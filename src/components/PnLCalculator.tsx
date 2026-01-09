@@ -1,11 +1,13 @@
 "use client";
 
+import { useI18n } from "@/i18n/LanguageProvider";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Calculator, TrendingUp, DollarSign, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function PnLCalculator() {
+  const { t } = useI18n();
   const [bondAmount, setBondAmount] = useState<string>("1000");
   const [role, setRole] = useState<"disputer" | "asserter">("disputer");
 
@@ -25,8 +27,8 @@ export function PnLCalculator() {
             <Calculator className="h-6 w-6 text-white" />
           </div>
           <div>
-            <CardTitle className="text-xl font-bold">Profit Calculator</CardTitle>
-            <CardDescription className="text-indigo-100">Estimate your potential returns</CardDescription>
+            <CardTitle className="text-xl font-bold">{t("pnl.title")}</CardTitle>
+            <CardDescription className="text-indigo-100">{t("pnl.description")}</CardDescription>
           </div>
         </div>
       </CardHeader>
@@ -43,7 +45,7 @@ export function PnLCalculator() {
                 : "text-slate-500 hover:text-slate-700"
             )}
           >
-            I want to Dispute
+            {t("pnl.iWantToDispute")}
           </button>
           <button
             onClick={() => setRole("asserter")}
@@ -54,7 +56,7 @@ export function PnLCalculator() {
                 : "text-slate-500 hover:text-slate-700"
             )}
           >
-            I want to Assert
+            {t("pnl.iWantToAssert")}
           </button>
         </div>
 
@@ -62,7 +64,7 @@ export function PnLCalculator() {
         <div className="space-y-4">
           <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
             <DollarSign className="h-4 w-4" />
-            Bond Amount (USD)
+            {t("pnl.bondAmount")}
           </label>
           <div className="relative group">
             <input
@@ -77,7 +79,7 @@ export function PnLCalculator() {
             </span>
           </div>
           <p className="text-xs text-slate-500">
-            *Assuming standard 1:1 bond escalation game logic.
+            {t("pnl.disclaimer")}
           </p>
         </div>
 
@@ -89,13 +91,13 @@ export function PnLCalculator() {
           
           <div className="relative z-10 grid grid-cols-2 gap-8">
             <div>
-              <p className="text-sm font-medium text-emerald-600 mb-1">Potential Profit</p>
+              <p className="text-sm font-medium text-emerald-600 mb-1">{t("pnl.profit")}</p>
               <p className="text-3xl font-bold text-emerald-700">
                 +${profit.toLocaleString()}
               </p>
             </div>
             <div>
-              <p className="text-sm font-medium text-emerald-600 mb-1">ROI</p>
+              <p className="text-sm font-medium text-emerald-600 mb-1">{t("pnl.roi")}</p>
               <p className="text-3xl font-bold text-emerald-700">
                 {roi}%
               </p>
@@ -104,7 +106,7 @@ export function PnLCalculator() {
 
           <div className="mt-6 pt-6 border-t border-emerald-200/50 flex items-center justify-between text-sm">
             <div className="flex flex-col">
-              <span className="text-emerald-800/60">Total Return</span>
+              <span className="text-emerald-800/60">{t("pnl.totalReturn")}</span>
               <span className="font-semibold text-emerald-900">${totalReturn.toLocaleString()}</span>
             </div>
             <ArrowRight className="h-5 w-5 text-emerald-400" />

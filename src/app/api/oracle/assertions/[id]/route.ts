@@ -1,6 +1,8 @@
 import { getAssertion, getDisputeByAssertionId } from "@/server/oracleStore";
 import { readOracleConfig } from "@/server/oracleConfig";
 import { error, handleApi } from "@/server/apiResponse";
+import { createPublicClient, formatEther, http } from "viem";
+import { oracleAbi } from "@/lib/oracleAbi";
 
 export async function GET(
   request: Request,
@@ -13,6 +15,24 @@ export async function GET(
     
     const dispute = await getDisputeByAssertionId(id);
     const config = await readOracleConfig();
-    return { assertion, dispute, config };
+    let bondWei: string | null = null;
+    let bondEth: string | null = null;
+    if (config.rpcUrl && config.contractAddress) {
+      try {
+        const client = createPublicClient({ transport: http(config.rpcUrl) });
+        const bond = await client.readContract({
+          address: config.contractAddress as `0x${string}`,
+          abi: oracleAbi,
+          functionName: "getBond",
+          args: []
+        });
+        bondWei = bond.toString(10);
+        bondEth = formatEther(bond);
+      } catch {
+        bondWei = null;
+        bondEth = null;
+      }
+    }
+    return { assertion, dispute, config, bondWei, bondEth };
   });
 }

@@ -7,6 +7,9 @@ export async function ensureSchema() {
       rpc_url TEXT,
       contract_address TEXT,
       chain TEXT,
+      start_block BIGINT,
+      max_block_range INTEGER,
+      voting_period_hours INTEGER,
       CONSTRAINT single_row CHECK (id = 1)
     );
 
@@ -69,6 +72,13 @@ export async function ensureSchema() {
 
   await query(`
     ALTER TABLE assertions ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMP WITH TIME ZONE;
+    ALTER TABLE assertions ADD COLUMN IF NOT EXISTS settlement_resolution BOOLEAN;
+  `);
+
+  await query(`
+    ALTER TABLE oracle_config ADD COLUMN IF NOT EXISTS start_block BIGINT;
+    ALTER TABLE oracle_config ADD COLUMN IF NOT EXISTS max_block_range INTEGER;
+    ALTER TABLE oracle_config ADD COLUMN IF NOT EXISTS voting_period_hours INTEGER;
   `);
 
   // Initialize singleton rows if not exist

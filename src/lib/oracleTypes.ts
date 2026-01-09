@@ -12,6 +12,7 @@ export type Assertion = {
   assertedAt: string;
   livenessEndsAt: string;
   resolvedAt?: string;
+  settlementResolution?: boolean;
   status: OracleStatus;
   bondUsd: number;
   disputer?: string;
@@ -64,6 +65,9 @@ export type OracleConfig = {
   rpcUrl: string;
   contractAddress: string;
   chain: OracleChain;
+  startBlock?: number;
+  maxBlockRange?: number;
+  votingPeriodHours?: number;
 };
 
 export type OracleStatusSnapshot = {

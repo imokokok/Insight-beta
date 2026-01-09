@@ -19,7 +19,10 @@ export async function PUT(request: Request) {
       const patch = validateOracleConfigPatch({
         rpcUrl: body.rpcUrl,
         contractAddress: body.contractAddress,
-        chain: body.chain
+        chain: body.chain,
+        startBlock: body.startBlock,
+        maxBlockRange: body.maxBlockRange,
+        votingPeriodHours: body.votingPeriodHours
       });
       return writeOracleConfig(patch);
     } catch (e) {

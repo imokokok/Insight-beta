@@ -1,6 +1,6 @@
 import { query } from "./db";
 import { ensureSchema } from "./schema";
-import type { Assertion, Dispute, OracleStats } from "@/lib/oracleTypes";
+import type { Assertion, Dispute, OracleStats, LeaderboardStats } from "@/lib/oracleTypes";
 import { mockAssertions, mockDisputes } from "@/lib/mockData";
 
 export type { Assertion, Dispute } from "@/lib/oracleTypes";
@@ -345,4 +345,73 @@ export const getOracleStats = unstable_cache(
   },
   ["oracle-stats"],
   { revalidate: 60, tags: ["oracle-stats"] }
+);
+
+export const getLeaderboardStats = unstable_cache(
+  async (): Promise<LeaderboardStats> => {
+    await ensureDb();
+    
+    const dbCount = (await query("SELECT COUNT(*) as c FROM assertions")).rows[0].c;
+    
+    if (Number(dbCount) === 0) {
+      // Mock data logic
+      const asserterMap = new Map<string, { count: number; value: number }>();
+      mockAssertions.forEach(a => {
+        const curr = asserterMap.get(a.asserter) || { count: 0, value: 0 };
+        asserterMap.set(a.asserter, { count: curr.count + 1, value: curr.value + a.bondUsd });
+      });
+      
+      const topAsserters = Array.from(asserterMap.entries())
+        .map(([address, { count, value }]) => ({ address, count, value, rank: 0 }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10)
+        .map((item, i) => ({ ...item, rank: i + 1 }));
+
+      const disputerMap = new Map<string, number>();
+      mockDisputes.forEach(d => {
+        const curr = disputerMap.get(d.disputer) || 0;
+        disputerMap.set(d.disputer, curr + 1);
+      });
+
+      const topDisputers = Array.from(disputerMap.entries())
+        .map(([address, count]) => ({ address, count, rank: 0 }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10)
+        .map((item, i) => ({ ...item, rank: i + 1 }));
+        
+      return { topAsserters, topDisputers };
+    }
+
+    const assertersRes = await query(`
+      SELECT asserter as address, COUNT(*) as count, SUM(bond_usd) as value
+      FROM assertions
+      GROUP BY asserter
+      ORDER BY count DESC
+      LIMIT 10
+    `);
+
+    const disputersRes = await query(`
+      SELECT disputer as address, COUNT(*) as count
+      FROM disputes
+      GROUP BY disputer
+      ORDER BY count DESC
+      LIMIT 10
+    `);
+
+    return {
+      topAsserters: assertersRes.rows.map((r, i) => ({ 
+        address: r.address, 
+        count: Number(r.count), 
+        value: Number(r.value), 
+        rank: i + 1 
+      })),
+      topDisputers: disputersRes.rows.map((r, i) => ({ 
+        address: r.address, 
+        count: Number(r.count), 
+        rank: i + 1 
+      }))
+    };
+  },
+  ["oracle-leaderboard"],
+  { revalidate: 300, tags: ["oracle-leaderboard"] }
 );

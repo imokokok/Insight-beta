@@ -12,6 +12,12 @@ export interface Toast {
   title: string;
   message?: string;
   duration?: number;
+  actionLabel?: string;
+  actionHref?: string;
+  actionOnClick?: () => void;
+  secondaryActionLabel?: string;
+  secondaryActionHref?: string;
+  secondaryActionOnClick?: () => void;
 }
 
 interface ToastContextType {
@@ -29,9 +35,32 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const toast = useCallback(
-    ({ type, title, message, duration = 5000 }: Omit<Toast, "id">) => {
+    ({
+      type,
+      title,
+      message,
+      duration = 5000,
+      actionLabel,
+      actionHref,
+      actionOnClick,
+      secondaryActionLabel,
+      secondaryActionHref,
+      secondaryActionOnClick
+    }: Omit<Toast, "id">) => {
       const id = Math.random().toString(36).substring(2, 9);
-      const newToast = { id, type, title, message, duration };
+      const newToast = {
+        id,
+        type,
+        title,
+        message,
+        duration,
+        actionLabel,
+        actionHref,
+        actionOnClick,
+        secondaryActionLabel,
+        secondaryActionHref,
+        secondaryActionOnClick
+      };
       
       setToasts((prev) => [...prev, newToast]);
 
@@ -78,6 +107,68 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 )}>
                   {t.message}
                 </p>
+              )}
+              {(t.actionLabel || t.secondaryActionLabel) && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {t.actionLabel && t.actionHref && (
+                    <a
+                      href={t.actionHref}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={cn(
+                        "inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 transition-colors",
+                        t.type === "success" && "bg-emerald-100 text-emerald-900 ring-emerald-200 hover:bg-emerald-200",
+                        t.type === "error" && "bg-rose-100 text-rose-900 ring-rose-200 hover:bg-rose-200",
+                        t.type === "info" && "bg-blue-100 text-blue-900 ring-blue-200 hover:bg-blue-200"
+                      )}
+                    >
+                      {t.actionLabel}
+                    </a>
+                  )}
+                  {t.actionLabel && t.actionOnClick && (
+                    <button
+                      type="button"
+                      onClick={t.actionOnClick}
+                      className={cn(
+                        "inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 transition-colors",
+                        t.type === "success" && "bg-emerald-100 text-emerald-900 ring-emerald-200 hover:bg-emerald-200",
+                        t.type === "error" && "bg-rose-100 text-rose-900 ring-rose-200 hover:bg-rose-200",
+                        t.type === "info" && "bg-blue-100 text-blue-900 ring-blue-200 hover:bg-blue-200"
+                      )}
+                    >
+                      {t.actionLabel}
+                    </button>
+                  )}
+                  {t.secondaryActionLabel && t.secondaryActionHref && (
+                    <a
+                      href={t.secondaryActionHref}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={cn(
+                        "inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 transition-colors",
+                        t.type === "success" && "bg-emerald-100 text-emerald-900 ring-emerald-200 hover:bg-emerald-200",
+                        t.type === "error" && "bg-rose-100 text-rose-900 ring-rose-200 hover:bg-rose-200",
+                        t.type === "info" && "bg-blue-100 text-blue-900 ring-blue-200 hover:bg-blue-200"
+                      )}
+                    >
+                      {t.secondaryActionLabel}
+                    </a>
+                  )}
+                  {t.secondaryActionLabel && t.secondaryActionOnClick && (
+                    <button
+                      type="button"
+                      onClick={t.secondaryActionOnClick}
+                      className={cn(
+                        "inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 transition-colors",
+                        t.type === "success" && "bg-emerald-100 text-emerald-900 ring-emerald-200 hover:bg-emerald-200",
+                        t.type === "error" && "bg-rose-100 text-rose-900 ring-rose-200 hover:bg-rose-200",
+                        t.type === "info" && "bg-blue-100 text-blue-900 ring-blue-200 hover:bg-blue-200"
+                      )}
+                    >
+                      {t.secondaryActionLabel}
+                    </button>
+                  )}
+                </div>
               )}
             </div>
             

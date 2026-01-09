@@ -48,17 +48,25 @@ vi.mock('@/i18n/LanguageProvider', () => ({
   }),
 }));
 
-// Mock viem
-const mockSendTransaction = vi.fn();
-const mockRequestAddresses = vi.fn();
+let lastDisputeModalProps: unknown = null;
 
-vi.mock('viem', () => ({
-  createWalletClient: () => ({
-    requestAddresses: mockRequestAddresses,
-    sendTransaction: mockSendTransaction,
-  }),
-  custom: vi.fn(),
-  encodeFunctionData: vi.fn(),
+vi.mock('@/components/DisputeModal', () => ({
+  DisputeModal: (props: Record<string, unknown>) => {
+    lastDisputeModalProps = props;
+    return props.isOpen === true ? <div>Dispute Modal</div> : null;
+  },
+}));
+
+vi.mock('@/components/VoteModal', () => ({
+  VoteModal: (props: Record<string, unknown>) => {
+    return props.isOpen === true ? <div>Vote Modal</div> : null;
+  },
+}));
+
+vi.mock('@/components/SettleModal', () => ({
+  SettleModal: (props: Record<string, unknown>) => {
+    return props.isOpen === true ? <div>Settle Modal</div> : null;
+  },
 }));
 
 // Mock Utils
@@ -69,12 +77,6 @@ vi.mock('@/lib/utils', async (importOriginal) => {
     fetchApiData: vi.fn(),
   };
 });
-
-// Mock Toast
-const mockToast = vi.fn();
-vi.mock('@/components/ui/toast', () => ({
-  useToast: () => ({ toast: mockToast }),
-}));
 
 describe('OracleDetailPage', () => {
   const mockAssertion: Assertion = {
@@ -99,13 +101,16 @@ describe('OracleDetailPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    lastDisputeModalProps = null;
     const fetchApiDataMock = vi.mocked(utils.fetchApiData) as unknown as {
       mockResolvedValue: (value: unknown) => void;
     };
     fetchApiDataMock.mockResolvedValue({
       assertion: mockAssertion,
       dispute: null,
-      config: mockConfig
+      config: mockConfig,
+      bondWei: null,
+      bondEth: null
     });
   });
 
@@ -126,10 +131,7 @@ describe('OracleDetailPage', () => {
     expect(screen.getAllByText(/1,000/)[0]).toBeInTheDocument(); // Bond
   });
 
-  it('shows error toast if wallet is not installed', async () => {
-    // Mock window without ethereum
-    // We don't need to do anything as JSDOM window doesn't have ethereum by default
-
+  it('opens dispute modal and passes required props', async () => {
     render(<OracleDetailPage />);
     
     await waitFor(() => {
@@ -139,40 +141,11 @@ describe('OracleDetailPage', () => {
     const disputeBtn = screen.getByText('Dispute Assertion');
     fireEvent.click(disputeBtn);
 
-    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({
-      type: 'error',
-      title: 'Wallet not found'
-    }));
-  });
-
-  it('handles successful dispute transaction', async () => {
-    // Mock window.ethereum
-    Object.defineProperty(window, 'ethereum', {
-      value: {},
-      writable: true,
-      configurable: true
-    });
-
-    mockRequestAddresses.mockResolvedValue(['0xuser']);
-    mockSendTransaction.mockResolvedValue('0xtxhash');
-
-    render(<OracleDetailPage />);
-    
-    await waitFor(() => {
-        expect(screen.getByText('Assertion Details')).toBeInTheDocument();
-    });
-
-    const disputeBtn = screen.getByText('Dispute Assertion');
-    fireEvent.click(disputeBtn);
-
-    await waitFor(() => {
-      expect(mockRequestAddresses).toHaveBeenCalled();
-      expect(mockSendTransaction).toHaveBeenCalled();
-    });
-
-    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({
-      type: 'success',
-      message: expect.stringContaining('0xtxhash')
+    expect(screen.getByText('Dispute Modal')).toBeInTheDocument();
+    expect(lastDisputeModalProps as Record<string, unknown>).toEqual(expect.objectContaining({
+      assertionId: mockAssertion.id,
+      contractAddress: mockConfig.contractAddress,
+      chain: mockConfig.chain,
     }));
   });
 });

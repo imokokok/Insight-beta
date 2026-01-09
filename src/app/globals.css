@@ -3,14 +3,44 @@
 @tailwind utilities;
 
 :root {
-  --background: #fdf4ff;
+  --background: #fafafa;
+  --foreground: #171717;
 }
 
 html,
 body {
   height: 100%;
+  overflow-x: hidden;
 }
 
 body {
-  @apply antialiased;
+  @apply antialiased bg-slate-50 text-gray-900;
+  /* Dark mode fallback (though currently mostly light mode focused) */
+  background-image: 
+    radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+    radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
+    radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+/* Light mode overrides for the mesh gradient to be softer but richer */
+@media (prefers-color-scheme: light) {
+  body {
+    background-color: #fafafa;
+    background-image: none;
+  }
+}
+
+.glass-panel {
+  @apply bg-white/70 backdrop-blur-xl border border-white/60 shadow-xl shadow-indigo-500/5;
+}
+
+.glass-card {
+  @apply bg-white/60 backdrop-blur-md border border-white/50 shadow-lg shadow-indigo-500/5 transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1 hover:bg-white/90;
+}
+
+.glass-input {
+  @apply bg-white/50 backdrop-blur-sm border-white/30 focus:bg-white/80 transition-all focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/30;
 }

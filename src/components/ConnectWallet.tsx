@@ -1,67 +1,69 @@
 "use client";
 
-import { useState } from "react";
 import { Wallet } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
+import { useI18n } from "@/i18n/LanguageProvider";
+import { useWallet } from "@/contexts/WalletContext";
+import { normalizeWalletError } from "@/lib/walletErrors";
 
 export function ConnectWallet() {
-  const [address, setAddress] = useState<string | null>(null);
+  const { address, connect, disconnect, isConnecting } = useWallet();
   const { toast } = useToast();
+  const { t } = useI18n();
 
-  const connect = async () => {
-    if (typeof window === "undefined" || !window.ethereum) {
-      toast({
-        type: "error",
-        title: "Wallet not found",
-        message: "Please install a wallet like MetaMask or Rabby!"
-      });
-      return;
-    }
+  const handleConnect = async () => {
     try {
-      const accounts = await window.ethereum.request({
-        method: "eth_requestAccounts",
+      await connect();
+      toast({
+        type: "success",
+        title: t("wallet.connected"),
+        message: t("wallet.connectedMsg")
       });
-      if (accounts && Array.isArray(accounts) && accounts.length > 0) {
-        setAddress(accounts[0]);
-        toast({
-          type: "success",
-          title: "Wallet Connected",
-          message: `Connected to ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`
-        });
-      }
     } catch (error: unknown) {
       console.error("Failed to connect wallet:", error);
+      const normalized = normalizeWalletError(error);
+      if (normalized.kind === "WALLET_NOT_FOUND") {
+        toast({
+          type: "error",
+          title: t("wallet.notFound"),
+          message: t("wallet.install")
+        });
+        return;
+      }
+      const msg =
+        normalized.kind === "USER_REJECTED"
+          ? t("errors.userRejected")
+          : normalized.kind === "REQUEST_PENDING"
+            ? t("errors.requestPending")
+            : t("errors.unknownError");
       toast({
         type: "error",
-        title: "Connection Failed",
-        message: error instanceof Error ? error.message : "Unknown error"
+        title: t("wallet.failed"),
+        message: msg
       });
     }
-  };
-
-  const disconnect = () => {
-    setAddress(null);
   };
 
   if (address) {
     return (
       <button
         onClick={disconnect}
-        className="flex items-center gap-2 rounded-lg bg-purple-100 px-3 py-1.5 text-sm font-medium text-purple-700 hover:bg-purple-200"
+        className="flex items-center gap-2 rounded-lg bg-purple-100 px-3 py-1.5 text-sm font-medium text-purple-700 hover:bg-purple-200 transition-colors"
       >
         <div className="h-2 w-2 rounded-full bg-green-500" />
-        {address}
+        {address.slice(0, 6)}...{address.slice(-4)}
       </button>
     );
   }
 
   return (
     <button
-      onClick={connect}
-      className="flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-purple-700"
+      onClick={handleConnect}
+      disabled={isConnecting}
+      className="flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
     >
       <Wallet size={16} />
-      Connect Wallet
+      {isConnecting ? t("wallet.connecting") : t("wallet.connect")}
     </button>
   );
 }

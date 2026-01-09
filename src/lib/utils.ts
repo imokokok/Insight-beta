@@ -63,6 +63,55 @@ export function formatDurationMinutes(totalMinutes: number) {
   return `${hours}h ${minutes}m`;
 }
 
+export function getExplorerUrl(chain: string, hash: string) {
+  if (!hash) return null;
+  if (chain === "Polygon") return `https://polygonscan.com/tx/${hash}`;
+  if (chain === "Arbitrum") return `https://arbiscan.io/tx/${hash}`;
+  if (chain === "Optimism") return `https://optimistic.etherscan.io/tx/${hash}`;
+  return null;
+}
+
+export async function copyToClipboard(text: string): Promise<boolean> {
+  if (typeof navigator === "undefined") return false;
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    void 0;
+  }
+
+  try {
+    const el = document.createElement("textarea");
+    el.value = text;
+    el.setAttribute("readonly", "");
+    el.style.position = "fixed";
+    el.style.left = "-9999px";
+    el.style.top = "-9999px";
+    document.body.appendChild(el);
+    el.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(el);
+    return ok;
+  } catch {
+    return false;
+  }
+}
+
+export function getAssertionStatusColor(status: string) {
+  switch (status) {
+    case "Pending":
+      return "bg-blue-500/10 text-blue-700 ring-1 ring-blue-500/20";
+    case "Disputed":
+      return "bg-rose-500/10 text-rose-700 ring-1 ring-rose-500/20";
+    case "Resolved":
+      return "bg-emerald-500/10 text-emerald-700 ring-1 ring-emerald-500/20";
+    default:
+      return "bg-gray-500/10 text-gray-700 ring-1 ring-gray-500/20";
+  }
+}
+
 interface ApiResponse<T> {
   ok: boolean;
   data?: T;
@@ -98,16 +147,18 @@ export async function fetchApiData<T>(input: RequestInfo | URL, init?: RequestIn
     }
 
     const record = json as ApiResponse<T>;
-    if (record.ok === true && "data" in record) {
-      return record.data as T;
+    if (record.ok && record.data !== undefined) {
+      return record.data;
     }
-    if (record.ok === false) {
-      throw new Error(record.error || "api_error");
+    
+    if (record.error) {
+      throw new Error(record.error);
     }
+    
+    throw new Error("api_unknown_error");
 
-    // Fallback if structure is weird but ok is missing
-    throw new Error("invalid_api_structure");
-  } catch (e) {
-    throw e instanceof Error ? e : new Error(String(e));
+  } catch (error) {
+    console.error("Fetch error:", error);
+    throw error;
   }
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { fetchApiData } from "@/lib/utils";
 import type { Assertion, OracleConfig, OracleStats, OracleStatus } from "@/lib/oracleTypes";
 
@@ -58,7 +58,7 @@ export function useOracleData(
     };
   }, [filterStatus, filterChain, query, refreshKey]);
 
-  const loadMore = async () => {
+  const loadMore = useCallback(async () => {
     if (nextCursor === null) return;
     setLoadingMore(true);
     setError(null);
@@ -81,12 +81,12 @@ export function useOracleData(
     } finally {
       setLoadingMore(false);
     }
-  };
+  }, [filterStatus, filterChain, query, nextCursor]);
 
-  const refresh = () => {
+  const refresh = useCallback(() => {
     setLoading(true);
     setRefreshKey((k) => k + 1);
-  };
+  }, []);
 
   return { items, stats, loading, loadingMore, error, loadMore, hasMore: nextCursor !== null, refresh };
 }

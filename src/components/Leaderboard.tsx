@@ -1,35 +1,73 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Trophy, ShieldAlert, Award, Medal } from "lucide-react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { fetchApiData, formatUsdCompact } from "@/lib/utils";
+import { useI18n } from "@/i18n/LanguageProvider";
+import { Award, TrendingUp, User, Trophy, ShieldCheck, Loader2 } from "lucide-react";
+import { cn, fetchApiData } from "@/lib/utils";
+import { useEffect, useState, memo } from "react";
 import type { LeaderboardStats } from "@/lib/oracleTypes";
 
-import { useI18n } from "@/i18n/LanguageProvider";
-import { langToLocale } from "@/i18n/translations";
-
-function RankIcon({ rank }: { rank: number }) {
-  if (rank === 1) return <Trophy className="h-5 w-5 text-yellow-500" />;
-  if (rank === 2) return <Medal className="h-5 w-5 text-gray-400" />;
-  if (rank === 3) return <Medal className="h-5 w-5 text-amber-700" />;
-  return <span className="flex h-5 w-5 items-center justify-center font-bold text-gray-500">{rank}</span>;
+interface RankItemProps {
+  rank: number;
+  address: string;
+  count: number;
+  type: "asserter" | "disputer";
+  value?: number;
 }
 
-function AddressDisplay({ address }: { address: string }) {
+const RankItem = memo(function RankItem({
+  rank,
+  address,
+  count,
+  type,
+  value
+}: RankItemProps) {
+  const { t } = useI18n();
+  
   return (
-    <span className="font-mono text-sm text-gray-700">
-      {address.substring(0, 6)}...{address.substring(38)}
-    </span>
+    <div className="group flex items-center justify-between rounded-xl glass-panel p-3 transition-all hover:bg-white/60 hover:shadow-md hover:-translate-y-0.5 border border-white/40">
+      <div className="flex items-center gap-3">
+        <div
+          className={cn(
+            "flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold shadow-sm transition-transform group-hover:scale-110",
+            rank === 1 && "bg-gradient-to-br from-yellow-300 to-amber-500 text-white shadow-amber-500/30",
+            rank === 2 && "bg-gradient-to-br from-slate-300 to-slate-500 text-white shadow-slate-500/30",
+            rank === 3 && "bg-gradient-to-br from-orange-300 to-orange-500 text-white shadow-orange-500/30",
+            rank > 3 && "bg-white/80 text-gray-500 ring-1 ring-gray-200"
+          )}
+        >
+          {rank <= 3 ? <Trophy size={14} /> : rank}
+        </div>
+        <div className="flex flex-col">
+          <span className="font-mono text-sm font-bold text-gray-700 group-hover:text-purple-700 transition-colors">
+            {address.slice(0, 6)}...{address.slice(-4)}
+          </span>
+          <span className="text-[10px] uppercase tracking-wider font-semibold text-gray-400">
+            {type === "asserter" ? t("oracle.card.asserter") : t("oracle.card.disputer")}
+          </span>
+        </div>
+      </div>
+      <div className="text-right">
+        <div className="flex items-center justify-end gap-1.5 rounded-lg bg-white/50 px-2 py-1 text-sm font-bold text-gray-800 shadow-sm ring-1 ring-gray-900/5">
+            {count}
+            <span className="text-[10px] font-normal text-gray-500 uppercase">
+                {type === "asserter" ? t("oracle.leaderboard.assertions") : t("oracle.leaderboard.disputes")}
+            </span>
+        </div>
+        {value !== undefined && (
+            <div className="mt-1 text-[10px] font-medium text-gray-400">
+                ${value.toLocaleString()} {t("oracle.leaderboard.bonded")}
+            </div>
+        )}
+      </div>
+    </div>
   );
-}
+});
 
 export function Leaderboard() {
+  const { t } = useI18n();
   const [data, setData] = useState<LeaderboardStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const { lang } = useI18n();
-  const locale = langToLocale[lang];
+  const [activeTab, setActiveTab] = useState<"asserters" | "disputers">("asserters");
 
   useEffect(() => {
     fetchApiData<LeaderboardStats>("/api/oracle/leaderboard")
@@ -39,104 +77,126 @@ export function Leaderboard() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="border-purple-100 bg-white/60 shadow-sm">
-          <CardHeader className="pb-4"><Skeleton className="h-6 w-32" /></CardHeader>
-          <CardContent className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="flex items-center justify-between pb-2">
-                <div className="flex items-center gap-3">
-                  <Skeleton className="h-5 w-5 rounded-full" />
-                  <Skeleton className="h-4 w-24" />
-                </div>
-                <div className="space-y-1 text-right">
-                  <Skeleton className="h-4 w-16 ml-auto" />
-                  <Skeleton className="h-3 w-12 ml-auto" />
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-        <Card className="border-rose-100 bg-white/60 shadow-sm">
-          <CardHeader className="pb-4"><Skeleton className="h-6 w-32" /></CardHeader>
-          <CardContent className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="flex items-center justify-between pb-2">
-                <div className="flex items-center gap-3">
-                  <Skeleton className="h-5 w-5 rounded-full" />
-                  <Skeleton className="h-4 w-24" />
-                </div>
-                <div className="text-right">
-                  <Skeleton className="h-4 w-16 ml-auto" />
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
-    );
+      return (
+          <div className="flex justify-center py-20">
+              <Loader2 className="animate-spin text-purple-500" size={32} />
+          </div>
+      );
   }
-  if (!data) return null;
 
   return (
-    <div className="grid gap-6 md:grid-cols-2">
-      {/* Top Asserters */}
-      <Card className="border-purple-100 bg-white/60 shadow-sm">
-        <CardHeader className="pb-4">
-          <div className="flex items-center gap-2">
-            <Award className="h-5 w-5 text-purple-600" />
-            <h3 className="font-semibold text-gray-900">Top Asserters</h3>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {data.topAsserters.map((item) => (
-              <div key={item.address} className="flex items-center justify-between border-b border-gray-100 pb-2 last:border-0 last:pb-0">
-                <div className="flex items-center gap-3">
-                  <RankIcon rank={item.rank} />
-                  <AddressDisplay address={item.address} />
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-medium text-gray-900">{formatUsdCompact(item.value || 0, locale)}</div>
-                  <div className="text-xs text-gray-500">{item.count} assertions</div>
-                </div>
-              </div>
-            ))}
-            {data.topAsserters.length === 0 && (
-              <div className="text-center text-sm text-gray-500">No data available</div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+    <div className="w-full max-w-4xl mx-auto">
+      <div className={cn(
+        "glass-card rounded-2xl p-6 relative overflow-hidden transition-all duration-500",
+        activeTab === "asserters" ? "border-purple-100/20" : "border-rose-100/20"
+      )}>
+        {/* Artistic Background Mesh - Dynamic based on tab */}
+        <div className={cn(
+            "absolute inset-0 pointer-events-none transition-opacity duration-700",
+            activeTab === "asserters" ? "opacity-20" : "opacity-0"
+        )}>
+            <div className="absolute -right-[10%] -top-[10%] h-[150%] w-[50%] bg-gradient-to-bl from-purple-200/30 via-indigo-100/10 to-transparent blur-3xl rounded-full" />
+            <div className="absolute left-0 bottom-0 h-[60%] w-[40%] bg-gradient-to-tr from-blue-100/20 via-transparent to-transparent blur-2xl rounded-full" />
+        </div>
+        <div className={cn(
+            "absolute inset-0 pointer-events-none transition-opacity duration-700",
+            activeTab === "disputers" ? "opacity-20" : "opacity-0"
+        )}>
+            <div className="absolute -left-[10%] -top-[10%] h-[150%] w-[50%] bg-gradient-to-br from-rose-200/30 via-orange-100/10 to-transparent blur-3xl rounded-full" />
+            <div className="absolute right-0 bottom-0 h-[60%] w-[40%] bg-gradient-to-tl from-amber-100/20 via-transparent to-transparent blur-2xl rounded-full" />
+        </div>
 
-      {/* Top Disputers */}
-      <Card className="border-rose-100 bg-white/60 shadow-sm">
-        <CardHeader className="pb-4">
-          <div className="flex items-center gap-2">
-            <ShieldAlert className="h-5 w-5 text-rose-600" />
-            <h3 className="font-semibold text-gray-900">Top Disputers</h3>
+        {/* Header & Tabs */}
+        <div className="relative z-10 mb-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-3">
+             <div className={cn(
+               "rounded-xl p-3 shadow-inner ring-1 backdrop-blur-md transition-colors duration-500",
+               activeTab === "asserters" 
+                 ? "bg-gradient-to-br from-purple-500/10 to-indigo-500/10 text-purple-600 ring-purple-500/20" 
+                 : "bg-gradient-to-br from-rose-500/10 to-orange-500/10 text-rose-600 ring-rose-500/20"
+             )}>
+                {activeTab === "asserters" ? <Award className="h-6 w-6" /> : <TrendingUp className="h-6 w-6" />}
+             </div>
+             <div>
+               <h3 className="text-lg font-bold text-gray-800">
+                 {activeTab === "asserters" ? t("oracle.leaderboard.topAsserters") : t("oracle.leaderboard.topDisputers")}
+               </h3>
+               <p className="text-sm text-gray-500">
+                 {activeTab === "asserters" ? t("oracle.leaderboard.topAssertersDesc") : t("oracle.leaderboard.topDisputersDesc")}
+               </p>
+             </div>
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {data.topDisputers.map((item) => (
-              <div key={item.address} className="flex items-center justify-between border-b border-gray-100 pb-2 last:border-0 last:pb-0">
-                <div className="flex items-center gap-3">
-                  <RankIcon rank={item.rank} />
-                  <AddressDisplay address={item.address} />
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-medium text-gray-900">{item.count} disputes</div>
-                </div>
-              </div>
-            ))}
-            {data.topDisputers.length === 0 && (
-              <div className="text-center text-sm text-gray-500">No data available</div>
-            )}
+
+          <div className="flex items-center gap-1 p-1 rounded-xl bg-gray-100/50 backdrop-blur-sm border border-gray-200/50">
+            <button
+              onClick={() => setActiveTab("asserters")}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300",
+                activeTab === "asserters"
+                  ? "bg-white text-purple-700 shadow-sm ring-1 ring-black/5"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-white/50"
+              )}
+            >
+              <Award size={14} />
+              {t("oracle.leaderboard.topAsserters")}
+            </button>
+            <button
+              onClick={() => setActiveTab("disputers")}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300",
+                activeTab === "disputers"
+                  ? "bg-white text-rose-700 shadow-sm ring-1 ring-black/5"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-white/50"
+              )}
+            >
+              <ShieldCheck size={14} />
+              {t("oracle.leaderboard.topDisputers")}
+            </button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* Content Area */}
+        <div className="relative z-10 min-h-[400px]">
+           {activeTab === "asserters" ? (
+             <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                {data?.topAsserters.map((item) => (
+                    <RankItem
+                    key={item.address}
+                    rank={item.rank}
+                    address={item.address}
+                    count={item.count}
+                    value={item.value}
+                    type="asserter"
+                    />
+                ))}
+                {(!data?.topAsserters || data.topAsserters.length === 0) && (
+                    <div className="flex flex-col items-center justify-center py-20 text-center text-gray-400">
+                    <User className="mb-2 h-12 w-12 opacity-20" />
+                    <p className="text-sm">{t("oracle.leaderboard.noData")}</p>
+                    </div>
+                )}
+             </div>
+           ) : (
+             <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                {data?.topDisputers.map((item) => (
+                    <RankItem
+                    key={item.address}
+                    rank={item.rank}
+                    address={item.address}
+                    count={item.count}
+                    type="disputer"
+                    />
+                ))}
+                {(!data?.topDisputers || data.topDisputers.length === 0) && (
+                    <div className="flex flex-col items-center justify-center py-20 text-center text-gray-400">
+                    <User className="mb-2 h-12 w-12 opacity-20" />
+                    <p className="text-sm">{t("oracle.leaderboard.noData")}</p>
+                    </div>
+                )}
+             </div>
+           )}
+        </div>
+      </div>
     </div>
   );
 }

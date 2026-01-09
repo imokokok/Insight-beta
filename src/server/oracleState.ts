@@ -39,6 +39,7 @@ function mapAssertionRow(row: any): Assertion {
     assertedAt: row.asserted_at.toISOString(),
     livenessEndsAt: row.liveness_ends_at.toISOString(),
     resolvedAt: row.resolved_at ? row.resolved_at.toISOString() : undefined,
+    settlementResolution: row.settlement_resolution,
     status: row.status,
     bondUsd: Number(row.bond_usd),
     disputer: row.disputer,
@@ -166,13 +167,14 @@ export async function upsertAssertion(a: Assertion) {
   await ensureDb();
   await query(
     `INSERT INTO assertions (
-      id, chain, asserter, protocol, market, assertion_data, asserted_at, liveness_ends_at, resolved_at, status, bond_usd, disputer, tx_hash
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+      id, chain, asserter, protocol, market, assertion_data, asserted_at, liveness_ends_at, resolved_at, settlement_resolution, status, bond_usd, disputer, tx_hash
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
     ON CONFLICT (id) DO UPDATE SET
       status = excluded.status,
       disputer = excluded.disputer,
       bond_usd = excluded.bond_usd,
-      resolved_at = excluded.resolved_at
+      resolved_at = excluded.resolved_at,
+      settlement_resolution = excluded.settlement_resolution
     `,
     [
       a.id,
@@ -184,6 +186,7 @@ export async function upsertAssertion(a: Assertion) {
       a.assertedAt,
       a.livenessEndsAt,
       a.resolvedAt ?? null,
+      a.settlementResolution ?? null,
       a.status,
       a.bondUsd,
       a.disputer || null,
