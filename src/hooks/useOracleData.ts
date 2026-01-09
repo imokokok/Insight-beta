@@ -83,7 +83,10 @@ export function useOracleData(
     }
   };
 
-  const refresh = () => setRefreshKey((k) => k + 1);
+  const refresh = () => {
+    setLoading(true);
+    setRefreshKey((k) => k + 1);
+  };
 
   return { items, stats, loading, loadingMore, error, loadMore, hasMore: nextCursor !== null, refresh };
 }

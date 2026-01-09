@@ -105,6 +105,7 @@ export function OracleCharts() {
                   tick={{ fontSize: 12, fill: '#6b7280' }} 
                   axisLine={false}
                   tickLine={false}
+                  allowDecimals={false}
                 />
                 <Tooltip 
                   contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
@@ -116,6 +117,7 @@ export function OracleCharts() {
                   fillOpacity={1} 
                   fill="url(#colorCount)" 
                   strokeWidth={2}
+                  isAnimationActive={false}
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -154,6 +156,7 @@ export function OracleCharts() {
                   stroke="#10b981" 
                   strokeWidth={2} 
                   dot={false}
+                  isAnimationActive={false}
                 />
               </LineChart>
             </ResponsiveContainer>

@@ -47,6 +47,8 @@ export default function OracleDetailPage() {
   const [loading, setLoading] = useState(true);
   const [txPending, setTxPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [disputeReason, setDisputeReason] = useState("");
+  const [showDisputeInput, setShowDisputeInput] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -111,6 +113,15 @@ export default function OracleDetailPage() {
       return;
     }
     
+    if (!disputeReason.trim()) {
+      toast({
+        type: "error",
+        title: t("oracle.detail.validationError"),
+        message: t("oracle.detail.reasonRequired")
+      });
+      return;
+    }
+    
     setTxPending(true);
     try {
       const client = createWalletClient({
@@ -122,7 +133,7 @@ export default function OracleDetailPage() {
       const calldata = encodeFunctionData({
         abi: ORACLE_ABI,
         functionName: "disputeAssertion",
-        args: [assertion.id as `0x${string}`]
+        args: [assertion.id as `0x${string}`, disputeReason]
       });
 
       const hash = await client.sendTransaction({
@@ -137,6 +148,7 @@ export default function OracleDetailPage() {
         title: t("oracle.detail.txSent"),
         message: `${t("oracle.detail.hash")}: ${hash}`
       });
+      setShowDisputeInput(false);
     } catch (e: unknown) {
       console.error(e);
       const msg = e instanceof Error ? e.message : "Unknown error";
@@ -241,21 +253,57 @@ export default function OracleDetailPage() {
               </div>
 
               {assertion.status === "Pending" && (
-                <div className="mt-6">
-                  <button 
-                    onClick={handleDispute}
-                    disabled={txPending}
-                    className={cn(
-                      "w-full flex items-center justify-center gap-2 rounded-xl bg-rose-600 py-2.5 text-sm font-semibold text-white shadow-lg shadow-rose-500/20 hover:bg-rose-700 transition-colors",
-                      txPending && "opacity-70 cursor-wait"
-                    )}
-                  >
-                    <ShieldAlert size={18} />
-                    {txPending ? t("oracle.detail.confirming") : t("oracle.detail.disputeAssertion")}
-                  </button>
-                  <p className="mt-2 text-center text-xs text-purple-500">
-                    {t("oracle.detail.disputeRequiresBond")} {formatUsd(assertion.bondUsd, locale)}
-                  </p>
+                <div className="mt-6 space-y-4">
+                  {!showDisputeInput ? (
+                    <button 
+                      onClick={() => setShowDisputeInput(true)}
+                      className="w-full flex items-center justify-center gap-2 rounded-xl bg-rose-600 py-2.5 text-sm font-semibold text-white shadow-lg shadow-rose-500/20 hover:bg-rose-700 transition-colors"
+                    >
+                      <ShieldAlert size={18} />
+                      {t("oracle.detail.disputeAssertion")}
+                    </button>
+                  ) : (
+                    <div className="rounded-xl bg-rose-50 p-4 border border-rose-100 animate-in fade-in slide-in-from-top-2">
+                      <label className="block text-sm font-medium text-rose-900 mb-2">
+                        {t("oracle.detail.reasonForDispute")}
+                      </label>
+                      <textarea
+                        value={disputeReason}
+                        onChange={(e) => setDisputeReason(e.target.value)}
+                        placeholder={t("oracle.detail.reasonPlaceholder")}
+                        className="w-full rounded-lg border-rose-200 bg-white p-3 text-sm text-gray-900 focus:border-rose-500 focus:ring-rose-500 min-h-[100px]"
+                      />
+                      <div className="flex gap-2 mt-3">
+                        <button
+                          onClick={() => setShowDisputeInput(false)}
+                          className="flex-1 rounded-lg border border-rose-200 bg-white px-4 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50"
+                        >
+                          {t("oracle.detail.cancel")}
+                        </button>
+                        <button
+                          onClick={handleDispute}
+                          disabled={txPending || !disputeReason.trim()}
+                          className={cn(
+                            "flex-1 flex items-center justify-center gap-2 rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-700",
+                            (txPending || !disputeReason.trim()) && "opacity-50 cursor-not-allowed"
+                          )}
+                        >
+                          {txPending ? (
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                          ) : (
+                            <ShieldAlert size={16} />
+                          )}
+                          {t("oracle.detail.confirmDispute")}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {!showDisputeInput && (
+                    <p className="mt-2 text-center text-xs text-purple-500">
+                      {t("oracle.detail.disputeRequiresBond")} {formatUsd(assertion.bondUsd, locale)}
+                    </p>
+                  )}
                 </div>
               )}
             </CardContent>

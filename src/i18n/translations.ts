@@ -112,7 +112,13 @@ export const translations = {
         txSent: "交易已发送",
         txFailed: "交易失败",
         hash: "哈希",
-        votes: "票"
+        votes: "票",
+        reasonForDispute: "争议原因",
+        reasonPlaceholder: "请详细描述为何该断言不正确...",
+        validationError: "验证错误",
+        reasonRequired: "请输入争议原因",
+        cancel: "取消",
+        confirmDispute: "确认争议"
       },
       config: {
         title: "连接与同步",
@@ -559,6 +565,12 @@ export type TranslationKey =
   | "oracle.detail.txFailed"
   | "oracle.detail.hash"
   | "oracle.detail.votes"
+  | "oracle.detail.reasonForDispute"
+  | "oracle.detail.reasonPlaceholder"
+  | "oracle.detail.validationError"
+  | "oracle.detail.reasonRequired"
+  | "oracle.detail.cancel"
+  | "oracle.detail.confirmDispute"
   | "oracle.config.title"
   | "oracle.config.rpcUrl"
   | "oracle.config.contractAddress"

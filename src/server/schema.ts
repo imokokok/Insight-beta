@@ -54,7 +54,11 @@ export async function ensureSchema() {
     -- Indexes for performance
     CREATE INDEX IF NOT EXISTS idx_assertions_date ON assertions(asserted_at);
     CREATE INDEX IF NOT EXISTS idx_assertions_status ON assertions(status);
+    CREATE INDEX IF NOT EXISTS idx_assertions_chain ON assertions(chain);
     CREATE INDEX IF NOT EXISTS idx_disputes_assertion ON disputes(assertion_id);
+    CREATE INDEX IF NOT EXISTS idx_disputes_status ON disputes(status);
+    CREATE INDEX IF NOT EXISTS idx_disputes_chain ON disputes(chain);
+    CREATE INDEX IF NOT EXISTS idx_disputes_date ON disputes(disputed_at);
 
     CREATE TABLE IF NOT EXISTS kv_store (
       key TEXT PRIMARY KEY,

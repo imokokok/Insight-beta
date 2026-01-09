@@ -186,7 +186,7 @@ export default function OraclePage() {
         title={t("oracle.title")} 
         description={t("oracle.description")}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-center gap-3">
           <ConnectWallet />
           <button
             type="button"
