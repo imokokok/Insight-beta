@@ -15,13 +15,17 @@ export interface Toast {
   actionLabel?: string;
   actionHref?: string;
   actionOnClick?: () => void;
+  actionDisabled?: boolean;
   secondaryActionLabel?: string;
   secondaryActionHref?: string;
   secondaryActionOnClick?: () => void;
+  secondaryActionDisabled?: boolean;
 }
 
 interface ToastContextType {
-  toast: (props: Omit<Toast, "id">) => void;
+  toast: (props: Omit<Toast, "id"> & { id?: string }) => string;
+  update: (id: string, patch: Partial<Omit<Toast, "id">>) => void;
+  replace: (id: string, next: Omit<Toast, "id">) => void;
   dismiss: (id: string) => void;
 }
 
@@ -34,8 +38,21 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
+  const update = useCallback((id: string, patch: Partial<Omit<Toast, "id">>) => {
+    setToasts((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, ...patch } : t))
+    );
+  }, []);
+
+  const replace = useCallback((id: string, next: Omit<Toast, "id">) => {
+    setToasts((prev) =>
+      prev.map((t) => (t.id === id ? { ...next, id } : t))
+    );
+  }, []);
+
   const toast = useCallback(
     ({
+      id: incomingId,
       type,
       title,
       message,
@@ -43,11 +60,13 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       actionLabel,
       actionHref,
       actionOnClick,
+      actionDisabled,
       secondaryActionLabel,
       secondaryActionHref,
-      secondaryActionOnClick
-    }: Omit<Toast, "id">) => {
-      const id = Math.random().toString(36).substring(2, 9);
+      secondaryActionOnClick,
+      secondaryActionDisabled
+    }: Omit<Toast, "id"> & { id?: string }) => {
+      const id = incomingId ?? Math.random().toString(36).substring(2, 9);
       const newToast = {
         id,
         type,
@@ -57,9 +76,11 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         actionLabel,
         actionHref,
         actionOnClick,
+        actionDisabled,
         secondaryActionLabel,
         secondaryActionHref,
-        secondaryActionOnClick
+        secondaryActionOnClick,
+        secondaryActionDisabled
       };
       
       setToasts((prev) => [...prev, newToast]);
@@ -69,12 +90,13 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           dismiss(id);
         }, duration);
       }
+      return id;
     },
     [dismiss]
   );
 
   return (
-    <ToastContext.Provider value={{ toast, dismiss }}>
+    <ToastContext.Provider value={{ toast, update, replace, dismiss }}>
       {children}
       <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">
         {toasts.map((t) => (
@@ -129,6 +151,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                     <button
                       type="button"
                       onClick={t.actionOnClick}
+                      disabled={t.actionDisabled}
                       className={cn(
                         "inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 transition-colors",
                         t.type === "success" && "bg-emerald-100 text-emerald-900 ring-emerald-200 hover:bg-emerald-200",
@@ -158,6 +181,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                     <button
                       type="button"
                       onClick={t.secondaryActionOnClick}
+                      disabled={t.secondaryActionDisabled}
                       className={cn(
                         "inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 transition-colors",
                         t.type === "success" && "bg-emerald-100 text-emerald-900 ring-emerald-200 hover:bg-emerald-200",

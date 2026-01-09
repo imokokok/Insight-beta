@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { logger } from "@/lib/logger";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -158,7 +159,7 @@ export async function fetchApiData<T>(input: RequestInfo | URL, init?: RequestIn
     throw new Error("api_unknown_error");
 
   } catch (error) {
-    console.error("Fetch error:", error);
+    logger.error("Fetch error:", error);
     throw error;
   }
 }

@@ -115,6 +115,7 @@ export const translations = {
         installWallet: "请安装 MetaMask 或其他 Web3 钱包。",
         validationError: "验证错误",
         reasonRequired: "请提供争议理由。",
+        submitting: "提交中…",
         confirming: "确认中…",
         txSent: "交易已发送",
         hash: "哈希",
@@ -368,6 +369,7 @@ export const translations = {
         installWallet: "Please install MetaMask or another Web3 wallet.",
         validationError: "Validation Error",
         reasonRequired: "Please provide a reason for the dispute.",
+        submitting: "Submitting…",
         confirming: "Confirming…",
         txSent: "Transaction Sent",
         hash: "Hash",
@@ -627,9 +629,10 @@ export const translations = {
         errorNotFound: "La afirmación que busca no existe o ha sido eliminada.",
         goBack: "Volver",
         walletNotFound: "Billetera no encontrada",
-        installWallet: "Por favor, instale MetaMask u otra billetera Web3.",
+        installWallet: "Instale MetaMask u otra billetera Web3.",
         validationError: "Error de validación",
         reasonRequired: "Por favor, proporcione un motivo para la disputa.",
+        submitting: "Enviando…",
         confirming: "Confirmando…",
         txSent: "Transacción enviada",
         hash: "Hash",
@@ -882,6 +885,7 @@ export type TranslationKey =
   | "oracle.detail.reasonPlaceholder"
   | "oracle.detail.validationError"
   | "oracle.detail.reasonRequired"
+  | "oracle.detail.submitting"
   | "oracle.detail.cancel"
   | "oracle.detail.confirmDispute"
   | "oracle.detail.timeline"

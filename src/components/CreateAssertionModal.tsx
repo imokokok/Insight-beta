@@ -18,7 +18,7 @@ interface CreateAssertionModalProps {
 export function CreateAssertionModal({ isOpen, onClose, contractAddress, chain }: CreateAssertionModalProps) {
   const { address } = useWallet();
   const { t } = useI18n();
-  const { execute, isSubmitting, error } = useOracleTransaction();
+  const { execute, isSubmitting, isConfirming, error } = useOracleTransaction();
   const dialogRef = useRef<HTMLDivElement | null>(null);
   useModalBehavior(isOpen, onClose, dialogRef);
   
@@ -40,7 +40,7 @@ export function CreateAssertionModal({ isOpen, onClose, contractAddress, chain }
       chain,
       successTitle: t("oracle.tx.assertionCreatedTitle"),
       successMessage: t("oracle.tx.assertionCreatedMsg"),
-      onSuccess: () => onClose()
+      onConfirmed: () => onClose()
     });
   };
 
@@ -128,11 +128,17 @@ export function CreateAssertionModal({ isOpen, onClose, contractAddress, chain }
             </button>
             <button
               type="submit"
-              disabled={isSubmitting || !address}
+              disabled={isSubmitting || isConfirming || !address}
               className="flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-50"
             >
-              {isSubmitting && <Loader2 size={16} className="animate-spin" />}
-              {address ? t("oracle.createAssertionModal.submit") : t("wallet.connect")}
+              {(isSubmitting || isConfirming) && <Loader2 size={16} className="animate-spin" />}
+              {!address
+                ? t("wallet.connect")
+                : isSubmitting
+                  ? t("oracle.detail.submitting")
+                  : isConfirming
+                    ? t("oracle.detail.confirming")
+                    : t("oracle.createAssertionModal.submit")}
             </button>
           </div>
         </form>

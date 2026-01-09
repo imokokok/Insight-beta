@@ -5,6 +5,7 @@ import { useToast } from "@/components/ui/toast";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { useWallet } from "@/contexts/WalletContext";
 import { normalizeWalletError } from "@/lib/walletErrors";
+import { logger } from "@/lib/logger";
 
 export function ConnectWallet() {
   const { address, connect, disconnect, isConnecting } = useWallet();
@@ -20,7 +21,7 @@ export function ConnectWallet() {
         message: t("wallet.connectedMsg")
       });
     } catch (error: unknown) {
-      console.error("Failed to connect wallet:", error);
+      logger.error("Failed to connect wallet:", error);
       const normalized = normalizeWalletError(error);
       if (normalized.kind === "WALLET_NOT_FOUND") {
         toast({

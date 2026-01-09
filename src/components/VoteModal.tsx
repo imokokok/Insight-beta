@@ -18,7 +18,7 @@ interface VoteModalProps {
 
 export function VoteModal({ assertionId, isOpen, onClose, contractAddress, chain }: VoteModalProps) {
   const { address } = useWallet();
-  const { execute, isSubmitting, error } = useOracleTransaction();
+  const { execute, isSubmitting, isConfirming, error } = useOracleTransaction();
   const { t } = useI18n();
   const [support, setSupport] = useState<boolean | null>(null);
   const dialogRef = useRef<HTMLDivElement | null>(null);
@@ -37,7 +37,7 @@ export function VoteModal({ assertionId, isOpen, onClose, contractAddress, chain
       chain,
       successTitle: t("oracle.tx.voteCastTitle"),
       successMessage: support ? t("oracle.tx.voteCastSupportMsg") : t("oracle.tx.voteCastAgainstMsg"),
-      onSuccess: () => onClose()
+      onConfirmed: () => onClose()
     });
   };
 
@@ -105,11 +105,17 @@ export function VoteModal({ assertionId, isOpen, onClose, contractAddress, chain
             </button>
             <button
               type="submit"
-              disabled={isSubmitting || !address || support === null}
+              disabled={isSubmitting || isConfirming || !address || support === null}
               className="flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-50"
             >
-              {isSubmitting && <Loader2 size={16} className="animate-spin" />}
-              {address ? t("oracle.detail.voteOnDispute") : t("wallet.connect")}
+              {(isSubmitting || isConfirming) && <Loader2 size={16} className="animate-spin" />}
+              {!address
+                ? t("wallet.connect")
+                : isSubmitting
+                  ? t("oracle.detail.submitting")
+                  : isConfirming
+                    ? t("oracle.detail.confirming")
+                    : t("oracle.detail.voteOnDispute")}
             </button>
           </div>
         </form>

@@ -5,6 +5,7 @@ import { Award, TrendingUp, User, Trophy, ShieldCheck, Loader2 } from "lucide-re
 import { cn, fetchApiData } from "@/lib/utils";
 import { useEffect, useState, memo } from "react";
 import type { LeaderboardStats } from "@/lib/oracleTypes";
+import { logger } from "@/lib/logger";
 
 interface RankItemProps {
   rank: number;
@@ -72,7 +73,7 @@ export function Leaderboard() {
   useEffect(() => {
     fetchApiData<LeaderboardStats>("/api/oracle/leaderboard")
       .then(setData)
-      .catch(console.error)
+      .catch((e) => logger.error(e))
       .finally(() => setLoading(false));
   }, []);
 

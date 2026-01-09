@@ -19,7 +19,7 @@ interface DisputeModalProps {
 
 export function DisputeModal({ assertionId, isOpen, onClose, contractAddress, chain, defaultBondEth }: DisputeModalProps) {
   const { address } = useWallet();
-  const { execute, isSubmitting, error } = useOracleTransaction();
+  const { execute, isSubmitting, isConfirming, error } = useOracleTransaction();
   const { t } = useI18n();
   const [bond, setBond] = useState(defaultBondEth ?? "0.1");
   const dialogRef = useRef<HTMLDivElement | null>(null);
@@ -42,7 +42,7 @@ export function DisputeModal({ assertionId, isOpen, onClose, contractAddress, ch
       chain,
       successTitle: t("oracle.tx.disputeSubmittedTitle"),
       successMessage: t("oracle.tx.disputeSubmittedMsg"),
-      onSuccess: () => onClose()
+      onConfirmed: () => onClose()
     });
   };
 
@@ -97,11 +97,17 @@ export function DisputeModal({ assertionId, isOpen, onClose, contractAddress, ch
             </button>
             <button
               type="submit"
-              disabled={isSubmitting || !address}
+              disabled={isSubmitting || isConfirming || !address}
               className="flex items-center gap-2 rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-700 disabled:opacity-50"
             >
-              {isSubmitting && <Loader2 size={16} className="animate-spin" />}
-              {address ? t("oracle.disputeModal.submit") : t("wallet.connect")}
+              {(isSubmitting || isConfirming) && <Loader2 size={16} className="animate-spin" />}
+              {!address
+                ? t("wallet.connect")
+                : isSubmitting
+                  ? t("oracle.detail.submitting")
+                  : isConfirming
+                    ? t("oracle.detail.confirming")
+                    : t("oracle.disputeModal.submit")}
             </button>
           </div>
         </form>

@@ -18,7 +18,7 @@ interface SettleModalProps {
 
 export function SettleModal({ assertionId, isOpen, onClose, contractAddress, chain }: SettleModalProps) {
   const { address } = useWallet();
-  const { execute, isSubmitting, error } = useOracleTransaction();
+  const { execute, isSubmitting, isConfirming, error } = useOracleTransaction();
   const { t } = useI18n();
   const dialogRef = useRef<HTMLDivElement | null>(null);
   useModalBehavior(isOpen, onClose, dialogRef);
@@ -33,7 +33,7 @@ export function SettleModal({ assertionId, isOpen, onClose, contractAddress, cha
       chain,
       successTitle: t("oracle.tx.settlementSubmittedTitle"),
       successMessage: t("oracle.tx.settlementSubmittedMsg"),
-      onSuccess: () => onClose()
+      onConfirmed: () => onClose()
     });
   };
 
@@ -84,10 +84,11 @@ export function SettleModal({ assertionId, isOpen, onClose, contractAddress, cha
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={isSubmitting || !address}
+              disabled={isSubmitting || isConfirming || !address}
               className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3 font-semibold text-white shadow-lg shadow-blue-500/25 hover:from-blue-700 hover:to-indigo-700 hover:shadow-xl hover:shadow-blue-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : t("oracle.detail.settleAssertion")}
+              {isSubmitting || isConfirming ? <Loader2 className="animate-spin" size={20} /> : null}
+              {isSubmitting ? t("oracle.detail.submitting") : isConfirming ? t("oracle.detail.confirming") : t("oracle.detail.settleAssertion")}
             </button>
           </div>
         </div>

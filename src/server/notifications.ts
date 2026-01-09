@@ -1,16 +1,17 @@
 import { Dispute, Assertion } from "@/lib/oracleTypes";
+import { logger } from "@/lib/logger";
 
 export async function notifyDispute(assertion: Assertion, dispute: Dispute) {
-  console.log(`
-🚨 [INSIGHT ALERT] Dispute Detected!
-------------------------------------
-Market:    ${assertion.market}
-Assertion: ${assertion.assertion}
-Reason:    ${dispute.disputeReason}
-Disputer:  ${dispute.disputer}
-Tx Hash:   ${assertion.txHash}
-------------------------------------
-`);
+  logger.info(
+    `\n🚨 [INSIGHT ALERT] Dispute Detected!\n` +
+      `------------------------------------\n` +
+      `Market:    ${assertion.market}\n` +
+      `Assertion: ${assertion.assertion}\n` +
+      `Reason:    ${dispute.disputeReason}\n` +
+      `Disputer:  ${dispute.disputer}\n` +
+      `Tx Hash:   ${assertion.txHash}\n` +
+      `------------------------------------\n`
+  );
 
   // In a production environment, you would trigger a webhook here:
   // if (process.env.DISCORD_WEBHOOK_URL) {

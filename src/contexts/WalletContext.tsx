@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode, useCallback, useMemo } from "react";
 import { createWalletClient, custom, type WalletClient, type Address } from "viem";
 import { arbitrum, hardhat, mainnet, optimism, polygon } from "viem/chains";
+import { logger } from "@/lib/logger";
 
 interface WalletContextType {
   address: Address | null;
@@ -54,36 +55,40 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [isConnecting, setIsConnecting] = useState(false);
 
   useEffect(() => {
-    // Auto-connect if previously connected
-    if (typeof window !== "undefined" && window.ethereum) {
-      window.ethereum.request({ method: "eth_accounts" })
-        .then((accounts: unknown) => {
-          const accs = accounts as string[];
-          if (accs.length > 0) {
-            setAddress(accs[0] as Address);
-            window.ethereum!.request({ method: "eth_chainId" })
-              .then((id: unknown) => setChainId(parseInt(id as string, 16)));
-          }
-        })
-        .catch(console.error);
+    if (typeof window === "undefined" || !window.ethereum) return;
 
-      // Listen for account changes
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      window.ethereum.on("accountsChanged", (accounts: any) => {
-        const accs = accounts as string[];
-        if (accs.length > 0) {
-          setAddress(accs[0] as Address);
-        } else {
-          setAddress(null);
-        }
-      });
+    const provider = window.ethereum as {
+      request: (args: { method: string; params?: unknown }) => Promise<unknown>;
+      on?: (event: string, handler: (payload: unknown) => void) => void;
+      removeListener?: (event: string, handler: (payload: unknown) => void) => void;
+    };
 
-      // Listen for chain changes
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      window.ethereum.on("chainChanged", (id: any) => {
-        setChainId(parseInt(id as string, 16));
-      });
-    }
+    const handleAccountsChanged = (accounts: unknown) => {
+      const accs = Array.isArray(accounts) ? accounts : [];
+      const first = typeof accs[0] === "string" ? accs[0] : null;
+      setAddress(first ? (first as Address) : null);
+    };
+
+    const handleChainChanged = (id: unknown) => {
+      if (typeof id !== "string") return;
+      setChainId(parseInt(id, 16));
+    };
+
+    provider.request({ method: "eth_accounts" })
+      .then((accounts) => {
+        handleAccountsChanged(accounts);
+        return provider.request({ method: "eth_chainId" });
+      })
+      .then((id) => handleChainChanged(id))
+      .catch((e) => logger.debug("wallet auto-connect failed:", e));
+
+    provider.on?.("accountsChanged", handleAccountsChanged);
+    provider.on?.("chainChanged", handleChainChanged);
+
+    return () => {
+      provider.removeListener?.("accountsChanged", handleAccountsChanged);
+      provider.removeListener?.("chainChanged", handleChainChanged);
+    };
   }, []);
 
   const connect = useCallback(async () => {
