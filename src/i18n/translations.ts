@@ -40,13 +40,16 @@ export const translations = {
     },
     nav: {
       oracle: "监控台",
-      disputes: "争议"
+      disputes: "争议",
+      myAssertions: "我的断言",
+      myDisputes: "我的争议"
     },
     common: {
       language: "语言",
       loading: "加载中…",
       comingSoon: "敬请期待",
       loadMore: "加载更多",
+      noData: "暂无数据",
       all: "全部",
       pending: "待确认",
       disputed: "已争议",
@@ -66,12 +69,16 @@ export const translations = {
     },
     wallet: {
       connect: "连接钱包",
-      connecting: "连接中…",
-      notFound: "未检测到钱包",
-      install: "请安装 MetaMask 或 Rabby 等钱包！",
+      connecting: "连接中...",
+      notFound: "未找到钱包",
+      install: "请安装 MetaMask 或 Rabby！",
       connected: "钱包已连接",
       connectedMsg: "已连接到",
-      failed: "连接失败"
+      failed: "连接失败",
+      disconnect: "断开连接",
+      copyAddress: "复制地址",
+      balance: "余额",
+      myProfile: "我的资料"
     },
     chain: {
       local: "本地",
@@ -96,6 +103,21 @@ export const translations = {
         activityDesc: "随时间变化的活动",
         tvsDesc: "累计价值",
         waitingData: "等待更多历史数据以生成活动趋势。"
+      },
+      myAssertions: {
+        title: "我的断言",
+        description: "管理您创建的所有断言。",
+        connectWalletTitle: "连接钱包以查看",
+        connectWalletDesc: "请连接您的钱包以查看您的断言历史记录。",
+        noAssertions: "您尚未创建任何断言。",
+        createFirst: "创建您的第一个断言"
+      },
+      myDisputes: {
+        title: "我的争议",
+        description: "管理您发起的所有争议。",
+        connectWalletTitle: "连接钱包以查看",
+        connectWalletDesc: "请连接您的钱包以查看您的争议历史记录。",
+        noDisputes: "您尚未发起任何争议。"
       },
       timeline: {
         asserted: "已断言",
@@ -122,7 +144,7 @@ export const translations = {
         txFailed: "交易失败",
         marketQuestion: "市场问题",
         assertedOutcome: "断言结果",
-        asserter: "断言方",
+        asserter: "断言者",
         transaction: "交易",
         disputeAssertion: "争议此断言",
         reasonForDispute: "争议理由",
@@ -207,7 +229,11 @@ export const translations = {
         activeDisputes: "进行中争议",
         resolved24h: "24 小时已结算",
         avgResolution: "平均结算耗时",
-        liveCap: "实时预言机市值"
+        liveCap: "实时预言机市值",
+        totalAssertions: "断言总数",
+        totalDisputes: "争议总数",
+        totalBonded: "累计质押",
+        winRate: "胜率"
       },
       card: {
         marketQuestion: "市场问题",
@@ -293,14 +319,17 @@ export const translations = {
       subtitle: "Oracle Monitor"
     },
     nav: {
-      oracle: "Monitor",
-      disputes: "Disputes"
+      oracle: "Oracle",
+      disputes: "Disputes",
+      myAssertions: "My Assertions",
+      myDisputes: "My Disputes"
     },
     common: {
       language: "Language",
       loading: "Loading…",
-      comingSoon: "Coming soon",
-      loadMore: "Load more",
+      comingSoon: "Coming Soon",
+      loadMore: "Load More",
+      noData: "No Data",
       all: "All",
       pending: "Pending",
       disputed: "Disputed",
@@ -320,12 +349,16 @@ export const translations = {
     },
     wallet: {
       connect: "Connect Wallet",
-      connecting: "Connecting…",
+      connecting: "Connecting...",
       notFound: "Wallet Not Found",
-      install: "Please install a wallet like MetaMask or Rabby!",
+      install: "Please install MetaMask or Rabby!",
       connected: "Wallet Connected",
       connectedMsg: "Connected to",
-      failed: "Connection Failed"
+      failed: "Connection Failed",
+      disconnect: "Disconnect",
+      copyAddress: "Copy Address",
+      balance: "Balance",
+      myProfile: "My Profile"
     },
     chain: {
       local: "Local",
@@ -351,6 +384,21 @@ export const translations = {
         tvsDesc: "Cumulative value",
         waitingData: "Waiting for more historical data to generate activity trends."
       },
+      myAssertions: {
+        title: "My Assertions",
+        description: "Manage all assertions created by you.",
+        connectWalletTitle: "Connect Wallet to View",
+        connectWalletDesc: "Please connect your wallet to see your assertion history.",
+        noAssertions: "You haven't created any assertions yet.",
+        createFirst: "Create your first assertion"
+      },
+      myDisputes: {
+        title: "My Disputes",
+        description: "Manage all disputes initiated by you.",
+        connectWalletTitle: "Connect Wallet to View",
+        connectWalletDesc: "Please connect your wallet to see your dispute history.",
+        noDisputes: "You haven't initiated any disputes yet."
+      },
       timeline: {
         asserted: "Asserted",
         disputed: "Disputed",
@@ -360,46 +408,24 @@ export const translations = {
         active: "Active"
       },
       detail: {
-        title: "Assertion Detail",
-        back: "Back to Overview",
-        errorTitle: "Assertion Not Found",
-        errorNotFound: "The assertion you are looking for does not exist or has been removed.",
-        goBack: "Go Back",
-        walletNotFound: "Wallet Not Found",
-        installWallet: "Please install MetaMask or another Web3 wallet.",
-        validationError: "Validation Error",
-        reasonRequired: "Please provide a reason for the dispute.",
-        submitting: "Submitting…",
-        confirming: "Confirming…",
-        txSent: "Transaction Sent",
-        hash: "Hash",
-        txFailed: "Transaction Failed",
-        marketQuestion: "Market Question",
-        assertedOutcome: "Asserted Outcome",
-        asserter: "Asserter",
-        transaction: "Transaction",
-        disputeAssertion: "Dispute this Assertion",
-        reasonForDispute: "Reason for Dispute",
-        reasonPlaceholder: "Explain why this assertion is incorrect...",
-        cancel: "Cancel",
-        confirmDispute: "Confirm Dispute",
-        disputeRequiresBond: "Disputing requires a bond of",
-        disputeActive: "Active Dispute",
-        reason: "Reason",
-        support: "Support",
-        against: "Against",
-        votes: "votes",
-        voteOnDispute: "Vote on Dispute",
-        bondAmount: "Bond Amount",
-        timeline: "Timeline",
-        actions: "Actions",
-        resolved: "Resolved",
-        resolvedDesc: "This assertion has been resolved successfully.",
-        settleAssertion: "Settle Assertion",
-      settleDesc: "This assertion has passed the challenge period and can be settled.",
+      title: "Assertion Details",
+      back: "Back",
+      goBack: "Go Back",
+      asserter: "Asserter",
+      bondAmount: "Bond Amount",
+      marketQuestion: "Market Question",
+      assertedOutcome: "Asserted Outcome",
       settlementResult: "Settlement Result",
-      settlementTrue: "Valid / True",
-      settlementFalse: "Invalid / False"
+      settleAssertion: "Settle Assertion",
+      cancel: "Cancel",
+      submitting: "Submitting...",
+      confirming: "Confirming...",
+      errorTitle: "Error Loading Data",
+      errorNotFound: "The requested assertion could not be found.",
+      disputeAssertion: "Dispute this Assertion",
+      voteOnDispute: "Vote on Dispute",
+      support: "Support",
+      against: "Against",
     },
     tx: {
       confirmingTitle: "Confirming",
@@ -547,8 +573,9 @@ export const translations = {
       subtitle: "Monitor de Oráculo"
     },
     nav: {
-      oracle: "Monitor",
-      disputes: "Disputas"
+      oracle: "Oráculo",
+      disputes: "Disputas",
+      myAssertions: "Mis Afirmaciones"
     },
     common: {
       language: "Idioma",
@@ -573,12 +600,16 @@ export const translations = {
     },
     wallet: {
       connect: "Conectar cartera",
-      connecting: "Conectando…",
+      connecting: "Conectando...",
       notFound: "Cartera no encontrada",
       install: "¡Por favor, instala una cartera como MetaMask o Rabby!",
       connected: "Cartera conectada",
       connectedMsg: "Conectado a",
-      failed: "Conexión fallida"
+      failed: "Conexión fallida",
+      disconnect: "Desconectar",
+      copyAddress: "Copiar dirección",
+      balance: "Saldo",
+      myProfile: "Mi perfil"
     },
     chain: {
       local: "Local",
@@ -604,6 +635,21 @@ export const translations = {
         tvsDesc: "Valor acumulado",
         waitingData: "Esperando más datos históricos para generar tendencias de actividad."
       },
+      myAssertions: {
+        title: "Mis Afirmaciones",
+        description: "Gestiona todas las afirmaciones creadas por ti.",
+        connectWalletTitle: "Conectar cartera para ver",
+        connectWalletDesc: "Por favor, conecta tu cartera para ver tu historial de afirmaciones.",
+        noAssertions: "Aún no has creado ninguna afirmación.",
+        createFirst: "Crea tu primera afirmación"
+      },
+      myDisputes: {
+        title: "Mis Disputas",
+        description: "Gestiona todas las disputas iniciadas por ti.",
+        connectWalletTitle: "Conectar cartera para ver",
+        connectWalletDesc: "Por favor, conecta tu cartera para ver tu historial de disputas.",
+        noDisputes: "Aún no has iniciado ninguna disputa."
+      },
       leaderboard: {
         topAsserters: "Mejores Afirmadores",
         topAssertersDesc: "Contribuyentes más activos",
@@ -613,6 +659,14 @@ export const translations = {
         noData: "Sin datos disponibles",
         assertions: "Afirmaciones",
         disputes: "Disputas"
+      },
+      sync: {
+        synced: "Sincronizado",
+        lagging: "Retrasado",
+        error: "Error de Sync",
+        status: "Estado del Indexador",
+        block: "Altura de Bloque",
+        lastUpdate: "Última Actualización"
       },
       timeline: {
         asserted: "Afirmado",
@@ -801,10 +855,13 @@ export type TranslationKey =
   | "app.subtitle"
   | "nav.oracle"
   | "nav.disputes"
+  | "nav.myAssertions"
+  | "nav.myDisputes"
   | "common.language"
   | "common.loading"
   | "common.comingSoon"
   | "common.loadMore"
+  | "common.noData"
   | "common.all"
   | "common.pending"
   | "common.disputed"
@@ -826,6 +883,10 @@ export type TranslationKey =
   | "wallet.connected"
   | "wallet.connectedMsg"
   | "wallet.failed"
+  | "wallet.disconnect"
+  | "wallet.copyAddress"
+  | "wallet.balance"
+  | "wallet.myProfile"
   | "chain.local"
   | "chain.polygon"
   | "chain.arbitrum"
@@ -851,6 +912,17 @@ export type TranslationKey =
   | "oracle.charts.activityDesc"
   | "oracle.charts.tvsDesc"
   | "oracle.charts.waitingData"
+  | "myAssertions.title"
+  | "myAssertions.description"
+  | "myAssertions.connectWalletTitle"
+  | "myAssertions.connectWalletDesc"
+  | "myAssertions.noAssertions"
+  | "myAssertions.createFirst"
+  | "myDisputes.title"
+  | "myDisputes.description"
+  | "myDisputes.connectWalletTitle"
+  | "myDisputes.connectWalletDesc"
+  | "myDisputes.noDisputes"
   | "oracle.timeline.asserted"
   | "oracle.timeline.disputed"
   | "oracle.timeline.resolved"

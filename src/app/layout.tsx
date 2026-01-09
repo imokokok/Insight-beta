@@ -6,6 +6,7 @@ import { LanguageProvider } from "@/i18n/LanguageProvider";
 import { ToastProvider } from "@/components/ui/toast";
 import { WalletProvider } from "@/contexts/WalletContext";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { SyncStatus } from "@/components/SyncStatus";
 import { cookies, headers } from "next/headers";
 import type { Metadata } from "next";
 import { detectLangFromAcceptLanguage, isLang, langToHtmlLang, LANG_STORAGE_KEY, translations } from "@/i18n/translations";

@@ -26,11 +26,19 @@ export function CreateAssertionModal({ isOpen, onClose, contractAddress, chain }
   const [market, setMarket] = useState("");
   const [assertion, setAssertion] = useState("");
   const [bond, setBond] = useState("0.01"); // Default bond
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setValidationError(null);
+
+    const bondValue = parseFloat(bond);
+    if (isNaN(bondValue) || bondValue <= 0) {
+      setValidationError("Bond amount must be greater than 0");
+      return;
+    }
     
     await execute({
       functionName: "assertTruth",

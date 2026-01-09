@@ -6,9 +6,10 @@ import { useI18n } from "@/i18n/LanguageProvider";
 import { useWallet } from "@/contexts/WalletContext";
 import { normalizeWalletError } from "@/lib/walletErrors";
 import { logger } from "@/lib/logger";
+import { UserMenu } from "@/components/UserMenu";
 
 export function ConnectWallet() {
-  const { address, connect, disconnect, isConnecting } = useWallet();
+  const { address, connect, isConnecting } = useWallet();
   const { toast } = useToast();
   const { t } = useI18n();
 
@@ -46,15 +47,7 @@ export function ConnectWallet() {
   };
 
   if (address) {
-    return (
-      <button
-        onClick={disconnect}
-        className="flex items-center gap-2 rounded-lg bg-purple-100 px-3 py-1.5 text-sm font-medium text-purple-700 hover:bg-purple-200 transition-colors"
-      >
-        <div className="h-2 w-2 rounded-full bg-green-500" />
-        {address.slice(0, 6)}...{address.slice(-4)}
-      </button>
-    );
+    return <UserMenu />;
   }
 
   return (

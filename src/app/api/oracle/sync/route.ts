@@ -3,6 +3,20 @@ import { readOracleConfig } from "@/server/oracleConfig";
 import { readOracleState } from "@/server/oracleState";
 import { error, handleApi, requireAdmin } from "@/server/apiResponse";
 
+export async function GET() {
+  return handleApi(async () => {
+    const state = await readOracleState();
+    return {
+      chain: state.chain,
+      contractAddress: state.contractAddress,
+      lastProcessedBlock: state.lastProcessedBlock.toString(10),
+      assertions: Object.keys(state.assertions).length,
+      disputes: Object.keys(state.disputes).length,
+      sync: state.sync
+    };
+  });
+}
+
 export async function POST(request: Request) {
   return handleApi(async () => {
     const auth = requireAdmin(request);

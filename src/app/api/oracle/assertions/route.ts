@@ -9,7 +9,8 @@ const assertionParamsSchema = z.object({
   q: z.string().optional().nullable(),
   limit: z.coerce.number().min(1).max(100).default(30),
   cursor: z.coerce.number().min(0).default(0),
-  sync: z.enum(["0", "1"]).optional()
+  sync: z.enum(["0", "1"]).optional(),
+  asserter: z.string().optional().nullable()
 });
 
 export async function GET(request: Request) {
@@ -28,7 +29,8 @@ export async function GET(request: Request) {
       chain: params.chain,
       q: params.q,
       limit: params.limit,
-      cursor: params.cursor
+      cursor: params.cursor,
+      asserter: params.asserter
     });
     
     return { items, total, nextCursor };

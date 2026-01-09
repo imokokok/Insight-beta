@@ -1,92 +1,63 @@
-import { useEffect, useState, useCallback } from "react";
+import { useCallback } from "react";
+import useSWR from "swr";
 import { fetchApiData } from "@/lib/utils";
 import type { Assertion, OracleConfig, OracleStats, OracleStatus } from "@/lib/oracleTypes";
+import { useInfiniteList, BaseResponse } from "./useInfiniteList";
 
 export function useOracleData(
   filterStatus: OracleStatus | "All",
   filterChain: OracleConfig["chain"] | "All",
-  query: string
+  query: string,
+  asserter?: string | null
 ) {
-  const [items, setItems] = useState<Assertion[]>([]);
-  const [stats, setStats] = useState<OracleStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [nextCursor, setNextCursor] = useState<number | null>(null);
-  const [refreshKey, setRefreshKey] = useState(0);
+  // 1. Stats Fetching (Standard SWR)
+  const { 
+    data: stats, 
+    error: statsError 
+  } = useSWR<OracleStats>(
+    "/api/oracle/stats", 
+    fetchApiData,
+    { refreshInterval: 5000 }
+  );
 
-  useEffect(() => {
-    let cancelled = false;
-    const controller = new AbortController();
+  // 2. Assertions Fetching (Infinite SWR for pagination)
+  const getUrl = (pageIndex: number, previousPageData: BaseResponse<Assertion> | null) => {
+    // If reached the end, return null
+    if (previousPageData && previousPageData.nextCursor === null) return null;
 
-    const load = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const params = new URLSearchParams();
-        if (filterStatus !== "All") params.set("status", filterStatus);
-        if (filterChain !== "All") params.set("chain", filterChain);
-        if (query.trim()) params.set("q", query.trim());
-        params.set("limit", "30");
-
-        const [assertionsData, statsData] = await Promise.all([
-          fetchApiData<{ items: Assertion[]; total: number; nextCursor: number | null }>(
-            `/api/oracle/assertions?${params.toString()}`,
-            {
-              signal: controller.signal
-            }
-          ),
-          fetchApiData<OracleStats>("/api/oracle/stats", { signal: controller.signal })
-        ]);
-
-        if (cancelled) return;
-        setItems(assertionsData.items ?? []);
-        setNextCursor(assertionsData.nextCursor ?? null);
-        setStats(statsData);
-      } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : "unknown_error");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-
-    const timeout = window.setTimeout(load, 250);
-    return () => {
-      cancelled = true;
-      controller.abort();
-      window.clearTimeout(timeout);
-    };
-  }, [filterStatus, filterChain, query, refreshKey]);
-
-  const loadMore = useCallback(async () => {
-    if (nextCursor === null) return;
-    setLoadingMore(true);
-    setError(null);
-    try {
-      const params = new URLSearchParams();
-      if (filterStatus !== "All") params.set("status", filterStatus);
-      if (filterChain !== "All") params.set("chain", filterChain);
-      if (query.trim()) params.set("q", query.trim());
-      params.set("limit", "30");
-      params.set("cursor", String(nextCursor));
-
-      const data = await fetchApiData<{ items: Assertion[]; total: number; nextCursor: number | null }>(
-        `/api/oracle/assertions?${params.toString()}`
-      );
-
-      setItems((prev) => prev.concat(data.items ?? []));
-      setNextCursor(data.nextCursor ?? null);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "unknown_error");
-    } finally {
-      setLoadingMore(false);
+    const params = new URLSearchParams();
+    if (filterStatus !== "All") params.set("status", filterStatus);
+    if (filterChain !== "All") params.set("chain", filterChain);
+    if (query.trim()) params.set("q", query.trim());
+    if (asserter) params.set("asserter", asserter);
+    params.set("limit", "30");
+    
+    // For first page, no cursor. For next pages, use prev cursor
+    if (pageIndex > 0 && previousPageData?.nextCursor) {
+      params.set("cursor", String(previousPageData.nextCursor));
     }
-  }, [filterStatus, filterChain, query, nextCursor]);
 
-  const refresh = useCallback(() => {
-    setLoading(true);
-    setRefreshKey((k) => k + 1);
-  }, []);
+    return `/api/oracle/assertions?${params.toString()}`;
+  };
 
-  return { items, stats, loading, loadingMore, error, loadMore, hasMore: nextCursor !== null, refresh };
+  const { 
+    items, 
+    loading, 
+    loadingMore, 
+    error: assertionsError, 
+    loadMore, 
+    hasMore, 
+    refresh 
+  } = useInfiniteList<Assertion>(getUrl);
+
+  return { 
+    items, 
+    stats: stats ?? null, 
+    loading, 
+    loadingMore, 
+    error: (assertionsError || statsError)?.message ?? null, 
+    loadMore, 
+    hasMore, 
+    refresh 
+  };
 }

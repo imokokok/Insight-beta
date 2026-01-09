@@ -1,7 +1,8 @@
 import { query } from "./db";
 import { ensureSchema } from "./schema";
-import type { Assertion, Dispute, OracleStats, LeaderboardStats } from "@/lib/oracleTypes";
+import type { Assertion, Dispute, OracleStats, LeaderboardStats, UserStats } from "@/lib/oracleTypes";
 import { mockAssertions, mockDisputes } from "@/lib/mockData";
+import { unstable_cache } from "next/cache";
 
 export type { Assertion, Dispute } from "@/lib/oracleTypes";
 
@@ -19,6 +20,8 @@ type ListParams = {
   q?: string | null;
   limit?: number | null;
   cursor?: number | null;
+  asserter?: string | null;
+  disputer?: string | null;
 };
 
 // Helper to map DB row to Assertion
@@ -76,7 +79,9 @@ export function parseListParams(url: URL): ListParams {
     chain: url.searchParams.get("chain"),
     q: url.searchParams.get("q"),
     limit: Number(url.searchParams.get("limit")) || 30,
-    cursor: Number(url.searchParams.get("cursor")) || 0
+    cursor: Number(url.searchParams.get("cursor")) || 0,
+    asserter: url.searchParams.get("asserter"),
+    disputer: url.searchParams.get("disputer")
   };
 }
 
@@ -104,6 +109,9 @@ export async function listAssertions(params: ListParams) {
           a.txHash.toLowerCase().includes(q)
         );
       });
+    }
+    if (params.asserter) {
+      items = items.filter((a) => a.asserter.toLowerCase() === params.asserter?.toLowerCase());
     }
     const start = offset;
     const end = offset + limit;
@@ -138,6 +146,11 @@ export async function listAssertions(params: ListParams) {
     )`);
     values.push(q);
     idx++;
+  }
+
+  if (params.asserter) {
+    conditions.push(`LOWER(asserter) = $${idx++}`);
+    values.push(params.asserter.toLowerCase());
   }
 
   const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
@@ -213,6 +226,9 @@ export async function listDisputes(params: ListParams) {
         );
       });
     }
+    if (params.disputer) {
+      items = items.filter((d) => d.disputer?.toLowerCase() === params.disputer?.toLowerCase());
+    }
     const start = offset;
     const end = offset + limit;
     return {
@@ -254,6 +270,11 @@ export async function listDisputes(params: ListParams) {
     idx++;
   }
   
+  if (params.disputer) {
+    conditions.push(`LOWER(disputer) = $${idx++}`);
+    values.push(params.disputer.toLowerCase());
+  }
+
   const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
   
   const countRes = await query(`SELECT COUNT(*) as total FROM disputes ${whereClause}`, values);
@@ -270,8 +291,6 @@ export async function listDisputes(params: ListParams) {
     nextCursor: offset + res.rows.length < total ? offset + limit : null
   };
 }
-
-import { unstable_cache } from "next/cache";
 
 export const getOracleStats = unstable_cache(
   async (): Promise<OracleStats> => {
@@ -414,4 +433,81 @@ export const getLeaderboardStats = unstable_cache(
   },
   ["oracle-leaderboard"],
   { revalidate: 300, tags: ["oracle-leaderboard"] }
+);
+
+export const getUserStats = unstable_cache(
+  async (address: string): Promise<UserStats> => {
+    await ensureDb();
+    
+    // Check if DB is empty to use mocks
+    const dbCount = (await query("SELECT COUNT(*) as c FROM assertions")).rows[0].c;
+    
+    if (Number(dbCount) === 0) {
+      // Mock stats
+      const assertions = mockAssertions.filter(a => a.asserter.toLowerCase() === address.toLowerCase());
+      const disputes = mockDisputes.filter(d => d.disputer.toLowerCase() === address.toLowerCase());
+      
+      const totalBondedUsd = assertions.reduce((acc, a) => acc + a.bondUsd, 0);
+      
+      const resolvedAssertions = assertions.filter(a => a.status === "Resolved");
+      const wonAssertions = resolvedAssertions.filter(a => {
+        return true; // Simplified for mock
+      });
+
+      const winRate = resolvedAssertions.length > 0 
+        ? Math.round((wonAssertions.length / resolvedAssertions.length) * 100) 
+        : 0;
+
+      return {
+        totalAssertions: assertions.length,
+        totalDisputes: disputes.length,
+        totalBondedUsd,
+        winRate
+      };
+    }
+
+    // Real DB stats
+    const assertionsRes = await query(`
+      SELECT COUNT(*) as count, COALESCE(SUM(bond_usd), 0) as bonded
+      FROM assertions
+      WHERE LOWER(asserter) = $1
+    `, [address.toLowerCase()]);
+    
+    const disputesRes = await query(`
+      SELECT COUNT(*) as count
+      FROM disputes
+      WHERE LOWER(disputer) = $1
+    `, [address.toLowerCase()]);
+
+    const resolvedRes = await query(`
+      SELECT COUNT(*) as count
+      FROM assertions
+      WHERE LOWER(asserter) = $1 AND status = 'Resolved'
+    `, [address.toLowerCase()]);
+    
+    const wonRes = await query(`
+      SELECT COUNT(*) as count
+      FROM assertions
+      WHERE LOWER(asserter) = $1 AND status = 'Resolved' AND (settlement_resolution IS TRUE OR settlement_resolution IS NULL)
+    `, [address.toLowerCase()]);
+
+    const totalAssertions = Number(assertionsRes.rows[0].count);
+    const totalBondedUsd = Number(assertionsRes.rows[0].bonded);
+    const totalDisputes = Number(disputesRes.rows[0].count);
+    const resolvedCount = Number(resolvedRes.rows[0].count);
+    const wonCount = Number(wonRes.rows[0].count);
+    
+    const winRate = resolvedCount > 0 
+      ? Math.round((wonCount / resolvedCount) * 100)
+      : 0;
+
+    return {
+      totalAssertions,
+      totalDisputes,
+      totalBondedUsd,
+      winRate
+    };
+  },
+  ["user-stats"],
+  { revalidate: 60, tags: ["user-stats"] }
 );

@@ -59,7 +59,7 @@ export type LeaderboardEntry = {
 export type LeaderboardStats = {
   topAsserters: LeaderboardEntry[];
   topDisputers: LeaderboardEntry[];
-};;
+};
 
 export type OracleConfig = {
   rpcUrl: string;
@@ -68,6 +68,7 @@ export type OracleConfig = {
   startBlock?: number;
   maxBlockRange?: number;
   votingPeriodHours?: number;
+  adminToken?: string;
 };
 
 export type OracleStatusSnapshot = {
@@ -87,3 +88,10 @@ export type OracleStatusSnapshot = {
 
 export type ApiOk<T extends Record<string, unknown>> = { ok: true } & T;
 export type ApiError = { ok: false; error: string };
+
+export type UserStats = {
+  totalAssertions: number;
+  totalDisputes: number;
+  totalBondedUsd: number;
+  winRate: number; // 0-100
+};

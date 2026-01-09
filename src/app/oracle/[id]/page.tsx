@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+import useSWR from "swr";
 import { 
   ArrowLeft, 
   ExternalLink, 
@@ -22,6 +23,7 @@ import { langToLocale } from "@/i18n/translations";
 import type { Assertion, Dispute, OracleConfig } from "@/lib/oracleTypes";
 
 import { AssertionTimeline } from "@/components/AssertionTimeline";
+import { AssertionDetailSkeleton } from "@/components/AssertionDetailSkeleton";
 
 const DisputeModal = dynamic(() => import("@/components/DisputeModal").then(mod => mod.DisputeModal), { ssr: false });
 const VoteModal = dynamic(() => import("@/components/VoteModal").then(mod => mod.VoteModal), { ssr: false });
@@ -47,42 +49,18 @@ export default function OracleDetailPage() {
   const { lang, t } = useI18n();
   const locale = langToLocale[lang];
 
-  const [data, setData] = useState<{ assertion: Assertion; dispute: Dispute | null; config: OracleConfig; bondWei: string | null; bondEth: string | null } | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, error, isLoading } = useSWR<{ assertion: Assertion; dispute: Dispute | null; config: OracleConfig; bondWei: string | null; bondEth: string | null }>(
+    id ? `/api/oracle/assertions/${id}` : null,
+    fetchApiData,
+    { refreshInterval: 5000 }
+  );
+
   const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false);
   const [isVoteModalOpen, setIsVoteModalOpen] = useState(false);
   const [isSettleModalOpen, setIsSettleModalOpen] = useState(false);
 
-  useEffect(() => {
-    if (!id) return;
-    const load = async () => {
-      setLoading(true);
-      try {
-        const res = await fetchApiData<{ assertion: Assertion; dispute: Dispute | null; config: OracleConfig; bondWei: string | null; bondEth: string | null }>(
-          `/api/oracle/assertions/${id}`
-        );
-        setData(res);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "unknown_error");
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, [id]);
-
-  if (loading) {
-    return (
-      <div className="flex h-[60vh] items-center justify-center">
-        <div className="relative">
-          <div className="h-16 w-16 animate-spin rounded-full border-4 border-purple-200 border-t-purple-600"></div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="h-8 w-8 animate-pulse rounded-full bg-purple-100"></div>
-          </div>
-        </div>
-      </div>
-    );
+  if (isLoading) {
+    return <AssertionDetailSkeleton />;
   }
 
   if (error || !data) {
