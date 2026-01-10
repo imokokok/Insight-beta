@@ -35,22 +35,32 @@ export function OracleCharts() {
   const [rawSyncMetrics, setRawSyncMetrics] = useState<SyncMetricItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [syncLoading, setSyncLoading] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"activity" | "tvs" | "sync">("activity");
   const { t, lang } = useI18n();
   const locale = langToLocale[lang];
 
   useEffect(() => {
-    Promise.all([
-      fetchApiData<ChartItem[]>("/api/oracle/charts"),
-      fetchApiData<{ items: SyncMetricItem[] }>("/api/oracle/sync-metrics?minutes=360&limit=720").then((r) => r.items)
-    ])
-      .then(([charts, syncMetrics]) => {
-        setRawData(charts);
-        setRawSyncMetrics(syncMetrics);
-      })
+    const controller = new AbortController();
+    fetchApiData<ChartItem[]>("/api/oracle/charts", { signal: controller.signal })
+      .then((charts) => setRawData(charts))
       .catch((e: unknown) => setError(e instanceof Error ? e.message : "unknown_error"))
       .finally(() => setLoading(false));
+    return () => controller.abort();
   }, []);
+
+  useEffect(() => {
+    if (activeTab !== "sync") return;
+    if (syncLoading || rawSyncMetrics.length > 0 || syncError) return;
+    const controller = new AbortController();
+    setSyncLoading(true);
+    fetchApiData<{ items: SyncMetricItem[] }>("/api/oracle/sync-metrics?minutes=360&limit=720", { signal: controller.signal })
+      .then((r) => setRawSyncMetrics(r.items))
+      .catch((e: unknown) => setSyncError(e instanceof Error ? e.message : "unknown_error"))
+      .finally(() => setSyncLoading(false));
+    return () => controller.abort();
+  }, [activeTab, rawSyncMetrics.length, syncError, syncLoading]);
 
   const chartData = useMemo(() => {
     if (rawData.length === 0) return [];
@@ -86,6 +96,15 @@ export function OracleCharts() {
     return (
       <div className="w-full h-[400px]">
         <Skeleton className="h-full w-full rounded-2xl" />
+      </div>
+    );
+  }
+  if (activeTab === "sync" && syncError) {
+    return (
+      <div className="glass-panel rounded-2xl p-6 shadow-sm border-rose-100 bg-rose-50/50">
+        <div className="text-sm text-rose-700">
+          {getUiErrorMessage(syncError, t)}
+        </div>
       </div>
     );
   }
@@ -303,7 +322,11 @@ export function OracleCharts() {
               </AreaChart>
             )
           ) : (
-            !hasSyncData ? (
+            syncLoading ? (
+              <div className="h-full w-full flex items-center justify-center text-sm text-gray-400">
+                {t("common.loading")}
+              </div>
+            ) : !hasSyncData ? (
               <div className="h-full w-full flex items-center justify-center text-sm text-gray-400">
                 {t("oracle.charts.waitingData")}
               </div>

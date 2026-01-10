@@ -1,16 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ZodError } from 'zod';
 import { GET } from './route';
-import * as oracleStore from '@/server/oracleStore';
+import * as oracle from '@/server/oracle';
 import type { Assertion } from '@/lib/oracleTypes';
 
-// Mock oracleStore
-vi.mock('@/server/oracleStore', () => ({
+vi.mock('@/server/oracle', () => ({
   listAssertions: vi.fn(),
-}));
-
-// Mock oracleIndexer
-vi.mock('@/server/oracleIndexer', () => ({
   ensureOracleSynced: vi.fn(),
 }));
 
@@ -57,7 +52,7 @@ describe('GET /api/oracle/assertions', () => {
         txHash: '0xtx'
       }
     ];
-    const listAssertionsMock = vi.mocked(oracleStore.listAssertions);
+    const listAssertionsMock = vi.mocked(oracle.listAssertions);
     listAssertionsMock.mockResolvedValue({
       items: mockItems,
       total: 1,
@@ -76,25 +71,25 @@ describe('GET /api/oracle/assertions', () => {
     if (response.ok) {
       expect(response.data.items).toEqual(mockItems);
     }
-    expect(oracleStore.listAssertions).toHaveBeenCalledWith(expect.objectContaining({
+    expect(oracle.listAssertions).toHaveBeenCalledWith(expect.objectContaining({
       limit: 10
     }));
   });
 
   it('filters by chain', async () => {
-    vi.mocked(oracleStore.listAssertions).mockResolvedValue({ items: [], total: 0, nextCursor: null });
+    vi.mocked(oracle.listAssertions).mockResolvedValue({ items: [], total: 0, nextCursor: null });
 
     const request = new Request('http://localhost:3000/api/oracle/assertions?chain=Optimism');
     await GET(request);
 
-    expect(oracleStore.listAssertions).toHaveBeenCalledWith(expect.objectContaining({
+    expect(oracle.listAssertions).toHaveBeenCalledWith(expect.objectContaining({
       chain: 'Optimism'
     }));
   });
 
   it('handles sync param', async () => {
-    const { ensureOracleSynced } = await import('@/server/oracleIndexer');
-    vi.mocked(oracleStore.listAssertions).mockResolvedValue({ items: [], total: 0, nextCursor: null });
+    const { ensureOracleSynced } = await import('@/server/oracle');
+    vi.mocked(oracle.listAssertions).mockResolvedValue({ items: [], total: 0, nextCursor: null });
 
     const request = new Request('http://localhost:3000/api/oracle/assertions?sync=1');
     await GET(request);
@@ -111,6 +106,6 @@ describe('GET /api/oracle/assertions', () => {
     if (!response.ok) {
       expect(response.error).toBe('invalid_address');
     }
-    expect(oracleStore.listAssertions).not.toHaveBeenCalled();
+    expect(oracle.listAssertions).not.toHaveBeenCalled();
   });
 });

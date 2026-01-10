@@ -1,5 +1,4 @@
-import { listAssertions } from "@/server/oracleStore";
-import { ensureOracleSynced } from "@/server/oracleIndexer";
+import { ensureOracleSynced, listAssertions } from "@/server/oracle";
 import { handleApi, rateLimit } from "@/server/apiResponse";
 import { z } from "zod";
 import { isAddress } from "viem";

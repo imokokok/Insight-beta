@@ -1,6 +1,8 @@
 import { hasDatabase, query } from "./db";
 import { getMemoryStore, memoryNowIso } from "@/server/memoryBackend";
 
+const MEMORY_MAX_KV_KEYS = 2000;
+
 export async function readJsonFile<T>(key: string, defaultValue: T): Promise<T> {
   if (!hasDatabase()) {
     const mem = getMemoryStore();
@@ -17,6 +19,18 @@ export async function writeJsonFile<T>(key: string, value: T): Promise<void> {
   if (!hasDatabase()) {
     const mem = getMemoryStore();
     mem.kv.set(key, { value, updatedAt: memoryNowIso() });
+    const overflow = mem.kv.size - MEMORY_MAX_KV_KEYS;
+    if (overflow > 0) {
+      const candidates = Array.from(mem.kv.entries()).map(([k, v]) => ({
+        key: k,
+        updatedAtMs: new Date(v.updatedAt).getTime()
+      }));
+      candidates.sort((a, b) => a.updatedAtMs - b.updatedAtMs);
+      for (let i = 0; i < overflow; i++) {
+        const k = candidates[i]?.key;
+        if (k) mem.kv.delete(k);
+      }
+    }
     return;
   }
   await query(

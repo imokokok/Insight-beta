@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { readJsonFile, writeJsonFile, deleteJsonKey, listJsonKeys } from './kvStore';
-import { query } from './db';
+import { query, hasDatabase } from './db';
+import { getMemoryStore } from './memoryBackend';
 
 vi.mock('./db', () => ({
   query: vi.fn(),
@@ -10,6 +11,8 @@ vi.mock('./db', () => ({
 describe('kvStore', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    (globalThis as unknown as { __insightMemoryStore?: unknown }).__insightMemoryStore = undefined;
+    vi.mocked(hasDatabase).mockReturnValue(true);
   });
 
   describe('readJsonFile', () => {
@@ -50,6 +53,15 @@ describe('kvStore', () => {
         expect.stringContaining('INSERT INTO kv_store'),
         ['test-key', JSON.stringify(mockValue)]
       );
+    });
+
+    it('evicts old keys in memory mode', async () => {
+      vi.mocked(hasDatabase).mockReturnValue(false);
+      for (let i = 0; i < 2100; i++) {
+        await writeJsonFile(`k/${i}`, { i });
+      }
+      const mem = getMemoryStore();
+      expect(mem.kv.size).toBeLessThanOrEqual(2000);
     });
   });
 

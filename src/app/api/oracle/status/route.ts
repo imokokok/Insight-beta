@@ -1,6 +1,4 @@
-import { readOracleConfig } from "@/server/oracleConfig";
-import { getSyncState, readOracleState } from "@/server/oracleState";
-import { isOracleSyncing } from "@/server/oracleIndexer";
+import { getSyncState, isOracleSyncing, readOracleConfig, readOracleState } from "@/server/oracle";
 import { handleApi, rateLimit } from "@/server/apiResponse";
 
 export async function GET(request: Request) {

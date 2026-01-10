@@ -1,15 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ZodError } from "zod";
 import { GET } from "./route";
-import * as oracleStore from "@/server/oracleStore";
+import * as oracle from "@/server/oracle";
 import type { Dispute } from "@/lib/oracleTypes";
 
-vi.mock("@/server/oracleStore", () => ({
+vi.mock("@/server/oracle", () => ({
   listDisputes: vi.fn(),
-}));
-
-vi.mock("@/server/oracleIndexer", () => ({
-  ensureOracleSynced: vi.fn(),
+  ensureOracleSynced: vi.fn()
 }));
 
 vi.mock("@/server/apiResponse", () => ({
@@ -57,7 +54,7 @@ describe("GET /api/oracle/disputes", () => {
       },
     ];
 
-    const listDisputesMock = vi.mocked(oracleStore.listDisputes);
+    const listDisputesMock = vi.mocked(oracle.listDisputes);
     listDisputesMock.mockResolvedValue({
       items: mockItems,
       total: 1,
@@ -76,7 +73,7 @@ describe("GET /api/oracle/disputes", () => {
     if (response.ok) {
       expect(response.data.items).toEqual(mockItems);
     }
-    expect(oracleStore.listDisputes).toHaveBeenCalledWith(
+    expect(oracle.listDisputes).toHaveBeenCalledWith(
       expect.objectContaining({
         limit: 10,
       }),
@@ -92,12 +89,12 @@ describe("GET /api/oracle/disputes", () => {
     if (!response.ok) {
       expect(response.error).toBe("invalid_address");
     }
-    expect(oracleStore.listDisputes).not.toHaveBeenCalled();
+    expect(oracle.listDisputes).not.toHaveBeenCalled();
   });
 
   it("handles sync param", async () => {
-    const { ensureOracleSynced } = await import("@/server/oracleIndexer");
-    vi.mocked(oracleStore.listDisputes).mockResolvedValue({ items: [], total: 0, nextCursor: null });
+    const { ensureOracleSynced } = await import("@/server/oracle");
+    vi.mocked(oracle.listDisputes).mockResolvedValue({ items: [], total: 0, nextCursor: null });
 
     const request = new Request("http://localhost:3000/api/oracle/disputes?sync=1");
     await GET(request);

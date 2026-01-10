@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWRInfinite from "swr/infinite";
 import { fetchApiData } from "@/lib/utils";
 
@@ -13,6 +13,8 @@ export function useInfiniteList<T>(
   options: {
     refreshInterval?: number;
     revalidateFirstPage?: boolean;
+    revalidateOnFocus?: boolean;
+    dedupingInterval?: number;
   } = {}
 ) {
   const { 
@@ -26,13 +28,16 @@ export function useInfiniteList<T>(
     fetchApiData,
     { 
       revalidateFirstPage: false,
-      refreshInterval: 5000,
+      revalidateOnFocus: false,
+      revalidateAll: false,
+      refreshInterval: 0,
+      dedupingInterval: 10_000,
       ...options
     }
   );
 
   // Flatten items from all pages
-  const items = pages ? pages.flatMap(page => page.items) : [];
+  const items = useMemo(() => (pages ? pages.flatMap((page) => page.items) : []), [pages]);
   
   // Check if we can load more
   const lastPage = pages ? pages[pages.length - 1] : null;

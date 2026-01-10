@@ -1,8 +1,7 @@
-import { ensureOracleSynced } from "@/server/oracleIndexer";
-import { readOracleConfig } from "@/server/oracleConfig";
-import { readOracleState } from "@/server/oracleState";
+import { ensureOracleSynced, readOracleConfig, readOracleState } from "@/server/oracle";
 import { error, getAdminActor, handleApi, rateLimit, requireAdmin } from "@/server/apiResponse";
 import { appendAuditLog } from "@/server/observability";
+import { revalidateTag } from "next/cache";
 
 export async function GET(request: Request) {
   return handleApi(request, async () => {
@@ -28,7 +27,7 @@ export async function POST(request: Request) {
 
     const config = await readOracleConfig();
     if (!config.rpcUrl || !config.contractAddress) {
-      return error("missing_config", 400);
+      return error({ code: "missing_config" }, 400);
     }
     let result: { updated: boolean };
     try {
@@ -38,7 +37,7 @@ export async function POST(request: Request) {
       if (code === "rpc_unreachable") return error(code, 502);
       if (code === "contract_not_found") return error(code, 400);
       if (code === "sync_failed") return error(code, 502);
-      return error("sync_failed", 502);
+      return error({ code: "sync_failed" }, 502);
     }
     const state = await readOracleState();
     const actor = getAdminActor(request);
@@ -49,6 +48,11 @@ export async function POST(request: Request) {
       entityId: state.contractAddress,
       details: { updated: result.updated, lastProcessedBlock: state.lastProcessedBlock.toString(10) }
     });
+    if (result.updated) {
+      revalidateTag("oracle-stats");
+      revalidateTag("oracle-leaderboard");
+      revalidateTag("user-stats");
+    }
     return {
       updated: result.updated,
       chain: state.chain,

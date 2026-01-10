@@ -1,7 +1,8 @@
 import { hasDatabase, query } from "./db";
 import { ensureSchema } from "./schema";
 import type { Assertion, Dispute, OracleChain } from "@/lib/oracleTypes";
-import { getMemoryStore } from "@/server/memoryBackend";
+import { env } from "@/lib/env";
+import { getMemoryStore } from "./memoryBackend";
 
 export type SyncMeta = {
   lastAttemptAt: string | null;
@@ -26,6 +27,89 @@ async function ensureDb() {
   if (!schemaEnsured) {
     await ensureSchema();
     schemaEnsured = true;
+  }
+}
+
+const DEFAULT_MEMORY_MAX_VOTE_KEYS = 200_000;
+const DEFAULT_MEMORY_VOTE_BLOCK_WINDOW = 50_000n;
+const MEMORY_MAX_ASSERTIONS = 10_000;
+const MEMORY_MAX_DISPUTES = 10_000;
+
+function memoryMaxVoteKeys() {
+  const raw = env.INSIGHT_MEMORY_MAX_VOTE_KEYS;
+  if (!raw) return DEFAULT_MEMORY_MAX_VOTE_KEYS;
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed) || !Number.isInteger(parsed) || parsed <= 0) return DEFAULT_MEMORY_MAX_VOTE_KEYS;
+  return parsed;
+}
+
+function memoryVoteBlockWindow() {
+  const raw = env.INSIGHT_MEMORY_VOTE_BLOCK_WINDOW;
+  if (!raw) return DEFAULT_MEMORY_VOTE_BLOCK_WINDOW;
+  try {
+    const parsed = BigInt(raw);
+    return parsed >= 0n ? parsed : DEFAULT_MEMORY_VOTE_BLOCK_WINDOW;
+  } catch {
+    return DEFAULT_MEMORY_VOTE_BLOCK_WINDOW;
+  }
+}
+
+function toTimeMs(value: string | undefined) {
+  const ms = value ? new Date(value).getTime() : NaN;
+  return Number.isFinite(ms) ? ms : 0;
+}
+
+function deleteVotesForAssertion(mem: ReturnType<typeof getMemoryStore>, assertionId: string) {
+  for (const [key, v] of mem.votes.entries()) {
+    if (v.assertionId === assertionId) mem.votes.delete(key);
+  }
+}
+
+function pruneMemoryAssertions(mem: ReturnType<typeof getMemoryStore>) {
+  const overflow = mem.assertions.size - MEMORY_MAX_ASSERTIONS;
+  if (overflow <= 0) return;
+  const candidates = Array.from(mem.assertions.entries()).map(([id, a]) => ({
+    id,
+    rank: a.status === "Resolved" ? 1 : 0,
+    timeMs: a.status === "Resolved" ? toTimeMs(a.resolvedAt) : toTimeMs(a.assertedAt)
+  }));
+  candidates.sort((a, b) => {
+    const r = b.rank - a.rank;
+    if (r !== 0) return r;
+    return a.timeMs - b.timeMs;
+  });
+  for (let i = 0; i < overflow; i++) {
+    const id = candidates[i]?.id;
+    if (!id) continue;
+    mem.assertions.delete(id);
+    mem.disputes.delete(`D:${id}`);
+    mem.voteSums.delete(id);
+    deleteVotesForAssertion(mem, id);
+  }
+}
+
+function pruneMemoryDisputes(mem: ReturnType<typeof getMemoryStore>) {
+  const overflow = mem.disputes.size - MEMORY_MAX_DISPUTES;
+  if (overflow <= 0) return;
+  const candidates = Array.from(mem.disputes.entries()).map(([id, d]) => ({
+    id,
+    rank: d.status === "Executed" ? 1 : 0,
+    timeMs: toTimeMs(d.votingEndsAt ?? d.disputedAt)
+  }));
+  candidates.sort((a, b) => {
+    const r = b.rank - a.rank;
+    if (r !== 0) return r;
+    return a.timeMs - b.timeMs;
+  });
+  for (let i = 0; i < overflow; i++) {
+    const id = candidates[i]?.id;
+    if (!id) continue;
+    const d = mem.disputes.get(id);
+    mem.disputes.delete(id);
+    if (d) {
+      mem.voteSums.delete(d.assertionId);
+      deleteVotesForAssertion(mem, d.assertionId);
+    }
   }
 }
 
@@ -218,6 +302,7 @@ export async function upsertAssertion(a: Assertion) {
   if (!hasDatabase()) {
     const mem = getMemoryStore();
     mem.assertions.set(a.id, a);
+    pruneMemoryAssertions(mem);
     return;
   }
   await query(
@@ -255,6 +340,13 @@ export async function upsertDispute(d: Dispute) {
   if (!hasDatabase()) {
     const mem = getMemoryStore();
     mem.disputes.set(d.id, d);
+    if (d.status === "Executed") {
+      mem.voteSums.delete(d.assertionId);
+      for (const [key, v] of mem.votes.entries()) {
+        if (v.assertionId === d.assertionId) mem.votes.delete(key);
+      }
+    }
+    pruneMemoryDisputes(mem);
     return;
   }
   await query(
@@ -433,6 +525,34 @@ function bigintToSafeNumber(value: bigint) {
   return Number(value);
 }
 
+function applyVoteSumsDelta(
+  mem: ReturnType<typeof getMemoryStore>,
+  assertionId: string,
+  support: boolean,
+  weight: bigint,
+  direction: 1 | -1
+) {
+  const prev = mem.voteSums.get(assertionId) ?? { forWeight: 0n, againstWeight: 0n };
+  const delta = direction === 1 ? weight : -weight;
+  let forWeight = prev.forWeight;
+  let againstWeight = prev.againstWeight;
+  if (support) forWeight += delta;
+  else againstWeight += delta;
+  if (forWeight < 0n) forWeight = 0n;
+  if (againstWeight < 0n) againstWeight = 0n;
+  const next = { forWeight, againstWeight };
+  if (next.forWeight === 0n && next.againstWeight === 0n) mem.voteSums.delete(assertionId);
+  else mem.voteSums.set(assertionId, next);
+  const dispute = mem.disputes.get(`D:${assertionId}`);
+  if (dispute) {
+    dispute.currentVotesFor = bigintToSafeNumber(next.forWeight);
+    dispute.currentVotesAgainst = bigintToSafeNumber(next.againstWeight);
+    dispute.totalVotes = bigintToSafeNumber(next.forWeight + next.againstWeight);
+    mem.disputes.set(dispute.id, dispute);
+  }
+  return next;
+}
+
 export async function insertVoteEvent(input: {
   chain: OracleChain;
   assertionId: string;
@@ -448,7 +568,27 @@ export async function insertVoteEvent(input: {
     const mem = getMemoryStore();
     const key = `${input.txHash}:${input.logIndex}`;
     if (mem.votes.has(key)) return false;
-    mem.votes.set(key, { assertionId: input.assertionId, support: input.support, weight: input.weight });
+    mem.votes.set(key, { assertionId: input.assertionId, support: input.support, weight: input.weight, blockNumber: input.blockNumber });
+    applyVoteSumsDelta(mem, input.assertionId, input.support, input.weight, 1);
+    const maxKeys = memoryMaxVoteKeys();
+    if (mem.votes.size > maxKeys) {
+      const blockWindow = memoryVoteBlockWindow();
+      const cutoff = input.blockNumber > blockWindow ? input.blockNumber - blockWindow : 0n;
+      for (const [k, v] of mem.votes.entries()) {
+        if (v.blockNumber < cutoff) {
+          mem.votes.delete(k);
+          applyVoteSumsDelta(mem, v.assertionId, v.support, v.weight, -1);
+        }
+        if (mem.votes.size <= maxKeys) break;
+      }
+      while (mem.votes.size > maxKeys) {
+        const firstKey = mem.votes.keys().next().value as string | undefined;
+        if (!firstKey) break;
+        const v = mem.votes.get(firstKey);
+        mem.votes.delete(firstKey);
+        if (v) applyVoteSumsDelta(mem, v.assertionId, v.support, v.weight, -1);
+      }
+    }
     return true;
   }
   const res = await query(
@@ -478,16 +618,23 @@ export async function recomputeDisputeVotes(assertionId: string) {
     const mem = getMemoryStore();
     const dispute = mem.disputes.get(`D:${assertionId}`);
     if (!dispute) return;
-    let votesFor = 0n;
-    let votesAgainst = 0n;
-    for (const v of mem.votes.values()) {
-      if (v.assertionId !== assertionId) continue;
-      if (v.support) votesFor += v.weight;
-      else votesAgainst += v.weight;
-    }
-    dispute.currentVotesFor = bigintToSafeNumber(votesFor);
-    dispute.currentVotesAgainst = bigintToSafeNumber(votesAgainst);
-    dispute.totalVotes = bigintToSafeNumber(votesFor + votesAgainst);
+    const sums =
+      mem.voteSums.get(assertionId) ??
+      (() => {
+        let votesFor = 0n;
+        let votesAgainst = 0n;
+        for (const v of mem.votes.values()) {
+          if (v.assertionId !== assertionId) continue;
+          if (v.support) votesFor += v.weight;
+          else votesAgainst += v.weight;
+        }
+        const computed = { forWeight: votesFor, againstWeight: votesAgainst };
+        mem.voteSums.set(assertionId, computed);
+        return computed;
+      })();
+    dispute.currentVotesFor = bigintToSafeNumber(sums.forWeight);
+    dispute.currentVotesAgainst = bigintToSafeNumber(sums.againstWeight);
+    dispute.totalVotes = bigintToSafeNumber(sums.forWeight + sums.againstWeight);
     mem.disputes.set(dispute.id, dispute);
     return;
   }

@@ -1,3 +1,4 @@
+import { memo } from "react";
 import Link from "next/link";
 import { 
   CheckCircle2,
@@ -33,7 +34,7 @@ function getStatusColor(status: OracleStatus) {
   }
 }
 
-export function AssertionList({ items, loading, viewMode, hasMore, loadMore, loadingMore }: AssertionListProps) {
+export const AssertionList = memo(function AssertionList({ items, loading, viewMode, hasMore, loadMore, loadingMore }: AssertionListProps) {
   const { t, lang } = useI18n();
   const locale = langToLocale[lang];
 
@@ -196,4 +197,4 @@ export function AssertionList({ items, loading, viewMode, hasMore, loadMore, loa
       )}
     </div>
   );
-}
+});

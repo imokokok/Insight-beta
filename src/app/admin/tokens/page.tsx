@@ -67,6 +67,13 @@ export default function AdminTokensPage() {
   }, [adminActor, adminToken]);
 
   const load = useCallback(async () => {
+    const token = adminToken.trim();
+    if (!token) {
+      setItems([]);
+      setError(null);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -80,11 +87,12 @@ export default function AdminTokensPage() {
     } finally {
       setLoading(false);
     }
-  }, [buildHeaders]);
+  }, [adminToken, buildHeaders]);
 
   useEffect(() => {
+    if (!adminToken.trim()) return;
     void load();
-  }, [load]);
+  }, [adminToken, load]);
 
   const createToken = async () => {
     setCreating(true);

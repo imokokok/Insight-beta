@@ -1,9 +1,13 @@
-import { readOracleConfig, validateOracleConfigPatch, writeOracleConfig, type OracleConfig } from "@/server/oracleConfig";
+import { readOracleConfig, validateOracleConfigPatch, writeOracleConfig, type OracleConfig } from "@/server/oracle";
 import { error, getAdminActor, handleApi, rateLimit, requireAdmin } from "@/server/apiResponse";
 import { appendAuditLog } from "@/server/observability";
 
 export async function GET(request: Request) {
-  return handleApi(request, () => readOracleConfig());
+  return handleApi(request, () => {
+    const limited = rateLimit(request, { key: "oracle_config_get", limit: 240, windowMs: 60_000 });
+    if (limited) return limited;
+    return readOracleConfig();
+  });
 }
 
 export async function PUT(request: Request) {
@@ -16,7 +20,7 @@ export async function PUT(request: Request) {
 
     const parsed = (await request.json().catch(() => null)) as unknown;
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-      return error("invalid_request_body", 400);
+      return error({ code: "invalid_request_body" }, 400);
     }
     const body = parsed as Partial<OracleConfig>;
     try {

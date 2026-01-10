@@ -1,6 +1,7 @@
-import { query } from "./db";
+import { hasDatabase, query } from "./db";
 
 export async function ensureSchema() {
+  if (!hasDatabase()) return;
   await query(`
     CREATE TABLE IF NOT EXISTS oracle_config (
       id INTEGER PRIMARY KEY DEFAULT 1,

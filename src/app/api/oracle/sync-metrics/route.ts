@@ -1,5 +1,5 @@
 import { handleApi, rateLimit } from "@/server/apiResponse";
-import { listSyncMetrics } from "@/server/oracleState";
+import { listSyncMetrics } from "@/server/oracle";
 import { z } from "zod";
 
 const querySchema = z.object({
@@ -18,4 +18,3 @@ export async function GET(request: Request) {
     return { items };
   });
 }
-

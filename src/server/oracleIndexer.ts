@@ -1,6 +1,6 @@
 import { createPublicClient, http, parseAbi, type Address } from "viem";
 import type { Assertion, Dispute, OracleChain } from "@/lib/oracleTypes";
-import { readOracleConfig } from "@/server/oracleConfig";
+import { readOracleConfig } from "./oracleConfig";
 import { 
   readOracleState, 
   getSyncState, 
@@ -13,10 +13,10 @@ import {
   insertVoteEvent,
   recomputeDisputeVotes,
   type StoredState 
-} from "@/server/oracleState";
+} from "./oracleState";
 import { isZeroBytes32, toIsoFromSeconds } from "@/lib/utils";
 import { env } from "@/lib/env";
-import { createOrTouchAlert, readAlertRules } from "@/server/observability";
+import { createOrTouchAlert, readAlertRules } from "./observability";
 
 const abi = parseAbi([
   "event AssertionCreated(bytes32 indexed assertionId,address indexed asserter,string protocol,string market,string assertion,uint256 bondUsd,uint256 assertedAt,uint256 livenessEndsAt,bytes32 txHash)",

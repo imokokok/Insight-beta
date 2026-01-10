@@ -7,7 +7,7 @@ vi.mock("@/server/observability", () => ({
   listAlerts: vi.fn()
 }));
 
-vi.mock("@/server/oracleIndexer", () => ({
+vi.mock("@/server/oracle", () => ({
   ensureOracleSynced: vi.fn()
 }));
 
@@ -55,7 +55,7 @@ describe("GET /api/oracle/alerts", () => {
   });
 
   it("handles sync param", async () => {
-    const { ensureOracleSynced } = await import("@/server/oracleIndexer");
+    const { ensureOracleSynced } = await import("@/server/oracle");
     vi.mocked(observability.listAlerts).mockResolvedValue({ items: [], total: 0, nextCursor: null });
 
     const request = new Request("http://localhost:3000/api/oracle/alerts?sync=1");

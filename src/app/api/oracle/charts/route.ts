@@ -1,6 +1,7 @@
-import { query } from "@/server/db";
+import { hasDatabase, query } from "@/server/db";
 import { handleApi, rateLimit } from "@/server/apiResponse";
 import { z } from "zod";
+import { getMemoryStore } from "@/server/memoryBackend";
 
 const chartsParamsSchema = z.object({
   days: z.coerce.number().min(1).max(365).default(30)
@@ -21,6 +22,22 @@ export async function GET(request: Request) {
     const rawParams = Object.fromEntries(url.searchParams);
     const { days } = chartsParamsSchema.parse(rawParams);
     
+    if (!hasDatabase()) {
+      const mem = getMemoryStore();
+      const cutoffMs = Date.now() - days * 24 * 60 * 60 * 1000;
+      const buckets = new Map<string, { date: string; count: number; volume: number }>();
+
+      for (const a of mem.assertions.values()) {
+        const assertedAtMs = new Date(a.assertedAt).getTime();
+        if (!Number.isFinite(assertedAtMs) || assertedAtMs < cutoffMs) continue;
+        const date = new Date(assertedAtMs).toISOString().slice(0, 10);
+        const prev = buckets.get(date) ?? { date, count: 0, volume: 0 };
+        buckets.set(date, { date, count: prev.count + 1, volume: prev.volume + (a.bondUsd || 0) });
+      }
+
+      return Array.from(buckets.values()).sort((a, b) => a.date.localeCompare(b.date));
+    }
+
     // Group by date
     const res = await query(`
       SELECT 

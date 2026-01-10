@@ -1,5 +1,5 @@
 import type { Assertion, Dispute, OracleConfig } from "@/lib/oracleTypes";
-import type { SyncMeta } from "@/server/oracleState";
+import type { SyncMeta } from "./oracleState";
 
 type MemoryAlert = {
   id: number;
@@ -47,7 +47,8 @@ type MemoryStore = {
   };
   assertions: Map<string, Assertion>;
   disputes: Map<string, Dispute>;
-  votes: Map<string, { assertionId: string; support: boolean; weight: bigint }>;
+  votes: Map<string, { assertionId: string; support: boolean; weight: bigint; blockNumber: bigint }>;
+  voteSums: Map<string, { forWeight: bigint; againstWeight: bigint }>;
   kv: Map<string, MemoryKvItem>;
   alerts: Map<string, MemoryAlert>;
   nextAlertId: number;
@@ -95,6 +96,7 @@ export function getMemoryStore(): MemoryStore {
       assertions: new Map(),
       disputes: new Map(),
       votes: new Map(),
+      voteSums: new Map(),
       kv: new Map(),
       alerts: new Map(),
       nextAlertId: 1,

@@ -1,4 +1,4 @@
-import { getLeaderboardStats } from "@/server/oracleStore";
+import { getLeaderboardStats } from "@/server/oracle";
 import { handleApi, rateLimit } from "@/server/apiResponse";
 
 export async function GET(request: Request) {

@@ -20,16 +20,16 @@ export async function PATCH(
     const { id } = await params;
     const alertId = Number(id);
     if (!Number.isFinite(alertId) || alertId <= 0) {
-      return error("invalid_request_body", 400);
+      return error({ code: "invalid_request_body" }, 400);
     }
 
     const bodyRaw = await request.json().catch(() => null);
     const parsed = patchSchema.safeParse(bodyRaw);
-    if (!parsed.success) return error("invalid_request_body", 400);
+    if (!parsed.success) return error({ code: "invalid_request_body" }, 400);
 
     const actor = getAdminActor(request);
     const updated = await updateAlertStatus({ id: alertId, status: parsed.data.status, actor });
-    if (!updated) return error("not_found", 404);
+    if (!updated) return error({ code: "not_found" }, 404);
     return updated;
   });
 }

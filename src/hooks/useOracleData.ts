@@ -16,7 +16,7 @@ export function useOracleData(
   } = useSWR<OracleStats>(
     "/api/oracle/stats", 
     fetchApiData,
-    { refreshInterval: 5000 }
+    { refreshInterval: 15_000, dedupingInterval: 10_000, revalidateOnFocus: false }
   );
 
   // 2. Assertions Fetching (Infinite SWR for pagination)
@@ -39,7 +39,7 @@ export function useOracleData(
     return `/api/oracle/assertions?${params.toString()}`;
   };
 
-  const { 
+  const {
     items, 
     loading, 
     loadingMore, 
@@ -47,7 +47,7 @@ export function useOracleData(
     loadMore, 
     hasMore, 
     refresh 
-  } = useInfiniteList<Assertion>(getUrl);
+  } = useInfiniteList<Assertion>(getUrl, { refreshInterval: 0, revalidateOnFocus: false, dedupingInterval: 10_000 });
 
   return { 
     items, 

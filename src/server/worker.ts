@@ -1,7 +1,7 @@
 import { ensureOracleSynced, isOracleSyncing } from './oracleIndexer';
 import { logger } from "@/lib/logger";
 import { createOrTouchAlert, readAlertRules } from "@/server/observability";
-import { getSyncState } from "@/server/oracleState";
+import { getSyncState } from "@/server/oracle";
 
 const SYNC_INTERVAL = 15000; // 15 seconds
 

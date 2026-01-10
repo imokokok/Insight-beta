@@ -1,5 +1,4 @@
-import { getAssertion, getDisputeByAssertionId } from "@/server/oracleStore";
-import { readOracleConfig } from "@/server/oracleConfig";
+import { getAssertion, getDisputeByAssertionId, readOracleConfig } from "@/server/oracle";
 import { error, handleApi, rateLimit } from "@/server/apiResponse";
 import { createPublicClient, formatEther, http } from "viem";
 import { oracleAbi } from "@/lib/oracleAbi";
@@ -14,7 +13,7 @@ export async function GET(
 
     const { id } = await params;
     const assertion = await getAssertion(id);
-    if (!assertion) return error("not_found", 404);
+    if (!assertion) return error({ code: "not_found" }, 404);
     
     const dispute = await getDisputeByAssertionId(id);
     const config = await readOracleConfig();

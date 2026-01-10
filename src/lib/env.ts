@@ -1,17 +1,45 @@
 import { z } from "zod";
 
 export const env = {
-  SUPABASE_URL: (process.env.SUPABASE_URL ?? "").trim(),
-  SUPABASE_SERVICE_ROLE_KEY: (process.env.SUPABASE_SERVICE_ROLE_KEY ?? "").trim(),
-  INSIGHT_ADMIN_TOKEN: (process.env.INSIGHT_ADMIN_TOKEN ?? "").trim(),
-  INSIGHT_ADMIN_TOKEN_SALT: (process.env.INSIGHT_ADMIN_TOKEN_SALT ?? "").trim(),
-  INSIGHT_RPC_URL: (process.env.INSIGHT_RPC_URL ?? "").trim(),
-  INSIGHT_ORACLE_ADDRESS: (process.env.INSIGHT_ORACLE_ADDRESS ?? "").trim(),
-  INSIGHT_CHAIN: (process.env.INSIGHT_CHAIN ?? "").trim(),
-  INSIGHT_SLOW_REQUEST_MS: (process.env.INSIGHT_SLOW_REQUEST_MS ?? "").trim(),
-  INSIGHT_DISABLE_EMBEDDED_WORKER: (process.env.INSIGHT_DISABLE_EMBEDDED_WORKER ?? "").trim(),
-  INSIGHT_WORKER_ID: (process.env.INSIGHT_WORKER_ID ?? "").trim(),
-  INSIGHT_WEBHOOK_URL: (process.env.INSIGHT_WEBHOOK_URL ?? "").trim()
+  get SUPABASE_URL() {
+    return (process.env.SUPABASE_URL ?? "").trim();
+  },
+  get SUPABASE_SERVICE_ROLE_KEY() {
+    return (process.env.SUPABASE_SERVICE_ROLE_KEY ?? "").trim();
+  },
+  get INSIGHT_ADMIN_TOKEN() {
+    return (process.env.INSIGHT_ADMIN_TOKEN ?? "").trim();
+  },
+  get INSIGHT_ADMIN_TOKEN_SALT() {
+    return (process.env.INSIGHT_ADMIN_TOKEN_SALT ?? "").trim();
+  },
+  get INSIGHT_RPC_URL() {
+    return (process.env.INSIGHT_RPC_URL ?? "").trim();
+  },
+  get INSIGHT_ORACLE_ADDRESS() {
+    return (process.env.INSIGHT_ORACLE_ADDRESS ?? "").trim();
+  },
+  get INSIGHT_CHAIN() {
+    return (process.env.INSIGHT_CHAIN ?? "").trim();
+  },
+  get INSIGHT_SLOW_REQUEST_MS() {
+    return (process.env.INSIGHT_SLOW_REQUEST_MS ?? "").trim();
+  },
+  get INSIGHT_MEMORY_MAX_VOTE_KEYS() {
+    return (process.env.INSIGHT_MEMORY_MAX_VOTE_KEYS ?? "").trim();
+  },
+  get INSIGHT_MEMORY_VOTE_BLOCK_WINDOW() {
+    return (process.env.INSIGHT_MEMORY_VOTE_BLOCK_WINDOW ?? "").trim();
+  },
+  get INSIGHT_DISABLE_EMBEDDED_WORKER() {
+    return (process.env.INSIGHT_DISABLE_EMBEDDED_WORKER ?? "").trim();
+  },
+  get INSIGHT_WORKER_ID() {
+    return (process.env.INSIGHT_WORKER_ID ?? "").trim();
+  },
+  get INSIGHT_WEBHOOK_URL() {
+    return (process.env.INSIGHT_WEBHOOK_URL ?? "").trim();
+  }
 };
 
 export function getEnv(key: keyof typeof env): string {
@@ -53,6 +81,8 @@ const envSchema = z.object({
     .optional(),
   INSIGHT_CHAIN: z.enum(["Polygon", "Arbitrum", "Optimism", "Local"]).optional(),
   INSIGHT_SLOW_REQUEST_MS: z.coerce.number().int().min(0).optional(),
+  INSIGHT_MEMORY_MAX_VOTE_KEYS: z.coerce.number().int().min(1).optional(),
+  INSIGHT_MEMORY_VOTE_BLOCK_WINDOW: z.coerce.bigint().min(0n).optional(),
   INSIGHT_DISABLE_EMBEDDED_WORKER: z.enum(["1", "0", "true", "false"]).optional(),
   INSIGHT_WORKER_ID: z.string().min(1).optional(),
   INSIGHT_WEBHOOK_URL: z.string().url().optional()

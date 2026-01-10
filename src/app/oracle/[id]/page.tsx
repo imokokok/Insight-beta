@@ -52,7 +52,7 @@ export default function OracleDetailPage() {
   const { data, error, isLoading } = useSWR<{ assertion: Assertion; dispute: Dispute | null; config: OracleConfig; bondWei: string | null; bondEth: string | null }>(
     id ? `/api/oracle/assertions/${id}` : null,
     fetchApiData,
-    { refreshInterval: 5000 }
+    { refreshInterval: 15_000, dedupingInterval: 10_000, revalidateOnFocus: false }
   );
 
   const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false);

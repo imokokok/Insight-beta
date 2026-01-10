@@ -55,7 +55,7 @@ export async function PUT(request: Request) {
     const body = putBodySchema.safeParse(parsed);
     
     if (!body.success) {
-      return error("invalid_request_body", 400);
+      return error({ code: "invalid_request_body" }, 400);
     }
 
     await writeJsonFile(body.data.key, body.data.value);
@@ -83,7 +83,7 @@ export async function DELETE(request: Request) {
     const params = deleteKeySchema.safeParse(rawParams);
     
     if (!params.success) {
-      return error("invalid_request_body", 400);
+      return error({ code: "invalid_request_body" }, 400);
     }
 
     await deleteJsonKey(params.data.key);

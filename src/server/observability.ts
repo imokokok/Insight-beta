@@ -56,6 +56,28 @@ async function ensureDb() {
 }
 
 const ALERT_RULES_KEY = "alert_rules/v1";
+const MEMORY_MAX_ALERTS = 2000;
+const MEMORY_MAX_AUDIT = 5000;
+
+function pruneMemoryAlerts(mem: ReturnType<typeof getMemoryStore>) {
+  const overflow = mem.alerts.size - MEMORY_MAX_ALERTS;
+  if (overflow <= 0) return;
+  const statusRank = (s: Alert["status"]) => (s === "Open" ? 0 : s === "Acknowledged" ? 1 : 2);
+  const candidates = Array.from(mem.alerts.entries()).map(([fingerprint, a]) => ({
+    fingerprint,
+    statusRank: statusRank(a.status),
+    lastSeenAtMs: new Date(a.lastSeenAt).getTime()
+  }));
+  candidates.sort((a, b) => {
+    const r = b.statusRank - a.statusRank;
+    if (r !== 0) return r;
+    return a.lastSeenAtMs - b.lastSeenAtMs;
+  });
+  for (let i = 0; i < overflow; i++) {
+    const fp = candidates[i]?.fingerprint;
+    if (fp) mem.alerts.delete(fp);
+  }
+}
 
 export async function readAlertRules(): Promise<AlertRule[]> {
   await ensureDb();
@@ -179,6 +201,7 @@ export async function createOrTouchAlert(input: {
       };
       mem.alerts.set(input.fingerprint, created);
     }
+    pruneMemoryAlerts(mem);
     return;
   }
   await query(
@@ -396,6 +419,7 @@ export async function appendAuditLog(input: {
       entityId: input.entityId ?? null,
       details: input.details ?? null
     });
+    if (mem.audit.length > MEMORY_MAX_AUDIT) mem.audit.length = MEMORY_MAX_AUDIT;
     return;
   }
   await query(

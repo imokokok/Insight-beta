@@ -1,5 +1,4 @@
-import { listDisputes } from "@/server/oracleStore";
-import { ensureOracleSynced } from "@/server/oracleIndexer";
+import { ensureOracleSynced, listDisputes } from "@/server/oracle";
 import { handleApi, rateLimit } from "@/server/apiResponse";
 import { z } from "zod";
 import { isAddress } from "viem";

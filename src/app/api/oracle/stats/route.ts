@@ -1,5 +1,4 @@
-import { getOracleStats } from "@/server/oracleStore";
-import { ensureOracleSynced } from "@/server/oracleIndexer";
+import { ensureOracleSynced, getOracleStats } from "@/server/oracle";
 import { handleApi, rateLimit } from "@/server/apiResponse";
 
 export async function GET(request: Request) {

@@ -1,9 +1,11 @@
-import { handleApi } from "@/server/apiResponse";
+import { handleApi, rateLimit } from "@/server/apiResponse";
 import { hasDatabase, query } from "@/server/db";
 import { getEnvReport } from "@/lib/env";
 
 export async function GET(request: Request) {
   return handleApi(request, async () => {
+    const limited = rateLimit(request, { key: "health_get", limit: 240, windowMs: 60_000 });
+    if (limited) return limited;
     const envReport = getEnvReport();
 
     return {

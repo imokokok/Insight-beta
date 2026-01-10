@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     if (auth) return auth;
     const parsed = await request.json().catch(() => null);
     const body = createSchema.safeParse(parsed);
-    if (!body.success) return error("invalid_request_body", 400);
+    if (!body.success) return error({ code: "invalid_request_body" }, 400);
     const actor = getAdminActor(request);
     const created = await createAdminToken({ label: body.data.label, role: body.data.role, createdByActor: actor });
     await appendAuditLog({
@@ -54,10 +54,10 @@ export async function DELETE(request: Request) {
     const url = new URL(request.url);
     const rawParams = Object.fromEntries(url.searchParams);
     const parsed = revokeSchema.safeParse(rawParams);
-    if (!parsed.success) return error("invalid_request_body", 400);
+    if (!parsed.success) return error({ code: "invalid_request_body" }, 400);
     const actor = getAdminActor(request);
     const ok = await revokeAdminToken({ id: parsed.data.id });
-    if (!ok) return error("not_found", 404);
+    if (!ok) return error({ code: "not_found" }, 404);
     await appendAuditLog({
       actor,
       action: "admin_token_revoked",
@@ -68,4 +68,3 @@ export async function DELETE(request: Request) {
     return { ok: true };
   });
 }
-

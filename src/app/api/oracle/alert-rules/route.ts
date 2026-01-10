@@ -17,6 +17,8 @@ const putSchema = z.object({
 
 export async function GET(request: Request) {
   return handleApi(request, async () => {
+    const limited = rateLimit(request, { key: "alert_rules_get", limit: 240, windowMs: 60_000 });
+    if (limited) return limited;
     const rules = await readAlertRules();
     return { rules };
   });
@@ -32,7 +34,7 @@ export async function PUT(request: Request) {
 
     const parsed = await request.json().catch(() => null);
     const body = putSchema.safeParse(parsed);
-    if (!body.success) return error("invalid_request_body", 400);
+    if (!body.success) return error({ code: "invalid_request_body" }, 400);
 
     await writeAlertRules(body.data.rules);
     const actor = getAdminActor(request);

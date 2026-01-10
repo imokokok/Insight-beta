@@ -1,5 +1,5 @@
 import { handleApi, rateLimit } from "@/server/apiResponse";
-import { ensureOracleSynced } from "@/server/oracleIndexer";
+import { ensureOracleSynced } from "@/server/oracle";
 import { listAlerts } from "@/server/observability";
 import { z } from "zod";
 

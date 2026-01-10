@@ -23,13 +23,13 @@ export async function requireAdmin(request: Request, opts?: { strict?: boolean; 
   const hasEnvToken = !!env.INSIGHT_ADMIN_TOKEN.trim();
   const hasSalt = !!env.INSIGHT_ADMIN_TOKEN_SALT.trim();
   if (!hasEnvToken && !hasSalt) {
-    if (strict) return error("forbidden", 403);
-    if (process.env.NODE_ENV === "production") return error("forbidden", 403);
+    if (strict) return error({ code: "forbidden" }, 403);
+    if (process.env.NODE_ENV === "production") return error({ code: "forbidden" }, 403);
     return null;
   }
   const verified = await verifyAdmin(request, { strict, scope: opts?.scope });
   if (verified.ok) return null;
-  return error("forbidden", 403);
+  return error({ code: "forbidden" }, 403);
 }
 
 export function getAdminActor(request: Request) {
@@ -111,8 +111,8 @@ function attachRequestId(response: Response, requestId: string | null) {
 }
 
 export async function handleApi<T>(
-  arg1: Request | (() => Promise<T> | T),
-  arg2?: () => Promise<T> | T
+  arg1: Request | (() => Promise<T | Response> | T | Response),
+  arg2?: () => Promise<T | Response> | T | Response
 ) {
   const request = typeof arg1 === "function" ? undefined : arg1;
   const fn = typeof arg1 === "function" ? arg1 : (arg2 as () => Promise<T> | T);

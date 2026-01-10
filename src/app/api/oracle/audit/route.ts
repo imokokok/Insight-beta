@@ -18,7 +18,7 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const rawParams = Object.fromEntries(url.searchParams);
     const parsed = paramsSchema.safeParse(rawParams);
-    if (!parsed.success) return error("invalid_request_body", 400);
+    if (!parsed.success) return error({ code: "invalid_request_body" }, 400);
 
     return listAuditLog({ limit: parsed.data.limit, cursor: parsed.data.cursor });
   });

@@ -34,7 +34,7 @@ export function SyncStatus() {
 
   const lastSynced = new Date(data.sync.lastSyncedAt).getTime();
   const now = Date.now();
-  const diff = now - lastSynced;
+  const diff = Number.isFinite(lastSynced) ? now - lastSynced : Number.POSITIVE_INFINITY;
   
   // Status logic
   let status: "ok" | "lagging" | "error" = "ok";

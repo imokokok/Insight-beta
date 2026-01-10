@@ -1,4 +1,4 @@
-import { getUserStats } from "@/server/oracleStore";
+import { getUserStats } from "@/server/oracle";
 import { handleApi, rateLimit } from "@/server/apiResponse";
 import { z } from "zod";
 import { isAddress } from "viem";

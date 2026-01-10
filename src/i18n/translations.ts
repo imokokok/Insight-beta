@@ -108,6 +108,14 @@ export const translations = {
         leaderboard: "排行榜",
         tools: "工具"
       },
+      sync: {
+        synced: "已同步",
+        lagging: "同步滞后",
+        error: "同步错误",
+        status: "索引器状态",
+        block: "区块高度",
+        lastUpdate: "最后更新"
+      },
       charts: {
         dailyAssertions: "每日断言数",
         tvsCumulative: "安全总价值（累计）",
@@ -459,6 +467,14 @@ export const translations = {
         overview: "Overview",
         leaderboard: "Leaderboard",
         tools: "Tools"
+      },
+      sync: {
+        synced: "Synced",
+        lagging: "Lagging",
+        error: "Sync Error",
+        status: "Indexer Status",
+        block: "Block Height",
+        lastUpdate: "Last Update"
       },
       charts: {
         dailyAssertions: "Daily Assertions",

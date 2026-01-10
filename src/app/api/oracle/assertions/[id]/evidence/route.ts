@@ -1,7 +1,5 @@
 import { handleApi, rateLimit } from "@/server/apiResponse";
-import { getAssertion, getDisputeByAssertionId } from "@/server/oracleStore";
-import { readOracleConfig } from "@/server/oracleConfig";
-import { getSyncState } from "@/server/oracleState";
+import { getAssertion, getDisputeByAssertionId, getSyncState, readOracleConfig } from "@/server/oracle";
 import { createPublicClient, http, parseAbi } from "viem";
 
 const eventsAbi = parseAbi([

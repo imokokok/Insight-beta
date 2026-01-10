@@ -41,13 +41,16 @@ export function formatNumberCompact(amount: number, locale: string) {
   }).format(amount);
 }
 
-export function formatTime(iso: string, locale: string) {
+export function formatTime(iso: string | null | undefined, locale: string) {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (!Number.isFinite(d.getTime())) return "—";
   return new Intl.DateTimeFormat(locale, {
     month: "short",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit"
-  }).format(new Date(iso));
+  }).format(d);
 }
 
 export function calculatePercentage(part: number, total: number) {
