@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { upsertAssertion, fetchAssertion, getSyncState } from './oracleState';
+import { upsertAssertion, fetchAssertion, getSyncState, insertVoteEvent, recomputeDisputeVotes } from './oracleState';
 import { query } from './db';
 import { ensureSchema } from './schema';
 import { Assertion } from '@/lib/oracleTypes';
@@ -95,6 +95,55 @@ describe('oracleState', () => {
 
       expect(result.lastProcessedBlock).toBe(100n);
       expect(result.chain).toBe('Optimism');
+    });
+  });
+
+  describe('votes', () => {
+    it('inserts vote event idempotently', async () => {
+      const queryMock = vi.mocked(query) as unknown as { mockResolvedValueOnce: (value: unknown) => void };
+      queryMock.mockResolvedValueOnce({ rows: [{ 1: 1 }] });
+      const inserted = await insertVoteEvent({
+        chain: 'Local',
+        assertionId: '0x123',
+        voter: '0xabc',
+        support: true,
+        weight: 10n,
+        txHash: '0xhash',
+        blockNumber: 100n,
+        logIndex: 1
+      });
+      expect(inserted).toBe(true);
+      expect(query).toHaveBeenCalledWith(
+        expect.stringContaining('INSERT INTO votes'),
+        expect.arrayContaining(['Local', '0x123', '0xabc'])
+      );
+
+      queryMock.mockResolvedValueOnce({ rows: [] });
+      const inserted2 = await insertVoteEvent({
+        chain: 'Local',
+        assertionId: '0x123',
+        voter: '0xabc',
+        support: true,
+        weight: 10n,
+        txHash: '0xhash',
+        blockNumber: 100n,
+        logIndex: 1
+      });
+      expect(inserted2).toBe(false);
+    });
+
+    it('recomputes dispute votes from vote events', async () => {
+      const queryMock = vi.mocked(query) as unknown as { mockResolvedValueOnce: (value: unknown) => void };
+      queryMock.mockResolvedValueOnce({ rows: [{ votes_for: '5', votes_against: '2', total_votes: '7' }] });
+      queryMock.mockResolvedValueOnce({ rowCount: 1, rows: [] });
+
+      await recomputeDisputeVotes('0x123');
+
+      expect(query).toHaveBeenCalledWith(expect.stringContaining('FROM votes'), ['0x123']);
+      expect(query).toHaveBeenCalledWith(
+        expect.stringContaining('UPDATE disputes'),
+        ['0x123', '5', '2', '7']
+      );
     });
   });
 });

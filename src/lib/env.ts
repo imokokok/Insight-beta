@@ -9,6 +9,9 @@ export const env = {
   INSIGHT_ORACLE_ADDRESS: (process.env.INSIGHT_ORACLE_ADDRESS ?? "").trim(),
   INSIGHT_CHAIN: (process.env.INSIGHT_CHAIN ?? "").trim(),
   INSIGHT_SLOW_REQUEST_MS: (process.env.INSIGHT_SLOW_REQUEST_MS ?? "").trim(),
+  INSIGHT_DISABLE_EMBEDDED_WORKER: (process.env.INSIGHT_DISABLE_EMBEDDED_WORKER ?? "").trim(),
+  INSIGHT_WORKER_ID: (process.env.INSIGHT_WORKER_ID ?? "").trim(),
+  INSIGHT_WEBHOOK_URL: (process.env.INSIGHT_WEBHOOK_URL ?? "").trim()
 };
 
 export function getEnv(key: keyof typeof env): string {
@@ -24,13 +27,35 @@ const envSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
   INSIGHT_ADMIN_TOKEN: z.string().min(1).optional(),
   INSIGHT_ADMIN_TOKEN_SALT: z.string().min(16).optional(),
-  INSIGHT_RPC_URL: z.string().url().optional(),
+  INSIGHT_RPC_URL: z
+    .string()
+    .optional()
+    .transform((v) => (v ?? "").trim())
+    .refine(
+      (value) => {
+        if (!value) return true;
+        const urls = value.split(/[,\s]+/).map((s) => s.trim()).filter(Boolean);
+        if (urls.length === 0) return true;
+        return urls.every((u) => {
+          try {
+            const url = new URL(u);
+            return ["http:", "https:", "ws:", "wss:"].includes(url.protocol);
+          } catch {
+            return false;
+          }
+        });
+      },
+      { message: "invalid_rpc_url" }
+    ),
   INSIGHT_ORACLE_ADDRESS: z
     .string()
     .regex(/^0x[a-fA-F0-9]{40}$/, "invalid_address")
     .optional(),
   INSIGHT_CHAIN: z.enum(["Polygon", "Arbitrum", "Optimism", "Local"]).optional(),
-  INSIGHT_SLOW_REQUEST_MS: z.coerce.number().int().min(0).optional()
+  INSIGHT_SLOW_REQUEST_MS: z.coerce.number().int().min(0).optional(),
+  INSIGHT_DISABLE_EMBEDDED_WORKER: z.enum(["1", "0", "true", "false"]).optional(),
+  INSIGHT_WORKER_ID: z.string().min(1).optional(),
+  INSIGHT_WEBHOOK_URL: z.string().url().optional()
 });
 
 export type EnvIssue = {

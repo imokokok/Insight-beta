@@ -68,6 +68,7 @@ export type OracleConfig = {
   startBlock?: number;
   maxBlockRange?: number;
   votingPeriodHours?: number;
+  confirmationBlocks?: number;
   adminToken?: string;
 };
 
@@ -75,6 +76,12 @@ export type OracleStatusSnapshot = {
   chain: OracleChain;
   contractAddress: string | null;
   lastProcessedBlock: string;
+  latestBlock?: string | null;
+  safeBlock?: string | null;
+  lagBlocks?: string | null;
+  consecutiveFailures?: number;
+  rpcActiveUrl?: string | null;
+  rpcStats?: unknown;
   assertions: number;
   disputes: number;
   syncing?: boolean;

@@ -459,6 +459,30 @@ export default function OraclePage() {
                       </div>
                     )}
                   </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("oracle.config.confirmationBlocks")}</label>
+                    <input
+                      value={config.confirmationBlocks ?? 12}
+                      onChange={(e) => {
+                        setConfigError(null);
+                        setConfigFieldErrors((prev) => ({ ...prev, confirmationBlocks: undefined }));
+                        setConfig((c) => ({ ...c, confirmationBlocks: Number(e.target.value) }));
+                      }}
+                      placeholder="12"
+                      type="number"
+                      min={0}
+                      step={1}
+                      className={cn(
+                        "glass-input h-10 w-full rounded-xl px-4 font-mono text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20",
+                        configFieldErrors.confirmationBlocks && "ring-2 ring-rose-500/20 focus:ring-rose-500/20"
+                      )}
+                    />
+                    {configFieldErrors.confirmationBlocks && (
+                      <div className="text-xs text-rose-600">
+                        {getUiErrorMessage(configFieldErrors.confirmationBlocks, t)}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="mt-6 space-y-2">
@@ -488,6 +512,26 @@ export default function OraclePage() {
                     <div className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-1.5 text-gray-600">
                       <span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
                       {t("oracle.config.lastBlock")}: <span className="font-mono font-medium">{status ? status.state.lastProcessedBlock : "—"}</span>
+                    </div>
+                    <div className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-1.5 text-gray-600">
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+                      {t("oracle.config.latestBlock")}: <span className="font-mono font-medium">{status?.state.latestBlock ?? "—"}</span>
+                    </div>
+                    <div className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-1.5 text-gray-600">
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+                      {t("oracle.config.safeBlock")}: <span className="font-mono font-medium">{status?.state.safeBlock ?? "—"}</span>
+                    </div>
+                    <div className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-1.5 text-gray-600">
+                      <span className={cn("w-1.5 h-1.5 rounded-full", status?.state.lagBlocks && Number(status.state.lagBlocks) > 0 ? "bg-amber-500" : "bg-emerald-500")}></span>
+                      {t("oracle.config.lagBlocks")}: <span className="font-mono font-medium">{status?.state.lagBlocks ?? "—"}</span>
+                    </div>
+                    <div className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-1.5 text-gray-600">
+                      <span className={cn("w-1.5 h-1.5 rounded-full", (status?.state.consecutiveFailures ?? 0) > 0 ? "bg-rose-500" : "bg-emerald-500")}></span>
+                      {t("oracle.config.consecutiveFailures")}: <span className="font-mono font-medium">{String(status?.state.consecutiveFailures ?? 0)}</span>
+                    </div>
+                    <div className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-1.5 text-gray-600">
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+                      {t("oracle.config.rpcActive")}: <span className="font-mono font-medium">{status?.state.rpcActiveUrl ? shortAddress(status.state.rpcActiveUrl) : "—"}</span>
                     </div>
                     <div className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-1.5 text-gray-600">
                       <span className={cn("w-1.5 h-1.5 rounded-full", status?.state.syncing ? "bg-blue-500 animate-pulse" : "bg-emerald-500")}></span>

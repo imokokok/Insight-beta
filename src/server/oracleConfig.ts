@@ -23,16 +23,25 @@ function validateRpcUrl(value: unknown) {
   if (typeof value !== "string") throw new Error("invalid_request_body");
   const trimmed = value.trim();
   if (!trimmed) return "";
-  let url: URL;
-  try {
-    url = new URL(trimmed);
-  } catch {
-    throw new Error("invalid_rpc_url");
+  const parts = trimmed
+    .split(/[,\s]+/g)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (parts.length === 0) return "";
+  const normalized: string[] = [];
+  for (const part of parts) {
+    let url: URL;
+    try {
+      url = new URL(part);
+    } catch {
+      throw new Error("invalid_rpc_url");
+    }
+    if (!["http:", "https:", "ws:", "wss:"].includes(url.protocol)) {
+      throw new Error("invalid_rpc_url");
+    }
+    normalized.push(part);
   }
-  if (!["http:", "https:", "ws:", "wss:"].includes(url.protocol)) {
-    throw new Error("invalid_rpc_url");
-  }
-  return trimmed;
+  return normalized.join(",");
 }
 
 function normalizeAddress(value: unknown) {
@@ -123,6 +132,7 @@ export function validateOracleConfigPatch(next: Partial<OracleConfig>) {
   if (next.startBlock !== undefined) patch.startBlock = withField("startBlock", () => validateOptionalNonNegativeInt(next.startBlock));
   if (next.maxBlockRange !== undefined) patch.maxBlockRange = withField("maxBlockRange", () => validateOptionalIntInRange(next.maxBlockRange, 100, 200_000, "invalid_max_block_range"));
   if (next.votingPeriodHours !== undefined) patch.votingPeriodHours = withField("votingPeriodHours", () => validateOptionalIntInRange(next.votingPeriodHours, 1, 720, "invalid_voting_period_hours"));
+  if (next.confirmationBlocks !== undefined) patch.confirmationBlocks = withField("confirmationBlocks", () => validateOptionalNonNegativeInt(next.confirmationBlocks));
   return patch;
 }
 
@@ -140,7 +150,8 @@ export async function readOracleConfig(): Promise<OracleConfig> {
       chain: "Local",
       startBlock: 0,
       maxBlockRange: 10_000,
-      votingPeriodHours: 72
+      votingPeriodHours: 72,
+      confirmationBlocks: 12
     };
   }
   return {
@@ -149,7 +160,8 @@ export async function readOracleConfig(): Promise<OracleConfig> {
     chain: (row.chain as OracleChain) || "Local",
     startBlock: normalizeOptionalNonNegativeInt(row.start_block) ?? 0,
     maxBlockRange: normalizeOptionalIntInRange(row.max_block_range, 100, 200_000) ?? 10_000,
-    votingPeriodHours: normalizeOptionalIntInRange(row.voting_period_hours, 1, 720) ?? 72
+    votingPeriodHours: normalizeOptionalIntInRange(row.voting_period_hours, 1, 720) ?? 72,
+    confirmationBlocks: normalizeOptionalNonNegativeInt(row.confirmation_blocks) ?? 12
   };
 }
 
@@ -162,7 +174,8 @@ export async function writeOracleConfig(next: Partial<OracleConfig>) {
     chain: next.chain === undefined ? prev.chain : normalizeChain(next.chain),
     startBlock: next.startBlock === undefined ? prev.startBlock : (normalizeOptionalNonNegativeInt(next.startBlock) ?? 0),
     maxBlockRange: next.maxBlockRange === undefined ? prev.maxBlockRange : (normalizeOptionalIntInRange(next.maxBlockRange, 100, 200_000) ?? 10_000),
-    votingPeriodHours: next.votingPeriodHours === undefined ? prev.votingPeriodHours : (normalizeOptionalIntInRange(next.votingPeriodHours, 1, 720) ?? 72)
+    votingPeriodHours: next.votingPeriodHours === undefined ? prev.votingPeriodHours : (normalizeOptionalIntInRange(next.votingPeriodHours, 1, 720) ?? 72),
+    confirmationBlocks: next.confirmationBlocks === undefined ? prev.confirmationBlocks : (normalizeOptionalNonNegativeInt(next.confirmationBlocks) ?? 12)
   };
   
   if (!hasDatabase()) {
@@ -171,17 +184,26 @@ export async function writeOracleConfig(next: Partial<OracleConfig>) {
   }
 
   await query(
-    `INSERT INTO oracle_config (id, rpc_url, contract_address, chain, start_block, max_block_range, voting_period_hours)
-     VALUES (1, $1, $2, $3, $4, $5, $6)
+    `INSERT INTO oracle_config (id, rpc_url, contract_address, chain, start_block, max_block_range, voting_period_hours, confirmation_blocks)
+     VALUES (1, $1, $2, $3, $4, $5, $6, $7)
      ON CONFLICT (id) DO UPDATE SET
        rpc_url = excluded.rpc_url,
        contract_address = excluded.contract_address,
        chain = excluded.chain,
        start_block = excluded.start_block,
        max_block_range = excluded.max_block_range,
-       voting_period_hours = excluded.voting_period_hours
+       voting_period_hours = excluded.voting_period_hours,
+       confirmation_blocks = excluded.confirmation_blocks
     `,
-    [merged.rpcUrl, merged.contractAddress, merged.chain, String(merged.startBlock ?? 0), merged.maxBlockRange ?? 10_000, merged.votingPeriodHours ?? 72]
+    [
+      merged.rpcUrl,
+      merged.contractAddress,
+      merged.chain,
+      String(merged.startBlock ?? 0),
+      merged.maxBlockRange ?? 10_000,
+      merged.votingPeriodHours ?? 72,
+      merged.confirmationBlocks ?? 12
+    ]
   );
   
   return merged;

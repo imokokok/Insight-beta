@@ -111,9 +111,13 @@ export const translations = {
       charts: {
         dailyAssertions: "每日断言数",
         tvsCumulative: "安全总价值（累计）",
+        syncHealth: "同步健康",
         noData: "暂无图表数据",
         activityDesc: "随时间变化的活动",
         tvsDesc: "累计价值",
+        syncDesc: "索引器同步滞后与耗时趋势",
+        syncLagBlocks: "落后区块",
+        syncDuration: "同步耗时（毫秒）",
         waitingData: "等待更多历史数据以生成活动趋势。"
       },
       myAssertions: {
@@ -226,6 +230,7 @@ export const translations = {
         startBlock: "起始区块",
         maxBlockRange: "最大区块跨度",
         votingPeriodHours: "投票期（小时）",
+        confirmationBlocks: "确认区块数",
         adminToken: "管理员 Token",
         adminActor: "操作者",
         adminActorPlaceholder: "例如：alice@ops",
@@ -236,6 +241,11 @@ export const translations = {
         syncDuration: "耗时",
         syncError: "上次失败原因",
         lastBlock: "处理到区块",
+        latestBlock: "最新区块",
+        safeBlock: "安全区块",
+        lagBlocks: "落后区块",
+        consecutiveFailures: "连续失败次数",
+        rpcActive: "当前 RPC",
         indexed: "已索引",
         demo: "演示数据",
         demoHint: "当前展示演示数据。填写配置并点击立即同步获取链上数据。",
@@ -453,9 +463,13 @@ export const translations = {
       charts: {
         dailyAssertions: "Daily Assertions",
         tvsCumulative: "Total Value Secured (Cumulative)",
+        syncHealth: "Sync Health",
         noData: "No chart data",
         activityDesc: "Activity over time",
         tvsDesc: "Cumulative value",
+        syncDesc: "Indexer lag and duration over time",
+        syncLagBlocks: "Lag (blocks)",
+        syncDuration: "Sync duration (ms)",
         waitingData: "Waiting for more historical data to generate activity trends."
       },
       myAssertions: {
@@ -546,6 +560,7 @@ export const translations = {
         startBlock: "Start Block",
         maxBlockRange: "Max Block Range",
         votingPeriodHours: "Voting Period (hours)",
+        confirmationBlocks: "Confirmation blocks",
         adminToken: "Admin Token",
         adminActor: "Actor",
         adminActorPlaceholder: "e.g. alice@ops",
@@ -556,6 +571,11 @@ export const translations = {
         syncDuration: "Duration",
         syncError: "Last Error",
         lastBlock: "Processed Block",
+        latestBlock: "Latest Block",
+        safeBlock: "Safe Block",
+        lagBlocks: "Lag Blocks",
+        consecutiveFailures: "Consecutive failures",
+        rpcActive: "Active RPC",
         indexed: "Indexed",
         demo: "Demo",
         demoHint: "You are viewing demo data. Fill in config and click Sync Now to load on-chain data.",
@@ -770,9 +790,13 @@ export const translations = {
       charts: {
         dailyAssertions: "Afirmaciones diarias",
         tvsCumulative: "Valor total asegurado (acumulado)",
+        syncHealth: "Salud de sincronización",
         noData: "Sin datos de gráficos",
         activityDesc: "Actividad a lo largo del tiempo",
         tvsDesc: "Valor acumulado",
+        syncDesc: "Retraso y duración del indexador a lo largo del tiempo",
+        syncLagBlocks: "Retraso (bloques)",
+        syncDuration: "Duración de sync (ms)",
         waitingData: "Esperando más datos históricos para generar tendencias de actividad."
       },
       myAssertions: {
@@ -903,6 +927,7 @@ export const translations = {
         startBlock: "Bloque inicial",
         maxBlockRange: "Rango máximo de bloques",
         votingPeriodHours: "Período de votación (horas)",
+        confirmationBlocks: "Bloques de confirmación",
         adminToken: "Token de administrador",
         adminActor: "Actor",
         adminActorPlaceholder: "p.ej. alice@ops",
@@ -913,6 +938,11 @@ export const translations = {
         syncDuration: "Duración",
         syncError: "Último error",
         lastBlock: "Bloque procesado",
+        latestBlock: "Último bloque",
+        safeBlock: "Bloque seguro",
+        lagBlocks: "Bloques de retraso",
+        consecutiveFailures: "Fallos consecutivos",
+        rpcActive: "RPC activo",
         indexed: "Indexado",
         demo: "Demo",
         demoHint: "Estás viendo datos de demostración. Completa la configuración y pulsa Sincronizar.",
@@ -1112,9 +1142,13 @@ export type TranslationKey =
   | "oracle.leaderboard.disputes"
   | "oracle.charts.dailyAssertions"
   | "oracle.charts.tvsCumulative"
+  | "oracle.charts.syncHealth"
   | "oracle.charts.noData"
   | "oracle.charts.activityDesc"
   | "oracle.charts.tvsDesc"
+  | "oracle.charts.syncDesc"
+  | "oracle.charts.syncLagBlocks"
+  | "oracle.charts.syncDuration"
   | "oracle.charts.waitingData"
   | "myAssertions.title"
   | "myAssertions.description"
@@ -1226,6 +1260,7 @@ export type TranslationKey =
   | "oracle.config.startBlock"
   | "oracle.config.maxBlockRange"
   | "oracle.config.votingPeriodHours"
+  | "oracle.config.confirmationBlocks"
   | "oracle.config.adminToken"
   | "oracle.config.adminActor"
   | "oracle.config.adminActorPlaceholder"
@@ -1236,6 +1271,11 @@ export type TranslationKey =
   | "oracle.config.syncDuration"
   | "oracle.config.syncError"
   | "oracle.config.lastBlock"
+  | "oracle.config.latestBlock"
+  | "oracle.config.safeBlock"
+  | "oracle.config.lagBlocks"
+  | "oracle.config.consecutiveFailures"
+  | "oracle.config.rpcActive"
   | "oracle.config.indexed"
   | "oracle.config.demo"
   | "oracle.config.demoHint"

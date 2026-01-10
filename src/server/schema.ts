@@ -10,17 +10,35 @@ export async function ensureSchema() {
       start_block BIGINT,
       max_block_range INTEGER,
       voting_period_hours INTEGER,
+      confirmation_blocks INTEGER,
       CONSTRAINT single_row CHECK (id = 1)
     );
 
     CREATE TABLE IF NOT EXISTS sync_state (
       id INTEGER PRIMARY KEY DEFAULT 1,
       last_processed_block BIGINT DEFAULT 0,
+      latest_block BIGINT,
+      safe_block BIGINT,
+      last_success_processed_block BIGINT,
+      consecutive_failures INTEGER DEFAULT 0,
+      rpc_active_url TEXT,
+      rpc_stats JSONB,
       last_attempt_at TIMESTAMP WITH TIME ZONE,
       last_success_at TIMESTAMP WITH TIME ZONE,
       last_duration_ms INTEGER,
       last_error TEXT,
       CONSTRAINT single_row CHECK (id = 1)
+    );
+
+    CREATE TABLE IF NOT EXISTS sync_metrics (
+      id BIGSERIAL PRIMARY KEY,
+      recorded_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+      last_processed_block BIGINT NOT NULL,
+      latest_block BIGINT,
+      safe_block BIGINT,
+      lag_blocks BIGINT,
+      duration_ms INTEGER,
+      error TEXT
     );
 
     CREATE TABLE IF NOT EXISTS assertions (
@@ -54,6 +72,20 @@ export async function ensureSchema() {
       total_votes NUMERIC DEFAULT 0
     );
 
+    CREATE TABLE IF NOT EXISTS votes (
+      id BIGSERIAL PRIMARY KEY,
+      chain TEXT NOT NULL,
+      assertion_id TEXT NOT NULL REFERENCES assertions(id),
+      voter TEXT NOT NULL,
+      support BOOLEAN NOT NULL,
+      weight NUMERIC NOT NULL,
+      tx_hash TEXT NOT NULL,
+      block_number BIGINT NOT NULL,
+      log_index INTEGER NOT NULL,
+      created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+      UNIQUE (tx_hash, log_index)
+    );
+
     -- Indexes for performance
     CREATE INDEX IF NOT EXISTS idx_assertions_date ON assertions(asserted_at);
     CREATE INDEX IF NOT EXISTS idx_assertions_status ON assertions(status);
@@ -62,6 +94,9 @@ export async function ensureSchema() {
     CREATE INDEX IF NOT EXISTS idx_disputes_status ON disputes(status);
     CREATE INDEX IF NOT EXISTS idx_disputes_chain ON disputes(chain);
     CREATE INDEX IF NOT EXISTS idx_disputes_date ON disputes(disputed_at);
+    CREATE INDEX IF NOT EXISTS idx_votes_assertion ON votes(assertion_id);
+    CREATE INDEX IF NOT EXISTS idx_votes_voter ON votes(voter);
+    CREATE INDEX IF NOT EXISTS idx_votes_block ON votes(block_number);
 
     CREATE TABLE IF NOT EXISTS kv_store (
       key TEXT PRIMARY KEY,
@@ -115,6 +150,16 @@ export async function ensureSchema() {
     ALTER TABLE oracle_config ADD COLUMN IF NOT EXISTS start_block BIGINT;
     ALTER TABLE oracle_config ADD COLUMN IF NOT EXISTS max_block_range INTEGER;
     ALTER TABLE oracle_config ADD COLUMN IF NOT EXISTS voting_period_hours INTEGER;
+    ALTER TABLE oracle_config ADD COLUMN IF NOT EXISTS confirmation_blocks INTEGER;
+  `);
+
+  await query(`
+    ALTER TABLE sync_state ADD COLUMN IF NOT EXISTS latest_block BIGINT;
+    ALTER TABLE sync_state ADD COLUMN IF NOT EXISTS safe_block BIGINT;
+    ALTER TABLE sync_state ADD COLUMN IF NOT EXISTS last_success_processed_block BIGINT;
+    ALTER TABLE sync_state ADD COLUMN IF NOT EXISTS consecutive_failures INTEGER DEFAULT 0;
+    ALTER TABLE sync_state ADD COLUMN IF NOT EXISTS rpc_active_url TEXT;
+    ALTER TABLE sync_state ADD COLUMN IF NOT EXISTS rpc_stats JSONB;
   `);
 
   // Initialize singleton rows if not exist

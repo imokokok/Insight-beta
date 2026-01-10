@@ -34,9 +34,20 @@ type MemoryKvItem = { value: unknown; updatedAt: string };
 
 type MemoryStore = {
   oracleConfig: OracleConfig;
-  sync: { lastProcessedBlock: bigint; meta: SyncMeta };
+  sync: {
+    lastProcessedBlock: bigint;
+    latestBlock?: bigint | null;
+    safeBlock?: bigint | null;
+    lastSuccessProcessedBlock?: bigint | null;
+    consecutiveFailures?: number;
+    rpcActiveUrl?: string | null;
+    rpcStats?: unknown;
+    meta: SyncMeta;
+    metrics?: { recordedAt: string; lagBlocks: bigint | null; durationMs: number | null; error: string | null }[];
+  };
   assertions: Map<string, Assertion>;
   disputes: Map<string, Dispute>;
+  votes: Map<string, { assertionId: string; support: boolean; weight: bigint }>;
   kv: Map<string, MemoryKvItem>;
   alerts: Map<string, MemoryAlert>;
   nextAlertId: number;
@@ -51,7 +62,8 @@ function createDefaultConfig(): OracleConfig {
     chain: "Local",
     startBlock: 0,
     maxBlockRange: 10_000,
-    votingPeriodHours: 72
+    votingPeriodHours: 72,
+    confirmationBlocks: 12
   };
 }
 
@@ -69,9 +81,20 @@ export function getMemoryStore(): MemoryStore {
   if (!g.__insightMemoryStore) {
     g.__insightMemoryStore = {
       oracleConfig: createDefaultConfig(),
-      sync: { lastProcessedBlock: 0n, meta: createDefaultSyncMeta() },
+      sync: {
+        lastProcessedBlock: 0n,
+        latestBlock: null,
+        safeBlock: null,
+        lastSuccessProcessedBlock: null,
+        consecutiveFailures: 0,
+        rpcActiveUrl: null,
+        rpcStats: null,
+        meta: createDefaultSyncMeta(),
+        metrics: []
+      },
       assertions: new Map(),
       disputes: new Map(),
+      votes: new Map(),
       kv: new Map(),
       alerts: new Map(),
       nextAlertId: 1,
@@ -85,4 +108,3 @@ export function getMemoryStore(): MemoryStore {
 export function memoryNowIso() {
   return new Date().toISOString();
 }
-

@@ -138,6 +138,12 @@ export async function getSyncState() {
     const mem = getMemoryStore();
     return {
       lastProcessedBlock: mem.sync.lastProcessedBlock,
+      latestBlock: mem.sync.latestBlock ?? null,
+      safeBlock: mem.sync.safeBlock ?? null,
+      lastSuccessProcessedBlock: mem.sync.lastSuccessProcessedBlock ?? null,
+      consecutiveFailures: mem.sync.consecutiveFailures ?? 0,
+      rpcActiveUrl: mem.sync.rpcActiveUrl ?? null,
+      rpcStats: mem.sync.rpcStats ?? null,
       sync: mem.sync.meta,
       chain: mem.oracleConfig.chain,
       contractAddress: mem.oracleConfig.contractAddress || null
@@ -153,6 +159,15 @@ export async function getSyncState() {
   
   return {
     lastProcessedBlock: BigInt(syncRow.last_processed_block || 0),
+    latestBlock: syncRow.latest_block !== null && syncRow.latest_block !== undefined ? BigInt(syncRow.latest_block) : null,
+    safeBlock: syncRow.safe_block !== null && syncRow.safe_block !== undefined ? BigInt(syncRow.safe_block) : null,
+    lastSuccessProcessedBlock:
+      syncRow.last_success_processed_block !== null && syncRow.last_success_processed_block !== undefined
+        ? BigInt(syncRow.last_success_processed_block)
+        : null,
+    consecutiveFailures: Number(syncRow.consecutive_failures ?? 0),
+    rpcActiveUrl: (syncRow.rpc_active_url as string | null | undefined) ?? null,
+    rpcStats: (syncRow.rpc_stats as unknown) ?? null,
     sync: {
       lastAttemptAt: syncRow.last_attempt_at ? syncRow.last_attempt_at.toISOString() : null,
       lastSuccessAt: syncRow.last_success_at ? syncRow.last_success_at.toISOString() : null,
@@ -275,12 +290,26 @@ export async function updateSyncState(
   attemptAt: string, 
   successAt: string | null, 
   duration: number | null, 
-  error: string | null
+  error: string | null,
+  extra?: {
+    latestBlock?: bigint;
+    safeBlock?: bigint;
+    lastSuccessProcessedBlock?: bigint;
+    consecutiveFailures?: number;
+    rpcActiveUrl?: string | null;
+    rpcStats?: unknown;
+  }
 ) {
   await ensureDb();
   if (!hasDatabase()) {
     const mem = getMemoryStore();
     mem.sync.lastProcessedBlock = block;
+    if (extra?.latestBlock !== undefined) mem.sync.latestBlock = extra.latestBlock;
+    if (extra?.safeBlock !== undefined) mem.sync.safeBlock = extra.safeBlock;
+    if (extra?.lastSuccessProcessedBlock !== undefined) mem.sync.lastSuccessProcessedBlock = extra.lastSuccessProcessedBlock;
+    if (extra?.consecutiveFailures !== undefined) mem.sync.consecutiveFailures = extra.consecutiveFailures;
+    if (extra?.rpcActiveUrl !== undefined) mem.sync.rpcActiveUrl = extra.rpcActiveUrl;
+    if (extra?.rpcStats !== undefined) mem.sync.rpcStats = extra.rpcStats;
     mem.sync.meta = {
       lastAttemptAt: attemptAt,
       lastSuccessAt: successAt,
@@ -289,9 +318,21 @@ export async function updateSyncState(
     };
     return;
   }
+  const latest = extra?.latestBlock;
+  const safe = extra?.safeBlock;
+  const lastSuccessProcessed = extra?.lastSuccessProcessedBlock;
+  const consecutiveFailures = extra?.consecutiveFailures;
+  const rpcActiveUrl = extra?.rpcActiveUrl;
+  const rpcStats = extra?.rpcStats;
   await query(
     `UPDATE sync_state SET 
       last_processed_block = $1,
+      latest_block = COALESCE($6, latest_block),
+      safe_block = COALESCE($7, safe_block),
+      last_success_processed_block = COALESCE($8, last_success_processed_block),
+      consecutive_failures = COALESCE($9, consecutive_failures),
+      rpc_active_url = COALESCE($10, rpc_active_url),
+      rpc_stats = COALESCE($11, rpc_stats),
       last_attempt_at = $2,
       last_success_at = $3,
       last_duration_ms = $4,
@@ -302,7 +343,175 @@ export async function updateSyncState(
       attemptAt,
       successAt,
       duration,
-      error
+      error,
+      latest !== undefined ? latest.toString() : null,
+      safe !== undefined ? safe.toString() : null,
+      lastSuccessProcessed !== undefined ? lastSuccessProcessed.toString() : null,
+      consecutiveFailures !== undefined ? consecutiveFailures : null,
+      rpcActiveUrl !== undefined ? rpcActiveUrl : null,
+      rpcStats !== undefined ? rpcStats : null
     ]
+  );
+}
+
+export async function insertSyncMetric(input: {
+  lastProcessedBlock: bigint;
+  latestBlock: bigint | null;
+  safeBlock: bigint | null;
+  lagBlocks: bigint | null;
+  durationMs: number | null;
+  error: string | null;
+}) {
+  await ensureDb();
+  const recordedAt = new Date().toISOString();
+  if (!hasDatabase()) {
+    const mem = getMemoryStore();
+    const list = mem.sync.metrics ?? [];
+    list.push({ recordedAt, lagBlocks: input.lagBlocks, durationMs: input.durationMs, error: input.error });
+    while (list.length > 2000) list.shift();
+    mem.sync.metrics = list;
+    return;
+  }
+  await query(
+    `
+    INSERT INTO sync_metrics (recorded_at, last_processed_block, latest_block, safe_block, lag_blocks, duration_ms, error)
+    VALUES (NOW(), $1, $2, $3, $4, $5, $6)
+    `,
+    [
+      input.lastProcessedBlock.toString(10),
+      input.latestBlock !== null && input.latestBlock !== undefined ? input.latestBlock.toString(10) : null,
+      input.safeBlock !== null && input.safeBlock !== undefined ? input.safeBlock.toString(10) : null,
+      input.lagBlocks !== null && input.lagBlocks !== undefined ? input.lagBlocks.toString(10) : null,
+      input.durationMs,
+      input.error
+    ]
+  );
+}
+
+export async function listSyncMetrics(params: { minutes: number; limit?: number }) {
+  await ensureDb();
+  const minutes = Math.min(24 * 60, Math.max(1, Math.floor(params.minutes)));
+  const limit = Math.min(5000, Math.max(1, Math.floor(params.limit ?? 600)));
+  if (!hasDatabase()) {
+    const mem = getMemoryStore();
+    const list = mem.sync.metrics ?? [];
+    const cutoffMs = Date.now() - minutes * 60 * 1000;
+    return list
+      .filter((m) => new Date(m.recordedAt).getTime() >= cutoffMs)
+      .slice(-limit)
+      .map((m) => ({
+        recordedAt: m.recordedAt,
+        lagBlocks: m.lagBlocks !== null ? m.lagBlocks.toString(10) : null,
+        durationMs: m.durationMs,
+        error: m.error
+      }));
+  }
+  const res = await query(
+    `
+    SELECT recorded_at, lag_blocks, duration_ms, error
+    FROM sync_metrics
+    WHERE recorded_at > NOW() - INTERVAL '1 minute' * $1
+    ORDER BY recorded_at ASC
+    LIMIT $2
+    `,
+    [minutes, limit]
+  );
+  return res.rows.map((row) => {
+    const r = row as unknown as { recorded_at: unknown; lag_blocks: unknown; duration_ms: unknown; error: unknown };
+    const recordedAtDate = r.recorded_at instanceof Date ? r.recorded_at : new Date(String(r.recorded_at));
+    const lagBlocks = r.lag_blocks !== null && r.lag_blocks !== undefined ? String(r.lag_blocks) : null;
+    const durationMs =
+      r.duration_ms === null || r.duration_ms === undefined ? null : (typeof r.duration_ms === "number" ? r.duration_ms : Number(r.duration_ms));
+    const error = typeof r.error === "string" ? r.error : null;
+    return { recordedAt: recordedAtDate.toISOString(), lagBlocks, durationMs, error };
+  });
+}
+
+function bigintToSafeNumber(value: bigint) {
+  if (value > BigInt(Number.MAX_SAFE_INTEGER)) return Number.MAX_SAFE_INTEGER;
+  if (value < BigInt(Number.MIN_SAFE_INTEGER)) return Number.MIN_SAFE_INTEGER;
+  return Number(value);
+}
+
+export async function insertVoteEvent(input: {
+  chain: OracleChain;
+  assertionId: string;
+  voter: string;
+  support: boolean;
+  weight: bigint;
+  txHash: string;
+  blockNumber: bigint;
+  logIndex: number;
+}) {
+  await ensureDb();
+  if (!hasDatabase()) {
+    const mem = getMemoryStore();
+    const key = `${input.txHash}:${input.logIndex}`;
+    if (mem.votes.has(key)) return false;
+    mem.votes.set(key, { assertionId: input.assertionId, support: input.support, weight: input.weight });
+    return true;
+  }
+  const res = await query(
+    `
+    INSERT INTO votes (chain, assertion_id, voter, support, weight, tx_hash, block_number, log_index)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    ON CONFLICT (tx_hash, log_index) DO NOTHING
+    RETURNING 1
+    `,
+    [
+      input.chain,
+      input.assertionId,
+      input.voter,
+      input.support,
+      input.weight.toString(10),
+      input.txHash,
+      input.blockNumber.toString(10),
+      input.logIndex
+    ]
+  );
+  return res.rows.length > 0;
+}
+
+export async function recomputeDisputeVotes(assertionId: string) {
+  await ensureDb();
+  if (!hasDatabase()) {
+    const mem = getMemoryStore();
+    const dispute = mem.disputes.get(`D:${assertionId}`);
+    if (!dispute) return;
+    let votesFor = 0n;
+    let votesAgainst = 0n;
+    for (const v of mem.votes.values()) {
+      if (v.assertionId !== assertionId) continue;
+      if (v.support) votesFor += v.weight;
+      else votesAgainst += v.weight;
+    }
+    dispute.currentVotesFor = bigintToSafeNumber(votesFor);
+    dispute.currentVotesAgainst = bigintToSafeNumber(votesAgainst);
+    dispute.totalVotes = bigintToSafeNumber(votesFor + votesAgainst);
+    mem.disputes.set(dispute.id, dispute);
+    return;
+  }
+  const sums = await query(
+    `
+    SELECT
+      COALESCE(SUM(CASE WHEN support THEN weight ELSE 0 END), 0) AS votes_for,
+      COALESCE(SUM(CASE WHEN NOT support THEN weight ELSE 0 END), 0) AS votes_against,
+      COALESCE(SUM(weight), 0) AS total_votes
+    FROM votes
+    WHERE assertion_id = $1
+    `,
+    [assertionId]
+  );
+  const row = (sums.rows[0] ?? {}) as unknown as { votes_for?: unknown; votes_against?: unknown; total_votes?: unknown };
+  const votesFor = row.votes_for !== undefined && row.votes_for !== null ? String(row.votes_for) : "0";
+  const votesAgainst = row.votes_against !== undefined && row.votes_against !== null ? String(row.votes_against) : "0";
+  const totalVotes = row.total_votes !== undefined && row.total_votes !== null ? String(row.total_votes) : "0";
+  await query(
+    `
+    UPDATE disputes
+    SET votes_for = $2, votes_against = $3, total_votes = $4
+    WHERE assertion_id = $1
+    `,
+    [assertionId, votesFor, votesAgainst, totalVotes]
   );
 }

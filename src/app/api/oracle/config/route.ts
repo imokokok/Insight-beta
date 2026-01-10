@@ -26,7 +26,8 @@ export async function PUT(request: Request) {
         chain: body.chain,
         startBlock: body.startBlock,
         maxBlockRange: body.maxBlockRange,
-        votingPeriodHours: body.votingPeriodHours
+        votingPeriodHours: body.votingPeriodHours,
+        confirmationBlocks: body.confirmationBlocks
       });
       const updated = await writeOracleConfig(patch);
       const actor = getAdminActor(request);
