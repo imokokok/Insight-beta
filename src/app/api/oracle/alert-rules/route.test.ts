@@ -67,4 +67,18 @@ describe("PUT /api/oracle/alert-rules", () => {
     expect(response.ok).toBe(true);
     expect(observability.writeAlertRules).toHaveBeenCalled();
   });
+
+  it("allows empty rules list", async () => {
+    const rules: any[] = [];
+    const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ rules })
+    });
+
+    type ApiMockResponse<T> = { ok: true; data: T } | { ok: false; error: unknown };
+    const response = (await PUT(req)) as unknown as ApiMockResponse<{ rules: unknown[] }>;
+    expect(response.ok).toBe(true);
+    expect(observability.writeAlertRules).toHaveBeenCalledWith([]);
+  });
 });

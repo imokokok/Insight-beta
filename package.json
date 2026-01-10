@@ -10,16 +10,20 @@
     "typecheck": "tsc --noEmit",
     "supabase:provision": "node scripts/provision-supabase.mjs",
     "contracts:compile": "HARDHAT_DISABLE_TELEMETRY=1 hardhat compile",
-    "contracts:test": "HARDHAT_DISABLE_TELEMETRY=1 hardhat test"
+    "contracts:test": "HARDHAT_DISABLE_TELEMETRY=1 hardhat test",
+    "test": "vitest"
   },
   "dependencies": {
+    "@openzeppelin/contracts": "^5.4.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.562.0",
     "next": "15.5.9",
     "pg": "^8.16.3",
     "react": "19.0.0",
     "react-dom": "19.0.0",
+    "react-virtuoso": "^4.18.1",
     "recharts": "^3.6.0",
+    "sonner": "^2.0.7",
     "swr": "^2.3.8",
     "tailwind-merge": "^3.4.0",
     "viem": "^2.43.5",

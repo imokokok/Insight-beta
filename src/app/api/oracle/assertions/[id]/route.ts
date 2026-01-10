@@ -1,9 +1,6 @@
-import { getAssertion, getDisputeByAssertionId, getOracleEnv, readOracleConfig, redactOracleConfig } from "@/server/oracle";
+import { getAssertion, getDisputeByAssertionId, getOracleEnv, readOracleConfig, redactOracleConfig, getBondData } from "@/server/oracle";
 import { error, handleApi, rateLimit } from "@/server/apiResponse";
 import { verifyAdmin } from "@/server/adminAuth";
-import { createPublicClient, formatEther, http } from "viem";
-import { oracleAbi } from "@/lib/oracleAbi";
-import { parseRpcUrls } from "@/lib/utils";
 
 export async function GET(
   request: Request,
@@ -20,35 +17,10 @@ export async function GET(
     const dispute = await getDisputeByAssertionId(id);
     const admin = await verifyAdmin(request, { strict: false, scope: "oracle_config_write" });
     const config = await readOracleConfig();
-    let bondWei: string | null = null;
-    let bondEth: string | null = null;
+    
     const envConfig = await getOracleEnv();
-    const rpcUrl = envConfig.rpcUrl;
-    const contractAddress = envConfig.contractAddress;
-    if (rpcUrl && contractAddress) {
-      try {
-        const urls = parseRpcUrls(rpcUrl);
-        for (const url of urls) {
-          try {
-            const client = createPublicClient({ transport: http(url) });
-            const bond = await client.readContract({
-              address: contractAddress as `0x${string}`,
-              abi: oracleAbi,
-              functionName: "getBond",
-              args: []
-            });
-            bondWei = bond.toString(10);
-            bondEth = formatEther(bond);
-            break;
-          } catch {
-            continue;
-          }
-        }
-      } catch {
-        bondWei = null;
-        bondEth = null;
-      }
-    }
+    const { bondWei, bondEth } = await getBondData(envConfig.rpcUrl, envConfig.contractAddress);
+
     return { assertion, dispute, config: admin.ok ? config : redactOracleConfig(config), bondWei, bondEth };
   });
 }

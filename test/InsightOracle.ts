@@ -4,16 +4,19 @@ import type { Log } from "ethers";
 import hre from "hardhat";
 
 describe("InsightOracle", () => {
-  it("emits lifecycle events", async () => {
+  async function deployOracle() {
     const { ethers } = hre;
-    const [owner, user, disputer] = await ethers.getSigners();
-    void owner;
-
-    const Factory = await ethers.getContractFactory("InsightOracle", user);
+    const [owner, user, disputer, other] = await ethers.getSigners();
+    const Factory = await ethers.getContractFactory("InsightOracle", owner);
     const oracle = (await Factory.deploy()) as any;
     await oracle.waitForDeployment();
+    return { oracle, owner, user, disputer, other };
+  }
 
-    const createTx = await oracle
+  it("emits lifecycle events", async () => {
+    const { oracle, user, disputer, owner } = await deployOracle();
+
+    const createTx = await oracle.connect(user)
       .createAssertion("Demo", "ETH > $4,000 on 2026-03-31", "Outcome is YES", 1500, 24 * 3600);
 
     await expect(createTx)
@@ -43,5 +46,54 @@ describe("InsightOracle", () => {
 
     const resolveTx = await oracle.connect(owner).resolveAssertion(assertionId, true);
     await expect(resolveTx).to.emit(oracle, "AssertionResolved").withArgs(assertionId, true, anyValue);
+  });
+
+  it("manages default bond", async () => {
+    const { oracle, owner, user } = await deployOracle();
+    
+    expect(await oracle.getBond()).to.equal(0);
+
+    await expect(oracle.connect(user).setDefaultBond(1000))
+      .to.be.revertedWithCustomError(oracle, "OwnableUnauthorizedAccount");
+
+    await expect(oracle.connect(owner).setDefaultBond(1000))
+      .to.emit(oracle, "BondChanged")
+      .withArgs(0, 1000);
+
+    expect(await oracle.getBond()).to.equal(1000);
+  });
+
+  it("enforces pause mechanism", async () => {
+    const { oracle, owner, user } = await deployOracle();
+
+    await oracle.connect(owner).pause();
+
+    await expect(oracle.connect(user).createAssertion("P", "M", "A", 100, 100))
+      .to.be.revertedWithCustomError(oracle, "EnforcedPause");
+
+    await oracle.connect(owner).unpause();
+
+    await expect(oracle.connect(user).createAssertion("P", "M", "A", 100, 100))
+      .to.emit(oracle, "AssertionCreated");
+  });
+
+  it("restricts resolveAssertion to owner", async () => {
+    const { oracle, owner, user, disputer } = await deployOracle();
+
+    const createTx = await oracle.connect(user)
+      .createAssertion("P", "M", "A", 100, 100);
+    const receipt = await createTx.wait();
+    const log = receipt.logs.find((l: any) => {
+        try { return oracle.interface.parseLog(l).name === "AssertionCreated"; } catch { return false; }
+    });
+    const assertionId = oracle.interface.parseLog(log).args.assertionId;
+
+    await oracle.connect(disputer).disputeAssertion(assertionId, "Reason");
+
+    await expect(oracle.connect(user).resolveAssertion(assertionId, true))
+      .to.be.revertedWithCustomError(oracle, "OwnableUnauthorizedAccount");
+
+    await expect(oracle.connect(owner).resolveAssertion(assertionId, true))
+      .to.emit(oracle, "AssertionResolved");
   });
 });

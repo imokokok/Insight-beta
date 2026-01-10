@@ -12,7 +12,7 @@ const ruleSchema = z.object({
 });
 
 const putSchema = z.object({
-  rules: z.array(ruleSchema).min(1).max(50)
+  rules: z.array(ruleSchema).max(50)
 });
 
 export async function GET(request: Request) {

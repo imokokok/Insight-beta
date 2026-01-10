@@ -290,32 +290,40 @@ describe('oracleState', () => {
     });
 
     it('caps assertions and keeps pending over resolved', async () => {
-      const base: Omit<Assertion, "id" | "status"> = {
-        chain: "Local",
-        asserter: "0xabc",
-        protocol: "Aave",
-        market: "ETH/USD",
-        assertion: "x",
-        assertedAt: new Date().toISOString(),
-        livenessEndsAt: new Date().toISOString(),
-        bondUsd: 1,
-        txHash: "0xhash"
-      };
+      const prevMax = process.env.INSIGHT_MEMORY_MAX_ASSERTIONS;
+      process.env.INSIGHT_MEMORY_MAX_ASSERTIONS = "10";
+      
+      try {
+        const base: Omit<Assertion, "id" | "status"> = {
+          chain: "Local",
+          asserter: "0xabc",
+          protocol: "Aave",
+          market: "ETH/USD",
+          assertion: "x",
+          assertedAt: new Date().toISOString(),
+          livenessEndsAt: new Date().toISOString(),
+          bondUsd: 1,
+          txHash: "0xhash"
+        };
 
-      await upsertAssertion({ ...base, id: "keep-pending", status: "Pending" });
-      for (let i = 0; i < 11000; i++) {
-        await upsertAssertion({
-          ...base,
-          id: `r/${i}`,
-          status: "Resolved",
-          resolvedAt: new Date(Date.now() - i * 1000).toISOString()
-        });
+        await upsertAssertion({ ...base, id: "keep-pending", status: "Pending" });
+        for (let i = 0; i < 20; i++) {
+          await upsertAssertion({
+            ...base,
+            id: `r/${i}`,
+            status: "Resolved",
+            resolvedAt: new Date(Date.now() - i * 1000).toISOString()
+          });
+        }
+
+        const mem = getMemoryStore();
+        expect(mem.assertions.size).toBeLessThanOrEqual(10);
+        expect(mem.assertions.has("keep-pending")).toBe(true);
+      } finally {
+        if (prevMax === undefined) delete process.env.INSIGHT_MEMORY_MAX_ASSERTIONS;
+        else process.env.INSIGHT_MEMORY_MAX_ASSERTIONS = prevMax;
       }
-
-      const mem = getMemoryStore();
-      expect(mem.assertions.size).toBeLessThanOrEqual(10000);
-      expect(mem.assertions.has("keep-pending")).toBe(true);
-    }, 20_000);
+    });
   });
 });
 

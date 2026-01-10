@@ -32,14 +32,30 @@ async function ensureDb() {
 
 const DEFAULT_MEMORY_MAX_VOTE_KEYS = 200_000;
 const DEFAULT_MEMORY_VOTE_BLOCK_WINDOW = 50_000n;
-const MEMORY_MAX_ASSERTIONS = 10_000;
-const MEMORY_MAX_DISPUTES = 10_000;
+const DEFAULT_MEMORY_MAX_ASSERTIONS = 10_000;
+const DEFAULT_MEMORY_MAX_DISPUTES = 10_000;
 
 function memoryMaxVoteKeys() {
   const raw = env.INSIGHT_MEMORY_MAX_VOTE_KEYS;
   if (!raw) return DEFAULT_MEMORY_MAX_VOTE_KEYS;
   const parsed = Number(raw);
   if (!Number.isFinite(parsed) || !Number.isInteger(parsed) || parsed <= 0) return DEFAULT_MEMORY_MAX_VOTE_KEYS;
+  return parsed;
+}
+
+function memoryMaxAssertions() {
+  const raw = env.INSIGHT_MEMORY_MAX_ASSERTIONS;
+  if (!raw) return DEFAULT_MEMORY_MAX_ASSERTIONS;
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed) || !Number.isInteger(parsed) || parsed <= 0) return DEFAULT_MEMORY_MAX_ASSERTIONS;
+  return parsed;
+}
+
+function memoryMaxDisputes() {
+  const raw = env.INSIGHT_MEMORY_MAX_DISPUTES;
+  if (!raw) return DEFAULT_MEMORY_MAX_DISPUTES;
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed) || !Number.isInteger(parsed) || parsed <= 0) return DEFAULT_MEMORY_MAX_DISPUTES;
   return parsed;
 }
 
@@ -66,7 +82,7 @@ function deleteVotesForAssertion(mem: ReturnType<typeof getMemoryStore>, asserti
 }
 
 function pruneMemoryAssertions(mem: ReturnType<typeof getMemoryStore>) {
-  const overflow = mem.assertions.size - MEMORY_MAX_ASSERTIONS;
+  const overflow = mem.assertions.size - memoryMaxAssertions();
   if (overflow <= 0) return;
   const candidates = Array.from(mem.assertions.entries()).map(([id, a]) => ({
     id,
@@ -89,7 +105,7 @@ function pruneMemoryAssertions(mem: ReturnType<typeof getMemoryStore>) {
 }
 
 function pruneMemoryDisputes(mem: ReturnType<typeof getMemoryStore>) {
-  const overflow = mem.disputes.size - MEMORY_MAX_DISPUTES;
+  const overflow = mem.disputes.size - memoryMaxDisputes();
   if (overflow <= 0) return;
   const candidates = Array.from(mem.disputes.entries()).map(([id, d]) => ({
     id,

@@ -31,6 +31,12 @@ export const env = {
   get INSIGHT_MEMORY_VOTE_BLOCK_WINDOW() {
     return (process.env.INSIGHT_MEMORY_VOTE_BLOCK_WINDOW ?? "").trim();
   },
+  get INSIGHT_MEMORY_MAX_ASSERTIONS() {
+    return (process.env.INSIGHT_MEMORY_MAX_ASSERTIONS ?? "").trim();
+  },
+  get INSIGHT_MEMORY_MAX_DISPUTES() {
+    return (process.env.INSIGHT_MEMORY_MAX_DISPUTES ?? "").trim();
+  },
   get INSIGHT_DISABLE_EMBEDDED_WORKER() {
     return (process.env.INSIGHT_DISABLE_EMBEDDED_WORKER ?? "").trim();
   },
@@ -92,36 +98,25 @@ const envSchema = z.object({
   INSIGHT_SLOW_REQUEST_MS: z.coerce.number().int().min(0).optional(),
   INSIGHT_MEMORY_MAX_VOTE_KEYS: z.coerce.number().int().min(1).optional(),
   INSIGHT_MEMORY_VOTE_BLOCK_WINDOW: z.coerce.bigint().min(0n).optional(),
-  INSIGHT_DISABLE_EMBEDDED_WORKER: z.enum(["1", "0", "true", "false"]).optional(),
+  INSIGHT_MEMORY_MAX_ASSERTIONS: z.coerce.number().int().min(1).optional(),
+  INSIGHT_MEMORY_MAX_DISPUTES: z.coerce.number().int().min(1).optional(),
+  INSIGHT_DISABLE_EMBEDDED_WORKER: z.enum(["true", "false", "1", "0"]).optional(),
   INSIGHT_WORKER_ID: z.string().min(1).optional(),
-  INSIGHT_TRUST_PROXY: z.enum(["1", "0", "true", "false", "cloudflare"]).optional(),
-  INSIGHT_RATE_LIMIT_STORE: z.enum(["memory", "db", "kv", "auto"]).optional(),
+  INSIGHT_TRUST_PROXY: z.enum(["true", "false", "1", "0"]).optional(),
+  INSIGHT_RATE_LIMIT_STORE: z.enum(["memory", "redis"]).optional(),
   INSIGHT_API_LOG_SAMPLE_RATE: z.coerce.number().min(0).max(1).optional(),
   INSIGHT_WEBHOOK_URL: z.string().url().optional()
 });
 
-export type EnvIssue = {
-  key: keyof typeof env;
-  kind: "missing" | "invalid";
-  message: string;
-};
-
-export type EnvReport = {
-  ok: boolean;
-  issues: EnvIssue[];
-};
-
-export function getEnvReport(): EnvReport {
-  const raw: Record<string, string | undefined> = {};
-  for (const [k, v] of Object.entries(env)) {
-    raw[k] = v ? v : undefined;
+// Auto-validate on import
+try {
+  // Only validate in server environment to avoid build-time issues if possible, 
+  // but standard practice is to validate process.env.
+  if (typeof process !== "undefined" && process.env) {
+    envSchema.parse(process.env);
   }
-  const parsed = envSchema.safeParse(raw);
-  if (parsed.success) return { ok: true, issues: [] };
-  const issues: EnvIssue[] = parsed.error.issues.map((i) => {
-    const key = String(i.path[0]) as keyof typeof env;
-    const kind: EnvIssue["kind"] = i.code === "invalid_type" ? "missing" : "invalid";
-    return { key, kind, message: i.message };
-  });
-  return { ok: false, issues };
+} catch (e) {
+  if (e instanceof z.ZodError) {
+    console.error("❌ Invalid environment variables:", JSON.stringify(e.format(), null, 2));
+  }
 }

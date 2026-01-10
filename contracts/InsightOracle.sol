@@ -1,6 +1,9 @@
 pragma solidity ^0.8.24;
 
-contract InsightOracle {
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
+
+contract InsightOracle is Ownable, Pausable {
   event AssertionCreated(
     bytes32 indexed assertionId,
     address indexed asserter,
@@ -21,6 +24,7 @@ contract InsightOracle {
   );
 
   event AssertionResolved(bytes32 indexed assertionId, bool outcome, uint256 resolvedAt);
+  event BondChanged(uint256 oldBond, uint256 newBond);
 
   struct AssertionData {
     address asserter;
@@ -36,6 +40,9 @@ contract InsightOracle {
 
   mapping(bytes32 => AssertionData) public assertions;
   uint256 public nonce;
+  uint256 public defaultBond;
+
+  constructor() Ownable(msg.sender) {}
 
   function createAssertion(
     string calldata protocol,
@@ -43,7 +50,7 @@ contract InsightOracle {
     string calldata assertionText,
     uint256 bondUsd,
     uint256 livenessSeconds
-  ) external returns (bytes32 assertionId) {
+  ) external whenNotPaused returns (bytes32 assertionId) {
     nonce += 1;
     assertionId = keccak256(abi.encodePacked(address(this), msg.sender, nonce, block.chainid, market, assertionText));
 
@@ -71,7 +78,7 @@ contract InsightOracle {
     );
   }
 
-  function disputeAssertion(bytes32 assertionId, string calldata reason) external {
+  function disputeAssertion(bytes32 assertionId, string calldata reason) external whenNotPaused {
     AssertionData storage a = assertions[assertionId];
     require(a.assertedAt != 0, "missing");
     require(!a.resolved, "resolved");
@@ -79,11 +86,29 @@ contract InsightOracle {
     emit AssertionDisputed(assertionId, msg.sender, reason, block.timestamp);
   }
 
-  function resolveAssertion(bytes32 assertionId, bool outcome) external {
+  function resolveAssertion(bytes32 assertionId, bool outcome) external onlyOwner whenNotPaused {
     AssertionData storage a = assertions[assertionId];
     require(a.assertedAt != 0, "missing");
     require(!a.resolved, "resolved");
     a.resolved = true;
     emit AssertionResolved(assertionId, outcome, block.timestamp);
+  }
+
+  function getBond() external view returns (uint256) {
+    return defaultBond;
+  }
+
+  function setDefaultBond(uint256 _bond) external onlyOwner {
+    uint256 oldBond = defaultBond;
+    defaultBond = _bond;
+    emit BondChanged(oldBond, _bond);
+  }
+
+  function pause() external onlyOwner {
+    _pause();
+  }
+
+  function unpause() external onlyOwner {
+    _unpause();
   }
 }

@@ -1,36 +1,34 @@
 export const oracleAbi = [
   {
     type: 'function',
-    name: 'assertTruth',
+    name: 'createAssertion',
     inputs: [
       { name: 'protocol', type: 'string' },
       { name: 'market', type: 'string' },
-      { name: 'assertion', type: 'string' }
+      { name: 'assertionText', type: 'string' },
+      { name: 'bondUsd', type: 'uint256' },
+      { name: 'livenessSeconds', type: 'uint256' }
     ],
     outputs: [{ name: 'assertionId', type: 'bytes32' }],
-    stateMutability: 'payable'
+    stateMutability: 'nonpayable'
   },
   {
     type: 'function',
     name: 'disputeAssertion',
-    inputs: [{ name: 'assertionId', type: 'bytes32' }],
-    outputs: [],
-    stateMutability: 'payable'
-  },
-  {
-    type: 'function',
-    name: 'vote',
     inputs: [
       { name: 'assertionId', type: 'bytes32' },
-      { name: 'support', type: 'bool' }
+      { name: 'reason', type: 'string' }
     ],
     outputs: [],
     stateMutability: 'nonpayable'
   },
   {
     type: 'function',
-    name: 'settleAssertion',
-    inputs: [{ name: 'assertionId', type: 'bytes32' }],
+    name: 'resolveAssertion',
+    inputs: [
+      { name: 'assertionId', type: 'bytes32' },
+      { name: 'outcome', type: 'bool' }
+    ],
     outputs: [],
     stateMutability: 'nonpayable'
   },
@@ -40,5 +38,47 @@ export const oracleAbi = [
     inputs: [],
     outputs: [{ name: '', type: 'uint256' }],
     stateMutability: 'view'
+  },
+  {
+    type: 'function',
+    name: 'setDefaultBond',
+    inputs: [{ name: '_bond', type: 'uint256' }],
+    outputs: [],
+    stateMutability: 'nonpayable'
+  },
+  {
+    type: 'function',
+    name: 'pause',
+    inputs: [],
+    outputs: [],
+    stateMutability: 'nonpayable'
+  },
+  {
+    type: 'function',
+    name: 'unpause',
+    inputs: [],
+    outputs: [],
+    stateMutability: 'nonpayable'
+  },
+  {
+    type: 'function',
+    name: 'owner',
+    inputs: [],
+    outputs: [{ name: '', type: 'address' }],
+    stateMutability: 'view'
+  },
+  {
+    type: 'function',
+    name: 'renounceOwnership',
+    inputs: [],
+    outputs: [],
+    stateMutability: 'nonpayable'
+  },
+  {
+    type: 'function',
+    name: 'transferOwnership',
+    inputs: [{ name: 'newOwner', type: 'address' }],
+    outputs: [],
+    stateMutability: 'nonpayable'
   }
 ] as const;

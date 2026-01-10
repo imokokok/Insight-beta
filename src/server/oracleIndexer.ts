@@ -138,17 +138,34 @@ async function syncOracleOnce(): Promise<{ updated: boolean; state: StoredState 
         const url = i === 0 ? rpcActiveUrl : pickNextRpcUrl(urlsToTry, rpcActiveUrl);
         rpcActiveUrl = url;
         const client = createPublicClient({ transport: http(url) });
-        const t0 = Date.now();
-        try {
-          const result = await op(client);
-          recordRpcOk(rpcStats, url, Date.now() - t0);
-          return result;
-        } catch (e) {
-          lastErr = e;
-          const code = toSyncErrorCode(e);
-          recordRpcFail(rpcStats, url);
-          if (code !== "rpc_unreachable") break;
+
+        const MAX_RETRIES = 3;
+        for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+          const t0 = Date.now();
+          try {
+            const result = await op(client);
+            recordRpcOk(rpcStats, url, Date.now() - t0);
+            return result;
+          } catch (e) {
+            lastErr = e;
+            const code = toSyncErrorCode(e);
+            
+            if (code === "rpc_unreachable") {
+              recordRpcFail(rpcStats, url);
+              if (attempt < MAX_RETRIES - 1) {
+                const backoff = 1000 * Math.pow(2, attempt);
+                logger.warn(`RPC ${url} unreachable (attempt ${attempt + 1}/${MAX_RETRIES}), retrying in ${backoff}ms...`);
+                await new Promise((r) => setTimeout(r, backoff));
+                continue;
+              }
+            } else {
+              break;
+            }
+          }
         }
+
+        const code = toSyncErrorCode(lastErr);
+        if (code !== "rpc_unreachable") break;
       }
       throw lastErr instanceof Error ? lastErr : new Error("rpc_unreachable");
     };

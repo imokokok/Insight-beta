@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { getMemoryStore } from "./memoryBackend";
 import { createOrTouchAlert, appendAuditLog } from "./observability";
 import { hasDatabase } from "@/server/db";
+import { notifyAlert } from "@/server/notifications";
 
 vi.mock("@/server/db", () => ({
   query: vi.fn(),
@@ -10,6 +11,10 @@ vi.mock("@/server/db", () => ({
 
 vi.mock("@/server/schema", () => ({
   ensureSchema: vi.fn()
+}));
+
+vi.mock("@/server/notifications", () => ({
+  notifyAlert: vi.fn().mockResolvedValue(undefined)
 }));
 
 describe("observability (memory)", () => {
@@ -52,6 +57,20 @@ describe("observability (memory)", () => {
     }
     const mem = getMemoryStore();
     expect(mem.audit.length).toBeLessThanOrEqual(5000);
+  });
+
+  it("triggers notification on new alert", async () => {
+    await createOrTouchAlert({
+      fingerprint: "notify-me",
+      type: "test",
+      severity: "critical",
+      title: "Test Alert",
+      message: "Testing notifications"
+    });
+    expect(notifyAlert).toHaveBeenCalledWith(expect.objectContaining({
+      fingerprint: "notify-me",
+      severity: "critical"
+    }));
   });
 });
 

@@ -47,6 +47,11 @@ npm run dev -- --port 3100
 - `npm run contracts:compile`：编译合约（Hardhat）
 - `npm run contracts:test`：合约测试（Hardhat）
 
+## 文档
+
+- [部署指南 (DEPLOYMENT.md)](docs/DEPLOYMENT.md)：详细的生产环境部署说明（Docker、环境变量、健康检查）。
+- [API 文档 (API.md)](docs/API.md)：后端接口定义与鉴权说明。
+
 ## 环境变量
 
 项目在 `src/lib/env.ts` 中集中读取环境变量。

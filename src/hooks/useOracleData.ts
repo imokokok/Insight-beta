@@ -16,7 +16,7 @@ export function useOracleData(
   } = useSWR<OracleStats>(
     "/api/oracle/stats", 
     fetchApiData,
-    { refreshInterval: 15_000, dedupingInterval: 10_000, revalidateOnFocus: false }
+    { refreshInterval: 15_000, dedupingInterval: 10_000, revalidateOnFocus: true }
   );
 
   // 2. Assertions Fetching (Infinite SWR for pagination)

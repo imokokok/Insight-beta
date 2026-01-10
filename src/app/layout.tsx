@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { Sidebar } from "@/components/Sidebar";
 import { cn } from "@/lib/utils";
 import { LanguageProvider } from "@/i18n/LanguageProvider";
-import { ToastProvider } from "@/components/ui/toast";
+import { Toaster } from "sonner";
 import { WalletProvider } from "@/contexts/WalletContext";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { SyncStatus } from "@/components/SyncStatus";
@@ -60,7 +60,6 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                   </div>
                 </main>
               </div>
-            </ToastProvider>
           </WalletProvider>
         </LanguageProvider>
       </body>

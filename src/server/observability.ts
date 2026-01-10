@@ -2,6 +2,7 @@ import { hasDatabase, query } from "@/server/db";
 import { ensureSchema } from "@/server/schema";
 import { readJsonFile, writeJsonFile } from "@/server/kvStore";
 import { getMemoryStore, memoryNowIso } from "@/server/memoryBackend";
+import { notifyAlert } from "@/server/notifications";
 
 export type AlertSeverity = "info" | "warning" | "critical";
 export type AlertStatus = "Open" | "Acknowledged" | "Resolved";
@@ -180,6 +181,14 @@ export async function createOrTouchAlert(input: {
               updatedAt: now
             };
       mem.alerts.set(input.fingerprint, next);
+      if (next.status === "Open" && existing.status === "Resolved") {
+        notifyAlert({
+          title: next.title,
+          message: next.message,
+          severity: next.severity,
+          fingerprint: next.fingerprint
+        }).catch(() => void 0);
+      }
     } else {
       const created = {
         id: mem.nextAlertId++,
@@ -200,10 +209,18 @@ export async function createOrTouchAlert(input: {
         updatedAt: now
       };
       mem.alerts.set(input.fingerprint, created);
+      pruneMemoryAlerts(mem);
+      notifyAlert({
+        title: created.title,
+        message: created.message,
+        severity: created.severity,
+        fingerprint: created.fingerprint
+      }).catch(() => void 0);
     }
-    pruneMemoryAlerts(mem);
     return;
   }
+
+  // Database path
   await query(
     `
     INSERT INTO alerts (
@@ -242,6 +259,15 @@ export async function createOrTouchAlert(input: {
       input.entityId ?? null
     ]
   );
+
+  if (!existingDb || existingDb.status === "Resolved") {
+    notifyAlert({
+      title: input.title,
+      message: input.message,
+      severity: input.severity,
+      fingerprint: input.fingerprint
+    }).catch(() => void 0);
+  }
 }
 
 export async function listAlerts(params: {
