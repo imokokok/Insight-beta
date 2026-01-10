@@ -1,6 +1,6 @@
 import { getAssertion, getDisputeByAssertionId } from "@/server/oracleStore";
 import { readOracleConfig } from "@/server/oracleConfig";
-import { error, handleApi } from "@/server/apiResponse";
+import { error, handleApi, rateLimit } from "@/server/apiResponse";
 import { createPublicClient, formatEther, http } from "viem";
 import { oracleAbi } from "@/lib/oracleAbi";
 
@@ -8,7 +8,10 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  return handleApi(async () => {
+  return handleApi(request, async () => {
+    const limited = rateLimit(request, { key: "assertion_detail_get", limit: 120, windowMs: 60_000 });
+    if (limited) return limited;
+
     const { id } = await params;
     const assertion = await getAssertion(id);
     if (!assertion) return error("not_found", 404);

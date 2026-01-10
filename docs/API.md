@@ -12,7 +12,7 @@
 { "ok": false, "error": "error_code" }
 ```
 
-当设置了 `INSIGHT_ADMIN_TOKEN` 时，管理/写接口需要鉴权：
+当设置了 `INSIGHT_ADMIN_TOKEN` 或 `INSIGHT_ADMIN_TOKEN_SALT` 时，管理/写接口需要鉴权：
 
 - `x-admin-token: <token>` 或 `Authorization: Bearer <token>`
 
@@ -104,3 +104,22 @@ KV 用于存储后端内部状态/配置 JSON，主要给运维/调试用。
 
 删除一个 key。
 
+## Admin Tokens（RBAC）
+
+当设置 `INSIGHT_ADMIN_TOKEN_SALT` 后，可以用 DB 持久化的多 Token（可撤销、可轮换），并按角色限制能力。
+
+### GET `/api/admin/tokens`（Admin）
+
+列出已创建的 token（不包含明文/哈希）。
+
+### POST `/api/admin/tokens`（Admin）
+
+创建 token（只返回一次明文 token）：
+
+```json
+{ "label": "alerts-bot", "role": "alerts" }
+```
+
+### DELETE `/api/admin/tokens?id=...`（Admin）
+
+吊销一个 token。

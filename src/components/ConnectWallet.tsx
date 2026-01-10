@@ -37,6 +37,12 @@ export function ConnectWallet() {
           ? t("errors.userRejected")
           : normalized.kind === "REQUEST_PENDING"
             ? t("errors.requestPending")
+            : normalized.kind === "CHAIN_NOT_ADDED"
+              ? t("errors.chainNotAdded")
+              : normalized.kind === "WRONG_NETWORK"
+                ? t("errors.wrongNetwork")
+                : normalized.kind === "INSUFFICIENT_FUNDS"
+                  ? t("errors.insufficientFunds")
             : t("errors.unknownError");
       toast({
         type: "error",

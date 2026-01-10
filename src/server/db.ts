@@ -19,6 +19,14 @@ function getDbUrl() {
   return null;
 }
 
+export function getDatabaseUrl() {
+  return getDbUrl();
+}
+
+export function hasDatabase() {
+  return Boolean(getDbUrl());
+}
+
 export const db = globalForDb.conn ?? new Pool({
   connectionString: getDbUrl() || undefined,
   max: 10,
@@ -30,6 +38,9 @@ if (process.env.NODE_ENV !== "production") globalForDb.conn = db;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function query<T extends pg.QueryResultRow>(text: string, params?: any[]) {
+  if (!getDbUrl()) {
+    throw new Error("missing_database_url");
+  }
   const client = await db.connect();
   try {
     const res = await client.query<T>(text, params);
@@ -40,5 +51,8 @@ export async function query<T extends pg.QueryResultRow>(text: string, params?: 
 }
 
 export async function getClient() {
+  if (!getDbUrl()) {
+    throw new Error("missing_database_url");
+  }
   return db.connect();
 }

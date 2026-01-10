@@ -1,6 +1,7 @@
-import { query } from "./db";
+import { hasDatabase, query } from "./db";
 import { ensureSchema } from "./schema";
 import type { Assertion, Dispute, OracleChain } from "@/lib/oracleTypes";
+import { getMemoryStore } from "@/server/memoryBackend";
 
 export type SyncMeta = {
   lastAttemptAt: string | null;
@@ -21,6 +22,7 @@ export type StoredState = {
 
 let schemaEnsured = false;
 async function ensureDb() {
+  if (!hasDatabase()) return;
   if (!schemaEnsured) {
     await ensureSchema();
     schemaEnsured = true;
@@ -77,6 +79,22 @@ function mapDisputeRow(row: any): Dispute {
 
 export async function readOracleState(): Promise<StoredState> {
   await ensureDb();
+  if (!hasDatabase()) {
+    const mem = getMemoryStore();
+    const assertions: Record<string, Assertion> = {};
+    for (const [id, a] of mem.assertions.entries()) assertions[id] = a;
+    const disputes: Record<string, Dispute> = {};
+    for (const [id, d] of mem.disputes.entries()) disputes[id] = d;
+    return {
+      version: 2,
+      chain: mem.oracleConfig.chain,
+      contractAddress: mem.oracleConfig.contractAddress || null,
+      lastProcessedBlock: mem.sync.lastProcessedBlock,
+      sync: mem.sync.meta,
+      assertions,
+      disputes
+    };
+  }
 
   const [syncRes, configRes, assertionsRes, disputesRes] = await Promise.all([
     query("SELECT * FROM sync_state WHERE id = 1"),
@@ -116,6 +134,15 @@ export async function readOracleState(): Promise<StoredState> {
 
 export async function getSyncState() {
   await ensureDb();
+  if (!hasDatabase()) {
+    const mem = getMemoryStore();
+    return {
+      lastProcessedBlock: mem.sync.lastProcessedBlock,
+      sync: mem.sync.meta,
+      chain: mem.oracleConfig.chain,
+      contractAddress: mem.oracleConfig.contractAddress || null
+    };
+  }
   const [syncRes, configRes] = await Promise.all([
     query("SELECT * FROM sync_state WHERE id = 1"),
     query("SELECT * FROM oracle_config WHERE id = 1")
@@ -139,6 +166,10 @@ export async function getSyncState() {
 
 export async function fetchAssertion(id: string): Promise<Assertion | null> {
   await ensureDb();
+  if (!hasDatabase()) {
+    const mem = getMemoryStore();
+    return mem.assertions.get(id) ?? null;
+  }
   const res = await query("SELECT * FROM assertions WHERE id = $1", [id]);
   if (res.rows.length === 0) return null;
   return mapAssertionRow(res.rows[0]);
@@ -146,6 +177,10 @@ export async function fetchAssertion(id: string): Promise<Assertion | null> {
 
 export async function fetchDispute(id: string): Promise<Dispute | null> {
   await ensureDb();
+  if (!hasDatabase()) {
+    const mem = getMemoryStore();
+    return mem.disputes.get(id) ?? null;
+  }
   const res = await query("SELECT * FROM disputes WHERE id = $1", [id]);
   if (res.rows.length === 0) return null;
   return mapDisputeRow(res.rows[0]);
@@ -165,6 +200,11 @@ export async function writeOracleState(state: StoredState) {
 
 export async function upsertAssertion(a: Assertion) {
   await ensureDb();
+  if (!hasDatabase()) {
+    const mem = getMemoryStore();
+    mem.assertions.set(a.id, a);
+    return;
+  }
   await query(
     `INSERT INTO assertions (
       id, chain, asserter, protocol, market, assertion_data, asserted_at, liveness_ends_at, resolved_at, settlement_resolution, status, bond_usd, disputer, tx_hash
@@ -197,6 +237,11 @@ export async function upsertAssertion(a: Assertion) {
 
 export async function upsertDispute(d: Dispute) {
   await ensureDb();
+  if (!hasDatabase()) {
+    const mem = getMemoryStore();
+    mem.disputes.set(d.id, d);
+    return;
+  }
   await query(
     `INSERT INTO disputes (
       id, chain, assertion_id, market, reason, disputer, disputed_at, voting_ends_at, status, votes_for, votes_against, total_votes
@@ -233,6 +278,17 @@ export async function updateSyncState(
   error: string | null
 ) {
   await ensureDb();
+  if (!hasDatabase()) {
+    const mem = getMemoryStore();
+    mem.sync.lastProcessedBlock = block;
+    mem.sync.meta = {
+      lastAttemptAt: attemptAt,
+      lastSuccessAt: successAt,
+      lastDurationMs: duration,
+      lastError: error
+    };
+    return;
+  }
   await query(
     `UPDATE sync_state SET 
       last_processed_block = $1,

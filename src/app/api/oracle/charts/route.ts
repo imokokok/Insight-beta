@@ -1,5 +1,5 @@
 import { query } from "@/server/db";
-import { handleApi } from "@/server/apiResponse";
+import { handleApi, rateLimit } from "@/server/apiResponse";
 import { z } from "zod";
 
 const chartsParamsSchema = z.object({
@@ -13,7 +13,10 @@ interface ChartRow {
 }
 
 export async function GET(request: Request) {
-  return handleApi(async () => {
+  return handleApi(request, async () => {
+    const limited = rateLimit(request, { key: "charts_get", limit: 60, windowMs: 60_000 });
+    if (limited) return limited;
+
     const url = new URL(request.url);
     const rawParams = Object.fromEntries(url.searchParams);
     const { days } = chartsParamsSchema.parse(rawParams);

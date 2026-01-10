@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from "swr";
-import { Activity, AlertCircle, CheckCircle2, Clock } from "lucide-react";
+import { Activity, AlertCircle } from "lucide-react";
 import { fetchApiData, cn, formatTime } from "@/lib/utils";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { langToLocale } from "@/i18n/translations";
@@ -24,7 +24,7 @@ export function SyncStatus() {
   const { lang, t } = useI18n();
   const locale = langToLocale[lang];
 
-  const { data, error } = useSWR<SyncResponse>(
+  const { data } = useSWR<SyncResponse>(
     "/api/oracle/sync",
     fetchApiData,
     { refreshInterval: 10000 }
@@ -53,23 +53,27 @@ export function SyncStatus() {
       </div>
       
       <span className="text-xs font-medium text-gray-600">
-        {status === "ok" ? t("sync.synced") : status === "lagging" ? t("sync.lagging") : t("sync.error")}
+        {status === "ok"
+          ? t("oracle.sync.synced")
+          : status === "lagging"
+            ? t("oracle.sync.lagging")
+            : t("oracle.sync.error")}
       </span>
 
       {/* Hover Card */}
       <div className="absolute right-0 top-full mt-2 hidden w-64 flex-col gap-2 rounded-xl bg-white p-4 shadow-xl ring-1 ring-gray-100 group-hover:flex z-50">
         <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-          <span className="font-semibold text-gray-900 text-sm">{t("sync.status")}</span>
+          <span className="font-semibold text-gray-900 text-sm">{t("oracle.sync.status")}</span>
           <Activity size={14} className="text-purple-500" />
         </div>
         
         <div className="space-y-2 text-xs text-gray-600">
           <div className="flex justify-between">
-            <span>{t("sync.block")}</span>
+            <span>{t("oracle.sync.block")}</span>
             <span className="font-mono font-medium">{data.lastProcessedBlock}</span>
           </div>
           <div className="flex justify-between">
-             <span>{t("sync.lastUpdate")}</span>
+             <span>{t("oracle.sync.lastUpdate")}</span>
              <span>{formatTime(data.sync.lastSyncedAt, locale)}</span>
           </div>
           {data.sync.error && (

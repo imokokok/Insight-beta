@@ -4,10 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { 
   LogOut, 
-  User, 
   Copy, 
   Check, 
-  Wallet,
   FileText,
   AlertTriangle,
   ChevronDown
@@ -16,10 +14,12 @@ import { useWallet } from "@/contexts/WalletContext";
 import { useBalance } from "@/hooks/useBalance";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { cn } from "@/lib/utils";
+import { arbitrum, hardhat, mainnet, optimism, polygon } from "viem/chains";
+import { useSwitchChainWithFeedback } from "@/hooks/useSwitchChainWithFeedback";
 
 export function UserMenu() {
-  const { address, disconnect } = useWallet();
-  const { formattedBalance } = useBalance();
+  const { address, chainId, disconnect } = useWallet();
+  const { formattedBalance, symbol } = useBalance();
   const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -42,10 +42,22 @@ export function UserMenu() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const { switchToChain, switchingChainId } = useSwitchChainWithFeedback({
+    onClose: () => setIsOpen(false)
+  });
+
   if (!address) return null;
 
-  // Generate a deterministic gradient based on address
   const gradient = `linear-gradient(135deg, #${address.slice(2, 8)} 0%, #${address.slice(8, 14)} 100%)`;
+  const supportedChains = [mainnet, polygon, arbitrum, optimism, hardhat];
+
+  const currentChain =
+    chainId === polygon.id ? polygon :
+    chainId === arbitrum.id ? arbitrum :
+    chainId === optimism.id ? optimism :
+    chainId === hardhat.id ? hardhat :
+    chainId === mainnet.id ? mainnet :
+    null;
 
   return (
     <div className="relative" ref={menuRef}>
@@ -76,7 +88,7 @@ export function UserMenu() {
           <div className="mb-2 rounded-lg bg-gray-50 p-3">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-medium text-gray-500">{t("wallet.balance")}</span>
-              <span className="text-xs font-bold text-gray-900 font-mono">{formattedBalance} ETH</span>
+              <span className="text-xs font-bold text-gray-900 font-mono">{formattedBalance} {symbol}</span>
             </div>
             <div className="flex items-center justify-between gap-2 rounded-md bg-white border border-gray-200 px-2 py-1.5">
               <span className="font-mono text-xs text-gray-500 truncate">{address}</span>
@@ -87,6 +99,33 @@ export function UserMenu() {
               >
                 {copied ? <Check size={14} /> : <Copy size={14} />}
               </button>
+            </div>
+          </div>
+
+          <div className="mb-2 rounded-lg border border-gray-100 bg-white px-3 py-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-gray-500">{t("wallet.network")}</span>
+              <span className="text-xs font-semibold text-gray-900">
+                {currentChain ? currentChain.name : t("wallet.unknownNetwork")}
+              </span>
+            </div>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              {supportedChains.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => void switchToChain({ id: c.id, name: c.name })}
+                  disabled={switchingChainId !== null}
+                  className={cn(
+                    "rounded-lg border px-2 py-1.5 text-xs font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed",
+                    chainId === c.id
+                      ? "border-purple-200 bg-purple-50 text-purple-700"
+                      : "border-gray-200 bg-white text-gray-700 hover:border-purple-200 hover:bg-purple-50 hover:text-purple-700"
+                  )}
+                >
+                  {switchingChainId === c.id ? t("wallet.switchingNetwork") : c.name}
+                </button>
+              ))}
             </div>
           </div>
 

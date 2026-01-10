@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { ZodError } from 'zod';
 import { GET } from './route';
 import * as oracleStore from '@/server/oracleStore';
 import type { Assertion } from '@/lib/oracleTypes';
@@ -15,11 +16,20 @@ vi.mock('@/server/oracleIndexer', () => ({
 
 // Mock apiResponse to just return the data or response
 vi.mock('@/server/apiResponse', () => ({
-  handleApi: async (fn: () => unknown | Promise<unknown>) => {
+  rateLimit: vi.fn(() => null),
+  handleApi: async (arg1: unknown, arg2?: unknown) => {
     try {
+      const fn = typeof arg1 === "function" ? (arg1 as () => unknown | Promise<unknown>) : (arg2 as () => unknown | Promise<unknown>);
       const data = await fn();
       return { ok: true, data };
     } catch (e: unknown) {
+      if (e instanceof ZodError) {
+        const messages = e.issues.map((i) => i.message);
+        if (messages.includes('invalid_address')) {
+          return { ok: false, error: 'invalid_address' };
+        }
+        return { ok: false, error: 'invalid_request_body' };
+      }
       const message = e instanceof Error ? e.message : String(e);
       return { ok: false, error: message };
     }
@@ -90,5 +100,17 @@ describe('GET /api/oracle/assertions', () => {
     await GET(request);
 
     expect(ensureOracleSynced).toHaveBeenCalled();
+  });
+
+  it('rejects invalid asserter address', async () => {
+    const request = new Request('http://localhost:3000/api/oracle/assertions?asserter=not_an_address');
+    type ApiMockResponse = { ok: true; data: unknown } | { ok: false; error: string };
+    const response = (await GET(request)) as unknown as ApiMockResponse;
+
+    expect(response.ok).toBe(false);
+    if (!response.ok) {
+      expect(response.error).toBe('invalid_address');
+    }
+    expect(oracleStore.listAssertions).not.toHaveBeenCalled();
   });
 });

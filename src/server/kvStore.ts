@@ -1,12 +1,24 @@
-import { query } from "./db";
+import { hasDatabase, query } from "./db";
+import { getMemoryStore, memoryNowIso } from "@/server/memoryBackend";
 
 export async function readJsonFile<T>(key: string, defaultValue: T): Promise<T> {
+  if (!hasDatabase()) {
+    const mem = getMemoryStore();
+    const item = mem.kv.get(key);
+    if (!item) return defaultValue;
+    return item.value as T;
+  }
   const result = await query("SELECT value FROM kv_store WHERE key = $1", [key]);
   if (result.rows.length === 0) return defaultValue;
   return result.rows[0].value as T;
 }
 
 export async function writeJsonFile<T>(key: string, value: T): Promise<void> {
+  if (!hasDatabase()) {
+    const mem = getMemoryStore();
+    mem.kv.set(key, { value, updatedAt: memoryNowIso() });
+    return;
+  }
   await query(
     `INSERT INTO kv_store (key, value, updated_at)
      VALUES ($1, $2, CURRENT_TIMESTAMP)
@@ -16,10 +28,30 @@ export async function writeJsonFile<T>(key: string, value: T): Promise<void> {
 }
 
 export async function deleteJsonKey(key: string): Promise<void> {
+  if (!hasDatabase()) {
+    const mem = getMemoryStore();
+    mem.kv.delete(key);
+    return;
+  }
   await query("DELETE FROM kv_store WHERE key = $1", [key]);
 }
 
 export async function listJsonKeys({ prefix, limit, offset }: { prefix?: string; limit?: number; offset?: number }) {
+  if (!hasDatabase()) {
+    const mem = getMemoryStore();
+    const keys = Array.from(mem.kv.keys()).sort((a, b) => a.localeCompare(b));
+    const filtered = prefix ? keys.filter((k) => k.startsWith(prefix)) : keys;
+    const start = Math.max(0, offset ?? 0);
+    const end = limit ? start + limit : filtered.length;
+    const slice = filtered.slice(start, end);
+    return {
+      items: slice.map((key) => {
+        const item = mem.kv.get(key)!;
+        return { key, value: item.value, updatedAt: item.updatedAt };
+      }),
+      total: filtered.length
+    };
+  }
   let sql = "SELECT key, value, updated_at FROM kv_store";
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const params: any[] = [];

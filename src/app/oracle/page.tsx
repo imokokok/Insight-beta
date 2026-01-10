@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { OracleStatsBanner } from "@/components/OracleStatsBanner";
 import { PageHeader } from "@/components/PageHeader";
-import { cn, fetchApiData, formatDurationMinutes, formatTime, formatUsdCompact, formatUsd } from "@/lib/utils";
+import { cn, fetchApiData, formatDurationMinutes, formatTime, formatUsdCompact, formatUsd, getErrorCode, getErrorDetails } from "@/lib/utils";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { getUiErrorMessage, langToLocale } from "@/i18n/translations";
 import { useOracleData } from "@/hooks/useOracleData";
@@ -69,9 +69,11 @@ export default function OraclePage() {
     votingPeriodHours: 72
   });
   const [adminToken, setAdminToken] = useState("");
+  const [adminActor, setAdminActor] = useState("");
   const [saving, setSaving] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [configError, setConfigError] = useState<string | null>(null);
+  const [configFieldErrors, setConfigFieldErrors] = useState<Partial<Record<keyof OracleConfig, string>>>({});
   const [activeTab, setActiveTab] = useState<"overview" | "leaderboard" | "tools">("overview");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -82,6 +84,8 @@ export default function OraclePage() {
   useEffect(() => {
     const saved = window.sessionStorage.getItem("insight_admin_token");
     if (saved) setAdminToken(saved);
+    const savedActor = window.sessionStorage.getItem("insight_admin_actor");
+    if (savedActor) setAdminActor(savedActor);
   }, []);
 
   useEffect(() => {
@@ -89,6 +93,12 @@ export default function OraclePage() {
     if (trimmed) window.sessionStorage.setItem("insight_admin_token", trimmed);
     else window.sessionStorage.removeItem("insight_admin_token");
   }, [adminToken]);
+
+  useEffect(() => {
+    const trimmed = adminActor.trim();
+    if (trimmed) window.sessionStorage.setItem("insight_admin_actor", trimmed);
+    else window.sessionStorage.removeItem("insight_admin_actor");
+  }, [adminActor]);
 
   useEffect(() => {
     let cancelled = false;
@@ -119,10 +129,13 @@ export default function OraclePage() {
   const saveConfig = async () => {
     setSaving(true);
     setConfigError(null);
+    setConfigFieldErrors({});
     try {
       const headers: Record<string, string> = { "content-type": "application/json" };
       const trimmed = adminToken.trim();
       if (trimmed) headers["x-admin-token"] = trimmed;
+      const actor = adminActor.trim();
+      if (actor) headers["x-admin-actor"] = actor;
       const data = await fetchApiData<OracleConfig>("/api/oracle/config", {
         method: "PUT",
         headers,
@@ -131,7 +144,16 @@ export default function OraclePage() {
       setConfig(data);
       setStatus((prev) => (prev ? { ...prev, config: data } : prev));
     } catch (e) {
-      setConfigError(e instanceof Error ? e.message : "unknown_error");
+      const code = getErrorCode(e);
+      setConfigError(code);
+      const details = getErrorDetails(e);
+      const field =
+        details && typeof details === "object" && "field" in details
+          ? (details as { field?: unknown }).field
+          : undefined;
+      if (typeof field === "string") {
+        setConfigFieldErrors({ [field as keyof OracleConfig]: code });
+      }
     } finally {
       setSaving(false);
     }
@@ -144,6 +166,8 @@ export default function OraclePage() {
       const headers: Record<string, string> = {};
       const trimmed = adminToken.trim();
       if (trimmed) headers["x-admin-token"] = trimmed;
+      const actor = adminActor.trim();
+      if (actor) headers["x-admin-actor"] = actor;
       await fetchApiData<{ updated: boolean } | { updated: boolean; chain: unknown }>("/api/oracle/sync", {
         method: "POST",
         headers
@@ -294,27 +318,58 @@ export default function OraclePage() {
                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("oracle.config.rpcUrl")}</label>
                     <input
                       value={config.rpcUrl}
-                      onChange={(e) => setConfig((c) => ({ ...c, rpcUrl: e.target.value }))}
+                      onChange={(e) => {
+                        setConfigError(null);
+                        setConfigFieldErrors((prev) => ({ ...prev, rpcUrl: undefined }));
+                        setConfig((c) => ({ ...c, rpcUrl: e.target.value }));
+                      }}
                       placeholder="https://…"
-                      className="glass-input h-10 w-full rounded-xl px-4 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                      className={cn(
+                        "glass-input h-10 w-full rounded-xl px-4 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20",
+                        configFieldErrors.rpcUrl && "ring-2 ring-rose-500/20 focus:ring-rose-500/20"
+                      )}
                     />
+                    {configFieldErrors.rpcUrl && (
+                      <div className="text-xs text-rose-600">
+                        {getUiErrorMessage(configFieldErrors.rpcUrl, t)}
+                      </div>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("oracle.config.contractAddress")}</label>
                     <input
                       value={config.contractAddress}
-                      onChange={(e) => setConfig((c) => ({ ...c, contractAddress: e.target.value }))}
+                      onChange={(e) => {
+                        setConfigError(null);
+                        setConfigFieldErrors((prev) => ({ ...prev, contractAddress: undefined }));
+                        setConfig((c) => ({ ...c, contractAddress: e.target.value }));
+                      }}
                       placeholder="0x…"
-                      className="glass-input h-10 w-full rounded-xl px-4 font-mono text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                      className={cn(
+                        "glass-input h-10 w-full rounded-xl px-4 font-mono text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20",
+                        configFieldErrors.contractAddress && "ring-2 ring-rose-500/20 focus:ring-rose-500/20"
+                      )}
                     />
+                    {configFieldErrors.contractAddress && (
+                      <div className="text-xs text-rose-600">
+                        {getUiErrorMessage(configFieldErrors.contractAddress, t)}
+                      </div>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("oracle.config.chain")}</label>
                     <div className="relative">
                       <select
                         value={config.chain}
-                        onChange={(e) => setConfig((c) => ({ ...c, chain: e.target.value as OracleConfig["chain"] }))}
-                        className="glass-input h-10 w-full appearance-none rounded-xl px-4 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                        onChange={(e) => {
+                          setConfigError(null);
+                          setConfigFieldErrors((prev) => ({ ...prev, chain: undefined }));
+                          setConfig((c) => ({ ...c, chain: e.target.value as OracleConfig["chain"] }));
+                        }}
+                        className={cn(
+                          "glass-input h-10 w-full appearance-none rounded-xl px-4 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500/20",
+                          configFieldErrors.chain && "ring-2 ring-rose-500/20 focus:ring-rose-500/20"
+                        )}
                       >
                         <option value="Local">{t("chain.local")}</option>
                         <option value="Polygon">{t("chain.polygon")}</option>
@@ -323,6 +378,11 @@ export default function OraclePage() {
                       </select>
                       <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
                     </div>
+                    {configFieldErrors.chain && (
+                      <div className="text-xs text-rose-600">
+                        {getUiErrorMessage(configFieldErrors.chain, t)}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -331,37 +391,73 @@ export default function OraclePage() {
                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("oracle.config.startBlock")}</label>
                     <input
                       value={config.startBlock ?? 0}
-                      onChange={(e) => setConfig((c) => ({ ...c, startBlock: Number(e.target.value) }))}
+                      onChange={(e) => {
+                        setConfigError(null);
+                        setConfigFieldErrors((prev) => ({ ...prev, startBlock: undefined }));
+                        setConfig((c) => ({ ...c, startBlock: Number(e.target.value) }));
+                      }}
                       placeholder="0"
                       type="number"
                       min={0}
                       step={1}
-                      className="glass-input h-10 w-full rounded-xl px-4 font-mono text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                      className={cn(
+                        "glass-input h-10 w-full rounded-xl px-4 font-mono text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20",
+                        configFieldErrors.startBlock && "ring-2 ring-rose-500/20 focus:ring-rose-500/20"
+                      )}
                     />
+                    {configFieldErrors.startBlock && (
+                      <div className="text-xs text-rose-600">
+                        {getUiErrorMessage(configFieldErrors.startBlock, t)}
+                      </div>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("oracle.config.maxBlockRange")}</label>
                     <input
                       value={config.maxBlockRange ?? 10000}
-                      onChange={(e) => setConfig((c) => ({ ...c, maxBlockRange: Number(e.target.value) }))}
+                      onChange={(e) => {
+                        setConfigError(null);
+                        setConfigFieldErrors((prev) => ({ ...prev, maxBlockRange: undefined }));
+                        setConfig((c) => ({ ...c, maxBlockRange: Number(e.target.value) }));
+                      }}
                       placeholder="10000"
                       type="number"
                       min={100}
                       step={100}
-                      className="glass-input h-10 w-full rounded-xl px-4 font-mono text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                      className={cn(
+                        "glass-input h-10 w-full rounded-xl px-4 font-mono text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20",
+                        configFieldErrors.maxBlockRange && "ring-2 ring-rose-500/20 focus:ring-rose-500/20"
+                      )}
                     />
+                    {configFieldErrors.maxBlockRange && (
+                      <div className="text-xs text-rose-600">
+                        {getUiErrorMessage(configFieldErrors.maxBlockRange, t)}
+                      </div>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("oracle.config.votingPeriodHours")}</label>
                     <input
                       value={config.votingPeriodHours ?? 72}
-                      onChange={(e) => setConfig((c) => ({ ...c, votingPeriodHours: Number(e.target.value) }))}
+                      onChange={(e) => {
+                        setConfigError(null);
+                        setConfigFieldErrors((prev) => ({ ...prev, votingPeriodHours: undefined }));
+                        setConfig((c) => ({ ...c, votingPeriodHours: Number(e.target.value) }));
+                      }}
                       placeholder="72"
                       type="number"
                       min={1}
                       step={1}
-                      className="glass-input h-10 w-full rounded-xl px-4 font-mono text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                      className={cn(
+                        "glass-input h-10 w-full rounded-xl px-4 font-mono text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20",
+                        configFieldErrors.votingPeriodHours && "ring-2 ring-rose-500/20 focus:ring-rose-500/20"
+                      )}
                     />
+                    {configFieldErrors.votingPeriodHours && (
+                      <div className="text-xs text-rose-600">
+                        {getUiErrorMessage(configFieldErrors.votingPeriodHours, t)}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -373,6 +469,16 @@ export default function OraclePage() {
                     placeholder="Bearer …"
                     type="password"
                     autoComplete="off"
+                    className="glass-input h-10 w-full rounded-xl px-4 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                  />
+                </div>
+
+                <div className="mt-4 space-y-2">
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("oracle.config.adminActor")}</label>
+                  <input
+                    value={adminActor}
+                    onChange={(e) => setAdminActor(e.target.value)}
+                    placeholder={t("oracle.config.adminActorPlaceholder")}
                     className="glass-input h-10 w-full rounded-xl px-4 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
                   />
                 </div>

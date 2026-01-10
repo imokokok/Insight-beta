@@ -36,7 +36,7 @@ export function CreateAssertionModal({ isOpen, onClose, contractAddress, chain }
 
     const bondValue = parseFloat(bond);
     if (isNaN(bondValue) || bondValue <= 0) {
-      setValidationError("Bond amount must be greater than 0");
+      setValidationError(t("oracle.createAssertionModal.bondInvalid"));
       return;
     }
     
@@ -74,6 +74,13 @@ export function CreateAssertionModal({ isOpen, onClose, contractAddress, chain }
           <div className="mb-4 flex items-center gap-2 rounded-lg bg-red-50 p-3 text-sm text-red-600">
             <AlertCircle size={16} />
             {error}
+          </div>
+        )}
+
+        {validationError && (
+          <div className="mb-4 flex items-center gap-2 rounded-lg bg-red-50 p-3 text-sm text-red-600">
+            <AlertCircle size={16} />
+            {validationError}
           </div>
         )}
 

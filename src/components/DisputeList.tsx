@@ -89,7 +89,7 @@ export function DisputeList({ items, loading, viewMode, hasMore, loadMore, loadi
                   {item.chain[0]}
                 </div>
                 <div>
-                  <div className="text-xs font-medium text-gray-400 mb-0.5">Dispute</div>
+                  <div className="text-xs font-medium text-gray-400 mb-0.5">{t("disputes.card.dispute")}</div>
                   <div className="text-sm font-bold text-gray-900 font-mono tracking-tight">{item.id.slice(0, 8)}...</div>
                 </div>
               </div>
@@ -136,11 +136,11 @@ export function DisputeList({ items, loading, viewMode, hasMore, loadMore, loadi
               viewMode === "grid" ? "grid grid-cols-2 gap-3 mb-5" : "flex items-center gap-6 md:w-auto shrink-0 mt-4 md:mt-0"
             )}>
               <div className={cn(viewMode === "grid" ? "p-3 rounded-xl bg-gray-50/50" : "text-right")}>
-                <div className="text-xs text-gray-500 mb-1">Disputer</div>
+                <div className="text-xs text-gray-500 mb-1">{t("disputes.card.disputer")}</div>
                 <div className="font-mono text-xs font-medium text-gray-700">{shortAddress(item.disputer)}</div>
               </div>
               <div className={cn(viewMode === "grid" ? "p-3 rounded-xl bg-gray-50/50" : "text-right")}>
-                <div className="text-xs text-gray-500 mb-1">Votes</div>
+                <div className="text-xs text-gray-500 mb-1">{t("disputes.card.votes")}</div>
                 <div className="font-medium text-gray-900">{item.totalVotes}</div>
               </div>
             </div>

@@ -1,10 +1,13 @@
 import { readOracleConfig } from "@/server/oracleConfig";
 import { readOracleState } from "@/server/oracleState";
 import { isOracleSyncing } from "@/server/oracleIndexer";
-import { handleApi } from "@/server/apiResponse";
+import { handleApi, rateLimit } from "@/server/apiResponse";
 
-export async function GET() {
-  return handleApi(async () => {
+export async function GET(request: Request) {
+  return handleApi(request, async () => {
+    const limited = rateLimit(request, { key: "oracle_status_get", limit: 240, windowMs: 60_000 });
+    if (limited) return limited;
+
     const config = await readOracleConfig();
     const state = await readOracleState();
     return {

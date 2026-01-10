@@ -20,7 +20,6 @@ export function useInfiniteList<T>(
     error, 
     size, 
     setSize, 
-    isValidating,
     mutate
   } = useSWRInfinite<BaseResponse<T>>(
     getUrl, 

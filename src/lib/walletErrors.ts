@@ -3,6 +3,7 @@ type NormalizedWalletErrorKind =
   | "USER_REJECTED"
   | "REQUEST_PENDING"
   | "CHAIN_NOT_ADDED"
+  | "WRONG_NETWORK"
   | "INSUFFICIENT_FUNDS"
   | "UNKNOWN";
 
@@ -40,6 +41,9 @@ export function normalizeWalletError(err: unknown): {
   if (code === 4902 || msg.includes("add it first")) {
     return { kind: "CHAIN_NOT_ADDED", code, rawMessage };
   }
+  if (msg.includes("wrong network") || msg.includes("network mismatch") || msg.includes("chain mismatch")) {
+    return { kind: "WRONG_NETWORK", code, rawMessage };
+  }
   if (msg.includes("wallet not found") || msg.includes("install metamask") || msg.includes("metamask")) {
     return { kind: "WALLET_NOT_FOUND", code, rawMessage };
   }
@@ -48,4 +52,3 @@ export function normalizeWalletError(err: unknown): {
   }
   return { kind: "UNKNOWN", code, rawMessage };
 }
-

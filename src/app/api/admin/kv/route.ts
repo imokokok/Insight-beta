@@ -1,17 +1,7 @@
-import { error, handleApi } from "@/server/apiResponse";
+import { error, getAdminActor, handleApi, rateLimit, requireAdmin } from "@/server/apiResponse";
 import { deleteJsonKey, listJsonKeys, readJsonFile, writeJsonFile } from "@/server/kvStore";
-import { env } from "@/lib/env";
+import { appendAuditLog } from "@/server/observability";
 import { z } from "zod";
-
-function requireAdminStrict(request: Request) {
-  const token = env.INSIGHT_ADMIN_TOKEN;
-  if (!token) return error("forbidden", 403);
-  const headerToken = request.headers.get("x-admin-token")?.trim() ?? "";
-  const auth = request.headers.get("authorization")?.trim() ?? "";
-  const bearer = auth.toLowerCase().startsWith("bearer ") ? auth.slice(7).trim() : "";
-  if (headerToken === token || bearer === token) return null;
-  return error("forbidden", 403);
-}
 
 const getKeySchema = z.object({
   key: z.string().trim().max(200).optional(),
@@ -30,8 +20,10 @@ const deleteKeySchema = z.object({
 });
 
 export async function GET(request: Request) {
-  return handleApi(async () => {
-    const auth = requireAdminStrict(request);
+  return handleApi(request, async () => {
+    const limited = rateLimit(request, { key: "admin_kv_get", limit: 120, windowMs: 60_000 });
+    if (limited) return limited;
+    const auth = await requireAdmin(request, { strict: true, scope: "admin_kv_read" });
     if (auth) return auth;
 
     const url = new URL(request.url);
@@ -53,8 +45,10 @@ export async function GET(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  return handleApi(async () => {
-    const auth = requireAdminStrict(request);
+  return handleApi(request, async () => {
+    const limited = rateLimit(request, { key: "admin_kv_put", limit: 60, windowMs: 60_000 });
+    if (limited) return limited;
+    const auth = await requireAdmin(request, { strict: true, scope: "admin_kv_write" });
     if (auth) return auth;
 
     const parsed = await request.json().catch(() => null);
@@ -65,13 +59,23 @@ export async function PUT(request: Request) {
     }
 
     await writeJsonFile(body.data.key, body.data.value);
+    const actor = getAdminActor(request);
+    await appendAuditLog({
+      actor,
+      action: "admin_kv_put",
+      entityType: "kv",
+      entityId: body.data.key,
+      details: null
+    });
     return { ok: true, key: body.data.key };
   });
 }
 
 export async function DELETE(request: Request) {
-  return handleApi(async () => {
-    const auth = requireAdminStrict(request);
+  return handleApi(request, async () => {
+    const limited = rateLimit(request, { key: "admin_kv_delete", limit: 60, windowMs: 60_000 });
+    if (limited) return limited;
+    const auth = await requireAdmin(request, { strict: true, scope: "admin_kv_write" });
     if (auth) return auth;
 
     const url = new URL(request.url);
@@ -83,7 +87,14 @@ export async function DELETE(request: Request) {
     }
 
     await deleteJsonKey(params.data.key);
+    const actor = getAdminActor(request);
+    await appendAuditLog({
+      actor,
+      action: "admin_kv_delete",
+      entityType: "kv",
+      entityId: params.data.key,
+      details: null
+    });
     return { ok: true, key: params.data.key };
   });
 }
-

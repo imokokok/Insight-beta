@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import useSWR from "swr";
 import { fetchApiData } from "@/lib/utils";
 import type { Assertion, OracleConfig, OracleStats, OracleStatus } from "@/lib/oracleTypes";

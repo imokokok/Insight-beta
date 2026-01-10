@@ -56,8 +56,8 @@ export function useOracleTransaction() {
     chain,
     rpcUrl,
     waitForConfirmation = true,
-    successTitle = "Transaction Sent",
-    successMessage = "Your transaction has been submitted.",
+    successTitle,
+    successMessage,
     onSuccess,
     onConfirmed,
     onError
@@ -142,8 +142,8 @@ export function useOracleTransaction() {
       toast({
         id: sentToastId,
         type: "success",
-        title: successTitle,
-        message: `${successMessage} (${hash.slice(0, 10)}…${hash.slice(-8)})`,
+        title: successTitle ?? t("oracle.tx.sentTitle"),
+        message: `${successMessage ?? t("oracle.tx.sentMsg")} (${hash.slice(0, 10)}…${hash.slice(-8)})`,
         actionLabel: explorerUrl ? t("common.viewTx") : undefined,
         actionHref: explorerUrl ?? undefined,
         secondaryActionLabel: t("common.copyHash"),

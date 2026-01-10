@@ -4,6 +4,7 @@ import { query } from './db';
 
 vi.mock('./db', () => ({
   query: vi.fn(),
+  hasDatabase: vi.fn(() => true),
 }));
 
 describe('kvStore', () => {

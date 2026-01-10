@@ -1,10 +1,11 @@
 import { ensureOracleSynced } from "@/server/oracleIndexer";
 import { readOracleConfig } from "@/server/oracleConfig";
 import { readOracleState } from "@/server/oracleState";
-import { error, handleApi, requireAdmin } from "@/server/apiResponse";
+import { error, getAdminActor, handleApi, rateLimit, requireAdmin } from "@/server/apiResponse";
+import { appendAuditLog } from "@/server/observability";
 
-export async function GET() {
-  return handleApi(async () => {
+export async function GET(request: Request) {
+  return handleApi(request, async () => {
     const state = await readOracleState();
     return {
       chain: state.chain,
@@ -18,8 +19,11 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  return handleApi(async () => {
-    const auth = requireAdmin(request);
+  return handleApi(request, async () => {
+    const limited = rateLimit(request, { key: "oracle_sync_post", limit: 10, windowMs: 60_000 });
+    if (limited) return limited;
+
+    const auth = await requireAdmin(request, { strict: true, scope: "oracle_sync_trigger" });
     if (auth) return auth;
 
     const config = await readOracleConfig();
@@ -37,6 +41,14 @@ export async function POST(request: Request) {
       return error("sync_failed", 502);
     }
     const state = await readOracleState();
+    const actor = getAdminActor(request);
+    await appendAuditLog({
+      actor,
+      action: "oracle_sync_triggered",
+      entityType: "oracle",
+      entityId: state.contractAddress,
+      details: { updated: result.updated, lastProcessedBlock: state.lastProcessedBlock.toString(10) }
+    });
     return {
       updated: result.updated,
       chain: state.chain,

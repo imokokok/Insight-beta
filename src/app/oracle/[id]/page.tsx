@@ -58,6 +58,7 @@ export default function OracleDetailPage() {
   const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false);
   const [isVoteModalOpen, setIsVoteModalOpen] = useState(false);
   const [isSettleModalOpen, setIsSettleModalOpen] = useState(false);
+  const [exportingEvidence, setExportingEvidence] = useState<null | "fast" | "logs">(null);
 
   if (isLoading) {
     return <AssertionDetailSkeleton />;
@@ -88,6 +89,25 @@ export default function OracleDetailPage() {
   const canSettle = 
     (assertion.status === "Pending" && isLivenessExpired) ||
     (dispute?.status === "Pending Execution");
+
+  const exportEvidence = async (mode: "fast" | "logs") => {
+    setExportingEvidence(mode);
+    try {
+      const qs = mode === "logs" ? "?includeLogs=1" : "";
+      const payload = await fetchApiData<unknown>(`/api/oracle/assertions/${assertion.id}/evidence${qs}`);
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `evidence_${assertion.chain}_${assertion.id}_${mode}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } finally {
+      setExportingEvidence(null);
+    }
+  };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-12">
@@ -233,11 +253,30 @@ export default function OracleDetailPage() {
                 {t("oracle.detail.actions")}
             </h3>
 
+            <div className="mb-6 space-y-3">
+              <button
+                type="button"
+                onClick={() => exportEvidence("fast")}
+                disabled={exportingEvidence !== null}
+                className="w-full rounded-xl bg-white py-3 text-sm font-bold text-purple-700 shadow-sm ring-1 ring-purple-100 transition-colors hover:bg-purple-50 disabled:opacity-60"
+              >
+                {exportingEvidence === "fast" ? "导出中…" : "导出证据包"}
+              </button>
+              <button
+                type="button"
+                onClick={() => exportEvidence("logs")}
+                disabled={exportingEvidence !== null}
+                className="w-full rounded-xl bg-white py-3 text-sm font-bold text-gray-700 shadow-sm ring-1 ring-gray-100 transition-colors hover:bg-gray-50 disabled:opacity-60"
+              >
+                {exportingEvidence === "logs" ? "导出中…" : "导出证据包（含链上日志）"}
+              </button>
+            </div>
+
             {canSettle && (
               <div className="space-y-4">
                  <button 
                    onClick={() => setIsSettleModalOpen(true)}
-                   className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 py-3.5 text-sm font-bold text-white shadow-lg shadow-blue-500/25 transition-all hover:from-blue-600 hover:to-blue-700 hover:shadow-xl hover:shadow-blue-500/30 active:scale-[0.98]"
+                    className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 py-3.5 text-sm font-bold text-white shadow-lg shadow-blue-500/25 transition-all hover:from-blue-600 hover:to-blue-700 hover:shadow-xl hover:shadow-blue-500/30 active:scale-[0.98]"
                  >
                    <div className="flex items-center justify-center gap-2 relative z-10">
                      <CheckCircle2 size={18} />

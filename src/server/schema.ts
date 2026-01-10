@@ -68,6 +68,42 @@ export async function ensureSchema() {
       value JSONB,
       updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     );
+
+    CREATE TABLE IF NOT EXISTS alerts (
+      id BIGSERIAL PRIMARY KEY,
+      fingerprint TEXT UNIQUE NOT NULL,
+      type TEXT NOT NULL,
+      severity TEXT NOT NULL,
+      title TEXT NOT NULL,
+      message TEXT NOT NULL,
+      entity_type TEXT,
+      entity_id TEXT,
+      status TEXT NOT NULL DEFAULT 'Open',
+      occurrences INTEGER NOT NULL DEFAULT 1,
+      first_seen_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+      last_seen_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+      acknowledged_at TIMESTAMP WITH TIME ZONE,
+      resolved_at TIMESTAMP WITH TIME ZONE,
+      created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_alerts_status ON alerts(status);
+    CREATE INDEX IF NOT EXISTS idx_alerts_last_seen ON alerts(last_seen_at);
+    CREATE INDEX IF NOT EXISTS idx_alerts_type ON alerts(type);
+    CREATE INDEX IF NOT EXISTS idx_alerts_severity ON alerts(severity);
+
+    CREATE TABLE IF NOT EXISTS audit_log (
+      id BIGSERIAL PRIMARY KEY,
+      actor TEXT,
+      action TEXT NOT NULL,
+      entity_type TEXT,
+      entity_id TEXT,
+      details JSONB,
+      created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_audit_created ON audit_log(created_at);
   `);
 
   await query(`

@@ -13,6 +13,7 @@ import {
 } from "@/server/oracleState";
 import { isZeroBytes32, toIsoFromSeconds } from "@/lib/utils";
 import { env } from "@/lib/env";
+import { createOrTouchAlert, readAlertRules } from "@/server/observability";
 
 const abi = parseAbi([
   "event AssertionCreated(bytes32 indexed assertionId,address indexed asserter,string protocol,string market,string assertion,uint256 bondUsd,uint256 assertedAt,uint256 livenessEndsAt,bytes32 txHash)",
@@ -70,6 +71,8 @@ async function syncOracleOnce(): Promise<{ updated: boolean; state: StoredState 
   const { rpcUrl, contractAddress, chain, startBlock, maxBlockRange, votingPeriodMs } = await getOracleEnv();
   const syncState = await getSyncState();
   let lastProcessedBlock = syncState.lastProcessedBlock;
+  const alertRules = await readAlertRules();
+  const isRuleEnabled = (event: string) => alertRules.some((r) => r.enabled && r.event === event);
 
   if (!rpcUrl || !contractAddress) {
     return { updated: false, state: await readOracleState() };
@@ -182,6 +185,19 @@ async function syncOracleOnce(): Promise<{ updated: boolean; state: StoredState 
             
             await upsertDispute(dispute);
             updated = true;
+
+            if (isRuleEnabled("dispute_created")) {
+              const fingerprint = `dispute_created:${chain}:${id}`;
+              await createOrTouchAlert({
+                fingerprint,
+                type: "dispute_created",
+                severity: "critical",
+                title: "Dispute detected",
+                message: `${assertion?.market ?? id} disputed: ${dispute.disputeReason}`,
+                entityType: "assertion",
+                entityId: id
+              });
+            }
           }
 
           for (const log of voteLogs) {
@@ -265,6 +281,18 @@ async function syncOracleOnce(): Promise<{ updated: boolean; state: StoredState 
 
   } catch (e) {
     const code = toSyncErrorCode(e);
+    if (isRuleEnabled("sync_error")) {
+      const fingerprint = `sync_error:${chain}:${contractAddress}`;
+      await createOrTouchAlert({
+        fingerprint,
+        type: "sync_error",
+        severity: "warning",
+        title: "Oracle sync error",
+        message: code,
+        entityType: "oracle",
+        entityId: contractAddress
+      });
+    }
     await updateSyncState(
       lastProcessedBlock,
       attemptAt,

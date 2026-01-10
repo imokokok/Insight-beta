@@ -6,6 +6,7 @@ import { Assertion } from '@/lib/oracleTypes';
 
 vi.mock('./db', () => ({
   query: vi.fn(),
+  hasDatabase: vi.fn(() => true),
 }));
 
 vi.mock('./schema', () => ({

@@ -1,7 +1,8 @@
 import { listAssertions } from "@/server/oracleStore";
 import { ensureOracleSynced } from "@/server/oracleIndexer";
-import { handleApi } from "@/server/apiResponse";
+import { handleApi, rateLimit } from "@/server/apiResponse";
 import { z } from "zod";
+import { isAddress } from "viem";
 
 const assertionParamsSchema = z.object({
   status: z.enum(["Pending", "Disputed", "Resolved"]).optional().nullable(),
@@ -10,11 +11,14 @@ const assertionParamsSchema = z.object({
   limit: z.coerce.number().min(1).max(100).default(30),
   cursor: z.coerce.number().min(0).default(0),
   sync: z.enum(["0", "1"]).optional(),
-  asserter: z.string().optional().nullable()
+  asserter: z.string().optional().nullable().refine((value) => !value || isAddress(value), { message: "invalid_address" })
 });
 
 export async function GET(request: Request) {
-  return handleApi(async () => {
+  return handleApi(request, async () => {
+    const limited = rateLimit(request, { key: "assertions_get", limit: 120, windowMs: 60_000 });
+    if (limited) return limited;
+
     const url = new URL(request.url);
     const rawParams = Object.fromEntries(url.searchParams);
     

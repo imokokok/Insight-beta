@@ -1,5 +1,3 @@
-import { ArrowLeft } from "lucide-react";
-
 export function AssertionDetailSkeleton() {
   return (
     <div className="space-y-8 animate-pulse pb-12">

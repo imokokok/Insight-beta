@@ -1,11 +1,13 @@
-import { query } from "./db";
+import { hasDatabase, query } from "./db";
 import { ensureSchema } from "./schema";
 import type { OracleChain, OracleConfig as SharedOracleConfig } from "@/lib/oracleTypes";
+import { getMemoryStore } from "@/server/memoryBackend";
 
 export type OracleConfig = SharedOracleConfig;
 
 let schemaEnsured = false;
 async function ensureDb() {
+  if (!hasDatabase()) return;
   if (!schemaEnsured) {
     await ensureSchema();
     schemaEnsured = true;
@@ -102,19 +104,33 @@ function validateOptionalIntInRange(value: unknown, min: number, max: number, co
   return normalized;
 }
 
+type OracleConfigField = keyof OracleConfig;
+
+function withField<T>(field: OracleConfigField, fn: () => T) {
+  try {
+    return fn();
+  } catch (e) {
+    const code = e instanceof Error ? e.message : "unknown_error";
+    throw Object.assign(new Error(code), { field });
+  }
+}
+
 export function validateOracleConfigPatch(next: Partial<OracleConfig>) {
   const patch: Partial<OracleConfig> = {};
-  if (next.rpcUrl !== undefined) patch.rpcUrl = validateRpcUrl(next.rpcUrl);
-  if (next.contractAddress !== undefined) patch.contractAddress = validateAddress(next.contractAddress);
-  if (next.chain !== undefined) patch.chain = validateChain(next.chain);
-  if (next.startBlock !== undefined) patch.startBlock = validateOptionalNonNegativeInt(next.startBlock);
-  if (next.maxBlockRange !== undefined) patch.maxBlockRange = validateOptionalIntInRange(next.maxBlockRange, 100, 200_000, "invalid_max_block_range");
-  if (next.votingPeriodHours !== undefined) patch.votingPeriodHours = validateOptionalIntInRange(next.votingPeriodHours, 1, 720, "invalid_voting_period_hours");
+  if (next.rpcUrl !== undefined) patch.rpcUrl = withField("rpcUrl", () => validateRpcUrl(next.rpcUrl));
+  if (next.contractAddress !== undefined) patch.contractAddress = withField("contractAddress", () => validateAddress(next.contractAddress));
+  if (next.chain !== undefined) patch.chain = withField("chain", () => validateChain(next.chain));
+  if (next.startBlock !== undefined) patch.startBlock = withField("startBlock", () => validateOptionalNonNegativeInt(next.startBlock));
+  if (next.maxBlockRange !== undefined) patch.maxBlockRange = withField("maxBlockRange", () => validateOptionalIntInRange(next.maxBlockRange, 100, 200_000, "invalid_max_block_range"));
+  if (next.votingPeriodHours !== undefined) patch.votingPeriodHours = withField("votingPeriodHours", () => validateOptionalIntInRange(next.votingPeriodHours, 1, 720, "invalid_voting_period_hours"));
   return patch;
 }
 
 export async function readOracleConfig(): Promise<OracleConfig> {
   await ensureDb();
+  if (!hasDatabase()) {
+    return getMemoryStore().oracleConfig;
+  }
   const res = await query("SELECT * FROM oracle_config WHERE id = 1");
   const row = res.rows[0];
   if (!row) {
@@ -149,6 +165,11 @@ export async function writeOracleConfig(next: Partial<OracleConfig>) {
     votingPeriodHours: next.votingPeriodHours === undefined ? prev.votingPeriodHours : (normalizeOptionalIntInRange(next.votingPeriodHours, 1, 720) ?? 72)
   };
   
+  if (!hasDatabase()) {
+    getMemoryStore().oracleConfig = merged;
+    return merged;
+  }
+
   await query(
     `INSERT INTO oracle_config (id, rpc_url, contract_address, chain, start_block, max_block_range, voting_period_hours)
      VALUES (1, $1, $2, $3, $4, $5, $6)

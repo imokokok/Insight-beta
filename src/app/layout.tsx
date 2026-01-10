@@ -51,7 +51,10 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                 <main className="flex-1 transition-all duration-300 md:ml-64">
                   <div className="container mx-auto p-4 md:p-8 max-w-7xl">
                     <div className="sticky top-0 z-20 mb-6 flex justify-end">
-                      <LanguageSwitcher />
+                      <div className="flex items-center gap-3">
+                        <SyncStatus />
+                        <LanguageSwitcher />
+                      </div>
                     </div>
                     {children}
                   </div>

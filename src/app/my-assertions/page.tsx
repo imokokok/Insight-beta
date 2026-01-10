@@ -13,7 +13,8 @@ import {
   LayoutGrid, 
   List, 
   Search,
-  Wallet 
+  Wallet,
+  FileText
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -30,22 +31,22 @@ export default function MyAssertionsPage() {
     return (
       <div className="space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
         <PageHeader 
-        title={t("myAssertions.title")} 
-        description={t("myAssertions.description")}
-      >
-        <ConnectWallet />
-      </PageHeader>
-      
-      <div className="flex flex-col items-center justify-center py-20 text-center">
-        <div className="p-6 rounded-full bg-purple-50 text-purple-600 mb-6">
-          <Wallet size={48} />
+          title={t("nav.myAssertions")} 
+          description={t("oracle.myAssertions.description")}
+        >
+          <ConnectWallet />
+        </PageHeader>
+        
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="p-6 rounded-full bg-purple-50 text-purple-600 mb-6">
+            <Wallet size={48} />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">{t("oracle.myAssertions.connectWalletTitle")}</h2>
+          <p className="text-gray-500 max-w-md mx-auto mb-8">
+            {t("oracle.myAssertions.connectWalletDesc")}
+          </p>
+          <ConnectWallet />
         </div>
-        <h2 className="text-xl font-bold text-gray-900 mb-2">{t("myAssertions.connectWalletTitle")}</h2>
-        <p className="text-gray-500 max-w-md mx-auto mb-8">
-          {t("myAssertions.connectWalletDesc")}
-        </p>
-        <ConnectWallet />
-      </div>
       </div>
     );
   }
@@ -53,8 +54,8 @@ export default function MyAssertionsPage() {
   return (
     <div className="space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <PageHeader 
-        title="My Assertions" 
-        description="View and manage your assertions"
+        title={t("nav.myAssertions")} 
+        description={t("oracle.myAssertions.description")}
       >
         <ConnectWallet />
       </PageHeader>
@@ -67,7 +68,7 @@ export default function MyAssertionsPage() {
       {/* Toolbar */}
       <div className="glass-panel sticky top-4 z-20 rounded-2xl p-3 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between shadow-xl shadow-purple-900/5 backdrop-blur-xl border-white/60 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
         <div className="flex items-center gap-3">
-          <div className="hidden md:flex bg-gray-100/50 p-1 rounded-xl">
+          <div className="flex bg-gray-100/50 p-1 rounded-xl">
             <button
               onClick={() => setViewMode("grid")}
               className={cn(
@@ -104,6 +105,17 @@ export default function MyAssertionsPage() {
       </div>
 
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
+        {!loading && items.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="p-6 rounded-full bg-purple-50 text-purple-600 mb-6">
+              <FileText size={48} />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">{t("oracle.myAssertions.noAssertions")}</h2>
+            <p className="text-gray-500 max-w-md mx-auto">
+              {t("oracle.myAssertions.createFirst")}
+            </p>
+          </div>
+        ) : (
         <AssertionList 
           items={items} 
           loading={loading} 
@@ -112,6 +124,7 @@ export default function MyAssertionsPage() {
           loadMore={loadMore}
           loadingMore={loadingMore}
         />
+        )}
       </div>
     </div>
   );

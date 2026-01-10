@@ -7,7 +7,9 @@ import {
   Activity, 
   Menu,
   X,
-  User
+  User,
+  ScrollText,
+  KeyRound
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -17,6 +19,9 @@ import { ConnectWallet } from "@/components/ConnectWallet";
 const navItems = [
   { key: "nav.oracle" as const, href: "/oracle", icon: Activity },
   { key: "nav.disputes" as const, href: "/disputes", icon: ShieldAlert },
+  { key: "nav.alerts" as const, href: "/alerts", icon: ShieldAlert },
+  { key: "nav.audit" as const, href: "/audit", icon: ScrollText },
+  { key: "nav.adminTokens" as const, href: "/admin/tokens", icon: KeyRound },
   { key: "nav.myAssertions" as const, href: "/my-assertions", icon: User },
   { key: "nav.myDisputes" as const, href: "/my-disputes", icon: ShieldAlert }
 ];

@@ -41,6 +41,9 @@ export const translations = {
     nav: {
       oracle: "监控台",
       disputes: "争议",
+      alerts: "告警",
+      audit: "审计",
+      adminTokens: "密钥",
       myAssertions: "我的断言",
       myDisputes: "我的争议"
     },
@@ -49,10 +52,11 @@ export const translations = {
       loading: "加载中…",
       comingSoon: "敬请期待",
       loadMore: "加载更多",
+      retry: "重试",
       noData: "暂无数据",
       all: "全部",
       pending: "待确认",
-      disputed: "已争议",
+      disputed: "有争议",
       resolved: "已结算",
       openMenu: "打开菜单",
       closeMenu: "关闭菜单",
@@ -60,8 +64,10 @@ export const translations = {
       viewTx: "查看交易",
       copyHash: "复制哈希",
       copied: "已复制",
-      viewDetails: "查看详情",
-      allLoaded: "已加载全部"
+      allLoaded: "已全部加载",
+      ok: "好的",
+      cancel: "取消",
+      confirm: "确认"
     },
     sidebar: {
       userWallet: "用户钱包",
@@ -78,7 +84,13 @@ export const translations = {
       disconnect: "断开连接",
       copyAddress: "复制地址",
       balance: "余额",
-      myProfile: "我的资料"
+      myProfile: "我的资料",
+      network: "网络",
+      unknownNetwork: "未知网络",
+      networkSwitched: "网络已切换",
+      networkSwitchFailed: "切换网络失败",
+      switchingNetwork: "切换中…",
+      networkAlreadySelected: "当前已在该网络"
     },
     chain: {
       local: "本地",
@@ -170,6 +182,8 @@ export const translations = {
       settlementFalse: "无效 / 虚假"
     },
     tx: {
+      sentTitle: "交易已发送",
+      sentMsg: "你的交易已提交。",
       confirmingTitle: "等待确认",
       confirmingMsg: "交易已提交，正在等待链上确认。",
       confirmedTitle: "交易已确认",
@@ -184,16 +198,17 @@ export const translations = {
       settlementSubmittedTitle: "结算已提交",
       settlementSubmittedMsg: "该断言已发起结算。"
     },
-    createAssertionModal: {
-      protocolLabel: "协议",
-      protocolPlaceholder: "例如：Aave V3",
-      marketLabel: "市场 / ID",
-      marketPlaceholder: "例如：ETH-USDC",
-      assertionLabel: "断言内容",
-      assertionPlaceholder: "请描述你要断言的事实…",
-      bondLabel: "保证金（ETH）",
-      submit: "创建断言"
-    },
+      createAssertionModal: {
+        protocolLabel: "协议",
+        protocolPlaceholder: "例如：Aave V3",
+        marketLabel: "市场 / ID",
+        marketPlaceholder: "例如：ETH-USDC",
+        assertionLabel: "断言内容",
+        assertionPlaceholder: "你认为的事实是什么？",
+        bondLabel: "保证金 (ETH)",
+        submit: "创建断言",
+        bondInvalid: "保证金金额必须大于 0"
+      },
     disputeModal: {
       desc: "提交争议需要缴纳保证金（Bond）。",
       bondLabel: "保证金（ETH）",
@@ -212,6 +227,8 @@ export const translations = {
         maxBlockRange: "最大区块跨度",
         votingPeriodHours: "投票期（小时）",
         adminToken: "管理员 Token",
+        adminActor: "操作者",
+        adminActorPlaceholder: "例如：alice@ops",
         save: "保存",
         syncNow: "立即同步",
         syncStatus: "同步状态",
@@ -268,6 +285,29 @@ export const translations = {
       roi: "投资回报率",
       totalReturn: "总回报"
     },
+    audit: {
+      title: "审计日志",
+      description: "追踪管理员操作与关键配置变更。",
+      adminToken: "管理员 Token",
+      adminTokenPlaceholder: "Bearer …",
+      adminTokenHint: "使用监控台里保存的管理员 Token。",
+      total: "总记录",
+      refresh: "刷新",
+      error: "错误",
+      empty: "暂无审计记录。",
+      actor: "操作者"
+    },
+    adminTokens: {
+      title: "管理密钥",
+      description: "创建、轮换与吊销管理员 Token。",
+      label: "标签",
+      role: "角色",
+      create: "创建",
+      revoke: "吊销",
+      createdAt: "创建时间",
+      revokedAt: "吊销时间",
+      tokenValue: "新 Token（仅显示一次）"
+    },
     disputes: {
       title: "争议结算",
       description: "监控争议进展、投票情况与最终裁决。",
@@ -282,7 +322,26 @@ export const translations = {
       reject: "反对断言",
       totalVotesCast: "已投票总数",
       emptyTitle: "暂无活跃争议",
-      emptyDesc: "当前系统没有活跃争议，可稍后再查看。"
+      emptyDesc: "当前系统没有活跃争议，可稍后再查看。",
+      card: {
+        dispute: "争议",
+        disputer: "争议发起方",
+        votes: "票数"
+      }
+    },
+    alerts: {
+      title: "告警中心",
+      description: "聚合告警、确认处理并追踪系统健康。",
+      adminToken: "管理员 Token",
+      adminActor: "操作者",
+      adminActorPlaceholder: "例如：alice@ops",
+      rules: "告警规则",
+      refresh: "刷新",
+      acknowledge: "确认",
+      resolve: "解决",
+      status: "状态",
+      severity: "级别",
+      type: "类型"
     },
     status: {
       voting: "投票中",
@@ -297,6 +356,9 @@ export const translations = {
       chainNotAdded: "钱包未添加该网络，请先添加后再重试。",
       wrongNetwork: "网络不匹配，请切换到目标链后重试。",
       insufficientFunds: "余额不足，无法支付交易费用或转账金额。",
+      invalidAddress: "地址格式不正确",
+      invalidMaxBlockRange: "最大区块跨度不在允许范围内",
+      invalidVotingPeriodHours: "投票期小时数不在允许范围内",
       httpError: "网络请求失败",
       invalidJson: "响应解析失败",
       apiError: "服务端错误",
@@ -321,6 +383,9 @@ export const translations = {
     nav: {
       oracle: "Oracle",
       disputes: "Disputes",
+      alerts: "Alerts",
+      audit: "Audit",
+      adminTokens: "Tokens",
       myAssertions: "My Assertions",
       myDisputes: "My Disputes"
     },
@@ -329,19 +394,22 @@ export const translations = {
       loading: "Loading…",
       comingSoon: "Coming Soon",
       loadMore: "Load More",
+      retry: "Retry",
       noData: "No Data",
       all: "All",
       pending: "Pending",
       disputed: "Disputed",
       resolved: "Resolved",
-      openMenu: "Open Menu",
-      closeMenu: "Close Menu",
+      openMenu: "Open menu",
+      closeMenu: "Close menu",
       close: "Close",
       viewTx: "View TX",
       copyHash: "Copy hash",
       copied: "Copied",
-      viewDetails: "View Details",
-      allLoaded: "All loaded"
+      allLoaded: "All loaded",
+      ok: "OK",
+      cancel: "Cancel",
+      confirm: "Confirm"
     },
     sidebar: {
       userWallet: "User Wallet",
@@ -358,7 +426,13 @@ export const translations = {
       disconnect: "Disconnect",
       copyAddress: "Copy Address",
       balance: "Balance",
-      myProfile: "My Profile"
+      myProfile: "My Profile",
+      network: "Network",
+      unknownNetwork: "Unknown network",
+      networkSwitched: "Network switched",
+      networkSwitchFailed: "Failed to switch network",
+      switchingNetwork: "Switching…",
+      networkAlreadySelected: "Already on this network"
     },
     chain: {
       local: "Local",
@@ -428,6 +502,8 @@ export const translations = {
       against: "Against",
     },
     tx: {
+      sentTitle: "Transaction sent",
+      sentMsg: "Your transaction has been submitted.",
       confirmingTitle: "Confirming",
       confirmingMsg: "Transaction submitted. Waiting for confirmation.",
       confirmedTitle: "Confirmed",
@@ -450,7 +526,8 @@ export const translations = {
       assertionLabel: "Assertion Statement",
       assertionPlaceholder: "What is the truth you are asserting?",
       bondLabel: "Bond Amount (ETH)",
-      submit: "Create Assertion"
+      submit: "Create Assertion",
+      bondInvalid: "Bond amount must be greater than 0"
     },
     disputeModal: {
       desc: "Submitting a dispute requires a bond.",
@@ -470,6 +547,8 @@ export const translations = {
         maxBlockRange: "Max Block Range",
         votingPeriodHours: "Voting Period (hours)",
         adminToken: "Admin Token",
+        adminActor: "Actor",
+        adminActorPlaceholder: "e.g. alice@ops",
         save: "Save",
         syncNow: "Sync Now",
         syncStatus: "Sync",
@@ -487,7 +566,11 @@ export const translations = {
         activeDisputes: "Active Disputes",
         resolved24h: "Resolved (24h)",
         avgResolution: "Avg Resolution Time",
-        liveCap: "Live oracle market capitalization"
+        liveCap: "Live oracle market capitalization",
+        totalAssertions: "Total Assertions",
+        totalDisputes: "Total Disputes",
+        totalBonded: "Total Bonded",
+        winRate: "Win Rate"
       },
       card: {
         marketQuestion: "Market Question",
@@ -522,6 +605,29 @@ export const translations = {
       roi: "ROI",
       totalReturn: "Total Return"
     },
+    audit: {
+      title: "Audit Log",
+      description: "Track admin actions and critical changes.",
+      adminToken: "Admin token",
+      adminTokenPlaceholder: "Bearer …",
+      adminTokenHint: "Use the same admin token stored in this session.",
+      total: "Total",
+      refresh: "Refresh",
+      error: "Error",
+      empty: "No audit entries yet.",
+      actor: "Actor"
+    },
+    adminTokens: {
+      title: "Admin Tokens",
+      description: "Create, rotate, and revoke admin tokens.",
+      label: "Label",
+      role: "Role",
+      create: "Create",
+      revoke: "Revoke",
+      createdAt: "Created",
+      revokedAt: "Revoked",
+      tokenValue: "New token (shown once)"
+    },
     disputes: {
       title: "Dispute Resolution",
       description: "Monitor active disputes, track voting progress, and analyze outcomes.",
@@ -536,7 +642,26 @@ export const translations = {
       reject: "Reject Assertion",
       totalVotesCast: "Total Votes Cast",
       emptyTitle: "No Active Disputes",
-      emptyDesc: "There are currently no active disputes in the system."
+      emptyDesc: "There are currently no active disputes in the system.",
+      card: {
+        dispute: "Dispute",
+        disputer: "Disputer",
+        votes: "Votes"
+      }
+    },
+    alerts: {
+      title: "Alerts",
+      description: "Aggregate alerts, acknowledge and track health.",
+      adminToken: "Admin token",
+      adminActor: "Actor",
+      adminActorPlaceholder: "e.g. alice@ops",
+      rules: "Alert rules",
+      refresh: "Refresh",
+      acknowledge: "Acknowledge",
+      resolve: "Resolve",
+      status: "Status",
+      severity: "Severity",
+      type: "Type"
     },
     status: {
       voting: "Voting",
@@ -551,6 +676,9 @@ export const translations = {
       chainNotAdded: "This network is not added in your wallet. Please add it first.",
       wrongNetwork: "Wrong network. Please switch to the target chain.",
       insufficientFunds: "Insufficient funds to pay for gas or value.",
+      invalidAddress: "Invalid address",
+      invalidMaxBlockRange: "Max block range is out of allowed bounds",
+      invalidVotingPeriodHours: "Voting period hours is out of allowed bounds",
       httpError: "Network request failed",
       invalidJson: "Failed to parse response",
       apiError: "Server error",
@@ -575,13 +703,18 @@ export const translations = {
     nav: {
       oracle: "Oráculo",
       disputes: "Disputas",
-      myAssertions: "Mis Afirmaciones"
+      alerts: "Alertas",
+      audit: "Auditoría",
+      adminTokens: "Tokens",
+      myAssertions: "Mis Aserciones",
+      myDisputes: "Mis Disputas"
     },
     common: {
       language: "Idioma",
       loading: "Cargando…",
       comingSoon: "Próximamente",
       loadMore: "Cargar más",
+      retry: "Reintentar",
       all: "Todo",
       pending: "Pendiente",
       disputed: "En disputa",
@@ -592,7 +725,8 @@ export const translations = {
       viewTx: "Ver TX",
       copyHash: "Copiar hash",
       copied: "Copiado",
-      allLoaded: "Todo cargado"
+      allLoaded: "Todo cargado",
+      noData: "Sin datos"
     },
     sidebar: {
       userWallet: "Cartera de usuario",
@@ -609,7 +743,13 @@ export const translations = {
       disconnect: "Desconectar",
       copyAddress: "Copiar dirección",
       balance: "Saldo",
-      myProfile: "Mi perfil"
+      myProfile: "Mi perfil",
+      network: "Red",
+      unknownNetwork: "Red desconocida",
+      networkSwitched: "Red cambiada",
+      networkSwitchFailed: "No se pudo cambiar la red",
+      switchingNetwork: "Cambiando…",
+      networkAlreadySelected: "Ya estás en esta red"
     },
     chain: {
       local: "Local",
@@ -719,6 +859,8 @@ export const translations = {
         settlementFalse: "Inválido / Falso"
       },
       tx: {
+        sentTitle: "Transacción enviada",
+        sentMsg: "Tu transacción ha sido enviada.",
         confirmingTitle: "Confirmando",
         confirmingMsg: "Transacción enviada. Esperando confirmación.",
         confirmedTitle: "Confirmada",
@@ -741,7 +883,8 @@ export const translations = {
         assertionLabel: "Declaración de afirmación",
         assertionPlaceholder: "¿Cuál es la verdad que afirmas?",
         bondLabel: "Depósito (ETH)",
-        submit: "Crear afirmación"
+        submit: "Crear afirmación",
+        bondInvalid: "El depósito debe ser mayor que 0"
       },
       disputeModal: {
         desc: "Enviar una disputa requiere un depósito.",
@@ -761,6 +904,8 @@ export const translations = {
         maxBlockRange: "Rango máximo de bloques",
         votingPeriodHours: "Período de votación (horas)",
         adminToken: "Token de administrador",
+        adminActor: "Actor",
+        adminActorPlaceholder: "p.ej. alice@ops",
         save: "Guardar",
         syncNow: "Sincronizar",
         syncStatus: "Sincronización",
@@ -778,7 +923,11 @@ export const translations = {
         activeDisputes: "Disputas activas",
         resolved24h: "Resueltas (24h)",
         avgResolution: "Tiempo medio de resolución",
-        liveCap: "Capitalización de mercado de oráculo en vivo"
+        liveCap: "Capitalización de mercado de oráculo en vivo",
+        totalAssertions: "Afirmaciones totales",
+        totalDisputes: "Disputas totales",
+        totalBonded: "Total en fianza",
+        winRate: "Tasa de aciertos"
       },
       card: {
         marketQuestion: "Pregunta del mercado",
@@ -803,6 +952,29 @@ export const translations = {
       roi: "ROI",
       totalReturn: "Retorno Total"
     },
+    audit: {
+      title: "Registro de Auditoría",
+      description: "Rastrea acciones de admin y cambios críticos.",
+      adminToken: "Token de admin",
+      adminTokenPlaceholder: "Bearer …",
+      adminTokenHint: "Usa el mismo token de admin guardado en esta sesión.",
+      total: "Total",
+      refresh: "Actualizar",
+      error: "Error",
+      empty: "Aún no hay registros de auditoría.",
+      actor: "Actor"
+    },
+    adminTokens: {
+      title: "Tokens de Admin",
+      description: "Crea, rota y revoca tokens de administrador.",
+      label: "Etiqueta",
+      role: "Rol",
+      create: "Crear",
+      revoke: "Revocar",
+      createdAt: "Creado",
+      revokedAt: "Revocado",
+      tokenValue: "Nuevo token (se muestra una vez)"
+    },
     disputes: {
       title: "Resolución de disputas",
       description: "Monitorea disputas activas, progreso de votación y resultados.",
@@ -817,7 +989,26 @@ export const translations = {
       reject: "Rechazar afirmación",
       totalVotesCast: "Votos emitidos",
       emptyTitle: "No hay disputas activas",
-      emptyDesc: "Actualmente no hay disputas activas en el sistema."
+      emptyDesc: "Actualmente no hay disputas activas en el sistema.",
+      card: {
+        dispute: "Disputa",
+        disputer: "Disputante",
+        votes: "Votos"
+      }
+    },
+    alerts: {
+      title: "Alertas",
+      description: "Agrupa alertas, confirma y sigue la salud.",
+      adminToken: "Token de admin",
+      adminActor: "Actor",
+      adminActorPlaceholder: "p.ej. alice@ops",
+      rules: "Reglas de alertas",
+      refresh: "Actualizar",
+      acknowledge: "Confirmar",
+      resolve: "Resolver",
+      status: "Estado",
+      severity: "Severidad",
+      type: "Tipo"
     },
     status: {
       voting: "Votación",
@@ -832,6 +1023,9 @@ export const translations = {
       chainNotAdded: "Esta red no está añadida en tu cartera. Añádela primero.",
       wrongNetwork: "Red incorrecta. Cambia a la cadena objetivo.",
       insufficientFunds: "Fondos insuficientes para pagar gas o el valor.",
+      invalidAddress: "Dirección inválida",
+      invalidMaxBlockRange: "El rango máximo de bloques está fuera de los límites permitidos",
+      invalidVotingPeriodHours: "Las horas del período de votación están fuera de los límites permitidos",
       httpError: "Falló la solicitud de red",
       invalidJson: "No se pudo analizar la respuesta",
       apiError: "Error del servidor",
@@ -855,12 +1049,16 @@ export type TranslationKey =
   | "app.subtitle"
   | "nav.oracle"
   | "nav.disputes"
+  | "nav.alerts"
+  | "nav.adminTokens"
   | "nav.myAssertions"
   | "nav.myDisputes"
+  | "nav.audit"
   | "common.language"
   | "common.loading"
   | "common.comingSoon"
   | "common.loadMore"
+  | "common.retry"
   | "common.noData"
   | "common.all"
   | "common.pending"
@@ -887,6 +1085,12 @@ export type TranslationKey =
   | "wallet.copyAddress"
   | "wallet.balance"
   | "wallet.myProfile"
+  | "wallet.network"
+  | "wallet.unknownNetwork"
+  | "wallet.networkSwitched"
+  | "wallet.networkSwitchFailed"
+  | "wallet.switchingNetwork"
+  | "wallet.networkAlreadySelected"
   | "chain.local"
   | "chain.polygon"
   | "chain.arbitrum"
@@ -922,7 +1126,24 @@ export type TranslationKey =
   | "myDisputes.description"
   | "myDisputes.connectWalletTitle"
   | "myDisputes.connectWalletDesc"
-  | "myDisputes.noDisputes"
+  | "oracle.charts.waitingData"
+  | "oracle.myAssertions.title"
+  | "oracle.myAssertions.description"
+  | "oracle.myAssertions.connectWalletTitle"
+  | "oracle.myAssertions.connectWalletDesc"
+  | "oracle.myAssertions.noAssertions"
+  | "oracle.myAssertions.createFirst"
+  | "oracle.myDisputes.title"
+  | "oracle.myDisputes.description"
+  | "oracle.myDisputes.connectWalletTitle"
+  | "oracle.myDisputes.connectWalletDesc"
+  | "oracle.myDisputes.noDisputes"
+  | "oracle.sync.synced"
+  | "oracle.sync.lagging"
+  | "oracle.sync.error"
+  | "oracle.sync.status"
+  | "oracle.sync.block"
+  | "oracle.sync.lastUpdate"
   | "oracle.timeline.asserted"
   | "oracle.timeline.disputed"
   | "oracle.timeline.resolved"
@@ -978,6 +1199,8 @@ export type TranslationKey =
   | "oracle.tx.voteCastAgainstMsg"
   | "oracle.tx.settlementSubmittedTitle"
   | "oracle.tx.settlementSubmittedMsg"
+  | "oracle.tx.sentTitle"
+  | "oracle.tx.sentMsg"
   | "oracle.tx.confirmingTitle"
   | "oracle.tx.confirmingMsg"
   | "oracle.tx.confirmedTitle"
@@ -990,6 +1213,7 @@ export type TranslationKey =
   | "oracle.createAssertionModal.assertionPlaceholder"
   | "oracle.createAssertionModal.bondLabel"
   | "oracle.createAssertionModal.submit"
+  | "oracle.createAssertionModal.bondInvalid"
   | "oracle.disputeModal.desc"
   | "oracle.disputeModal.bondLabel"
   | "oracle.disputeModal.submit"
@@ -1003,6 +1227,8 @@ export type TranslationKey =
   | "oracle.config.maxBlockRange"
   | "oracle.config.votingPeriodHours"
   | "oracle.config.adminToken"
+  | "oracle.config.adminActor"
+  | "oracle.config.adminActorPlaceholder"
   | "oracle.config.save"
   | "oracle.config.syncNow"
   | "oracle.config.syncStatus"
@@ -1019,6 +1245,10 @@ export type TranslationKey =
   | "oracle.stats.resolved24h"
   | "oracle.stats.avgResolution"
   | "oracle.stats.liveCap"
+  | "oracle.stats.totalAssertions"
+  | "oracle.stats.totalDisputes"
+  | "oracle.stats.totalBonded"
+  | "oracle.stats.winRate"
   | "oracle.card.marketQuestion"
   | "oracle.card.assertion"
   | "oracle.card.asserter"
@@ -1037,6 +1267,25 @@ export type TranslationKey =
   | "pnl.profit"
   | "pnl.roi"
   | "pnl.totalReturn"
+  | "audit.title"
+  | "audit.description"
+  | "audit.adminToken"
+  | "audit.adminTokenPlaceholder"
+  | "audit.adminTokenHint"
+  | "audit.total"
+  | "audit.refresh"
+  | "audit.error"
+  | "audit.empty"
+  | "audit.actor"
+  | "adminTokens.title"
+  | "adminTokens.description"
+  | "adminTokens.label"
+  | "adminTokens.role"
+  | "adminTokens.create"
+  | "adminTokens.revoke"
+  | "adminTokens.createdAt"
+  | "adminTokens.revokedAt"
+  | "adminTokens.tokenValue"
   | "disputes.title"
   | "disputes.description"
   | "disputes.umaDvmActive"
@@ -1051,6 +1300,21 @@ export type TranslationKey =
   | "disputes.totalVotesCast"
   | "disputes.emptyTitle"
   | "disputes.emptyDesc"
+  | "disputes.card.dispute"
+  | "disputes.card.disputer"
+  | "disputes.card.votes"
+  | "alerts.title"
+  | "alerts.description"
+  | "alerts.adminToken"
+  | "alerts.adminActor"
+  | "alerts.adminActorPlaceholder"
+  | "alerts.rules"
+  | "alerts.refresh"
+  | "alerts.acknowledge"
+  | "alerts.resolve"
+  | "alerts.status"
+  | "alerts.severity"
+  | "alerts.type"
   | "status.voting"
   | "status.pendingExecution"
   | "status.executed"
@@ -1061,6 +1325,9 @@ export type TranslationKey =
   | "errors.chainNotAdded"
   | "errors.wrongNetwork"
   | "errors.insufficientFunds"
+  | "errors.invalidAddress"
+  | "errors.invalidMaxBlockRange"
+  | "errors.invalidVotingPeriodHours"
   | "errors.httpError"
   | "errors.invalidJson"
   | "errors.apiError"
@@ -1079,13 +1346,18 @@ export function getUiErrorMessage(errorCode: string, t: (key: TranslationKey) =>
   if (errorCode === "unknown_error") return t("errors.unknownError");
   if (errorCode.startsWith("http_")) return `${t("errors.httpError")} (${errorCode.slice(5)})`;
   if (errorCode === "invalid_json") return t("errors.invalidJson");
+  if (errorCode === "invalid_json_response") return t("errors.invalidJson");
   if (errorCode === "api_error") return t("errors.apiError");
   if (errorCode === "invalid_api_response") return t("errors.invalidApiResponse");
+  if (errorCode === "api_unknown_error") return t("errors.unknownError");
   if (errorCode === "missing_config") return t("errors.missingConfig");
   if (errorCode === "invalid_rpc_url") return t("errors.invalidRpcUrl");
   if (errorCode === "invalid_contract_address") return t("errors.invalidContractAddress");
   if (errorCode === "invalid_chain") return t("errors.invalidChain");
   if (errorCode === "invalid_request_body") return t("errors.invalidRequestBody");
+  if (errorCode === "invalid_address") return t("errors.invalidAddress");
+  if (errorCode === "invalid_max_block_range") return t("errors.invalidMaxBlockRange");
+  if (errorCode === "invalid_voting_period_hours") return t("errors.invalidVotingPeriodHours");
   if (errorCode === "forbidden") return t("errors.forbidden");
   if (errorCode === "rpc_unreachable") return t("errors.rpcUnreachable");
   if (errorCode === "contract_not_found") return t("errors.contractNotFound");

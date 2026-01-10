@@ -5,13 +5,12 @@ export const logger = {
     if (!isProd) console.debug(...args);
   },
   info: (...args: unknown[]) => {
-    if (!isProd) console.info(...args);
+    console.info(...args);
   },
   warn: (...args: unknown[]) => {
-    if (!isProd) console.warn(...args);
+    console.warn(...args);
   },
   error: (...args: unknown[]) => {
     console.error(...args);
   }
 };
-

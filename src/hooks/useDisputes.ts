@@ -1,5 +1,3 @@
-import { useCallback } from "react";
-import { fetchApiData } from "@/lib/utils";
 import type { Dispute, OracleConfig, DisputeStatus } from "@/lib/oracleTypes";
 import { useInfiniteList, BaseResponse } from "./useInfiniteList";
 

@@ -60,7 +60,8 @@ npm run dev -- --port 3100
 
 - `SUPABASE_DB_URL`：Supabase Postgres 连接串（供脚本/回退使用）
 - `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`：脚本辅助字段（并非稳定的 DB URL 来源）
-- `INSIGHT_ADMIN_TOKEN`：管理接口 Token（用于写配置、触发同步等）
+- `INSIGHT_ADMIN_TOKEN`：管理接口 Root Token（用于写配置、触发同步等；建议仅用于引导/紧急）
+- `INSIGHT_ADMIN_TOKEN_SALT`：用于 DB 中管理多 Token 的盐（启用 `/api/admin/tokens` 时需要，建议 ≥16 字符随机）
 - `INSIGHT_RPC_URL`：后端索引默认 RPC（写入/覆盖配置时可用）
 - `INSIGHT_ORACLE_ADDRESS`：默认 Oracle 合约地址
 - `INSIGHT_CHAIN`：链名（与配置的 `OracleChain` 一致，例如 `Polygon`/`Arbitrum`/`Optimism`/`Local`）
@@ -69,10 +70,12 @@ npm run dev -- --port 3100
 
 ### 管理接口鉴权
 
-当设置了 `INSIGHT_ADMIN_TOKEN` 时，以下接口需要鉴权：
+当设置了 `INSIGHT_ADMIN_TOKEN` 或 `INSIGHT_ADMIN_TOKEN_SALT` 时，管理/写接口需要鉴权：
 
 - Header `x-admin-token: <token>` 或
 - Header `Authorization: Bearer <token>`
+
+当设置 `INSIGHT_ADMIN_TOKEN_SALT` 后，可以通过 `GET/POST/DELETE /api/admin/tokens` 管理多 Token（POST 会返回一次性的明文 token，用于分发/轮换）。
 
 ### Oracle 配置
 
@@ -131,3 +134,4 @@ npm run supabase:provision
 ## 更多文档
 
 - `docs/API.md`：API 端点与示例
+- `docs/DEPLOYMENT.md`：生产部署与 Token 轮换

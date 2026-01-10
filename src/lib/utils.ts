@@ -116,7 +116,29 @@ export function getAssertionStatusColor(status: string) {
 interface ApiResponse<T> {
   ok: boolean;
   data?: T;
-  error?: string;
+  error?: string | { code?: unknown; details?: unknown };
+}
+
+export class ApiClientError extends Error {
+  code: string;
+  details?: unknown;
+
+  constructor(code: string, details?: unknown) {
+    super(code);
+    this.code = code;
+    this.details = details;
+  }
+}
+
+export function getErrorCode(error: unknown) {
+  if (error instanceof ApiClientError) return error.code;
+  if (error instanceof Error) return error.message;
+  return "unknown_error";
+}
+
+export function getErrorDetails(error: unknown) {
+  if (error instanceof ApiClientError) return error.details;
+  return undefined;
 }
 
 export async function fetchApiData<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
@@ -128,23 +150,29 @@ export async function fetchApiData<T>(input: RequestInfo | URL, init?: RequestIn
       json = await res.json();
     } catch {
       // If parsing fails, throw http status or generic error
-      if (!res.ok) throw new Error(`http_${res.status}`);
-      throw new Error("invalid_json_response");
+      if (!res.ok) throw new ApiClientError(`http_${res.status}`);
+      throw new ApiClientError("invalid_json");
     }
 
     if (!res.ok) {
       if (json && typeof json === "object") {
         const record = json as Record<string, unknown>;
         if (record.ok === false) {
-          const error = typeof record.error === "string" ? record.error : "api_error";
-          throw new Error(error);
+          const err = record.error;
+          if (typeof err === "string") throw new ApiClientError(err);
+          if (err && typeof err === "object") {
+            const obj = err as Record<string, unknown>;
+            const code = typeof obj.code === "string" ? obj.code : "api_error";
+            throw new ApiClientError(code, obj.details);
+          }
+          throw new ApiClientError("api_error");
         }
       }
-      throw new Error(`http_${res.status}`);
+      throw new ApiClientError(`http_${res.status}`);
     }
 
     if (!json || typeof json !== "object") {
-      throw new Error("invalid_api_response");
+      throw new ApiClientError("invalid_api_response");
     }
 
     const record = json as ApiResponse<T>;
@@ -153,10 +181,18 @@ export async function fetchApiData<T>(input: RequestInfo | URL, init?: RequestIn
     }
     
     if (record.error) {
-      throw new Error(record.error);
+      if (typeof record.error === "string") {
+        throw new ApiClientError(record.error);
+      }
+      if (record.error && typeof record.error === "object") {
+        const err = record.error as { code?: unknown; details?: unknown };
+        const code = typeof err.code === "string" ? err.code : "api_error";
+        throw new ApiClientError(code, err.details);
+      }
+      throw new ApiClientError("api_error");
     }
     
-    throw new Error("api_unknown_error");
+    throw new ApiClientError("unknown_error");
 
   } catch (error) {
     logger.error("Fetch error:", error);

@@ -30,8 +30,8 @@ export default function MyDisputesPage() {
     return (
       <div className="space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
         <PageHeader 
-          title="My Disputes" 
-          description="View and manage your disputes"
+          title={t("nav.myDisputes")} 
+          description={t("oracle.myDisputes.description")}
         >
           <ConnectWallet />
         </PageHeader>
@@ -40,9 +40,9 @@ export default function MyDisputesPage() {
           <div className="p-6 rounded-full bg-purple-50 text-purple-600 mb-6">
             <Wallet size={48} />
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Connect Your Wallet</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">{t("oracle.myDisputes.connectWalletTitle")}</h2>
           <p className="text-gray-500 max-w-md mx-auto mb-8">
-            Please connect your wallet to view your dispute history and statistics.
+            {t("oracle.myDisputes.connectWalletDesc")}
           </p>
           <ConnectWallet />
         </div>
@@ -104,14 +104,26 @@ export default function MyDisputesPage() {
       </div>
 
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
-        <DisputeList 
-          items={items} 
-          loading={loading} 
-          viewMode={viewMode}
-          hasMore={hasMore}
-          loadMore={loadMore}
-          loadingMore={loadingMore}
-        />
+        {!loading && items.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="p-6 rounded-full bg-purple-50 text-purple-600 mb-6">
+              <Wallet size={48} />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">{t("oracle.myDisputes.noDisputes")}</h2>
+            <p className="text-gray-500 max-w-md mx-auto">
+              {t("oracle.myDisputes.description")}
+            </p>
+          </div>
+        ) : (
+          <DisputeList 
+            items={items} 
+            loading={loading} 
+            viewMode={viewMode}
+            hasMore={hasMore}
+            loadMore={loadMore}
+            loadingMore={loadingMore}
+          />
+        )}
       </div>
     </div>
   );

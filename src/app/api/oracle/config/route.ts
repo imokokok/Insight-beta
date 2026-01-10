@@ -1,13 +1,17 @@
 import { readOracleConfig, validateOracleConfigPatch, writeOracleConfig, type OracleConfig } from "@/server/oracleConfig";
-import { error, handleApi, requireAdmin } from "@/server/apiResponse";
+import { error, getAdminActor, handleApi, rateLimit, requireAdmin } from "@/server/apiResponse";
+import { appendAuditLog } from "@/server/observability";
 
-export async function GET() {
-  return handleApi(() => readOracleConfig());
+export async function GET(request: Request) {
+  return handleApi(request, () => readOracleConfig());
 }
 
 export async function PUT(request: Request) {
-  return handleApi(async () => {
-    const auth = requireAdmin(request);
+  return handleApi(request, async () => {
+    const limited = rateLimit(request, { key: "oracle_config_put", limit: 30, windowMs: 60_000 });
+    if (limited) return limited;
+
+    const auth = await requireAdmin(request, { strict: true, scope: "oracle_config_write" });
     if (auth) return auth;
 
     const parsed = (await request.json().catch(() => null)) as unknown;
@@ -24,10 +28,23 @@ export async function PUT(request: Request) {
         maxBlockRange: body.maxBlockRange,
         votingPeriodHours: body.votingPeriodHours
       });
-      return writeOracleConfig(patch);
+      const updated = await writeOracleConfig(patch);
+      const actor = getAdminActor(request);
+      await appendAuditLog({
+        actor,
+        action: "oracle_config_updated",
+        entityType: "oracle",
+        entityId: updated.contractAddress || null,
+        details: patch
+      });
+      return updated;
     } catch (e) {
       const code = e instanceof Error ? e.message : "unknown_error";
-      return error(code, 400);
+      const field = e && typeof e === "object" && "field" in e ? (e as { field?: unknown }).field : undefined;
+      if (typeof field === "string") {
+        return error({ code, details: { field } }, 400);
+      }
+      return error({ code }, 400);
     }
   });
 }
