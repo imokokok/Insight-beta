@@ -1,9 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { upsertAssertion, fetchAssertion, getSyncState, insertVoteEvent, recomputeDisputeVotes, upsertDispute, fetchDispute } from './oracleState';
+import { listAssertions, listDisputes } from './oracleStore';
 import { query, hasDatabase } from './db';
 import { ensureSchema } from './schema';
 import { Assertion, Dispute } from '@/lib/oracleTypes';
 import { getMemoryStore } from './memoryBackend';
+import { mockAssertions, mockDisputes } from '@/lib/mockData';
 
 vi.mock('./db', () => ({
   query: vi.fn(),
@@ -313,6 +315,42 @@ describe('oracleState', () => {
       const mem = getMemoryStore();
       expect(mem.assertions.size).toBeLessThanOrEqual(10000);
       expect(mem.assertions.has("keep-pending")).toBe(true);
-    });
+    }, 20_000);
+  });
+});
+
+describe('oracleStore', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('uses mocks when assertions table is empty', async () => {
+    vi.mocked(hasDatabase).mockReturnValue(true);
+    const queryMock = vi.mocked(query) as unknown as { mockResolvedValueOnce: (value: unknown) => void };
+    queryMock.mockResolvedValueOnce({ rows: [{ has_rows: false }], rowCount: 1 });
+
+    const result = await listAssertions({ limit: 30, cursor: 0 });
+
+    expect(query).toHaveBeenCalledTimes(1);
+    expect(query).toHaveBeenCalledWith(
+      expect.stringContaining("SELECT EXISTS (SELECT 1 FROM assertions) as has_rows")
+    );
+    expect(result.total).toBe(mockAssertions.length);
+    expect(result.items).toHaveLength(Math.min(30, mockAssertions.length));
+  });
+
+  it('uses mocks when disputes table is empty', async () => {
+    vi.mocked(hasDatabase).mockReturnValue(true);
+    const queryMock = vi.mocked(query) as unknown as { mockResolvedValueOnce: (value: unknown) => void };
+    queryMock.mockResolvedValueOnce({ rows: [{ has_rows: false }], rowCount: 1 });
+
+    const result = await listDisputes({ limit: 30, cursor: 0 });
+
+    expect(query).toHaveBeenCalledTimes(1);
+    expect(query).toHaveBeenCalledWith(
+      expect.stringContaining("SELECT EXISTS (SELECT 1 FROM disputes) as has_rows")
+    );
+    expect(result.total).toBe(mockDisputes.length);
+    expect(result.items).toHaveLength(Math.min(30, mockDisputes.length));
   });
 });

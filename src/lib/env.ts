@@ -37,6 +37,15 @@ export const env = {
   get INSIGHT_WORKER_ID() {
     return (process.env.INSIGHT_WORKER_ID ?? "").trim();
   },
+  get INSIGHT_TRUST_PROXY() {
+    return (process.env.INSIGHT_TRUST_PROXY ?? "").trim();
+  },
+  get INSIGHT_RATE_LIMIT_STORE() {
+    return (process.env.INSIGHT_RATE_LIMIT_STORE ?? "").trim();
+  },
+  get INSIGHT_API_LOG_SAMPLE_RATE() {
+    return (process.env.INSIGHT_API_LOG_SAMPLE_RATE ?? "").trim();
+  },
   get INSIGHT_WEBHOOK_URL() {
     return (process.env.INSIGHT_WEBHOOK_URL ?? "").trim();
   }
@@ -85,6 +94,9 @@ const envSchema = z.object({
   INSIGHT_MEMORY_VOTE_BLOCK_WINDOW: z.coerce.bigint().min(0n).optional(),
   INSIGHT_DISABLE_EMBEDDED_WORKER: z.enum(["1", "0", "true", "false"]).optional(),
   INSIGHT_WORKER_ID: z.string().min(1).optional(),
+  INSIGHT_TRUST_PROXY: z.enum(["1", "0", "true", "false", "cloudflare"]).optional(),
+  INSIGHT_RATE_LIMIT_STORE: z.enum(["memory", "db", "kv", "auto"]).optional(),
+  INSIGHT_API_LOG_SAMPLE_RATE: z.coerce.number().min(0).max(1).optional(),
   INSIGHT_WEBHOOK_URL: z.string().url().optional()
 });
 

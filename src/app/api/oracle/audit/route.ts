@@ -9,7 +9,7 @@ const paramsSchema = z.object({
 
 export async function GET(request: Request) {
   return handleApi(request, async () => {
-    const limited = rateLimit(request, { key: "audit_get", limit: 60, windowMs: 60_000 });
+    const limited = await rateLimit(request, { key: "audit_get", limit: 60, windowMs: 60_000 });
     if (limited) return limited;
 
     const auth = await requireAdmin(request, { strict: true, scope: "audit_read" });

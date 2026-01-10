@@ -1,4 +1,4 @@
-import { handleApi, rateLimit } from "@/server/apiResponse";
+import { cachedJson, handleApi, rateLimit, requireAdmin } from "@/server/apiResponse";
 import { ensureOracleSynced } from "@/server/oracle";
 import { listAlerts } from "@/server/observability";
 import { z } from "zod";
@@ -15,7 +15,7 @@ const alertParamsSchema = z.object({
 
 export async function GET(request: Request) {
   return handleApi(request, async () => {
-    const limited = rateLimit(request, { key: "alerts_get", limit: 120, windowMs: 60_000 });
+    const limited = await rateLimit(request, { key: "alerts_get", limit: 120, windowMs: 60_000 });
     if (limited) return limited;
 
     const url = new URL(request.url);
@@ -23,18 +23,25 @@ export async function GET(request: Request) {
     const params = alertParamsSchema.parse(rawParams);
 
     if (params.sync === "1") {
+      const auth = await requireAdmin(request, { strict: true, scope: "oracle_sync_trigger" });
+      if (auth) return auth;
       await ensureOracleSynced();
     }
 
-    const { items, total, nextCursor } = await listAlerts({
-      status: params.status ?? "All",
-      severity: params.severity ?? "All",
-      type: params.type ?? "All",
-      q: params.q,
-      limit: params.limit,
-      cursor: params.cursor
-    });
+    const compute = async () => {
+      const { items, total, nextCursor } = await listAlerts({
+        status: params.status ?? "All",
+        severity: params.severity ?? "All",
+        type: params.type ?? "All",
+        q: params.q,
+        limit: params.limit,
+        cursor: params.cursor
+      });
+      return { items, total, nextCursor };
+    };
 
-    return { items, total, nextCursor };
+    if (params.sync === "1") return await compute();
+    const cacheKey = `oracle_api:${url.pathname}${url.search}`;
+    return await cachedJson(cacheKey, 10_000, compute);
   });
 }

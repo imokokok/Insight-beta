@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { formatUsd, formatUsdCompact, calculatePercentage, formatDurationMinutes } from './utils';
+import { describe, it, expect, vi } from "vitest";
+import { formatUsd, formatUsdCompact, calculatePercentage, formatDurationMinutes, fetchApiData } from "./utils";
 
 describe('Utils', () => {
   it('formatUsd formats correctly', () => {
@@ -24,5 +24,19 @@ describe('Utils', () => {
     expect(formatDurationMinutes(60)).toBe('1h');
     expect(formatDurationMinutes(90)).toBe('1h 30m');
     expect(formatDurationMinutes(0)).toBe('—');
+  });
+
+  it("fetchApiData supports relative URLs in node", async () => {
+    const fetchSpy = vi.spyOn(globalThis as unknown as { fetch: typeof fetch }, "fetch").mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({ ok: true, data: { value: 1 } })
+    } as unknown as Response);
+
+    const res = await fetchApiData<{ value: number }>("/api/test");
+    expect(res).toEqual({ value: 1 });
+    expect(fetchSpy).toHaveBeenCalled();
+
+    fetchSpy.mockRestore();
   });
 });

@@ -2,6 +2,24 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { logger } from "@/lib/logger";
 
+export function parseRpcUrls(value: string) {
+  const parts = value
+    .split(/[,\s]+/g)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const out: string[] = [];
+  for (const p of parts) {
+    try {
+      const u = new URL(p);
+      if (!["http:", "https:", "ws:", "wss:"].includes(u.protocol)) continue;
+      if (!out.includes(p)) out.push(p);
+    } catch {
+      continue;
+    }
+  }
+  return out;
+}
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -146,7 +164,17 @@ export function getErrorDetails(error: unknown) {
 
 export async function fetchApiData<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
   try {
-    const res = await fetch(input, init);
+    const normalizedInput = (() => {
+      if (typeof input === "string" && input.startsWith("/")) {
+        const base =
+          typeof window !== "undefined" && typeof window.location?.origin === "string" && window.location.origin !== "null"
+            ? window.location.origin
+            : "http://localhost";
+        return new URL(input, base);
+      }
+      return input;
+    })();
+    const res = await fetch(normalizedInput, init);
     
     let json: unknown;
     try {
@@ -198,7 +226,9 @@ export async function fetchApiData<T>(input: RequestInfo | URL, init?: RequestIn
     throw new ApiClientError("unknown_error");
 
   } catch (error) {
-    logger.error("Fetch error:", error);
+    const name =
+      error && typeof error === "object" && "name" in error ? String((error as { name?: unknown }).name) : "";
+    if (name !== "AbortError") logger.error("Fetch error:", error);
     throw error;
   }
 }

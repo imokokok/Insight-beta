@@ -1,12 +1,17 @@
 import { handleApi, rateLimit } from "@/server/apiResponse";
 import { hasDatabase, query } from "@/server/db";
 import { getEnvReport } from "@/lib/env";
+import { requireAdmin } from "@/server/apiResponse";
+import { readJsonFile } from "@/server/kvStore";
 
 export async function GET(request: Request) {
   return handleApi(request, async () => {
-    const limited = rateLimit(request, { key: "health_get", limit: 240, windowMs: 60_000 });
+    const limited = await rateLimit(request, { key: "health_get", limit: 240, windowMs: 60_000 });
     if (limited) return limited;
     const envReport = getEnvReport();
+    const auth = await requireAdmin(request, { strict: false, scope: "audit_read" });
+    const includeEnv = auth === null;
+    const worker = includeEnv ? await readJsonFile("worker/heartbeat/v1", null) : null;
 
     return {
       status: "ok",
@@ -17,7 +22,8 @@ export async function GET(request: Request) {
             .catch(() => "disconnected")
         : "not_configured",
       environment: process.env.NODE_ENV,
-      env: envReport
+      env: includeEnv ? envReport : { ok: false, issues: [] },
+      worker: includeEnv ? worker : null
     };
   });
 }

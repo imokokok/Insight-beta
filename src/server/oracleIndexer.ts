@@ -14,9 +14,10 @@ import {
   recomputeDisputeVotes,
   type StoredState 
 } from "./oracleState";
-import { isZeroBytes32, toIsoFromSeconds } from "@/lib/utils";
+import { isZeroBytes32, parseRpcUrls, toIsoFromSeconds } from "@/lib/utils";
 import { env } from "@/lib/env";
 import { createOrTouchAlert, readAlertRules } from "./observability";
+import { logger } from "@/lib/logger";
 
 const abi = parseAbi([
   "event AssertionCreated(bytes32 indexed assertionId,address indexed asserter,string protocol,string market,string assertion,uint256 bondUsd,uint256 assertedAt,uint256 livenessEndsAt,bytes32 txHash)",
@@ -27,7 +28,7 @@ const abi = parseAbi([
 
 export async function getOracleEnv() {
   const config = await readOracleConfig();
-  const rpcUrl = config.rpcUrl || env.INSIGHT_RPC_URL;
+  const rpcUrl = env.INSIGHT_RPC_URL || config.rpcUrl;
   const contractAddress = (config.contractAddress || env.INSIGHT_ORACLE_ADDRESS) as Address;
   const chain = (config.chain || (env.INSIGHT_CHAIN as StoredState["chain"] | undefined) || "Local") as StoredState["chain"];
   const startBlock = BigInt(config.startBlock ?? 0);
@@ -81,24 +82,6 @@ type RpcStatsItem = {
 
 type RpcStats = Record<string, RpcStatsItem>;
 
-function parseRpcUrls(value: string) {
-  const parts = value
-    .split(/[,\s]+/g)
-    .map((s) => s.trim())
-    .filter(Boolean);
-  const out: string[] = [];
-  for (const p of parts) {
-    try {
-      const u = new URL(p);
-      if (!["http:", "https:", "ws:", "wss:"].includes(u.protocol)) continue;
-      if (!out.includes(p)) out.push(p);
-    } catch {
-      continue;
-    }
-  }
-  return out;
-}
-
 function readRpcStats(input: unknown): RpcStats {
   if (!input || typeof input !== "object" || Array.isArray(input)) return {};
   return input as RpcStats;
@@ -109,11 +92,13 @@ function recordRpcOk(stats: RpcStats, url: string, latencyMs: number) {
   const avg =
     prev.avgLatencyMs === null ? latencyMs : Math.round(prev.avgLatencyMs * 0.8 + latencyMs * 0.2);
   stats[url] = { ...prev, ok: prev.ok + 1, lastOkAt: new Date().toISOString(), avgLatencyMs: avg };
+  if (Math.random() < 0.01) logger.info("rpc_sample", { url, ok: true, latencyMs });
 }
 
 function recordRpcFail(stats: RpcStats, url: string) {
   const prev = stats[url] ?? { ok: 0, fail: 0, lastOkAt: null, lastFailAt: null, avgLatencyMs: null };
   stats[url] = { ...prev, fail: prev.fail + 1, lastFailAt: new Date().toISOString() };
+  if (Math.random() < 0.01) logger.warn("rpc_sample", { url, ok: false });
 }
 
 function pickNextRpcUrl(urls: string[], current: string) {

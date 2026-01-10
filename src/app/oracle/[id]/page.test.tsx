@@ -141,7 +141,9 @@ describe('OracleDetailPage', () => {
     const disputeBtn = screen.getByText('Dispute Assertion');
     fireEvent.click(disputeBtn);
 
-    expect(screen.getByText('Dispute Modal')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Dispute Modal')).toBeInTheDocument();
+    });
     expect(lastDisputeModalProps as Record<string, unknown>).toEqual(expect.objectContaining({
       assertionId: mockAssertion.id,
       contractAddress: mockConfig.contractAddress,

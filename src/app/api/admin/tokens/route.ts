@@ -14,7 +14,7 @@ const revokeSchema = z.object({
 
 export async function GET(request: Request) {
   return handleApi(request, async () => {
-    const limited = rateLimit(request, { key: "admin_tokens_get", limit: 60, windowMs: 60_000 });
+    const limited = await rateLimit(request, { key: "admin_tokens_get", limit: 60, windowMs: 60_000 });
     if (limited) return limited;
     const auth = await requireAdmin(request, { strict: true, scope: "admin_tokens_manage" });
     if (auth) return auth;
@@ -25,7 +25,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   return handleApi(request, async () => {
-    const limited = rateLimit(request, { key: "admin_tokens_post", limit: 30, windowMs: 60_000 });
+    const limited = await rateLimit(request, { key: "admin_tokens_post", limit: 30, windowMs: 60_000 });
     if (limited) return limited;
     const auth = await requireAdmin(request, { strict: true, scope: "admin_tokens_manage" });
     if (auth) return auth;
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   return handleApi(request, async () => {
-    const limited = rateLimit(request, { key: "admin_tokens_delete", limit: 30, windowMs: 60_000 });
+    const limited = await rateLimit(request, { key: "admin_tokens_delete", limit: 30, windowMs: 60_000 });
     if (limited) return limited;
     const auth = await requireAdmin(request, { strict: true, scope: "admin_tokens_manage" });
     if (auth) return auth;

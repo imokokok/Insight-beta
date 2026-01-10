@@ -17,7 +17,7 @@ const putSchema = z.object({
 
 export async function GET(request: Request) {
   return handleApi(request, async () => {
-    const limited = rateLimit(request, { key: "alert_rules_get", limit: 240, windowMs: 60_000 });
+    const limited = await rateLimit(request, { key: "alert_rules_get", limit: 240, windowMs: 60_000 });
     if (limited) return limited;
     const rules = await readAlertRules();
     return { rules };
@@ -26,7 +26,7 @@ export async function GET(request: Request) {
 
 export async function PUT(request: Request) {
   return handleApi(request, async () => {
-    const limited = rateLimit(request, { key: "alert_rules_put", limit: 30, windowMs: 60_000 });
+    const limited = await rateLimit(request, { key: "alert_rules_put", limit: 30, windowMs: 60_000 });
     if (limited) return limited;
 
     const auth = await requireAdmin(request, { strict: true, scope: "alert_rules_write" });

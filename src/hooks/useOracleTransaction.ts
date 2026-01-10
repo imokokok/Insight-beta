@@ -6,7 +6,7 @@ import { oracleAbi } from "@/lib/oracleAbi";
 import { env } from "@/lib/env";
 import { createPublicClient, custom, http, parseEther, webSocket } from "viem";
 import type { OracleChain, OracleConfig } from "@/lib/oracleTypes";
-import { copyToClipboard, fetchApiData, getExplorerUrl } from "@/lib/utils";
+import { copyToClipboard, fetchApiData, getExplorerUrl, parseRpcUrls } from "@/lib/utils";
 import { normalizeWalletError } from "@/lib/walletErrors";
 import { logger } from "@/lib/logger";
 
@@ -176,11 +176,12 @@ export function useOracleTransaction() {
           }
           effectiveRpcUrl = (configRef.current?.rpcUrl ?? "").trim();
         }
+        const primaryRpcUrl = parseRpcUrls(effectiveRpcUrl)[0] ?? "";
 
         const publicClient = createPublicClient({
           chain: client.chain ?? undefined,
-          transport: effectiveRpcUrl
-            ? (effectiveRpcUrl.startsWith("ws") ? webSocket(effectiveRpcUrl) : http(effectiveRpcUrl))
+          transport: primaryRpcUrl
+            ? (primaryRpcUrl.startsWith("ws") ? webSocket(primaryRpcUrl) : http(primaryRpcUrl))
             : custom(window.ethereum)
         });
         const receipt = await publicClient.waitForTransactionReceipt({ hash });

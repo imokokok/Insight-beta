@@ -1,10 +1,12 @@
-import { ensureOracleSynced, readOracleConfig, readOracleState } from "@/server/oracle";
-import { error, getAdminActor, handleApi, rateLimit, requireAdmin } from "@/server/apiResponse";
+import { ensureOracleSynced, getOracleEnv, readOracleState } from "@/server/oracle";
+import { error, getAdminActor, handleApi, invalidateCachedJson, rateLimit, requireAdmin } from "@/server/apiResponse";
 import { appendAuditLog } from "@/server/observability";
 import { revalidateTag } from "next/cache";
 
 export async function GET(request: Request) {
   return handleApi(request, async () => {
+    const limited = await rateLimit(request, { key: "oracle_sync_get", limit: 240, windowMs: 60_000 });
+    if (limited) return limited;
     const state = await readOracleState();
     return {
       chain: state.chain,
@@ -19,14 +21,14 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   return handleApi(request, async () => {
-    const limited = rateLimit(request, { key: "oracle_sync_post", limit: 10, windowMs: 60_000 });
+    const limited = await rateLimit(request, { key: "oracle_sync_post", limit: 10, windowMs: 60_000 });
     if (limited) return limited;
 
     const auth = await requireAdmin(request, { strict: true, scope: "oracle_sync_trigger" });
     if (auth) return auth;
 
-    const config = await readOracleConfig();
-    if (!config.rpcUrl || !config.contractAddress) {
+    const envConfig = await getOracleEnv();
+    if (!envConfig.rpcUrl || !envConfig.contractAddress) {
       return error({ code: "missing_config" }, 400);
     }
     let result: { updated: boolean };
@@ -34,9 +36,9 @@ export async function POST(request: Request) {
       result = await ensureOracleSynced();
     } catch (e) {
       const code = e instanceof Error ? e.message : "sync_failed";
-      if (code === "rpc_unreachable") return error(code, 502);
-      if (code === "contract_not_found") return error(code, 400);
-      if (code === "sync_failed") return error(code, 502);
+      if (code === "rpc_unreachable") return error({ code }, 502);
+      if (code === "contract_not_found") return error({ code }, 400);
+      if (code === "sync_failed") return error({ code }, 502);
       return error({ code: "sync_failed" }, 502);
     }
     const state = await readOracleState();
@@ -52,6 +54,7 @@ export async function POST(request: Request) {
       revalidateTag("oracle-stats");
       revalidateTag("oracle-leaderboard");
       revalidateTag("user-stats");
+      await invalidateCachedJson("oracle_api:/api/oracle");
     }
     return {
       updated: result.updated,

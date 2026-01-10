@@ -9,7 +9,7 @@ const querySchema = z.object({
 
 export async function GET(request: Request) {
   return handleApi(request, async () => {
-    const limited = rateLimit(request, { key: "sync_metrics_get", limit: 120, windowMs: 60_000 });
+    const limited = await rateLimit(request, { key: "sync_metrics_get", limit: 120, windowMs: 60_000 });
     if (limited) return limited;
     const url = new URL(request.url);
     const raw = Object.fromEntries(url.searchParams);

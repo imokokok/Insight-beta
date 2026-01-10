@@ -5,6 +5,10 @@ import { getMemoryStore } from "@/server/memoryBackend";
 
 export type OracleConfig = SharedOracleConfig;
 
+export function redactOracleConfig(config: OracleConfig): OracleConfig {
+  return { ...config, rpcUrl: "" };
+}
+
 let schemaEnsured = false;
 async function ensureDb() {
   if (!hasDatabase()) return;

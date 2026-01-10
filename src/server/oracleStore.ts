@@ -15,6 +15,15 @@ async function ensureDb() {
   }
 }
 
+async function isTableEmpty(table: "assertions" | "disputes") {
+  const sql =
+    table === "assertions"
+      ? "SELECT EXISTS (SELECT 1 FROM assertions) as has_rows"
+      : "SELECT EXISTS (SELECT 1 FROM disputes) as has_rows";
+  const res = await query<{ has_rows: boolean }>(sql);
+  return !res.rows[0]?.has_rows;
+}
+
 type ListParams = {
   status?: string | null;
   chain?: string | null;
@@ -123,8 +132,7 @@ export async function listAssertions(params: ListParams) {
   const limit = Math.min(100, Math.max(1, params.limit ?? 30));
   const offset = Math.max(0, params.cursor ?? 0);
 
-  const dbCount = Number((await query("SELECT COUNT(*) as c FROM assertions")).rows[0]?.c || 0);
-  if (dbCount === 0) {
+  if (await isTableEmpty("assertions")) {
     let items = mockAssertions.slice();
     if (params.status && ["Pending", "Disputed", "Resolved"].includes(params.status)) {
       items = items.filter((a) => a.status === params.status);
@@ -283,8 +291,7 @@ export async function listDisputes(params: ListParams) {
   const limit = Math.min(100, Math.max(1, params.limit ?? 30));
   const offset = Math.max(0, params.cursor ?? 0);
 
-  const dbCount = Number((await query("SELECT COUNT(*) as c FROM disputes")).rows[0]?.c || 0);
-  if (dbCount === 0) {
+  if (await isTableEmpty("disputes")) {
     let items = mockDisputes.slice();
     if (params.status && ["Voting", "Pending Execution", "Executed"].includes(params.status)) {
       items = items.filter((d) => d.status === params.status);
@@ -395,6 +402,31 @@ export const getOracleStats = unstable_cache(
         avgResolutionMinutes: avgResolutionMinutesMock
       };
     }
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    if (await isTableEmpty("assertions")) {
+      const resolved24hMock = mockAssertions.filter((a) => {
+        if (a.status !== "Resolved") return false;
+        const resolvedAt = a.resolvedAt ?? a.livenessEndsAt;
+        return new Date(resolvedAt).getTime() > oneDayAgo.getTime();
+      }).length;
+      const avgResolutionMinutesMock = (() => {
+        const resolved = mockAssertions.filter((a) => a.status === "Resolved");
+        if (resolved.length === 0) return 0;
+        const sum = resolved.reduce((acc, a) => {
+          const resolvedAt = a.resolvedAt ?? a.livenessEndsAt;
+          return acc + (new Date(resolvedAt).getTime() - new Date(a.assertedAt).getTime()) / 60_000;
+        }, 0);
+        return sum / resolved.length;
+      })();
+      return {
+        tvsUsd: mockAssertions.reduce((acc, a) => acc + a.bondUsd, 0),
+        activeDisputes: mockDisputes.filter((d) => d.status !== "Executed").length,
+        resolved24h: resolved24hMock,
+        avgResolutionMinutes: avgResolutionMinutesMock
+      };
+    }
+
     // 1. TVS: Sum of bond_usd for all assertions (or just active ones? Let's do all for "Total Value Secured")
     // Usually TVS implies current active value. Let's do active (Pending/Disputed).
     const tvsRes = await query(`
@@ -413,7 +445,6 @@ export const getOracleStats = unstable_cache(
     const activeDisputes = Number(activeDisputesRes.rows[0].count);
 
     // 3. Resolved in last 24h
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const resolvedRes = await query(`
       SELECT COUNT(*) as count 
       FROM assertions 
@@ -429,31 +460,6 @@ export const getOracleStats = unstable_cache(
       WHERE status = 'Resolved'
     `);
     const avgResolutionMinutes = Number(avgRes.rows[0].avg_min || 0);
-
-    // If DB is empty, use mocks
-    const dbCount = (await query("SELECT COUNT(*) as c FROM assertions")).rows[0].c;
-    if (Number(dbCount) === 0) {
-       const resolved24hMock = mockAssertions.filter((a) => {
-         if (a.status !== "Resolved") return false;
-         const resolvedAt = a.resolvedAt ?? a.livenessEndsAt;
-         return new Date(resolvedAt).getTime() > oneDayAgo.getTime();
-       }).length;
-       const avgResolutionMinutesMock = (() => {
-         const resolved = mockAssertions.filter((a) => a.status === "Resolved");
-         if (resolved.length === 0) return 0;
-         const sum = resolved.reduce((acc, a) => {
-           const resolvedAt = a.resolvedAt ?? a.livenessEndsAt;
-           return acc + (new Date(resolvedAt).getTime() - new Date(a.assertedAt).getTime()) / 60_000;
-         }, 0);
-         return sum / resolved.length;
-       })();
-       return {
-         tvsUsd: mockAssertions.reduce((acc, a) => acc + a.bondUsd, 0),
-         activeDisputes: mockDisputes.filter(d => d.status !== 'Executed').length,
-         resolved24h: resolved24hMock,
-         avgResolutionMinutes: avgResolutionMinutesMock
-       };
-    }
 
     return {
       tvsUsd,
@@ -495,9 +501,7 @@ export const getLeaderboardStats = unstable_cache(
       return { topAsserters, topDisputers };
     }
     
-    const dbCount = (await query("SELECT COUNT(*) as c FROM assertions")).rows[0].c;
-    
-    if (Number(dbCount) === 0) {
+    if (await isTableEmpty("assertions")) {
       // Mock data logic
       const asserterMap = new Map<string, { count: number; value: number }>();
       mockAssertions.forEach(a => {
@@ -585,9 +589,7 @@ export function getUserStats(address: string): Promise<UserStats> {
       }
     
       // Check if DB is empty to use mocks
-      const dbCount = (await query("SELECT COUNT(*) as c FROM assertions")).rows[0].c;
-    
-      if (Number(dbCount) === 0) {
+      if (await isTableEmpty("assertions")) {
         // Mock stats
         const assertions = mockAssertions.filter((a) => a.asserter.toLowerCase() === addressLower);
         const disputes = mockDisputes.filter((d) => d.disputer.toLowerCase() === addressLower);

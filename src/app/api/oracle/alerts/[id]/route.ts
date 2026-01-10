@@ -11,7 +11,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   return handleApi(request, async () => {
-    const limited = rateLimit(request, { key: "alerts_patch", limit: 60, windowMs: 60_000 });
+    const limited = await rateLimit(request, { key: "alerts_patch", limit: 60, windowMs: 60_000 });
     if (limited) return limited;
 
     const auth = await requireAdmin(request, { strict: true, scope: "alerts_update" });

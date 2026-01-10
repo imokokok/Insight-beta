@@ -21,7 +21,7 @@ const deleteKeySchema = z.object({
 
 export async function GET(request: Request) {
   return handleApi(request, async () => {
-    const limited = rateLimit(request, { key: "admin_kv_get", limit: 120, windowMs: 60_000 });
+    const limited = await rateLimit(request, { key: "admin_kv_get", limit: 120, windowMs: 60_000 });
     if (limited) return limited;
     const auth = await requireAdmin(request, { strict: true, scope: "admin_kv_read" });
     if (auth) return auth;
@@ -46,7 +46,7 @@ export async function GET(request: Request) {
 
 export async function PUT(request: Request) {
   return handleApi(request, async () => {
-    const limited = rateLimit(request, { key: "admin_kv_put", limit: 60, windowMs: 60_000 });
+    const limited = await rateLimit(request, { key: "admin_kv_put", limit: 60, windowMs: 60_000 });
     if (limited) return limited;
     const auth = await requireAdmin(request, { strict: true, scope: "admin_kv_write" });
     if (auth) return auth;
@@ -73,7 +73,7 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request) {
   return handleApi(request, async () => {
-    const limited = rateLimit(request, { key: "admin_kv_delete", limit: 60, windowMs: 60_000 });
+    const limited = await rateLimit(request, { key: "admin_kv_delete", limit: 60, windowMs: 60_000 });
     if (limited) return limited;
     const auth = await requireAdmin(request, { strict: true, scope: "admin_kv_write" });
     if (auth) return auth;

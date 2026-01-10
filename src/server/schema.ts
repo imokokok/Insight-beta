@@ -91,10 +91,20 @@ export async function ensureSchema() {
     CREATE INDEX IF NOT EXISTS idx_assertions_date ON assertions(asserted_at);
     CREATE INDEX IF NOT EXISTS idx_assertions_status ON assertions(status);
     CREATE INDEX IF NOT EXISTS idx_assertions_chain ON assertions(chain);
+    CREATE INDEX IF NOT EXISTS idx_assertions_market ON assertions(market);
+    CREATE INDEX IF NOT EXISTS idx_assertions_tx_hash ON assertions(tx_hash);
+    CREATE INDEX IF NOT EXISTS idx_assertions_asserter_lower ON assertions(LOWER(asserter));
+    CREATE INDEX IF NOT EXISTS idx_assertions_status_date ON assertions(status, asserted_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_assertions_chain_date ON assertions(chain, asserted_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_assertions_asserter_date ON assertions(LOWER(asserter), asserted_at DESC);
     CREATE INDEX IF NOT EXISTS idx_disputes_assertion ON disputes(assertion_id);
     CREATE INDEX IF NOT EXISTS idx_disputes_status ON disputes(status);
     CREATE INDEX IF NOT EXISTS idx_disputes_chain ON disputes(chain);
     CREATE INDEX IF NOT EXISTS idx_disputes_date ON disputes(disputed_at);
+    CREATE INDEX IF NOT EXISTS idx_disputes_disputer_lower ON disputes(LOWER(disputer));
+    CREATE INDEX IF NOT EXISTS idx_disputes_status_date ON disputes(status, disputed_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_disputes_chain_date ON disputes(chain, disputed_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_disputes_disputer_date ON disputes(LOWER(disputer), disputed_at DESC);
     CREATE INDEX IF NOT EXISTS idx_votes_assertion ON votes(assertion_id);
     CREATE INDEX IF NOT EXISTS idx_votes_voter ON votes(voter);
     CREATE INDEX IF NOT EXISTS idx_votes_block ON votes(block_number);
@@ -128,6 +138,7 @@ export async function ensureSchema() {
     CREATE INDEX IF NOT EXISTS idx_alerts_last_seen ON alerts(last_seen_at);
     CREATE INDEX IF NOT EXISTS idx_alerts_type ON alerts(type);
     CREATE INDEX IF NOT EXISTS idx_alerts_severity ON alerts(severity);
+    CREATE INDEX IF NOT EXISTS idx_alerts_status_last_seen ON alerts(status, last_seen_at DESC);
 
     CREATE TABLE IF NOT EXISTS audit_log (
       id BIGSERIAL PRIMARY KEY,
@@ -140,6 +151,14 @@ export async function ensureSchema() {
     );
 
     CREATE INDEX IF NOT EXISTS idx_audit_created ON audit_log(created_at);
+
+    CREATE TABLE IF NOT EXISTS rate_limits (
+      key TEXT PRIMARY KEY,
+      reset_at TIMESTAMP WITH TIME ZONE NOT NULL,
+      count INTEGER NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_rate_limits_reset ON rate_limits(reset_at);
   `);
 
   await query(`

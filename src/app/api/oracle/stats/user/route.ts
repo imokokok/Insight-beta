@@ -9,7 +9,7 @@ const statsParamsSchema = z.object({
 
 export async function GET(request: Request) {
   return handleApi(request, async () => {
-    const limited = rateLimit(request, { key: "user_stats_get", limit: 120, windowMs: 60_000 });
+    const limited = await rateLimit(request, { key: "user_stats_get", limit: 120, windowMs: 60_000 });
     if (limited) return limited;
 
     const url = new URL(request.url);

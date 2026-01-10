@@ -97,7 +97,13 @@ export default function OraclePage() {
 
     const loadStatus = async () => {
       try {
+        const headers: Record<string, string> = {};
+        const trimmed = adminToken.trim();
+        if (trimmed) headers["x-admin-token"] = trimmed;
+        const actor = adminActor.trim();
+        if (actor) headers["x-admin-actor"] = actor;
         const data = await fetchApiData<{ config: OracleConfig; state: OracleStatusSnapshot }>("/api/oracle/status", {
+          headers,
           signal: controller.signal
         });
         if (cancelled) return;
@@ -115,7 +121,7 @@ export default function OraclePage() {
       controller.abort();
       window.clearInterval(id);
     };
-  }, []);
+  }, [adminToken, adminActor]);
 
   const saveConfig = async () => {
     setSaving(true);
@@ -167,7 +173,8 @@ export default function OraclePage() {
       const data = await fetchApiData<{ config: OracleConfig; state: OracleStatusSnapshot }>("/api/oracle/status");
       setStatus(data);
     } catch (e) {
-      setConfigError(e instanceof Error ? e.message : "unknown_error");
+      const code = getErrorCode(e);
+      setConfigError(code);
     } finally {
       setSyncing(false);
     }

@@ -13,7 +13,14 @@ vi.mock("@/server/oracle", () => ({
 
 vi.mock("@/server/apiResponse", () => ({
   rateLimit: vi.fn(() => null),
+  cachedJson: vi.fn(async (_key: string, _ttlMs: number, compute: () => unknown | Promise<unknown>) => {
+    return await compute();
+  }),
   getAdminActor: vi.fn(() => "test"),
+  requireAdmin: vi.fn(async (request: Request) => {
+    const token = request.headers.get("x-admin-token")?.trim() ?? "";
+    return token ? null : {};
+  }),
   handleApi: async (arg1: unknown, arg2?: unknown) => {
     try {
       const fn = typeof arg1 === "function" ? (arg1 as () => unknown | Promise<unknown>) : (arg2 as () => unknown | Promise<unknown>);
@@ -58,7 +65,9 @@ describe("GET /api/oracle/alerts", () => {
     const { ensureOracleSynced } = await import("@/server/oracle");
     vi.mocked(observability.listAlerts).mockResolvedValue({ items: [], total: 0, nextCursor: null });
 
-    const request = new Request("http://localhost:3000/api/oracle/alerts?sync=1");
+    const request = new Request("http://localhost:3000/api/oracle/alerts?sync=1", {
+      headers: { "x-admin-token": "test" }
+    });
     await GET(request);
 
     expect(ensureOracleSynced).toHaveBeenCalled();
