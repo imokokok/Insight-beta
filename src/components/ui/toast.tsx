@@ -1,6 +1,6 @@
 "use client";
 
-import { toast as sonnerToast } from "sonner";
+import { toast as sonnerToast, type ExternalToast } from "sonner";
 import { useCallback } from "react";
 
 export type ToastType = "success" | "error" | "info";
@@ -67,7 +67,7 @@ export function useToast() {
     // we might assume it keeps the same type or use the generic toast if type is missing.
     // Ideally, the caller should provide the type if they want to change it.
     
-    const options: any = { id };
+    const options: ExternalToast & { id: string } = { id };
     if (patch.message) options.description = patch.message;
     if (patch.duration) options.duration = patch.duration;
     

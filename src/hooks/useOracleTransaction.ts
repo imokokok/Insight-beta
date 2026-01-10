@@ -14,8 +14,10 @@ type OracleWriteFunctionName = Exclude<typeof oracleAbi[number]["name"], "getBon
 
 type OracleWriteArgs =
   | readonly [protocol: string, market: string, assertion: string]
+  | readonly [protocol: string, market: string, assertion: string, bond: bigint, liveness: bigint]
   | readonly [`0x${string}`]
-  | readonly [`0x${string}`, support: boolean];
+  | readonly [`0x${string}`, support: boolean]
+  | readonly [`0x${string}`, reason: string];
 
 type TransactionOptions<TFunctionName extends OracleWriteFunctionName> = {
   functionName: TFunctionName;

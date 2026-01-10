@@ -69,7 +69,7 @@ describe("PUT /api/oracle/alert-rules", () => {
   });
 
   it("allows empty rules list", async () => {
-    const rules: any[] = [];
+    const rules: object[] = [];
     const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
       method: "PUT",
       headers: { "content-type": "application/json" },

@@ -221,6 +221,14 @@ export async function createOrTouchAlert(input: {
   }
 
   // Database path
+  const result = await query(
+    `
+    SELECT status FROM alerts WHERE fingerprint = $1
+    `,
+    [input.fingerprint]
+  );
+  const existingDb = result.rows[0];
+
   await query(
     `
     INSERT INTO alerts (

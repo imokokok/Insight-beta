@@ -30,6 +30,11 @@ export function VoteModal({ assertionId, isOpen, onClose, contractAddress, chain
     e.preventDefault();
     if (support === null) return;
     
+    // TODO: Implement voting logic or remove if not needed
+    // Currently disabled because 'vote' is not in the ABI
+    console.log("Voting not implemented yet", { assertionId, support, contractAddress, chain });
+    onClose();
+    /*
     await execute({
       functionName: "vote",
       args: [assertionId as `0x${string}`, support],
@@ -39,6 +44,7 @@ export function VoteModal({ assertionId, isOpen, onClose, contractAddress, chain
       successMessage: support ? t("oracle.tx.voteCastSupportMsg") : t("oracle.tx.voteCastAgainstMsg"),
       onConfirmed: () => onClose()
     });
+    */
   };
 
   return (

@@ -26,6 +26,11 @@ export function SettleModal({ assertionId, isOpen, onClose, contractAddress, cha
   if (!isOpen) return null;
 
   const handleSubmit = async () => {
+    // TODO: Implement settlement logic or remove if not needed
+    // Currently disabled because 'settleAssertion' is not in the ABI
+    console.log("Settlement not implemented yet", { assertionId, contractAddress, chain });
+    onClose();
+    /*
     await execute({
       functionName: "settleAssertion",
       args: [assertionId as `0x${string}`],
@@ -35,6 +40,7 @@ export function SettleModal({ assertionId, isOpen, onClose, contractAddress, cha
       successMessage: t("oracle.tx.settlementSubmittedMsg"),
       onConfirmed: () => onClose()
     });
+    */
   };
 
   return (

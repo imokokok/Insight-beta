@@ -1,4 +1,4 @@
-import { memo, forwardRef } from "react";
+import { memo, forwardRef, ComponentPropsWithoutRef } from "react";
 import Link from "next/link";
 import { 
   CheckCircle2,
@@ -34,7 +34,7 @@ function getStatusColor(status: OracleStatus) {
 }
 
 // Grid Components for Virtuoso
-const GridList = forwardRef<HTMLDivElement, any>(({ style, children, ...props }, ref) => (
+const GridList = forwardRef<HTMLDivElement, ComponentPropsWithoutRef<'div'>>(({ style, children, ...props }, ref) => (
   <div
     ref={ref}
     {...props}
@@ -46,7 +46,7 @@ const GridList = forwardRef<HTMLDivElement, any>(({ style, children, ...props },
 ));
 GridList.displayName = "GridList";
 
-const GridItem = forwardRef<HTMLDivElement, any>(({ children, ...props }, ref) => (
+const GridItem = forwardRef<HTMLDivElement, ComponentPropsWithoutRef<'div'>>(({ children, ...props }, ref) => (
   <div ref={ref} {...props} className="h-full">
     {children}
   </div>
@@ -54,7 +54,7 @@ const GridItem = forwardRef<HTMLDivElement, any>(({ children, ...props }, ref) =
 GridItem.displayName = "GridItem";
 
 // List Components for Virtuoso
-const ListContainer = forwardRef<HTMLDivElement, any>(({ style, children, ...props }, ref) => (
+const ListContainer = forwardRef<HTMLDivElement, ComponentPropsWithoutRef<'div'>>(({ style, children, ...props }, ref) => (
   <div
     ref={ref}
     {...props}

@@ -120,3 +120,22 @@ try {
     console.error("❌ Invalid environment variables:", JSON.stringify(e.format(), null, 2));
   }
 }
+
+export function getEnvReport() {
+  const issues: string[] = [];
+  try {
+    envSchema.parse(process.env);
+  } catch (e) {
+    if (e instanceof z.ZodError) {
+      for (const err of e.issues) {
+        issues.push(`${err.path.join(".")}: ${err.message}`);
+      }
+    } else {
+      issues.push(e instanceof Error ? e.message : String(e));
+    }
+  }
+  return {
+    ok: issues.length === 0,
+    issues
+  };
+}

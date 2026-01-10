@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { parseEther } from "viem";
 import { X, Loader2, AlertCircle } from "lucide-react";
 import { useWallet } from "@/contexts/WalletContext";
 import { useI18n } from "@/i18n/LanguageProvider";
@@ -41,9 +42,8 @@ export function CreateAssertionModal({ isOpen, onClose, contractAddress, chain }
     }
     
     await execute({
-      functionName: "assertTruth",
-      args: [protocol, market, assertion],
-      value: bond,
+      functionName: "createAssertion",
+      args: [protocol, market, assertion, parseEther(bond), 7200n],
       contractAddress,
       chain,
       successTitle: t("oracle.tx.assertionCreatedTitle"),

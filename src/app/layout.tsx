@@ -17,8 +17,30 @@ export async function generateMetadata(): Promise<Metadata> {
   const h = await headers();
   const lang = isLang(cookieLang) ? cookieLang : detectLangFromAcceptLanguage(h.get("accept-language"));
   return {
-    title: translations[lang].app.title,
-    description: translations[lang].app.description
+    title: {
+      default: translations[lang].app.title,
+      template: `%s | ${translations[lang].app.title}`
+    },
+    description: translations[lang].app.description,
+    icons: {
+      icon: '/favicon.ico',
+      apple: '/apple-touch-icon.png'
+    },
+    manifest: '/manifest.json',
+    openGraph: {
+      type: "website",
+      locale: langToHtmlLang[lang],
+      url: "https://insight.foresight.build",
+      title: translations[lang].app.title,
+      description: translations[lang].app.description,
+      siteName: "Insight Oracle"
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: translations[lang].app.title,
+      description: translations[lang].app.description
+    },
+    metadataBase: new URL("https://insight.foresight.build")
   };
 }
 
@@ -32,8 +54,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       <body className={cn("min-h-screen bg-[var(--background)] font-sans antialiased text-purple-950")}>
         <LanguageProvider initialLang={lang}>
           <WalletProvider>
-            <ToastProvider>
-              {/* Base bright gradient */}
+            <Toaster />
+            {/* Base bright gradient */}
               <div className="fixed inset-0 -z-30 bg-[#fafafa]" />
               <div className="fixed inset-0 -z-20 bg-[radial-gradient(circle_at_top_left,_var(--tw-gradient-stops))] from-yellow-100/60 via-pink-100/60 to-cyan-100/60 opacity-80 pointer-events-none" />
               
