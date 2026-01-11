@@ -63,12 +63,15 @@ const MEMORY_MAX_AUDIT = 5000;
 function pruneMemoryAlerts(mem: ReturnType<typeof getMemoryStore>) {
   const overflow = mem.alerts.size - MEMORY_MAX_ALERTS;
   if (overflow <= 0) return;
-  const statusRank = (s: Alert["status"]) => (s === "Open" ? 0 : s === "Acknowledged" ? 1 : 2);
-  const candidates = Array.from(mem.alerts.entries()).map(([fingerprint, a]) => ({
-    fingerprint,
-    statusRank: statusRank(a.status),
-    lastSeenAtMs: new Date(a.lastSeenAt).getTime()
-  }));
+  const statusRank = (s: Alert["status"]) =>
+    s === "Open" ? 0 : s === "Acknowledged" ? 1 : 2;
+  const candidates = Array.from(mem.alerts.entries()).map(
+    ([fingerprint, a]) => ({
+      fingerprint,
+      statusRank: statusRank(a.status),
+      lastSeenAtMs: new Date(a.lastSeenAt).getTime(),
+    })
+  );
   candidates.sort((a, b) => {
     const r = b.statusRank - a.statusRank;
     if (r !== 0) return r;
@@ -90,14 +93,14 @@ export async function readAlertRules(): Promise<AlertRule[]> {
       name: "Dispute created",
       enabled: true,
       event: "dispute_created",
-      severity: "critical"
+      severity: "critical",
     },
     {
       id: "sync_error",
       name: "Sync error",
       enabled: true,
       event: "sync_error",
-      severity: "warning"
+      severity: "warning",
     },
     {
       id: "stale_sync_5m",
@@ -105,8 +108,8 @@ export async function readAlertRules(): Promise<AlertRule[]> {
       enabled: true,
       event: "stale_sync",
       severity: "warning",
-      params: { maxAgeMs: 5 * 60 * 1000 }
-    }
+      params: { maxAgeMs: 5 * 60 * 1000 },
+    },
   ];
   await writeJsonFile(ALERT_RULES_KEY, defaults);
   return defaults;
@@ -132,10 +135,12 @@ function mapAlertRow(row: any): Alert {
     occurrences: Number(row.occurrences),
     firstSeenAt: row.first_seen_at.toISOString(),
     lastSeenAt: row.last_seen_at.toISOString(),
-    acknowledgedAt: row.acknowledged_at ? row.acknowledged_at.toISOString() : null,
+    acknowledgedAt: row.acknowledged_at
+      ? row.acknowledged_at.toISOString()
+      : null,
     resolvedAt: row.resolved_at ? row.resolved_at.toISOString() : null,
     createdAt: row.created_at.toISOString(),
-    updatedAt: row.updated_at.toISOString()
+    updatedAt: row.updated_at.toISOString(),
   };
 }
 
@@ -167,7 +172,7 @@ export async function createOrTouchAlert(input: {
               lastSeenAt: now,
               updatedAt: now,
               status: "Open" as const,
-              resolvedAt: null
+              resolvedAt: null,
             }
           : {
               ...existing,
@@ -178,7 +183,7 @@ export async function createOrTouchAlert(input: {
               entityId: input.entityId ?? null,
               occurrences: existing.occurrences + 1,
               lastSeenAt: now,
-              updatedAt: now
+              updatedAt: now,
             };
       mem.alerts.set(input.fingerprint, next);
       if (next.status === "Open" && existing.status === "Resolved") {
@@ -186,7 +191,7 @@ export async function createOrTouchAlert(input: {
           title: next.title,
           message: next.message,
           severity: next.severity,
-          fingerprint: next.fingerprint
+          fingerprint: next.fingerprint,
         }).catch(() => void 0);
       }
     } else {
@@ -206,7 +211,7 @@ export async function createOrTouchAlert(input: {
         acknowledgedAt: null,
         resolvedAt: null,
         createdAt: now,
-        updatedAt: now
+        updatedAt: now,
       };
       mem.alerts.set(input.fingerprint, created);
       pruneMemoryAlerts(mem);
@@ -214,7 +219,7 @@ export async function createOrTouchAlert(input: {
         title: created.title,
         message: created.message,
         severity: created.severity,
-        fingerprint: created.fingerprint
+        fingerprint: created.fingerprint,
       }).catch(() => void 0);
     }
     return;
@@ -264,7 +269,7 @@ export async function createOrTouchAlert(input: {
       input.title,
       input.message,
       input.entityType ?? null,
-      input.entityId ?? null
+      input.entityId ?? null,
     ]
   );
 
@@ -273,7 +278,7 @@ export async function createOrTouchAlert(input: {
       title: input.title,
       message: input.message,
       severity: input.severity,
-      fingerprint: input.fingerprint
+      fingerprint: input.fingerprint,
     }).catch(() => void 0);
   }
 }
@@ -312,17 +317,20 @@ export async function listAlerts(params: {
       });
     }
     alerts.sort((a, b) => {
-      const statusRank = (s: Alert["status"]) => (s === "Open" ? 0 : s === "Acknowledged" ? 1 : 2);
+      const statusRank = (s: Alert["status"]) =>
+        s === "Open" ? 0 : s === "Acknowledged" ? 1 : 2;
       const r = statusRank(a.status) - statusRank(b.status);
       if (r !== 0) return r;
-      return new Date(b.lastSeenAt).getTime() - new Date(a.lastSeenAt).getTime();
+      return (
+        new Date(b.lastSeenAt).getTime() - new Date(a.lastSeenAt).getTime()
+      );
     });
     const total = alerts.length;
     const slice = alerts.slice(offset, offset + limit);
     return {
       items: slice,
       total,
-      nextCursor: offset + slice.length < total ? offset + limit : null
+      nextCursor: offset + slice.length < total ? offset + limit : null,
     };
   }
   const limit = Math.min(100, Math.max(1, params.limit ?? 30));
@@ -358,8 +366,12 @@ export async function listAlerts(params: {
     idx++;
   }
 
-  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
-  const countRes = await query(`SELECT COUNT(*) as total FROM alerts ${whereClause}`, values);
+  const whereClause =
+    conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+  const countRes = await query(
+    `SELECT COUNT(*) as total FROM alerts ${whereClause}`,
+    values
+  );
   const total = Number(countRes.rows[0]?.total || 0);
 
   const res = await query(
@@ -370,7 +382,7 @@ export async function listAlerts(params: {
   return {
     items: res.rows.map(mapAlertRow),
     total,
-    nextCursor: offset + res.rows.length < total ? offset + limit : null
+    nextCursor: offset + res.rows.length < total ? offset + limit : null,
   };
 }
 
@@ -388,17 +400,34 @@ export async function updateAlertStatus(input: {
     if (!found) return null;
     const updated =
       input.status === "Acknowledged"
-        ? { ...found, status: "Acknowledged" as const, acknowledgedAt: now, resolvedAt: null, updatedAt: now }
+        ? {
+            ...found,
+            status: "Acknowledged" as const,
+            acknowledgedAt: now,
+            resolvedAt: null,
+            updatedAt: now,
+          }
         : input.status === "Resolved"
-          ? { ...found, status: "Resolved" as const, resolvedAt: now, updatedAt: now }
-          : { ...found, status: "Open" as const, acknowledgedAt: null, resolvedAt: null, updatedAt: now };
+        ? {
+            ...found,
+            status: "Resolved" as const,
+            resolvedAt: now,
+            updatedAt: now,
+          }
+        : {
+            ...found,
+            status: "Open" as const,
+            acknowledgedAt: null,
+            resolvedAt: null,
+            updatedAt: now,
+          };
     mem.alerts.set(found.fingerprint, updated);
     await appendAuditLog({
       actor: input.actor ?? null,
       action: "alert_status_updated",
       entityType: "alert",
       entityId: String(input.id),
-      details: { status: input.status }
+      details: { status: input.status },
     });
     return updated;
   }
@@ -407,8 +436,8 @@ export async function updateAlertStatus(input: {
     status === "Acknowledged"
       ? "acknowledged_at = NOW(), resolved_at = NULL"
       : status === "Resolved"
-        ? "resolved_at = NOW()"
-        : "acknowledged_at = NULL, resolved_at = NULL";
+      ? "resolved_at = NOW()"
+      : "acknowledged_at = NULL, resolved_at = NULL";
 
   const res = await query(
     `
@@ -427,7 +456,7 @@ export async function updateAlertStatus(input: {
     action: "alert_status_updated",
     entityType: "alert",
     entityId: String(input.id),
-    details: { status }
+    details: { status },
   });
 
   return mapAlertRow(res.rows[0]);
@@ -451,9 +480,10 @@ export async function appendAuditLog(input: {
       action: input.action,
       entityType: input.entityType ?? null,
       entityId: input.entityId ?? null,
-      details: input.details ?? null
+      details: input.details ?? null,
     });
-    if (mem.audit.length > MEMORY_MAX_AUDIT) mem.audit.length = MEMORY_MAX_AUDIT;
+    if (mem.audit.length > MEMORY_MAX_AUDIT)
+      mem.audit.length = MEMORY_MAX_AUDIT;
     return;
   }
   await query(
@@ -461,7 +491,13 @@ export async function appendAuditLog(input: {
     INSERT INTO audit_log (actor, action, entity_type, entity_id, details, created_at)
     VALUES ($1, $2, $3, $4, $5, NOW())
     `,
-    [input.actor, input.action, input.entityType ?? null, input.entityId ?? null, input.details ?? null]
+    [
+      input.actor,
+      input.action,
+      input.entityType ?? null,
+      input.entityId ?? null,
+      input.details ? JSON.stringify(input.details) : null,
+    ]
   );
 }
 
@@ -474,11 +510,14 @@ function mapAuditRow(row: any): AuditLogEntry {
     action: row.action,
     entityType: row.entity_type,
     entityId: row.entity_id,
-    details: row.details
+    details: row.details,
   };
 }
 
-export async function listAuditLog(params: { limit?: number | null; cursor?: number | null }) {
+export async function listAuditLog(params: {
+  limit?: number | null;
+  cursor?: number | null;
+}) {
   await ensureDb();
   if (!hasDatabase()) {
     const mem = getMemoryStore();
@@ -489,7 +528,7 @@ export async function listAuditLog(params: { limit?: number | null; cursor?: num
     return {
       items: slice,
       total,
-      nextCursor: offset + slice.length < total ? offset + limit : null
+      nextCursor: offset + slice.length < total ? offset + limit : null,
     };
   }
   const limit = Math.min(100, Math.max(1, params.limit ?? 50));
@@ -503,6 +542,6 @@ export async function listAuditLog(params: { limit?: number | null; cursor?: num
   return {
     items: res.rows.map(mapAuditRow),
     total,
-    nextCursor: offset + res.rows.length < total ? offset + limit : null
+    nextCursor: offset + res.rows.length < total ? offset + limit : null,
   };
 }

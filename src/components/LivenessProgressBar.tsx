@@ -17,7 +17,6 @@ interface LivenessProgressBarProps {
 export function LivenessProgressBar({
   startDate,
   endDate,
-  status,
   className,
   tooltip,
   label = "Challenge Period",

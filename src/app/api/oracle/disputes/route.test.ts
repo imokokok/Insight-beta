@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ZodError } from "zod";
 import { GET } from "./route";
 import * as oracle from "@/server/oracle";
-import { requireAdmin } from "@/server/apiResponse";
+import { requireAdmin, error } from "@/server/apiResponse";
 import type { Dispute } from "@/lib/oracleTypes";
 
 vi.mock("@/server/oracle", () => ({
@@ -143,10 +143,7 @@ describe("GET /api/oracle/disputes", () => {
 
   it("requires admin for sync", async () => {
     // Mock requireAdmin to return error when no token
-    vi.mocked(requireAdmin).mockResolvedValueOnce({
-      ok: false,
-      error: "unauthorized",
-    });
+    vi.mocked(requireAdmin).mockResolvedValueOnce(error("unauthorized", 403));
 
     const request = new Request(
       "http://localhost:3000/api/oracle/disputes?sync=1"

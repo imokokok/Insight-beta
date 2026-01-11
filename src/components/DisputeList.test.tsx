@@ -1,3 +1,4 @@
+import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { DisputeList } from "./DisputeList";
@@ -36,6 +37,41 @@ vi.mock("next/link", () => ({
 vi.mock("./SkeletonList", () => ({
   SkeletonList: ({ count }: { count: number }) => (
     <div data-testid="skeleton-list">Skeleton Loading {count}</div>
+  ),
+}));
+
+// Mock react-virtuoso
+type VirtuosoProps<T> = {
+  itemContent: (index: number, item: T) => React.ReactNode;
+  data: T[];
+};
+
+type VirtuosoGridProps<T> = VirtuosoProps<T> & {
+  listClassName?: string;
+  itemClassName?: string;
+};
+
+vi.mock("react-virtuoso", () => ({
+  Virtuoso: ({ itemContent, data }: VirtuosoProps<unknown>) => (
+    <div data-testid="virtuoso-list">
+      {data.map((item, index) => (
+        <div key={index}>{itemContent(index, item)}</div>
+      ))}
+    </div>
+  ),
+  VirtuosoGrid: ({
+    itemContent,
+    data,
+    listClassName,
+    itemClassName,
+  }: VirtuosoGridProps<unknown>) => (
+    <div className={listClassName} data-testid="virtuoso-grid">
+      {data.map((item, index) => (
+        <div key={index} className={itemClassName}>
+          {itemContent(index, item)}
+        </div>
+      ))}
+    </div>
   ),
 }));
 

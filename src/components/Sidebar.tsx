@@ -2,14 +2,15 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { 
-  ShieldAlert, 
-  Activity, 
+import {
+  ShieldAlert,
+  Activity,
   Menu,
   X,
   User,
   ScrollText,
-  KeyRound
+  KeyRound,
+  Star,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -22,8 +23,9 @@ const navItems = [
   { key: "nav.alerts" as const, href: "/alerts", icon: ShieldAlert },
   { key: "nav.audit" as const, href: "/audit", icon: ScrollText },
   { key: "nav.adminTokens" as const, href: "/admin/tokens", icon: KeyRound },
+  { key: "nav.watchlist" as const, href: "/watchlist", icon: Star },
   { key: "nav.myAssertions" as const, href: "/my-assertions", icon: User },
-  { key: "nav.myDisputes" as const, href: "/my-disputes", icon: ShieldAlert }
+  { key: "nav.myDisputes" as const, href: "/my-disputes", icon: ShieldAlert },
 ];
 
 export function Sidebar() {
@@ -35,16 +37,20 @@ export function Sidebar() {
     <>
       <button
         onClick={() => setIsOpen(!isOpen)}
-      className="fixed top-4 left-4 z-50 rounded-xl bg-white/50 p-2 shadow-sm backdrop-blur-md md:hidden text-purple-900"
-      aria-label={isOpen ? t("common.closeMenu") : t("common.openMenu")}
-      aria-expanded={isOpen}
-    >
-      {isOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
-    </button>
+        className="fixed top-4 left-4 z-50 rounded-xl bg-white/50 p-2 shadow-sm backdrop-blur-md md:hidden text-purple-900"
+        aria-label={isOpen ? t("common.closeMenu") : t("common.openMenu")}
+        aria-expanded={isOpen}
+      >
+        {isOpen ? (
+          <X size={20} aria-hidden="true" />
+        ) : (
+          <Menu size={20} aria-hidden="true" />
+        )}
+      </button>
 
       {/* Mobile overlay */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-30 bg-black/20 backdrop-blur-sm md:hidden"
           onClick={() => setIsOpen(false)}
           aria-hidden="true"
@@ -64,8 +70,12 @@ export function Sidebar() {
               I
             </div>
             <div>
-              <h1 className="text-lg font-bold text-gray-800 tracking-tight">Insight</h1>
-              <p className="text-xs text-gray-500 font-medium">{t("app.subtitle")}</p>
+              <h1 className="text-lg font-bold text-gray-800 tracking-tight">
+                Insight
+              </h1>
+              <p className="text-xs text-gray-500 font-medium">
+                {t("app.subtitle")}
+              </p>
             </div>
           </div>
 
@@ -89,7 +99,9 @@ export function Sidebar() {
                     size={20}
                     className={cn(
                       "transition-colors duration-200",
-                      isActive ? "text-purple-600" : "text-gray-400 group-hover:text-purple-500"
+                      isActive
+                        ? "text-purple-600"
+                        : "text-gray-400 group-hover:text-purple-500"
                     )}
                   />
                   {t(item.key)}
@@ -99,9 +111,9 @@ export function Sidebar() {
           </nav>
 
           <div className="border-t border-white/20 pt-4">
-             <div className="w-full">
-               <ConnectWallet />
-             </div>
+            <div className="w-full">
+              <ConnectWallet />
+            </div>
           </div>
         </div>
       </aside>

@@ -6,11 +6,13 @@ import {
   ArrowUpRight,
   RotateCw,
   FileQuestion,
+  Star,
 } from "lucide-react";
 import { Virtuoso, VirtuosoGrid } from "react-virtuoso";
-import { cn, formatTime, formatUsd } from "@/lib/utils";
+import { cn, formatTime, formatUsd, getExplorerUrl } from "@/lib/utils";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { langToLocale } from "@/i18n/translations";
+import { useWatchlist } from "@/hooks/useWatchlist";
 import type { Assertion, OracleStatus } from "@/lib/oracleTypes";
 import { CopyButton } from "@/components/CopyButton";
 import { SkeletonList } from "./SkeletonList";
@@ -84,6 +86,7 @@ export const AssertionList = memo(function AssertionList({
 }: AssertionListProps) {
   const { t, lang } = useI18n();
   const locale = langToLocale[lang];
+  const { isWatched, toggleWatchlist } = useWatchlist();
 
   if (loading && items.length === 0) {
     return <SkeletonList viewMode={viewMode} />;
@@ -191,17 +194,43 @@ export const AssertionList = memo(function AssertionList({
             </div>
             <CopyButton text={item.id} className="ml-1 h-6 w-6" iconSize={12} />
           </div>
-          {/* Status badge for Grid view */}
-          {viewMode === "grid" && (
-            <span
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleWatchlist(item.id);
+              }}
               className={cn(
-                "px-2.5 py-1 rounded-full text-xs font-semibold",
-                getStatusColor(item.status)
+                "p-1.5 rounded-lg transition-all duration-200",
+                isWatched(item.id)
+                  ? "text-yellow-400 hover:text-yellow-500 hover:bg-yellow-50"
+                  : "text-gray-300 hover:text-yellow-400 hover:bg-gray-50"
               )}
+              title={
+                isWatched(item.id) ? t("nav.watchlist") : t("nav.watchlist")
+              }
             >
-              {statusLabel(item.status)}
-            </span>
-          )}
+              <Star
+                size={18}
+                fill={isWatched(item.id) ? "currentColor" : "none"}
+                strokeWidth={isWatched(item.id) ? 0 : 2}
+              />
+            </button>
+
+            {/* Status badge for Grid view */}
+            {viewMode === "grid" && (
+              <span
+                className={cn(
+                  "px-2.5 py-1 rounded-full text-xs font-semibold",
+                  getStatusColor(item.status)
+                )}
+              >
+                {statusLabel(item.status)}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Question */}
@@ -260,7 +289,29 @@ export const AssertionList = memo(function AssertionList({
               {t("oracle.card.asserter")}
             </div>
             <div className="font-mono text-xs font-medium text-gray-700">
-              {shortAddress(item.asserter)}
+              {(() => {
+                const explorerUrl = getExplorerUrl(
+                  item.chain,
+                  item.asserter,
+                  "address"
+                );
+                if (!explorerUrl) {
+                  return shortAddress(item.asserter);
+                }
+                return (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      window.open(explorerUrl, "_blank", "noopener,noreferrer");
+                    }}
+                    className="hover:text-purple-600 hover:underline transition-colors"
+                  >
+                    {shortAddress(item.asserter)}
+                  </button>
+                );
+              })()}
             </div>
           </div>
           <div

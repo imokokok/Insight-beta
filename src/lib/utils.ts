@@ -39,7 +39,7 @@ export function formatUsdCompact(amount: number, locale: string) {
     style: "currency",
     currency: "USD",
     notation: "compact",
-    maximumFractionDigits: 1
+    maximumFractionDigits: 1,
   }).format(amount);
   return formatted;
 }
@@ -48,14 +48,14 @@ export function formatUsd(amount: number, locale: string) {
   return new Intl.NumberFormat(locale, {
     style: "currency",
     currency: "USD",
-    maximumFractionDigits: 0
+    maximumFractionDigits: 0,
   }).format(amount);
 }
 
 export function formatNumberCompact(amount: number, locale: string) {
   return new Intl.NumberFormat(locale, {
     notation: "compact",
-    maximumFractionDigits: 1
+    maximumFractionDigits: 1,
   }).format(amount);
 }
 
@@ -67,7 +67,7 @@ export function formatTime(iso: string | null | undefined, locale: string) {
     month: "short",
     day: "numeric",
     hour: "2-digit",
-    minute: "2-digit"
+    minute: "2-digit",
   }).format(d);
 }
 
@@ -85,12 +85,25 @@ export function formatDurationMinutes(totalMinutes: number) {
   return `${hours}h ${minutes}m`;
 }
 
-export function getExplorerUrl(chain: string, hash: string) {
-  if (!hash) return null;
-  if (chain === "Polygon") return `https://polygonscan.com/tx/${hash}`;
-  if (chain === "Arbitrum") return `https://arbiscan.io/tx/${hash}`;
-  if (chain === "Optimism") return `https://optimistic.etherscan.io/tx/${hash}`;
-  return null;
+export function getExplorerUrl(
+  chain: string | undefined | null,
+  value: string,
+  type: "tx" | "address" | "block" = "tx"
+) {
+  if (!value) return null;
+  const c = chain?.toLowerCase() || "";
+
+  let baseUrl = "";
+  if (c.includes("polygon") || c === "137") baseUrl = "https://polygonscan.com";
+  else if (c.includes("arbitrum") || c === "42161")
+    baseUrl = "https://arbiscan.io";
+  else if (c.includes("optimism") || c === "10")
+    baseUrl = "https://optimistic.etherscan.io";
+  else if (c.includes("mainnet") || c === "1") baseUrl = "https://etherscan.io";
+  else if (c.includes("base") || c === "8453") baseUrl = "https://basescan.org";
+  else return null;
+
+  return `${baseUrl}/${type}/${value}`;
 }
 
 export async function copyToClipboard(text: string): Promise<boolean> {
@@ -162,12 +175,17 @@ export function getErrorDetails(error: unknown) {
   return undefined;
 }
 
-export async function fetchApiData<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
+export async function fetchApiData<T>(
+  input: RequestInfo | URL,
+  init?: RequestInit
+): Promise<T> {
   try {
     const normalizedInput = (() => {
       if (typeof input === "string" && input.startsWith("/")) {
         const base =
-          typeof window !== "undefined" && typeof window.location?.origin === "string" && window.location.origin !== "null"
+          typeof window !== "undefined" &&
+          typeof window.location?.origin === "string" &&
+          window.location.origin !== "null"
             ? window.location.origin
             : "http://localhost";
         return new URL(input, base);
@@ -175,7 +193,7 @@ export async function fetchApiData<T>(input: RequestInfo | URL, init?: RequestIn
       return input;
     })();
     const res = await fetch(normalizedInput, init);
-    
+
     let json: unknown;
     try {
       json = await res.json();
@@ -210,7 +228,7 @@ export async function fetchApiData<T>(input: RequestInfo | URL, init?: RequestIn
     if (record.ok && record.data !== undefined) {
       return record.data;
     }
-    
+
     if (record.error) {
       if (typeof record.error === "string") {
         throw new ApiClientError(record.error);
@@ -222,12 +240,13 @@ export async function fetchApiData<T>(input: RequestInfo | URL, init?: RequestIn
       }
       throw new ApiClientError("api_error");
     }
-    
-    throw new ApiClientError("unknown_error");
 
+    throw new ApiClientError("unknown_error");
   } catch (error) {
     const name =
-      error && typeof error === "object" && "name" in error ? String((error as { name?: unknown }).name) : "";
+      error && typeof error === "object" && "name" in error
+        ? String((error as { name?: unknown }).name)
+        : "";
     if (name !== "AbortError") logger.error("Fetch error:", error);
     throw error;
   }

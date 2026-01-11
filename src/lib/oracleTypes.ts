@@ -47,7 +47,7 @@ export type OracleStats = {
   activeDisputes: number;
   resolved24h: number;
   avgResolutionMinutes: number;
-}
+};
 
 export type LeaderboardEntry = {
   address: string;
@@ -94,7 +94,10 @@ export type OracleStatusSnapshot = {
 };
 
 export type ApiOk<T extends Record<string, unknown>> = { ok: true } & T;
-export type ApiError = { ok: false; error: string | { code: string; details?: unknown } };
+export type ApiError = {
+  ok: false;
+  error: string | { code: string; details?: unknown };
+};
 
 export type UserStats = {
   totalAssertions: number;
@@ -102,6 +105,37 @@ export type UserStats = {
   totalBondedUsd: number;
   winRate: number; // 0-100
 };
+
+export interface DbAssertionRow {
+  id: string;
+  chain: OracleChain;
+  asserter: string;
+  protocol: string;
+  market: string;
+  assertion_data: string;
+  asserted_at: Date;
+  liveness_ends_at: Date;
+  resolved_at: Date | null;
+  status: OracleStatus;
+  bond_usd: string | number;
+  disputer: string | null;
+  tx_hash: string;
+}
+
+export interface DbDisputeRow {
+  id: string;
+  chain: OracleChain;
+  assertion_id: string;
+  market: string;
+  reason: string;
+  disputer: string;
+  disputed_at: Date;
+  voting_ends_at: Date | null;
+  status: string;
+  votes_for: string | number;
+  votes_against: string | number;
+  total_votes: string | number;
+}
 
 export type AlertSeverity = "info" | "warning" | "critical";
 export type AlertStatus = "Open" | "Acknowledged" | "Resolved";

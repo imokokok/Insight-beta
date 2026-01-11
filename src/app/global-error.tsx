@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { AlertTriangle, RefreshCcw, Home } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { translations, type Lang } from "@/i18n/translations";
 
 export default function GlobalError({
   error,
@@ -11,13 +11,26 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const [lang, setLang] = useState<Lang>("en");
+
   useEffect(() => {
     // Optionally log to an error reporting service
     console.error(error);
+
+    // Simple client-side language detection
+    if (typeof navigator !== "undefined") {
+      const browserLang = navigator.language.toLowerCase();
+      if (browserLang.includes("zh")) setLang("zh");
+      else if (browserLang.includes("es")) setLang("es");
+      else setLang("en");
+    }
   }, [error]);
 
+  const t = translations[lang].errorPage;
+  const htmlLang = lang === "zh" ? "zh-CN" : lang === "es" ? "es" : "en";
+
   return (
-    <html lang="en">
+    <html lang={htmlLang}>
       <body className="bg-gray-50 min-h-screen flex items-center justify-center p-4 font-sans text-gray-900 antialiased">
         <div className="w-full max-w-md">
           <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 p-8 text-center space-y-6">
@@ -27,11 +40,10 @@ export default function GlobalError({
 
             <div className="space-y-2">
               <h2 className="text-2xl font-bold tracking-tight text-gray-900">
-                Something went wrong
+                {t.title}
               </h2>
               <p className="text-gray-500 text-sm leading-relaxed">
-                We apologize for the inconvenience. An unexpected error has
-                occurred while processing your request.
+                {t.description}
               </p>
             </div>
 
@@ -49,20 +61,20 @@ export default function GlobalError({
                 className="flex items-center justify-center gap-2 w-full rounded-xl bg-purple-600 px-4 py-3 text-sm font-semibold text-white hover:bg-purple-700 transition-all active:scale-[0.98] shadow-lg shadow-purple-500/20"
               >
                 <RefreshCcw className="w-4 h-4" />
-                Try again
+                {t.retry}
               </button>
               <button
                 onClick={() => (window.location.href = "/")}
                 className="flex items-center justify-center gap-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-[0.98]"
               >
                 <Home className="w-4 h-4" />
-                Go Home
+                {t.home}
               </button>
             </div>
           </div>
 
           <p className="mt-8 text-center text-xs text-gray-400">
-            Error Digest: {error.digest || "N/A"}
+            {t.digest}: {error.digest || "N/A"}
           </p>
         </div>
       </body>

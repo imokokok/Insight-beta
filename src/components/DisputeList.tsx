@@ -9,8 +9,10 @@ import {
   RotateCw,
   AlertTriangle,
   Gavel,
+  Star,
 } from "lucide-react";
-import { cn, formatTime } from "@/lib/utils";
+import { cn, formatTime, getExplorerUrl } from "@/lib/utils";
+import { useWatchlist } from "@/hooks/useWatchlist";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { langToLocale } from "@/i18n/translations";
 import type { Dispute, DisputeStatus } from "@/lib/oracleTypes";
@@ -84,6 +86,7 @@ export const DisputeList = memo(function DisputeList({
 }: DisputeListProps) {
   const { t, lang } = useI18n();
   const locale = langToLocale[lang];
+  const { isWatched, toggleWatchlist, mounted } = useWatchlist();
 
   if (loading && items.length === 0) {
     return <SkeletonList viewMode={viewMode} />;
@@ -193,17 +196,40 @@ export const DisputeList = memo(function DisputeList({
               </div>
             </div>
           </div>
-          {/* Status badge for Grid view */}
-          {viewMode === "grid" && (
-            <span
+          <div className="flex items-center gap-2">
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleWatchlist(item.assertionId);
+              }}
               className={cn(
-                "px-2.5 py-1 rounded-full text-xs font-semibold",
-                getStatusColor(item.status)
+                "p-1.5 rounded-lg transition-all z-10",
+                mounted && isWatched(item.assertionId)
+                  ? "bg-amber-100 text-amber-500 hover:bg-amber-200"
+                  : "bg-gray-100/50 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
               )}
             >
-              {statusLabel(item.status)}
-            </span>
-          )}
+              <Star
+                size={16}
+                className={cn(
+                  "transition-all",
+                  mounted && isWatched(item.assertionId) && "fill-current"
+                )}
+              />
+            </button>
+            {/* Status badge for Grid view */}
+            {viewMode === "grid" && (
+              <span
+                className={cn(
+                  "px-2.5 py-1 rounded-full text-xs font-semibold",
+                  getStatusColor(item.status)
+                )}
+              >
+                {statusLabel(item.status)}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Question */}
@@ -267,8 +293,20 @@ export const DisputeList = memo(function DisputeList({
             <div className="text-xs text-gray-500 mb-1">
               {t("disputes.card.disputer")}
             </div>
-            <div className="font-mono text-xs font-medium text-gray-700">
+            <div className="font-mono text-xs font-medium text-gray-700 flex items-center gap-1 justify-end">
               {shortAddress(item.disputer)}
+              {getExplorerUrl(item.chain, item.disputer) && (
+                <a
+                  href={getExplorerUrl(item.chain, item.disputer)!}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-purple-600 transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                  title={t("common.viewOnExplorer")}
+                >
+                  <ArrowUpRight size={10} />
+                </a>
+              )}
             </div>
           </div>
           <div

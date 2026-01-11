@@ -1,25 +1,15 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useSWRConfig } from "swr";
+import { useState } from "react";
 import { useParams } from "next/navigation";
-import {
-  User,
-  ExternalLink,
-  CheckCircle2,
-  XCircle,
-  LayoutGrid,
-  List as ListIcon,
-} from "lucide-react";
+import { ExternalLink, LayoutGrid, List as ListIcon } from "lucide-react";
 import { useI18n } from "@/i18n/LanguageProvider";
-import { useToast } from "@/components/ui/toast";
-import { PageHeader } from "@/components/PageHeader";
 import { UserStatsCard } from "@/components/UserStatsCard";
 import { AssertionList } from "@/components/AssertionList";
 import { DisputeList } from "@/components/DisputeList";
 import { AddressAvatar } from "@/components/AddressAvatar";
 import { CopyButton } from "@/components/CopyButton";
-import { cn } from "@/lib/utils";
+import { cn, getExplorerUrl } from "@/lib/utils";
 import { useOracleData } from "@/hooks/useOracleData";
 import { useDisputes } from "@/hooks/useDisputes";
 import { useUserStats } from "@/hooks/useUserStats";
@@ -28,7 +18,6 @@ export default function AddressProfilePage() {
   const params = useParams();
   const address = params.address as string;
   const { t } = useI18n();
-  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<"assertions" | "disputes">(
     "assertions"
   );
@@ -81,15 +70,17 @@ export default function AddressProfilePage() {
                 iconSize={14}
               />
             </div>
-            <a
-              href={`https://etherscan.io/address/${address}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors border border-transparent hover:border-purple-100"
-              title="View on Etherscan"
-            >
-              <ExternalLink size={18} />
-            </a>
+            {getExplorerUrl("Mainnet", address, "address") && (
+              <a
+                href={getExplorerUrl("Mainnet", address, "address")!}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors border border-transparent hover:border-purple-100"
+                title={t("common.viewOnExplorer")}
+              >
+                <ExternalLink size={18} />
+              </a>
+            )}
           </div>
         </div>
       </div>

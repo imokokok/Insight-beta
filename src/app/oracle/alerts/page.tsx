@@ -6,7 +6,6 @@ import {
   Bell,
   Save,
   AlertTriangle,
-  CheckCircle2,
   Info,
   ShieldAlert,
   Loader2,

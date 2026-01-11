@@ -16,9 +16,9 @@ interface SettleModalProps {
   chain?: OracleChain;
 }
 
-export function SettleModal({ assertionId, isOpen, onClose, contractAddress, chain }: SettleModalProps) {
+export function SettleModal({ isOpen, onClose }: SettleModalProps) {
   const { address } = useWallet();
-  const { execute, isSubmitting, isConfirming, error } = useOracleTransaction();
+  const { isSubmitting, isConfirming, error } = useOracleTransaction();
   const { t } = useI18n();
   const dialogRef = useRef<HTMLDivElement | null>(null);
   useModalBehavior(isOpen, onClose, dialogRef);
@@ -28,7 +28,6 @@ export function SettleModal({ assertionId, isOpen, onClose, contractAddress, cha
   const handleSubmit = async () => {
     // TODO: Implement settlement logic or remove if not needed
     // Currently disabled because 'settleAssertion' is not in the ABI
-    console.log("Settlement not implemented yet", { assertionId, contractAddress, chain });
     onClose();
     /*
     await execute({
@@ -53,10 +52,23 @@ export function SettleModal({ assertionId, isOpen, onClose, contractAddress, cha
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div ref={dialogRef} tabIndex={-1} className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl ring-1 ring-gray-200">
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl ring-1 ring-gray-200"
+      >
         <div className="mb-6 flex items-center justify-between">
-          <h2 id="settle-modal-title" className="text-xl font-bold text-gray-900">{t("oracle.detail.settleAssertion")}</h2>
-          <button onClick={onClose} className="rounded-full p-1 hover:bg-gray-100" aria-label={t("common.close")}>
+          <h2
+            id="settle-modal-title"
+            className="text-xl font-bold text-gray-900"
+          >
+            {t("oracle.detail.settleAssertion")}
+          </h2>
+          <button
+            onClick={onClose}
+            className="rounded-full p-1 hover:bg-gray-100"
+            aria-label={t("common.close")}
+          >
             <X size={20} className="text-gray-500" />
           </button>
         </div>
@@ -93,8 +105,14 @@ export function SettleModal({ assertionId, isOpen, onClose, contractAddress, cha
               disabled={isSubmitting || isConfirming || !address}
               className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3 font-semibold text-white shadow-lg shadow-blue-500/25 hover:from-blue-700 hover:to-indigo-700 hover:shadow-xl hover:shadow-blue-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting || isConfirming ? <Loader2 className="animate-spin" size={20} /> : null}
-              {isSubmitting ? t("oracle.detail.submitting") : isConfirming ? t("oracle.detail.confirming") : t("oracle.detail.settleAssertion")}
+              {isSubmitting || isConfirming ? (
+                <Loader2 className="animate-spin" size={20} />
+              ) : null}
+              {isSubmitting
+                ? t("oracle.detail.submitting")
+                : isConfirming
+                ? t("oracle.detail.confirming")
+                : t("oracle.detail.settleAssertion")}
             </button>
           </div>
         </div>

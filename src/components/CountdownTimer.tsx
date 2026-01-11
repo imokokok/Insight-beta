@@ -32,7 +32,7 @@ export function CountdownTimer({
       const difference = target - now;
 
       if (difference <= 0) {
-        if (timeLeft && !timeLeft.isExpired && onExpire) {
+        if (onExpire) {
           onExpire();
         }
         return { days: 0, hours: 0, minutes: 0, seconds: 0, isExpired: true };

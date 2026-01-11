@@ -75,6 +75,7 @@ export const translations = {
       adminTokens: "密钥",
       myAssertions: "我的断言",
       myDisputes: "我的争议",
+      watchlist: "关注列表",
     },
     common: {
       language: "语言",
@@ -94,13 +95,17 @@ export const translations = {
       copyHash: "复制哈希",
       copied: "已复制",
       viewDetails: "查看详情",
+      viewOnExplorer: "在浏览器查看",
       allLoaded: "已全部加载",
       ok: "好的",
       cancel: "取消",
       confirm: "确认",
+      success: "成功",
       popular: "热门",
       example: "示例",
       min: "最小",
+      addToWatchlist: "加入关注",
+      removeFromWatchlist: "取消关注",
     },
     sidebar: {
       userWallet: "用户钱包",
@@ -159,6 +164,7 @@ export const translations = {
         dailyAssertions: "每日断言数",
         tvsCumulative: "安全总价值（累计）",
         syncHealth: "同步健康",
+        topMarkets: "热门市场",
         noData: "暂无图表数据",
         activityDesc: "随时间变化的活动",
         tvsDesc: "累计价值",
@@ -462,6 +468,13 @@ export const translations = {
       contractNotFound: "合约地址不存在或不可用",
       syncFailed: "同步失败",
     },
+    errorPage: {
+      title: "出错了",
+      description: "抱歉给您带来不便。处理您的请求时发生了意外错误。",
+      digest: "错误摘要",
+      retry: "重试",
+      home: "返回首页",
+    },
   },
   en: {
     tooltips: {
@@ -506,6 +519,7 @@ export const translations = {
       adminTokens: "Tokens",
       myAssertions: "My Assertions",
       myDisputes: "My Disputes",
+      watchlist: "Watchlist",
     },
     common: {
       language: "Language",
@@ -525,12 +539,16 @@ export const translations = {
       copyHash: "Copy hash",
       copied: "Copied",
       viewDetails: "View Details",
+      viewOnExplorer: "View on Explorer",
+      addToWatchlist: "Add to Watchlist",
+      removeFromWatchlist: "Remove from Watchlist",
       allLoaded: "All loaded",
       ok: "OK",
       cancel: "Cancel",
       confirm: "Confirm",
       popular: "Popular",
       example: "Example",
+      success: "Success",
     },
     sidebar: {
       userWallet: "User Wallet",
@@ -880,6 +898,14 @@ export const translations = {
       contractNotFound: "Contract not found",
       syncFailed: "Sync failed",
     },
+    errorPage: {
+      title: "Something went wrong",
+      description:
+        "We apologize for the inconvenience. An unexpected error occurred while processing your request.",
+      digest: "Error Digest",
+      retry: "Retry",
+      home: "Go Home",
+    },
   },
   es: {
     tooltips: {
@@ -924,6 +950,7 @@ export const translations = {
       adminTokens: "Tokens",
       myAssertions: "Mis Aserciones",
       myDisputes: "Mis Disputas",
+      watchlist: "Lista de seguimiento",
     },
     common: {
       language: "Idioma",
@@ -942,6 +969,7 @@ export const translations = {
       copyHash: "Copiar hash",
       copied: "Copiado",
       viewDetails: "Ver detalles",
+      viewOnExplorer: "Ver en el explorador",
       allLoaded: "Todo cargado",
       noData: "Sin datos",
       ok: "OK",
@@ -950,6 +978,9 @@ export const translations = {
       popular: "Popular",
       example: "Ejemplo",
       min: "Mínimo",
+      addToWatchlist: "Añadir a lista de seguimiento",
+      removeFromWatchlist: "Eliminar de lista de seguimiento",
+      success: "Éxito",
     },
     sidebar: {
       userWallet: "Cartera de usuario",
@@ -1323,6 +1354,14 @@ export const translations = {
       contractNotFound: "Contrato no encontrado",
       syncFailed: "Error de sincronización",
     },
+    errorPage: {
+      title: "Algo salió mal",
+      description:
+        "Nos disculpamos por las molestias. Ha ocurrido un error inesperado al procesar su solicitud.",
+      digest: "Resumen del error",
+      retry: "Reintentar",
+      home: "Ir a Inicio",
+    },
   },
 } as const;
 
@@ -1350,6 +1389,7 @@ export type TranslationKey =
   | "nav.myAssertions"
   | "nav.myDisputes"
   | "nav.audit"
+  | "nav.watchlist"
   | "common.language"
   | "common.loading"
   | "common.comingSoon"
@@ -1367,10 +1407,14 @@ export type TranslationKey =
   | "common.copyHash"
   | "common.copied"
   | "common.viewDetails"
+  | "common.viewOnExplorer"
   | "common.allLoaded"
   | "common.popular"
   | "common.example"
   | "common.min"
+  | "common.addToWatchlist"
+  | "common.removeFromWatchlist"
+  | "common.success"
   | "sidebar.userWallet"
   | "sidebar.notConnected"
   | "wallet.connect"
@@ -1421,6 +1465,7 @@ export type TranslationKey =
   | "oracle.charts.dailyAssertions"
   | "oracle.charts.tvsCumulative"
   | "oracle.charts.syncHealth"
+  | "oracle.charts.topMarkets"
   | "oracle.charts.noData"
   | "oracle.charts.activityDesc"
   | "oracle.charts.tvsDesc"

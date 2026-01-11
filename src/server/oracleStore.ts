@@ -6,6 +6,8 @@ import type {
   OracleStats,
   LeaderboardStats,
   UserStats,
+  DbAssertionRow,
+  DbDisputeRow,
 } from "@/lib/oracleTypes";
 import { mockAssertions, mockDisputes } from "@/lib/mockData";
 import { unstable_cache } from "next/cache";
@@ -40,11 +42,11 @@ type ListParams = {
   cursor?: number | null;
   asserter?: string | null;
   disputer?: string | null;
+  ids?: string[] | null;
 };
 
 // Helper to map DB row to Assertion
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function mapAssertionRow(row: any): Assertion {
+function mapAssertionRow(row: DbAssertionRow): Assertion {
   return {
     id: row.id,
     chain: row.chain,
@@ -57,14 +59,13 @@ function mapAssertionRow(row: any): Assertion {
     resolvedAt: row.resolved_at ? row.resolved_at.toISOString() : undefined,
     status: row.status,
     bondUsd: Number(row.bond_usd),
-    disputer: row.disputer,
+    disputer: row.disputer || undefined,
     txHash: row.tx_hash,
   };
 }
 
 // Helper to map DB row to Dispute
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function mapDisputeRow(row: any): Dispute {
+function mapDisputeRow(row: DbDisputeRow): Dispute {
   const now = Date.now();
   const votingEndsAt = row.voting_ends_at
     ? row.voting_ends_at.toISOString()
@@ -85,7 +86,7 @@ function mapDisputeRow(row: any): Dispute {
     disputeReason: row.reason,
     disputer: row.disputer,
     disputedAt: row.disputed_at.toISOString(),
-    votingEndsAt,
+    votingEndsAt: votingEndsAt || "", // Fallback empty string if undefined, ensuring string type
     status: computedStatus,
     currentVotesFor: Number(row.votes_for),
     currentVotesAgainst: Number(row.votes_against),
@@ -102,6 +103,7 @@ export function parseListParams(url: URL): ListParams {
     cursor: Number(url.searchParams.get("cursor")) || 0,
     asserter: url.searchParams.get("asserter"),
     disputer: url.searchParams.get("disputer"),
+    ids: url.searchParams.get("ids")?.split(",").filter(Boolean),
   };
 }
 
@@ -138,6 +140,9 @@ export async function listAssertions(params: ListParams) {
       items = items.filter(
         (a) => a.asserter.toLowerCase() === params.asserter?.toLowerCase()
       );
+    }
+    if (params.ids && params.ids.length > 0) {
+      items = items.filter((a) => params.ids!.includes(a.id));
     }
     const start = offset;
     const end = offset + limit;
@@ -190,7 +195,7 @@ export async function listAssertions(params: ListParams) {
   }
 
   const conditions: string[] = [];
-  const values: (string | number)[] = [];
+  const values: (string | number | string[])[] = [];
   let idx = 1;
 
   if (
@@ -227,16 +232,21 @@ export async function listAssertions(params: ListParams) {
     values.push(params.asserter.toLowerCase());
   }
 
+  if (params.ids && params.ids.length > 0) {
+    conditions.push(`id = ANY($${idx++})`);
+    values.push(params.ids);
+  }
+
   const whereClause =
     conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
-  const countRes = await query(
+  const countRes = await query<{ total: string | number }>(
     `SELECT COUNT(*) as total FROM assertions ${whereClause}`,
     values
   );
   const total = Number(countRes.rows[0]?.total || 0);
 
-  const res = await query(
+  const res = await query<DbAssertionRow>(
     `SELECT * FROM assertions ${whereClause} ORDER BY asserted_at DESC LIMIT $${idx++} OFFSET $${idx}`,
     [...values, limit, offset]
   );
@@ -254,7 +264,10 @@ export async function getAssertion(id: string): Promise<Assertion | null> {
     const mock = mockAssertions.find((a) => a.id === id);
     return mock || null;
   }
-  const res = await query("SELECT * FROM assertions WHERE id = $1", [id]);
+  const res = await query<DbAssertionRow>(
+    "SELECT * FROM assertions WHERE id = $1",
+    [id]
+  );
   if (res.rows.length === 0) {
     // Check mocks
     const mock = mockAssertions.find((a) => a.id === id);
@@ -269,7 +282,10 @@ export async function getDispute(id: string): Promise<Dispute | null> {
     const mock = mockDisputes.find((d) => d.id === id);
     return mock || null;
   }
-  const res = await query("SELECT * FROM disputes WHERE id = $1", [id]);
+  const res = await query<DbDisputeRow>(
+    "SELECT * FROM disputes WHERE id = $1",
+    [id]
+  );
   if (res.rows.length === 0) {
     const mock = mockDisputes.find((d) => d.id === id);
     return mock || null;
@@ -285,9 +301,10 @@ export async function getDisputeByAssertionId(
     const mock = mockDisputes.find((d) => d.assertionId === assertionId);
     return mock || null;
   }
-  const res = await query("SELECT * FROM disputes WHERE assertion_id = $1", [
-    assertionId,
-  ]);
+  const res = await query<DbDisputeRow>(
+    "SELECT * FROM disputes WHERE assertion_id = $1",
+    [assertionId]
+  );
   if (res.rows.length === 0) {
     const mock = mockDisputes.find((d) => d.assertionId === assertionId);
     return mock || null;
@@ -429,13 +446,13 @@ export async function listDisputes(params: ListParams) {
   const whereClause =
     conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
-  const countRes = await query(
+  const countRes = await query<{ total: string | number }>(
     `SELECT COUNT(*) as total FROM disputes ${whereClause}`,
     values
   );
   const total = Number(countRes.rows[0]?.total || 0);
 
-  const res = await query(
+  const res = await query<DbDisputeRow>(
     `SELECT * FROM disputes ${whereClause} ORDER BY disputed_at DESC LIMIT $${idx++} OFFSET $${idx}`,
     [...values, limit, offset]
   );

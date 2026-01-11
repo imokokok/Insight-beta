@@ -15,7 +15,6 @@ import {
   RotateCw,
   User,
   Gavel,
-  FileText,
 } from "lucide-react";
 import { OracleStatsBanner } from "@/components/OracleStatsBanner";
 import { HowItWorks } from "@/components/HowItWorks";
@@ -39,6 +38,7 @@ import { Leaderboard } from "@/components/Leaderboard";
 import { PnLCalculator } from "@/components/PnLCalculator";
 import { AssertionList } from "@/components/AssertionList";
 import { DisputeList } from "@/components/DisputeList";
+import { useToast } from "@/components/ui/toast";
 import type {
   OracleConfig,
   OracleStatus,
@@ -63,6 +63,7 @@ const OracleCharts = dynamic(
 );
 
 export default function OraclePage() {
+  const { toast } = useToast();
   const { address } = useWallet();
   const [filterStatus, setFilterStatus] = useState<OracleStatus | "All">("All");
   const [filterChain, setFilterChain] = useState<OracleConfig["chain"] | "All">(
@@ -210,6 +211,12 @@ export default function OraclePage() {
       });
       setConfig(data);
       setStatus((prev) => (prev ? { ...prev, config: data } : prev));
+      setShowConfig(false);
+      toast({
+        title: t("common.success"),
+        message: "Configuration saved successfully",
+        type: "success",
+      });
     } catch (e) {
       const code = getErrorCode(e);
       setConfigError(code);

@@ -39,7 +39,8 @@ function memoryMaxVoteKeys() {
   const raw = env.INSIGHT_MEMORY_MAX_VOTE_KEYS;
   if (!raw) return DEFAULT_MEMORY_MAX_VOTE_KEYS;
   const parsed = Number(raw);
-  if (!Number.isFinite(parsed) || !Number.isInteger(parsed) || parsed <= 0) return DEFAULT_MEMORY_MAX_VOTE_KEYS;
+  if (!Number.isFinite(parsed) || !Number.isInteger(parsed) || parsed <= 0)
+    return DEFAULT_MEMORY_MAX_VOTE_KEYS;
   return parsed;
 }
 
@@ -47,7 +48,8 @@ function memoryMaxAssertions() {
   const raw = env.INSIGHT_MEMORY_MAX_ASSERTIONS;
   if (!raw) return DEFAULT_MEMORY_MAX_ASSERTIONS;
   const parsed = Number(raw);
-  if (!Number.isFinite(parsed) || !Number.isInteger(parsed) || parsed <= 0) return DEFAULT_MEMORY_MAX_ASSERTIONS;
+  if (!Number.isFinite(parsed) || !Number.isInteger(parsed) || parsed <= 0)
+    return DEFAULT_MEMORY_MAX_ASSERTIONS;
   return parsed;
 }
 
@@ -55,7 +57,8 @@ function memoryMaxDisputes() {
   const raw = env.INSIGHT_MEMORY_MAX_DISPUTES;
   if (!raw) return DEFAULT_MEMORY_MAX_DISPUTES;
   const parsed = Number(raw);
-  if (!Number.isFinite(parsed) || !Number.isInteger(parsed) || parsed <= 0) return DEFAULT_MEMORY_MAX_DISPUTES;
+  if (!Number.isFinite(parsed) || !Number.isInteger(parsed) || parsed <= 0)
+    return DEFAULT_MEMORY_MAX_DISPUTES;
   return parsed;
 }
 
@@ -75,7 +78,10 @@ function toTimeMs(value: string | undefined) {
   return Number.isFinite(ms) ? ms : 0;
 }
 
-function deleteVotesForAssertion(mem: ReturnType<typeof getMemoryStore>, assertionId: string) {
+function deleteVotesForAssertion(
+  mem: ReturnType<typeof getMemoryStore>,
+  assertionId: string
+) {
   for (const [key, v] of mem.votes.entries()) {
     if (v.assertionId === assertionId) mem.votes.delete(key);
   }
@@ -87,7 +93,8 @@ function pruneMemoryAssertions(mem: ReturnType<typeof getMemoryStore>) {
   const candidates = Array.from(mem.assertions.entries()).map(([id, a]) => ({
     id,
     rank: a.status === "Resolved" ? 1 : 0,
-    timeMs: a.status === "Resolved" ? toTimeMs(a.resolvedAt) : toTimeMs(a.assertedAt)
+    timeMs:
+      a.status === "Resolved" ? toTimeMs(a.resolvedAt) : toTimeMs(a.assertedAt),
   }));
   candidates.sort((a, b) => {
     const r = b.rank - a.rank;
@@ -110,7 +117,7 @@ function pruneMemoryDisputes(mem: ReturnType<typeof getMemoryStore>) {
   const candidates = Array.from(mem.disputes.entries()).map(([id, d]) => ({
     id,
     rank: d.status === "Executed" ? 1 : 0,
-    timeMs: toTimeMs(d.votingEndsAt ?? d.disputedAt)
+    timeMs: toTimeMs(d.votingEndsAt ?? d.disputedAt),
   }));
   candidates.sort((a, b) => {
     const r = b.rank - a.rank;
@@ -145,21 +152,23 @@ function mapAssertionRow(row: any): Assertion {
     status: row.status,
     bondUsd: Number(row.bond_usd),
     disputer: row.disputer,
-    txHash: row.tx_hash
+    txHash: row.tx_hash,
   };
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapDisputeRow(row: any): Dispute {
   const now = Date.now();
-  const votingEndsAt = row.voting_ends_at ? row.voting_ends_at.toISOString() : undefined;
+  const votingEndsAt = row.voting_ends_at
+    ? row.voting_ends_at.toISOString()
+    : undefined;
   const statusFromDb = row.status as Dispute["status"];
   const computedStatus: Dispute["status"] =
     statusFromDb === "Executed"
       ? "Executed"
       : votingEndsAt && new Date(votingEndsAt).getTime() <= now
-        ? "Pending Execution"
-        : "Voting";
+      ? "Pending Execution"
+      : "Voting";
 
   return {
     id: row.id,
@@ -173,7 +182,7 @@ function mapDisputeRow(row: any): Dispute {
     status: computedStatus,
     currentVotesFor: Number(row.votes_for),
     currentVotesAgainst: Number(row.votes_against),
-    totalVotes: Number(row.total_votes)
+    totalVotes: Number(row.total_votes),
   };
 }
 
@@ -192,7 +201,7 @@ export async function readOracleState(): Promise<StoredState> {
       lastProcessedBlock: mem.sync.lastProcessedBlock,
       sync: mem.sync.meta,
       assertions,
-      disputes
+      disputes,
     };
   }
 
@@ -200,7 +209,7 @@ export async function readOracleState(): Promise<StoredState> {
     query("SELECT * FROM sync_state WHERE id = 1"),
     query("SELECT * FROM oracle_config WHERE id = 1"),
     query("SELECT * FROM assertions"),
-    query("SELECT * FROM disputes")
+    query("SELECT * FROM disputes"),
   ]);
 
   const syncRow = syncRes.rows[0] || {};
@@ -222,13 +231,17 @@ export async function readOracleState(): Promise<StoredState> {
     contractAddress: configRow.contract_address || null,
     lastProcessedBlock: BigInt(syncRow.last_processed_block || 0),
     sync: {
-      lastAttemptAt: syncRow.last_attempt_at ? syncRow.last_attempt_at.toISOString() : null,
-      lastSuccessAt: syncRow.last_success_at ? syncRow.last_success_at.toISOString() : null,
+      lastAttemptAt: syncRow.last_attempt_at
+        ? syncRow.last_attempt_at.toISOString()
+        : null,
+      lastSuccessAt: syncRow.last_success_at
+        ? syncRow.last_success_at.toISOString()
+        : null,
       lastDurationMs: syncRow.last_duration_ms || null,
-      lastError: syncRow.last_error || null
+      lastError: syncRow.last_error || null,
     },
     assertions,
-    disputes
+    disputes,
   };
 }
 
@@ -246,36 +259,47 @@ export async function getSyncState() {
       rpcStats: mem.sync.rpcStats ?? null,
       sync: mem.sync.meta,
       chain: mem.oracleConfig.chain,
-      contractAddress: mem.oracleConfig.contractAddress || null
+      contractAddress: mem.oracleConfig.contractAddress || null,
     };
   }
   const [syncRes, configRes] = await Promise.all([
     query("SELECT * FROM sync_state WHERE id = 1"),
-    query("SELECT * FROM oracle_config WHERE id = 1")
+    query("SELECT * FROM oracle_config WHERE id = 1"),
   ]);
-  
+
   const syncRow = syncRes.rows[0] || {};
   const configRow = configRes.rows[0] || {};
-  
+
   return {
     lastProcessedBlock: BigInt(syncRow.last_processed_block || 0),
-    latestBlock: syncRow.latest_block !== null && syncRow.latest_block !== undefined ? BigInt(syncRow.latest_block) : null,
-    safeBlock: syncRow.safe_block !== null && syncRow.safe_block !== undefined ? BigInt(syncRow.safe_block) : null,
+    latestBlock:
+      syncRow.latest_block !== null && syncRow.latest_block !== undefined
+        ? BigInt(syncRow.latest_block)
+        : null,
+    safeBlock:
+      syncRow.safe_block !== null && syncRow.safe_block !== undefined
+        ? BigInt(syncRow.safe_block)
+        : null,
     lastSuccessProcessedBlock:
-      syncRow.last_success_processed_block !== null && syncRow.last_success_processed_block !== undefined
+      syncRow.last_success_processed_block !== null &&
+      syncRow.last_success_processed_block !== undefined
         ? BigInt(syncRow.last_success_processed_block)
         : null,
     consecutiveFailures: Number(syncRow.consecutive_failures ?? 0),
     rpcActiveUrl: (syncRow.rpc_active_url as string | null | undefined) ?? null,
-    rpcStats: (syncRow.rpc_stats as unknown) ?? null,
+    rpcStats: syncRow.rpc_stats ?? null,
     sync: {
-      lastAttemptAt: syncRow.last_attempt_at ? syncRow.last_attempt_at.toISOString() : null,
-      lastSuccessAt: syncRow.last_success_at ? syncRow.last_success_at.toISOString() : null,
+      lastAttemptAt: syncRow.last_attempt_at
+        ? syncRow.last_attempt_at.toISOString()
+        : null,
+      lastSuccessAt: syncRow.last_success_at
+        ? syncRow.last_success_at.toISOString()
+        : null,
       lastDurationMs: syncRow.last_duration_ms || null,
-      lastError: syncRow.last_error || null
+      lastError: syncRow.last_error || null,
     },
     chain: (configRow.chain as OracleChain) || "Local",
-    contractAddress: configRow.contract_address || null
+    contractAddress: configRow.contract_address || null,
   };
 }
 
@@ -346,7 +370,7 @@ export async function upsertAssertion(a: Assertion) {
       a.status,
       a.bondUsd,
       a.disputer || null,
-      a.txHash
+      a.txHash,
     ]
   );
 }
@@ -388,16 +412,16 @@ export async function upsertDispute(d: Dispute) {
       d.status,
       d.currentVotesFor,
       d.currentVotesAgainst,
-      d.totalVotes
+      d.totalVotes,
     ]
   );
 }
 
 export async function updateSyncState(
-  block: bigint, 
-  attemptAt: string, 
-  successAt: string | null, 
-  duration: number | null, 
+  block: bigint,
+  attemptAt: string,
+  successAt: string | null,
+  duration: number | null,
   error: string | null,
   extra?: {
     latestBlock?: bigint;
@@ -412,17 +436,21 @@ export async function updateSyncState(
   if (!hasDatabase()) {
     const mem = getMemoryStore();
     mem.sync.lastProcessedBlock = block;
-    if (extra?.latestBlock !== undefined) mem.sync.latestBlock = extra.latestBlock;
+    if (extra?.latestBlock !== undefined)
+      mem.sync.latestBlock = extra.latestBlock;
     if (extra?.safeBlock !== undefined) mem.sync.safeBlock = extra.safeBlock;
-    if (extra?.lastSuccessProcessedBlock !== undefined) mem.sync.lastSuccessProcessedBlock = extra.lastSuccessProcessedBlock;
-    if (extra?.consecutiveFailures !== undefined) mem.sync.consecutiveFailures = extra.consecutiveFailures;
-    if (extra?.rpcActiveUrl !== undefined) mem.sync.rpcActiveUrl = extra.rpcActiveUrl;
+    if (extra?.lastSuccessProcessedBlock !== undefined)
+      mem.sync.lastSuccessProcessedBlock = extra.lastSuccessProcessedBlock;
+    if (extra?.consecutiveFailures !== undefined)
+      mem.sync.consecutiveFailures = extra.consecutiveFailures;
+    if (extra?.rpcActiveUrl !== undefined)
+      mem.sync.rpcActiveUrl = extra.rpcActiveUrl;
     if (extra?.rpcStats !== undefined) mem.sync.rpcStats = extra.rpcStats;
     mem.sync.meta = {
       lastAttemptAt: attemptAt,
       lastSuccessAt: successAt,
       lastDurationMs: duration,
-      lastError: error
+      lastError: error,
     };
     return;
   }
@@ -432,6 +460,7 @@ export async function updateSyncState(
   const consecutiveFailures = extra?.consecutiveFailures;
   const rpcActiveUrl = extra?.rpcActiveUrl;
   const rpcStats = extra?.rpcStats;
+  const rpcStatsJson = rpcStats !== undefined ? JSON.stringify(rpcStats) : null;
   await query(
     `UPDATE sync_state SET 
       last_processed_block = $1,
@@ -454,10 +483,12 @@ export async function updateSyncState(
       error,
       latest !== undefined ? latest.toString() : null,
       safe !== undefined ? safe.toString() : null,
-      lastSuccessProcessed !== undefined ? lastSuccessProcessed.toString() : null,
+      lastSuccessProcessed !== undefined
+        ? lastSuccessProcessed.toString()
+        : null,
       consecutiveFailures !== undefined ? consecutiveFailures : null,
       rpcActiveUrl !== undefined ? rpcActiveUrl : null,
-      rpcStats !== undefined ? rpcStats : null
+      rpcStatsJson,
     ]
   );
 }
@@ -475,7 +506,12 @@ export async function insertSyncMetric(input: {
   if (!hasDatabase()) {
     const mem = getMemoryStore();
     const list = mem.sync.metrics ?? [];
-    list.push({ recordedAt, lagBlocks: input.lagBlocks, durationMs: input.durationMs, error: input.error });
+    list.push({
+      recordedAt,
+      lagBlocks: input.lagBlocks,
+      durationMs: input.durationMs,
+      error: input.error,
+    });
     while (list.length > 2000) list.shift();
     mem.sync.metrics = list;
     return;
@@ -487,16 +523,25 @@ export async function insertSyncMetric(input: {
     `,
     [
       input.lastProcessedBlock.toString(10),
-      input.latestBlock !== null && input.latestBlock !== undefined ? input.latestBlock.toString(10) : null,
-      input.safeBlock !== null && input.safeBlock !== undefined ? input.safeBlock.toString(10) : null,
-      input.lagBlocks !== null && input.lagBlocks !== undefined ? input.lagBlocks.toString(10) : null,
+      input.latestBlock !== null && input.latestBlock !== undefined
+        ? input.latestBlock.toString(10)
+        : null,
+      input.safeBlock !== null && input.safeBlock !== undefined
+        ? input.safeBlock.toString(10)
+        : null,
+      input.lagBlocks !== null && input.lagBlocks !== undefined
+        ? input.lagBlocks.toString(10)
+        : null,
       input.durationMs,
-      input.error
+      input.error,
     ]
   );
 }
 
-export async function listSyncMetrics(params: { minutes: number; limit?: number }) {
+export async function listSyncMetrics(params: {
+  minutes: number;
+  limit?: number;
+}) {
   await ensureDb();
   const minutes = Math.min(24 * 60, Math.max(1, Math.floor(params.minutes)));
   const limit = Math.min(5000, Math.max(1, Math.floor(params.limit ?? 600)));
@@ -511,7 +556,7 @@ export async function listSyncMetrics(params: { minutes: number; limit?: number 
         recordedAt: m.recordedAt,
         lagBlocks: m.lagBlocks !== null ? m.lagBlocks.toString(10) : null,
         durationMs: m.durationMs,
-        error: m.error
+        error: m.error,
       }));
   }
   const res = await query(
@@ -525,13 +570,33 @@ export async function listSyncMetrics(params: { minutes: number; limit?: number 
     [minutes, limit]
   );
   return res.rows.map((row) => {
-    const r = row as unknown as { recorded_at: unknown; lag_blocks: unknown; duration_ms: unknown; error: unknown };
-    const recordedAtDate = r.recorded_at instanceof Date ? r.recorded_at : new Date(String(r.recorded_at));
-    const lagBlocks = r.lag_blocks !== null && r.lag_blocks !== undefined ? String(r.lag_blocks) : null;
+    const r = row as unknown as {
+      recorded_at: unknown;
+      lag_blocks: unknown;
+      duration_ms: unknown;
+      error: unknown;
+    };
+    const recordedAtDate =
+      r.recorded_at instanceof Date
+        ? r.recorded_at
+        : new Date(String(r.recorded_at));
+    const lagBlocks =
+      r.lag_blocks !== null && r.lag_blocks !== undefined
+        ? String(r.lag_blocks)
+        : null;
     const durationMs =
-      r.duration_ms === null || r.duration_ms === undefined ? null : (typeof r.duration_ms === "number" ? r.duration_ms : Number(r.duration_ms));
+      r.duration_ms === null || r.duration_ms === undefined
+        ? null
+        : typeof r.duration_ms === "number"
+        ? r.duration_ms
+        : Number(r.duration_ms);
     const error = typeof r.error === "string" ? r.error : null;
-    return { recordedAt: recordedAtDate.toISOString(), lagBlocks, durationMs, error };
+    return {
+      recordedAt: recordedAtDate.toISOString(),
+      lagBlocks,
+      durationMs,
+      error,
+    };
   });
 }
 
@@ -548,7 +613,10 @@ function applyVoteSumsDelta(
   weight: bigint,
   direction: 1 | -1
 ) {
-  const prev = mem.voteSums.get(assertionId) ?? { forWeight: 0n, againstWeight: 0n };
+  const prev = mem.voteSums.get(assertionId) ?? {
+    forWeight: 0n,
+    againstWeight: 0n,
+  };
   const delta = direction === 1 ? weight : -weight;
   let forWeight = prev.forWeight;
   let againstWeight = prev.againstWeight;
@@ -557,13 +625,16 @@ function applyVoteSumsDelta(
   if (forWeight < 0n) forWeight = 0n;
   if (againstWeight < 0n) againstWeight = 0n;
   const next = { forWeight, againstWeight };
-  if (next.forWeight === 0n && next.againstWeight === 0n) mem.voteSums.delete(assertionId);
+  if (next.forWeight === 0n && next.againstWeight === 0n)
+    mem.voteSums.delete(assertionId);
   else mem.voteSums.set(assertionId, next);
   const dispute = mem.disputes.get(`D:${assertionId}`);
   if (dispute) {
     dispute.currentVotesFor = bigintToSafeNumber(next.forWeight);
     dispute.currentVotesAgainst = bigintToSafeNumber(next.againstWeight);
-    dispute.totalVotes = bigintToSafeNumber(next.forWeight + next.againstWeight);
+    dispute.totalVotes = bigintToSafeNumber(
+      next.forWeight + next.againstWeight
+    );
     mem.disputes.set(dispute.id, dispute);
   }
   return next;
@@ -584,12 +655,18 @@ export async function insertVoteEvent(input: {
     const mem = getMemoryStore();
     const key = `${input.txHash}:${input.logIndex}`;
     if (mem.votes.has(key)) return false;
-    mem.votes.set(key, { assertionId: input.assertionId, support: input.support, weight: input.weight, blockNumber: input.blockNumber });
+    mem.votes.set(key, {
+      assertionId: input.assertionId,
+      support: input.support,
+      weight: input.weight,
+      blockNumber: input.blockNumber,
+    });
     applyVoteSumsDelta(mem, input.assertionId, input.support, input.weight, 1);
     const maxKeys = memoryMaxVoteKeys();
     if (mem.votes.size > maxKeys) {
       const blockWindow = memoryVoteBlockWindow();
-      const cutoff = input.blockNumber > blockWindow ? input.blockNumber - blockWindow : 0n;
+      const cutoff =
+        input.blockNumber > blockWindow ? input.blockNumber - blockWindow : 0n;
       for (const [k, v] of mem.votes.entries()) {
         if (v.blockNumber < cutoff) {
           mem.votes.delete(k);
@@ -622,7 +699,7 @@ export async function insertVoteEvent(input: {
       input.weight.toString(10),
       input.txHash,
       input.blockNumber.toString(10),
-      input.logIndex
+      input.logIndex,
     ]
   );
   return res.rows.length > 0;
@@ -650,7 +727,9 @@ export async function recomputeDisputeVotes(assertionId: string) {
       })();
     dispute.currentVotesFor = bigintToSafeNumber(sums.forWeight);
     dispute.currentVotesAgainst = bigintToSafeNumber(sums.againstWeight);
-    dispute.totalVotes = bigintToSafeNumber(sums.forWeight + sums.againstWeight);
+    dispute.totalVotes = bigintToSafeNumber(
+      sums.forWeight + sums.againstWeight
+    );
     mem.disputes.set(dispute.id, dispute);
     return;
   }
@@ -665,10 +744,23 @@ export async function recomputeDisputeVotes(assertionId: string) {
     `,
     [assertionId]
   );
-  const row = (sums.rows[0] ?? {}) as unknown as { votes_for?: unknown; votes_against?: unknown; total_votes?: unknown };
-  const votesFor = row.votes_for !== undefined && row.votes_for !== null ? String(row.votes_for) : "0";
-  const votesAgainst = row.votes_against !== undefined && row.votes_against !== null ? String(row.votes_against) : "0";
-  const totalVotes = row.total_votes !== undefined && row.total_votes !== null ? String(row.total_votes) : "0";
+  const row = (sums.rows[0] ?? {}) as unknown as {
+    votes_for?: unknown;
+    votes_against?: unknown;
+    total_votes?: unknown;
+  };
+  const votesFor =
+    row.votes_for !== undefined && row.votes_for !== null
+      ? String(row.votes_for)
+      : "0";
+  const votesAgainst =
+    row.votes_against !== undefined && row.votes_against !== null
+      ? String(row.votes_against)
+      : "0";
+  const totalVotes =
+    row.total_votes !== undefined && row.total_votes !== null
+      ? String(row.total_votes)
+      : "0";
   await query(
     `
     UPDATE disputes

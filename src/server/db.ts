@@ -27,17 +27,21 @@ export function hasDatabase() {
   return Boolean(getDbUrl());
 }
 
-export const db = globalForDb.conn ?? new Pool({
-  connectionString: getDbUrl() || undefined,
-  max: 10,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000,
-});
+export const db =
+  globalForDb.conn ??
+  new Pool({
+    connectionString: getDbUrl() || undefined,
+    max: 10,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000,
+  });
 
 if (process.env.NODE_ENV !== "production") globalForDb.conn = db;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function query<T extends pg.QueryResultRow>(text: string, params?: any[]) {
+export async function query<T extends pg.QueryResultRow>(
+  text: string,
+  params?: (string | number | boolean | Date | null | undefined | string[])[]
+) {
   if (!getDbUrl()) {
     throw new Error("missing_database_url");
   }

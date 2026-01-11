@@ -4,21 +4,26 @@ import { render, screen } from "@testing-library/react";
 import type React from "react";
 
 vi.mock("next/dynamic", () => ({
-  default: () => () => null
+  default: () => () => null,
 }));
 
-vi.mock("lucide-react", () => ({
-  ArrowUpRight: () => null,
-  Search: () => null,
-  Settings2: () => null,
-  ChevronDown: () => null,
-  LayoutGrid: () => null,
-  List: () => null,
-  LayoutDashboard: () => null,
-  Trophy: () => null,
-  Wrench: () => null,
-  RotateCw: () => null
-}));
+vi.mock("lucide-react", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("lucide-react")>();
+  return {
+    ...actual,
+    ArrowUpRight: () => null,
+    Search: () => null,
+    Settings2: () => null,
+    ChevronDown: () => null,
+    LayoutGrid: () => null,
+    List: () => null,
+    LayoutDashboard: () => null,
+    Trophy: () => null,
+    Wrench: () => null,
+    RotateCw: () => null,
+    Megaphone: () => null,
+  };
+});
 
 vi.mock("@/hooks/useOracleData", () => ({
   useOracleData: () => ({
@@ -29,49 +34,64 @@ vi.mock("@/hooks/useOracleData", () => ({
     error: null,
     loadMore: vi.fn(),
     hasMore: false,
-    refresh: vi.fn()
-  })
+    refresh: vi.fn(),
+  }),
 }));
 
 vi.mock("@/i18n/LanguageProvider", () => ({
   useI18n: () => ({
     t: (key: string) => key,
-    lang: "en"
-  })
+    lang: "en",
+  }),
 }));
 
 vi.mock("@/i18n/translations", () => ({
   getUiErrorMessage: () => "",
-  langToLocale: { zh: "zh-CN", en: "en-US", es: "es-ES" }
+  langToLocale: { zh: "zh-CN", en: "en-US", es: "es-ES" },
 }));
 
 vi.mock("@/components/PageHeader", () => ({
-  PageHeader: ({ title, children }: { title: string; children: React.ReactNode }) => (
+  PageHeader: ({
+    title,
+    children,
+  }: {
+    title: string;
+    children: React.ReactNode;
+  }) => (
     <div>
       <h1>{title}</h1>
       {children}
     </div>
-  )
+  ),
 }));
 
 vi.mock("@/components/OracleStatsBanner", () => ({
-  OracleStatsBanner: () => <div>stats</div>
+  OracleStatsBanner: () => <div>stats</div>,
+}));
+
+vi.mock("@/contexts/WalletContext", () => ({
+  useWallet: () => ({
+    address: null,
+    isConnected: false,
+    connect: vi.fn(),
+    disconnect: vi.fn(),
+  }),
 }));
 
 vi.mock("@/components/ConnectWallet", () => ({
-  ConnectWallet: () => <div>wallet</div>
+  ConnectWallet: () => <div>wallet</div>,
 }));
 
 vi.mock("@/components/Leaderboard", () => ({
-  Leaderboard: () => <div>leaderboard</div>
+  Leaderboard: () => <div>leaderboard</div>,
 }));
 
 vi.mock("@/components/PnLCalculator", () => ({
-  PnLCalculator: () => <div>pnl</div>
+  PnLCalculator: () => <div>pnl</div>,
 }));
 
 vi.mock("@/components/AssertionList", () => ({
-  AssertionList: () => <div>list</div>
+  AssertionList: () => <div>list</div>,
 }));
 
 import OraclePage from "./page";

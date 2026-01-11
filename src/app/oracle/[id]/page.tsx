@@ -18,6 +18,7 @@ import {
   X,
   Copy,
   Share2,
+  Star,
 } from "lucide-react";
 import {
   cn,
@@ -29,6 +30,7 @@ import {
 import { useI18n } from "@/i18n/LanguageProvider";
 import { langToLocale } from "@/i18n/translations";
 import { useToast } from "@/components/ui/toast";
+import { useWatchlist } from "@/hooks/useWatchlist";
 import type { Assertion, Dispute, OracleConfig } from "@/lib/oracleTypes";
 
 import { AssertionTimeline } from "@/components/AssertionTimeline";
@@ -37,7 +39,6 @@ import { PayoutSimulator } from "@/components/PayoutSimulator";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { AddressAvatar } from "@/components/AddressAvatar";
 import { CopyButton } from "@/components/CopyButton";
-import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { InfoTooltip } from "@/components/InfoTooltip";
 import { LivenessProgressBar } from "@/components/LivenessProgressBar";
 
@@ -70,6 +71,7 @@ export default function OracleDetailPage() {
   const { lang, t } = useI18n();
   const locale = langToLocale[lang];
   const { toast } = useToast();
+  const { isWatched, toggleWatchlist, mounted } = useWatchlist();
 
   const copyToClipboard = async (text: string, label: string) => {
     try {
@@ -80,7 +82,7 @@ export default function OracleDetailPage() {
         type: "success",
         duration: 2000,
       });
-    } catch (err) {
+    } catch {
       toast({
         title: "Failed to copy",
         type: "error",
@@ -215,6 +217,28 @@ export default function OracleDetailPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => toggleWatchlist(assertion.id)}
+              className={cn(
+                "p-2 rounded-full transition-all shadow-sm ring-1 ring-gray-200/50",
+                mounted && isWatched(assertion.id)
+                  ? "bg-amber-100 text-amber-500 hover:bg-amber-200"
+                  : "bg-white/50 hover:bg-white text-gray-500 hover:text-gray-600"
+              )}
+              title={
+                mounted && isWatched(assertion.id)
+                  ? t("common.removeFromWatchlist")
+                  : t("common.addToWatchlist")
+              }
+            >
+              <Star
+                size={18}
+                className={cn(
+                  "transition-all",
+                  mounted && isWatched(assertion.id) && "fill-current"
+                )}
+              />
+            </button>
             <button
               onClick={() => {
                 const url = window.location.href;
