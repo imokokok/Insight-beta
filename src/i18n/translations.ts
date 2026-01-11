@@ -3,7 +3,7 @@ export type Lang = "zh" | "en" | "es";
 export const languages: Array<{ code: Lang; label: string }> = [
   { code: "zh", label: "中文" },
   { code: "en", label: "English" },
-  { code: "es", label: "Español" }
+  { code: "es", label: "Español" },
 ];
 
 export const LANG_STORAGE_KEY = "insight_lang";
@@ -12,7 +12,9 @@ export function isLang(value: unknown): value is Lang {
   return value === "zh" || value === "en" || value === "es";
 }
 
-export function detectLangFromAcceptLanguage(value: string | null | undefined): Lang {
+export function detectLangFromAcceptLanguage(
+  value: string | null | undefined
+): Lang {
   const lower = (value ?? "").toLowerCase();
   if (lower.includes("zh")) return "zh";
   if (lower.includes("es")) return "es";
@@ -22,21 +24,48 @@ export function detectLangFromAcceptLanguage(value: string | null | undefined): 
 export const langToHtmlLang: Record<Lang, string> = {
   zh: "zh-CN",
   en: "en",
-  es: "es"
+  es: "es",
 };
 
 export const langToLocale: Record<Lang, string> = {
   zh: "zh-CN",
   en: "en-US",
-  es: "es-ES"
+  es: "es-ES",
 };
 
 export const translations = {
   zh: {
+    tooltips: {
+      bond: "质押金是断言者为确保信息真实而锁定的资金。如果信息被证明错误，质押金将被没收。",
+      market:
+        "市场问题定义了预言机需要回答的具体内容，通常是一个是/否问题或数值。",
+      liveness:
+        "挑战期是允许任何人对断言提出异议的时间窗口。结束后断言将被视为真实。",
+      reward:
+        "如果在挑战期结束前没有异议，断言者将取回质押金。如果发生争议且你获胜，你将获得对方的质押金作为奖励。",
+      protocol: "该断言所涉及的协议或项目名称。",
+      assertion:
+        "您要陈述的事实。请确保它是客观、可验证的，并且有明确的时间和来源。",
+    },
     app: {
       title: "Insight · UMA 结算监控",
       description: "UMA Optimistic Oracle 争议与结算可视化监控",
-      subtitle: "预言机监控"
+      subtitle: "预言机监控",
+    },
+    howItWorks: {
+      title: "工作原理",
+      step1: {
+        title: "提出断言",
+        desc: "任何人都可以将任何陈述作为事实发布，并附带质押金作为保证金。",
+      },
+      step2: {
+        title: "验证与争议",
+        desc: "在挑战期内，如果断言不实，任何人都可以通过质押相同金额来发起挑战。",
+      },
+      step3: {
+        title: "结算与奖励",
+        desc: "若无挑战，断言生效。若发生挑战，UMA 验证者将裁决，胜者赢取对方的质押金。",
+      },
     },
     nav: {
       oracle: "监控台",
@@ -45,7 +74,7 @@ export const translations = {
       audit: "审计",
       adminTokens: "密钥",
       myAssertions: "我的断言",
-      myDisputes: "我的争议"
+      myDisputes: "我的争议",
     },
     common: {
       language: "语言",
@@ -64,14 +93,18 @@ export const translations = {
       viewTx: "查看交易",
       copyHash: "复制哈希",
       copied: "已复制",
+      viewDetails: "查看详情",
       allLoaded: "已全部加载",
       ok: "好的",
       cancel: "取消",
-      confirm: "确认"
+      confirm: "确认",
+      popular: "热门",
+      example: "示例",
+      min: "最小",
     },
     sidebar: {
       userWallet: "用户钱包",
-      notConnected: "未连接"
+      notConnected: "未连接",
     },
     wallet: {
       connect: "连接钱包",
@@ -90,23 +123,29 @@ export const translations = {
       networkSwitched: "网络已切换",
       networkSwitchFailed: "切换网络失败",
       switchingNetwork: "切换中…",
-      networkAlreadySelected: "当前已在该网络"
+      networkAlreadySelected: "当前已在该网络",
     },
     chain: {
       local: "本地",
       polygon: "Polygon",
       arbitrum: "Arbitrum",
-      optimism: "Optimism"
+      optimism: "Optimism",
     },
     oracle: {
       title: "预言机监控",
       description: "实时追踪 UMA Optimistic Oracle 断言与争议。",
       newAssertion: "新建断言",
+      myActivity: "我的动态",
+      myActivityTooltip: "仅显示由我创建的断言",
+      myActivityEmpty: "您尚未创建任何断言。",
+      myDisputesFilter: "我的争议",
+      myDisputesTooltip: "仅显示由我发起的争议",
+      myDisputesEmpty: "您尚未发起任何争议。",
       searchPlaceholder: "搜索断言…",
       tabs: {
         overview: "概览",
         leaderboard: "排行榜",
-        tools: "工具"
+        tools: "工具",
       },
       sync: {
         synced: "已同步",
@@ -114,7 +153,7 @@ export const translations = {
         error: "同步错误",
         status: "索引器状态",
         block: "区块高度",
-        lastUpdate: "最后更新"
+        lastUpdate: "最后更新",
       },
       charts: {
         dailyAssertions: "每日断言数",
@@ -126,7 +165,32 @@ export const translations = {
         syncDesc: "索引器同步滞后与耗时趋势",
         syncLagBlocks: "落后区块",
         syncDuration: "同步耗时（毫秒）",
-        waitingData: "等待更多历史数据以生成活动趋势。"
+        waitingData: "等待更多历史数据以生成活动趋势。",
+      },
+      alerts: {
+        title: "告警规则",
+        description: "配置系统监控与通知规则。",
+        rule: "规则名称",
+        event: "触发事件",
+        severity: "严重程度",
+        status: "状态",
+        enabled: "已启用",
+        disabled: "已禁用",
+        save: "保存配置",
+        saving: "保存中...",
+        success: "配置已保存",
+        error: "保存失败",
+        noRules: "暂无规则",
+        events: {
+          dispute_created: "争议创建",
+          sync_error: "同步错误",
+          stale_sync: "同步停滞",
+        },
+        severities: {
+          info: "信息",
+          warning: "警告",
+          critical: "严重",
+        },
       },
       myAssertions: {
         title: "我的断言",
@@ -134,14 +198,14 @@ export const translations = {
         connectWalletTitle: "连接钱包以查看",
         connectWalletDesc: "请连接您的钱包以查看您的断言历史记录。",
         noAssertions: "您尚未创建任何断言。",
-        createFirst: "创建您的第一个断言"
+        createFirst: "创建您的第一个断言",
       },
       myDisputes: {
         title: "我的争议",
         description: "管理您发起的所有争议。",
         connectWalletTitle: "连接钱包以查看",
         connectWalletDesc: "请连接您的钱包以查看您的争议历史记录。",
-        noDisputes: "您尚未发起任何争议。"
+        noDisputes: "您尚未发起任何争议。",
       },
       timeline: {
         asserted: "已断言",
@@ -149,7 +213,7 @@ export const translations = {
         resolved: "已结算",
         votingEnds: "投票截止",
         livenessEnds: "挑战期结束",
-        active: "进行中"
+        active: "进行中",
       },
       detail: {
         title: "断言详情",
@@ -188,28 +252,28 @@ export const translations = {
         resolved: "已解决",
         resolvedDesc: "此断言已成功解决。",
         settleAssertion: "结算断言",
-      settleDesc: "该断言已通过挑战期，可以进行结算。",
-      settlementResult: "结算结果",
-      settlementTrue: "有效 / 真实",
-      settlementFalse: "无效 / 虚假"
-    },
-    tx: {
-      sentTitle: "交易已发送",
-      sentMsg: "你的交易已提交。",
-      confirmingTitle: "等待确认",
-      confirmingMsg: "交易已提交，正在等待链上确认。",
-      confirmedTitle: "交易已确认",
-      confirmedMsg: "交易已在链上确认。",
-      disputeSubmittedTitle: "争议已提交",
-      disputeSubmittedMsg: "你的争议已成功提交。",
-      assertionCreatedTitle: "断言已创建",
-      assertionCreatedMsg: "交易已提交，稍后将出现在列表中。",
-      voteCastTitle: "投票已提交",
-      voteCastSupportMsg: "你已投票支持该断言。",
-      voteCastAgainstMsg: "你已投票反对该断言。",
-      settlementSubmittedTitle: "结算已提交",
-      settlementSubmittedMsg: "该断言已发起结算。"
-    },
+        settleDesc: "该断言已通过挑战期，可以进行结算。",
+        settlementResult: "结算结果",
+        settlementTrue: "有效 / 真实",
+        settlementFalse: "无效 / 虚假",
+      },
+      tx: {
+        sentTitle: "交易已发送",
+        sentMsg: "你的交易已提交。",
+        confirmingTitle: "等待确认",
+        confirmingMsg: "交易已提交，正在等待链上确认。",
+        confirmedTitle: "交易已确认",
+        confirmedMsg: "交易已在链上确认。",
+        disputeSubmittedTitle: "争议已提交",
+        disputeSubmittedMsg: "你的争议已成功提交。",
+        assertionCreatedTitle: "断言已创建",
+        assertionCreatedMsg: "交易已提交，稍后将出现在列表中。",
+        voteCastTitle: "投票已提交",
+        voteCastSupportMsg: "你已投票支持该断言。",
+        voteCastAgainstMsg: "你已投票反对该断言。",
+        settlementSubmittedTitle: "结算已提交",
+        settlementSubmittedMsg: "该断言已发起结算。",
+      },
       createAssertionModal: {
         protocolLabel: "协议",
         protocolPlaceholder: "例如：Aave V3",
@@ -219,18 +283,20 @@ export const translations = {
         assertionPlaceholder: "你认为的事实是什么？",
         bondLabel: "保证金 (ETH)",
         submit: "创建断言",
-        bondInvalid: "保证金金额必须大于 0"
+        bondInvalid: "保证金金额必须大于 0",
       },
-    disputeModal: {
-      desc: "提交争议需要缴纳保证金（Bond）。",
-      bondLabel: "保证金（ETH）",
-      submit: "提交争议"
-    },
-    settleModal: {
-      readyTitle: "可结算",
-      readyDesc: "挑战期已结束。你可以结算该断言以确认结果并分配保证金/奖励。"
-    },
-    config: {
+      disputeModal: {
+        desc: "提交争议需要缴纳保证金（Bond）。",
+        bondLabel: "保证金（ETH）",
+        submit: "提交争议",
+        warning: "警告：如果断言被验证为正确，您将失去质押金。",
+      },
+      settleModal: {
+        readyTitle: "可结算",
+        readyDesc:
+          "挑战期已结束。你可以结算该断言以确认结果并分配保证金/奖励。",
+      },
+      config: {
         title: "连接与同步",
         rpcUrl: "RPC URL",
         contractAddress: "合约地址",
@@ -257,7 +323,7 @@ export const translations = {
         indexed: "已索引",
         demo: "演示数据",
         demoHint: "当前展示演示数据。填写配置并点击立即同步获取链上数据。",
-        indexedHint: "已连接到链上数据，数据将自动刷新。"
+        indexedHint: "已连接到链上数据，数据将自动刷新。",
       },
       stats: {
         tvs: "安全总价值",
@@ -268,7 +334,7 @@ export const translations = {
         totalAssertions: "断言总数",
         totalDisputes: "争议总数",
         totalBonded: "累计质押",
-        winRate: "胜率"
+        winRate: "胜率",
       },
       card: {
         marketQuestion: "市场问题",
@@ -279,7 +345,7 @@ export const translations = {
         bond: "保证金",
         livenessEnds: "挑战期结束",
         gridView: "网格视图",
-        listView: "列表视图"
+        listView: "列表视图",
       },
       leaderboard: {
         topAsserters: "最佳断言方",
@@ -289,8 +355,13 @@ export const translations = {
         bonded: "已质押",
         noData: "暂无数据",
         assertions: "断言数",
-        disputes: "争议数"
-      }
+        disputes: "争议数",
+      },
+      profile: {
+        title: "地址概览",
+        assertionsHistory: "断言历史",
+        disputesHistory: "争议历史",
+      },
     },
     pnl: {
       title: "收益计算器",
@@ -301,7 +372,7 @@ export const translations = {
       disclaimer: "*假设标准的 1:1 保证金升级博弈逻辑。",
       profit: "潜在利润",
       roi: "投资回报率",
-      totalReturn: "总回报"
+      totalReturn: "总回报",
     },
     audit: {
       title: "审计日志",
@@ -313,7 +384,7 @@ export const translations = {
       refresh: "刷新",
       error: "错误",
       empty: "暂无审计记录。",
-      actor: "操作者"
+      actor: "操作者",
     },
     adminTokens: {
       title: "管理密钥",
@@ -324,7 +395,7 @@ export const translations = {
       revoke: "吊销",
       createdAt: "创建时间",
       revokedAt: "吊销时间",
-      tokenValue: "新 Token（仅显示一次）"
+      tokenValue: "新 Token（仅显示一次）",
     },
     disputes: {
       title: "争议结算",
@@ -344,8 +415,8 @@ export const translations = {
       card: {
         dispute: "争议",
         disputer: "争议发起方",
-        votes: "票数"
-      }
+        votes: "票数",
+      },
     },
     alerts: {
       title: "告警中心",
@@ -359,12 +430,12 @@ export const translations = {
       resolve: "解决",
       status: "状态",
       severity: "级别",
-      type: "类型"
+      type: "类型",
     },
     status: {
       voting: "投票中",
       pendingExecution: "待执行",
-      executed: "已执行"
+      executed: "已执行",
     },
     errors: {
       unknownError: "未知错误",
@@ -389,14 +460,43 @@ export const translations = {
       forbidden: "无权限操作（需要管理员 Token）",
       rpcUnreachable: "RPC 连接失败",
       contractNotFound: "合约地址不存在或不可用",
-      syncFailed: "同步失败"
-    }
+      syncFailed: "同步失败",
+    },
   },
   en: {
+    tooltips: {
+      bond: "Bond is the collateral locked by the asserter. If the information is proven wrong, the bond is slashed.",
+      market:
+        "Market Question defines what the oracle needs to answer, usually a Yes/No question or a value.",
+      liveness:
+        "Liveness period is the window for anyone to dispute the assertion. After this, the assertion is treated as truth.",
+      reward:
+        "If no disputes occur, the asserter gets the bond back. If a dispute occurs and you win, you earn the opponent's bond.",
+      protocol:
+        "The name of the protocol or project this assertion relates to.",
+      assertion:
+        "The fact you are stating. Ensure it is objective, verifiable, and has clear timing and sources.",
+    },
     app: {
       title: "Insight · UMA Settlement Monitor",
-      description: "Visual monitoring of UMA Optimistic Oracle disputes and settlements.",
-      subtitle: "Oracle Monitor"
+      description:
+        "Visual monitoring of UMA Optimistic Oracle disputes and settlements.",
+      subtitle: "Oracle Monitor",
+    },
+    howItWorks: {
+      title: "How It Works",
+      step1: {
+        title: "Assert Truth",
+        desc: "Anyone can publish any statement as fact, backed by a bond as collateral.",
+      },
+      step2: {
+        title: "Verify & Dispute",
+        desc: "During the liveness period, if the assertion is false, anyone can challenge it by staking an equal bond.",
+      },
+      step3: {
+        title: "Settle & Reward",
+        desc: "If unchallenged, the assertion holds. If disputed, UMA verifiers vote, and the winner takes the opponent's bond.",
+      },
     },
     nav: {
       oracle: "Oracle",
@@ -405,7 +505,7 @@ export const translations = {
       audit: "Audit",
       adminTokens: "Tokens",
       myAssertions: "My Assertions",
-      myDisputes: "My Disputes"
+      myDisputes: "My Disputes",
     },
     common: {
       language: "Language",
@@ -424,14 +524,17 @@ export const translations = {
       viewTx: "View TX",
       copyHash: "Copy hash",
       copied: "Copied",
+      viewDetails: "View Details",
       allLoaded: "All loaded",
       ok: "OK",
       cancel: "Cancel",
-      confirm: "Confirm"
+      confirm: "Confirm",
+      popular: "Popular",
+      example: "Example",
     },
     sidebar: {
       userWallet: "User Wallet",
-      notConnected: "Not connected"
+      notConnected: "Not connected",
     },
     wallet: {
       connect: "Connect Wallet",
@@ -450,23 +553,30 @@ export const translations = {
       networkSwitched: "Network switched",
       networkSwitchFailed: "Failed to switch network",
       switchingNetwork: "Switching…",
-      networkAlreadySelected: "Already on this network"
+      networkAlreadySelected: "Already on this network",
     },
     chain: {
       local: "Local",
       polygon: "Polygon",
       arbitrum: "Arbitrum",
-      optimism: "Optimism"
+      optimism: "Optimism",
     },
     oracle: {
       title: "Oracle Monitor",
-      description: "Real-time tracking of UMA Optimistic Oracle assertions and disputes.",
+      description:
+        "Real-time tracking of UMA Optimistic Oracle assertions and disputes.",
       newAssertion: "New Assertion",
+      myActivity: "My Activity",
+      myActivityTooltip: "Only show assertions created by me",
+      myActivityEmpty: "You haven't created any assertions yet.",
+      myDisputesFilter: "My Disputes",
+      myDisputesTooltip: "Only show disputes initiated by me",
+      myDisputesEmpty: "You haven't initiated any disputes yet.",
       searchPlaceholder: "Search assertions…",
       tabs: {
         overview: "Overview",
         leaderboard: "Leaderboard",
-        tools: "Tools"
+        tools: "Tools",
       },
       sync: {
         synced: "Synced",
@@ -474,7 +584,7 @@ export const translations = {
         error: "Sync Error",
         status: "Indexer Status",
         block: "Block Height",
-        lastUpdate: "Last Update"
+        lastUpdate: "Last Update",
       },
       charts: {
         dailyAssertions: "Daily Assertions",
@@ -486,22 +596,50 @@ export const translations = {
         syncDesc: "Indexer lag and duration over time",
         syncLagBlocks: "Lag (blocks)",
         syncDuration: "Sync duration (ms)",
-        waitingData: "Waiting for more historical data to generate activity trends."
+        waitingData:
+          "Waiting for more historical data to generate activity trends.",
+      },
+      alerts: {
+        title: "Alert Rules",
+        description: "Configure system monitoring and notification rules.",
+        rule: "Rule Name",
+        event: "Trigger Event",
+        severity: "Severity",
+        status: "Status",
+        enabled: "Enabled",
+        disabled: "Disabled",
+        save: "Save Config",
+        saving: "Saving...",
+        success: "Config saved",
+        error: "Failed to save",
+        noRules: "No rules found",
+        events: {
+          dispute_created: "Dispute Created",
+          sync_error: "Sync Error",
+          stale_sync: "Stale Sync",
+        },
+        severities: {
+          info: "Info",
+          warning: "Warning",
+          critical: "Critical",
+        },
       },
       myAssertions: {
         title: "My Assertions",
         description: "Manage all assertions created by you.",
         connectWalletTitle: "Connect Wallet to View",
-        connectWalletDesc: "Please connect your wallet to see your assertion history.",
+        connectWalletDesc:
+          "Please connect your wallet to see your assertion history.",
         noAssertions: "You haven't created any assertions yet.",
-        createFirst: "Create your first assertion"
+        createFirst: "Create your first assertion",
       },
       myDisputes: {
         title: "My Disputes",
         description: "Manage all disputes initiated by you.",
         connectWalletTitle: "Connect Wallet to View",
-        connectWalletDesc: "Please connect your wallet to see your dispute history.",
-        noDisputes: "You haven't initiated any disputes yet."
+        connectWalletDesc:
+          "Please connect your wallet to see your dispute history.",
+        noDisputes: "You haven't initiated any disputes yet.",
       },
       timeline: {
         asserted: "Asserted",
@@ -509,66 +647,69 @@ export const translations = {
         resolved: "Resolved",
         votingEnds: "Voting Ends",
         livenessEnds: "Liveness Ends",
-        active: "Active"
+        active: "Active",
       },
       detail: {
-      title: "Assertion Details",
-      back: "Back",
-      goBack: "Go Back",
-      asserter: "Asserter",
-      bondAmount: "Bond Amount",
-      marketQuestion: "Market Question",
-      assertedOutcome: "Asserted Outcome",
-      settlementResult: "Settlement Result",
-      settleAssertion: "Settle Assertion",
-      cancel: "Cancel",
-      submitting: "Submitting...",
-      confirming: "Confirming...",
-      errorTitle: "Error Loading Data",
-      errorNotFound: "The requested assertion could not be found.",
-      disputeAssertion: "Dispute this Assertion",
-      voteOnDispute: "Vote on Dispute",
-      support: "Support",
-      against: "Against",
-    },
-    tx: {
-      sentTitle: "Transaction sent",
-      sentMsg: "Your transaction has been submitted.",
-      confirmingTitle: "Confirming",
-      confirmingMsg: "Transaction submitted. Waiting for confirmation.",
-      confirmedTitle: "Confirmed",
-      confirmedMsg: "Transaction confirmed on-chain.",
-      disputeSubmittedTitle: "Dispute Submitted",
-      disputeSubmittedMsg: "Your dispute has been submitted successfully.",
-      assertionCreatedTitle: "Assertion Created",
-      assertionCreatedMsg: "Transaction submitted. It will appear shortly.",
-      voteCastTitle: "Vote Cast",
-      voteCastSupportMsg: "You voted to support the assertion.",
-      voteCastAgainstMsg: "You voted to oppose the assertion.",
-      settlementSubmittedTitle: "Settlement Submitted",
-      settlementSubmittedMsg: "The assertion has been settled."
-    },
-    createAssertionModal: {
-      protocolLabel: "Protocol",
-      protocolPlaceholder: "e.g. Aave V3",
-      marketLabel: "Market / ID",
-      marketPlaceholder: "e.g. ETH-USDC",
-      assertionLabel: "Assertion Statement",
-      assertionPlaceholder: "What is the truth you are asserting?",
-      bondLabel: "Bond Amount (ETH)",
-      submit: "Create Assertion",
-      bondInvalid: "Bond amount must be greater than 0"
-    },
-    disputeModal: {
-      desc: "Submitting a dispute requires a bond.",
-      bondLabel: "Bond (ETH)",
-      submit: "Submit Dispute"
-    },
-    settleModal: {
-      readyTitle: "Ready to Settle",
-      readyDesc: "The voting/liveness period has ended. You can now settle this assertion to resolve the outcome and distribute bonds/rewards."
-    },
-    config: {
+        title: "Assertion Details",
+        back: "Back",
+        goBack: "Go Back",
+        asserter: "Asserter",
+        bondAmount: "Bond Amount",
+        marketQuestion: "Market Question",
+        assertedOutcome: "Asserted Outcome",
+        settlementResult: "Settlement Result",
+        settleAssertion: "Settle Assertion",
+        cancel: "Cancel",
+        submitting: "Submitting...",
+        confirming: "Confirming...",
+        errorTitle: "Error Loading Data",
+        errorNotFound: "The requested assertion could not be found.",
+        disputeAssertion: "Dispute this Assertion",
+        voteOnDispute: "Vote on Dispute",
+        support: "Support",
+        against: "Against",
+      },
+      tx: {
+        sentTitle: "Transaction sent",
+        sentMsg: "Your transaction has been submitted.",
+        confirmingTitle: "Confirming",
+        confirmingMsg: "Transaction submitted. Waiting for confirmation.",
+        confirmedTitle: "Confirmed",
+        confirmedMsg: "Transaction confirmed on-chain.",
+        disputeSubmittedTitle: "Dispute Submitted",
+        disputeSubmittedMsg: "Your dispute has been submitted successfully.",
+        assertionCreatedTitle: "Assertion Created",
+        assertionCreatedMsg: "Transaction submitted. It will appear shortly.",
+        voteCastTitle: "Vote Cast",
+        voteCastSupportMsg: "You voted to support the assertion.",
+        voteCastAgainstMsg: "You voted to oppose the assertion.",
+        settlementSubmittedTitle: "Settlement Submitted",
+        settlementSubmittedMsg: "The assertion has been settled.",
+      },
+      createAssertionModal: {
+        protocolLabel: "Protocol",
+        protocolPlaceholder: "e.g. Aave V3",
+        marketLabel: "Market / ID",
+        marketPlaceholder: "e.g. ETH-USDC",
+        assertionLabel: "Assertion Statement",
+        assertionPlaceholder: "What is the truth you are asserting?",
+        bondLabel: "Bond Amount (ETH)",
+        submit: "Create Assertion",
+        bondInvalid: "Bond amount must be greater than 0",
+      },
+      disputeModal: {
+        desc: "Submitting a dispute requires a bond.",
+        bondLabel: "Bond (ETH)",
+        submit: "Submit Dispute",
+        warning:
+          "Warning: If the assertion is verified as correct, you will lose your bond.",
+      },
+      settleModal: {
+        readyTitle: "Ready to Settle",
+        readyDesc:
+          "The voting/liveness period has ended. You can now settle this assertion to resolve the outcome and distribute bonds/rewards.",
+      },
+      config: {
         title: "Connection & Sync",
         rpcUrl: "RPC URL",
         contractAddress: "Contract Address",
@@ -594,8 +735,10 @@ export const translations = {
         rpcActive: "Active RPC",
         indexed: "Indexed",
         demo: "Demo",
-        demoHint: "You are viewing demo data. Fill in config and click Sync Now to load on-chain data.",
-        indexedHint: "Connected to on-chain data. Data refreshes automatically."
+        demoHint:
+          "You are viewing demo data. Fill in config and click Sync Now to load on-chain data.",
+        indexedHint:
+          "Connected to on-chain data. Data refreshes automatically.",
       },
       stats: {
         tvs: "Total Value Secured",
@@ -606,7 +749,7 @@ export const translations = {
         totalAssertions: "Total Assertions",
         totalDisputes: "Total Disputes",
         totalBonded: "Total Bonded",
-        winRate: "Win Rate"
+        winRate: "Win Rate",
       },
       card: {
         marketQuestion: "Market Question",
@@ -617,7 +760,7 @@ export const translations = {
         bond: "Bond",
         livenessEnds: "Liveness Ends",
         gridView: "Grid view",
-        listView: "List view"
+        listView: "List view",
       },
       leaderboard: {
         topAsserters: "Top Asserters",
@@ -627,8 +770,13 @@ export const translations = {
         bonded: "Bonded",
         noData: "No data available",
         assertions: "Assertions",
-        disputes: "Disputes"
-      }
+        disputes: "Disputes",
+      },
+      profile: {
+        title: "Address Profile",
+        assertionsHistory: "Assertions History",
+        disputesHistory: "Disputes History",
+      },
     },
     pnl: {
       title: "Profit Calculator",
@@ -639,7 +787,7 @@ export const translations = {
       disclaimer: "*Assuming standard 1:1 bond escalation game logic.",
       profit: "Potential Profit",
       roi: "ROI",
-      totalReturn: "Total Return"
+      totalReturn: "Total Return",
     },
     audit: {
       title: "Audit Log",
@@ -651,7 +799,7 @@ export const translations = {
       refresh: "Refresh",
       error: "Error",
       empty: "No audit entries yet.",
-      actor: "Actor"
+      actor: "Actor",
     },
     adminTokens: {
       title: "Admin Tokens",
@@ -662,11 +810,12 @@ export const translations = {
       revoke: "Revoke",
       createdAt: "Created",
       revokedAt: "Revoked",
-      tokenValue: "New token (shown once)"
+      tokenValue: "New token (shown once)",
     },
     disputes: {
       title: "Dispute Resolution",
-      description: "Monitor active disputes, track voting progress, and analyze outcomes.",
+      description:
+        "Monitor active disputes, track voting progress, and analyze outcomes.",
       umaDvmActive: "UMA DVM Active",
       viewOnUma: "View on UMA",
       reason: "Reason for Dispute",
@@ -682,8 +831,8 @@ export const translations = {
       card: {
         dispute: "Dispute",
         disputer: "Disputer",
-        votes: "Votes"
-      }
+        votes: "Votes",
+      },
     },
     alerts: {
       title: "Alerts",
@@ -697,19 +846,21 @@ export const translations = {
       resolve: "Resolve",
       status: "Status",
       severity: "Severity",
-      type: "Type"
+      type: "Type",
     },
     status: {
       voting: "Voting",
       pendingExecution: "Pending Execution",
-      executed: "Executed"
+      executed: "Executed",
     },
     errors: {
       unknownError: "Unknown error",
       walletNotConnected: "Wallet not connected",
       userRejected: "You rejected the wallet request.",
-      requestPending: "A wallet request is already pending. Please check your wallet.",
-      chainNotAdded: "This network is not added in your wallet. Please add it first.",
+      requestPending:
+        "A wallet request is already pending. Please check your wallet.",
+      chainNotAdded:
+        "This network is not added in your wallet. Please add it first.",
       wrongNetwork: "Wrong network. Please switch to the target chain.",
       insufficientFunds: "Insufficient funds to pay for gas or value.",
       invalidAddress: "Invalid address",
@@ -727,14 +878,43 @@ export const translations = {
       forbidden: "Forbidden (admin token required)",
       rpcUnreachable: "RPC unreachable",
       contractNotFound: "Contract not found",
-      syncFailed: "Sync failed"
-    }
+      syncFailed: "Sync failed",
+    },
   },
   es: {
+    tooltips: {
+      bond: "La fianza es el colateral bloqueado por el afirmante. Si la información es incorrecta, se pierde la fianza.",
+      market:
+        "La pregunta de mercado define lo que el oráculo debe responder, usualmente Sí/No o un valor.",
+      liveness:
+        "El periodo de vida es la ventana para disputar. Después, la afirmación se considera verdadera.",
+      reward:
+        "Si no hay disputas, se recupera la fianza. Si ganas una disputa, ganas la fianza del oponente.",
+      protocol:
+        "El nombre del protocolo o proyecto al que se refiere esta afirmación.",
+      assertion:
+        "El hecho que estás afirmando. Asegúrate de que sea objetivo, verificable y tenga tiempos y fuentes claras.",
+    },
     app: {
       title: "Insight · Monitor de liquidación UMA",
-      description: "Monitoreo visual de disputas y liquidaciones de UMA Optimistic Oracle.",
-      subtitle: "Monitor de Oráculo"
+      description:
+        "Monitoreo visual de disputas y liquidaciones de UMA Optimistic Oracle.",
+      subtitle: "Monitor de Oráculo",
+    },
+    howItWorks: {
+      title: "Cómo Funciona",
+      step1: {
+        title: "Afirmar Verdad",
+        desc: "Cualquiera puede publicar cualquier declaración como hecho, respaldada por una fianza como garantía.",
+      },
+      step2: {
+        title: "Verificar y Disputar",
+        desc: "Durante el período de vigencia, si la afirmación es falsa, cualquiera puede impugnarla apostando una fianza igual.",
+      },
+      step3: {
+        title: "Resolver y Recompensar",
+        desc: "Si no se impugna, la afirmación se mantiene. Si se disputa, los verificadores de UMA votan y el ganador se lleva la fianza del oponente.",
+      },
     },
     nav: {
       oracle: "Oráculo",
@@ -743,7 +923,7 @@ export const translations = {
       audit: "Auditoría",
       adminTokens: "Tokens",
       myAssertions: "Mis Aserciones",
-      myDisputes: "Mis Disputas"
+      myDisputes: "Mis Disputas",
     },
     common: {
       language: "Idioma",
@@ -761,12 +941,19 @@ export const translations = {
       viewTx: "Ver TX",
       copyHash: "Copiar hash",
       copied: "Copiado",
+      viewDetails: "Ver detalles",
       allLoaded: "Todo cargado",
-      noData: "Sin datos"
+      noData: "Sin datos",
+      ok: "OK",
+      cancel: "Cancelar",
+      confirm: "Confirmar",
+      popular: "Popular",
+      example: "Ejemplo",
+      min: "Mínimo",
     },
     sidebar: {
       userWallet: "Cartera de usuario",
-      notConnected: "No conectado"
+      notConnected: "No conectado",
     },
     wallet: {
       connect: "Conectar cartera",
@@ -785,23 +972,30 @@ export const translations = {
       networkSwitched: "Red cambiada",
       networkSwitchFailed: "No se pudo cambiar la red",
       switchingNetwork: "Cambiando…",
-      networkAlreadySelected: "Ya estás en esta red"
+      networkAlreadySelected: "Ya estás en esta red",
     },
     chain: {
       local: "Local",
       polygon: "Polygon",
       arbitrum: "Arbitrum",
-      optimism: "Optimism"
+      optimism: "Optimism",
     },
     oracle: {
       title: "Monitor de Oráculo",
-      description: "Seguimiento en tiempo real de afirmaciones y disputas de UMA Optimistic Oracle.",
-      newAssertion: "Nueva afirmación",
+      description:
+        "Seguimiento en tiempo real de afirmaciones y disputas de UMA Optimistic Oracle.",
+      newAssertion: "Nueva Afirmación",
+      myActivity: "Mi Actividad",
+      myActivityTooltip: "Mostrar solo afirmaciones creadas por mí",
+      myActivityEmpty: "Aún no has creado ninguna afirmación.",
+      myDisputesFilter: "Mis Disputas",
+      myDisputesTooltip: "Mostrar solo disputas iniciadas por mí",
+      myDisputesEmpty: "Aún no has iniciado ninguna disputa.",
       searchPlaceholder: "Buscar afirmaciones…",
       tabs: {
         overview: "Resumen",
         leaderboard: "Clasificación",
-        tools: "Herramientas"
+        tools: "Herramientas",
       },
       charts: {
         dailyAssertions: "Afirmaciones diarias",
@@ -813,22 +1007,25 @@ export const translations = {
         syncDesc: "Retraso y duración del indexador a lo largo del tiempo",
         syncLagBlocks: "Retraso (bloques)",
         syncDuration: "Duración de sync (ms)",
-        waitingData: "Esperando más datos históricos para generar tendencias de actividad."
+        waitingData:
+          "Esperando más datos históricos para generar tendencias de actividad.",
       },
       myAssertions: {
         title: "Mis Afirmaciones",
         description: "Gestiona todas las afirmaciones creadas por ti.",
         connectWalletTitle: "Conectar cartera para ver",
-        connectWalletDesc: "Por favor, conecta tu cartera para ver tu historial de afirmaciones.",
+        connectWalletDesc:
+          "Por favor, conecta tu cartera para ver tu historial de afirmaciones.",
         noAssertions: "Aún no has creado ninguna afirmación.",
-        createFirst: "Crea tu primera afirmación"
+        createFirst: "Crea tu primera afirmación",
       },
       myDisputes: {
         title: "Mis Disputas",
         description: "Gestiona todas las disputas iniciadas por ti.",
         connectWalletTitle: "Conectar cartera para ver",
-        connectWalletDesc: "Por favor, conecta tu cartera para ver tu historial de disputas.",
-        noDisputes: "Aún no has iniciado ninguna disputa."
+        connectWalletDesc:
+          "Por favor, conecta tu cartera para ver tu historial de disputas.",
+        noDisputes: "Aún no has iniciado ninguna disputa.",
       },
       leaderboard: {
         topAsserters: "Mejores Afirmadores",
@@ -838,7 +1035,12 @@ export const translations = {
         bonded: "En fianza",
         noData: "Sin datos disponibles",
         assertions: "Afirmaciones",
-        disputes: "Disputas"
+        disputes: "Disputas",
+      },
+      profile: {
+        title: "Perfil de Dirección",
+        assertionsHistory: "Historial de Afirmaciones",
+        disputesHistory: "Historial de Disputas",
       },
       sync: {
         synced: "Sincronizado",
@@ -846,7 +1048,7 @@ export const translations = {
         error: "Error de Sync",
         status: "Estado del Indexador",
         block: "Altura de Bloque",
-        lastUpdate: "Última Actualización"
+        lastUpdate: "Última Actualización",
       },
       timeline: {
         asserted: "Afirmado",
@@ -854,7 +1056,7 @@ export const translations = {
         resolved: "Resuelto",
         votingEnds: "Fin de votación",
         livenessEnds: "Fin de vigencia",
-        active: "Activo"
+        active: "Activo",
       },
       detail: {
         title: "Detalle de Afirmación",
@@ -893,10 +1095,11 @@ export const translations = {
         resolved: "Resuelto",
         resolvedDesc: "Esta afirmación ha sido resuelta con éxito.",
         settleAssertion: "Liquidar afirmación",
-        settleDesc: "Esta afirmación ha pasado el período de desafío y puede ser liquidada.",
+        settleDesc:
+          "Esta afirmación ha pasado el período de desafío y puede ser liquidada.",
         settlementResult: "Resultado de liquidación",
         settlementTrue: "Válido / Verdadero",
-        settlementFalse: "Inválido / Falso"
+        settlementFalse: "Inválido / Falso",
       },
       tx: {
         sentTitle: "Transacción enviada",
@@ -913,7 +1116,7 @@ export const translations = {
         voteCastSupportMsg: "Has votado a favor de la afirmación.",
         voteCastAgainstMsg: "Has votado en contra de la afirmación.",
         settlementSubmittedTitle: "Liquidación enviada",
-        settlementSubmittedMsg: "La afirmación ha sido liquidada."
+        settlementSubmittedMsg: "La afirmación ha sido liquidada.",
       },
       createAssertionModal: {
         protocolLabel: "Protocolo",
@@ -924,16 +1127,19 @@ export const translations = {
         assertionPlaceholder: "¿Cuál es la verdad que afirmas?",
         bondLabel: "Depósito (ETH)",
         submit: "Crear afirmación",
-        bondInvalid: "El depósito debe ser mayor que 0"
+        bondInvalid: "El depósito debe ser mayor que 0",
       },
       disputeModal: {
         desc: "Enviar una disputa requiere un depósito.",
         bondLabel: "Depósito (ETH)",
-        submit: "Enviar disputa"
+        submit: "Enviar disputa",
+        warning:
+          "Advertencia: Si la afirmación se verifica como correcta, perderá su fianza.",
       },
       settleModal: {
         readyTitle: "Listo para liquidar",
-        readyDesc: "El período de votación/vigencia ha terminado. Ahora puedes liquidar esta afirmación para resolver el resultado y distribuir depósitos/recompensas."
+        readyDesc:
+          "El período de votación/vigencia ha terminado. Ahora puedes liquidar esta afirmación para resolver el resultado y distribuir depósitos/recompensas.",
       },
       config: {
         title: "Conexión y sincronización",
@@ -961,8 +1167,10 @@ export const translations = {
         rpcActive: "RPC activo",
         indexed: "Indexado",
         demo: "Demo",
-        demoHint: "Estás viendo datos de demostración. Completa la configuración y pulsa Sincronizar.",
-        indexedHint: "Conectado a datos on-chain. Los datos se actualizan automáticamente."
+        demoHint:
+          "Estás viendo datos de demostración. Completa la configuración y pulsa Sincronizar.",
+        indexedHint:
+          "Conectado a datos on-chain. Los datos se actualizan automáticamente.",
       },
       stats: {
         tvs: "Valor total asegurado",
@@ -973,7 +1181,7 @@ export const translations = {
         totalAssertions: "Afirmaciones totales",
         totalDisputes: "Disputas totales",
         totalBonded: "Total en fianza",
-        winRate: "Tasa de aciertos"
+        winRate: "Tasa de aciertos",
       },
       card: {
         marketQuestion: "Pregunta del mercado",
@@ -984,8 +1192,33 @@ export const translations = {
         bond: "Depósito",
         livenessEnds: "Fin de vigencia",
         gridView: "Vista de cuadrícula",
-        listView: "Vista de lista"
-      }
+        listView: "Vista de lista",
+      },
+      alerts: {
+        title: "Reglas de Alertas",
+        description: "Configurar reglas de monitoreo y notificación.",
+        rule: "Nombre de regla",
+        event: "Evento activador",
+        severity: "Severidad",
+        status: "Estado",
+        enabled: "Habilitado",
+        disabled: "Deshabilitado",
+        save: "Guardar configuración",
+        saving: "Guardando...",
+        success: "Configuración guardada",
+        error: "Error al guardar",
+        noRules: "No hay reglas",
+        events: {
+          dispute_created: "Disputa creada",
+          sync_error: "Error de sincronización",
+          stale_sync: "Sincronización estancada",
+        },
+        severities: {
+          info: "Info",
+          warning: "Advertencia",
+          critical: "Crítico",
+        },
+      },
     },
     pnl: {
       title: "Calculadora de Ganancias",
@@ -996,7 +1229,7 @@ export const translations = {
       disclaimer: "*Asumiendo lógica estándar de escalada de bonos 1:1.",
       profit: "Beneficio Potencial",
       roi: "ROI",
-      totalReturn: "Retorno Total"
+      totalReturn: "Retorno Total",
     },
     audit: {
       title: "Registro de Auditoría",
@@ -1008,10 +1241,10 @@ export const translations = {
       refresh: "Actualizar",
       error: "Error",
       empty: "Aún no hay registros de auditoría.",
-      actor: "Actor"
+      actor: "Actor",
     },
     adminTokens: {
-      title: "Tokens de Admin",
+      title: "Tokens",
       description: "Crea, rota y revoca tokens de administrador.",
       label: "Etiqueta",
       role: "Rol",
@@ -1019,28 +1252,29 @@ export const translations = {
       revoke: "Revocar",
       createdAt: "Creado",
       revokedAt: "Revocado",
-      tokenValue: "Nuevo token (se muestra una vez)"
+      tokenValue: "Nuevo token (se muestra una vez)",
     },
     disputes: {
-      title: "Resolución de disputas",
-      description: "Monitorea disputas activas, progreso de votación y resultados.",
+      title: "Disputas",
+      description:
+        "Monitorea disputas activas, progreso de votación y resultados.",
       umaDvmActive: "UMA DVM Activo",
       viewOnUma: "Ver en UMA",
       reason: "Motivo de la disputa",
       disputer: "Disputante",
-      disputedAt: "Disputada el",
+      disputedAt: "Disputado en",
       votingProgress: "Progreso de votación",
-      endsAt: "Finaliza",
-      support: "Apoyar afirmación",
-      reject: "Rechazar afirmación",
-      totalVotesCast: "Votos emitidos",
-      emptyTitle: "No hay disputas activas",
-      emptyDesc: "Actualmente no hay disputas activas en el sistema.",
+      endsAt: "Termina",
+      support: "Apoyar",
+      reject: "Rechazar",
+      totalVotesCast: "Total de votos",
+      emptyTitle: "Sin disputas activas",
+      emptyDesc: "No hay disputas activas en el sistema.",
       card: {
         dispute: "Disputa",
         disputer: "Disputante",
-        votes: "Votos"
-      }
+        votes: "Votos",
+      },
     },
     alerts: {
       title: "Alertas",
@@ -1054,24 +1288,27 @@ export const translations = {
       resolve: "Resolver",
       status: "Estado",
       severity: "Severidad",
-      type: "Tipo"
+      type: "Tipo",
     },
     status: {
       voting: "Votación",
       pendingExecution: "Ejecución pendiente",
-      executed: "Ejecutado"
+      executed: "Ejecutado",
     },
     errors: {
       unknownError: "Error desconocido",
       walletNotConnected: "Cartera no conectada",
       userRejected: "Has rechazado la solicitud de la cartera.",
-      requestPending: "Ya hay una solicitud pendiente en la cartera. Revisa tu cartera.",
+      requestPending:
+        "Ya hay una solicitud pendiente en la cartera. Revisa tu cartera.",
       chainNotAdded: "Esta red no está añadida en tu cartera. Añádela primero.",
       wrongNetwork: "Red incorrecta. Cambia a la cadena objetivo.",
       insufficientFunds: "Fondos insuficientes para pagar gas o el valor.",
       invalidAddress: "Dirección inválida",
-      invalidMaxBlockRange: "El rango máximo de bloques está fuera de los límites permitidos",
-      invalidVotingPeriodHours: "Las horas del período de votación están fuera de los límites permitidos",
+      invalidMaxBlockRange:
+        "El rango máximo de bloques está fuera de los límites permitidos",
+      invalidVotingPeriodHours:
+        "Las horas del período de votación están fuera de los límites permitidos",
       httpError: "Falló la solicitud de red",
       invalidJson: "No se pudo analizar la respuesta",
       apiError: "Error del servidor",
@@ -1084,15 +1321,28 @@ export const translations = {
       forbidden: "Prohibido (se requiere token de administrador)",
       rpcUnreachable: "RPC inaccesible",
       contractNotFound: "Contrato no encontrado",
-      syncFailed: "Error de sincronización"
-    }
-  }
+      syncFailed: "Error de sincronización",
+    },
+  },
 } as const;
 
 export type TranslationKey =
+  | "tooltips.bond"
+  | "tooltips.market"
+  | "tooltips.liveness"
+  | "tooltips.reward"
+  | "tooltips.protocol"
+  | "tooltips.assertion"
   | "app.title"
   | "app.description"
   | "app.subtitle"
+  | "howItWorks.title"
+  | "howItWorks.step1.title"
+  | "howItWorks.step1.desc"
+  | "howItWorks.step2.title"
+  | "howItWorks.step2.desc"
+  | "howItWorks.step3.title"
+  | "howItWorks.step3.desc"
   | "nav.oracle"
   | "nav.disputes"
   | "nav.alerts"
@@ -1118,6 +1368,9 @@ export type TranslationKey =
   | "common.copied"
   | "common.viewDetails"
   | "common.allLoaded"
+  | "common.popular"
+  | "common.example"
+  | "common.min"
   | "sidebar.userWallet"
   | "sidebar.notConnected"
   | "wallet.connect"
@@ -1144,6 +1397,12 @@ export type TranslationKey =
   | "oracle.title"
   | "oracle.description"
   | "oracle.newAssertion"
+  | "oracle.myActivity"
+  | "oracle.myActivityTooltip"
+  | "oracle.myActivityEmpty"
+  | "oracle.myDisputesFilter"
+  | "oracle.myDisputesTooltip"
+  | "oracle.myDisputesEmpty"
   | "oracle.searchPlaceholder"
   | "oracle.tabs.overview"
   | "oracle.tabs.leaderboard"
@@ -1156,6 +1415,9 @@ export type TranslationKey =
   | "oracle.leaderboard.noData"
   | "oracle.leaderboard.assertions"
   | "oracle.leaderboard.disputes"
+  | "oracle.profile.title"
+  | "oracle.profile.assertionsHistory"
+  | "oracle.profile.disputesHistory"
   | "oracle.charts.dailyAssertions"
   | "oracle.charts.tvsCumulative"
   | "oracle.charts.syncHealth"
@@ -1267,6 +1529,7 @@ export type TranslationKey =
   | "oracle.disputeModal.desc"
   | "oracle.disputeModal.bondLabel"
   | "oracle.disputeModal.submit"
+  | "oracle.disputeModal.warning"
   | "oracle.settleModal.readyTitle"
   | "oracle.settleModal.readyDesc"
   | "oracle.config.title"
@@ -1396,29 +1659,58 @@ export type TranslationKey =
   | "errors.forbidden"
   | "errors.rpcUnreachable"
   | "errors.contractNotFound"
-  | "errors.syncFailed";
+  | "errors.syncFailed"
+  | "oracle.alerts.title"
+  | "oracle.alerts.description"
+  | "oracle.alerts.rule"
+  | "oracle.alerts.event"
+  | "oracle.alerts.severity"
+  | "oracle.alerts.status"
+  | "oracle.alerts.enabled"
+  | "oracle.alerts.disabled"
+  | "oracle.alerts.save"
+  | "oracle.alerts.saving"
+  | "oracle.alerts.success"
+  | "oracle.alerts.error"
+  | "oracle.alerts.noRules"
+  | "oracle.alerts.events.dispute_created"
+  | "oracle.alerts.events.sync_error"
+  | "oracle.alerts.events.stale_sync"
+  | "oracle.alerts.severities.info"
+  | "oracle.alerts.severities.warning"
+  | "oracle.alerts.severities.critical";
 
-export function getUiErrorMessage(errorCode: string, t: (key: TranslationKey) => string) {
+export function getUiErrorMessage(
+  errorCode: string,
+  t: (key: TranslationKey) => string
+) {
   if (errorCode === "unknown_error") return t("errors.unknownError");
-  if (errorCode.startsWith("http_")) return `${t("errors.httpError")} (${errorCode.slice(5)})`;
+  if (errorCode.startsWith("http_"))
+    return `${t("errors.httpError")} (${errorCode.slice(5)})`;
   if (errorCode === "invalid_json") return t("errors.invalidJson");
   if (errorCode === "invalid_json_response") return t("errors.invalidJson");
   if (errorCode === "api_error") return t("errors.apiError");
-  if (errorCode === "invalid_api_response") return t("errors.invalidApiResponse");
+  if (errorCode === "invalid_api_response")
+    return t("errors.invalidApiResponse");
   if (errorCode === "api_unknown_error") return t("errors.unknownError");
   if (errorCode === "missing_config") return t("errors.missingConfig");
   if (errorCode === "invalid_rpc_url") return t("errors.invalidRpcUrl");
-  if (errorCode === "invalid_contract_address") return t("errors.invalidContractAddress");
+  if (errorCode === "invalid_contract_address")
+    return t("errors.invalidContractAddress");
   if (errorCode === "invalid_chain") return t("errors.invalidChain");
-  if (errorCode === "invalid_request_body") return t("errors.invalidRequestBody");
+  if (errorCode === "invalid_request_body")
+    return t("errors.invalidRequestBody");
   if (errorCode === "invalid_address") return t("errors.invalidAddress");
-  if (errorCode === "invalid_max_block_range") return t("errors.invalidMaxBlockRange");
-  if (errorCode === "invalid_voting_period_hours") return t("errors.invalidVotingPeriodHours");
+  if (errorCode === "invalid_max_block_range")
+    return t("errors.invalidMaxBlockRange");
+  if (errorCode === "invalid_voting_period_hours")
+    return t("errors.invalidVotingPeriodHours");
   if (errorCode === "forbidden") return t("errors.forbidden");
   if (errorCode === "rpc_unreachable") return t("errors.rpcUnreachable");
   if (errorCode === "contract_not_found") return t("errors.contractNotFound");
   if (errorCode === "sync_failed") return t("errors.syncFailed");
-  if (errorCode === "wallet_not_connected") return t("errors.walletNotConnected");
+  if (errorCode === "wallet_not_connected")
+    return t("errors.walletNotConnected");
   if (errorCode === "user_rejected") return t("errors.userRejected");
   if (errorCode === "request_pending") return t("errors.requestPending");
   if (errorCode === "chain_not_added") return t("errors.chainNotAdded");

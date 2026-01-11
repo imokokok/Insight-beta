@@ -1,6 +1,12 @@
 import { hasDatabase, query } from "./db";
 import { ensureSchema } from "./schema";
-import type { Assertion, Dispute, OracleStats, LeaderboardStats, UserStats } from "@/lib/oracleTypes";
+import type {
+  Assertion,
+  Dispute,
+  OracleStats,
+  LeaderboardStats,
+  UserStats,
+} from "@/lib/oracleTypes";
 import { mockAssertions, mockDisputes } from "@/lib/mockData";
 import { unstable_cache } from "next/cache";
 
@@ -15,7 +21,9 @@ async function ensureDb() {
   }
 }
 
-async function isTableEmpty(table: "assertions" | "disputes") {
+export async function isTableEmpty(table: "assertions" | "disputes") {
+  await ensureDb();
+  if (!hasDatabase()) return true;
   const sql =
     table === "assertions"
       ? "SELECT EXISTS (SELECT 1 FROM assertions) as has_rows"
@@ -50,7 +58,7 @@ function mapAssertionRow(row: any): Assertion {
     status: row.status,
     bondUsd: Number(row.bond_usd),
     disputer: row.disputer,
-    txHash: row.tx_hash
+    txHash: row.tx_hash,
   };
 }
 
@@ -58,14 +66,16 @@ function mapAssertionRow(row: any): Assertion {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapDisputeRow(row: any): Dispute {
   const now = Date.now();
-  const votingEndsAt = row.voting_ends_at ? row.voting_ends_at.toISOString() : undefined;
+  const votingEndsAt = row.voting_ends_at
+    ? row.voting_ends_at.toISOString()
+    : undefined;
   const statusFromDb = row.status as Dispute["status"];
   const computedStatus: Dispute["status"] =
     statusFromDb === "Executed"
       ? "Executed"
       : votingEndsAt && new Date(votingEndsAt).getTime() <= now
-        ? "Pending Execution"
-        : "Voting";
+      ? "Pending Execution"
+      : "Voting";
 
   return {
     id: row.id,
@@ -79,7 +89,7 @@ function mapDisputeRow(row: any): Dispute {
     status: computedStatus,
     currentVotesFor: Number(row.votes_for),
     currentVotesAgainst: Number(row.votes_against),
-    totalVotes: Number(row.total_votes)
+    totalVotes: Number(row.total_votes),
   };
 }
 
@@ -91,7 +101,7 @@ export function parseListParams(url: URL): ListParams {
     limit: Number(url.searchParams.get("limit")) || 30,
     cursor: Number(url.searchParams.get("cursor")) || 0,
     asserter: url.searchParams.get("asserter"),
-    disputer: url.searchParams.get("disputer")
+    disputer: url.searchParams.get("disputer"),
   };
 }
 
@@ -101,10 +111,16 @@ export async function listAssertions(params: ListParams) {
     let items = mockAssertions.slice();
     const limit = Math.min(100, Math.max(1, params.limit ?? 30));
     const offset = Math.max(0, params.cursor ?? 0);
-    if (params.status && ["Pending", "Disputed", "Resolved"].includes(params.status)) {
+    if (
+      params.status &&
+      ["Pending", "Disputed", "Resolved"].includes(params.status)
+    ) {
       items = items.filter((a) => a.status === params.status);
     }
-    if (params.chain && ["Polygon", "Arbitrum", "Optimism", "Local"].includes(params.chain)) {
+    if (
+      params.chain &&
+      ["Polygon", "Arbitrum", "Optimism", "Local"].includes(params.chain)
+    ) {
       items = items.filter((a) => a.chain === params.chain);
     }
     if (params.q?.trim()) {
@@ -119,14 +135,16 @@ export async function listAssertions(params: ListParams) {
       });
     }
     if (params.asserter) {
-      items = items.filter((a) => a.asserter.toLowerCase() === params.asserter?.toLowerCase());
+      items = items.filter(
+        (a) => a.asserter.toLowerCase() === params.asserter?.toLowerCase()
+      );
     }
     const start = offset;
     const end = offset + limit;
     return {
       items: items.slice(start, end),
       total: items.length,
-      nextCursor: end < items.length ? end : null
+      nextCursor: end < items.length ? end : null,
     };
   }
   const limit = Math.min(100, Math.max(1, params.limit ?? 30));
@@ -134,10 +152,16 @@ export async function listAssertions(params: ListParams) {
 
   if (await isTableEmpty("assertions")) {
     let items = mockAssertions.slice();
-    if (params.status && ["Pending", "Disputed", "Resolved"].includes(params.status)) {
+    if (
+      params.status &&
+      ["Pending", "Disputed", "Resolved"].includes(params.status)
+    ) {
       items = items.filter((a) => a.status === params.status);
     }
-    if (params.chain && ["Polygon", "Arbitrum", "Optimism", "Local"].includes(params.chain)) {
+    if (
+      params.chain &&
+      ["Polygon", "Arbitrum", "Optimism", "Local"].includes(params.chain)
+    ) {
       items = items.filter((a) => a.chain === params.chain);
     }
     if (params.q?.trim()) {
@@ -152,27 +176,35 @@ export async function listAssertions(params: ListParams) {
       });
     }
     if (params.asserter) {
-      items = items.filter((a) => a.asserter.toLowerCase() === params.asserter?.toLowerCase());
+      items = items.filter(
+        (a) => a.asserter.toLowerCase() === params.asserter?.toLowerCase()
+      );
     }
     const start = offset;
     const end = offset + limit;
     return {
       items: items.slice(start, end),
       total: items.length,
-      nextCursor: end < items.length ? end : null
+      nextCursor: end < items.length ? end : null,
     };
   }
-  
+
   const conditions: string[] = [];
   const values: (string | number)[] = [];
   let idx = 1;
 
-  if (params.status && ["Pending", "Disputed", "Resolved"].includes(params.status)) {
+  if (
+    params.status &&
+    ["Pending", "Disputed", "Resolved"].includes(params.status)
+  ) {
     conditions.push(`status = $${idx++}`);
     values.push(params.status);
   }
 
-  if (params.chain && ["Polygon", "Arbitrum", "Optimism", "Local"].includes(params.chain)) {
+  if (
+    params.chain &&
+    ["Polygon", "Arbitrum", "Optimism", "Local"].includes(params.chain)
+  ) {
     conditions.push(`chain = $${idx++}`);
     values.push(params.chain);
   }
@@ -183,7 +215,8 @@ export async function listAssertions(params: ListParams) {
       LOWER(id) LIKE $${idx} OR 
       LOWER(protocol) LIKE $${idx} OR 
       LOWER(market) LIKE $${idx} OR 
-      LOWER(tx_hash) LIKE $${idx}
+      LOWER(tx_hash) LIKE $${idx} OR
+      LOWER(asserter) LIKE $${idx}
     )`);
     values.push(q);
     idx++;
@@ -194,20 +227,24 @@ export async function listAssertions(params: ListParams) {
     values.push(params.asserter.toLowerCase());
   }
 
-  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
-  
-  const countRes = await query(`SELECT COUNT(*) as total FROM assertions ${whereClause}`, values);
+  const whereClause =
+    conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
+  const countRes = await query(
+    `SELECT COUNT(*) as total FROM assertions ${whereClause}`,
+    values
+  );
   const total = Number(countRes.rows[0]?.total || 0);
 
   const res = await query(
     `SELECT * FROM assertions ${whereClause} ORDER BY asserted_at DESC LIMIT $${idx++} OFFSET $${idx}`,
     [...values, limit, offset]
   );
-  
+
   return {
     items: res.rows.map(mapAssertionRow),
     total,
-    nextCursor: offset + res.rows.length < total ? offset + limit : null
+    nextCursor: offset + res.rows.length < total ? offset + limit : null,
   };
 }
 
@@ -220,7 +257,7 @@ export async function getAssertion(id: string): Promise<Assertion | null> {
   const res = await query("SELECT * FROM assertions WHERE id = $1", [id]);
   if (res.rows.length === 0) {
     // Check mocks
-    const mock = mockAssertions.find(a => a.id === id);
+    const mock = mockAssertions.find((a) => a.id === id);
     return mock || null;
   }
   return mapAssertionRow(res.rows[0]);
@@ -234,22 +271,26 @@ export async function getDispute(id: string): Promise<Dispute | null> {
   }
   const res = await query("SELECT * FROM disputes WHERE id = $1", [id]);
   if (res.rows.length === 0) {
-    const mock = mockDisputes.find(d => d.id === id);
+    const mock = mockDisputes.find((d) => d.id === id);
     return mock || null;
   }
   return mapDisputeRow(res.rows[0]);
 }
 
-export async function getDisputeByAssertionId(assertionId: string): Promise<Dispute | null> {
+export async function getDisputeByAssertionId(
+  assertionId: string
+): Promise<Dispute | null> {
   await ensureDb();
   if (!hasDatabase()) {
     const mock = mockDisputes.find((d) => d.assertionId === assertionId);
     return mock || null;
   }
-  const res = await query("SELECT * FROM disputes WHERE assertion_id = $1", [assertionId]);
+  const res = await query("SELECT * FROM disputes WHERE assertion_id = $1", [
+    assertionId,
+  ]);
   if (res.rows.length === 0) {
-     const mock = mockDisputes.find(d => d.assertionId === assertionId);
-     return mock || null;
+    const mock = mockDisputes.find((d) => d.assertionId === assertionId);
+    return mock || null;
   }
   return mapDisputeRow(res.rows[0]);
 }
@@ -260,10 +301,16 @@ export async function listDisputes(params: ListParams) {
     let items = mockDisputes.slice();
     const limit = Math.min(100, Math.max(1, params.limit ?? 30));
     const offset = Math.max(0, params.cursor ?? 0);
-    if (params.status && ["Voting", "Pending Execution", "Executed"].includes(params.status)) {
+    if (
+      params.status &&
+      ["Voting", "Pending Execution", "Executed"].includes(params.status)
+    ) {
       items = items.filter((d) => d.status === params.status);
     }
-    if (params.chain && ["Polygon", "Arbitrum", "Optimism", "Local"].includes(params.chain)) {
+    if (
+      params.chain &&
+      ["Polygon", "Arbitrum", "Optimism", "Local"].includes(params.chain)
+    ) {
       items = items.filter((d) => d.chain === params.chain);
     }
     if (params.q?.trim()) {
@@ -278,14 +325,16 @@ export async function listDisputes(params: ListParams) {
       });
     }
     if (params.disputer) {
-      items = items.filter((d) => d.disputer?.toLowerCase() === params.disputer?.toLowerCase());
+      items = items.filter(
+        (d) => d.disputer?.toLowerCase() === params.disputer?.toLowerCase()
+      );
     }
     const start = offset;
     const end = offset + limit;
     return {
       items: items.slice(start, end),
       total: items.length,
-      nextCursor: end < items.length ? end : null
+      nextCursor: end < items.length ? end : null,
     };
   }
   const limit = Math.min(100, Math.max(1, params.limit ?? 30));
@@ -293,10 +342,16 @@ export async function listDisputes(params: ListParams) {
 
   if (await isTableEmpty("disputes")) {
     let items = mockDisputes.slice();
-    if (params.status && ["Voting", "Pending Execution", "Executed"].includes(params.status)) {
+    if (
+      params.status &&
+      ["Voting", "Pending Execution", "Executed"].includes(params.status)
+    ) {
       items = items.filter((d) => d.status === params.status);
     }
-    if (params.chain && ["Polygon", "Arbitrum", "Optimism", "Local"].includes(params.chain)) {
+    if (
+      params.chain &&
+      ["Polygon", "Arbitrum", "Optimism", "Local"].includes(params.chain)
+    ) {
       items = items.filter((d) => d.chain === params.chain);
     }
     if (params.q?.trim()) {
@@ -311,33 +366,45 @@ export async function listDisputes(params: ListParams) {
       });
     }
     if (params.disputer) {
-      items = items.filter((d) => d.disputer?.toLowerCase() === params.disputer?.toLowerCase());
+      items = items.filter(
+        (d) => d.disputer?.toLowerCase() === params.disputer?.toLowerCase()
+      );
     }
     const start = offset;
     const end = offset + limit;
     return {
       items: items.slice(start, end),
       total: items.length,
-      nextCursor: end < items.length ? end : null
+      nextCursor: end < items.length ? end : null,
     };
   }
-  
+
   const conditions: string[] = [];
   const values: (string | number)[] = [];
   let idx = 1;
 
-  if (params.status && ["Voting", "Pending Execution", "Executed"].includes(params.status)) {
+  if (
+    params.status &&
+    ["Voting", "Pending Execution", "Executed"].includes(params.status)
+  ) {
     if (params.status === "Executed") {
       conditions.push(`status = $${idx++}`);
       values.push("Executed");
     } else if (params.status === "Pending Execution") {
-      conditions.push(`status <> 'Executed' AND voting_ends_at IS NOT NULL AND voting_ends_at <= NOW()`);
+      conditions.push(
+        `status <> 'Executed' AND voting_ends_at IS NOT NULL AND voting_ends_at <= NOW()`
+      );
     } else {
-      conditions.push(`status <> 'Executed' AND (voting_ends_at IS NULL OR voting_ends_at > NOW())`);
+      conditions.push(
+        `status <> 'Executed' AND (voting_ends_at IS NULL OR voting_ends_at > NOW())`
+      );
     }
   }
 
-  if (params.chain && ["Polygon", "Arbitrum", "Optimism", "Local"].includes(params.chain)) {
+  if (
+    params.chain &&
+    ["Polygon", "Arbitrum", "Optimism", "Local"].includes(params.chain)
+  ) {
     conditions.push(`chain = $${idx++}`);
     values.push(params.chain);
   }
@@ -353,26 +420,30 @@ export async function listDisputes(params: ListParams) {
     values.push(q);
     idx++;
   }
-  
+
   if (params.disputer) {
     conditions.push(`LOWER(disputer) = $${idx++}`);
     values.push(params.disputer.toLowerCase());
   }
 
-  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
-  
-  const countRes = await query(`SELECT COUNT(*) as total FROM disputes ${whereClause}`, values);
+  const whereClause =
+    conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
+  const countRes = await query(
+    `SELECT COUNT(*) as total FROM disputes ${whereClause}`,
+    values
+  );
   const total = Number(countRes.rows[0]?.total || 0);
 
   const res = await query(
     `SELECT * FROM disputes ${whereClause} ORDER BY disputed_at DESC LIMIT $${idx++} OFFSET $${idx}`,
     [...values, limit, offset]
   );
-  
+
   return {
     items: res.rows.map(mapDisputeRow),
     total,
-    nextCursor: offset + res.rows.length < total ? offset + limit : null
+    nextCursor: offset + res.rows.length < total ? offset + limit : null,
   };
 }
 
@@ -391,15 +462,21 @@ export const getOracleStats = unstable_cache(
         if (resolved.length === 0) return 0;
         const sum = resolved.reduce((acc, a) => {
           const resolvedAt = a.resolvedAt ?? a.livenessEndsAt;
-          return acc + (new Date(resolvedAt).getTime() - new Date(a.assertedAt).getTime()) / 60_000;
+          return (
+            acc +
+            (new Date(resolvedAt).getTime() -
+              new Date(a.assertedAt).getTime()) /
+              60_000
+          );
         }, 0);
         return sum / resolved.length;
       })();
       return {
         tvsUsd: mockAssertions.reduce((acc, a) => acc + a.bondUsd, 0),
-        activeDisputes: mockDisputes.filter((d) => d.status !== "Executed").length,
+        activeDisputes: mockDisputes.filter((d) => d.status !== "Executed")
+          .length,
         resolved24h: resolved24hMock,
-        avgResolutionMinutes: avgResolutionMinutesMock
+        avgResolutionMinutes: avgResolutionMinutesMock,
       };
     }
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -415,15 +492,21 @@ export const getOracleStats = unstable_cache(
         if (resolved.length === 0) return 0;
         const sum = resolved.reduce((acc, a) => {
           const resolvedAt = a.resolvedAt ?? a.livenessEndsAt;
-          return acc + (new Date(resolvedAt).getTime() - new Date(a.assertedAt).getTime()) / 60_000;
+          return (
+            acc +
+            (new Date(resolvedAt).getTime() -
+              new Date(a.assertedAt).getTime()) /
+              60_000
+          );
         }, 0);
         return sum / resolved.length;
       })();
       return {
         tvsUsd: mockAssertions.reduce((acc, a) => acc + a.bondUsd, 0),
-        activeDisputes: mockDisputes.filter((d) => d.status !== "Executed").length,
+        activeDisputes: mockDisputes.filter((d) => d.status !== "Executed")
+          .length,
         resolved24h: resolved24hMock,
-        avgResolutionMinutes: avgResolutionMinutesMock
+        avgResolutionMinutes: avgResolutionMinutesMock,
       };
     }
 
@@ -445,11 +528,14 @@ export const getOracleStats = unstable_cache(
     const activeDisputes = Number(activeDisputesRes.rows[0].count);
 
     // 3. Resolved in last 24h
-    const resolvedRes = await query(`
+    const resolvedRes = await query(
+      `
       SELECT COUNT(*) as count 
       FROM assertions 
       WHERE status = 'Resolved' AND COALESCE(resolved_at, liveness_ends_at) > $1
-    `, [oneDayAgo]);
+    `,
+      [oneDayAgo]
+    );
     const resolved24h = Number(resolvedRes.rows[0].count);
 
     // 4. Avg Resolution Time (minutes)
@@ -465,7 +551,7 @@ export const getOracleStats = unstable_cache(
       tvsUsd,
       activeDisputes,
       resolved24h,
-      avgResolutionMinutes
+      avgResolutionMinutes,
     };
   },
   ["oracle-stats"],
@@ -479,10 +565,18 @@ export const getLeaderboardStats = unstable_cache(
       const asserterMap = new Map<string, { count: number; value: number }>();
       mockAssertions.forEach((a) => {
         const curr = asserterMap.get(a.asserter) || { count: 0, value: 0 };
-        asserterMap.set(a.asserter, { count: curr.count + 1, value: curr.value + a.bondUsd });
+        asserterMap.set(a.asserter, {
+          count: curr.count + 1,
+          value: curr.value + a.bondUsd,
+        });
       });
       const topAsserters = Array.from(asserterMap.entries())
-        .map(([address, { count, value }]) => ({ address, count, value, rank: 0 }))
+        .map(([address, { count, value }]) => ({
+          address,
+          count,
+          value,
+          rank: 0,
+        }))
         .sort((a, b) => b.count - a.count)
         .slice(0, 10)
         .map((item, i) => ({ ...item, rank: i + 1 }));
@@ -500,23 +594,31 @@ export const getLeaderboardStats = unstable_cache(
 
       return { topAsserters, topDisputers };
     }
-    
+
     if (await isTableEmpty("assertions")) {
       // Mock data logic
       const asserterMap = new Map<string, { count: number; value: number }>();
-      mockAssertions.forEach(a => {
+      mockAssertions.forEach((a) => {
         const curr = asserterMap.get(a.asserter) || { count: 0, value: 0 };
-        asserterMap.set(a.asserter, { count: curr.count + 1, value: curr.value + a.bondUsd });
+        asserterMap.set(a.asserter, {
+          count: curr.count + 1,
+          value: curr.value + a.bondUsd,
+        });
       });
-      
+
       const topAsserters = Array.from(asserterMap.entries())
-        .map(([address, { count, value }]) => ({ address, count, value, rank: 0 }))
+        .map(([address, { count, value }]) => ({
+          address,
+          count,
+          value,
+          rank: 0,
+        }))
         .sort((a, b) => b.count - a.count)
         .slice(0, 10)
         .map((item, i) => ({ ...item, rank: i + 1 }));
 
       const disputerMap = new Map<string, number>();
-      mockDisputes.forEach(d => {
+      mockDisputes.forEach((d) => {
         const curr = disputerMap.get(d.disputer) || 0;
         disputerMap.set(d.disputer, curr + 1);
       });
@@ -526,7 +628,7 @@ export const getLeaderboardStats = unstable_cache(
         .sort((a, b) => b.count - a.count)
         .slice(0, 10)
         .map((item, i) => ({ ...item, rank: i + 1 }));
-        
+
       return { topAsserters, topDisputers };
     }
 
@@ -547,17 +649,17 @@ export const getLeaderboardStats = unstable_cache(
     `);
 
     return {
-      topAsserters: assertersRes.rows.map((r, i) => ({ 
-        address: r.address, 
-        count: Number(r.count), 
-        value: Number(r.value), 
-        rank: i + 1 
+      topAsserters: assertersRes.rows.map((r, i) => ({
+        address: r.address,
+        count: Number(r.count),
+        value: Number(r.value),
+        rank: i + 1,
       })),
-      topDisputers: disputersRes.rows.map((r, i) => ({ 
-        address: r.address, 
-        count: Number(r.count), 
-        rank: i + 1 
-      }))
+      topDisputers: disputersRes.rows.map((r, i) => ({
+        address: r.address,
+        count: Number(r.count),
+        rank: i + 1,
+      })),
     };
   },
   ["oracle-leaderboard"],
@@ -571,86 +673,120 @@ export function getUserStats(address: string): Promise<UserStats> {
     async (): Promise<UserStats> => {
       await ensureDb();
       if (!hasDatabase()) {
-        const assertions = mockAssertions.filter((a) => a.asserter.toLowerCase() === addressLower);
-        const disputes = mockDisputes.filter((d) => d.disputer.toLowerCase() === addressLower);
-        const totalBondedUsd = assertions.reduce((acc, a) => acc + a.bondUsd, 0);
-        const resolvedAssertions = assertions.filter((a) => a.status === "Resolved");
+        const assertions = mockAssertions.filter(
+          (a) => a.asserter.toLowerCase() === addressLower
+        );
+        const disputes = mockDisputes.filter(
+          (d) => d.disputer.toLowerCase() === addressLower
+        );
+        const totalBondedUsd = assertions.reduce(
+          (acc, a) => acc + a.bondUsd,
+          0
+        );
+        const resolvedAssertions = assertions.filter(
+          (a) => a.status === "Resolved"
+        );
         const wonAssertions = resolvedAssertions.filter(() => true);
         const winRate =
           resolvedAssertions.length > 0
-            ? Math.round((wonAssertions.length / resolvedAssertions.length) * 100)
+            ? Math.round(
+                (wonAssertions.length / resolvedAssertions.length) * 100
+              )
             : 0;
         return {
           totalAssertions: assertions.length,
           totalDisputes: disputes.length,
           totalBondedUsd,
-          winRate
+          winRate,
         };
       }
-    
+
       // Check if DB is empty to use mocks
       if (await isTableEmpty("assertions")) {
         // Mock stats
-        const assertions = mockAssertions.filter((a) => a.asserter.toLowerCase() === addressLower);
-        const disputes = mockDisputes.filter((d) => d.disputer.toLowerCase() === addressLower);
-      
-        const totalBondedUsd = assertions.reduce((acc, a) => acc + a.bondUsd, 0);
-      
-        const resolvedAssertions = assertions.filter((a) => a.status === "Resolved");
+        const assertions = mockAssertions.filter(
+          (a) => a.asserter.toLowerCase() === addressLower
+        );
+        const disputes = mockDisputes.filter(
+          (d) => d.disputer.toLowerCase() === addressLower
+        );
+
+        const totalBondedUsd = assertions.reduce(
+          (acc, a) => acc + a.bondUsd,
+          0
+        );
+
+        const resolvedAssertions = assertions.filter(
+          (a) => a.status === "Resolved"
+        );
         const wonAssertions = resolvedAssertions.filter(() => true);
 
-        const winRate = resolvedAssertions.length > 0 
-          ? Math.round((wonAssertions.length / resolvedAssertions.length) * 100) 
-          : 0;
+        const winRate =
+          resolvedAssertions.length > 0
+            ? Math.round(
+                (wonAssertions.length / resolvedAssertions.length) * 100
+              )
+            : 0;
 
         return {
           totalAssertions: assertions.length,
           totalDisputes: disputes.length,
           totalBondedUsd,
-          winRate
+          winRate,
         };
       }
 
       // Real DB stats
-      const assertionsRes = await query(`
+      const assertionsRes = await query(
+        `
         SELECT COUNT(*) as count, COALESCE(SUM(bond_usd), 0) as bonded
         FROM assertions
         WHERE LOWER(asserter) = $1
-      `, [addressLower]);
-    
-      const disputesRes = await query(`
+      `,
+        [addressLower]
+      );
+
+      const disputesRes = await query(
+        `
         SELECT COUNT(*) as count
         FROM disputes
         WHERE LOWER(disputer) = $1
-      `, [addressLower]);
+      `,
+        [addressLower]
+      );
 
-      const resolvedRes = await query(`
+      const resolvedRes = await query(
+        `
         SELECT COUNT(*) as count
         FROM assertions
         WHERE LOWER(asserter) = $1 AND status = 'Resolved'
-      `, [addressLower]);
-    
-      const wonRes = await query(`
+      `,
+        [addressLower]
+      );
+
+      const wonRes = await query(
+        `
         SELECT COUNT(*) as count
         FROM assertions
         WHERE LOWER(asserter) = $1 AND status = 'Resolved' AND (settlement_resolution IS TRUE OR settlement_resolution IS NULL)
-      `, [addressLower]);
+      `,
+        [addressLower]
+      );
 
       const totalAssertions = Number(assertionsRes.rows[0].count);
       const totalBondedUsd = Number(assertionsRes.rows[0].bonded);
       const totalDisputes = Number(disputesRes.rows[0].count);
       const resolvedCount = Number(resolvedRes.rows[0].count);
       const wonCount = Number(wonRes.rows[0].count);
-    
-      const winRate = resolvedCount > 0 
-        ? Math.round((wonCount / resolvedCount) * 100)
-        : 0;
+
+      const winRate =
+        resolvedCount > 0 ? Math.round((wonCount / resolvedCount) * 100) : 0;
 
       return {
         totalAssertions,
         totalDisputes,
         totalBondedUsd,
-        winRate
+        winRate,
       };
     },
     ["user-stats", addressLower],

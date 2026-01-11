@@ -12,10 +12,12 @@
     "contracts:compile": "HARDHAT_DISABLE_TELEMETRY=1 hardhat compile",
     "contracts:test": "HARDHAT_DISABLE_TELEMETRY=1 hardhat test",
     "contracts:deploy": "HARDHAT_DISABLE_TELEMETRY=1 hardhat run scripts/deploy.js",
-    "test": "vitest"
+    "test": "vitest",
+    "prepare": "husky"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^5.4.0",
+    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.562.0",
     "next": "15.5.9",
@@ -46,11 +48,22 @@
     "eslint": "^9.17.0",
     "eslint-config-next": "15.5.9",
     "hardhat": "^2.22.19",
+    "husky": "^9.1.7",
     "jsdom": "^27.4.0",
+    "lint-staged": "^16.2.7",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3",
     "vitest": "^4.0.16"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
   }
 }

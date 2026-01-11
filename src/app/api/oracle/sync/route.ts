@@ -1,30 +1,55 @@
-import { ensureOracleSynced, getOracleEnv, readOracleState } from "@/server/oracle";
-import { error, getAdminActor, handleApi, invalidateCachedJson, rateLimit, requireAdmin } from "@/server/apiResponse";
+import {
+  ensureOracleSynced,
+  getOracleEnv,
+  readOracleState,
+} from "@/server/oracle";
+import { isTableEmpty } from "@/server/oracleStore";
+import {
+  error,
+  getAdminActor,
+  handleApi,
+  invalidateCachedJson,
+  rateLimit,
+  requireAdmin,
+} from "@/server/apiResponse";
 import { appendAuditLog } from "@/server/observability";
 import { revalidateTag } from "next/cache";
 
 export async function GET(request: Request) {
   return handleApi(request, async () => {
-    const limited = await rateLimit(request, { key: "oracle_sync_get", limit: 240, windowMs: 60_000 });
+    const limited = await rateLimit(request, {
+      key: "oracle_sync_get",
+      limit: 240,
+      windowMs: 60_000,
+    });
     if (limited) return limited;
     const state = await readOracleState();
+    const isDemo = await isTableEmpty("assertions");
     return {
       chain: state.chain,
       contractAddress: state.contractAddress,
+      mode: isDemo ? "demo" : "real",
       lastProcessedBlock: state.lastProcessedBlock.toString(10),
       assertions: Object.keys(state.assertions).length,
       disputes: Object.keys(state.disputes).length,
-      sync: state.sync
+      sync: state.sync,
     };
   });
 }
 
 export async function POST(request: Request) {
   return handleApi(request, async () => {
-    const limited = await rateLimit(request, { key: "oracle_sync_post", limit: 10, windowMs: 60_000 });
+    const limited = await rateLimit(request, {
+      key: "oracle_sync_post",
+      limit: 10,
+      windowMs: 60_000,
+    });
     if (limited) return limited;
 
-    const auth = await requireAdmin(request, { strict: true, scope: "oracle_sync_trigger" });
+    const auth = await requireAdmin(request, {
+      strict: true,
+      scope: "oracle_sync_trigger",
+    });
     if (auth) return auth;
 
     const envConfig = await getOracleEnv();
@@ -48,7 +73,10 @@ export async function POST(request: Request) {
       action: "oracle_sync_triggered",
       entityType: "oracle",
       entityId: state.contractAddress,
-      details: { updated: result.updated, lastProcessedBlock: state.lastProcessedBlock.toString(10) }
+      details: {
+        updated: result.updated,
+        lastProcessedBlock: state.lastProcessedBlock.toString(10),
+      },
     });
     if (result.updated) {
       revalidateTag("oracle-stats");
@@ -56,14 +84,16 @@ export async function POST(request: Request) {
       revalidateTag("user-stats");
       await invalidateCachedJson("oracle_api:/api/oracle");
     }
+    const isDemo = await isTableEmpty("assertions");
     return {
       updated: result.updated,
       chain: state.chain,
       contractAddress: state.contractAddress,
+      mode: isDemo ? "demo" : "real",
       lastProcessedBlock: state.lastProcessedBlock.toString(10),
       assertions: Object.keys(state.assertions).length,
       disputes: Object.keys(state.disputes).length,
-      sync: state.sync
+      sync: state.sync,
     };
   });
 }
