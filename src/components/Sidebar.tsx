@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import {
   ShieldAlert,
   Activity,
@@ -31,6 +32,7 @@ const navItems = [
 export function Sidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [logoSrc, setLogoSrc] = useState("/logo-owl.png");
   const { t } = useI18n();
 
   return (
@@ -66,8 +68,20 @@ export function Sidebar() {
       >
         <div className="flex h-full flex-col px-4 py-6">
           <div className="mb-8 flex items-center gap-3 px-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/30 text-white font-bold text-xl ring-2 ring-white/50">
-              I
+            <div className="group relative inline-flex h-12 w-12 items-center justify-center border border-gray-100 bg-white rounded-xl shadow-sm rotate-[-3deg] transition-transform hover:rotate-0 p-1">
+              <Image
+                src={logoSrc}
+                alt="Insight Logo"
+                width={36}
+                height={36}
+                className="h-9 w-9 object-contain"
+                priority
+                onError={() => setLogoSrc("/logo-owl.svg")}
+              />
+              <span
+                className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-pink-300/70 ring-2 ring-white/80"
+                aria-hidden="true"
+              />
             </div>
             <div>
               <h1 className="text-lg font-bold text-gray-800 tracking-tight">
