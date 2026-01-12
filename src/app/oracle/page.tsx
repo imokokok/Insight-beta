@@ -34,8 +34,6 @@ import { useOracleData } from "@/hooks/useOracleData";
 import { useDisputes } from "@/hooks/useDisputes";
 import { useWallet } from "@/contexts/WalletContext";
 import { ConnectWallet } from "@/components/ConnectWallet";
-import { Leaderboard } from "@/components/Leaderboard";
-import { PnLCalculator } from "@/components/PnLCalculator";
 import { AssertionList } from "@/components/AssertionList";
 import { DisputeList } from "@/components/DisputeList";
 import { useToast } from "@/components/ui/toast";
@@ -60,6 +58,14 @@ const OracleCharts = dynamic(
     ),
     ssr: false,
   }
+);
+
+const Leaderboard = dynamic(() =>
+  import("@/components/Leaderboard").then((mod) => mod.Leaderboard)
+);
+
+const PnLCalculator = dynamic(() =>
+  import("@/components/PnLCalculator").then((mod) => mod.PnLCalculator)
 );
 
 export default function OraclePage() {
@@ -184,13 +190,20 @@ export default function OraclePage() {
     };
 
     loadStatus();
-    const id = window.setInterval(loadStatus, 15_000);
+
+    let id: number | undefined;
+    if (showConfig) {
+      id = window.setInterval(loadStatus, 15_000);
+    }
+
     return () => {
       cancelled = true;
       controller.abort();
-      window.clearInterval(id);
+      if (id !== undefined) {
+        window.clearInterval(id);
+      }
     };
-  }, [adminToken, adminActor]);
+  }, [adminToken, adminActor, showConfig]);
 
   const saveConfig = async () => {
     setSaving(true);

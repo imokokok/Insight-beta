@@ -16,6 +16,12 @@ const config: HardhatUserConfig = {
         ? [process.env.DEPLOYER_PRIVATE_KEY]
         : [],
     },
+    polygonAmoy: {
+      url: process.env.POLYGON_AMOY_RPC_URL || "",
+      accounts: process.env.DEPLOYER_PRIVATE_KEY
+        ? [process.env.DEPLOYER_PRIVATE_KEY]
+        : [],
+    },
     polygon: {
       url: process.env.POLYGON_RPC_URL || "",
       accounts: process.env.DEPLOYER_PRIVATE_KEY

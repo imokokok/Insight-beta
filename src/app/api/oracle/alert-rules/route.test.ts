@@ -65,6 +65,11 @@ describe("GET /api/oracle/alert-rules", () => {
     if (response.ok) {
       expect(response.data.rules).toHaveLength(1);
     }
+    expect(rateLimit).toHaveBeenCalledWith(req, {
+      key: "alert_rules_get",
+      limit: 240,
+      windowMs: 60_000,
+    });
   });
 
   it("returns rate limited when GET is over limit", async () => {
@@ -111,6 +116,15 @@ describe("PUT /api/oracle/alert-rules", () => {
       rules: unknown[];
     }>;
     expect(response.ok).toBe(true);
+    expect(rateLimit).toHaveBeenCalledWith(req, {
+      key: "alert_rules_put",
+      limit: 30,
+      windowMs: 60_000,
+    });
+    expect(requireAdmin).toHaveBeenCalledWith(req, {
+      strict: true,
+      scope: "alert_rules_write",
+    });
     expect(observability.writeAlertRules).toHaveBeenCalledWith(rules);
     expect(observability.appendAuditLog).toHaveBeenCalledWith({
       actor: "test",
@@ -151,6 +165,84 @@ describe("PUT /api/oracle/alert-rules", () => {
     expect(response.error).toEqual({ code: "invalid_request_body" });
   });
 
+  it("rejects malformed json body", async () => {
+    const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: "not-json",
+    });
+
+    const response = (await PUT(req)) as { ok: boolean; error?: unknown };
+    expect(response.ok).toBe(false);
+    expect(response.error).toEqual({ code: "invalid_request_body" });
+  });
+
+  it("rejects more than 50 rules", async () => {
+    const baseRule = {
+      id: "x",
+      name: "X",
+      enabled: true,
+      event: "sync_error" as const,
+      severity: "warning" as const,
+    };
+    const rules = Array.from({ length: 51 }, (_, i) => ({
+      ...baseRule,
+      id: `x-${i}`,
+      name: `X-${i}`,
+    }));
+    const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ rules }),
+    });
+
+    const response = (await PUT(req)) as { ok: boolean; error?: unknown };
+    expect(response.ok).toBe(false);
+    expect(response.error).toEqual({ code: "invalid_request_body" });
+  });
+
+  it("rejects rule with invalid event", async () => {
+    const rules = [
+      {
+        id: "x",
+        name: "X",
+        enabled: true,
+        event: "unknown_event",
+        severity: "warning",
+      },
+    ] as unknown[];
+    const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ rules }),
+    });
+
+    const response = (await PUT(req)) as { ok: boolean; error?: unknown };
+    expect(response.ok).toBe(false);
+    expect(response.error).toEqual({ code: "invalid_request_body" });
+  });
+
+  it("rejects rule with invalid severity", async () => {
+    const rules = [
+      {
+        id: "x",
+        name: "X",
+        enabled: true,
+        event: "sync_error",
+        severity: "low",
+      },
+    ] as unknown[];
+    const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ rules }),
+    });
+
+    const response = (await PUT(req)) as { ok: boolean; error?: unknown };
+    expect(response.ok).toBe(false);
+    expect(response.error).toEqual({ code: "invalid_request_body" });
+  });
+
   it("returns rate limited when PUT is over limit", async () => {
     const rules = [
       {
@@ -178,6 +270,8 @@ describe("PUT /api/oracle/alert-rules", () => {
     const response = (await PUT(req)) as { ok: boolean; error?: unknown };
     expect(response.ok).toBe(false);
     expect(response.error).toEqual({ code: "rate_limited" });
+    expect(observability.writeAlertRules).not.toHaveBeenCalled();
+    expect(requireAdmin).not.toHaveBeenCalled();
   });
 
   it("returns error when not authorized", async () => {
@@ -206,5 +300,6 @@ describe("PUT /api/oracle/alert-rules", () => {
     const response = (await PUT(req)) as { ok: boolean; error?: unknown };
     expect(response.ok).toBe(false);
     expect(response.error).toEqual({ code: "forbidden" });
+    expect(observability.writeAlertRules).not.toHaveBeenCalled();
   });
 });
