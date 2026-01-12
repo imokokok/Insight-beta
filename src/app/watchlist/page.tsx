@@ -52,7 +52,7 @@ export default function WatchlistPage() {
             {t("common.noData")}
           </h2>
           <p className="text-gray-500 max-w-md mb-8">
-            You have not added any assertions to your watchlist yet.
+            {t("watchlist.emptyDesc")}
           </p>
           <Link
             href="/oracle"

@@ -435,6 +435,9 @@ export const translations = {
       adminToken: "管理员 Token",
       adminActor: "操作者",
       adminActorPlaceholder: "例如：alice@ops",
+      adminTokenHint: "仅保存在本地，用于访问管理员接口",
+      adminTokenWarning:
+        "未填写 Token 时只能查看告警，不能确认/解决或保存规则。",
       rules: "告警规则",
       refresh: "刷新",
       acknowledge: "确认",
@@ -442,6 +445,15 @@ export const translations = {
       status: "状态",
       severity: "级别",
       type: "类型",
+      searchPlaceholder: "搜索标题/内容/实体…",
+      loadRules: "加载规则",
+      saveRules: "保存",
+      savingRules: "保存中…",
+      lastSeen: "最近",
+      occurrences: "次数",
+    },
+    watchlist: {
+      emptyDesc: "你还没有将任何断言加入关注列表。",
     },
     status: {
       voting: "投票中",
@@ -868,6 +880,9 @@ export const translations = {
       adminToken: "Admin token",
       adminActor: "Actor",
       adminActorPlaceholder: "e.g. alice@ops",
+      adminTokenHint: "Stored locally in this session for admin API access",
+      adminTokenWarning:
+        "Without a token you can only view alerts, not acknowledge/resolve or save rules.",
       rules: "Alert rules",
       refresh: "Refresh",
       acknowledge: "Acknowledge",
@@ -875,6 +890,15 @@ export const translations = {
       status: "Status",
       severity: "Severity",
       type: "Type",
+      searchPlaceholder: "Search title/content/entity…",
+      loadRules: "Load Rules",
+      saveRules: "Save",
+      savingRules: "Saving…",
+      lastSeen: "Last",
+      occurrences: "Occurrences",
+    },
+    watchlist: {
+      emptyDesc: "You have not added any assertions to your watchlist yet.",
     },
     status: {
       voting: "Voting",
@@ -1328,6 +1352,10 @@ export const translations = {
       adminToken: "Token de admin",
       adminActor: "Actor",
       adminActorPlaceholder: "p.ej. alice@ops",
+      adminTokenHint:
+        "Se guarda localmente en esta sesión para las APIs de administrador",
+      adminTokenWarning:
+        "Sin token solo puedes ver alertas; no podrás confirmar/resolver ni guardar reglas.",
       rules: "Reglas de alertas",
       refresh: "Actualizar",
       acknowledge: "Confirmar",
@@ -1335,6 +1363,15 @@ export const translations = {
       status: "Estado",
       severity: "Severidad",
       type: "Tipo",
+      searchPlaceholder: "Buscar título/contenido/entidad…",
+      loadRules: "Cargar reglas",
+      saveRules: "Guardar",
+      savingRules: "Guardando…",
+      lastSeen: "Última vez",
+      occurrences: "Ocurrencias",
+    },
+    watchlist: {
+      emptyDesc: "Aún no has añadido afirmaciones a tu lista de seguimiento.",
     },
     status: {
       voting: "Votación",
@@ -1699,6 +1736,15 @@ export type TranslationKey =
   | "alerts.status"
   | "alerts.severity"
   | "alerts.type"
+  | "alerts.searchPlaceholder"
+  | "alerts.loadRules"
+  | "alerts.saveRules"
+  | "alerts.savingRules"
+  | "alerts.lastSeen"
+  | "alerts.occurrences"
+  | "alerts.adminTokenHint"
+  | "alerts.adminTokenWarning"
+  | "watchlist.emptyDesc"
   | "status.voting"
   | "status.pendingExecution"
   | "status.executed"
