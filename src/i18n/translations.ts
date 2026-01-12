@@ -326,6 +326,11 @@ export const translations = {
         lagBlocks: "落后区块",
         consecutiveFailures: "连续失败次数",
         rpcActive: "当前 RPC",
+        owner: "合约 Owner",
+        ownerType: "Owner 类型",
+        ownerTypeContract: "合约 / 多签",
+        ownerTypeEoa: "外部账户 (EOA)",
+        ownerTypeUnknown: "未知类型",
         indexed: "已索引",
         demo: "演示数据",
         demoHint: "当前展示演示数据。填写配置并点击立即同步获取链上数据。",
@@ -751,6 +756,11 @@ export const translations = {
         lagBlocks: "Lag Blocks",
         consecutiveFailures: "Consecutive failures",
         rpcActive: "Active RPC",
+        owner: "Contract Owner",
+        ownerType: "Owner Type",
+        ownerTypeContract: "Contract / Multisig",
+        ownerTypeEoa: "Externally Owned Account (EOA)",
+        ownerTypeUnknown: "Unknown type",
         indexed: "Indexed",
         demo: "Demo",
         demoHint:
@@ -1196,6 +1206,11 @@ export const translations = {
         lagBlocks: "Bloques de retraso",
         consecutiveFailures: "Fallos consecutivos",
         rpcActive: "RPC activo",
+        owner: "Owner del contrato",
+        ownerType: "Tipo de owner",
+        ownerTypeContract: "Contrato / Multisig",
+        ownerTypeEoa: "Cuenta externa (EOA)",
+        ownerTypeUnknown: "Tipo desconocido",
         indexed: "Indexado",
         demo: "Demo",
         demoHint:
@@ -1600,6 +1615,11 @@ export type TranslationKey =
   | "oracle.config.lagBlocks"
   | "oracle.config.consecutiveFailures"
   | "oracle.config.rpcActive"
+  | "oracle.config.owner"
+  | "oracle.config.ownerType"
+  | "oracle.config.ownerTypeContract"
+  | "oracle.config.ownerTypeEoa"
+  | "oracle.config.ownerTypeUnknown"
   | "oracle.config.indexed"
   | "oracle.config.demo"
   | "oracle.config.demoHint"

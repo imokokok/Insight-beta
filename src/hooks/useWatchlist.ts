@@ -10,13 +10,19 @@ export function useWatchlist() {
 
   useEffect(() => {
     setMounted(true);
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        setWatchlist(JSON.parse(stored));
-      } catch {
-        setWatchlist([]);
-      }
+    if (
+      typeof window === "undefined" ||
+      !window.localStorage ||
+      typeof window.localStorage.getItem !== "function"
+    ) {
+      return;
+    }
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    if (!stored) return;
+    try {
+      setWatchlist(JSON.parse(stored));
+    } catch {
+      setWatchlist([]);
     }
   }, []);
 
@@ -25,7 +31,13 @@ export function useWatchlist() {
       const next = prev.includes(id)
         ? prev.filter((i) => i !== id)
         : [...prev, id];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      if (
+        typeof window !== "undefined" &&
+        window.localStorage &&
+        typeof window.localStorage.setItem === "function"
+      ) {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      }
       return next;
     });
   };

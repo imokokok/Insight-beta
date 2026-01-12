@@ -31,7 +31,12 @@ import { useI18n } from "@/i18n/LanguageProvider";
 import { langToLocale } from "@/i18n/translations";
 import { useToast } from "@/components/ui/toast";
 import { useWatchlist } from "@/hooks/useWatchlist";
-import type { Assertion, Dispute, OracleConfig } from "@/lib/oracleTypes";
+import type {
+  Assertion,
+  Dispute,
+  OracleConfig,
+  Alert,
+} from "@/lib/oracleTypes";
 
 import { AssertionTimeline } from "@/components/AssertionTimeline";
 import { AssertionDetailSkeleton } from "@/components/AssertionDetailSkeleton";
@@ -99,6 +104,17 @@ export default function OracleDetailPage() {
   }>(id ? `/api/oracle/assertions/${id}` : null, fetchApiData, {
     refreshInterval: 15_000,
     dedupingInterval: 10_000,
+    revalidateOnFocus: false,
+  });
+
+  const { data: timelineData } = useSWR<{
+    assertion: Assertion;
+    dispute: Dispute | null;
+    alerts: Alert[];
+    timeline: { type: string; at: string }[];
+  }>(id ? `/api/oracle/assertions/${id}/timeline` : null, fetchApiData, {
+    refreshInterval: 30_000,
+    dedupingInterval: 15_000,
     revalidateOnFocus: false,
   });
 
@@ -432,7 +448,11 @@ export default function OracleDetailPage() {
               <Activity className="text-indigo-500" size={24} />
               {t("oracle.detail.timeline")}
             </h2>
-            <AssertionTimeline assertion={assertion} dispute={dispute} />
+            <AssertionTimeline
+              assertion={assertion}
+              dispute={dispute}
+              alerts={timelineData?.alerts ?? []}
+            />
           </div>
         </div>
 

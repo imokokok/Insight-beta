@@ -85,6 +85,8 @@ export type OracleStatusSnapshot = {
   assertions: number;
   disputes: number;
   syncing?: boolean;
+  owner?: string | null;
+  ownerIsContract?: boolean | null;
   sync?: {
     lastAttemptAt: string | null;
     lastSuccessAt: string | null;

@@ -262,17 +262,23 @@ export default function OraclePage() {
     }
   };
 
+  const shortAddress = (value: string) => {
+    if (!value) return "—";
+    if (value.length <= 12) return value;
+    return `${value.slice(0, 6)}...${value.slice(-4)}`;
+  };
+
+  const ownerTypeLabel = (value: boolean | null | undefined) => {
+    if (value === true) return t("oracle.config.ownerTypeContract");
+    if (value === false) return t("oracle.config.ownerTypeEoa");
+    return t("oracle.config.ownerTypeUnknown");
+  };
+
   const statusLabel = (status: OracleStatus | "All") => {
     if (status === "All") return t("common.all");
     if (status === "Pending") return t("common.pending");
     if (status === "Disputed") return t("common.disputed");
     return t("common.resolved");
-  };
-
-  const shortAddress = (value: string) => {
-    if (!value) return "—";
-    if (value.length <= 12) return value;
-    return `${value.slice(0, 6)}...${value.slice(-4)}`;
   };
 
   const formattedStats = useMemo(() => {
@@ -758,6 +764,31 @@ export default function OraclePage() {
                         {status?.state.rpcActiveUrl
                           ? shortAddress(status.state.rpcActiveUrl)
                           : "—"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-1.5 text-gray-600">
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+                      {t("oracle.config.owner")}:{" "}
+                      <span className="font-mono font-medium">
+                        {status?.state.owner
+                          ? shortAddress(status.state.owner)
+                          : "—"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-1.5 text-gray-600">
+                      <span
+                        className={cn(
+                          "w-1.5 h-1.5 rounded-full",
+                          status?.state.ownerIsContract === true
+                            ? "bg-emerald-500"
+                            : status?.state.ownerIsContract === false
+                            ? "bg-slate-400"
+                            : "bg-gray-300"
+                        )}
+                      ></span>
+                      {t("oracle.config.ownerType")}:{" "}
+                      <span className="font-mono font-medium">
+                        {ownerTypeLabel(status?.state.ownerIsContract)}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-1.5 text-gray-600">

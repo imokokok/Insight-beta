@@ -4,7 +4,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import OracleDetailPage from "./page";
 import * as utils from "@/lib/utils";
-import { Assertion, OracleConfig } from "@/lib/oracleTypes";
+import { Assertion, OracleConfig, Alert } from "@/lib/oracleTypes";
 
 // Mock Next.js hooks
 vi.mock("next/navigation", () => ({
@@ -93,18 +93,46 @@ describe("OracleDetailPage", () => {
     rpcUrl: "http://localhost:8545",
   };
 
+  const mockAlert: Alert = {
+    id: 1,
+    fingerprint: "fp1",
+    type: "dispute_created",
+    severity: "critical",
+    title: "Dispute detected",
+    message: "disputed",
+    entityType: "assertion",
+    entityId: "0x123",
+    status: "Open",
+    occurrences: 1,
+    firstSeenAt: new Date().toISOString(),
+    lastSeenAt: new Date().toISOString(),
+    acknowledgedAt: null,
+    resolvedAt: null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
     lastDisputeModalProps = null;
-    const fetchApiDataMock = vi.mocked(utils.fetchApiData) as unknown as {
-      mockResolvedValue: (value: unknown) => void;
-    };
-    fetchApiDataMock.mockResolvedValue({
-      assertion: mockAssertion,
-      dispute: null,
-      config: mockConfig,
-      bondWei: null,
-      bondEth: null,
+    const fetchApiDataMock = vi.mocked(utils.fetchApiData);
+    fetchApiDataMock.mockImplementation((input) => {
+      if (typeof input === "string" && input.includes("/timeline")) {
+        return Promise.resolve({
+          assertion: mockAssertion,
+          dispute: null,
+          alerts: [mockAlert],
+          timeline: [],
+        });
+      }
+
+      return Promise.resolve({
+        assertion: mockAssertion,
+        dispute: null,
+        config: mockConfig,
+        bondWei: null,
+        bondEth: null,
+      });
     });
   });
 
@@ -145,5 +173,15 @@ describe("OracleDetailPage", () => {
         chain: mockConfig.chain,
       })
     );
+  });
+
+  it("renders alert events in the timeline when available", async () => {
+    render(<OracleDetailPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Assertion Details")).toBeInTheDocument();
+    });
+
+    expect(screen.getByText("Dispute detected")).toBeInTheDocument();
   });
 });

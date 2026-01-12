@@ -46,6 +46,10 @@ vi.mock("@/server/apiResponse", () => ({
       return { ok: false, error: message };
     }
   },
+  error: (message: string) => ({
+    ok: false as const,
+    error: message,
+  }),
 }));
 
 describe("GET /api/oracle/disputes", () => {

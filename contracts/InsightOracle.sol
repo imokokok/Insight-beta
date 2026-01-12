@@ -4,6 +4,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 
 contract InsightOracle is Ownable, Pausable {
+  uint256 public constant MAX_LIVENESS = 30 days;
+  uint256 public constant MAX_ACTIVE_ASSERTIONS = 1000;
   event AssertionCreated(
     bytes32 indexed assertionId,
     address indexed asserter,
@@ -32,13 +34,14 @@ contract InsightOracle is Ownable, Pausable {
     string market;
     string assertion;
     uint256 bondUsd;
-    uint256 assertedAt;
-    uint256 livenessEndsAt;
+    uint64 assertedAt;
+    uint64 livenessEndsAt;
     bool disputed;
     bool resolved;
   }
 
   mapping(bytes32 => AssertionData) public assertions;
+  mapping(address => uint256) public activeAssertions;
   uint256 public nonce;
   uint256 public defaultBond;
 
@@ -51,7 +54,11 @@ contract InsightOracle is Ownable, Pausable {
     uint256 bondUsd,
     uint256 livenessSeconds
   ) external whenNotPaused returns (bytes32 assertionId) {
-    nonce += 1;
+    require(livenessSeconds > 0 && livenessSeconds <= MAX_LIVENESS, "liveness");
+    require(activeAssertions[msg.sender] < MAX_ACTIVE_ASSERTIONS, "rate");
+    unchecked {
+      nonce += 1;
+    }
     assertionId = keccak256(abi.encodePacked(address(this), msg.sender, nonce, block.chainid, market, assertionText));
 
     AssertionData storage a = assertions[assertionId];
@@ -62,8 +69,10 @@ contract InsightOracle is Ownable, Pausable {
     a.market = market;
     a.assertion = assertionText;
     a.bondUsd = bondUsd;
-    a.assertedAt = block.timestamp;
-    a.livenessEndsAt = block.timestamp + livenessSeconds;
+    a.assertedAt = uint64(block.timestamp);
+    a.livenessEndsAt = uint64(block.timestamp + livenessSeconds);
+
+    activeAssertions[msg.sender] += 1;
 
     emit AssertionCreated(
       assertionId,
@@ -82,6 +91,8 @@ contract InsightOracle is Ownable, Pausable {
     AssertionData storage a = assertions[assertionId];
     require(a.assertedAt != 0, "missing");
     require(!a.resolved, "resolved");
+    require(!a.disputed, "disputed");
+    require(block.timestamp <= a.livenessEndsAt, "expired");
     a.disputed = true;
     emit AssertionDisputed(assertionId, msg.sender, reason, block.timestamp);
   }
@@ -90,7 +101,14 @@ contract InsightOracle is Ownable, Pausable {
     AssertionData storage a = assertions[assertionId];
     require(a.assertedAt != 0, "missing");
     require(!a.resolved, "resolved");
+    require(block.timestamp >= a.livenessEndsAt, "live");
     a.resolved = true;
+    uint256 currentActive = activeAssertions[a.asserter];
+    if (currentActive != 0) {
+      unchecked {
+        activeAssertions[a.asserter] = currentActive - 1;
+      }
+    }
     emit AssertionResolved(assertionId, outcome, block.timestamp);
   }
 
