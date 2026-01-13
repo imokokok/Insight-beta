@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET, POST } from "./route";
 import {
   rateLimit,
-  error,
   getAdminActor,
   invalidateCachedJson,
   requireAdmin,
@@ -33,21 +32,22 @@ vi.mock("@/server/oracle", () => ({
 }));
 
 vi.mock("@/server/oracleStore", () => ({
-  isTableEmpty: vi.fn(async (_table: string) => false),
+  isTableEmpty: vi.fn(async () => false),
 }));
 
 vi.mock("@/server/apiResponse", () => ({
-  rateLimit: vi.fn(async () => null),
-  requireAdmin: vi.fn(async (_request: Request) => null),
-  getAdminActor: vi.fn((_request: Request) => "test-actor"),
-  invalidateCachedJson: vi.fn(async (_key: string) => {}),
+  rateLimit: vi.fn(async () => false),
+  requireAdmin: vi.fn(async () => null),
+  getAdminActor: vi.fn(() => "test-actor"),
+  invalidateCachedJson: vi.fn(async () => {}),
   handleApi: async (
     _request: Request,
     fn: () => unknown | Promise<unknown>
   ) => {
-    return await fn();
+    return fn();
   },
-  error: (value: unknown, _status?: number) => ({ ok: false, error: value }),
+  success: (value: unknown) => ({ ok: true, value }),
+  error: (value: unknown) => ({ ok: false, error: value }),
 }));
 
 vi.mock("@/server/observability", () => ({
@@ -55,7 +55,7 @@ vi.mock("@/server/observability", () => ({
 }));
 
 vi.mock("next/cache", () => ({
-  revalidateTag: vi.fn((_tag: string) => {}),
+  revalidateTag: vi.fn(() => {}),
 }));
 
 describe("GET /api/oracle/sync", () => {

@@ -177,7 +177,8 @@ export function getErrorDetails(error: unknown) {
 
 export async function fetchApiData<T>(
   input: RequestInfo | URL,
-  init?: RequestInit
+  init?: RequestInit,
+  timeout: number = 30000 // 30秒超时
 ): Promise<T> {
   try {
     const normalizedInput = (() => {
@@ -187,12 +188,21 @@ export async function fetchApiData<T>(
           typeof window.location?.origin === "string" &&
           window.location.origin !== "null"
             ? window.location.origin
-            : "http://localhost";
+            : "http://localhost:3000"; // 添加默认端口号
         return new URL(input, base);
       }
       return input;
     })();
-    const res = await fetch(normalizedInput, init);
+
+    // 添加超时机制
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    const res = await fetch(normalizedInput, {
+      ...init,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
 
     let json: unknown;
     try {
@@ -247,7 +257,16 @@ export async function fetchApiData<T>(
       error && typeof error === "object" && "name" in error
         ? String((error as { name?: unknown }).name)
         : "";
-    if (name !== "AbortError") logger.error("Fetch error:", error);
+    if (name !== "AbortError") {
+      logger.error("Fetch error:", error);
+      // 如果是网络错误，包装成更友好的错误
+      if (
+        error instanceof Error &&
+        (error.name === "TypeError" || error.message.includes("Network"))
+      ) {
+        throw new ApiClientError("network_error", error.message);
+      }
+    }
     throw error;
   }
 }

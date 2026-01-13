@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET } from "./route";
 import { rateLimit, cachedJson } from "@/server/apiResponse";
-import type { AdminScope } from "@/server/adminAuth";
 import { verifyAdmin } from "@/server/adminAuth";
 import {
   readOracleConfig,
@@ -71,12 +70,7 @@ vi.mock("@/server/apiResponse", () => ({
 }));
 
 vi.mock("@/server/adminAuth", () => ({
-  verifyAdmin: vi.fn(
-    async (
-      _request: Request,
-      _opts: { strict: boolean; scope?: AdminScope }
-    ) => ({ ok: false })
-  ),
+  verifyAdmin: vi.fn(async () => ({ ok: false })),
 }));
 
 describe("GET /api/oracle/status", () => {

@@ -2,11 +2,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET, PUT } from "./route";
 import {
   rateLimit,
-  error,
   getAdminActor,
   invalidateCachedJson,
 } from "@/server/apiResponse";
-import type { AdminScope } from "@/server/adminAuth";
 import { requireAdmin } from "@/server/apiResponse";
 import { verifyAdmin } from "@/server/adminAuth";
 import {
@@ -30,9 +28,9 @@ vi.mock("@/server/oracle", () => {
   };
   return {
     readOracleConfig: vi.fn(async () => config),
-    writeOracleConfig: vi.fn(async (_patch: Partial<OracleConfig>) => config),
+    writeOracleConfig: vi.fn(async () => config),
     validateOracleConfigPatch: vi.fn((next: Partial<OracleConfig>) => next),
-    redactOracleConfig: vi.fn((_c: OracleConfig) => ({
+    redactOracleConfig: vi.fn(() => ({
       ...config,
       rpcUrl: "",
     })),
@@ -45,25 +43,20 @@ vi.mock("@/server/observability", () => ({
 
 vi.mock("@/server/apiResponse", () => ({
   rateLimit: vi.fn(async () => null),
-  requireAdmin: vi.fn(async (_request: Request) => null),
-  getAdminActor: vi.fn((_request: Request) => "test-actor"),
-  invalidateCachedJson: vi.fn(async (_key: string) => {}),
+  requireAdmin: vi.fn(async () => null),
+  getAdminActor: vi.fn(() => "test-actor"),
+  invalidateCachedJson: vi.fn(async () => {}),
   handleApi: async (
     _request: Request,
     fn: () => unknown | Promise<unknown>
   ) => {
     return await fn();
   },
-  error: (value: unknown, _status?: number) => ({ ok: false, error: value }),
+  error: (value: unknown) => ({ ok: false, error: value }),
 }));
 
 vi.mock("@/server/adminAuth", () => ({
-  verifyAdmin: vi.fn(
-    async (
-      _request: Request,
-      _opts: { strict: boolean; scope?: AdminScope }
-    ) => ({ ok: false })
-  ),
+  verifyAdmin: vi.fn(async () => ({ ok: false })),
 }));
 
 describe("GET /api/oracle/config", () => {

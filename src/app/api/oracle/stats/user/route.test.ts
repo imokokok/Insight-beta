@@ -5,7 +5,7 @@ import { getUserStats } from "@/server/oracle";
 import { ZodError } from "zod";
 
 vi.mock("@/server/oracle", () => ({
-  getUserStats: vi.fn(async (_address: string) => ({ score: 42 })),
+  getUserStats: vi.fn(async () => ({ score: 42 })),
 }));
 
 vi.mock("@/server/apiResponse", () => ({

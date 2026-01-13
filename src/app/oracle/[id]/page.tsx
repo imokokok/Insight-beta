@@ -102,9 +102,13 @@ export default function OracleDetailPage() {
     bondWei: string | null;
     bondEth: string | null;
   }>(id ? `/api/oracle/assertions/${id}` : null, fetchApiData, {
-    refreshInterval: 15_000,
-    dedupingInterval: 10_000,
-    revalidateOnFocus: false,
+    refreshInterval: 30_000, // 延长刷新间隔到30秒
+    dedupingInterval: 15_000, // 延长去重间隔到15秒
+    revalidateOnFocus: false, // 关闭焦点重验证
+    revalidateOnReconnect: true, // 连接恢复时重新验证
+    errorRetryCount: 3, // 错误重试3次
+    errorRetryInterval: 1000, // 初始重试间隔
+    shouldRetryOnError: true,
   });
 
   const { data: timelineData } = useSWR<{
@@ -113,9 +117,13 @@ export default function OracleDetailPage() {
     alerts: Alert[];
     timeline: { type: string; at: string }[];
   }>(id ? `/api/oracle/assertions/${id}/timeline` : null, fetchApiData, {
-    refreshInterval: 30_000,
-    dedupingInterval: 15_000,
-    revalidateOnFocus: false,
+    refreshInterval: 60_000, // 延长时间线刷新间隔到60秒
+    dedupingInterval: 30_000, // 延长时间线去重间隔到30秒
+    revalidateOnFocus: false, // 关闭焦点重验证
+    revalidateOnReconnect: true, // 连接恢复时重新验证
+    errorRetryCount: 3, // 错误重试3次
+    errorRetryInterval: 1000, // 初始重试间隔
+    shouldRetryOnError: true,
   });
 
   const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false);

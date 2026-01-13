@@ -83,6 +83,7 @@ export const AssertionList = memo(function AssertionList({
   loadMore,
   loadingMore,
   emptyStateMessage,
+  onCreateAssertion,
 }: AssertionListProps) {
   const { t, lang } = useI18n();
   const locale = langToLocale[lang];
@@ -104,6 +105,14 @@ export const AssertionList = memo(function AssertionList({
         <p className="mt-2 text-gray-500 max-w-sm px-4">
           {emptyStateMessage || t("oracle.leaderboard.noData")}
         </p>
+        {onCreateAssertion && (
+          <button
+            onClick={onCreateAssertion}
+            className="mt-6 rounded-lg bg-purple-600 px-6 py-2.5 text-sm font-medium text-white shadow-lg shadow-purple-500/20 transition-all hover:bg-purple-700 hover:shadow-purple-500/30 hover:-translate-y-0.5 active:translate-y-0"
+          >
+            {t("oracle.newAssertion")}
+          </button>
+        )}
       </div>
     );
   }
@@ -209,7 +218,9 @@ export const AssertionList = memo(function AssertionList({
                   : "text-gray-300 hover:text-yellow-400 hover:bg-gray-50"
               )}
               title={
-                isWatched(item.id) ? t("nav.watchlist") : t("nav.watchlist")
+                isWatched(item.id)
+                  ? t("common.removeFromWatchlist")
+                  : t("common.addToWatchlist")
               }
             >
               <Star
@@ -375,20 +386,6 @@ export const AssertionList = memo(function AssertionList({
       </div>
     </Link>
   );
-
-  if (loading) {
-    return <SkeletonList count={6} viewMode={viewMode} />;
-  }
-
-  if (items.length === 0) {
-    return (
-      <div className="text-center py-20">
-        <div className="inline-block p-6 rounded-2xl bg-gray-50 border border-gray-100">
-          <p className="text-gray-500 font-medium">{t("common.noData")}</p>
-        </div>
-      </div>
-    );
-  }
 
   if (viewMode === "grid") {
     return (

@@ -209,6 +209,11 @@ export const DisputeList = memo(function DisputeList({
                   ? "bg-amber-100 text-amber-500 hover:bg-amber-200"
                   : "bg-gray-100/50 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
               )}
+              title={
+                mounted && isWatched(item.assertionId)
+                  ? t("common.removeFromWatchlist")
+                  : t("common.addToWatchlist")
+              }
             >
               <Star
                 size={16}
@@ -296,16 +301,22 @@ export const DisputeList = memo(function DisputeList({
             <div className="font-mono text-xs font-medium text-gray-700 flex items-center gap-1 justify-end">
               {shortAddress(item.disputer)}
               {getExplorerUrl(item.chain, item.disputer) && (
-                <a
-                  href={getExplorerUrl(item.chain, item.disputer)!}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-400 hover:text-purple-600 transition-colors"
-                  onClick={(e) => e.stopPropagation()}
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    window.open(
+                      getExplorerUrl(item.chain, item.disputer)!,
+                      "_blank",
+                      "noopener noreferrer"
+                    );
+                  }}
+                  className="text-gray-400 hover:text-purple-600 transition-colors p-1 rounded hover:bg-gray-100"
                   title={t("common.viewOnExplorer")}
+                  aria-label={t("common.viewOnExplorer")}
                 >
                   <ArrowUpRight size={10} />
-                </a>
+                </button>
               )}
             </div>
           </div>

@@ -71,15 +71,50 @@ const PnLCalculator = dynamic(() =>
 export default function OraclePage() {
   const { toast } = useToast();
   const { address } = useWallet();
-  const [filterStatus, setFilterStatus] = useState<OracleStatus | "All">("All");
+
+  // 从 localStorage 加载筛选偏好
+  const loadFilters = () => {
+    try {
+      // 使用 try-catch 处理 localStorage 访问
+      const saved = localStorage.getItem("oracleFilters");
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch {
+      // 如果 localStorage 不可用，返回 null
+      return null;
+    }
+    return null;
+  };
+
+  const savedFilters = loadFilters();
+  const [filterStatus, setFilterStatus] = useState<OracleStatus | "All">(
+    savedFilters?.status || "All"
+  );
   const [filterChain, setFilterChain] = useState<OracleConfig["chain"] | "All">(
-    "All"
+    savedFilters?.chain || "All"
   );
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [showConfig, setShowConfig] = useState(false);
   const [myActivity, setMyActivity] = useState(false);
   const [myDisputes, setMyDisputes] = useState(false);
+
+  // 保存筛选偏好到 localStorage
+  useEffect(() => {
+    try {
+      // 使用 try-catch 处理 localStorage 访问
+      localStorage.setItem(
+        "oracleFilters",
+        JSON.stringify({
+          status: filterStatus,
+          chain: filterChain,
+        })
+      );
+    } catch {
+      // 如果 localStorage 不可用，忽略错误
+    }
+  }, [filterStatus, filterChain]);
 
   const {
     items,
@@ -322,13 +357,6 @@ export default function OraclePage() {
           </button>
         </div>
       </PageHeader>
-
-      <CreateAssertionModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        contractAddress={config.contractAddress}
-        chain={config.chain}
-      />
 
       <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
         <OracleStatsBanner stats={formattedStats} loading={loading} />

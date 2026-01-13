@@ -10,7 +10,7 @@ vi.mock("@/server/observability", () => ({
 
 vi.mock("@/server/apiResponse", () => ({
   rateLimit: vi.fn(async () => null),
-  requireAdmin: vi.fn(async (_request: Request) => null),
+  requireAdmin: vi.fn(async () => null),
   handleApi: async (arg1: unknown, arg2?: unknown) => {
     try {
       const fn =

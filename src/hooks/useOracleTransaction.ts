@@ -6,15 +6,29 @@ import { oracleAbi } from "@/lib/oracleAbi";
 import { env } from "@/lib/env";
 import { createPublicClient, custom, http, parseEther, webSocket } from "viem";
 import type { OracleChain, OracleConfig } from "@/lib/oracleTypes";
-import { copyToClipboard, fetchApiData, getExplorerUrl, parseRpcUrls } from "@/lib/utils";
+import {
+  copyToClipboard,
+  fetchApiData,
+  getExplorerUrl,
+  parseRpcUrls,
+} from "@/lib/utils";
 import { normalizeWalletError } from "@/lib/walletErrors";
 import { logger } from "@/lib/logger";
 
-type OracleWriteFunctionName = Exclude<typeof oracleAbi[number]["name"], "getBond">;
+type OracleWriteFunctionName = Exclude<
+  (typeof oracleAbi)[number]["name"],
+  "getBond"
+>;
 
 type OracleWriteArgs =
   | readonly [protocol: string, market: string, assertion: string]
-  | readonly [protocol: string, market: string, assertion: string, bond: bigint, liveness: bigint]
+  | readonly [
+      protocol: string,
+      market: string,
+      assertion: string,
+      bond: bigint,
+      liveness: bigint
+    ]
   | readonly [`0x${string}`]
   | readonly [`0x${string}`, support: boolean]
   | readonly [`0x${string}`, reason: string];
@@ -62,12 +76,16 @@ export function useOracleTransaction() {
     successMessage,
     onSuccess,
     onConfirmed,
-    onError
+    onError,
   }: TransactionOptions<TFunctionName>) => {
     if (!address) {
       const msg = t("errors.walletNotConnected");
       setError(msg);
-      toast({ type: "error", title: t("oracle.detail.validationError"), message: msg });
+      toast({
+        type: "error",
+        title: t("oracle.detail.validationError"),
+        message: msg,
+      });
       return;
     }
 
@@ -86,21 +104,30 @@ export function useOracleTransaction() {
             normalized.kind === "CHAIN_NOT_ADDED"
               ? t("errors.chainNotAdded")
               : normalized.kind === "USER_REJECTED"
-                ? t("errors.userRejected")
-                : normalized.kind === "REQUEST_PENDING"
-                  ? t("errors.requestPending")
-                  : t("errors.wrongNetwork");
+              ? t("errors.userRejected")
+              : normalized.kind === "REQUEST_PENDING"
+              ? t("errors.requestPending")
+              : t("errors.wrongNetwork");
           setError(msg);
-          toast({ type: "error", title: t("oracle.detail.validationError"), message: msg });
+          toast({
+            type: "error",
+            title: t("oracle.detail.validationError"),
+            message: msg,
+          });
           return;
         }
       }
 
       const client = await getWalletClient(expectedChainId ?? undefined);
-      if (!client) throw new Error("No wallet client");
+      if (!client) {
+        throw new Error(
+          "No wallet client available. Please make sure your wallet is connected and unlocked."
+        );
+      }
 
       const targetAddress = contractAddress || env.INSIGHT_ORACLE_ADDRESS;
-      if (!targetAddress) throw new Error("Oracle contract address not configured");
+      if (!targetAddress)
+        throw new Error("Oracle contract address not configured");
 
       const hash = await client.writeContract({
         account: address as `0x${string}`,
@@ -109,7 +136,7 @@ export function useOracleTransaction() {
         functionName: functionName,
         args,
         value: value ? parseEther(value) : undefined,
-        chain: client.chain ?? null
+        chain: client.chain ?? null,
       } as unknown as Parameters<typeof client.writeContract>[0]);
 
       logger.info(`Transaction ${functionName} sent:`, hash);
@@ -120,12 +147,12 @@ export function useOracleTransaction() {
         if (ok) {
           update(toastId, {
             secondaryActionLabel: t("common.copied"),
-            secondaryActionDisabled: true
+            secondaryActionDisabled: true,
           });
           window.setTimeout(() => {
             update(toastId, {
               secondaryActionLabel: t("common.copyHash"),
-              secondaryActionDisabled: false
+              secondaryActionDisabled: false,
             });
           }, 1200);
           return;
@@ -133,7 +160,7 @@ export function useOracleTransaction() {
         toast({
           type: "error",
           title: t("oracle.detail.txFailed"),
-          message: t("errors.unknownError")
+          message: t("errors.unknownError"),
         });
       };
       const makeCopyHandler = (toastId: string) => () => {
@@ -145,33 +172,45 @@ export function useOracleTransaction() {
         id: sentToastId,
         type: "success",
         title: successTitle ?? t("oracle.tx.sentTitle"),
-        message: `${successMessage ?? t("oracle.tx.sentMsg")} (${hash.slice(0, 10)}…${hash.slice(-8)})`,
+        message: `${successMessage ?? t("oracle.tx.sentMsg")} (${hash.slice(
+          0,
+          10
+        )}…${hash.slice(-8)})`,
         actionLabel: explorerUrl ? t("common.viewTx") : undefined,
         actionHref: explorerUrl ?? undefined,
         secondaryActionLabel: t("common.copyHash"),
-        secondaryActionOnClick: makeCopyHandler(sentToastId)
+        secondaryActionOnClick: makeCopyHandler(sentToastId),
       });
 
       onSuccess?.(hash);
 
-      if (waitForConfirmation && typeof window !== "undefined" && window.ethereum) {
+      if (
+        waitForConfirmation &&
+        typeof window !== "undefined" &&
+        window.ethereum
+      ) {
         setIsConfirming(true);
         const confirmingToastId = Math.random().toString(36).substring(2, 9);
         toast({
           id: confirmingToastId,
           type: "info",
           title: t("oracle.tx.confirmingTitle"),
-          message: `${t("oracle.tx.confirmingMsg")} (${hash.slice(0, 10)}…${hash.slice(-8)})`,
+          message: `${t("oracle.tx.confirmingMsg")} (${hash.slice(
+            0,
+            10
+          )}…${hash.slice(-8)})`,
           actionLabel: explorerUrl ? t("common.viewTx") : undefined,
           actionHref: explorerUrl ?? undefined,
           secondaryActionLabel: t("common.copyHash"),
-          secondaryActionOnClick: makeCopyHandler(confirmingToastId)
+          secondaryActionOnClick: makeCopyHandler(confirmingToastId),
         });
         let effectiveRpcUrl = (rpcUrl ?? "").trim();
         if (!effectiveRpcUrl) {
           if (!configRef.current) {
             try {
-              configRef.current = await fetchApiData<OracleConfig>("/api/oracle/config");
+              configRef.current = await fetchApiData<OracleConfig>(
+                "/api/oracle/config"
+              );
             } catch {
               configRef.current = null;
             }
@@ -183,15 +222,21 @@ export function useOracleTransaction() {
         const publicClient = createPublicClient({
           chain: client.chain ?? undefined,
           transport: primaryRpcUrl
-            ? (primaryRpcUrl.startsWith("ws") ? webSocket(primaryRpcUrl) : http(primaryRpcUrl))
-            : custom(window.ethereum)
+            ? primaryRpcUrl.startsWith("ws")
+              ? webSocket(primaryRpcUrl)
+              : http(primaryRpcUrl)
+            : custom(window.ethereum),
         });
         const receipt = await publicClient.waitForTransactionReceipt({ hash });
         setIsConfirming(false);
         if (receipt.status === "reverted") {
           const msg = t("oracle.detail.txFailed");
           setError(msg);
-          toast({ type: "error", title: t("oracle.detail.txFailed"), message: msg });
+          toast({
+            type: "error",
+            title: t("oracle.detail.txFailed"),
+            message: msg,
+          });
           return;
         }
         const confirmedToastId = Math.random().toString(36).substring(2, 9);
@@ -199,11 +244,14 @@ export function useOracleTransaction() {
           id: confirmedToastId,
           type: "success",
           title: t("oracle.tx.confirmedTitle"),
-          message: `${t("oracle.tx.confirmedMsg")} (${hash.slice(0, 10)}…${hash.slice(-8)})`,
+          message: `${t("oracle.tx.confirmedMsg")} (${hash.slice(
+            0,
+            10
+          )}…${hash.slice(-8)})`,
           actionLabel: explorerUrl ? t("common.viewTx") : undefined,
           actionHref: explorerUrl ?? undefined,
           secondaryActionLabel: t("common.copyHash"),
-          secondaryActionOnClick: makeCopyHandler(confirmedToastId)
+          secondaryActionOnClick: makeCopyHandler(confirmedToastId),
         });
         onConfirmed?.(hash);
       }
@@ -214,10 +262,10 @@ export function useOracleTransaction() {
         normalized.kind === "USER_REJECTED"
           ? t("errors.userRejected")
           : normalized.kind === "REQUEST_PENDING"
-            ? t("errors.requestPending")
-            : normalized.kind === "INSUFFICIENT_FUNDS"
-              ? t("errors.insufficientFunds")
-              : normalized.rawMessage ?? t("errors.unknownError");
+          ? t("errors.requestPending")
+          : normalized.kind === "INSUFFICIENT_FUNDS"
+          ? t("errors.insufficientFunds")
+          : normalized.rawMessage ?? t("errors.unknownError");
       setError(errorMessage);
       toast({
         type: "error",
@@ -231,5 +279,11 @@ export function useOracleTransaction() {
     }
   };
 
-  return { execute, isSubmitting, isConfirming, error, resetError: () => setError(null) };
+  return {
+    execute,
+    isSubmitting,
+    isConfirming,
+    error,
+    resetError: () => setError(null),
+  };
 }

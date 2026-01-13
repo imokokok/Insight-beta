@@ -301,6 +301,11 @@ export const translations = {
         readyTitle: "可结算",
         readyDesc:
           "挑战期已结束。你可以结算该断言以确认结果并分配保证金/奖励。",
+        selectOutcome: "选择结算结果",
+        outcomeTrue: "有效/真实",
+        outcomeTrueDesc: "确认该断言为真实有效的陈述",
+        outcomeFalse: "无效/虚假",
+        outcomeFalseDesc: "确认该断言为虚假无效的陈述",
       },
       config: {
         title: "连接与同步",
@@ -743,6 +748,11 @@ export const translations = {
         readyTitle: "Ready to Settle",
         readyDesc:
           "The voting/liveness period has ended. You can now settle this assertion to resolve the outcome and distribute bonds/rewards.",
+        selectOutcome: "Select Settlement Outcome",
+        outcomeTrue: "Valid/True",
+        outcomeTrueDesc: "Confirm the assertion is valid and true",
+        outcomeFalse: "Invalid/False",
+        outcomeFalseDesc: "Confirm the assertion is invalid and false",
       },
       config: {
         title: "Connection & Sync",
@@ -1205,6 +1215,11 @@ export const translations = {
         readyTitle: "Listo para liquidar",
         readyDesc:
           "El período de votación/vigencia ha terminado. Ahora puedes liquidar esta afirmación para resolver el resultado y distribuir depósitos/recompensas.",
+        selectOutcome: "Seleccionar resultado de liquidación",
+        outcomeTrue: "Válido/Veraz",
+        outcomeTrueDesc: "Confirmar que la afirmación es válida y verdadera",
+        outcomeFalse: "Inválido/Falso",
+        outcomeFalseDesc: "Confirmar que la afirmación es inválida y falsa",
       },
       config: {
         title: "Conexión y sincronización",
@@ -1629,6 +1644,11 @@ export type TranslationKey =
   | "oracle.disputeModal.warning"
   | "oracle.settleModal.readyTitle"
   | "oracle.settleModal.readyDesc"
+  | "oracle.settleModal.selectOutcome"
+  | "oracle.settleModal.outcomeTrue"
+  | "oracle.settleModal.outcomeTrueDesc"
+  | "oracle.settleModal.outcomeFalse"
+  | "oracle.settleModal.outcomeFalseDesc"
   | "oracle.config.title"
   | "oracle.config.rpcUrl"
   | "oracle.config.contractAddress"

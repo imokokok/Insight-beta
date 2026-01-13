@@ -19,7 +19,7 @@ vi.mock("@/server/apiResponse", () => ({
       return await compute();
     }
   ),
-  requireAdmin: vi.fn(async (_request: Request) => null),
+  requireAdmin: vi.fn(async () => null),
   handleApi: async (_request: Request, fn: () => unknown | Promise<unknown>) =>
     await fn(),
 }));
