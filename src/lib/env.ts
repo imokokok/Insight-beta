@@ -54,7 +54,7 @@ export const env = {
   },
   get INSIGHT_WEBHOOK_URL() {
     return (process.env.INSIGHT_WEBHOOK_URL ?? "").trim();
-  }
+  },
 };
 
 export function getEnv(key: keyof typeof env): string {
@@ -77,7 +77,10 @@ const envSchema = z.object({
     .refine(
       (value) => {
         if (!value) return true;
-        const urls = value.split(/[,\s]+/).map((s) => s.trim()).filter(Boolean);
+        const urls = value
+          .split(/[,\s]+/)
+          .map((s) => s.trim())
+          .filter(Boolean);
         if (urls.length === 0) return true;
         return urls.every((u) => {
           try {
@@ -94,30 +97,41 @@ const envSchema = z.object({
     .string()
     .regex(/^0x[a-fA-F0-9]{40}$/, "invalid_address")
     .optional(),
-  INSIGHT_CHAIN: z.enum(["Polygon", "Arbitrum", "Optimism", "Local"]).optional(),
+  INSIGHT_CHAIN: z
+    .enum(["Polygon", "Arbitrum", "Optimism", "Local"])
+    .optional(),
   INSIGHT_SLOW_REQUEST_MS: z.coerce.number().int().min(0).optional(),
   INSIGHT_MEMORY_MAX_VOTE_KEYS: z.coerce.number().int().min(1).optional(),
   INSIGHT_MEMORY_VOTE_BLOCK_WINDOW: z.coerce.bigint().min(0n).optional(),
   INSIGHT_MEMORY_MAX_ASSERTIONS: z.coerce.number().int().min(1).optional(),
   INSIGHT_MEMORY_MAX_DISPUTES: z.coerce.number().int().min(1).optional(),
-  INSIGHT_DISABLE_EMBEDDED_WORKER: z.enum(["true", "false", "1", "0"]).optional(),
+  INSIGHT_DISABLE_EMBEDDED_WORKER: z
+    .enum(["true", "false", "1", "0"])
+    .optional(),
   INSIGHT_WORKER_ID: z.string().min(1).optional(),
-  INSIGHT_TRUST_PROXY: z.enum(["true", "false", "1", "0"]).optional(),
-  INSIGHT_RATE_LIMIT_STORE: z.enum(["memory", "redis"]).optional(),
+  INSIGHT_TRUST_PROXY: z
+    .enum(["true", "false", "1", "0", "cloudflare"])
+    .optional(),
+  INSIGHT_RATE_LIMIT_STORE: z
+    .enum(["auto", "db", "kv", "memory", "redis"])
+    .optional(),
   INSIGHT_API_LOG_SAMPLE_RATE: z.coerce.number().min(0).max(1).optional(),
-  INSIGHT_WEBHOOK_URL: z.string().url().optional()
+  INSIGHT_WEBHOOK_URL: z.string().url().optional(),
 });
 
 // Auto-validate on import
 try {
-  // Only validate in server environment to avoid build-time issues if possible, 
+  // Only validate in server environment to avoid build-time issues if possible,
   // but standard practice is to validate process.env.
   if (typeof process !== "undefined" && process.env) {
     envSchema.parse(process.env);
   }
 } catch (e) {
   if (e instanceof z.ZodError) {
-    console.error("❌ Invalid environment variables:", JSON.stringify(e.format(), null, 2));
+    console.error(
+      "❌ Invalid environment variables:",
+      JSON.stringify(e.format(), null, 2)
+    );
   }
 }
 
@@ -136,6 +150,6 @@ export function getEnvReport() {
   }
   return {
     ok: issues.length === 0,
-    issues
+    issues,
   };
 }
