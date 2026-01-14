@@ -43,6 +43,10 @@ vi.mock("@/server/notifications", () => ({
   notifyAlert: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("@/server/adminAuth", () => ({
+  verifyAdmin: vi.fn(async () => ({ ok: false })),
+}));
+
 describe("GET /api/oracle/alert-rules", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -74,6 +78,10 @@ describe("GET /api/oracle/alert-rules", () => {
       key: "alert_rules_get",
       limit: 240,
       windowMs: 60_000,
+    });
+    expect(requireAdmin).toHaveBeenCalledWith(req, {
+      strict: true,
+      scope: "alert_rules_write",
     });
   });
 

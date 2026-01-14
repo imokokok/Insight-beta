@@ -191,6 +191,13 @@ export async function GET(request: Request) {
       windowMs: 60_000,
     });
     if (limited) return limited;
+
+    const auth = await requireAdmin(request, {
+      strict: true,
+      scope: "alert_rules_write",
+    });
+    if (auth) return auth;
+
     const rules = await readAlertRules();
     return { rules };
   });

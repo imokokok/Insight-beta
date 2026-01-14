@@ -9,16 +9,13 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
+import { AlertRulesManager } from "@/components/AlertRulesManager";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { cn, fetchApiData, formatTime, getErrorCode } from "@/lib/utils";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { getUiErrorMessage, langToLocale } from "@/i18n/translations";
-import type {
-  Alert,
-  AlertRule,
-  AlertSeverity,
-  AlertStatus,
-} from "@/lib/oracleTypes";
+import { useAdminSession } from "@/hooks/useAdminSession";
+import type { Alert, AlertSeverity, AlertStatus } from "@/lib/oracleTypes";
 
 function severityBadge(severity: AlertSeverity) {
   if (severity === "critical")
@@ -39,56 +36,24 @@ export default function AlertsPage() {
   const { t, lang } = useI18n();
   const locale = langToLocale[lang];
 
-  const [adminToken, setAdminToken] = useState("");
-  const [adminActor, setAdminActor] = useState("");
+  const {
+    adminToken,
+    setAdminToken,
+    adminActor,
+    setAdminActor,
+    headers: adminHeaders,
+    canAdmin,
+  } = useAdminSession({ actor: true });
   const [items, setItems] = useState<Alert[]>([]);
-  const [rules, setRules] = useState<AlertRule[] | null>(null);
   const [loading, setLoading] = useState(true);
-  const [loadingRules, setLoadingRules] = useState(false);
-  const [savingRules, setSavingRules] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [filterStatus, setFilterStatus] = useState<AlertStatus | "All">("All");
   const [filterSeverity, setFilterSeverity] = useState<AlertSeverity | "All">(
-    "All"
+    "All",
   );
   const [query, setQuery] = useState("");
   const [nextCursor, setNextCursor] = useState<number | null>(null);
-
-  useEffect(() => {
-    const saved = window.sessionStorage.getItem("insight_admin_token");
-    if (saved) setAdminToken(saved);
-    const savedActor = window.sessionStorage.getItem("insight_admin_actor");
-    if (savedActor) setAdminActor(savedActor);
-  }, []);
-
-  useEffect(() => {
-    const trimmed = adminToken.trim();
-    if (trimmed) window.sessionStorage.setItem("insight_admin_token", trimmed);
-    else window.sessionStorage.removeItem("insight_admin_token");
-  }, [adminToken]);
-
-  useEffect(() => {
-    const trimmed = adminActor.trim();
-    if (trimmed) window.sessionStorage.setItem("insight_admin_actor", trimmed);
-    else window.sessionStorage.removeItem("insight_admin_actor");
-  }, [adminActor]);
-
-  const loadRules = useCallback(async () => {
-    setLoadingRules(true);
-    setError(null);
-    try {
-      const data = await fetchApiData<{ rules: AlertRule[] }>(
-        "/api/oracle/alert-rules"
-      );
-      setRules(data.rules);
-    } catch (e) {
-      setRules(null);
-      setError(getErrorCode(e));
-    } finally {
-      setLoadingRules(false);
-    }
-  }, []);
 
   const loadAlerts = useCallback(
     async (cursor: number | null) => {
@@ -106,7 +71,7 @@ export default function AlertsPage() {
       }>(`/api/oracle/alerts?${params.toString()}`);
       return data;
     },
-    [filterSeverity, filterStatus, query]
+    [filterSeverity, filterStatus, query],
   );
 
   const refresh = useCallback(async () => {
@@ -158,10 +123,6 @@ export default function AlertsPage() {
     };
   }, [filterStatus, filterSeverity, query]);
 
-  useEffect(() => {
-    loadRules();
-  }, [loadRules]);
-
   const loadMore = async () => {
     if (nextCursor === null) return;
     try {
@@ -174,49 +135,12 @@ export default function AlertsPage() {
   };
 
   const updateAlert = async (alertId: number, status: AlertStatus) => {
-    const token = adminToken.trim();
-    const headers: Record<string, string> = {
-      "content-type": "application/json",
-    };
-    if (token) headers["x-admin-token"] = token;
-    const actor = adminActor.trim();
-    if (actor) headers["x-admin-actor"] = actor;
     await fetchApiData<Alert>(`/api/oracle/alerts/${alertId}`, {
       method: "PATCH",
-      headers,
+      headers: { "content-type": "application/json", ...adminHeaders },
       body: JSON.stringify({ status }),
     });
     await refresh();
-  };
-
-  const canAdmin = adminToken.trim().length > 0;
-
-  const saveRules = async () => {
-    if (!rules) return;
-    setSavingRules(true);
-    setError(null);
-    try {
-      const token = adminToken.trim();
-      const headers: Record<string, string> = {
-        "content-type": "application/json",
-      };
-      if (token) headers["x-admin-token"] = token;
-      const actor = adminActor.trim();
-      if (actor) headers["x-admin-actor"] = actor;
-      const data = await fetchApiData<{ rules: AlertRule[] }>(
-        "/api/oracle/alert-rules",
-        {
-          method: "PUT",
-          headers,
-          body: JSON.stringify({ rules }),
-        }
-      );
-      setRules(data.rules);
-    } catch (e) {
-      setError(getErrorCode(e));
-    } finally {
-      setSavingRules(false);
-    }
   };
 
   return (
@@ -313,8 +237,8 @@ export default function AlertsPage() {
                             a.severity === "critical"
                               ? "bg-rose-100 text-rose-600"
                               : a.severity === "warning"
-                              ? "bg-amber-100 text-amber-700"
-                              : "bg-slate-100 text-slate-600"
+                                ? "bg-amber-100 text-amber-700"
+                                : "bg-slate-100 text-slate-600",
                           )}
                         >
                           {a.status === "Resolved" ? (
@@ -331,7 +255,7 @@ export default function AlertsPage() {
                             <span
                               className={cn(
                                 "px-2.5 py-0.5 rounded-full text-xs font-medium border",
-                                severityBadge(a.severity)
+                                severityBadge(a.severity),
                               )}
                             >
                               {a.severity}
@@ -339,7 +263,7 @@ export default function AlertsPage() {
                             <span
                               className={cn(
                                 "px-2.5 py-0.5 rounded-full text-xs font-medium ring-1",
-                                statusBadge(a.status)
+                                statusBadge(a.status),
                               )}
                             >
                               {a.status}
@@ -445,78 +369,11 @@ export default function AlertsPage() {
                 className="h-9 w-full rounded-lg border-none bg-white/50 px-3 text-sm text-purple-900 shadow-sm placeholder:text-purple-300 focus:ring-2 focus:ring-purple-500/20"
               />
             </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={loadRules}
-                disabled={loadingRules}
-                className="flex-1 rounded-xl bg-white/60 px-4 py-2 text-sm font-semibold text-purple-800 shadow-sm ring-1 ring-purple-100 hover:bg-white disabled:opacity-60"
-              >
-                {loadingRules ? t("common.loading") : t("alerts.loadRules")}
-              </button>
-              <button
-                type="button"
-                onClick={saveRules}
-                disabled={!canAdmin || !rules || savingRules}
-                className="flex-1 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-purple-500/20 disabled:opacity-60"
-              >
-                {savingRules ? t("alerts.savingRules") : t("alerts.saveRules")}
-              </button>
-            </div>
-
-            <div className="space-y-2">
-              {!rules && (
-                <div className="rounded-xl border border-purple-100 bg-white/50 p-4 text-sm text-purple-700/70">
-                  {t("common.noData")}
-                </div>
-              )}
-              {rules &&
-                rules.map((r) => (
-                  <div
-                    key={r.id}
-                    className="rounded-xl border border-purple-100 bg-white/50 p-3"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="space-y-1">
-                        <div className="text-sm font-semibold text-purple-950">
-                          {r.name}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {t("alerts.type")}: {r.event} · {t("alerts.severity")}
-                          : {r.severity}
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setRules((prev) =>
-                            prev
-                              ? prev.map((x) =>
-                                  x.id === r.id
-                                    ? { ...x, enabled: !x.enabled }
-                                    : x
-                                )
-                              : prev
-                          )
-                        }
-                        className={cn(
-                          "h-8 w-14 rounded-full p-1 transition-colors shadow-inner",
-                          r.enabled ? "bg-emerald-200" : "bg-gray-200"
-                        )}
-                        aria-pressed={r.enabled}
-                      >
-                        <div
-                          className={cn(
-                            "h-6 w-6 rounded-full bg-white shadow transition-transform",
-                            r.enabled ? "translate-x-6" : "translate-x-0"
-                          )}
-                        />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-            </div>
+            <AlertRulesManager
+              showTitle={false}
+              showAdminTokenInput={false}
+              showAdminActorInput={false}
+            />
           </CardContent>
         </Card>
       </div>
