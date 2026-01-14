@@ -2,7 +2,7 @@ import { hasDatabase, query } from "@/server/db";
 import { ensureSchema } from "@/server/schema";
 import { readJsonFile, writeJsonFile } from "@/server/kvStore";
 import { getMemoryStore, memoryNowIso } from "@/server/memoryBackend";
-import { notifyAlert } from "@/server/notifications";
+import { notifyAlert, type NotificationOptions } from "@/server/notifications";
 
 export type AlertSeverity = "info" | "warning" | "critical";
 export type AlertStatus = "Open" | "Acknowledged" | "Resolved";
@@ -41,6 +41,8 @@ export type AlertRule = {
   event: AlertRuleEvent;
   severity: AlertSeverity;
   params?: Record<string, unknown>;
+  channels?: Array<"webhook" | "email">;
+  recipient?: string | null;
 };
 
 export type AuditLogEntry = {
@@ -66,6 +68,130 @@ const ALERT_RULES_KEY = "alert_rules/v1";
 const MEMORY_MAX_ALERTS = 2000;
 const MEMORY_MAX_AUDIT = 5000;
 
+const validRuleEvents: AlertRuleEvent[] = [
+  "dispute_created",
+  "sync_error",
+  "stale_sync",
+  "slow_api_request",
+  "high_error_rate",
+  "database_slow_query",
+];
+
+const validSeverities: AlertSeverity[] = ["info", "warning", "critical"];
+
+function normalizeRuleChannels(
+  channels: unknown,
+  recipient: string | null,
+): Array<"webhook" | "email"> {
+  const raw =
+    Array.isArray(channels) && channels.length > 0 ? channels : ["webhook"];
+  const out: Array<"webhook" | "email"> = [];
+  for (const c of raw) {
+    if (c !== "webhook" && c !== "email") continue;
+    if (!out.includes(c)) out.push(c);
+  }
+  const safe: Array<"webhook" | "email"> =
+    out.length > 0 ? out : (["webhook"] as Array<"webhook" | "email">);
+  if (safe.includes("email") && !recipient) {
+    const withoutEmail = safe.filter((c) => c !== "email");
+    return withoutEmail.length > 0
+      ? (withoutEmail as Array<"webhook" | "email">)
+      : (["webhook"] as Array<"webhook" | "email">);
+  }
+  return safe;
+}
+
+function normalizeRuleParams(
+  event: AlertRuleEvent,
+  params: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
+  const p = params ?? {};
+  const getNumber = (key: string) => Number(p[key]);
+  const setNumber = (key: string, value: number) => ({ ...p, [key]: value });
+
+  if (event === "stale_sync") {
+    const maxAgeMs = getNumber("maxAgeMs");
+    const v =
+      Number.isFinite(maxAgeMs) && maxAgeMs > 0 ? maxAgeMs : 5 * 60 * 1000;
+    return setNumber("maxAgeMs", v);
+  }
+
+  if (event === "slow_api_request") {
+    const thresholdMs = getNumber("thresholdMs");
+    const v =
+      Number.isFinite(thresholdMs) && thresholdMs > 0 ? thresholdMs : 1000;
+    return setNumber("thresholdMs", v);
+  }
+
+  if (event === "database_slow_query") {
+    const thresholdMs = getNumber("thresholdMs");
+    const v =
+      Number.isFinite(thresholdMs) && thresholdMs > 0 ? thresholdMs : 200;
+    return setNumber("thresholdMs", v);
+  }
+
+  if (event === "high_error_rate") {
+    const thresholdPercent = getNumber("thresholdPercent");
+    const windowMinutes = getNumber("windowMinutes");
+    const safeThreshold =
+      Number.isFinite(thresholdPercent) &&
+      thresholdPercent > 0 &&
+      thresholdPercent <= 100
+        ? thresholdPercent
+        : 5;
+    const safeWindow =
+      Number.isFinite(windowMinutes) && windowMinutes > 0 ? windowMinutes : 5;
+    return { ...p, thresholdPercent: safeThreshold, windowMinutes: safeWindow };
+  }
+
+  return params;
+}
+
+function normalizeStoredRule(input: unknown): AlertRule | null {
+  if (!input || typeof input !== "object") return null;
+  const obj = input as Record<string, unknown>;
+
+  const id = typeof obj.id === "string" ? obj.id.trim() : "";
+  if (!id) return null;
+
+  const event = typeof obj.event === "string" ? obj.event : "";
+  if (!validRuleEvents.includes(event as AlertRuleEvent)) return null;
+  const safeEvent = event as AlertRuleEvent;
+
+  const name =
+    typeof obj.name === "string" && obj.name.trim() ? obj.name.trim() : id;
+  const enabled = typeof obj.enabled === "boolean" ? obj.enabled : true;
+
+  const severityRaw = typeof obj.severity === "string" ? obj.severity : "";
+  const severity = validSeverities.includes(severityRaw as AlertSeverity)
+    ? (severityRaw as AlertSeverity)
+    : "warning";
+
+  const recipient =
+    typeof obj.recipient === "string" && obj.recipient.trim()
+      ? obj.recipient.trim()
+      : null;
+
+  const params =
+    obj.params && typeof obj.params === "object" && !Array.isArray(obj.params)
+      ? (obj.params as Record<string, unknown>)
+      : undefined;
+
+  const normalizedParams = normalizeRuleParams(safeEvent, params);
+  const channels = normalizeRuleChannels(obj.channels, recipient);
+
+  return {
+    id,
+    name,
+    enabled,
+    event: safeEvent,
+    severity,
+    params: normalizedParams,
+    channels,
+    recipient,
+  };
+}
+
 function pruneMemoryAlerts(mem: ReturnType<typeof getMemoryStore>) {
   const overflow = mem.alerts.size - MEMORY_MAX_ALERTS;
   if (overflow <= 0) return;
@@ -76,7 +202,7 @@ function pruneMemoryAlerts(mem: ReturnType<typeof getMemoryStore>) {
       fingerprint,
       statusRank: statusRank(a.status),
       lastSeenAtMs: new Date(a.lastSeenAt).getTime(),
-    })
+    }),
   );
   candidates.sort((a, b) => {
     const r = b.statusRank - a.statusRank;
@@ -92,7 +218,38 @@ function pruneMemoryAlerts(mem: ReturnType<typeof getMemoryStore>) {
 export async function readAlertRules(): Promise<AlertRule[]> {
   await ensureDb();
   const stored = await readJsonFile<unknown>(ALERT_RULES_KEY, null);
-  if (Array.isArray(stored)) return stored as AlertRule[];
+  if (Array.isArray(stored)) {
+    let changed = false;
+    const normalized: AlertRule[] = [];
+    for (const item of stored) {
+      const rule = normalizeStoredRule(item);
+      if (!rule) {
+        changed = true;
+        continue;
+      }
+      const prev = item as Partial<AlertRule>;
+      const prevChannels = Array.isArray(prev.channels)
+        ? prev.channels
+        : undefined;
+      const same =
+        prev.id === rule.id &&
+        prev.name === rule.name &&
+        prev.enabled === rule.enabled &&
+        prev.event === rule.event &&
+        prev.severity === rule.severity &&
+        JSON.stringify(prev.params ?? undefined) ===
+          JSON.stringify(rule.params ?? undefined) &&
+        JSON.stringify(prevChannels ?? undefined) ===
+          JSON.stringify(rule.channels ?? undefined) &&
+        (typeof prev.recipient === "string"
+          ? prev.recipient.trim()
+          : (prev.recipient ?? null)) === rule.recipient;
+      if (!same) changed = true;
+      normalized.push(rule);
+    }
+    if (changed) await writeJsonFile(ALERT_RULES_KEY, normalized);
+    return normalized;
+  }
   const defaults: AlertRule[] = [
     {
       id: "dispute_created",
@@ -182,6 +339,7 @@ export async function createOrTouchAlert(input: {
   message: string;
   entityType?: string | null;
   entityId?: string | null;
+  notify?: NotificationOptions;
 }) {
   await ensureDb();
   if (!hasDatabase()) {
@@ -217,12 +375,15 @@ export async function createOrTouchAlert(input: {
             };
       mem.alerts.set(input.fingerprint, next);
       if (next.status === "Open" && existing.status === "Resolved") {
-        notifyAlert({
-          title: next.title,
-          message: next.message,
-          severity: next.severity,
-          fingerprint: next.fingerprint,
-        }).catch(() => void 0);
+        notifyAlert(
+          {
+            title: next.title,
+            message: next.message,
+            severity: next.severity,
+            fingerprint: next.fingerprint,
+          },
+          input.notify,
+        ).catch(() => void 0);
       }
     } else {
       const created = {
@@ -245,12 +406,15 @@ export async function createOrTouchAlert(input: {
       };
       mem.alerts.set(input.fingerprint, created);
       pruneMemoryAlerts(mem);
-      notifyAlert({
-        title: created.title,
-        message: created.message,
-        severity: created.severity,
-        fingerprint: created.fingerprint,
-      }).catch(() => void 0);
+      notifyAlert(
+        {
+          title: created.title,
+          message: created.message,
+          severity: created.severity,
+          fingerprint: created.fingerprint,
+        },
+        input.notify,
+      ).catch(() => void 0);
     }
     return;
   }
@@ -260,7 +424,7 @@ export async function createOrTouchAlert(input: {
     `
     SELECT status FROM alerts WHERE fingerprint = $1
     `,
-    [input.fingerprint]
+    [input.fingerprint],
   );
   const existingDb = result.rows[0];
 
@@ -300,16 +464,19 @@ export async function createOrTouchAlert(input: {
       input.message,
       input.entityType ?? null,
       input.entityId ?? null,
-    ]
+    ],
   );
 
   if (!existingDb || existingDb.status === "Resolved") {
-    notifyAlert({
-      title: input.title,
-      message: input.message,
-      severity: input.severity,
-      fingerprint: input.fingerprint,
-    }).catch(() => void 0);
+    notifyAlert(
+      {
+        title: input.title,
+        message: input.message,
+        severity: input.severity,
+        fingerprint: input.fingerprint,
+      },
+      input.notify,
+    ).catch(() => void 0);
   }
 }
 
@@ -400,13 +567,13 @@ export async function listAlerts(params: {
     conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
   const countRes = await query(
     `SELECT COUNT(*) as total FROM alerts ${whereClause}`,
-    values
+    values,
   );
   const total = Number(countRes.rows[0]?.total || 0);
 
   const res = await query(
     `SELECT * FROM alerts ${whereClause} ORDER BY status ASC, last_seen_at DESC LIMIT $${idx++} OFFSET $${idx}`,
-    [...values, limit, offset]
+    [...values, limit, offset],
   );
 
   return {
@@ -438,19 +605,19 @@ export async function updateAlertStatus(input: {
             updatedAt: now,
           }
         : input.status === "Resolved"
-        ? {
-            ...found,
-            status: "Resolved" as const,
-            resolvedAt: now,
-            updatedAt: now,
-          }
-        : {
-            ...found,
-            status: "Open" as const,
-            acknowledgedAt: null,
-            resolvedAt: null,
-            updatedAt: now,
-          };
+          ? {
+              ...found,
+              status: "Resolved" as const,
+              resolvedAt: now,
+              updatedAt: now,
+            }
+          : {
+              ...found,
+              status: "Open" as const,
+              acknowledgedAt: null,
+              resolvedAt: null,
+              updatedAt: now,
+            };
     mem.alerts.set(found.fingerprint, updated);
     await appendAuditLog({
       actor: input.actor ?? null,
@@ -466,8 +633,8 @@ export async function updateAlertStatus(input: {
     status === "Acknowledged"
       ? "acknowledged_at = NOW(), resolved_at = NULL"
       : status === "Resolved"
-      ? "resolved_at = NOW()"
-      : "acknowledged_at = NULL, resolved_at = NULL";
+        ? "resolved_at = NOW()"
+        : "acknowledged_at = NULL, resolved_at = NULL";
 
   const res = await query(
     `
@@ -476,7 +643,7 @@ export async function updateAlertStatus(input: {
     WHERE id = $2
     RETURNING *
     `,
-    [status, input.id]
+    [status, input.id],
   );
 
   if (res.rows.length === 0) return null;
@@ -527,7 +694,7 @@ export async function appendAuditLog(input: {
       input.entityType ?? null,
       input.entityId ?? null,
       input.details ? JSON.stringify(input.details) : null,
-    ]
+    ],
   );
 }
 
@@ -567,7 +734,7 @@ export async function listAuditLog(params: {
   const total = Number(countRes.rows[0]?.total || 0);
   const res = await query(
     `SELECT * FROM audit_log ORDER BY created_at DESC LIMIT $1 OFFSET $2`,
-    [limit, offset]
+    [limit, offset],
   );
   return {
     items: res.rows.map(mapAuditRow),

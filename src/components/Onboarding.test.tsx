@@ -4,6 +4,8 @@ import { Onboarding } from "./Onboarding";
 import { HelpTooltip } from "./HelpTooltip";
 import { FeatureCallout } from "./FeatureCallout";
 import { AlertCircle } from "lucide-react";
+import { LanguageProvider } from "@/i18n/LanguageProvider";
+import { LANG_STORAGE_KEY } from "@/i18n/translations";
 
 // Mock localStorage
 const mockLocalStorage = {
@@ -29,20 +31,29 @@ beforeEach(() => {
     writable: true,
   });
   mockLocalStorage.clear();
+  localStorage.setItem(LANG_STORAGE_KEY, "en");
 });
 
 describe("Onboarding Component", () => {
   it("should render welcome screen by default", () => {
-    render(<Onboarding />);
+    render(
+      <LanguageProvider initialLang="en">
+        <Onboarding />
+      </LanguageProvider>,
+    );
 
     expect(screen.getByText("Welcome to Insight")).toBeInTheDocument();
     expect(
-      screen.getByText(/Insight is your gateway to Oracle monitoring/)
+      screen.getByText(/Insight is your gateway to Oracle monitoring/),
     ).toBeInTheDocument();
   });
 
   it("should display next step when Next button is clicked", () => {
-    render(<Onboarding />);
+    render(
+      <LanguageProvider initialLang="en">
+        <Onboarding />
+      </LanguageProvider>,
+    );
 
     // Click Continue as General User first
     const continueButton = screen.getByText("Continue as General User");
@@ -58,7 +69,11 @@ describe("Onboarding Component", () => {
   });
 
   it("should complete onboarding when Get Started is clicked", () => {
-    render(<Onboarding />);
+    render(
+      <LanguageProvider initialLang="en">
+        <Onboarding />
+      </LanguageProvider>,
+    );
 
     // Click Continue as General User first
     const continueButton = screen.getByText("Continue as General User");
@@ -78,7 +93,11 @@ describe("Onboarding Component", () => {
   });
 
   it("should skip onboarding when Skip Tour is clicked", () => {
-    render(<Onboarding />);
+    render(
+      <LanguageProvider initialLang="en">
+        <Onboarding />
+      </LanguageProvider>,
+    );
 
     // Click Skip Tour
     const skipButton = screen.getByText("Skip Tour");
@@ -92,7 +111,11 @@ describe("Onboarding Component", () => {
     // Set onboarding as completed in localStorage
     localStorage.setItem("insight-onboarding-completed", "true");
 
-    render(<Onboarding />);
+    render(
+      <LanguageProvider initialLang="en">
+        <Onboarding />
+      </LanguageProvider>,
+    );
 
     // Check if onboarding is not rendered
     expect(screen.queryByText("Welcome to Insight")).not.toBeInTheDocument();
@@ -104,7 +127,7 @@ describe("HelpTooltip Component", () => {
     render(
       <HelpTooltip content="This is a tooltip">
         <button>Hover me</button>
-      </HelpTooltip>
+      </HelpTooltip>,
     );
 
     const button = screen.getByText("Hover me");
@@ -129,7 +152,7 @@ describe("HelpTooltip Component", () => {
     render(
       <HelpTooltip content="This is a tooltip" title="Tooltip Title">
         <button>Hover me</button>
-      </HelpTooltip>
+      </HelpTooltip>,
     );
 
     const button = screen.getByText("Hover me");
@@ -147,7 +170,7 @@ describe("FeatureCallout Component", () => {
         title="Feature Title"
         description="Feature description text"
         icon={<AlertCircle />}
-      />
+      />,
     );
 
     expect(screen.getByText("Feature Title")).toBeInTheDocument();

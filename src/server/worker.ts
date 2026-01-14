@@ -22,7 +22,7 @@ async function tryAcquireWorkerLock() {
   try {
     const res = await client.query<{ ok: boolean }>(
       "SELECT pg_try_advisory_lock($1::bigint) as ok",
-      [key.toString(10)]
+      [key.toString(10)],
     );
     const ok = Boolean(res.rows[0]?.ok);
     if (!ok) {
@@ -64,29 +64,38 @@ async function tickWorker() {
   try {
     await ensureOracleSynced();
     const rules = await readAlertRules();
-    const staleRule = rules.find((r) => r.enabled && r.event === "stale_sync");
-    if (staleRule) {
-      const maxAgeMs = Number(
-        (staleRule.params as { maxAgeMs?: unknown } | undefined)?.maxAgeMs ??
-          5 * 60 * 1000
-      );
+    const staleRules = rules.filter(
+      (r) => r.enabled && r.event === "stale_sync",
+    );
+    if (staleRules.length > 0) {
       const state = await getSyncState();
       const lastSuccessAt = state.sync.lastSuccessAt;
       if (lastSuccessAt) {
         const ageMs = Date.now() - new Date(lastSuccessAt).getTime();
-        if (ageMs > maxAgeMs) {
-          const fingerprint = `stale_sync:${state.chain}:${
-            state.contractAddress ?? "unknown"
-          }`;
-          await createOrTouchAlert({
-            fingerprint,
-            type: "stale_sync",
-            severity: staleRule.severity,
-            title: "Oracle sync stale",
-            message: `Last success ${Math.round(ageMs / 1000)}s ago`,
-            entityType: "oracle",
-            entityId: state.contractAddress,
-          });
+        for (const staleRule of staleRules) {
+          const maxAgeMs = Number(
+            (staleRule.params as { maxAgeMs?: unknown } | undefined)
+              ?.maxAgeMs ?? 5 * 60 * 1000,
+          );
+          if (!Number.isFinite(maxAgeMs) || maxAgeMs <= 0) continue;
+          if (ageMs > maxAgeMs) {
+            const fingerprint = `${staleRule.id}:${state.chain}:${
+              state.contractAddress ?? "unknown"
+            }`;
+            await createOrTouchAlert({
+              fingerprint,
+              type: staleRule.event,
+              severity: staleRule.severity,
+              title: "Oracle sync stale",
+              message: `Last success ${Math.round(ageMs / 1000)}s ago`,
+              entityType: "oracle",
+              entityId: state.contractAddress,
+              notify: {
+                channels: staleRule.channels,
+                recipient: staleRule.recipient ?? undefined,
+              },
+            });
+          }
         }
       }
     }

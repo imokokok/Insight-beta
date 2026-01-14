@@ -159,8 +159,8 @@ async function syncOracleOnce(): Promise<{
   const syncState = await getSyncState();
   let lastProcessedBlock = syncState.lastProcessedBlock;
   const alertRules = await readAlertRules();
-  const isRuleEnabled = (event: string) =>
-    alertRules.some((r) => r.enabled && r.event === event);
+  const enabledRules = (event: string) =>
+    alertRules.filter((r) => r.enabled && r.event === event);
 
   if (!rpcUrl || !contractAddress) {
     return { updated: false, state: await readOracleState() };
@@ -181,7 +181,7 @@ async function syncOracleOnce(): Promise<{
 
   try {
     const withRpc = async <T>(
-      op: (client: ReturnType<typeof createPublicClient>) => Promise<T>
+      op: (client: ReturnType<typeof createPublicClient>) => Promise<T>,
     ) => {
       const urlsToTry = rpcUrls.length > 0 ? rpcUrls : [rpcActiveUrl];
       let lastErr: unknown = null;
@@ -209,7 +209,7 @@ async function syncOracleOnce(): Promise<{
                 logger.warn(
                   `RPC ${url} unreachable (attempt ${
                     attempt + 1
-                  }/${MAX_RETRIES}), retrying in ${backoff}ms...`
+                  }/${MAX_RETRIES}), retrying in ${backoff}ms...`,
                 );
                 await new Promise((r) => setTimeout(r, backoff));
                 continue;
@@ -227,7 +227,7 @@ async function syncOracleOnce(): Promise<{
     };
 
     const bytecode = await withRpc((client) =>
-      client.getBytecode({ address: contractAddress })
+      client.getBytecode({ address: contractAddress }),
     );
     if (!bytecode || bytecode === "0x") {
       throw new Error("contract_not_found");
@@ -241,11 +241,11 @@ async function syncOracleOnce(): Promise<{
         ? startBlock > 0n
           ? startBlock
           : (safeBlock ?? 0n) > maxBlockRange
-          ? (safeBlock ?? 0n) - maxBlockRange
-          : 0n
+            ? (safeBlock ?? 0n) - maxBlockRange
+            : 0n
         : syncState.lastProcessedBlock > 10n
-        ? syncState.lastProcessedBlock - 10n
-        : 0n;
+          ? syncState.lastProcessedBlock - 10n
+          : 0n;
     const toBlock = safeBlock ?? latest;
     const initialCursor = fromBlock < startBlock ? startBlock : fromBlock;
     let processedHigh = syncState.lastProcessedBlock;
@@ -265,7 +265,7 @@ async function syncOracleOnce(): Promise<{
           consecutiveFailures: 0,
           rpcActiveUrl,
           rpcStats,
-        }
+        },
       );
       await insertSyncMetric({
         lastProcessedBlock: syncState.lastProcessedBlock,
@@ -316,7 +316,7 @@ async function syncOracleOnce(): Promise<{
                   fromBlock: cursor,
                   toBlock: rangeTo,
                 }),
-              ])
+              ]),
             );
 
           for (const log of createdLogs) {
@@ -325,12 +325,12 @@ async function syncOracleOnce(): Promise<{
             const id = args.assertionId as `0x${string}`;
             const assertedAt = toIsoFromSeconds(args.assertedAt as bigint);
             const livenessEndsAt = toIsoFromSeconds(
-              args.livenessEndsAt as bigint
+              args.livenessEndsAt as bigint,
             );
             const txHashArg = args.txHash as `0x${string}` | undefined;
             const txHash = !isZeroBytes32(txHashArg)
               ? txHashArg!
-              : (log.transactionHash as `0x${string}`) ?? "0x0";
+              : ((log.transactionHash as `0x${string}`) ?? "0x0");
 
             const assertion: Assertion = {
               id,
@@ -375,7 +375,7 @@ async function syncOracleOnce(): Promise<{
               disputer,
               disputedAt,
               votingEndsAt: new Date(
-                new Date(disputedAt).getTime() + votingPeriodMs
+                new Date(disputedAt).getTime() + votingPeriodMs,
               ).toISOString(),
               status: "Voting",
               currentVotesFor: 0,
@@ -386,18 +386,22 @@ async function syncOracleOnce(): Promise<{
             await upsertDispute(dispute);
             updated = true;
 
-            if (isRuleEnabled("dispute_created")) {
-              const fingerprint = `dispute_created:${chain}:${id}`;
+            for (const rule of enabledRules("dispute_created")) {
+              const fingerprint = `${rule.id}:${chain}:${id}`;
               await createOrTouchAlert({
                 fingerprint,
-                type: "dispute_created",
-                severity: "critical",
+                type: rule.event,
+                severity: rule.severity,
                 title: "Dispute detected",
                 message: `${assertion?.market ?? id} disputed: ${
                   dispute.disputeReason
                 }`,
                 entityType: "assertion",
                 entityId: id,
+                notify: {
+                  channels: rule.channels,
+                  recipient: rule.recipient ?? undefined,
+                },
               });
             }
           }
@@ -477,7 +481,7 @@ async function syncOracleOnce(): Promise<{
               consecutiveFailures: 0,
               rpcActiveUrl,
               rpcStats,
-            }
+            },
           );
           lastProcessedBlock = processedHigh;
           cursor = rangeTo + 1n;
@@ -509,7 +513,7 @@ async function syncOracleOnce(): Promise<{
         consecutiveFailures: 0,
         rpcActiveUrl,
         rpcStats,
-      }
+      },
     );
     await insertSyncMetric({
       lastProcessedBlock: processedHigh > toBlock ? processedHigh : toBlock,
@@ -523,16 +527,20 @@ async function syncOracleOnce(): Promise<{
     return { updated, state: await readOracleState() };
   } catch (e) {
     const code = toSyncErrorCode(e);
-    if (isRuleEnabled("sync_error")) {
-      const fingerprint = `sync_error:${chain}:${contractAddress}`;
+    for (const rule of enabledRules("sync_error")) {
+      const fingerprint = `${rule.id}:${chain}:${contractAddress}`;
       await createOrTouchAlert({
         fingerprint,
-        type: "sync_error",
-        severity: "warning",
+        type: rule.event,
+        severity: rule.severity,
         title: "Oracle sync error",
         message: code,
         entityType: "oracle",
         entityId: contractAddress,
+        notify: {
+          channels: rule.channels,
+          recipient: rule.recipient ?? undefined,
+        },
       });
     }
     await updateSyncState(
@@ -549,7 +557,7 @@ async function syncOracleOnce(): Promise<{
         consecutiveFailures: (syncState.consecutiveFailures ?? 0) + 1,
         rpcActiveUrl,
         rpcStats,
-      }
+      },
     );
     const latestForMetric = latestBlock ?? syncState.latestBlock ?? null;
     const safeForMetric = safeBlock ?? syncState.safeBlock ?? null;

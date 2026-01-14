@@ -9,6 +9,11 @@ import {
   readJsonFile,
   writeJsonFile,
 } from "@/server/kvStore";
+import {
+  createOrTouchAlert,
+  readAlertRules,
+  type AlertRule,
+} from "@/server/observability";
 import { ZodError } from "zod";
 import { isIP } from "node:net";
 
@@ -25,7 +30,7 @@ export function ok<T>(data: T, init?: { headers?: HeadersInit }) {
 export function error(
   error: string | ApiErrorPayload,
   status = 500,
-  init?: { headers?: HeadersInit }
+  init?: { headers?: HeadersInit },
 ) {
   return NextResponse.json({ ok: false, error } satisfies ApiError, {
     status,
@@ -47,10 +52,184 @@ const insightApiCache =
 if (process.env.NODE_ENV !== "production")
   globalForApiCache.insightApiCache = insightApiCache;
 
+type ApiRequestBucket = { total: number; errors: number };
+
+const globalForApiAlerts = globalThis as unknown as {
+  insightApiAlertRulesCache?: { loadedAtMs: number; rules: AlertRule[] } | null;
+  insightApiAlertRulesInflight?: Promise<AlertRule[]> | null;
+  insightApiAlertCooldown?: Map<string, number> | undefined;
+  insightApiRequestBuckets?: Map<number, ApiRequestBucket> | undefined;
+};
+
+const apiAlertCooldown =
+  globalForApiAlerts.insightApiAlertCooldown ?? new Map<string, number>();
+const apiRequestBuckets =
+  globalForApiAlerts.insightApiRequestBuckets ??
+  new Map<number, ApiRequestBucket>();
+if (process.env.NODE_ENV !== "production") {
+  globalForApiAlerts.insightApiAlertCooldown = apiAlertCooldown;
+  globalForApiAlerts.insightApiRequestBuckets = apiRequestBuckets;
+}
+
+async function getAlertRulesCached(): Promise<AlertRule[]> {
+  const now = Date.now();
+  const cached = globalForApiAlerts.insightApiAlertRulesCache;
+  if (cached && now - cached.loadedAtMs < 5_000) return cached.rules;
+  if (globalForApiAlerts.insightApiAlertRulesInflight)
+    return globalForApiAlerts.insightApiAlertRulesInflight;
+  const p = readAlertRules()
+    .then((rules) => {
+      globalForApiAlerts.insightApiAlertRulesCache = { loadedAtMs: now, rules };
+      return rules;
+    })
+    .catch(() => {
+      globalForApiAlerts.insightApiAlertRulesCache = {
+        loadedAtMs: now,
+        rules: [],
+      };
+      return [];
+    })
+    .finally(() => {
+      globalForApiAlerts.insightApiAlertRulesInflight = null;
+    });
+  globalForApiAlerts.insightApiAlertRulesInflight = p;
+  return p;
+}
+
+function shouldRunApiAlerts(path: string | undefined) {
+  if (!path) return false;
+  if (!path.startsWith("/api/")) return false;
+  if (path.startsWith("/api/admin/")) return false;
+  return true;
+}
+
+function recordApiBucket(nowMs: number, isError: boolean) {
+  const minute = Math.floor(nowMs / 60_000);
+  const existing = apiRequestBuckets.get(minute) ?? { total: 0, errors: 0 };
+  apiRequestBuckets.set(minute, {
+    total: existing.total + 1,
+    errors: existing.errors + (isError ? 1 : 0),
+  });
+
+  const pruneBefore = minute - 120;
+  for (const k of apiRequestBuckets.keys()) {
+    if (k < pruneBefore) apiRequestBuckets.delete(k);
+  }
+}
+
+async function maybeAlertSlowApiRequest(input: {
+  method: string | undefined;
+  path: string | undefined;
+  durationMs: number;
+}) {
+  if (!shouldRunApiAlerts(input.path)) return;
+  const rules = await getAlertRulesCached();
+  const slowRules = rules.filter(
+    (r) => r.enabled && r.event === "slow_api_request",
+  );
+  if (slowRules.length === 0) return;
+
+  const now = Date.now();
+  for (const rule of slowRules) {
+    const thresholdMs = Number(
+      (rule.params as { thresholdMs?: unknown } | undefined)?.thresholdMs ??
+        1000,
+    );
+    if (!Number.isFinite(thresholdMs) || thresholdMs <= 0) continue;
+    if (input.durationMs < thresholdMs) continue;
+
+    const method = input.method || "UNKNOWN";
+    const path = input.path!;
+    const fingerprint = `${rule.id}:${method}:${path}`;
+    const cooldownKey = `slow:${fingerprint}`;
+    const lastAt = apiAlertCooldown.get(cooldownKey) ?? 0;
+    if (now - lastAt < 30_000) continue;
+    apiAlertCooldown.set(cooldownKey, now);
+
+    await createOrTouchAlert({
+      fingerprint,
+      type: rule.event,
+      severity: rule.severity,
+      title: "Slow API request",
+      message: `${method} ${path} took ${input.durationMs}ms (threshold ${thresholdMs}ms)`,
+      entityType: "api",
+      entityId: path,
+      notify: {
+        channels: rule.channels,
+        recipient: rule.recipient ?? undefined,
+      },
+    });
+  }
+}
+
+async function maybeAlertHighErrorRate(input: { path: string | undefined }) {
+  if (!shouldRunApiAlerts(input.path)) return;
+  const rules = await getAlertRulesCached();
+  const rateRules = rules.filter(
+    (r) => r.enabled && r.event === "high_error_rate",
+  );
+  if (rateRules.length === 0) return;
+
+  const nowMs = Date.now();
+  const minute = Math.floor(nowMs / 60_000);
+  for (const rule of rateRules) {
+    const thresholdPercent = Number(
+      (rule.params as { thresholdPercent?: unknown } | undefined)
+        ?.thresholdPercent ?? 5,
+    );
+    const windowMinutes = Number(
+      (rule.params as { windowMinutes?: unknown } | undefined)?.windowMinutes ??
+        5,
+    );
+    if (
+      !Number.isFinite(thresholdPercent) ||
+      thresholdPercent <= 0 ||
+      thresholdPercent > 100
+    )
+      continue;
+    if (!Number.isFinite(windowMinutes) || windowMinutes <= 0) continue;
+
+    const window = Math.floor(windowMinutes);
+    const startMinute = minute - window + 1;
+    let total = 0;
+    let errors = 0;
+    for (let m = startMinute; m <= minute; m += 1) {
+      const b = apiRequestBuckets.get(m);
+      if (!b) continue;
+      total += b.total;
+      errors += b.errors;
+    }
+    if (total <= 0) continue;
+
+    const rate = (errors / total) * 100;
+    if (rate < thresholdPercent) continue;
+
+    const fingerprint = `${rule.id}:global`;
+    const cooldownKey = `high_error_rate:${fingerprint}`;
+    const lastAt = apiAlertCooldown.get(cooldownKey) ?? 0;
+    if (nowMs - lastAt < 30_000) continue;
+    apiAlertCooldown.set(cooldownKey, nowMs);
+
+    await createOrTouchAlert({
+      fingerprint,
+      type: rule.event,
+      severity: rule.severity,
+      title: "High API error rate",
+      message: `${rate.toFixed(1)}% errors (${errors}/${total}) over ${window}m`,
+      entityType: "api",
+      entityId: null,
+      notify: {
+        channels: rule.channels,
+        recipient: rule.recipient ?? undefined,
+      },
+    });
+  }
+}
+
 export async function cachedJson<T>(
   key: string,
   ttlMs: number,
-  compute: () => Promise<T> | T
+  compute: () => Promise<T> | T,
 ): Promise<T> {
   const now = Date.now();
   const mem = insightApiCache.get(key);
@@ -91,7 +270,7 @@ export async function invalidateCachedJson(prefix: string) {
 
 export async function requireAdmin(
   request: Request,
-  opts?: { strict?: boolean; scope?: AdminScope }
+  opts?: { strict?: boolean; scope?: AdminScope },
 ) {
   const strict = opts?.strict ?? false;
   const hasEnvToken = !!env.INSIGHT_ADMIN_TOKEN.trim();
@@ -173,7 +352,7 @@ function getClientIp(request: Request) {
 async function rateLimitDb(
   opts: { key: string; limit: number; windowMs: number },
   ip: string,
-  now: number
+  now: number,
 ) {
   const resetAt = new Date(now + opts.windowMs);
   const bucketKey = `${opts.key}:${ip}`;
@@ -195,7 +374,7 @@ async function rateLimitDb(
       reset_at = CASE WHEN rate_limits.reset_at <= NOW() THEN excluded.reset_at ELSE rate_limits.reset_at END
     RETURNING count, reset_at
     `,
-    [bucketKey, resetAt.toISOString()]
+    [bucketKey, resetAt.toISOString()],
   );
   const row = res.rows[0];
   const count = Number(row?.count ?? 1);
@@ -216,7 +395,7 @@ async function rateLimitDb(
 async function rateLimitKv(
   opts: { key: string; limit: number; windowMs: number },
   ip: string,
-  now: number
+  now: number,
 ) {
   if (!hasDatabase()) throw new Error("missing_database_url");
   const resetAtMs = now + opts.windowMs;
@@ -234,7 +413,7 @@ async function rateLimitKv(
       )
       DELETE FROM kv_store WHERE key IN (SELECT key FROM expired)
       `,
-      [now]
+      [now],
     ).catch(() => null);
   }
 
@@ -260,7 +439,7 @@ async function rateLimitKv(
       COALESCE((value->>'count')::int, 1) as count,
       COALESCE((value->>'resetAtMs')::bigint, $2::bigint) as resetAtMs
     `,
-    [bucketKey, resetAtMs, now]
+    [bucketKey, resetAtMs, now],
   );
 
   const row = res.rows[0];
@@ -280,7 +459,7 @@ async function rateLimitKv(
 
 export async function rateLimit(
   request: Request,
-  opts: { key: string; limit: number; windowMs: number }
+  opts: { key: string; limit: number; windowMs: number },
 ) {
   const ip = getClientIp(request);
   const now = Date.now();
@@ -318,7 +497,7 @@ export async function rateLimit(
   if (existing.count >= opts.limit) {
     const retryAfterSeconds = Math.max(
       1,
-      Math.ceil((existing.resetAtMs - now) / 1000)
+      Math.ceil((existing.resetAtMs - now) / 1000),
     );
     const headers = new Headers();
     headers.set("retry-after", String(retryAfterSeconds));
@@ -354,7 +533,7 @@ function attachRequestId(response: Response, requestId: string | null) {
 
 export async function handleApi<T>(
   arg1: Request | (() => Promise<T | Response> | T | Response),
-  arg2?: () => Promise<T | Response> | T | Response
+  arg2?: () => Promise<T | Response> | T | Response,
 ) {
   const request = typeof arg1 === "function" ? undefined : arg1;
   const fn = typeof arg1 === "function" ? arg1 : (arg2 as () => Promise<T> | T);
@@ -395,6 +574,19 @@ export async function handleApi<T>(
         logger.warn("api_slow", { ...logData, thresholdMs: slowMs });
       }
 
+      if (shouldRunApiAlerts(path)) {
+        const isError = response.status >= 500;
+        recordApiBucket(Date.now(), isError);
+        if (durationMs >= slowMs) {
+          maybeAlertSlowApiRequest({ method, path, durationMs }).catch(
+            () => void 0,
+          );
+        }
+        if (isError) {
+          maybeAlertHighErrorRate({ path }).catch(() => void 0);
+        }
+      }
+
       // Add response headers with timing info
       response.headers.set("x-response-time", durationMs.toString());
       response.headers.set("x-request-id", requestId || "");
@@ -424,6 +616,19 @@ export async function handleApi<T>(
       logger.warn("api_slow", { ...logData, thresholdMs: slowMs });
     }
 
+    if (shouldRunApiAlerts(path)) {
+      const isError = response.status >= 500;
+      recordApiBucket(Date.now(), isError);
+      if (durationMs >= slowMs) {
+        maybeAlertSlowApiRequest({ method, path, durationMs }).catch(
+          () => void 0,
+        );
+      }
+      if (isError) {
+        maybeAlertHighErrorRate({ path }).catch(() => void 0);
+      }
+    }
+
     // Add response headers with timing info
     response.headers.set("x-response-time", durationMs.toString());
     response.headers.set("x-request-id", requestId || "");
@@ -450,6 +655,19 @@ export async function handleApi<T>(
         status: response.status,
       });
 
+      if (shouldRunApiAlerts(path)) {
+        const isError = response.status >= 500;
+        recordApiBucket(Date.now(), isError);
+        if (durationMs >= slowMs) {
+          maybeAlertSlowApiRequest({ method, path, durationMs }).catch(
+            () => void 0,
+          );
+        }
+        if (isError) {
+          maybeAlertHighErrorRate({ path }).catch(() => void 0);
+        }
+      }
+
       // Add response headers with timing info
       response.headers.set("x-response-time", durationMs.toString());
       response.headers.set("x-request-id", requestId || "");
@@ -464,7 +682,7 @@ export async function handleApi<T>(
         : "invalid_request_body";
       const response = attachRequestId(
         error({ code: errorCode, details: e.issues }, 400),
-        requestId
+        requestId,
       );
 
       logger.error("api_error", {
@@ -473,6 +691,15 @@ export async function handleApi<T>(
         status: 400,
         details: e.issues,
       });
+
+      if (shouldRunApiAlerts(path)) {
+        recordApiBucket(Date.now(), false);
+        if (durationMs >= slowMs) {
+          maybeAlertSlowApiRequest({ method, path, durationMs }).catch(
+            () => void 0,
+          );
+        }
+      }
 
       // Add response headers with timing info
       response.headers.set("x-response-time", durationMs.toString());
@@ -521,8 +748,21 @@ export async function handleApi<T>(
 
     const response = attachRequestId(
       error({ code: errorCode }, status),
-      requestId
+      requestId,
     );
+
+    if (shouldRunApiAlerts(path)) {
+      const isError = status >= 500;
+      recordApiBucket(Date.now(), isError);
+      if (durationMs >= slowMs) {
+        maybeAlertSlowApiRequest({ method, path, durationMs }).catch(
+          () => void 0,
+        );
+      }
+      if (isError) {
+        maybeAlertHighErrorRate({ path }).catch(() => void 0);
+      }
+    }
 
     // Add response headers with timing info
     response.headers.set("x-response-time", durationMs.toString());

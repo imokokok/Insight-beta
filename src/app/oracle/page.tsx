@@ -46,9 +46,9 @@ import type {
 const CreateAssertionModal = dynamic(
   () =>
     import("@/components/CreateAssertionModal").then(
-      (mod) => mod.CreateAssertionModal
+      (mod) => mod.CreateAssertionModal,
     ),
-  { ssr: false }
+  { ssr: false },
 );
 const OracleCharts = dynamic(
   () => import("@/components/OracleCharts").then((mod) => mod.OracleCharts),
@@ -57,42 +57,79 @@ const OracleCharts = dynamic(
       <div className="h-[400px] w-full bg-white/5 animate-pulse rounded-2xl" />
     ),
     ssr: false,
-  }
+  },
 );
 
 const Leaderboard = dynamic(() =>
-  import("@/components/Leaderboard").then((mod) => mod.Leaderboard)
+  import("@/components/Leaderboard").then((mod) => mod.Leaderboard),
 );
 
 const PnLCalculator = dynamic(() =>
-  import("@/components/PnLCalculator").then((mod) => mod.PnLCalculator)
+  import("@/components/PnLCalculator").then((mod) => mod.PnLCalculator),
 );
+
+function parseOptionalNumber(value: string | null | undefined) {
+  if (value === null || value === undefined) return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+function minutesSince(iso: string | null | undefined) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (!Number.isFinite(d.getTime())) return null;
+  const diffMs = Date.now() - d.getTime();
+  if (!Number.isFinite(diffMs) || diffMs < 0) return null;
+  return Math.floor(diffMs / 60_000);
+}
 
 export default function OraclePage() {
   const { toast } = useToast();
   const { address } = useWallet();
 
-  // 从 localStorage 加载筛选偏好
-  const loadFilters = () => {
+  const [filterStatus, setFilterStatus] = useState<OracleStatus | "All">(() => {
     try {
-      // 使用 try-catch 处理 localStorage 访问
-      const saved = localStorage.getItem("oracleFilters");
-      if (saved) {
-        return JSON.parse(saved);
-      }
+      if (typeof window === "undefined") return "All";
+      const saved = window.localStorage.getItem("oracleFilters");
+      if (!saved) return "All";
+      const parsed = JSON.parse(saved) as { status?: unknown } | null;
+      const status =
+        parsed && typeof parsed === "object" ? parsed.status : null;
+      if (
+        status === "Pending" ||
+        status === "Disputed" ||
+        status === "Resolved" ||
+        status === "All"
+      )
+        return status;
     } catch {
-      // 如果 localStorage 不可用，返回 null
-      return null;
+      return "All";
     }
-    return null;
-  };
+    return "All";
+  });
 
-  const savedFilters = loadFilters();
-  const [filterStatus, setFilterStatus] = useState<OracleStatus | "All">(
-    savedFilters?.status || "All"
-  );
   const [filterChain, setFilterChain] = useState<OracleConfig["chain"] | "All">(
-    savedFilters?.chain || "All"
+    () => {
+      try {
+        if (typeof window === "undefined") return "All";
+        const saved = window.localStorage.getItem("oracleFilters");
+        if (!saved) return "All";
+        const parsed = JSON.parse(saved) as { chain?: unknown } | null;
+        const chain =
+          parsed && typeof parsed === "object" ? parsed.chain : null;
+        if (
+          chain === "Polygon" ||
+          chain === "Arbitrum" ||
+          chain === "Optimism" ||
+          chain === "Local" ||
+          chain === "All"
+        )
+          return chain;
+      } catch {
+        return "All";
+      }
+      return "All";
+    },
   );
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -109,7 +146,7 @@ export default function OraclePage() {
         JSON.stringify({
           status: filterStatus,
           chain: filterChain,
-        })
+        }),
       );
     } catch {
       // 如果 localStorage 不可用，忽略错误
@@ -129,7 +166,7 @@ export default function OraclePage() {
     filterStatus,
     filterChain,
     debouncedQuery,
-    myActivity ? address : undefined
+    myActivity ? address : undefined,
   );
 
   const {
@@ -142,7 +179,7 @@ export default function OraclePage() {
     "All",
     filterChain,
     debouncedQuery,
-    myDisputes ? address : undefined
+    myDisputes ? address : undefined,
   );
 
   const [status, setStatus] = useState<{
@@ -339,6 +376,132 @@ export default function OraclePage() {
     };
   }, [locale, stats]);
 
+  const health = useMemo(() => {
+    const isLoadingHealth = loading && !status;
+    if (isLoadingHealth) {
+      return {
+        isLoading: true,
+        score: null as number | null,
+        labelText: t("common.loading"),
+        accent: "from-purple-500 to-indigo-500",
+        ring: "ring-purple-200",
+        lagBlocks: null as number | null,
+        activeDisputes: null as number | null,
+        lastSuccessMinutes: null as number | null,
+        lastError: null as string | null,
+        topRisks: [] as { key: string; severity: "warning" | "critical" }[],
+      };
+    }
+
+    const snapshot = status?.state ?? null;
+    const activeDisputes = stats?.activeDisputes ?? null;
+
+    const lagBlocks = parseOptionalNumber(snapshot?.lagBlocks);
+    const consecutiveFailures = snapshot?.consecutiveFailures ?? null;
+    const lastSuccessMinutes = minutesSince(
+      snapshot?.sync?.lastSuccessAt ?? null,
+    );
+    const lastError = snapshot?.sync?.lastError ?? null;
+    const hasContract = Boolean(snapshot?.contractAddress);
+
+    let score = 100;
+
+    if (!hasContract) score -= 25;
+    if (lastError) score -= 30;
+    if (typeof consecutiveFailures === "number" && consecutiveFailures >= 3)
+      score -= 20;
+
+    if (typeof activeDisputes === "number" && activeDisputes > 0) {
+      score -= Math.min(30, activeDisputes * 5);
+    }
+
+    if (typeof lagBlocks === "number") {
+      if (lagBlocks >= 1000) score -= 30;
+      else if (lagBlocks >= 200) score -= 15;
+      else if (lagBlocks >= 50) score -= 5;
+    }
+
+    if (typeof lastSuccessMinutes === "number") {
+      if (lastSuccessMinutes >= 120) score -= 30;
+      else if (lastSuccessMinutes >= 30) score -= 15;
+    }
+
+    score = Math.max(0, Math.min(100, Math.round(score)));
+
+    const label = score >= 85 ? "good" : score >= 65 ? "watch" : "risk";
+    const labelText =
+      label === "good"
+        ? t("oracle.sync.synced")
+        : label === "watch"
+          ? t("oracle.sync.lagging")
+          : t("oracle.sync.error");
+    const accent =
+      label === "good"
+        ? "from-emerald-500 to-teal-500"
+        : label === "watch"
+          ? "from-amber-500 to-orange-500"
+          : "from-rose-500 to-red-500";
+    const ring =
+      label === "good"
+        ? "ring-emerald-200"
+        : label === "watch"
+          ? "ring-amber-200"
+          : "ring-rose-200";
+
+    const risks: { key: string; severity: "warning" | "critical" }[] = [];
+    if (!hasContract)
+      risks.push({ key: t("errors.missingConfig"), severity: "critical" });
+    if (lastError)
+      risks.push({ key: t("errors.syncFailed"), severity: "critical" });
+    if (typeof consecutiveFailures === "number" && consecutiveFailures >= 3)
+      risks.push({
+        key: `${t("oracle.config.rpcActive")}: ${t("oracle.sync.error")}`,
+        severity: "warning",
+      });
+    if (typeof lagBlocks === "number" && lagBlocks >= 200)
+      risks.push({
+        key: `${t("oracle.charts.syncLagBlocks")}: ${lagBlocks.toLocaleString()}`,
+        severity: lagBlocks >= 1000 ? "critical" : "warning",
+      });
+    if (typeof activeDisputes === "number" && activeDisputes > 0)
+      risks.push({
+        key: `${t("oracle.stats.activeDisputes")}: ${activeDisputes}`,
+        severity: activeDisputes >= 3 ? "critical" : "warning",
+      });
+    if (typeof lastSuccessMinutes === "number" && lastSuccessMinutes >= 30)
+      risks.push({
+        key: `${t("oracle.sync.lastUpdate")}: ${lastSuccessMinutes}m`,
+        severity: lastSuccessMinutes >= 120 ? "critical" : "warning",
+      });
+
+    const topRisks = risks.slice(0, 4);
+
+    return {
+      isLoading: false,
+      score,
+      labelText,
+      accent,
+      ring,
+      lagBlocks,
+      activeDisputes,
+      lastSuccessMinutes,
+      lastError,
+      topRisks,
+    };
+  }, [loading, stats, status, t]);
+
+  const lastSuccessAt = status?.state?.sync?.lastSuccessAt ?? null;
+  const lastSuccessAtText = lastSuccessAt
+    ? formatTime(lastSuccessAt, locale)
+    : "—";
+  const lastSuccessAgoText =
+    typeof health.lastSuccessMinutes === "number"
+      ? `${health.lastSuccessMinutes}m`
+      : null;
+  const lastProcessedBlock = parseOptionalNumber(
+    status?.state?.lastProcessedBlock,
+  );
+
   return (
     <div className="space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <PageHeader
@@ -358,6 +521,147 @@ export default function OraclePage() {
         </div>
       </PageHeader>
 
+      <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 delay-75">
+        <div className="glass-panel rounded-3xl border border-white/60 shadow-2xl shadow-purple-500/5 overflow-hidden">
+          <div className="relative p-6 md:p-8">
+            <div className="absolute inset-0 pointer-events-none opacity-40">
+              <div
+                className={cn(
+                  "absolute -right-[15%] -top-[40%] h-[200%] w-[50%] bg-gradient-to-br blur-3xl rounded-full",
+                  health.accent,
+                )}
+              />
+              <div className="absolute left-0 bottom-0 h-[80%] w-[30%] bg-gradient-to-tl from-indigo-200/30 via-purple-100/20 to-transparent blur-3xl rounded-full" />
+            </div>
+
+            <div className="relative z-10 grid gap-6 lg:grid-cols-12">
+              <div className="lg:col-span-5 flex items-center gap-6">
+                <div
+                  className={cn(
+                    "relative h-24 w-24 md:h-28 md:w-28 rounded-2xl bg-white/70 ring-1 shadow-sm flex items-center justify-center",
+                    health.ring,
+                  )}
+                >
+                  <div className="text-center">
+                    <div className="text-3xl md:text-4xl font-black text-gray-900 tabular-nums">
+                      {health.score ?? "—"}
+                    </div>
+                    <div className="text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                      {t("oracle.charts.syncHealth")}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold text-gray-500">
+                    {t("oracle.charts.syncHealth")}
+                  </div>
+                  <div className="text-2xl md:text-3xl font-black text-gray-900 leading-tight">
+                    {health.labelText}
+                  </div>
+                  <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-600">
+                    <div className="rounded-lg bg-white/60 px-3 py-1.5 ring-1 ring-black/5">
+                      {t("oracle.sync.block")}:{" "}
+                      <span className="font-mono font-semibold">
+                        {typeof lastProcessedBlock === "number"
+                          ? lastProcessedBlock.toLocaleString(locale)
+                          : "—"}
+                      </span>
+                    </div>
+                    <div className="rounded-lg bg-white/60 px-3 py-1.5 ring-1 ring-black/5">
+                      {t("oracle.charts.syncLagBlocks")}:{" "}
+                      <span className="font-mono font-semibold">
+                        {typeof health.lagBlocks === "number"
+                          ? health.lagBlocks.toLocaleString(locale)
+                          : "—"}
+                      </span>
+                    </div>
+                    <div className="rounded-lg bg-white/60 px-3 py-1.5 ring-1 ring-black/5">
+                      {t("oracle.stats.activeDisputes")}:{" "}
+                      <span className="font-mono font-semibold">
+                        {typeof health.activeDisputes === "number"
+                          ? health.activeDisputes
+                          : "—"}
+                      </span>
+                    </div>
+                    <div className="rounded-lg bg-white/60 px-3 py-1.5 ring-1 ring-black/5">
+                      {t("oracle.sync.lastUpdate")}:{" "}
+                      <span className="font-mono font-semibold">
+                        {lastSuccessAtText}
+                        {lastSuccessAgoText ? (
+                          <span className="ml-1 text-gray-400">
+                            ({lastSuccessAgoText})
+                          </span>
+                        ) : null}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="lg:col-span-7">
+                <div className="rounded-2xl bg-white/60 ring-1 ring-black/5 p-5 md:p-6">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="text-sm font-bold text-gray-900">
+                      {t("oracle.charts.syncHealth")}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {t("oracle.sync.lastUpdate")}: {lastSuccessAtText}
+                    </div>
+                  </div>
+
+                  <div className="mt-4 grid gap-2">
+                    {health.topRisks.length === 0 ? (
+                      <div className="text-sm text-emerald-700 bg-emerald-50/60 border border-emerald-100 rounded-xl px-4 py-3">
+                        {health.isLoading
+                          ? t("common.loading")
+                          : t("oracle.sync.synced")}
+                      </div>
+                    ) : (
+                      health.topRisks.map((r, idx) => (
+                        <div
+                          key={`${r.key}-${idx}`}
+                          className={cn(
+                            "flex items-center justify-between gap-3 rounded-xl px-4 py-3 border",
+                            r.severity === "critical"
+                              ? "bg-rose-50/60 border-rose-100 text-rose-800"
+                              : "bg-amber-50/60 border-amber-100 text-amber-800",
+                          )}
+                        >
+                          <div className="min-w-0 text-sm font-semibold truncate">
+                            {r.key}
+                          </div>
+                          <div
+                            className={cn(
+                              "shrink-0 text-[11px] font-black uppercase tracking-wider rounded-lg px-2 py-1",
+                              r.severity === "critical"
+                                ? "bg-rose-100 text-rose-700"
+                                : "bg-amber-100 text-amber-700",
+                            )}
+                          >
+                            {t(
+                              r.severity === "critical"
+                                ? "oracle.alerts.severities.critical"
+                                : "oracle.alerts.severities.warning",
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                    {health.lastError ? (
+                      <div className="mt-2 text-xs text-gray-500">
+                        {t("oracle.sync.error")}:{" "}
+                        <span className="font-mono">{health.lastError}</span>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
         <OracleStatsBanner stats={formattedStats} loading={loading} />
       </div>
@@ -370,7 +674,7 @@ export default function OraclePage() {
               "flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300",
               activeTab === "overview"
                 ? "bg-white text-purple-700 shadow-md shadow-purple-500/10 ring-1 ring-black/5 scale-[1.02]"
-                : "text-gray-500 hover:text-gray-900 hover:bg-white/40"
+                : "text-gray-500 hover:text-gray-900 hover:bg-white/40",
             )}
           >
             <LayoutDashboard
@@ -379,7 +683,7 @@ export default function OraclePage() {
                 "transition-transform duration-300",
                 activeTab === "overview"
                   ? "scale-110 text-purple-600"
-                  : "text-gray-400"
+                  : "text-gray-400",
               )}
             />
             {t("oracle.tabs.overview")}
@@ -390,7 +694,7 @@ export default function OraclePage() {
               "flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300",
               activeTab === "leaderboard"
                 ? "bg-white text-purple-700 shadow-md shadow-purple-500/10 ring-1 ring-black/5 scale-[1.02]"
-                : "text-gray-500 hover:text-gray-900 hover:bg-white/40"
+                : "text-gray-500 hover:text-gray-900 hover:bg-white/40",
             )}
           >
             <Trophy
@@ -399,7 +703,7 @@ export default function OraclePage() {
                 "transition-transform duration-300",
                 activeTab === "leaderboard"
                   ? "scale-110 text-amber-500"
-                  : "text-gray-400"
+                  : "text-gray-400",
               )}
             />
             {t("oracle.tabs.leaderboard")}
@@ -410,7 +714,7 @@ export default function OraclePage() {
               "flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300",
               activeTab === "tools"
                 ? "bg-white text-purple-700 shadow-md shadow-purple-500/10 ring-1 ring-black/5 scale-[1.02]"
-                : "text-gray-500 hover:text-gray-900 hover:bg-white/40"
+                : "text-gray-500 hover:text-gray-900 hover:bg-white/40",
             )}
           >
             <Wrench
@@ -419,7 +723,7 @@ export default function OraclePage() {
                 "transition-transform duration-300",
                 activeTab === "tools"
                   ? "scale-110 text-slate-600"
-                  : "text-gray-400"
+                  : "text-gray-400",
               )}
             />
             {t("oracle.tabs.tools")}
@@ -445,7 +749,7 @@ export default function OraclePage() {
                   size={14}
                   className={cn(
                     "transition-transform",
-                    showConfig && "rotate-180"
+                    showConfig && "rotate-180",
                   )}
                 />
               </button>
@@ -465,7 +769,7 @@ export default function OraclePage() {
                       "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium transition-all",
                       syncing
                         ? "bg-gray-100 text-gray-400"
-                        : "bg-purple-50 text-purple-600 hover:bg-purple-100"
+                        : "bg-purple-50 text-purple-600 hover:bg-purple-100",
                     )}
                   >
                     <RotateCw
@@ -495,7 +799,7 @@ export default function OraclePage() {
                       className={cn(
                         "glass-input h-10 w-full rounded-xl px-4 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20",
                         configFieldErrors.rpcUrl &&
-                          "ring-2 ring-rose-500/20 focus:ring-rose-500/20"
+                          "ring-2 ring-rose-500/20 focus:ring-rose-500/20",
                       )}
                     />
                     {configFieldErrors.rpcUrl && (
@@ -525,14 +829,14 @@ export default function OraclePage() {
                       className={cn(
                         "glass-input h-10 w-full rounded-xl px-4 font-mono text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20",
                         configFieldErrors.contractAddress &&
-                          "ring-2 ring-rose-500/20 focus:ring-rose-500/20"
+                          "ring-2 ring-rose-500/20 focus:ring-rose-500/20",
                       )}
                     />
                     {configFieldErrors.contractAddress && (
                       <div className="text-xs text-rose-600">
                         {getUiErrorMessage(
                           configFieldErrors.contractAddress,
-                          t
+                          t,
                         )}
                       </div>
                     )}
@@ -558,7 +862,7 @@ export default function OraclePage() {
                         className={cn(
                           "glass-input h-10 w-full appearance-none rounded-xl px-4 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500/20",
                           configFieldErrors.chain &&
-                            "ring-2 ring-rose-500/20 focus:ring-rose-500/20"
+                            "ring-2 ring-rose-500/20 focus:ring-rose-500/20",
                         )}
                       >
                         <option value="Local">{t("chain.local")}</option>
@@ -604,7 +908,7 @@ export default function OraclePage() {
                       className={cn(
                         "glass-input h-10 w-full rounded-xl px-4 font-mono text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20",
                         configFieldErrors.startBlock &&
-                          "ring-2 ring-rose-500/20 focus:ring-rose-500/20"
+                          "ring-2 ring-rose-500/20 focus:ring-rose-500/20",
                       )}
                     />
                     {configFieldErrors.startBlock && (
@@ -637,7 +941,7 @@ export default function OraclePage() {
                       className={cn(
                         "glass-input h-10 w-full rounded-xl px-4 font-mono text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20",
                         configFieldErrors.maxBlockRange &&
-                          "ring-2 ring-rose-500/20 focus:ring-rose-500/20"
+                          "ring-2 ring-rose-500/20 focus:ring-rose-500/20",
                       )}
                     />
                     {configFieldErrors.maxBlockRange && (
@@ -670,14 +974,14 @@ export default function OraclePage() {
                       className={cn(
                         "glass-input h-10 w-full rounded-xl px-4 font-mono text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20",
                         configFieldErrors.votingPeriodHours &&
-                          "ring-2 ring-rose-500/20 focus:ring-rose-500/20"
+                          "ring-2 ring-rose-500/20 focus:ring-rose-500/20",
                       )}
                     />
                     {configFieldErrors.votingPeriodHours && (
                       <div className="text-xs text-rose-600">
                         {getUiErrorMessage(
                           configFieldErrors.votingPeriodHours,
-                          t
+                          t,
                         )}
                       </div>
                     )}
@@ -706,14 +1010,14 @@ export default function OraclePage() {
                       className={cn(
                         "glass-input h-10 w-full rounded-xl px-4 font-mono text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20",
                         configFieldErrors.confirmationBlocks &&
-                          "ring-2 ring-rose-500/20 focus:ring-rose-500/20"
+                          "ring-2 ring-rose-500/20 focus:ring-rose-500/20",
                       )}
                     />
                     {configFieldErrors.confirmationBlocks && (
                       <div className="text-xs text-rose-600">
                         {getUiErrorMessage(
                           configFieldErrors.confirmationBlocks,
-                          t
+                          t,
                         )}
                       </div>
                     )}
@@ -776,7 +1080,7 @@ export default function OraclePage() {
                           status?.state.lagBlocks &&
                             Number(status.state.lagBlocks) > 0
                             ? "bg-amber-500"
-                            : "bg-emerald-500"
+                            : "bg-emerald-500",
                         )}
                       ></span>
                       {t("oracle.config.lagBlocks")}:{" "}
@@ -790,7 +1094,7 @@ export default function OraclePage() {
                           "w-1.5 h-1.5 rounded-full",
                           (status?.state.consecutiveFailures ?? 0) > 0
                             ? "bg-rose-500"
-                            : "bg-emerald-500"
+                            : "bg-emerald-500",
                         )}
                       ></span>
                       {t("oracle.config.consecutiveFailures")}:{" "}
@@ -823,8 +1127,8 @@ export default function OraclePage() {
                           status?.state.ownerIsContract === true
                             ? "bg-emerald-500"
                             : status?.state.ownerIsContract === false
-                            ? "bg-slate-400"
-                            : "bg-gray-300"
+                              ? "bg-slate-400"
+                              : "bg-gray-300",
                         )}
                       ></span>
                       {t("oracle.config.ownerType")}:{" "}
@@ -838,14 +1142,14 @@ export default function OraclePage() {
                           "w-1.5 h-1.5 rounded-full",
                           status?.state.syncing
                             ? "bg-blue-500 animate-pulse"
-                            : "bg-emerald-500"
+                            : "bg-emerald-500",
                         )}
                       ></span>
                       {status?.state.syncing
                         ? t("oracle.config.syncing")
                         : status?.state.sync?.lastSuccessAt
-                        ? formatTime(status.state.sync.lastSuccessAt, locale)
-                        : "—"}
+                          ? formatTime(status.state.sync.lastSuccessAt, locale)
+                          : "—"}
                     </div>
                   </div>
 
@@ -856,7 +1160,7 @@ export default function OraclePage() {
                       "rounded-xl px-6 py-2 text-sm font-medium transition-all shadow-sm",
                       saving
                         ? "bg-gray-100 text-gray-400"
-                        : "bg-purple-600 text-white hover:bg-purple-700 hover:shadow-purple-500/25"
+                        : "bg-purple-600 text-white hover:bg-purple-700 hover:shadow-purple-500/25",
                     )}
                   >
                     {t("oracle.config.save")}
@@ -902,14 +1206,14 @@ export default function OraclePage() {
                         "text-emerald-600 ring-emerald-100",
                       filterStatus === status &&
                         status === "All" &&
-                        "text-purple-700 ring-purple-100"
+                        "text-purple-700 ring-purple-100",
                     )}
                   >
                     {status === "Pending" && (
                       <div
                         className={cn(
                           "w-2 h-2 rounded-full bg-blue-500",
-                          filterStatus !== status && "opacity-50"
+                          filterStatus !== status && "opacity-50",
                         )}
                       />
                     )}
@@ -917,7 +1221,7 @@ export default function OraclePage() {
                       <div
                         className={cn(
                           "w-2 h-2 rounded-full bg-rose-500",
-                          filterStatus !== status && "opacity-50"
+                          filterStatus !== status && "opacity-50",
                         )}
                       />
                     )}
@@ -925,7 +1229,7 @@ export default function OraclePage() {
                       <div
                         className={cn(
                           "w-2 h-2 rounded-full bg-emerald-500",
-                          filterStatus !== status && "opacity-50"
+                          filterStatus !== status && "opacity-50",
                         )}
                       />
                     )}
@@ -933,7 +1237,7 @@ export default function OraclePage() {
                       <div
                         className={cn(
                           "w-2 h-2 rounded-full bg-purple-500",
-                          filterStatus !== status && "opacity-50"
+                          filterStatus !== status && "opacity-50",
                         )}
                       />
                     )}
@@ -954,7 +1258,7 @@ export default function OraclePage() {
                         "hidden md:flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition-all border",
                         myActivity
                           ? "bg-purple-100 text-purple-700 border-purple-200 shadow-inner"
-                          : "bg-white/50 text-gray-500 border-transparent hover:bg-white hover:text-gray-900"
+                          : "bg-white/50 text-gray-500 border-transparent hover:bg-white hover:text-gray-900",
                       )}
                       title={t("oracle.myActivityTooltip")}
                     >
@@ -970,7 +1274,7 @@ export default function OraclePage() {
                         "hidden md:flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition-all border",
                         myDisputes
                           ? "bg-rose-100 text-rose-700 border-rose-200 shadow-inner"
-                          : "bg-white/50 text-gray-500 border-transparent hover:bg-white hover:text-gray-900"
+                          : "bg-white/50 text-gray-500 border-transparent hover:bg-white hover:text-gray-900",
                       )}
                       title={t("oracle.myDisputesTooltip")}
                     >
@@ -987,7 +1291,7 @@ export default function OraclePage() {
                       "p-1.5 rounded-md transition-all",
                       viewMode === "grid"
                         ? "bg-white shadow text-purple-600"
-                        : "text-gray-400 hover:text-gray-600"
+                        : "text-gray-400 hover:text-gray-600",
                     )}
                     title={t("oracle.card.gridView")}
                   >
@@ -999,7 +1303,7 @@ export default function OraclePage() {
                       "p-1.5 rounded-md transition-all",
                       viewMode === "list"
                         ? "bg-white shadow text-purple-600"
-                        : "text-gray-400 hover:text-gray-600"
+                        : "text-gray-400 hover:text-gray-600",
                     )}
                     title={t("oracle.card.listView")}
                   >
@@ -1012,7 +1316,7 @@ export default function OraclePage() {
                     value={filterChain}
                     onChange={(e) =>
                       setFilterChain(
-                        e.target.value as OracleConfig["chain"] | "All"
+                        e.target.value as OracleConfig["chain"] | "All",
                       )
                     }
                     className="glass-input h-9 rounded-xl border-none pl-3 pr-8 text-sm font-medium text-gray-600 hover:bg-white/80 focus:ring-2 focus:ring-purple-500/20 cursor-pointer appearance-none"
@@ -1068,8 +1372,8 @@ export default function OraclePage() {
                   myActivity
                     ? t("oracle.myActivityEmpty")
                     : loading
-                    ? undefined
-                    : t("oracle.leaderboard.noData")
+                      ? undefined
+                      : t("oracle.leaderboard.noData")
                 }
                 onCreateAssertion={
                   myActivity ? () => setIsCreateModalOpen(true) : undefined

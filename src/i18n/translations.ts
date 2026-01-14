@@ -21,7 +21,7 @@ export function isLang(value: unknown): value is Lang {
 }
 
 export function detectLangFromAcceptLanguage(
-  value: string | null | undefined
+  value: string | null | undefined,
 ): Lang {
   const lower = (value ?? "").toLowerCase();
   if (lower.includes("zh")) return "zh";
@@ -201,10 +201,37 @@ export const translations = {
         success: "配置已保存",
         error: "保存失败",
         noRules: "暂无规则",
+        channels: "通知渠道",
+        channelsWebhook: "Webhook",
+        channelsEmail: "Email",
+        recipient: "收件人",
+        recipientPlaceholder: "ops@example.com",
+        testSend: "发送测试",
+        testSending: "发送中…",
+        testSent: "测试已发送",
+        testFailed: "测试发送失败",
+        params: {
+          maxAgeMinutes: "最大滞后（分钟）",
+          thresholdMs: "阈值（毫秒）",
+          thresholdPercent: "错误率阈值（%）",
+          windowMinutes: "统计窗口（分钟）",
+        },
+        validation: {
+          emailRecipientRequired: "启用 Email 时必须填写收件人",
+          emailRecipientInvalid: "Email 收件人格式不正确",
+          staleSyncMaxAgeMsPositive: "同步停滞的最大时长必须为正数",
+          slowApiThresholdMsPositive: "慢请求阈值必须为正数",
+          databaseSlowQueryThresholdMsPositive: "慢查询阈值必须为正数",
+          highErrorRateThresholdPercentRange: "错误率阈值必须在 1-100 之间",
+          highErrorRateWindowMinutesPositive: "错误率统计窗口必须为正数",
+        },
         events: {
           dispute_created: "争议创建",
           sync_error: "同步错误",
           stale_sync: "同步停滞",
+          slow_api_request: "慢请求",
+          high_error_rate: "错误率过高",
+          database_slow_query: "慢查询",
         },
         severities: {
           info: "信息",
@@ -751,10 +778,40 @@ export const translations = {
         success: "Config saved",
         error: "Failed to save",
         noRules: "No rules found",
+        channels: "Channels",
+        channelsWebhook: "Webhook",
+        channelsEmail: "Email",
+        recipient: "Recipient",
+        recipientPlaceholder: "ops@example.com",
+        testSend: "Send Test",
+        testSending: "Sending…",
+        testSent: "Test sent",
+        testFailed: "Failed to send test",
+        params: {
+          maxAgeMinutes: "Max age (minutes)",
+          thresholdMs: "Threshold (ms)",
+          thresholdPercent: "Threshold (%)",
+          windowMinutes: "Window (minutes)",
+        },
+        validation: {
+          emailRecipientRequired: "Recipient is required when Email is enabled",
+          emailRecipientInvalid: "Invalid recipient email format",
+          staleSyncMaxAgeMsPositive: "Max age must be a positive number",
+          slowApiThresholdMsPositive: "Threshold must be a positive number",
+          databaseSlowQueryThresholdMsPositive:
+            "Threshold must be a positive number",
+          highErrorRateThresholdPercentRange:
+            "Threshold must be between 1 and 100",
+          highErrorRateWindowMinutesPositive:
+            "Window minutes must be a positive number",
+        },
         events: {
           dispute_created: "Dispute Created",
           sync_error: "Sync Error",
           stale_sync: "Stale Sync",
+          slow_api_request: "Slow API Request",
+          high_error_rate: "High Error Rate",
+          database_slow_query: "Slow Database Query",
         },
         severities: {
           info: "Info",
@@ -1006,100 +1063,94 @@ export const translations = {
       occurrences: "Occurrences",
     },
     onboarding: {
-      title: "Insight: Recorrido Rápido",
-      welcome: "Bienvenido a Insight",
+      title: "Insight Quick Tour",
+      welcome: "Welcome to Insight",
       welcomeDesc:
-        "Insight es tu puerta de acceso al monitoreo de oráculos y resolución de disputas. Tomemos un recorrido rápido para comenzar.",
-      selectRole: "Selecciona tu rol para obtener un recorrido personalizado:",
-      skipTour: "Saltar recorrido",
-      continueAsGeneral: "Continuar como usuario general",
-      getStarted: "Empezar",
-      next: "Siguiente",
+        "Insight is your gateway to Oracle monitoring and dispute resolution. Let's take a quick tour to get you started.",
+      selectRole: "Please select your role to get a personalized tour:",
+      skipTour: "Skip Tour",
+      continueAsGeneral: "Continue as General User",
+      getStarted: "Get Started",
+      next: "Next",
       roles: {
         developer: {
-          title: "Para desarrolladores",
-          description:
-            "Construye con confianza usando nuestra API de datos de oráculo",
+          title: "For Developers",
+          description: "Build with confidence using our Oracle data API",
         },
         protocol_team: {
-          title: "Para equipos de protocolo",
-          description:
-            "Asegura la fiabilidad de los datos del oráculo para tus protocolos DeFi",
+          title: "For Protocol Teams",
+          description: "Ensure Oracle data reliability for your DeFi protocols",
         },
         oracle_operator: {
-          title: "Para operadores de oráculos",
-          description: "Gestiona tus nodos de oráculo y su rendimiento",
+          title: "For Oracle Operators",
+          description: "Manage your Oracle nodes and performance",
         },
         general_user: {
-          title: "Para usuarios generales",
-          description:
-            "Explora los datos del oráculo y participa en el ecosistema",
+          title: "For General Users",
+          description: "Explore Oracle data and participate in the ecosystem",
         },
       },
       steps: {
         developer: {
           api: {
-            title: "Acceso a API",
+            title: "API Access",
             description:
-              "Explora nuestra API REST para acceder a datos de oráculo de forma programática.",
+              "Explore our REST API for accessing Oracle data programmatically.",
           },
           integration: {
-            title: "Integración sencilla",
+            title: "Easy Integration",
             description:
-              "Integra datos de oráculo en tus dApps con SDKs simples.",
+              "Integrate Oracle data into your dApps with simple SDKs.",
           },
           monitoring: {
-            title: "Monitorea tus integraciones",
+            title: "Monitor Your Integrations",
             description:
-              "Rastrea el rendimiento de los datos del oráculo en tus aplicaciones.",
+              "Track the performance of Oracle data in your applications.",
           },
         },
         protocol_team: {
           monitoring: {
-            title: "Monitoreo en tiempo real",
+            title: "Real-time Monitoring",
             description:
-              "Monitorea las tendencias de datos del oráculo y el estado de sincronización para tus protocolos.",
+              "Monitor Oracle data trends and sync status for your protocols.",
           },
           disputes: {
-            title: "Resolución de disputas",
-            description: "Participa en disputas y asegura resultados justos.",
+            title: "Dispute Resolution",
+            description: "Participate in disputes and ensure fair outcomes.",
           },
           analytics: {
-            title: "Análisis de rendimiento",
-            description:
-              "Analiza el rendimiento del oráculo en diferentes mercados.",
+            title: "Performance Analytics",
+            description: "Analyze Oracle performance across different markets.",
           },
         },
         oracle_operator: {
           nodeMonitoring: {
-            title: "Monitoreo de nodos",
+            title: "Node Monitoring",
             description:
-              "Monitorea el rendimiento y estado de tus nodos de oráculo.",
+              "Monitor the performance and status of your Oracle nodes.",
           },
           syncStatus: {
-            title: "Estado de sincronización",
-            description:
-              "Rastrea el estado de sincronización y latencia entre cadenas.",
+            title: "Sync Status",
+            description: "Track sync status and latency across chains.",
           },
           alerts: {
-            title: "Gestión de alertas",
-            description:
-              "Configura alertas para eventos importantes y anomalías.",
+            title: "Alert Management",
+            description: "Configure alerts for important events and anomalies.",
           },
         },
         general_user: {
           exploration: {
-            title: "Exploración de datos",
+            title: "Data Exploration",
             description:
-              "Navega por los datos del oráculo en diferentes mercados y protocolos.",
+              "Browse Oracle data across different markets and protocols.",
           },
           assertions: {
-            title: "Creación de afirmaciones",
-            description: "Crea y rastrea afirmaciones sobre datos de oráculo.",
+            title: "Assertion Creation",
+            description: "Create and track assertions on Oracle data.",
           },
           disputes: {
-            title: "Participación en disputas",
-            description: "Vota en disputas y forma el resultado.",
+            title: "Dispute Participation",
+            description: "Vote on disputes and shape the outcome.",
           },
         },
       },
@@ -1580,94 +1631,100 @@ export const translations = {
       occurrences: "Ocurrencias",
     },
     onboarding: {
-      title: "Insight Quick Tour",
-      welcome: "Welcome to Insight",
+      title: "Insight: Recorrido Rápido",
+      welcome: "Bienvenido a Insight",
       welcomeDesc:
-        "Insight is your gateway to Oracle monitoring and dispute resolution. Let's take a quick tour to get you started.",
-      selectRole: "Please select your role to get a personalized tour:",
-      skipTour: "Skip Tour",
-      continueAsGeneral: "Continue as General User",
-      getStarted: "Get Started",
-      next: "Next",
+        "Insight es tu puerta de acceso al monitoreo de oráculos y resolución de disputas. Tomemos un recorrido rápido para comenzar.",
+      selectRole: "Selecciona tu rol para obtener un recorrido personalizado:",
+      skipTour: "Saltar recorrido",
+      continueAsGeneral: "Continuar como usuario general",
+      getStarted: "Empezar",
+      next: "Siguiente",
       roles: {
         developer: {
-          title: "For Developers",
-          description: "Build with confidence using our Oracle data API",
+          title: "Para desarrolladores",
+          description:
+            "Construye con confianza usando nuestra API de datos de oráculo",
         },
         protocol_team: {
-          title: "For Protocol Teams",
-          description: "Ensure Oracle data reliability for your DeFi protocols",
+          title: "Para equipos de protocolo",
+          description:
+            "Asegura la fiabilidad de los datos del oráculo para tus protocolos DeFi",
         },
         oracle_operator: {
-          title: "For Oracle Operators",
-          description: "Manage your Oracle nodes and performance",
+          title: "Para operadores de oráculos",
+          description: "Gestiona tus nodos de oráculo y su rendimiento",
         },
         general_user: {
-          title: "For General Users",
-          description: "Explore Oracle data and participate in the ecosystem",
+          title: "Para usuarios generales",
+          description:
+            "Explora los datos del oráculo y participa en el ecosistema",
         },
       },
       steps: {
         developer: {
           api: {
-            title: "API Access",
+            title: "Acceso a API",
             description:
-              "Explore our REST API for accessing Oracle data programmatically.",
+              "Explora nuestra API REST para acceder a datos de oráculo de forma programática.",
           },
           integration: {
-            title: "Easy Integration",
+            title: "Integración sencilla",
             description:
-              "Integrate Oracle data into your dApps with simple SDKs.",
+              "Integra datos de oráculo en tus dApps con SDKs simples.",
           },
           monitoring: {
-            title: "Monitor Your Integrations",
+            title: "Monitorea tus integraciones",
             description:
-              "Track the performance of Oracle data in your applications.",
+              "Rastrea el rendimiento de los datos del oráculo en tus aplicaciones.",
           },
         },
         protocol_team: {
           monitoring: {
-            title: "Real-time Monitoring",
+            title: "Monitoreo en tiempo real",
             description:
-              "Monitor Oracle data trends and sync status for your protocols.",
+              "Monitorea las tendencias de datos del oráculo y el estado de sincronización para tus protocolos.",
           },
           disputes: {
-            title: "Dispute Resolution",
-            description: "Participate in disputes and ensure fair outcomes.",
+            title: "Resolución de disputas",
+            description: "Participa en disputas y asegura resultados justos.",
           },
           analytics: {
-            title: "Performance Analytics",
-            description: "Analyze Oracle performance across different markets.",
+            title: "Análisis de rendimiento",
+            description:
+              "Analiza el rendimiento del oráculo en diferentes mercados.",
           },
         },
         oracle_operator: {
           nodeMonitoring: {
-            title: "Node Monitoring",
+            title: "Monitoreo de nodos",
             description:
-              "Monitor the performance and status of your Oracle nodes.",
+              "Monitorea el rendimiento y estado de tus nodos de oráculo.",
           },
           syncStatus: {
-            title: "Sync Status",
-            description: "Track sync status and latency across chains.",
+            title: "Estado de sincronización",
+            description:
+              "Rastrea el estado de sincronización y latencia entre cadenas.",
           },
           alerts: {
-            title: "Alert Management",
-            description: "Configure alerts for important events and anomalies.",
+            title: "Gestión de alertas",
+            description:
+              "Configura alertas para eventos importantes y anomalías.",
           },
         },
         general_user: {
           exploration: {
-            title: "Data Exploration",
+            title: "Exploración de datos",
             description:
-              "Browse Oracle data across different markets and protocols.",
+              "Navega por los datos del oráculo en diferentes mercados y protocolos.",
           },
           assertions: {
-            title: "Assertion Creation",
-            description: "Create and track assertions on Oracle data.",
+            title: "Creación de afirmaciones",
+            description: "Crea y rastrea afirmaciones sobre datos de oráculo.",
           },
           disputes: {
-            title: "Dispute Participation",
-            description: "Vote on disputes and shape the outcome.",
+            title: "Participación en disputas",
+            description: "Vota en disputas y forma el resultado.",
           },
         },
       },
@@ -3004,13 +3061,36 @@ export type TranslationKey =
   | "oracle.alerts.events.dispute_created"
   | "oracle.alerts.events.sync_error"
   | "oracle.alerts.events.stale_sync"
+  | "oracle.alerts.events.slow_api_request"
+  | "oracle.alerts.events.high_error_rate"
+  | "oracle.alerts.events.database_slow_query"
+  | "oracle.alerts.channels"
+  | "oracle.alerts.channelsWebhook"
+  | "oracle.alerts.channelsEmail"
+  | "oracle.alerts.recipient"
+  | "oracle.alerts.recipientPlaceholder"
+  | "oracle.alerts.params.maxAgeMinutes"
+  | "oracle.alerts.params.thresholdMs"
+  | "oracle.alerts.params.thresholdPercent"
+  | "oracle.alerts.params.windowMinutes"
+  | "oracle.alerts.validation.emailRecipientRequired"
+  | "oracle.alerts.validation.emailRecipientInvalid"
+  | "oracle.alerts.validation.staleSyncMaxAgeMsPositive"
+  | "oracle.alerts.validation.slowApiThresholdMsPositive"
+  | "oracle.alerts.validation.databaseSlowQueryThresholdMsPositive"
+  | "oracle.alerts.validation.highErrorRateThresholdPercentRange"
+  | "oracle.alerts.validation.highErrorRateWindowMinutesPositive"
+  | "oracle.alerts.testSend"
+  | "oracle.alerts.testSending"
+  | "oracle.alerts.testSent"
+  | "oracle.alerts.testFailed"
   | "oracle.alerts.severities.info"
   | "oracle.alerts.severities.warning"
   | "oracle.alerts.severities.critical";
 
 export function getUiErrorMessage(
   errorCode: string,
-  t: (key: TranslationKey) => string
+  t: (key: TranslationKey) => string,
 ) {
   if (errorCode === "unknown_error") return t("errors.unknownError");
   if (errorCode.startsWith("http_"))

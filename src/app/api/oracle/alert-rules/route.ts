@@ -1,35 +1,266 @@
-import { error, getAdminActor, handleApi, rateLimit, requireAdmin } from "@/server/apiResponse";
-import { appendAuditLog, readAlertRules, writeAlertRules } from "@/server/observability";
+import {
+  error,
+  getAdminActor,
+  handleApi,
+  rateLimit,
+  requireAdmin,
+} from "@/server/apiResponse";
+import {
+  appendAuditLog,
+  readAlertRules,
+  writeAlertRules,
+} from "@/server/observability";
+import { notifyAlert } from "@/server/notifications";
 import { z } from "zod";
 
-const ruleSchema = z.object({
-  id: z.string().trim().min(1).max(100),
-  name: z.string().trim().min(1).max(200),
-  enabled: z.boolean(),
-  event: z.enum(["dispute_created", "sync_error", "stale_sync"]),
-  severity: z.enum(["info", "warning", "critical"]),
-  params: z.record(z.string(), z.unknown()).optional()
-});
+const ruleSchema = z
+  .object({
+    id: z.string().trim().min(1).max(100),
+    name: z.string().trim().min(1).max(200),
+    enabled: z.boolean(),
+    event: z.enum([
+      "dispute_created",
+      "sync_error",
+      "stale_sync",
+      "slow_api_request",
+      "high_error_rate",
+      "database_slow_query",
+    ]),
+    severity: z.enum(["info", "warning", "critical"]),
+    params: z.record(z.string(), z.unknown()).optional(),
+    channels: z
+      .array(z.enum(["webhook", "email"]))
+      .min(1)
+      .max(2)
+      .optional(),
+    recipient: z.string().trim().max(200).email().optional().nullable(),
+  })
+  .superRefine((rule, ctx) => {
+    if (rule.channels) {
+      const unique = new Set(rule.channels);
+      if (unique.size !== rule.channels.length) {
+        ctx.addIssue({
+          code: "custom",
+          message: "duplicate_channel",
+          path: ["channels"],
+        });
+      }
+    }
 
-const putSchema = z.object({
-  rules: z.array(ruleSchema).max(50)
+    if (rule.channels?.includes("email")) {
+      const recipient = (rule.recipient ?? "").trim();
+      if (!recipient) {
+        ctx.addIssue({
+          code: "custom",
+          message: "missing_email_recipient",
+          path: ["recipient"],
+        });
+      }
+    }
+
+    const params = rule.params ?? {};
+    const getNumber = (key: string) =>
+      Number((params as Record<string, unknown>)[key]);
+
+    if (rule.event === "stale_sync") {
+      if (!("maxAgeMs" in params)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "missing_maxAgeMs",
+          path: ["params", "maxAgeMs"],
+        });
+      } else {
+        const maxAgeMs = getNumber("maxAgeMs");
+        if (!Number.isFinite(maxAgeMs) || maxAgeMs <= 0) {
+          ctx.addIssue({
+            code: "custom",
+            message: "invalid_maxAgeMs",
+            path: ["params", "maxAgeMs"],
+          });
+        }
+      }
+    }
+
+    if (rule.event === "slow_api_request") {
+      if (!("thresholdMs" in params)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "missing_thresholdMs",
+          path: ["params", "thresholdMs"],
+        });
+      } else {
+        const thresholdMs = getNumber("thresholdMs");
+        if (!Number.isFinite(thresholdMs) || thresholdMs <= 0) {
+          ctx.addIssue({
+            code: "custom",
+            message: "invalid_thresholdMs",
+            path: ["params", "thresholdMs"],
+          });
+        }
+      }
+    }
+
+    if (rule.event === "database_slow_query") {
+      if (!("thresholdMs" in params)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "missing_thresholdMs",
+          path: ["params", "thresholdMs"],
+        });
+      } else {
+        const thresholdMs = getNumber("thresholdMs");
+        if (!Number.isFinite(thresholdMs) || thresholdMs <= 0) {
+          ctx.addIssue({
+            code: "custom",
+            message: "invalid_thresholdMs",
+            path: ["params", "thresholdMs"],
+          });
+        }
+      }
+    }
+
+    if (rule.event === "high_error_rate") {
+      if (!("thresholdPercent" in params)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "missing_thresholdPercent",
+          path: ["params", "thresholdPercent"],
+        });
+      } else {
+        const thresholdPercent = getNumber("thresholdPercent");
+        if (
+          !Number.isFinite(thresholdPercent) ||
+          thresholdPercent <= 0 ||
+          thresholdPercent > 100
+        ) {
+          ctx.addIssue({
+            code: "custom",
+            message: "invalid_thresholdPercent",
+            path: ["params", "thresholdPercent"],
+          });
+        }
+      }
+
+      if (!("windowMinutes" in params)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "missing_windowMinutes",
+          path: ["params", "windowMinutes"],
+        });
+      } else {
+        const windowMinutes = getNumber("windowMinutes");
+        if (!Number.isFinite(windowMinutes) || windowMinutes <= 0) {
+          ctx.addIssue({
+            code: "custom",
+            message: "invalid_windowMinutes",
+            path: ["params", "windowMinutes"],
+          });
+        }
+      }
+    }
+  });
+
+const putSchema = z
+  .object({
+    rules: z.array(ruleSchema).max(50),
+  })
+  .superRefine((body, ctx) => {
+    const seen = new Set<string>();
+    for (const [idx, r] of body.rules.entries()) {
+      if (seen.has(r.id)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "duplicate_rule_id",
+          path: ["rules", idx, "id"],
+        });
+        continue;
+      }
+      seen.add(r.id);
+    }
+  });
+
+const postSchema = z.object({
+  ruleId: z.string().trim().min(1).max(100),
 });
 
 export async function GET(request: Request) {
   return handleApi(request, async () => {
-    const limited = await rateLimit(request, { key: "alert_rules_get", limit: 240, windowMs: 60_000 });
+    const limited = await rateLimit(request, {
+      key: "alert_rules_get",
+      limit: 240,
+      windowMs: 60_000,
+    });
     if (limited) return limited;
     const rules = await readAlertRules();
     return { rules };
   });
 }
 
-export async function PUT(request: Request) {
+export async function POST(request: Request) {
   return handleApi(request, async () => {
-    const limited = await rateLimit(request, { key: "alert_rules_put", limit: 30, windowMs: 60_000 });
+    const limited = await rateLimit(request, {
+      key: "alert_rules_test",
+      limit: 30,
+      windowMs: 60_000,
+    });
     if (limited) return limited;
 
-    const auth = await requireAdmin(request, { strict: true, scope: "alert_rules_write" });
+    const auth = await requireAdmin(request, {
+      strict: true,
+      scope: "alert_rules_write",
+    });
+    if (auth) return auth;
+
+    const parsed = await request.json().catch(() => null);
+    const body = postSchema.safeParse(parsed);
+    if (!body.success) return error({ code: "invalid_request_body" }, 400);
+
+    const rules = await readAlertRules();
+    const rule = rules.find((r) => r.id === body.data.ruleId);
+    if (!rule) return error({ code: "not_found" }, 404);
+
+    await notifyAlert(
+      {
+        title: `Test: ${rule.name}`,
+        message: `Rule: ${rule.id}\nEvent: ${rule.event}\nSeverity: ${rule.severity}`,
+        severity: rule.severity,
+        fingerprint: `test:${rule.id}:${Date.now()}`,
+      },
+      {
+        channels: rule.channels,
+        recipient: rule.recipient ?? undefined,
+      },
+    );
+
+    const actor = getAdminActor(request);
+    await appendAuditLog({
+      actor,
+      action: "alert_rule_test_sent",
+      entityType: "alert_rule",
+      entityId: rule.id,
+      details: {
+        channels: rule.channels ?? ["webhook"],
+        recipient: rule.recipient ?? null,
+      },
+    });
+
+    return { sent: true };
+  });
+}
+
+export async function PUT(request: Request) {
+  return handleApi(request, async () => {
+    const limited = await rateLimit(request, {
+      key: "alert_rules_put",
+      limit: 30,
+      windowMs: 60_000,
+    });
+    if (limited) return limited;
+
+    const auth = await requireAdmin(request, {
+      strict: true,
+      scope: "alert_rules_write",
+    });
     if (auth) return auth;
 
     const parsed = await request.json().catch(() => null);
@@ -43,7 +274,7 @@ export async function PUT(request: Request) {
       action: "alert_rules_updated",
       entityType: "alerts",
       entityId: null,
-      details: { count: body.data.rules.length }
+      details: { count: body.data.rules.length },
     });
     return { rules: body.data.rules };
   });

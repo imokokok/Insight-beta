@@ -171,7 +171,13 @@ export type AuditLogEntry = {
   details: unknown;
 };
 
-export type AlertRuleEvent = "dispute_created" | "sync_error" | "stale_sync";
+export type AlertRuleEvent =
+  | "dispute_created"
+  | "sync_error"
+  | "stale_sync"
+  | "slow_api_request"
+  | "high_error_rate"
+  | "database_slow_query";
 export type AlertRule = {
   id: string;
   name: string;
@@ -179,4 +185,6 @@ export type AlertRule = {
   event: AlertRuleEvent;
   severity: AlertSeverity;
   params?: Record<string, unknown>;
+  channels?: Array<"webhook" | "email">;
+  recipient?: string | null;
 };

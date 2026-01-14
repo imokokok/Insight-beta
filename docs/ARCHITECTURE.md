@@ -12,7 +12,7 @@
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS + Shadcn UI
 - **State Management**: React Hooks + SWR (Stale-While-Revalidate)
-- **Web3 Integration**: `viem` for blockchain interaction, `wagmi` (inferred) for wallet connection.
+- **Web3 Integration**: `viem` for blockchain interaction and wallet connection (EIP-1193 provider).
 - **Charts**: Recharts
 
 ### Backend (Server Actions / API Routes)

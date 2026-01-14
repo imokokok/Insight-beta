@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ZodError } from "zod";
-import { GET, PUT } from "./route";
+import { GET, PUT, POST } from "./route";
 import { rateLimit, requireAdmin } from "@/server/apiResponse";
 import * as observability from "@/server/observability";
+import { notifyAlert } from "@/server/notifications";
 
 vi.mock("@/server/observability", () => ({
   readAlertRules: vi.fn(),
@@ -36,6 +37,10 @@ vi.mock("@/server/apiResponse", () => ({
     }
   },
   error: (value: unknown) => ({ ok: false, error: value }),
+}));
+
+vi.mock("@/server/notifications", () => ({
+  notifyAlert: vi.fn().mockResolvedValue(undefined),
 }));
 
 describe("GET /api/oracle/alert-rules", () => {
@@ -85,6 +90,66 @@ describe("GET /api/oracle/alert-rules", () => {
     const response = (await GET(req)) as { ok: boolean; error?: unknown };
     expect(response.ok).toBe(false);
     expect(response.error).toEqual({ code: "rate_limited" });
+  });
+});
+
+describe("POST /api/oracle/alert-rules (test)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("sends test notification for rule", async () => {
+    vi.mocked(observability.readAlertRules).mockResolvedValue([
+      {
+        id: "x",
+        name: "X",
+        enabled: true,
+        event: "sync_error",
+        severity: "warning",
+        channels: ["webhook"],
+        recipient: null,
+      },
+    ]);
+
+    const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ ruleId: "x" }),
+    });
+
+    const response = (await POST(req)) as unknown as
+      | { ok: true; data: { sent: boolean } }
+      | { ok: false; error: unknown };
+    expect(response.ok).toBe(true);
+    if (response.ok) {
+      expect(response.data.sent).toBe(true);
+    }
+    expect(rateLimit).toHaveBeenCalledWith(req, {
+      key: "alert_rules_test",
+      limit: 30,
+      windowMs: 60_000,
+    });
+    expect(requireAdmin).toHaveBeenCalledWith(req, {
+      strict: true,
+      scope: "alert_rules_write",
+    });
+    expect(notifyAlert).toHaveBeenCalled();
+  });
+
+  it("returns not_found when rule does not exist", async () => {
+    vi.mocked(observability.readAlertRules).mockResolvedValue([]);
+    const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ ruleId: "missing" }),
+    });
+
+    const response = (await POST(req)) as unknown as {
+      ok: boolean;
+      error?: unknown;
+    };
+    expect(response.ok).toBe(false);
+    expect(response.error).toEqual({ code: "not_found" });
   });
 });
 
@@ -232,6 +297,73 @@ describe("PUT /api/oracle/alert-rules", () => {
         severity: "low",
       },
     ] as unknown[];
+    const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ rules }),
+    });
+
+    const response = (await PUT(req)) as { ok: boolean; error?: unknown };
+    expect(response.ok).toBe(false);
+    expect(response.error).toEqual({ code: "invalid_request_body" });
+  });
+
+  it("rejects email channel without recipient", async () => {
+    const rules = [
+      {
+        id: "x",
+        name: "X",
+        enabled: true,
+        event: "sync_error",
+        severity: "warning",
+        channels: ["email"],
+        recipient: null,
+      },
+    ];
+    const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ rules }),
+    });
+
+    const response = (await PUT(req)) as { ok: boolean; error?: unknown };
+    expect(response.ok).toBe(false);
+    expect(response.error).toEqual({ code: "invalid_request_body" });
+  });
+
+  it("rejects stale_sync without maxAgeMs", async () => {
+    const rules = [
+      {
+        id: "stale",
+        name: "Stale",
+        enabled: true,
+        event: "stale_sync",
+        severity: "warning",
+        params: {},
+      },
+    ];
+    const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ rules }),
+    });
+
+    const response = (await PUT(req)) as { ok: boolean; error?: unknown };
+    expect(response.ok).toBe(false);
+    expect(response.error).toEqual({ code: "invalid_request_body" });
+  });
+
+  it("rejects high_error_rate without required params", async () => {
+    const rules = [
+      {
+        id: "rate",
+        name: "Rate",
+        enabled: true,
+        event: "high_error_rate",
+        severity: "critical",
+        params: { thresholdPercent: 10 },
+      },
+    ];
     const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
       method: "PUT",
       headers: { "content-type": "application/json" },

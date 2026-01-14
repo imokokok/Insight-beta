@@ -6,21 +6,23 @@ import { notifyAlert } from "@/server/notifications";
 
 vi.mock("@/server/db", () => ({
   query: vi.fn(),
-  hasDatabase: vi.fn(() => false)
+  hasDatabase: vi.fn(() => false),
 }));
 
 vi.mock("@/server/schema", () => ({
-  ensureSchema: vi.fn()
+  ensureSchema: vi.fn(),
 }));
 
 vi.mock("@/server/notifications", () => ({
-  notifyAlert: vi.fn().mockResolvedValue(undefined)
+  notifyAlert: vi.fn().mockResolvedValue(undefined),
 }));
 
 describe("observability (memory)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (globalThis as unknown as { __insightMemoryStore?: unknown }).__insightMemoryStore = undefined;
+    (
+      globalThis as unknown as { __insightMemoryStore?: unknown }
+    ).__insightMemoryStore = undefined;
     vi.mocked(hasDatabase).mockReturnValue(false);
   });
 
@@ -30,7 +32,7 @@ describe("observability (memory)", () => {
       type: "test",
       severity: "warning",
       title: "open",
-      message: "open"
+      message: "open",
     });
 
     for (let i = 0; i < 2100; i++) {
@@ -39,11 +41,15 @@ describe("observability (memory)", () => {
         type: "test",
         severity: "info",
         title: "resolved",
-        message: "resolved"
+        message: "resolved",
       });
       const mem = getMemoryStore();
       const created = mem.alerts.get(`resolved/${i}`);
-      if (created) mem.alerts.set(`resolved/${i}`, { ...created, status: "Resolved" as const });
+      if (created)
+        mem.alerts.set(`resolved/${i}`, {
+          ...created,
+          status: "Resolved" as const,
+        });
     }
 
     const mem = getMemoryStore();
@@ -65,12 +71,14 @@ describe("observability (memory)", () => {
       type: "test",
       severity: "critical",
       title: "Test Alert",
-      message: "Testing notifications"
+      message: "Testing notifications",
     });
-    expect(notifyAlert).toHaveBeenCalledWith(expect.objectContaining({
-      fingerprint: "notify-me",
-      severity: "critical"
-    }));
+    expect(notifyAlert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        fingerprint: "notify-me",
+        severity: "critical",
+      }),
+      undefined,
+    );
   });
 });
-
