@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { X, AlertCircle, BarChart2, FileText, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/i18n/LanguageProvider";
 import { RoleSelection } from "./Onboarding/RoleSelection";
 import { OnboardingSteps } from "./Onboarding/OnboardingSteps";
 
@@ -25,106 +26,8 @@ interface OnboardingProps {
   className?: string;
 }
 
-const roleSpecificSteps = [
-  {
-    role: "developer" as UserRole,
-    steps: [
-      {
-        id: "dev_api",
-        title: "API Access",
-        description:
-          "Explore our REST API for accessing Oracle data programmatically.",
-        icon: <FileText className="w-10 h-10 text-blue-600" />,
-      },
-      {
-        id: "dev_integration",
-        title: "Easy Integration",
-        description: "Integrate Oracle data into your dApps with simple SDKs.",
-        icon: <BarChart2 className="w-10 h-10 text-green-600" />,
-      },
-      {
-        id: "dev_monitoring",
-        title: "Monitor Your Integrations",
-        description:
-          "Track the performance of Oracle data in your applications.",
-        icon: <AlertCircle className="w-10 h-10 text-purple-600" />,
-      },
-    ],
-  },
-  {
-    role: "protocol_team" as UserRole,
-    steps: [
-      {
-        id: "proto_monitoring",
-        title: "Real-time Monitoring",
-        description:
-          "Monitor Oracle data trends and sync status for your protocols.",
-        icon: <BarChart2 className="w-10 h-10 text-blue-600" />,
-      },
-      {
-        id: "proto_disputes",
-        title: "Dispute Resolution",
-        description: "Participate in disputes and ensure fair outcomes.",
-        icon: <Users className="w-10 h-10 text-orange-600" />,
-      },
-      {
-        id: "proto_analytics",
-        title: "Performance Analytics",
-        description: "Analyze Oracle performance across different markets.",
-        icon: <FileText className="w-10 h-10 text-green-600" />,
-      },
-    ],
-  },
-  {
-    role: "oracle_operator" as UserRole,
-    steps: [
-      {
-        id: "op_monitoring",
-        title: "Node Monitoring",
-        description: "Monitor the performance and status of your Oracle nodes.",
-        icon: <BarChart2 className="w-10 h-10 text-blue-600" />,
-      },
-      {
-        id: "op_sync",
-        title: "Sync Status",
-        description: "Track sync status and latency across chains.",
-        icon: <AlertCircle className="w-10 h-10 text-purple-600" />,
-      },
-      {
-        id: "op_alerts",
-        title: "Alert Management",
-        description: "Configure alerts for important events and anomalies.",
-        icon: <Users className="w-10 h-10 text-orange-600" />,
-      },
-    ],
-  },
-  {
-    role: "general_user" as UserRole,
-    steps: [
-      {
-        id: "user_monitoring",
-        title: "Data Exploration",
-        description:
-          "Browse Oracle data across different markets and protocols.",
-        icon: <BarChart2 className="w-10 h-10 text-blue-600" />,
-      },
-      {
-        id: "user_assertions",
-        title: "Assertion Creation",
-        description: "Create and track assertions on Oracle data.",
-        icon: <FileText className="w-10 h-10 text-green-600" />,
-      },
-      {
-        id: "user_disputes",
-        title: "Dispute Participation",
-        description: "Vote on disputes and shape the outcome.",
-        icon: <Users className="w-10 h-10 text-orange-600" />,
-      },
-    ],
-  },
-];
-
 export function Onboarding({ onComplete, className }: OnboardingProps) {
+  const { t } = useI18n();
   const [currentStep, setCurrentStep] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
@@ -141,9 +44,8 @@ export function Onboarding({ onComplete, className }: OnboardingProps) {
   // Common welcome step
   const welcomeStep: OnboardingStep = {
     id: "welcome",
-    title: "Welcome to Insight",
-    description:
-      "Insight is your gateway to Oracle monitoring and dispute resolution. Let's take a quick tour to get you started.",
+    title: t("onboarding.welcome"),
+    description: t("onboarding.welcomeDesc"),
     icon: <AlertCircle className="w-10 h-10 text-purple-600" />,
   };
 
@@ -155,8 +57,104 @@ export function Onboarding({ onComplete, className }: OnboardingProps) {
     if (!selectedRole) {
       return [welcomeStep];
     }
-    const roleSteps = roleSpecificSteps.find((r) => r.role === selectedRole);
-    return roleSteps ? roleSteps.steps : [];
+
+    // Role-specific steps with translations
+    const roleStepsConfig = {
+      developer: [
+        {
+          id: "dev_api",
+          title: t("onboarding.steps.developer.api.title"),
+          description: t("onboarding.steps.developer.api.description"),
+          icon: <FileText className="w-10 h-10 text-blue-600" />,
+        },
+        {
+          id: "dev_integration",
+          title: t("onboarding.steps.developer.integration.title"),
+          description: t("onboarding.steps.developer.integration.description"),
+          icon: <BarChart2 className="w-10 h-10 text-green-600" />,
+        },
+        {
+          id: "dev_monitoring",
+          title: t("onboarding.steps.developer.monitoring.title"),
+          description: t("onboarding.steps.developer.monitoring.description"),
+          icon: <AlertCircle className="w-10 h-10 text-purple-600" />,
+        },
+      ],
+      protocol_team: [
+        {
+          id: "proto_monitoring",
+          title: t("onboarding.steps.protocol_team.monitoring.title"),
+          description: t(
+            "onboarding.steps.protocol_team.monitoring.description"
+          ),
+          icon: <BarChart2 className="w-10 h-10 text-blue-600" />,
+        },
+        {
+          id: "proto_disputes",
+          title: t("onboarding.steps.protocol_team.disputes.title"),
+          description: t("onboarding.steps.protocol_team.disputes.description"),
+          icon: <Users className="w-10 h-10 text-orange-600" />,
+        },
+        {
+          id: "proto_analytics",
+          title: t("onboarding.steps.protocol_team.analytics.title"),
+          description: t(
+            "onboarding.steps.protocol_team.analytics.description"
+          ),
+          icon: <FileText className="w-10 h-10 text-green-600" />,
+        },
+      ],
+      oracle_operator: [
+        {
+          id: "op_monitoring",
+          title: t("onboarding.steps.oracle_operator.nodeMonitoring.title"),
+          description: t(
+            "onboarding.steps.oracle_operator.nodeMonitoring.description"
+          ),
+          icon: <BarChart2 className="w-10 h-10 text-blue-600" />,
+        },
+        {
+          id: "op_sync",
+          title: t("onboarding.steps.oracle_operator.syncStatus.title"),
+          description: t(
+            "onboarding.steps.oracle_operator.syncStatus.description"
+          ),
+          icon: <AlertCircle className="w-10 h-10 text-purple-600" />,
+        },
+        {
+          id: "op_alerts",
+          title: t("onboarding.steps.oracle_operator.alerts.title"),
+          description: t("onboarding.steps.oracle_operator.alerts.description"),
+          icon: <Users className="w-10 h-10 text-orange-600" />,
+        },
+      ],
+      general_user: [
+        {
+          id: "user_monitoring",
+          title: t("onboarding.steps.general_user.exploration.title"),
+          description: t(
+            "onboarding.steps.general_user.exploration.description"
+          ),
+          icon: <BarChart2 className="w-10 h-10 text-blue-600" />,
+        },
+        {
+          id: "user_assertions",
+          title: t("onboarding.steps.general_user.assertions.title"),
+          description: t(
+            "onboarding.steps.general_user.assertions.description"
+          ),
+          icon: <FileText className="w-10 h-10 text-green-600" />,
+        },
+        {
+          id: "user_disputes",
+          title: t("onboarding.steps.general_user.disputes.title"),
+          description: t("onboarding.steps.general_user.disputes.description"),
+          icon: <Users className="w-10 h-10 text-orange-600" />,
+        },
+      ],
+    };
+
+    return roleStepsConfig[selectedRole] || [];
   };
 
   const steps = getCurrentSteps();
@@ -199,7 +197,7 @@ export function Onboarding({ onComplete, className }: OnboardingProps) {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-xl font-bold text-gray-900">
-            Insight Quick Tour
+            {t("onboarding.title")}
           </h2>
           <button
             onClick={handleSkip}

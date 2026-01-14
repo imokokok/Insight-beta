@@ -1,5 +1,6 @@
 import React from "react";
 import { Check, ArrowRight } from "lucide-react";
+import { useI18n } from "@/i18n/LanguageProvider";
 import { cn } from "@/lib/utils";
 
 interface OnboardingStep {
@@ -23,6 +24,7 @@ export function OnboardingSteps({
   onNext,
   onSkip,
 }: OnboardingStepsProps) {
+  const { t } = useI18n();
   const step = steps[currentStep];
   if (!step) return null;
 
@@ -63,7 +65,7 @@ export function OnboardingSteps({
           onClick={onSkip}
           className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
         >
-          Skip Tour
+          {t("onboarding.skipTour")}
         </button>
         <button
           onClick={onNext}
@@ -72,11 +74,11 @@ export function OnboardingSteps({
           {currentStep === steps.length - 1 ? (
             <>
               <Check className="w-4 h-4" />
-              Get Started
+              {t("onboarding.getStarted")}
             </>
           ) : (
             <>
-              Next
+              {t("onboarding.next")}
               <ArrowRight className="w-4 h-4" />
             </>
           )}

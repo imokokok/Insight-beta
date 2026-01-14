@@ -1,15 +1,23 @@
-export type Lang = "zh" | "en" | "es";
+export type Lang = "zh" | "en" | "es" | "fr" | "ko";
 
 export const languages: Array<{ code: Lang; label: string }> = [
   { code: "zh", label: "中文" },
   { code: "en", label: "English" },
   { code: "es", label: "Español" },
+  { code: "fr", label: "Français" },
+  { code: "ko", label: "한국어" },
 ];
 
 export const LANG_STORAGE_KEY = "insight_lang";
 
 export function isLang(value: unknown): value is Lang {
-  return value === "zh" || value === "en" || value === "es";
+  return (
+    value === "zh" ||
+    value === "en" ||
+    value === "es" ||
+    value === "fr" ||
+    value === "ko"
+  );
 }
 
 export function detectLangFromAcceptLanguage(
@@ -17,6 +25,8 @@ export function detectLangFromAcceptLanguage(
 ): Lang {
   const lower = (value ?? "").toLowerCase();
   if (lower.includes("zh")) return "zh";
+  if (lower.includes("fr")) return "fr";
+  if (lower.includes("ko")) return "ko";
   if (lower.includes("es")) return "es";
   return "en";
 }
@@ -25,12 +35,16 @@ export const langToHtmlLang: Record<Lang, string> = {
   zh: "zh-CN",
   en: "en",
   es: "es",
+  fr: "fr",
+  ko: "ko",
 };
 
 export const langToLocale: Record<Lang, string> = {
   zh: "zh-CN",
   en: "en-US",
   es: "es-ES",
+  fr: "fr-FR",
+  ko: "ko-KR",
 };
 
 export const translations = {
@@ -457,8 +471,92 @@ export const translations = {
       lastSeen: "最近",
       occurrences: "次数",
     },
-    watchlist: {
-      emptyDesc: "你还没有将任何断言加入关注列表。",
+    onboarding: {
+      title: "Insight 快速导览",
+      welcome: "欢迎使用 Insight",
+      welcomeDesc:
+        "Insight 是您进入预言机监控和争议解决的门户。让我们快速浏览一下，帮助您开始使用。",
+      selectRole: "请选择您的角色，获取个性化导览：",
+      skipTour: "跳过导览",
+      continueAsGeneral: "以普通用户身份继续",
+      getStarted: "开始使用",
+      next: "下一步",
+      roles: {
+        developer: {
+          title: "面向开发者",
+          description: "使用我们的预言机数据 API 自信地构建应用",
+        },
+        protocol_team: {
+          title: "面向协议团队",
+          description: "确保您的 DeFi 协议获得可靠的预言机数据",
+        },
+        oracle_operator: {
+          title: "面向预言机操作者",
+          description: "管理您的预言机节点和性能",
+        },
+        general_user: {
+          title: "面向普通用户",
+          description: "探索预言机数据并参与生态系统",
+        },
+      },
+      steps: {
+        developer: {
+          api: {
+            title: "API 访问",
+            description: "探索我们的 REST API，以编程方式访问预言机数据。",
+          },
+          integration: {
+            title: "轻松集成",
+            description: "使用简单的 SDK 将预言机数据集成到您的 dApps 中。",
+          },
+          monitoring: {
+            title: "监控您的集成",
+            description: "跟踪预言机数据在您应用中的性能。",
+          },
+        },
+        protocol_team: {
+          monitoring: {
+            title: "实时监控",
+            description: "监控您协议的预言机数据趋势和同步状态。",
+          },
+          disputes: {
+            title: "争议解决",
+            description: "参与争议并确保公平结果。",
+          },
+          analytics: {
+            title: "性能分析",
+            description: "分析不同市场的预言机性能。",
+          },
+        },
+        oracle_operator: {
+          nodeMonitoring: {
+            title: "节点监控",
+            description: "监控您的预言机节点的性能和状态。",
+          },
+          syncStatus: {
+            title: "同步状态",
+            description: "跟踪跨链的同步状态和延迟。",
+          },
+          alerts: {
+            title: "告警管理",
+            description: "为重要事件和异常配置告警。",
+          },
+        },
+        general_user: {
+          exploration: {
+            title: "数据探索",
+            description: "浏览不同市场和协议的预言机数据。",
+          },
+          assertions: {
+            title: "创建断言",
+            description: "创建和跟踪预言机数据的断言。",
+          },
+          disputes: {
+            title: "参与争议",
+            description: "对争议进行投票并影响结果。",
+          },
+        },
+      },
     },
     status: {
       voting: "投票中",
@@ -907,8 +1005,104 @@ export const translations = {
       lastSeen: "Last",
       occurrences: "Occurrences",
     },
-    watchlist: {
-      emptyDesc: "You have not added any assertions to your watchlist yet.",
+    onboarding: {
+      title: "Insight: Recorrido Rápido",
+      welcome: "Bienvenido a Insight",
+      welcomeDesc:
+        "Insight es tu puerta de acceso al monitoreo de oráculos y resolución de disputas. Tomemos un recorrido rápido para comenzar.",
+      selectRole: "Selecciona tu rol para obtener un recorrido personalizado:",
+      skipTour: "Saltar recorrido",
+      continueAsGeneral: "Continuar como usuario general",
+      getStarted: "Empezar",
+      next: "Siguiente",
+      roles: {
+        developer: {
+          title: "Para desarrolladores",
+          description:
+            "Construye con confianza usando nuestra API de datos de oráculo",
+        },
+        protocol_team: {
+          title: "Para equipos de protocolo",
+          description:
+            "Asegura la fiabilidad de los datos del oráculo para tus protocolos DeFi",
+        },
+        oracle_operator: {
+          title: "Para operadores de oráculos",
+          description: "Gestiona tus nodos de oráculo y su rendimiento",
+        },
+        general_user: {
+          title: "Para usuarios generales",
+          description:
+            "Explora los datos del oráculo y participa en el ecosistema",
+        },
+      },
+      steps: {
+        developer: {
+          api: {
+            title: "Acceso a API",
+            description:
+              "Explora nuestra API REST para acceder a datos de oráculo de forma programática.",
+          },
+          integration: {
+            title: "Integración sencilla",
+            description:
+              "Integra datos de oráculo en tus dApps con SDKs simples.",
+          },
+          monitoring: {
+            title: "Monitorea tus integraciones",
+            description:
+              "Rastrea el rendimiento de los datos del oráculo en tus aplicaciones.",
+          },
+        },
+        protocol_team: {
+          monitoring: {
+            title: "Monitoreo en tiempo real",
+            description:
+              "Monitorea las tendencias de datos del oráculo y el estado de sincronización para tus protocolos.",
+          },
+          disputes: {
+            title: "Resolución de disputas",
+            description: "Participa en disputas y asegura resultados justos.",
+          },
+          analytics: {
+            title: "Análisis de rendimiento",
+            description:
+              "Analiza el rendimiento del oráculo en diferentes mercados.",
+          },
+        },
+        oracle_operator: {
+          nodeMonitoring: {
+            title: "Monitoreo de nodos",
+            description:
+              "Monitorea el rendimiento y estado de tus nodos de oráculo.",
+          },
+          syncStatus: {
+            title: "Estado de sincronización",
+            description:
+              "Rastrea el estado de sincronización y latencia entre cadenas.",
+          },
+          alerts: {
+            title: "Gestión de alertas",
+            description:
+              "Configura alertas para eventos importantes y anomalías.",
+          },
+        },
+        general_user: {
+          exploration: {
+            title: "Exploración de datos",
+            description:
+              "Navega por los datos del oráculo en diferentes mercados y protocolos.",
+          },
+          assertions: {
+            title: "Creación de afirmaciones",
+            description: "Crea y rastrea afirmaciones sobre datos de oráculo.",
+          },
+          disputes: {
+            title: "Participación en disputas",
+            description: "Vota en disputas y forma el resultado.",
+          },
+        },
+      },
     },
     status: {
       voting: "Voting",
@@ -1385,8 +1579,98 @@ export const translations = {
       lastSeen: "Última vez",
       occurrences: "Ocurrencias",
     },
-    watchlist: {
-      emptyDesc: "Aún no has añadido afirmaciones a tu lista de seguimiento.",
+    onboarding: {
+      title: "Insight Quick Tour",
+      welcome: "Welcome to Insight",
+      welcomeDesc:
+        "Insight is your gateway to Oracle monitoring and dispute resolution. Let's take a quick tour to get you started.",
+      selectRole: "Please select your role to get a personalized tour:",
+      skipTour: "Skip Tour",
+      continueAsGeneral: "Continue as General User",
+      getStarted: "Get Started",
+      next: "Next",
+      roles: {
+        developer: {
+          title: "For Developers",
+          description: "Build with confidence using our Oracle data API",
+        },
+        protocol_team: {
+          title: "For Protocol Teams",
+          description: "Ensure Oracle data reliability for your DeFi protocols",
+        },
+        oracle_operator: {
+          title: "For Oracle Operators",
+          description: "Manage your Oracle nodes and performance",
+        },
+        general_user: {
+          title: "For General Users",
+          description: "Explore Oracle data and participate in the ecosystem",
+        },
+      },
+      steps: {
+        developer: {
+          api: {
+            title: "API Access",
+            description:
+              "Explore our REST API for accessing Oracle data programmatically.",
+          },
+          integration: {
+            title: "Easy Integration",
+            description:
+              "Integrate Oracle data into your dApps with simple SDKs.",
+          },
+          monitoring: {
+            title: "Monitor Your Integrations",
+            description:
+              "Track the performance of Oracle data in your applications.",
+          },
+        },
+        protocol_team: {
+          monitoring: {
+            title: "Real-time Monitoring",
+            description:
+              "Monitor Oracle data trends and sync status for your protocols.",
+          },
+          disputes: {
+            title: "Dispute Resolution",
+            description: "Participate in disputes and ensure fair outcomes.",
+          },
+          analytics: {
+            title: "Performance Analytics",
+            description: "Analyze Oracle performance across different markets.",
+          },
+        },
+        oracle_operator: {
+          nodeMonitoring: {
+            title: "Node Monitoring",
+            description:
+              "Monitor the performance and status of your Oracle nodes.",
+          },
+          syncStatus: {
+            title: "Sync Status",
+            description: "Track sync status and latency across chains.",
+          },
+          alerts: {
+            title: "Alert Management",
+            description: "Configure alerts for important events and anomalies.",
+          },
+        },
+        general_user: {
+          exploration: {
+            title: "Data Exploration",
+            description:
+              "Browse Oracle data across different markets and protocols.",
+          },
+          assertions: {
+            title: "Assertion Creation",
+            description: "Create and track assertions on Oracle data.",
+          },
+          disputes: {
+            title: "Dispute Participation",
+            description: "Vote on disputes and shape the outcome.",
+          },
+        },
+      },
     },
     status: {
       voting: "Votación",
@@ -1428,6 +1712,879 @@ export const translations = {
       digest: "Resumen del error",
       retry: "Reintentar",
       home: "Ir a Inicio",
+    },
+  },
+  fr: {
+    tooltips: {
+      bond: "Le caution est le capital bloqué par l'assertionneur pour garantir la véracité des informations. Si les informations sont prouvées fausses, la caution est confisquée.",
+      market:
+        "La question de marché définit ce que l'oracle doit répondre, généralement une question oui/non ou une valeur.",
+      liveness:
+        "La période de vie est la fenêtre temporelle permettant à quiconque de contester une assertion. Après cette période, l'assertion est considérée comme vraie.",
+      reward:
+        "Si aucune contestation n'a lieu, l'assertionneur récupère sa caution. Si une contestation se produit et que vous gagnez, vous gagnez la caution de l'opposant en récompense.",
+      protocol:
+        "Le nom du protocole ou du projet concerné par cette assertion.",
+      assertion:
+        "Le fait que vous déclarez. Assurez-vous qu'il est objectif, vérifiable et dispose d'un temps et d'une source clairs.",
+    },
+    app: {
+      title: "Insight · Surveillance UMA",
+      description:
+        "Surveillance visuelle des contestations et des règlements de l'UMA Optimistic Oracle.",
+      subtitle: "Surveillance de l'oracle",
+    },
+    howItWorks: {
+      title: "Comment ça fonctionne",
+      step1: {
+        title: "Déclarer une vérité",
+        desc: "Quiconque peut publier toute déclaration comme un fait, accompagnée d'une caution en garantie.",
+      },
+      step2: {
+        title: "Vérifier et contester",
+        desc: "Pendant la période de vie, si l'assertion est fausse, quiconque peut la contester en bloquant un montant égal.",
+      },
+      step3: {
+        title: "Régler et récompenser",
+        desc: "Si aucune contestation n'a lieu, l'assertion est valide. Si une contestation se produit, les vérificateurs UMA voteront et le gagnant prend la caution de l'opposant.",
+      },
+    },
+    nav: {
+      oracle: "Oracle",
+      disputes: "Contestations",
+      alerts: "Alertes",
+      audit: "Audit",
+      adminTokens: "Jetons",
+      myAssertions: "Mes assertions",
+      myDisputes: "Mes contestations",
+      watchlist: "Liste de surveillance",
+    },
+    common: {
+      language: "Langue",
+      loading: "Chargement…",
+      comingSoon: "Bientôt disponible",
+      loadMore: "Charger plus",
+      retry: "Réessayer",
+      noData: "Aucune donnée",
+      all: "Tous",
+      pending: "En attente",
+      disputed: "Contesté",
+      resolved: "Résolu",
+      openMenu: "Ouvrir le menu",
+      closeMenu: "Fermer le menu",
+      close: "Fermer",
+      viewTx: "Voir la transaction",
+      copyHash: "Copier le hash",
+      copied: "Copié",
+      viewDetails: "Voir les détails",
+      viewOnExplorer: "Voir sur l'explorateur",
+      allLoaded: "Tout chargé",
+      ok: "OK",
+      cancel: "Annuler",
+      confirm: "Confirmer",
+      popular: "Populaire",
+      example: "Exemple",
+      min: "Minimum",
+      addToWatchlist: "Ajouter à la liste de surveillance",
+      removeFromWatchlist: "Retirer de la liste de surveillance",
+      success: "Succès",
+    },
+    sidebar: {
+      userWallet: "Portefeuille utilisateur",
+      notConnected: "Non connecté",
+    },
+    wallet: {
+      connect: "Connecter le portefeuille",
+      connecting: "Connexion…",
+      notFound: "Portefeuille non trouvé",
+      install: "Veuillez installer MetaMask ou Rabby !",
+      connected: "Portefeuille connecté",
+      connectedMsg: "Connecté à",
+      failed: "Échec de la connexion",
+      disconnect: "Déconnecter",
+      copyAddress: "Copier l'adresse",
+      balance: "Solde",
+      myProfile: "Mon profil",
+      network: "Réseau",
+      unknownNetwork: "Réseau inconnu",
+      networkSwitched: "Réseau basculé",
+      networkSwitchFailed: "Échec du basculement de réseau",
+      switchingNetwork: "Basculement…",
+      networkAlreadySelected: "Déjà sur ce réseau",
+    },
+    chain: {
+      local: "Local",
+      polygon: "Polygon",
+      arbitrum: "Arbitrum",
+      optimism: "Optimism",
+    },
+    oracle: {
+      title: "Surveillance de l'oracle",
+      description:
+        "Suivi en temps réel des assertions et des contestations de l'UMA Optimistic Oracle.",
+      newAssertion: "Nouvelle assertion",
+      myActivity: "Mon activité",
+      myActivityTooltip: "Afficher uniquement les assertions créées par moi",
+      myActivityEmpty: "Vous n'avez pas encore créé d'assertions.",
+      myDisputesFilter: "Mes contestations",
+      myDisputesTooltip:
+        "Afficher uniquement les contestations initiées par moi",
+      myDisputesEmpty: "Vous n'avez pas encore initié de contestations.",
+      searchPlaceholder: "Rechercher des assertions…",
+      tabs: {
+        overview: "Aperçu",
+        leaderboard: "Classement",
+        tools: "Outils",
+      },
+      sync: {
+        synced: "Synchronisé",
+        lagging: "En retard",
+        error: "Erreur de synchronisation",
+        status: "Statut de l'indexeur",
+        block: "Hauteur du bloc",
+        lastUpdate: "Dernière mise à jour",
+      },
+      charts: {
+        dailyAssertions: "Assertions quotidiennes",
+        tvsCumulative: "Valeur totale sécurisée (cumulée)",
+        syncHealth: "Santé de la synchronisation",
+        topMarkets: "Marchés populaires",
+        noData: "Aucune donnée de graphique",
+        activityDesc: "Activité au fil du temps",
+        tvsDesc: "Valeur cumulée",
+        syncDesc: "Délai et durée de l'indexeur au fil du temps",
+        syncLagBlocks: "Délai (blocs)",
+        syncDuration: "Durée de synchronisation (ms)",
+        waitingData:
+          "Attente de plus de données historiques pour générer des tendances d'activité.",
+      },
+      alerts: {
+        title: "Règles d'alerte",
+        description:
+          "Configurer les règles de surveillance et de notification du système.",
+        rule: "Nom de la règle",
+        event: "Événement de déclenchement",
+        severity: "Gravité",
+        status: "Statut",
+        enabled: "Activé",
+        disabled: "Désactivé",
+        save: "Enregistrer la configuration",
+        saving: "Enregistrement…",
+        success: "Configuration enregistrée",
+        error: "Échec de l'enregistrement",
+        noRules: "Aucune règle",
+        events: {
+          dispute_created: "Contestation créée",
+          sync_error: "Erreur de synchronisation",
+          stale_sync: "Synchronisation figée",
+        },
+        severities: {
+          info: "Info",
+          warning: "Avertissement",
+          critical: "Critique",
+        },
+      },
+      myAssertions: {
+        title: "Mes assertions",
+        description: "Gérez toutes les assertions créées par vous.",
+        connectWalletTitle: "Connectez votre portefeuille pour voir",
+        connectWalletDesc:
+          "Veuillez connecter votre portefeuille pour voir votre historique d'assertions.",
+        noAssertions: "Vous n'avez pas encore créé d'assertions.",
+        createFirst: "Créer votre première assertion",
+      },
+      myDisputes: {
+        title: "Mes contestations",
+        description: "Gérez toutes les contestations initiées par vous.",
+        connectWalletTitle: "Connectez votre portefeuille pour voir",
+        connectWalletDesc:
+          "Veuillez connecter votre portefeuille pour voir votre historique de contestations.",
+        noDisputes: "Vous n'avez pas encore initié de contestations.",
+      },
+      timeline: {
+        asserted: "Asserté",
+        disputed: "Contesté",
+        resolved: "Résolu",
+        votingEnds: "Fin du vote",
+        livenessEnds: "Fin de la période de vie",
+        active: "Actif",
+      },
+      detail: {
+        title: "Détails de l'assertion",
+        back: "Retour",
+        goBack: "Retour",
+        asserter: "Assertionneur",
+        bondAmount: "Montant de la caution",
+        marketQuestion: "Question de marché",
+        assertedOutcome: "Résultat asserté",
+        settlementResult: "Résultat du règlement",
+        settleAssertion: "Régler l'assertion",
+        cancel: "Annuler",
+        submitting: "Soumission…",
+        confirming: "Confirmation…",
+        errorTitle: "Erreur de chargement des données",
+        errorNotFound: "L'assertion demandée n'a pas pu être trouvée.",
+        disputeAssertion: "Contester cette assertion",
+        voteOnDispute: "Voter sur la contestation",
+        support: "Prend en charge",
+        against: "Contre",
+      },
+    },
+    pnl: {
+      title: "Calculateur de profit",
+      description: "Estimez vos rendements potentiels",
+      iWantToDispute: "Je veux contester",
+      iWantToAssert: "Je veux affirmer",
+      bondAmount: "Montant de la caution (USD)",
+      disclaimer:
+        "*Supposant une logique standard de jeu d'escalade de caution 1:1.",
+      profit: "Profit potentiel",
+      roi: "ROI",
+      totalReturn: "Retour total",
+    },
+    audit: {
+      title: "Journal d'audit",
+      description:
+        "Suivez les actions d'administration et les modifications critiques.",
+      adminToken: "Jeton d'administration",
+      adminTokenPlaceholder: "Bearer …",
+      adminTokenHint:
+        "Utilisez le même jeton d'administration stocké dans cette session.",
+      total: "Total",
+      refresh: "Actualiser",
+      error: "Erreur",
+      empty: "Aucune entrée d'audit pour le moment.",
+      actor: "Acteur",
+    },
+    adminTokens: {
+      title: "Jetons d'administration",
+      description:
+        "Créez, faites pivoter et révoquez les jetons d'administration.",
+      label: "Étiquette",
+      role: "Rôle",
+      create: "Créer",
+      revoke: "Révoquer",
+      createdAt: "Créé",
+      revokedAt: "Révoqué",
+      tokenValue: "Nouveau jeton (affiché une fois)",
+    },
+    disputes: {
+      title: "Règlement des contestations",
+      description:
+        "Surveillez les contestations actives, suivez la progression des votes et analysez les résultats.",
+      umaDvmActive: "UMA DVM Actif",
+      viewOnUma: "Voir sur UMA",
+      reason: "Raison de la contestation",
+      disputer: "Contestataire",
+      disputedAt: "Contesté le",
+      votingProgress: "Progression du vote",
+      endsAt: "Se termine",
+      support: "Soutenir l'assertion",
+      reject: "Rejeter l'assertion",
+      totalVotesCast: "Total des votes exprimés",
+      emptyTitle: "Aucune contestation active",
+      emptyDesc:
+        "Il n'y a actuellement aucune contestation active dans le système.",
+      card: {
+        dispute: "Contestation",
+        disputer: "Contestataire",
+        votes: "Votes",
+      },
+    },
+    alerts: {
+      title: "Alertes",
+      description: "Aggrégez les alertes, reconnaissez-les et suivez la santé.",
+      adminToken: "Jeton d'administration",
+      adminActor: "Acteur",
+      adminActorPlaceholder: "ex. alice@ops",
+      adminTokenHint:
+        "Stocké localement dans cette session pour l'accès API administrateur",
+      adminTokenWarning:
+        "Sans jeton, vous ne pouvez que voir les alertes, pas les reconnaître/résoudre ni enregistrer les règles.",
+      rules: "Règles d'alerte",
+      refresh: "Actualiser",
+      acknowledge: "Reconnaître",
+      resolve: "Résoudre",
+      status: "Statut",
+      severity: "Gravité",
+      type: "Type",
+      searchPlaceholder: "Rechercher titre/contenu/entité…",
+      loadRules: "Charger les règles",
+      saveRules: "Enregistrer",
+      savingRules: "Enregistrement…",
+      lastSeen: "Dernière",
+      occurrences: "Occurrences",
+    },
+    watchlist: {
+      emptyDesc:
+        "Vous n'avez pas encore ajouté d'assertions à votre liste de surveillance.",
+    },
+    status: {
+      voting: "Voting",
+      pendingExecution: "Exécution en attente",
+      executed: "Exécuté",
+    },
+    errors: {
+      unknownError: "Erreur inconnue",
+      walletNotConnected: "Portefeuille non connecté",
+      userRejected: "Vous avez refusé la demande de portefeuille.",
+      requestPending:
+        "Une demande de portefeuille est déjà en attente. Veuillez vérifier votre portefeuille.",
+      chainNotAdded:
+        "Ce réseau n'est pas ajouté dans votre portefeuille. Veuillez l'ajouter d'abord.",
+      wrongNetwork: "Mauvais réseau. Veuillez basculer sur la chaîne cible.",
+      insufficientFunds:
+        "Fonds insuffisants pour payer les frais de transaction ou le montant de transfert.",
+      invalidAddress: "Format d'adresse incorrect",
+      invalidMaxBlockRange:
+        "La plage de blocs maximale n'est pas dans les limites autorisées",
+      invalidVotingPeriodHours:
+        "Le nombre d'heures de période de vote n'est pas dans les limites autorisées",
+      httpError: "Échec de la requête réseau",
+      invalidJson: "Échec de l'analyse de la réponse",
+      apiError: "Erreur serveur",
+      invalidApiResponse: "Réponse API invalide",
+      missingConfig: "Configuration manquante : URL RPC ou adresse de contrat",
+      invalidRpcUrl: "Format d'URL RPC incorrect",
+      invalidContractAddress: "Format d'adresse de contrat incorrect",
+      invalidChain: "Configuration de chaîne incorrecte",
+      invalidRequestBody: "Paramètres de requête incorrects",
+      forbidden: "Interdit (jeton d'administration requis)",
+      rpcUnreachable: "RPC inaccessible",
+      contractNotFound: "Contrat non trouvé",
+      syncFailed: "Échec de synchronisation",
+    },
+    errorPage: {
+      title: "Quelque chose s'est mal passé",
+      description:
+        "Nous nous excusons pour le désagrément. Une erreur inattendue s'est produite lors du traitement de votre demande.",
+      digest: "Résumé de l'erreur",
+      retry: "Réessayer",
+      home: "Retourner à l'accueil",
+    },
+    onboarding: {
+      title: "Visite guidée Insight",
+      welcome: "Bienvenue dans Insight",
+      welcomeDesc:
+        "Insight est votre passerelle vers la surveillance des oracles et la résolution des contestations. Faisons une petite visite pour vous familiariser.",
+      selectRole:
+        "Veuillez sélectionner votre rôle pour obtenir une visite personnalisée:",
+      skipTour: "Ignorer la visite",
+      continueAsGeneral: "Continuer en tant qu'utilisateur général",
+      getStarted: "Commencer",
+      next: "Suivant",
+      roles: {
+        developer: {
+          title: "Pour les développeurs",
+          description:
+            "Construisez avec confiance en utilisant notre API de données d'oracle",
+        },
+        protocol_team: {
+          title: "Pour les équipes de protocole",
+          description:
+            "Assurez la fiabilité des données d'oracle pour vos protocoles DeFi",
+        },
+        oracle_operator: {
+          title: "Pour les opérateurs d'oracles",
+          description: "Gérez vos nœuds d'oracle et leur performance",
+        },
+        general_user: {
+          title: "Pour les utilisateurs généraux",
+          description:
+            "Explorez les données d'oracle et participez à l'écosystème",
+        },
+      },
+      steps: {
+        developer: {
+          api: {
+            title: "Accès API",
+            description:
+              "Explorez notre API REST pour accéder aux données d'oracle de manière programmatique.",
+          },
+          integration: {
+            title: "Intégration simple",
+            description:
+              "Intégrez les données d'oracle dans vos dApps avec des SDK simples.",
+          },
+          monitoring: {
+            title: "Surveillez vos intégrations",
+            description:
+              "Suivez les performances des données d'oracle dans vos applications.",
+          },
+        },
+        protocol_team: {
+          monitoring: {
+            title: "Surveillance en temps réel",
+            description:
+              "Surveillez les tendances des données d'oracle et l'état de synchronisation pour vos protocoles.",
+          },
+          disputes: {
+            title: "Résolution des contestations",
+            description:
+              "Participez aux contestations et assurez des résultats équitables.",
+          },
+          analytics: {
+            title: "Analytiques de performance",
+            description:
+              "Analysez les performances de l'oracle sur différents marchés.",
+          },
+        },
+        oracle_operator: {
+          nodeMonitoring: {
+            title: "Surveillance des nœuds",
+            description:
+              "Surveillez les performances et l'état de vos nœuds d'oracle.",
+          },
+          syncStatus: {
+            title: "État de synchronisation",
+            description:
+              "Suivez l'état de synchronisation et la latence entre les chaînes.",
+          },
+          alerts: {
+            title: "Gestion des alertes",
+            description:
+              "Configurez des alertes pour les événements importants et les anomalies.",
+          },
+        },
+        general_user: {
+          exploration: {
+            title: "Exploration des données",
+            description:
+              "Parcourez les données d'oracle sur différents marchés et protocoles.",
+          },
+          assertions: {
+            title: "Création d'assertions",
+            description:
+              "Créez et suivez des assertions sur les données d'oracle.",
+          },
+          disputes: {
+            title: "Participation aux contestations",
+            description:
+              "Votez sur les contestations et influencez le résultat.",
+          },
+        },
+      },
+    },
+  },
+  ko: {
+    tooltips: {
+      bond: "본드는 주장자가 정보의 진실성을 보장하기 위해 잠그는 자금입니다. 정보가 거짓으로 입증되면 본드가 몰수됩니다.",
+      market:
+        "시장 질문은 오라클이 답해야 할具체적인 내용을 정의하며, 일반적으로 예/아니오 질문이나 수치입니다.",
+      liveness:
+        "생명 주기는 누구나 주장에异议를 제기할 수 있는 시간 창입니다. 종료 후 주장은 진실로 간주됩니다.",
+      reward:
+        "만약异议 기간 내에异议가 없다면, 주장자는 본드를 회수합니다.异议가 발생하고 승리하면 상대방의 본드를 보상으로 받게 됩니다.",
+      protocol: "이 주장과 관련된 프로토콜 또는 프로젝트의 이름입니다.",
+      assertion:
+        "당신이 진실로 주장하는 사실입니다.客觀적이고 검증 가능하며 명확한 시간과 출처가 있어야 합니다.",
+    },
+    app: {
+      title: "Insight · UMA 모니터링",
+      description: "UMA Optimistic Oracle 분쟁 및 결제의 시각적 모니터링",
+      subtitle: "오라클 모니터링",
+    },
+    howItWorks: {
+      title: "작동 원리",
+      step1: {
+        title: "진실 주장",
+        desc: "누구나 보증금과 함께 사실로서 어떤 주장도 게시할 수 있습니다.",
+      },
+      step2: {
+        title: "검증 및异议",
+        desc: "생명 주기 동안 주장이 거짓이라면, 누구나 같은 금액을 보증하여异议를 제기할 수 있습니다.",
+      },
+      step3: {
+        title: "결제 및 보상",
+        desc: "异议가 없으면 주장이 유효합니다.异议가 발생하면 UMA 검증자가 투표하고, 승자는 상대방의 보증금을 받습니다.",
+      },
+    },
+    nav: {
+      oracle: "오라클",
+      disputes: "분쟁",
+      alerts: "경고",
+      audit: "감사",
+      adminTokens: "토큰",
+      myAssertions: "내 주장",
+      myDisputes: "내 분쟁",
+      watchlist: "관심 목록",
+    },
+    common: {
+      language: "언어",
+      loading: "로딩 중…",
+      comingSoon: "곧 출시됩니다",
+      loadMore: "더 불러오기",
+      retry: "재시도",
+      noData: "데이터가 없습니다",
+      all: "전체",
+      pending: "대기 중",
+      disputed: "분쟁 중",
+      resolved: "해결됨",
+      openMenu: "메뉴 열기",
+      closeMenu: "메뉴 닫기",
+      close: "닫기",
+      viewTx: "거래 보기",
+      copyHash: "해시 복사",
+      copied: "복사됨",
+      viewDetails: "세부 정보 보기",
+      viewOnExplorer: "탐색기에서 보기",
+      allLoaded: "모두 로드됨",
+      ok: "확인",
+      cancel: "취소",
+      confirm: "확인",
+      popular: "인기",
+      example: "예시",
+      min: "최소",
+      addToWatchlist: "관심 목록에 추가",
+      removeFromWatchlist: "관심 목록에서 제거",
+      success: "성공",
+    },
+    sidebar: {
+      userWallet: "사용자 지갑",
+      notConnected: "연결되지 않음",
+    },
+    wallet: {
+      connect: "지갑 연결",
+      connecting: "연결 중...",
+      notFound: "지갑을 찾을 수 없음",
+      install: "MetaMask 또는 Rabby를 설치하세요!",
+      connected: "지갑이 연결되었습니다",
+      connectedMsg: "에 연결되었습니다",
+      failed: "연결 실패",
+      disconnect: "연결 해제",
+      copyAddress: "주소 복사",
+      balance: "잔액",
+      myProfile: "내 프로필",
+      network: "네트워크",
+      unknownNetwork: "알 수 없는 네트워크",
+      networkSwitched: "네트워크가 전환되었습니다",
+      networkSwitchFailed: "네트워크 전환 실패",
+      switchingNetwork: "전환 중…",
+      networkAlreadySelected: "이 네트워크에 이미 있습니다",
+    },
+    chain: {
+      local: "로컬",
+      polygon: "Polygon",
+      arbitrum: "Arbitrum",
+      optimism: "Optimism",
+    },
+    oracle: {
+      title: "오라클 모니터링",
+      description: "UMA Optimistic Oracle 주장과 분쟁의 실시간 추적",
+      newAssertion: "새 주장",
+      myActivity: "내 활동",
+      myActivityTooltip: "내가 만든 주장만 표시",
+      myActivityEmpty: "아직 주장을 만들지 않았습니다.",
+      myDisputesFilter: "내 분쟁",
+      myDisputesTooltip: "내가 시작한 분쟁만 표시",
+      myDisputesEmpty: "아직 분쟁을 시작하지 않았습니다.",
+      searchPlaceholder: "주장 검색…",
+      tabs: {
+        overview: "개요",
+        leaderboard: "순위표",
+        tools: "도구",
+      },
+      sync: {
+        synced: "동기화됨",
+        lagging: "동기화 지연",
+        error: "동기화 오류",
+        status: "인덱서 상태",
+        block: "블록 높이",
+        lastUpdate: "마지막 업데이트",
+      },
+      charts: {
+        dailyAssertions: "일일 주장",
+        tvsCumulative: "총 보장 가치 (누적)",
+        syncHealth: "동기화 건강",
+        topMarkets: "인기 시장",
+        noData: "차트 데이터가 없습니다",
+        activityDesc: "시간에 따른 활동",
+        tvsDesc: "누적 가치",
+        syncDesc: "시간에 따른 인덱서 지연 및 지속 시간",
+        syncLagBlocks: "지연 (블록)",
+        syncDuration: "동기화 지속 시간 (ms)",
+        waitingData:
+          "활동 트렌드를 생성하기 위해 더 많은 역사적 데이터를 기다리고 있습니다.",
+      },
+      alerts: {
+        title: "경고 규칙",
+        description: "시스템 모니터링 및 알림 규칙 구성",
+        rule: "규칙 이름",
+        event: "트리거 이벤트",
+        severity: "심각도",
+        status: "상태",
+        enabled: "활성화됨",
+        disabled: "비활성화됨",
+        save: "구성 저장",
+        saving: "저장 중...",
+        success: "구성이 저장되었습니다",
+        error: "저장 실패",
+        noRules: "규칙을 찾을 수 없습니다",
+        events: {
+          dispute_created: "분쟁 생성",
+          sync_error: "동기화 오류",
+          stale_sync: "동기화 정체",
+        },
+        severities: {
+          info: "정보",
+          warning: "경고",
+          critical: "심각",
+        },
+      },
+      myAssertions: {
+        title: "내 주장",
+        description: "내가 만든 모든 주장 관리",
+        connectWalletTitle: "보려면 지갑을 연결하세요",
+        connectWalletDesc: "주장 기록을 보려면 지갑을 연결하세요.",
+        noAssertions: "아직 주장을 만들지 않았습니다.",
+        createFirst: "첫 주장 만들기",
+      },
+      myDisputes: {
+        title: "내 분쟁",
+        description: "내가 시작한 모든 분쟁 관리",
+        connectWalletTitle: "보려면 지갑을 연결하세요",
+        connectWalletDesc: "분쟁 기록을 보려면 지갑을 연결하세요.",
+        noDisputes: "아직 분쟁을 시작하지 않았습니다.",
+      },
+      timeline: {
+        asserted: "주장됨",
+        disputed: "분쟁됨",
+        resolved: "해결됨",
+        votingEnds: "투표 종료",
+        livenessEnds: "생명 주기 종료",
+        active: "진행 중",
+      },
+      detail: {
+        title: "주장 세부 정보",
+        back: "뒤로 가기",
+        goBack: "돌아가기",
+        asserter: "주장자",
+        bondAmount: "보증금 금액",
+        marketQuestion: "시장 질문",
+        assertedOutcome: "주장된 결과",
+        settlementResult: "결제 결과",
+        settleAssertion: "주장 결제",
+        cancel: "취소",
+        submitting: "제출 중...",
+        confirming: "확인 중...",
+        errorTitle: "오류: 데이터 로드 실패",
+        errorNotFound: "요청한 주장을 찾을 수 없습니다.",
+        disputeAssertion: "이 주장에异议 제기",
+        voteOnDispute: "분쟁에 투표",
+        support: "지지",
+        against: "반대",
+      },
+    },
+    pnl: {
+      title: "수익 계산기",
+      description: "잠재적 수익 추정",
+      iWantToDispute: "异议하려고 합니다",
+      iWantToAssert: "주장하려고 합니다",
+      bondAmount: "보증금 금액 (USD)",
+      disclaimer: "*표준 1:1 보증금 승격 게임 로직을 가정합니다.",
+      profit: "잠재적 수익",
+      roi: "수익률",
+      totalReturn: "총 수익",
+    },
+    audit: {
+      title: "감사 로그",
+      description: "관리자 작업과 중요한 변경사항 추적",
+      adminToken: "관리자 토큰",
+      adminTokenPlaceholder: "Bearer …",
+      adminTokenHint: "이 세션에 저장된 동일한 관리자 토큰을 사용하세요.",
+      total: "총계",
+      refresh: "새로 고침",
+      error: "오류",
+      empty: "아직 감사 항목이 없습니다.",
+      actor: "행위자",
+    },
+    adminTokens: {
+      title: "관리자 토큰",
+      description: "관리자 토큰 생성, 회전 및 취소",
+      label: "레이블",
+      role: "역할",
+      create: "생성",
+      revoke: "취소",
+      createdAt: "생성일",
+      revokedAt: "취소일",
+      tokenValue: "새 토큰 (한 번만 표시)",
+    },
+    disputes: {
+      title: "분쟁 결제",
+      description: "활성 분쟁 모니터링, 투표 진행 상황 및 결과 분석",
+      umaDvmActive: "UMA DVM 활성",
+      viewOnUma: "UMA에서 보기",
+      reason: "분쟁 이유",
+      disputer: "异议자",
+      disputedAt: "异议 일시",
+      votingProgress: "투표 진행 상황",
+      endsAt: "종료 일시",
+      support: "지지",
+      reject: "거부",
+      totalVotesCast: "총 투표 수",
+      emptyTitle: "활성 분쟁이 없습니다",
+      emptyDesc: "현재 시스템에 활성 분쟁이 없습니다.",
+      card: {
+        dispute: "분쟁",
+        disputer: "异议자",
+        votes: "투표",
+      },
+    },
+    alerts: {
+      title: "경고",
+      description: "경고 집계, 확인 및 건강 추적",
+      adminToken: "관리자 토큰",
+      adminActor: "행위자",
+      adminActorPlaceholder: "예: alice@ops",
+      adminTokenHint: "관리자 API 접근을 위해 이 세션에 로컬로 저장됨",
+      adminTokenWarning:
+        "토큰 없이는 경고를 보기만 할 수 있고, 확인/해결하거나 규칙을 저장할 수 없습니다.",
+      rules: "경고 규칙",
+      refresh: "새로 고침",
+      acknowledge: "확인",
+      resolve: "해결",
+      status: "상태",
+      severity: "심각도",
+      type: "유형",
+      searchPlaceholder: "제목/내용/엔티티 검색…",
+      loadRules: "규칙 로드",
+      saveRules: "저장",
+      savingRules: "저장 중…",
+      lastSeen: "마지막",
+      occurrences: "발생 횟수",
+    },
+    watchlist: {
+      emptyDesc: "아직 관심 목록에 주장을 추가하지 않았습니다.",
+    },
+    status: {
+      voting: "투표 중",
+      pendingExecution: "실행 대기 중",
+      executed: "실행됨",
+    },
+    errors: {
+      unknownError: "알 수 없는 오류",
+      walletNotConnected: "지갑이 연결되지 않았습니다",
+      userRejected: "지갑 요청을 거부했습니다.",
+      requestPending:
+        "지갑에 이미 대기 중인 요청이 있습니다. 지갑을 확인하세요.",
+      chainNotAdded:
+        "이 네트워크가 지갑에 추가되지 않았습니다. 먼저 추가하세요.",
+      wrongNetwork: "잘못된 네트워크입니다. 대상 체인으로 전환하세요.",
+      insufficientFunds:
+        "트랜잭션 비용이나 전송 금액을 지불할 잔액이 부족합니다.",
+      invalidAddress: "주소 형식이 올바르지 않습니다",
+      invalidMaxBlockRange: "최대 블록 범위가 허용 범위를 벗어났습니다",
+      invalidVotingPeriodHours: "투표 기간 시간이 허용 범위를 벗어났습니다",
+      httpError: "네트워크 요청 실패",
+      invalidJson: "응답 파싱 실패",
+      apiError: "서버 오류",
+      invalidApiResponse: "API 응답이 유효하지 않습니다",
+      missingConfig: "구성 누락: RPC URL 또는 계약 주소",
+      invalidRpcUrl: "RPC URL 형식이 올바르지 않습니다",
+      invalidContractAddress: "계약 주소 형식이 올바르지 않습니다",
+      invalidChain: "체인 구성이 올바르지 않습니다",
+      invalidRequestBody: "요청 본문이 올바르지 않습니다",
+      forbidden: "금지됨 (관리자 토큰 필요)",
+      rpcUnreachable: "RPC에 연결할 수 없습니다",
+      contractNotFound: "계약을 찾을 수 없습니다",
+      syncFailed: "동기화 실패",
+    },
+    errorPage: {
+      title: "문제가 발생했습니다",
+      description:
+        "불편을 드려 죄송합니다. 요청을 처리하는 동안 예기치 않은 오류가 발생했습니다.",
+      digest: "오류 요약",
+      retry: "재시도",
+      home: "홈으로 가기",
+    },
+    onboarding: {
+      title: "Insight 빠른 안내",
+      welcome: "Insight에 오신 것을 환영합니다",
+      welcomeDesc:
+        "Insight는 오라클 모니터링과 분쟁 해결을 위한 게이트웨이입니다. 시작하기 전에 빠른 안내를 진행해보겠습니다.",
+      selectRole: "개인화된 안내를 받으려면 역할을 선택해 주세요:",
+      skipTour: "안내 건너뛰기",
+      continueAsGeneral: "일반 사용자로 계속하기",
+      getStarted: "시작하기",
+      next: "다음",
+      roles: {
+        developer: {
+          title: "개발자용",
+          description: "오라클 데이터 API를 사용하여 자신 있게 개발하세요",
+        },
+        protocol_team: {
+          title: "프로토콜 팀용",
+          description: "DeFi 프로토콜에 안정적인 오라클 데이터를 보장하세요",
+        },
+        oracle_operator: {
+          title: "오라클 운영자용",
+          description: "오라클 노드와 성능을 관리하세요",
+        },
+        general_user: {
+          title: "일반 사용자용",
+          description: "오라클 데이터를 탐색하고 생태계에 참여하세요",
+        },
+      },
+      steps: {
+        developer: {
+          api: {
+            title: "API 접근",
+            description:
+              "프로그래밍 방식으로 오라클 데이터에 접근하기 위한 REST API를 탐색하세요.",
+          },
+          integration: {
+            title: "간편한 통합",
+            description: "간단한 SDK로 dApp에 오라클 데이터를 통합하세요.",
+          },
+          monitoring: {
+            title: "통합 모니터링",
+            description: "애플리케이션에서 오라클 데이터의 성능을 추적하세요.",
+          },
+        },
+        protocol_team: {
+          monitoring: {
+            title: "실시간 모니터링",
+            description:
+              "프로토콜에 대한 오라클 데이터 트렌드와 동기화 상태를 모니터링하세요.",
+          },
+          disputes: {
+            title: "분쟁 해결",
+            description: "분쟁에 참여하고 공정한 결과를 보장하세요.",
+          },
+          analytics: {
+            title: "성능 분석",
+            description: "다양한 시장에서 오라클 성능을 분석하세요.",
+          },
+        },
+        oracle_operator: {
+          nodeMonitoring: {
+            title: "노드 모니터링",
+            description: "오라클 노드의 성능과 상태를 모니터링하세요.",
+          },
+          syncStatus: {
+            title: "동기화 상태",
+            description: "체인 간 동기화 상태와 지연을 추적하세요.",
+          },
+          alerts: {
+            title: "경고 관리",
+            description: "중요한 이벤트와 이상에 대한 경고를 구성하세요.",
+          },
+        },
+        general_user: {
+          exploration: {
+            title: "데이터 탐색",
+            description: "다양한 시장과 프로토콜의 오라클 데이터를 탐색하세요.",
+          },
+          assertions: {
+            title: "주장 생성",
+            description: "오라클 데이터에 대한 주장을 생성하고 추적하세요.",
+          },
+          disputes: {
+            title: "분쟁 참여",
+            description: "분쟁에 투표하고 결과에 영향을 미치세요.",
+          },
+        },
+      },
     },
   },
 } as const;
@@ -1778,6 +2935,46 @@ export type TranslationKey =
   | "errors.invalidAddress"
   | "errors.invalidMaxBlockRange"
   | "errors.invalidVotingPeriodHours"
+  | "onboarding.title"
+  | "onboarding.welcome"
+  | "onboarding.welcomeDesc"
+  | "onboarding.selectRole"
+  | "onboarding.skipTour"
+  | "onboarding.continueAsGeneral"
+  | "onboarding.getStarted"
+  | "onboarding.next"
+  | "onboarding.roles.developer.title"
+  | "onboarding.roles.developer.description"
+  | "onboarding.roles.protocol_team.title"
+  | "onboarding.roles.protocol_team.description"
+  | "onboarding.roles.oracle_operator.title"
+  | "onboarding.roles.oracle_operator.description"
+  | "onboarding.roles.general_user.title"
+  | "onboarding.roles.general_user.description"
+  | "onboarding.steps.developer.api.title"
+  | "onboarding.steps.developer.api.description"
+  | "onboarding.steps.developer.integration.title"
+  | "onboarding.steps.developer.integration.description"
+  | "onboarding.steps.developer.monitoring.title"
+  | "onboarding.steps.developer.monitoring.description"
+  | "onboarding.steps.protocol_team.monitoring.title"
+  | "onboarding.steps.protocol_team.monitoring.description"
+  | "onboarding.steps.protocol_team.disputes.title"
+  | "onboarding.steps.protocol_team.disputes.description"
+  | "onboarding.steps.protocol_team.analytics.title"
+  | "onboarding.steps.protocol_team.analytics.description"
+  | "onboarding.steps.oracle_operator.nodeMonitoring.title"
+  | "onboarding.steps.oracle_operator.nodeMonitoring.description"
+  | "onboarding.steps.oracle_operator.syncStatus.title"
+  | "onboarding.steps.oracle_operator.syncStatus.description"
+  | "onboarding.steps.oracle_operator.alerts.title"
+  | "onboarding.steps.oracle_operator.alerts.description"
+  | "onboarding.steps.general_user.exploration.title"
+  | "onboarding.steps.general_user.exploration.description"
+  | "onboarding.steps.general_user.assertions.title"
+  | "onboarding.steps.general_user.assertions.description"
+  | "onboarding.steps.general_user.disputes.title"
+  | "onboarding.steps.general_user.disputes.description"
   | "errors.httpError"
   | "errors.invalidJson"
   | "errors.apiError"
