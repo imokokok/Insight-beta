@@ -275,7 +275,7 @@ describe("GET /api/oracle/charts", () => {
       if (isNaN(days) || days < 1 || days > 365) {
         throw new Error("Invalid days parameter");
       }
-    } catch (e) {
+    } catch {
       errorThrown = true;
     }
     expect(errorThrown).toBe(true);
@@ -289,7 +289,7 @@ describe("GET /api/oracle/charts", () => {
       if (isNaN(days) || days < 1 || days > 365) {
         throw new Error("Invalid days parameter");
       }
-    } catch (e) {
+    } catch {
       errorThrown = true;
     }
     expect(errorThrown).toBe(false);

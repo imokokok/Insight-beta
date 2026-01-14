@@ -540,6 +540,85 @@ function attachRequestId(response: Response, requestId: string | null) {
   return response;
 }
 
+function logApiAccess(
+  requestId: string | null,
+  method: string | undefined,
+  path: string | undefined,
+  durationMs: number,
+  status: number,
+  sampleRate: number,
+  url: string | undefined,
+) {
+  // Enhanced logging with more metrics
+  const logData = {
+    requestId,
+    method,
+    path,
+    durationMs,
+    status,
+    timestamp: new Date().toISOString(),
+  };
+
+  if (sampleRate > 0 && Math.random() < sampleRate && url) {
+    logger.info("api_access", logData);
+  }
+
+  return logData;
+}
+
+function checkSlowRequest(
+  logData: {
+    requestId: string | null;
+    method: string | undefined;
+    path: string | undefined;
+    durationMs: number;
+    status: number;
+    timestamp: string;
+  },
+  durationMs: number,
+  slowMs: number,
+) {
+  // Alert for slow requests
+  if (durationMs >= slowMs) {
+    logger.warn("api_slow", { ...logData, thresholdMs: slowMs });
+  }
+}
+
+async function runApiAlerts(
+  path: string | undefined,
+  isError: boolean,
+  durationMs: number,
+  slowMs: number,
+  method: string | undefined,
+) {
+  if (shouldRunApiAlerts(path)) {
+    recordApiBucket(Date.now(), isError);
+    if (durationMs >= slowMs) {
+      maybeAlertSlowApiRequest({ method, path, durationMs }).catch(
+        () => void 0,
+      );
+    }
+    if (isError) {
+      maybeAlertHighErrorRate({ path }).catch(() => void 0);
+    }
+  }
+}
+
+function enhanceResponse(
+  response: Response,
+  durationMs: number,
+  requestId: string | null,
+  errorCode?: string,
+) {
+  // Add response headers with timing info
+  response.headers.set("x-response-time", durationMs.toString());
+  response.headers.set("x-request-id", requestId || "");
+  if (errorCode) {
+    response.headers.set("x-error-code", errorCode);
+  }
+  return response;
+}
+
 export async function handleApi<T>(
   arg1: Request | (() => Promise<T | Response> | T | Response),
   arg2?: () => Promise<T | Response> | T | Response,
@@ -563,86 +642,50 @@ export async function handleApi<T>(
       const response = attachRequestId(data, requestId);
       const durationMs = Date.now() - startedAt;
       const path = url ? new URL(url).pathname : undefined;
-
-      // Enhanced logging with more metrics
-      const logData = {
+      const logData = logApiAccess(
         requestId,
         method,
         path,
         durationMs,
-        status: response.status,
-        timestamp: new Date().toISOString(),
-      };
+        response.status,
+        sampleRate,
+        url,
+      );
 
-      if (sampleRate > 0 && Math.random() < sampleRate && url) {
-        logger.info("api_access", logData);
-      }
+      checkSlowRequest(logData, durationMs, slowMs);
+      await runApiAlerts(
+        path,
+        response.status >= 500,
+        durationMs,
+        slowMs,
+        method,
+      );
 
-      // Alert for slow requests
-      if (durationMs >= slowMs) {
-        logger.warn("api_slow", { ...logData, thresholdMs: slowMs });
-      }
-
-      if (shouldRunApiAlerts(path)) {
-        const isError = response.status >= 500;
-        recordApiBucket(Date.now(), isError);
-        if (durationMs >= slowMs) {
-          maybeAlertSlowApiRequest({ method, path, durationMs }).catch(
-            () => void 0,
-          );
-        }
-        if (isError) {
-          maybeAlertHighErrorRate({ path }).catch(() => void 0);
-        }
-      }
-
-      // Add response headers with timing info
-      response.headers.set("x-response-time", durationMs.toString());
-      response.headers.set("x-request-id", requestId || "");
-
-      return response;
+      return enhanceResponse(response, durationMs, requestId);
     }
     const response = attachRequestId(ok(data), requestId);
     const durationMs = Date.now() - startedAt;
     const path = url ? new URL(url).pathname : undefined;
-
-    // Enhanced logging with more metrics
-    const logData = {
+    const logData = logApiAccess(
       requestId,
       method,
       path,
       durationMs,
-      status: response.status,
-      timestamp: new Date().toISOString(),
-    };
+      response.status,
+      sampleRate,
+      url,
+    );
 
-    if (sampleRate > 0 && Math.random() < sampleRate && url) {
-      logger.info("api_access", logData);
-    }
+    checkSlowRequest(logData, durationMs, slowMs);
+    await runApiAlerts(
+      path,
+      response.status >= 500,
+      durationMs,
+      slowMs,
+      method,
+    );
 
-    // Alert for slow requests
-    if (durationMs >= slowMs) {
-      logger.warn("api_slow", { ...logData, thresholdMs: slowMs });
-    }
-
-    if (shouldRunApiAlerts(path)) {
-      const isError = response.status >= 500;
-      recordApiBucket(Date.now(), isError);
-      if (durationMs >= slowMs) {
-        maybeAlertSlowApiRequest({ method, path, durationMs }).catch(
-          () => void 0,
-        );
-      }
-      if (isError) {
-        maybeAlertHighErrorRate({ path }).catch(() => void 0);
-      }
-    }
-
-    // Add response headers with timing info
-    response.headers.set("x-response-time", durationMs.toString());
-    response.headers.set("x-request-id", requestId || "");
-
-    return response;
+    return enhanceResponse(response, durationMs, requestId);
   } catch (e) {
     const durationMs = Date.now() - startedAt;
     const path = url ? new URL(url).pathname : undefined;
@@ -664,24 +707,14 @@ export async function handleApi<T>(
         status: response.status,
       });
 
-      if (shouldRunApiAlerts(path)) {
-        const isError = response.status >= 500;
-        recordApiBucket(Date.now(), isError);
-        if (durationMs >= slowMs) {
-          maybeAlertSlowApiRequest({ method, path, durationMs }).catch(
-            () => void 0,
-          );
-        }
-        if (isError) {
-          maybeAlertHighErrorRate({ path }).catch(() => void 0);
-        }
-      }
-
-      // Add response headers with timing info
-      response.headers.set("x-response-time", durationMs.toString());
-      response.headers.set("x-request-id", requestId || "");
-
-      return response;
+      await runApiAlerts(
+        path,
+        response.status >= 500,
+        durationMs,
+        slowMs,
+        method,
+      );
+      return enhanceResponse(response, durationMs, requestId);
     }
 
     if (e instanceof ZodError) {
@@ -701,20 +734,8 @@ export async function handleApi<T>(
         details: e.issues,
       });
 
-      if (shouldRunApiAlerts(path)) {
-        recordApiBucket(Date.now(), false);
-        if (durationMs >= slowMs) {
-          maybeAlertSlowApiRequest({ method, path, durationMs }).catch(
-            () => void 0,
-          );
-        }
-      }
-
-      // Add response headers with timing info
-      response.headers.set("x-response-time", durationMs.toString());
-      response.headers.set("x-request-id", requestId || "");
-
-      return response;
+      await runApiAlerts(path, false, durationMs, slowMs, method);
+      return enhanceResponse(response, durationMs, requestId);
     }
 
     const message = e instanceof Error ? e.message : "unknown_error";
@@ -760,24 +781,7 @@ export async function handleApi<T>(
       requestId,
     );
 
-    if (shouldRunApiAlerts(path)) {
-      const isError = status >= 500;
-      recordApiBucket(Date.now(), isError);
-      if (durationMs >= slowMs) {
-        maybeAlertSlowApiRequest({ method, path, durationMs }).catch(
-          () => void 0,
-        );
-      }
-      if (isError) {
-        maybeAlertHighErrorRate({ path }).catch(() => void 0);
-      }
-    }
-
-    // Add response headers with timing info
-    response.headers.set("x-response-time", durationMs.toString());
-    response.headers.set("x-request-id", requestId || "");
-    response.headers.set("x-error-code", errorCode);
-
-    return response;
+    await runApiAlerts(path, status >= 500, durationMs, slowMs, method);
+    return enhanceResponse(response, durationMs, requestId, errorCode);
   }
 }

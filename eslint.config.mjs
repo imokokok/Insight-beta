@@ -3,8 +3,10 @@ import js from "@eslint/js";
 
 const compat = new FlatCompat({ baseDirectory: import.meta.dirname });
 
-export default [
+const config = [
   { ignores: ["contracts/**", "test/**", "hardhat.config.ts", "next-env.d.ts"] },
   js.configs.recommended,
   ...compat.extends("next/core-web-vitals", "next/typescript")
 ];
+
+export default config;
