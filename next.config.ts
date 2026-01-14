@@ -3,6 +3,41 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   output: "standalone",
+
+  // Build Optimization
+  compress: true, // Enable gzip compression
+
+  // Typed Routes
+  typedRoutes: true, // Enable typed routes
+
+  // Image Optimization
+  images: {
+    formats: ["image/avif", "image/webp"], // Support modern image formats
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+    ],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+  },
+
+  // Experimental Features
+  experimental: {
+    optimizeCss: true, // Optimize CSS
+    webpackBuildWorker: true, // Use webpack build worker for faster builds
+    serverMinification: true, // Minify server components
+  },
+
+  // Bundle Analysis
+  modularizeImports: {
+    "lucide-react": {
+      transform: "lucide-react/dist/esm/icons/{{ kebabCase member }}",
+      skipDefaultConversion: true,
+    },
+  },
+
   async headers() {
     return [
       {

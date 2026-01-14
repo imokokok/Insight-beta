@@ -3,7 +3,12 @@ import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import { verifyAdmin, type AdminScope } from "@/server/adminAuth";
 import { hasDatabase, query } from "@/server/db";
-import { deleteJsonKey, listJsonKeys, readJsonFile, writeJsonFile } from "@/server/kvStore";
+import {
+  deleteJsonKey,
+  listJsonKeys,
+  readJsonFile,
+  writeJsonFile,
+} from "@/server/kvStore";
 import { ZodError } from "zod";
 import { isIP } from "node:net";
 
@@ -12,11 +17,20 @@ export type ApiErrorPayload = { code: string; details?: unknown };
 export type ApiError = { ok: false; error: string | ApiErrorPayload };
 
 export function ok<T>(data: T, init?: { headers?: HeadersInit }) {
-  return NextResponse.json({ ok: true, data } satisfies ApiOk<T>, { headers: init?.headers });
+  return NextResponse.json({ ok: true, data } satisfies ApiOk<T>, {
+    headers: init?.headers,
+  });
 }
 
-export function error(error: string | ApiErrorPayload, status = 500, init?: { headers?: HeadersInit }) {
-  return NextResponse.json({ ok: false, error } satisfies ApiError, { status, headers: init?.headers });
+export function error(
+  error: string | ApiErrorPayload,
+  status = 500,
+  init?: { headers?: HeadersInit }
+) {
+  return NextResponse.json({ ok: false, error } satisfies ApiError, {
+    status,
+    headers: init?.headers,
+  });
 }
 
 export type { AdminScope };
@@ -27,8 +41,11 @@ const globalForApiCache = globalThis as unknown as {
   insightApiCache?: Map<string, ApiCacheRecord<unknown>> | undefined;
 };
 
-const insightApiCache = globalForApiCache.insightApiCache ?? new Map<string, ApiCacheRecord<unknown>>();
-if (process.env.NODE_ENV !== "production") globalForApiCache.insightApiCache = insightApiCache;
+const insightApiCache =
+  globalForApiCache.insightApiCache ??
+  new Map<string, ApiCacheRecord<unknown>>();
+if (process.env.NODE_ENV !== "production")
+  globalForApiCache.insightApiCache = insightApiCache;
 
 export async function cachedJson<T>(
   key: string,
@@ -61,22 +78,28 @@ export async function cachedJson<T>(
 export async function invalidateCachedJson(prefix: string) {
   insightApiCache.clear();
   for (let offset = 0; offset < 50_000; offset += 1000) {
-    const page = await listJsonKeys({ prefix: `api_cache/v1/${prefix}`, limit: 1000, offset }).catch(
-      () => null
-    );
+    const page = await listJsonKeys({
+      prefix: `api_cache/v1/${prefix}`,
+      limit: 1000,
+      offset,
+    }).catch(() => null);
     const items = page?.items ?? [];
     if (items.length === 0) break;
     await Promise.all(items.map((i) => deleteJsonKey(i.key).catch(() => null)));
   }
 }
 
-export async function requireAdmin(request: Request, opts?: { strict?: boolean; scope?: AdminScope }) {
+export async function requireAdmin(
+  request: Request,
+  opts?: { strict?: boolean; scope?: AdminScope }
+) {
   const strict = opts?.strict ?? false;
   const hasEnvToken = !!env.INSIGHT_ADMIN_TOKEN.trim();
   const hasSalt = !!env.INSIGHT_ADMIN_TOKEN_SALT.trim();
   if (!hasEnvToken && !hasSalt) {
     if (strict) return error({ code: "forbidden" }, 403);
-    if (process.env.NODE_ENV === "production") return error({ code: "forbidden" }, 403);
+    if (process.env.NODE_ENV === "production")
+      return error({ code: "forbidden" }, 403);
     return null;
   }
   const verified = await verifyAdmin(request, { strict, scope: opts?.scope });
@@ -104,8 +127,10 @@ const globalForRate = globalThis as unknown as {
   insightRate?: Map<string, RateLimitEntry> | undefined;
 };
 
-const insightRate = globalForRate.insightRate ?? new Map<string, RateLimitEntry>();
-if (process.env.NODE_ENV !== "production") globalForRate.insightRate = insightRate;
+const insightRate =
+  globalForRate.insightRate ?? new Map<string, RateLimitEntry>();
+if (process.env.NODE_ENV !== "production")
+  globalForRate.insightRate = insightRate;
 
 let lastRatePruneAtMs = 0;
 
@@ -145,7 +170,11 @@ function getClientIp(request: Request) {
   return "unknown";
 }
 
-async function rateLimitDb(opts: { key: string; limit: number; windowMs: number }, ip: string, now: number) {
+async function rateLimitDb(
+  opts: { key: string; limit: number; windowMs: number },
+  ip: string,
+  now: number
+) {
   const resetAt = new Date(now + opts.windowMs);
   const bucketKey = `${opts.key}:${ip}`;
   if (now - lastRatePruneAtMs > 5 * 60_000) {
@@ -170,7 +199,8 @@ async function rateLimitDb(opts: { key: string; limit: number; windowMs: number 
   );
   const row = res.rows[0];
   const count = Number(row?.count ?? 1);
-  const resetAtMs = row?.reset_at instanceof Date ? row.reset_at.getTime() : resetAt.getTime();
+  const resetAtMs =
+    row?.reset_at instanceof Date ? row.reset_at.getTime() : resetAt.getTime();
   if (count > opts.limit) {
     const retryAfterSeconds = Math.max(1, Math.ceil((resetAtMs - now) / 1000));
     const headers = new Headers();
@@ -183,7 +213,11 @@ async function rateLimitDb(opts: { key: string; limit: number; windowMs: number 
   return null;
 }
 
-async function rateLimitKv(opts: { key: string; limit: number; windowMs: number }, ip: string, now: number) {
+async function rateLimitKv(
+  opts: { key: string; limit: number; windowMs: number },
+  ip: string,
+  now: number
+) {
   if (!hasDatabase()) throw new Error("missing_database_url");
   const resetAtMs = now + opts.windowMs;
   const bucketKey = `rate_limit/v1/${opts.key}:${ip}`;
@@ -282,7 +316,10 @@ export async function rateLimit(
     return null;
   }
   if (existing.count >= opts.limit) {
-    const retryAfterSeconds = Math.max(1, Math.ceil((existing.resetAtMs - now) / 1000));
+    const retryAfterSeconds = Math.max(
+      1,
+      Math.ceil((existing.resetAtMs - now) / 1000)
+    );
     const headers = new Headers();
     headers.set("retry-after", String(retryAfterSeconds));
     headers.set("x-ratelimit-limit", String(opts.limit));
@@ -299,7 +336,8 @@ function getRequestId(request?: Request) {
   if (!request) return null;
   const existing = request.headers.get("x-request-id")?.trim();
   if (existing) return existing;
-  const hasCrypto = typeof crypto !== "undefined" && typeof crypto.randomUUID === "function";
+  const hasCrypto =
+    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function";
   if (hasCrypto) return crypto.randomUUID();
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
@@ -325,7 +363,9 @@ export async function handleApi<T>(
   const url = request ? request.url : undefined;
   const sampleRateRaw = Number(env.INSIGHT_API_LOG_SAMPLE_RATE || "");
   const sampleRate =
-    Number.isFinite(sampleRateRaw) && sampleRateRaw >= 0 && sampleRateRaw <= 1 ? sampleRateRaw : 0.01;
+    Number.isFinite(sampleRateRaw) && sampleRateRaw >= 0 && sampleRateRaw <= 1
+      ? sampleRateRaw
+      : 0.01;
   const slowMsRaw = Number(env.INSIGHT_SLOW_REQUEST_MS || 500);
   const slowMs = Number.isFinite(slowMsRaw) && slowMsRaw >= 0 ? slowMsRaw : 500;
   const startedAt = Date.now();
@@ -334,44 +374,121 @@ export async function handleApi<T>(
     if (data instanceof Response) {
       const response = attachRequestId(data, requestId);
       const durationMs = Date.now() - startedAt;
+      const path = url ? new URL(url).pathname : undefined;
+
+      // Enhanced logging with more metrics
+      const logData = {
+        requestId,
+        method,
+        path,
+        durationMs,
+        status: response.status,
+        timestamp: new Date().toISOString(),
+      };
+
       if (sampleRate > 0 && Math.random() < sampleRate && url) {
-        const path = new URL(url).pathname;
-        logger.info("api_access", { requestId, method, path, durationMs, status: response.status });
+        logger.info("api_access", logData);
       }
+
+      // Alert for slow requests
       if (durationMs >= slowMs) {
-        logger.warn("api_slow", { requestId, method, url, durationMs, status: response.status });
+        logger.warn("api_slow", { ...logData, thresholdMs: slowMs });
       }
+
+      // Add response headers with timing info
+      response.headers.set("x-response-time", durationMs.toString());
+      response.headers.set("x-request-id", requestId || "");
+
       return response;
     }
     const response = attachRequestId(ok(data), requestId);
     const durationMs = Date.now() - startedAt;
+    const path = url ? new URL(url).pathname : undefined;
+
+    // Enhanced logging with more metrics
+    const logData = {
+      requestId,
+      method,
+      path,
+      durationMs,
+      status: response.status,
+      timestamp: new Date().toISOString(),
+    };
+
     if (sampleRate > 0 && Math.random() < sampleRate && url) {
-      const path = new URL(url).pathname;
-      logger.info("api_access", { requestId, method, path, durationMs, status: response.status });
+      logger.info("api_access", logData);
     }
+
+    // Alert for slow requests
     if (durationMs >= slowMs) {
-      logger.warn("api_slow", { requestId, method, url, durationMs, status: response.status });
+      logger.warn("api_slow", { ...logData, thresholdMs: slowMs });
     }
+
+    // Add response headers with timing info
+    response.headers.set("x-response-time", durationMs.toString());
+    response.headers.set("x-request-id", requestId || "");
+
     return response;
   } catch (e) {
+    const durationMs = Date.now() - startedAt;
+    const path = url ? new URL(url).pathname : undefined;
+
+    // Enhanced error logging
+    const errorData = {
+      requestId,
+      method,
+      path,
+      durationMs,
+      timestamp: new Date().toISOString(),
+    };
+
     if (e instanceof Response) {
       const response = attachRequestId(e, requestId);
-      const durationMs = Date.now() - startedAt;
-      logger.error("api_error", { requestId, method, url, message: `http_${response.status}`, durationMs });
+      logger.error("api_error", {
+        ...errorData,
+        message: `http_${response.status}`,
+        status: response.status,
+      });
+
+      // Add response headers with timing info
+      response.headers.set("x-response-time", durationMs.toString());
+      response.headers.set("x-request-id", requestId || "");
+
       return response;
     }
 
     if (e instanceof ZodError) {
       const messages = e.issues.map((i) => i.message);
-      if (messages.includes("invalid_address")) {
-        return attachRequestId(error({ code: "invalid_address", details: e.issues }, 400), requestId);
-      }
-      return attachRequestId(error({ code: "invalid_request_body", details: e.issues }, 400), requestId);
+      const errorCode = messages.includes("invalid_address")
+        ? "invalid_address"
+        : "invalid_request_body";
+      const response = attachRequestId(
+        error({ code: errorCode, details: e.issues }, 400),
+        requestId
+      );
+
+      logger.error("api_error", {
+        ...errorData,
+        message: errorCode,
+        status: 400,
+        details: e.issues,
+      });
+
+      // Add response headers with timing info
+      response.headers.set("x-response-time", durationMs.toString());
+      response.headers.set("x-request-id", requestId || "");
+
+      return response;
     }
 
     const message = e instanceof Error ? e.message : "unknown_error";
-    const durationMs = Date.now() - startedAt;
-    logger.error("api_error", { requestId, method, url, message, durationMs });
+    logger.error("api_error", {
+      ...errorData,
+      message,
+      status: 500,
+      stack: e instanceof Error ? e.stack : undefined,
+    });
+
     const known400 = new Set([
       "invalid_request_body",
       "invalid_address",
@@ -384,11 +501,34 @@ export async function handleApi<T>(
       "invalid_voting_period_hours",
       "contract_not_found",
     ]);
-    if (message === "forbidden") return attachRequestId(error({ code: "forbidden" }, 403), requestId);
-    if (message === "rpc_unreachable") return attachRequestId(error({ code: message }, 502), requestId);
-    if (message === "sync_failed") return attachRequestId(error({ code: message }, 502), requestId);
-    if (known400.has(message)) return attachRequestId(error({ code: message }, 400), requestId);
-    if (message.startsWith("http_")) return attachRequestId(error({ code: message }, 500), requestId);
-    return attachRequestId(error({ code: "unknown_error" }, 500), requestId);
+
+    let status = 500;
+    let errorCode = "unknown_error";
+
+    if (message === "forbidden") {
+      status = 403;
+      errorCode = "forbidden";
+    } else if (message === "rpc_unreachable" || message === "sync_failed") {
+      status = 502;
+      errorCode = message;
+    } else if (known400.has(message)) {
+      status = 400;
+      errorCode = message;
+    } else if (message.startsWith("http_")) {
+      status = 500;
+      errorCode = message;
+    }
+
+    const response = attachRequestId(
+      error({ code: errorCode }, status),
+      requestId
+    );
+
+    // Add response headers with timing info
+    response.headers.set("x-response-time", durationMs.toString());
+    response.headers.set("x-request-id", requestId || "");
+    response.headers.set("x-error-code", errorCode);
+
+    return response;
   }
 }

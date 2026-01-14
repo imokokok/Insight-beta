@@ -494,7 +494,7 @@ export function OracleCharts() {
                   paddingAngle={5}
                   dataKey="count"
                 >
-                  {marketStats.map((entry, index) => (
+                  {marketStats.map((_entry, index) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={COLORS[index % COLORS.length]}

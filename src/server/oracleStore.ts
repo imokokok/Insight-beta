@@ -273,7 +273,8 @@ export async function getAssertion(id: string): Promise<Assertion | null> {
     const mock = mockAssertions.find((a) => a.id === id);
     return mock || null;
   }
-  return mapAssertionRow(res.rows[0]);
+  const row = res.rows[0];
+  return row ? mapAssertionRow(row) : null;
 }
 
 export async function getDispute(id: string): Promise<Dispute | null> {
@@ -290,7 +291,8 @@ export async function getDispute(id: string): Promise<Dispute | null> {
     const mock = mockDisputes.find((d) => d.id === id);
     return mock || null;
   }
-  return mapDisputeRow(res.rows[0]);
+  const row = res.rows[0];
+  return row ? mapDisputeRow(row) : null;
 }
 
 export async function getDisputeByAssertionId(
@@ -309,7 +311,8 @@ export async function getDisputeByAssertionId(
     const mock = mockDisputes.find((d) => d.assertionId === assertionId);
     return mock || null;
   }
-  return mapDisputeRow(res.rows[0]);
+  const row = res.rows[0];
+  return row ? mapDisputeRow(row) : null;
 }
 
 export async function listDisputes(params: ListParams) {
@@ -530,19 +533,21 @@ export const getOracleStats = unstable_cache(
     // 1. TVS: Sum of bond_usd for all assertions (or just active ones? Let's do all for "Total Value Secured")
     // Usually TVS implies current active value. Let's do active (Pending/Disputed).
     const tvsRes = await query(`
-      SELECT COALESCE(SUM(bond_usd), 0) as tvs 
-      FROM assertions 
+      SELECT SUM(bond_usd) AS tvs
+      FROM assertions
       WHERE status IN ('Pending', 'Disputed')
     `);
-    const tvsUsd = Number(tvsRes.rows[0].tvs);
+    const tvsRow = tvsRes.rows[0];
+    const tvsUsd = Number(tvsRow?.tvs || 0);
 
     // 2. Active Disputes
     const activeDisputesRes = await query(`
       SELECT COUNT(*) as count 
-      FROM disputes 
+      FROM disputes
       WHERE status <> 'Executed'
     `);
-    const activeDisputes = Number(activeDisputesRes.rows[0].count);
+    const activeDisputesRow = activeDisputesRes.rows[0];
+    const activeDisputes = Number(activeDisputesRow?.count || 0);
 
     // 3. Resolved in last 24h
     const resolvedRes = await query(
@@ -553,7 +558,8 @@ export const getOracleStats = unstable_cache(
     `,
       [oneDayAgo]
     );
-    const resolved24h = Number(resolvedRes.rows[0].count);
+    const resolvedRow = resolvedRes.rows[0];
+    const resolved24h = Number(resolvedRow?.count || 0);
 
     // 4. Avg Resolution Time (minutes)
     // For assertions that are Resolved, avg difference between liveness_ends_at and asserted_at
@@ -562,7 +568,8 @@ export const getOracleStats = unstable_cache(
       FROM assertions 
       WHERE status = 'Resolved'
     `);
-    const avgResolutionMinutes = Number(avgRes.rows[0].avg_min || 0);
+    const avgRow = avgRes.rows[0];
+    const avgResolutionMinutes = Number(avgRow?.avg_min || 0);
 
     return {
       tvsUsd,
@@ -790,11 +797,16 @@ export function getUserStats(address: string): Promise<UserStats> {
         [addressLower]
       );
 
-      const totalAssertions = Number(assertionsRes.rows[0].count);
-      const totalBondedUsd = Number(assertionsRes.rows[0].bonded);
-      const totalDisputes = Number(disputesRes.rows[0].count);
-      const resolvedCount = Number(resolvedRes.rows[0].count);
-      const wonCount = Number(wonRes.rows[0].count);
+      const assertionsRow = assertionsRes.rows[0];
+      const disputesRow = disputesRes.rows[0];
+      const resolvedRow = resolvedRes.rows[0];
+      const wonRow = wonRes.rows[0];
+
+      const totalAssertions = Number(assertionsRow?.count || 0);
+      const totalBondedUsd = Number(assertionsRow?.bonded || 0);
+      const totalDisputes = Number(disputesRow?.count || 0);
+      const resolvedCount = Number(resolvedRow?.count || 0);
+      const wonCount = Number(wonRow?.count || 0);
 
       const winRate =
         resolvedCount > 0 ? Math.round((wonCount / resolvedCount) * 100) : 0;

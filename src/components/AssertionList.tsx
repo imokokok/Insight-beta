@@ -399,7 +399,7 @@ export const AssertionList = memo(function AssertionList({
           Item: GridItem,
           Footer: Footer,
         }}
-        itemContent={(index, item) => renderCard(item)}
+        itemContent={(_index, item) => renderCard(item)}
       />
     );
   }
@@ -414,7 +414,7 @@ export const AssertionList = memo(function AssertionList({
         List: ListContainer,
         Footer: Footer,
       }}
-      itemContent={(index, item) => (
+      itemContent={(_index, item) => (
         <div className="mb-6">{renderCard(item)}</div>
       )}
     />

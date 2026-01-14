@@ -55,6 +55,24 @@ export const env = {
   get INSIGHT_WEBHOOK_URL() {
     return (process.env.INSIGHT_WEBHOOK_URL ?? "").trim();
   },
+  get INSIGHT_SMTP_HOST() {
+    return (process.env.INSIGHT_SMTP_HOST ?? "").trim();
+  },
+  get INSIGHT_SMTP_PORT() {
+    return (process.env.INSIGHT_SMTP_PORT ?? "").trim();
+  },
+  get INSIGHT_SMTP_USER() {
+    return (process.env.INSIGHT_SMTP_USER ?? "").trim();
+  },
+  get INSIGHT_SMTP_PASS() {
+    return (process.env.INSIGHT_SMTP_PASS ?? "").trim();
+  },
+  get INSIGHT_FROM_EMAIL() {
+    return (process.env.INSIGHT_FROM_EMAIL ?? "").trim();
+  },
+  get INSIGHT_DEFAULT_EMAIL() {
+    return (process.env.INSIGHT_DEFAULT_EMAIL ?? "").trim();
+  },
 };
 
 export function getEnv(key: keyof typeof env): string {
@@ -117,6 +135,12 @@ const envSchema = z.object({
     .optional(),
   INSIGHT_API_LOG_SAMPLE_RATE: z.coerce.number().min(0).max(1).optional(),
   INSIGHT_WEBHOOK_URL: z.string().url().optional(),
+  INSIGHT_SMTP_HOST: z.string().optional(),
+  INSIGHT_SMTP_PORT: z.string().optional(),
+  INSIGHT_SMTP_USER: z.string().optional(),
+  INSIGHT_SMTP_PASS: z.string().optional(),
+  INSIGHT_FROM_EMAIL: z.string().email().optional(),
+  INSIGHT_DEFAULT_EMAIL: z.string().email().optional(),
 });
 
 // Auto-validate on import

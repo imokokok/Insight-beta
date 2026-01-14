@@ -19,16 +19,16 @@ export function ConnectWallet() {
       toast({
         type: "success",
         title: t("wallet.connected"),
-        message: t("wallet.connectedMsg")
+        message: t("wallet.connectedMsg"),
       });
     } catch (error: unknown) {
-      logger.error("Failed to connect wallet:", error);
+      logger.error("Failed to connect wallet:", { error });
       const normalized = normalizeWalletError(error);
       if (normalized.kind === "WALLET_NOT_FOUND") {
         toast({
           type: "error",
           title: t("wallet.notFound"),
-          message: t("wallet.install")
+          message: t("wallet.install"),
         });
         return;
       }
@@ -36,18 +36,18 @@ export function ConnectWallet() {
         normalized.kind === "USER_REJECTED"
           ? t("errors.userRejected")
           : normalized.kind === "REQUEST_PENDING"
-            ? t("errors.requestPending")
-            : normalized.kind === "CHAIN_NOT_ADDED"
-              ? t("errors.chainNotAdded")
-              : normalized.kind === "WRONG_NETWORK"
-                ? t("errors.wrongNetwork")
-                : normalized.kind === "INSUFFICIENT_FUNDS"
-                  ? t("errors.insufficientFunds")
-            : t("errors.unknownError");
+          ? t("errors.requestPending")
+          : normalized.kind === "CHAIN_NOT_ADDED"
+          ? t("errors.chainNotAdded")
+          : normalized.kind === "WRONG_NETWORK"
+          ? t("errors.wrongNetwork")
+          : normalized.kind === "INSUFFICIENT_FUNDS"
+          ? t("errors.insufficientFunds")
+          : t("errors.unknownError");
       toast({
         type: "error",
         title: t("wallet.failed"),
-        message: msg
+        message: msg,
       });
     }
   };

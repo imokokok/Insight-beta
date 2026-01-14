@@ -1,4 +1,4 @@
-import { ensureOracleSynced, isOracleSyncing } from './oracleIndexer';
+import { ensureOracleSynced, isOracleSyncing } from "./oracleIndexer";
 import crypto from "crypto";
 import type { PoolClient } from "pg";
 import { env } from "@/lib/env";
@@ -50,7 +50,8 @@ async function tickWorker() {
       }
       global.insightWorkerLockClient = undefined;
       global.insightWorkerLockKey = undefined;
-      if (global.insightWorkerInterval) clearInterval(global.insightWorkerInterval);
+      if (global.insightWorkerInterval)
+        clearInterval(global.insightWorkerInterval);
       global.insightWorkerInterval = undefined;
       global.insightWorkerStarted = false;
       setTimeout(() => startWorker(), 5_000);
@@ -65,13 +66,18 @@ async function tickWorker() {
     const rules = await readAlertRules();
     const staleRule = rules.find((r) => r.enabled && r.event === "stale_sync");
     if (staleRule) {
-      const maxAgeMs = Number((staleRule.params as { maxAgeMs?: unknown } | undefined)?.maxAgeMs ?? 5 * 60 * 1000);
+      const maxAgeMs = Number(
+        (staleRule.params as { maxAgeMs?: unknown } | undefined)?.maxAgeMs ??
+          5 * 60 * 1000
+      );
       const state = await getSyncState();
       const lastSuccessAt = state.sync.lastSuccessAt;
       if (lastSuccessAt) {
         const ageMs = Date.now() - new Date(lastSuccessAt).getTime();
         if (ageMs > maxAgeMs) {
-          const fingerprint = `stale_sync:${state.chain}:${state.contractAddress ?? "unknown"}`;
+          const fingerprint = `stale_sync:${state.chain}:${
+            state.contractAddress ?? "unknown"
+          }`;
           await createOrTouchAlert({
             fingerprint,
             type: "stale_sync",
@@ -79,7 +85,7 @@ async function tickWorker() {
             title: "Oracle sync stale",
             message: `Last success ${Math.round(ageMs / 1000)}s ago`,
             entityType: "oracle",
-            entityId: state.contractAddress
+            entityId: state.contractAddress,
           });
         }
       }
@@ -93,13 +99,14 @@ async function tickWorker() {
       workerId: env.INSIGHT_WORKER_ID || "embedded",
       lockKey: global.insightWorkerLockKey ?? null,
       pid: typeof process !== "undefined" ? process.pid : null,
-      runtime: process.env.NEXT_RUNTIME ?? null
+      runtime: process.env.NEXT_RUNTIME ?? null,
     });
   } catch (e) {
     global.insightWorkerLastTickAt = new Date().toISOString();
     global.insightWorkerLastTickDurationMs = Date.now() - startedAt;
-    global.insightWorkerLastError = e instanceof Error ? e.message : "unknown_error";
-    logger.error("Background sync failed:", e);
+    global.insightWorkerLastError =
+      e instanceof Error ? e.message : "unknown_error";
+    logger.error("Background sync failed:", { error: e });
   }
 }
 

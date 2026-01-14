@@ -19,14 +19,30 @@ import { useI18n } from "@/i18n/LanguageProvider";
 import { ConnectWallet } from "@/components/ConnectWallet";
 
 const navItems = [
-  { key: "nav.oracle" as const, href: "/oracle", icon: Activity },
-  { key: "nav.disputes" as const, href: "/disputes", icon: ShieldAlert },
-  { key: "nav.alerts" as const, href: "/alerts", icon: ShieldAlert },
-  { key: "nav.audit" as const, href: "/audit", icon: ScrollText },
-  { key: "nav.adminTokens" as const, href: "/admin/tokens", icon: KeyRound },
-  { key: "nav.watchlist" as const, href: "/watchlist", icon: Star },
-  { key: "nav.myAssertions" as const, href: "/my-assertions", icon: User },
-  { key: "nav.myDisputes" as const, href: "/my-disputes", icon: ShieldAlert },
+  { key: "nav.oracle" as const, href: "/oracle" as const, icon: Activity },
+  {
+    key: "nav.disputes" as const,
+    href: "/disputes" as const,
+    icon: ShieldAlert,
+  },
+  { key: "nav.alerts" as const, href: "/alerts" as const, icon: ShieldAlert },
+  { key: "nav.audit" as const, href: "/audit" as const, icon: ScrollText },
+  {
+    key: "nav.adminTokens" as const,
+    href: "/admin/tokens" as const,
+    icon: KeyRound,
+  },
+  { key: "nav.watchlist" as const, href: "/watchlist" as const, icon: Star },
+  {
+    key: "nav.myAssertions" as const,
+    href: "/my-assertions" as const,
+    icon: User,
+  },
+  {
+    key: "nav.myDisputes" as const,
+    href: "/my-disputes" as const,
+    icon: ShieldAlert,
+  },
 ];
 
 export function Sidebar() {

@@ -46,7 +46,7 @@ const GridList = forwardRef<HTMLDivElement, ComponentPropsWithoutRef<"div">>(
       ref={ref}
       {...props}
       style={style}
-      className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-4"
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 pb-4"
     >
       {children}
     </div>
@@ -158,10 +158,10 @@ export const DisputeList = memo(function DisputeList({
     <Link href={`/oracle/${item.assertionId}`} className="block h-full">
       <div
         className={cn(
-          "glass-card rounded-2xl p-5 relative group border border-white/60 transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/10 hover:-translate-y-1 hover:border-purple-200/50",
+          "glass-card rounded-xl p-3 sm:p-5 relative group border border-white/60 transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/10 hover:-translate-y-1 hover:border-purple-200/50",
           viewMode === "grid"
             ? "h-full"
-            : "flex flex-col md:flex-row md:items-center gap-6"
+            : "flex flex-col md:flex-row md:items-center gap-4 sm:gap-6"
         )}
       >
         {/* Header: Icon, ID, Protocol */}
@@ -373,7 +373,7 @@ export const DisputeList = memo(function DisputeList({
           Item: GridItem,
           Footer: Footer,
         }}
-        itemContent={(index, item) => renderCard(item)}
+        itemContent={(_index, item) => renderCard(item)}
       />
     );
   }
@@ -388,7 +388,7 @@ export const DisputeList = memo(function DisputeList({
         List: ListContainer,
         Footer: Footer,
       }}
-      itemContent={(index, item) => (
+      itemContent={(_index, item) => (
         <div className="mb-6">{renderCard(item)}</div>
       )}
     />

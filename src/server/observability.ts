@@ -26,7 +26,13 @@ export type Alert = {
   updatedAt: string;
 };
 
-export type AlertRuleEvent = "dispute_created" | "sync_error" | "stale_sync";
+export type AlertRuleEvent =
+  | "dispute_created"
+  | "sync_error"
+  | "stale_sync"
+  | "slow_api_request"
+  | "high_error_rate"
+  | "database_slow_query";
 
 export type AlertRule = {
   id: string;
@@ -109,6 +115,30 @@ export async function readAlertRules(): Promise<AlertRule[]> {
       event: "stale_sync",
       severity: "warning",
       params: { maxAgeMs: 5 * 60 * 1000 },
+    },
+    {
+      id: "slow_api_request",
+      name: "Slow API request (>1s)",
+      enabled: true,
+      event: "slow_api_request",
+      severity: "warning",
+      params: { thresholdMs: 1000 },
+    },
+    {
+      id: "high_error_rate",
+      name: "High API error rate (>5%)",
+      enabled: true,
+      event: "high_error_rate",
+      severity: "critical",
+      params: { thresholdPercent: 5, windowMinutes: 5 },
+    },
+    {
+      id: "database_slow_query",
+      name: "Database slow query (>200ms)",
+      enabled: true,
+      event: "database_slow_query",
+      severity: "warning",
+      params: { thresholdMs: 200 },
     },
   ];
   await writeJsonFile(ALERT_RULES_KEY, defaults);

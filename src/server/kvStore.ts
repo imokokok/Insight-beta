@@ -3,16 +3,21 @@ import { getMemoryStore, memoryNowIso } from "@/server/memoryBackend";
 
 const MEMORY_MAX_KV_KEYS = 2000;
 
-export async function readJsonFile<T>(key: string, defaultValue: T): Promise<T> {
+export async function readJsonFile<T>(
+  key: string,
+  defaultValue: T
+): Promise<T> {
   if (!hasDatabase()) {
     const mem = getMemoryStore();
     const item = mem.kv.get(key);
     if (!item) return defaultValue;
     return item.value as T;
   }
-  const result = await query("SELECT value FROM kv_store WHERE key = $1", [key]);
+  const result = await query("SELECT value FROM kv_store WHERE key = $1", [
+    key,
+  ]);
   if (result.rows.length === 0) return defaultValue;
-  return result.rows[0].value as T;
+  return result.rows[0]!.value as T;
 }
 
 export async function writeJsonFile<T>(key: string, value: T): Promise<void> {
@@ -23,7 +28,7 @@ export async function writeJsonFile<T>(key: string, value: T): Promise<void> {
     if (overflow > 0) {
       const candidates = Array.from(mem.kv.entries()).map(([k, v]) => ({
         key: k,
-        updatedAtMs: new Date(v.updatedAt).getTime()
+        updatedAtMs: new Date(v.updatedAt).getTime(),
       }));
       candidates.sort((a, b) => a.updatedAtMs - b.updatedAtMs);
       for (let i = 0; i < overflow; i++) {
@@ -50,7 +55,15 @@ export async function deleteJsonKey(key: string): Promise<void> {
   await query("DELETE FROM kv_store WHERE key = $1", [key]);
 }
 
-export async function listJsonKeys({ prefix, limit, offset }: { prefix?: string; limit?: number; offset?: number }) {
+export async function listJsonKeys({
+  prefix,
+  limit,
+  offset,
+}: {
+  prefix?: string;
+  limit?: number;
+  offset?: number;
+}) {
   if (!hasDatabase()) {
     const mem = getMemoryStore();
     const keys = Array.from(mem.kv.keys()).sort((a, b) => a.localeCompare(b));
@@ -63,7 +76,7 @@ export async function listJsonKeys({ prefix, limit, offset }: { prefix?: string;
         const item = mem.kv.get(key)!;
         return { key, value: item.value, updatedAt: item.updatedAt };
       }),
-      total: filtered.length
+      total: filtered.length,
     };
   }
   let sql = "SELECT key, value, updated_at FROM kv_store";
@@ -94,11 +107,11 @@ export async function listJsonKeys({ prefix, limit, offset }: { prefix?: string;
 
   const result = await query(sql, params);
   return {
-    items: result.rows.map(row => ({
+    items: result.rows.map((row) => ({
       key: row.key,
       value: row.value,
-      updatedAt: row.updated_at
+      updatedAt: row.updated_at,
     })),
-    total: result.rowCount || 0 // Approximate for now
+    total: result.rowCount || 0, // Approximate for now
   };
 }

@@ -258,7 +258,7 @@ export async function fetchApiData<T>(
         ? String((error as { name?: unknown }).name)
         : "";
     if (name !== "AbortError") {
-      logger.error("Fetch error:", error);
+      logger.error("Fetch error:", { error });
       // 如果是网络错误，包装成更友好的错误
       if (
         error instanceof Error &&

@@ -139,7 +139,7 @@ export function useOracleTransaction() {
         chain: client.chain ?? null,
       } as unknown as Parameters<typeof client.writeContract>[0]);
 
-      logger.info(`Transaction ${functionName} sent:`, hash);
+      logger.info(`Transaction ${functionName} sent:`, { hash });
 
       const explorerUrl = chain ? getExplorerUrl(chain, hash) : null;
       const copyHashForToast = async (toastId: string) => {
@@ -256,7 +256,7 @@ export function useOracleTransaction() {
         onConfirmed?.(hash);
       }
     } catch (err: unknown) {
-      logger.error(err);
+      logger.error("Transaction failed:", { error: err });
       const normalized = normalizeWalletError(err);
       const errorMessage =
         normalized.kind === "USER_REJECTED"

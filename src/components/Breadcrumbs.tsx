@@ -33,7 +33,7 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
           <ChevronRight size={14} className="mx-2 text-gray-400" />
           {item.href ? (
             <Link
-              href={item.href}
+              href={item.href as unknown as URL}
               className="hover:text-purple-600 transition-colors font-medium"
             >
               {item.label}

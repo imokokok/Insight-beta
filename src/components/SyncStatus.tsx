@@ -21,7 +21,7 @@ interface SyncResponse {
   };
 }
 
-export function SyncStatus() {
+export function SyncStatus({ className }: { className?: string }) {
   const { lang, t } = useI18n();
   const locale = langToLocale[lang];
 
@@ -45,7 +45,12 @@ export function SyncStatus() {
   else if (diff > 60 * 1000) status = "lagging"; // > 1 min
 
   return (
-    <div className="group relative flex items-center gap-2 rounded-full bg-white/50 px-3 py-1.5 shadow-sm ring-1 ring-gray-200 backdrop-blur-sm transition-all hover:bg-white hover:shadow-md">
+    <div
+      className={cn(
+        "group relative flex items-center gap-2 rounded-full bg-white/50 px-3 py-1.5 shadow-sm ring-1 ring-gray-200 backdrop-blur-sm transition-all hover:bg-white hover:shadow-md",
+        className
+      )}
+    >
       <div
         className={cn(
           "relative flex h-2.5 w-2.5 items-center justify-center rounded-full",
