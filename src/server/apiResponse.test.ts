@@ -1,78 +1,190 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { NextResponse } from "next/server";
 
 vi.mock("@/lib/logger", () => ({
   logger: {
     debug: vi.fn(),
     info: vi.fn(),
     warn: vi.fn(),
-    error: vi.fn()
-  }
+    error: vi.fn(),
+  },
 }));
 
-import { handleApi } from "@/server/apiResponse";
-import { rateLimit } from "@/server/apiResponse";
+import {
+  handleApi,
+  rateLimit,
+  cachedJson,
+  invalidateCachedJson,
+  requireAdmin,
+  getAdminActor,
+  ok,
+  error,
+} from "@/server/apiResponse";
 import { hasDatabase } from "@/server/db";
+import { readJsonFile, writeJsonFile, listJsonKeys } from "@/server/kvStore";
+import { verifyAdmin } from "@/server/adminAuth";
 
-vi.mock("@/server/db", async () => {
-  const actual = await vi.importActual<typeof import("@/server/db")>("@/server/db");
-  return {
-    ...actual,
-    hasDatabase: vi.fn(() => false)
-  };
+vi.mock("@/server/db", () => ({
+  hasDatabase: vi.fn(() => false),
+  query: vi.fn(),
+}));
+
+vi.mock("@/server/kvStore", () => ({
+  readJsonFile: vi.fn(async () => null),
+  writeJsonFile: vi.fn(async () => void 0),
+  deleteJsonKey: vi.fn(async () => void 0),
+  listJsonKeys: vi.fn(async () => ({ items: [] })),
+}));
+
+vi.mock("@/server/adminAuth", () => ({
+  verifyAdmin: vi.fn(async () => ({ ok: true })),
+}));
+
+vi.mock("@/lib/env", () => ({
+  env: {
+    INSIGHT_ADMIN_TOKEN: "test-token",
+    INSIGHT_ADMIN_TOKEN_SALT: "test-salt",
+    INSIGHT_TRUST_PROXY: "false",
+  },
+}));
+
+describe("ok and error functions", () => {
+  it("ok returns a successful response", () => {
+    const data = { message: "success" };
+    const response = ok(data);
+    expect(response).toBeInstanceOf(NextResponse);
+    expect(response.status).toBe(200);
+  });
+
+  it("error returns an error response", () => {
+    const response = error("test error", 400);
+    expect(response).toBeInstanceOf(NextResponse);
+    expect(response.status).toBe(400);
+  });
 });
 
-describe("handleApi error mapping", () => {
+describe("handleApi function", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("handles successful responses", async () => {
+    const data = { message: "success" };
+    const response = await handleApi(
+      new Request("http://localhost/api/test"),
+      async () => {
+        return data;
+      },
+    );
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body).toEqual({ ok: true, data });
+  });
+
+  it("handles Response objects", async () => {
+    const mockResponse = new NextResponse(
+      JSON.stringify({ custom: "response" }),
+      {
+        status: 201,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+    const response = await handleApi(
+      new Request("http://localhost/api/test"),
+      async () => {
+        return mockResponse;
+      },
+    );
+    expect(response.status).toBe(201);
+    const body = await response.json();
+    expect(body).toEqual({ custom: "response" });
+  });
+
+  it("handles Zod errors", async () => {
+    // Simplified test that just throws a basic ZodError
+    const response = await handleApi(
+      new Request("http://localhost/api/test"),
+      async () => {
+        // Create a simple ZodError using Zod schema validation
+        const { z } = await import("zod");
+        const schema = z.string();
+        return schema.parse(123); // This will throw a ZodError
+      },
+    );
+    expect(response.status).toBe(400);
+    const body = await response.json();
+    expect(body.ok).toBe(false);
+    expect(body.error).toBeDefined();
+  });
+
   it("maps rpc_unreachable to 502", async () => {
-    const res = await handleApi(new Request("http://localhost/api/test"), async () => {
-      throw new Error("rpc_unreachable");
-    });
+    const res = await handleApi(
+      new Request("http://localhost/api/test"),
+      async () => {
+        throw new Error("rpc_unreachable");
+      },
+    );
     expect(res.status).toBe(502);
     const body = await res.json();
     expect(body).toEqual({ ok: false, error: { code: "rpc_unreachable" } });
   });
 
   it("maps sync_failed to 502", async () => {
-    const res = await handleApi(new Request("http://localhost/api/test"), async () => {
-      throw new Error("sync_failed");
-    });
+    const res = await handleApi(
+      new Request("http://localhost/api/test"),
+      async () => {
+        throw new Error("sync_failed");
+      },
+    );
     expect(res.status).toBe(502);
     const body = await res.json();
     expect(body).toEqual({ ok: false, error: { code: "sync_failed" } });
   });
 
   it("maps contract_not_found to 400", async () => {
-    const res = await handleApi(new Request("http://localhost/api/test"), async () => {
-      throw new Error("contract_not_found");
-    });
+    const res = await handleApi(
+      new Request("http://localhost/api/test"),
+      async () => {
+        throw new Error("contract_not_found");
+      },
+    );
     expect(res.status).toBe(400);
     const body = await res.json();
     expect(body).toEqual({ ok: false, error: { code: "contract_not_found" } });
   });
 
   it("maps forbidden to 403", async () => {
-    const res = await handleApi(new Request("http://localhost/api/test"), async () => {
-      throw new Error("forbidden");
-    });
+    const res = await handleApi(
+      new Request("http://localhost/api/test"),
+      async () => {
+        throw new Error("forbidden");
+      },
+    );
     expect(res.status).toBe(403);
     const body = await res.json();
     expect(body).toEqual({ ok: false, error: { code: "forbidden" } });
   });
 
   it("maps unknown errors to 500", async () => {
-    const res = await handleApi(new Request("http://localhost/api/test"), async () => {
-      throw new Error("something_else");
-    });
+    const res = await handleApi(
+      new Request("http://localhost/api/test"),
+      async () => {
+        throw new Error("something_else");
+      },
+    );
     expect(res.status).toBe(500);
     const body = await res.json();
     expect(body).toEqual({ ok: false, error: { code: "unknown_error" } });
   });
 });
 
-describe("rateLimit KV fallback", () => {
+describe("rateLimit function", () => {
   it("falls back to memory when KV storage is unavailable", async () => {
     const prevTrust = process.env.INSIGHT_TRUST_PROXY;
     const prevStore = process.env.INSIGHT_RATE_LIMIT_STORE;
-    (globalThis as unknown as { insightRate?: Map<string, unknown> }).insightRate = new Map();
+    (
+      globalThis as unknown as { insightRate?: Map<string, unknown> }
+    ).insightRate = new Map();
     try {
       process.env.INSIGHT_TRUST_PROXY = "true";
       process.env.INSIGHT_RATE_LIMIT_STORE = "kv";
@@ -80,8 +192,8 @@ describe("rateLimit KV fallback", () => {
 
       const req = new Request("http://localhost/api/test", {
         headers: {
-          "x-real-ip": "203.0.113.10"
-        }
+          "x-real-ip": "203.0.113.10",
+        },
       });
 
       const limit = 2;
@@ -98,5 +210,120 @@ describe("rateLimit KV fallback", () => {
       if (prevStore === undefined) delete process.env.INSIGHT_RATE_LIMIT_STORE;
       else process.env.INSIGHT_RATE_LIMIT_STORE = prevStore;
     }
+  });
+});
+
+describe("cachedJson function", () => {
+  beforeEach(() => {
+    // Clear any existing memory cache and reset mocks
+    (
+      globalThis as unknown as { insightApiCache?: Map<string, unknown> }
+    ).insightApiCache = new Map();
+    vi.clearAllMocks();
+  });
+
+  it("returns cached value when available", async () => {
+    const key = "test-key-cached";
+    const value = { message: "cached" };
+    const ttlMs = 60_000;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (readJsonFile as any).mockResolvedValue({
+      expiresAtMs: Date.now() + ttlMs,
+      value,
+    });
+
+    const result = await cachedJson(key, ttlMs, async () => {
+      return { message: "computed" };
+    });
+
+    expect(result).toEqual(value);
+    expect(readJsonFile).toHaveBeenCalled();
+  });
+
+  it("computes and caches value when not cached", async () => {
+    const key = "test-key-computed";
+    const computedValue = { message: "computed" };
+    const ttlMs = 60_000;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (readJsonFile as any).mockResolvedValue(null);
+
+    const result = await cachedJson(key, ttlMs, async () => {
+      return computedValue;
+    });
+
+    expect(result).toEqual(computedValue);
+    expect(writeJsonFile).toHaveBeenCalled();
+  });
+});
+
+describe("invalidateCachedJson function", () => {
+  it("clears all cache when no prefix is provided", async () => {
+    await invalidateCachedJson("");
+    expect(listJsonKeys).toHaveBeenCalled();
+  });
+
+  it("clears cache with prefix when provided", async () => {
+    await invalidateCachedJson("test-prefix");
+    expect(listJsonKeys).toHaveBeenCalled();
+  });
+});
+
+describe("requireAdmin function", () => {
+  it("returns null when admin is verified", async () => {
+    const request = new Request("http://localhost/api/admin/test", {
+      headers: {
+        Authorization: "Bearer test-token",
+      },
+    });
+
+    const result = await requireAdmin(request);
+    expect(result).toBeNull();
+    expect(verifyAdmin).toHaveBeenCalled();
+  });
+
+  it("returns error when admin verification fails", async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (verifyAdmin as any).mockResolvedValue({ ok: false });
+
+    const request = new Request("http://localhost/api/admin/test", {
+      headers: {
+        Authorization: "Bearer invalid-token",
+      },
+    });
+
+    const result = await requireAdmin(request);
+    expect(result).not.toBeNull();
+    expect(result?.status).toBe(403);
+  });
+});
+
+describe("getAdminActor function", () => {
+  it("returns admin when no x-admin-actor header is provided", () => {
+    const request = new Request("http://localhost/api/admin/test");
+    const actor = getAdminActor(request);
+    expect(actor).toBe("admin");
+  });
+
+  it("returns the x-admin-actor header value when provided", () => {
+    const request = new Request("http://localhost/api/admin/test", {
+      headers: {
+        "x-admin-actor": "test-actor",
+      },
+    });
+    const actor = getAdminActor(request);
+    expect(actor).toBe("test-actor");
+  });
+
+  it("truncates long actor names", () => {
+    const longActor = "a".repeat(100);
+    const request = new Request("http://localhost/api/admin/test", {
+      headers: {
+        "x-admin-actor": longActor,
+      },
+    });
+    const actor = getAdminActor(request);
+    expect(actor.length).toBe(80);
   });
 });

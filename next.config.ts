@@ -24,6 +24,17 @@ export default function nextConfig(phase: string): NextConfig {
         skipDefaultConversion: true,
       },
     },
+    webpack: (config) => {
+      // Ignore OpenTelemetry dynamic dependency warnings
+      config.ignoreWarnings = config.ignoreWarnings || [];
+      config.ignoreWarnings.push({
+        module:
+          /@opentelemetry\/instrumentation\/build\/esm\/platform\/node\/instrumentation\.js/,
+        message: /the request of a dependency is an expression/,
+      });
+
+      return config;
+    },
     async headers() {
       return [
         {

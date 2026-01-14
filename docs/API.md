@@ -57,11 +57,24 @@
 
 查询断言列表，支持参数：
 
-- `status`: `Pending | Disputed | Resolved`
-- `chain`: `Polygon | Arbitrum | Optimism | Local`
+- `status`: `Pending | Disputed | Resolved` - 断言状态筛选
+- `chain`: `Polygon | Arbitrum | Optimism | Local` - 区块链网络筛选
 - `q`: 关键字（market/assertion/address 等）
-- `limit`: 默认 30
-- `cursor`: 分页游标
+- `limit`: 结果数量限制，1-100，默认 30
+- `cursor`: 分页游标，默认 0
+- `sync`: `0 | 1` - 管理员专用，是否先触发同步
+- `asserter`: 断言者地址，筛选特定地址的断言
+- `ids`: 逗号分隔的断言ID列表，精确筛选多个断言
+
+返回结果：
+
+```json
+{
+  "items": [...],
+  "total": 100,
+  "nextCursor": 30
+}
+```
 
 ### GET `/api/oracle/assertions/[id]`
 
@@ -97,7 +110,7 @@ KV 用于存储后端内部状态/配置 JSON，主要给运维/调试用。
 写入一个 JSON：
 
 ```json
-{ "key": "oracle-config.json", "value": { } }
+{ "key": "oracle-config.json", "value": {} }
 ```
 
 ### DELETE `/api/admin/kv?key=...`（Admin）

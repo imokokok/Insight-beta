@@ -103,6 +103,40 @@ function shouldRunApiAlerts(path: string | undefined) {
   return true;
 }
 
+function getAlertCooldownKey(event: string, fingerprint: string): string {
+  return `${event}:${fingerprint}`;
+}
+
+async function createAlertIfNeeded(
+  rule: AlertRule,
+  fingerprint: string,
+  title: string,
+  message: string,
+  entityId: string | null,
+) {
+  const now = Date.now();
+  const cooldownKey = getAlertCooldownKey(rule.event, fingerprint);
+  const lastAt = apiAlertCooldown.get(cooldownKey) ?? 0;
+
+  if (now - lastAt < 30_000) return;
+
+  apiAlertCooldown.set(cooldownKey, now);
+
+  await createOrTouchAlert({
+    fingerprint,
+    type: rule.event,
+    severity: rule.severity,
+    title,
+    message,
+    entityType: "api",
+    entityId,
+    notify: {
+      channels: rule.channels,
+      recipient: rule.recipient ?? undefined,
+    },
+  });
+}
+
 function recordApiBucket(nowMs: number, isError: boolean) {
   const minute = Math.floor(nowMs / 60_000);
   const existing = apiRequestBuckets.get(minute) ?? { total: 0, errors: 0 };
@@ -123,55 +157,54 @@ async function maybeAlertSlowApiRequest(input: {
   durationMs: number;
 }) {
   if (!shouldRunApiAlerts(input.path)) return;
+
   const rules = await getAlertRulesCached();
   const slowRules = rules.filter(
     (r) => r.enabled && r.event === "slow_api_request",
   );
+
   if (slowRules.length === 0) return;
 
-  const now = Date.now();
+  const method = input.method || "UNKNOWN";
+  const path = input.path;
+
+  if (!path) return;
+
   for (const rule of slowRules) {
     const thresholdMs = Number(
       (rule.params as { thresholdMs?: unknown } | undefined)?.thresholdMs ??
         1000,
     );
+
     if (!Number.isFinite(thresholdMs) || thresholdMs <= 0) continue;
     if (input.durationMs < thresholdMs) continue;
 
-    const method = input.method || "UNKNOWN";
-    const path = input.path!;
     const fingerprint = `${rule.id}:${method}:${path}`;
-    const cooldownKey = `slow:${fingerprint}`;
-    const lastAt = apiAlertCooldown.get(cooldownKey) ?? 0;
-    if (now - lastAt < 30_000) continue;
-    apiAlertCooldown.set(cooldownKey, now);
+    const message = `${method} ${path} took ${input.durationMs}ms (threshold ${thresholdMs}ms)`;
 
-    await createOrTouchAlert({
+    await createAlertIfNeeded(
+      rule,
       fingerprint,
-      type: rule.event,
-      severity: rule.severity,
-      title: "Slow API request",
-      message: `${method} ${path} took ${input.durationMs}ms (threshold ${thresholdMs}ms)`,
-      entityType: "api",
-      entityId: path,
-      notify: {
-        channels: rule.channels,
-        recipient: rule.recipient ?? undefined,
-      },
-    });
+      "Slow API request",
+      message,
+      path,
+    );
   }
 }
 
 async function maybeAlertHighErrorRate(input: { path: string | undefined }) {
   if (!shouldRunApiAlerts(input.path)) return;
+
   const rules = await getAlertRulesCached();
   const rateRules = rules.filter(
     (r) => r.enabled && r.event === "high_error_rate",
   );
+
   if (rateRules.length === 0) return;
 
   const nowMs = Date.now();
   const minute = Math.floor(nowMs / 60_000);
+
   for (const rule of rateRules) {
     const thresholdPercent = Number(
       (rule.params as { thresholdPercent?: unknown } | undefined)
@@ -181,6 +214,7 @@ async function maybeAlertHighErrorRate(input: { path: string | undefined }) {
       (rule.params as { windowMinutes?: unknown } | undefined)?.windowMinutes ??
         5,
     );
+
     if (
       !Number.isFinite(thresholdPercent) ||
       thresholdPercent <= 0 ||
@@ -193,36 +227,29 @@ async function maybeAlertHighErrorRate(input: { path: string | undefined }) {
     const startMinute = minute - window + 1;
     let total = 0;
     let errors = 0;
+
     for (let m = startMinute; m <= minute; m += 1) {
       const b = apiRequestBuckets.get(m);
       if (!b) continue;
       total += b.total;
       errors += b.errors;
     }
+
     if (total <= 0) continue;
 
     const rate = (errors / total) * 100;
     if (rate < thresholdPercent) continue;
 
     const fingerprint = `${rule.id}:global`;
-    const cooldownKey = `high_error_rate:${fingerprint}`;
-    const lastAt = apiAlertCooldown.get(cooldownKey) ?? 0;
-    if (nowMs - lastAt < 30_000) continue;
-    apiAlertCooldown.set(cooldownKey, nowMs);
+    const message = `${rate.toFixed(1)}% errors (${errors}/${total}) over ${window}m`;
 
-    await createOrTouchAlert({
+    await createAlertIfNeeded(
+      rule,
       fingerprint,
-      type: rule.event,
-      severity: rule.severity,
-      title: "High API error rate",
-      message: `${rate.toFixed(1)}% errors (${errors}/${total}) over ${window}m`,
-      entityType: "api",
-      entityId: null,
-      notify: {
-        channels: rule.channels,
-        recipient: rule.recipient ?? undefined,
-      },
-    });
+      "High API error rate",
+      message,
+      null,
+    );
   }
 }
 
@@ -236,7 +263,12 @@ export async function cachedJson<T>(
   if (mem && mem.expiresAtMs > now) return mem.value as T;
 
   const storeKey = `api_cache/v1/${key}`;
-  const stored = await readJsonFile<ApiCacheRecord<T> | null>(storeKey, null);
+  let stored: ApiCacheRecord<T> | null = null;
+  try {
+    stored = await readJsonFile<ApiCacheRecord<T> | null>(storeKey, null);
+  } catch {
+    // Ignore read errors, will compute new value
+  }
   if (
     stored &&
     typeof stored === "object" &&
@@ -323,39 +355,47 @@ if (process.env.NODE_ENV !== "production")
 let lastRatePruneAtMs = 0;
 
 function getClientIp(request: Request) {
-  const trustMode = (env.INSIGHT_TRUST_PROXY || "").toLowerCase();
-  const trustAny = ["1", "true"].includes(trustMode);
-  const trustCloudflare = trustMode === "cloudflare";
-  if (!trustAny && !trustCloudflare) return "unknown";
+  try {
+    const trustMode = (env.INSIGHT_TRUST_PROXY || "").toLowerCase();
+    const trustAny = ["1", "true"].includes(trustMode);
+    const trustCloudflare = trustMode === "cloudflare";
+    if (!trustAny && !trustCloudflare) return "unknown";
 
-  const normalize = (raw: string) => {
-    let s = raw.trim();
-    if (!s) return null;
-    const comma = s.indexOf(",");
-    if (comma >= 0) s = s.slice(0, comma).trim();
-    if (s.includes(".") && s.includes(":") && !s.includes("::")) {
-      const parts = s.split(":");
-      if (parts.length === 2) s = parts[0]?.trim() ?? s;
+    const normalize = (raw: string | null | undefined) => {
+      try {
+        let s = raw?.trim() || "";
+        if (!s) return null;
+        const comma = s.indexOf(",");
+        if (comma >= 0) s = s.slice(0, comma).trim();
+        if (s.includes(".") && s.includes(":") && !s.includes("::")) {
+          const parts = s.split(":");
+          if (parts.length === 2) s = parts[0]?.trim() ?? s;
+        }
+        if (s.startsWith("[") && s.endsWith("]")) s = s.slice(1, -1).trim();
+        if (!s) return null;
+        if (isIP(s) === 0) return null;
+        return s;
+      } catch {
+        return null;
+      }
+    };
+
+    const cfRay = request.headers.get("cf-ray")?.trim() ?? "";
+    const cf = normalize(request.headers.get("cf-connecting-ip"));
+    if (trustCloudflare) {
+      if (cf && cfRay) return cf;
+      return "unknown";
     }
-    if (s.startsWith("[") && s.endsWith("]")) s = s.slice(1, -1).trim();
-    if (!s) return null;
-    if (isIP(s) === 0) return null;
-    return s;
-  };
 
-  const cfRay = request.headers.get("cf-ray")?.trim() ?? "";
-  const cf = normalize(request.headers.get("cf-connecting-ip") ?? "");
-  if (trustCloudflare) {
-    if (cf && cfRay) return cf;
+    if (cf) return cf;
+    const real = normalize(request.headers.get("x-real-ip"));
+    if (real) return real;
+    const forwarded = normalize(request.headers.get("x-forwarded-for"));
+    if (forwarded) return forwarded;
+    return "unknown";
+  } catch {
     return "unknown";
   }
-
-  if (cf) return cf;
-  const real = normalize(request.headers.get("x-real-ip") ?? "");
-  if (real) return real;
-  const forwarded = normalize(request.headers.get("x-forwarded-for") ?? "");
-  if (forwarded) return forwarded;
-  return "unknown";
 }
 
 async function rateLimitDb(
@@ -619,53 +659,43 @@ function enhanceResponse(
   return response;
 }
 
-export async function handleApi<T>(
-  arg1: Request | (() => Promise<T | Response> | T | Response),
-  arg2?: () => Promise<T | Response> | T | Response,
-) {
-  const request = typeof arg1 === "function" ? undefined : arg1;
-  const fn = typeof arg1 === "function" ? arg1 : (arg2 as () => Promise<T> | T);
-  const requestId = getRequestId(request);
-  const method = request?.method;
-  const url = request ? request.url : undefined;
+function getSampleRate(): number {
   const sampleRateRaw = Number(env.INSIGHT_API_LOG_SAMPLE_RATE || "");
-  const sampleRate =
-    Number.isFinite(sampleRateRaw) && sampleRateRaw >= 0 && sampleRateRaw <= 1
-      ? sampleRateRaw
-      : 0.01;
+  return Number.isFinite(sampleRateRaw) &&
+    sampleRateRaw >= 0 &&
+    sampleRateRaw <= 1
+    ? sampleRateRaw
+    : 0.01;
+}
+
+function getSlowRequestThreshold(): number {
   const slowMsRaw = Number(env.INSIGHT_SLOW_REQUEST_MS || 500);
-  const slowMs = Number.isFinite(slowMsRaw) && slowMsRaw >= 0 ? slowMsRaw : 500;
-  const startedAt = Date.now();
+  return Number.isFinite(slowMsRaw) && slowMsRaw >= 0 ? slowMsRaw : 500;
+}
+
+function getRequestPath(url: string | undefined): string | undefined {
+  if (!url) return undefined;
   try {
-    const data = await fn();
-    if (data instanceof Response) {
-      const response = attachRequestId(data, requestId);
-      const durationMs = Date.now() - startedAt;
-      const path = url ? new URL(url).pathname : undefined;
-      const logData = logApiAccess(
-        requestId,
-        method,
-        path,
-        durationMs,
-        response.status,
-        sampleRate,
-        url,
-      );
+    return new URL(url).pathname;
+  } catch {
+    return undefined;
+  }
+}
 
-      checkSlowRequest(logData, durationMs, slowMs);
-      await runApiAlerts(
-        path,
-        response.status >= 500,
-        durationMs,
-        slowMs,
-        method,
-      );
-
-      return enhanceResponse(response, durationMs, requestId);
-    }
-    const response = attachRequestId(ok(data), requestId);
+async function handleApiSuccess<T>(
+  data: T | Response,
+  _request: Request | undefined,
+  requestId: string | null,
+  method: string | undefined,
+  url: string | undefined,
+  startedAt: number,
+  sampleRate: number,
+  slowMs: number,
+): Promise<Response> {
+  if (data instanceof Response) {
+    const response = attachRequestId(data, requestId);
     const durationMs = Date.now() - startedAt;
-    const path = url ? new URL(url).pathname : undefined;
+    const path = getRequestPath(url);
     const logData = logApiAccess(
       requestId,
       method,
@@ -686,102 +716,176 @@ export async function handleApi<T>(
     );
 
     return enhanceResponse(response, durationMs, requestId);
-  } catch (e) {
-    const durationMs = Date.now() - startedAt;
-    const path = url ? new URL(url).pathname : undefined;
+  }
 
-    // Enhanced error logging
-    const errorData = {
-      requestId,
-      method,
-      path,
-      durationMs,
-      timestamp: new Date().toISOString(),
-    };
+  const response = attachRequestId(ok(data), requestId);
+  const durationMs = Date.now() - startedAt;
+  const path = getRequestPath(url);
+  const logData = logApiAccess(
+    requestId,
+    method,
+    path,
+    durationMs,
+    response.status,
+    sampleRate,
+    url,
+  );
 
-    if (e instanceof Response) {
-      const response = attachRequestId(e, requestId);
-      logger.error("api_error", {
-        ...errorData,
-        message: `http_${response.status}`,
-        status: response.status,
-      });
+  checkSlowRequest(logData, durationMs, slowMs);
+  await runApiAlerts(path, response.status >= 500, durationMs, slowMs, method);
 
-      await runApiAlerts(
-        path,
-        response.status >= 500,
-        durationMs,
-        slowMs,
-        method,
-      );
-      return enhanceResponse(response, durationMs, requestId);
-    }
+  return enhanceResponse(response, durationMs, requestId);
+}
 
-    if (e instanceof ZodError) {
-      const messages = e.issues.map((i) => i.message);
-      const errorCode = messages.includes("invalid_address")
-        ? "invalid_address"
-        : "invalid_request_body";
-      const response = attachRequestId(
-        error({ code: errorCode, details: e.issues }, 400),
-        requestId,
-      );
+function getErrorStatusCodeAndCode(message: string): {
+  status: number;
+  errorCode: string;
+} {
+  const known400 = new Set([
+    "invalid_request_body",
+    "invalid_address",
+    "missing_config",
+    "missing_database_url",
+    "invalid_rpc_url",
+    "invalid_contract_address",
+    "invalid_chain",
+    "invalid_max_block_range",
+    "invalid_voting_period_hours",
+    "contract_not_found",
+  ]);
 
-      logger.error("api_error", {
-        ...errorData,
-        message: errorCode,
-        status: 400,
-        details: e.issues,
-      });
+  let status = 500;
+  let errorCode = "unknown_error";
 
-      await runApiAlerts(path, false, durationMs, slowMs, method);
-      return enhanceResponse(response, durationMs, requestId);
-    }
+  if (message === "forbidden") {
+    status = 403;
+    errorCode = "forbidden";
+  } else if (message === "rpc_unreachable" || message === "sync_failed") {
+    status = 502;
+    errorCode = message;
+  } else if (known400.has(message)) {
+    status = 400;
+    errorCode = message;
+  } else if (message.startsWith("http_")) {
+    status = 500;
+    errorCode = message;
+  }
 
-    const message = e instanceof Error ? e.message : "unknown_error";
+  return { status, errorCode };
+}
+
+async function handleApiError(
+  e: unknown,
+  _request: Request | undefined,
+  requestId: string | null,
+  method: string | undefined,
+  url: string | undefined,
+  startedAt: number,
+  slowMs: number,
+): Promise<Response> {
+  const durationMs = Date.now() - startedAt;
+  const path = getRequestPath(url);
+
+  // Enhanced error logging
+  const errorData = {
+    requestId,
+    method,
+    path,
+    durationMs,
+    timestamp: new Date().toISOString(),
+  };
+
+  if (e instanceof Response) {
+    const response = attachRequestId(e, requestId);
     logger.error("api_error", {
       ...errorData,
-      message,
-      status: 500,
-      stack: e instanceof Error ? e.stack : undefined,
+      message: `http_${response.status}`,
+      status: response.status,
     });
 
-    const known400 = new Set([
-      "invalid_request_body",
-      "invalid_address",
-      "missing_config",
-      "missing_database_url",
-      "invalid_rpc_url",
-      "invalid_contract_address",
-      "invalid_chain",
-      "invalid_max_block_range",
-      "invalid_voting_period_hours",
-      "contract_not_found",
-    ]);
+    await runApiAlerts(
+      path,
+      response.status >= 500,
+      durationMs,
+      slowMs,
+      method,
+    );
+    return enhanceResponse(response, durationMs, requestId);
+  }
 
-    let status = 500;
-    let errorCode = "unknown_error";
-
-    if (message === "forbidden") {
-      status = 403;
-      errorCode = "forbidden";
-    } else if (message === "rpc_unreachable" || message === "sync_failed") {
-      status = 502;
-      errorCode = message;
-    } else if (known400.has(message)) {
-      status = 400;
-      errorCode = message;
-    } else if (message.startsWith("http_")) {
-      status = 500;
-      errorCode = message;
-    }
-
+  if (e instanceof ZodError) {
+    const messages = e.issues.map((i) => i.message);
+    const errorCode = messages.includes("invalid_address")
+      ? "invalid_address"
+      : "invalid_request_body";
     const response = attachRequestId(
-      error({ code: errorCode }, status),
+      error({ code: errorCode, details: e.issues }, 400),
       requestId,
     );
 
-    await runApiAlerts(path, status >= 500, durationMs, slowMs, method);
-    return enhanceResponse(response, durationMs, requestId, errorCode);
+    logger.error("api_error", {
+      ...errorData,
+      message: errorCode,
+      status: 400,
+      details: e.issues,
+    });
+
+    await runApiAlerts(path, false, durationMs, slowMs, method);
+    return enhanceResponse(response, durationMs, requestId);
+  }
+
+  const message = e instanceof Error ? e.message : "unknown_error";
+  logger.error("api_error", {
+    ...errorData,
+    message,
+    status: 500,
+    stack: e instanceof Error ? e.stack : undefined,
+  });
+
+  const { status, errorCode } = getErrorStatusCodeAndCode(message);
+  const response = attachRequestId(
+    error({ code: errorCode }, status),
+    requestId,
+  );
+
+  await runApiAlerts(path, status >= 500, durationMs, slowMs, method);
+  return enhanceResponse(response, durationMs, requestId, errorCode);
+}
+
+export async function handleApi<T>(
+  arg1: Request | (() => Promise<T | Response> | T | Response),
+  arg2?: () => Promise<T | Response> | T | Response,
+) {
+  const request = typeof arg1 === "function" ? undefined : arg1;
+  const fn = typeof arg1 === "function" ? arg1 : (arg2 as () => Promise<T> | T);
+  const requestId = getRequestId(request);
+  const method = request?.method;
+  const url = request ? request.url : undefined;
+  const sampleRate = getSampleRate();
+  const slowMs = getSlowRequestThreshold();
+  const startedAt = Date.now();
+
+  try {
+    const data = await fn();
+    return await handleApiSuccess(
+      data,
+      request,
+      requestId,
+      method,
+      url,
+      startedAt,
+      sampleRate,
+      slowMs,
+    );
+  } catch (e) {
+    return await handleApiError(
+      e,
+      request,
+      requestId,
+      method,
+      url,
+      startedAt,
+      slowMs,
+    );
   }
 }

@@ -122,13 +122,15 @@ describe("GET /api/oracle/charts", () => {
 
   it("returns chart data from database when available", async () => {
     const { query } = await import("@/server/db");
-    (hasDatabase as vi.Mock).mockReturnValue(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (hasDatabase as any).mockReturnValue(true);
 
     const mockRows = [
       { date: "2023-01-01", count: "3", volume: "150" },
       { date: "2023-01-02", count: "5", volume: "250" },
     ];
-    (query as vi.Mock).mockResolvedValue({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (query as any).mockResolvedValue({
       rows: mockRows,
     });
 
@@ -154,8 +156,10 @@ describe("GET /api/oracle/charts", () => {
 
   it("handles days parameter boundaries correctly", async () => {
     const { query } = await import("@/server/db");
-    (hasDatabase as vi.Mock).mockReturnValue(true);
-    (query as vi.Mock).mockResolvedValue({ rows: [] });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (hasDatabase as any).mockReturnValue(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (query as any).mockResolvedValue({ rows: [] });
 
     // Test default value (30 days)
     let request = new Request("http://localhost:3000/api/oracle/charts");
@@ -206,8 +210,10 @@ describe("GET /api/oracle/charts", () => {
 
     // Test empty data in database mode
     const { query } = await import("@/server/db");
-    (hasDatabase as vi.Mock).mockReturnValue(true);
-    (query as vi.Mock).mockResolvedValue({ rows: [] });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (hasDatabase as any).mockReturnValue(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (query as any).mockResolvedValue({ rows: [] });
 
     response = (await GET(request)) as unknown as {
       date: string;
@@ -234,7 +240,8 @@ describe("GET /api/oracle/charts", () => {
       },
     );
 
-    vi.mocked(rateLimit).mockResolvedValue(mockRateLimitResponse);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (rateLimit as any).mockResolvedValue(mockRateLimitResponse);
 
     const request = new Request(
       "http://localhost:3000/api/oracle/charts?days=7",
@@ -297,16 +304,17 @@ describe("GET /api/oracle/charts", () => {
 
   it("handles database errors gracefully", async () => {
     const { query } = await import("@/server/db");
-    (hasDatabase as vi.Mock).mockReturnValue(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (hasDatabase as any).mockReturnValue(true);
 
     // Mock query to throw an error
-    (query as vi.Mock).mockRejectedValue(
-      new Error("Database connection failed"),
-    );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (query as any).mockRejectedValue(new Error("Database connection failed"));
 
     // Since handleApi is mocked to return the raw data, we need to mock rateLimit
     // to not return a rate limit response, so we can test the database error handling
-    vi.mocked(rateLimit).mockResolvedValue(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (rateLimit as any).mockResolvedValue(null);
 
     const request = new Request(
       "http://localhost:3000/api/oracle/charts?days=7",
