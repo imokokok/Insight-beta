@@ -88,10 +88,10 @@ describe("GET /api/oracle/charts", () => {
     });
     expect(hasDatabase).toHaveBeenCalled();
     expect(response).toHaveLength(2);
-    expect(response[0].count).toBe(1);
-    expect(response[0].volume).toBe(10);
-    expect(response[1].count).toBe(1);
-    expect(response[1].volume).toBe(5);
+    expect(response[0]!.count).toBe(1);
+    expect(response[0]!.volume).toBe(10);
+    expect(response[1]!.count).toBe(1);
+    expect(response[1]!.volume).toBe(5);
     expect(cachedJson).toHaveBeenCalledWith(
       "oracle_api:/api/oracle/charts?days=7",
       30_000,

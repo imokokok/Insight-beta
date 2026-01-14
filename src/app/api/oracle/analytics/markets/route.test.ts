@@ -88,9 +88,9 @@ describe("GET /api/oracle/analytics/markets", () => {
     });
     expect(hasDatabase).toHaveBeenCalled();
     expect(response).toHaveLength(1);
-    expect(response[0].market).toBe("ETH/USD");
-    expect(response[0].count).toBe(2);
-    expect(response[0].volume).toBe(15);
+    expect(response[0]!.market).toBe("ETH/USD");
+    expect(response[0]!.count).toBe(2);
+    expect(response[0]!.volume).toBe(15);
     expect(cachedJson).toHaveBeenCalledWith(
       "oracle_api:markets:7:5",
       60_000,
