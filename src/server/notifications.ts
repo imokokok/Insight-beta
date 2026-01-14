@@ -41,7 +41,7 @@ export async function notifyAlert(
     severity: "info" | "warning" | "critical";
     fingerprint: string;
   },
-  options?: NotificationOptions
+  options?: NotificationOptions,
 ) {
   const channels = options?.channels || ["webhook"];
 
@@ -70,24 +70,38 @@ async function sendWebhookNotification(alert: {
   fingerprint: string;
 }) {
   const url = env.INSIGHT_WEBHOOK_URL;
-  if (!url) return;
+  if (!url) {
+    logger.debug("Webhook notification not configured, skipping", {
+      fingerprint: alert.fingerprint,
+    });
+    return;
+  }
 
   const emoji =
     alert.severity === "critical"
       ? "🚨"
       : alert.severity === "warning"
-      ? "⚠️"
-      : "ℹ️";
+        ? "⚠️"
+        : "ℹ️";
   const content = `${emoji} **[${alert.severity.toUpperCase()}] ${
     alert.title
   }**\n${alert.message}\nID: \`${alert.fingerprint}\``;
 
   try {
-    await fetch(url, {
+    const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ content }),
     });
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      logger.error("Webhook notification failed", {
+        status: res.status,
+        fingerprint: alert.fingerprint,
+        response: body.slice(0, 500),
+      });
+      return;
+    }
     logger.debug("Webhook notification sent successfully", {
       fingerprint: alert.fingerprint,
     });
@@ -114,7 +128,7 @@ async function sendEmailNotification(
     severity: "info" | "warning" | "critical";
     fingerprint: string;
   },
-  recipient?: string
+  recipient?: string,
 ) {
   // Check if email service is properly configured
   const smtpHost = env.INSIGHT_SMTP_HOST;
@@ -135,36 +149,14 @@ async function sendEmailNotification(
   }
 
   try {
-    // In a real implementation, you would use a proper email library like nodemailer
-    // For now, we'll just log the email notification
-    logger.info("Sending email notification", {
-      to: toEmail,
-      subject: `[${alert.severity.toUpperCase()}] ${alert.title}`,
-      body: `${alert.message}\n\nID: ${alert.fingerprint}`,
-      fingerprint: alert.fingerprint,
-    });
-
-    // Example implementation with nodemailer (would need to install it)
-    // const nodemailer = require('nodemailer');
-    // const transporter = nodemailer.createTransport({
-    //   host: smtpHost,
-    //   port: parseInt(smtpPort),
-    //   secure: smtpPort === '465',
-    //   auth: {
-    //     user: smtpUser,
-    //     pass: smtpPass,
-    //   },
-    // });
-    // await transporter.sendMail({
-    //   from: fromEmail,
-    //   to: toEmail,
-    //   subject: `[${alert.severity.toUpperCase()}] ${alert.title}`,
-    //   text: `${alert.message}\n\nID: ${alert.fingerprint}`,
-    // });
-
-    logger.debug("Email notification sent successfully", {
-      fingerprint: alert.fingerprint,
-    });
+    logger.warn(
+      "Email notification requested but delivery is not implemented",
+      {
+        to: toEmail,
+        subject: `[${alert.severity.toUpperCase()}] ${alert.title}`,
+        fingerprint: alert.fingerprint,
+      },
+    );
   } catch (error) {
     logger.error("Failed to send email notification", {
       error,
@@ -184,7 +176,7 @@ async function sendEmailNotification(
 export async function notifyDispute(
   assertion: Assertion,
   dispute: Dispute,
-  options?: NotificationOptions
+  options?: NotificationOptions,
 ) {
   // Log detailed dispute information to console
   logger.info(
@@ -195,7 +187,7 @@ export async function notifyDispute(
       `Reason:    ${dispute.disputeReason}\n` +
       `Disputer:  ${dispute.disputer}\n` +
       `Tx Hash:   ${assertion.txHash}\n` +
-      `------------------------------------\n`
+      `------------------------------------\n`,
   );
 
   // Send formal notification through configured channels
@@ -206,7 +198,7 @@ export async function notifyDispute(
       severity: "critical",
       fingerprint: `dispute:${assertion.id}`,
     },
-    options
+    options,
   );
 }
 
@@ -220,7 +212,7 @@ export async function notifyDispute(
  */
 export async function sendTestNotification(
   channel: NotificationChannel,
-  recipient?: string
+  recipient?: string,
 ) {
   await notifyAlert(
     {
@@ -233,6 +225,6 @@ export async function sendTestNotification(
     {
       channels: [channel],
       recipient,
-    }
+    },
   );
 }

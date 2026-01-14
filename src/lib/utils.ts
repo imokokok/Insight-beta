@@ -88,7 +88,7 @@ export function formatDurationMinutes(totalMinutes: number) {
 export function getExplorerUrl(
   chain: string | undefined | null,
   value: string,
-  type: "tx" | "address" | "block" = "tx"
+  type: "tx" | "address" | "block" = "tx",
 ) {
   if (!value) return null;
   const c = chain?.toLowerCase() || "";
@@ -178,7 +178,7 @@ export function getErrorDetails(error: unknown) {
 export async function fetchApiData<T>(
   input: RequestInfo | URL,
   init?: RequestInit,
-  timeout: number = 30000 // 30秒超时
+  timeout: number = 30000, // 30秒超时
 ): Promise<T> {
   try {
     const normalizedInput = (() => {
@@ -257,7 +257,7 @@ export async function fetchApiData<T>(
       error && typeof error === "object" && "name" in error
         ? String((error as { name?: unknown }).name)
         : "";
-    if (name !== "AbortError") {
+    if (name !== "AbortError" && !(error instanceof ApiClientError)) {
       logger.error("Fetch error:", { error });
       // 如果是网络错误，包装成更友好的错误
       if (

@@ -2,6 +2,7 @@
 .env.*.local
 .data/
 .next/
+.next-dev/
 node_modules/
 artifacts/
 cache/

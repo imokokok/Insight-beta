@@ -255,16 +255,25 @@ export async function cachedJson<T>(
 }
 
 export async function invalidateCachedJson(prefix: string) {
-  insightApiCache.clear();
-  for (let offset = 0; offset < 50_000; offset += 1000) {
+  if (!prefix) {
+    insightApiCache.clear();
+  } else {
+    for (const key of insightApiCache.keys()) {
+      if (key.startsWith(prefix)) insightApiCache.delete(key);
+    }
+  }
+
+  const storePrefix = `api_cache/v1/${prefix}`;
+  for (;;) {
     const page = await listJsonKeys({
-      prefix: `api_cache/v1/${prefix}`,
+      prefix: storePrefix,
       limit: 1000,
-      offset,
+      offset: 0,
     }).catch(() => null);
     const items = page?.items ?? [];
     if (items.length === 0) break;
     await Promise.all(items.map((i) => deleteJsonKey(i.key).catch(() => null)));
+    if (items.length < 1000) break;
   }
 }
 

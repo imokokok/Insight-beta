@@ -109,7 +109,7 @@ const envSchema = z.object({
           }
         });
       },
-      { message: "invalid_rpc_url" }
+      { message: "invalid_rpc_url" },
     ),
   INSIGHT_ORACLE_ADDRESS: z
     .string()
@@ -145,17 +145,35 @@ const envSchema = z.object({
 
 // Auto-validate on import
 try {
-  // Only validate in server environment to avoid build-time issues if possible,
-  // but standard practice is to validate process.env.
-  if (typeof process !== "undefined" && process.env) {
-    envSchema.parse(process.env);
+  const isServer = typeof window === "undefined";
+  const isProd = process.env.NODE_ENV === "production";
+  if (isServer && typeof process !== "undefined" && process.env) {
+    const parsed = envSchema.safeParse(process.env);
+    if (!parsed.success) {
+      if (isProd) {
+        throw new Error(
+          `Invalid environment variables: ${JSON.stringify(parsed.error.format())}`,
+        );
+      }
+      console.error(
+        "❌ Invalid environment variables:",
+        JSON.stringify(parsed.error.format(), null, 2),
+      );
+    }
   }
 } catch (e) {
   if (e instanceof z.ZodError) {
     console.error(
       "❌ Invalid environment variables:",
-      JSON.stringify(e.format(), null, 2)
+      JSON.stringify(e.format(), null, 2),
     );
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(
+        `Invalid environment variables: ${JSON.stringify(e.format())}`,
+      );
+    }
+  } else {
+    throw e;
   }
 }
 

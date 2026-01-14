@@ -18,6 +18,8 @@ import {
   translations,
 } from "@/i18n/translations";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata(): Promise<Metadata> {
   const c = await cookies();
   const cookieLang = c.get(LANG_STORAGE_KEY)?.value;
@@ -68,7 +70,7 @@ export default async function RootLayout({
     <html lang={langToHtmlLang[lang]}>
       <body
         className={cn(
-          "min-h-screen bg-[var(--background)] font-sans antialiased text-purple-950"
+          "min-h-screen bg-[var(--background)] font-sans antialiased text-purple-950",
         )}
       >
         <LanguageProvider initialLang={lang}>
@@ -98,7 +100,6 @@ export default async function RootLayout({
               />
             </div>
 
-            <div className="fixed inset-0 pointer-events-none opacity-[0.02] -z-10 bg-[url('https://www.transparenttextures.com/patterns/cream-paper.png')]" />
             <div className="flex min-h-screen">
               <Sidebar />
               <main className="flex-1 transition-all duration-300 md:ml-64">
