@@ -43,7 +43,8 @@
     "swr": "^2.3.8",
     "tailwind-merge": "^3.4.0",
     "viem": "^2.43.5",
-    "zod": "^4.3.5"
+    "zod": "^4.3.5",
+    "nodemailer": "^6.10.1"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^6.1.0",
@@ -53,6 +54,7 @@
     "@types/chai": "^4.3.20",
     "@types/mocha": "^10.0.10",
     "@types/node": "^20.11.0",
+    "@types/nodemailer": "^6.4.17",
     "@types/pg": "^8.16.0",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",

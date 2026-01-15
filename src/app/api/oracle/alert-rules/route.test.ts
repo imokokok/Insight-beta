@@ -339,6 +339,79 @@ describe("PUT /api/oracle/alert-rules", () => {
     expect(response.error).toEqual({ code: "invalid_request_body" });
   });
 
+  it("rejects invalid runbook url", async () => {
+    const rules = [
+      {
+        id: "x",
+        name: "X",
+        enabled: true,
+        event: "sync_error",
+        severity: "warning",
+        runbook: "javascript:alert(1)",
+      },
+    ];
+    const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ rules }),
+    });
+
+    const response = (await PUT(req)) as { ok: boolean; error?: unknown };
+    expect(response.ok).toBe(false);
+    expect(response.error).toEqual({ code: "invalid_request_body" });
+  });
+
+  it("rejects runbook with whitespace", async () => {
+    const rules = [
+      {
+        id: "x",
+        name: "X",
+        enabled: true,
+        event: "sync_error",
+        severity: "warning",
+        runbook: "https://example.com/a b",
+      },
+    ];
+    const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ rules }),
+    });
+
+    const response = (await PUT(req)) as { ok: boolean; error?: unknown };
+    expect(response.ok).toBe(false);
+    expect(response.error).toEqual({ code: "invalid_request_body" });
+  });
+
+  it("accepts runbook as internal path", async () => {
+    const rules = [
+      {
+        id: "x",
+        name: "X",
+        enabled: true,
+        event: "sync_error",
+        severity: "warning",
+        runbook: "/docs/runbook",
+      },
+    ];
+    const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ rules }),
+    });
+
+    type ApiMockResponse<T> =
+      | { ok: true; data: T }
+      | { ok: false; error: unknown };
+    const response = (await PUT(req)) as unknown as ApiMockResponse<{
+      rules: unknown[];
+    }>;
+    expect(response.ok).toBe(true);
+    if (response.ok) {
+      expect(response.data.rules).toHaveLength(1);
+    }
+  });
+
   it("rejects stale_sync without maxAgeMs", async () => {
     const rules = [
       {

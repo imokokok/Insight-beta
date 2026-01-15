@@ -1,6 +1,7 @@
 import { Dispute, Assertion } from "@/lib/oracleTypes";
 import { logger } from "@/lib/logger";
 import { env } from "@/lib/env";
+import type { Transporter } from "nodemailer";
 
 /**
  * Supported notification channels for alert delivery
@@ -55,6 +56,8 @@ export async function notifyAlert(
     await sendEmailNotification(alert, options?.recipient);
   }
 }
+
+let smtpTransport: Transporter | null = null;
 
 /**
  * Sends a notification via webhook to configured URL
@@ -149,20 +152,55 @@ async function sendEmailNotification(
   }
 
   try {
-    logger.warn(
-      "Email notification requested but delivery is not implemented",
-      {
-        to: toEmail,
-        subject: `[${alert.severity.toUpperCase()}] ${alert.title}`,
-        fingerprint: alert.fingerprint,
-      },
-    );
+    const port = Number(smtpPort);
+    const resolvedPort = Number.isFinite(port) ? port : 587;
+    if (!smtpTransport) {
+      const nodemailer = await import("nodemailer");
+      smtpTransport = nodemailer.createTransport({
+        host: smtpHost,
+        port: resolvedPort,
+        secure: resolvedPort === 465,
+        auth: {
+          user: smtpUser,
+          pass: smtpPass,
+        },
+      });
+    }
+
+    const subject = `[${alert.severity.toUpperCase()}] ${alert.title}`;
+    const text = `${alert.message}\n\nID: ${alert.fingerprint}`;
+    const html = `<div style="font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;line-height:1.5">
+<div style="font-size:14px;margin-bottom:12px"><strong>${subject}</strong></div>
+<pre style="white-space:pre-wrap;background:#f6f7f9;padding:12px;border-radius:8px;border:1px solid #eceef2;font-size:13px">${escapeHtml(
+      alert.message,
+    )}</pre>
+<div style="font-size:12px;color:#6b7280;margin-top:10px">ID: <code>${escapeHtml(
+      alert.fingerprint,
+    )}</code></div>
+</div>`;
+
+    await smtpTransport.sendMail({
+      from: fromEmail,
+      to: toEmail,
+      subject,
+      text,
+      html,
+    });
   } catch (error) {
     logger.error("Failed to send email notification", {
       error,
       fingerprint: alert.fingerprint,
     });
   }
+}
+
+function escapeHtml(input: string) {
+  return input
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 /**

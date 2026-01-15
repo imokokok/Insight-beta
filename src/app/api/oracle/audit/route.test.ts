@@ -42,10 +42,10 @@ describe("GET /api/oracle/audit", () => {
 
   it("returns audit logs with parsed params and enforces admin auth", async () => {
     const request = new Request(
-      "http://localhost:3000/api/oracle/audit?limit=25&cursor=5",
+      "http://localhost:3000/api/oracle/audit?limit=25&cursor=5&actor=alice",
       {
         headers: { "x-admin-token": "t" },
-      }
+      },
     );
     const response = (await GET(request)) as unknown as {
       ok: boolean;
@@ -61,7 +61,9 @@ describe("GET /api/oracle/audit", () => {
       strict: true,
       scope: "audit_read",
     });
-    expect(listAuditLog).toHaveBeenCalledWith({ limit: 25, cursor: 5 });
+    expect(listAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({ limit: 25, cursor: 5, actor: "alice" }),
+    );
   });
 
   it("rejects invalid params", async () => {
@@ -69,7 +71,7 @@ describe("GET /api/oracle/audit", () => {
       "http://localhost:3000/api/oracle/audit?limit=0&cursor=-1",
       {
         headers: { "x-admin-token": "t" },
-      }
+      },
     );
     const response = (await GET(badReq)) as { ok: boolean; error?: unknown };
     expect(response.ok).toBe(false);

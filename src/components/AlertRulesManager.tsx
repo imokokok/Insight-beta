@@ -234,6 +234,12 @@ export function AlertRulesManager({
               channels: derived?.channels ?? normalizeChannels(r.channels),
               recipient:
                 r.recipient && r.recipient.trim() ? r.recipient.trim() : null,
+              owner: r.owner && r.owner.trim() ? r.owner.trim() : null,
+              runbook: r.runbook && r.runbook.trim() ? r.runbook.trim() : null,
+              silencedUntil:
+                r.silencedUntil && r.silencedUntil.trim()
+                  ? r.silencedUntil.trim()
+                  : null,
             };
           }),
         }),
@@ -591,6 +597,40 @@ export function AlertRulesManager({
                             {t("oracle.alerts.severities.critical")}
                           </option>
                         </select>
+                      </div>
+
+                      <div className="md:col-span-4">
+                        <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                          {t("oracle.alerts.owner")}
+                        </div>
+                        <Input
+                          value={rule.owner ?? ""}
+                          onChange={(e) =>
+                            patchRule(rule.id, {
+                              owner: e.target.value.slice(0, 80),
+                            })
+                          }
+                          placeholder={t("oracle.alerts.ownerPlaceholder")}
+                          maxLength={80}
+                          className="h-10 rounded-xl bg-white/70 ring-1 ring-black/5 border-transparent focus-visible:ring-2 focus-visible:ring-purple-500/20"
+                        />
+                      </div>
+
+                      <div className="md:col-span-4">
+                        <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                          {t("oracle.alerts.runbook")}
+                        </div>
+                        <Input
+                          value={rule.runbook ?? ""}
+                          onChange={(e) =>
+                            patchRule(rule.id, {
+                              runbook: e.target.value.slice(0, 500),
+                            })
+                          }
+                          placeholder={t("oracle.alerts.runbookPlaceholder")}
+                          maxLength={500}
+                          className="h-10 rounded-xl bg-white/70 ring-1 ring-black/5 border-transparent focus-visible:ring-2 focus-visible:ring-purple-500/20"
+                        />
                       </div>
 
                       <div className="md:col-span-4">

@@ -49,11 +49,11 @@ import { LivenessProgressBar } from "@/components/LivenessProgressBar";
 
 const DisputeModal = dynamic(
   () => import("@/components/DisputeModal").then((mod) => mod.DisputeModal),
-  { ssr: false }
+  { ssr: false },
 );
 const SettleModal = dynamic(
   () => import("@/components/SettleModal").then((mod) => mod.SettleModal),
-  { ssr: false }
+  { ssr: false },
 );
 
 function getStatusIcon(status: string) {
@@ -171,7 +171,7 @@ export default function OracleDetailPage() {
     try {
       const qs = mode === "logs" ? "?includeLogs=1" : "";
       const payload = await fetchApiData<unknown>(
-        `/api/oracle/assertions/${assertion.id}/evidence${qs}`
+        `/api/oracle/assertions/${assertion.id}/evidence${qs}`,
       );
       const blob = new Blob([JSON.stringify(payload, null, 2)], {
         type: "application/json",
@@ -183,7 +183,7 @@ export default function OracleDetailPage() {
       document.body.appendChild(a);
       a.click();
       a.remove();
-      URL.revokeObjectURL(url);
+      window.setTimeout(() => URL.revokeObjectURL(url), 0);
     } finally {
       setExportingEvidence(null);
     }
@@ -213,7 +213,7 @@ export default function OracleDetailPage() {
               <div
                 className={cn(
                   "flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-bold shadow-sm",
-                  getAssertionStatusColor(assertion.status)
+                  getAssertionStatusColor(assertion.status),
                 )}
               >
                 {getStatusIcon(assertion.status)}
@@ -247,7 +247,7 @@ export default function OracleDetailPage() {
                 "p-2 rounded-full transition-all shadow-sm ring-1 ring-gray-200/50",
                 mounted && isWatched(assertion.id)
                   ? "bg-amber-100 text-amber-500 hover:bg-amber-200"
-                  : "bg-white/50 hover:bg-white text-gray-500 hover:text-gray-600"
+                  : "bg-white/50 hover:bg-white text-gray-500 hover:text-gray-600",
               )}
               title={
                 mounted && isWatched(assertion.id)
@@ -259,7 +259,7 @@ export default function OracleDetailPage() {
                 size={18}
                 className={cn(
                   "transition-all",
-                  mounted && isWatched(assertion.id) && "fill-current"
+                  mounted && isWatched(assertion.id) && "fill-current",
                 )}
               />
             </button>
@@ -343,7 +343,7 @@ export default function OracleDetailPage() {
                       "rounded-xl p-5 font-bold border shadow-sm flex items-center gap-3",
                       assertion.settlementResolution
                         ? "bg-emerald-50 text-emerald-900 border-emerald-100"
-                        : "bg-rose-50 text-rose-900 border-rose-100"
+                        : "bg-rose-50 text-rose-900 border-rose-100",
                     )}
                   >
                     {assertion.settlementResolution ? (

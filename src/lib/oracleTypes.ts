@@ -184,6 +184,9 @@ export type AlertRule = {
   enabled: boolean;
   event: AlertRuleEvent;
   severity: AlertSeverity;
+  owner?: string | null;
+  runbook?: string | null;
+  silencedUntil?: string | null;
   params?: Record<string, unknown>;
   channels?: Array<"webhook" | "email">;
   recipient?: string | null;

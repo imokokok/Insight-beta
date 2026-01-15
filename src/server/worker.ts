@@ -82,6 +82,13 @@ async function tickWorker() {
             const fingerprint = `${staleRule.id}:${state.chain}:${
               state.contractAddress ?? "unknown"
             }`;
+            const nowMs = Date.now();
+            const silencedUntilRaw = (staleRule.silencedUntil ?? "").trim();
+            const silencedUntilMs = silencedUntilRaw
+              ? Date.parse(silencedUntilRaw)
+              : NaN;
+            const silenced =
+              Number.isFinite(silencedUntilMs) && silencedUntilMs > nowMs;
             await createOrTouchAlert({
               fingerprint,
               type: staleRule.event,
@@ -90,10 +97,12 @@ async function tickWorker() {
               message: `Last success ${Math.round(ageMs / 1000)}s ago`,
               entityType: "oracle",
               entityId: state.contractAddress,
-              notify: {
-                channels: staleRule.channels,
-                recipient: staleRule.recipient ?? undefined,
-              },
+              notify: silenced
+                ? { channels: [] }
+                : {
+                    channels: staleRule.channels,
+                    recipient: staleRule.recipient ?? undefined,
+                  },
             });
           }
         }

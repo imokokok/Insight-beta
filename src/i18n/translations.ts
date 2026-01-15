@@ -193,6 +193,10 @@ export const translations = {
         rule: "规则名称",
         event: "触发事件",
         severity: "严重程度",
+        owner: "负责人",
+        ownerPlaceholder: "例如：alice@ops",
+        runbook: "Runbook",
+        runbookPlaceholder: "例如：https://… 或 /docs/…",
         status: "状态",
         enabled: "已启用",
         disabled: "已禁用",
@@ -437,8 +441,23 @@ export const translations = {
       adminToken: "管理员 Token",
       adminTokenPlaceholder: "Bearer …",
       adminTokenHint: "使用监控台里保存的管理员 Token。",
+      filters: "筛选",
       total: "总记录",
       refresh: "刷新",
+      action: "动作",
+      entityType: "实体类型",
+      entityId: "实体 ID",
+      query: "全文搜索",
+      actorPlaceholder: "例如：alice@ops",
+      actionPlaceholder: "例如：alert_rules_updated",
+      entityTypePlaceholder: "例如：alerts",
+      entityIdPlaceholder: "例如：0x…",
+      queryPlaceholder: "搜索 actor/action/entity/details…",
+      apply: "应用",
+      clear: "清空",
+      exportJson: "导出 JSON",
+      exportCsv: "导出 CSV",
+      exporting: "导出中…",
       error: "错误",
       empty: "暂无审计记录。",
       actor: "操作者",
@@ -488,6 +507,13 @@ export const translations = {
       refresh: "刷新",
       acknowledge: "确认",
       resolve: "解决",
+      owner: "负责人",
+      runbook: "Runbook",
+      silencedUntil: "静默至",
+      unsilence: "取消静默",
+      silence30m: "静默 30 分钟",
+      silence2h: "静默 2 小时",
+      silence24h: "静默 24 小时",
       status: "状态",
       severity: "级别",
       type: "类型",
@@ -770,6 +796,10 @@ export const translations = {
         rule: "Rule Name",
         event: "Trigger Event",
         severity: "Severity",
+        owner: "Owner",
+        ownerPlaceholder: "e.g. alice@ops",
+        runbook: "Runbook",
+        runbookPlaceholder: "e.g. https://… or /docs/…",
         status: "Status",
         enabled: "Enabled",
         disabled: "Disabled",
@@ -1000,8 +1030,23 @@ export const translations = {
       adminToken: "Admin token",
       adminTokenPlaceholder: "Bearer …",
       adminTokenHint: "Use the same admin token stored in this session.",
+      filters: "Filters",
       total: "Total",
       refresh: "Refresh",
+      action: "Action",
+      entityType: "Entity type",
+      entityId: "Entity ID",
+      query: "Search",
+      actorPlaceholder: "e.g. alice@ops",
+      actionPlaceholder: "e.g. alert_rules_updated",
+      entityTypePlaceholder: "e.g. alerts",
+      entityIdPlaceholder: "e.g. 0x…",
+      queryPlaceholder: "Search actor/action/entity/details…",
+      apply: "Apply",
+      clear: "Clear",
+      exportJson: "Export JSON",
+      exportCsv: "Export CSV",
+      exporting: "Exporting…",
       error: "Error",
       empty: "No audit entries yet.",
       actor: "Actor",
@@ -1052,6 +1097,13 @@ export const translations = {
       refresh: "Refresh",
       acknowledge: "Acknowledge",
       resolve: "Resolve",
+      owner: "Owner",
+      runbook: "Runbook",
+      silencedUntil: "Silenced until",
+      unsilence: "Unsilence",
+      silence30m: "Silence 30m",
+      silence2h: "Silence 2h",
+      silence24h: "Silence 24h",
       status: "Status",
       severity: "Severity",
       type: "Type",
@@ -1526,10 +1578,14 @@ export const translations = {
       },
       alerts: {
         title: "Reglas de Alertas",
-        description: "Configurar reglas de monitoreo y notificación.",
+        description: "Configura reglas de monitoreo y notificación.",
         rule: "Nombre de regla",
         event: "Evento activador",
         severity: "Severidad",
+        owner: "Responsable",
+        ownerPlaceholder: "p. ej. alice@ops",
+        runbook: "Runbook",
+        runbookPlaceholder: "p. ej. https://… o /docs/…",
         status: "Estado",
         enabled: "Habilitado",
         disabled: "Deshabilitado",
@@ -1567,8 +1623,23 @@ export const translations = {
       adminToken: "Token de admin",
       adminTokenPlaceholder: "Bearer …",
       adminTokenHint: "Usa el mismo token de admin guardado en esta sesión.",
+      filters: "Filtros",
       total: "Total",
       refresh: "Actualizar",
+      action: "Acción",
+      entityType: "Tipo de entidad",
+      entityId: "ID de entidad",
+      query: "Búsqueda",
+      actorPlaceholder: "p. ej. alice@ops",
+      actionPlaceholder: "p. ej. alert_rules_updated",
+      entityTypePlaceholder: "p. ej. alerts",
+      entityIdPlaceholder: "p. ej. 0x…",
+      queryPlaceholder: "Buscar actor/acción/entidad/detalles…",
+      apply: "Aplicar",
+      clear: "Limpiar",
+      exportJson: "Exportar JSON",
+      exportCsv: "Exportar CSV",
+      exporting: "Exportando…",
       error: "Error",
       empty: "Aún no hay registros de auditoría.",
       actor: "Actor",
@@ -1620,6 +1691,13 @@ export const translations = {
       refresh: "Actualizar",
       acknowledge: "Confirmar",
       resolve: "Resolver",
+      owner: "Responsable",
+      runbook: "Runbook",
+      silencedUntil: "Silenciado hasta",
+      unsilence: "Quitar silencio",
+      silence30m: "Silenciar 30 min",
+      silence2h: "Silenciar 2 h",
+      silence24h: "Silenciar 24 h",
       status: "Estado",
       severity: "Severidad",
       type: "Tipo",
@@ -1922,6 +2000,10 @@ export const translations = {
         rule: "Nom de la règle",
         event: "Événement de déclenchement",
         severity: "Gravité",
+        owner: "Responsable",
+        ownerPlaceholder: "ex. alice@ops",
+        runbook: "Runbook",
+        runbookPlaceholder: "ex. https://… ou /docs/…",
         status: "Statut",
         enabled: "Activé",
         disabled: "Désactivé",
@@ -2007,8 +2089,23 @@ export const translations = {
       adminTokenPlaceholder: "Bearer …",
       adminTokenHint:
         "Utilisez le même jeton d'administration stocké dans cette session.",
+      filters: "Filtres",
       total: "Total",
       refresh: "Actualiser",
+      action: "Action",
+      entityType: "Type d'entité",
+      entityId: "ID d'entité",
+      query: "Recherche",
+      actorPlaceholder: "ex. alice@ops",
+      actionPlaceholder: "ex. alert_rules_updated",
+      entityTypePlaceholder: "ex. alerts",
+      entityIdPlaceholder: "ex. 0x…",
+      queryPlaceholder: "Rechercher acteur/action/entité/détails…",
+      apply: "Appliquer",
+      clear: "Effacer",
+      exportJson: "Exporter JSON",
+      exportCsv: "Exporter CSV",
+      exporting: "Exportation…",
       error: "Erreur",
       empty: "Aucune entrée d'audit pour le moment.",
       actor: "Acteur",
@@ -2062,6 +2159,13 @@ export const translations = {
       refresh: "Actualiser",
       acknowledge: "Reconnaître",
       resolve: "Résoudre",
+      owner: "Responsable",
+      runbook: "Runbook",
+      silencedUntil: "Mis en sourdine jusqu'à",
+      unsilence: "Annuler la sourdine",
+      silence30m: "Sourdine 30 min",
+      silence2h: "Sourdine 2 h",
+      silence24h: "Sourdine 24 h",
       status: "Statut",
       severity: "Gravité",
       type: "Type",
@@ -2369,6 +2473,10 @@ export const translations = {
         rule: "규칙 이름",
         event: "트리거 이벤트",
         severity: "심각도",
+        owner: "담당자",
+        ownerPlaceholder: "예: alice@ops",
+        runbook: "Runbook",
+        runbookPlaceholder: "예: https://… 또는 /docs/…",
         status: "상태",
         enabled: "활성화됨",
         disabled: "비활성화됨",
@@ -2449,8 +2557,23 @@ export const translations = {
       adminToken: "관리자 토큰",
       adminTokenPlaceholder: "Bearer …",
       adminTokenHint: "이 세션에 저장된 동일한 관리자 토큰을 사용하세요.",
+      filters: "필터",
       total: "총계",
       refresh: "새로 고침",
+      action: "작업",
+      entityType: "엔터티 유형",
+      entityId: "엔터티 ID",
+      query: "검색",
+      actorPlaceholder: "예: alice@ops",
+      actionPlaceholder: "예: alert_rules_updated",
+      entityTypePlaceholder: "예: alerts",
+      entityIdPlaceholder: "예: 0x…",
+      queryPlaceholder: "행위자/작업/엔터티/세부정보 검색…",
+      apply: "적용",
+      clear: "지우기",
+      exportJson: "JSON 내보내기",
+      exportCsv: "CSV 내보내기",
+      exporting: "내보내는 중…",
       error: "오류",
       empty: "아직 감사 항목이 없습니다.",
       actor: "행위자",
@@ -2500,6 +2623,13 @@ export const translations = {
       refresh: "새로 고침",
       acknowledge: "확인",
       resolve: "해결",
+      owner: "담당자",
+      runbook: "Runbook",
+      silencedUntil: "다음까지 정숙",
+      unsilence: "정숙 해제",
+      silence30m: "30분 정숙",
+      silence2h: "2시간 정숙",
+      silence24h: "24시간 정숙",
       status: "상태",
       severity: "심각도",
       type: "유형",
@@ -2927,8 +3057,23 @@ export type TranslationKey =
   | "audit.adminToken"
   | "audit.adminTokenPlaceholder"
   | "audit.adminTokenHint"
+  | "audit.filters"
   | "audit.total"
   | "audit.refresh"
+  | "audit.action"
+  | "audit.entityType"
+  | "audit.entityId"
+  | "audit.query"
+  | "audit.actorPlaceholder"
+  | "audit.actionPlaceholder"
+  | "audit.entityTypePlaceholder"
+  | "audit.entityIdPlaceholder"
+  | "audit.queryPlaceholder"
+  | "audit.apply"
+  | "audit.clear"
+  | "audit.exportJson"
+  | "audit.exportCsv"
+  | "audit.exporting"
   | "audit.error"
   | "audit.empty"
   | "audit.actor"
@@ -2978,6 +3123,13 @@ export type TranslationKey =
   | "alerts.occurrences"
   | "alerts.adminTokenHint"
   | "alerts.adminTokenWarning"
+  | "alerts.owner"
+  | "alerts.runbook"
+  | "alerts.silencedUntil"
+  | "alerts.unsilence"
+  | "alerts.silence30m"
+  | "alerts.silence2h"
+  | "alerts.silence24h"
   | "watchlist.emptyDesc"
   | "status.voting"
   | "status.pendingExecution"
@@ -3050,6 +3202,10 @@ export type TranslationKey =
   | "oracle.alerts.rule"
   | "oracle.alerts.event"
   | "oracle.alerts.severity"
+  | "oracle.alerts.owner"
+  | "oracle.alerts.ownerPlaceholder"
+  | "oracle.alerts.runbook"
+  | "oracle.alerts.runbookPlaceholder"
   | "oracle.alerts.status"
   | "oracle.alerts.enabled"
   | "oracle.alerts.disabled"

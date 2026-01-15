@@ -122,6 +122,10 @@ async function createAlertIfNeeded(
 
   apiAlertCooldown.set(cooldownKey, now);
 
+  const silencedUntilRaw = (rule.silencedUntil ?? "").trim();
+  const silencedUntilMs = silencedUntilRaw ? Date.parse(silencedUntilRaw) : NaN;
+  const silenced = Number.isFinite(silencedUntilMs) && silencedUntilMs > now;
+
   await createOrTouchAlert({
     fingerprint,
     type: rule.event,
@@ -130,10 +134,12 @@ async function createAlertIfNeeded(
     message,
     entityType: "api",
     entityId,
-    notify: {
-      channels: rule.channels,
-      recipient: rule.recipient ?? undefined,
-    },
+    notify: silenced
+      ? { channels: [] }
+      : {
+          channels: rule.channels,
+          recipient: rule.recipient ?? undefined,
+        },
   });
 }
 

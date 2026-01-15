@@ -13,6 +13,22 @@ import {
 import { notifyAlert } from "@/server/notifications";
 import { z } from "zod";
 
+function isValidRunbook(runbook: string) {
+  const trimmed = runbook.trim();
+  if (!trimmed) return true;
+  if (/\s/.test(trimmed)) return false;
+  if (trimmed.startsWith("/")) {
+    if (trimmed.startsWith("//")) return false;
+    return true;
+  }
+  try {
+    const url = new URL(trimmed);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 const ruleSchema = z
   .object({
     id: z.string().trim().min(1).max(100),
@@ -27,6 +43,9 @@ const ruleSchema = z
       "database_slow_query",
     ]),
     severity: z.enum(["info", "warning", "critical"]),
+    owner: z.string().trim().max(80).optional().nullable(),
+    runbook: z.string().trim().max(500).optional().nullable(),
+    silencedUntil: z.string().trim().max(40).optional().nullable(),
     params: z.record(z.string(), z.unknown()).optional(),
     channels: z
       .array(z.enum(["webhook", "email"]))
@@ -36,6 +55,25 @@ const ruleSchema = z
     recipient: z.string().trim().max(200).email().optional().nullable(),
   })
   .superRefine((rule, ctx) => {
+    if (rule.runbook && !isValidRunbook(rule.runbook)) {
+      ctx.addIssue({
+        code: "custom",
+        message: "invalid_runbook",
+        path: ["runbook"],
+      });
+    }
+
+    if (rule.silencedUntil) {
+      const ms = Date.parse(rule.silencedUntil);
+      if (!Number.isFinite(ms)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "invalid_silencedUntil",
+          path: ["silencedUntil"],
+        });
+      }
+    }
+
     if (rule.channels) {
       const unique = new Set(rule.channels);
       if (unique.size !== rule.channels.length) {

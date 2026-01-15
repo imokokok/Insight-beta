@@ -387,6 +387,13 @@ async function syncOracleOnce(): Promise<{
             updated = true;
 
             for (const rule of enabledRules("dispute_created")) {
+              const nowMs = Date.now();
+              const silencedUntilRaw = (rule.silencedUntil ?? "").trim();
+              const silencedUntilMs = silencedUntilRaw
+                ? Date.parse(silencedUntilRaw)
+                : NaN;
+              const silenced =
+                Number.isFinite(silencedUntilMs) && silencedUntilMs > nowMs;
               const fingerprint = `${rule.id}:${chain}:${id}`;
               await createOrTouchAlert({
                 fingerprint,
@@ -398,10 +405,12 @@ async function syncOracleOnce(): Promise<{
                 }`,
                 entityType: "assertion",
                 entityId: id,
-                notify: {
-                  channels: rule.channels,
-                  recipient: rule.recipient ?? undefined,
-                },
+                notify: silenced
+                  ? { channels: [] }
+                  : {
+                      channels: rule.channels,
+                      recipient: rule.recipient ?? undefined,
+                    },
               });
             }
           }
@@ -528,6 +537,13 @@ async function syncOracleOnce(): Promise<{
   } catch (e) {
     const code = toSyncErrorCode(e);
     for (const rule of enabledRules("sync_error")) {
+      const nowMs = Date.now();
+      const silencedUntilRaw = (rule.silencedUntil ?? "").trim();
+      const silencedUntilMs = silencedUntilRaw
+        ? Date.parse(silencedUntilRaw)
+        : NaN;
+      const silenced =
+        Number.isFinite(silencedUntilMs) && silencedUntilMs > nowMs;
       const fingerprint = `${rule.id}:${chain}:${contractAddress}`;
       await createOrTouchAlert({
         fingerprint,
@@ -537,10 +553,12 @@ async function syncOracleOnce(): Promise<{
         message: code,
         entityType: "oracle",
         entityId: contractAddress,
-        notify: {
-          channels: rule.channels,
-          recipient: rule.recipient ?? undefined,
-        },
+        notify: silenced
+          ? { channels: [] }
+          : {
+              channels: rule.channels,
+              recipient: rule.recipient ?? undefined,
+            },
       });
     }
     await updateSyncState(

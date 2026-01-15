@@ -40,6 +40,9 @@ export type AlertRule = {
   enabled: boolean;
   event: AlertRuleEvent;
   severity: AlertSeverity;
+  owner?: string | null;
+  runbook?: string | null;
+  silencedUntil?: string | null;
   params?: Record<string, unknown>;
   channels?: Array<"webhook" | "email">;
   recipient?: string | null;
@@ -172,6 +175,21 @@ function normalizeStoredRule(input: unknown): AlertRule | null {
       ? obj.recipient.trim()
       : null;
 
+  const owner =
+    typeof obj.owner === "string" && obj.owner.trim() ? obj.owner.trim() : null;
+
+  const runbook =
+    typeof obj.runbook === "string" && obj.runbook.trim()
+      ? obj.runbook.trim()
+      : null;
+
+  const silencedUntilRaw =
+    typeof obj.silencedUntil === "string" ? obj.silencedUntil.trim() : "";
+  const silencedUntilMs = silencedUntilRaw ? Date.parse(silencedUntilRaw) : NaN;
+  const silencedUntil = Number.isFinite(silencedUntilMs)
+    ? silencedUntilRaw
+    : null;
+
   const params =
     obj.params && typeof obj.params === "object" && !Array.isArray(obj.params)
       ? (obj.params as Record<string, unknown>)
@@ -186,6 +204,9 @@ function normalizeStoredRule(input: unknown): AlertRule | null {
     enabled,
     event: safeEvent,
     severity,
+    owner,
+    runbook,
+    silencedUntil,
     params: normalizedParams,
     channels,
     recipient,
@@ -237,6 +258,18 @@ export async function readAlertRules(): Promise<AlertRule[]> {
         prev.enabled === rule.enabled &&
         prev.event === rule.event &&
         prev.severity === rule.severity &&
+        (typeof (prev as { owner?: unknown }).owner === "string"
+          ? ((prev as { owner?: string }).owner ?? "").trim()
+          : ((prev as { owner?: null }).owner ?? null)) ===
+          (rule.owner ?? null) &&
+        (typeof (prev as { runbook?: unknown }).runbook === "string"
+          ? ((prev as { runbook?: string }).runbook ?? "").trim()
+          : ((prev as { runbook?: null }).runbook ?? null)) ===
+          (rule.runbook ?? null) &&
+        (typeof (prev as { silencedUntil?: unknown }).silencedUntil === "string"
+          ? ((prev as { silencedUntil?: string }).silencedUntil ?? "").trim()
+          : ((prev as { silencedUntil?: null }).silencedUntil ?? null)) ===
+          (rule.silencedUntil ?? null) &&
         JSON.stringify(prev.params ?? undefined) ===
           JSON.stringify(rule.params ?? undefined) &&
         JSON.stringify(prevChannels ?? undefined) ===
@@ -714,14 +747,51 @@ function mapAuditRow(row: any): AuditLogEntry {
 export async function listAuditLog(params: {
   limit?: number | null;
   cursor?: number | null;
+  actor?: string | null;
+  action?: string | null;
+  entityType?: string | null;
+  entityId?: string | null;
+  q?: string | null;
 }) {
   await ensureDb();
   if (!hasDatabase()) {
     const mem = getMemoryStore();
     const limit = Math.min(100, Math.max(1, params.limit ?? 50));
     const offset = Math.max(0, params.cursor ?? 0);
-    const total = mem.audit.length;
-    const slice = mem.audit.slice(offset, offset + limit);
+    let list = mem.audit;
+    const actorQ = params.actor?.trim().toLowerCase();
+    const actionQ = params.action?.trim().toLowerCase();
+    const entityTypeQ = params.entityType?.trim().toLowerCase();
+    const entityIdQ = params.entityId?.trim().toLowerCase();
+    const q = params.q?.trim().toLowerCase();
+
+    if (actorQ)
+      list = list.filter((e) => (e.actor ?? "").toLowerCase().includes(actorQ));
+    if (actionQ)
+      list = list.filter((e) => e.action.toLowerCase().includes(actionQ));
+    if (entityTypeQ)
+      list = list.filter((e) =>
+        (e.entityType ?? "").toLowerCase().includes(entityTypeQ),
+      );
+    if (entityIdQ)
+      list = list.filter((e) =>
+        (e.entityId ?? "").toLowerCase().includes(entityIdQ),
+      );
+    if (q) {
+      list = list.filter((e) => {
+        const details = e.details ? JSON.stringify(e.details) : "";
+        return (
+          e.action.toLowerCase().includes(q) ||
+          (e.actor ?? "").toLowerCase().includes(q) ||
+          (e.entityType ?? "").toLowerCase().includes(q) ||
+          (e.entityId ?? "").toLowerCase().includes(q) ||
+          details.toLowerCase().includes(q)
+        );
+      });
+    }
+
+    const total = list.length;
+    const slice = list.slice(offset, offset + limit);
     return {
       items: slice,
       total,
@@ -730,11 +800,54 @@ export async function listAuditLog(params: {
   }
   const limit = Math.min(100, Math.max(1, params.limit ?? 50));
   const offset = Math.max(0, params.cursor ?? 0);
-  const countRes = await query(`SELECT COUNT(*) as total FROM audit_log`);
+
+  const conditions: string[] = [];
+  const values: (string | number)[] = [];
+  let idx = 1;
+
+  if (params.actor?.trim()) {
+    conditions.push(`LOWER(COALESCE(actor, '')) LIKE $${idx++}`);
+    values.push(`%${params.actor.trim().toLowerCase()}%`);
+  }
+
+  if (params.action?.trim()) {
+    conditions.push(`LOWER(action) LIKE $${idx++}`);
+    values.push(`%${params.action.trim().toLowerCase()}%`);
+  }
+
+  if (params.entityType?.trim()) {
+    conditions.push(`LOWER(COALESCE(entity_type, '')) LIKE $${idx++}`);
+    values.push(`%${params.entityType.trim().toLowerCase()}%`);
+  }
+
+  if (params.entityId?.trim()) {
+    conditions.push(`LOWER(COALESCE(entity_id, '')) LIKE $${idx++}`);
+    values.push(`%${params.entityId.trim().toLowerCase()}%`);
+  }
+
+  if (params.q?.trim()) {
+    conditions.push(`(
+      LOWER(action) LIKE $${idx} OR
+      LOWER(COALESCE(actor, '')) LIKE $${idx} OR
+      LOWER(COALESCE(entity_type, '')) LIKE $${idx} OR
+      LOWER(COALESCE(entity_id, '')) LIKE $${idx} OR
+      LOWER(COALESCE(details::text, '')) LIKE $${idx}
+    )`);
+    values.push(`%${params.q.trim().toLowerCase()}%`);
+    idx += 1;
+  }
+
+  const whereClause =
+    conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
+  const countRes = await query(
+    `SELECT COUNT(*) as total FROM audit_log ${whereClause}`,
+    values,
+  );
   const total = Number(countRes.rows[0]?.total || 0);
   const res = await query(
-    `SELECT * FROM audit_log ORDER BY created_at DESC LIMIT $1 OFFSET $2`,
-    [limit, offset],
+    `SELECT * FROM audit_log ${whereClause} ORDER BY created_at DESC LIMIT $${idx++} OFFSET $${idx}`,
+    [...values, limit, offset],
   );
   return {
     items: res.rows.map(mapAuditRow),
