@@ -52,6 +52,15 @@ export const env = {
   get INSIGHT_API_LOG_SAMPLE_RATE() {
     return (process.env.INSIGHT_API_LOG_SAMPLE_RATE ?? "").trim();
   },
+  get INSIGHT_DEPENDENCY_TIMEOUT_MS() {
+    return (process.env.INSIGHT_DEPENDENCY_TIMEOUT_MS ?? "").trim();
+  },
+  get INSIGHT_RPC_TIMEOUT_MS() {
+    return (process.env.INSIGHT_RPC_TIMEOUT_MS ?? "").trim();
+  },
+  get INSIGHT_WEBHOOK_TIMEOUT_MS() {
+    return (process.env.INSIGHT_WEBHOOK_TIMEOUT_MS ?? "").trim();
+  },
   get INSIGHT_WEBHOOK_URL() {
     return (process.env.INSIGHT_WEBHOOK_URL ?? "").trim();
   },
@@ -134,6 +143,18 @@ const envSchema = z.object({
     .enum(["auto", "db", "kv", "memory", "redis"])
     .optional(),
   INSIGHT_API_LOG_SAMPLE_RATE: z.coerce.number().min(0).max(1).optional(),
+  INSIGHT_DEPENDENCY_TIMEOUT_MS: z.preprocess(
+    (v) => (v === "" ? undefined : v),
+    z.coerce.number().int().min(1).optional(),
+  ),
+  INSIGHT_RPC_TIMEOUT_MS: z.preprocess(
+    (v) => (v === "" ? undefined : v),
+    z.coerce.number().int().min(1).optional(),
+  ),
+  INSIGHT_WEBHOOK_TIMEOUT_MS: z.preprocess(
+    (v) => (v === "" ? undefined : v),
+    z.coerce.number().int().min(1).optional(),
+  ),
   INSIGHT_WEBHOOK_URL: z.string().url().optional(),
   INSIGHT_SMTP_HOST: z.string().optional(),
   INSIGHT_SMTP_PORT: z.string().optional(),

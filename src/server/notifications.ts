@@ -91,11 +91,21 @@ async function sendWebhookNotification(alert: {
   }**\n${alert.message}\nID: \`${alert.fingerprint}\``;
 
   try {
+    const controller = new AbortController();
+    const timeoutMsRaw = Number(
+      env.INSIGHT_WEBHOOK_TIMEOUT_MS ||
+        env.INSIGHT_DEPENDENCY_TIMEOUT_MS ||
+        10_000,
+    );
+    const timeoutMs =
+      Number.isFinite(timeoutMsRaw) && timeoutMsRaw > 0 ? timeoutMsRaw : 10_000;
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ content }),
-    });
+      signal: controller.signal,
+    }).finally(() => clearTimeout(timeoutId));
     if (!res.ok) {
       const body = await res.text().catch(() => "");
       logger.error("Webhook notification failed", {

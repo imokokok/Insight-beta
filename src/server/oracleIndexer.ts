@@ -26,6 +26,13 @@ const abi = parseAbi([
   "event VoteCast(bytes32 indexed assertionId, address indexed voter, bool support, uint256 weight)",
 ]);
 
+function getRpcTimeoutMs() {
+  const raw = Number(
+    env.INSIGHT_RPC_TIMEOUT_MS || env.INSIGHT_DEPENDENCY_TIMEOUT_MS || 10_000,
+  );
+  return Number.isFinite(raw) && raw > 0 ? raw : 10_000;
+}
+
 export async function getOracleEnv() {
   const config = await readOracleConfig();
   const rpcUrl = env.INSIGHT_RPC_URL || config.rpcUrl;
@@ -189,7 +196,9 @@ async function syncOracleOnce(): Promise<{
         const url =
           i === 0 ? rpcActiveUrl : pickNextRpcUrl(urlsToTry, rpcActiveUrl);
         rpcActiveUrl = url;
-        const client = createPublicClient({ transport: http(url) });
+        const client = createPublicClient({
+          transport: http(url, { timeout: getRpcTimeoutMs() }),
+        });
 
         const MAX_RETRIES = 3;
         for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {

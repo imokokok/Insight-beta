@@ -1,10 +1,18 @@
 import { createPublicClient, formatEther, http } from "viem";
 import { oracleAbi } from "@/lib/oracleAbi";
 import { parseRpcUrls } from "@/lib/utils";
+import { env } from "@/lib/env";
+
+function getRpcTimeoutMs() {
+  const raw = Number(
+    env.INSIGHT_RPC_TIMEOUT_MS || env.INSIGHT_DEPENDENCY_TIMEOUT_MS || 10_000,
+  );
+  return Number.isFinite(raw) && raw > 0 ? raw : 10_000;
+}
 
 export async function getBondData(
   rpcUrl: string | undefined,
-  contractAddress: string | undefined
+  contractAddress: string | undefined,
 ) {
   let bondWei: string | null = null;
   let bondEth: string | null = null;
@@ -14,7 +22,13 @@ export async function getBondData(
       const urls = parseRpcUrls(rpcUrl);
       for (const url of urls) {
         try {
-          const client = createPublicClient({ transport: http(url) });
+          const client = createPublicClient({
+            transport: http(url, {
+              timeout: getRpcTimeoutMs(),
+              retryCount: 2,
+              retryDelay: 250,
+            }),
+          });
           const bond = (await client.readContract({
             address: contractAddress as `0x${string}`,
             abi: oracleAbi,
@@ -38,7 +52,7 @@ export async function getBondData(
 
 export async function getOwnerData(
   rpcUrl: string | undefined,
-  contractAddress: string | undefined
+  contractAddress: string | undefined,
 ) {
   let owner: string | null = null;
   let isContractOwner: boolean | null = null;
@@ -48,7 +62,13 @@ export async function getOwnerData(
       const urls = parseRpcUrls(rpcUrl);
       for (const url of urls) {
         try {
-          const client = createPublicClient({ transport: http(url) });
+          const client = createPublicClient({
+            transport: http(url, {
+              timeout: getRpcTimeoutMs(),
+              retryCount: 2,
+              retryDelay: 250,
+            }),
+          });
           const ownerAddress = (await client.readContract({
             address: contractAddress as `0x${string}`,
             abi: oracleAbi,

@@ -14,6 +14,21 @@ function createNonce() {
   return toBase64(bytes);
 }
 
+function createRequestId() {
+  const existingCrypto = globalThis.crypto as unknown as {
+    randomUUID?: () => string;
+  };
+  if (typeof existingCrypto?.randomUUID === "function")
+    return existingCrypto.randomUUID();
+  const bytes = new Uint8Array(16);
+  globalThis.crypto.getRandomValues(bytes);
+  let out = "";
+  for (let i = 0; i < bytes.length; i += 1) {
+    out += bytes[i]!.toString(16).padStart(2, "0");
+  }
+  return out;
+}
+
 function buildCsp(nonce: string, isDev: boolean) {
   const scriptSrc = ["'self'", `'nonce-${nonce}'`];
   if (isDev) scriptSrc.push("'unsafe-eval'");
@@ -51,10 +66,24 @@ export function middleware(request: NextRequest) {
     request.headers.get("x-middleware-prefetch") === "1";
   if (isPrefetch) return NextResponse.next();
 
+  const requestId =
+    request.headers.get("x-request-id")?.trim() || createRequestId();
+
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-request-id", requestId);
+
+  const path = request.nextUrl.pathname;
+  if (path.startsWith("/api/")) {
+    const response = NextResponse.next({
+      request: { headers: requestHeaders },
+    });
+    response.headers.set("x-request-id", requestId);
+    return response;
+  }
+
   const nonce = createNonce();
   const csp = buildCsp(nonce, isDev);
 
-  const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nonce", nonce);
   requestHeaders.set("content-security-policy", csp);
 
@@ -63,9 +92,10 @@ export function middleware(request: NextRequest) {
   });
   response.headers.set("content-security-policy", csp);
   response.headers.set("x-nonce", nonce);
+  response.headers.set("x-request-id", requestId);
   return response;
 }
 
 export const config = {
-  matcher: ["/((?!_next/|api/|favicon.ico|robots.txt|sitemap.xml).*)"],
+  matcher: ["/((?!_next/|favicon.ico|robots.txt|sitemap.xml).*)"],
 };

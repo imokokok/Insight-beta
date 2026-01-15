@@ -14,6 +14,7 @@ import {
   readAlertRules,
   type AlertRule,
 } from "@/server/observability";
+import { context, trace } from "@opentelemetry/api";
 import { ZodError } from "zod";
 import { isIP } from "node:net";
 
@@ -566,10 +567,28 @@ export async function rateLimit(
   return null;
 }
 
-function getRequestId(request?: Request) {
+function getActiveTraceContext(): {
+  traceId: string | null;
+  spanId: string | null;
+} {
+  try {
+    const span = trace.getSpan(context.active());
+    if (!span) return { traceId: null, spanId: null };
+    const spanContext = span.spanContext();
+    const traceId = spanContext?.traceId || null;
+    const spanId = spanContext?.spanId || null;
+    if (!traceId) return { traceId: null, spanId: null };
+    return { traceId, spanId };
+  } catch {
+    return { traceId: null, spanId: null };
+  }
+}
+
+function getRequestId(request: Request | undefined, traceId: string | null) {
   if (!request) return null;
   const existing = request.headers.get("x-request-id")?.trim();
   if (existing) return existing;
+  if (traceId) return traceId;
   const hasCrypto =
     typeof crypto !== "undefined" && typeof crypto.randomUUID === "function";
   if (hasCrypto) return crypto.randomUUID();
@@ -588,6 +607,8 @@ function attachRequestId(response: Response, requestId: string | null) {
 
 function logApiAccess(
   requestId: string | null,
+  traceId: string | null,
+  spanId: string | null,
   method: string | undefined,
   path: string | undefined,
   durationMs: number,
@@ -598,6 +619,8 @@ function logApiAccess(
   // Enhanced logging with more metrics
   const logData = {
     requestId,
+    traceId,
+    spanId,
     method,
     path,
     durationMs,
@@ -615,6 +638,8 @@ function logApiAccess(
 function checkSlowRequest(
   logData: {
     requestId: string | null;
+    traceId: string | null;
+    spanId: string | null;
     method: string | undefined;
     path: string | undefined;
     durationMs: number;
@@ -654,11 +679,15 @@ function enhanceResponse(
   response: Response,
   durationMs: number,
   requestId: string | null,
+  traceId: string | null,
+  spanId: string | null,
   errorCode?: string,
 ) {
   // Add response headers with timing info
   response.headers.set("x-response-time", durationMs.toString());
   response.headers.set("x-request-id", requestId || "");
+  if (traceId) response.headers.set("x-trace-id", traceId);
+  if (spanId) response.headers.set("x-span-id", spanId);
   if (errorCode) {
     response.headers.set("x-error-code", errorCode);
   }
@@ -692,6 +721,8 @@ async function handleApiSuccess<T>(
   data: T | Response,
   _request: Request | undefined,
   requestId: string | null,
+  traceId: string | null,
+  spanId: string | null,
   method: string | undefined,
   url: string | undefined,
   startedAt: number,
@@ -704,6 +735,8 @@ async function handleApiSuccess<T>(
     const path = getRequestPath(url);
     const logData = logApiAccess(
       requestId,
+      traceId,
+      spanId,
       method,
       path,
       durationMs,
@@ -721,7 +754,7 @@ async function handleApiSuccess<T>(
       method,
     );
 
-    return enhanceResponse(response, durationMs, requestId);
+    return enhanceResponse(response, durationMs, requestId, traceId, spanId);
   }
 
   const response = attachRequestId(ok(data), requestId);
@@ -729,6 +762,8 @@ async function handleApiSuccess<T>(
   const path = getRequestPath(url);
   const logData = logApiAccess(
     requestId,
+    traceId,
+    spanId,
     method,
     path,
     durationMs,
@@ -740,7 +775,7 @@ async function handleApiSuccess<T>(
   checkSlowRequest(logData, durationMs, slowMs);
   await runApiAlerts(path, response.status >= 500, durationMs, slowMs, method);
 
-  return enhanceResponse(response, durationMs, requestId);
+  return enhanceResponse(response, durationMs, requestId, traceId, spanId);
 }
 
 function getErrorStatusCodeAndCode(message: string): {
@@ -784,6 +819,8 @@ async function handleApiError(
   e: unknown,
   _request: Request | undefined,
   requestId: string | null,
+  traceId: string | null,
+  spanId: string | null,
   method: string | undefined,
   url: string | undefined,
   startedAt: number,
@@ -795,6 +832,8 @@ async function handleApiError(
   // Enhanced error logging
   const errorData = {
     requestId,
+    traceId,
+    spanId,
     method,
     path,
     durationMs,
@@ -816,7 +855,7 @@ async function handleApiError(
       slowMs,
       method,
     );
-    return enhanceResponse(response, durationMs, requestId);
+    return enhanceResponse(response, durationMs, requestId, traceId, spanId);
   }
 
   if (e instanceof ZodError) {
@@ -837,7 +876,7 @@ async function handleApiError(
     });
 
     await runApiAlerts(path, false, durationMs, slowMs, method);
-    return enhanceResponse(response, durationMs, requestId);
+    return enhanceResponse(response, durationMs, requestId, traceId, spanId);
   }
 
   const message = e instanceof Error ? e.message : "unknown_error";
@@ -855,7 +894,14 @@ async function handleApiError(
   );
 
   await runApiAlerts(path, status >= 500, durationMs, slowMs, method);
-  return enhanceResponse(response, durationMs, requestId, errorCode);
+  return enhanceResponse(
+    response,
+    durationMs,
+    requestId,
+    traceId,
+    spanId,
+    errorCode,
+  );
 }
 
 export async function handleApi<T>(
@@ -864,7 +910,8 @@ export async function handleApi<T>(
 ) {
   const request = typeof arg1 === "function" ? undefined : arg1;
   const fn = typeof arg1 === "function" ? arg1 : (arg2 as () => Promise<T> | T);
-  const requestId = getRequestId(request);
+  const traceCtx = getActiveTraceContext();
+  const requestId = getRequestId(request, traceCtx.traceId);
   const method = request?.method;
   const url = request ? request.url : undefined;
   const sampleRate = getSampleRate();
@@ -877,6 +924,8 @@ export async function handleApi<T>(
       data,
       request,
       requestId,
+      traceCtx.traceId,
+      traceCtx.spanId,
       method,
       url,
       startedAt,
@@ -888,6 +937,8 @@ export async function handleApi<T>(
       e,
       request,
       requestId,
+      traceCtx.traceId,
+      traceCtx.spanId,
       method,
       url,
       startedAt,
