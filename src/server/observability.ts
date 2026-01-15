@@ -30,6 +30,10 @@ export type AlertRuleEvent =
   | "dispute_created"
   | "sync_error"
   | "stale_sync"
+  | "execution_delayed"
+  | "low_participation"
+  | "high_vote_divergence"
+  | "high_dispute_rate"
   | "slow_api_request"
   | "high_error_rate"
   | "database_slow_query";
@@ -58,6 +62,24 @@ export type AuditLogEntry = {
   details: unknown;
 };
 
+export type IncidentStatus = "Open" | "Mitigating" | "Resolved";
+
+export type Incident = {
+  id: number;
+  title: string;
+  status: IncidentStatus;
+  severity: AlertSeverity;
+  owner: string | null;
+  summary: string | null;
+  runbook: string | null;
+  alertIds: number[];
+  entityType: string | null;
+  entityId: string | null;
+  createdAt: string;
+  updatedAt: string;
+  resolvedAt: string | null;
+};
+
 let schemaEnsured = false;
 async function ensureDb() {
   if (!hasDatabase()) return;
@@ -68,6 +90,7 @@ async function ensureDb() {
 }
 
 const ALERT_RULES_KEY = "alert_rules/v1";
+const INCIDENTS_KEY = "incidents/v1";
 const MEMORY_MAX_ALERTS = 2000;
 const MEMORY_MAX_AUDIT = 5000;
 
@@ -75,6 +98,10 @@ const validRuleEvents: AlertRuleEvent[] = [
   "dispute_created",
   "sync_error",
   "stale_sync",
+  "execution_delayed",
+  "low_participation",
+  "high_vote_divergence",
+  "high_dispute_rate",
   "slow_api_request",
   "high_error_rate",
   "database_slow_query",
@@ -111,12 +138,81 @@ function normalizeRuleParams(
   const p = params ?? {};
   const getNumber = (key: string) => Number(p[key]);
   const setNumber = (key: string, value: number) => ({ ...p, [key]: value });
+  const setNumbers = (pairs: Array<[string, number]>) => {
+    let out = { ...p };
+    for (const [k, v] of pairs) out = { ...out, [k]: v };
+    return out;
+  };
 
   if (event === "stale_sync") {
     const maxAgeMs = getNumber("maxAgeMs");
     const v =
       Number.isFinite(maxAgeMs) && maxAgeMs > 0 ? maxAgeMs : 5 * 60 * 1000;
     return setNumber("maxAgeMs", v);
+  }
+
+  if (event === "execution_delayed") {
+    const maxDelayMinutes = getNumber("maxDelayMinutes");
+    const v =
+      Number.isFinite(maxDelayMinutes) && maxDelayMinutes > 0
+        ? maxDelayMinutes
+        : 30;
+    return setNumber("maxDelayMinutes", v);
+  }
+
+  if (event === "low_participation") {
+    const withinMinutes = getNumber("withinMinutes");
+    const minTotalVotes = getNumber("minTotalVotes");
+    const safeWithin =
+      Number.isFinite(withinMinutes) && withinMinutes > 0 ? withinMinutes : 60;
+    const safeMin =
+      Number.isFinite(minTotalVotes) && minTotalVotes >= 0 ? minTotalVotes : 0;
+    return setNumbers([
+      ["withinMinutes", safeWithin],
+      ["minTotalVotes", safeMin],
+    ]);
+  }
+
+  if (event === "high_vote_divergence") {
+    const withinMinutes = getNumber("withinMinutes");
+    const minTotalVotes = getNumber("minTotalVotes");
+    const maxMarginPercent = getNumber("maxMarginPercent");
+    const safeWithin =
+      Number.isFinite(withinMinutes) && withinMinutes > 0 ? withinMinutes : 60;
+    const safeMin =
+      Number.isFinite(minTotalVotes) && minTotalVotes > 0 ? minTotalVotes : 1;
+    const safeMargin =
+      Number.isFinite(maxMarginPercent) &&
+      maxMarginPercent > 0 &&
+      maxMarginPercent <= 100
+        ? maxMarginPercent
+        : 10;
+    return setNumbers([
+      ["withinMinutes", safeWithin],
+      ["minTotalVotes", safeMin],
+      ["maxMarginPercent", safeMargin],
+    ]);
+  }
+
+  if (event === "high_dispute_rate") {
+    const windowDays = getNumber("windowDays");
+    const minAssertions = getNumber("minAssertions");
+    const thresholdPercent = getNumber("thresholdPercent");
+    const safeDays =
+      Number.isFinite(windowDays) && windowDays > 0 ? windowDays : 7;
+    const safeMin =
+      Number.isFinite(minAssertions) && minAssertions > 0 ? minAssertions : 20;
+    const safeThreshold =
+      Number.isFinite(thresholdPercent) &&
+      thresholdPercent > 0 &&
+      thresholdPercent <= 100
+        ? thresholdPercent
+        : 10;
+    return setNumbers([
+      ["windowDays", safeDays],
+      ["minAssertions", safeMin],
+      ["thresholdPercent", safeThreshold],
+    ]);
   }
 
   if (event === "slow_api_request") {
@@ -292,6 +388,38 @@ export async function readAlertRules(): Promise<AlertRule[]> {
       severity: "critical",
     },
     {
+      id: "execution_delayed_30m",
+      name: "Execution delayed > 30m",
+      enabled: true,
+      event: "execution_delayed",
+      severity: "critical",
+      params: { maxDelayMinutes: 30 },
+    },
+    {
+      id: "low_participation_60m",
+      name: "Low participation after 60m",
+      enabled: true,
+      event: "low_participation",
+      severity: "warning",
+      params: { withinMinutes: 60, minTotalVotes: 1 },
+    },
+    {
+      id: "high_vote_divergence_15m",
+      name: "High vote divergence near close",
+      enabled: true,
+      event: "high_vote_divergence",
+      severity: "warning",
+      params: { withinMinutes: 15, minTotalVotes: 10, maxMarginPercent: 5 },
+    },
+    {
+      id: "high_dispute_rate_7d",
+      name: "High dispute rate (7d)",
+      enabled: true,
+      event: "high_dispute_rate",
+      severity: "warning",
+      params: { windowDays: 7, minAssertions: 20, thresholdPercent: 10 },
+    },
+    {
       id: "sync_error",
       name: "Sync error",
       enabled: true,
@@ -338,6 +466,325 @@ export async function readAlertRules(): Promise<AlertRule[]> {
 export async function writeAlertRules(rules: AlertRule[]) {
   await ensureDb();
   await writeJsonFile(ALERT_RULES_KEY, rules);
+}
+
+type IncidentStoreV1 = {
+  version: 1;
+  nextId: number;
+  items: Incident[];
+};
+
+function normalizeIncidentStatus(raw: unknown): IncidentStatus {
+  return raw === "Open" || raw === "Mitigating" || raw === "Resolved"
+    ? raw
+    : "Open";
+}
+
+function normalizeIncident(
+  input: unknown,
+  fallbackId: number,
+): Incident | null {
+  if (!input || typeof input !== "object") return null;
+  const obj = input as Record<string, unknown>;
+
+  const id = Number(obj.id ?? fallbackId);
+  if (!Number.isFinite(id) || id <= 0) return null;
+
+  const title = typeof obj.title === "string" ? obj.title.trim() : "";
+  if (!title) return null;
+
+  const status = normalizeIncidentStatus(obj.status);
+  const severityRaw = typeof obj.severity === "string" ? obj.severity : "";
+  const severity = validSeverities.includes(severityRaw as AlertSeverity)
+    ? (severityRaw as AlertSeverity)
+    : "warning";
+
+  const owner =
+    typeof obj.owner === "string" && obj.owner.trim() ? obj.owner.trim() : null;
+
+  const summary =
+    typeof obj.summary === "string" && obj.summary.trim()
+      ? obj.summary.trim()
+      : null;
+
+  const runbook =
+    typeof obj.runbook === "string" && obj.runbook.trim()
+      ? obj.runbook.trim()
+      : null;
+
+  const alertIds = Array.isArray(obj.alertIds)
+    ? obj.alertIds
+        .map((x) => Number(x))
+        .filter((n) => Number.isFinite(n) && n > 0)
+    : [];
+
+  const entityType =
+    typeof obj.entityType === "string" && obj.entityType.trim()
+      ? obj.entityType.trim()
+      : null;
+  const entityId =
+    typeof obj.entityId === "string" && obj.entityId.trim()
+      ? obj.entityId.trim()
+      : null;
+
+  const createdAtRaw = typeof obj.createdAt === "string" ? obj.createdAt : "";
+  const updatedAtRaw = typeof obj.updatedAt === "string" ? obj.updatedAt : "";
+  const resolvedAtRaw =
+    typeof obj.resolvedAt === "string" ? obj.resolvedAt : null;
+
+  const createdAtMs = createdAtRaw ? Date.parse(createdAtRaw) : NaN;
+  const updatedAtMs = updatedAtRaw ? Date.parse(updatedAtRaw) : NaN;
+  const resolvedAtMs = resolvedAtRaw ? Date.parse(resolvedAtRaw) : NaN;
+
+  const now = memoryNowIso();
+  const createdAt = Number.isFinite(createdAtMs) ? createdAtRaw : now;
+  const updatedAt = Number.isFinite(updatedAtMs) ? updatedAtRaw : createdAt;
+  const resolvedAt = Number.isFinite(resolvedAtMs) ? resolvedAtRaw : null;
+
+  return {
+    id,
+    title,
+    status,
+    severity,
+    owner,
+    summary,
+    runbook,
+    alertIds,
+    entityType,
+    entityId,
+    createdAt,
+    updatedAt,
+    resolvedAt,
+  };
+}
+
+async function readIncidentStore(): Promise<IncidentStoreV1> {
+  await ensureDb();
+  const stored = await readJsonFile<unknown>(INCIDENTS_KEY, null);
+  const defaultStore: IncidentStoreV1 = { version: 1, nextId: 1, items: [] };
+  if (!stored || typeof stored !== "object") return defaultStore;
+  const obj = stored as Record<string, unknown>;
+  const version = Number(obj.version);
+  if (version !== 1) return defaultStore;
+  const rawItems = Array.isArray(obj.items) ? obj.items : [];
+  const normalized: Incident[] = [];
+  let maxId = 0;
+  for (let i = 0; i < rawItems.length; i += 1) {
+    const incident = normalizeIncident(rawItems[i], i + 1);
+    if (!incident) continue;
+    normalized.push(incident);
+    if (incident.id > maxId) maxId = incident.id;
+  }
+  const nextIdRaw = Number(obj.nextId);
+  const nextId =
+    Number.isFinite(nextIdRaw) && nextIdRaw > maxId ? nextIdRaw : maxId + 1;
+  const store: IncidentStoreV1 = { version: 1, nextId, items: normalized };
+  if (
+    JSON.stringify(obj.items ?? null) !== JSON.stringify(normalized) ||
+    obj.nextId !== nextId
+  ) {
+    await writeJsonFile(INCIDENTS_KEY, store);
+  }
+  return store;
+}
+
+async function writeIncidentStore(store: IncidentStoreV1) {
+  await ensureDb();
+  await writeJsonFile(INCIDENTS_KEY, store);
+}
+
+export async function listIncidents(params?: {
+  status?: IncidentStatus | "All" | null;
+  limit?: number | null;
+}) {
+  const store = await readIncidentStore();
+  const limit = Math.min(200, Math.max(1, params?.limit ?? 50));
+  let items = store.items.slice();
+  if (params?.status && params.status !== "All") {
+    items = items.filter((i) => i.status === params.status);
+  }
+  const statusRank = (s: IncidentStatus) =>
+    s === "Open" ? 0 : s === "Mitigating" ? 1 : 2;
+  items.sort((a, b) => {
+    const r = statusRank(a.status) - statusRank(b.status);
+    if (r !== 0) return r;
+    return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+  });
+  return items.slice(0, limit);
+}
+
+export async function getIncident(id: number) {
+  const store = await readIncidentStore();
+  const found = store.items.find((i) => i.id === id);
+  return found ?? null;
+}
+
+export async function createIncident(input: {
+  title: string;
+  severity: AlertSeverity;
+  status?: IncidentStatus | null;
+  owner?: string | null;
+  summary?: string | null;
+  runbook?: string | null;
+  alertIds?: number[] | null;
+  entityType?: string | null;
+  entityId?: string | null;
+  actor?: string | null;
+}) {
+  const title = input.title.trim();
+  if (!title) return null;
+
+  const store = await readIncidentStore();
+  const now = memoryNowIso();
+
+  const created: Incident = {
+    id: store.nextId,
+    title,
+    status: input.status ?? "Open",
+    severity: input.severity,
+    owner: input.owner?.trim() ? input.owner.trim() : null,
+    summary: input.summary?.trim() ? input.summary.trim() : null,
+    runbook: input.runbook?.trim() ? input.runbook.trim() : null,
+    alertIds: Array.isArray(input.alertIds)
+      ? input.alertIds
+          .map((x) => Number(x))
+          .filter((n) => Number.isFinite(n) && n > 0)
+      : [],
+    entityType: input.entityType?.trim() ? input.entityType.trim() : null,
+    entityId: input.entityId?.trim() ? input.entityId.trim() : null,
+    createdAt: now,
+    updatedAt: now,
+    resolvedAt: input.status === "Resolved" ? now : null,
+  };
+
+  const nextStore: IncidentStoreV1 = {
+    version: 1,
+    nextId: store.nextId + 1,
+    items: [created, ...store.items],
+  };
+  await writeIncidentStore(nextStore);
+  await appendAuditLog({
+    actor: input.actor ?? null,
+    action: "incident_created",
+    entityType: "incident",
+    entityId: String(created.id),
+    details: created,
+  });
+  return created;
+}
+
+export async function patchIncident(input: {
+  id: number;
+  patch: Partial<
+    Pick<
+      Incident,
+      | "title"
+      | "status"
+      | "severity"
+      | "owner"
+      | "summary"
+      | "runbook"
+      | "alertIds"
+      | "entityType"
+      | "entityId"
+    >
+  >;
+  actor?: string | null;
+}) {
+  const store = await readIncidentStore();
+  const idx = store.items.findIndex((i) => i.id === input.id);
+  if (idx < 0) return null;
+
+  const prev = store.items[idx]!;
+  const now = memoryNowIso();
+
+  const title =
+    typeof input.patch.title === "string"
+      ? input.patch.title.trim() || prev.title
+      : prev.title;
+  const status = input.patch.status ?? prev.status;
+  const severity = input.patch.severity ?? prev.severity;
+  const owner =
+    input.patch.owner === undefined
+      ? prev.owner
+      : input.patch.owner?.trim()
+        ? input.patch.owner.trim()
+        : null;
+  const summary =
+    input.patch.summary === undefined
+      ? prev.summary
+      : input.patch.summary?.trim()
+        ? input.patch.summary.trim()
+        : null;
+  const runbook =
+    input.patch.runbook === undefined
+      ? prev.runbook
+      : input.patch.runbook?.trim()
+        ? input.patch.runbook.trim()
+        : null;
+
+  const alertIds =
+    input.patch.alertIds === undefined
+      ? prev.alertIds
+      : Array.isArray(input.patch.alertIds)
+        ? input.patch.alertIds
+            .map((x) => Number(x))
+            .filter((n) => Number.isFinite(n) && n > 0)
+        : [];
+
+  const entityType =
+    input.patch.entityType === undefined
+      ? prev.entityType
+      : input.patch.entityType?.trim()
+        ? input.patch.entityType.trim()
+        : null;
+
+  const entityId =
+    input.patch.entityId === undefined
+      ? prev.entityId
+      : input.patch.entityId?.trim()
+        ? input.patch.entityId.trim()
+        : null;
+
+  const resolvedAt =
+    status === "Resolved"
+      ? (prev.resolvedAt ?? now)
+      : status === prev.status
+        ? prev.resolvedAt
+        : null;
+
+  const next: Incident = {
+    ...prev,
+    title,
+    status,
+    severity,
+    owner,
+    summary,
+    runbook,
+    alertIds,
+    entityType,
+    entityId,
+    updatedAt: now,
+    resolvedAt,
+  };
+
+  const items = store.items.slice();
+  items[idx] = next;
+
+  const nextStore: IncidentStoreV1 = {
+    version: 1,
+    nextId: store.nextId,
+    items,
+  };
+  await writeIncidentStore(nextStore);
+  await appendAuditLog({
+    actor: input.actor ?? null,
+    action: "incident_updated",
+    entityType: "incident",
+    entityId: String(next.id),
+    details: { before: prev, after: next },
+  });
+  return next;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -614,6 +1061,47 @@ export async function listAlerts(params: {
     total,
     nextCursor: offset + res.rows.length < total ? offset + limit : null,
   };
+}
+
+export async function getAlertsByIds(inputIds: number[]) {
+  await ensureDb();
+  const ids = Array.from(new Set(inputIds))
+    .map((x) => Number(x))
+    .filter((n) => Number.isFinite(n) && n > 0);
+  if (ids.length === 0) return [];
+  const limited = ids.slice(0, 200);
+
+  if (!hasDatabase()) {
+    const mem = getMemoryStore();
+    const byId = new Map<number, Alert>();
+    for (const a of mem.alerts.values()) byId.set(a.id, a);
+    const out: Alert[] = [];
+    for (const id of limited) {
+      const found = byId.get(id);
+      if (found) out.push(found);
+    }
+    return out;
+  }
+
+  const res = await query(
+    `
+    SELECT * FROM alerts WHERE id = ANY($1::int[])
+    `,
+    [limited],
+  );
+
+  const byId = new Map<number, Alert>();
+  for (const row of res.rows) {
+    const a = mapAlertRow(row);
+    byId.set(a.id, a);
+  }
+
+  const out: Alert[] = [];
+  for (const id of limited) {
+    const found = byId.get(id);
+    if (found) out.push(found);
+  }
+  return out;
 }
 
 export async function updateAlertStatus(input: {

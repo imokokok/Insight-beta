@@ -40,7 +40,16 @@ if (process.env.NODE_ENV !== "production") globalForDb.conn = db;
 
 export async function query<T extends pg.QueryResultRow>(
   text: string,
-  params?: (string | number | boolean | Date | null | undefined | string[])[]
+  params?: (
+    | string
+    | number
+    | boolean
+    | Date
+    | null
+    | undefined
+    | string[]
+    | number[]
+  )[],
 ) {
   if (!getDbUrl()) {
     throw new Error("missing_database_url");

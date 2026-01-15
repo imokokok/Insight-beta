@@ -175,6 +175,10 @@ export type AlertRuleEvent =
   | "dispute_created"
   | "sync_error"
   | "stale_sync"
+  | "execution_delayed"
+  | "low_participation"
+  | "high_vote_divergence"
+  | "high_dispute_rate"
   | "slow_api_request"
   | "high_error_rate"
   | "database_slow_query";
@@ -190,4 +194,36 @@ export type AlertRule = {
   params?: Record<string, unknown>;
   channels?: Array<"webhook" | "email">;
   recipient?: string | null;
+};
+
+export type IncidentStatus = "Open" | "Mitigating" | "Resolved";
+
+export type Incident = {
+  id: number;
+  title: string;
+  status: IncidentStatus;
+  severity: AlertSeverity;
+  owner: string | null;
+  summary: string | null;
+  runbook: string | null;
+  alertIds: number[];
+  entityType: string | null;
+  entityId: string | null;
+  createdAt: string;
+  updatedAt: string;
+  resolvedAt: string | null;
+};
+
+export type RiskSeverity = AlertSeverity;
+
+export type RiskItem = {
+  entityType: "assertion" | "market";
+  entityId: string;
+  chain: OracleChain;
+  market: string;
+  score: number;
+  severity: RiskSeverity;
+  reasons: string[];
+  assertionId?: string;
+  disputeId?: string;
 };

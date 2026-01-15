@@ -6,11 +6,13 @@ import type {
   OracleStats,
   LeaderboardStats,
   UserStats,
+  RiskItem,
   DbAssertionRow,
   DbDisputeRow,
 } from "@/lib/oracleTypes";
 import { mockAssertions, mockDisputes } from "@/lib/mockData";
 import { unstable_cache } from "next/cache";
+import { readOracleState } from "@/server/oracleState";
 
 export type { Assertion, Dispute } from "@/lib/oracleTypes";
 
@@ -75,8 +77,8 @@ function mapDisputeRow(row: DbDisputeRow): Dispute {
     statusFromDb === "Executed"
       ? "Executed"
       : votingEndsAt && new Date(votingEndsAt).getTime() <= now
-      ? "Pending Execution"
-      : "Voting";
+        ? "Pending Execution"
+        : "Voting";
 
   return {
     id: row.id,
@@ -138,7 +140,7 @@ export async function listAssertions(params: ListParams) {
     }
     if (params.asserter) {
       items = items.filter(
-        (a) => a.asserter.toLowerCase() === params.asserter?.toLowerCase()
+        (a) => a.asserter.toLowerCase() === params.asserter?.toLowerCase(),
       );
     }
     if (params.ids && params.ids.length > 0) {
@@ -182,7 +184,7 @@ export async function listAssertions(params: ListParams) {
     }
     if (params.asserter) {
       items = items.filter(
-        (a) => a.asserter.toLowerCase() === params.asserter?.toLowerCase()
+        (a) => a.asserter.toLowerCase() === params.asserter?.toLowerCase(),
       );
     }
     const start = offset;
@@ -242,13 +244,13 @@ export async function listAssertions(params: ListParams) {
 
   const countRes = await query<{ total: string | number }>(
     `SELECT COUNT(*) as total FROM assertions ${whereClause}`,
-    values
+    values,
   );
   const total = Number(countRes.rows[0]?.total || 0);
 
   const res = await query<DbAssertionRow>(
     `SELECT * FROM assertions ${whereClause} ORDER BY asserted_at DESC LIMIT $${idx++} OFFSET $${idx}`,
-    [...values, limit, offset]
+    [...values, limit, offset],
   );
 
   return {
@@ -266,7 +268,7 @@ export async function getAssertion(id: string): Promise<Assertion | null> {
   }
   const res = await query<DbAssertionRow>(
     "SELECT * FROM assertions WHERE id = $1",
-    [id]
+    [id],
   );
   if (res.rows.length === 0) {
     // Check mocks
@@ -285,7 +287,7 @@ export async function getDispute(id: string): Promise<Dispute | null> {
   }
   const res = await query<DbDisputeRow>(
     "SELECT * FROM disputes WHERE id = $1",
-    [id]
+    [id],
   );
   if (res.rows.length === 0) {
     const mock = mockDisputes.find((d) => d.id === id);
@@ -296,7 +298,7 @@ export async function getDispute(id: string): Promise<Dispute | null> {
 }
 
 export async function getDisputeByAssertionId(
-  assertionId: string
+  assertionId: string,
 ): Promise<Dispute | null> {
   await ensureDb();
   if (!hasDatabase()) {
@@ -305,7 +307,7 @@ export async function getDisputeByAssertionId(
   }
   const res = await query<DbDisputeRow>(
     "SELECT * FROM disputes WHERE assertion_id = $1",
-    [assertionId]
+    [assertionId],
   );
   if (res.rows.length === 0) {
     const mock = mockDisputes.find((d) => d.assertionId === assertionId);
@@ -346,7 +348,7 @@ export async function listDisputes(params: ListParams) {
     }
     if (params.disputer) {
       items = items.filter(
-        (d) => d.disputer?.toLowerCase() === params.disputer?.toLowerCase()
+        (d) => d.disputer?.toLowerCase() === params.disputer?.toLowerCase(),
       );
     }
     const start = offset;
@@ -387,7 +389,7 @@ export async function listDisputes(params: ListParams) {
     }
     if (params.disputer) {
       items = items.filter(
-        (d) => d.disputer?.toLowerCase() === params.disputer?.toLowerCase()
+        (d) => d.disputer?.toLowerCase() === params.disputer?.toLowerCase(),
       );
     }
     const start = offset;
@@ -412,11 +414,11 @@ export async function listDisputes(params: ListParams) {
       values.push("Executed");
     } else if (params.status === "Pending Execution") {
       conditions.push(
-        `status <> 'Executed' AND voting_ends_at IS NOT NULL AND voting_ends_at <= NOW()`
+        `status <> 'Executed' AND voting_ends_at IS NOT NULL AND voting_ends_at <= NOW()`,
       );
     } else {
       conditions.push(
-        `status <> 'Executed' AND (voting_ends_at IS NULL OR voting_ends_at > NOW())`
+        `status <> 'Executed' AND (voting_ends_at IS NULL OR voting_ends_at > NOW())`,
       );
     }
   }
@@ -451,13 +453,13 @@ export async function listDisputes(params: ListParams) {
 
   const countRes = await query<{ total: string | number }>(
     `SELECT COUNT(*) as total FROM disputes ${whereClause}`,
-    values
+    values,
   );
   const total = Number(countRes.rows[0]?.total || 0);
 
   const res = await query<DbDisputeRow>(
     `SELECT * FROM disputes ${whereClause} ORDER BY disputed_at DESC LIMIT $${idx++} OFFSET $${idx}`,
-    [...values, limit, offset]
+    [...values, limit, offset],
   );
 
   return {
@@ -556,7 +558,7 @@ export const getOracleStats = unstable_cache(
       FROM assertions 
       WHERE status = 'Resolved' AND COALESCE(resolved_at, liveness_ends_at) > $1
     `,
-      [oneDayAgo]
+      [oneDayAgo],
     );
     const resolvedRow = resolvedRes.rows[0];
     const resolved24h = Number(resolvedRow?.count || 0);
@@ -579,7 +581,7 @@ export const getOracleStats = unstable_cache(
     };
   },
   ["oracle-stats"],
-  { revalidate: 60, tags: ["oracle-stats"] }
+  { revalidate: 60, tags: ["oracle-stats"] },
 );
 
 export const getLeaderboardStats = unstable_cache(
@@ -687,7 +689,7 @@ export const getLeaderboardStats = unstable_cache(
     };
   },
   ["oracle-leaderboard"],
-  { revalidate: 300, tags: ["oracle-leaderboard"] }
+  { revalidate: 300, tags: ["oracle-leaderboard"] },
 );
 
 export function getUserStats(address: string): Promise<UserStats> {
@@ -698,23 +700,23 @@ export function getUserStats(address: string): Promise<UserStats> {
       await ensureDb();
       if (!hasDatabase()) {
         const assertions = mockAssertions.filter(
-          (a) => a.asserter.toLowerCase() === addressLower
+          (a) => a.asserter.toLowerCase() === addressLower,
         );
         const disputes = mockDisputes.filter(
-          (d) => d.disputer.toLowerCase() === addressLower
+          (d) => d.disputer.toLowerCase() === addressLower,
         );
         const totalBondedUsd = assertions.reduce(
           (acc, a) => acc + a.bondUsd,
-          0
+          0,
         );
         const resolvedAssertions = assertions.filter(
-          (a) => a.status === "Resolved"
+          (a) => a.status === "Resolved",
         );
         const wonAssertions = resolvedAssertions.filter(() => true);
         const winRate =
           resolvedAssertions.length > 0
             ? Math.round(
-                (wonAssertions.length / resolvedAssertions.length) * 100
+                (wonAssertions.length / resolvedAssertions.length) * 100,
               )
             : 0;
         return {
@@ -729,26 +731,26 @@ export function getUserStats(address: string): Promise<UserStats> {
       if (await isTableEmpty("assertions")) {
         // Mock stats
         const assertions = mockAssertions.filter(
-          (a) => a.asserter.toLowerCase() === addressLower
+          (a) => a.asserter.toLowerCase() === addressLower,
         );
         const disputes = mockDisputes.filter(
-          (d) => d.disputer.toLowerCase() === addressLower
+          (d) => d.disputer.toLowerCase() === addressLower,
         );
 
         const totalBondedUsd = assertions.reduce(
           (acc, a) => acc + a.bondUsd,
-          0
+          0,
         );
 
         const resolvedAssertions = assertions.filter(
-          (a) => a.status === "Resolved"
+          (a) => a.status === "Resolved",
         );
         const wonAssertions = resolvedAssertions.filter(() => true);
 
         const winRate =
           resolvedAssertions.length > 0
             ? Math.round(
-                (wonAssertions.length / resolvedAssertions.length) * 100
+                (wonAssertions.length / resolvedAssertions.length) * 100,
               )
             : 0;
 
@@ -767,7 +769,7 @@ export function getUserStats(address: string): Promise<UserStats> {
         FROM assertions
         WHERE LOWER(asserter) = $1
       `,
-        [addressLower]
+        [addressLower],
       );
 
       const disputesRes = await query(
@@ -776,7 +778,7 @@ export function getUserStats(address: string): Promise<UserStats> {
         FROM disputes
         WHERE LOWER(disputer) = $1
       `,
-        [addressLower]
+        [addressLower],
       );
 
       const resolvedRes = await query(
@@ -785,7 +787,7 @@ export function getUserStats(address: string): Promise<UserStats> {
         FROM assertions
         WHERE LOWER(asserter) = $1 AND status = 'Resolved'
       `,
-        [addressLower]
+        [addressLower],
       );
 
       const wonRes = await query(
@@ -794,7 +796,7 @@ export function getUserStats(address: string): Promise<UserStats> {
         FROM assertions
         WHERE LOWER(asserter) = $1 AND status = 'Resolved' AND (settlement_resolution IS TRUE OR settlement_resolution IS NULL)
       `,
-        [addressLower]
+        [addressLower],
       );
 
       const assertionsRow = assertionsRes.rows[0];
@@ -819,6 +821,170 @@ export function getUserStats(address: string): Promise<UserStats> {
       };
     },
     ["user-stats", addressLower],
-    { revalidate: 60, tags: ["user-stats", `user-stats:${addressLower}`] }
+    { revalidate: 60, tags: ["user-stats", `user-stats:${addressLower}`] },
   )();
+}
+
+export async function getRiskItems(params?: { limit?: number | null }) {
+  const limit = Math.min(200, Math.max(1, params?.limit ?? 50));
+  const nowMs = Date.now();
+  const state = await readOracleState();
+  const disputes = Object.values(state.disputes);
+
+  const out: RiskItem[] = [];
+
+  const pushRisk = (r: RiskItem) => {
+    if (!Number.isFinite(r.score)) return;
+    r.score = Math.max(0, Math.min(100, Math.round(r.score)));
+    out.push(r);
+  };
+
+  const computeBondBoost = (bondUsd: number) => {
+    if (!Number.isFinite(bondUsd) || bondUsd <= 0) return 0;
+    if (bondUsd >= 250_000) return 15;
+    if (bondUsd >= 100_000) return 12;
+    if (bondUsd >= 50_000) return 9;
+    if (bondUsd >= 10_000) return 6;
+    return 0;
+  };
+
+  for (const dispute of disputes) {
+    const assertion = state.assertions[dispute.assertionId];
+    const bondUsd = assertion?.bondUsd ?? 0;
+    const bondBoost = computeBondBoost(bondUsd);
+
+    const votingEndsAtMs = Date.parse(dispute.votingEndsAt);
+    const disputedAtMs = Date.parse(dispute.disputedAt);
+    const totalVotes = Number(dispute.totalVotes);
+    const votesFor = Number(dispute.currentVotesFor);
+    const votesAgainst = Number(dispute.currentVotesAgainst);
+    const marginPercent =
+      totalVotes > 0
+        ? (Math.abs(votesFor - votesAgainst) / totalVotes) * 100
+        : 100;
+
+    if (dispute.status === "Pending Execution") {
+      const delayMinutes = Number.isFinite(votingEndsAtMs)
+        ? Math.max(0, (nowMs - votingEndsAtMs) / 60_000)
+        : 0;
+      if (delayMinutes >= 30) {
+        const base = 88 + Math.min(12, delayMinutes / 30);
+        const score = base + bondBoost;
+        pushRisk({
+          entityType: "assertion",
+          entityId: dispute.assertionId,
+          chain: dispute.chain,
+          market: dispute.market,
+          score,
+          severity: score >= 85 ? "critical" : "warning",
+          reasons: [
+            `Execution delayed ${Math.round(delayMinutes)}m past voting end`,
+            bondBoost > 0
+              ? `High bond $${Math.round(bondUsd).toLocaleString()}`
+              : "",
+          ].filter(Boolean),
+          assertionId: dispute.assertionId,
+          disputeId: dispute.id,
+        });
+      }
+    }
+
+    if (dispute.status === "Voting") {
+      if (
+        Number.isFinite(disputedAtMs) &&
+        nowMs - disputedAtMs >= 60 * 60_000
+      ) {
+        if (!Number.isFinite(totalVotes) || totalVotes <= 1) {
+          const hours = Math.max(
+            1,
+            Math.round((nowMs - disputedAtMs) / 3_600_000),
+          );
+          const base = 72 + Math.min(10, hours);
+          const score = base + bondBoost;
+          pushRisk({
+            entityType: "assertion",
+            entityId: dispute.assertionId,
+            chain: dispute.chain,
+            market: dispute.market,
+            score,
+            severity: score >= 85 ? "critical" : "warning",
+            reasons: [
+              `Low dispute participation after ${hours}h (${Number.isFinite(totalVotes) ? totalVotes : 0} votes)`,
+              bondBoost > 0
+                ? `High bond $${Math.round(bondUsd).toLocaleString()}`
+                : "",
+            ].filter(Boolean),
+            assertionId: dispute.assertionId,
+            disputeId: dispute.id,
+          });
+        }
+      }
+
+      if (Number.isFinite(votingEndsAtMs)) {
+        const minsToEnd = (votingEndsAtMs - nowMs) / 60_000;
+        if (
+          minsToEnd >= 0 &&
+          minsToEnd <= 15 &&
+          Number.isFinite(totalVotes) &&
+          totalVotes >= 10 &&
+          Number.isFinite(marginPercent) &&
+          marginPercent <= 5
+        ) {
+          const base = 78 + Math.min(7, (5 - marginPercent) * 1.4);
+          const score = base + bondBoost;
+          pushRisk({
+            entityType: "assertion",
+            entityId: dispute.assertionId,
+            chain: dispute.chain,
+            market: dispute.market,
+            score,
+            severity: score >= 85 ? "critical" : "warning",
+            reasons: [
+              `Vote divergence risk: margin ${marginPercent.toFixed(1)}% with ${Math.round(
+                minsToEnd,
+              )}m to end`,
+              bondBoost > 0
+                ? `High bond $${Math.round(bondUsd).toLocaleString()}`
+                : "",
+            ].filter(Boolean),
+            assertionId: dispute.assertionId,
+            disputeId: dispute.id,
+          });
+        }
+      }
+    }
+  }
+
+  const cutoffMs = nowMs - 7 * 24 * 60 * 60_000;
+  const assertions = Object.values(state.assertions);
+  const assertions7d = assertions.filter(
+    (a) => Date.parse(a.assertedAt) >= cutoffMs,
+  );
+  const disputedSet = new Set(
+    Object.values(state.disputes)
+      .filter((d) => Date.parse(d.disputedAt) >= cutoffMs)
+      .map((d) => d.assertionId),
+  );
+  const totalAssertions = assertions7d.length;
+  const disputedAssertions = Array.from(disputedSet).length;
+  if (totalAssertions >= 20) {
+    const rate = (disputedAssertions / totalAssertions) * 100;
+    if (rate >= 10) {
+      const score = 70 + Math.min(20, rate);
+      pushRisk({
+        entityType: "market",
+        entityId: state.contractAddress ?? "oracle",
+        chain: state.chain,
+        market: "global",
+        score,
+        severity: score >= 85 ? "critical" : "warning",
+        reasons: [
+          `High dispute rate: ${rate.toFixed(1)}% (${disputedAssertions}/${totalAssertions}) over 7d`,
+        ],
+      });
+    }
+  }
+
+  out.sort((a, b) => b.score - a.score);
+  return out.slice(0, limit);
 }

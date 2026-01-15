@@ -38,6 +38,10 @@ const ruleSchema = z
       "dispute_created",
       "sync_error",
       "stale_sync",
+      "execution_delayed",
+      "low_participation",
+      "high_vote_divergence",
+      "high_dispute_rate",
       "slow_api_request",
       "high_error_rate",
       "database_slow_query",
@@ -114,6 +118,175 @@ const ruleSchema = z
             code: "custom",
             message: "invalid_maxAgeMs",
             path: ["params", "maxAgeMs"],
+          });
+        }
+      }
+    }
+
+    if (rule.event === "execution_delayed") {
+      if (!("maxDelayMinutes" in params)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "missing_maxDelayMinutes",
+          path: ["params", "maxDelayMinutes"],
+        });
+      } else {
+        const maxDelayMinutes = getNumber("maxDelayMinutes");
+        if (!Number.isFinite(maxDelayMinutes) || maxDelayMinutes <= 0) {
+          ctx.addIssue({
+            code: "custom",
+            message: "invalid_maxDelayMinutes",
+            path: ["params", "maxDelayMinutes"],
+          });
+        }
+      }
+    }
+
+    if (rule.event === "low_participation") {
+      if (!("withinMinutes" in params)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "missing_withinMinutes",
+          path: ["params", "withinMinutes"],
+        });
+      } else {
+        const withinMinutes = getNumber("withinMinutes");
+        if (!Number.isFinite(withinMinutes) || withinMinutes <= 0) {
+          ctx.addIssue({
+            code: "custom",
+            message: "invalid_withinMinutes",
+            path: ["params", "withinMinutes"],
+          });
+        }
+      }
+
+      if (!("minTotalVotes" in params)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "missing_minTotalVotes",
+          path: ["params", "minTotalVotes"],
+        });
+      } else {
+        const minTotalVotes = getNumber("minTotalVotes");
+        if (!Number.isFinite(minTotalVotes) || minTotalVotes < 0) {
+          ctx.addIssue({
+            code: "custom",
+            message: "invalid_minTotalVotes",
+            path: ["params", "minTotalVotes"],
+          });
+        }
+      }
+    }
+
+    if (rule.event === "high_vote_divergence") {
+      if (!("withinMinutes" in params)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "missing_withinMinutes",
+          path: ["params", "withinMinutes"],
+        });
+      } else {
+        const withinMinutes = getNumber("withinMinutes");
+        if (!Number.isFinite(withinMinutes) || withinMinutes <= 0) {
+          ctx.addIssue({
+            code: "custom",
+            message: "invalid_withinMinutes",
+            path: ["params", "withinMinutes"],
+          });
+        }
+      }
+
+      if (!("minTotalVotes" in params)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "missing_minTotalVotes",
+          path: ["params", "minTotalVotes"],
+        });
+      } else {
+        const minTotalVotes = getNumber("minTotalVotes");
+        if (!Number.isFinite(minTotalVotes) || minTotalVotes <= 0) {
+          ctx.addIssue({
+            code: "custom",
+            message: "invalid_minTotalVotes",
+            path: ["params", "minTotalVotes"],
+          });
+        }
+      }
+
+      if (!("maxMarginPercent" in params)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "missing_maxMarginPercent",
+          path: ["params", "maxMarginPercent"],
+        });
+      } else {
+        const maxMarginPercent = getNumber("maxMarginPercent");
+        if (
+          !Number.isFinite(maxMarginPercent) ||
+          maxMarginPercent <= 0 ||
+          maxMarginPercent > 100
+        ) {
+          ctx.addIssue({
+            code: "custom",
+            message: "invalid_maxMarginPercent",
+            path: ["params", "maxMarginPercent"],
+          });
+        }
+      }
+    }
+
+    if (rule.event === "high_dispute_rate") {
+      if (!("windowDays" in params)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "missing_windowDays",
+          path: ["params", "windowDays"],
+        });
+      } else {
+        const windowDays = getNumber("windowDays");
+        if (!Number.isFinite(windowDays) || windowDays <= 0) {
+          ctx.addIssue({
+            code: "custom",
+            message: "invalid_windowDays",
+            path: ["params", "windowDays"],
+          });
+        }
+      }
+
+      if (!("minAssertions" in params)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "missing_minAssertions",
+          path: ["params", "minAssertions"],
+        });
+      } else {
+        const minAssertions = getNumber("minAssertions");
+        if (!Number.isFinite(minAssertions) || minAssertions <= 0) {
+          ctx.addIssue({
+            code: "custom",
+            message: "invalid_minAssertions",
+            path: ["params", "minAssertions"],
+          });
+        }
+      }
+
+      if (!("thresholdPercent" in params)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "missing_thresholdPercent",
+          path: ["params", "thresholdPercent"],
+        });
+      } else {
+        const thresholdPercent = getNumber("thresholdPercent");
+        if (
+          !Number.isFinite(thresholdPercent) ||
+          thresholdPercent <= 0 ||
+          thresholdPercent > 100
+        ) {
+          ctx.addIssue({
+            code: "custom",
+            message: "invalid_thresholdPercent",
+            path: ["params", "thresholdPercent"],
           });
         }
       }
