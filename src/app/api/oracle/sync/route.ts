@@ -1,9 +1,9 @@
 import {
   ensureOracleSynced,
   getOracleEnv,
+  isTableEmpty,
   readOracleState,
 } from "@/server/oracle";
-import { isTableEmpty } from "@/server/oracleStore";
 import {
   error,
   getAdminActor,

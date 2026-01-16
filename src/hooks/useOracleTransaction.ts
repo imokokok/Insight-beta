@@ -3,7 +3,7 @@ import { useWallet } from "@/contexts/WalletContext";
 import { useToast } from "@/components/ui/toast";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { oracleAbi } from "@/lib/oracleAbi";
-import { env } from "@/lib/env";
+import { publicEnv } from "@/lib/publicEnv";
 import { createPublicClient, custom, http, parseEther, webSocket } from "viem";
 import type { OracleChain, OracleConfig } from "@/lib/oracleTypes";
 import {
@@ -27,7 +27,7 @@ type OracleWriteArgs =
       market: string,
       assertion: string,
       bond: bigint,
-      liveness: bigint
+      liveness: bigint,
     ]
   | readonly [`0x${string}`]
   | readonly [`0x${string}`, support: boolean]
@@ -104,10 +104,10 @@ export function useOracleTransaction() {
             normalized.kind === "CHAIN_NOT_ADDED"
               ? t("errors.chainNotAdded")
               : normalized.kind === "USER_REJECTED"
-              ? t("errors.userRejected")
-              : normalized.kind === "REQUEST_PENDING"
-              ? t("errors.requestPending")
-              : t("errors.wrongNetwork");
+                ? t("errors.userRejected")
+                : normalized.kind === "REQUEST_PENDING"
+                  ? t("errors.requestPending")
+                  : t("errors.wrongNetwork");
           setError(msg);
           toast({
             type: "error",
@@ -121,11 +121,25 @@ export function useOracleTransaction() {
       const client = await getWalletClient(expectedChainId ?? undefined);
       if (!client) {
         throw new Error(
-          "No wallet client available. Please make sure your wallet is connected and unlocked."
+          "No wallet client available. Please make sure your wallet is connected and unlocked.",
         );
       }
 
-      const targetAddress = contractAddress || env.INSIGHT_ORACLE_ADDRESS;
+      let targetAddress = (contractAddress ?? "").trim();
+      if (!targetAddress) {
+        targetAddress = publicEnv.INSIGHT_ORACLE_ADDRESS;
+      }
+      if (!targetAddress) {
+        if (!configRef.current) {
+          try {
+            configRef.current =
+              await fetchApiData<OracleConfig>("/api/oracle/config");
+          } catch {
+            configRef.current = null;
+          }
+        }
+        targetAddress = (configRef.current?.contractAddress ?? "").trim();
+      }
       if (!targetAddress)
         throw new Error("Oracle contract address not configured");
 
@@ -174,7 +188,7 @@ export function useOracleTransaction() {
         title: successTitle ?? t("oracle.tx.sentTitle"),
         message: `${successMessage ?? t("oracle.tx.sentMsg")} (${hash.slice(
           0,
-          10
+          10,
         )}…${hash.slice(-8)})`,
         actionLabel: explorerUrl ? t("common.viewTx") : undefined,
         actionHref: explorerUrl ?? undefined,
@@ -197,7 +211,7 @@ export function useOracleTransaction() {
           title: t("oracle.tx.confirmingTitle"),
           message: `${t("oracle.tx.confirmingMsg")} (${hash.slice(
             0,
-            10
+            10,
           )}…${hash.slice(-8)})`,
           actionLabel: explorerUrl ? t("common.viewTx") : undefined,
           actionHref: explorerUrl ?? undefined,
@@ -208,9 +222,8 @@ export function useOracleTransaction() {
         if (!effectiveRpcUrl) {
           if (!configRef.current) {
             try {
-              configRef.current = await fetchApiData<OracleConfig>(
-                "/api/oracle/config"
-              );
+              configRef.current =
+                await fetchApiData<OracleConfig>("/api/oracle/config");
             } catch {
               configRef.current = null;
             }
@@ -246,7 +259,7 @@ export function useOracleTransaction() {
           title: t("oracle.tx.confirmedTitle"),
           message: `${t("oracle.tx.confirmedMsg")} (${hash.slice(
             0,
-            10
+            10,
           )}…${hash.slice(-8)})`,
           actionLabel: explorerUrl ? t("common.viewTx") : undefined,
           actionHref: explorerUrl ?? undefined,
@@ -262,10 +275,10 @@ export function useOracleTransaction() {
         normalized.kind === "USER_REJECTED"
           ? t("errors.userRejected")
           : normalized.kind === "REQUEST_PENDING"
-          ? t("errors.requestPending")
-          : normalized.kind === "INSUFFICIENT_FUNDS"
-          ? t("errors.insufficientFunds")
-          : normalized.rawMessage ?? t("errors.unknownError");
+            ? t("errors.requestPending")
+            : normalized.kind === "INSUFFICIENT_FUNDS"
+              ? t("errors.insufficientFunds")
+              : (normalized.rawMessage ?? t("errors.unknownError"));
       setError(errorMessage);
       toast({
         type: "error",

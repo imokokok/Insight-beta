@@ -10,9 +10,9 @@ import { revalidateTag } from "next/cache";
 import {
   ensureOracleSynced,
   getOracleEnv,
+  isTableEmpty,
   readOracleState,
 } from "@/server/oracle";
-import { isTableEmpty } from "@/server/oracleStore";
 import { appendAuditLog } from "@/server/observability";
 
 vi.mock("@/server/oracle", () => ({
@@ -21,6 +21,7 @@ vi.mock("@/server/oracle", () => ({
     rpcUrl: "https://rpc.example",
     contractAddress: "0xabc",
   })),
+  isTableEmpty: vi.fn(async () => false),
   readOracleState: vi.fn(async () => ({
     chain: "mainnet",
     contractAddress: "0xabc",
@@ -31,10 +32,6 @@ vi.mock("@/server/oracle", () => ({
   })),
 }));
 
-vi.mock("@/server/oracleStore", () => ({
-  isTableEmpty: vi.fn(async () => false),
-}));
-
 vi.mock("@/server/apiResponse", () => ({
   rateLimit: vi.fn(async () => false),
   requireAdmin: vi.fn(async () => null),
@@ -42,7 +39,7 @@ vi.mock("@/server/apiResponse", () => ({
   invalidateCachedJson: vi.fn(async () => {}),
   handleApi: async (
     _request: Request,
-    fn: () => unknown | Promise<unknown>
+    fn: () => unknown | Promise<unknown>,
   ) => {
     return fn();
   },

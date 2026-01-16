@@ -1,6 +1,41 @@
 import type { NextConfig } from "next";
 import { PHASE_DEVELOPMENT_SERVER } from "next/constants";
 
+function buildCsp(isDev: boolean) {
+  const scriptSrc = ["'self'", "'unsafe-inline'"];
+  if (isDev) scriptSrc.push("'unsafe-eval'");
+
+  const styleSrc = ["'self'", "'unsafe-inline'"];
+
+  const connectSrc = ["'self'", "https:", "wss:"];
+  if (isDev) connectSrc.push("http:", "ws:");
+
+  const directives = [
+    "default-src 'self'",
+    `script-src ${scriptSrc.join(" ")}`,
+    "script-src-attr 'none'",
+    `style-src ${styleSrc.join(" ")}`,
+    "img-src 'self' blob: data:",
+    "media-src 'self'",
+    "font-src 'self' data:",
+    `connect-src ${connectSrc.join(" ")}`,
+    "object-src 'none'",
+    "frame-src 'none'",
+    "worker-src 'self' blob:",
+    "manifest-src 'self'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+  ];
+
+  if (!isDev) {
+    directives.push("upgrade-insecure-requests");
+    directives.push("block-all-mixed-content");
+  }
+
+  return directives.join("; ");
+}
+
 export default function nextConfig(phase: string): NextConfig {
   const isDev = phase === PHASE_DEVELOPMENT_SERVER;
   return {
@@ -37,6 +72,7 @@ export default function nextConfig(phase: string): NextConfig {
       return config;
     },
     async headers() {
+      const csp = buildCsp(isDev);
       const headers: Array<{ key: string; value: string }> = [
         {
           key: "X-DNS-Prefetch-Control",
@@ -62,6 +98,10 @@ export default function nextConfig(phase: string): NextConfig {
           key: "Permissions-Policy",
           value:
             "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=(), interest-cohort=()",
+        },
+        {
+          key: "Content-Security-Policy",
+          value: csp,
         },
         {
           key: "Cross-Origin-Opener-Policy",
