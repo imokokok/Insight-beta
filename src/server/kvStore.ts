@@ -5,7 +5,7 @@ const MEMORY_MAX_KV_KEYS = 2000;
 
 export async function readJsonFile<T>(
   key: string,
-  defaultValue: T
+  defaultValue: T,
 ): Promise<T> {
   if (!hasDatabase()) {
     const mem = getMemoryStore();
@@ -42,7 +42,7 @@ export async function writeJsonFile<T>(key: string, value: T): Promise<void> {
     `INSERT INTO kv_store (key, value, updated_at)
      VALUES ($1, $2, CURRENT_TIMESTAMP)
      ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = CURRENT_TIMESTAMP`,
-    [key, JSON.stringify(value)]
+    [key, JSON.stringify(value)],
   );
 }
 
@@ -80,8 +80,7 @@ export async function listJsonKeys({
     };
   }
   let sql = "SELECT key, value, updated_at FROM kv_store";
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const params: any[] = [];
+  const params: Array<string | number> = [];
   const conditions: string[] = [];
 
   if (prefix) {

@@ -1,6 +1,7 @@
 import * as opentelemetry from "@opentelemetry/sdk-node";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node";
+import { logger } from "@/lib/logger";
 
 // Initialize OpenTelemetry SDK
 const initOpenTelemetry = () => {
@@ -11,9 +12,7 @@ const initOpenTelemetry = () => {
 
   // Only initialize if OpenTelemetry is enabled
   if (process.env.OTEL_ENABLED !== "true") {
-    console.log(
-      "OpenTelemetry is not enabled. Set OTEL_ENABLED=true to enable.",
-    );
+    logger.debug("OpenTelemetry disabled");
     return;
   }
 
@@ -35,14 +34,14 @@ const initOpenTelemetry = () => {
   process.on("SIGTERM", () => {
     sdk
       .shutdown()
-      .then(() => console.log("OpenTelemetry SDK shut down successfully"))
+      .then(() => logger.info("OpenTelemetry SDK shutdown complete"))
       .catch((error) =>
-        console.error("Error shutting down OpenTelemetry SDK", error),
+        logger.error("OpenTelemetry SDK shutdown failed", { error }),
       )
       .finally(() => process.exit(0));
   });
 
-  console.log("OpenTelemetry SDK initialized successfully");
+  logger.info("OpenTelemetry SDK initialized");
 };
 
 export default initOpenTelemetry;

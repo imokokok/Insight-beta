@@ -405,13 +405,28 @@ function getClientIp(request: Request) {
   }
 }
 
+function getClientFallbackId(request: Request) {
+  const ua = request.headers.get("user-agent")?.trim() ?? "";
+  const acceptLang = request.headers.get("accept-language")?.trim() ?? "";
+  const raw = `${ua}|${acceptLang}`;
+  let out = "";
+  for (let i = 0; i < raw.length; i += 1) {
+    const code = raw.charCodeAt(i);
+    if (code < 32 || code === 127) continue;
+    out += raw[i];
+    if (out.length >= 160) break;
+  }
+  const cleaned = out.trim();
+  return cleaned ? `ua:${cleaned}` : "unknown";
+}
+
 async function rateLimitDb(
   opts: { key: string; limit: number; windowMs: number },
-  ip: string,
+  clientId: string,
   now: number,
 ) {
   const resetAt = new Date(now + opts.windowMs);
-  const bucketKey = `${opts.key}:${ip}`;
+  const bucketKey = `${opts.key}:${clientId}`;
   if (now - lastRatePruneAtMs > 5 * 60_000) {
     lastRatePruneAtMs = now;
     await query(`
@@ -450,12 +465,12 @@ async function rateLimitDb(
 
 async function rateLimitKv(
   opts: { key: string; limit: number; windowMs: number },
-  ip: string,
+  clientId: string,
   now: number,
 ) {
   if (!hasDatabase()) throw new Error("missing_database_url");
   const resetAtMs = now + opts.windowMs;
-  const bucketKey = `rate_limit/v1/${opts.key}:${ip}`;
+  const bucketKey = `rate_limit/v1/${opts.key}:${clientId}`;
   if (now - lastRatePruneAtMs > 5 * 60_000) {
     lastRatePruneAtMs = now;
     await query(
@@ -518,13 +533,14 @@ export async function rateLimit(
   opts: { key: string; limit: number; windowMs: number },
 ) {
   const ip = getClientIp(request);
+  const clientId = ip === "unknown" ? getClientFallbackId(request) : ip;
   const now = Date.now();
   const store = (env.INSIGHT_RATE_LIMIT_STORE || "auto").toLowerCase();
   const useDb = store === "db" || (store === "auto" && hasDatabase());
   const useKv = store === "kv";
   if (useKv) {
     try {
-      const limited = await rateLimitKv(opts, ip, now);
+      const limited = await rateLimitKv(opts, clientId, now);
       if (limited) return limited;
       return null;
     } catch {
@@ -533,7 +549,7 @@ export async function rateLimit(
   }
   if (useDb) {
     try {
-      return await rateLimitDb(opts, ip, now);
+      return await rateLimitDb(opts, clientId, now);
     } catch {
       // fall through
     }
@@ -544,7 +560,7 @@ export async function rateLimit(
       if (v.resetAtMs <= now) insightRate.delete(k);
     }
   }
-  const bucketKey = `${opts.key}:${ip}`;
+  const bucketKey = `${opts.key}:${clientId}`;
   const existing = insightRate.get(bucketKey);
   if (!existing || existing.resetAtMs <= now) {
     insightRate.set(bucketKey, { count: 1, resetAtMs: now + opts.windowMs });

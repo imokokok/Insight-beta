@@ -1,4 +1,5 @@
 import { env } from "@/lib/env";
+import { logger } from "@/lib/logger";
 
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
@@ -8,7 +9,7 @@ export async function register() {
         initOpenTelemetry();
       })
       .catch((error) => {
-        console.error("Failed to initialize OpenTelemetry:", error);
+        logger.error("Failed to initialize OpenTelemetry", { error });
       });
 
     const disabled = ["1", "true"].includes(

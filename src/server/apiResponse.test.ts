@@ -227,8 +227,10 @@ describe("cachedJson function", () => {
     const value = { message: "cached" };
     const ttlMs = 60_000;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (readJsonFile as any).mockResolvedValue({
+    const readJsonFileMock = readJsonFile as unknown as {
+      mockResolvedValue(value: unknown): void;
+    };
+    readJsonFileMock.mockResolvedValue({
       expiresAtMs: Date.now() + ttlMs,
       value,
     });
@@ -246,8 +248,10 @@ describe("cachedJson function", () => {
     const computedValue = { message: "computed" };
     const ttlMs = 60_000;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (readJsonFile as any).mockResolvedValue(null);
+    const readJsonFileMock = readJsonFile as unknown as {
+      mockResolvedValue(value: unknown): void;
+    };
+    readJsonFileMock.mockResolvedValue(null);
 
     const result = await cachedJson(key, ttlMs, async () => {
       return computedValue;
@@ -284,8 +288,10 @@ describe("requireAdmin function", () => {
   });
 
   it("returns error when admin verification fails", async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (verifyAdmin as any).mockResolvedValue({ ok: false });
+    const verifyAdminMock = verifyAdmin as unknown as {
+      mockResolvedValue(value: unknown): void;
+    };
+    verifyAdminMock.mockResolvedValue({ ok: false });
 
     const request = new Request("http://localhost/api/admin/test", {
       headers: {

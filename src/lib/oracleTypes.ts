@@ -118,6 +118,7 @@ export interface DbAssertionRow {
   asserted_at: Date;
   liveness_ends_at: Date;
   resolved_at: Date | null;
+  settlement_resolution: boolean | null;
   status: OracleStatus;
   bond_usd: string | number;
   disputer: string | null;

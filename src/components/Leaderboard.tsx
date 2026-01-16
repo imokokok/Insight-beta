@@ -45,7 +45,7 @@ const RankItem = memo(function RankItem({
                 "bg-gradient-to-br from-slate-300 to-slate-500 text-white shadow-slate-500/30",
               rank === 3 &&
                 "bg-gradient-to-br from-orange-300 to-orange-500 text-white shadow-orange-500/30",
-              rank > 3 && "bg-white/80 text-gray-500 ring-1 ring-gray-200"
+              rank > 3 && "bg-white/80 text-gray-500 ring-1 ring-gray-200",
             )}
           >
             {rank <= 3 ? <Trophy size={14} /> : rank}
@@ -86,13 +86,13 @@ export function Leaderboard() {
   const [data, setData] = useState<LeaderboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"asserters" | "disputers">(
-    "asserters"
+    "asserters",
   );
 
   useEffect(() => {
     fetchApiData<LeaderboardStats>("/api/oracle/leaderboard")
       .then(setData)
-      .catch((e) => logger.error(e))
+      .catch((e) => logger.error("leaderboard_fetch_failed", { error: e }))
       .finally(() => setLoading(false));
   }, []);
 
@@ -111,14 +111,14 @@ export function Leaderboard() {
           "glass-card rounded-2xl p-6 relative overflow-hidden transition-all duration-500",
           activeTab === "asserters"
             ? "border-purple-100/20"
-            : "border-rose-100/20"
+            : "border-rose-100/20",
         )}
       >
         {/* Artistic Background Mesh - Dynamic based on tab */}
         <div
           className={cn(
             "absolute inset-0 pointer-events-none transition-opacity duration-700",
-            activeTab === "asserters" ? "opacity-20" : "opacity-0"
+            activeTab === "asserters" ? "opacity-20" : "opacity-0",
           )}
         >
           <div className="absolute -right-[10%] -top-[10%] h-[150%] w-[50%] bg-gradient-to-bl from-purple-200/30 via-indigo-100/10 to-transparent blur-3xl rounded-full" />
@@ -127,7 +127,7 @@ export function Leaderboard() {
         <div
           className={cn(
             "absolute inset-0 pointer-events-none transition-opacity duration-700",
-            activeTab === "disputers" ? "opacity-20" : "opacity-0"
+            activeTab === "disputers" ? "opacity-20" : "opacity-0",
           )}
         >
           <div className="absolute -left-[10%] -top-[10%] h-[150%] w-[50%] bg-gradient-to-br from-rose-200/30 via-orange-100/10 to-transparent blur-3xl rounded-full" />
@@ -142,7 +142,7 @@ export function Leaderboard() {
                 "rounded-xl p-3 shadow-inner ring-1 backdrop-blur-md transition-colors duration-500",
                 activeTab === "asserters"
                   ? "bg-gradient-to-br from-purple-500/10 to-indigo-500/10 text-purple-600 ring-purple-500/20"
-                  : "bg-gradient-to-br from-rose-500/10 to-orange-500/10 text-rose-600 ring-rose-500/20"
+                  : "bg-gradient-to-br from-rose-500/10 to-orange-500/10 text-rose-600 ring-rose-500/20",
               )}
             >
               {activeTab === "asserters" ? (
@@ -172,7 +172,7 @@ export function Leaderboard() {
                 "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300",
                 activeTab === "asserters"
                   ? "bg-white text-purple-700 shadow-sm ring-1 ring-black/5"
-                  : "text-gray-500 hover:text-gray-700 hover:bg-white/50"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-white/50",
               )}
             >
               <Award size={14} />
@@ -184,7 +184,7 @@ export function Leaderboard() {
                 "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300",
                 activeTab === "disputers"
                   ? "bg-white text-rose-700 shadow-sm ring-1 ring-black/5"
-                  : "text-gray-500 hover:text-gray-700 hover:bg-white/50"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-white/50",
               )}
             >
               <ShieldCheck size={14} />

@@ -1,4 +1,7 @@
-const isProd = process.env.NODE_ENV === "production";
+const isProd =
+  typeof process !== "undefined" && process.env
+    ? process.env.NODE_ENV === "production"
+    : false;
 
 /**
  * Supported log levels with severity ordering
@@ -22,7 +25,10 @@ export type LogLevel = keyof typeof LOG_LEVELS;
  * @returns Log level to use for logging
  */
 function getLogLevel(): LogLevel {
-  const envLevel = (process.env.LOG_LEVEL || "").toLowerCase();
+  const envLevel =
+    typeof process !== "undefined" && process.env
+      ? (process.env.LOG_LEVEL || "").toLowerCase()
+      : "";
   if (envLevel in LOG_LEVELS) {
     return envLevel as LogLevel;
   }
@@ -50,7 +56,7 @@ function shouldLog(level: LogLevel): boolean {
 function createLogEntry(
   level: LogLevel,
   message: string,
-  metadata?: Record<string, unknown>
+  metadata?: Record<string, unknown>,
 ) {
   const timestamp = new Date().toISOString();
   const logEntry = {

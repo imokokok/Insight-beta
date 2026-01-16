@@ -1,6 +1,12 @@
 import { hasDatabase, query } from "./db";
 import { ensureSchema } from "./schema";
-import type { Assertion, Dispute, OracleChain } from "@/lib/oracleTypes";
+import type {
+  Assertion,
+  Dispute,
+  OracleChain,
+  DbAssertionRow,
+  DbDisputeRow,
+} from "@/lib/oracleTypes";
 import { env } from "@/lib/env";
 import { getMemoryStore } from "./memoryBackend";
 
@@ -80,7 +86,7 @@ function toTimeMs(value: string | undefined) {
 
 function deleteVotesForAssertion(
   mem: ReturnType<typeof getMemoryStore>,
-  assertionId: string
+  assertionId: string,
 ) {
   for (const [key, v] of mem.votes.entries()) {
     if (v.assertionId === assertionId) mem.votes.delete(key);
@@ -136,8 +142,7 @@ function pruneMemoryDisputes(mem: ReturnType<typeof getMemoryStore>) {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function mapAssertionRow(row: any): Assertion {
+function mapAssertionRow(row: DbAssertionRow): Assertion {
   return {
     id: row.id,
     chain: row.chain,
@@ -148,16 +153,15 @@ function mapAssertionRow(row: any): Assertion {
     assertedAt: row.asserted_at.toISOString(),
     livenessEndsAt: row.liveness_ends_at.toISOString(),
     resolvedAt: row.resolved_at ? row.resolved_at.toISOString() : undefined,
-    settlementResolution: row.settlement_resolution,
+    settlementResolution: row.settlement_resolution ?? undefined,
     status: row.status,
     bondUsd: Number(row.bond_usd),
-    disputer: row.disputer,
+    disputer: row.disputer || undefined,
     txHash: row.tx_hash,
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function mapDisputeRow(row: any): Dispute {
+function mapDisputeRow(row: DbDisputeRow): Dispute {
   const now = Date.now();
   const votingEndsAt = row.voting_ends_at
     ? row.voting_ends_at.toISOString()
@@ -167,8 +171,8 @@ function mapDisputeRow(row: any): Dispute {
     statusFromDb === "Executed"
       ? "Executed"
       : votingEndsAt && new Date(votingEndsAt).getTime() <= now
-      ? "Pending Execution"
-      : "Voting";
+        ? "Pending Execution"
+        : "Voting";
 
   return {
     id: row.id,
@@ -178,7 +182,7 @@ function mapDisputeRow(row: any): Dispute {
     disputeReason: row.reason,
     disputer: row.disputer,
     disputedAt: row.disputed_at.toISOString(),
-    votingEndsAt,
+    votingEndsAt: votingEndsAt || "",
     status: computedStatus,
     currentVotesFor: Number(row.votes_for),
     currentVotesAgainst: Number(row.votes_against),
@@ -208,8 +212,8 @@ export async function readOracleState(): Promise<StoredState> {
   const [syncRes, configRes, assertionsRes, disputesRes] = await Promise.all([
     query("SELECT * FROM sync_state WHERE id = 1"),
     query("SELECT * FROM oracle_config WHERE id = 1"),
-    query("SELECT * FROM assertions"),
-    query("SELECT * FROM disputes"),
+    query<DbAssertionRow>("SELECT * FROM assertions"),
+    query<DbDisputeRow>("SELECT * FROM disputes"),
   ]);
 
   const syncRow = syncRes.rows[0] || {};
@@ -309,9 +313,13 @@ export async function fetchAssertion(id: string): Promise<Assertion | null> {
     const mem = getMemoryStore();
     return mem.assertions.get(id) ?? null;
   }
-  const res = await query("SELECT * FROM assertions WHERE id = $1", [id]);
-  if (res.rows.length === 0) return null;
-  return mapAssertionRow(res.rows[0]);
+  const res = await query<DbAssertionRow>(
+    "SELECT * FROM assertions WHERE id = $1",
+    [id],
+  );
+  const row = res.rows[0];
+  if (!row) return null;
+  return mapAssertionRow(row);
 }
 
 export async function fetchDispute(id: string): Promise<Dispute | null> {
@@ -320,9 +328,13 @@ export async function fetchDispute(id: string): Promise<Dispute | null> {
     const mem = getMemoryStore();
     return mem.disputes.get(id) ?? null;
   }
-  const res = await query("SELECT * FROM disputes WHERE id = $1", [id]);
-  if (res.rows.length === 0) return null;
-  return mapDisputeRow(res.rows[0]);
+  const res = await query<DbDisputeRow>(
+    "SELECT * FROM disputes WHERE id = $1",
+    [id],
+  );
+  const row = res.rows[0];
+  if (!row) return null;
+  return mapDisputeRow(row);
 }
 
 export async function writeOracleState(state: StoredState) {
@@ -333,7 +345,7 @@ export async function writeOracleState(state: StoredState) {
     state.sync.lastAttemptAt || new Date().toISOString(),
     state.sync.lastSuccessAt,
     state.sync.lastDurationMs,
-    state.sync.lastError
+    state.sync.lastError,
   );
 }
 
@@ -371,7 +383,7 @@ export async function upsertAssertion(a: Assertion) {
       a.bondUsd,
       a.disputer || null,
       a.txHash,
-    ]
+    ],
   );
 }
 
@@ -413,7 +425,7 @@ export async function upsertDispute(d: Dispute) {
       d.currentVotesFor,
       d.currentVotesAgainst,
       d.totalVotes,
-    ]
+    ],
   );
 }
 
@@ -430,7 +442,7 @@ export async function updateSyncState(
     consecutiveFailures?: number;
     rpcActiveUrl?: string | null;
     rpcStats?: unknown;
-  }
+  },
 ) {
   await ensureDb();
   if (!hasDatabase()) {
@@ -489,7 +501,7 @@ export async function updateSyncState(
       consecutiveFailures !== undefined ? consecutiveFailures : null,
       rpcActiveUrl !== undefined ? rpcActiveUrl : null,
       rpcStatsJson,
-    ]
+    ],
   );
 }
 
@@ -534,7 +546,7 @@ export async function insertSyncMetric(input: {
         : null,
       input.durationMs,
       input.error,
-    ]
+    ],
   );
 }
 
@@ -567,7 +579,7 @@ export async function listSyncMetrics(params: {
     ORDER BY recorded_at ASC
     LIMIT $2
     `,
-    [minutes, limit]
+    [minutes, limit],
   );
   return res.rows.map((row) => {
     const r = row as unknown as {
@@ -588,8 +600,8 @@ export async function listSyncMetrics(params: {
       r.duration_ms === null || r.duration_ms === undefined
         ? null
         : typeof r.duration_ms === "number"
-        ? r.duration_ms
-        : Number(r.duration_ms);
+          ? r.duration_ms
+          : Number(r.duration_ms);
     const error = typeof r.error === "string" ? r.error : null;
     return {
       recordedAt: recordedAtDate.toISOString(),
@@ -611,7 +623,7 @@ function applyVoteSumsDelta(
   assertionId: string,
   support: boolean,
   weight: bigint,
-  direction: 1 | -1
+  direction: 1 | -1,
 ) {
   const prev = mem.voteSums.get(assertionId) ?? {
     forWeight: 0n,
@@ -633,7 +645,7 @@ function applyVoteSumsDelta(
     dispute.currentVotesFor = bigintToSafeNumber(next.forWeight);
     dispute.currentVotesAgainst = bigintToSafeNumber(next.againstWeight);
     dispute.totalVotes = bigintToSafeNumber(
-      next.forWeight + next.againstWeight
+      next.forWeight + next.againstWeight,
     );
     mem.disputes.set(dispute.id, dispute);
   }
@@ -700,7 +712,7 @@ export async function insertVoteEvent(input: {
       input.txHash,
       input.blockNumber.toString(10),
       input.logIndex,
-    ]
+    ],
   );
   return res.rows.length > 0;
 }
@@ -728,7 +740,7 @@ export async function recomputeDisputeVotes(assertionId: string) {
     dispute.currentVotesFor = bigintToSafeNumber(sums.forWeight);
     dispute.currentVotesAgainst = bigintToSafeNumber(sums.againstWeight);
     dispute.totalVotes = bigintToSafeNumber(
-      sums.forWeight + sums.againstWeight
+      sums.forWeight + sums.againstWeight,
     );
     mem.disputes.set(dispute.id, dispute);
     return;
@@ -742,7 +754,7 @@ export async function recomputeDisputeVotes(assertionId: string) {
     FROM votes
     WHERE assertion_id = $1
     `,
-    [assertionId]
+    [assertionId],
   );
   const row = (sums.rows[0] ?? {}) as unknown as {
     votes_for?: unknown;
@@ -767,6 +779,6 @@ export async function recomputeDisputeVotes(assertionId: string) {
     SET votes_for = $2, votes_against = $3, total_votes = $4
     WHERE assertion_id = $1
     `,
-    [assertionId, votesFor, votesAgainst, totalVotes]
+    [assertionId, votesFor, votesAgainst, totalVotes],
   );
 }

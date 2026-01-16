@@ -122,15 +122,19 @@ describe("GET /api/oracle/charts", () => {
 
   it("returns chart data from database when available", async () => {
     const { query } = await import("@/server/db");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (hasDatabase as any).mockReturnValue(true);
+    const hasDatabaseMock = hasDatabase as unknown as {
+      mockReturnValue(value: boolean): void;
+    };
+    hasDatabaseMock.mockReturnValue(true);
 
     const mockRows = [
       { date: "2023-01-01", count: "3", volume: "150" },
       { date: "2023-01-02", count: "5", volume: "250" },
     ];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (query as any).mockResolvedValue({
+    const queryMock = query as unknown as {
+      mockResolvedValue(value: unknown): void;
+    };
+    queryMock.mockResolvedValue({
       rows: mockRows,
     });
 
@@ -156,10 +160,14 @@ describe("GET /api/oracle/charts", () => {
 
   it("handles days parameter boundaries correctly", async () => {
     const { query } = await import("@/server/db");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (hasDatabase as any).mockReturnValue(true);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (query as any).mockResolvedValue({ rows: [] });
+    const hasDatabaseMock = hasDatabase as unknown as {
+      mockReturnValue(value: boolean): void;
+    };
+    hasDatabaseMock.mockReturnValue(true);
+    const queryMock = query as unknown as {
+      mockResolvedValue(value: unknown): void;
+    };
+    queryMock.mockResolvedValue({ rows: [] });
 
     // Test default value (30 days)
     let request = new Request("http://localhost:3000/api/oracle/charts");
@@ -210,10 +218,14 @@ describe("GET /api/oracle/charts", () => {
 
     // Test empty data in database mode
     const { query } = await import("@/server/db");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (hasDatabase as any).mockReturnValue(true);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (query as any).mockResolvedValue({ rows: [] });
+    const hasDatabaseMock = hasDatabase as unknown as {
+      mockReturnValue(value: boolean): void;
+    };
+    hasDatabaseMock.mockReturnValue(true);
+    const queryMock = query as unknown as {
+      mockResolvedValue(value: unknown): void;
+    };
+    queryMock.mockResolvedValue({ rows: [] });
 
     response = (await GET(request)) as unknown as {
       date: string;
@@ -240,8 +252,10 @@ describe("GET /api/oracle/charts", () => {
       },
     );
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (rateLimit as any).mockResolvedValue(mockRateLimitResponse);
+    const rateLimitMock = rateLimit as unknown as {
+      mockResolvedValue(value: unknown): void;
+    };
+    rateLimitMock.mockResolvedValue(mockRateLimitResponse);
 
     const request = new Request(
       "http://localhost:3000/api/oracle/charts?days=7",
@@ -304,17 +318,23 @@ describe("GET /api/oracle/charts", () => {
 
   it("handles database errors gracefully", async () => {
     const { query } = await import("@/server/db");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (hasDatabase as any).mockReturnValue(true);
+    const hasDatabaseMock = hasDatabase as unknown as {
+      mockReturnValue(value: boolean): void;
+    };
+    hasDatabaseMock.mockReturnValue(true);
 
     // Mock query to throw an error
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (query as any).mockRejectedValue(new Error("Database connection failed"));
+    const queryMock = query as unknown as {
+      mockRejectedValue(value: unknown): void;
+    };
+    queryMock.mockRejectedValue(new Error("Database connection failed"));
 
     // Since handleApi is mocked to return the raw data, we need to mock rateLimit
     // to not return a rate limit response, so we can test the database error handling
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (rateLimit as any).mockResolvedValue(null);
+    const rateLimitMock = rateLimit as unknown as {
+      mockResolvedValue(value: unknown): void;
+    };
+    rateLimitMock.mockResolvedValue(null);
 
     const request = new Request(
       "http://localhost:3000/api/oracle/charts?days=7",

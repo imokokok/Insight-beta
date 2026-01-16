@@ -14,6 +14,12 @@ interface MarketStat {
   volume: number;
 }
 
+type DbMarketRow = {
+  market: string;
+  count: string | number;
+  volume: string | number | null;
+};
+
 export async function GET(request: Request) {
   return handleApi(request, async () => {
     const limited = await rateLimit(request, {
@@ -55,7 +61,7 @@ export async function GET(request: Request) {
           .slice(0, limit);
       }
 
-      const res = await query(
+      const res = await query<DbMarketRow>(
         `
         SELECT 
           market,
@@ -67,18 +73,14 @@ export async function GET(request: Request) {
         ORDER BY count DESC
         LIMIT $2
         `,
-        [days, limit]
+        [days, limit],
       );
 
-      return res.rows.map((row: unknown) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const r = row as any;
-        return {
-          market: r.market,
-          count: Number(r.count),
-          volume: Number(r.volume),
-        };
-      });
+      return res.rows.map((row) => ({
+        market: row.market,
+        count: Number(row.count),
+        volume: Number(row.volume ?? 0),
+      }));
     };
 
     const cacheKey = `oracle_api:markets:${days}:${limit}`;

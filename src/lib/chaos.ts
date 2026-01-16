@@ -2,6 +2,7 @@
 // This module provides utilities for injecting chaos into the system
 
 import { chaosTests, globalChaosConfig } from "../../chaos.config";
+import { logger } from "@/lib/logger";
 
 // Chaos injection utilities
 export class ChaosInjector {
@@ -11,11 +12,11 @@ export class ChaosInjector {
   // Initialize chaos testing
   start(): void {
     if (!globalChaosConfig.enabled) {
-      console.log("Chaos testing is disabled");
+      logger.debug("Chaos testing disabled");
       return;
     }
 
-    console.log("Starting chaos testing...");
+    logger.info("Starting chaos testing");
 
     // Start each enabled test
     chaosTests.forEach((test) => {
@@ -27,7 +28,7 @@ export class ChaosInjector {
 
   // Stop chaos testing
   stop(): void {
-    console.log("Stopping chaos testing...");
+    logger.info("Stopping chaos testing");
 
     // Clear all timers
     this.timers.forEach((timer) => clearInterval(timer));
@@ -44,7 +45,7 @@ export class ChaosInjector {
     }, test.frequency);
 
     this.timers.set(test.name, timer);
-    console.log(`Started chaos test: ${test.name}`);
+    logger.info("Started chaos test", { name: test.name });
   }
 
   // Execute a chaos test
@@ -54,12 +55,12 @@ export class ChaosInjector {
     }
 
     if (globalChaosConfig.dryRun) {
-      console.log(`[DRY RUN] Would execute chaos test: ${test.name}`);
+      logger.info("Chaos dry run", { name: test.name });
       return;
     }
 
     this.activeTests.add(test.name);
-    console.log(`Executing chaos test: ${test.name}`);
+    logger.info("Executing chaos test", { name: test.name });
 
     try {
       // Execute the test based on type
@@ -81,10 +82,10 @@ export class ChaosInjector {
       // Wait for the test duration
       await new Promise((resolve) => setTimeout(resolve, test.duration));
     } catch (error) {
-      console.error(`Error executing chaos test ${test.name}:`, error);
+      logger.error("Error executing chaos test", { name: test.name, error });
     } finally {
       this.activeTests.delete(test.name);
-      console.log(`Completed chaos test: ${test.name}`);
+      logger.info("Completed chaos test", { name: test.name });
     }
   }
 
@@ -93,32 +94,34 @@ export class ChaosInjector {
     test: (typeof chaosTests)[0],
   ): Promise<void> {
     // This would be implemented with a proxy or middleware in a real system
-    console.log(
-      `Injecting network delay: ${test.minImpact}-${test.maxImpact}ms into ${test.scope.join(", ")}`,
-    );
+    logger.info("Injecting network delay", {
+      minImpact: test.minImpact,
+      maxImpact: test.maxImpact,
+      scope: test.scope.join(", "),
+    });
   }
 
   // Inject service failure
   private async injectServiceFailure(
     test: (typeof chaosTests)[0],
   ): Promise<void> {
-    console.log(`Injecting service failure into ${test.scope.join(", ")}`);
+    logger.info("Injecting service failure", { scope: test.scope.join(", ") });
   }
 
   // Inject infrastructure failure
   private async injectInfrastructureFailure(
     test: (typeof chaosTests)[0],
   ): Promise<void> {
-    console.log(
-      `Injecting infrastructure failure into ${test.scope.join(", ")}`,
-    );
+    logger.info("Injecting infrastructure failure", {
+      scope: test.scope.join(", "),
+    });
   }
 
   // Inject data corruption
   private async injectDataCorruption(
     test: (typeof chaosTests)[0],
   ): Promise<void> {
-    console.log(`Injecting data corruption into ${test.scope.join(", ")}`);
+    logger.info("Injecting data corruption", { scope: test.scope.join(", ") });
   }
 
   // Static method to check if chaos is enabled
@@ -148,7 +151,11 @@ export function withChaosDelay<T>(
   const delay = minDelay + Math.random() * (maxDelay - minDelay);
   return new Promise((resolve) => {
     setTimeout(() => {
-      fn().then(resolve).catch(console.error);
+      fn()
+        .then(resolve)
+        .catch((error) =>
+          logger.error("Chaos delay execution failed", { error }),
+        );
     }, delay);
   });
 }

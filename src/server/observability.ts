@@ -26,6 +26,35 @@ export type Alert = {
   updatedAt: string;
 };
 
+type DbAlertRow = {
+  id: number | string;
+  fingerprint: string;
+  type: string;
+  severity: AlertSeverity;
+  title: string;
+  message: string;
+  entity_type: string | null;
+  entity_id: string | null;
+  status: AlertStatus;
+  occurrences: number | string;
+  first_seen_at: Date;
+  last_seen_at: Date;
+  acknowledged_at: Date | null;
+  resolved_at: Date | null;
+  created_at: Date;
+  updated_at: Date;
+};
+
+type DbAuditRow = {
+  id: number | string;
+  actor: string | null;
+  action: string;
+  entity_type: string | null;
+  entity_id: string | null;
+  details: unknown;
+  created_at: Date;
+};
+
 export type AlertRuleEvent =
   | "dispute_created"
   | "sync_error"
@@ -787,8 +816,7 @@ export async function patchIncident(input: {
   return next;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function mapAlertRow(row: any): Alert {
+function mapAlertRow(row: DbAlertRow): Alert {
   return {
     id: Number(row.id),
     fingerprint: row.fingerprint,
@@ -900,7 +928,7 @@ export async function createOrTouchAlert(input: {
   }
 
   // Database path
-  const result = await query(
+  const result = await query<{ status: AlertStatus }>(
     `
     SELECT status FROM alerts WHERE fingerprint = $1
     `,
@@ -1051,7 +1079,7 @@ export async function listAlerts(params: {
   );
   const total = Number(countRes.rows[0]?.total || 0);
 
-  const res = await query(
+  const res = await query<DbAlertRow>(
     `SELECT * FROM alerts ${whereClause} ORDER BY status ASC, last_seen_at DESC LIMIT $${idx++} OFFSET $${idx}`,
     [...values, limit, offset],
   );
@@ -1083,7 +1111,7 @@ export async function getAlertsByIds(inputIds: number[]) {
     return out;
   }
 
-  const res = await query(
+  const res = await query<DbAlertRow>(
     `
     SELECT * FROM alerts WHERE id = ANY($1::int[])
     `,
@@ -1157,7 +1185,7 @@ export async function updateAlertStatus(input: {
         ? "resolved_at = NOW()"
         : "acknowledged_at = NULL, resolved_at = NULL";
 
-  const res = await query(
+  const res = await query<DbAlertRow>(
     `
     UPDATE alerts
     SET status = $1, ${nowFields}, updated_at = NOW()
@@ -1167,7 +1195,8 @@ export async function updateAlertStatus(input: {
     [status, input.id],
   );
 
-  if (res.rows.length === 0) return null;
+  const row = res.rows[0];
+  if (!row) return null;
 
   await appendAuditLog({
     actor: input.actor ?? null,
@@ -1177,7 +1206,7 @@ export async function updateAlertStatus(input: {
     details: { status },
   });
 
-  return mapAlertRow(res.rows[0]);
+  return mapAlertRow(row);
 }
 
 export async function appendAuditLog(input: {
@@ -1219,8 +1248,7 @@ export async function appendAuditLog(input: {
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function mapAuditRow(row: any): AuditLogEntry {
+function mapAuditRow(row: DbAuditRow): AuditLogEntry {
   return {
     id: Number(row.id),
     createdAt: row.created_at.toISOString(),
@@ -1328,12 +1356,12 @@ export async function listAuditLog(params: {
   const whereClause =
     conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
-  const countRes = await query(
+  const countRes = await query<{ total: string | number }>(
     `SELECT COUNT(*) as total FROM audit_log ${whereClause}`,
     values,
   );
   const total = Number(countRes.rows[0]?.total || 0);
-  const res = await query(
+  const res = await query<DbAuditRow>(
     `SELECT * FROM audit_log ${whereClause} ORDER BY created_at DESC LIMIT $${idx++} OFFSET $${idx}`,
     [...values, limit, offset],
   );
