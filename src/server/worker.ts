@@ -4,6 +4,7 @@ import type { PoolClient } from "pg";
 import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import { getClient, hasDatabase, query } from "@/server/db";
+import { getMemoryStore } from "@/server/memoryBackend";
 import { createOrTouchAlert, readAlertRules } from "@/server/observability";
 import { getSyncState, readOracleState } from "@/server/oracle";
 import { writeJsonFile } from "@/server/kvStore";
@@ -33,45 +34,55 @@ async function tryAcquireWorkerLock() {
     global.insightWorkerLockClient = client;
     global.insightWorkerLockKey = key.toString(10);
     return true;
-  } catch {
+  } catch (e) {
+    logger.error("Failed to acquire worker lock", { error: e });
     client.release();
     return false;
   }
 }
 
 async function tickWorker() {
-  if (hasDatabase() && global.insightWorkerLockClient) {
-    try {
-      await global.insightWorkerLockClient.query("SELECT 1 as ok");
-    } catch {
-      try {
-        global.insightWorkerLockClient.release();
-      } catch {
-        void 0;
-      }
-      global.insightWorkerLockClient = undefined;
-      global.insightWorkerLockKey = undefined;
-      if (global.insightWorkerInterval)
-        clearInterval(global.insightWorkerInterval);
-      global.insightWorkerInterval = undefined;
-      global.insightWorkerStarted = false;
-      setTimeout(() => startWorker(), 5_000);
-      return;
-    }
-  }
-
-  if (isOracleSyncing()) return;
+  if (global.insightWorkerTickInProgress) return;
+  global.insightWorkerTickInProgress = true;
   const startedAt = Date.now();
   try {
+    if (hasDatabase() && global.insightWorkerLockClient) {
+      try {
+        await global.insightWorkerLockClient.query("SELECT 1 as ok");
+      } catch (e) {
+        logger.error("Worker lock client unhealthy", { error: e });
+        try {
+          global.insightWorkerLockClient.release();
+        } catch (releaseError) {
+          logger.error("Failed to release worker lock client", {
+            error: releaseError,
+          });
+        }
+        global.insightWorkerLockClient = undefined;
+        global.insightWorkerLockKey = undefined;
+        if (global.insightWorkerInterval)
+          clearInterval(global.insightWorkerInterval);
+        global.insightWorkerInterval = undefined;
+        global.insightWorkerStarted = false;
+        setTimeout(() => startWorker(), 5_000);
+        return;
+      }
+    }
+
+    if (isOracleSyncing()) return;
     await ensureOracleSynced();
     const rules = await readAlertRules();
     const state = await getSyncState();
     const nowMs = Date.now();
 
-    const shouldEmit = (event: string, fingerprint: string) => {
+    const shouldEmit = (
+      event: string,
+      fingerprint: string,
+      cooldownMs: number,
+    ) => {
       const key = `${event}:${fingerprint}`;
       const lastAt = workerAlertCooldown.get(key) ?? 0;
-      if (nowMs - lastAt < 30_000) return false;
+      if (nowMs - lastAt < cooldownMs) return false;
       workerAlertCooldown.set(key, nowMs);
       return true;
     };
@@ -95,6 +106,20 @@ async function tickWorker() {
           };
     };
 
+    const getRuleCooldownMs = (rule: { params?: Record<string, unknown> }) => {
+      const raw = Number(rule.params?.cooldownMs ?? 5 * 60_000);
+      if (!Number.isFinite(raw) || raw <= 0) return 5 * 60_000;
+      return Math.min(24 * 60 * 60_000, Math.max(30_000, Math.round(raw)));
+    };
+
+    const getRuleEscalateAfterMs = (rule: {
+      params?: Record<string, unknown>;
+    }) => {
+      const raw = Number(rule.params?.escalateAfterMs ?? 0);
+      if (!Number.isFinite(raw) || raw <= 0) return null;
+      return Math.min(30 * 24 * 60 * 60_000, Math.max(60_000, Math.round(raw)));
+    };
+
     const staleRules = rules.filter(
       (r) => r.enabled && r.event === "stale_sync",
     );
@@ -112,7 +137,14 @@ async function tickWorker() {
             const fingerprint = `${staleRule.id}:${state.chain}:${
               state.contractAddress ?? "unknown"
             }`;
-            if (!shouldEmit(staleRule.event, fingerprint)) continue;
+            if (
+              !shouldEmit(
+                staleRule.event,
+                fingerprint,
+                getRuleCooldownMs(staleRule),
+              )
+            )
+              continue;
             await createOrTouchAlert({
               fingerprint,
               type: staleRule.event,
@@ -167,7 +199,8 @@ async function tickWorker() {
             if (nowMs <= thresholdMs) continue;
 
             const fingerprint = `${rule.id}:${dispute.chain}:${dispute.assertionId}`;
-            if (!shouldEmit(rule.event, fingerprint)) continue;
+            if (!shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule)))
+              continue;
             const delayMinutes = Math.max(
               0,
               Math.round((nowMs - votingEndsAtMs) / 60_000),
@@ -201,7 +234,8 @@ async function tickWorker() {
             if (totalVotes > minTotalVotes) continue;
 
             const fingerprint = `${rule.id}:${dispute.chain}:${dispute.assertionId}`;
-            if (!shouldEmit(rule.event, fingerprint)) continue;
+            if (!shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule)))
+              continue;
 
             await createOrTouchAlert({
               fingerprint,
@@ -247,7 +281,8 @@ async function tickWorker() {
             if (minsToEnd < 0 || minsToEnd > withinMinutes) continue;
 
             const fingerprint = `${rule.id}:${dispute.chain}:${dispute.assertionId}`;
-            if (!shouldEmit(rule.event, fingerprint)) continue;
+            if (!shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule)))
+              continue;
 
             await createOrTouchAlert({
               fingerprint,
@@ -342,7 +377,8 @@ async function tickWorker() {
         if (rate < thresholdPercent) continue;
 
         const fingerprint = `${rule.id}:${state.chain}:${contract}`;
-        if (!shouldEmit(rule.event, fingerprint)) continue;
+        if (!shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule)))
+          continue;
 
         await createOrTouchAlert({
           fingerprint,
@@ -356,6 +392,108 @@ async function tickWorker() {
           entityId: state.contractAddress,
           notify: notifyForRule(rule),
         });
+      }
+    }
+
+    const escalationRules = rules
+      .filter((r) => r.enabled)
+      .map((r) => ({ rule: r, afterMs: getRuleEscalateAfterMs(r) }))
+      .filter(
+        (x): x is { rule: (typeof rules)[number]; afterMs: number } =>
+          typeof x.afterMs === "number",
+      );
+
+    if (escalationRules.length > 0) {
+      const escalateSeverity = (s: "info" | "warning" | "critical") =>
+        s === "info" ? "warning" : "critical";
+
+      if (hasDatabase()) {
+        for (const { rule, afterMs } of escalationRules) {
+          const cutoffSeconds = Math.floor((nowMs - afterMs) / 1000);
+          const prefix = `${rule.id}:escalation:`;
+          const res = await query<{
+            fingerprint: string;
+            title: string;
+            message: string;
+            entity_type: string | null;
+            entity_id: string | null;
+            first_seen_at: Date;
+          }>(
+            `
+            SELECT fingerprint, title, message, entity_type, entity_id, first_seen_at
+            FROM alerts a
+            WHERE a.status = 'Open'
+              AND a.type = $1
+              AND a.first_seen_at <= to_timestamp($2)
+              AND NOT EXISTS (
+                SELECT 1 FROM alerts e WHERE e.fingerprint = CONCAT($3, a.fingerprint)
+              )
+            ORDER BY a.first_seen_at ASC
+            LIMIT 200
+            `,
+            [rule.event, cutoffSeconds, prefix],
+          );
+
+          for (const a of res.rows) {
+            const firstSeenMs = a.first_seen_at.getTime();
+            const ageMs = nowMs - firstSeenMs;
+            const escalationFingerprint = `${prefix}${a.fingerprint}`;
+            if (
+              !shouldEmit(
+                `${rule.event}_escalation`,
+                escalationFingerprint,
+                getRuleCooldownMs(rule),
+              )
+            )
+              continue;
+            await createOrTouchAlert({
+              fingerprint: escalationFingerprint,
+              type: `${rule.event}_escalation`,
+              severity: escalateSeverity(rule.severity),
+              title: `Escalation: ${a.title}`,
+              message: `${Math.round(ageMs / 60_000)}m open • ${a.message} • source ${a.fingerprint}`,
+              entityType: a.entity_type,
+              entityId: a.entity_id,
+              notify: notifyForRule(rule),
+            });
+          }
+        }
+      } else {
+        const mem = getMemoryStore();
+        const items = Array.from(mem.alerts.values());
+        const existingFingerprints = new Set(items.map((a) => a.fingerprint));
+
+        for (const { rule, afterMs } of escalationRules) {
+          const prefix = `${rule.id}:escalation:`;
+          for (const a of items) {
+            if (a.status !== "Open") continue;
+            if (a.type !== rule.event) continue;
+            const firstSeenMs = Date.parse(a.firstSeenAt);
+            if (!Number.isFinite(firstSeenMs)) continue;
+            const ageMs = nowMs - firstSeenMs;
+            if (ageMs < afterMs) continue;
+            const escalationFingerprint = `${prefix}${a.fingerprint}`;
+            if (existingFingerprints.has(escalationFingerprint)) continue;
+            if (
+              !shouldEmit(
+                `${rule.event}_escalation`,
+                escalationFingerprint,
+                getRuleCooldownMs(rule),
+              )
+            )
+              continue;
+            await createOrTouchAlert({
+              fingerprint: escalationFingerprint,
+              type: `${rule.event}_escalation`,
+              severity: escalateSeverity(rule.severity),
+              title: `Escalation: ${a.title}`,
+              message: `${Math.round(ageMs / 60_000)}m open • ${a.message} • source ${a.fingerprint}`,
+              entityType: a.entityType,
+              entityId: a.entityId,
+              notify: notifyForRule(rule),
+            });
+          }
+        }
       }
     }
 
@@ -376,6 +514,8 @@ async function tickWorker() {
     global.insightWorkerLastError =
       e instanceof Error ? e.message : "unknown_error";
     logger.error("Background sync failed:", { error: e });
+  } finally {
+    global.insightWorkerTickInProgress = false;
   }
 }
 
@@ -403,9 +543,14 @@ declare global {
   var insightWorkerLockClient: PoolClient | undefined;
   var insightWorkerLockKey: string | undefined;
   var insightWorkerInterval: ReturnType<typeof setInterval> | undefined;
+  var insightWorkerTickInProgress: boolean | undefined;
   var insightWorkerLastTickAt: string | undefined;
   var insightWorkerLastTickDurationMs: number | undefined;
   var insightWorkerLastError: string | null | undefined;
 }
 
-startWorker();
+const embeddedWorkerDisabled = ["1", "true"].includes(
+  env.INSIGHT_DISABLE_EMBEDDED_WORKER.toLowerCase(),
+);
+
+if (!embeddedWorkerDisabled) startWorker();

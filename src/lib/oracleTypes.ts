@@ -228,3 +228,21 @@ export type RiskItem = {
   assertionId?: string;
   disputeId?: string;
 };
+
+export type OpsMetrics = {
+  generatedAt: string;
+  windowDays: number;
+  alerts: {
+    open: number;
+    acknowledged: number;
+    resolved: number;
+    mttaMs: number | null;
+    mttrMs: number | null;
+  };
+  incidents: {
+    open: number;
+    mitigating: number;
+    resolved: number;
+    mttrMs: number | null;
+  };
+};

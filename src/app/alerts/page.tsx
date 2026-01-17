@@ -13,7 +13,13 @@ import {
 import { PageHeader } from "@/components/PageHeader";
 import { AlertRulesManager } from "@/components/AlertRulesManager";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { cn, fetchApiData, formatTime, getErrorCode } from "@/lib/utils";
+import {
+  cn,
+  fetchApiData,
+  formatDurationMinutes,
+  formatTime,
+  getErrorCode,
+} from "@/lib/utils";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { getUiErrorMessage, langToLocale } from "@/i18n/translations";
 import { useAdminSession } from "@/hooks/useAdminSession";
@@ -23,6 +29,7 @@ import type {
   AlertSeverity,
   AlertStatus,
   Incident,
+  OpsMetrics,
   RiskItem,
 } from "@/lib/oracleTypes";
 
@@ -117,6 +124,9 @@ export default function AlertsPage() {
   const [risks, setRisks] = useState<RiskItem[]>([]);
   const [risksError, setRisksError] = useState<string | null>(null);
   const [risksLoading, setRisksLoading] = useState(false);
+  const [opsMetrics, setOpsMetrics] = useState<OpsMetrics | null>(null);
+  const [opsMetricsError, setOpsMetricsError] = useState<string | null>(null);
+  const [opsMetricsLoading, setOpsMetricsLoading] = useState(false);
 
   const rulesById = useCallback(() => {
     const map = new Map<string, AlertRule>();
@@ -176,10 +186,26 @@ export default function AlertsPage() {
     }
   }, []);
 
+  const loadOpsMetrics = useCallback(async () => {
+    setOpsMetricsError(null);
+    setOpsMetricsLoading(true);
+    try {
+      const data = await fetchApiData<{ metrics: OpsMetrics }>(
+        "/api/oracle/ops-metrics?windowDays=7",
+      );
+      setOpsMetrics(data.metrics ?? null);
+    } catch (e) {
+      setOpsMetricsError(getErrorCode(e));
+    } finally {
+      setOpsMetricsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     void loadIncidents();
     void loadRisks();
-  }, [loadIncidents, loadRisks]);
+    void loadOpsMetrics();
+  }, [loadIncidents, loadOpsMetrics, loadRisks]);
 
   const loadAlerts = useCallback(
     async (cursor: number | null) => {
@@ -208,12 +234,13 @@ export default function AlertsPage() {
       setNextCursor(data.nextCursor ?? null);
       void loadIncidents();
       void loadRisks();
+      void loadOpsMetrics();
     } catch (e) {
       setError(getErrorCode(e));
     } finally {
       setLoading(false);
     }
-  }, [loadAlerts, loadIncidents, loadRisks]);
+  }, [loadAlerts, loadIncidents, loadOpsMetrics, loadRisks]);
 
   const createIncidentFromAlert = async (a: Alert, rule?: AlertRule) => {
     if (!canAdmin) return;
@@ -802,6 +829,90 @@ export default function AlertsPage() {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="rounded-xl border border-purple-100/60 bg-white/50 p-3">
+              <div className="flex items-start justify-between gap-2">
+                <div className="text-sm font-semibold text-purple-950">
+                  Ops (7d)
+                </div>
+                <div className="text-[11px] text-purple-700/70">
+                  {opsMetrics?.generatedAt
+                    ? formatTime(opsMetrics.generatedAt, locale)
+                    : "—"}
+                </div>
+              </div>
+
+              {opsMetricsError ? (
+                <div className="mt-2 rounded-lg border border-rose-100 bg-rose-50/50 p-2 text-xs text-rose-700">
+                  {getUiErrorMessage(opsMetricsError, t)}
+                </div>
+              ) : null}
+
+              {opsMetricsLoading ? (
+                <div className="mt-2 text-xs text-purple-700/70">
+                  {t("common.loading")}
+                </div>
+              ) : !opsMetrics ? (
+                <div className="mt-2 text-xs text-purple-700/70">
+                  {t("common.noData")}
+                </div>
+              ) : (
+                <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                  <div className="rounded-lg border border-purple-100/60 bg-white/60 p-2">
+                    <div className="text-[11px] text-purple-700/70">
+                      Alerts open
+                    </div>
+                    <div className="text-sm font-semibold text-purple-950">
+                      {opsMetrics.alerts.open}
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-purple-100/60 bg-white/60 p-2">
+                    <div className="text-[11px] text-purple-700/70">
+                      Alerts ack
+                    </div>
+                    <div className="text-sm font-semibold text-purple-950">
+                      {opsMetrics.alerts.acknowledged}
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-purple-100/60 bg-white/60 p-2">
+                    <div className="text-[11px] text-purple-700/70">MTTA</div>
+                    <div className="text-sm font-semibold text-purple-950">
+                      {formatDurationMinutes(
+                        (opsMetrics.alerts.mttaMs ?? 0) / 60_000,
+                      )}
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-purple-100/60 bg-white/60 p-2">
+                    <div className="text-[11px] text-purple-700/70">
+                      Alert MTTR
+                    </div>
+                    <div className="text-sm font-semibold text-purple-950">
+                      {formatDurationMinutes(
+                        (opsMetrics.alerts.mttrMs ?? 0) / 60_000,
+                      )}
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-purple-100/60 bg-white/60 p-2">
+                    <div className="text-[11px] text-purple-700/70">
+                      Incidents open
+                    </div>
+                    <div className="text-sm font-semibold text-purple-950">
+                      {opsMetrics.incidents.open}
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-purple-100/60 bg-white/60 p-2">
+                    <div className="text-[11px] text-purple-700/70">
+                      Incident MTTR
+                    </div>
+                    <div className="text-sm font-semibold text-purple-950">
+                      {formatDurationMinutes(
+                        (opsMetrics.incidents.mttrMs ?? 0) / 60_000,
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="rounded-xl border border-purple-100/60 bg-white/50 p-3">
               <div className="text-sm font-semibold text-purple-950">
                 Incidents

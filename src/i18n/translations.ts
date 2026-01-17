@@ -219,6 +219,8 @@ export const translations = {
           thresholdMs: "阈值（毫秒）",
           thresholdPercent: "错误率阈值（%）",
           windowMinutes: "统计窗口（分钟）",
+          cooldownMs: "冷却时间（分钟）",
+          escalateAfterMs: "升级等待（分钟）",
         },
         validation: {
           emailRecipientRequired: "启用 Email 时必须填写收件人",
@@ -822,6 +824,8 @@ export const translations = {
           thresholdMs: "Threshold (ms)",
           thresholdPercent: "Threshold (%)",
           windowMinutes: "Window (minutes)",
+          cooldownMs: "Cooldown (minutes)",
+          escalateAfterMs: "Escalate after (minutes)",
         },
         validation: {
           emailRecipientRequired: "Recipient is required when Email is enabled",
@@ -1594,10 +1598,44 @@ export const translations = {
         success: "Configuración guardada",
         error: "Error al guardar",
         noRules: "No hay reglas",
+        channels: "Canales",
+        channelsWebhook: "Webhook",
+        channelsEmail: "Email",
+        recipient: "Destinatario",
+        recipientPlaceholder: "ops@example.com",
+        testSend: "Enviar prueba",
+        testSending: "Enviando…",
+        testSent: "Prueba enviada",
+        testFailed: "Error al enviar la prueba",
+        params: {
+          maxAgeMinutes: "Antigüedad máxima (minutos)",
+          thresholdMs: "Umbral (ms)",
+          thresholdPercent: "Umbral (%)",
+          windowMinutes: "Ventana (minutos)",
+          cooldownMs: "Enfriamiento (minutos)",
+          escalateAfterMs: "Escalar después de (minutos)",
+        },
+        validation: {
+          emailRecipientRequired:
+            "El destinatario es obligatorio cuando Email está habilitado",
+          emailRecipientInvalid: "Formato de email del destinatario inválido",
+          staleSyncMaxAgeMsPositive:
+            "La antigüedad máxima debe ser un número positivo",
+          slowApiThresholdMsPositive: "El umbral debe ser un número positivo",
+          databaseSlowQueryThresholdMsPositive:
+            "El umbral debe ser un número positivo",
+          highErrorRateThresholdPercentRange:
+            "El umbral debe estar entre 1 y 100",
+          highErrorRateWindowMinutesPositive:
+            "Los minutos de ventana deben ser un número positivo",
+        },
         events: {
           dispute_created: "Disputa creada",
           sync_error: "Error de sincronización",
           stale_sync: "Sincronización estancada",
+          slow_api_request: "Solicitud API lenta",
+          high_error_rate: "Alta tasa de errores",
+          database_slow_query: "Consulta lenta de base de datos",
         },
         severities: {
           info: "Info",
@@ -2012,10 +2050,44 @@ export const translations = {
         success: "Configuration enregistrée",
         error: "Échec de l'enregistrement",
         noRules: "Aucune règle",
+        channels: "Canaux",
+        channelsWebhook: "Webhook",
+        channelsEmail: "Email",
+        recipient: "Destinataire",
+        recipientPlaceholder: "ops@example.com",
+        testSend: "Envoyer un test",
+        testSending: "Envoi…",
+        testSent: "Test envoyé",
+        testFailed: "Échec de l'envoi du test",
+        params: {
+          maxAgeMinutes: "Âge maximum (minutes)",
+          thresholdMs: "Seuil (ms)",
+          thresholdPercent: "Seuil (%)",
+          windowMinutes: "Fenêtre (minutes)",
+          cooldownMs: "Délai de refroidissement (minutes)",
+          escalateAfterMs: "Escalade après (minutes)",
+        },
+        validation: {
+          emailRecipientRequired:
+            "Le destinataire est requis lorsque Email est activé",
+          emailRecipientInvalid: "Format d'email du destinataire invalide",
+          staleSyncMaxAgeMsPositive:
+            "L'âge maximum doit être un nombre positif",
+          slowApiThresholdMsPositive: "Le seuil doit être un nombre positif",
+          databaseSlowQueryThresholdMsPositive:
+            "Le seuil doit être un nombre positif",
+          highErrorRateThresholdPercentRange:
+            "Le seuil doit être entre 1 et 100",
+          highErrorRateWindowMinutesPositive:
+            "Les minutes de fenêtre doivent être un nombre positif",
+        },
         events: {
           dispute_created: "Contestation créée",
           sync_error: "Erreur de synchronisation",
           stale_sync: "Synchronisation figée",
+          slow_api_request: "Requête API lente",
+          high_error_rate: "Taux d'erreur élevé",
+          database_slow_query: "Requête base de données lente",
         },
         severities: {
           info: "Info",
@@ -2485,10 +2557,40 @@ export const translations = {
         success: "구성이 저장되었습니다",
         error: "저장 실패",
         noRules: "규칙을 찾을 수 없습니다",
+        channels: "채널",
+        channelsWebhook: "Webhook",
+        channelsEmail: "Email",
+        recipient: "수신자",
+        recipientPlaceholder: "ops@example.com",
+        testSend: "테스트 전송",
+        testSending: "전송 중…",
+        testSent: "테스트 전송됨",
+        testFailed: "테스트 전송 실패",
+        params: {
+          maxAgeMinutes: "최대 경과 (분)",
+          thresholdMs: "임계값 (ms)",
+          thresholdPercent: "임계값 (%)",
+          windowMinutes: "윈도우 (분)",
+          cooldownMs: "쿨다운 (분)",
+          escalateAfterMs: "다음 후 에스컬레이션 (분)",
+        },
+        validation: {
+          emailRecipientRequired: "Email을 활성화하면 수신자가 필요합니다",
+          emailRecipientInvalid: "수신자 이메일 형식이 올바르지 않습니다",
+          staleSyncMaxAgeMsPositive: "최대 경과는 양수여야 합니다",
+          slowApiThresholdMsPositive: "임계값은 양수여야 합니다",
+          databaseSlowQueryThresholdMsPositive: "임계값은 양수여야 합니다",
+          highErrorRateThresholdPercentRange:
+            "임계값은 1에서 100 사이여야 합니다",
+          highErrorRateWindowMinutesPositive: "윈도우 분은 양수여야 합니다",
+        },
         events: {
           dispute_created: "분쟁 생성",
           sync_error: "동기화 오류",
           stale_sync: "동기화 정체",
+          slow_api_request: "느린 API 요청",
+          high_error_rate: "높은 오류율",
+          database_slow_query: "느린 DB 쿼리",
         },
         severities: {
           info: "정보",
@@ -3229,6 +3331,8 @@ export type TranslationKey =
   | "oracle.alerts.params.thresholdMs"
   | "oracle.alerts.params.thresholdPercent"
   | "oracle.alerts.params.windowMinutes"
+  | "oracle.alerts.params.cooldownMs"
+  | "oracle.alerts.params.escalateAfterMs"
   | "oracle.alerts.validation.emailRecipientRequired"
   | "oracle.alerts.validation.emailRecipientInvalid"
   | "oracle.alerts.validation.staleSyncMaxAgeMsPositive"

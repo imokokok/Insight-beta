@@ -1371,3 +1371,187 @@ export async function listAuditLog(params: {
     nextCursor: offset + res.rows.length < total ? offset + limit : null,
   };
 }
+
+export type OpsMetrics = {
+  generatedAt: string;
+  windowDays: number;
+  alerts: {
+    open: number;
+    acknowledged: number;
+    resolved: number;
+    mttaMs: number | null;
+    mttrMs: number | null;
+  };
+  incidents: {
+    open: number;
+    mitigating: number;
+    resolved: number;
+    mttrMs: number | null;
+  };
+};
+
+function safeAvgMs(
+  samples: number[],
+  opts?: { min?: number; max?: number },
+): number | null {
+  if (samples.length === 0) return null;
+  const sum = samples.reduce((a, b) => a + b, 0);
+  const avg = sum / samples.length;
+  if (!Number.isFinite(avg)) return null;
+  const min = opts?.min ?? 0;
+  const max = opts?.max ?? 365 * 24 * 60 * 60_000;
+  const clamped = Math.max(min, Math.min(max, avg));
+  return Math.round(clamped);
+}
+
+export async function getOpsMetrics(params?: {
+  windowDays?: number | null;
+}): Promise<OpsMetrics> {
+  await ensureDb();
+  const windowDaysRaw = Number(params?.windowDays ?? 7);
+  const windowDays = Number.isFinite(windowDaysRaw)
+    ? Math.min(90, Math.max(1, Math.round(windowDaysRaw)))
+    : 7;
+  const nowIso = memoryNowIso();
+  const cutoffMs = Date.now() - windowDays * 24 * 60 * 60_000;
+
+  if (!hasDatabase()) {
+    const mem = getMemoryStore();
+    const alerts = Array.from(mem.alerts.values());
+    const open = alerts.filter((a) => a.status === "Open").length;
+    const acknowledged = alerts.filter(
+      (a) => a.status === "Acknowledged",
+    ).length;
+    const resolved = alerts.filter((a) => a.status === "Resolved").length;
+
+    const mttaSamples: number[] = [];
+    const mttrSamples: number[] = [];
+    for (const a of alerts) {
+      const firstSeenMs = Date.parse(a.firstSeenAt);
+      if (!Number.isFinite(firstSeenMs)) continue;
+      if (a.acknowledgedAt) {
+        const ackMs = Date.parse(a.acknowledgedAt);
+        if (Number.isFinite(ackMs) && ackMs >= cutoffMs) {
+          const d = ackMs - firstSeenMs;
+          if (Number.isFinite(d) && d >= 0) mttaSamples.push(d);
+        }
+      }
+      if (a.resolvedAt) {
+        const resolvedMs = Date.parse(a.resolvedAt);
+        if (Number.isFinite(resolvedMs) && resolvedMs >= cutoffMs) {
+          const d = resolvedMs - firstSeenMs;
+          if (Number.isFinite(d) && d >= 0) mttrSamples.push(d);
+        }
+      }
+    }
+
+    const allIncidents = await listIncidents({ status: "All", limit: 200 });
+    const incOpen = allIncidents.filter((i) => i.status === "Open").length;
+    const incMitigating = allIncidents.filter(
+      (i) => i.status === "Mitigating",
+    ).length;
+    const incResolved = allIncidents.filter(
+      (i) => i.status === "Resolved",
+    ).length;
+    const incMttrSamples: number[] = [];
+    for (const i of allIncidents) {
+      if (i.status !== "Resolved" || !i.resolvedAt) continue;
+      const resolvedMs = Date.parse(i.resolvedAt);
+      const createdMs = Date.parse(i.createdAt);
+      if (!Number.isFinite(resolvedMs) || !Number.isFinite(createdMs)) continue;
+      if (resolvedMs < cutoffMs) continue;
+      const d = resolvedMs - createdMs;
+      if (Number.isFinite(d) && d >= 0) incMttrSamples.push(d);
+    }
+
+    return {
+      generatedAt: nowIso,
+      windowDays,
+      alerts: {
+        open,
+        acknowledged,
+        resolved,
+        mttaMs: safeAvgMs(mttaSamples),
+        mttrMs: safeAvgMs(mttrSamples),
+      },
+      incidents: {
+        open: incOpen,
+        mitigating: incMitigating,
+        resolved: incResolved,
+        mttrMs: safeAvgMs(incMttrSamples),
+      },
+    };
+  }
+
+  const alertStatusRes = await query<{
+    open: string | number;
+    acknowledged: string | number;
+    resolved: string | number;
+  }>(`
+    SELECT
+      COUNT(*) FILTER (WHERE status = 'Open') as open,
+      COUNT(*) FILTER (WHERE status = 'Acknowledged') as acknowledged,
+      COUNT(*) FILTER (WHERE status = 'Resolved') as resolved
+    FROM alerts
+  `);
+
+  const open = Number(alertStatusRes.rows[0]?.open ?? 0);
+  const acknowledged = Number(alertStatusRes.rows[0]?.acknowledged ?? 0);
+  const resolved = Number(alertStatusRes.rows[0]?.resolved ?? 0);
+
+  const mttaRes = await query<{ ms: number | string | null }>(
+    `
+    SELECT AVG(EXTRACT(EPOCH FROM (acknowledged_at - first_seen_at)) * 1000) as ms
+    FROM alerts
+    WHERE acknowledged_at IS NOT NULL AND acknowledged_at >= to_timestamp($1)
+    `,
+    [Math.floor(cutoffMs / 1000)],
+  );
+  const mttrRes = await query<{ ms: number | string | null }>(
+    `
+    SELECT AVG(EXTRACT(EPOCH FROM (resolved_at - first_seen_at)) * 1000) as ms
+    FROM alerts
+    WHERE resolved_at IS NOT NULL AND resolved_at >= to_timestamp($1)
+    `,
+    [Math.floor(cutoffMs / 1000)],
+  );
+  const mttaMsRaw = Number(mttaRes.rows[0]?.ms ?? NaN);
+  const mttrMsRaw = Number(mttrRes.rows[0]?.ms ?? NaN);
+
+  const allIncidents = await listIncidents({ status: "All", limit: 200 });
+  const incOpen = allIncidents.filter((i) => i.status === "Open").length;
+  const incMitigating = allIncidents.filter(
+    (i) => i.status === "Mitigating",
+  ).length;
+  const incResolved = allIncidents.filter(
+    (i) => i.status === "Resolved",
+  ).length;
+  const incMttrSamples: number[] = [];
+  for (const i of allIncidents) {
+    if (i.status !== "Resolved" || !i.resolvedAt) continue;
+    const resolvedMs = Date.parse(i.resolvedAt);
+    const createdMs = Date.parse(i.createdAt);
+    if (!Number.isFinite(resolvedMs) || !Number.isFinite(createdMs)) continue;
+    if (resolvedMs < cutoffMs) continue;
+    const d = resolvedMs - createdMs;
+    if (Number.isFinite(d) && d >= 0) incMttrSamples.push(d);
+  }
+
+  return {
+    generatedAt: nowIso,
+    windowDays,
+    alerts: {
+      open: Number.isFinite(open) ? open : 0,
+      acknowledged: Number.isFinite(acknowledged) ? acknowledged : 0,
+      resolved: Number.isFinite(resolved) ? resolved : 0,
+      mttaMs: Number.isFinite(mttaMsRaw) ? Math.round(mttaMsRaw) : null,
+      mttrMs: Number.isFinite(mttrMsRaw) ? Math.round(mttrMsRaw) : null,
+    },
+    incidents: {
+      open: incOpen,
+      mitigating: incMitigating,
+      resolved: incResolved,
+      mttrMs: safeAvgMs(incMttrSamples),
+    },
+  };
+}
