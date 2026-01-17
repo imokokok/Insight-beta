@@ -156,6 +156,21 @@ export function AlertRulesManager({
           );
         }
       }
+
+      if (rule.event === "price_deviation") {
+        const thresholdPercent = getNumber("thresholdPercent");
+        if (!Number.isFinite(thresholdPercent) || thresholdPercent <= 0) {
+          return t("oracle.alerts.validation.priceDeviationPositive");
+        }
+      }
+
+      if (rule.event === "low_gas") {
+        const minBalanceEth = getNumber("minBalanceEth");
+        if (!Number.isFinite(minBalanceEth) || minBalanceEth <= 0) {
+          return t("oracle.alerts.validation.lowGasPositive");
+        }
+      }
+
       return null;
     },
     [t],
@@ -838,6 +853,56 @@ export function AlertRulesManager({
                                 Math.floor(Number(e.target.value)),
                               );
                               patchRuleParams(rule.id, { thresholdMs: ms });
+                            }}
+                            className="h-10 rounded-xl bg-white/70 ring-1 ring-black/5 border-transparent focus-visible:ring-2 focus-visible:ring-purple-500/20"
+                          />
+                        </div>
+                      ) : null}
+
+                      {rule.event === "price_deviation" ? (
+                        <div className="md:col-span-12">
+                          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                            {t("oracle.alerts.params.priceDeviationThreshold")}
+                          </div>
+                          <Input
+                            type="number"
+                            min={0.1}
+                            step={0.1}
+                            value={Number(
+                              (
+                                rule.params as
+                                  | { thresholdPercent?: unknown }
+                                  | undefined
+                              )?.thresholdPercent ?? 2,
+                            )}
+                            onChange={(e) => {
+                              const v = Math.max(0.1, Number(e.target.value));
+                              patchRuleParams(rule.id, { thresholdPercent: v });
+                            }}
+                            className="h-10 rounded-xl bg-white/70 ring-1 ring-black/5 border-transparent focus-visible:ring-2 focus-visible:ring-purple-500/20"
+                          />
+                        </div>
+                      ) : null}
+
+                      {rule.event === "low_gas" ? (
+                        <div className="md:col-span-12">
+                          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                            {t("oracle.alerts.params.minBalanceEth")}
+                          </div>
+                          <Input
+                            type="number"
+                            min={0.01}
+                            step={0.01}
+                            value={Number(
+                              (
+                                rule.params as
+                                  | { minBalanceEth?: unknown }
+                                  | undefined
+                              )?.minBalanceEth ?? 0.1,
+                            )}
+                            onChange={(e) => {
+                              const v = Math.max(0.001, Number(e.target.value));
+                              patchRuleParams(rule.id, { minBalanceEth: v });
                             }}
                             className="h-10 rounded-xl bg-white/70 ring-1 ring-black/5 border-transparent focus-visible:ring-2 focus-visible:ring-purple-500/20"
                           />

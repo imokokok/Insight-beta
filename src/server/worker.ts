@@ -8,6 +8,8 @@ import { getMemoryStore } from "@/server/memoryBackend";
 import { createOrTouchAlert, readAlertRules } from "@/server/observability";
 import { getSyncState, readOracleState } from "@/server/oracle";
 import { writeJsonFile } from "@/server/kvStore";
+import { fetchCurrentPrice } from "@/server/oracle/priceFetcher";
+import { createPublicClient, http, formatEther } from "viem";
 
 const SYNC_INTERVAL = 15000; // 15 seconds
 const workerAlertCooldown = new Map<string, number>();
@@ -301,6 +303,89 @@ async function tickWorker() {
             });
           }
         }
+      }
+    }
+
+    // Price Deviation Check
+    const deviationRules = rules.filter(
+      (r) => r.enabled && r.event === "price_deviation",
+    );
+    if (deviationRules.length > 0) {
+      // In a real app, symbol would be dynamic based on contract
+      const symbol = "ETH";
+      const { referencePrice, oraclePrice } = await fetchCurrentPrice(symbol);
+      const deviation =
+        referencePrice > 0
+          ? Math.abs(oraclePrice - referencePrice) / referencePrice
+          : 0;
+      const deviationPercent = deviation * 100;
+
+      for (const rule of deviationRules) {
+        const threshold = Number(
+          (rule.params as { thresholdPercent?: unknown })?.thresholdPercent ??
+            2,
+        );
+        if (deviationPercent > threshold) {
+          const fingerprint = `price_deviation:${symbol}:${
+            state.contractAddress ?? "unknown"
+          }`;
+          if (!shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule)))
+            continue;
+
+          await createOrTouchAlert({
+            fingerprint,
+            type: rule.event,
+            severity: rule.severity,
+            title: "Price Deviation Detected",
+            message: `Oracle: $${oraclePrice}, Ref: $${referencePrice}, Deviation: ${deviationPercent.toFixed(
+              2,
+            )}% > ${threshold}%`,
+            entityType: "oracle",
+            entityId: state.contractAddress,
+            notify: notifyForRule(rule),
+          });
+        }
+      }
+    }
+
+    // Low Gas Check
+    const lowGasRules = rules.filter((r) => r.enabled && r.event === "low_gas");
+    if (lowGasRules.length > 0 && state.owner && state.rpcActiveUrl) {
+      try {
+        const client = createPublicClient({
+          transport: http(state.rpcActiveUrl),
+        });
+        const balanceWei = await client.getBalance({
+          address: state.owner as `0x${string}`,
+        });
+        const balanceEth = Number(formatEther(balanceWei));
+
+        for (const rule of lowGasRules) {
+          const minBalance = Number(
+            (rule.params as { minBalanceEth?: unknown })?.minBalanceEth ?? 0.1,
+          );
+          if (balanceEth < minBalance) {
+            const fingerprint = `low_gas:${state.owner}`;
+            if (!shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule)))
+              continue;
+
+            await createOrTouchAlert({
+              fingerprint,
+              type: rule.event,
+              severity: rule.severity,
+              title: "Low Gas Balance",
+              message: `Owner ${state.owner.slice(
+                0,
+                6,
+              )}... has ${balanceEth.toFixed(4)} ETH < ${minBalance} ETH`,
+              entityType: "account",
+              entityId: state.owner,
+              notify: notifyForRule(rule),
+            });
+          }
+        }
+      } catch (e) {
+        logger.error("Failed to check gas balance", { error: e });
       }
     }
 

@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { useEffect, useState, useMemo } from "react";
-import { BarChart3, Activity, PieChart, Clock } from "lucide-react";
+import { BarChart3, Activity, PieChart, Clock, Target } from "lucide-react";
 import {
   XAxis,
   YAxis,
@@ -15,11 +15,16 @@ import {
   Legend,
   Pie,
   PieChart as RechartsPieChart,
+  ComposedChart,
+  Line,
+  Bar,
 } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetchApiData } from "@/lib/utils";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { getUiErrorMessage, langToLocale } from "@/i18n/translations";
+import { OracleHealthScore } from "./OracleHealthScore";
+import { calculateHealthScore, PricePoint } from "@/server/oracle/priceFetcher";
 
 type ChartItem = {
   date: string;
@@ -55,15 +60,24 @@ export function OracleCharts() {
   const [rawData, setRawData] = useState<ChartItem[]>([]);
   const [rawSyncMetrics, setRawSyncMetrics] = useState<SyncMetricItem[]>([]);
   const [marketStats, setMarketStats] = useState<MarketStat[]>([]);
+  const [accuracyData, setAccuracyData] = useState<PricePoint[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
   const [syncLoading, setSyncLoading] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
+
   const [marketsLoading, setMarketsLoading] = useState(false);
   const [marketsError, setMarketsError] = useState<string | null>(null);
+
+  const [accuracyLoading, setAccuracyLoading] = useState(false);
+  const [accuracyError, setAccuracyError] = useState<string | null>(null);
+
   const [activeTab, setActiveTab] = useState<
-    "activity" | "tvs" | "sync" | "markets"
+    "activity" | "tvs" | "sync" | "markets" | "accuracy"
   >("activity");
+
   const { t, lang } = useI18n();
   const locale = langToLocale[lang];
 
@@ -74,7 +88,7 @@ export function OracleCharts() {
     })
       .then((charts) => setRawData(charts))
       .catch((e: unknown) =>
-        setError(e instanceof Error ? e.message : "unknown_error")
+        setError(e instanceof Error ? e.message : "unknown_error"),
       )
       .finally(() => setLoading(false));
     return () => controller.abort();
@@ -87,11 +101,11 @@ export function OracleCharts() {
     setSyncLoading(true);
     fetchApiData<{ items: SyncMetricItem[] }>(
       "/api/oracle/sync-metrics?minutes=360&limit=720",
-      { signal: controller.signal }
+      { signal: controller.signal },
     )
       .then((r) => setRawSyncMetrics(r.items))
       .catch((e: unknown) =>
-        setSyncError(e instanceof Error ? e.message : "unknown_error")
+        setSyncError(e instanceof Error ? e.message : "unknown_error"),
       )
       .finally(() => setSyncLoading(false));
     return () => controller.abort();
@@ -104,15 +118,32 @@ export function OracleCharts() {
     setMarketsLoading(true);
     fetchApiData<MarketStat[]>(
       "/api/oracle/analytics/markets?days=30&limit=10",
-      { signal: controller.signal }
+      { signal: controller.signal },
     )
       .then((data) => setMarketStats(data))
       .catch((e: unknown) =>
-        setMarketsError(e instanceof Error ? e.message : "unknown_error")
+        setMarketsError(e instanceof Error ? e.message : "unknown_error"),
       )
       .finally(() => setMarketsLoading(false));
     return () => controller.abort();
   }, [activeTab, marketStats.length, marketsError, marketsLoading]);
+
+  useEffect(() => {
+    if (activeTab !== "accuracy") return;
+    if (accuracyLoading || accuracyData.length > 0 || accuracyError) return;
+    const controller = new AbortController();
+    setAccuracyLoading(true);
+    fetchApiData<PricePoint[]>(
+      "/api/oracle/analytics/accuracy?symbol=ETH&days=30",
+      { signal: controller.signal },
+    )
+      .then((data) => setAccuracyData(data))
+      .catch((e: unknown) =>
+        setAccuracyError(e instanceof Error ? e.message : "unknown_error"),
+      )
+      .finally(() => setAccuracyLoading(false));
+    return () => controller.abort();
+  }, [activeTab, accuracyData.length, accuracyError, accuracyLoading]);
 
   const chartData = useMemo(() => {
     if (rawData.length === 0) return [];
@@ -147,8 +178,25 @@ export function OracleCharts() {
     });
   }, [locale, rawSyncMetrics]);
 
+  const accuracyChartData = useMemo(() => {
+    if (accuracyData.length === 0) return [];
+    return accuracyData.map((item) => ({
+      ...item,
+      label: new Date(item.timestamp).toLocaleDateString(locale, {
+        month: "short",
+        day: "numeric",
+      }),
+      deviationPct: (item.deviation * 100).toFixed(2),
+    }));
+  }, [locale, accuracyData]);
+
+  const healthScore = useMemo(() => {
+    return calculateHealthScore(accuracyData);
+  }, [accuracyData]);
+
   const hasAssertionsData = chartData.length >= 2;
   const hasSyncData = syncChartData.length >= 2;
+  const hasAccuracyData = accuracyChartData.length >= 2;
 
   if (loading) {
     return (
@@ -200,27 +248,39 @@ export function OracleCharts() {
     );
   }
 
+  if (activeTab === "accuracy" && accuracyError) {
+    return (
+      <div className="glass-panel rounded-2xl p-6 shadow-sm border-rose-100 bg-rose-50/50">
+        <div className="text-sm text-rose-700">
+          {getUiErrorMessage(accuracyError, t)}
+        </div>
+      </div>
+    );
+  }
+
   const tabBorder =
     activeTab === "activity"
       ? "border-purple-100/20"
       : activeTab === "tvs"
-      ? "border-pink-100/20"
-      : activeTab === "sync"
-      ? "border-blue-100/20"
-      : "border-orange-100/20";
+        ? "border-pink-100/20"
+        : activeTab === "sync"
+          ? "border-blue-100/20"
+          : activeTab === "markets"
+            ? "border-orange-100/20"
+            : "border-green-100/20"; // Accuracy color
 
   return (
     <div
       className={cn(
         "glass-card rounded-2xl p-6 relative overflow-hidden transition-all duration-500",
-        tabBorder
+        tabBorder,
       )}
     >
       {/* Artistic Background Mesh - Dynamic based on tab */}
       <div
         className={cn(
           "absolute inset-0 pointer-events-none transition-opacity duration-700",
-          activeTab === "activity" ? "opacity-20" : "opacity-0"
+          activeTab === "activity" ? "opacity-20" : "opacity-0",
         )}
       >
         <div className="absolute -left-[10%] -top-[10%] h-[150%] w-[50%] bg-gradient-to-br from-purple-200/30 via-indigo-100/10 to-transparent blur-3xl rounded-full" />
@@ -229,7 +289,7 @@ export function OracleCharts() {
       <div
         className={cn(
           "absolute inset-0 pointer-events-none transition-opacity duration-700",
-          activeTab === "tvs" ? "opacity-20" : "opacity-0"
+          activeTab === "tvs" ? "opacity-20" : "opacity-0",
         )}
       >
         <div className="absolute -right-[10%] -top-[10%] h-[150%] w-[50%] bg-gradient-to-bl from-pink-200/30 via-rose-100/10 to-transparent blur-3xl rounded-full" />
@@ -238,7 +298,7 @@ export function OracleCharts() {
       <div
         className={cn(
           "absolute inset-0 pointer-events-none transition-opacity duration-700",
-          activeTab === "sync" ? "opacity-20" : "opacity-0"
+          activeTab === "sync" ? "opacity-20" : "opacity-0",
         )}
       >
         <div className="absolute -left-[10%] -bottom-[10%] h-[150%] w-[50%] bg-gradient-to-tr from-blue-200/30 via-cyan-100/10 to-transparent blur-3xl rounded-full" />
@@ -247,11 +307,20 @@ export function OracleCharts() {
       <div
         className={cn(
           "absolute inset-0 pointer-events-none transition-opacity duration-700",
-          activeTab === "markets" ? "opacity-20" : "opacity-0"
+          activeTab === "markets" ? "opacity-20" : "opacity-0",
         )}
       >
         <div className="absolute right-[20%] -top-[10%] h-[120%] w-[60%] bg-gradient-to-b from-orange-200/30 via-amber-100/10 to-transparent blur-3xl rounded-full" />
         <div className="absolute left-0 bottom-0 h-[50%] w-[40%] bg-gradient-to-tr from-red-100/20 via-transparent to-transparent blur-2xl rounded-full" />
+      </div>
+      <div
+        className={cn(
+          "absolute inset-0 pointer-events-none transition-opacity duration-700",
+          activeTab === "accuracy" ? "opacity-20" : "opacity-0",
+        )}
+      >
+        <div className="absolute left-[20%] -top-[10%] h-[120%] w-[60%] bg-gradient-to-b from-green-200/30 via-emerald-100/10 to-transparent blur-3xl rounded-full" />
+        <div className="absolute right-0 bottom-0 h-[50%] w-[40%] bg-gradient-to-tr from-teal-100/20 via-transparent to-transparent blur-2xl rounded-full" />
       </div>
 
       {/* Header & Tabs */}
@@ -263,16 +332,24 @@ export function OracleCharts() {
               activeTab === "activity"
                 ? "bg-gradient-to-br from-purple-500/10 to-indigo-500/10 text-purple-600 ring-purple-500/20"
                 : activeTab === "tvs"
-                ? "bg-gradient-to-br from-pink-500/10 to-rose-500/10 text-pink-600 ring-pink-500/20"
-                : "bg-gradient-to-br from-blue-500/10 to-cyan-500/10 text-blue-600 ring-blue-500/20"
+                  ? "bg-gradient-to-br from-pink-500/10 to-rose-500/10 text-pink-600 ring-pink-500/20"
+                  : activeTab === "sync"
+                    ? "bg-gradient-to-br from-blue-500/10 to-cyan-500/10 text-blue-600 ring-blue-500/20"
+                    : activeTab === "markets"
+                      ? "bg-gradient-to-br from-orange-500/10 to-amber-500/10 text-orange-600 ring-orange-500/20"
+                      : "bg-gradient-to-br from-green-500/10 to-emerald-500/10 text-green-600 ring-green-500/20",
             )}
           >
             {activeTab === "activity" ? (
               <Activity className="h-6 w-6" />
             ) : activeTab === "tvs" ? (
               <PieChart className="h-6 w-6" />
-            ) : (
+            ) : activeTab === "sync" ? (
               <Clock className="h-6 w-6" />
+            ) : activeTab === "markets" ? (
+              <BarChart3 className="h-6 w-6" />
+            ) : (
+              <Target className="h-6 w-6" />
             )}
           </div>
           <div>
@@ -280,27 +357,35 @@ export function OracleCharts() {
               {activeTab === "activity"
                 ? t("oracle.charts.dailyAssertions")
                 : activeTab === "tvs"
-                ? t("oracle.charts.tvsCumulative")
-                : t("oracle.charts.syncHealth")}
+                  ? t("oracle.charts.tvsCumulative")
+                  : activeTab === "sync"
+                    ? t("oracle.charts.syncHealth")
+                    : activeTab === "markets"
+                      ? t("oracle.charts.topMarkets")
+                      : "Data Accuracy"}
             </h3>
             <p className="text-sm text-gray-500">
               {activeTab === "activity"
                 ? t("oracle.charts.activityDesc")
                 : activeTab === "tvs"
-                ? t("oracle.charts.tvsDesc")
-                : t("oracle.charts.syncDesc")}
+                  ? t("oracle.charts.tvsDesc")
+                  : activeTab === "sync"
+                    ? t("oracle.charts.syncDesc")
+                    : activeTab === "markets"
+                      ? "Most active markets by disputes"
+                      : "Oracle vs Reference Price Deviation"}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-1 p-1 rounded-xl bg-gray-100/50 backdrop-blur-sm border border-gray-200/50">
+        <div className="flex items-center gap-1 p-1 rounded-xl bg-gray-100/50 backdrop-blur-sm border border-gray-200/50 overflow-x-auto max-w-full">
           <button
             onClick={() => setActiveTab("activity")}
             className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300",
+              "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 whitespace-nowrap",
               activeTab === "activity"
                 ? "bg-white text-purple-700 shadow-sm ring-1 ring-black/5"
-                : "text-gray-500 hover:text-gray-700 hover:bg-white/50"
+                : "text-gray-500 hover:text-gray-700 hover:bg-white/50",
             )}
           >
             <Activity size={14} />
@@ -309,10 +394,10 @@ export function OracleCharts() {
           <button
             onClick={() => setActiveTab("tvs")}
             className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300",
+              "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 whitespace-nowrap",
               activeTab === "tvs"
                 ? "bg-white text-pink-700 shadow-sm ring-1 ring-black/5"
-                : "text-gray-500 hover:text-gray-700 hover:bg-white/50"
+                : "text-gray-500 hover:text-gray-700 hover:bg-white/50",
             )}
           >
             <PieChart size={14} />
@@ -321,10 +406,10 @@ export function OracleCharts() {
           <button
             onClick={() => setActiveTab("sync")}
             className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300",
+              "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 whitespace-nowrap",
               activeTab === "sync"
                 ? "bg-white text-blue-700 shadow-sm ring-1 ring-black/5"
-                : "text-gray-500 hover:text-gray-700 hover:bg-white/50"
+                : "text-gray-500 hover:text-gray-700 hover:bg-white/50",
             )}
           >
             <Clock size={14} />
@@ -333,14 +418,26 @@ export function OracleCharts() {
           <button
             onClick={() => setActiveTab("markets")}
             className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300",
+              "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 whitespace-nowrap",
               activeTab === "markets"
                 ? "bg-white text-orange-700 shadow-sm ring-1 ring-black/5"
-                : "text-gray-500 hover:text-gray-700 hover:bg-white/50"
+                : "text-gray-500 hover:text-gray-700 hover:bg-white/50",
             )}
           >
             <BarChart3 size={14} />
             {t("oracle.charts.topMarkets")}
+          </button>
+          <button
+            onClick={() => setActiveTab("accuracy")}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 whitespace-nowrap",
+              activeTab === "accuracy"
+                ? "bg-white text-green-700 shadow-sm ring-1 ring-black/5"
+                : "text-gray-500 hover:text-gray-700 hover:bg-white/50",
+            )}
+          >
+            <Target size={14} />
+            Accuracy
           </button>
         </div>
       </div>
@@ -505,7 +602,7 @@ export function OracleCharts() {
                   formatter={(
                     value: unknown,
                     _name: unknown,
-                    props: { payload?: MarketStat }
+                    props: { payload?: MarketStat },
                   ) => {
                     const numericValue =
                       typeof value === "number" ? value : Number(value ?? 0);
@@ -528,6 +625,96 @@ export function OracleCharts() {
                   wrapperStyle={{ fontSize: "12px", maxWidth: "40%" }}
                 />
               </RechartsPieChart>
+            )
+          ) : activeTab === "accuracy" ? (
+            accuracyLoading ? (
+              <div className="h-full w-full flex items-center justify-center text-sm text-gray-400">
+                {t("common.loading")}
+              </div>
+            ) : !hasAccuracyData ? (
+              <div className="h-full w-full flex items-center justify-center text-sm text-gray-400">
+                {t("oracle.charts.waitingData")}
+              </div>
+            ) : (
+              <div className="relative w-full h-full flex flex-col">
+                <div className="absolute top-0 right-0 z-20">
+                  <OracleHealthScore
+                    score={healthScore}
+                    isLoading={accuracyLoading}
+                  />
+                </div>
+                <div className="flex-1 w-full h-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={accuracyChartData}>
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        vertical={false}
+                        stroke="#dcfce7"
+                      />
+                      <XAxis
+                        dataKey="label"
+                        scale="point"
+                        tick={{ fontSize: 10 }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <YAxis
+                        yAxisId="left"
+                        orientation="left"
+                        domain={["auto", "auto"]}
+                        tick={{ fontSize: 10 }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <YAxis
+                        yAxisId="right"
+                        orientation="right"
+                        tick={{ fontSize: 10 }}
+                        axisLine={false}
+                        tickLine={false}
+                        unit="%"
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "rgba(255, 255, 255, 0.9)",
+                          borderRadius: "8px",
+                          border: "none",
+                          boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+                          fontSize: "12px",
+                        }}
+                      />
+                      <Legend verticalAlign="top" height={36} />
+                      <Bar
+                        yAxisId="right"
+                        dataKey="deviationPct"
+                        name="Deviation %"
+                        barSize={20}
+                        fill="#f87171"
+                        opacity={0.5}
+                      />
+                      <Line
+                        yAxisId="left"
+                        type="monotone"
+                        dataKey="oraclePrice"
+                        name="Oracle Price"
+                        stroke="#10b981"
+                        strokeWidth={2}
+                        dot={false}
+                      />
+                      <Line
+                        yAxisId="left"
+                        type="monotone"
+                        dataKey="referencePrice"
+                        name="Ref Price"
+                        stroke="#6b7280"
+                        strokeWidth={1}
+                        strokeDasharray="3 3"
+                        dot={false}
+                      />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
             )
           ) : syncLoading ? (
             <div className="h-full w-full flex items-center justify-center text-sm text-gray-400">

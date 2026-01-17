@@ -221,10 +221,14 @@ export const translations = {
           windowMinutes: "统计窗口（分钟）",
           cooldownMs: "冷却时间（分钟）",
           escalateAfterMs: "升级等待（分钟）",
+          priceDeviationThreshold: "价格偏差阈值 (%)",
+          minBalanceEth: "最低 Gas 余额 (ETH)",
         },
         validation: {
           emailRecipientRequired: "启用 Email 时必须填写收件人",
           emailRecipientInvalid: "Email 收件人格式不正确",
+          priceDeviationPositive: "价格偏差阈值必须为正数",
+          lowGasPositive: "最低 Gas 余额必须为正数",
           staleSyncMaxAgeMsPositive: "同步停滞的最大时长必须为正数",
           slowApiThresholdMsPositive: "慢请求阈值必须为正数",
           databaseSlowQueryThresholdMsPositive: "慢查询阈值必须为正数",
@@ -826,6 +830,8 @@ export const translations = {
           windowMinutes: "Window (minutes)",
           cooldownMs: "Cooldown (minutes)",
           escalateAfterMs: "Escalate after (minutes)",
+          priceDeviationThreshold: "Price Deviation Threshold (%)",
+          minBalanceEth: "Min Gas Balance (ETH)",
         },
         validation: {
           emailRecipientRequired: "Recipient is required when Email is enabled",
@@ -838,6 +844,8 @@ export const translations = {
             "Threshold must be between 1 and 100",
           highErrorRateWindowMinutesPositive:
             "Window minutes must be a positive number",
+          priceDeviationPositive: "Price deviation threshold must be positive",
+          lowGasPositive: "Minimum gas balance must be positive",
         },
         events: {
           dispute_created: "Dispute Created",
@@ -3333,6 +3341,8 @@ export type TranslationKey =
   | "oracle.alerts.params.windowMinutes"
   | "oracle.alerts.params.cooldownMs"
   | "oracle.alerts.params.escalateAfterMs"
+  | "oracle.alerts.params.priceDeviationThreshold"
+  | "oracle.alerts.params.minBalanceEth"
   | "oracle.alerts.validation.emailRecipientRequired"
   | "oracle.alerts.validation.emailRecipientInvalid"
   | "oracle.alerts.validation.staleSyncMaxAgeMsPositive"
@@ -3340,6 +3350,8 @@ export type TranslationKey =
   | "oracle.alerts.validation.databaseSlowQueryThresholdMsPositive"
   | "oracle.alerts.validation.highErrorRateThresholdPercentRange"
   | "oracle.alerts.validation.highErrorRateWindowMinutesPositive"
+  | "oracle.alerts.validation.priceDeviationPositive"
+  | "oracle.alerts.validation.lowGasPositive"
   | "oracle.alerts.testSend"
   | "oracle.alerts.testSending"
   | "oracle.alerts.testSent"

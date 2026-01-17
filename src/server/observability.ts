@@ -134,6 +134,8 @@ const validRuleEvents: AlertRuleEvent[] = [
   "slow_api_request",
   "high_error_rate",
   "database_slow_query",
+  "price_deviation",
+  "low_gas",
 ];
 
 const validSeverities: AlertSeverity[] = ["info", "warning", "critical"];
@@ -200,6 +202,22 @@ function normalizeRuleParams(
       ["withinMinutes", safeWithin],
       ["minTotalVotes", safeMin],
     ]);
+  }
+
+  if (event === "price_deviation") {
+    const thresholdPercent = getNumber("thresholdPercent");
+    const v =
+      Number.isFinite(thresholdPercent) && thresholdPercent > 0
+        ? thresholdPercent
+        : 2;
+    return setNumber("thresholdPercent", v);
+  }
+
+  if (event === "low_gas") {
+    const minBalanceEth = getNumber("minBalanceEth");
+    const v =
+      Number.isFinite(minBalanceEth) && minBalanceEth > 0 ? minBalanceEth : 0.1;
+    return setNumber("minBalanceEth", v);
   }
 
   if (event === "high_vote_divergence") {
