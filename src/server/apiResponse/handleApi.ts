@@ -1,5 +1,5 @@
 import { env } from "@/lib/env";
-import { logger } from "@/lib/logger";
+import { logger, withLogContext } from "@/lib/logger";
 import { context, trace } from "@opentelemetry/api";
 import { ZodError } from "zod";
 import { error, ok } from "./response";
@@ -100,7 +100,7 @@ function enhanceResponse(
   errorCode?: string,
 ) {
   response.headers.set("x-response-time", durationMs.toString());
-  response.headers.set("x-request-id", requestId || "");
+  if (requestId) response.headers.set("x-request-id", requestId);
   if (traceId) response.headers.set("x-trace-id", traceId);
   if (spanId) response.headers.set("x-span-id", spanId);
   if (errorCode) {
@@ -332,31 +332,40 @@ export async function handleApi<T>(
   const slowMs = getSlowRequestThreshold();
   const startedAt = Date.now();
 
-  try {
-    const data = await fn();
-    return await handleApiSuccess(
-      data,
-      request,
+  return await withLogContext(
+    {
       requestId,
-      traceCtx.traceId,
-      traceCtx.spanId,
-      method,
-      url,
-      startedAt,
-      sampleRate,
-      slowMs,
-    );
-  } catch (e) {
-    return await handleApiError(
-      e,
-      request,
-      requestId,
-      traceCtx.traceId,
-      traceCtx.spanId,
-      method,
-      url,
-      startedAt,
-      slowMs,
-    );
-  }
+      traceId: traceCtx.traceId,
+      spanId: traceCtx.spanId,
+    },
+    async () => {
+      try {
+        const data = await fn();
+        return await handleApiSuccess(
+          data,
+          request,
+          requestId,
+          traceCtx.traceId,
+          traceCtx.spanId,
+          method,
+          url,
+          startedAt,
+          sampleRate,
+          slowMs,
+        );
+      } catch (e) {
+        return await handleApiError(
+          e,
+          request,
+          requestId,
+          traceCtx.traceId,
+          traceCtx.spanId,
+          method,
+          url,
+          startedAt,
+          slowMs,
+        );
+      }
+    },
+  );
 }

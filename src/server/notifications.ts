@@ -59,6 +59,21 @@ export async function notifyAlert(
 
 let smtpTransport: Transporter | null = null;
 
+const notificationRetryAttempts = 3;
+const notificationRetryBaseDelayMs = 500;
+const notificationRetryMaxDelayMs = 5_000;
+
+function getRetryDelayMs(attempt: number) {
+  const exp = notificationRetryBaseDelayMs * 2 ** Math.max(0, attempt - 1);
+  const capped = Math.min(exp, notificationRetryMaxDelayMs);
+  const jitter = 0.8 + Math.random() * 0.4;
+  return Math.round(capped * jitter);
+}
+
+async function sleep(ms: number) {
+  await new Promise<void>((resolve) => setTimeout(resolve, ms));
+}
+
 /**
  * Sends a notification via webhook to configured URL
  *
@@ -90,23 +105,49 @@ async function sendWebhookNotification(alert: {
     alert.title
   }**\n${alert.message}\nID: \`${alert.fingerprint}\``;
 
-  try {
-    const controller = new AbortController();
-    const timeoutMsRaw = Number(
-      env.INSIGHT_WEBHOOK_TIMEOUT_MS ||
-        env.INSIGHT_DEPENDENCY_TIMEOUT_MS ||
-        10_000,
-    );
-    const timeoutMs =
-      Number.isFinite(timeoutMsRaw) && timeoutMsRaw > 0 ? timeoutMsRaw : 10_000;
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content }),
-      signal: controller.signal,
-    }).finally(() => clearTimeout(timeoutId));
-    if (!res.ok) {
+  const timeoutMsRaw = Number(
+    env.INSIGHT_WEBHOOK_TIMEOUT_MS ||
+      env.INSIGHT_DEPENDENCY_TIMEOUT_MS ||
+      10_000,
+  );
+  const timeoutMs =
+    Number.isFinite(timeoutMsRaw) && timeoutMsRaw > 0 ? timeoutMsRaw : 10_000;
+
+  for (let attempt = 1; attempt <= notificationRetryAttempts; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content }),
+        signal: controller.signal,
+      }).finally(() => clearTimeout(timeoutId));
+
+      if (res.ok) {
+        logger.debug("Webhook notification sent successfully", {
+          fingerprint: alert.fingerprint,
+        });
+        return;
+      }
+
+      const retryable =
+        res.status === 408 ||
+        res.status === 429 ||
+        (res.status >= 500 && res.status <= 599);
+
+      if (retryable && attempt < notificationRetryAttempts) {
+        const nextDelayMs = getRetryDelayMs(attempt);
+        logger.warn("Webhook notification retrying", {
+          status: res.status,
+          fingerprint: alert.fingerprint,
+          attempt,
+          nextDelayMs,
+        });
+        await sleep(nextDelayMs);
+        continue;
+      }
+
       const body = await res.text().catch(() => "");
       logger.error("Webhook notification failed", {
         status: res.status,
@@ -114,15 +155,25 @@ async function sendWebhookNotification(alert: {
         response: body.slice(0, 500),
       });
       return;
+    } catch (error) {
+      if (attempt < notificationRetryAttempts) {
+        const nextDelayMs = getRetryDelayMs(attempt);
+        logger.warn("Webhook notification retrying after error", {
+          error,
+          fingerprint: alert.fingerprint,
+          attempt,
+          nextDelayMs,
+        });
+        await sleep(nextDelayMs);
+        continue;
+      }
+
+      logger.error("Failed to send webhook notification", {
+        error,
+        fingerprint: alert.fingerprint,
+      });
+      return;
     }
-    logger.debug("Webhook notification sent successfully", {
-      fingerprint: alert.fingerprint,
-    });
-  } catch (error) {
-    logger.error("Failed to send webhook notification", {
-      error,
-      fingerprint: alert.fingerprint,
-    });
   }
 }
 
@@ -189,13 +240,34 @@ async function sendEmailNotification(
     )}</code></div>
 </div>`;
 
-    await smtpTransport.sendMail({
-      from: fromEmail,
-      to: toEmail,
-      subject,
-      text,
-      html,
-    });
+    for (let attempt = 1; attempt <= notificationRetryAttempts; attempt++) {
+      try {
+        await smtpTransport.sendMail({
+          from: fromEmail,
+          to: toEmail,
+          subject,
+          text,
+          html,
+        });
+        logger.debug("Email notification sent successfully", {
+          fingerprint: alert.fingerprint,
+        });
+        return;
+      } catch (error) {
+        if (attempt < notificationRetryAttempts) {
+          const nextDelayMs = getRetryDelayMs(attempt);
+          logger.warn("Email notification retrying after error", {
+            error,
+            fingerprint: alert.fingerprint,
+            attempt,
+            nextDelayMs,
+          });
+          await sleep(nextDelayMs);
+          continue;
+        }
+        throw error;
+      }
+    }
   } catch (error) {
     logger.error("Failed to send email notification", {
       error,

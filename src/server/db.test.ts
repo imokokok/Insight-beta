@@ -38,6 +38,7 @@ vi.mock("@/lib/env", () => ({
 }));
 
 vi.mock("@/lib/logger", () => ({
+  withLogContext: vi.fn((_: unknown, fn: () => unknown) => fn()),
   logger: {
     debug: vi.fn(),
     info: vi.fn(),

@@ -41,12 +41,19 @@ const roleScopes: Record<AdminRole, ReadonlySet<AdminScope>> = {
     "oracle_sync_trigger",
     "alert_rules_write",
     "alerts_update",
-    "audit_read"
+    "audit_read",
   ]),
   ops: new Set(["oracle_config_write", "oracle_sync_trigger", "audit_read"]),
   alerts: new Set(["alert_rules_write", "alerts_update", "audit_read"]),
-  viewer: new Set(["audit_read"])
+  viewer: new Set(["audit_read"]),
 };
+
+function timingSafeEqualString(a: string, b: string) {
+  const aBuf = Buffer.from(a, "utf8");
+  const bBuf = Buffer.from(b, "utf8");
+  if (aBuf.length !== bBuf.length) return false;
+  return crypto.timingSafeEqual(aBuf, bBuf);
+}
 
 function getTokenFromRequest(request: Request) {
   const headerToken = request.headers.get("x-admin-token")?.trim() ?? "";
@@ -93,13 +100,14 @@ function tokenHasScope(role: AdminRole, scope: AdminScope | undefined) {
 
 export async function verifyAdmin(
   request: Request,
-  opts: { strict: boolean; scope?: AdminScope }
+  opts: { strict: boolean; scope?: AdminScope },
 ): Promise<{ ok: true; role: AdminRole; tokenId: string } | { ok: false }> {
   const token = getTokenFromRequest(request);
   if (!token) return { ok: false };
   const envToken = env.INSIGHT_ADMIN_TOKEN.trim();
   if (envToken) {
-    if (token === envToken) return { ok: true, role: "root", tokenId: "env" };
+    if (timingSafeEqualString(token, envToken))
+      return { ok: true, role: "root", tokenId: "env" };
   }
 
   const salt = getSalt();
@@ -108,7 +116,7 @@ export async function verifyAdmin(
   const store = await readStoreCached();
   if (!store || store.version !== 1) return { ok: false };
   const hashed = hashToken(token, salt);
-  const found = store.tokens.find((t) => t.hash === hashed);
+  const found = store.tokens.find((t) => timingSafeEqualString(t.hash, hashed));
   if (!found) return { ok: false };
   if (found.revokedAt) return { ok: false };
   if (!tokenHasScope(found.role, opts.scope)) return { ok: false };
@@ -141,10 +149,16 @@ export async function createAdminToken(input: {
     createdAt: now,
     createdByActor: input.createdByActor,
     revokedAt: null,
-    hash: hashToken(token, salt)
+    hash: hashToken(token, salt),
   };
-  const existing = (await readStoreCached()) ?? { version: 1 as const, tokens: [] };
-  const next: AdminTokenStore = { version: 1, tokens: [record, ...existing.tokens] };
+  const existing = (await readStoreCached()) ?? {
+    version: 1 as const,
+    tokens: [],
+  };
+  const next: AdminTokenStore = {
+    version: 1,
+    tokens: [record, ...existing.tokens],
+  };
   await writeJsonFile(STORE_KEY, next);
   cached = { loadedAtMs: Date.now(), store: next };
   const { hash, ...pub } = record;
@@ -152,14 +166,16 @@ export async function createAdminToken(input: {
   return { token, record: pub };
 }
 
-export async function revokeAdminToken(input: { id: string }): Promise<boolean> {
+export async function revokeAdminToken(input: {
+  id: string;
+}): Promise<boolean> {
   const existing = await readStoreCached();
   if (!existing || existing.version !== 1) return false;
   const now = new Date().toISOString();
   const idx = existing.tokens.findIndex((t) => t.id === input.id);
   if (idx === -1) return false;
   const nextTokens = existing.tokens.map((t) =>
-    t.id === input.id ? { ...t, revokedAt: t.revokedAt ?? now } : t
+    t.id === input.id ? { ...t, revokedAt: t.revokedAt ?? now } : t,
   );
   const next: AdminTokenStore = { version: 1, tokens: nextTokens };
   await writeJsonFile(STORE_KEY, next);

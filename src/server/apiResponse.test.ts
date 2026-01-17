@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextResponse } from "next/server";
 
 vi.mock("@/lib/logger", () => ({
+  withLogContext: vi.fn((_: unknown, fn: () => unknown) => fn()),
   logger: {
     debug: vi.fn(),
     info: vi.fn(),
@@ -79,6 +80,26 @@ describe("handleApi function", () => {
     expect(response.status).toBe(200);
     const body = await response.json();
     expect(body).toEqual({ ok: true, data });
+  });
+
+  it("binds requestId into log context", async () => {
+    const { withLogContext } = await import("@/lib/logger");
+    const requestId = "req-123";
+    const response = await handleApi(
+      new Request("http://localhost/api/test", {
+        headers: { "x-request-id": requestId },
+      }),
+      async () => {
+        return { message: "success" };
+      },
+    );
+    expect(response.status).toBe(200);
+    expect(response.headers.get("x-request-id")).toBe(requestId);
+    expect(vi.mocked(withLogContext)).toHaveBeenCalled();
+    const firstCall = vi.mocked(withLogContext).mock.calls[0]?.[0] as
+      | Record<string, unknown>
+      | undefined;
+    expect(firstCall?.requestId).toBe(requestId);
   });
 
   it("handles Response objects", async () => {

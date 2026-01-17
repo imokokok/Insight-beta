@@ -37,6 +37,64 @@ function getLogLevel(): LogLevel {
 
 const currentLevel = getLogLevel();
 
+type LogContext = Record<string, unknown>;
+
+type AsyncLocalStorageLike<T> = {
+  getStore(): T | undefined;
+  run<R>(store: T, callback: () => R): R;
+};
+
+let asyncLocalStorage: AsyncLocalStorageLike<LogContext> | null | undefined;
+
+function getAsyncLocalStorage(): AsyncLocalStorageLike<LogContext> | null {
+  if (asyncLocalStorage !== undefined) return asyncLocalStorage;
+  if (typeof window !== "undefined") {
+    asyncLocalStorage = null;
+    return null;
+  }
+
+  const runtime =
+    typeof process !== "undefined" && process.env
+      ? process.env.NEXT_RUNTIME
+      : "";
+  if (runtime && runtime !== "nodejs") {
+    asyncLocalStorage = null;
+    return null;
+  }
+
+  try {
+    const req = (0, eval)("require") as ((id: string) => unknown) | undefined;
+    if (!req) {
+      asyncLocalStorage = null;
+      return null;
+    }
+    const mod = req("node:async_hooks") as {
+      AsyncLocalStorage?: new () => AsyncLocalStorageLike<LogContext>;
+    };
+    if (!mod.AsyncLocalStorage) {
+      asyncLocalStorage = null;
+      return null;
+    }
+    asyncLocalStorage = new mod.AsyncLocalStorage();
+    return asyncLocalStorage;
+  } catch {
+    asyncLocalStorage = null;
+    return null;
+  }
+}
+
+function getLogContext(): LogContext | undefined {
+  const storage = getAsyncLocalStorage();
+  return storage?.getStore();
+}
+
+export function withLogContext<R>(context: LogContext, fn: () => R): R {
+  const storage = getAsyncLocalStorage();
+  if (!storage) return fn();
+  const parent = storage.getStore() || {};
+  return storage.run({ ...parent, ...context }, fn);
+}
+
 /**
  * Checks if a log level should be logged based on current configuration
  * @param level - Log level to check
@@ -59,10 +117,12 @@ function createLogEntry(
   metadata?: Record<string, unknown>,
 ) {
   const timestamp = new Date().toISOString();
+  const context = getLogContext();
   const logEntry = {
     level: level.toUpperCase(),
     timestamp,
     message,
+    ...(context || {}),
     ...(metadata || {}),
   };
   return logEntry;
