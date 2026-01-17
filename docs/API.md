@@ -12,6 +12,17 @@
 { "ok": false, "error": "error_code" }
 ```
 
+常见错误代码：
+
+- `forbidden`: 权限不足
+- `rate_limited`: 请求过于频繁
+- `invalid_request_body`: 请求参数无效
+- `invalid_address`: 地址格式错误
+- `missing_config`: 缺少必要配置
+- `rpc_unreachable`: RPC 节点不可达
+- `sync_failed`: 同步失败
+- `unknown_error`: 未知错误
+
 当设置了 `INSIGHT_ADMIN_TOKEN` 或 `INSIGHT_ADMIN_TOKEN_SALT` 时，管理/写接口需要鉴权：
 
 - `x-admin-token: <token>` 或 `Authorization: Bearer <token>`
@@ -95,6 +106,52 @@ Oracle 全局统计（TVS、活跃争议数、24h resolved、平均解决时间�
 ### GET `/api/oracle/leaderboard`
 
 排行榜数据（top asserters/top disputers）。
+
+## Alerts & Rules
+
+### GET `/api/oracle/alerts`
+
+查询告警列表。
+
+- `status`: `Open | Acknowledged | Resolved`
+- `severity`: `info | warning | critical`
+- `type`: 告警类型筛选
+- `q`: 关键字搜索
+- `limit`: 默认 30
+- `cursor`: 分页游标
+
+### GET `/api/oracle/alert-rules` (Admin)
+
+获取所有告警规则。
+
+### PUT `/api/oracle/alert-rules` (Admin)
+
+全量更新告警规则。
+
+请求体：
+
+```json
+{
+  "rules": [
+    {
+      "id": "rule_1",
+      "name": "High Dispute Rate",
+      "enabled": true,
+      "event": "high_dispute_rate",
+      "severity": "warning",
+      "params": { ... },
+      "channels": ["webhook"],
+      "recipient": "https://..."
+    }
+  ]
+}
+```
+
+### POST `/api/oracle/alert-rules` (Admin)
+
+测试告警规则（发送测试通知）。
+
+请求体：`{ "ruleId": "..." }`
 
 ## Admin KV（高级）
 

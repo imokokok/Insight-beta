@@ -241,6 +241,70 @@ API 路由位于 `src/app/api/` 目录，遵循 Next.js App Router 规范。
 
 API 响应使用双层缓存（内存 + 文件系统），缓存时间可以通过 `cachedJson` 函数参数调整。
 
+### 8.5 核心 API 函数
+
+后端提供了一系列核心函数来简化 API 开发：
+
+#### `handleApi()`
+
+主要的 API 处理包装器，提供统一的错误处理、日志记录和监控。
+
+```typescript
+import { handleApi } from "@/server/apiResponse";
+
+export async function GET(request: Request) {
+  return handleApi(request, async () => {
+    // 业务逻辑
+    return { data: "result" };
+  });
+}
+```
+
+#### `cachedJson()`
+
+缓存工具，支持内存和持久化存储。
+
+```typescript
+import { cachedJson } from "@/server/apiResponse";
+
+const data = await cachedJson("cache-key", 60000, async () => {
+  // 耗时计算或数据库查询
+  return await fetchData();
+});
+```
+
+#### `requireAdmin()`
+
+管理员鉴权中间件。
+
+```typescript
+import { requireAdmin } from "@/server/apiResponse";
+
+export async function POST(request: Request) {
+  const error = await requireAdmin(request, { scope: "write" });
+  if (error) return error;
+  // ...
+}
+```
+
+### 8.6 可观测性 (Observability)
+
+API 集成了 OpenTelemetry 进行分布式追踪。
+
+- **Tracing**: 响应头包含 `x-request-id`。
+- **Logging**: API 访问日志根据 `INSIGHT_API_LOG_SAMPLE_RATE` 进行采样。
+- **Metrics**: 记录请求耗时、状态码、路径等指标。
+
+### 8.7 混沌工程 (Chaos Engineering)
+
+系统支持混沌测试以验证弹性，可通过以下环境变量配置：
+
+- `CHAOS_ENABLED`: 是否启用 (默认 false)
+- `CHAOS_FAILURE_RATE`: 故障率 (默认 0.1)
+- `CHAOS_MAX_DELAY_MS`: 最大网络延迟 (默认 500ms)
+
+支持模拟网络延迟、数据库故障、服务错误等场景。
+
 ## 9. 智能合约开发
 
 ### 9.1 合约编译
@@ -339,18 +403,15 @@ npm run contracts:test
 ### 13.1 常见问题
 
 1. **数据库连接错误**
-
    - 检查环境变量中的数据库连接字符串
    - 确保 PostgreSQL 服务正在运行
    - 确保数据库用户有正确的权限
 
 2. **API 认证错误**
-
    - 确保提供了正确的管理员令牌
    - 检查环境变量中的令牌设置
 
 3. **Web3 连接问题**
-
    - 确保钱包已连接
    - 确保在正确的链上
    - 检查 RPC URL 配置

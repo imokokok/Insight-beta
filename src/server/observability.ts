@@ -65,7 +65,9 @@ export type AlertRuleEvent =
   | "high_dispute_rate"
   | "slow_api_request"
   | "high_error_rate"
-  | "database_slow_query";
+  | "database_slow_query"
+  | "price_deviation"
+  | "low_gas";
 
 export type AlertRule = {
   id: string;

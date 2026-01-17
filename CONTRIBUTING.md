@@ -43,6 +43,8 @@ This project and everyone participating in it is governed by our Code of Conduct
 
 ## Development Setup
 
+For a detailed guide on setting up your development environment and understanding the project structure, please refer to the [Development Guide](docs/DEVELOPMENT_GUIDE.md).
+
 1.  Run `npm install` to install dependencies.
 2.  Run `npm run dev` to start the local development server.
 3.  Ensure all tests pass using `npm test`.

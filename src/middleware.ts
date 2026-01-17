@@ -21,10 +21,15 @@ function applyBaseResponseHeaders(response: NextResponse, requestId: string) {
   response.headers.set("x-frame-options", "DENY");
   response.headers.set("referrer-policy", "strict-origin-when-cross-origin");
   response.headers.set("x-dns-prefetch-control", "off");
+  response.headers.set(
+    "strict-transport-security",
+    "max-age=63072000; includeSubDomains; preload",
+  );
   return response;
 }
 
 export function middleware(request: NextRequest) {
+  // Note: API rate limiting is handled per-route in src/server/apiResponse/rateLimit.ts
   const requestId =
     request.headers.get("x-request-id")?.trim() || createRequestId();
 

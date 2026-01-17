@@ -264,6 +264,7 @@ export async function getSyncState() {
       sync: mem.sync.meta,
       chain: mem.oracleConfig.chain,
       contractAddress: mem.oracleConfig.contractAddress || null,
+      owner: null as string | null,
     };
   }
   const [syncRes, configRes] = await Promise.all([
@@ -304,6 +305,7 @@ export async function getSyncState() {
     },
     chain: (configRow.chain as OracleChain) || "Local",
     contractAddress: configRow.contract_address || null,
+    owner: null as string | null,
   };
 }
 

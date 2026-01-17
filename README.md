@@ -30,6 +30,7 @@
 
 - Node.js >= 18
 - npm or yarn
+- PostgreSQL (or Supabase)
 - Docker (optional, for local DB)
 
 ### Installation
@@ -55,13 +56,34 @@
     cp .env.example .env.local
     ```
 
-4.  **Run the development server**
+    > **Note**: You must provide a valid `DATABASE_URL` for the application to function correctly.
+
+4.  **Provision the database**
+
+    You can use the included script to provision a Supabase project or set up your local PostgreSQL instance.
+
+    ```bash
+    npm run supabase:provision
+    ```
+
+5.  **Run the development server**
 
     ```bash
     npm run dev
     ```
 
     Open [http://localhost:3000](http://localhost:3000) with your browser.
+
+## 📚 Documentation
+
+For more detailed information, please refer to the [docs/](docs/) directory:
+
+- [Development Guide (CN)](docs/DEVELOPMENT_GUIDE.md): Comprehensive guide for developers.
+- [Architecture (CN)](docs/ARCHITECTURE.md): System design and data flow.
+- [Database Schema (CN)](docs/DATABASE.md): Tables, relationships, and indexes.
+- [Smart Contracts (CN)](docs/CONTRACTS.md): Contract logic and events.
+- [API Reference (CN)](docs/API.md): Detailed API endpoint documentation.
+- [Deployment Guide (CN)](docs/DEPLOYMENT.md): Instructions for production deployment.
 
 ## 🧪 Running Tests
 
