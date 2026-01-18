@@ -1,6 +1,9 @@
 import { hasDatabase, query } from "./db";
 import { ensureSchema } from "./schema";
-import type { OracleChain, OracleConfig as SharedOracleConfig } from "@/lib/oracleTypes";
+import type {
+  OracleChain,
+  OracleConfig as SharedOracleConfig,
+} from "@/lib/oracleTypes";
 import { getMemoryStore } from "@/server/memoryBackend";
 
 export type OracleConfig = SharedOracleConfig;
@@ -69,18 +72,33 @@ function validateAddress(value: unknown) {
 }
 
 function normalizeChain(value: unknown): OracleChain {
-  if (value === "Polygon" || value === "Arbitrum" || value === "Optimism" || value === "Local") return value;
+  if (
+    value === "Polygon" ||
+    value === "PolygonAmoy" ||
+    value === "Arbitrum" ||
+    value === "Optimism" ||
+    value === "Local"
+  )
+    return value;
   return "Local";
 }
 
 function validateChain(value: unknown): OracleChain {
   if (typeof value !== "string") throw new Error("invalid_request_body");
-  if (value === "Polygon" || value === "Arbitrum" || value === "Optimism" || value === "Local") return value;
+  if (
+    value === "Polygon" ||
+    value === "PolygonAmoy" ||
+    value === "Arbitrum" ||
+    value === "Optimism" ||
+    value === "Local"
+  )
+    return value;
   throw new Error("invalid_chain");
 }
 
 function normalizeOptionalNonNegativeInt(value: unknown) {
-  if (typeof value === "number" && Number.isInteger(value) && value >= 0) return value;
+  if (typeof value === "number" && Number.isInteger(value) && value >= 0)
+    return value;
   if (typeof value === "bigint") {
     if (value < 0n) return undefined;
     if (value > BigInt(Number.MAX_SAFE_INTEGER)) return undefined;
@@ -97,7 +115,8 @@ function normalizeOptionalNonNegativeInt(value: unknown) {
 function validateOptionalNonNegativeInt(value: unknown) {
   if (value === null) return undefined;
   const normalized = normalizeOptionalNonNegativeInt(value);
-  if (normalized === undefined && value !== undefined) throw new Error("invalid_request_body");
+  if (normalized === undefined && value !== undefined)
+    throw new Error("invalid_request_body");
   return normalized;
 }
 
@@ -108,7 +127,12 @@ function normalizeOptionalIntInRange(value: unknown, min: number, max: number) {
   return normalized;
 }
 
-function validateOptionalIntInRange(value: unknown, min: number, max: number, code: string) {
+function validateOptionalIntInRange(
+  value: unknown,
+  min: number,
+  max: number,
+  code: string,
+) {
   if (value === null) return undefined;
   if (value === undefined) return undefined;
   const normalized = normalizeOptionalNonNegativeInt(value);
@@ -130,13 +154,40 @@ function withField<T>(field: OracleConfigField, fn: () => T) {
 
 export function validateOracleConfigPatch(next: Partial<OracleConfig>) {
   const patch: Partial<OracleConfig> = {};
-  if (next.rpcUrl !== undefined) patch.rpcUrl = withField("rpcUrl", () => validateRpcUrl(next.rpcUrl));
-  if (next.contractAddress !== undefined) patch.contractAddress = withField("contractAddress", () => validateAddress(next.contractAddress));
-  if (next.chain !== undefined) patch.chain = withField("chain", () => validateChain(next.chain));
-  if (next.startBlock !== undefined) patch.startBlock = withField("startBlock", () => validateOptionalNonNegativeInt(next.startBlock));
-  if (next.maxBlockRange !== undefined) patch.maxBlockRange = withField("maxBlockRange", () => validateOptionalIntInRange(next.maxBlockRange, 100, 200_000, "invalid_max_block_range"));
-  if (next.votingPeriodHours !== undefined) patch.votingPeriodHours = withField("votingPeriodHours", () => validateOptionalIntInRange(next.votingPeriodHours, 1, 720, "invalid_voting_period_hours"));
-  if (next.confirmationBlocks !== undefined) patch.confirmationBlocks = withField("confirmationBlocks", () => validateOptionalNonNegativeInt(next.confirmationBlocks));
+  if (next.rpcUrl !== undefined)
+    patch.rpcUrl = withField("rpcUrl", () => validateRpcUrl(next.rpcUrl));
+  if (next.contractAddress !== undefined)
+    patch.contractAddress = withField("contractAddress", () =>
+      validateAddress(next.contractAddress),
+    );
+  if (next.chain !== undefined)
+    patch.chain = withField("chain", () => validateChain(next.chain));
+  if (next.startBlock !== undefined)
+    patch.startBlock = withField("startBlock", () =>
+      validateOptionalNonNegativeInt(next.startBlock),
+    );
+  if (next.maxBlockRange !== undefined)
+    patch.maxBlockRange = withField("maxBlockRange", () =>
+      validateOptionalIntInRange(
+        next.maxBlockRange,
+        100,
+        200_000,
+        "invalid_max_block_range",
+      ),
+    );
+  if (next.votingPeriodHours !== undefined)
+    patch.votingPeriodHours = withField("votingPeriodHours", () =>
+      validateOptionalIntInRange(
+        next.votingPeriodHours,
+        1,
+        720,
+        "invalid_voting_period_hours",
+      ),
+    );
+  if (next.confirmationBlocks !== undefined)
+    patch.confirmationBlocks = withField("confirmationBlocks", () =>
+      validateOptionalNonNegativeInt(next.confirmationBlocks),
+    );
   return patch;
 }
 
@@ -155,7 +206,7 @@ export async function readOracleConfig(): Promise<OracleConfig> {
       startBlock: 0,
       maxBlockRange: 10_000,
       votingPeriodHours: 72,
-      confirmationBlocks: 12
+      confirmationBlocks: 12,
     };
   }
   return {
@@ -163,9 +214,12 @@ export async function readOracleConfig(): Promise<OracleConfig> {
     contractAddress: row.contract_address || "",
     chain: (row.chain as OracleChain) || "Local",
     startBlock: normalizeOptionalNonNegativeInt(row.start_block) ?? 0,
-    maxBlockRange: normalizeOptionalIntInRange(row.max_block_range, 100, 200_000) ?? 10_000,
-    votingPeriodHours: normalizeOptionalIntInRange(row.voting_period_hours, 1, 720) ?? 72,
-    confirmationBlocks: normalizeOptionalNonNegativeInt(row.confirmation_blocks) ?? 12
+    maxBlockRange:
+      normalizeOptionalIntInRange(row.max_block_range, 100, 200_000) ?? 10_000,
+    votingPeriodHours:
+      normalizeOptionalIntInRange(row.voting_period_hours, 1, 720) ?? 72,
+    confirmationBlocks:
+      normalizeOptionalNonNegativeInt(row.confirmation_blocks) ?? 12,
   };
 }
 
@@ -174,14 +228,30 @@ export async function writeOracleConfig(next: Partial<OracleConfig>) {
   const prev = await readOracleConfig();
   const merged: OracleConfig = {
     rpcUrl: next.rpcUrl === undefined ? prev.rpcUrl : normalizeUrl(next.rpcUrl),
-    contractAddress: next.contractAddress === undefined ? prev.contractAddress : normalizeAddress(next.contractAddress),
+    contractAddress:
+      next.contractAddress === undefined
+        ? prev.contractAddress
+        : normalizeAddress(next.contractAddress),
     chain: next.chain === undefined ? prev.chain : normalizeChain(next.chain),
-    startBlock: next.startBlock === undefined ? prev.startBlock : (normalizeOptionalNonNegativeInt(next.startBlock) ?? 0),
-    maxBlockRange: next.maxBlockRange === undefined ? prev.maxBlockRange : (normalizeOptionalIntInRange(next.maxBlockRange, 100, 200_000) ?? 10_000),
-    votingPeriodHours: next.votingPeriodHours === undefined ? prev.votingPeriodHours : (normalizeOptionalIntInRange(next.votingPeriodHours, 1, 720) ?? 72),
-    confirmationBlocks: next.confirmationBlocks === undefined ? prev.confirmationBlocks : (normalizeOptionalNonNegativeInt(next.confirmationBlocks) ?? 12)
+    startBlock:
+      next.startBlock === undefined
+        ? prev.startBlock
+        : (normalizeOptionalNonNegativeInt(next.startBlock) ?? 0),
+    maxBlockRange:
+      next.maxBlockRange === undefined
+        ? prev.maxBlockRange
+        : (normalizeOptionalIntInRange(next.maxBlockRange, 100, 200_000) ??
+          10_000),
+    votingPeriodHours:
+      next.votingPeriodHours === undefined
+        ? prev.votingPeriodHours
+        : (normalizeOptionalIntInRange(next.votingPeriodHours, 1, 720) ?? 72),
+    confirmationBlocks:
+      next.confirmationBlocks === undefined
+        ? prev.confirmationBlocks
+        : (normalizeOptionalNonNegativeInt(next.confirmationBlocks) ?? 12),
   };
-  
+
   if (!hasDatabase()) {
     getMemoryStore().oracleConfig = merged;
     return merged;
@@ -206,9 +276,9 @@ export async function writeOracleConfig(next: Partial<OracleConfig>) {
       String(merged.startBlock ?? 0),
       merged.maxBlockRange ?? 10_000,
       merged.votingPeriodHours ?? 72,
-      merged.confirmationBlocks ?? 12
-    ]
+      merged.confirmationBlocks ?? 12,
+    ],
   );
-  
+
   return merged;
 }

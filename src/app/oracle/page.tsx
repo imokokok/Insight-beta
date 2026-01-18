@@ -867,6 +867,9 @@ export default function OraclePage() {
                       >
                         <option value="Local">{t("chain.local")}</option>
                         <option value="Polygon">{t("chain.polygon")}</option>
+                        <option value="PolygonAmoy">
+                          {t("chain.polygon")} (Amoy)
+                        </option>
                         <option value="Arbitrum">{t("chain.arbitrum")}</option>
                         <option value="Optimism">{t("chain.optimism")}</option>
                       </select>
@@ -1324,6 +1327,9 @@ export default function OraclePage() {
                     <option value="All">{t("common.all")}</option>
                     <option value="Local">{t("chain.local")}</option>
                     <option value="Polygon">{t("chain.polygon")}</option>
+                    <option value="PolygonAmoy">
+                      {t("chain.polygon")} (Amoy)
+                    </option>
                     <option value="Arbitrum">{t("chain.arbitrum")}</option>
                     <option value="Optimism">{t("chain.optimism")}</option>
                   </select>

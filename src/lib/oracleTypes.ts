@@ -1,4 +1,9 @@
-export type OracleChain = "Polygon" | "Arbitrum" | "Optimism" | "Local";
+export type OracleChain =
+  | "Polygon"
+  | "PolygonAmoy"
+  | "Arbitrum"
+  | "Optimism"
+  | "Local";
 
 export type OracleStatus = "Pending" | "Disputed" | "Resolved";
 

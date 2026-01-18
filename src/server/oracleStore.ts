@@ -123,7 +123,9 @@ export async function listAssertions(params: ListParams) {
     }
     if (
       params.chain &&
-      ["Polygon", "Arbitrum", "Optimism", "Local"].includes(params.chain)
+      ["Polygon", "PolygonAmoy", "Arbitrum", "Optimism", "Local"].includes(
+        params.chain,
+      )
     ) {
       items = items.filter((a) => a.chain === params.chain);
     }
@@ -167,7 +169,9 @@ export async function listAssertions(params: ListParams) {
     }
     if (
       params.chain &&
-      ["Polygon", "Arbitrum", "Optimism", "Local"].includes(params.chain)
+      ["Polygon", "PolygonAmoy", "Arbitrum", "Optimism", "Local"].includes(
+        params.chain,
+      )
     ) {
       items = items.filter((a) => a.chain === params.chain);
     }
@@ -210,7 +214,9 @@ export async function listAssertions(params: ListParams) {
 
   if (
     params.chain &&
-    ["Polygon", "Arbitrum", "Optimism", "Local"].includes(params.chain)
+    ["Polygon", "PolygonAmoy", "Arbitrum", "Optimism", "Local"].includes(
+      params.chain,
+    )
   ) {
     conditions.push(`chain = $${idx++}`);
     values.push(params.chain);
@@ -331,7 +337,9 @@ export async function listDisputes(params: ListParams) {
     }
     if (
       params.chain &&
-      ["Polygon", "Arbitrum", "Optimism", "Local"].includes(params.chain)
+      ["Polygon", "PolygonAmoy", "Arbitrum", "Optimism", "Local"].includes(
+        params.chain,
+      )
     ) {
       items = items.filter((d) => d.chain === params.chain);
     }
@@ -372,7 +380,9 @@ export async function listDisputes(params: ListParams) {
     }
     if (
       params.chain &&
-      ["Polygon", "Arbitrum", "Optimism", "Local"].includes(params.chain)
+      ["Polygon", "PolygonAmoy", "Arbitrum", "Optimism", "Local"].includes(
+        params.chain,
+      )
     ) {
       items = items.filter((d) => d.chain === params.chain);
     }
@@ -425,7 +435,9 @@ export async function listDisputes(params: ListParams) {
 
   if (
     params.chain &&
-    ["Polygon", "Arbitrum", "Optimism", "Local"].includes(params.chain)
+    ["Polygon", "PolygonAmoy", "Arbitrum", "Optimism", "Local"].includes(
+      params.chain,
+    )
   ) {
     conditions.push(`chain = $${idx++}`);
     values.push(params.chain);

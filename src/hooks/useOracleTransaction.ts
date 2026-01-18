@@ -50,6 +50,7 @@ type TransactionOptions<TFunctionName extends OracleWriteFunctionName> = {
 
 function oracleChainToChainId(chain: OracleChain): number {
   if (chain === "Polygon") return 137;
+  if (chain === "PolygonAmoy") return 80002;
   if (chain === "Arbitrum") return 42161;
   if (chain === "Optimism") return 10;
   return 31337;

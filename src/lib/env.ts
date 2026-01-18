@@ -1,6 +1,12 @@
 import { z } from "zod";
 
 export const env = {
+  get DATABASE_URL() {
+    return (process.env.DATABASE_URL ?? "").trim();
+  },
+  get SUPABASE_DB_URL() {
+    return (process.env.SUPABASE_DB_URL ?? "").trim();
+  },
   get SUPABASE_URL() {
     return (process.env.SUPABASE_URL ?? "").trim();
   },
@@ -93,6 +99,38 @@ export function isEnvSet(key: keyof typeof env): boolean {
 }
 
 const envSchema = z.object({
+  DATABASE_URL: z
+    .string()
+    .optional()
+    .transform((v) => (v ?? "").trim())
+    .refine(
+      (value) => {
+        if (!value) return true;
+        try {
+          const url = new URL(value);
+          return ["postgres:", "postgresql:"].includes(url.protocol);
+        } catch {
+          return false;
+        }
+      },
+      { message: "invalid_database_url" },
+    ),
+  SUPABASE_DB_URL: z
+    .string()
+    .optional()
+    .transform((v) => (v ?? "").trim())
+    .refine(
+      (value) => {
+        if (!value) return true;
+        try {
+          const url = new URL(value);
+          return ["postgres:", "postgresql:"].includes(url.protocol);
+        } catch {
+          return false;
+        }
+      },
+      { message: "invalid_supabase_db_url" },
+    ),
   SUPABASE_URL: z.string().url().optional(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
   INSIGHT_ADMIN_TOKEN: z.string().min(1).optional(),
@@ -125,7 +163,7 @@ const envSchema = z.object({
     .regex(/^0x[a-fA-F0-9]{40}$/, "invalid_address")
     .optional(),
   INSIGHT_CHAIN: z
-    .enum(["Polygon", "Arbitrum", "Optimism", "Local"])
+    .enum(["Polygon", "PolygonAmoy", "Arbitrum", "Optimism", "Local"])
     .optional(),
   INSIGHT_SLOW_REQUEST_MS: z.coerce.number().int().min(0).optional(),
   INSIGHT_MEMORY_MAX_VOTE_KEYS: z.coerce.number().int().min(1).optional(),
@@ -162,6 +200,13 @@ const envSchema = z.object({
   INSIGHT_SMTP_PASS: z.string().optional(),
   INSIGHT_FROM_EMAIL: z.string().email().optional(),
   INSIGHT_DEFAULT_EMAIL: z.string().email().optional(),
+  NEXT_PUBLIC_INSIGHT_ORACLE_ADDRESS: z
+    .string()
+    .optional()
+    .transform((v) => (v ?? "").trim())
+    .refine((value) => !value || /^0x[a-fA-F0-9]{40}$/.test(value), {
+      message: "invalid_address",
+    }),
 });
 
 // Auto-validate on import

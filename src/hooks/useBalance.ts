@@ -1,12 +1,23 @@
 import useSWR from "swr";
 import { useWallet } from "@/contexts/WalletContext";
 import { formatEther } from "viem";
-import { arbitrum, hardhat, mainnet, optimism, polygon } from "viem/chains";
+import {
+  arbitrum,
+  hardhat,
+  mainnet,
+  optimism,
+  polygon,
+  polygonAmoy,
+} from "viem/chains";
 
 export function useBalance() {
   const { address, chainId } = useWallet();
 
-  const { data: balance, error, isLoading } = useSWR(
+  const {
+    data: balance,
+    error,
+    isLoading,
+  } = useSWR(
     address ? `balance-${address}-${chainId ?? "unknown"}` : null,
     async () => {
       if (!address) return null;
@@ -21,22 +32,29 @@ export function useBalance() {
     },
     {
       refreshInterval: 10000,
-    }
+    },
   );
 
   const symbol =
-    chainId === polygon.id ? polygon.nativeCurrency.symbol :
-    chainId === arbitrum.id ? arbitrum.nativeCurrency.symbol :
-    chainId === optimism.id ? optimism.nativeCurrency.symbol :
-    chainId === hardhat.id ? hardhat.nativeCurrency.symbol :
-    chainId === mainnet.id ? mainnet.nativeCurrency.symbol :
-    "ETH";
+    chainId === polygon.id
+      ? polygon.nativeCurrency.symbol
+      : chainId === polygonAmoy.id
+        ? polygonAmoy.nativeCurrency.symbol
+        : chainId === arbitrum.id
+          ? arbitrum.nativeCurrency.symbol
+          : chainId === optimism.id
+            ? optimism.nativeCurrency.symbol
+            : chainId === hardhat.id
+              ? hardhat.nativeCurrency.symbol
+              : chainId === mainnet.id
+                ? mainnet.nativeCurrency.symbol
+                : "ETH";
 
-  return { 
-    balance, 
+  return {
+    balance,
     formattedBalance: balance ? parseFloat(balance).toFixed(4) : "0.0000",
     symbol,
-    error, 
-    isLoading 
+    error,
+    isLoading,
   };
 }

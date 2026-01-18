@@ -94,7 +94,10 @@ export function getExplorerUrl(
   const c = chain?.toLowerCase() || "";
 
   let baseUrl = "";
-  if (c.includes("polygon") || c === "137") baseUrl = "https://polygonscan.com";
+  if (c.includes("amoy") || c === "80002")
+    baseUrl = "https://amoy.polygonscan.com";
+  else if (c.includes("polygon") || c === "137")
+    baseUrl = "https://polygonscan.com";
   else if (c.includes("arbitrum") || c === "42161")
     baseUrl = "https://arbiscan.io";
   else if (c.includes("optimism") || c === "10")

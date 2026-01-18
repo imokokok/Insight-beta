@@ -11,7 +11,7 @@ import { isAddress } from "viem";
 const assertionParamsSchema = z.object({
   status: z.enum(["Pending", "Disputed", "Resolved"]).optional().nullable(),
   chain: z
-    .enum(["Polygon", "Arbitrum", "Optimism", "Local"])
+    .enum(["Polygon", "PolygonAmoy", "Arbitrum", "Optimism", "Local"])
     .optional()
     .nullable(),
   q: z.string().optional().nullable(),

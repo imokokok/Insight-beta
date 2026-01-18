@@ -1,8 +1,28 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, type ReactNode, useCallback, useMemo } from "react";
-import { createWalletClient, custom, type WalletClient, type Address } from "viem";
-import { arbitrum, hardhat, mainnet, optimism, polygon } from "viem/chains";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+  useCallback,
+  useMemo,
+} from "react";
+import {
+  createWalletClient,
+  custom,
+  type WalletClient,
+  type Address,
+} from "viem";
+import {
+  arbitrum,
+  hardhat,
+  mainnet,
+  optimism,
+  polygon,
+  polygonAmoy,
+} from "viem/chains";
 import { logger } from "@/lib/logger";
 
 interface WalletContextType {
@@ -19,12 +39,19 @@ const WalletContext = createContext<WalletContextType | null>(null);
 
 function getAddChainParams(targetChainId: number) {
   const chain =
-    targetChainId === polygon.id ? polygon :
-    targetChainId === arbitrum.id ? arbitrum :
-    targetChainId === optimism.id ? optimism :
-    targetChainId === hardhat.id ? hardhat :
-    targetChainId === mainnet.id ? mainnet :
-    undefined;
+    targetChainId === polygon.id
+      ? polygon
+      : targetChainId === polygonAmoy.id
+        ? polygonAmoy
+        : targetChainId === arbitrum.id
+          ? arbitrum
+          : targetChainId === optimism.id
+            ? optimism
+            : targetChainId === hardhat.id
+              ? hardhat
+              : targetChainId === mainnet.id
+                ? mainnet
+                : undefined;
 
   if (!chain) return null;
 
@@ -37,7 +64,7 @@ function getAddChainParams(targetChainId: number) {
     chainName: chain.name,
     nativeCurrency: chain.nativeCurrency,
     rpcUrls,
-    blockExplorerUrls
+    blockExplorerUrls,
   };
 }
 
@@ -60,7 +87,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     const provider = window.ethereum as {
       request: (args: { method: string; params?: unknown }) => Promise<unknown>;
       on?: (event: string, handler: (payload: unknown) => void) => void;
-      removeListener?: (event: string, handler: (payload: unknown) => void) => void;
+      removeListener?: (
+        event: string,
+        handler: (payload: unknown) => void,
+      ) => void;
     };
 
     const handleAccountsChanged = (accounts: unknown) => {
@@ -74,7 +104,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       setChainId(parseInt(id, 16));
     };
 
-    provider.request({ method: "eth_accounts" })
+    provider
+      .request({ method: "eth_accounts" })
       .then((accounts) => {
         handleAccountsChanged(accounts);
         return provider.request({ method: "eth_chainId" });
@@ -98,12 +129,14 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
     setIsConnecting(true);
     try {
-      const accounts = await window.ethereum.request({
+      const accounts = (await window.ethereum.request({
         method: "eth_requestAccounts",
-      }) as string[];
+      })) as string[];
       if (accounts && Array.isArray(accounts) && accounts.length > 0) {
         setAddress(accounts[0] as Address);
-        const id = await window.ethereum.request({ method: "eth_chainId" }) as string;
+        const id = (await window.ethereum.request({
+          method: "eth_chainId",
+        })) as string;
         setChainId(parseInt(id, 16));
       }
     } finally {
@@ -145,36 +178,60 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         params: [{ chainId: `0x${targetChainId.toString(16)}` }],
       });
     }
-    const id = await window.ethereum.request({ method: "eth_chainId" }) as string;
+    const id = (await window.ethereum.request({
+      method: "eth_chainId",
+    })) as string;
     setChainId(parseInt(id, 16));
   }, []);
 
-  const getWalletClient = useCallback(async (chainIdOverride?: number): Promise<WalletClient | null> => {
-    if (!address || typeof window === "undefined" || !window.ethereum) return null;
-    const effectiveChainId = chainIdOverride ?? chainId;
-    const chain =
-      effectiveChainId === polygon.id ? polygon :
-      effectiveChainId === arbitrum.id ? arbitrum :
-      effectiveChainId === optimism.id ? optimism :
-      effectiveChainId === hardhat.id ? hardhat :
-      effectiveChainId === mainnet.id ? mainnet :
-      undefined;
-    return createWalletClient({
-      account: address,
-      chain,
-      transport: custom(window.ethereum)
-    });
-  }, [address, chainId]);
+  const getWalletClient = useCallback(
+    async (chainIdOverride?: number): Promise<WalletClient | null> => {
+      if (!address || typeof window === "undefined" || !window.ethereum)
+        return null;
+      const effectiveChainId = chainIdOverride ?? chainId;
+      const chain =
+        effectiveChainId === polygon.id
+          ? polygon
+          : effectiveChainId === polygonAmoy.id
+            ? polygonAmoy
+            : effectiveChainId === arbitrum.id
+              ? arbitrum
+              : effectiveChainId === optimism.id
+                ? optimism
+                : effectiveChainId === hardhat.id
+                  ? hardhat
+                  : effectiveChainId === mainnet.id
+                    ? mainnet
+                    : undefined;
+      return createWalletClient({
+        account: address,
+        chain,
+        transport: custom(window.ethereum),
+      });
+    },
+    [address, chainId],
+  );
 
-  const contextValue = useMemo(() => ({
-    address,
-    chainId,
-    isConnecting,
-    connect,
-    disconnect,
-    switchChain,
-    getWalletClient
-  }), [address, chainId, isConnecting, connect, disconnect, switchChain, getWalletClient]);
+  const contextValue = useMemo(
+    () => ({
+      address,
+      chainId,
+      isConnecting,
+      connect,
+      disconnect,
+      switchChain,
+      getWalletClient,
+    }),
+    [
+      address,
+      chainId,
+      isConnecting,
+      connect,
+      disconnect,
+      switchChain,
+      getWalletClient,
+    ],
+  );
 
   return (
     <WalletContext.Provider value={contextValue}>

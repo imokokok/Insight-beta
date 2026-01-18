@@ -1,5 +1,23 @@
 const BASE_URL = process.env.BASE_URL || "http://localhost:3000";
 
+function unwrapApiJson(json) {
+  if (
+    json &&
+    typeof json === "object" &&
+    json.ok === true &&
+    Object.prototype.hasOwnProperty.call(json, "data")
+  ) {
+    return json.data;
+  }
+  if (json && typeof json === "object" && json.ok === false) {
+    const err = json.error;
+    const code =
+      err && typeof err === "object" && err.code ? String(err.code) : "error";
+    throw new Error(`api_error:${code}`);
+  }
+  return json;
+}
+
 function requireHeader(res, key, opts = {}) {
   const value = res.headers.get(key);
   const present = value !== null && String(value).trim().length > 0;
@@ -66,7 +84,7 @@ async function checkProbe(probe) {
   try {
     const res = await fetch(`${BASE_URL}/api/health?probe=${probe}`);
     if (!res.ok) throw new Error(`Status ${res.status}`);
-    const data = await res.json();
+    const data = unwrapApiJson(await res.json());
     console.log(`✅ ${probe} probe passed:`, data);
     const isHttps = String(BASE_URL).toLowerCase().startsWith("https://");
     if (!checkSecurityHeaders(res, { isHttps, expectNoStore: true }))
@@ -83,7 +101,7 @@ async function checkHealth() {
   try {
     const res = await fetch(`${BASE_URL}/api/health`);
     if (!res.ok) throw new Error(`Status ${res.status}`);
-    const data = await res.json();
+    const data = unwrapApiJson(await res.json());
     console.log("✅ Health check passed:", data);
 
     const isHttps = String(BASE_URL).toLowerCase().startsWith("https://");
@@ -95,19 +113,30 @@ async function checkHealth() {
 }
 
 async function checkStats() {
-  console.log(`Checking oracle stats at ${BASE_URL}/api/oracle/stats ...`);
+  console.log(`Checking oracle status at ${BASE_URL}/api/oracle/status ...`);
   try {
-    const res = await fetch(`${BASE_URL}/api/oracle/stats`);
+    const res = await fetch(`${BASE_URL}/api/oracle/status`);
     if (!res.ok) throw new Error(`Status ${res.status}`);
-    const data = await res.json();
-    console.log("✅ Oracle Stats:", {
-      chainId: data.chainId,
-      lastProcessedBlock: data.lastProcessedBlock,
-      syncStatus: data.isSyncing ? "Syncing" : "Synced",
+    const data = unwrapApiJson(await res.json());
+    const state = (data && data.state) || {};
+    console.log("✅ Oracle Status:", {
+      chain: state.chain,
+      contractAddress: state.contractAddress,
+      lastProcessedBlock: state.lastProcessedBlock,
+      latestBlock: state.latestBlock,
+      lagBlocks: state.lagBlocks,
+      syncing: state.syncing,
+      consecutiveFailures: state.consecutiveFailures,
+      lastError: state.sync?.lastError ?? null,
     });
     const isHttps = String(BASE_URL).toLowerCase().startsWith("https://");
     if (!checkSecurityHeaders(res, { isHttps, expectNoStore: true }))
       return null;
+    if (!state.contractAddress) {
+      console.warn(
+        "⚠️  Warning: Oracle contractAddress not configured (DB config empty).",
+      );
+    }
     return data;
   } catch (e) {
     console.error("❌ Stats check failed:", e.message);
@@ -130,12 +159,12 @@ async function main() {
   console.log("\n-------------------\n");
 
   // 2. Stats Check
-  const stats = await checkStats();
-  if (!stats) process.exit(1);
-
-  if (stats.lastProcessedBlock === 0) {
+  const status = await checkStats();
+  if (!status) process.exit(1);
+  const lastProcessed = status?.state?.lastProcessedBlock;
+  if (lastProcessed === "0" || lastProcessed === 0) {
     console.warn(
-      "⚠️  Warning: Last processed block is 0. Oracle might not be syncing yet.",
+      "⚠️  Warning: lastProcessedBlock is 0. Oracle might not be syncing yet.",
     );
   }
 
