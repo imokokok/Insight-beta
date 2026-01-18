@@ -1,1 +1,7 @@
+staged_files="$(git diff --cached --name-only)"
+if printf "%s\n" "$staged_files" | grep -E -q '(^|/)\.env\.local$|(^|/)\.env\.production$|(^|/)\.env\..*\.local$'; then
+  echo "Refusing to commit local env files (.env.local/.env.production/.env.*.local). Use .env.example."
+  exit 1
+fi
+
 npx lint-staged

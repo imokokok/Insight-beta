@@ -179,33 +179,15 @@ export function getErrorDetails(error: unknown) {
 }
 
 function getServerBaseUrl(): string {
-  const candidates = [
-    (process.env.INSIGHT_BASE_URL ?? "").trim(),
-    (process.env.NEXT_PUBLIC_SITE_URL ?? "").trim(),
-    (process.env.SITE_URL ?? "").trim(),
-    (process.env.VERCEL_URL ?? "").trim(),
-  ].filter(Boolean);
-
-  const raw = candidates[0] ?? "";
-  if (!raw) {
-    if (process.env.NODE_ENV !== "production") return "http://localhost:3000";
-    throw new ApiClientError("missing_base_url");
+  if (
+    typeof window !== "undefined" &&
+    typeof window.location?.origin === "string" &&
+    window.location.origin !== "null"
+  ) {
+    return window.location.origin;
   }
-
-  const normalized = (() => {
-    try {
-      return new URL(raw);
-    } catch {
-      try {
-        return new URL(`https://${raw}`);
-      } catch {
-        return null;
-      }
-    }
-  })();
-
-  if (!normalized) throw new ApiClientError("invalid_base_url");
-  return normalized.origin;
+  if (process.env.NODE_ENV !== "production") return "http://localhost:3000";
+  throw new ApiClientError("missing_base_url");
 }
 
 export async function fetchApiData<T>(
@@ -216,16 +198,7 @@ export async function fetchApiData<T>(
   try {
     const normalizedInput = (() => {
       if (typeof input === "string" && input.startsWith("/")) {
-        const base = (() => {
-          if (
-            typeof window !== "undefined" &&
-            typeof window.location?.origin === "string" &&
-            window.location.origin !== "null"
-          ) {
-            return window.location.origin;
-          }
-          return getServerBaseUrl();
-        })();
+        const base = getServerBaseUrl();
         return new URL(input, base);
       }
       return input;

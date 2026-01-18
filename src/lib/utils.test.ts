@@ -52,6 +52,9 @@ describe("Utils", () => {
     const res = await fetchApiData<{ value: number }>("/api/test");
     expect(res).toEqual({ value: 1 });
     expect(fetchSpy).toHaveBeenCalled();
+    const firstArg = fetchSpy.mock.calls[0]?.[0];
+    expect(firstArg).toBeInstanceOf(URL);
+    expect(String(firstArg)).toBe("http://localhost:3000/api/test");
 
     fetchSpy.mockRestore();
   });
@@ -64,45 +67,10 @@ describe("Utils", () => {
       (g as { window?: unknown }).window = undefined;
 
       vi.stubEnv("NODE_ENV", "production");
-      vi.stubEnv("INSIGHT_BASE_URL", "");
-      vi.stubEnv("NEXT_PUBLIC_SITE_URL", "");
-      vi.stubEnv("SITE_URL", "");
-      vi.stubEnv("VERCEL_URL", "");
 
       await expect(fetchApiData("/api/test")).rejects.toMatchObject({
         code: "missing_base_url",
       });
-    } finally {
-      if (hadWindow) (g as { window?: unknown }).window = originalWindow;
-    }
-  });
-
-  it("fetchApiData uses INSIGHT_BASE_URL for relative URLs in production", async () => {
-    const g = globalThis as unknown as Record<string, unknown>;
-    const hadWindow = Object.prototype.hasOwnProperty.call(g, "window");
-    const originalWindow = (g as { window?: unknown }).window;
-    try {
-      (g as { window?: unknown }).window = undefined;
-
-      vi.stubEnv("NODE_ENV", "production");
-      vi.stubEnv("INSIGHT_BASE_URL", "https://example.com");
-
-      const fetchSpy = vi
-        .spyOn(globalThis as unknown as { fetch: typeof fetch }, "fetch")
-        .mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          json: async () => ({ ok: true, data: { value: 1 } }),
-        } as unknown as Response);
-
-      const res = await fetchApiData<{ value: number }>("/api/test");
-      expect(res).toEqual({ value: 1 });
-      expect(fetchSpy).toHaveBeenCalled();
-      const firstArg = fetchSpy.mock.calls[0]?.[0];
-      expect(firstArg).toBeInstanceOf(URL);
-      expect(String(firstArg)).toBe("https://example.com/api/test");
-
-      fetchSpy.mockRestore();
     } finally {
       if (hadWindow) (g as { window?: unknown }).window = originalWindow;
     }
