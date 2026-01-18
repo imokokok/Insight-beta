@@ -178,6 +178,36 @@ export function getErrorDetails(error: unknown) {
   return undefined;
 }
 
+function getServerBaseUrl(): string {
+  const candidates = [
+    (process.env.INSIGHT_BASE_URL ?? "").trim(),
+    (process.env.NEXT_PUBLIC_SITE_URL ?? "").trim(),
+    (process.env.SITE_URL ?? "").trim(),
+    (process.env.VERCEL_URL ?? "").trim(),
+  ].filter(Boolean);
+
+  const raw = candidates[0] ?? "";
+  if (!raw) {
+    if (process.env.NODE_ENV !== "production") return "http://localhost:3000";
+    throw new ApiClientError("missing_base_url");
+  }
+
+  const normalized = (() => {
+    try {
+      return new URL(raw);
+    } catch {
+      try {
+        return new URL(`https://${raw}`);
+      } catch {
+        return null;
+      }
+    }
+  })();
+
+  if (!normalized) throw new ApiClientError("invalid_base_url");
+  return normalized.origin;
+}
+
 export async function fetchApiData<T>(
   input: RequestInfo | URL,
   init?: RequestInit,
@@ -186,12 +216,16 @@ export async function fetchApiData<T>(
   try {
     const normalizedInput = (() => {
       if (typeof input === "string" && input.startsWith("/")) {
-        const base =
-          typeof window !== "undefined" &&
-          typeof window.location?.origin === "string" &&
-          window.location.origin !== "null"
-            ? window.location.origin
-            : "http://localhost:3000"; // 添加默认端口号
+        const base = (() => {
+          if (
+            typeof window !== "undefined" &&
+            typeof window.location?.origin === "string" &&
+            window.location.origin !== "null"
+          ) {
+            return window.location.origin;
+          }
+          return getServerBaseUrl();
+        })();
         return new URL(input, base);
       }
       return input;

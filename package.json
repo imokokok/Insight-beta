@@ -20,6 +20,7 @@
     "contracts:transfer-owner:polygon": "HARDHAT_DISABLE_TELEMETRY=1 hardhat run scripts/transfer-ownership.cjs --network polygon",
     "contracts:transfer-owner:arbitrum": "HARDHAT_DISABLE_TELEMETRY=1 hardhat run scripts/transfer-ownership.cjs --network arbitrum",
     "test": "vitest",
+    "test:ci": "vitest run",
     "bench": "vitest run src/server/benchmark/",
     "prepare": "husky"
   },

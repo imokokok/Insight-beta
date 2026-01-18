@@ -27,11 +27,6 @@ describe("middleware", () => {
     const req = makeRequest("/oracle");
     const res = middleware(req);
     expect(res.headers.get("x-request-id")).toBeTruthy();
-    expect(res.headers.get("x-content-type-options")).toBe("nosniff");
-    expect(res.headers.get("x-frame-options")).toBe("DENY");
-    expect(res.headers.get("referrer-policy")).toBe(
-      "strict-origin-when-cross-origin",
-    );
   });
 
   it("reuses incoming x-request-id (trimmed)", () => {

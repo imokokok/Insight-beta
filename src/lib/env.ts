@@ -200,6 +200,8 @@ const envSchema = z.object({
   INSIGHT_SMTP_PASS: z.string().optional(),
   INSIGHT_FROM_EMAIL: z.string().email().optional(),
   INSIGHT_DEFAULT_EMAIL: z.string().email().optional(),
+  INSIGHT_BASE_URL: z.string().url().optional(),
+  INSIGHT_CSP_MODE: z.enum(["relaxed", "strict"]).optional(),
   NEXT_PUBLIC_INSIGHT_ORACLE_ADDRESS: z
     .string()
     .optional()

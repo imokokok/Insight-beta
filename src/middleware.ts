@@ -15,21 +15,6 @@ function createRequestId() {
   return `${Date.now().toString(16)}${Math.random().toString(16).slice(2)}`;
 }
 
-function applyBaseResponseHeaders(response: NextResponse, requestId: string) {
-  response.headers.set("x-request-id", requestId);
-  response.headers.set("x-content-type-options", "nosniff");
-  response.headers.set("x-frame-options", "DENY");
-  response.headers.set("referrer-policy", "strict-origin-when-cross-origin");
-  response.headers.set("x-dns-prefetch-control", "off");
-  if (process.env.NODE_ENV === "production") {
-    response.headers.set(
-      "strict-transport-security",
-      "max-age=63072000; includeSubDomains; preload",
-    );
-  }
-  return response;
-}
-
 export function middleware(request: NextRequest) {
   // Note: API rate limiting is handled per-route in src/server/apiResponse/rateLimit.ts
   const requestId =
@@ -41,7 +26,8 @@ export function middleware(request: NextRequest) {
   const response = NextResponse.next({
     request: { headers: requestHeaders },
   });
-  return applyBaseResponseHeaders(response, requestId);
+  response.headers.set("x-request-id", requestId);
+  return response;
 }
 
 export const config = {

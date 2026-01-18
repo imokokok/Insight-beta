@@ -2,7 +2,11 @@ import type { NextConfig } from "next";
 import { PHASE_DEVELOPMENT_SERVER } from "next/constants";
 
 function buildCsp(isDev: boolean) {
-  const scriptSrc = ["'self'", "'unsafe-inline'"];
+  const mode = (process.env.INSIGHT_CSP_MODE ?? "relaxed").toLowerCase();
+  const strict = mode === "strict";
+
+  const scriptSrc = ["'self'"];
+  if (!strict || isDev) scriptSrc.push("'unsafe-inline'");
   if (isDev) scriptSrc.push("'unsafe-eval'");
 
   const styleSrc = ["'self'", "'unsafe-inline'"];
