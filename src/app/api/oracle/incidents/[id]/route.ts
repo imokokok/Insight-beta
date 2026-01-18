@@ -2,6 +2,7 @@ import {
   error,
   getAdminActor,
   handleApi,
+  invalidateCachedJson,
   rateLimit,
   requireAdmin,
 } from "@/server/apiResponse";
@@ -130,6 +131,8 @@ export async function PATCH(
         actor,
       });
       if (!updated) return error({ code: "not_found" }, 404);
+      await invalidateCachedJson("oracle_api:/api/oracle/alerts");
+      await invalidateCachedJson("oracle_api:/api/oracle/incidents");
       return { ok: true, incident: updated };
     }
 
@@ -139,6 +142,7 @@ export async function PATCH(
       actor,
     });
     if (!updated) return error({ code: "not_found" }, 404);
+    await invalidateCachedJson("oracle_api:/api/oracle/incidents");
     return { ok: true, incident: updated };
   });
 }

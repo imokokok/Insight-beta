@@ -47,6 +47,7 @@ async function tickWorker() {
   if (global.insightWorkerTickInProgress) return;
   global.insightWorkerTickInProgress = true;
   const startedAt = Date.now();
+  let lastError: string | null = null;
   try {
     if (hasDatabase() && global.insightWorkerLockClient) {
       try {
@@ -581,25 +582,30 @@ async function tickWorker() {
         }
       }
     }
-
+  } catch (e) {
+    lastError = e instanceof Error ? e.message : "unknown_error";
+    logger.error("Background sync failed:", {
+      error: e,
+      errorMessage: lastError,
+    });
+  } finally {
     const at = new Date().toISOString();
     global.insightWorkerLastTickAt = at;
     global.insightWorkerLastTickDurationMs = Date.now() - startedAt;
-    global.insightWorkerLastError = null;
-    await writeJsonFile("worker/heartbeat/v1", {
-      at,
-      workerId: env.INSIGHT_WORKER_ID || "embedded",
-      lockKey: global.insightWorkerLockKey ?? null,
-      pid: typeof process !== "undefined" ? process.pid : null,
-      runtime: process.env.NEXT_RUNTIME ?? null,
-    });
-  } catch (e) {
-    global.insightWorkerLastTickAt = new Date().toISOString();
-    global.insightWorkerLastTickDurationMs = Date.now() - startedAt;
-    global.insightWorkerLastError =
-      e instanceof Error ? e.message : "unknown_error";
-    logger.error("Background sync failed:", { error: e });
-  } finally {
+    global.insightWorkerLastError = lastError;
+    try {
+      await writeJsonFile("worker/heartbeat/v1", {
+        at,
+        workerId: env.INSIGHT_WORKER_ID || "embedded",
+        lockKey: global.insightWorkerLockKey ?? null,
+        pid: typeof process !== "undefined" ? process.pid : null,
+        runtime: process.env.NEXT_RUNTIME ?? null,
+        durationMs: global.insightWorkerLastTickDurationMs,
+        lastError,
+      });
+    } catch (e) {
+      logger.error("Failed to write worker heartbeat", { error: e });
+    }
     global.insightWorkerTickInProgress = false;
   }
 }

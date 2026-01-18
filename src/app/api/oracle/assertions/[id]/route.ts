@@ -11,7 +11,7 @@ import { verifyAdmin } from "@/server/adminAuth";
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   return handleApi(request, async () => {
     const limited = await rateLimit(request, {
@@ -24,33 +24,35 @@ export async function GET(
     const { id } = await params;
     const url = new URL(request.url);
 
-    const compute = async () => {
+    const admin = await verifyAdmin(request, {
+      strict: false,
+      scope: "oracle_config_write",
+    });
+
+    const compute = async (includeSecrets: boolean) => {
       const assertion = await getAssertion(id);
       if (!assertion) return error({ code: "not_found" }, 404);
 
       const dispute = await getDisputeByAssertionId(id);
-      const admin = await verifyAdmin(request, {
-        strict: false,
-        scope: "oracle_config_write",
-      });
       const config = await readOracleConfig();
 
       const envConfig = await getOracleEnv();
       const { bondWei, bondEth } = await getBondData(
         envConfig.rpcUrl,
-        envConfig.contractAddress
+        envConfig.contractAddress,
       );
 
       return {
         assertion,
         dispute,
-        config: admin.ok ? config : redactOracleConfig(config),
+        config: includeSecrets ? config : redactOracleConfig(config),
         bondWei,
         bondEth,
       };
     };
 
+    if (admin.ok) return await compute(true);
     const cacheKey = `oracle_api:${url.pathname}`;
-    return await cachedJson(cacheKey, 5_000, compute);
+    return await cachedJson(cacheKey, 5_000, () => compute(false));
   });
 }

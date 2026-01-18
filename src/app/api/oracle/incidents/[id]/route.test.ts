@@ -13,6 +13,7 @@ vi.mock("@/server/observability", () => ({
 
 vi.mock("@/server/apiResponse", () => ({
   rateLimit: vi.fn(() => null),
+  invalidateCachedJson: vi.fn(async () => {}),
   handleApi: async (arg1: unknown, arg2?: unknown) => {
     try {
       const fn =

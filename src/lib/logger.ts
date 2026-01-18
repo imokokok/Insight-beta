@@ -44,6 +44,54 @@ type AsyncLocalStorageLike<T> = {
   run<R>(store: T, callback: () => R): R;
 };
 
+function serializeError(error: Error): Record<string, unknown> {
+  const cause = (error as { cause?: unknown }).cause;
+  return {
+    name: error.name,
+    message: error.message,
+    stack: error.stack,
+    cause:
+      cause instanceof Error
+        ? serializeError(cause)
+        : typeof cause === "bigint"
+          ? cause.toString(10)
+          : cause,
+  };
+}
+
+function normalizeForJson(value: unknown, seen: WeakSet<object>): unknown {
+  if (value instanceof Error) return serializeError(value);
+  if (typeof value === "bigint") return value.toString(10);
+  if (value instanceof Date) return value.toISOString();
+  if (!value || typeof value !== "object") return value;
+  if (seen.has(value)) return "[Circular]";
+  seen.add(value);
+  if (Array.isArray(value)) {
+    return value.map((v) => normalizeForJson(v, seen));
+  }
+  if (value instanceof Map) {
+    return Array.from(value.entries()).map(([k, v]) => ({
+      key: normalizeForJson(k, seen),
+      value: normalizeForJson(v, seen),
+    }));
+  }
+  if (value instanceof Set) {
+    return Array.from(value.values()).map((v) => normalizeForJson(v, seen));
+  }
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+    out[k] = normalizeForJson(v, seen);
+  }
+  return out;
+}
+
+function normalizeMetadata(
+  metadata?: Record<string, unknown>,
+): Record<string, unknown> | undefined {
+  if (!metadata) return undefined;
+  return normalizeForJson(metadata, new WeakSet()) as Record<string, unknown>;
+}
+
 let asyncLocalStorage: AsyncLocalStorageLike<LogContext> | null | undefined;
 
 function getAsyncLocalStorage(): AsyncLocalStorageLike<LogContext> | null {
@@ -117,13 +165,14 @@ function createLogEntry(
   metadata?: Record<string, unknown>,
 ) {
   const timestamp = new Date().toISOString();
-  const context = getLogContext();
+  const context = normalizeMetadata(getLogContext());
+  const normalizedMetadata = normalizeMetadata(metadata);
   const logEntry = {
     level: level.toUpperCase(),
     timestamp,
     message,
     ...(context || {}),
-    ...(metadata || {}),
+    ...(normalizedMetadata || {}),
   };
   return logEntry;
 }

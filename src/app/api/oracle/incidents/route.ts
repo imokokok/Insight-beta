@@ -3,6 +3,7 @@ import {
   error,
   getAdminActor,
   handleApi,
+  invalidateCachedJson,
   rateLimit,
   requireAdmin,
 } from "@/server/apiResponse";
@@ -108,6 +109,7 @@ export async function POST(request: Request) {
     const actor = getAdminActor(request);
     const created = await createIncident({ ...parsed.data, actor });
     if (!created) return error({ code: "invalid_request_body" }, 400);
+    await invalidateCachedJson("oracle_api:/api/oracle/incidents");
     return { ok: true, incident: created };
   });
 }
