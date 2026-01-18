@@ -1,4 +1,5 @@
 .env.local
+.env.production
 .env.*.local
 .data/
 .next/
