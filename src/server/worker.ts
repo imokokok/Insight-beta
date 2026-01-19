@@ -14,7 +14,7 @@ import { createPublicClient, http, formatEther } from "viem";
 const SYNC_INTERVAL = 15000; // 15 seconds
 const workerAlertCooldown = new Map<string, number>();
 
-async function tryAcquireWorkerLock() {
+export async function tryAcquireWorkerLock() {
   if (!hasDatabase()) return true;
   if (global.insightWorkerLockClient) return true;
   const name = `insight_worker:${env.INSIGHT_WORKER_ID || "embedded"}`;

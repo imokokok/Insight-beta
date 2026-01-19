@@ -35,12 +35,22 @@ function getRpcTimeoutMs() {
 
 export async function getOracleEnv() {
   const config = await readOracleConfig();
-  const rpcUrl = env.INSIGHT_RPC_URL || config.rpcUrl;
-  const contractAddress = (config.contractAddress ||
-    env.INSIGHT_ORACLE_ADDRESS) as Address;
   const chain = (config.chain ||
     (env.INSIGHT_CHAIN as StoredState["chain"] | undefined) ||
     "Local") as StoredState["chain"];
+  const chainRpcUrl =
+    chain === "PolygonAmoy"
+      ? env.POLYGON_AMOY_RPC_URL
+      : chain === "Polygon"
+        ? env.POLYGON_RPC_URL
+        : chain === "Arbitrum"
+          ? env.ARBITRUM_RPC_URL
+          : chain === "Optimism"
+            ? env.OPTIMISM_RPC_URL
+            : "";
+  const rpcUrl = env.INSIGHT_RPC_URL || config.rpcUrl || chainRpcUrl;
+  const contractAddress = (config.contractAddress ||
+    env.INSIGHT_ORACLE_ADDRESS) as Address;
   const startBlock = BigInt(config.startBlock ?? 0);
   const maxBlockRange = BigInt(config.maxBlockRange ?? 10_000);
   const votingPeriodMs = Number(config.votingPeriodHours ?? 72) * 3600 * 1000;

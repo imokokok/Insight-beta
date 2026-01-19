@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { GET, POST } from "./route";
 import {
   rateLimit,
@@ -60,6 +60,10 @@ describe("GET /api/oracle/sync", () => {
     vi.clearAllMocks();
   });
 
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it("returns sync state", async () => {
     const request = new Request("http://localhost:3000/api/oracle/sync");
     const response = (await GET(request)) as unknown as {
@@ -91,6 +95,10 @@ describe("GET /api/oracle/sync", () => {
 describe("POST /api/oracle/sync", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   it("triggers sync when authorized and revalidates caches and tags", async () => {
@@ -141,6 +149,36 @@ describe("POST /api/oracle/sync", () => {
     expect(response.contractAddress).toBe("0xabc");
     expect(response.mode).toBe("real");
     expect(response.lastProcessedBlock).toBe("100");
+  });
+
+  it("triggers sync with cron secret and skips admin auth", async () => {
+    vi.stubEnv("INSIGHT_CRON_SECRET", "test-cron-secret-123456");
+    const request = new Request("http://localhost:3000/api/oracle/sync", {
+      method: "POST",
+      headers: { "x-insight-cron-secret": "test-cron-secret-123456" },
+    });
+    const response = (await POST(request)) as unknown as {
+      updated: boolean;
+    };
+
+    expect(requireAdmin).not.toHaveBeenCalled();
+    expect(ensureOracleSynced).toHaveBeenCalled();
+    expect(response.updated).toBe(true);
+  });
+
+  it("triggers sync with Authorization Bearer cron secret and skips admin auth", async () => {
+    vi.stubEnv("CRON_SECRET", "test-cron-secret-123456");
+    const request = new Request("http://localhost:3000/api/oracle/sync", {
+      method: "POST",
+      headers: { Authorization: "Bearer test-cron-secret-123456" },
+    });
+    const response = (await POST(request)) as unknown as {
+      updated: boolean;
+    };
+
+    expect(requireAdmin).not.toHaveBeenCalled();
+    expect(ensureOracleSynced).toHaveBeenCalled();
+    expect(response.updated).toBe(true);
   });
 
   it("returns error when missing config", async () => {

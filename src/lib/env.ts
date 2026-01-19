@@ -19,6 +19,12 @@ export const env = {
   get INSIGHT_ADMIN_TOKEN_SALT() {
     return (process.env.INSIGHT_ADMIN_TOKEN_SALT ?? "").trim();
   },
+  get INSIGHT_CRON_SECRET() {
+    return (process.env.INSIGHT_CRON_SECRET ?? "").trim();
+  },
+  get CRON_SECRET() {
+    return (process.env.CRON_SECRET ?? "").trim();
+  },
   get INSIGHT_RPC_URL() {
     return (process.env.INSIGHT_RPC_URL ?? "").trim();
   },
@@ -88,6 +94,18 @@ export const env = {
   get INSIGHT_DEFAULT_EMAIL() {
     return (process.env.INSIGHT_DEFAULT_EMAIL ?? "").trim();
   },
+  get POLYGON_AMOY_RPC_URL() {
+    return (process.env.POLYGON_AMOY_RPC_URL ?? "").trim();
+  },
+  get POLYGON_RPC_URL() {
+    return (process.env.POLYGON_RPC_URL ?? "").trim();
+  },
+  get ARBITRUM_RPC_URL() {
+    return (process.env.ARBITRUM_RPC_URL ?? "").trim();
+  },
+  get OPTIMISM_RPC_URL() {
+    return (process.env.OPTIMISM_RPC_URL ?? "").trim();
+  },
 };
 
 export function getEnv(key: keyof typeof env): string {
@@ -135,6 +153,8 @@ const envSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
   INSIGHT_ADMIN_TOKEN: z.string().min(1).optional(),
   INSIGHT_ADMIN_TOKEN_SALT: z.string().min(16).optional(),
+  INSIGHT_CRON_SECRET: z.string().min(16).optional(),
+  CRON_SECRET: z.string().min(16).optional(),
   INSIGHT_RPC_URL: z
     .string()
     .optional()
@@ -209,6 +229,70 @@ const envSchema = z.object({
     .refine((value) => !value || /^0x[a-fA-F0-9]{40}$/.test(value), {
       message: "invalid_address",
     }),
+  POLYGON_AMOY_RPC_URL: z
+    .string()
+    .optional()
+    .transform((v) => (v ?? "").trim())
+    .refine(
+      (value) => {
+        if (!value) return true;
+        try {
+          const url = new URL(value);
+          return ["http:", "https:", "ws:", "wss:"].includes(url.protocol);
+        } catch {
+          return false;
+        }
+      },
+      { message: "invalid_polygon_amoy_rpc_url" },
+    ),
+  POLYGON_RPC_URL: z
+    .string()
+    .optional()
+    .transform((v) => (v ?? "").trim())
+    .refine(
+      (value) => {
+        if (!value) return true;
+        try {
+          const url = new URL(value);
+          return ["http:", "https:", "ws:", "wss:"].includes(url.protocol);
+        } catch {
+          return false;
+        }
+      },
+      { message: "invalid_polygon_rpc_url" },
+    ),
+  ARBITRUM_RPC_URL: z
+    .string()
+    .optional()
+    .transform((v) => (v ?? "").trim())
+    .refine(
+      (value) => {
+        if (!value) return true;
+        try {
+          const url = new URL(value);
+          return ["http:", "https:", "ws:", "wss:"].includes(url.protocol);
+        } catch {
+          return false;
+        }
+      },
+      { message: "invalid_arbitrum_rpc_url" },
+    ),
+  OPTIMISM_RPC_URL: z
+    .string()
+    .optional()
+    .transform((v) => (v ?? "").trim())
+    .refine(
+      (value) => {
+        if (!value) return true;
+        try {
+          const url = new URL(value);
+          return ["http:", "https:", "ws:", "wss:"].includes(url.protocol);
+        } catch {
+          return false;
+        }
+      },
+      { message: "invalid_optimism_rpc_url" },
+    ),
 });
 
 // Auto-validate on import
