@@ -14,8 +14,7 @@ export default function GlobalError({
   const [lang, setLang] = useState<Lang>("en");
 
   useEffect(() => {
-    // Optionally log to an error reporting service
-    console.error(error);
+    if (process.env.NODE_ENV === "development") console.error(error);
 
     // Simple client-side language detection
     if (typeof navigator !== "undefined") {

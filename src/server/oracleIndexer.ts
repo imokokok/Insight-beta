@@ -110,6 +110,36 @@ type RpcStatsItem = {
 
 type RpcStats = Record<string, RpcStatsItem>;
 
+function redactRpcUrl(raw: string) {
+  try {
+    const u = new URL(raw);
+    u.username = "";
+    u.password = "";
+    u.search = "";
+    u.hash = "";
+    const segments = u.pathname.split("/").filter(Boolean);
+    if (segments.length > 0) {
+      for (let i = 0; i < segments.length; i += 1) {
+        const seg = segments[i] ?? "";
+        const looksLikeToken =
+          seg.length >= 16 &&
+          /^[a-zA-Z0-9_-]+$/.test(seg) &&
+          !seg.includes(".");
+        if (looksLikeToken) segments[i] = "<redacted>";
+      }
+      if (segments.length > 6) {
+        segments.splice(6, segments.length - 6, "…");
+      }
+      u.pathname = "/" + segments.join("/");
+    }
+    return u.toString();
+  } catch {
+    const trimmed = raw.trim();
+    if (trimmed.length <= 140) return trimmed;
+    return trimmed.slice(0, 140) + "…";
+  }
+}
+
 function readRpcStats(input: unknown): RpcStats {
   if (!input || typeof input !== "object" || Array.isArray(input)) return {};
   return input as RpcStats;
@@ -134,7 +164,7 @@ function recordRpcOk(stats: RpcStats, url: string, latencyMs: number) {
     avgLatencyMs: avg,
   };
   if (Math.random() < 0.01)
-    logger.info("rpc_sample", { url, ok: true, latencyMs });
+    logger.info("rpc_sample", { url: redactRpcUrl(url), ok: true, latencyMs });
 }
 
 function recordRpcFail(stats: RpcStats, url: string) {
@@ -150,7 +180,8 @@ function recordRpcFail(stats: RpcStats, url: string) {
     fail: prev.fail + 1,
     lastFailAt: new Date().toISOString(),
   };
-  if (Math.random() < 0.01) logger.warn("rpc_sample", { url, ok: false });
+  if (Math.random() < 0.01)
+    logger.warn("rpc_sample", { url: redactRpcUrl(url), ok: false });
 }
 
 function pickNextRpcUrl(urls: string[], current: string): string {
@@ -226,7 +257,7 @@ async function syncOracleOnce(): Promise<{
               if (attempt < MAX_RETRIES - 1) {
                 const backoff = 1000 * Math.pow(2, attempt);
                 logger.warn(
-                  `RPC ${url} unreachable (attempt ${
+                  `RPC ${redactRpcUrl(url)} unreachable (attempt ${
                     attempt + 1
                   }/${MAX_RETRIES}), retrying in ${backoff}ms...`,
                 );

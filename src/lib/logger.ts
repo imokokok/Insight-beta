@@ -44,23 +44,71 @@ type AsyncLocalStorageLike<T> = {
   run<R>(store: T, callback: () => R): R;
 };
 
+const urlSubstringRe = /\b(?:https?|wss?|postgres(?:ql)?):\/\/[^\s"'<>]+/gi;
+
+function redactUrlString(raw: string) {
+  try {
+    const u = new URL(raw);
+    u.username = "";
+    u.password = "";
+    u.search = "";
+    u.hash = "";
+    const segments = u.pathname.split("/").filter(Boolean);
+    if (segments.length > 0) {
+      for (let i = 0; i < segments.length; i += 1) {
+        const seg = segments[i] ?? "";
+        const looksLikeToken =
+          seg.length >= 16 &&
+          /^[a-zA-Z0-9_-]+$/.test(seg) &&
+          !seg.includes(".");
+        if (looksLikeToken) segments[i] = "<redacted>";
+      }
+      if (segments.length > 6) {
+        segments.splice(6, segments.length - 6, "…");
+      }
+      u.pathname = "/" + segments.join("/");
+    }
+    return u.toString();
+  } catch {
+    const trimmed = raw.trim();
+    if (trimmed.length <= 140) return trimmed;
+    return trimmed.slice(0, 140) + "…";
+  }
+}
+
+function redactUrlsInText(input: string) {
+  if (!input.includes("://")) return input;
+  return input.replace(urlSubstringRe, (match) => {
+    let raw = match;
+    let suffix = "";
+    while (raw.length > 0 && /[),.;\]}]$/.test(raw)) {
+      suffix = raw.slice(-1) + suffix;
+      raw = raw.slice(0, -1);
+    }
+    return redactUrlString(raw) + suffix;
+  });
+}
+
 function serializeError(error: Error): Record<string, unknown> {
   const cause = (error as { cause?: unknown }).cause;
   return {
     name: error.name,
-    message: error.message,
-    stack: error.stack,
+    message: redactUrlsInText(error.message),
+    stack: error.stack ? redactUrlsInText(error.stack) : undefined,
     cause:
       cause instanceof Error
         ? serializeError(cause)
-        : typeof cause === "bigint"
-          ? cause.toString(10)
-          : cause,
+        : typeof cause === "string"
+          ? redactUrlsInText(cause)
+          : typeof cause === "bigint"
+            ? cause.toString(10)
+            : cause,
   };
 }
 
 function normalizeForJson(value: unknown, seen: WeakSet<object>): unknown {
   if (value instanceof Error) return serializeError(value);
+  if (typeof value === "string") return redactUrlsInText(value);
   if (typeof value === "bigint") return value.toString(10);
   if (value instanceof Date) return value.toISOString();
   if (!value || typeof value !== "object") return value;
@@ -88,8 +136,16 @@ function normalizeForJson(value: unknown, seen: WeakSet<object>): unknown {
 function normalizeMetadata(
   metadata?: Record<string, unknown>,
 ): Record<string, unknown> | undefined {
-  if (!metadata) return undefined;
-  return normalizeForJson(metadata, new WeakSet()) as Record<string, unknown>;
+  if (metadata === undefined) return undefined;
+  const normalized = normalizeForJson(metadata, new WeakSet());
+  if (
+    !normalized ||
+    typeof normalized !== "object" ||
+    Array.isArray(normalized)
+  ) {
+    return { metadata: normalized };
+  }
+  return normalized as Record<string, unknown>;
 }
 
 let asyncLocalStorage: AsyncLocalStorageLike<LogContext> | null | undefined;
@@ -170,7 +226,7 @@ function createLogEntry(
   const logEntry = {
     level: level.toUpperCase(),
     timestamp,
-    message,
+    message: redactUrlsInText(message),
     ...(context || {}),
     ...(normalizedMetadata || {}),
   };

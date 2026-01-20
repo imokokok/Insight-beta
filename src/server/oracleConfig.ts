@@ -5,6 +5,8 @@ import type {
   OracleConfig as SharedOracleConfig,
 } from "@/lib/oracleTypes";
 import { getMemoryStore } from "@/server/memoryBackend";
+import { isIP } from "node:net";
+import { env } from "@/lib/env";
 
 export type OracleConfig = SharedOracleConfig;
 
@@ -26,6 +28,53 @@ function normalizeUrl(value: unknown) {
   return value.trim();
 }
 
+function allowPrivateRpcUrls() {
+  const raw = (env.INSIGHT_ALLOW_PRIVATE_RPC_URLS ?? "").trim().toLowerCase();
+  if (raw === "1" || raw === "true") return true;
+  if (raw === "0" || raw === "false") return false;
+  return process.env.NODE_ENV !== "production";
+}
+
+function isPrivateIpv4(ip: string) {
+  const parts = ip.split(".").map((p) => Number(p));
+  if (parts.length !== 4) return false;
+  if (parts.some((n) => !Number.isInteger(n) || n < 0 || n > 255)) return false;
+  const [a, b] = parts as [number, number, number, number];
+  if (a === 10) return true;
+  if (a === 127) return true;
+  if (a === 0) return true;
+  if (a === 169 && b === 254) return true;
+  if (a === 172 && b >= 16 && b <= 31) return true;
+  if (a === 192 && b === 168) return true;
+  if (a === 100 && b >= 64 && b <= 127) return true;
+  return false;
+}
+
+function isPrivateIpv6(ip: string) {
+  const lower = ip.toLowerCase();
+  if (lower === "::1" || lower === "::") return true;
+  if (lower.startsWith("fe80:")) return true;
+  if (lower.startsWith("fc") || lower.startsWith("fd")) return true;
+  if (lower.startsWith("::ffff:")) {
+    const maybeV4 = lower.slice("::ffff:".length);
+    if (isIP(maybeV4) === 4) return isPrivateIpv4(maybeV4);
+  }
+  return false;
+}
+
+function isPrivateHost(hostname: string) {
+  const lower = hostname.trim().toLowerCase();
+  if (!lower) return false;
+  if (lower === "localhost") return true;
+  if (lower === "host.docker.internal") return true;
+  if (lower.endsWith(".localhost")) return true;
+  if (lower.endsWith(".local")) return true;
+  const ipVer = isIP(lower);
+  if (ipVer === 4) return isPrivateIpv4(lower);
+  if (ipVer === 6) return isPrivateIpv6(lower);
+  return false;
+}
+
 function validateRpcUrl(value: unknown) {
   if (typeof value !== "string") throw new Error("invalid_request_body");
   const trimmed = value.trim();
@@ -44,6 +93,12 @@ function validateRpcUrl(value: unknown) {
       throw new Error("invalid_rpc_url");
     }
     if (!["http:", "https:", "ws:", "wss:"].includes(url.protocol)) {
+      throw new Error("invalid_rpc_url");
+    }
+    if (url.username || url.password) {
+      throw new Error("invalid_rpc_url");
+    }
+    if (!allowPrivateRpcUrls() && isPrivateHost(url.hostname)) {
       throw new Error("invalid_rpc_url");
     }
     normalized.push(part);

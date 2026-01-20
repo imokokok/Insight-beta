@@ -75,4 +75,33 @@ describe("Utils", () => {
       if (hadWindow) (g as { window?: unknown }).window = originalWindow;
     }
   });
+
+  it("logger redacts URLs in messages and metadata", async () => {
+    vi.resetModules();
+    vi.unstubAllEnvs();
+    vi.stubEnv("LOG_LEVEL", "info");
+
+    const infoSpy = vi.spyOn(console, "info").mockImplementation(() => void 0);
+
+    const { logger } = await import("./logger");
+
+    const token = "b1ed563a66f24a18df41688fd2e44c40";
+    const url = `https://rpc.ankr.com/polygon_amoy/${token}?apiKey=secret#hash`;
+
+    logger.info(`rpc request failed: ${url}`, {
+      url,
+      error: new Error(`request to ${url} failed`),
+    });
+
+    expect(infoSpy).toHaveBeenCalledTimes(1);
+    const output = String(infoSpy.mock.calls[0]?.[0] ?? "");
+    expect(output).toContain("rpc.ankr.com");
+    expect(output).toContain("redacted");
+    expect(output).not.toContain(token);
+    expect(output).not.toContain("apiKey=secret");
+    expect(output).not.toContain("#hash");
+
+    infoSpy.mockRestore();
+    vi.unstubAllEnvs();
+  });
 });

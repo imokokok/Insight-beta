@@ -28,6 +28,9 @@ export const env = {
   get INSIGHT_RPC_URL() {
     return (process.env.INSIGHT_RPC_URL ?? "").trim();
   },
+  get INSIGHT_ALLOW_PRIVATE_RPC_URLS() {
+    return (process.env.INSIGHT_ALLOW_PRIVATE_RPC_URLS ?? "").trim();
+  },
   get INSIGHT_ORACLE_ADDRESS() {
     return (process.env.INSIGHT_ORACLE_ADDRESS ?? "").trim();
   },
@@ -178,6 +181,9 @@ const envSchema = z.object({
       },
       { message: "invalid_rpc_url" },
     ),
+  INSIGHT_ALLOW_PRIVATE_RPC_URLS: z
+    .enum(["true", "false", "1", "0"])
+    .optional(),
   INSIGHT_ORACLE_ADDRESS: z
     .string()
     .regex(/^0x[a-fA-F0-9]{40}$/, "invalid_address")
