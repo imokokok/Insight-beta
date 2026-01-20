@@ -236,12 +236,19 @@ const envSchema = z.object({
     .refine(
       (value) => {
         if (!value) return true;
-        try {
-          const url = new URL(value);
-          return ["http:", "https:", "ws:", "wss:"].includes(url.protocol);
-        } catch {
-          return false;
-        }
+        const urls = value
+          .split(/[,\s]+/)
+          .map((s) => s.trim())
+          .filter(Boolean);
+        if (urls.length === 0) return true;
+        return urls.every((u) => {
+          try {
+            const url = new URL(u);
+            return ["http:", "https:", "ws:", "wss:"].includes(url.protocol);
+          } catch {
+            return false;
+          }
+        });
       },
       { message: "invalid_polygon_amoy_rpc_url" },
     ),
@@ -252,12 +259,19 @@ const envSchema = z.object({
     .refine(
       (value) => {
         if (!value) return true;
-        try {
-          const url = new URL(value);
-          return ["http:", "https:", "ws:", "wss:"].includes(url.protocol);
-        } catch {
-          return false;
-        }
+        const urls = value
+          .split(/[,\s]+/)
+          .map((s) => s.trim())
+          .filter(Boolean);
+        if (urls.length === 0) return true;
+        return urls.every((u) => {
+          try {
+            const url = new URL(u);
+            return ["http:", "https:", "ws:", "wss:"].includes(url.protocol);
+          } catch {
+            return false;
+          }
+        });
       },
       { message: "invalid_polygon_rpc_url" },
     ),
@@ -268,12 +282,19 @@ const envSchema = z.object({
     .refine(
       (value) => {
         if (!value) return true;
-        try {
-          const url = new URL(value);
-          return ["http:", "https:", "ws:", "wss:"].includes(url.protocol);
-        } catch {
-          return false;
-        }
+        const urls = value
+          .split(/[,\s]+/)
+          .map((s) => s.trim())
+          .filter(Boolean);
+        if (urls.length === 0) return true;
+        return urls.every((u) => {
+          try {
+            const url = new URL(u);
+            return ["http:", "https:", "ws:", "wss:"].includes(url.protocol);
+          } catch {
+            return false;
+          }
+        });
       },
       { message: "invalid_arbitrum_rpc_url" },
     ),
@@ -284,12 +305,19 @@ const envSchema = z.object({
     .refine(
       (value) => {
         if (!value) return true;
-        try {
-          const url = new URL(value);
-          return ["http:", "https:", "ws:", "wss:"].includes(url.protocol);
-        } catch {
-          return false;
-        }
+        const urls = value
+          .split(/[,\s]+/)
+          .map((s) => s.trim())
+          .filter(Boolean);
+        if (urls.length === 0) return true;
+        return urls.every((u) => {
+          try {
+            const url = new URL(u);
+            return ["http:", "https:", "ws:", "wss:"].includes(url.protocol);
+          } catch {
+            return false;
+          }
+        });
       },
       { message: "invalid_optimism_rpc_url" },
     ),

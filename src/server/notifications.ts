@@ -45,15 +45,18 @@ export async function notifyAlert(
   options?: NotificationOptions,
 ) {
   const channels = options?.channels || ["webhook"];
-
-  // Send webhook notification if enabled
-  if (channels.includes("webhook")) {
-    await sendWebhookNotification(alert);
-  }
-
-  // Send email notification if enabled and configured
-  if (channels.includes("email")) {
-    await sendEmailNotification(alert, options?.recipient);
+  for (const channel of channels) {
+    try {
+      if (channel === "webhook") await sendWebhookNotification(alert);
+      if (channel === "email")
+        await sendEmailNotification(alert, options?.recipient);
+    } catch (error) {
+      logger.error("Notification channel failed", {
+        channel,
+        error,
+        fingerprint: alert.fingerprint,
+      });
+    }
   }
 }
 
@@ -214,7 +217,8 @@ async function sendEmailNotification(
 
   try {
     const port = Number(smtpPort);
-    const resolvedPort = Number.isFinite(port) ? port : 587;
+    const resolvedPort =
+      Number.isFinite(port) && port >= 1 && port <= 65535 ? port : 587;
     if (!smtpTransport) {
       const nodemailer = await import("nodemailer");
       smtpTransport = nodemailer.createTransport({

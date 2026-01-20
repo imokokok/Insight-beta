@@ -1,6 +1,7 @@
 import {
   getOwnerData,
   getSyncState,
+  getOracleEnv,
   isOracleSyncing,
   readOracleConfig,
   readOracleState,
@@ -26,6 +27,7 @@ export async function GET(request: Request) {
 
     const compute = async (includeSecrets: boolean) => {
       const config = await readOracleConfig();
+      const envConfig = await getOracleEnv();
       const state = await readOracleState();
       const syncState = await getSyncState();
       const latestBlock = syncState.latestBlock;
@@ -34,15 +36,30 @@ export async function GET(request: Request) {
         latestBlock !== null && latestBlock !== undefined
           ? latestBlock - syncState.lastProcessedBlock
           : null;
+      const configErrors: string[] = [];
+      if (!(envConfig.rpcUrl || config.rpcUrl)) {
+        configErrors.push("missing_rpc_url");
+      }
+      if (!(envConfig.contractAddress || config.contractAddress)) {
+        configErrors.push("missing_contract_address");
+      }
+      const lastError = state.sync?.lastError ?? null;
+      if (
+        lastError === "contract_not_found" ||
+        lastError === "invalid_chain" ||
+        lastError === "missing_config"
+      ) {
+        if (!configErrors.includes(lastError)) configErrors.push(lastError);
+      }
       const ownerInfo = await getOwnerData(
-        config.rpcUrl,
-        config.contractAddress
+        envConfig.rpcUrl || config.rpcUrl,
+        String(envConfig.contractAddress || config.contractAddress || ""),
       );
       return {
         config: includeSecrets ? config : redactOracleConfig(config),
         state: {
-          chain: state.chain,
-          contractAddress: state.contractAddress,
+          chain: state.chain || envConfig.chain,
+          contractAddress: state.contractAddress || envConfig.contractAddress,
           lastProcessedBlock: state.lastProcessedBlock.toString(10),
           latestBlock:
             latestBlock !== null && latestBlock !== undefined
@@ -54,12 +71,16 @@ export async function GET(request: Request) {
               : null,
           lagBlocks: lagBlocks !== null ? lagBlocks.toString(10) : null,
           consecutiveFailures: syncState.consecutiveFailures ?? 0,
-          rpcActiveUrl: includeSecrets ? syncState.rpcActiveUrl ?? null : null,
-          rpcStats: includeSecrets ? syncState.rpcStats ?? null : null,
+          rpcActiveUrl: includeSecrets
+            ? (syncState.rpcActiveUrl ?? null)
+            : null,
+          rpcStats: includeSecrets ? (syncState.rpcStats ?? null) : null,
           assertions: Object.keys(state.assertions).length,
           disputes: Object.keys(state.disputes).length,
           syncing: isOracleSyncing(),
           sync: state.sync,
+          configError: configErrors[0] ?? null,
+          configErrors,
           owner: ownerInfo.owner,
           ownerIsContract: ownerInfo.isContractOwner,
         },

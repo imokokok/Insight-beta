@@ -1,4 +1,8 @@
-import { ensureOracleSynced, isOracleSyncing } from "./oracleIndexer";
+import {
+  ensureOracleSynced,
+  getOracleEnv,
+  isOracleSyncing,
+} from "./oracleIndexer";
 import crypto from "crypto";
 import type { PoolClient } from "pg";
 import { env } from "@/lib/env";
@@ -73,10 +77,54 @@ async function tickWorker() {
     }
 
     if (isOracleSyncing()) return;
-    await ensureOracleSynced();
+
+    const preSyncState = await getSyncState();
+    const envConfig = await getOracleEnv();
+    const missingConfig = !envConfig.rpcUrl || !envConfig.contractAddress;
+    const nowMs = Date.now();
+    const consecutiveFailures = preSyncState.consecutiveFailures ?? 0;
+    const lastAttemptAtRaw = preSyncState.sync.lastAttemptAt ?? "";
+    const lastAttemptAtMs = lastAttemptAtRaw
+      ? Date.parse(lastAttemptAtRaw)
+      : NaN;
+    const baseBackoffMs =
+      consecutiveFailures > 0
+        ? Math.min(
+            5 * 60_000,
+            5_000 * 2 ** Math.min(consecutiveFailures - 1, 6),
+          )
+        : 0;
+
+    const isConfigError =
+      missingConfig || preSyncState.sync.lastError === "contract_not_found";
+
+    const backoffMs = isConfigError
+      ? Math.max(
+          baseBackoffMs,
+          consecutiveFailures > 0
+            ? Math.min(
+                60 * 60_000,
+                30_000 * 2 ** Math.min(consecutiveFailures - 1, 10),
+              )
+            : 60_000,
+        )
+      : baseBackoffMs;
+
+    const shouldAttemptSync =
+      backoffMs === 0 ||
+      !Number.isFinite(lastAttemptAtMs) ||
+      nowMs - lastAttemptAtMs >= backoffMs;
+
+    if (missingConfig) {
+      lastError = "missing_config";
+    }
+
+    if (shouldAttemptSync && !missingConfig) {
+      await ensureOracleSynced();
+    }
+
     const rules = await readAlertRules();
     const state = await getSyncState();
-    const nowMs = Date.now();
 
     const shouldEmit = (
       event: string,
@@ -584,10 +632,16 @@ async function tickWorker() {
     }
   } catch (e) {
     lastError = e instanceof Error ? e.message : "unknown_error";
-    logger.error("Background sync failed:", {
-      error: e,
-      errorMessage: lastError,
-    });
+    if (lastError === "contract_not_found" || lastError === "missing_config") {
+      logger.warn("Background sync skipped due to configuration issue", {
+        errorMessage: lastError,
+      });
+    } else {
+      logger.error("Background sync failed:", {
+        error: e,
+        errorMessage: lastError,
+      });
+    }
   } finally {
     const at = new Date().toISOString();
     global.insightWorkerLastTickAt = at;

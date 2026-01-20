@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { notifyAlert } from "./notifications";
+
+const sendMailMock = vi.fn(async () => void 0);
+vi.mock("nodemailer", () => ({
+  createTransport: vi.fn(() => ({ sendMail: sendMailMock })),
+}));
 
 describe("notifications", () => {
   const envBefore: Record<string, string | undefined> = {};
@@ -7,6 +11,8 @@ describe("notifications", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     vi.unstubAllEnvs();
+    vi.resetModules();
+    sendMailMock.mockClear();
     for (const k of [
       "INSIGHT_WEBHOOK_URL",
       "INSIGHT_WEBHOOK_TIMEOUT_MS",
@@ -36,6 +42,7 @@ describe("notifications", () => {
       .spyOn(globalThis as unknown as { fetch: typeof fetch }, "fetch")
       .mockResolvedValueOnce({ ok: true } as unknown as Response);
 
+    const { notifyAlert } = await import("./notifications");
     await notifyAlert({
       title: "t",
       message: "m",
@@ -71,6 +78,7 @@ describe("notifications", () => {
         text: async () => "ok",
       } as unknown as Response);
 
+    const { notifyAlert } = await import("./notifications");
     const p = notifyAlert(
       {
         title: "t",
@@ -97,11 +105,46 @@ describe("notifications", () => {
       .spyOn(globalThis as unknown as { fetch: typeof fetch }, "fetch")
       .mockResolvedValueOnce({ ok: true } as unknown as Response);
 
+    const { notifyAlert } = await import("./notifications");
     await notifyAlert(
       { title: "t", message: "m", severity: "info", fingerprint: "fp" },
       { channels: ["email"] },
     );
 
     expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it("continues to email when webhook fails", async () => {
+    process.env.INSIGHT_WEBHOOK_URL = "https://webhook.example";
+    process.env.INSIGHT_WEBHOOK_TIMEOUT_MS = "1000";
+    process.env.INSIGHT_SMTP_HOST = "smtp.example";
+    process.env.INSIGHT_SMTP_PORT = "587";
+    process.env.INSIGHT_SMTP_USER = "user";
+    process.env.INSIGHT_SMTP_PASS = "pass";
+    process.env.INSIGHT_FROM_EMAIL = "from@example.com";
+    process.env.INSIGHT_DEFAULT_EMAIL = "to@example.com";
+
+    vi.useFakeTimers();
+    vi.spyOn(Math, "random").mockReturnValue(0);
+
+    const fetchSpy = vi
+      .spyOn(globalThis as unknown as { fetch: typeof fetch }, "fetch")
+      .mockResolvedValue({
+        ok: false,
+        status: 500,
+        text: async () => "bad",
+      } as unknown as Response);
+
+    const { notifyAlert } = await import("./notifications");
+    const p = notifyAlert(
+      { title: "t", message: "m", severity: "warning", fingerprint: "fp" },
+      { channels: ["webhook", "email"] },
+    );
+
+    await vi.runAllTimersAsync();
+    await p;
+
+    expect(fetchSpy).toHaveBeenCalled();
+    expect(sendMailMock).toHaveBeenCalled();
   });
 });

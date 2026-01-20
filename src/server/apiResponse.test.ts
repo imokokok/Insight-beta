@@ -24,6 +24,7 @@ import {
 import { hasDatabase } from "@/server/db";
 import { readJsonFile, writeJsonFile, listJsonKeys } from "@/server/kvStore";
 import { verifyAdmin } from "@/server/adminAuth";
+import { env } from "@/lib/env";
 
 vi.mock("@/server/db", () => ({
   hasDatabase: vi.fn(() => false),
@@ -231,6 +232,83 @@ describe("rateLimit function", () => {
       if (prevStore === undefined) delete process.env.INSIGHT_RATE_LIMIT_STORE;
       else process.env.INSIGHT_RATE_LIMIT_STORE = prevStore;
     }
+  });
+
+  it("uses x-real-ip when trust proxy is enabled", async () => {
+    (env as unknown as Record<string, string>).INSIGHT_TRUST_PROXY = "true";
+    (env as unknown as Record<string, string>).INSIGHT_RATE_LIMIT_STORE =
+      "memory";
+    (
+      globalThis as unknown as { insightRate?: Map<string, unknown> }
+    ).insightRate = new Map();
+
+    const limit = 1;
+    const windowMs = 60_000;
+
+    const req1 = new Request("http://localhost/api/test", {
+      headers: { "x-real-ip": "203.0.113.11" },
+    });
+    const req2 = new Request("http://localhost/api/test", {
+      headers: { "x-real-ip": "203.0.113.12" },
+    });
+
+    expect(await rateLimit(req1, { key: "t2", limit, windowMs })).toBeNull();
+    expect(await rateLimit(req2, { key: "t2", limit, windowMs })).toBeNull();
+    const limited = await rateLimit(req1, { key: "t2", limit, windowMs });
+    expect(limited?.status).toBe(429);
+  });
+
+  it("parses Forwarded header when trust proxy is enabled", async () => {
+    (env as unknown as Record<string, string>).INSIGHT_TRUST_PROXY = "true";
+    (env as unknown as Record<string, string>).INSIGHT_RATE_LIMIT_STORE =
+      "memory";
+    (
+      globalThis as unknown as { insightRate?: Map<string, unknown> }
+    ).insightRate = new Map();
+
+    const limit = 1;
+    const windowMs = 60_000;
+
+    const req1 = new Request("http://localhost/api/test", {
+      headers: { forwarded: 'for="203.0.113.21";proto=https;host=example.com' },
+    });
+    const req2 = new Request("http://localhost/api/test", {
+      headers: { forwarded: "for=203.0.113.22;proto=https" },
+    });
+
+    expect(await rateLimit(req1, { key: "t3", limit, windowMs })).toBeNull();
+    expect(await rateLimit(req2, { key: "t3", limit, windowMs })).toBeNull();
+    const limited = await rateLimit(req1, { key: "t3", limit, windowMs });
+    expect(limited?.status).toBe(429);
+  });
+
+  it("prefers x-vercel-forwarded-for over x-real-ip", async () => {
+    (env as unknown as Record<string, string>).INSIGHT_TRUST_PROXY = "true";
+    (env as unknown as Record<string, string>).INSIGHT_RATE_LIMIT_STORE =
+      "memory";
+    (
+      globalThis as unknown as { insightRate?: Map<string, unknown> }
+    ).insightRate = new Map();
+
+    const limit = 1;
+    const windowMs = 60_000;
+
+    const req1 = new Request("http://localhost/api/test", {
+      headers: {
+        "x-vercel-forwarded-for": "203.0.113.31",
+        "x-real-ip": "203.0.113.99",
+      },
+    });
+    const req2 = new Request("http://localhost/api/test", {
+      headers: {
+        "x-vercel-forwarded-for": "203.0.113.31",
+        "x-real-ip": "203.0.113.32",
+      },
+    });
+
+    expect(await rateLimit(req1, { key: "t4", limit, windowMs })).toBeNull();
+    const limited = await rateLimit(req2, { key: "t4", limit, windowMs });
+    expect(limited?.status).toBe(429);
   });
 });
 

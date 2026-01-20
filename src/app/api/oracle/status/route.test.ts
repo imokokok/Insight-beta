@@ -23,7 +23,12 @@ vi.mock("@/server/oracle", () => {
     lastProcessedBlock: BigInt(100),
     assertions: { a: {}, b: {} },
     disputes: { c: {} },
-    sync: { mode: "realtime" },
+    sync: {
+      lastAttemptAt: null,
+      lastSuccessAt: "2020-01-01T00:00:00.000Z",
+      lastDurationMs: 123,
+      lastError: null,
+    },
   };
   const syncState = {
     latestBlock: BigInt(110),
@@ -32,11 +37,17 @@ vi.mock("@/server/oracle", () => {
     consecutiveFailures: 3,
     rpcActiveUrl: "https://rpc.active",
     rpcStats: { latencyMs: 10 },
+    sync: state.sync,
   };
   return {
     readOracleConfig: vi.fn(async () => config),
     readOracleState: vi.fn(async () => state),
     getSyncState: vi.fn(async () => syncState),
+    getOracleEnv: vi.fn(async () => ({
+      rpcUrl: config.rpcUrl,
+      contractAddress: config.contractAddress,
+      chain: config.chain,
+    })),
     isOracleSyncing: vi.fn(() => true),
     getOwnerData: vi.fn(async () => ({
       owner: "0xowner",
@@ -56,14 +67,14 @@ vi.mock("@/server/apiResponse", () => ({
     async (
       _key: string,
       _ttlMs: number,
-      compute: () => unknown | Promise<unknown>
+      compute: () => unknown | Promise<unknown>,
     ) => {
       return await compute();
-    }
+    },
   ),
   handleApi: async (
     _request: Request,
-    fn: () => unknown | Promise<unknown>
+    fn: () => unknown | Promise<unknown>,
   ) => {
     return await fn();
   },
@@ -109,6 +120,8 @@ describe("GET /api/oracle/status", () => {
         disputes: number;
         syncing: boolean;
         sync: unknown;
+        configError: string | null;
+        configErrors: string[];
         owner: string;
         ownerIsContract: boolean;
       };
@@ -141,14 +154,45 @@ describe("GET /api/oracle/status", () => {
     expect(response.state.assertions).toBe(2);
     expect(response.state.disputes).toBe(1);
     expect(response.state.syncing).toBe(true);
+    expect(response.state.configError).toBe(null);
+    expect(response.state.configErrors).toEqual([]);
     expect(response.state.owner).toBe("0xowner");
     expect(response.state.ownerIsContract).toBe(true);
+  });
+
+  it("includes config error when lastError is contract_not_found", async () => {
+    vi.mocked(verifyAdmin).mockResolvedValueOnce({
+      ok: true,
+      role: "root",
+      tokenId: "test",
+    });
+    vi.mocked(readOracleState).mockResolvedValueOnce({
+      chain: "mainnet",
+      contractAddress: "0xabc",
+      lastProcessedBlock: BigInt(100),
+      assertions: { a: {}, b: {} },
+      disputes: { c: {} },
+      sync: {
+        lastAttemptAt: null,
+        lastSuccessAt: "2020-01-01T00:00:00.000Z",
+        lastDurationMs: 123,
+        lastError: "contract_not_found",
+      },
+    } as unknown as Awaited<ReturnType<typeof readOracleState>>);
+
+    const request = new Request("http://localhost:3000/api/oracle/status");
+    const response = (await GET(request)) as unknown as {
+      state: { configError: string | null; configErrors: string[] };
+    };
+
+    expect(response.state.configError).toBe("contract_not_found");
+    expect(response.state.configErrors).toEqual(["contract_not_found"]);
   });
 
   it("returns redacted config for non-admin and caches response", async () => {
     const redactOracleConfigMock = vi.mocked(redactOracleConfig);
     const request = new Request(
-      "http://localhost:3000/api/oracle/status?foo=bar"
+      "http://localhost:3000/api/oracle/status?foo=bar",
     );
     const response = (await GET(request)) as unknown as {
       config: unknown;
@@ -167,7 +211,7 @@ describe("GET /api/oracle/status", () => {
     expect(cachedJson).toHaveBeenCalledWith(
       "oracle_api:/api/oracle/status?foo=bar",
       2_000,
-      expect.any(Function)
+      expect.any(Function),
     );
     expect(redactOracleConfigMock).toHaveBeenCalled();
     expect(response.config).toEqual({

@@ -1,5 +1,6 @@
 import { env } from "@/lib/env";
 import { hasDatabase, query } from "@/server/db";
+import { ensureSchema } from "@/server/schema";
 import { isIP } from "node:net";
 import { error } from "./response";
 
@@ -16,6 +17,15 @@ if (process.env.NODE_ENV !== "production")
 
 let lastRatePruneAtMs = 0;
 
+let schemaEnsured = false;
+async function ensureDb() {
+  if (!hasDatabase()) return;
+  if (!schemaEnsured) {
+    await ensureSchema();
+    schemaEnsured = true;
+  }
+}
+
 function getClientIp(request: Request) {
   try {
     const trustMode = (env.INSIGHT_TRUST_PROXY || "").toLowerCase();
@@ -29,6 +39,12 @@ function getClientIp(request: Request) {
         if (!s) return null;
         const comma = s.indexOf(",");
         if (comma >= 0) s = s.slice(0, comma).trim();
+        if (s.toLowerCase().startsWith("for=")) {
+          s = s.slice(4).trim();
+        }
+        if (s.startsWith('"') && s.endsWith('"') && s.length >= 2) {
+          s = s.slice(1, -1).trim();
+        }
         if (s.includes(".") && s.includes(":") && !s.includes("::")) {
           const parts = s.split(":");
           if (parts.length === 2) s = parts[0]?.trim() ?? s;
@@ -42,6 +58,16 @@ function getClientIp(request: Request) {
       }
     };
 
+    const forwardedFor = () => {
+      const header = request.headers.get("forwarded");
+      if (!header) return null;
+      const first = header.split(",")[0]?.trim() ?? "";
+      if (!first) return null;
+      const parts = first.split(";").map((p) => p.trim());
+      const forPart = parts.find((p) => p.toLowerCase().startsWith("for="));
+      return normalize(forPart ?? null);
+    };
+
     const cfRay = request.headers.get("cf-ray")?.trim() ?? "";
     const cf = normalize(request.headers.get("cf-connecting-ip"));
     if (trustCloudflare) {
@@ -50,10 +76,16 @@ function getClientIp(request: Request) {
     }
 
     if (cf) return cf;
+    const vercel = normalize(request.headers.get("x-vercel-forwarded-for"));
+    if (vercel) return vercel;
     const real = normalize(request.headers.get("x-real-ip"));
     if (real) return real;
+    const fly = normalize(request.headers.get("fly-client-ip"));
+    if (fly) return fly;
     const forwarded = normalize(request.headers.get("x-forwarded-for"));
     if (forwarded) return forwarded;
+    const std = forwardedFor();
+    if (std) return std;
     return "unknown";
   } catch {
     return "unknown";
@@ -191,24 +223,44 @@ export async function rateLimit(
   const clientId = ip === "unknown" ? getClientFallbackId(request) : ip;
   const now = Date.now();
   const store = (env.INSIGHT_RATE_LIMIT_STORE || "auto").toLowerCase();
-  const useDb = store === "db" || (store === "auto" && hasDatabase());
-  const useKv = store === "kv";
-  if (useKv) {
+
+  const wantMemory = store === "memory";
+  const wantDb = store === "db";
+  const wantKv = store === "kv" || store === "redis";
+  const wantAuto =
+    store === "auto" || store === "" || (!wantMemory && !wantDb && !wantKv);
+
+  if (hasDatabase() && (wantDb || wantKv || wantAuto)) {
     try {
-      const limited = await rateLimitKv(opts, clientId, now);
-      if (limited) return limited;
-      return null;
+      await ensureDb();
     } catch {
       void 0;
     }
   }
-  if (useDb) {
-    try {
-      return await rateLimitDb(opts, clientId, now);
-    } catch {
-      void 0;
+
+  if (!wantMemory && hasDatabase()) {
+    const primary = wantKv ? "kv" : "db";
+    const order =
+      wantAuto || wantDb || wantKv
+        ? primary === "kv"
+          ? (["kv", "db"] as const)
+          : (["db", "kv"] as const)
+        : ([] as const);
+
+    for (const mode of order) {
+      try {
+        const limited =
+          mode === "kv"
+            ? await rateLimitKv(opts, clientId, now)
+            : await rateLimitDb(opts, clientId, now);
+        if (limited) return limited;
+        return null;
+      } catch {
+        continue;
+      }
     }
   }
+
   if (insightRate.size > 5000 && now - lastRatePruneAtMs > 60_000) {
     lastRatePruneAtMs = now;
     for (const [k, v] of insightRate.entries()) {

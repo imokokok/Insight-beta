@@ -1,6 +1,5 @@
-.env.local
-.env.production
-.env.*.local
+.env*
+!.env.example
 .data/
 .next/
 .next-dev/
