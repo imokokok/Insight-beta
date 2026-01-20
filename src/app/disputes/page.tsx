@@ -28,6 +28,7 @@ export default function DisputesPage() {
   const [error, setError] = useState<string | null>(null);
   // const [refreshKey, setRefreshKey] = useState(0); // Removed unused state
   const [nextCursor, setNextCursor] = useState<number | null>(null);
+  const [voteTrackingEnabled, setVoteTrackingEnabled] = useState(true);
   const [filterStatus, setFilterStatus] = useState<DisputeStatus | "All">(
     "All",
   );
@@ -71,12 +72,14 @@ export default function DisputesPage() {
           items: Dispute[];
           total: number;
           nextCursor: number | null;
+          voteTrackingEnabled?: boolean;
         }>(`/api/oracle/disputes?${params.toString()}`, {
           signal: controller.signal,
         });
         if (cancelled) return;
         setItems(data.items ?? []);
         setNextCursor(data.nextCursor ?? null);
+        setVoteTrackingEnabled(data.voteTrackingEnabled ?? true);
       } catch (e) {
         if (!cancelled)
           setError(e instanceof Error ? e.message : "unknown_error");
@@ -108,9 +111,11 @@ export default function DisputesPage() {
         items: Dispute[];
         total: number;
         nextCursor: number | null;
+        voteTrackingEnabled?: boolean;
       }>(`/api/oracle/disputes?${params.toString()}`);
       setItems((prev) => prev.concat(data.items ?? []));
       setNextCursor(data.nextCursor ?? null);
+      setVoteTrackingEnabled(data.voteTrackingEnabled ?? voteTrackingEnabled);
     } catch (e) {
       setError(e instanceof Error ? e.message : "unknown_error");
     } finally {
@@ -295,60 +300,69 @@ export default function DisputesPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-3">
-                      <div>
-                        <div className="flex justify-between text-xs mb-1.5">
-                          <span className="flex items-center gap-1 font-medium text-emerald-700">
-                            <ThumbsUp size={12} /> {t("disputes.support")}
-                          </span>
-                          <span className="text-emerald-700 font-bold">
-                            {calculatePercentage(
-                              dispute.currentVotesFor,
-                              dispute.totalVotes,
-                            )}
-                            %
-                          </span>
-                        </div>
-                        <div className="h-2 w-full rounded-full bg-emerald-100 overflow-hidden">
-                          <div
-                            className="h-full rounded-full bg-emerald-500 transition-all duration-500"
-                            style={{
-                              width: `${calculatePercentage(dispute.currentVotesFor, dispute.totalVotes)}%`,
-                            }}
-                          />
-                        </div>
-                      </div>
+                    {voteTrackingEnabled ? (
+                      <>
+                        <div className="space-y-3">
+                          <div>
+                            <div className="flex justify-between text-xs mb-1.5">
+                              <span className="flex items-center gap-1 font-medium text-emerald-700">
+                                <ThumbsUp size={12} /> {t("disputes.support")}
+                              </span>
+                              <span className="text-emerald-700 font-bold">
+                                {calculatePercentage(
+                                  dispute.currentVotesFor,
+                                  dispute.totalVotes,
+                                )}
+                                %
+                              </span>
+                            </div>
+                            <div className="h-2 w-full rounded-full bg-emerald-100 overflow-hidden">
+                              <div
+                                className="h-full rounded-full bg-emerald-500 transition-all duration-500"
+                                style={{
+                                  width: `${calculatePercentage(dispute.currentVotesFor, dispute.totalVotes)}%`,
+                                }}
+                              />
+                            </div>
+                          </div>
 
-                      <div>
-                        <div className="flex justify-between text-xs mb-1.5">
-                          <span className="flex items-center gap-1 font-medium text-rose-700">
-                            <ThumbsDown size={12} /> {t("disputes.reject")}
-                          </span>
-                          <span className="text-rose-700 font-bold">
-                            {calculatePercentage(
+                          <div>
+                            <div className="flex justify-between text-xs mb-1.5">
+                              <span className="flex items-center gap-1 font-medium text-rose-700">
+                                <ThumbsDown size={12} /> {t("disputes.reject")}
+                              </span>
+                              <span className="text-rose-700 font-bold">
+                                {calculatePercentage(
+                                  dispute.currentVotesAgainst,
+                                  dispute.totalVotes,
+                                )}
+                                %
+                              </span>
+                            </div>
+                            <div className="h-2 w-full rounded-full bg-rose-100 overflow-hidden">
+                              <div
+                                className="h-full rounded-full bg-rose-500 transition-all duration-500"
+                                style={{
+                                  width: `${calculatePercentage(dispute.currentVotesAgainst, dispute.totalVotes)}%`,
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="text-xs text-center text-purple-400 pt-2">
+                          {t("disputes.totalVotesCast")}:{" "}
+                          {new Intl.NumberFormat(locale).format(
+                            dispute.currentVotesFor +
                               dispute.currentVotesAgainst,
-                              dispute.totalVotes,
-                            )}
-                            %
-                          </span>
+                          )}
                         </div>
-                        <div className="h-2 w-full rounded-full bg-rose-100 overflow-hidden">
-                          <div
-                            className="h-full rounded-full bg-rose-500 transition-all duration-500"
-                            style={{
-                              width: `${calculatePercentage(dispute.currentVotesAgainst, dispute.totalVotes)}%`,
-                            }}
-                          />
-                        </div>
+                      </>
+                    ) : (
+                      <div className="text-xs text-center text-purple-400 pt-2">
+                        {t("disputes.totalVotesCast")}: —
                       </div>
-                    </div>
-
-                    <div className="text-xs text-center text-purple-400 pt-2">
-                      {t("disputes.totalVotesCast")}:{" "}
-                      {new Intl.NumberFormat(locale).format(
-                        dispute.currentVotesFor + dispute.currentVotesAgainst,
-                      )}
-                    </div>
+                    )}
                   </div>
                 </div>
               </CardContent>

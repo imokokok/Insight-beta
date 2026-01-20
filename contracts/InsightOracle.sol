@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/utils/Pausable.sol";
 contract InsightOracle is Ownable, Pausable {
   uint256 public constant MAX_LIVENESS = 30 days;
   uint256 public constant MAX_ACTIVE_ASSERTIONS = 1000;
+  uint256 public constant DEFAULT_VOTE_WEIGHT = 1;
   event AssertionCreated(
     bytes32 indexed assertionId,
     address indexed asserter,
@@ -26,6 +27,7 @@ contract InsightOracle is Ownable, Pausable {
   );
 
   event AssertionResolved(bytes32 indexed assertionId, bool outcome, uint256 resolvedAt);
+  event VoteCast(bytes32 indexed assertionId, address indexed voter, bool support, uint256 weight);
   event BondChanged(uint256 oldBond, uint256 newBond);
 
   struct AssertionData {
@@ -42,6 +44,7 @@ contract InsightOracle is Ownable, Pausable {
 
   mapping(bytes32 => AssertionData) public assertions;
   mapping(address => uint256) public activeAssertions;
+  mapping(bytes32 => mapping(address => bool)) public hasVoted;
   uint256 public nonce;
   uint256 public defaultBond;
 
@@ -87,7 +90,18 @@ contract InsightOracle is Ownable, Pausable {
     );
   }
 
-  function disputeAssertion(bytes32 assertionId, string calldata reason) external whenNotPaused {
+  function disputeAssertion(bytes32 assertionId) external payable whenNotPaused {
+    _disputeAssertion(assertionId, "");
+  }
+
+  function disputeAssertion(
+    bytes32 assertionId,
+    string calldata reason
+  ) external payable whenNotPaused {
+    _disputeAssertion(assertionId, reason);
+  }
+
+  function _disputeAssertion(bytes32 assertionId, string memory reason) internal {
     AssertionData storage a = assertions[assertionId];
     require(a.assertedAt != 0, "missing");
     require(!a.resolved, "resolved");
@@ -95,6 +109,16 @@ contract InsightOracle is Ownable, Pausable {
     require(block.timestamp <= a.livenessEndsAt, "expired");
     a.disputed = true;
     emit AssertionDisputed(assertionId, msg.sender, reason, block.timestamp);
+  }
+
+  function castVote(bytes32 assertionId, bool support) external whenNotPaused {
+    AssertionData storage a = assertions[assertionId];
+    require(a.assertedAt != 0, "missing");
+    require(a.disputed, "not_disputed");
+    require(!a.resolved, "resolved");
+    require(!hasVoted[assertionId][msg.sender], "voted");
+    hasVoted[assertionId][msg.sender] = true;
+    emit VoteCast(assertionId, msg.sender, support, DEFAULT_VOTE_WEIGHT);
   }
 
   function resolveAssertion(bytes32 assertionId, bool outcome) external onlyOwner whenNotPaused {

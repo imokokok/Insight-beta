@@ -5,6 +5,7 @@ import "@testing-library/jest-dom";
 import OracleDetailPage from "./page";
 import * as utils from "@/lib/utils";
 import { Assertion, OracleConfig, Alert } from "@/lib/oracleTypes";
+import { WalletProvider } from "@/contexts/WalletContext";
 
 // Mock Next.js hooks
 vi.mock("next/navigation", () => ({
@@ -141,7 +142,11 @@ describe("OracleDetailPage", () => {
   });
 
   it("renders assertion details after loading", async () => {
-    render(<OracleDetailPage />);
+    render(
+      <WalletProvider>
+        <OracleDetailPage />
+      </WalletProvider>,
+    );
 
     // Wait for data
     await waitFor(() => {
@@ -154,7 +159,11 @@ describe("OracleDetailPage", () => {
   });
 
   it("opens dispute modal and passes required props", async () => {
-    render(<OracleDetailPage />);
+    render(
+      <WalletProvider>
+        <OracleDetailPage />
+      </WalletProvider>,
+    );
 
     await waitFor(() => {
       expect(screen.getByText("Assertion Details")).toBeInTheDocument();
@@ -171,12 +180,16 @@ describe("OracleDetailPage", () => {
         assertionId: mockAssertion.id,
         contractAddress: mockConfig.contractAddress,
         chain: mockConfig.chain,
-      })
+      }),
     );
   });
 
   it("renders alert events in the timeline when available", async () => {
-    render(<OracleDetailPage />);
+    render(
+      <WalletProvider>
+        <OracleDetailPage />
+      </WalletProvider>,
+    );
 
     await waitFor(() => {
       expect(screen.getByText("Assertion Details")).toBeInTheDocument();

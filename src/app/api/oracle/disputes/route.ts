@@ -7,6 +7,7 @@ import {
 } from "@/server/apiResponse";
 import { z } from "zod";
 import { isAddress } from "viem";
+import { env } from "@/lib/env";
 
 const disputesParamsSchema = z.object({
   status: z
@@ -60,7 +61,22 @@ export async function GET(request: Request) {
         cursor: params.cursor,
         disputer: params.disputer ?? undefined,
       });
-      return { items, total, nextCursor };
+      const degraded = ["1", "true"].includes(
+        (env.INSIGHT_VOTING_DEGRADATION || "").toLowerCase(),
+      );
+      const voteTrackingEnabled =
+        ["1", "true"].includes(
+          (env.INSIGHT_ENABLE_VOTING || "").toLowerCase(),
+        ) &&
+        !["1", "true"].includes(
+          (env.INSIGHT_DISABLE_VOTE_TRACKING || "").toLowerCase(),
+        );
+      return {
+        items,
+        total,
+        nextCursor,
+        voteTrackingEnabled: voteTrackingEnabled && !degraded,
+      };
     };
     if (params.sync === "1") return await compute();
     const cacheKey = `oracle_api:${url.pathname}${url.search}`;

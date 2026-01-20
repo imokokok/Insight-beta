@@ -31,6 +31,9 @@ import { useI18n } from "@/i18n/LanguageProvider";
 import { langToLocale } from "@/i18n/translations";
 import { useToast } from "@/components/ui/toast";
 import { useWatchlist } from "@/hooks/useWatchlist";
+import { useOracleTransaction } from "@/hooks/useOracleTransaction";
+import { useWallet } from "@/contexts/WalletContext";
+import { ConnectWallet } from "@/components/ConnectWallet";
 import type {
   Assertion,
   Dispute,
@@ -77,6 +80,13 @@ export default function OracleDetailPage() {
   const locale = langToLocale[lang];
   const { toast } = useToast();
   const { isWatched, toggleWatchlist, mounted } = useWatchlist();
+  const { address } = useWallet();
+  const {
+    execute: executeTx,
+    isSubmitting: isVoteSubmitting,
+    isConfirming: isVoteConfirming,
+    error: voteTxError,
+  } = useOracleTransaction();
 
   const copyToClipboard = async (text: string, label: string) => {
     try {
@@ -101,6 +111,7 @@ export default function OracleDetailPage() {
     config: OracleConfig;
     bondWei: string | null;
     bondEth: string | null;
+    voteTrackingEnabled: boolean;
   }>(id ? `/api/oracle/assertions/${id}` : null, fetchApiData, {
     refreshInterval: 30_000, // 延长刷新间隔到30秒
     dedupingInterval: 15_000, // 延长去重间隔到15秒
@@ -160,11 +171,29 @@ export default function OracleDetailPage() {
   }
 
   const { assertion, dispute } = data;
+  const voteTrackingEnabled = data.voteTrackingEnabled ?? true;
   const now = Date.now();
   const isLivenessExpired = new Date(assertion.livenessEndsAt).getTime() <= now;
   const canSettle =
     (assertion.status === "Pending" && isLivenessExpired) ||
     dispute?.status === "Pending Execution";
+
+  const canVote = Boolean(dispute && dispute.status === "Voting");
+  const submitVote = async (support: boolean) => {
+    await executeTx({
+      functionName: "castVote",
+      args: [assertion.id as `0x${string}`, support],
+      contractAddress: data.config.contractAddress,
+      chain: data.config.chain,
+      successTitle: t("oracle.tx.voteCastTitle"),
+      successMessage: support
+        ? t("oracle.tx.voteCastSupportMsg")
+        : t("oracle.tx.voteCastAgainstMsg"),
+      onConfirmed: () => {
+        void mutate();
+      },
+    });
+  };
 
   const exportEvidence = async (mode: "fast" | "logs") => {
     setExportingEvidence(mode);
@@ -546,37 +575,87 @@ export default function OracleDetailPage() {
                     <p className="leading-relaxed">{dispute.disputeReason}</p>
                   </div>
 
-                  <div className="space-y-3 pt-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="font-medium text-rose-700">
-                        {t("oracle.detail.support")}
-                      </span>
-                      <span className="font-bold text-rose-900">
-                        {dispute.currentVotesFor} {t("oracle.detail.votes")}
-                      </span>
+                  {voteTrackingEnabled ? (
+                    <div className="space-y-3 pt-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="font-medium text-rose-700">
+                          {t("oracle.detail.support")}
+                        </span>
+                        <span className="font-bold text-rose-900">
+                          {dispute.currentVotesFor} {t("oracle.detail.votes")}
+                        </span>
+                      </div>
+                      <div className="h-3 overflow-hidden rounded-full bg-rose-200/30 ring-1 ring-rose-200/50">
+                        <div
+                          className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 transition-all shadow-sm"
+                          style={{
+                            width: `${
+                              dispute.totalVotes > 0
+                                ? (dispute.currentVotesFor /
+                                    dispute.totalVotes) *
+                                  100
+                                : 0
+                            }%`,
+                          }}
+                        />
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="font-medium text-rose-700">
+                          {t("oracle.detail.against")}
+                        </span>
+                        <span className="font-bold text-rose-900">
+                          {dispute.currentVotesAgainst}{" "}
+                          {t("oracle.detail.votes")}
+                        </span>
+                      </div>
                     </div>
-                    <div className="h-3 overflow-hidden rounded-full bg-rose-200/30 ring-1 ring-rose-200/50">
-                      <div
-                        className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 transition-all shadow-sm"
-                        style={{
-                          width: `${
-                            dispute.totalVotes > 0
-                              ? (dispute.currentVotesFor / dispute.totalVotes) *
-                                100
-                              : 0
-                          }%`,
-                        }}
-                      />
+                  ) : null}
+
+                  {voteTrackingEnabled ? (
+                    <div className="pt-4 space-y-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="font-bold text-rose-900">
+                          {t("oracle.detail.voteOnDispute")}
+                        </div>
+                        <ConnectWallet />
+                      </div>
+
+                      {voteTxError ? (
+                        <div className="rounded-xl bg-white p-3 text-sm text-rose-700 shadow-sm ring-1 ring-rose-100/50">
+                          {voteTxError}
+                        </div>
+                      ) : null}
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          type="button"
+                          onClick={() => void submitVote(true)}
+                          disabled={
+                            !address ||
+                            !canVote ||
+                            isVoteSubmitting ||
+                            isVoteConfirming
+                          }
+                          className="w-full rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-500/20 hover:from-emerald-700 hover:to-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+                        >
+                          {t("oracle.detail.support")}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void submitVote(false)}
+                          disabled={
+                            !address ||
+                            !canVote ||
+                            isVoteSubmitting ||
+                            isVoteConfirming
+                          }
+                          className="w-full rounded-xl bg-gradient-to-r from-rose-600 to-rose-500 py-3 text-sm font-bold text-white shadow-lg shadow-rose-500/20 hover:from-rose-700 hover:to-rose-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+                        >
+                          {t("oracle.detail.against")}
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="font-medium text-rose-700">
-                        {t("oracle.detail.against")}
-                      </span>
-                      <span className="font-bold text-rose-900">
-                        {dispute.currentVotesAgainst} {t("oracle.detail.votes")}
-                      </span>
-                    </div>
-                  </div>
+                  ) : null}
 
                   <a
                     href="https://vote.umaproject.org/"

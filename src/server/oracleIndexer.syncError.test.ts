@@ -30,8 +30,14 @@ const {
   readOracleConfig,
   readOracleState,
   getSyncState,
+  fetchAssertion,
+  fetchDispute,
+  upsertAssertion,
+  upsertDispute,
   updateSyncState,
   insertSyncMetric,
+  insertVoteEvent,
+  recomputeDisputeVotes,
   createOrTouchAlert,
   readAlertRules,
   createPublicClient,
@@ -41,8 +47,14 @@ const {
   readOracleConfig: vi.fn(),
   readOracleState: vi.fn(),
   getSyncState: vi.fn<() => Promise<SyncStateLike>>(),
+  fetchAssertion: vi.fn(),
+  fetchDispute: vi.fn(),
+  upsertAssertion: vi.fn(),
+  upsertDispute: vi.fn(),
   updateSyncState: vi.fn(),
   insertSyncMetric: vi.fn(),
+  insertVoteEvent: vi.fn(),
+  recomputeDisputeVotes: vi.fn(),
   createOrTouchAlert: vi.fn(),
   readAlertRules: vi.fn<() => Promise<AlertRuleLike[]>>(),
   createPublicClient: vi.fn(),
@@ -55,14 +67,14 @@ vi.mock("./oracleConfig", () => ({ readOracleConfig }));
 vi.mock("./oracleState", () => ({
   readOracleState,
   getSyncState,
-  fetchAssertion: vi.fn(),
-  fetchDispute: vi.fn(),
-  upsertAssertion: vi.fn(),
-  upsertDispute: vi.fn(),
+  fetchAssertion,
+  fetchDispute,
+  upsertAssertion,
+  upsertDispute,
   updateSyncState,
   insertSyncMetric,
-  insertVoteEvent: vi.fn(),
-  recomputeDisputeVotes: vi.fn(),
+  insertVoteEvent,
+  recomputeDisputeVotes,
 }));
 
 vi.mock("./observability", () => ({
@@ -81,6 +93,9 @@ vi.mock("@/lib/env", () => ({
     POLYGON_RPC_URL: "",
     ARBITRUM_RPC_URL: "",
     OPTIMISM_RPC_URL: "",
+    INSIGHT_ENABLE_VOTING: "true",
+    INSIGHT_DISABLE_VOTE_TRACKING: "false",
+    INSIGHT_VOTING_DEGRADATION: "false",
   },
 }));
 
@@ -237,5 +252,103 @@ describe("oracleIndexer sync error handling", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it("stores VoteCast logs and recomputes dispute votes", async () => {
+    getSyncState.mockResolvedValue({
+      ...baseSyncState,
+      lastProcessedBlock: 0n,
+      consecutiveFailures: 0,
+    });
+
+    const assertionId = `0x${"11".repeat(32)}`;
+    const voter = "0x2222222222222222222222222222222222222222";
+    const asserter = "0x3333333333333333333333333333333333333333";
+    const disputer = "0x4444444444444444444444444444444444444444";
+
+    fetchAssertion.mockResolvedValue(null);
+    fetchDispute.mockResolvedValue(null);
+
+    createPublicClient.mockReturnValue({
+      getBytecode: vi.fn(async () => "0x1234"),
+      getBlockNumber: vi.fn(async () => 20n),
+      getLogs: vi.fn(async (opts: { event?: unknown } | undefined) => {
+        const ev = opts?.event;
+        if (typeof ev !== "string") return [];
+        if (ev.includes("AssertionCreated")) {
+          return [
+            {
+              args: {
+                assertionId,
+                asserter,
+                protocol: "Demo",
+                market: "ETH/USD",
+                assertion: "YES",
+                bondUsd: 100n,
+                assertedAt: 1n,
+                livenessEndsAt: 2n,
+                txHash: `0x${"00".repeat(32)}`,
+              },
+              transactionHash: `0x${"aa".repeat(32)}`,
+              blockNumber: 10n,
+              logIndex: 0,
+            },
+          ];
+        }
+        if (ev.includes("AssertionDisputed")) {
+          return [
+            {
+              args: {
+                assertionId,
+                disputer,
+                reason: "Because",
+                disputedAt: 3n,
+              },
+              transactionHash: `0x${"bb".repeat(32)}`,
+              blockNumber: 11n,
+              logIndex: 1,
+            },
+          ];
+        }
+        if (ev.includes("VoteCast")) {
+          return [
+            {
+              args: {
+                assertionId,
+                voter,
+                support: true,
+                weight: 1n,
+              },
+              transactionHash: `0x${"cc".repeat(32)}`,
+              blockNumber: 12n,
+              logIndex: 2,
+            },
+          ];
+        }
+        return [];
+      }),
+    });
+
+    insertVoteEvent.mockResolvedValue(true);
+
+    const result = await ensureOracleSynced();
+    expect(result.updated).toBe(true);
+
+    expect(insertVoteEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        assertionId,
+        voter,
+        support: true,
+        weight: 1n,
+      }),
+    );
+    expect(recomputeDisputeVotes).toHaveBeenCalledWith(assertionId);
+    expect(upsertDispute).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: `D:${assertionId}`,
+        assertionId,
+        status: "Voting",
+      }),
+    );
   });
 });

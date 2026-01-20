@@ -97,6 +97,30 @@ export const env = {
   get INSIGHT_DEFAULT_EMAIL() {
     return (process.env.INSIGHT_DEFAULT_EMAIL ?? "").trim();
   },
+  get INSIGHT_ENABLE_VOTING() {
+    return (process.env.INSIGHT_ENABLE_VOTING ?? "").trim();
+  },
+  get INSIGHT_DISABLE_VOTE_TRACKING() {
+    return (process.env.INSIGHT_DISABLE_VOTE_TRACKING ?? "").trim();
+  },
+  get INSIGHT_VOTING_DEGRADATION() {
+    return (process.env.INSIGHT_VOTING_DEGRADATION ?? "").trim();
+  },
+  get INSIGHT_REFERENCE_PRICE_PROVIDER() {
+    return (process.env.INSIGHT_REFERENCE_PRICE_PROVIDER ?? "").trim();
+  },
+  get INSIGHT_PRICE_SYMBOL() {
+    return (process.env.INSIGHT_PRICE_SYMBOL ?? "").trim();
+  },
+  get INSIGHT_DEX_TWAP_POOL() {
+    return (process.env.INSIGHT_DEX_TWAP_POOL ?? "").trim();
+  },
+  get INSIGHT_DEX_TWAP_SECONDS() {
+    return (process.env.INSIGHT_DEX_TWAP_SECONDS ?? "").trim();
+  },
+  get INSIGHT_DEX_PRICE_INVERT() {
+    return (process.env.INSIGHT_DEX_PRICE_INVERT ?? "").trim();
+  },
   get POLYGON_AMOY_RPC_URL() {
     return (process.env.POLYGON_AMOY_RPC_URL ?? "").trim();
   },
@@ -226,6 +250,36 @@ const envSchema = z.object({
   INSIGHT_SMTP_PASS: z.string().optional(),
   INSIGHT_FROM_EMAIL: z.string().email().optional(),
   INSIGHT_DEFAULT_EMAIL: z.string().email().optional(),
+  INSIGHT_ENABLE_VOTING: z.enum(["true", "false", "1", "0"]).optional(),
+  INSIGHT_DISABLE_VOTE_TRACKING: z.enum(["true", "false", "1", "0"]).optional(),
+  INSIGHT_VOTING_DEGRADATION: z.enum(["true", "false", "1", "0"]).optional(),
+  INSIGHT_REFERENCE_PRICE_PROVIDER: z
+    .enum(["binance", "coinbase", "mock"])
+    .optional(),
+  INSIGHT_PRICE_SYMBOL: z
+    .string()
+    .optional()
+    .transform((v) => (v ?? "").trim())
+    .refine((v) => !v || /^[A-Z0-9]{1,12}$/.test(v), {
+      message: "invalid_price_symbol",
+    }),
+  INSIGHT_DEX_TWAP_POOL: z
+    .string()
+    .optional()
+    .transform((v) => (v ?? "").trim())
+    .refine((v) => !v || /^0x[a-fA-F0-9]{40}$/.test(v), {
+      message: "invalid_dex_twap_pool",
+    }),
+  INSIGHT_DEX_TWAP_SECONDS: z.preprocess(
+    (v) => (v === "" ? undefined : v),
+    z.coerce
+      .number()
+      .int()
+      .min(60)
+      .max(7 * 24 * 3600)
+      .optional(),
+  ),
+  INSIGHT_DEX_PRICE_INVERT: z.enum(["true", "false", "1", "0"]).optional(),
   INSIGHT_BASE_URL: z.string().url().optional(),
   INSIGHT_CSP_MODE: z.enum(["relaxed", "strict"]).optional(),
   NEXT_PUBLIC_INSIGHT_ORACLE_ADDRESS: z

@@ -85,7 +85,7 @@ describe("Utils", () => {
 
     const { logger } = await import("./logger");
 
-    const token = "b1ed563a66f24a18df41688fd2e44c40";
+    const token = "test_token_32_chars_0000000000000";
     const url = `https://rpc.ankr.com/polygon_amoy/${token}?apiKey=secret#hash`;
 
     logger.info(`rpc request failed: ${url}`, {

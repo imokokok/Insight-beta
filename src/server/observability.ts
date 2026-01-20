@@ -59,6 +59,11 @@ export type AlertRuleEvent =
   | "dispute_created"
   | "sync_error"
   | "stale_sync"
+  | "contract_paused"
+  | "sync_backlog"
+  | "backlog_assertions"
+  | "backlog_disputes"
+  | "market_stale"
   | "execution_delayed"
   | "low_participation"
   | "high_vote_divergence"
@@ -129,6 +134,11 @@ const validRuleEvents: AlertRuleEvent[] = [
   "dispute_created",
   "sync_error",
   "stale_sync",
+  "contract_paused",
+  "sync_backlog",
+  "backlog_assertions",
+  "backlog_disputes",
+  "market_stale",
   "execution_delayed",
   "low_participation",
   "high_vote_divergence",
@@ -181,6 +191,38 @@ function normalizeRuleParams(
     const maxAgeMs = getNumber("maxAgeMs");
     const v =
       Number.isFinite(maxAgeMs) && maxAgeMs > 0 ? maxAgeMs : 5 * 60 * 1000;
+    return setNumber("maxAgeMs", v);
+  }
+
+  if (event === "sync_backlog") {
+    const maxLagBlocks = getNumber("maxLagBlocks");
+    const v =
+      Number.isFinite(maxLagBlocks) && maxLagBlocks > 0 ? maxLagBlocks : 200;
+    return setNumber("maxLagBlocks", v);
+  }
+
+  if (event === "backlog_assertions") {
+    const maxOpenAssertions = getNumber("maxOpenAssertions");
+    const v =
+      Number.isFinite(maxOpenAssertions) && maxOpenAssertions > 0
+        ? maxOpenAssertions
+        : 50;
+    return setNumber("maxOpenAssertions", v);
+  }
+
+  if (event === "backlog_disputes") {
+    const maxOpenDisputes = getNumber("maxOpenDisputes");
+    const v =
+      Number.isFinite(maxOpenDisputes) && maxOpenDisputes > 0
+        ? maxOpenDisputes
+        : 20;
+    return setNumber("maxOpenDisputes", v);
+  }
+
+  if (event === "market_stale") {
+    const maxAgeMs = getNumber("maxAgeMs");
+    const v =
+      Number.isFinite(maxAgeMs) && maxAgeMs > 0 ? maxAgeMs : 6 * 60 * 60_000;
     return setNumber("maxAgeMs", v);
   }
 
@@ -437,6 +479,13 @@ export async function readAlertRules(): Promise<AlertRule[]> {
       severity: "critical",
     },
     {
+      id: "contract_paused",
+      name: "Contract paused",
+      enabled: true,
+      event: "contract_paused",
+      severity: "critical",
+    },
+    {
       id: "execution_delayed_30m",
       name: "Execution delayed > 30m",
       enabled: true,
@@ -482,6 +531,38 @@ export async function readAlertRules(): Promise<AlertRule[]> {
       event: "stale_sync",
       severity: "warning",
       params: { maxAgeMs: 5 * 60 * 1000 },
+    },
+    {
+      id: "sync_backlog_200",
+      name: "Sync backlog > 200 blocks",
+      enabled: true,
+      event: "sync_backlog",
+      severity: "warning",
+      params: { maxLagBlocks: 200 },
+    },
+    {
+      id: "backlog_assertions_50",
+      name: "Open assertions > 50",
+      enabled: true,
+      event: "backlog_assertions",
+      severity: "warning",
+      params: { maxOpenAssertions: 50 },
+    },
+    {
+      id: "backlog_disputes_20",
+      name: "Open disputes > 20",
+      enabled: true,
+      event: "backlog_disputes",
+      severity: "warning",
+      params: { maxOpenDisputes: 20 },
+    },
+    {
+      id: "market_stale_6h",
+      name: "Market stale > 6h",
+      enabled: true,
+      event: "market_stale",
+      severity: "warning",
+      params: { maxAgeMs: 6 * 60 * 60_000 },
     },
     {
       id: "slow_api_request",

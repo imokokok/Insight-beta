@@ -24,7 +24,7 @@ describe("InsightOracle", () => {
         "ETH > $4,000 on 2026-03-31",
         "Outcome is YES",
         1500,
-        24 * 3600
+        24 * 3600,
       );
 
     await expect(createTx)
@@ -38,7 +38,7 @@ describe("InsightOracle", () => {
         1500,
         anyValue,
         anyValue,
-        anyValue
+        anyValue,
       );
 
     const receipt = await createTx.wait();
@@ -57,7 +57,7 @@ describe("InsightOracle", () => {
         }
       })
       .find(
-        (e): e is ParsedEvent => e !== null && e.name === "AssertionCreated"
+        (e): e is ParsedEvent => e !== null && e.name === "AssertionCreated",
       );
     if (!parsed) throw new Error("missing_AssertionCreated");
 
@@ -66,7 +66,7 @@ describe("InsightOracle", () => {
 
     const disputeTx = await oracle
       .connect(disputer)
-      .disputeAssertion(assertionId, "Reason");
+      ["disputeAssertion(bytes32,string)"](assertionId, "Reason");
     await expect(disputeTx)
       .to.emit(oracle, "AssertionDisputed")
       .withArgs(assertionId, disputer.address, "Reason", anyValue);
@@ -87,7 +87,7 @@ describe("InsightOracle", () => {
     expect(await oracle.getBond()).to.equal(0);
 
     await expect(
-      oracle.connect(user).setDefaultBond(1000)
+      oracle.connect(user).setDefaultBond(1000),
     ).to.be.revertedWithCustomError(oracle, "OwnableUnauthorizedAccount");
 
     await expect(oracle.connect(owner).setDefaultBond(1000))
@@ -103,13 +103,13 @@ describe("InsightOracle", () => {
     await oracle.connect(owner).pause();
 
     await expect(
-      oracle.connect(user).createAssertion("P", "M", "A", 100, 100)
+      oracle.connect(user).createAssertion("P", "M", "A", 100, 100),
     ).to.be.revertedWithCustomError(oracle, "EnforcedPause");
 
     await oracle.connect(owner).unpause();
 
     await expect(
-      oracle.connect(user).createAssertion("P", "M", "A", 100, 100)
+      oracle.connect(user).createAssertion("P", "M", "A", 100, 100),
     ).to.emit(oracle, "AssertionCreated");
   });
 
@@ -129,16 +129,18 @@ describe("InsightOracle", () => {
     });
     const assertionId = oracle.interface.parseLog(log).args.assertionId;
 
-    await oracle.connect(disputer).disputeAssertion(assertionId, "Reason");
+    await oracle
+      .connect(disputer)
+      ["disputeAssertion(bytes32,string)"](assertionId, "Reason");
 
     await time.increase(100 + 1);
 
     await expect(
-      oracle.connect(user).resolveAssertion(assertionId, true)
+      oracle.connect(user).resolveAssertion(assertionId, true),
     ).to.be.revertedWithCustomError(oracle, "OwnableUnauthorizedAccount");
 
     await expect(
-      oracle.connect(owner).resolveAssertion(assertionId, true)
+      oracle.connect(owner).resolveAssertion(assertionId, true),
     ).to.emit(oracle, "AssertionResolved");
   });
 
@@ -146,13 +148,15 @@ describe("InsightOracle", () => {
     const { oracle, user } = await deployOracle();
 
     await expect(
-      oracle.connect(user).createAssertion("P", "M", "A", 100, 0)
+      oracle.connect(user).createAssertion("P", "M", "A", 100, 0),
     ).to.be.revertedWith("liveness");
 
     const maxLiveness = await oracle.MAX_LIVENESS();
 
     await expect(
-      oracle.connect(user).createAssertion("P", "M", "A", 100, maxLiveness + 1n)
+      oracle
+        .connect(user)
+        .createAssertion("P", "M", "A", 100, maxLiveness + 1n),
     ).to.be.revertedWith("liveness");
   });
 
@@ -166,7 +170,40 @@ describe("InsightOracle", () => {
     }
 
     await expect(
-      oracle.connect(user).createAssertion("P", "M", "A", 100, 100)
+      oracle.connect(user).createAssertion("P", "M", "A", 100, 100),
     ).to.be.revertedWith("rate");
+  });
+
+  it("emits VoteCast for disputes and prevents double voting", async () => {
+    const { oracle, user, disputer, other } = await deployOracle();
+
+    const createTx = await oracle
+      .connect(user)
+      .createAssertion("P", "M", "A", 100, 100);
+    const receipt = await createTx.wait();
+    const log = receipt.logs.find((l: any) => {
+      try {
+        return oracle.interface.parseLog(l).name === "AssertionCreated";
+      } catch {
+        return false;
+      }
+    });
+    const assertionId = oracle.interface.parseLog(log).args.assertionId;
+
+    await expect(
+      oracle.connect(other).castVote(assertionId, true),
+    ).to.be.revertedWith("not_disputed");
+
+    await oracle
+      .connect(disputer)
+      ["disputeAssertion(bytes32,string)"](assertionId, "Reason");
+
+    await expect(oracle.connect(other).castVote(assertionId, true))
+      .to.emit(oracle, "VoteCast")
+      .withArgs(assertionId, other.address, true, 1);
+
+    await expect(
+      oracle.connect(other).castVote(assertionId, false),
+    ).to.be.revertedWith("voted");
   });
 });

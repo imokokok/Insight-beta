@@ -32,21 +32,31 @@ export function DisputeModal({
   const { execute, isSubmitting, isConfirming, error } = useOracleTransaction();
   const { t } = useI18n();
   const [bond, setBond] = useState(defaultBondEth ?? "0.1");
+  const [reason, setReason] = useState("");
+  const [validationError, setValidationError] = useState<string | null>(null);
   const dialogRef = useRef<HTMLDivElement | null>(null);
   useModalBehavior(isOpen, onClose, dialogRef);
 
   useEffect(() => {
     if (!isOpen) return;
     if (defaultBondEth) setBond(defaultBondEth);
+    setReason("");
+    setValidationError(null);
   }, [defaultBondEth, isOpen]);
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setValidationError(null);
+    const trimmedReason = reason.trim();
+    if (!trimmedReason) {
+      setValidationError(t("oracle.detail.reasonRequired"));
+      return;
+    }
     await execute({
       functionName: "disputeAssertion",
-      args: [assertionId as `0x${string}`],
+      args: [assertionId as `0x${string}`, trimmedReason],
       value: bond,
       contractAddress,
       chain,
@@ -97,6 +107,13 @@ export function DisputeModal({
           </div>
         )}
 
+        {validationError && (
+          <div className="mb-4 flex items-center gap-2 rounded-lg bg-red-50 p-3 text-sm text-red-600">
+            <AlertCircle size={16} />
+            {validationError}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <p className="text-sm text-gray-600">
             {t("oracle.disputeModal.desc")}
@@ -104,6 +121,20 @@ export function DisputeModal({
 
           <div className="rounded-md bg-yellow-50 p-3 text-sm text-yellow-700 border border-yellow-200">
             {t("oracle.disputeModal.warning")}
+          </div>
+
+          <div>
+            <label className="mb-1 flex items-center gap-1.5 text-sm font-medium text-gray-700">
+              {t("oracle.detail.reasonForDispute")}
+            </label>
+            <textarea
+              required
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              rows={3}
+              placeholder={t("oracle.detail.reasonPlaceholder")}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+            />
           </div>
 
           <div>
@@ -141,10 +172,10 @@ export function DisputeModal({
               {!address
                 ? t("wallet.connect")
                 : isSubmitting
-                ? t("oracle.detail.submitting")
-                : isConfirming
-                ? t("oracle.detail.confirming")
-                : t("oracle.disputeModal.submit")}
+                  ? t("oracle.detail.submitting")
+                  : isConfirming
+                    ? t("oracle.detail.confirming")
+                    : t("oracle.disputeModal.submit")}
             </button>
           </div>
         </form>

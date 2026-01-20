@@ -13,10 +13,12 @@ import { createOrTouchAlert, readAlertRules } from "@/server/observability";
 import { getSyncState, readOracleState } from "@/server/oracle";
 import { writeJsonFile } from "@/server/kvStore";
 import { fetchCurrentPrice } from "@/server/oracle/priceFetcher";
-import { createPublicClient, http, formatEther } from "viem";
+import { createPublicClient, http, formatEther, parseAbi } from "viem";
 
 const SYNC_INTERVAL = 15000; // 15 seconds
 const workerAlertCooldown = new Map<string, number>();
+
+const pausableAbi = parseAbi(["function paused() view returns (bool)"]);
 
 export async function tryAcquireWorkerLock() {
   if (!hasDatabase()) return true;
@@ -125,6 +127,15 @@ async function tickWorker() {
 
     const rules = await readAlertRules();
     const state = await getSyncState();
+    const degraded = ["1", "true"].includes(
+      (env.INSIGHT_VOTING_DEGRADATION || "").toLowerCase(),
+    );
+    const voteTrackingEnabled =
+      ["1", "true"].includes((env.INSIGHT_ENABLE_VOTING || "").toLowerCase()) &&
+      !["1", "true"].includes(
+        (env.INSIGHT_DISABLE_VOTE_TRACKING || "").toLowerCase(),
+      );
+    const effectiveVoteTrackingEnabled = voteTrackingEnabled && !degraded;
 
     const shouldEmit = (
       event: string,
@@ -171,6 +182,29 @@ async function tickWorker() {
       return Math.min(30 * 24 * 60 * 60_000, Math.max(60_000, Math.round(raw)));
     };
 
+    if (missingConfig) {
+      const syncErrorRules = rules.filter(
+        (r) => r.enabled && r.event === "sync_error",
+      );
+      for (const rule of syncErrorRules) {
+        const fingerprint = `${rule.id}:${state.chain}:${
+          state.contractAddress ?? "unknown"
+        }`;
+        if (!shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule)))
+          continue;
+        await createOrTouchAlert({
+          fingerprint,
+          type: rule.event,
+          severity: rule.severity,
+          title: "Oracle sync error",
+          message: "missing_config",
+          entityType: "oracle",
+          entityId: state.contractAddress,
+          notify: notifyForRule(rule),
+        });
+      }
+    }
+
     const staleRules = rules.filter(
       (r) => r.enabled && r.event === "stale_sync",
     );
@@ -211,6 +245,194 @@ async function tickWorker() {
       }
     }
 
+    const pausedRules = rules.filter(
+      (r) => r.enabled && r.event === "contract_paused",
+    );
+    if (pausedRules.length > 0 && state.contractAddress && state.rpcActiveUrl) {
+      try {
+        const client = createPublicClient({
+          transport: http(state.rpcActiveUrl),
+        });
+        const paused = (await client.readContract({
+          address: state.contractAddress as `0x${string}`,
+          abi: pausableAbi,
+          functionName: "paused",
+          args: [],
+        })) as boolean;
+        if (paused) {
+          for (const rule of pausedRules) {
+            const fingerprint = `${rule.id}:${state.chain}:${
+              state.contractAddress ?? "unknown"
+            }`;
+            if (!shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule)))
+              continue;
+            await createOrTouchAlert({
+              fingerprint,
+              type: rule.event,
+              severity: rule.severity,
+              title: "Contract paused",
+              message: "paused() returned true",
+              entityType: "oracle",
+              entityId: state.contractAddress,
+              notify: notifyForRule(rule),
+            });
+          }
+        }
+      } catch {
+        void 0;
+      }
+    }
+
+    const backlogRules = rules.filter(
+      (r) =>
+        r.enabled &&
+        (r.event === "sync_backlog" ||
+          r.event === "backlog_assertions" ||
+          r.event === "backlog_disputes" ||
+          r.event === "market_stale"),
+    );
+
+    if (backlogRules.length > 0) {
+      const lagBlocks =
+        state.latestBlock !== null &&
+        state.latestBlock !== undefined &&
+        state.lastProcessedBlock !== null &&
+        state.lastProcessedBlock !== undefined
+          ? state.latestBlock - state.lastProcessedBlock
+          : null;
+
+      const oracleState = await readOracleState();
+      const assertions = Object.values(oracleState.assertions);
+      const disputes = Object.values(oracleState.disputes);
+
+      const openAssertions = assertions.filter(
+        (a) => a.status !== "Resolved",
+      ).length;
+      const openDisputes = disputes.filter(
+        (d) => d.status !== "Executed",
+      ).length;
+      const newestAssertedAtMs = assertions.reduce((acc, a) => {
+        const ms = Date.parse(a.assertedAt);
+        if (!Number.isFinite(ms)) return acc;
+        return Math.max(acc, ms);
+      }, 0);
+
+      for (const rule of backlogRules) {
+        if (rule.event === "sync_backlog") {
+          const maxLagBlocks = Number(
+            (rule.params as { maxLagBlocks?: unknown } | undefined)
+              ?.maxLagBlocks ?? 200,
+          );
+          if (!Number.isFinite(maxLagBlocks) || maxLagBlocks <= 0) continue;
+          if (lagBlocks === null) continue;
+          if (lagBlocks <= BigInt(Math.floor(maxLagBlocks))) continue;
+          const fingerprint = `${rule.id}:${state.chain}:${
+            state.contractAddress ?? "unknown"
+          }`;
+          if (!shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule)))
+            continue;
+          await createOrTouchAlert({
+            fingerprint,
+            type: rule.event,
+            severity: rule.severity,
+            title: "Sync backlog high",
+            message: `lagBlocks ${lagBlocks.toString(10)} > ${Math.floor(
+              maxLagBlocks,
+            )}`,
+            entityType: "oracle",
+            entityId: state.contractAddress,
+            notify: notifyForRule(rule),
+          });
+        }
+
+        if (rule.event === "backlog_assertions") {
+          const maxOpenAssertions = Number(
+            (rule.params as { maxOpenAssertions?: unknown } | undefined)
+              ?.maxOpenAssertions ?? 50,
+          );
+          if (
+            !Number.isFinite(maxOpenAssertions) ||
+            maxOpenAssertions <= 0 ||
+            openAssertions <= maxOpenAssertions
+          )
+            continue;
+          const fingerprint = `${rule.id}:${state.chain}:${
+            state.contractAddress ?? "unknown"
+          }`;
+          if (!shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule)))
+            continue;
+          await createOrTouchAlert({
+            fingerprint,
+            type: rule.event,
+            severity: rule.severity,
+            title: "Assertion backlog high",
+            message: `${openAssertions} open assertions > ${Math.floor(
+              maxOpenAssertions,
+            )}`,
+            entityType: "oracle",
+            entityId: state.contractAddress,
+            notify: notifyForRule(rule),
+          });
+        }
+
+        if (rule.event === "backlog_disputes") {
+          const maxOpenDisputes = Number(
+            (rule.params as { maxOpenDisputes?: unknown } | undefined)
+              ?.maxOpenDisputes ?? 20,
+          );
+          if (
+            !Number.isFinite(maxOpenDisputes) ||
+            maxOpenDisputes <= 0 ||
+            openDisputes <= maxOpenDisputes
+          )
+            continue;
+          const fingerprint = `${rule.id}:${state.chain}:${
+            state.contractAddress ?? "unknown"
+          }`;
+          if (!shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule)))
+            continue;
+          await createOrTouchAlert({
+            fingerprint,
+            type: rule.event,
+            severity: rule.severity,
+            title: "Dispute backlog high",
+            message: `${openDisputes} open disputes > ${Math.floor(
+              maxOpenDisputes,
+            )}`,
+            entityType: "oracle",
+            entityId: state.contractAddress,
+            notify: notifyForRule(rule),
+          });
+        }
+
+        if (rule.event === "market_stale") {
+          const maxAgeMs = Number(
+            (rule.params as { maxAgeMs?: unknown } | undefined)?.maxAgeMs ??
+              6 * 60 * 60_000,
+          );
+          if (!Number.isFinite(maxAgeMs) || maxAgeMs <= 0) continue;
+          if (newestAssertedAtMs <= 0) continue;
+          const ageMs = nowMs - newestAssertedAtMs;
+          if (ageMs <= maxAgeMs) continue;
+          const fingerprint = `${rule.id}:${state.chain}:${
+            state.contractAddress ?? "unknown"
+          }`;
+          if (!shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule)))
+            continue;
+          await createOrTouchAlert({
+            fingerprint,
+            type: rule.event,
+            severity: rule.severity,
+            title: "Market data stale",
+            message: `last assertion ${Math.round(ageMs / 60_000)}m ago`,
+            entityType: "oracle",
+            entityId: state.contractAddress,
+            notify: notifyForRule(rule),
+          });
+        }
+      }
+    }
+
     const disputeRules = rules.filter(
       (r) =>
         r.enabled &&
@@ -219,7 +441,7 @@ async function tickWorker() {
           r.event === "high_vote_divergence"),
     );
 
-    if (disputeRules.length > 0) {
+    if (disputeRules.length > 0 && effectiveVoteTrackingEnabled) {
       const oracleState = await readOracleState();
       const disputes = Object.values(oracleState.disputes);
 
@@ -360,9 +582,10 @@ async function tickWorker() {
       (r) => r.enabled && r.event === "price_deviation",
     );
     if (deviationRules.length > 0) {
-      // In a real app, symbol would be dynamic based on contract
-      const symbol = "ETH";
-      const { referencePrice, oraclePrice } = await fetchCurrentPrice(symbol);
+      const symbol = env.INSIGHT_PRICE_SYMBOL || "ETH";
+      const { referencePrice, oraclePrice } = await fetchCurrentPrice(symbol, {
+        rpcUrl: state.rpcActiveUrl ?? null,
+      });
       const deviation =
         referencePrice > 0
           ? Math.abs(oraclePrice - referencePrice) / referencePrice
@@ -699,3 +922,7 @@ const embeddedWorkerDisabled = ["1", "true"].includes(
 );
 
 if (!embeddedWorkerDisabled) startWorker();
+
+export async function tickWorkerOnce() {
+  await tickWorker();
+}

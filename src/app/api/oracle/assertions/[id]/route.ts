@@ -8,6 +8,7 @@ import {
 } from "@/server/oracle";
 import { cachedJson, error, handleApi, rateLimit } from "@/server/apiResponse";
 import { verifyAdmin } from "@/server/adminAuth";
+import { env } from "@/lib/env";
 
 export async function GET(
   request: Request,
@@ -35,6 +36,16 @@ export async function GET(
 
       const dispute = await getDisputeByAssertionId(id);
       const config = await readOracleConfig();
+      const degraded = ["1", "true"].includes(
+        (env.INSIGHT_VOTING_DEGRADATION || "").toLowerCase(),
+      );
+      const voteTrackingEnabled =
+        ["1", "true"].includes(
+          (env.INSIGHT_ENABLE_VOTING || "").toLowerCase(),
+        ) &&
+        !["1", "true"].includes(
+          (env.INSIGHT_DISABLE_VOTE_TRACKING || "").toLowerCase(),
+        );
 
       const envConfig = await getOracleEnv();
       const { bondWei, bondEth } = await getBondData(
@@ -48,6 +59,7 @@ export async function GET(
         config: includeSecrets ? config : redactOracleConfig(config),
         bondWei,
         bondEth,
+        voteTrackingEnabled: voteTrackingEnabled && !degraded,
       };
     };
 

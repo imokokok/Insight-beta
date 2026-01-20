@@ -204,6 +204,15 @@ async function syncOracleOnce(): Promise<{
     votingPeriodMs,
     confirmationBlocks,
   } = await getOracleEnv();
+  const degraded = ["1", "true"].includes(
+    (env.INSIGHT_VOTING_DEGRADATION || "").toLowerCase(),
+  );
+  const voteTrackingEnabled =
+    ["1", "true"].includes((env.INSIGHT_ENABLE_VOTING || "").toLowerCase()) &&
+    !["1", "true"].includes(
+      (env.INSIGHT_DISABLE_VOTE_TRACKING || "").toLowerCase(),
+    );
+  const effectiveVoteTrackingEnabled = voteTrackingEnabled && !degraded;
   const syncState = await getSyncState();
   let lastProcessedBlock = syncState.lastProcessedBlock;
   const alertRules = await readAlertRules();
@@ -360,13 +369,15 @@ async function syncOracleOnce(): Promise<{
                   fromBlock: cursor,
                   toBlock: rangeTo,
                 }),
-                client.getLogs({
-                  address: contractAddress,
-                  event: abi[3],
-                  fromBlock: cursor,
-                  toBlock: rangeTo,
-                }),
-              ]),
+                effectiveVoteTrackingEnabled
+                  ? client.getLogs({
+                      address: contractAddress,
+                      event: abi[3],
+                      fromBlock: cursor,
+                      toBlock: rangeTo,
+                    })
+                  : Promise.resolve([]),
+              ] as const),
             );
 
           for (const log of createdLogs) {

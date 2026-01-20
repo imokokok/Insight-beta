@@ -26,6 +26,7 @@ vi.mock("@/lib/logger", () => ({ logger }));
 
 vi.mock("./oracleIndexer", () => ({
   ensureOracleSynced: vi.fn(async () => ({ updated: false, state: {} })),
+  getOracleEnv: vi.fn(async () => ({ rpcUrl: "", contractAddress: "" })),
   isOracleSyncing: vi.fn(() => false),
 }));
 
@@ -74,9 +75,10 @@ vi.mock("viem", () => ({
   createPublicClient: vi.fn(),
   http: vi.fn(),
   formatEther: vi.fn(),
+  parseAbi: vi.fn(() => []),
 }));
 
-import { tryAcquireWorkerLock } from "./worker";
+import { tickWorkerOnce, tryAcquireWorkerLock } from "./worker";
 
 describe("worker advisory lock", () => {
   beforeEach(() => {
@@ -153,5 +155,46 @@ describe("worker advisory lock", () => {
     );
     expect(global.insightWorkerLockKey).toMatch(/^\d+$/);
     expect(client.release).not.toHaveBeenCalled();
+  });
+});
+
+describe("worker alerts", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    global.insightWorkerTickInProgress = undefined;
+    global.insightWorkerLastError = undefined;
+  });
+
+  it("emits sync_error missing_config when oracle config is missing", async () => {
+    hasDatabase.mockReturnValue(false);
+
+    const { readAlertRules, createOrTouchAlert } =
+      await import("@/server/observability");
+    (readAlertRules as unknown as ReturnType<typeof vi.fn>).mockResolvedValue([
+      {
+        id: "rule-1",
+        enabled: true,
+        event: "sync_error",
+        severity: "critical",
+        channels: ["webhook"],
+        recipient: null,
+      },
+    ]);
+
+    const { getOracleEnv } = await import("./oracleIndexer");
+    (getOracleEnv as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      rpcUrl: "",
+      contractAddress: "",
+    });
+
+    await tickWorkerOnce();
+
+    expect(createOrTouchAlert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "sync_error",
+        title: "Oracle sync error",
+        message: "missing_config",
+      }),
+    );
   });
 });

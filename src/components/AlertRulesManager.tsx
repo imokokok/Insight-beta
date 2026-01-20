@@ -122,6 +122,34 @@ export function AlertRulesManager({
         }
       }
 
+      if (rule.event === "sync_backlog") {
+        const maxLagBlocks = getNumber("maxLagBlocks");
+        if (!Number.isFinite(maxLagBlocks) || maxLagBlocks <= 0) {
+          return "maxLagBlocks must be positive";
+        }
+      }
+
+      if (rule.event === "backlog_assertions") {
+        const maxOpenAssertions = getNumber("maxOpenAssertions");
+        if (!Number.isFinite(maxOpenAssertions) || maxOpenAssertions <= 0) {
+          return "maxOpenAssertions must be positive";
+        }
+      }
+
+      if (rule.event === "backlog_disputes") {
+        const maxOpenDisputes = getNumber("maxOpenDisputes");
+        if (!Number.isFinite(maxOpenDisputes) || maxOpenDisputes <= 0) {
+          return "maxOpenDisputes must be positive";
+        }
+      }
+
+      if (rule.event === "market_stale") {
+        const maxAgeMs = getNumber("maxAgeMs");
+        if (!Number.isFinite(maxAgeMs) || maxAgeMs <= 0) {
+          return "maxAgeMs must be positive";
+        }
+      }
+
       if (rule.event === "slow_api_request") {
         const thresholdMs = getNumber("thresholdMs");
         if (!Number.isFinite(thresholdMs) || thresholdMs <= 0) {
@@ -726,6 +754,124 @@ export function AlertRulesManager({
                                     | { maxAgeMs?: unknown }
                                     | undefined
                                 )?.maxAgeMs ?? 5 * 60 * 1000,
+                              ) / 60_000,
+                            )}
+                            onChange={(e) => {
+                              const minutes = Math.max(
+                                1,
+                                Math.floor(Number(e.target.value)),
+                              );
+                              patchRuleParams(rule.id, {
+                                maxAgeMs: minutes * 60_000,
+                              });
+                            }}
+                            className="h-10 rounded-xl bg-white/70 ring-1 ring-black/5 border-transparent focus-visible:ring-2 focus-visible:ring-purple-500/20"
+                          />
+                        </div>
+                      ) : null}
+
+                      {rule.event === "sync_backlog" ? (
+                        <div className="md:col-span-12">
+                          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                            Max lag blocks
+                          </div>
+                          <Input
+                            type="number"
+                            min={1}
+                            step={1}
+                            value={Number(
+                              (
+                                rule.params as
+                                  | { maxLagBlocks?: unknown }
+                                  | undefined
+                              )?.maxLagBlocks ?? 200,
+                            )}
+                            onChange={(e) => {
+                              const v = Math.max(
+                                1,
+                                Math.floor(Number(e.target.value)),
+                              );
+                              patchRuleParams(rule.id, { maxLagBlocks: v });
+                            }}
+                            className="h-10 rounded-xl bg-white/70 ring-1 ring-black/5 border-transparent focus-visible:ring-2 focus-visible:ring-purple-500/20"
+                          />
+                        </div>
+                      ) : null}
+
+                      {rule.event === "backlog_assertions" ? (
+                        <div className="md:col-span-12">
+                          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                            Max open assertions
+                          </div>
+                          <Input
+                            type="number"
+                            min={1}
+                            step={1}
+                            value={Number(
+                              (
+                                rule.params as
+                                  | { maxOpenAssertions?: unknown }
+                                  | undefined
+                              )?.maxOpenAssertions ?? 50,
+                            )}
+                            onChange={(e) => {
+                              const v = Math.max(
+                                1,
+                                Math.floor(Number(e.target.value)),
+                              );
+                              patchRuleParams(rule.id, {
+                                maxOpenAssertions: v,
+                              });
+                            }}
+                            className="h-10 rounded-xl bg-white/70 ring-1 ring-black/5 border-transparent focus-visible:ring-2 focus-visible:ring-purple-500/20"
+                          />
+                        </div>
+                      ) : null}
+
+                      {rule.event === "backlog_disputes" ? (
+                        <div className="md:col-span-12">
+                          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                            Max open disputes
+                          </div>
+                          <Input
+                            type="number"
+                            min={1}
+                            step={1}
+                            value={Number(
+                              (
+                                rule.params as
+                                  | { maxOpenDisputes?: unknown }
+                                  | undefined
+                              )?.maxOpenDisputes ?? 20,
+                            )}
+                            onChange={(e) => {
+                              const v = Math.max(
+                                1,
+                                Math.floor(Number(e.target.value)),
+                              );
+                              patchRuleParams(rule.id, { maxOpenDisputes: v });
+                            }}
+                            className="h-10 rounded-xl bg-white/70 ring-1 ring-black/5 border-transparent focus-visible:ring-2 focus-visible:ring-purple-500/20"
+                          />
+                        </div>
+                      ) : null}
+
+                      {rule.event === "market_stale" ? (
+                        <div className="md:col-span-12">
+                          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                            Max age minutes
+                          </div>
+                          <Input
+                            type="number"
+                            min={1}
+                            step={1}
+                            value={Math.round(
+                              Number(
+                                (
+                                  rule.params as
+                                    | { maxAgeMs?: unknown }
+                                    | undefined
+                                )?.maxAgeMs ?? 6 * 60 * 60_000,
                               ) / 60_000,
                             )}
                             onChange={(e) => {
