@@ -79,6 +79,15 @@ export const env = {
   get INSIGHT_WEBHOOK_URL() {
     return (process.env.INSIGHT_WEBHOOK_URL ?? "").trim();
   },
+  get INSIGHT_TELEGRAM_BOT_TOKEN() {
+    return (process.env.INSIGHT_TELEGRAM_BOT_TOKEN ?? "").trim();
+  },
+  get INSIGHT_TELEGRAM_CHAT_ID() {
+    return (process.env.INSIGHT_TELEGRAM_CHAT_ID ?? "").trim();
+  },
+  get INSIGHT_TELEGRAM_TIMEOUT_MS() {
+    return (process.env.INSIGHT_TELEGRAM_TIMEOUT_MS ?? "").trim();
+  },
   get INSIGHT_SMTP_HOST() {
     return (process.env.INSIGHT_SMTP_HOST ?? "").trim();
   },
@@ -244,6 +253,12 @@ const envSchema = z.object({
     z.coerce.number().int().min(1).optional(),
   ),
   INSIGHT_WEBHOOK_URL: z.string().url().optional(),
+  INSIGHT_TELEGRAM_BOT_TOKEN: z.string().optional(),
+  INSIGHT_TELEGRAM_CHAT_ID: z.string().optional(),
+  INSIGHT_TELEGRAM_TIMEOUT_MS: z.preprocess(
+    (v) => (v === "" ? undefined : v),
+    z.coerce.number().int().min(1).optional(),
+  ),
   INSIGHT_SMTP_HOST: z.string().optional(),
   INSIGHT_SMTP_PORT: z.string().optional(),
   INSIGHT_SMTP_USER: z.string().optional(),

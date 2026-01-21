@@ -98,7 +98,10 @@ export async function ensureSchema() {
       assertion_data TEXT,
       asserted_at TIMESTAMP WITH TIME ZONE NOT NULL,
       liveness_ends_at TIMESTAMP WITH TIME ZONE NOT NULL,
+      block_number BIGINT,
+      log_index INTEGER,
       resolved_at TIMESTAMP WITH TIME ZONE,
+      settlement_resolution BOOLEAN,
       status TEXT NOT NULL,
       bond_usd NUMERIC,
       disputer TEXT,
@@ -115,6 +118,9 @@ export async function ensureSchema() {
       disputer TEXT NOT NULL,
       disputed_at TIMESTAMP WITH TIME ZONE NOT NULL,
       voting_ends_at TIMESTAMP WITH TIME ZONE,
+      tx_hash TEXT,
+      block_number BIGINT,
+      log_index INTEGER,
       status TEXT NOT NULL,
       votes_for NUMERIC DEFAULT 0,
       votes_against NUMERIC DEFAULT 0,
@@ -136,6 +142,20 @@ export async function ensureSchema() {
       UNIQUE (tx_hash, log_index)
     );
 
+    CREATE TABLE IF NOT EXISTS oracle_events (
+      id BIGSERIAL PRIMARY KEY,
+      instance_id TEXT NOT NULL DEFAULT 'default',
+      chain TEXT NOT NULL,
+      event_type TEXT NOT NULL,
+      assertion_id TEXT,
+      tx_hash TEXT NOT NULL,
+      block_number BIGINT NOT NULL,
+      log_index INTEGER NOT NULL,
+      payload JSONB NOT NULL,
+      created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+      UNIQUE (instance_id, tx_hash, log_index)
+    );
+
     -- Indexes for performance
     CREATE INDEX IF NOT EXISTS idx_assertions_date ON assertions(asserted_at);
     CREATE INDEX IF NOT EXISTS idx_assertions_status ON assertions(status);
@@ -143,6 +163,7 @@ export async function ensureSchema() {
     CREATE INDEX IF NOT EXISTS idx_assertions_instance ON assertions(instance_id);
     CREATE INDEX IF NOT EXISTS idx_assertions_market ON assertions(market);
     CREATE INDEX IF NOT EXISTS idx_assertions_tx_hash ON assertions(tx_hash);
+    CREATE INDEX IF NOT EXISTS idx_assertions_block_number ON assertions(block_number);
     CREATE INDEX IF NOT EXISTS idx_assertions_asserter_lower ON assertions(LOWER(asserter));
     CREATE INDEX IF NOT EXISTS idx_assertions_status_date ON assertions(status, asserted_at DESC);
     CREATE INDEX IF NOT EXISTS idx_assertions_chain_date ON assertions(chain, asserted_at DESC);
@@ -153,6 +174,8 @@ export async function ensureSchema() {
     CREATE INDEX IF NOT EXISTS idx_disputes_chain ON disputes(chain);
     CREATE INDEX IF NOT EXISTS idx_disputes_instance ON disputes(instance_id);
     CREATE INDEX IF NOT EXISTS idx_disputes_date ON disputes(disputed_at);
+    CREATE INDEX IF NOT EXISTS idx_disputes_tx_hash ON disputes(tx_hash);
+    CREATE INDEX IF NOT EXISTS idx_disputes_block_number ON disputes(block_number);
     CREATE INDEX IF NOT EXISTS idx_disputes_disputer_lower ON disputes(LOWER(disputer));
     CREATE INDEX IF NOT EXISTS idx_disputes_status_date ON disputes(status, disputed_at DESC);
     CREATE INDEX IF NOT EXISTS idx_disputes_chain_date ON disputes(chain, disputed_at DESC);
@@ -162,6 +185,10 @@ export async function ensureSchema() {
     CREATE INDEX IF NOT EXISTS idx_votes_voter ON votes(voter);
     CREATE INDEX IF NOT EXISTS idx_votes_block ON votes(block_number);
     CREATE INDEX IF NOT EXISTS idx_votes_instance ON votes(instance_id);
+    CREATE INDEX IF NOT EXISTS idx_oracle_events_instance_block ON oracle_events(instance_id, block_number DESC);
+    CREATE INDEX IF NOT EXISTS idx_oracle_events_assertion ON oracle_events(assertion_id);
+    CREATE INDEX IF NOT EXISTS idx_oracle_events_type ON oracle_events(event_type);
+    CREATE INDEX IF NOT EXISTS idx_oracle_events_tx_hash ON oracle_events(tx_hash);
 
     CREATE TABLE IF NOT EXISTS kv_store (
       key TEXT PRIMARY KEY,
@@ -218,6 +245,8 @@ export async function ensureSchema() {
   await query(`
     ALTER TABLE assertions ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMP WITH TIME ZONE;
     ALTER TABLE assertions ADD COLUMN IF NOT EXISTS settlement_resolution BOOLEAN;
+    ALTER TABLE assertions ADD COLUMN IF NOT EXISTS block_number BIGINT;
+    ALTER TABLE assertions ADD COLUMN IF NOT EXISTS log_index INTEGER;
     ALTER TABLE assertions ADD COLUMN IF NOT EXISTS instance_id TEXT;
   `);
 
@@ -229,6 +258,9 @@ export async function ensureSchema() {
 
   await query(`
     ALTER TABLE disputes ADD COLUMN IF NOT EXISTS instance_id TEXT;
+    ALTER TABLE disputes ADD COLUMN IF NOT EXISTS tx_hash TEXT;
+    ALTER TABLE disputes ADD COLUMN IF NOT EXISTS block_number BIGINT;
+    ALTER TABLE disputes ADD COLUMN IF NOT EXISTS log_index INTEGER;
   `);
 
   await query(`

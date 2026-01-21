@@ -59,6 +59,12 @@ type ListParams = {
 
 // Helper to map DB row to Assertion
 function mapAssertionRow(row: DbAssertionRow): Assertion {
+  const blockNumber =
+    row.block_number === null || row.block_number === undefined
+      ? undefined
+      : typeof row.block_number === "number"
+        ? String(Math.trunc(row.block_number))
+        : String(row.block_number);
   return {
     id: row.id,
     chain: row.chain,
@@ -68,6 +74,11 @@ function mapAssertionRow(row: DbAssertionRow): Assertion {
     assertion: row.assertion_data,
     assertedAt: row.asserted_at.toISOString(),
     livenessEndsAt: row.liveness_ends_at.toISOString(),
+    blockNumber,
+    logIndex:
+      typeof row.log_index === "number"
+        ? row.log_index
+        : (row.log_index ?? undefined),
     resolvedAt: row.resolved_at ? row.resolved_at.toISOString() : undefined,
     status: row.status,
     bondUsd: Number(row.bond_usd),
@@ -99,6 +110,17 @@ function mapDisputeRow(row: DbDisputeRow): Dispute {
     disputer: row.disputer,
     disputedAt: row.disputed_at.toISOString(),
     votingEndsAt: votingEndsAt || "", // Fallback empty string if undefined, ensuring string type
+    txHash: row.tx_hash ?? undefined,
+    blockNumber:
+      row.block_number === null || row.block_number === undefined
+        ? undefined
+        : typeof row.block_number === "number"
+          ? String(Math.trunc(row.block_number))
+          : String(row.block_number),
+    logIndex:
+      typeof row.log_index === "number"
+        ? row.log_index
+        : (row.log_index ?? undefined),
     status: computedStatus,
     currentVotesFor: Number(row.votes_for),
     currentVotesAgainst: Number(row.votes_against),

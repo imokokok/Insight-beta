@@ -222,6 +222,7 @@ export const translations = {
         channels: "通知渠道",
         channelsWebhook: "Webhook",
         channelsEmail: "Email",
+        channelsTelegram: "Telegram",
         recipient: "收件人",
         recipientPlaceholder: "ops@example.com",
         testSend: "发送测试",
@@ -236,6 +237,7 @@ export const translations = {
           thresholdMs: "阈值（毫秒）",
           thresholdPercent: "错误率阈值（%）",
           windowMinutes: "统计窗口（分钟）",
+          withinMinutes: "预警窗口（分钟）",
           cooldownMs: "冷却时间（分钟）",
           escalateAfterMs: "升级等待（分钟）",
           priceDeviationThreshold: "价格偏差阈值 (%)",
@@ -255,9 +257,11 @@ export const translations = {
           databaseSlowQueryThresholdMsPositive: "慢查询阈值必须为正数",
           highErrorRateThresholdPercentRange: "错误率阈值必须在 1-100 之间",
           highErrorRateWindowMinutesPositive: "错误率统计窗口必须为正数",
+          withinMinutesPositive: "预警窗口必须为正数",
         },
         events: {
           dispute_created: "争议创建",
+          liveness_expiring: "挑战期即将结束",
           sync_error: "同步错误",
           stale_sync: "同步停滞",
           slow_api_request: "慢请求",
@@ -365,6 +369,8 @@ export const translations = {
       },
       disputeModal: {
         desc: "提交争议需要缴纳保证金（Bond）。",
+        reasonHint: "请说明事实依据、数据来源或时间范围。",
+        reasonExample: "例如：官方公告显示结果相反，且数据源已被更正。",
         bondLabel: "保证金（ETH）",
         submit: "提交争议",
         warning: "警告：如果断言被验证为正确，您将失去质押金。",
@@ -857,6 +863,7 @@ export const translations = {
         channels: "Channels",
         channelsWebhook: "Webhook",
         channelsEmail: "Email",
+        channelsTelegram: "Telegram",
         recipient: "Recipient",
         recipientPlaceholder: "ops@example.com",
         testSend: "Send Test",
@@ -871,6 +878,7 @@ export const translations = {
           thresholdMs: "Threshold (ms)",
           thresholdPercent: "Threshold (%)",
           windowMinutes: "Window (minutes)",
+          withinMinutes: "Within minutes",
           cooldownMs: "Cooldown (minutes)",
           escalateAfterMs: "Escalate after (minutes)",
           priceDeviationThreshold: "Price Deviation Threshold (%)",
@@ -895,9 +903,11 @@ export const translations = {
             "Window minutes must be a positive number",
           priceDeviationPositive: "Price deviation threshold must be positive",
           lowGasPositive: "Minimum gas balance must be positive",
+          withinMinutesPositive: "Within minutes must be a positive number",
         },
         events: {
           dispute_created: "Dispute Created",
+          liveness_expiring: "Liveness Expiring",
           sync_error: "Sync Error",
           stale_sync: "Stale Sync",
           slow_api_request: "Slow API Request",
@@ -985,6 +995,9 @@ export const translations = {
       },
       disputeModal: {
         desc: "Submitting a dispute requires a bond.",
+        reasonHint: "Explain evidence, data sources, or timing.",
+        reasonExample:
+          "e.g. Official data shows the opposite outcome and the source was corrected.",
         bondLabel: "Bond (ETH)",
         submit: "Submit Dispute",
         warning:
@@ -1572,6 +1585,9 @@ export const translations = {
       },
       disputeModal: {
         desc: "Enviar una disputa requiere un depósito.",
+        reasonHint: "Indica evidencia, fuente de datos o marco temporal.",
+        reasonExample:
+          "p. ej. Los datos oficiales muestran el resultado opuesto y la fuente fue corregida.",
         bondLabel: "Depósito (ETH)",
         submit: "Enviar disputa",
         warning:
@@ -1666,6 +1682,7 @@ export const translations = {
         channels: "Canales",
         channelsWebhook: "Webhook",
         channelsEmail: "Email",
+        channelsTelegram: "Telegram",
         recipient: "Destinatario",
         recipientPlaceholder: "ops@example.com",
         testSend: "Enviar prueba",
@@ -1677,6 +1694,7 @@ export const translations = {
           thresholdMs: "Umbral (ms)",
           thresholdPercent: "Umbral (%)",
           windowMinutes: "Ventana (minutos)",
+          withinMinutes: "Ventana (minutos)",
           cooldownMs: "Enfriamiento (minutos)",
           escalateAfterMs: "Escalar después de (minutos)",
         },
@@ -1693,9 +1711,12 @@ export const translations = {
             "El umbral debe estar entre 1 y 100",
           highErrorRateWindowMinutesPositive:
             "Los minutos de ventana deben ser un número positivo",
+          withinMinutesPositive:
+            "Los minutos de ventana deben ser un número positivo",
         },
         events: {
           dispute_created: "Disputa creada",
+          liveness_expiring: "Vigencia a punto de expirar",
           sync_error: "Error de sincronización",
           stale_sync: "Sincronización estancada",
           slow_api_request: "Solicitud API lenta",
@@ -2121,6 +2142,7 @@ export const translations = {
         channels: "Canaux",
         channelsWebhook: "Webhook",
         channelsEmail: "Email",
+        channelsTelegram: "Telegram",
         recipient: "Destinataire",
         recipientPlaceholder: "ops@example.com",
         testSend: "Envoyer un test",
@@ -2132,6 +2154,7 @@ export const translations = {
           thresholdMs: "Seuil (ms)",
           thresholdPercent: "Seuil (%)",
           windowMinutes: "Fenêtre (minutes)",
+          withinMinutes: "Fenêtre (minutes)",
           cooldownMs: "Délai de refroidissement (minutes)",
           escalateAfterMs: "Escalade après (minutes)",
         },
@@ -2148,9 +2171,12 @@ export const translations = {
             "Le seuil doit être entre 1 et 100",
           highErrorRateWindowMinutesPositive:
             "Les minutes de fenêtre doivent être un nombre positif",
+          withinMinutesPositive:
+            "Les minutes de fenêtre doivent être un nombre positif",
         },
         events: {
           dispute_created: "Contestation créée",
+          liveness_expiring: "Fin de validité imminente",
           sync_error: "Erreur de synchronisation",
           stale_sync: "Synchronisation figée",
           slow_api_request: "Requête API lente",
@@ -2631,6 +2657,7 @@ export const translations = {
         channels: "채널",
         channelsWebhook: "Webhook",
         channelsEmail: "Email",
+        channelsTelegram: "Telegram",
         recipient: "수신자",
         recipientPlaceholder: "ops@example.com",
         testSend: "테스트 전송",
@@ -2642,6 +2669,7 @@ export const translations = {
           thresholdMs: "임계값 (ms)",
           thresholdPercent: "임계값 (%)",
           windowMinutes: "윈도우 (분)",
+          withinMinutes: "윈도우 (분)",
           cooldownMs: "쿨다운 (분)",
           escalateAfterMs: "다음 후 에스컬레이션 (분)",
         },
@@ -2654,9 +2682,11 @@ export const translations = {
           highErrorRateThresholdPercentRange:
             "임계값은 1에서 100 사이여야 합니다",
           highErrorRateWindowMinutesPositive: "윈도우 분은 양수여야 합니다",
+          withinMinutesPositive: "윈도우 분은 양수여야 합니다",
         },
         events: {
           dispute_created: "분쟁 생성",
+          liveness_expiring: "챌린지 기간 만료 임박",
           sync_error: "동기화 오류",
           stale_sync: "동기화 정체",
           slow_api_request: "느린 API 요청",
@@ -3167,6 +3197,8 @@ export type TranslationKey =
   | "oracle.createAssertionModal.submit"
   | "oracle.createAssertionModal.bondInvalid"
   | "oracle.disputeModal.desc"
+  | "oracle.disputeModal.reasonHint"
+  | "oracle.disputeModal.reasonExample"
   | "oracle.disputeModal.bondLabel"
   | "oracle.disputeModal.submit"
   | "oracle.disputeModal.warning"
@@ -3404,6 +3436,7 @@ export type TranslationKey =
   | "oracle.alerts.error"
   | "oracle.alerts.noRules"
   | "oracle.alerts.events.dispute_created"
+  | "oracle.alerts.events.liveness_expiring"
   | "oracle.alerts.events.sync_error"
   | "oracle.alerts.events.stale_sync"
   | "oracle.alerts.events.slow_api_request"
@@ -3412,6 +3445,7 @@ export type TranslationKey =
   | "oracle.alerts.channels"
   | "oracle.alerts.channelsWebhook"
   | "oracle.alerts.channelsEmail"
+  | "oracle.alerts.channelsTelegram"
   | "oracle.alerts.recipient"
   | "oracle.alerts.recipientPlaceholder"
   | "oracle.alerts.params.maxAgeMinutes"
@@ -3421,6 +3455,7 @@ export type TranslationKey =
   | "oracle.alerts.params.thresholdMs"
   | "oracle.alerts.params.thresholdPercent"
   | "oracle.alerts.params.windowMinutes"
+  | "oracle.alerts.params.withinMinutes"
   | "oracle.alerts.params.cooldownMs"
   | "oracle.alerts.params.escalateAfterMs"
   | "oracle.alerts.params.priceDeviationThreshold"
@@ -3436,6 +3471,7 @@ export type TranslationKey =
   | "oracle.alerts.validation.databaseSlowQueryThresholdMsPositive"
   | "oracle.alerts.validation.highErrorRateThresholdPercentRange"
   | "oracle.alerts.validation.highErrorRateWindowMinutesPositive"
+  | "oracle.alerts.validation.withinMinutesPositive"
   | "oracle.alerts.validation.priceDeviationPositive"
   | "oracle.alerts.validation.lowGasPositive"
   | "oracle.alerts.testSend"

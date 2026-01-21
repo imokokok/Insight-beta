@@ -11,7 +11,9 @@ import {
   updateSyncState,
   insertSyncMetric,
   insertVoteEvent,
+  insertOracleEvent,
   recomputeDisputeVotes,
+  replayOracleEventsRange,
   type StoredState,
 } from "./oracleState";
 import { isZeroBytes32, parseRpcUrls, toIsoFromSeconds } from "@/lib/utils";
@@ -422,6 +424,12 @@ async function syncOracleOnce(instanceId: string): Promise<{
             const txHash = !isZeroBytes32(txHashArg)
               ? txHashArg!
               : ((log.transactionHash as `0x${string}`) ?? "0x0");
+            const blockNumber =
+              typeof log.blockNumber === "bigint" ? log.blockNumber : 0n;
+            const logIndex =
+              typeof log.logIndex === "number"
+                ? log.logIndex
+                : Number(log.logIndex ?? 0);
 
             const assertion: Assertion = {
               id,
@@ -432,12 +440,26 @@ async function syncOracleOnce(instanceId: string): Promise<{
               assertion: args.assertion as string,
               assertedAt,
               livenessEndsAt,
+              blockNumber: blockNumber.toString(10),
+              logIndex,
               resolvedAt: undefined,
               status: "Pending",
               bondUsd: Number(args.bondUsd as bigint),
               txHash,
             };
 
+            await insertOracleEvent(
+              {
+                chain: chain as OracleChain,
+                eventType: "assertion_created",
+                assertionId: id,
+                txHash,
+                blockNumber,
+                logIndex,
+                payload: assertion,
+              },
+              instanceId,
+            );
             await upsertAssertion(assertion, instanceId);
             updated = true;
           }
@@ -448,6 +470,14 @@ async function syncOracleOnce(instanceId: string): Promise<{
             const id = args.assertionId as `0x${string}`;
             const disputedAt = toIsoFromSeconds(args.disputedAt as bigint);
             const disputer = args.disputer as `0x${string}`;
+            const txHash =
+              (log.transactionHash as `0x${string}` | undefined) ?? "0x0";
+            const blockNumber =
+              typeof log.blockNumber === "bigint" ? log.blockNumber : 0n;
+            const logIndex =
+              typeof log.logIndex === "number"
+                ? log.logIndex
+                : Number(log.logIndex ?? 0);
 
             const assertion = await fetchAssertion(id, instanceId);
             if (assertion) {
@@ -468,12 +498,27 @@ async function syncOracleOnce(instanceId: string): Promise<{
               votingEndsAt: new Date(
                 new Date(disputedAt).getTime() + votingPeriodMs,
               ).toISOString(),
+              txHash,
+              blockNumber: blockNumber.toString(10),
+              logIndex,
               status: "Voting",
               currentVotesFor: 0,
               currentVotesAgainst: 0,
               totalVotes: 0,
             };
 
+            await insertOracleEvent(
+              {
+                chain: chain as OracleChain,
+                eventType: "assertion_disputed",
+                assertionId: id,
+                txHash,
+                blockNumber,
+                logIndex,
+                payload: dispute,
+              },
+              instanceId,
+            );
             await upsertDispute(dispute, instanceId);
             updated = true;
 
@@ -536,6 +581,27 @@ async function syncOracleOnce(instanceId: string): Promise<{
               instanceId,
             );
             if (inserted) {
+              await insertOracleEvent(
+                {
+                  chain: chain as OracleChain,
+                  eventType: "vote_cast",
+                  assertionId: id,
+                  txHash,
+                  blockNumber,
+                  logIndex,
+                  payload: {
+                    chain: chain as OracleChain,
+                    assertionId: id,
+                    voter,
+                    support,
+                    weight: weight.toString(10),
+                    txHash,
+                    blockNumber: blockNumber.toString(10),
+                    logIndex,
+                  },
+                },
+                instanceId,
+              );
               touchedVotes.add(id);
               updated = true;
             }
@@ -551,7 +617,27 @@ async function syncOracleOnce(instanceId: string): Promise<{
             const id = args.assertionId as `0x${string}`;
             const resolvedAt = toIsoFromSeconds(args.resolvedAt as bigint);
             const outcome = args.outcome as boolean;
+            const txHash =
+              (log.transactionHash as `0x${string}` | undefined) ?? "0x0";
+            const blockNumber =
+              typeof log.blockNumber === "bigint" ? log.blockNumber : 0n;
+            const logIndex =
+              typeof log.logIndex === "number"
+                ? log.logIndex
+                : Number(log.logIndex ?? 0);
 
+            await insertOracleEvent(
+              {
+                chain: chain as OracleChain,
+                eventType: "assertion_resolved",
+                assertionId: id,
+                txHash,
+                blockNumber,
+                logIndex,
+                payload: { assertionId: id, resolvedAt, outcome },
+              },
+              instanceId,
+            );
             const assertion = await fetchAssertion(id, instanceId);
             if (assertion) {
               assertion.status = "Resolved";
@@ -598,6 +684,34 @@ async function syncOracleOnce(instanceId: string): Promise<{
             continue;
           }
           if (attempts < 3) continue;
+          const replay = await replayOracleEventsRange(
+            cursor,
+            rangeTo,
+            instanceId,
+          );
+          if (replay.applied > 0) {
+            updated = true;
+            if (rangeTo > processedHigh) processedHigh = rangeTo;
+            await updateSyncState(
+              processedHigh,
+              attemptAt,
+              syncState.sync.lastSuccessAt,
+              syncState.sync.lastDurationMs,
+              null,
+              {
+                latestBlock: latest,
+                safeBlock: toBlock,
+                lastSuccessProcessedBlock: processedHigh,
+                consecutiveFailures: 0,
+                rpcActiveUrl,
+                rpcStats,
+              },
+              instanceId,
+            );
+            lastProcessedBlock = processedHigh;
+            cursor = rangeTo + 1n;
+            break;
+          }
           throw e;
         }
       }

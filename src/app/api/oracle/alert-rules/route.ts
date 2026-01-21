@@ -29,6 +29,12 @@ function isValidRunbook(runbook: string) {
   }
 }
 
+function isValidEmail(value: string) {
+  const v = value.trim();
+  if (!v) return false;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+}
+
 const ruleSchema = z
   .object({
     id: z.string().trim().min(1).max(100),
@@ -36,6 +42,7 @@ const ruleSchema = z
     enabled: z.boolean(),
     event: z.enum([
       "dispute_created",
+      "liveness_expiring",
       "sync_error",
       "stale_sync",
       "execution_delayed",
@@ -52,11 +59,11 @@ const ruleSchema = z
     silencedUntil: z.string().trim().max(40).optional().nullable(),
     params: z.record(z.string(), z.unknown()).optional(),
     channels: z
-      .array(z.enum(["webhook", "email"]))
+      .array(z.enum(["webhook", "email", "telegram"]))
       .min(1)
-      .max(2)
+      .max(3)
       .optional(),
-    recipient: z.string().trim().max(200).email().optional().nullable(),
+    recipient: z.string().trim().max(200).optional().nullable(),
   })
   .superRefine((rule, ctx) => {
     if (rule.runbook && !isValidRunbook(rule.runbook)) {
@@ -95,6 +102,12 @@ const ruleSchema = z
         ctx.addIssue({
           code: "custom",
           message: "missing_email_recipient",
+          path: ["recipient"],
+        });
+      } else if (!isValidEmail(recipient)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "invalid_email_recipient",
           path: ["recipient"],
         });
       }
@@ -173,6 +186,25 @@ const ruleSchema = z
             code: "custom",
             message: "invalid_minTotalVotes",
             path: ["params", "minTotalVotes"],
+          });
+        }
+      }
+    }
+
+    if (rule.event === "liveness_expiring") {
+      if (!("withinMinutes" in params)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "missing_withinMinutes",
+          path: ["params", "withinMinutes"],
+        });
+      } else {
+        const withinMinutes = getNumber("withinMinutes");
+        if (!Number.isFinite(withinMinutes) || withinMinutes <= 0) {
+          ctx.addIssue({
+            code: "custom",
+            message: "invalid_withinMinutes",
+            path: ["params", "withinMinutes"],
           });
         }
       }

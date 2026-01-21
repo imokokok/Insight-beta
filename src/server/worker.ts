@@ -108,7 +108,7 @@ async function tickWorker() {
 
     const notifyForRule = (rule: {
       silencedUntil?: string | null;
-      channels?: Array<"webhook" | "email">;
+      channels?: Array<"webhook" | "email" | "telegram">;
       recipient?: string | null;
     }) => {
       const silencedUntilRaw = (rule.silencedUntil ?? "").trim();
@@ -118,7 +118,7 @@ async function tickWorker() {
       const silenced =
         Number.isFinite(silencedUntilMs) && silencedUntilMs > nowMs;
       return silenced
-        ? { channels: [] as Array<"webhook" | "email"> }
+        ? { channels: [] as Array<"webhook" | "email" | "telegram"> }
         : {
             channels: rule.channels,
             recipient: rule.recipient ?? undefined,
@@ -442,6 +442,50 @@ async function tickWorker() {
                 message: `last assertion ${Math.round(ageMs / 60_000)}m ago`,
                 entityType: "oracle",
                 entityId: state.contractAddress,
+                notify: notifyForRule(rule),
+              });
+            }
+          }
+        }
+
+        const livenessRules = rules.filter(
+          (r) => r.enabled && r.event === "liveness_expiring",
+        );
+        if (livenessRules.length > 0) {
+          const oracleState = await readOracleState(instanceId);
+          const assertions = Object.values(oracleState.assertions);
+
+          for (const assertion of assertions) {
+            if (assertion.status === "Resolved") continue;
+            const livenessEndsAtMs = Date.parse(assertion.livenessEndsAt);
+            if (!Number.isFinite(livenessEndsAtMs)) continue;
+            const remainingMs = livenessEndsAtMs - nowMs;
+            if (remainingMs <= 0) continue;
+
+            for (const rule of livenessRules) {
+              const withinMinutes = Number(
+                (rule.params as { withinMinutes?: unknown } | undefined)
+                  ?.withinMinutes ?? 60,
+              );
+              if (!Number.isFinite(withinMinutes) || withinMinutes <= 0)
+                continue;
+              if (remainingMs > withinMinutes * 60_000) continue;
+
+              const fingerprint = `${rule.id}:${instanceId}:${assertion.chain}:${assertion.id}`;
+              if (!shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule)))
+                continue;
+
+              await createOrTouchAlert({
+                fingerprint,
+                type: rule.event,
+                severity: rule.severity,
+                title: "Liveness expiring",
+                message: `${assertion.market} • ${Math.max(
+                  0,
+                  Math.ceil(remainingMs / 60_000),
+                )}m remaining`,
+                entityType: "assertion",
+                entityId: assertion.id,
                 notify: notifyForRule(rule),
               });
             }

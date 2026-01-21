@@ -16,7 +16,7 @@ type DbAlertRule = {
   severity: "info" | "warning" | "critical";
   silencedUntil?: string | null;
   params?: Record<string, unknown>;
-  channels?: Array<"webhook" | "email">;
+  channels?: Array<"webhook" | "email" | "telegram">;
   recipient?: string | null;
 };
 

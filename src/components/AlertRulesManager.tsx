@@ -18,7 +18,7 @@ import { useI18n } from "@/i18n/LanguageProvider";
 import type { AlertRule, AlertSeverity } from "@/lib/oracleTypes";
 import { useAdminSession } from "@/hooks/useAdminSession";
 
-type Channel = "webhook" | "email";
+type Channel = "webhook" | "email" | "telegram";
 
 function normalizeChannels(
   channels: AlertRule["channels"] | undefined,
@@ -26,7 +26,7 @@ function normalizeChannels(
   const input = channels && channels.length > 0 ? channels : ["webhook"];
   const out: Channel[] = [];
   for (const c of input) {
-    if (c !== "webhook" && c !== "email") continue;
+    if (c !== "webhook" && c !== "email" && c !== "telegram") continue;
     if (!out.includes(c)) out.push(c);
   }
   return out.length > 0 ? out : ["webhook"];
@@ -147,6 +147,13 @@ export function AlertRulesManager({
         const maxAgeMs = getNumber("maxAgeMs");
         if (!Number.isFinite(maxAgeMs) || maxAgeMs <= 0) {
           return t("oracle.alerts.validation.marketStaleMaxAgeMsPositive");
+        }
+      }
+
+      if (rule.event === "liveness_expiring") {
+        const withinMinutes = getNumber("withinMinutes");
+        if (!Number.isFinite(withinMinutes) || withinMinutes <= 0) {
+          return t("oracle.alerts.validation.withinMinutesPositive");
         }
       }
 
@@ -358,6 +365,8 @@ export function AlertRulesManager({
       return t("oracle.alerts.events.high_error_rate");
     if (event === "database_slow_query")
       return t("oracle.alerts.events.database_slow_query");
+    if (event === "liveness_expiring")
+      return t("oracle.alerts.events.liveness_expiring");
     return event;
   };
 
@@ -719,6 +728,27 @@ export function AlertRulesManager({
                         </div>
                       </div>
 
+                      <div className="md:col-span-4">
+                        <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                          {t("oracle.alerts.channelsTelegram")}
+                        </div>
+                        <div className="flex items-center justify-between rounded-xl bg-white/60 ring-1 ring-black/5 px-4 py-3">
+                          <div className="text-sm font-semibold text-gray-800">
+                            {t("oracle.alerts.channelsTelegram")}
+                          </div>
+                          <Switch
+                            checked={channels.includes("telegram")}
+                            onCheckedChange={(checked) =>
+                              toggleChannel(rule.id, "telegram", checked)
+                            }
+                            className={cn(
+                              "data-[state=checked]:bg-purple-600",
+                              "h-6 w-11",
+                            )}
+                          />
+                        </div>
+                      </div>
+
                       {channels.includes("email") ? (
                         <div className="md:col-span-12">
                           <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
@@ -882,6 +912,36 @@ export function AlertRulesManager({
                               );
                               patchRuleParams(rule.id, {
                                 maxAgeMs: minutes * 60_000,
+                              });
+                            }}
+                            className="h-10 rounded-xl bg-white/70 ring-1 ring-black/5 border-transparent focus-visible:ring-2 focus-visible:ring-purple-500/20"
+                          />
+                        </div>
+                      ) : null}
+
+                      {rule.event === "liveness_expiring" ? (
+                        <div className="md:col-span-12">
+                          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                            {t("oracle.alerts.params.withinMinutes")}
+                          </div>
+                          <Input
+                            type="number"
+                            min={1}
+                            step={1}
+                            value={Number(
+                              (
+                                rule.params as
+                                  | { withinMinutes?: unknown }
+                                  | undefined
+                              )?.withinMinutes ?? 60,
+                            )}
+                            onChange={(e) => {
+                              const minutes = Math.max(
+                                1,
+                                Math.floor(Number(e.target.value)),
+                              );
+                              patchRuleParams(rule.id, {
+                                withinMinutes: minutes,
                               });
                             }}
                             className="h-10 rounded-xl bg-white/70 ring-1 ring-black/5 border-transparent focus-visible:ring-2 focus-visible:ring-purple-500/20"

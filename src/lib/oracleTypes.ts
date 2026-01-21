@@ -16,6 +16,8 @@ export type Assertion = {
   assertion: string;
   assertedAt: string;
   livenessEndsAt: string;
+  blockNumber?: string;
+  logIndex?: number;
   resolvedAt?: string;
   settlementResolution?: boolean;
   status: OracleStatus;
@@ -39,6 +41,9 @@ export type Dispute = {
   currentVotesFor: number;
   currentVotesAgainst: number;
   totalVotes: number;
+  txHash?: string;
+  blockNumber?: string;
+  logIndex?: number;
 };
 
 export type ListResult<T> = {
@@ -135,6 +140,8 @@ export interface DbAssertionRow {
   assertion_data: string;
   asserted_at: Date;
   liveness_ends_at: Date;
+  block_number?: string | number | null;
+  log_index?: number | null;
   resolved_at: Date | null;
   settlement_resolution: boolean | null;
   status: OracleStatus;
@@ -153,6 +160,9 @@ export interface DbDisputeRow {
   disputer: string;
   disputed_at: Date;
   voting_ends_at: Date | null;
+  tx_hash?: string | null;
+  block_number?: string | number | null;
+  log_index?: number | null;
   status: string;
   votes_for: string | number;
   votes_against: string | number;
@@ -193,6 +203,7 @@ export type AuditLogEntry = {
 
 export type AlertRuleEvent =
   | "dispute_created"
+  | "liveness_expiring"
   | "sync_error"
   | "stale_sync"
   | "contract_paused"
@@ -219,7 +230,7 @@ export type AlertRule = {
   runbook?: string | null;
   silencedUntil?: string | null;
   params?: Record<string, unknown>;
-  channels?: Array<"webhook" | "email">;
+  channels?: Array<"webhook" | "email" | "telegram">;
   recipient?: string | null;
 };
 

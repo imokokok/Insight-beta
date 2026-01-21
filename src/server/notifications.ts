@@ -6,7 +6,7 @@ import type { Transporter } from "nodemailer";
 /**
  * Supported notification channels for alert delivery
  */
-export type NotificationChannel = "webhook" | "email";
+export type NotificationChannel = "webhook" | "email" | "telegram";
 
 /**
  * Options for configuring notification delivery
@@ -50,6 +50,7 @@ export async function notifyAlert(
       if (channel === "webhook") await sendWebhookNotification(alert);
       if (channel === "email")
         await sendEmailNotification(alert, options?.recipient);
+      if (channel === "telegram") await sendTelegramNotification(alert);
     } catch (error) {
       logger.error("Notification channel failed", {
         channel,
@@ -172,6 +173,109 @@ async function sendWebhookNotification(alert: {
       }
 
       logger.error("Failed to send webhook notification", {
+        error,
+        fingerprint: alert.fingerprint,
+      });
+      return;
+    }
+  }
+}
+
+async function sendTelegramNotification(
+  alert: {
+    title: string;
+    message: string;
+    severity: "info" | "warning" | "critical";
+    fingerprint: string;
+  },
+  recipient?: string,
+) {
+  const token = env.INSIGHT_TELEGRAM_BOT_TOKEN;
+  const chatId = (recipient || env.INSIGHT_TELEGRAM_CHAT_ID || "").trim();
+  if (!token || !chatId) {
+    logger.debug("Telegram notification not configured, skipping", {
+      fingerprint: alert.fingerprint,
+    });
+    return;
+  }
+
+  const emoji =
+    alert.severity === "critical"
+      ? "🚨"
+      : alert.severity === "warning"
+        ? "⚠️"
+        : "ℹ️";
+  const text = `${emoji} [${alert.severity.toUpperCase()}] ${alert.title}\n${alert.message}\nID: ${alert.fingerprint}`;
+  const url = `https://api.telegram.org/bot${token}/sendMessage`;
+
+  const timeoutMsRaw = Number(
+    env.INSIGHT_TELEGRAM_TIMEOUT_MS ||
+      env.INSIGHT_DEPENDENCY_TIMEOUT_MS ||
+      10_000,
+  );
+  const timeoutMs =
+    Number.isFinite(timeoutMsRaw) && timeoutMsRaw > 0 ? timeoutMsRaw : 10_000;
+
+  for (let attempt = 1; attempt <= notificationRetryAttempts; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text,
+          disable_web_page_preview: true,
+        }),
+        signal: controller.signal,
+      }).finally(() => clearTimeout(timeoutId));
+
+      if (res.ok) {
+        logger.debug("Telegram notification sent successfully", {
+          fingerprint: alert.fingerprint,
+        });
+        return;
+      }
+
+      const retryable =
+        res.status === 408 ||
+        res.status === 429 ||
+        (res.status >= 500 && res.status <= 599);
+
+      if (retryable && attempt < notificationRetryAttempts) {
+        const nextDelayMs = getRetryDelayMs(attempt);
+        logger.warn("Telegram notification retrying", {
+          status: res.status,
+          fingerprint: alert.fingerprint,
+          attempt,
+          nextDelayMs,
+        });
+        await sleep(nextDelayMs);
+        continue;
+      }
+
+      const body = await res.text().catch(() => "");
+      logger.error("Telegram notification failed", {
+        status: res.status,
+        fingerprint: alert.fingerprint,
+        response: body.slice(0, 500),
+      });
+      return;
+    } catch (error) {
+      if (attempt < notificationRetryAttempts) {
+        const nextDelayMs = getRetryDelayMs(attempt);
+        logger.warn("Telegram notification retrying after error", {
+          error,
+          fingerprint: alert.fingerprint,
+          attempt,
+          nextDelayMs,
+        });
+        await sleep(nextDelayMs);
+        continue;
+      }
+
+      logger.error("Failed to send telegram notification", {
         error,
         fingerprint: alert.fingerprint,
       });

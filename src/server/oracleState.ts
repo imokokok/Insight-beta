@@ -144,6 +144,12 @@ function pruneMemoryDisputes(mem: ReturnType<typeof getMemoryInstance>) {
 }
 
 function mapAssertionRow(row: DbAssertionRow): Assertion {
+  const blockNumber =
+    row.block_number === null || row.block_number === undefined
+      ? undefined
+      : typeof row.block_number === "number"
+        ? String(Math.trunc(row.block_number))
+        : String(row.block_number);
   return {
     id: row.id,
     chain: row.chain,
@@ -153,6 +159,11 @@ function mapAssertionRow(row: DbAssertionRow): Assertion {
     assertion: row.assertion_data,
     assertedAt: row.asserted_at.toISOString(),
     livenessEndsAt: row.liveness_ends_at.toISOString(),
+    blockNumber,
+    logIndex:
+      typeof row.log_index === "number"
+        ? row.log_index
+        : (row.log_index ?? undefined),
     resolvedAt: row.resolved_at ? row.resolved_at.toISOString() : undefined,
     settlementResolution: row.settlement_resolution ?? undefined,
     status: row.status,
@@ -184,6 +195,17 @@ function mapDisputeRow(row: DbDisputeRow): Dispute {
     disputer: row.disputer,
     disputedAt: row.disputed_at.toISOString(),
     votingEndsAt: votingEndsAt || "",
+    txHash: row.tx_hash ?? undefined,
+    blockNumber:
+      row.block_number === null || row.block_number === undefined
+        ? undefined
+        : typeof row.block_number === "number"
+          ? String(Math.trunc(row.block_number))
+          : String(row.block_number),
+    logIndex:
+      typeof row.log_index === "number"
+        ? row.log_index
+        : (row.log_index ?? undefined),
     status: computedStatus,
     currentVotesFor: Number(row.votes_for),
     currentVotesAgainst: Number(row.votes_against),
@@ -447,13 +469,15 @@ export async function upsertAssertion(
   }
   await query(
     `INSERT INTO assertions (
-      id, instance_id, chain, asserter, protocol, market, assertion_data, asserted_at, liveness_ends_at, resolved_at, settlement_resolution, status, bond_usd, disputer, tx_hash
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+      id, instance_id, chain, asserter, protocol, market, assertion_data, asserted_at, liveness_ends_at, block_number, log_index, resolved_at, settlement_resolution, status, bond_usd, disputer, tx_hash
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
     ON CONFLICT (id) DO UPDATE SET
       instance_id = excluded.instance_id,
       status = excluded.status,
       disputer = excluded.disputer,
       bond_usd = excluded.bond_usd,
+      block_number = excluded.block_number,
+      log_index = excluded.log_index,
       resolved_at = excluded.resolved_at,
       settlement_resolution = excluded.settlement_resolution
     `,
@@ -467,6 +491,8 @@ export async function upsertAssertion(
       a.assertion,
       a.assertedAt,
       a.livenessEndsAt,
+      a.blockNumber ?? null,
+      a.logIndex ?? null,
       a.resolvedAt ?? null,
       a.settlementResolution ?? null,
       a.status,
@@ -497,15 +523,18 @@ export async function upsertDispute(
   }
   await query(
     `INSERT INTO disputes (
-      id, instance_id, chain, assertion_id, market, reason, disputer, disputed_at, voting_ends_at, status, votes_for, votes_against, total_votes
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+      id, instance_id, chain, assertion_id, market, reason, disputer, disputed_at, voting_ends_at, tx_hash, block_number, log_index, status, votes_for, votes_against, total_votes
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
     ON CONFLICT (id) DO UPDATE SET
       instance_id = excluded.instance_id,
       status = excluded.status,
       votes_for = excluded.votes_for,
       votes_against = excluded.votes_against,
       total_votes = excluded.total_votes,
-      voting_ends_at = excluded.voting_ends_at
+      voting_ends_at = excluded.voting_ends_at,
+      tx_hash = excluded.tx_hash,
+      block_number = excluded.block_number,
+      log_index = excluded.log_index
     `,
     [
       d.id,
@@ -517,6 +546,9 @@ export async function upsertDispute(
       d.disputer,
       d.disputedAt,
       d.votingEndsAt,
+      d.txHash ?? null,
+      d.blockNumber ?? null,
+      d.logIndex ?? null,
       d.status,
       d.currentVotesFor,
       d.currentVotesAgainst,
@@ -841,6 +873,165 @@ export async function insertVoteEvent(
     ],
   );
   return res.rows.length > 0;
+}
+
+export async function insertOracleEvent(
+  input: {
+    chain: OracleChain;
+    eventType: string;
+    assertionId?: string | null;
+    txHash: string;
+    blockNumber: bigint;
+    logIndex: number;
+    payload: unknown;
+  },
+  instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
+) {
+  await ensureDb();
+  const normalizedInstanceId = normalizeInstanceId(instanceId);
+  if (!hasDatabase()) return false;
+  try {
+    const res = await query(
+      `
+      INSERT INTO oracle_events (instance_id, chain, event_type, assertion_id, tx_hash, block_number, log_index, payload)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb)
+      ON CONFLICT (instance_id, tx_hash, log_index) DO NOTHING
+      RETURNING 1
+      `,
+      [
+        normalizedInstanceId,
+        input.chain,
+        input.eventType,
+        input.assertionId ?? null,
+        input.txHash,
+        input.blockNumber.toString(10),
+        input.logIndex,
+        JSON.stringify(input.payload),
+      ],
+    );
+    return res.rows.length > 0;
+  } catch {
+    return false;
+  }
+}
+
+export async function replayOracleEventsRange(
+  fromBlock: bigint,
+  toBlock: bigint,
+  instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
+) {
+  await ensureDb();
+  const normalizedInstanceId = normalizeInstanceId(instanceId);
+  if (!hasDatabase()) return { applied: 0 };
+
+  const res = await query<{
+    event_type: string;
+    assertion_id: string | null;
+    payload: unknown;
+  }>(
+    `
+    SELECT event_type, assertion_id, payload
+    FROM oracle_events
+    WHERE instance_id = $1 AND block_number >= $2 AND block_number <= $3
+    ORDER BY block_number ASC, log_index ASC, id ASC
+    `,
+    [normalizedInstanceId, fromBlock.toString(10), toBlock.toString(10)],
+  );
+
+  let applied = 0;
+  for (const row of res.rows) {
+    const eventType = (row.event_type ?? "").trim();
+    const payload = row.payload;
+    if (!eventType) continue;
+
+    if (eventType === "assertion_created") {
+      const a = payload as Assertion;
+      if (!a?.id) continue;
+      await upsertAssertion(a, normalizedInstanceId);
+      applied += 1;
+      continue;
+    }
+
+    if (eventType === "assertion_disputed") {
+      const d = payload as Dispute;
+      if (!d?.assertionId) continue;
+      const assertion = await fetchAssertion(
+        d.assertionId,
+        normalizedInstanceId,
+      );
+      if (assertion) {
+        assertion.status = "Disputed";
+        assertion.disputer = d.disputer;
+        await upsertAssertion(assertion, normalizedInstanceId);
+      }
+      await upsertDispute(d, normalizedInstanceId);
+      applied += 1;
+      continue;
+    }
+
+    if (eventType === "vote_cast") {
+      const v = payload as {
+        chain: OracleChain;
+        assertionId: string;
+        voter: string;
+        support: boolean;
+        weight: string;
+        txHash: string;
+        blockNumber: string;
+        logIndex: number;
+      };
+      if (!v?.assertionId) continue;
+      await insertVoteEvent(
+        {
+          chain: v.chain,
+          assertionId: v.assertionId,
+          voter: v.voter,
+          support: Boolean(v.support),
+          weight: BigInt(v.weight || "0"),
+          txHash: v.txHash,
+          blockNumber: BigInt(v.blockNumber || "0"),
+          logIndex: Number(v.logIndex ?? 0),
+        },
+        normalizedInstanceId,
+      );
+      await recomputeDisputeVotes(v.assertionId, normalizedInstanceId);
+      applied += 1;
+      continue;
+    }
+
+    if (eventType === "assertion_resolved") {
+      const r = payload as {
+        assertionId: string;
+        resolvedAt: string;
+        outcome: boolean;
+      };
+      const assertionId = r?.assertionId || row.assertion_id;
+      if (!assertionId) continue;
+
+      const assertion = await fetchAssertion(assertionId, normalizedInstanceId);
+      if (assertion) {
+        assertion.status = "Resolved";
+        assertion.resolvedAt = r.resolvedAt;
+        assertion.settlementResolution = r.outcome;
+        await upsertAssertion(assertion, normalizedInstanceId);
+      }
+
+      const dispute = await fetchDispute(
+        `D:${assertionId}`,
+        normalizedInstanceId,
+      );
+      if (dispute) {
+        dispute.status = "Executed";
+        dispute.votingEndsAt = r.resolvedAt;
+        await upsertDispute(dispute, normalizedInstanceId);
+      }
+
+      applied += 1;
+      continue;
+    }
+  }
+
+  return { applied };
 }
 
 export async function recomputeDisputeVotes(

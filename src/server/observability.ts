@@ -57,6 +57,7 @@ type DbAuditRow = {
 
 export type AlertRuleEvent =
   | "dispute_created"
+  | "liveness_expiring"
   | "sync_error"
   | "stale_sync"
   | "contract_paused"
@@ -84,7 +85,7 @@ export type AlertRule = {
   runbook?: string | null;
   silencedUntil?: string | null;
   params?: Record<string, unknown>;
-  channels?: Array<"webhook" | "email">;
+  channels?: Array<"webhook" | "email" | "telegram">;
   recipient?: string | null;
 };
 
@@ -132,6 +133,7 @@ const MEMORY_MAX_AUDIT = 5000;
 
 const validRuleEvents: AlertRuleEvent[] = [
   "dispute_created",
+  "liveness_expiring",
   "sync_error",
   "stale_sync",
   "contract_paused",
@@ -155,21 +157,23 @@ const validSeverities: AlertSeverity[] = ["info", "warning", "critical"];
 function normalizeRuleChannels(
   channels: unknown,
   recipient: string | null,
-): Array<"webhook" | "email"> {
+): Array<"webhook" | "email" | "telegram"> {
   const raw =
     Array.isArray(channels) && channels.length > 0 ? channels : ["webhook"];
-  const out: Array<"webhook" | "email"> = [];
+  const out: Array<"webhook" | "email" | "telegram"> = [];
   for (const c of raw) {
-    if (c !== "webhook" && c !== "email") continue;
+    if (c !== "webhook" && c !== "email" && c !== "telegram") continue;
     if (!out.includes(c)) out.push(c);
   }
-  const safe: Array<"webhook" | "email"> =
-    out.length > 0 ? out : (["webhook"] as Array<"webhook" | "email">);
+  const safe: Array<"webhook" | "email" | "telegram"> =
+    out.length > 0
+      ? out
+      : (["webhook"] as Array<"webhook" | "email" | "telegram">);
   if (safe.includes("email") && !recipient) {
     const withoutEmail = safe.filter((c) => c !== "email");
     return withoutEmail.length > 0
-      ? (withoutEmail as Array<"webhook" | "email">)
-      : (["webhook"] as Array<"webhook" | "email">);
+      ? (withoutEmail as Array<"webhook" | "email" | "telegram">)
+      : (["webhook"] as Array<"webhook" | "email" | "telegram">);
   }
   return safe;
 }
@@ -246,6 +250,13 @@ function normalizeRuleParams(
       ["withinMinutes", safeWithin],
       ["minTotalVotes", safeMin],
     ]);
+  }
+
+  if (event === "liveness_expiring") {
+    const withinMinutes = getNumber("withinMinutes");
+    const safeWithin =
+      Number.isFinite(withinMinutes) && withinMinutes > 0 ? withinMinutes : 60;
+    return setNumber("withinMinutes", safeWithin);
   }
 
   if (event === "price_deviation") {
@@ -484,6 +495,14 @@ export async function readAlertRules(): Promise<AlertRule[]> {
       enabled: true,
       event: "contract_paused",
       severity: "critical",
+    },
+    {
+      id: "liveness_expiring_30m",
+      name: "Liveness expiring < 30m",
+      enabled: true,
+      event: "liveness_expiring",
+      severity: "warning",
+      params: { withinMinutes: 30 },
     },
     {
       id: "execution_delayed_30m",

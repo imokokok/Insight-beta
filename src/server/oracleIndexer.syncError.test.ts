@@ -37,7 +37,9 @@ const {
   updateSyncState,
   insertSyncMetric,
   insertVoteEvent,
+  insertOracleEvent,
   recomputeDisputeVotes,
+  replayOracleEventsRange,
   createOrTouchAlert,
   readAlertRules,
   createPublicClient,
@@ -54,7 +56,9 @@ const {
   updateSyncState: vi.fn(),
   insertSyncMetric: vi.fn(),
   insertVoteEvent: vi.fn(),
+  insertOracleEvent: vi.fn(),
   recomputeDisputeVotes: vi.fn(),
+  replayOracleEventsRange: vi.fn(async () => ({ applied: 0 })),
   createOrTouchAlert: vi.fn(),
   readAlertRules: vi.fn<() => Promise<AlertRuleLike[]>>(),
   createPublicClient: vi.fn(),
@@ -77,7 +81,9 @@ vi.mock("./oracleState", () => ({
   updateSyncState,
   insertSyncMetric,
   insertVoteEvent,
+  insertOracleEvent,
   recomputeDisputeVotes,
+  replayOracleEventsRange,
 }));
 
 vi.mock("./observability", () => ({
