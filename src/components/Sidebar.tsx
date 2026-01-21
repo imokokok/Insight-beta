@@ -107,14 +107,14 @@ export function Sidebar() {
           "fixed inset-y-0 left-0 z-40 w-64 transform border-r border-white/40 bg-white/70 backdrop-blur-xl shadow-2xl shadow-purple-500/10 transition-transform duration-300 ease-in-out md:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full",
         )}
-        aria-label="Sidebar"
+        aria-label={t("common.sidebar")}
       >
         <div className="flex h-full flex-col px-4 py-6">
           <div className="mb-8 flex items-center gap-3 px-2">
             <div className="group relative inline-flex h-12 w-12 items-center justify-center border border-gray-100 bg-white rounded-xl shadow-sm rotate-[-3deg] transition-transform hover:rotate-0 p-1">
               <Image
                 src={logoSrc}
-                alt="Insight Logo"
+                alt={t("app.logoAlt")}
                 width={36}
                 height={36}
                 className="h-9 w-9 object-contain"
@@ -128,7 +128,7 @@ export function Sidebar() {
             </div>
             <div>
               <h1 className="text-lg font-bold text-gray-800 tracking-tight">
-                Insight
+                {t("app.brand")}
               </h1>
               <p className="text-xs text-gray-500 font-medium">
                 {t("app.subtitle")}

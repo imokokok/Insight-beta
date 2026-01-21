@@ -125,28 +125,28 @@ export function AlertRulesManager({
       if (rule.event === "sync_backlog") {
         const maxLagBlocks = getNumber("maxLagBlocks");
         if (!Number.isFinite(maxLagBlocks) || maxLagBlocks <= 0) {
-          return "maxLagBlocks must be positive";
+          return t("oracle.alerts.validation.maxLagBlocksPositive");
         }
       }
 
       if (rule.event === "backlog_assertions") {
         const maxOpenAssertions = getNumber("maxOpenAssertions");
         if (!Number.isFinite(maxOpenAssertions) || maxOpenAssertions <= 0) {
-          return "maxOpenAssertions must be positive";
+          return t("oracle.alerts.validation.maxOpenAssertionsPositive");
         }
       }
 
       if (rule.event === "backlog_disputes") {
         const maxOpenDisputes = getNumber("maxOpenDisputes");
         if (!Number.isFinite(maxOpenDisputes) || maxOpenDisputes <= 0) {
-          return "maxOpenDisputes must be positive";
+          return t("oracle.alerts.validation.maxOpenDisputesPositive");
         }
       }
 
       if (rule.event === "market_stale") {
         const maxAgeMs = getNumber("maxAgeMs");
         if (!Number.isFinite(maxAgeMs) || maxAgeMs <= 0) {
-          return "maxAgeMs must be positive";
+          return t("oracle.alerts.validation.marketStaleMaxAgeMsPositive");
         }
       }
 
@@ -573,7 +573,8 @@ export function AlertRulesManager({
                             </span>
                           </div>
                           <p className="text-sm text-gray-500 font-mono">
-                            ID: {rule.id} • {t("oracle.alerts.event")}:{" "}
+                            {t("oracle.alerts.ruleId")}: {rule.id} •{" "}
+                            {t("oracle.alerts.event")}:{" "}
                             {getEventLabel(rule.event)}
                           </p>
                         </div>
@@ -773,7 +774,7 @@ export function AlertRulesManager({
                       {rule.event === "sync_backlog" ? (
                         <div className="md:col-span-12">
                           <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                            Max lag blocks
+                            {t("oracle.alerts.params.maxLagBlocks")}
                           </div>
                           <Input
                             type="number"
@@ -801,7 +802,7 @@ export function AlertRulesManager({
                       {rule.event === "backlog_assertions" ? (
                         <div className="md:col-span-12">
                           <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                            Max open assertions
+                            {t("oracle.alerts.params.maxOpenAssertions")}
                           </div>
                           <Input
                             type="number"
@@ -831,7 +832,7 @@ export function AlertRulesManager({
                       {rule.event === "backlog_disputes" ? (
                         <div className="md:col-span-12">
                           <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                            Max open disputes
+                            {t("oracle.alerts.params.maxOpenDisputes")}
                           </div>
                           <Input
                             type="number"
@@ -859,7 +860,7 @@ export function AlertRulesManager({
                       {rule.event === "market_stale" ? (
                         <div className="md:col-span-12">
                           <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                            Max age minutes
+                            {t("oracle.alerts.params.maxAgeMinutes")}
                           </div>
                           <Input
                             type="number"

@@ -2,7 +2,13 @@
 
 import { useI18n } from "@/i18n/LanguageProvider";
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Calculator, TrendingUp, DollarSign, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -27,12 +33,16 @@ export function PnLCalculator() {
             <Calculator className="h-6 w-6 text-white" />
           </div>
           <div>
-            <CardTitle className="text-xl font-bold">{t("pnl.title")}</CardTitle>
-            <CardDescription className="text-indigo-100">{t("pnl.description")}</CardDescription>
+            <CardTitle className="text-xl font-bold">
+              {t("pnl.title")}
+            </CardTitle>
+            <CardDescription className="text-indigo-100">
+              {t("pnl.description")}
+            </CardDescription>
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent className="p-6 space-y-8">
         {/* Role Selector */}
         <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl">
@@ -42,7 +52,7 @@ export function PnLCalculator() {
               "py-2.5 px-4 rounded-lg text-sm font-semibold transition-all duration-200",
               role === "disputer"
                 ? "bg-white text-violet-700 shadow-sm"
-                : "text-slate-500 hover:text-slate-700"
+                : "text-slate-500 hover:text-slate-700",
             )}
           >
             {t("pnl.iWantToDispute")}
@@ -53,7 +63,7 @@ export function PnLCalculator() {
               "py-2.5 px-4 rounded-lg text-sm font-semibold transition-all duration-200",
               role === "asserter"
                 ? "bg-white text-violet-700 shadow-sm"
-                : "text-slate-500 hover:text-slate-700"
+                : "text-slate-500 hover:text-slate-700",
             )}
           >
             {t("pnl.iWantToAssert")}
@@ -75,12 +85,10 @@ export function PnLCalculator() {
               placeholder="0"
             />
             <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 font-medium text-lg">
-              USD
+              {t("common.usd")}
             </span>
           </div>
-          <p className="text-xs text-slate-500">
-            {t("pnl.disclaimer")}
-          </p>
+          <p className="text-xs text-slate-500">{t("pnl.disclaimer")}</p>
         </div>
 
         {/* Result Section */}
@@ -88,26 +96,32 @@ export function PnLCalculator() {
           <div className="absolute top-0 right-0 p-4 opacity-10">
             <TrendingUp className="h-24 w-24 text-emerald-600" />
           </div>
-          
+
           <div className="relative z-10 grid grid-cols-2 gap-8">
             <div>
-              <p className="text-sm font-medium text-emerald-600 mb-1">{t("pnl.profit")}</p>
+              <p className="text-sm font-medium text-emerald-600 mb-1">
+                {t("pnl.profit")}
+              </p>
               <p className="text-3xl font-bold text-emerald-700">
                 +${profit.toLocaleString()}
               </p>
             </div>
             <div>
-              <p className="text-sm font-medium text-emerald-600 mb-1">{t("pnl.roi")}</p>
-              <p className="text-3xl font-bold text-emerald-700">
-                {roi}%
+              <p className="text-sm font-medium text-emerald-600 mb-1">
+                {t("pnl.roi")}
               </p>
+              <p className="text-3xl font-bold text-emerald-700">{roi}%</p>
             </div>
           </div>
 
           <div className="mt-6 pt-6 border-t border-emerald-200/50 flex items-center justify-between text-sm">
             <div className="flex flex-col">
-              <span className="text-emerald-800/60">{t("pnl.totalReturn")}</span>
-              <span className="font-semibold text-emerald-900">${totalReturn.toLocaleString()}</span>
+              <span className="text-emerald-800/60">
+                {t("pnl.totalReturn")}
+              </span>
+              <span className="font-semibold text-emerald-900">
+                ${totalReturn.toLocaleString()}
+              </span>
             </div>
             <ArrowRight className="h-5 w-5 text-emerald-400" />
           </div>

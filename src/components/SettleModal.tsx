@@ -137,7 +137,7 @@ export function SettleModal({
           <div className="space-y-2">
             <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
               <Info size={14} className="text-gray-400" />
-              Assertion ID
+              {t("oracle.settleModal.assertionId")}
             </h3>
             <div className="rounded-xl bg-gray-50 p-3 font-mono text-sm text-gray-800 border border-gray-100">
               <code className="text-xs break-all">{assertionId}</code>
@@ -188,7 +188,7 @@ export function SettleModal({
             {outcome === null && (
               <div className="mt-2 text-xs text-amber-600 flex items-center gap-2 animate-pulse">
                 <AlertCircle size={12} />
-                Please select a settlement outcome
+                {t("oracle.settleModal.selectOutcomeRequired")}
               </div>
             )}
           </div>
@@ -226,12 +226,12 @@ export function SettleModal({
           <div className="text-xs text-gray-500 bg-gray-50 rounded-lg p-3 border border-gray-100">
             <div className="flex items-center gap-2 mb-1">
               <Info size={12} className="text-gray-400" />
-              <span className="font-medium">Transaction Note</span>
+              <span className="font-medium">
+                {t("oracle.settleModal.transactionNoteTitle")}
+              </span>
             </div>
             <p className="leading-relaxed">
-              This transaction will settle the assertion and distribute the
-              bond/rewards. Please review the outcome carefully before
-              confirming.
+              {t("oracle.settleModal.transactionNoteBody")}
             </p>
           </div>
         </div>

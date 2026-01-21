@@ -65,6 +65,8 @@ export const translations = {
       title: "Insight · UMA 结算监控",
       description: "UMA Optimistic Oracle 争议与结算可视化监控",
       subtitle: "预言机监控",
+      brand: "Insight",
+      logoAlt: "Insight 标志",
     },
     howItWorks: {
       title: "工作原理",
@@ -93,6 +95,8 @@ export const translations = {
     },
     common: {
       language: "语言",
+      breadcrumb: "面包屑导航",
+      home: "首页",
       loading: "加载中…",
       comingSoon: "敬请期待",
       loadMore: "加载更多",
@@ -104,6 +108,7 @@ export const translations = {
       resolved: "已结算",
       openMenu: "打开菜单",
       closeMenu: "关闭菜单",
+      sidebar: "侧边栏",
       close: "关闭",
       viewTx: "查看交易",
       copyHash: "复制哈希",
@@ -118,6 +123,7 @@ export const translations = {
       popular: "热门",
       example: "示例",
       min: "最小",
+      usd: "USD",
       addToWatchlist: "加入关注",
       removeFromWatchlist: "取消关注",
     },
@@ -187,10 +193,18 @@ export const translations = {
         syncDuration: "同步耗时（毫秒）",
         waitingData: "等待更多历史数据以生成活动趋势。",
       },
+      healthScore: {
+        title: "预言机健康评分",
+        excellent: "优秀",
+        good: "良好",
+        degraded: "降级",
+        critical: "严重",
+      },
       alerts: {
         title: "告警规则",
         description: "配置系统监控与通知规则。",
         rule: "规则名称",
+        ruleId: "规则 ID",
         event: "触发事件",
         severity: "严重程度",
         owner: "负责人",
@@ -216,6 +230,9 @@ export const translations = {
         testFailed: "测试发送失败",
         params: {
           maxAgeMinutes: "最大滞后（分钟）",
+          maxLagBlocks: "最大落后区块数",
+          maxOpenAssertions: "最大未结算断言数",
+          maxOpenDisputes: "最大未结算争议数",
           thresholdMs: "阈值（毫秒）",
           thresholdPercent: "错误率阈值（%）",
           windowMinutes: "统计窗口（分钟）",
@@ -230,6 +247,10 @@ export const translations = {
           priceDeviationPositive: "价格偏差阈值必须为正数",
           lowGasPositive: "最低 Gas 余额必须为正数",
           staleSyncMaxAgeMsPositive: "同步停滞的最大时长必须为正数",
+          marketStaleMaxAgeMsPositive: "市场数据停滞的最大时长必须为正数",
+          maxLagBlocksPositive: "最大落后区块数必须为正数",
+          maxOpenAssertionsPositive: "最大未结算断言数必须为正数",
+          maxOpenDisputesPositive: "最大未结算争议数必须为正数",
           slowApiThresholdMsPositive: "慢请求阈值必须为正数",
           databaseSlowQueryThresholdMsPositive: "慢查询阈值必须为正数",
           highErrorRateThresholdPercentRange: "错误率阈值必须在 1-100 之间",
@@ -352,11 +373,16 @@ export const translations = {
         readyTitle: "可结算",
         readyDesc:
           "挑战期已结束。你可以结算该断言以确认结果并分配保证金/奖励。",
+        assertionId: "断言 ID",
         selectOutcome: "选择结算结果",
         outcomeTrue: "有效/真实",
         outcomeTrueDesc: "确认该断言为真实有效的陈述",
         outcomeFalse: "无效/虚假",
         outcomeFalseDesc: "确认该断言为虚假无效的陈述",
+        selectOutcomeRequired: "请选择一个结算结果后再继续",
+        transactionNoteTitle: "交易提示",
+        transactionNoteBody:
+          "你将提交一笔链上交易来结算该断言。请在钱包中确认，并等待链上确认完成。",
       },
       config: {
         title: "连接与同步",
@@ -674,6 +700,8 @@ export const translations = {
       description:
         "Visual monitoring of UMA Optimistic Oracle disputes and settlements.",
       subtitle: "Oracle Monitor",
+      brand: "Insight",
+      logoAlt: "Insight logo",
     },
     howItWorks: {
       title: "How It Works",
@@ -702,6 +730,8 @@ export const translations = {
     },
     common: {
       language: "Language",
+      breadcrumb: "Breadcrumb",
+      home: "Home",
       loading: "Loading…",
       comingSoon: "Coming Soon",
       loadMore: "Load More",
@@ -713,6 +743,7 @@ export const translations = {
       resolved: "Resolved",
       openMenu: "Open menu",
       closeMenu: "Close menu",
+      sidebar: "Sidebar",
       close: "Close",
       viewTx: "View TX",
       copyHash: "Copy hash",
@@ -727,6 +758,7 @@ export const translations = {
       confirm: "Confirm",
       popular: "Popular",
       example: "Example",
+      usd: "USD",
       success: "Success",
     },
     sidebar: {
@@ -796,10 +828,18 @@ export const translations = {
         waitingData:
           "Waiting for more historical data to generate activity trends.",
       },
+      healthScore: {
+        title: "Oracle Health Score",
+        excellent: "Excellent",
+        good: "Good",
+        degraded: "Degraded",
+        critical: "Critical",
+      },
       alerts: {
         title: "Alert Rules",
         description: "Configure system monitoring and notification rules.",
         rule: "Rule Name",
+        ruleId: "Rule ID",
         event: "Trigger Event",
         severity: "Severity",
         owner: "Owner",
@@ -825,6 +865,9 @@ export const translations = {
         testFailed: "Failed to send test",
         params: {
           maxAgeMinutes: "Max age (minutes)",
+          maxLagBlocks: "Max Lag Blocks",
+          maxOpenAssertions: "Max Open Assertions",
+          maxOpenDisputes: "Max Open Disputes",
           thresholdMs: "Threshold (ms)",
           thresholdPercent: "Threshold (%)",
           windowMinutes: "Window (minutes)",
@@ -837,6 +880,12 @@ export const translations = {
           emailRecipientRequired: "Recipient is required when Email is enabled",
           emailRecipientInvalid: "Invalid recipient email format",
           staleSyncMaxAgeMsPositive: "Max age must be a positive number",
+          marketStaleMaxAgeMsPositive: "Max age must be a positive number",
+          maxLagBlocksPositive: "Max lag blocks must be a positive number",
+          maxOpenAssertionsPositive:
+            "Max open assertions must be a positive number",
+          maxOpenDisputesPositive:
+            "Max open disputes must be a positive number",
           slowApiThresholdMsPositive: "Threshold must be a positive number",
           databaseSlowQueryThresholdMsPositive:
             "Threshold must be a positive number",
@@ -945,11 +994,16 @@ export const translations = {
         readyTitle: "Ready to Settle",
         readyDesc:
           "The voting/liveness period has ended. You can now settle this assertion to resolve the outcome and distribute bonds/rewards.",
+        assertionId: "Assertion ID",
         selectOutcome: "Select Settlement Outcome",
         outcomeTrue: "Valid/True",
         outcomeTrueDesc: "Confirm the assertion is valid and true",
         outcomeFalse: "Invalid/False",
         outcomeFalseDesc: "Confirm the assertion is invalid and false",
+        selectOutcomeRequired: "Select an outcome to continue",
+        transactionNoteTitle: "Transaction Note",
+        transactionNoteBody:
+          "You will submit an on-chain transaction to settle this assertion. Confirm it in your wallet and wait for confirmation.",
       },
       config: {
         title: "Connection & Sync",
@@ -1307,6 +1361,8 @@ export const translations = {
     },
     common: {
       language: "Idioma",
+      breadcrumb: "Ruta de navegación",
+      home: "Inicio",
       loading: "Cargando…",
       comingSoon: "Próximamente",
       loadMore: "Cargar más",
@@ -1331,6 +1387,7 @@ export const translations = {
       popular: "Popular",
       example: "Ejemplo",
       min: "Mínimo",
+      usd: "USD",
       addToWatchlist: "Añadir a lista de seguimiento",
       removeFromWatchlist: "Eliminar de lista de seguimiento",
       success: "Éxito",
@@ -1942,6 +1999,8 @@ export const translations = {
     },
     common: {
       language: "Langue",
+      breadcrumb: "Fil d’Ariane",
+      home: "Accueil",
       loading: "Chargement…",
       comingSoon: "Bientôt disponible",
       loadMore: "Charger plus",
@@ -1966,6 +2025,7 @@ export const translations = {
       popular: "Populaire",
       example: "Exemple",
       min: "Minimum",
+      usd: "USD",
       addToWatchlist: "Ajouter à la liste de surveillance",
       removeFromWatchlist: "Retirer de la liste de surveillance",
       success: "Succès",
@@ -2452,6 +2512,8 @@ export const translations = {
     },
     common: {
       language: "언어",
+      breadcrumb: "탐색 경로",
+      home: "홈",
       loading: "로딩 중…",
       comingSoon: "곧 출시됩니다",
       loadMore: "더 불러오기",
@@ -2476,6 +2538,7 @@ export const translations = {
       popular: "인기",
       example: "예시",
       min: "최소",
+      usd: "USD",
       addToWatchlist: "관심 목록에 추가",
       removeFromWatchlist: "관심 목록에서 제거",
       success: "성공",
@@ -2896,6 +2959,8 @@ export type TranslationKey =
   | "app.title"
   | "app.description"
   | "app.subtitle"
+  | "app.brand"
+  | "app.logoAlt"
   | "howItWorks.title"
   | "howItWorks.step1.title"
   | "howItWorks.step1.desc"
@@ -2912,6 +2977,8 @@ export type TranslationKey =
   | "nav.audit"
   | "nav.watchlist"
   | "common.language"
+  | "common.breadcrumb"
+  | "common.home"
   | "common.loading"
   | "common.comingSoon"
   | "common.loadMore"
@@ -2923,6 +2990,7 @@ export type TranslationKey =
   | "common.resolved"
   | "common.openMenu"
   | "common.closeMenu"
+  | "common.sidebar"
   | "common.close"
   | "common.viewTx"
   | "common.copyHash"
@@ -2933,6 +3001,7 @@ export type TranslationKey =
   | "common.popular"
   | "common.example"
   | "common.min"
+  | "common.usd"
   | "common.addToWatchlist"
   | "common.removeFromWatchlist"
   | "common.success"
@@ -2994,6 +3063,11 @@ export type TranslationKey =
   | "oracle.charts.syncLagBlocks"
   | "oracle.charts.syncDuration"
   | "oracle.charts.waitingData"
+  | "oracle.healthScore.title"
+  | "oracle.healthScore.excellent"
+  | "oracle.healthScore.good"
+  | "oracle.healthScore.degraded"
+  | "oracle.healthScore.critical"
   | "myAssertions.title"
   | "myAssertions.description"
   | "myAssertions.connectWalletTitle"
@@ -3098,11 +3172,15 @@ export type TranslationKey =
   | "oracle.disputeModal.warning"
   | "oracle.settleModal.readyTitle"
   | "oracle.settleModal.readyDesc"
+  | "oracle.settleModal.assertionId"
   | "oracle.settleModal.selectOutcome"
   | "oracle.settleModal.outcomeTrue"
   | "oracle.settleModal.outcomeTrueDesc"
   | "oracle.settleModal.outcomeFalse"
   | "oracle.settleModal.outcomeFalseDesc"
+  | "oracle.settleModal.selectOutcomeRequired"
+  | "oracle.settleModal.transactionNoteTitle"
+  | "oracle.settleModal.transactionNoteBody"
   | "oracle.config.title"
   | "oracle.config.rpcUrl"
   | "oracle.config.contractAddress"
@@ -3310,6 +3388,7 @@ export type TranslationKey =
   | "oracle.alerts.title"
   | "oracle.alerts.description"
   | "oracle.alerts.rule"
+  | "oracle.alerts.ruleId"
   | "oracle.alerts.event"
   | "oracle.alerts.severity"
   | "oracle.alerts.owner"
@@ -3336,6 +3415,9 @@ export type TranslationKey =
   | "oracle.alerts.recipient"
   | "oracle.alerts.recipientPlaceholder"
   | "oracle.alerts.params.maxAgeMinutes"
+  | "oracle.alerts.params.maxLagBlocks"
+  | "oracle.alerts.params.maxOpenAssertions"
+  | "oracle.alerts.params.maxOpenDisputes"
   | "oracle.alerts.params.thresholdMs"
   | "oracle.alerts.params.thresholdPercent"
   | "oracle.alerts.params.windowMinutes"
@@ -3346,6 +3428,10 @@ export type TranslationKey =
   | "oracle.alerts.validation.emailRecipientRequired"
   | "oracle.alerts.validation.emailRecipientInvalid"
   | "oracle.alerts.validation.staleSyncMaxAgeMsPositive"
+  | "oracle.alerts.validation.marketStaleMaxAgeMsPositive"
+  | "oracle.alerts.validation.maxLagBlocksPositive"
+  | "oracle.alerts.validation.maxOpenAssertionsPositive"
+  | "oracle.alerts.validation.maxOpenDisputesPositive"
   | "oracle.alerts.validation.slowApiThresholdMsPositive"
   | "oracle.alerts.validation.databaseSlowQueryThresholdMsPositive"
   | "oracle.alerts.validation.highErrorRateThresholdPercentRange"

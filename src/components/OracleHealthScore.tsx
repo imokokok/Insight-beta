@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@/lib/utils";
 import {
   Activity,
@@ -5,6 +7,7 @@ import {
   CheckCircle2,
   ShieldCheck,
 } from "lucide-react";
+import { useI18n } from "@/i18n/LanguageProvider";
 
 interface OracleHealthScoreProps {
   score: number;
@@ -15,6 +18,8 @@ export function OracleHealthScore({
   score,
   isLoading,
 }: OracleHealthScoreProps) {
+  const { t } = useI18n();
+
   if (isLoading) {
     return (
       <div className="h-full w-full flex items-center justify-center">
@@ -27,28 +32,28 @@ export function OracleHealthScore({
   let bgColor = "bg-green-50";
   let ringColor = "ring-green-100";
   let Icon = ShieldCheck;
-  let statusText = "Excellent";
+  let statusText = t("oracle.healthScore.excellent");
 
   if (score < 90) {
     color = "text-yellow-500";
     bgColor = "bg-yellow-50";
     ringColor = "ring-yellow-100";
     Icon = CheckCircle2;
-    statusText = "Good";
+    statusText = t("oracle.healthScore.good");
   }
   if (score < 80) {
     color = "text-orange-500";
     bgColor = "bg-orange-50";
     ringColor = "ring-orange-100";
     Icon = Activity;
-    statusText = "Degraded";
+    statusText = t("oracle.healthScore.degraded");
   }
   if (score < 60) {
     color = "text-red-500";
     bgColor = "bg-red-50";
     ringColor = "ring-red-100";
     Icon = AlertTriangle;
-    statusText = "Critical";
+    statusText = t("oracle.healthScore.critical");
   }
 
   return (
@@ -73,7 +78,9 @@ export function OracleHealthScore({
         </span>
       </div>
       <h3 className="text-2xl font-bold text-gray-900">{statusText}</h3>
-      <p className="text-sm text-gray-500 mt-1">Node Health Score</p>
+      <p className="text-sm text-gray-500 mt-1">
+        {t("oracle.healthScore.title")}
+      </p>
     </div>
   );
 }
