@@ -56,14 +56,18 @@ function oracleChainToChainId(chain: OracleChain): number {
   return 31337;
 }
 
-export function useOracleTransaction() {
+export function useOracleTransaction(instanceId?: string) {
   const { address, chainId, switchChain, getWalletClient } = useWallet();
   const { toast, update } = useToast();
   const { t } = useI18n();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const configRef = useRef<OracleConfig | null>(null);
+  const resolvedInstanceId =
+    typeof instanceId === "string" && instanceId.trim()
+      ? instanceId.trim()
+      : null;
+  const configRef = useRef<Map<string, OracleConfig | null>>(new Map());
 
   const execute = async <TFunctionName extends OracleWriteFunctionName>({
     functionName,
@@ -131,15 +135,20 @@ export function useOracleTransaction() {
         targetAddress = publicEnv.INSIGHT_ORACLE_ADDRESS;
       }
       if (!targetAddress) {
-        if (!configRef.current) {
+        const key = resolvedInstanceId ?? "default";
+        if (!configRef.current.has(key)) {
           try {
-            configRef.current =
-              await fetchApiData<OracleConfig>("/api/oracle/config");
+            const url = resolvedInstanceId
+              ? `/api/oracle/config?instanceId=${encodeURIComponent(resolvedInstanceId)}`
+              : "/api/oracle/config";
+            configRef.current.set(key, await fetchApiData<OracleConfig>(url));
           } catch {
-            configRef.current = null;
+            configRef.current.set(key, null);
           }
         }
-        targetAddress = (configRef.current?.contractAddress ?? "").trim();
+        targetAddress = (
+          configRef.current.get(key)?.contractAddress ?? ""
+        ).trim();
       }
       if (!targetAddress)
         throw new Error("Oracle contract address not configured");
@@ -221,15 +230,18 @@ export function useOracleTransaction() {
         });
         let effectiveRpcUrl = (rpcUrl ?? "").trim();
         if (!effectiveRpcUrl) {
-          if (!configRef.current) {
+          const key = resolvedInstanceId ?? "default";
+          if (!configRef.current.has(key)) {
             try {
-              configRef.current =
-                await fetchApiData<OracleConfig>("/api/oracle/config");
+              const url = resolvedInstanceId
+                ? `/api/oracle/config?instanceId=${encodeURIComponent(resolvedInstanceId)}`
+                : "/api/oracle/config";
+              configRef.current.set(key, await fetchApiData<OracleConfig>(url));
             } catch {
-              configRef.current = null;
+              configRef.current.set(key, null);
             }
           }
-          effectiveRpcUrl = (configRef.current?.rpcUrl ?? "").trim();
+          effectiveRpcUrl = (configRef.current.get(key)?.rpcUrl ?? "").trim();
         }
         const primaryRpcUrl = parseRpcUrls(effectiveRpcUrl)[0] ?? "";
 

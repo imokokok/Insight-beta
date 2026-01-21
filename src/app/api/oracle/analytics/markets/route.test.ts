@@ -11,15 +11,21 @@ vi.mock("@/server/db", () => ({
 
 vi.mock("@/server/memoryBackend", () => {
   const memStore = {
-    assertions: new Map<
+    instances: new Map<
       string,
       {
-        assertedAt: string;
-        market: string;
-        bondUsd?: number;
+        assertions: Map<
+          string,
+          {
+            assertedAt: string;
+            market: string;
+            bondUsd?: number;
+          }
+        >;
       }
     >(),
   };
+  memStore.instances.set("default", { assertions: new Map() });
   return {
     getMemoryStore: vi.fn(() => memStore),
   };
@@ -31,14 +37,14 @@ vi.mock("@/server/apiResponse", () => ({
     async (
       _key: string,
       _ttlMs: number,
-      compute: () => unknown | Promise<unknown>
+      compute: () => unknown | Promise<unknown>,
     ) => {
       return await compute();
-    }
+    },
   ),
   handleApi: async (
     _request: Request,
-    fn: () => unknown | Promise<unknown>
+    fn: () => unknown | Promise<unknown>,
   ) => {
     return await fn();
   },
@@ -51,29 +57,35 @@ describe("GET /api/oracle/analytics/markets", () => {
 
   it("returns market stats from memory backend", async () => {
     const mem = getMemoryStore() as unknown as {
-      assertions: Map<
+      instances: Map<
         string,
         {
-          assertedAt: string;
-          market: string;
-          bondUsd?: number;
+          assertions: Map<
+            string,
+            {
+              assertedAt: string;
+              market: string;
+              bondUsd?: number;
+            }
+          >;
         }
       >;
     };
+    const inst = mem.instances.get("default")!;
     const now = Date.now();
-    mem.assertions.set("1", {
+    inst.assertions.set("1", {
       assertedAt: new Date(now).toISOString(),
       market: "ETH/USD",
       bondUsd: 10,
     });
-    mem.assertions.set("2", {
+    inst.assertions.set("2", {
       assertedAt: new Date(now).toISOString(),
       market: "ETH/USD",
       bondUsd: 5,
     });
 
     const request = new Request(
-      "http://localhost:3000/api/oracle/analytics/markets?days=7&limit=5"
+      "http://localhost:3000/api/oracle/analytics/markets?days=7&limit=5",
     );
     const response = (await GET(request)) as unknown as {
       market: string;
@@ -92,9 +104,9 @@ describe("GET /api/oracle/analytics/markets", () => {
     expect(response[0]!.count).toBe(2);
     expect(response[0]!.volume).toBe(15);
     expect(cachedJson).toHaveBeenCalledWith(
-      "oracle_api:markets:7:5",
+      "oracle_api:/api/oracle/analytics/markets?days=7&limit=5",
       60_000,
-      expect.any(Function)
+      expect.any(Function),
     );
   });
 });

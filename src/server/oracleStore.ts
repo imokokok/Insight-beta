@@ -13,6 +13,7 @@ import type {
 import { mockAssertions, mockDisputes } from "@/lib/mockData";
 import { unstable_cache } from "next/cache";
 import { readOracleState } from "@/server/oracleState";
+import { DEFAULT_ORACLE_INSTANCE_ID } from "@/server/oracleConfig";
 
 export type { Assertion, Dispute } from "@/lib/oracleTypes";
 
@@ -25,14 +26,23 @@ async function ensureDb() {
   }
 }
 
-export async function isTableEmpty(table: "assertions" | "disputes") {
+function normalizeInstanceId(instanceId?: string | null) {
+  const trimmed = (instanceId ?? DEFAULT_ORACLE_INSTANCE_ID).trim();
+  return trimmed || DEFAULT_ORACLE_INSTANCE_ID;
+}
+
+export async function isTableEmpty(
+  table: "assertions" | "disputes",
+  instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
+) {
   await ensureDb();
   if (!hasDatabase()) return true;
+  const normalizedInstanceId = normalizeInstanceId(instanceId);
   const sql =
     table === "assertions"
-      ? "SELECT EXISTS (SELECT 1 FROM assertions) as has_rows"
-      : "SELECT EXISTS (SELECT 1 FROM disputes) as has_rows";
-  const res = await query<{ has_rows: boolean }>(sql);
+      ? "SELECT EXISTS (SELECT 1 FROM assertions WHERE instance_id = $1) as has_rows"
+      : "SELECT EXISTS (SELECT 1 FROM disputes WHERE instance_id = $1) as has_rows";
+  const res = await query<{ has_rows: boolean }>(sql, [normalizedInstanceId]);
   return !res.rows[0]?.has_rows;
 }
 
@@ -109,7 +119,10 @@ export function parseListParams(url: URL): ListParams {
   };
 }
 
-export async function listAssertions(params: ListParams) {
+export async function listAssertions(
+  params: ListParams,
+  instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
+) {
   await ensureDb();
   if (!hasDatabase()) {
     let items = mockAssertions.slice();
@@ -158,8 +171,9 @@ export async function listAssertions(params: ListParams) {
   }
   const limit = Math.min(100, Math.max(1, params.limit ?? 30));
   const offset = Math.max(0, params.cursor ?? 0);
+  const normalizedInstanceId = normalizeInstanceId(instanceId);
 
-  if (await isTableEmpty("assertions")) {
+  if (await isTableEmpty("assertions", normalizedInstanceId)) {
     let items = mockAssertions.slice();
     if (
       params.status &&
@@ -203,6 +217,9 @@ export async function listAssertions(params: ListParams) {
   const conditions: string[] = [];
   const values: (string | number | string[])[] = [];
   let idx = 1;
+
+  conditions.push(`instance_id = $${idx++}`);
+  values.push(normalizedInstanceId);
 
   if (
     params.status &&
@@ -266,15 +283,19 @@ export async function listAssertions(params: ListParams) {
   };
 }
 
-export async function getAssertion(id: string): Promise<Assertion | null> {
+export async function getAssertion(
+  id: string,
+  instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
+): Promise<Assertion | null> {
   await ensureDb();
   if (!hasDatabase()) {
     const mock = mockAssertions.find((a) => a.id === id);
     return mock || null;
   }
+  const normalizedInstanceId = normalizeInstanceId(instanceId);
   const res = await query<DbAssertionRow>(
-    "SELECT * FROM assertions WHERE id = $1",
-    [id],
+    "SELECT * FROM assertions WHERE id = $1 AND instance_id = $2",
+    [id, normalizedInstanceId],
   );
   if (res.rows.length === 0) {
     // Check mocks
@@ -285,15 +306,19 @@ export async function getAssertion(id: string): Promise<Assertion | null> {
   return row ? mapAssertionRow(row) : null;
 }
 
-export async function getDispute(id: string): Promise<Dispute | null> {
+export async function getDispute(
+  id: string,
+  instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
+): Promise<Dispute | null> {
   await ensureDb();
   if (!hasDatabase()) {
     const mock = mockDisputes.find((d) => d.id === id);
     return mock || null;
   }
+  const normalizedInstanceId = normalizeInstanceId(instanceId);
   const res = await query<DbDisputeRow>(
-    "SELECT * FROM disputes WHERE id = $1",
-    [id],
+    "SELECT * FROM disputes WHERE id = $1 AND instance_id = $2",
+    [id, normalizedInstanceId],
   );
   if (res.rows.length === 0) {
     const mock = mockDisputes.find((d) => d.id === id);
@@ -305,15 +330,17 @@ export async function getDispute(id: string): Promise<Dispute | null> {
 
 export async function getDisputeByAssertionId(
   assertionId: string,
+  instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
 ): Promise<Dispute | null> {
   await ensureDb();
   if (!hasDatabase()) {
     const mock = mockDisputes.find((d) => d.assertionId === assertionId);
     return mock || null;
   }
+  const normalizedInstanceId = normalizeInstanceId(instanceId);
   const res = await query<DbDisputeRow>(
-    "SELECT * FROM disputes WHERE assertion_id = $1",
-    [assertionId],
+    "SELECT * FROM disputes WHERE assertion_id = $1 AND instance_id = $2",
+    [assertionId, normalizedInstanceId],
   );
   if (res.rows.length === 0) {
     const mock = mockDisputes.find((d) => d.assertionId === assertionId);
@@ -323,7 +350,10 @@ export async function getDisputeByAssertionId(
   return row ? mapDisputeRow(row) : null;
 }
 
-export async function listDisputes(params: ListParams) {
+export async function listDisputes(
+  params: ListParams,
+  instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
+) {
   await ensureDb();
   if (!hasDatabase()) {
     let items = mockDisputes.slice();
@@ -369,8 +399,9 @@ export async function listDisputes(params: ListParams) {
   }
   const limit = Math.min(100, Math.max(1, params.limit ?? 30));
   const offset = Math.max(0, params.cursor ?? 0);
+  const normalizedInstanceId = normalizeInstanceId(instanceId);
 
-  if (await isTableEmpty("disputes")) {
+  if (await isTableEmpty("disputes", normalizedInstanceId)) {
     let items = mockDisputes.slice();
     if (
       params.status &&
@@ -414,6 +445,9 @@ export async function listDisputes(params: ListParams) {
   const conditions: string[] = [];
   const values: (string | number)[] = [];
   let idx = 1;
+
+  conditions.push(`instance_id = $${idx++}`);
+  values.push(normalizedInstanceId);
 
   if (
     params.status &&
@@ -481,231 +515,275 @@ export async function listDisputes(params: ListParams) {
   };
 }
 
-export const getOracleStats = unstable_cache(
-  async (): Promise<OracleStats> => {
-    await ensureDb();
-    if (!hasDatabase()) {
+export function getOracleStats(
+  instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
+): Promise<OracleStats> {
+  const normalizedInstanceId = normalizeInstanceId(instanceId);
+  return unstable_cache(
+    async (): Promise<OracleStats> => {
+      await ensureDb();
+      if (!hasDatabase()) {
+        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const resolved24hMock = mockAssertions.filter((a) => {
+          if (a.status !== "Resolved") return false;
+          const resolvedAt = a.resolvedAt ?? a.livenessEndsAt;
+          return new Date(resolvedAt).getTime() > oneDayAgo.getTime();
+        }).length;
+        const avgResolutionMinutesMock = (() => {
+          const resolved = mockAssertions.filter(
+            (a) => a.status === "Resolved",
+          );
+          if (resolved.length === 0) return 0;
+          const sum = resolved.reduce((acc, a) => {
+            const resolvedAt = a.resolvedAt ?? a.livenessEndsAt;
+            return (
+              acc +
+              (new Date(resolvedAt).getTime() -
+                new Date(a.assertedAt).getTime()) /
+                60_000
+            );
+          }, 0);
+          return sum / resolved.length;
+        })();
+        return {
+          tvsUsd: mockAssertions.reduce((acc, a) => acc + a.bondUsd, 0),
+          activeDisputes: mockDisputes.filter((d) => d.status !== "Executed")
+            .length,
+          resolved24h: resolved24hMock,
+          avgResolutionMinutes: avgResolutionMinutesMock,
+        };
+      }
       const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-      const resolved24hMock = mockAssertions.filter((a) => {
-        if (a.status !== "Resolved") return false;
-        const resolvedAt = a.resolvedAt ?? a.livenessEndsAt;
-        return new Date(resolvedAt).getTime() > oneDayAgo.getTime();
-      }).length;
-      const avgResolutionMinutesMock = (() => {
-        const resolved = mockAssertions.filter((a) => a.status === "Resolved");
-        if (resolved.length === 0) return 0;
-        const sum = resolved.reduce((acc, a) => {
-          const resolvedAt = a.resolvedAt ?? a.livenessEndsAt;
-          return (
-            acc +
-            (new Date(resolvedAt).getTime() -
-              new Date(a.assertedAt).getTime()) /
-              60_000
-          );
-        }, 0);
-        return sum / resolved.length;
-      })();
-      return {
-        tvsUsd: mockAssertions.reduce((acc, a) => acc + a.bondUsd, 0),
-        activeDisputes: mockDisputes.filter((d) => d.status !== "Executed")
-          .length,
-        resolved24h: resolved24hMock,
-        avgResolutionMinutes: avgResolutionMinutesMock,
-      };
-    }
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-    if (await isTableEmpty("assertions")) {
-      const resolved24hMock = mockAssertions.filter((a) => {
-        if (a.status !== "Resolved") return false;
-        const resolvedAt = a.resolvedAt ?? a.livenessEndsAt;
-        return new Date(resolvedAt).getTime() > oneDayAgo.getTime();
-      }).length;
-      const avgResolutionMinutesMock = (() => {
-        const resolved = mockAssertions.filter((a) => a.status === "Resolved");
-        if (resolved.length === 0) return 0;
-        const sum = resolved.reduce((acc, a) => {
+      if (await isTableEmpty("assertions", normalizedInstanceId)) {
+        const resolved24hMock = mockAssertions.filter((a) => {
+          if (a.status !== "Resolved") return false;
           const resolvedAt = a.resolvedAt ?? a.livenessEndsAt;
-          return (
-            acc +
-            (new Date(resolvedAt).getTime() -
-              new Date(a.assertedAt).getTime()) /
-              60_000
+          return new Date(resolvedAt).getTime() > oneDayAgo.getTime();
+        }).length;
+        const avgResolutionMinutesMock = (() => {
+          const resolved = mockAssertions.filter(
+            (a) => a.status === "Resolved",
           );
-        }, 0);
-        return sum / resolved.length;
-      })();
-      return {
-        tvsUsd: mockAssertions.reduce((acc, a) => acc + a.bondUsd, 0),
-        activeDisputes: mockDisputes.filter((d) => d.status !== "Executed")
-          .length,
-        resolved24h: resolved24hMock,
-        avgResolutionMinutes: avgResolutionMinutesMock,
-      };
-    }
+          if (resolved.length === 0) return 0;
+          const sum = resolved.reduce((acc, a) => {
+            const resolvedAt = a.resolvedAt ?? a.livenessEndsAt;
+            return (
+              acc +
+              (new Date(resolvedAt).getTime() -
+                new Date(a.assertedAt).getTime()) /
+                60_000
+            );
+          }, 0);
+          return sum / resolved.length;
+        })();
+        return {
+          tvsUsd: mockAssertions.reduce((acc, a) => acc + a.bondUsd, 0),
+          activeDisputes: mockDisputes.filter((d) => d.status !== "Executed")
+            .length,
+          resolved24h: resolved24hMock,
+          avgResolutionMinutes: avgResolutionMinutesMock,
+        };
+      }
 
-    // 1. TVS: Sum of bond_usd for all assertions (or just active ones? Let's do all for "Total Value Secured")
-    // Usually TVS implies current active value. Let's do active (Pending/Disputed).
-    const tvsRes = await query(`
+      // 1. TVS: Sum of bond_usd for all assertions (or just active ones? Let's do all for "Total Value Secured")
+      // Usually TVS implies current active value. Let's do active (Pending/Disputed).
+      const tvsRes = await query(
+        `
       SELECT SUM(bond_usd) AS tvs
       FROM assertions
-      WHERE status IN ('Pending', 'Disputed')
-    `);
-    const tvsRow = tvsRes.rows[0];
-    const tvsUsd = Number(tvsRow?.tvs || 0);
+      WHERE instance_id = $1 AND status IN ('Pending', 'Disputed')
+    `,
+        [normalizedInstanceId],
+      );
+      const tvsRow = tvsRes.rows[0];
+      const tvsUsd = Number(tvsRow?.tvs || 0);
 
-    // 2. Active Disputes
-    const activeDisputesRes = await query(`
+      // 2. Active Disputes
+      const activeDisputesRes = await query(
+        `
       SELECT COUNT(*) as count 
       FROM disputes
-      WHERE status <> 'Executed'
-    `);
-    const activeDisputesRow = activeDisputesRes.rows[0];
-    const activeDisputes = Number(activeDisputesRow?.count || 0);
+      WHERE instance_id = $1 AND status <> 'Executed'
+    `,
+        [normalizedInstanceId],
+      );
+      const activeDisputesRow = activeDisputesRes.rows[0];
+      const activeDisputes = Number(activeDisputesRow?.count || 0);
 
-    // 3. Resolved in last 24h
-    const resolvedRes = await query(
-      `
+      // 3. Resolved in last 24h
+      const resolvedRes = await query(
+        `
       SELECT COUNT(*) as count 
       FROM assertions 
-      WHERE status = 'Resolved' AND COALESCE(resolved_at, liveness_ends_at) > $1
+      WHERE instance_id = $2 AND status = 'Resolved' AND COALESCE(resolved_at, liveness_ends_at) > $1
     `,
-      [oneDayAgo],
-    );
-    const resolvedRow = resolvedRes.rows[0];
-    const resolved24h = Number(resolvedRow?.count || 0);
+        [oneDayAgo, normalizedInstanceId],
+      );
+      const resolvedRow = resolvedRes.rows[0];
+      const resolved24h = Number(resolvedRow?.count || 0);
 
-    // 4. Avg Resolution Time (minutes)
-    // For assertions that are Resolved, avg difference between liveness_ends_at and asserted_at
-    const avgRes = await query(`
+      // 4. Avg Resolution Time (minutes)
+      // For assertions that are Resolved, avg difference between liveness_ends_at and asserted_at
+      const avgRes = await query(
+        `
       SELECT AVG(EXTRACT(EPOCH FROM (COALESCE(resolved_at, liveness_ends_at) - asserted_at))/60) as avg_min
       FROM assertions 
-      WHERE status = 'Resolved'
-    `);
-    const avgRow = avgRes.rows[0];
-    const avgResolutionMinutes = Number(avgRow?.avg_min || 0);
+      WHERE instance_id = $1 AND status = 'Resolved'
+    `,
+        [normalizedInstanceId],
+      );
+      const avgRow = avgRes.rows[0];
+      const avgResolutionMinutes = Number(avgRow?.avg_min || 0);
 
-    return {
-      tvsUsd,
-      activeDisputes,
-      resolved24h,
-      avgResolutionMinutes,
-    };
-  },
-  ["oracle-stats"],
-  { revalidate: 60, tags: ["oracle-stats"] },
-);
+      return {
+        tvsUsd,
+        activeDisputes,
+        resolved24h,
+        avgResolutionMinutes,
+      };
+    },
+    ["oracle-stats", normalizedInstanceId],
+    {
+      revalidate: 60,
+      tags: ["oracle-stats", `oracle-stats:${normalizedInstanceId}`],
+    },
+  )();
+}
 
-export const getLeaderboardStats = unstable_cache(
-  async (): Promise<LeaderboardStats> => {
-    await ensureDb();
-    if (!hasDatabase()) {
-      const asserterMap = new Map<string, { count: number; value: number }>();
-      mockAssertions.forEach((a) => {
-        const curr = asserterMap.get(a.asserter) || { count: 0, value: 0 };
-        asserterMap.set(a.asserter, {
-          count: curr.count + 1,
-          value: curr.value + a.bondUsd,
+export function getLeaderboardStats(
+  instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
+): Promise<LeaderboardStats> {
+  const normalizedInstanceId = normalizeInstanceId(instanceId);
+  return unstable_cache(
+    async (): Promise<LeaderboardStats> => {
+      await ensureDb();
+      if (!hasDatabase()) {
+        const asserterMap = new Map<string, { count: number; value: number }>();
+        mockAssertions.forEach((a) => {
+          const curr = asserterMap.get(a.asserter) || { count: 0, value: 0 };
+          asserterMap.set(a.asserter, {
+            count: curr.count + 1,
+            value: curr.value + a.bondUsd,
+          });
         });
-      });
-      const topAsserters = Array.from(asserterMap.entries())
-        .map(([address, { count, value }]) => ({
-          address,
-          count,
-          value,
-          rank: 0,
-        }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 10)
-        .map((item, i) => ({ ...item, rank: i + 1 }));
+        const topAsserters = Array.from(asserterMap.entries())
+          .map(([address, { count, value }]) => ({
+            address,
+            count,
+            value,
+            rank: 0,
+          }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 10)
+          .map((item, i) => ({ ...item, rank: i + 1 }));
 
-      const disputerMap = new Map<string, number>();
-      mockDisputes.forEach((d) => {
-        const curr = disputerMap.get(d.disputer) || 0;
-        disputerMap.set(d.disputer, curr + 1);
-      });
-      const topDisputers = Array.from(disputerMap.entries())
-        .map(([address, count]) => ({ address, count, rank: 0 }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 10)
-        .map((item, i) => ({ ...item, rank: i + 1 }));
-
-      return { topAsserters, topDisputers };
-    }
-
-    if (await isTableEmpty("assertions")) {
-      // Mock data logic
-      const asserterMap = new Map<string, { count: number; value: number }>();
-      mockAssertions.forEach((a) => {
-        const curr = asserterMap.get(a.asserter) || { count: 0, value: 0 };
-        asserterMap.set(a.asserter, {
-          count: curr.count + 1,
-          value: curr.value + a.bondUsd,
+        const disputerMap = new Map<string, number>();
+        mockDisputes.forEach((d) => {
+          const curr = disputerMap.get(d.disputer) || 0;
+          disputerMap.set(d.disputer, curr + 1);
         });
-      });
+        const topDisputers = Array.from(disputerMap.entries())
+          .map(([address, count]) => ({ address, count, rank: 0 }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 10)
+          .map((item, i) => ({ ...item, rank: i + 1 }));
 
-      const topAsserters = Array.from(asserterMap.entries())
-        .map(([address, { count, value }]) => ({
-          address,
-          count,
-          value,
-          rank: 0,
-        }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 10)
-        .map((item, i) => ({ ...item, rank: i + 1 }));
+        return { topAsserters, topDisputers };
+      }
 
-      const disputerMap = new Map<string, number>();
-      mockDisputes.forEach((d) => {
-        const curr = disputerMap.get(d.disputer) || 0;
-        disputerMap.set(d.disputer, curr + 1);
-      });
+      if (await isTableEmpty("assertions", normalizedInstanceId)) {
+        // Mock data logic
+        const asserterMap = new Map<string, { count: number; value: number }>();
+        mockAssertions.forEach((a) => {
+          const curr = asserterMap.get(a.asserter) || { count: 0, value: 0 };
+          asserterMap.set(a.asserter, {
+            count: curr.count + 1,
+            value: curr.value + a.bondUsd,
+          });
+        });
 
-      const topDisputers = Array.from(disputerMap.entries())
-        .map(([address, count]) => ({ address, count, rank: 0 }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 10)
-        .map((item, i) => ({ ...item, rank: i + 1 }));
+        const topAsserters = Array.from(asserterMap.entries())
+          .map(([address, { count, value }]) => ({
+            address,
+            count,
+            value,
+            rank: 0,
+          }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 10)
+          .map((item, i) => ({ ...item, rank: i + 1 }));
 
-      return { topAsserters, topDisputers };
-    }
+        const disputerMap = new Map<string, number>();
+        mockDisputes.forEach((d) => {
+          const curr = disputerMap.get(d.disputer) || 0;
+          disputerMap.set(d.disputer, curr + 1);
+        });
 
-    const assertersRes = await query(`
+        const topDisputers = Array.from(disputerMap.entries())
+          .map(([address, count]) => ({ address, count, rank: 0 }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 10)
+          .map((item, i) => ({ ...item, rank: i + 1 }));
+
+        return { topAsserters, topDisputers };
+      }
+
+      const assertersRes = await query(
+        `
       SELECT asserter as address, COUNT(*) as count, SUM(bond_usd) as value
       FROM assertions
+      WHERE instance_id = $1
       GROUP BY asserter
       ORDER BY count DESC
       LIMIT 10
-    `);
+    `,
+        [normalizedInstanceId],
+      );
 
-    const disputersRes = await query(`
+      const disputersRes = await query(
+        `
       SELECT disputer as address, COUNT(*) as count
       FROM disputes
+      WHERE instance_id = $1
       GROUP BY disputer
       ORDER BY count DESC
       LIMIT 10
-    `);
+    `,
+        [normalizedInstanceId],
+      );
 
-    return {
-      topAsserters: assertersRes.rows.map((r, i) => ({
-        address: r.address,
-        count: Number(r.count),
-        value: Number(r.value),
-        rank: i + 1,
-      })),
-      topDisputers: disputersRes.rows.map((r, i) => ({
-        address: r.address,
-        count: Number(r.count),
-        rank: i + 1,
-      })),
-    };
-  },
-  ["oracle-leaderboard"],
-  { revalidate: 300, tags: ["oracle-leaderboard"] },
-);
+      return {
+        topAsserters: assertersRes.rows.map((r, i) => ({
+          address: r.address,
+          count: Number(r.count),
+          value: Number(r.value),
+          rank: i + 1,
+        })),
+        topDisputers: disputersRes.rows.map((r, i) => ({
+          address: r.address,
+          count: Number(r.count),
+          rank: i + 1,
+        })),
+      };
+    },
+    ["oracle-leaderboard", normalizedInstanceId],
+    {
+      revalidate: 300,
+      tags: [
+        "oracle-leaderboard",
+        `oracle-leaderboard:${normalizedInstanceId}`,
+      ],
+    },
+  )();
+}
 
-export function getUserStats(address: string): Promise<UserStats> {
+export function getUserStats(
+  address: string,
+  instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
+): Promise<UserStats> {
   const addressLower = address.toLowerCase();
+  const normalizedInstanceId = normalizeInstanceId(instanceId);
 
   return unstable_cache(
     async (): Promise<UserStats> => {
@@ -740,7 +818,7 @@ export function getUserStats(address: string): Promise<UserStats> {
       }
 
       // Check if DB is empty to use mocks
-      if (await isTableEmpty("assertions")) {
+      if (await isTableEmpty("assertions", normalizedInstanceId)) {
         // Mock stats
         const assertions = mockAssertions.filter(
           (a) => a.asserter.toLowerCase() === addressLower,
@@ -779,36 +857,36 @@ export function getUserStats(address: string): Promise<UserStats> {
         `
         SELECT COUNT(*) as count, COALESCE(SUM(bond_usd), 0) as bonded
         FROM assertions
-        WHERE LOWER(asserter) = $1
+        WHERE instance_id = $2 AND LOWER(asserter) = $1
       `,
-        [addressLower],
+        [addressLower, normalizedInstanceId],
       );
 
       const disputesRes = await query(
         `
         SELECT COUNT(*) as count
         FROM disputes
-        WHERE LOWER(disputer) = $1
+        WHERE instance_id = $2 AND LOWER(disputer) = $1
       `,
-        [addressLower],
+        [addressLower, normalizedInstanceId],
       );
 
       const resolvedRes = await query(
         `
         SELECT COUNT(*) as count
         FROM assertions
-        WHERE LOWER(asserter) = $1 AND status = 'Resolved'
+        WHERE instance_id = $2 AND LOWER(asserter) = $1 AND status = 'Resolved'
       `,
-        [addressLower],
+        [addressLower, normalizedInstanceId],
       );
 
       const wonRes = await query(
         `
         SELECT COUNT(*) as count
         FROM assertions
-        WHERE LOWER(asserter) = $1 AND status = 'Resolved' AND (settlement_resolution IS TRUE OR settlement_resolution IS NULL)
+        WHERE instance_id = $2 AND LOWER(asserter) = $1 AND status = 'Resolved' AND (settlement_resolution IS TRUE OR settlement_resolution IS NULL)
       `,
-        [addressLower],
+        [addressLower, normalizedInstanceId],
       );
 
       const assertionsRow = assertionsRes.rows[0];
@@ -832,15 +910,26 @@ export function getUserStats(address: string): Promise<UserStats> {
         winRate,
       };
     },
-    ["user-stats", addressLower],
-    { revalidate: 60, tags: ["user-stats", `user-stats:${addressLower}`] },
+    ["user-stats", normalizedInstanceId, addressLower],
+    {
+      revalidate: 60,
+      tags: [
+        "user-stats",
+        `user-stats:${normalizedInstanceId}`,
+        `user-stats:${normalizedInstanceId}:${addressLower}`,
+      ],
+    },
   )();
 }
 
-export async function getRiskItems(params?: { limit?: number | null }) {
+export async function getRiskItems(params?: {
+  limit?: number | null;
+  instanceId?: string | null;
+}) {
   const limit = Math.min(200, Math.max(1, params?.limit ?? 50));
   const nowMs = Date.now();
-  const state = await readOracleState();
+  const normalizedInstanceId = normalizeInstanceId(params?.instanceId);
+  const state = await readOracleState(normalizedInstanceId);
   const disputes = Object.values(state.disputes);
 
   const out: RiskItem[] = [];

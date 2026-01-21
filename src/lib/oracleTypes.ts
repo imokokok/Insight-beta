@@ -77,7 +77,17 @@ export type OracleConfig = {
   adminToken?: string;
 };
 
+export type OracleInstance = {
+  id: string;
+  name: string;
+  enabled: boolean;
+  chain: OracleChain;
+  contractAddress: string;
+};
+
 export type OracleStatusSnapshot = {
+  instanceId?: string;
+  instanceName?: string | null;
   chain: OracleChain;
   contractAddress: string | null;
   lastProcessedBlock: string;
@@ -117,6 +127,7 @@ export type UserStats = {
 
 export interface DbAssertionRow {
   id: string;
+  instance_id: string;
   chain: OracleChain;
   asserter: string;
   protocol: string;
@@ -134,6 +145,7 @@ export interface DbAssertionRow {
 
 export interface DbDisputeRow {
   id: string;
+  instance_id: string;
   chain: OracleChain;
   assertion_id: string;
   market: string;

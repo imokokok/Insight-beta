@@ -15,6 +15,7 @@ interface SettleModalProps {
   onClose: () => void;
   contractAddress?: string;
   chain?: OracleChain;
+  instanceId?: string;
 }
 
 export function SettleModal({
@@ -23,10 +24,11 @@ export function SettleModal({
   onClose,
   contractAddress,
   chain,
+  instanceId,
 }: SettleModalProps) {
   const { address } = useWallet();
   const { execute, isSubmitting, isConfirming, error, resetError } =
-    useOracleTransaction();
+    useOracleTransaction(instanceId);
   const { t } = useI18n();
   const { toast } = useToast();
   const dialogRef = useRef<HTMLDivElement | null>(null);
@@ -215,8 +217,8 @@ export function SettleModal({
               {isSubmitting
                 ? t("oracle.detail.submitting")
                 : isConfirming
-                ? t("oracle.detail.confirming")
-                : t("oracle.detail.settleAssertion")}
+                  ? t("oracle.detail.confirming")
+                  : t("oracle.detail.settleAssertion")}
             </button>
           </div>
 

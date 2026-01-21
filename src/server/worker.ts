@@ -10,7 +10,11 @@ import { logger } from "@/lib/logger";
 import { getClient, hasDatabase, query } from "@/server/db";
 import { getMemoryStore } from "@/server/memoryBackend";
 import { createOrTouchAlert, readAlertRules } from "@/server/observability";
-import { getSyncState, readOracleState } from "@/server/oracle";
+import {
+  getSyncState,
+  listOracleInstances,
+  readOracleState,
+} from "@/server/oracle";
 import { writeJsonFile } from "@/server/kvStore";
 import { fetchCurrentPrice } from "@/server/oracle/priceFetcher";
 import { createPublicClient, http, formatEther, parseAbi } from "viem";
@@ -78,55 +82,8 @@ async function tickWorker() {
       }
     }
 
-    if (isOracleSyncing()) return;
-
-    const preSyncState = await getSyncState();
-    const envConfig = await getOracleEnv();
-    const missingConfig = !envConfig.rpcUrl || !envConfig.contractAddress;
     const nowMs = Date.now();
-    const consecutiveFailures = preSyncState.consecutiveFailures ?? 0;
-    const lastAttemptAtRaw = preSyncState.sync.lastAttemptAt ?? "";
-    const lastAttemptAtMs = lastAttemptAtRaw
-      ? Date.parse(lastAttemptAtRaw)
-      : NaN;
-    const baseBackoffMs =
-      consecutiveFailures > 0
-        ? Math.min(
-            5 * 60_000,
-            5_000 * 2 ** Math.min(consecutiveFailures - 1, 6),
-          )
-        : 0;
-
-    const isConfigError =
-      missingConfig || preSyncState.sync.lastError === "contract_not_found";
-
-    const backoffMs = isConfigError
-      ? Math.max(
-          baseBackoffMs,
-          consecutiveFailures > 0
-            ? Math.min(
-                60 * 60_000,
-                30_000 * 2 ** Math.min(consecutiveFailures - 1, 10),
-              )
-            : 60_000,
-        )
-      : baseBackoffMs;
-
-    const shouldAttemptSync =
-      backoffMs === 0 ||
-      !Number.isFinite(lastAttemptAtMs) ||
-      nowMs - lastAttemptAtMs >= backoffMs;
-
-    if (missingConfig) {
-      lastError = "missing_config";
-    }
-
-    if (shouldAttemptSync && !missingConfig) {
-      await ensureOracleSynced();
-    }
-
     const rules = await readAlertRules();
-    const state = await getSyncState();
     const degraded = ["1", "true"].includes(
       (env.INSIGHT_VOTING_DEGRADATION || "").toLowerCase(),
     );
@@ -182,86 +139,64 @@ async function tickWorker() {
       return Math.min(30 * 24 * 60 * 60_000, Math.max(60_000, Math.round(raw)));
     };
 
-    if (missingConfig) {
-      const syncErrorRules = rules.filter(
-        (r) => r.enabled && r.event === "sync_error",
-      );
-      for (const rule of syncErrorRules) {
-        const fingerprint = `${rule.id}:${state.chain}:${
-          state.contractAddress ?? "unknown"
-        }`;
-        if (!shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule)))
-          continue;
-        await createOrTouchAlert({
-          fingerprint,
-          type: rule.event,
-          severity: rule.severity,
-          title: "Oracle sync error",
-          message: "missing_config",
-          entityType: "oracle",
-          entityId: state.contractAddress,
-          notify: notifyForRule(rule),
-        });
-      }
-    }
+    const instances = (await listOracleInstances()).filter((i) => i.enabled);
+    for (const inst of instances) {
+      const instanceId = inst.id;
+      try {
+        if (isOracleSyncing(instanceId)) continue;
 
-    const staleRules = rules.filter(
-      (r) => r.enabled && r.event === "stale_sync",
-    );
-    if (staleRules.length > 0) {
-      const lastSuccessAt = state.sync.lastSuccessAt;
-      if (lastSuccessAt) {
-        const ageMs = Date.now() - new Date(lastSuccessAt).getTime();
-        for (const staleRule of staleRules) {
-          const maxAgeMs = Number(
-            (staleRule.params as { maxAgeMs?: unknown } | undefined)
-              ?.maxAgeMs ?? 5 * 60 * 1000,
-          );
-          if (!Number.isFinite(maxAgeMs) || maxAgeMs <= 0) continue;
-          if (ageMs > maxAgeMs) {
-            const fingerprint = `${staleRule.id}:${state.chain}:${
-              state.contractAddress ?? "unknown"
-            }`;
-            if (
-              !shouldEmit(
-                staleRule.event,
-                fingerprint,
-                getRuleCooldownMs(staleRule),
+        const preSyncState = await getSyncState(instanceId);
+        const envConfig = await getOracleEnv(instanceId);
+        const missingConfig = !envConfig.rpcUrl || !envConfig.contractAddress;
+        const consecutiveFailures = preSyncState.consecutiveFailures ?? 0;
+        const lastAttemptAtRaw = preSyncState.sync.lastAttemptAt ?? "";
+        const lastAttemptAtMs = lastAttemptAtRaw
+          ? Date.parse(lastAttemptAtRaw)
+          : NaN;
+        const baseBackoffMs =
+          consecutiveFailures > 0
+            ? Math.min(
+                5 * 60_000,
+                5_000 * 2 ** Math.min(consecutiveFailures - 1, 6),
               )
-            )
-              continue;
-            await createOrTouchAlert({
-              fingerprint,
-              type: staleRule.event,
-              severity: staleRule.severity,
-              title: "Oracle sync stale",
-              message: `Last success ${Math.round(ageMs / 1000)}s ago`,
-              entityType: "oracle",
-              entityId: state.contractAddress,
-              notify: notifyForRule(staleRule),
-            });
-          }
-        }
-      }
-    }
+            : 0;
 
-    const pausedRules = rules.filter(
-      (r) => r.enabled && r.event === "contract_paused",
-    );
-    if (pausedRules.length > 0 && state.contractAddress && state.rpcActiveUrl) {
-      try {
-        const client = createPublicClient({
-          transport: http(state.rpcActiveUrl),
-        });
-        const paused = (await client.readContract({
-          address: state.contractAddress as `0x${string}`,
-          abi: pausableAbi,
-          functionName: "paused",
-          args: [],
-        })) as boolean;
-        if (paused) {
-          for (const rule of pausedRules) {
-            const fingerprint = `${rule.id}:${state.chain}:${
+        const isConfigError =
+          missingConfig || preSyncState.sync.lastError === "contract_not_found";
+
+        const backoffMs = isConfigError
+          ? Math.max(
+              baseBackoffMs,
+              consecutiveFailures > 0
+                ? Math.min(
+                    60 * 60_000,
+                    30_000 * 2 ** Math.min(consecutiveFailures - 1, 10),
+                  )
+                : 60_000,
+            )
+          : baseBackoffMs;
+
+        const shouldAttemptSync =
+          backoffMs === 0 ||
+          !Number.isFinite(lastAttemptAtMs) ||
+          nowMs - lastAttemptAtMs >= backoffMs;
+
+        if (missingConfig) {
+          lastError = "missing_config";
+        }
+
+        if (shouldAttemptSync && !missingConfig) {
+          await ensureOracleSynced(instanceId);
+        }
+
+        const state = await getSyncState(instanceId);
+
+        if (missingConfig) {
+          const syncErrorRules = rules.filter(
+            (r) => r.enabled && r.event === "sync_error",
+          );
+          for (const rule of syncErrorRules) {
+            const fingerprint = `${rule.id}:${instanceId}:${state.chain}:${
               state.contractAddress ?? "unknown"
             }`;
             if (!shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule)))
@@ -270,374 +205,574 @@ async function tickWorker() {
               fingerprint,
               type: rule.event,
               severity: rule.severity,
-              title: "Contract paused",
-              message: "paused() returned true",
+              title: "Oracle sync error",
+              message: "missing_config",
               entityType: "oracle",
               entityId: state.contractAddress,
               notify: notifyForRule(rule),
             });
           }
         }
-      } catch {
-        void 0;
-      }
-    }
 
-    const backlogRules = rules.filter(
-      (r) =>
-        r.enabled &&
-        (r.event === "sync_backlog" ||
-          r.event === "backlog_assertions" ||
-          r.event === "backlog_disputes" ||
-          r.event === "market_stale"),
-    );
-
-    if (backlogRules.length > 0) {
-      const lagBlocks =
-        state.latestBlock !== null &&
-        state.latestBlock !== undefined &&
-        state.lastProcessedBlock !== null &&
-        state.lastProcessedBlock !== undefined
-          ? state.latestBlock - state.lastProcessedBlock
-          : null;
-
-      const oracleState = await readOracleState();
-      const assertions = Object.values(oracleState.assertions);
-      const disputes = Object.values(oracleState.disputes);
-
-      const openAssertions = assertions.filter(
-        (a) => a.status !== "Resolved",
-      ).length;
-      const openDisputes = disputes.filter(
-        (d) => d.status !== "Executed",
-      ).length;
-      const newestAssertedAtMs = assertions.reduce((acc, a) => {
-        const ms = Date.parse(a.assertedAt);
-        if (!Number.isFinite(ms)) return acc;
-        return Math.max(acc, ms);
-      }, 0);
-
-      for (const rule of backlogRules) {
-        if (rule.event === "sync_backlog") {
-          const maxLagBlocks = Number(
-            (rule.params as { maxLagBlocks?: unknown } | undefined)
-              ?.maxLagBlocks ?? 200,
-          );
-          if (!Number.isFinite(maxLagBlocks) || maxLagBlocks <= 0) continue;
-          if (lagBlocks === null) continue;
-          if (lagBlocks <= BigInt(Math.floor(maxLagBlocks))) continue;
-          const fingerprint = `${rule.id}:${state.chain}:${
-            state.contractAddress ?? "unknown"
-          }`;
-          if (!shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule)))
-            continue;
-          await createOrTouchAlert({
-            fingerprint,
-            type: rule.event,
-            severity: rule.severity,
-            title: "Sync backlog high",
-            message: `lagBlocks ${lagBlocks.toString(10)} > ${Math.floor(
-              maxLagBlocks,
-            )}`,
-            entityType: "oracle",
-            entityId: state.contractAddress,
-            notify: notifyForRule(rule),
-          });
-        }
-
-        if (rule.event === "backlog_assertions") {
-          const maxOpenAssertions = Number(
-            (rule.params as { maxOpenAssertions?: unknown } | undefined)
-              ?.maxOpenAssertions ?? 50,
-          );
-          if (
-            !Number.isFinite(maxOpenAssertions) ||
-            maxOpenAssertions <= 0 ||
-            openAssertions <= maxOpenAssertions
-          )
-            continue;
-          const fingerprint = `${rule.id}:${state.chain}:${
-            state.contractAddress ?? "unknown"
-          }`;
-          if (!shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule)))
-            continue;
-          await createOrTouchAlert({
-            fingerprint,
-            type: rule.event,
-            severity: rule.severity,
-            title: "Assertion backlog high",
-            message: `${openAssertions} open assertions > ${Math.floor(
-              maxOpenAssertions,
-            )}`,
-            entityType: "oracle",
-            entityId: state.contractAddress,
-            notify: notifyForRule(rule),
-          });
-        }
-
-        if (rule.event === "backlog_disputes") {
-          const maxOpenDisputes = Number(
-            (rule.params as { maxOpenDisputes?: unknown } | undefined)
-              ?.maxOpenDisputes ?? 20,
-          );
-          if (
-            !Number.isFinite(maxOpenDisputes) ||
-            maxOpenDisputes <= 0 ||
-            openDisputes <= maxOpenDisputes
-          )
-            continue;
-          const fingerprint = `${rule.id}:${state.chain}:${
-            state.contractAddress ?? "unknown"
-          }`;
-          if (!shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule)))
-            continue;
-          await createOrTouchAlert({
-            fingerprint,
-            type: rule.event,
-            severity: rule.severity,
-            title: "Dispute backlog high",
-            message: `${openDisputes} open disputes > ${Math.floor(
-              maxOpenDisputes,
-            )}`,
-            entityType: "oracle",
-            entityId: state.contractAddress,
-            notify: notifyForRule(rule),
-          });
-        }
-
-        if (rule.event === "market_stale") {
-          const maxAgeMs = Number(
-            (rule.params as { maxAgeMs?: unknown } | undefined)?.maxAgeMs ??
-              6 * 60 * 60_000,
-          );
-          if (!Number.isFinite(maxAgeMs) || maxAgeMs <= 0) continue;
-          if (newestAssertedAtMs <= 0) continue;
-          const ageMs = nowMs - newestAssertedAtMs;
-          if (ageMs <= maxAgeMs) continue;
-          const fingerprint = `${rule.id}:${state.chain}:${
-            state.contractAddress ?? "unknown"
-          }`;
-          if (!shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule)))
-            continue;
-          await createOrTouchAlert({
-            fingerprint,
-            type: rule.event,
-            severity: rule.severity,
-            title: "Market data stale",
-            message: `last assertion ${Math.round(ageMs / 60_000)}m ago`,
-            entityType: "oracle",
-            entityId: state.contractAddress,
-            notify: notifyForRule(rule),
-          });
-        }
-      }
-    }
-
-    const disputeRules = rules.filter(
-      (r) =>
-        r.enabled &&
-        (r.event === "execution_delayed" ||
-          r.event === "low_participation" ||
-          r.event === "high_vote_divergence"),
-    );
-
-    if (disputeRules.length > 0 && effectiveVoteTrackingEnabled) {
-      const oracleState = await readOracleState();
-      const disputes = Object.values(oracleState.disputes);
-
-      for (const dispute of disputes) {
-        if (dispute.status !== "Voting") continue;
-        const disputedAtMs = Date.parse(dispute.disputedAt);
-        const votingEndsAtMs = Date.parse(dispute.votingEndsAt);
-        if (!Number.isFinite(disputedAtMs) || !Number.isFinite(votingEndsAtMs))
-          continue;
-
-        const totalVotes = Number(dispute.totalVotes);
-        const votesFor = Number(dispute.currentVotesFor);
-        const votesAgainst = Number(dispute.currentVotesAgainst);
-        const marginPercent =
-          totalVotes > 0
-            ? (Math.abs(votesFor - votesAgainst) / totalVotes) * 100
-            : 100;
-
-        for (const rule of disputeRules) {
-          if (rule.event === "execution_delayed") {
-            const maxDelayMinutes = Number(
-              (rule.params as { maxDelayMinutes?: unknown } | undefined)
-                ?.maxDelayMinutes ?? 30,
-            );
-            if (!Number.isFinite(maxDelayMinutes) || maxDelayMinutes <= 0)
-              continue;
-            const thresholdMs = votingEndsAtMs + maxDelayMinutes * 60_000;
-            if (nowMs <= thresholdMs) continue;
-
-            const fingerprint = `${rule.id}:${dispute.chain}:${dispute.assertionId}`;
-            if (!shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule)))
-              continue;
-            const delayMinutes = Math.max(
-              0,
-              Math.round((nowMs - votingEndsAtMs) / 60_000),
-            );
-
-            await createOrTouchAlert({
-              fingerprint,
-              type: rule.event,
-              severity: rule.severity,
-              title: "Dispute execution delayed",
-              message: `${dispute.market} • ${delayMinutes}m past voting end • votes ${totalVotes}`,
-              entityType: "assertion",
-              entityId: dispute.assertionId,
-              notify: notifyForRule(rule),
-            });
+        const staleRules = rules.filter(
+          (r) => r.enabled && r.event === "stale_sync",
+        );
+        if (staleRules.length > 0) {
+          const lastSuccessAt = state.sync.lastSuccessAt;
+          if (lastSuccessAt) {
+            const ageMs = Date.now() - new Date(lastSuccessAt).getTime();
+            for (const staleRule of staleRules) {
+              const maxAgeMs = Number(
+                (staleRule.params as { maxAgeMs?: unknown } | undefined)
+                  ?.maxAgeMs ?? 5 * 60 * 1000,
+              );
+              if (!Number.isFinite(maxAgeMs) || maxAgeMs <= 0) continue;
+              if (ageMs > maxAgeMs) {
+                const fingerprint = `${staleRule.id}:${instanceId}:${state.chain}:${
+                  state.contractAddress ?? "unknown"
+                }`;
+                if (
+                  !shouldEmit(
+                    staleRule.event,
+                    fingerprint,
+                    getRuleCooldownMs(staleRule),
+                  )
+                )
+                  continue;
+                await createOrTouchAlert({
+                  fingerprint,
+                  type: staleRule.event,
+                  severity: staleRule.severity,
+                  title: "Oracle sync stale",
+                  message: `Last success ${Math.round(ageMs / 1000)}s ago`,
+                  entityType: "oracle",
+                  entityId: state.contractAddress,
+                  notify: notifyForRule(staleRule),
+                });
+              }
+            }
           }
+        }
 
-          if (rule.event === "low_participation") {
-            const withinMinutes = Number(
-              (rule.params as { withinMinutes?: unknown } | undefined)
-                ?.withinMinutes ?? 60,
-            );
-            const minTotalVotes = Number(
-              (rule.params as { minTotalVotes?: unknown } | undefined)
-                ?.minTotalVotes ?? 0,
-            );
-            if (!Number.isFinite(withinMinutes) || withinMinutes <= 0) continue;
-            if (!Number.isFinite(minTotalVotes) || minTotalVotes < 0) continue;
-
-            if (nowMs - disputedAtMs < withinMinutes * 60_000) continue;
-            if (totalVotes > minTotalVotes) continue;
-
-            const fingerprint = `${rule.id}:${dispute.chain}:${dispute.assertionId}`;
-            if (!shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule)))
-              continue;
-
-            await createOrTouchAlert({
-              fingerprint,
-              type: rule.event,
-              severity: rule.severity,
-              title: "Low dispute participation",
-              message: `${dispute.market} • votes ${totalVotes} after ${Math.round(
-                withinMinutes,
-              )}m`,
-              entityType: "assertion",
-              entityId: dispute.assertionId,
-              notify: notifyForRule(rule),
+        const pausedRules = rules.filter(
+          (r) => r.enabled && r.event === "contract_paused",
+        );
+        if (
+          pausedRules.length > 0 &&
+          state.contractAddress &&
+          state.rpcActiveUrl
+        ) {
+          try {
+            const client = createPublicClient({
+              transport: http(state.rpcActiveUrl),
             });
+            const paused = (await client.readContract({
+              address: state.contractAddress as `0x${string}`,
+              abi: pausableAbi,
+              functionName: "paused",
+              args: [],
+            })) as boolean;
+            if (paused) {
+              for (const rule of pausedRules) {
+                const fingerprint = `${rule.id}:${instanceId}:${state.chain}:${
+                  state.contractAddress ?? "unknown"
+                }`;
+                if (
+                  !shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule))
+                )
+                  continue;
+                await createOrTouchAlert({
+                  fingerprint,
+                  type: rule.event,
+                  severity: rule.severity,
+                  title: "Contract paused",
+                  message: "paused() returned true",
+                  entityType: "oracle",
+                  entityId: state.contractAddress,
+                  notify: notifyForRule(rule),
+                });
+              }
+            }
+          } catch {
+            void 0;
           }
+        }
 
-          if (rule.event === "high_vote_divergence") {
-            const withinMinutes = Number(
-              (rule.params as { withinMinutes?: unknown } | undefined)
-                ?.withinMinutes ?? 15,
-            );
-            const minTotalVotes = Number(
-              (rule.params as { minTotalVotes?: unknown } | undefined)
-                ?.minTotalVotes ?? 1,
-            );
-            const maxMarginPercent = Number(
-              (rule.params as { maxMarginPercent?: unknown } | undefined)
-                ?.maxMarginPercent ?? 10,
-            );
+        const backlogRules = rules.filter(
+          (r) =>
+            r.enabled &&
+            (r.event === "sync_backlog" ||
+              r.event === "backlog_assertions" ||
+              r.event === "backlog_disputes" ||
+              r.event === "market_stale"),
+        );
 
-            if (!Number.isFinite(withinMinutes) || withinMinutes <= 0) continue;
-            if (!Number.isFinite(minTotalVotes) || minTotalVotes <= 0) continue;
+        if (backlogRules.length > 0) {
+          const lagBlocks =
+            state.latestBlock !== null &&
+            state.latestBlock !== undefined &&
+            state.lastProcessedBlock !== null &&
+            state.lastProcessedBlock !== undefined
+              ? state.latestBlock - state.lastProcessedBlock
+              : null;
+
+          const oracleState = await readOracleState(instanceId);
+          const assertions = Object.values(oracleState.assertions);
+          const disputes = Object.values(oracleState.disputes);
+
+          const openAssertions = assertions.filter(
+            (a) => a.status !== "Resolved",
+          ).length;
+          const openDisputes = disputes.filter(
+            (d) => d.status !== "Executed",
+          ).length;
+          const newestAssertedAtMs = assertions.reduce((acc, a) => {
+            const ms = Date.parse(a.assertedAt);
+            if (!Number.isFinite(ms)) return acc;
+            return Math.max(acc, ms);
+          }, 0);
+
+          for (const rule of backlogRules) {
+            if (rule.event === "sync_backlog") {
+              const maxLagBlocks = Number(
+                (rule.params as { maxLagBlocks?: unknown } | undefined)
+                  ?.maxLagBlocks ?? 200,
+              );
+              if (!Number.isFinite(maxLagBlocks) || maxLagBlocks <= 0) continue;
+              if (lagBlocks === null) continue;
+              if (lagBlocks <= BigInt(Math.floor(maxLagBlocks))) continue;
+              const fingerprint = `${rule.id}:${instanceId}:${state.chain}:${
+                state.contractAddress ?? "unknown"
+              }`;
+              if (!shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule)))
+                continue;
+              await createOrTouchAlert({
+                fingerprint,
+                type: rule.event,
+                severity: rule.severity,
+                title: "Sync backlog high",
+                message: `lagBlocks ${lagBlocks.toString(10)} > ${Math.floor(
+                  maxLagBlocks,
+                )}`,
+                entityType: "oracle",
+                entityId: state.contractAddress,
+                notify: notifyForRule(rule),
+              });
+            }
+
+            if (rule.event === "backlog_assertions") {
+              const maxOpenAssertions = Number(
+                (rule.params as { maxOpenAssertions?: unknown } | undefined)
+                  ?.maxOpenAssertions ?? 50,
+              );
+              if (
+                !Number.isFinite(maxOpenAssertions) ||
+                maxOpenAssertions <= 0 ||
+                openAssertions <= maxOpenAssertions
+              )
+                continue;
+              const fingerprint = `${rule.id}:${instanceId}:${state.chain}:${
+                state.contractAddress ?? "unknown"
+              }`;
+              if (!shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule)))
+                continue;
+              await createOrTouchAlert({
+                fingerprint,
+                type: rule.event,
+                severity: rule.severity,
+                title: "Assertion backlog high",
+                message: `${openAssertions} open assertions > ${Math.floor(
+                  maxOpenAssertions,
+                )}`,
+                entityType: "oracle",
+                entityId: state.contractAddress,
+                notify: notifyForRule(rule),
+              });
+            }
+
+            if (rule.event === "backlog_disputes") {
+              const maxOpenDisputes = Number(
+                (rule.params as { maxOpenDisputes?: unknown } | undefined)
+                  ?.maxOpenDisputes ?? 20,
+              );
+              if (
+                !Number.isFinite(maxOpenDisputes) ||
+                maxOpenDisputes <= 0 ||
+                openDisputes <= maxOpenDisputes
+              )
+                continue;
+              const fingerprint = `${rule.id}:${instanceId}:${state.chain}:${
+                state.contractAddress ?? "unknown"
+              }`;
+              if (!shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule)))
+                continue;
+              await createOrTouchAlert({
+                fingerprint,
+                type: rule.event,
+                severity: rule.severity,
+                title: "Dispute backlog high",
+                message: `${openDisputes} open disputes > ${Math.floor(
+                  maxOpenDisputes,
+                )}`,
+                entityType: "oracle",
+                entityId: state.contractAddress,
+                notify: notifyForRule(rule),
+              });
+            }
+
+            if (rule.event === "market_stale") {
+              const maxAgeMs = Number(
+                (rule.params as { maxAgeMs?: unknown } | undefined)?.maxAgeMs ??
+                  6 * 60 * 60_000,
+              );
+              if (!Number.isFinite(maxAgeMs) || maxAgeMs <= 0) continue;
+              if (newestAssertedAtMs <= 0) continue;
+              const ageMs = nowMs - newestAssertedAtMs;
+              if (ageMs <= maxAgeMs) continue;
+              const fingerprint = `${rule.id}:${instanceId}:${state.chain}:${
+                state.contractAddress ?? "unknown"
+              }`;
+              if (!shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule)))
+                continue;
+              await createOrTouchAlert({
+                fingerprint,
+                type: rule.event,
+                severity: rule.severity,
+                title: "Market data stale",
+                message: `last assertion ${Math.round(ageMs / 60_000)}m ago`,
+                entityType: "oracle",
+                entityId: state.contractAddress,
+                notify: notifyForRule(rule),
+              });
+            }
+          }
+        }
+
+        const disputeRules = rules.filter(
+          (r) =>
+            r.enabled &&
+            (r.event === "execution_delayed" ||
+              r.event === "low_participation" ||
+              r.event === "high_vote_divergence"),
+        );
+
+        if (disputeRules.length > 0 && effectiveVoteTrackingEnabled) {
+          const oracleState = await readOracleState(instanceId);
+          const disputes = Object.values(oracleState.disputes);
+
+          for (const dispute of disputes) {
+            if (dispute.status !== "Voting") continue;
+            const disputedAtMs = Date.parse(dispute.disputedAt);
+            const votingEndsAtMs = Date.parse(dispute.votingEndsAt);
             if (
-              !Number.isFinite(maxMarginPercent) ||
-              maxMarginPercent <= 0 ||
-              maxMarginPercent > 100
+              !Number.isFinite(disputedAtMs) ||
+              !Number.isFinite(votingEndsAtMs)
             )
               continue;
 
-            if (totalVotes < minTotalVotes) continue;
-            if (marginPercent > maxMarginPercent) continue;
+            const totalVotes = Number(dispute.totalVotes);
+            const votesFor = Number(dispute.currentVotesFor);
+            const votesAgainst = Number(dispute.currentVotesAgainst);
+            const marginPercent =
+              totalVotes > 0
+                ? (Math.abs(votesFor - votesAgainst) / totalVotes) * 100
+                : 100;
 
-            const minsToEnd = (votingEndsAtMs - nowMs) / 60_000;
-            if (minsToEnd < 0 || minsToEnd > withinMinutes) continue;
+            for (const rule of disputeRules) {
+              if (rule.event === "execution_delayed") {
+                const maxDelayMinutes = Number(
+                  (rule.params as { maxDelayMinutes?: unknown } | undefined)
+                    ?.maxDelayMinutes ?? 30,
+                );
+                if (!Number.isFinite(maxDelayMinutes) || maxDelayMinutes <= 0)
+                  continue;
+                const thresholdMs = votingEndsAtMs + maxDelayMinutes * 60_000;
+                if (nowMs <= thresholdMs) continue;
 
-            const fingerprint = `${rule.id}:${dispute.chain}:${dispute.assertionId}`;
-            if (!shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule)))
-              continue;
+                const fingerprint = `${rule.id}:${instanceId}:${dispute.chain}:${dispute.assertionId}`;
+                if (
+                  !shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule))
+                )
+                  continue;
+                const delayMinutes = Math.max(
+                  0,
+                  Math.round((nowMs - votingEndsAtMs) / 60_000),
+                );
 
-            await createOrTouchAlert({
-              fingerprint,
-              type: rule.event,
-              severity: rule.severity,
-              title: "Vote divergence risk",
-              message: `${dispute.market} • margin ${marginPercent.toFixed(
-                1,
-              )}% • votes ${totalVotes} • ${Math.max(
-                0,
-                Math.round(minsToEnd),
-              )}m to end`,
-              entityType: "assertion",
-              entityId: dispute.assertionId,
-              notify: notifyForRule(rule),
+                await createOrTouchAlert({
+                  fingerprint,
+                  type: rule.event,
+                  severity: rule.severity,
+                  title: "Dispute execution delayed",
+                  message: `${dispute.market} • ${delayMinutes}m past voting end • votes ${totalVotes}`,
+                  entityType: "assertion",
+                  entityId: dispute.assertionId,
+                  notify: notifyForRule(rule),
+                });
+              }
+
+              if (rule.event === "low_participation") {
+                const withinMinutes = Number(
+                  (rule.params as { withinMinutes?: unknown } | undefined)
+                    ?.withinMinutes ?? 60,
+                );
+                const minTotalVotes = Number(
+                  (rule.params as { minTotalVotes?: unknown } | undefined)
+                    ?.minTotalVotes ?? 0,
+                );
+                if (!Number.isFinite(withinMinutes) || withinMinutes <= 0)
+                  continue;
+                if (!Number.isFinite(minTotalVotes) || minTotalVotes < 0)
+                  continue;
+
+                if (nowMs - disputedAtMs < withinMinutes * 60_000) continue;
+                if (totalVotes > minTotalVotes) continue;
+
+                const fingerprint = `${rule.id}:${instanceId}:${dispute.chain}:${dispute.assertionId}`;
+                if (
+                  !shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule))
+                )
+                  continue;
+
+                await createOrTouchAlert({
+                  fingerprint,
+                  type: rule.event,
+                  severity: rule.severity,
+                  title: "Low dispute participation",
+                  message: `${dispute.market} • votes ${totalVotes} after ${Math.round(
+                    withinMinutes,
+                  )}m`,
+                  entityType: "assertion",
+                  entityId: dispute.assertionId,
+                  notify: notifyForRule(rule),
+                });
+              }
+
+              if (rule.event === "high_vote_divergence") {
+                const withinMinutes = Number(
+                  (rule.params as { withinMinutes?: unknown } | undefined)
+                    ?.withinMinutes ?? 15,
+                );
+                const minTotalVotes = Number(
+                  (rule.params as { minTotalVotes?: unknown } | undefined)
+                    ?.minTotalVotes ?? 1,
+                );
+                const maxMarginPercent = Number(
+                  (rule.params as { maxMarginPercent?: unknown } | undefined)
+                    ?.maxMarginPercent ?? 10,
+                );
+
+                if (!Number.isFinite(withinMinutes) || withinMinutes <= 0)
+                  continue;
+                if (!Number.isFinite(minTotalVotes) || minTotalVotes <= 0)
+                  continue;
+                if (
+                  !Number.isFinite(maxMarginPercent) ||
+                  maxMarginPercent <= 0 ||
+                  maxMarginPercent > 100
+                )
+                  continue;
+
+                if (totalVotes < minTotalVotes) continue;
+                if (marginPercent > maxMarginPercent) continue;
+
+                const minsToEnd = (votingEndsAtMs - nowMs) / 60_000;
+                if (minsToEnd < 0 || minsToEnd > withinMinutes) continue;
+
+                const fingerprint = `${rule.id}:${instanceId}:${dispute.chain}:${dispute.assertionId}`;
+                if (
+                  !shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule))
+                )
+                  continue;
+
+                await createOrTouchAlert({
+                  fingerprint,
+                  type: rule.event,
+                  severity: rule.severity,
+                  title: "Vote divergence risk",
+                  message: `${dispute.market} • margin ${marginPercent.toFixed(
+                    1,
+                  )}% • votes ${totalVotes} • ${Math.max(
+                    0,
+                    Math.round(minsToEnd),
+                  )}m to end`,
+                  entityType: "assertion",
+                  entityId: dispute.assertionId,
+                  notify: notifyForRule(rule),
+                });
+              }
+            }
+          }
+        }
+
+        const deviationRules = rules.filter(
+          (r) => r.enabled && r.event === "price_deviation",
+        );
+        if (deviationRules.length > 0) {
+          const symbol = env.INSIGHT_PRICE_SYMBOL || "ETH";
+          const { referencePrice, oraclePrice } = await fetchCurrentPrice(
+            symbol,
+            {
+              rpcUrl: state.rpcActiveUrl ?? null,
+            },
+          );
+          const deviation =
+            referencePrice > 0
+              ? Math.abs(oraclePrice - referencePrice) / referencePrice
+              : 0;
+          const deviationPercent = deviation * 100;
+
+          for (const rule of deviationRules) {
+            const threshold = Number(
+              (rule.params as { thresholdPercent?: unknown })
+                ?.thresholdPercent ?? 2,
+            );
+            if (deviationPercent > threshold) {
+              const fingerprint = `price_deviation:${instanceId}:${symbol}:${
+                state.contractAddress ?? "unknown"
+              }`;
+              if (!shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule)))
+                continue;
+
+              await createOrTouchAlert({
+                fingerprint,
+                type: rule.event,
+                severity: rule.severity,
+                title: "Price Deviation Detected",
+                message: `Oracle: $${oraclePrice}, Ref: $${referencePrice}, Deviation: ${deviationPercent.toFixed(
+                  2,
+                )}% > ${threshold}%`,
+                entityType: "oracle",
+                entityId: state.contractAddress,
+                notify: notifyForRule(rule),
+              });
+            }
+          }
+        }
+
+        const lowGasRules = rules.filter(
+          (r) => r.enabled && r.event === "low_gas",
+        );
+        if (lowGasRules.length > 0 && state.owner && state.rpcActiveUrl) {
+          try {
+            const client = createPublicClient({
+              transport: http(state.rpcActiveUrl),
+            });
+            const balanceWei = await client.getBalance({
+              address: state.owner as `0x${string}`,
+            });
+            const balanceEth = Number(formatEther(balanceWei));
+
+            for (const rule of lowGasRules) {
+              const minBalance = Number(
+                (rule.params as { minBalanceEth?: unknown })?.minBalanceEth ??
+                  0.1,
+              );
+              if (balanceEth < minBalance) {
+                const fingerprint = `low_gas:${instanceId}:${state.owner}`;
+                if (
+                  !shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule))
+                )
+                  continue;
+
+                await createOrTouchAlert({
+                  fingerprint,
+                  type: rule.event,
+                  severity: rule.severity,
+                  title: "Low Gas Balance",
+                  message: `Owner ${state.owner.slice(
+                    0,
+                    6,
+                  )}... has ${balanceEth.toFixed(4)} ETH < ${minBalance} ETH`,
+                  entityType: "account",
+                  entityId: state.owner,
+                  notify: notifyForRule(rule),
+                });
+              }
+            }
+          } catch (e) {
+            logger.error("Failed to check gas balance", {
+              error: e,
+              instanceId,
             });
           }
         }
-      }
-    }
 
-    // Price Deviation Check
-    const deviationRules = rules.filter(
-      (r) => r.enabled && r.event === "price_deviation",
-    );
-    if (deviationRules.length > 0) {
-      const symbol = env.INSIGHT_PRICE_SYMBOL || "ETH";
-      const { referencePrice, oraclePrice } = await fetchCurrentPrice(symbol, {
-        rpcUrl: state.rpcActiveUrl ?? null,
-      });
-      const deviation =
-        referencePrice > 0
-          ? Math.abs(oraclePrice - referencePrice) / referencePrice
-          : 0;
-      const deviationPercent = deviation * 100;
-
-      for (const rule of deviationRules) {
-        const threshold = Number(
-          (rule.params as { thresholdPercent?: unknown })?.thresholdPercent ??
-            2,
+        const disputeRateRules = rules.filter(
+          (r) => r.enabled && r.event === "high_dispute_rate",
         );
-        if (deviationPercent > threshold) {
-          const fingerprint = `price_deviation:${symbol}:${
-            state.contractAddress ?? "unknown"
-          }`;
-          if (!shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule)))
-            continue;
+        if (disputeRateRules.length > 0) {
+          const contract = state.contractAddress ?? "unknown";
+          for (const rule of disputeRateRules) {
+            const windowDays = Number(
+              (rule.params as { windowDays?: unknown } | undefined)
+                ?.windowDays ?? 7,
+            );
+            const minAssertions = Number(
+              (rule.params as { minAssertions?: unknown } | undefined)
+                ?.minAssertions ?? 20,
+            );
+            const thresholdPercent = Number(
+              (rule.params as { thresholdPercent?: unknown } | undefined)
+                ?.thresholdPercent ?? 10,
+            );
+            if (!Number.isFinite(windowDays) || windowDays <= 0) continue;
+            if (!Number.isFinite(minAssertions) || minAssertions <= 0) continue;
+            if (
+              !Number.isFinite(thresholdPercent) ||
+              thresholdPercent <= 0 ||
+              thresholdPercent > 100
+            )
+              continue;
 
-          await createOrTouchAlert({
-            fingerprint,
-            type: rule.event,
-            severity: rule.severity,
-            title: "Price Deviation Detected",
-            message: `Oracle: $${oraclePrice}, Ref: $${referencePrice}, Deviation: ${deviationPercent.toFixed(
-              2,
-            )}% > ${threshold}%`,
-            entityType: "oracle",
-            entityId: state.contractAddress,
-            notify: notifyForRule(rule),
-          });
-        }
-      }
-    }
+            let totalAssertions = 0;
+            let disputedAssertions = 0;
 
-    // Low Gas Check
-    const lowGasRules = rules.filter((r) => r.enabled && r.event === "low_gas");
-    if (lowGasRules.length > 0 && state.owner && state.rpcActiveUrl) {
-      try {
-        const client = createPublicClient({
-          transport: http(state.rpcActiveUrl),
-        });
-        const balanceWei = await client.getBalance({
-          address: state.owner as `0x${string}`,
-        });
-        const balanceEth = Number(formatEther(balanceWei));
+            if (hasDatabase()) {
+              const totalRes = await query<{ total: string | number }>(
+                `
+                SELECT COUNT(*) as total
+                FROM assertions
+                WHERE asserted_at > NOW() - INTERVAL '1 day' * $1
+                  AND instance_id = $2
+                `,
+                [windowDays, instanceId],
+              );
+              totalAssertions = Number(totalRes.rows[0]?.total ?? 0);
 
-        for (const rule of lowGasRules) {
-          const minBalance = Number(
-            (rule.params as { minBalanceEth?: unknown })?.minBalanceEth ?? 0.1,
-          );
-          if (balanceEth < minBalance) {
-            const fingerprint = `low_gas:${state.owner}`;
+              const disputedRes = await query<{ total: string | number }>(
+                `
+                SELECT COUNT(DISTINCT assertion_id) as total
+                FROM disputes
+                WHERE disputed_at > NOW() - INTERVAL '1 day' * $1
+                  AND instance_id = $2
+                `,
+                [windowDays, instanceId],
+              );
+              disputedAssertions = Number(disputedRes.rows[0]?.total ?? 0);
+            } else {
+              const oracleState = await readOracleState(instanceId);
+              const cutoff = nowMs - windowDays * 24 * 60 * 60_000;
+              const assertions = Object.values(oracleState.assertions);
+              const disputes = Object.values(oracleState.disputes);
+              totalAssertions = assertions.filter(
+                (a) => Date.parse(a.assertedAt) >= cutoff,
+              ).length;
+              const disputedSet = new Set(
+                disputes
+                  .filter((d) => Date.parse(d.disputedAt) >= cutoff)
+                  .map((d) => d.assertionId),
+              );
+              disputedAssertions = disputedSet.size;
+            }
+
+            if (totalAssertions < minAssertions) continue;
+            if (totalAssertions <= 0) continue;
+
+            const rate = (disputedAssertions / totalAssertions) * 100;
+            if (rate < thresholdPercent) continue;
+
+            const fingerprint = `${rule.id}:${instanceId}:${state.chain}:${contract}`;
             if (!shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule)))
               continue;
 
@@ -645,110 +780,33 @@ async function tickWorker() {
               fingerprint,
               type: rule.event,
               severity: rule.severity,
-              title: "Low Gas Balance",
-              message: `Owner ${state.owner.slice(
-                0,
-                6,
-              )}... has ${balanceEth.toFixed(4)} ETH < ${minBalance} ETH`,
-              entityType: "account",
-              entityId: state.owner,
+              title: "High dispute rate",
+              message: `${rate.toFixed(1)}% disputed (${disputedAssertions}/${totalAssertions}) over ${Math.round(
+                windowDays,
+              )}d`,
+              entityType: "oracle",
+              entityId: state.contractAddress,
               notify: notifyForRule(rule),
             });
           }
         }
       } catch (e) {
-        logger.error("Failed to check gas balance", { error: e });
-      }
-    }
-
-    const disputeRateRules = rules.filter(
-      (r) => r.enabled && r.event === "high_dispute_rate",
-    );
-    if (disputeRateRules.length > 0) {
-      const contract = state.contractAddress ?? "unknown";
-      for (const rule of disputeRateRules) {
-        const windowDays = Number(
-          (rule.params as { windowDays?: unknown } | undefined)?.windowDays ??
-            7,
-        );
-        const minAssertions = Number(
-          (rule.params as { minAssertions?: unknown } | undefined)
-            ?.minAssertions ?? 20,
-        );
-        const thresholdPercent = Number(
-          (rule.params as { thresholdPercent?: unknown } | undefined)
-            ?.thresholdPercent ?? 10,
-        );
-        if (!Number.isFinite(windowDays) || windowDays <= 0) continue;
-        if (!Number.isFinite(minAssertions) || minAssertions <= 0) continue;
+        lastError = e instanceof Error ? e.message : "unknown_error";
         if (
-          !Number.isFinite(thresholdPercent) ||
-          thresholdPercent <= 0 ||
-          thresholdPercent > 100
-        )
-          continue;
-
-        let totalAssertions = 0;
-        let disputedAssertions = 0;
-
-        if (hasDatabase()) {
-          const totalRes = await query<{ total: string | number }>(
-            `
-            SELECT COUNT(*) as total
-            FROM assertions
-            WHERE asserted_at > NOW() - INTERVAL '1 day' * $1
-            `,
-            [windowDays],
-          );
-          totalAssertions = Number(totalRes.rows[0]?.total ?? 0);
-
-          const disputedRes = await query<{ total: string | number }>(
-            `
-            SELECT COUNT(DISTINCT assertion_id) as total
-            FROM disputes
-            WHERE disputed_at > NOW() - INTERVAL '1 day' * $1
-            `,
-            [windowDays],
-          );
-          disputedAssertions = Number(disputedRes.rows[0]?.total ?? 0);
+          lastError === "contract_not_found" ||
+          lastError === "missing_config"
+        ) {
+          logger.warn("Background sync skipped due to configuration issue", {
+            errorMessage: lastError,
+            instanceId,
+          });
         } else {
-          const oracleState = await readOracleState();
-          const cutoff = nowMs - windowDays * 24 * 60 * 60_000;
-          const assertions = Object.values(oracleState.assertions);
-          const disputes = Object.values(oracleState.disputes);
-          totalAssertions = assertions.filter(
-            (a) => Date.parse(a.assertedAt) >= cutoff,
-          ).length;
-          const disputedSet = new Set(
-            disputes
-              .filter((d) => Date.parse(d.disputedAt) >= cutoff)
-              .map((d) => d.assertionId),
-          );
-          disputedAssertions = disputedSet.size;
+          logger.error("Background sync failed:", {
+            error: e,
+            errorMessage: lastError,
+            instanceId,
+          });
         }
-
-        if (totalAssertions < minAssertions) continue;
-        if (totalAssertions <= 0) continue;
-
-        const rate = (disputedAssertions / totalAssertions) * 100;
-        if (rate < thresholdPercent) continue;
-
-        const fingerprint = `${rule.id}:${state.chain}:${contract}`;
-        if (!shouldEmit(rule.event, fingerprint, getRuleCooldownMs(rule)))
-          continue;
-
-        await createOrTouchAlert({
-          fingerprint,
-          type: rule.event,
-          severity: rule.severity,
-          title: "High dispute rate",
-          message: `${rate.toFixed(1)}% disputed (${disputedAssertions}/${totalAssertions}) over ${Math.round(
-            windowDays,
-          )}d`,
-          entityType: "oracle",
-          entityId: state.contractAddress,
-          notify: notifyForRule(rule),
-        });
       }
     }
 

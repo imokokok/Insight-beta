@@ -2,6 +2,8 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
+import type { Route } from "next";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowUpRight,
   Search,
@@ -41,6 +43,7 @@ import type {
   OracleConfig,
   OracleStatus,
   OracleStatusSnapshot,
+  OracleInstance,
 } from "@/lib/oracleTypes";
 
 const CreateAssertionModal = dynamic(
@@ -86,6 +89,11 @@ function minutesSince(iso: string | null | undefined) {
 export default function OraclePage() {
   const { toast } = useToast();
   const { address } = useWallet();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentSearch = searchParams?.toString() ?? "";
+  const instanceIdFromUrl = searchParams?.get("instanceId")?.trim() || "";
 
   const [filterStatus, setFilterStatus] = useState<OracleStatus | "All">(() => {
     try {
@@ -131,11 +139,64 @@ export default function OraclePage() {
       return "All";
     },
   );
+  const [instanceId, setInstanceId] = useState<string>(() => {
+    try {
+      if (typeof window === "undefined") return "default";
+      const saved = window.localStorage.getItem("oracleFilters");
+      if (!saved) return "default";
+      const parsed = JSON.parse(saved) as { instanceId?: unknown } | null;
+      const value =
+        parsed && typeof parsed === "object" ? parsed.instanceId : null;
+      if (typeof value === "string" && value.trim()) return value.trim();
+    } catch {
+      return "default";
+    }
+    return "default";
+  });
+  const [instances, setInstances] = useState<OracleInstance[] | null>(null);
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [showConfig, setShowConfig] = useState(false);
   const [myActivity, setMyActivity] = useState(false);
   const [myDisputes, setMyDisputes] = useState(false);
+
+  useEffect(() => {
+    if (!instanceIdFromUrl) return;
+    if (instanceIdFromUrl === instanceId) return;
+    setInstanceId(instanceIdFromUrl);
+  }, [instanceIdFromUrl, instanceId]);
+
+  useEffect(() => {
+    const normalized = instanceId.trim();
+    const params = new URLSearchParams(currentSearch);
+    if (normalized) params.set("instanceId", normalized);
+    else params.delete("instanceId");
+    const nextSearch = params.toString();
+    const nextUrl = nextSearch ? `${pathname}?${nextSearch}` : pathname;
+    const currentUrl = currentSearch
+      ? `${pathname}?${currentSearch}`
+      : pathname;
+    if (nextUrl !== currentUrl)
+      router.replace(nextUrl as Route, { scroll: false });
+  }, [instanceId, pathname, router, currentSearch]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const controller = new AbortController();
+    fetchApiData<{ instances: OracleInstance[] }>("/api/oracle/instances", {
+      signal: controller.signal,
+    })
+      .then((r) => {
+        if (!cancelled) setInstances(r.instances);
+      })
+      .catch(() => {
+        if (!cancelled) setInstances(null);
+      });
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, []);
 
   // 保存筛选偏好到 localStorage
   useEffect(() => {
@@ -146,12 +207,13 @@ export default function OraclePage() {
         JSON.stringify({
           status: filterStatus,
           chain: filterChain,
+          instanceId,
         }),
       );
     } catch {
       // 如果 localStorage 不可用，忽略错误
     }
-  }, [filterStatus, filterChain]);
+  }, [filterStatus, filterChain, instanceId]);
 
   const {
     items,
@@ -167,6 +229,7 @@ export default function OraclePage() {
     filterChain,
     debouncedQuery,
     myActivity ? address : undefined,
+    instanceId,
   );
 
   const {
@@ -180,6 +243,7 @@ export default function OraclePage() {
     filterChain,
     debouncedQuery,
     myDisputes ? address : undefined,
+    instanceId,
   );
 
   const [status, setStatus] = useState<{
@@ -246,10 +310,14 @@ export default function OraclePage() {
         if (trimmed) headers["x-admin-token"] = trimmed;
         const actor = adminActor.trim();
         if (actor) headers["x-admin-actor"] = actor;
+        const normalizedInstanceId = instanceId.trim();
+        const statusUrl = normalizedInstanceId
+          ? `/api/oracle/status?instanceId=${encodeURIComponent(normalizedInstanceId)}`
+          : "/api/oracle/status";
         const data = await fetchApiData<{
           config: OracleConfig;
           state: OracleStatusSnapshot;
-        }>("/api/oracle/status", {
+        }>(statusUrl, {
           headers,
           signal: controller.signal,
         });
@@ -275,7 +343,7 @@ export default function OraclePage() {
         window.clearInterval(id);
       }
     };
-  }, [adminToken, adminActor, showConfig]);
+  }, [adminToken, adminActor, instanceId, showConfig]);
 
   const saveConfig = async () => {
     setSaving(true);
@@ -289,7 +357,11 @@ export default function OraclePage() {
       if (trimmed) headers["x-admin-token"] = trimmed;
       const actor = adminActor.trim();
       if (actor) headers["x-admin-actor"] = actor;
-      const data = await fetchApiData<OracleConfig>("/api/oracle/config", {
+      const normalizedInstanceId = instanceId.trim();
+      const configUrl = normalizedInstanceId
+        ? `/api/oracle/config?instanceId=${encodeURIComponent(normalizedInstanceId)}`
+        : "/api/oracle/config";
+      const data = await fetchApiData<OracleConfig>(configUrl, {
         method: "PUT",
         headers,
         body: JSON.stringify(config),
@@ -327,17 +399,24 @@ export default function OraclePage() {
       if (trimmed) headers["x-admin-token"] = trimmed;
       const actor = adminActor.trim();
       if (actor) headers["x-admin-actor"] = actor;
+      const normalizedInstanceId = instanceId.trim();
+      const syncUrl = normalizedInstanceId
+        ? `/api/oracle/sync?instanceId=${encodeURIComponent(normalizedInstanceId)}`
+        : "/api/oracle/sync";
       await fetchApiData<
         { updated: boolean } | { updated: boolean; chain: unknown }
-      >("/api/oracle/sync", {
+      >(syncUrl, {
         method: "POST",
         headers,
       });
       refresh();
+      const statusUrl = normalizedInstanceId
+        ? `/api/oracle/status?instanceId=${encodeURIComponent(normalizedInstanceId)}`
+        : "/api/oracle/status";
       const data = await fetchApiData<{
         config: OracleConfig;
         state: OracleStatusSnapshot;
-      }>("/api/oracle/status");
+      }>(statusUrl);
       setStatus(data);
     } catch (e) {
       const code = getErrorCode(e);
@@ -734,7 +813,7 @@ export default function OraclePage() {
       {activeTab === "overview" ? (
         <div className="space-y-8">
           <HowItWorks />
-          <OracleCharts />
+          <OracleCharts instanceId={instanceId} />
 
           <div className="flex flex-col gap-6">
             {/* Configuration Toggle */}
@@ -1314,6 +1393,30 @@ export default function OraclePage() {
                   </button>
                 </div>
 
+                {instances && instances.length > 0 ? (
+                  <>
+                    <div className="relative hidden md:block">
+                      <select
+                        value={instanceId}
+                        onChange={(e) => setInstanceId(e.target.value)}
+                        className="glass-input h-9 rounded-xl border-none pl-3 pr-8 text-sm font-medium text-gray-600 hover:bg-white/80 focus:ring-2 focus:ring-purple-500/20 cursor-pointer appearance-none"
+                      >
+                        {instances.map((inst) => (
+                          <option key={inst.id} value={inst.id}>
+                            {inst.name}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                        size={14}
+                      />
+                    </div>
+
+                    <div className="h-4 w-px bg-gray-200 hidden md:block"></div>
+                  </>
+                ) : null}
+
                 <div className="relative hidden md:block">
                   <select
                     value={filterChain}
@@ -1365,6 +1468,7 @@ export default function OraclePage() {
                 loadingMore={disputesLoadingMore}
                 emptyStateMessage={t("oracle.myDisputesEmpty")}
                 onExplore={() => setMyDisputes(false)}
+                instanceId={instanceId}
               />
             ) : (
               <AssertionList
@@ -1384,12 +1488,13 @@ export default function OraclePage() {
                 onCreateAssertion={
                   myActivity ? () => setIsCreateModalOpen(true) : undefined
                 }
+                instanceId={instanceId}
               />
             )}
           </div>
         </div>
       ) : activeTab === "leaderboard" ? (
-        <Leaderboard />
+        <Leaderboard instanceId={instanceId} />
       ) : (
         <div className="mt-8 max-w-2xl mx-auto">
           <PnLCalculator />
@@ -1401,6 +1506,7 @@ export default function OraclePage() {
         onClose={() => setIsCreateModalOpen(false)}
         contractAddress={config.contractAddress}
         chain={config.chain}
+        instanceId={instanceId}
         onSuccess={refresh}
       />
     </div>

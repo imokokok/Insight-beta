@@ -12,11 +12,16 @@ export function useOracleData(
   filterStatus: OracleStatus | "All",
   filterChain: OracleConfig["chain"] | "All",
   query: string,
-  asserter?: string | null
+  asserter?: string | null,
+  instanceId?: string | null,
 ) {
+  const normalizedInstanceId = (instanceId ?? "").trim();
+
   // 1. Stats Fetching (Standard SWR)
   const { data: stats, error: statsError } = useSWR<OracleStats>(
-    "/api/oracle/stats",
+    normalizedInstanceId
+      ? `/api/oracle/stats?instanceId=${encodeURIComponent(normalizedInstanceId)}`
+      : "/api/oracle/stats",
     fetchApiData,
     {
       refreshInterval: 30_000, // 延长刷新间隔到30秒
@@ -26,18 +31,19 @@ export function useOracleData(
       errorRetryCount: 3, // 错误重试3次
       errorRetryInterval: 1000, // 初始重试间隔
       shouldRetryOnError: true,
-    }
+    },
   );
 
   // 2. Assertions Fetching (Infinite SWR for pagination)
   const getUrl = (
     pageIndex: number,
-    previousPageData: BaseResponse<Assertion> | null
+    previousPageData: BaseResponse<Assertion> | null,
   ) => {
     // If reached the end, return null
     if (previousPageData && previousPageData.nextCursor === null) return null;
 
     const params = new URLSearchParams();
+    if (normalizedInstanceId) params.set("instanceId", normalizedInstanceId);
     if (filterStatus !== "All") params.set("status", filterStatus);
     if (filterChain !== "All") params.set("chain", filterChain);
     if (query.trim()) params.set("q", query.trim());

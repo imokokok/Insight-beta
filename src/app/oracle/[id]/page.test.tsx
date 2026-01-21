@@ -11,6 +11,7 @@ import { WalletProvider } from "@/contexts/WalletContext";
 vi.mock("next/navigation", () => ({
   useParams: () => ({ id: "0x123" }),
   useRouter: () => ({ back: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(""),
 }));
 
 // Mock i18n

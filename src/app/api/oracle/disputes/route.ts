@@ -42,6 +42,7 @@ export async function GET(request: Request) {
 
     const url = new URL(request.url);
     const rawParams = Object.fromEntries(url.searchParams);
+    const instanceId = url.searchParams.get("instanceId");
     const params = disputesParamsSchema.parse(rawParams);
 
     if (params.sync === "1") {
@@ -50,17 +51,30 @@ export async function GET(request: Request) {
         scope: "oracle_sync_trigger",
       });
       if (auth) return auth;
-      await ensureOracleSynced();
+      if (instanceId) await ensureOracleSynced(instanceId);
+      else await ensureOracleSynced();
     }
     const compute = async () => {
-      const { items, total, nextCursor } = await listDisputes({
-        status: params.status ?? undefined,
-        chain: params.chain ?? undefined,
-        q: params.q ?? undefined,
-        limit: params.limit,
-        cursor: params.cursor,
-        disputer: params.disputer ?? undefined,
-      });
+      const { items, total, nextCursor } = await (instanceId
+        ? listDisputes(
+            {
+              status: params.status ?? undefined,
+              chain: params.chain ?? undefined,
+              q: params.q ?? undefined,
+              limit: params.limit,
+              cursor: params.cursor,
+              disputer: params.disputer ?? undefined,
+            },
+            instanceId,
+          )
+        : listDisputes({
+            status: params.status ?? undefined,
+            chain: params.chain ?? undefined,
+            q: params.q ?? undefined,
+            limit: params.limit,
+            cursor: params.cursor,
+            disputer: params.disputer ?? undefined,
+          }));
       const degraded = ["1", "true"].includes(
         (env.INSIGHT_VOTING_DEGRADATION || "").toLowerCase(),
       );

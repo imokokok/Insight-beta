@@ -8,7 +8,8 @@ import type {
   DbDisputeRow,
 } from "@/lib/oracleTypes";
 import { env } from "@/lib/env";
-import { getMemoryStore } from "./memoryBackend";
+import { getMemoryInstance } from "./memoryBackend";
+import { DEFAULT_ORACLE_INSTANCE_ID } from "./oracleConfig";
 
 export type SyncMeta = {
   lastAttemptAt: string | null;
@@ -85,7 +86,7 @@ function toTimeMs(value: string | undefined) {
 }
 
 function deleteVotesForAssertion(
-  mem: ReturnType<typeof getMemoryStore>,
+  mem: ReturnType<typeof getMemoryInstance>,
   assertionId: string,
 ) {
   for (const [key, v] of mem.votes.entries()) {
@@ -93,7 +94,7 @@ function deleteVotesForAssertion(
   }
 }
 
-function pruneMemoryAssertions(mem: ReturnType<typeof getMemoryStore>) {
+function pruneMemoryAssertions(mem: ReturnType<typeof getMemoryInstance>) {
   const overflow = mem.assertions.size - memoryMaxAssertions();
   if (overflow <= 0) return;
   const candidates = Array.from(mem.assertions.entries()).map(([id, a]) => ({
@@ -117,7 +118,7 @@ function pruneMemoryAssertions(mem: ReturnType<typeof getMemoryStore>) {
   }
 }
 
-function pruneMemoryDisputes(mem: ReturnType<typeof getMemoryStore>) {
+function pruneMemoryDisputes(mem: ReturnType<typeof getMemoryInstance>) {
   const overflow = mem.disputes.size - memoryMaxDisputes();
   if (overflow <= 0) return;
   const candidates = Array.from(mem.disputes.entries()).map(([id, d]) => ({
@@ -190,10 +191,59 @@ function mapDisputeRow(row: DbDisputeRow): Dispute {
   };
 }
 
-export async function readOracleState(): Promise<StoredState> {
+function normalizeInstanceId(instanceId: string | undefined) {
+  const trimmed = (instanceId ?? DEFAULT_ORACLE_INSTANCE_ID).trim();
+  return trimmed || DEFAULT_ORACLE_INSTANCE_ID;
+}
+
+function toBigIntOr(value: unknown, fallback: bigint) {
+  if (typeof value === "bigint") return value;
+  if (typeof value === "number" && Number.isFinite(value))
+    return BigInt(Math.trunc(value));
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return fallback;
+    try {
+      return BigInt(trimmed);
+    } catch {
+      return fallback;
+    }
+  }
+  return fallback;
+}
+
+function toIsoOrNull(value: unknown) {
+  if (!value) return null;
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === "string") {
+    const ms = Date.parse(value);
+    return Number.isFinite(ms) ? new Date(ms).toISOString() : null;
+  }
+  return null;
+}
+
+function toNullableNumber(value: unknown) {
+  if (value === null || value === undefined) return null;
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string") {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+}
+
+function toNullableString(value: unknown) {
+  if (value === null || value === undefined) return null;
+  return typeof value === "string" ? value : null;
+}
+
+export async function readOracleState(
+  instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
+): Promise<StoredState> {
   await ensureDb();
+  const normalizedInstanceId = normalizeInstanceId(instanceId);
   if (!hasDatabase()) {
-    const mem = getMemoryStore();
+    const mem = getMemoryInstance(normalizedInstanceId);
     const assertions: Record<string, Assertion> = {};
     for (const [id, a] of mem.assertions.entries()) assertions[id] = a;
     const disputes: Record<string, Dispute> = {};
@@ -209,15 +259,32 @@ export async function readOracleState(): Promise<StoredState> {
     };
   }
 
-  const [syncRes, configRes, assertionsRes, disputesRes] = await Promise.all([
-    query("SELECT * FROM sync_state WHERE id = 1"),
-    query("SELECT * FROM oracle_config WHERE id = 1"),
-    query<DbAssertionRow>("SELECT * FROM assertions"),
-    query<DbDisputeRow>("SELECT * FROM disputes"),
-  ]);
+  const [syncRes, instanceRes, legacyConfigRes, assertionsRes, disputesRes] =
+    await Promise.all([
+      query("SELECT * FROM oracle_sync_state WHERE instance_id = $1", [
+        normalizedInstanceId,
+      ]),
+      query(
+        "SELECT chain, contract_address FROM oracle_instances WHERE id = $1",
+        [normalizedInstanceId],
+      ),
+      normalizedInstanceId === DEFAULT_ORACLE_INSTANCE_ID
+        ? query(
+            "SELECT chain, contract_address FROM oracle_config WHERE id = 1",
+          )
+        : Promise.resolve({ rows: [] } as { rows: unknown[] }),
+      query<DbAssertionRow>("SELECT * FROM assertions WHERE instance_id = $1", [
+        normalizedInstanceId,
+      ]),
+      query<DbDisputeRow>("SELECT * FROM disputes WHERE instance_id = $1", [
+        normalizedInstanceId,
+      ]),
+    ]);
 
-  const syncRow = syncRes.rows[0] || {};
-  const configRow = configRes.rows[0] || {};
+  const syncRow = (syncRes.rows[0] || {}) as Record<string, unknown>;
+  const instanceRow = (instanceRes.rows[0] ||
+    legacyConfigRes.rows[0] ||
+    {}) as Record<string, unknown>;
 
   const assertions: Record<string, Assertion> = {};
   for (const row of assertionsRes.rows) {
@@ -231,28 +298,27 @@ export async function readOracleState(): Promise<StoredState> {
 
   return {
     version: 2,
-    chain: (configRow.chain as OracleChain) || "Local",
-    contractAddress: configRow.contract_address || null,
-    lastProcessedBlock: BigInt(syncRow.last_processed_block || 0),
+    chain: (instanceRow.chain as OracleChain) || "Local",
+    contractAddress: (instanceRow.contract_address as string | null) || null,
+    lastProcessedBlock: toBigIntOr(syncRow.last_processed_block, 0n),
     sync: {
-      lastAttemptAt: syncRow.last_attempt_at
-        ? syncRow.last_attempt_at.toISOString()
-        : null,
-      lastSuccessAt: syncRow.last_success_at
-        ? syncRow.last_success_at.toISOString()
-        : null,
-      lastDurationMs: syncRow.last_duration_ms || null,
-      lastError: syncRow.last_error || null,
+      lastAttemptAt: toIsoOrNull(syncRow.last_attempt_at),
+      lastSuccessAt: toIsoOrNull(syncRow.last_success_at),
+      lastDurationMs: toNullableNumber(syncRow.last_duration_ms),
+      lastError: toNullableString(syncRow.last_error),
     },
     assertions,
     disputes,
   };
 }
 
-export async function getSyncState() {
+export async function getSyncState(
+  instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
+) {
   await ensureDb();
+  const normalizedInstanceId = normalizeInstanceId(instanceId);
   if (!hasDatabase()) {
-    const mem = getMemoryStore();
+    const mem = getMemoryInstance(normalizedInstanceId);
     return {
       lastProcessedBlock: mem.sync.lastProcessedBlock,
       latestBlock: mem.sync.latestBlock ?? null,
@@ -267,72 +333,88 @@ export async function getSyncState() {
       owner: null as string | null,
     };
   }
-  const [syncRes, configRes] = await Promise.all([
-    query("SELECT * FROM sync_state WHERE id = 1"),
-    query("SELECT * FROM oracle_config WHERE id = 1"),
+  const [syncRes, instanceRes, legacyConfigRes] = await Promise.all([
+    query("SELECT * FROM oracle_sync_state WHERE instance_id = $1", [
+      normalizedInstanceId,
+    ]),
+    query(
+      "SELECT chain, contract_address FROM oracle_instances WHERE id = $1",
+      [normalizedInstanceId],
+    ),
+    normalizedInstanceId === DEFAULT_ORACLE_INSTANCE_ID
+      ? query("SELECT chain, contract_address FROM oracle_config WHERE id = 1")
+      : Promise.resolve({ rows: [] } as { rows: unknown[] }),
   ]);
 
-  const syncRow = syncRes.rows[0] || {};
-  const configRow = configRes.rows[0] || {};
+  const syncRow = (syncRes.rows[0] || {}) as Record<string, unknown>;
+  const configRow = (instanceRes.rows[0] ||
+    legacyConfigRes.rows[0] ||
+    {}) as Record<string, unknown>;
 
   return {
-    lastProcessedBlock: BigInt(syncRow.last_processed_block || 0),
+    lastProcessedBlock: toBigIntOr(syncRow.last_processed_block, 0n),
     latestBlock:
       syncRow.latest_block !== null && syncRow.latest_block !== undefined
-        ? BigInt(syncRow.latest_block)
+        ? toBigIntOr(syncRow.latest_block, 0n)
         : null,
     safeBlock:
       syncRow.safe_block !== null && syncRow.safe_block !== undefined
-        ? BigInt(syncRow.safe_block)
+        ? toBigIntOr(syncRow.safe_block, 0n)
         : null,
     lastSuccessProcessedBlock:
       syncRow.last_success_processed_block !== null &&
       syncRow.last_success_processed_block !== undefined
-        ? BigInt(syncRow.last_success_processed_block)
+        ? toBigIntOr(syncRow.last_success_processed_block, 0n)
         : null,
-    consecutiveFailures: Number(syncRow.consecutive_failures ?? 0),
+    consecutiveFailures: Number(
+      toNullableNumber(syncRow.consecutive_failures) ?? 0,
+    ),
     rpcActiveUrl: (syncRow.rpc_active_url as string | null | undefined) ?? null,
     rpcStats: syncRow.rpc_stats ?? null,
     sync: {
-      lastAttemptAt: syncRow.last_attempt_at
-        ? syncRow.last_attempt_at.toISOString()
-        : null,
-      lastSuccessAt: syncRow.last_success_at
-        ? syncRow.last_success_at.toISOString()
-        : null,
-      lastDurationMs: syncRow.last_duration_ms || null,
-      lastError: syncRow.last_error || null,
+      lastAttemptAt: toIsoOrNull(syncRow.last_attempt_at),
+      lastSuccessAt: toIsoOrNull(syncRow.last_success_at),
+      lastDurationMs: toNullableNumber(syncRow.last_duration_ms),
+      lastError: toNullableString(syncRow.last_error),
     },
     chain: (configRow.chain as OracleChain) || "Local",
-    contractAddress: configRow.contract_address || null,
+    contractAddress: (configRow.contract_address as string | null) || null,
     owner: null as string | null,
   };
 }
 
-export async function fetchAssertion(id: string): Promise<Assertion | null> {
+export async function fetchAssertion(
+  id: string,
+  instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
+): Promise<Assertion | null> {
   await ensureDb();
+  const normalizedInstanceId = normalizeInstanceId(instanceId);
   if (!hasDatabase()) {
-    const mem = getMemoryStore();
+    const mem = getMemoryInstance(normalizedInstanceId);
     return mem.assertions.get(id) ?? null;
   }
   const res = await query<DbAssertionRow>(
-    "SELECT * FROM assertions WHERE id = $1",
-    [id],
+    "SELECT * FROM assertions WHERE id = $1 AND instance_id = $2",
+    [id, normalizedInstanceId],
   );
   const row = res.rows[0];
   if (!row) return null;
   return mapAssertionRow(row);
 }
 
-export async function fetchDispute(id: string): Promise<Dispute | null> {
+export async function fetchDispute(
+  id: string,
+  instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
+): Promise<Dispute | null> {
   await ensureDb();
+  const normalizedInstanceId = normalizeInstanceId(instanceId);
   if (!hasDatabase()) {
-    const mem = getMemoryStore();
+    const mem = getMemoryInstance(normalizedInstanceId);
     return mem.disputes.get(id) ?? null;
   }
   const res = await query<DbDisputeRow>(
-    "SELECT * FROM disputes WHERE id = $1",
-    [id],
+    "SELECT * FROM disputes WHERE id = $1 AND instance_id = $2",
+    [id, normalizedInstanceId],
   );
   const row = res.rows[0];
   if (!row) return null;
@@ -351,19 +433,24 @@ export async function writeOracleState(state: StoredState) {
   );
 }
 
-export async function upsertAssertion(a: Assertion) {
+export async function upsertAssertion(
+  a: Assertion,
+  instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
+) {
   await ensureDb();
+  const normalizedInstanceId = normalizeInstanceId(instanceId);
   if (!hasDatabase()) {
-    const mem = getMemoryStore();
+    const mem = getMemoryInstance(normalizedInstanceId);
     mem.assertions.set(a.id, a);
     pruneMemoryAssertions(mem);
     return;
   }
   await query(
     `INSERT INTO assertions (
-      id, chain, asserter, protocol, market, assertion_data, asserted_at, liveness_ends_at, resolved_at, settlement_resolution, status, bond_usd, disputer, tx_hash
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+      id, instance_id, chain, asserter, protocol, market, assertion_data, asserted_at, liveness_ends_at, resolved_at, settlement_resolution, status, bond_usd, disputer, tx_hash
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
     ON CONFLICT (id) DO UPDATE SET
+      instance_id = excluded.instance_id,
       status = excluded.status,
       disputer = excluded.disputer,
       bond_usd = excluded.bond_usd,
@@ -372,6 +459,7 @@ export async function upsertAssertion(a: Assertion) {
     `,
     [
       a.id,
+      normalizedInstanceId,
       a.chain,
       a.asserter,
       a.protocol,
@@ -389,10 +477,14 @@ export async function upsertAssertion(a: Assertion) {
   );
 }
 
-export async function upsertDispute(d: Dispute) {
+export async function upsertDispute(
+  d: Dispute,
+  instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
+) {
   await ensureDb();
+  const normalizedInstanceId = normalizeInstanceId(instanceId);
   if (!hasDatabase()) {
-    const mem = getMemoryStore();
+    const mem = getMemoryInstance(normalizedInstanceId);
     mem.disputes.set(d.id, d);
     if (d.status === "Executed") {
       mem.voteSums.delete(d.assertionId);
@@ -405,9 +497,10 @@ export async function upsertDispute(d: Dispute) {
   }
   await query(
     `INSERT INTO disputes (
-      id, chain, assertion_id, market, reason, disputer, disputed_at, voting_ends_at, status, votes_for, votes_against, total_votes
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      id, instance_id, chain, assertion_id, market, reason, disputer, disputed_at, voting_ends_at, status, votes_for, votes_against, total_votes
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
     ON CONFLICT (id) DO UPDATE SET
+      instance_id = excluded.instance_id,
       status = excluded.status,
       votes_for = excluded.votes_for,
       votes_against = excluded.votes_against,
@@ -416,6 +509,7 @@ export async function upsertDispute(d: Dispute) {
     `,
     [
       d.id,
+      normalizedInstanceId,
       d.chain,
       d.assertionId,
       d.market,
@@ -445,10 +539,12 @@ export async function updateSyncState(
     rpcActiveUrl?: string | null;
     rpcStats?: unknown;
   },
+  instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
 ) {
   await ensureDb();
+  const normalizedInstanceId = normalizeInstanceId(instanceId);
   if (!hasDatabase()) {
-    const mem = getMemoryStore();
+    const mem = getMemoryInstance(normalizedInstanceId);
     mem.sync.lastProcessedBlock = block;
     if (extra?.latestBlock !== undefined)
       mem.sync.latestBlock = extra.latestBlock;
@@ -476,25 +572,37 @@ export async function updateSyncState(
   const rpcStats = extra?.rpcStats;
   const rpcStatsJson = rpcStats !== undefined ? JSON.stringify(rpcStats) : null;
   await query(
-    `UPDATE sync_state SET 
-      last_processed_block = $1,
-      latest_block = COALESCE($6, latest_block),
-      safe_block = COALESCE($7, safe_block),
-      last_success_processed_block = COALESCE($8, last_success_processed_block),
-      consecutive_failures = COALESCE($9, consecutive_failures),
-      rpc_active_url = COALESCE($10, rpc_active_url),
-      rpc_stats = COALESCE($11, rpc_stats),
-      last_attempt_at = $2,
-      last_success_at = $3,
-      last_duration_ms = $4,
-      last_error = $5
-     WHERE id = 1`,
+    `
+    INSERT INTO oracle_sync_state (
+      instance_id,
+      last_processed_block,
+      latest_block,
+      safe_block,
+      last_success_processed_block,
+      consecutive_failures,
+      rpc_active_url,
+      rpc_stats,
+      last_attempt_at,
+      last_success_at,
+      last_duration_ms,
+      last_error
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+    ON CONFLICT (instance_id) DO UPDATE SET
+      last_processed_block = excluded.last_processed_block,
+      latest_block = COALESCE(excluded.latest_block, oracle_sync_state.latest_block),
+      safe_block = COALESCE(excluded.safe_block, oracle_sync_state.safe_block),
+      last_success_processed_block = COALESCE(excluded.last_success_processed_block, oracle_sync_state.last_success_processed_block),
+      consecutive_failures = COALESCE(excluded.consecutive_failures, oracle_sync_state.consecutive_failures),
+      rpc_active_url = COALESCE(excluded.rpc_active_url, oracle_sync_state.rpc_active_url),
+      rpc_stats = COALESCE(excluded.rpc_stats, oracle_sync_state.rpc_stats),
+      last_attempt_at = excluded.last_attempt_at,
+      last_success_at = excluded.last_success_at,
+      last_duration_ms = excluded.last_duration_ms,
+      last_error = excluded.last_error
+    `,
     [
+      normalizedInstanceId,
       block.toString(),
-      attemptAt,
-      successAt,
-      duration,
-      error,
       latest !== undefined ? latest.toString() : null,
       safe !== undefined ? safe.toString() : null,
       lastSuccessProcessed !== undefined
@@ -503,22 +611,30 @@ export async function updateSyncState(
       consecutiveFailures !== undefined ? consecutiveFailures : null,
       rpcActiveUrl !== undefined ? rpcActiveUrl : null,
       rpcStatsJson,
+      attemptAt,
+      successAt,
+      duration,
+      error,
     ],
   );
 }
 
-export async function insertSyncMetric(input: {
-  lastProcessedBlock: bigint;
-  latestBlock: bigint | null;
-  safeBlock: bigint | null;
-  lagBlocks: bigint | null;
-  durationMs: number | null;
-  error: string | null;
-}) {
+export async function insertSyncMetric(
+  input: {
+    lastProcessedBlock: bigint;
+    latestBlock: bigint | null;
+    safeBlock: bigint | null;
+    lagBlocks: bigint | null;
+    durationMs: number | null;
+    error: string | null;
+  },
+  instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
+) {
   await ensureDb();
+  const normalizedInstanceId = normalizeInstanceId(instanceId);
   const recordedAt = new Date().toISOString();
   if (!hasDatabase()) {
-    const mem = getMemoryStore();
+    const mem = getMemoryInstance(normalizedInstanceId);
     const list = mem.sync.metrics ?? [];
     list.push({
       recordedAt,
@@ -532,10 +648,11 @@ export async function insertSyncMetric(input: {
   }
   await query(
     `
-    INSERT INTO sync_metrics (recorded_at, last_processed_block, latest_block, safe_block, lag_blocks, duration_ms, error)
-    VALUES (NOW(), $1, $2, $3, $4, $5, $6)
+    INSERT INTO oracle_sync_metrics (instance_id, recorded_at, last_processed_block, latest_block, safe_block, lag_blocks, duration_ms, error)
+    VALUES ($1, NOW(), $2, $3, $4, $5, $6, $7)
     `,
     [
+      normalizedInstanceId,
       input.lastProcessedBlock.toString(10),
       input.latestBlock !== null && input.latestBlock !== undefined
         ? input.latestBlock.toString(10)
@@ -555,12 +672,14 @@ export async function insertSyncMetric(input: {
 export async function listSyncMetrics(params: {
   minutes: number;
   limit?: number;
+  instanceId?: string;
 }) {
   await ensureDb();
   const minutes = Math.min(24 * 60, Math.max(1, Math.floor(params.minutes)));
   const limit = Math.min(5000, Math.max(1, Math.floor(params.limit ?? 600)));
+  const normalizedInstanceId = normalizeInstanceId(params.instanceId);
   if (!hasDatabase()) {
-    const mem = getMemoryStore();
+    const mem = getMemoryInstance(normalizedInstanceId);
     const list = mem.sync.metrics ?? [];
     const cutoffMs = Date.now() - minutes * 60 * 1000;
     return list
@@ -576,12 +695,12 @@ export async function listSyncMetrics(params: {
   const res = await query(
     `
     SELECT recorded_at, lag_blocks, duration_ms, error
-    FROM sync_metrics
-    WHERE recorded_at > NOW() - INTERVAL '1 minute' * $1
+    FROM oracle_sync_metrics
+    WHERE instance_id = $1 AND recorded_at > NOW() - INTERVAL '1 minute' * $2
     ORDER BY recorded_at ASC
-    LIMIT $2
+    LIMIT $3
     `,
-    [minutes, limit],
+    [normalizedInstanceId, minutes, limit],
   );
   return res.rows.map((row) => {
     const r = row as unknown as {
@@ -621,7 +740,7 @@ function bigintToSafeNumber(value: bigint) {
 }
 
 function applyVoteSumsDelta(
-  mem: ReturnType<typeof getMemoryStore>,
+  mem: ReturnType<typeof getMemoryInstance>,
   assertionId: string,
   support: boolean,
   weight: bigint,
@@ -654,19 +773,23 @@ function applyVoteSumsDelta(
   return next;
 }
 
-export async function insertVoteEvent(input: {
-  chain: OracleChain;
-  assertionId: string;
-  voter: string;
-  support: boolean;
-  weight: bigint;
-  txHash: string;
-  blockNumber: bigint;
-  logIndex: number;
-}) {
+export async function insertVoteEvent(
+  input: {
+    chain: OracleChain;
+    assertionId: string;
+    voter: string;
+    support: boolean;
+    weight: bigint;
+    txHash: string;
+    blockNumber: bigint;
+    logIndex: number;
+  },
+  instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
+) {
   await ensureDb();
+  const normalizedInstanceId = normalizeInstanceId(instanceId);
   if (!hasDatabase()) {
-    const mem = getMemoryStore();
+    const mem = getMemoryInstance(normalizedInstanceId);
     const key = `${input.txHash}:${input.logIndex}`;
     if (mem.votes.has(key)) return false;
     mem.votes.set(key, {
@@ -700,12 +823,13 @@ export async function insertVoteEvent(input: {
   }
   const res = await query(
     `
-    INSERT INTO votes (chain, assertion_id, voter, support, weight, tx_hash, block_number, log_index)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    INSERT INTO votes (instance_id, chain, assertion_id, voter, support, weight, tx_hash, block_number, log_index)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     ON CONFLICT (tx_hash, log_index) DO NOTHING
     RETURNING 1
     `,
     [
+      normalizedInstanceId,
       input.chain,
       input.assertionId,
       input.voter,
@@ -719,10 +843,14 @@ export async function insertVoteEvent(input: {
   return res.rows.length > 0;
 }
 
-export async function recomputeDisputeVotes(assertionId: string) {
+export async function recomputeDisputeVotes(
+  assertionId: string,
+  instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
+) {
   await ensureDb();
+  const normalizedInstanceId = normalizeInstanceId(instanceId);
   if (!hasDatabase()) {
-    const mem = getMemoryStore();
+    const mem = getMemoryInstance(normalizedInstanceId);
     const dispute = mem.disputes.get(`D:${assertionId}`);
     if (!dispute) return;
     const sums =
@@ -754,9 +882,9 @@ export async function recomputeDisputeVotes(assertionId: string) {
       COALESCE(SUM(CASE WHEN NOT support THEN weight ELSE 0 END), 0) AS votes_against,
       COALESCE(SUM(weight), 0) AS total_votes
     FROM votes
-    WHERE assertion_id = $1
+    WHERE assertion_id = $1 AND instance_id = $2
     `,
-    [assertionId],
+    [assertionId, normalizedInstanceId],
   );
   const row = (sums.rows[0] ?? {}) as unknown as {
     votes_for?: unknown;
@@ -779,8 +907,8 @@ export async function recomputeDisputeVotes(assertionId: string) {
     `
     UPDATE disputes
     SET votes_for = $2, votes_against = $3, total_votes = $4
-    WHERE assertion_id = $1
+    WHERE assertion_id = $1 AND instance_id = $5
     `,
-    [assertionId, votesFor, votesAgainst, totalVotes],
+    [assertionId, votesFor, votesAgainst, totalVotes, normalizedInstanceId],
   );
 }

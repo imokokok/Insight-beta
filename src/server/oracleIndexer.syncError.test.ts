@@ -62,7 +62,10 @@ const {
   parseAbi: vi.fn((abi: unknown) => abi),
 }));
 
-vi.mock("./oracleConfig", () => ({ readOracleConfig }));
+vi.mock("./oracleConfig", () => ({
+  readOracleConfig,
+  DEFAULT_ORACLE_INSTANCE_ID: "default",
+}));
 
 vi.mock("./oracleState", () => ({
   readOracleState,
@@ -196,6 +199,7 @@ describe("oracleIndexer sync error handling", () => {
       expect.objectContaining({
         consecutiveFailures: 3,
       }),
+      "default",
     );
 
     expect(insertSyncMetric).toHaveBeenCalledWith(
@@ -203,6 +207,7 @@ describe("oracleIndexer sync error handling", () => {
         lastProcessedBlock: 100n,
         error: "contract_not_found",
       }),
+      "default",
     );
   });
 
@@ -248,6 +253,7 @@ describe("oracleIndexer sync error handling", () => {
         expect.objectContaining({
           consecutiveFailures: 3,
         }),
+        "default",
       );
     } finally {
       vi.useRealTimers();
@@ -341,14 +347,16 @@ describe("oracleIndexer sync error handling", () => {
         support: true,
         weight: 1n,
       }),
+      "default",
     );
-    expect(recomputeDisputeVotes).toHaveBeenCalledWith(assertionId);
+    expect(recomputeDisputeVotes).toHaveBeenCalledWith(assertionId, "default");
     expect(upsertDispute).toHaveBeenCalledWith(
       expect.objectContaining({
         id: `D:${assertionId}`,
         assertionId,
         status: "Voting",
       }),
+      "default",
     );
   });
 });

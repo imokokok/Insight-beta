@@ -39,6 +39,7 @@ export async function GET(request: Request) {
 
     const url = new URL(request.url);
     const rawParams = Object.fromEntries(url.searchParams);
+    const instanceId = url.searchParams.get("instanceId");
 
     const params = assertionParamsSchema.parse(rawParams);
 
@@ -48,19 +49,33 @@ export async function GET(request: Request) {
         scope: "oracle_sync_trigger",
       });
       if (auth) return auth;
-      await ensureOracleSynced();
+      if (instanceId) await ensureOracleSynced(instanceId);
+      else await ensureOracleSynced();
     }
 
     const compute = async () => {
-      const { items, total, nextCursor } = await listAssertions({
-        status: params.status,
-        chain: params.chain,
-        q: params.q,
-        limit: params.limit,
-        cursor: params.cursor,
-        asserter: params.asserter,
-        ids: params.ids ? params.ids.split(",") : undefined,
-      });
+      const { items, total, nextCursor } = await (instanceId
+        ? listAssertions(
+            {
+              status: params.status,
+              chain: params.chain,
+              q: params.q,
+              limit: params.limit,
+              cursor: params.cursor,
+              asserter: params.asserter,
+              ids: params.ids ? params.ids.split(",") : undefined,
+            },
+            instanceId,
+          )
+        : listAssertions({
+            status: params.status,
+            chain: params.chain,
+            q: params.q,
+            limit: params.limit,
+            cursor: params.cursor,
+            asserter: params.asserter,
+            ids: params.ids ? params.ids.split(",") : undefined,
+          }));
       return { items, total, nextCursor };
     };
 

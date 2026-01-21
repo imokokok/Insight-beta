@@ -1,6 +1,6 @@
 import { createPublicClient, http, parseAbi, type Address } from "viem";
 import type { Assertion, Dispute, OracleChain } from "@/lib/oracleTypes";
-import { readOracleConfig } from "./oracleConfig";
+import { DEFAULT_ORACLE_INSTANCE_ID, readOracleConfig } from "./oracleConfig";
 import {
   readOracleState,
   getSyncState,
@@ -33,10 +33,18 @@ function getRpcTimeoutMs() {
   return Number.isFinite(raw) && raw > 0 ? raw : 10_000;
 }
 
-export async function getOracleEnv() {
-  const config = await readOracleConfig();
+export async function getOracleEnv(
+  instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
+) {
+  const normalizedInstanceId = (
+    instanceId || DEFAULT_ORACLE_INSTANCE_ID
+  ).trim();
+  const config = await readOracleConfig(normalizedInstanceId);
+  const useEnvOverrides = normalizedInstanceId === DEFAULT_ORACLE_INSTANCE_ID;
   const chain = (config.chain ||
-    (env.INSIGHT_CHAIN as StoredState["chain"] | undefined) ||
+    (useEnvOverrides
+      ? (env.INSIGHT_CHAIN as StoredState["chain"] | undefined)
+      : undefined) ||
     "Local") as StoredState["chain"];
   const chainRpcUrl =
     chain === "PolygonAmoy"
@@ -48,9 +56,12 @@ export async function getOracleEnv() {
           : chain === "Optimism"
             ? env.OPTIMISM_RPC_URL
             : "";
-  const rpcUrl = env.INSIGHT_RPC_URL || config.rpcUrl || chainRpcUrl;
+  const rpcUrl =
+    (useEnvOverrides ? env.INSIGHT_RPC_URL : "") ||
+    config.rpcUrl ||
+    chainRpcUrl;
   const contractAddress = (config.contractAddress ||
-    env.INSIGHT_ORACLE_ADDRESS) as Address;
+    (useEnvOverrides ? env.INSIGHT_ORACLE_ADDRESS : "")) as Address;
   const startBlock = BigInt(config.startBlock ?? 0);
   const maxBlockRange = BigInt(config.maxBlockRange ?? 10_000);
   const votingPeriodMs = Number(config.votingPeriodHours ?? 72) * 3600 * 1000;
@@ -66,19 +77,34 @@ export async function getOracleEnv() {
   };
 }
 
-let inflight: Promise<{ updated: boolean; state: StoredState }> | null = null;
+const inflightByInstance = new Map<
+  string,
+  Promise<{ updated: boolean; state: StoredState }>
+>();
 
-export async function ensureOracleSynced() {
-  if (!inflight) {
-    inflight = syncOracleOnce().finally(() => {
-      inflight = null;
-    });
-  }
-  return inflight;
+export async function ensureOracleSynced(
+  instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
+) {
+  const normalizedInstanceId = (
+    instanceId || DEFAULT_ORACLE_INSTANCE_ID
+  ).trim();
+  const existing = inflightByInstance.get(normalizedInstanceId);
+  if (existing) return existing;
+  const p = syncOracleOnce(normalizedInstanceId).finally(() => {
+    inflightByInstance.delete(normalizedInstanceId);
+  });
+  inflightByInstance.set(normalizedInstanceId, p);
+  return p;
 }
 
-export function isOracleSyncing() {
-  return inflight !== null;
+export function isOracleSyncing(instanceId?: string) {
+  if (instanceId) {
+    const normalizedInstanceId = (
+      instanceId || DEFAULT_ORACLE_INSTANCE_ID
+    ).trim();
+    return inflightByInstance.has(normalizedInstanceId);
+  }
+  return inflightByInstance.size > 0;
 }
 
 function toSyncErrorCode(error: unknown) {
@@ -191,7 +217,7 @@ function pickNextRpcUrl(urls: string[], current: string): string {
   return urls[nextIdx]!; // 使用非空断言，因为urls.length > 1确保索引有效
 }
 
-async function syncOracleOnce(): Promise<{
+async function syncOracleOnce(instanceId: string): Promise<{
   updated: boolean;
   state: StoredState;
 }> {
@@ -203,7 +229,7 @@ async function syncOracleOnce(): Promise<{
     maxBlockRange,
     votingPeriodMs,
     confirmationBlocks,
-  } = await getOracleEnv();
+  } = await getOracleEnv(instanceId);
   const degraded = ["1", "true"].includes(
     (env.INSIGHT_VOTING_DEGRADATION || "").toLowerCase(),
   );
@@ -213,14 +239,14 @@ async function syncOracleOnce(): Promise<{
       (env.INSIGHT_DISABLE_VOTE_TRACKING || "").toLowerCase(),
     );
   const effectiveVoteTrackingEnabled = voteTrackingEnabled && !degraded;
-  const syncState = await getSyncState();
+  const syncState = await getSyncState(instanceId);
   let lastProcessedBlock = syncState.lastProcessedBlock;
   const alertRules = await readAlertRules();
   const enabledRules = (event: string) =>
     alertRules.filter((r) => r.enabled && r.event === event);
 
   if (!rpcUrl || !contractAddress) {
-    return { updated: false, state: await readOracleState() };
+    return { updated: false, state: await readOracleState(instanceId) };
   }
 
   const attemptAt = new Date().toISOString();
@@ -325,16 +351,20 @@ async function syncOracleOnce(): Promise<{
           rpcActiveUrl,
           rpcStats,
         },
+        instanceId,
       );
-      await insertSyncMetric({
-        lastProcessedBlock: syncState.lastProcessedBlock,
-        latestBlock: latest,
-        safeBlock: toBlock,
-        lagBlocks: latest - syncState.lastProcessedBlock,
-        durationMs,
-        error: null,
-      });
-      return { updated: false, state: await readOracleState() };
+      await insertSyncMetric(
+        {
+          lastProcessedBlock: syncState.lastProcessedBlock,
+          latestBlock: latest,
+          safeBlock: toBlock,
+          lagBlocks: latest - syncState.lastProcessedBlock,
+          durationMs,
+          error: null,
+        },
+        instanceId,
+      );
+      return { updated: false, state: await readOracleState(instanceId) };
     }
 
     let updated = false;
@@ -408,7 +438,7 @@ async function syncOracleOnce(): Promise<{
               txHash,
             };
 
-            await upsertAssertion(assertion);
+            await upsertAssertion(assertion, instanceId);
             updated = true;
           }
 
@@ -419,11 +449,11 @@ async function syncOracleOnce(): Promise<{
             const disputedAt = toIsoFromSeconds(args.disputedAt as bigint);
             const disputer = args.disputer as `0x${string}`;
 
-            const assertion = await fetchAssertion(id);
+            const assertion = await fetchAssertion(id, instanceId);
             if (assertion) {
               assertion.status = "Disputed";
               assertion.disputer = disputer;
-              await upsertAssertion(assertion);
+              await upsertAssertion(assertion, instanceId);
               updated = true;
             }
 
@@ -444,7 +474,7 @@ async function syncOracleOnce(): Promise<{
               totalVotes: 0,
             };
 
-            await upsertDispute(dispute);
+            await upsertDispute(dispute, instanceId);
             updated = true;
 
             for (const rule of enabledRules("dispute_created")) {
@@ -455,7 +485,7 @@ async function syncOracleOnce(): Promise<{
                 : NaN;
               const silenced =
                 Number.isFinite(silencedUntilMs) && silencedUntilMs > nowMs;
-              const fingerprint = `${rule.id}:${chain}:${id}`;
+              const fingerprint = `${rule.id}:${instanceId}:${chain}:${id}`;
               await createOrTouchAlert({
                 fingerprint,
                 type: rule.event,
@@ -492,16 +522,19 @@ async function syncOracleOnce(): Promise<{
                 : Number(log.logIndex ?? 0);
             const voter = (args.voter as `0x${string}` | undefined) ?? "0x0";
 
-            const inserted = await insertVoteEvent({
-              chain: chain as OracleChain,
-              assertionId: id,
-              voter,
-              support,
-              weight,
-              txHash,
-              blockNumber,
-              logIndex,
-            });
+            const inserted = await insertVoteEvent(
+              {
+                chain: chain as OracleChain,
+                assertionId: id,
+                voter,
+                support,
+                weight,
+                txHash,
+                blockNumber,
+                logIndex,
+              },
+              instanceId,
+            );
             if (inserted) {
               touchedVotes.add(id);
               updated = true;
@@ -509,7 +542,7 @@ async function syncOracleOnce(): Promise<{
           }
 
           for (const assertionId of touchedVotes) {
-            await recomputeDisputeVotes(assertionId);
+            await recomputeDisputeVotes(assertionId, instanceId);
           }
 
           for (const log of resolvedLogs) {
@@ -519,20 +552,20 @@ async function syncOracleOnce(): Promise<{
             const resolvedAt = toIsoFromSeconds(args.resolvedAt as bigint);
             const outcome = args.outcome as boolean;
 
-            const assertion = await fetchAssertion(id);
+            const assertion = await fetchAssertion(id, instanceId);
             if (assertion) {
               assertion.status = "Resolved";
               assertion.resolvedAt = resolvedAt;
               assertion.settlementResolution = outcome;
-              await upsertAssertion(assertion);
+              await upsertAssertion(assertion, instanceId);
               updated = true;
             }
 
-            const dispute = await fetchDispute(`D:${id}`);
+            const dispute = await fetchDispute(`D:${id}`, instanceId);
             if (dispute) {
               dispute.status = "Executed";
               dispute.votingEndsAt = resolvedAt;
-              await upsertDispute(dispute);
+              await upsertDispute(dispute, instanceId);
               updated = true;
             }
           }
@@ -552,6 +585,7 @@ async function syncOracleOnce(): Promise<{
               rpcActiveUrl,
               rpcStats,
             },
+            instanceId,
           );
           lastProcessedBlock = processedHigh;
           cursor = rangeTo + 1n;
@@ -584,17 +618,21 @@ async function syncOracleOnce(): Promise<{
         rpcActiveUrl,
         rpcStats,
       },
+      instanceId,
     );
-    await insertSyncMetric({
-      lastProcessedBlock: processedHigh > toBlock ? processedHigh : toBlock,
-      latestBlock: latest,
-      safeBlock: toBlock,
-      lagBlocks: latest - (processedHigh > toBlock ? processedHigh : toBlock),
-      durationMs: Date.now() - startedAt,
-      error: null,
-    });
+    await insertSyncMetric(
+      {
+        lastProcessedBlock: processedHigh > toBlock ? processedHigh : toBlock,
+        latestBlock: latest,
+        safeBlock: toBlock,
+        lagBlocks: latest - (processedHigh > toBlock ? processedHigh : toBlock),
+        durationMs: Date.now() - startedAt,
+        error: null,
+      },
+      instanceId,
+    );
 
-    return { updated, state: await readOracleState() };
+    return { updated, state: await readOracleState(instanceId) };
   } catch (e) {
     const code = toSyncErrorCode(e);
     for (const rule of enabledRules("sync_error")) {
@@ -605,7 +643,7 @@ async function syncOracleOnce(): Promise<{
         : NaN;
       const silenced =
         Number.isFinite(silencedUntilMs) && silencedUntilMs > nowMs;
-      const fingerprint = `${rule.id}:${chain}:${contractAddress}`;
+      const fingerprint = `${rule.id}:${instanceId}:${chain}:${contractAddress}`;
       await createOrTouchAlert({
         fingerprint,
         type: rule.event,
@@ -637,18 +675,24 @@ async function syncOracleOnce(): Promise<{
         rpcActiveUrl,
         rpcStats,
       },
+      instanceId,
     );
     const latestForMetric = latestBlock ?? syncState.latestBlock ?? null;
     const safeForMetric = safeBlock ?? syncState.safeBlock ?? null;
-    await insertSyncMetric({
-      lastProcessedBlock,
-      latestBlock: latestForMetric,
-      safeBlock: safeForMetric,
-      lagBlocks:
-        latestForMetric !== null ? latestForMetric - lastProcessedBlock : null,
-      durationMs: Date.now() - startedAt,
-      error: code,
-    });
+    await insertSyncMetric(
+      {
+        lastProcessedBlock,
+        latestBlock: latestForMetric,
+        safeBlock: safeForMetric,
+        lagBlocks:
+          latestForMetric !== null
+            ? latestForMetric - lastProcessedBlock
+            : null,
+        durationMs: Date.now() - startedAt,
+        error: code,
+      },
+      instanceId,
+    );
     throw e;
   }
 }

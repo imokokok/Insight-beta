@@ -3,6 +3,12 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import type React from "react";
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: vi.fn() }),
+  usePathname: () => "/oracle",
+  useSearchParams: () => new URLSearchParams(""),
+}));
+
 vi.mock("next/dynamic", () => ({
   default: () => () => null,
 }));

@@ -17,9 +17,13 @@ export async function GET(request: Request) {
 
     const url = new URL(request.url);
     const q = querySchema.parse(Object.fromEntries(url.searchParams));
+    const instanceId = url.searchParams.get("instanceId")?.trim() || null;
     const cacheKey = `oracle_api:${url.pathname}${url.search}`;
     return await cachedJson(cacheKey, 5_000, async () => {
-      const metrics = await getOpsMetrics({ windowDays: q.windowDays });
+      const metrics = await getOpsMetrics({
+        windowDays: q.windowDays,
+        instanceId,
+      });
       return { metrics };
     });
   });

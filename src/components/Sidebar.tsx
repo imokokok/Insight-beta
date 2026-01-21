@@ -1,8 +1,9 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import type { Route } from "next";
 import {
   ShieldAlert,
   Activity,
@@ -47,9 +48,35 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [isOpen, setIsOpen] = useState(false);
   const [logoSrc, setLogoSrc] = useState("/logo-owl.png");
   const { t } = useI18n();
+  const instanceIdFromUrl = searchParams?.get("instanceId")?.trim() || null;
+  const [storedInstanceId] = useState<string>(() => {
+    try {
+      if (typeof window === "undefined") return "default";
+      const saved = window.localStorage.getItem("oracleFilters");
+      if (!saved) return "default";
+      const parsed = JSON.parse(saved) as { instanceId?: unknown } | null;
+      const value =
+        parsed && typeof parsed === "object" ? parsed.instanceId : null;
+      if (typeof value === "string" && value.trim()) return value.trim();
+    } catch {
+      return "default";
+    }
+    return "default";
+  });
+
+  const instanceId = instanceIdFromUrl ?? storedInstanceId;
+
+  const attachInstanceId = (href: string) => {
+    const normalized = (instanceId ?? "").trim();
+    if (!normalized) return href;
+    const url = new URL(href, "http://insight.local");
+    url.searchParams.set("instanceId", normalized);
+    return `${url.pathname}${url.search}${url.hash}`;
+  };
 
   return (
     <>
@@ -78,7 +105,7 @@ export function Sidebar() {
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-40 w-64 transform border-r border-white/40 bg-white/70 backdrop-blur-xl shadow-2xl shadow-purple-500/10 transition-transform duration-300 ease-in-out md:translate-x-0",
-          isOpen ? "translate-x-0" : "-translate-x-full"
+          isOpen ? "translate-x-0" : "-translate-x-full",
         )}
         aria-label="Sidebar"
       >
@@ -113,16 +140,17 @@ export function Sidebar() {
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
+              const href = attachInstanceId(item.href) as Route;
 
               return (
                 <Link
                   key={item.href}
-                  href={item.href}
+                  href={href}
                   className={cn(
                     "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
                     isActive
                       ? "bg-white shadow-md shadow-purple-500/5 ring-1 ring-white/60 text-purple-700"
-                      : "text-gray-600 hover:bg-white/40 hover:text-purple-700 hover:shadow-sm"
+                      : "text-gray-600 hover:bg-white/40 hover:text-purple-700 hover:shadow-sm",
                   )}
                 >
                   <Icon
@@ -131,7 +159,7 @@ export function Sidebar() {
                       "transition-colors duration-200",
                       isActive
                         ? "text-purple-600"
-                        : "text-gray-400 group-hover:text-purple-500"
+                        : "text-gray-400 group-hover:text-purple-500",
                     )}
                   />
                   {t(item.key)}

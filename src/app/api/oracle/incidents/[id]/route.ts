@@ -54,8 +54,13 @@ export async function GET(
     if (!incident) return error({ code: "not_found" }, 404);
     const url = new URL(request.url);
     const q = querySchema.parse(Object.fromEntries(url.searchParams));
+    const instanceId = url.searchParams.get("instanceId")?.trim() || null;
     if (q.includeAlerts === "1") {
-      const alerts = await getAlertsByIds(incident.alertIds ?? []);
+      let alerts = await getAlertsByIds(incident.alertIds ?? []);
+      if (instanceId) {
+        const marker = `:${instanceId}:`;
+        alerts = alerts.filter((a) => a.fingerprint.includes(marker));
+      }
       const toSummary = (a: Alert) => ({
         id: a.id,
         type: a.type,
@@ -112,13 +117,24 @@ export async function PATCH(
 
     const actor = getAdminActor(request);
     const { action, ...patch } = parsed.data;
+    const url = new URL(request.url);
+    const instanceId = url.searchParams.get("instanceId")?.trim() || null;
 
     if (action) {
       const incident = await getIncident(incidentId);
       if (!incident) return error({ code: "not_found" }, 404);
 
       const ids = incident.alertIds ?? [];
-      for (const alertId of ids) {
+      let allowedIds = ids;
+      if (instanceId) {
+        const alerts = await getAlertsByIds(ids);
+        const marker = `:${instanceId}:`;
+        allowedIds = alerts
+          .filter((a) => a.fingerprint.includes(marker))
+          .map((a) => a.id);
+      }
+
+      for (const alertId of allowedIds) {
         await updateAlertStatus({
           id: alertId,
           status: action === "ack_alerts" ? "Acknowledged" : "Resolved",

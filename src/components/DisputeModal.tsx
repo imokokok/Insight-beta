@@ -17,6 +17,7 @@ interface DisputeModalProps {
   chain?: OracleChain;
   defaultBondEth?: string;
   onSuccess?: () => void;
+  instanceId?: string;
 }
 
 export function DisputeModal({
@@ -27,9 +28,11 @@ export function DisputeModal({
   chain,
   defaultBondEth,
   onSuccess,
+  instanceId,
 }: DisputeModalProps) {
   const { address } = useWallet();
-  const { execute, isSubmitting, isConfirming, error } = useOracleTransaction();
+  const { execute, isSubmitting, isConfirming, error } =
+    useOracleTransaction(instanceId);
   const { t } = useI18n();
   const [bond, setBond] = useState(defaultBondEth ?? "0.1");
   const [reason, setReason] = useState("");

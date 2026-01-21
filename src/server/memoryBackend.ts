@@ -32,7 +32,10 @@ type MemoryAudit = {
 
 type MemoryKvItem = { value: unknown; updatedAt: string };
 
-type MemoryStore = {
+export type MemoryOracleInstance = {
+  id: string;
+  name: string;
+  enabled: boolean;
   oracleConfig: OracleConfig;
   sync: {
     lastProcessedBlock: bigint;
@@ -43,12 +46,29 @@ type MemoryStore = {
     rpcActiveUrl?: string | null;
     rpcStats?: unknown;
     meta: SyncMeta;
-    metrics?: { recordedAt: string; lagBlocks: bigint | null; durationMs: number | null; error: string | null }[];
+    metrics?: {
+      recordedAt: string;
+      lagBlocks: bigint | null;
+      durationMs: number | null;
+      error: string | null;
+    }[];
   };
   assertions: Map<string, Assertion>;
   disputes: Map<string, Dispute>;
-  votes: Map<string, { assertionId: string; support: boolean; weight: bigint; blockNumber: bigint }>;
+  votes: Map<
+    string,
+    {
+      assertionId: string;
+      support: boolean;
+      weight: bigint;
+      blockNumber: bigint;
+    }
+  >;
   voteSums: Map<string, { forWeight: bigint; againstWeight: bigint }>;
+};
+
+type MemoryStore = {
+  instances: Map<string, MemoryOracleInstance>;
   kv: Map<string, MemoryKvItem>;
   alerts: Map<string, MemoryAlert>;
   nextAlertId: number;
@@ -64,7 +84,7 @@ function createDefaultConfig(): OracleConfig {
     startBlock: 0,
     maxBlockRange: 10_000,
     votingPeriodHours: 72,
-    confirmationBlocks: 12
+    confirmationBlocks: 12,
   };
 }
 
@@ -73,38 +93,60 @@ function createDefaultSyncMeta(): SyncMeta {
     lastAttemptAt: null,
     lastSuccessAt: null,
     lastDurationMs: null,
-    lastError: null
+    lastError: null,
+  };
+}
+
+function createDefaultInstance(id: string): MemoryOracleInstance {
+  return {
+    id,
+    name: id === "default" ? "Default" : id,
+    enabled: true,
+    oracleConfig: createDefaultConfig(),
+    sync: {
+      lastProcessedBlock: 0n,
+      latestBlock: null,
+      safeBlock: null,
+      lastSuccessProcessedBlock: null,
+      consecutiveFailures: 0,
+      rpcActiveUrl: null,
+      rpcStats: null,
+      meta: createDefaultSyncMeta(),
+      metrics: [],
+    },
+    assertions: new Map(),
+    disputes: new Map(),
+    votes: new Map(),
+    voteSums: new Map(),
   };
 }
 
 export function getMemoryStore(): MemoryStore {
   const g = globalThis as unknown as { __insightMemoryStore?: MemoryStore };
   if (!g.__insightMemoryStore) {
+    const instances = new Map<string, MemoryOracleInstance>();
+    instances.set("default", createDefaultInstance("default"));
     g.__insightMemoryStore = {
-      oracleConfig: createDefaultConfig(),
-      sync: {
-        lastProcessedBlock: 0n,
-        latestBlock: null,
-        safeBlock: null,
-        lastSuccessProcessedBlock: null,
-        consecutiveFailures: 0,
-        rpcActiveUrl: null,
-        rpcStats: null,
-        meta: createDefaultSyncMeta(),
-        metrics: []
-      },
-      assertions: new Map(),
-      disputes: new Map(),
-      votes: new Map(),
-      voteSums: new Map(),
+      instances,
       kv: new Map(),
       alerts: new Map(),
       nextAlertId: 1,
       audit: [],
-      nextAuditId: 1
+      nextAuditId: 1,
     };
   }
   return g.__insightMemoryStore;
+}
+
+export function getMemoryInstance(instanceId: string) {
+  const mem = getMemoryStore();
+  const id = (instanceId || "default").trim() || "default";
+  let inst = mem.instances.get(id);
+  if (!inst) {
+    inst = createDefaultInstance(id);
+    mem.instances.set(id, inst);
+  }
+  return inst;
 }
 
 export function memoryNowIso() {

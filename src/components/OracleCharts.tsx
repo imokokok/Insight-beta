@@ -56,7 +56,7 @@ const COLORS = [
   "#10b981",
 ];
 
-export function OracleCharts() {
+export function OracleCharts({ instanceId }: { instanceId?: string | null }) {
   const [rawData, setRawData] = useState<ChartItem[]>([]);
   const [rawSyncMetrics, setRawSyncMetrics] = useState<SyncMetricItem[]>([]);
   const [marketStats, setMarketStats] = useState<MarketStat[]>([]);
@@ -80,10 +80,26 @@ export function OracleCharts() {
 
   const { t, lang } = useI18n();
   const locale = langToLocale[lang];
+  const normalizedInstanceId = (instanceId ?? "").trim();
+
+  useEffect(() => {
+    setRawData([]);
+    setRawSyncMetrics([]);
+    setMarketStats([]);
+    setAccuracyData([]);
+    setError(null);
+    setSyncError(null);
+    setMarketsError(null);
+    setAccuracyError(null);
+    setLoading(true);
+  }, [normalizedInstanceId]);
 
   useEffect(() => {
     const controller = new AbortController();
-    fetchApiData<ChartItem[]>("/api/oracle/charts", {
+    const url = normalizedInstanceId
+      ? `/api/oracle/charts?instanceId=${encodeURIComponent(normalizedInstanceId)}`
+      : "/api/oracle/charts";
+    fetchApiData<ChartItem[]>(url, {
       signal: controller.signal,
     })
       .then((charts) => setRawData(charts))
@@ -92,15 +108,20 @@ export function OracleCharts() {
       )
       .finally(() => setLoading(false));
     return () => controller.abort();
-  }, []);
+  }, [normalizedInstanceId]);
 
   useEffect(() => {
     if (activeTab !== "sync") return;
     if (syncLoading || rawSyncMetrics.length > 0 || syncError) return;
     const controller = new AbortController();
     setSyncLoading(true);
+    const url = new URLSearchParams({
+      minutes: "360",
+      limit: "720",
+      ...(normalizedInstanceId ? { instanceId: normalizedInstanceId } : {}),
+    });
     fetchApiData<{ items: SyncMetricItem[] }>(
-      "/api/oracle/sync-metrics?minutes=360&limit=720",
+      `/api/oracle/sync-metrics?${url.toString()}`,
       { signal: controller.signal },
     )
       .then((r) => setRawSyncMetrics(r.items))
@@ -109,15 +130,26 @@ export function OracleCharts() {
       )
       .finally(() => setSyncLoading(false));
     return () => controller.abort();
-  }, [activeTab, rawSyncMetrics.length, syncError, syncLoading]);
+  }, [
+    activeTab,
+    normalizedInstanceId,
+    rawSyncMetrics.length,
+    syncError,
+    syncLoading,
+  ]);
 
   useEffect(() => {
     if (activeTab !== "markets") return;
     if (marketsLoading || marketStats.length > 0 || marketsError) return;
     const controller = new AbortController();
     setMarketsLoading(true);
+    const url = new URLSearchParams({
+      days: "30",
+      limit: "10",
+      ...(normalizedInstanceId ? { instanceId: normalizedInstanceId } : {}),
+    });
     fetchApiData<MarketStat[]>(
-      "/api/oracle/analytics/markets?days=30&limit=10",
+      `/api/oracle/analytics/markets?${url.toString()}`,
       { signal: controller.signal },
     )
       .then((data) => setMarketStats(data))
@@ -126,15 +158,26 @@ export function OracleCharts() {
       )
       .finally(() => setMarketsLoading(false));
     return () => controller.abort();
-  }, [activeTab, marketStats.length, marketsError, marketsLoading]);
+  }, [
+    activeTab,
+    normalizedInstanceId,
+    marketStats.length,
+    marketsError,
+    marketsLoading,
+  ]);
 
   useEffect(() => {
     if (activeTab !== "accuracy") return;
     if (accuracyLoading || accuracyData.length > 0 || accuracyError) return;
     const controller = new AbortController();
     setAccuracyLoading(true);
+    const url = new URLSearchParams({
+      symbol: "ETH",
+      days: "30",
+      ...(normalizedInstanceId ? { instanceId: normalizedInstanceId } : {}),
+    });
     fetchApiData<PricePoint[]>(
-      "/api/oracle/analytics/accuracy?symbol=ETH&days=30",
+      `/api/oracle/analytics/accuracy?${url.toString()}`,
       { signal: controller.signal },
     )
       .then((data) => setAccuracyData(data))
@@ -143,7 +186,13 @@ export function OracleCharts() {
       )
       .finally(() => setAccuracyLoading(false));
     return () => controller.abort();
-  }, [activeTab, accuracyData.length, accuracyError, accuracyLoading]);
+  }, [
+    activeTab,
+    normalizedInstanceId,
+    accuracyData.length,
+    accuracyError,
+    accuracyLoading,
+  ]);
 
   const chartData = useMemo(() => {
     if (rawData.length === 0) return [];

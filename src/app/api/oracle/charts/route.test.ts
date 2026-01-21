@@ -11,15 +11,21 @@ vi.mock("@/server/db", () => ({
 
 vi.mock("@/server/memoryBackend", () => {
   const memStore = {
-    assertions: new Map<
+    instances: new Map<
       string,
       {
-        assertedAt: string;
-        market: string;
-        bondUsd?: number;
+        assertions: Map<
+          string,
+          {
+            assertedAt: string;
+            market: string;
+            bondUsd?: number;
+          }
+        >;
       }
     >(),
   };
+  memStore.instances.set("default", { assertions: new Map() });
   return {
     getMemoryStore: vi.fn(() => memStore),
   };
@@ -72,22 +78,28 @@ describe("GET /api/oracle/charts", () => {
 
   it("returns chart data from memory backend", async () => {
     const mem = getMemoryStore() as unknown as {
-      assertions: Map<
+      instances: Map<
         string,
         {
-          assertedAt: string;
-          market: string;
-          bondUsd?: number;
+          assertions: Map<
+            string,
+            {
+              assertedAt: string;
+              market: string;
+              bondUsd?: number;
+            }
+          >;
         }
       >;
     };
+    const inst = mem.instances.get("default")!;
     const base = Date.now();
-    mem.assertions.set("1", {
+    inst.assertions.set("1", {
       assertedAt: new Date(base).toISOString(),
       market: "ETH/USD",
       bondUsd: 10,
     });
-    mem.assertions.set("2", {
+    inst.assertions.set("2", {
       assertedAt: new Date(base + 24 * 60 * 60 * 1000).toISOString(),
       market: "ETH/USD",
       bondUsd: 5,
@@ -148,7 +160,7 @@ describe("GET /api/oracle/charts", () => {
     }[];
 
     expect(hasDatabase).toHaveBeenCalled();
-    expect(query).toHaveBeenCalledWith(expect.any(String), [7]);
+    expect(query).toHaveBeenCalledWith(expect.any(String), [7, "default"]);
     expect(response).toHaveLength(2);
     expect(response[0]!.date).toBe("2023-01-01");
     expect(response[0]!.count).toBe(3);
@@ -172,38 +184,43 @@ describe("GET /api/oracle/charts", () => {
     // Test default value (30 days)
     let request = new Request("http://localhost:3000/api/oracle/charts");
     await GET(request);
-    expect(query).toHaveBeenCalledWith(expect.any(String), [30]);
+    expect(query).toHaveBeenCalledWith(expect.any(String), [30, "default"]);
 
     // Test minimum value (1 day)
     request = new Request("http://localhost:3000/api/oracle/charts?days=1");
     await GET(request);
-    expect(query).toHaveBeenCalledWith(expect.any(String), [1]);
+    expect(query).toHaveBeenCalledWith(expect.any(String), [1, "default"]);
 
     // Test maximum value (365 days)
     request = new Request("http://localhost:3000/api/oracle/charts?days=365");
     await GET(request);
-    expect(query).toHaveBeenCalledWith(expect.any(String), [365]);
+    expect(query).toHaveBeenCalledWith(expect.any(String), [365, "default"]);
 
     // Test normal value (7 days)
     request = new Request("http://localhost:3000/api/oracle/charts?days=7");
     await GET(request);
-    expect(query).toHaveBeenCalledWith(expect.any(String), [7]);
+    expect(query).toHaveBeenCalledWith(expect.any(String), [7, "default"]);
   });
 
   it("handles empty data correctly in both modes", async () => {
     const mem = getMemoryStore() as unknown as {
-      assertions: Map<
+      instances: Map<
         string,
         {
-          assertedAt: string;
-          market: string;
-          bondUsd?: number;
+          assertions: Map<
+            string,
+            {
+              assertedAt: string;
+              market: string;
+              bondUsd?: number;
+            }
+          >;
         }
       >;
     };
 
     // Clear memory store to ensure empty data
-    mem.assertions.clear();
+    mem.instances.get("default")!.assertions.clear();
 
     // Test empty data in memory mode
     const request = new Request(

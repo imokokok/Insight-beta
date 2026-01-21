@@ -82,6 +82,9 @@ describe("GET /api/oracle/ops-metrics", () => {
       5_000,
       expect.any(Function),
     );
-    expect(observability.getOpsMetrics).toHaveBeenCalledWith({ windowDays: 7 });
+    expect(observability.getOpsMetrics).toHaveBeenCalledWith({
+      windowDays: 7,
+      instanceId: null,
+    });
   });
 });

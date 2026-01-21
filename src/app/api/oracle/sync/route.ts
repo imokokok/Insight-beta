@@ -16,6 +16,7 @@ import { appendAuditLog } from "@/server/observability";
 import { revalidateTag } from "next/cache";
 import { env } from "@/lib/env";
 import crypto from "node:crypto";
+import { DEFAULT_ORACLE_INSTANCE_ID } from "@/server/oracleConfig";
 
 function timingSafeEqualString(a: string, b: string) {
   const aBuf = Buffer.from(a, "utf8");
@@ -47,8 +48,14 @@ export async function GET(request: Request) {
       windowMs: 60_000,
     });
     if (limited) return limited;
-    const state = await readOracleState();
-    const isDemo = await isTableEmpty("assertions");
+    const url = new URL(request.url);
+    const instanceId = url.searchParams.get("instanceId");
+    const state = instanceId
+      ? await readOracleState(instanceId)
+      : await readOracleState();
+    const isDemo = instanceId
+      ? await isTableEmpty("assertions", instanceId)
+      : await isTableEmpty("assertions");
     return {
       chain: state.chain,
       contractAddress: state.contractAddress,
@@ -69,6 +76,11 @@ export async function POST(request: Request) {
       windowMs: 60_000,
     });
     if (limited) return limited;
+    const url = new URL(request.url);
+    const instanceId = url.searchParams.get("instanceId");
+    const normalizedInstanceId =
+      (instanceId ?? DEFAULT_ORACLE_INSTANCE_ID).trim() ||
+      DEFAULT_ORACLE_INSTANCE_ID;
 
     if (!isCronAuthorized(request)) {
       const auth = await requireAdmin(request, {
@@ -78,13 +90,17 @@ export async function POST(request: Request) {
       if (auth) return auth;
     }
 
-    const envConfig = await getOracleEnv();
+    const envConfig = instanceId
+      ? await getOracleEnv(instanceId)
+      : await getOracleEnv();
     if (!envConfig.rpcUrl || !envConfig.contractAddress) {
       return error({ code: "missing_config" }, 400);
     }
     let result: { updated: boolean };
     try {
-      result = await ensureOracleSynced();
+      result = instanceId
+        ? await ensureOracleSynced(instanceId)
+        : await ensureOracleSynced();
     } catch (e) {
       const code = e instanceof Error ? e.message : "sync_failed";
       if (code === "rpc_unreachable") return error({ code }, 502);
@@ -92,7 +108,9 @@ export async function POST(request: Request) {
       if (code === "sync_failed") return error({ code }, 502);
       return error({ code: "sync_failed" }, 502);
     }
-    const state = await readOracleState();
+    const state = instanceId
+      ? await readOracleState(instanceId)
+      : await readOracleState();
     const actor = getAdminActor(request);
     await appendAuditLog({
       actor,
@@ -106,11 +124,16 @@ export async function POST(request: Request) {
     });
     if (result.updated) {
       revalidateTag("oracle-stats");
+      revalidateTag(`oracle-stats:${normalizedInstanceId}`);
       revalidateTag("oracle-leaderboard");
+      revalidateTag(`oracle-leaderboard:${normalizedInstanceId}`);
       revalidateTag("user-stats");
+      revalidateTag(`user-stats:${normalizedInstanceId}`);
       await invalidateCachedJson("oracle_api:/api/oracle");
     }
-    const isDemo = await isTableEmpty("assertions");
+    const isDemo = instanceId
+      ? await isTableEmpty("assertions", instanceId)
+      : await isTableEmpty("assertions");
     return {
       updated: result.updated,
       chain: state.chain,

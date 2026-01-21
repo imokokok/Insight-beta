@@ -3,12 +3,15 @@ import { ensureSchema } from "./schema";
 import type {
   OracleChain,
   OracleConfig as SharedOracleConfig,
+  OracleInstance,
 } from "@/lib/oracleTypes";
-import { getMemoryStore } from "@/server/memoryBackend";
+import { getMemoryInstance, getMemoryStore } from "@/server/memoryBackend";
 import { isIP } from "node:net";
 import { env } from "@/lib/env";
 
 export type OracleConfig = SharedOracleConfig;
+
+export const DEFAULT_ORACLE_INSTANCE_ID = "default";
 
 export function redactOracleConfig(config: OracleConfig): OracleConfig {
   return { ...config, rpcUrl: "" };
@@ -26,6 +29,25 @@ async function ensureDb() {
 function normalizeUrl(value: unknown) {
   if (typeof value !== "string") return "";
   return value.trim();
+}
+
+function normalizeInstanceId(value: unknown) {
+  if (typeof value !== "string") return DEFAULT_ORACLE_INSTANCE_ID;
+  const trimmed = value.trim();
+  if (!trimmed) return DEFAULT_ORACLE_INSTANCE_ID;
+  const lowered = trimmed.toLowerCase();
+  if (!/^[a-z0-9][a-z0-9_-]{0,63}$/.test(lowered))
+    return DEFAULT_ORACLE_INSTANCE_ID;
+  return lowered;
+}
+
+export function validateOracleInstanceId(value: unknown) {
+  if (typeof value !== "string") throw new Error("invalid_request_body");
+  const trimmed = value.trim().toLowerCase();
+  if (!trimmed) return DEFAULT_ORACLE_INSTANCE_ID;
+  if (!/^[a-z0-9][a-z0-9_-]{0,63}$/.test(trimmed))
+    throw new Error("invalid_instance_id");
+  return trimmed;
 }
 
 function allowPrivateRpcUrls() {
@@ -246,14 +268,116 @@ export function validateOracleConfigPatch(next: Partial<OracleConfig>) {
   return patch;
 }
 
-export async function readOracleConfig(): Promise<OracleConfig> {
+export async function listOracleInstances(): Promise<OracleInstance[]> {
   await ensureDb();
   if (!hasDatabase()) {
-    return getMemoryStore().oracleConfig;
+    const mem = getMemoryStore();
+    return Array.from(mem.instances.values()).map((inst) => ({
+      id: inst.id,
+      name: inst.name,
+      enabled: inst.enabled,
+      chain: inst.oracleConfig.chain,
+      contractAddress: inst.oracleConfig.contractAddress,
+    }));
   }
-  const res = await query("SELECT * FROM oracle_config WHERE id = 1");
-  const row = res.rows[0];
-  if (!row) {
+
+  const res = await query<{
+    id: string;
+    name: string;
+    enabled: boolean;
+    chain: OracleChain | null;
+    contract_address: string | null;
+  }>(
+    "SELECT id, name, enabled, chain, contract_address FROM oracle_instances ORDER BY id ASC",
+  );
+
+  if (res.rows.length > 0) {
+    return res.rows.map((row) => ({
+      id: row.id,
+      name: row.name,
+      enabled: Boolean(row.enabled),
+      chain: (row.chain as OracleChain) || "Local",
+      contractAddress: (row.contract_address ?? "") || "",
+    }));
+  }
+
+  const fallback = await readOracleConfig(DEFAULT_ORACLE_INSTANCE_ID);
+  return [
+    {
+      id: DEFAULT_ORACLE_INSTANCE_ID,
+      name: "Default",
+      enabled: true,
+      chain: fallback.chain,
+      contractAddress: fallback.contractAddress,
+    },
+  ];
+}
+
+export async function readOracleConfig(
+  instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
+): Promise<OracleConfig> {
+  await ensureDb();
+  const normalizedInstanceId = normalizeInstanceId(instanceId);
+  if (!hasDatabase()) {
+    return getMemoryInstance(normalizedInstanceId).oracleConfig;
+  }
+
+  const res = await query("SELECT * FROM oracle_instances WHERE id = $1", [
+    normalizedInstanceId,
+  ]);
+  const row = res.rows[0] as
+    | {
+        rpc_url?: unknown;
+        contract_address?: unknown;
+        chain?: unknown;
+        start_block?: unknown;
+        max_block_range?: unknown;
+        voting_period_hours?: unknown;
+        confirmation_blocks?: unknown;
+      }
+    | undefined;
+  if (row) {
+    return {
+      rpcUrl: typeof row.rpc_url === "string" ? row.rpc_url : "",
+      contractAddress:
+        typeof row.contract_address === "string" ? row.contract_address : "",
+      chain: normalizeChain(row.chain),
+      startBlock: normalizeOptionalNonNegativeInt(row.start_block) ?? 0,
+      maxBlockRange:
+        normalizeOptionalIntInRange(row.max_block_range, 100, 200_000) ??
+        10_000,
+      votingPeriodHours:
+        normalizeOptionalIntInRange(row.voting_period_hours, 1, 720) ?? 72,
+      confirmationBlocks:
+        normalizeOptionalNonNegativeInt(row.confirmation_blocks) ?? 12,
+    };
+  }
+
+  if (normalizedInstanceId !== DEFAULT_ORACLE_INSTANCE_ID) {
+    return {
+      rpcUrl: "",
+      contractAddress: "",
+      chain: "Local",
+      startBlock: 0,
+      maxBlockRange: 10_000,
+      votingPeriodHours: 72,
+      confirmationBlocks: 12,
+    };
+  }
+
+  const legacy = await query("SELECT * FROM oracle_config WHERE id = 1");
+  const legacyRow = legacy.rows[0] as
+    | {
+        rpc_url?: unknown;
+        contract_address?: unknown;
+        chain?: unknown;
+        start_block?: unknown;
+        max_block_range?: unknown;
+        voting_period_hours?: unknown;
+        confirmation_blocks?: unknown;
+      }
+    | undefined;
+  if (!legacyRow) {
     return {
       rpcUrl: "",
       contractAddress: "",
@@ -265,22 +389,30 @@ export async function readOracleConfig(): Promise<OracleConfig> {
     };
   }
   return {
-    rpcUrl: row.rpc_url || "",
-    contractAddress: row.contract_address || "",
-    chain: (row.chain as OracleChain) || "Local",
-    startBlock: normalizeOptionalNonNegativeInt(row.start_block) ?? 0,
+    rpcUrl: typeof legacyRow.rpc_url === "string" ? legacyRow.rpc_url : "",
+    contractAddress:
+      typeof legacyRow.contract_address === "string"
+        ? legacyRow.contract_address
+        : "",
+    chain: normalizeChain(legacyRow.chain),
+    startBlock: normalizeOptionalNonNegativeInt(legacyRow.start_block) ?? 0,
     maxBlockRange:
-      normalizeOptionalIntInRange(row.max_block_range, 100, 200_000) ?? 10_000,
+      normalizeOptionalIntInRange(legacyRow.max_block_range, 100, 200_000) ??
+      10_000,
     votingPeriodHours:
-      normalizeOptionalIntInRange(row.voting_period_hours, 1, 720) ?? 72,
+      normalizeOptionalIntInRange(legacyRow.voting_period_hours, 1, 720) ?? 72,
     confirmationBlocks:
-      normalizeOptionalNonNegativeInt(row.confirmation_blocks) ?? 12,
+      normalizeOptionalNonNegativeInt(legacyRow.confirmation_blocks) ?? 12,
   };
 }
 
-export async function writeOracleConfig(next: Partial<OracleConfig>) {
+export async function writeOracleConfig(
+  next: Partial<OracleConfig>,
+  instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
+) {
   await ensureDb();
-  const prev = await readOracleConfig();
+  const normalizedInstanceId = normalizeInstanceId(instanceId);
+  const prev = await readOracleConfig(normalizedInstanceId);
   const merged: OracleConfig = {
     rpcUrl: next.rpcUrl === undefined ? prev.rpcUrl : normalizeUrl(next.rpcUrl),
     contractAddress:
@@ -308,7 +440,43 @@ export async function writeOracleConfig(next: Partial<OracleConfig>) {
   };
 
   if (!hasDatabase()) {
-    getMemoryStore().oracleConfig = merged;
+    getMemoryInstance(normalizedInstanceId).oracleConfig = merged;
+    return merged;
+  }
+
+  const defaultName =
+    normalizedInstanceId === DEFAULT_ORACLE_INSTANCE_ID
+      ? "Default"
+      : normalizedInstanceId;
+
+  await query(
+    `INSERT INTO oracle_instances (
+      id, name, enabled, rpc_url, contract_address, chain, start_block, max_block_range, voting_period_hours, confirmation_blocks, updated_at
+    ) VALUES ($1, COALESCE((SELECT name FROM oracle_instances WHERE id = $1), $2), true, $3, $4, $5, $6, $7, $8, $9, NOW())
+    ON CONFLICT (id) DO UPDATE SET
+      rpc_url = excluded.rpc_url,
+      contract_address = excluded.contract_address,
+      chain = excluded.chain,
+      start_block = excluded.start_block,
+      max_block_range = excluded.max_block_range,
+      voting_period_hours = excluded.voting_period_hours,
+      confirmation_blocks = excluded.confirmation_blocks,
+      updated_at = NOW()
+    `,
+    [
+      normalizedInstanceId,
+      defaultName,
+      merged.rpcUrl,
+      merged.contractAddress,
+      merged.chain,
+      String(merged.startBlock ?? 0),
+      merged.maxBlockRange ?? 10_000,
+      merged.votingPeriodHours ?? 72,
+      merged.confirmationBlocks ?? 12,
+    ],
+  );
+
+  if (normalizedInstanceId !== DEFAULT_ORACLE_INSTANCE_ID) {
     return merged;
   }
 

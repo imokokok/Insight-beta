@@ -39,18 +39,28 @@ export async function GET(
         (env.INSIGHT_DISABLE_VOTE_TRACKING || "").toLowerCase(),
       );
 
+    const url = new URL(request.url);
+    const instanceId = url.searchParams.get("instanceId");
     const { id } = await params;
-    const assertion = await getAssertion(id);
-    const dispute = await getDisputeByAssertionId(id);
+    const assertion = instanceId
+      ? await getAssertion(id, instanceId)
+      : await getAssertion(id);
+    const dispute = instanceId
+      ? await getDisputeByAssertionId(id, instanceId)
+      : await getDisputeByAssertionId(id);
     const admin = await verifyAdmin(request, {
       strict: false,
       scope: "oracle_config_write",
     });
-    const config = await readOracleConfig();
-    const envConfig = await getOracleEnv();
-    const sync = await getSyncState();
-
-    const url = new URL(request.url);
+    const config = instanceId
+      ? await readOracleConfig(instanceId)
+      : await readOracleConfig();
+    const envConfig = instanceId
+      ? await getOracleEnv(instanceId)
+      : await getOracleEnv();
+    const sync = instanceId
+      ? await getSyncState(instanceId)
+      : await getSyncState();
     const includeLogs = admin.ok && url.searchParams.get("includeLogs") === "1";
     const maxBlocks = Math.min(
       1_000_000,

@@ -17,6 +17,7 @@ interface CreateAssertionModalProps {
   contractAddress?: string;
   chain?: OracleChain;
   onSuccess?: () => void;
+  instanceId?: string;
 }
 
 export function CreateAssertionModal({
@@ -25,10 +26,12 @@ export function CreateAssertionModal({
   contractAddress,
   chain,
   onSuccess,
+  instanceId,
 }: CreateAssertionModalProps) {
   const { address } = useWallet();
   const { t } = useI18n();
-  const { execute, isSubmitting, isConfirming, error } = useOracleTransaction();
+  const { execute, isSubmitting, isConfirming, error } =
+    useOracleTransaction(instanceId);
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const marketInputRef = useRef<HTMLInputElement>(null);
   useModalBehavior(isOpen, onClose, dialogRef);
@@ -180,7 +183,7 @@ export function CreateAssertionModal({
               rows={3}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
               placeholder={t(
-                "oracle.createAssertionModal.assertionPlaceholder"
+                "oracle.createAssertionModal.assertionPlaceholder",
               )}
             />
           </div>
@@ -223,10 +226,10 @@ export function CreateAssertionModal({
               {!address
                 ? t("wallet.connect")
                 : isSubmitting
-                ? t("oracle.detail.submitting")
-                : isConfirming
-                ? t("oracle.detail.confirming")
-                : t("oracle.createAssertionModal.submit")}
+                  ? t("oracle.detail.submitting")
+                  : isConfirming
+                    ? t("oracle.detail.confirming")
+                    : t("oracle.createAssertionModal.submit")}
             </button>
           </div>
         </form>

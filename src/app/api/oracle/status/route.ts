@@ -24,12 +24,21 @@ export async function GET(request: Request) {
       scope: "oracle_config_write",
     });
     const url = new URL(request.url);
+    const instanceId = url.searchParams.get("instanceId");
 
     const compute = async (includeSecrets: boolean) => {
-      const config = await readOracleConfig();
-      const envConfig = await getOracleEnv();
-      const state = await readOracleState();
-      const syncState = await getSyncState();
+      const config = instanceId
+        ? await readOracleConfig(instanceId)
+        : await readOracleConfig();
+      const envConfig = instanceId
+        ? await getOracleEnv(instanceId)
+        : await getOracleEnv();
+      const state = instanceId
+        ? await readOracleState(instanceId)
+        : await readOracleState();
+      const syncState = instanceId
+        ? await getSyncState(instanceId)
+        : await getSyncState();
       const latestBlock = syncState.latestBlock;
       const safeBlock = syncState.safeBlock;
       const lagBlocks =
@@ -77,7 +86,7 @@ export async function GET(request: Request) {
           rpcStats: includeSecrets ? (syncState.rpcStats ?? null) : null,
           assertions: Object.keys(state.assertions).length,
           disputes: Object.keys(state.disputes).length,
-          syncing: isOracleSyncing(),
+          syncing: instanceId ? isOracleSyncing(instanceId) : isOracleSyncing(),
           sync: state.sync,
           configError: configErrors[0] ?? null,
           configErrors,

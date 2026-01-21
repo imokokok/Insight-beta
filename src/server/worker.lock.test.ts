@@ -60,6 +60,15 @@ vi.mock("@/server/oracle", () => ({
     contractAddress: null,
     owner: null,
   })),
+  listOracleInstances: vi.fn(async () => [
+    {
+      id: "default",
+      name: "Default",
+      enabled: true,
+      chain: "Local",
+      contractAddress: "",
+    },
+  ]),
   readOracleState: vi.fn(async () => ({})),
 }));
 

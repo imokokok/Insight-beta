@@ -100,7 +100,7 @@ describe("DisputeList", () => {
         hasMore={false}
         loadMore={() => {}}
         loadingMore={false}
-      />
+      />,
     );
     expect(screen.getByTestId("skeleton-list")).toBeInTheDocument();
   });
@@ -114,7 +114,7 @@ describe("DisputeList", () => {
         hasMore={false}
         loadMore={() => {}}
         loadingMore={false}
-      />
+      />,
     );
     expect(screen.getByText("common.noData")).toBeInTheDocument();
   });
@@ -128,7 +128,7 @@ describe("DisputeList", () => {
         hasMore={false}
         loadMore={() => {}}
         loadingMore={false}
-      />
+      />,
     );
 
     // Check if ID is displayed (truncated)
@@ -148,7 +148,7 @@ describe("DisputeList", () => {
         hasMore={false}
         loadMore={() => {}}
         loadingMore={false}
-      />
+      />,
     );
 
     // Check content
@@ -166,10 +166,27 @@ describe("DisputeList", () => {
         hasMore={false}
         loadMore={() => {}}
         loadingMore={false}
-      />
+      />,
     );
 
     const link = screen.getByTestId("mock-link");
     expect(link).toHaveAttribute("href", "/oracle/0xassertion");
+  });
+
+  it("generates correct link with instanceId", () => {
+    render(
+      <DisputeList
+        items={[mockDispute]}
+        loading={false}
+        viewMode="grid"
+        hasMore={false}
+        loadMore={() => {}}
+        loadingMore={false}
+        instanceId="demo"
+      />,
+    );
+
+    const link = screen.getByTestId("mock-link");
+    expect(link).toHaveAttribute("href", "/oracle/0xassertion?instanceId=demo");
   });
 });

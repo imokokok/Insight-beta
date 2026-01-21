@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import type { Route } from "next";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   AlertTriangle,
   ExternalLink,
@@ -22,6 +24,11 @@ import type { Dispute, DisputeStatus, OracleChain } from "@/lib/oracleTypes";
 export default function DisputesPage() {
   const { t, lang } = useI18n();
   const locale = langToLocale[lang];
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentSearch = searchParams?.toString() ?? "";
+  const instanceIdFromUrl = searchParams?.get("instanceId")?.trim() || "";
   const [items, setItems] = useState<Dispute[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -34,6 +41,57 @@ export default function DisputesPage() {
   );
   const [filterChain, setFilterChain] = useState<OracleChain | "All">("All");
   const [query, setQuery] = useState("");
+  const [instanceId, setInstanceId] = useState<string>(() => {
+    try {
+      if (typeof window === "undefined") return "default";
+      const saved = window.localStorage.getItem("oracleFilters");
+      if (!saved) return "default";
+      const parsed = JSON.parse(saved) as { instanceId?: unknown } | null;
+      const value =
+        parsed && typeof parsed === "object" ? parsed.instanceId : null;
+      if (typeof value === "string" && value.trim()) return value.trim();
+    } catch {
+      return "default";
+    }
+    return "default";
+  });
+
+  useEffect(() => {
+    if (!instanceIdFromUrl) return;
+    if (instanceIdFromUrl === instanceId) return;
+    setInstanceId(instanceIdFromUrl);
+  }, [instanceIdFromUrl, instanceId]);
+
+  useEffect(() => {
+    const normalized = instanceId.trim();
+    const params = new URLSearchParams(currentSearch);
+    if (normalized) params.set("instanceId", normalized);
+    else params.delete("instanceId");
+    const nextSearch = params.toString();
+    const nextUrl = nextSearch ? `${pathname}?${nextSearch}` : pathname;
+    const currentUrl = currentSearch
+      ? `${pathname}?${currentSearch}`
+      : pathname;
+    if (nextUrl !== currentUrl)
+      router.replace(nextUrl as Route, { scroll: false });
+  }, [instanceId, pathname, router, currentSearch]);
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem("oracleFilters");
+      const parsed =
+        raw && raw.trim()
+          ? (JSON.parse(raw) as Record<string, unknown> | null)
+          : null;
+      const next = {
+        ...(parsed && typeof parsed === "object" ? parsed : {}),
+        instanceId,
+      };
+      window.localStorage.setItem("oracleFilters", JSON.stringify(next));
+    } catch {
+      void 0;
+    }
+  }, [instanceId]);
 
   const statusLabel = (status: DisputeStatus) => {
     if (status === "Voting") return t("status.voting");
@@ -64,6 +122,7 @@ export default function DisputesPage() {
       setError(null);
       try {
         const params = new URLSearchParams();
+        if (instanceId) params.set("instanceId", instanceId);
         if (filterStatus !== "All") params.set("status", filterStatus);
         if (filterChain !== "All") params.set("chain", filterChain);
         if (query.trim()) params.set("q", query.trim());
@@ -94,7 +153,7 @@ export default function DisputesPage() {
       controller.abort();
       window.clearTimeout(timeout);
     };
-  }, [filterStatus, filterChain, query]);
+  }, [filterStatus, filterChain, query, instanceId]);
 
   const loadMore = async () => {
     if (nextCursor === null) return;
@@ -102,6 +161,7 @@ export default function DisputesPage() {
     setError(null);
     try {
       const params = new URLSearchParams();
+      if (instanceId) params.set("instanceId", instanceId);
       if (filterStatus !== "All") params.set("status", filterStatus);
       if (filterChain !== "All") params.set("chain", filterChain);
       if (query.trim()) params.set("q", query.trim());

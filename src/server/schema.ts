@@ -15,6 +15,23 @@ export async function ensureSchema() {
       CONSTRAINT single_row CHECK (id = 1)
     );
 
+    CREATE TABLE IF NOT EXISTS oracle_instances (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      enabled BOOLEAN NOT NULL DEFAULT true,
+      rpc_url TEXT,
+      contract_address TEXT,
+      chain TEXT,
+      start_block BIGINT,
+      max_block_range INTEGER,
+      voting_period_hours INTEGER,
+      confirmation_blocks INTEGER,
+      created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_oracle_instances_enabled ON oracle_instances(enabled);
+
     CREATE TABLE IF NOT EXISTS sync_state (
       id INTEGER PRIMARY KEY DEFAULT 1,
       last_processed_block BIGINT DEFAULT 0,
@@ -31,6 +48,21 @@ export async function ensureSchema() {
       CONSTRAINT single_row CHECK (id = 1)
     );
 
+    CREATE TABLE IF NOT EXISTS oracle_sync_state (
+      instance_id TEXT PRIMARY KEY REFERENCES oracle_instances(id) ON DELETE CASCADE,
+      last_processed_block BIGINT DEFAULT 0,
+      latest_block BIGINT,
+      safe_block BIGINT,
+      last_success_processed_block BIGINT,
+      consecutive_failures INTEGER DEFAULT 0,
+      rpc_active_url TEXT,
+      rpc_stats JSONB,
+      last_attempt_at TIMESTAMP WITH TIME ZONE,
+      last_success_at TIMESTAMP WITH TIME ZONE,
+      last_duration_ms INTEGER,
+      last_error TEXT
+    );
+
     CREATE TABLE IF NOT EXISTS sync_metrics (
       id BIGSERIAL PRIMARY KEY,
       recorded_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
@@ -42,8 +74,23 @@ export async function ensureSchema() {
       error TEXT
     );
 
+    CREATE TABLE IF NOT EXISTS oracle_sync_metrics (
+      id BIGSERIAL PRIMARY KEY,
+      instance_id TEXT NOT NULL REFERENCES oracle_instances(id) ON DELETE CASCADE,
+      recorded_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+      last_processed_block BIGINT NOT NULL,
+      latest_block BIGINT,
+      safe_block BIGINT,
+      lag_blocks BIGINT,
+      duration_ms INTEGER,
+      error TEXT
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_oracle_sync_metrics_instance_date ON oracle_sync_metrics(instance_id, recorded_at DESC);
+
     CREATE TABLE IF NOT EXISTS assertions (
       id TEXT PRIMARY KEY,
+      instance_id TEXT NOT NULL DEFAULT 'default',
       chain TEXT NOT NULL,
       asserter TEXT NOT NULL,
       protocol TEXT,
@@ -60,6 +107,7 @@ export async function ensureSchema() {
 
     CREATE TABLE IF NOT EXISTS disputes (
       id TEXT PRIMARY KEY,
+      instance_id TEXT NOT NULL DEFAULT 'default',
       chain TEXT NOT NULL,
       assertion_id TEXT NOT NULL REFERENCES assertions(id),
       market TEXT,
@@ -75,6 +123,7 @@ export async function ensureSchema() {
 
     CREATE TABLE IF NOT EXISTS votes (
       id BIGSERIAL PRIMARY KEY,
+      instance_id TEXT NOT NULL DEFAULT 'default',
       chain TEXT NOT NULL,
       assertion_id TEXT NOT NULL REFERENCES assertions(id),
       voter TEXT NOT NULL,
@@ -91,23 +140,28 @@ export async function ensureSchema() {
     CREATE INDEX IF NOT EXISTS idx_assertions_date ON assertions(asserted_at);
     CREATE INDEX IF NOT EXISTS idx_assertions_status ON assertions(status);
     CREATE INDEX IF NOT EXISTS idx_assertions_chain ON assertions(chain);
+    CREATE INDEX IF NOT EXISTS idx_assertions_instance ON assertions(instance_id);
     CREATE INDEX IF NOT EXISTS idx_assertions_market ON assertions(market);
     CREATE INDEX IF NOT EXISTS idx_assertions_tx_hash ON assertions(tx_hash);
     CREATE INDEX IF NOT EXISTS idx_assertions_asserter_lower ON assertions(LOWER(asserter));
     CREATE INDEX IF NOT EXISTS idx_assertions_status_date ON assertions(status, asserted_at DESC);
     CREATE INDEX IF NOT EXISTS idx_assertions_chain_date ON assertions(chain, asserted_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_assertions_instance_date ON assertions(instance_id, asserted_at DESC);
     CREATE INDEX IF NOT EXISTS idx_assertions_asserter_date ON assertions(LOWER(asserter), asserted_at DESC);
     CREATE INDEX IF NOT EXISTS idx_disputes_assertion ON disputes(assertion_id);
     CREATE INDEX IF NOT EXISTS idx_disputes_status ON disputes(status);
     CREATE INDEX IF NOT EXISTS idx_disputes_chain ON disputes(chain);
+    CREATE INDEX IF NOT EXISTS idx_disputes_instance ON disputes(instance_id);
     CREATE INDEX IF NOT EXISTS idx_disputes_date ON disputes(disputed_at);
     CREATE INDEX IF NOT EXISTS idx_disputes_disputer_lower ON disputes(LOWER(disputer));
     CREATE INDEX IF NOT EXISTS idx_disputes_status_date ON disputes(status, disputed_at DESC);
     CREATE INDEX IF NOT EXISTS idx_disputes_chain_date ON disputes(chain, disputed_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_disputes_instance_date ON disputes(instance_id, disputed_at DESC);
     CREATE INDEX IF NOT EXISTS idx_disputes_disputer_date ON disputes(LOWER(disputer), disputed_at DESC);
     CREATE INDEX IF NOT EXISTS idx_votes_assertion ON votes(assertion_id);
     CREATE INDEX IF NOT EXISTS idx_votes_voter ON votes(voter);
     CREATE INDEX IF NOT EXISTS idx_votes_block ON votes(block_number);
+    CREATE INDEX IF NOT EXISTS idx_votes_instance ON votes(instance_id);
 
     CREATE TABLE IF NOT EXISTS kv_store (
       key TEXT PRIMARY KEY,
@@ -164,6 +218,33 @@ export async function ensureSchema() {
   await query(`
     ALTER TABLE assertions ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMP WITH TIME ZONE;
     ALTER TABLE assertions ADD COLUMN IF NOT EXISTS settlement_resolution BOOLEAN;
+    ALTER TABLE assertions ADD COLUMN IF NOT EXISTS instance_id TEXT;
+  `);
+
+  await query(`
+    UPDATE assertions SET instance_id = 'default' WHERE instance_id IS NULL;
+    ALTER TABLE assertions ALTER COLUMN instance_id SET DEFAULT 'default';
+    ALTER TABLE assertions ALTER COLUMN instance_id SET NOT NULL;
+  `);
+
+  await query(`
+    ALTER TABLE disputes ADD COLUMN IF NOT EXISTS instance_id TEXT;
+  `);
+
+  await query(`
+    UPDATE disputes SET instance_id = 'default' WHERE instance_id IS NULL;
+    ALTER TABLE disputes ALTER COLUMN instance_id SET DEFAULT 'default';
+    ALTER TABLE disputes ALTER COLUMN instance_id SET NOT NULL;
+  `);
+
+  await query(`
+    ALTER TABLE votes ADD COLUMN IF NOT EXISTS instance_id TEXT;
+  `);
+
+  await query(`
+    UPDATE votes SET instance_id = 'default' WHERE instance_id IS NULL;
+    ALTER TABLE votes ALTER COLUMN instance_id SET DEFAULT 'default';
+    ALTER TABLE votes ALTER COLUMN instance_id SET NOT NULL;
   `);
 
   await query(`
@@ -186,5 +267,27 @@ export async function ensureSchema() {
   await query(`
     INSERT INTO oracle_config (id, chain) VALUES (1, 'Local') ON CONFLICT (id) DO NOTHING;
     INSERT INTO sync_state (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
+  `);
+
+  await query(`
+    INSERT INTO oracle_instances (
+      id, name, enabled, rpc_url, contract_address, chain, start_block, max_block_range, voting_period_hours, confirmation_blocks
+    )
+    SELECT
+      'default', 'Default', true, rpc_url, contract_address, chain, start_block, max_block_range, voting_period_hours, confirmation_blocks
+    FROM oracle_config
+    WHERE id = 1
+    ON CONFLICT (id) DO NOTHING;
+  `);
+
+  await query(`
+    INSERT INTO oracle_sync_state (
+      instance_id, last_processed_block, latest_block, safe_block, last_success_processed_block, consecutive_failures, rpc_active_url, rpc_stats, last_attempt_at, last_success_at, last_duration_ms, last_error
+    )
+    SELECT
+      'default', last_processed_block, latest_block, safe_block, last_success_processed_block, consecutive_failures, rpc_active_url, rpc_stats, last_attempt_at, last_success_at, last_duration_ms, last_error
+    FROM sync_state
+    WHERE id = 1
+    ON CONFLICT (instance_id) DO NOTHING;
   `);
 }

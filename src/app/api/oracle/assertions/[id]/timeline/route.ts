@@ -12,7 +12,7 @@ type TimelineEvent =
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   return handleApi(request, async () => {
     const limited = await rateLimit(request, {
@@ -23,10 +23,16 @@ export async function GET(
     if (limited) return limited;
 
     const { id } = await params;
-    const assertion = await getAssertion(id);
+    const url = new URL(request.url);
+    const instanceId = url.searchParams.get("instanceId");
+    const assertion = instanceId
+      ? await getAssertion(id, instanceId)
+      : await getAssertion(id);
     if (!assertion) return error({ code: "not_found" }, 404);
 
-    const dispute = await getDisputeByAssertionId(id);
+    const dispute = instanceId
+      ? await getDisputeByAssertionId(id, instanceId)
+      : await getDisputeByAssertionId(id);
     const alertsResult = await listAlerts({
       status: "All",
       severity: "All",
@@ -34,10 +40,11 @@ export async function GET(
       q: id,
       limit: 100,
       cursor: 0,
+      instanceId,
     });
 
     const alerts = alertsResult.items.filter(
-      (a) => a.entityType === "assertion" && a.entityId === id
+      (a) => a.entityType === "assertion" && a.entityId === id,
     );
 
     const events: TimelineEvent[] = [];

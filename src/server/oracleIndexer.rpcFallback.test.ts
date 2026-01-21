@@ -14,7 +14,10 @@ const { readOracleConfig } = vi.hoisted(() => ({
   readOracleConfig: vi.fn<() => Promise<OracleConfigLike>>(),
 }));
 
-vi.mock("./oracleConfig", () => ({ readOracleConfig }));
+vi.mock("./oracleConfig", () => ({
+  readOracleConfig,
+  DEFAULT_ORACLE_INSTANCE_ID: "default",
+}));
 
 import { getOracleEnv } from "./oracleIndexer";
 

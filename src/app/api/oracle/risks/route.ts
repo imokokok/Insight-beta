@@ -17,9 +17,10 @@ export async function GET(request: Request) {
 
     const url = new URL(request.url);
     const q = querySchema.parse(Object.fromEntries(url.searchParams));
+    const instanceId = url.searchParams.get("instanceId");
     const cacheKey = `oracle_api:${url.pathname}${url.search}`;
     return await cachedJson(cacheKey, 10_000, async () => {
-      const items = await getRiskItems({ limit: q.limit ?? 50 });
+      const items = await getRiskItems({ limit: q.limit ?? 50, instanceId });
       return { items };
     });
   });

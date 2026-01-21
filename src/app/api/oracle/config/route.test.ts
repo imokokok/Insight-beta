@@ -48,7 +48,7 @@ vi.mock("@/server/apiResponse", () => ({
   invalidateCachedJson: vi.fn(async () => {}),
   handleApi: async (
     _request: Request,
-    fn: () => unknown | Promise<unknown>
+    fn: () => unknown | Promise<unknown>,
   ) => {
     return await fn();
   },
@@ -86,6 +86,22 @@ describe("GET /api/oracle/config", () => {
     });
     expect(readOracleConfig).toHaveBeenCalled();
     expect(response.rpcUrl).toBe("https://rpc.example");
+  });
+
+  it("passes instanceId through when provided", async () => {
+    const verifyAdminMock = vi.mocked(verifyAdmin);
+    verifyAdminMock.mockResolvedValueOnce({
+      ok: true,
+      role: "root",
+      tokenId: "test",
+    });
+
+    const request = new Request(
+      "http://localhost:3000/api/oracle/config?instanceId=foo",
+    );
+    await GET(request);
+
+    expect(readOracleConfig).toHaveBeenCalledWith("foo");
   });
 
   it("returns redacted config for non-admin", async () => {
@@ -162,6 +178,24 @@ describe("PUT /api/oracle/config", () => {
     expect(response.contractAddress).toBe("0xabc");
   });
 
+  it("passes instanceId through when provided", async () => {
+    const configPatch: Partial<OracleConfig> = {
+      rpcUrl: "https://new-rpc",
+    };
+    const request = new Request(
+      "http://localhost:3000/api/oracle/config?instanceId=foo",
+      {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(configPatch),
+      },
+    );
+
+    await PUT(request);
+
+    expect(writeOracleConfig).toHaveBeenCalledWith(configPatch, "foo");
+  });
+
   it("rejects malformed json body", async () => {
     const request = new Request("http://localhost:3000/api/oracle/config", {
       method: "PUT",
@@ -233,7 +267,7 @@ describe("PUT /api/oracle/config", () => {
 
     const validateMock = validateOracleConfigPatch as unknown as {
       mockImplementationOnce(
-        fn: (next: Partial<OracleConfig>) => Partial<OracleConfig>
+        fn: (next: Partial<OracleConfig>) => Partial<OracleConfig>,
       ): void;
     };
     validateMock.mockImplementationOnce(() => {
@@ -260,7 +294,7 @@ describe("PUT /api/oracle/config", () => {
 
     const validateMock = validateOracleConfigPatch as unknown as {
       mockImplementationOnce(
-        fn: (next: Partial<OracleConfig>) => Partial<OracleConfig>
+        fn: (next: Partial<OracleConfig>) => Partial<OracleConfig>,
       ): void;
     };
     validateMock.mockImplementationOnce(() => {

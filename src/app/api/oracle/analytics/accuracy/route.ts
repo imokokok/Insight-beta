@@ -1,6 +1,7 @@
 import { cachedJson, handleApi, rateLimit } from "@/server/apiResponse";
 import { z } from "zod";
 import { fetchReferencePriceHistory } from "@/server/oracle/priceFetcher";
+import { getOracleEnv, readOracleConfig } from "@/server/oracle";
 
 const paramsSchema = z.object({
   symbol: z.string().default("ETH"),
@@ -19,14 +20,22 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const rawParams = Object.fromEntries(url.searchParams);
     const { symbol, days } = paramsSchema.parse(rawParams);
+    const instanceId = url.searchParams.get("instanceId");
 
     const compute = async () => {
-      const data = await fetchReferencePriceHistory(symbol, days);
-      return data;
+      if (instanceId) {
+        const [cfg, envCfg] = await Promise.all([
+          readOracleConfig(instanceId),
+          getOracleEnv(instanceId),
+        ]);
+        const rpcUrl = (envCfg.rpcUrl || cfg.rpcUrl || "").trim() || null;
+        return await fetchReferencePriceHistory(symbol, days, { rpcUrl });
+      }
+      return await fetchReferencePriceHistory(symbol, days);
     };
 
     // Cache for 5 minutes as accuracy data doesn't change every second
-    const cacheKey = `oracle_api:accuracy:${symbol}:${days}`;
+    const cacheKey = `oracle_api:${url.pathname}${url.search}`;
     return await cachedJson(cacheKey, 300_000, compute);
   });
 }

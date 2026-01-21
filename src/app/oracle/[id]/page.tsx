@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import useSWR from "swr";
@@ -75,7 +75,9 @@ function getStatusIcon(status: string) {
 export default function OracleDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const id = params?.id as string;
+  const instanceId = searchParams?.get("instanceId")?.trim() || null;
   const { lang, t } = useI18n();
   const locale = langToLocale[lang];
   const { toast } = useToast();
@@ -86,7 +88,25 @@ export default function OracleDetailPage() {
     isSubmitting: isVoteSubmitting,
     isConfirming: isVoteConfirming,
     error: voteTxError,
-  } = useOracleTransaction();
+  } = useOracleTransaction(instanceId ?? undefined);
+
+  useEffect(() => {
+    if (!instanceId) return;
+    try {
+      const raw = window.localStorage.getItem("oracleFilters");
+      const parsed =
+        raw && raw.trim()
+          ? (JSON.parse(raw) as Record<string, unknown> | null)
+          : null;
+      const next = {
+        ...(parsed && typeof parsed === "object" ? parsed : {}),
+        instanceId,
+      };
+      window.localStorage.setItem("oracleFilters", JSON.stringify(next));
+    } catch {
+      void 0;
+    }
+  }, [instanceId]);
 
   const copyToClipboard = async (text: string, label: string) => {
     try {
@@ -112,30 +132,46 @@ export default function OracleDetailPage() {
     bondWei: string | null;
     bondEth: string | null;
     voteTrackingEnabled: boolean;
-  }>(id ? `/api/oracle/assertions/${id}` : null, fetchApiData, {
-    refreshInterval: 30_000, // 延长刷新间隔到30秒
-    dedupingInterval: 15_000, // 延长去重间隔到15秒
-    revalidateOnFocus: false, // 关闭焦点重验证
-    revalidateOnReconnect: true, // 连接恢复时重新验证
-    errorRetryCount: 3, // 错误重试3次
-    errorRetryInterval: 1000, // 初始重试间隔
-    shouldRetryOnError: true,
-  });
+  }>(
+    id
+      ? instanceId
+        ? `/api/oracle/assertions/${id}?instanceId=${encodeURIComponent(instanceId)}`
+        : `/api/oracle/assertions/${id}`
+      : null,
+    fetchApiData,
+    {
+      refreshInterval: 30_000, // 延长刷新间隔到30秒
+      dedupingInterval: 15_000, // 延长去重间隔到15秒
+      revalidateOnFocus: false, // 关闭焦点重验证
+      revalidateOnReconnect: true, // 连接恢复时重新验证
+      errorRetryCount: 3, // 错误重试3次
+      errorRetryInterval: 1000, // 初始重试间隔
+      shouldRetryOnError: true,
+    },
+  );
 
   const { data: timelineData } = useSWR<{
     assertion: Assertion;
     dispute: Dispute | null;
     alerts: Alert[];
     timeline: { type: string; at: string }[];
-  }>(id ? `/api/oracle/assertions/${id}/timeline` : null, fetchApiData, {
-    refreshInterval: 60_000, // 延长时间线刷新间隔到60秒
-    dedupingInterval: 30_000, // 延长时间线去重间隔到30秒
-    revalidateOnFocus: false, // 关闭焦点重验证
-    revalidateOnReconnect: true, // 连接恢复时重新验证
-    errorRetryCount: 3, // 错误重试3次
-    errorRetryInterval: 1000, // 初始重试间隔
-    shouldRetryOnError: true,
-  });
+  }>(
+    id
+      ? instanceId
+        ? `/api/oracle/assertions/${id}/timeline?instanceId=${encodeURIComponent(instanceId)}`
+        : `/api/oracle/assertions/${id}/timeline`
+      : null,
+    fetchApiData,
+    {
+      refreshInterval: 60_000, // 延长时间线刷新间隔到60秒
+      dedupingInterval: 30_000, // 延长时间线去重间隔到30秒
+      revalidateOnFocus: false, // 关闭焦点重验证
+      revalidateOnReconnect: true, // 连接恢复时重新验证
+      errorRetryCount: 3, // 错误重试3次
+      errorRetryInterval: 1000, // 初始重试间隔
+      shouldRetryOnError: true,
+    },
+  );
 
   const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false);
   const [isSettleModalOpen, setIsSettleModalOpen] = useState(false);
@@ -198,9 +234,11 @@ export default function OracleDetailPage() {
   const exportEvidence = async (mode: "fast" | "logs") => {
     setExportingEvidence(mode);
     try {
-      const qs = mode === "logs" ? "?includeLogs=1" : "";
+      const qs = new URLSearchParams();
+      if (mode === "logs") qs.set("includeLogs", "1");
+      if (instanceId) qs.set("instanceId", instanceId);
       const payload = await fetchApiData<unknown>(
-        `/api/oracle/assertions/${assertion.id}/evidence${qs}`,
+        `/api/oracle/assertions/${assertion.id}/evidence${qs.toString() ? `?${qs.toString()}` : ""}`,
       );
       const blob = new Blob([JSON.stringify(payload, null, 2)], {
         type: "application/json",
@@ -401,7 +439,11 @@ export default function OracleDetailPage() {
                   />
                 </div>
                 <Link
-                  href={`/oracle/address/${assertion.asserter}`}
+                  href={
+                    instanceId
+                      ? `/oracle/address/${assertion.asserter}?instanceId=${encodeURIComponent(instanceId)}`
+                      : `/oracle/address/${assertion.asserter}`
+                  }
                   className="flex items-center gap-2"
                 >
                   <AddressAvatar address={assertion.asserter} size={20} />
@@ -705,6 +747,7 @@ export default function OracleDetailPage() {
             contractAddress={data.config.contractAddress}
             chain={data.config.chain}
             defaultBondEth={data.bondEth ?? undefined}
+            instanceId={instanceId ?? undefined}
             onSuccess={() => mutate()}
           />
 
@@ -714,6 +757,7 @@ export default function OracleDetailPage() {
             onClose={() => setIsSettleModalOpen(false)}
             contractAddress={data.config.contractAddress}
             chain={data.config.chain}
+            instanceId={instanceId ?? undefined}
           />
         </>
       )}

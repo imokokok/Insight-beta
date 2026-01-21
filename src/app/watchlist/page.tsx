@@ -1,6 +1,8 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
+import type { Route } from "next";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useWatchlist } from "@/hooks/useWatchlist";
 import { useInfiniteList, BaseResponse } from "@/hooks/useInfiniteList";
 import { Assertion } from "@/lib/oracleTypes";
@@ -13,6 +15,62 @@ import Link from "next/link";
 export default function WatchlistPage() {
   const { t } = useI18n();
   const { watchlist, mounted } = useWatchlist();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentSearch = searchParams?.toString() ?? "";
+  const instanceIdFromUrl = searchParams?.get("instanceId")?.trim() || "";
+  const [instanceId, setInstanceId] = useState<string>(() => {
+    try {
+      if (typeof window === "undefined") return "default";
+      const saved = window.localStorage.getItem("oracleFilters");
+      if (!saved) return "default";
+      const parsed = JSON.parse(saved) as { instanceId?: unknown } | null;
+      const value =
+        parsed && typeof parsed === "object" ? parsed.instanceId : null;
+      if (typeof value === "string" && value.trim()) return value.trim();
+    } catch {
+      return "default";
+    }
+    return "default";
+  });
+
+  useEffect(() => {
+    if (!instanceIdFromUrl) return;
+    if (instanceIdFromUrl === instanceId) return;
+    setInstanceId(instanceIdFromUrl);
+  }, [instanceIdFromUrl, instanceId]);
+
+  useEffect(() => {
+    const normalized = instanceId.trim();
+    const params = new URLSearchParams(currentSearch);
+    if (normalized) params.set("instanceId", normalized);
+    else params.delete("instanceId");
+    const nextSearch = params.toString();
+    const nextUrl = nextSearch ? `${pathname}?${nextSearch}` : pathname;
+    const currentUrl = currentSearch
+      ? `${pathname}?${currentSearch}`
+      : pathname;
+    if (nextUrl !== currentUrl)
+      router.replace(nextUrl as Route, { scroll: false });
+  }, [instanceId, pathname, router, currentSearch]);
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem("oracleFilters");
+      const parsed =
+        raw && raw.trim()
+          ? (JSON.parse(raw) as Record<string, unknown> | null)
+          : null;
+      const next = {
+        ...(parsed && typeof parsed === "object" ? parsed : {}),
+        instanceId,
+      };
+      window.localStorage.setItem("oracleFilters", JSON.stringify(next));
+    } catch {
+      void 0;
+    }
+  }, [instanceId]);
 
   const getUrl = useCallback(
     (pageIndex: number, previousPageData: BaseResponse<Assertion> | null) => {
@@ -20,6 +78,7 @@ export default function WatchlistPage() {
       if (previousPageData && previousPageData.nextCursor === null) return null;
 
       const params = new URLSearchParams();
+      if (instanceId) params.set("instanceId", instanceId);
       params.set("ids", watchlist.join(","));
       params.set("limit", "30");
 
@@ -29,7 +88,7 @@ export default function WatchlistPage() {
 
       return `/api/oracle/assertions?${params.toString()}`;
     },
-    [watchlist, mounted]
+    [watchlist, mounted, instanceId],
   );
 
   const { items, loading, loadingMore, hasMore, loadMore } =
@@ -55,7 +114,11 @@ export default function WatchlistPage() {
             {t("watchlist.emptyDesc")}
           </p>
           <Link
-            href="/oracle"
+            href={
+              instanceId
+                ? `/oracle?instanceId=${encodeURIComponent(instanceId)}`
+                : "/oracle"
+            }
             className="px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors font-medium shadow-lg shadow-purple-500/20"
           >
             {t("nav.oracle")}
@@ -70,6 +133,7 @@ export default function WatchlistPage() {
           loadingMore={loadingMore}
           emptyStateMessage={t("common.noData")}
           viewMode="grid"
+          instanceId={instanceId}
         />
       )}
     </main>

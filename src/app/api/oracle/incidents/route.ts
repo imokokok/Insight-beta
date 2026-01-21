@@ -44,44 +44,65 @@ export async function GET(request: Request) {
 
     const url = new URL(request.url);
     const q = querySchema.parse(Object.fromEntries(url.searchParams));
+    const instanceId = url.searchParams.get("instanceId")?.trim() || null;
     const cacheKey = `oracle_api:${url.pathname}${url.search}`;
     return await cachedJson(cacheKey, 5_000, async () => {
-      const items = await listIncidents({
+      let items = await listIncidents({
         status: q.status ?? "All",
         limit: q.limit ?? 50,
       });
-      if (q.includeAlerts === "1") {
+      const toSummary = (a: Alert) => ({
+        id: a.id,
+        type: a.type,
+        severity: a.severity,
+        title: a.title,
+        message: a.message,
+        entityType: a.entityType,
+        entityId: a.entityId,
+        status: a.status,
+        occurrences: a.occurrences,
+        firstSeenAt: a.firstSeenAt,
+        lastSeenAt: a.lastSeenAt,
+        acknowledgedAt: a.acknowledgedAt,
+        resolvedAt: a.resolvedAt,
+        createdAt: a.createdAt,
+        updatedAt: a.updatedAt,
+      });
+
+      let byId: Map<number, Alert> | null = null;
+      if (instanceId) {
         const allIds: number[] = [];
         for (const i of items) allIds.push(...(i.alertIds ?? []));
         const alerts = await getAlertsByIds(allIds);
-        const byId = new Map(alerts.map((a) => [a.id, a]));
-        const toSummary = (a: Alert) => ({
-          id: a.id,
-          type: a.type,
-          severity: a.severity,
-          title: a.title,
-          message: a.message,
-          entityType: a.entityType,
-          entityId: a.entityId,
-          status: a.status,
-          occurrences: a.occurrences,
-          firstSeenAt: a.firstSeenAt,
-          lastSeenAt: a.lastSeenAt,
-          acknowledgedAt: a.acknowledgedAt,
-          resolvedAt: a.resolvedAt,
-          createdAt: a.createdAt,
-          updatedAt: a.updatedAt,
+        const marker = `:${instanceId}:`;
+        const filtered = alerts.filter((a) => a.fingerprint.includes(marker));
+        byId = new Map(filtered.map((a) => [a.id, a]));
+        items = items.filter((i) => {
+          const ids = i.alertIds ?? [];
+          if (ids.length === 0) return true;
+          return ids.some((id) => byId!.has(id));
         });
+      }
+
+      if (q.includeAlerts === "1") {
+        if (!byId) {
+          const allIds: number[] = [];
+          for (const i of items) allIds.push(...(i.alertIds ?? []));
+          const alerts = await getAlertsByIds(allIds);
+          byId = new Map(alerts.map((a) => [a.id, a]));
+        }
+
         return {
           items: items.map((i) => ({
             ...i,
             alerts: (i.alertIds ?? [])
-              .map((id) => byId.get(id))
+              .map((id) => byId!.get(id))
               .filter((a): a is Alert => Boolean(a))
               .map(toSummary),
           })),
         };
       }
+
       return { items };
     });
   });

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useParams, useSearchParams } from "next/navigation";
 import { ExternalLink, LayoutGrid, List as ListIcon } from "lucide-react";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { UserStatsCard } from "@/components/UserStatsCard";
@@ -16,15 +16,50 @@ import { useUserStats } from "@/hooks/useUserStats";
 
 export default function AddressProfilePage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const address = params.address as string;
   const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<"assertions" | "disputes">(
-    "assertions"
+    "assertions",
   );
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const instanceIdFromUrl = searchParams?.get("instanceId")?.trim() || "";
+  const [instanceId, setInstanceId] = useState<string>(() => {
+    try {
+      if (typeof window === "undefined") return "default";
+      const saved = window.localStorage.getItem("oracleFilters");
+      if (!saved) return "default";
+      const parsed = JSON.parse(saved) as { instanceId?: unknown } | null;
+      const value =
+        parsed && typeof parsed === "object" ? parsed.instanceId : null;
+      if (typeof value === "string" && value.trim()) return value.trim();
+    } catch {
+      return "default";
+    }
+    return "default";
+  });
+
+  useEffect(() => {
+    if (!instanceIdFromUrl) return;
+    setInstanceId(instanceIdFromUrl);
+    try {
+      const raw = window.localStorage.getItem("oracleFilters");
+      const parsed =
+        raw && raw.trim()
+          ? (JSON.parse(raw) as Record<string, unknown> | null)
+          : null;
+      const next = {
+        ...(parsed && typeof parsed === "object" ? parsed : {}),
+        instanceId: instanceIdFromUrl,
+      };
+      window.localStorage.setItem("oracleFilters", JSON.stringify(next));
+    } catch {
+      void 0;
+    }
+  }, [instanceIdFromUrl]);
 
   // Fetch User Stats
-  const { stats, loading: statsLoading } = useUserStats(address);
+  const { stats, loading: statsLoading } = useUserStats(address, instanceId);
 
   // Fetch Assertions (reusing useOracleData)
   const {
@@ -33,7 +68,7 @@ export default function AddressProfilePage() {
     loadingMore: assertionsLoadingMore,
     hasMore: assertionsHasMore,
     loadMore: loadMoreAssertions,
-  } = useOracleData("All", "All", "", address);
+  } = useOracleData("All", "All", "", address, instanceId);
 
   // Fetch Disputes
   const {
@@ -42,7 +77,7 @@ export default function AddressProfilePage() {
     loadingMore: disputesLoadingMore,
     hasMore: disputesHasMore,
     loadMore: loadMoreDisputes,
-  } = useDisputes("All", "All", "", address);
+  } = useDisputes("All", "All", "", address, instanceId);
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-8 max-w-7xl">
@@ -98,7 +133,7 @@ export default function AddressProfilePage() {
                 "pb-3 text-sm font-bold transition-all relative",
                 activeTab === "assertions"
                   ? "text-purple-600"
-                  : "text-gray-500 hover:text-gray-700"
+                  : "text-gray-500 hover:text-gray-700",
               )}
             >
               {t("oracle.profile.assertionsHistory")}
@@ -112,7 +147,7 @@ export default function AddressProfilePage() {
                 "pb-3 text-sm font-bold transition-all relative",
                 activeTab === "disputes"
                   ? "text-purple-600"
-                  : "text-gray-500 hover:text-gray-700"
+                  : "text-gray-500 hover:text-gray-700",
               )}
             >
               {t("oracle.profile.disputesHistory")}
@@ -129,7 +164,7 @@ export default function AddressProfilePage() {
                 "p-1.5 rounded-md transition-all",
                 viewMode === "grid"
                   ? "bg-white shadow-sm text-purple-600"
-                  : "text-gray-400 hover:text-gray-600"
+                  : "text-gray-400 hover:text-gray-600",
               )}
             >
               <LayoutGrid size={16} />
@@ -140,7 +175,7 @@ export default function AddressProfilePage() {
                 "p-1.5 rounded-md transition-all",
                 viewMode === "list"
                   ? "bg-white shadow-sm text-purple-600"
-                  : "text-gray-400 hover:text-gray-600"
+                  : "text-gray-400 hover:text-gray-600",
               )}
             >
               <ListIcon size={16} />
@@ -158,6 +193,7 @@ export default function AddressProfilePage() {
               hasMore={assertionsHasMore}
               loadMore={loadMoreAssertions}
               loadingMore={assertionsLoadingMore}
+              instanceId={instanceId}
             />
           ) : (
             <DisputeList
@@ -167,6 +203,7 @@ export default function AddressProfilePage() {
               hasMore={disputesHasMore}
               loadMore={loadMoreDisputes}
               loadingMore={disputesLoadingMore}
+              instanceId={instanceId}
             />
           )}
         </div>

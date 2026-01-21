@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import type { Route } from "next";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -30,6 +31,7 @@ import type {
   AlertStatus,
   Incident,
   OpsMetrics,
+  OracleInstance,
   RiskItem,
 } from "@/lib/oracleTypes";
 
@@ -83,6 +85,11 @@ function statusBadge(status: AlertStatus) {
 export default function AlertsPage() {
   const { t, lang } = useI18n();
   const locale = langToLocale[lang];
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentSearch = searchParams?.toString() ?? "";
+  const instanceIdFromUrl = searchParams?.get("instanceId")?.trim() || "";
 
   const {
     adminToken,
@@ -102,6 +109,21 @@ export default function AlertsPage() {
   );
   const [query, setQuery] = useState("");
   const [nextCursor, setNextCursor] = useState<number | null>(null);
+  const [instanceId, setInstanceId] = useState<string>(() => {
+    try {
+      if (typeof window === "undefined") return "default";
+      const saved = window.localStorage.getItem("oracleFilters");
+      if (!saved) return "default";
+      const parsed = JSON.parse(saved) as { instanceId?: unknown } | null;
+      const value =
+        parsed && typeof parsed === "object" ? parsed.instanceId : null;
+      if (typeof value === "string" && value.trim()) return value.trim();
+    } catch {
+      return "default";
+    }
+    return "default";
+  });
+  const [instances, setInstances] = useState<OracleInstance[] | null>(null);
   const [rules, setRules] = useState<AlertRule[] | null>(null);
   const [rulesError, setRulesError] = useState<string | null>(null);
   const [rulesSaving, setRulesSaving] = useState(false);
@@ -134,6 +156,61 @@ export default function AlertsPage() {
     return map;
   }, [rules]);
 
+  useEffect(() => {
+    if (!instanceIdFromUrl) return;
+    if (instanceIdFromUrl === instanceId) return;
+    setInstanceId(instanceIdFromUrl);
+  }, [instanceIdFromUrl, instanceId]);
+
+  useEffect(() => {
+    const normalized = instanceId.trim();
+    const params = new URLSearchParams(currentSearch);
+    if (normalized) params.set("instanceId", normalized);
+    else params.delete("instanceId");
+    const nextSearch = params.toString();
+    const nextUrl = nextSearch ? `${pathname}?${nextSearch}` : pathname;
+    const currentUrl = currentSearch
+      ? `${pathname}?${currentSearch}`
+      : pathname;
+    if (nextUrl !== currentUrl)
+      router.replace(nextUrl as Route, { scroll: false });
+  }, [instanceId, pathname, router, currentSearch]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const controller = new AbortController();
+    fetchApiData<{ instances: OracleInstance[] }>("/api/oracle/instances", {
+      signal: controller.signal,
+    })
+      .then((r) => {
+        if (!cancelled) setInstances(r.instances);
+      })
+      .catch(() => {
+        if (!cancelled) setInstances(null);
+      });
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, []);
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem("oracleFilters");
+      const parsed =
+        raw && raw.trim()
+          ? (JSON.parse(raw) as Record<string, unknown> | null)
+          : null;
+      const next = {
+        ...(parsed && typeof parsed === "object" ? parsed : {}),
+        instanceId,
+      };
+      window.localStorage.setItem("oracleFilters", JSON.stringify(next));
+    } catch {
+      void 0;
+    }
+  }, [instanceId]);
+
   const loadRules = useCallback(async () => {
     if (!canAdmin) {
       setRules(null);
@@ -156,12 +233,30 @@ export default function AlertsPage() {
     void loadRules();
   }, [loadRules]);
 
+  const attachInstanceId = useCallback(
+    (path: string) => {
+      if (!instanceId) return path;
+      if (!path.startsWith("/oracle") && !path.startsWith("/disputes"))
+        return path;
+      const normalized = instanceId.trim();
+      if (!normalized) return path;
+      const url = new URL(path, "http://insight.local");
+      url.searchParams.set("instanceId", normalized);
+      return `${url.pathname}${url.search}${url.hash}`;
+    },
+    [instanceId],
+  );
+
   const loadIncidents = useCallback(async () => {
     setIncidentsError(null);
     setIncidentsLoading(true);
     try {
+      const params = new URLSearchParams();
+      params.set("limit", "20");
+      params.set("includeAlerts", "1");
+      if (instanceId) params.set("instanceId", instanceId);
       const data = await fetchApiData<{ items: IncidentWithAlerts[] }>(
-        "/api/oracle/incidents?limit=20&includeAlerts=1",
+        `/api/oracle/incidents?${params.toString()}`,
       );
       setIncidents(data.items ?? []);
     } catch (e) {
@@ -169,14 +264,17 @@ export default function AlertsPage() {
     } finally {
       setIncidentsLoading(false);
     }
-  }, []);
+  }, [instanceId]);
 
   const loadRisks = useCallback(async () => {
     setRisksError(null);
     setRisksLoading(true);
     try {
+      const params = new URLSearchParams();
+      params.set("limit", "20");
+      if (instanceId) params.set("instanceId", instanceId);
       const data = await fetchApiData<{ items: RiskItem[] }>(
-        "/api/oracle/risks?limit=20",
+        `/api/oracle/risks?${params.toString()}`,
       );
       setRisks(data.items ?? []);
     } catch (e) {
@@ -184,14 +282,17 @@ export default function AlertsPage() {
     } finally {
       setRisksLoading(false);
     }
-  }, []);
+  }, [instanceId]);
 
   const loadOpsMetrics = useCallback(async () => {
     setOpsMetricsError(null);
     setOpsMetricsLoading(true);
     try {
+      const params = new URLSearchParams();
+      params.set("windowDays", "7");
+      if (instanceId) params.set("instanceId", instanceId);
       const data = await fetchApiData<{ metrics: OpsMetrics }>(
-        "/api/oracle/ops-metrics?windowDays=7",
+        `/api/oracle/ops-metrics?${params.toString()}`,
       );
       setOpsMetrics(data.metrics ?? null);
     } catch (e) {
@@ -199,7 +300,7 @@ export default function AlertsPage() {
     } finally {
       setOpsMetricsLoading(false);
     }
-  }, []);
+  }, [instanceId]);
 
   useEffect(() => {
     void loadIncidents();
@@ -211,6 +312,7 @@ export default function AlertsPage() {
     async (cursor: number | null) => {
       setError(null);
       const params = new URLSearchParams();
+      if (instanceId) params.set("instanceId", instanceId);
       if (filterStatus !== "All") params.set("status", filterStatus);
       if (filterSeverity !== "All") params.set("severity", filterSeverity);
       if (query.trim()) params.set("q", query.trim());
@@ -223,7 +325,7 @@ export default function AlertsPage() {
       }>(`/api/oracle/alerts?${params.toString()}`);
       return data;
     },
-    [filterSeverity, filterStatus, query],
+    [filterSeverity, filterStatus, query, instanceId],
   );
 
   const refresh = useCallback(async () => {
@@ -489,6 +591,29 @@ export default function AlertsPage() {
               </div>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                 <select
+                  value={instanceId}
+                  onChange={(e) => setInstanceId(e.target.value)}
+                  className="h-9 rounded-lg border-none bg-white/50 px-3 text-sm text-purple-900 shadow-sm focus:ring-2 focus:ring-purple-500/20"
+                >
+                  {(() => {
+                    const list = (instances ?? []).filter(
+                      (i) => i.enabled || i.id === instanceId,
+                    );
+                    if (list.length === 0) {
+                      return (
+                        <option value={instanceId}>
+                          {instanceId || "default"}
+                        </option>
+                      );
+                    }
+                    return list.map((i) => (
+                      <option key={i.id} value={i.id}>
+                        {i.name} ({i.id})
+                      </option>
+                    ));
+                  })()}
+                </select>
+                <select
                   value={filterStatus}
                   onChange={(e) =>
                     setFilterStatus(e.target.value as AlertStatus | "All")
@@ -667,10 +792,13 @@ export default function AlertsPage() {
                           {a.entityType &&
                             a.entityId &&
                             (() => {
-                              const href = getEntityHref(
+                              const rawHref = getEntityHref(
                                 a.entityType,
                                 a.entityId,
                               );
+                              const href = rawHref
+                                ? attachInstanceId(rawHref)
+                                : null;
                               const text = `${a.entityType}:${a.entityId.slice(0, 18)}…`;
                               return href ? (
                                 href.startsWith("/api/") ? (
@@ -1088,10 +1216,13 @@ export default function AlertsPage() {
                             : null}
                           {i.entityType && i.entityId
                             ? (() => {
-                                const href = getEntityHref(
+                                const rawHref = getEntityHref(
                                   i.entityType,
                                   i.entityId,
                                 );
+                                const href = rawHref
+                                  ? attachInstanceId(rawHref)
+                                  : null;
                                 const text = `${i.entityType}:${i.entityId.slice(0, 18)}…`;
                                 return href ? (
                                   href.startsWith("/api/") ? (
@@ -1288,10 +1419,13 @@ export default function AlertsPage() {
                                   <div className="flex items-center gap-2">
                                     {a.entityType && a.entityId
                                       ? (() => {
-                                          const href = getEntityHref(
+                                          const rawHref = getEntityHref(
                                             a.entityType,
                                             a.entityId,
                                           );
+                                          const href = rawHref
+                                            ? attachInstanceId(rawHref)
+                                            : null;
                                           const text = `${a.entityType}:${a.entityId.slice(0, 14)}…`;
                                           return href ? (
                                             href.startsWith("/api/") ? (
@@ -1376,17 +1510,21 @@ export default function AlertsPage() {
                     const alertsQuery = (
                       r.assertionId?.trim() ? r.assertionId : r.entityId
                     ).trim();
-                    const assertionHref = (
-                      r.assertionId?.trim()
-                        ? (`/oracle/${r.assertionId}` as Route)
-                        : r.entityType === "assertion"
-                          ? (`/oracle/${r.entityId}` as Route)
-                          : null
-                    ) as Route | null;
-                    const disputeHref = r.disputeId?.trim()
+                    const assertionHrefRaw = r.assertionId?.trim()
+                      ? (`/oracle/${r.assertionId}` as Route)
+                      : r.entityType === "assertion"
+                        ? (`/oracle/${r.entityId}` as Route)
+                        : null;
+                    const assertionHref = assertionHrefRaw
+                      ? (attachInstanceId(assertionHrefRaw) as Route)
+                      : null;
+                    const disputeHrefRaw = r.disputeId?.trim()
                       ? (`/disputes?q=${encodeURIComponent(
                           r.disputeId,
                         )}` as Route)
+                      : null;
+                    const disputeHref = disputeHrefRaw
+                      ? (attachInstanceId(disputeHrefRaw) as Route)
                       : null;
                     const reasons = (r.reasons ?? []).filter(Boolean);
                     return (
@@ -1455,7 +1593,7 @@ export default function AlertsPage() {
                               </Link>
                             ) : (
                               <Link
-                                href={"/disputes" as Route}
+                                href={attachInstanceId("/disputes") as Route}
                                 className="rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-semibold text-purple-700 shadow-sm ring-1 ring-purple-100 hover:bg-purple-50"
                               >
                                 Disputes

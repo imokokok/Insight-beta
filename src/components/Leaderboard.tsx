@@ -21,6 +21,7 @@ interface RankItemProps {
   count: number;
   type: "asserter" | "disputer";
   value?: number;
+  instanceId?: string | null;
 }
 
 const RankItem = memo(function RankItem({
@@ -29,11 +30,19 @@ const RankItem = memo(function RankItem({
   count,
   type,
   value,
+  instanceId,
 }: RankItemProps) {
   const { t } = useI18n();
 
   return (
-    <Link href={`/oracle/address/${address}`} className="block mb-2">
+    <Link
+      href={
+        instanceId
+          ? `/oracle/address/${address}?instanceId=${encodeURIComponent(instanceId)}`
+          : `/oracle/address/${address}`
+      }
+      className="block mb-2"
+    >
       <div className="group flex items-center justify-between rounded-xl glass-panel p-3 transition-all hover:bg-white/60 hover:shadow-md hover:-translate-y-0.5 border border-white/40">
         <div className="flex items-center gap-3">
           <div
@@ -81,7 +90,7 @@ const RankItem = memo(function RankItem({
   );
 });
 
-export function Leaderboard() {
+export function Leaderboard({ instanceId }: { instanceId?: string | null }) {
   const { t } = useI18n();
   const [data, setData] = useState<LeaderboardStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -90,11 +99,16 @@ export function Leaderboard() {
   );
 
   useEffect(() => {
-    fetchApiData<LeaderboardStats>("/api/oracle/leaderboard")
+    setLoading(true);
+    const normalizedInstanceId = (instanceId ?? "").trim();
+    const url = normalizedInstanceId
+      ? `/api/oracle/leaderboard?instanceId=${encodeURIComponent(normalizedInstanceId)}`
+      : "/api/oracle/leaderboard";
+    fetchApiData<LeaderboardStats>(url)
       .then(setData)
       .catch((e) => logger.error("leaderboard_fetch_failed", { error: e }))
       .finally(() => setLoading(false));
-  }, []);
+  }, [instanceId]);
 
   if (loading) {
     return (
@@ -205,6 +219,7 @@ export function Leaderboard() {
                   count={item.count}
                   value={item.value}
                   type="asserter"
+                  instanceId={instanceId}
                 />
               ))}
               {(!data?.topAsserters || data.topAsserters.length === 0) && (
@@ -223,6 +238,7 @@ export function Leaderboard() {
                   address={item.address}
                   count={item.count}
                   type="disputer"
+                  instanceId={instanceId}
                 />
               ))}
               {(!data?.topDisputers || data.topDisputers.length === 0) && (

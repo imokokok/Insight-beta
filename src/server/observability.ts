@@ -1096,13 +1096,20 @@ export async function listAlerts(params: {
   q?: string | null;
   limit?: number | null;
   cursor?: number | null;
+  instanceId?: string | null;
 }) {
   await ensureDb();
+  const instanceId =
+    typeof params.instanceId === "string" ? params.instanceId.trim() : "";
   if (!hasDatabase()) {
     const mem = getMemoryStore();
     const limit = Math.min(100, Math.max(1, params.limit ?? 30));
     const offset = Math.max(0, params.cursor ?? 0);
     let alerts = Array.from(mem.alerts.values());
+    if (instanceId) {
+      const marker = `:${instanceId}:`;
+      alerts = alerts.filter((a) => a.fingerprint.includes(marker));
+    }
     if (params.status && params.status !== "All") {
       alerts = alerts.filter((a) => a.status === params.status);
     }
@@ -1145,6 +1152,11 @@ export async function listAlerts(params: {
   const conditions: string[] = [];
   const values: (string | number)[] = [];
   let idx = 1;
+
+  if (instanceId) {
+    conditions.push(`fingerprint LIKE $${idx++}`);
+    values.push(`%:${instanceId}:%`);
+  }
 
   if (params.status && params.status !== "All") {
     conditions.push(`status = $${idx++}`);
@@ -1507,27 +1519,53 @@ function safeAvgMs(
 
 export async function getOpsMetrics(params?: {
   windowDays?: number | null;
+  instanceId?: string | null;
 }): Promise<OpsMetrics> {
   await ensureDb();
   const windowDaysRaw = Number(params?.windowDays ?? 7);
   const windowDays = Number.isFinite(windowDaysRaw)
     ? Math.min(90, Math.max(1, Math.round(windowDaysRaw)))
     : 7;
+  const instanceId =
+    typeof params?.instanceId === "string" ? params.instanceId.trim() : "";
   const nowIso = memoryNowIso();
   const cutoffMs = Date.now() - windowDays * 24 * 60 * 60_000;
+
+  const filterIncidents = async (items: Incident[]) => {
+    if (!instanceId) return items;
+    const allIds: number[] = [];
+    for (const i of items) allIds.push(...(i.alertIds ?? []));
+    const alerts = await getAlertsByIds(allIds);
+    const marker = `:${instanceId}:`;
+    const byId = new Map(
+      alerts
+        .filter((a) => a.fingerprint.includes(marker))
+        .map((a) => [a.id, a]),
+    );
+    return items.filter((i) => {
+      const ids = i.alertIds ?? [];
+      if (ids.length === 0) return true;
+      return ids.some((id) => byId.has(id));
+    });
+  };
 
   if (!hasDatabase()) {
     const mem = getMemoryStore();
     const alerts = Array.from(mem.alerts.values());
-    const open = alerts.filter((a) => a.status === "Open").length;
-    const acknowledged = alerts.filter(
+    const filteredAlerts = instanceId
+      ? alerts.filter((a) => a.fingerprint.includes(`:${instanceId}:`))
+      : alerts;
+    const open = filteredAlerts.filter((a) => a.status === "Open").length;
+    const acknowledged = filteredAlerts.filter(
       (a) => a.status === "Acknowledged",
     ).length;
-    const resolved = alerts.filter((a) => a.status === "Resolved").length;
+    const resolved = filteredAlerts.filter(
+      (a) => a.status === "Resolved",
+    ).length;
 
     const mttaSamples: number[] = [];
     const mttrSamples: number[] = [];
-    for (const a of alerts) {
+    for (const a of filteredAlerts) {
       const firstSeenMs = Date.parse(a.firstSeenAt);
       if (!Number.isFinite(firstSeenMs)) continue;
       if (a.acknowledgedAt) {
@@ -1546,7 +1584,9 @@ export async function getOpsMetrics(params?: {
       }
     }
 
-    const allIncidents = await listIncidents({ status: "All", limit: 200 });
+    const allIncidents = await filterIncidents(
+      await listIncidents({ status: "All", limit: 200 }),
+    );
     const incOpen = allIncidents.filter((i) => i.status === "Open").length;
     const incMitigating = allIncidents.filter(
       (i) => i.status === "Mitigating",
@@ -1584,42 +1624,64 @@ export async function getOpsMetrics(params?: {
     };
   }
 
+  const alertWhere = instanceId ? "WHERE fingerprint LIKE $1" : "";
+  const alertWhereArgs = instanceId ? [`%:${instanceId}:%`] : [];
+
   const alertStatusRes = await query<{
     open: string | number;
     acknowledged: string | number;
     resolved: string | number;
-  }>(`
+  }>(
+    `
     SELECT
       COUNT(*) FILTER (WHERE status = 'Open') as open,
       COUNT(*) FILTER (WHERE status = 'Acknowledged') as acknowledged,
       COUNT(*) FILTER (WHERE status = 'Resolved') as resolved
     FROM alerts
-  `);
+    ${alertWhere}
+    `,
+    alertWhereArgs,
+  );
 
   const open = Number(alertStatusRes.rows[0]?.open ?? 0);
   const acknowledged = Number(alertStatusRes.rows[0]?.acknowledged ?? 0);
   const resolved = Number(alertStatusRes.rows[0]?.resolved ?? 0);
 
+  const cutoffSeconds = Math.floor(cutoffMs / 1000);
   const mttaRes = await query<{ ms: number | string | null }>(
-    `
-    SELECT AVG(EXTRACT(EPOCH FROM (acknowledged_at - first_seen_at)) * 1000) as ms
-    FROM alerts
-    WHERE acknowledged_at IS NOT NULL AND acknowledged_at >= to_timestamp($1)
-    `,
-    [Math.floor(cutoffMs / 1000)],
+    instanceId
+      ? `
+        SELECT AVG(EXTRACT(EPOCH FROM (acknowledged_at - first_seen_at)) * 1000) as ms
+        FROM alerts
+        WHERE fingerprint LIKE $1 AND acknowledged_at IS NOT NULL AND acknowledged_at >= to_timestamp($2)
+        `
+      : `
+        SELECT AVG(EXTRACT(EPOCH FROM (acknowledged_at - first_seen_at)) * 1000) as ms
+        FROM alerts
+        WHERE acknowledged_at IS NOT NULL AND acknowledged_at >= to_timestamp($1)
+        `,
+    instanceId ? [`%:${instanceId}:%`, cutoffSeconds] : [cutoffSeconds],
   );
   const mttrRes = await query<{ ms: number | string | null }>(
-    `
-    SELECT AVG(EXTRACT(EPOCH FROM (resolved_at - first_seen_at)) * 1000) as ms
-    FROM alerts
-    WHERE resolved_at IS NOT NULL AND resolved_at >= to_timestamp($1)
-    `,
-    [Math.floor(cutoffMs / 1000)],
+    instanceId
+      ? `
+        SELECT AVG(EXTRACT(EPOCH FROM (resolved_at - first_seen_at)) * 1000) as ms
+        FROM alerts
+        WHERE fingerprint LIKE $1 AND resolved_at IS NOT NULL AND resolved_at >= to_timestamp($2)
+        `
+      : `
+        SELECT AVG(EXTRACT(EPOCH FROM (resolved_at - first_seen_at)) * 1000) as ms
+        FROM alerts
+        WHERE resolved_at IS NOT NULL AND resolved_at >= to_timestamp($1)
+        `,
+    instanceId ? [`%:${instanceId}:%`, cutoffSeconds] : [cutoffSeconds],
   );
   const mttaMsRaw = Number(mttaRes.rows[0]?.ms ?? NaN);
   const mttrMsRaw = Number(mttrRes.rows[0]?.ms ?? NaN);
 
-  const allIncidents = await listIncidents({ status: "All", limit: 200 });
+  const allIncidents = await filterIncidents(
+    await listIncidents({ status: "All", limit: 200 }),
+  );
   const incOpen = allIncidents.filter((i) => i.status === "Open").length;
   const incMitigating = allIncidents.filter(
     (i) => i.status === "Mitigating",

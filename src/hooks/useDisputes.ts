@@ -5,16 +5,20 @@ export function useDisputes(
   filterStatus: DisputeStatus | "All" | null,
   filterChain: OracleConfig["chain"] | "All" | null,
   query: string | null,
-  disputer?: string | null
+  disputer?: string | null,
+  instanceId?: string | null,
 ) {
+  const normalizedInstanceId = (instanceId ?? "").trim();
+
   const getUrl = (
     pageIndex: number,
-    previousPageData: BaseResponse<Dispute> | null
+    previousPageData: BaseResponse<Dispute> | null,
   ) => {
     // If reached the end, return null
     if (previousPageData && previousPageData.nextCursor === null) return null;
 
     const params = new URLSearchParams();
+    if (normalizedInstanceId) params.set("instanceId", normalizedInstanceId);
     if (filterStatus && filterStatus !== "All")
       params.set("status", filterStatus);
     if (filterChain && filterChain !== "All") params.set("chain", filterChain);

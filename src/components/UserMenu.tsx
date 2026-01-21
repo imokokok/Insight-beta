@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import type { Route } from "next";
+import { useSearchParams } from "next/navigation";
 import {
   LogOut,
   Copy,
@@ -28,8 +30,24 @@ export function UserMenu() {
   const { address, chainId, disconnect } = useWallet();
   const { formattedBalance, symbol } = useBalance();
   const { t } = useI18n();
+  const searchParams = useSearchParams();
+  const instanceIdFromUrl = searchParams?.get("instanceId")?.trim() || null;
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [storedInstanceId] = useState<string>(() => {
+    try {
+      if (typeof window === "undefined") return "default";
+      const saved = window.localStorage.getItem("oracleFilters");
+      if (!saved) return "default";
+      const parsed = JSON.parse(saved) as { instanceId?: unknown } | null;
+      const value =
+        parsed && typeof parsed === "object" ? parsed.instanceId : null;
+      if (typeof value === "string" && value.trim()) return value.trim();
+    } catch {
+      return "default";
+    }
+    return "default";
+  });
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -79,6 +97,16 @@ export function UserMenu() {
               : chainId === mainnet.id
                 ? mainnet
                 : null;
+
+  const instanceId = instanceIdFromUrl ?? storedInstanceId;
+
+  const attachInstanceId = (href: string) => {
+    const normalized = (instanceId ?? "").trim();
+    if (!normalized) return href;
+    const url = new URL(href, "http://insight.local");
+    url.searchParams.set("instanceId", normalized);
+    return `${url.pathname}${url.search}${url.hash}`;
+  };
 
   return (
     <div className="relative" ref={menuRef}>
@@ -169,7 +197,7 @@ export function UserMenu() {
           {/* Menu Items */}
           <div className="space-y-1">
             <Link
-              href="/my-assertions"
+              href={attachInstanceId("/my-assertions") as Route}
               className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
               onClick={() => setIsOpen(false)}
             >
@@ -177,7 +205,7 @@ export function UserMenu() {
               {t("nav.myAssertions")}
             </Link>
             <Link
-              href="/my-disputes"
+              href={attachInstanceId("/my-disputes") as Route}
               className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
               onClick={() => setIsOpen(false)}
             >

@@ -199,7 +199,29 @@ export async function fetchApiData<T>(
     const normalizedInput = (() => {
       if (typeof input === "string" && input.startsWith("/")) {
         const base = getServerBaseUrl();
-        return new URL(input, base);
+        const url = new URL(input, base);
+        if (
+          typeof window !== "undefined" &&
+          url.pathname.startsWith("/api/oracle/") &&
+          !url.searchParams.has("instanceId")
+        ) {
+          try {
+            const saved = window.localStorage.getItem("oracleFilters");
+            if (saved) {
+              const parsed = JSON.parse(saved) as {
+                instanceId?: unknown;
+              } | null;
+              const instanceId =
+                parsed && typeof parsed === "object" ? parsed.instanceId : null;
+              if (typeof instanceId === "string" && instanceId.trim()) {
+                url.searchParams.set("instanceId", instanceId.trim());
+              }
+            }
+          } catch {
+            void 0;
+          }
+        }
+        return url;
       }
       return input;
     })();

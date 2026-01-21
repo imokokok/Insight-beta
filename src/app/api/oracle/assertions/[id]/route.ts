@@ -24,6 +24,7 @@ export async function GET(
 
     const { id } = await params;
     const url = new URL(request.url);
+    const instanceId = url.searchParams.get("instanceId");
 
     const admin = await verifyAdmin(request, {
       strict: false,
@@ -31,11 +32,17 @@ export async function GET(
     });
 
     const compute = async (includeSecrets: boolean) => {
-      const assertion = await getAssertion(id);
+      const assertion = instanceId
+        ? await getAssertion(id, instanceId)
+        : await getAssertion(id);
       if (!assertion) return error({ code: "not_found" }, 404);
 
-      const dispute = await getDisputeByAssertionId(id);
-      const config = await readOracleConfig();
+      const dispute = instanceId
+        ? await getDisputeByAssertionId(id, instanceId)
+        : await getDisputeByAssertionId(id);
+      const config = instanceId
+        ? await readOracleConfig(instanceId)
+        : await readOracleConfig();
       const degraded = ["1", "true"].includes(
         (env.INSIGHT_VOTING_DEGRADATION || "").toLowerCase(),
       );
@@ -47,7 +54,9 @@ export async function GET(
           (env.INSIGHT_DISABLE_VOTE_TRACKING || "").toLowerCase(),
         );
 
-      const envConfig = await getOracleEnv();
+      const envConfig = instanceId
+        ? await getOracleEnv(instanceId)
+        : await getOracleEnv();
       const { bondWei, bondEth } = await getBondData(
         envConfig.rpcUrl,
         envConfig.contractAddress,
@@ -64,7 +73,7 @@ export async function GET(
     };
 
     if (admin.ok) return await compute(true);
-    const cacheKey = `oracle_api:${url.pathname}`;
+    const cacheKey = `oracle_api:${url.pathname}${url.search}`;
     return await cachedJson(cacheKey, 5_000, () => compute(false));
   });
 }

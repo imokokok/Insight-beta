@@ -20,12 +20,15 @@ export async function GET(request: Request) {
 
     const url = new URL(request.url);
     const rawParams = Object.fromEntries(url.searchParams);
+    const instanceId = url.searchParams.get("instanceId");
 
     const params = statsParamsSchema.parse(rawParams);
 
     const cacheKey = `oracle_api:${url.pathname}${url.search}`;
     return await cachedJson(cacheKey, 30_000, () =>
-      getUserStats(params.address)
+      instanceId
+        ? getUserStats(params.address, instanceId)
+        : getUserStats(params.address),
     );
   });
 }

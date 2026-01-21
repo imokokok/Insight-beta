@@ -487,6 +487,7 @@ function generateMockHistory(symbol: string, safeDays: number): PricePoint[] {
 export async function fetchReferencePriceHistory(
   symbol: string = "ETH",
   days: number = 30,
+  opts?: { rpcUrl?: string | null },
 ): Promise<PricePoint[]> {
   const safeDays = Math.min(90, Math.max(1, Math.floor(days)));
   const provider = (env.INSIGHT_REFERENCE_PRICE_PROVIDER || "mock")
@@ -533,7 +534,9 @@ export async function fetchReferencePriceHistory(
       return points;
     }
 
-    const { referencePrice, oraclePrice } = await fetchCurrentPrice(symbol);
+    const { referencePrice, oraclePrice } = await fetchCurrentPrice(symbol, {
+      rpcUrl: opts?.rpcUrl ?? null,
+    });
     const ratio =
       referencePrice > 0 && oraclePrice > 0 ? oraclePrice / referencePrice : 1;
     const safeRatio = Number.isFinite(ratio) && ratio > 0 ? ratio : 1;
