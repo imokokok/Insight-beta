@@ -43,15 +43,21 @@ export function DisputeModal({
   useModalBehavior(isOpen, onClose, dialogRef);
   const reasonLimit = 500;
   const trimmedReason = reason.trim();
-  const bondValue = parseFloat(bond);
-  const isBondValid = Number.isFinite(bondValue) && bondValue > 0;
+  const bondValue = Number.parseFloat(bond);
+  const minBondValue = Number.parseFloat(defaultBondEth ?? "0.001");
+  const isBondValid =
+    Number.isFinite(bondValue) &&
+    Number.isFinite(minBondValue) &&
+    bondValue >= minBondValue;
   const minBondText = defaultBondEth ?? "0.001";
   const isActionLocked = isSubmitting || isConfirming;
-  const hasConfig =
-    Boolean((contractAddress ?? "").trim()) ||
-    Boolean((instanceId ?? "").trim()) ||
-    Boolean((publicEnv.INSIGHT_ORACLE_ADDRESS ?? "").trim());
-  const isFormValid = Boolean(trimmedReason) && isBondValid && hasConfig;
+  const hasContractAddress = (contractAddress ?? "").trim().length > 0;
+  const hasInstanceId = (instanceId ?? "").trim().length > 0;
+  const hasPublicAddress =
+    (publicEnv.INSIGHT_ORACLE_ADDRESS ?? "").trim().length > 0;
+  const shouldWarnMissingConfig =
+    !hasContractAddress && !hasInstanceId && !hasPublicAddress;
+  const isFormValid = Boolean(trimmedReason) && isBondValid;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -72,10 +78,6 @@ export function DisputeModal({
     }
     if (!isBondValid) {
       setValidationError(t("oracle.createAssertionModal.bondInvalid"));
-      return;
-    }
-    if (!hasConfig) {
-      setValidationError(t("errors.missingConfig"));
       return;
     }
     await execute({
@@ -165,7 +167,7 @@ export function DisputeModal({
           </div>
         )}
 
-        {!hasConfig && (
+        {shouldWarnMissingConfig && (
           <div className="mb-4 rounded-xl bg-amber-50 p-4 text-amber-900 border border-amber-100">
             <h3 className="flex items-center gap-2 font-semibold">
               <AlertCircle size={18} className="text-amber-600" />

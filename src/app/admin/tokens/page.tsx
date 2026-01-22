@@ -3,7 +3,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { useI18n } from "@/i18n/LanguageProvider";
-import { fetchApiData, getErrorCode, copyToClipboard, formatTime, cn } from "@/lib/utils";
+import {
+  fetchApiData,
+  getErrorCode,
+  copyToClipboard,
+  formatTime,
+  cn,
+} from "@/lib/utils";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 type AdminRole = "root" | "ops" | "alerts" | "viewer";
@@ -21,7 +27,10 @@ type CreateResponse = { token: string; record: AdminTokenPublic };
 
 export default function AdminTokensPage() {
   const { t, lang } = useI18n();
-  const locale = useMemo(() => (lang === "zh" ? "zh-CN" : lang === "es" ? "es-ES" : "en-US"), [lang]);
+  const locale = useMemo(
+    () => (lang === "zh" ? "zh-CN" : lang === "es" ? "es-ES" : "en-US"),
+    [lang],
+  );
 
   const [adminToken, setAdminToken] = useState("");
   const [adminActor, setAdminActor] = useState("");
@@ -58,7 +67,9 @@ export default function AdminTokensPage() {
   }, [adminActor]);
 
   const buildHeaders = useCallback(() => {
-    const headers: Record<string, string> = { "content-type": "application/json" };
+    const headers: Record<string, string> = {
+      "content-type": "application/json",
+    };
     const token = adminToken.trim();
     if (token) headers["x-admin-token"] = token;
     const actor = adminActor.trim();
@@ -77,10 +88,13 @@ export default function AdminTokensPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchApiData<{ items: AdminTokenPublic[] }>("/api/admin/tokens", {
-        method: "GET",
-        headers: buildHeaders()
-      });
+      const data = await fetchApiData<{ items: AdminTokenPublic[] }>(
+        "/api/admin/tokens",
+        {
+          method: "GET",
+          headers: buildHeaders(),
+        },
+      );
       setItems(data.items);
     } catch (e) {
       setError(getErrorCode(e));
@@ -104,7 +118,7 @@ export default function AdminTokensPage() {
       const data = await fetchApiData<CreateResponse>("/api/admin/tokens", {
         method: "POST",
         headers: buildHeaders(),
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
       });
       setNewTokenValue(data.token);
       setLabel("");
@@ -120,10 +134,13 @@ export default function AdminTokensPage() {
     setRevokingId(id);
     setError(null);
     try {
-      await fetchApiData<{ ok: true }>(`/api/admin/tokens?id=${encodeURIComponent(id)}`, {
-        method: "DELETE",
-        headers: buildHeaders()
-      });
+      await fetchApiData<{ ok: true }>(
+        `/api/admin/tokens?id=${encodeURIComponent(id)}`,
+        {
+          method: "DELETE",
+          headers: buildHeaders(),
+        },
+      );
       await load();
     } catch (e) {
       setError(getErrorCode(e));
@@ -136,7 +153,10 @@ export default function AdminTokensPage() {
 
   return (
     <div className="space-y-6 pb-16">
-      <PageHeader title={t("adminTokens.title")} description={t("adminTokens.description")} />
+      <PageHeader
+        title={t("adminTokens.title")}
+        description={t("adminTokens.description")}
+      />
 
       {error && (
         <div className="rounded-2xl border border-rose-100 bg-rose-50/50 p-4 text-sm text-rose-700 shadow-sm">
@@ -147,11 +167,15 @@ export default function AdminTokensPage() {
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="border-purple-100/60 bg-white/60 shadow-sm lg:col-span-1">
           <CardHeader className="pb-4">
-            <div className="text-sm font-semibold text-purple-950">{t("adminTokens.create")}</div>
+            <div className="text-sm font-semibold text-purple-950">
+              {t("adminTokens.create")}
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <div className="text-xs font-semibold text-gray-500">{t("alerts.adminToken")}</div>
+              <div className="text-xs font-semibold text-gray-500">
+                {t("alerts.adminToken")}
+              </div>
               <input
                 value={adminToken}
                 onChange={(e) => setAdminToken(e.target.value)}
@@ -163,7 +187,9 @@ export default function AdminTokensPage() {
             </div>
 
             <div className="space-y-2">
-              <div className="text-xs font-semibold text-gray-500">{t("alerts.adminActor")}</div>
+              <div className="text-xs font-semibold text-gray-500">
+                {t("alerts.adminActor")}
+              </div>
               <input
                 value={adminActor}
                 onChange={(e) => setAdminActor(e.target.value)}
@@ -173,7 +199,9 @@ export default function AdminTokensPage() {
             </div>
 
             <div className="space-y-2">
-              <div className="text-xs font-semibold text-gray-500">{t("adminTokens.label")}</div>
+              <div className="text-xs font-semibold text-gray-500">
+                {t("adminTokens.label")}
+              </div>
               <input
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
@@ -182,7 +210,9 @@ export default function AdminTokensPage() {
             </div>
 
             <div className="space-y-2">
-              <div className="text-xs font-semibold text-gray-500">{t("adminTokens.role")}</div>
+              <div className="text-xs font-semibold text-gray-500">
+                {t("adminTokens.role")}
+              </div>
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value as AdminRole)}
@@ -206,7 +236,9 @@ export default function AdminTokensPage() {
 
             {newTokenValue && (
               <div className="rounded-xl border border-purple-100 bg-white/50 p-3 space-y-2">
-                <div className="text-xs font-semibold text-gray-500">{t("adminTokens.tokenValue")}</div>
+                <div className="text-xs font-semibold text-gray-500">
+                  {t("adminTokens.tokenValue")}
+                </div>
                 <div className="flex items-center gap-2">
                   <input
                     value={newTokenValue}
@@ -224,7 +256,7 @@ export default function AdminTokensPage() {
                       "h-9 rounded-lg px-3 text-xs font-semibold shadow-sm ring-1",
                       copied
                         ? "bg-emerald-50 text-emerald-700 ring-emerald-100"
-                        : "bg-white text-purple-700 ring-purple-100 hover:bg-purple-50"
+                        : "bg-white text-purple-700 ring-purple-100 hover:bg-purple-50",
                     )}
                   >
                     {copied ? t("common.copied") : t("common.copyHash")}
@@ -238,7 +270,9 @@ export default function AdminTokensPage() {
         <Card className="border-purple-100/60 bg-white/60 shadow-sm lg:col-span-2">
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between gap-3">
-              <div className="text-sm font-semibold text-purple-950">{t("nav.adminTokens")}</div>
+              <div className="text-sm font-semibold text-purple-950">
+                {t("nav.adminTokens")}
+              </div>
               <button
                 type="button"
                 onClick={load}
@@ -257,29 +291,44 @@ export default function AdminTokensPage() {
             )}
 
             {items.map((it) => (
-              <div key={it.id} className="rounded-xl border border-purple-100 bg-white/50 p-3">
+              <div
+                key={it.id}
+                className="rounded-xl border border-purple-100 bg-white/50 p-3"
+              >
                 <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                   <div className="space-y-1">
                     <div className="text-sm font-semibold text-purple-950">
-                      {it.label} <span className="text-xs font-medium text-purple-700/70">({it.role})</span>
+                      {it.label}{" "}
+                      <span className="text-xs font-medium text-purple-700/70">
+                        ({it.role})
+                      </span>
                     </div>
                     <div className="text-xs text-gray-500">
-                      {t("adminTokens.createdAt")}: {formatTime(it.createdAt, locale)} · actor: {it.createdByActor || "—"}
+                      {t("adminTokens.createdAt")}:{" "}
+                      {formatTime(it.createdAt, locale)} · actor:{" "}
+                      {it.createdByActor || "—"}
                     </div>
                     <div className="text-xs text-gray-500">
-                      {t("adminTokens.revokedAt")}: {it.revokedAt ? formatTime(it.revokedAt, locale) : "—"}
+                      {t("adminTokens.revokedAt")}:{" "}
+                      {it.revokedAt ? formatTime(it.revokedAt, locale) : "—"}
                     </div>
-                    <div className="text-[11px] text-gray-400 font-mono break-all">{it.id}</div>
+                    <div className="text-[11px] text-gray-400 font-mono break-all">
+                      {it.id}
+                    </div>
                   </div>
 
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => revoke(it.id)}
-                      disabled={!canManage || !!it.revokedAt || revokingId === it.id}
+                      disabled={
+                        !canManage || !!it.revokedAt || revokingId === it.id
+                      }
                       className="rounded-lg bg-white px-3 py-2 text-xs font-semibold text-rose-700 shadow-sm ring-1 ring-rose-100 hover:bg-rose-50 disabled:opacity-60"
                     >
-                      {revokingId === it.id ? t("common.loading") : t("adminTokens.revoke")}
+                      {revokingId === it.id
+                        ? t("common.loading")
+                        : t("adminTokens.revoke")}
                     </button>
                   </div>
                 </div>

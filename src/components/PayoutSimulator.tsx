@@ -25,7 +25,7 @@ export function PayoutSimulator({
 }: PayoutSimulatorProps) {
   const { t } = useI18n();
   const [bondAmount, setBondAmount] = useState<string>(
-    initialBond > 0 ? initialBond.toString() : "1000"
+    initialBond > 0 ? initialBond.toString() : "1000",
   );
   const [mode, setMode] = useState<"assert" | "dispute">("dispute");
 

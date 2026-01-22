@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
-  redirect: vi.fn()
+  redirect: vi.fn(),
 }));
 
 import Home from "./page";
@@ -13,4 +13,3 @@ describe("Home page", () => {
     expect(redirect).toHaveBeenCalledWith("/oracle");
   });
 });
-

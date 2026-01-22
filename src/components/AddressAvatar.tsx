@@ -37,7 +37,7 @@ export function AddressAvatar({
     <div
       className={cn(
         "rounded-full ring-2 ring-white dark:ring-gray-900 shadow-sm shrink-0",
-        className
+        className,
       )}
       style={gradientStyle}
       title={address}

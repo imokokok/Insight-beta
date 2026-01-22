@@ -70,7 +70,7 @@ export function CountdownTimer({
       className={cn(
         "flex items-center gap-1.5 font-mono text-sm transition-colors",
         isUrgent ? "text-rose-600 font-bold animate-pulse" : "text-gray-600",
-        className
+        className,
       )}
     >
       <Clock size={14} className={cn(isUrgent && "text-rose-600")} />

@@ -88,7 +88,7 @@ describe("DisputeModal", () => {
     expect(screen.getByText("errors.missingConfig")).toBeInTheDocument();
   });
 
-  it("disables submit when config is missing even with reason", () => {
+  it("enables submit when config is missing but form is valid", () => {
     render(
       <DisputeModal
         assertionId="0xassertion123"
@@ -103,7 +103,7 @@ describe("DisputeModal", () => {
 
     expect(
       screen.getByRole("button", { name: "oracle.disputeModal.submit" }),
-    ).toBeDisabled();
+    ).toBeEnabled();
   });
 
   it("hides missing config prompt when contract address is provided", () => {

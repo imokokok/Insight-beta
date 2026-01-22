@@ -51,7 +51,7 @@ export function CopyButton({
         copied
           ? "bg-green-50 text-green-600 hover:bg-green-100"
           : "text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800",
-        className
+        className,
       )}
       title={label || "Copy"}
     >
@@ -60,14 +60,14 @@ export function CopyButton({
           size={iconSize}
           className={cn(
             "transition-all duration-300 absolute top-0 left-0",
-            copied ? "scale-0 opacity-0" : "scale-100 opacity-100"
+            copied ? "scale-0 opacity-0" : "scale-100 opacity-100",
           )}
         />
         <Check
           size={iconSize}
           className={cn(
             "transition-all duration-300",
-            copied ? "scale-100 opacity-100" : "scale-0 opacity-0"
+            copied ? "scale-100 opacity-100" : "scale-0 opacity-0",
           )}
         />
         {/* Spacer to keep size */}

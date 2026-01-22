@@ -20,7 +20,7 @@ export function FeatureCallout({
     <div
       className={cn(
         "flex items-start p-4 bg-blue-50 border border-blue-100 rounded-lg",
-        className
+        className,
       )}
     >
       <div className="text-blue-600 mr-3">{icon}</div>

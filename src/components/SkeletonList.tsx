@@ -5,18 +5,23 @@ interface SkeletonListProps {
   viewMode?: "grid" | "list";
 }
 
-export function SkeletonList({ count = 6, viewMode = "grid" }: SkeletonListProps) {
+export function SkeletonList({
+  count = 6,
+  viewMode = "grid",
+}: SkeletonListProps) {
   return (
-    <div className={cn(
-      "grid gap-6",
-      viewMode === "grid" ? "md:grid-cols-2 xl:grid-cols-3" : "grid-cols-1"
-    )}>
+    <div
+      className={cn(
+        "grid gap-6",
+        viewMode === "grid" ? "md:grid-cols-2 xl:grid-cols-3" : "grid-cols-1",
+      )}
+    >
       {Array.from({ length: count }).map((_, i) => (
-        <div 
-          key={i} 
+        <div
+          key={i}
           className={cn(
             "glass-card rounded-2xl p-5 border border-white/60 animate-pulse",
-            viewMode === "grid" ? "h-[220px]" : "h-[120px]"
+            viewMode === "grid" ? "h-[220px]" : "h-[120px]",
           )}
         >
           <div className="flex items-center gap-4 mb-6">
@@ -29,12 +34,12 @@ export function SkeletonList({ count = 6, viewMode = "grid" }: SkeletonListProps
           </div>
           <div className="space-y-4">
             <div className="flex justify-between">
-               <div className="h-3 w-24 bg-gray-200/50 rounded" />
-               <div className="h-3 w-16 bg-gray-200/50 rounded" />
+              <div className="h-3 w-24 bg-gray-200/50 rounded" />
+              <div className="h-3 w-16 bg-gray-200/50 rounded" />
             </div>
             <div className="flex justify-between">
-               <div className="h-3 w-24 bg-gray-200/50 rounded" />
-               <div className="h-3 w-16 bg-gray-200/50 rounded" />
+              <div className="h-3 w-24 bg-gray-200/50 rounded" />
+              <div className="h-3 w-16 bg-gray-200/50 rounded" />
             </div>
             <div className="h-3 w-full bg-gray-200/50 rounded mt-4" />
           </div>

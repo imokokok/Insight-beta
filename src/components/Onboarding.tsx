@@ -85,7 +85,7 @@ export function Onboarding({ onComplete, className }: OnboardingProps) {
           id: "proto_monitoring",
           title: t("onboarding.steps.protocol_team.monitoring.title"),
           description: t(
-            "onboarding.steps.protocol_team.monitoring.description"
+            "onboarding.steps.protocol_team.monitoring.description",
           ),
           icon: <BarChart2 className="w-10 h-10 text-blue-600" />,
         },
@@ -99,7 +99,7 @@ export function Onboarding({ onComplete, className }: OnboardingProps) {
           id: "proto_analytics",
           title: t("onboarding.steps.protocol_team.analytics.title"),
           description: t(
-            "onboarding.steps.protocol_team.analytics.description"
+            "onboarding.steps.protocol_team.analytics.description",
           ),
           icon: <FileText className="w-10 h-10 text-green-600" />,
         },
@@ -109,7 +109,7 @@ export function Onboarding({ onComplete, className }: OnboardingProps) {
           id: "op_monitoring",
           title: t("onboarding.steps.oracle_operator.nodeMonitoring.title"),
           description: t(
-            "onboarding.steps.oracle_operator.nodeMonitoring.description"
+            "onboarding.steps.oracle_operator.nodeMonitoring.description",
           ),
           icon: <BarChart2 className="w-10 h-10 text-blue-600" />,
         },
@@ -117,7 +117,7 @@ export function Onboarding({ onComplete, className }: OnboardingProps) {
           id: "op_sync",
           title: t("onboarding.steps.oracle_operator.syncStatus.title"),
           description: t(
-            "onboarding.steps.oracle_operator.syncStatus.description"
+            "onboarding.steps.oracle_operator.syncStatus.description",
           ),
           icon: <AlertCircle className="w-10 h-10 text-purple-600" />,
         },
@@ -133,7 +133,7 @@ export function Onboarding({ onComplete, className }: OnboardingProps) {
           id: "user_monitoring",
           title: t("onboarding.steps.general_user.exploration.title"),
           description: t(
-            "onboarding.steps.general_user.exploration.description"
+            "onboarding.steps.general_user.exploration.description",
           ),
           icon: <BarChart2 className="w-10 h-10 text-blue-600" />,
         },
@@ -141,7 +141,7 @@ export function Onboarding({ onComplete, className }: OnboardingProps) {
           id: "user_assertions",
           title: t("onboarding.steps.general_user.assertions.title"),
           description: t(
-            "onboarding.steps.general_user.assertions.description"
+            "onboarding.steps.general_user.assertions.description",
           ),
           icon: <FileText className="w-10 h-10 text-green-600" />,
         },
@@ -190,7 +190,7 @@ export function Onboarding({ onComplete, className }: OnboardingProps) {
     <div
       className={cn(
         "fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm",
-        className
+        className,
       )}
     >
       <div className="w-full max-w-md rounded-lg bg-white shadow-2xl overflow-hidden">

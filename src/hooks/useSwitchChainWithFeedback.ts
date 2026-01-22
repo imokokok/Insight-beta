@@ -49,12 +49,12 @@ export function useSwitchChainWithFeedback(options?: { onClose?: () => void }) {
           normalized.kind === "USER_REJECTED"
             ? t("errors.userRejected")
             : normalized.kind === "REQUEST_PENDING"
-            ? t("errors.requestPending")
-            : normalized.kind === "CHAIN_NOT_ADDED"
-            ? t("errors.chainNotAdded")
-            : normalized.kind === "WRONG_NETWORK"
-            ? t("errors.wrongNetwork")
-            : t("errors.unknownError");
+              ? t("errors.requestPending")
+              : normalized.kind === "CHAIN_NOT_ADDED"
+                ? t("errors.chainNotAdded")
+                : normalized.kind === "WRONG_NETWORK"
+                  ? t("errors.wrongNetwork")
+                  : t("errors.unknownError");
         toast({
           type: "error",
           title: t("wallet.networkSwitchFailed"),
@@ -69,7 +69,7 @@ export function useSwitchChainWithFeedback(options?: { onClose?: () => void }) {
         lockRef.current = false;
       }
     },
-    [chainId, options, switchChain, t, toast]
+    [chainId, options, switchChain, t, toast],
   );
 
   return { switchToChain, switchingChainId };

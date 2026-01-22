@@ -41,14 +41,15 @@ export function SyncStatus({ className }: { className?: string }) {
   let status: "ok" | "lagging" | "error" | "demo" = "ok";
   if (data.mode === "demo") status = "demo";
   else if (data.sync.error) status = "error";
-  else if (diff > 5 * 60 * 1000) status = "error"; // > 5 min
+  else if (diff > 5 * 60 * 1000)
+    status = "error"; // > 5 min
   else if (diff > 60 * 1000) status = "lagging"; // > 1 min
 
   return (
     <div
       className={cn(
         "group relative flex items-center gap-2 rounded-full bg-white/50 px-3 py-1.5 shadow-sm ring-1 ring-gray-200 backdrop-blur-sm transition-all hover:bg-white hover:shadow-md",
-        className
+        className,
       )}
     >
       <div
@@ -57,17 +58,17 @@ export function SyncStatus({ className }: { className?: string }) {
           status === "ok"
             ? "bg-emerald-500"
             : status === "lagging"
-            ? "bg-yellow-500"
-            : status === "demo"
-            ? "bg-blue-500"
-            : "bg-red-500"
+              ? "bg-yellow-500"
+              : status === "demo"
+                ? "bg-blue-500"
+                : "bg-red-500",
         )}
       >
         {(status === "ok" || status === "demo") && (
           <div
             className={cn(
               "absolute inline-flex h-full w-full animate-ping rounded-full opacity-75",
-              status === "demo" ? "bg-blue-400" : "bg-emerald-400"
+              status === "demo" ? "bg-blue-400" : "bg-emerald-400",
             )}
           />
         )}
@@ -77,10 +78,10 @@ export function SyncStatus({ className }: { className?: string }) {
         {status === "ok"
           ? t("oracle.sync.synced")
           : status === "lagging"
-          ? t("oracle.sync.lagging")
-          : status === "demo"
-          ? t("oracle.config.demo")
-          : t("oracle.sync.error")}
+            ? t("oracle.sync.lagging")
+            : status === "demo"
+              ? t("oracle.config.demo")
+              : t("oracle.sync.error")}
       </span>
 
       {/* Hover Card */}

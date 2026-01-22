@@ -22,11 +22,13 @@ export default function AuditPage() {
 
   return (
     <div className="space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <PageHeader title={t("audit.title")} description={t("audit.description")} />
+      <PageHeader
+        title={t("audit.title")}
+        description={t("audit.description")}
+      />
       <div className="max-w-3xl">
         <AuditLogViewer adminToken={adminToken} setAdminToken={setAdminToken} />
       </div>
     </div>
   );
 }
-

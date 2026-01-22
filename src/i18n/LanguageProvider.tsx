@@ -1,8 +1,22 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import type { ReactNode } from "react";
-import { isLang, langToHtmlLang, LANG_STORAGE_KEY, translations, type Lang, type TranslationKey } from "@/i18n/translations";
+import {
+  isLang,
+  langToHtmlLang,
+  LANG_STORAGE_KEY,
+  translations,
+  type Lang,
+  type TranslationKey,
+} from "@/i18n/translations";
 
 type I18nContextValue = {
   lang: Lang;
@@ -20,7 +34,13 @@ function getNestedValue(obj: unknown, path: string) {
   }, obj);
 }
 
-export function LanguageProvider({ children, initialLang }: { children: ReactNode; initialLang?: Lang }) {
+export function LanguageProvider({
+  children,
+  initialLang,
+}: {
+  children: ReactNode;
+  initialLang?: Lang;
+}) {
   const [lang, setLangState] = useState<Lang>(initialLang ?? "zh");
 
   useEffect(() => {
@@ -42,13 +62,18 @@ export function LanguageProvider({ children, initialLang }: { children: ReactNod
 
   const t = useCallback(
     (key: TranslationKey) => {
-      const value = getNestedValue(translations[lang], key) ?? getNestedValue(translations.en, key);
+      const value =
+        getNestedValue(translations[lang], key) ??
+        getNestedValue(translations.en, key);
       return typeof value === "string" ? value : key;
     },
-    [lang]
+    [lang],
   );
 
-  const value = useMemo<I18nContextValue>(() => ({ lang, setLang, t }), [lang, setLang, t]);
+  const value = useMemo<I18nContextValue>(
+    () => ({ lang, setLang, t }),
+    [lang, setLang, t],
+  );
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }

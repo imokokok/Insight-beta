@@ -18,10 +18,10 @@ vi.mock("@/server/apiResponse", () => ({
     async (
       _key: string,
       _ttlMs: number,
-      compute: () => unknown | Promise<unknown>
+      compute: () => unknown | Promise<unknown>,
     ) => {
       return await compute();
-    }
+    },
   ),
   getAdminActor: vi.fn(() => "test"),
   requireAdmin: vi.fn(async (request: Request) => {
@@ -55,7 +55,7 @@ describe("GET /api/oracle/alerts", () => {
     listAlertsMock.mockResolvedValue({ items: [], total: 0, nextCursor: null });
 
     const request = new Request(
-      "http://localhost:3000/api/oracle/alerts?status=Open&severity=warning&limit=10"
+      "http://localhost:3000/api/oracle/alerts?status=Open&severity=warning&limit=10",
     );
     type ApiMockResponse<T> =
       | { ok: true; data: T }
@@ -72,7 +72,7 @@ describe("GET /api/oracle/alerts", () => {
         status: "Open",
         severity: "warning",
         limit: 10,
-      })
+      }),
     );
     expect(rateLimit).toHaveBeenCalledWith(request, {
       key: "alerts_get",
@@ -82,7 +82,7 @@ describe("GET /api/oracle/alerts", () => {
     expect(cachedJson).toHaveBeenCalledWith(
       "oracle_api:/api/oracle/alerts?status=Open&severity=warning&limit=10",
       10_000,
-      expect.any(Function)
+      expect.any(Function),
     );
   });
 
@@ -98,7 +98,7 @@ describe("GET /api/oracle/alerts", () => {
       "http://localhost:3000/api/oracle/alerts?sync=1",
       {
         headers: { "x-admin-token": "test" },
-      }
+      },
     );
     await GET(request);
 
@@ -111,7 +111,7 @@ describe("GET /api/oracle/alerts", () => {
 
   it("rejects invalid query params", async () => {
     const badReq = new Request(
-      "http://localhost:3000/api/oracle/alerts?status=Unknown&limit=-1"
+      "http://localhost:3000/api/oracle/alerts?status=Unknown&limit=-1",
     );
     const response = (await GET(badReq)) as { ok: boolean; error?: unknown };
     expect(response.ok).toBe(false);

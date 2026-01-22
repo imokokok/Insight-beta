@@ -11,14 +11,14 @@ export interface BaseResponse<T> {
 export function useInfiniteList<T>(
   getUrl: (
     pageIndex: number,
-    previousPageData: BaseResponse<T> | null
+    previousPageData: BaseResponse<T> | null,
   ) => string | null,
   options: {
     refreshInterval?: number;
     revalidateFirstPage?: boolean;
     revalidateOnFocus?: boolean;
     dedupingInterval?: number;
-  } = {}
+  } = {},
 ) {
   const {
     data: pages,
@@ -42,7 +42,7 @@ export function useInfiniteList<T>(
   // Flatten items from all pages
   const items = useMemo(
     () => (pages ? pages.flatMap((page) => page.items) : []),
-    [pages]
+    [pages],
   );
 
   // Check if we can load more

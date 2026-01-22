@@ -12,7 +12,8 @@ export const mockAssertions: Assertion[] = [
     livenessEndsAt: "2026-01-09T08:12:00Z",
     status: "Pending",
     bondUsd: 1500,
-    txHash: "0x8b6f1d0a7b0e2c44e6f4c1c5d4a0d2c5b2e8a1b7b6c8d9e1f0a1b2c3d4e5f6a7"
+    txHash:
+      "0x8b6f1d0a7b0e2c44e6f4c1c5d4a0d2c5b2e8a1b7b6c8d9e1f0a1b2c3d4e5f6a7",
   },
   {
     id: "A-10411",
@@ -26,7 +27,7 @@ export const mockAssertions: Assertion[] = [
     status: "Disputed",
     bondUsd: 3000,
     disputer: "0x3d2a0000000000000000000000000000000091c4",
-    txHash: "0x3f0f3c7a4d7c5a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4"
+    txHash: "0x3f0f3c7a4d7c5a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4",
   },
   {
     id: "A-10377",
@@ -40,7 +41,8 @@ export const mockAssertions: Assertion[] = [
     resolvedAt: "2026-01-06T10:05:00Z",
     status: "Resolved",
     bondUsd: 800,
-    txHash: "0x2c0d9e1f0a1b2c3d4e5f6a78b9c0d1e2f3a43f0f3c7a4d7c5a0b1c2d3e4f5a6b7"
+    txHash:
+      "0x2c0d9e1f0a1b2c3d4e5f6a78b9c0d1e2f3a43f0f3c7a4d7c5a0b1c2d3e4f5a6b7",
   },
   {
     id: "A-10402",
@@ -54,8 +56,9 @@ export const mockAssertions: Assertion[] = [
     resolvedAt: "2026-01-07T04:22:00Z",
     status: "Resolved",
     bondUsd: 1200,
-    txHash: "0x9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b2c0d9e1f0a1b2c3d4e5f6a78b9c0d1e2f3"
-  }
+    txHash:
+      "0x9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b2c0d9e1f0a1b2c3d4e5f6a78b9c0d1e2f3",
+  },
 ];
 
 export const mockDisputes: Dispute[] = [
@@ -71,7 +74,7 @@ export const mockDisputes: Dispute[] = [
     status: "Voting",
     currentVotesFor: 45000,
     currentVotesAgainst: 12000,
-    totalVotes: 100000
+    totalVotes: 100000,
   },
   {
     id: "D-10399",
@@ -85,6 +88,6 @@ export const mockDisputes: Dispute[] = [
     status: "Pending Execution",
     currentVotesFor: 89000,
     currentVotesAgainst: 2000,
-    totalVotes: 95000
-  }
+    totalVotes: 95000,
+  },
 ];

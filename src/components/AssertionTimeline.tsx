@@ -101,7 +101,7 @@ export function AssertionTimeline({
     }
 
     stepsList.sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     );
 
     return stepsList;
@@ -125,7 +125,7 @@ export function AssertionTimeline({
                   "relative z-10 flex h-12 w-12 items-center justify-center rounded-2xl shadow-lg ring-4 ring-white transition-all duration-300 group-hover:scale-110 group-hover:shadow-xl",
                   step.active
                     ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-indigo-500/30"
-                    : "bg-white text-gray-400 shadow-gray-200/50"
+                    : "bg-white text-gray-400 shadow-gray-200/50",
                 )}
               >
                 <Icon size={20} strokeWidth={2.5} />
@@ -137,14 +137,14 @@ export function AssertionTimeline({
                     "glass-panel flex flex-col gap-1 rounded-2xl p-4 transition-all duration-300 hover:translate-x-1 hover:shadow-md",
                     step.active
                       ? "border-purple-200/50 bg-white/60"
-                      : "bg-white/30"
+                      : "bg-white/30",
                   )}
                 >
                   <div className="flex items-center justify-between">
                     <p
                       className={cn(
                         "font-bold text-sm",
-                        step.active ? "text-gray-800" : "text-gray-500"
+                        step.active ? "text-gray-800" : "text-gray-500",
                       )}
                     >
                       {step.label}

@@ -16,10 +16,10 @@ vi.mock("@/server/apiResponse", () => ({
     async (
       _key: string,
       _ttlMs: number,
-      compute: () => unknown | Promise<unknown>
+      compute: () => unknown | Promise<unknown>,
     ) => {
       return await compute();
-    }
+    },
   ),
   getAdminActor: vi.fn(() => "test"),
   requireAdmin: vi.fn(async (request: Request) => {
@@ -83,7 +83,7 @@ describe("GET /api/oracle/disputes", () => {
     });
 
     const request = new Request(
-      "http://localhost:3000/api/oracle/disputes?limit=10"
+      "http://localhost:3000/api/oracle/disputes?limit=10",
     );
     type ApiMockResponse<T> =
       | { ok: true; data: T }
@@ -101,13 +101,13 @@ describe("GET /api/oracle/disputes", () => {
     expect(oracle.listDisputes).toHaveBeenCalledWith(
       expect.objectContaining({
         limit: 10,
-      })
+      }),
     );
   });
 
   it("rejects invalid disputer address", async () => {
     const request = new Request(
-      "http://localhost:3000/api/oracle/disputes?disputer=not_an_address"
+      "http://localhost:3000/api/oracle/disputes?disputer=not_an_address",
     );
     type ApiMockResponse =
       | { ok: true; data: unknown }
@@ -126,7 +126,7 @@ describe("GET /api/oracle/disputes", () => {
       "http://localhost:3000/api/oracle/disputes?sync=1",
       {
         headers: { "x-admin-token": "valid_token" },
-      }
+      },
     );
 
     // Mock listDisputes to return empty list
@@ -150,7 +150,7 @@ describe("GET /api/oracle/disputes", () => {
     vi.mocked(requireAdmin).mockResolvedValueOnce(error("unauthorized", 403));
 
     const request = new Request(
-      "http://localhost:3000/api/oracle/disputes?sync=1"
+      "http://localhost:3000/api/oracle/disputes?sync=1",
     );
     // handleApi mock wraps the return value in { ok: true, data: ... }
     const response = (await GET(request)) as unknown as {
@@ -165,7 +165,7 @@ describe("GET /api/oracle/disputes", () => {
 
   it("passes filters to listDisputes", async () => {
     const request = new Request(
-      "http://localhost:3000/api/oracle/disputes?status=Voting&chain=Arbitrum"
+      "http://localhost:3000/api/oracle/disputes?status=Voting&chain=Arbitrum",
     );
 
     vi.mocked(oracle.listDisputes).mockResolvedValue({
@@ -180,7 +180,7 @@ describe("GET /api/oracle/disputes", () => {
       expect.objectContaining({
         status: "Voting",
         chain: "Arbitrum",
-      })
+      }),
     );
   });
 });

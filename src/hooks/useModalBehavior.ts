@@ -4,15 +4,18 @@ const focusableSelector =
   'a[href],button:not([disabled]),textarea:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])';
 
 function getFocusableElements(container: HTMLElement) {
-  return Array.from(container.querySelectorAll<HTMLElement>(focusableSelector)).filter(
-    (el) => !el.hasAttribute("disabled") && el.getAttribute("aria-hidden") !== "true"
+  return Array.from(
+    container.querySelectorAll<HTMLElement>(focusableSelector),
+  ).filter(
+    (el) =>
+      !el.hasAttribute("disabled") && el.getAttribute("aria-hidden") !== "true",
   );
 }
 
 export function useModalBehavior(
   isOpen: boolean,
   onClose: () => void,
-  dialogRef?: RefObject<HTMLElement | null>
+  dialogRef?: RefObject<HTMLElement | null>,
 ) {
   useEffect(() => {
     if (!isOpen) return;
@@ -20,7 +23,10 @@ export function useModalBehavior(
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
-    const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previouslyFocused =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
 
     const focusDialog = () => {
       const dialog = dialogRef?.current;

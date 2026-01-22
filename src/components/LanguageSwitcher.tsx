@@ -12,7 +12,9 @@ export function LanguageSwitcher({ className }: { className?: string }) {
   const rootRef = useRef<HTMLDivElement | null>(null);
 
   const currentLabel = useMemo(() => {
-    return languages.find((l) => l.code === lang)?.label ?? t("common.language");
+    return (
+      languages.find((l) => l.code === lang)?.label ?? t("common.language")
+    );
   }, [lang, t]);
 
   useEffect(() => {
@@ -56,13 +58,15 @@ export function LanguageSwitcher({ className }: { className?: string }) {
                   "flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm transition-colors",
                   l.code === lang
                     ? "bg-purple-100 text-purple-950"
-                    : "text-purple-800/80 hover:bg-white/60 hover:text-purple-950"
+                    : "text-purple-800/80 hover:bg-white/60 hover:text-purple-950",
                 )}
                 role="option"
                 aria-selected={l.code === lang}
               >
                 <span>{l.label}</span>
-                {l.code === lang && <span className="text-xs text-purple-600">✓</span>}
+                {l.code === lang && (
+                  <span className="text-xs text-purple-600">✓</span>
+                )}
               </button>
             ))}
           </div>

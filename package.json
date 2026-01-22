@@ -8,6 +8,8 @@
     "start": "node .next/standalone/server.js",
     "check:prod": "node scripts/post-deploy-check.js",
     "lint": "eslint src --max-warnings=0",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:write": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,md}\"",
     "typecheck": "tsc --noEmit",
     "supabase:provision": "node scripts/provision-supabase.mjs",
     "contracts:compile": "HARDHAT_DISABLE_TELEMETRY=1 hardhat compile",

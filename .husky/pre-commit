@@ -5,3 +5,4 @@ if printf "%s\n" "$staged_files" | grep -E -q '(^|/)\.env\.local$|(^|/)\.env\.pr
 fi
 
 npx lint-staged
+npm run typecheck

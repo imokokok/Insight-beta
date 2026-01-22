@@ -43,14 +43,14 @@ describe("SettleModal", () => {
         assertionId="0xassertion123"
         isOpen={true}
         onClose={mockOnClose}
-      />
+      />,
     );
 
     // Check if the modal is rendered by looking for the title
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     // Get the title specifically by its role and name
     expect(
-      screen.getByRole("heading", { name: "oracle.detail.settleAssertion" })
+      screen.getByRole("heading", { name: "oracle.detail.settleAssertion" }),
     ).toBeInTheDocument();
   });
 
@@ -60,7 +60,7 @@ describe("SettleModal", () => {
         assertionId="0xassertion123"
         isOpen={false}
         onClose={mockOnClose}
-      />
+      />,
     );
 
     expect(container.firstChild).toBeNull();
@@ -72,7 +72,7 @@ describe("SettleModal", () => {
         assertionId="0xassertion123"
         isOpen={true}
         onClose={mockOnClose}
-      />
+      />,
     );
 
     const closeButton = screen.getByLabelText("common.close");
@@ -87,7 +87,7 @@ describe("SettleModal", () => {
         assertionId="0xassertion123"
         isOpen={true}
         onClose={mockOnClose}
-      />
+      />,
     );
 
     const cancelButton = screen.getByText("oracle.detail.cancel");
@@ -102,7 +102,7 @@ describe("SettleModal", () => {
         assertionId="0xassertion123"
         isOpen={true}
         onClose={mockOnClose}
-      />
+      />,
     );
 
     const trueButton = screen.getByText("oracle.settleModal.outcomeTrue");
@@ -110,7 +110,7 @@ describe("SettleModal", () => {
 
     // Check if the button is selected (has correct class)
     expect(trueButton.closest("button")).toHaveClass(
-      "border-green-500 bg-green-50"
+      "border-green-500 bg-green-50",
     );
   });
 
@@ -120,7 +120,7 @@ describe("SettleModal", () => {
         assertionId="0xassertion123"
         isOpen={true}
         onClose={mockOnClose}
-      />
+      />,
     );
 
     const falseButton = screen.getByText("oracle.settleModal.outcomeFalse");
@@ -128,7 +128,7 @@ describe("SettleModal", () => {
 
     // Check if the button is selected (has correct class)
     expect(falseButton.closest("button")).toHaveClass(
-      "border-red-500 bg-red-50"
+      "border-red-500 bg-red-50",
     );
   });
 
@@ -138,7 +138,7 @@ describe("SettleModal", () => {
         assertionId="0xassertion123"
         isOpen={true}
         onClose={mockOnClose}
-      />
+      />,
     );
 
     // Get the submit button specifically by its role
@@ -154,7 +154,7 @@ describe("SettleModal", () => {
         assertionId="0xassertion123"
         isOpen={true}
         onClose={mockOnClose}
-      />
+      />,
     );
 
     // Select outcome true

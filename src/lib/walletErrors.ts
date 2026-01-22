@@ -32,7 +32,11 @@ export function normalizeWalletError(err: unknown): {
   const rawMessage = getErrorMessage(err);
   const msg = (rawMessage ?? "").toLowerCase();
 
-  if (code === 4001 || msg.includes("user rejected") || msg.includes("rejected")) {
+  if (
+    code === 4001 ||
+    msg.includes("user rejected") ||
+    msg.includes("rejected")
+  ) {
     return { kind: "USER_REJECTED", code, rawMessage };
   }
   if (code === -32002 || msg.includes("request already pending")) {
@@ -41,10 +45,18 @@ export function normalizeWalletError(err: unknown): {
   if (code === 4902 || msg.includes("add it first")) {
     return { kind: "CHAIN_NOT_ADDED", code, rawMessage };
   }
-  if (msg.includes("wrong network") || msg.includes("network mismatch") || msg.includes("chain mismatch")) {
+  if (
+    msg.includes("wrong network") ||
+    msg.includes("network mismatch") ||
+    msg.includes("chain mismatch")
+  ) {
     return { kind: "WRONG_NETWORK", code, rawMessage };
   }
-  if (msg.includes("wallet not found") || msg.includes("install metamask") || msg.includes("metamask")) {
+  if (
+    msg.includes("wallet not found") ||
+    msg.includes("install metamask") ||
+    msg.includes("metamask")
+  ) {
     return { kind: "WALLET_NOT_FOUND", code, rawMessage };
   }
   if (msg.includes("insufficient funds")) {

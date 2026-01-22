@@ -45,7 +45,7 @@ export function LivenessProgressBar({
       } else {
         const hours = Math.floor(remaining / (1000 * 60 * 60));
         const minutes = Math.floor(
-          (remaining % (1000 * 60 * 60)) / (1000 * 60)
+          (remaining % (1000 * 60 * 60)) / (1000 * 60),
         );
         // If less than 1 hour, show minutes
         if (hours === 0) {
@@ -73,7 +73,7 @@ export function LivenessProgressBar({
         <span
           className={cn(
             "flex items-center gap-1",
-            isExpired ? "text-gray-400" : "text-purple-600 font-bold"
+            isExpired ? "text-gray-400" : "text-purple-600 font-bold",
           )}
         >
           <Clock size={12} />
@@ -86,7 +86,7 @@ export function LivenessProgressBar({
             "h-full transition-all duration-1000 ease-out shadow-sm",
             isExpired
               ? "bg-gray-300"
-              : "bg-gradient-to-r from-purple-500 to-indigo-500"
+              : "bg-gradient-to-r from-purple-500 to-indigo-500",
           )}
           style={{ width: `${progress}%` }}
         />

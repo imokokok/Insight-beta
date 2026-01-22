@@ -18,7 +18,7 @@ const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
     <TabsContext.Provider value={{ value, onValueChange }}>
       <div ref={ref} className={cn("", className)} {...props} />
     </TabsContext.Provider>
-  )
+  ),
 );
 Tabs.displayName = "Tabs";
 
@@ -30,12 +30,12 @@ const TabsList = React.forwardRef<
     ref={ref}
     className={cn(
       "inline-flex h-9 items-center justify-center rounded-lg bg-gray-100 p-1 text-gray-500 dark:bg-gray-800 dark:text-gray-400",
-      className
+      className,
     )}
     onKeyDown={(e) => {
       if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
         const tabs = Array.from(
-          e.currentTarget.querySelectorAll('[role="tab"]')
+          e.currentTarget.querySelectorAll('[role="tab"]'),
         );
         const activeElement = document.activeElement;
         const index = tabs.indexOf(activeElement as Element);
@@ -58,8 +58,7 @@ const TabsList = React.forwardRef<
 ));
 TabsList.displayName = "TabsList";
 
-export interface TabsTriggerProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface TabsTriggerProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   value: string;
 }
 
@@ -82,12 +81,12 @@ const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
           isActive
             ? "bg-white text-gray-950 shadow dark:bg-gray-950 dark:text-gray-50"
             : "hover:bg-gray-200/50 hover:text-gray-900 dark:hover:bg-gray-800/50 dark:hover:text-gray-50",
-          className
+          className,
         )}
         {...props}
       />
     );
-  }
+  },
 );
 TabsTrigger.displayName = "TabsTrigger";
 
@@ -105,7 +104,7 @@ const TabsContent = React.forwardRef<
       ref={ref}
       className={cn(
         "mt-2 ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2 dark:ring-offset-gray-950 dark:focus-visible:ring-gray-300",
-        className
+        className,
       )}
       {...props}
     />

@@ -99,9 +99,8 @@ describe("GET /api/oracle/assertions/[id]/timeline", () => {
       },
     ];
 
-    const { getAssertion, getDisputeByAssertionId } = await import(
-      "@/server/oracle"
-    );
+    const { getAssertion, getDisputeByAssertionId } =
+      await import("@/server/oracle");
     const { listAlerts } = await import("@/server/observability");
 
     vi.mocked(getAssertion).mockResolvedValue(assertion);
@@ -117,7 +116,7 @@ describe("GET /api/oracle/assertions/[id]/timeline", () => {
       | { ok: false; error: unknown };
 
     const request = new Request(
-      "http://localhost:3000/api/oracle/assertions/0xassertion/timeline"
+      "http://localhost:3000/api/oracle/assertions/0xassertion/timeline",
     );
 
     const response = (await GET(request, {
@@ -155,7 +154,7 @@ describe("GET /api/oracle/assertions/[id]/timeline", () => {
       | { ok: false; error: unknown };
 
     const request = new Request(
-      "http://localhost:3000/api/oracle/assertions/0xmissing/timeline"
+      "http://localhost:3000/api/oracle/assertions/0xmissing/timeline",
     );
 
     const response = (await GET(request, {
@@ -185,7 +184,7 @@ describe("GET /api/oracle/assertions/[id]/timeline", () => {
       | { ok: false; error: unknown };
 
     const request = new Request(
-      "http://localhost:3000/api/oracle/assertions/0xassertion/timeline"
+      "http://localhost:3000/api/oracle/assertions/0xassertion/timeline",
     );
 
     const response = (await GET(request, {

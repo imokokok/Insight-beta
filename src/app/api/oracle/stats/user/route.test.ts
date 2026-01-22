@@ -14,10 +14,10 @@ vi.mock("@/server/apiResponse", () => ({
     async (
       _key: string,
       _ttlMs: number,
-      compute: () => unknown | Promise<unknown>
+      compute: () => unknown | Promise<unknown>,
     ) => {
       return await compute();
-    }
+    },
   ),
   handleApi: async (arg1: unknown, arg2?: unknown) => {
     try {
@@ -47,7 +47,7 @@ describe("GET /api/oracle/stats/user", () => {
   it("returns user stats for valid address and caches result", async () => {
     const addr = "0x" + "1".repeat(40);
     const request = new Request(
-      `http://localhost:3000/api/oracle/stats/user?address=${addr}`
+      `http://localhost:3000/api/oracle/stats/user?address=${addr}`,
     );
     type ApiMockResponse<T> =
       | { ok: true; data: T }
@@ -63,7 +63,7 @@ describe("GET /api/oracle/stats/user", () => {
     expect(cachedJson).toHaveBeenCalledWith(
       `oracle_api:/api/oracle/stats/user?address=${addr}`,
       30_000,
-      expect.any(Function)
+      expect.any(Function),
     );
     expect(getUserStats).toHaveBeenCalledWith(addr);
     expect(response.ok).toBe(true);
@@ -74,7 +74,7 @@ describe("GET /api/oracle/stats/user", () => {
 
   it("rejects invalid address", async () => {
     const request = new Request(
-      "http://localhost:3000/api/oracle/stats/user?address=not-address"
+      "http://localhost:3000/api/oracle/stats/user?address=not-address",
     );
     const response = (await GET(request)) as { ok: boolean; error?: unknown };
     expect(response.ok).toBe(false);
