@@ -1,5 +1,6 @@
 import { env } from "@/lib/env";
 import { hasDatabase, query } from "@/server/db";
+import { createOrTouchAlert } from "@/server/observability";
 import { ensureSchema } from "@/server/schema";
 import { isIP } from "node:net";
 import { error } from "./response";
@@ -8,12 +9,18 @@ type RateLimitEntry = { count: number; resetAtMs: number };
 
 const globalForRate = globalThis as unknown as {
   insightRate?: Map<string, RateLimitEntry> | undefined;
+  insightRateAlerts?: Map<string, number> | undefined;
 };
 
 const insightRate =
   globalForRate.insightRate ?? new Map<string, RateLimitEntry>();
 if (process.env.NODE_ENV !== "production")
   globalForRate.insightRate = insightRate;
+
+const rateAlertCooldown =
+  globalForRate.insightRateAlerts ?? new Map<string, number>();
+if (process.env.NODE_ENV !== "production")
+  globalForRate.insightRateAlerts = rateAlertCooldown;
 
 let lastRatePruneAtMs = 0;
 
@@ -24,6 +31,30 @@ async function ensureDb() {
     await ensureSchema();
     schemaEnsured = true;
   }
+}
+
+async function maybeAlertRateLimited(input: {
+  key: string;
+  limit: number;
+  windowMs: number;
+}) {
+  if (process.env.NODE_ENV !== "production") return;
+  const now = Date.now();
+  const bucket = Math.floor(now / 600_000);
+  const fingerprint = `rate_limited:${input.key}:${bucket}`;
+  const lastAt = rateAlertCooldown.get(fingerprint) ?? 0;
+  if (now - lastAt < 30_000) return;
+  rateAlertCooldown.set(fingerprint, now);
+  const windowSeconds = Math.max(1, Math.round(input.windowMs / 1000));
+  await createOrTouchAlert({
+    fingerprint,
+    type: "rate_limited",
+    severity: "warning",
+    title: "API rate limited",
+    message: `${input.key} exceeded ${input.limit} requests per ${windowSeconds}s`,
+    entityType: "security",
+    entityId: input.key,
+  });
 }
 
 function getClientIp(request: Request) {
@@ -145,6 +176,11 @@ async function rateLimitDb(
     headers.set("x-ratelimit-limit", String(opts.limit));
     headers.set("x-ratelimit-remaining", "0");
     headers.set("x-ratelimit-reset", String(resetAtMs));
+    await maybeAlertRateLimited({
+      key: opts.key,
+      limit: opts.limit,
+      windowMs: opts.windowMs,
+    });
     return error({ code: "rate_limited" }, 429, { headers });
   }
   return null;
@@ -210,6 +246,11 @@ async function rateLimitKv(
     headers.set("x-ratelimit-limit", String(opts.limit));
     headers.set("x-ratelimit-remaining", "0");
     headers.set("x-ratelimit-reset", String(resetMs));
+    await maybeAlertRateLimited({
+      key: opts.key,
+      limit: opts.limit,
+      windowMs: opts.windowMs,
+    });
     return error({ code: "rate_limited" }, 429, { headers });
   }
   return null;
@@ -283,6 +324,11 @@ export async function rateLimit(
     headers.set("x-ratelimit-limit", String(opts.limit));
     headers.set("x-ratelimit-remaining", "0");
     headers.set("x-ratelimit-reset", String(existing.resetAtMs));
+    await maybeAlertRateLimited({
+      key: opts.key,
+      limit: opts.limit,
+      windowMs: opts.windowMs,
+    });
     return error({ code: "rate_limited" }, 429, { headers });
   }
   existing.count += 1;

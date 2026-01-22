@@ -10,6 +10,8 @@ import type {
 import { env } from "@/lib/env";
 import { getMemoryInstance } from "./memoryBackend";
 import { DEFAULT_ORACLE_INSTANCE_ID } from "./oracleConfig";
+import crypto from "node:crypto";
+import { logger } from "@/lib/logger";
 
 export type SyncMeta = {
   lastAttemptAt: string | null;
@@ -891,10 +893,15 @@ export async function insertOracleEvent(
   const normalizedInstanceId = normalizeInstanceId(instanceId);
   if (!hasDatabase()) return false;
   try {
+    const payloadJson = JSON.stringify(input.payload);
+    const payloadChecksum = crypto
+      .createHash("sha256")
+      .update(payloadJson)
+      .digest("hex");
     const res = await query(
       `
-      INSERT INTO oracle_events (instance_id, chain, event_type, assertion_id, tx_hash, block_number, log_index, payload)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb)
+      INSERT INTO oracle_events (instance_id, chain, event_type, assertion_id, tx_hash, block_number, log_index, payload, payload_checksum)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9)
       ON CONFLICT (instance_id, tx_hash, log_index) DO NOTHING
       RETURNING 1
       `,
@@ -906,7 +913,8 @@ export async function insertOracleEvent(
         input.txHash,
         input.blockNumber.toString(10),
         input.logIndex,
-        JSON.stringify(input.payload),
+        payloadJson,
+        payloadChecksum,
       ],
     );
     return res.rows.length > 0;
@@ -928,9 +936,10 @@ export async function replayOracleEventsRange(
     event_type: string;
     assertion_id: string | null;
     payload: unknown;
+    payload_checksum: string | null;
   }>(
     `
-    SELECT event_type, assertion_id, payload
+    SELECT event_type, assertion_id, payload, payload_checksum
     FROM oracle_events
     WHERE instance_id = $1 AND block_number >= $2 AND block_number <= $3
     ORDER BY block_number ASC, log_index ASC, id ASC
@@ -943,6 +952,19 @@ export async function replayOracleEventsRange(
     const eventType = (row.event_type ?? "").trim();
     const payload = row.payload;
     if (!eventType) continue;
+    if (row.payload_checksum) {
+      const payloadChecksum = crypto
+        .createHash("sha256")
+        .update(JSON.stringify(payload))
+        .digest("hex");
+      if (payloadChecksum !== row.payload_checksum) {
+        logger.warn("Event payload checksum mismatch", {
+          eventType,
+          assertionId: row.assertion_id,
+        });
+        continue;
+      }
+    }
 
     if (eventType === "assertion_created") {
       const a = payload as Assertion;

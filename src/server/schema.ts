@@ -152,6 +152,7 @@ export async function ensureSchema() {
       block_number BIGINT NOT NULL,
       log_index INTEGER NOT NULL,
       payload JSONB NOT NULL,
+      payload_checksum TEXT,
       created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
       UNIQUE (instance_id, tx_hash, log_index)
     );
@@ -284,6 +285,10 @@ export async function ensureSchema() {
     ALTER TABLE oracle_config ADD COLUMN IF NOT EXISTS max_block_range INTEGER;
     ALTER TABLE oracle_config ADD COLUMN IF NOT EXISTS voting_period_hours INTEGER;
     ALTER TABLE oracle_config ADD COLUMN IF NOT EXISTS confirmation_blocks INTEGER;
+  `);
+
+  await query(`
+    ALTER TABLE oracle_events ADD COLUMN IF NOT EXISTS payload_checksum TEXT;
   `);
 
   await query(`

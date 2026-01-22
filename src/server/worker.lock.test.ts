@@ -38,6 +38,7 @@ vi.mock("@/server/db", () => ({
 
 vi.mock("@/server/observability", () => ({
   createOrTouchAlert: vi.fn(),
+  pruneStaleAlerts: vi.fn(async () => ({ resolved: 0 })),
   readAlertRules: vi.fn(async () => []),
 }));
 

@@ -76,6 +76,9 @@ export const env = {
   get INSIGHT_DISABLE_EMBEDDED_WORKER() {
     return (process.env.INSIGHT_DISABLE_EMBEDDED_WORKER ?? "").trim();
   },
+  get INSIGHT_DEMO_MODE() {
+    return (process.env.INSIGHT_DEMO_MODE ?? "").trim();
+  },
   get INSIGHT_WORKER_ID() {
     return (process.env.INSIGHT_WORKER_ID ?? "").trim();
   },
@@ -272,6 +275,7 @@ const envSchema = z.object({
   INSIGHT_DISABLE_EMBEDDED_WORKER: z
     .enum(["true", "false", "1", "0"])
     .optional(),
+  INSIGHT_DEMO_MODE: z.enum(["true", "false", "1", "0"]).optional(),
   INSIGHT_WORKER_ID: z.string().min(1).optional(),
   INSIGHT_TRUST_PROXY: z
     .enum(["true", "false", "1", "0", "cloudflare"])
@@ -484,6 +488,38 @@ export function getEnvReport() {
     } else {
       issues.push(e instanceof Error ? e.message : String(e));
     }
+  }
+  const isProd = process.env.NODE_ENV === "production";
+  if (isProd) {
+    const demoModeEnabled = ["1", "true"].includes(
+      (process.env.INSIGHT_DEMO_MODE ?? "").toLowerCase(),
+    );
+    if (demoModeEnabled)
+      issues.push("INSIGHT_DEMO_MODE: demo_mode_enabled_in_production");
+    const hasDatabaseConfig = Boolean(
+      process.env.DATABASE_URL || process.env.SUPABASE_DB_URL,
+    );
+    if (!hasDatabaseConfig) issues.push("DATABASE_URL: required_in_production");
+    const hasAdminToken = Boolean(
+      (process.env.INSIGHT_ADMIN_TOKEN ?? "").trim(),
+    );
+    const hasAdminSalt = Boolean(
+      (process.env.INSIGHT_ADMIN_TOKEN_SALT ?? "").trim(),
+    );
+    if (!hasAdminToken && !hasAdminSalt)
+      issues.push("INSIGHT_ADMIN_TOKEN: required_in_production");
+    const hasCronSecret = Boolean(
+      (process.env.INSIGHT_CRON_SECRET ?? "").trim() ||
+      (process.env.CRON_SECRET ?? "").trim(),
+    );
+    if (!hasCronSecret) issues.push("CRON_SECRET: required_in_production");
+    const allowPrivateRpc =
+      (process.env.INSIGHT_ALLOW_PRIVATE_RPC_URLS ?? "")
+        .trim()
+        .toLowerCase() === "true" ||
+      (process.env.INSIGHT_ALLOW_PRIVATE_RPC_URLS ?? "").trim() === "1";
+    if (allowPrivateRpc)
+      issues.push("INSIGHT_ALLOW_PRIVATE_RPC_URLS: enabled_in_production");
   }
   return {
     ok: issues.length === 0,

@@ -14,6 +14,7 @@ import { mockAssertions, mockDisputes } from "@/lib/mockData";
 import { unstable_cache } from "next/cache";
 import { readOracleState } from "@/server/oracleState";
 import { DEFAULT_ORACLE_INSTANCE_ID } from "@/server/oracleConfig";
+import { env } from "@/lib/env";
 
 export type { Assertion, Dispute } from "@/lib/oracleTypes";
 
@@ -31,11 +32,20 @@ function normalizeInstanceId(instanceId?: string | null) {
   return trimmed || DEFAULT_ORACLE_INSTANCE_ID;
 }
 
+function isDemoModeEnabled() {
+  return ["1", "true"].includes(env.INSIGHT_DEMO_MODE.toLowerCase());
+}
+
+export function isDemoMode() {
+  return !hasDatabase() || isDemoModeEnabled();
+}
+
 export async function isTableEmpty(
   table: "assertions" | "disputes",
   instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
 ) {
   await ensureDb();
+  if (isDemoModeEnabled()) return true;
   if (!hasDatabase()) return true;
   const normalizedInstanceId = normalizeInstanceId(instanceId);
   const sql =
@@ -195,7 +205,10 @@ export async function listAssertions(
   const offset = Math.max(0, params.cursor ?? 0);
   const normalizedInstanceId = normalizeInstanceId(instanceId);
 
-  if (await isTableEmpty("assertions", normalizedInstanceId)) {
+  if (
+    isDemoModeEnabled() &&
+    (await isTableEmpty("assertions", normalizedInstanceId))
+  ) {
     let items = mockAssertions.slice();
     if (
       params.status &&
@@ -320,9 +333,11 @@ export async function getAssertion(
     [id, normalizedInstanceId],
   );
   if (res.rows.length === 0) {
-    // Check mocks
-    const mock = mockAssertions.find((a) => a.id === id);
-    return mock || null;
+    if (isDemoModeEnabled()) {
+      const mock = mockAssertions.find((a) => a.id === id);
+      return mock || null;
+    }
+    return null;
   }
   const row = res.rows[0];
   return row ? mapAssertionRow(row) : null;
@@ -343,8 +358,11 @@ export async function getDispute(
     [id, normalizedInstanceId],
   );
   if (res.rows.length === 0) {
-    const mock = mockDisputes.find((d) => d.id === id);
-    return mock || null;
+    if (isDemoModeEnabled()) {
+      const mock = mockDisputes.find((d) => d.id === id);
+      return mock || null;
+    }
+    return null;
   }
   const row = res.rows[0];
   return row ? mapDisputeRow(row) : null;
@@ -365,8 +383,11 @@ export async function getDisputeByAssertionId(
     [assertionId, normalizedInstanceId],
   );
   if (res.rows.length === 0) {
-    const mock = mockDisputes.find((d) => d.assertionId === assertionId);
-    return mock || null;
+    if (isDemoModeEnabled()) {
+      const mock = mockDisputes.find((d) => d.assertionId === assertionId);
+      return mock || null;
+    }
+    return null;
   }
   const row = res.rows[0];
   return row ? mapDisputeRow(row) : null;
@@ -423,7 +444,10 @@ export async function listDisputes(
   const offset = Math.max(0, params.cursor ?? 0);
   const normalizedInstanceId = normalizeInstanceId(instanceId);
 
-  if (await isTableEmpty("disputes", normalizedInstanceId)) {
+  if (
+    isDemoModeEnabled() &&
+    (await isTableEmpty("disputes", normalizedInstanceId))
+  ) {
     let items = mockDisputes.slice();
     if (
       params.status &&
@@ -577,7 +601,10 @@ export function getOracleStats(
       }
       const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-      if (await isTableEmpty("assertions", normalizedInstanceId)) {
+      if (
+        isDemoModeEnabled() &&
+        (await isTableEmpty("assertions", normalizedInstanceId))
+      ) {
         const resolved24hMock = mockAssertions.filter((a) => {
           if (a.status !== "Resolved") return false;
           const resolvedAt = a.resolvedAt ?? a.livenessEndsAt;
@@ -714,7 +741,10 @@ export function getLeaderboardStats(
         return { topAsserters, topDisputers };
       }
 
-      if (await isTableEmpty("assertions", normalizedInstanceId)) {
+      if (
+        isDemoModeEnabled() &&
+        (await isTableEmpty("assertions", normalizedInstanceId))
+      ) {
         // Mock data logic
         const asserterMap = new Map<string, { count: number; value: number }>();
         mockAssertions.forEach((a) => {
@@ -840,7 +870,10 @@ export function getUserStats(
       }
 
       // Check if DB is empty to use mocks
-      if (await isTableEmpty("assertions", normalizedInstanceId)) {
+      if (
+        isDemoModeEnabled() &&
+        (await isTableEmpty("assertions", normalizedInstanceId))
+      ) {
         // Mock stats
         const assertions = mockAssertions.filter(
           (a) => a.asserter.toLowerCase() === addressLower,

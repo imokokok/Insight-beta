@@ -9,7 +9,11 @@ import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import { getClient, hasDatabase, query } from "@/server/db";
 import { getMemoryStore } from "@/server/memoryBackend";
-import { createOrTouchAlert, readAlertRules } from "@/server/observability";
+import {
+  createOrTouchAlert,
+  pruneStaleAlerts,
+  readAlertRules,
+} from "@/server/observability";
 import {
   getSyncState,
   listOracleInstances,
@@ -83,6 +87,16 @@ async function tickWorker() {
     }
 
     const nowMs = Date.now();
+    const lastMaintenanceAt = global.insightWorkerLastMaintenanceAt ?? 0;
+    if (nowMs - lastMaintenanceAt >= 6 * 60 * 60_000) {
+      try {
+        await pruneStaleAlerts();
+      } catch (e) {
+        logger.warn("Failed to prune stale alerts", { error: e });
+      } finally {
+        global.insightWorkerLastMaintenanceAt = nowMs;
+      }
+    }
     const rules = await readAlertRules();
     const degraded = ["1", "true"].includes(
       (env.INSIGHT_VOTING_DEGRADATION || "").toLowerCase(),
@@ -1017,6 +1031,7 @@ declare global {
   var insightWorkerLastTickAt: string | undefined;
   var insightWorkerLastTickDurationMs: number | undefined;
   var insightWorkerLastError: string | null | undefined;
+  var insightWorkerLastMaintenanceAt: number | undefined;
 }
 
 const embeddedWorkerDisabled = ["1", "true"].includes(

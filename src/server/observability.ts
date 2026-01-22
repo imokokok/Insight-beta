@@ -437,6 +437,38 @@ function pruneMemoryAlerts(mem: ReturnType<typeof getMemoryStore>) {
   }
 }
 
+export async function pruneStaleAlerts() {
+  await ensureDb();
+  const cutoffMs = Date.now() - 7 * 24 * 60 * 60_000;
+  if (!hasDatabase()) {
+    const mem = getMemoryStore();
+    let resolved = 0;
+    for (const [fingerprint, alert] of mem.alerts.entries()) {
+      if (alert.status === "Resolved") continue;
+      const lastSeenMs = Date.parse(alert.lastSeenAt);
+      if (!Number.isFinite(lastSeenMs) || lastSeenMs >= cutoffMs) continue;
+      const now = memoryNowIso();
+      mem.alerts.set(fingerprint, {
+        ...alert,
+        status: "Resolved",
+        resolvedAt: now,
+        updatedAt: now,
+      });
+      resolved += 1;
+    }
+    return { resolved };
+  }
+
+  const res = await query(
+    `
+    UPDATE alerts
+    SET status = 'Resolved', resolved_at = NOW(), updated_at = NOW()
+    WHERE last_seen_at < NOW() - INTERVAL '7 days' AND status != 'Resolved'
+    `,
+  );
+  return { resolved: res.rowCount ?? 0 };
+}
+
 export async function readAlertRules(): Promise<AlertRule[]> {
   await ensureDb();
   const stored = await readJsonFile<unknown>(ALERT_RULES_KEY, null);

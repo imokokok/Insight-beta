@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import crypto from "node:crypto";
 import {
   upsertAssertion,
   fetchAssertion,
@@ -7,6 +8,8 @@ import {
   recomputeDisputeVotes,
   upsertDispute,
   fetchDispute,
+  insertOracleEvent,
+  replayOracleEventsRange,
 } from "./oracleState";
 import { listAssertions, listDisputes } from "./oracleStore";
 import { query, hasDatabase } from "./db";
@@ -30,6 +33,7 @@ describe("oracleState", () => {
     (
       globalThis as unknown as { __insightMemoryStore?: unknown }
     ).__insightMemoryStore = undefined;
+    vi.mocked(hasDatabase).mockReturnValue(true);
   });
 
   describe("upsertAssertion", () => {
@@ -421,55 +425,109 @@ describe("oracleState", () => {
       }
     });
   });
+
+  describe("oracle events", () => {
+    it("stores payload checksum when inserting oracle event", async () => {
+      const payload = {
+        id: "0x1",
+        chain: "Local",
+        asserter: "0xabc",
+        protocol: "Aave",
+        market: "ETH/USD",
+        assertion: "Price is 2000",
+        assertedAt: new Date().toISOString(),
+        livenessEndsAt: new Date().toISOString(),
+        status: "Pending",
+        bondUsd: 1000,
+        txHash: "0xhash",
+      };
+      const payloadJson = JSON.stringify(payload);
+      const payloadChecksum = crypto
+        .createHash("sha256")
+        .update(payloadJson)
+        .digest("hex");
+      const queryMock = vi.mocked(query) as unknown as {
+        mockResolvedValueOnce: (value: unknown) => void;
+      };
+      queryMock.mockResolvedValueOnce({ rows: [{ ok: 1 }] });
+
+      const inserted = await insertOracleEvent({
+        chain: "Local",
+        eventType: "assertion_created",
+        assertionId: payload.id,
+        txHash: payload.txHash,
+        blockNumber: 1n,
+        logIndex: 0,
+        payload,
+      });
+
+      expect(inserted).toBe(true);
+      expect(query).toHaveBeenCalledWith(
+        expect.stringContaining("payload_checksum"),
+        expect.arrayContaining([payloadJson, payloadChecksum]),
+      );
+    });
+
+    it("skips replay when payload checksum mismatch", async () => {
+      const payload = {
+        id: "0x1",
+        chain: "Local",
+        asserter: "0xabc",
+        protocol: "Aave",
+        market: "ETH/USD",
+        assertion: "Price is 2000",
+        assertedAt: new Date().toISOString(),
+        livenessEndsAt: new Date().toISOString(),
+        status: "Pending",
+        bondUsd: 1000,
+        txHash: "0xhash",
+      };
+      const queryMock = vi.mocked(query) as unknown as {
+        mockResolvedValueOnce: (value: unknown) => void;
+      };
+      queryMock.mockResolvedValueOnce({
+        rows: [
+          {
+            event_type: "assertion_created",
+            assertion_id: null,
+            payload,
+            payload_checksum: "bad",
+          },
+        ],
+      });
+
+      const result = await replayOracleEventsRange(1n, 2n);
+
+      expect(result.applied).toBe(0);
+      expect(query).toHaveBeenCalledTimes(1);
+    });
+  });
 });
 
 describe("oracleStore", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
 
   it("uses mocks when assertions table is empty", async () => {
     vi.mocked(hasDatabase).mockReturnValue(true);
-    const queryMock = vi.mocked(query) as unknown as {
-      mockResolvedValueOnce: (value: unknown) => void;
-    };
-    queryMock.mockResolvedValueOnce({
-      rows: [{ has_rows: false }],
-      rowCount: 1,
-    });
-
+    vi.stubEnv("INSIGHT_DEMO_MODE", "true");
     const result = await listAssertions({ limit: 30, cursor: 0 });
 
-    expect(query).toHaveBeenCalledTimes(1);
-    expect(query).toHaveBeenCalledWith(
-      expect.stringContaining(
-        "SELECT EXISTS (SELECT 1 FROM assertions WHERE instance_id = $1) as has_rows",
-      ),
-      ["default"],
-    );
+    expect(query).not.toHaveBeenCalled();
     expect(result.total).toBe(mockAssertions.length);
     expect(result.items).toHaveLength(Math.min(30, mockAssertions.length));
   });
 
   it("uses mocks when disputes table is empty", async () => {
     vi.mocked(hasDatabase).mockReturnValue(true);
-    const queryMock = vi.mocked(query) as unknown as {
-      mockResolvedValueOnce: (value: unknown) => void;
-    };
-    queryMock.mockResolvedValueOnce({
-      rows: [{ has_rows: false }],
-      rowCount: 1,
-    });
-
+    vi.stubEnv("INSIGHT_DEMO_MODE", "true");
     const result = await listDisputes({ limit: 30, cursor: 0 });
 
-    expect(query).toHaveBeenCalledTimes(1);
-    expect(query).toHaveBeenCalledWith(
-      expect.stringContaining(
-        "SELECT EXISTS (SELECT 1 FROM disputes WHERE instance_id = $1) as has_rows",
-      ),
-      ["default"],
-    );
+    expect(query).not.toHaveBeenCalled();
     expect(result.total).toBe(mockDisputes.length);
     expect(result.items).toHaveLength(Math.min(30, mockDisputes.length));
   });
