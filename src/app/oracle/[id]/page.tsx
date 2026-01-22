@@ -24,11 +24,12 @@ import {
   cn,
   fetchApiData,
   formatUsd,
+  getErrorCode,
   getExplorerUrl,
   getAssertionStatusColor,
 } from "@/lib/utils";
 import { useI18n } from "@/i18n/LanguageProvider";
-import { langToLocale } from "@/i18n/translations";
+import { getUiErrorMessage, langToLocale } from "@/i18n/translations";
 import { useToast } from "@/components/ui/toast";
 import { useWatchlist } from "@/hooks/useWatchlist";
 import { useOracleTransaction } from "@/hooks/useOracleTransaction";
@@ -193,7 +194,9 @@ export default function OracleDetailPage() {
           {t("oracle.detail.errorTitle")}
         </h3>
         <p className="mt-2 max-w-md text-gray-600">
-          {error ? error : t("oracle.detail.errorNotFound")}
+          {error
+            ? getUiErrorMessage(getErrorCode(error), t)
+            : t("oracle.detail.errorNotFound")}
         </p>
         <button
           onClick={() => router.back()}

@@ -11,6 +11,7 @@ import { useOracleData } from "@/hooks/useOracleData";
 import { useUserStats } from "@/hooks/useUserStats";
 import { useWallet } from "@/contexts/WalletContext";
 import { useI18n } from "@/i18n/LanguageProvider";
+import { getUiErrorMessage } from "@/i18n/translations";
 import { LayoutGrid, List, Search, Wallet, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +23,7 @@ export default function MyAssertionsPage() {
   const searchParams = useSearchParams();
   const currentSearch = searchParams?.toString() ?? "";
   const instanceIdFromUrl = searchParams?.get("instanceId")?.trim() || "";
+  const queryFromUrl = searchParams?.get("q")?.trim() || "";
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [query, setQuery] = useState("");
   const [instanceId, setInstanceId] = useState<string>(() => {
@@ -46,10 +48,18 @@ export default function MyAssertionsPage() {
   }, [instanceIdFromUrl, instanceId]);
 
   useEffect(() => {
+    if (queryFromUrl === query) return;
+    setQuery(queryFromUrl);
+  }, [queryFromUrl, query]);
+
+  useEffect(() => {
     const normalized = instanceId.trim();
+    const normalizedQuery = query.trim();
     const params = new URLSearchParams(currentSearch);
     if (normalized) params.set("instanceId", normalized);
     else params.delete("instanceId");
+    if (normalizedQuery) params.set("q", normalizedQuery);
+    else params.delete("q");
     const nextSearch = params.toString();
     const nextUrl = nextSearch ? `${pathname}?${nextSearch}` : pathname;
     const currentUrl = currentSearch
@@ -57,7 +67,7 @@ export default function MyAssertionsPage() {
       : pathname;
     if (nextUrl !== currentUrl)
       router.replace(nextUrl as Route, { scroll: false });
-  }, [instanceId, pathname, router, currentSearch]);
+  }, [instanceId, pathname, router, currentSearch, query]);
 
   useEffect(() => {
     try {
@@ -76,13 +86,8 @@ export default function MyAssertionsPage() {
     }
   }, [instanceId]);
 
-  const { items, loading, loadingMore, hasMore, loadMore } = useOracleData(
-    "All",
-    "All",
-    query,
-    address,
-    instanceId,
-  );
+  const { items, loading, loadingMore, hasMore, loadMore, error } =
+    useOracleData("All", "All", query, address, instanceId);
   const { stats, loading: statsLoading } = useUserStats(address, instanceId);
 
   if (!address) {
@@ -159,7 +164,7 @@ export default function MyAssertionsPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="text"
-              placeholder={t("oracle.searchPlaceholder")}
+              placeholder={t("oracle.myAssertions.searchPlaceholder")}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="glass-input h-9 w-full rounded-xl pl-9 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500/20 md:w-64"
@@ -169,7 +174,12 @@ export default function MyAssertionsPage() {
       </div>
 
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
-        {!loading && items.length === 0 ? (
+        {error ? (
+          <div className="mb-4 rounded-2xl border border-rose-100 bg-rose-50/50 p-4 text-sm text-rose-700 shadow-sm">
+            {getUiErrorMessage(error, t)}
+          </div>
+        ) : null}
+        {!loading && !error && items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="p-6 rounded-full bg-purple-50 text-purple-600 mb-6">
               <FileText size={48} />

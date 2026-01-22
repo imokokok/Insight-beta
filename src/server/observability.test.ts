@@ -4,6 +4,8 @@ import {
   createOrTouchAlert,
   appendAuditLog,
   pruneStaleAlerts,
+  updateAlertStatus,
+  createIncident,
 } from "./observability";
 import { hasDatabase } from "@/server/db";
 import { notifyAlert } from "@/server/notifications";
@@ -128,5 +130,50 @@ describe("observability (memory)", () => {
     expect(staleAfter?.status).toBe("Resolved");
     expect(staleAfter?.resolvedAt).not.toBeNull();
     expect(freshAfter?.status).toBe("Open");
+  });
+
+  it("updates alert status and writes audit log", async () => {
+    await createOrTouchAlert({
+      fingerprint: "status-alert",
+      type: "test",
+      severity: "warning",
+      title: "status",
+      message: "status",
+    });
+
+    const mem = getMemoryStore();
+    const created = Array.from(mem.alerts.values()).find(
+      (a) => a.fingerprint === "status-alert",
+    );
+    expect(created).toBeTruthy();
+
+    const updated = await updateAlertStatus({
+      id: created!.id,
+      status: "Acknowledged",
+      actor: "tester",
+    });
+
+    expect(updated?.status).toBe("Acknowledged");
+    expect(updated?.acknowledgedAt).not.toBeNull();
+    expect(mem.audit[0]?.action).toBe("alert_status_updated");
+    expect(mem.audit[0]?.actor).toBe("tester");
+  });
+
+  it("creates incidents and records audit log", async () => {
+    const incident = await createIncident({
+      title: "Incident 1",
+      severity: "critical",
+      alertIds: [1, 2],
+      actor: "ops",
+    });
+
+    expect(incident).not.toBeNull();
+    expect(incident?.id).toBe(1);
+    expect(incident?.status).toBe("Open");
+    expect(incident?.alertIds).toEqual([1, 2]);
+
+    const mem = getMemoryStore();
+    expect(mem.audit[0]?.action).toBe("incident_created");
+    expect(mem.audit[0]?.actor).toBe("ops");
   });
 });

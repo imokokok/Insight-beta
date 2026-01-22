@@ -9,6 +9,7 @@ import { Assertion } from "@/lib/oracleTypes";
 import { AssertionList } from "@/components/AssertionList";
 import { PageHeader } from "@/components/PageHeader";
 import { useI18n } from "@/i18n/LanguageProvider";
+import { getUiErrorMessage } from "@/i18n/translations";
 import { Star } from "lucide-react";
 import Link from "next/link";
 
@@ -91,7 +92,7 @@ export default function WatchlistPage() {
     [watchlist, mounted, instanceId],
   );
 
-  const { items, loading, loadingMore, hasMore, loadMore } =
+  const { items, loading, loadingMore, hasMore, loadMore, error } =
     useInfiniteList<Assertion>(getUrl, { revalidateOnFocus: true });
 
   return (
@@ -125,16 +126,23 @@ export default function WatchlistPage() {
           </Link>
         </div>
       ) : (
-        <AssertionList
-          items={items}
-          loading={loading}
-          hasMore={hasMore}
-          loadMore={loadMore}
-          loadingMore={loadingMore}
-          emptyStateMessage={t("common.noData")}
-          viewMode="grid"
-          instanceId={instanceId}
-        />
+        <div className="space-y-4">
+          {error ? (
+            <div className="rounded-2xl border border-rose-100 bg-rose-50/50 p-4 text-sm text-rose-700 shadow-sm">
+              {getUiErrorMessage(error, t)}
+            </div>
+          ) : null}
+          <AssertionList
+            items={items}
+            loading={loading}
+            hasMore={hasMore}
+            loadMore={loadMore}
+            loadingMore={loadingMore}
+            emptyStateMessage={t("common.noData")}
+            viewMode="grid"
+            instanceId={instanceId}
+          />
+        </div>
       )}
     </main>
   );

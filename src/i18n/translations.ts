@@ -229,15 +229,29 @@ export const translations = {
         testSending: "发送中…",
         testSent: "测试已发送",
         testFailed: "测试发送失败",
+        opsTitle: "运维指标",
+        opsAlertsOpen: "未关闭告警",
+        opsAlertsAcknowledged: "已确认告警",
+        opsMtta: "平均确认时间",
+        opsAlertMttr: "告警平均恢复时间",
+        opsIncidentsOpen: "未关闭事件",
+        opsIncidentMttr: "事件平均恢复时间",
+        opsTrend: "运维趋势",
+        topRisks: "高风险项",
         params: {
           maxAgeMinutes: "最大滞后（分钟）",
           maxLagBlocks: "最大落后区块数",
           maxOpenAssertions: "最大未结算断言数",
           maxOpenDisputes: "最大未结算争议数",
+          maxDelayMinutes: "最大延迟（分钟）",
           thresholdMs: "阈值（毫秒）",
           thresholdPercent: "错误率阈值（%）",
           windowMinutes: "统计窗口（分钟）",
+          windowDays: "统计窗口（天）",
           withinMinutes: "预警窗口（分钟）",
+          minTotalVotes: "最少投票数",
+          minAssertions: "最小断言数",
+          maxMarginPercent: "最大票差 (%)",
           cooldownMs: "冷却时间（分钟）",
           escalateAfterMs: "升级等待（分钟）",
           priceDeviationThreshold: "价格偏差阈值 (%)",
@@ -253,20 +267,38 @@ export const translations = {
           maxLagBlocksPositive: "最大落后区块数必须为正数",
           maxOpenAssertionsPositive: "最大未结算断言数必须为正数",
           maxOpenDisputesPositive: "最大未结算争议数必须为正数",
+          executionDelayedMaxDelayMinutesPositive: "执行延迟阈值必须为正数",
           slowApiThresholdMsPositive: "慢请求阈值必须为正数",
           databaseSlowQueryThresholdMsPositive: "慢查询阈值必须为正数",
           highErrorRateThresholdPercentRange: "错误率阈值必须在 1-100 之间",
           highErrorRateWindowMinutesPositive: "错误率统计窗口必须为正数",
           withinMinutesPositive: "预警窗口必须为正数",
+          minTotalVotesNonNegative: "最少投票数不能为负数",
+          minTotalVotesPositive: "最少投票数必须为正数",
+          maxMarginPercentRange: "最大票差必须在 1-100 之间",
+          highDisputeRateWindowDaysPositive: "争议率统计窗口必须为正数",
+          highDisputeRateMinAssertionsPositive: "最小断言数必须为正数",
+          highDisputeRateThresholdPercentRange: "争议率阈值必须在 1-100 之间",
         },
         events: {
           dispute_created: "争议创建",
           liveness_expiring: "挑战期即将结束",
+          contract_paused: "合约暂停",
           sync_error: "同步错误",
           stale_sync: "同步停滞",
+          sync_backlog: "同步落后",
+          backlog_assertions: "断言积压",
+          backlog_disputes: "争议积压",
+          market_stale: "市场数据停滞",
+          execution_delayed: "执行延迟",
+          low_participation: "投票参与度过低",
+          high_vote_divergence: "投票分歧过大",
+          high_dispute_rate: "争议率过高",
           slow_api_request: "慢请求",
           high_error_rate: "错误率过高",
           database_slow_query: "慢查询",
+          price_deviation: "价格偏离",
+          low_gas: "Gas 余额过低",
         },
         severities: {
           info: "信息",
@@ -281,6 +313,7 @@ export const translations = {
         connectWalletDesc: "请连接您的钱包以查看您的断言历史记录。",
         noAssertions: "您尚未创建任何断言。",
         createFirst: "创建您的第一个断言",
+        searchPlaceholder: "搜索断言…",
       },
       myDisputes: {
         title: "我的争议",
@@ -288,6 +321,7 @@ export const translations = {
         connectWalletTitle: "连接钱包以查看",
         connectWalletDesc: "请连接您的钱包以查看您的争议历史记录。",
         noDisputes: "您尚未发起任何争议。",
+        searchPlaceholder: "搜索争议…",
       },
       timeline: {
         asserted: "已断言",
@@ -870,15 +904,29 @@ export const translations = {
         testSending: "Sending…",
         testSent: "Test sent",
         testFailed: "Failed to send test",
+        opsTitle: "Ops",
+        opsAlertsOpen: "Alerts open",
+        opsAlertsAcknowledged: "Alerts ack",
+        opsMtta: "MTTA",
+        opsAlertMttr: "Alert MTTR",
+        opsIncidentsOpen: "Incidents open",
+        opsIncidentMttr: "Incident MTTR",
+        opsTrend: "Ops trend",
+        topRisks: "Top risks",
         params: {
           maxAgeMinutes: "Max age (minutes)",
           maxLagBlocks: "Max Lag Blocks",
           maxOpenAssertions: "Max Open Assertions",
           maxOpenDisputes: "Max Open Disputes",
+          maxDelayMinutes: "Max Delay (minutes)",
           thresholdMs: "Threshold (ms)",
           thresholdPercent: "Threshold (%)",
           windowMinutes: "Window (minutes)",
+          windowDays: "Window (days)",
           withinMinutes: "Within minutes",
+          minTotalVotes: "Min Total Votes",
+          minAssertions: "Min Assertions",
+          maxMarginPercent: "Max Margin (%)",
           cooldownMs: "Cooldown (minutes)",
           escalateAfterMs: "Escalate after (minutes)",
           priceDeviationThreshold: "Price Deviation Threshold (%)",
@@ -894,6 +942,8 @@ export const translations = {
             "Max open assertions must be a positive number",
           maxOpenDisputesPositive:
             "Max open disputes must be a positive number",
+          executionDelayedMaxDelayMinutesPositive:
+            "Max delay minutes must be a positive number",
           slowApiThresholdMsPositive: "Threshold must be a positive number",
           databaseSlowQueryThresholdMsPositive:
             "Threshold must be a positive number",
@@ -904,15 +954,35 @@ export const translations = {
           priceDeviationPositive: "Price deviation threshold must be positive",
           lowGasPositive: "Minimum gas balance must be positive",
           withinMinutesPositive: "Within minutes must be a positive number",
+          minTotalVotesNonNegative: "Min total votes must be non-negative",
+          minTotalVotesPositive: "Min total votes must be positive",
+          maxMarginPercentRange: "Max margin must be between 1 and 100",
+          highDisputeRateWindowDaysPositive:
+            "Window days must be a positive number",
+          highDisputeRateMinAssertionsPositive:
+            "Min assertions must be a positive number",
+          highDisputeRateThresholdPercentRange:
+            "Threshold must be between 1 and 100",
         },
         events: {
           dispute_created: "Dispute Created",
           liveness_expiring: "Liveness Expiring",
+          contract_paused: "Contract Paused",
           sync_error: "Sync Error",
           stale_sync: "Stale Sync",
+          sync_backlog: "Sync Backlog",
+          backlog_assertions: "Assertion Backlog",
+          backlog_disputes: "Dispute Backlog",
+          market_stale: "Market Stale",
+          execution_delayed: "Execution Delayed",
+          low_participation: "Low Participation",
+          high_vote_divergence: "High Vote Divergence",
+          high_dispute_rate: "High Dispute Rate",
           slow_api_request: "Slow API Request",
           high_error_rate: "High Error Rate",
           database_slow_query: "Slow Database Query",
+          price_deviation: "Price Deviation",
+          low_gas: "Low Gas Balance",
         },
         severities: {
           info: "Info",
@@ -928,6 +998,7 @@ export const translations = {
           "Please connect your wallet to see your assertion history.",
         noAssertions: "You haven't created any assertions yet.",
         createFirst: "Create your first assertion",
+        searchPlaceholder: "Search assertions…",
       },
       myDisputes: {
         title: "My Disputes",
@@ -936,6 +1007,7 @@ export const translations = {
         connectWalletDesc:
           "Please connect your wallet to see your dispute history.",
         noDisputes: "You haven't initiated any disputes yet.",
+        searchPlaceholder: "Search disputes…",
       },
       timeline: {
         asserted: "Asserted",
@@ -1472,6 +1544,7 @@ export const translations = {
           "Por favor, conecta tu cartera para ver tu historial de afirmaciones.",
         noAssertions: "Aún no has creado ninguna afirmación.",
         createFirst: "Crea tu primera afirmación",
+        searchPlaceholder: "Buscar afirmaciones…",
       },
       myDisputes: {
         title: "Mis Disputas",
@@ -1480,6 +1553,7 @@ export const translations = {
         connectWalletDesc:
           "Por favor, conecta tu cartera para ver tu historial de disputas.",
         noDisputes: "Aún no has iniciado ninguna disputa.",
+        searchPlaceholder: "Buscar disputas…",
       },
       leaderboard: {
         topAsserters: "Mejores Afirmadores",
@@ -1691,19 +1765,42 @@ export const translations = {
         testFailed: "Error al enviar la prueba",
         params: {
           maxAgeMinutes: "Antigüedad máxima (minutos)",
+          maxLagBlocks: "Máximo de bloques de retraso",
+          maxOpenAssertions: "Máximo de afirmaciones abiertas",
+          maxOpenDisputes: "Máximo de disputas abiertas",
+          maxDelayMinutes: "Retraso máximo (minutos)",
           thresholdMs: "Umbral (ms)",
           thresholdPercent: "Umbral (%)",
           windowMinutes: "Ventana (minutos)",
+          windowDays: "Ventana (días)",
           withinMinutes: "Ventana (minutos)",
+          minTotalVotes: "Votos totales mínimos",
+          minAssertions: "Afirmaciones mínimas",
+          maxMarginPercent: "Margen máximo (%)",
           cooldownMs: "Enfriamiento (minutos)",
           escalateAfterMs: "Escalar después de (minutos)",
+          priceDeviationThreshold: "Umbral de desviación de precio (%)",
+          minBalanceEth: "Saldo mínimo de gas (ETH)",
         },
         validation: {
           emailRecipientRequired:
             "El destinatario es obligatorio cuando Email está habilitado",
           emailRecipientInvalid: "Formato de email del destinatario inválido",
+          priceDeviationPositive:
+            "El umbral de desviación de precio debe ser positivo",
+          lowGasPositive: "El saldo mínimo de gas debe ser positivo",
           staleSyncMaxAgeMsPositive:
             "La antigüedad máxima debe ser un número positivo",
+          marketStaleMaxAgeMsPositive:
+            "La antigüedad máxima debe ser un número positivo",
+          maxLagBlocksPositive:
+            "El máximo de bloques de retraso debe ser un número positivo",
+          maxOpenAssertionsPositive:
+            "El máximo de afirmaciones abiertas debe ser un número positivo",
+          maxOpenDisputesPositive:
+            "El máximo de disputas abiertas debe ser un número positivo",
+          executionDelayedMaxDelayMinutesPositive:
+            "El retraso máximo debe ser un número positivo",
           slowApiThresholdMsPositive: "El umbral debe ser un número positivo",
           databaseSlowQueryThresholdMsPositive:
             "El umbral debe ser un número positivo",
@@ -1713,15 +1810,37 @@ export const translations = {
             "Los minutos de ventana deben ser un número positivo",
           withinMinutesPositive:
             "Los minutos de ventana deben ser un número positivo",
+          minTotalVotesNonNegative:
+            "Los votos totales mínimos no pueden ser negativos",
+          minTotalVotesPositive:
+            "Los votos totales mínimos deben ser positivos",
+          maxMarginPercentRange: "El margen máximo debe estar entre 1 y 100",
+          highDisputeRateWindowDaysPositive:
+            "Los días de ventana deben ser un número positivo",
+          highDisputeRateMinAssertionsPositive:
+            "Las afirmaciones mínimas deben ser positivas",
+          highDisputeRateThresholdPercentRange:
+            "El umbral debe estar entre 1 y 100",
         },
         events: {
           dispute_created: "Disputa creada",
           liveness_expiring: "Vigencia a punto de expirar",
+          contract_paused: "Contrato pausado",
           sync_error: "Error de sincronización",
           stale_sync: "Sincronización estancada",
+          sync_backlog: "Retraso de sincronización",
+          backlog_assertions: "Afirmaciones en cola",
+          backlog_disputes: "Disputas en cola",
+          market_stale: "Mercado sin actualizar",
+          execution_delayed: "Ejecución retrasada",
+          low_participation: "Baja participación",
+          high_vote_divergence: "Alta divergencia de votos",
+          high_dispute_rate: "Alta tasa de disputas",
           slow_api_request: "Solicitud API lenta",
           high_error_rate: "Alta tasa de errores",
           database_slow_query: "Consulta lenta de base de datos",
+          price_deviation: "Desviación de precio",
+          low_gas: "Saldo de gas bajo",
         },
         severities: {
           info: "Info",
@@ -2151,19 +2270,41 @@ export const translations = {
         testFailed: "Échec de l'envoi du test",
         params: {
           maxAgeMinutes: "Âge maximum (minutes)",
+          maxLagBlocks: "Blocs de retard max",
+          maxOpenAssertions: "Assertions ouvertes max",
+          maxOpenDisputes: "Contestations ouvertes max",
+          maxDelayMinutes: "Délai max (minutes)",
           thresholdMs: "Seuil (ms)",
           thresholdPercent: "Seuil (%)",
           windowMinutes: "Fenêtre (minutes)",
+          windowDays: "Fenêtre (jours)",
           withinMinutes: "Fenêtre (minutes)",
+          minTotalVotes: "Votes totaux min",
+          minAssertions: "Assertions min",
+          maxMarginPercent: "Marge max (%)",
           cooldownMs: "Délai de refroidissement (minutes)",
           escalateAfterMs: "Escalade après (minutes)",
+          priceDeviationThreshold: "Seuil d'écart de prix (%)",
+          minBalanceEth: "Solde min de gas (ETH)",
         },
         validation: {
           emailRecipientRequired:
             "Le destinataire est requis lorsque Email est activé",
           emailRecipientInvalid: "Format d'email du destinataire invalide",
+          priceDeviationPositive: "Le seuil d'écart de prix doit être positif",
+          lowGasPositive: "Le solde minimal de gas doit être positif",
           staleSyncMaxAgeMsPositive:
             "L'âge maximum doit être un nombre positif",
+          marketStaleMaxAgeMsPositive:
+            "L'âge maximum doit être un nombre positif",
+          maxLagBlocksPositive:
+            "Le nombre max de blocs de retard doit être positif",
+          maxOpenAssertionsPositive:
+            "Le nombre max d'assertions ouvertes doit être positif",
+          maxOpenDisputesPositive:
+            "Le nombre max de contestations ouvertes doit être positif",
+          executionDelayedMaxDelayMinutesPositive:
+            "Le délai max doit être un nombre positif",
           slowApiThresholdMsPositive: "Le seuil doit être un nombre positif",
           databaseSlowQueryThresholdMsPositive:
             "Le seuil doit être un nombre positif",
@@ -2173,15 +2314,37 @@ export const translations = {
             "Les minutes de fenêtre doivent être un nombre positif",
           withinMinutesPositive:
             "Les minutes de fenêtre doivent être un nombre positif",
+          minTotalVotesNonNegative:
+            "Le nombre min de votes totaux ne peut pas être négatif",
+          minTotalVotesPositive:
+            "Le nombre min de votes totaux doit être positif",
+          maxMarginPercentRange: "La marge max doit être entre 1 et 100",
+          highDisputeRateWindowDaysPositive:
+            "Les jours de fenêtre doivent être positifs",
+          highDisputeRateMinAssertionsPositive:
+            "Le nombre min d'assertions doit être positif",
+          highDisputeRateThresholdPercentRange:
+            "Le seuil doit être entre 1 et 100",
         },
         events: {
           dispute_created: "Contestation créée",
           liveness_expiring: "Fin de validité imminente",
+          contract_paused: "Contrat suspendu",
           sync_error: "Erreur de synchronisation",
           stale_sync: "Synchronisation figée",
+          sync_backlog: "Retard de synchronisation",
+          backlog_assertions: "Arriéré d'assertions",
+          backlog_disputes: "Arriéré de contestations",
+          market_stale: "Marché figé",
+          execution_delayed: "Exécution retardée",
+          low_participation: "Participation faible",
+          high_vote_divergence: "Forte divergence de votes",
+          high_dispute_rate: "Taux élevé de contestations",
           slow_api_request: "Requête API lente",
           high_error_rate: "Taux d'erreur élevé",
           database_slow_query: "Requête base de données lente",
+          price_deviation: "Écart de prix",
+          low_gas: "Solde de gas faible",
         },
         severities: {
           info: "Info",
@@ -2197,6 +2360,7 @@ export const translations = {
           "Veuillez connecter votre portefeuille pour voir votre historique d'assertions.",
         noAssertions: "Vous n'avez pas encore créé d'assertions.",
         createFirst: "Créer votre première assertion",
+        searchPlaceholder: "Rechercher des assertions…",
       },
       myDisputes: {
         title: "Mes contestations",
@@ -2205,6 +2369,7 @@ export const translations = {
         connectWalletDesc:
           "Veuillez connecter votre portefeuille pour voir votre historique de contestations.",
         noDisputes: "Vous n'avez pas encore initié de contestations.",
+        searchPlaceholder: "Rechercher des contestations…",
       },
       timeline: {
         asserted: "Asserté",
@@ -2666,32 +2831,69 @@ export const translations = {
         testFailed: "테스트 전송 실패",
         params: {
           maxAgeMinutes: "최대 경과 (분)",
+          maxLagBlocks: "최대 지연 블록",
+          maxOpenAssertions: "최대 미결 주장",
+          maxOpenDisputes: "최대 미결 분쟁",
+          maxDelayMinutes: "최대 지연 (분)",
           thresholdMs: "임계값 (ms)",
           thresholdPercent: "임계값 (%)",
           windowMinutes: "윈도우 (분)",
+          windowDays: "윈도우 (일)",
           withinMinutes: "윈도우 (분)",
+          minTotalVotes: "최소 총 투표 수",
+          minAssertions: "최소 주장 수",
+          maxMarginPercent: "최대 격차 (%)",
           cooldownMs: "쿨다운 (분)",
           escalateAfterMs: "다음 후 에스컬레이션 (분)",
+          priceDeviationThreshold: "가격 편차 임계값 (%)",
+          minBalanceEth: "최소 가스 잔액 (ETH)",
         },
         validation: {
           emailRecipientRequired: "Email을 활성화하면 수신자가 필요합니다",
           emailRecipientInvalid: "수신자 이메일 형식이 올바르지 않습니다",
+          priceDeviationPositive: "가격 편차 임계값은 양수여야 합니다",
+          lowGasPositive: "최소 가스 잔액은 양수여야 합니다",
           staleSyncMaxAgeMsPositive: "최대 경과는 양수여야 합니다",
+          marketStaleMaxAgeMsPositive: "최대 경과는 양수여야 합니다",
+          maxLagBlocksPositive: "최대 지연 블록은 양수여야 합니다",
+          maxOpenAssertionsPositive: "최대 미결 주장은 양수여야 합니다",
+          maxOpenDisputesPositive: "최대 미결 분쟁은 양수여야 합니다",
+          executionDelayedMaxDelayMinutesPositive:
+            "최대 지연 시간은 양수여야 합니다",
           slowApiThresholdMsPositive: "임계값은 양수여야 합니다",
           databaseSlowQueryThresholdMsPositive: "임계값은 양수여야 합니다",
           highErrorRateThresholdPercentRange:
             "임계값은 1에서 100 사이여야 합니다",
           highErrorRateWindowMinutesPositive: "윈도우 분은 양수여야 합니다",
           withinMinutesPositive: "윈도우 분은 양수여야 합니다",
+          minTotalVotesNonNegative: "최소 총 투표 수는 음수일 수 없습니다",
+          minTotalVotesPositive: "최소 총 투표 수는 양수여야 합니다",
+          maxMarginPercentRange: "최대 격차는 1에서 100 사이여야 합니다",
+          highDisputeRateWindowDaysPositive: "윈도우 일수는 양수여야 합니다",
+          highDisputeRateMinAssertionsPositive:
+            "최소 주장 수는 양수여야 합니다",
+          highDisputeRateThresholdPercentRange:
+            "임계값은 1에서 100 사이여야 합니다",
         },
         events: {
           dispute_created: "분쟁 생성",
           liveness_expiring: "챌린지 기간 만료 임박",
+          contract_paused: "계약 중단",
           sync_error: "동기화 오류",
           stale_sync: "동기화 정체",
+          sync_backlog: "동기화 지연",
+          backlog_assertions: "주장 적체",
+          backlog_disputes: "분쟁 적체",
+          market_stale: "시장 데이터 정체",
+          execution_delayed: "실행 지연",
+          low_participation: "낮은 참여도",
+          high_vote_divergence: "높은 투표 분산",
+          high_dispute_rate: "높은 분쟁률",
           slow_api_request: "느린 API 요청",
           high_error_rate: "높은 오류율",
           database_slow_query: "느린 DB 쿼리",
+          price_deviation: "가격 편차",
+          low_gas: "가스 잔액 부족",
         },
         severities: {
           info: "정보",
@@ -2706,6 +2908,7 @@ export const translations = {
         connectWalletDesc: "주장 기록을 보려면 지갑을 연결하세요.",
         noAssertions: "아직 주장을 만들지 않았습니다.",
         createFirst: "첫 주장 만들기",
+        searchPlaceholder: "주장 검색…",
       },
       myDisputes: {
         title: "내 분쟁",
@@ -2713,6 +2916,7 @@ export const translations = {
         connectWalletTitle: "보려면 지갑을 연결하세요",
         connectWalletDesc: "분쟁 기록을 보려면 지갑을 연결하세요.",
         noDisputes: "아직 분쟁을 시작하지 않았습니다.",
+        searchPlaceholder: "분쟁 검색…",
       },
       timeline: {
         asserted: "주장됨",
@@ -3115,11 +3319,13 @@ export type TranslationKey =
   | "oracle.myAssertions.connectWalletDesc"
   | "oracle.myAssertions.noAssertions"
   | "oracle.myAssertions.createFirst"
+  | "oracle.myAssertions.searchPlaceholder"
   | "oracle.myDisputes.title"
   | "oracle.myDisputes.description"
   | "oracle.myDisputes.connectWalletTitle"
   | "oracle.myDisputes.connectWalletDesc"
   | "oracle.myDisputes.noDisputes"
+  | "oracle.myDisputes.searchPlaceholder"
   | "oracle.sync.synced"
   | "oracle.sync.lagging"
   | "oracle.sync.error"
@@ -3437,11 +3643,22 @@ export type TranslationKey =
   | "oracle.alerts.noRules"
   | "oracle.alerts.events.dispute_created"
   | "oracle.alerts.events.liveness_expiring"
+  | "oracle.alerts.events.contract_paused"
   | "oracle.alerts.events.sync_error"
   | "oracle.alerts.events.stale_sync"
+  | "oracle.alerts.events.sync_backlog"
+  | "oracle.alerts.events.backlog_assertions"
+  | "oracle.alerts.events.backlog_disputes"
+  | "oracle.alerts.events.market_stale"
+  | "oracle.alerts.events.execution_delayed"
+  | "oracle.alerts.events.low_participation"
+  | "oracle.alerts.events.high_vote_divergence"
+  | "oracle.alerts.events.high_dispute_rate"
   | "oracle.alerts.events.slow_api_request"
   | "oracle.alerts.events.high_error_rate"
   | "oracle.alerts.events.database_slow_query"
+  | "oracle.alerts.events.price_deviation"
+  | "oracle.alerts.events.low_gas"
   | "oracle.alerts.channels"
   | "oracle.alerts.channelsWebhook"
   | "oracle.alerts.channelsEmail"
@@ -3452,10 +3669,15 @@ export type TranslationKey =
   | "oracle.alerts.params.maxLagBlocks"
   | "oracle.alerts.params.maxOpenAssertions"
   | "oracle.alerts.params.maxOpenDisputes"
+  | "oracle.alerts.params.maxDelayMinutes"
   | "oracle.alerts.params.thresholdMs"
   | "oracle.alerts.params.thresholdPercent"
   | "oracle.alerts.params.windowMinutes"
+  | "oracle.alerts.params.windowDays"
   | "oracle.alerts.params.withinMinutes"
+  | "oracle.alerts.params.minTotalVotes"
+  | "oracle.alerts.params.minAssertions"
+  | "oracle.alerts.params.maxMarginPercent"
   | "oracle.alerts.params.cooldownMs"
   | "oracle.alerts.params.escalateAfterMs"
   | "oracle.alerts.params.priceDeviationThreshold"
@@ -3467,17 +3689,33 @@ export type TranslationKey =
   | "oracle.alerts.validation.maxLagBlocksPositive"
   | "oracle.alerts.validation.maxOpenAssertionsPositive"
   | "oracle.alerts.validation.maxOpenDisputesPositive"
+  | "oracle.alerts.validation.executionDelayedMaxDelayMinutesPositive"
   | "oracle.alerts.validation.slowApiThresholdMsPositive"
   | "oracle.alerts.validation.databaseSlowQueryThresholdMsPositive"
   | "oracle.alerts.validation.highErrorRateThresholdPercentRange"
   | "oracle.alerts.validation.highErrorRateWindowMinutesPositive"
   | "oracle.alerts.validation.withinMinutesPositive"
+  | "oracle.alerts.validation.minTotalVotesNonNegative"
+  | "oracle.alerts.validation.minTotalVotesPositive"
+  | "oracle.alerts.validation.maxMarginPercentRange"
+  | "oracle.alerts.validation.highDisputeRateWindowDaysPositive"
+  | "oracle.alerts.validation.highDisputeRateMinAssertionsPositive"
+  | "oracle.alerts.validation.highDisputeRateThresholdPercentRange"
   | "oracle.alerts.validation.priceDeviationPositive"
   | "oracle.alerts.validation.lowGasPositive"
   | "oracle.alerts.testSend"
   | "oracle.alerts.testSending"
   | "oracle.alerts.testSent"
   | "oracle.alerts.testFailed"
+  | "oracle.alerts.opsTitle"
+  | "oracle.alerts.opsAlertsOpen"
+  | "oracle.alerts.opsAlertsAcknowledged"
+  | "oracle.alerts.opsMtta"
+  | "oracle.alerts.opsAlertMttr"
+  | "oracle.alerts.opsIncidentsOpen"
+  | "oracle.alerts.opsIncidentMttr"
+  | "oracle.alerts.opsTrend"
+  | "oracle.alerts.topRisks"
   | "oracle.alerts.severities.info"
   | "oracle.alerts.severities.warning"
   | "oracle.alerts.severities.critical";

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { useI18n } from "@/i18n/LanguageProvider";
+import { getUiErrorMessage } from "@/i18n/translations";
 import {
   fetchApiData,
   getErrorCode,
@@ -160,7 +161,7 @@ export default function AdminTokensPage() {
 
       {error && (
         <div className="rounded-2xl border border-rose-100 bg-rose-50/50 p-4 text-sm text-rose-700 shadow-sm">
-          {error}
+          {getUiErrorMessage(error, t)}
         </div>
       )}
 

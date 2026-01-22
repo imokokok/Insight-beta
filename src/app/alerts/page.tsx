@@ -1365,7 +1365,7 @@ export default function AlertsPage() {
             <div className="rounded-xl border border-purple-100/60 bg-white/50 p-3">
               <div className="flex items-start justify-between gap-2">
                 <div className="text-sm font-semibold text-purple-950">
-                  Ops (7d)
+                  {t("oracle.alerts.opsTitle")} (7d)
                 </div>
                 <div className="text-[11px] text-purple-700/70">
                   {opsMetrics?.generatedAt
@@ -1393,7 +1393,7 @@ export default function AlertsPage() {
                   <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
                     <div className="rounded-lg border border-purple-100/60 bg-white/60 p-2">
                       <div className="text-[11px] text-purple-700/70">
-                        Alerts open
+                        {t("oracle.alerts.opsAlertsOpen")}
                       </div>
                       <div className="text-sm font-semibold text-purple-950">
                         {opsMetrics.alerts.open}
@@ -1401,14 +1401,16 @@ export default function AlertsPage() {
                     </div>
                     <div className="rounded-lg border border-purple-100/60 bg-white/60 p-2">
                       <div className="text-[11px] text-purple-700/70">
-                        Alerts ack
+                        {t("oracle.alerts.opsAlertsAcknowledged")}
                       </div>
                       <div className="text-sm font-semibold text-purple-950">
                         {opsMetrics.alerts.acknowledged}
                       </div>
                     </div>
                     <div className="rounded-lg border border-purple-100/60 bg-white/60 p-2">
-                      <div className="text-[11px] text-purple-700/70">MTTA</div>
+                      <div className="text-[11px] text-purple-700/70">
+                        {t("oracle.alerts.opsMtta")}
+                      </div>
                       <div className="text-sm font-semibold text-purple-950">
                         {formatDurationMinutes(
                           (opsMetrics.alerts.mttaMs ?? 0) / 60_000,
@@ -1417,7 +1419,7 @@ export default function AlertsPage() {
                     </div>
                     <div className="rounded-lg border border-purple-100/60 bg-white/60 p-2">
                       <div className="text-[11px] text-purple-700/70">
-                        Alert MTTR
+                        {t("oracle.alerts.opsAlertMttr")}
                       </div>
                       <div className="text-sm font-semibold text-purple-950">
                         {formatDurationMinutes(
@@ -1427,7 +1429,7 @@ export default function AlertsPage() {
                     </div>
                     <div className="rounded-lg border border-purple-100/60 bg-white/60 p-2">
                       <div className="text-[11px] text-purple-700/70">
-                        Incidents open
+                        {t("oracle.alerts.opsIncidentsOpen")}
                       </div>
                       <div className="text-sm font-semibold text-purple-950">
                         {opsMetrics.incidents.open}
@@ -1435,7 +1437,7 @@ export default function AlertsPage() {
                     </div>
                     <div className="rounded-lg border border-purple-100/60 bg-white/60 p-2">
                       <div className="text-[11px] text-purple-700/70">
-                        Incident MTTR
+                        {t("oracle.alerts.opsIncidentMttr")}
                       </div>
                       <div className="text-sm font-semibold text-purple-950">
                         {formatDurationMinutes(
@@ -1448,7 +1450,7 @@ export default function AlertsPage() {
                   <div className="mt-3 rounded-lg border border-purple-100/60 bg-white/60 p-2">
                     <div className="flex items-start justify-between gap-2">
                       <div className="text-[11px] text-purple-700/70">
-                        Ops trend
+                        {t("oracle.alerts.opsTrend")}
                       </div>
                       <div className="text-[11px] text-purple-700/70">7d</div>
                     </div>
@@ -2132,7 +2134,7 @@ export default function AlertsPage() {
 
             <div className="rounded-xl border border-purple-100/60 bg-white/50 p-3">
               <div className="text-sm font-semibold text-purple-950">
-                Top risks
+                {t("oracle.alerts.topRisks")}
               </div>
               {risksError ? (
                 <div className="mt-2 rounded-lg border border-rose-100 bg-rose-50/50 p-2 text-xs text-rose-700">

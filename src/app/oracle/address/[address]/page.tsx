@@ -1,9 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useSearchParams } from "next/navigation";
+import type { Route } from "next";
+import {
+  useParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import { ExternalLink, LayoutGrid, List as ListIcon } from "lucide-react";
 import { useI18n } from "@/i18n/LanguageProvider";
+import { getUiErrorMessage } from "@/i18n/translations";
 import { UserStatsCard } from "@/components/UserStatsCard";
 import { AssertionList } from "@/components/AssertionList";
 import { DisputeList } from "@/components/DisputeList";
@@ -19,6 +26,9 @@ export default function AddressProfilePage() {
   const searchParams = useSearchParams();
   const address = params.address as string;
   const { t } = useI18n();
+  const router = useRouter();
+  const pathname = usePathname();
+  const currentSearch = searchParams?.toString() ?? "";
   const [activeTab, setActiveTab] = useState<"assertions" | "disputes">(
     "assertions",
   );
@@ -41,7 +51,25 @@ export default function AddressProfilePage() {
 
   useEffect(() => {
     if (!instanceIdFromUrl) return;
+    if (instanceIdFromUrl === instanceId) return;
     setInstanceId(instanceIdFromUrl);
+  }, [instanceIdFromUrl, instanceId]);
+
+  useEffect(() => {
+    const normalized = instanceId.trim();
+    const params = new URLSearchParams(currentSearch);
+    if (normalized) params.set("instanceId", normalized);
+    else params.delete("instanceId");
+    const nextSearch = params.toString();
+    const nextUrl = nextSearch ? `${pathname}?${nextSearch}` : pathname;
+    const currentUrl = currentSearch
+      ? `${pathname}?${currentSearch}`
+      : pathname;
+    if (nextUrl !== currentUrl)
+      router.replace(nextUrl as Route, { scroll: false });
+  }, [currentSearch, instanceId, pathname, router]);
+
+  useEffect(() => {
     try {
       const raw = window.localStorage.getItem("oracleFilters");
       const parsed =
@@ -50,13 +78,13 @@ export default function AddressProfilePage() {
           : null;
       const next = {
         ...(parsed && typeof parsed === "object" ? parsed : {}),
-        instanceId: instanceIdFromUrl,
+        instanceId,
       };
       window.localStorage.setItem("oracleFilters", JSON.stringify(next));
     } catch {
       void 0;
     }
-  }, [instanceIdFromUrl]);
+  }, [instanceId]);
 
   // Fetch User Stats
   const { stats, loading: statsLoading } = useUserStats(address, instanceId);
@@ -66,6 +94,7 @@ export default function AddressProfilePage() {
     items: assertions,
     loading: assertionsLoading,
     loadingMore: assertionsLoadingMore,
+    error: assertionsError,
     hasMore: assertionsHasMore,
     loadMore: loadMoreAssertions,
   } = useOracleData("All", "All", "", address, instanceId);
@@ -75,9 +104,12 @@ export default function AddressProfilePage() {
     items: disputes,
     loading: disputesLoading,
     loadingMore: disputesLoadingMore,
+    error: disputesError,
     hasMore: disputesHasMore,
     loadMore: loadMoreDisputes,
   } = useDisputes("All", "All", "", address, instanceId);
+  const activeError =
+    activeTab === "assertions" ? assertionsError : disputesError;
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-8 max-w-7xl">
@@ -185,6 +217,11 @@ export default function AddressProfilePage() {
 
         {/* Tab Content */}
         <div className="min-h-[400px]">
+          {activeError ? (
+            <div className="mb-4 rounded-2xl border border-rose-100 bg-rose-50/50 p-4 text-sm text-rose-700 shadow-sm">
+              {getUiErrorMessage(activeError, t)}
+            </div>
+          ) : null}
           {activeTab === "assertions" ? (
             <AssertionList
               items={assertions}

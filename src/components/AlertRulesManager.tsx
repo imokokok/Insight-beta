@@ -157,6 +157,70 @@ export function AlertRulesManager({
         }
       }
 
+      if (rule.event === "execution_delayed") {
+        const maxDelayMinutes = getNumber("maxDelayMinutes");
+        if (!Number.isFinite(maxDelayMinutes) || maxDelayMinutes <= 0) {
+          return t(
+            "oracle.alerts.validation.executionDelayedMaxDelayMinutesPositive",
+          );
+        }
+      }
+
+      if (rule.event === "low_participation") {
+        const withinMinutes = getNumber("withinMinutes");
+        const minTotalVotes = getNumber("minTotalVotes");
+        if (!Number.isFinite(withinMinutes) || withinMinutes <= 0) {
+          return t("oracle.alerts.validation.withinMinutesPositive");
+        }
+        if (!Number.isFinite(minTotalVotes) || minTotalVotes < 0) {
+          return t("oracle.alerts.validation.minTotalVotesNonNegative");
+        }
+      }
+
+      if (rule.event === "high_vote_divergence") {
+        const withinMinutes = getNumber("withinMinutes");
+        const minTotalVotes = getNumber("minTotalVotes");
+        const maxMarginPercent = getNumber("maxMarginPercent");
+        if (!Number.isFinite(withinMinutes) || withinMinutes <= 0) {
+          return t("oracle.alerts.validation.withinMinutesPositive");
+        }
+        if (!Number.isFinite(minTotalVotes) || minTotalVotes <= 0) {
+          return t("oracle.alerts.validation.minTotalVotesPositive");
+        }
+        if (
+          !Number.isFinite(maxMarginPercent) ||
+          maxMarginPercent <= 0 ||
+          maxMarginPercent > 100
+        ) {
+          return t("oracle.alerts.validation.maxMarginPercentRange");
+        }
+      }
+
+      if (rule.event === "high_dispute_rate") {
+        const windowDays = getNumber("windowDays");
+        const minAssertions = getNumber("minAssertions");
+        const thresholdPercent = getNumber("thresholdPercent");
+        if (!Number.isFinite(windowDays) || windowDays <= 0) {
+          return t(
+            "oracle.alerts.validation.highDisputeRateWindowDaysPositive",
+          );
+        }
+        if (!Number.isFinite(minAssertions) || minAssertions <= 0) {
+          return t(
+            "oracle.alerts.validation.highDisputeRateMinAssertionsPositive",
+          );
+        }
+        if (
+          !Number.isFinite(thresholdPercent) ||
+          thresholdPercent <= 0 ||
+          thresholdPercent > 100
+        ) {
+          return t(
+            "oracle.alerts.validation.highDisputeRateThresholdPercentRange",
+          );
+        }
+      }
+
       if (rule.event === "slow_api_request") {
         const thresholdMs = getNumber("thresholdMs");
         if (!Number.isFinite(thresholdMs) || thresholdMs <= 0) {
@@ -357,8 +421,24 @@ export function AlertRulesManager({
   const getEventLabel = (event: AlertRule["event"]) => {
     if (event === "dispute_created")
       return t("oracle.alerts.events.dispute_created");
+    if (event === "contract_paused")
+      return t("oracle.alerts.events.contract_paused");
     if (event === "sync_error") return t("oracle.alerts.events.sync_error");
     if (event === "stale_sync") return t("oracle.alerts.events.stale_sync");
+    if (event === "sync_backlog") return t("oracle.alerts.events.sync_backlog");
+    if (event === "backlog_assertions")
+      return t("oracle.alerts.events.backlog_assertions");
+    if (event === "backlog_disputes")
+      return t("oracle.alerts.events.backlog_disputes");
+    if (event === "market_stale") return t("oracle.alerts.events.market_stale");
+    if (event === "execution_delayed")
+      return t("oracle.alerts.events.execution_delayed");
+    if (event === "low_participation")
+      return t("oracle.alerts.events.low_participation");
+    if (event === "high_vote_divergence")
+      return t("oracle.alerts.events.high_vote_divergence");
+    if (event === "high_dispute_rate")
+      return t("oracle.alerts.events.high_dispute_rate");
     if (event === "slow_api_request")
       return t("oracle.alerts.events.slow_api_request");
     if (event === "high_error_rate")
@@ -367,6 +447,9 @@ export function AlertRulesManager({
       return t("oracle.alerts.events.database_slow_query");
     if (event === "liveness_expiring")
       return t("oracle.alerts.events.liveness_expiring");
+    if (event === "price_deviation")
+      return t("oracle.alerts.events.price_deviation");
+    if (event === "low_gas") return t("oracle.alerts.events.low_gas");
     return event;
   };
 
@@ -947,6 +1030,267 @@ export function AlertRulesManager({
                             className="h-10 rounded-xl bg-white/70 ring-1 ring-black/5 border-transparent focus-visible:ring-2 focus-visible:ring-purple-500/20"
                           />
                         </div>
+                      ) : null}
+
+                      {rule.event === "execution_delayed" ? (
+                        <div className="md:col-span-12">
+                          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                            {t("oracle.alerts.params.maxDelayMinutes")}
+                          </div>
+                          <Input
+                            type="number"
+                            min={1}
+                            step={1}
+                            value={Number(
+                              (
+                                rule.params as
+                                  | { maxDelayMinutes?: unknown }
+                                  | undefined
+                              )?.maxDelayMinutes ?? 30,
+                            )}
+                            onChange={(e) => {
+                              const minutes = Math.max(
+                                1,
+                                Math.floor(Number(e.target.value)),
+                              );
+                              patchRuleParams(rule.id, {
+                                maxDelayMinutes: minutes,
+                              });
+                            }}
+                            className="h-10 rounded-xl bg-white/70 ring-1 ring-black/5 border-transparent focus-visible:ring-2 focus-visible:ring-purple-500/20"
+                          />
+                        </div>
+                      ) : null}
+
+                      {rule.event === "low_participation" ? (
+                        <>
+                          <div className="md:col-span-6">
+                            <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                              {t("oracle.alerts.params.withinMinutes")}
+                            </div>
+                            <Input
+                              type="number"
+                              min={1}
+                              step={1}
+                              value={Number(
+                                (
+                                  rule.params as
+                                    | { withinMinutes?: unknown }
+                                    | undefined
+                                )?.withinMinutes ?? 60,
+                              )}
+                              onChange={(e) => {
+                                const minutes = Math.max(
+                                  1,
+                                  Math.floor(Number(e.target.value)),
+                                );
+                                patchRuleParams(rule.id, {
+                                  withinMinutes: minutes,
+                                });
+                              }}
+                              className="h-10 rounded-xl bg-white/70 ring-1 ring-black/5 border-transparent focus-visible:ring-2 focus-visible:ring-purple-500/20"
+                            />
+                          </div>
+                          <div className="md:col-span-6">
+                            <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                              {t("oracle.alerts.params.minTotalVotes")}
+                            </div>
+                            <Input
+                              type="number"
+                              min={0}
+                              step={1}
+                              value={Number(
+                                (
+                                  rule.params as
+                                    | { minTotalVotes?: unknown }
+                                    | undefined
+                                )?.minTotalVotes ?? 1,
+                              )}
+                              onChange={(e) => {
+                                const v = Math.max(
+                                  0,
+                                  Math.floor(Number(e.target.value)),
+                                );
+                                patchRuleParams(rule.id, { minTotalVotes: v });
+                              }}
+                              className="h-10 rounded-xl bg-white/70 ring-1 ring-black/5 border-transparent focus-visible:ring-2 focus-visible:ring-purple-500/20"
+                            />
+                          </div>
+                        </>
+                      ) : null}
+
+                      {rule.event === "high_vote_divergence" ? (
+                        <>
+                          <div className="md:col-span-4">
+                            <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                              {t("oracle.alerts.params.withinMinutes")}
+                            </div>
+                            <Input
+                              type="number"
+                              min={1}
+                              step={1}
+                              value={Number(
+                                (
+                                  rule.params as
+                                    | { withinMinutes?: unknown }
+                                    | undefined
+                                )?.withinMinutes ?? 15,
+                              )}
+                              onChange={(e) => {
+                                const minutes = Math.max(
+                                  1,
+                                  Math.floor(Number(e.target.value)),
+                                );
+                                patchRuleParams(rule.id, {
+                                  withinMinutes: minutes,
+                                });
+                              }}
+                              className="h-10 rounded-xl bg-white/70 ring-1 ring-black/5 border-transparent focus-visible:ring-2 focus-visible:ring-purple-500/20"
+                            />
+                          </div>
+                          <div className="md:col-span-4">
+                            <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                              {t("oracle.alerts.params.minTotalVotes")}
+                            </div>
+                            <Input
+                              type="number"
+                              min={1}
+                              step={1}
+                              value={Number(
+                                (
+                                  rule.params as
+                                    | { minTotalVotes?: unknown }
+                                    | undefined
+                                )?.minTotalVotes ?? 10,
+                              )}
+                              onChange={(e) => {
+                                const v = Math.max(
+                                  1,
+                                  Math.floor(Number(e.target.value)),
+                                );
+                                patchRuleParams(rule.id, { minTotalVotes: v });
+                              }}
+                              className="h-10 rounded-xl bg-white/70 ring-1 ring-black/5 border-transparent focus-visible:ring-2 focus-visible:ring-purple-500/20"
+                            />
+                          </div>
+                          <div className="md:col-span-4">
+                            <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                              {t("oracle.alerts.params.maxMarginPercent")}
+                            </div>
+                            <Input
+                              type="number"
+                              min={1}
+                              max={100}
+                              step={1}
+                              value={Number(
+                                (
+                                  rule.params as
+                                    | { maxMarginPercent?: unknown }
+                                    | undefined
+                                )?.maxMarginPercent ?? 5,
+                              )}
+                              onChange={(e) => {
+                                const v = Math.max(
+                                  1,
+                                  Math.min(
+                                    100,
+                                    Math.floor(Number(e.target.value)),
+                                  ),
+                                );
+                                patchRuleParams(rule.id, {
+                                  maxMarginPercent: v,
+                                });
+                              }}
+                              className="h-10 rounded-xl bg-white/70 ring-1 ring-black/5 border-transparent focus-visible:ring-2 focus-visible:ring-purple-500/20"
+                            />
+                          </div>
+                        </>
+                      ) : null}
+
+                      {rule.event === "high_dispute_rate" ? (
+                        <>
+                          <div className="md:col-span-4">
+                            <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                              {t("oracle.alerts.params.windowDays")}
+                            </div>
+                            <Input
+                              type="number"
+                              min={1}
+                              step={1}
+                              value={Number(
+                                (
+                                  rule.params as
+                                    | { windowDays?: unknown }
+                                    | undefined
+                                )?.windowDays ?? 7,
+                              )}
+                              onChange={(e) => {
+                                const v = Math.max(
+                                  1,
+                                  Math.floor(Number(e.target.value)),
+                                );
+                                patchRuleParams(rule.id, { windowDays: v });
+                              }}
+                              className="h-10 rounded-xl bg-white/70 ring-1 ring-black/5 border-transparent focus-visible:ring-2 focus-visible:ring-purple-500/20"
+                            />
+                          </div>
+                          <div className="md:col-span-4">
+                            <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                              {t("oracle.alerts.params.minAssertions")}
+                            </div>
+                            <Input
+                              type="number"
+                              min={1}
+                              step={1}
+                              value={Number(
+                                (
+                                  rule.params as
+                                    | { minAssertions?: unknown }
+                                    | undefined
+                                )?.minAssertions ?? 20,
+                              )}
+                              onChange={(e) => {
+                                const v = Math.max(
+                                  1,
+                                  Math.floor(Number(e.target.value)),
+                                );
+                                patchRuleParams(rule.id, { minAssertions: v });
+                              }}
+                              className="h-10 rounded-xl bg-white/70 ring-1 ring-black/5 border-transparent focus-visible:ring-2 focus-visible:ring-purple-500/20"
+                            />
+                          </div>
+                          <div className="md:col-span-4">
+                            <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                              {t("oracle.alerts.params.thresholdPercent")}
+                            </div>
+                            <Input
+                              type="number"
+                              min={1}
+                              max={100}
+                              step={1}
+                              value={Number(
+                                (
+                                  rule.params as
+                                    | { thresholdPercent?: unknown }
+                                    | undefined
+                                )?.thresholdPercent ?? 10,
+                              )}
+                              onChange={(e) => {
+                                const v = Math.max(
+                                  1,
+                                  Math.min(
+                                    100,
+                                    Math.floor(Number(e.target.value)),
+                                  ),
+                                );
+                                patchRuleParams(rule.id, {
+                                  thresholdPercent: v,
+                                });
+                              }}
+                              className="h-10 rounded-xl bg-white/70 ring-1 ring-black/5 border-transparent focus-visible:ring-2 focus-visible:ring-purple-500/20"
+                            />
+                          </div>
+                        </>
                       ) : null}
 
                       {rule.event === "slow_api_request" ? (

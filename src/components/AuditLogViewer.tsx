@@ -11,7 +11,7 @@ import {
 import { cn, fetchApiData, formatTime, getErrorCode } from "@/lib/utils";
 import type { AuditLogEntry } from "@/lib/oracleTypes";
 import { useI18n } from "@/i18n/LanguageProvider";
-import { langToLocale } from "@/i18n/translations";
+import { getUiErrorMessage, langToLocale } from "@/i18n/translations";
 import { Download, ScrollText, RotateCw } from "lucide-react";
 
 type AuditListResponse = {
@@ -453,7 +453,7 @@ export function AuditLogViewer({
 
         {error && (
           <div className="p-3 rounded-xl bg-rose-50 text-xs text-rose-600 border border-rose-100">
-            {t("audit.error")}: <span className="font-mono">{error}</span>
+            {getUiErrorMessage(error, t)}
           </div>
         )}
 
