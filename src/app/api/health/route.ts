@@ -58,6 +58,52 @@ export async function GET(request: Request) {
         timestamp: new Date().toISOString(),
       };
     }
+    if (probe === "validation") {
+      const databaseStatus = hasDatabase()
+        ? await query("SELECT 1 as ok")
+            .then((res) =>
+              res.rows[0]?.ok === 1 ? ("connected" as const) : "disconnected",
+            )
+            .catch(() => "disconnected" as const)
+        : ("not_configured" as const);
+
+      const embeddedWorkerDisabled = ["1", "true"].includes(
+        env.INSIGHT_DISABLE_EMBEDDED_WORKER.toLowerCase(),
+      );
+      const heartbeat = embeddedWorkerDisabled
+        ? null
+        : await readJsonFile("worker/heartbeat/v1", null);
+      const at =
+        heartbeat && typeof heartbeat === "object"
+          ? (heartbeat as { at?: unknown }).at
+          : null;
+      const atMs = typeof at === "string" ? Date.parse(at) : NaN;
+      const workerOk =
+        embeddedWorkerDisabled ||
+        (Number.isFinite(atMs) && Date.now() - atMs <= 90_000);
+
+      const envReport = getEnvReport();
+      const auth = await requireAdmin(request, {
+        strict: false,
+        scope: "audit_read",
+      });
+      const includeEnv = auth === null;
+      const issues: string[] = [];
+      if (databaseStatus === "disconnected")
+        issues.push("database_disconnected");
+      if (!workerOk) issues.push("worker_stale");
+      if (includeEnv && !envReport.ok) issues.push("env_invalid");
+
+      return {
+        status: issues.length === 0 ? "ok" : "degraded",
+        probe: "validation",
+        timestamp: new Date().toISOString(),
+        issues,
+        database: databaseStatus,
+        env: includeEnv ? envReport : { ok: false, issues: [] },
+        worker: includeEnv ? heartbeat : null,
+      };
+    }
     const envReport = getEnvReport();
     const auth = await requireAdmin(request, {
       strict: false,

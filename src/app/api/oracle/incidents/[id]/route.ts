@@ -24,6 +24,7 @@ const patchSchema = z.object({
   status: z.enum(["Open", "Mitigating", "Resolved"]).optional(),
   severity: z.enum(["info", "warning", "critical"]).optional(),
   owner: z.string().trim().max(80).optional().nullable(),
+  rootCause: z.string().trim().max(120).optional().nullable(),
   summary: z.string().trim().max(5000).optional().nullable(),
   runbook: z.string().trim().max(500).optional().nullable(),
   alertIds: z.array(z.coerce.number().int().positive()).max(200).optional(),

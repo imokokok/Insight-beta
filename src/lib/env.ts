@@ -40,6 +40,27 @@ export const env = {
   get INSIGHT_SLOW_REQUEST_MS() {
     return (process.env.INSIGHT_SLOW_REQUEST_MS ?? "").trim();
   },
+  get INSIGHT_SLO_MAX_LAG_BLOCKS() {
+    return (process.env.INSIGHT_SLO_MAX_LAG_BLOCKS ?? "").trim();
+  },
+  get INSIGHT_SLO_MAX_SYNC_STALENESS_MINUTES() {
+    return (process.env.INSIGHT_SLO_MAX_SYNC_STALENESS_MINUTES ?? "").trim();
+  },
+  get INSIGHT_SLO_MAX_ALERT_MTTA_MINUTES() {
+    return (process.env.INSIGHT_SLO_MAX_ALERT_MTTA_MINUTES ?? "").trim();
+  },
+  get INSIGHT_SLO_MAX_ALERT_MTTR_MINUTES() {
+    return (process.env.INSIGHT_SLO_MAX_ALERT_MTTR_MINUTES ?? "").trim();
+  },
+  get INSIGHT_SLO_MAX_INCIDENT_MTTR_MINUTES() {
+    return (process.env.INSIGHT_SLO_MAX_INCIDENT_MTTR_MINUTES ?? "").trim();
+  },
+  get INSIGHT_SLO_MAX_OPEN_ALERTS() {
+    return (process.env.INSIGHT_SLO_MAX_OPEN_ALERTS ?? "").trim();
+  },
+  get INSIGHT_SLO_MAX_OPEN_CRITICAL_ALERTS() {
+    return (process.env.INSIGHT_SLO_MAX_OPEN_CRITICAL_ALERTS ?? "").trim();
+  },
   get INSIGHT_MEMORY_MAX_VOTE_KEYS() {
     return (process.env.INSIGHT_MEMORY_MAX_VOTE_KEYS ?? "").trim();
   },
@@ -225,6 +246,25 @@ const envSchema = z.object({
     .enum(["Polygon", "PolygonAmoy", "Arbitrum", "Optimism", "Local"])
     .optional(),
   INSIGHT_SLOW_REQUEST_MS: z.coerce.number().int().min(0).optional(),
+  INSIGHT_SLO_MAX_LAG_BLOCKS: z.coerce.number().int().min(0).optional(),
+  INSIGHT_SLO_MAX_SYNC_STALENESS_MINUTES: z.coerce
+    .number()
+    .int()
+    .min(0)
+    .optional(),
+  INSIGHT_SLO_MAX_ALERT_MTTA_MINUTES: z.coerce.number().int().min(0).optional(),
+  INSIGHT_SLO_MAX_ALERT_MTTR_MINUTES: z.coerce.number().int().min(0).optional(),
+  INSIGHT_SLO_MAX_INCIDENT_MTTR_MINUTES: z.coerce
+    .number()
+    .int()
+    .min(0)
+    .optional(),
+  INSIGHT_SLO_MAX_OPEN_ALERTS: z.coerce.number().int().min(0).optional(),
+  INSIGHT_SLO_MAX_OPEN_CRITICAL_ALERTS: z.coerce
+    .number()
+    .int()
+    .min(0)
+    .optional(),
   INSIGHT_MEMORY_MAX_VOTE_KEYS: z.coerce.number().int().min(1).optional(),
   INSIGHT_MEMORY_VOTE_BLOCK_WINDOW: z.coerce.bigint().min(0n).optional(),
   INSIGHT_MEMORY_MAX_ASSERTIONS: z.coerce.number().int().min(1).optional(),

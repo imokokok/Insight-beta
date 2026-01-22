@@ -3,6 +3,8 @@ import { ensureSchema } from "@/server/schema";
 import { readJsonFile, writeJsonFile } from "@/server/kvStore";
 import { getMemoryStore, memoryNowIso } from "@/server/memoryBackend";
 import { notifyAlert, type NotificationOptions } from "@/server/notifications";
+import { getSyncState } from "@/server/oracleState";
+import { env } from "@/lib/env";
 
 export type AlertSeverity = "info" | "warning" | "critical";
 export type AlertStatus = "Open" | "Acknowledged" | "Resolved";
@@ -107,6 +109,7 @@ export type Incident = {
   status: IncidentStatus;
   severity: AlertSeverity;
   owner: string | null;
+  rootCause: string | null;
   summary: string | null;
   runbook: string | null;
   alertIds: number[];
@@ -651,6 +654,11 @@ function normalizeIncident(
   const owner =
     typeof obj.owner === "string" && obj.owner.trim() ? obj.owner.trim() : null;
 
+  const rootCause =
+    typeof obj.rootCause === "string" && obj.rootCause.trim()
+      ? obj.rootCause.trim()
+      : null;
+
   const summary =
     typeof obj.summary === "string" && obj.summary.trim()
       ? obj.summary.trim()
@@ -696,6 +704,7 @@ function normalizeIncident(
     status,
     severity,
     owner,
+    rootCause,
     summary,
     runbook,
     alertIds,
@@ -773,6 +782,7 @@ export async function createIncident(input: {
   severity: AlertSeverity;
   status?: IncidentStatus | null;
   owner?: string | null;
+  rootCause?: string | null;
   summary?: string | null;
   runbook?: string | null;
   alertIds?: number[] | null;
@@ -792,6 +802,7 @@ export async function createIncident(input: {
     status: input.status ?? "Open",
     severity: input.severity,
     owner: input.owner?.trim() ? input.owner.trim() : null,
+    rootCause: input.rootCause?.trim() ? input.rootCause.trim() : null,
     summary: input.summary?.trim() ? input.summary.trim() : null,
     runbook: input.runbook?.trim() ? input.runbook.trim() : null,
     alertIds: Array.isArray(input.alertIds)
@@ -831,6 +842,7 @@ export async function patchIncident(input: {
       | "status"
       | "severity"
       | "owner"
+      | "rootCause"
       | "summary"
       | "runbook"
       | "alertIds"
@@ -858,6 +870,12 @@ export async function patchIncident(input: {
       ? prev.owner
       : input.patch.owner?.trim()
         ? input.patch.owner.trim()
+        : null;
+  const rootCause =
+    input.patch.rootCause === undefined
+      ? prev.rootCause
+      : input.patch.rootCause?.trim()
+        ? input.patch.rootCause.trim()
         : null;
   const summary =
     input.patch.summary === undefined
@@ -908,6 +926,7 @@ export async function patchIncident(input: {
     status,
     severity,
     owner,
+    rootCause,
     summary,
     runbook,
     alertIds,
@@ -1520,7 +1539,155 @@ export type OpsMetrics = {
     resolved: number;
     mttrMs: number | null;
   };
+  slo?: OpsSloStatus;
 };
+
+export type OpsMetricsSeriesPoint = {
+  date: string;
+  alertsCreated: number;
+  alertsResolved: number;
+  incidentsCreated: number;
+  incidentsResolved: number;
+};
+
+export type OpsSloStatus = {
+  status: "met" | "degraded" | "breached";
+  targets: {
+    maxLagBlocks: number;
+    maxSyncStalenessMinutes: number;
+    maxAlertMttaMinutes: number;
+    maxAlertMttrMinutes: number;
+    maxIncidentMttrMinutes: number;
+    maxOpenAlerts: number;
+    maxOpenCriticalAlerts: number;
+  };
+  current: {
+    lagBlocks: number | null;
+    syncStalenessMinutes: number | null;
+    alertMttaMinutes: number | null;
+    alertMttrMinutes: number | null;
+    incidentMttrMinutes: number | null;
+    openAlerts: number | null;
+    openCriticalAlerts: number | null;
+  };
+  breaches: Array<{ key: string; target: number; actual: number }>;
+};
+
+function readSloNumber(raw: string, fallback: number, opts?: { min?: number }) {
+  const n = Number(raw);
+  if (!Number.isFinite(n)) return fallback;
+  const min = opts?.min ?? 0;
+  return Math.max(min, n);
+}
+
+function getSloTargets() {
+  return {
+    maxLagBlocks: readSloNumber(env.INSIGHT_SLO_MAX_LAG_BLOCKS, 200, {
+      min: 0,
+    }),
+    maxSyncStalenessMinutes: readSloNumber(
+      env.INSIGHT_SLO_MAX_SYNC_STALENESS_MINUTES,
+      30,
+      { min: 1 },
+    ),
+    maxAlertMttaMinutes: readSloNumber(
+      env.INSIGHT_SLO_MAX_ALERT_MTTA_MINUTES,
+      30,
+      { min: 1 },
+    ),
+    maxAlertMttrMinutes: readSloNumber(
+      env.INSIGHT_SLO_MAX_ALERT_MTTR_MINUTES,
+      240,
+      { min: 1 },
+    ),
+    maxIncidentMttrMinutes: readSloNumber(
+      env.INSIGHT_SLO_MAX_INCIDENT_MTTR_MINUTES,
+      720,
+      { min: 1 },
+    ),
+    maxOpenAlerts: readSloNumber(env.INSIGHT_SLO_MAX_OPEN_ALERTS, 50, {
+      min: 0,
+    }),
+    maxOpenCriticalAlerts: readSloNumber(
+      env.INSIGHT_SLO_MAX_OPEN_CRITICAL_ALERTS,
+      3,
+      { min: 0 },
+    ),
+  };
+}
+
+function minutesSince(iso: string | null) {
+  if (!iso) return null;
+  const ms = Date.parse(iso);
+  if (!Number.isFinite(ms)) return null;
+  const diff = Date.now() - ms;
+  if (!Number.isFinite(diff) || diff < 0) return null;
+  return Math.round(diff / 60_000);
+}
+
+function buildSloStatus(input: {
+  lagBlocks: number | null;
+  syncStalenessMinutes: number | null;
+  alertMttaMinutes: number | null;
+  alertMttrMinutes: number | null;
+  incidentMttrMinutes: number | null;
+  openAlerts: number | null;
+  openCriticalAlerts: number | null;
+}): OpsSloStatus {
+  const targets = getSloTargets();
+  const breaches: Array<{ key: string; target: number; actual: number }> = [];
+  let missing = 0;
+
+  const check = (
+    key: keyof OpsSloStatus["current"],
+    value: number | null,
+    target: number,
+  ) => {
+    if (value === null || !Number.isFinite(value)) {
+      missing += 1;
+      return;
+    }
+    if (value > target) breaches.push({ key, target, actual: value });
+  };
+
+  check("lagBlocks", input.lagBlocks, targets.maxLagBlocks);
+  check(
+    "syncStalenessMinutes",
+    input.syncStalenessMinutes,
+    targets.maxSyncStalenessMinutes,
+  );
+  check(
+    "alertMttaMinutes",
+    input.alertMttaMinutes,
+    targets.maxAlertMttaMinutes,
+  );
+  check(
+    "alertMttrMinutes",
+    input.alertMttrMinutes,
+    targets.maxAlertMttrMinutes,
+  );
+  check(
+    "incidentMttrMinutes",
+    input.incidentMttrMinutes,
+    targets.maxIncidentMttrMinutes,
+  );
+  check("openAlerts", input.openAlerts, targets.maxOpenAlerts);
+  check(
+    "openCriticalAlerts",
+    input.openCriticalAlerts,
+    targets.maxOpenCriticalAlerts,
+  );
+
+  const status =
+    breaches.length > 0 ? "breached" : missing > 0 ? "degraded" : "met";
+
+  return {
+    status,
+    targets,
+    current: input,
+    breaches,
+  };
+}
 
 function safeAvgMs(
   samples: number[],
@@ -1536,6 +1703,25 @@ function safeAvgMs(
   return Math.round(clamped);
 }
 
+async function filterIncidentsByInstanceId(
+  items: Incident[],
+  instanceId: string,
+) {
+  if (!instanceId) return items;
+  const allIds: number[] = [];
+  for (const i of items) allIds.push(...(i.alertIds ?? []));
+  const alerts = await getAlertsByIds(allIds);
+  const marker = `:${instanceId}:`;
+  const byId = new Set(
+    alerts.filter((a) => a.fingerprint.includes(marker)).map((a) => a.id),
+  );
+  return items.filter((i) => {
+    const ids = i.alertIds ?? [];
+    if (ids.length === 0) return true;
+    return ids.some((id) => byId.has(id));
+  });
+}
+
 export async function getOpsMetrics(params?: {
   windowDays?: number | null;
   instanceId?: string | null;
@@ -1549,24 +1735,25 @@ export async function getOpsMetrics(params?: {
     typeof params?.instanceId === "string" ? params.instanceId.trim() : "";
   const nowIso = memoryNowIso();
   const cutoffMs = Date.now() - windowDays * 24 * 60 * 60_000;
+  const syncState = instanceId
+    ? await getSyncState(instanceId)
+    : await getSyncState();
+  const lagBlocks =
+    syncState.latestBlock === null || syncState.latestBlock === undefined
+      ? null
+      : Number(
+          syncState.latestBlock >= syncState.lastProcessedBlock
+            ? syncState.latestBlock - syncState.lastProcessedBlock
+            : 0n,
+        );
+  const syncStalenessMinutes = minutesSince(
+    syncState.sync?.lastSuccessAt ?? null,
+  );
+  const toMinutes = (ms: number | null) =>
+    ms !== null && Number.isFinite(ms) ? Math.round(ms / 60_000) : null;
 
-  const filterIncidents = async (items: Incident[]) => {
-    if (!instanceId) return items;
-    const allIds: number[] = [];
-    for (const i of items) allIds.push(...(i.alertIds ?? []));
-    const alerts = await getAlertsByIds(allIds);
-    const marker = `:${instanceId}:`;
-    const byId = new Map(
-      alerts
-        .filter((a) => a.fingerprint.includes(marker))
-        .map((a) => [a.id, a]),
-    );
-    return items.filter((i) => {
-      const ids = i.alertIds ?? [];
-      if (ids.length === 0) return true;
-      return ids.some((id) => byId.has(id));
-    });
-  };
+  const filterIncidents = async (items: Incident[]) =>
+    filterIncidentsByInstanceId(items, instanceId);
 
   if (!hasDatabase()) {
     const mem = getMemoryStore();
@@ -1580,6 +1767,9 @@ export async function getOpsMetrics(params?: {
     ).length;
     const resolved = filteredAlerts.filter(
       (a) => a.status === "Resolved",
+    ).length;
+    const openCritical = filteredAlerts.filter(
+      (a) => a.status === "Open" && a.severity === "critical",
     ).length;
 
     const mttaSamples: number[] = [];
@@ -1624,6 +1814,16 @@ export async function getOpsMetrics(params?: {
       if (Number.isFinite(d) && d >= 0) incMttrSamples.push(d);
     }
 
+    const slo = buildSloStatus({
+      lagBlocks,
+      syncStalenessMinutes,
+      alertMttaMinutes: toMinutes(safeAvgMs(mttaSamples)),
+      alertMttrMinutes: toMinutes(safeAvgMs(mttrSamples)),
+      incidentMttrMinutes: toMinutes(safeAvgMs(incMttrSamples)),
+      openAlerts: open,
+      openCriticalAlerts: openCritical,
+    });
+
     return {
       generatedAt: nowIso,
       windowDays,
@@ -1640,6 +1840,7 @@ export async function getOpsMetrics(params?: {
         resolved: incResolved,
         mttrMs: safeAvgMs(incMttrSamples),
       },
+      slo,
     };
   }
 
@@ -1650,12 +1851,14 @@ export async function getOpsMetrics(params?: {
     open: string | number;
     acknowledged: string | number;
     resolved: string | number;
+    open_critical: string | number;
   }>(
     `
     SELECT
       COUNT(*) FILTER (WHERE status = 'Open') as open,
       COUNT(*) FILTER (WHERE status = 'Acknowledged') as acknowledged,
-      COUNT(*) FILTER (WHERE status = 'Resolved') as resolved
+      COUNT(*) FILTER (WHERE status = 'Resolved') as resolved,
+      COUNT(*) FILTER (WHERE status = 'Open' AND severity = 'critical') as open_critical
     FROM alerts
     ${alertWhere}
     `,
@@ -1665,6 +1868,7 @@ export async function getOpsMetrics(params?: {
   const open = Number(alertStatusRes.rows[0]?.open ?? 0);
   const acknowledged = Number(alertStatusRes.rows[0]?.acknowledged ?? 0);
   const resolved = Number(alertStatusRes.rows[0]?.resolved ?? 0);
+  const openCritical = Number(alertStatusRes.rows[0]?.open_critical ?? 0);
 
   const cutoffSeconds = Math.floor(cutoffMs / 1000);
   const mttaRes = await query<{ ms: number | string | null }>(
@@ -1719,6 +1923,20 @@ export async function getOpsMetrics(params?: {
     if (Number.isFinite(d) && d >= 0) incMttrSamples.push(d);
   }
 
+  const slo = buildSloStatus({
+    lagBlocks,
+    syncStalenessMinutes,
+    alertMttaMinutes: toMinutes(
+      Number.isFinite(mttaMsRaw) ? Math.round(mttaMsRaw) : null,
+    ),
+    alertMttrMinutes: toMinutes(
+      Number.isFinite(mttrMsRaw) ? Math.round(mttrMsRaw) : null,
+    ),
+    incidentMttrMinutes: toMinutes(safeAvgMs(incMttrSamples)),
+    openAlerts: open,
+    openCriticalAlerts: openCritical,
+  });
+
   return {
     generatedAt: nowIso,
     windowDays,
@@ -1735,5 +1953,176 @@ export async function getOpsMetrics(params?: {
       resolved: incResolved,
       mttrMs: safeAvgMs(incMttrSamples),
     },
+    slo,
   };
+}
+
+export async function getOpsMetricsSeries(params?: {
+  seriesDays?: number | null;
+  instanceId?: string | null;
+}): Promise<OpsMetricsSeriesPoint[]> {
+  await ensureDb();
+  const seriesDaysRaw = Number(params?.seriesDays ?? 7);
+  const seriesDays = Number.isFinite(seriesDaysRaw)
+    ? Math.min(90, Math.max(1, Math.round(seriesDaysRaw)))
+    : 7;
+  const instanceId =
+    typeof params?.instanceId === "string" ? params.instanceId.trim() : "";
+  const cutoffMs = Date.now() - seriesDays * 24 * 60 * 60_000;
+  const dayMs = 24 * 60 * 60_000;
+  const end = new Date();
+  const endUtc = Date.UTC(
+    end.getUTCFullYear(),
+    end.getUTCMonth(),
+    end.getUTCDate(),
+  );
+  const series: OpsMetricsSeriesPoint[] = [];
+  for (let i = seriesDays - 1; i >= 0; i -= 1) {
+    const date = new Date(endUtc - i * dayMs).toISOString().slice(0, 10);
+    series.push({
+      date,
+      alertsCreated: 0,
+      alertsResolved: 0,
+      incidentsCreated: 0,
+      incidentsResolved: 0,
+    });
+  }
+  const byDate = new Map(series.map((point) => [point.date, point]));
+
+  type NumericField =
+    | "alertsCreated"
+    | "alertsResolved"
+    | "incidentsCreated"
+    | "incidentsResolved";
+
+  const addPoint = (
+    map: Map<string, OpsMetricsSeriesPoint>,
+    date: string,
+    field: NumericField,
+    value: number,
+  ) => {
+    const item = map.get(date);
+    if (!item) return;
+    item[field] += value;
+  };
+
+  if (!hasDatabase()) {
+    const mem = getMemoryStore();
+    const alerts = Array.from(mem.alerts.values());
+    const filteredAlerts = instanceId
+      ? alerts.filter((a) => a.fingerprint.includes(`:${instanceId}:`))
+      : alerts;
+    for (const a of filteredAlerts) {
+      const created = Date.parse(a.createdAt || a.firstSeenAt);
+      if (Number.isFinite(created) && created >= cutoffMs) {
+        addPoint(
+          byDate,
+          new Date(created).toISOString().slice(0, 10),
+          "alertsCreated",
+          1,
+        );
+      }
+      const resolved = a.resolvedAt ? Date.parse(a.resolvedAt) : NaN;
+      if (Number.isFinite(resolved) && resolved >= cutoffMs) {
+        addPoint(
+          byDate,
+          new Date(resolved).toISOString().slice(0, 10),
+          "alertsResolved",
+          1,
+        );
+      }
+    }
+    const incidents = await filterIncidentsByInstanceId(
+      await listIncidents({ status: "All", limit: 200 }),
+      instanceId,
+    );
+    for (const i of incidents) {
+      const created = Date.parse(i.createdAt);
+      if (Number.isFinite(created) && created >= cutoffMs) {
+        addPoint(
+          byDate,
+          new Date(created).toISOString().slice(0, 10),
+          "incidentsCreated",
+          1,
+        );
+      }
+      const resolved = i.resolvedAt ? Date.parse(i.resolvedAt) : NaN;
+      if (Number.isFinite(resolved) && resolved >= cutoffMs) {
+        addPoint(
+          byDate,
+          new Date(resolved).toISOString().slice(0, 10),
+          "incidentsResolved",
+          1,
+        );
+      }
+    }
+    return series;
+  }
+
+  const cutoffIso = new Date(cutoffMs).toISOString();
+  const alertWhere = instanceId ? "AND fingerprint LIKE $2" : "";
+  const alertArgs = instanceId ? [cutoffIso, `%:${instanceId}:%`] : [cutoffIso];
+
+  const createdRes = await query<{ day: string; count: number | string }>(
+    `
+    SELECT
+      to_char(date_trunc('day', created_at AT TIME ZONE 'UTC'), 'YYYY-MM-DD') as day,
+      COUNT(*) as count
+    FROM alerts
+    WHERE created_at >= $1
+    ${alertWhere}
+    GROUP BY day
+    `,
+    alertArgs,
+  );
+  for (const row of createdRes.rows) {
+    const count = Number(row.count ?? 0);
+    if (!Number.isFinite(count)) continue;
+    addPoint(byDate, row.day, "alertsCreated", count);
+  }
+
+  const resolvedRes = await query<{ day: string; count: number | string }>(
+    `
+    SELECT
+      to_char(date_trunc('day', resolved_at AT TIME ZONE 'UTC'), 'YYYY-MM-DD') as day,
+      COUNT(*) as count
+    FROM alerts
+    WHERE resolved_at IS NOT NULL AND resolved_at >= $1
+    ${alertWhere}
+    GROUP BY day
+    `,
+    alertArgs,
+  );
+  for (const row of resolvedRes.rows) {
+    const count = Number(row.count ?? 0);
+    if (!Number.isFinite(count)) continue;
+    addPoint(byDate, row.day, "alertsResolved", count);
+  }
+
+  const incidents = await filterIncidentsByInstanceId(
+    await listIncidents({ status: "All", limit: 200 }),
+    instanceId,
+  );
+  for (const i of incidents) {
+    const created = Date.parse(i.createdAt);
+    if (Number.isFinite(created) && created >= cutoffMs) {
+      addPoint(
+        byDate,
+        new Date(created).toISOString().slice(0, 10),
+        "incidentsCreated",
+        1,
+      );
+    }
+    const resolved = i.resolvedAt ? Date.parse(i.resolvedAt) : NaN;
+    if (Number.isFinite(resolved) && resolved >= cutoffMs) {
+      addPoint(
+        byDate,
+        new Date(resolved).toISOString().slice(0, 10),
+        "incidentsResolved",
+        1,
+      );
+    }
+  }
+
+  return series;
 }

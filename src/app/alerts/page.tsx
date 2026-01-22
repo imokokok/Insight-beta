@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -11,6 +11,16 @@ import {
   RefreshCw,
   ShieldAlert,
 } from "lucide-react";
+import {
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { PageHeader } from "@/components/PageHeader";
 import { AlertRulesManager } from "@/components/AlertRulesManager";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -31,6 +41,8 @@ import type {
   AlertStatus,
   Incident,
   OpsMetrics,
+  OpsMetricsSeriesPoint,
+  OpsSloStatus,
   OracleInstance,
   RiskItem,
 } from "@/lib/oracleTypes";
@@ -82,6 +94,88 @@ function statusBadge(status: AlertStatus) {
   return "bg-emerald-50 text-emerald-700 ring-emerald-200";
 }
 
+const sloLabels: Record<string, string> = {
+  lagBlocks: "Sync lag blocks",
+  syncStalenessMinutes: "Sync staleness",
+  alertMttaMinutes: "Alert MTTA",
+  alertMttrMinutes: "Alert MTTR",
+  incidentMttrMinutes: "Incident MTTR",
+  openAlerts: "Open alerts",
+  openCriticalAlerts: "Open critical",
+};
+
+function sloStatusBadge(status: OpsSloStatus["status"]) {
+  if (status === "met")
+    return "bg-emerald-50 text-emerald-700 ring-emerald-200";
+  if (status === "degraded") return "bg-amber-50 text-amber-700 ring-amber-200";
+  return "bg-rose-50 text-rose-700 ring-rose-200";
+}
+
+function sloStatusLabel(status: OpsSloStatus["status"]) {
+  if (status === "met") return "Met";
+  if (status === "degraded") return "Degraded";
+  return "Breached";
+}
+
+function formatSloValue(key: string, value: number | null) {
+  if (value === null || !Number.isFinite(value)) return "—";
+  if (key.includes("Minutes")) return formatDurationMinutes(value);
+  return value.toLocaleString();
+}
+
+function formatSloTarget(key: string, value: number) {
+  if (!Number.isFinite(value)) return "—";
+  if (key.includes("Minutes")) return formatDurationMinutes(value);
+  return value.toLocaleString();
+}
+
+function getSloEntries(slo: OpsSloStatus) {
+  return [
+    {
+      key: "lagBlocks",
+      label: sloLabels.lagBlocks,
+      current: slo.current.lagBlocks,
+      target: slo.targets.maxLagBlocks,
+    },
+    {
+      key: "syncStalenessMinutes",
+      label: sloLabels.syncStalenessMinutes,
+      current: slo.current.syncStalenessMinutes,
+      target: slo.targets.maxSyncStalenessMinutes,
+    },
+    {
+      key: "alertMttaMinutes",
+      label: sloLabels.alertMttaMinutes,
+      current: slo.current.alertMttaMinutes,
+      target: slo.targets.maxAlertMttaMinutes,
+    },
+    {
+      key: "alertMttrMinutes",
+      label: sloLabels.alertMttrMinutes,
+      current: slo.current.alertMttrMinutes,
+      target: slo.targets.maxAlertMttrMinutes,
+    },
+    {
+      key: "incidentMttrMinutes",
+      label: sloLabels.incidentMttrMinutes,
+      current: slo.current.incidentMttrMinutes,
+      target: slo.targets.maxIncidentMttrMinutes,
+    },
+    {
+      key: "openAlerts",
+      label: sloLabels.openAlerts,
+      current: slo.current.openAlerts,
+      target: slo.targets.maxOpenAlerts,
+    },
+    {
+      key: "openCriticalAlerts",
+      label: sloLabels.openCriticalAlerts,
+      current: slo.current.openCriticalAlerts,
+      target: slo.targets.maxOpenCriticalAlerts,
+    },
+  ];
+}
+
 export default function AlertsPage() {
   const { t, lang } = useI18n();
   const locale = langToLocale[lang];
@@ -107,6 +201,7 @@ export default function AlertsPage() {
   const [filterSeverity, setFilterSeverity] = useState<AlertSeverity | "All">(
     "All",
   );
+  const [filterType, setFilterType] = useState<string | "All">("All");
   const [query, setQuery] = useState("");
   const [nextCursor, setNextCursor] = useState<number | null>(null);
   const [instanceId, setInstanceId] = useState<string>(() => {
@@ -138,6 +233,7 @@ export default function AlertsPage() {
     title: string;
     severity: AlertSeverity;
     owner: string;
+    rootCause: string;
     runbook: string;
     entityType: string;
     entityId: string;
@@ -147,8 +243,44 @@ export default function AlertsPage() {
   const [risksError, setRisksError] = useState<string | null>(null);
   const [risksLoading, setRisksLoading] = useState(false);
   const [opsMetrics, setOpsMetrics] = useState<OpsMetrics | null>(null);
+  const [opsMetricsSeries, setOpsMetricsSeries] = useState<
+    OpsMetricsSeriesPoint[] | null
+  >(null);
   const [opsMetricsError, setOpsMetricsError] = useState<string | null>(null);
   const [opsMetricsLoading, setOpsMetricsLoading] = useState(false);
+  const [sloIncidentCreating, setSloIncidentCreating] = useState(false);
+  const [sloIncidentError, setSloIncidentError] = useState<string | null>(null);
+  const rootCauseOptions = useMemo(
+    () => [
+      { value: "", label: "Unspecified" },
+      { value: "sync", label: "Sync" },
+      { value: "rpc", label: "RPC provider" },
+      { value: "chain", label: "Chain issue" },
+      { value: "contract", label: "Contract" },
+      { value: "infra", label: "Infrastructure" },
+      { value: "config", label: "Configuration" },
+      { value: "data", label: "Data quality" },
+      { value: "external", label: "External dependency" },
+      { value: "unknown", label: "Unknown" },
+    ],
+    [],
+  );
+  const sloAlertTypes = useMemo(
+    () =>
+      new Set([
+        "sync_backlog",
+        "sync_error",
+        "backlog_assertions",
+        "backlog_disputes",
+        "stale_sync",
+        "contract_paused",
+        "market_stale",
+        "slow_api_request",
+        "high_error_rate",
+        "database_slow_query",
+      ]),
+    [],
+  );
 
   const rulesById = useCallback(() => {
     const map = new Map<string, AlertRule>();
@@ -290,13 +422,17 @@ export default function AlertsPage() {
     try {
       const params = new URLSearchParams();
       params.set("windowDays", "7");
+      params.set("seriesDays", "7");
       if (instanceId) params.set("instanceId", instanceId);
-      const data = await fetchApiData<{ metrics: OpsMetrics }>(
-        `/api/oracle/ops-metrics?${params.toString()}`,
-      );
+      const data = await fetchApiData<{
+        metrics: OpsMetrics;
+        series: OpsMetricsSeriesPoint[] | null;
+      }>(`/api/oracle/ops-metrics?${params.toString()}`);
       setOpsMetrics(data.metrics ?? null);
+      setOpsMetricsSeries(data.series ?? null);
     } catch (e) {
       setOpsMetricsError(getErrorCode(e));
+      setOpsMetricsSeries(null);
     } finally {
       setOpsMetricsLoading(false);
     }
@@ -315,6 +451,7 @@ export default function AlertsPage() {
       if (instanceId) params.set("instanceId", instanceId);
       if (filterStatus !== "All") params.set("status", filterStatus);
       if (filterSeverity !== "All") params.set("severity", filterSeverity);
+      if (filterType !== "All") params.set("type", filterType);
       if (query.trim()) params.set("q", query.trim());
       params.set("limit", "30");
       if (cursor !== null) params.set("cursor", String(cursor));
@@ -325,8 +462,34 @@ export default function AlertsPage() {
       }>(`/api/oracle/alerts?${params.toString()}`);
       return data;
     },
-    [filterSeverity, filterStatus, query, instanceId],
+    [filterSeverity, filterStatus, filterType, query, instanceId],
   );
+
+  const focusOpenCritical = useCallback(() => {
+    setFilterStatus("Open");
+    setFilterSeverity("critical");
+    setFilterType("All");
+    setQuery("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  const focusOpenAlerts = useCallback(() => {
+    setFilterStatus("Open");
+    setFilterSeverity("All");
+    setFilterType("All");
+    setQuery("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  const scrollToIncidents = useCallback(() => {
+    const el = document.getElementById("incidents-panel");
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+  }, []);
+
+  const scrollToSlo = useCallback(() => {
+    const el = document.getElementById("slo-panel");
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+  }, []);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -365,6 +528,149 @@ export default function AlertsPage() {
     );
     await loadIncidents();
   };
+
+  const collectSloAlertIds = useCallback(
+    async (slo: OpsSloStatus) => {
+      const keys = new Set(slo.breaches.map((b) => b.key));
+      const ids = new Set<number>();
+      const lagTypes = [
+        "sync_backlog",
+        "sync_error",
+        "backlog_assertions",
+        "backlog_disputes",
+      ];
+      const stalenessTypes = [
+        "stale_sync",
+        "sync_error",
+        "contract_paused",
+        "market_stale",
+      ];
+      const performanceTypes = [
+        "slow_api_request",
+        "high_error_rate",
+        "database_slow_query",
+      ];
+
+      const fetchIds = async (params: {
+        status?: AlertStatus | "All";
+        severity?: AlertSeverity | "All";
+        type?: string | "All";
+      }) => {
+        const search = new URLSearchParams();
+        if (instanceId) search.set("instanceId", instanceId);
+        if (params.status && params.status !== "All")
+          search.set("status", params.status);
+        if (params.severity && params.severity !== "All")
+          search.set("severity", params.severity);
+        if (params.type && params.type !== "All")
+          search.set("type", params.type);
+        search.set("limit", "50");
+        const data = await fetchApiData<{ items: Alert[] }>(
+          `/api/oracle/alerts?${search.toString()}`,
+        );
+        for (const item of data.items ?? []) {
+          if (Number.isFinite(item.id)) ids.add(item.id);
+        }
+      };
+
+      if (keys.has("lagBlocks")) {
+        for (const type of lagTypes) {
+          await fetchIds({ status: "Open", type });
+        }
+      }
+      if (keys.has("syncStalenessMinutes")) {
+        for (const type of stalenessTypes) {
+          await fetchIds({ status: "Open", type });
+        }
+      }
+      if (keys.has("openAlerts")) {
+        await fetchIds({ status: "Open" });
+      }
+      if (keys.has("openCriticalAlerts")) {
+        await fetchIds({ status: "Open", severity: "critical" });
+      }
+      if (keys.has("alertMttaMinutes")) {
+        await fetchIds({ status: "Acknowledged" });
+        await fetchIds({ status: "Open" });
+        for (const type of performanceTypes) {
+          await fetchIds({ status: "Open", type });
+        }
+      }
+      if (keys.has("alertMttrMinutes")) {
+        await fetchIds({ status: "Resolved" });
+        await fetchIds({ status: "Open" });
+        for (const type of performanceTypes) {
+          await fetchIds({ status: "Open", type });
+        }
+      }
+      if (keys.has("incidentMttrMinutes")) {
+        for (const incident of incidents) {
+          for (const id of incident.alertIds ?? []) {
+            if (Number.isFinite(id)) ids.add(id);
+          }
+        }
+      }
+
+      return Array.from(ids);
+    },
+    [incidents, instanceId],
+  );
+
+  const createIncidentFromSlo = useCallback(async () => {
+    if (!canAdmin) return;
+    const slo = opsMetrics?.slo ?? null;
+    if (!slo || slo.status === "met") return;
+    setSloIncidentError(null);
+    setSloIncidentCreating(true);
+    try {
+      const severity: AlertSeverity =
+        slo.status === "breached" ? "critical" : "warning";
+      const title = `SLO ${sloStatusLabel(slo.status)}`;
+      const breachText =
+        slo.breaches.length > 0
+          ? slo.breaches
+              .map(
+                (b) =>
+                  `${sloLabels[b.key] ?? b.key}: ${formatSloValue(
+                    b.key,
+                    b.actual,
+                  )} > ${formatSloTarget(b.key, b.target)}`,
+              )
+              .join("; ")
+          : "Missing SLO data";
+      const summary = `Instance ${instanceId || "default"}; ${breachText}`;
+      const alertIds = await collectSloAlertIds(slo);
+      await fetchApiData<{ ok: true; incident: Incident }>(
+        "/api/oracle/incidents",
+        {
+          method: "POST",
+          headers: { "content-type": "application/json", ...adminHeaders },
+          body: JSON.stringify({
+            title,
+            severity,
+            summary,
+            entityType: "slo",
+            entityId: instanceId || "default",
+            alertIds: alertIds.length > 0 ? alertIds : undefined,
+          }),
+        },
+      );
+      await loadIncidents();
+      scrollToIncidents();
+    } catch (e) {
+      setSloIncidentError(getErrorCode(e));
+    } finally {
+      setSloIncidentCreating(false);
+    }
+  }, [
+    adminHeaders,
+    canAdmin,
+    collectSloAlertIds,
+    instanceId,
+    loadIncidents,
+    opsMetrics,
+    scrollToIncidents,
+  ]);
 
   const patchIncidentStatus = async (
     id: number,
@@ -405,6 +711,7 @@ export default function AlertsPage() {
       title: i.title ?? "",
       severity: i.severity,
       owner: i.owner ?? "",
+      rootCause: i.rootCause ?? "",
       runbook: i.runbook ?? "",
       entityType: i.entityType ?? "",
       entityId: i.entityId ?? "",
@@ -426,6 +733,9 @@ export default function AlertsPage() {
       title: incidentDraft.title.trim(),
       severity: incidentDraft.severity,
       owner: incidentDraft.owner.trim() ? incidentDraft.owner.trim() : null,
+      rootCause: incidentDraft.rootCause.trim()
+        ? incidentDraft.rootCause.trim()
+        : null,
       runbook: incidentDraft.runbook.trim()
         ? incidentDraft.runbook.trim()
         : null,
@@ -460,9 +770,61 @@ export default function AlertsPage() {
   const resetFilters = useCallback(() => {
     setFilterStatus("All");
     setFilterSeverity("All");
+    setFilterType("All");
     setQuery("");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
+
+  const alertTypeOptions = useMemo(() => {
+    const set = new Set<string>();
+    for (const r of rules ?? []) {
+      if (r.event) set.add(r.event);
+    }
+    for (const a of items ?? []) {
+      if (a.type) set.add(a.type);
+    }
+    return Array.from(set).sort();
+  }, [items, rules]);
+
+  const handleSloBreachClick = useCallback(
+    (key: string) => {
+      if (key === "openCriticalAlerts") {
+        focusOpenCritical();
+        return;
+      }
+      if (key === "openAlerts") {
+        focusOpenAlerts();
+        return;
+      }
+      if (key === "incidentMttrMinutes") {
+        scrollToIncidents();
+        return;
+      }
+      if (key === "alertMttaMinutes" || key === "alertMttrMinutes") {
+        focusOpenAlerts();
+        return;
+      }
+      if (key === "lagBlocks") {
+        setFilterType("sync_backlog");
+        setFilterStatus("Open");
+        setFilterSeverity("All");
+        setQuery("");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+      if (key === "syncStalenessMinutes") {
+        setFilterType("stale_sync");
+        setFilterStatus("Open");
+        setFilterSeverity("All");
+        setQuery("");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+      setFilterType("All");
+      applyQuery(key);
+    },
+    [applyQuery, focusOpenAlerts, focusOpenCritical, scrollToIncidents],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -474,6 +836,7 @@ export default function AlertsPage() {
         const params = new URLSearchParams();
         if (filterStatus !== "All") params.set("status", filterStatus);
         if (filterSeverity !== "All") params.set("severity", filterSeverity);
+        if (filterType !== "All") params.set("type", filterType);
         if (query.trim()) params.set("q", query.trim());
         params.set("limit", "30");
         const data = await fetchApiData<{
@@ -498,7 +861,7 @@ export default function AlertsPage() {
       controller.abort();
       window.clearTimeout(timeout);
     };
-  }, [filterStatus, filterSeverity, query]);
+  }, [filterStatus, filterSeverity, filterType, query]);
 
   const loadMore = async () => {
     if (nextCursor === null) return;
@@ -558,6 +921,20 @@ export default function AlertsPage() {
       setRulesSaving(false);
     }
   };
+
+  const slo = opsMetrics?.slo ?? null;
+  const sloEntries = slo ? getSloEntries(slo) : [];
+  const opsSeriesChartData = useMemo(() => {
+    if (!opsMetricsSeries || opsMetricsSeries.length === 0) return [];
+    return opsMetricsSeries.map((point) => ({
+      ...point,
+      label: new Date(point.date).toLocaleDateString(locale, {
+        month: "short",
+        day: "numeric",
+      }),
+    }));
+  }, [locale, opsMetricsSeries]);
+  const hasOpsSeries = opsSeriesChartData.length >= 2;
 
   return (
     <div className="space-y-6 pb-16">
@@ -639,6 +1016,23 @@ export default function AlertsPage() {
                   <option value="info">info</option>
                 </select>
 
+                <select
+                  value={filterType}
+                  onChange={(e) => setFilterType(e.target.value)}
+                  className="h-9 rounded-lg border-none bg-white/50 px-3 text-sm text-purple-900 shadow-sm focus:ring-2 focus:ring-purple-500/20"
+                >
+                  <option value="All">{t("common.all")}</option>
+                  {filterType !== "All" &&
+                  !alertTypeOptions.includes(filterType) ? (
+                    <option value={filterType}>{filterType}</option>
+                  ) : null}
+                  {alertTypeOptions.map((event) => (
+                    <option key={event} value={event}>
+                      {event}
+                    </option>
+                  ))}
+                </select>
+
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
@@ -647,6 +1041,7 @@ export default function AlertsPage() {
                 />
                 {filterStatus !== "All" ||
                 filterSeverity !== "All" ||
+                filterType !== "All" ||
                 query.trim() ? (
                   <button
                     type="button"
@@ -684,6 +1079,7 @@ export default function AlertsPage() {
                   const isSilenced =
                     Number.isFinite(silencedUntilMs) &&
                     silencedUntilMs > Date.now();
+                  const isSloRelated = sloAlertTypes.has(a.type);
                   return (
                     <Card
                       key={a.id}
@@ -745,6 +1141,15 @@ export default function AlertsPage() {
                           </div>
 
                           <div className="flex items-center gap-2">
+                            {isSloRelated ? (
+                              <button
+                                type="button"
+                                onClick={scrollToSlo}
+                                className="rounded-lg bg-white px-3 py-2 text-xs font-semibold text-purple-700 shadow-sm ring-1 ring-purple-100 hover:bg-purple-50"
+                              >
+                                SLO
+                              </button>
+                            ) : null}
                             {canAdmin && (
                               <button
                                 type="button"
@@ -984,64 +1389,260 @@ export default function AlertsPage() {
                   {t("common.noData")}
                 </div>
               ) : (
-                <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-                  <div className="rounded-lg border border-purple-100/60 bg-white/60 p-2">
-                    <div className="text-[11px] text-purple-700/70">
-                      Alerts open
+                <>
+                  <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                    <div className="rounded-lg border border-purple-100/60 bg-white/60 p-2">
+                      <div className="text-[11px] text-purple-700/70">
+                        Alerts open
+                      </div>
+                      <div className="text-sm font-semibold text-purple-950">
+                        {opsMetrics.alerts.open}
+                      </div>
                     </div>
-                    <div className="text-sm font-semibold text-purple-950">
-                      {opsMetrics.alerts.open}
+                    <div className="rounded-lg border border-purple-100/60 bg-white/60 p-2">
+                      <div className="text-[11px] text-purple-700/70">
+                        Alerts ack
+                      </div>
+                      <div className="text-sm font-semibold text-purple-950">
+                        {opsMetrics.alerts.acknowledged}
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-purple-100/60 bg-white/60 p-2">
+                      <div className="text-[11px] text-purple-700/70">MTTA</div>
+                      <div className="text-sm font-semibold text-purple-950">
+                        {formatDurationMinutes(
+                          (opsMetrics.alerts.mttaMs ?? 0) / 60_000,
+                        )}
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-purple-100/60 bg-white/60 p-2">
+                      <div className="text-[11px] text-purple-700/70">
+                        Alert MTTR
+                      </div>
+                      <div className="text-sm font-semibold text-purple-950">
+                        {formatDurationMinutes(
+                          (opsMetrics.alerts.mttrMs ?? 0) / 60_000,
+                        )}
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-purple-100/60 bg-white/60 p-2">
+                      <div className="text-[11px] text-purple-700/70">
+                        Incidents open
+                      </div>
+                      <div className="text-sm font-semibold text-purple-950">
+                        {opsMetrics.incidents.open}
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-purple-100/60 bg-white/60 p-2">
+                      <div className="text-[11px] text-purple-700/70">
+                        Incident MTTR
+                      </div>
+                      <div className="text-sm font-semibold text-purple-950">
+                        {formatDurationMinutes(
+                          (opsMetrics.incidents.mttrMs ?? 0) / 60_000,
+                        )}
+                      </div>
                     </div>
                   </div>
-                  <div className="rounded-lg border border-purple-100/60 bg-white/60 p-2">
-                    <div className="text-[11px] text-purple-700/70">
-                      Alerts ack
+
+                  <div className="mt-3 rounded-lg border border-purple-100/60 bg-white/60 p-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="text-[11px] text-purple-700/70">
+                        Ops trend
+                      </div>
+                      <div className="text-[11px] text-purple-700/70">7d</div>
                     </div>
-                    <div className="text-sm font-semibold text-purple-950">
-                      {opsMetrics.alerts.acknowledged}
-                    </div>
+                    {opsMetricsLoading ? (
+                      <div className="mt-2 text-xs text-purple-700/70">
+                        {t("common.loading")}
+                      </div>
+                    ) : !hasOpsSeries ? (
+                      <div className="mt-2 text-xs text-purple-700/70">
+                        {t("common.noData")}
+                      </div>
+                    ) : (
+                      <div className="mt-2 h-44 w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={opsSeriesChartData}>
+                            <CartesianGrid
+                              strokeDasharray="3 3"
+                              vertical={false}
+                              stroke="#ede9fe"
+                            />
+                            <XAxis
+                              dataKey="label"
+                              tick={{ fontSize: 10 }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <YAxis
+                              tick={{ fontSize: 10 }}
+                              axisLine={false}
+                              tickLine={false}
+                              allowDecimals={false}
+                            />
+                            <Tooltip
+                              contentStyle={{
+                                backgroundColor: "rgba(255, 255, 255, 0.9)",
+                                borderRadius: "12px",
+                                border: "1px solid rgba(148, 163, 184, 0.2)",
+                              }}
+                            />
+                            <Legend
+                              verticalAlign="bottom"
+                              height={18}
+                              wrapperStyle={{ fontSize: "10px" }}
+                            />
+                            <Line
+                              type="monotone"
+                              dataKey="alertsCreated"
+                              name="Alerts created"
+                              stroke="#8b5cf6"
+                              strokeWidth={2}
+                              dot={false}
+                            />
+                            <Line
+                              type="monotone"
+                              dataKey="alertsResolved"
+                              name="Alerts resolved"
+                              stroke="#22c55e"
+                              strokeWidth={2}
+                              dot={false}
+                            />
+                            <Line
+                              type="monotone"
+                              dataKey="incidentsCreated"
+                              name="Incidents created"
+                              stroke="#f97316"
+                              strokeWidth={2}
+                              dot={false}
+                            />
+                            <Line
+                              type="monotone"
+                              dataKey="incidentsResolved"
+                              name="Incidents resolved"
+                              stroke="#0ea5e9"
+                              strokeWidth={2}
+                              dot={false}
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    )}
                   </div>
-                  <div className="rounded-lg border border-purple-100/60 bg-white/60 p-2">
-                    <div className="text-[11px] text-purple-700/70">MTTA</div>
-                    <div className="text-sm font-semibold text-purple-950">
-                      {formatDurationMinutes(
-                        (opsMetrics.alerts.mttaMs ?? 0) / 60_000,
-                      )}
+
+                  {slo ? (
+                    <div
+                      id="slo-panel"
+                      className="mt-3 rounded-lg border border-purple-100/60 bg-white/60 p-2"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="text-[11px] text-purple-700/70">
+                          SLO status
+                        </div>
+                        <span
+                          className={cn(
+                            "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1",
+                            sloStatusBadge(slo.status),
+                          )}
+                        >
+                          {slo.status === "met" ? (
+                            <CheckCircle2 size={12} />
+                          ) : (
+                            <AlertTriangle size={12} />
+                          )}
+                          {sloStatusLabel(slo.status)}
+                        </span>
+                      </div>
+                      <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                        {sloEntries.map((entry) => (
+                          <div
+                            key={entry.key}
+                            className="rounded-lg border border-purple-100/60 bg-white/60 p-2"
+                          >
+                            <div className="text-[11px] text-purple-700/70">
+                              {entry.label}
+                            </div>
+                            <div className="text-sm font-semibold text-purple-950">
+                              {formatSloValue(entry.key, entry.current)} /{" "}
+                              {formatSloTarget(entry.key, entry.target)}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-purple-700/70">
+                        {slo.breaches.length === 0 ? (
+                          <span className="rounded-md bg-emerald-50 px-2 py-1 text-emerald-700 ring-1 ring-emerald-100">
+                            No breaches
+                          </span>
+                        ) : (
+                          slo.breaches.map((breach) => (
+                            <button
+                              key={`${breach.key}-${breach.target}`}
+                              type="button"
+                              onClick={() => handleSloBreachClick(breach.key)}
+                              className="rounded-md bg-rose-50 px-2 py-1 text-rose-700 ring-1 ring-rose-100 hover:bg-rose-100"
+                            >
+                              {sloLabels[breach.key] ?? breach.key}{" "}
+                              {formatSloValue(breach.key, breach.actual)} &gt;{" "}
+                              {formatSloTarget(breach.key, breach.target)}
+                            </button>
+                          ))
+                        )}
+                      </div>
+                      {sloIncidentError ? (
+                        <div className="mt-2 rounded-lg border border-rose-100 bg-rose-50/50 p-2 text-xs text-rose-700">
+                          {getUiErrorMessage(sloIncidentError, t)}
+                        </div>
+                      ) : null}
+                      {canAdmin && slo.status !== "met" ? (
+                        <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-purple-700/70">
+                          <button
+                            type="button"
+                            onClick={createIncidentFromSlo}
+                            disabled={sloIncidentCreating}
+                            className="rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-semibold text-purple-700 shadow-sm ring-1 ring-purple-100 hover:bg-purple-50 disabled:opacity-50"
+                          >
+                            {sloIncidentCreating
+                              ? "Creating incident..."
+                              : "Create incident"}
+                          </button>
+                        </div>
+                      ) : null}
                     </div>
+                  ) : null}
+
+                  <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-purple-700/70">
+                    <button
+                      type="button"
+                      onClick={focusOpenCritical}
+                      className="rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-semibold text-rose-700 shadow-sm ring-1 ring-rose-100 hover:bg-rose-50"
+                    >
+                      Open critical alerts
+                    </button>
+                    <button
+                      type="button"
+                      onClick={focusOpenAlerts}
+                      className="rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-semibold text-purple-700 shadow-sm ring-1 ring-purple-100 hover:bg-purple-50"
+                    >
+                      Open alerts
+                    </button>
+                    <button
+                      type="button"
+                      onClick={scrollToIncidents}
+                      className="rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50"
+                    >
+                      Incidents
+                    </button>
                   </div>
-                  <div className="rounded-lg border border-purple-100/60 bg-white/60 p-2">
-                    <div className="text-[11px] text-purple-700/70">
-                      Alert MTTR
-                    </div>
-                    <div className="text-sm font-semibold text-purple-950">
-                      {formatDurationMinutes(
-                        (opsMetrics.alerts.mttrMs ?? 0) / 60_000,
-                      )}
-                    </div>
-                  </div>
-                  <div className="rounded-lg border border-purple-100/60 bg-white/60 p-2">
-                    <div className="text-[11px] text-purple-700/70">
-                      Incidents open
-                    </div>
-                    <div className="text-sm font-semibold text-purple-950">
-                      {opsMetrics.incidents.open}
-                    </div>
-                  </div>
-                  <div className="rounded-lg border border-purple-100/60 bg-white/60 p-2">
-                    <div className="text-[11px] text-purple-700/70">
-                      Incident MTTR
-                    </div>
-                    <div className="text-sm font-semibold text-purple-950">
-                      {formatDurationMinutes(
-                        (opsMetrics.incidents.mttrMs ?? 0) / 60_000,
-                      )}
-                    </div>
-                  </div>
-                </div>
+                </>
               )}
             </div>
 
-            <div className="rounded-xl border border-purple-100/60 bg-white/50 p-3">
+            <div
+              id="incidents-panel"
+              className="rounded-xl border border-purple-100/60 bg-white/50 p-3"
+            >
               <div className="text-sm font-semibold text-purple-950">
                 Incidents
               </div>
@@ -1067,6 +1668,9 @@ export default function AlertsPage() {
                         .map((a) => a.entityId ?? "")
                         .find((x) => x.trim()) ||
                       "";
+                    const isSloIncident =
+                      i.entityType === "slo" ||
+                      (i.alerts ?? []).some((a) => sloAlertTypes.has(a.type));
                     return (
                       <div
                         key={i.id}
@@ -1089,12 +1693,26 @@ export default function AlertsPage() {
                               <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold border bg-gray-50 text-gray-600">
                                 {i.status}
                               </span>
+                              {i.rootCause ? (
+                                <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold border bg-purple-50 text-purple-700">
+                                  {i.rootCause}
+                                </span>
+                              ) : null}
                               <span className="text-[11px] text-gray-400">
                                 {formatTime(i.updatedAt, locale)}
                               </span>
                             </div>
                           </div>
                           <div className="flex shrink-0 flex-wrap items-center gap-2">
+                            {isSloIncident ? (
+                              <button
+                                type="button"
+                                onClick={scrollToSlo}
+                                className="rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-semibold text-purple-700 shadow-sm ring-1 ring-purple-100 hover:bg-purple-50"
+                              >
+                                SLO
+                              </button>
+                            ) : null}
                             {incidentQuery ? (
                               <button
                                 type="button"
@@ -1314,6 +1932,31 @@ export default function AlertsPage() {
                                   }
                                   className="w-full rounded-lg border border-purple-100 bg-white px-2 py-1.5 text-xs text-purple-950 outline-none ring-purple-200 focus:ring-2"
                                 />
+                              </label>
+                              <label className="space-y-1">
+                                <div className="text-[11px] font-semibold text-purple-900/80">
+                                  Root cause
+                                </div>
+                                <select
+                                  value={incidentDraft.rootCause}
+                                  onChange={(e) =>
+                                    setIncidentDraft((prev) =>
+                                      prev
+                                        ? {
+                                            ...prev,
+                                            rootCause: e.target.value,
+                                          }
+                                        : prev,
+                                    )
+                                  }
+                                  className="w-full rounded-lg border border-purple-100 bg-white px-2 py-1.5 text-xs text-purple-950 outline-none ring-purple-200 focus:ring-2"
+                                >
+                                  {rootCauseOptions.map((o) => (
+                                    <option key={o.value} value={o.value}>
+                                      {o.label}
+                                    </option>
+                                  ))}
+                                </select>
                               </label>
                               <label className="space-y-1">
                                 <div className="text-[11px] font-semibold text-purple-900/80">

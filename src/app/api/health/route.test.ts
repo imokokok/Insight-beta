@@ -110,4 +110,24 @@ describe("GET /api/health", () => {
     expect(res.status).toBe("ok");
     expect(res.probe).toBe("readiness");
   });
+
+  it("returns validation degraded when database disconnected", async () => {
+    hasDatabase.mockReturnValue(true);
+    query.mockRejectedValueOnce(new Error("db_down"));
+    readJsonFile.mockResolvedValueOnce({ at: new Date().toISOString() });
+
+    const request = new Request(
+      "http://localhost:3000/api/health?probe=validation",
+    );
+    const res = (await GET(request)) as unknown as {
+      status: string;
+      probe: string;
+      issues: string[];
+      database: string;
+    };
+    expect(res.status).toBe("degraded");
+    expect(res.probe).toBe("validation");
+    expect(res.issues).toContain("database_disconnected");
+    expect(res.database).toBe("disconnected");
+  });
 });

@@ -58,6 +58,28 @@ describe("GET /api/oracle/ops-metrics", () => {
         resolved: 0,
         mttrMs: null,
       },
+      slo: {
+        status: "met",
+        targets: {
+          maxLagBlocks: 200,
+          maxSyncStalenessMinutes: 30,
+          maxAlertMttaMinutes: 30,
+          maxAlertMttrMinutes: 240,
+          maxIncidentMttrMinutes: 720,
+          maxOpenAlerts: 50,
+          maxOpenCriticalAlerts: 3,
+        },
+        current: {
+          lagBlocks: 10,
+          syncStalenessMinutes: 5,
+          alertMttaMinutes: 4,
+          alertMttrMinutes: 12,
+          incidentMttrMinutes: 30,
+          openAlerts: 1,
+          openCriticalAlerts: 0,
+        },
+        breaches: [],
+      },
     } as unknown as observability.OpsMetrics);
 
     type ApiMockResponse<T> =
@@ -68,7 +90,7 @@ describe("GET /api/oracle/ops-metrics", () => {
       "http://localhost:3000/api/oracle/ops-metrics?windowDays=7",
     );
     const response = (await GET(request)) as unknown as ApiMockResponse<{
-      metrics: unknown;
+      metrics: observability.OpsMetrics;
     }>;
 
     expect(response.ok).toBe(true);
@@ -86,5 +108,9 @@ describe("GET /api/oracle/ops-metrics", () => {
       windowDays: 7,
       instanceId: null,
     });
+    if (response.ok) {
+      expect(response.data.metrics.slo?.status).toBe("met");
+      expect(response.data.metrics.slo?.breaches.length).toBe(0);
+    }
   });
 });

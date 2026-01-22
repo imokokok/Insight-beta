@@ -1,9 +1,10 @@
 import { cachedJson, handleApi, rateLimit } from "@/server/apiResponse";
-import { getOpsMetrics } from "@/server/observability";
+import { getOpsMetrics, getOpsMetricsSeries } from "@/server/observability";
 import { z } from "zod";
 
 const querySchema = z.object({
   windowDays: z.coerce.number().int().min(1).max(90).default(7),
+  seriesDays: z.coerce.number().int().min(1).max(90).optional(),
 });
 
 export async function GET(request: Request) {
@@ -24,7 +25,14 @@ export async function GET(request: Request) {
         windowDays: q.windowDays,
         instanceId,
       });
-      return { metrics };
+      const series =
+        q.seriesDays !== undefined
+          ? await getOpsMetricsSeries({
+              seriesDays: q.seriesDays,
+              instanceId,
+            })
+          : null;
+      return { metrics, series };
     });
   });
 }
