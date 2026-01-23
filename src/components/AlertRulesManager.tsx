@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import useSWR from "swr";
 import { AlertTriangle, Bell, Loader2, Save, ShieldAlert } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -10,31 +10,17 @@ import { useI18n } from "@/i18n/LanguageProvider";
 import type { AlertRule } from "@/lib/oracleTypes";
 import { useAdminSession } from "@/hooks/useAdminSession";
 import { AlertRuleCard } from "./AlertRuleCard";
+import {
+  validateAlertRule,
+  normalizeChannels,
+} from "./AlertRules/alertValidation";
 
 export type Channel = "webhook" | "email" | "telegram";
 
-function normalizeChannels(
-  channels: AlertRule["channels"] | undefined,
-): Channel[] {
-  const input = channels && channels.length > 0 ? channels : ["webhook"];
-  const out: Channel[] = [];
-  for (const c of input) {
-    if (c !== "webhook" && c !== "email" && c !== "telegram") continue;
-    if (!out.includes(c)) out.push(c);
-  }
-  return out.length > 0 ? out : ["webhook"];
-}
-
-function isValidEmail(value: string) {
-  const v = value.trim();
-  if (!v) return false;
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-}
-
 export function AlertRulesManager({
-  showTitle = true,
-  showAdminTokenInput = true,
   showAdminActorInput = true,
+  showAdminTokenInput = true,
+  showTitle = true,
 }: {
   showTitle?: boolean;
   showAdminTokenInput?: boolean;
@@ -43,12 +29,12 @@ export function AlertRulesManager({
   const { t } = useI18n();
   const { toast } = useToast();
   const {
-    adminToken,
-    setAdminToken,
     adminActor,
-    setAdminActor,
-    headers: adminHeaders,
+    adminToken,
     canAdmin,
+    headers: adminHeaders,
+    setAdminActor,
+    setAdminToken,
   } = useAdminSession({ actor: true });
   const [localRules, setLocalRules] = useState<AlertRule[]>([]);
   const [saving, setSaving] = useState(false);
@@ -95,179 +81,6 @@ export function AlertRulesManager({
     setHasChanges(true);
   };
 
-  const getRuleValidationErrorMessage = useCallback(
-    (rule: AlertRule, channels: Channel[]) => {
-      if (channels.includes("email")) {
-        const recipient = (rule.recipient ?? "").trim();
-        if (!recipient)
-          return t("oracle.alerts.validation.emailRecipientRequired");
-        if (!isValidEmail(recipient))
-          return t("oracle.alerts.validation.emailRecipientInvalid");
-      }
-
-      const params = (rule.params ?? {}) as Record<string, unknown>;
-      const getNumber = (key: string) => Number(params[key]);
-
-      if (rule.event === "stale_sync") {
-        const maxAgeMs = getNumber("maxAgeMs");
-        if (!Number.isFinite(maxAgeMs) || maxAgeMs <= 0) {
-          return t("oracle.alerts.validation.staleSyncMaxAgeMsPositive");
-        }
-      }
-
-      if (rule.event === "sync_backlog") {
-        const maxLagBlocks = getNumber("maxLagBlocks");
-        if (!Number.isFinite(maxLagBlocks) || maxLagBlocks <= 0) {
-          return t("oracle.alerts.validation.maxLagBlocksPositive");
-        }
-      }
-
-      if (rule.event === "backlog_assertions") {
-        const maxOpenAssertions = getNumber("maxOpenAssertions");
-        if (!Number.isFinite(maxOpenAssertions) || maxOpenAssertions <= 0) {
-          return t("oracle.alerts.validation.maxOpenAssertionsPositive");
-        }
-      }
-
-      if (rule.event === "backlog_disputes") {
-        const maxOpenDisputes = getNumber("maxOpenDisputes");
-        if (!Number.isFinite(maxOpenDisputes) || maxOpenDisputes <= 0) {
-          return t("oracle.alerts.validation.maxOpenDisputesPositive");
-        }
-      }
-
-      if (rule.event === "market_stale") {
-        const maxAgeMs = getNumber("maxAgeMs");
-        if (!Number.isFinite(maxAgeMs) || maxAgeMs <= 0) {
-          return t("oracle.alerts.validation.marketStaleMaxAgeMsPositive");
-        }
-      }
-
-      if (rule.event === "liveness_expiring") {
-        const withinMinutes = getNumber("withinMinutes");
-        if (!Number.isFinite(withinMinutes) || withinMinutes <= 0) {
-          return t("oracle.alerts.validation.withinMinutesPositive");
-        }
-      }
-
-      if (rule.event === "execution_delayed") {
-        const maxDelayMinutes = getNumber("maxDelayMinutes");
-        if (!Number.isFinite(maxDelayMinutes) || maxDelayMinutes <= 0) {
-          return t(
-            "oracle.alerts.validation.executionDelayedMaxDelayMinutesPositive",
-          );
-        }
-      }
-
-      if (rule.event === "low_participation") {
-        const withinMinutes = getNumber("withinMinutes");
-        const minTotalVotes = getNumber("minTotalVotes");
-        if (!Number.isFinite(withinMinutes) || withinMinutes <= 0) {
-          return t("oracle.alerts.validation.withinMinutesPositive");
-        }
-        if (!Number.isFinite(minTotalVotes) || minTotalVotes < 0) {
-          return t("oracle.alerts.validation.minTotalVotesNonNegative");
-        }
-      }
-
-      if (rule.event === "high_vote_divergence") {
-        const withinMinutes = getNumber("withinMinutes");
-        const minTotalVotes = getNumber("minTotalVotes");
-        const maxMarginPercent = getNumber("maxMarginPercent");
-        if (!Number.isFinite(withinMinutes) || withinMinutes <= 0) {
-          return t("oracle.alerts.validation.withinMinutesPositive");
-        }
-        if (!Number.isFinite(minTotalVotes) || minTotalVotes <= 0) {
-          return t("oracle.alerts.validation.minTotalVotesPositive");
-        }
-        if (
-          !Number.isFinite(maxMarginPercent) ||
-          maxMarginPercent <= 0 ||
-          maxMarginPercent > 100
-        ) {
-          return t("oracle.alerts.validation.maxMarginPercentRange");
-        }
-      }
-
-      if (rule.event === "high_dispute_rate") {
-        const windowDays = getNumber("windowDays");
-        const minAssertions = getNumber("minAssertions");
-        const thresholdPercent = getNumber("thresholdPercent");
-        if (!Number.isFinite(windowDays) || windowDays <= 0) {
-          return t(
-            "oracle.alerts.validation.highDisputeRateWindowDaysPositive",
-          );
-        }
-        if (!Number.isFinite(minAssertions) || minAssertions <= 0) {
-          return t(
-            "oracle.alerts.validation.highDisputeRateMinAssertionsPositive",
-          );
-        }
-        if (
-          !Number.isFinite(thresholdPercent) ||
-          thresholdPercent <= 0 ||
-          thresholdPercent > 100
-        ) {
-          return t(
-            "oracle.alerts.validation.highDisputeRateThresholdPercentRange",
-          );
-        }
-      }
-
-      if (rule.event === "slow_api_request") {
-        const thresholdMs = getNumber("thresholdMs");
-        if (!Number.isFinite(thresholdMs) || thresholdMs <= 0) {
-          return t("oracle.alerts.validation.slowApiThresholdMsPositive");
-        }
-      }
-
-      if (rule.event === "database_slow_query") {
-        const thresholdMs = getNumber("thresholdMs");
-        if (!Number.isFinite(thresholdMs) || thresholdMs <= 0) {
-          return t(
-            "oracle.alerts.validation.databaseSlowQueryThresholdMsPositive",
-          );
-        }
-      }
-
-      if (rule.event === "high_error_rate") {
-        const thresholdPercent = getNumber("thresholdPercent");
-        const windowMinutes = getNumber("windowMinutes");
-        if (
-          !Number.isFinite(thresholdPercent) ||
-          thresholdPercent <= 0 ||
-          thresholdPercent > 100
-        ) {
-          return t(
-            "oracle.alerts.validation.highErrorRateThresholdPercentRange",
-          );
-        }
-        if (!Number.isFinite(windowMinutes) || windowMinutes <= 0) {
-          return t(
-            "oracle.alerts.validation.highErrorRateWindowMinutesPositive",
-          );
-        }
-      }
-
-      if (rule.event === "price_deviation") {
-        const thresholdPercent = getNumber("thresholdPercent");
-        if (!Number.isFinite(thresholdPercent) || thresholdPercent <= 0) {
-          return t("oracle.alerts.validation.priceDeviationPositive");
-        }
-      }
-
-      if (rule.event === "low_gas") {
-        const minBalanceEth = getNumber("minBalanceEth");
-        if (!Number.isFinite(minBalanceEth) || minBalanceEth <= 0) {
-          return t("oracle.alerts.validation.lowGasPositive");
-        }
-      }
-
-      return null;
-    },
-    [t],
-  );
-
   const { derivedById, firstBlockingRuleError } = useMemo(() => {
     const derivedById = new Map<
       string,
@@ -281,9 +94,7 @@ export function AlertRulesManager({
 
     for (const rule of localRules) {
       const channels = normalizeChannels(rule.channels);
-      const error = rule.enabled
-        ? getRuleValidationErrorMessage(rule, channels)
-        : null;
+      const error = rule.enabled ? validateAlertRule(rule, channels, t) : null;
       if (!firstBlockingRuleError && rule.enabled && error) {
         firstBlockingRuleError = { id: rule.id, message: error };
       }
@@ -291,7 +102,7 @@ export function AlertRulesManager({
     }
 
     return { derivedById, firstBlockingRuleError };
-  }, [getRuleValidationErrorMessage, localRules]);
+  }, [localRules, t]);
 
   const toggleChannel = (id: string, channel: Channel, enabled: boolean) => {
     setLocalRules((prev) =>
@@ -312,8 +123,8 @@ export function AlertRulesManager({
     const trimmedToken = adminToken.trim();
     if (!trimmedToken) {
       toast({
-        title: t("oracle.alerts.error"),
         message: t("errors.forbidden"),
+        title: t("oracle.alerts.error"),
         type: "error",
       });
       return;
@@ -321,8 +132,8 @@ export function AlertRulesManager({
 
     if (firstBlockingRuleError) {
       toast({
-        title: t("oracle.alerts.error"),
         message: `${firstBlockingRuleError.id}: ${firstBlockingRuleError.message}`,
+        title: t("oracle.alerts.error"),
         type: "error",
       });
       return;
@@ -331,17 +142,15 @@ export function AlertRulesManager({
     setSaving(true);
     try {
       await fetchApiData("/api/oracle/alert-rules", {
-        method: "PUT",
-        headers: { "content-type": "application/json", ...adminHeaders },
         body: JSON.stringify({
           rules: localRules.map((r) => {
             const derived = derivedById.get(r.id);
             return {
               ...r,
               channels: derived?.channels ?? normalizeChannels(r.channels),
+              owner: r.owner && r.owner.trim() ? r.owner.trim() : null,
               recipient:
                 r.recipient && r.recipient.trim() ? r.recipient.trim() : null,
-              owner: r.owner && r.owner.trim() ? r.owner.trim() : null,
               runbook: r.runbook && r.runbook.trim() ? r.runbook.trim() : null,
               silencedUntil:
                 r.silencedUntil && r.silencedUntil.trim()
@@ -350,6 +159,8 @@ export function AlertRulesManager({
             };
           }),
         }),
+        headers: { "content-type": "application/json", ...adminHeaders },
+        method: "PUT",
       });
 
       await mutate();
@@ -361,9 +172,9 @@ export function AlertRulesManager({
     } catch (e) {
       const code = getErrorCode(e);
       toast({
-        title: t("oracle.alerts.error"),
         message:
           code === "forbidden" ? t("errors.forbidden") : t("errors.apiError"),
+        title: t("oracle.alerts.error"),
         type: "error",
       });
     } finally {
@@ -375,8 +186,8 @@ export function AlertRulesManager({
     const trimmedToken = adminToken.trim();
     if (!trimmedToken) {
       toast({
-        title: t("oracle.alerts.error"),
         message: t("errors.forbidden"),
+        title: t("oracle.alerts.error"),
         type: "error",
       });
       return;
@@ -385,12 +196,12 @@ export function AlertRulesManager({
     setTestingRuleId(ruleId);
     try {
       await fetchApiData("/api/oracle/alert-rules", {
-        method: "POST",
+        body: JSON.stringify({ ruleId }),
         headers: {
           "content-type": "application/json",
           ...adminHeaders,
         },
-        body: JSON.stringify({ ruleId }),
+        method: "POST",
       });
       toast({
         title: t("oracle.alerts.testSent"),
@@ -399,11 +210,11 @@ export function AlertRulesManager({
     } catch (e) {
       const code = getErrorCode(e);
       toast({
-        title: t("oracle.alerts.error"),
         message:
           code === "forbidden"
             ? t("errors.forbidden")
             : t("oracle.alerts.testFailed"),
+        title: t("oracle.alerts.error"),
         type: "error",
       });
     } finally {

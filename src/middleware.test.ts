@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import type { NextRequest } from "next/server";
 import { middleware } from "./middleware";
 import nextConfig from "../next.config";
-import { PHASE_DEVELOPMENT_SERVER } from "next/constants";
 
 function makeRequest(
   pathname: string,
@@ -50,11 +49,15 @@ describe("middleware", () => {
 
 describe("next.config headers", () => {
   it("adds security headers", async () => {
-    const cfg = nextConfig(PHASE_DEVELOPMENT_SERVER);
-    const rules = await cfg.headers?.();
+    const rules = await nextConfig.headers?.();
     expect(rules?.[0]?.source).toBe("/:path*");
     const headers = rules?.[0]?.headers ?? [];
-    const map = new Map(headers.map((h) => [h.key.toLowerCase(), h.value]));
+    const map = new Map(
+      headers.map((h: { key: string; value: string }) => [
+        h.key.toLowerCase(),
+        h.value,
+      ]),
+    );
     expect(map.get("x-content-type-options")).toBe("nosniff");
     expect(map.get("referrer-policy")).toBe("strict-origin-when-cross-origin");
     expect(map.get("content-security-policy")).toContain("default-src");

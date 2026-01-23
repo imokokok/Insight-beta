@@ -1,9 +1,9 @@
+import * as Sentry from "@sentry/nextjs";
 import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
 
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
-    // Initialize OpenTelemetry if enabled
     await import("./lib/opentelemetry")
       .then(({ default: initOpenTelemetry }) => {
         initOpenTelemetry();
@@ -20,3 +20,5 @@ export async function register() {
     }
   }
 }
+
+export const onError = Sentry.captureException;

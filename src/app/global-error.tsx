@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AlertTriangle, RefreshCcw, Home } from "lucide-react";
 import { translations, type Lang } from "@/i18n/translations";
+import * as Sentry from "@sentry/nextjs";
 
 export default function GlobalError({
   error,
@@ -14,9 +15,16 @@ export default function GlobalError({
   const [lang, setLang] = useState<Lang>("en");
 
   useEffect(() => {
-    if (process.env.NODE_ENV === "development") console.error(error);
+    if (process.env.NODE_ENV === "development") {
+      console.error(error);
+    } else {
+      Sentry.captureException(error, {
+        extra: {
+          digest: error.digest,
+        },
+      });
+    }
 
-    // Simple client-side language detection
     if (typeof navigator !== "undefined") {
       const browserLang = navigator.language.toLowerCase();
       if (browserLang.includes("zh")) setLang("zh");
@@ -46,7 +54,8 @@ export default function GlobalError({
               </p>
             </div>
 
-            {process.env.NODE_ENV === "development" && (
+            {(process.env.NODE_ENV === "development" ||
+              process.env.NODE_ENV === "test") && (
               <div className="bg-red-50/50 rounded-xl p-4 text-left overflow-auto max-h-40 border border-red-100/50">
                 <p className="font-mono text-xs text-red-700 break-all">
                   {error.message}
