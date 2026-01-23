@@ -1,4 +1,5 @@
-import { createPublicClient, createWalletClient, http, type Address, type Hash } from "viem";
+import type { createWalletClient } from "viem";
+import { createPublicClient, http, type Address, type Hash } from "viem";
 import type { Chain } from "viem/chains";
 import {
   arbitrum,
@@ -89,7 +90,14 @@ const UMA_DVM_ABI = [
   },
 ];
 
-const SUPPORTED_CHAINS = [arbitrum, hardhat, mainnet, optimism, polygon, polygonAmoy] as const;
+const SUPPORTED_CHAINS = [
+  arbitrum,
+  hardhat,
+  mainnet,
+  optimism,
+  polygon,
+  polygonAmoy,
+] as const;
 
 export class UMAOracleClient {
   private publicClient: ReturnType<typeof createPublicClient> | null = null;
@@ -110,7 +118,10 @@ export class UMAOracleClient {
       throw new Error("RPC URL is required");
     }
 
-    if (!this.dvmAddress || this.dvmAddress === "0x0000000000000000000000000000000000000000") {
+    if (
+      !this.dvmAddress ||
+      this.dvmAddress === "0x0000000000000000000000000000000000000000"
+    ) {
       throw new Error("Valid DVM address is required");
     }
 
@@ -197,13 +208,15 @@ export class UMAOracleClient {
     }
 
     try {
-      const { request: callRequest } = await this.publicClient.simulateContract({
-        address: this.dvmAddress,
-        abi: UMA_DVM_ABI,
-        functionName: "voteFor",
-        args: [request.assertionId as `0x${string}`, request.support],
-        account: request.voterAddress,
-      });
+      const { request: callRequest } = await this.publicClient.simulateContract(
+        {
+          address: this.dvmAddress,
+          abi: UMA_DVM_ABI,
+          functionName: "voteFor",
+          args: [request.assertionId as `0x${string}`, request.support],
+          account: request.voterAddress,
+        },
+      );
 
       const hash = await this.walletClient.writeContract(callRequest);
 
@@ -258,12 +271,12 @@ export class UMAOracleClient {
     }
 
     try {
-      const hasVoted = await this.publicClient.readContract({
+      const hasVoted = (await this.publicClient.readContract({
         address: this.dvmAddress,
         abi: UMA_DVM_ABI,
         functionName: "hasVoted",
         args: [assertionId as `0x${string}`, voterAddress],
-      });
+      })) as boolean;
 
       logger.debug("UMA vote status checked", {
         assertionId,
@@ -304,12 +317,12 @@ export class UMAOracleClient {
     }
 
     try {
-      const timestamp = await this.publicClient.readContract({
+      const timestamp = (await this.publicClient.readContract({
         address: this.dvmAddress,
         abi: UMA_DVM_ABI,
         functionName: "getVoteTimestamp",
         args: [assertionId as `0x${string}`, voterAddress],
-      });
+      })) as bigint;
 
       return timestamp;
     } catch (error) {

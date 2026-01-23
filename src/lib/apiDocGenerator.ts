@@ -1,4 +1,14 @@
 export interface APIDocumentation {
+  openapi: string;
+  info: {
+    title: string;
+    version: string;
+    description: string;
+    contact?: {
+      name: string;
+      email: string;
+    };
+  };
   title: string;
   version: string;
   description: string;
@@ -7,6 +17,7 @@ export interface APIDocumentation {
   components: {
     schemas: Record<string, Schema>;
     responses: Record<string, Response>;
+    securitySchemes?: SecurityRequirement[];
   };
   tags?: string[];
   servers?: Array<{ url: string; description: string }>;
@@ -98,7 +109,8 @@ const DEFAULT_THEME = "light";
 
 export class APIDocGenerator {
   private doc: APIDocumentation;
-  private cache: Map<string, { spec: APIDocumentation; timestamp: number }> = new Map();
+  private cache: Map<string, { spec: APIDocumentation; timestamp: number }> =
+    new Map();
   private cacheTimeout: number = 300000; // 5 minutes
 
   constructor(config: {
@@ -114,7 +126,13 @@ export class APIDocGenerator {
         version: config.version || DEFAULT_VERSION,
         description: config.description || "",
       },
-      servers: config.baseUrl ? [{ url: config.baseUrl, description: "Base URL" }] : undefined,
+      title: config.title,
+      version: config.version || DEFAULT_VERSION,
+      description: config.description || "",
+      baseUrl: config.baseUrl || "",
+      servers: config.baseUrl
+        ? [{ url: config.baseUrl, description: "Base URL" }]
+        : undefined,
       paths: {},
       components: {
         schemas: {},
@@ -206,7 +224,7 @@ export class APIDocGenerator {
     `;
   }
 
-  generateMarkdown(options?: DocGenerationOptions): string {
+  generateMarkdown(_options?: DocGenerationOptions): string {
     const lines: string[] = [];
 
     lines.push(`# ${this.doc.title}`);
@@ -245,38 +263,54 @@ export class APIDocGenerator {
           for (const param of operation.parameters) {
             const required = param.required ? "Yes" : "No";
             const type = param.schema.type || "unknown";
-            lines.push(`| \`${param.name}\` | ${param.in} | ${type} | ${required} | ${param.description} |`);
+            lines.push(
+              `| \`${param.name}\` | ${param.in} | ${type} | ${required} | ${param.description} |`,
+            );
           }
           lines.push("\n");
         }
 
         if (operation.requestBody) {
           lines.push("### Request Body\n");
-          lines.push(`**Required:** ${operation.requestBody.required ? "Yes" : "No"}\n`);
+          lines.push(
+            `**Required:** ${operation.requestBody.required ? "Yes" : "No"}\n`,
+          );
           lines.push(operation.requestBody.description + "\n");
 
-          for (const [contentType, media] of Object.entries(operation.requestBody.content)) {
+          for (const [contentType, media] of Object.entries(
+            operation.requestBody.content,
+          )) {
+            const mediaTyped: MediaType = media as MediaType;
             lines.push(`**Content-Type:** ${contentType}\n`);
-            if (media.schema && media.schema.example) {
+            if (mediaTyped.schema && mediaTyped.schema.example) {
               lines.push("```json");
-              lines.push(JSON.stringify(media.schema.example, null, 2));
+              lines.push(JSON.stringify(mediaTyped.schema.example, null, 2));
               lines.push("```");
             }
             lines.push("\n");
           }
         }
 
-        if (operation.responses && Object.keys(operation.responses).length > 0) {
+        if (
+          operation.responses &&
+          Object.keys(operation.responses).length > 0
+        ) {
           lines.push("### Responses\n");
-          for (const [statusCode, response] of Object.entries(operation.responses)) {
+          for (const [statusCode, response] of Object.entries(
+            operation.responses,
+          )) {
+            const responseTyped: APIResponse = response as APIResponse;
             lines.push(`#### ${statusCode}\n`);
-            lines.push(response.description + "\n");
-            if (response.content) {
-              for (const [contentType, media] of Object.entries(response.content)) {
+            lines.push(responseTyped.description + "\n");
+            if (responseTyped.content) {
+              for (const [contentType, media] of Object.entries(
+                responseTyped.content,
+              )) {
+                const mediaTyped: MediaType = media as MediaType;
                 lines.push(`**Content-Type:** ${contentType}\n`);
-                if (media.schema) {
+                if (mediaTyped.schema) {
                   lines.push("```json");
-                  lines.push(JSON.stringify(media.schema, null, 2));
+                  lines.push(JSON.stringify(mediaTyped.schema, null, 2));
                   lines.push("```");
                 }
                 lines.push("\n");
@@ -288,7 +322,11 @@ export class APIDocGenerator {
         if (operation.security && operation.security.length > 0) {
           lines.push("### Security\n");
           for (const scheme of operation.security) {
-            lines.push(`- ${Object.entries(scheme).map(([k, v]) => `${k}: ${v.join(", ")}`).join("; ")}\n`);
+            lines.push(
+              `- ${Object.entries(scheme)
+                .map(([k, v]) => `${k}: ${(v as string[]).join(", ")}`)
+                .join("; ")}\n`,
+            );
           }
         }
       }
@@ -307,8 +345,11 @@ export class APIDocGenerator {
 
   private invalidateCache(): void {
     if (this.cache.size > 100) {
-      const entries = Array.from(this.cache.entries());
-      entries.sort((a, b) => a.timestamp - b.timestamp);
+      const entries = Array.from(this.cache.entries()) as [
+        string,
+        { spec: APIDocumentation; timestamp: number },
+      ][];
+      entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
       const toRemove = entries.slice(0, entries.length - 50);
       for (const [key] of toRemove) {
         this.cache.delete(key);
@@ -324,7 +365,8 @@ export function getAPIDocGenerator(): APIDocGenerator {
     docGenerator = new APIDocGenerator({
       title: "Insight API",
       version: "1.0.0",
-      description: "API documentation for the Insight oracle monitoring platform",
+      description:
+        "API documentation for the Insight oracle monitoring platform",
       baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || "/api",
     });
   }

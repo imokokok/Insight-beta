@@ -266,7 +266,8 @@ export const translations = {
     pwa: {
       install: "Install App",
       installTitle: "Install Insight Oracle",
-      installDescription: "Add Insight Oracle to your home screen for quick access and offline support.",
+      installDescription:
+        "Add Insight Oracle to your home screen for quick access and offline support.",
     },
     disputes: {
       card: {
@@ -1115,7 +1116,8 @@ export const translations = {
     pwa: {
       install: "Instalar App",
       installTitle: "Instalar Insight Oracle",
-      installDescription: "Añade Insight Oracle a tu pantalla de inicio para acceso rápido y soporte sin conexión.",
+      installDescription:
+        "Añade Insight Oracle a tu pantalla de inicio para acceso rápido y soporte sin conexión.",
     },
     disputes: {
       card: {
@@ -2837,7 +2839,8 @@ export const translations = {
     pwa: {
       install: "앱 설치",
       installTitle: "Insight Oracle 설치",
-      installDescription: "빠른 액세스와 오프라인 지원을 위해 Insight Oracle을 홈 화면에 추가하세요.",
+      installDescription:
+        "빠른 액세스와 오프라인 지원을 위해 Insight Oracle을 홈 화면에 추가하세요.",
     },
     disputes: {
       card: {
@@ -3651,7 +3654,8 @@ export const translations = {
     pwa: {
       install: "安装应用",
       installTitle: "安装 Insight Oracle",
-      installDescription: "将 Insight Oracle 添加到主屏幕以快速访问和离线支持。",
+      installDescription:
+        "将 Insight Oracle 添加到主屏幕以快速访问和离线支持。",
     },
     disputes: {
       card: {
@@ -4294,6 +4298,7 @@ export type TranslationKey =
   | "common.addToWatchlist"
   | "common.removeFromWatchlist"
   | "common.success"
+  | "common.notNow"
   | "sidebar.userWallet"
   | "sidebar.notConnected"
   | "wallet.connect"
