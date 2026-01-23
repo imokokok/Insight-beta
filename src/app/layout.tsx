@@ -76,11 +76,8 @@ export default async function RootLayout({
         <LanguageProvider initialLang={lang}>
           <WalletProvider>
             <Toaster />
-            {/* Base bright gradient */}
             <div className="fixed inset-0 -z-30 bg-[#fafafa]" />
             <div className="fixed inset-0 -z-20 bg-[radial-gradient(circle_at_top_left,_var(--tw-gradient-stops))] from-yellow-100/60 via-pink-100/60 to-cyan-100/60 opacity-80 pointer-events-none" />
-
-            {/* Colorful animated orbs for rainbow feel */}
             <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
               <div
                 className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-gradient-to-br from-yellow-300/30 to-orange-300/30 blur-[120px] mix-blend-multiply animate-pulse"
@@ -99,7 +96,6 @@ export default async function RootLayout({
                 style={{ animationDuration: "9s" }}
               />
             </div>
-
             <div className="flex min-h-screen">
               <Sidebar />
               <main className="flex-1 transition-all duration-300 md:ml-64">
