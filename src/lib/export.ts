@@ -75,7 +75,8 @@ export async function exportData<T extends Record<string, unknown>>(
       batchData: T[],
       batchIndex: number,
     ): Promise<string> => {
-      const batchHeaders = headers || Object.keys(batchData[0]);
+      const batchHeaders =
+        headers || (batchData[0] ? Object.keys(batchData[0]) : []);
       const batchFilename = `${filename}_batch_${batchIndex}`;
 
       let content: string;
@@ -94,9 +95,7 @@ export async function exportData<T extends Record<string, unknown>>(
           });
           break;
         case "json":
-          content = await exportToJSON(batchData, {
-            filename: batchFilename,
-          });
+          content = await exportToJSON(batchData);
           break;
         default:
           throw new Error(`Unsupported export format: ${format}`);
@@ -122,7 +121,10 @@ export async function exportData<T extends Record<string, unknown>>(
 
       for (let i = 0; i < data.length; i += effectiveBatchSize) {
         const batchData = data.slice(i, i + effectiveBatchSize);
-        const batchContent = await processBatch(batchData, Math.floor(i / effectiveBatchSize));
+        const batchContent = await processBatch(
+          batchData,
+          Math.floor(i / effectiveBatchSize),
+        );
         batches.push(batchContent);
       }
 
@@ -159,7 +161,8 @@ export async function exportData<T extends Record<string, unknown>>(
 
     return result;
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "Unknown export error";
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown export error";
     return {
       success: false,
       filename: "",
@@ -178,7 +181,11 @@ async function exportToCSV<T extends Record<string, unknown>>(
     throw new Error("No data to export");
   }
 
-  const headers = options.headers || Object.keys(data[0]);
+  const firstItem = data[0];
+  if (!firstItem) {
+    throw new Error("No data to export");
+  }
+  const headers = options.headers || Object.keys(firstItem);
   const csvRows: string[] = [headers.join(",")];
 
   for (const row of data) {
@@ -219,7 +226,11 @@ async function exportToExcel<T extends Record<string, unknown>>(
     throw new Error("No data to export");
   }
 
-  const headers = options.headers || Object.keys(data[0]);
+  const firstItem = data[0];
+  if (!firstItem) {
+    throw new Error("No data to export");
+  }
+  const headers = options.headers || Object.keys(firstItem);
   const worksheetData = [headers];
 
   for (const row of data) {
@@ -241,7 +252,6 @@ async function exportToExcel<T extends Record<string, unknown>>(
 
 async function exportToJSON<T extends Record<string, unknown>>(
   data: T[],
-  options: { filename: string },
 ): Promise<string> {
   return JSON.stringify(data, null, 2);
 }
@@ -338,10 +348,7 @@ export function generateExportFilename(
     return `${prefix}.${format}`;
   }
 
-  const timestamp = new Date()
-    .toISOString()
-    .replace(/[:.]/g, "-")
-    .slice(0, -5);
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, -5);
 
   return `${prefix}-${timestamp}.${format}`;
 }

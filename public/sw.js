@@ -7,22 +7,22 @@ const CACHE_STRATEGIES = {
   STALE_WHILE_REVALIDATE: "stale-while-revalidate",
   NETWORK_ONLY: "network-only",
   CACHE_ONLY: "cache-only",
-} as const;
+};
 
 const CACHE_CONFIG = {
   STATIC_ASSETS: {
     strategy: CACHE_STRATEGIES.CACHE_FIRST,
-    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    maxAge: 30 * 24 * 60 * 60 * 1000,
     patterns: [/\.(?:js|css|png|jpg|jpeg|svg|ico|woff|woff2)$/i],
   },
   API_ROUTES: {
     strategy: CACHE_STRATEGIES.NETWORK_FIRST,
-    maxAge: 5 * 60 * 1000, // 5 minutes
+    maxAge: 5 * 60 * 1000,
     patterns: [/^\/api\//i],
   },
   HTML_PAGES: {
     strategy: CACHE_STRATEGIES.STALE_WHILE_REVALIDATE,
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    maxAge: 24 * 60 * 60 * 1000,
     patterns: [/\.html$/i, /^\/$/i],
   },
 };
@@ -31,40 +31,46 @@ const OFFLINE_URL = "/offline.html";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll([
-        "/",
-        "/oracle",
-        "/disputes",
-        "/alerts",
-        "/audit",
-        "/watchlist",
-        "/my-assertions",
-        "/my-disputes",
-        "/logo-owl.png",
-        "/manifest.json",
-        OFFLINE_URL,
-      ]);
-    }).catch((error) => {
-      console.error("Failed to cache resources during install:", error);
-    }),
+    caches
+      .open(CACHE_NAME)
+      .then((cache) => {
+        return cache.addAll([
+          "/",
+          "/oracle",
+          "/disputes",
+          "/alerts",
+          "/audit",
+          "/watchlist",
+          "/my-assertions",
+          "/my-disputes",
+          "/logo-owl.png",
+          "/manifest.json",
+          OFFLINE_URL,
+        ]);
+      })
+      .catch((error) => {
+        console.error("Failed to cache resources during install:", error);
+      }),
   );
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames
-          .filter((cacheName) => cacheName !== CACHE_NAME)
-          .map((cacheName) => {
-            console.log("Deleting old cache:", cacheName);
-            return caches.delete(cacheName);
-          }),
-      );
-    }).then(() => {
-      return self.clients.claim();
-    }),
+    caches
+      .keys()
+      .then((cacheNames) => {
+        return Promise.all(
+          cacheNames
+            .filter((cacheName) => cacheName !== CACHE_NAME)
+            .map((cacheName) => {
+              console.log("Deleting old cache:", cacheName);
+              return caches.delete(cacheName);
+            }),
+        );
+      })
+      .then(() => {
+        return self.clients.claim();
+      }),
   );
 });
 
@@ -77,7 +83,7 @@ self.addEventListener("fetch", (event) => {
   }
 
   const config = Object.values(CACHE_CONFIG).find((c) =>
-    c.patterns.some((pattern) => pattern.test(url.pathname))
+    c.patterns.some((pattern) => pattern.test(url.pathname)),
   );
 
   if (!config) {
@@ -106,7 +112,7 @@ self.addEventListener("fetch", (event) => {
   }
 });
 
-async function cacheFirst(request: Request, maxAge: number): Promise<Response> {
+async function cacheFirst(request, maxAge) {
   const cache = await caches.open(CACHE_NAME);
   const cached = await cache.match(request);
 
@@ -120,7 +126,7 @@ async function cacheFirst(request: Request, maxAge: number): Promise<Response> {
       await cache.put(request, networkResponse.clone());
     }
     return networkResponse;
-  } catch (error) {
+  } catch {
     if (cached) {
       return cached;
     }
@@ -128,7 +134,7 @@ async function cacheFirst(request: Request, maxAge: number): Promise<Response> {
   }
 }
 
-async function networkFirst(request: Request, maxAge: number): Promise<Response> {
+async function networkFirst(request, maxAge) {
   try {
     const networkResponse = await fetch(request);
     if (networkResponse && networkResponse.status === 200) {
@@ -136,7 +142,7 @@ async function networkFirst(request: Request, maxAge: number): Promise<Response>
       await cache.put(request, networkResponse.clone());
     }
     return networkResponse;
-  } catch (error) {
+  } catch {
     const cache = await caches.open(CACHE_NAME);
     const cached = await cache.match(request);
     if (cached && !isExpired(cached, maxAge)) {
@@ -146,7 +152,7 @@ async function networkFirst(request: Request, maxAge: number): Promise<Response>
   }
 }
 
-async function staleWhileRevalidate(request: Request, maxAge: number): Promise<Response> {
+async function staleWhileRevalidate(request, maxAge) {
   const cache = await caches.open(CACHE_NAME);
   const cached = await cache.match(request);
 
@@ -164,21 +170,21 @@ async function staleWhileRevalidate(request: Request, maxAge: number): Promise<R
   return networkPromise;
 }
 
-async function networkOnly(request: Request): Promise<Response> {
+async function networkOnly(request) {
   try {
     return await fetch(request);
-  } catch (error) {
+  } catch {
     return getOfflineResponse();
   }
 }
 
-async function cacheOnly(request: Request): Promise<Response> {
+async function cacheOnly(request) {
   const cache = await caches.open(CACHE_NAME);
   const cached = await cache.match(request);
   return cached || getOfflineResponse();
 }
 
-function isExpired(response: Response, maxAge: number): boolean {
+function isExpired(response, maxAge) {
   const dateHeader = response.headers.get("Date");
   if (!dateHeader) return false;
 
@@ -189,7 +195,7 @@ function isExpired(response: Response, maxAge: number): boolean {
   return age > maxAge;
 }
 
-function getOfflineResponse(): Response {
+function getOfflineResponse() {
   return caches.match(OFFLINE_URL).then((response) => {
     return (
       response ||
@@ -218,7 +224,7 @@ self.addEventListener("message", (event) => {
   }
 });
 
-async function updateCache(urls: string[]): Promise<void> {
+async function updateCache(urls) {
   const cache = await caches.open(CACHE_NAME);
   for (const url of urls) {
     try {
@@ -246,7 +252,10 @@ self.addEventListener("push", (event) => {
   };
 
   event.waitUntil(
-    self.registration.showNotification(data?.title || "Insight Oracle", options),
+    self.registration.showNotification(
+      data?.title || "Insight Oracle",
+      options,
+    ),
   );
 });
 
@@ -256,19 +265,21 @@ self.addEventListener("notificationclick", (event) => {
   const urlToOpen = event.notification.data?.url || "/";
 
   event.waitUntil(
-    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
-      for (const client of clientList) {
-        if (client.url === urlToOpen && "focus" in client) {
-          return client.focus();
+    self.clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((clientList) => {
+        for (const client of clientList) {
+          if (client.url === urlToOpen && "focus" in client) {
+            return client.focus();
+          }
         }
-      }
 
-      if (clientList.length > 0) {
-        return clientList[0].focus();
-      }
+        if (clientList.length > 0) {
+          return clientList[0].focus();
+        }
 
-      return self.clients.openWindow(urlToOpen);
-    }),
+        return self.clients.openWindow(urlToOpen);
+      }),
   );
 });
 
@@ -282,7 +293,7 @@ self.addEventListener("sync", (event) => {
   }
 });
 
-async function syncData(): Promise<void> {
+async function syncData() {
   try {
     const response = await fetch("/api/sync", {
       method: "POST",

@@ -253,6 +253,7 @@ export const translations = {
       openMenu: "Open menu",
       pending: "Pending",
       popular: "Popular",
+      refresh: "Refresh",
       removeFromWatchlist: "Remove from Watchlist",
       resolved: "Resolved",
       retry: "Retry",
@@ -265,9 +266,16 @@ export const translations = {
     },
     pwa: {
       install: "Install App",
-      installTitle: "Install Insight Oracle",
       installDescription:
         "Add Insight Oracle to your home screen for quick access and offline support.",
+      installTitle: "Install Insight Oracle",
+      installing: "Installing…",
+      offline: "You are offline",
+      offlineDescription:
+        "Some features may be unavailable until you reconnect.",
+      update: "Update",
+      updateAvailable: "Update Available",
+      updateDescription: "A new version of Insight Oracle is available.",
     },
     disputes: {
       card: {
@@ -1103,6 +1111,7 @@ export const translations = {
       openMenu: "Abrir menú",
       pending: "Pendiente",
       popular: "Popular",
+      refresh: "Actualizar",
       removeFromWatchlist: "Eliminar de lista de seguimiento",
       resolved: "Resuelto",
       retry: "Reintentar",
@@ -1115,9 +1124,16 @@ export const translations = {
     },
     pwa: {
       install: "Instalar App",
-      installTitle: "Instalar Insight Oracle",
       installDescription:
         "Añade Insight Oracle a tu pantalla de inicio para acceso rápido y soporte sin conexión.",
+      installTitle: "Instalar Insight Oracle",
+      installing: "Instalando…",
+      offline: "Estás sin conexión",
+      offlineDescription:
+        "Algunas funciones pueden no estar disponibles hasta que te reconectes.",
+      update: "Actualizar",
+      updateAvailable: "Actualización disponible",
+      updateDescription: "Una nueva versión de Insight Oracle está disponible.",
     },
     disputes: {
       card: {
@@ -2826,6 +2842,7 @@ export const translations = {
       openMenu: "메뉴 열기",
       pending: "대기 중",
       popular: "인기",
+      refresh: "새로고침",
       removeFromWatchlist: "관심 목록에서 제거",
       resolved: "해결됨",
       retry: "재시도",
@@ -2838,9 +2855,15 @@ export const translations = {
     },
     pwa: {
       install: "앱 설치",
-      installTitle: "Insight Oracle 설치",
       installDescription:
         "빠른 액세스와 오프라인 지원을 위해 Insight Oracle을 홈 화면에 추가하세요.",
+      installTitle: "Insight Oracle 설치",
+      installing: "설치 중…",
+      offline: "오프라인 상태입니다",
+      offlineDescription: "다시 연결할 때까지 일부 기능을 사용할 수 없습니다.",
+      update: "업데이트",
+      updateAvailable: "업데이트 가능",
+      updateDescription: "새로운 버전의 Insight Oracle이 있습니다.",
     },
     disputes: {
       card: {
@@ -3641,6 +3664,7 @@ export const translations = {
       openMenu: "打开菜单",
       pending: "待确认",
       popular: "热门",
+      refresh: "刷新",
       removeFromWatchlist: "取消关注",
       resolved: "已结算",
       retry: "重试",
@@ -3653,9 +3677,15 @@ export const translations = {
     },
     pwa: {
       install: "安装应用",
-      installTitle: "安装 Insight Oracle",
       installDescription:
         "将 Insight Oracle 添加到主屏幕以快速访问和离线支持。",
+      installTitle: "安装 Insight Oracle",
+      installing: "安装中…",
+      offline: "您已离线",
+      offlineDescription: "重新连接前，部分功能可能不可用。",
+      update: "更新",
+      updateAvailable: "有可用更新",
+      updateDescription: "有新版本的 Insight Oracle 可用。",
     },
     disputes: {
       card: {
@@ -4857,9 +4887,16 @@ export type TranslationKey =
   | "oracle.alerts.severities.warning"
   | "oracle.alerts.severities.critical"
   | "pwa.install"
-  | "pwa.installTitle"
   | "pwa.installDescription"
-  | "common.export";
+  | "pwa.installTitle"
+  | "pwa.installing"
+  | "pwa.offline"
+  | "pwa.offlineDescription"
+  | "pwa.update"
+  | "pwa.updateAvailable"
+  | "pwa.updateDescription"
+  | "common.export"
+  | "common.refresh";
 
 export function getUiErrorMessage(
   errorCode: string,

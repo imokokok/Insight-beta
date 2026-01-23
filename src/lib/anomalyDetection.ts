@@ -40,7 +40,10 @@ export class AnomalyDetector {
 
     const window = this.history.slice(-this.config.windowSize);
     const mean = this.calculateMean(window.map((d) => d.value));
-    const stdDev = this.calculateStdDev(window.map((d) => d.value), mean);
+    const stdDev = this.calculateStdDev(
+      window.map((d) => d.value),
+      mean,
+    );
 
     if (stdDev === 0) {
       return null;
@@ -60,7 +63,7 @@ export class AnomalyDetector {
       isAnomaly: true,
       severity,
       score,
-      message: this.generateAnomalyMessage(dataPoint.value, mean, stdDev, zScore),
+      message: this.generateAnomalyMessage(dataPoint.value, mean, zScore),
       timestamp: dataPoint.timestamp,
     };
   }
@@ -96,6 +99,9 @@ export class AnomalyDetector {
 
     if (changePercent > this.config.threshold * 10) {
       const latestPoint = data[data.length - 1];
+      if (!latestPoint) {
+        return anomalies;
+      }
       const severity = this.calculateSeverity(changePercent / 10);
       const score = Math.min(100, changePercent);
 
@@ -151,25 +157,48 @@ export class AnomalyDetector {
     return anomalies;
   }
 
-  private detectSpikes(data: TimeSeriesData[]): Array<{ timestamp: string; value: number; expected: number; zScore: number }> {
-    const spikes: Array<{ timestamp: string; value: number; expected: number; zScore: number }> = [];
+  private detectSpikes(
+    data: TimeSeriesData[],
+  ): Array<{
+    timestamp: string;
+    value: number;
+    expected: number;
+    zScore: number;
+  }> {
+    const spikes: Array<{
+      timestamp: string;
+      value: number;
+      expected: number;
+      zScore: number;
+    }> = [];
 
     for (let i = 2; i < data.length; i++) {
-      const current = data[i].value;
-      const previous1 = data[i - 1].value;
-      const previous2 = data[i - 2].value;
+      const current = data[i]?.value;
+      const previous1 = data[i - 1]?.value;
+      const previous2 = data[i - 2]?.value;
+
+      if (
+        current === undefined ||
+        previous1 === undefined ||
+        previous2 === undefined
+      ) {
+        continue;
+      }
 
       const expected = (previous1 + previous2) / 2;
       const changePercent = Math.abs((current - expected) / expected) * 100;
 
       if (changePercent > 50) {
-        const zScore = Math.abs((current - expected) / this.calculateStdDev(
-          data.slice(Math.max(0, i - 5), i).map((d) => d.value),
-          expected,
-        ));
+        const zScore = Math.abs(
+          (current - expected) /
+            this.calculateStdDev(
+              data.slice(Math.max(0, i - 5), i).map((d) => d.value),
+              expected,
+            ),
+        );
 
         spikes.push({
-          timestamp: data[i].timestamp,
+          timestamp: data[i]!.timestamp,
           value: current,
           expected,
           zScore,
@@ -180,25 +209,48 @@ export class AnomalyDetector {
     return spikes;
   }
 
-  private detectDrops(data: TimeSeriesData[]): Array<{ timestamp: string; value: number; expected: number; zScore: number }> {
-    const drops: Array<{ timestamp: string; value: number; expected: number; zScore: number }> = [];
+  private detectDrops(
+    data: TimeSeriesData[],
+  ): Array<{
+    timestamp: string;
+    value: number;
+    expected: number;
+    zScore: number;
+  }> {
+    const drops: Array<{
+      timestamp: string;
+      value: number;
+      expected: number;
+      zScore: number;
+    }> = [];
 
     for (let i = 2; i < data.length; i++) {
-      const current = data[i].value;
-      const previous1 = data[i - 1].value;
-      const previous2 = data[i - 2].value;
+      const current = data[i]?.value;
+      const previous1 = data[i - 1]?.value;
+      const previous2 = data[i - 2]?.value;
+
+      if (
+        current === undefined ||
+        previous1 === undefined ||
+        previous2 === undefined
+      ) {
+        continue;
+      }
 
       const expected = (previous1 + previous2) / 2;
       const changePercent = Math.abs((current - expected) / expected) * 100;
 
       if (changePercent > 50 && current < expected) {
-        const zScore = Math.abs((current - expected) / this.calculateStdDev(
-          data.slice(Math.max(0, i - 5), i).map((d) => d.value),
-          expected,
-        ));
+        const zScore = Math.abs(
+          (current - expected) /
+            this.calculateStdDev(
+              data.slice(Math.max(0, i - 5), i).map((d) => d.value),
+              expected,
+            ),
+        );
 
         drops.push({
-          timestamp: data[i].timestamp,
+          timestamp: data[i]!.timestamp,
           value: current,
           expected,
           zScore,
@@ -227,10 +279,15 @@ export class AnomalyDetector {
     return "high";
   }
 
-  private generateAnomalyMessage(value: number, mean: number, stdDev: number, zScore: number): string {
+  private generateAnomalyMessage(
+    value: number,
+    mean: number,
+    zScore: number,
+  ): string {
     const deviationPercent = ((value - mean) / mean) * 100;
     const direction = value > mean ? "above" : "below";
-    const deviationType = Math.abs(deviationPercent) > 100 ? "extreme" : "significant";
+    const deviationType =
+      Math.abs(deviationPercent) > 100 ? "extreme" : "significant";
 
     return `Value is ${deviationType} (${Math.abs(deviationPercent).toFixed(1)}%) ${direction} expected range (Z-score: ${zScore.toFixed(2)})`;
   }
@@ -249,7 +306,9 @@ export class AnomalyDetector {
 
 let anomalyDetector: AnomalyDetector | null = null;
 
-export function getAnomalyDetector(config?: Partial<AnomalyDetectionConfig>): AnomalyDetector {
+export function getAnomalyDetector(
+  config?: Partial<AnomalyDetectionConfig>,
+): AnomalyDetector {
   if (!anomalyDetector) {
     anomalyDetector = new AnomalyDetector(config);
   }
@@ -272,8 +331,9 @@ export function detectOracleAnomalies(
     ...patternAnomalies,
   ];
 
-  const uniqueAnomalies = allAnomalies.filter((anomaly, index, self) =>
-    index === self.findIndex((a) => a.timestamp === anomaly.timestamp)
+  const uniqueAnomalies = allAnomalies.filter(
+    (anomaly, index, self) =>
+      index === self.findIndex((a) => a.timestamp === anomaly.timestamp),
   );
 
   logger.info(`Anomaly detection completed for ${type}`, {
@@ -293,11 +353,17 @@ export function calculateAnomalyScore(anomalies: AnomalyResult[]): number {
   return totalScore / anomalies.length;
 }
 
-export function getAnomalySeverity(anomalies: AnomalyResult[]): "low" | "medium" | "high" {
+export function getAnomalySeverity(
+  anomalies: AnomalyResult[],
+): "low" | "medium" | "high" {
   if (anomalies.length === 0) return "low";
 
-  const highSeverityCount = anomalies.filter((a) => a.severity === "high").length;
-  const mediumSeverityCount = anomalies.filter((a) => a.severity === "medium").length;
+  const highSeverityCount = anomalies.filter(
+    (a) => a.severity === "high",
+  ).length;
+  const mediumSeverityCount = anomalies.filter(
+    (a) => a.severity === "medium",
+  ).length;
 
   if (highSeverityCount >= 3) return "high";
   if (mediumSeverityCount >= 5) return "medium";

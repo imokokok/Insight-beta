@@ -61,7 +61,6 @@ export interface ReportGenerationOptions {
   compress?: boolean;
 }
 
-const DEFAULT_TIMEOUT = 60000;
 const CACHE_TIMEOUT = 300000; // 5 minutes
 
 class ReportCache {
@@ -400,7 +399,7 @@ export class PDFReportGenerator {
 
   ${sectionsHTML}
 
-  ${this.config.includePageNumbers ? '<div class="page-number">Page <span class="page-number"></span></div>' : ''}
+  ${this.config.includePageNumbers ? '<div class="page-number">Page <span class="page-number"></span></div>' : ""}
 </body>
 </html>
     `;
@@ -492,20 +491,31 @@ export class PDFReportGenerator {
     return `${sizes[this.config.pageSize || "A4"]} ${orientations[this.config.orientation || "portrait"]}`;
   }
 
-  private renderSection(section: ReportSection, options?: ReportGenerationOptions): string {
-    const headingTag = section.content instanceof Array && section.content.length > 0 ? "h3" : "h2";
+  private renderSection(
+    section: ReportSection,
+    options?: ReportGenerationOptions,
+  ): string {
+    const headingTag =
+      section.content instanceof Array && section.content.length > 0
+        ? "h3"
+        : "h2";
     const sectionClass = headingTag === "h2" ? "section" : "subsection";
 
-    const contentHTML = typeof section.content === "string"
-      ? `<div class="content">${section.content}</div>`
-      : section.content.map((sub) => this.renderSection(sub, options)).join("\n");
+    const contentHTML =
+      typeof section.content === "string"
+        ? `<div class="content">${section.content}</div>`
+        : section.content
+            .map((sub) => this.renderSection(sub, options))
+            .join("\n");
 
     const tablesHTML = section.tables
       ? section.tables.map((table) => this.renderTable(table)).join("\n")
       : "";
 
     const chartsHTML = section.charts
-      ? section.charts.map((chart) => this.renderChartPlaceholder(chart)).join("\n")
+      ? section.charts
+          .map((chart) => this.renderChartPlaceholder(chart))
+          .join("\n")
       : "";
 
     return `
@@ -520,10 +530,14 @@ export class PDFReportGenerator {
 
   private renderTable(table: ReportTable): string {
     const styleClass = table.style || "default";
-    const headerRow = table.headers.map((header) => `<th>${header}</th>`).join("");
-    const bodyRows = table.rows.map((row) =>
-      `<tr>${row.map((cell) => `<td>${cell}</td>`).join("")}</tr>`
-    ).join("");
+    const headerRow = table.headers
+      .map((header) => `<th>${header}</th>`)
+      .join("");
+    const bodyRows = table.rows
+      .map(
+        (row) => `<tr>${row.map((cell) => `<td>${cell}</td>`).join("")}</tr>`,
+      )
+      .join("");
 
     return `
       <table class="${styleClass}">
@@ -556,13 +570,15 @@ export class PDFReportGenerator {
   }
 
   private renderTableOfContents(): string {
-    const tocItems = this.config.sections.map((section, index) => {
-      return `
+    const tocItems = this.config.sections
+      .map((section, index) => {
+        return `
         <li>
           <a href="#section-${index}">${index + 1}. ${section.title}</a>
         </li>
       `;
-    }).join("");
+      })
+      .join("");
 
     return `
       <div class="toc">
@@ -609,18 +625,20 @@ export class PDFReportGenerator {
     const defaultFilename = `${this.config.title.toLowerCase().replace(/\s+/g, "-")}-${Date.now()}.pdf`;
     const finalFilename = filename || defaultFilename;
 
-    this.generatePDF(options).then((blob) => {
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = finalFilename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    }).catch((error) => {
-      logger.error("Failed to download PDF", { error });
-    });
+    this.generatePDF(options)
+      .then((blob) => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = finalFilename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      })
+      .catch((error) => {
+        logger.error("Failed to download PDF", { error });
+      });
   }
 
   clearCache(): void {
@@ -628,7 +646,7 @@ export class PDFReportGenerator {
   }
 }
 
-let reportTemplates: ReportTemplate[] = [
+const reportTemplates: ReportTemplate[] = [
   {
     id: "default",
     name: "Default Report",
@@ -733,7 +751,10 @@ export function createOracleReport(
         tables: [
           {
             headers: ["Metric", "Value"],
-            rows: Object.entries(data.stats).map(([key, value]) => [key, String(value)]),
+            rows: Object.entries(data.stats).map(([key, value]) => [
+              key,
+              String(value),
+            ]),
             caption: "Overall System Metrics",
             style: "striped",
           },
@@ -747,13 +768,15 @@ export function createOracleReport(
         tables: [
           {
             headers: ["ID", "Market", "Status", "Created At", "Bond (USD)"],
-            rows: data.assertions.slice(0, 10).map((a: any) => [
-              a.id || "N/A",
-              a.market || "N/A",
-              a.status || "N/A",
-              a.assertedAt || "N/A",
-              a.bondUsd || "N/A",
-            ]),
+            rows: data.assertions
+              .slice(0, 10)
+              .map((a: any) => [
+                a.id || "N/A",
+                a.market || "N/A",
+                a.status || "N/A",
+                a.assertedAt || "N/A",
+                a.bondUsd || "N/A",
+              ]),
             caption: "Recent Assertions (Top 10)",
             style: "striped",
           },
@@ -767,13 +790,15 @@ export function createOracleReport(
         tables: [
           {
             headers: ["ID", "Assertion ID", "Disputer", "Reason", "Status"],
-            rows: data.disputes.slice(0, 10).map((d: any) => [
-              d.id || "N/A",
-              d.assertionId || "N/A",
-              d.disputer || "N/A",
-              d.reason || "N/A",
-              d.status || "N/A",
-            ]),
+            rows: data.disputes
+              .slice(0, 10)
+              .map((d: any) => [
+                d.id || "N/A",
+                d.assertionId || "N/A",
+                d.disputer || "N/A",
+                d.reason || "N/A",
+                d.status || "N/A",
+              ]),
             caption: "Recent Disputes (Top 10)",
             style: "striped",
           },
@@ -787,13 +812,15 @@ export function createOracleReport(
         tables: [
           {
             headers: ["ID", "Type", "Severity", "Status", "Created At"],
-            rows: data.alerts.slice(0, 10).map((a: any) => [
-              a.id || "N/A",
-              a.type || "N/A",
-              a.severity || "N/A",
-              a.status || "N/A",
-              a.createdAt || "N/A",
-            ]),
+            rows: data.alerts
+              .slice(0, 10)
+              .map((a: any) => [
+                a.id || "N/A",
+                a.type || "N/A",
+                a.severity || "N/A",
+                a.status || "N/A",
+                a.createdAt || "N/A",
+              ]),
             caption: "Recent Alerts (Top 10)",
             style: "striped",
           },

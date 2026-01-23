@@ -1,12 +1,23 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { MessageSquare, ThumbsUp, Reply, Pin, Trash2, Edit2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import {
+  MessageSquare,
+  ThumbsUp,
+  Reply,
+  Pin,
+  Trash2,
+  Edit2,
+} from "lucide-react";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { useWallet } from "@/contexts/WalletContext";
 import { fetchApiData, getErrorCode } from "@/lib/utils";
 import { getUiErrorMessage } from "@/i18n/translations";
-import type { Comment, CommentCreateInput, CommentWithReplies } from "@/lib/commentTypes";
+import type {
+  Comment,
+  CommentCreateInput,
+  CommentWithReplies,
+} from "@/lib/commentTypes";
 import { useToast } from "@/components/ui/toast";
 
 interface CommentSectionProps {
@@ -64,7 +75,9 @@ export function CommentSection({ entityType, entityId }: CommentSectionProps) {
 
     for (const comment of flatComments) {
       if (comment.parentId && commentMap.has(comment.parentId)) {
-        commentMap.get(comment.parentId)!.replies!.push(commentMap.get(comment.id)!);
+        commentMap
+          .get(comment.parentId)!
+          .replies!.push(commentMap.get(comment.id)!);
       } else {
         rootComments.push(commentMap.get(comment.id)!);
       }
@@ -217,7 +230,9 @@ export function CommentSection({ entityType, entityId }: CommentSectionProps) {
         <div className="flex items-start gap-3">
           <div className="flex-shrink-0">
             <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white font-semibold text-sm">
-              {comment.authorName ? comment.authorName[0]?.toUpperCase() : formatAddress(comment.authorAddress)}
+              {comment.authorName
+                ? comment.authorName[0]?.toUpperCase()
+                : formatAddress(comment.authorAddress)}
             </div>
           </div>
 
@@ -340,11 +355,15 @@ export function CommentSection({ entityType, entityId }: CommentSectionProps) {
               </form>
             )}
 
-            {comment.replies && comment.replies.length > 0 && depth < maxDepth && (
-              <div className="mt-4 space-y-3">
-                {comment.replies.map((reply) => renderComment(reply, depth + 1))}
-              </div>
-            )}
+            {comment.replies &&
+              comment.replies.length > 0 &&
+              depth < maxDepth && (
+                <div className="mt-4 space-y-3">
+                  {comment.replies.map((reply) =>
+                    renderComment(reply, depth + 1),
+                  )}
+                </div>
+              )}
           </div>
         </div>
       </div>
@@ -371,7 +390,9 @@ export function CommentSection({ entityType, entityId }: CommentSectionProps) {
     return (
       <div className="text-center py-8">
         <MessageSquare className="mx-auto h-12 w-12 text-gray-300 mb-3" />
-        <p className="text-gray-500 text-sm">No comments yet. Be the first to share your thoughts!</p>
+        <p className="text-gray-500 text-sm">
+          No comments yet. Be the first to share your thoughts!
+        </p>
       </div>
     );
   }

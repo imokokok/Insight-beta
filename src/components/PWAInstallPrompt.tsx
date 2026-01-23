@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Download, X, RefreshCw, WifiOff, CheckCircle2 } from "lucide-react";
+import { Download, X, RefreshCw, WifiOff } from "lucide-react";
 import { useI18n } from "@/i18n/LanguageProvider";
 
 interface BeforeInstallPromptEvent extends Event {
@@ -37,7 +37,8 @@ export function PWAInstallPrompt() {
   const [installProgress, setInstallProgress] = useState(0);
 
   const checkInstallStatus = useCallback(() => {
-    const isInstalled = window.matchMedia("(display-mode: standalone)").matches ||
+    const isInstalled =
+      window.matchMedia("(display-mode: standalone)").matches ||
       (window.navigator as any).standalone ||
       document.referrer.includes("android-app://");
 
@@ -56,7 +57,10 @@ export function PWAInstallPrompt() {
           const newWorker = registration.installing;
           if (newWorker) {
             newWorker.addEventListener("statechange", () => {
-              if (newWorker.state === "installed" && navigator.serviceWorker?.controller) {
+              if (
+                newWorker.state === "installed" &&
+                navigator.serviceWorker?.controller
+              ) {
                 setUpdateAvailable(true);
                 localStorage.setItem(STORAGE_KEYS.UPDATE_AVAILABLE, "true");
               }
@@ -64,10 +68,9 @@ export function PWAInstallPrompt() {
           }
         });
       }
-    });
-  } catch (error) {
-    console.error("Failed to check for updates:", error);
-  }
+    } catch (error) {
+      console.error("Failed to check for updates:", error);
+    }
   }, []);
 
   useEffect(() => {
@@ -77,7 +80,8 @@ export function PWAInstallPrompt() {
 
     const wasDismissed = localStorage.getItem(STORAGE_KEYS.PROMPT_DISMISSED);
     const dismissDate = wasDismissed ? parseInt(wasDismissed) : 0;
-    const shouldShowPrompt = Date.now() - dismissDate > PROMPT_DISMISSAL_DURATION;
+    const shouldShowPrompt =
+      Date.now() - dismissDate > PROMPT_DISMISSAL_DURATION;
 
     const updateAvailable = localStorage.getItem(STORAGE_KEYS.UPDATE_AVAILABLE);
     if (updateAvailable === "true") {
@@ -87,7 +91,11 @@ export function PWAInstallPrompt() {
     const installHandler = (e: Event) => {
       e.preventDefault();
       const prompt = e as BeforeInstallPromptEvent;
-      setState((prev) => ({ ...prev, deferredPrompt: prompt, isInstallable: true }));
+      setState((prev) => ({
+        ...prev,
+        deferredPrompt: prompt,
+        isInstallable: true,
+      }));
 
       if (shouldShowPrompt) {
         setShowPrompt(true);
@@ -123,7 +131,11 @@ export function PWAInstallPrompt() {
       if (outcome === "accepted") {
         setInstallProgress(100);
         setShowPrompt(false);
-        setState((prev) => ({ ...prev, deferredPrompt: null, isInstalled: true }));
+        setState((prev) => ({
+          ...prev,
+          deferredPrompt: null,
+          isInstalled: true,
+        }));
 
         localStorage.setItem(STORAGE_KEYS.INSTALL_DATE, Date.now().toString());
         localStorage.removeItem(STORAGE_KEYS.PROMPT_DISMISSED);
@@ -160,7 +172,8 @@ export function PWAInstallPrompt() {
     window.location.reload();
   }, []);
 
-  const shouldShowInstallPrompt = showPrompt && state.isInstallable && !state.isInstalled;
+  const shouldShowInstallPrompt =
+    showPrompt && state.isInstallable && !state.isInstalled;
   const shouldShowUpdatePrompt = updateAvailable && state.isInstalled;
 
   if (!shouldShowInstallPrompt && !shouldShowUpdatePrompt) {
@@ -313,7 +326,8 @@ export function usePWAInstallStatus(): PWAInstallState {
 
   useEffect(() => {
     const checkStatus = () => {
-      const isInstalled = window.matchMedia("(display-mode: standalone)").matches ||
+      const isInstalled =
+        window.matchMedia("(display-mode: standalone)").matches ||
         (window.navigator as any).standalone ||
         document.referrer.includes("android-app://");
 

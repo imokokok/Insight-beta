@@ -2,7 +2,12 @@
 
 import { useState, useCallback, useRef } from "react";
 import { useWallet } from "@/contexts/WalletContext";
-import { castUMAVote, checkUMAVoteStatus, type UMAVoteResult, type UMAVoteStatus } from "@/lib/umaDvm";
+import {
+  castUMAVote,
+  checkUMAVoteStatus,
+  type UMAVoteResult,
+  type UMAVoteStatus,
+} from "@/lib/umaDvm";
 import { logger } from "@/lib/logger";
 
 interface UseUMAVoteReturn {
@@ -12,9 +17,6 @@ interface UseUMAVoteReturn {
   error: string | null;
   clearError: () => void;
 }
-
-const DEFAULT_CHAIN_ID = 137;
-const DEFAULT_ORACLE_ADDRESS = "0x0000000000000000000000000000000000000000" as const;
 
 export function useUMAVote(): UseUMAVoteReturn {
   const { address, chainId } = useWallet();
@@ -68,7 +70,11 @@ export function useUMAVote(): UseUMAVoteReturn {
 
         if (!result.success) {
           setError(result.error || "Vote failed");
-          logger.error("UMA vote failed", { assertionId, support, error: result.error });
+          logger.error("UMA vote failed", {
+            assertionId,
+            support,
+            error: result.error,
+          });
         } else {
           logger.info("UMA vote successful", {
             assertionId,
@@ -81,7 +87,8 @@ export function useUMAVote(): UseUMAVoteReturn {
 
         return result;
       } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : "Unknown error occurred";
+        const errorMsg =
+          err instanceof Error ? err.message : "Unknown error occurred";
         setError(errorMsg);
         logger.error("UMA vote error", {
           error: err,

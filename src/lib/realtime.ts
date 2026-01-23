@@ -29,18 +29,22 @@ export interface RealtimeEventFilter {
 }
 
 export type RealtimeEventHandler = (event: RealtimeEvent) => void;
-export type RealtimeConnectionStatus = "connecting" | "connected" | "disconnected" | "reconnecting";
+export type RealtimeConnectionStatus =
+  | "connecting"
+  | "connected"
+  | "disconnected"
+  | "reconnecting";
 export type RealtimeStatusCallback = (status: RealtimeConnectionStatus) => void;
 
 const HEARTBEAT_INTERVAL = 30000;
 const MAX_RECONNECT_ATTEMPTS = 10;
 const INITIAL_RECONNECT_DELAY = 1000;
 const MAX_RECONNECT_DELAY = 30000;
-const MESSAGE_QUEUE_SIZE = 100;
 
 export class RealtimeClient {
   private eventSource: EventSource | null = null;
-  private handlers: Map<RealtimeEventType, Set<RealtimeEventHandler>> = new Map();
+  private handlers: Map<RealtimeEventType, Set<RealtimeEventHandler>> =
+    new Map();
   private statusHandlers: Set<RealtimeStatusCallback> = new Set();
   private reconnectAttempts: number = 0;
   private reconnectTimer: NodeJS.Timeout | null = null;
@@ -236,15 +240,6 @@ export class RealtimeClient {
     });
   }
 
-  private enqueueMessage(event: RealtimeEvent): void {
-    if (this.messageQueue.length >= MESSAGE_QUEUE_SIZE) {
-      this.messageQueue.shift();
-      logger.warn("Message queue full, dropping oldest message");
-    }
-
-    this.messageQueue.push(event);
-  }
-
   disconnect(): void {
     this.stopHeartbeat();
 
@@ -270,7 +265,10 @@ export class RealtimeClient {
     }
     this.handlers.get(eventType)!.add(handler);
 
-    logger.debug("Event handler registered", { eventType, handlerCount: this.handlers.get(eventType)!.size });
+    logger.debug("Event handler registered", {
+      eventType,
+      handlerCount: this.handlers.get(eventType)!.size,
+    });
 
     return () => {
       this.off(eventType, handler);
@@ -294,7 +292,10 @@ export class RealtimeClient {
       if (handlers.size === 0) {
         this.handlers.delete(eventType);
       }
-      logger.debug("Event handler removed", { eventType, remainingHandlers: handlers.size });
+      logger.debug("Event handler removed", {
+        eventType,
+        remainingHandlers: handlers.size,
+      });
     }
   }
 
@@ -391,7 +392,9 @@ export function useRealtimeStatus(callback: RealtimeStatusCallback) {
 }
 
 export function useRealtimeStats() {
-  const [stats, setStats] = React.useState(() => getRealtimeClient().getStats());
+  const [stats, setStats] = React.useState(() =>
+    getRealtimeClient().getStats(),
+  );
 
   React.useEffect(() => {
     const interval = setInterval(() => {
