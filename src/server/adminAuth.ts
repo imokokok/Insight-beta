@@ -51,8 +51,7 @@ const roleScopes: Record<AdminRole, ReadonlySet<AdminScope>> = {
 function timingSafeEqualString(a: string, b: string) {
   const aBuf = Buffer.from(a, "utf8");
   const bBuf = Buffer.from(b, "utf8");
-  if (aBuf.length !== bBuf.length) return false;
-  return crypto.timingSafeEqual(aBuf, bBuf);
+  return aBuf.length === bBuf.length && crypto.timingSafeEqual(aBuf, bBuf);
 }
 
 function getTokenFromRequest(request: Request) {

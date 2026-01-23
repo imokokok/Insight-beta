@@ -1,8 +1,25 @@
 import crypto from "crypto";
 import { logger } from "@/lib/logger";
 
-const API_SECRET =
-  process.env.INSIGHT_API_SECRET || "default-dev-secret-change-in-production";
+const API_SECRET = (() => {
+  const secret = process.env.INSIGHT_API_SECRET;
+  if (!secret || secret.trim() === "") {
+    throw new Error(
+      "INSIGHT_API_SECRET environment variable is required. " +
+        "Do not use the default development secret in production.",
+    );
+  }
+  if (
+    secret === "default-dev-secret-change-in-production" &&
+    process.env.NODE_ENV === "production"
+  ) {
+    throw new Error(
+      "INSIGHT_API_SECRET cannot be the default development secret in production. " +
+        "Please set a strong, random secret.",
+    );
+  }
+  return secret.trim();
+})();
 
 export interface SignedRequest {
   signature: string;
@@ -38,18 +55,31 @@ export function verifySignature(
   signature: string,
 ): boolean {
   const maxAge = 5 * 60 * 1000;
-  const age = Date.now() - timestamp;
+  const clockSkew = 60 * 1000;
+  const now = Date.now();
+  const age = now - timestamp;
 
-  if (age > maxAge) {
-    logger.warn("Request timestamp too old", { age, maxAge });
+  if (age > maxAge || age < -clockSkew) {
+    logger.warn("Request timestamp invalid", { age, maxAge, clockSkew });
     return false;
   }
 
   const expectedSignature = signRequest(method, path, body, timestamp, nonce);
-  const isValid = crypto.timingSafeEqual(
-    Uint8Array.from(Buffer.from(signature, "hex")),
-    Uint8Array.from(Buffer.from(expectedSignature, "hex")),
-  );
+  const signatureBuffer = (() => {
+    try {
+      return Uint8Array.from(Buffer.from(signature, "hex"));
+    } catch {
+      return null;
+    }
+  })();
+  const expectedBuffer = Uint8Array.from(Buffer.from(expectedSignature, "hex"));
+
+  if (!signatureBuffer || signatureBuffer.length !== expectedBuffer.length) {
+    logger.warn("Invalid signature format or length", { method, path });
+    return false;
+  }
+
+  const isValid = crypto.timingSafeEqual(signatureBuffer, expectedBuffer);
 
   if (!isValid) {
     logger.warn("Invalid signature detected", { method, path });
@@ -58,7 +88,41 @@ export function verifySignature(
   return isValid;
 }
 
-const nonceCache = new Set<string>();
+const nonceCache = new Map<string, number>();
+
+const NONCE_CACHE_MAX_SIZE = 10000;
+const NONCE_CACHE_TTL_MS = 15 * 60 * 1000;
+
+function cleanupNonceCache() {
+  const now = Date.now();
+  let cleaned = 0;
+  const maxToClean = 5000;
+
+  for (const [nonce, addedAt] of nonceCache.entries()) {
+    if (now - addedAt > NONCE_CACHE_TTL_MS) {
+      nonceCache.delete(nonce);
+      cleaned++;
+      if (cleaned >= maxToClean) break;
+    }
+  }
+}
+
+if (nonceCache.size > NONCE_CACHE_MAX_SIZE) {
+  cleanupNonceCache();
+}
+
+setInterval(() => {
+  cleanupNonceCache();
+  if (nonceCache.size > NONCE_CACHE_MAX_SIZE) {
+    const entriesToDelete = Array.from(nonceCache.entries())
+      .sort(([, a], [, b]) => a - b)
+      .slice(0, Math.floor(NONCE_CACHE_MAX_SIZE * 0.3))
+      .map(([key]) => key);
+    for (const key of entriesToDelete) {
+      nonceCache.delete(key);
+    }
+  }
+}, 60 * 1000);
 
 export function verifyNonce(nonce: string): boolean {
   if (nonceCache.has(nonce)) {
@@ -66,20 +130,7 @@ export function verifyNonce(nonce: string): boolean {
     return false;
   }
 
-  nonceCache.add(nonce);
-
-  if (nonceCache.size > 10000) {
-    const oldestNonces = Array.from(nonceCache).slice(0, 5000);
-    oldestNonces.forEach((n) => nonceCache.delete(n));
-  }
-
-  setTimeout(
-    () => {
-      nonceCache.delete(nonce);
-    },
-    15 * 60 * 1000,
-  );
-
+  nonceCache.set(nonce, Date.now());
   return true;
 }
 
@@ -118,13 +169,17 @@ export function decryptData(encryptedData: string): string {
 
   const iv = Uint8Array.from(Buffer.from(ivHex, "hex"));
   const authTag = Uint8Array.from(Buffer.from(authTagHex, "hex"));
-  const encrypted = Buffer.from(encryptedHex, "utf8");
+  const encrypted = Buffer.from(encryptedHex, "hex");
 
   const key = Uint8Array.from(crypto.scryptSync(API_SECRET, "salt", 32));
   const decipher = crypto.createDecipheriv("aes-256-gcm", key, iv);
   decipher.setAuthTag(authTag);
 
-  return decipher.update(Uint8Array.from(encrypted)) + decipher.final("utf8");
+  const decrypted = Buffer.concat([
+    decipher.update(encrypted as any) as any,
+    decipher.final() as any,
+  ]);
+  return decrypted.toString("utf8");
 }
 
 export function generateApiKey(): { key: string; secret: string } {
@@ -136,16 +191,17 @@ export function generateApiKey(): { key: string; secret: string } {
   return { key: newKey, secret: hashedSecret };
 }
 
-export function validateApiKey(_key: string, secret: string): boolean {
-  const expectedSecret = crypto
-    .createHash("sha256")
-    .update(secret)
-    .digest("hex");
+export function validateApiKey(input: string, storedHash: string): boolean {
+  const inputHash = crypto.createHash("sha256").update(input).digest("hex");
 
-  return crypto.timingSafeEqual(
-    Uint8Array.from(Buffer.from(expectedSecret)),
-    Uint8Array.from(Buffer.from(secret)),
-  );
+  const inputBuffer = Uint8Array.from(Buffer.from(inputHash));
+  const storedBuffer = Uint8Array.from(Buffer.from(storedHash));
+
+  if (inputBuffer.length !== storedBuffer.length) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(inputBuffer, storedBuffer);
 }
 
 export const apiSecurity = {

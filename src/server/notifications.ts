@@ -1,4 +1,4 @@
-import { Dispute, Assertion } from "@/lib/oracleTypes";
+import type { Dispute, Assertion } from "@/lib/oracleTypes";
 import { logger } from "@/lib/logger";
 import { env } from "@/lib/env";
 import type { Transporter } from "nodemailer";
@@ -94,6 +94,29 @@ async function sendWebhookNotification(alert: {
   const url = env.INSIGHT_WEBHOOK_URL;
   if (!url) {
     logger.debug("Webhook notification not configured, skipping", {
+      fingerprint: alert.fingerprint,
+    });
+    return;
+  }
+
+  try {
+    const urlObj = new URL(url);
+    const isHttps = urlObj.protocol === "https:";
+    const isLocalhost =
+      urlObj.hostname === "localhost" ||
+      urlObj.hostname === "127.0.0.1" ||
+      urlObj.hostname === "::1";
+
+    if (process.env.NODE_ENV === "production" && !isHttps && !isLocalhost) {
+      logger.error("Webhook URL must use HTTPS in production", {
+        url: urlObj.toString(),
+        fingerprint: alert.fingerprint,
+      });
+      return;
+    }
+  } catch {
+    logger.error("Invalid webhook URL format", {
+      url,
       fingerprint: alert.fingerprint,
     });
     return;
