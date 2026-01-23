@@ -18,8 +18,412 @@ import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { calculatePercentage, cn, fetchApiData, formatTime } from "@/lib/utils";
 import { useI18n } from "@/i18n/LanguageProvider";
-import { getUiErrorMessage, langToLocale } from "@/i18n/translations";
+import {
+  getUiErrorMessage,
+  langToLocale,
+  type TranslationKey,
+} from "@/i18n/translations";
 import type { Dispute, DisputeStatus, OracleChain } from "@/lib/oracleTypes";
+
+type Translate = (key: TranslationKey) => string;
+
+type StatusTabsProps = {
+  filterStatus: DisputeStatus | "All";
+  setFilterStatus: (status: DisputeStatus | "All") => void;
+  t: Translate;
+};
+
+function StatusTabs({ filterStatus, setFilterStatus, t }: StatusTabsProps) {
+  return (
+    <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0">
+      {(["All", "Voting", "Pending Execution", "Executed"] as const).map(
+        (status) => (
+          <button
+            key={status}
+            onClick={() => setFilterStatus(status as DisputeStatus | "All")}
+            className={cn(
+              "rounded-lg px-4 py-1.5 text-sm font-medium transition-colors whitespace-nowrap",
+              filterStatus === status
+                ? "bg-purple-100 text-purple-900 ring-1 ring-purple-200"
+                : "text-purple-600/70 hover:bg-white/50 hover:text-purple-900",
+            )}
+          >
+            {status === "All" ? t("common.all") : statusLabel(status, t)}
+          </button>
+        ),
+      )}
+    </div>
+  );
+}
+
+type FiltersBarProps = {
+  filterStatus: DisputeStatus | "All";
+  setFilterStatus: (status: DisputeStatus | "All") => void;
+  filterChain: OracleChain | "All";
+  setFilterChain: (chain: OracleChain | "All") => void;
+  query: string;
+  setQuery: (value: string) => void;
+  t: Translate;
+};
+
+function FiltersBar({
+  filterStatus,
+  setFilterStatus,
+  filterChain,
+  setFilterChain,
+  query,
+  setQuery,
+  t,
+}: FiltersBarProps) {
+  return (
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <StatusTabs
+        filterStatus={filterStatus}
+        setFilterStatus={setFilterStatus}
+        t={t}
+      />
+
+      <div className="flex items-center gap-2">
+        <select
+          value={filterChain}
+          onChange={(e) =>
+            setFilterChain(e.target.value as OracleChain | "All")
+          }
+          className="h-9 rounded-lg border-none bg-white/50 px-3 text-sm text-purple-900 shadow-sm focus:ring-2 focus:ring-purple-500/20"
+        >
+          <option value="All">{t("common.all")}</option>
+          <option value="Local">{t("chain.local")}</option>
+          <option value="Polygon">{t("chain.polygon")}</option>
+          <option value="PolygonAmoy">{t("chain.polygon")} (Amoy)</option>
+          <option value="Arbitrum">{t("chain.arbitrum")}</option>
+          <option value="Optimism">{t("chain.optimism")}</option>
+        </select>
+
+        <div className="relative">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-purple-400" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t("oracle.searchPlaceholder")}
+            className="h-9 w-full rounded-lg border-none bg-white/50 pl-9 pr-4 text-sm text-purple-900 shadow-sm placeholder:text-purple-300 focus:ring-2 focus:ring-purple-500/20 md:w-64"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+type ErrorBannerProps = {
+  error: string | null;
+  t: Translate;
+};
+
+function ErrorBanner({ error, t }: ErrorBannerProps) {
+  if (!error) return null;
+  return (
+    <div className="rounded-2xl border border-rose-100 bg-rose-50/50 p-4 text-sm text-rose-700 shadow-sm">
+      {getUiErrorMessage(error, t)}
+    </div>
+  );
+}
+
+type LoadingBannerProps = {
+  t: Translate;
+};
+
+function LoadingBanner({ t }: LoadingBannerProps) {
+  return (
+    <div className="rounded-2xl border border-purple-100 bg-white/50 p-6 text-sm text-purple-700/70 shadow-sm">
+      {t("common.loading")}
+    </div>
+  );
+}
+
+type EmptyStateProps = {
+  t: Translate;
+};
+
+function EmptyState({ t }: EmptyStateProps) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 text-center">
+      <div className="rounded-full bg-purple-50 p-4 mb-4">
+        <AlertTriangle className="h-8 w-8 text-purple-300" />
+      </div>
+      <h3 className="text-lg font-medium text-purple-900">
+        {t("disputes.emptyTitle")}
+      </h3>
+      <p className="text-sm text-purple-400 mt-1 max-w-sm">
+        {t("disputes.emptyDesc")}
+      </p>
+    </div>
+  );
+}
+
+type LoadMoreButtonProps = {
+  loadingMore: boolean;
+  onLoadMore: () => void;
+  t: Translate;
+};
+
+function LoadMoreButton({ loadingMore, onLoadMore, t }: LoadMoreButtonProps) {
+  return (
+    <div className="flex justify-center pt-2">
+      <button
+        type="button"
+        onClick={onLoadMore}
+        disabled={loadingMore}
+        className={cn(
+          "rounded-lg px-4 py-2 text-sm font-medium shadow-sm ring-1 ring-purple-100 transition-colors",
+          loadingMore
+            ? "bg-white/50 text-purple-400"
+            : "bg-white text-purple-600 hover:bg-purple-50 hover:text-purple-700",
+        )}
+      >
+        {loadingMore ? t("common.loading") : t("common.loadMore")}
+      </button>
+    </div>
+  );
+}
+
+function statusLabel(status: DisputeStatus, t: Translate) {
+  if (status === "Voting") return t("status.voting");
+  if (status === "Pending Execution") return t("status.pendingExecution");
+  return t("status.executed");
+}
+
+function shortAddress(value: string) {
+  if (!value) return "—";
+  if (value.length <= 12) return value;
+  return `${value.slice(0, 6)}...${value.slice(-4)}`;
+}
+
+function umaAssertionUrl(dispute: Dispute) {
+  const id =
+    dispute.assertionId ||
+    (dispute.id.startsWith("D:") ? dispute.id.slice(2) : dispute.id);
+  if (!id || !id.startsWith("0x")) return "https://oracle.uma.xyz/";
+  return `https://oracle.uma.xyz/#/assertion/${id}`;
+}
+
+type DisputeHeaderProps = {
+  dispute: Dispute;
+  t: Translate;
+};
+
+function DisputeHeader({ dispute, t }: DisputeHeaderProps) {
+  return (
+    <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+      <div className="flex gap-4">
+        <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-100 text-rose-600 shadow-sm">
+          <ShieldAlert size={20} />
+        </div>
+        <div>
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-purple-950">
+              {dispute.id}
+            </h3>
+            <span
+              className={cn(
+                "px-2.5 py-0.5 rounded-full text-xs font-medium border",
+                dispute.status === "Voting"
+                  ? "bg-amber-100 text-amber-700 border-amber-200"
+                  : dispute.status === "Pending Execution"
+                    ? "bg-purple-100 text-purple-700 border-purple-200"
+                    : "bg-gray-100 text-gray-700 border-gray-200",
+              )}
+            >
+              {statusLabel(dispute.status, t)}
+            </span>
+            <span className="text-xs text-gray-400 font-medium px-2 py-0.5 bg-gray-50 rounded-md border border-gray-100">
+              {dispute.chain}
+            </span>
+          </div>
+          <p className="mt-1 text-base font-medium text-purple-900">
+            {dispute.market}
+          </p>
+        </div>
+      </div>
+
+      <a
+        href={umaAssertionUrl(dispute)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-xs font-medium text-purple-600 shadow-sm ring-1 ring-purple-100 transition-colors hover:bg-purple-50 hover:text-purple-700"
+      >
+        {t("disputes.viewOnUma")}
+        <ExternalLink size={14} />
+      </a>
+    </div>
+  );
+}
+
+type DisputeReasonProps = {
+  dispute: Dispute;
+  t: Translate;
+  locale: string;
+};
+
+function DisputeReason({ dispute, t, locale }: DisputeReasonProps) {
+  return (
+    <div className="space-y-4 rounded-xl bg-purple-50/30 p-4 border border-purple-100/50">
+      <div>
+        <h4 className="flex items-center gap-2 text-sm font-semibold text-purple-900/80 mb-2">
+          <MessageSquare size={16} className="text-purple-400" />
+          {t("disputes.reason")}
+        </h4>
+        <p className="text-sm text-purple-800/80 leading-relaxed">
+          {dispute.disputeReason}
+        </p>
+      </div>
+
+      <div className="flex items-center justify-between border-t border-purple-100/50 pt-3 text-sm">
+        <div className="flex flex-col">
+          <span className="text-xs text-purple-400">
+            {t("disputes.disputer")}
+          </span>
+          <span className="font-mono text-purple-600">
+            {shortAddress(dispute.disputer)}
+          </span>
+        </div>
+        <div className="flex flex-col items-end">
+          <span className="text-xs text-purple-400">
+            {t("disputes.disputedAt")}
+          </span>
+          <span className="text-purple-700">
+            {formatTime(dispute.disputedAt, locale)}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+type VotingProgressProps = {
+  dispute: Dispute;
+  voteTrackingEnabled: boolean;
+  t: Translate;
+  locale: string;
+};
+
+function VotingProgress({
+  dispute,
+  voteTrackingEnabled,
+  t,
+  locale,
+}: VotingProgressProps) {
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h4 className="flex items-center gap-2 text-sm font-semibold text-purple-900/80">
+          <Gavel size={16} className="text-purple-400" />
+          {t("disputes.votingProgress")}
+        </h4>
+        <div className="flex items-center gap-1.5 text-xs text-purple-500 bg-purple-50 px-2 py-1 rounded-md">
+          <Clock size={12} />
+          {t("disputes.endsAt")}: {formatTime(dispute.votingEndsAt, locale)}
+        </div>
+      </div>
+
+      {voteTrackingEnabled ? (
+        <>
+          <div className="space-y-3">
+            <div>
+              <div className="flex justify-between text-xs mb-1.5">
+                <span className="flex items-center gap-1 font-medium text-emerald-700">
+                  <ThumbsUp size={12} /> {t("disputes.support")}
+                </span>
+                <span className="text-emerald-700 font-bold">
+                  {calculatePercentage(
+                    dispute.currentVotesFor,
+                    dispute.totalVotes,
+                  )}
+                  %
+                </span>
+              </div>
+              <div className="h-2 w-full rounded-full bg-emerald-100 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-emerald-500 transition-all duration-500"
+                  style={{
+                    width: `${calculatePercentage(dispute.currentVotesFor, dispute.totalVotes)}%`,
+                  }}
+                />
+              </div>
+            </div>
+
+            <div>
+              <div className="flex justify-between text-xs mb-1.5">
+                <span className="flex items-center gap-1 font-medium text-rose-700">
+                  <ThumbsDown size={12} /> {t("disputes.reject")}
+                </span>
+                <span className="text-rose-700 font-bold">
+                  {calculatePercentage(
+                    dispute.currentVotesAgainst,
+                    dispute.totalVotes,
+                  )}
+                  %
+                </span>
+              </div>
+              <div className="h-2 w-full rounded-full bg-rose-100 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-rose-500 transition-all duration-500"
+                  style={{
+                    width: `${calculatePercentage(dispute.currentVotesAgainst, dispute.totalVotes)}%`,
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="text-xs text-center text-purple-400 pt-2">
+            {t("disputes.totalVotesCast")}:{" "}
+            {new Intl.NumberFormat(locale).format(
+              dispute.currentVotesFor + dispute.currentVotesAgainst,
+            )}
+          </div>
+        </>
+      ) : (
+        <div className="text-xs text-center text-purple-400 pt-2">
+          {t("disputes.totalVotesCast")}: —
+        </div>
+      )}
+    </div>
+  );
+}
+
+type DisputeCardProps = {
+  dispute: Dispute;
+  voteTrackingEnabled: boolean;
+  t: Translate;
+  locale: string;
+};
+
+function DisputeCard({
+  dispute,
+  voteTrackingEnabled,
+  t,
+  locale,
+}: DisputeCardProps) {
+  return (
+    <Card className="border-purple-100/60 bg-white/60 shadow-sm hover:shadow-md transition-all">
+      <CardHeader className="pb-4">
+        <DisputeHeader dispute={dispute} t={t} />
+      </CardHeader>
+
+      <CardContent>
+        <div className="grid gap-6 md:grid-cols-2">
+          <DisputeReason dispute={dispute} t={t} locale={locale} />
+          <VotingProgress
+            dispute={dispute}
+            voteTrackingEnabled={voteTrackingEnabled}
+            t={t}
+            locale={locale}
+          />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function DisputesPage() {
   const { t, lang } = useI18n();
@@ -33,7 +437,6 @@ export default function DisputesPage() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // const [refreshKey, setRefreshKey] = useState(0); // Removed unused state
   const [nextCursor, setNextCursor] = useState<number | null>(null);
   const [voteTrackingEnabled, setVoteTrackingEnabled] = useState(true);
   const [filterStatus, setFilterStatus] = useState<DisputeStatus | "All">(
@@ -92,26 +495,6 @@ export default function DisputesPage() {
       void 0;
     }
   }, [instanceId]);
-
-  const statusLabel = (status: DisputeStatus) => {
-    if (status === "Voting") return t("status.voting");
-    if (status === "Pending Execution") return t("status.pendingExecution");
-    return t("status.executed");
-  };
-
-  const shortAddress = (value: string) => {
-    if (!value) return "—";
-    if (value.length <= 12) return value;
-    return `${value.slice(0, 6)}...${value.slice(-4)}`;
-  };
-
-  const umaAssertionUrl = (dispute: Dispute) => {
-    const id =
-      dispute.assertionId ||
-      (dispute.id.startsWith("D:") ? dispute.id.slice(2) : dispute.id);
-    if (!id || !id.startsWith("0x")) return "https://oracle.uma.xyz/";
-    return `https://oracle.uma.xyz/#/assertion/${id}`;
-  };
 
   useEffect(() => {
     let cancelled = false;
@@ -198,267 +581,39 @@ export default function DisputesPage() {
       </PageHeader>
 
       <div className="grid gap-6">
-        {error && (
-          <div className="rounded-2xl border border-rose-100 bg-rose-50/50 p-4 text-sm text-rose-700 shadow-sm">
-            {getUiErrorMessage(error, t)}
-          </div>
-        )}
+        <ErrorBanner error={error} t={t} />
 
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0">
-            {(["All", "Voting", "Pending Execution", "Executed"] as const).map(
-              (status) => (
-                <button
-                  key={status}
-                  onClick={() =>
-                    setFilterStatus(status as DisputeStatus | "All")
-                  }
-                  className={cn(
-                    "rounded-lg px-4 py-1.5 text-sm font-medium transition-colors whitespace-nowrap",
-                    filterStatus === status
-                      ? "bg-purple-100 text-purple-900 ring-1 ring-purple-200"
-                      : "text-purple-600/70 hover:bg-white/50 hover:text-purple-900",
-                  )}
-                >
-                  {status === "All"
-                    ? t("common.all")
-                    : statusLabel(status as DisputeStatus)}
-                </button>
-              ),
-            )}
-          </div>
+        <FiltersBar
+          filterStatus={filterStatus}
+          setFilterStatus={setFilterStatus}
+          filterChain={filterChain}
+          setFilterChain={setFilterChain}
+          query={query}
+          setQuery={setQuery}
+          t={t}
+        />
 
-          <div className="flex items-center gap-2">
-            <select
-              value={filterChain}
-              onChange={(e) =>
-                setFilterChain(e.target.value as OracleChain | "All")
-              }
-              className="h-9 rounded-lg border-none bg-white/50 px-3 text-sm text-purple-900 shadow-sm focus:ring-2 focus:ring-purple-500/20"
-            >
-              <option value="All">{t("common.all")}</option>
-              <option value="Local">{t("chain.local")}</option>
-              <option value="Polygon">{t("chain.polygon")}</option>
-              <option value="PolygonAmoy">{t("chain.polygon")} (Amoy)</option>
-              <option value="Arbitrum">{t("chain.arbitrum")}</option>
-              <option value="Optimism">{t("chain.optimism")}</option>
-            </select>
-
-            <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-purple-400" />
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={t("oracle.searchPlaceholder")}
-                className="h-9 w-full rounded-lg border-none bg-white/50 pl-9 pr-4 text-sm text-purple-900 shadow-sm placeholder:text-purple-300 focus:ring-2 focus:ring-purple-500/20 md:w-64"
-              />
-            </div>
-          </div>
-        </div>
-
-        {loading && (
-          <div className="rounded-2xl border border-purple-100 bg-white/50 p-6 text-sm text-purple-700/70 shadow-sm">
-            {t("common.loading")}
-          </div>
-        )}
+        {loading && <LoadingBanner t={t} />}
 
         {!loading &&
           items.map((dispute) => (
-            <Card
+            <DisputeCard
               key={dispute.id}
-              className="border-purple-100/60 bg-white/60 shadow-sm hover:shadow-md transition-all"
-            >
-              <CardHeader className="pb-4">
-                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                  <div className="flex gap-4">
-                    <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-100 text-rose-600 shadow-sm">
-                      <ShieldAlert size={20} />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-lg font-semibold text-purple-950">
-                          {dispute.id}
-                        </h3>
-                        <span
-                          className={cn(
-                            "px-2.5 py-0.5 rounded-full text-xs font-medium border",
-                            dispute.status === "Voting"
-                              ? "bg-amber-100 text-amber-700 border-amber-200"
-                              : dispute.status === "Pending Execution"
-                                ? "bg-purple-100 text-purple-700 border-purple-200"
-                                : "bg-gray-100 text-gray-700 border-gray-200",
-                          )}
-                        >
-                          {statusLabel(dispute.status)}
-                        </span>
-                        <span className="text-xs text-gray-400 font-medium px-2 py-0.5 bg-gray-50 rounded-md border border-gray-100">
-                          {dispute.chain}
-                        </span>
-                      </div>
-                      <p className="mt-1 text-base font-medium text-purple-900">
-                        {dispute.market}
-                      </p>
-                    </div>
-                  </div>
-
-                  <a
-                    href={umaAssertionUrl(dispute)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-xs font-medium text-purple-600 shadow-sm ring-1 ring-purple-100 transition-colors hover:bg-purple-50 hover:text-purple-700"
-                  >
-                    {t("disputes.viewOnUma")}
-                    <ExternalLink size={14} />
-                  </a>
-                </div>
-              </CardHeader>
-
-              <CardContent>
-                <div className="grid gap-6 md:grid-cols-2">
-                  <div className="space-y-4 rounded-xl bg-purple-50/30 p-4 border border-purple-100/50">
-                    <div>
-                      <h4 className="flex items-center gap-2 text-sm font-semibold text-purple-900/80 mb-2">
-                        <MessageSquare size={16} className="text-purple-400" />
-                        {t("disputes.reason")}
-                      </h4>
-                      <p className="text-sm text-purple-800/80 leading-relaxed">
-                        {dispute.disputeReason}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center justify-between border-t border-purple-100/50 pt-3 text-sm">
-                      <div className="flex flex-col">
-                        <span className="text-xs text-purple-400">
-                          {t("disputes.disputer")}
-                        </span>
-                        <span className="font-mono text-purple-600">
-                          {shortAddress(dispute.disputer)}
-                        </span>
-                      </div>
-                      <div className="flex flex-col items-end">
-                        <span className="text-xs text-purple-400">
-                          {t("disputes.disputedAt")}
-                        </span>
-                        <span className="text-purple-700">
-                          {formatTime(dispute.disputedAt, locale)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h4 className="flex items-center gap-2 text-sm font-semibold text-purple-900/80">
-                        <Gavel size={16} className="text-purple-400" />
-                        {t("disputes.votingProgress")}
-                      </h4>
-                      <div className="flex items-center gap-1.5 text-xs text-purple-500 bg-purple-50 px-2 py-1 rounded-md">
-                        <Clock size={12} />
-                        {t("disputes.endsAt")}:{" "}
-                        {formatTime(dispute.votingEndsAt, locale)}
-                      </div>
-                    </div>
-
-                    {voteTrackingEnabled ? (
-                      <>
-                        <div className="space-y-3">
-                          <div>
-                            <div className="flex justify-between text-xs mb-1.5">
-                              <span className="flex items-center gap-1 font-medium text-emerald-700">
-                                <ThumbsUp size={12} /> {t("disputes.support")}
-                              </span>
-                              <span className="text-emerald-700 font-bold">
-                                {calculatePercentage(
-                                  dispute.currentVotesFor,
-                                  dispute.totalVotes,
-                                )}
-                                %
-                              </span>
-                            </div>
-                            <div className="h-2 w-full rounded-full bg-emerald-100 overflow-hidden">
-                              <div
-                                className="h-full rounded-full bg-emerald-500 transition-all duration-500"
-                                style={{
-                                  width: `${calculatePercentage(dispute.currentVotesFor, dispute.totalVotes)}%`,
-                                }}
-                              />
-                            </div>
-                          </div>
-
-                          <div>
-                            <div className="flex justify-between text-xs mb-1.5">
-                              <span className="flex items-center gap-1 font-medium text-rose-700">
-                                <ThumbsDown size={12} /> {t("disputes.reject")}
-                              </span>
-                              <span className="text-rose-700 font-bold">
-                                {calculatePercentage(
-                                  dispute.currentVotesAgainst,
-                                  dispute.totalVotes,
-                                )}
-                                %
-                              </span>
-                            </div>
-                            <div className="h-2 w-full rounded-full bg-rose-100 overflow-hidden">
-                              <div
-                                className="h-full rounded-full bg-rose-500 transition-all duration-500"
-                                style={{
-                                  width: `${calculatePercentage(dispute.currentVotesAgainst, dispute.totalVotes)}%`,
-                                }}
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="text-xs text-center text-purple-400 pt-2">
-                          {t("disputes.totalVotesCast")}:{" "}
-                          {new Intl.NumberFormat(locale).format(
-                            dispute.currentVotesFor +
-                              dispute.currentVotesAgainst,
-                          )}
-                        </div>
-                      </>
-                    ) : (
-                      <div className="text-xs text-center text-purple-400 pt-2">
-                        {t("disputes.totalVotesCast")}: —
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+              dispute={dispute}
+              voteTrackingEnabled={voteTrackingEnabled}
+              t={t}
+              locale={locale}
+            />
           ))}
 
-        {!loading && !hasItems && (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="rounded-full bg-purple-50 p-4 mb-4">
-              <AlertTriangle className="h-8 w-8 text-purple-300" />
-            </div>
-            <h3 className="text-lg font-medium text-purple-900">
-              {t("disputes.emptyTitle")}
-            </h3>
-            <p className="text-sm text-purple-400 mt-1 max-w-sm">
-              {t("disputes.emptyDesc")}
-            </p>
-          </div>
-        )}
+        {!loading && !hasItems && <EmptyState t={t} />}
 
         {!loading && nextCursor !== null && (
-          <div className="flex justify-center pt-2">
-            <button
-              type="button"
-              onClick={loadMore}
-              disabled={loadingMore}
-              className={cn(
-                "rounded-lg px-4 py-2 text-sm font-medium shadow-sm ring-1 ring-purple-100 transition-colors",
-                loadingMore
-                  ? "bg-white/50 text-purple-400"
-                  : "bg-white text-purple-600 hover:bg-purple-50 hover:text-purple-700",
-              )}
-            >
-              {loadingMore ? t("common.loading") : t("common.loadMore")}
-            </button>
-          </div>
+          <LoadMoreButton
+            loadingMore={loadingMore}
+            onLoadMore={loadMore}
+            t={t}
+          />
         )}
       </div>
     </div>

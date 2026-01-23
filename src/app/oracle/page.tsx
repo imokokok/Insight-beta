@@ -31,7 +31,11 @@ import {
   getErrorDetails,
 } from "@/lib/utils";
 import { useI18n } from "@/i18n/LanguageProvider";
-import { getUiErrorMessage, langToLocale } from "@/i18n/translations";
+import {
+  getUiErrorMessage,
+  langToLocale,
+  type TranslationKey,
+} from "@/i18n/translations";
 import { useOracleData } from "@/hooks/useOracleData";
 import { useDisputes } from "@/hooks/useDisputes";
 import { useWallet } from "@/contexts/WalletContext";
@@ -84,6 +88,604 @@ function minutesSince(iso: string | null | undefined) {
   const diffMs = Date.now() - d.getTime();
   if (!Number.isFinite(diffMs) || diffMs < 0) return null;
   return Math.floor(diffMs / 60_000);
+}
+
+type HealthState = {
+  isLoading: boolean;
+  score: number | null;
+  labelText: string;
+  accent: string;
+  ring: string;
+  lagBlocks: number | null;
+  activeDisputes: number | null;
+  lastSuccessMinutes: number | null;
+  lastError: string | null;
+  topRisks: Array<{ key: string; severity: "warning" | "critical" }>;
+};
+
+type OracleHealthPanelProps = {
+  health: HealthState;
+  lastProcessedBlock: number | null;
+  lastSuccessAtText: string;
+  lastSuccessAgoText: string | null;
+  locale: string;
+  t: (key: TranslationKey) => string;
+};
+
+function OracleHealthPanel({
+  health,
+  lastProcessedBlock,
+  lastSuccessAtText,
+  lastSuccessAgoText,
+  locale,
+  t,
+}: OracleHealthPanelProps) {
+  return (
+    <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 delay-75">
+      <div className="glass-panel rounded-3xl border border-white/60 shadow-2xl shadow-purple-500/5 overflow-hidden">
+        <div className="relative p-6 md:p-8">
+          <div className="absolute inset-0 pointer-events-none opacity-40">
+            <div
+              className={cn(
+                "absolute -right-[15%] -top-[40%] h-[200%] w-[50%] bg-gradient-to-br blur-3xl rounded-full",
+                health.accent,
+              )}
+            />
+            <div className="absolute left-0 bottom-0 h-[80%] w-[30%] bg-gradient-to-tl from-indigo-200/30 via-purple-100/20 to-transparent blur-3xl rounded-full" />
+          </div>
+
+          <div className="relative z-10 grid gap-6 lg:grid-cols-12">
+            <div className="lg:col-span-5 flex items-center gap-6">
+              <div
+                className={cn(
+                  "relative h-24 w-24 md:h-28 md:w-28 rounded-2xl bg-white/70 ring-1 shadow-sm flex items-center justify-center",
+                  health.ring,
+                )}
+              >
+                <div className="text-center">
+                  <div className="text-3xl md:text-4xl font-black text-gray-900 tabular-nums">
+                    {health.score ?? "—"}
+                  </div>
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                    {t("oracle.charts.syncHealth")}
+                  </div>
+                </div>
+              </div>
+
+              <div className="min-w-0">
+                <div className="text-sm font-semibold text-gray-500">
+                  {t("oracle.charts.syncHealth")}
+                </div>
+                <div className="text-2xl md:text-3xl font-black text-gray-900 leading-tight">
+                  {health.labelText}
+                </div>
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-600">
+                  <div className="rounded-lg bg-white/60 px-3 py-1.5 ring-1 ring-black/5">
+                    {t("oracle.sync.block")}:{" "}
+                    <span className="font-mono font-semibold">
+                      {typeof lastProcessedBlock === "number"
+                        ? lastProcessedBlock.toLocaleString(locale)
+                        : "—"}
+                    </span>
+                  </div>
+                  <div className="rounded-lg bg-white/60 px-3 py-1.5 ring-1 ring-black/5">
+                    {t("oracle.charts.syncLagBlocks")}:{" "}
+                    <span className="font-mono font-semibold">
+                      {typeof health.lagBlocks === "number"
+                        ? health.lagBlocks.toLocaleString(locale)
+                        : "—"}
+                    </span>
+                  </div>
+                  <div className="rounded-lg bg-white/60 px-3 py-1.5 ring-1 ring-black/5">
+                    {t("oracle.stats.activeDisputes")}:{" "}
+                    <span className="font-mono font-semibold">
+                      {typeof health.activeDisputes === "number"
+                        ? health.activeDisputes
+                        : "—"}
+                    </span>
+                  </div>
+                  <div className="rounded-lg bg-white/60 px-3 py-1.5 ring-1 ring-black/5">
+                    {t("oracle.sync.lastUpdate")}:{" "}
+                    <span className="font-mono font-semibold">
+                      {lastSuccessAtText}
+                      {lastSuccessAgoText ? (
+                        <span className="ml-1 text-gray-400">
+                          ({lastSuccessAgoText})
+                        </span>
+                      ) : null}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="lg:col-span-7">
+              <div className="rounded-2xl bg-white/60 ring-1 ring-black/5 p-5 md:p-6">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="text-sm font-bold text-gray-900">
+                    {t("oracle.charts.syncHealth")}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {t("oracle.sync.lastUpdate")}: {lastSuccessAtText}
+                  </div>
+                </div>
+
+                <div className="mt-4 grid gap-2">
+                  {health.topRisks.length === 0 ? (
+                    <div className="text-sm text-emerald-700 bg-emerald-50/60 border border-emerald-100 rounded-xl px-4 py-3">
+                      {health.isLoading
+                        ? t("common.loading")
+                        : t("oracle.sync.synced")}
+                    </div>
+                  ) : (
+                    health.topRisks.map((r, idx) => (
+                      <div
+                        key={`${r.key}-${idx}`}
+                        className={cn(
+                          "flex items-center justify-between gap-3 rounded-xl px-4 py-3 border",
+                          r.severity === "critical"
+                            ? "bg-rose-50/60 border-rose-100 text-rose-800"
+                            : "bg-amber-50/60 border-amber-100 text-amber-800",
+                        )}
+                      >
+                        <div className="min-w-0 text-sm font-semibold truncate">
+                          {r.key}
+                        </div>
+                        <div
+                          className={cn(
+                            "shrink-0 text-[11px] font-black uppercase tracking-wider rounded-lg px-2 py-1",
+                            r.severity === "critical"
+                              ? "bg-rose-100 text-rose-700"
+                              : "bg-amber-100 text-amber-700",
+                          )}
+                        >
+                          {t(
+                            r.severity === "critical"
+                              ? "oracle.alerts.severities.critical"
+                              : "oracle.alerts.severities.warning",
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                  {health.lastError ? (
+                    <div className="mt-2 text-xs text-gray-500">
+                      {t("oracle.sync.error")}:{" "}
+                      <span className="font-mono">{health.lastError}</span>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+type OracleTabsProps = {
+  activeTab: "overview" | "leaderboard" | "tools";
+  onChange: (nextTab: "overview" | "leaderboard" | "tools") => void;
+  t: (key: TranslationKey) => string;
+};
+
+function OracleTabs({ activeTab, onChange, t }: OracleTabsProps) {
+  return (
+    <div className="flex justify-center mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
+      <div className="glass-panel p-1.5 rounded-2xl flex items-center gap-1 shadow-lg shadow-purple-500/5 bg-white/40 backdrop-blur-xl border-white/60">
+        <button
+          onClick={() => onChange("overview")}
+          className={cn(
+            "flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300",
+            activeTab === "overview"
+              ? "bg-white text-purple-700 shadow-md shadow-purple-500/10 ring-1 ring-black/5 scale-[1.02]"
+              : "text-gray-500 hover:text-gray-900 hover:bg-white/40",
+          )}
+        >
+          <LayoutDashboard
+            size={18}
+            className={cn(
+              "transition-transform duration-300",
+              activeTab === "overview"
+                ? "scale-110 text-purple-600"
+                : "text-gray-400",
+            )}
+          />
+          {t("oracle.tabs.overview")}
+        </button>
+        <button
+          onClick={() => onChange("leaderboard")}
+          className={cn(
+            "flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300",
+            activeTab === "leaderboard"
+              ? "bg-white text-purple-700 shadow-md shadow-purple-500/10 ring-1 ring-black/5 scale-[1.02]"
+              : "text-gray-500 hover:text-gray-900 hover:bg-white/40",
+          )}
+        >
+          <Trophy
+            size={18}
+            className={cn(
+              "transition-transform duration-300",
+              activeTab === "leaderboard"
+                ? "scale-110 text-amber-500"
+                : "text-gray-400",
+            )}
+          />
+          {t("oracle.tabs.leaderboard")}
+        </button>
+        <button
+          onClick={() => onChange("tools")}
+          className={cn(
+            "flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300",
+            activeTab === "tools"
+              ? "bg-white text-purple-700 shadow-md shadow-purple-500/10 ring-1 ring-black/5 scale-[1.02]"
+              : "text-gray-500 hover:text-gray-900 hover:bg-white/40",
+          )}
+        >
+          <Wrench
+            size={18}
+            className={cn(
+              "transition-transform duration-300",
+              activeTab === "tools"
+                ? "scale-110 text-slate-600"
+                : "text-gray-400",
+            )}
+          />
+          {t("oracle.tabs.tools")}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+type OracleFiltersToolbarProps = {
+  filterStatus: OracleStatus | "All";
+  onFilterStatusChange: (status: OracleStatus | "All") => void;
+  statusLabel: (status: OracleStatus | "All") => string;
+  address: string | null | undefined;
+  myActivity: boolean;
+  myDisputes: boolean;
+  onToggleMyActivity: () => void;
+  onToggleMyDisputes: () => void;
+  viewMode: "grid" | "list";
+  onViewModeChange: (mode: "grid" | "list") => void;
+  instances: OracleInstance[] | null;
+  instanceId: string;
+  onInstanceIdChange: (value: string) => void;
+  filterChain: OracleConfig["chain"] | "All";
+  onFilterChainChange: (value: OracleConfig["chain"] | "All") => void;
+  query: string;
+  onQueryChange: (value: string) => void;
+  onClearFilters: () => void;
+  t: (key: TranslationKey) => string;
+};
+
+function OracleFiltersToolbar({
+  filterStatus,
+  onFilterStatusChange,
+  statusLabel,
+  address,
+  myActivity,
+  myDisputes,
+  onToggleMyActivity,
+  onToggleMyDisputes,
+  viewMode,
+  onViewModeChange,
+  instances,
+  instanceId,
+  onInstanceIdChange,
+  filterChain,
+  onFilterChainChange,
+  query,
+  onQueryChange,
+  onClearFilters,
+  t,
+}: OracleFiltersToolbarProps) {
+  const showClear =
+    filterStatus !== "All" ||
+    filterChain !== "All" ||
+    query.trim() ||
+    myActivity ||
+    myDisputes;
+
+  return (
+    <div className="glass-panel sticky top-4 z-20 rounded-2xl p-3 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between shadow-xl shadow-purple-900/5 backdrop-blur-xl border-white/60">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div className="flex items-center gap-1.5 overflow-x-auto p-1 sm:p-0 no-scrollbar">
+          {["All", "Pending", "Disputed", "Resolved"].map((status) => (
+            <button
+              key={status}
+              onClick={() =>
+                onFilterStatusChange(status as OracleStatus | "All")
+              }
+              className={cn(
+                "rounded-xl px-4 py-2 text-sm font-bold transition-all whitespace-nowrap flex items-center gap-2",
+                filterStatus === status
+                  ? "bg-white shadow-md shadow-purple-500/10 ring-1 ring-black/5 scale-105"
+                  : "text-gray-500 hover:bg-white/40 hover:text-gray-900",
+                filterStatus === status &&
+                  status === "Pending" &&
+                  "text-blue-600 ring-blue-100",
+                filterStatus === status &&
+                  status === "Disputed" &&
+                  "text-rose-600 ring-rose-100",
+                filterStatus === status &&
+                  status === "Resolved" &&
+                  "text-emerald-600 ring-emerald-100",
+                filterStatus === status &&
+                  status === "All" &&
+                  "text-purple-700 ring-purple-100",
+              )}
+            >
+              {status === "Pending" && (
+                <div
+                  className={cn(
+                    "w-2 h-2 rounded-full bg-blue-500",
+                    filterStatus !== status && "opacity-50",
+                  )}
+                />
+              )}
+              {status === "Disputed" && (
+                <div
+                  className={cn(
+                    "w-2 h-2 rounded-full bg-rose-500",
+                    filterStatus !== status && "opacity-50",
+                  )}
+                />
+              )}
+              {status === "Resolved" && (
+                <div
+                  className={cn(
+                    "w-2 h-2 rounded-full bg-emerald-500",
+                    filterStatus !== status && "opacity-50",
+                  )}
+                />
+              )}
+              {status === "All" && (
+                <div
+                  className={cn(
+                    "w-2 h-2 rounded-full bg-purple-500",
+                    filterStatus !== status && "opacity-50",
+                  )}
+                />
+              )}
+              {statusLabel(status as OracleStatus | "All")}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 md:gap-3">
+          {address && (
+            <div className="flex w-full gap-2 md:hidden">
+              <button
+                onClick={onToggleMyActivity}
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition-all border",
+                  myActivity
+                    ? "bg-purple-100 text-purple-700 border-purple-200 shadow-inner"
+                    : "bg-white/50 text-gray-500 border-transparent hover:bg-white hover:text-gray-900",
+                )}
+              >
+                <User size={14} />
+                {t("oracle.myActivity")}
+              </button>
+              <button
+                onClick={onToggleMyDisputes}
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition-all border",
+                  myDisputes
+                    ? "bg-rose-100 text-rose-700 border-rose-200 shadow-inner"
+                    : "bg-white/50 text-gray-500 border-transparent hover:bg-white hover:text-gray-900",
+                )}
+              >
+                <Gavel size={14} />
+                {t("oracle.myDisputesFilter")}
+              </button>
+            </div>
+          )}
+
+          {address && (
+            <>
+              <button
+                onClick={onToggleMyActivity}
+                className={cn(
+                  "hidden md:flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition-all border",
+                  myActivity
+                    ? "bg-purple-100 text-purple-700 border-purple-200 shadow-inner"
+                    : "bg-white/50 text-gray-500 border-transparent hover:bg-white hover:text-gray-900",
+                )}
+                title={t("oracle.myActivityTooltip")}
+              >
+                <User size={16} />
+                {t("oracle.myActivity")}
+              </button>
+              <button
+                onClick={onToggleMyDisputes}
+                className={cn(
+                  "hidden md:flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition-all border",
+                  myDisputes
+                    ? "bg-rose-100 text-rose-700 border-rose-200 shadow-inner"
+                    : "bg-white/50 text-gray-500 border-transparent hover:bg-white hover:text-gray-900",
+                )}
+                title={t("oracle.myDisputesTooltip")}
+              >
+                <Gavel size={16} />
+                {t("oracle.myDisputesFilter")}
+              </button>
+            </>
+          )}
+
+          <div className="flex bg-gray-100/50 p-1 rounded-xl md:hidden">
+            <button
+              onClick={() => onViewModeChange("grid")}
+              className={cn(
+                "p-1.5 rounded-md transition-all",
+                viewMode === "grid"
+                  ? "bg-white shadow text-purple-600"
+                  : "text-gray-400 hover:text-gray-600",
+              )}
+              title={t("oracle.card.gridView")}
+            >
+              <LayoutGrid size={16} />
+            </button>
+            <button
+              onClick={() => onViewModeChange("list")}
+              className={cn(
+                "p-1.5 rounded-md transition-all",
+                viewMode === "list"
+                  ? "bg-white shadow text-purple-600"
+                  : "text-gray-400 hover:text-gray-600",
+              )}
+              title={t("oracle.card.listView")}
+            >
+              <List size={16} />
+            </button>
+          </div>
+
+          <div className="hidden md:flex bg-gray-100/50 p-1 rounded-xl">
+            <button
+              onClick={() => onViewModeChange("grid")}
+              className={cn(
+                "p-1.5 rounded-md transition-all",
+                viewMode === "grid"
+                  ? "bg-white shadow text-purple-600"
+                  : "text-gray-400 hover:text-gray-600",
+              )}
+              title={t("oracle.card.gridView")}
+            >
+              <LayoutGrid size={16} />
+            </button>
+            <button
+              onClick={() => onViewModeChange("list")}
+              className={cn(
+                "p-1.5 rounded-md transition-all",
+                viewMode === "list"
+                  ? "bg-white shadow text-purple-600"
+                  : "text-gray-400 hover:text-gray-600",
+              )}
+              title={t("oracle.card.listView")}
+            >
+              <List size={16} />
+            </button>
+          </div>
+
+          {instances && instances.length > 0 ? (
+            <div className="relative w-full md:hidden">
+              <select
+                value={instanceId}
+                onChange={(e) => onInstanceIdChange(e.target.value)}
+                className="glass-input h-9 w-full rounded-xl border-none pl-3 pr-8 text-sm font-medium text-gray-600 hover:bg-white/80 focus:ring-2 focus:ring-purple-500/20 cursor-pointer appearance-none"
+              >
+                {instances.map((inst) => (
+                  <option key={inst.id} value={inst.id}>
+                    {inst.name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                size={14}
+              />
+            </div>
+          ) : null}
+
+          <div className="relative w-full md:hidden">
+            <select
+              value={filterChain}
+              onChange={(e) =>
+                onFilterChainChange(
+                  e.target.value as OracleConfig["chain"] | "All",
+                )
+              }
+              className="glass-input h-9 w-full rounded-xl border-none pl-3 pr-8 text-sm font-medium text-gray-600 hover:bg-white/80 focus:ring-2 focus:ring-purple-500/20 cursor-pointer appearance-none"
+            >
+              <option value="All">{t("common.all")}</option>
+              <option value="Local">{t("chain.local")}</option>
+              <option value="Polygon">{t("chain.polygon")}</option>
+              <option value="PolygonAmoy">{t("chain.polygon")} (Amoy)</option>
+              <option value="Arbitrum">{t("chain.arbitrum")}</option>
+              <option value="Optimism">{t("chain.optimism")}</option>
+            </select>
+            <ChevronDown
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+              size={14}
+            />
+          </div>
+
+          {instances && instances.length > 0 ? (
+            <>
+              <div className="relative hidden md:block">
+                <select
+                  value={instanceId}
+                  onChange={(e) => onInstanceIdChange(e.target.value)}
+                  className="glass-input h-9 rounded-xl border-none pl-3 pr-8 text-sm font-medium text-gray-600 hover:bg-white/80 focus:ring-2 focus:ring-purple-500/20 cursor-pointer appearance-none"
+                >
+                  {instances.map((inst) => (
+                    <option key={inst.id} value={inst.id}>
+                      {inst.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                  size={14}
+                />
+              </div>
+
+              <div className="h-4 w-px bg-gray-200 hidden md:block"></div>
+            </>
+          ) : null}
+
+          <div className="relative hidden md:block">
+            <select
+              value={filterChain}
+              onChange={(e) =>
+                onFilterChainChange(
+                  e.target.value as OracleConfig["chain"] | "All",
+                )
+              }
+              className="glass-input h-9 rounded-xl border-none pl-3 pr-8 text-sm font-medium text-gray-600 hover:bg-white/80 focus:ring-2 focus:ring-purple-500/20 cursor-pointer appearance-none"
+            >
+              <option value="All">{t("common.all")}</option>
+              <option value="Local">{t("chain.local")}</option>
+              <option value="Polygon">{t("chain.polygon")}</option>
+              <option value="PolygonAmoy">{t("chain.polygon")} (Amoy)</option>
+              <option value="Arbitrum">{t("chain.arbitrum")}</option>
+              <option value="Optimism">{t("chain.optimism")}</option>
+            </select>
+            <ChevronDown
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+              size={14}
+            />
+          </div>
+
+          <div className="h-4 w-px bg-gray-200 hidden md:block"></div>
+
+          <div className="relative w-full md:flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder={t("oracle.searchPlaceholder")}
+              value={query}
+              onChange={(e) => onQueryChange(e.target.value)}
+              className="glass-input h-9 w-full rounded-xl pl-9 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500/20 md:w-64"
+            />
+          </div>
+
+          {showClear && (
+            <button
+              type="button"
+              onClick={onClearFilters}
+              className="h-9 rounded-xl bg-white px-3 text-sm font-semibold text-purple-700 shadow-sm ring-1 ring-purple-100 hover:bg-purple-50"
+            >
+              {t("audit.clear")}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function OraclePage() {
@@ -596,6 +1198,27 @@ export default function OraclePage() {
     status?.state?.lastProcessedBlock,
   );
 
+  const handleToggleMyActivity = () => {
+    setMyActivity(!myActivity);
+    if (!myActivity) setMyDisputes(false);
+  };
+
+  const handleToggleMyDisputes = () => {
+    setMyDisputes(!myDisputes);
+    if (!myDisputes) setMyActivity(false);
+  };
+
+  const handleClearFilters = () => {
+    setFilterStatus("All");
+    setFilterChain("All");
+    setQuery("");
+    setMyActivity(false);
+    setMyDisputes(false);
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   return (
     <div className="space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <PageHeader
@@ -615,215 +1238,20 @@ export default function OraclePage() {
         </div>
       </PageHeader>
 
-      <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 delay-75">
-        <div className="glass-panel rounded-3xl border border-white/60 shadow-2xl shadow-purple-500/5 overflow-hidden">
-          <div className="relative p-6 md:p-8">
-            <div className="absolute inset-0 pointer-events-none opacity-40">
-              <div
-                className={cn(
-                  "absolute -right-[15%] -top-[40%] h-[200%] w-[50%] bg-gradient-to-br blur-3xl rounded-full",
-                  health.accent,
-                )}
-              />
-              <div className="absolute left-0 bottom-0 h-[80%] w-[30%] bg-gradient-to-tl from-indigo-200/30 via-purple-100/20 to-transparent blur-3xl rounded-full" />
-            </div>
-
-            <div className="relative z-10 grid gap-6 lg:grid-cols-12">
-              <div className="lg:col-span-5 flex items-center gap-6">
-                <div
-                  className={cn(
-                    "relative h-24 w-24 md:h-28 md:w-28 rounded-2xl bg-white/70 ring-1 shadow-sm flex items-center justify-center",
-                    health.ring,
-                  )}
-                >
-                  <div className="text-center">
-                    <div className="text-3xl md:text-4xl font-black text-gray-900 tabular-nums">
-                      {health.score ?? "—"}
-                    </div>
-                    <div className="text-[11px] font-bold uppercase tracking-wider text-gray-500">
-                      {t("oracle.charts.syncHealth")}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="min-w-0">
-                  <div className="text-sm font-semibold text-gray-500">
-                    {t("oracle.charts.syncHealth")}
-                  </div>
-                  <div className="text-2xl md:text-3xl font-black text-gray-900 leading-tight">
-                    {health.labelText}
-                  </div>
-                  <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-600">
-                    <div className="rounded-lg bg-white/60 px-3 py-1.5 ring-1 ring-black/5">
-                      {t("oracle.sync.block")}:{" "}
-                      <span className="font-mono font-semibold">
-                        {typeof lastProcessedBlock === "number"
-                          ? lastProcessedBlock.toLocaleString(locale)
-                          : "—"}
-                      </span>
-                    </div>
-                    <div className="rounded-lg bg-white/60 px-3 py-1.5 ring-1 ring-black/5">
-                      {t("oracle.charts.syncLagBlocks")}:{" "}
-                      <span className="font-mono font-semibold">
-                        {typeof health.lagBlocks === "number"
-                          ? health.lagBlocks.toLocaleString(locale)
-                          : "—"}
-                      </span>
-                    </div>
-                    <div className="rounded-lg bg-white/60 px-3 py-1.5 ring-1 ring-black/5">
-                      {t("oracle.stats.activeDisputes")}:{" "}
-                      <span className="font-mono font-semibold">
-                        {typeof health.activeDisputes === "number"
-                          ? health.activeDisputes
-                          : "—"}
-                      </span>
-                    </div>
-                    <div className="rounded-lg bg-white/60 px-3 py-1.5 ring-1 ring-black/5">
-                      {t("oracle.sync.lastUpdate")}:{" "}
-                      <span className="font-mono font-semibold">
-                        {lastSuccessAtText}
-                        {lastSuccessAgoText ? (
-                          <span className="ml-1 text-gray-400">
-                            ({lastSuccessAgoText})
-                          </span>
-                        ) : null}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="lg:col-span-7">
-                <div className="rounded-2xl bg-white/60 ring-1 ring-black/5 p-5 md:p-6">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="text-sm font-bold text-gray-900">
-                      {t("oracle.charts.syncHealth")}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {t("oracle.sync.lastUpdate")}: {lastSuccessAtText}
-                    </div>
-                  </div>
-
-                  <div className="mt-4 grid gap-2">
-                    {health.topRisks.length === 0 ? (
-                      <div className="text-sm text-emerald-700 bg-emerald-50/60 border border-emerald-100 rounded-xl px-4 py-3">
-                        {health.isLoading
-                          ? t("common.loading")
-                          : t("oracle.sync.synced")}
-                      </div>
-                    ) : (
-                      health.topRisks.map((r, idx) => (
-                        <div
-                          key={`${r.key}-${idx}`}
-                          className={cn(
-                            "flex items-center justify-between gap-3 rounded-xl px-4 py-3 border",
-                            r.severity === "critical"
-                              ? "bg-rose-50/60 border-rose-100 text-rose-800"
-                              : "bg-amber-50/60 border-amber-100 text-amber-800",
-                          )}
-                        >
-                          <div className="min-w-0 text-sm font-semibold truncate">
-                            {r.key}
-                          </div>
-                          <div
-                            className={cn(
-                              "shrink-0 text-[11px] font-black uppercase tracking-wider rounded-lg px-2 py-1",
-                              r.severity === "critical"
-                                ? "bg-rose-100 text-rose-700"
-                                : "bg-amber-100 text-amber-700",
-                            )}
-                          >
-                            {t(
-                              r.severity === "critical"
-                                ? "oracle.alerts.severities.critical"
-                                : "oracle.alerts.severities.warning",
-                            )}
-                          </div>
-                        </div>
-                      ))
-                    )}
-                    {health.lastError ? (
-                      <div className="mt-2 text-xs text-gray-500">
-                        {t("oracle.sync.error")}:{" "}
-                        <span className="font-mono">{health.lastError}</span>
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <OracleHealthPanel
+        health={health}
+        lastProcessedBlock={lastProcessedBlock}
+        lastSuccessAtText={lastSuccessAtText}
+        lastSuccessAgoText={lastSuccessAgoText}
+        locale={locale}
+        t={t}
+      />
 
       <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
         <OracleStatsBanner stats={formattedStats} loading={loading} />
       </div>
 
-      <div className="flex justify-center mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
-        <div className="glass-panel p-1.5 rounded-2xl flex items-center gap-1 shadow-lg shadow-purple-500/5 bg-white/40 backdrop-blur-xl border-white/60">
-          <button
-            onClick={() => setActiveTab("overview")}
-            className={cn(
-              "flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300",
-              activeTab === "overview"
-                ? "bg-white text-purple-700 shadow-md shadow-purple-500/10 ring-1 ring-black/5 scale-[1.02]"
-                : "text-gray-500 hover:text-gray-900 hover:bg-white/40",
-            )}
-          >
-            <LayoutDashboard
-              size={18}
-              className={cn(
-                "transition-transform duration-300",
-                activeTab === "overview"
-                  ? "scale-110 text-purple-600"
-                  : "text-gray-400",
-              )}
-            />
-            {t("oracle.tabs.overview")}
-          </button>
-          <button
-            onClick={() => setActiveTab("leaderboard")}
-            className={cn(
-              "flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300",
-              activeTab === "leaderboard"
-                ? "bg-white text-purple-700 shadow-md shadow-purple-500/10 ring-1 ring-black/5 scale-[1.02]"
-                : "text-gray-500 hover:text-gray-900 hover:bg-white/40",
-            )}
-          >
-            <Trophy
-              size={18}
-              className={cn(
-                "transition-transform duration-300",
-                activeTab === "leaderboard"
-                  ? "scale-110 text-amber-500"
-                  : "text-gray-400",
-              )}
-            />
-            {t("oracle.tabs.leaderboard")}
-          </button>
-          <button
-            onClick={() => setActiveTab("tools")}
-            className={cn(
-              "flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300",
-              activeTab === "tools"
-                ? "bg-white text-purple-700 shadow-md shadow-purple-500/10 ring-1 ring-black/5 scale-[1.02]"
-                : "text-gray-500 hover:text-gray-900 hover:bg-white/40",
-            )}
-          >
-            <Wrench
-              size={18}
-              className={cn(
-                "transition-transform duration-300",
-                activeTab === "tools"
-                  ? "scale-110 text-slate-600"
-                  : "text-gray-400",
-              )}
-            />
-            {t("oracle.tabs.tools")}
-          </button>
-        </div>
-      </div>
+      <OracleTabs activeTab={activeTab} onChange={setActiveTab} t={t} />
 
       {activeTab === "overview" ? (
         <div className="space-y-8">
@@ -1278,331 +1706,27 @@ export default function OraclePage() {
               </div>
             )}
 
-            {/* Filters & Search Toolbar */}
-            <div className="glass-panel sticky top-4 z-20 rounded-2xl p-3 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between shadow-xl shadow-purple-900/5 backdrop-blur-xl border-white/60">
-              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <div className="flex items-center gap-1.5 overflow-x-auto p-1 sm:p-0 no-scrollbar">
-                  {["All", "Pending", "Disputed", "Resolved"].map((status) => (
-                    <button
-                      key={status}
-                      onClick={() =>
-                        setFilterStatus(status as OracleStatus | "All")
-                      }
-                      className={cn(
-                        "rounded-xl px-4 py-2 text-sm font-bold transition-all whitespace-nowrap flex items-center gap-2",
-                        filterStatus === status
-                          ? "bg-white shadow-md shadow-purple-500/10 ring-1 ring-black/5 scale-105"
-                          : "text-gray-500 hover:bg-white/40 hover:text-gray-900",
-                        filterStatus === status &&
-                          status === "Pending" &&
-                          "text-blue-600 ring-blue-100",
-                        filterStatus === status &&
-                          status === "Disputed" &&
-                          "text-rose-600 ring-rose-100",
-                        filterStatus === status &&
-                          status === "Resolved" &&
-                          "text-emerald-600 ring-emerald-100",
-                        filterStatus === status &&
-                          status === "All" &&
-                          "text-purple-700 ring-purple-100",
-                      )}
-                    >
-                      {status === "Pending" && (
-                        <div
-                          className={cn(
-                            "w-2 h-2 rounded-full bg-blue-500",
-                            filterStatus !== status && "opacity-50",
-                          )}
-                        />
-                      )}
-                      {status === "Disputed" && (
-                        <div
-                          className={cn(
-                            "w-2 h-2 rounded-full bg-rose-500",
-                            filterStatus !== status && "opacity-50",
-                          )}
-                        />
-                      )}
-                      {status === "Resolved" && (
-                        <div
-                          className={cn(
-                            "w-2 h-2 rounded-full bg-emerald-500",
-                            filterStatus !== status && "opacity-50",
-                          )}
-                        />
-                      )}
-                      {status === "All" && (
-                        <div
-                          className={cn(
-                            "w-2 h-2 rounded-full bg-purple-500",
-                            filterStatus !== status && "opacity-50",
-                          )}
-                        />
-                      )}
-                      {statusLabel(status as OracleStatus | "All")}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2 md:gap-3">
-                  {address && (
-                    <div className="flex w-full gap-2 md:hidden">
-                      <button
-                        onClick={() => {
-                          setMyActivity(!myActivity);
-                          if (!myActivity) setMyDisputes(false);
-                        }}
-                        className={cn(
-                          "flex-1 flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition-all border",
-                          myActivity
-                            ? "bg-purple-100 text-purple-700 border-purple-200 shadow-inner"
-                            : "bg-white/50 text-gray-500 border-transparent hover:bg-white hover:text-gray-900",
-                        )}
-                      >
-                        <User size={14} />
-                        {t("oracle.myActivity")}
-                      </button>
-                      <button
-                        onClick={() => {
-                          setMyDisputes(!myDisputes);
-                          if (!myDisputes) setMyActivity(false);
-                        }}
-                        className={cn(
-                          "flex-1 flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition-all border",
-                          myDisputes
-                            ? "bg-rose-100 text-rose-700 border-rose-200 shadow-inner"
-                            : "bg-white/50 text-gray-500 border-transparent hover:bg-white hover:text-gray-900",
-                        )}
-                      >
-                        <Gavel size={14} />
-                        {t("oracle.myDisputesFilter")}
-                      </button>
-                    </div>
-                  )}
-
-                  {address && (
-                    <>
-                      <button
-                        onClick={() => {
-                          setMyActivity(!myActivity);
-                          if (!myActivity) setMyDisputes(false);
-                        }}
-                        className={cn(
-                          "hidden md:flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition-all border",
-                          myActivity
-                            ? "bg-purple-100 text-purple-700 border-purple-200 shadow-inner"
-                            : "bg-white/50 text-gray-500 border-transparent hover:bg-white hover:text-gray-900",
-                        )}
-                        title={t("oracle.myActivityTooltip")}
-                      >
-                        <User size={16} />
-                        {t("oracle.myActivity")}
-                      </button>
-                      <button
-                        onClick={() => {
-                          setMyDisputes(!myDisputes);
-                          if (!myDisputes) setMyActivity(false);
-                        }}
-                        className={cn(
-                          "hidden md:flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition-all border",
-                          myDisputes
-                            ? "bg-rose-100 text-rose-700 border-rose-200 shadow-inner"
-                            : "bg-white/50 text-gray-500 border-transparent hover:bg-white hover:text-gray-900",
-                        )}
-                        title={t("oracle.myDisputesTooltip")}
-                      >
-                        <Gavel size={16} />
-                        {t("oracle.myDisputesFilter")}
-                      </button>
-                    </>
-                  )}
-
-                  <div className="flex bg-gray-100/50 p-1 rounded-xl md:hidden">
-                    <button
-                      onClick={() => setViewMode("grid")}
-                      className={cn(
-                        "p-1.5 rounded-md transition-all",
-                        viewMode === "grid"
-                          ? "bg-white shadow text-purple-600"
-                          : "text-gray-400 hover:text-gray-600",
-                      )}
-                      title={t("oracle.card.gridView")}
-                    >
-                      <LayoutGrid size={16} />
-                    </button>
-                    <button
-                      onClick={() => setViewMode("list")}
-                      className={cn(
-                        "p-1.5 rounded-md transition-all",
-                        viewMode === "list"
-                          ? "bg-white shadow text-purple-600"
-                          : "text-gray-400 hover:text-gray-600",
-                      )}
-                      title={t("oracle.card.listView")}
-                    >
-                      <List size={16} />
-                    </button>
-                  </div>
-
-                  <div className="hidden md:flex bg-gray-100/50 p-1 rounded-xl">
-                    <button
-                      onClick={() => setViewMode("grid")}
-                      className={cn(
-                        "p-1.5 rounded-md transition-all",
-                        viewMode === "grid"
-                          ? "bg-white shadow text-purple-600"
-                          : "text-gray-400 hover:text-gray-600",
-                      )}
-                      title={t("oracle.card.gridView")}
-                    >
-                      <LayoutGrid size={16} />
-                    </button>
-                    <button
-                      onClick={() => setViewMode("list")}
-                      className={cn(
-                        "p-1.5 rounded-md transition-all",
-                        viewMode === "list"
-                          ? "bg-white shadow text-purple-600"
-                          : "text-gray-400 hover:text-gray-600",
-                      )}
-                      title={t("oracle.card.listView")}
-                    >
-                      <List size={16} />
-                    </button>
-                  </div>
-
-                  {instances && instances.length > 0 ? (
-                    <div className="relative w-full md:hidden">
-                      <select
-                        value={instanceId}
-                        onChange={(e) => setInstanceId(e.target.value)}
-                        className="glass-input h-9 w-full rounded-xl border-none pl-3 pr-8 text-sm font-medium text-gray-600 hover:bg-white/80 focus:ring-2 focus:ring-purple-500/20 cursor-pointer appearance-none"
-                      >
-                        {instances.map((inst) => (
-                          <option key={inst.id} value={inst.id}>
-                            {inst.name}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-                        size={14}
-                      />
-                    </div>
-                  ) : null}
-
-                  <div className="relative w-full md:hidden">
-                    <select
-                      value={filterChain}
-                      onChange={(e) =>
-                        setFilterChain(
-                          e.target.value as OracleConfig["chain"] | "All",
-                        )
-                      }
-                      className="glass-input h-9 w-full rounded-xl border-none pl-3 pr-8 text-sm font-medium text-gray-600 hover:bg-white/80 focus:ring-2 focus:ring-purple-500/20 cursor-pointer appearance-none"
-                    >
-                      <option value="All">{t("common.all")}</option>
-                      <option value="Local">{t("chain.local")}</option>
-                      <option value="Polygon">{t("chain.polygon")}</option>
-                      <option value="PolygonAmoy">
-                        {t("chain.polygon")} (Amoy)
-                      </option>
-                      <option value="Arbitrum">{t("chain.arbitrum")}</option>
-                      <option value="Optimism">{t("chain.optimism")}</option>
-                    </select>
-                    <ChevronDown
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-                      size={14}
-                    />
-                  </div>
-
-                  {instances && instances.length > 0 ? (
-                    <>
-                      <div className="relative hidden md:block">
-                        <select
-                          value={instanceId}
-                          onChange={(e) => setInstanceId(e.target.value)}
-                          className="glass-input h-9 rounded-xl border-none pl-3 pr-8 text-sm font-medium text-gray-600 hover:bg-white/80 focus:ring-2 focus:ring-purple-500/20 cursor-pointer appearance-none"
-                        >
-                          {instances.map((inst) => (
-                            <option key={inst.id} value={inst.id}>
-                              {inst.name}
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronDown
-                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-                          size={14}
-                        />
-                      </div>
-
-                      <div className="h-4 w-px bg-gray-200 hidden md:block"></div>
-                    </>
-                  ) : null}
-
-                  <div className="relative hidden md:block">
-                    <select
-                      value={filterChain}
-                      onChange={(e) =>
-                        setFilterChain(
-                          e.target.value as OracleConfig["chain"] | "All",
-                        )
-                      }
-                      className="glass-input h-9 rounded-xl border-none pl-3 pr-8 text-sm font-medium text-gray-600 hover:bg-white/80 focus:ring-2 focus:ring-purple-500/20 cursor-pointer appearance-none"
-                    >
-                      <option value="All">{t("common.all")}</option>
-                      <option value="Local">{t("chain.local")}</option>
-                      <option value="Polygon">{t("chain.polygon")}</option>
-                      <option value="PolygonAmoy">
-                        {t("chain.polygon")} (Amoy)
-                      </option>
-                      <option value="Arbitrum">{t("chain.arbitrum")}</option>
-                      <option value="Optimism">{t("chain.optimism")}</option>
-                    </select>
-                    <ChevronDown
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-                      size={14}
-                    />
-                  </div>
-
-                  <div className="h-4 w-px bg-gray-200 hidden md:block"></div>
-
-                  <div className="relative w-full md:flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <input
-                      type="text"
-                      placeholder={t("oracle.searchPlaceholder")}
-                      value={query}
-                      onChange={(e) => setQuery(e.target.value)}
-                      className="glass-input h-9 w-full rounded-xl pl-9 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500/20 md:w-64"
-                    />
-                  </div>
-
-                  {(filterStatus !== "All" ||
-                    filterChain !== "All" ||
-                    query.trim() ||
-                    myActivity ||
-                    myDisputes) && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setFilterStatus("All");
-                        setFilterChain("All");
-                        setQuery("");
-                        setMyActivity(false);
-                        setMyDisputes(false);
-                        if (typeof window !== "undefined") {
-                          window.scrollTo({ top: 0, behavior: "smooth" });
-                        }
-                      }}
-                      className="h-9 rounded-xl bg-white px-3 text-sm font-semibold text-purple-700 shadow-sm ring-1 ring-purple-100 hover:bg-purple-50"
-                    >
-                      {t("audit.clear")}
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
+            <OracleFiltersToolbar
+              filterStatus={filterStatus}
+              onFilterStatusChange={setFilterStatus}
+              statusLabel={statusLabel}
+              address={address}
+              myActivity={myActivity}
+              myDisputes={myDisputes}
+              onToggleMyActivity={handleToggleMyActivity}
+              onToggleMyDisputes={handleToggleMyDisputes}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+              instances={instances}
+              instanceId={instanceId}
+              onInstanceIdChange={setInstanceId}
+              filterChain={filterChain}
+              onFilterChainChange={setFilterChain}
+              query={query}
+              onQueryChange={setQuery}
+              onClearFilters={handleClearFilters}
+              t={t}
+            />
 
             {/* Assertion / Dispute List */}
             {myDisputes ? (
