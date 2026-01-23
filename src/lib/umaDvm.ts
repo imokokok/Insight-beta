@@ -89,39 +89,110 @@ const UMA_DVM_ABI = [
   },
 ];
 
+const SUPPORTED_CHAINS = [arbitrum, hardhat, mainnet, optimism, polygon, polygonAmoy] as const;
+
 export class UMAOracleClient {
-  private publicClient: ReturnType<typeof createPublicClient>;
+  private publicClient: ReturnType<typeof createPublicClient> | null = null;
   private walletClient: ReturnType<typeof createWalletClient> | null = null;
   private chain: Chain | null = null;
+  private isConnected = false;
 
   constructor(
     private chainId: number,
     private rpcUrl: string,
     private dvmAddress: Address,
   ) {
-    this.chain = this.getChainById(chainId);
-    if (this.chain) {
+    this.initialize();
+  }
+
+  private initialize(): void {
+    if (!this.rpcUrl) {
+      throw new Error("RPC URL is required");
+    }
+
+    if (!this.dvmAddress || this.dvmAddress === "0x0000000000000000000000000000000000000000") {
+      throw new Error("Valid DVM address is required");
+    }
+
+    this.chain = this.getChainById(this.chainId);
+    if (!this.chain) {
+      throw new Error(`Unsupported chain ID: ${this.chainId}`);
+    }
+
+    try {
       this.publicClient = createPublicClient({
         chain: this.chain,
-        transport: http(rpcUrl),
+        transport: http(this.rpcUrl, {
+          timeout: 30000,
+          retryCount: 3,
+          retryDelay: 1000,
+        }),
       });
+      this.isConnected = true;
+      logger.info("UMA Oracle client initialized", {
+        chainId: this.chainId,
+        chainName: this.chain.name,
+        dvmAddress: this.dvmAddress,
+      });
+    } catch (error) {
+      logger.error("Failed to initialize UMA Oracle client", {
+        error,
+        chainId: this.chainId,
+        rpcUrl: this.rpcUrl,
+      });
+      throw error;
     }
   }
 
   private getChainById(chainId: number): Chain | null {
-    const chains = [arbitrum, hardhat, mainnet, optimism, polygon, polygonAmoy];
-    return chains.find((c) => c.id === chainId) || null;
+    return SUPPORTED_CHAINS.find((c) => c.id === chainId) || null;
+  }
+
+  private validateAssertionId(assertionId: string): boolean {
+    const hexRegex = /^0x[0-9a-fA-F]{64}$/;
+    return hexRegex.test(assertionId);
+  }
+
+  private validateAddress(address: Address): boolean {
+    const hexRegex = /^0x[0-9a-fA-F]{40}$/;
+    return hexRegex.test(address);
   }
 
   setWalletClient(walletClient: ReturnType<typeof createWalletClient>): void {
     this.walletClient = walletClient;
+    logger.info("Wallet client set for UMA Oracle");
+  }
+
+  getConnectionStatus(): boolean {
+    return this.isConnected && this.publicClient !== null;
   }
 
   async voteFor(request: UMAVoteRequest): Promise<UMAVoteResult> {
+    if (!this.isConnected || !this.publicClient) {
+      return {
+        success: false,
+        error: "UMA Oracle client not connected",
+      };
+    }
+
     if (!this.walletClient) {
       return {
         success: false,
         error: "Wallet client not connected",
+      };
+    }
+
+    if (!this.validateAssertionId(request.assertionId)) {
+      return {
+        success: false,
+        error: "Invalid assertion ID format",
+      };
+    }
+
+    if (!this.validateAddress(request.voterAddress)) {
+      return {
+        success: false,
+        error: "Invalid voter address format",
       };
     }
 
@@ -136,11 +207,12 @@ export class UMAOracleClient {
 
       const hash = await this.walletClient.writeContract(callRequest);
 
-      logger.info("UMA vote submitted", {
+      logger.info("UMA vote submitted successfully", {
         assertionId: request.assertionId,
         support: request.support,
         voter: request.voterAddress,
         txHash: hash,
+        chainId: this.chainId,
       });
 
       return {
@@ -148,15 +220,17 @@ export class UMAOracleClient {
         txHash: hash,
       };
     } catch (error) {
+      const errorMessage = this.parseError(error);
       logger.error("UMA vote failed", {
         error,
         assertionId: request.assertionId,
         voter: request.voterAddress,
+        errorMessage,
       });
 
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: errorMessage,
       };
     }
   }
@@ -165,6 +239,24 @@ export class UMAOracleClient {
     assertionId: string,
     voterAddress: Address,
   ): Promise<UMAVoteStatus> {
+    if (!this.isConnected || !this.publicClient) {
+      return {
+        hasVoted: false,
+      };
+    }
+
+    if (!this.validateAssertionId(assertionId)) {
+      return {
+        hasVoted: false,
+      };
+    }
+
+    if (!this.validateAddress(voterAddress)) {
+      return {
+        hasVoted: false,
+      };
+    }
+
     try {
       const hasVoted = await this.publicClient.readContract({
         address: this.dvmAddress,
@@ -173,11 +265,22 @@ export class UMAOracleClient {
         args: [assertionId as `0x${string}`, voterAddress],
       });
 
+      logger.debug("UMA vote status checked", {
+        assertionId,
+        voterAddress,
+        hasVoted,
+      });
+
       return {
         hasVoted,
       };
     } catch (error) {
-      logger.error("Failed to get UMA vote status", { error, assertionId, voterAddress });
+      logger.error("Failed to get UMA vote status", {
+        error,
+        assertionId,
+        voterAddress,
+      });
+
       return {
         hasVoted: false,
       };
@@ -188,6 +291,18 @@ export class UMAOracleClient {
     assertionId: string,
     voterAddress: Address,
   ): Promise<bigint | null> {
+    if (!this.isConnected || !this.publicClient) {
+      return null;
+    }
+
+    if (!this.validateAssertionId(assertionId)) {
+      return null;
+    }
+
+    if (!this.validateAddress(voterAddress)) {
+      return null;
+    }
+
     try {
       const timestamp = await this.publicClient.readContract({
         address: this.dvmAddress,
@@ -198,36 +313,89 @@ export class UMAOracleClient {
 
       return timestamp;
     } catch (error) {
-      logger.error("Failed to get UMA vote timestamp", { error, assertionId, voterAddress });
+      logger.error("Failed to get UMA vote timestamp", {
+        error,
+        assertionId,
+        voterAddress,
+      });
       return null;
     }
   }
 
-  async waitForTransaction(txHash: Hash): Promise<boolean> {
+  async waitForTransaction(
+    txHash: Hash,
+    timeout: number = 60000,
+  ): Promise<boolean> {
+    if (!this.isConnected || !this.publicClient) {
+      return false;
+    }
+
     try {
       const receipt = await this.publicClient.waitForTransactionReceipt({
         hash: txHash,
+        timeout,
       });
 
-      return receipt.status === "success";
+      const success = receipt.status === "success";
+      logger.info("UMA transaction confirmed", {
+        txHash,
+        success,
+        blockNumber: receipt.blockNumber,
+      });
+
+      return success;
     } catch (error) {
-      logger.error("Failed to wait for UMA transaction", { error, txHash });
+      logger.error("Failed to wait for UMA transaction", {
+        error,
+        txHash,
+        timeout,
+      });
       return false;
     }
   }
+
+  private parseError(error: unknown): string {
+    if (error instanceof Error) {
+      const message = error.message.toLowerCase();
+
+      if (message.includes("user rejected")) {
+        return "Transaction rejected by user";
+      }
+      if (message.includes("insufficient funds")) {
+        return "Insufficient funds for transaction";
+      }
+      if (message.includes("gas")) {
+        return "Gas estimation failed";
+      }
+      if (message.includes("nonce")) {
+        return "Invalid transaction nonce";
+      }
+      if (message.includes("network")) {
+        return "Network error occurred";
+      }
+
+      return error.message;
+    }
+
+    return "Unknown error occurred";
+  }
 }
 
-let umaClient: UMAOracleClient | null = null;
+const clientCache = new Map<string, UMAOracleClient>();
 
 export function getUMAClient(
   chainId: number,
   rpcUrl: string,
   dvmAddress: Address,
 ): UMAOracleClient {
-  if (!umaClient) {
-    umaClient = new UMAOracleClient(chainId, rpcUrl, dvmAddress);
+  const cacheKey = `${chainId}-${rpcUrl}-${dvmAddress}`;
+
+  if (!clientCache.has(cacheKey)) {
+    const client = new UMAOracleClient(chainId, rpcUrl, dvmAddress);
+    clientCache.set(cacheKey, client);
   }
-  return umaClient;
+
+  return clientCache.get(cacheKey)!;
 }
 
 export async function castUMAVote(
