@@ -241,12 +241,14 @@ export const translations = {
       copyHash: "Copy hash",
       disputed: "Disputed",
       example: "Example",
+      export: "Export",
       home: "Home",
       language: "Language",
       loading: "Loading…",
       loadMore: "Load More",
       min: "Min",
       noData: "No Data",
+      notNow: "Not Now",
       ok: "OK",
       openMenu: "Open menu",
       pending: "Pending",
@@ -260,6 +262,11 @@ export const translations = {
       viewDetails: "View Details",
       viewOnExplorer: "View on Explorer",
       viewTx: "View TX",
+    },
+    pwa: {
+      install: "Install App",
+      installTitle: "Install Insight Oracle",
+      installDescription: "Add Insight Oracle to your home screen for quick access and offline support.",
     },
     disputes: {
       card: {
@@ -1083,12 +1090,14 @@ export const translations = {
       copyHash: "Copiar hash",
       disputed: "En disputa",
       example: "Ejemplo",
+      export: "Exportar",
       home: "Inicio",
       language: "Idioma",
       loading: "Cargando…",
       loadMore: "Cargar más",
       min: "Mínimo",
       noData: "Sin datos",
+      notNow: "Ahora no",
       ok: "OK",
       openMenu: "Abrir menú",
       pending: "Pendiente",
@@ -1102,6 +1111,11 @@ export const translations = {
       viewDetails: "Ver detalles",
       viewOnExplorer: "Ver en el explorador",
       viewTx: "Ver TX",
+    },
+    pwa: {
+      install: "Instalar App",
+      installTitle: "Instalar Insight Oracle",
+      installDescription: "Añade Insight Oracle a tu pantalla de inicio para acceso rápido y soporte sin conexión.",
     },
     disputes: {
       card: {
@@ -2820,6 +2834,11 @@ export const translations = {
       viewOnExplorer: "탐색기에서 보기",
       viewTx: "거래 보기",
     },
+    pwa: {
+      install: "앱 설치",
+      installTitle: "Insight Oracle 설치",
+      installDescription: "빠른 액세스와 오프라인 지원을 위해 Insight Oracle을 홈 화면에 추가하세요.",
+    },
     disputes: {
       card: {
         dispute: "분쟁",
@@ -3628,6 +3647,11 @@ export const translations = {
       viewDetails: "查看详情",
       viewOnExplorer: "在浏览器查看",
       viewTx: "查看交易",
+    },
+    pwa: {
+      install: "安装应用",
+      installTitle: "安装 Insight Oracle",
+      installDescription: "将 Insight Oracle 添加到主屏幕以快速访问和离线支持。",
     },
     disputes: {
       card: {
@@ -4826,7 +4850,11 @@ export type TranslationKey =
   | "oracle.alerts.topRisks"
   | "oracle.alerts.severities.info"
   | "oracle.alerts.severities.warning"
-  | "oracle.alerts.severities.critical";
+  | "oracle.alerts.severities.critical"
+  | "pwa.install"
+  | "pwa.installTitle"
+  | "pwa.installDescription"
+  | "common.export";
 
 export function getUiErrorMessage(
   errorCode: string,

@@ -1,0 +1,51 @@
+{
+  "name": "Insight Oracle Monitor",
+  "short_name": "Insight",
+  "description": "Real-time monitoring and dispute resolution for UMA Optimistic Oracle",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#6366f1",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo-owl.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo-owl.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "business", "utilities"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "View Oracle",
+      "short_name": "Oracle",
+      "description": "View oracle monitoring dashboard",
+      "url": "/oracle",
+      "icons": [{ "src": "/logo-owl.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "View Disputes",
+      "short_name": "Disputes",
+      "description": "View active disputes",
+      "url": "/disputes",
+      "icons": [{ "src": "/logo-owl.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "View Alerts",
+      "short_name": "Alerts",
+      "description": "View system alerts",
+      "url": "/alerts",
+      "icons": [{ "src": "/logo-owl.png", "sizes": "96x96" }]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

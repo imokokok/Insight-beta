@@ -68,6 +68,14 @@ export default async function RootLayout({
     : detectLangFromAcceptLanguage(h.get("accept-language"));
   return (
     <html lang={langToHtmlLang[lang]}>
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/logo-owl.png" />
+        <meta name="theme-color" content="#6366f1" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Insight" />
+      </head>
       <body
         className={cn(
           "min-h-screen bg-[var(--background)] font-sans antialiased text-purple-950",
