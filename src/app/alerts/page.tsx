@@ -32,7 +32,11 @@ import {
   getErrorCode,
 } from "@/lib/utils";
 import { useI18n } from "@/i18n/LanguageProvider";
-import { getUiErrorMessage, langToLocale } from "@/i18n/translations";
+import {
+  getUiErrorMessage,
+  langToLocale,
+  type TranslationKey,
+} from "@/i18n/translations";
 import { useAdminSession } from "@/hooks/useAdminSession";
 import type {
   Alert,
@@ -102,6 +106,123 @@ const sloLabels: Record<string, string> = {
   incidentMttrMinutes: "Incident MTTR",
   openAlerts: "Open alerts",
   openCriticalAlerts: "Open critical",
+};
+
+const alertInsightMap: Record<
+  string,
+  { explanation: TranslationKey; actions: TranslationKey[] }
+> = {
+  dispute_created: {
+    explanation: "alerts.explanations.dispute_created",
+    actions: [
+      "alerts.actions.dispute_created.1",
+      "alerts.actions.dispute_created.2",
+    ],
+  },
+  liveness_expiring: {
+    explanation: "alerts.explanations.liveness_expiring",
+    actions: [
+      "alerts.actions.liveness_expiring.1",
+      "alerts.actions.liveness_expiring.2",
+    ],
+  },
+  sync_error: {
+    explanation: "alerts.explanations.sync_error",
+    actions: ["alerts.actions.sync_error.1", "alerts.actions.sync_error.2"],
+  },
+  stale_sync: {
+    explanation: "alerts.explanations.stale_sync",
+    actions: ["alerts.actions.stale_sync.1", "alerts.actions.stale_sync.2"],
+  },
+  contract_paused: {
+    explanation: "alerts.explanations.contract_paused",
+    actions: [
+      "alerts.actions.contract_paused.1",
+      "alerts.actions.contract_paused.2",
+    ],
+  },
+  sync_backlog: {
+    explanation: "alerts.explanations.sync_backlog",
+    actions: ["alerts.actions.sync_backlog.1", "alerts.actions.sync_backlog.2"],
+  },
+  backlog_assertions: {
+    explanation: "alerts.explanations.backlog_assertions",
+    actions: [
+      "alerts.actions.backlog_assertions.1",
+      "alerts.actions.backlog_assertions.2",
+    ],
+  },
+  backlog_disputes: {
+    explanation: "alerts.explanations.backlog_disputes",
+    actions: [
+      "alerts.actions.backlog_disputes.1",
+      "alerts.actions.backlog_disputes.2",
+    ],
+  },
+  market_stale: {
+    explanation: "alerts.explanations.market_stale",
+    actions: ["alerts.actions.market_stale.1", "alerts.actions.market_stale.2"],
+  },
+  execution_delayed: {
+    explanation: "alerts.explanations.execution_delayed",
+    actions: [
+      "alerts.actions.execution_delayed.1",
+      "alerts.actions.execution_delayed.2",
+    ],
+  },
+  low_participation: {
+    explanation: "alerts.explanations.low_participation",
+    actions: [
+      "alerts.actions.low_participation.1",
+      "alerts.actions.low_participation.2",
+    ],
+  },
+  high_vote_divergence: {
+    explanation: "alerts.explanations.high_vote_divergence",
+    actions: [
+      "alerts.actions.high_vote_divergence.1",
+      "alerts.actions.high_vote_divergence.2",
+    ],
+  },
+  high_dispute_rate: {
+    explanation: "alerts.explanations.high_dispute_rate",
+    actions: [
+      "alerts.actions.high_dispute_rate.1",
+      "alerts.actions.high_dispute_rate.2",
+    ],
+  },
+  slow_api_request: {
+    explanation: "alerts.explanations.slow_api_request",
+    actions: [
+      "alerts.actions.slow_api_request.1",
+      "alerts.actions.slow_api_request.2",
+    ],
+  },
+  high_error_rate: {
+    explanation: "alerts.explanations.high_error_rate",
+    actions: [
+      "alerts.actions.high_error_rate.1",
+      "alerts.actions.high_error_rate.2",
+    ],
+  },
+  database_slow_query: {
+    explanation: "alerts.explanations.database_slow_query",
+    actions: [
+      "alerts.actions.database_slow_query.1",
+      "alerts.actions.database_slow_query.2",
+    ],
+  },
+  price_deviation: {
+    explanation: "alerts.explanations.price_deviation",
+    actions: [
+      "alerts.actions.price_deviation.1",
+      "alerts.actions.price_deviation.2",
+    ],
+  },
+  low_gas: {
+    explanation: "alerts.explanations.low_gas",
+    actions: ["alerts.actions.low_gas.1", "alerts.actions.low_gas.2"],
+  },
 };
 
 function sloStatusBadge(status: OpsSloStatus["status"]) {
@@ -1185,6 +1306,33 @@ export default function AlertsPage() {
                         </div>
                       </CardHeader>
                       <CardContent className="pt-0">
+                        {(() => {
+                          const insight = alertInsightMap[a.type];
+                          if (!insight) return null;
+                          return (
+                            <div className="mb-3 rounded-xl border border-slate-100 bg-white/70 p-3">
+                              <div className="text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                                {t("alerts.explanation")}
+                              </div>
+                              <div className="mt-1 text-sm text-gray-700">
+                                {t(insight.explanation)}
+                              </div>
+                              <div className="mt-3 text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                                {t("alerts.recommendedActions")}
+                              </div>
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                {insight.actions.map((actionKey) => (
+                                  <span
+                                    key={actionKey}
+                                    className="rounded-md border border-gray-100 bg-white px-2 py-1 text-[11px] font-semibold text-gray-600"
+                                  >
+                                    {t(actionKey)}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })()}
                         <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500">
                           <span className="flex items-center gap-1.5 rounded-md bg-gray-50 px-2 py-1 border border-gray-100">
                             <Clock size={12} />

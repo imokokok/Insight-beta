@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { Route } from "next";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -40,6 +41,7 @@ import type {
   Dispute,
   OracleConfig,
   Alert,
+  RiskItem,
 } from "@/lib/oracleTypes";
 
 import { AssertionTimeline } from "@/components/AssertionTimeline";
@@ -71,6 +73,12 @@ function getStatusIcon(status: string) {
     default:
       return <AlertTriangle className="h-4 w-4" />;
   }
+}
+
+function withInstanceId(href: string, instanceId: string | null) {
+  if (!instanceId) return href;
+  const hasQuery = href.includes("?");
+  return `${href}${hasQuery ? "&" : "?"}instanceId=${encodeURIComponent(instanceId)}`;
 }
 
 export default function OracleDetailPage() {
@@ -174,11 +182,58 @@ export default function OracleDetailPage() {
     },
   );
 
+  const {
+    data: risksData,
+    error: risksError,
+    isLoading: risksLoading,
+  } = useSWR<{ items: RiskItem[] }>(
+    id
+      ? instanceId
+        ? `/api/oracle/risks?limit=20&instanceId=${encodeURIComponent(instanceId)}`
+        : "/api/oracle/risks?limit=20"
+      : null,
+    fetchApiData,
+    {
+      refreshInterval: 60_000,
+      dedupingInterval: 30_000,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: true,
+      errorRetryCount: 2,
+      errorRetryInterval: 1000,
+      shouldRetryOnError: true,
+    },
+  );
+
   const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false);
   const [isSettleModalOpen, setIsSettleModalOpen] = useState(false);
   const [exportingEvidence, setExportingEvidence] = useState<
     null | "fast" | "logs"
   >(null);
+
+  const riskItems = useMemo(() => {
+    if (!risksData?.items || !data) return [];
+    const assertionId = data.assertion.id;
+    const disputeId = data.dispute?.id ?? null;
+    const market = data.assertion.market?.trim();
+    return risksData.items.filter((risk) => {
+      if (risk.assertionId?.trim() === assertionId) return true;
+      if (risk.entityType === "assertion" && risk.entityId === assertionId)
+        return true;
+      if (disputeId && risk.disputeId?.trim() === disputeId) return true;
+      if (market && risk.market?.trim() === market) return true;
+      if (risk.entityType === "market" && risk.market === "global")
+        return risk.chain === data.assertion.chain;
+      return false;
+    });
+  }, [data, risksData]);
+
+  const riskSeverityBadge = (severity: RiskItem["severity"]) => {
+    if (severity === "critical")
+      return "border-rose-100 bg-rose-50/70 text-rose-800";
+    if (severity === "warning")
+      return "border-amber-100 bg-amber-50/70 text-amber-800";
+    return "border-slate-100 bg-slate-50/70 text-slate-600";
+  };
 
   if (isLoading) {
     return <AssertionDetailSkeleton />;
@@ -730,6 +785,112 @@ export default function OracleDetailPage() {
                 </div>
               </div>
             )}
+
+            <div className="glass-card rounded-3xl p-6">
+              <div className="text-lg font-bold text-gray-800">
+                {t("oracle.detail.riskImpactTitle")}
+              </div>
+              <div className="mt-1 text-xs text-gray-500">
+                {t("oracle.detail.riskImpactDesc")}
+              </div>
+              {risksError ? (
+                <div className="mt-3 rounded-xl border border-rose-100 bg-rose-50/60 p-3 text-xs text-rose-700">
+                  {getUiErrorMessage(getErrorCode(risksError), t)}
+                </div>
+              ) : null}
+              {risksLoading ? (
+                <div className="mt-3 text-xs text-gray-500">
+                  {t("common.loading")}
+                </div>
+              ) : riskItems.length === 0 ? (
+                <div className="mt-3 text-xs text-gray-500">
+                  {t("oracle.detail.riskNone")}
+                </div>
+              ) : (
+                <div className="mt-4 space-y-3">
+                  {riskItems.map((risk, idx) => (
+                    <div
+                      key={`${risk.entityType}:${risk.entityId}:${idx}`}
+                      className="rounded-2xl border border-purple-100/60 bg-white/60 p-3"
+                    >
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span
+                          className={cn(
+                            "px-2 py-0.5 rounded-full text-[11px] font-semibold border",
+                            riskSeverityBadge(risk.severity),
+                          )}
+                        >
+                          {t(
+                            risk.severity === "critical"
+                              ? "oracle.alerts.severities.critical"
+                              : risk.severity === "warning"
+                                ? "oracle.alerts.severities.warning"
+                                : "oracle.alerts.severities.info",
+                          )}
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold border bg-gray-50 text-gray-600">
+                          {Math.round(risk.score)}
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold border bg-gray-50 text-gray-600">
+                          {risk.chain}
+                        </span>
+                        <span className="truncate text-sm font-semibold text-purple-950">
+                          {risk.market}
+                        </span>
+                      </div>
+                      {risk.reasons?.length ? (
+                        <div className="mt-2 space-y-1 text-xs text-purple-800/80">
+                          {risk.reasons
+                            .filter(Boolean)
+                            .map((reason, reasonIdx) => (
+                              <div
+                                key={`${idx}:${reasonIdx}`}
+                                className="leading-snug"
+                              >
+                                {reason}
+                              </div>
+                            ))}
+                        </div>
+                      ) : null}
+                      {(risk.assertionId || risk.disputeId) && (
+                        <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-gray-500">
+                          {risk.assertionId ? (
+                            <Link
+                              href={
+                                withInstanceId(
+                                  `/oracle/${risk.assertionId}`,
+                                  instanceId,
+                                ) as Route
+                              }
+                              className="rounded-md bg-gray-50 px-2 py-1 border border-gray-100 font-mono transition-colors hover:text-purple-700 hover:border-purple-200 hover:bg-white"
+                            >
+                              {t("oracle.detail.relatedAssertion")}:{" "}
+                              {risk.assertionId.slice(0, 10)}…
+                            </Link>
+                          ) : null}
+                          {risk.disputeId ? (
+                            <Link
+                              href={
+                                withInstanceId(
+                                  `/disputes?q=${encodeURIComponent(
+                                    risk.disputeId,
+                                  )}`,
+                                  instanceId,
+                                ) as Route
+                              }
+                              className="rounded-md bg-gray-50 px-2 py-1 border border-gray-100 font-mono transition-colors hover:text-purple-700 hover:border-purple-200 hover:bg-white"
+                            >
+                              {t("oracle.detail.relatedDispute")}:{" "}
+                              {risk.disputeId.slice(0, 10)}…
+                            </Link>
+                          ) : null}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {data && (

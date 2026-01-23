@@ -55,6 +55,8 @@ const COLORS = [
   "#0ea5e9",
   "#10b981",
 ];
+const ANOMALY_WARNING_THRESHOLD = 0.02;
+const ANOMALY_CRITICAL_THRESHOLD = 0.05;
 
 export function OracleCharts({ instanceId }: { instanceId?: string | null }) {
   const [rawData, setRawData] = useState<ChartItem[]>([]);
@@ -243,6 +245,40 @@ export function OracleCharts({ instanceId }: { instanceId?: string | null }) {
     return calculateHealthScore(accuracyData);
   }, [accuracyData]);
 
+  const accuracyStats = useMemo(() => {
+    if (accuracyData.length === 0) return null;
+    const deviations = accuracyData.map((p) => p.deviation);
+    const avgDeviation =
+      deviations.reduce((sum, v) => sum + v, 0) / deviations.length;
+    const maxDeviation = Math.max(...deviations);
+    const lastPoint = accuracyData[accuracyData.length - 1] ?? null;
+    return {
+      avgDeviation,
+      maxDeviation,
+      lastDeviation: lastPoint?.deviation ?? null,
+      lastTimestamp: lastPoint?.timestamp ?? null,
+      samples: accuracyData.length,
+    };
+  }, [accuracyData]);
+
+  const accuracyAnomalies = useMemo(() => {
+    if (accuracyData.length === 0) return [];
+    return accuracyData
+      .filter((p) => p.deviation >= ANOMALY_WARNING_THRESHOLD)
+      .map((p) => ({
+        ...p,
+        severity:
+          p.deviation >= ANOMALY_CRITICAL_THRESHOLD ? "critical" : "warning",
+      }))
+      .sort((a, b) => b.deviation - a.deviation)
+      .slice(0, 5);
+  }, [accuracyData]);
+
+  const formatPercent = (value: number | null) => {
+    if (value === null || !Number.isFinite(value)) return "—";
+    return `${(value * 100).toFixed(2)}%`;
+  };
+
   const hasAssertionsData = chartData.length >= 2;
   const hasSyncData = syncChartData.length >= 2;
   const hasAccuracyData = accuracyChartData.length >= 2;
@@ -411,7 +447,7 @@ export function OracleCharts({ instanceId }: { instanceId?: string | null }) {
                     ? t("oracle.charts.syncHealth")
                     : activeTab === "markets"
                       ? t("oracle.charts.topMarkets")
-                      : "Data Accuracy"}
+                      : t("oracle.charts.dataQuality")}
             </h3>
             <p className="text-sm text-gray-500">
               {activeTab === "activity"
@@ -421,8 +457,8 @@ export function OracleCharts({ instanceId }: { instanceId?: string | null }) {
                   : activeTab === "sync"
                     ? t("oracle.charts.syncDesc")
                     : activeTab === "markets"
-                      ? "Most active markets by disputes"
-                      : "Oracle vs Reference Price Deviation"}
+                      ? t("oracle.charts.marketsDesc")
+                      : t("oracle.charts.dataQualityDesc")}
             </p>
           </div>
         </div>
@@ -486,7 +522,7 @@ export function OracleCharts({ instanceId }: { instanceId?: string | null }) {
             )}
           >
             <Target size={14} />
-            Accuracy
+            {t("oracle.charts.dataQuality")}
           </button>
         </div>
       </div>
@@ -736,7 +772,7 @@ export function OracleCharts({ instanceId }: { instanceId?: string | null }) {
                       <Bar
                         yAxisId="right"
                         dataKey="deviationPct"
-                        name="Deviation %"
+                        name={t("oracle.charts.deviationPercent")}
                         barSize={20}
                         fill="#f87171"
                         opacity={0.5}
@@ -745,7 +781,7 @@ export function OracleCharts({ instanceId }: { instanceId?: string | null }) {
                         yAxisId="left"
                         type="monotone"
                         dataKey="oraclePrice"
-                        name="Oracle Price"
+                        name={t("oracle.charts.oraclePrice")}
                         stroke="#10b981"
                         strokeWidth={2}
                         dot={false}
@@ -754,7 +790,7 @@ export function OracleCharts({ instanceId }: { instanceId?: string | null }) {
                         yAxisId="left"
                         type="monotone"
                         dataKey="referencePrice"
-                        name="Ref Price"
+                        name={t("oracle.charts.referencePrice")}
                         stroke="#6b7280"
                         strokeWidth={1}
                         strokeDasharray="3 3"
@@ -829,6 +865,127 @@ export function OracleCharts({ instanceId }: { instanceId?: string | null }) {
           )}
         </ResponsiveContainer>
       </div>
+      {activeTab === "accuracy" && !accuracyLoading && hasAccuracyData ? (
+        <div className="mt-4 grid gap-4 lg:grid-cols-3">
+          <div className="lg:col-span-2 rounded-2xl bg-white/60 ring-1 ring-black/5 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="text-sm font-bold text-gray-900">
+                {t("oracle.charts.dataQualitySummary")}
+              </div>
+              <div className="text-xs text-gray-500">
+                {t("oracle.charts.lastSample")}:{" "}
+                {accuracyStats?.lastTimestamp
+                  ? new Date(accuracyStats.lastTimestamp).toLocaleString(
+                      locale,
+                      {
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      },
+                    )
+                  : "—"}
+              </div>
+            </div>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 px-3 py-2">
+                <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">
+                  {t("oracle.charts.healthScore")}
+                </div>
+                <div className="text-xl font-black text-emerald-900">
+                  {healthScore}
+                </div>
+              </div>
+              <div className="rounded-xl border border-slate-100 bg-white/60 px-3 py-2">
+                <div className="text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                  {t("oracle.charts.deviationAvg")}
+                </div>
+                <div className="text-xl font-black text-gray-900">
+                  {formatPercent(accuracyStats?.avgDeviation ?? null)}
+                </div>
+              </div>
+              <div className="rounded-xl border border-rose-100 bg-rose-50/60 px-3 py-2">
+                <div className="text-[11px] font-bold uppercase tracking-wider text-rose-600">
+                  {t("oracle.charts.deviationMax")}
+                </div>
+                <div className="text-xl font-black text-rose-800">
+                  {formatPercent(accuracyStats?.maxDeviation ?? null)}
+                </div>
+              </div>
+              <div className="rounded-xl border border-blue-100 bg-blue-50/60 px-3 py-2">
+                <div className="text-[11px] font-bold uppercase tracking-wider text-blue-600">
+                  {t("oracle.charts.deviationLatest")}
+                </div>
+                <div className="text-xl font-black text-blue-800">
+                  {formatPercent(accuracyStats?.lastDeviation ?? null)}
+                </div>
+              </div>
+            </div>
+            <div className="mt-3 text-xs text-gray-500">
+              {t("oracle.charts.dataSamples")}: {accuracyStats?.samples ?? 0}
+            </div>
+          </div>
+          <div className="rounded-2xl bg-white/60 ring-1 ring-black/5 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="text-sm font-bold text-gray-900">
+                {t("oracle.charts.anomalyView")}
+              </div>
+              <div className="text-[11px] font-semibold text-gray-500">
+                {t("oracle.charts.anomalyThreshold")}:{" "}
+                {(ANOMALY_WARNING_THRESHOLD * 100).toFixed(1)}%
+              </div>
+            </div>
+            {accuracyAnomalies.length === 0 ? (
+              <div className="mt-3 text-xs text-emerald-700">
+                {t("oracle.charts.anomalyNone")}
+              </div>
+            ) : (
+              <div className="mt-3 space-y-2">
+                {accuracyAnomalies.map((item, idx) => (
+                  <div
+                    key={`${item.timestamp}-${idx}`}
+                    className={cn(
+                      "flex items-center justify-between gap-3 rounded-xl px-3 py-2 border",
+                      item.severity === "critical"
+                        ? "bg-rose-50/60 border-rose-100 text-rose-800"
+                        : "bg-amber-50/60 border-amber-100 text-amber-800",
+                    )}
+                  >
+                    <div className="min-w-0">
+                      <div className="text-xs font-semibold truncate">
+                        {new Date(item.timestamp).toLocaleString(locale, {
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </div>
+                      <div className="text-[11px] text-gray-500">
+                        {t("oracle.charts.deviationPercent")}:{" "}
+                        {formatPercent(item.deviation)}
+                      </div>
+                    </div>
+                    <div
+                      className={cn(
+                        "shrink-0 text-[10px] font-black uppercase tracking-wider rounded-lg px-2 py-1",
+                        item.severity === "critical"
+                          ? "bg-rose-100 text-rose-700"
+                          : "bg-amber-100 text-amber-700",
+                      )}
+                    >
+                      {t(
+                        item.severity === "critical"
+                          ? "oracle.alerts.severities.critical"
+                          : "oracle.alerts.severities.warning",
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

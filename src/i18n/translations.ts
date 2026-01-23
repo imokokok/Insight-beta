@@ -185,6 +185,22 @@ export const translations = {
         tvsCumulative: "安全总价值（累计）",
         syncHealth: "同步健康",
         topMarkets: "热门市场",
+        marketsDesc: "过去 30 天内争议集中分布",
+        dataQuality: "数据质量",
+        dataQualityDesc: "预言机与参考价格偏差与异常概览",
+        dataQualitySummary: "质量摘要",
+        lastSample: "最近采样",
+        healthScore: "健康评分",
+        deviationAvg: "平均偏差",
+        deviationMax: "最大偏差",
+        deviationLatest: "最新偏差",
+        dataSamples: "样本数",
+        anomalyView: "异常视图",
+        anomalyThreshold: "异常阈值",
+        anomalyNone: "当前未发现显著异常",
+        deviationPercent: "偏差百分比",
+        oraclePrice: "预言机价格",
+        referencePrice: "参考价格",
         noData: "暂无图表数据",
         activityDesc: "随时间变化的活动",
         tvsDesc: "累计价值",
@@ -365,6 +381,11 @@ export const translations = {
         bondAmount: "保证金金额",
         timeline: "时间轴",
         actions: "操作",
+        riskImpactTitle: "风险与影响",
+        riskImpactDesc: "与该断言相关的风险线索与潜在影响",
+        riskNone: "暂无关联风险",
+        relatedAssertion: "关联断言",
+        relatedDispute: "关联争议",
         resolved: "已解决",
         resolvedDesc: "此断言已成功解决。",
         settleAssertion: "结算断言",
@@ -595,6 +616,102 @@ export const translations = {
       savingRules: "保存中…",
       lastSeen: "最近",
       occurrences: "次数",
+      explanation: "异常说明",
+      recommendedActions: "行动建议",
+      explanations: {
+        dispute_created: "检测到新争议，需确认争议原因与影响范围。",
+        liveness_expiring: "挑战期即将结束，需尽快评估是否需要争议。",
+        sync_error: "索引器同步失败，可能影响告警与数据时效。",
+        stale_sync: "同步停滞超过阈值，数据可能已过期。",
+        contract_paused: "预言机合约暂停，断言与结算流程受影响。",
+        sync_backlog: "同步积压增加，处理延迟可能扩大。",
+        backlog_assertions: "断言积压异常，可能存在处理瓶颈。",
+        backlog_disputes: "争议积压异常，投票与结算可能延迟。",
+        market_stale: "市场数据过期，需检查数据源与更新频率。",
+        execution_delayed: "执行延迟超过阈值，可能影响结算及时性。",
+        low_participation: "投票参与度偏低，结果可信度下降。",
+        high_vote_divergence: "投票分歧较大，结果存在不确定性。",
+        high_dispute_rate: "争议率偏高，需排查数据质量与断言流程。",
+        slow_api_request: "API 请求延迟升高，影响下游体验。",
+        high_error_rate: "错误率升高，需定位异常来源。",
+        database_slow_query: "数据库查询变慢，可能拖慢核心流程。",
+        price_deviation: "价格偏差扩大，需核对参考源。",
+        low_gas: "节点 gas 余额过低，可能导致交易失败。",
+      },
+      actions: {
+        dispute_created: {
+          1: "查看争议详情与证据",
+          2: "通知相关负责人介入",
+        },
+        liveness_expiring: {
+          1: "复核断言与数据源",
+          2: "必要时提交争议",
+        },
+        sync_error: {
+          1: "检查 RPC 与索引器日志",
+          2: "重启或切换备援节点",
+        },
+        stale_sync: {
+          1: "确认同步落后原因",
+          2: "临时提高同步资源",
+        },
+        contract_paused: {
+          1: "确认暂停原因与范围",
+          2: "通知协议团队处理",
+        },
+        sync_backlog: {
+          1: "查看积压任务类型",
+          2: "扩容索引处理能力",
+        },
+        backlog_assertions: {
+          1: "检查断言写入通道",
+          2: "清理异常断言队列",
+        },
+        backlog_disputes: {
+          1: "检查争议处理队列",
+          2: "协调投票与结算流程",
+        },
+        market_stale: {
+          1: "检查市场数据源",
+          2: "校准更新频率",
+        },
+        execution_delayed: {
+          1: "检查执行器健康状态",
+          2: "评估链上拥堵情况",
+        },
+        low_participation: {
+          1: "提醒投票人参与",
+          2: "评估激励与时限设置",
+        },
+        high_vote_divergence: {
+          1: "检查争议焦点与证据",
+          2: "分析投票偏差原因",
+        },
+        high_dispute_rate: {
+          1: "定位争议集中的市场",
+          2: "评估断言创建规则",
+        },
+        slow_api_request: {
+          1: "排查慢接口与依赖",
+          2: "启用缓存或限流",
+        },
+        high_error_rate: {
+          1: "检查错误日志与告警",
+          2: "回滚最近变更",
+        },
+        database_slow_query: {
+          1: "定位慢查询语句",
+          2: "优化索引与资源",
+        },
+        price_deviation: {
+          1: "比对参考价格源",
+          2: "检查喂价延迟",
+        },
+        low_gas: {
+          1: "补充节点 gas 余额",
+          2: "设置余额告警阈值",
+        },
+      },
     },
     onboarding: {
       title: "Insight 快速导览",
@@ -860,6 +977,22 @@ export const translations = {
         tvsCumulative: "Total Value Secured (Cumulative)",
         syncHealth: "Sync Health",
         noData: "No chart data",
+        marketsDesc: "Dispute concentration over the last 30 days",
+        dataQuality: "Data Quality",
+        dataQualityDesc: "Oracle vs reference deviation and anomaly overview",
+        dataQualitySummary: "Quality summary",
+        lastSample: "Latest sample",
+        healthScore: "Health score",
+        deviationAvg: "Average deviation",
+        deviationMax: "Max deviation",
+        deviationLatest: "Latest deviation",
+        dataSamples: "Samples",
+        anomalyView: "Anomaly view",
+        anomalyThreshold: "Anomaly threshold",
+        anomalyNone: "No significant anomalies detected",
+        deviationPercent: "Deviation %",
+        oraclePrice: "Oracle price",
+        referencePrice: "Reference price",
         activityDesc: "Activity over time",
         tvsDesc: "Cumulative value",
         syncDesc: "Indexer lag and duration over time",
@@ -1036,6 +1169,11 @@ export const translations = {
         voteOnDispute: "Vote on Dispute",
         support: "Support",
         against: "Against",
+        riskImpactTitle: "Risk & Impact",
+        riskImpactDesc: "Related risk signals and potential impact",
+        riskNone: "No related risks",
+        relatedAssertion: "Related assertion",
+        relatedDispute: "Related dispute",
       },
       tx: {
         sentTitle: "Transaction sent",
@@ -1264,6 +1402,102 @@ export const translations = {
       savingRules: "Saving…",
       lastSeen: "Last",
       occurrences: "Occurrences",
+      explanation: "Explanation",
+      recommendedActions: "Recommended actions",
+      explanations: {
+        dispute_created: "A new dispute was detected and may impact outcomes.",
+        liveness_expiring: "Liveness window is about to expire soon.",
+        sync_error: "Indexer sync failed and data may be stale.",
+        stale_sync: "Sync appears stalled beyond the allowed threshold.",
+        contract_paused: "Oracle contract is paused and workflows are blocked.",
+        sync_backlog: "Sync backlog is growing and delays may increase.",
+        backlog_assertions: "Assertion backlog is higher than expected.",
+        backlog_disputes: "Dispute backlog is higher than expected.",
+        market_stale: "Market data looks stale and may be outdated.",
+        execution_delayed: "Execution is delayed past the expected window.",
+        low_participation: "Voting participation is below expected levels.",
+        high_vote_divergence: "Voting divergence is high, outcome uncertain.",
+        high_dispute_rate: "Dispute rate is elevated and needs review.",
+        slow_api_request: "API latency increased and may affect clients.",
+        high_error_rate: "Error rate is elevated and needs investigation.",
+        database_slow_query: "Database query latency is elevated.",
+        price_deviation: "Oracle price deviates from reference sources.",
+        low_gas: "Node gas balance is low and transactions may fail.",
+      },
+      actions: {
+        dispute_created: {
+          1: "Review dispute details and evidence",
+          2: "Notify stakeholders and triage impact",
+        },
+        liveness_expiring: {
+          1: "Verify assertion data sources",
+          2: "Dispute if needed before expiry",
+        },
+        sync_error: {
+          1: "Check RPC/indexer logs",
+          2: "Restart or switch to backup node",
+        },
+        stale_sync: {
+          1: "Identify the stalled sync stage",
+          2: "Allocate more sync resources",
+        },
+        contract_paused: {
+          1: "Confirm pause reason and scope",
+          2: "Coordinate with protocol team",
+        },
+        sync_backlog: {
+          1: "Inspect backlog composition",
+          2: "Scale indexer throughput",
+        },
+        backlog_assertions: {
+          1: "Check assertion ingestion pipeline",
+          2: "Clear stuck assertion queue",
+        },
+        backlog_disputes: {
+          1: "Check dispute processing pipeline",
+          2: "Coordinate voting/settlement capacity",
+        },
+        market_stale: {
+          1: "Verify market data sources",
+          2: "Adjust update cadence",
+        },
+        execution_delayed: {
+          1: "Check executor health",
+          2: "Assess on-chain congestion",
+        },
+        low_participation: {
+          1: "Nudge voters to participate",
+          2: "Review incentives and timing",
+        },
+        high_vote_divergence: {
+          1: "Review evidence and dispute focus",
+          2: "Analyze voting skew causes",
+        },
+        high_dispute_rate: {
+          1: "Identify markets with spikes",
+          2: "Review assertion creation rules",
+        },
+        slow_api_request: {
+          1: "Find slow endpoints and dependencies",
+          2: "Enable caching or rate limiting",
+        },
+        high_error_rate: {
+          1: "Check error logs and alerts",
+          2: "Rollback recent changes if needed",
+        },
+        database_slow_query: {
+          1: "Identify slow queries",
+          2: "Optimize indexes and resources",
+        },
+        price_deviation: {
+          1: "Compare against reference feeds",
+          2: "Check feed latency and sources",
+        },
+        low_gas: {
+          1: "Top up node gas balance",
+          2: "Set a minimum balance alert",
+        },
+      },
     },
     onboarding: {
       title: "Insight Quick Tour",
@@ -1527,6 +1761,23 @@ export const translations = {
         dailyAssertions: "Afirmaciones diarias",
         tvsCumulative: "Valor total asegurado (acumulado)",
         syncHealth: "Salud de sincronización",
+        topMarkets: "Mercados principales",
+        marketsDesc: "Concentración de disputas en los últimos 30 días",
+        dataQuality: "Calidad de datos",
+        dataQualityDesc: "Desviación y anomalías entre oráculo y referencia",
+        dataQualitySummary: "Resumen de calidad",
+        lastSample: "Última muestra",
+        healthScore: "Puntaje de salud",
+        deviationAvg: "Desviación promedio",
+        deviationMax: "Desviación máxima",
+        deviationLatest: "Desviación reciente",
+        dataSamples: "Muestras",
+        anomalyView: "Vista de anomalías",
+        anomalyThreshold: "Umbral de anomalías",
+        anomalyNone: "No se detectan anomalías significativas",
+        deviationPercent: "Desviación %",
+        oraclePrice: "Precio del oráculo",
+        referencePrice: "Precio de referencia",
         noData: "Sin datos de gráficos",
         activityDesc: "Actividad a lo largo del tiempo",
         tvsDesc: "Valor acumulado",
@@ -1620,6 +1871,11 @@ export const translations = {
         bondAmount: "Monto del depósito",
         timeline: "Cronología",
         actions: "Acciones",
+        riskImpactTitle: "Riesgo e impacto",
+        riskImpactDesc: "Señales de riesgo relacionadas y posible impacto",
+        riskNone: "No hay riesgos relacionados",
+        relatedAssertion: "Afirmación relacionada",
+        relatedDispute: "Disputa relacionada",
         resolved: "Resuelto",
         resolvedDesc: "Esta afirmación ha sido resuelta con éxito.",
         settleAssertion: "Liquidar afirmación",
@@ -1950,6 +2206,118 @@ export const translations = {
       savingRules: "Guardando…",
       lastSeen: "Última vez",
       occurrences: "Ocurrencias",
+      explanation: "Explicación",
+      recommendedActions: "Acciones recomendadas",
+      explanations: {
+        dispute_created:
+          "Se detectó una nueva disputa y puede afectar los resultados.",
+        liveness_expiring: "La ventana de liveness está por expirar pronto.",
+        sync_error:
+          "La sincronización del indexador falló y los datos pueden estar obsoletos.",
+        stale_sync:
+          "La sincronización parece detenida más allá del umbral permitido.",
+        contract_paused:
+          "El contrato del oráculo está en pausa y los flujos están bloqueados.",
+        sync_backlog:
+          "El atraso de sincronización está creciendo y los retrasos pueden aumentar.",
+        backlog_assertions:
+          "El atraso de afirmaciones es mayor de lo esperado.",
+        backlog_disputes: "El atraso de disputas es mayor de lo esperado.",
+        market_stale:
+          "Los datos de mercado parecen obsoletos y pueden estar desactualizados.",
+        execution_delayed:
+          "La ejecución está retrasada más allá de la ventana esperada.",
+        low_participation:
+          "La participación de votación está por debajo de lo esperado.",
+        high_vote_divergence:
+          "La divergencia de votos es alta; el resultado es incierto.",
+        high_dispute_rate:
+          "La tasa de disputas está elevada y requiere revisión.",
+        slow_api_request:
+          "La latencia de la API aumentó y puede afectar a los clientes.",
+        high_error_rate:
+          "La tasa de errores está elevada y requiere investigación.",
+        database_slow_query:
+          "La latencia de consultas de la base de datos está elevada.",
+        price_deviation:
+          "El precio del oráculo se desvía de las fuentes de referencia.",
+        low_gas:
+          "El saldo de gas del nodo es bajo y las transacciones pueden fallar.",
+      },
+      actions: {
+        dispute_created: {
+          1: "Revisar detalles y evidencia de la disputa",
+          2: "Notificar a las partes interesadas y evaluar impacto",
+        },
+        liveness_expiring: {
+          1: "Verificar fuentes de datos de la afirmación",
+          2: "Disputar si es necesario antes del vencimiento",
+        },
+        sync_error: {
+          1: "Revisar logs de RPC/indexador",
+          2: "Reiniciar o cambiar a nodo de respaldo",
+        },
+        stale_sync: {
+          1: "Identificar la etapa de sincronización detenida",
+          2: "Asignar más recursos de sincronización",
+        },
+        contract_paused: {
+          1: "Confirmar motivo y alcance de la pausa",
+          2: "Coordinar con el equipo del protocolo",
+        },
+        sync_backlog: {
+          1: "Inspeccionar la composición del atraso",
+          2: "Escalar el rendimiento del indexador",
+        },
+        backlog_assertions: {
+          1: "Revisar la canalización de ingestión de afirmaciones",
+          2: "Limpiar la cola de afirmaciones atascadas",
+        },
+        backlog_disputes: {
+          1: "Revisar la canalización de procesamiento de disputas",
+          2: "Coordinar capacidad de votación/liquidación",
+        },
+        market_stale: {
+          1: "Verificar las fuentes de datos de mercado",
+          2: "Ajustar la cadencia de actualización",
+        },
+        execution_delayed: {
+          1: "Revisar la salud del ejecutor",
+          2: "Evaluar congestión on-chain",
+        },
+        low_participation: {
+          1: "Incentivar a los votantes a participar",
+          2: "Revisar incentivos y tiempos",
+        },
+        high_vote_divergence: {
+          1: "Revisar evidencia y foco de la disputa",
+          2: "Analizar causas de sesgo en votación",
+        },
+        high_dispute_rate: {
+          1: "Identificar mercados con picos",
+          2: "Revisar reglas de creación de afirmaciones",
+        },
+        slow_api_request: {
+          1: "Revisar latencia de servicios y base de datos",
+          2: "Ajustar límites o escalar recursos",
+        },
+        high_error_rate: {
+          1: "Revisar registros de errores y métricas",
+          2: "Mitigar la causa raíz",
+        },
+        database_slow_query: {
+          1: "Revisar consultas lentas",
+          2: "Optimizar índices o cachés",
+        },
+        price_deviation: {
+          1: "Comparar con fuentes de referencia",
+          2: "Revisar actualización de precios",
+        },
+        low_gas: {
+          1: "Reponer saldo de gas",
+          2: "Configurar alertas de saldo mínimo",
+        },
+      },
     },
     onboarding: {
       title: "Insight: Recorrido Rápido",
@@ -2230,6 +2598,22 @@ export const translations = {
         tvsCumulative: "Valeur totale sécurisée (cumulée)",
         syncHealth: "Santé de la synchronisation",
         topMarkets: "Marchés populaires",
+        marketsDesc: "Concentration des contestations sur 30 jours",
+        dataQuality: "Qualité des données",
+        dataQualityDesc: "Écart et anomalies entre oracle et référence",
+        dataQualitySummary: "Résumé de qualité",
+        lastSample: "Dernier échantillon",
+        healthScore: "Score de santé",
+        deviationAvg: "Écart moyen",
+        deviationMax: "Écart maximal",
+        deviationLatest: "Dernier écart",
+        dataSamples: "Échantillons",
+        anomalyView: "Vue des anomalies",
+        anomalyThreshold: "Seuil d'anomalie",
+        anomalyNone: "Aucune anomalie notable détectée",
+        deviationPercent: "Écart %",
+        oraclePrice: "Prix de l'oracle",
+        referencePrice: "Prix de référence",
         noData: "Aucune donnée de graphique",
         activityDesc: "Activité au fil du temps",
         tvsDesc: "Valeur cumulée",
@@ -2398,6 +2782,11 @@ export const translations = {
         voteOnDispute: "Voter sur la contestation",
         support: "Prend en charge",
         against: "Contre",
+        riskImpactTitle: "Risque et impact",
+        riskImpactDesc: "Signaux de risque liés et impact potentiel",
+        riskNone: "Aucun risque lié",
+        relatedAssertion: "Assertion liée",
+        relatedDispute: "Contestation liée",
       },
     },
     pnl: {
@@ -2506,6 +2895,119 @@ export const translations = {
       savingRules: "Enregistrement…",
       lastSeen: "Dernière",
       occurrences: "Occurrences",
+      explanation: "Explication",
+      recommendedActions: "Actions recommandées",
+      explanations: {
+        dispute_created:
+          "Une nouvelle contestation a été détectée et peut impacter les résultats.",
+        liveness_expiring: "La fenêtre de liveness est sur le point d'expirer.",
+        sync_error:
+          "La synchronisation de l'indexeur a échoué et les données peuvent être obsolètes.",
+        stale_sync:
+          "La synchronisation semble bloquée au-delà du seuil autorisé.",
+        contract_paused:
+          "Le contrat de l'oracle est en pause et les flux sont bloqués.",
+        sync_backlog:
+          "Le backlog de synchronisation augmente et les retards peuvent s'accentuer.",
+        backlog_assertions:
+          "Le backlog d'assertions est supérieur aux attentes.",
+        backlog_disputes:
+          "Le backlog de contestations est supérieur aux attentes.",
+        market_stale:
+          "Les données de marché semblent obsolètes et peuvent être dépassées.",
+        execution_delayed:
+          "L'exécution est retardée au-delà de la fenêtre attendue.",
+        low_participation:
+          "La participation au vote est inférieure aux attentes.",
+        high_vote_divergence:
+          "La divergence de vote est élevée, l'issue est incertaine.",
+        high_dispute_rate:
+          "Le taux de contestation est élevé et nécessite une revue.",
+        slow_api_request:
+          "La latence de l'API a augmenté et peut impacter les clients.",
+        high_error_rate:
+          "Le taux d'erreur est élevé et nécessite une investigation.",
+        database_slow_query:
+          "La latence des requêtes de base de données est élevée.",
+        price_deviation:
+          "Le prix de l'oracle s'écarte des sources de référence.",
+        low_gas:
+          "Le solde de gas du nœud est faible et les transactions peuvent échouer.",
+      },
+      actions: {
+        dispute_created: {
+          1: "Examiner les détails et preuves de la contestation",
+          2: "Notifier les parties prenantes et évaluer l'impact",
+        },
+        liveness_expiring: {
+          1: "Vérifier les sources de données de l'assertion",
+          2: "Contester si nécessaire avant l'expiration",
+        },
+        sync_error: {
+          1: "Vérifier les logs RPC/indexeur",
+          2: "Redémarrer ou basculer vers un nœud de secours",
+        },
+        stale_sync: {
+          1: "Identifier l'étape de synchronisation bloquée",
+          2: "Allouer davantage de ressources de synchronisation",
+        },
+        contract_paused: {
+          1: "Confirmer la raison et la portée de la pause",
+          2: "Coordonner avec l'équipe protocole",
+        },
+        sync_backlog: {
+          1: "Inspecter la composition du backlog",
+          2: "Augmenter le débit de l'indexeur",
+        },
+        backlog_assertions: {
+          1: "Vérifier le pipeline d'ingestion des assertions",
+          2: "Débloquer la file d'assertions",
+        },
+        backlog_disputes: {
+          1: "Vérifier le pipeline de traitement des contestations",
+          2: "Coordonner la capacité de vote/règlement",
+        },
+        market_stale: {
+          1: "Vérifier les sources de données de marché",
+          2: "Ajuster la cadence de mise à jour",
+        },
+        execution_delayed: {
+          1: "Vérifier la santé de l'exécuteur",
+          2: "Évaluer la congestion on-chain",
+        },
+        low_participation: {
+          1: "Inciter les votants à participer",
+          2: "Revoir les incitations et le calendrier",
+        },
+        high_vote_divergence: {
+          1: "Examiner les preuves et le focus de la contestation",
+          2: "Analyser les causes de biais de vote",
+        },
+        high_dispute_rate: {
+          1: "Identifier les marchés avec des pics",
+          2: "Revoir les règles de création d'assertions",
+        },
+        slow_api_request: {
+          1: "Examiner la latence des services et de la base",
+          2: "Ajuster les limites ou augmenter les ressources",
+        },
+        high_error_rate: {
+          1: "Examiner les logs d'erreurs et métriques",
+          2: "Atténuer la cause racine",
+        },
+        database_slow_query: {
+          1: "Examiner les requêtes lentes",
+          2: "Optimiser les index ou caches",
+        },
+        price_deviation: {
+          1: "Comparer aux sources de référence",
+          2: "Revoir la mise à jour des prix",
+        },
+        low_gas: {
+          1: "Réapprovisionner le solde de gas",
+          2: "Configurer des alertes de solde minimum",
+        },
+      },
     },
     watchlist: {
       emptyDesc:
@@ -2792,6 +3294,22 @@ export const translations = {
         tvsCumulative: "총 보장 가치 (누적)",
         syncHealth: "동기화 건강",
         topMarkets: "인기 시장",
+        marketsDesc: "최근 30일 분쟁 집중 분포",
+        dataQuality: "데이터 품질",
+        dataQualityDesc: "오라클과 기준 가격 간 편차 및 이상치 개요",
+        dataQualitySummary: "품질 요약",
+        lastSample: "최근 샘플",
+        healthScore: "건강 점수",
+        deviationAvg: "평균 편차",
+        deviationMax: "최대 편차",
+        deviationLatest: "최신 편차",
+        dataSamples: "샘플 수",
+        anomalyView: "이상치 보기",
+        anomalyThreshold: "이상치 임계값",
+        anomalyNone: "유의미한 이상치가 없습니다",
+        deviationPercent: "편차 %",
+        oraclePrice: "오라클 가격",
+        referencePrice: "기준 가격",
         noData: "차트 데이터가 없습니다",
         activityDesc: "시간에 따른 활동",
         tvsDesc: "누적 가치",
@@ -2945,6 +3463,11 @@ export const translations = {
         voteOnDispute: "분쟁에 투표",
         support: "지지",
         against: "반대",
+        riskImpactTitle: "위험 및 영향",
+        riskImpactDesc: "관련 위험 신호와 잠재적 영향",
+        riskNone: "관련 위험이 없습니다",
+        relatedAssertion: "연관 주장",
+        relatedDispute: "연관 분쟁",
       },
     },
     pnl: {
@@ -3046,6 +3569,105 @@ export const translations = {
       savingRules: "저장 중…",
       lastSeen: "마지막",
       occurrences: "발생 횟수",
+      explanation: "설명",
+      recommendedActions: "권장 조치",
+      explanations: {
+        dispute_created:
+          "새로운 분쟁이 감지되었으며 결과에 영향을 줄 수 있습니다.",
+        liveness_expiring: "챌린지 기간이 곧 만료됩니다.",
+        sync_error: "인덱서 동기화가 실패하여 데이터가 오래되었을 수 있습니다.",
+        stale_sync: "동기화가 허용 임계값을 넘어 정체된 것으로 보입니다.",
+        contract_paused:
+          "오라클 계약이 일시 중지되어 워크플로가 차단되었습니다.",
+        sync_backlog: "동기화 적체가 증가하고 지연이 확대될 수 있습니다.",
+        backlog_assertions: "주장 적체가 예상보다 높습니다.",
+        backlog_disputes: "분쟁 적체가 예상보다 높습니다.",
+        market_stale: "시장 데이터가 오래되어 최신이 아닐 수 있습니다.",
+        execution_delayed: "실행이 예상된 창을 넘어 지연되고 있습니다.",
+        low_participation: "투표 참여도가 예상보다 낮습니다.",
+        high_vote_divergence: "투표 분산이 높아 결과가 불확실합니다.",
+        high_dispute_rate: "분쟁률이 높아 검토가 필요합니다.",
+        slow_api_request:
+          "API 지연이 증가하여 클라이언트에 영향을 줄 수 있습니다.",
+        high_error_rate: "오류율이 높아 조사가 필요합니다.",
+        database_slow_query: "데이터베이스 쿼리 지연이 높습니다.",
+        price_deviation: "오라클 가격이 기준 소스와 괴리됩니다.",
+        low_gas: "노드 가스 잔액이 낮아 트랜잭션이 실패할 수 있습니다.",
+      },
+      actions: {
+        dispute_created: {
+          1: "분쟁 상세와 증거를 검토",
+          2: "관계자에게 알리고 영향 평가",
+        },
+        liveness_expiring: {
+          1: "주장 데이터 소스를 확인",
+          2: "필요 시 만료 전에 분쟁 제기",
+        },
+        sync_error: {
+          1: "RPC/인덱서 로그 확인",
+          2: "재시작 또는 백업 노드로 전환",
+        },
+        stale_sync: {
+          1: "정체된 동기화 단계 파악",
+          2: "동기화 자원 추가 배정",
+        },
+        contract_paused: {
+          1: "중단 사유와 범위 확인",
+          2: "프로토콜 팀과 협의",
+        },
+        sync_backlog: {
+          1: "적체 구성 확인",
+          2: "인덱서 처리량 확장",
+        },
+        backlog_assertions: {
+          1: "주장 수집 파이프라인 점검",
+          2: "정체된 주장 큐 정리",
+        },
+        backlog_disputes: {
+          1: "분쟁 처리 파이프라인 점검",
+          2: "투표/정산 처리 용량 조정",
+        },
+        market_stale: {
+          1: "시장 데이터 소스 확인",
+          2: "업데이트 주기 조정",
+        },
+        execution_delayed: {
+          1: "실행기 상태 점검",
+          2: "온체인 혼잡도 평가",
+        },
+        low_participation: {
+          1: "투표 참여 유도",
+          2: "인센티브와 타이밍 검토",
+        },
+        high_vote_divergence: {
+          1: "증거와 분쟁 초점 검토",
+          2: "투표 편향 원인 분석",
+        },
+        high_dispute_rate: {
+          1: "급증한 시장 파악",
+          2: "주장 생성 규칙 검토",
+        },
+        slow_api_request: {
+          1: "서비스 및 데이터베이스 지연 점검",
+          2: "제한 조정 또는 자원 확장",
+        },
+        high_error_rate: {
+          1: "오류 로그와 지표 확인",
+          2: "근본 원인 완화",
+        },
+        database_slow_query: {
+          1: "느린 쿼리 점검",
+          2: "인덱스 또는 캐시 최적화",
+        },
+        price_deviation: {
+          1: "기준 소스와 비교",
+          2: "가격 업데이트 재점검",
+        },
+        low_gas: {
+          1: "가스 잔액 보충",
+          2: "최소 잔액 경고 설정",
+        },
+      },
     },
     watchlist: {
       emptyDesc: "아직 관심 목록에 주장을 추가하지 않았습니다.",
@@ -3291,6 +3913,22 @@ export type TranslationKey =
   | "oracle.charts.syncHealth"
   | "oracle.charts.topMarkets"
   | "oracle.charts.noData"
+  | "oracle.charts.marketsDesc"
+  | "oracle.charts.dataQuality"
+  | "oracle.charts.dataQualityDesc"
+  | "oracle.charts.dataQualitySummary"
+  | "oracle.charts.lastSample"
+  | "oracle.charts.healthScore"
+  | "oracle.charts.deviationAvg"
+  | "oracle.charts.deviationMax"
+  | "oracle.charts.deviationLatest"
+  | "oracle.charts.dataSamples"
+  | "oracle.charts.anomalyView"
+  | "oracle.charts.anomalyThreshold"
+  | "oracle.charts.anomalyNone"
+  | "oracle.charts.deviationPercent"
+  | "oracle.charts.oraclePrice"
+  | "oracle.charts.referencePrice"
   | "oracle.charts.activityDesc"
   | "oracle.charts.tvsDesc"
   | "oracle.charts.syncDesc"
@@ -3378,6 +4016,11 @@ export type TranslationKey =
   | "oracle.detail.settlementResult"
   | "oracle.detail.settlementTrue"
   | "oracle.detail.settlementFalse"
+  | "oracle.detail.riskImpactTitle"
+  | "oracle.detail.riskImpactDesc"
+  | "oracle.detail.riskNone"
+  | "oracle.detail.relatedAssertion"
+  | "oracle.detail.relatedDispute"
   | "oracle.tx.disputeSubmittedTitle"
   | "oracle.tx.disputeSubmittedMsg"
   | "oracle.tx.assertionCreatedTitle"
@@ -3556,6 +4199,62 @@ export type TranslationKey =
   | "alerts.silence30m"
   | "alerts.silence2h"
   | "alerts.silence24h"
+  | "alerts.explanation"
+  | "alerts.recommendedActions"
+  | "alerts.explanations.dispute_created"
+  | "alerts.explanations.liveness_expiring"
+  | "alerts.explanations.sync_error"
+  | "alerts.explanations.stale_sync"
+  | "alerts.explanations.contract_paused"
+  | "alerts.explanations.sync_backlog"
+  | "alerts.explanations.backlog_assertions"
+  | "alerts.explanations.backlog_disputes"
+  | "alerts.explanations.market_stale"
+  | "alerts.explanations.execution_delayed"
+  | "alerts.explanations.low_participation"
+  | "alerts.explanations.high_vote_divergence"
+  | "alerts.explanations.high_dispute_rate"
+  | "alerts.explanations.slow_api_request"
+  | "alerts.explanations.high_error_rate"
+  | "alerts.explanations.database_slow_query"
+  | "alerts.explanations.price_deviation"
+  | "alerts.explanations.low_gas"
+  | "alerts.actions.dispute_created.1"
+  | "alerts.actions.dispute_created.2"
+  | "alerts.actions.liveness_expiring.1"
+  | "alerts.actions.liveness_expiring.2"
+  | "alerts.actions.sync_error.1"
+  | "alerts.actions.sync_error.2"
+  | "alerts.actions.stale_sync.1"
+  | "alerts.actions.stale_sync.2"
+  | "alerts.actions.contract_paused.1"
+  | "alerts.actions.contract_paused.2"
+  | "alerts.actions.sync_backlog.1"
+  | "alerts.actions.sync_backlog.2"
+  | "alerts.actions.backlog_assertions.1"
+  | "alerts.actions.backlog_assertions.2"
+  | "alerts.actions.backlog_disputes.1"
+  | "alerts.actions.backlog_disputes.2"
+  | "alerts.actions.market_stale.1"
+  | "alerts.actions.market_stale.2"
+  | "alerts.actions.execution_delayed.1"
+  | "alerts.actions.execution_delayed.2"
+  | "alerts.actions.low_participation.1"
+  | "alerts.actions.low_participation.2"
+  | "alerts.actions.high_vote_divergence.1"
+  | "alerts.actions.high_vote_divergence.2"
+  | "alerts.actions.high_dispute_rate.1"
+  | "alerts.actions.high_dispute_rate.2"
+  | "alerts.actions.slow_api_request.1"
+  | "alerts.actions.slow_api_request.2"
+  | "alerts.actions.high_error_rate.1"
+  | "alerts.actions.high_error_rate.2"
+  | "alerts.actions.database_slow_query.1"
+  | "alerts.actions.database_slow_query.2"
+  | "alerts.actions.price_deviation.1"
+  | "alerts.actions.price_deviation.2"
+  | "alerts.actions.low_gas.1"
+  | "alerts.actions.low_gas.2"
   | "watchlist.emptyDesc"
   | "status.voting"
   | "status.pendingExecution"
