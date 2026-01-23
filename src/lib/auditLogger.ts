@@ -50,11 +50,48 @@ export interface AuditFilter {
   instanceId?: string;
   limit?: number;
   offset?: number;
+  search?: string;
+  success?: boolean;
 }
+
+export interface AuditStatistics {
+  total: number;
+  byAction: Record<AuditAction, number>;
+  bySeverity: Record<AuditSeverity, number>;
+  byActorType: Record<"user" | "admin" | "system" | "anonymous", number>;
+  successRate: number;
+  criticalEvents: number;
+  timeRange: {
+    start: string;
+    end: string;
+  };
+  topActions: Array<{ action: AuditAction; count: number }>;
+  topActors: Array<{ actor: string; count: number }>;
+}
+
+export interface AuditExportOptions {
+  format: "csv" | "json";
+  startDate?: string;
+  endDate?: string;
+  includeDetails?: boolean;
+}
+
+export interface AuditArchiveOptions {
+  olderThanDays: number;
+  compress?: boolean;
+}
+
+const MAX_LOGS = 10000;
+const BATCH_SIZE = 100;
+const PERSISTENCE_RETRY_ATTEMPTS = 3;
+const PERSISTENCE_RETRY_DELAY = 1000;
 
 class SecurityAuditLogger {
   private logs: AuditLogEntry[] = [];
-  private maxLogs: number = 10000;
+  private persistenceQueue: AuditLogEntry[] = [];
+  private isPersisting = false;
+  private persistenceTimer: NodeJS.Timeout | null = null;
+  private maxLogs: number = MAX_LOGS;
 
   log(entry: Omit<AuditLogEntry, "id" | "timestamp">): void {
     const auditEntry: AuditLogEntry = {
@@ -64,6 +101,7 @@ class SecurityAuditLogger {
     };
 
     this.logs.push(auditEntry);
+    this.persistenceQueue.push(auditEntry);
 
     if (this.logs.length > this.maxLogs) {
       this.logs = this.logs.slice(-this.maxLogs);
@@ -76,11 +114,20 @@ class SecurityAuditLogger {
       success: auditEntry.success,
     });
 
-    this.persistToDatabase(auditEntry);
+    this.schedulePersistence();
   }
 
   query(filter: AuditFilter): AuditLogEntry[] {
     let results = [...this.logs];
+
+    if (filter.search) {
+      const searchLower = filter.search.toLowerCase();
+      results = results.filter((log) =>
+        log.actor.toLowerCase().includes(searchLower) ||
+        log.action.toLowerCase().includes(searchLower) ||
+        JSON.stringify(log.details).toLowerCase().includes(searchLower)
+      );
+    }
 
     if (filter.action) {
       const actions = Array.isArray(filter.action) ? filter.action : [filter.action];
@@ -99,6 +146,10 @@ class SecurityAuditLogger {
       results = results.filter((log) => log.severity === filter.severity);
     }
 
+    if (filter.success !== undefined) {
+      results = results.filter((log) => log.success === filter.success);
+    }
+
     if (filter.startDate) {
       results = results.filter((log) => log.timestamp >= filter.startDate!);
     }
@@ -111,10 +162,6 @@ class SecurityAuditLogger {
       results = results.filter((log) => log.instanceId === filter.instanceId);
     }
 
-    if (filter.success !== undefined) {
-      results = results.filter((log) => log.success === filter.success);
-    }
-
     results.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
 
     const offset = filter.offset || 0;
@@ -123,54 +170,218 @@ class SecurityAuditLogger {
     return results.slice(offset, offset + limit);
   }
 
-  getStatistics(filter: Omit<AuditFilter, "limit" | "offset"> = {}): {
-    total: number;
-    byAction: Record<AuditAction, number>;
-    bySeverity: Record<AuditSeverity, number>;
-    successRate: number;
-    criticalEvents: number;
-  } {
+  getStatistics(filter: Omit<AuditFilter, "limit" | "offset" | "search"> = {}): AuditStatistics {
     const logs = this.query(filter);
+
     const byAction = {} as Record<AuditAction, number>;
     const bySeverity = {} as Record<AuditSeverity, number>;
+    const byActorType = {} as Record<"user" | "admin" | "system" | "anonymous", number>;
     let successCount = 0;
     let criticalCount = 0;
 
     for (const log of logs) {
       byAction[log.action] = (byAction[log.action] || 0) + 1;
       bySeverity[log.severity] = (bySeverity[log.severity] || 0) + 1;
+      byActorType[log.actorType] = (byActorType[log.actorType] || 0) + 1;
       if (log.success) successCount++;
       if (log.severity === "critical") criticalCount++;
     }
+
+    const topActions = Object.entries(byAction)
+      .map(([action, count]) => ({ action: action as AuditAction, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+
+    const topActors = this.getTopActors(logs);
+
+    const timeRange = this.getTimeRange(logs);
 
     return {
       total: logs.length,
       byAction,
       bySeverity,
+      byActorType,
       successRate: logs.length > 0 ? (successCount / logs.length) * 100 : 0,
       criticalEvents: criticalCount,
+      timeRange,
+      topActions,
+      topActors,
     };
   }
 
-  private generateId(): string {
-    return `audit-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  private getTopActors(logs: AuditLogEntry[]): Array<{ actor: string; count: number }> {
+    const actorCounts = new Map<string, number>();
+
+    for (const log of logs) {
+      const count = actorCounts.get(log.actor) || 0;
+      actorCounts.set(log.actor, count + 1);
+    }
+
+    return Array.from(actorCounts.entries())
+      .map(([actor, count]) => ({ actor, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
   }
 
-  private async persistToDatabase(entry: AuditLogEntry): Promise<void> {
+  private getTimeRange(logs: AuditLogEntry[]): { start: string; end: string } {
+    if (logs.length === 0) {
+      return {
+        start: new Date().toISOString(),
+        end: new Date().toISOString(),
+      };
+    }
+
+    const timestamps = logs.map((log) => new Date(log.timestamp));
+    const minTime = new Date(Math.min(...timestamps));
+    const maxTime = new Date(Math.max(...timestamps));
+
+    return {
+      start: minTime.toISOString(),
+      end: maxTime.toISOString(),
+    };
+  }
+
+  async exportLogs(options: AuditExportOptions = { format: "json" }): Promise<string> {
+    const filter: AuditFilter = {};
+    if (options.startDate) filter.startDate = options.startDate;
+    if (options.endDate) filter.endDate = options.endDate;
+
+    const logs = this.query(filter);
+
+    if (!options.includeDetails) {
+      return JSON.stringify(
+        logs.map((log) => ({
+          id: log.id,
+          timestamp: log.timestamp,
+          action: log.action,
+          actor: log.actor,
+          severity: log.severity,
+          success: log.success,
+        })),
+        null,
+        2,
+      );
+    }
+
+    if (options.format === "csv") {
+      const headers = Object.keys(logs[0]);
+      const csvRows = [headers.join(",")];
+
+      for (const row of logs) {
+        const values = headers.map((header) => {
+          const value = row[header as keyof AuditLogEntry];
+          return this.formatCSVValue(value);
+        });
+        csvRows.push(values.join(","));
+      }
+
+      return csvRows.join("\n");
+    }
+
+    return JSON.stringify(logs, null, 2);
+  }
+
+  private formatCSVValue(value: unknown): string {
+    if (value === null || value === undefined) {
+      return "";
+    }
+
+    const stringValue = String(value);
+
+    if (
+      stringValue.includes(",") ||
+      stringValue.includes('"') ||
+      stringValue.includes("\n") ||
+      stringValue.includes("\r")
+    ) {
+      return `"${stringValue.replace(/"/g, '""')}"`;
+    }
+
+    return stringValue;
+  }
+
+  async archiveLogs(options: AuditArchiveOptions): Promise<{
+    success: boolean;
+    archivedCount: number;
+    archiveSize: number;
+  }> {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - options.olderThanDays);
+    const cutoff = cutoffDate.toISOString();
+
+    const logsToArchive = this.logs.filter((log) => log.timestamp < cutoff);
+
+    if (logsToArchive.length === 0) {
+      return {
+        success: true,
+        archivedCount: 0,
+        archiveSize: 0,
+      };
+    }
+
     try {
-      await fetch("/api/audit/log", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(entry),
+      const archiveData = JSON.stringify(logsToArchive, null, 2);
+      const archiveSize = archiveData.length;
+
+      if (options.compress) {
+        const compressed = await this.compressData(archiveData);
+        await this.saveArchive(compressed, `audit-archive-${cutoff.slice(0, 10)}.gz`);
+      } else {
+        await this.saveArchive(archiveData, `audit-archive-${cutoff.slice(0, 10)}.json`);
+      }
+
+      this.logs = this.logs.filter((log) => log.timestamp >= cutoff);
+
+      logger.info("Audit logs archived", {
+        cutoff,
+        archivedCount: logsToArchive.length,
+        archiveSize,
       });
+
+      return {
+        success: true,
+        archivedCount: logsToArchive.length,
+        archiveSize,
+      };
     } catch (error) {
-      logger.error("Failed to persist audit log", { error, entry });
+      logger.error("Failed to archive audit logs", { error });
+      return {
+        success: false,
+        archivedCount: 0,
+        archiveSize: 0,
+      };
     }
   }
 
-  exportLogs(filter: AuditFilter = {}): string {
-    const logs = this.query(filter);
-    return JSON.stringify(logs, null, 2);
+  private async compressData(data: string): Promise<string> {
+    if (typeof CompressionStream === "undefined") {
+      return data;
+    }
+
+    try {
+      const stream = new CompressionStream("gzip");
+      const writer = stream.writable.getWriter();
+      await writer.write(new TextEncoder().encode(data));
+      await writer.close();
+
+      const compressed = await new Response(stream.readable).arrayBuffer();
+      return new TextDecoder().decode(compressed);
+    } catch {
+      return data;
+    }
+  }
+
+  private async saveArchive(data: string, filename: string): Promise<void> {
+    try {
+      await fetch("/api/audit/archive", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data, filename }),
+      });
+    } catch (error) {
+      logger.error("Failed to save audit archive", { error, filename });
+      throw error;
+    }
   }
 
   clearOldLogs(daysToKeep: number = 30): void {
@@ -178,12 +389,107 @@ class SecurityAuditLogger {
     cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
     const cutoff = cutoffDate.toISOString();
 
+    const beforeCount = this.logs.length;
     this.logs = this.logs.filter((log) => log.timestamp >= cutoff);
+    const afterCount = this.logs.length;
 
     logger.info("Old audit logs cleared", {
       cutoff,
-      remaining: this.logs.length,
+      clearedCount: beforeCount - afterCount,
+      remainingCount: afterCount,
     });
+  }
+
+  getLogCount(): number {
+    return this.logs.length;
+  }
+
+  getMemoryUsage(): {
+    totalLogs: number;
+    queueSize: number;
+    memoryEstimate: string;
+  } {
+    const totalSize = JSON.stringify(this.logs).length;
+    const queueSize = this.persistenceQueue.length;
+    const memoryEstimate = this.formatBytes(totalSize);
+
+    return {
+      totalLogs: this.logs.length,
+      queueSize,
+      memoryEstimate,
+    };
+  }
+
+  private formatBytes(bytes: number): string {
+    if (bytes === 0) return "0 Bytes";
+
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+    return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`;
+  }
+
+  private schedulePersistence(): void {
+    if (this.persistenceTimer) {
+      clearTimeout(this.persistenceTimer);
+    }
+
+    this.persistenceTimer = setTimeout(() => {
+      this.flushPersistenceQueue();
+    }, 1000);
+  }
+
+  private async flushPersistenceQueue(): Promise<void> {
+    if (this.isPersisting || this.persistenceQueue.length === 0) {
+      return;
+    }
+
+    this.isPersisting = true;
+
+    try {
+      const batch = this.persistenceQueue.splice(0, BATCH_SIZE);
+
+      while (batch.length > 0) {
+        await this.persistBatch(batch.splice(0, BATCH_SIZE));
+      }
+    } catch (error) {
+      logger.error("Failed to flush persistence queue", { error });
+    } finally {
+      this.isPersisting = false;
+    }
+  }
+
+  private async persistBatch(entries: AuditLogEntry[]): Promise<void> {
+    let attempt = 0;
+
+    while (attempt < PERSISTENCE_RETRY_ATTEMPTS) {
+      try {
+        await fetch("/api/audit/batch", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(entries),
+        });
+        return;
+      } catch (error) {
+        attempt++;
+        if (attempt < PERSISTENCE_RETRY_ATTEMPTS) {
+          await new Promise((resolve) =>
+            setTimeout(resolve, PERSISTENCE_RETRY_DELAY * attempt),
+          );
+        }
+        logger.warn("Persistence attempt failed, retrying", {
+          attempt,
+          error,
+        });
+      }
+    }
+
+    throw new Error("Failed to persist audit logs after retries");
+  }
+
+  private generateId(): string {
+    return `audit-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
 }
 
@@ -248,4 +554,39 @@ export function logSecurityAlert(
     success: false,
     errorMessage,
   });
+}
+
+export function getAuditStatistics(
+  filter?: Omit<AuditFilter, "limit" | "offset" | "search">,
+): AuditStatistics {
+  const logger = getAuditLogger();
+  return logger.getStatistics(filter || {});
+}
+
+export function exportAuditLogs(
+  options?: AuditExportOptions,
+): Promise<string> {
+  const logger = getAuditLogger();
+  return logger.exportLogs(options || { format: "json" });
+}
+
+export function archiveAuditLogs(
+  options: AuditArchiveOptions,
+): Promise<{ success: boolean; archivedCount: number; archiveSize: number }> {
+  const logger = getAuditLogger();
+  return logger.archiveLogs(options);
+}
+
+export function clearOldAuditLogs(daysToKeep: number = 30): void {
+  const logger = getAuditLogger();
+  logger.clearOldLogs(daysToKeep);
+}
+
+export function getAuditMemoryUsage(): {
+  totalLogs: number;
+  queueSize: number;
+  memoryEstimate: string;
+} {
+  const logger = getAuditLogger();
+  return logger.getMemoryUsage();
 }
