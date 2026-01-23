@@ -207,4 +207,58 @@ describe("worker alerts", () => {
       }),
     );
   });
+
+  it("attempts recovery when sync is stale during backoff", async () => {
+    hasDatabase.mockReturnValue(false);
+    const now = new Date();
+    const lastAttemptAt = now.toISOString();
+    const lastSuccessAt = new Date(now.getTime() - 10_000).toISOString();
+
+    const { readAlertRules } = await import("@/server/observability");
+    (readAlertRules as unknown as ReturnType<typeof vi.fn>).mockResolvedValue([
+      {
+        id: "rule-1",
+        enabled: true,
+        event: "stale_sync",
+        severity: "warning",
+        channels: ["webhook"],
+        recipient: null,
+        params: { maxAgeMs: 1000 },
+      },
+    ]);
+
+    const { getOracleEnv, ensureOracleSynced } =
+      await import("./oracleIndexer");
+    (getOracleEnv as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      rpcUrl: "https://rpc.example",
+      contractAddress: "0x1111111111111111111111111111111111111111",
+    });
+
+    const { getSyncState } = await import("@/server/oracle");
+    const state = {
+      lastProcessedBlock: 100n,
+      latestBlock: 120n,
+      safeBlock: 118n,
+      lastSuccessProcessedBlock: 100n,
+      consecutiveFailures: 3,
+      rpcActiveUrl: "https://rpc.example",
+      rpcStats: null,
+      sync: {
+        lastAttemptAt,
+        lastSuccessAt,
+        lastDurationMs: 1000,
+        lastError: "rpc_unreachable",
+      },
+      chain: "Local",
+      contractAddress: "0x1111111111111111111111111111111111111111",
+      owner: null,
+    };
+    (getSyncState as unknown as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(state)
+      .mockResolvedValueOnce(state);
+
+    await tickWorkerOnce();
+
+    expect(ensureOracleSynced).toHaveBeenCalledTimes(1);
+  });
 });

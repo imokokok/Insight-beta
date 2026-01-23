@@ -17,6 +17,16 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(""),
 }));
 
+vi.mock("next/link", () => ({
+  default: ({
+    href,
+    children,
+  }: {
+    href: string;
+    children: React.ReactNode;
+  }) => <a href={href}>{children}</a>,
+}));
+
 vi.mock("@/i18n/LanguageProvider", () => ({
   useI18n: () => ({
     t: (key: string) => key,
@@ -67,6 +77,14 @@ vi.mock("@/components/UserStatsCard", () => ({
   UserStatsCard: () => <div>UserStatsCard</div>,
 }));
 
+vi.mock("@/lib/utils", async () => {
+  const actual = await import("@/lib/utils");
+  return {
+    ...actual,
+    fetchApiData: vi.fn().mockResolvedValue({ instances: [] }),
+  };
+});
+
 vi.mock("@/components/AssertionList", () => ({
   AssertionList: () => <div>AssertionList</div>,
 }));
@@ -106,5 +124,12 @@ describe("MyAssertionsPage", () => {
     oracleState.error = "api_error";
     render(<MyAssertionsPage />);
     expect(screen.getByText("uiError")).toBeInTheDocument();
+  });
+
+  it("shows empty state actions when no assertions", () => {
+    mockAddress = "0x1234";
+    render(<MyAssertionsPage />);
+    expect(screen.getByText("oracle.newAssertion")).toBeInTheDocument();
+    expect(screen.getByText("nav.disputes")).toBeInTheDocument();
   });
 });

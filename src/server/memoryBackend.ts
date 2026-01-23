@@ -1,4 +1,9 @@
-import type { Assertion, Dispute, OracleConfig } from "@/lib/oracleTypes";
+import type {
+  Assertion,
+  Dispute,
+  OracleChain,
+  OracleConfig,
+} from "@/lib/oracleTypes";
 import type { SyncMeta } from "./oracleState";
 
 type MemoryAlert = {
@@ -31,6 +36,18 @@ type MemoryAudit = {
 };
 
 type MemoryKvItem = { value: unknown; updatedAt: string };
+
+type MemoryOracleEvent = {
+  id: number;
+  chain: OracleChain;
+  eventType: string;
+  assertionId: string | null;
+  txHash: string;
+  blockNumber: bigint;
+  logIndex: number;
+  payload: unknown;
+  payloadChecksum: string | null;
+};
 
 export type MemoryOracleInstance = {
   id: string;
@@ -65,6 +82,8 @@ export type MemoryOracleInstance = {
     }
   >;
   voteSums: Map<string, { forWeight: bigint; againstWeight: bigint }>;
+  oracleEvents: Map<string, MemoryOracleEvent>;
+  nextOracleEventId: number;
 };
 
 type MemoryStore = {
@@ -118,6 +137,8 @@ function createDefaultInstance(id: string): MemoryOracleInstance {
     disputes: new Map(),
     votes: new Map(),
     voteSums: new Map(),
+    oracleEvents: new Map(),
+    nextOracleEventId: 1,
   };
 }
 

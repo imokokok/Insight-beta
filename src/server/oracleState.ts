@@ -891,13 +891,29 @@ export async function insertOracleEvent(
 ) {
   await ensureDb();
   const normalizedInstanceId = normalizeInstanceId(instanceId);
-  if (!hasDatabase()) return false;
   try {
     const payloadJson = JSON.stringify(input.payload);
     const payloadChecksum = crypto
       .createHash("sha256")
       .update(payloadJson)
       .digest("hex");
+    if (!hasDatabase()) {
+      const mem = getMemoryInstance(normalizedInstanceId);
+      const key = `${input.txHash}:${input.logIndex}`;
+      if (mem.oracleEvents.has(key)) return false;
+      mem.oracleEvents.set(key, {
+        id: mem.nextOracleEventId++,
+        chain: input.chain,
+        eventType: input.eventType,
+        assertionId: input.assertionId ?? null,
+        txHash: input.txHash,
+        blockNumber: input.blockNumber,
+        logIndex: input.logIndex,
+        payload: input.payload,
+        payloadChecksum,
+      });
+      return true;
+    }
     const res = await query(
       `
       INSERT INTO oracle_events (instance_id, chain, event_type, assertion_id, tx_hash, block_number, log_index, payload, payload_checksum)
@@ -930,7 +946,120 @@ export async function replayOracleEventsRange(
 ) {
   await ensureDb();
   const normalizedInstanceId = normalizeInstanceId(instanceId);
-  if (!hasDatabase()) return { applied: 0 };
+  if (!hasDatabase()) {
+    const mem = getMemoryInstance(normalizedInstanceId);
+    const events = Array.from(mem.oracleEvents.values())
+      .filter(
+        (event) =>
+          event.blockNumber >= fromBlock && event.blockNumber <= toBlock,
+      )
+      .sort((a, b) => {
+        if (a.blockNumber === b.blockNumber) {
+          if (a.logIndex === b.logIndex) return a.id - b.id;
+          return a.logIndex - b.logIndex;
+        }
+        return a.blockNumber < b.blockNumber ? -1 : 1;
+      });
+
+    let applied = 0;
+    for (const event of events) {
+      const eventType = (event.eventType ?? "").trim();
+      const payload = event.payload;
+      if (!eventType) continue;
+      if (event.payloadChecksum) {
+        const payloadChecksum = crypto
+          .createHash("sha256")
+          .update(JSON.stringify(payload))
+          .digest("hex");
+        if (payloadChecksum !== event.payloadChecksum) {
+          logger.warn("Event payload checksum mismatch", {
+            eventType,
+            assertionId: event.assertionId,
+          });
+          continue;
+        }
+      }
+
+      if (eventType === "assertion_created") {
+        const a = payload as Assertion;
+        if (!a?.id) continue;
+        await upsertAssertion(a, normalizedInstanceId);
+        applied += 1;
+        continue;
+      }
+
+      if (eventType === "assertion_disputed") {
+        const d = payload as Dispute;
+        if (!d?.assertionId) continue;
+        const assertion = await fetchAssertion(
+          d.assertionId,
+          normalizedInstanceId,
+        );
+        if (assertion) {
+          assertion.status = "Disputed";
+          assertion.disputer = d.disputer;
+          await upsertAssertion(assertion, normalizedInstanceId);
+        }
+        await upsertDispute(d, normalizedInstanceId);
+        applied += 1;
+        continue;
+      }
+
+      if (eventType === "vote_cast") {
+        const v = payload as {
+          chain: OracleChain;
+          assertionId: string;
+          voter: string;
+          support: boolean;
+          weight: string;
+          txHash: string;
+          blockNumber: string;
+          logIndex: number;
+        };
+        if (!v?.assertionId) continue;
+        await insertVoteEvent(
+          {
+            chain: v.chain,
+            assertionId: v.assertionId,
+            voter: v.voter,
+            support: Boolean(v.support),
+            weight: BigInt(v.weight || "0"),
+            txHash: v.txHash,
+            blockNumber: BigInt(v.blockNumber || "0"),
+            logIndex: Number(v.logIndex ?? 0),
+          },
+          normalizedInstanceId,
+        );
+        await recomputeDisputeVotes(v.assertionId, normalizedInstanceId);
+        applied += 1;
+        continue;
+      }
+
+      if (eventType === "assertion_resolved") {
+        const r = payload as {
+          assertionId: string;
+          resolvedAt: string;
+          outcome: boolean;
+        };
+        const assertionId = r?.assertionId || event.assertionId;
+        if (!assertionId) continue;
+
+        const assertion = await fetchAssertion(
+          assertionId,
+          normalizedInstanceId,
+        );
+        if (assertion) {
+          assertion.status = "Resolved";
+          assertion.resolvedAt = r.resolvedAt;
+          assertion.settlementResolution = r.outcome;
+          await upsertAssertion(assertion, normalizedInstanceId);
+        }
+        applied += 1;
+      }
+    }
+
+    return { applied };
+  }
 
   const res = await query<{
     event_type: string;

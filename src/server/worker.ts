@@ -25,6 +25,7 @@ import { createPublicClient, http, formatEther, parseAbi } from "viem";
 
 const SYNC_INTERVAL = 15000; // 15 seconds
 const workerAlertCooldown = new Map<string, number>();
+const workerRecoveryCooldown = new Map<string, number>();
 
 const pausableAbi = parseAbi(["function paused() view returns (bool)"]);
 
@@ -120,6 +121,18 @@ async function tickWorker() {
       return true;
     };
 
+    const shouldAttemptRecovery = (
+      event: string,
+      fingerprint: string,
+      cooldownMs: number,
+    ) => {
+      const key = `${event}:${fingerprint}`;
+      const lastAt = workerRecoveryCooldown.get(key) ?? 0;
+      if (nowMs - lastAt < cooldownMs) return false;
+      workerRecoveryCooldown.set(key, nowMs);
+      return true;
+    };
+
     const notifyForRule = (rule: {
       silencedUntil?: string | null;
       channels?: Array<"webhook" | "email" | "telegram">;
@@ -142,6 +155,14 @@ async function tickWorker() {
     const getRuleCooldownMs = (rule: { params?: Record<string, unknown> }) => {
       const raw = Number(rule.params?.cooldownMs ?? 5 * 60_000);
       if (!Number.isFinite(raw) || raw <= 0) return 5 * 60_000;
+      return Math.min(24 * 60 * 60_000, Math.max(30_000, Math.round(raw)));
+    };
+
+    const getRuleRecoveryCooldownMs = (rule: {
+      params?: Record<string, unknown>;
+    }) => {
+      const raw = Number(rule.params?.recoveryCooldownMs ?? 60_000);
+      if (!Number.isFinite(raw) || raw <= 0) return 60_000;
       return Math.min(24 * 60 * 60_000, Math.max(30_000, Math.round(raw)));
     };
 
@@ -235,6 +256,7 @@ async function tickWorker() {
           const lastSuccessAt = state.sync.lastSuccessAt;
           if (lastSuccessAt) {
             const ageMs = Date.now() - new Date(lastSuccessAt).getTime();
+            let staleRecoveryAttempted = false;
             for (const staleRule of staleRules) {
               const maxAgeMs = Number(
                 (staleRule.params as { maxAgeMs?: unknown } | undefined)
@@ -245,6 +267,31 @@ async function tickWorker() {
                 const fingerprint = `${staleRule.id}:${instanceId}:${state.chain}:${
                   state.contractAddress ?? "unknown"
                 }`;
+                if (
+                  !missingConfig &&
+                  !shouldAttemptSync &&
+                  !staleRecoveryAttempted
+                ) {
+                  const recoveryCooldownMs =
+                    getRuleRecoveryCooldownMs(staleRule);
+                  if (
+                    shouldAttemptRecovery(
+                      "stale_sync_recovery",
+                      fingerprint,
+                      recoveryCooldownMs,
+                    )
+                  ) {
+                    staleRecoveryAttempted = true;
+                    try {
+                      await ensureOracleSynced(instanceId);
+                    } catch (e) {
+                      logger.warn("Stale sync recovery failed", {
+                        error: e,
+                        instanceId,
+                      });
+                    }
+                  }
+                }
                 if (
                   !shouldEmit(
                     staleRule.event,

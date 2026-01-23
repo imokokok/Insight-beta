@@ -32,7 +32,20 @@ export default function AddressProfilePage() {
   const [activeTab, setActiveTab] = useState<"assertions" | "disputes">(
     "assertions",
   );
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "list">(() => {
+    try {
+      if (typeof window === "undefined") return "grid";
+      const raw = window.localStorage.getItem("oracleFilters");
+      if (!raw) return "grid";
+      const parsed = JSON.parse(raw) as { viewMode?: unknown } | null;
+      const value =
+        parsed && typeof parsed === "object" ? parsed.viewMode : null;
+      if (value === "grid" || value === "list") return value;
+    } catch {
+      return "grid";
+    }
+    return "grid";
+  });
   const instanceIdFromUrl = searchParams?.get("instanceId")?.trim() || "";
   const [instanceId, setInstanceId] = useState<string>(() => {
     try {
@@ -79,12 +92,13 @@ export default function AddressProfilePage() {
       const next = {
         ...(parsed && typeof parsed === "object" ? parsed : {}),
         instanceId,
+        viewMode,
       };
       window.localStorage.setItem("oracleFilters", JSON.stringify(next));
     } catch {
       void 0;
     }
-  }, [instanceId]);
+  }, [instanceId, viewMode]);
 
   // Fetch User Stats
   const { stats, loading: statsLoading } = useUserStats(address, instanceId);

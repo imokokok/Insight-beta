@@ -468,6 +468,42 @@ describe("oracleState", () => {
       );
     });
 
+    it("stores and replays oracle events in memory mode", async () => {
+      vi.mocked(hasDatabase).mockReturnValue(false);
+      const payload = {
+        id: "0xmem1",
+        chain: "Local",
+        asserter: "0xabc",
+        protocol: "Aave",
+        market: "ETH/USD",
+        assertion: "Price is 2000",
+        assertedAt: new Date().toISOString(),
+        livenessEndsAt: new Date().toISOString(),
+        status: "Pending",
+        bondUsd: 1000,
+        txHash: "0xhashmem",
+      };
+
+      const inserted = await insertOracleEvent({
+        chain: "Local",
+        eventType: "assertion_created",
+        assertionId: payload.id,
+        txHash: payload.txHash,
+        blockNumber: 10n,
+        logIndex: 0,
+        payload,
+      });
+
+      const mem = getMemoryInstance("default");
+      expect(inserted).toBe(true);
+      expect(mem.oracleEvents.size).toBe(1);
+
+      const result = await replayOracleEventsRange(1n, 20n);
+      expect(result.applied).toBe(1);
+      const assertion = await fetchAssertion(payload.id);
+      expect(assertion?.id).toBe(payload.id);
+    });
+
     it("skips replay when payload checksum mismatch", async () => {
       const payload = {
         id: "0x1",
