@@ -47,8 +47,8 @@ export function verifySignature(
 
   const expectedSignature = signRequest(method, path, body, timestamp, nonce);
   const isValid = crypto.timingSafeEqual(
-    Buffer.from(signature, "hex"),
-    Buffer.from(expectedSignature, "hex"),
+    Uint8Array.from(Buffer.from(signature, "hex")),
+    Uint8Array.from(Buffer.from(expectedSignature, "hex")),
   );
 
   if (!isValid) {
@@ -88,17 +88,18 @@ export function hashSensitiveData(data: string): string {
 }
 
 export function encryptData(data: string): string {
-  const iv = crypto.randomBytes(16);
-  const key = crypto.scryptSync(API_SECRET, "salt", 32);
+  const ivBuffer = crypto.randomBytes(16);
+  const iv = Uint8Array.from(ivBuffer);
+  const key = Uint8Array.from(crypto.scryptSync(API_SECRET, "salt", 32));
   const cipher = crypto.createCipheriv("aes-256-gcm", key, iv);
 
   const encrypted = Buffer.concat([
-    cipher.update(data, "utf8"),
-    cipher.final(),
+    Uint8Array.from(cipher.update(data, "utf8")),
+    Uint8Array.from(cipher.final()),
   ]);
   const authTag = cipher.getAuthTag();
 
-  return `${iv.toString("hex")}:${authTag.toString("hex")}:${encrypted.toString("hex")}`;
+  return `${ivBuffer.toString("hex")}:${authTag.toString("hex")}:${encrypted.toString("hex")}`;
 }
 
 export function decryptData(encryptedData: string): string {
@@ -115,15 +116,15 @@ export function decryptData(encryptedData: string): string {
     throw new Error("Invalid encrypted data format");
   }
 
-  const iv = Buffer.from(ivHex, "hex");
-  const authTag = Buffer.from(authTagHex, "hex");
+  const iv = Uint8Array.from(Buffer.from(ivHex, "hex"));
+  const authTag = Uint8Array.from(Buffer.from(authTagHex, "hex"));
   const encrypted = Buffer.from(encryptedHex, "utf8");
 
-  const key = crypto.scryptSync(API_SECRET, "salt", 32);
+  const key = Uint8Array.from(crypto.scryptSync(API_SECRET, "salt", 32));
   const decipher = crypto.createDecipheriv("aes-256-gcm", key, iv);
   decipher.setAuthTag(authTag);
 
-  return decipher.update(encrypted) + decipher.final("utf8");
+  return decipher.update(Uint8Array.from(encrypted)) + decipher.final("utf8");
 }
 
 export function generateApiKey(): { key: string; secret: string } {
@@ -142,8 +143,8 @@ export function validateApiKey(_key: string, secret: string): boolean {
     .digest("hex");
 
   return crypto.timingSafeEqual(
-    Buffer.from(expectedSecret),
-    Buffer.from(secret),
+    Uint8Array.from(Buffer.from(expectedSecret)),
+    Uint8Array.from(Buffer.from(secret)),
   );
 }
 
