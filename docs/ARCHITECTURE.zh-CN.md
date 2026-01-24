@@ -1,8 +1,8 @@
-[中文](./ARCHITECTURE.zh-CN.md)
+[English](./ARCHITECTURE.md)
 
-# System Architecture
+# 系统架构
 
-## Overview
+## 概览
 
 **Insight** is a comprehensive oracle monitoring and dispute resolution interface. It provides real-time visualization of oracle data, manages dispute lifecycles, and enables user interaction with the protocol through a modern web interface.
 

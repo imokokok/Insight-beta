@@ -1,8 +1,8 @@
-[中文](./API.zh-CN.md)
+[English](./API.md)
 
-# API Documentation
+# API
 
-All endpoints return:
+所有接口默认返回：
 
 ```json
 { "ok": true, "data": ... }
@@ -126,7 +126,7 @@ Query alert list.
 
 Get all alert rules.
 
-### PUT `/api/oracle/alert-rules` (Admin)
+### PUT `/api/oracle/alerts-rules` (Admin)
 
 Fully update alert rules.
 

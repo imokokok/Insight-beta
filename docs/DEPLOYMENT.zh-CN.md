@@ -1,8 +1,8 @@
-[中文](./DEPLOYMENT.zh-CN.md)
+[English](./DEPLOYMENT.md)
 
-# Deployment (Production)
+# 部署（生产）
 
-## 1) Environment Variables
+## 1) 环境变量
 
 Minimum required:
 

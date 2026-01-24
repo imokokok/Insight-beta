@@ -1,8 +1,8 @@
-[中文](./DEVELOPMENT_GUIDE.zh-CN.md)
+[English](./DEVELOPMENT_GUIDE.md)
 
-# Development Guide
+# 开发指南
 
-## 1. Environment Setup
+## 1. 环境设置
 
 ```bash
 git clone https://github.com/insight-oracle/insight.git

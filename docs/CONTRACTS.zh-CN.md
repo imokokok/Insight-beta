@@ -1,8 +1,8 @@
-[中文](./CONTRACTS.zh-CN.md)
+[English](./CONTRACTS.md)
 
-# Smart Contract Documentation
+# 智能合约文档
 
-## 1. Contract Overview
+## 1. 合约概览
 
 **InsightOracle** is the core contract of the system, responsible for managing assertion lifecycle, dispute resolution, and bond management.
 

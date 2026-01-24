@@ -1,8 +1,8 @@
-[中文](./USER_MANUAL.zh-CN.md)
+[English](./USER_MANUAL.md)
 
-# User Manual
+# 用户手册
 
-## 1. Quick Start
+## 1. 快速开始
 
 ### Connect Wallet
 

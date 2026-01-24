@@ -7,16 +7,16 @@
 
 [English](README.md) | [中文](README.zh-CN.md)
 
-**Insight** is an oracle monitoring and dispute resolution interface, supporting real-time visualization of oracle data and participation in dispute resolution.
+**Insight** 是一个预言机监控和争议解决界面，支持实时可视化预言机数据、参与争议解决。
 
-## Features
+## 主要功能
 
-- **Real-time Monitoring**: Oracle data trends, volume, sync status
-- **Dispute Resolution**: Browse, vote, resolve disputes
-- **Assertion Management**: Create and track assertions
-- **Multi-chain Support**: Polygon, Arbitrum, Optimism, Local
+- **实时监控**: 预言机数据趋势、交易量、同步状态
+- **争议解决**: 浏览、投票、解决争议
+- **断言管理**: 创建和追踪断言
+- **多链支持**: Polygon、Arbitrum、Optimism、Local
 
-## Quick Start
+## 快速开始
 
 ```bash
 git clone https://github.com/your-org/insight.git
@@ -26,7 +26,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-## Documentation
+## 文档
 
 ### English Documentation
 
@@ -48,19 +48,19 @@ npm run dev
 - [部署指南](docs/DEPLOYMENT.zh-CN.md) - 生产环境部署
 - [用户手册](docs/USER_MANUAL.zh-CN.md) - 用户操作指南
 
-## Commands
+## 命令
 
-| Command                  | Description              |
-| ------------------------ | ------------------------ |
-| `npm run dev`            | Start development server |
-| `npm test`               | Run tests                |
-| `npm run build`          | Build production version |
-| `npm run contracts:test` | Run contract tests       |
+| 命令                     | 说明           |
+| ------------------------ | -------------- |
+| `npm run dev`            | 启动开发服务器 |
+| `npm test`               | 运行测试       |
+| `npm run build`          | 构建生产版本   |
+| `npm run contracts:test` | 运行合约测试   |
 
-## Contributing
+## 贡献
 
-See [CONTRIBUTING.md](CONTRIBUTING.md)
+参见 [CONTRIBUTING.md](CONTRIBUTING.md)
 
-## License
+## 许可证
 
 MIT

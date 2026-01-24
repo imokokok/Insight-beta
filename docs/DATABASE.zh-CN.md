@@ -1,8 +1,8 @@
-[中文](./DATABASE.zh-CN.md)
+[English](./DATABASE.md)
 
-# Database Design
+# 数据库设计
 
-This document describes the database schema, table structure design, and index optimization strategies for the Insight project.
+本文档详细描述了 Insight 项目的数据库架构、表结构设计以及索引优化策略。
 
 ## 1. Overview
 
