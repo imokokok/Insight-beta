@@ -382,7 +382,7 @@ export class EmbedApiManager {
     if (!widget) return "";
 
     const widgetId = `widget_${Date.now()}`;
-    const configId = this.createConfig("system", widget.name, "widget_chart", {
+    const config = this.createConfig("system", widget.name, "widget_chart", {
       description: widget.description,
       dimensions: { width: "300px", height: "200px" },
       options: {
@@ -392,16 +392,18 @@ export class EmbedApiManager {
         showHeader: true,
         showFooter: false,
         showControls: true,
+        customCss: "",
+        customJs: "",
         parameters: { widgetType, ...options },
       },
     });
 
-    const token = this.generateEmbedToken(configId, [{ resource: widgetType, actions: ["read"] }]);
+    const token = this.generateEmbedToken(config.id, [{ resource: widgetType, actions: ["read"] }]);
 
     return `<div
   id="${widgetId}"
   data-widget="${widgetType}"
-  data-config="${configId}"
+  data-config="${config.id}"
   data-token="${token?.token}"
   style="width: 100%; height: 100%;"
 ></div>
@@ -421,8 +423,17 @@ export class EmbedApiManager {
     stats.totalViews++;
     stats.averageLoadTime = (stats.averageLoadTime * (stats.totalViews - 1) + loadTime) / stats.totalViews;
 
-    const today = new Date().toISOString().split("T")[0];
-    stats.viewsByDay[today] = (stats.viewsByDay[today] || 0) + 1;
+    const todayDate = new Date().toISOString().split("T")[0];
+    const today = todayDate ?? "unknown";
+    const viewsByDayRecord = stats.viewsByDay;
+    if (viewsByDayRecord) {
+      const currentValue = viewsByDayRecord[today];
+      if (currentValue !== undefined) {
+        viewsByDayRecord[today] = currentValue + 1;
+      } else {
+        viewsByDayRecord[today] = 1;
+      }
+    }
 
     if (referrer) {
       const domain = this.extractDomain(referrer);

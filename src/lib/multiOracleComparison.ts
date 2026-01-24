@@ -292,8 +292,12 @@ export class MultiOracleComparator {
     let denomY = 0;
 
     for (let i = 0; i < n; i++) {
-      const diffX = x[i] - meanX;
-      const diffY = y[i] - meanY;
+      const valX = x[i];
+      const valY = y[i];
+      if (valX === undefined || valY === undefined) continue;
+      
+      const diffX = valX - meanX;
+      const diffY = valY - meanY;
       numerator += diffX * diffY;
       denomX += diffX * diffX;
       denomY += diffY * diffY;
@@ -319,6 +323,7 @@ export class MultiOracleComparator {
   }
 
    
+  // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
   private logGamma(x: number): number {
     const cof = [
       76.18009172947146, -86.50532032941677, 24.01409824083091,
@@ -328,13 +333,16 @@ export class MultiOracleComparator {
     let y = x;
     let tmp = x + 5.5;
     tmp -= (x + 0.5) * Math.log(tmp);
+    // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
     let ser = 1.000000000190015;
 
     for (let j = 0; j < 6; j++) {
-      ser += cof[j] / ++y;
+      const cofVal = cof[j];
+      if (cofVal === undefined) continue;
+      ser += cofVal / ++y;
     }
 
-     
+    // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
     return -tmp + Math.log(2.5066282746310005 * ser / x);
   }
 
@@ -458,11 +466,17 @@ export class MultiOracleComparator {
 
     if (oracleIds.length >= 2) {
       for (let i = 0; i < oracleIds.length - 1; i++) {
+        const oracleIdI = oracleIds[i];
+        if (!oracleIdI) continue;
+        
         for (let j = i + 1; j < oracleIds.length; j++) {
+          const oracleIdJ = oracleIds[j];
+          if (!oracleIdJ) continue;
+          
           const correlation = this.analyzeCorrelation(
-            oracleIds[i],
-            oracleIds[j],
-            this.historicalData.get(`${oracleIds[i]}-${oracleIds[j]}`) || [],
+            oracleIdI,
+            oracleIdJ,
+            this.historicalData.get(`${oracleIdI}-${oracleIdJ}`) || [],
           );
           if (!topCorrelation || Math.abs(correlation.correlationCoefficient) > Math.abs(topCorrelation.correlationCoefficient)) {
             topCorrelation = correlation;
@@ -488,7 +502,7 @@ export class MultiOracleComparator {
     const insights = this.generateComparativeInsights(oracleId1, oracleId2);
     const correlation = this.analyzeCorrelation(
       oracleId1,
-      oracle2,
+      oracleId2,
       this.historicalData.get(`${oracleId1}-${oracleId2}`) || [],
     );
 
