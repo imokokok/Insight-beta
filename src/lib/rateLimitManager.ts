@@ -540,9 +540,10 @@ export class RateLimitManager {
     if (rule.method !== "*" && rule.method !== method) return false;
 
     const pattern = rule.endpointPattern
-      .replace("*", ".*")
-      .replace("/api/", "/api/");
-    const regex = new RegExp(`^${pattern}$`);
+      .replace(/\*/g, ".*")
+      .replace(/\/api\//g, "/api/");
+    const escapedPattern = pattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(`^${escapedPattern}$`);
     return regex.test(endpoint);
   }
 

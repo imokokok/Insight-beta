@@ -180,9 +180,9 @@ export class EmbedApiManager {
       name: "Executive Summary",
       description: "High-level overview for executives",
       widgets: [
-        { type: "health_score", name: "Health", size: "small", dataSource: "", refreshInterval: 0, options: {} },
-        { type: "assertion_count", name: "Assertions", size: "medium", dataSource: "", refreshInterval: 0, options: {} },
-        { type: "dispute_rate", name: "Disputes", size: "small", dataSource: "", refreshInterval: 0, options: {} },
+        { type: "health_score", name: "Health", description: "Health score widget", size: "small", dataSource: "", refreshInterval: 0, options: {} },
+        { type: "assertion_count", name: "Assertions", description: "Assertion count widget", size: "medium", dataSource: "", refreshInterval: 0, options: {} },
+        { type: "dispute_rate", name: "Disputes", description: "Dispute rate widget", size: "small", dataSource: "", refreshInterval: 0, options: {} },
       ],
       layout: {
         columns: 3,
@@ -199,9 +199,9 @@ export class EmbedApiManager {
       name: "Operations Dashboard",
       description: "Detailed operational metrics",
       widgets: [
-        { type: "sync_status", name: "Sync", size: "medium", dataSource: "", refreshInterval: 0, options: {} },
-        { type: "performance_metrics", name: "Performance", size: "large", dataSource: "", refreshInterval: 0, options: {} },
-        { type: "cost_analysis", name: "Costs", size: "large", dataSource: "", refreshInterval: 0, options: {} },
+        { type: "sync_status", name: "Sync", description: "Sync status widget", size: "medium", dataSource: "", refreshInterval: 0, options: {} },
+        { type: "performance_metrics", name: "Performance", description: "Performance metrics widget", size: "large", dataSource: "", refreshInterval: 0, options: {} },
+        { type: "cost_analysis", name: "Costs", description: "Cost analysis widget", size: "large", dataSource: "", refreshInterval: 0, options: {} },
       ],
       layout: {
         columns: 3,
@@ -396,7 +396,7 @@ export class EmbedApiManager {
       },
     });
 
-    const token = this.generateEmbedToken(configId, [{ resource: widgetType, actions: ["read"] } });
+    const token = this.generateEmbedToken(configId, [{ resource: widgetType, actions: ["read"] }]);
 
     return `<div
   id="${widgetId}"

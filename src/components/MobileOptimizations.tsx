@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { useBreakpoint, breakpoints } from "@/hooks/useMediaQuery";
 import { cn } from "@/lib/utils";
 
 interface ResponsiveGridProps {
@@ -28,10 +28,12 @@ export function ResponsiveGrid({
   cols = { default: 1, sm: 2, md: 3, lg: 4 },
   gap = { default: "gap-4", md: "gap-6" },
 }: ResponsiveGridProps) {
-  const isSm = useMediaQuery("(min-width: 640px)");
-  const isMd = useMediaQuery("(min-width: 768px)");
-  const isLg = useMediaQuery("(min-width: 1024px)");
-  const isXl = useMediaQuery("(min-width: 1280px)");
+  const { isSm, isMd, isLg, isXl } = {
+    isSm: useBreakpoint("sm"),
+    isMd: useBreakpoint("md"),
+    isLg: useBreakpoint("lg"),
+    isXl: useBreakpoint("xl"),
+  };
 
   const colCount = isXl
     ? cols.xl ?? cols.lg ?? cols.md ?? cols.sm ?? cols.default
@@ -59,8 +61,8 @@ export function ResponsiveGrid({
 }
 
 interface TouchOptimizedButtonProps {
-  childrenNode;
-  on: React.ReactClick?: () => void;
+  children: React.ReactNode;
+  onClick?: () => void;
   className?: string;
   variant?: "primary" | "secondary" | "ghost" | "danger";
   size?: "sm" | "md" | "lg";

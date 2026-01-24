@@ -1,6 +1,7 @@
 "use client";
 
-import { ReactNode, useState, useRef, useEffect } from "react";
+import type { ReactNode} from "react";
+import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 type TooltipPosition = "top" | "bottom" | "left" | "right";
@@ -27,7 +28,7 @@ export function Tooltip({
 }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [positionState, setPositionState] = useState<TooltipPosition>(position);
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>();
   const tooltipRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -414,7 +415,7 @@ const helpContentDatabase: Record<string, HelpContent> = {
       "Use predictions as guidance, not guarantees",
     ],
     relatedTopics: ["anomaly-detection", "trend-analysis", "machine-learning"],
-  };
+  },
 };
 
 function getHelpContent(helpId: string): HelpContent | null {
@@ -441,6 +442,8 @@ export function InteractiveGuide({ steps, onComplete, onSkip }: InteractiveGuide
   if (!isVisible) return null;
 
   const step = steps[currentStep];
+  if (!step) return null;
+
   const progress = ((currentStep + 1) / steps.length) * 100;
 
   return (
