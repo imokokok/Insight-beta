@@ -6,7 +6,8 @@ import type {
   OracleStats,
   OracleStatus,
 } from "@/lib/oracleTypes";
-import { useInfiniteList, BaseResponse } from "./useInfiniteList";
+import type { BaseResponse } from "./useInfiniteList";
+import { useInfiniteList } from "./useInfiniteList";
 
 export function useOracleData(
   filterStatus: OracleStatus | "All",

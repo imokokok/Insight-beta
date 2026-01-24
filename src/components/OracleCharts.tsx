@@ -28,7 +28,8 @@ import {
   type TranslationKey,
 } from "@/i18n/translations";
 import { OracleHealthScore } from "./OracleHealthScore";
-import { calculateHealthScore, PricePoint } from "@/server/oracle/priceFetcher";
+import type { PricePoint } from "@/server/oracle/priceFetcher";
+import { calculateHealthScore } from "@/server/oracle/priceFetcher";
 
 type ChartItem = {
   date: string;

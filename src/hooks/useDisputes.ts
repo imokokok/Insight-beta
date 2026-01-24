@@ -1,5 +1,6 @@
 import type { Dispute, OracleConfig, DisputeStatus } from "@/lib/oracleTypes";
-import { useInfiniteList, BaseResponse } from "./useInfiniteList";
+import type { BaseResponse } from "./useInfiniteList";
+import { useInfiniteList } from "./useInfiniteList";
 
 export function useDisputes(
   filterStatus: DisputeStatus | "All" | null,

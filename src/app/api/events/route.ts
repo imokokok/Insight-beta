@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import { handleApi } from "@/server/apiResponse";
 import { logger } from "@/lib/logger";
 

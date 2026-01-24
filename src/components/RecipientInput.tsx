@@ -1,7 +1,7 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import { AlertRule } from "@/lib/oracleTypes";
+import type { AlertRule } from "@/lib/oracleTypes";
 
 interface RecipientInputProps {
   rule: AlertRule;
