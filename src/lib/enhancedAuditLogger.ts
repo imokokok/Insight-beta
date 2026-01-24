@@ -246,7 +246,7 @@ export class EnhancedAuditLogger {
     };
 
     return this.log({
-      action: actionMap[action],
+      action: actionMap[action] ?? "dispute.create",
       entityType: "dispute",
       entityId: disputeId,
       actorId: userId,
@@ -272,7 +272,7 @@ export class EnhancedAuditLogger {
     };
 
     return this.log({
-      action: actionMap[action],
+      action: actionMap[action] ?? "alert.create",
       entityType: "alert",
       entityId: alertId,
       actorId: userId,
@@ -317,7 +317,7 @@ export class EnhancedAuditLogger {
     };
 
     return this.log({
-      action: actionMap[eventType],
+      action: actionMap[eventType] ?? "security.mfa_enable",
       entityType: "security",
       entityId: userId,
       actorId: userId,
@@ -335,7 +335,8 @@ export class EnhancedAuditLogger {
 
   getAllLogs(): AuditLogEntry[] {
     return Array.from(this.logs.values()).sort(
-      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
     );
   }
 
@@ -392,16 +393,27 @@ export class EnhancedAuditLogger {
   getStats(filter?: AuditFilter): AuditStats {
     const logs = filter ? this.filterLogs(filter) : this.getAllLogs();
 
-    const entriesByAction: Record<AuditAction, number> = {} as Record<AuditAction, number>;
-    const entriesByEntityType: Record<AuditEntityType, number> = {} as Record<AuditEntityType, number>;
-    const entriesBySeverity: Record<AuditSeverity, number> = {} as Record<AuditSeverity, number>;
+    const entriesByAction: Record<AuditAction, number> = {} as Record<
+      AuditAction,
+      number
+    >;
+    const entriesByEntityType: Record<AuditEntityType, number> = {} as Record<
+      AuditEntityType,
+      number
+    >;
+    const entriesBySeverity: Record<AuditSeverity, number> = {} as Record<
+      AuditSeverity,
+      number
+    >;
     const entriesByHour: Record<string, number> = {};
     const actorCounts: Map<string, number> = new Map();
 
     logs.forEach((log) => {
       entriesByAction[log.action] = (entriesByAction[log.action] || 0) + 1;
-      entriesByEntityType[log.entityType] = (entriesByEntityType[log.entityType] || 0) + 1;
-      entriesBySeverity[log.severity] = (entriesBySeverity[log.severity] || 0) + 1;
+      entriesByEntityType[log.entityType] =
+        (entriesByEntityType[log.entityType] || 0) + 1;
+      entriesBySeverity[log.severity] =
+        (entriesBySeverity[log.severity] || 0) + 1;
 
       const hour = log.timestamp.substring(0, 13) + ":00";
       entriesByHour[hour] = (entriesByHour[hour] || 0) + 1;
@@ -424,12 +436,16 @@ export class EnhancedAuditLogger {
 
     const todayLogs = logs.filter((l) => new Date(l.timestamp) >= oneDayAgo);
     const yesterdayLogs = logs.filter(
-      (l) => new Date(l.timestamp) >= twoDaysAgo && new Date(l.timestamp) < oneDayAgo,
+      (l) =>
+        new Date(l.timestamp) >= twoDaysAgo &&
+        new Date(l.timestamp) < oneDayAgo,
     );
 
-    const activityTrend = yesterdayLogs.length > 0
-      ? ((todayLogs.length - yesterdayLogs.length) / yesterdayLogs.length) * 100
-      : 0;
+    const activityTrend =
+      yesterdayLogs.length > 0
+        ? ((todayLogs.length - yesterdayLogs.length) / yesterdayLogs.length) *
+          100
+        : 0;
 
     return {
       totalEntries: logs.length,
@@ -466,7 +482,12 @@ export class EnhancedAuditLogger {
     ).length;
 
     const sensitiveOperations = logs.filter((l) =>
-      ["system.backup", "system.restore", "api_key.revoke", "webhook.delete"].includes(l.action),
+      [
+        "system.backup",
+        "system.restore",
+        "api_key.revoke",
+        "webhook.delete",
+      ].includes(l.action),
     ).length;
 
     const unusualActivity = logs
@@ -598,7 +619,9 @@ export class EnhancedAuditLogger {
   }
 
   private flushBuffer(): void {
-    console.log(`[AUDIT] Flushing ${this.logBuffer.length} log entries to persistent storage`);
+    console.log(
+      `[AUDIT] Flushing ${this.logBuffer.length} log entries to persistent storage`,
+    );
     this.logBuffer = [];
   }
 
@@ -607,7 +630,9 @@ export class EnhancedAuditLogger {
   }
 
   clearOldLogs(): number {
-    const cutoff = new Date(Date.now() - this.RETENTION_DAYS * 24 * 60 * 60 * 1000);
+    const cutoff = new Date(
+      Date.now() - this.RETENTION_DAYS * 24 * 60 * 60 * 1000,
+    );
     let removed = 0;
 
     for (const [id, log] of this.logs) {

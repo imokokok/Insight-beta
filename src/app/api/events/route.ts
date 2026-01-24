@@ -36,8 +36,9 @@ export async function GET(request: NextRequest) {
           heartbeatInterval = setInterval(sendHeartbeat, 30000);
 
           const eventBus = getEventBus();
-          const unsubscribe = eventBus.subscribe((event) => {
-            if (!instanceId || event.instanceId === instanceId) {
+          const unsubscribe = eventBus.subscribe((event: unknown) => {
+            const typedEvent = event as { instanceId?: string };
+            if (!instanceId || typedEvent.instanceId === instanceId) {
               sendEvent(event);
             }
           });
@@ -59,7 +60,7 @@ export async function GET(request: NextRequest) {
       headers: {
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache, no-transform",
-        "Connection": "keep-alive",
+        Connection: "keep-alive",
         "X-Accel-Buffering": "no",
       },
     });
@@ -91,14 +92,15 @@ class EventBus {
 
 let eventBus: EventBus | null = null;
 
-export function getEventBus(): EventBus {
+function getEventBus(): EventBus {
   if (!eventBus) {
     eventBus = new EventBus();
   }
   return eventBus;
 }
 
-export function publishRealtimeEvent(event: unknown): void {
-  const bus = getEventBus();
-  bus.publish(event);
-}
+// publishRealtimeEvent reserved for future use
+// function publishRealtimeEvent(event: unknown): void {
+//   const bus = getEventBus();
+//   bus.publish(event);
+// }

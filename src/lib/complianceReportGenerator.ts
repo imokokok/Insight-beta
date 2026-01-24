@@ -36,7 +36,12 @@ export interface ComplianceRequirement {
   id: string;
   code: string;
   description: string;
-  status: "compliant" | "non_compliant" | "partial" | "not_applicable" | "pending";
+  status:
+    | "compliant"
+    | "non_compliant"
+    | "partial"
+    | "not_applicable"
+    | "pending";
   evidence: string[];
   lastChecked: string;
   notes: string;
@@ -125,17 +130,52 @@ export class ComplianceReportGenerator {
       name: "ISO 27001",
       description: "Information Security Management System standard",
       sections: [
-        { id: "a5", name: "Information Security Policies", weight: 10, requirements: 2 },
-        { id: "a6", name: "Organization of Information Security", weight: 10, requirements: 7 },
-        { id: "a7", name: "Human Resource Security", weight: 10, requirements: 6 },
+        {
+          id: "a5",
+          name: "Information Security Policies",
+          weight: 10,
+          requirements: 2,
+        },
+        {
+          id: "a6",
+          name: "Organization of Information Security",
+          weight: 10,
+          requirements: 7,
+        },
+        {
+          id: "a7",
+          name: "Human Resource Security",
+          weight: 10,
+          requirements: 6,
+        },
         { id: "a8", name: "Asset Management", weight: 10, requirements: 6 },
         { id: "a9", name: "Access Control", weight: 15, requirements: 14 },
         { id: "a10", name: "Cryptography", weight: 10, requirements: 2 },
         { id: "a11", name: "Physical Security", weight: 10, requirements: 6 },
-        { id: "a12", name: "Operations Security", weight: 15, requirements: 16 },
-        { id: "a13", name: "Communications Security", weight: 10, requirements: 7 },
-        { id: "a14", name: "System Acquisition & Development", weight: 10, requirements: 6 },
-        { id: "a15", name: "Supplier Relationships", weight: 5, requirements: 5 },
+        {
+          id: "a12",
+          name: "Operations Security",
+          weight: 15,
+          requirements: 16,
+        },
+        {
+          id: "a13",
+          name: "Communications Security",
+          weight: 10,
+          requirements: 7,
+        },
+        {
+          id: "a14",
+          name: "System Acquisition & Development",
+          weight: 10,
+          requirements: 6,
+        },
+        {
+          id: "a15",
+          name: "Supplier Relationships",
+          weight: 5,
+          requirements: 5,
+        },
         { id: "a16", name: "Incident Management", weight: 10, requirements: 5 },
         { id: "a17", name: "Business Continuity", weight: 5, requirements: 4 },
         { id: "a18", name: "Compliance", weight: 10, requirements: 8 },
@@ -145,24 +185,84 @@ export class ComplianceReportGenerator {
       name: "GDPR",
       description: "General Data Protection Regulation compliance",
       sections: [
-        { id: "principles", name: "Data Processing Principles", weight: 20, requirements: 6 },
-        { id: "lawful_basis", name: "Lawful Basis for Processing", weight: 15, requirements: 6 },
-        { id: "consent", name: "Consent Requirements", weight: 15, requirements: 5 },
-        { id: "transparency", name: "Transparency & Information", weight: 10, requirements: 4 },
-        { id: "data_subject_rights", name: "Data Subject Rights", weight: 20, requirements: 8 },
-        { id: "security", name: "Security of Processing", weight: 15, requirements: 5 },
-        { id: "accountability", name: "Accountability", weight: 10, requirements: 4 },
+        {
+          id: "principles",
+          name: "Data Processing Principles",
+          weight: 20,
+          requirements: 6,
+        },
+        {
+          id: "lawful_basis",
+          name: "Lawful Basis for Processing",
+          weight: 15,
+          requirements: 6,
+        },
+        {
+          id: "consent",
+          name: "Consent Requirements",
+          weight: 15,
+          requirements: 5,
+        },
+        {
+          id: "transparency",
+          name: "Transparency & Information",
+          weight: 10,
+          requirements: 4,
+        },
+        {
+          id: "data_subject_rights",
+          name: "Data Subject Rights",
+          weight: 20,
+          requirements: 8,
+        },
+        {
+          id: "security",
+          name: "Security of Processing",
+          weight: 15,
+          requirements: 5,
+        },
+        {
+          id: "accountability",
+          name: "Accountability",
+          weight: 10,
+          requirements: 4,
+        },
       ],
     },
     ccpa: {
       name: "CCPA",
       description: "California Consumer Privacy Act compliance",
       sections: [
-        { id: "notice", name: "Privacy Notice Requirements", weight: 20, requirements: 4 },
-        { id: "access", name: "Consumer Access Rights", weight: 20, requirements: 3 },
-        { id: "deletion", name: "Right to Deletion", weight: 15, requirements: 3 },
-        { id: "optout", name: "Opt-Out Requirements", weight: 15, requirements: 3 },
-        { id: "nondiscrimination", name: "Non-Discrimination", weight: 10, requirements: 2 },
+        {
+          id: "notice",
+          name: "Privacy Notice Requirements",
+          weight: 20,
+          requirements: 4,
+        },
+        {
+          id: "access",
+          name: "Consumer Access Rights",
+          weight: 20,
+          requirements: 3,
+        },
+        {
+          id: "deletion",
+          name: "Right to Deletion",
+          weight: 15,
+          requirements: 3,
+        },
+        {
+          id: "optout",
+          name: "Opt-Out Requirements",
+          weight: 15,
+          requirements: 3,
+        },
+        {
+          id: "nondiscrimination",
+          name: "Non-Discrimination",
+          weight: 10,
+          requirements: 2,
+        },
         { id: "security", name: "Data Security", weight: 20, requirements: 4 },
       ],
     },
@@ -176,20 +276,60 @@ export class ComplianceReportGenerator {
       description: "Comprehensive security controls assessment",
       sections: [
         { id: "access", name: "Access Control", weight: 25, requirements: 20 },
-        { id: "encryption", name: "Encryption & Key Management", weight: 20, requirements: 15 },
-        { id: "network", name: "Network Security", weight: 20, requirements: 15 },
-        { id: "monitoring", name: "Monitoring & Logging", weight: 20, requirements: 15 },
-        { id: "incident", name: "Incident Response", weight: 15, requirements: 10 },
+        {
+          id: "encryption",
+          name: "Encryption & Key Management",
+          weight: 20,
+          requirements: 15,
+        },
+        {
+          id: "network",
+          name: "Network Security",
+          weight: 20,
+          requirements: 15,
+        },
+        {
+          id: "monitoring",
+          name: "Monitoring & Logging",
+          weight: 20,
+          requirements: 15,
+        },
+        {
+          id: "incident",
+          name: "Incident Response",
+          weight: 15,
+          requirements: 10,
+        },
       ],
     },
     operational_excellence: {
       name: "Operational Excellence",
       description: "Operational efficiency and reliability assessment",
       sections: [
-        { id: "reliability", name: "System Reliability", weight: 30, requirements: 10 },
-        { id: "performance", name: "Performance Management", weight: 25, requirements: 8 },
-        { id: "availability", name: "Availability & Uptime", weight: 30, requirements: 8 },
-        { id: "efficiency", name: "Resource Efficiency", weight: 15, requirements: 5 },
+        {
+          id: "reliability",
+          name: "System Reliability",
+          weight: 30,
+          requirements: 10,
+        },
+        {
+          id: "performance",
+          name: "Performance Management",
+          weight: 25,
+          requirements: 8,
+        },
+        {
+          id: "availability",
+          name: "Availability & Uptime",
+          weight: 30,
+          requirements: 8,
+        },
+        {
+          id: "efficiency",
+          name: "Resource Efficiency",
+          weight: 15,
+          requirements: 5,
+        },
       ],
     },
     data_integrity: {
@@ -197,9 +337,24 @@ export class ComplianceReportGenerator {
       description: "Data integrity and accuracy assessment",
       sections: [
         { id: "accuracy", name: "Data Accuracy", weight: 25, requirements: 8 },
-        { id: "consistency", name: "Data Consistency", weight: 25, requirements: 6 },
-        { id: "completeness", name: "Data Completeness", weight: 20, requirements: 6 },
-        { id: "validation", name: "Data Validation", weight: 30, requirements: 10 },
+        {
+          id: "consistency",
+          name: "Data Consistency",
+          weight: 25,
+          requirements: 6,
+        },
+        {
+          id: "completeness",
+          name: "Data Completeness",
+          weight: 20,
+          requirements: 6,
+        },
+        {
+          id: "validation",
+          name: "Data Validation",
+          weight: 30,
+          requirements: 10,
+        },
       ],
     },
   };
@@ -305,29 +460,41 @@ export class ComplianceReportGenerator {
     systemName: string,
     customSections?: ComplianceSection[],
   ): ComplianceReport {
+    const effectiveSystemName = systemName || "Unknown System";
     const framework = this.FRAMEWORKS[type];
     const sections = customSections || this.generateSections(type, framework);
 
-    const totalControls = sections.reduce((sum, s) => sum + s.requirements.length, 0);
+    const totalControls = sections.reduce(
+      (sum, s) => sum + s.requirements.length,
+      0,
+    );
     const passedControls = sections.reduce(
-      (sum, s) => sum + s.requirements.filter((r) => r.status === "compliant").length,
+      (sum, s) =>
+        sum + s.requirements.filter((r) => r.status === "compliant").length,
       0,
     );
     const failedControls = sections.reduce(
-      (sum, s) => sum + s.requirements.filter((r) => r.status === "non_compliant").length,
+      (sum, s) =>
+        sum + s.requirements.filter((r) => r.status === "non_compliant").length,
       0,
     );
 
-    const overallScore = totalControls > 0 ? (passedControls / totalControls) * 100 : 0;
+    const overallScore =
+      totalControls > 0 ? (passedControls / totalControls) * 100 : 0;
 
     const findings = this.generateFindings(sections);
-    const recommendations = this.generateRecommendations(type, sections, findings);
+    const recommendations = this.generateRecommendations(
+      type,
+      sections,
+      findings,
+    );
 
-    const status = overallScore >= 95
-      ? "compliant"
-      : overallScore >= 75
-        ? "needs_review"
-        : "non_compliant";
+    const status =
+      overallScore >= 95
+        ? "compliant"
+        : overallScore >= 75
+          ? "needs_review"
+          : "non_compliant";
 
     return {
       id: this.generateId(),
@@ -342,7 +509,7 @@ export class ComplianceReportGenerator {
       attestations: [],
       metadata: {
         organizationName,
-        systemName,
+        systemName: effectiveSystemName,
         version: "1.0.0",
         assessorName: "Insight Oracle Compliance System",
         assessorQualification: "Automated Assessment",
@@ -351,14 +518,19 @@ export class ComplianceReportGenerator {
         controlsPassed: passedControls,
         controlsFailed: failedControls,
         controlsNotApplicable: sections.reduce(
-          (sum, s) => sum + s.requirements.filter((r) => r.status === "not_applicable").length,
+          (sum, s) =>
+            sum +
+            s.requirements.filter((r) => r.status === "not_applicable").length,
           0,
         ),
       },
     };
   }
 
-  private generateSections(type: ComplianceReportType, framework: FrameworkConfig): ComplianceSection[] {
+  private generateSections(
+    type: ComplianceReportType,
+    framework: FrameworkConfig,
+  ): ComplianceSection[] {
     if (type === "custom" || !framework.sections.length) {
       return this.generateDefaultSections();
     }
@@ -370,7 +542,7 @@ export class ComplianceReportGenerator {
       requirements: this.generateRequirements(section.id, section.requirements),
       score: 0,
       weight: section.weight,
-      status: "pending",
+      status: "partial" as const,
     }));
   }
 
@@ -383,7 +555,7 @@ export class ComplianceReportGenerator {
         requirements: this.generateRequirements("access", 5),
         score: 0,
         weight: 25,
-        status: "pending",
+        status: "partial" as const,
       },
       {
         id: "security",
@@ -392,7 +564,7 @@ export class ComplianceReportGenerator {
         requirements: this.generateRequirements("security", 5),
         score: 0,
         weight: 30,
-        status: "pending",
+        status: "partial" as const,
       },
       {
         id: "operations",
@@ -401,7 +573,7 @@ export class ComplianceReportGenerator {
         requirements: this.generateRequirements("operations", 5),
         score: 0,
         weight: 25,
-        status: "pending",
+        status: "partial" as const,
       },
       {
         id: "monitoring",
@@ -410,48 +582,140 @@ export class ComplianceReportGenerator {
         requirements: this.generateRequirements("monitoring", 5),
         score: 0,
         weight: 20,
-        status: "pending",
+        status: "partial" as const,
       },
     ];
   }
 
-  private generateRequirements(sectionId: string, count: number): ComplianceRequirement[] {
-    const requirementTemplates: Record<string, Array<{ code: string; description: string; riskLevel: "low" | "medium" | "high" | "critical" }>> = {
+  private generateRequirements(
+    sectionId: string,
+    count: number,
+  ): ComplianceRequirement[] {
+    const requirementTemplates: Record<
+      string,
+      Array<{
+        code: string;
+        description: string;
+        riskLevel: "low" | "medium" | "high" | "critical";
+      }>
+    > = {
       access: [
-        { code: "AC-1", description: "Multi-factor authentication enabled", riskLevel: "high" },
-        { code: "AC-2", description: "Role-based access control implemented", riskLevel: "medium" },
-        { code: "AC-3", description: "Periodic access reviews conducted", riskLevel: "medium" },
-        { code: "AC-4", description: "Privileged access management enforced", riskLevel: "critical" },
-        { code: "AC-5", description: "Session timeout and management", riskLevel: "low" },
+        {
+          code: "AC-1",
+          description: "Multi-factor authentication enabled",
+          riskLevel: "high",
+        },
+        {
+          code: "AC-2",
+          description: "Role-based access control implemented",
+          riskLevel: "medium",
+        },
+        {
+          code: "AC-3",
+          description: "Periodic access reviews conducted",
+          riskLevel: "medium",
+        },
+        {
+          code: "AC-4",
+          description: "Privileged access management enforced",
+          riskLevel: "critical",
+        },
+        {
+          code: "AC-5",
+          description: "Session timeout and management",
+          riskLevel: "low",
+        },
       ],
       security: [
-        { code: "SC-1", description: "Encryption at rest implemented", riskLevel: "high" },
-        { code: "SC-2", description: "Encryption in transit enforced", riskLevel: "high" },
-        { code: "SC-3", description: "Key management procedures established", riskLevel: "high" },
-        { code: "SC-4", description: "Vulnerability management program", riskLevel: "medium" },
-        { code: "SC-5", description: "Patch management process", riskLevel: "medium" },
+        {
+          code: "SC-1",
+          description: "Encryption at rest implemented",
+          riskLevel: "high",
+        },
+        {
+          code: "SC-2",
+          description: "Encryption in transit enforced",
+          riskLevel: "high",
+        },
+        {
+          code: "SC-3",
+          description: "Key management procedures established",
+          riskLevel: "high",
+        },
+        {
+          code: "SC-4",
+          description: "Vulnerability management program",
+          riskLevel: "medium",
+        },
+        {
+          code: "SC-5",
+          description: "Patch management process",
+          riskLevel: "medium",
+        },
       ],
       operations: [
-        { code: "OP-1", description: "Change management procedures", riskLevel: "medium" },
-        { code: "OP-2", description: "Incident response procedures", riskLevel: "high" },
-        { code: "OP-3", description: "Business continuity planning", riskLevel: "medium" },
-        { code: "OP-4", description: "Disaster recovery testing", riskLevel: "high" },
+        {
+          code: "OP-1",
+          description: "Change management procedures",
+          riskLevel: "medium",
+        },
+        {
+          code: "OP-2",
+          description: "Incident response procedures",
+          riskLevel: "high",
+        },
+        {
+          code: "OP-3",
+          description: "Business continuity planning",
+          riskLevel: "medium",
+        },
+        {
+          code: "OP-4",
+          description: "Disaster recovery testing",
+          riskLevel: "high",
+        },
         { code: "OP-5", description: "Capacity planning", riskLevel: "low" },
       ],
       monitoring: [
-        { code: "MN-1", description: "Audit logging enabled", riskLevel: "high" },
-        { code: "MN-2", description: "Log retention policies", riskLevel: "medium" },
-        { code: "MN-3", description: "Security monitoring active", riskLevel: "high" },
-        { code: "MN-4", description: "Alert configuration", riskLevel: "medium" },
-        { code: "MN-5", description: "Log analysis procedures", riskLevel: "medium" },
+        {
+          code: "MN-1",
+          description: "Audit logging enabled",
+          riskLevel: "high",
+        },
+        {
+          code: "MN-2",
+          description: "Log retention policies",
+          riskLevel: "medium",
+        },
+        {
+          code: "MN-3",
+          description: "Security monitoring active",
+          riskLevel: "high",
+        },
+        {
+          code: "MN-4",
+          description: "Alert configuration",
+          riskLevel: "medium",
+        },
+        {
+          code: "MN-5",
+          description: "Log analysis procedures",
+          riskLevel: "medium",
+        },
       ],
     };
 
-    const templates = requirementTemplates[sectionId] || requirementTables[sectionId] || requirementTemplates["access"];
+    const templates =
+      requirementTemplates[sectionId as keyof typeof requirementTemplates] ||
+      requirementTemplates["access"];
+    if (!templates || templates.length === 0) {
+      return [];
+    }
     const requirements: ComplianceRequirement[] = [];
 
     for (let i = 0; i < Math.min(count, templates.length); i++) {
       const template = templates[i];
+      if (!template) continue;
       const statuses: Array<ComplianceRequirement["status"]> = [
         "compliant",
         "compliant",
@@ -460,7 +724,8 @@ export class ComplianceReportGenerator {
         "partial",
         "non_compliant",
       ];
-      const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+      const randomStatus =
+        statuses[Math.floor(Math.random() * statuses.length)] ?? "partial";
 
       requirements.push({
         id: this.generateId(),
@@ -492,9 +757,10 @@ export class ComplianceReportGenerator {
             description: `Control ${req.code} is currently ${req.status}`,
             requirementId: req.id,
             requirementCode: req.code,
-            currentState: req.status === "non_compliant"
-              ? "Control not implemented"
-              : "Control partially implemented",
+            currentState:
+              req.status === "non_compliant"
+                ? "Control not implemented"
+                : "Control partially implemented",
             expectedState: "Full compliance with requirement",
             remediation: `Implement or enhance ${req.description}`,
             timeline: "Within 30 days",
@@ -510,8 +776,8 @@ export class ComplianceReportGenerator {
   }
 
   private generateRecommendations(
-    type: ComplianceReportType,
-    sections: ComplianceSection[],
+    _type: ComplianceReportType,
+    _sections: ComplianceSection[],
     findings: ComplianceFinding[],
   ): ComplianceRecommendation[] {
     const recommendations: ComplianceRecommendation[] = [];
@@ -522,7 +788,8 @@ export class ComplianceReportGenerator {
         priority: "critical",
         category: "Security",
         title: "Address Critical Findings Immediately",
-        description: "Multiple critical severity findings require immediate attention",
+        description:
+          "Multiple critical severity findings require immediate attention",
         impact: "High risk exposure until addressed",
         effort: "high",
         estimatedCost: "$10,000-$50,000",
@@ -543,7 +810,8 @@ export class ComplianceReportGenerator {
         priority: "high",
         category: "Security",
         title: "Remediate High Severity Findings",
-        description: "Address high priority security gaps identified in assessment",
+        description:
+          "Address high priority security gaps identified in assessment",
         impact: "Significant risk reduction",
         effort: "medium",
         estimatedCost: "$5,000-$25,000",
@@ -577,7 +845,7 @@ export class ComplianceReportGenerator {
       dependencies: ["Tool selection", "Integration with existing systems"],
     });
 
-    if (type === "soc2_type2" || type === "iso27001") {
+    if (_type === "soc2_type2" || _type === "iso27001") {
       recommendations.push({
         id: this.generateId(),
         priority: "medium",
@@ -606,15 +874,27 @@ export class ComplianceReportGenerator {
 
     switch (type) {
       case "security_assessment":
-        this.CONTROL_CHECKS.access_control.forEach((check) => {
-          checks.push({ ...check, actualResult: "Sample result", passFail: Math.random() > 0.3 });
-        });
-        this.CONTROL_CHECKS.encryption.forEach((check) => {
-          checks.push({ ...check, actualResult: "Sample result", passFail: Math.random() > 0.3 });
-        });
-        this.CONTROL_CHECKS.monitoring.forEach((check) => {
-          checks.push({ ...check, actualResult: "Sample result", passFail: Math.random() > 0.3 });
-        });
+        this.CONTROL_CHECKS?.access_control?.forEach((check) => {
+          checks.push({
+            ...check,
+            actualResult: "Sample result",
+            passFail: Math.random() > 0.3,
+          });
+        }) ?? [];
+        this.CONTROL_CHECKS?.encryption?.forEach((check) => {
+          checks.push({
+            ...check,
+            actualResult: "Sample result",
+            passFail: Math.random() > 0.3,
+          });
+        }) ?? [];
+        this.CONTROL_CHECKS?.monitoring?.forEach((check) => {
+          checks.push({
+            ...check,
+            actualResult: "Sample result",
+            passFail: Math.random() > 0.3,
+          });
+        }) ?? [];
         break;
 
       default:
@@ -639,7 +919,10 @@ export class ComplianceReportGenerator {
     return `comp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
-  exportReport(report: ComplianceReport, format: "json" | "csv" | "pdf"): string {
+  exportReport(
+    report: ComplianceReport,
+    format: "json" | "csv" | "pdf",
+  ): string {
     if (format === "json") {
       return JSON.stringify(report, null, 2);
     }
@@ -674,8 +957,6 @@ interface FrameworkConfig {
   }>;
 }
 
-const requirementTables: Record<string, Array<{ code: string; description: string; riskLevel: "low" | "medium" | "high" | "critical" }>> = {};
-
 export const complianceReportGenerator = new ComplianceReportGenerator();
 
 export function generateQuickComplianceReport(
@@ -683,8 +964,16 @@ export function generateQuickComplianceReport(
   organizationName: string,
   systemName: string,
 ): ComplianceReport {
-  const endDate = new Date().toISOString().split("T")[0];
-  const startDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+  const endDate = new Date().toISOString().split("T")[0] as string;
+  const startDate = (new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .split("T")[0] || "") as string;
 
-  return complianceReportGenerator.generateReport(type, startDate, endDate, organizationName, systemName);
+  return complianceReportGenerator.generateReport(
+    type,
+    startDate,
+    endDate,
+    organizationName,
+    systemName || "Unknown System",
+  );
 }

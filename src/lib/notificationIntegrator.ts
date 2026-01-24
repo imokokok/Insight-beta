@@ -49,13 +49,14 @@ export class NotificationIntegrator {
     purple: 0x9b59b6,
   };
 
-  private readonly DISCORD_COLORS = {
-    success: 5763714,
-    warning: 16776960,
-    error: 15548997,
-    info: 3447003,
-    purple: 10115547,
-  };
+  // DISCORD_COLORS reserved for future Discord webhook integration
+  // private static readonly DISCORD_COLORS = {
+  //   success: 5763714,
+  //   warning: 16776960,
+  //   error: 15548997,
+  //   info: 3447003,
+  //   purple: 10115547,
+  // };
 
   configureSlack(userId: string, config: SlackConfig): void {
     this.slackConfigs.set(userId, config);
@@ -87,7 +88,11 @@ export class NotificationIntegrator {
   ): Promise<NotificationResult> {
     const config = this.slackConfigs.get(userId);
     if (!config || !config.isActive) {
-      return { success: false, platform: "slack", error: "Slack not configured or inactive" };
+      return {
+        success: false,
+        platform: "slack",
+        error: "Slack not configured or inactive",
+      };
     }
 
     const slackPayload = this.buildSlackPayload(config, message);
@@ -103,7 +108,11 @@ export class NotificationIntegrator {
         return { success: true, platform: "slack" };
       } else {
         const error = await response.text();
-        return { success: false, platform: "slack", error: `Slack API error: ${error}` };
+        return {
+          success: false,
+          platform: "slack",
+          error: `Slack API error: ${error}`,
+        };
       }
     } catch (error) {
       return {
@@ -120,7 +129,11 @@ export class NotificationIntegrator {
   ): Promise<NotificationResult> {
     const config = this.discordConfigs.get(userId);
     if (!config || !config.isActive) {
-      return { success: false, platform: "discord", error: "Discord not configured or inactive" };
+      return {
+        success: false,
+        platform: "discord",
+        error: "Discord not configured or inactive",
+      };
     }
 
     const discordPayload = this.buildDiscordPayload(config, message);
@@ -136,7 +149,11 @@ export class NotificationIntegrator {
         return { success: true, platform: "discord" };
       } else {
         const error = await response.text();
-        return { success: false, platform: "discord", error: `Discord API error: ${error}` };
+        return {
+          success: false,
+          platform: "discord",
+          error: `Discord API error: ${error}`,
+        };
       }
     } catch (error) {
       return {
@@ -169,8 +186,11 @@ export class NotificationIntegrator {
     return results;
   }
 
-  private buildSlackPayload(config: SlackConfig, message: NotificationMessage): object {
-    const blocks = [
+  private buildSlackPayload(
+    config: SlackConfig,
+    message: NotificationMessage,
+  ): object {
+    const blocks: object[] = [
       {
         type: "header",
         text: {
@@ -197,7 +217,7 @@ export class NotificationIntegrator {
       blocks.push({
         type: "section",
         fields,
-      } as object);
+      });
     }
 
     if (message.footer) {
@@ -241,13 +261,18 @@ export class NotificationIntegrator {
         {
           color: `#${message.color.toString(16).padStart(6, "0")}`,
           footer: message.footer,
-          ts: message.timestamp ? Math.floor(new Date(message.timestamp).getTime() / 1000) : undefined,
+          ts: message.timestamp
+            ? Math.floor(new Date(message.timestamp).getTime() / 1000)
+            : undefined,
         },
       ],
     };
   }
 
-  private buildDiscordPayload(config: DiscordConfig, message: NotificationMessage): object {
+  private buildDiscordPayload(
+    config: DiscordConfig,
+    message: NotificationMessage,
+  ): object {
     const embeds = [
       {
         title: message.title,
@@ -281,8 +306,16 @@ export class NotificationIntegrator {
       description: `A new assertion has been submitted for *${market}*`,
       color: this.SLACK_COLORS.info,
       fields: [
-        { name: "Assertion ID", value: `\`${assertionId.slice(0, 16)}...\``, inline: true },
-        { name: "Asserter", value: `\`${asserter.slice(0, 8)}...${asserter.slice(-6)}\``, inline: true },
+        {
+          name: "Assertion ID",
+          value: `\`${assertionId.slice(0, 16)}...\``,
+          inline: true,
+        },
+        {
+          name: "Asserter",
+          value: `\`${asserter.slice(0, 8)}...${asserter.slice(-6)}\``,
+          inline: true,
+        },
         { name: "Bond", value: `$${bondUsd.toLocaleString()}`, inline: true },
       ],
       footer: "Insight Oracle Monitor",
@@ -302,9 +335,21 @@ export class NotificationIntegrator {
       description: `An assertion has been disputed: *${reason}*`,
       color: this.SLACK_COLORS.warning,
       fields: [
-        { name: "Assertion ID", value: `\`${assertionId.slice(0, 16)}...\``, inline: true },
-        { name: "Disputer", value: `\`${disputer.slice(0, 8)}...${disputer.slice(-6)}\``, inline: true },
-        { name: "Bond at Risk", value: `$${bondUsd.toLocaleString()}`, inline: true },
+        {
+          name: "Assertion ID",
+          value: `\`${assertionId.slice(0, 16)}...\``,
+          inline: true,
+        },
+        {
+          name: "Disputer",
+          value: `\`${disputer.slice(0, 8)}...${disputer.slice(-6)}\``,
+          inline: true,
+        },
+        {
+          name: "Bond at Risk",
+          value: `$${bondUsd.toLocaleString()}`,
+          inline: true,
+        },
       ],
       footer: "Insight Oracle Monitor",
       timestamp: new Date().toISOString(),
@@ -318,16 +363,20 @@ export class NotificationIntegrator {
     message: string,
     recommendedAction: string,
   ): NotificationMessage {
-    const color = severity === "critical"
-      ? this.SLACK_COLORS.error
-      : severity === "warning"
-        ? this.SLACK_COLORS.warning
-        : this.SLACK_COLORS.info;
+    const color =
+      severity === "critical"
+        ? this.SLACK_COLORS.error
+        : severity === "warning"
+          ? this.SLACK_COLORS.warning
+          : this.SLACK_COLORS.info;
 
     return {
-      title: severity === "critical" ? "🚨 Critical Alert"
-        : severity === "warning" ? "⚠️ Warning Alert"
-          : "ℹ️ Info Alert",
+      title:
+        severity === "critical"
+          ? "🚨 Critical Alert"
+          : severity === "warning"
+            ? "⚠️ Warning Alert"
+            : "ℹ️ Info Alert",
       description: `*${alertType}*: ${message}`,
       color,
       fields: [
@@ -345,15 +394,22 @@ export class NotificationIntegrator {
     issues: string[],
   ): NotificationMessage {
     return {
-      title: score >= 90 ? "✅ Oracle Health Check Passed"
-        : score >= 70 ? "⚠️ Oracle Health Degraded"
-          : "🚨 Oracle Health Critical",
-      description: score >= 90
-        ? "All systems operating normally"
-        : `Health score: **${score}/100**\n\nIssues detected:\n${issues.map((i) => `• ${i}`).join("\n")}`,
-      color: score >= 90 ? this.SLACK_COLORS.success
-        : score >= 70 ? this.SLACK_COLORS.warning
-          : this.SLACK_COLORS.error,
+      title:
+        score >= 90
+          ? "✅ Oracle Health Check Passed"
+          : score >= 70
+            ? "⚠️ Oracle Health Degraded"
+            : "🚨 Oracle Health Critical",
+      description:
+        score >= 90
+          ? "All systems operating normally"
+          : `Health score: **${score}/100**\n\nIssues detected:\n${issues.map((i) => `• ${i}`).join("\n")}`,
+      color:
+        score >= 90
+          ? this.SLACK_COLORS.success
+          : score >= 70
+            ? this.SLACK_COLORS.warning
+            : this.SLACK_COLORS.error,
       fields: [
         { name: "Health Score", value: `${score}/100`, inline: true },
         { name: "Issues Found", value: issues.length.toString(), inline: true },
@@ -437,9 +493,7 @@ export function createSlackConfig(
   };
 }
 
-export function createDiscordConfig(
-  webhookUrl: string,
-): DiscordConfig {
+export function createDiscordConfig(webhookUrl: string): DiscordConfig {
   return {
     webhookUrl,
     username: "Insight Oracle",

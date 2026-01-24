@@ -1070,14 +1070,23 @@ function startWorker() {
 }
 
 declare global {
+  // eslint-disable-next-line no-var
   var insightWorkerStarted: boolean;
+  // eslint-disable-next-line no-var
   var insightWorkerLockClient: PoolClient | undefined;
+  // eslint-disable-next-line no-var
   var insightWorkerLockKey: string | undefined;
+  // eslint-disable-next-line no-var
   var insightWorkerInterval: ReturnType<typeof setInterval> | undefined;
+  // eslint-disable-next-line no-var
   var insightWorkerTickInProgress: boolean | undefined;
+  // eslint-disable-next-line no-var
   var insightWorkerLastTickAt: string | undefined;
+  // eslint-disable-next-line no-var
   var insightWorkerLastTickDurationMs: number | undefined;
+  // eslint-disable-next-line no-var
   var insightWorkerLastError: string | null | undefined;
+  // eslint-disable-next-line no-var
   var insightWorkerLastMaintenanceAt: number | undefined;
 }
 

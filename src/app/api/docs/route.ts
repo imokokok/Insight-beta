@@ -1,6 +1,6 @@
-import type { NextRequest} from "next/server";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { generateOracleAPIDoc } from "@/lib/apiDocGenerator";
+import { generateAPIDoc } from "@/lib/apiDocGenerator";
 
 export const dynamic = "force-dynamic";
 
@@ -8,13 +8,16 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const format = searchParams.get("format") || "json";
 
-  const spec = generateOracleAPIDoc();
+  const spec = generateAPIDoc();
 
   if (format === "html") {
-    const generator = new (await import("@/lib/apiDocGenerator")).APIDocGenerator({
+    const generator = new (
+      await import("@/lib/apiDocGenerator")
+    ).APIDocGenerator({
       title: "Insight Oracle API",
       version: "1.0.0",
-      description: "API for monitoring and managing UMA Optimistic Oracle assertions, disputes, and alerts.",
+      description:
+        "API for monitoring and managing UMA Optimistic Oracle assertions, disputes, and alerts.",
       baseUrl: "/api",
     });
 
@@ -27,10 +30,13 @@ export async function GET(request: NextRequest) {
   }
 
   if (format === "markdown") {
-    const generator = new (await import("@/lib/apiDocGenerator")).APIDocGenerator({
+    const generator = new (
+      await import("@/lib/apiDocGenerator")
+    ).APIDocGenerator({
       title: "Insight Oracle API",
       version: "1.0.0",
-      description: "API for monitoring and managing UMA Optimistic Oracle assertions, disputes, and alerts.",
+      description:
+        "API for monitoring and managing UMA Optimistic Oracle assertions, disputes, and alerts.",
       baseUrl: "/api",
     });
 

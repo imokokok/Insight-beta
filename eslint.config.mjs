@@ -23,6 +23,9 @@ const config = [
       "tests/**",
       "playwright.config.ts",
     ],
+    rules: {
+      "no-loss-of-precision": "off",
+    },
   },
   js.configs.recommended,
   ...compat.extends("next/core-web-vitals", "next/typescript"),
@@ -53,6 +56,8 @@ const config = [
       "security/detect-eval-with-expression": "error",
       "security/detect-unsafe-regex": "error",
       "@typescript-eslint/no-explicit-any": "warn",
+      "no-loss-of-precision": "off",
+      "@typescript-eslint/no-loss-of-precision": "off",
       "@typescript-eslint/no-unused-vars": [
         "error",
         { argsIgnorePattern: "^_" },

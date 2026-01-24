@@ -69,11 +69,7 @@ export const ROLE_DEFINITIONS: Record<Role, RoleDefinition> = {
     name: "viewer",
     displayName: "Viewer",
     description: "Read-only access to public data",
-    permissions: [
-      "oracle:read",
-      "dispute:read",
-      "alert:read",
-    ],
+    permissions: ["oracle:read", "dispute:read", "alert:read"],
     priority: 1,
     isSystem: true,
   },
@@ -375,7 +371,10 @@ export class PermissionManager {
     });
   }
 
-  createContext(userId: string | null, address: string | null): PermissionContext {
+  createContext(
+    userId: string | null,
+    address: string | null,
+  ): PermissionContext {
     if (!userId || !address) {
       return {
         userId: null,
@@ -439,7 +438,10 @@ export function requireRole(context: PermissionContext, role: Role): boolean {
   return context.roles.includes(role);
 }
 
-export function requireAnyRole(context: PermissionContext, roles: Role[]): boolean {
+export function requireAnyRole(
+  context: PermissionContext,
+  roles: Role[],
+): boolean {
   if (!context.isAuthenticated) return false;
   return roles.some((r) => context.roles.includes(r));
 }
@@ -447,11 +449,13 @@ export function requireAnyRole(context: PermissionContext, roles: Role[]): boole
 export function filterByPermission<T extends { id: string }>(
   items: T[],
   userId: string,
-  permission: Permission,
+  _permission: Permission,
   getItemOwnerId: (item: T) => string,
 ): T[] {
   const context = permissionManager.createContext(userId, "");
-  const hasAdmin = requirePermission(context, "admin:super") || requirePermission(context, "user:admin");
+  const hasAdmin =
+    requirePermission(context, "admin:super") ||
+    requirePermission(context, "user:admin");
 
   if (hasAdmin) return items;
 
@@ -461,11 +465,9 @@ export function filterByPermission<T extends { id: string }>(
   });
 }
 
-export function getAccessibleResources<T extends { id: string; ownerId: string }>(
-  resources: T[],
-  userId: string,
-  adminPermission: Permission,
-): T[] {
+export function getAccessibleResources<
+  T extends { id: string; ownerId: string },
+>(resources: T[], userId: string, adminPermission: Permission): T[] {
   const context = permissionManager.createContext(userId, "");
   const hasAdmin = requirePermission(context, adminPermission);
 

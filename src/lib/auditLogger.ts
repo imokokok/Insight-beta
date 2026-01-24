@@ -122,15 +122,18 @@ class SecurityAuditLogger {
 
     if (filter.search) {
       const searchLower = filter.search.toLowerCase();
-      results = results.filter((log) =>
-        log.actor.toLowerCase().includes(searchLower) ||
-        log.action.toLowerCase().includes(searchLower) ||
-        JSON.stringify(log.details).toLowerCase().includes(searchLower)
+      results = results.filter(
+        (log) =>
+          log.actor.toLowerCase().includes(searchLower) ||
+          log.action.toLowerCase().includes(searchLower) ||
+          JSON.stringify(log.details).toLowerCase().includes(searchLower),
       );
     }
 
     if (filter.action) {
-      const actions = Array.isArray(filter.action) ? filter.action : [filter.action];
+      const actions = Array.isArray(filter.action)
+        ? filter.action
+        : [filter.action];
       results = results.filter((log) => actions.includes(log.action));
     }
 
@@ -170,12 +173,17 @@ class SecurityAuditLogger {
     return results.slice(offset, offset + limit);
   }
 
-  getStatistics(filter: Omit<AuditFilter, "limit" | "offset" | "search"> = {}): AuditStatistics {
+  getStatistics(
+    filter: Omit<AuditFilter, "limit" | "offset" | "search"> = {},
+  ): AuditStatistics {
     const logs = this.query(filter);
 
     const byAction = {} as Record<AuditAction, number>;
     const bySeverity = {} as Record<AuditSeverity, number>;
-    const byActorType = {} as Record<"user" | "admin" | "system" | "anonymous", number>;
+    const byActorType = {} as Record<
+      "user" | "admin" | "system" | "anonymous",
+      number
+    >;
     let successCount = 0;
     let criticalCount = 0;
 
@@ -209,7 +217,9 @@ class SecurityAuditLogger {
     };
   }
 
-  private getTopActors(logs: AuditLogEntry[]): Array<{ actor: string; count: number }> {
+  private getTopActors(
+    logs: AuditLogEntry[],
+  ): Array<{ actor: string; count: number }> {
     const actorCounts = new Map<string, number>();
 
     for (const log of logs) {
@@ -231,7 +241,7 @@ class SecurityAuditLogger {
       };
     }
 
-    const timestamps = logs.map((log) => new Date(log.timestamp));
+    const timestamps = logs.map((log) => new Date(log.timestamp).getTime());
     const minTime = new Date(Math.min(...timestamps));
     const maxTime = new Date(Math.max(...timestamps));
 
@@ -241,7 +251,9 @@ class SecurityAuditLogger {
     };
   }
 
-  async exportLogs(options: AuditExportOptions = { format: "json" }): Promise<string> {
+  async exportLogs(
+    options: AuditExportOptions = { format: "json" },
+  ): Promise<string> {
     const filter: AuditFilter = {};
     if (options.startDate) filter.startDate = options.startDate;
     if (options.endDate) filter.endDate = options.endDate;
@@ -264,7 +276,11 @@ class SecurityAuditLogger {
     }
 
     if (options.format === "csv") {
-      const headers = Object.keys(logs[0]);
+      const firstLog = logs[0];
+      if (!firstLog) {
+        return "id,timestamp,action,actor,severity,success";
+      }
+      const headers = Object.keys(firstLog);
       const csvRows = [headers.join(",")];
 
       for (const row of logs) {
@@ -325,9 +341,15 @@ class SecurityAuditLogger {
 
       if (options.compress) {
         const compressed = await this.compressData(archiveData);
-        await this.saveArchive(compressed, `audit-archive-${cutoff.slice(0, 10)}.gz`);
+        await this.saveArchive(
+          compressed,
+          `audit-archive-${cutoff.slice(0, 10)}.gz`,
+        );
       } else {
-        await this.saveArchive(archiveData, `audit-archive-${cutoff.slice(0, 10)}.json`);
+        await this.saveArchive(
+          archiveData,
+          `audit-archive-${cutoff.slice(0, 10)}.json`,
+        );
       }
 
       this.logs = this.logs.filter((log) => log.timestamp >= cutoff);
@@ -563,9 +585,7 @@ export function getAuditStatistics(
   return logger.getStatistics(filter || {});
 }
 
-export function exportAuditLogs(
-  options?: AuditExportOptions,
-): Promise<string> {
+export function exportAuditLogs(options?: AuditExportOptions): Promise<string> {
   const logger = getAuditLogger();
   return logger.exportLogs(options || { format: "json" });
 }

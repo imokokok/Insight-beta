@@ -581,8 +581,8 @@ export class RateLimitManager {
   }
 
   private getApplicableConfigs(
-    endpoint: string,
-    method: string,
+    _endpoint: string,
+    _method: string,
     tier: RateLimitTier,
   ): RateLimitConfig[] {
     return this.getAllConfigs().filter((config) => {

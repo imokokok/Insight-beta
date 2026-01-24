@@ -48,7 +48,7 @@ export function ExportButton<T extends Record<string, unknown>>({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger>
         <Button
           variant="outline"
           size="sm"
