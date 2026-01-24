@@ -56,15 +56,45 @@ export function CreateAssertionModal({
     e.preventDefault();
     setValidationError(null);
 
+    const trimmedProtocol = protocol.trim();
+    const trimmedMarket = market.trim();
+    const trimmedAssertion = assertion.trim();
     const bondValue = parseFloat(bond);
+
     if (isNaN(bondValue) || bondValue <= 0) {
+      setValidationError(t("oracle.createAssertionModal.bondInvalid"));
+      return;
+    }
+
+    if (bondValue > 10000) {
+      setValidationError(t("oracle.createAssertionModal.bondInvalid"));
+      return;
+    }
+
+    if (trimmedProtocol.length === 0 || trimmedProtocol.length > 100) {
+      setValidationError(t("oracle.createAssertionModal.bondInvalid"));
+      return;
+    }
+
+    if (trimmedMarket.length === 0 || trimmedMarket.length > 200) {
+      setValidationError(t("oracle.createAssertionModal.bondInvalid"));
+      return;
+    }
+
+    if (trimmedAssertion.length === 0 || trimmedAssertion.length > 1000) {
       setValidationError(t("oracle.createAssertionModal.bondInvalid"));
       return;
     }
 
     await execute({
       functionName: "createAssertion",
-      args: [protocol, market, assertion, parseEther(bond), 7200n],
+      args: [
+        trimmedProtocol,
+        trimmedMarket,
+        trimmedAssertion,
+        parseEther(bond),
+        7200n,
+      ],
       contractAddress,
       chain,
       successTitle: t("oracle.tx.assertionCreatedTitle"),

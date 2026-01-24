@@ -40,7 +40,6 @@ export function SettleModal({
   const handleSubmit = async () => {
     if (outcome === null) return;
 
-    // 验证必要参数
     if (!contractAddress) {
       toast({
         title: t("oracle.detail.txFailed"),
@@ -61,9 +60,24 @@ export function SettleModal({
       return;
     }
 
+    const assertionIdTrimmed = assertionId.trim();
+    if (
+      !assertionIdTrimmed ||
+      !assertionIdTrimmed.startsWith("0x") ||
+      assertionIdTrimmed.length !== 66
+    ) {
+      toast({
+        title: t("oracle.detail.txFailed"),
+        message: t("errors.missingConfig"),
+        type: "error",
+        duration: 5000,
+      });
+      return;
+    }
+
     await execute({
       functionName: "resolveAssertion",
-      args: [assertionId as `0x${string}`, outcome],
+      args: [assertionIdTrimmed as `0x${string}`, outcome],
       contractAddress,
       chain,
       successTitle: t("oracle.tx.settlementSubmittedTitle"),

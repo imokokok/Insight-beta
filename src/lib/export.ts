@@ -31,6 +31,7 @@ export interface ExportHistory {
 
 const MAX_BATCH_SIZE = 10000;
 const DEFAULT_BATCH_SIZE = 5000;
+const MAX_EXPORT_RECORDS = 100000;
 
 export async function exportData<T extends Record<string, unknown>>(
   data: T[],
@@ -63,6 +64,16 @@ export async function exportData<T extends Record<string, unknown>>(
       size: 0,
       recordCount: 0,
       error: "No data to export",
+    };
+  }
+
+  if (data.length > MAX_EXPORT_RECORDS) {
+    return {
+      success: false,
+      filename: "",
+      size: 0,
+      recordCount: data.length,
+      error: `Too many records to export. Maximum allowed is ${MAX_EXPORT_RECORDS} records.`,
     };
   }
 

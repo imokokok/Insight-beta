@@ -344,7 +344,7 @@ export default function AlertsPageClient() {
 
   const scrollToIncidents = useCallback(() => {
     const el = document.getElementById("incidents-panel");
-    if (el) el.scrollIntoView({ behavior: "smooth" });
+    if (el?.scrollIntoView) el.scrollIntoView({ behavior: "smooth" });
   }, []);
 
   const scrollToSlo = useCallback(() => {

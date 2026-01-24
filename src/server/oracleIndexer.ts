@@ -215,8 +215,11 @@ function recordRpcFail(stats: RpcStats, url: string) {
 function pickNextRpcUrl(urls: string[], current: string): string {
   if (urls.length <= 1) return current;
   const idx = urls.indexOf(current);
-  const nextIdx = idx >= 0 ? (idx + 1) % urls.length : 0;
-  return urls[nextIdx]!; // 使用非空断言，因为urls.length > 1确保索引有效
+  if (idx >= 0) {
+    const nextIdx = (idx + 1) % urls.length;
+    return urls[nextIdx]!;
+  }
+  return urls[0]!;
 }
 
 async function syncOracleOnce(instanceId: string): Promise<{

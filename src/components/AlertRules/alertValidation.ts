@@ -5,8 +5,21 @@ export type Channel = "webhook" | "email" | "telegram";
 
 function isValidEmail(value: string): boolean {
   const v = value.trim();
-  if (!v) return false;
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  if (!v || v.length > 254) return false;
+  const atIndex = v.indexOf("@");
+  if (atIndex <= 0 || atIndex >= v.length - 1) return false;
+  const localPart = v.slice(0, atIndex);
+  const domainPart = v.slice(atIndex + 1);
+  if (localPart.length === 0 || localPart.length > 64) return false;
+  if (domainPart.length === 0 || domainPart.length > 253) return false;
+  if (localPart.includes(" ") || domainPart.includes(" ")) return false;
+  if (!/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+$/.test(localPart)) return false;
+  const domainParts = domainPart.split(".");
+  if (domainParts.length < 2) return false;
+  return domainParts.every(
+    (part) =>
+      part.length > 0 && part.length <= 63 && /^[a-zA-Z0-9-]+$/.test(part),
+  );
 }
 
 function getNumberParam(params: Record<string, unknown>, key: string): number {

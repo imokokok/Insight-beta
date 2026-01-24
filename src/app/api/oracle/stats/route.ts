@@ -41,7 +41,9 @@ export async function GET(request: Request) {
 
     const url = new URL(request.url);
     const instanceId = url.searchParams.get("instanceId");
-    if (url.searchParams.get("sync") === "1") {
+    const shouldSync = url.searchParams.get("sync") === "1";
+
+    if (shouldSync) {
       if (!isCronAuthorized(request)) {
         const auth = await requireAdmin(request, {
           strict: true,
@@ -51,12 +53,11 @@ export async function GET(request: Request) {
       }
       if (instanceId) await ensureOracleSynced(instanceId);
       else await ensureOracleSynced();
-    }
-    if (url.searchParams.get("sync") === "1") {
       return instanceId
         ? await getOracleStats(instanceId)
         : await getOracleStats();
     }
+
     const cacheKey = `oracle_api:${url.pathname}${url.search}`;
     return await cachedJson(cacheKey, 10_000, () =>
       instanceId ? getOracleStats(instanceId) : getOracleStats(),

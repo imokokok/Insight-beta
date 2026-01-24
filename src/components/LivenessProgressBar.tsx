@@ -43,15 +43,19 @@ export function LivenessProgressBar({
       if (remaining <= 0) {
         setTimeLeft("Ended");
       } else {
-        const hours = Math.floor(remaining / (1000 * 60 * 60));
+        const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
+        const hours = Math.floor(
+          (remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+        );
         const minutes = Math.floor(
           (remaining % (1000 * 60 * 60)) / (1000 * 60),
         );
-        // If less than 1 hour, show minutes
-        if (hours === 0) {
-          setTimeLeft(`${minutes}m left`);
-        } else {
+        if (days > 0) {
+          setTimeLeft(`${days}d ${hours}h left`);
+        } else if (hours > 0) {
           setTimeLeft(`${hours}h ${minutes}m left`);
+        } else {
+          setTimeLeft(`${minutes}m left`);
         }
       }
     };

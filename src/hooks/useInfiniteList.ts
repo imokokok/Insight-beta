@@ -23,6 +23,7 @@ export function useInfiniteList<T>(
   const {
     data: pages,
     error,
+    isLoading,
     size,
     setSize,
     mutate,
@@ -30,11 +31,11 @@ export function useInfiniteList<T>(
     revalidateFirstPage: false,
     revalidateOnFocus: false,
     revalidateAll: false,
-    refreshInterval: 0, // 无限滚动默认不自动刷新
+    refreshInterval: 0,
     dedupingInterval: 10_000,
-    revalidateOnReconnect: true, // 连接恢复时重新验证
-    errorRetryCount: 3, // 错误重试3次
-    errorRetryInterval: 1000, // 初始重试间隔
+    revalidateOnReconnect: true,
+    errorRetryCount: 3,
+    errorRetryInterval: 5000,
     shouldRetryOnError: true,
     ...options,
   });
@@ -50,7 +51,7 @@ export function useInfiniteList<T>(
   const hasMore = Boolean(lastPage?.nextCursor);
 
   // Loading states
-  const loading = !pages && !error; // Initial load
+  const loading = isLoading || (!pages && !error);
   const loadingMore = !!(
     size > 0 &&
     pages &&

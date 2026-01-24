@@ -257,6 +257,11 @@ export class RealtimeClient {
         errorCount: this.errorCount,
       });
     }
+
+    this.messageQueue = [];
+    this.handlers.clear();
+    this.statusHandlers.clear();
+    this.reconnectAttempts = 0;
   }
 
   on(eventType: RealtimeEventType, handler: RealtimeEventHandler): () => void {

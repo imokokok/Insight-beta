@@ -68,6 +68,9 @@ export function useOracleTransaction(instanceId?: string) {
       ? instanceId.trim()
       : null;
   const configRef = useRef<Map<string, OracleConfig | null>>(new Map());
+  const configFetchLocks = useRef<Map<string, Promise<OracleConfig | null>>>(
+    new Map(),
+  );
 
   const execute = async <TFunctionName extends OracleWriteFunctionName>({
     functionName,
@@ -137,14 +140,23 @@ export function useOracleTransaction(instanceId?: string) {
       if (!targetAddress) {
         const key = resolvedInstanceId ?? "default";
         if (!configRef.current.has(key)) {
-          try {
-            const url = resolvedInstanceId
-              ? `/api/oracle/config?instanceId=${encodeURIComponent(resolvedInstanceId)}`
-              : "/api/oracle/config";
-            configRef.current.set(key, await fetchApiData<OracleConfig>(url));
-          } catch {
-            configRef.current.set(key, null);
+          let lock = configFetchLocks.current.get(key);
+          if (!lock) {
+            const fetchPromise = (async () => {
+              try {
+                const url = resolvedInstanceId
+                  ? `/api/oracle/config?instanceId=${encodeURIComponent(resolvedInstanceId)}`
+                  : "/api/oracle/config";
+                return await fetchApiData<OracleConfig>(url);
+              } catch {
+                return null;
+              }
+            })();
+            configFetchLocks.current.set(key, fetchPromise);
+            lock = fetchPromise;
           }
+          const config = await lock;
+          configRef.current.set(key, config);
         }
         targetAddress = (
           configRef.current.get(key)?.contractAddress ?? ""
@@ -232,14 +244,23 @@ export function useOracleTransaction(instanceId?: string) {
         if (!effectiveRpcUrl) {
           const key = resolvedInstanceId ?? "default";
           if (!configRef.current.has(key)) {
-            try {
-              const url = resolvedInstanceId
-                ? `/api/oracle/config?instanceId=${encodeURIComponent(resolvedInstanceId)}`
-                : "/api/oracle/config";
-              configRef.current.set(key, await fetchApiData<OracleConfig>(url));
-            } catch {
-              configRef.current.set(key, null);
+            let lock = configFetchLocks.current.get(key);
+            if (!lock) {
+              const fetchPromise = (async () => {
+                try {
+                  const url = resolvedInstanceId
+                    ? `/api/oracle/config?instanceId=${encodeURIComponent(resolvedInstanceId)}`
+                    : "/api/oracle/config";
+                  return await fetchApiData<OracleConfig>(url);
+                } catch {
+                  return null;
+                }
+              })();
+              configFetchLocks.current.set(key, fetchPromise);
+              lock = fetchPromise;
             }
+            const config = await lock;
+            configRef.current.set(key, config);
           }
           effectiveRpcUrl = (configRef.current.get(key)?.rpcUrl ?? "").trim();
         }

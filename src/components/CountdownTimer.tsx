@@ -32,9 +32,6 @@ export function CountdownTimer({
       const difference = target - now;
 
       if (difference <= 0) {
-        if (onExpire) {
-          onExpire();
-        }
         return { days: 0, hours: 0, minutes: 0, seconds: 0, isExpired: true };
       }
 
@@ -51,7 +48,14 @@ export function CountdownTimer({
     setTimeLeft(calculateTimeLeft());
 
     const timer = setInterval(() => {
-      setTimeLeft(calculateTimeLeft());
+      const result = calculateTimeLeft();
+      setTimeLeft((prev) => {
+        if (prev?.isExpired) return prev;
+        if (result.isExpired && !prev?.isExpired) {
+          onExpire?.();
+        }
+        return result;
+      });
     }, 1000);
 
     return () => clearInterval(timer);

@@ -95,8 +95,14 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
     const handleAccountsChanged = (accounts: unknown) => {
       const accs = Array.isArray(accounts) ? accounts : [];
-      const first = typeof accs[0] === "string" ? accs[0] : null;
-      setAddress(first ? (first as Address) : null);
+      const newAddress =
+        typeof accs[0] === "string" ? (accs[0] as Address) : null;
+      setAddress((currentAddress) => {
+        if (newAddress !== currentAddress) {
+          return newAddress;
+        }
+        return currentAddress;
+      });
     };
 
     const handleChainChanged = (id: unknown) => {

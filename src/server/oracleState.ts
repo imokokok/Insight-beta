@@ -1249,8 +1249,14 @@ export async function recomputeDisputeVotes(
     `
     UPDATE disputes
     SET votes_for = $2, votes_against = $3, total_votes = $4
-    WHERE assertion_id = $1 AND instance_id = $5
+    WHERE id = $1 AND instance_id = $5
     `,
-    [assertionId, votesFor, votesAgainst, totalVotes, normalizedInstanceId],
+    [
+      `D:${assertionId}`,
+      votesFor,
+      votesAgainst,
+      totalVotes,
+      normalizedInstanceId,
+    ],
   );
 }

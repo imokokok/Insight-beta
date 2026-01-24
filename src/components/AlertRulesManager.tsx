@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import { AlertTriangle, Bell, Loader2, Save, ShieldAlert } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -222,7 +222,7 @@ export function AlertRulesManager({
     }
   };
 
-  useMemo(() => {
+  useEffect(() => {
     if (!data?.rules) return;
     setLocalRules(data.rules);
     setHasChanges(false);

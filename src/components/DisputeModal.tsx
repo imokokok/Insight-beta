@@ -80,9 +80,18 @@ export function DisputeModal({
       setValidationError(t("oracle.createAssertionModal.bondInvalid"));
       return;
     }
+    const trimmedAssertionId = assertionId.trim();
+    if (
+      !trimmedAssertionId ||
+      !trimmedAssertionId.startsWith("0x") ||
+      trimmedAssertionId.length !== 66
+    ) {
+      setValidationError(t("oracle.createAssertionModal.bondInvalid"));
+      return;
+    }
     await execute({
       functionName: "disputeAssertion",
-      args: [assertionId as `0x${string}`, trimmedReason],
+      args: [trimmedAssertionId as `0x${string}`, trimmedReason],
       value: bond,
       contractAddress,
       chain,

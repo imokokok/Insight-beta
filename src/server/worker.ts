@@ -26,6 +26,19 @@ import { createPublicClient, http, formatEther, parseAbi } from "viem";
 const SYNC_INTERVAL = 15000; // 15 seconds
 const workerAlertCooldown = new Map<string, number>();
 const workerRecoveryCooldown = new Map<string, number>();
+const COOLDOWN_MAX_AGE_MS = 24 * 60 * 60_000; // 24 hours - clean entries older than this
+
+function cleanupStaleCooldones(
+  cooldownMap: Map<string, number>,
+  maxAgeMs: number,
+) {
+  const nowMs = Date.now();
+  for (const [key, timestamp] of cooldownMap.entries()) {
+    if (nowMs - timestamp > maxAgeMs) {
+      cooldownMap.delete(key);
+    }
+  }
+}
 
 const pausableAbi = parseAbi(["function paused() view returns (bool)"]);
 
@@ -94,6 +107,8 @@ async function tickWorker() {
     if (nowMs - lastMaintenanceAt >= 6 * 60 * 60_000) {
       try {
         await pruneStaleAlerts();
+        cleanupStaleCooldones(workerAlertCooldown, COOLDOWN_MAX_AGE_MS);
+        cleanupStaleCooldones(workerRecoveryCooldown, COOLDOWN_MAX_AGE_MS);
       } catch (e) {
         logger.warn("Failed to prune stale alerts", { error: e });
       } finally {

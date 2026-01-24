@@ -12,10 +12,12 @@ export function useAdminSession(opts?: { actor?: boolean }) {
   const [adminActor, setAdminActorState] = useState("");
 
   const readStorageToken = useCallback(() => {
+    if (typeof window === "undefined") return "";
     return window.sessionStorage.getItem(TOKEN_KEY) ?? "";
   }, []);
 
   const readStorageActor = useCallback(() => {
+    if (typeof window === "undefined") return "";
     return window.sessionStorage.getItem(ACTOR_KEY) ?? "";
   }, []);
 
@@ -29,6 +31,7 @@ export function useAdminSession(opts?: { actor?: boolean }) {
   }, [readStorageActor, readStorageToken, withActor]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     const syncFromStorage = () => {
       const token = readStorageToken();
       setAdminTokenState(token);
@@ -57,6 +60,7 @@ export function useAdminSession(opts?: { actor?: boolean }) {
   }, [readStorageActor, readStorageToken, withActor]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     const trimmed = adminToken.trim();
     if (trimmed) window.sessionStorage.setItem(TOKEN_KEY, trimmed);
     else window.sessionStorage.removeItem(TOKEN_KEY);
@@ -64,7 +68,7 @@ export function useAdminSession(opts?: { actor?: boolean }) {
   }, [adminToken]);
 
   useEffect(() => {
-    if (!withActor) return;
+    if (!withActor || typeof window === "undefined") return;
     const trimmed = adminActor.trim();
     if (trimmed) window.sessionStorage.setItem(ACTOR_KEY, trimmed);
     else window.sessionStorage.removeItem(ACTOR_KEY);

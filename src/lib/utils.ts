@@ -186,8 +186,13 @@ function getServerBaseUrl(): string {
   ) {
     return window.location.origin;
   }
-  if (process.env.NODE_ENV !== "production") return "http://localhost:3000";
-  throw new ApiClientError("missing_base_url");
+  if (process.env.INSIGHT_BASE_URL) {
+    return process.env.INSIGHT_BASE_URL;
+  }
+  if (process.env.NODE_ENV !== "production") {
+    return "http://localhost:3000";
+  }
+  return "http://localhost:3000";
 }
 
 export async function fetchApiData<T>(

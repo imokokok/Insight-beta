@@ -893,6 +893,7 @@ export default function OraclePage() {
   const locale = langToLocale[lang];
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     const saved = window.sessionStorage.getItem("insight_admin_token");
     if (saved) setAdminToken(saved);
     const savedActor = window.sessionStorage.getItem("insight_admin_actor");
@@ -905,12 +906,14 @@ export default function OraclePage() {
   }, [query]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     const trimmed = adminToken.trim();
     if (trimmed) window.sessionStorage.setItem("insight_admin_token", trimmed);
     else window.sessionStorage.removeItem("insight_admin_token");
   }, [adminToken]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     const trimmed = adminActor.trim();
     if (trimmed) window.sessionStorage.setItem("insight_admin_actor", trimmed);
     else window.sessionStorage.removeItem("insight_admin_actor");

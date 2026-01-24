@@ -23,7 +23,29 @@ const getKeySchema = z.object({
 
 const putBodySchema = z.object({
   key: z.string().trim().min(1).max(200),
-  value: z.unknown(),
+  value: z.unknown().refine((val) => {
+    if (val === null) return true;
+    const type = typeof val;
+    if (type === "string" || type === "number" || type === "boolean")
+      return true;
+    if (type === "object" && !Array.isArray(val)) {
+      try {
+        JSON.stringify(val);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+    if (Array.isArray(val)) {
+      try {
+        JSON.stringify(val);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+    return false;
+  }, "value must be a valid JSON type (string, number, boolean, object, array, or null)"),
 });
 
 const deleteKeySchema = z.object({

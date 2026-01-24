@@ -25,7 +25,7 @@ export default function GlobalError({
       });
     }
 
-    if (typeof navigator !== "undefined") {
+    if (typeof navigator !== "undefined" && navigator.language) {
       const browserLang = navigator.language.toLowerCase();
       if (browserLang.includes("zh")) setLang("zh");
       else if (browserLang.includes("es")) setLang("es");

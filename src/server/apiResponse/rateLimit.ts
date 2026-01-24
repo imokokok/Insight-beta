@@ -304,8 +304,22 @@ export async function rateLimit(
 
   if (insightRate.size > 5000 && now - lastRatePruneAtMs > 60_000) {
     lastRatePruneAtMs = now;
+    const keysToDelete: string[] = [];
     for (const [k, v] of insightRate.entries()) {
-      if (v.resetAtMs <= now) insightRate.delete(k);
+      if (v.resetAtMs <= now) keysToDelete.push(k);
+      if (keysToDelete.length >= 1000) break;
+    }
+    for (const k of keysToDelete) {
+      insightRate.delete(k);
+    }
+    if (insightRate.size > 5000) {
+      const excessKeys = Array.from(insightRate.keys()).slice(
+        0,
+        insightRate.size - 4000,
+      );
+      for (const k of excessKeys) {
+        insightRate.delete(k);
+      }
     }
   }
   const bucketKey = `${opts.key}:${clientId}`;

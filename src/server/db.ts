@@ -70,9 +70,13 @@ export const db =
   globalForDb.conn ??
   new Pool({
     connectionString: getDbUrl() || undefined,
-    max: 10,
+    max: Math.max(
+      10,
+      Math.min(50, Number(process.env.INSIGHT_DB_POOL_SIZE) || 20),
+    ),
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 5000,
+    connectionTimeoutMillis: 10000,
+    maxUses: Math.max(1000, Number(process.env.INSIGHT_DB_MAX_USES) || 7500),
     ssl:
       process.env.NODE_ENV === "production"
         ? { rejectUnauthorized: true }
