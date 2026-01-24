@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode} from "react";
+import type { ReactNode } from "react";
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
@@ -28,7 +28,9 @@ export function Tooltip({
 }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [positionState, setPositionState] = useState<TooltipPosition>(position);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
   const tooltipRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -57,7 +59,9 @@ export function Tooltip({
     if (!tooltipRef.current) return;
 
     const rect = tooltipRef.current.getBoundingClientRect();
-    const tooltipRect = tooltipRef.current.querySelector(".tooltip-content")?.getBoundingClientRect();
+    const tooltipRect = tooltipRef.current
+      .querySelector(".tooltip-content")
+      ?.getBoundingClientRect();
 
     if (!tooltipRect) return;
 
@@ -175,7 +179,12 @@ interface ContextualHelpProps {
   className?: string;
 }
 
-export function ContextualHelp({ children, helpId, title, className }: ContextualHelpProps) {
+export function ContextualHelp({
+  children,
+  helpId,
+  title,
+  className,
+}: ContextualHelpProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -188,7 +197,12 @@ export function ContextualHelp({ children, helpId, title, className }: Contextua
           className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           aria-label="Help"
         >
-          <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg
+            className="w-4 h-4 text-gray-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -200,7 +214,11 @@ export function ContextualHelp({ children, helpId, title, className }: Contextua
       </Tooltip>
 
       {isOpen && (
-        <ContextualHelpPanel helpId={helpId} title={title} onClose={() => setIsOpen(false)} />
+        <ContextualHelpPanel
+          helpId={helpId}
+          title={title}
+          onClose={() => setIsOpen(false)}
+        />
       )}
     </div>
   );
@@ -213,7 +231,12 @@ interface ContextualHelpPanelProps {
   className?: string;
 }
 
-export function ContextualHelpPanel({ helpId, title, onClose, className }: ContextualHelpPanelProps) {
+export function ContextualHelpPanel({
+  helpId,
+  title,
+  onClose,
+  className,
+}: ContextualHelpPanelProps) {
   const helpContent = getHelpContent(helpId);
 
   return (
@@ -233,8 +256,18 @@ export function ContextualHelpPanel({ helpId, title, onClose, className }: Conte
           onClick={onClose}
           className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-700 transition-colors"
         >
-          <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <svg
+            className="w-4 h-4 text-gray-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
       </div>
@@ -242,7 +275,9 @@ export function ContextualHelpPanel({ helpId, title, onClose, className }: Conte
       <div className="p-4">
         {helpContent ? (
           <>
-            <p className="text-sm text-gray-600 dark:text-dark-300 mb-4">{helpContent.description}</p>
+            <p className="text-sm text-gray-600 dark:text-dark-300 mb-4">
+              {helpContent.description}
+            </p>
 
             {helpContent.examples && helpContent.examples.length > 0 && (
               <div className="mb-4">
@@ -251,7 +286,10 @@ export function ContextualHelpPanel({ helpId, title, onClose, className }: Conte
                 </h4>
                 <ul className="space-y-2">
                   {helpContent.examples.map((example, index) => (
-                    <li key={index} className="text-sm text-gray-700 dark:text-dark-200">
+                    <li
+                      key={index}
+                      className="text-sm text-gray-700 dark:text-dark-200"
+                    >
                       <code className="px-1.5 py-0.5 bg-gray-100 dark:bg-dark-700 rounded text-xs">
                         {example}
                       </code>
@@ -268,9 +306,22 @@ export function ContextualHelpPanel({ helpId, title, onClose, className }: Conte
                 </h4>
                 <ul className="space-y-1">
                   {helpContent.tips.map((tip, index) => (
-                    <li key={index} className="flex items-start gap-2 text-sm text-gray-700 dark:text-dark-200">
-                      <svg className="w-4 h-4 text-primary-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    <li
+                      key={index}
+                      className="flex items-start gap-2 text-sm text-gray-700 dark:text-dark-200"
+                    >
+                      <svg
+                        className="w-4 h-4 text-primary-500 flex-shrink-0 mt-0.5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                        />
                       </svg>
                       {tip}
                     </li>
@@ -279,23 +330,24 @@ export function ContextualHelpPanel({ helpId, title, onClose, className }: Conte
               </div>
             )}
 
-            {helpContent.relatedTopics && helpContent.relatedTopics.length > 0 && (
-              <div>
-                <h4 className="text-xs font-semibold text-gray-500 dark:text-dark-400 uppercase tracking-wider mb-2">
-                  Related Topics
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  {helpContent.relatedTopics.map((topic, index) => (
-                    <span
-                      key={index}
-                      className="px-2 py-1 text-xs bg-gray-100 dark:bg-dark-700 rounded-lg text-gray-600 dark:text-dark-300"
-                    >
-                      {topic}
-                    </span>
-                  ))}
+            {helpContent.relatedTopics &&
+              helpContent.relatedTopics.length > 0 && (
+                <div>
+                  <h4 className="text-xs font-semibold text-gray-500 dark:text-dark-400 uppercase tracking-wider mb-2">
+                    Related Topics
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {helpContent.relatedTopics.map((topic, index) => (
+                      <span
+                        key={index}
+                        className="px-2 py-1 text-xs bg-gray-100 dark:bg-dark-700 rounded-lg text-gray-600 dark:text-dark-300"
+                      >
+                        {topic}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
           </>
         ) : (
           <p className="text-sm text-gray-500 dark:text-dark-400">
@@ -305,7 +357,9 @@ export function ContextualHelpPanel({ helpId, title, onClose, className }: Conte
       </div>
 
       <div className="flex items-center justify-between p-3 border-t border-gray-200 dark:border-dark-700 bg-gray-50 dark:bg-dark-900 rounded-b-xl">
-        <span className="text-xs text-gray-500 dark:text-dark-400">Press ? for keyboard shortcuts</span>
+        <span className="text-xs text-gray-500 dark:text-dark-400">
+          Press ? for keyboard shortcuts
+        </span>
         <a
           href="/docs"
           className="text-xs text-primary-600 dark:text-primary-400 hover:underline"
@@ -328,7 +382,8 @@ interface HelpContent {
 const helpContentDatabase: Record<string, HelpContent> = {
   "oracle-health-score": {
     title: "Oracle Health Score",
-    description: "The Health Score is a composite metric (0-100) that measures the overall reliability and performance of the oracle. Scores above 90 indicate excellent health, while scores below 60 suggest potential issues requiring attention.",
+    description:
+      "The Health Score is a composite metric (0-100) that measures the overall reliability and performance of the oracle. Scores above 90 indicate excellent health, while scores below 60 suggest potential issues requiring attention.",
     examples: [
       "Health Score: 95 - Excellent performance",
       "Health Score: 72 - Minor issues detected",
@@ -343,7 +398,8 @@ const helpContentDatabase: Record<string, HelpContent> = {
   },
   "assertion-lifecycle": {
     title: "Assertion Lifecycle",
-    description: "An assertion goes through several stages: Created → Disputed (optional) → Resolved. Understanding this lifecycle helps you track the status and outcome of each data claim submitted to the oracle.",
+    description:
+      "An assertion goes through several stages: Created → Disputed (optional) → Resolved. Understanding this lifecycle helps you track the status and outcome of each data claim submitted to the oracle.",
     examples: [
       "New assertion submitted for BTC/USD price",
       "Assertion disputed due to price deviation",
@@ -358,7 +414,8 @@ const helpContentDatabase: Record<string, HelpContent> = {
   },
   "dispute-resolution": {
     title: "Dispute Resolution Process",
-    description: "When an assertion is disputed, UMA's Data Verification Mechanism (DVM) enables token holders to vote on the correct outcome. The DVM is designed to be maximally decentralized and resistant to manipulation.",
+    description:
+      "When an assertion is disputed, UMA's Data Verification Mechanism (DVM) enables token holders to vote on the correct outcome. The DVM is designed to be maximally decentralized and resistant to manipulation.",
     examples: [
       "Price disagreement leads to dispute",
       "Community votes on the correct price",
@@ -373,7 +430,8 @@ const helpContentDatabase: Record<string, HelpContent> = {
   },
   "bond-management": {
     title: "Bond Management",
-    description: "Bonds are required when submitting assertions. They serve as collateral that can be forfeited if your assertion is proven wrong. Higher bonds make it more expensive for others to dispute your claim.",
+    description:
+      "Bonds are required when submitting assertions. They serve as collateral that can be forfeited if your assertion is proven wrong. Higher bonds make it more expensive for others to dispute your claim.",
     examples: [
       "Submit assertion with 1000 USDC bond",
       "Disputer posts matching bond",
@@ -384,11 +442,16 @@ const helpContentDatabase: Record<string, HelpContent> = {
       "Consider market conditions when setting bond size",
       "Bond economics are designed to incentivize accuracy",
     ],
-    relatedTopics: ["assertion-costs", "dispute-incentives", "economic-security"],
+    relatedTopics: [
+      "assertion-costs",
+      "dispute-incentives",
+      "economic-security",
+    ],
   },
   "sync-status": {
     title: "Sync Status",
-    description: "The sync status indicates whether the oracle's on-chain data is current. An out-of-sync oracle may indicate network issues or backend problems requiring investigation.",
+    description:
+      "The sync status indicates whether the oracle's on-chain data is current. An out-of-sync oracle may indicate network issues or backend problems requiring investigation.",
     examples: [
       "Synced - Data is current",
       "Syncing - Updating data",
@@ -403,7 +466,8 @@ const helpContentDatabase: Record<string, HelpContent> = {
   },
   "prediction-analysis": {
     title: "Prediction Analysis",
-    description: "The predictive analytics engine analyzes historical patterns to forecast future oracle behavior. Predictions are probabilistic and should be used as one input in decision-making.",
+    description:
+      "The predictive analytics engine analyzes historical patterns to forecast future oracle behavior. Predictions are probabilistic and should be used as one input in decision-making.",
     examples: [
       "High probability of accurate assertion predicted",
       "Potential volatility spike expected",
@@ -435,7 +499,11 @@ interface GuideStep {
   position?: TooltipPosition;
 }
 
-export function InteractiveGuide({ steps, onComplete, onSkip }: InteractiveGuideProps) {
+export function InteractiveGuide({
+  steps,
+  onComplete,
+  onSkip,
+}: InteractiveGuideProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
 
@@ -450,7 +518,10 @@ export function InteractiveGuide({ steps, onComplete, onSkip }: InteractiveGuide
     <div className="fixed inset-0 z-50 pointer-events-none">
       <div className="absolute inset-0 bg-black/30 pointer-events-auto" />
 
-      <div className="absolute" style={{ top: "50%", left: "50%", transform: "translate(-50%, -50%)" }}>
+      <div
+        className="absolute"
+        style={{ top: "50%", left: "50%", transform: "translate(-50%, -50%)" }}
+      >
         <div className="w-80 bg-white dark:bg-dark-800 rounded-xl shadow-2xl pointer-events-auto">
           <div className="p-4 border-b border-gray-200 dark:border-dark-700">
             <div className="flex items-center justify-between mb-2">
@@ -464,8 +535,18 @@ export function InteractiveGuide({ steps, onComplete, onSkip }: InteractiveGuide
                 }}
                 className="text-gray-400 hover:text-gray-600 dark:hover:text-dark-300"
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
@@ -479,8 +560,12 @@ export function InteractiveGuide({ steps, onComplete, onSkip }: InteractiveGuide
           </div>
 
           <div className="p-4">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{step.title}</h3>
-            <p className="text-sm text-gray-600 dark:text-dark-300">{step.content}</p>
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+              {step.title}
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-dark-300">
+              {step.content}
+            </p>
           </div>
 
           <div className="flex items-center justify-between p-4 border-t border-gray-200 dark:border-dark-700">
@@ -518,10 +603,21 @@ export function InteractiveGuide({ steps, onComplete, onSkip }: InteractiveGuide
   );
 }
 
-export function HelpIcon({ helpId, className }: { helpId: string; className?: string }) {
+export function HelpIcon({
+  helpId,
+  className,
+}: {
+  helpId: string;
+  className?: string;
+}) {
   return (
     <ContextualHelp helpId={helpId} className={className}>
-      <svg className="w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-dark-300 cursor-help" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg
+        className="w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-dark-300 cursor-help"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
         <path
           strokeLinecap="round"
           strokeLinejoin="round"

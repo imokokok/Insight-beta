@@ -264,6 +264,10 @@ export const translations = {
       viewOnExplorer: "View on Explorer",
       viewTx: "View TX",
     },
+    keyboardShortcuts: {
+      title: "Keyboard Shortcuts",
+      pressAny: "Press any key to close",
+    },
     pwa: {
       install: "Install App",
       installDescription:
@@ -1121,6 +1125,10 @@ export const translations = {
       viewDetails: "Ver detalles",
       viewOnExplorer: "Ver en el explorador",
       viewTx: "Ver TX",
+    },
+    keyboardShortcuts: {
+      title: "Atajos de teclado",
+      pressAny: "Presiona cualquier tecla para cerrar",
     },
     pwa: {
       install: "Instalar App",
@@ -1997,6 +2005,10 @@ export const translations = {
       viewOnExplorer: "Voir sur l'explorateur",
       viewTx: "Voir la transaction",
     },
+    keyboardShortcuts: {
+      title: "Raccourcis clavier",
+      pressAny: "Appuyez sur une touche pour fermer",
+    },
     disputes: {
       card: {
         dispute: "Contestation",
@@ -2853,6 +2865,10 @@ export const translations = {
       viewOnExplorer: "탐색기에서 보기",
       viewTx: "거래 보기",
     },
+    keyboardShortcuts: {
+      title: "단축키",
+      pressAny: "아무 키나 눌러서 닫기",
+    },
     pwa: {
       install: "앱 설치",
       installDescription:
@@ -3674,6 +3690,10 @@ export const translations = {
       viewDetails: "查看详情",
       viewOnExplorer: "在浏览器查看",
       viewTx: "查看交易",
+    },
+    keyboardShortcuts: {
+      title: "键盘快捷键",
+      pressAny: "按任意键关闭",
     },
     pwa: {
       install: "安装应用",
@@ -4896,7 +4916,9 @@ export type TranslationKey =
   | "pwa.updateAvailable"
   | "pwa.updateDescription"
   | "common.export"
-  | "common.refresh";
+  | "common.refresh"
+  | "keyboardShortcuts.title"
+  | "keyboardShortcuts.pressAny";
 
 export function getUiErrorMessage(
   errorCode: string,

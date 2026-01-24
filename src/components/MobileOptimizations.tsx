@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useBreakpoint, breakpoints } from "@/hooks/useMediaQuery";
+import { useBreakpoint } from "@/hooks/useMediaQuery";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { cn } from "@/lib/utils";
 
 interface ResponsiveGridProps {
@@ -36,25 +37,28 @@ export function ResponsiveGrid({
   };
 
   const colCount = isXl
-    ? cols.xl ?? cols.lg ?? cols.md ?? cols.sm ?? cols.default
+    ? (cols.xl ?? cols.lg ?? cols.md ?? cols.sm ?? cols.default)
     : isLg
-      ? cols.lg ?? cols.md ?? cols.sm ?? cols.default
+      ? (cols.lg ?? cols.md ?? cols.sm ?? cols.default)
       : isMd
-        ? cols.md ?? cols.sm ?? cols.default
+        ? (cols.md ?? cols.sm ?? cols.default)
         : isSm
-          ? cols.sm ?? cols.default
+          ? (cols.sm ?? cols.default)
           : cols.default;
 
   const gapValue = isXl
-    ? gap.lg ?? gap.md ?? gap.default
+    ? (gap.lg ?? gap.md ?? gap.default)
     : isLg
-      ? gap.lg ?? gap.md ?? gap.default
+      ? (gap.lg ?? gap.md ?? gap.default)
       : isMd
-        ? gap.md ?? gap.default
+        ? (gap.md ?? gap.default)
         : gap.default;
 
   return (
-    <div className={cn("grid", gapValue, className)} style={{ gridTemplateColumns: `repeat(${colCount}, minmax(0, 1fr))` }}>
+    <div
+      className={cn("grid", gapValue, className)}
+      style={{ gridTemplateColumns: `repeat(${colCount}, minmax(0, 1fr))` }}
+    >
       {children}
     </div>
   );
@@ -79,7 +83,7 @@ export function TouchOptimizedButton({
   disabled = false,
   loading = false,
 }: TouchOptimizedButtonProps) {
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const { isMobile } = useMediaQuery();
 
   const sizeClasses = {
     sm: "px-3 py-1.5 text-xs min-h-[36px]",
@@ -88,10 +92,13 @@ export function TouchOptimizedButton({
   };
 
   const variantClasses = {
-    primary: "bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800 shadow-lg shadow-primary-500/20",
-    secondary: "bg-white text-gray-900 hover:bg-gray-50 active:bg-gray-100 border border-gray-200 shadow-lg",
+    primary:
+      "bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800 shadow-lg shadow-primary-500/20",
+    secondary:
+      "bg-white text-gray-900 hover:bg-gray-50 active:bg-gray-100 border border-gray-200 shadow-lg",
     ghost: "bg-transparent text-gray-700 hover:bg-gray-100 active:bg-gray-200",
-    danger: "bg-red-600 text-white hover:bg-red-700 active:bg-red-800 shadow-lg shadow-red-500/20",
+    danger:
+      "bg-red-600 text-white hover:bg-red-700 active:bg-red-800 shadow-lg shadow-red-500/20",
   };
 
   return (
@@ -114,9 +121,24 @@ export function TouchOptimizedButton({
       }}
     >
       {loading && (
-        <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+        <svg
+          className="animate-spin -ml-1 mr-2 h-4 w-4"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          />
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          />
         </svg>
       )}
       {children}
@@ -144,15 +166,20 @@ export function SwipeableContainer({
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
+    const touch = e.touches[0];
+    if (!touch) return;
+    touchStartX.current = touch.clientX;
+    touchStartY.current = touch.clientY;
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (touchStartX.current === null || touchStartY.current === null) return;
 
-    const touchEndX = e.changedTouches[0].clientX;
-    const touchEndY = e.changedTouches[0].clientY;
+    const touchEnd = e.changedTouches[0];
+    if (!touchEnd) return;
+
+    const touchEndX = touchEnd.clientX;
+    const touchEndY = touchEnd.clientY;
 
     const deltaX = touchEndX - touchStartX.current;
     const deltaY = touchEndY - touchStartY.current;
@@ -187,7 +214,11 @@ interface PullToRefreshProps {
   className?: string;
 }
 
-export function PullToRefresh({ children, onRefresh, className }: PullToRefreshProps) {
+export function PullToRefresh({
+  children,
+  onRefresh,
+  className,
+}: PullToRefreshProps) {
   const [isPulling, setIsPulling] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
@@ -196,13 +227,18 @@ export function PullToRefresh({ children, onRefresh, className }: PullToRefreshP
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (window.scrollY === 0) {
-      startY.current = e.touches[0].clientY;
+      const touch = e.touches[0];
+      if (touch) {
+        startY.current = touch.clientY;
+      }
     }
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (startY.current !== null && window.scrollY === 0) {
-      const currentY = e.touches[0].clientY;
+      const touch = e.touches[0];
+      if (!touch) return;
+      const currentY = touch.clientY;
       const distance = Math.max(0, currentY - startY.current);
       setPullDistance(Math.min(distance, 120));
       setIsPulling(distance > 20);
@@ -230,21 +266,47 @@ export function PullToRefresh({ children, onRefresh, className }: PullToRefreshP
     >
       <div
         className="flex items-center justify-center transition-transform duration-200"
-        style={{ height: pullDistance, transform: `translateY(${Math.min(pullDistance - 40, 40)}px)` }}
+        style={{
+          height: pullDistance,
+          transform: `translateY(${Math.min(pullDistance - 40, 40)}px)`,
+        }}
       >
         {isRefreshing ? (
-          <svg className="animate-spin h-6 w-6 text-primary-600" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          <svg
+            className="animate-spin h-6 w-6 text-primary-600"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            />
           </svg>
         ) : (
           <svg
-            className={cn("h-6 w-6 text-primary-600 transition-transform", isPulling && "rotate-180")}
+            className={cn(
+              "h-6 w-6 text-primary-600 transition-transform",
+              isPulling && "rotate-180",
+            )}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
           </svg>
         )}
       </div>
@@ -263,8 +325,14 @@ interface MobileSheetProps {
   position?: "bottom" | "right";
 }
 
-export function MobileSheet({ isOpen, onClose, children, title, position = "bottom" }: MobileSheetProps) {
-  const isMobile = useMediaQuery("(max-width: 768px)");
+export function MobileSheet({
+  isOpen,
+  onClose,
+  children,
+  title,
+  position = "bottom",
+}: MobileSheetProps) {
+  const { isMobile } = useMediaQuery();
 
   if (!isMobile) return <>{children}</>;
 
@@ -287,12 +355,24 @@ export function MobileSheet({ isOpen, onClose, children, title, position = "bott
                 onClick={onClose}
                 className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-700 transition-colors"
               >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
-            <div className="p-4 overflow-y-auto max-h-[calc(80vh-60px)]">{children}</div>
+            <div className="p-4 overflow-y-auto max-h-[calc(80vh-60px)]">
+              {children}
+            </div>
           </div>
         </div>
       )}
@@ -306,14 +386,20 @@ interface StickyHeaderProps {
   showThreshold?: number;
 }
 
-export function StickyHeader({ children, className, showThreshold = 50 }: StickyHeaderProps) {
+export function StickyHeader({
+  children,
+  className,
+  showThreshold = 50,
+}: StickyHeaderProps) {
   const [isVisible, setIsVisible] = useState(true);
   const lastScrollY = useRef(0);
 
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      setIsVisible(currentScrollY < lastScrollY.current || currentScrollY < showThreshold);
+      setIsVisible(
+        currentScrollY < lastScrollY.current || currentScrollY < showThreshold,
+      );
       lastScrollY.current = currentScrollY;
     };
 

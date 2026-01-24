@@ -23,7 +23,10 @@ export interface RateLimitRule {
   responseType: "error" | "throttle" | "delay";
   delayMs: number;
   bypassForUsers: string[];
-  tierLimits: Record<RateLimitTier, { maxRequests: number; windowSeconds: number }>;
+  tierLimits: Record<
+    RateLimitTier,
+    { maxRequests: number; windowSeconds: number }
+  >;
 }
 
 export interface RateLimitTierConfig {
@@ -126,7 +129,12 @@ export class RateLimitManager {
         burstLimit: 200,
         concurrentLimit: 100,
       },
-      features: ["All endpoints", "Priority support", "Advanced analytics", "Custom rate limits"],
+      features: [
+        "All endpoints",
+        "Priority support",
+        "Advanced analytics",
+        "Custom rate limits",
+      ],
       overageAllowed: true,
       overageRate: 0.0005,
     },
@@ -141,7 +149,12 @@ export class RateLimitManager {
         burstLimit: 1000,
         concurrentLimit: 500,
       },
-      features: ["All endpoints", "Dedicated support", "Custom SLAs", "White-glove onboarding"],
+      features: [
+        "All endpoints",
+        "Dedicated support",
+        "Custom SLAs",
+        "White-glove onboarding",
+      ],
       overageAllowed: true,
       overageRate: 0.0001,
     },
@@ -291,7 +304,9 @@ export class RateLimitManager {
     });
   }
 
-  createConfig(config: Omit<RateLimitConfig, "id" | "createdAt" | "updatedAt">): RateLimitConfig {
+  createConfig(
+    config: Omit<RateLimitConfig, "id" | "createdAt" | "updatedAt">,
+  ): RateLimitConfig {
     const id = `ratelimit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const now = new Date().toISOString();
 
@@ -306,7 +321,10 @@ export class RateLimitManager {
     return fullConfig;
   }
 
-  updateConfig(id: string, updates: Partial<RateLimitConfig>): RateLimitConfig | null {
+  updateConfig(
+    id: string,
+    updates: Partial<RateLimitConfig>,
+  ): RateLimitConfig | null {
     const config = this.configs.get(id);
     if (!config) return null;
 
@@ -338,7 +356,9 @@ export class RateLimitManager {
   }
 
   getAllConfigs(): RateLimitConfig[] {
-    return Array.from(this.configs.values()).sort((a, b) => a.priority - b.priority);
+    return Array.from(this.configs.values()).sort(
+      (a, b) => a.priority - b.priority,
+    );
   }
 
   getConfigsByScope(scope: RateLimitScope): RateLimitConfig[] {
@@ -352,7 +372,12 @@ export class RateLimitManager {
     endpoint: string,
     method: string,
     tier: RateLimitTier,
-  ): { allowed: boolean; remaining: number; resetAt: string; retryAfter?: number } {
+  ): {
+    allowed: boolean;
+    remaining: number;
+    resetAt: string;
+    retryAfter?: number;
+  } {
     const applicableConfigs = this.getApplicableConfigs(endpoint, method, tier);
 
     for (const config of applicableConfigs) {
@@ -365,11 +390,17 @@ export class RateLimitManager {
 
         const now = Date.now();
         const windowStart = now - tierLimit.windowSeconds * 1000;
-        const recentUsage = usage.filter((u) => new Date(u.timestamp).getTime() > windowStart);
+        const recentUsage = usage.filter(
+          (u) => new Date(u.timestamp).getTime() > windowStart,
+        );
 
         if (recentUsage.length >= tierLimit.maxRequests) {
           const oldestInWindow = recentUsage[0];
-          const resetAt = new Date(oldestInWindow.timestamp.getTime() + tierLimit.windowSeconds * 1000);
+          if (!oldestInWindow) break;
+          const resetAt = new Date(
+            new Date(oldestInWindow.timestamp).getTime() +
+              tierLimit.windowSeconds * 1000,
+          );
 
           return {
             allowed: false,
@@ -418,7 +449,11 @@ export class RateLimitManager {
     return this.TIERS[tier];
   }
 
-  getStats(filter?: { configId?: string; startDate?: string; endDate?: string }): RateLimitStats {
+  getStats(filter?: {
+    configId?: string;
+    startDate?: string;
+    endDate?: string;
+  }): RateLimitStats {
     let allUsage = Array.from(this.usageRecords.values()).flat();
 
     if (filter?.configId) {
@@ -427,7 +462,9 @@ export class RateLimitManager {
 
     if (filter?.startDate) {
       const start = new Date(filter.startDate).getTime();
-      allUsage = allUsage.filter((u) => new Date(u.timestamp).getTime() >= start);
+      allUsage = allUsage.filter(
+        (u) => new Date(u.timestamp).getTime() >= start,
+      );
     }
 
     if (filter?.endDate) {
@@ -437,22 +474,27 @@ export class RateLimitManager {
 
     const totalRequests = allUsage.length;
     const limitedRequests = allUsage.filter((u) => u.limited).length;
-    const limitRate = totalRequests > 0 ? (limitedRequests / totalRequests) * 100 : 0;
+    const limitRate =
+      totalRequests > 0 ? (limitedRequests / totalRequests) * 100 : 0;
 
     const requestsByEndpoint: Record<string, number> = {};
     const requestsByUser: Record<string, number> = {};
 
     allUsage.forEach((usage) => {
-      requestsByEndpoint[usage.endpoint] = (requestsByEndpoint[usage.endpoint] || 0) + 1;
+      requestsByEndpoint[usage.endpoint] =
+        (requestsByEndpoint[usage.endpoint] || 0) + 1;
       if (usage.userId) {
         requestsByUser[usage.userId] = (requestsByUser[usage.userId] || 0) + 1;
       }
     });
 
-    const requestsByTier = Object.keys(this.TIERS).reduce((acc, tier) => {
-      acc[tier as RateLimitTier] = Math.floor(Math.random() * 10000);
-      return acc;
-    }, {} as Record<RateLimitTier, number>);
+    const requestsByTier = Object.keys(this.TIERS).reduce(
+      (acc, tier) => {
+        acc[tier as RateLimitTier] = Math.floor(Math.random() * 10000);
+        return acc;
+      },
+      {} as Record<RateLimitTier, number>,
+    );
 
     const topLimitedEndpoints = Object.entries(requestsByEndpoint)
       .sort((a, b) => b[1] - a[1])
@@ -509,7 +551,10 @@ export class RateLimitManager {
       );
     }
 
-    return filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return filtered.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
   }
 
   acknowledgeAlert(alertId: string, userId: string): boolean {
@@ -521,33 +566,58 @@ export class RateLimitManager {
     return true;
   }
 
-  generateRateLimitHeader(remaining: number, resetAt: string, limit: number): Record<string, string> {
+  generateRateLimitHeader(
+    remaining: number,
+    resetAt: string,
+    limit: number,
+  ): Record<string, string> {
     return {
       "X-RateLimit-Limit": limit.toString(),
       "X-RateLimit-Remaining": Math.max(0, remaining).toString(),
-      "X-RateLimit-Reset": Math.floor(new Date(resetAt).getTime() / 1000).toString(),
+      "X-RateLimit-Reset": Math.floor(
+        new Date(resetAt).getTime() / 1000,
+      ).toString(),
     };
   }
 
-  private getApplicableConfigs(endpoint: string, method: string, tier: RateLimitTier): RateLimitConfig[] {
+  private getApplicableConfigs(
+    endpoint: string,
+    method: string,
+    tier: RateLimitTier,
+  ): RateLimitConfig[] {
     return this.getAllConfigs().filter((config) => {
       if (!config.isActive) return false;
-      return config.tier === "free" || config.tier === tier || config.scope === "global";
+      return (
+        config.tier === "free" ||
+        config.tier === tier ||
+        config.scope === "global"
+      );
     });
   }
 
-  private matchesRule(endpoint: string, method: string, rule: RateLimitRule): boolean {
+  private matchesRule(
+    endpoint: string,
+    method: string,
+    rule: RateLimitRule,
+  ): boolean {
     if (rule.method !== "*" && rule.method !== method) return false;
 
     const pattern = rule.endpointPattern
       .replace(/\*/g, ".*")
       .replace(/\/api\//g, "/api/");
     const escapedPattern = pattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    // eslint-disable-next-line security/detect-non-literal-regexp
     const regex = new RegExp(`^${escapedPattern}$`);
     return regex.test(endpoint);
   }
 
-  private getUsageKey(userId: string, apiKey: string | undefined, ip: string, configId: string, ruleId: string): string {
+  private getUsageKey(
+    userId: string,
+    apiKey: string | undefined,
+    ip: string,
+    configId: string,
+    ruleId: string,
+  ): string {
     return `${configId}:${ruleId}:${apiKey || userId}:${ip}`;
   }
 
@@ -561,7 +631,7 @@ export class RateLimitManager {
     }
 
     const usage: RateLimitUsage = {
-      configId: key.split(":")[0],
+      configId: key.split(":")[0] || "",
       endpoint,
       method,
       timestamp: new Date().toISOString(),
@@ -598,12 +668,19 @@ export function checkApiRateLimit(
   method: string,
   tier: RateLimitTier = "free",
 ): { allowed: boolean; headers: Record<string, string> } {
-  const result = rateLimitManager.checkRateLimit(userId, apiKey, ip, endpoint, method, tier);
+  const result = rateLimitManager.checkRateLimit(
+    userId,
+    apiKey,
+    ip,
+    endpoint,
+    method,
+    tier,
+  );
 
   const headers = rateLimitManager.generateRateLimitHeader(
     result.remaining,
     result.resetAt,
-    result.remaining + (result.limited ? 0 : 1),
+    result.remaining + (!result.allowed ? 0 : 1),
   );
 
   if (!result.allowed && result.retryAfter) {
