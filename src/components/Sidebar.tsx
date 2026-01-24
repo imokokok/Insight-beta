@@ -127,9 +127,9 @@ export function Sidebar() {
               />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-gray-800 tracking-tight">
+              <h2 className="text-lg font-bold text-gray-800 tracking-tight">
                 {t("app.brand")}
-              </h1>
+              </h2>
               <p className="text-xs text-gray-500 font-medium">
                 {t("app.subtitle")}
               </p>

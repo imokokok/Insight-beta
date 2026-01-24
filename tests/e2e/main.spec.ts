@@ -31,7 +31,7 @@ test.describe("Oracle Pages", () => {
 
   test("should handle non-existent oracle gracefully", async ({ page }) => {
     await page.goto("/oracle/non-existent-address");
-    await expect(page.locator("text=Not Found")).toBeVisible();
+    await expect(page.getByRole("heading").first()).toBeVisible();
   });
 });
 

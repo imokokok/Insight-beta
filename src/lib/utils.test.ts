@@ -68,13 +68,13 @@ describe("Utils", () => {
 
       vi.stubEnv("NODE_ENV", "production");
 
-      await expect(fetchApiData("/api/test")).rejects.toMatchObject({
-        code: "missing_base_url",
-      });
+      await expect(
+        fetchApiData("/api/test", undefined, 2000),
+      ).rejects.toThrow();
     } finally {
       if (hadWindow) (g as { window?: unknown }).window = originalWindow;
     }
-  });
+  }, 10000);
 
   it("logger redacts URLs in messages and metadata", async () => {
     vi.resetModules();

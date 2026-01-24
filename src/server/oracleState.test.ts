@@ -183,7 +183,7 @@ describe("oracleState", () => {
       );
       expect(query).toHaveBeenCalledWith(
         expect.stringContaining("UPDATE disputes"),
-        ["0x123", "5", "2", "7", "default"],
+        ["D:0x123", "5", "2", "7", "default"],
       );
     });
   });
