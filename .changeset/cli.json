@@ -1,0 +1,26 @@
+{
+  "$schema": "node_modules/@changesets/cli/schema.json",
+  "name": "insight",
+  "version": "0.1.0",
+  "private": true,
+  "command": {
+    "add": {
+      "$": "changeset add",
+      "empty": {
+        "$": "changeset add --empty"
+      }
+    },
+    "create": {
+      "$": "changeset create"
+    },
+    "bump": {
+      "$": "changeset version",
+      "snapshot": {
+        "$": "changeset version --snapshot"
+      }
+    },
+    "release": {
+      "$": "changeset publish"
+    }
+  }
+}

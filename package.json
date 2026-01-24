@@ -29,6 +29,13 @@
     "bench": "vitest run src/server/benchmark/",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
+    "test:coverage:fail": "vitest run --coverage --exit-on-failure",
+    "test:coverage:threshold": "vitest run --coverage --passWithNoThresholdErrors",
+    "docs:api": "node scripts/generate-api-docs.mjs",
+    "changeset": "changeset",
+    "changeset:add": "changeset add",
+    "changeset:version": "changeset version",
+    "changeset:publish": "changeset publish",
     "prepare": "husky"
   },
   "dependencies": {

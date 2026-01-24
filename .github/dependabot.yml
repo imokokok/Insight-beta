@@ -1,0 +1,117 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Shanghai"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "npm"
+    groups:
+      development-dependencies:
+        patterns:
+          - "@types/*"
+          - "@testing-library/*"
+          - "vitest"
+          - "@vitest/*"
+          - "eslint"
+          - "@typescript-eslint/*"
+          - "prettier"
+          - "husky"
+          - "lint-staged"
+        update-types:
+          - "minor"
+          - "patch"
+      react-ecosystem:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "next"
+          - "@types/react"
+          - "@types/react-dom"
+        update-types:
+          - "minor"
+          - "patch"
+      ui-libraries:
+        patterns:
+          - "tailwindcss"
+          - "lucide-react"
+          - "clsx"
+          - "tailwind-merge"
+          - "class-variance-authority"
+          - "sonner"
+          - "recharts"
+        update-types:
+          - "minor"
+          - "patch"
+      crypto-web3:
+        patterns:
+          - "viem"
+          - "ethers"
+          - "@openzeppelin/contracts"
+        update-types:
+          - "minor"
+          - "patch"
+      dev-tools:
+        patterns:
+          - "hardhat"
+          - "@nomicfoundation/*"
+          - "typechain"
+          - "@typechain/*"
+        update-types:
+          - "minor"
+          - "patch"
+      observability:
+        patterns:
+          - "@opentelemetry/*"
+          - "@sentry/*"
+          - "web-vitals"
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      - dependency-name: "node"
+        versions: ["20.x", "22.x"]
+    allow:
+      - dependency-type: "direct"
+      - dependency-type: "indirect"
+    rebase-strategy: "auto"
+    target-branch: "develop"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Shanghai"
+    commit-message:
+      prefix: "ci(actions)"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    groups:
+      github-actions:
+        patterns:
+          - "actions/*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "solc"
+    directory: "/contracts"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "chore(solc)"
+    labels:
+      - "dependencies"
+      - "solidity"
