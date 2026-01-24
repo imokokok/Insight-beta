@@ -1,0 +1,216 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - region "Notifications alt+T"
+  - generic [ref=e3]:
+    - complementary "Sidebar" [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - img "Insight logo" [ref=e8]
+          - generic [ref=e10]:
+            - heading "Insight" [level=1] [ref=e11]
+            - paragraph [ref=e12]: Oracle Monitor
+        - navigation [ref=e13]:
+          - link "Oracle" [ref=e14] [cursor=pointer]:
+            - /url: /oracle?instanceId=default
+            - img [ref=e15]
+            - text: Oracle
+          - link "Disputes" [ref=e17] [cursor=pointer]:
+            - /url: /disputes?instanceId=default
+            - img [ref=e18]
+            - text: Disputes
+          - link "Alerts" [ref=e20] [cursor=pointer]:
+            - /url: /alerts?instanceId=default
+            - img [ref=e21]
+            - text: Alerts
+          - link "Audit" [ref=e23] [cursor=pointer]:
+            - /url: /audit?instanceId=default
+            - img [ref=e24]
+            - text: Audit
+          - link "Tokens" [ref=e27] [cursor=pointer]:
+            - /url: /admin/tokens?instanceId=default
+            - img [ref=e28]
+            - text: Tokens
+          - link "Watchlist" [ref=e31] [cursor=pointer]:
+            - /url: /watchlist?instanceId=default
+            - img [ref=e32]
+            - text: Watchlist
+          - link "My Assertions" [ref=e34] [cursor=pointer]:
+            - /url: /my-assertions?instanceId=default
+            - img [ref=e35]
+            - text: My Assertions
+          - link "My Disputes" [ref=e38] [cursor=pointer]:
+            - /url: /my-disputes?instanceId=default
+            - img [ref=e39]
+            - text: My Disputes
+        - button "Connect Wallet" [ref=e43] [cursor=pointer]:
+          - img [ref=e44]
+          - text: Connect Wallet
+    - main [ref=e47]:
+      - generic [ref=e48]:
+        - generic [ref=e49]:
+          - heading "Insight · UMA Settlement Monitor" [level=1] [ref=e50]
+          - button "English" [ref=e53] [cursor=pointer]:
+            - img [ref=e54]
+            - generic [ref=e57]: English
+        - generic [ref=e58]:
+          - generic [ref=e59]:
+            - generic [ref=e60]:
+              - heading "Oracle Monitor" [level=1] [ref=e61]
+              - paragraph [ref=e62]: Real-time tracking of UMA Optimistic Oracle assertions and disputes.
+            - generic [ref=e64]:
+              - button "Connect Wallet" [ref=e65] [cursor=pointer]:
+                - img [ref=e66]
+                - text: Connect Wallet
+              - button "New Assertion" [ref=e69] [cursor=pointer]:
+                - img [ref=e70]
+                - text: New Assertion
+          - generic [ref=e76]:
+            - generic [ref=e77]:
+              - generic [ref=e79]:
+                - generic [ref=e80]: "75"
+                - generic [ref=e81]: Sync Health
+              - generic [ref=e82]:
+                - generic [ref=e83]: Sync Health
+                - generic [ref=e84]: Lagging
+                - generic [ref=e85]:
+                  - generic [ref=e86]: "Block Height: —"
+                  - generic [ref=e87]: "Lag (blocks): —"
+                  - generic [ref=e88]: "Active Disputes: —"
+                  - generic [ref=e89]: "Last Update: —"
+            - generic [ref=e91]:
+              - generic [ref=e92]:
+                - generic [ref=e93]: Sync Health
+                - generic [ref=e94]: "Last Update: —"
+              - generic [ref=e96]:
+                - generic [ref=e97]: "Missing config: RPC URL or contract address"
+                - generic [ref=e98]: Critical
+          - generic [ref=e101]:
+            - generic [ref=e102]:
+              - generic [ref=e103]:
+                - img [ref=e105]
+                - generic [ref=e107]: Total Value Secured
+              - generic [ref=e108]:
+                - heading "—" [level=2] [ref=e109]
+                - generic [ref=e110]: +2.4%
+              - paragraph [ref=e111]: Live oracle market capitalization
+            - generic [ref=e115]:
+              - generic [ref=e116]:
+                - img [ref=e119]
+                - generic [ref=e121]:
+                  - text: Active Disputes
+                  - generic [ref=e122]: —
+              - generic [ref=e123]:
+                - generic [ref=e124]:
+                  - img [ref=e126]
+                  - img [ref=e129]
+                - generic [ref=e132]:
+                  - text: Resolved (24h)
+                  - generic [ref=e133]: —
+              - generic [ref=e134]:
+                - img [ref=e137]
+                - generic [ref=e140]:
+                  - text: Avg Resolution Time
+                  - generic [ref=e141]: —
+          - generic [ref=e143]:
+            - button "Overview" [ref=e144] [cursor=pointer]:
+              - img [ref=e145]
+              - text: Overview
+            - button "Leaderboard" [ref=e150] [cursor=pointer]:
+              - img [ref=e151]
+              - text: Leaderboard
+            - button "Tools" [ref=e157] [cursor=pointer]:
+              - img [ref=e158]
+              - text: Tools
+          - generic [ref=e160]:
+            - generic [ref=e161]:
+              - heading "How It Works" [level=2] [ref=e162]
+              - generic [ref=e163]:
+                - generic [ref=e164]:
+                  - img [ref=e166]
+                  - heading "Assert Truth" [level=3] [ref=e169]
+                  - paragraph [ref=e170]: Anyone can publish any statement as fact, backed by a bond as collateral.
+                  - generic [ref=e172]: "01"
+                - generic [ref=e173]:
+                  - img [ref=e175]
+                  - heading "Verify & Dispute" [level=3] [ref=e177]
+                  - paragraph [ref=e178]: During the liveness period, if the assertion is false, anyone can challenge it by staking an equal bond.
+                  - generic [ref=e180]: "02"
+                - generic [ref=e181]:
+                  - img [ref=e183]
+                  - heading "Settle & Reward" [level=3] [ref=e189]
+                  - paragraph [ref=e190]: If unchallenged, the assertion holds. If disputed, UMA verifiers vote, and the winner takes the opponent's bond.
+                  - generic [ref=e192]: "03"
+            - generic [ref=e195]:
+              - button "Connection & Sync" [ref=e197] [cursor=pointer]:
+                - img [ref=e198]
+                - text: Connection & Sync
+                - img [ref=e201]
+              - generic [ref=e204]:
+                - generic [ref=e205]:
+                  - button "All" [ref=e206] [cursor=pointer]: All
+                  - button "Pending" [ref=e208] [cursor=pointer]: Pending
+                  - button "Disputed" [ref=e210] [cursor=pointer]: Disputed
+                  - button "Resolved" [ref=e212] [cursor=pointer]: Resolved
+                - generic [ref=e214]:
+                  - generic [ref=e215]:
+                    - button "Grid view" [ref=e216] [cursor=pointer]:
+                      - img [ref=e217]
+                    - button "List view" [ref=e222] [cursor=pointer]:
+                      - img [ref=e223]
+                  - generic [ref=e224]:
+                    - combobox [ref=e225] [cursor=pointer]:
+                      - option "All" [selected]
+                      - option "Local"
+                      - option "Polygon"
+                      - option "Polygon (Amoy)"
+                      - option "Arbitrum"
+                      - option "Optimism"
+                    - img
+                  - generic [ref=e227]:
+                    - img [ref=e228]
+                    - textbox "Search assertions…" [ref=e231]
+              - generic [ref=e232]:
+                - img [ref=e234]
+                - heading "No Data" [level=3] [ref=e237]
+                - paragraph [ref=e238]: No data available
+        - generic [ref=e240]:
+          - generic [ref=e241]:
+            - heading "Insight Quick Tour" [level=2] [ref=e242]
+            - button [ref=e243] [cursor=pointer]:
+              - img [ref=e244]
+          - generic [ref=e247]:
+            - generic [ref=e248]:
+              - img [ref=e250]
+              - heading "Welcome to Insight" [level=3] [ref=e252]
+              - paragraph [ref=e253]: Insight is your gateway to Oracle monitoring and dispute resolution. Let's take a quick tour to get you started.
+              - paragraph [ref=e254]: "Please select your role to get a personalized tour:"
+            - generic [ref=e255]:
+              - button "For Developers Build with confidence using our Oracle data API" [ref=e256] [cursor=pointer]:
+                - img [ref=e258]
+                - generic [ref=e261]:
+                  - heading "For Developers" [level=4] [ref=e262]
+                  - paragraph [ref=e263]: Build with confidence using our Oracle data API
+              - button "For Protocol Teams Ensure Oracle data reliability for your DeFi protocols" [ref=e264] [cursor=pointer]:
+                - img [ref=e266]
+                - generic [ref=e267]:
+                  - heading "For Protocol Teams" [level=4] [ref=e268]
+                  - paragraph [ref=e269]: Ensure Oracle data reliability for your DeFi protocols
+              - button "For Oracle Operators Manage your Oracle nodes and performance" [ref=e270] [cursor=pointer]:
+                - img [ref=e272]
+                - generic [ref=e274]:
+                  - heading "For Oracle Operators" [level=4] [ref=e275]
+                  - paragraph [ref=e276]: Manage your Oracle nodes and performance
+              - button "For General Users Explore Oracle data and participate in the ecosystem" [ref=e277] [cursor=pointer]:
+                - img [ref=e279]
+                - generic [ref=e284]:
+                  - heading "For General Users" [level=4] [ref=e285]
+                  - paragraph [ref=e286]: Explore Oracle data and participate in the ecosystem
+            - generic [ref=e287]:
+              - button "Skip Tour" [ref=e288] [cursor=pointer]
+              - button "Continue as General User" [ref=e289] [cursor=pointer]
+  - button "Open Next.js Dev Tools" [ref=e295] [cursor=pointer]:
+    - img [ref=e296]
+  - alert [ref=e299]
+```

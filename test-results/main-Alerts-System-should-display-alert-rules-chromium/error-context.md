@@ -1,0 +1,157 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - region "Notifications alt+T"
+  - generic [ref=e3]:
+    - complementary "Sidebar" [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - img "Insight logo" [ref=e8]
+          - generic [ref=e10]:
+            - heading "Insight" [level=1] [ref=e11]
+            - paragraph [ref=e12]: Oracle Monitor
+        - navigation [ref=e13]:
+          - link "Oracle" [ref=e14] [cursor=pointer]:
+            - /url: /oracle?instanceId=default
+            - img [ref=e15]
+            - text: Oracle
+          - link "Disputes" [ref=e17] [cursor=pointer]:
+            - /url: /disputes?instanceId=default
+            - img [ref=e18]
+            - text: Disputes
+          - link "Alerts" [ref=e20] [cursor=pointer]:
+            - /url: /alerts?instanceId=default
+            - img [ref=e21]
+            - text: Alerts
+          - link "Audit" [ref=e23] [cursor=pointer]:
+            - /url: /audit?instanceId=default
+            - img [ref=e24]
+            - text: Audit
+          - link "Tokens" [ref=e27] [cursor=pointer]:
+            - /url: /admin/tokens?instanceId=default
+            - img [ref=e28]
+            - text: Tokens
+          - link "Watchlist" [ref=e31] [cursor=pointer]:
+            - /url: /watchlist?instanceId=default
+            - img [ref=e32]
+            - text: Watchlist
+          - link "My Assertions" [ref=e34] [cursor=pointer]:
+            - /url: /my-assertions?instanceId=default
+            - img [ref=e35]
+            - text: My Assertions
+          - link "My Disputes" [ref=e38] [cursor=pointer]:
+            - /url: /my-disputes?instanceId=default
+            - img [ref=e39]
+            - text: My Disputes
+        - button "Connect Wallet" [ref=e43] [cursor=pointer]:
+          - img [ref=e44]
+          - text: Connect Wallet
+    - main [ref=e47]:
+      - generic [ref=e48]:
+        - generic [ref=e49]:
+          - heading "Insight · UMA Settlement Monitor" [level=1] [ref=e50]
+          - button "English" [ref=e53] [cursor=pointer]:
+            - img [ref=e54]
+            - generic [ref=e57]: English
+        - generic [ref=e58]:
+          - generic [ref=e59]:
+            - generic [ref=e60]:
+              - heading "Alerts" [level=1] [ref=e61]
+              - paragraph [ref=e62]: Aggregate alerts, acknowledge and track health.
+            - button "Refresh" [ref=e64] [cursor=pointer]:
+              - img [ref=e65]
+              - text: Refresh
+          - generic [ref=e70]:
+            - generic [ref=e71]:
+              - generic [ref=e73]:
+                - generic [ref=e74]:
+                  - img [ref=e75]
+                  - generic [ref=e77]: Alerts
+                - generic [ref=e78]:
+                  - combobox [ref=e79]:
+                    - option "default" [selected]
+                  - combobox [ref=e80]:
+                    - option "All" [selected]
+                    - option "Open"
+                    - option "Acknowledged"
+                    - option "Resolved"
+                  - combobox [ref=e81]:
+                    - option "All" [selected]
+                    - option "critical"
+                    - option "warning"
+                    - option "info"
+                  - combobox [ref=e82]:
+                    - option "All" [selected]
+                  - textbox "Search title/content/entity…" [ref=e83]
+              - generic [ref=e85]: Loading…
+            - generic [ref=e86]:
+              - generic [ref=e88]: Alert rules
+              - generic [ref=e89]:
+                - generic [ref=e90]:
+                  - generic [ref=e91]:
+                    - generic [ref=e92]: Ops (7d)
+                    - generic [ref=e93]: —
+                  - generic [ref=e94]: Loading…
+                - generic [ref=e95]:
+                  - generic [ref=e96]: Incidents
+                  - generic [ref=e97]: Loading…
+                - generic [ref=e98]:
+                  - generic [ref=e99]: Top risks
+                  - generic [ref=e100]: Loading…
+                - generic [ref=e101]:
+                  - generic [ref=e102]: Admin token
+                  - textbox "Stored locally in this session for admin API access" [ref=e103]
+                  - generic [ref=e104]: Without a token you can only view alerts, not acknowledge/resolve or save rules.
+                - generic [ref=e105]:
+                  - generic [ref=e106]: Actor
+                  - textbox "e.g. alice@ops" [ref=e107]
+                - main [ref=e109]:
+                  - generic [ref=e110]:
+                    - generic [ref=e111]:
+                      - generic [ref=e113]: Alert rules
+                      - button "Save Config" [disabled] [ref=e114]:
+                        - img [ref=e115]
+                        - generic [ref=e119]: Save Config
+                    - generic [ref=e120]:
+                      - img [ref=e121]
+                      - paragraph [ref=e123]: Without a token you can only view alerts, not acknowledge/resolve or save rules.
+        - generic [ref=e125]:
+          - generic [ref=e126]:
+            - heading "Insight Quick Tour" [level=2] [ref=e127]
+            - button [ref=e128] [cursor=pointer]:
+              - img [ref=e129]
+          - generic [ref=e132]:
+            - generic [ref=e133]:
+              - img [ref=e135]
+              - heading "Welcome to Insight" [level=3] [ref=e137]
+              - paragraph [ref=e138]: Insight is your gateway to Oracle monitoring and dispute resolution. Let's take a quick tour to get you started.
+              - paragraph [ref=e139]: "Please select your role to get a personalized tour:"
+            - generic [ref=e140]:
+              - button "For Developers Build with confidence using our Oracle data API" [ref=e141] [cursor=pointer]:
+                - img [ref=e143]
+                - generic [ref=e146]:
+                  - heading "For Developers" [level=4] [ref=e147]
+                  - paragraph [ref=e148]: Build with confidence using our Oracle data API
+              - button "For Protocol Teams Ensure Oracle data reliability for your DeFi protocols" [ref=e149] [cursor=pointer]:
+                - img [ref=e151]
+                - generic [ref=e152]:
+                  - heading "For Protocol Teams" [level=4] [ref=e153]
+                  - paragraph [ref=e154]: Ensure Oracle data reliability for your DeFi protocols
+              - button "For Oracle Operators Manage your Oracle nodes and performance" [ref=e155] [cursor=pointer]:
+                - img [ref=e157]
+                - generic [ref=e159]:
+                  - heading "For Oracle Operators" [level=4] [ref=e160]
+                  - paragraph [ref=e161]: Manage your Oracle nodes and performance
+              - button "For General Users Explore Oracle data and participate in the ecosystem" [ref=e162] [cursor=pointer]:
+                - img [ref=e164]
+                - generic [ref=e169]:
+                  - heading "For General Users" [level=4] [ref=e170]
+                  - paragraph [ref=e171]: Explore Oracle data and participate in the ecosystem
+            - generic [ref=e172]:
+              - button "Skip Tour" [ref=e173] [cursor=pointer]
+              - button "Continue as General User" [ref=e174] [cursor=pointer]
+  - button "Open Next.js Dev Tools" [ref=e180] [cursor=pointer]:
+    - img [ref=e181]
+  - alert [ref=e184]
+```

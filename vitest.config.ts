@@ -35,7 +35,8 @@ export default defineConfig({
     },
     environment: "jsdom",
     globals: true,
-    include: ["**/*.{test,spec,bench}.?(c|m)[jt]s?(x)"],
+    include: ["src/**/*.{test,spec,bench}.?(c|m)[jt]s?(x)"],
+    exclude: ["tests/**", "node_modules/**"],
     setupFiles: ["./vitest.setup.ts"],
   },
 });

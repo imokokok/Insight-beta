@@ -1,0 +1,98 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - region "Notifications alt+T"
+  - generic [ref=e3]:
+    - complementary "Sidebar" [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - img "Insight logo" [ref=e8]
+          - generic [ref=e10]:
+            - heading "Insight" [level=1] [ref=e11]
+            - paragraph [ref=e12]: Oracle Monitor
+        - navigation [ref=e13]:
+          - link "Oracle" [ref=e14] [cursor=pointer]:
+            - /url: /oracle?instanceId=default
+            - img [ref=e15]
+            - text: Oracle
+          - link "Disputes" [ref=e17] [cursor=pointer]:
+            - /url: /disputes?instanceId=default
+            - img [ref=e18]
+            - text: Disputes
+          - link "Alerts" [ref=e20] [cursor=pointer]:
+            - /url: /alerts?instanceId=default
+            - img [ref=e21]
+            - text: Alerts
+          - link "Audit" [ref=e23] [cursor=pointer]:
+            - /url: /audit?instanceId=default
+            - img [ref=e24]
+            - text: Audit
+          - link "Tokens" [ref=e27] [cursor=pointer]:
+            - /url: /admin/tokens?instanceId=default
+            - img [ref=e28]
+            - text: Tokens
+          - link "Watchlist" [ref=e31] [cursor=pointer]:
+            - /url: /watchlist?instanceId=default
+            - img [ref=e32]
+            - text: Watchlist
+          - link "My Assertions" [ref=e34] [cursor=pointer]:
+            - /url: /my-assertions?instanceId=default
+            - img [ref=e35]
+            - text: My Assertions
+          - link "My Disputes" [ref=e38] [cursor=pointer]:
+            - /url: /my-disputes?instanceId=default
+            - img [ref=e39]
+            - text: My Disputes
+        - button "Connect Wallet" [ref=e43] [cursor=pointer]:
+          - img [ref=e44]
+          - text: Connect Wallet
+    - main [ref=e47]:
+      - generic [ref=e48]:
+        - generic [ref=e49]:
+          - heading "Insight · UMA Settlement Monitor" [level=1] [ref=e50]
+          - button "English" [ref=e53] [cursor=pointer]:
+            - img [ref=e54]
+            - generic [ref=e57]: English
+        - generic [ref=e77]:
+          - generic:
+            - img
+        - generic [ref=e133]:
+          - generic [ref=e134]:
+            - heading "Insight Quick Tour" [level=2] [ref=e135]
+            - button [ref=e136] [cursor=pointer]:
+              - img [ref=e137]
+          - generic [ref=e140]:
+            - generic [ref=e141]:
+              - img [ref=e143]
+              - heading "Welcome to Insight" [level=3] [ref=e145]
+              - paragraph [ref=e146]: Insight is your gateway to Oracle monitoring and dispute resolution. Let's take a quick tour to get you started.
+              - paragraph [ref=e147]: "Please select your role to get a personalized tour:"
+            - generic [ref=e148]:
+              - button "For Developers Build with confidence using our Oracle data API" [ref=e149] [cursor=pointer]:
+                - img [ref=e151]
+                - generic [ref=e154]:
+                  - heading "For Developers" [level=4] [ref=e155]
+                  - paragraph [ref=e156]: Build with confidence using our Oracle data API
+              - button "For Protocol Teams Ensure Oracle data reliability for your DeFi protocols" [ref=e157] [cursor=pointer]:
+                - img [ref=e159]
+                - generic [ref=e160]:
+                  - heading "For Protocol Teams" [level=4] [ref=e161]
+                  - paragraph [ref=e162]: Ensure Oracle data reliability for your DeFi protocols
+              - button "For Oracle Operators Manage your Oracle nodes and performance" [ref=e163] [cursor=pointer]:
+                - img [ref=e165]
+                - generic [ref=e167]:
+                  - heading "For Oracle Operators" [level=4] [ref=e168]
+                  - paragraph [ref=e169]: Manage your Oracle nodes and performance
+              - button "For General Users Explore Oracle data and participate in the ecosystem" [ref=e170] [cursor=pointer]:
+                - img [ref=e172]
+                - generic [ref=e177]:
+                  - heading "For General Users" [level=4] [ref=e178]
+                  - paragraph [ref=e179]: Explore Oracle data and participate in the ecosystem
+            - generic [ref=e180]:
+              - button "Skip Tour" [ref=e181] [cursor=pointer]
+              - button "Continue as General User" [ref=e182] [cursor=pointer]
+  - button "Open Next.js Dev Tools" [ref=e188] [cursor=pointer]:
+    - img [ref=e189]
+  - alert [ref=e192]
+```
