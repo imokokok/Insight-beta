@@ -34,7 +34,9 @@ export async function tryAcquireWorkerLock() {
   if (global.insightWorkerLockClient) return true;
   const name = `insight_worker:${env.INSIGHT_WORKER_ID || "embedded"}`;
   const digest = crypto.createHash("sha256").update(name).digest();
-  const raw = BigInt(`0x${Buffer.from(digest.subarray(0, 8)).toString("hex")}`);
+  const buffer: Buffer = digest.subarray(0, 8);
+  const hexString: string = buffer.toString("hex");
+  const raw = BigInt("0x" + hexString);
   const key = raw % 9223372036854775807n;
 
   const client = await getClient();
