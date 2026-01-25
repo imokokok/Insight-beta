@@ -1,6 +1,6 @@
 import useSWR from "swr";
 import { fetchApiData } from "@/lib/utils";
-import type { UserStats } from "@/lib/oracleTypes";
+import type { UserStats } from "@/lib/types/oracleTypes";
 
 export function useUserStats(
   address?: string | null,

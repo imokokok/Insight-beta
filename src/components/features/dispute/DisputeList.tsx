@@ -14,10 +14,10 @@ import {
   Star,
 } from "lucide-react";
 import { cn, formatTime, getExplorerUrl } from "@/lib/utils";
-import { useWatchlist } from "@/hooks/useWatchlist";
+import { useWatchlist } from "@/hooks/user/useWatchlist";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { langToLocale, type TranslationKey } from "@/i18n/translations";
-import type { Dispute, DisputeStatus } from "@/lib/oracleTypes";
+import type { Dispute, DisputeStatus } from "@/lib/types/oracleTypes";
 
 interface DisputeListProps {
   items: Dispute[];

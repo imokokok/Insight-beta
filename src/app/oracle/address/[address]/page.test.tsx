@@ -36,15 +36,15 @@ vi.mock("@/i18n/translations", () => ({
   getUiErrorMessage: () => "uiError",
 }));
 
-vi.mock("@/hooks/useOracleData", () => ({
+vi.mock("@/hooks/oracle/useOracleData", () => ({
   useOracleData: () => assertionsState,
 }));
 
-vi.mock("@/hooks/useDisputes", () => ({
+vi.mock("@/hooks/dispute/useDisputes", () => ({
   useDisputes: () => disputesState,
 }));
 
-vi.mock("@/hooks/useUserStats", () => ({
+vi.mock("@/hooks/user/useUserStats", () => ({
   useUserStats: () => ({
     stats: null,
     loading: false,

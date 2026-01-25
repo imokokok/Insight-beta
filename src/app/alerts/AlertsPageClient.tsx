@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { fetchApiData, getErrorCode } from "@/lib/utils";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { getUiErrorMessage, langToLocale } from "@/i18n/translations";
-import { useAdminSession } from "@/hooks/useAdminSession";
+import { useAdminSession } from "@/hooks/user/useAdminSession";
 import type {
   Alert,
   AlertRule,
@@ -22,7 +22,7 @@ import type {
   OpsMetricsSeriesPoint,
   OracleInstance,
   RiskItem,
-} from "@/lib/oracleTypes";
+} from "@/lib/types/oracleTypes";
 import {
   AlertCard,
   IncidentCard,

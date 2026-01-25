@@ -1,5 +1,5 @@
 import { createPublicClient, http, parseAbi, type Address } from "viem";
-import type { Assertion, Dispute, OracleChain } from "@/lib/oracleTypes";
+import type { Assertion, Dispute, OracleChain } from "@/lib/types/oracleTypes";
 import { DEFAULT_ORACLE_INSTANCE_ID, readOracleConfig } from "./oracleConfig";
 import {
   readOracleState,

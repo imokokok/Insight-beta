@@ -3,7 +3,7 @@ import type {
   AlertSeverity,
   AlertStatus,
   OpsSloStatus,
-} from "@/lib/oracleTypes";
+} from "@/lib/types/oracleTypes";
 import type { TranslationKey } from "@/i18n/translations";
 
 export type RootCauseOption = { value: string; label: string };

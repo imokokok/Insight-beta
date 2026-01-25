@@ -14,7 +14,7 @@ import {
 import { listAssertions, listDisputes } from "./oracleStore";
 import { query, hasDatabase } from "./db";
 import { ensureSchema } from "./schema";
-import { Assertion, Dispute } from "@/lib/oracleTypes";
+import { Assertion, Dispute } from "@/lib/types/oracleTypes";
 import { getMemoryInstance } from "./memoryBackend";
 import { mockAssertions, mockDisputes } from "@/lib/mockData";
 

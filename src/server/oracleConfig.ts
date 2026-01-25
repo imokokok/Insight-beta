@@ -4,7 +4,7 @@ import type {
   OracleChain,
   OracleConfig as SharedOracleConfig,
   OracleInstance,
-} from "@/lib/oracleTypes";
+} from "@/lib/types/oracleTypes";
 import { getMemoryInstance, getMemoryStore } from "@/server/memoryBackend";
 import { isIP } from "node:net";
 import { env } from "@/lib/env";

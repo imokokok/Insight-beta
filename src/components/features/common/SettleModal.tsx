@@ -3,11 +3,11 @@
 import { useRef, useState } from "react";
 import { X, Loader2, AlertCircle, CheckCircle2, Info } from "lucide-react";
 import { useWallet } from "@/contexts/WalletContext";
-import { useOracleTransaction } from "@/hooks/useOracleTransaction";
-import { useModalBehavior } from "@/hooks/useModalBehavior";
+import { useOracleTransaction } from "@/hooks/oracle/useOracleTransaction";
+import { useModalBehavior } from "@/hooks/ui/useModalBehavior";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { useToast } from "@/components/ui/toast";
-import type { OracleChain } from "@/lib/oracleTypes";
+import type { OracleChain } from "@/lib/types/oracleTypes";
 
 interface SettleModalProps {
   assertionId: string;

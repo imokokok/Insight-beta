@@ -26,7 +26,7 @@ import type {
   OpsMetrics,
   OpsMetricsSeriesPoint,
   OpsSloStatus,
-} from "@/lib/oracleTypes";
+} from "@/lib/types/oracleTypes";
 import {
   alertInsightMap,
   formatSloTarget,

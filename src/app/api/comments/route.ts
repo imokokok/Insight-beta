@@ -1,7 +1,11 @@
 import type { NextRequest } from "next/server";
 import { handleApi } from "@/server/apiResponse";
 import { logger } from "@/lib/logger";
-import type { Comment, CommentCreateInput, CommentFilter } from "@/lib/commentTypes";
+import type {
+  Comment,
+  CommentCreateInput,
+  CommentFilter,
+} from "@/lib/types/commentTypes";
 import { db } from "@/server/db";
 
 export const dynamic = "force-dynamic";
@@ -9,7 +13,9 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   return handleApi(request, async () => {
     const { searchParams } = new URL(request.url);
-    const entityType = searchParams.get("entityType") as Comment["entityType"] | undefined;
+    const entityType = searchParams.get("entityType") as
+      | Comment["entityType"]
+      | undefined;
     const entityId = searchParams.get("entityId") || undefined;
     const authorAddress = searchParams.get("authorAddress") || undefined;
     const limit = Number(searchParams.get("limit")) || 50;
@@ -17,22 +23,23 @@ export async function GET(request: NextRequest) {
     const sortBy = searchParams.get("sortBy") || "newest";
 
     const filter: CommentFilter = {
-        entityType,
-        entityId,
-        authorAddress,
-        limit,
-        offset,
-        sortBy: sortBy as "newest" | "oldest" | "most_liked",
-      };
+      entityType,
+      entityId,
+      authorAddress,
+      limit,
+      offset,
+      sortBy: sortBy as "newest" | "oldest" | "most_liked",
+    };
 
     try {
-      const orderByClause = sortBy === "newest"
-        ? "ORDER BY c.created_at DESC"
-        : sortBy === "oldest"
-          ? "ORDER BY c.created_at ASC"
-          : sortBy === "most_liked"
-            ? "ORDER BY c.likes DESC, c.created_at DESC"
-            : "ORDER BY c.created_at DESC";
+      const orderByClause =
+        sortBy === "newest"
+          ? "ORDER BY c.created_at DESC"
+          : sortBy === "oldest"
+            ? "ORDER BY c.created_at ASC"
+            : sortBy === "most_liked"
+              ? "ORDER BY c.likes DESC, c.created_at DESC"
+              : "ORDER BY c.created_at DESC";
 
       const result = await db.query<Comment>(
         `
@@ -76,11 +83,9 @@ export async function GET(request: NextRequest) {
           ${filter.entityId ? "AND c.entity_id = $2" : ""}
           ${filter.authorAddress ? "AND c.author_address = $3" : ""}
         `,
-        [
-          filter.entityType,
-          filter.entityId,
-          filter.authorAddress,
-        ].filter(Boolean),
+        [filter.entityType, filter.entityId, filter.authorAddress].filter(
+          Boolean,
+        ),
       );
 
       return {

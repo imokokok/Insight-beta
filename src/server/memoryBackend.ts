@@ -3,7 +3,7 @@ import type {
   Dispute,
   OracleChain,
   OracleConfig,
-} from "@/lib/oracleTypes";
+} from "@/lib/types/oracleTypes";
 import type { SyncMeta } from "./oracleState";
 
 type MemoryAlert = {

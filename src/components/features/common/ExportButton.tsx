@@ -2,7 +2,7 @@
 
 import { Download, FileSpreadsheet, FileJson } from "lucide-react";
 import { useState } from "react";
-import { exportData, type ExportFormat } from "@/lib/export";
+import { exportData, type ExportFormat } from "@/lib/api/export";
 import { useI18n } from "@/i18n/LanguageProvider";
 import {
   DropdownMenu,

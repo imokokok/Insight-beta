@@ -31,7 +31,7 @@ vi.mock("lucide-react", async (importOriginal) => {
   };
 });
 
-vi.mock("@/hooks/useOracleData", () => ({
+vi.mock("@/hooks/oracle/useOracleData", () => ({
   useOracleData: () => ({
     items: [],
     stats: null,

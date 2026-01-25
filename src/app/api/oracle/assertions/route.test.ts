@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ZodError } from "zod";
 import { GET } from "./route";
 import * as oracle from "@/server/oracle";
-import type { Assertion } from "@/lib/oracleTypes";
+import type { Assertion } from "@/lib/types/oracleTypes";
 
 vi.mock("@/server/oracle", () => ({
   listAssertions: vi.fn(),

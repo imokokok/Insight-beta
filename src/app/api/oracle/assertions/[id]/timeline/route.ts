@@ -1,7 +1,7 @@
 import { getAssertion, getDisputeByAssertionId } from "@/server/oracle";
 import { listAlerts, type Alert } from "@/server/observability";
 import { error, handleApi, rateLimit } from "@/server/apiResponse";
-import type { Assertion, Dispute } from "@/lib/oracleTypes";
+import type { Assertion, Dispute } from "@/lib/types/oracleTypes";
 
 type TimelineEvent =
   | { type: "assertion_created"; at: string; assertion: Assertion }

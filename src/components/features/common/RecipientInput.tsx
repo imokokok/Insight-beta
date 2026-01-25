@@ -3,7 +3,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { CheckCircle2, AlertCircle } from "lucide-react";
-import type { AlertRule } from "@/lib/oracleTypes";
+import type { AlertRule } from "@/lib/types/oracleTypes";
 
 interface RecipientInputProps {
   rule: AlertRule;

@@ -8,7 +8,7 @@ import {
   Gavel,
 } from "lucide-react";
 import { formatTime, cn } from "@/lib/utils";
-import type { Assertion, Dispute, Alert } from "@/lib/oracleTypes";
+import type { Assertion, Dispute, Alert } from "@/lib/types/oracleTypes";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { langToLocale } from "@/i18n/translations";
 import { useMemo } from "react";

@@ -1,6 +1,6 @@
 import useSWR from "swr";
 import { fetchApiData } from "@/lib/utils";
-import type { OracleStats } from "@/lib/oracleTypes";
+import type { OracleStats } from "@/lib/types/oracleTypes";
 
 export function useOracleStats() {
   const {

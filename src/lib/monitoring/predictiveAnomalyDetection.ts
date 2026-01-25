@@ -514,7 +514,6 @@ export class PredictiveAnomalyDetector {
       hourlyCounts[hour]++;
     });
 
-    // eslint-disable-next-line security/detect-object-injection
     return hourlyAverages.map((sum, i) =>
       hourlyCounts[i] > 0 ? sum / hourlyCounts[i] : 0,
     );

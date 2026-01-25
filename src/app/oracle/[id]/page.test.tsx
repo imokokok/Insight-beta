@@ -4,7 +4,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import OracleDetailPage from "./page";
 import * as utils from "@/lib/utils";
-import { Assertion, OracleConfig, Alert } from "@/lib/oracleTypes";
+import { Assertion, OracleConfig, Alert } from "@/lib/types/oracleTypes";
 import { WalletProvider } from "@/contexts/WalletContext";
 
 // Mock Next.js hooks

@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { cn, fetchApiData } from "@/lib/utils";
 import { useEffect, useState, memo } from "react";
-import type { LeaderboardStats } from "@/lib/oracleTypes";
+import type { LeaderboardStats } from "@/lib/types/oracleTypes";
 import { logger } from "@/lib/logger";
 import Link from "next/link";
 

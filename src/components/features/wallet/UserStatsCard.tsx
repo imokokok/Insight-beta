@@ -2,7 +2,7 @@ import { Trophy, ShieldAlert, Coins, Activity } from "lucide-react";
 import { formatUsdCompact } from "@/lib/utils";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { langToLocale } from "@/i18n/translations";
-import type { UserStats } from "@/lib/oracleTypes";
+import type { UserStats } from "@/lib/types/oracleTypes";
 
 interface UserStatsCardProps {
   stats: UserStats | null;

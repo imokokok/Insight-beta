@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useBreakpoint } from "@/hooks/useMediaQuery";
-import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { useBreakpoint } from "@/hooks/ui/useMediaQuery";
+import { useMediaQuery } from "@/hooks/ui/useMediaQuery";
 import { cn } from "@/lib/utils";
 
 interface ResponsiveGridProps {

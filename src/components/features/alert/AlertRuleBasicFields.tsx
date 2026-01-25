@@ -1,7 +1,7 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import type { AlertRule, AlertSeverity } from "@/lib/oracleTypes";
+import type { AlertRule, AlertSeverity } from "@/lib/types/oracleTypes";
 import { useState } from "react";
 
 interface AlertRuleBasicFieldsProps {

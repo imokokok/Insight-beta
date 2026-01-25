@@ -1,7 +1,7 @@
 import useSWR from "swr";
 import { useWallet } from "@/contexts/WalletContext";
 import { formatEther } from "viem";
-import { getChainSymbol } from "@/lib/chainConfig";
+import { getChainSymbol } from "@/lib/blockchain/chainConfig";
 
 export function useBalance() {
   const { address, chainId } = useWallet();

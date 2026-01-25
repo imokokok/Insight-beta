@@ -8,7 +8,7 @@ interface RegisterOptions {
 
 async function initOpenTelemetryCore() {
   try {
-    const otel = await import("./lib/opentelemetry");
+    const otel = await import("./lib/monitoring/opentelemetry");
     if (typeof otel.default === "function") {
       otel.default();
     }

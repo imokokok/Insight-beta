@@ -20,7 +20,7 @@ vi.mock("@/contexts/WalletContext", () => ({
   }),
 }));
 
-vi.mock("@/hooks/useOracleTransaction", () => ({
+vi.mock("@/hooks/oracle/useOracleTransaction", () => ({
   useOracleTransaction: () => ({
     execute: mockExecute,
     isSubmitting: false,

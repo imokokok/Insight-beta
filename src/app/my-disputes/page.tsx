@@ -10,8 +10,8 @@ import { UserStatsCard } from "@/components/features/wallet/UserStatsCard";
 import { NoWalletState } from "@/components/features/dispute/my-disputes/NoWalletState";
 import { MyDisputesToolbar } from "@/components/features/dispute/my-disputes/MyDisputesToolbar";
 import { DisputesEmptyState } from "@/components/features/dispute/my-disputes/DisputesEmptyState";
-import { useDisputes } from "@/hooks/useDisputes";
-import { useUserStats } from "@/hooks/useUserStats";
+import { useDisputes } from "@/hooks/dispute/useDisputes";
+import { useUserStats } from "@/hooks/user/useUserStats";
 import { useWallet } from "@/contexts/WalletContext";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { getUiErrorMessage } from "@/i18n/translations";
@@ -20,7 +20,7 @@ import type {
   OracleConfig,
   OracleInstance,
   DisputeStatus,
-} from "@/lib/oracleTypes";
+} from "@/lib/types/oracleTypes";
 
 type ViewMode = "grid" | "list";
 

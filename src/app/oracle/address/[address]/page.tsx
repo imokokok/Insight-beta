@@ -17,9 +17,9 @@ import { DisputeList } from "@/components/features/dispute/DisputeList";
 import { AddressAvatar } from "@/components/features/wallet/AddressAvatar";
 import { CopyButton } from "@/components/features/common/CopyButton";
 import { cn, getExplorerUrl } from "@/lib/utils";
-import { useOracleData } from "@/hooks/useOracleData";
-import { useDisputes } from "@/hooks/useDisputes";
-import { useUserStats } from "@/hooks/useUserStats";
+import { useOracleData } from "@/hooks/oracle/useOracleData";
+import { useDisputes } from "@/hooks/dispute/useDisputes";
+import { useUserStats } from "@/hooks/user/useUserStats";
 
 export default function AddressProfilePage() {
   const params = useParams();

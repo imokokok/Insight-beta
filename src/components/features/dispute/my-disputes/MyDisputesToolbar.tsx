@@ -4,7 +4,7 @@ import type {
   OracleConfig,
   OracleInstance,
   DisputeStatus,
-} from "@/lib/oracleTypes";
+} from "@/lib/types/oracleTypes";
 import type { TranslationKey } from "@/i18n/translations";
 
 type Translate = (key: TranslationKey) => string;

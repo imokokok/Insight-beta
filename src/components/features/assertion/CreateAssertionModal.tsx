@@ -5,9 +5,9 @@ import { parseEther } from "viem";
 import { X, Loader2, AlertCircle } from "lucide-react";
 import { useWallet } from "@/contexts/WalletContext";
 import { useI18n } from "@/i18n/LanguageProvider";
-import { useOracleTransaction } from "@/hooks/useOracleTransaction";
-import { useModalBehavior } from "@/hooks/useModalBehavior";
-import type { OracleChain } from "@/lib/oracleTypes";
+import { useOracleTransaction } from "@/hooks/oracle/useOracleTransaction";
+import { useModalBehavior } from "@/hooks/ui/useModalBehavior";
+import type { OracleChain } from "@/lib/types/oracleTypes";
 
 import { InfoTooltip } from "@/components/features/common/InfoTooltip";
 

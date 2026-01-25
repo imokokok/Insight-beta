@@ -37,11 +37,11 @@ vi.mock("@/i18n/translations", () => ({
   getUiErrorMessage: () => "uiError",
 }));
 
-vi.mock("@/hooks/useWatchlist", () => ({
+vi.mock("@/hooks/user/useWatchlist", () => ({
   useWatchlist: () => watchlistState,
 }));
 
-vi.mock("@/hooks/useInfiniteList", () => ({
+vi.mock("@/hooks/ui/useInfiniteList", () => ({
   useInfiniteList: () => listState,
 }));
 

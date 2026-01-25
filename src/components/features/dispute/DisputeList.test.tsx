@@ -2,7 +2,7 @@ import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { DisputeList } from "./DisputeList";
-import type { Dispute } from "@/lib/oracleTypes";
+import type { Dispute } from "@/lib/types/oracleTypes";
 
 // Mock dependencies
 vi.mock("@/i18n/LanguageProvider", () => ({

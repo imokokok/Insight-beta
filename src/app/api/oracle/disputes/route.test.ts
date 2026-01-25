@@ -3,7 +3,7 @@ import { ZodError } from "zod";
 import { GET } from "./route";
 import * as oracle from "@/server/oracle";
 import { requireAdmin, error } from "@/server/apiResponse";
-import type { Dispute } from "@/lib/oracleTypes";
+import type { Dispute } from "@/lib/types/oracleTypes";
 
 vi.mock("@/server/oracle", () => ({
   listDisputes: vi.fn(),

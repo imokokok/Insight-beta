@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { handleApi } from "@/server/apiResponse";
 import { logger } from "@/lib/logger";
-import type { AuditLogEntry, AuditFilter } from "@/lib/auditLogger";
+import type { AuditLogEntry, AuditFilter } from "@/lib/monitoring/auditLogger";
 import { db } from "@/server/db";
 
 export const dynamic = "force-dynamic";
@@ -11,8 +11,12 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const action = searchParams.get("action");
     const actor = searchParams.get("actor") || undefined;
-    const actorType = searchParams.get("actorType") as AuditLogEntry["actorType"] | undefined;
-    const severity = searchParams.get("severity") as AuditLogEntry["severity"] | undefined;
+    const actorType = searchParams.get("actorType") as
+      | AuditLogEntry["actorType"]
+      | undefined;
+    const severity = searchParams.get("severity") as
+      | AuditLogEntry["severity"]
+      | undefined;
     const startDate = searchParams.get("startDate") || undefined;
     const endDate = searchParams.get("endDate") || undefined;
     const instanceId = searchParams.get("instanceId") || undefined;
@@ -97,7 +101,10 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   return handleApi(request, async () => {
-    const entry = (await request.json()) as Omit<AuditLogEntry, "id" | "timestamp">;
+    const entry = (await request.json()) as Omit<
+      AuditLogEntry,
+      "id" | "timestamp"
+    >;
 
     try {
       await db.query(

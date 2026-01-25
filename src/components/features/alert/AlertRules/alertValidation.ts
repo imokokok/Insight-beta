@@ -1,4 +1,4 @@
-import type { AlertRule } from "@/lib/oracleTypes";
+import type { AlertRule } from "@/lib/types/oracleTypes";
 import type { TranslationKey } from "@/i18n/translations";
 
 export type Channel = "webhook" | "email" | "telegram";

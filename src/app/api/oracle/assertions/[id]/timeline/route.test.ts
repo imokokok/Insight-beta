@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ZodError } from "zod";
 import { GET } from "./route";
-import type { Assertion, Dispute } from "@/lib/oracleTypes";
+import type { Assertion, Dispute } from "@/lib/types/oracleTypes";
 import type { Alert } from "@/server/observability";
 
 vi.mock("@/server/oracle", () => ({
@@ -99,8 +99,9 @@ describe("GET /api/oracle/assertions/[id]/timeline", () => {
       },
     ];
 
-    const { getAssertion, getDisputeByAssertionId } =
-      await import("@/server/oracle");
+    const { getAssertion, getDisputeByAssertionId } = await import(
+      "@/server/oracle"
+    );
     const { listAlerts } = await import("@/server/observability");
 
     vi.mocked(getAssertion).mockResolvedValue(assertion);

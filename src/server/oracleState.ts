@@ -6,7 +6,7 @@ import type {
   OracleChain,
   DbAssertionRow,
   DbDisputeRow,
-} from "@/lib/oracleTypes";
+} from "@/lib/types/oracleTypes";
 import { env } from "@/lib/env";
 import { getMemoryInstance } from "./memoryBackend";
 import { DEFAULT_ORACLE_INSTANCE_ID } from "./oracleConfig";

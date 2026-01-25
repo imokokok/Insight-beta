@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn, fetchApiData, formatTime, getErrorCode } from "@/lib/utils";
-import type { AuditLogEntry } from "@/lib/oracleTypes";
+import type { AuditLogEntry } from "@/lib/types/oracleTypes";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { getUiErrorMessage, langToLocale } from "@/i18n/translations";
 import { Download, ScrollText, RotateCw } from "lucide-react";

@@ -157,9 +157,7 @@ export class AnomalyDetector {
     return anomalies;
   }
 
-  private detectSpikes(
-    data: TimeSeriesData[],
-  ): Array<{
+  private detectSpikes(data: TimeSeriesData[]): Array<{
     timestamp: string;
     value: number;
     expected: number;
@@ -209,9 +207,7 @@ export class AnomalyDetector {
     return spikes;
   }
 
-  private detectDrops(
-    data: TimeSeriesData[],
-  ): Array<{
+  private detectDrops(data: TimeSeriesData[]): Array<{
     timestamp: string;
     value: number;
     expected: number;

@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { ConnectWallet } from "@/components/features/wallet/ConnectWallet";
-import { useOracleFilters } from "@/hooks/useOracleFilters";
+import { useOracleFilters } from "@/hooks/oracle/useOracleFilters";
 
 const navItems = [
   { key: "nav.oracle" as const, href: "/oracle" as const, icon: Activity },

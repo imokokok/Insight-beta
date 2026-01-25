@@ -1,13 +1,16 @@
 import type { NextRequest } from "next/server";
 import { handleApi } from "@/server/apiResponse";
-import { generateExportFilename, type ExportFormat } from "@/lib/export";
+import { generateExportFilename, type ExportFormat } from "@/lib/api/export";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   return handleApi(request, async () => {
     const { searchParams } = new URL(request.url);
-    const type = searchParams.get("type") as "assertions" | "disputes" | "alerts";
+    const type = searchParams.get("type") as
+      | "assertions"
+      | "disputes"
+      | "alerts";
     const format = (searchParams.get("format") as ExportFormat) || "csv";
     const instanceId = searchParams.get("instanceId") || undefined;
     const status = searchParams.get("status") || undefined;

@@ -2,10 +2,10 @@ import { useRef, useState } from "react";
 import { useWallet } from "@/contexts/WalletContext";
 import { useToast } from "@/components/ui/toast";
 import { useI18n } from "@/i18n/LanguageProvider";
-import { oracleAbi } from "@/lib/oracleAbi";
+import { oracleAbi } from "@/lib/blockchain/oracleAbi";
 import { publicEnv } from "@/lib/publicEnv";
 import { createPublicClient, custom, http, parseEther, webSocket } from "viem";
-import type { OracleChain, OracleConfig } from "@/lib/oracleTypes";
+import type { OracleChain, OracleConfig } from "@/lib/types/oracleTypes";
 import {
   copyToClipboard,
   fetchApiData,

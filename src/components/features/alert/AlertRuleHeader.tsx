@@ -3,7 +3,7 @@
 import { AlertTriangle, Info, ShieldAlert } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
-import type { AlertRule, AlertSeverity } from "@/lib/oracleTypes";
+import type { AlertRule, AlertSeverity } from "@/lib/types/oracleTypes";
 
 interface AlertRuleHeaderProps {
   rule: AlertRule;

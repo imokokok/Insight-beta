@@ -9,14 +9,14 @@ import type {
   RiskItem,
   DbAssertionRow,
   DbDisputeRow,
-} from "@/lib/oracleTypes";
+} from "@/lib/types/oracleTypes";
 import { mockAssertions, mockDisputes } from "@/lib/mockData";
 import { unstable_cache } from "next/cache";
 import { readOracleState } from "@/server/oracleState";
 import { DEFAULT_ORACLE_INSTANCE_ID } from "@/server/oracleConfig";
 import { env } from "@/lib/env";
 
-export type { Assertion, Dispute } from "@/lib/oracleTypes";
+export type { Assertion, Dispute } from "@/lib/types/oracleTypes";
 
 let schemaEnsured = false;
 async function ensureDb() {

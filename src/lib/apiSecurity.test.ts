@@ -12,7 +12,7 @@ const {
   hashSensitiveData,
   generateApiKey,
   validateApiKey,
-} = await import("./apiSecurity");
+} = await import("./api/apiSecurity");
 
 describe("apiSecurity", () => {
   afterEach(() => {

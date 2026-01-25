@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import type { AlertRule } from "@/lib/oracleTypes";
+import type { AlertRule } from "@/lib/types/oracleTypes";
 import type { Channel } from "./AlertRulesManager";
 import { AlertRuleHeader } from "./AlertRuleHeader";
 import { AlertRuleBasicFields } from "./AlertRuleBasicFields";

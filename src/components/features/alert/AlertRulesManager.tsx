@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
 import { cn, fetchApiData, getErrorCode } from "@/lib/utils";
 import { useI18n } from "@/i18n/LanguageProvider";
-import type { AlertRule } from "@/lib/oracleTypes";
-import { useAdminSession } from "@/hooks/useAdminSession";
+import type { AlertRule } from "@/lib/types/oracleTypes";
+import { useAdminSession } from "@/hooks/user/useAdminSession";
 import { AlertRuleCard } from "./AlertRuleCard";
 import {
   validateAlertRule,

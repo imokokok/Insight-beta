@@ -43,11 +43,11 @@ vi.mock("@/contexts/WalletContext", () => ({
   }),
 }));
 
-vi.mock("@/hooks/useOracleData", () => ({
+vi.mock("@/hooks/oracle/useOracleData", () => ({
   useOracleData: () => oracleState,
 }));
 
-vi.mock("@/hooks/useUserStats", () => ({
+vi.mock("@/hooks/user/useUserStats", () => ({
   useUserStats: () => ({
     stats: null,
     loading: false,

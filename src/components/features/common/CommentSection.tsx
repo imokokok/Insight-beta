@@ -17,7 +17,7 @@ import type {
   Comment,
   CommentCreateInput,
   CommentWithReplies,
-} from "@/lib/commentTypes";
+} from "@/lib/types/commentTypes";
 import { useToast } from "@/components/ui/toast";
 
 interface CommentSectionProps {

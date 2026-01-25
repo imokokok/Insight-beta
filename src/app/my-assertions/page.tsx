@@ -8,8 +8,8 @@ import { PageHeader } from "@/components/features/common/PageHeader";
 import { ConnectWallet } from "@/components/features/wallet/ConnectWallet";
 import { AssertionList } from "@/components/features/assertion/AssertionList";
 import { UserStatsCard } from "@/components/features/wallet/UserStatsCard";
-import { useOracleData } from "@/hooks/useOracleData";
-import { useUserStats } from "@/hooks/useUserStats";
+import { useOracleData } from "@/hooks/oracle/useOracleData";
+import { useUserStats } from "@/hooks/user/useUserStats";
 import { useWallet } from "@/contexts/WalletContext";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { getUiErrorMessage, type TranslationKey } from "@/i18n/translations";
@@ -26,7 +26,7 @@ import type {
   OracleConfig,
   OracleStatus,
   OracleInstance,
-} from "@/lib/oracleTypes";
+} from "@/lib/types/oracleTypes";
 
 type Translate = (key: TranslationKey) => string;
 type ViewMode = "grid" | "list";

@@ -3,10 +3,10 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Route } from "next";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useWatchlist } from "@/hooks/useWatchlist";
-import type { BaseResponse } from "@/hooks/useInfiniteList";
-import { useInfiniteList } from "@/hooks/useInfiniteList";
-import type { Assertion } from "@/lib/oracleTypes";
+import { useWatchlist } from "@/hooks/user/useWatchlist";
+import type { BaseResponse } from "@/hooks/ui/useInfiniteList";
+import { useInfiniteList } from "@/hooks/ui/useInfiniteList";
+import type { Assertion } from "@/lib/types/oracleTypes";
 import { AssertionList } from "@/components/features/assertion/AssertionList";
 import { PageHeader } from "@/components/features/common/PageHeader";
 import { useI18n } from "@/i18n/LanguageProvider";

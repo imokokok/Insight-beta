@@ -36,8 +36,8 @@ import {
   langToLocale,
   type TranslationKey,
 } from "@/i18n/translations";
-import { useOracleData } from "@/hooks/useOracleData";
-import { useDisputes } from "@/hooks/useDisputes";
+import { useOracleData } from "@/hooks/oracle/useOracleData";
+import { useDisputes } from "@/hooks/dispute/useDisputes";
 import { useWallet } from "@/contexts/WalletContext";
 import { ConnectWallet } from "@/components/features/wallet/ConnectWallet";
 import { AssertionList } from "@/components/features/assertion/AssertionList";
@@ -48,7 +48,7 @@ import type {
   OracleStatus,
   OracleStatusSnapshot,
   OracleInstance,
-} from "@/lib/oracleTypes";
+} from "@/lib/types/oracleTypes";
 
 const CreateAssertionModal = dynamic(
   () =>

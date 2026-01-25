@@ -32,8 +32,8 @@ import {
 import { useI18n } from "@/i18n/LanguageProvider";
 import { getUiErrorMessage, langToLocale } from "@/i18n/translations";
 import { useToast } from "@/components/ui/toast";
-import { useWatchlist } from "@/hooks/useWatchlist";
-import { useOracleTransaction } from "@/hooks/useOracleTransaction";
+import { useWatchlist } from "@/hooks/user/useWatchlist";
+import { useOracleTransaction } from "@/hooks/oracle/useOracleTransaction";
 import { useWallet } from "@/contexts/WalletContext";
 import { ConnectWallet } from "@/components/features/wallet/ConnectWallet";
 import type {
@@ -42,7 +42,7 @@ import type {
   OracleConfig,
   Alert,
   RiskItem,
-} from "@/lib/oracleTypes";
+} from "@/lib/types/oracleTypes";
 
 import { AssertionTimeline } from "@/components/features/assertion/AssertionTimeline";
 import { AssertionDetailSkeleton } from "@/components/features/assertion/AssertionDetailSkeleton";

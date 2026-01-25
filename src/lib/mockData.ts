@@ -1,4 +1,4 @@
-import type { Assertion, Dispute } from "@/lib/oracleTypes";
+import type { Assertion, Dispute } from "@/lib/types/oracleTypes";
 
 export const mockAssertions: Assertion[] = [
   {

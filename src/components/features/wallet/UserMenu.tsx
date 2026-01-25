@@ -13,7 +13,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useWallet } from "@/contexts/WalletContext";
-import { useBalance } from "@/hooks/useBalance";
+import { useBalance } from "@/hooks/wallet/useBalance";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { cn } from "@/lib/utils";
 import {
@@ -24,7 +24,7 @@ import {
   polygon,
   polygonAmoy,
 } from "viem/chains";
-import { useSwitchChainWithFeedback } from "@/hooks/useSwitchChainWithFeedback";
+import { useSwitchChainWithFeedback } from "@/hooks/wallet/useSwitchChainWithFeedback";
 
 export function UserMenu() {
   const { address, chainId, disconnect } = useWallet();

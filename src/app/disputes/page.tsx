@@ -23,7 +23,11 @@ import {
   langToLocale,
   type TranslationKey,
 } from "@/i18n/translations";
-import type { Dispute, DisputeStatus, OracleChain } from "@/lib/oracleTypes";
+import type {
+  Dispute,
+  DisputeStatus,
+  OracleChain,
+} from "@/lib/types/oracleTypes";
 
 type Translate = (key: TranslationKey) => string;
 

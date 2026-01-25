@@ -7,7 +7,7 @@ import {
   checkUMAVoteStatus,
   type UMAVoteResult,
   type UMAVoteStatus,
-} from "@/lib/umaDvm";
+} from "@/lib/blockchain/umaDvm";
 import { logger } from "@/lib/logger";
 
 interface UseUMAVoteReturn {
