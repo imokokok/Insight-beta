@@ -32,7 +32,7 @@ type AdminTokenStore = {
 
 const STORE_KEY = "admin_tokens_v1.json";
 
-const tokenStoreLock = new Map<string, Promise<void>>();
+const tokenStoreLock = new Map<string, Promise<unknown>>();
 async function withTokenStoreLock<T>(key: string, fn: () => Promise<T>): Promise<T> {
   let lockPromise = tokenStoreLock.get(key);
   if (!lockPromise) {
@@ -44,7 +44,7 @@ async function withTokenStoreLock<T>(key: string, fn: () => Promise<T>): Promise
       }
     })();
     tokenStoreLock.set(key, lockPromise);
-    return lockPromise;
+    return lockPromise as Promise<T>;
   }
   return lockPromise.then(() => fn());
 }
@@ -68,7 +68,15 @@ const roleScopes: Record<AdminRole, ReadonlySet<AdminScope>> = {
 function timingSafeEqualString(a: string, b: string) {
   const aBuf = Buffer.from(a, "utf8");
   const bBuf = Buffer.from(b, "utf8");
-  return aBuf.length === bBuf.length && crypto.timingSafeEqual(aBuf, bBuf);
+  const maxLen = Math.max(aBuf.length, bBuf.length);
+  const paddedA = Buffer.alloc(maxLen);
+  const paddedB = Buffer.alloc(maxLen);
+  aBuf.copy(paddedA);
+  bBuf.copy(paddedB);
+  return crypto.timingSafeEqual(
+    Uint8Array.from(paddedA),
+    Uint8Array.from(paddedB)
+  );
 }
 
 function getTokenFromRequest(request: Request) {
