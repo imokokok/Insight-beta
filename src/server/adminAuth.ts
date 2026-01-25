@@ -32,6 +32,23 @@ type AdminTokenStore = {
 
 const STORE_KEY = "admin_tokens_v1.json";
 
+const tokenStoreLock = new Map<string, Promise<void>>();
+async function withTokenStoreLock<T>(key: string, fn: () => Promise<T>): Promise<T> {
+  let lockPromise = tokenStoreLock.get(key);
+  if (!lockPromise) {
+    lockPromise = (async () => {
+      try {
+        await fn();
+      } finally {
+        tokenStoreLock.delete(key);
+      }
+    })();
+    tokenStoreLock.set(key, lockPromise);
+    return lockPromise;
+  }
+  return lockPromise.then(() => fn());
+}
+
 const roleScopes: Record<AdminRole, ReadonlySet<AdminScope>> = {
   root: new Set([
     "admin_kv_read",
