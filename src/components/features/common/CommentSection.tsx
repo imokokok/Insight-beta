@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   MessageSquare,
   ThumbsUp,
@@ -37,11 +37,7 @@ export function CommentSection({ entityType, entityId }: CommentSectionProps) {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editContent, setEditContent] = useState("");
 
-  useEffect(() => {
-    loadComments();
-  }, [entityType, entityId]);
-
-  const loadComments = async () => {
+  const loadComments = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -63,7 +59,11 @@ export function CommentSection({ entityType, entityId }: CommentSectionProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [entityType, entityId]);
+
+  useEffect(() => {
+    loadComments();
+  }, [loadComments]);
 
   const buildCommentTree = (flatComments: Comment[]): CommentWithReplies[] => {
     const commentMap = new Map<number, CommentWithReplies>();

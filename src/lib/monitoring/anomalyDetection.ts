@@ -184,6 +184,9 @@ export class AnomalyDetector {
       }
 
       const expected = (previous1 + previous2) / 2;
+
+      if (expected === 0) continue;
+
       const changePercent = Math.abs((current - expected) / expected) * 100;
 
       if (changePercent > 50) {
@@ -234,6 +237,9 @@ export class AnomalyDetector {
       }
 
       const expected = (previous1 + previous2) / 2;
+
+      if (expected === 0) continue;
+
       const changePercent = Math.abs((current - expected) / expected) * 100;
 
       if (changePercent > 50 && current < expected) {
@@ -280,6 +286,10 @@ export class AnomalyDetector {
     mean: number,
     zScore: number,
   ): string {
+    if (mean === 0) {
+      return `Value is ${value.toFixed(2)}, absolute deviation detected (Z-score: ${zScore.toFixed(2)})`;
+    }
+
     const deviationPercent = ((value - mean) / mean) * 100;
     const direction = value > mean ? "above" : "below";
     const deviationType =

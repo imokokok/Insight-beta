@@ -354,7 +354,7 @@ export class WebhookManager {
     webhooks.forEach((webhook) => {
       webhook.events.forEach((event) => {
         // Safe: event is a literal type from WebhookEvent union
-        // eslint-disable-next-line security/detect-object-injection
+
         eventsByType[event] = (eventsByType[event] || 0) + 1;
       });
     });

@@ -137,6 +137,28 @@ const nextConfig: NextConfig = {
         /@opentelemetry\/instrumentation\/build\/esm\/platform\/node\/instrumentation\.js/,
     });
 
+    config.resolve = config.resolve || {};
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      zlib: false,
+      crypto: false,
+      http: false,
+      https: false,
+      net: false,
+      tls: false,
+      fs: false,
+      path: false,
+      http2: false,
+      stream: false,
+      util: false,
+      url: false,
+      os: false,
+      events: false,
+      buffer: false,
+      string_decoder: false,
+      process: false,
+    };
+
     return config;
   },
 };

@@ -251,11 +251,20 @@ export async function ensureSchema() {
     ALTER TABLE assertions ADD COLUMN IF NOT EXISTS instance_id TEXT;
   `);
 
-  await query(`
-    UPDATE assertions SET instance_id = 'default' WHERE instance_id IS NULL;
-    ALTER TABLE assertions ALTER COLUMN instance_id SET DEFAULT 'default';
-    ALTER TABLE assertions ALTER COLUMN instance_id SET NOT NULL;
-  `);
+  try {
+    await query("BEGIN");
+    await query(`
+      UPDATE assertions SET instance_id = 'default' WHERE instance_id IS NULL;
+    `);
+    await query(`
+      ALTER TABLE assertions ALTER COLUMN instance_id SET DEFAULT 'default';
+      ALTER TABLE assertions ALTER COLUMN instance_id SET NOT NULL;
+    `);
+    await query("COMMIT");
+  } catch {
+    await query("ROLLBACK").catch(() => null);
+    throw new Error("Failed to migrate assertions instance_id");
+  }
 
   await query(`
     ALTER TABLE disputes ADD COLUMN IF NOT EXISTS instance_id TEXT;
@@ -264,21 +273,39 @@ export async function ensureSchema() {
     ALTER TABLE disputes ADD COLUMN IF NOT EXISTS log_index INTEGER;
   `);
 
-  await query(`
-    UPDATE disputes SET instance_id = 'default' WHERE instance_id IS NULL;
-    ALTER TABLE disputes ALTER COLUMN instance_id SET DEFAULT 'default';
-    ALTER TABLE disputes ALTER COLUMN instance_id SET NOT NULL;
-  `);
+  try {
+    await query("BEGIN");
+    await query(`
+      UPDATE disputes SET instance_id = 'default' WHERE instance_id IS NULL;
+    `);
+    await query(`
+      ALTER TABLE disputes ALTER COLUMN instance_id SET DEFAULT 'default';
+      ALTER TABLE disputes ALTER COLUMN instance_id SET NOT NULL;
+    `);
+    await query("COMMIT");
+  } catch {
+    await query("ROLLBACK").catch(() => null);
+    throw new Error("Failed to migrate disputes instance_id");
+  }
 
   await query(`
     ALTER TABLE votes ADD COLUMN IF NOT EXISTS instance_id TEXT;
   `);
 
-  await query(`
-    UPDATE votes SET instance_id = 'default' WHERE instance_id IS NULL;
-    ALTER TABLE votes ALTER COLUMN instance_id SET DEFAULT 'default';
-    ALTER TABLE votes ALTER COLUMN instance_id SET NOT NULL;
-  `);
+  try {
+    await query("BEGIN");
+    await query(`
+      UPDATE votes SET instance_id = 'default' WHERE instance_id IS NULL;
+    `);
+    await query(`
+      ALTER TABLE votes ALTER COLUMN instance_id SET DEFAULT 'default';
+      ALTER TABLE votes ALTER COLUMN instance_id SET NOT NULL;
+    `);
+    await query("COMMIT");
+  } catch {
+    await query("ROLLBACK").catch(() => null);
+    throw new Error("Failed to migrate votes instance_id");
+  }
 
   await query(`
     ALTER TABLE oracle_config ADD COLUMN IF NOT EXISTS start_block BIGINT;

@@ -28,7 +28,7 @@ const workerAlertCooldown = new Map<string, number>();
 const workerRecoveryCooldown = new Map<string, number>();
 const COOLDOWN_MAX_AGE_MS = 24 * 60 * 60_000; // 24 hours - clean entries older than this
 
-function cleanupStaleCooldones(
+function cleanupStaleCooldowns(
   cooldownMap: Map<string, number>,
   maxAgeMs: number,
 ) {
@@ -107,8 +107,8 @@ async function tickWorker() {
     if (nowMs - lastMaintenanceAt >= 6 * 60 * 60_000) {
       try {
         await pruneStaleAlerts();
-        cleanupStaleCooldones(workerAlertCooldown, COOLDOWN_MAX_AGE_MS);
-        cleanupStaleCooldones(workerRecoveryCooldown, COOLDOWN_MAX_AGE_MS);
+        cleanupStaleCooldowns(workerAlertCooldown, COOLDOWN_MAX_AGE_MS);
+        cleanupStaleCooldowns(workerRecoveryCooldown, COOLDOWN_MAX_AGE_MS);
       } catch (e) {
         logger.warn("Failed to prune stale alerts", { error: e });
       } finally {

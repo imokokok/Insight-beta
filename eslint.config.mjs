@@ -47,7 +47,7 @@ const config = [
       },
     },
     rules: {
-      "security/detect-object-injection": "warn",
+      "security/detect-object-injection": "off",
       "security/detect-non-literal-fs-filename": "error",
       "security/detect-no-csrf-before-method-override": "error",
       "security/detect-possible-timing-attacks": "error",

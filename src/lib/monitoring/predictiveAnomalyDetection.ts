@@ -161,6 +161,21 @@ export class PredictiveAnomalyDetector {
     if (zScore > threshold) {
       const severity = this.calculateSeverity(zScore);
       const direction = dataPoint.value > mean ? "above" : "below";
+
+      if (mean === 0) {
+        return {
+          isAnomaly: true,
+          severity,
+          score: Math.min(100, zScore * 10),
+          message: `Value is ${dataPoint.value.toFixed(2)}, absolute deviation detected (Z-score: ${zScore.toFixed(2)})`,
+          timestamp: dataPoint.timestamp,
+          type: "spike",
+          confidence: this.calculateConfidence(window.length),
+          affectedMetrics: [metricName],
+          recommendedActions: this.getRecommendedActions("zscore", severity),
+        };
+      }
+
       const deviationPercent = ((dataPoint.value - mean) / mean) * 100;
 
       return {
@@ -189,6 +204,8 @@ export class PredictiveAnomalyDetector {
     const mean = this.calculateMean(values);
     const stdDev = this.calculateStdDev(values, mean);
     const expected = mean;
+
+    if (expected === 0) return null;
 
     const changePercent = Math.abs((current.value - expected) / expected) * 100;
 
@@ -227,6 +244,8 @@ export class PredictiveAnomalyDetector {
 
     const firstMean = this.calculateMean(firstHalf.map((d) => d.value));
     const secondMean = this.calculateMean(secondHalf.map((d) => d.value));
+
+    if (firstMean === 0) return null;
 
     const changePercent = Math.abs((secondMean - firstMean) / firstMean) * 100;
 
@@ -464,7 +483,7 @@ export class PredictiveAnomalyDetector {
     };
 
     // Safe: actionMap is a fixed record with known keys
-    // eslint-disable-next-line security/detect-object-injection
+
     const actions = actionMap[type] || [
       "Investigate the anomaly",
       "Document findings",
@@ -508,9 +527,9 @@ export class PredictiveAnomalyDetector {
     data.forEach((d) => {
       const hour = new Date(d.timestamp).getHours();
       // Safe: hour is a number from 0-23, arrays are fixed size
-      // eslint-disable-next-line security/detect-object-injection
+
       hourlyAverages[hour] += d.value;
-      // eslint-disable-next-line security/detect-object-injection
+
       hourlyCounts[hour]++;
     });
 

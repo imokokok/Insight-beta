@@ -8,7 +8,11 @@ interface RegisterOptions {
 
 async function initOpenTelemetryCore() {
   try {
-    const otel = await import("./lib/monitoring/opentelemetry");
+    const otel = await import(
+      process.env.NEXT_RUNTIME === "nodejs"
+        ? "./lib/monitoring/opentelemetry"
+        : "./lib/monitoring/opentelemetry.client"
+    );
     if (typeof otel.default === "function") {
       otel.default();
     }
@@ -21,9 +25,9 @@ async function initWorker() {
   const disabled = ["1", "true"].includes(
     env.INSIGHT_DISABLE_EMBEDDED_WORKER.toLowerCase(),
   );
-  if (!disabled) {
+  if (!disabled && process.env.NEXT_RUNTIME === "nodejs") {
     try {
-      await import("./server/worker");
+      await import("./server/worker" /* webpackExclude: true */);
     } catch (error) {
       logger.error("Failed to initialize worker", { error });
     }

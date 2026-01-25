@@ -202,7 +202,7 @@ async function exportToCSV<T extends Record<string, unknown>>(
   for (const row of data) {
     const values = headers.map((header) => {
       // Safe: header comes from Object.keys of the same row object
-      // eslint-disable-next-line security/detect-object-injection
+
       const value = row[header];
       return formatCSVValue(value);
     });
@@ -249,7 +249,7 @@ async function exportToExcel<T extends Record<string, unknown>>(
   for (const row of data) {
     const values = headers.map((header) => {
       // Safe: header comes from Object.keys of the same row object
-      // eslint-disable-next-line security/detect-object-injection
+
       const value = row[header];
       return value === null || value === undefined ? "" : String(value);
     });

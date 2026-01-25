@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 
 type TooltipPosition = "top" | "bottom" | "left" | "right";
@@ -33,32 +33,7 @@ export function Tooltip({
   );
   const tooltipRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handleResize = () => {
-      if (isVisible && tooltipRef.current) {
-        updatePosition();
-      }
-    };
-
-    const handleScroll = () => {
-      if (isVisible) {
-        setIsVisible(false);
-      }
-    };
-
-    window.addEventListener("resize", handleResize);
-    window.addEventListener("scroll", handleScroll, true);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      window.removeEventListener("scroll", handleScroll, true);
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, [isVisible]);
-
-  const updatePosition = () => {
+  const updatePosition = useCallback(() => {
     if (!tooltipRef.current) return;
 
     const rect = tooltipRef.current.getBoundingClientRect();
@@ -101,7 +76,32 @@ export function Tooltip({
     }
 
     setPositionState(bestPosition);
-  };
+  }, [position]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (isVisible && tooltipRef.current) {
+        updatePosition();
+      }
+    };
+
+    const handleScroll = () => {
+      if (isVisible) {
+        setIsVisible(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("scroll", handleScroll, true);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("scroll", handleScroll, true);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [isVisible, updatePosition]);
 
   const showTooltip = () => {
     if (disabled) return;

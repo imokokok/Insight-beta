@@ -8,6 +8,8 @@ function createRequestId() {
     c.getRandomValues(bytes);
     let out = "";
     for (let i = 0; i < bytes.length; i += 1) {
+      // Safe: bytes is Uint8Array, i is bounded loop counter
+
       out += bytes[i]!.toString(16).padStart(2, "0");
     }
     return out;

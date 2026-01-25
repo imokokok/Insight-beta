@@ -33,7 +33,10 @@ type AdminTokenStore = {
 const STORE_KEY = "admin_tokens_v1.json";
 
 const tokenStoreLock = new Map<string, Promise<unknown>>();
-async function withTokenStoreLock<T>(key: string, fn: () => Promise<T>): Promise<T> {
+async function withTokenStoreLock<T>(
+  key: string,
+  fn: () => Promise<T>,
+): Promise<T> {
   let lockPromise = tokenStoreLock.get(key);
   if (!lockPromise) {
     lockPromise = (async () => {
@@ -117,7 +120,7 @@ async function readStoreCached() {
 function tokenHasScope(role: AdminRole, scope: AdminScope | undefined) {
   if (!scope) return true;
   // Safe: role is a literal type from AdminRole union
-  // eslint-disable-next-line security/detect-object-injection
+
   return roleScopes[role].has(scope);
 }
 

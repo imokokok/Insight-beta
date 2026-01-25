@@ -101,6 +101,15 @@ async function sendWebhookNotification(alert: {
 
   try {
     const urlObj = new URL(url);
+    const allowedProtocols = ["https:", "http:", "wss:", "ws:"];
+    if (!allowedProtocols.includes(urlObj.protocol)) {
+      logger.error("Unsupported webhook URL protocol", {
+        url: urlObj.toString(),
+        protocol: urlObj.protocol,
+        fingerprint: alert.fingerprint,
+      });
+      return;
+    }
     const isHttps = urlObj.protocol === "https:";
     const isLocalhost =
       urlObj.hostname === "localhost" ||

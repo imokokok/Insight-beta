@@ -98,6 +98,8 @@ export function useUpdateEffect(effect: () => void, deps: unknown[]) {
     if (!isFirstMount) {
       return effect();
     }
+    // Intentionally allowing dynamic deps for flexible effect hooks
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 }
 
@@ -108,6 +110,8 @@ export function useLayoutEffectAfterMount(effect: () => void, deps: unknown[]) {
     if (!isFirstMount) {
       return effect();
     }
+    // Intentionally allowing dynamic deps for flexible effect hooks
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 }
 

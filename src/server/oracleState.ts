@@ -111,7 +111,6 @@ function pruneMemoryAssertions(mem: ReturnType<typeof getMemoryInstance>) {
     return a.timeMs - b.timeMs;
   });
   for (let i = 0; i < overflow; i++) {
-    // eslint-disable-next-line security/detect-object-injection
     const id = candidates[i]?.id;
     if (!id) continue;
     mem.assertions.delete(id);
@@ -135,7 +134,6 @@ function pruneMemoryDisputes(mem: ReturnType<typeof getMemoryInstance>) {
     return a.timeMs - b.timeMs;
   });
   for (let i = 0; i < overflow; i++) {
-    // eslint-disable-next-line security/detect-object-injection
     const id = candidates[i]?.id;
     if (!id) continue;
     const d = mem.disputes.get(id);
@@ -272,12 +270,10 @@ export async function readOracleState(
     const mem = getMemoryInstance(normalizedInstanceId);
     const assertions: Record<string, Assertion> = {};
     for (const [id, a] of mem.assertions.entries()) {
-      // eslint-disable-next-line security/detect-object-injection
       assertions[id] = a;
     }
     const disputes: Record<string, Dispute> = {};
     for (const [id, d] of mem.disputes.entries()) {
-      // eslint-disable-next-line security/detect-object-injection
       disputes[id] = d;
     }
     return {

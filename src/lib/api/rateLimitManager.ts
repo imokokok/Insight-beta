@@ -385,7 +385,7 @@ export class RateLimitManager {
         if (!this.matchesRule(endpoint, method, rule)) continue;
 
         // Safe: tier is a literal type from RateLimitTier union
-        // eslint-disable-next-line security/detect-object-injection
+
         const tierLimit = rule.tierLimits[tier];
         const key = this.getUsageKey(userId, apiKey, ip, config.id, rule.id);
         const usage = this.getUsage(key);
@@ -433,7 +433,7 @@ export class RateLimitManager {
 
   getTierConfig(tier: RateLimitTier): RateLimitTierConfig {
     // Safe: tier is a literal type from RateLimitTier union
-    // eslint-disable-next-line security/detect-object-injection
+
     return this.TIERS[tier];
   }
 
@@ -446,16 +446,16 @@ export class RateLimitManager {
     limits: Partial<RateLimitTierConfig["limits"]>,
   ): RateLimitTierConfig {
     // Safe: tier is a literal type from RateLimitTier union
-    // eslint-disable-next-line security/detect-object-injection
+
     const config = this.TIERS[tier];
     // Safe: tier is a literal type from RateLimitTier union
-    // eslint-disable-next-line security/detect-object-injection
+
     this.TIERS[tier] = {
       ...config,
       limits: { ...config.limits, ...limits },
     };
     // Safe: tier is a literal type from RateLimitTier union
-    // eslint-disable-next-line security/detect-object-injection
+
     return this.TIERS[tier];
   }
 

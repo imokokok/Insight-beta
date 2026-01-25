@@ -338,7 +338,7 @@ export class PermissionManager {
 
   isRoleEditable(role: Role): boolean {
     // Safe: role is a literal type from Role union, ROLE_DEFINITIONS is Record<Role, RoleDefinition>
-    // eslint-disable-next-line security/detect-object-injection
+
     return !ROLE_DEFINITIONS[role]?.isSystem;
   }
 
@@ -353,7 +353,7 @@ export class PermissionManager {
     if (!assignerPerm) return false;
 
     // Safe: targetRole is a literal type from Role union
-    // eslint-disable-next-line security/detect-object-injection
+
     const targetRoleDef = ROLE_DEFINITIONS[targetRole];
     if (!targetRoleDef) return false;
 
@@ -361,7 +361,7 @@ export class PermissionManager {
     if (!assignerHighestRole) return false;
 
     // Safe: assignerHighestRole is a literal type from Role union
-    // eslint-disable-next-line security/detect-object-injection
+
     const assignerRoleDef = ROLE_DEFINITIONS[assignerHighestRole];
     return assignerRoleDef.priority > targetRoleDef.priority;
   }
@@ -372,9 +372,9 @@ export class PermissionManager {
 
     return userPerm.roles.reduce((highest, current) => {
       // Safe: highest and current are literal types from Role union
-      // eslint-disable-next-line security/detect-object-injection
+
       const highestDef = ROLE_DEFINITIONS[highest];
-      // eslint-disable-next-line security/detect-object-injection
+
       const currentDef = ROLE_DEFINITIONS[current];
       return currentDef.priority > highestDef.priority ? current : highest;
     });

@@ -77,8 +77,7 @@ export async function getOwnerData(
           })) as `0x${string}`;
           const code = await client.getBytecode({ address: ownerAddress });
           owner = ownerAddress;
-          isContractOwner =
-            code !== null && code !== undefined && code !== "0x";
+          isContractOwner = code != null && code !== "0x";
           break;
         } catch {
           continue;

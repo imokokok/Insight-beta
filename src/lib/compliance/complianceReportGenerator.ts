@@ -880,21 +880,21 @@ export class ComplianceReportGenerator {
             actualResult: "Sample result",
             passFail: Math.random() > 0.3,
           });
-        }) ?? [];
+        });
         this.CONTROL_CHECKS?.encryption?.forEach((check) => {
           checks.push({
             ...check,
             actualResult: "Sample result",
             passFail: Math.random() > 0.3,
           });
-        }) ?? [];
+        });
         this.CONTROL_CHECKS?.monitoring?.forEach((check) => {
           checks.push({
             ...check,
             actualResult: "Sample result",
             passFail: Math.random() > 0.3,
           });
-        }) ?? [];
+        });
         break;
 
       default:

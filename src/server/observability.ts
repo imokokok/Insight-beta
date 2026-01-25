@@ -189,7 +189,7 @@ function normalizeRuleParams(
   const getNumber = (key: string) => {
     if (!Object.hasOwn(p, key)) return NaN;
     // Safe: key has been validated with Object.hasOwn
-    // eslint-disable-next-line security/detect-object-injection
+
     return Number(p[key]);
   };
   const setNumber = (key: string, value: number) => ({ ...p, [key]: value });
@@ -437,7 +437,6 @@ function pruneMemoryAlerts(mem: ReturnType<typeof getMemoryStore>) {
     return a.lastSeenAtMs - b.lastSeenAtMs;
   });
   for (let i = 0; i < overflow; i++) {
-    // eslint-disable-next-line security/detect-object-injection
     const fp = candidates[i]?.fingerprint;
     if (fp) mem.alerts.delete(fp);
   }
@@ -766,7 +765,6 @@ async function readIncidentStore(): Promise<IncidentStoreV1> {
   const normalized: Incident[] = [];
   let maxId = 0;
   for (let i = 0; i < rawItems.length; i += 1) {
-    // eslint-disable-next-line security/detect-object-injection
     const incident = normalizeIncident(rawItems[i], i + 1);
     if (!incident) continue;
     normalized.push(incident);
@@ -895,7 +893,6 @@ export async function patchIncident(input: {
   const idx = store.items.findIndex((i) => i.id === input.id);
   if (idx < 0) return null;
 
-  // eslint-disable-next-line security/detect-object-injection
   const prev = store.items[idx]!;
   const now = memoryNowIso();
 
@@ -977,7 +974,7 @@ export async function patchIncident(input: {
   };
 
   const items = store.items.slice();
-  // eslint-disable-next-line security/detect-object-injection
+
   items[idx] = next;
 
   const nextStore: IncidentStoreV1 = {
@@ -2045,7 +2042,7 @@ export async function getOpsMetricsSeries(params?: {
     const item = map.get(date);
     if (!item) return;
     // Safe: field is a literal type union controlled by TypeScript
-    // eslint-disable-next-line security/detect-object-injection
+
     item[field] += value;
   };
 

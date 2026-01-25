@@ -170,13 +170,13 @@ export const env = {
 
 export function getEnv(key: keyof typeof env): string {
   // Safe: key is validated as keyof typeof env
-  // eslint-disable-next-line security/detect-object-injection
+
   return env[key];
 }
 
 export function isEnvSet(key: keyof typeof env): boolean {
   // Safe: key is validated as keyof typeof env
-  // eslint-disable-next-line security/detect-object-injection
+
   return !!env[key];
 }
 
