@@ -73,17 +73,10 @@ function timingSafeEqualString(a: string, b: string) {
   const paddedB = Buffer.alloc(maxLen);
   aBuf.copy(paddedA);
   bBuf.copy(paddedB);
-  const aBytes = new Uint8Array(
-    paddedA.buffer as ArrayBuffer,
-    paddedA.byteOffset,
-    paddedA.length
+  return crypto.timingSafeEqual(
+    paddedA as unknown as Uint8Array,
+    paddedB as unknown as Uint8Array
   );
-  const bBytes = new Uint8Array(
-    paddedB.buffer as ArrayBuffer,
-    paddedB.byteOffset,
-    paddedB.length
-  );
-  return crypto.timingSafeEqual(aBytes, bBytes);
 }
 
 function getTokenFromRequest(request: Request) {
