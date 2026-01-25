@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, act } from "@testing-library/react";
 
 let mockAddress: string | null = null;
 let disputesState: {
@@ -112,7 +112,9 @@ describe("MyDisputesPage", () => {
   });
 
   it("renders search input when wallet is connected", () => {
-    mockAddress = "0x1234";
+    act(() => {
+      mockAddress = "0x1234";
+    });
     render(<MyDisputesPage />);
     expect(
       screen.getByPlaceholderText("oracle.myDisputes.searchPlaceholder"),
@@ -120,14 +122,18 @@ describe("MyDisputesPage", () => {
   });
 
   it("shows error banner when disputes fail to load", () => {
-    mockAddress = "0x1234";
-    disputesState.error = "api_error";
+    act(() => {
+      mockAddress = "0x1234";
+      disputesState.error = "api_error";
+    });
     render(<MyDisputesPage />);
     expect(screen.getByText("uiError")).toBeInTheDocument();
   });
 
   it("shows empty state actions when no disputes", () => {
-    mockAddress = "0x1234";
+    act(() => {
+      mockAddress = "0x1234";
+    });
     render(<MyDisputesPage />);
     expect(screen.getByText("nav.oracle")).toBeInTheDocument();
     expect(screen.getByText("nav.disputes")).toBeInTheDocument();

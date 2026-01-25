@@ -99,10 +99,21 @@ export class WebhookManager {
     "sync.completed": "Sync Completed",
     "sync.failed": "Sync Failed",
     "health.check_failed": "Health Check Failed",
-    "custom": "Custom Event",
+    custom: "Custom Event",
   };
 
-  createWebhook(config: Omit<WebhookConfig, "id" | "createdAt" | "updatedAt" | "lastTriggeredAt" | "successRate" | "totalRequests" | "failedRequests">): WebhookConfig {
+  createWebhook(
+    config: Omit<
+      WebhookConfig,
+      | "id"
+      | "createdAt"
+      | "updatedAt"
+      | "lastTriggeredAt"
+      | "successRate"
+      | "totalRequests"
+      | "failedRequests"
+    >,
+  ): WebhookConfig {
     const id = this.generateId();
     const now = new Date().toISOString();
 
@@ -123,7 +134,10 @@ export class WebhookManager {
     return webhook;
   }
 
-  updateWebhook(id: string, updates: Partial<WebhookConfig>): WebhookConfig | null {
+  updateWebhook(
+    id: string,
+    updates: Partial<WebhookConfig>,
+  ): WebhookConfig | null {
     const webhook = this.webhooks.get(id);
     if (!webhook) return null;
 
@@ -161,7 +175,10 @@ export class WebhookManager {
     return Array.from(this.webhooks.values());
   }
 
-  async triggerEvent(event: WebhookEvent, data: Record<string, unknown>): Promise<void> {
+  async triggerEvent(
+    event: WebhookEvent,
+    data: Record<string, unknown>,
+  ): Promise<void> {
     const subscribedWebhooks = this.eventHandlers.get(event);
     if (!subscribedWebhooks || subscribedWebhooks.size === 0) return;
 
@@ -174,7 +191,10 @@ export class WebhookManager {
     await Promise.allSettled(promises);
   }
 
-  private async deliverWebhook(webhookId: string, payload: WebhookPayload): Promise<void> {
+  private async deliverWebhook(
+    webhookId: string,
+    payload: WebhookPayload,
+  ): Promise<void> {
     const webhook = this.webhooks.get(webhookId);
     if (!webhook || !webhook.isActive) return;
 
@@ -201,12 +221,20 @@ export class WebhookManager {
       response = result.response;
 
       if (attempt < webhook.retryPolicy.maxRetries) {
-        const delay = webhook.retryPolicy.retryInterval * Math.pow(webhook.retryPolicy.backoffMultiplier, attempt - 1);
+        const delay =
+          webhook.retryPolicy.retryInterval *
+          Math.pow(webhook.retryPolicy.backoffMultiplier, attempt - 1);
         await this.sleep(delay);
       }
     }
 
-    this.updateDeliveryFailed(delivery.id, webhookId, lastError, statusCode, response);
+    this.updateDeliveryFailed(
+      delivery.id,
+      webhookId,
+      lastError,
+      statusCode,
+      response,
+    );
     this.updateWebhookStats(webhookId, false);
   }
 
@@ -309,15 +337,24 @@ export class WebhookManager {
 
     const activeWebhooks = webhooks.filter((w) => w.isActive);
     const totalDeliveries = allDeliveries.length;
-    const successfulDeliveries = allDeliveries.filter((d) => d.status === "success").length;
-    const successRate = totalDeliveries > 0 ? (successfulDeliveries / totalDeliveries) * 100 : 100;
-    const averageResponseTime = allDeliveries.length > 0
-      ? allDeliveries.reduce((sum, d) => sum + (d.duration || 0), 0) / allDeliveries.length
-      : 0;
+    const successfulDeliveries = allDeliveries.filter(
+      (d) => d.status === "success",
+    ).length;
+    const successRate =
+      totalDeliveries > 0
+        ? (successfulDeliveries / totalDeliveries) * 100
+        : 100;
+    const averageResponseTime =
+      allDeliveries.length > 0
+        ? allDeliveries.reduce((sum, d) => sum + (d.duration || 0), 0) /
+          allDeliveries.length
+        : 0;
 
     const eventsByType = {} as Record<WebhookEvent, number>;
     webhooks.forEach((webhook) => {
       webhook.events.forEach((event) => {
+        // Safe: event is a literal type from WebhookEvent union
+        // eslint-disable-next-line security/detect-object-injection
         eventsByType[event] = (eventsByType[event] || 0) + 1;
       });
     });
@@ -343,7 +380,10 @@ export class WebhookManager {
     };
   }
 
-  private createPayload(event: WebhookEvent, data: Record<string, unknown>): WebhookPayload {
+  private createPayload(
+    event: WebhookEvent,
+    data: Record<string, unknown>,
+  ): WebhookPayload {
     const timestamp = new Date().toISOString();
     const payload: WebhookPayload = {
       id: this.generateId(),
@@ -360,10 +400,16 @@ export class WebhookManager {
 
   private generateSignature(payload: WebhookPayload): string {
     const message = `${payload.id}.${payload.event}.${payload.timestamp}.${JSON.stringify(payload.data)}`;
-    return crypto.createHmac("sha256", "webhook-secret").update(message).digest("hex");
+    return crypto
+      .createHmac("sha256", "webhook-secret")
+      .update(message)
+      .digest("hex");
   }
 
-  private createDelivery(webhookId: string, event: WebhookEvent): WebhookDelivery {
+  private createDelivery(
+    webhookId: string,
+    event: WebhookEvent,
+  ): WebhookDelivery {
     return {
       id: this.generateId(),
       webhookId,
@@ -391,7 +437,11 @@ export class WebhookManager {
     }
   }
 
-  private updateDeliverySuccess(deliveryId: string, webhookId: string, result: WebhookTestResult): void {
+  private updateDeliverySuccess(
+    deliveryId: string,
+    webhookId: string,
+    result: WebhookTestResult,
+  ): void {
     const deliveries = this.deliveries.get(webhookId);
     if (!deliveries) return;
 
@@ -433,10 +483,15 @@ export class WebhookManager {
     webhook.lastTriggeredAt = new Date().toISOString();
 
     if (success) {
-      webhook.successRate = (webhook.successRate * (webhook.totalRequests - 1) + 100) / webhook.totalRequests;
+      webhook.successRate =
+        (webhook.successRate * (webhook.totalRequests - 1) + 100) /
+        webhook.totalRequests;
     } else {
       webhook.failedRequests++;
-      webhook.successRate = ((webhook.totalRequests - webhook.failedRequests) / webhook.totalRequests) * 100;
+      webhook.successRate =
+        ((webhook.totalRequests - webhook.failedRequests) /
+          webhook.totalRequests) *
+        100;
     }
   }
 
@@ -498,6 +553,8 @@ export function createWebhookNotification(
   });
 }
 
-export async function sendTestNotification(webhookId: string): Promise<WebhookTestResult> {
+export async function sendTestNotification(
+  webhookId: string,
+): Promise<WebhookTestResult> {
   return webhookManager.testWebhook(webhookId);
 }

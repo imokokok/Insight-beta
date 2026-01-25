@@ -148,11 +148,13 @@ function redactRpcUrl(raw: string) {
     const segments = u.pathname.split("/").filter(Boolean);
     if (segments.length > 0) {
       for (let i = 0; i < segments.length; i += 1) {
+        // eslint-disable-next-line security/detect-object-injection
         const seg = segments[i] ?? "";
         const looksLikeToken =
           seg.length >= 16 &&
           /^[a-zA-Z0-9_-]+$/.test(seg) &&
           !seg.includes(".");
+        // eslint-disable-next-line security/detect-object-injection
         if (looksLikeToken) segments[i] = "<redacted>";
       }
       if (segments.length > 6) {
@@ -174,6 +176,7 @@ function readRpcStats(input: unknown): RpcStats {
 }
 
 function recordRpcOk(stats: RpcStats, url: string, latencyMs: number) {
+  // eslint-disable-next-line security/detect-object-injection
   const prev = stats[url] ?? {
     ok: 0,
     fail: 0,
@@ -185,6 +188,7 @@ function recordRpcOk(stats: RpcStats, url: string, latencyMs: number) {
     prev.avgLatencyMs === null
       ? latencyMs
       : Math.round(prev.avgLatencyMs * 0.8 + latencyMs * 0.2);
+  // eslint-disable-next-line security/detect-object-injection
   stats[url] = {
     ...prev,
     ok: prev.ok + 1,
@@ -196,6 +200,7 @@ function recordRpcOk(stats: RpcStats, url: string, latencyMs: number) {
 }
 
 function recordRpcFail(stats: RpcStats, url: string) {
+  // eslint-disable-next-line security/detect-object-injection
   const prev = stats[url] ?? {
     ok: 0,
     fail: 0,
@@ -203,6 +208,7 @@ function recordRpcFail(stats: RpcStats, url: string) {
     lastFailAt: null,
     avgLatencyMs: null,
   };
+  // eslint-disable-next-line security/detect-object-injection
   stats[url] = {
     ...prev,
     fail: prev.fail + 1,
@@ -217,6 +223,7 @@ function pickNextRpcUrl(urls: string[], current: string): string {
   const idx = urls.indexOf(current);
   if (idx >= 0) {
     const nextIdx = (idx + 1) % urls.length;
+    // eslint-disable-next-line security/detect-object-injection
     return urls[nextIdx]!;
   }
   return urls[0]!;

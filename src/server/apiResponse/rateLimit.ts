@@ -131,6 +131,8 @@ function getClientFallbackId(request: Request) {
   for (let i = 0; i < raw.length; i += 1) {
     const code = raw.charCodeAt(i);
     if (code < 32 || code === 127) continue;
+    // Safe: raw is a string, i is a loop counter
+    // eslint-disable-next-line security/detect-object-injection
     out += raw[i];
     if (out.length >= 160) break;
   }

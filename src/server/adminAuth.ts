@@ -94,6 +94,8 @@ async function readStoreCached() {
 
 function tokenHasScope(role: AdminRole, scope: AdminScope | undefined) {
   if (!scope) return true;
+  // Safe: role is a literal type from AdminRole union
+  // eslint-disable-next-line security/detect-object-injection
   return roleScopes[role].has(scope);
 }
 

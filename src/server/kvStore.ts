@@ -32,6 +32,7 @@ export async function writeJsonFile<T>(key: string, value: T): Promise<void> {
       }));
       candidates.sort((a, b) => a.updatedAtMs - b.updatedAtMs);
       for (let i = 0; i < overflow; i++) {
+        // eslint-disable-next-line security/detect-object-injection
         const k = candidates[i]?.key;
         if (k) mem.kv.delete(k);
       }

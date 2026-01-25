@@ -169,10 +169,14 @@ export const env = {
 };
 
 export function getEnv(key: keyof typeof env): string {
+  // Safe: key is validated as keyof typeof env
+  // eslint-disable-next-line security/detect-object-injection
   return env[key];
 }
 
 export function isEnvSet(key: keyof typeof env): boolean {
+  // Safe: key is validated as keyof typeof env
+  // eslint-disable-next-line security/detect-object-injection
   return !!env[key];
 }
 
@@ -510,7 +514,7 @@ export function getEnvReport() {
       issues.push("INSIGHT_ADMIN_TOKEN: required_in_production");
     const hasCronSecret = Boolean(
       (process.env.INSIGHT_CRON_SECRET ?? "").trim() ||
-      (process.env.CRON_SECRET ?? "").trim(),
+        (process.env.CRON_SECRET ?? "").trim(),
     );
     if (!hasCronSecret) issues.push("CRON_SECRET: required_in_production");
     const allowPrivateRpc =
