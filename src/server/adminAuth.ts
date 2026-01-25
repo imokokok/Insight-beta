@@ -194,16 +194,18 @@ export async function createAdminToken(input: {
 export async function revokeAdminToken(input: {
   id: string;
 }): Promise<boolean> {
-  const existing = await readStoreCached();
-  if (!existing || existing.version !== 1) return false;
-  const now = new Date().toISOString();
-  const idx = existing.tokens.findIndex((t) => t.id === input.id);
-  if (idx === -1) return false;
-  const nextTokens = existing.tokens.map((t) =>
-    t.id === input.id ? { ...t, revokedAt: t.revokedAt ?? now } : t,
-  );
-  const next: AdminTokenStore = { version: 1, tokens: nextTokens };
-  await writeJsonFile(STORE_KEY, next);
-  cached = { loadedAtMs: Date.now(), store: next };
-  return true;
+  return withTokenStoreLock(STORE_KEY, async () => {
+    const existing = await readStoreCached();
+    if (!existing || existing.version !== 1) return false;
+    const now = new Date().toISOString();
+    const idx = existing.tokens.findIndex((t) => t.id === input.id);
+    if (idx === -1) return false;
+    const nextTokens = existing.tokens.map((t) =>
+      t.id === input.id ? { ...t, revokedAt: t.revokedAt ?? now } : t,
+    );
+    const next: AdminTokenStore = { version: 1, tokens: nextTokens };
+    await writeJsonFile(STORE_KEY, next);
+    cached = { loadedAtMs: Date.now(), store: next };
+    return true;
+  });
 }
