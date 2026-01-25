@@ -83,7 +83,7 @@
     "@typechain/hardhat": "^9.1.0",
     "@types/chai": "4.3.20",
     "@types/mocha": "10.0.10",
-    "@types/node": "20.11.0",
+    "@types/node": "20.19.0",
     "@types/nodemailer": "6.4.17",
     "@types/pg": "8.16.0",
     "@types/react": "19.0.8",
@@ -100,7 +100,7 @@
     "eslint-plugin-perfectionist": "4.3.0",
     "eslint-plugin-security": "3.0.1",
     "ethers": "^6.16.0",
-    "hardhat": "2.22.19",
+    "hardhat": "2.28.3",
     "hardhat-gas-reporter": "^2.3.0",
     "husky": "9.1.7",
     "jsdom": "27.4.0",
@@ -114,7 +114,7 @@
     "ts-node": "10.9.2",
     "typechain": "^8.3.2",
     "typescript": "5.7.3",
-    "vitest": "4.0.16"
+    "vitest": "4.0.18"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
