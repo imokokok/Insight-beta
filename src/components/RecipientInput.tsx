@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
+import { CheckCircle2, AlertCircle } from "lucide-react";
 import type { AlertRule } from "@/lib/oracleTypes";
 
 interface RecipientInputProps {
@@ -18,33 +19,29 @@ const MAX_RETRY_DELAY = 10000;
 const INITIAL_RETRY_DELAY = 1000;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export function RecipientInput({ rule, onPatchRule, t }: RecipientInputProps) {
+function RecipientInputComponent({
+  rule,
+  onPatchRule,
+  t,
+}: RecipientInputProps) {
   const [localValue, setLocalValue] = useState(rule.recipient ?? "");
   const [error, setError] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
 
-  // 用于防抖延迟更新请求的计时器引用
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
-  // 用于跟踪当前请求ID，防止竞态条件
   const requestIdRef = useRef<number>(0);
-  // 用于显示成功消息后自动隐藏的计时器引用
   const successTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 当外部 rule props 变化时，同步更新内部状态
   useEffect(() => {
     setLocalValue(rule.recipient ?? "");
   }, [rule.id, rule.recipient]);
 
   useEffect(() => {
     return () => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-      }
-      if (successTimeoutRef.current) {
-        clearTimeout(successTimeoutRef.current);
-      }
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      if (successTimeoutRef.current) clearTimeout(successTimeoutRef.current);
     };
   }, []);
 
@@ -53,9 +50,7 @@ export function RecipientInput({ rule, onPatchRule, t }: RecipientInputProps) {
   }, []);
 
   const showSuccess = useCallback(() => {
-    if (successTimeoutRef.current) {
-      clearTimeout(successTimeoutRef.current);
-    }
+    if (successTimeoutRef.current) clearTimeout(successTimeoutRef.current);
     setIsSuccess(true);
     successTimeoutRef.current = setTimeout(() => {
       setIsSuccess(false);
@@ -63,30 +58,21 @@ export function RecipientInput({ rule, onPatchRule, t }: RecipientInputProps) {
     }, SUCCESS_MESSAGE_DURATION);
   }, []);
 
-  // 执行更新请求的函数，包含重试逻辑和竞态条件处理
   const executeUpdate = useCallback(
     async (value: string, requestId: number, attempt: number = 1) => {
-      // 检查请求ID是否是最新的，防止竞态条件
-      if (requestId !== requestIdRef.current) {
-        return;
-      }
+      if (requestId !== requestIdRef.current) return;
 
       try {
         await onPatchRule(rule.id, { recipient: value });
         setRetryCount(0);
         showSuccess();
-      } catch (error) {
-        console.error("Failed to update recipient:", error);
-        // 再次检查请求ID，确保在重试期间没有新的请求
-        if (requestId !== requestIdRef.current) {
-          return;
-        }
+      } catch (err) {
+        console.error("Failed to update recipient:", err);
+        if (requestId !== requestIdRef.current) return;
 
-        // 如果还有重试次数，进行指数退避重试
         if (attempt < MAX_RETRIES) {
           setRetryCount(attempt);
           const nextAttempt = attempt + 1;
-          // 指数退避：延迟时间翻倍，但不超过最大延迟
           const delay = Math.min(
             INITIAL_RETRY_DELAY * Math.pow(2, nextAttempt),
             MAX_RETRY_DELAY,
@@ -95,11 +81,9 @@ export function RecipientInput({ rule, onPatchRule, t }: RecipientInputProps) {
             executeUpdate(value, requestId, nextAttempt);
           }, delay);
         } else {
-          // 重试次数用完，显示最终错误
           setError(t("oracle.alerts.updateFailedWithRetry"));
         }
       } finally {
-        // 只在当前请求是最新的情况下重置状态
         if (requestId === requestIdRef.current) {
           setIsUpdating(false);
           debounceRef.current = null;
@@ -109,7 +93,6 @@ export function RecipientInput({ rule, onPatchRule, t }: RecipientInputProps) {
     [rule.id, onPatchRule, t, showSuccess],
   );
 
-  // 处理输入变化，包含防抖和验证逻辑
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
@@ -118,9 +101,7 @@ export function RecipientInput({ rule, onPatchRule, t }: RecipientInputProps) {
         return;
       }
 
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-      }
+      if (debounceRef.current) clearTimeout(debounceRef.current);
 
       setLocalValue(value);
       setError(null);
@@ -149,12 +130,9 @@ export function RecipientInput({ rule, onPatchRule, t }: RecipientInputProps) {
   const inputClassName = useMemo(() => {
     const baseClass =
       "h-10 rounded-xl bg-white/70 ring-1 border-transparent focus-visible:ring-2 focus-visible:ring-purple-500/20 transition-all duration-200";
-    if (error) {
-      return `${baseClass} ring-red-500 focus-visible:ring-red-500/20`;
-    }
-    if (isSuccess) {
+    if (error) return `${baseClass} ring-red-500 focus-visible:ring-red-500/20`;
+    if (isSuccess)
       return `${baseClass} ring-green-500 focus-visible:ring-green-500/20`;
-    }
     return `${baseClass} ring-black/5`;
   }, [error, isSuccess]);
 
@@ -185,7 +163,7 @@ export function RecipientInput({ rule, onPatchRule, t }: RecipientInputProps) {
               role="status"
               aria-live="polite"
             >
-              <CheckIcon className="w-3 h-3" />
+              <CheckCircle2 className="w-3 h-3" />
               {t("oracle.alerts.saved")}
             </div>
           )}
@@ -224,7 +202,7 @@ export function RecipientInput({ rule, onPatchRule, t }: RecipientInputProps) {
           role="alert"
           aria-live="assertive"
         >
-          <ErrorIcon className="w-3 h-3 flex-shrink-0" />
+          <AlertCircle className="w-3 h-3 flex-shrink-0" />
           {error}
         </div>
       )}
@@ -232,32 +210,4 @@ export function RecipientInput({ rule, onPatchRule, t }: RecipientInputProps) {
   );
 }
 
-function CheckIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M5 13l4 4L19 7"
-      />
-    </svg>
-  );
-}
-
-function ErrorIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="currentColor" viewBox="0 0 20 20">
-      <path
-        fillRule="evenodd"
-        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-        clipRule="evenodd"
-      />
-    </svg>
-  );
-}
+export const RecipientInput = memo(RecipientInputComponent);

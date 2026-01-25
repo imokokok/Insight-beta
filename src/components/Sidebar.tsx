@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { ConnectWallet } from "@/components/ConnectWallet";
+import { useOracleFilters } from "@/hooks/useOracleFilters";
 
 const navItems = [
   { key: "nav.oracle" as const, href: "/oracle" as const, icon: Activity },
@@ -52,26 +53,12 @@ export function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const [logoSrc, setLogoSrc] = useState("/logo-owl.png");
   const { t } = useI18n();
+  const { instanceId } = useOracleFilters();
   const instanceIdFromUrl = searchParams?.get("instanceId")?.trim() || null;
-  const [storedInstanceId] = useState<string>(() => {
-    try {
-      if (typeof window === "undefined") return "default";
-      const saved = window.localStorage.getItem("oracleFilters");
-      if (!saved) return "default";
-      const parsed = JSON.parse(saved) as { instanceId?: unknown } | null;
-      const value =
-        parsed && typeof parsed === "object" ? parsed.instanceId : null;
-      if (typeof value === "string" && value.trim()) return value.trim();
-    } catch {
-      return "default";
-    }
-    return "default";
-  });
-
-  const instanceId = instanceIdFromUrl ?? storedInstanceId;
+  const effectiveInstanceId = instanceIdFromUrl ?? instanceId;
 
   const attachInstanceId = (href: string) => {
-    const normalized = (instanceId ?? "").trim();
+    const normalized = (effectiveInstanceId ?? "").trim();
     if (!normalized) return href;
     const url = new URL(href, "http://insight.local");
     url.searchParams.set("instanceId", normalized);

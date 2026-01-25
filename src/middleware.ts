@@ -8,8 +8,6 @@ function createRequestId() {
     c.getRandomValues(bytes);
     let out = "";
     for (let i = 0; i < bytes.length; i += 1) {
-      // Safe: bytes is a Uint8Array, i is a loop counter
-      // eslint-disable-next-line security/detect-object-injection
       out += bytes[i]!.toString(16).padStart(2, "0");
     }
     return out;
@@ -17,8 +15,15 @@ function createRequestId() {
   return `${Date.now().toString(16)}${Math.random().toString(16).slice(2)}`;
 }
 
+function getResponseTime(startTime: number): string {
+  const duration = Date.now() - startTime;
+  if (duration < 1000) return `${duration}ms`;
+  if (duration < 60000) return `${(duration / 1000).toFixed(2)}s`;
+  return `${(duration / 60000).toFixed(2)}m`;
+}
+
 export function middleware(request: NextRequest) {
-  // Note: API rate limiting is handled per-route in src/server/apiResponse/rateLimit.ts
+  const startTime = Date.now();
   const requestId =
     request.headers.get("x-request-id")?.trim() || createRequestId();
 
@@ -29,6 +34,8 @@ export function middleware(request: NextRequest) {
     request: { headers: requestHeaders },
   });
   response.headers.set("x-request-id", requestId);
+  response.headers.set("x-response-time", getResponseTime(startTime));
+
   return response;
 }
 

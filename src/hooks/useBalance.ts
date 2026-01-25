@@ -1,14 +1,7 @@
 import useSWR from "swr";
 import { useWallet } from "@/contexts/WalletContext";
 import { formatEther } from "viem";
-import {
-  arbitrum,
-  hardhat,
-  mainnet,
-  optimism,
-  polygon,
-  polygonAmoy,
-} from "viem/chains";
+import { getChainSymbol } from "@/lib/chainConfig";
 
 export function useBalance() {
   const { address, chainId } = useWallet();
@@ -35,20 +28,7 @@ export function useBalance() {
     },
   );
 
-  const symbol =
-    chainId === polygon.id
-      ? polygon.nativeCurrency.symbol
-      : chainId === polygonAmoy.id
-        ? polygonAmoy.nativeCurrency.symbol
-        : chainId === arbitrum.id
-          ? arbitrum.nativeCurrency.symbol
-          : chainId === optimism.id
-            ? optimism.nativeCurrency.symbol
-            : chainId === hardhat.id
-              ? hardhat.nativeCurrency.symbol
-              : chainId === mainnet.id
-                ? mainnet.nativeCurrency.symbol
-                : "ETH";
+  const symbol = chainId ? getChainSymbol(chainId) : "ETH";
 
   return {
     balance,

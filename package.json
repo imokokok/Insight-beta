@@ -31,6 +31,7 @@
     "test:e2e:headed": "playwright test --headed",
     "test:coverage:fail": "vitest run --coverage --exit-on-failure",
     "test:coverage:threshold": "vitest run --coverage --passWithNoThresholdErrors",
+    "analyze:bundle": "node scripts/analyze-bundle.mjs",
     "docs:api": "node scripts/generate-api-docs.mjs",
     "changeset": "changeset",
     "changeset:add": "changeset add",

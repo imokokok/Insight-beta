@@ -1,13 +1,9 @@
 import "./globals.css";
 import type { ReactNode } from "react";
-import { Sidebar } from "@/components/Sidebar";
 import { cn } from "@/lib/utils";
 import { LanguageProvider } from "@/i18n/LanguageProvider";
 import { Toaster } from "sonner";
 import { WalletProvider } from "@/contexts/WalletContext";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { SyncStatus } from "@/components/SyncStatus";
-import { ClientComponentsWrapper } from "@/components/ClientComponentsWrapper";
 import { cookies, headers } from "next/headers";
 import type { Metadata } from "next";
 import {
@@ -17,6 +13,30 @@ import {
   LANG_STORAGE_KEY,
   translations,
 } from "@/i18n/translations";
+import { lazy, Suspense } from "react";
+
+const Sidebar = lazy(() =>
+  import("@/components/Sidebar").then((mod) => ({ default: mod.Sidebar })),
+);
+const LanguageSwitcher = lazy(() =>
+  import("@/components/LanguageSwitcher").then((mod) => ({
+    default: mod.LanguageSwitcher,
+  })),
+);
+const SyncStatus = lazy(() =>
+  import("@/components/SyncStatus").then((mod) => ({
+    default: mod.SyncStatus,
+  })),
+);
+const ClientComponentsWrapper = lazy(() =>
+  import("@/components/ClientComponentsWrapper").then((mod) => ({
+    default: mod.ClientComponentsWrapper,
+  })),
+);
+
+function LoadingPlaceholder({ className }: { className?: string }) {
+  return <div className={className} aria-hidden="true" />;
+}
 
 export const dynamic = "force-dynamic";
 
@@ -105,7 +125,13 @@ export default async function RootLayout({
               />
             </div>
             <div className="flex min-h-screen">
-              <Sidebar />
+              <Suspense
+                fallback={
+                  <LoadingPlaceholder className="w-64 hidden md:block" />
+                }
+              >
+                <Sidebar />
+              </Suspense>
               <main className="flex-1 transition-all duration-300 md:ml-64">
                 <div className="container mx-auto p-3 md:p-4 lg:p-8 max-w-7xl">
                   <div className="sticky top-0 z-20 mb-4 md:mb-6 flex flex-wrap justify-between items-center gap-3">
@@ -113,8 +139,20 @@ export default async function RootLayout({
                       {translations[lang].app.title}
                     </h2>
                     <div className="flex items-center gap-2 md:gap-3">
-                      <SyncStatus className="hidden sm:flex" />
-                      <LanguageSwitcher />
+                      <Suspense
+                        fallback={
+                          <LoadingPlaceholder className="w-24 h-6 rounded bg-gray-200 animate-pulse hidden sm:flex" />
+                        }
+                      >
+                        <SyncStatus className="hidden sm:flex" />
+                      </Suspense>
+                      <Suspense
+                        fallback={
+                          <LoadingPlaceholder className="w-8 h-8 rounded bg-gray-200 animate-pulse" />
+                        }
+                      >
+                        <LanguageSwitcher />
+                      </Suspense>
                     </div>
                   </div>
                   <ClientComponentsWrapper>{children}</ClientComponentsWrapper>
