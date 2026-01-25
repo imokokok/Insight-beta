@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { PageHeader } from "@/components/PageHeader";
+import { PageHeader } from "@/components/features/common/PageHeader";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { getUiErrorMessage } from "@/i18n/translations";
 import {

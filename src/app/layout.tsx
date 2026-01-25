@@ -16,22 +16,26 @@ import {
 import { lazy, Suspense } from "react";
 
 const Sidebar = lazy(() =>
-  import("@/components/Sidebar").then((mod) => ({ default: mod.Sidebar })),
+  import("@/components/features/common/Sidebar").then((mod) => ({
+    default: mod.Sidebar,
+  })),
 );
 const LanguageSwitcher = lazy(() =>
-  import("@/components/LanguageSwitcher").then((mod) => ({
+  import("@/components/features/common/LanguageSwitcher").then((mod) => ({
     default: mod.LanguageSwitcher,
   })),
 );
 const SyncStatus = lazy(() =>
-  import("@/components/SyncStatus").then((mod) => ({
+  import("@/components/features/oracle/SyncStatus").then((mod) => ({
     default: mod.SyncStatus,
   })),
 );
 const ClientComponentsWrapper = lazy(() =>
-  import("@/components/ClientComponentsWrapper").then((mod) => ({
-    default: mod.ClientComponentsWrapper,
-  })),
+  import("@/components/features/common/ClientComponentsWrapper").then(
+    (mod) => ({
+      default: mod.ClientComponentsWrapper,
+    }),
+  ),
 );
 
 function LoadingPlaceholder({ className }: { className?: string }) {

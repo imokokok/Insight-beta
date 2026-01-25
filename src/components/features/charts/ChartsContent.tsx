@@ -16,7 +16,7 @@ import {
   Line,
   Bar,
 } from "recharts";
-import { OracleHealthScore } from "../OracleHealthScore";
+import { OracleHealthScore } from "@/components/features/oracle/OracleHealthScore";
 import type {
   TabKey,
   Translator,

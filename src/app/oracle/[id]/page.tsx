@@ -35,7 +35,7 @@ import { useToast } from "@/components/ui/toast";
 import { useWatchlist } from "@/hooks/useWatchlist";
 import { useOracleTransaction } from "@/hooks/useOracleTransaction";
 import { useWallet } from "@/contexts/WalletContext";
-import { ConnectWallet } from "@/components/ConnectWallet";
+import { ConnectWallet } from "@/components/features/wallet/ConnectWallet";
 import type {
   Assertion,
   Dispute,
@@ -44,21 +44,27 @@ import type {
   RiskItem,
 } from "@/lib/oracleTypes";
 
-import { AssertionTimeline } from "@/components/AssertionTimeline";
-import { AssertionDetailSkeleton } from "@/components/AssertionDetailSkeleton";
-import { PayoutSimulator } from "@/components/PayoutSimulator";
-import { CountdownTimer } from "@/components/CountdownTimer";
-import { AddressAvatar } from "@/components/AddressAvatar";
-import { CopyButton } from "@/components/CopyButton";
-import { InfoTooltip } from "@/components/InfoTooltip";
-import { LivenessProgressBar } from "@/components/LivenessProgressBar";
+import { AssertionTimeline } from "@/components/features/assertion/AssertionTimeline";
+import { AssertionDetailSkeleton } from "@/components/features/assertion/AssertionDetailSkeleton";
+import { PayoutSimulator } from "@/components/features/oracle/PayoutSimulator";
+import { CountdownTimer } from "@/components/features/common/CountdownTimer";
+import { AddressAvatar } from "@/components/features/wallet/AddressAvatar";
+import { CopyButton } from "@/components/features/common/CopyButton";
+import { InfoTooltip } from "@/components/features/common/InfoTooltip";
+import { LivenessProgressBar } from "@/components/features/oracle/LivenessProgressBar";
 
 const DisputeModal = dynamic(
-  () => import("@/components/DisputeModal").then((mod) => mod.DisputeModal),
+  () =>
+    import("@/components/features/dispute/DisputeModal").then(
+      (mod) => mod.DisputeModal,
+    ),
   { ssr: false },
 );
 const SettleModal = dynamic(
-  () => import("@/components/SettleModal").then((mod) => mod.SettleModal),
+  () =>
+    import("@/components/features/common/SettleModal").then(
+      (mod) => mod.SettleModal,
+    ),
   { ssr: false },
 );
 

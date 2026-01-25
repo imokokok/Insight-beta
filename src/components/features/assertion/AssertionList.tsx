@@ -16,9 +16,9 @@ import { useI18n } from "@/i18n/LanguageProvider";
 import { langToLocale } from "@/i18n/translations";
 import { useWatchlist } from "@/hooks/useWatchlist";
 import type { Assertion, OracleStatus } from "@/lib/oracleTypes";
-import { CopyButton } from "@/components/CopyButton";
-import { SkeletonList } from "./SkeletonList";
-import { LivenessProgressBar } from "./LivenessProgressBar";
+import { CopyButton } from "@/components/features/common/CopyButton";
+import { SkeletonList } from "@/components/features/common/SkeletonList";
+import { LivenessProgressBar } from "@/components/features/oracle/LivenessProgressBar";
 
 interface AssertionListProps {
   items: Assertion[];

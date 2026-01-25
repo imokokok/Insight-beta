@@ -1,5 +1,5 @@
-import { PageHeader } from "@/components/PageHeader";
-import { ConnectWallet } from "@/components/ConnectWallet";
+import { PageHeader } from "@/components/features/common/PageHeader";
+import { ConnectWallet } from "@/components/features/wallet/ConnectWallet";
 import { Wallet } from "lucide-react";
 import type { TranslationKey } from "@/i18n/translations";
 

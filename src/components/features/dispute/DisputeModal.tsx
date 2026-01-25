@@ -6,8 +6,8 @@ import { useWallet } from "@/contexts/WalletContext";
 import { useOracleTransaction } from "@/hooks/useOracleTransaction";
 import { useModalBehavior } from "@/hooks/useModalBehavior";
 import { useI18n } from "@/i18n/LanguageProvider";
-import { InfoTooltip } from "@/components/InfoTooltip";
-import { ConnectWallet } from "@/components/ConnectWallet";
+import { InfoTooltip } from "@/components/features/common/InfoTooltip";
+import { ConnectWallet } from "@/components/features/wallet/ConnectWallet";
 import { publicEnv } from "@/lib/publicEnv";
 import type { OracleChain } from "@/lib/oracleTypes";
 

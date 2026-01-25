@@ -6,7 +6,7 @@ import { useI18n } from "@/i18n/LanguageProvider";
 import { useWallet } from "@/contexts/WalletContext";
 import { normalizeWalletError } from "@/lib/walletErrors";
 import { logger } from "@/lib/logger";
-import { UserMenu } from "@/components/UserMenu";
+import { UserMenu } from "@/components/features/wallet/UserMenu";
 
 export function ConnectWallet() {
   const { address, connect, isConnecting } = useWallet();

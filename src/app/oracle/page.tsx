@@ -18,9 +18,9 @@ import {
   User,
   Gavel,
 } from "lucide-react";
-import { OracleStatsBanner } from "@/components/OracleStatsBanner";
-import { HowItWorks } from "@/components/HowItWorks";
-import { PageHeader } from "@/components/PageHeader";
+import { OracleStatsBanner } from "@/components/features/oracle/OracleStatsBanner";
+import { HowItWorks } from "@/components/features/common/HowItWorks";
+import { PageHeader } from "@/components/features/common/PageHeader";
 import {
   cn,
   fetchApiData,
@@ -39,9 +39,9 @@ import {
 import { useOracleData } from "@/hooks/useOracleData";
 import { useDisputes } from "@/hooks/useDisputes";
 import { useWallet } from "@/contexts/WalletContext";
-import { ConnectWallet } from "@/components/ConnectWallet";
-import { AssertionList } from "@/components/AssertionList";
-import { DisputeList } from "@/components/DisputeList";
+import { ConnectWallet } from "@/components/features/wallet/ConnectWallet";
+import { AssertionList } from "@/components/features/assertion/AssertionList";
+import { DisputeList } from "@/components/features/dispute/DisputeList";
 import { useToast } from "@/components/ui/toast";
 import type {
   OracleConfig,
@@ -52,13 +52,16 @@ import type {
 
 const CreateAssertionModal = dynamic(
   () =>
-    import("@/components/CreateAssertionModal").then(
+    import("@/components/features/assertion/CreateAssertionModal").then(
       (mod) => mod.CreateAssertionModal,
     ),
   { ssr: false },
 );
 const OracleCharts = dynamic(
-  () => import("@/components/OracleCharts").then((mod) => mod.OracleCharts),
+  () =>
+    import("@/components/features/oracle/OracleCharts").then(
+      (mod) => mod.OracleCharts,
+    ),
   {
     loading: () => (
       <div className="h-[400px] w-full bg-white/5 animate-pulse rounded-2xl" />
@@ -68,11 +71,15 @@ const OracleCharts = dynamic(
 );
 
 const Leaderboard = dynamic(() =>
-  import("@/components/Leaderboard").then((mod) => mod.Leaderboard),
+  import("@/components/features/oracle/Leaderboard").then(
+    (mod) => mod.Leaderboard,
+  ),
 );
 
 const PnLCalculator = dynamic(() =>
-  import("@/components/PnLCalculator").then((mod) => mod.PnLCalculator),
+  import("@/components/features/common/PnLCalculator").then(
+    (mod) => mod.PnLCalculator,
+  ),
 );
 
 function parseOptionalNumber(value: string | null | undefined) {

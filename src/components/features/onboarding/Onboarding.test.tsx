@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { Onboarding } from "./Onboarding";
-import { HelpTooltip } from "./HelpTooltip";
-import { FeatureCallout } from "./FeatureCallout";
+import { HelpTooltip } from "@/components/features/common/HelpTooltip";
+import { FeatureCallout } from "@/components/features/common/FeatureCallout";
 import { AlertCircle } from "lucide-react";
 import { LanguageProvider } from "@/i18n/LanguageProvider";
 import { LANG_STORAGE_KEY } from "@/i18n/translations";

@@ -3,7 +3,7 @@ import { memo, forwardRef } from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import { Virtuoso, VirtuosoGrid } from "react-virtuoso";
-import { SkeletonList } from "./SkeletonList";
+import { SkeletonList } from "@/components/features/common/SkeletonList";
 import {
   CheckCircle2,
   Clock,

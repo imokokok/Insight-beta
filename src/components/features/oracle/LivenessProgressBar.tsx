@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import { InfoTooltip } from "@/components/InfoTooltip";
+import { InfoTooltip } from "@/components/features/common/InfoTooltip";
 import { Clock } from "lucide-react";
 
 interface LivenessProgressBarProps {

@@ -17,7 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useI18n } from "@/i18n/LanguageProvider";
-import { ConnectWallet } from "@/components/ConnectWallet";
+import { ConnectWallet } from "@/components/features/wallet/ConnectWallet";
 import { useOracleFilters } from "@/hooks/useOracleFilters";
 
 const navItems = [

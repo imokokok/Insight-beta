@@ -11,11 +11,11 @@ import {
 import { ExternalLink, LayoutGrid, List as ListIcon } from "lucide-react";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { getUiErrorMessage } from "@/i18n/translations";
-import { UserStatsCard } from "@/components/UserStatsCard";
-import { AssertionList } from "@/components/AssertionList";
-import { DisputeList } from "@/components/DisputeList";
-import { AddressAvatar } from "@/components/AddressAvatar";
-import { CopyButton } from "@/components/CopyButton";
+import { UserStatsCard } from "@/components/features/wallet/UserStatsCard";
+import { AssertionList } from "@/components/features/assertion/AssertionList";
+import { DisputeList } from "@/components/features/dispute/DisputeList";
+import { AddressAvatar } from "@/components/features/wallet/AddressAvatar";
+import { CopyButton } from "@/components/features/common/CopyButton";
 import { cn, getExplorerUrl } from "@/lib/utils";
 import { useOracleData } from "@/hooks/useOracleData";
 import { useDisputes } from "@/hooks/useDisputes";

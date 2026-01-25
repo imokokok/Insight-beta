@@ -9,7 +9,7 @@ import { useOracleTransaction } from "@/hooks/useOracleTransaction";
 import { useModalBehavior } from "@/hooks/useModalBehavior";
 import type { OracleChain } from "@/lib/oracleTypes";
 
-import { InfoTooltip } from "@/components/InfoTooltip";
+import { InfoTooltip } from "@/components/features/common/InfoTooltip";
 
 interface CreateAssertionModalProps {
   isOpen: boolean;

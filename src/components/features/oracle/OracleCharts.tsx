@@ -7,10 +7,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { fetchApiData } from "@/lib/utils";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { getUiErrorMessage, langToLocale } from "@/i18n/translations";
-import { ChartBackground } from "./charts/ChartBackground";
-import { ChartsHeader } from "./charts/ChartsHeader";
-import { ChartsContent } from "./charts/ChartsContent";
-import { AccuracySummary } from "./charts/AccuracySummary";
+import { ChartBackground } from "@/components/features/charts/ChartBackground";
+import { ChartsHeader } from "@/components/features/charts/ChartsHeader";
+import { ChartsContent } from "@/components/features/charts/ChartsContent";
+import { AccuracySummary } from "@/components/features/charts/AccuracySummary";
 import type { PricePoint } from "@/server/oracle/priceFetcher";
 import { calculateHealthScore } from "@/server/oracle/priceFetcher";
 import type {
@@ -20,7 +20,7 @@ import type {
   AccuracyAnomaly,
   TabKey,
   Translator,
-} from "./charts/types";
+} from "@/components/features/charts/types";
 
 const getTabBorder = (activeTab: TabKey) =>
   activeTab === "activity"

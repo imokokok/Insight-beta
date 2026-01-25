@@ -6,9 +6,9 @@ import type { Channel } from "./AlertRulesManager";
 import { AlertRuleHeader } from "./AlertRuleHeader";
 import { AlertRuleBasicFields } from "./AlertRuleBasicFields";
 import { ChannelSwitches } from "./ChannelSwitches";
-import { RecipientInput } from "./RecipientInput";
-import { EventParamsInputs } from "./EventParamsInputs";
-import { CommonParamsInputs } from "./CommonParamsInputs";
+import { RecipientInput } from "@/components/features/common/RecipientInput";
+import { EventParamsInputs } from "@/components/features/assertion/EventParamsInputs";
+import { CommonParamsInputs } from "@/components/features/assertion/CommonParamsInputs";
 
 interface AlertRuleCardProps {
   rule: AlertRule;
