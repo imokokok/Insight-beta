@@ -1,4 +1,4 @@
-import { env } from "@/lib/env";
+import { env } from "@/lib/config/env";
 import { verifyAdmin, type AdminScope } from "@/server/adminAuth";
 import { createOrTouchAlert } from "@/server/observability";
 import { error } from "./response";

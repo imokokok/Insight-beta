@@ -14,7 +14,7 @@ import {
 } from "@/server/apiResponse";
 import { appendAuditLog } from "@/server/observability";
 import { revalidateTag } from "next/cache";
-import { env } from "@/lib/env";
+import { env } from "@/lib/config/env";
 import crypto from "node:crypto";
 import { DEFAULT_ORACLE_INSTANCE_ID } from "@/server/oracleConfig";
 

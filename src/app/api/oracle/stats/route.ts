@@ -5,7 +5,7 @@ import {
   rateLimit,
   requireAdmin,
 } from "@/server/apiResponse";
-import { env } from "@/lib/env";
+import { env } from "@/lib/config/env";
 import crypto from "node:crypto";
 
 function timingSafeEqualString(a: string, b: string) {

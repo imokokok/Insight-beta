@@ -4,7 +4,7 @@ import {
   useServiceWorker,
   useOfflineStatus,
   useCachedData,
-} from "@/hooks/useServiceWorker";
+} from "@/hooks/service/useServiceWorker";
 
 describe("useServiceWorker", () => {
   const originalServiceWorker = navigator.serviceWorker;

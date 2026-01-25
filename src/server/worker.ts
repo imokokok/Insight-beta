@@ -5,7 +5,7 @@ import {
 } from "./oracleIndexer";
 import crypto from "crypto";
 import type { PoolClient } from "pg";
-import { env } from "@/lib/env";
+import { env } from "@/lib/config/env";
 import { logger } from "@/lib/logger";
 import { getClient, hasDatabase, query } from "@/server/db";
 import { getMemoryStore } from "@/server/memoryBackend";

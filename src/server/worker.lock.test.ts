@@ -15,7 +15,7 @@ const { logger } = vi.hoisted(() => ({
   },
 }));
 
-vi.mock("@/lib/env", () => ({
+vi.mock("@/lib/config/env", () => ({
   env: {
     INSIGHT_WORKER_ID: "test-worker",
     INSIGHT_DISABLE_EMBEDDED_WORKER: "true",
@@ -178,8 +178,9 @@ describe("worker alerts", () => {
   it("emits sync_error missing_config when oracle config is missing", async () => {
     hasDatabase.mockReturnValue(false);
 
-    const { readAlertRules, createOrTouchAlert } =
-      await import("@/server/observability");
+    const { readAlertRules, createOrTouchAlert } = await import(
+      "@/server/observability"
+    );
     (readAlertRules as unknown as ReturnType<typeof vi.fn>).mockResolvedValue([
       {
         id: "rule-1",
@@ -227,8 +228,9 @@ describe("worker alerts", () => {
       },
     ]);
 
-    const { getOracleEnv, ensureOracleSynced } =
-      await import("./oracleIndexer");
+    const { getOracleEnv, ensureOracleSynced } = await import(
+      "./oracleIndexer"
+    );
     (getOracleEnv as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
       rpcUrl: "https://rpc.example",
       contractAddress: "0x1111111111111111111111111111111111111111",

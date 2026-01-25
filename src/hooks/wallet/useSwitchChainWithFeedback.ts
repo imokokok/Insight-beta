@@ -4,7 +4,7 @@ import { useCallback, useRef, useState } from "react";
 import { useWallet } from "@/contexts/WalletContext";
 import { useToast } from "@/components/ui/toast";
 import { useI18n } from "@/i18n/LanguageProvider";
-import { normalizeWalletError } from "@/lib/walletErrors";
+import { normalizeWalletError } from "@/lib/errors/walletErrors";
 import { logger } from "@/lib/logger";
 
 type ChainTarget = {

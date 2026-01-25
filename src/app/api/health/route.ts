@@ -1,6 +1,6 @@
 import { error, handleApi, rateLimit } from "@/server/apiResponse";
 import { hasDatabase, query } from "@/server/db";
-import { env, getEnvReport } from "@/lib/env";
+import { env, getEnvReport } from "@/lib/config/env";
 import { requireAdmin } from "@/server/apiResponse";
 import { readJsonFile } from "@/server/kvStore";
 import {

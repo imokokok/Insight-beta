@@ -34,7 +34,7 @@ vi.mock("@/server/kvStore", () => ({
   readJsonFile,
 }));
 
-vi.mock("@/lib/env", () => ({
+vi.mock("@/lib/config/env", () => ({
   env: {
     get INSIGHT_DISABLE_EMBEDDED_WORKER() {
       return (process.env.INSIGHT_DISABLE_EMBEDDED_WORKER ?? "").trim();

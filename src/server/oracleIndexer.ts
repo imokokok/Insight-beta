@@ -17,7 +17,7 @@ import {
   type StoredState,
 } from "./oracleState";
 import { isZeroBytes32, parseRpcUrls, toIsoFromSeconds } from "@/lib/utils";
-import { env } from "@/lib/env";
+import { env } from "@/lib/config/env";
 import { createOrTouchAlert, readAlertRules } from "./observability";
 import { logger } from "@/lib/logger";
 

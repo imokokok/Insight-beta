@@ -1,4 +1,4 @@
-import { env } from "@/lib/env";
+import { env } from "@/lib/config/env";
 import { logger, withLogContext } from "@/lib/logger";
 import { context, trace } from "@opentelemetry/api";
 import { ZodError } from "zod";

@@ -1,5 +1,5 @@
 import * as Sentry from "@sentry/nextjs";
-import { env } from "@/lib/env";
+import { env } from "@/lib/config/env";
 import { logger } from "@/lib/logger";
 
 interface RegisterOptions {

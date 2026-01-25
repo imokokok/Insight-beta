@@ -1,4 +1,4 @@
-import { env } from "@/lib/env";
+import { env } from "@/lib/config/env";
 import { hasDatabase, query } from "@/server/db";
 import { createOrTouchAlert } from "@/server/observability";
 import { ensureSchema } from "@/server/schema";

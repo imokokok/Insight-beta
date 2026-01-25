@@ -4,7 +4,7 @@ import { Wallet } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { useWallet } from "@/contexts/WalletContext";
-import { normalizeWalletError } from "@/lib/walletErrors";
+import { normalizeWalletError } from "@/lib/errors/walletErrors";
 import { logger } from "@/lib/logger";
 import { UserMenu } from "@/components/features/wallet/UserMenu";
 

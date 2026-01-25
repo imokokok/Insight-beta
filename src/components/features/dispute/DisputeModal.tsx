@@ -8,7 +8,7 @@ import { useModalBehavior } from "@/hooks/ui/useModalBehavior";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { InfoTooltip } from "@/components/features/common/InfoTooltip";
 import { ConnectWallet } from "@/components/features/wallet/ConnectWallet";
-import { publicEnv } from "@/lib/publicEnv";
+import { publicEnv } from "@/lib/config/publicEnv";
 import type { OracleChain } from "@/lib/types/oracleTypes";
 
 interface DisputeModalProps {

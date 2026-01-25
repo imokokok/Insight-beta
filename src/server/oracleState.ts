@@ -7,7 +7,7 @@ import type {
   DbAssertionRow,
   DbDisputeRow,
 } from "@/lib/types/oracleTypes";
-import { env } from "@/lib/env";
+import { env } from "@/lib/config/env";
 import { getMemoryInstance } from "./memoryBackend";
 import { DEFAULT_ORACLE_INSTANCE_ID } from "./oracleConfig";
 import crypto from "node:crypto";

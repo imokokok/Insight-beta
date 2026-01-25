@@ -1,7 +1,7 @@
 import { createPublicClient, formatEther, http } from "viem";
 import { oracleAbi } from "@/lib/blockchain/oracleAbi";
 import { parseRpcUrls } from "@/lib/utils";
-import { env } from "@/lib/env";
+import { env } from "@/lib/config/env";
 
 function getRpcTimeoutMs() {
   const raw = Number(

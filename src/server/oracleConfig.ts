@@ -7,7 +7,7 @@ import type {
 } from "@/lib/types/oracleTypes";
 import { getMemoryInstance, getMemoryStore } from "@/server/memoryBackend";
 import { isIP } from "node:net";
-import { env } from "@/lib/env";
+import { env } from "@/lib/config/env";
 
 export type OracleConfig = SharedOracleConfig;
 

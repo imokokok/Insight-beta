@@ -6,7 +6,7 @@ import {
   useUpdateEffect,
   shallowCompare,
   memoize,
-} from "@/lib/renderOptimization";
+} from "@/lib/performance/renderOptimization";
 import {
   useDebounce,
   useThrottle,
@@ -15,7 +15,7 @@ import {
   getMemoryCache,
   clearMemoryCache,
   getCacheKey,
-} from "@/lib/requestOptimization";
+} from "@/lib/performance/requestOptimization";
 
 describe("usePrevious", () => {
   it("should return previous value", () => {

@@ -91,7 +91,7 @@ vi.mock("./observability", () => ({
   readAlertRules,
 }));
 
-vi.mock("@/lib/env", () => ({
+vi.mock("@/lib/config/env", () => ({
   env: {
     INSIGHT_RPC_URL: "",
     INSIGHT_CHAIN: "",

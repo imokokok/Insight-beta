@@ -7,7 +7,7 @@ import {
 } from "@/server/apiResponse";
 import { z } from "zod";
 import { isAddress } from "viem";
-import { env } from "@/lib/env";
+import { env } from "@/lib/config/env";
 
 const disputesParamsSchema = z.object({
   status: z

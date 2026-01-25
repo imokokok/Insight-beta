@@ -14,7 +14,7 @@ import { mockAssertions, mockDisputes } from "@/lib/mockData";
 import { unstable_cache } from "next/cache";
 import { readOracleState } from "@/server/oracleState";
 import { DEFAULT_ORACLE_INSTANCE_ID } from "@/server/oracleConfig";
-import { env } from "@/lib/env";
+import { env } from "@/lib/config/env";
 
 export type { Assertion, Dispute } from "@/lib/types/oracleTypes";
 

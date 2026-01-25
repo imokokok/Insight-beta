@@ -30,7 +30,7 @@ vi.mock("pg", () => {
   return { default: { Pool }, Pool };
 });
 
-vi.mock("@/lib/env", () => ({
+vi.mock("@/lib/config/env", () => ({
   env: {
     SUPABASE_URL: "",
     SUPABASE_SERVICE_ROLE_KEY: "",

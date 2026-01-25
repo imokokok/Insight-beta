@@ -3,7 +3,7 @@ import { useWallet } from "@/contexts/WalletContext";
 import { useToast } from "@/components/ui/toast";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { oracleAbi } from "@/lib/blockchain/oracleAbi";
-import { publicEnv } from "@/lib/publicEnv";
+import { publicEnv } from "@/lib/config/publicEnv";
 import { createPublicClient, custom, http, parseEther, webSocket } from "viem";
 import type { OracleChain, OracleConfig } from "@/lib/types/oracleTypes";
 import {
@@ -12,7 +12,7 @@ import {
   getExplorerUrl,
   parseRpcUrls,
 } from "@/lib/utils";
-import { normalizeWalletError } from "@/lib/walletErrors";
+import { normalizeWalletError } from "@/lib/errors/walletErrors";
 import { logger } from "@/lib/logger";
 
 type OracleWriteFunctionName = Exclude<

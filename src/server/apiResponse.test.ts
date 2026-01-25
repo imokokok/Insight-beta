@@ -24,7 +24,7 @@ import {
 import { hasDatabase } from "@/server/db";
 import { readJsonFile, writeJsonFile, listJsonKeys } from "@/server/kvStore";
 import { verifyAdmin } from "@/server/adminAuth";
-import { env } from "@/lib/env";
+import { env } from "@/lib/config/env";
 
 vi.mock("@/server/db", () => ({
   hasDatabase: vi.fn(() => false),
@@ -42,7 +42,7 @@ vi.mock("@/server/adminAuth", () => ({
   verifyAdmin: vi.fn(async () => ({ ok: true })),
 }));
 
-vi.mock("@/lib/env", () => ({
+vi.mock("@/lib/config/env", () => ({
   env: {
     INSIGHT_ADMIN_TOKEN: "test-token",
     INSIGHT_ADMIN_TOKEN_SALT: "test-salt",

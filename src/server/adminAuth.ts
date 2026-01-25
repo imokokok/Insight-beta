@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { env } from "@/lib/env";
+import { env } from "@/lib/config/env";
 import { readJsonFile, writeJsonFile } from "@/server/kvStore";
 
 export type AdminScope =

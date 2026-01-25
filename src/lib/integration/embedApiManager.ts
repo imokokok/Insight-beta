@@ -180,9 +180,33 @@ export class EmbedApiManager {
       name: "Executive Summary",
       description: "High-level overview for executives",
       widgets: [
-        { type: "health_score", name: "Health", description: "Health score widget", size: "small", dataSource: "", refreshInterval: 0, options: {} },
-        { type: "assertion_count", name: "Assertions", description: "Assertion count widget", size: "medium", dataSource: "", refreshInterval: 0, options: {} },
-        { type: "dispute_rate", name: "Disputes", description: "Dispute rate widget", size: "small", dataSource: "", refreshInterval: 0, options: {} },
+        {
+          type: "health_score",
+          name: "Health",
+          description: "Health score widget",
+          size: "small",
+          dataSource: "",
+          refreshInterval: 0,
+          options: {},
+        },
+        {
+          type: "assertion_count",
+          name: "Assertions",
+          description: "Assertion count widget",
+          size: "medium",
+          dataSource: "",
+          refreshInterval: 0,
+          options: {},
+        },
+        {
+          type: "dispute_rate",
+          name: "Disputes",
+          description: "Dispute rate widget",
+          size: "small",
+          dataSource: "",
+          refreshInterval: 0,
+          options: {},
+        },
       ],
       layout: {
         columns: 3,
@@ -199,9 +223,33 @@ export class EmbedApiManager {
       name: "Operations Dashboard",
       description: "Detailed operational metrics",
       widgets: [
-        { type: "sync_status", name: "Sync", description: "Sync status widget", size: "medium", dataSource: "", refreshInterval: 0, options: {} },
-        { type: "performance_metrics", name: "Performance", description: "Performance metrics widget", size: "large", dataSource: "", refreshInterval: 0, options: {} },
-        { type: "cost_analysis", name: "Costs", description: "Cost analysis widget", size: "large", dataSource: "", refreshInterval: 0, options: {} },
+        {
+          type: "sync_status",
+          name: "Sync",
+          description: "Sync status widget",
+          size: "medium",
+          dataSource: "",
+          refreshInterval: 0,
+          options: {},
+        },
+        {
+          type: "performance_metrics",
+          name: "Performance",
+          description: "Performance metrics widget",
+          size: "large",
+          dataSource: "",
+          refreshInterval: 0,
+          options: {},
+        },
+        {
+          type: "cost_analysis",
+          name: "Costs",
+          description: "Cost analysis widget",
+          size: "large",
+          dataSource: "",
+          refreshInterval: 0,
+          options: {},
+        },
       ],
       layout: {
         columns: 3,
@@ -251,8 +299,10 @@ export class EmbedApiManager {
         rateLimitWindow: options?.security?.rateLimitWindow || 3600,
         ipWhitelist: options?.security?.ipWhitelist || [],
         ipBlacklist: options?.security?.ipBlacklist || [],
-        encryptionAlgorithm: options?.security?.encryptionAlgorithm || "aes-256-gcm",
-        signatureKey: options?.security?.signatureKey || this.generateSignatureKey(),
+        encryptionAlgorithm:
+          options?.security?.encryptionAlgorithm || "aes-256-gcm",
+        signatureKey:
+          options?.security?.signatureKey || this.generateSignatureKey(),
       },
       analytics: {
         trackViews: options?.analytics?.trackViews ?? true,
@@ -319,7 +369,9 @@ export class EmbedApiManager {
   }
 
   getConfigsByOwner(ownerId: string): EmbedConfig[] {
-    return Array.from(this.configs.values()).filter((c) => c.ownerId === ownerId);
+    return Array.from(this.configs.values()).filter(
+      (c) => c.ownerId === ownerId,
+    );
   }
 
   generateEmbedToken(
@@ -377,7 +429,10 @@ export class EmbedApiManager {
 ></iframe>`;
   }
 
-  generateWidgetCode(widgetType: string, options: Record<string, unknown> = {}): string {
+  generateWidgetCode(
+    widgetType: string,
+    options: Record<string, unknown> = {},
+  ): string {
     const widget = this.WIDGET_DEFINITIONS.find((w) => w.type === widgetType);
     if (!widget) return "";
 
@@ -398,7 +453,9 @@ export class EmbedApiManager {
       },
     });
 
-    const token = this.generateEmbedToken(config.id, [{ resource: widgetType, actions: ["read"] }]);
+    const token = this.generateEmbedToken(config.id, [
+      { resource: widgetType, actions: ["read"] },
+    ]);
 
     return `<div
   id="${widgetId}"
@@ -421,7 +478,9 @@ export class EmbedApiManager {
     if (!stats) return;
 
     stats.totalViews++;
-    stats.averageLoadTime = (stats.averageLoadTime * (stats.totalViews - 1) + loadTime) / stats.totalViews;
+    stats.averageLoadTime =
+      (stats.averageLoadTime * (stats.totalViews - 1) + loadTime) /
+      stats.totalViews;
 
     const todayDate = new Date().toISOString().split("T")[0];
     const today = todayDate ?? "unknown";
@@ -504,13 +563,17 @@ export class EmbedApiManager {
   private generateSecureToken(): string {
     const array = new Uint8Array(32);
     crypto.getRandomValues(array);
-    return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join("");
+    return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join(
+      "",
+    );
   }
 
   private generateSignatureKey(): string {
     const array = new Uint8Array(32);
     crypto.getRandomValues(array);
-    return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join("");
+    return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join(
+      "",
+    );
   }
 
   private extractDomain(url: string): string {
@@ -545,7 +608,8 @@ export function initializeEmbed(
   const embedToken = embedApiManager.validateEmbedToken(token);
 
   if (!config || !embedToken) {
-    container.innerHTML = '<div class="error">Invalid embed configuration</div>';
+    container.innerHTML =
+      '<div class="error">Invalid embed configuration</div>';
     return;
   }
 

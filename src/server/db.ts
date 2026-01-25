@@ -1,5 +1,5 @@
 import pg from "pg";
-import { env } from "@/lib/env";
+import { env } from "@/lib/config/env";
 import crypto from "node:crypto";
 import { logger } from "@/lib/logger";
 

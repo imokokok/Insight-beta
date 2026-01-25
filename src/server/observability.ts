@@ -4,7 +4,7 @@ import { readJsonFile, writeJsonFile } from "@/server/kvStore";
 import { getMemoryStore, memoryNowIso } from "@/server/memoryBackend";
 import { notifyAlert, type NotificationOptions } from "@/server/notifications";
 import { getSyncState } from "@/server/oracleState";
-import { env } from "@/lib/env";
+import { env } from "@/lib/config/env";
 
 export type AlertSeverity = "info" | "warning" | "critical";
 export type AlertStatus = "Open" | "Acknowledged" | "Resolved";

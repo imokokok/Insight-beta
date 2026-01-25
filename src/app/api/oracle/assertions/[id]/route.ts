@@ -8,7 +8,7 @@ import {
 } from "@/server/oracle";
 import { cachedJson, error, handleApi, rateLimit } from "@/server/apiResponse";
 import { verifyAdmin } from "@/server/adminAuth";
-import { env } from "@/lib/env";
+import { env } from "@/lib/config/env";
 
 export async function GET(
   request: Request,
