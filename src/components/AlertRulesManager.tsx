@@ -65,7 +65,7 @@ export function AlertRulesManager({
     setHasChanges(true);
   };
 
-  const patchRule = (id: string, patch: Partial<AlertRule>) => {
+  const patchRule = async (id: string, patch: Partial<AlertRule>) => {
     setLocalRules((prev) =>
       prev.map((r) => (r.id === id ? { ...r, ...patch } : r)),
     );

@@ -17,7 +17,7 @@ interface AlertRuleCardProps {
   isTesting: boolean;
   canAdmin: boolean;
   onToggle: (id: string, enabled: boolean) => void;
-  onPatchRule: (id: string, patch: Partial<AlertRule>) => void;
+  onPatchRule: (id: string, patch: Partial<AlertRule>) => Promise<void>;
   onPatchRuleParams: (id: string, patch: Record<string, unknown>) => void;
   onToggleChannel: (id: string, channel: Channel, enabled: boolean) => void;
   onTest: (ruleId: string) => void;
