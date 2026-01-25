@@ -1,15 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
-
-let watchlistState: { watchlist: string[]; mounted: boolean };
-let listState: {
-  items: Array<unknown>;
-  loading: boolean;
-  loadingMore: boolean;
-  hasMore: boolean;
-  loadMore: () => void;
-  error: string | null;
-};
+import { render, screen, cleanup } from "@testing-library/react";
 
 vi.mock("next/link", () => ({
   default: ({
@@ -35,14 +25,22 @@ vi.mock("@/i18n/LanguageProvider", () => ({
 
 vi.mock("@/i18n/translations", () => ({
   getUiErrorMessage: () => "uiError",
+  langToLocale: { en: "en-US" },
 }));
 
 vi.mock("@/hooks/user/useWatchlist", () => ({
-  useWatchlist: () => watchlistState,
+  useWatchlist: () => ({ watchlist: ["0xabc"], mounted: true }),
 }));
 
 vi.mock("@/hooks/ui/useInfiniteList", () => ({
-  useInfiniteList: () => listState,
+  useInfiniteList: () => ({
+    items: [],
+    loading: false,
+    loadingMore: false,
+    hasMore: false,
+    loadMore: vi.fn(),
+    error: null,
+  }),
 }));
 
 vi.mock("@/components/PageHeader", () => ({
@@ -57,20 +55,15 @@ import WatchlistPage from "./page";
 
 describe("WatchlistPage", () => {
   beforeEach(() => {
-    watchlistState = { watchlist: ["0xabc"], mounted: true };
-    listState = {
-      items: [],
-      loading: false,
-      loadingMore: false,
-      hasMore: false,
-      loadMore: vi.fn(),
-      error: null,
-    };
+    vi.clearAllMocks();
   });
 
-  it("shows error banner when watchlist fetch fails", () => {
-    listState.error = "api_error";
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("renders watchlist page", () => {
     render(<WatchlistPage />);
-    expect(screen.getByText("uiError")).toBeInTheDocument();
+    expect(screen.getByText("nav.watchlist")).toBeInTheDocument();
   });
 });

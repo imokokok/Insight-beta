@@ -4,10 +4,9 @@ import { render, screen } from "@testing-library/react";
 import { DisputeList } from "./DisputeList";
 import type { Dispute } from "@/lib/types/oracleTypes";
 
-// Mock dependencies
 vi.mock("@/i18n/LanguageProvider", () => ({
   useI18n: () => ({
-    t: (key: string) => key, // Return key as translation
+    t: (key: string) => key,
     lang: "en",
   }),
 }));
@@ -16,7 +15,6 @@ vi.mock("@/i18n/translations", () => ({
   langToLocale: { en: "en-US" },
 }));
 
-// Mock Link to avoid Next.js router context issues
 vi.mock("next/link", () => ({
   default: ({
     href,
@@ -33,17 +31,18 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-// Mock SkeletonList
-vi.mock("./SkeletonList", () => ({
-  SkeletonList: ({ count }: { count: number }) => (
-    <div data-testid="skeleton-list">Skeleton Loading {count}</div>
-  ),
+vi.mock("@/hooks/user/useWatchlist", () => ({
+  useWatchlist: () => ({
+    isWatched: () => false,
+    toggleWatchlist: vi.fn(),
+    mounted: true,
+  }),
 }));
 
-// Mock react-virtuoso
 type VirtuosoProps<T> = {
   itemContent: (index: number, item: T) => React.ReactNode;
   data: T[];
+  endReached?: () => void;
 };
 
 type VirtuosoGridProps<T> = VirtuosoProps<T> & {
@@ -53,7 +52,7 @@ type VirtuosoGridProps<T> = VirtuosoProps<T> & {
 
 vi.mock("react-virtuoso", () => ({
   Virtuoso: ({ itemContent, data }: VirtuosoProps<unknown>) => (
-    <div data-testid="virtuoso-list">
+    <div data-testid="virtuoso-list" data-count={data.length}>
       {data.map((item, index) => (
         <div key={index}>{itemContent(index, item)}</div>
       ))}
@@ -65,7 +64,11 @@ vi.mock("react-virtuoso", () => ({
     listClassName,
     itemClassName,
   }: VirtuosoGridProps<unknown>) => (
-    <div className={listClassName} data-testid="virtuoso-grid">
+    <div
+      className={listClassName}
+      data-testid="virtuoso-grid"
+      data-count={data.length}
+    >
       {data.map((item, index) => (
         <div key={index} className={itemClassName}>
           {itemContent(index, item)}
@@ -91,8 +94,8 @@ describe("DisputeList", () => {
     totalVotes: 15,
   };
 
-  it("renders loading skeleton when loading is true", () => {
-    render(
+  it("renders loading skeleton when loading is true with no items", () => {
+    const { container } = render(
       <DisputeList
         items={[]}
         loading={true}
@@ -102,10 +105,13 @@ describe("DisputeList", () => {
         loadingMore={false}
       />,
     );
-    expect(screen.getByTestId("skeleton-list")).toBeInTheDocument();
+
+    const skeletonCards = container.querySelectorAll(".animate-pulse");
+    expect(skeletonCards.length).toBeGreaterThan(0);
+    expect(skeletonCards.length).toBe(6);
   });
 
-  it("renders empty state when items are empty", () => {
+  it("does not render skeleton when loading is false with no items", () => {
     render(
       <DisputeList
         items={[]}
@@ -131,11 +137,8 @@ describe("DisputeList", () => {
       />,
     );
 
-    // Check if ID is displayed (truncated)
     expect(screen.getByText("0x123456...")).toBeInTheDocument();
-    // Check if chain is displayed
-    expect(screen.getByText("A")).toBeInTheDocument(); // First letter of Arbitrum
-    // Check if status is displayed
+    expect(screen.getByText("A")).toBeInTheDocument();
     expect(screen.getByText("status.voting")).toBeInTheDocument();
   });
 
@@ -151,9 +154,7 @@ describe("DisputeList", () => {
       />,
     );
 
-    // Check content
     expect(screen.getByText("0x123456...")).toBeInTheDocument();
-    // In list view, status might be displayed differently or same, but checking existence
     expect(screen.getByText("status.voting")).toBeInTheDocument();
   });
 
@@ -188,5 +189,87 @@ describe("DisputeList", () => {
 
     const link = screen.getByTestId("mock-link");
     expect(link).toHaveAttribute("href", "/oracle/0xassertion?instanceId=demo");
+  });
+
+  it("renders multiple items", () => {
+    const mockDispute2: Dispute = {
+      ...mockDispute,
+      id: "0xabcdef1234567890abcdef1234567890abcdef12",
+      market: "Another Market",
+    };
+
+    render(
+      <DisputeList
+        items={[mockDispute, mockDispute2]}
+        loading={false}
+        viewMode="list"
+        hasMore={false}
+        loadMore={() => {}}
+        loadingMore={false}
+      />,
+    );
+
+    expect(screen.getByText("Test Market")).toBeInTheDocument();
+    expect(screen.getByText("Another Market")).toBeInTheDocument();
+  });
+
+  it("handles empty items correctly", () => {
+    render(
+      <DisputeList
+        items={[]}
+        loading={false}
+        viewMode="grid"
+        hasMore={false}
+        loadMore={() => {}}
+        loadingMore={false}
+      />,
+    );
+    expect(screen.getByText("common.noData")).toBeInTheDocument();
+  });
+
+  it("handles loading with items gracefully", () => {
+    render(
+      <DisputeList
+        items={[mockDispute]}
+        loading={true}
+        viewMode="grid"
+        hasMore={true}
+        loadMore={() => {}}
+        loadingMore={false}
+      />,
+    );
+
+    expect(screen.getByText("Test Market")).toBeInTheDocument();
+  });
+
+  it("renders skeleton in list mode when loading", () => {
+    const { container } = render(
+      <DisputeList
+        items={[]}
+        loading={true}
+        viewMode="list"
+        hasMore={false}
+        loadMore={() => {}}
+        loadingMore={false}
+      />,
+    );
+
+    const skeletonCards = container.querySelectorAll(".animate-pulse");
+    expect(skeletonCards.length).toBeGreaterThan(0);
+  });
+
+  it("handles custom empty state message", () => {
+    render(
+      <DisputeList
+        items={[]}
+        loading={false}
+        viewMode="grid"
+        hasMore={false}
+        loadMore={() => {}}
+        loadingMore={false}
+        emptyStateMessage="Custom empty message"
+      />,
+    );
+    expect(screen.getByText("Custom empty message")).toBeInTheDocument();
   });
 });
