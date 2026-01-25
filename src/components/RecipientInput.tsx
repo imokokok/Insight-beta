@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import type { AlertRule } from "@/lib/oracleTypes";
 
@@ -13,6 +13,10 @@ interface RecipientInputProps {
 const MAX_RETRIES = 3;
 const DEBOUNCE_DELAY = 300;
 const MAX_LENGTH = 200;
+const SUCCESS_MESSAGE_DURATION = 2000;
+const MAX_RETRY_DELAY = 10000;
+const INITIAL_RETRY_DELAY = 1000;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function RecipientInput({ rule, onPatchRule, t }: RecipientInputProps) {
   const [localValue, setLocalValue] = useState(rule.recipient ?? "");
@@ -20,12 +24,16 @@ export function RecipientInput({ rule, onPatchRule, t }: RecipientInputProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
-  const requestIdRef = useRef<number>(0);
-  const latestValueRef = useRef(rule.recipient ?? "");
 
+  // 用于防抖延迟更新请求的计时器引用
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  // 用于跟踪当前请求ID，防止竞态条件
+  const requestIdRef = useRef<number>(0);
+  // 用于显示成功消息后自动隐藏的计时器引用
+  const successTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 当外部 rule props 变化时，同步更新内部状态
   useEffect(() => {
-    latestValueRef.current = rule.recipient ?? "";
     setLocalValue(rule.recipient ?? "");
   }, [rule.id, rule.recipient]);
 
@@ -34,21 +42,31 @@ export function RecipientInput({ rule, onPatchRule, t }: RecipientInputProps) {
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
       }
+      if (successTimeoutRef.current) {
+        clearTimeout(successTimeoutRef.current);
+      }
     };
   }, []);
 
   const validateEmail = useCallback((value: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(value);
+    return EMAIL_REGEX.test(value);
   }, []);
 
   const showSuccess = useCallback(() => {
+    if (successTimeoutRef.current) {
+      clearTimeout(successTimeoutRef.current);
+    }
     setIsSuccess(true);
-    setTimeout(() => setIsSuccess(false), 2000);
+    successTimeoutRef.current = setTimeout(() => {
+      setIsSuccess(false);
+      successTimeoutRef.current = null;
+    }, SUCCESS_MESSAGE_DURATION);
   }, []);
 
+  // 执行更新请求的函数，包含重试逻辑和竞态条件处理
   const executeUpdate = useCallback(
     async (value: string, requestId: number, attempt: number = 1) => {
+      // 检查请求ID是否是最新的，防止竞态条件
       if (requestId !== requestIdRef.current) {
         return;
       }
@@ -57,22 +75,31 @@ export function RecipientInput({ rule, onPatchRule, t }: RecipientInputProps) {
         await onPatchRule(rule.id, { recipient: value });
         setRetryCount(0);
         showSuccess();
-      } catch {
+      } catch (error) {
+        console.error("Failed to update recipient:", error);
+        // 再次检查请求ID，确保在重试期间没有新的请求
         if (requestId !== requestIdRef.current) {
           return;
         }
 
+        // 如果还有重试次数，进行指数退避重试
         if (attempt < MAX_RETRIES) {
           setRetryCount(attempt);
           const nextAttempt = attempt + 1;
-          const delay = Math.min(1000 * Math.pow(2, nextAttempt), 10000);
+          // 指数退避：延迟时间翻倍，但不超过最大延迟
+          const delay = Math.min(
+            INITIAL_RETRY_DELAY * Math.pow(2, nextAttempt),
+            MAX_RETRY_DELAY,
+          );
           debounceRef.current = setTimeout(() => {
             executeUpdate(value, requestId, nextAttempt);
           }, delay);
         } else {
+          // 重试次数用完，显示最终错误
           setError(t("oracle.alerts.updateFailedWithRetry"));
         }
       } finally {
+        // 只在当前请求是最新的情况下重置状态
         if (requestId === requestIdRef.current) {
           setIsUpdating(false);
           debounceRef.current = null;
@@ -82,10 +109,14 @@ export function RecipientInput({ rule, onPatchRule, t }: RecipientInputProps) {
     [rule.id, onPatchRule, t, showSuccess],
   );
 
+  // 处理输入变化，包含防抖和验证逻辑
   const handleChange = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
+    (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
-      if (value.length > MAX_LENGTH) return;
+      if (value.length > MAX_LENGTH) {
+        setError(null);
+        return;
+      }
 
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
@@ -115,7 +146,7 @@ export function RecipientInput({ rule, onPatchRule, t }: RecipientInputProps) {
     [validateEmail, executeUpdate, t],
   );
 
-  const getInputClassName = () => {
+  const inputClassName = useMemo(() => {
     const baseClass =
       "h-10 rounded-xl bg-white/70 ring-1 border-transparent focus-visible:ring-2 focus-visible:ring-purple-500/20 transition-all duration-200";
     if (error) {
@@ -125,14 +156,14 @@ export function RecipientInput({ rule, onPatchRule, t }: RecipientInputProps) {
       return `${baseClass} ring-green-500 focus-visible:ring-green-500/20`;
     }
     return `${baseClass} ring-black/5`;
-  };
+  }, [error, isSuccess]);
 
-  const getCharacterCountColor = () => {
+  const characterCountColor = useMemo(() => {
     const percentage = (localValue.length / MAX_LENGTH) * 100;
     if (percentage >= 90) return "text-red-500";
     if (percentage >= 75) return "text-orange-500";
     return "text-gray-400";
-  };
+  }, [localValue.length]);
 
   return (
     <div className="md:col-span-12">
@@ -154,26 +185,11 @@ export function RecipientInput({ rule, onPatchRule, t }: RecipientInputProps) {
               role="status"
               aria-live="polite"
             >
-              <svg
-                className="w-3 h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
+              <CheckIcon className="w-3 h-3" />
               {t("oracle.alerts.saved")}
             </div>
           )}
-          <div
-            className={`text-xs ${getCharacterCountColor()}`}
-            aria-hidden="true"
-          >
+          <div className={`text-xs ${characterCountColor}`} aria-hidden="true">
             {localValue.length}/{MAX_LENGTH}
           </div>
         </div>
@@ -193,7 +209,7 @@ export function RecipientInput({ rule, onPatchRule, t }: RecipientInputProps) {
           aria-invalid={!!error}
           aria-describedby={error ? "recipient-error" : "recipient-hint"}
           aria-label={t("oracle.alerts.recipient")}
-          className={getInputClassName()}
+          className={inputClassName}
         />
       )}
 
@@ -208,20 +224,40 @@ export function RecipientInput({ rule, onPatchRule, t }: RecipientInputProps) {
           role="alert"
           aria-live="assertive"
         >
-          <svg
-            className="w-3 h-3 flex-shrink-0"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path
-              fillRule="evenodd"
-              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-              clipRule="evenodd"
-            />
-          </svg>
+          <ErrorIcon className="w-3 h-3 flex-shrink-0" />
           {error}
         </div>
       )}
     </div>
+  );
+}
+
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M5 13l4 4L19 7"
+      />
+    </svg>
+  );
+}
+
+function ErrorIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="currentColor" viewBox="0 0 20 20">
+      <path
+        fillRule="evenodd"
+        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+        clipRule="evenodd"
+      />
+    </svg>
   );
 }
