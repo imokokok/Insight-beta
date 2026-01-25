@@ -66,17 +66,14 @@ const roleScopes: Record<AdminRole, ReadonlySet<AdminScope>> = {
 };
 
 function timingSafeEqualString(a: string, b: string) {
-  const aBuf = Buffer.from(a, "utf8");
-  const bBuf = Buffer.from(b, "utf8");
-  const maxLen = Math.max(aBuf.length, bBuf.length);
-  const paddedA = Buffer.alloc(maxLen);
-  const paddedB = Buffer.alloc(maxLen);
-  aBuf.copy(paddedA);
-  bBuf.copy(paddedB);
-  return crypto.timingSafeEqual(
-    paddedA as unknown as Uint8Array,
-    paddedB as unknown as Uint8Array
-  );
+  const aBytes = new TextEncoder().encode(a);
+  const bBytes = new TextEncoder().encode(b);
+  const maxLen = Math.max(aBytes.length, bBytes.length);
+  const paddedA = new Uint8Array(maxLen);
+  const paddedB = new Uint8Array(maxLen);
+  paddedA.set(aBytes);
+  paddedB.set(bBytes);
+  return crypto.timingSafeEqual(paddedA, paddedB);
 }
 
 function getTokenFromRequest(request: Request) {
@@ -164,32 +161,34 @@ export async function createAdminToken(input: {
   role: AdminRole;
   createdByActor: string;
 }): Promise<{ token: string; record: AdminTokenPublic }> {
-  const salt = getSalt();
-  if (!salt) throw new Error("missing_admin_token_salt");
-  const now = new Date().toISOString();
-  const token = randomToken();
-  const record: AdminTokenRecord = {
-    id: randomId(),
-    label: input.label.trim().slice(0, 80) || "token",
-    role: input.role,
-    createdAt: now,
-    createdByActor: input.createdByActor,
-    revokedAt: null,
-    hash: hashToken(token, salt),
-  };
-  const existing = (await readStoreCached()) ?? {
-    version: 1 as const,
-    tokens: [],
-  };
-  const next: AdminTokenStore = {
-    version: 1,
-    tokens: [record, ...existing.tokens],
-  };
-  await writeJsonFile(STORE_KEY, next);
-  cached = { loadedAtMs: Date.now(), store: next };
-  const { hash, ...pub } = record;
-  void hash;
-  return { token, record: pub };
+  return withTokenStoreLock(STORE_KEY, async () => {
+    const salt = getSalt();
+    if (!salt) throw new Error("missing_admin_token_salt");
+    const now = new Date().toISOString();
+    const token = randomToken();
+    const record: AdminTokenRecord = {
+      id: randomId(),
+      label: input.label.trim().slice(0, 80) || "token",
+      role: input.role,
+      createdAt: now,
+      createdByActor: input.createdByActor,
+      revokedAt: null,
+      hash: hashToken(token, salt),
+    };
+    const existing = (await readStoreCached()) ?? {
+      version: 1 as const,
+      tokens: [],
+    };
+    const next: AdminTokenStore = {
+      version: 1,
+      tokens: [record, ...existing.tokens],
+    };
+    await writeJsonFile(STORE_KEY, next);
+    cached = { loadedAtMs: Date.now(), store: next };
+    const { hash, ...pub } = record;
+    void hash;
+    return { token, record: pub };
+  });
 }
 
 export async function revokeAdminToken(input: {
