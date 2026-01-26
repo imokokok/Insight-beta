@@ -191,7 +191,7 @@ export class PredictiveAnalyticsEngine {
   }
 
   predictDisputeProbability(input: PredictionInput): PredictionResult {
-    const { historicalData, currentValue: _currentValue, timeWindow = 7 } = input;
+    const { historicalData, timeWindow = 7 } = input;
     const features = this.extractFeatures(historicalData);
 
     const disputeRateHistory = historicalData

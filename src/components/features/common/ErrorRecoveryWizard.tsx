@@ -581,7 +581,7 @@ export function ErrorRecoveryWizard({ error, onClose, onContactSupport, onWatchT
                 </svg>
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Recovery Steps Completed!</h3>
-              <p className="text-gray-600 mb-6">You've completed all the recovery steps. Try the operation again.</p>
+              <p className="text-gray-600 mb-6">You&apos;ve completed all the recovery steps. Try the operation again.</p>
               <div className="flex gap-3 justify-center">
                 <button onClick={handleRetry} className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
                   Start Over

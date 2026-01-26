@@ -701,10 +701,14 @@ export function decodeIdentifier(hex: string): string {
   if (!hex.startsWith('0x')) {
     return hex;
   }
+  const matches = hex.slice(2).match(/.{1,2}/g);
+  if (!matches) {
+    return hex;
+  }
   const bytes = Uint8Array.from(
-    hex.slice(2).match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16))
+    matches.map((byte) => parseInt(byte, 16))
   );
-  return new TextDecoder().decode(bytes).replace(/\0+$/, '');
+  return new TextDecoder().decode(bytes).replace(/\0+$/g, '');
 }
 
 export function createUMAOracleConfig(

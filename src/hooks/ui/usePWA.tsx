@@ -240,7 +240,7 @@ interface PWAInstallBannerProps {
 }
 
 export function PWAInstallBanner({ onDismiss }: PWAInstallBannerProps) {
-  const { isInstallable, installPWA, isInstalled, manifest: _manifest } = usePWA();
+  const { isInstallable, installPWA, isInstalled } = usePWA();
   const [isVisible, setIsVisible] = useState(false);
   const [isInstalling, setIsInstalling] = useState(false);
 
