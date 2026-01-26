@@ -148,7 +148,7 @@ describe("observability (memory)", () => {
     expect(created).toBeTruthy();
 
     const updated = await updateAlertStatus({
-      id: created!.id,
+      id: created?.id ?? 0,
       status: "Acknowledged",
       actor: "tester",
     });

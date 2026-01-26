@@ -55,8 +55,8 @@ export function useModalBehavior(
         }
 
         const active = document.activeElement as HTMLElement | null;
-        const first = focusable[0]!;
-        const last = focusable[focusable.length - 1]!;
+        const first = focusable[0] ?? document.body;
+        const last = focusable[focusable.length - 1] ?? document.body;
 
         if (!active || !dialog.contains(active)) {
           e.preventDefault();

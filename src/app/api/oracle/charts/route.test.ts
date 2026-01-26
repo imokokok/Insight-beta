@@ -92,7 +92,16 @@ describe("GET /api/oracle/charts", () => {
         }
       >;
     };
-    const inst = mem.instances.get("default")!;
+    const inst = mem.instances.get("default") ?? {
+      assertions: new Map<
+        string,
+        {
+          assertedAt: string;
+          market: string;
+          bondUsd?: number;
+        }
+      >(),
+    };
     const base = Date.now();
     inst.assertions.set("1", {
       assertedAt: new Date(base).toISOString(),
@@ -121,10 +130,11 @@ describe("GET /api/oracle/charts", () => {
     });
     expect(hasDatabase).toHaveBeenCalled();
     expect(response).toHaveLength(2);
-    expect(response[0]!.count).toBe(1);
-    expect(response[0]!.volume).toBe(10);
-    expect(response[1]!.count).toBe(1);
-    expect(response[1]!.volume).toBe(5);
+    const [firstItem, secondItem] = response;
+    expect(firstItem?.count).toBe(1);
+    expect(firstItem?.volume).toBe(10);
+    expect(secondItem?.count).toBe(1);
+    expect(secondItem?.volume).toBe(5);
     expect(cachedJson).toHaveBeenCalledWith(
       "oracle_api:/api/oracle/charts?days=7",
       30_000,
@@ -220,7 +230,8 @@ describe("GET /api/oracle/charts", () => {
     };
 
     // Clear memory store to ensure empty data
-    mem.instances.get("default")!.assertions.clear();
+    const defaultInst = mem.instances.get("default");
+    defaultInst?.assertions.clear();
 
     // Test empty data in memory mode
     const request = new Request(

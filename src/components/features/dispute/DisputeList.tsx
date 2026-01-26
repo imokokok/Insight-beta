@@ -283,24 +283,23 @@ function DisputeCard({
             </div>
             <div className="font-mono text-xs font-medium text-gray-700 flex items-center gap-1 justify-end">
               {shortAddress(item.disputer)}
-              {getExplorerUrl(item.chain, item.disputer) && (
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    window.open(
-                      getExplorerUrl(item.chain, item.disputer)!,
-                      "_blank",
-                      "noopener noreferrer",
-                    );
-                  }}
-                  className="text-gray-400 hover:text-purple-600 transition-colors p-1 rounded hover:bg-gray-100"
-                  title={t("common.viewOnExplorer")}
-                  aria-label={t("common.viewOnExplorer")}
-                >
-                  <ArrowUpRight size={10} />
-                </button>
-              )}
+              {(() => {
+                const explorerUrl = getExplorerUrl(item.chain, item.disputer);
+                return explorerUrl ? (
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      window.open(explorerUrl, "_blank", "noopener noreferrer");
+                    }}
+                    className="text-gray-400 hover:text-purple-600 transition-colors p-1 rounded hover:bg-gray-100"
+                    title={t("common.viewOnExplorer")}
+                    aria-label={t("common.viewOnExplorer")}
+                  >
+                    <ArrowUpRight size={10} />
+                  </button>
+                ) : null;
+              })()}
             </div>
           </div>
           <div

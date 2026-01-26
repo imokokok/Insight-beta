@@ -17,7 +17,8 @@ export async function readJsonFile<T>(
     key,
   ]);
   if (result.rows.length === 0) return defaultValue;
-  return result.rows[0]!.value as T;
+  const firstRow = result.rows[0];
+  return firstRow?.value as T;
 }
 
 export async function writeJsonFile<T>(key: string, value: T): Promise<void> {

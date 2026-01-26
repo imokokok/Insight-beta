@@ -78,10 +78,11 @@ export async function GET(request: Request) {
         const marker = `:${instanceId}:`;
         const filtered = alerts.filter((a) => a.fingerprint.includes(marker));
         byId = new Map(filtered.map((a) => [a.id, a]));
+        const byIdMap = byId;
         items = items.filter((i) => {
           const ids = i.alertIds ?? [];
           if (ids.length === 0) return true;
-          return ids.some((id) => byId!.has(id));
+          return ids.some((id) => byIdMap.has(id));
         });
       }
 
@@ -93,11 +94,12 @@ export async function GET(request: Request) {
           byId = new Map(alerts.map((a) => [a.id, a]));
         }
 
+        const byIdMap = byId;
         return {
           items: items.map((i) => ({
             ...i,
             alerts: (i.alertIds ?? [])
-              .map((id) => byId!.get(id))
+              .map((id) => byIdMap.get(id))
               .filter((a): a is Alert => Boolean(a))
               .map(toSummary),
           })),

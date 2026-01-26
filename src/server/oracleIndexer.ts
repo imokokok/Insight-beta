@@ -220,10 +220,9 @@ function pickNextRpcUrl(urls: string[], current: string): string {
   const idx = urls.indexOf(current);
   if (idx >= 0) {
     const nextIdx = (idx + 1) % urls.length;
-
-    return urls[nextIdx]!;
+    return urls[nextIdx] ?? urls[0] ?? "";
   }
-  return urls[0]!;
+  return urls[0] ?? "";
 }
 
 async function syncOracleOnce(instanceId: string): Promise<{
@@ -429,7 +428,7 @@ async function syncOracleOnce(instanceId: string): Promise<{
             );
             const txHashArg = args.txHash as `0x${string}` | undefined;
             const txHash = !isZeroBytes32(txHashArg)
-              ? txHashArg!
+              ? (txHashArg ?? (log.transactionHash as `0x${string}`) ?? "0x0")
               : ((log.transactionHash as `0x${string}`) ?? "0x0");
             const blockNumber =
               typeof log.blockNumber === "bigint" ? log.blockNumber : 0n;

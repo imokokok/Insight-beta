@@ -100,9 +100,10 @@ describe("GET /api/oracle/analytics/markets", () => {
     });
     expect(hasDatabase).toHaveBeenCalled();
     expect(response).toHaveLength(1);
-    expect(response[0]!.market).toBe("ETH/USD");
-    expect(response[0]!.count).toBe(2);
-    expect(response[0]!.volume).toBe(15);
+    const firstResult = response[0];
+    expect(firstResult?.market).toBe("ETH/USD");
+    expect(firstResult?.count).toBe(2);
+    expect(firstResult?.volume).toBe(15);
     expect(cachedJson).toHaveBeenCalledWith(
       "oracle_api:/api/oracle/analytics/markets?days=7&limit=5",
       60_000,

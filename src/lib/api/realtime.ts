@@ -268,11 +268,12 @@ export class RealtimeClient {
     if (!this.handlers.has(eventType)) {
       this.handlers.set(eventType, new Set());
     }
-    this.handlers.get(eventType)!.add(handler);
+    const handlers = this.handlers.get(eventType)!;
+    handlers.add(handler);
 
     logger.debug("Event handler registered", {
       eventType,
-      handlerCount: this.handlers.get(eventType)!.size,
+      handlerCount: handlers.size,
     });
 
     return () => {

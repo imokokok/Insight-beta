@@ -151,17 +151,20 @@ export default function AddressProfilePage() {
                 iconSize={14}
               />
             </div>
-            {getExplorerUrl("Mainnet", address, "address") && (
-              <a
-                href={getExplorerUrl("Mainnet", address, "address")!}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors border border-transparent hover:border-purple-100"
-                title={t("common.viewOnExplorer")}
-              >
-                <ExternalLink size={18} />
-              </a>
-            )}
+            {(() => {
+              const explorerUrl = getExplorerUrl("Mainnet", address, "address");
+              return explorerUrl ? (
+                <a
+                  href={explorerUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors border border-transparent hover:border-purple-100"
+                  title={t("common.viewOnExplorer")}
+                >
+                  <ExternalLink size={18} />
+                </a>
+              ) : null;
+            })()}
           </div>
         </div>
       </div>

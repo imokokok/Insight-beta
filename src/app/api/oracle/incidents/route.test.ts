@@ -132,8 +132,8 @@ describe("GET /api/oracle/incidents", () => {
     expect(response.ok).toBe(true);
     if (response.ok) {
       expect(response.data.items).toHaveLength(1);
-      const item = response.data.items[0]!;
-      expect(item.alerts?.map((a) => a.id)).toEqual([10, 11]);
+      const item = response.data.items[0];
+      expect(item?.alerts?.map((a) => a.id)).toEqual([10, 11]);
     }
     expect(observability.getAlertsByIds).toHaveBeenCalledWith([10, 11]);
   });

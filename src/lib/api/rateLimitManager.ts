@@ -651,7 +651,7 @@ export class RateLimitManager {
       limitType: "tier",
     };
 
-    const records = this.usageRecords.get(key)!;
+    const records = this.usageRecords.get(key) ?? [];
     records.push(usage);
 
     if (records.length > 10000) {

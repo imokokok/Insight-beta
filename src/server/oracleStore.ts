@@ -191,7 +191,8 @@ export async function listAssertions(
       );
     }
     if (params.ids && params.ids.length > 0) {
-      items = items.filter((a) => params.ids!.includes(a.id));
+      const ids = params.ids;
+      items = items.filter((a) => ids.includes(a.id));
     }
     const start = offset;
     const end = offset + limit;
