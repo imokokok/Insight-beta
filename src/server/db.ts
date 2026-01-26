@@ -82,17 +82,29 @@ export async function query<T extends pg.QueryResultRow>(
   if (!getDbUrl()) {
     throw new Error('missing_database_url');
   }
-  const client = await db.connect();
   const startedAt = Date.now();
   try {
-    const res = await client.query<T>(text, params);
-    const durationMs = Date.now() - startedAt;
-    if ((globalForDbAlerts.insightDbAlertDepth ?? 0) <= 0 && durationMs >= 5) {
-      void maybeAlertDatabaseSlowQuery({ text, durationMs }).catch(() => void 0);
+    const client = await Promise.race([
+      db.connect(),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('database_connection_timeout')), 5000),
+      ),
+    ]);
+    try {
+      const res = await client.query<T>(text, params);
+      const durationMs = Date.now() - startedAt;
+      if ((globalForDbAlerts.insightDbAlertDepth ?? 0) <= 0 && durationMs >= 5) {
+        void maybeAlertDatabaseSlowQuery({ text, durationMs }).catch(() => void 0);
+      }
+      return res;
+    } finally {
+      client.release();
     }
-    return res;
-  } finally {
-    client.release();
+  } catch (error) {
+    if (error instanceof Error && error.message === 'database_connection_timeout') {
+      throw new Error('database_connection_timeout');
+    }
+    throw error;
   }
 }
 

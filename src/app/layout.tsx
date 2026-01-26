@@ -56,8 +56,8 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description: translations[lang].app.description,
     icons: {
-      icon: '/favicon.ico',
-      apple: '/apple-touch-icon.png',
+      icon: '/logo-owl.png',
+      apple: '/logo-owl.png',
     },
     manifest: '/manifest.json',
     openGraph: {

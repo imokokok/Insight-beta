@@ -21,8 +21,20 @@ let schemaEnsured = false;
 async function ensureDb() {
   if (!hasDatabase()) return;
   if (!schemaEnsured) {
-    await ensureSchema();
-    schemaEnsured = true;
+    try {
+      // Add timeout to prevent hanging on database connection issues
+      await Promise.race([
+        ensureSchema(),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('database_connection_timeout')), 10000),
+        ),
+      ]);
+      schemaEnsured = true;
+    } catch (error) {
+      // If database connection fails, mark schema as ensured to avoid repeated attempts
+      console.warn('Database connection failed, skipping schema initialization:', error);
+      schemaEnsured = true;
+    }
   }
 }
 
@@ -294,37 +306,82 @@ export async function listOracleInstances(): Promise<OracleInstance[]> {
 export async function readOracleConfig(
   instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
 ): Promise<OracleConfig> {
-  await ensureDb();
-  const normalizedInstanceId = normalizeInstanceId(instanceId);
-  if (!hasDatabase()) {
-    return getMemoryInstance(normalizedInstanceId).oracleConfig;
-  }
+  try {
+    await ensureDb();
+    const normalizedInstanceId = normalizeInstanceId(instanceId);
 
-  const res = await query('SELECT * FROM oracle_instances WHERE id = $1', [normalizedInstanceId]);
-  const row = res.rows[0] as
-    | {
-        rpc_url?: unknown;
-        contract_address?: unknown;
-        chain?: unknown;
-        start_block?: unknown;
-        max_block_range?: unknown;
-        voting_period_hours?: unknown;
-        confirmation_blocks?: unknown;
+    // Always try memory store first as fallback
+    const memoryConfig = getMemoryInstance(normalizedInstanceId).oracleConfig;
+
+    if (!hasDatabase()) {
+      return memoryConfig;
+    }
+
+    try {
+      const res = await query('SELECT * FROM oracle_instances WHERE id = $1', [
+        normalizedInstanceId,
+      ]);
+      const row = res.rows[0] as
+        | {
+            rpc_url?: unknown;
+            contract_address?: unknown;
+            chain?: unknown;
+            start_block?: unknown;
+            max_block_range?: unknown;
+            voting_period_hours?: unknown;
+            confirmation_blocks?: unknown;
+          }
+        | undefined;
+      if (row) {
+        return {
+          rpcUrl: typeof row.rpc_url === 'string' ? row.rpc_url : '',
+          contractAddress: typeof row.contract_address === 'string' ? row.contract_address : '',
+          chain: normalizeChain(row.chain),
+          startBlock: normalizeOptionalNonNegativeInt(row.start_block) ?? 0,
+          maxBlockRange: normalizeOptionalIntInRange(row.max_block_range, 100, 200_000) ?? 10_000,
+          votingPeriodHours: normalizeOptionalIntInRange(row.voting_period_hours, 1, 720) ?? 72,
+          confirmationBlocks: normalizeOptionalNonNegativeInt(row.confirmation_blocks) ?? 12,
+        };
       }
-    | undefined;
-  if (row) {
-    return {
-      rpcUrl: typeof row.rpc_url === 'string' ? row.rpc_url : '',
-      contractAddress: typeof row.contract_address === 'string' ? row.contract_address : '',
-      chain: normalizeChain(row.chain),
-      startBlock: normalizeOptionalNonNegativeInt(row.start_block) ?? 0,
-      maxBlockRange: normalizeOptionalIntInRange(row.max_block_range, 100, 200_000) ?? 10_000,
-      votingPeriodHours: normalizeOptionalIntInRange(row.voting_period_hours, 1, 720) ?? 72,
-      confirmationBlocks: normalizeOptionalNonNegativeInt(row.confirmation_blocks) ?? 12,
-    };
-  }
 
-  if (normalizedInstanceId !== DEFAULT_ORACLE_INSTANCE_ID) {
+      if (normalizedInstanceId !== DEFAULT_ORACLE_INSTANCE_ID) {
+        return memoryConfig;
+      }
+
+      const legacy = await query('SELECT * FROM oracle_config WHERE id = 1');
+      const legacyRow = legacy.rows[0] as
+        | {
+            rpc_url?: unknown;
+            contract_address?: unknown;
+            chain?: unknown;
+            start_block?: unknown;
+            max_block_range?: unknown;
+            voting_period_hours?: unknown;
+            confirmation_blocks?: unknown;
+          }
+        | undefined;
+      if (legacyRow) {
+        return {
+          rpcUrl: typeof legacyRow.rpc_url === 'string' ? legacyRow.rpc_url : '',
+          contractAddress:
+            typeof legacyRow.contract_address === 'string' ? legacyRow.contract_address : '',
+          chain: normalizeChain(legacyRow.chain),
+          startBlock: normalizeOptionalNonNegativeInt(legacyRow.start_block) ?? 0,
+          maxBlockRange:
+            normalizeOptionalIntInRange(legacyRow.max_block_range, 100, 200_000) ?? 10_000,
+          votingPeriodHours:
+            normalizeOptionalIntInRange(legacyRow.voting_period_hours, 1, 720) ?? 72,
+          confirmationBlocks: normalizeOptionalNonNegativeInt(legacyRow.confirmation_blocks) ?? 12,
+        };
+      }
+    } catch (error) {
+      // Database query failed, fall back to memory store
+      console.warn('Database query failed, falling back to memory store:', error);
+      return memoryConfig;
+    }
+  } catch (error) {
+    // Any other error, return default config
+    console.warn('Error reading oracle config, returning default:', error);
     return {
       rpcUrl: '',
       contractAddress: '',
@@ -336,38 +393,15 @@ export async function readOracleConfig(
     };
   }
 
-  const legacy = await query('SELECT * FROM oracle_config WHERE id = 1');
-  const legacyRow = legacy.rows[0] as
-    | {
-        rpc_url?: unknown;
-        contract_address?: unknown;
-        chain?: unknown;
-        start_block?: unknown;
-        max_block_range?: unknown;
-        voting_period_hours?: unknown;
-        confirmation_blocks?: unknown;
-      }
-    | undefined;
-  if (!legacyRow) {
-    return {
-      rpcUrl: '',
-      contractAddress: '',
-      chain: 'Local',
-      startBlock: 0,
-      maxBlockRange: 10_000,
-      votingPeriodHours: 72,
-      confirmationBlocks: 12,
-    };
-  }
+  // Default fallback
   return {
-    rpcUrl: typeof legacyRow.rpc_url === 'string' ? legacyRow.rpc_url : '',
-    contractAddress:
-      typeof legacyRow.contract_address === 'string' ? legacyRow.contract_address : '',
-    chain: normalizeChain(legacyRow.chain),
-    startBlock: normalizeOptionalNonNegativeInt(legacyRow.start_block) ?? 0,
-    maxBlockRange: normalizeOptionalIntInRange(legacyRow.max_block_range, 100, 200_000) ?? 10_000,
-    votingPeriodHours: normalizeOptionalIntInRange(legacyRow.voting_period_hours, 1, 720) ?? 72,
-    confirmationBlocks: normalizeOptionalNonNegativeInt(legacyRow.confirmation_blocks) ?? 12,
+    rpcUrl: '',
+    contractAddress: '',
+    chain: 'Local',
+    startBlock: 0,
+    maxBlockRange: 10_000,
+    votingPeriodHours: 72,
+    confirmationBlocks: 12,
   };
 }
 

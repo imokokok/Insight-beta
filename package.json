@@ -47,7 +47,7 @@
     "@opentelemetry/semantic-conventions": "1.38.0",
     "@opentelemetry/winston-transport": "0.19.0",
     "@openzeppelin/contracts": "5.4.0",
-    "@sentry/nextjs": "8.50.0",
+    "@sentry/nextjs": "8.49.0",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "lucide-react": "0.562.0",

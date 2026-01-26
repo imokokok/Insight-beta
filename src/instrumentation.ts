@@ -25,7 +25,7 @@ async function initWorker() {
   const disabled = ['1', 'true'].includes(env.INSIGHT_DISABLE_EMBEDDED_WORKER.toLowerCase());
   if (!disabled && process.env.NEXT_RUNTIME === 'nodejs') {
     try {
-      await import('./server/worker' /* webpackExclude: true */);
+      await import('./server/worker' /* webpackExclude: /worker/ */);
     } catch (error) {
       logger.error('Failed to initialize worker', { error });
     }
