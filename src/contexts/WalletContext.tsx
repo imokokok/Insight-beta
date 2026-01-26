@@ -1,21 +1,16 @@
 'use client';
 
-import { createContext, useState, useEffect, useCallback, useMemo, useContext, type ReactNode } from 'react';
 import {
-  createWalletClient,
-  custom,
-  type WalletClient,
-  type Address,
-  type Chain,
-} from 'viem';
-import {
-  arbitrum,
-  hardhat,
-  mainnet,
-  optimism,
-  polygon,
-  polygonAmoy,
-} from 'viem/chains';
+  createContext,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useContext,
+  type ReactNode,
+} from 'react';
+import { createWalletClient, custom, type WalletClient, type Address, type Chain } from 'viem';
+import { arbitrum, hardhat, mainnet, optimism, polygon, polygonAmoy } from 'viem/chains';
 import { logger } from '@/lib/logger';
 import { normalizeWalletError } from '@/lib/errors/walletErrors';
 
@@ -139,12 +134,16 @@ export function WalletProvider({ children }: WalletProviderProps) {
     };
 
     const handleDisconnect = (error: unknown) => {
-      logger.info('Wallet disconnected', { error });
+      // Only log as error if there's an actual error object
+      // MetaMask often sends disconnect events when switching chains or accounts, which are not errors
+      if (error instanceof Error) {
+        logger.error('Wallet disconnect failed', { error });
+        handleError(error, 'disconnect');
+      } else {
+        logger.info('Wallet disconnected', { error });
+      }
       setAddress(null);
       setChainId(null);
-      if (error) {
-        handleError(error, 'disconnect');
-      }
     };
 
     provider
@@ -231,10 +230,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
         logger.info('Chain switched successfully', { targetChainId });
       } catch (err: unknown) {
         const errorDetail = normalizeWalletError(err);
-        if (
-          errorDetail.kind === 'CHAIN_NOT_ADDED' &&
-          errorDetail.code === 4902
-        ) {
+        if (errorDetail.kind === 'CHAIN_NOT_ADDED' && errorDetail.code === 4902) {
           throw err;
         }
         handleError(err, 'switchChain');
@@ -322,9 +318,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
     ],
   );
 
-  return (
-    <WalletContext.Provider value={value}>{children}</WalletContext.Provider>
-  );
+  return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>;
 }
 
 export function useWalletState() {

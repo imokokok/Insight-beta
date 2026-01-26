@@ -51,8 +51,8 @@ export async function getOracleEnv(instanceId: string = DEFAULT_ORACLE_INSTANCE_
             ? env.OPTIMISM_RPC_URL
             : '';
   const rpcUrl = (useEnvOverrides ? env.INSIGHT_RPC_URL : '') || config.rpcUrl || chainRpcUrl;
-  const contractAddress = (config.contractAddress ||
-    (useEnvOverrides ? env.INSIGHT_ORACLE_ADDRESS : '')) as Address;
+  const contractAddress = ((useEnvOverrides ? env.INSIGHT_ORACLE_ADDRESS : '') ||
+    config.contractAddress) as Address;
   const startBlock = BigInt(config.startBlock ?? 0);
   const maxBlockRange = BigInt(config.maxBlockRange ?? 10_000);
   const votingPeriodMs = Number(config.votingPeriodHours ?? 72) * 3600 * 1000;
