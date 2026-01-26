@@ -1,0 +1,441 @@
+'use client';
+
+import { useState, useCallback, useMemo } from 'react';
+import { Check, Square, Trash2, Download, AlertCircle, Loader2 } from 'lucide-react';
+
+interface BatchOperationItem {
+  id: string;
+  selected: boolean;
+  data: Record<string, unknown>;
+}
+
+interface BatchOperationConfig {
+  maxSelectable?: number;
+  requireConfirmation?: boolean;
+  confirmationThreshold?: number;
+}
+
+interface BatchOperationResult<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
+interface UseBatchOperationsReturn<T> {
+  items: BatchOperationItem[];
+  selectedItems: T[];
+  selectedCount: number;
+  isAllSelected: boolean;
+  isIndeterminate: boolean;
+  isProcessing: boolean;
+  toggleSelect: (id: string) => void;
+  toggleSelectAll: () => void;
+  selectItems: (ids: string[]) => void;
+  deselectAll: () => void;
+  setItems: (items: Array<{ id: string; data: Record<string, unknown> }>) => void;
+  processBatch: (
+    processor: (items: T[]) => Promise<BatchOperationResult<T>>,
+    options?: { onProgress?: (completed: number, total: number) => void }
+  ) => Promise<BatchOperationResult<T[]>>;
+  getSelectedIds: () => string[];
+}
+
+export function useBatchOperations<T extends { id: string }>(
+  config: BatchOperationConfig = {},
+): UseBatchOperationsReturn<T> {
+  const { maxSelectable = 100, requireConfirmation = true, confirmationThreshold = 10 } = config;
+
+  const [items, setItemsState] = useState<BatchOperationItem[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const selectedItems = useMemo(() => {
+    return items.filter((item) => item.selected).map((item) => item.data) as T[];
+  }, [items]);
+
+  const selectedCount = useMemo(() => {
+    return items.filter((item) => item.selected).length;
+  }, [items]);
+
+  const isAllSelected = useMemo(() => {
+    return items.length > 0 && selectedCount === items.length;
+  }, [items.length, selectedCount]);
+
+  const isIndeterminate = useMemo(() => {
+    return selectedCount > 0 && selectedCount < items.length;
+  }, [selectedCount, items.length]);
+
+  const toggleSelect = useCallback((id: string) => {
+    setItemsState((prevItems) => {
+      const currentSelected = prevItems.filter((item) => item.selected).length;
+      const targetItem = prevItems.find((item) => item.id === id);
+
+      if (targetItem?.selected) {
+        return prevItems.map((item) =>
+          item.id === id ? { ...item, selected: false } : item
+        );
+      }
+
+      if (currentSelected >= maxSelectable) {
+        console.warn(`Maximum of ${maxSelectable} items can be selected`);
+        return prevItems;
+      }
+
+      return prevItems.map((item) =>
+        item.id === id ? { ...item, selected: !item.selected } : item
+      );
+    });
+  }, [maxSelectable]);
+
+  const toggleSelectAll = useCallback(() => {
+    if (isAllSelected) {
+      setItemsState((prevItems) =>
+        prevItems.map((item) => ({ ...item, selected: false }))
+      );
+    } else {
+      setItemsState((prevItems) =>
+        prevItems.slice(0, maxSelectable).map((item) => ({ ...item, selected: true }))
+      );
+    }
+  }, [isAllSelected, maxSelectable]);
+
+  const selectItems = useCallback((ids: string[]) => {
+    setItemsState((prevItems) =>
+      prevItems.map((item) =>
+        ids.includes(item.id) ? { ...item, selected: true } : item
+      )
+    );
+  }, []);
+
+  const deselectAll = useCallback(() => {
+    setItemsState((prevItems) =>
+      prevItems.map((item) => ({ ...item, selected: false }))
+    );
+  }, []);
+
+  const setItems = useCallback((newItems: Array<{ id: string; data: Record<string, unknown> }>) => {
+    setItemsState(
+      newItems.map((item) => ({
+        id: item.id,
+        selected: false,
+        data: item.data,
+      }))
+    );
+  }, []);
+
+  const processBatch = useCallback(
+    async (
+      processor: (items: T[]) => Promise<BatchOperationResult<T>>,
+      options?: { onProgress?: (completed: number, total: number) => void }
+    ): Promise<BatchOperationResult<T[]>> => {
+      if (selectedItems.length === 0) {
+        return { success: false, error: 'No items selected' };
+      }
+
+      if (requireConfirmation && selectedCount >= confirmationThreshold) {
+        const confirmed = window.confirm(
+          `Are you sure you want to process ${selectedCount} items? This action cannot be undone.`
+        );
+        if (!confirmed) {
+          return { success: false, error: 'Operation cancelled by user' };
+        }
+      }
+
+      setIsProcessing(true);
+
+      try {
+        const results: T[] = [];
+
+        for (let i = 0; i < selectedItems.length; i++) {
+          const item = selectedItems[i];
+          const result = await processor(item);
+
+          if (!result.success) {
+            console.error(`Failed to process item ${item.id}:`, result.error);
+          } else if (result.data) {
+            results.push(result.data);
+          }
+
+          options?.onProgress?.(i + 1, selectedItems.length);
+        }
+
+        setItemsState((prevItems) =>
+          prevItems.map((item) =>
+            results.find((r) => r.id === item.data.id)
+              ? { ...item, selected: false }
+              : item
+          )
+        );
+
+        return { success: true, data: results };
+      } catch (error) {
+        console.error('Batch processing failed:', error);
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error occurred',
+        };
+      } finally {
+        setIsProcessing(false);
+      }
+    },
+    [selectedItems, requireConfirmation, confirmationThreshold, selectedCount]
+  );
+
+  const getSelectedIds = useCallback(() => {
+    return items.filter((item) => item.selected).map((item) => item.id);
+  }, [items]);
+
+  return {
+    items,
+    selectedItems,
+    selectedCount,
+    isAllSelected,
+    isIndeterminate,
+    isProcessing,
+    toggleSelect,
+    toggleSelectAll,
+    selectItems,
+    deselectAll,
+    setItems,
+    processBatch,
+    getSelectedIds,
+  };
+}
+
+interface BatchOperationsToolbarProps {
+  selectedCount: number;
+  totalCount: number;
+  isAllSelected: boolean;
+  isIndeterminate: boolean;
+  isProcessing: boolean;
+  onSelectAll: () => void;
+  onDeselectAll: () => void;
+  onProcess: () => void;
+  onExport: () => void;
+  onDelete?: () => void;
+  processingLabel?: string;
+  selectedActions?: Array<{
+    label: string;
+    icon: React.ReactNode;
+    onClick: () => void;
+    variant?: 'primary' | 'danger';
+  }>;
+}
+
+export function BatchOperationsToolbar({
+  selectedCount,
+  totalCount,
+  isAllSelected,
+  isIndeterminate,
+  isProcessing,
+  onSelectAll,
+  onDeselectAll,
+  onProcess,
+  onExport,
+  onDelete,
+  processingLabel = 'Processing...',
+  selectedActions = [],
+}: BatchOperationsToolbarProps) {
+  if (selectedCount === 0) {
+    return null;
+  }
+
+  return (
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg">
+      <div className="max-w-7xl mx-auto px-4 py-3">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={isAllSelected ? onDeselectAll : onSelectAll}
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label={isAllSelected ? 'Deselect all' : 'Select all'}
+            >
+              {isAllSelected ? (
+                <Check className="h-4 w-4 text-purple-600" />
+              ) : (
+                <Square className="h-4 w-4 text-gray-400" />
+              )}
+              <span>
+                {selectedCount} of {totalCount} selected
+              </span>
+            </button>
+
+            {isProcessing && (
+              <div className="flex items-center gap-2 text-sm text-purple-600">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>{processingLabel}</span>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            {selectedActions.map((action, index) => (
+              <button
+                key={index}
+                onClick={action.onClick}
+                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors touch-manipulation min-h-[44px] ${
+                  action.variant === 'danger'
+                    ? 'text-red-600 hover:bg-red-50 active:bg-red-100'
+                    : 'text-gray-700 hover:bg-gray-100 active:bg-gray-200'
+                }`}
+              >
+                {action.icon}
+                {action.label}
+              </button>
+            ))}
+
+            {onDelete && (
+              <button
+                onClick={onDelete}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 active:bg-red-100 rounded-lg transition-colors touch-manipulation min-h-[44px]"
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete
+              </button>
+            )}
+
+            {onExport && (
+              <button
+                onClick={onExport}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 active:bg-gray-200 rounded-lg transition-colors touch-manipulation min-h-[44px]"
+              >
+                <Download className="h-4 w-4" />
+                Export
+              </button>
+            )}
+
+            <button
+              onClick={onProcess}
+              disabled={isProcessing}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 active:bg-purple-800 rounded-lg transition-colors touch-manipulation min-h-[44px] disabled:opacity-50"
+            >
+              <AlertCircle className="h-4 w-4" />
+              Process
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface BatchActionConfirmDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  title: string;
+  description: string;
+  confirmText?: string;
+  cancelText?: string;
+  variant?: 'primary' | 'danger';
+  isProcessing?: boolean;
+  itemCount: number;
+}
+
+export function BatchActionConfirmDialog({
+  isOpen,
+  onClose,
+  onConfirm,
+  title,
+  description,
+  confirmText = 'Confirm',
+  cancelText = 'Cancel',
+  variant = 'primary',
+  isProcessing = false,
+  itemCount,
+}: BatchActionConfirmDialogProps) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
+        <div className="flex items-center gap-3 mb-4">
+          {variant === 'danger' ? (
+            <div className="rounded-full bg-red-100 p-2">
+              <AlertCircle className="h-6 w-6 text-red-600" />
+            </div>
+          ) : (
+            <div className="rounded-full bg-purple-100 p-2">
+              <AlertCircle className="h-6 w-6 text-purple-600" />
+            </div>
+          )}
+          <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+        </div>
+
+        <p className="text-gray-600 mb-6">{description}</p>
+
+        <div className="bg-gray-50 rounded-lg p-4 mb-6">
+          <p className="text-sm text-gray-500 mb-1">Items to be processed:</p>
+          <p className="text-2xl font-bold text-gray-900">{itemCount}</p>
+        </div>
+
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            disabled={isProcessing}
+            className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors disabled:opacity-50"
+          >
+            {cancelText}
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={isProcessing}
+            className={`flex-1 px-4 py-2.5 rounded-lg font-medium transition-colors disabled:opacity-50 ${
+              variant === 'danger'
+                ? 'bg-red-600 text-white hover:bg-red-700'
+                : 'bg-purple-600 text-white hover:bg-purple-700'
+            }`}
+          >
+            {isProcessing ? (
+              <span className="flex items-center justify-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Processing...
+              </span>
+            ) : (
+              confirmText
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface BatchProgressTrackerProps {
+  current: number;
+  total: number;
+  label?: string;
+  showPercentage?: boolean;
+}
+
+export function BatchProgressTracker({
+  current,
+  total,
+  label = 'Processing items',
+  showPercentage = true,
+}: BatchProgressTrackerProps) {
+  const percentage = total > 0 ? Math.round((current / total) * 100) : 0;
+
+  return (
+    <div className="w-full">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-sm font-medium text-gray-700">{label}</span>
+        {showPercentage && (
+          <span className="text-sm text-gray-500">{percentage}%</span>
+        )}
+      </div>
+      <div className="w-full bg-gray-200 rounded-full h-2">
+        <div
+          className="bg-purple-600 h-2 rounded-full transition-all duration-300 ease-out"
+          style={{ width: `${percentage}%` }}
+          role="progressbar"
+          aria-valuenow={current}
+          aria-valuemin={0}
+          aria-valuemax={total}
+        />
+      </div>
+      <p className="mt-1 text-xs text-gray-500">
+        {current} of {total} items processed
+      </p>
+    </div>
+  );
+}

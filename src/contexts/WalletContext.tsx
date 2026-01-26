@@ -1,55 +1,69 @@
 'use client';
 
+import { useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-  useCallback,
-  useMemo,
-} from 'react';
-import { createWalletClient, custom, type WalletClient, type Address } from 'viem';
-import { arbitrum, hardhat, mainnet, optimism, polygon, polygonAmoy } from 'viem/chains';
+  createWalletClient,
+  custom,
+  type WalletClient,
+  type Address,
+  type Chain,
+} from 'viem';
+import {
+  arbitrum,
+  hardhat,
+  mainnet,
+  optimism,
+  polygon,
+  polygonAmoy,
+} from 'viem/chains';
 import { logger } from '@/lib/logger';
+import { normalizeWalletError } from '@/lib/errors/walletErrors';
 
-interface WalletContextType {
+interface WalletState {
   address: Address | null;
   chainId: number | null;
   isConnecting: boolean;
+  isConnected: boolean;
+  error: string | null;
+  errorKind: string | null;
+}
+
+interface WalletContextType extends WalletState {
   connect: () => Promise<void>;
   disconnect: () => void;
   switchChain: (targetChainId: number) => Promise<void>;
   getWalletClient: (chainIdOverride?: number) => Promise<WalletClient | null>;
+  clearError: () => void;
+  addNetwork: (targetChainId: number) => Promise<void>;
 }
 
 const WalletContext = createContext<WalletContextType | null>(null);
 
+const chainConfigs: Record<number, { name: string; chain: Chain }> = {
+  [polygon.id]: { name: 'Polygon', chain: polygon },
+  [polygonAmoy.id]: { name: 'Polygon Amoy', chain: polygonAmoy },
+  [arbitrum.id]: { name: 'Arbitrum', chain: arbitrum },
+  [optimism.id]: { name: 'Optimism', chain: optimism },
+  [mainnet.id]: { name: 'Ethereum Mainnet', chain: mainnet },
+  [hardhat.id]: { name: 'Hardhat', chain: hardhat },
+};
+
+function getChainConfig(chainId: number) {
+  return chainConfigs[chainId] || null;
+}
+
 function getAddChainParams(targetChainId: number) {
-  const chain =
-    targetChainId === polygon.id
-      ? polygon
-      : targetChainId === polygonAmoy.id
-        ? polygonAmoy
-        : targetChainId === arbitrum.id
-          ? arbitrum
-          : targetChainId === optimism.id
-            ? optimism
-            : targetChainId === hardhat.id
-              ? hardhat
-              : targetChainId === mainnet.id
-                ? mainnet
-                : undefined;
+  const config = getChainConfig(targetChainId);
+  if (!config) return null;
 
-  if (!chain) return null;
-
+  const chain = config.chain;
   const rpcUrls = chain.rpcUrls?.default?.http ?? [];
   const blockExplorerUrl = chain.blockExplorers?.default?.url;
   const blockExplorerUrls = blockExplorerUrl ? [blockExplorerUrl] : undefined;
 
   return {
     chainId: `0x${targetChainId.toString(16)}`,
-    chainName: chain.name,
+    chainName: config.name,
     nativeCurrency: chain.nativeCurrency,
     rpcUrls,
     blockExplorerUrls,
@@ -64,10 +78,37 @@ export function useWallet() {
   return context;
 }
 
-export function WalletProvider({ children }: { children: ReactNode }) {
+interface WalletProviderProps {
+  children: ReactNode;
+}
+
+export function WalletProvider({ children }: WalletProviderProps) {
   const [address, setAddress] = useState<Address | null>(null);
   const [chainId, setChainId] = useState<number | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [errorKind, setErrorKind] = useState<string | null>(null);
+
+  const isConnected = useMemo(() => {
+    return address !== null && chainId !== null;
+  }, [address, chainId]);
+
+  const clearError = useCallback(() => {
+    setError(null);
+    setErrorKind(null);
+  }, []);
+
+  const handleError = useCallback((err: unknown, context: string) => {
+    const errorDetail = normalizeWalletError(err);
+    setError(errorDetail.userMessage);
+    setErrorKind(errorDetail.kind);
+    logger.error(`Wallet ${context} failed`, {
+      error: err,
+      kind: errorDetail.kind,
+      userMessage: errorDetail.userMessage,
+      recoveryAction: errorDetail.recoveryAction,
+    });
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.ethereum) return;
@@ -87,6 +128,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         }
         return currentAddress;
       });
+      if (accs.length === 0) {
+        setChainId(null);
+      }
     };
 
     const handleChainChanged = (id: unknown) => {
@@ -94,104 +138,150 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       setChainId(parseInt(id, 16));
     };
 
+    const handleDisconnect = (error: unknown) => {
+      logger.info('Wallet disconnected', { error });
+      setAddress(null);
+      setChainId(null);
+      if (error) {
+        handleError(error, 'disconnect');
+      }
+    };
+
     provider
       .request({ method: 'eth_accounts' })
       .then((accounts) => {
         handleAccountsChanged(accounts);
-        return provider.request({ method: 'eth_chainId' });
+        if (accounts && Array.isArray(accounts) && accounts.length > 0) {
+          return provider.request({ method: 'eth_chainId' });
+        }
+        return null;
       })
-      .then((id) => handleChainChanged(id))
-      .catch((e) => logger.debug('wallet auto-connect failed:', e));
+      .then((id) => {
+        if (id) handleChainChanged(id);
+      })
+      .catch((e) => logger.debug('Wallet auto-connect failed:', e));
 
     provider.on?.('accountsChanged', handleAccountsChanged);
     provider.on?.('chainChanged', handleChainChanged);
+    provider.on?.('disconnect', handleDisconnect);
 
     return () => {
       provider.removeListener?.('accountsChanged', handleAccountsChanged);
       provider.removeListener?.('chainChanged', handleChainChanged);
+      provider.removeListener?.('disconnect', handleDisconnect);
     };
-  }, []);
+  }, [handleError]);
 
   const connect = useCallback(async () => {
     if (typeof window === 'undefined' || !window.ethereum) {
-      throw new Error('Wallet not found. Please install MetaMask or Rabby.');
+      const errorDetail = normalizeWalletError(new Error('Wallet not found'));
+      setError(errorDetail.userMessage);
+      setErrorKind(errorDetail.kind);
+      return;
     }
 
     setIsConnecting(true);
+    clearError();
+
     try {
       const accounts = (await window.ethereum.request({
         method: 'eth_requestAccounts',
       })) as string[];
+
       if (accounts && Array.isArray(accounts) && accounts.length > 0) {
         setAddress(accounts[0] as Address);
         const id = (await window.ethereum.request({
           method: 'eth_chainId',
         })) as string;
         setChainId(parseInt(id, 16));
+        logger.info('Wallet connected successfully', {
+          address: accounts[0],
+          chainId: parseInt(id, 16),
+        });
       }
+    } catch (err) {
+      handleError(err, 'connect');
     } finally {
       setIsConnecting(false);
     }
-  }, []);
+  }, [clearError, handleError]);
 
   const disconnect = useCallback(() => {
     setAddress(null);
     setChainId(null);
-  }, []);
+    clearError();
+    logger.info('Wallet disconnected by user');
+  }, [clearError]);
 
-  const switchChain = useCallback(async (targetChainId: number) => {
-    if (typeof window === 'undefined' || !window.ethereum) {
-      throw new Error('Wallet not found. Please install MetaMask or Rabby.');
-    }
-    try {
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: `0x${targetChainId.toString(16)}` }],
-      });
-    } catch (err: unknown) {
-      const code =
-        typeof err === 'object' && err !== null && 'code' in err
-          ? (err as { code?: unknown }).code
-          : undefined;
-      if (code !== 4902) throw err;
+  const switchChain = useCallback(
+    async (targetChainId: number) => {
+      if (typeof window === 'undefined' || !window.ethereum) {
+        handleError(new Error('Wallet not found'), 'switchChain');
+        return;
+      }
 
-      const params = getAddChainParams(targetChainId);
-      if (!params) throw err;
+      clearError();
 
-      await window.ethereum.request({
-        method: 'wallet_addEthereumChain',
-        params: [params],
-      });
+      try {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: `0x${targetChainId.toString(16)}` }],
+        });
+        setChainId(targetChainId);
+        logger.info('Chain switched successfully', { targetChainId });
+      } catch (err: unknown) {
+        const errorDetail = normalizeWalletError(err);
+        if (
+          errorDetail.kind === 'CHAIN_NOT_ADDED' &&
+          errorDetail.code === 4902
+        ) {
+          throw err;
+        }
+        handleError(err, 'switchChain');
+      }
+    },
+    [clearError, handleError],
+  );
 
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: `0x${targetChainId.toString(16)}` }],
-      });
-    }
-    const id = (await window.ethereum.request({
-      method: 'eth_chainId',
-    })) as string;
-    setChainId(parseInt(id, 16));
-  }, []);
+  const addNetwork = useCallback(
+    async (targetChainId: number) => {
+      if (typeof window === 'undefined' || !window.ethereum) {
+        handleError(new Error('Wallet not found'), 'addNetwork');
+        return;
+      }
+
+      clearError();
+
+      const chainParams = getAddChainParams(targetChainId);
+      if (!chainParams) {
+        handleError(new Error(`Unsupported chain: ${targetChainId}`), 'addNetwork');
+        return;
+      }
+
+      try {
+        await window.ethereum.request({
+          method: 'wallet_addEthereumChain',
+          params: [chainParams],
+        });
+        setChainId(targetChainId);
+        logger.info('Network added successfully', { targetChainId });
+      } catch (err) {
+        handleError(err, 'addNetwork');
+      }
+    },
+    [clearError, handleError],
+  );
 
   const getWalletClient = useCallback(
-    async (chainIdOverride?: number): Promise<WalletClient | null> => {
-      if (!address || typeof window === 'undefined' || !window.ethereum) return null;
-      const effectiveChainId = chainIdOverride ?? chainId;
-      const chain =
-        effectiveChainId === polygon.id
-          ? polygon
-          : effectiveChainId === polygonAmoy.id
-            ? polygonAmoy
-            : effectiveChainId === arbitrum.id
-              ? arbitrum
-              : effectiveChainId === optimism.id
-                ? optimism
-                : effectiveChainId === hardhat.id
-                  ? hardhat
-                  : effectiveChainId === mainnet.id
-                    ? mainnet
-                    : undefined;
+    async (chainIdOverride?: number) => {
+      if (typeof window === 'undefined' || !window.ethereum || !address) {
+        return null;
+      }
+
+      const targetChainId = chainIdOverride ?? chainId;
+      const chainConfig = targetChainId ? getChainConfig(targetChainId) : null;
+      const chain = chainConfig?.chain || polygon;
+
       return createWalletClient({
         account: address,
         chain,
@@ -201,18 +291,46 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     [address, chainId],
   );
 
-  const contextValue = useMemo(
+  const value: WalletContextType = useMemo(
     () => ({
       address,
       chainId,
       isConnecting,
+      isConnected,
+      error,
+      errorKind,
       connect,
       disconnect,
       switchChain,
       getWalletClient,
+      clearError,
+      addNetwork,
     }),
-    [address, chainId, isConnecting, connect, disconnect, switchChain, getWalletClient],
+    [
+      address,
+      chainId,
+      isConnecting,
+      isConnected,
+      error,
+      errorKind,
+      connect,
+      disconnect,
+      switchChain,
+      getWalletClient,
+      clearError,
+      addNetwork,
+    ],
   );
 
-  return <WalletContext.Provider value={contextValue}>{children}</WalletContext.Provider>;
+  return (
+    <WalletContext.Provider value={value}>{children}</WalletContext.Provider>
+  );
+}
+
+export function useWalletState() {
+  const context = useContext(WalletContext);
+  if (!context) {
+    throw new Error('useWalletState must be used within a WalletProvider');
+  }
+  return context;
 }
