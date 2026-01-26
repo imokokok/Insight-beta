@@ -1,4 +1,6 @@
-import { vi, describe, it, expect, beforeEach, afterEach, Mock } from 'vitest';
+import type { Mock } from 'vitest';
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { render } from '@testing-library/react';
 
 export interface TestScenario<T> {
   name: string;
@@ -6,6 +8,7 @@ export interface TestScenario<T> {
   expected: T extends unknown ? unknown : never;
   setup?: () => void;
   teardown?: () => void;
+  shouldThrow?: boolean;
 }
 
 export interface EdgeCase<T> {
@@ -142,7 +145,11 @@ export function createErrorBoundaryTest() {
 export function createAsyncTestHelpers() {
   const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  const waitFor = async (condition: () => boolean, timeout = 5000, interval = 100): Promise<boolean> => {
+  const waitFor = async (
+    condition: () => boolean,
+    timeout = 5000,
+    interval = 100,
+  ): Promise<boolean> => {
     const startTime = Date.now();
 
     while (Date.now() - startTime < timeout) {
@@ -155,7 +162,7 @@ export function createAsyncTestHelpers() {
     return false;
   };
 
-  const waitForAsync = async function <T>(
+  const waitForAsync = async function (
     asyncCondition: () => Promise<boolean>,
     timeout = 5000,
     interval = 100,
@@ -209,7 +216,9 @@ export function createRenderHelpers() {
 }
 
 export function createPerformanceHelpers() {
-  const measureExecutionTime = async function <T>(fn: () => Promise<T> | T): Promise<{ result: T; duration: number }> {
+  const measureExecutionTime = async function <T>(
+    fn: () => Promise<T> | T,
+  ): Promise<{ result: T; duration: number }> {
     const start = performance.now();
     const result = await fn();
     const duration = performance.now() - start;
@@ -232,6 +241,7 @@ export function createPerformanceHelpers() {
           lastCall = now;
           return fn(...args);
         }
+        return undefined;
       }) as T;
     };
   };
@@ -321,7 +331,10 @@ export function createAccessibilityHelpers() {
       }
     });
 
-    if (element.getAttribute('role')?.includes('button') && !element.hasAttribute('aria-disabled')) {
+    if (
+      element.getAttribute('role')?.includes('button') &&
+      !element.hasAttribute('aria-disabled')
+    ) {
       const interactiveAttrs = ['tabindex', 'onclick', 'onkeydown'];
       const hasInteraction = interactiveAttrs.some((attr) => element.hasAttribute(attr));
 
@@ -337,7 +350,10 @@ export function createAccessibilityHelpers() {
     const violations: string[] = [];
 
     if (element.getAttribute('tabindex') === '-1') {
-      if (element.getAttribute('role')?.includes('button') || element.getAttribute('role') === 'link') {
+      if (
+        element.getAttribute('role')?.includes('button') ||
+        element.getAttribute('role') === 'link'
+      ) {
         violations.push('Interactive element with tabindex=-1 may not be keyboard accessible');
       }
     }
@@ -362,8 +378,18 @@ export function createAccessibilityHelpers() {
 
 export function createMemoryHelpers() {
   const trackMemoryUsage = () => {
-    if (typeof window !== 'undefined' && (window as unknown as { performance?: { memory?: { usedJSHeapSize: number } } }).performance?.memory) {
-      const memInfo = (window as unknown as { performance: { memory: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } } }).performance.memory;
+    if (
+      typeof window !== 'undefined' &&
+      (window as unknown as { performance?: { memory?: { usedJSHeapSize: number } } }).performance
+        ?.memory
+    ) {
+      const memInfo = (
+        window as unknown as {
+          performance: {
+            memory: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number };
+          };
+        }
+      ).performance.memory;
       return {
         used: memInfo.usedJSHeapSize,
         total: memInfo.totalJSHeapSize,
@@ -401,7 +427,8 @@ export function createValidationHelpers() {
 
       for (const [key, validate] of Object.entries(schema)) {
         const value = data[key as keyof T];
-        if (!validate(value)) {
+        const validateFn = validate as (value: unknown) => boolean;
+        if (!validateFn(value)) {
           errors[key as keyof T] = `Invalid value for ${key}`;
           valid = false;
         }
@@ -421,7 +448,8 @@ export function createValidationHelpers() {
       if (expectedType === 'number') return typeof value === 'number' && !isNaN(value);
       if (expectedType === 'boolean') return typeof value === 'boolean';
       if (expectedType === 'array') return Array.isArray(value);
-      if (expectedType === 'object') return typeof value === 'object' && value !== null && !Array.isArray(value);
+      if (expectedType === 'object')
+        return typeof value === 'object' && value !== null && !Array.isArray(value);
       return false;
     };
   };
@@ -458,26 +486,26 @@ export function createValidationHelpers() {
 
 export function createIntegrationHelpers() {
   const createMockService = <T extends Record<string, unknown>>(
-    service: T,
+    _service: T,
     methods: Array<keyof T>,
   ) => {
     const mockService = {} as T;
 
     methods.forEach((method) => {
-      mockService[method] = vi.fn().mockImplementation((...args: unknown[]) => {
+      mockService[method as keyof T] = vi.fn().mockImplementation((_args: unknown[]) => {
         console.warn(`Mocking ${String(method)} with default implementation`);
         return null;
-      });
+      }) as unknown as T[keyof T];
     });
 
     return mockService;
   };
 
-  const createServiceProxy = <T extends object>(target: T): T => {
+  const createServiceProxy = <T extends Record<string, unknown>>(target: T): T => {
     return new Proxy(target, {
       get: (obj, prop) => {
         if (prop in obj) {
-          return obj[prop];
+          return obj[prop as keyof typeof obj];
         }
         console.warn(`Attempting to access non-existent property: ${String(prop)}`);
         return undefined;
