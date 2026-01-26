@@ -1,4 +1,4 @@
-import AlertsPageClient from "./AlertsPageClient";
+import AlertsPageClient from './AlertsPageClient';
 
 export default function AlertsPage() {
   return <AlertsPageClient />;

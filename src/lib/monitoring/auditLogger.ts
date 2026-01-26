@@ -1,35 +1,35 @@
-import { logger } from "@/lib/logger";
+import { logger } from '@/lib/logger';
 
 export type AuditAction =
-  | "user_login"
-  | "user_logout"
-  | "admin_login"
-  | "admin_logout"
-  | "config_updated"
-  | "assertion_created"
-  | "assertion_disputed"
-  | "assertion_resolved"
-  | "vote_cast"
-  | "alert_created"
-  | "alert_acknowledged"
-  | "alert_resolved"
-  | "incident_created"
-  | "incident_updated"
-  | "data_exported"
-  | "api_access"
-  | "sync_triggered"
-  | "contract_interaction"
-  | "permission_denied"
-  | "security_event";
+  | 'user_login'
+  | 'user_logout'
+  | 'admin_login'
+  | 'admin_logout'
+  | 'config_updated'
+  | 'assertion_created'
+  | 'assertion_disputed'
+  | 'assertion_resolved'
+  | 'vote_cast'
+  | 'alert_created'
+  | 'alert_acknowledged'
+  | 'alert_resolved'
+  | 'incident_created'
+  | 'incident_updated'
+  | 'data_exported'
+  | 'api_access'
+  | 'sync_triggered'
+  | 'contract_interaction'
+  | 'permission_denied'
+  | 'security_event';
 
-export type AuditSeverity = "info" | "warning" | "critical";
+export type AuditSeverity = 'info' | 'warning' | 'critical';
 
 export interface AuditLogEntry {
   id: string;
   timestamp: string;
   action: AuditAction;
   actor: string;
-  actorType: "user" | "admin" | "system" | "anonymous";
+  actorType: 'user' | 'admin' | 'system' | 'anonymous';
   severity: AuditSeverity;
   details: Record<string, unknown>;
   ip?: string;
@@ -43,7 +43,7 @@ export interface AuditLogEntry {
 export interface AuditFilter {
   action?: AuditAction | AuditAction[];
   actor?: string;
-  actorType?: AuditLogEntry["actorType"];
+  actorType?: AuditLogEntry['actorType'];
   severity?: AuditSeverity;
   startDate?: string;
   endDate?: string;
@@ -58,7 +58,7 @@ export interface AuditStatistics {
   total: number;
   byAction: Record<AuditAction, number>;
   bySeverity: Record<AuditSeverity, number>;
-  byActorType: Record<"user" | "admin" | "system" | "anonymous", number>;
+  byActorType: Record<'user' | 'admin' | 'system' | 'anonymous', number>;
   successRate: number;
   criticalEvents: number;
   timeRange: {
@@ -70,7 +70,7 @@ export interface AuditStatistics {
 }
 
 export interface AuditExportOptions {
-  format: "csv" | "json";
+  format: 'csv' | 'json';
   startDate?: string;
   endDate?: string;
   includeDetails?: boolean;
@@ -93,7 +93,7 @@ class SecurityAuditLogger {
   private persistenceTimer: NodeJS.Timeout | null = null;
   private maxLogs: number = MAX_LOGS;
 
-  log(entry: Omit<AuditLogEntry, "id" | "timestamp">): void {
+  log(entry: Omit<AuditLogEntry, 'id' | 'timestamp'>): void {
     const auditEntry: AuditLogEntry = {
       ...entry,
       id: this.generateId(),
@@ -107,7 +107,7 @@ class SecurityAuditLogger {
       this.logs = this.logs.slice(-this.maxLogs);
     }
 
-    logger.info("Audit log entry", {
+    logger.info('Audit log entry', {
       action: auditEntry.action,
       actor: auditEntry.actor,
       severity: auditEntry.severity,
@@ -131,9 +131,7 @@ class SecurityAuditLogger {
     }
 
     if (filter.action) {
-      const actions = Array.isArray(filter.action)
-        ? filter.action
-        : [filter.action];
+      const actions = Array.isArray(filter.action) ? filter.action : [filter.action];
       results = results.filter((log) => actions.includes(log.action));
     }
 
@@ -154,11 +152,13 @@ class SecurityAuditLogger {
     }
 
     if (filter.startDate) {
-      results = results.filter((log) => log.timestamp >= filter.startDate!);
+      const startDate = filter.startDate;
+      results = results.filter((log) => log.timestamp >= startDate);
     }
 
     if (filter.endDate) {
-      results = results.filter((log) => log.timestamp <= filter.endDate!);
+      const endDate = filter.endDate;
+      results = results.filter((log) => log.timestamp <= endDate);
     }
 
     if (filter.instanceId) {
@@ -173,17 +173,12 @@ class SecurityAuditLogger {
     return results.slice(offset, offset + limit);
   }
 
-  getStatistics(
-    filter: Omit<AuditFilter, "limit" | "offset" | "search"> = {},
-  ): AuditStatistics {
+  getStatistics(filter: Omit<AuditFilter, 'limit' | 'offset' | 'search'> = {}): AuditStatistics {
     const logs = this.query(filter);
 
     const byAction = {} as Record<AuditAction, number>;
     const bySeverity = {} as Record<AuditSeverity, number>;
-    const byActorType = {} as Record<
-      "user" | "admin" | "system" | "anonymous",
-      number
-    >;
+    const byActorType = {} as Record<'user' | 'admin' | 'system' | 'anonymous', number>;
     let successCount = 0;
     let criticalCount = 0;
 
@@ -192,7 +187,7 @@ class SecurityAuditLogger {
       bySeverity[log.severity] = (bySeverity[log.severity] || 0) + 1;
       byActorType[log.actorType] = (byActorType[log.actorType] || 0) + 1;
       if (log.success) successCount++;
-      if (log.severity === "critical") criticalCount++;
+      if (log.severity === 'critical') criticalCount++;
     }
 
     const topActions = Object.entries(byAction)
@@ -217,9 +212,7 @@ class SecurityAuditLogger {
     };
   }
 
-  private getTopActors(
-    logs: AuditLogEntry[],
-  ): Array<{ actor: string; count: number }> {
+  private getTopActors(logs: AuditLogEntry[]): Array<{ actor: string; count: number }> {
     const actorCounts = new Map<string, number>();
 
     for (const log of logs) {
@@ -251,9 +244,7 @@ class SecurityAuditLogger {
     };
   }
 
-  async exportLogs(
-    options: AuditExportOptions = { format: "json" },
-  ): Promise<string> {
+  async exportLogs(options: AuditExportOptions = { format: 'json' }): Promise<string> {
     const filter: AuditFilter = {};
     if (options.startDate) filter.startDate = options.startDate;
     if (options.endDate) filter.endDate = options.endDate;
@@ -275,23 +266,23 @@ class SecurityAuditLogger {
       );
     }
 
-    if (options.format === "csv") {
+    if (options.format === 'csv') {
       const firstLog = logs[0];
       if (!firstLog) {
-        return "id,timestamp,action,actor,severity,success";
+        return 'id,timestamp,action,actor,severity,success';
       }
       const headers = Object.keys(firstLog);
-      const csvRows = [headers.join(",")];
+      const csvRows = [headers.join(',')];
 
       for (const row of logs) {
         const values = headers.map((header) => {
           const value = row[header as keyof AuditLogEntry];
           return this.formatCSVValue(value);
         });
-        csvRows.push(values.join(","));
+        csvRows.push(values.join(','));
       }
 
-      return csvRows.join("\n");
+      return csvRows.join('\n');
     }
 
     return JSON.stringify(logs, null, 2);
@@ -299,16 +290,16 @@ class SecurityAuditLogger {
 
   private formatCSVValue(value: unknown): string {
     if (value === null || value === undefined) {
-      return "";
+      return '';
     }
 
     const stringValue = String(value);
 
     if (
-      stringValue.includes(",") ||
+      stringValue.includes(',') ||
       stringValue.includes('"') ||
-      stringValue.includes("\n") ||
-      stringValue.includes("\r")
+      stringValue.includes('\n') ||
+      stringValue.includes('\r')
     ) {
       return `"${stringValue.replace(/"/g, '""')}"`;
     }
@@ -341,20 +332,14 @@ class SecurityAuditLogger {
 
       if (options.compress) {
         const compressed = await this.compressData(archiveData);
-        await this.saveArchive(
-          compressed,
-          `audit-archive-${cutoff.slice(0, 10)}.gz`,
-        );
+        await this.saveArchive(compressed, `audit-archive-${cutoff.slice(0, 10)}.gz`);
       } else {
-        await this.saveArchive(
-          archiveData,
-          `audit-archive-${cutoff.slice(0, 10)}.json`,
-        );
+        await this.saveArchive(archiveData, `audit-archive-${cutoff.slice(0, 10)}.json`);
       }
 
       this.logs = this.logs.filter((log) => log.timestamp >= cutoff);
 
-      logger.info("Audit logs archived", {
+      logger.info('Audit logs archived', {
         cutoff,
         archivedCount: logsToArchive.length,
         archiveSize,
@@ -366,7 +351,7 @@ class SecurityAuditLogger {
         archiveSize,
       };
     } catch (error) {
-      logger.error("Failed to archive audit logs", { error });
+      logger.error('Failed to archive audit logs', { error });
       return {
         success: false,
         archivedCount: 0,
@@ -376,12 +361,12 @@ class SecurityAuditLogger {
   }
 
   private async compressData(data: string): Promise<string> {
-    if (typeof CompressionStream === "undefined") {
+    if (typeof CompressionStream === 'undefined') {
       return data;
     }
 
     try {
-      const stream = new CompressionStream("gzip");
+      const stream = new CompressionStream('gzip');
       const writer = stream.writable.getWriter();
       await writer.write(new TextEncoder().encode(data));
       await writer.close();
@@ -395,13 +380,13 @@ class SecurityAuditLogger {
 
   private async saveArchive(data: string, filename: string): Promise<void> {
     try {
-      await fetch("/api/audit/archive", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      await fetch('/api/audit/archive', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ data, filename }),
       });
     } catch (error) {
-      logger.error("Failed to save audit archive", { error, filename });
+      logger.error('Failed to save audit archive', { error, filename });
       throw error;
     }
   }
@@ -415,7 +400,7 @@ class SecurityAuditLogger {
     this.logs = this.logs.filter((log) => log.timestamp >= cutoff);
     const afterCount = this.logs.length;
 
-    logger.info("Old audit logs cleared", {
+    logger.info('Old audit logs cleared', {
       cutoff,
       clearedCount: beforeCount - afterCount,
       remainingCount: afterCount,
@@ -443,10 +428,10 @@ class SecurityAuditLogger {
   }
 
   private formatBytes(bytes: number): string {
-    if (bytes === 0) return "0 Bytes";
+    if (bytes === 0) return '0 Bytes';
 
     const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
 
     return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`;
@@ -476,7 +461,7 @@ class SecurityAuditLogger {
         await this.persistBatch(batch.splice(0, BATCH_SIZE));
       }
     } catch (error) {
-      logger.error("Failed to flush persistence queue", { error });
+      logger.error('Failed to flush persistence queue', { error });
     } finally {
       this.isPersisting = false;
     }
@@ -487,27 +472,25 @@ class SecurityAuditLogger {
 
     while (attempt < PERSISTENCE_RETRY_ATTEMPTS) {
       try {
-        await fetch("/api/audit/batch", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        await fetch('/api/audit/batch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(entries),
         });
         return;
       } catch (error) {
         attempt++;
         if (attempt < PERSISTENCE_RETRY_ATTEMPTS) {
-          await new Promise((resolve) =>
-            setTimeout(resolve, PERSISTENCE_RETRY_DELAY * attempt),
-          );
+          await new Promise((resolve) => setTimeout(resolve, PERSISTENCE_RETRY_DELAY * attempt));
         }
-        logger.warn("Persistence attempt failed, retrying", {
+        logger.warn('Persistence attempt failed, retrying', {
           attempt,
           error,
         });
       }
     }
 
-    throw new Error("Failed to persist audit logs after retries");
+    throw new Error('Failed to persist audit logs after retries');
   }
 
   private generateId(): string {
@@ -528,7 +511,7 @@ export function logSecurityEvent(
   action: AuditAction,
   actor: string,
   details: Record<string, unknown>,
-  severity: AuditSeverity = "info",
+  severity: AuditSeverity = 'info',
   success: boolean = true,
   errorMessage?: string,
 ): void {
@@ -536,7 +519,7 @@ export function logSecurityEvent(
   logger.log({
     action,
     actor,
-    actorType: "user",
+    actorType: 'user',
     severity,
     details,
     success,
@@ -554,8 +537,8 @@ export function logAdminAction(
   logger.log({
     action,
     actor,
-    actorType: "admin",
-    severity: success ? "info" : "warning",
+    actorType: 'admin',
+    severity: success ? 'info' : 'warning',
     details,
     success,
   });
@@ -569,9 +552,9 @@ export function logSecurityAlert(
   const logger = getAuditLogger();
   logger.log({
     action,
-    actor: "system",
-    actorType: "system",
-    severity: "critical",
+    actor: 'system',
+    actorType: 'system',
+    severity: 'critical',
     details,
     success: false,
     errorMessage,
@@ -579,7 +562,7 @@ export function logSecurityAlert(
 }
 
 export function getAuditStatistics(
-  filter?: Omit<AuditFilter, "limit" | "offset" | "search">,
+  filter?: Omit<AuditFilter, 'limit' | 'offset' | 'search'>,
 ): AuditStatistics {
   const logger = getAuditLogger();
   return logger.getStatistics(filter || {});
@@ -587,7 +570,7 @@ export function getAuditStatistics(
 
 export function exportAuditLogs(options?: AuditExportOptions): Promise<string> {
   const logger = getAuditLogger();
-  return logger.exportLogs(options || { format: "json" });
+  return logger.exportLogs(options || { format: 'json' });
 }
 
 export function archiveAuditLogs(

@@ -20,16 +20,16 @@ export interface EmbedConfig {
 }
 
 export type EmbedType =
-  | "iframe"
-  | "widget"
-  | "api"
-  | "widget_chart"
-  | "status_badge"
-  | "metrics_card"
-  | "full_dashboard";
+  | 'iframe'
+  | 'widget'
+  | 'api'
+  | 'widget_chart'
+  | 'status_badge'
+  | 'metrics_card'
+  | 'full_dashboard';
 
 export interface EmbedOptions {
-  theme: "light" | "dark" | "auto";
+  theme: 'light' | 'dark' | 'auto';
   locale: string;
   refreshInterval: number;
   showHeader: boolean;
@@ -70,7 +70,7 @@ export interface EmbedToken {
 
 export interface EmbedPermission {
   resource: string;
-  actions: ("read" | "write" | "delete")[];
+  actions: ('read' | 'write' | 'delete')[];
 }
 
 export interface EmbedUsageStats {
@@ -86,7 +86,7 @@ export interface WidgetDefinition {
   type: string;
   name: string;
   description: string;
-  size: "small" | "medium" | "large" | "full";
+  size: 'small' | 'medium' | 'large' | 'full';
   dataSource: string;
   refreshInterval: number;
   options: Record<string, unknown>;
@@ -119,91 +119,91 @@ export class EmbedApiManager {
 
   private readonly WIDGET_DEFINITIONS: WidgetDefinition[] = [
     {
-      type: "health_score",
-      name: "Health Score",
-      description: "Current oracle health score indicator",
-      size: "small",
-      dataSource: "/api/oracle/stats",
+      type: 'health_score',
+      name: 'Health Score',
+      description: 'Current oracle health score indicator',
+      size: 'small',
+      dataSource: '/api/oracle/stats',
       refreshInterval: 30000,
-      options: { showTrend: true, colorScheme: "auto" },
+      options: { showTrend: true, colorScheme: 'auto' },
     },
     {
-      type: "assertion_count",
-      name: "Assertion Count",
-      description: "Number of assertions in specified period",
-      size: "medium",
-      dataSource: "/api/oracle/assertions",
+      type: 'assertion_count',
+      name: 'Assertion Count',
+      description: 'Number of assertions in specified period',
+      size: 'medium',
+      dataSource: '/api/oracle/assertions',
       refreshInterval: 60000,
-      options: { period: "24h", showChart: true },
+      options: { period: '24h', showChart: true },
     },
     {
-      type: "dispute_rate",
-      name: "Dispute Rate",
-      description: "Current dispute rate percentage",
-      size: "small",
-      dataSource: "/api/oracle/disputes",
+      type: 'dispute_rate',
+      name: 'Dispute Rate',
+      description: 'Current dispute rate percentage',
+      size: 'small',
+      dataSource: '/api/oracle/disputes',
       refreshInterval: 60000,
       options: { showTrend: true, threshold: 5 },
     },
     {
-      type: "sync_status",
-      name: "Sync Status",
-      description: "Current synchronization status",
-      size: "medium",
-      dataSource: "/api/oracle/sync",
+      type: 'sync_status',
+      name: 'Sync Status',
+      description: 'Current synchronization status',
+      size: 'medium',
+      dataSource: '/api/oracle/sync',
       refreshInterval: 10000,
       options: { showDetails: true },
     },
     {
-      type: "cost_analysis",
-      name: "Cost Analysis",
-      description: "Cost efficiency metrics",
-      size: "large",
-      dataSource: "/api/oracle/analytics/cost",
+      type: 'cost_analysis',
+      name: 'Cost Analysis',
+      description: 'Cost efficiency metrics',
+      size: 'large',
+      dataSource: '/api/oracle/analytics/cost',
       refreshInterval: 300000,
-      options: { period: "7d", showBreakdown: true },
+      options: { period: '7d', showBreakdown: true },
     },
     {
-      type: "performance_metrics",
-      name: "Performance Metrics",
-      description: "System performance indicators",
-      size: "large",
-      dataSource: "/api/oracle/analytics/performance",
+      type: 'performance_metrics',
+      name: 'Performance Metrics',
+      description: 'System performance indicators',
+      size: 'large',
+      dataSource: '/api/oracle/analytics/performance',
       refreshInterval: 60000,
-      options: { showCharts: true, period: "1h" },
+      options: { showCharts: true, period: '1h' },
     },
   ];
 
   private readonly DASHBOARD_TEMPLATES: DashboardTemplate[] = [
     {
-      id: "executive_summary",
-      name: "Executive Summary",
-      description: "High-level overview for executives",
+      id: 'executive_summary',
+      name: 'Executive Summary',
+      description: 'High-level overview for executives',
       widgets: [
         {
-          type: "health_score",
-          name: "Health",
-          description: "Health score widget",
-          size: "small",
-          dataSource: "",
+          type: 'health_score',
+          name: 'Health',
+          description: 'Health score widget',
+          size: 'small',
+          dataSource: '',
           refreshInterval: 0,
           options: {},
         },
         {
-          type: "assertion_count",
-          name: "Assertions",
-          description: "Assertion count widget",
-          size: "medium",
-          dataSource: "",
+          type: 'assertion_count',
+          name: 'Assertions',
+          description: 'Assertion count widget',
+          size: 'medium',
+          dataSource: '',
           refreshInterval: 0,
           options: {},
         },
         {
-          type: "dispute_rate",
-          name: "Disputes",
-          description: "Dispute rate widget",
-          size: "small",
-          dataSource: "",
+          type: 'dispute_rate',
+          name: 'Disputes',
+          description: 'Dispute rate widget',
+          size: 'small',
+          dataSource: '',
           refreshInterval: 0,
           options: {},
         },
@@ -212,41 +212,41 @@ export class EmbedApiManager {
         columns: 3,
         rows: 1,
         areas: [
-          { name: "health", x: 0, y: 0, width: 1, height: 1 },
-          { name: "assertions", x: 1, y: 0, width: 1, height: 1 },
-          { name: "disputes", x: 2, y: 0, width: 1, height: 1 },
+          { name: 'health', x: 0, y: 0, width: 1, height: 1 },
+          { name: 'assertions', x: 1, y: 0, width: 1, height: 1 },
+          { name: 'disputes', x: 2, y: 0, width: 1, height: 1 },
         ],
       },
     },
     {
-      id: "operations_dashboard",
-      name: "Operations Dashboard",
-      description: "Detailed operational metrics",
+      id: 'operations_dashboard',
+      name: 'Operations Dashboard',
+      description: 'Detailed operational metrics',
       widgets: [
         {
-          type: "sync_status",
-          name: "Sync",
-          description: "Sync status widget",
-          size: "medium",
-          dataSource: "",
+          type: 'sync_status',
+          name: 'Sync',
+          description: 'Sync status widget',
+          size: 'medium',
+          dataSource: '',
           refreshInterval: 0,
           options: {},
         },
         {
-          type: "performance_metrics",
-          name: "Performance",
-          description: "Performance metrics widget",
-          size: "large",
-          dataSource: "",
+          type: 'performance_metrics',
+          name: 'Performance',
+          description: 'Performance metrics widget',
+          size: 'large',
+          dataSource: '',
           refreshInterval: 0,
           options: {},
         },
         {
-          type: "cost_analysis",
-          name: "Costs",
-          description: "Cost analysis widget",
-          size: "large",
-          dataSource: "",
+          type: 'cost_analysis',
+          name: 'Costs',
+          description: 'Cost analysis widget',
+          size: 'large',
+          dataSource: '',
           refreshInterval: 0,
           options: {},
         },
@@ -255,9 +255,9 @@ export class EmbedApiManager {
         columns: 3,
         rows: 2,
         areas: [
-          { name: "sync", x: 0, y: 0, width: 1, height: 1 },
-          { name: "performance", x: 1, y: 0, width: 2, height: 1 },
-          { name: "costs", x: 0, y: 1, width: 3, height: 1 },
+          { name: 'sync', x: 0, y: 0, width: 1, height: 1 },
+          { name: 'performance', x: 1, y: 0, width: 2, height: 1 },
+          { name: 'costs', x: 0, y: 1, width: 3, height: 1 },
         ],
       },
     },
@@ -275,34 +275,32 @@ export class EmbedApiManager {
     const config: EmbedConfig = {
       id,
       name,
-      description: options?.description || "",
+      description: options?.description || '',
       ownerId,
       embedType,
       sourceUrl: options?.sourceUrl || this.generateSourceUrl(id, embedType),
-      dimensions: options?.dimensions || { width: "100%", height: "400px" },
+      dimensions: options?.dimensions || { width: '100%', height: '400px' },
       options: {
-        theme: options?.options?.theme || "auto",
-        locale: options?.options?.locale || "en",
+        theme: options?.options?.theme || 'auto',
+        locale: options?.options?.locale || 'en',
         refreshInterval: options?.options?.refreshInterval || 0,
         showHeader: options?.options?.showHeader ?? true,
         showFooter: options?.options?.showFooter ?? true,
         showControls: options?.options?.showControls ?? true,
-        customCss: options?.options?.customCss || "",
-        customJs: options?.options?.customJs || "",
+        customCss: options?.options?.customCss || '',
+        customJs: options?.options?.customJs || '',
         parameters: options?.options?.parameters || {},
       },
       security: {
-        allowedDomains: options?.security?.allowedDomains || ["*"],
+        allowedDomains: options?.security?.allowedDomains || ['*'],
         requireAuthentication: options?.security?.requireAuthentication ?? true,
         tokenExpiry: options?.security?.tokenExpiry || 3600,
         rateLimit: options?.security?.rateLimit || 1000,
         rateLimitWindow: options?.security?.rateLimitWindow || 3600,
         ipWhitelist: options?.security?.ipWhitelist || [],
         ipBlacklist: options?.security?.ipBlacklist || [],
-        encryptionAlgorithm:
-          options?.security?.encryptionAlgorithm || "aes-256-gcm",
-        signatureKey:
-          options?.security?.signatureKey || this.generateSignatureKey(),
+        encryptionAlgorithm: options?.security?.encryptionAlgorithm || 'aes-256-gcm',
+        signatureKey: options?.security?.signatureKey || this.generateSignatureKey(),
       },
       analytics: {
         trackViews: options?.analytics?.trackViews ?? true,
@@ -369,9 +367,7 @@ export class EmbedApiManager {
   }
 
   getConfigsByOwner(ownerId: string): EmbedConfig[] {
-    return Array.from(this.configs.values()).filter(
-      (c) => c.ownerId === ownerId,
-    );
+    return Array.from(this.configs.values()).filter((c) => c.ownerId === ownerId);
   }
 
   generateEmbedToken(
@@ -412,7 +408,7 @@ export class EmbedApiManager {
 
   generateEmbedCode(configId: string, token: string): string {
     const config = this.configs.get(configId);
-    if (!config) return "";
+    if (!config) return '';
 
     const embedUrl = `${config.sourceUrl}?token=${token}&theme=${config.options.theme}&locale=${config.options.locale}`;
 
@@ -429,33 +425,28 @@ export class EmbedApiManager {
 ></iframe>`;
   }
 
-  generateWidgetCode(
-    widgetType: string,
-    options: Record<string, unknown> = {},
-  ): string {
+  generateWidgetCode(widgetType: string, options: Record<string, unknown> = {}): string {
     const widget = this.WIDGET_DEFINITIONS.find((w) => w.type === widgetType);
-    if (!widget) return "";
+    if (!widget) return '';
 
     const widgetId = `widget_${Date.now()}`;
-    const config = this.createConfig("system", widget.name, "widget_chart", {
+    const config = this.createConfig('system', widget.name, 'widget_chart', {
       description: widget.description,
-      dimensions: { width: "300px", height: "200px" },
+      dimensions: { width: '300px', height: '200px' },
       options: {
-        theme: "auto",
-        locale: "en",
+        theme: 'auto',
+        locale: 'en',
         refreshInterval: widget.refreshInterval,
         showHeader: true,
         showFooter: false,
         showControls: true,
-        customCss: "",
-        customJs: "",
+        customCss: '',
+        customJs: '',
         parameters: { widgetType, ...options },
       },
     });
 
-    const token = this.generateEmbedToken(config.id, [
-      { resource: widgetType, actions: ["read"] },
-    ]);
+    const token = this.generateEmbedToken(config.id, [{ resource: widgetType, actions: ['read'] }]);
 
     return `<div
   id="${widgetId}"
@@ -479,11 +470,10 @@ export class EmbedApiManager {
 
     stats.totalViews++;
     stats.averageLoadTime =
-      (stats.averageLoadTime * (stats.totalViews - 1) + loadTime) /
-      stats.totalViews;
+      (stats.averageLoadTime * (stats.totalViews - 1) + loadTime) / stats.totalViews;
 
-    const todayDate = new Date().toISOString().split("T")[0];
-    const today = todayDate ?? "unknown";
+    const todayDate = new Date().toISOString().split('T')[0];
+    const today = todayDate ?? 'unknown';
     const viewsByDayRecord = stats.viewsByDay;
     if (viewsByDayRecord) {
       const currentValue = viewsByDayRecord[today];
@@ -546,15 +536,15 @@ export class EmbedApiManager {
   }
 
   private generateSourceUrl(id: string, type: EmbedType): string {
-    const baseUrl = "https://insight.foresight.build/embed";
+    const baseUrl = 'https://insight.foresight.build/embed';
     const typePath = {
-      iframe: "view",
-      widget: "widget",
-      api: "api",
-      widget_chart: "widget/chart",
-      status_badge: "badge",
-      metrics_card: "card",
-      full_dashboard: "dashboard",
+      iframe: 'view',
+      widget: 'widget',
+      api: 'api',
+      widget_chart: 'widget/chart',
+      status_badge: 'badge',
+      metrics_card: 'card',
+      full_dashboard: 'dashboard',
     };
 
     return `${baseUrl}/${typePath[type]}/${id}`;
@@ -563,24 +553,20 @@ export class EmbedApiManager {
   private generateSecureToken(): string {
     const array = new Uint8Array(32);
     crypto.getRandomValues(array);
-    return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join(
-      "",
-    );
+    return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('');
   }
 
   private generateSignatureKey(): string {
     const array = new Uint8Array(32);
     crypto.getRandomValues(array);
-    return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join(
-      "",
-    );
+    return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('');
   }
 
   private extractDomain(url: string): string {
     try {
       return new URL(url).hostname;
     } catch {
-      return "unknown";
+      return 'unknown';
     }
   }
 }
@@ -599,27 +585,22 @@ export function createEmbedWidget(
   }
 }
 
-export function initializeEmbed(
-  configId: string,
-  token: string,
-  container: HTMLElement,
-): void {
+export function initializeEmbed(configId: string, token: string, container: HTMLElement): void {
   const config = embedApiManager.getConfig(configId);
   const embedToken = embedApiManager.validateEmbedToken(token);
 
   if (!config || !embedToken) {
-    container.innerHTML =
-      '<div class="error">Invalid embed configuration</div>';
+    container.innerHTML = '<div class="error">Invalid embed configuration</div>';
     return;
   }
 
-  const iframe = document.createElement("iframe");
+  const iframe = document.createElement('iframe');
   iframe.src = `${config.sourceUrl}?token=${token}&theme=${config.options.theme}`;
   iframe.width = config.dimensions.width;
   iframe.height = config.dimensions.height;
-  iframe.frameBorder = "0";
-  iframe.style.border = "none";
-  iframe.style.borderRadius = "8px";
+  iframe.frameBorder = '0';
+  iframe.style.border = 'none';
+  iframe.style.borderRadius = '8px';
 
   container.appendChild(iframe);
 }

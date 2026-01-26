@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { AlertTriangle, RefreshCcw, Home } from "lucide-react";
-import { translations, type Lang } from "@/i18n/translations";
-import * as Sentry from "@sentry/nextjs";
+import { useEffect, useState } from 'react';
+import { AlertTriangle, RefreshCcw, Home } from 'lucide-react';
+import { translations, type Lang } from '@/i18n/translations';
+import * as Sentry from '@sentry/nextjs';
 
 export default function GlobalError({
   error,
@@ -12,10 +12,10 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  const [lang, setLang] = useState<Lang>("en");
+  const [lang, setLang] = useState<Lang>('en');
 
   useEffect(() => {
-    if (process.env.NODE_ENV === "development") {
+    if (process.env.NODE_ENV === 'development') {
       console.error(error);
     } else {
       Sentry.captureException(error, {
@@ -25,64 +25,57 @@ export default function GlobalError({
       });
     }
 
-    if (typeof navigator !== "undefined" && navigator.language) {
+    if (typeof navigator !== 'undefined' && navigator.language) {
       const browserLang = navigator.language.toLowerCase();
-      if (browserLang.includes("zh")) setLang("zh");
-      else if (browserLang.includes("es")) setLang("es");
-      else setLang("en");
+      if (browserLang.includes('zh')) setLang('zh');
+      else if (browserLang.includes('es')) setLang('es');
+      else setLang('en');
     }
   }, [error]);
 
   const t = translations[lang].errorPage;
-  const htmlLang = lang === "zh" ? "zh-CN" : lang === "es" ? "es" : "en";
+  const htmlLang = lang === 'zh' ? 'zh-CN' : lang === 'es' ? 'es' : 'en';
 
   return (
     <html lang={htmlLang}>
-      <body className="bg-gray-50 min-h-screen flex items-center justify-center p-4 font-sans text-gray-900 antialiased">
+      <body className="flex min-h-screen items-center justify-center bg-gray-50 p-4 font-sans text-gray-900 antialiased">
         <div className="w-full max-w-md">
-          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 p-8 text-center space-y-6">
-            <div className="mx-auto w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mb-6 ring-1 ring-red-100 shadow-sm">
-              <AlertTriangle className="w-8 h-8 text-red-500" />
+          <div className="space-y-6 rounded-3xl border border-white/50 bg-white/80 p-8 text-center shadow-2xl backdrop-blur-xl">
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 shadow-sm ring-1 ring-red-100">
+              <AlertTriangle className="h-8 w-8 text-red-500" />
             </div>
 
             <div className="space-y-2">
-              <h2 className="text-2xl font-bold tracking-tight text-gray-900">
-                {t.title}
-              </h2>
-              <p className="text-gray-500 text-sm leading-relaxed">
-                {t.description}
-              </p>
+              <h2 className="text-2xl font-bold tracking-tight text-gray-900">{t.title}</h2>
+              <p className="text-sm leading-relaxed text-gray-500">{t.description}</p>
             </div>
 
-            {(process.env.NODE_ENV === "development" ||
-              process.env.NODE_ENV === "test") && (
-              <div className="bg-red-50/50 rounded-xl p-4 text-left overflow-auto max-h-40 border border-red-100/50">
-                <p className="font-mono text-xs text-red-700 break-all">
-                  {error.message}
-                </p>
+            {(process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') && (
+              <div className="max-h-40 overflow-auto rounded-xl border border-red-100/50 bg-red-50/50 p-4 text-left">
+                <p className="break-all font-mono text-xs text-red-700">{error.message}</p>
               </div>
             )}
 
             <div className="grid grid-cols-2 gap-3 pt-2">
               <button
                 onClick={() => reset()}
-                className="flex items-center justify-center gap-2 w-full rounded-xl bg-purple-600 px-4 py-3 text-sm font-semibold text-white hover:bg-purple-700 transition-all active:scale-[0.98] shadow-lg shadow-purple-500/20"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-purple-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-purple-500/20 transition-all hover:bg-purple-700 active:scale-[0.98]"
               >
-                <RefreshCcw className="w-4 h-4" />
+                <RefreshCcw className="h-4 w-4" />
                 {t.retry}
               </button>
               <button
-                onClick={() => (window.location.href = "/")}
-                className="flex items-center justify-center gap-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-[0.98]"
+                onClick={() => (window.location.href = '/')}
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition-all hover:border-gray-300 hover:bg-gray-50 active:scale-[0.98]"
               >
-                <Home className="w-4 h-4" />
+                <Home className="h-4 w-4" />
                 {t.home}
               </button>
             </div>
           </div>
 
           <p className="mt-8 text-center text-xs text-gray-400">
-            {t.digest}: {error.digest || "N/A"}
+            {t.digest}: {error.digest || 'N/A'}
           </p>
         </div>
       </body>

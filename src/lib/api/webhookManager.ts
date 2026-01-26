@@ -1,18 +1,18 @@
-import crypto from "crypto";
+import crypto from 'crypto';
 
 export type WebhookEvent =
-  | "assertion.created"
-  | "assertion.disputed"
-  | "assertion.resolved"
-  | "dispute.created"
-  | "dispute.vote_cast"
-  | "dispute.resolved"
-  | "alert.triggered"
-  | "alert.resolved"
-  | "sync.completed"
-  | "sync.failed"
-  | "health.check_failed"
-  | "custom";
+  | 'assertion.created'
+  | 'assertion.disputed'
+  | 'assertion.resolved'
+  | 'dispute.created'
+  | 'dispute.vote_cast'
+  | 'dispute.resolved'
+  | 'alert.triggered'
+  | 'alert.resolved'
+  | 'sync.completed'
+  | 'sync.failed'
+  | 'health.check_failed'
+  | 'custom';
 
 export interface WebhookConfig {
   id: string;
@@ -49,7 +49,7 @@ export interface WebhookDelivery {
   id: string;
   webhookId: string;
   event: WebhookEvent;
-  status: "pending" | "success" | "failed" | "retrying";
+  status: 'pending' | 'success' | 'failed' | 'retrying';
   statusCode: number | null;
   response: string | null;
   error: string | null;
@@ -88,30 +88,30 @@ export class WebhookManager {
   private eventHandlers: Map<WebhookEvent, Set<string>> = new Map();
 
   private readonly EVENT_LABELS: Record<WebhookEvent, string> = {
-    "assertion.created": "Assertion Created",
-    "assertion.disputed": "Assertion Disputed",
-    "assertion.resolved": "Assertion Resolved",
-    "dispute.created": "Dispute Created",
-    "dispute.vote_cast": "Vote Cast",
-    "dispute.resolved": "Dispute Resolved",
-    "alert.triggered": "Alert Triggered",
-    "alert.resolved": "Alert Resolved",
-    "sync.completed": "Sync Completed",
-    "sync.failed": "Sync Failed",
-    "health.check_failed": "Health Check Failed",
-    custom: "Custom Event",
+    'assertion.created': 'Assertion Created',
+    'assertion.disputed': 'Assertion Disputed',
+    'assertion.resolved': 'Assertion Resolved',
+    'dispute.created': 'Dispute Created',
+    'dispute.vote_cast': 'Vote Cast',
+    'dispute.resolved': 'Dispute Resolved',
+    'alert.triggered': 'Alert Triggered',
+    'alert.resolved': 'Alert Resolved',
+    'sync.completed': 'Sync Completed',
+    'sync.failed': 'Sync Failed',
+    'health.check_failed': 'Health Check Failed',
+    custom: 'Custom Event',
   };
 
   createWebhook(
     config: Omit<
       WebhookConfig,
-      | "id"
-      | "createdAt"
-      | "updatedAt"
-      | "lastTriggeredAt"
-      | "successRate"
-      | "totalRequests"
-      | "failedRequests"
+      | 'id'
+      | 'createdAt'
+      | 'updatedAt'
+      | 'lastTriggeredAt'
+      | 'successRate'
+      | 'totalRequests'
+      | 'failedRequests'
     >,
   ): WebhookConfig {
     const id = this.generateId();
@@ -134,10 +134,7 @@ export class WebhookManager {
     return webhook;
   }
 
-  updateWebhook(
-    id: string,
-    updates: Partial<WebhookConfig>,
-  ): WebhookConfig | null {
+  updateWebhook(id: string, updates: Partial<WebhookConfig>): WebhookConfig | null {
     const webhook = this.webhooks.get(id);
     if (!webhook) return null;
 
@@ -175,10 +172,7 @@ export class WebhookManager {
     return Array.from(this.webhooks.values());
   }
 
-  async triggerEvent(
-    event: WebhookEvent,
-    data: Record<string, unknown>,
-  ): Promise<void> {
+  async triggerEvent(event: WebhookEvent, data: Record<string, unknown>): Promise<void> {
     const subscribedWebhooks = this.eventHandlers.get(event);
     if (!subscribedWebhooks || subscribedWebhooks.size === 0) return;
 
@@ -191,10 +185,7 @@ export class WebhookManager {
     await Promise.allSettled(promises);
   }
 
-  private async deliverWebhook(
-    webhookId: string,
-    payload: WebhookPayload,
-  ): Promise<void> {
+  private async deliverWebhook(webhookId: string, payload: WebhookPayload): Promise<void> {
     const webhook = this.webhooks.get(webhookId);
     if (!webhook || !webhook.isActive) return;
 
@@ -228,13 +219,7 @@ export class WebhookManager {
       }
     }
 
-    this.updateDeliveryFailed(
-      delivery.id,
-      webhookId,
-      lastError,
-      statusCode,
-      response,
-    );
+    this.updateDeliveryFailed(delivery.id, webhookId, lastError, statusCode, response);
     this.updateWebhookStats(webhookId, false);
   }
 
@@ -250,14 +235,14 @@ export class WebhookManager {
 
     try {
       const response = await fetch(webhook.url, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
-          "X-Webhook-ID": webhook.id,
-          "X-Webhook-Event": payload.event,
-          "X-Webhook-Signature": payload.signature,
-          "X-Webhook-Timestamp": payload.timestamp,
-          "X-Webhook-Retry-Count": attempt.toString(),
+          'Content-Type': 'application/json',
+          'X-Webhook-ID': webhook.id,
+          'X-Webhook-Event': payload.event,
+          'X-Webhook-Signature': payload.signature,
+          'X-Webhook-Timestamp': payload.timestamp,
+          'X-Webhook-Retry-Count': attempt.toString(),
           ...webhook.headers,
         },
         body: JSON.stringify(payload),
@@ -267,11 +252,11 @@ export class WebhookManager {
       clearTimeout(timeoutId);
       const duration = Date.now() - startTime;
 
-      let responseBody = "";
+      let responseBody = '';
       try {
         responseBody = await response.text();
       } catch {
-        responseBody = "";
+        responseBody = '';
       }
 
       if (response.ok) {
@@ -299,7 +284,7 @@ export class WebhookManager {
         success: false,
         statusCode: null,
         response: null,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: error instanceof Error ? error.message : 'Unknown error',
         duration,
       };
     }
@@ -312,14 +297,14 @@ export class WebhookManager {
         success: false,
         statusCode: null,
         response: null,
-        error: "Webhook not found",
+        error: 'Webhook not found',
         duration: 0,
       };
     }
 
-    const testPayload = this.createPayload("custom", {
-      type: "test",
-      message: "This is a test webhook delivery from Insight Oracle",
+    const testPayload = this.createPayload('custom', {
+      type: 'test',
+      message: 'This is a test webhook delivery from Insight Oracle',
       timestamp: new Date().toISOString(),
     });
 
@@ -337,17 +322,11 @@ export class WebhookManager {
 
     const activeWebhooks = webhooks.filter((w) => w.isActive);
     const totalDeliveries = allDeliveries.length;
-    const successfulDeliveries = allDeliveries.filter(
-      (d) => d.status === "success",
-    ).length;
-    const successRate =
-      totalDeliveries > 0
-        ? (successfulDeliveries / totalDeliveries) * 100
-        : 100;
+    const successfulDeliveries = allDeliveries.filter((d) => d.status === 'success').length;
+    const successRate = totalDeliveries > 0 ? (successfulDeliveries / totalDeliveries) * 100 : 100;
     const averageResponseTime =
       allDeliveries.length > 0
-        ? allDeliveries.reduce((sum, d) => sum + (d.duration || 0), 0) /
-          allDeliveries.length
+        ? allDeliveries.reduce((sum, d) => sum + (d.duration || 0), 0) / allDeliveries.length
         : 0;
 
     const eventsByType = {} as Record<WebhookEvent, number>;
@@ -380,17 +359,14 @@ export class WebhookManager {
     };
   }
 
-  private createPayload(
-    event: WebhookEvent,
-    data: Record<string, unknown>,
-  ): WebhookPayload {
+  private createPayload(event: WebhookEvent, data: Record<string, unknown>): WebhookPayload {
     const timestamp = new Date().toISOString();
     const payload: WebhookPayload = {
       id: this.generateId(),
       event,
       timestamp,
       data,
-      signature: "",
+      signature: '',
       retryCount: 0,
     };
 
@@ -400,21 +376,15 @@ export class WebhookManager {
 
   private generateSignature(payload: WebhookPayload): string {
     const message = `${payload.id}.${payload.event}.${payload.timestamp}.${JSON.stringify(payload.data)}`;
-    return crypto
-      .createHmac("sha256", "webhook-secret")
-      .update(message)
-      .digest("hex");
+    return crypto.createHmac('sha256', 'webhook-secret').update(message).digest('hex');
   }
 
-  private createDelivery(
-    webhookId: string,
-    event: WebhookEvent,
-  ): WebhookDelivery {
+  private createDelivery(webhookId: string, event: WebhookEvent): WebhookDelivery {
     return {
       id: this.generateId(),
       webhookId,
       event,
-      status: "pending",
+      status: 'pending',
       statusCode: null,
       response: null,
       error: null,
@@ -429,10 +399,11 @@ export class WebhookManager {
     if (!this.deliveries.has(webhookId)) {
       this.deliveries.set(webhookId, []);
     }
-    this.deliveries.get(webhookId)!.push(delivery);
+    const deliveries = this.deliveries.get(webhookId);
+    if (!deliveries) return;
+    deliveries.push(delivery);
 
-    if (this.deliveries.get(webhookId)!.length > 100) {
-      const deliveries = this.deliveries.get(webhookId)!;
+    if (deliveries.length > 100) {
       deliveries.shift();
     }
   }
@@ -448,7 +419,7 @@ export class WebhookManager {
     const delivery = deliveries.find((d) => d.id === deliveryId);
     if (!delivery) return;
 
-    delivery.status = "success";
+    delivery.status = 'success';
     delivery.statusCode = result.statusCode;
     delivery.response = result.response;
     delivery.completedAt = new Date().toISOString();
@@ -468,7 +439,7 @@ export class WebhookManager {
     const delivery = deliveries.find((d) => d.id === deliveryId);
     if (!delivery) return;
 
-    delivery.status = "failed";
+    delivery.status = 'failed';
     delivery.error = error;
     delivery.statusCode = statusCode;
     delivery.response = response;
@@ -484,14 +455,11 @@ export class WebhookManager {
 
     if (success) {
       webhook.successRate =
-        (webhook.successRate * (webhook.totalRequests - 1) + 100) /
-        webhook.totalRequests;
+        (webhook.successRate * (webhook.totalRequests - 1) + 100) / webhook.totalRequests;
     } else {
       webhook.failedRequests++;
       webhook.successRate =
-        ((webhook.totalRequests - webhook.failedRequests) /
-          webhook.totalRequests) *
-        100;
+        ((webhook.totalRequests - webhook.failedRequests) / webhook.totalRequests) * 100;
     }
   }
 
@@ -500,7 +468,10 @@ export class WebhookManager {
       if (!this.eventHandlers.has(event)) {
         this.eventHandlers.set(event, new Set());
       }
-      this.eventHandlers.get(event)!.add(webhook.id);
+      const handlers = this.eventHandlers.get(event);
+      if (handlers) {
+        handlers.add(webhook.id);
+      }
     });
   }
 
@@ -553,8 +524,6 @@ export function createWebhookNotification(
   });
 }
 
-export async function sendTestNotification(
-  webhookId: string,
-): Promise<WebhookTestResult> {
+export async function sendTestNotification(webhookId: string): Promise<WebhookTestResult> {
   return webhookManager.testWebhook(webhookId);
 }

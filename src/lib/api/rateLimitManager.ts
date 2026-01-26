@@ -1,5 +1,5 @@
-export type RateLimitScope = "global" | "user" | "api_key" | "ip" | "endpoint";
-export type RateLimitTier = "free" | "basic" | "pro" | "enterprise";
+export type RateLimitScope = 'global' | 'user' | 'api_key' | 'ip' | 'endpoint';
+export type RateLimitTier = 'free' | 'basic' | 'pro' | 'enterprise';
 
 export interface RateLimitConfig {
   id: string;
@@ -17,16 +17,13 @@ export interface RateLimitConfig {
 export interface RateLimitRule {
   id: string;
   endpointPattern: string;
-  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "*";
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | '*';
   maxRequests: number;
   windowSeconds: number;
-  responseType: "error" | "throttle" | "delay";
+  responseType: 'error' | 'throttle' | 'delay';
   delayMs: number;
   bypassForUsers: string[];
-  tierLimits: Record<
-    RateLimitTier,
-    { maxRequests: number; windowSeconds: number }
-  >;
+  tierLimits: Record<RateLimitTier, { maxRequests: number; windowSeconds: number }>;
 }
 
 export interface RateLimitTierConfig {
@@ -56,7 +53,7 @@ export interface RateLimitUsage {
   requestCount: number;
   windowRemaining: number;
   limited: boolean;
-  limitType: "global" | "tier" | "custom";
+  limitType: 'global' | 'tier' | 'custom';
 }
 
 export interface RateLimitStats {
@@ -73,8 +70,8 @@ export interface RateLimitStats {
 export interface RateLimitAlert {
   id: string;
   configId: string;
-  type: "threshold_exceeded" | "abuse_detected" | "limit_approaching";
-  severity: "low" | "medium" | "high" | "critical";
+  type: 'threshold_exceeded' | 'abuse_detected' | 'limit_approaching';
+  severity: 'low' | 'medium' | 'high' | 'critical';
   message: string;
   threshold: number;
   current: number;
@@ -89,9 +86,9 @@ export class RateLimitManager {
   private alerts: RateLimitAlert[] = [];
   private readonly TIERS: Record<RateLimitTier, RateLimitTierConfig> = {
     free: {
-      tier: "free",
-      displayName: "Free",
-      description: "Basic access for development and testing",
+      tier: 'free',
+      displayName: 'Free',
+      description: 'Basic access for development and testing',
       limits: {
         requestsPerHour: 1000,
         requestsPerDay: 10000,
@@ -99,14 +96,14 @@ export class RateLimitManager {
         burstLimit: 10,
         concurrentLimit: 5,
       },
-      features: ["Basic endpoints", "Community support"],
+      features: ['Basic endpoints', 'Community support'],
       overageAllowed: false,
       overageRate: 0,
     },
     basic: {
-      tier: "basic",
-      displayName: "Basic",
-      description: "Standard access for small applications",
+      tier: 'basic',
+      displayName: 'Basic',
+      description: 'Standard access for small applications',
       limits: {
         requestsPerHour: 10000,
         requestsPerDay: 100000,
@@ -114,14 +111,14 @@ export class RateLimitManager {
         burstLimit: 50,
         concurrentLimit: 20,
       },
-      features: ["All basic endpoints", "Email support", "Analytics"],
+      features: ['All basic endpoints', 'Email support', 'Analytics'],
       overageAllowed: true,
       overageRate: 0.001,
     },
     pro: {
-      tier: "pro",
-      displayName: "Pro",
-      description: "Enhanced access for production applications",
+      tier: 'pro',
+      displayName: 'Pro',
+      description: 'Enhanced access for production applications',
       limits: {
         requestsPerHour: 100000,
         requestsPerDay: 1000000,
@@ -129,19 +126,14 @@ export class RateLimitManager {
         burstLimit: 200,
         concurrentLimit: 100,
       },
-      features: [
-        "All endpoints",
-        "Priority support",
-        "Advanced analytics",
-        "Custom rate limits",
-      ],
+      features: ['All endpoints', 'Priority support', 'Advanced analytics', 'Custom rate limits'],
       overageAllowed: true,
       overageRate: 0.0005,
     },
     enterprise: {
-      tier: "enterprise",
-      displayName: "Enterprise",
-      description: "Unlimited access with dedicated support",
+      tier: 'enterprise',
+      displayName: 'Enterprise',
+      description: 'Unlimited access with dedicated support',
       limits: {
         requestsPerHour: 1000000,
         requestsPerDay: 10000000,
@@ -149,12 +141,7 @@ export class RateLimitManager {
         burstLimit: 1000,
         concurrentLimit: 500,
       },
-      features: [
-        "All endpoints",
-        "Dedicated support",
-        "Custom SLAs",
-        "White-glove onboarding",
-      ],
+      features: ['All endpoints', 'Dedicated support', 'Custom SLAs', 'White-glove onboarding'],
       overageAllowed: true,
       overageRate: 0.0001,
     },
@@ -162,19 +149,19 @@ export class RateLimitManager {
 
   private readonly DEFAULT_CONFIGS: RateLimitConfig[] = [
     {
-      id: "global_default",
-      name: "Global Default Limits",
-      description: "Default rate limits for all API requests",
-      scope: "global",
-      tier: "free",
+      id: 'global_default',
+      name: 'Global Default Limits',
+      description: 'Default rate limits for all API requests',
+      scope: 'global',
+      tier: 'free',
       rules: [
         {
-          id: "default_read",
-          endpointPattern: "/api/*/GET",
-          method: "GET",
+          id: 'default_read',
+          endpointPattern: '/api/*/GET',
+          method: 'GET',
           maxRequests: 100,
           windowSeconds: 60,
-          responseType: "error",
+          responseType: 'error',
           delayMs: 0,
           bypassForUsers: [],
           tierLimits: {
@@ -185,12 +172,12 @@ export class RateLimitManager {
           },
         },
         {
-          id: "default_write",
-          endpointPattern: "/api/*/POST",
-          method: "POST",
+          id: 'default_write',
+          endpointPattern: '/api/*/POST',
+          method: 'POST',
           maxRequests: 20,
           windowSeconds: 60,
-          responseType: "error",
+          responseType: 'error',
           delayMs: 0,
           bypassForUsers: [],
           tierLimits: {
@@ -207,19 +194,19 @@ export class RateLimitManager {
       updatedAt: new Date().toISOString(),
     },
     {
-      id: "user_specific",
-      name: "User-Specific Limits",
-      description: "Per-user rate limit configurations",
-      scope: "user",
-      tier: "basic",
+      id: 'user_specific',
+      name: 'User-Specific Limits',
+      description: 'Per-user rate limit configurations',
+      scope: 'user',
+      tier: 'basic',
       rules: [
         {
-          id: "user_dashboard",
-          endpointPattern: "/api/oracle/dashboard",
-          method: "GET",
+          id: 'user_dashboard',
+          endpointPattern: '/api/oracle/dashboard',
+          method: 'GET',
           maxRequests: 60,
           windowSeconds: 60,
-          responseType: "throttle",
+          responseType: 'throttle',
           delayMs: 500,
           bypassForUsers: [],
           tierLimits: {
@@ -230,14 +217,14 @@ export class RateLimitManager {
           },
         },
         {
-          id: "user_export",
-          endpointPattern: "/api/export/*",
-          method: "*",
+          id: 'user_export',
+          endpointPattern: '/api/export/*',
+          method: '*',
           maxRequests: 10,
           windowSeconds: 3600,
-          responseType: "error",
+          responseType: 'error',
           delayMs: 0,
-          bypassForUsers: ["admin"],
+          bypassForUsers: ['admin'],
           tierLimits: {
             free: { maxRequests: 5, windowSeconds: 3600 },
             basic: { maxRequests: 10, windowSeconds: 3600 },
@@ -252,19 +239,19 @@ export class RateLimitManager {
       updatedAt: new Date().toISOString(),
     },
     {
-      id: "critical_endpoints",
-      name: "Critical Endpoint Protection",
-      description: "Enhanced protection for critical endpoints",
-      scope: "endpoint",
-      tier: "pro",
+      id: 'critical_endpoints',
+      name: 'Critical Endpoint Protection',
+      description: 'Enhanced protection for critical endpoints',
+      scope: 'endpoint',
+      tier: 'pro',
       rules: [
         {
-          id: "critical_sync",
-          endpointPattern: "/api/oracle/sync",
-          method: "POST",
+          id: 'critical_sync',
+          endpointPattern: '/api/oracle/sync',
+          method: 'POST',
           maxRequests: 5,
           windowSeconds: 60,
-          responseType: "error",
+          responseType: 'error',
           delayMs: 0,
           bypassForUsers: [],
           tierLimits: {
@@ -275,12 +262,12 @@ export class RateLimitManager {
           },
         },
         {
-          id: "critical_dispute",
-          endpointPattern: "/api/oracle/disputes",
-          method: "POST",
+          id: 'critical_dispute',
+          endpointPattern: '/api/oracle/disputes',
+          method: 'POST',
           maxRequests: 3,
           windowSeconds: 300,
-          responseType: "error",
+          responseType: 'error',
           delayMs: 0,
           bypassForUsers: [],
           tierLimits: {
@@ -304,9 +291,7 @@ export class RateLimitManager {
     });
   }
 
-  createConfig(
-    config: Omit<RateLimitConfig, "id" | "createdAt" | "updatedAt">,
-  ): RateLimitConfig {
+  createConfig(config: Omit<RateLimitConfig, 'id' | 'createdAt' | 'updatedAt'>): RateLimitConfig {
     const id = `ratelimit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const now = new Date().toISOString();
 
@@ -321,10 +306,7 @@ export class RateLimitManager {
     return fullConfig;
   }
 
-  updateConfig(
-    id: string,
-    updates: Partial<RateLimitConfig>,
-  ): RateLimitConfig | null {
+  updateConfig(id: string, updates: Partial<RateLimitConfig>): RateLimitConfig | null {
     const config = this.configs.get(id);
     if (!config) return null;
 
@@ -344,7 +326,7 @@ export class RateLimitManager {
     const config = this.configs.get(id);
     if (!config) return false;
 
-    if (config.scope === "global") {
+    if (config.scope === 'global') {
       return false;
     }
 
@@ -356,9 +338,7 @@ export class RateLimitManager {
   }
 
   getAllConfigs(): RateLimitConfig[] {
-    return Array.from(this.configs.values()).sort(
-      (a, b) => a.priority - b.priority,
-    );
+    return Array.from(this.configs.values()).sort((a, b) => a.priority - b.priority);
   }
 
   getConfigsByScope(scope: RateLimitScope): RateLimitConfig[] {
@@ -392,16 +372,13 @@ export class RateLimitManager {
 
         const now = Date.now();
         const windowStart = now - tierLimit.windowSeconds * 1000;
-        const recentUsage = usage.filter(
-          (u) => new Date(u.timestamp).getTime() > windowStart,
-        );
+        const recentUsage = usage.filter((u) => new Date(u.timestamp).getTime() > windowStart);
 
         if (recentUsage.length >= tierLimit.maxRequests) {
           const oldestInWindow = recentUsage[0];
           if (!oldestInWindow) break;
           const resetAt = new Date(
-            new Date(oldestInWindow.timestamp).getTime() +
-              tierLimit.windowSeconds * 1000,
+            new Date(oldestInWindow.timestamp).getTime() + tierLimit.windowSeconds * 1000,
           );
 
           return {
@@ -443,7 +420,7 @@ export class RateLimitManager {
 
   updateTierLimits(
     tier: RateLimitTier,
-    limits: Partial<RateLimitTierConfig["limits"]>,
+    limits: Partial<RateLimitTierConfig['limits']>,
   ): RateLimitTierConfig {
     // Safe: tier is a literal type from RateLimitTier union
 
@@ -459,11 +436,7 @@ export class RateLimitManager {
     return this.TIERS[tier];
   }
 
-  getStats(filter?: {
-    configId?: string;
-    startDate?: string;
-    endDate?: string;
-  }): RateLimitStats {
+  getStats(filter?: { configId?: string; startDate?: string; endDate?: string }): RateLimitStats {
     let allUsage = Array.from(this.usageRecords.values()).flat();
 
     if (filter?.configId) {
@@ -472,9 +445,7 @@ export class RateLimitManager {
 
     if (filter?.startDate) {
       const start = new Date(filter.startDate).getTime();
-      allUsage = allUsage.filter(
-        (u) => new Date(u.timestamp).getTime() >= start,
-      );
+      allUsage = allUsage.filter((u) => new Date(u.timestamp).getTime() >= start);
     }
 
     if (filter?.endDate) {
@@ -484,15 +455,13 @@ export class RateLimitManager {
 
     const totalRequests = allUsage.length;
     const limitedRequests = allUsage.filter((u) => u.limited).length;
-    const limitRate =
-      totalRequests > 0 ? (limitedRequests / totalRequests) * 100 : 0;
+    const limitRate = totalRequests > 0 ? (limitedRequests / totalRequests) * 100 : 0;
 
     const requestsByEndpoint: Record<string, number> = {};
     const requestsByUser: Record<string, number> = {};
 
     allUsage.forEach((usage) => {
-      requestsByEndpoint[usage.endpoint] =
-        (requestsByEndpoint[usage.endpoint] || 0) + 1;
+      requestsByEndpoint[usage.endpoint] = (requestsByEndpoint[usage.endpoint] || 0) + 1;
       if (usage.userId) {
         requestsByUser[usage.userId] = (requestsByUser[usage.userId] || 0) + 1;
       }
@@ -525,8 +494,8 @@ export class RateLimitManager {
 
   createAlert(
     configId: string,
-    type: RateLimitAlert["type"],
-    severity: RateLimitAlert["severity"],
+    type: RateLimitAlert['type'],
+    severity: RateLimitAlert['severity'],
     message: string,
     threshold: number,
     current: number,
@@ -562,8 +531,7 @@ export class RateLimitManager {
     }
 
     return filtered.sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
   }
 
@@ -582,11 +550,9 @@ export class RateLimitManager {
     limit: number,
   ): Record<string, string> {
     return {
-      "X-RateLimit-Limit": limit.toString(),
-      "X-RateLimit-Remaining": Math.max(0, remaining).toString(),
-      "X-RateLimit-Reset": Math.floor(
-        new Date(resetAt).getTime() / 1000,
-      ).toString(),
+      'X-RateLimit-Limit': limit.toString(),
+      'X-RateLimit-Remaining': Math.max(0, remaining).toString(),
+      'X-RateLimit-Reset': Math.floor(new Date(resetAt).getTime() / 1000).toString(),
     };
   }
 
@@ -597,25 +563,15 @@ export class RateLimitManager {
   ): RateLimitConfig[] {
     return this.getAllConfigs().filter((config) => {
       if (!config.isActive) return false;
-      return (
-        config.tier === "free" ||
-        config.tier === tier ||
-        config.scope === "global"
-      );
+      return config.tier === 'free' || config.tier === tier || config.scope === 'global';
     });
   }
 
-  private matchesRule(
-    endpoint: string,
-    method: string,
-    rule: RateLimitRule,
-  ): boolean {
-    if (rule.method !== "*" && rule.method !== method) return false;
+  private matchesRule(endpoint: string, method: string, rule: RateLimitRule): boolean {
+    if (rule.method !== '*' && rule.method !== method) return false;
 
-    const pattern = rule.endpointPattern
-      .replace(/\*/g, ".*")
-      .replace(/\/api\//g, "/api/");
-    const escapedPattern = pattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const pattern = rule.endpointPattern.replace(/\*/g, '.*').replace(/\/api\//g, '/api/');
+    const escapedPattern = pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     // eslint-disable-next-line security/detect-non-literal-regexp
     const regex = new RegExp(`^${escapedPattern}$`);
     return regex.test(endpoint);
@@ -641,14 +597,14 @@ export class RateLimitManager {
     }
 
     const usage: RateLimitUsage = {
-      configId: key.split(":")[0] || "",
+      configId: key.split(':')[0] || '',
       endpoint,
       method,
       timestamp: new Date().toISOString(),
       requestCount: 1,
       windowRemaining: 0,
       limited: false,
-      limitType: "tier",
+      limitType: 'tier',
     };
 
     const records = this.usageRecords.get(key) ?? [];
@@ -676,16 +632,9 @@ export function checkApiRateLimit(
   ip: string,
   endpoint: string,
   method: string,
-  tier: RateLimitTier = "free",
+  tier: RateLimitTier = 'free',
 ): { allowed: boolean; headers: Record<string, string> } {
-  const result = rateLimitManager.checkRateLimit(
-    userId,
-    apiKey,
-    ip,
-    endpoint,
-    method,
-    tier,
-  );
+  const result = rateLimitManager.checkRateLimit(userId, apiKey, ip, endpoint, method, tier);
 
   const headers = rateLimitManager.generateRateLimitHeader(
     result.remaining,
@@ -694,7 +643,7 @@ export function checkApiRateLimit(
   );
 
   if (!result.allowed && result.retryAfter) {
-    headers["Retry-After"] = result.retryAfter.toString();
+    headers['Retry-After'] = result.retryAfter.toString();
   }
 
   return {

@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { cn } from "@/lib/utils";
+import React, { useState } from 'react';
+import { cn } from '@/lib/utils';
 
 interface HelpTooltipProps {
   content: string;
@@ -10,16 +10,11 @@ interface HelpTooltipProps {
   className?: string;
 }
 
-export function HelpTooltip({
-  content,
-  title,
-  children,
-  className,
-}: HelpTooltipProps) {
+export function HelpTooltip({ content, title, children, className }: HelpTooltipProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className={cn("relative inline-block", className)}>
+    <div className={cn('relative inline-block', className)}>
       <div
         className="cursor-help"
         onMouseEnter={() => setIsOpen(true)}
@@ -30,14 +25,10 @@ export function HelpTooltip({
       </div>
 
       {isOpen && (
-        <div className="absolute z-50 w-64 p-3 bg-white border border-gray-200 rounded-lg shadow-lg -top-4 left-1/2 transform -translate-x-1/2">
-          {title && (
-            <h4 className="text-sm font-semibold text-gray-900 mb-1">
-              {title}
-            </h4>
-          )}
+        <div className="absolute -top-4 left-1/2 z-50 w-64 -translate-x-1/2 transform rounded-lg border border-gray-200 bg-white p-3 shadow-lg">
+          {title && <h4 className="mb-1 text-sm font-semibold text-gray-900">{title}</h4>}
           <p className="text-xs text-gray-600">{content}</p>
-          <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-white border-b border-r border-gray-200 rotate-45" />
+          <div className="absolute -bottom-2 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 transform border-b border-r border-gray-200 bg-white" />
         </div>
       )}
     </div>

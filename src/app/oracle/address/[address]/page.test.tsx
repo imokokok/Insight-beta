@@ -1,25 +1,25 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, cleanup } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, cleanup } from '@testing-library/react';
 
-vi.mock("next/navigation", () => ({
-  useParams: () => ({ address: "0x1234" }),
+vi.mock('next/navigation', () => ({
+  useParams: () => ({ address: '0x1234' }),
   useRouter: () => ({ replace: vi.fn() }),
-  usePathname: () => "/oracle/address/0x1234",
-  useSearchParams: () => new URLSearchParams(""),
+  usePathname: () => '/oracle/address/0x1234',
+  useSearchParams: () => new URLSearchParams(''),
 }));
 
-vi.mock("@/i18n/LanguageProvider", () => ({
+vi.mock('@/i18n/LanguageProvider', () => ({
   useI18n: () => ({
     t: (key: string) => key,
   }),
 }));
 
-vi.mock("@/i18n/translations", () => ({
-  getUiErrorMessage: () => "uiError",
-  langToLocale: { en: "en-US" },
+vi.mock('@/i18n/translations', () => ({
+  getUiErrorMessage: () => 'uiError',
+  langToLocale: { en: 'en-US' },
 }));
 
-vi.mock("@/hooks/oracle/useOracleData", () => ({
+vi.mock('@/hooks/oracle/useOracleData', () => ({
   useOracleData: () => ({
     items: [],
     loading: false,
@@ -30,7 +30,7 @@ vi.mock("@/hooks/oracle/useOracleData", () => ({
   }),
 }));
 
-vi.mock("@/hooks/dispute/useDisputes", () => ({
+vi.mock('@/hooks/dispute/useDisputes', () => ({
   useDisputes: () => ({
     items: [],
     loading: false,
@@ -41,36 +41,36 @@ vi.mock("@/hooks/dispute/useDisputes", () => ({
   }),
 }));
 
-vi.mock("@/hooks/user/useUserStats", () => ({
+vi.mock('@/hooks/user/useUserStats', () => ({
   useUserStats: () => ({
     stats: null,
     loading: false,
   }),
 }));
 
-vi.mock("@/components/UserStatsCard", () => ({
+vi.mock('@/components/UserStatsCard', () => ({
   UserStatsCard: () => <div>UserStatsCard</div>,
 }));
 
-vi.mock("@/components/AssertionList", () => ({
+vi.mock('@/components/AssertionList', () => ({
   AssertionList: () => <div>AssertionList</div>,
 }));
 
-vi.mock("@/components/DisputeList", () => ({
+vi.mock('@/components/DisputeList', () => ({
   DisputeList: () => <div>DisputeList</div>,
 }));
 
-vi.mock("@/components/AddressAvatar", () => ({
+vi.mock('@/components/AddressAvatar', () => ({
   AddressAvatar: () => <div>AddressAvatar</div>,
 }));
 
-vi.mock("@/components/CopyButton", () => ({
+vi.mock('@/components/CopyButton', () => ({
   CopyButton: () => <div>CopyButton</div>,
 }));
 
-import AddressProfilePage from "./page";
+import AddressProfilePage from './page';
 
-describe("AddressProfilePage", () => {
+describe('AddressProfilePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -79,7 +79,7 @@ describe("AddressProfilePage", () => {
     cleanup();
   });
 
-  it("renders address profile page", () => {
+  it('renders address profile page', () => {
     expect(() => render(<AddressProfilePage />)).not.toThrow();
   });
 });

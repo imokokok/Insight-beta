@@ -1,7 +1,7 @@
-import { PageHeader } from "@/components/features/common/PageHeader";
-import { ConnectWallet } from "@/components/features/wallet/ConnectWallet";
-import { Wallet } from "lucide-react";
-import type { TranslationKey } from "@/i18n/translations";
+import { PageHeader } from '@/components/features/common/PageHeader';
+import { ConnectWallet } from '@/components/features/wallet/ConnectWallet';
+import { Wallet } from 'lucide-react';
+import type { TranslationKey } from '@/i18n/translations';
 
 type Translate = (key: TranslationKey) => string;
 
@@ -11,23 +11,20 @@ type NoWalletStateProps = {
 
 export function NoWalletState({ t }: NoWalletStateProps) {
   return (
-    <div className="space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <PageHeader
-        title={t("nav.myDisputes")}
-        description={t("oracle.myDisputes.description")}
-      >
+    <div className="animate-in fade-in slide-in-from-bottom-4 space-y-8 pb-20 duration-700">
+      <PageHeader title={t('nav.myDisputes')} description={t('oracle.myDisputes.description')}>
         <ConnectWallet />
       </PageHeader>
 
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <div className="p-6 rounded-full bg-purple-50 text-purple-600 mb-6">
+        <div className="mb-6 rounded-full bg-purple-50 p-6 text-purple-600">
           <Wallet size={48} />
         </div>
-        <h2 className="text-xl font-bold text-gray-900 mb-2">
-          {t("oracle.myDisputes.connectWalletTitle")}
+        <h2 className="mb-2 text-xl font-bold text-gray-900">
+          {t('oracle.myDisputes.connectWalletTitle')}
         </h2>
-        <p className="text-gray-500 max-w-md mx-auto mb-8">
-          {t("oracle.myDisputes.connectWalletDesc")}
+        <p className="mx-auto mb-8 max-w-md text-gray-500">
+          {t('oracle.myDisputes.connectWalletDesc')}
         </p>
         <ConnectWallet />
       </div>

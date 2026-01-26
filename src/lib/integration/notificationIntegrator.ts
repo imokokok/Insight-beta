@@ -32,7 +32,7 @@ export interface NotificationMessage {
 
 export interface NotificationResult {
   success: boolean;
-  platform: "slack" | "discord";
+  platform: 'slack' | 'discord';
   messageId?: string;
   error?: string;
 }
@@ -90,8 +90,8 @@ export class NotificationIntegrator {
     if (!config || !config.isActive) {
       return {
         success: false,
-        platform: "slack",
-        error: "Slack not configured or inactive",
+        platform: 'slack',
+        error: 'Slack not configured or inactive',
       };
     }
 
@@ -99,26 +99,26 @@ export class NotificationIntegrator {
 
     try {
       const response = await fetch(config.webhookUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(slackPayload),
       });
 
       if (response.ok) {
-        return { success: true, platform: "slack" };
+        return { success: true, platform: 'slack' };
       } else {
         const error = await response.text();
         return {
           success: false,
-          platform: "slack",
+          platform: 'slack',
           error: `Slack API error: ${error}`,
         };
       }
     } catch (error) {
       return {
         success: false,
-        platform: "slack",
-        error: error instanceof Error ? error.message : "Unknown error",
+        platform: 'slack',
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
@@ -131,8 +131,8 @@ export class NotificationIntegrator {
     if (!config || !config.isActive) {
       return {
         success: false,
-        platform: "discord",
-        error: "Discord not configured or inactive",
+        platform: 'discord',
+        error: 'Discord not configured or inactive',
       };
     }
 
@@ -140,26 +140,26 @@ export class NotificationIntegrator {
 
     try {
       const response = await fetch(config.webhookUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(discordPayload),
       });
 
       if (response.ok) {
-        return { success: true, platform: "discord" };
+        return { success: true, platform: 'discord' };
       } else {
         const error = await response.text();
         return {
           success: false,
-          platform: "discord",
+          platform: 'discord',
           error: `Discord API error: ${error}`,
         };
       }
     } catch (error) {
       return {
         success: false,
-        platform: "discord",
-        error: error instanceof Error ? error.message : "Unknown error",
+        platform: 'discord',
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
@@ -175,34 +175,31 @@ export class NotificationIntegrator {
 
     const results: NotificationResult[] = [];
 
-    if (slackResult.status === "fulfilled") {
+    if (slackResult.status === 'fulfilled') {
       results.push(slackResult.value);
     }
 
-    if (discordResult.status === "fulfilled") {
+    if (discordResult.status === 'fulfilled') {
       results.push(discordResult.value);
     }
 
     return results;
   }
 
-  private buildSlackPayload(
-    config: SlackConfig,
-    message: NotificationMessage,
-  ): object {
+  private buildSlackPayload(config: SlackConfig, message: NotificationMessage): object {
     const blocks: object[] = [
       {
-        type: "header",
+        type: 'header',
         text: {
-          type: "plain_text",
+          type: 'plain_text',
           text: message.title,
           emoji: true,
         },
       },
       {
-        type: "section",
+        type: 'section',
         text: {
-          type: "mrkdwn",
+          type: 'mrkdwn',
           text: message.description,
         },
       },
@@ -210,22 +207,22 @@ export class NotificationIntegrator {
 
     if (message.fields && message.fields.length > 0) {
       const fields = message.fields.map((field) => ({
-        type: "mrkdwn",
+        type: 'mrkdwn',
         text: `*${field.name}*\n${field.value}`,
       }));
 
       blocks.push({
-        type: "section",
+        type: 'section',
         fields,
       });
     }
 
     if (message.footer) {
       blocks.push({
-        type: "context",
+        type: 'context',
         elements: [
           {
-            type: "mrkdwn",
+            type: 'mrkdwn',
             text: message.footer,
           },
         ],
@@ -244,10 +241,10 @@ export class NotificationIntegrator {
       });
 
       blocks.unshift({
-        type: "section",
+        type: 'section',
         text: {
-          type: "mrkdwn",
-          text: mentions.join(" "),
+          type: 'mrkdwn',
+          text: mentions.join(' '),
         },
       });
     }
@@ -259,7 +256,7 @@ export class NotificationIntegrator {
       blocks,
       attachments: [
         {
-          color: `#${message.color.toString(16).padStart(6, "0")}`,
+          color: `#${message.color.toString(16).padStart(6, '0')}`,
           footer: message.footer,
           ts: message.timestamp
             ? Math.floor(new Date(message.timestamp).getTime() / 1000)
@@ -269,10 +266,7 @@ export class NotificationIntegrator {
     };
   }
 
-  private buildDiscordPayload(
-    config: DiscordConfig,
-    message: NotificationMessage,
-  ): object {
+  private buildDiscordPayload(config: DiscordConfig, message: NotificationMessage): object {
     const embeds = [
       {
         title: message.title,
@@ -285,7 +279,7 @@ export class NotificationIntegrator {
       },
     ];
 
-    const content = config.mentionEveryone ? "@everyone" : "";
+    const content = config.mentionEveryone ? '@everyone' : '';
 
     return {
       username: config.username,
@@ -302,23 +296,23 @@ export class NotificationIntegrator {
     bondUsd: number,
   ): NotificationMessage {
     return {
-      title: "🆕 New Assertion Created",
+      title: '🆕 New Assertion Created',
       description: `A new assertion has been submitted for *${market}*`,
       color: this.SLACK_COLORS.info,
       fields: [
         {
-          name: "Assertion ID",
+          name: 'Assertion ID',
           value: `\`${assertionId.slice(0, 16)}...\``,
           inline: true,
         },
         {
-          name: "Asserter",
+          name: 'Asserter',
           value: `\`${asserter.slice(0, 8)}...${asserter.slice(-6)}\``,
           inline: true,
         },
-        { name: "Bond", value: `$${bondUsd.toLocaleString()}`, inline: true },
+        { name: 'Bond', value: `$${bondUsd.toLocaleString()}`, inline: true },
       ],
-      footer: "Insight Oracle Monitor",
+      footer: 'Insight Oracle Monitor',
       timestamp: new Date().toISOString(),
       url: `https://insight.foresight.build/oracle/${assertionId}`,
     };
@@ -331,27 +325,27 @@ export class NotificationIntegrator {
     bondUsd: number,
   ): NotificationMessage {
     return {
-      title: "⚠️ Assertion Disputed",
+      title: '⚠️ Assertion Disputed',
       description: `An assertion has been disputed: *${reason}*`,
       color: this.SLACK_COLORS.warning,
       fields: [
         {
-          name: "Assertion ID",
+          name: 'Assertion ID',
           value: `\`${assertionId.slice(0, 16)}...\``,
           inline: true,
         },
         {
-          name: "Disputer",
+          name: 'Disputer',
           value: `\`${disputer.slice(0, 8)}...${disputer.slice(-6)}\``,
           inline: true,
         },
         {
-          name: "Bond at Risk",
+          name: 'Bond at Risk',
           value: `$${bondUsd.toLocaleString()}`,
           inline: true,
         },
       ],
-      footer: "Insight Oracle Monitor",
+      footer: 'Insight Oracle Monitor',
       timestamp: new Date().toISOString(),
       url: `https://insight.foresight.build/disputes/${assertionId}`,
     };
@@ -359,51 +353,48 @@ export class NotificationIntegrator {
 
   createAlertNotification(
     alertType: string,
-    severity: "critical" | "warning" | "info",
+    severity: 'critical' | 'warning' | 'info',
     message: string,
     recommendedAction: string,
   ): NotificationMessage {
     const color =
-      severity === "critical"
+      severity === 'critical'
         ? this.SLACK_COLORS.error
-        : severity === "warning"
+        : severity === 'warning'
           ? this.SLACK_COLORS.warning
           : this.SLACK_COLORS.info;
 
     return {
       title:
-        severity === "critical"
-          ? "🚨 Critical Alert"
-          : severity === "warning"
-            ? "⚠️ Warning Alert"
-            : "ℹ️ Info Alert",
+        severity === 'critical'
+          ? '🚨 Critical Alert'
+          : severity === 'warning'
+            ? '⚠️ Warning Alert'
+            : 'ℹ️ Info Alert',
       description: `*${alertType}*: ${message}`,
       color,
       fields: [
-        { name: "Severity", value: severity.toUpperCase(), inline: true },
-        { name: "Recommended Action", value: recommendedAction, inline: false },
+        { name: 'Severity', value: severity.toUpperCase(), inline: true },
+        { name: 'Recommended Action', value: recommendedAction, inline: false },
       ],
-      footer: "Insight Oracle Monitor",
+      footer: 'Insight Oracle Monitor',
       timestamp: new Date().toISOString(),
-      url: "https://insight.foresight.build/alerts",
+      url: 'https://insight.foresight.build/alerts',
     };
   }
 
-  createHealthNotification(
-    score: number,
-    issues: string[],
-  ): NotificationMessage {
+  createHealthNotification(score: number, issues: string[]): NotificationMessage {
     return {
       title:
         score >= 90
-          ? "✅ Oracle Health Check Passed"
+          ? '✅ Oracle Health Check Passed'
           : score >= 70
-            ? "⚠️ Oracle Health Degraded"
-            : "🚨 Oracle Health Critical",
+            ? '⚠️ Oracle Health Degraded'
+            : '🚨 Oracle Health Critical',
       description:
         score >= 90
-          ? "All systems operating normally"
-          : `Health score: **${score}/100**\n\nIssues detected:\n${issues.map((i) => `• ${i}`).join("\n")}`,
+          ? 'All systems operating normally'
+          : `Health score: **${score}/100**\n\nIssues detected:\n${issues.map((i) => `• ${i}`).join('\n')}`,
       color:
         score >= 90
           ? this.SLACK_COLORS.success
@@ -411,12 +402,12 @@ export class NotificationIntegrator {
             ? this.SLACK_COLORS.warning
             : this.SLACK_COLORS.error,
       fields: [
-        { name: "Health Score", value: `${score}/100`, inline: true },
-        { name: "Issues Found", value: issues.length.toString(), inline: true },
+        { name: 'Health Score', value: `${score}/100`, inline: true },
+        { name: 'Issues Found', value: issues.length.toString(), inline: true },
       ],
-      footer: "Insight Oracle Monitor",
+      footer: 'Insight Oracle Monitor',
       timestamp: new Date().toISOString(),
-      url: "https://insight.foresight.build/oracle",
+      url: 'https://insight.foresight.build/oracle',
     };
   }
 
@@ -426,9 +417,9 @@ export class NotificationIntegrator {
 
     try {
       const response = await fetch(config.webhookUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: "🔔 Insight Oracle - Test notification" }),
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: '🔔 Insight Oracle - Test notification' }),
       });
 
       return response.ok;
@@ -443,12 +434,12 @@ export class NotificationIntegrator {
 
     try {
       const response = await fetch(config.webhookUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           username: config.username,
           avatar_url: config.avatarUrl,
-          content: "🔔 Insight Oracle - Test notification",
+          content: '🔔 Insight Oracle - Test notification',
         }),
       });
 
@@ -480,24 +471,24 @@ export const notificationIntegrator = new NotificationIntegrator();
 
 export function createSlackConfig(
   webhookUrl: string,
-  channel: string = "#oracle-alerts",
+  channel: string = '#oracle-alerts',
 ): SlackConfig {
   return {
     webhookUrl,
     channel,
-    username: "Insight Oracle",
-    iconEmoji: ":owl:",
+    username: 'Insight Oracle',
+    iconEmoji: ':owl:',
     isActive: true,
     mentionUsers: [],
-    mentionRole: "",
+    mentionRole: '',
   };
 }
 
 export function createDiscordConfig(webhookUrl: string): DiscordConfig {
   return {
     webhookUrl,
-    username: "Insight Oracle",
-    avatarUrl: "https://insight.foresight.build/logo-owl.png",
+    username: 'Insight Oracle',
+    avatarUrl: 'https://insight.foresight.build/logo-owl.png',
     isActive: true,
     mentionEveryone: false,
   };

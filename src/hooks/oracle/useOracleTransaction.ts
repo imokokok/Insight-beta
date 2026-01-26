@@ -1,34 +1,20 @@
-import { useRef, useState } from "react";
-import { useWallet } from "@/contexts/WalletContext";
-import { useToast } from "@/components/ui/toast";
-import { useI18n } from "@/i18n/LanguageProvider";
-import { oracleAbi } from "@/lib/blockchain/oracleAbi";
-import { publicEnv } from "@/lib/config/publicEnv";
-import { createPublicClient, custom, http, parseEther, webSocket } from "viem";
-import type { OracleChain, OracleConfig } from "@/lib/types/oracleTypes";
-import {
-  copyToClipboard,
-  fetchApiData,
-  getExplorerUrl,
-  parseRpcUrls,
-} from "@/lib/utils";
-import { normalizeWalletError } from "@/lib/errors/walletErrors";
-import { logger } from "@/lib/logger";
+import { useRef, useState } from 'react';
+import { useWallet } from '@/contexts/WalletContext';
+import { useToast } from '@/components/ui/toast';
+import { useI18n } from '@/i18n/LanguageProvider';
+import { oracleAbi } from '@/lib/blockchain/oracleAbi';
+import { publicEnv } from '@/lib/config/publicEnv';
+import { createPublicClient, custom, http, parseEther, webSocket } from 'viem';
+import type { OracleChain, OracleConfig } from '@/lib/types/oracleTypes';
+import { copyToClipboard, fetchApiData, getExplorerUrl, parseRpcUrls } from '@/lib/utils';
+import { normalizeWalletError } from '@/lib/errors/walletErrors';
+import { logger } from '@/lib/logger';
 
-type OracleWriteFunctionName = Exclude<
-  (typeof oracleAbi)[number]["name"],
-  "getBond"
->;
+type OracleWriteFunctionName = Exclude<(typeof oracleAbi)[number]['name'], 'getBond'>;
 
 type OracleWriteArgs =
   | readonly [protocol: string, market: string, assertion: string]
-  | readonly [
-      protocol: string,
-      market: string,
-      assertion: string,
-      bond: bigint,
-      liveness: bigint,
-    ]
+  | readonly [protocol: string, market: string, assertion: string, bond: bigint, liveness: bigint]
   | readonly [`0x${string}`]
   | readonly [`0x${string}`, support: boolean]
   | readonly [`0x${string}`, reason: string];
@@ -49,10 +35,10 @@ type TransactionOptions<TFunctionName extends OracleWriteFunctionName> = {
 };
 
 function oracleChainToChainId(chain: OracleChain): number {
-  if (chain === "Polygon") return 137;
-  if (chain === "PolygonAmoy") return 80002;
-  if (chain === "Arbitrum") return 42161;
-  if (chain === "Optimism") return 10;
+  if (chain === 'Polygon') return 137;
+  if (chain === 'PolygonAmoy') return 80002;
+  if (chain === 'Arbitrum') return 42161;
+  if (chain === 'Optimism') return 10;
   return 31337;
 }
 
@@ -64,13 +50,9 @@ export function useOracleTransaction(instanceId?: string) {
   const [isConfirming, setIsConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const resolvedInstanceId =
-    typeof instanceId === "string" && instanceId.trim()
-      ? instanceId.trim()
-      : null;
+    typeof instanceId === 'string' && instanceId.trim() ? instanceId.trim() : null;
   const configRef = useRef<Map<string, OracleConfig | null>>(new Map());
-  const configFetchLocks = useRef<Map<string, Promise<OracleConfig | null>>>(
-    new Map(),
-  );
+  const configFetchLocks = useRef<Map<string, Promise<OracleConfig | null>>>(new Map());
 
   const execute = async <TFunctionName extends OracleWriteFunctionName>({
     functionName,
@@ -87,11 +69,11 @@ export function useOracleTransaction(instanceId?: string) {
     onError,
   }: TransactionOptions<TFunctionName>) => {
     if (!address) {
-      const msg = t("errors.walletNotConnected");
+      const msg = t('errors.walletNotConnected');
       setError(msg);
       toast({
-        type: "error",
-        title: t("oracle.detail.validationError"),
+        type: 'error',
+        title: t('oracle.detail.validationError'),
         message: msg,
       });
       return;
@@ -109,17 +91,17 @@ export function useOracleTransaction(instanceId?: string) {
         } catch (err) {
           const normalized = normalizeWalletError(err);
           const msg =
-            normalized.kind === "CHAIN_NOT_ADDED"
-              ? t("errors.chainNotAdded")
-              : normalized.kind === "USER_REJECTED"
-                ? t("errors.userRejected")
-                : normalized.kind === "REQUEST_PENDING"
-                  ? t("errors.requestPending")
-                  : t("errors.wrongNetwork");
+            normalized.kind === 'CHAIN_NOT_ADDED'
+              ? t('errors.chainNotAdded')
+              : normalized.kind === 'USER_REJECTED'
+                ? t('errors.userRejected')
+                : normalized.kind === 'REQUEST_PENDING'
+                  ? t('errors.requestPending')
+                  : t('errors.wrongNetwork');
           setError(msg);
           toast({
-            type: "error",
-            title: t("oracle.detail.validationError"),
+            type: 'error',
+            title: t('oracle.detail.validationError'),
             message: msg,
           });
           return;
@@ -129,16 +111,16 @@ export function useOracleTransaction(instanceId?: string) {
       const client = await getWalletClient(expectedChainId ?? undefined);
       if (!client) {
         throw new Error(
-          "No wallet client available. Please make sure your wallet is connected and unlocked.",
+          'No wallet client available. Please make sure your wallet is connected and unlocked.',
         );
       }
 
-      let targetAddress = (contractAddress ?? "").trim();
+      let targetAddress = (contractAddress ?? '').trim();
       if (!targetAddress) {
         targetAddress = publicEnv.INSIGHT_ORACLE_ADDRESS;
       }
       if (!targetAddress) {
-        const key = resolvedInstanceId ?? "default";
+        const key = resolvedInstanceId ?? 'default';
         if (!configRef.current.has(key)) {
           let lock = configFetchLocks.current.get(key);
           if (!lock) {
@@ -146,7 +128,7 @@ export function useOracleTransaction(instanceId?: string) {
               try {
                 const url = resolvedInstanceId
                   ? `/api/oracle/config?instanceId=${encodeURIComponent(resolvedInstanceId)}`
-                  : "/api/oracle/config";
+                  : '/api/oracle/config';
                 return await fetchApiData<OracleConfig>(url);
               } catch {
                 return null;
@@ -158,12 +140,9 @@ export function useOracleTransaction(instanceId?: string) {
           const config = await lock;
           configRef.current.set(key, config);
         }
-        targetAddress = (
-          configRef.current.get(key)?.contractAddress ?? ""
-        ).trim();
+        targetAddress = (configRef.current.get(key)?.contractAddress ?? '').trim();
       }
-      if (!targetAddress)
-        throw new Error("Oracle contract address not configured");
+      if (!targetAddress) throw new Error('Oracle contract address not configured');
 
       const hash = await client.writeContract({
         account: address as `0x${string}`,
@@ -182,21 +161,21 @@ export function useOracleTransaction(instanceId?: string) {
         const ok = await copyToClipboard(hash);
         if (ok) {
           update(toastId, {
-            secondaryActionLabel: t("common.copied"),
+            secondaryActionLabel: t('common.copied'),
             secondaryActionDisabled: true,
           });
           window.setTimeout(() => {
             update(toastId, {
-              secondaryActionLabel: t("common.copyHash"),
+              secondaryActionLabel: t('common.copyHash'),
               secondaryActionDisabled: false,
             });
           }, 1200);
           return;
         }
         toast({
-          type: "error",
-          title: t("oracle.detail.txFailed"),
-          message: t("errors.unknownError"),
+          type: 'error',
+          title: t('oracle.detail.txFailed'),
+          message: t('errors.unknownError'),
         });
       };
       const makeCopyHandler = (toastId: string) => () => {
@@ -206,43 +185,36 @@ export function useOracleTransaction(instanceId?: string) {
       const sentToastId = Math.random().toString(36).substring(2, 9);
       toast({
         id: sentToastId,
-        type: "success",
-        title: successTitle ?? t("oracle.tx.sentTitle"),
-        message: `${successMessage ?? t("oracle.tx.sentMsg")} (${hash.slice(
+        type: 'success',
+        title: successTitle ?? t('oracle.tx.sentTitle'),
+        message: `${successMessage ?? t('oracle.tx.sentMsg')} (${hash.slice(
           0,
           10,
         )}…${hash.slice(-8)})`,
-        actionLabel: explorerUrl ? t("common.viewTx") : undefined,
+        actionLabel: explorerUrl ? t('common.viewTx') : undefined,
         actionHref: explorerUrl ?? undefined,
-        secondaryActionLabel: t("common.copyHash"),
+        secondaryActionLabel: t('common.copyHash'),
         secondaryActionOnClick: makeCopyHandler(sentToastId),
       });
 
       onSuccess?.(hash);
 
-      if (
-        waitForConfirmation &&
-        typeof window !== "undefined" &&
-        window.ethereum
-      ) {
+      if (waitForConfirmation && typeof window !== 'undefined' && window.ethereum) {
         setIsConfirming(true);
         const confirmingToastId = Math.random().toString(36).substring(2, 9);
         toast({
           id: confirmingToastId,
-          type: "info",
-          title: t("oracle.tx.confirmingTitle"),
-          message: `${t("oracle.tx.confirmingMsg")} (${hash.slice(
-            0,
-            10,
-          )}…${hash.slice(-8)})`,
-          actionLabel: explorerUrl ? t("common.viewTx") : undefined,
+          type: 'info',
+          title: t('oracle.tx.confirmingTitle'),
+          message: `${t('oracle.tx.confirmingMsg')} (${hash.slice(0, 10)}…${hash.slice(-8)})`,
+          actionLabel: explorerUrl ? t('common.viewTx') : undefined,
           actionHref: explorerUrl ?? undefined,
-          secondaryActionLabel: t("common.copyHash"),
+          secondaryActionLabel: t('common.copyHash'),
           secondaryActionOnClick: makeCopyHandler(confirmingToastId),
         });
-        let effectiveRpcUrl = (rpcUrl ?? "").trim();
+        let effectiveRpcUrl = (rpcUrl ?? '').trim();
         if (!effectiveRpcUrl) {
-          const key = resolvedInstanceId ?? "default";
+          const key = resolvedInstanceId ?? 'default';
           if (!configRef.current.has(key)) {
             let lock = configFetchLocks.current.get(key);
             if (!lock) {
@@ -250,7 +222,7 @@ export function useOracleTransaction(instanceId?: string) {
                 try {
                   const url = resolvedInstanceId
                     ? `/api/oracle/config?instanceId=${encodeURIComponent(resolvedInstanceId)}`
-                    : "/api/oracle/config";
+                    : '/api/oracle/config';
                   return await fetchApiData<OracleConfig>(url);
                 } catch {
                   return null;
@@ -262,26 +234,26 @@ export function useOracleTransaction(instanceId?: string) {
             const config = await lock;
             configRef.current.set(key, config);
           }
-          effectiveRpcUrl = (configRef.current.get(key)?.rpcUrl ?? "").trim();
+          effectiveRpcUrl = (configRef.current.get(key)?.rpcUrl ?? '').trim();
         }
-        const primaryRpcUrl = parseRpcUrls(effectiveRpcUrl)[0] ?? "";
+        const primaryRpcUrl = parseRpcUrls(effectiveRpcUrl)[0] ?? '';
 
         const publicClient = createPublicClient({
           chain: client.chain ?? undefined,
           transport: primaryRpcUrl
-            ? primaryRpcUrl.startsWith("ws")
+            ? primaryRpcUrl.startsWith('ws')
               ? webSocket(primaryRpcUrl)
               : http(primaryRpcUrl)
             : custom(window.ethereum),
         });
         const receipt = await publicClient.waitForTransactionReceipt({ hash });
         setIsConfirming(false);
-        if (receipt.status === "reverted") {
-          const msg = t("oracle.detail.txFailed");
+        if (receipt.status === 'reverted') {
+          const msg = t('oracle.detail.txFailed');
           setError(msg);
           toast({
-            type: "error",
-            title: t("oracle.detail.txFailed"),
+            type: 'error',
+            title: t('oracle.detail.txFailed'),
             message: msg,
           });
           return;
@@ -289,34 +261,31 @@ export function useOracleTransaction(instanceId?: string) {
         const confirmedToastId = Math.random().toString(36).substring(2, 9);
         toast({
           id: confirmedToastId,
-          type: "success",
-          title: t("oracle.tx.confirmedTitle"),
-          message: `${t("oracle.tx.confirmedMsg")} (${hash.slice(
-            0,
-            10,
-          )}…${hash.slice(-8)})`,
-          actionLabel: explorerUrl ? t("common.viewTx") : undefined,
+          type: 'success',
+          title: t('oracle.tx.confirmedTitle'),
+          message: `${t('oracle.tx.confirmedMsg')} (${hash.slice(0, 10)}…${hash.slice(-8)})`,
+          actionLabel: explorerUrl ? t('common.viewTx') : undefined,
           actionHref: explorerUrl ?? undefined,
-          secondaryActionLabel: t("common.copyHash"),
+          secondaryActionLabel: t('common.copyHash'),
           secondaryActionOnClick: makeCopyHandler(confirmedToastId),
         });
         onConfirmed?.(hash);
       }
     } catch (err: unknown) {
-      logger.error("Transaction failed:", { error: err });
+      logger.error('Transaction failed:', { error: err });
       const normalized = normalizeWalletError(err);
       const errorMessage =
-        normalized.kind === "USER_REJECTED"
-          ? t("errors.userRejected")
-          : normalized.kind === "REQUEST_PENDING"
-            ? t("errors.requestPending")
-            : normalized.kind === "INSUFFICIENT_FUNDS"
-              ? t("errors.insufficientFunds")
-              : (normalized.rawMessage ?? t("errors.unknownError"));
+        normalized.kind === 'USER_REJECTED'
+          ? t('errors.userRejected')
+          : normalized.kind === 'REQUEST_PENDING'
+            ? t('errors.requestPending')
+            : normalized.kind === 'INSUFFICIENT_FUNDS'
+              ? t('errors.insufficientFunds')
+              : (normalized.rawMessage ?? t('errors.unknownError'));
       setError(errorMessage);
       toast({
-        type: "error",
-        title: t("oracle.detail.txFailed"),
+        type: 'error',
+        title: t('oracle.detail.txFailed'),
         message: errorMessage,
       });
       onError?.(err);

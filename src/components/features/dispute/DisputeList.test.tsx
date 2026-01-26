@@ -1,21 +1,21 @@
-import React from "react";
-import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
-import { DisputeList } from "./DisputeList";
-import type { Dispute } from "@/lib/types/oracleTypes";
+import React from 'react';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { DisputeList } from './DisputeList';
+import type { Dispute } from '@/lib/types/oracleTypes';
 
-vi.mock("@/i18n/LanguageProvider", () => ({
+vi.mock('@/i18n/LanguageProvider', () => ({
   useI18n: () => ({
     t: (key: string) => key,
-    lang: "en",
+    lang: 'en',
   }),
 }));
 
-vi.mock("@/i18n/translations", () => ({
-  langToLocale: { en: "en-US" },
+vi.mock('@/i18n/translations', () => ({
+  langToLocale: { en: 'en-US' },
 }));
 
-vi.mock("next/link", () => ({
+vi.mock('next/link', () => ({
   default: ({
     href,
     children,
@@ -31,7 +31,7 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-vi.mock("@/hooks/user/useWatchlist", () => ({
+vi.mock('@/hooks/user/useWatchlist', () => ({
   useWatchlist: () => ({
     isWatched: () => false,
     toggleWatchlist: vi.fn(),
@@ -50,7 +50,7 @@ type VirtuosoGridProps<T> = VirtuosoProps<T> & {
   itemClassName?: string;
 };
 
-vi.mock("react-virtuoso", () => ({
+vi.mock('react-virtuoso', () => ({
   Virtuoso: ({ itemContent, data }: VirtuosoProps<unknown>) => (
     <div data-testid="virtuoso-list" data-count={data.length}>
       {data.map((item, index) => (
@@ -64,11 +64,7 @@ vi.mock("react-virtuoso", () => ({
     listClassName,
     itemClassName,
   }: VirtuosoGridProps<unknown>) => (
-    <div
-      className={listClassName}
-      data-testid="virtuoso-grid"
-      data-count={data.length}
-    >
+    <div className={listClassName} data-testid="virtuoso-grid" data-count={data.length}>
       {data.map((item, index) => (
         <div key={index} className={itemClassName}>
           {itemContent(index, item)}
@@ -78,23 +74,23 @@ vi.mock("react-virtuoso", () => ({
   ),
 }));
 
-describe("DisputeList", () => {
+describe('DisputeList', () => {
   const mockDispute: Dispute = {
-    id: "0x1234567890abcdef1234567890abcdef12345678",
-    chain: "Arbitrum",
-    assertionId: "0xassertion",
-    market: "Test Market",
-    disputeReason: "Bad result",
-    disputer: "0xuser",
+    id: '0x1234567890abcdef1234567890abcdef12345678',
+    chain: 'Arbitrum',
+    assertionId: '0xassertion',
+    market: 'Test Market',
+    disputeReason: 'Bad result',
+    disputer: '0xuser',
     disputedAt: new Date().toISOString(),
     votingEndsAt: new Date().toISOString(),
-    status: "Voting",
+    status: 'Voting',
     currentVotesFor: 10,
     currentVotesAgainst: 5,
     totalVotes: 15,
   };
 
-  it("renders loading skeleton when loading is true with no items", () => {
+  it('renders loading skeleton when loading is true with no items', () => {
     const { container } = render(
       <DisputeList
         items={[]}
@@ -106,12 +102,12 @@ describe("DisputeList", () => {
       />,
     );
 
-    const skeletonCards = container.querySelectorAll(".animate-pulse");
+    const skeletonCards = container.querySelectorAll('.animate-pulse');
     expect(skeletonCards.length).toBeGreaterThan(0);
     expect(skeletonCards.length).toBe(6);
   });
 
-  it("does not render skeleton when loading is false with no items", () => {
+  it('does not render skeleton when loading is false with no items', () => {
     render(
       <DisputeList
         items={[]}
@@ -122,10 +118,10 @@ describe("DisputeList", () => {
         loadingMore={false}
       />,
     );
-    expect(screen.getByText("common.noData")).toBeInTheDocument();
+    expect(screen.getByText('common.noData')).toBeInTheDocument();
   });
 
-  it("renders items in grid view", () => {
+  it('renders items in grid view', () => {
     render(
       <DisputeList
         items={[mockDispute]}
@@ -137,12 +133,12 @@ describe("DisputeList", () => {
       />,
     );
 
-    expect(screen.getByText("0x123456...")).toBeInTheDocument();
-    expect(screen.getByText("A")).toBeInTheDocument();
-    expect(screen.getByText("status.voting")).toBeInTheDocument();
+    expect(screen.getByText('0x123456...')).toBeInTheDocument();
+    expect(screen.getByText('A')).toBeInTheDocument();
+    expect(screen.getByText('status.voting')).toBeInTheDocument();
   });
 
-  it("renders items in list view", () => {
+  it('renders items in list view', () => {
     render(
       <DisputeList
         items={[mockDispute]}
@@ -154,11 +150,11 @@ describe("DisputeList", () => {
       />,
     );
 
-    expect(screen.getByText("0x123456...")).toBeInTheDocument();
-    expect(screen.getByText("status.voting")).toBeInTheDocument();
+    expect(screen.getByText('0x123456...')).toBeInTheDocument();
+    expect(screen.getByText('status.voting')).toBeInTheDocument();
   });
 
-  it("generates correct link to assertion details", () => {
+  it('generates correct link to assertion details', () => {
     render(
       <DisputeList
         items={[mockDispute]}
@@ -170,11 +166,11 @@ describe("DisputeList", () => {
       />,
     );
 
-    const link = screen.getByTestId("mock-link");
-    expect(link).toHaveAttribute("href", "/oracle/0xassertion");
+    const link = screen.getByTestId('mock-link');
+    expect(link).toHaveAttribute('href', '/oracle/0xassertion');
   });
 
-  it("generates correct link with instanceId", () => {
+  it('generates correct link with instanceId', () => {
     render(
       <DisputeList
         items={[mockDispute]}
@@ -187,15 +183,15 @@ describe("DisputeList", () => {
       />,
     );
 
-    const link = screen.getByTestId("mock-link");
-    expect(link).toHaveAttribute("href", "/oracle/0xassertion?instanceId=demo");
+    const link = screen.getByTestId('mock-link');
+    expect(link).toHaveAttribute('href', '/oracle/0xassertion?instanceId=demo');
   });
 
-  it("renders multiple items", () => {
+  it('renders multiple items', () => {
     const mockDispute2: Dispute = {
       ...mockDispute,
-      id: "0xabcdef1234567890abcdef1234567890abcdef12",
-      market: "Another Market",
+      id: '0xabcdef1234567890abcdef1234567890abcdef12',
+      market: 'Another Market',
     };
 
     render(
@@ -209,11 +205,11 @@ describe("DisputeList", () => {
       />,
     );
 
-    expect(screen.getByText("Test Market")).toBeInTheDocument();
-    expect(screen.getByText("Another Market")).toBeInTheDocument();
+    expect(screen.getByText('Test Market')).toBeInTheDocument();
+    expect(screen.getByText('Another Market')).toBeInTheDocument();
   });
 
-  it("handles empty items correctly", () => {
+  it('handles empty items correctly', () => {
     render(
       <DisputeList
         items={[]}
@@ -224,10 +220,10 @@ describe("DisputeList", () => {
         loadingMore={false}
       />,
     );
-    expect(screen.getByText("common.noData")).toBeInTheDocument();
+    expect(screen.getByText('common.noData')).toBeInTheDocument();
   });
 
-  it("handles loading with items gracefully", () => {
+  it('handles loading with items gracefully', () => {
     render(
       <DisputeList
         items={[mockDispute]}
@@ -239,10 +235,10 @@ describe("DisputeList", () => {
       />,
     );
 
-    expect(screen.getByText("Test Market")).toBeInTheDocument();
+    expect(screen.getByText('Test Market')).toBeInTheDocument();
   });
 
-  it("renders skeleton in list mode when loading", () => {
+  it('renders skeleton in list mode when loading', () => {
     const { container } = render(
       <DisputeList
         items={[]}
@@ -254,11 +250,11 @@ describe("DisputeList", () => {
       />,
     );
 
-    const skeletonCards = container.querySelectorAll(".animate-pulse");
+    const skeletonCards = container.querySelectorAll('.animate-pulse');
     expect(skeletonCards.length).toBeGreaterThan(0);
   });
 
-  it("handles custom empty state message", () => {
+  it('handles custom empty state message', () => {
     render(
       <DisputeList
         items={[]}
@@ -270,6 +266,6 @@ describe("DisputeList", () => {
         emptyStateMessage="Custom empty message"
       />,
     );
-    expect(screen.getByText("Custom empty message")).toBeInTheDocument();
+    expect(screen.getByText('Custom empty message')).toBeInTheDocument();
   });
 });

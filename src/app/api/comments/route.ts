@@ -1,26 +1,20 @@
-import type { NextRequest } from "next/server";
-import { handleApi } from "@/server/apiResponse";
-import { logger } from "@/lib/logger";
-import type {
-  Comment,
-  CommentCreateInput,
-  CommentFilter,
-} from "@/lib/types/commentTypes";
-import { db } from "@/server/db";
+import type { NextRequest } from 'next/server';
+import { handleApi } from '@/server/apiResponse';
+import { logger } from '@/lib/logger';
+import type { Comment, CommentCreateInput, CommentFilter } from '@/lib/types/commentTypes';
+import { db } from '@/server/db';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   return handleApi(request, async () => {
     const { searchParams } = new URL(request.url);
-    const entityType = searchParams.get("entityType") as
-      | Comment["entityType"]
-      | undefined;
-    const entityId = searchParams.get("entityId") || undefined;
-    const authorAddress = searchParams.get("authorAddress") || undefined;
-    const limit = Number(searchParams.get("limit")) || 50;
-    const offset = Number(searchParams.get("offset")) || 0;
-    const sortBy = searchParams.get("sortBy") || "newest";
+    const entityType = searchParams.get('entityType') as Comment['entityType'] | undefined;
+    const entityId = searchParams.get('entityId') || undefined;
+    const authorAddress = searchParams.get('authorAddress') || undefined;
+    const limit = Number(searchParams.get('limit')) || 50;
+    const offset = Number(searchParams.get('offset')) || 0;
+    const sortBy = searchParams.get('sortBy') || 'newest';
 
     const filter: CommentFilter = {
       entityType,
@@ -28,18 +22,18 @@ export async function GET(request: NextRequest) {
       authorAddress,
       limit,
       offset,
-      sortBy: sortBy as "newest" | "oldest" | "most_liked",
+      sortBy: sortBy as 'newest' | 'oldest' | 'most_liked',
     };
 
     try {
       const orderByClause =
-        sortBy === "newest"
-          ? "ORDER BY c.created_at DESC"
-          : sortBy === "oldest"
-            ? "ORDER BY c.created_at ASC"
-            : sortBy === "most_liked"
-              ? "ORDER BY c.likes DESC, c.created_at DESC"
-              : "ORDER BY c.created_at DESC";
+        sortBy === 'newest'
+          ? 'ORDER BY c.created_at DESC'
+          : sortBy === 'oldest'
+            ? 'ORDER BY c.created_at ASC'
+            : sortBy === 'most_liked'
+              ? 'ORDER BY c.likes DESC, c.created_at DESC'
+              : 'ORDER BY c.created_at DESC';
 
       const result = await db.query<Comment>(
         `
@@ -59,19 +53,13 @@ export async function GET(request: NextRequest) {
           c.is_deleted
         FROM comments c
         WHERE c.is_deleted = false
-          ${filter.entityType ? "AND c.entity_type = $1" : ""}
-          ${filter.entityId ? "AND c.entity_id = $2" : ""}
-          ${filter.authorAddress ? "AND c.author_address = $3" : ""}
+          ${filter.entityType ? 'AND c.entity_type = $1' : ''}
+          ${filter.entityId ? 'AND c.entity_id = $2' : ''}
+          ${filter.authorAddress ? 'AND c.author_address = $3' : ''}
         ${orderByClause}
         LIMIT $4 OFFSET $5
         `,
-        [
-          filter.entityType,
-          filter.entityId,
-          filter.authorAddress,
-          limit,
-          offset,
-        ].filter(Boolean),
+        [filter.entityType, filter.entityId, filter.authorAddress, limit, offset].filter(Boolean),
       );
 
       const countResult = await db.query<{ count: bigint }>(
@@ -79,13 +67,11 @@ export async function GET(request: NextRequest) {
         SELECT COUNT(*) as count 
         FROM comments c
         WHERE c.is_deleted = false
-          ${filter.entityType ? "AND c.entity_type = $1" : ""}
-          ${filter.entityId ? "AND c.entity_id = $2" : ""}
-          ${filter.authorAddress ? "AND c.author_address = $3" : ""}
+          ${filter.entityType ? 'AND c.entity_type = $1' : ''}
+          ${filter.entityId ? 'AND c.entity_id = $2' : ''}
+          ${filter.authorAddress ? 'AND c.author_address = $3' : ''}
         `,
-        [filter.entityType, filter.entityId, filter.authorAddress].filter(
-          Boolean,
-        ),
+        [filter.entityType, filter.entityId, filter.authorAddress].filter(Boolean),
       );
 
       return {
@@ -95,7 +81,7 @@ export async function GET(request: NextRequest) {
         offset,
       };
     } catch (error) {
-      logger.error("Failed to query comments", { error, filter });
+      logger.error('Failed to query comments', { error, filter });
       throw error;
     }
   });
@@ -105,18 +91,18 @@ export async function POST(request: NextRequest) {
   return handleApi(request, async () => {
     const input = (await request.json()) as CommentCreateInput;
     const { searchParams } = new URL(request.url);
-    const authorAddress = searchParams.get("authorAddress");
+    const authorAddress = searchParams.get('authorAddress');
 
     if (!authorAddress) {
-      return { error: "missing_author_address" };
+      return { error: 'missing_author_address' };
     }
 
     if (!input.entityType || !input.entityId || !input.content) {
-      return { error: "invalid_request_body" };
+      return { error: 'invalid_request_body' };
     }
 
     if (input.content.length > 1000) {
-      return { error: "comment_too_long" };
+      return { error: 'comment_too_long' };
     }
 
     try {
@@ -128,16 +114,10 @@ export async function POST(request: NextRequest) {
         ) VALUES ($1, $2, $3, $4, $5, 0, false, false, false)
         RETURNING id
         `,
-        [
-          input.entityType,
-          input.entityId,
-          authorAddress,
-          input.content,
-          input.parentId || null,
-        ],
+        [input.entityType, input.entityId, authorAddress, input.content, input.parentId || null],
       );
 
-      logger.info("Comment created", {
+      logger.info('Comment created', {
         commentId: result.rows[0]?.id,
         entityType: input.entityType,
         entityId: input.entityId,
@@ -158,7 +138,7 @@ export async function POST(request: NextRequest) {
         },
       };
     } catch (error) {
-      logger.error("Failed to create comment", { error, input });
+      logger.error('Failed to create comment', { error, input });
       throw error;
     }
   });

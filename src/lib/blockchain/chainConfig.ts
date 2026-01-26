@@ -1,42 +1,35 @@
-import {
-  arbitrum,
-  hardhat,
-  mainnet,
-  optimism,
-  polygon,
-  polygonAmoy,
-} from "viem/chains";
+import { arbitrum, hardhat, mainnet, optimism, polygon, polygonAmoy } from 'viem/chains';
 
 export const CHAIN_CONFIG = {
   [polygon.id]: {
-    name: "Polygon",
+    name: 'Polygon',
     symbol: polygon.nativeCurrency.symbol,
-    explorer: "https://polygonscan.com",
+    explorer: 'https://polygonscan.com',
   },
   [polygonAmoy.id]: {
-    name: "Polygon Amoy",
+    name: 'Polygon Amoy',
     symbol: polygonAmoy.nativeCurrency.symbol,
-    explorer: "https://www.oklink.com/amoy",
+    explorer: 'https://www.oklink.com/amoy',
   },
   [arbitrum.id]: {
-    name: "Arbitrum",
+    name: 'Arbitrum',
     symbol: arbitrum.nativeCurrency.symbol,
-    explorer: "https://arbiscan.io",
+    explorer: 'https://arbiscan.io',
   },
   [optimism.id]: {
-    name: "Optimism",
+    name: 'Optimism',
     symbol: optimism.nativeCurrency.symbol,
-    explorer: "https://optimistic.etherscan.io",
+    explorer: 'https://optimistic.etherscan.io',
   },
   [hardhat.id]: {
-    name: "Hardhat",
+    name: 'Hardhat',
     symbol: hardhat.nativeCurrency.symbol,
-    explorer: "",
+    explorer: '',
   },
   [mainnet.id]: {
-    name: "Ethereum",
+    name: 'Ethereum',
     symbol: mainnet.nativeCurrency.symbol,
-    explorer: "https://etherscan.io",
+    explorer: 'https://etherscan.io',
   },
 } as const;
 

@@ -1,6 +1,6 @@
-import { env } from "@/lib/config/env";
-import { parseRpcUrls } from "@/lib/utils";
-import { createPublicClient, http, parseAbi } from "viem";
+import { env } from '@/lib/config/env';
+import { parseRpcUrls } from '@/lib/utils';
+import { createPublicClient, http, parseAbi } from 'viem';
 
 export interface PricePoint {
   timestamp: string;
@@ -47,22 +47,19 @@ function getDependencyTimeoutMs() {
 
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   const controller = new AbortController();
-  const timeout = setTimeout(
-    () => controller.abort(),
-    getDependencyTimeoutMs(),
-  );
+  const timeout = setTimeout(() => controller.abort(), getDependencyTimeoutMs());
   try {
     const res = await fetch(url, {
       ...init,
       signal: controller.signal,
       headers: {
-        accept: "application/json",
+        accept: 'application/json',
         ...(init?.headers ?? {}),
       },
-      cache: "no-store",
+      cache: 'no-store',
     });
     if (!res.ok) {
-      const text = await res.text().catch(() => "");
+      const text = await res.text().catch(() => '');
       throw new Error(`http_${res.status}:${text.slice(0, 200)}`);
     }
     return (await res.json()) as T;
@@ -72,14 +69,14 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 function normalizeSymbol(raw: string) {
-  const sym = (raw ?? "").trim().toUpperCase();
-  if (!sym) return "ETH";
+  const sym = (raw ?? '').trim().toUpperCase();
+  if (!sym) return 'ETH';
   return sym;
 }
 
 function fallbackSpotUsd(sym: string) {
   const symbol = normalizeSymbol(sym);
-  return symbol === "BTC" ? 65000 : symbol === "ETH" ? 3500 : 100;
+  return symbol === 'BTC' ? 65000 : symbol === 'ETH' ? 3500 : 100;
 }
 
 function toBinanceSymbol(sym: string) {
@@ -95,33 +92,24 @@ function toCoinbaseProduct(sym: string) {
 async function fetchBinanceSpotUsdUncached(sym: string): Promise<number> {
   const symbol = toBinanceSymbol(sym);
   const data = await fetchJson<{ price?: string }>(
-    `https://api.binance.com/api/v3/ticker/price?symbol=${encodeURIComponent(
-      symbol,
-    )}`,
+    `https://api.binance.com/api/v3/ticker/price?symbol=${encodeURIComponent(symbol)}`,
   );
   const price = Number(data.price);
-  if (!Number.isFinite(price) || price <= 0)
-    throw new Error("binance_bad_price");
+  if (!Number.isFinite(price) || price <= 0) throw new Error('binance_bad_price');
   return price;
 }
 
 async function fetchCoinbaseSpotUsdUncached(sym: string): Promise<number> {
   const productId = toCoinbaseProduct(sym);
   const data = await fetchJson<{ price?: string }>(
-    `https://api.exchange.coinbase.com/products/${encodeURIComponent(
-      productId,
-    )}/ticker`,
+    `https://api.exchange.coinbase.com/products/${encodeURIComponent(productId)}/ticker`,
   );
   const price = Number(data.price);
-  if (!Number.isFinite(price) || price <= 0)
-    throw new Error("coinbase_bad_price");
+  if (!Number.isFinite(price) || price <= 0) throw new Error('coinbase_bad_price');
   return price;
 }
 
-function getCachedNumber(
-  cache: Map<string, CacheEntry<number>>,
-  key: string,
-): number | null {
+function getCachedNumber(cache: Map<string, CacheEntry<number>>, key: string): number | null {
   const hit = cache.get(key);
   if (!hit) return null;
   if (Date.now() > hit.expiresAtMs) {
@@ -156,18 +144,18 @@ async function cachedNumber(
 
 async function fetchSpotUsdWithCache(
   sym: string,
-  provider: "binance" | "coinbase",
+  provider: 'binance' | 'coinbase',
 ): Promise<number> {
   const symbol = normalizeSymbol(sym);
   const key = `spot:${provider}:${symbol}`;
   const ttlMs = SPOT_CACHE_TTL_MS;
   return cachedNumber(spotCache, spotInflight, key, ttlMs, async () => {
     const raw =
-      provider === "binance"
+      provider === 'binance'
         ? await fetchBinanceSpotUsdUncached(symbol)
         : await fetchCoinbaseSpotUsdUncached(symbol);
     const v = Number(raw);
-    if (!Number.isFinite(v) || v <= 0) throw new Error("spot_bad_price");
+    if (!Number.isFinite(v) || v <= 0) throw new Error('spot_bad_price');
     return v;
   });
 }
@@ -185,21 +173,18 @@ function recordProviderOk(key: string) {
 function recordProviderFail(key: string) {
   const prev = providerState.get(key) ?? { failCount: 0, nextRetryAtMs: 0 };
   const failCount = Math.min(20, prev.failCount + 1);
-  const backoff = Math.min(
-    PROVIDER_BACKOFF_MAX_MS,
-    1000 * 2 ** (failCount - 1),
-  );
+  const backoff = Math.min(PROVIDER_BACKOFF_MAX_MS, 1000 * 2 ** (failCount - 1));
   providerState.set(key, { failCount, nextRetryAtMs: Date.now() + backoff });
 }
 
 async function fetchSpotUsdResilient(
   sym: string,
-  preferred: "binance" | "coinbase",
+  preferred: 'binance' | 'coinbase',
 ): Promise<number> {
   const symbol = normalizeSymbol(sym);
-  const candidates: Array<"binance" | "coinbase"> = [
+  const candidates: Array<'binance' | 'coinbase'> = [
     preferred,
-    preferred === "binance" ? "coinbase" : "binance",
+    preferred === 'binance' ? 'coinbase' : 'binance',
   ];
 
   let lastErr: unknown = null;
@@ -216,7 +201,7 @@ async function fetchSpotUsdResilient(
       recordProviderFail(key);
     }
   }
-  throw lastErr instanceof Error ? lastErr : new Error("spot_unavailable");
+  throw lastErr instanceof Error ? lastErr : new Error('spot_unavailable');
 }
 
 async function fetchBinanceDailyClosesUsd(
@@ -228,16 +213,12 @@ async function fetchBinanceDailyClosesUsd(
   const url = `https://api.binance.com/api/v3/klines?symbol=${encodeURIComponent(
     symbol,
   )}&interval=1d&limit=${limit}`;
-  const data =
-    await fetchJson<Array<[number, string, string, string, string, string]>>(
-      url,
-    );
+  const data = await fetchJson<Array<[number, string, string, string, string, string]>>(url);
   const out: Array<{ timestamp: string; close: number }> = [];
   for (const row of data) {
     const openTimeMs = Number(row[0]);
     const close = Number(row[4]);
-    if (!Number.isFinite(openTimeMs) || !Number.isFinite(close) || close <= 0)
-      continue;
+    if (!Number.isFinite(openTimeMs) || !Number.isFinite(close) || close <= 0) continue;
     out.push({ timestamp: new Date(openTimeMs).toISOString(), close });
   }
   return out;
@@ -257,14 +238,12 @@ async function fetchCoinbaseDailyClosesUsd(
   )}/candles?granularity=86400&start=${encodeURIComponent(
     startIso,
   )}&end=${encodeURIComponent(endIso)}`;
-  const data =
-    await fetchJson<Array<[number, number, number, number, number]>>(url);
+  const data = await fetchJson<Array<[number, number, number, number, number]>>(url);
   const rows = data
     .map((r) => {
       const timeS = Number(r[0]);
       const close = Number(r[4]);
-      if (!Number.isFinite(timeS) || !Number.isFinite(close) || close <= 0)
-        return null;
+      if (!Number.isFinite(timeS) || !Number.isFinite(close) || close <= 0) return null;
       return { timestamp: new Date(timeS * 1000).toISOString(), close };
     })
     .filter(Boolean) as Array<{ timestamp: string; close: number }>;
@@ -274,19 +253,19 @@ async function fetchCoinbaseDailyClosesUsd(
 
 function getDexRpcUrl(explicitRpcUrl?: string | null) {
   const raw =
-    (explicitRpcUrl ?? "").trim() ||
+    (explicitRpcUrl ?? '').trim() ||
     env.INSIGHT_RPC_URL ||
     env.POLYGON_AMOY_RPC_URL ||
     env.POLYGON_RPC_URL ||
     env.ARBITRUM_RPC_URL ||
     env.OPTIMISM_RPC_URL ||
-    "";
+    '';
   const urls = raw ? parseRpcUrls(raw) : [];
   return urls[0] ?? raw;
 }
 
 function divFloor(a: bigint, b: bigint) {
-  if (b === 0n) throw new Error("div_by_zero");
+  if (b === 0n) throw new Error('div_by_zero');
   let q = a / b;
   const r = a % b;
   if (r !== 0n && a < 0n !== b < 0n) q -= 1n;
@@ -302,17 +281,17 @@ function clampTick(tick: bigint) {
 }
 
 const poolAbi = parseAbi([
-  "function token0() view returns (address)",
-  "function token1() view returns (address)",
-  "function observe(uint32[] secondsAgos) view returns (int56[] tickCumulatives, uint160[] secondsPerLiquidityCumulativeX128s)",
+  'function token0() view returns (address)',
+  'function token1() view returns (address)',
+  'function observe(uint32[] secondsAgos) view returns (int56[] tickCumulatives, uint160[] secondsPerLiquidityCumulativeX128s)',
 ]);
 
-const erc20Abi = parseAbi(["function decimals() view returns (uint8)"]);
+const erc20Abi = parseAbi(['function decimals() view returns (uint8)']);
 
 async function fetchDexTwapPriceUsdUncached(
   input: { rpcUrl?: string | null } = {},
 ): Promise<number | null> {
-  const pool = (env.INSIGHT_DEX_TWAP_POOL || "").trim();
+  const pool = (env.INSIGHT_DEX_TWAP_POOL || '').trim();
   if (!pool) return null;
 
   const secondsRaw = Number(env.INSIGHT_DEX_TWAP_SECONDS || 1800);
@@ -320,9 +299,7 @@ async function fetchDexTwapPriceUsdUncached(
     ? Math.min(7 * 24 * 3600, Math.max(60, Math.floor(secondsRaw)))
     : 1800;
 
-  const invert = ["1", "true"].includes(
-    (env.INSIGHT_DEX_PRICE_INVERT || "").trim().toLowerCase(),
-  );
+  const invert = ['1', 'true'].includes((env.INSIGHT_DEX_PRICE_INVERT || '').trim().toLowerCase());
 
   const rpcUrl = getDexRpcUrl(input.rpcUrl);
   if (!rpcUrl) return null;
@@ -335,9 +312,7 @@ async function fetchDexTwapPriceUsdUncached(
     const poolKey = `${pool.toLowerCase()}`;
     const poolMetaHit = poolMetaCache.get(poolKey);
     const cachedMeta =
-      poolMetaHit && Date.now() <= poolMetaHit.expiresAtMs
-        ? poolMetaHit.value
-        : null;
+      poolMetaHit && Date.now() <= poolMetaHit.expiresAtMs ? poolMetaHit.value : null;
 
     const meta =
       cachedMeta ??
@@ -346,13 +321,13 @@ async function fetchDexTwapPriceUsdUncached(
           client.readContract({
             address: pool as `0x${string}`,
             abi: poolAbi,
-            functionName: "token0",
+            functionName: 'token0',
             args: [],
           }) as Promise<`0x${string}`>,
           client.readContract({
             address: pool as `0x${string}`,
             abi: poolAbi,
-            functionName: "token1",
+            functionName: 'token1',
             args: [],
           }) as Promise<`0x${string}`>,
         ]);
@@ -361,13 +336,13 @@ async function fetchDexTwapPriceUsdUncached(
           client.readContract({
             address: token0,
             abi: erc20Abi,
-            functionName: "decimals",
+            functionName: 'decimals',
             args: [],
           }) as Promise<number>,
           client.readContract({
             address: token1,
             abi: erc20Abi,
-            functionName: "decimals",
+            functionName: 'decimals',
             args: [],
           }) as Promise<number>,
         ]);
@@ -388,7 +363,7 @@ async function fetchDexTwapPriceUsdUncached(
     const [tickCumulatives] = (await client.readContract({
       address: pool as `0x${string}`,
       abi: poolAbi,
-      functionName: "observe",
+      functionName: 'observe',
       args: [[seconds, 0]],
     })) as [bigint[], bigint[]];
 
@@ -413,16 +388,14 @@ async function fetchDexTwapPriceUsdUncached(
 async function fetchDexTwapPriceUsdCached(
   input: { rpcUrl?: string | null } = {},
 ): Promise<number | null> {
-  const pool = (env.INSIGHT_DEX_TWAP_POOL || "").trim();
+  const pool = (env.INSIGHT_DEX_TWAP_POOL || '').trim();
   if (!pool) return null;
   const seconds = Number(env.INSIGHT_DEX_TWAP_SECONDS || 1800);
-  const invert = ["1", "true"].includes(
-    (env.INSIGHT_DEX_PRICE_INVERT || "").trim().toLowerCase(),
-  );
+  const invert = ['1', 'true'].includes((env.INSIGHT_DEX_PRICE_INVERT || '').trim().toLowerCase());
   const rpcUrl = getDexRpcUrl(input.rpcUrl);
   const key = `dex:${pool.toLowerCase()}:${Math.floor(
     Number.isFinite(seconds) ? seconds : 1800,
-  )}:${invert ? "1" : "0"}:${rpcUrl || ""}`;
+  )}:${invert ? '1' : '0'}:${rpcUrl || ''}`;
   const hit = dexCache.get(key);
   if (hit && Date.now() <= hit.expiresAtMs) return hit.value;
   const existing = dexInflight.get(key);
@@ -444,8 +417,7 @@ async function fetchDexTwapPriceUsdCached(
 
 function syntheticSpotUsd(sym: string) {
   const symbol = normalizeSymbol(sym);
-  const basePrice =
-    symbol === "BTC" ? 65000 : symbol === "ETH" ? 3500 : symbol ? 100 : 3500;
+  const basePrice = symbol === 'BTC' ? 65000 : symbol === 'ETH' ? 3500 : symbol ? 100 : 3500;
   const time = Date.now();
   const trend = Math.sin(time / (24 * 60 * 60 * 1000 * 7)) * (basePrice * 0.1);
   const noise = (Math.random() - 0.5) * (basePrice * 0.02);
@@ -459,8 +431,7 @@ function generateMockHistory(symbol: string, safeDays: number): PricePoint[] {
   const msPerDay = 24 * 60 * 60 * 1000;
 
   const sym = normalizeSymbol(symbol);
-  const basePrice =
-    sym === "BTC" ? 65000 : sym === "ETH" ? 3500 : sym ? 100 : 3500;
+  const basePrice = sym === 'BTC' ? 65000 : sym === 'ETH' ? 3500 : sym ? 100 : 3500;
 
   for (let i = safeDays; i >= 0; i--) {
     const time = now - i * msPerDay;
@@ -469,8 +440,7 @@ function generateMockHistory(symbol: string, safeDays: number): PricePoint[] {
     const noise = (Math.random() - 0.5) * (basePrice * 0.02);
     const refPrice = basePrice + trend + noise;
     const deviationEvent = Math.random() > 0.9 ? basePrice * 0.03 : 0;
-    const oraclePrice =
-      refPrice + (Math.random() - 0.5) * (basePrice * 0.01) + deviationEvent;
+    const oraclePrice = refPrice + (Math.random() - 0.5) * (basePrice * 0.01) + deviationEvent;
     const deviation = Math.abs(oraclePrice - refPrice) / refPrice;
 
     points.push({
@@ -485,26 +455,24 @@ function generateMockHistory(symbol: string, safeDays: number): PricePoint[] {
 }
 
 export async function fetchReferencePriceHistory(
-  symbol: string = "ETH",
+  symbol: string = 'ETH',
   days: number = 30,
   opts?: { rpcUrl?: string | null },
 ): Promise<PricePoint[]> {
   const safeDays = Math.min(90, Math.max(1, Math.floor(days)));
-  const provider = (env.INSIGHT_REFERENCE_PRICE_PROVIDER || "mock")
-    .trim()
-    .toLowerCase();
+  const provider = (env.INSIGHT_REFERENCE_PRICE_PROVIDER || 'mock').trim().toLowerCase();
 
-  if (provider !== "mock") {
+  if (provider !== 'mock') {
     let closes: Array<{ timestamp: string; close: number }> | null = null;
     try {
       closes =
-        provider === "binance"
+        provider === 'binance'
           ? await fetchBinanceDailyClosesUsd(symbol, safeDays)
           : await fetchCoinbaseDailyClosesUsd(symbol, safeDays);
     } catch {
       try {
         closes =
-          provider === "binance"
+          provider === 'binance'
             ? await fetchCoinbaseDailyClosesUsd(symbol, safeDays)
             : await fetchBinanceDailyClosesUsd(symbol, safeDays);
       } catch {
@@ -537,8 +505,7 @@ export async function fetchReferencePriceHistory(
     const { referencePrice, oraclePrice } = await fetchCurrentPrice(symbol, {
       rpcUrl: opts?.rpcUrl ?? null,
     });
-    const ratio =
-      referencePrice > 0 && oraclePrice > 0 ? oraclePrice / referencePrice : 1;
+    const ratio = referencePrice > 0 && oraclePrice > 0 ? oraclePrice / referencePrice : 1;
     const safeRatio = Number.isFinite(ratio) && ratio > 0 ? ratio : 1;
 
     return closes.map((c) => {
@@ -562,16 +529,14 @@ export async function fetchReferencePriceHistory(
  * Used for real-time monitoring and alerting.
  */
 export async function fetchCurrentPrice(
-  symbol: string = "ETH",
+  symbol: string = 'ETH',
   opts?: { rpcUrl?: string | null },
 ): Promise<{ referencePrice: number; oraclePrice: number }> {
-  const provider = (env.INSIGHT_REFERENCE_PRICE_PROVIDER || "mock")
-    .trim()
-    .toLowerCase();
+  const provider = (env.INSIGHT_REFERENCE_PRICE_PROVIDER || 'mock').trim().toLowerCase();
 
-  if (provider !== "mock") {
+  if (provider !== 'mock') {
     const normalizedSymbol = normalizeSymbol(symbol);
-    const preferred = provider === "binance" ? "binance" : "coinbase";
+    const preferred = provider === 'binance' ? 'binance' : 'coinbase';
 
     let referencePrice: number | null = null;
     try {
@@ -584,26 +549,19 @@ export async function fetchCurrentPrice(
       rpcUrl: opts?.rpcUrl ?? null,
     });
     const nowMs = Date.now();
-    if (dex !== null)
-      lastGoodDex.set(normalizedSymbol, { price: dex, atMs: nowMs });
+    if (dex !== null) lastGoodDex.set(normalizedSymbol, { price: dex, atMs: nowMs });
 
     const lastSpot = lastGoodSpot.get(normalizedSymbol);
     const lastDex = lastGoodDex.get(normalizedSymbol);
 
     const lastSpotPrice =
-      lastSpot && nowMs - lastSpot.atMs <= LAST_GOOD_SPOT_MAX_AGE_MS
-        ? lastSpot.price
-        : null;
+      lastSpot && nowMs - lastSpot.atMs <= LAST_GOOD_SPOT_MAX_AGE_MS ? lastSpot.price : null;
     const lastDexPrice =
-      lastDex && nowMs - lastDex.atMs <= LAST_GOOD_DEX_MAX_AGE_MS
-        ? lastDex.price
-        : null;
+      lastDex && nowMs - lastDex.atMs <= LAST_GOOD_DEX_MAX_AGE_MS ? lastDex.price : null;
     const fallback = fallbackSpotUsd(normalizedSymbol);
 
-    const resolvedReference =
-      referencePrice ?? dex ?? lastSpotPrice ?? lastDexPrice ?? fallback;
-    const resolvedOracle =
-      dex ?? lastDexPrice ?? referencePrice ?? lastSpotPrice ?? fallback;
+    const resolvedReference = referencePrice ?? dex ?? lastSpotPrice ?? lastDexPrice ?? fallback;
+    const resolvedOracle = dex ?? lastDexPrice ?? referencePrice ?? lastSpotPrice ?? fallback;
 
     return {
       referencePrice: Number(resolvedReference.toFixed(6)),
@@ -613,14 +571,9 @@ export async function fetchCurrentPrice(
 
   const refPrice = syntheticSpotUsd(symbol);
   const basePrice =
-    normalizeSymbol(symbol) === "BTC"
-      ? 65000
-      : normalizeSymbol(symbol) === "ETH"
-        ? 3500
-        : 100;
+    normalizeSymbol(symbol) === 'BTC' ? 65000 : normalizeSymbol(symbol) === 'ETH' ? 3500 : 100;
   const deviationEvent = Math.random() > 0.9 ? basePrice * 0.03 : 0;
-  const oraclePrice =
-    refPrice + (Math.random() - 0.5) * (basePrice * 0.01) + deviationEvent;
+  const oraclePrice = refPrice + (Math.random() - 0.5) * (basePrice * 0.01) + deviationEvent;
   return {
     referencePrice: refPrice,
     oraclePrice: Number(oraclePrice.toFixed(2)),
@@ -631,8 +584,7 @@ export function calculateHealthScore(points: PricePoint[]): number {
   if (points.length === 0) return 100;
 
   // Calculate average deviation
-  const avgDeviation =
-    points.reduce((sum, p) => sum + p.deviation, 0) / points.length;
+  const avgDeviation = points.reduce((sum, p) => sum + p.deviation, 0) / points.length;
 
   // Score formula: Start at 100.
   // Deduct 1 point for every 0.1% average deviation.

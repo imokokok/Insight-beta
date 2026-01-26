@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { Component, type ReactNode } from "react";
-import { AlertTriangle, RefreshCw } from "lucide-react";
+import { Component, type ReactNode } from 'react';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -15,10 +15,7 @@ interface ErrorBoundaryState {
   errorInfo: string | null;
 }
 
-export class ErrorBoundary extends Component<
-  ErrorBoundaryProps,
-  ErrorBoundaryState
-> {
+export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   state: ErrorBoundaryState = {
     hasError: false,
     error: null,
@@ -39,11 +36,11 @@ export class ErrorBoundary extends Component<
       this.props.onError(error, { componentStack: errorInfo.componentStack });
     }
 
-    console.error("ErrorBoundary caught an error:", error, errorInfo);
+    console.error('ErrorBoundary caught an error:', error, errorInfo);
   }
 
   handleReload = () => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== 'undefined') {
       window.location.reload();
     }
   };
@@ -55,26 +52,24 @@ export class ErrorBoundary extends Component<
       }
 
       return (
-        <div className="flex flex-col items-center justify-center min-h-[400px] p-8 text-center">
-          <div className="bg-red-50 rounded-full p-4 mb-4">
-            <AlertTriangle className="w-12 h-12 text-red-500" />
+        <div className="flex min-h-[400px] flex-col items-center justify-center p-8 text-center">
+          <div className="mb-4 rounded-full bg-red-50 p-4">
+            <AlertTriangle className="h-12 w-12 text-red-500" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">
-            Something went wrong
-          </h2>
-          <p className="text-gray-600 mb-4 max-w-md">
+          <h2 className="mb-2 text-xl font-bold text-gray-900">Something went wrong</h2>
+          <p className="mb-4 max-w-md text-gray-600">
             We encountered an unexpected error. Please try reloading the page.
           </p>
           {this.state.error && (
-            <p className="text-sm text-gray-400 mb-4 font-mono bg-gray-50 px-3 py-2 rounded">
+            <p className="mb-4 rounded bg-gray-50 px-3 py-2 font-mono text-sm text-gray-400">
               {this.state.error.message}
             </p>
           )}
           <button
             onClick={this.handleReload}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            className="flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-700"
           >
-            <RefreshCw className="w-4 h-4" />
+            <RefreshCw className="h-4 w-4" />
             Reload Page
           </button>
         </div>

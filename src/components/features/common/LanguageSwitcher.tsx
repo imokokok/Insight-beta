@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Globe } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useI18n } from "@/i18n/LanguageProvider";
-import { languages, type Lang } from "@/i18n/translations";
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Globe } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useI18n } from '@/i18n/LanguageProvider';
+import { languages, type Lang } from '@/i18n/translations';
 
 export function LanguageSwitcher({ className }: { className?: string }) {
   const { lang, setLang, t } = useI18n();
@@ -12,9 +12,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
   const rootRef = useRef<HTMLDivElement | null>(null);
 
   const currentLabel = useMemo(() => {
-    return (
-      languages.find((l) => l.code === lang)?.label ?? t("common.language")
-    );
+    return languages.find((l) => l.code === lang)?.label ?? t('common.language');
   }, [lang, t]);
 
   useEffect(() => {
@@ -24,8 +22,8 @@ export function LanguageSwitcher({ className }: { className?: string }) {
       if (e.target instanceof Node && el.contains(e.target)) return;
       setOpen(false);
     };
-    window.addEventListener("pointerdown", onPointerDown);
-    return () => window.removeEventListener("pointerdown", onPointerDown);
+    window.addEventListener('pointerdown', onPointerDown);
+    return () => window.removeEventListener('pointerdown', onPointerDown);
   }, []);
 
   const onSelect = (next: Lang) => {
@@ -34,7 +32,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
   };
 
   return (
-    <div ref={rootRef} className={cn("relative", className)}>
+    <div ref={rootRef} className={cn('relative', className)}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -55,18 +53,16 @@ export function LanguageSwitcher({ className }: { className?: string }) {
                 type="button"
                 onClick={() => onSelect(l.code)}
                 className={cn(
-                  "flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm transition-colors",
+                  'flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm transition-colors',
                   l.code === lang
-                    ? "bg-purple-100 text-purple-950"
-                    : "text-purple-800/80 hover:bg-white/60 hover:text-purple-950",
+                    ? 'bg-purple-100 text-purple-950'
+                    : 'text-purple-800/80 hover:bg-white/60 hover:text-purple-950',
                 )}
                 role="option"
                 aria-selected={l.code === lang}
               >
                 <span>{l.label}</span>
-                {l.code === lang && (
-                  <span className="text-xs text-purple-600">✓</span>
-                )}
+                {l.code === lang && <span className="text-xs text-purple-600">✓</span>}
               </button>
             ))}
           </div>

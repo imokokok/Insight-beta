@@ -1,4 +1,4 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from 'next/server';
 
 function createRequestId() {
   const c = (globalThis as unknown as { crypto?: Crypto }).crypto;
@@ -6,11 +6,9 @@ function createRequestId() {
   if (c?.getRandomValues) {
     const bytes = new Uint8Array(16);
     c.getRandomValues(bytes);
-    let out = "";
+    let out = '';
     for (let i = 0; i < bytes.length; i += 1) {
-      // Safe: bytes is Uint8Array, i is bounded loop counter
-
-      out += bytes[i]!.toString(16).padStart(2, "0");
+      out += bytes[i]?.toString(16).padStart(2, '0') ?? '00';
     }
     return out;
   }
@@ -26,21 +24,20 @@ function getResponseTime(startTime: number): string {
 
 export function middleware(request: NextRequest) {
   const startTime = Date.now();
-  const requestId =
-    request.headers.get("x-request-id")?.trim() || createRequestId();
+  const requestId = request.headers.get('x-request-id')?.trim() || createRequestId();
 
   const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-request-id", requestId);
+  requestHeaders.set('x-request-id', requestId);
 
   const response = NextResponse.next({
     request: { headers: requestHeaders },
   });
-  response.headers.set("x-request-id", requestId);
-  response.headers.set("x-response-time", getResponseTime(startTime));
+  response.headers.set('x-request-id', requestId);
+  response.headers.set('x-response-time', getResponseTime(startTime));
 
   return response;
 }
 
 export const config = {
-  matcher: ["/((?!_next/|favicon.ico|robots.txt|sitemap.xml).*)"],
+  matcher: ['/((?!_next/|favicon.ico|robots.txt|sitemap.xml).*)'],
 };

@@ -1,18 +1,18 @@
-import crypto from "crypto";
-import { env } from "@/lib/config/env";
-import { readJsonFile, writeJsonFile } from "@/server/kvStore";
+import crypto from 'crypto';
+import { env } from '@/lib/config/env';
+import { readJsonFile, writeJsonFile } from '@/server/kvStore';
 
 export type AdminScope =
-  | "admin_kv_read"
-  | "admin_kv_write"
-  | "admin_tokens_manage"
-  | "oracle_config_write"
-  | "oracle_sync_trigger"
-  | "alert_rules_write"
-  | "alerts_update"
-  | "audit_read";
+  | 'admin_kv_read'
+  | 'admin_kv_write'
+  | 'admin_tokens_manage'
+  | 'oracle_config_write'
+  | 'oracle_sync_trigger'
+  | 'alert_rules_write'
+  | 'alerts_update'
+  | 'audit_read';
 
-export type AdminRole = "root" | "ops" | "alerts" | "viewer";
+export type AdminRole = 'root' | 'ops' | 'alerts' | 'viewer';
 
 export type AdminTokenPublic = {
   id: string;
@@ -30,13 +30,10 @@ type AdminTokenStore = {
   tokens: AdminTokenRecord[];
 };
 
-const STORE_KEY = "admin_tokens_v1.json";
+const STORE_KEY = 'admin_tokens_v1.json';
 
 const tokenStoreLock = new Map<string, Promise<unknown>>();
-async function withTokenStoreLock<T>(
-  key: string,
-  fn: () => Promise<T>,
-): Promise<T> {
+async function withTokenStoreLock<T>(key: string, fn: () => Promise<T>): Promise<T> {
   let lockPromise = tokenStoreLock.get(key);
   if (!lockPromise) {
     lockPromise = (async () => {
@@ -54,18 +51,18 @@ async function withTokenStoreLock<T>(
 
 const roleScopes: Record<AdminRole, ReadonlySet<AdminScope>> = {
   root: new Set([
-    "admin_kv_read",
-    "admin_kv_write",
-    "admin_tokens_manage",
-    "oracle_config_write",
-    "oracle_sync_trigger",
-    "alert_rules_write",
-    "alerts_update",
-    "audit_read",
+    'admin_kv_read',
+    'admin_kv_write',
+    'admin_tokens_manage',
+    'oracle_config_write',
+    'oracle_sync_trigger',
+    'alert_rules_write',
+    'alerts_update',
+    'audit_read',
   ]),
-  ops: new Set(["oracle_config_write", "oracle_sync_trigger", "audit_read"]),
-  alerts: new Set(["alert_rules_write", "alerts_update", "audit_read"]),
-  viewer: new Set(["audit_read"]),
+  ops: new Set(['oracle_config_write', 'oracle_sync_trigger', 'audit_read']),
+  alerts: new Set(['alert_rules_write', 'alerts_update', 'audit_read']),
+  viewer: new Set(['audit_read']),
 };
 
 function timingSafeEqualString(a: string, b: string) {
@@ -80,26 +77,26 @@ function timingSafeEqualString(a: string, b: string) {
 }
 
 function getTokenFromRequest(request: Request) {
-  const headerToken = request.headers.get("x-admin-token")?.trim() ?? "";
+  const headerToken = request.headers.get('x-admin-token')?.trim() ?? '';
   if (headerToken) return headerToken;
-  const auth = request.headers.get("authorization")?.trim() ?? "";
-  if (!auth) return "";
+  const auth = request.headers.get('authorization')?.trim() ?? '';
+  if (!auth) return '';
   const lower = auth.toLowerCase();
-  if (!lower.startsWith("bearer ")) return "";
+  if (!lower.startsWith('bearer ')) return '';
   return auth.slice(7).trim();
 }
 
 function getSalt() {
   const salt = env.INSIGHT_ADMIN_TOKEN_SALT.trim();
-  return salt ? salt : "";
+  return salt ? salt : '';
 }
 
 function hashToken(token: string, salt: string) {
-  return crypto.createHash("sha256").update(`${salt}:${token}`).digest("hex");
+  return crypto.createHash('sha256').update(`${salt}:${token}`).digest('hex');
 }
 
 function randomToken() {
-  return crypto.randomBytes(32).toString("base64url");
+  return crypto.randomBytes(32).toString('base64url');
 }
 
 function randomId() {
@@ -132,8 +129,7 @@ export async function verifyAdmin(
   if (!token) return { ok: false };
   const envToken = env.INSIGHT_ADMIN_TOKEN.trim();
   if (envToken) {
-    if (timingSafeEqualString(token, envToken))
-      return { ok: true, role: "root", tokenId: "env" };
+    if (timingSafeEqualString(token, envToken)) return { ok: true, role: 'root', tokenId: 'env' };
   }
 
   const salt = getSalt();
@@ -166,12 +162,12 @@ export async function createAdminToken(input: {
 }): Promise<{ token: string; record: AdminTokenPublic }> {
   return withTokenStoreLock(STORE_KEY, async () => {
     const salt = getSalt();
-    if (!salt) throw new Error("missing_admin_token_salt");
+    if (!salt) throw new Error('missing_admin_token_salt');
     const now = new Date().toISOString();
     const token = randomToken();
     const record: AdminTokenRecord = {
       id: randomId(),
-      label: input.label.trim().slice(0, 80) || "token",
+      label: input.label.trim().slice(0, 80) || 'token',
       role: input.role,
       createdAt: now,
       createdByActor: input.createdByActor,
@@ -194,9 +190,7 @@ export async function createAdminToken(input: {
   });
 }
 
-export async function revokeAdminToken(input: {
-  id: string;
-}): Promise<boolean> {
+export async function revokeAdminToken(input: { id: string }): Promise<boolean> {
   return withTokenStoreLock(STORE_KEY, async () => {
     const existing = await readStoreCached();
     if (!existing || existing.version !== 1) return false;

@@ -1,21 +1,21 @@
-import crypto from "crypto";
-import { logger } from "@/lib/logger";
+import crypto from 'crypto';
+import { logger } from '@/lib/logger';
 
 const API_SECRET = (() => {
   const secret = process.env.INSIGHT_API_SECRET;
-  if (!secret || secret.trim() === "") {
+  if (!secret || secret.trim() === '') {
     throw new Error(
-      "INSIGHT_API_SECRET environment variable is required. " +
-        "Do not use the default development secret in production.",
+      'INSIGHT_API_SECRET environment variable is required. ' +
+        'Do not use the default development secret in production.',
     );
   }
   if (
-    secret === "default-dev-secret-change-in-production" &&
-    process.env.NODE_ENV === "production"
+    secret === 'default-dev-secret-change-in-production' &&
+    process.env.NODE_ENV === 'production'
   ) {
     throw new Error(
-      "INSIGHT_API_SECRET cannot be the default development secret in production. " +
-        "Please set a strong, random secret.",
+      'INSIGHT_API_SECRET cannot be the default development secret in production. ' +
+        'Please set a strong, random secret.',
     );
   }
   return secret.trim();
@@ -28,7 +28,7 @@ export interface SignedRequest {
 }
 
 export function generateNonce(): string {
-  return crypto.randomBytes(16).toString("hex");
+  return crypto.randomBytes(16).toString('hex');
 }
 
 export function generateTimestamp(): number {
@@ -43,7 +43,7 @@ export function signRequest(
   nonce: string,
 ): string {
   const payload = `${method}:${path}:${timestamp}:${nonce}:${body}`;
-  return crypto.createHmac("sha256", API_SECRET).update(payload).digest("hex");
+  return crypto.createHmac('sha256', API_SECRET).update(payload).digest('hex');
 }
 
 export function verifySignature(
@@ -60,29 +60,29 @@ export function verifySignature(
   const age = now - timestamp;
 
   if (age > maxAge || age < -clockSkew) {
-    logger.warn("Request timestamp invalid", { age, maxAge, clockSkew });
+    logger.warn('Request timestamp invalid', { age, maxAge, clockSkew });
     return false;
   }
 
   const expectedSignature = signRequest(method, path, body, timestamp, nonce);
   const signatureBuffer = (() => {
     try {
-      return Uint8Array.from(Buffer.from(signature, "hex"));
+      return Uint8Array.from(Buffer.from(signature, 'hex'));
     } catch {
       return null;
     }
   })();
-  const expectedBuffer = Uint8Array.from(Buffer.from(expectedSignature, "hex"));
+  const expectedBuffer = Uint8Array.from(Buffer.from(expectedSignature, 'hex'));
 
   if (!signatureBuffer || signatureBuffer.length !== expectedBuffer.length) {
-    logger.warn("Invalid signature format or length", { method, path });
+    logger.warn('Invalid signature format or length', { method, path });
     return false;
   }
 
   const isValid = crypto.timingSafeEqual(signatureBuffer, expectedBuffer);
 
   if (!isValid) {
-    logger.warn("Invalid signature detected", { method, path });
+    logger.warn('Invalid signature detected', { method, path });
   }
 
   return isValid;
@@ -126,7 +126,7 @@ setInterval(() => {
 
 export function verifyNonce(nonce: string): boolean {
   if (nonceCache.has(nonce)) {
-    logger.warn("Nonce reuse detected", { nonce });
+    logger.warn('Nonce reuse detected', { nonce });
     return false;
   }
 
@@ -135,28 +135,28 @@ export function verifyNonce(nonce: string): boolean {
 }
 
 export function hashSensitiveData(data: string): string {
-  return crypto.createHash("sha256").update(data).digest("hex");
+  return crypto.createHash('sha256').update(data).digest('hex');
 }
 
 export function encryptData(data: string): string {
   const ivBuffer = crypto.randomBytes(16);
   const iv = Uint8Array.from(ivBuffer);
-  const key = Uint8Array.from(crypto.scryptSync(API_SECRET, "salt", 32));
-  const cipher = crypto.createCipheriv("aes-256-gcm", key, iv);
+  const key = Uint8Array.from(crypto.scryptSync(API_SECRET, 'salt', 32));
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
 
   const encrypted = Buffer.concat([
-    Uint8Array.from(cipher.update(data, "utf8")),
+    Uint8Array.from(cipher.update(data, 'utf8')),
     Uint8Array.from(cipher.final()),
   ]);
   const authTag = cipher.getAuthTag();
 
-  return `${ivBuffer.toString("hex")}:${authTag.toString("hex")}:${encrypted.toString("hex")}`;
+  return `${ivBuffer.toString('hex')}:${authTag.toString('hex')}:${encrypted.toString('hex')}`;
 }
 
 export function decryptData(encryptedData: string): string {
-  const parts = encryptedData.split(":");
+  const parts = encryptedData.split(':');
   if (parts.length !== 3) {
-    throw new Error("Invalid encrypted data format");
+    throw new Error('Invalid encrypted data format');
   }
 
   const ivHex = parts[0];
@@ -164,35 +164,32 @@ export function decryptData(encryptedData: string): string {
   const encryptedHex = parts[2];
 
   if (!ivHex || !authTagHex || !encryptedHex) {
-    throw new Error("Invalid encrypted data format");
+    throw new Error('Invalid encrypted data format');
   }
 
-  const iv = Uint8Array.from(Buffer.from(ivHex, "hex"));
-  const authTag = Uint8Array.from(Buffer.from(authTagHex, "hex"));
-  const encrypted = Buffer.from(encryptedHex, "hex");
+  const iv = Uint8Array.from(Buffer.from(ivHex, 'hex'));
+  const authTag = Uint8Array.from(Buffer.from(authTagHex, 'hex'));
+  const encrypted = Buffer.from(encryptedHex, 'hex');
 
-  const key = Uint8Array.from(crypto.scryptSync(API_SECRET, "salt", 32));
-  const decipher = crypto.createDecipheriv("aes-256-gcm", key, iv);
+  const key = Uint8Array.from(crypto.scryptSync(API_SECRET, 'salt', 32));
+  const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
   decipher.setAuthTag(authTag);
 
-  const decrypted = Buffer.concat([
-    decipher.update(encrypted),
-    decipher.final(),
-  ]);
-  return decrypted.toString("utf8");
+  const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
+  return decrypted.toString('utf8');
 }
 
 export function generateApiKey(): { key: string; secret: string } {
-  const newKey = `insight_${crypto.randomBytes(8).toString("hex")}`;
-  const secret = crypto.randomBytes(32).toString("hex");
+  const newKey = `insight_${crypto.randomBytes(8).toString('hex')}`;
+  const secret = crypto.randomBytes(32).toString('hex');
 
-  const hashedSecret = crypto.createHash("sha256").update(secret).digest("hex");
+  const hashedSecret = crypto.createHash('sha256').update(secret).digest('hex');
 
   return { key: newKey, secret: hashedSecret };
 }
 
 export function validateApiKey(input: string, storedHash: string): boolean {
-  const inputHash = crypto.createHash("sha256").update(input).digest("hex");
+  const inputHash = crypto.createHash('sha256').update(input).digest('hex');
 
   const inputBuffer = Uint8Array.from(Buffer.from(inputHash));
   const storedBuffer = Uint8Array.from(Buffer.from(storedHash));

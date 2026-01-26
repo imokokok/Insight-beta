@@ -1,52 +1,37 @@
-"use client";
+'use client';
 
-import { useState, useRef, useEffect } from "react";
-import Link from "next/link";
-import type { Route } from "next";
-import { useSearchParams } from "next/navigation";
-import {
-  LogOut,
-  Copy,
-  Check,
-  FileText,
-  AlertTriangle,
-  ChevronDown,
-} from "lucide-react";
-import { useWallet } from "@/contexts/WalletContext";
-import { useBalance } from "@/hooks/wallet/useBalance";
-import { useI18n } from "@/i18n/LanguageProvider";
-import { cn } from "@/lib/utils";
-import {
-  arbitrum,
-  hardhat,
-  mainnet,
-  optimism,
-  polygon,
-  polygonAmoy,
-} from "viem/chains";
-import { useSwitchChainWithFeedback } from "@/hooks/wallet/useSwitchChainWithFeedback";
+import { useState, useRef, useEffect } from 'react';
+import Link from 'next/link';
+import type { Route } from 'next';
+import { useSearchParams } from 'next/navigation';
+import { LogOut, Copy, Check, FileText, AlertTriangle, ChevronDown } from 'lucide-react';
+import { useWallet } from '@/contexts/WalletContext';
+import { useBalance } from '@/hooks/wallet/useBalance';
+import { useI18n } from '@/i18n/LanguageProvider';
+import { cn } from '@/lib/utils';
+import { arbitrum, hardhat, mainnet, optimism, polygon, polygonAmoy } from 'viem/chains';
+import { useSwitchChainWithFeedback } from '@/hooks/wallet/useSwitchChainWithFeedback';
 
 export function UserMenu() {
   const { address, chainId, disconnect } = useWallet();
   const { formattedBalance, symbol } = useBalance();
   const { t } = useI18n();
   const searchParams = useSearchParams();
-  const instanceIdFromUrl = searchParams?.get("instanceId")?.trim() || null;
+  const instanceIdFromUrl = searchParams?.get('instanceId')?.trim() || null;
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [storedInstanceId] = useState<string>(() => {
     try {
-      if (typeof window === "undefined") return "default";
-      const saved = window.localStorage.getItem("oracleFilters");
-      if (!saved) return "default";
+      if (typeof window === 'undefined') return 'default';
+      const saved = window.localStorage.getItem('oracleFilters');
+      if (!saved) return 'default';
       const parsed = JSON.parse(saved) as { instanceId?: unknown } | null;
-      const value =
-        parsed && typeof parsed === "object" ? parsed.instanceId : null;
-      if (typeof value === "string" && value.trim()) return value.trim();
+      const value = parsed && typeof parsed === 'object' ? parsed.instanceId : null;
+      if (typeof value === 'string' && value.trim()) return value.trim();
     } catch {
-      return "default";
+      return 'default';
     }
-    return "default";
+    return 'default';
   });
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -56,8 +41,8 @@ export function UserMenu() {
         setIsOpen(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const handleCopy = async () => {
@@ -74,14 +59,7 @@ export function UserMenu() {
   if (!address) return null;
 
   const gradient = `linear-gradient(135deg, #${address.slice(2, 8)} 0%, #${address.slice(8, 14)} 100%)`;
-  const supportedChains = [
-    mainnet,
-    polygon,
-    polygonAmoy,
-    arbitrum,
-    optimism,
-    hardhat,
-  ];
+  const supportedChains = [mainnet, polygon, polygonAmoy, arbitrum, optimism, hardhat];
 
   const currentChain =
     chainId === polygon.id
@@ -101,10 +79,10 @@ export function UserMenu() {
   const instanceId = instanceIdFromUrl ?? storedInstanceId;
 
   const attachInstanceId = (href: string) => {
-    const normalized = (instanceId ?? "").trim();
+    const normalized = (instanceId ?? '').trim();
     if (!normalized) return href;
-    const url = new URL(href, "http://insight.local");
-    url.searchParams.set("instanceId", normalized);
+    const url = new URL(href, 'http://insight.local');
+    url.searchParams.set('instanceId', normalized);
     return `${url.pathname}${url.search}${url.hash}`;
   };
 
@@ -113,10 +91,10 @@ export function UserMenu() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "flex items-center gap-2 rounded-full border p-1 pr-3 transition-all",
+          'flex items-center gap-2 rounded-full border p-1 pr-3 transition-all',
           isOpen
-            ? "bg-purple-50 border-purple-200 ring-2 ring-purple-100"
-            : "bg-white border-gray-200 hover:border-purple-200 hover:shadow-sm",
+            ? 'border-purple-200 bg-purple-50 ring-2 ring-purple-100'
+            : 'border-gray-200 bg-white hover:border-purple-200 hover:shadow-sm',
         )}
       >
         <div
@@ -130,33 +108,26 @@ export function UserMenu() {
         </div>
         <ChevronDown
           size={14}
-          className={cn(
-            "text-gray-400 transition-transform",
-            isOpen && "rotate-180",
-          )}
+          className={cn('text-gray-400 transition-transform', isOpen && 'rotate-180')}
         />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-64 origin-top-right rounded-xl border border-gray-100 bg-white p-2 shadow-xl ring-1 ring-black/5 animate-in fade-in zoom-in-95 duration-200 z-50">
+        <div className="animate-in fade-in zoom-in-95 absolute right-0 top-full z-50 mt-2 w-64 origin-top-right rounded-xl border border-gray-100 bg-white p-2 shadow-xl ring-1 ring-black/5 duration-200">
           {/* Header */}
           <div className="mb-2 rounded-lg bg-gray-50 p-3">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-gray-500">
-                {t("wallet.balance")}
-              </span>
-              <span className="text-xs font-bold text-gray-900 font-mono">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-xs font-medium text-gray-500">{t('wallet.balance')}</span>
+              <span className="font-mono text-xs font-bold text-gray-900">
                 {formattedBalance} {symbol}
               </span>
             </div>
-            <div className="flex items-center justify-between gap-2 rounded-md bg-white border border-gray-200 px-2 py-1.5">
-              <span className="font-mono text-xs text-gray-500 truncate">
-                {address}
-              </span>
+            <div className="flex items-center justify-between gap-2 rounded-md border border-gray-200 bg-white px-2 py-1.5">
+              <span className="truncate font-mono text-xs text-gray-500">{address}</span>
               <button
                 onClick={handleCopy}
-                className="text-gray-400 hover:text-purple-600 transition-colors"
-                title={t("wallet.copyAddress")}
+                className="text-gray-400 transition-colors hover:text-purple-600"
+                title={t('wallet.copyAddress')}
               >
                 {copied ? <Check size={14} /> : <Copy size={14} />}
               </button>
@@ -165,11 +136,9 @@ export function UserMenu() {
 
           <div className="mb-2 rounded-lg border border-gray-100 bg-white px-3 py-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-gray-500">
-                {t("wallet.network")}
-              </span>
+              <span className="text-xs font-medium text-gray-500">{t('wallet.network')}</span>
               <span className="text-xs font-semibold text-gray-900">
-                {currentChain ? currentChain.name : t("wallet.unknownNetwork")}
+                {currentChain ? currentChain.name : t('wallet.unknownNetwork')}
               </span>
             </div>
             <div className="mt-2 grid grid-cols-2 gap-2">
@@ -180,15 +149,13 @@ export function UserMenu() {
                   onClick={() => void switchToChain({ id: c.id, name: c.name })}
                   disabled={switchingChainId !== null}
                   className={cn(
-                    "rounded-lg border px-2 py-1.5 text-xs font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed",
+                    'rounded-lg border px-2 py-1.5 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60',
                     chainId === c.id
-                      ? "border-purple-200 bg-purple-50 text-purple-700"
-                      : "border-gray-200 bg-white text-gray-700 hover:border-purple-200 hover:bg-purple-50 hover:text-purple-700",
+                      ? 'border-purple-200 bg-purple-50 text-purple-700'
+                      : 'border-gray-200 bg-white text-gray-700 hover:border-purple-200 hover:bg-purple-50 hover:text-purple-700',
                   )}
                 >
-                  {switchingChainId === c.id
-                    ? t("wallet.switchingNetwork")
-                    : c.name}
+                  {switchingChainId === c.id ? t('wallet.switchingNetwork') : c.name}
                 </button>
               ))}
             </div>
@@ -197,20 +164,20 @@ export function UserMenu() {
           {/* Menu Items */}
           <div className="space-y-1">
             <Link
-              href={attachInstanceId("/my-assertions") as Route}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
+              href={attachInstanceId('/my-assertions') as Route}
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-purple-50 hover:text-purple-700"
               onClick={() => setIsOpen(false)}
             >
               <FileText size={16} />
-              {t("nav.myAssertions")}
+              {t('nav.myAssertions')}
             </Link>
             <Link
-              href={attachInstanceId("/my-disputes") as Route}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
+              href={attachInstanceId('/my-disputes') as Route}
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-purple-50 hover:text-purple-700"
               onClick={() => setIsOpen(false)}
             >
               <AlertTriangle size={16} />
-              {t("nav.myDisputes")}
+              {t('nav.myDisputes')}
             </Link>
           </div>
 
@@ -222,10 +189,10 @@ export function UserMenu() {
               disconnect();
               setIsOpen(false);
             }}
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
           >
             <LogOut size={16} />
-            {t("wallet.disconnect")}
+            {t('wallet.disconnect')}
           </button>
         </div>
       )}

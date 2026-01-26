@@ -1,17 +1,17 @@
-import { hasDatabase, query } from "./db";
-import { ensureSchema } from "./schema";
+import { hasDatabase, query } from './db';
+import { ensureSchema } from './schema';
 import type {
   Assertion,
   Dispute,
   OracleChain,
   DbAssertionRow,
   DbDisputeRow,
-} from "@/lib/types/oracleTypes";
-import { env } from "@/lib/config/env";
-import { getMemoryInstance } from "./memoryBackend";
-import { DEFAULT_ORACLE_INSTANCE_ID } from "./oracleConfig";
-import crypto from "node:crypto";
-import { logger } from "@/lib/logger";
+} from '@/lib/types/oracleTypes';
+import { env } from '@/lib/config/env';
+import { getMemoryInstance } from './memoryBackend';
+import { DEFAULT_ORACLE_INSTANCE_ID } from './oracleConfig';
+import crypto from 'node:crypto';
+import { logger } from '@/lib/logger';
 
 export type SyncMeta = {
   lastAttemptAt: string | null;
@@ -87,10 +87,7 @@ function toTimeMs(value: string | undefined) {
   return Number.isFinite(ms) ? ms : 0;
 }
 
-function deleteVotesForAssertion(
-  mem: ReturnType<typeof getMemoryInstance>,
-  assertionId: string,
-) {
+function deleteVotesForAssertion(mem: ReturnType<typeof getMemoryInstance>, assertionId: string) {
   for (const [key, v] of mem.votes.entries()) {
     if (v.assertionId === assertionId) mem.votes.delete(key);
   }
@@ -101,9 +98,8 @@ function pruneMemoryAssertions(mem: ReturnType<typeof getMemoryInstance>) {
   if (overflow <= 0) return;
   const candidates = Array.from(mem.assertions.entries()).map(([id, a]) => ({
     id,
-    rank: a.status === "Resolved" ? 1 : 0,
-    timeMs:
-      a.status === "Resolved" ? toTimeMs(a.resolvedAt) : toTimeMs(a.assertedAt),
+    rank: a.status === 'Resolved' ? 1 : 0,
+    timeMs: a.status === 'Resolved' ? toTimeMs(a.resolvedAt) : toTimeMs(a.assertedAt),
   }));
   candidates.sort((a, b) => {
     const r = b.rank - a.rank;
@@ -125,7 +121,7 @@ function pruneMemoryDisputes(mem: ReturnType<typeof getMemoryInstance>) {
   if (overflow <= 0) return;
   const candidates = Array.from(mem.disputes.entries()).map(([id, d]) => ({
     id,
-    rank: d.status === "Executed" ? 1 : 0,
+    rank: d.status === 'Executed' ? 1 : 0,
     timeMs: toTimeMs(d.votingEndsAt ?? d.disputedAt),
   }));
   candidates.sort((a, b) => {
@@ -149,7 +145,7 @@ function mapAssertionRow(row: DbAssertionRow): Assertion {
   const blockNumber =
     row.block_number === null || row.block_number === undefined
       ? undefined
-      : typeof row.block_number === "number"
+      : typeof row.block_number === 'number'
         ? String(Math.trunc(row.block_number))
         : String(row.block_number);
   return {
@@ -162,10 +158,7 @@ function mapAssertionRow(row: DbAssertionRow): Assertion {
     assertedAt: row.asserted_at.toISOString(),
     livenessEndsAt: row.liveness_ends_at.toISOString(),
     blockNumber,
-    logIndex:
-      typeof row.log_index === "number"
-        ? row.log_index
-        : (row.log_index ?? undefined),
+    logIndex: typeof row.log_index === 'number' ? row.log_index : (row.log_index ?? undefined),
     resolvedAt: row.resolved_at ? row.resolved_at.toISOString() : undefined,
     settlementResolution: row.settlement_resolution ?? undefined,
     status: row.status,
@@ -177,16 +170,14 @@ function mapAssertionRow(row: DbAssertionRow): Assertion {
 
 function mapDisputeRow(row: DbDisputeRow): Dispute {
   const now = Date.now();
-  const votingEndsAt = row.voting_ends_at
-    ? row.voting_ends_at.toISOString()
-    : undefined;
-  const statusFromDb = row.status as Dispute["status"];
-  const computedStatus: Dispute["status"] =
-    statusFromDb === "Executed"
-      ? "Executed"
+  const votingEndsAt = row.voting_ends_at ? row.voting_ends_at.toISOString() : undefined;
+  const statusFromDb = row.status as Dispute['status'];
+  const computedStatus: Dispute['status'] =
+    statusFromDb === 'Executed'
+      ? 'Executed'
       : votingEndsAt && new Date(votingEndsAt).getTime() <= now
-        ? "Pending Execution"
-        : "Voting";
+        ? 'Pending Execution'
+        : 'Voting';
 
   return {
     id: row.id,
@@ -196,18 +187,15 @@ function mapDisputeRow(row: DbDisputeRow): Dispute {
     disputeReason: row.reason,
     disputer: row.disputer,
     disputedAt: row.disputed_at.toISOString(),
-    votingEndsAt: votingEndsAt || "",
+    votingEndsAt: votingEndsAt || '',
     txHash: row.tx_hash ?? undefined,
     blockNumber:
       row.block_number === null || row.block_number === undefined
         ? undefined
-        : typeof row.block_number === "number"
+        : typeof row.block_number === 'number'
           ? String(Math.trunc(row.block_number))
           : String(row.block_number),
-    logIndex:
-      typeof row.log_index === "number"
-        ? row.log_index
-        : (row.log_index ?? undefined),
+    logIndex: typeof row.log_index === 'number' ? row.log_index : (row.log_index ?? undefined),
     status: computedStatus,
     currentVotesFor: Number(row.votes_for),
     currentVotesAgainst: Number(row.votes_against),
@@ -221,10 +209,9 @@ function normalizeInstanceId(instanceId: string | undefined) {
 }
 
 function toBigIntOr(value: unknown, fallback: bigint) {
-  if (typeof value === "bigint") return value;
-  if (typeof value === "number" && Number.isFinite(value))
-    return BigInt(Math.trunc(value));
-  if (typeof value === "string") {
+  if (typeof value === 'bigint') return value;
+  if (typeof value === 'number' && Number.isFinite(value)) return BigInt(Math.trunc(value));
+  if (typeof value === 'string') {
     const trimmed = value.trim();
     if (!trimmed) return fallback;
     try {
@@ -239,7 +226,7 @@ function toBigIntOr(value: unknown, fallback: bigint) {
 function toIsoOrNull(value: unknown) {
   if (!value) return null;
   if (value instanceof Date) return value.toISOString();
-  if (typeof value === "string") {
+  if (typeof value === 'string') {
     const ms = Date.parse(value);
     return Number.isFinite(ms) ? new Date(ms).toISOString() : null;
   }
@@ -248,8 +235,8 @@ function toIsoOrNull(value: unknown) {
 
 function toNullableNumber(value: unknown) {
   if (value === null || value === undefined) return null;
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  if (typeof value === "string") {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string') {
     const n = Number(value);
     return Number.isFinite(n) ? n : null;
   }
@@ -258,7 +245,7 @@ function toNullableNumber(value: unknown) {
 
 function toNullableString(value: unknown) {
   if (value === null || value === undefined) return null;
-  return typeof value === "string" ? value : null;
+  return typeof value === 'string' ? value : null;
 }
 
 export async function readOracleState(
@@ -287,32 +274,25 @@ export async function readOracleState(
     };
   }
 
-  const [syncRes, instanceRes, legacyConfigRes, assertionsRes, disputesRes] =
-    await Promise.all([
-      query("SELECT * FROM oracle_sync_state WHERE instance_id = $1", [
-        normalizedInstanceId,
-      ]),
-      query(
-        "SELECT chain, contract_address FROM oracle_instances WHERE id = $1",
-        [normalizedInstanceId],
-      ),
-      normalizedInstanceId === DEFAULT_ORACLE_INSTANCE_ID
-        ? query(
-            "SELECT chain, contract_address FROM oracle_config WHERE id = 1",
-          )
-        : Promise.resolve({ rows: [] } as { rows: unknown[] }),
-      query<DbAssertionRow>("SELECT * FROM assertions WHERE instance_id = $1", [
-        normalizedInstanceId,
-      ]),
-      query<DbDisputeRow>("SELECT * FROM disputes WHERE instance_id = $1", [
-        normalizedInstanceId,
-      ]),
-    ]);
+  const [syncRes, instanceRes, legacyConfigRes, assertionsRes, disputesRes] = await Promise.all([
+    query('SELECT * FROM oracle_sync_state WHERE instance_id = $1', [normalizedInstanceId]),
+    query('SELECT chain, contract_address FROM oracle_instances WHERE id = $1', [
+      normalizedInstanceId,
+    ]),
+    normalizedInstanceId === DEFAULT_ORACLE_INSTANCE_ID
+      ? query('SELECT chain, contract_address FROM oracle_config WHERE id = 1')
+      : Promise.resolve({ rows: [] } as { rows: unknown[] }),
+    query<DbAssertionRow>('SELECT * FROM assertions WHERE instance_id = $1', [
+      normalizedInstanceId,
+    ]),
+    query<DbDisputeRow>('SELECT * FROM disputes WHERE instance_id = $1', [normalizedInstanceId]),
+  ]);
 
   const syncRow = (syncRes.rows[0] || {}) as Record<string, unknown>;
-  const instanceRow = (instanceRes.rows[0] ||
-    legacyConfigRes.rows[0] ||
-    {}) as Record<string, unknown>;
+  const instanceRow = (instanceRes.rows[0] || legacyConfigRes.rows[0] || {}) as Record<
+    string,
+    unknown
+  >;
 
   const assertions: Record<string, Assertion> = {};
   for (const row of assertionsRes.rows) {
@@ -326,7 +306,7 @@ export async function readOracleState(
 
   return {
     version: 2,
-    chain: (instanceRow.chain as OracleChain) || "Local",
+    chain: (instanceRow.chain as OracleChain) || 'Local',
     contractAddress: (instanceRow.contract_address as string | null) || null,
     lastProcessedBlock: toBigIntOr(syncRow.last_processed_block, 0n),
     sync: {
@@ -340,9 +320,7 @@ export async function readOracleState(
   };
 }
 
-export async function getSyncState(
-  instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
-) {
+export async function getSyncState(instanceId: string = DEFAULT_ORACLE_INSTANCE_ID) {
   await ensureDb();
   const normalizedInstanceId = normalizeInstanceId(instanceId);
   if (!hasDatabase()) {
@@ -362,22 +340,20 @@ export async function getSyncState(
     };
   }
   const [syncRes, instanceRes, legacyConfigRes] = await Promise.all([
-    query("SELECT * FROM oracle_sync_state WHERE instance_id = $1", [
+    query('SELECT * FROM oracle_sync_state WHERE instance_id = $1', [normalizedInstanceId]),
+    query('SELECT chain, contract_address FROM oracle_instances WHERE id = $1', [
       normalizedInstanceId,
     ]),
-    query(
-      "SELECT chain, contract_address FROM oracle_instances WHERE id = $1",
-      [normalizedInstanceId],
-    ),
     normalizedInstanceId === DEFAULT_ORACLE_INSTANCE_ID
-      ? query("SELECT chain, contract_address FROM oracle_config WHERE id = 1")
+      ? query('SELECT chain, contract_address FROM oracle_config WHERE id = 1')
       : Promise.resolve({ rows: [] } as { rows: unknown[] }),
   ]);
 
   const syncRow = (syncRes.rows[0] || {}) as Record<string, unknown>;
-  const configRow = (instanceRes.rows[0] ||
-    legacyConfigRes.rows[0] ||
-    {}) as Record<string, unknown>;
+  const configRow = (instanceRes.rows[0] || legacyConfigRes.rows[0] || {}) as Record<
+    string,
+    unknown
+  >;
 
   return {
     lastProcessedBlock: toBigIntOr(syncRow.last_processed_block, 0n),
@@ -394,9 +370,7 @@ export async function getSyncState(
       syncRow.last_success_processed_block !== undefined
         ? toBigIntOr(syncRow.last_success_processed_block, 0n)
         : null,
-    consecutiveFailures: Number(
-      toNullableNumber(syncRow.consecutive_failures) ?? 0,
-    ),
+    consecutiveFailures: Number(toNullableNumber(syncRow.consecutive_failures) ?? 0),
     rpcActiveUrl: (syncRow.rpc_active_url as string | null | undefined) ?? null,
     rpcStats: syncRow.rpc_stats ?? null,
     sync: {
@@ -405,7 +379,7 @@ export async function getSyncState(
       lastDurationMs: toNullableNumber(syncRow.last_duration_ms),
       lastError: toNullableString(syncRow.last_error),
     },
-    chain: (configRow.chain as OracleChain) || "Local",
+    chain: (configRow.chain as OracleChain) || 'Local',
     contractAddress: (configRow.contract_address as string | null) || null,
     owner: null as string | null,
   };
@@ -422,7 +396,7 @@ export async function fetchAssertion(
     return mem.assertions.get(id) ?? null;
   }
   const res = await query<DbAssertionRow>(
-    "SELECT * FROM assertions WHERE id = $1 AND instance_id = $2",
+    'SELECT * FROM assertions WHERE id = $1 AND instance_id = $2',
     [id, normalizedInstanceId],
   );
   const row = res.rows[0];
@@ -441,7 +415,7 @@ export async function fetchDispute(
     return mem.disputes.get(id) ?? null;
   }
   const res = await query<DbDisputeRow>(
-    "SELECT * FROM disputes WHERE id = $1 AND instance_id = $2",
+    'SELECT * FROM disputes WHERE id = $1 AND instance_id = $2',
     [id, normalizedInstanceId],
   );
   const row = res.rows[0];
@@ -509,16 +483,13 @@ export async function upsertAssertion(
   );
 }
 
-export async function upsertDispute(
-  d: Dispute,
-  instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
-) {
+export async function upsertDispute(d: Dispute, instanceId: string = DEFAULT_ORACLE_INSTANCE_ID) {
   await ensureDb();
   const normalizedInstanceId = normalizeInstanceId(instanceId);
   if (!hasDatabase()) {
     const mem = getMemoryInstance(normalizedInstanceId);
     mem.disputes.set(d.id, d);
-    if (d.status === "Executed") {
+    if (d.status === 'Executed') {
       mem.voteSums.delete(d.assertionId);
       for (const [key, v] of mem.votes.entries()) {
         if (v.assertionId === d.assertionId) mem.votes.delete(key);
@@ -584,15 +555,13 @@ export async function updateSyncState(
   if (!hasDatabase()) {
     const mem = getMemoryInstance(normalizedInstanceId);
     mem.sync.lastProcessedBlock = block;
-    if (extra?.latestBlock !== undefined)
-      mem.sync.latestBlock = extra.latestBlock;
+    if (extra?.latestBlock !== undefined) mem.sync.latestBlock = extra.latestBlock;
     if (extra?.safeBlock !== undefined) mem.sync.safeBlock = extra.safeBlock;
     if (extra?.lastSuccessProcessedBlock !== undefined)
       mem.sync.lastSuccessProcessedBlock = extra.lastSuccessProcessedBlock;
     if (extra?.consecutiveFailures !== undefined)
       mem.sync.consecutiveFailures = extra.consecutiveFailures;
-    if (extra?.rpcActiveUrl !== undefined)
-      mem.sync.rpcActiveUrl = extra.rpcActiveUrl;
+    if (extra?.rpcActiveUrl !== undefined) mem.sync.rpcActiveUrl = extra.rpcActiveUrl;
     if (extra?.rpcStats !== undefined) mem.sync.rpcStats = extra.rpcStats;
     mem.sync.meta = {
       lastAttemptAt: attemptAt,
@@ -643,9 +612,7 @@ export async function updateSyncState(
       block.toString(),
       latest !== undefined ? latest.toString() : null,
       safe !== undefined ? safe.toString() : null,
-      lastSuccessProcessed !== undefined
-        ? lastSuccessProcessed.toString()
-        : null,
+      lastSuccessProcessed !== undefined ? lastSuccessProcessed.toString() : null,
       consecutiveFailures !== undefined ? consecutiveFailures : null,
       rpcActiveUrl !== undefined ? rpcActiveUrl : null,
       rpcStatsJson,
@@ -748,20 +715,16 @@ export async function listSyncMetrics(params: {
       error: unknown;
     };
     const recordedAtDate =
-      r.recorded_at instanceof Date
-        ? r.recorded_at
-        : new Date(String(r.recorded_at));
+      r.recorded_at instanceof Date ? r.recorded_at : new Date(String(r.recorded_at));
     const lagBlocks =
-      r.lag_blocks !== null && r.lag_blocks !== undefined
-        ? String(r.lag_blocks)
-        : null;
+      r.lag_blocks !== null && r.lag_blocks !== undefined ? String(r.lag_blocks) : null;
     const durationMs =
       r.duration_ms === null || r.duration_ms === undefined
         ? null
-        : typeof r.duration_ms === "number"
+        : typeof r.duration_ms === 'number'
           ? r.duration_ms
           : Number(r.duration_ms);
-    const error = typeof r.error === "string" ? r.error : null;
+    const error = typeof r.error === 'string' ? r.error : null;
     return {
       recordedAt: recordedAtDate.toISOString(),
       lagBlocks,
@@ -796,16 +759,13 @@ function applyVoteSumsDelta(
   if (forWeight < 0n) forWeight = 0n;
   if (againstWeight < 0n) againstWeight = 0n;
   const next = { forWeight, againstWeight };
-  if (next.forWeight === 0n && next.againstWeight === 0n)
-    mem.voteSums.delete(assertionId);
+  if (next.forWeight === 0n && next.againstWeight === 0n) mem.voteSums.delete(assertionId);
   else mem.voteSums.set(assertionId, next);
   const dispute = mem.disputes.get(`D:${assertionId}`);
   if (dispute) {
     dispute.currentVotesFor = bigintToSafeNumber(next.forWeight);
     dispute.currentVotesAgainst = bigintToSafeNumber(next.againstWeight);
-    dispute.totalVotes = bigintToSafeNumber(
-      next.forWeight + next.againstWeight,
-    );
+    dispute.totalVotes = bigintToSafeNumber(next.forWeight + next.againstWeight);
     mem.disputes.set(dispute.id, dispute);
   }
   return next;
@@ -840,8 +800,7 @@ export async function insertVoteEvent(
     const maxKeys = memoryMaxVoteKeys();
     if (mem.votes.size > maxKeys) {
       const blockWindow = memoryVoteBlockWindow();
-      const cutoff =
-        input.blockNumber > blockWindow ? input.blockNumber - blockWindow : 0n;
+      const cutoff = input.blockNumber > blockWindow ? input.blockNumber - blockWindow : 0n;
       for (const [k, v] of mem.votes.entries()) {
         if (v.blockNumber < cutoff) {
           mem.votes.delete(k);
@@ -897,10 +856,7 @@ export async function insertOracleEvent(
   const normalizedInstanceId = normalizeInstanceId(instanceId);
   try {
     const payloadJson = JSON.stringify(input.payload);
-    const payloadChecksum = crypto
-      .createHash("sha256")
-      .update(payloadJson)
-      .digest("hex");
+    const payloadChecksum = crypto.createHash('sha256').update(payloadJson).digest('hex');
     if (!hasDatabase()) {
       const mem = getMemoryInstance(normalizedInstanceId);
       const key = `${input.txHash}:${input.logIndex}`;
@@ -953,10 +909,7 @@ export async function replayOracleEventsRange(
   if (!hasDatabase()) {
     const mem = getMemoryInstance(normalizedInstanceId);
     const events = Array.from(mem.oracleEvents.values())
-      .filter(
-        (event) =>
-          event.blockNumber >= fromBlock && event.blockNumber <= toBlock,
-      )
+      .filter((event) => event.blockNumber >= fromBlock && event.blockNumber <= toBlock)
       .sort((a, b) => {
         if (a.blockNumber === b.blockNumber) {
           if (a.logIndex === b.logIndex) return a.id - b.id;
@@ -967,16 +920,16 @@ export async function replayOracleEventsRange(
 
     let applied = 0;
     for (const event of events) {
-      const eventType = (event.eventType ?? "").trim();
+      const eventType = (event.eventType ?? '').trim();
       const payload = event.payload;
       if (!eventType) continue;
       if (event.payloadChecksum) {
         const payloadChecksum = crypto
-          .createHash("sha256")
+          .createHash('sha256')
           .update(JSON.stringify(payload))
-          .digest("hex");
+          .digest('hex');
         if (payloadChecksum !== event.payloadChecksum) {
-          logger.warn("Event payload checksum mismatch", {
+          logger.warn('Event payload checksum mismatch', {
             eventType,
             assertionId: event.assertionId,
           });
@@ -984,7 +937,7 @@ export async function replayOracleEventsRange(
         }
       }
 
-      if (eventType === "assertion_created") {
+      if (eventType === 'assertion_created') {
         const a = payload as Assertion;
         if (!a?.id) continue;
         await upsertAssertion(a, normalizedInstanceId);
@@ -992,15 +945,12 @@ export async function replayOracleEventsRange(
         continue;
       }
 
-      if (eventType === "assertion_disputed") {
+      if (eventType === 'assertion_disputed') {
         const d = payload as Dispute;
         if (!d?.assertionId) continue;
-        const assertion = await fetchAssertion(
-          d.assertionId,
-          normalizedInstanceId,
-        );
+        const assertion = await fetchAssertion(d.assertionId, normalizedInstanceId);
         if (assertion) {
-          assertion.status = "Disputed";
+          assertion.status = 'Disputed';
           assertion.disputer = d.disputer;
           await upsertAssertion(assertion, normalizedInstanceId);
         }
@@ -1009,7 +959,7 @@ export async function replayOracleEventsRange(
         continue;
       }
 
-      if (eventType === "vote_cast") {
+      if (eventType === 'vote_cast') {
         const v = payload as {
           chain: OracleChain;
           assertionId: string;
@@ -1027,9 +977,9 @@ export async function replayOracleEventsRange(
             assertionId: v.assertionId,
             voter: v.voter,
             support: Boolean(v.support),
-            weight: BigInt(v.weight || "0"),
+            weight: BigInt(v.weight || '0'),
             txHash: v.txHash,
-            blockNumber: BigInt(v.blockNumber || "0"),
+            blockNumber: BigInt(v.blockNumber || '0'),
             logIndex: Number(v.logIndex ?? 0),
           },
           normalizedInstanceId,
@@ -1039,7 +989,7 @@ export async function replayOracleEventsRange(
         continue;
       }
 
-      if (eventType === "assertion_resolved") {
+      if (eventType === 'assertion_resolved') {
         const r = payload as {
           assertionId: string;
           resolvedAt: string;
@@ -1048,12 +998,9 @@ export async function replayOracleEventsRange(
         const assertionId = r?.assertionId || event.assertionId;
         if (!assertionId) continue;
 
-        const assertion = await fetchAssertion(
-          assertionId,
-          normalizedInstanceId,
-        );
+        const assertion = await fetchAssertion(assertionId, normalizedInstanceId);
         if (assertion) {
-          assertion.status = "Resolved";
+          assertion.status = 'Resolved';
           assertion.resolvedAt = r.resolvedAt;
           assertion.settlementResolution = r.outcome;
           await upsertAssertion(assertion, normalizedInstanceId);
@@ -1082,16 +1029,16 @@ export async function replayOracleEventsRange(
 
   let applied = 0;
   for (const row of res.rows) {
-    const eventType = (row.event_type ?? "").trim();
+    const eventType = (row.event_type ?? '').trim();
     const payload = row.payload;
     if (!eventType) continue;
     if (row.payload_checksum) {
       const payloadChecksum = crypto
-        .createHash("sha256")
+        .createHash('sha256')
         .update(JSON.stringify(payload))
-        .digest("hex");
+        .digest('hex');
       if (payloadChecksum !== row.payload_checksum) {
-        logger.warn("Event payload checksum mismatch", {
+        logger.warn('Event payload checksum mismatch', {
           eventType,
           assertionId: row.assertion_id,
         });
@@ -1099,7 +1046,7 @@ export async function replayOracleEventsRange(
       }
     }
 
-    if (eventType === "assertion_created") {
+    if (eventType === 'assertion_created') {
       const a = payload as Assertion;
       if (!a?.id) continue;
       await upsertAssertion(a, normalizedInstanceId);
@@ -1107,15 +1054,12 @@ export async function replayOracleEventsRange(
       continue;
     }
 
-    if (eventType === "assertion_disputed") {
+    if (eventType === 'assertion_disputed') {
       const d = payload as Dispute;
       if (!d?.assertionId) continue;
-      const assertion = await fetchAssertion(
-        d.assertionId,
-        normalizedInstanceId,
-      );
+      const assertion = await fetchAssertion(d.assertionId, normalizedInstanceId);
       if (assertion) {
-        assertion.status = "Disputed";
+        assertion.status = 'Disputed';
         assertion.disputer = d.disputer;
         await upsertAssertion(assertion, normalizedInstanceId);
       }
@@ -1124,7 +1068,7 @@ export async function replayOracleEventsRange(
       continue;
     }
 
-    if (eventType === "vote_cast") {
+    if (eventType === 'vote_cast') {
       const v = payload as {
         chain: OracleChain;
         assertionId: string;
@@ -1142,9 +1086,9 @@ export async function replayOracleEventsRange(
           assertionId: v.assertionId,
           voter: v.voter,
           support: Boolean(v.support),
-          weight: BigInt(v.weight || "0"),
+          weight: BigInt(v.weight || '0'),
           txHash: v.txHash,
-          blockNumber: BigInt(v.blockNumber || "0"),
+          blockNumber: BigInt(v.blockNumber || '0'),
           logIndex: Number(v.logIndex ?? 0),
         },
         normalizedInstanceId,
@@ -1154,7 +1098,7 @@ export async function replayOracleEventsRange(
       continue;
     }
 
-    if (eventType === "assertion_resolved") {
+    if (eventType === 'assertion_resolved') {
       const r = payload as {
         assertionId: string;
         resolvedAt: string;
@@ -1165,18 +1109,15 @@ export async function replayOracleEventsRange(
 
       const assertion = await fetchAssertion(assertionId, normalizedInstanceId);
       if (assertion) {
-        assertion.status = "Resolved";
+        assertion.status = 'Resolved';
         assertion.resolvedAt = r.resolvedAt;
         assertion.settlementResolution = r.outcome;
         await upsertAssertion(assertion, normalizedInstanceId);
       }
 
-      const dispute = await fetchDispute(
-        `D:${assertionId}`,
-        normalizedInstanceId,
-      );
+      const dispute = await fetchDispute(`D:${assertionId}`, normalizedInstanceId);
       if (dispute) {
-        dispute.status = "Executed";
+        dispute.status = 'Executed';
         dispute.votingEndsAt = r.resolvedAt;
         await upsertDispute(dispute, normalizedInstanceId);
       }
@@ -1215,9 +1156,7 @@ export async function recomputeDisputeVotes(
       })();
     dispute.currentVotesFor = bigintToSafeNumber(sums.forWeight);
     dispute.currentVotesAgainst = bigintToSafeNumber(sums.againstWeight);
-    dispute.totalVotes = bigintToSafeNumber(
-      sums.forWeight + sums.againstWeight,
-    );
+    dispute.totalVotes = bigintToSafeNumber(sums.forWeight + sums.againstWeight);
     mem.disputes.set(dispute.id, dispute);
     return;
   }
@@ -1238,29 +1177,17 @@ export async function recomputeDisputeVotes(
     total_votes?: unknown;
   };
   const votesFor =
-    row.votes_for !== undefined && row.votes_for !== null
-      ? String(row.votes_for)
-      : "0";
+    row.votes_for !== undefined && row.votes_for !== null ? String(row.votes_for) : '0';
   const votesAgainst =
-    row.votes_against !== undefined && row.votes_against !== null
-      ? String(row.votes_against)
-      : "0";
+    row.votes_against !== undefined && row.votes_against !== null ? String(row.votes_against) : '0';
   const totalVotes =
-    row.total_votes !== undefined && row.total_votes !== null
-      ? String(row.total_votes)
-      : "0";
+    row.total_votes !== undefined && row.total_votes !== null ? String(row.total_votes) : '0';
   await query(
     `
     UPDATE disputes
     SET votes_for = $2, votes_against = $3, total_votes = $4
     WHERE id = $1 AND instance_id = $5
     `,
-    [
-      `D:${assertionId}`,
-      votesFor,
-      votesAgainst,
-      totalVotes,
-      normalizedInstanceId,
-    ],
+    [`D:${assertionId}`, votesFor, votesAgainst, totalVotes, normalizedInstanceId],
   );
 }

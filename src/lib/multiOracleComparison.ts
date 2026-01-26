@@ -44,12 +44,7 @@ export interface CorrelationAnalysis {
   oracle1: string;
   oracle2: string;
   correlationCoefficient: number;
-  correlationStrength:
-    | "very_strong"
-    | "strong"
-    | "moderate"
-    | "weak"
-    | "very_weak";
+  correlationStrength: 'very_strong' | 'strong' | 'moderate' | 'weak' | 'very_weak';
   isStatisticallySignificant: boolean;
   pValue: number;
   sampleSize: number;
@@ -57,7 +52,7 @@ export interface CorrelationAnalysis {
 }
 
 export interface ComparativeInsight {
-  type: "advantage" | "disadvantage" | "neutral" | "opportunity";
+  type: 'advantage' | 'disadvantage' | 'neutral' | 'opportunity';
   metric: string;
   description: string;
   impactedOracle: string;
@@ -85,10 +80,7 @@ export class MultiOracleComparator {
     return Array.from(this.oracles.values());
   }
 
-  compareTwoOracles(
-    oracleId1: string,
-    oracleId2: string,
-  ): ComparisonMetrics | null {
+  compareTwoOracles(oracleId1: string, oracleId2: string): ComparisonMetrics | null {
     const oracle1 = this.oracles.get(oracleId1);
     const oracle2 = this.oracles.get(oracleId2);
 
@@ -127,7 +119,7 @@ export class MultiOracleComparator {
   }
 
   private calculateOverallScore(
-    metrics: Omit<ComparisonMetrics, "overallScore" | "winner">,
+    metrics: Omit<ComparisonMetrics, 'overallScore' | 'winner'>,
   ): number {
     const weights = {
       assertions: 0.2,
@@ -187,8 +179,7 @@ export class MultiOracleComparator {
       disputeRate: 0.2,
     };
 
-    const disputeRate =
-      oracle.assertions > 0 ? (oracle.disputes / oracle.assertions) * 100 : 0;
+    const disputeRate = oracle.assertions > 0 ? (oracle.disputes / oracle.assertions) * 100 : 0;
 
     const responseTimeScore = Math.max(0, 100 - oracle.avgResponseTime / 10);
     const disputeRateScore = Math.max(0, 100 - disputeRate);
@@ -206,15 +197,12 @@ export class MultiOracleComparator {
   private identifyStrengths(oracle: OracleComparisonData): string[] {
     const strengths: string[] = [];
 
-    if (oracle.accuracy >= 99) strengths.push("Excellent accuracy (≥99%)");
-    if (oracle.uptime >= 99.9) strengths.push("High uptime (≥99.9%)");
-    if (oracle.avgResponseTime < 100)
-      strengths.push("Fast response time (<100ms)");
-    if (oracle.costEfficiency >= 8) strengths.push("Cost-efficient operations");
-    if (oracle.disputes === 0 && oracle.assertions > 10)
-      strengths.push("Zero disputes");
-    if (oracle.assertions > 1000)
-      strengths.push("High throughput (>1000 assertions)");
+    if (oracle.accuracy >= 99) strengths.push('Excellent accuracy (≥99%)');
+    if (oracle.uptime >= 99.9) strengths.push('High uptime (≥99.9%)');
+    if (oracle.avgResponseTime < 100) strengths.push('Fast response time (<100ms)');
+    if (oracle.costEfficiency >= 8) strengths.push('Cost-efficient operations');
+    if (oracle.disputes === 0 && oracle.assertions > 10) strengths.push('Zero disputes');
+    if (oracle.assertions > 1000) strengths.push('High throughput (>1000 assertions)');
 
     return strengths;
   }
@@ -222,29 +210,24 @@ export class MultiOracleComparator {
   private identifyWeaknesses(oracle: OracleComparisonData): string[] {
     const weaknesses: string[] = [];
 
-    if (oracle.accuracy < 95) weaknesses.push("Below average accuracy (<95%)");
-    if (oracle.uptime < 99) weaknesses.push("Uptime concerns (<99%)");
-    if (oracle.avgResponseTime > 500)
-      weaknesses.push("Slow response time (>500ms)");
-    if (oracle.costEfficiency < 5) weaknesses.push("High operational costs");
-    if (oracle.disputes > oracle.assertions * 0.1)
-      weaknesses.push("High dispute rate (>10%)");
+    if (oracle.accuracy < 95) weaknesses.push('Below average accuracy (<95%)');
+    if (oracle.uptime < 99) weaknesses.push('Uptime concerns (<99%)');
+    if (oracle.avgResponseTime > 500) weaknesses.push('Slow response time (>500ms)');
+    if (oracle.costEfficiency < 5) weaknesses.push('High operational costs');
+    if (oracle.disputes > oracle.assertions * 0.1) weaknesses.push('High dispute rate (>10%)');
 
     return weaknesses;
   }
 
-  private generateRecommendation(
-    _oracle: OracleComparisonData,
-    score: number,
-  ): string {
+  private generateRecommendation(_oracle: OracleComparisonData, score: number): string {
     if (score >= 90) {
-      return "Top performer - recommended for critical applications";
+      return 'Top performer - recommended for critical applications';
     } else if (score >= 70) {
-      return "Solid choice - suitable for most use cases";
+      return 'Solid choice - suitable for most use cases';
     } else if (score >= 50) {
-      return "Consider improvements before mission-critical use";
+      return 'Consider improvements before mission-critical use';
     } else {
-      return "Requires significant improvements - use with caution";
+      return 'Requires significant improvements - use with caution';
     }
   }
 
@@ -265,19 +248,18 @@ export class MultiOracleComparator {
 
     const correlation = this.calculatePearsonCorrelation(values1, values2);
     const n = dataPoints.length;
-    const tStat =
-      correlation * Math.sqrt((n - 2) / (1 - correlation * correlation));
+    const tStat = correlation * Math.sqrt((n - 2) / (1 - correlation * correlation));
     const pValue = this.calculatePValue(Math.abs(tStat), n - 2);
     const isSignificant = pValue < 0.05;
 
-    let strength: CorrelationAnalysis["correlationStrength"];
+    let strength: CorrelationAnalysis['correlationStrength'];
     const absCorrelation = Math.abs(correlation);
 
-    if (absCorrelation >= 0.9) strength = "very_strong";
-    else if (absCorrelation >= 0.7) strength = "strong";
-    else if (absCorrelation >= 0.5) strength = "moderate";
-    else if (absCorrelation >= 0.3) strength = "weak";
-    else strength = "very_weak";
+    if (absCorrelation >= 0.9) strength = 'very_strong';
+    else if (absCorrelation >= 0.7) strength = 'strong';
+    else if (absCorrelation >= 0.5) strength = 'moderate';
+    else if (absCorrelation >= 0.3) strength = 'weak';
+    else strength = 'very_weak';
 
     const interpretation = this.generateCorrelationInterpretation(
       correlation,
@@ -372,42 +354,39 @@ export class MultiOracleComparator {
     name1: string,
     name2: string,
   ): string {
-    const direction = correlation > 0 ? "positive" : "negative";
+    const direction = correlation > 0 ? 'positive' : 'negative';
     const significance = isSignificant
-      ? "statistically significant"
-      : "not statistically significant";
+      ? 'statistically significant'
+      : 'not statistically significant';
 
-    let strengthDesc = "";
+    let strengthDesc = '';
     switch (strength) {
-      case "very_strong":
-        strengthDesc = "very strong";
+      case 'very_strong':
+        strengthDesc = 'very strong';
         break;
-      case "strong":
-        strengthDesc = "strong";
+      case 'strong':
+        strengthDesc = 'strong';
         break;
-      case "moderate":
-        strengthDesc = "moderate";
+      case 'moderate':
+        strengthDesc = 'moderate';
         break;
-      case "weak":
-        strengthDesc = "weak";
+      case 'weak':
+        strengthDesc = 'weak';
         break;
-      case "very_weak":
-        strengthDesc = "very weak or no";
+      case 'very_weak':
+        strengthDesc = 'very weak or no';
         break;
     }
 
     return `${name1} and ${name2} show a ${strengthDesc} ${direction} correlation that is ${significance}.`;
   }
 
-  private getDefaultCorrelation(
-    oracle1: string,
-    oracle2: string,
-  ): CorrelationAnalysis {
+  private getDefaultCorrelation(oracle1: string, oracle2: string): CorrelationAnalysis {
     return {
       oracle1,
       oracle2,
       correlationCoefficient: 0,
-      correlationStrength: "very_weak",
+      correlationStrength: 'very_weak',
       isStatisticallySignificant: false,
       pValue: 1,
       sampleSize: 0,
@@ -415,10 +394,7 @@ export class MultiOracleComparator {
     };
   }
 
-  generateComparativeInsights(
-    oracleId1: string,
-    oracleId2: string,
-  ): ComparativeInsight[] {
+  generateComparativeInsights(oracleId1: string, oracleId2: string): ComparativeInsight[] {
     const comparison = this.compareTwoOracles(oracleId1, oracleId2);
     const oracle1 = this.oracles.get(oracleId1);
     const oracle2 = this.oracles.get(oracleId2);
@@ -429,58 +405,55 @@ export class MultiOracleComparator {
 
     if (comparison.accuracyDiff > 1) {
       insights.push({
-        type: "advantage",
-        metric: "Accuracy",
+        type: 'advantage',
+        metric: 'Accuracy',
         description: `${oracle2.oracleName} has ${comparison.accuracyDiff.toFixed(1)}% higher accuracy`,
         impactedOracle: oracle2.oracleId,
         magnitude: comparison.accuracyDiff,
-        recommendation:
-          "Consider using the higher accuracy oracle for critical decisions",
+        recommendation: 'Consider using the higher accuracy oracle for critical decisions',
       });
     } else if (comparison.accuracyDiff < -1) {
       insights.push({
-        type: "advantage",
-        metric: "Accuracy",
+        type: 'advantage',
+        metric: 'Accuracy',
         description: `${oracle1.oracleName} has ${Math.abs(comparison.accuracyDiff).toFixed(1)}% higher accuracy`,
         impactedOracle: oracle1.oracleId,
         magnitude: Math.abs(comparison.accuracyDiff),
-        recommendation:
-          "Consider using the higher accuracy oracle for critical decisions",
+        recommendation: 'Consider using the higher accuracy oracle for critical decisions',
       });
     }
 
     if (comparison.responseTimeDiff > 50) {
       insights.push({
-        type: "advantage",
-        metric: "Response Time",
+        type: 'advantage',
+        metric: 'Response Time',
         description: `${oracle1.oracleName} responds ${comparison.responseTimeDiff.toFixed(0)}ms faster`,
         impactedOracle: oracle1.oracleId,
         magnitude: comparison.responseTimeDiff,
-        recommendation: "Use the faster oracle for time-sensitive applications",
+        recommendation: 'Use the faster oracle for time-sensitive applications',
       });
     }
 
     if (comparison.uptimeDiff > 0.1) {
       insights.push({
-        type: "advantage",
-        metric: "Uptime",
+        type: 'advantage',
+        metric: 'Uptime',
         description: `${oracle2.oracleName} has ${comparison.uptimeDiff.toFixed(2)}% better uptime`,
         impactedOracle: oracle2.oracleId,
         magnitude: comparison.uptimeDiff,
-        recommendation:
-          "Prioritize the more reliable oracle for continuous operations",
+        recommendation: 'Prioritize the more reliable oracle for continuous operations',
       });
     }
 
     if (comparison.costEfficiencyDiff > 1) {
       insights.push({
-        type: "opportunity",
-        metric: "Cost Efficiency",
+        type: 'opportunity',
+        metric: 'Cost Efficiency',
         description: `${oracle2.oracleName} is ${comparison.costEfficiencyDiff.toFixed(1)} points more cost-efficient`,
         impactedOracle: oracle2.oracleId,
         magnitude: comparison.costEfficiencyDiff,
         recommendation:
-          "Consider switching to the more cost-efficient option for routine operations",
+          'Consider switching to the more cost-efficient option for routine operations',
       });
     }
 
@@ -498,10 +471,8 @@ export class MultiOracleComparator {
     const rankings = this.rankAllOracles();
     const oracles = this.getAllOracles();
 
-    const averageAccuracy =
-      oracles.reduce((sum, o) => sum + o.accuracy, 0) / oracles.length || 0;
-    const averageUptime =
-      oracles.reduce((sum, o) => sum + o.uptime, 0) / oracles.length || 0;
+    const averageAccuracy = oracles.reduce((sum, o) => sum + o.accuracy, 0) / oracles.length || 0;
+    const averageUptime = oracles.reduce((sum, o) => sum + o.uptime, 0) / oracles.length || 0;
     const totalAssertions = oracles.reduce((sum, o) => sum + o.assertions, 0);
 
     let topCorrelation: CorrelationAnalysis | null = null;
@@ -554,7 +525,7 @@ export class MultiOracleComparator {
     );
 
     if (!comparison || !oracle1 || !oracle2) {
-      return "Insufficient data to generate comparison report";
+      return 'Insufficient data to generate comparison report';
     }
 
     return `
@@ -578,19 +549,19 @@ export class MultiOracleComparator {
 
 ## Overall Analysis
 - **Score Difference**: ${Math.abs(comparison.overallScore).toFixed(2)}
-- **Winner**: ${comparison.winner ? (comparison.winner === oracleId1 ? oracle1.oracleName : oracle2.oracleName) : "Tie"}
+- **Winner**: ${comparison.winner ? (comparison.winner === oracleId1 ? oracle1.oracleName : oracle2.oracleName) : 'Tie'}
 
 ## Correlation Analysis
 - **Correlation Coefficient**: ${correlation.correlationCoefficient.toFixed(4)}
-- **Correlation Strength**: ${correlation.correlationStrength.replace("_", " ")}
-- **Statistical Significance**: ${correlation.isStatisticallySignificant ? "Yes" : "No"} (p=${correlation.pValue.toFixed(4)})
+- **Correlation Strength**: ${correlation.correlationStrength.replace('_', ' ')}
+- **Statistical Significance**: ${correlation.isStatisticallySignificant ? 'Yes' : 'No'} (p=${correlation.pValue.toFixed(4)})
 - **Interpretation**: ${correlation.interpretation}
 
 ## Key Insights
-${insights.map((i) => `- **${i.metric}**: ${i.description}`).join("\n") || "No significant differences found"}
+${insights.map((i) => `- **${i.metric}**: ${i.description}`).join('\n') || 'No significant differences found'}
 
 ## Recommendations
-${insights.map((i) => `- ${i.recommendation}`).join("\n") || "Both oracles perform similarly"}
+${insights.map((i) => `- ${i.recommendation}`).join('\n') || 'Both oracles perform similarly'}
     `.trim();
   }
 }
@@ -604,10 +575,11 @@ export function compareOracles(
   multiOracleComparator.addOracleData(oracle1);
   multiOracleComparator.addOracleData(oracle2);
 
-  return multiOracleComparator.compareTwoOracles(
-    oracle1.oracleId,
-    oracle2.oracleId,
-  )!;
+  const result = multiOracleComparator.compareTwoOracles(oracle1.oracleId, oracle2.oracleId);
+  if (!result) {
+    throw new Error(`Failed to compare oracles: ${oracle1.oracleId} and ${oracle2.oracleId}`);
+  }
+  return result;
 }
 
 export function getOracleRankings(): OracleRanking[] {

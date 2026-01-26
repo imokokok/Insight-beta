@@ -1,38 +1,32 @@
 export type Permission =
-  | "oracle:read"
-  | "oracle:write"
-  | "oracle:delete"
-  | "oracle:admin"
-  | "dispute:read"
-  | "dispute:create"
-  | "dispute:vote"
-  | "dispute:admin"
-  | "alert:read"
-  | "alert:write"
-  | "alert:admin"
-  | "user:read"
-  | "user:write"
-  | "user:delete"
-  | "user:admin"
-  | "admin:read"
-  | "admin:write"
-  | "admin:delete"
-  | "admin:super"
-  | "audit:read"
-  | "audit:export"
-  | "settings:read"
-  | "settings:write"
-  | "api:read"
-  | "api:write"
-  | "api:admin";
+  | 'oracle:read'
+  | 'oracle:write'
+  | 'oracle:delete'
+  | 'oracle:admin'
+  | 'dispute:read'
+  | 'dispute:create'
+  | 'dispute:vote'
+  | 'dispute:admin'
+  | 'alert:read'
+  | 'alert:write'
+  | 'alert:admin'
+  | 'user:read'
+  | 'user:write'
+  | 'user:delete'
+  | 'user:admin'
+  | 'admin:read'
+  | 'admin:write'
+  | 'admin:delete'
+  | 'admin:super'
+  | 'audit:read'
+  | 'audit:export'
+  | 'settings:read'
+  | 'settings:write'
+  | 'api:read'
+  | 'api:write'
+  | 'api:admin';
 
-export type Role =
-  | "viewer"
-  | "user"
-  | "moderator"
-  | "operator"
-  | "admin"
-  | "super_admin";
+export type Role = 'viewer' | 'user' | 'moderator' | 'operator' | 'admin' | 'super_admin';
 
 export interface RoleDefinition {
   name: Role;
@@ -66,129 +60,123 @@ export interface PermissionContext {
 
 export const ROLE_DEFINITIONS: Record<Role, RoleDefinition> = {
   viewer: {
-    name: "viewer",
-    displayName: "Viewer",
-    description: "Read-only access to public data",
-    permissions: ["oracle:read", "dispute:read", "alert:read"],
+    name: 'viewer',
+    displayName: 'Viewer',
+    description: 'Read-only access to public data',
+    permissions: ['oracle:read', 'dispute:read', 'alert:read'],
     priority: 1,
     isSystem: true,
   },
   user: {
-    name: "user",
-    displayName: "User",
-    description: "Standard user with basic interaction capabilities",
-    permissions: [
-      "oracle:read",
-      "dispute:read",
-      "dispute:create",
-      "alert:read",
-      "user:read",
-    ],
+    name: 'user',
+    displayName: 'User',
+    description: 'Standard user with basic interaction capabilities',
+    permissions: ['oracle:read', 'dispute:read', 'dispute:create', 'alert:read', 'user:read'],
     priority: 2,
     isSystem: true,
   },
   moderator: {
-    name: "moderator",
-    displayName: "Moderator",
-    description: "Can manage disputes and alerts",
+    name: 'moderator',
+    displayName: 'Moderator',
+    description: 'Can manage disputes and alerts',
     permissions: [
-      "oracle:read",
-      "dispute:read",
-      "dispute:create",
-      "dispute:vote",
-      "alert:read",
-      "alert:write",
-      "user:read",
-      "audit:read",
+      'oracle:read',
+      'dispute:read',
+      'dispute:create',
+      'dispute:vote',
+      'alert:read',
+      'alert:write',
+      'user:read',
+      'audit:read',
     ],
     priority: 3,
     isSystem: true,
   },
   operator: {
-    name: "operator",
-    displayName: "Operator",
-    description: "Full operational access except user management",
+    name: 'operator',
+    displayName: 'Operator',
+    description: 'Full operational access except user management',
     permissions: [
-      "oracle:read",
-      "oracle:write",
-      "dispute:read",
-      "dispute:create",
-      "dispute:vote",
-      "dispute:admin",
-      "alert:read",
-      "alert:write",
-      "alert:admin",
-      "user:read",
-      "audit:read",
-      "audit:export",
-      "settings:read",
-      "api:read",
+      'oracle:read',
+      'oracle:write',
+      'dispute:read',
+      'dispute:create',
+      'dispute:vote',
+      'dispute:admin',
+      'alert:read',
+      'alert:write',
+      'alert:admin',
+      'user:read',
+      'audit:read',
+      'audit:export',
+      'settings:read',
+      'api:read',
     ],
     priority: 4,
     isSystem: true,
   },
   admin: {
-    name: "admin",
-    displayName: "Administrator",
-    description: "Full system access except super admin features",
+    name: 'admin',
+    displayName: 'Administrator',
+    description: 'Full system access except super admin features',
     permissions: [
-      "oracle:read",
-      "oracle:write",
-      "oracle:delete",
-      "oracle:admin",
-      "dispute:read",
-      "dispute:create",
-      "dispute:vote",
-      "dispute:admin",
-      "alert:read",
-      "alert:write",
-      "alert:admin",
-      "user:read",
-      "user:write",
-      "user:admin",
-      "admin:read",
-      "admin:write",
-      "audit:read",
-      "audit:export",
-      "settings:read",
-      "settings:write",
-      "api:read",
-      "api:write",
+      'oracle:read',
+      'oracle:write',
+      'oracle:delete',
+      'oracle:admin',
+      'dispute:read',
+      'dispute:create',
+      'dispute:vote',
+      'dispute:admin',
+      'alert:read',
+      'alert:write',
+      'alert:admin',
+      'user:read',
+      'user:write',
+      'user:admin',
+      'admin:read',
+      'admin:write',
+      'audit:read',
+      'audit:export',
+      'settings:read',
+      'settings:write',
+      'api:read',
+      'api:write',
     ],
     priority: 5,
     isSystem: true,
   },
   super_admin: {
-    name: "super_admin",
-    displayName: "Super Administrator",
-    description: "Complete system control with all permissions",
+    name: 'super_admin',
+    displayName: 'Super Administrator',
+    description: 'Complete system control with all permissions',
     permissions: [
-      "oracle:read",
-      "oracle:write",
-      "oracle:delete",
-      "oracle:admin",
-      "dispute:read",
-      "dispute:create",
-      "dispute:vote",
-      "dispute:admin",
-      "alert:read",
-      "alert:write",
-      "alert:admin",
-      "user:read",
-      "user:write",
-      "user:delete",
-      "user:admin",
-      "admin:read",
-      "admin:write",
-      "admin:delete",
-      "admin:super",
-      "audit:read",
-      "audit:export",
-      "settings:read",
-      "settings:write",
-      "api:read",
-      "api:write",
-      "api:admin",
+      'oracle:read',
+      'oracle:write',
+      'oracle:delete',
+      'oracle:admin',
+      'dispute:read',
+      'dispute:create',
+      'dispute:vote',
+      'dispute:admin',
+      'alert:read',
+      'alert:write',
+      'alert:admin',
+      'user:read',
+      'user:write',
+      'user:delete',
+      'user:admin',
+      'admin:read',
+      'admin:write',
+      'admin:delete',
+      'admin:super',
+      'audit:read',
+      'audit:export',
+      'settings:read',
+      'settings:write',
+      'api:read',
+      'api:write',
+      'api:admin',
     ],
     priority: 100,
     isSystem: true,
@@ -196,14 +184,14 @@ export const ROLE_DEFINITIONS: Record<Role, RoleDefinition> = {
 };
 
 export const PERMISSION_GROUPS: Record<string, Permission[]> = {
-  oracle: ["oracle:read", "oracle:write", "oracle:delete", "oracle:admin"],
-  dispute: ["dispute:read", "dispute:create", "dispute:vote", "dispute:admin"],
-  alert: ["alert:read", "alert:write", "alert:admin"],
-  user: ["user:read", "user:write", "user:delete", "user:admin"],
-  admin: ["admin:read", "admin:write", "admin:delete", "admin:super"],
-  audit: ["audit:read", "audit:export"],
-  settings: ["settings:read", "settings:write"],
-  api: ["api:read", "api:write", "api:admin"],
+  oracle: ['oracle:read', 'oracle:write', 'oracle:delete', 'oracle:admin'],
+  dispute: ['dispute:read', 'dispute:create', 'dispute:vote', 'dispute:admin'],
+  alert: ['alert:read', 'alert:write', 'alert:admin'],
+  user: ['user:read', 'user:write', 'user:delete', 'user:admin'],
+  admin: ['admin:read', 'admin:write', 'admin:delete', 'admin:super'],
+  audit: ['audit:read', 'audit:export'],
+  settings: ['settings:read', 'settings:write'],
+  api: ['api:read', 'api:write', 'api:admin'],
 };
 
 export class PermissionManager {
@@ -380,10 +368,7 @@ export class PermissionManager {
     });
   }
 
-  createContext(
-    userId: string | null,
-    address: string | null,
-  ): PermissionContext {
+  createContext(userId: string | null, address: string | null): PermissionContext {
     if (!userId || !address) {
       return {
         userId: null,
@@ -406,8 +391,8 @@ export class PermissionManager {
       roles,
       permissions,
       isAuthenticated: true,
-      isAdmin: roles.includes("admin") || roles.includes("super_admin"),
-      isSuperAdmin: roles.includes("super_admin"),
+      isAdmin: roles.includes('admin') || roles.includes('super_admin'),
+      isSuperAdmin: roles.includes('super_admin'),
     };
   }
 
@@ -418,10 +403,7 @@ export class PermissionManager {
 
 export const permissionManager = new PermissionManager();
 
-export function requirePermission(
-  context: PermissionContext,
-  permission: Permission,
-): boolean {
+export function requirePermission(context: PermissionContext, permission: Permission): boolean {
   if (!context.isAuthenticated) return false;
   return context.permissions.includes(permission);
 }
@@ -447,10 +429,7 @@ export function requireRole(context: PermissionContext, role: Role): boolean {
   return context.roles.includes(role);
 }
 
-export function requireAnyRole(
-  context: PermissionContext,
-  roles: Role[],
-): boolean {
+export function requireAnyRole(context: PermissionContext, roles: Role[]): boolean {
   if (!context.isAuthenticated) return false;
   return roles.some((r) => context.roles.includes(r));
 }
@@ -461,10 +440,9 @@ export function filterByPermission<T extends { id: string }>(
   _permission: Permission,
   getItemOwnerId: (item: T) => string,
 ): T[] {
-  const context = permissionManager.createContext(userId, "");
+  const context = permissionManager.createContext(userId, '');
   const hasAdmin =
-    requirePermission(context, "admin:super") ||
-    requirePermission(context, "user:admin");
+    requirePermission(context, 'admin:super') || requirePermission(context, 'user:admin');
 
   if (hasAdmin) return items;
 
@@ -474,10 +452,12 @@ export function filterByPermission<T extends { id: string }>(
   });
 }
 
-export function getAccessibleResources<
-  T extends { id: string; ownerId: string },
->(resources: T[], userId: string, adminPermission: Permission): T[] {
-  const context = permissionManager.createContext(userId, "");
+export function getAccessibleResources<T extends { id: string; ownerId: string }>(
+  resources: T[],
+  userId: string,
+  adminPermission: Permission,
+): T[] {
+  const context = permissionManager.createContext(userId, '');
   const hasAdmin = requirePermission(context, adminPermission);
 
   if (hasAdmin) return resources;

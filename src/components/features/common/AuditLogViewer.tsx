@@ -1,18 +1,12 @@
-"use client";
+'use client';
 
-import { useEffect, useMemo, useState, type KeyboardEvent } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { cn, fetchApiData, formatTime, getErrorCode } from "@/lib/utils";
-import type { AuditLogEntry } from "@/lib/types/oracleTypes";
-import { useI18n } from "@/i18n/LanguageProvider";
-import { getUiErrorMessage, langToLocale } from "@/i18n/translations";
-import { Download, ScrollText, RotateCw } from "lucide-react";
+import { useEffect, useMemo, useState, type KeyboardEvent } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { cn, fetchApiData, formatTime, getErrorCode } from '@/lib/utils';
+import type { AuditLogEntry } from '@/lib/types/oracleTypes';
+import { useI18n } from '@/i18n/LanguageProvider';
+import { getUiErrorMessage, langToLocale } from '@/i18n/translations';
+import { Download, ScrollText, RotateCw } from 'lucide-react';
 
 type AuditListResponse = {
   items: AuditLogEntry[];
@@ -44,22 +38,22 @@ export function AuditLogViewer({
     entityType: string;
     entityId: string;
     q: string;
-  }>({ actor: "", action: "", entityType: "", entityId: "", q: "" });
+  }>({ actor: '', action: '', entityType: '', entityId: '', q: '' });
 
   const canLoadMore = nextCursor !== null;
 
   const headers = useMemo(() => {
     const h: Record<string, string> = {};
     const trimmed = adminToken.trim();
-    if (trimmed) h["x-admin-token"] = trimmed;
+    if (trimmed) h['x-admin-token'] = trimmed;
     return h;
   }, [adminToken]);
 
   const buildQueryString = useMemo(() => {
     return (input: { cursor: number; limit: number }) => {
       const params = new URLSearchParams();
-      params.set("cursor", String(input.cursor));
-      params.set("limit", String(input.limit));
+      params.set('cursor', String(input.cursor));
+      params.set('limit', String(input.limit));
 
       const actor = filters.actor.trim();
       const action = filters.action.trim();
@@ -67,11 +61,11 @@ export function AuditLogViewer({
       const entityId = filters.entityId.trim();
       const q = filters.q.trim();
 
-      if (actor) params.set("actor", actor);
-      if (action) params.set("action", action);
-      if (entityType) params.set("entityType", entityType);
-      if (entityId) params.set("entityId", entityId);
-      if (q) params.set("q", q);
+      if (actor) params.set('actor', actor);
+      if (action) params.set('action', action);
+      if (entityType) params.set('entityType', entityType);
+      if (entityId) params.set('entityId', entityId);
+      if (q) params.set('q', q);
 
       return params.toString();
     };
@@ -85,10 +79,9 @@ export function AuditLogViewer({
       setError(null);
       try {
         const query = buildQueryString({ cursor, limit: 50 });
-        const data = await fetchApiData<AuditListResponse>(
-          `/api/oracle/audit?${query}`,
-          { headers },
-        );
+        const data = await fetchApiData<AuditListResponse>(`/api/oracle/audit?${query}`, {
+          headers,
+        });
         setTotal(data.total);
         setNextCursor(data.nextCursor);
         setItems((prev) => (replace ? data.items : [...prev, ...data.items]));
@@ -111,12 +104,12 @@ export function AuditLogViewer({
   };
 
   const handleFilterKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key !== "Enter") return;
+    if (e.key !== 'Enter') return;
     void applyFilters();
   };
 
   const clearFilters = async () => {
-    setFilters({ actor: "", action: "", entityType: "", entityId: "", q: "" });
+    setFilters({ actor: '', action: '', entityType: '', entityId: '', q: '' });
     setItems([]);
     setTotal(0);
     setNextCursor(0);
@@ -125,7 +118,7 @@ export function AuditLogViewer({
     await load(0, true);
   };
 
-  const exportAll = async (format: "json" | "csv") => {
+  const exportAll = async (format: 'json' | 'csv') => {
     if (!adminToken.trim()) return;
     setExporting(true);
     setError(null);
@@ -141,10 +134,9 @@ export function AuditLogViewer({
         if (seenCursors.has(cursor)) break;
         seenCursors.add(cursor);
         const query = buildQueryString({ cursor, limit });
-        const data = await fetchApiData<AuditListResponse>(
-          `/api/oracle/audit?${query}`,
-          { headers },
-        );
+        const data = await fetchApiData<AuditListResponse>(`/api/oracle/audit?${query}`, {
+          headers,
+        });
         all.push(...(data.items ?? []));
         next = data.nextCursor;
         if (next === null) break;
@@ -155,13 +147,13 @@ export function AuditLogViewer({
       }
 
       const now = new Date();
-      const stamp = now.toISOString().replace(/[:.]/g, "-");
+      const stamp = now.toISOString().replace(/[:.]/g, '-');
       const truncated = all.length >= maxItems && next !== null;
-      const baseName = `audit-export-${stamp}${truncated ? "-truncated" : ""}`;
+      const baseName = `audit-export-${stamp}${truncated ? '-truncated' : ''}`;
 
       const download = (blob: Blob, filename: string) => {
         const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
+        const a = document.createElement('a');
         a.href = url;
         a.download = filename;
         document.body.appendChild(a);
@@ -170,7 +162,7 @@ export function AuditLogViewer({
         window.setTimeout(() => URL.revokeObjectURL(url), 0);
       };
 
-      if (format === "json") {
+      if (format === 'json') {
         const payload = {
           exportedAt: now.toISOString(),
           truncated,
@@ -185,7 +177,7 @@ export function AuditLogViewer({
         };
         download(
           new Blob([JSON.stringify(payload, null, 2)], {
-            type: "application/json",
+            type: 'application/json',
           }),
           `${baseName}.json`,
         );
@@ -193,40 +185,29 @@ export function AuditLogViewer({
       }
 
       const csvEscape = (value: unknown) => {
-        const s = value === null || value === undefined ? "" : String(value);
+        const s = value === null || value === undefined ? '' : String(value);
         const escaped = s.replace(/"/g, '""');
         return `"${escaped}"`;
       };
 
-      const header = [
-        "id",
-        "createdAt",
-        "actor",
-        "action",
-        "entityType",
-        "entityId",
-        "details",
-      ];
-      const rows = [header.map(csvEscape).join(",")];
+      const header = ['id', 'createdAt', 'actor', 'action', 'entityType', 'entityId', 'details'];
+      const rows = [header.map(csvEscape).join(',')];
       for (const e of all) {
         rows.push(
           [
             e.id,
             e.createdAt,
-            e.actor ?? "",
+            e.actor ?? '',
             e.action,
-            e.entityType ?? "",
-            e.entityId ?? "",
-            e.details ? JSON.stringify(e.details) : "",
+            e.entityType ?? '',
+            e.entityId ?? '',
+            e.details ? JSON.stringify(e.details) : '',
           ]
             .map(csvEscape)
-            .join(","),
+            .join(','),
         );
       }
-      download(
-        new Blob([rows.join("\n")], { type: "text/csv" }),
-        `${baseName}.csv`,
-      );
+      download(new Blob([rows.join('\n')], { type: 'text/csv' }), `${baseName}.csv`);
     } catch (e) {
       setError(getErrorCode(e));
     } finally {
@@ -244,50 +225,42 @@ export function AuditLogViewer({
   }, [adminToken, load]);
 
   return (
-    <Card className="overflow-hidden border-none shadow-xl bg-white/80 backdrop-blur-md">
-      <CardHeader className="bg-gradient-to-r from-slate-700 to-slate-900 text-white p-6">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 bg-white/15 rounded-lg backdrop-blur-sm">
+    <Card className="overflow-hidden border-none bg-white/80 shadow-xl backdrop-blur-md">
+      <CardHeader className="bg-gradient-to-r from-slate-700 to-slate-900 p-6 text-white">
+        <div className="mb-2 flex items-center gap-3">
+          <div className="rounded-lg bg-white/15 p-2 backdrop-blur-sm">
             <ScrollText className="h-6 w-6 text-white" />
           </div>
           <div>
-            <CardTitle className="text-xl font-bold">
-              {t("audit.title")}
-            </CardTitle>
-            <CardDescription className="text-slate-200">
-              {t("audit.description")}
-            </CardDescription>
+            <CardTitle className="text-xl font-bold">{t('audit.title')}</CardTitle>
+            <CardDescription className="text-slate-200">{t('audit.description')}</CardDescription>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="p-6 space-y-5">
+      <CardContent className="space-y-5 p-6">
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-            {t("audit.adminToken")}
+          <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            {t('audit.adminToken')}
           </label>
           <input
             value={adminToken}
             onChange={(e) => setAdminToken(e.target.value)}
-            placeholder={t("audit.adminTokenPlaceholder")}
+            placeholder={t('audit.adminTokenPlaceholder')}
             type="password"
             autoComplete="off"
             className="glass-input h-10 w-full rounded-xl px-4 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-slate-500/20"
           />
-          <div className="text-xs text-slate-500">
-            {t("audit.adminTokenHint")}
-          </div>
+          <div className="text-xs text-slate-500">{t('audit.adminTokenHint')}</div>
         </div>
 
-        <div className="rounded-2xl border border-white/60 bg-white/60 backdrop-blur-sm shadow-sm p-4 space-y-3">
-          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-            {t("audit.filters")}
+        <div className="space-y-3 rounded-2xl border border-white/60 bg-white/60 p-4 shadow-sm backdrop-blur-sm">
+          <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            {t('audit.filters')}
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-500">
-                {t("audit.actor")}
-              </label>
+              <label className="text-xs font-semibold text-slate-500">{t('audit.actor')}</label>
               <input
                 value={filters.actor}
                 onChange={(e) =>
@@ -297,15 +270,13 @@ export function AuditLogViewer({
                   }))
                 }
                 onKeyDown={handleFilterKeyDown}
-                placeholder={t("audit.actorPlaceholder")}
+                placeholder={t('audit.actorPlaceholder')}
                 maxLength={80}
                 className="glass-input h-10 w-full rounded-xl px-4 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-slate-500/20"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-500">
-                {t("audit.action")}
-              </label>
+              <label className="text-xs font-semibold text-slate-500">{t('audit.action')}</label>
               <input
                 value={filters.action}
                 onChange={(e) =>
@@ -315,14 +286,14 @@ export function AuditLogViewer({
                   }))
                 }
                 onKeyDown={handleFilterKeyDown}
-                placeholder={t("audit.actionPlaceholder")}
+                placeholder={t('audit.actionPlaceholder')}
                 maxLength={120}
                 className="glass-input h-10 w-full rounded-xl px-4 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-slate-500/20"
               />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-semibold text-slate-500">
-                {t("audit.entityType")}
+                {t('audit.entityType')}
               </label>
               <input
                 value={filters.entityType}
@@ -333,15 +304,13 @@ export function AuditLogViewer({
                   }))
                 }
                 onKeyDown={handleFilterKeyDown}
-                placeholder={t("audit.entityTypePlaceholder")}
+                placeholder={t('audit.entityTypePlaceholder')}
                 maxLength={80}
                 className="glass-input h-10 w-full rounded-xl px-4 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-slate-500/20"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-500">
-                {t("audit.entityId")}
-              </label>
+              <label className="text-xs font-semibold text-slate-500">{t('audit.entityId')}</label>
               <input
                 value={filters.entityId}
                 onChange={(e) =>
@@ -351,23 +320,19 @@ export function AuditLogViewer({
                   }))
                 }
                 onKeyDown={handleFilterKeyDown}
-                placeholder={t("audit.entityIdPlaceholder")}
+                placeholder={t('audit.entityIdPlaceholder')}
                 maxLength={200}
                 className="glass-input h-10 w-full rounded-xl px-4 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-slate-500/20"
               />
             </div>
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-500">
-              {t("audit.query")}
-            </label>
+            <label className="text-xs font-semibold text-slate-500">{t('audit.query')}</label>
             <input
               value={filters.q}
-              onChange={(e) =>
-                setFilters((p) => ({ ...p, q: e.target.value.slice(0, 200) }))
-              }
+              onChange={(e) => setFilters((p) => ({ ...p, q: e.target.value.slice(0, 200) }))}
               onKeyDown={handleFilterKeyDown}
-              placeholder={t("audit.queryPlaceholder")}
+              placeholder={t('audit.queryPlaceholder')}
               maxLength={200}
               className="glass-input h-10 w-full rounded-xl px-4 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-slate-500/20"
             />
@@ -378,117 +343,112 @@ export function AuditLogViewer({
               onClick={applyFilters}
               disabled={loading || !adminToken.trim()}
               className={cn(
-                "rounded-xl px-4 py-2 text-sm font-semibold shadow-sm transition-all",
+                'rounded-xl px-4 py-2 text-sm font-semibold shadow-sm transition-all',
                 loading || !adminToken.trim()
-                  ? "bg-gray-100 text-gray-400"
-                  : "bg-slate-900 text-white hover:bg-slate-800",
+                  ? 'bg-gray-100 text-gray-400'
+                  : 'bg-slate-900 text-white hover:bg-slate-800',
               )}
             >
-              {t("audit.apply")}
+              {t('audit.apply')}
             </button>
             <button
               type="button"
               onClick={clearFilters}
               disabled={loading || !adminToken.trim()}
               className={cn(
-                "rounded-xl px-4 py-2 text-sm font-semibold shadow-sm transition-all",
+                'rounded-xl px-4 py-2 text-sm font-semibold shadow-sm transition-all',
                 loading || !adminToken.trim()
-                  ? "bg-gray-100 text-gray-400"
-                  : "bg-white text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50",
+                  ? 'bg-gray-100 text-gray-400'
+                  : 'bg-white text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50',
               )}
             >
-              {t("audit.clear")}
+              {t('audit.clear')}
             </button>
             <div className="flex-1" />
             <button
               type="button"
-              onClick={() => exportAll("json")}
+              onClick={() => exportAll('json')}
               disabled={exporting || !adminToken.trim()}
               className={cn(
-                "flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold shadow-sm transition-all",
+                'flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold shadow-sm transition-all',
                 exporting || !adminToken.trim()
-                  ? "bg-gray-100 text-gray-400"
-                  : "bg-white text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50",
+                  ? 'bg-gray-100 text-gray-400'
+                  : 'bg-white text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50',
               )}
             >
               <Download size={16} />
-              {exporting ? t("audit.exporting") : t("audit.exportJson")}
+              {exporting ? t('audit.exporting') : t('audit.exportJson')}
             </button>
             <button
               type="button"
-              onClick={() => exportAll("csv")}
+              onClick={() => exportAll('csv')}
               disabled={exporting || !adminToken.trim()}
               className={cn(
-                "flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold shadow-sm transition-all",
+                'flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold shadow-sm transition-all',
                 exporting || !adminToken.trim()
-                  ? "bg-gray-100 text-gray-400"
-                  : "bg-white text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50",
+                  ? 'bg-gray-100 text-gray-400'
+                  : 'bg-white text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50',
               )}
             >
               <Download size={16} />
-              {exporting ? t("audit.exporting") : t("audit.exportCsv")}
+              {exporting ? t('audit.exporting') : t('audit.exportCsv')}
             </button>
           </div>
         </div>
 
         <div className="flex items-center justify-between">
           <div className="text-sm font-semibold text-slate-700">
-            {t("audit.total")}: <span className="font-mono">{total}</span>
+            {t('audit.total')}: <span className="font-mono">{total}</span>
           </div>
           <button
             type="button"
             onClick={() => load(0, true)}
             disabled={loading || !adminToken.trim()}
             className={cn(
-              "flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all shadow-sm",
+              'flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold shadow-sm transition-all',
               loading || !adminToken.trim()
-                ? "bg-gray-100 text-gray-400"
-                : "bg-slate-900 text-white hover:bg-slate-800",
+                ? 'bg-gray-100 text-gray-400'
+                : 'bg-slate-900 text-white hover:bg-slate-800',
             )}
           >
-            <RotateCw size={16} className={loading ? "animate-spin" : ""} />
-            {t("audit.refresh")}
+            <RotateCw size={16} className={loading ? 'animate-spin' : ''} />
+            {t('audit.refresh')}
           </button>
         </div>
 
         {error && (
-          <div className="p-3 rounded-xl bg-rose-50 text-xs text-rose-600 border border-rose-100">
+          <div className="rounded-xl border border-rose-100 bg-rose-50 p-3 text-xs text-rose-600">
             {getUiErrorMessage(error, t)}
           </div>
         )}
 
         {!error && !loading && items.length === 0 && adminToken.trim() && (
-          <div className="text-sm text-slate-500">{t("audit.empty")}</div>
+          <div className="text-sm text-slate-500">{t('audit.empty')}</div>
         )}
 
         <div className="space-y-3">
           {items.map((entry) => (
             <div
               key={entry.id}
-              className="rounded-2xl border border-white/60 bg-white/60 backdrop-blur-sm shadow-sm p-4"
+              className="rounded-2xl border border-white/60 bg-white/60 p-4 shadow-sm backdrop-blur-sm"
             >
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                       {entry.action}
                     </span>
-                    <span className="text-xs text-slate-400 font-mono">
-                      #{entry.id}
-                    </span>
+                    <span className="font-mono text-xs text-slate-400">#{entry.id}</span>
                   </div>
                   <div className="mt-1 text-sm font-medium text-slate-800">
-                    {(entry.entityType || "—") + ":"}{" "}
-                    <span className="font-mono break-all">
-                      {entry.entityId || "—"}
-                    </span>
+                    {(entry.entityType || '—') + ':'}{' '}
+                    <span className="break-all font-mono">{entry.entityId || '—'}</span>
                   </div>
                   <div className="mt-1 text-xs text-slate-500">
-                    {t("audit.actor")}:{" "}
-                    <span className="font-mono">{entry.actor || "—"}</span>
+                    {t('audit.actor')}: <span className="font-mono">{entry.actor || '—'}</span>
                   </div>
                 </div>
-                <div className="text-xs text-slate-500 font-mono">
+                <div className="font-mono text-xs text-slate-500">
                   {formatTime(entry.createdAt, locale)}
                 </div>
               </div>
@@ -503,20 +463,13 @@ export function AuditLogViewer({
                 type="button"
                 onClick={() => load(nextCursor ?? 0, false)}
                 disabled={loadingMore}
-                className="group flex items-center gap-2 rounded-full bg-white px-8 py-3 text-sm font-bold text-slate-800 shadow-lg shadow-slate-500/10 ring-1 ring-slate-100 transition-all hover:bg-slate-50 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
+                className="group flex items-center gap-2 rounded-full bg-white px-8 py-3 text-sm font-bold text-slate-800 shadow-lg shadow-slate-500/10 ring-1 ring-slate-100 transition-all hover:scale-105 hover:bg-slate-50 hover:shadow-xl disabled:opacity-50 disabled:hover:scale-100"
               >
-                <RotateCw
-                  size={18}
-                  className={loadingMore ? "animate-spin" : "opacity-60"}
-                />
-                <span>
-                  {loadingMore ? t("common.loading") : t("common.loadMore")}
-                </span>
+                <RotateCw size={18} className={loadingMore ? 'animate-spin' : 'opacity-60'} />
+                <span>{loadingMore ? t('common.loading') : t('common.loadMore')}</span>
               </button>
             ) : (
-              <div className="text-sm font-medium text-slate-400 py-4">
-                {t("common.allLoaded")}
-              </div>
+              <div className="py-4 text-sm font-medium text-slate-400">{t('common.allLoaded')}</div>
             )}
           </div>
         )}

@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import type { ReactNode } from "react";
-import { useState, useRef, useEffect, useCallback } from "react";
-import { cn } from "@/lib/utils";
+import type { ReactNode } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { cn } from '@/lib/utils';
 
-type TooltipPosition = "top" | "bottom" | "left" | "right";
-type TooltipTheme = "default" | "info" | "warning" | "error" | "success";
+type TooltipPosition = 'top' | 'bottom' | 'left' | 'right';
+type TooltipTheme = 'default' | 'info' | 'warning' | 'error' | 'success';
 
 interface TooltipProps {
   children: ReactNode;
@@ -20,17 +20,15 @@ interface TooltipProps {
 export function Tooltip({
   children,
   content,
-  position = "top",
-  theme = "default",
+  position = 'top',
+  theme = 'default',
   delay = 300,
   className,
   disabled = false,
 }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [positionState, setPositionState] = useState<TooltipPosition>(position);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
-    undefined,
-  );
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const tooltipRef = useRef<HTMLDivElement>(null);
 
   const updatePosition = useCallback(() => {
@@ -38,12 +36,12 @@ export function Tooltip({
 
     const rect = tooltipRef.current.getBoundingClientRect();
     const tooltipRect = tooltipRef.current
-      .querySelector(".tooltip-content")
+      .querySelector('.tooltip-content')
       ?.getBoundingClientRect();
 
     if (!tooltipRect) return;
 
-    const positions: TooltipPosition[] = ["top", "bottom", "left", "right"];
+    const positions: TooltipPosition[] = ['top', 'bottom', 'left', 'right'];
     const viewport = {
       width: window.innerWidth,
       height: window.innerHeight,
@@ -55,16 +53,16 @@ export function Tooltip({
       let fits = true;
 
       switch (pos) {
-        case "top":
+        case 'top':
           fits = rect.top > tooltipRect.height + 10;
           break;
-        case "bottom":
+        case 'bottom':
           fits = viewport.height - rect.bottom > tooltipRect.height + 10;
           break;
-        case "left":
+        case 'left':
           fits = rect.left > tooltipRect.width + 10;
           break;
-        case "right":
+        case 'right':
           fits = viewport.width - rect.right > tooltipRect.width + 10;
           break;
       }
@@ -91,12 +89,12 @@ export function Tooltip({
       }
     };
 
-    window.addEventListener("resize", handleResize);
-    window.addEventListener("scroll", handleScroll, true);
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('scroll', handleScroll, true);
 
     return () => {
-      window.removeEventListener("resize", handleResize);
-      window.removeEventListener("scroll", handleScroll, true);
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('scroll', handleScroll, true);
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
@@ -120,31 +118,31 @@ export function Tooltip({
   };
 
   const positionClasses = {
-    top: "bottom-full left-1/2 -translate-x-1/2 mb-2",
-    bottom: "top-full left-1/2 -translate-x-1/2 mt-2",
-    left: "right-full top-1/2 -translate-y-1/2 mr-2",
-    right: "left-full top-1/2 -translate-y-1/2 ml-2",
+    top: 'bottom-full left-1/2 -translate-x-1/2 mb-2',
+    bottom: 'top-full left-1/2 -translate-x-1/2 mt-2',
+    left: 'right-full top-1/2 -translate-y-1/2 mr-2',
+    right: 'left-full top-1/2 -translate-y-1/2 ml-2',
   };
 
   const arrowClasses = {
-    top: "top-full left-1/2 -translate-x-1/2 border-t-current",
-    bottom: "bottom-full left-1/2 -translate-x-1/2 border-b-current",
-    left: "left-full top-1/2 -translate-y-1/2 border-l-current",
-    right: "right-full top-1/2 -translate-y-1/2 border-r-current",
+    top: 'top-full left-1/2 -translate-x-1/2 border-t-current',
+    bottom: 'bottom-full left-1/2 -translate-x-1/2 border-b-current',
+    left: 'left-full top-1/2 -translate-y-1/2 border-l-current',
+    right: 'right-full top-1/2 -translate-y-1/2 border-r-current',
   };
 
   const themeClasses = {
-    default: "bg-gray-900 text-white border-gray-700",
-    info: "bg-blue-600 text-white border-blue-500",
-    warning: "bg-yellow-500 text-black border-yellow-400",
-    error: "bg-red-600 text-white border-red-500",
-    success: "bg-green-600 text-white border-green-500",
+    default: 'bg-gray-900 text-white border-gray-700',
+    info: 'bg-blue-600 text-white border-blue-500',
+    warning: 'bg-yellow-500 text-black border-yellow-400',
+    error: 'bg-red-600 text-white border-red-500',
+    success: 'bg-green-600 text-white border-green-500',
   };
 
   return (
     <div
       ref={tooltipRef}
-      className={cn("relative inline-block", className)}
+      className={cn('relative inline-block', className)}
       onMouseEnter={showTooltip}
       onMouseLeave={hideTooltip}
       onFocus={showTooltip}
@@ -155,8 +153,8 @@ export function Tooltip({
       {isVisible && (
         <div
           className={cn(
-            "tooltip-content absolute z-50 px-3 py-2 text-sm rounded-lg shadow-xl border max-w-xs",
-            "animate-fade-in",
+            'tooltip-content absolute z-50 max-w-xs rounded-lg border px-3 py-2 text-sm shadow-xl',
+            'animate-fade-in',
             positionClasses[positionState],
             themeClasses[theme],
           )}
@@ -165,7 +163,7 @@ export function Tooltip({
           <div className="relative z-10">{content}</div>
           <div
             className={cn(
-              "absolute w-0 h-0 border-4 border-transparent",
+              'absolute h-0 w-0 border-4 border-transparent',
               arrowClasses[positionState],
             )}
           />
@@ -182,26 +180,21 @@ interface ContextualHelpProps {
   className?: string;
 }
 
-export function ContextualHelp({
-  children,
-  helpId,
-  title,
-  className,
-}: ContextualHelpProps) {
+export function ContextualHelp({ children, helpId, title, className }: ContextualHelpProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className={cn("relative inline-flex items-center gap-2", className)}>
+    <div className={cn('relative inline-flex items-center gap-2', className)}>
       {children}
 
       <Tooltip content="Click for help" position="right">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          className="rounded-full p-1 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
           aria-label="Help"
         >
           <svg
-            className="w-4 h-4 text-gray-500"
+            className="h-4 w-4 text-gray-500"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -217,11 +210,7 @@ export function ContextualHelp({
       </Tooltip>
 
       {isOpen && (
-        <ContextualHelpPanel
-          helpId={helpId}
-          title={title}
-          onClose={() => setIsOpen(false)}
-        />
+        <ContextualHelpPanel helpId={helpId} title={title} onClose={() => setIsOpen(false)} />
       )}
     </div>
   );
@@ -245,22 +234,22 @@ export function ContextualHelpPanel({
   return (
     <div
       className={cn(
-        "absolute z-50 w-80 bg-white dark:bg-dark-800 rounded-xl shadow-2xl border border-gray-200 dark:border-dark-700",
-        "animate-slide-down",
+        'dark:bg-dark-800 dark:border-dark-700 absolute z-50 w-80 rounded-xl border border-gray-200 bg-white shadow-2xl',
+        'animate-slide-down',
         className,
       )}
-      style={{ top: "100%", right: 0, marginTop: "8px" }}
+      style={{ top: '100%', right: 0, marginTop: '8px' }}
     >
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-dark-700">
+      <div className="dark:border-dark-700 flex items-center justify-between border-b border-gray-200 p-4">
         <h3 className="font-semibold text-gray-900 dark:text-white">
-          {title || helpContent?.title || "Help"}
+          {title || helpContent?.title || 'Help'}
         </h3>
         <button
           onClick={onClose}
-          className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-700 transition-colors"
+          className="dark:hover:bg-dark-700 rounded-lg p-1 transition-colors hover:bg-gray-100"
         >
           <svg
-            className="w-4 h-4 text-gray-500"
+            className="h-4 w-4 text-gray-500"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -278,22 +267,19 @@ export function ContextualHelpPanel({
       <div className="p-4">
         {helpContent ? (
           <>
-            <p className="text-sm text-gray-600 dark:text-dark-300 mb-4">
+            <p className="dark:text-dark-300 mb-4 text-sm text-gray-600">
               {helpContent.description}
             </p>
 
             {helpContent.examples && helpContent.examples.length > 0 && (
               <div className="mb-4">
-                <h4 className="text-xs font-semibold text-gray-500 dark:text-dark-400 uppercase tracking-wider mb-2">
+                <h4 className="dark:text-dark-400 mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
                   Examples
                 </h4>
                 <ul className="space-y-2">
                   {helpContent.examples.map((example, index) => (
-                    <li
-                      key={index}
-                      className="text-sm text-gray-700 dark:text-dark-200"
-                    >
-                      <code className="px-1.5 py-0.5 bg-gray-100 dark:bg-dark-700 rounded text-xs">
+                    <li key={index} className="dark:text-dark-200 text-sm text-gray-700">
+                      <code className="dark:bg-dark-700 rounded bg-gray-100 px-1.5 py-0.5 text-xs">
                         {example}
                       </code>
                     </li>
@@ -304,17 +290,17 @@ export function ContextualHelpPanel({
 
             {helpContent.tips && helpContent.tips.length > 0 && (
               <div className="mb-4">
-                <h4 className="text-xs font-semibold text-gray-500 dark:text-dark-400 uppercase tracking-wider mb-2">
+                <h4 className="dark:text-dark-400 mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
                   Tips
                 </h4>
                 <ul className="space-y-1">
                   {helpContent.tips.map((tip, index) => (
                     <li
                       key={index}
-                      className="flex items-start gap-2 text-sm text-gray-700 dark:text-dark-200"
+                      className="dark:text-dark-200 flex items-start gap-2 text-sm text-gray-700"
                     >
                       <svg
-                        className="w-4 h-4 text-primary-500 flex-shrink-0 mt-0.5"
+                        className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary-500"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -333,40 +319,36 @@ export function ContextualHelpPanel({
               </div>
             )}
 
-            {helpContent.relatedTopics &&
-              helpContent.relatedTopics.length > 0 && (
-                <div>
-                  <h4 className="text-xs font-semibold text-gray-500 dark:text-dark-400 uppercase tracking-wider mb-2">
-                    Related Topics
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {helpContent.relatedTopics.map((topic, index) => (
-                      <span
-                        key={index}
-                        className="px-2 py-1 text-xs bg-gray-100 dark:bg-dark-700 rounded-lg text-gray-600 dark:text-dark-300"
-                      >
-                        {topic}
-                      </span>
-                    ))}
-                  </div>
+            {helpContent.relatedTopics && helpContent.relatedTopics.length > 0 && (
+              <div>
+                <h4 className="dark:text-dark-400 mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Related Topics
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {helpContent.relatedTopics.map((topic, index) => (
+                    <span
+                      key={index}
+                      className="dark:bg-dark-700 dark:text-dark-300 rounded-lg bg-gray-100 px-2 py-1 text-xs text-gray-600"
+                    >
+                      {topic}
+                    </span>
+                  ))}
                 </div>
-              )}
+              </div>
+            )}
           </>
         ) : (
-          <p className="text-sm text-gray-500 dark:text-dark-400">
+          <p className="dark:text-dark-400 text-sm text-gray-500">
             No help content available for this topic.
           </p>
         )}
       </div>
 
-      <div className="flex items-center justify-between p-3 border-t border-gray-200 dark:border-dark-700 bg-gray-50 dark:bg-dark-900 rounded-b-xl">
-        <span className="text-xs text-gray-500 dark:text-dark-400">
+      <div className="dark:border-dark-700 dark:bg-dark-900 flex items-center justify-between rounded-b-xl border-t border-gray-200 bg-gray-50 p-3">
+        <span className="dark:text-dark-400 text-xs text-gray-500">
           Press ? for keyboard shortcuts
         </span>
-        <a
-          href="/docs"
-          className="text-xs text-primary-600 dark:text-primary-400 hover:underline"
-        >
+        <a href="/docs" className="text-xs text-primary-600 hover:underline dark:text-primary-400">
           View full documentation →
         </a>
       </div>
@@ -383,105 +365,101 @@ interface HelpContent {
 }
 
 const helpContentDatabase: Record<string, HelpContent> = {
-  "oracle-health-score": {
-    title: "Oracle Health Score",
+  'oracle-health-score': {
+    title: 'Oracle Health Score',
     description:
-      "The Health Score is a composite metric (0-100) that measures the overall reliability and performance of the oracle. Scores above 90 indicate excellent health, while scores below 60 suggest potential issues requiring attention.",
+      'The Health Score is a composite metric (0-100) that measures the overall reliability and performance of the oracle. Scores above 90 indicate excellent health, while scores below 60 suggest potential issues requiring attention.',
     examples: [
-      "Health Score: 95 - Excellent performance",
-      "Health Score: 72 - Minor issues detected",
-      "Health Score: 45 - Critical attention needed",
+      'Health Score: 95 - Excellent performance',
+      'Health Score: 72 - Minor issues detected',
+      'Health Score: 45 - Critical attention needed',
     ],
     tips: [
-      "Check the individual metrics breakdown for specific issues",
-      "Review recent disputes for accuracy concerns",
-      "Monitor the trend over time for early warning signs",
+      'Check the individual metrics breakdown for specific issues',
+      'Review recent disputes for accuracy concerns',
+      'Monitor the trend over time for early warning signs',
     ],
-    relatedTopics: ["assertion-accuracy", "dispute-rate", "uptime-metrics"],
+    relatedTopics: ['assertion-accuracy', 'dispute-rate', 'uptime-metrics'],
   },
-  "assertion-lifecycle": {
-    title: "Assertion Lifecycle",
+  'assertion-lifecycle': {
+    title: 'Assertion Lifecycle',
     description:
-      "An assertion goes through several stages: Created → Disputed (optional) → Resolved. Understanding this lifecycle helps you track the status and outcome of each data claim submitted to the oracle.",
+      'An assertion goes through several stages: Created → Disputed (optional) → Resolved. Understanding this lifecycle helps you track the status and outcome of each data claim submitted to the oracle.',
     examples: [
-      "New assertion submitted for BTC/USD price",
-      "Assertion disputed due to price deviation",
-      "Assertion resolved with incorrect vote outcome",
+      'New assertion submitted for BTC/USD price',
+      'Assertion disputed due to price deviation',
+      'Assertion resolved with incorrect vote outcome',
     ],
     tips: [
-      "Assertions are typically resolved within 2-4 hours",
-      "Disputed assertions require community voting",
-      "Larger bonds increase the cost of disputing your assertion",
+      'Assertions are typically resolved within 2-4 hours',
+      'Disputed assertions require community voting',
+      'Larger bonds increase the cost of disputing your assertion',
     ],
-    relatedTopics: ["bond-amount", "dispute-process", "voting-mechanism"],
+    relatedTopics: ['bond-amount', 'dispute-process', 'voting-mechanism'],
   },
-  "dispute-resolution": {
-    title: "Dispute Resolution Process",
+  'dispute-resolution': {
+    title: 'Dispute Resolution Process',
     description:
       "When an assertion is disputed, UMA's Data Verification Mechanism (DVM) enables token holders to vote on the correct outcome. The DVM is designed to be maximally decentralized and resistant to manipulation.",
     examples: [
-      "Price disagreement leads to dispute",
-      "Community votes on the correct price",
-      "Winning side receives the bond",
+      'Price disagreement leads to dispute',
+      'Community votes on the correct price',
+      'Winning side receives the bond',
     ],
     tips: [
-      "Vote on disputes to earn rewards",
-      "Review the evidence before voting",
-      "Delegated voting is available for passive participants",
+      'Vote on disputes to earn rewards',
+      'Review the evidence before voting',
+      'Delegated voting is available for passive participants',
     ],
-    relatedTopics: ["dvm-mechanism", "voting-rewards", "delegation"],
+    relatedTopics: ['dvm-mechanism', 'voting-rewards', 'delegation'],
   },
-  "bond-management": {
-    title: "Bond Management",
+  'bond-management': {
+    title: 'Bond Management',
     description:
-      "Bonds are required when submitting assertions. They serve as collateral that can be forfeited if your assertion is proven wrong. Higher bonds make it more expensive for others to dispute your claim.",
+      'Bonds are required when submitting assertions. They serve as collateral that can be forfeited if your assertion is proven wrong. Higher bonds make it more expensive for others to dispute your claim.',
     examples: [
-      "Submit assertion with 1000 USDC bond",
-      "Disputer posts matching bond",
+      'Submit assertion with 1000 USDC bond',
+      'Disputer posts matching bond',
       "Losing side's bond is paid to the winner",
     ],
     tips: [
-      "Larger bonds deter frivolous disputes",
-      "Consider market conditions when setting bond size",
-      "Bond economics are designed to incentivize accuracy",
+      'Larger bonds deter frivolous disputes',
+      'Consider market conditions when setting bond size',
+      'Bond economics are designed to incentivize accuracy',
     ],
-    relatedTopics: [
-      "assertion-costs",
-      "dispute-incentives",
-      "economic-security",
-    ],
+    relatedTopics: ['assertion-costs', 'dispute-incentives', 'economic-security'],
   },
-  "sync-status": {
-    title: "Sync Status",
+  'sync-status': {
+    title: 'Sync Status',
     description:
       "The sync status indicates whether the oracle's on-chain data is current. An out-of-sync oracle may indicate network issues or backend problems requiring investigation.",
     examples: [
-      "Synced - Data is current",
-      "Syncing - Updating data",
-      "Out of Sync - Data is stale",
+      'Synced - Data is current',
+      'Syncing - Updating data',
+      'Out of Sync - Data is stale',
     ],
     tips: [
-      "Check your network connection if sync fails",
-      "Recent block number should match the latest on-chain",
-      "Contact support if issues persist",
+      'Check your network connection if sync fails',
+      'Recent block number should match the latest on-chain',
+      'Contact support if issues persist',
     ],
-    relatedTopics: ["network-health", "blockchain-sync", "data-latency"],
+    relatedTopics: ['network-health', 'blockchain-sync', 'data-latency'],
   },
-  "prediction-analysis": {
-    title: "Prediction Analysis",
+  'prediction-analysis': {
+    title: 'Prediction Analysis',
     description:
-      "The predictive analytics engine analyzes historical patterns to forecast future oracle behavior. Predictions are probabilistic and should be used as one input in decision-making.",
+      'The predictive analytics engine analyzes historical patterns to forecast future oracle behavior. Predictions are probabilistic and should be used as one input in decision-making.',
     examples: [
-      "High probability of accurate assertion predicted",
-      "Potential volatility spike expected",
-      "Trend indicates improving reliability",
+      'High probability of accurate assertion predicted',
+      'Potential volatility spike expected',
+      'Trend indicates improving reliability',
     ],
     tips: [
-      "Predictions become more accurate with more data",
-      "Review confidence intervals before making decisions",
-      "Use predictions as guidance, not guarantees",
+      'Predictions become more accurate with more data',
+      'Review confidence intervals before making decisions',
+      'Use predictions as guidance, not guarantees',
     ],
-    relatedTopics: ["anomaly-detection", "trend-analysis", "machine-learning"],
+    relatedTopics: ['anomaly-detection', 'trend-analysis', 'machine-learning'],
   },
 };
 
@@ -489,19 +467,11 @@ function getHelpContent(helpId: string): HelpContent | null {
   return helpContentDatabase[helpId] || null;
 }
 
-
-
-export function HelpIcon({
-  helpId,
-  className,
-}: {
-  helpId: string;
-  className?: string;
-}) {
+export function HelpIcon({ helpId, className }: { helpId: string; className?: string }) {
   return (
     <ContextualHelp helpId={helpId} className={className}>
       <svg
-        className="w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-dark-300 cursor-help"
+        className="dark:hover:text-dark-300 h-4 w-4 cursor-help text-gray-400 hover:text-gray-600"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"

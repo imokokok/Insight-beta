@@ -1,6 +1,6 @@
 export interface Comment {
   id: number;
-  entityType: "assertion" | "dispute" | "alert" | "incident";
+  entityType: 'assertion' | 'dispute' | 'alert' | 'incident';
   entityId: string;
   authorAddress: string;
   authorName?: string;
@@ -19,7 +19,7 @@ export interface CommentWithReplies extends Comment {
 }
 
 export interface CommentCreateInput {
-  entityType: Comment["entityType"];
+  entityType: Comment['entityType'];
   entityId: string;
   content: string;
   parentId?: number;
@@ -30,12 +30,12 @@ export interface CommentUpdateInput {
 }
 
 export interface CommentFilter {
-  entityType?: Comment["entityType"];
+  entityType?: Comment['entityType'];
   entityId?: string;
   authorAddress?: string;
   limit?: number;
   offset?: number;
-  sortBy?: "newest" | "oldest" | "most_liked";
+  sortBy?: 'newest' | 'oldest' | 'most_liked';
 }
 
 export interface CommentStats {

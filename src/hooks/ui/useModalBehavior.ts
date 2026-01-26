@@ -1,14 +1,11 @@
-import { useEffect, type RefObject } from "react";
+import { useEffect, type RefObject } from 'react';
 
 const focusableSelector =
   'a[href],button:not([disabled]),textarea:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])';
 
 function getFocusableElements(container: HTMLElement) {
-  return Array.from(
-    container.querySelectorAll<HTMLElement>(focusableSelector),
-  ).filter(
-    (el) =>
-      !el.hasAttribute("disabled") && el.getAttribute("aria-hidden") !== "true",
+  return Array.from(container.querySelectorAll<HTMLElement>(focusableSelector)).filter(
+    (el) => !el.hasAttribute('disabled') && el.getAttribute('aria-hidden') !== 'true',
   );
 }
 
@@ -21,12 +18,10 @@ export function useModalBehavior(
     if (!isOpen) return;
 
     const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = 'hidden';
 
     const previouslyFocused =
-      document.activeElement instanceof HTMLElement
-        ? document.activeElement
-        : null;
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
 
     const focusDialog = () => {
       const dialog = dialogRef?.current;
@@ -42,8 +37,8 @@ export function useModalBehavior(
     requestAnimationFrame(focusDialog);
 
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-      if (e.key === "Tab") {
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'Tab') {
         const dialog = dialogRef?.current;
         if (!dialog) return;
 
@@ -78,10 +73,10 @@ export function useModalBehavior(
         }
       }
     };
-    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener('keydown', onKeyDown);
 
     return () => {
-      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener('keydown', onKeyDown);
       document.body.style.overflow = prevOverflow;
       if (previouslyFocused) previouslyFocused.focus();
     };

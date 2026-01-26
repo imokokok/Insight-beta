@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 
 interface PerformanceMetrics {
   fcp: number | null;
@@ -17,19 +17,10 @@ interface Props {
 }
 
 interface MetricHandler {
-  (metric: {
-    name: string;
-    value: number;
-    delta: number;
-    id: string;
-    rating: string | null;
-  }): void;
+  (metric: { name: string; value: number; delta: number; id: string; rating: string | null }): void;
 }
 
-export function PerformanceMonitor({
-  children,
-  onMetrics,
-}: Props): React.ReactElement {
+export function PerformanceMonitor({ children, onMetrics }: Props): React.ReactElement {
   const [metrics, setMetrics] = useState<PerformanceMetrics>({
     fcp: null,
     lcp: null,
@@ -48,11 +39,11 @@ export function PerformanceMonitor({
     id: string;
     rating: string | null;
   }) => {
-    if (process.env.NODE_ENV === "production") {
+    if (process.env.NODE_ENV === 'production') {
       try {
-        const endpoint = "/api/ops-metrics";
+        const endpoint = '/api/ops-metrics';
         const body = JSON.stringify({
-          type: "web-vitals",
+          type: 'web-vitals',
           name: metric.name,
           value: metric.value,
           rating: metric.rating,
@@ -65,23 +56,23 @@ export function PerformanceMonitor({
           navigator.sendBeacon(endpoint, body);
         } else {
           fetch(endpoint, {
-            method: "POST",
+            method: 'POST',
             body,
             keepalive: true,
           }).catch(() => {});
         }
       } catch {
-        console.warn("Failed to send performance metric");
+        console.warn('Failed to send performance metric');
       }
     }
   };
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
 
     const initWebVitals = async () => {
       try {
-        const webVitals = await import("web-vitals");
+        const webVitals = await import('web-vitals');
         const { onFCP, onLCP, onFID, onCLS, onINP, onTTFB } = webVitals;
 
         const handleFCP: MetricHandler = (metric) => {
@@ -148,7 +139,7 @@ export function PerformanceMonitor({
 export function getPerformanceRating(
   metricName: string,
   value: number,
-): "good" | "needs-improvement" | "poor" {
+): 'good' | 'needs-improvement' | 'poor' {
   const thresholds: Record<string, [number, number]> = {
     fcp: [1800, 3000],
     lcp: [2500, 4000],
@@ -160,34 +151,31 @@ export function getPerformanceRating(
 
   const [good, poor] = thresholds[metricName] || [100, 300];
 
-  if (value <= good) return "good";
-  if (value <= poor) return "needs-improvement";
-  return "poor";
+  if (value <= good) return 'good';
+  if (value <= poor) return 'needs-improvement';
+  return 'poor';
 }
 
-export function formatMetricValue(
-  value: number | null,
-  unit: string = "ms",
-): string {
-  if (value === null) return "N/A";
+export function formatMetricValue(value: number | null, unit: string = 'ms'): string {
+  if (value === null) return 'N/A';
   return `${value.toFixed(2)}${unit}`;
 }
 
 export function getOverallRating(
   metrics: PerformanceMetrics,
-): "good" | "needs-improvement" | "poor" {
+): 'good' | 'needs-improvement' | 'poor' {
   const ratings = [
-    metrics.fcp ? getPerformanceRating("fcp", metrics.fcp) : "good",
-    metrics.lcp ? getPerformanceRating("lcp", metrics.lcp) : "good",
-    metrics.fid ? getPerformanceRating("fid", metrics.fid) : "good",
-    metrics.cls ? getPerformanceRating("cls", metrics.cls) : "good",
-    metrics.inp ? getPerformanceRating("inp", metrics.inp) : "good",
-    metrics.ttfb ? getPerformanceRating("ttfb", metrics.ttfb) : "good",
+    metrics.fcp ? getPerformanceRating('fcp', metrics.fcp) : 'good',
+    metrics.lcp ? getPerformanceRating('lcp', metrics.lcp) : 'good',
+    metrics.fid ? getPerformanceRating('fid', metrics.fid) : 'good',
+    metrics.cls ? getPerformanceRating('cls', metrics.cls) : 'good',
+    metrics.inp ? getPerformanceRating('inp', metrics.inp) : 'good',
+    metrics.ttfb ? getPerformanceRating('ttfb', metrics.ttfb) : 'good',
   ];
 
-  if (ratings.includes("poor")) return "poor";
-  if (ratings.includes("needs-improvement")) return "needs-improvement";
-  return "good";
+  if (ratings.includes('poor')) return 'poor';
+  if (ratings.includes('needs-improvement')) return 'needs-improvement';
+  return 'good';
 }
 
 export default PerformanceMonitor;

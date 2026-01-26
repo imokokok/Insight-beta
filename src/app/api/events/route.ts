@@ -1,15 +1,15 @@
-import type { NextRequest } from "next/server";
-import { handleApi } from "@/server/apiResponse";
-import { logger } from "@/lib/logger";
+import type { NextRequest } from 'next/server';
+import { handleApi } from '@/server/apiResponse';
+import { logger } from '@/lib/logger';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   return handleApi(request, async () => {
     const { searchParams } = new URL(request.url);
-    const instanceId = searchParams.get("instanceId") || undefined;
+    const instanceId = searchParams.get('instanceId') || undefined;
 
-    logger.info("SSE connection initiated", { instanceId });
+    logger.info('SSE connection initiated', { instanceId });
 
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
@@ -20,15 +20,15 @@ export async function GET(request: NextRequest) {
         };
 
         const sendHeartbeat = () => {
-          controller.enqueue(encoder.encode(": heartbeat\n\n"));
+          controller.enqueue(encoder.encode(': heartbeat\n\n'));
         };
 
         let heartbeatInterval: NodeJS.Timeout | null = null;
 
         try {
           sendEvent({
-            type: "connected",
-            data: { message: "Realtime connection established" },
+            type: 'connected',
+            data: { message: 'Realtime connection established' },
             timestamp: new Date().toISOString(),
             instanceId,
           });
@@ -43,14 +43,14 @@ export async function GET(request: NextRequest) {
             }
           });
 
-          request.signal.addEventListener("abort", () => {
+          request.signal.addEventListener('abort', () => {
             if (heartbeatInterval) clearInterval(heartbeatInterval);
             unsubscribe();
             controller.close();
-            logger.info("SSE connection closed", { instanceId });
+            logger.info('SSE connection closed', { instanceId });
           });
         } catch (error) {
-          logger.error("SSE stream error", { error });
+          logger.error('SSE stream error', { error });
           controller.error(error);
         }
       },
@@ -58,10 +58,10 @@ export async function GET(request: NextRequest) {
 
     return new Response(stream, {
       headers: {
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache, no-transform",
-        Connection: "keep-alive",
-        "X-Accel-Buffering": "no",
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache, no-transform',
+        Connection: 'keep-alive',
+        'X-Accel-Buffering': 'no',
       },
     });
   });
@@ -84,7 +84,7 @@ class EventBus {
       try {
         handler(event);
       } catch (error) {
-        logger.error("Error in event handler", { error });
+        logger.error('Error in event handler', { error });
       }
     });
   }

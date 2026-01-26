@@ -1,10 +1,10 @@
-import { listOracleInstances } from "@/server/oracle";
-import { cachedJson, handleApi, rateLimit } from "@/server/apiResponse";
+import { listOracleInstances } from '@/server/oracle';
+import { cachedJson, handleApi, rateLimit } from '@/server/apiResponse';
 
 export async function GET(request: Request) {
   return handleApi(request, async () => {
     const limited = await rateLimit(request, {
-      key: "oracle_instances_get",
+      key: 'oracle_instances_get',
       limit: 240,
       windowMs: 60_000,
     });

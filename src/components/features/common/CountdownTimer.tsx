@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { Clock } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useEffect, useState } from 'react';
+import { Clock } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface CountdownTimerProps {
   targetDate: string | number | Date;
@@ -11,12 +11,7 @@ interface CountdownTimerProps {
   onExpire?: () => void;
 }
 
-export function CountdownTimer({
-  targetDate,
-  label,
-  className,
-  onExpire,
-}: CountdownTimerProps) {
+export function CountdownTimer({ targetDate, label, className, onExpire }: CountdownTimerProps) {
   const [timeLeft, setTimeLeft] = useState<{
     days: number;
     hours: number;
@@ -72,22 +67,18 @@ export function CountdownTimer({
   return (
     <div
       className={cn(
-        "flex items-center gap-1.5 font-mono text-sm transition-colors",
-        isUrgent ? "text-rose-600 font-bold animate-pulse" : "text-gray-600",
+        'flex items-center gap-1.5 font-mono text-sm transition-colors',
+        isUrgent ? 'animate-pulse font-bold text-rose-600' : 'text-gray-600',
         className,
       )}
     >
-      <Clock size={14} className={cn(isUrgent && "text-rose-600")} />
-      {label && (
-        <span className="mr-1 font-sans text-xs text-gray-500 uppercase">
-          {label}
-        </span>
-      )}
+      <Clock size={14} className={cn(isUrgent && 'text-rose-600')} />
+      {label && <span className="mr-1 font-sans text-xs uppercase text-gray-500">{label}</span>}
       <span>
         {timeLeft.days > 0 && <span>{timeLeft.days}d </span>}
-        {timeLeft.hours.toString().padStart(2, "0")}h :
-        {timeLeft.minutes.toString().padStart(2, "0")}m :
-        {timeLeft.seconds.toString().padStart(2, "0")}s
+        {timeLeft.hours.toString().padStart(2, '0')}h :
+        {timeLeft.minutes.toString().padStart(2, '0')}m :
+        {timeLeft.seconds.toString().padStart(2, '0')}s
       </span>
     </div>
   );

@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { PoolClient } from "pg";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { PoolClient } from 'pg';
 
 const { hasDatabase, getClient } = vi.hoisted(() => ({
   hasDatabase: vi.fn<() => boolean>(),
@@ -15,34 +15,34 @@ const { logger } = vi.hoisted(() => ({
   },
 }));
 
-vi.mock("@/lib/config/env", () => ({
+vi.mock('@/lib/config/env', () => ({
   env: {
-    INSIGHT_WORKER_ID: "test-worker",
-    INSIGHT_DISABLE_EMBEDDED_WORKER: "true",
+    INSIGHT_WORKER_ID: 'test-worker',
+    INSIGHT_DISABLE_EMBEDDED_WORKER: 'true',
   },
 }));
 
-vi.mock("@/lib/logger", () => ({ logger }));
+vi.mock('@/lib/logger', () => ({ logger }));
 
-vi.mock("./oracleIndexer", () => ({
+vi.mock('./oracleIndexer', () => ({
   ensureOracleSynced: vi.fn(async () => ({ updated: false, state: {} })),
-  getOracleEnv: vi.fn(async () => ({ rpcUrl: "", contractAddress: "" })),
+  getOracleEnv: vi.fn(async () => ({ rpcUrl: '', contractAddress: '' })),
   isOracleSyncing: vi.fn(() => false),
 }));
 
-vi.mock("@/server/db", () => ({
+vi.mock('@/server/db', () => ({
   hasDatabase,
   getClient,
   query: vi.fn(),
 }));
 
-vi.mock("@/server/observability", () => ({
+vi.mock('@/server/observability', () => ({
   createOrTouchAlert: vi.fn(),
   pruneStaleAlerts: vi.fn(async () => ({ resolved: 0 })),
   readAlertRules: vi.fn(async () => []),
 }));
 
-vi.mock("@/server/oracle", () => ({
+vi.mock('@/server/oracle', () => ({
   getSyncState: vi.fn(async () => ({
     lastProcessedBlock: 0n,
     latestBlock: null,
@@ -57,54 +57,54 @@ vi.mock("@/server/oracle", () => ({
       lastDurationMs: null,
       lastError: null,
     },
-    chain: "Local",
+    chain: 'Local',
     contractAddress: null,
     owner: null,
   })),
   listOracleInstances: vi.fn(async () => [
     {
-      id: "default",
-      name: "Default",
+      id: 'default',
+      name: 'Default',
       enabled: true,
-      chain: "Local",
-      contractAddress: "",
+      chain: 'Local',
+      contractAddress: '',
     },
   ]),
   readOracleState: vi.fn(async () => ({})),
 }));
 
-vi.mock("@/server/kvStore", () => ({
+vi.mock('@/server/kvStore', () => ({
   writeJsonFile: vi.fn(async () => void 0),
 }));
 
-vi.mock("@/server/oracle/priceFetcher", () => ({
+vi.mock('@/server/oracle/priceFetcher', () => ({
   fetchCurrentPrice: vi.fn(),
 }));
 
-vi.mock("viem", () => ({
+vi.mock('viem', () => ({
   createPublicClient: vi.fn(),
   http: vi.fn(),
   formatEther: vi.fn(),
   parseAbi: vi.fn(() => []),
 }));
 
-import { tickWorkerOnce, tryAcquireWorkerLock } from "./worker";
+import { tickWorkerOnce, tryAcquireWorkerLock } from './worker';
 
-describe("worker advisory lock", () => {
+describe('worker advisory lock', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     global.insightWorkerLockClient = undefined;
     global.insightWorkerLockKey = undefined;
   });
 
-  it("returns true when database is disabled", async () => {
+  it('returns true when database is disabled', async () => {
     hasDatabase.mockReturnValue(false);
     const ok = await tryAcquireWorkerLock();
     expect(ok).toBe(true);
     expect(getClient).not.toHaveBeenCalled();
   });
 
-  it("returns true when lock client already exists", async () => {
+  it('returns true when lock client already exists', async () => {
     hasDatabase.mockReturnValue(true);
     global.insightWorkerLockClient = {
       query: vi.fn(),
@@ -115,7 +115,7 @@ describe("worker advisory lock", () => {
     expect(getClient).not.toHaveBeenCalled();
   });
 
-  it("returns false and releases client when lock not acquired", async () => {
+  it('returns false and releases client when lock not acquired', async () => {
     hasDatabase.mockReturnValue(true);
     const client = {
       query: vi.fn(async () => ({ rows: [{ ok: false }] })),
@@ -130,11 +130,11 @@ describe("worker advisory lock", () => {
     expect(global.insightWorkerLockKey).toBeUndefined();
   });
 
-  it("returns false and releases client when query throws", async () => {
+  it('returns false and releases client when query throws', async () => {
     hasDatabase.mockReturnValue(true);
     const client = {
       query: vi.fn(async () => {
-        throw new Error("db_down");
+        throw new Error('db_down');
       }),
       release: vi.fn(),
     };
@@ -142,15 +142,12 @@ describe("worker advisory lock", () => {
 
     const ok = await tryAcquireWorkerLock();
     expect(ok).toBe(false);
-    expect(logger.error).toHaveBeenCalledWith(
-      "Failed to acquire worker lock",
-      expect.any(Object),
-    );
+    expect(logger.error).toHaveBeenCalledWith('Failed to acquire worker lock', expect.any(Object));
     expect(client.release).toHaveBeenCalledTimes(1);
     expect(global.insightWorkerLockClient).toBeUndefined();
   });
 
-  it("stores lock client and key when acquired", async () => {
+  it('stores lock client and key when acquired', async () => {
     hasDatabase.mockReturnValue(true);
     const client = {
       query: vi.fn(async () => ({ rows: [{ ok: true }] })),
@@ -160,99 +157,93 @@ describe("worker advisory lock", () => {
 
     const ok = await tryAcquireWorkerLock();
     expect(ok).toBe(true);
-    expect(global.insightWorkerLockClient).toBe(
-      client as unknown as PoolClient,
-    );
+    expect(global.insightWorkerLockClient).toBe(client as unknown as PoolClient);
     expect(global.insightWorkerLockKey).toMatch(/^\d+$/);
     expect(client.release).not.toHaveBeenCalled();
   });
 });
 
-describe("worker alerts", () => {
+describe('worker alerts', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     global.insightWorkerTickInProgress = undefined;
     global.insightWorkerLastError = undefined;
   });
 
-  it("emits sync_error missing_config when oracle config is missing", async () => {
+  it('emits sync_error missing_config when oracle config is missing', async () => {
     hasDatabase.mockReturnValue(false);
 
-    const { readAlertRules, createOrTouchAlert } = await import(
-      "@/server/observability"
-    );
+    const { readAlertRules, createOrTouchAlert } = await import('@/server/observability');
     (readAlertRules as unknown as ReturnType<typeof vi.fn>).mockResolvedValue([
       {
-        id: "rule-1",
+        id: 'rule-1',
         enabled: true,
-        event: "sync_error",
-        severity: "critical",
-        channels: ["webhook"],
+        event: 'sync_error',
+        severity: 'critical',
+        channels: ['webhook'],
         recipient: null,
       },
     ]);
 
-    const { getOracleEnv } = await import("./oracleIndexer");
+    const { getOracleEnv } = await import('./oracleIndexer');
     (getOracleEnv as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
-      rpcUrl: "",
-      contractAddress: "",
+      rpcUrl: '',
+      contractAddress: '',
     });
 
     await tickWorkerOnce();
 
     expect(createOrTouchAlert).toHaveBeenCalledWith(
       expect.objectContaining({
-        type: "sync_error",
-        title: "Oracle sync error",
-        message: "missing_config",
+        type: 'sync_error',
+        title: 'Oracle sync error',
+        message: 'missing_config',
       }),
     );
   });
 
-  it("attempts recovery when sync is stale during backoff", async () => {
+  it('attempts recovery when sync is stale during backoff', async () => {
     hasDatabase.mockReturnValue(false);
     const now = new Date();
     const lastAttemptAt = now.toISOString();
     const lastSuccessAt = new Date(now.getTime() - 10_000).toISOString();
 
-    const { readAlertRules } = await import("@/server/observability");
+    const { readAlertRules } = await import('@/server/observability');
     (readAlertRules as unknown as ReturnType<typeof vi.fn>).mockResolvedValue([
       {
-        id: "rule-1",
+        id: 'rule-1',
         enabled: true,
-        event: "stale_sync",
-        severity: "warning",
-        channels: ["webhook"],
+        event: 'stale_sync',
+        severity: 'warning',
+        channels: ['webhook'],
         recipient: null,
         params: { maxAgeMs: 1000 },
       },
     ]);
 
-    const { getOracleEnv, ensureOracleSynced } = await import(
-      "./oracleIndexer"
-    );
+    const { getOracleEnv, ensureOracleSynced } = await import('./oracleIndexer');
     (getOracleEnv as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
-      rpcUrl: "https://rpc.example",
-      contractAddress: "0x1111111111111111111111111111111111111111",
+      rpcUrl: 'https://rpc.example',
+      contractAddress: '0x1111111111111111111111111111111111111111',
     });
 
-    const { getSyncState } = await import("@/server/oracle");
+    const { getSyncState } = await import('@/server/oracle');
     const state = {
       lastProcessedBlock: 100n,
       latestBlock: 120n,
       safeBlock: 118n,
       lastSuccessProcessedBlock: 100n,
       consecutiveFailures: 3,
-      rpcActiveUrl: "https://rpc.example",
+      rpcActiveUrl: 'https://rpc.example',
       rpcStats: null,
       sync: {
         lastAttemptAt,
         lastSuccessAt,
         lastDurationMs: 1000,
-        lastError: "rpc_unreachable",
+        lastError: 'rpc_unreachable',
       },
-      chain: "Local",
-      contractAddress: "0x1111111111111111111111111111111111111111",
+      chain: 'Local',
+      contractAddress: '0x1111111111111111111111111111111111111111',
       owner: null,
     };
     (getSyncState as unknown as ReturnType<typeof vi.fn>)

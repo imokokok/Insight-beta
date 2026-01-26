@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 type OracleConfigLike = {
   rpcUrl: string;
@@ -14,12 +14,12 @@ const { readOracleConfig } = vi.hoisted(() => ({
   readOracleConfig: vi.fn<() => Promise<OracleConfigLike>>(),
 }));
 
-vi.mock("./oracleConfig", () => ({
+vi.mock('./oracleConfig', () => ({
   readOracleConfig,
-  DEFAULT_ORACLE_INSTANCE_ID: "default",
+  DEFAULT_ORACLE_INSTANCE_ID: 'default',
 }));
 
-import { getOracleEnv } from "./oracleIndexer";
+import { getOracleEnv } from './oracleIndexer';
 
 type EnvSnapshot = Record<string, string | undefined>;
 
@@ -36,15 +36,15 @@ function restoreEnv(snapshot: EnvSnapshot) {
   }
 }
 
-describe("getOracleEnv RPC fallback", () => {
+describe('getOracleEnv RPC fallback', () => {
   const keys = [
-    "INSIGHT_RPC_URL",
-    "INSIGHT_CHAIN",
-    "INSIGHT_ORACLE_ADDRESS",
-    "POLYGON_AMOY_RPC_URL",
-    "POLYGON_RPC_URL",
-    "ARBITRUM_RPC_URL",
-    "OPTIMISM_RPC_URL",
+    'INSIGHT_RPC_URL',
+    'INSIGHT_CHAIN',
+    'INSIGHT_ORACLE_ADDRESS',
+    'POLYGON_AMOY_RPC_URL',
+    'POLYGON_RPC_URL',
+    'ARBITRUM_RPC_URL',
+    'OPTIMISM_RPC_URL',
   ];
   let envBefore: EnvSnapshot;
 
@@ -58,15 +58,14 @@ describe("getOracleEnv RPC fallback", () => {
     restoreEnv(envBefore);
   });
 
-  it("uses chain-specific RPC when INSIGHT_RPC_URL and config.rpcUrl are empty", async () => {
-    process.env.POLYGON_AMOY_RPC_URL = "https://amoy.rpc.example";
-    process.env.INSIGHT_ORACLE_ADDRESS =
-      "0x1111111111111111111111111111111111111111";
+  it('uses chain-specific RPC when INSIGHT_RPC_URL and config.rpcUrl are empty', async () => {
+    process.env.POLYGON_AMOY_RPC_URL = 'https://amoy.rpc.example';
+    process.env.INSIGHT_ORACLE_ADDRESS = '0x1111111111111111111111111111111111111111';
 
     readOracleConfig.mockResolvedValueOnce({
-      rpcUrl: "",
+      rpcUrl: '',
       contractAddress: null,
-      chain: "PolygonAmoy",
+      chain: 'PolygonAmoy',
       startBlock: 0,
       maxBlockRange: 10_000,
       votingPeriodHours: 72,
@@ -74,20 +73,19 @@ describe("getOracleEnv RPC fallback", () => {
     });
 
     const out = await getOracleEnv();
-    expect(out.chain).toBe("PolygonAmoy");
-    expect(out.rpcUrl).toBe("https://amoy.rpc.example");
+    expect(out.chain).toBe('PolygonAmoy');
+    expect(out.rpcUrl).toBe('https://amoy.rpc.example');
   });
 
-  it("prefers INSIGHT_RPC_URL over chain-specific RPC", async () => {
-    process.env.INSIGHT_RPC_URL = "https://override.rpc.example";
-    process.env.POLYGON_AMOY_RPC_URL = "https://amoy.rpc.example";
-    process.env.INSIGHT_ORACLE_ADDRESS =
-      "0x1111111111111111111111111111111111111111";
+  it('prefers INSIGHT_RPC_URL over chain-specific RPC', async () => {
+    process.env.INSIGHT_RPC_URL = 'https://override.rpc.example';
+    process.env.POLYGON_AMOY_RPC_URL = 'https://amoy.rpc.example';
+    process.env.INSIGHT_ORACLE_ADDRESS = '0x1111111111111111111111111111111111111111';
 
     readOracleConfig.mockResolvedValueOnce({
-      rpcUrl: "",
+      rpcUrl: '',
       contractAddress: null,
-      chain: "PolygonAmoy",
+      chain: 'PolygonAmoy',
       startBlock: 0,
       maxBlockRange: 10_000,
       votingPeriodHours: 72,
@@ -95,18 +93,17 @@ describe("getOracleEnv RPC fallback", () => {
     });
 
     const out = await getOracleEnv();
-    expect(out.rpcUrl).toBe("https://override.rpc.example");
+    expect(out.rpcUrl).toBe('https://override.rpc.example');
   });
 
-  it("prefers config.rpcUrl over chain-specific RPC", async () => {
-    process.env.POLYGON_AMOY_RPC_URL = "https://amoy.rpc.example";
-    process.env.INSIGHT_ORACLE_ADDRESS =
-      "0x1111111111111111111111111111111111111111";
+  it('prefers config.rpcUrl over chain-specific RPC', async () => {
+    process.env.POLYGON_AMOY_RPC_URL = 'https://amoy.rpc.example';
+    process.env.INSIGHT_ORACLE_ADDRESS = '0x1111111111111111111111111111111111111111';
 
     readOracleConfig.mockResolvedValueOnce({
-      rpcUrl: "https://config.rpc.example",
+      rpcUrl: 'https://config.rpc.example',
       contractAddress: null,
-      chain: "PolygonAmoy",
+      chain: 'PolygonAmoy',
       startBlock: 0,
       maxBlockRange: 10_000,
       votingPeriodHours: 72,
@@ -114,19 +111,18 @@ describe("getOracleEnv RPC fallback", () => {
     });
 
     const out = await getOracleEnv();
-    expect(out.rpcUrl).toBe("https://config.rpc.example");
+    expect(out.rpcUrl).toBe('https://config.rpc.example');
   });
 
-  it("uses INSIGHT_CHAIN to select chain-specific RPC when config.chain is empty", async () => {
-    process.env.INSIGHT_CHAIN = "Arbitrum";
-    process.env.ARBITRUM_RPC_URL = "https://arbitrum.rpc.example";
-    process.env.INSIGHT_ORACLE_ADDRESS =
-      "0x1111111111111111111111111111111111111111";
+  it('uses INSIGHT_CHAIN to select chain-specific RPC when config.chain is empty', async () => {
+    process.env.INSIGHT_CHAIN = 'Arbitrum';
+    process.env.ARBITRUM_RPC_URL = 'https://arbitrum.rpc.example';
+    process.env.INSIGHT_ORACLE_ADDRESS = '0x1111111111111111111111111111111111111111';
 
     readOracleConfig.mockResolvedValueOnce({
-      rpcUrl: "",
+      rpcUrl: '',
       contractAddress: null,
-      chain: "",
+      chain: '',
       startBlock: 0,
       maxBlockRange: 10_000,
       votingPeriodHours: 72,
@@ -134,7 +130,7 @@ describe("getOracleEnv RPC fallback", () => {
     });
 
     const out = await getOracleEnv();
-    expect(out.chain).toBe("Arbitrum");
-    expect(out.rpcUrl).toBe("https://arbitrum.rpc.example");
+    expect(out.chain).toBe('Arbitrum');
+    expect(out.rpcUrl).toBe('https://arbitrum.rpc.example');
   });
 });

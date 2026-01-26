@@ -1,8 +1,4 @@
-import {
-  createOrTouchAlert,
-  readAlertRules,
-  type AlertRule,
-} from "@/server/observability";
+import { createOrTouchAlert, readAlertRules, type AlertRule } from '@/server/observability';
 
 type ApiRequestBucket = { total: number; errors: number };
 
@@ -13,12 +9,10 @@ const globalForApiAlerts = globalThis as unknown as {
   insightApiRequestBuckets?: Map<number, ApiRequestBucket> | undefined;
 };
 
-const apiAlertCooldown =
-  globalForApiAlerts.insightApiAlertCooldown ?? new Map<string, number>();
+const apiAlertCooldown = globalForApiAlerts.insightApiAlertCooldown ?? new Map<string, number>();
 const apiRequestBuckets =
-  globalForApiAlerts.insightApiRequestBuckets ??
-  new Map<number, ApiRequestBucket>();
-if (process.env.NODE_ENV !== "production") {
+  globalForApiAlerts.insightApiRequestBuckets ?? new Map<number, ApiRequestBucket>();
+if (process.env.NODE_ENV !== 'production') {
   globalForApiAlerts.insightApiAlertCooldown = apiAlertCooldown;
   globalForApiAlerts.insightApiRequestBuckets = apiRequestBuckets;
 }
@@ -50,8 +44,8 @@ async function getAlertRulesCached(): Promise<AlertRule[]> {
 
 function shouldRunApiAlerts(path: string | undefined) {
   if (!path) return false;
-  if (!path.startsWith("/api/")) return false;
-  if (path.startsWith("/api/admin/")) return false;
+  if (!path.startsWith('/api/')) return false;
+  if (path.startsWith('/api/admin/')) return false;
   return true;
 }
 
@@ -74,7 +68,7 @@ async function createAlertIfNeeded(
 
   apiAlertCooldown.set(cooldownKey, now);
 
-  const silencedUntilRaw = (rule.silencedUntil ?? "").trim();
+  const silencedUntilRaw = (rule.silencedUntil ?? '').trim();
   const silencedUntilMs = silencedUntilRaw ? Date.parse(silencedUntilRaw) : NaN;
   const silenced = Number.isFinite(silencedUntilMs) && silencedUntilMs > now;
 
@@ -84,7 +78,7 @@ async function createAlertIfNeeded(
     severity: rule.severity,
     title,
     message,
-    entityType: "api",
+    entityType: 'api',
     entityId,
     notify: silenced
       ? { channels: [] }
@@ -117,21 +111,18 @@ async function maybeAlertSlowApiRequest(input: {
   if (!shouldRunApiAlerts(input.path)) return;
 
   const rules = await getAlertRulesCached();
-  const slowRules = rules.filter(
-    (r) => r.enabled && r.event === "slow_api_request",
-  );
+  const slowRules = rules.filter((r) => r.enabled && r.event === 'slow_api_request');
 
   if (slowRules.length === 0) return;
 
-  const method = input.method || "UNKNOWN";
+  const method = input.method || 'UNKNOWN';
   const path = input.path;
 
   if (!path) return;
 
   for (const rule of slowRules) {
     const thresholdMs = Number(
-      (rule.params as { thresholdMs?: unknown } | undefined)?.thresholdMs ??
-        1000,
+      (rule.params as { thresholdMs?: unknown } | undefined)?.thresholdMs ?? 1000,
     );
 
     if (!Number.isFinite(thresholdMs) || thresholdMs <= 0) continue;
@@ -140,13 +131,7 @@ async function maybeAlertSlowApiRequest(input: {
     const fingerprint = `${rule.id}:${method}:${path}`;
     const message = `${method} ${path} took ${input.durationMs}ms (threshold ${thresholdMs}ms)`;
 
-    await createAlertIfNeeded(
-      rule,
-      fingerprint,
-      "Slow API request",
-      message,
-      path,
-    );
+    await createAlertIfNeeded(rule, fingerprint, 'Slow API request', message, path);
   }
 }
 
@@ -154,9 +139,7 @@ async function maybeAlertHighErrorRate(input: { path: string | undefined }) {
   if (!shouldRunApiAlerts(input.path)) return;
 
   const rules = await getAlertRulesCached();
-  const rateRules = rules.filter(
-    (r) => r.enabled && r.event === "high_error_rate",
-  );
+  const rateRules = rules.filter((r) => r.enabled && r.event === 'high_error_rate');
 
   if (rateRules.length === 0) return;
 
@@ -165,19 +148,13 @@ async function maybeAlertHighErrorRate(input: { path: string | undefined }) {
 
   for (const rule of rateRules) {
     const thresholdPercent = Number(
-      (rule.params as { thresholdPercent?: unknown } | undefined)
-        ?.thresholdPercent ?? 5,
+      (rule.params as { thresholdPercent?: unknown } | undefined)?.thresholdPercent ?? 5,
     );
     const windowMinutes = Number(
-      (rule.params as { windowMinutes?: unknown } | undefined)?.windowMinutes ??
-        5,
+      (rule.params as { windowMinutes?: unknown } | undefined)?.windowMinutes ?? 5,
     );
 
-    if (
-      !Number.isFinite(thresholdPercent) ||
-      thresholdPercent <= 0 ||
-      thresholdPercent > 100
-    )
+    if (!Number.isFinite(thresholdPercent) || thresholdPercent <= 0 || thresholdPercent > 100)
       continue;
     if (!Number.isFinite(windowMinutes) || windowMinutes <= 0) continue;
 
@@ -201,13 +178,7 @@ async function maybeAlertHighErrorRate(input: { path: string | undefined }) {
     const fingerprint = `${rule.id}:global`;
     const message = `${rate.toFixed(1)}% errors (${errors}/${total}) over ${window}m`;
 
-    await createAlertIfNeeded(
-      rule,
-      fingerprint,
-      "High API error rate",
-      message,
-      null,
-    );
+    await createAlertIfNeeded(rule, fingerprint, 'High API error rate', message, null);
   }
 }
 
@@ -221,9 +192,7 @@ export async function runApiAlerts(
   if (shouldRunApiAlerts(path)) {
     recordApiBucket(Date.now(), isError);
     if (durationMs >= slowMs) {
-      maybeAlertSlowApiRequest({ method, path, durationMs }).catch(
-        () => void 0,
-      );
+      maybeAlertSlowApiRequest({ method, path, durationMs }).catch(() => void 0);
     }
     if (isError) {
       maybeAlertHighErrorRate({ path }).catch(() => void 0);

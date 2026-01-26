@@ -1,9 +1,9 @@
-import { env } from "@/lib/config/env";
-import { logger, withLogContext } from "@/lib/logger";
-import { context, trace } from "@opentelemetry/api";
-import { ZodError } from "zod";
-import { error, ok } from "./response";
-import { runApiAlerts } from "./alerts";
+import { env } from '@/lib/config/env';
+import { logger, withLogContext } from '@/lib/logger';
+import { context, trace } from '@opentelemetry/api';
+import { ZodError } from 'zod';
+import { error, ok } from './response';
+import { runApiAlerts } from './alerts';
 
 function getActiveTraceContext(): {
   traceId: string | null;
@@ -24,11 +24,10 @@ function getActiveTraceContext(): {
 
 function getRequestId(request: Request | undefined, traceId: string | null) {
   if (!request) return null;
-  const existing = request.headers.get("x-request-id")?.trim();
+  const existing = request.headers.get('x-request-id')?.trim();
   if (existing) return existing;
   if (traceId) return traceId;
-  const hasCrypto =
-    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function";
+  const hasCrypto = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function';
   if (hasCrypto) return crypto.randomUUID();
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
@@ -36,7 +35,7 @@ function getRequestId(request: Request | undefined, traceId: string | null) {
 function attachRequestId(response: Response, requestId: string | null) {
   if (!requestId) return response;
   try {
-    response.headers.set("x-request-id", requestId);
+    response.headers.set('x-request-id', requestId);
   } catch {
     return response;
   }
@@ -66,7 +65,7 @@ function logApiAccess(
   };
 
   if (sampleRate > 0 && Math.random() < sampleRate && url) {
-    logger.info("api_access", logData);
+    logger.info('api_access', logData);
   }
 
   return logData;
@@ -87,7 +86,7 @@ function checkSlowRequest(
   slowMs: number,
 ) {
   if (durationMs >= slowMs) {
-    logger.warn("api_slow", { ...logData, thresholdMs: slowMs });
+    logger.warn('api_slow', { ...logData, thresholdMs: slowMs });
   }
 }
 
@@ -99,21 +98,19 @@ function enhanceResponse(
   spanId: string | null,
   errorCode?: string,
 ) {
-  response.headers.set("x-response-time", durationMs.toString());
-  if (requestId) response.headers.set("x-request-id", requestId);
-  if (traceId) response.headers.set("x-trace-id", traceId);
-  if (spanId) response.headers.set("x-span-id", spanId);
+  response.headers.set('x-response-time', durationMs.toString());
+  if (requestId) response.headers.set('x-request-id', requestId);
+  if (traceId) response.headers.set('x-trace-id', traceId);
+  if (spanId) response.headers.set('x-span-id', spanId);
   if (errorCode) {
-    response.headers.set("x-error-code", errorCode);
+    response.headers.set('x-error-code', errorCode);
   }
   return response;
 }
 
 function getSampleRate(): number {
-  const sampleRateRaw = Number(env.INSIGHT_API_LOG_SAMPLE_RATE || "");
-  return Number.isFinite(sampleRateRaw) &&
-    sampleRateRaw >= 0 &&
-    sampleRateRaw <= 1
+  const sampleRateRaw = Number(env.INSIGHT_API_LOG_SAMPLE_RATE || '');
+  return Number.isFinite(sampleRateRaw) && sampleRateRaw >= 0 && sampleRateRaw <= 1
     ? sampleRateRaw
     : 0.01;
 }
@@ -161,13 +158,7 @@ async function handleApiSuccess<T>(
     );
 
     checkSlowRequest(logData, durationMs, slowMs);
-    await runApiAlerts(
-      path,
-      response.status >= 500,
-      durationMs,
-      slowMs,
-      method,
-    );
+    await runApiAlerts(path, response.status >= 500, durationMs, slowMs, method);
 
     return enhanceResponse(response, durationMs, requestId, traceId, spanId);
   }
@@ -198,31 +189,31 @@ function getErrorStatusCodeAndCode(message: string): {
   errorCode: string;
 } {
   const known400 = new Set([
-    "invalid_request_body",
-    "invalid_address",
-    "missing_config",
-    "missing_database_url",
-    "invalid_rpc_url",
-    "invalid_contract_address",
-    "invalid_chain",
-    "invalid_max_block_range",
-    "invalid_voting_period_hours",
-    "contract_not_found",
+    'invalid_request_body',
+    'invalid_address',
+    'missing_config',
+    'missing_database_url',
+    'invalid_rpc_url',
+    'invalid_contract_address',
+    'invalid_chain',
+    'invalid_max_block_range',
+    'invalid_voting_period_hours',
+    'contract_not_found',
   ]);
 
   let status = 500;
-  let errorCode = "unknown_error";
+  let errorCode = 'unknown_error';
 
-  if (message === "forbidden") {
+  if (message === 'forbidden') {
     status = 403;
-    errorCode = "forbidden";
-  } else if (message === "rpc_unreachable" || message === "sync_failed") {
+    errorCode = 'forbidden';
+  } else if (message === 'rpc_unreachable' || message === 'sync_failed') {
     status = 502;
     errorCode = message;
   } else if (known400.has(message)) {
     status = 400;
     errorCode = message;
-  } else if (message.startsWith("http_")) {
+  } else if (message.startsWith('http_')) {
     status = 500;
     errorCode = message;
   }
@@ -256,33 +247,24 @@ async function handleApiError(
 
   if (e instanceof Response) {
     const response = attachRequestId(e, requestId);
-    logger.error("api_error", {
+    logger.error('api_error', {
       ...errorData,
       message: `http_${response.status}`,
       status: response.status,
     });
 
-    await runApiAlerts(
-      path,
-      response.status >= 500,
-      durationMs,
-      slowMs,
-      method,
-    );
+    await runApiAlerts(path, response.status >= 500, durationMs, slowMs, method);
     return enhanceResponse(response, durationMs, requestId, traceId, spanId);
   }
 
   if (e instanceof ZodError) {
     const messages = e.issues.map((i) => i.message);
-    const errorCode = messages.includes("invalid_address")
-      ? "invalid_address"
-      : "invalid_request_body";
-    const response = attachRequestId(
-      error({ code: errorCode, details: e.issues }, 400),
-      requestId,
-    );
+    const errorCode = messages.includes('invalid_address')
+      ? 'invalid_address'
+      : 'invalid_request_body';
+    const response = attachRequestId(error({ code: errorCode, details: e.issues }, 400), requestId);
 
-    logger.error("api_error", {
+    logger.error('api_error', {
       ...errorData,
       message: errorCode,
       status: 400,
@@ -293,8 +275,8 @@ async function handleApiError(
     return enhanceResponse(response, durationMs, requestId, traceId, spanId);
   }
 
-  const message = e instanceof Error ? e.message : "unknown_error";
-  logger.error("api_error", {
+  const message = e instanceof Error ? e.message : 'unknown_error';
+  logger.error('api_error', {
     ...errorData,
     message,
     status: 500,
@@ -302,28 +284,18 @@ async function handleApiError(
   });
 
   const { status, errorCode } = getErrorStatusCodeAndCode(message);
-  const response = attachRequestId(
-    error({ code: errorCode }, status),
-    requestId,
-  );
+  const response = attachRequestId(error({ code: errorCode }, status), requestId);
 
   await runApiAlerts(path, status >= 500, durationMs, slowMs, method);
-  return enhanceResponse(
-    response,
-    durationMs,
-    requestId,
-    traceId,
-    spanId,
-    errorCode,
-  );
+  return enhanceResponse(response, durationMs, requestId, traceId, spanId, errorCode);
 }
 
 export async function handleApi<T>(
   arg1: Request | (() => Promise<T | Response> | T | Response),
   arg2?: () => Promise<T | Response> | T | Response,
 ) {
-  const request = typeof arg1 === "function" ? undefined : arg1;
-  const fn = typeof arg1 === "function" ? arg1 : (arg2 as () => Promise<T> | T);
+  const request = typeof arg1 === 'function' ? undefined : arg1;
+  const fn = typeof arg1 === 'function' ? arg1 : (arg2 as () => Promise<T> | T);
   const traceCtx = getActiveTraceContext();
   const requestId = getRequestId(request, traceCtx.traceId);
   const method = request?.method;

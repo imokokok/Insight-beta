@@ -1,4 +1,4 @@
-import { hasDatabase, query } from "./db";
+import { hasDatabase, query } from './db';
 
 export async function ensureSchema() {
   if (!hasDatabase()) return;
@@ -252,7 +252,7 @@ export async function ensureSchema() {
   `);
 
   try {
-    await query("BEGIN");
+    await query('BEGIN');
     await query(`
       UPDATE assertions SET instance_id = 'default' WHERE instance_id IS NULL;
     `);
@@ -260,10 +260,10 @@ export async function ensureSchema() {
       ALTER TABLE assertions ALTER COLUMN instance_id SET DEFAULT 'default';
       ALTER TABLE assertions ALTER COLUMN instance_id SET NOT NULL;
     `);
-    await query("COMMIT");
+    await query('COMMIT');
   } catch {
-    await query("ROLLBACK").catch(() => null);
-    throw new Error("Failed to migrate assertions instance_id");
+    await query('ROLLBACK').catch(() => null);
+    throw new Error('Failed to migrate assertions instance_id');
   }
 
   await query(`
@@ -274,7 +274,7 @@ export async function ensureSchema() {
   `);
 
   try {
-    await query("BEGIN");
+    await query('BEGIN');
     await query(`
       UPDATE disputes SET instance_id = 'default' WHERE instance_id IS NULL;
     `);
@@ -282,10 +282,10 @@ export async function ensureSchema() {
       ALTER TABLE disputes ALTER COLUMN instance_id SET DEFAULT 'default';
       ALTER TABLE disputes ALTER COLUMN instance_id SET NOT NULL;
     `);
-    await query("COMMIT");
+    await query('COMMIT');
   } catch {
-    await query("ROLLBACK").catch(() => null);
-    throw new Error("Failed to migrate disputes instance_id");
+    await query('ROLLBACK').catch(() => null);
+    throw new Error('Failed to migrate disputes instance_id');
   }
 
   await query(`
@@ -293,7 +293,7 @@ export async function ensureSchema() {
   `);
 
   try {
-    await query("BEGIN");
+    await query('BEGIN');
     await query(`
       UPDATE votes SET instance_id = 'default' WHERE instance_id IS NULL;
     `);
@@ -301,10 +301,10 @@ export async function ensureSchema() {
       ALTER TABLE votes ALTER COLUMN instance_id SET DEFAULT 'default';
       ALTER TABLE votes ALTER COLUMN instance_id SET NOT NULL;
     `);
-    await query("COMMIT");
+    await query('COMMIT');
   } catch {
-    await query("ROLLBACK").catch(() => null);
-    throw new Error("Failed to migrate votes instance_id");
+    await query('ROLLBACK').catch(() => null);
+    throw new Error('Failed to migrate votes instance_id');
   }
 
   await query(`

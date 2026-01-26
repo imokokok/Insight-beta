@@ -1,4 +1,4 @@
-import { handleApi, rateLimit } from "@/server/apiResponse";
+import { handleApi, rateLimit } from '@/server/apiResponse';
 import {
   getAssertion,
   getDisputeByAssertionId,
@@ -6,65 +6,50 @@ import {
   getSyncState,
   readOracleConfig,
   redactOracleConfig,
-} from "@/server/oracle";
-import { verifyAdmin } from "@/server/adminAuth";
-import { createPublicClient, http, parseAbi } from "viem";
-import { parseRpcUrls } from "@/lib/utils";
-import { env } from "@/lib/config/env";
+} from '@/server/oracle';
+import { verifyAdmin } from '@/server/adminAuth';
+import { createPublicClient, http, parseAbi } from 'viem';
+import { parseRpcUrls } from '@/lib/utils';
+import { env } from '@/lib/config/env';
 
 const eventsAbi = parseAbi([
-  "event AssertionCreated(bytes32 indexed assertionId,address indexed asserter,string protocol,string market,string assertion,uint256 bondUsd,uint256 assertedAt,uint256 livenessEndsAt,bytes32 txHash)",
-  "event AssertionDisputed(bytes32 indexed assertionId,address indexed disputer,string reason,uint256 disputedAt)",
-  "event AssertionResolved(bytes32 indexed assertionId,bool outcome,uint256 resolvedAt)",
-  "event VoteCast(bytes32 indexed assertionId, address indexed voter, bool support, uint256 weight)",
+  'event AssertionCreated(bytes32 indexed assertionId,address indexed asserter,string protocol,string market,string assertion,uint256 bondUsd,uint256 assertedAt,uint256 livenessEndsAt,bytes32 txHash)',
+  'event AssertionDisputed(bytes32 indexed assertionId,address indexed disputer,string reason,uint256 disputedAt)',
+  'event AssertionResolved(bytes32 indexed assertionId,bool outcome,uint256 resolvedAt)',
+  'event VoteCast(bytes32 indexed assertionId, address indexed voter, bool support, uint256 weight)',
 ]);
 
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   return handleApi(request, async () => {
     const limited = await rateLimit(request, {
-      key: "evidence_get",
+      key: 'evidence_get',
       limit: 30,
       windowMs: 60_000,
     });
     if (limited) return limited;
-    const degraded = ["1", "true"].includes(
-      (env.INSIGHT_VOTING_DEGRADATION || "").toLowerCase(),
-    );
+    const degraded = ['1', 'true'].includes((env.INSIGHT_VOTING_DEGRADATION || '').toLowerCase());
     const voteTrackingEnabled =
-      ["1", "true"].includes((env.INSIGHT_ENABLE_VOTING || "").toLowerCase()) &&
-      !["1", "true"].includes(
-        (env.INSIGHT_DISABLE_VOTE_TRACKING || "").toLowerCase(),
-      );
+      ['1', 'true'].includes((env.INSIGHT_ENABLE_VOTING || '').toLowerCase()) &&
+      !['1', 'true'].includes((env.INSIGHT_DISABLE_VOTE_TRACKING || '').toLowerCase());
 
     const url = new URL(request.url);
-    const instanceId = url.searchParams.get("instanceId");
+    const instanceId = url.searchParams.get('instanceId');
     const { id } = await params;
-    const assertion = instanceId
-      ? await getAssertion(id, instanceId)
-      : await getAssertion(id);
+    const assertion = instanceId ? await getAssertion(id, instanceId) : await getAssertion(id);
     const dispute = instanceId
       ? await getDisputeByAssertionId(id, instanceId)
       : await getDisputeByAssertionId(id);
     const admin = await verifyAdmin(request, {
       strict: false,
-      scope: "oracle_config_write",
+      scope: 'oracle_config_write',
     });
-    const config = instanceId
-      ? await readOracleConfig(instanceId)
-      : await readOracleConfig();
-    const envConfig = instanceId
-      ? await getOracleEnv(instanceId)
-      : await getOracleEnv();
-    const sync = instanceId
-      ? await getSyncState(instanceId)
-      : await getSyncState();
-    const includeLogs = admin.ok && url.searchParams.get("includeLogs") === "1";
+    const config = instanceId ? await readOracleConfig(instanceId) : await readOracleConfig();
+    const envConfig = instanceId ? await getOracleEnv(instanceId) : await getOracleEnv();
+    const sync = instanceId ? await getSyncState(instanceId) : await getSyncState();
+    const includeLogs = admin.ok && url.searchParams.get('includeLogs') === '1';
     const maxBlocks = Math.min(
       1_000_000,
-      Math.max(10_000, Number(url.searchParams.get("maxBlocks") ?? 200_000)),
+      Math.max(10_000, Number(url.searchParams.get('maxBlocks') ?? 200_000)),
     );
 
     let logs: unknown[] | null = null;
@@ -80,7 +65,7 @@ export async function GET(
       envConfig.rpcUrl &&
       envConfig.contractAddress &&
       assertion.txHash &&
-      assertion.txHash !== "0x0"
+      assertion.txHash !== '0x0'
     ) {
       try {
         const rpcUrls = parseRpcUrls(envConfig.rpcUrl);
@@ -90,9 +75,7 @@ export async function GET(
           return {
             generatedAt: new Date().toISOString(),
             config: admin.ok ? config : redactOracleConfig(config),
-            sync: admin.ok
-              ? sync
-              : { ...sync, rpcActiveUrl: null, rpcStats: null },
+            sync: admin.ok ? sync : { ...sync, rpcActiveUrl: null, rpcStats: null },
             assertion,
             dispute,
             logsMeta,
@@ -114,9 +97,7 @@ export async function GET(
             const latest = await client.getBlockNumber();
             fromBlock = receipt.blockNumber;
             toBlock =
-              fromBlock + BigInt(maxBlocks) < latest
-                ? fromBlock + BigInt(maxBlocks)
-                : latest;
+              fromBlock + BigInt(maxBlocks) < latest ? fromBlock + BigInt(maxBlocks) : latest;
             const res = await Promise.all([
               client.getLogs({
                 address: envConfig.contractAddress as `0x${string}`,
@@ -164,9 +145,7 @@ export async function GET(
           return {
             generatedAt: new Date().toISOString(),
             config: admin.ok ? config : redactOracleConfig(config),
-            sync: admin.ok
-              ? sync
-              : { ...sync, rpcActiveUrl: null, rpcStats: null },
+            sync: admin.ok ? sync : { ...sync, rpcActiveUrl: null, rpcStats: null },
             assertion,
             dispute,
             logsMeta,

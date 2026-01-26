@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useMemo } from "react";
-import { cn } from "@/lib/utils";
+import { useMemo } from 'react';
+import { cn } from '@/lib/utils';
 
 interface AddressAvatarProps {
   address: string;
@@ -9,11 +9,7 @@ interface AddressAvatarProps {
   className?: string;
 }
 
-export function AddressAvatar({
-  address,
-  size = 24,
-  className,
-}: AddressAvatarProps) {
+export function AddressAvatar({ address, size = 24, className }: AddressAvatarProps) {
   const gradientStyle = useMemo(() => {
     if (!address) return {};
 
@@ -36,7 +32,7 @@ export function AddressAvatar({
   return (
     <div
       className={cn(
-        "rounded-full ring-2 ring-white dark:ring-gray-900 shadow-sm shrink-0",
+        'shrink-0 rounded-full shadow-sm ring-2 ring-white dark:ring-gray-900',
         className,
       )}
       style={gradientStyle}

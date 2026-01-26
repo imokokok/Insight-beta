@@ -1,13 +1,13 @@
-import { hasDatabase, query } from "@/server/db";
-import { ensureSchema } from "@/server/schema";
-import { readJsonFile, writeJsonFile } from "@/server/kvStore";
-import { getMemoryStore, memoryNowIso } from "@/server/memoryBackend";
-import { notifyAlert, type NotificationOptions } from "@/server/notifications";
-import { getSyncState } from "@/server/oracleState";
-import { env } from "@/lib/config/env";
+import { hasDatabase, query } from '@/server/db';
+import { ensureSchema } from '@/server/schema';
+import { readJsonFile, writeJsonFile } from '@/server/kvStore';
+import { getMemoryStore, memoryNowIso } from '@/server/memoryBackend';
+import { notifyAlert, type NotificationOptions } from '@/server/notifications';
+import { getSyncState } from '@/server/oracleState';
+import { env } from '@/lib/config/env';
 
-export type AlertSeverity = "info" | "warning" | "critical";
-export type AlertStatus = "Open" | "Acknowledged" | "Resolved";
+export type AlertSeverity = 'info' | 'warning' | 'critical';
+export type AlertStatus = 'Open' | 'Acknowledged' | 'Resolved';
 
 export type Alert = {
   id: number;
@@ -58,24 +58,24 @@ type DbAuditRow = {
 };
 
 export type AlertRuleEvent =
-  | "dispute_created"
-  | "liveness_expiring"
-  | "sync_error"
-  | "stale_sync"
-  | "contract_paused"
-  | "sync_backlog"
-  | "backlog_assertions"
-  | "backlog_disputes"
-  | "market_stale"
-  | "execution_delayed"
-  | "low_participation"
-  | "high_vote_divergence"
-  | "high_dispute_rate"
-  | "slow_api_request"
-  | "high_error_rate"
-  | "database_slow_query"
-  | "price_deviation"
-  | "low_gas";
+  | 'dispute_created'
+  | 'liveness_expiring'
+  | 'sync_error'
+  | 'stale_sync'
+  | 'contract_paused'
+  | 'sync_backlog'
+  | 'backlog_assertions'
+  | 'backlog_disputes'
+  | 'market_stale'
+  | 'execution_delayed'
+  | 'low_participation'
+  | 'high_vote_divergence'
+  | 'high_dispute_rate'
+  | 'slow_api_request'
+  | 'high_error_rate'
+  | 'database_slow_query'
+  | 'price_deviation'
+  | 'low_gas';
 
 export type AlertRule = {
   id: string;
@@ -87,7 +87,7 @@ export type AlertRule = {
   runbook?: string | null;
   silencedUntil?: string | null;
   params?: Record<string, unknown>;
-  channels?: Array<"webhook" | "email" | "telegram">;
+  channels?: Array<'webhook' | 'email' | 'telegram'>;
   recipient?: string | null;
 };
 
@@ -101,7 +101,7 @@ export type AuditLogEntry = {
   details: unknown;
 };
 
-export type IncidentStatus = "Open" | "Mitigating" | "Resolved";
+export type IncidentStatus = 'Open' | 'Mitigating' | 'Resolved';
 
 export type Incident = {
   id: number;
@@ -129,54 +129,51 @@ async function ensureDb() {
   }
 }
 
-const ALERT_RULES_KEY = "alert_rules/v1";
-const INCIDENTS_KEY = "incidents/v1";
+const ALERT_RULES_KEY = 'alert_rules/v1';
+const INCIDENTS_KEY = 'incidents/v1';
 const MEMORY_MAX_ALERTS = 2000;
 const MEMORY_MAX_AUDIT = 5000;
 
 const validRuleEvents: AlertRuleEvent[] = [
-  "dispute_created",
-  "liveness_expiring",
-  "sync_error",
-  "stale_sync",
-  "contract_paused",
-  "sync_backlog",
-  "backlog_assertions",
-  "backlog_disputes",
-  "market_stale",
-  "execution_delayed",
-  "low_participation",
-  "high_vote_divergence",
-  "high_dispute_rate",
-  "slow_api_request",
-  "high_error_rate",
-  "database_slow_query",
-  "price_deviation",
-  "low_gas",
+  'dispute_created',
+  'liveness_expiring',
+  'sync_error',
+  'stale_sync',
+  'contract_paused',
+  'sync_backlog',
+  'backlog_assertions',
+  'backlog_disputes',
+  'market_stale',
+  'execution_delayed',
+  'low_participation',
+  'high_vote_divergence',
+  'high_dispute_rate',
+  'slow_api_request',
+  'high_error_rate',
+  'database_slow_query',
+  'price_deviation',
+  'low_gas',
 ];
 
-const validSeverities: AlertSeverity[] = ["info", "warning", "critical"];
+const validSeverities: AlertSeverity[] = ['info', 'warning', 'critical'];
 
 function normalizeRuleChannels(
   channels: unknown,
   recipient: string | null,
-): Array<"webhook" | "email" | "telegram"> {
-  const raw =
-    Array.isArray(channels) && channels.length > 0 ? channels : ["webhook"];
-  const out: Array<"webhook" | "email" | "telegram"> = [];
+): Array<'webhook' | 'email' | 'telegram'> {
+  const raw = Array.isArray(channels) && channels.length > 0 ? channels : ['webhook'];
+  const out: Array<'webhook' | 'email' | 'telegram'> = [];
   for (const c of raw) {
-    if (c !== "webhook" && c !== "email" && c !== "telegram") continue;
+    if (c !== 'webhook' && c !== 'email' && c !== 'telegram') continue;
     if (!out.includes(c)) out.push(c);
   }
-  const safe: Array<"webhook" | "email" | "telegram"> =
-    out.length > 0
-      ? out
-      : (["webhook"] as Array<"webhook" | "email" | "telegram">);
-  if (safe.includes("email") && !recipient) {
-    const withoutEmail = safe.filter((c) => c !== "email");
+  const safe: Array<'webhook' | 'email' | 'telegram'> =
+    out.length > 0 ? out : (['webhook'] as Array<'webhook' | 'email' | 'telegram'>);
+  if (safe.includes('email') && !recipient) {
+    const withoutEmail = safe.filter((c) => c !== 'email');
     return withoutEmail.length > 0
-      ? (withoutEmail as Array<"webhook" | "email" | "telegram">)
-      : (["webhook"] as Array<"webhook" | "email" | "telegram">);
+      ? (withoutEmail as Array<'webhook' | 'email' | 'telegram'>)
+      : (['webhook'] as Array<'webhook' | 'email' | 'telegram'>);
   }
   return safe;
 }
@@ -199,157 +196,125 @@ function normalizeRuleParams(
     return out;
   };
 
-  if (event === "stale_sync") {
-    const maxAgeMs = getNumber("maxAgeMs");
-    const v =
-      Number.isFinite(maxAgeMs) && maxAgeMs > 0 ? maxAgeMs : 5 * 60 * 1000;
-    return setNumber("maxAgeMs", v);
+  if (event === 'stale_sync') {
+    const maxAgeMs = getNumber('maxAgeMs');
+    const v = Number.isFinite(maxAgeMs) && maxAgeMs > 0 ? maxAgeMs : 5 * 60 * 1000;
+    return setNumber('maxAgeMs', v);
   }
 
-  if (event === "sync_backlog") {
-    const maxLagBlocks = getNumber("maxLagBlocks");
-    const v =
-      Number.isFinite(maxLagBlocks) && maxLagBlocks > 0 ? maxLagBlocks : 200;
-    return setNumber("maxLagBlocks", v);
+  if (event === 'sync_backlog') {
+    const maxLagBlocks = getNumber('maxLagBlocks');
+    const v = Number.isFinite(maxLagBlocks) && maxLagBlocks > 0 ? maxLagBlocks : 200;
+    return setNumber('maxLagBlocks', v);
   }
 
-  if (event === "backlog_assertions") {
-    const maxOpenAssertions = getNumber("maxOpenAssertions");
-    const v =
-      Number.isFinite(maxOpenAssertions) && maxOpenAssertions > 0
-        ? maxOpenAssertions
-        : 50;
-    return setNumber("maxOpenAssertions", v);
+  if (event === 'backlog_assertions') {
+    const maxOpenAssertions = getNumber('maxOpenAssertions');
+    const v = Number.isFinite(maxOpenAssertions) && maxOpenAssertions > 0 ? maxOpenAssertions : 50;
+    return setNumber('maxOpenAssertions', v);
   }
 
-  if (event === "backlog_disputes") {
-    const maxOpenDisputes = getNumber("maxOpenDisputes");
-    const v =
-      Number.isFinite(maxOpenDisputes) && maxOpenDisputes > 0
-        ? maxOpenDisputes
-        : 20;
-    return setNumber("maxOpenDisputes", v);
+  if (event === 'backlog_disputes') {
+    const maxOpenDisputes = getNumber('maxOpenDisputes');
+    const v = Number.isFinite(maxOpenDisputes) && maxOpenDisputes > 0 ? maxOpenDisputes : 20;
+    return setNumber('maxOpenDisputes', v);
   }
 
-  if (event === "market_stale") {
-    const maxAgeMs = getNumber("maxAgeMs");
-    const v =
-      Number.isFinite(maxAgeMs) && maxAgeMs > 0 ? maxAgeMs : 6 * 60 * 60_000;
-    return setNumber("maxAgeMs", v);
+  if (event === 'market_stale') {
+    const maxAgeMs = getNumber('maxAgeMs');
+    const v = Number.isFinite(maxAgeMs) && maxAgeMs > 0 ? maxAgeMs : 6 * 60 * 60_000;
+    return setNumber('maxAgeMs', v);
   }
 
-  if (event === "execution_delayed") {
-    const maxDelayMinutes = getNumber("maxDelayMinutes");
-    const v =
-      Number.isFinite(maxDelayMinutes) && maxDelayMinutes > 0
-        ? maxDelayMinutes
-        : 30;
-    return setNumber("maxDelayMinutes", v);
+  if (event === 'execution_delayed') {
+    const maxDelayMinutes = getNumber('maxDelayMinutes');
+    const v = Number.isFinite(maxDelayMinutes) && maxDelayMinutes > 0 ? maxDelayMinutes : 30;
+    return setNumber('maxDelayMinutes', v);
   }
 
-  if (event === "low_participation") {
-    const withinMinutes = getNumber("withinMinutes");
-    const minTotalVotes = getNumber("minTotalVotes");
-    const safeWithin =
-      Number.isFinite(withinMinutes) && withinMinutes > 0 ? withinMinutes : 60;
-    const safeMin =
-      Number.isFinite(minTotalVotes) && minTotalVotes >= 0 ? minTotalVotes : 0;
+  if (event === 'low_participation') {
+    const withinMinutes = getNumber('withinMinutes');
+    const minTotalVotes = getNumber('minTotalVotes');
+    const safeWithin = Number.isFinite(withinMinutes) && withinMinutes > 0 ? withinMinutes : 60;
+    const safeMin = Number.isFinite(minTotalVotes) && minTotalVotes >= 0 ? minTotalVotes : 0;
     return setNumbers([
-      ["withinMinutes", safeWithin],
-      ["minTotalVotes", safeMin],
+      ['withinMinutes', safeWithin],
+      ['minTotalVotes', safeMin],
     ]);
   }
 
-  if (event === "liveness_expiring") {
-    const withinMinutes = getNumber("withinMinutes");
-    const safeWithin =
-      Number.isFinite(withinMinutes) && withinMinutes > 0 ? withinMinutes : 60;
-    return setNumber("withinMinutes", safeWithin);
+  if (event === 'liveness_expiring') {
+    const withinMinutes = getNumber('withinMinutes');
+    const safeWithin = Number.isFinite(withinMinutes) && withinMinutes > 0 ? withinMinutes : 60;
+    return setNumber('withinMinutes', safeWithin);
   }
 
-  if (event === "price_deviation") {
-    const thresholdPercent = getNumber("thresholdPercent");
-    const v =
-      Number.isFinite(thresholdPercent) && thresholdPercent > 0
-        ? thresholdPercent
-        : 2;
-    return setNumber("thresholdPercent", v);
+  if (event === 'price_deviation') {
+    const thresholdPercent = getNumber('thresholdPercent');
+    const v = Number.isFinite(thresholdPercent) && thresholdPercent > 0 ? thresholdPercent : 2;
+    return setNumber('thresholdPercent', v);
   }
 
-  if (event === "low_gas") {
-    const minBalanceEth = getNumber("minBalanceEth");
-    const v =
-      Number.isFinite(minBalanceEth) && minBalanceEth > 0 ? minBalanceEth : 0.1;
-    return setNumber("minBalanceEth", v);
+  if (event === 'low_gas') {
+    const minBalanceEth = getNumber('minBalanceEth');
+    const v = Number.isFinite(minBalanceEth) && minBalanceEth > 0 ? minBalanceEth : 0.1;
+    return setNumber('minBalanceEth', v);
   }
 
-  if (event === "high_vote_divergence") {
-    const withinMinutes = getNumber("withinMinutes");
-    const minTotalVotes = getNumber("minTotalVotes");
-    const maxMarginPercent = getNumber("maxMarginPercent");
-    const safeWithin =
-      Number.isFinite(withinMinutes) && withinMinutes > 0 ? withinMinutes : 60;
-    const safeMin =
-      Number.isFinite(minTotalVotes) && minTotalVotes > 0 ? minTotalVotes : 1;
+  if (event === 'high_vote_divergence') {
+    const withinMinutes = getNumber('withinMinutes');
+    const minTotalVotes = getNumber('minTotalVotes');
+    const maxMarginPercent = getNumber('maxMarginPercent');
+    const safeWithin = Number.isFinite(withinMinutes) && withinMinutes > 0 ? withinMinutes : 60;
+    const safeMin = Number.isFinite(minTotalVotes) && minTotalVotes > 0 ? minTotalVotes : 1;
     const safeMargin =
-      Number.isFinite(maxMarginPercent) &&
-      maxMarginPercent > 0 &&
-      maxMarginPercent <= 100
+      Number.isFinite(maxMarginPercent) && maxMarginPercent > 0 && maxMarginPercent <= 100
         ? maxMarginPercent
         : 10;
     return setNumbers([
-      ["withinMinutes", safeWithin],
-      ["minTotalVotes", safeMin],
-      ["maxMarginPercent", safeMargin],
+      ['withinMinutes', safeWithin],
+      ['minTotalVotes', safeMin],
+      ['maxMarginPercent', safeMargin],
     ]);
   }
 
-  if (event === "high_dispute_rate") {
-    const windowDays = getNumber("windowDays");
-    const minAssertions = getNumber("minAssertions");
-    const thresholdPercent = getNumber("thresholdPercent");
-    const safeDays =
-      Number.isFinite(windowDays) && windowDays > 0 ? windowDays : 7;
-    const safeMin =
-      Number.isFinite(minAssertions) && minAssertions > 0 ? minAssertions : 20;
+  if (event === 'high_dispute_rate') {
+    const windowDays = getNumber('windowDays');
+    const minAssertions = getNumber('minAssertions');
+    const thresholdPercent = getNumber('thresholdPercent');
+    const safeDays = Number.isFinite(windowDays) && windowDays > 0 ? windowDays : 7;
+    const safeMin = Number.isFinite(minAssertions) && minAssertions > 0 ? minAssertions : 20;
     const safeThreshold =
-      Number.isFinite(thresholdPercent) &&
-      thresholdPercent > 0 &&
-      thresholdPercent <= 100
+      Number.isFinite(thresholdPercent) && thresholdPercent > 0 && thresholdPercent <= 100
         ? thresholdPercent
         : 10;
     return setNumbers([
-      ["windowDays", safeDays],
-      ["minAssertions", safeMin],
-      ["thresholdPercent", safeThreshold],
+      ['windowDays', safeDays],
+      ['minAssertions', safeMin],
+      ['thresholdPercent', safeThreshold],
     ]);
   }
 
-  if (event === "slow_api_request") {
-    const thresholdMs = getNumber("thresholdMs");
-    const v =
-      Number.isFinite(thresholdMs) && thresholdMs > 0 ? thresholdMs : 1000;
-    return setNumber("thresholdMs", v);
+  if (event === 'slow_api_request') {
+    const thresholdMs = getNumber('thresholdMs');
+    const v = Number.isFinite(thresholdMs) && thresholdMs > 0 ? thresholdMs : 1000;
+    return setNumber('thresholdMs', v);
   }
 
-  if (event === "database_slow_query") {
-    const thresholdMs = getNumber("thresholdMs");
-    const v =
-      Number.isFinite(thresholdMs) && thresholdMs > 0 ? thresholdMs : 200;
-    return setNumber("thresholdMs", v);
+  if (event === 'database_slow_query') {
+    const thresholdMs = getNumber('thresholdMs');
+    const v = Number.isFinite(thresholdMs) && thresholdMs > 0 ? thresholdMs : 200;
+    return setNumber('thresholdMs', v);
   }
 
-  if (event === "high_error_rate") {
-    const thresholdPercent = getNumber("thresholdPercent");
-    const windowMinutes = getNumber("windowMinutes");
+  if (event === 'high_error_rate') {
+    const thresholdPercent = getNumber('thresholdPercent');
+    const windowMinutes = getNumber('windowMinutes');
     const safeThreshold =
-      Number.isFinite(thresholdPercent) &&
-      thresholdPercent > 0 &&
-      thresholdPercent <= 100
+      Number.isFinite(thresholdPercent) && thresholdPercent > 0 && thresholdPercent <= 100
         ? thresholdPercent
         : 5;
-    const safeWindow =
-      Number.isFinite(windowMinutes) && windowMinutes > 0 ? windowMinutes : 5;
+    const safeWindow = Number.isFinite(windowMinutes) && windowMinutes > 0 ? windowMinutes : 5;
     return { ...p, thresholdPercent: safeThreshold, windowMinutes: safeWindow };
   }
 
@@ -357,47 +322,37 @@ function normalizeRuleParams(
 }
 
 function normalizeStoredRule(input: unknown): AlertRule | null {
-  if (!input || typeof input !== "object") return null;
+  if (!input || typeof input !== 'object') return null;
   const obj = input as Record<string, unknown>;
 
-  const id = typeof obj.id === "string" ? obj.id.trim() : "";
+  const id = typeof obj.id === 'string' ? obj.id.trim() : '';
   if (!id) return null;
 
-  const event = typeof obj.event === "string" ? obj.event : "";
+  const event = typeof obj.event === 'string' ? obj.event : '';
   if (!validRuleEvents.includes(event as AlertRuleEvent)) return null;
   const safeEvent = event as AlertRuleEvent;
 
-  const name =
-    typeof obj.name === "string" && obj.name.trim() ? obj.name.trim() : id;
-  const enabled = typeof obj.enabled === "boolean" ? obj.enabled : true;
+  const name = typeof obj.name === 'string' && obj.name.trim() ? obj.name.trim() : id;
+  const enabled = typeof obj.enabled === 'boolean' ? obj.enabled : true;
 
-  const severityRaw = typeof obj.severity === "string" ? obj.severity : "";
+  const severityRaw = typeof obj.severity === 'string' ? obj.severity : '';
   const severity = validSeverities.includes(severityRaw as AlertSeverity)
     ? (severityRaw as AlertSeverity)
-    : "warning";
+    : 'warning';
 
   const recipient =
-    typeof obj.recipient === "string" && obj.recipient.trim()
-      ? obj.recipient.trim()
-      : null;
+    typeof obj.recipient === 'string' && obj.recipient.trim() ? obj.recipient.trim() : null;
 
-  const owner =
-    typeof obj.owner === "string" && obj.owner.trim() ? obj.owner.trim() : null;
+  const owner = typeof obj.owner === 'string' && obj.owner.trim() ? obj.owner.trim() : null;
 
-  const runbook =
-    typeof obj.runbook === "string" && obj.runbook.trim()
-      ? obj.runbook.trim()
-      : null;
+  const runbook = typeof obj.runbook === 'string' && obj.runbook.trim() ? obj.runbook.trim() : null;
 
-  const silencedUntilRaw =
-    typeof obj.silencedUntil === "string" ? obj.silencedUntil.trim() : "";
+  const silencedUntilRaw = typeof obj.silencedUntil === 'string' ? obj.silencedUntil.trim() : '';
   const silencedUntilMs = silencedUntilRaw ? Date.parse(silencedUntilRaw) : NaN;
-  const silencedUntil = Number.isFinite(silencedUntilMs)
-    ? silencedUntilRaw
-    : null;
+  const silencedUntil = Number.isFinite(silencedUntilMs) ? silencedUntilRaw : null;
 
   const params =
-    obj.params && typeof obj.params === "object" && !Array.isArray(obj.params)
+    obj.params && typeof obj.params === 'object' && !Array.isArray(obj.params)
       ? (obj.params as Record<string, unknown>)
       : undefined;
 
@@ -422,15 +377,12 @@ function normalizeStoredRule(input: unknown): AlertRule | null {
 function pruneMemoryAlerts(mem: ReturnType<typeof getMemoryStore>) {
   const overflow = mem.alerts.size - MEMORY_MAX_ALERTS;
   if (overflow <= 0) return;
-  const statusRank = (s: Alert["status"]) =>
-    s === "Open" ? 0 : s === "Acknowledged" ? 1 : 2;
-  const candidates = Array.from(mem.alerts.entries()).map(
-    ([fingerprint, a]) => ({
-      fingerprint,
-      statusRank: statusRank(a.status),
-      lastSeenAtMs: new Date(a.lastSeenAt).getTime(),
-    }),
-  );
+  const statusRank = (s: Alert['status']) => (s === 'Open' ? 0 : s === 'Acknowledged' ? 1 : 2);
+  const candidates = Array.from(mem.alerts.entries()).map(([fingerprint, a]) => ({
+    fingerprint,
+    statusRank: statusRank(a.status),
+    lastSeenAtMs: new Date(a.lastSeenAt).getTime(),
+  }));
   candidates.sort((a, b) => {
     const r = b.statusRank - a.statusRank;
     if (r !== 0) return r;
@@ -449,13 +401,13 @@ export async function pruneStaleAlerts() {
     const mem = getMemoryStore();
     let resolved = 0;
     for (const [fingerprint, alert] of mem.alerts.entries()) {
-      if (alert.status === "Resolved") continue;
+      if (alert.status === 'Resolved') continue;
       const lastSeenMs = Date.parse(alert.lastSeenAt);
       if (!Number.isFinite(lastSeenMs) || lastSeenMs >= cutoffMs) continue;
       const now = memoryNowIso();
       mem.alerts.set(fingerprint, {
         ...alert,
-        status: "Resolved",
+        status: 'Resolved',
         resolvedAt: now,
         updatedAt: now,
       });
@@ -487,34 +439,27 @@ export async function readAlertRules(): Promise<AlertRule[]> {
         continue;
       }
       const prev = item as Partial<AlertRule>;
-      const prevChannels = Array.isArray(prev.channels)
-        ? prev.channels
-        : undefined;
+      const prevChannels = Array.isArray(prev.channels) ? prev.channels : undefined;
       const same =
         prev.id === rule.id &&
         prev.name === rule.name &&
         prev.enabled === rule.enabled &&
         prev.event === rule.event &&
         prev.severity === rule.severity &&
-        (typeof (prev as { owner?: unknown }).owner === "string"
-          ? ((prev as { owner?: string }).owner ?? "").trim()
-          : ((prev as { owner?: null }).owner ?? null)) ===
-          (rule.owner ?? null) &&
-        (typeof (prev as { runbook?: unknown }).runbook === "string"
-          ? ((prev as { runbook?: string }).runbook ?? "").trim()
-          : ((prev as { runbook?: null }).runbook ?? null)) ===
-          (rule.runbook ?? null) &&
-        (typeof (prev as { silencedUntil?: unknown }).silencedUntil === "string"
-          ? ((prev as { silencedUntil?: string }).silencedUntil ?? "").trim()
+        (typeof (prev as { owner?: unknown }).owner === 'string'
+          ? ((prev as { owner?: string }).owner ?? '').trim()
+          : ((prev as { owner?: null }).owner ?? null)) === (rule.owner ?? null) &&
+        (typeof (prev as { runbook?: unknown }).runbook === 'string'
+          ? ((prev as { runbook?: string }).runbook ?? '').trim()
+          : ((prev as { runbook?: null }).runbook ?? null)) === (rule.runbook ?? null) &&
+        (typeof (prev as { silencedUntil?: unknown }).silencedUntil === 'string'
+          ? ((prev as { silencedUntil?: string }).silencedUntil ?? '').trim()
           : ((prev as { silencedUntil?: null }).silencedUntil ?? null)) ===
           (rule.silencedUntil ?? null) &&
-        JSON.stringify(prev.params ?? undefined) ===
-          JSON.stringify(rule.params ?? undefined) &&
-        JSON.stringify(prevChannels ?? undefined) ===
-          JSON.stringify(rule.channels ?? undefined) &&
-        (typeof prev.recipient === "string"
-          ? prev.recipient.trim()
-          : (prev.recipient ?? null)) === rule.recipient;
+        JSON.stringify(prev.params ?? undefined) === JSON.stringify(rule.params ?? undefined) &&
+        JSON.stringify(prevChannels ?? undefined) === JSON.stringify(rule.channels ?? undefined) &&
+        (typeof prev.recipient === 'string' ? prev.recipient.trim() : (prev.recipient ?? null)) ===
+          rule.recipient;
       if (!same) changed = true;
       normalized.push(rule);
     }
@@ -523,128 +468,128 @@ export async function readAlertRules(): Promise<AlertRule[]> {
   }
   const defaults: AlertRule[] = [
     {
-      id: "dispute_created",
-      name: "Dispute created",
+      id: 'dispute_created',
+      name: 'Dispute created',
       enabled: true,
-      event: "dispute_created",
-      severity: "critical",
+      event: 'dispute_created',
+      severity: 'critical',
     },
     {
-      id: "contract_paused",
-      name: "Contract paused",
+      id: 'contract_paused',
+      name: 'Contract paused',
       enabled: true,
-      event: "contract_paused",
-      severity: "critical",
+      event: 'contract_paused',
+      severity: 'critical',
     },
     {
-      id: "liveness_expiring_30m",
-      name: "Liveness expiring < 30m",
+      id: 'liveness_expiring_30m',
+      name: 'Liveness expiring < 30m',
       enabled: true,
-      event: "liveness_expiring",
-      severity: "warning",
+      event: 'liveness_expiring',
+      severity: 'warning',
       params: { withinMinutes: 30 },
     },
     {
-      id: "execution_delayed_30m",
-      name: "Execution delayed > 30m",
+      id: 'execution_delayed_30m',
+      name: 'Execution delayed > 30m',
       enabled: true,
-      event: "execution_delayed",
-      severity: "critical",
+      event: 'execution_delayed',
+      severity: 'critical',
       params: { maxDelayMinutes: 30 },
     },
     {
-      id: "low_participation_60m",
-      name: "Low participation after 60m",
+      id: 'low_participation_60m',
+      name: 'Low participation after 60m',
       enabled: true,
-      event: "low_participation",
-      severity: "warning",
+      event: 'low_participation',
+      severity: 'warning',
       params: { withinMinutes: 60, minTotalVotes: 1 },
     },
     {
-      id: "high_vote_divergence_15m",
-      name: "High vote divergence near close",
+      id: 'high_vote_divergence_15m',
+      name: 'High vote divergence near close',
       enabled: true,
-      event: "high_vote_divergence",
-      severity: "warning",
+      event: 'high_vote_divergence',
+      severity: 'warning',
       params: { withinMinutes: 15, minTotalVotes: 10, maxMarginPercent: 5 },
     },
     {
-      id: "high_dispute_rate_7d",
-      name: "High dispute rate (7d)",
+      id: 'high_dispute_rate_7d',
+      name: 'High dispute rate (7d)',
       enabled: true,
-      event: "high_dispute_rate",
-      severity: "warning",
+      event: 'high_dispute_rate',
+      severity: 'warning',
       params: { windowDays: 7, minAssertions: 20, thresholdPercent: 10 },
     },
     {
-      id: "sync_error",
-      name: "Sync error",
+      id: 'sync_error',
+      name: 'Sync error',
       enabled: true,
-      event: "sync_error",
-      severity: "warning",
+      event: 'sync_error',
+      severity: 'warning',
     },
     {
-      id: "stale_sync_5m",
-      name: "Stale sync > 5m",
+      id: 'stale_sync_5m',
+      name: 'Stale sync > 5m',
       enabled: true,
-      event: "stale_sync",
-      severity: "warning",
+      event: 'stale_sync',
+      severity: 'warning',
       params: { maxAgeMs: 5 * 60 * 1000 },
     },
     {
-      id: "sync_backlog_200",
-      name: "Sync backlog > 200 blocks",
+      id: 'sync_backlog_200',
+      name: 'Sync backlog > 200 blocks',
       enabled: true,
-      event: "sync_backlog",
-      severity: "warning",
+      event: 'sync_backlog',
+      severity: 'warning',
       params: { maxLagBlocks: 200 },
     },
     {
-      id: "backlog_assertions_50",
-      name: "Open assertions > 50",
+      id: 'backlog_assertions_50',
+      name: 'Open assertions > 50',
       enabled: true,
-      event: "backlog_assertions",
-      severity: "warning",
+      event: 'backlog_assertions',
+      severity: 'warning',
       params: { maxOpenAssertions: 50 },
     },
     {
-      id: "backlog_disputes_20",
-      name: "Open disputes > 20",
+      id: 'backlog_disputes_20',
+      name: 'Open disputes > 20',
       enabled: true,
-      event: "backlog_disputes",
-      severity: "warning",
+      event: 'backlog_disputes',
+      severity: 'warning',
       params: { maxOpenDisputes: 20 },
     },
     {
-      id: "market_stale_6h",
-      name: "Market stale > 6h",
+      id: 'market_stale_6h',
+      name: 'Market stale > 6h',
       enabled: true,
-      event: "market_stale",
-      severity: "warning",
+      event: 'market_stale',
+      severity: 'warning',
       params: { maxAgeMs: 6 * 60 * 60_000 },
     },
     {
-      id: "slow_api_request",
-      name: "Slow API request (>1s)",
+      id: 'slow_api_request',
+      name: 'Slow API request (>1s)',
       enabled: true,
-      event: "slow_api_request",
-      severity: "warning",
+      event: 'slow_api_request',
+      severity: 'warning',
       params: { thresholdMs: 1000 },
     },
     {
-      id: "high_error_rate",
-      name: "High API error rate (>5%)",
+      id: 'high_error_rate',
+      name: 'High API error rate (>5%)',
       enabled: true,
-      event: "high_error_rate",
-      severity: "critical",
+      event: 'high_error_rate',
+      severity: 'critical',
       params: { thresholdPercent: 5, windowMinutes: 5 },
     },
     {
-      id: "database_slow_query",
-      name: "Database slow query (>200ms)",
+      id: 'database_slow_query',
+      name: 'Database slow query (>200ms)',
       enabled: true,
-      event: "database_slow_query",
-      severity: "warning",
+      event: 'database_slow_query',
+      severity: 'warning',
       params: { thresholdMs: 200 },
     },
   ];
@@ -664,67 +609,46 @@ type IncidentStoreV1 = {
 };
 
 function normalizeIncidentStatus(raw: unknown): IncidentStatus {
-  return raw === "Open" || raw === "Mitigating" || raw === "Resolved"
-    ? raw
-    : "Open";
+  return raw === 'Open' || raw === 'Mitigating' || raw === 'Resolved' ? raw : 'Open';
 }
 
-function normalizeIncident(
-  input: unknown,
-  fallbackId: number,
-): Incident | null {
-  if (!input || typeof input !== "object") return null;
+function normalizeIncident(input: unknown, fallbackId: number): Incident | null {
+  if (!input || typeof input !== 'object') return null;
   const obj = input as Record<string, unknown>;
 
   const id = Number(obj.id ?? fallbackId);
   if (!Number.isFinite(id) || id <= 0) return null;
 
-  const title = typeof obj.title === "string" ? obj.title.trim() : "";
+  const title = typeof obj.title === 'string' ? obj.title.trim() : '';
   if (!title) return null;
 
   const status = normalizeIncidentStatus(obj.status);
-  const severityRaw = typeof obj.severity === "string" ? obj.severity : "";
+  const severityRaw = typeof obj.severity === 'string' ? obj.severity : '';
   const severity = validSeverities.includes(severityRaw as AlertSeverity)
     ? (severityRaw as AlertSeverity)
-    : "warning";
+    : 'warning';
 
-  const owner =
-    typeof obj.owner === "string" && obj.owner.trim() ? obj.owner.trim() : null;
+  const owner = typeof obj.owner === 'string' && obj.owner.trim() ? obj.owner.trim() : null;
 
   const rootCause =
-    typeof obj.rootCause === "string" && obj.rootCause.trim()
-      ? obj.rootCause.trim()
-      : null;
+    typeof obj.rootCause === 'string' && obj.rootCause.trim() ? obj.rootCause.trim() : null;
 
-  const summary =
-    typeof obj.summary === "string" && obj.summary.trim()
-      ? obj.summary.trim()
-      : null;
+  const summary = typeof obj.summary === 'string' && obj.summary.trim() ? obj.summary.trim() : null;
 
-  const runbook =
-    typeof obj.runbook === "string" && obj.runbook.trim()
-      ? obj.runbook.trim()
-      : null;
+  const runbook = typeof obj.runbook === 'string' && obj.runbook.trim() ? obj.runbook.trim() : null;
 
   const alertIds = Array.isArray(obj.alertIds)
-    ? obj.alertIds
-        .map((x) => Number(x))
-        .filter((n) => Number.isFinite(n) && n > 0)
+    ? obj.alertIds.map((x) => Number(x)).filter((n) => Number.isFinite(n) && n > 0)
     : [];
 
   const entityType =
-    typeof obj.entityType === "string" && obj.entityType.trim()
-      ? obj.entityType.trim()
-      : null;
+    typeof obj.entityType === 'string' && obj.entityType.trim() ? obj.entityType.trim() : null;
   const entityId =
-    typeof obj.entityId === "string" && obj.entityId.trim()
-      ? obj.entityId.trim()
-      : null;
+    typeof obj.entityId === 'string' && obj.entityId.trim() ? obj.entityId.trim() : null;
 
-  const createdAtRaw = typeof obj.createdAt === "string" ? obj.createdAt : "";
-  const updatedAtRaw = typeof obj.updatedAt === "string" ? obj.updatedAt : "";
-  const resolvedAtRaw =
-    typeof obj.resolvedAt === "string" ? obj.resolvedAt : null;
+  const createdAtRaw = typeof obj.createdAt === 'string' ? obj.createdAt : '';
+  const updatedAtRaw = typeof obj.updatedAt === 'string' ? obj.updatedAt : '';
+  const resolvedAtRaw = typeof obj.resolvedAt === 'string' ? obj.resolvedAt : null;
 
   const createdAtMs = createdAtRaw ? Date.parse(createdAtRaw) : NaN;
   const updatedAtMs = updatedAtRaw ? Date.parse(updatedAtRaw) : NaN;
@@ -757,7 +681,7 @@ async function readIncidentStore(): Promise<IncidentStoreV1> {
   await ensureDb();
   const stored = await readJsonFile<unknown>(INCIDENTS_KEY, null);
   const defaultStore: IncidentStoreV1 = { version: 1, nextId: 1, items: [] };
-  if (!stored || typeof stored !== "object") return defaultStore;
+  if (!stored || typeof stored !== 'object') return defaultStore;
   const obj = stored as Record<string, unknown>;
   const version = Number(obj.version);
   if (version !== 1) return defaultStore;
@@ -771,13 +695,9 @@ async function readIncidentStore(): Promise<IncidentStoreV1> {
     if (incident.id > maxId) maxId = incident.id;
   }
   const nextIdRaw = Number(obj.nextId);
-  const nextId =
-    Number.isFinite(nextIdRaw) && nextIdRaw > maxId ? nextIdRaw : maxId + 1;
+  const nextId = Number.isFinite(nextIdRaw) && nextIdRaw > maxId ? nextIdRaw : maxId + 1;
   const store: IncidentStoreV1 = { version: 1, nextId, items: normalized };
-  if (
-    JSON.stringify(obj.items ?? null) !== JSON.stringify(normalized) ||
-    obj.nextId !== nextId
-  ) {
+  if (JSON.stringify(obj.items ?? null) !== JSON.stringify(normalized) || obj.nextId !== nextId) {
     await writeJsonFile(INCIDENTS_KEY, store);
   }
   return store;
@@ -789,17 +709,16 @@ async function writeIncidentStore(store: IncidentStoreV1) {
 }
 
 export async function listIncidents(params?: {
-  status?: IncidentStatus | "All" | null;
+  status?: IncidentStatus | 'All' | null;
   limit?: number | null;
 }) {
   const store = await readIncidentStore();
   const limit = Math.min(200, Math.max(1, params?.limit ?? 50));
   let items = store.items.slice();
-  if (params?.status && params.status !== "All") {
+  if (params?.status && params.status !== 'All') {
     items = items.filter((i) => i.status === params.status);
   }
-  const statusRank = (s: IncidentStatus) =>
-    s === "Open" ? 0 : s === "Mitigating" ? 1 : 2;
+  const statusRank = (s: IncidentStatus) => (s === 'Open' ? 0 : s === 'Mitigating' ? 1 : 2);
   items.sort((a, b) => {
     const r = statusRank(a.status) - statusRank(b.status);
     if (r !== 0) return r;
@@ -836,22 +755,20 @@ export async function createIncident(input: {
   const created: Incident = {
     id: store.nextId,
     title,
-    status: input.status ?? "Open",
+    status: input.status ?? 'Open',
     severity: input.severity,
     owner: input.owner?.trim() ? input.owner.trim() : null,
     rootCause: input.rootCause?.trim() ? input.rootCause.trim() : null,
     summary: input.summary?.trim() ? input.summary.trim() : null,
     runbook: input.runbook?.trim() ? input.runbook.trim() : null,
     alertIds: Array.isArray(input.alertIds)
-      ? input.alertIds
-          .map((x) => Number(x))
-          .filter((n) => Number.isFinite(n) && n > 0)
+      ? input.alertIds.map((x) => Number(x)).filter((n) => Number.isFinite(n) && n > 0)
       : [],
     entityType: input.entityType?.trim() ? input.entityType.trim() : null,
     entityId: input.entityId?.trim() ? input.entityId.trim() : null,
     createdAt: now,
     updatedAt: now,
-    resolvedAt: input.status === "Resolved" ? now : null,
+    resolvedAt: input.status === 'Resolved' ? now : null,
   };
 
   const nextStore: IncidentStoreV1 = {
@@ -862,8 +779,8 @@ export async function createIncident(input: {
   await writeIncidentStore(nextStore);
   await appendAuditLog({
     actor: input.actor ?? null,
-    action: "incident_created",
-    entityType: "incident",
+    action: 'incident_created',
+    entityType: 'incident',
     entityId: String(created.id),
     details: created,
   });
@@ -875,16 +792,16 @@ export async function patchIncident(input: {
   patch: Partial<
     Pick<
       Incident,
-      | "title"
-      | "status"
-      | "severity"
-      | "owner"
-      | "rootCause"
-      | "summary"
-      | "runbook"
-      | "alertIds"
-      | "entityType"
-      | "entityId"
+      | 'title'
+      | 'status'
+      | 'severity'
+      | 'owner'
+      | 'rootCause'
+      | 'summary'
+      | 'runbook'
+      | 'alertIds'
+      | 'entityType'
+      | 'entityId'
     >
   >;
   actor?: string | null;
@@ -898,9 +815,7 @@ export async function patchIncident(input: {
   const now = memoryNowIso();
 
   const title =
-    typeof input.patch.title === "string"
-      ? input.patch.title.trim() || prev.title
-      : prev.title;
+    typeof input.patch.title === 'string' ? input.patch.title.trim() || prev.title : prev.title;
   const status = input.patch.status ?? prev.status;
   const severity = input.patch.severity ?? prev.severity;
   const owner =
@@ -932,9 +847,7 @@ export async function patchIncident(input: {
     input.patch.alertIds === undefined
       ? prev.alertIds
       : Array.isArray(input.patch.alertIds)
-        ? input.patch.alertIds
-            .map((x) => Number(x))
-            .filter((n) => Number.isFinite(n) && n > 0)
+        ? input.patch.alertIds.map((x) => Number(x)).filter((n) => Number.isFinite(n) && n > 0)
         : [];
 
   const entityType =
@@ -952,7 +865,7 @@ export async function patchIncident(input: {
         : null;
 
   const resolvedAt =
-    status === "Resolved"
+    status === 'Resolved'
       ? (prev.resolvedAt ?? now)
       : status === prev.status
         ? prev.resolvedAt
@@ -986,8 +899,8 @@ export async function patchIncident(input: {
   await writeIncidentStore(nextStore);
   await appendAuditLog({
     actor: input.actor ?? null,
-    action: "incident_updated",
-    entityType: "incident",
+    action: 'incident_updated',
+    entityType: 'incident',
     entityId: String(next.id),
     details: { before: prev, after: next },
   });
@@ -1008,9 +921,7 @@ function mapAlertRow(row: DbAlertRow): Alert {
     occurrences: Number(row.occurrences),
     firstSeenAt: row.first_seen_at.toISOString(),
     lastSeenAt: row.last_seen_at.toISOString(),
-    acknowledgedAt: row.acknowledged_at
-      ? row.acknowledged_at.toISOString()
-      : null,
+    acknowledgedAt: row.acknowledged_at ? row.acknowledged_at.toISOString() : null,
     resolvedAt: row.resolved_at ? row.resolved_at.toISOString() : null,
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString(),
@@ -1034,7 +945,7 @@ export async function createOrTouchAlert(input: {
     const existing = mem.alerts.get(input.fingerprint);
     if (existing) {
       const next =
-        existing.status === "Resolved"
+        existing.status === 'Resolved'
           ? {
               ...existing,
               severity: input.severity,
@@ -1045,7 +956,7 @@ export async function createOrTouchAlert(input: {
               occurrences: existing.occurrences + 1,
               lastSeenAt: now,
               updatedAt: now,
-              status: "Open" as const,
+              status: 'Open' as const,
               resolvedAt: null,
             }
           : {
@@ -1060,7 +971,7 @@ export async function createOrTouchAlert(input: {
               updatedAt: now,
             };
       mem.alerts.set(input.fingerprint, next);
-      if (next.status === "Open" && existing.status === "Resolved") {
+      if (next.status === 'Open' && existing.status === 'Resolved') {
         notifyAlert(
           {
             title: next.title,
@@ -1081,7 +992,7 @@ export async function createOrTouchAlert(input: {
         message: input.message,
         entityType: input.entityType ?? null,
         entityId: input.entityId ?? null,
-        status: "Open" as const,
+        status: 'Open' as const,
         occurrences: 1,
         firstSeenAt: now,
         lastSeenAt: now,
@@ -1153,7 +1064,7 @@ export async function createOrTouchAlert(input: {
     ],
   );
 
-  if (!existingDb || existingDb.status === "Resolved") {
+  if (!existingDb || existingDb.status === 'Resolved') {
     notifyAlert(
       {
         title: input.title,
@@ -1167,17 +1078,16 @@ export async function createOrTouchAlert(input: {
 }
 
 export async function listAlerts(params: {
-  status?: AlertStatus | "All" | null;
-  severity?: AlertSeverity | "All" | null;
-  type?: string | "All" | null;
+  status?: AlertStatus | 'All' | null;
+  severity?: AlertSeverity | 'All' | null;
+  type?: string | 'All' | null;
   q?: string | null;
   limit?: number | null;
   cursor?: number | null;
   instanceId?: string | null;
 }) {
   await ensureDb();
-  const instanceId =
-    typeof params.instanceId === "string" ? params.instanceId.trim() : "";
+  const instanceId = typeof params.instanceId === 'string' ? params.instanceId.trim() : '';
   if (!hasDatabase()) {
     const mem = getMemoryStore();
     const limit = Math.min(100, Math.max(1, params.limit ?? 30));
@@ -1187,13 +1097,13 @@ export async function listAlerts(params: {
       const marker = `:${instanceId}:`;
       alerts = alerts.filter((a) => a.fingerprint.includes(marker));
     }
-    if (params.status && params.status !== "All") {
+    if (params.status && params.status !== 'All') {
       alerts = alerts.filter((a) => a.status === params.status);
     }
-    if (params.severity && params.severity !== "All") {
+    if (params.severity && params.severity !== 'All') {
       alerts = alerts.filter((a) => a.severity === params.severity);
     }
-    if (params.type && params.type !== "All") {
+    if (params.type && params.type !== 'All') {
       alerts = alerts.filter((a) => a.type === params.type);
     }
     if (params.q?.trim()) {
@@ -1202,18 +1112,15 @@ export async function listAlerts(params: {
         return (
           a.title.toLowerCase().includes(q) ||
           a.message.toLowerCase().includes(q) ||
-          (a.entityId ?? "").toLowerCase().includes(q)
+          (a.entityId ?? '').toLowerCase().includes(q)
         );
       });
     }
     alerts.sort((a, b) => {
-      const statusRank = (s: Alert["status"]) =>
-        s === "Open" ? 0 : s === "Acknowledged" ? 1 : 2;
+      const statusRank = (s: Alert['status']) => (s === 'Open' ? 0 : s === 'Acknowledged' ? 1 : 2);
       const r = statusRank(a.status) - statusRank(b.status);
       if (r !== 0) return r;
-      return (
-        new Date(b.lastSeenAt).getTime() - new Date(a.lastSeenAt).getTime()
-      );
+      return new Date(b.lastSeenAt).getTime() - new Date(a.lastSeenAt).getTime();
     });
     const total = alerts.length;
     const slice = alerts.slice(offset, offset + limit);
@@ -1235,17 +1142,17 @@ export async function listAlerts(params: {
     values.push(`%:${instanceId}:%`);
   }
 
-  if (params.status && params.status !== "All") {
+  if (params.status && params.status !== 'All') {
     conditions.push(`status = $${idx++}`);
     values.push(params.status);
   }
 
-  if (params.severity && params.severity !== "All") {
+  if (params.severity && params.severity !== 'All') {
     conditions.push(`severity = $${idx++}`);
     values.push(params.severity);
   }
 
-  if (params.type && params.type !== "All") {
+  if (params.type && params.type !== 'All') {
     conditions.push(`type = $${idx++}`);
     values.push(params.type);
   }
@@ -1261,12 +1168,8 @@ export async function listAlerts(params: {
     idx++;
   }
 
-  const whereClause =
-    conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
-  const countRes = await query(
-    `SELECT COUNT(*) as total FROM alerts ${whereClause}`,
-    values,
-  );
+  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+  const countRes = await query(`SELECT COUNT(*) as total FROM alerts ${whereClause}`, values);
   const total = Number(countRes.rows[0]?.total || 0);
 
   const res = await query<DbAlertRow>(
@@ -1335,24 +1238,24 @@ export async function updateAlertStatus(input: {
     const found = list.find((a) => a.id === input.id);
     if (!found) return null;
     const updated =
-      input.status === "Acknowledged"
+      input.status === 'Acknowledged'
         ? {
             ...found,
-            status: "Acknowledged" as const,
+            status: 'Acknowledged' as const,
             acknowledgedAt: now,
             resolvedAt: null,
             updatedAt: now,
           }
-        : input.status === "Resolved"
+        : input.status === 'Resolved'
           ? {
               ...found,
-              status: "Resolved" as const,
+              status: 'Resolved' as const,
               resolvedAt: now,
               updatedAt: now,
             }
           : {
               ...found,
-              status: "Open" as const,
+              status: 'Open' as const,
               acknowledgedAt: null,
               resolvedAt: null,
               updatedAt: now,
@@ -1360,8 +1263,8 @@ export async function updateAlertStatus(input: {
     mem.alerts.set(found.fingerprint, updated);
     await appendAuditLog({
       actor: input.actor ?? null,
-      action: "alert_status_updated",
-      entityType: "alert",
+      action: 'alert_status_updated',
+      entityType: 'alert',
       entityId: String(input.id),
       details: { status: input.status },
     });
@@ -1369,11 +1272,11 @@ export async function updateAlertStatus(input: {
   }
   const status = input.status;
   const nowFields =
-    status === "Acknowledged"
-      ? "acknowledged_at = NOW(), resolved_at = NULL"
-      : status === "Resolved"
-        ? "resolved_at = NOW()"
-        : "acknowledged_at = NULL, resolved_at = NULL";
+    status === 'Acknowledged'
+      ? 'acknowledged_at = NOW(), resolved_at = NULL'
+      : status === 'Resolved'
+        ? 'resolved_at = NOW()'
+        : 'acknowledged_at = NULL, resolved_at = NULL';
 
   const res = await query<DbAlertRow>(
     `
@@ -1390,8 +1293,8 @@ export async function updateAlertStatus(input: {
 
   await appendAuditLog({
     actor: input.actor ?? null,
-    action: "alert_status_updated",
-    entityType: "alert",
+    action: 'alert_status_updated',
+    entityType: 'alert',
     entityId: String(input.id),
     details: { status },
   });
@@ -1419,8 +1322,7 @@ export async function appendAuditLog(input: {
       entityId: input.entityId ?? null,
       details: input.details ?? null,
     });
-    if (mem.audit.length > MEMORY_MAX_AUDIT)
-      mem.audit.length = MEMORY_MAX_AUDIT;
+    if (mem.audit.length > MEMORY_MAX_AUDIT) mem.audit.length = MEMORY_MAX_AUDIT;
     return;
   }
   await query(
@@ -1471,26 +1373,19 @@ export async function listAuditLog(params: {
     const entityIdQ = params.entityId?.trim().toLowerCase();
     const q = params.q?.trim().toLowerCase();
 
-    if (actorQ)
-      list = list.filter((e) => (e.actor ?? "").toLowerCase().includes(actorQ));
-    if (actionQ)
-      list = list.filter((e) => e.action.toLowerCase().includes(actionQ));
+    if (actorQ) list = list.filter((e) => (e.actor ?? '').toLowerCase().includes(actorQ));
+    if (actionQ) list = list.filter((e) => e.action.toLowerCase().includes(actionQ));
     if (entityTypeQ)
-      list = list.filter((e) =>
-        (e.entityType ?? "").toLowerCase().includes(entityTypeQ),
-      );
-    if (entityIdQ)
-      list = list.filter((e) =>
-        (e.entityId ?? "").toLowerCase().includes(entityIdQ),
-      );
+      list = list.filter((e) => (e.entityType ?? '').toLowerCase().includes(entityTypeQ));
+    if (entityIdQ) list = list.filter((e) => (e.entityId ?? '').toLowerCase().includes(entityIdQ));
     if (q) {
       list = list.filter((e) => {
-        const details = e.details ? JSON.stringify(e.details) : "";
+        const details = e.details ? JSON.stringify(e.details) : '';
         return (
           e.action.toLowerCase().includes(q) ||
-          (e.actor ?? "").toLowerCase().includes(q) ||
-          (e.entityType ?? "").toLowerCase().includes(q) ||
-          (e.entityId ?? "").toLowerCase().includes(q) ||
+          (e.actor ?? '').toLowerCase().includes(q) ||
+          (e.entityType ?? '').toLowerCase().includes(q) ||
+          (e.entityId ?? '').toLowerCase().includes(q) ||
           details.toLowerCase().includes(q)
         );
       });
@@ -1543,8 +1438,7 @@ export async function listAuditLog(params: {
     idx += 1;
   }
 
-  const whereClause =
-    conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
   const countRes = await query<{ total: string | number }>(
     `SELECT COUNT(*) as total FROM audit_log ${whereClause}`,
@@ -1590,7 +1484,7 @@ export type OpsMetricsSeriesPoint = {
 };
 
 export type OpsSloStatus = {
-  status: "met" | "degraded" | "breached";
+  status: 'met' | 'degraded' | 'breached';
   targets: {
     maxLagBlocks: number;
     maxSyncStalenessMinutes: number;
@@ -1624,34 +1518,18 @@ function getSloTargets() {
     maxLagBlocks: readSloNumber(env.INSIGHT_SLO_MAX_LAG_BLOCKS, 200, {
       min: 0,
     }),
-    maxSyncStalenessMinutes: readSloNumber(
-      env.INSIGHT_SLO_MAX_SYNC_STALENESS_MINUTES,
-      30,
-      { min: 1 },
-    ),
-    maxAlertMttaMinutes: readSloNumber(
-      env.INSIGHT_SLO_MAX_ALERT_MTTA_MINUTES,
-      30,
-      { min: 1 },
-    ),
-    maxAlertMttrMinutes: readSloNumber(
-      env.INSIGHT_SLO_MAX_ALERT_MTTR_MINUTES,
-      240,
-      { min: 1 },
-    ),
-    maxIncidentMttrMinutes: readSloNumber(
-      env.INSIGHT_SLO_MAX_INCIDENT_MTTR_MINUTES,
-      720,
-      { min: 1 },
-    ),
+    maxSyncStalenessMinutes: readSloNumber(env.INSIGHT_SLO_MAX_SYNC_STALENESS_MINUTES, 30, {
+      min: 1,
+    }),
+    maxAlertMttaMinutes: readSloNumber(env.INSIGHT_SLO_MAX_ALERT_MTTA_MINUTES, 30, { min: 1 }),
+    maxAlertMttrMinutes: readSloNumber(env.INSIGHT_SLO_MAX_ALERT_MTTR_MINUTES, 240, { min: 1 }),
+    maxIncidentMttrMinutes: readSloNumber(env.INSIGHT_SLO_MAX_INCIDENT_MTTR_MINUTES, 720, {
+      min: 1,
+    }),
     maxOpenAlerts: readSloNumber(env.INSIGHT_SLO_MAX_OPEN_ALERTS, 50, {
       min: 0,
     }),
-    maxOpenCriticalAlerts: readSloNumber(
-      env.INSIGHT_SLO_MAX_OPEN_CRITICAL_ALERTS,
-      3,
-      { min: 0 },
-    ),
+    maxOpenCriticalAlerts: readSloNumber(env.INSIGHT_SLO_MAX_OPEN_CRITICAL_ALERTS, 3, { min: 0 }),
   };
 }
 
@@ -1677,11 +1555,7 @@ function buildSloStatus(input: {
   const breaches: Array<{ key: string; target: number; actual: number }> = [];
   let missing = 0;
 
-  const check = (
-    key: keyof OpsSloStatus["current"],
-    value: number | null,
-    target: number,
-  ) => {
+  const check = (key: keyof OpsSloStatus['current'], value: number | null, target: number) => {
     if (value === null || !Number.isFinite(value)) {
       missing += 1;
       return;
@@ -1689,36 +1563,15 @@ function buildSloStatus(input: {
     if (value > target) breaches.push({ key, target, actual: value });
   };
 
-  check("lagBlocks", input.lagBlocks, targets.maxLagBlocks);
-  check(
-    "syncStalenessMinutes",
-    input.syncStalenessMinutes,
-    targets.maxSyncStalenessMinutes,
-  );
-  check(
-    "alertMttaMinutes",
-    input.alertMttaMinutes,
-    targets.maxAlertMttaMinutes,
-  );
-  check(
-    "alertMttrMinutes",
-    input.alertMttrMinutes,
-    targets.maxAlertMttrMinutes,
-  );
-  check(
-    "incidentMttrMinutes",
-    input.incidentMttrMinutes,
-    targets.maxIncidentMttrMinutes,
-  );
-  check("openAlerts", input.openAlerts, targets.maxOpenAlerts);
-  check(
-    "openCriticalAlerts",
-    input.openCriticalAlerts,
-    targets.maxOpenCriticalAlerts,
-  );
+  check('lagBlocks', input.lagBlocks, targets.maxLagBlocks);
+  check('syncStalenessMinutes', input.syncStalenessMinutes, targets.maxSyncStalenessMinutes);
+  check('alertMttaMinutes', input.alertMttaMinutes, targets.maxAlertMttaMinutes);
+  check('alertMttrMinutes', input.alertMttrMinutes, targets.maxAlertMttrMinutes);
+  check('incidentMttrMinutes', input.incidentMttrMinutes, targets.maxIncidentMttrMinutes);
+  check('openAlerts', input.openAlerts, targets.maxOpenAlerts);
+  check('openCriticalAlerts', input.openCriticalAlerts, targets.maxOpenCriticalAlerts);
 
-  const status =
-    breaches.length > 0 ? "breached" : missing > 0 ? "degraded" : "met";
+  const status = breaches.length > 0 ? 'breached' : missing > 0 ? 'degraded' : 'met';
 
   return {
     status,
@@ -1728,10 +1581,7 @@ function buildSloStatus(input: {
   };
 }
 
-function safeAvgMs(
-  samples: number[],
-  opts?: { min?: number; max?: number },
-): number | null {
+function safeAvgMs(samples: number[], opts?: { min?: number; max?: number }): number | null {
   if (samples.length === 0) return null;
   const sum = samples.reduce((a, b) => a + b, 0);
   const avg = sum / samples.length;
@@ -1742,18 +1592,13 @@ function safeAvgMs(
   return Math.round(clamped);
 }
 
-async function filterIncidentsByInstanceId(
-  items: Incident[],
-  instanceId: string,
-) {
+async function filterIncidentsByInstanceId(items: Incident[], instanceId: string) {
   if (!instanceId) return items;
   const allIds: number[] = [];
   for (const i of items) allIds.push(...(i.alertIds ?? []));
   const alerts = await getAlertsByIds(allIds);
   const marker = `:${instanceId}:`;
-  const byId = new Set(
-    alerts.filter((a) => a.fingerprint.includes(marker)).map((a) => a.id),
-  );
+  const byId = new Set(alerts.filter((a) => a.fingerprint.includes(marker)).map((a) => a.id));
   return items.filter((i) => {
     const ids = i.alertIds ?? [];
     if (ids.length === 0) return true;
@@ -1770,13 +1615,10 @@ export async function getOpsMetrics(params?: {
   const windowDays = Number.isFinite(windowDaysRaw)
     ? Math.min(90, Math.max(1, Math.round(windowDaysRaw)))
     : 7;
-  const instanceId =
-    typeof params?.instanceId === "string" ? params.instanceId.trim() : "";
+  const instanceId = typeof params?.instanceId === 'string' ? params.instanceId.trim() : '';
   const nowIso = memoryNowIso();
   const cutoffMs = Date.now() - windowDays * 24 * 60 * 60_000;
-  const syncState = instanceId
-    ? await getSyncState(instanceId)
-    : await getSyncState();
+  const syncState = instanceId ? await getSyncState(instanceId) : await getSyncState();
   const lagBlocks =
     syncState.latestBlock === null || syncState.latestBlock === undefined
       ? null
@@ -1785,9 +1627,7 @@ export async function getOpsMetrics(params?: {
             ? syncState.latestBlock - syncState.lastProcessedBlock
             : 0n,
         );
-  const syncStalenessMinutes = minutesSince(
-    syncState.sync?.lastSuccessAt ?? null,
-  );
+  const syncStalenessMinutes = minutesSince(syncState.sync?.lastSuccessAt ?? null);
   const toMinutes = (ms: number | null) =>
     ms !== null && Number.isFinite(ms) ? Math.round(ms / 60_000) : null;
 
@@ -1800,15 +1640,11 @@ export async function getOpsMetrics(params?: {
     const filteredAlerts = instanceId
       ? alerts.filter((a) => a.fingerprint.includes(`:${instanceId}:`))
       : alerts;
-    const open = filteredAlerts.filter((a) => a.status === "Open").length;
-    const acknowledged = filteredAlerts.filter(
-      (a) => a.status === "Acknowledged",
-    ).length;
-    const resolved = filteredAlerts.filter(
-      (a) => a.status === "Resolved",
-    ).length;
+    const open = filteredAlerts.filter((a) => a.status === 'Open').length;
+    const acknowledged = filteredAlerts.filter((a) => a.status === 'Acknowledged').length;
+    const resolved = filteredAlerts.filter((a) => a.status === 'Resolved').length;
     const openCritical = filteredAlerts.filter(
-      (a) => a.status === "Open" && a.severity === "critical",
+      (a) => a.status === 'Open' && a.severity === 'critical',
     ).length;
 
     const mttaSamples: number[] = [];
@@ -1832,19 +1668,13 @@ export async function getOpsMetrics(params?: {
       }
     }
 
-    const allIncidents = await filterIncidents(
-      await listIncidents({ status: "All", limit: 200 }),
-    );
-    const incOpen = allIncidents.filter((i) => i.status === "Open").length;
-    const incMitigating = allIncidents.filter(
-      (i) => i.status === "Mitigating",
-    ).length;
-    const incResolved = allIncidents.filter(
-      (i) => i.status === "Resolved",
-    ).length;
+    const allIncidents = await filterIncidents(await listIncidents({ status: 'All', limit: 200 }));
+    const incOpen = allIncidents.filter((i) => i.status === 'Open').length;
+    const incMitigating = allIncidents.filter((i) => i.status === 'Mitigating').length;
+    const incResolved = allIncidents.filter((i) => i.status === 'Resolved').length;
     const incMttrSamples: number[] = [];
     for (const i of allIncidents) {
-      if (i.status !== "Resolved" || !i.resolvedAt) continue;
+      if (i.status !== 'Resolved' || !i.resolvedAt) continue;
       const resolvedMs = Date.parse(i.resolvedAt);
       const createdMs = Date.parse(i.createdAt);
       if (!Number.isFinite(resolvedMs) || !Number.isFinite(createdMs)) continue;
@@ -1883,7 +1713,7 @@ export async function getOpsMetrics(params?: {
     };
   }
 
-  const alertWhere = instanceId ? "WHERE fingerprint LIKE $1" : "";
+  const alertWhere = instanceId ? 'WHERE fingerprint LIKE $1' : '';
   const alertWhereArgs = instanceId ? [`%:${instanceId}:%`] : [];
 
   const alertStatusRes = await query<{
@@ -1941,19 +1771,13 @@ export async function getOpsMetrics(params?: {
   const mttaMsRaw = Number(mttaRes.rows[0]?.ms ?? NaN);
   const mttrMsRaw = Number(mttrRes.rows[0]?.ms ?? NaN);
 
-  const allIncidents = await filterIncidents(
-    await listIncidents({ status: "All", limit: 200 }),
-  );
-  const incOpen = allIncidents.filter((i) => i.status === "Open").length;
-  const incMitigating = allIncidents.filter(
-    (i) => i.status === "Mitigating",
-  ).length;
-  const incResolved = allIncidents.filter(
-    (i) => i.status === "Resolved",
-  ).length;
+  const allIncidents = await filterIncidents(await listIncidents({ status: 'All', limit: 200 }));
+  const incOpen = allIncidents.filter((i) => i.status === 'Open').length;
+  const incMitigating = allIncidents.filter((i) => i.status === 'Mitigating').length;
+  const incResolved = allIncidents.filter((i) => i.status === 'Resolved').length;
   const incMttrSamples: number[] = [];
   for (const i of allIncidents) {
-    if (i.status !== "Resolved" || !i.resolvedAt) continue;
+    if (i.status !== 'Resolved' || !i.resolvedAt) continue;
     const resolvedMs = Date.parse(i.resolvedAt);
     const createdMs = Date.parse(i.createdAt);
     if (!Number.isFinite(resolvedMs) || !Number.isFinite(createdMs)) continue;
@@ -1965,12 +1789,8 @@ export async function getOpsMetrics(params?: {
   const slo = buildSloStatus({
     lagBlocks,
     syncStalenessMinutes,
-    alertMttaMinutes: toMinutes(
-      Number.isFinite(mttaMsRaw) ? Math.round(mttaMsRaw) : null,
-    ),
-    alertMttrMinutes: toMinutes(
-      Number.isFinite(mttrMsRaw) ? Math.round(mttrMsRaw) : null,
-    ),
+    alertMttaMinutes: toMinutes(Number.isFinite(mttaMsRaw) ? Math.round(mttaMsRaw) : null),
+    alertMttrMinutes: toMinutes(Number.isFinite(mttrMsRaw) ? Math.round(mttrMsRaw) : null),
     incidentMttrMinutes: toMinutes(safeAvgMs(incMttrSamples)),
     openAlerts: open,
     openCriticalAlerts: openCritical,
@@ -2005,16 +1825,11 @@ export async function getOpsMetricsSeries(params?: {
   const seriesDays = Number.isFinite(seriesDaysRaw)
     ? Math.min(90, Math.max(1, Math.round(seriesDaysRaw)))
     : 7;
-  const instanceId =
-    typeof params?.instanceId === "string" ? params.instanceId.trim() : "";
+  const instanceId = typeof params?.instanceId === 'string' ? params.instanceId.trim() : '';
   const cutoffMs = Date.now() - seriesDays * 24 * 60 * 60_000;
   const dayMs = 24 * 60 * 60_000;
   const end = new Date();
-  const endUtc = Date.UTC(
-    end.getUTCFullYear(),
-    end.getUTCMonth(),
-    end.getUTCDate(),
-  );
+  const endUtc = Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate());
   const series: OpsMetricsSeriesPoint[] = [];
   for (let i = seriesDays - 1; i >= 0; i -= 1) {
     const date = new Date(endUtc - i * dayMs).toISOString().slice(0, 10);
@@ -2028,11 +1843,7 @@ export async function getOpsMetricsSeries(params?: {
   }
   const byDate = new Map(series.map((point) => [point.date, point]));
 
-  type NumericField =
-    | "alertsCreated"
-    | "alertsResolved"
-    | "incidentsCreated"
-    | "incidentsResolved";
+  type NumericField = 'alertsCreated' | 'alertsResolved' | 'incidentsCreated' | 'incidentsResolved';
 
   const addPoint = (
     map: Map<string, OpsMetricsSeriesPoint>,
@@ -2056,52 +1867,32 @@ export async function getOpsMetricsSeries(params?: {
     for (const a of filteredAlerts) {
       const created = Date.parse(a.createdAt || a.firstSeenAt);
       if (Number.isFinite(created) && created >= cutoffMs) {
-        addPoint(
-          byDate,
-          new Date(created).toISOString().slice(0, 10),
-          "alertsCreated",
-          1,
-        );
+        addPoint(byDate, new Date(created).toISOString().slice(0, 10), 'alertsCreated', 1);
       }
       const resolved = a.resolvedAt ? Date.parse(a.resolvedAt) : NaN;
       if (Number.isFinite(resolved) && resolved >= cutoffMs) {
-        addPoint(
-          byDate,
-          new Date(resolved).toISOString().slice(0, 10),
-          "alertsResolved",
-          1,
-        );
+        addPoint(byDate, new Date(resolved).toISOString().slice(0, 10), 'alertsResolved', 1);
       }
     }
     const incidents = await filterIncidentsByInstanceId(
-      await listIncidents({ status: "All", limit: 200 }),
+      await listIncidents({ status: 'All', limit: 200 }),
       instanceId,
     );
     for (const i of incidents) {
       const created = Date.parse(i.createdAt);
       if (Number.isFinite(created) && created >= cutoffMs) {
-        addPoint(
-          byDate,
-          new Date(created).toISOString().slice(0, 10),
-          "incidentsCreated",
-          1,
-        );
+        addPoint(byDate, new Date(created).toISOString().slice(0, 10), 'incidentsCreated', 1);
       }
       const resolved = i.resolvedAt ? Date.parse(i.resolvedAt) : NaN;
       if (Number.isFinite(resolved) && resolved >= cutoffMs) {
-        addPoint(
-          byDate,
-          new Date(resolved).toISOString().slice(0, 10),
-          "incidentsResolved",
-          1,
-        );
+        addPoint(byDate, new Date(resolved).toISOString().slice(0, 10), 'incidentsResolved', 1);
       }
     }
     return series;
   }
 
   const cutoffIso = new Date(cutoffMs).toISOString();
-  const alertWhere = instanceId ? "AND fingerprint LIKE $2" : "";
+  const alertWhere = instanceId ? 'AND fingerprint LIKE $2' : '';
   const alertArgs = instanceId ? [cutoffIso, `%:${instanceId}:%`] : [cutoffIso];
 
   const createdRes = await query<{ day: string; count: number | string }>(
@@ -2119,7 +1910,7 @@ export async function getOpsMetricsSeries(params?: {
   for (const row of createdRes.rows) {
     const count = Number(row.count ?? 0);
     if (!Number.isFinite(count)) continue;
-    addPoint(byDate, row.day, "alertsCreated", count);
+    addPoint(byDate, row.day, 'alertsCreated', count);
   }
 
   const resolvedRes = await query<{ day: string; count: number | string }>(
@@ -2137,31 +1928,21 @@ export async function getOpsMetricsSeries(params?: {
   for (const row of resolvedRes.rows) {
     const count = Number(row.count ?? 0);
     if (!Number.isFinite(count)) continue;
-    addPoint(byDate, row.day, "alertsResolved", count);
+    addPoint(byDate, row.day, 'alertsResolved', count);
   }
 
   const incidents = await filterIncidentsByInstanceId(
-    await listIncidents({ status: "All", limit: 200 }),
+    await listIncidents({ status: 'All', limit: 200 }),
     instanceId,
   );
   for (const i of incidents) {
     const created = Date.parse(i.createdAt);
     if (Number.isFinite(created) && created >= cutoffMs) {
-      addPoint(
-        byDate,
-        new Date(created).toISOString().slice(0, 10),
-        "incidentsCreated",
-        1,
-      );
+      addPoint(byDate, new Date(created).toISOString().slice(0, 10), 'incidentsCreated', 1);
     }
     const resolved = i.resolvedAt ? Date.parse(i.resolvedAt) : NaN;
     if (Number.isFinite(resolved) && resolved >= cutoffMs) {
-      addPoint(
-        byDate,
-        new Date(resolved).toISOString().slice(0, 10),
-        "incidentsResolved",
-        1,
-      );
+      addPoint(byDate, new Date(resolved).toISOString().slice(0, 10), 'incidentsResolved', 1);
     }
   }
 

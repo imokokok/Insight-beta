@@ -1,17 +1,17 @@
-import { logger } from "@/lib/logger";
+import { logger } from '@/lib/logger';
 
 export interface AnomalyDetectionConfig {
   threshold: number;
   windowSize: number;
   minDataPoints: number;
-  sensitivity: "low" | "medium" | "high";
+  sensitivity: 'low' | 'medium' | 'high';
   enablePrediction: boolean;
   predictionHorizon: number;
 }
 
 export interface AnomalyResult {
   isAnomaly: boolean;
-  severity: "low" | "medium" | "high" | "critical";
+  severity: 'low' | 'medium' | 'high' | 'critical';
   score: number;
   message: string;
   timestamp: string;
@@ -25,9 +25,9 @@ export interface PredictionResult {
   predictedValue: number;
   confidenceInterval: { lower: number; upper: number };
   predictionTime: string;
-  trend: "increasing" | "decreasing" | "stable" | "volatile";
+  trend: 'increasing' | 'decreasing' | 'stable' | 'volatile';
   trendStrength: number;
-  riskLevel: "low" | "medium" | "high";
+  riskLevel: 'low' | 'medium' | 'high';
   anomaliesExpected: number;
 }
 
@@ -38,14 +38,14 @@ export interface TimeSeriesData {
 }
 
 export type AnomalyType =
-  | "spike"
-  | "drop"
-  | "trend_change"
-  | "seasonality_break"
-  | "volatility_increase"
-  | "correlation_break"
-  | "rate_of_change"
-  | "prediction_deviation";
+  | 'spike'
+  | 'drop'
+  | 'trend_change'
+  | 'seasonality_break'
+  | 'volatility_increase'
+  | 'correlation_break'
+  | 'rate_of_change'
+  | 'prediction_deviation';
 
 export interface MetricProfile {
   metricName: string;
@@ -78,7 +78,7 @@ export class PredictiveAnomalyDetector {
       threshold: config?.threshold || 2.5,
       windowSize: config?.windowSize || 24,
       minDataPoints: config?.minDataPoints || 10,
-      sensitivity: config?.sensitivity || "medium",
+      sensitivity: config?.sensitivity || 'medium',
       enablePrediction: config?.enablePrediction !== false,
       predictionHorizon: config?.predictionHorizon || 6,
     };
@@ -89,7 +89,8 @@ export class PredictiveAnomalyDetector {
       this.history.set(metricName, []);
     }
 
-    const metricHistory = this.history.get(metricName)!;
+    const metricHistory = this.history.get(metricName);
+    if (!metricHistory) return null;
     metricHistory.push(dataPoint);
 
     if (metricHistory.length < this.config.minDataPoints) {
@@ -101,11 +102,7 @@ export class PredictiveAnomalyDetector {
 
     const anomalies: AnomalyResult[] = [];
 
-    const zScoreAnomaly = this.detectZScoreAnomaly(
-      metricName,
-      dataPoint,
-      window,
-    );
+    const zScoreAnomaly = this.detectZScoreAnomaly(metricName, dataPoint, window);
     if (zScoreAnomaly) anomalies.push(zScoreAnomaly);
 
     const spikeAnomaly = this.detectSpike(dataPoint, recentData);
@@ -117,15 +114,12 @@ export class PredictiveAnomalyDetector {
     const volatilityAnomaly = this.detectVolatilityAnomaly(recentData);
     if (volatilityAnomaly) anomalies.push(volatilityAnomaly);
 
-    const rateOfChangeAnomaly = this.detectRateOfChange(
-      dataPoint,
-      metricHistory,
-    );
+    const rateOfChangeAnomaly = this.detectRateOfChange(dataPoint, metricHistory);
     if (rateOfChangeAnomaly) anomalies.push(rateOfChangeAnomaly);
 
     if (anomalies.length > 0) {
       const combined = this.combineAnomalies(anomalies);
-      logger.warn("Anomaly detected", {
+      logger.warn('Anomaly detected', {
         metricName,
         type: combined.type,
         severity: combined.severity,
@@ -160,7 +154,7 @@ export class PredictiveAnomalyDetector {
 
     if (zScore > threshold) {
       const severity = this.calculateSeverity(zScore);
-      const direction = dataPoint.value > mean ? "above" : "below";
+      const direction = dataPoint.value > mean ? 'above' : 'below';
 
       if (mean === 0) {
         return {
@@ -169,10 +163,10 @@ export class PredictiveAnomalyDetector {
           score: Math.min(100, zScore * 10),
           message: `Value is ${dataPoint.value.toFixed(2)}, absolute deviation detected (Z-score: ${zScore.toFixed(2)})`,
           timestamp: dataPoint.timestamp,
-          type: "spike",
+          type: 'spike',
           confidence: this.calculateConfidence(window.length),
           affectedMetrics: [metricName],
-          recommendedActions: this.getRecommendedActions("zscore", severity),
+          recommendedActions: this.getRecommendedActions('zscore', severity),
         };
       }
 
@@ -184,20 +178,17 @@ export class PredictiveAnomalyDetector {
         score: Math.min(100, zScore * 10),
         message: `Value is ${Math.abs(deviationPercent).toFixed(1)}% ${direction} expected range (Z-score: ${zScore.toFixed(2)})`,
         timestamp: dataPoint.timestamp,
-        type: deviationPercent > 0 ? "spike" : "drop",
+        type: deviationPercent > 0 ? 'spike' : 'drop',
         confidence: this.calculateConfidence(window.length),
         affectedMetrics: [metricName],
-        recommendedActions: this.getRecommendedActions("zscore", severity),
+        recommendedActions: this.getRecommendedActions('zscore', severity),
       };
     }
 
     return null;
   }
 
-  private detectSpike(
-    current: TimeSeriesData,
-    recentData: TimeSeriesData[],
-  ): AnomalyResult | null {
+  private detectSpike(current: TimeSeriesData, recentData: TimeSeriesData[]): AnomalyResult | null {
     if (recentData.length < 5) return null;
 
     const values = recentData.slice(0, -1).map((d) => d.value);
@@ -210,32 +201,25 @@ export class PredictiveAnomalyDetector {
     const changePercent = Math.abs((current.value - expected) / expected) * 100;
 
     if (changePercent > 50) {
-      const zScore =
-        stdDev > 0 ? Math.abs(current.value - expected) / stdDev : 0;
+      const zScore = stdDev > 0 ? Math.abs(current.value - expected) / stdDev : 0;
 
       return {
         isAnomaly: true,
-        severity: zScore > 4 ? "critical" : zScore > 3 ? "high" : "medium",
+        severity: zScore > 4 ? 'critical' : zScore > 3 ? 'high' : 'medium',
         score: Math.min(100, changePercent),
-        message: `Sudden ${current.value > expected ? "spike" : "drop"} detected: ${current.value.toFixed(2)} (expected: ${expected.toFixed(2)})`,
+        message: `Sudden ${current.value > expected ? 'spike' : 'drop'} detected: ${current.value.toFixed(2)} (expected: ${expected.toFixed(2)})`,
         timestamp: current.timestamp,
-        type: "spike",
+        type: 'spike',
         confidence: this.calculateConfidence(recentData.length),
         affectedMetrics: [],
-        recommendedActions: this.getRecommendedActions(
-          "spike",
-          zScore > 3 ? "high" : "medium",
-        ),
+        recommendedActions: this.getRecommendedActions('spike', zScore > 3 ? 'high' : 'medium'),
       };
     }
 
     return null;
   }
 
-  private detectTrendAnomaly(
-    metricName: string,
-    data: TimeSeriesData[],
-  ): AnomalyResult | null {
+  private detectTrendAnomaly(metricName: string, data: TimeSeriesData[]): AnomalyResult | null {
     if (data.length < this.config.windowSize) return null;
 
     const window = data.slice(-this.config.windowSize);
@@ -255,21 +239,16 @@ export class PredictiveAnomalyDetector {
 
       return {
         isAnomaly: true,
-        severity:
-          changePercent > 50
-            ? "critical"
-            : changePercent > 30
-              ? "high"
-              : "medium",
+        severity: changePercent > 50 ? 'critical' : changePercent > 30 ? 'high' : 'medium',
         score: Math.min(100, changePercent),
-        message: `Significant trend change: ${changePercent.toFixed(1)}% ${secondMean > firstMean ? "increase" : "decrease"} detected`,
+        message: `Significant trend change: ${changePercent.toFixed(1)}% ${secondMean > firstMean ? 'increase' : 'decrease'} detected`,
         timestamp: latestPoint.timestamp,
-        type: "trend_change",
+        type: 'trend_change',
         confidence: this.calculateConfidence(data.length),
         affectedMetrics: [metricName],
         recommendedActions: this.getRecommendedActions(
-          "trend_change",
-          changePercent > 30 ? "high" : "medium",
+          'trend_change',
+          changePercent > 30 ? 'high' : 'medium',
         ),
       };
     }
@@ -277,9 +256,7 @@ export class PredictiveAnomalyDetector {
     return null;
   }
 
-  private detectVolatilityAnomaly(
-    data: TimeSeriesData[],
-  ): AnomalyResult | null {
+  private detectVolatilityAnomaly(data: TimeSeriesData[]): AnomalyResult | null {
     if (data.length < 10) return null;
 
     const recent = data.slice(-10);
@@ -287,35 +264,27 @@ export class PredictiveAnomalyDetector {
 
     if (older.length < 5) return null;
 
-    const recentVolatility = this.calculateVolatility(
-      recent.map((d) => d.value),
-    );
+    const recentVolatility = this.calculateVolatility(recent.map((d) => d.value));
     const olderVolatility = this.calculateVolatility(older.map((d) => d.value));
 
     if (olderVolatility === 0) return null;
 
-    const volatilityIncrease =
-      (recentVolatility - olderVolatility) / olderVolatility;
+    const volatilityIncrease = (recentVolatility - olderVolatility) / olderVolatility;
 
     if (volatilityIncrease > 1.5) {
       const lastDataPoint = recent[recent.length - 1];
       return {
         isAnomaly: true,
-        severity:
-          volatilityIncrease > 3
-            ? "critical"
-            : volatilityIncrease > 2
-              ? "high"
-              : "medium",
+        severity: volatilityIncrease > 3 ? 'critical' : volatilityIncrease > 2 ? 'high' : 'medium',
         score: Math.min(100, volatilityIncrease * 25),
         message: `Volatility increased by ${(volatilityIncrease * 100).toFixed(0)}% - market may be unstable`,
         timestamp: lastDataPoint?.timestamp || new Date().toISOString(),
-        type: "volatility_increase",
+        type: 'volatility_increase',
         confidence: this.calculateConfidence(data.length),
         affectedMetrics: [],
         recommendedActions: this.getRecommendedActions(
-          "volatility",
-          volatilityIncrease > 2 ? "high" : "medium",
+          'volatility',
+          volatilityIncrease > 2 ? 'high' : 'medium',
         ),
       };
     }
@@ -334,28 +303,21 @@ export class PredictiveAnomalyDetector {
 
     if (previous.value === 0) return null;
 
-    const rateOfChange = Math.abs(
-      (current.value - previous.value) / previous.value,
-    );
+    const rateOfChange = Math.abs((current.value - previous.value) / previous.value);
 
     if (rateOfChange > 0.5) {
       return {
         isAnomaly: true,
-        severity:
-          rateOfChange > 1
-            ? "critical"
-            : rateOfChange > 0.75
-              ? "high"
-              : "medium",
+        severity: rateOfChange > 1 ? 'critical' : rateOfChange > 0.75 ? 'high' : 'medium',
         score: Math.min(100, rateOfChange * 50),
         message: `Rapid change of ${(rateOfChange * 100).toFixed(0)}% detected in single period`,
         timestamp: current.timestamp,
-        type: "rate_of_change",
+        type: 'rate_of_change',
         confidence: this.calculateConfidence(history.length),
         affectedMetrics: [],
         recommendedActions: this.getRecommendedActions(
-          "rate_of_change",
-          rateOfChange > 0.75 ? "high" : "medium",
+          'rate_of_change',
+          rateOfChange > 0.75 ? 'high' : 'medium',
         ),
       };
     }
@@ -367,11 +329,11 @@ export class PredictiveAnomalyDetector {
     if (anomalies.length === 0) {
       return {
         isAnomaly: false,
-        severity: "low",
+        severity: 'low',
         score: 0,
-        message: "No anomalies to combine",
+        message: 'No anomalies to combine',
         timestamp: new Date().toISOString(),
-        type: "spike",
+        type: 'spike',
         confidence: 0,
         affectedMetrics: [],
         recommendedActions: [],
@@ -382,27 +344,23 @@ export class PredictiveAnomalyDetector {
     const maxSeverity = anomalies.reduce((max, a) => {
       const maxSeverityVal = max as AnomalyResult;
       const aSeverityVal = a as AnomalyResult;
-      return severityOrder[aSeverityVal.severity] >
-        severityOrder[maxSeverityVal.severity]
+      return severityOrder[aSeverityVal.severity] > severityOrder[maxSeverityVal.severity]
         ? a
         : max;
     }, anomalies[0] as AnomalyResult);
 
-    const avgScore =
-      anomalies.reduce((sum, a) => sum + a.score, 0) / anomalies.length;
+    const avgScore = anomalies.reduce((sum, a) => sum + a.score, 0) / anomalies.length;
 
     const allActions = anomalies.flatMap((a) => a.recommendedActions);
     const uniqueActions = [...new Set(allActions)].slice(0, 3);
 
-    const affectedMetrics = [
-      ...new Set(anomalies.flatMap((a) => a.affectedMetrics)),
-    ];
+    const affectedMetrics = [...new Set(anomalies.flatMap((a) => a.affectedMetrics))];
 
     return {
       isAnomaly: true,
       severity: maxSeverity.severity,
       score: avgScore,
-      message: `${anomalies.length} anomalies detected: ${anomalies.map((a) => a.type).join(", ")}`,
+      message: `${anomalies.length} anomalies detected: ${anomalies.map((a) => a.type).join(', ')}`,
       timestamp: maxSeverity.timestamp,
       type: maxSeverity.type,
       confidence: Math.min(...anomalies.map((a) => a.confidence)),
@@ -429,24 +387,18 @@ export class PredictiveAnomalyDetector {
     for (let i = 1; i < values.length; i++) {
       const prevValue = values[i - 1];
       const currentValue = values[i];
-      if (
-        prevValue !== undefined &&
-        prevValue !== 0 &&
-        currentValue !== undefined
-      ) {
+      if (prevValue !== undefined && prevValue !== 0 && currentValue !== undefined) {
         returns.push(Math.abs((currentValue - prevValue) / prevValue));
       }
     }
     return this.calculateMean(returns);
   }
 
-  private calculateSeverity(
-    zScore: number,
-  ): "low" | "medium" | "high" | "critical" {
-    if (zScore < 3) return "low";
-    if (zScore < 4) return "medium";
-    if (zScore < 5) return "high";
-    return "critical";
+  private calculateSeverity(zScore: number): 'low' | 'medium' | 'high' | 'critical' {
+    if (zScore < 3) return 'low';
+    if (zScore < 4) return 'medium';
+    if (zScore < 5) return 'high';
+    return 'critical';
   }
 
   private calculateConfidence(dataPoints: number): number {
@@ -456,42 +408,38 @@ export class PredictiveAnomalyDetector {
   private getRecommendedActions(type: string, severity: string): string[] {
     const actionMap: Record<string, string[]> = {
       zscore: [
-        "Review recent data sources",
-        "Check for data pipeline issues",
-        "Verify data collection methods",
+        'Review recent data sources',
+        'Check for data pipeline issues',
+        'Verify data collection methods',
       ],
       spike: [
-        "Investigate spike cause immediately",
-        "Check external data feeds",
-        "Consider pausing automated processes",
+        'Investigate spike cause immediately',
+        'Check external data feeds',
+        'Consider pausing automated processes',
       ],
       trend_change: [
-        "Analyze trend drivers",
-        "Review market conditions",
-        "Update prediction models",
+        'Analyze trend drivers',
+        'Review market conditions',
+        'Update prediction models',
       ],
       volatility: [
-        "Increase monitoring frequency",
-        "Prepare contingency plans",
-        "Alert relevant stakeholders",
+        'Increase monitoring frequency',
+        'Prepare contingency plans',
+        'Alert relevant stakeholders',
       ],
-      rate_of_change: [
-        "Check for data anomalies",
-        "Verify system integrity",
-        "Pause if necessary",
-      ],
+      rate_of_change: ['Check for data anomalies', 'Verify system integrity', 'Pause if necessary'],
     };
 
     // Safe: actionMap is a fixed record with known keys
 
     const actions = actionMap[type] || [
-      "Investigate the anomaly",
-      "Document findings",
-      "Review system logs",
+      'Investigate the anomaly',
+      'Document findings',
+      'Review system logs',
     ];
 
-    if (severity === "critical" || severity === "high") {
-      actions.unshift("URGENT: Immediate investigation required");
+    if (severity === 'critical' || severity === 'high') {
+      actions.unshift('URGENT: Immediate investigation required');
     }
 
     return actions.slice(0, 3);
@@ -533,9 +481,7 @@ export class PredictiveAnomalyDetector {
       hourlyCounts[hour]++;
     });
 
-    return hourlyAverages.map((sum, i) =>
-      hourlyCounts[i] > 0 ? sum / hourlyCounts[i] : 0,
-    );
+    return hourlyAverages.map((sum, i) => (hourlyCounts[i] > 0 ? sum / hourlyCounts[i] : 0));
   }
 
   private calculateTrendCoefficient(data: TimeSeriesData[]): number {
@@ -556,10 +502,7 @@ export class PredictiveAnomalyDetector {
     return denominator !== 0 ? numerator / denominator : 0;
   }
 
-  private generatePrediction(
-    metricName: string,
-    history: TimeSeriesData[],
-  ): void {
+  private generatePrediction(metricName: string, history: TimeSeriesData[]): void {
     if (history.length < this.config.minDataPoints) return;
 
     const profile = this.profiles.get(metricName);
@@ -570,27 +513,24 @@ export class PredictiveAnomalyDetector {
     const mean = this.calculateMean(values);
     const stdDev = this.calculateStdDev(values, mean);
 
-    const predictedValue =
-      mean + profile.trendCoefficient * this.config.predictionHorizon;
-    const uncertainty =
-      stdDev * Math.sqrt(1 + this.config.predictionHorizon / recentData.length);
+    const predictedValue = mean + profile.trendCoefficient * this.config.predictionHorizon;
+    const uncertainty = stdDev * Math.sqrt(1 + this.config.predictionHorizon / recentData.length);
 
     const trend =
       profile.trendCoefficient > 0.01
-        ? "increasing"
+        ? 'increasing'
         : profile.trendCoefficient < -0.01
-          ? "decreasing"
+          ? 'decreasing'
           : Math.abs(profile.volatilityIndex - 0.1) > 0.05
-            ? "volatile"
-            : "stable";
+            ? 'volatile'
+            : 'stable';
 
     const riskLevel =
       Math.abs(profile.trendCoefficient) > 0.1 || profile.volatilityIndex > 0.2
-        ? "high"
-        : Math.abs(profile.trendCoefficient) > 0.05 ||
-            profile.volatilityIndex > 0.1
-          ? "medium"
-          : "low";
+        ? 'high'
+        : Math.abs(profile.trendCoefficient) > 0.05 || profile.volatilityIndex > 0.1
+          ? 'medium'
+          : 'low';
 
     const anomaliesExpected = this.estimateAnomalies(recentData);
 
@@ -621,13 +561,9 @@ export class PredictiveAnomalyDetector {
     // Safe: config.sensitivity is a literal type with known keys
     const threshold = this.SENSITIVITY_MULTIPLIERS[this.config.sensitivity];
 
-    const anomalies = values.filter(
-      (v) => Math.abs(v - mean) / stdDev > threshold,
-    );
+    const anomalies = values.filter((v) => Math.abs(v - mean) / stdDev > threshold);
 
-    return Math.round(
-      (anomalies.length / values.length) * this.config.predictionHorizon,
-    );
+    return Math.round((anomalies.length / values.length) * this.config.predictionHorizon);
   }
 
   getPrediction(metricName: string): PredictionResult | null {
@@ -672,12 +608,12 @@ export function detectOracleAnomaliesAdvanced(
   metricName: string,
   dataPoint: TimeSeriesData,
   type:
-    | "sync_lag"
-    | "dispute_rate"
-    | "error_rate"
-    | "assertion_volume"
-    | "response_time"
-    | "cost_efficiency",
+    | 'sync_lag'
+    | 'dispute_rate'
+    | 'error_rate'
+    | 'assertion_volume'
+    | 'response_time'
+    | 'cost_efficiency',
 ): AnomalyResult | null {
   const detector = getPredictiveDetector();
 
@@ -697,9 +633,7 @@ export function detectOracleAnomaliesAdvanced(
   return result;
 }
 
-export function getOraclePrediction(
-  metricName: string,
-): PredictionResult | null {
+export function getOraclePrediction(metricName: string): PredictionResult | null {
   const detector = getPredictiveDetector();
   return detector.getPrediction(metricName);
 }
@@ -708,10 +642,7 @@ export function calculateSystemHealthScore(
   anomalies: AnomalyResult[],
   prediction: PredictionResult | null,
 ): number {
-  if (
-    anomalies.length === 0 &&
-    (!prediction || prediction.riskLevel === "low")
-  ) {
+  if (anomalies.length === 0 && (!prediction || prediction.riskLevel === 'low')) {
     return 100;
   }
 
@@ -720,9 +651,7 @@ export function calculateSystemHealthScore(
     return sum + severityPenalty[a.severity] * (a.score / 100);
   }, 0);
 
-  const riskPenalty = prediction
-    ? { low: 0, medium: 5, high: 15 }[prediction.riskLevel]
-    : 0;
+  const riskPenalty = prediction ? { low: 0, medium: 5, high: 15 }[prediction.riskLevel] : 0;
 
   const score = Math.max(0, 100 - anomalyPenalty - riskPenalty);
 

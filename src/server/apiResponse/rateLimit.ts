@@ -1,9 +1,9 @@
-import { env } from "@/lib/config/env";
-import { hasDatabase, query } from "@/server/db";
-import { createOrTouchAlert } from "@/server/observability";
-import { ensureSchema } from "@/server/schema";
-import { isIP } from "node:net";
-import { error } from "./response";
+import { env } from '@/lib/config/env';
+import { hasDatabase, query } from '@/server/db';
+import { createOrTouchAlert } from '@/server/observability';
+import { ensureSchema } from '@/server/schema';
+import { isIP } from 'node:net';
+import { error } from './response';
 
 type RateLimitEntry = { count: number; resetAtMs: number };
 
@@ -12,15 +12,11 @@ const globalForRate = globalThis as unknown as {
   insightRateAlerts?: Map<string, number> | undefined;
 };
 
-const insightRate =
-  globalForRate.insightRate ?? new Map<string, RateLimitEntry>();
-if (process.env.NODE_ENV !== "production")
-  globalForRate.insightRate = insightRate;
+const insightRate = globalForRate.insightRate ?? new Map<string, RateLimitEntry>();
+if (process.env.NODE_ENV !== 'production') globalForRate.insightRate = insightRate;
 
-const rateAlertCooldown =
-  globalForRate.insightRateAlerts ?? new Map<string, number>();
-if (process.env.NODE_ENV !== "production")
-  globalForRate.insightRateAlerts = rateAlertCooldown;
+const rateAlertCooldown = globalForRate.insightRateAlerts ?? new Map<string, number>();
+if (process.env.NODE_ENV !== 'production') globalForRate.insightRateAlerts = rateAlertCooldown;
 
 let lastRatePruneAtMs = 0;
 
@@ -33,12 +29,8 @@ async function ensureDb() {
   }
 }
 
-async function maybeAlertRateLimited(input: {
-  key: string;
-  limit: number;
-  windowMs: number;
-}) {
-  if (process.env.NODE_ENV !== "production") return;
+async function maybeAlertRateLimited(input: { key: string; limit: number; windowMs: number }) {
+  if (process.env.NODE_ENV !== 'production') return;
   const now = Date.now();
   const bucket = Math.floor(now / 600_000);
   const fingerprint = `rate_limited:${input.key}:${bucket}`;
@@ -48,39 +40,39 @@ async function maybeAlertRateLimited(input: {
   const windowSeconds = Math.max(1, Math.round(input.windowMs / 1000));
   await createOrTouchAlert({
     fingerprint,
-    type: "rate_limited",
-    severity: "warning",
-    title: "API rate limited",
+    type: 'rate_limited',
+    severity: 'warning',
+    title: 'API rate limited',
     message: `${input.key} exceeded ${input.limit} requests per ${windowSeconds}s`,
-    entityType: "security",
+    entityType: 'security',
     entityId: input.key,
   });
 }
 
 function getClientIp(request: Request) {
   try {
-    const trustMode = (env.INSIGHT_TRUST_PROXY || "").toLowerCase();
-    const trustAny = ["1", "true"].includes(trustMode);
-    const trustCloudflare = trustMode === "cloudflare";
-    if (!trustAny && !trustCloudflare) return "unknown";
+    const trustMode = (env.INSIGHT_TRUST_PROXY || '').toLowerCase();
+    const trustAny = ['1', 'true'].includes(trustMode);
+    const trustCloudflare = trustMode === 'cloudflare';
+    if (!trustAny && !trustCloudflare) return 'unknown';
 
     const normalize = (raw: string | null | undefined) => {
       try {
-        let s = raw?.trim() || "";
+        let s = raw?.trim() || '';
         if (!s) return null;
-        const comma = s.indexOf(",");
+        const comma = s.indexOf(',');
         if (comma >= 0) s = s.slice(0, comma).trim();
-        if (s.toLowerCase().startsWith("for=")) {
+        if (s.toLowerCase().startsWith('for=')) {
           s = s.slice(4).trim();
         }
         if (s.startsWith('"') && s.endsWith('"') && s.length >= 2) {
           s = s.slice(1, -1).trim();
         }
-        if (s.includes(".") && s.includes(":") && !s.includes("::")) {
-          const parts = s.split(":");
+        if (s.includes('.') && s.includes(':') && !s.includes('::')) {
+          const parts = s.split(':');
           if (parts.length === 2) s = parts[0]?.trim() ?? s;
         }
-        if (s.startsWith("[") && s.endsWith("]")) s = s.slice(1, -1).trim();
+        if (s.startsWith('[') && s.endsWith(']')) s = s.slice(1, -1).trim();
         if (!s) return null;
         if (isIP(s) === 0) return null;
         return s;
@@ -90,44 +82,44 @@ function getClientIp(request: Request) {
     };
 
     const forwardedFor = () => {
-      const header = request.headers.get("forwarded");
+      const header = request.headers.get('forwarded');
       if (!header) return null;
-      const first = header.split(",")[0]?.trim() ?? "";
+      const first = header.split(',')[0]?.trim() ?? '';
       if (!first) return null;
-      const parts = first.split(";").map((p) => p.trim());
-      const forPart = parts.find((p) => p.toLowerCase().startsWith("for="));
+      const parts = first.split(';').map((p) => p.trim());
+      const forPart = parts.find((p) => p.toLowerCase().startsWith('for='));
       return normalize(forPart ?? null);
     };
 
-    const cfRay = request.headers.get("cf-ray")?.trim() ?? "";
-    const cf = normalize(request.headers.get("cf-connecting-ip"));
+    const cfRay = request.headers.get('cf-ray')?.trim() ?? '';
+    const cf = normalize(request.headers.get('cf-connecting-ip'));
     if (trustCloudflare) {
       if (cf && cfRay) return cf;
-      return "unknown";
+      return 'unknown';
     }
 
     if (cf) return cf;
-    const vercel = normalize(request.headers.get("x-vercel-forwarded-for"));
+    const vercel = normalize(request.headers.get('x-vercel-forwarded-for'));
     if (vercel) return vercel;
-    const real = normalize(request.headers.get("x-real-ip"));
+    const real = normalize(request.headers.get('x-real-ip'));
     if (real) return real;
-    const fly = normalize(request.headers.get("fly-client-ip"));
+    const fly = normalize(request.headers.get('fly-client-ip'));
     if (fly) return fly;
-    const forwarded = normalize(request.headers.get("x-forwarded-for"));
+    const forwarded = normalize(request.headers.get('x-forwarded-for'));
     if (forwarded) return forwarded;
     const std = forwardedFor();
     if (std) return std;
-    return "unknown";
+    return 'unknown';
   } catch {
-    return "unknown";
+    return 'unknown';
   }
 }
 
 function getClientFallbackId(request: Request) {
-  const ua = request.headers.get("user-agent")?.trim() ?? "";
-  const acceptLang = request.headers.get("accept-language")?.trim() ?? "";
+  const ua = request.headers.get('user-agent')?.trim() ?? '';
+  const acceptLang = request.headers.get('accept-language')?.trim() ?? '';
   const raw = `${ua}|${acceptLang}`;
-  let out = "";
+  let out = '';
   for (let i = 0; i < raw.length; i += 1) {
     const code = raw.charCodeAt(i);
     if (code < 32 || code === 127) continue;
@@ -137,7 +129,7 @@ function getClientFallbackId(request: Request) {
     if (out.length >= 160) break;
   }
   const cleaned = out.trim();
-  return cleaned ? `ua:${cleaned}` : "unknown";
+  return cleaned ? `ua:${cleaned}` : 'unknown';
 }
 
 async function rateLimitDb(
@@ -169,21 +161,20 @@ async function rateLimitDb(
   );
   const row = res.rows[0];
   const count = Number(row?.count ?? 1);
-  const resetAtMs =
-    row?.reset_at instanceof Date ? row.reset_at.getTime() : resetAt.getTime();
+  const resetAtMs = row?.reset_at instanceof Date ? row.reset_at.getTime() : resetAt.getTime();
   if (count > opts.limit) {
     const retryAfterSeconds = Math.max(1, Math.ceil((resetAtMs - now) / 1000));
     const headers = new Headers();
-    headers.set("retry-after", String(retryAfterSeconds));
-    headers.set("x-ratelimit-limit", String(opts.limit));
-    headers.set("x-ratelimit-remaining", "0");
-    headers.set("x-ratelimit-reset", String(resetAtMs));
+    headers.set('retry-after', String(retryAfterSeconds));
+    headers.set('x-ratelimit-limit', String(opts.limit));
+    headers.set('x-ratelimit-remaining', '0');
+    headers.set('x-ratelimit-reset', String(resetAtMs));
     await maybeAlertRateLimited({
       key: opts.key,
       limit: opts.limit,
       windowMs: opts.windowMs,
     });
-    return error({ code: "rate_limited" }, 429, { headers });
+    return error({ code: 'rate_limited' }, 429, { headers });
   }
   return null;
 }
@@ -193,7 +184,7 @@ async function rateLimitKv(
   clientId: string,
   now: number,
 ) {
-  if (!hasDatabase()) throw new Error("missing_database_url");
+  if (!hasDatabase()) throw new Error('missing_database_url');
   const resetAtMs = now + opts.windowMs;
   const bucketKey = `rate_limit/v1/${opts.key}:${clientId}`;
   if (now - lastRatePruneAtMs > 5 * 60_000) {
@@ -244,16 +235,16 @@ async function rateLimitKv(
   if (count > opts.limit) {
     const retryAfterSeconds = Math.max(1, Math.ceil((resetMs - now) / 1000));
     const headers = new Headers();
-    headers.set("retry-after", String(retryAfterSeconds));
-    headers.set("x-ratelimit-limit", String(opts.limit));
-    headers.set("x-ratelimit-remaining", "0");
-    headers.set("x-ratelimit-reset", String(resetMs));
+    headers.set('retry-after', String(retryAfterSeconds));
+    headers.set('x-ratelimit-limit', String(opts.limit));
+    headers.set('x-ratelimit-remaining', '0');
+    headers.set('x-ratelimit-reset', String(resetMs));
     await maybeAlertRateLimited({
       key: opts.key,
       limit: opts.limit,
       windowMs: opts.windowMs,
     });
-    return error({ code: "rate_limited" }, 429, { headers });
+    return error({ code: 'rate_limited' }, 429, { headers });
   }
   return null;
 }
@@ -263,15 +254,14 @@ export async function rateLimit(
   opts: { key: string; limit: number; windowMs: number },
 ) {
   const ip = getClientIp(request);
-  const clientId = ip === "unknown" ? getClientFallbackId(request) : ip;
+  const clientId = ip === 'unknown' ? getClientFallbackId(request) : ip;
   const now = Date.now();
-  const store = (env.INSIGHT_RATE_LIMIT_STORE || "auto").toLowerCase();
+  const store = (env.INSIGHT_RATE_LIMIT_STORE || 'auto').toLowerCase();
 
-  const wantMemory = store === "memory";
-  const wantDb = store === "db";
-  const wantKv = store === "kv" || store === "redis";
-  const wantAuto =
-    store === "auto" || store === "" || (!wantMemory && !wantDb && !wantKv);
+  const wantMemory = store === 'memory';
+  const wantDb = store === 'db';
+  const wantKv = store === 'kv' || store === 'redis';
+  const wantAuto = store === 'auto' || store === '' || (!wantMemory && !wantDb && !wantKv);
 
   if (hasDatabase() && (wantDb || wantKv || wantAuto)) {
     try {
@@ -282,18 +272,18 @@ export async function rateLimit(
   }
 
   if (!wantMemory && hasDatabase()) {
-    const primary = wantKv ? "kv" : "db";
+    const primary = wantKv ? 'kv' : 'db';
     const order =
       wantAuto || wantDb || wantKv
-        ? primary === "kv"
-          ? (["kv", "db"] as const)
-          : (["db", "kv"] as const)
+        ? primary === 'kv'
+          ? (['kv', 'db'] as const)
+          : (['db', 'kv'] as const)
         : ([] as const);
 
     for (const mode of order) {
       try {
         const limited =
-          mode === "kv"
+          mode === 'kv'
             ? await rateLimitKv(opts, clientId, now)
             : await rateLimitDb(opts, clientId, now);
         if (limited) return limited;
@@ -315,10 +305,7 @@ export async function rateLimit(
       insightRate.delete(k);
     }
     if (insightRate.size > 5000) {
-      const excessKeys = Array.from(insightRate.keys()).slice(
-        0,
-        insightRate.size - 4000,
-      );
+      const excessKeys = Array.from(insightRate.keys()).slice(0, insightRate.size - 4000);
       for (const k of excessKeys) {
         insightRate.delete(k);
       }
@@ -331,21 +318,18 @@ export async function rateLimit(
     return null;
   }
   if (existing.count >= opts.limit) {
-    const retryAfterSeconds = Math.max(
-      1,
-      Math.ceil((existing.resetAtMs - now) / 1000),
-    );
+    const retryAfterSeconds = Math.max(1, Math.ceil((existing.resetAtMs - now) / 1000));
     const headers = new Headers();
-    headers.set("retry-after", String(retryAfterSeconds));
-    headers.set("x-ratelimit-limit", String(opts.limit));
-    headers.set("x-ratelimit-remaining", "0");
-    headers.set("x-ratelimit-reset", String(existing.resetAtMs));
+    headers.set('retry-after', String(retryAfterSeconds));
+    headers.set('x-ratelimit-limit', String(opts.limit));
+    headers.set('x-ratelimit-remaining', '0');
+    headers.set('x-ratelimit-reset', String(existing.resetAtMs));
     await maybeAlertRateLimited({
       key: opts.key,
       limit: opts.limit,
       windowMs: opts.windowMs,
     });
-    return error({ code: "rate_limited" }, 429, { headers });
+    return error({ code: 'rate_limited' }, 429, { headers });
   }
   existing.count += 1;
   insightRate.set(bucketKey, existing);

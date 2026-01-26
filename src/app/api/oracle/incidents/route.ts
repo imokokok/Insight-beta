@@ -6,25 +6,21 @@ import {
   invalidateCachedJson,
   rateLimit,
   requireAdmin,
-} from "@/server/apiResponse";
-import {
-  createIncident,
-  getAlertsByIds,
-  listIncidents,
-} from "@/server/observability";
-import { z } from "zod";
-import type { Alert } from "@/server/observability";
+} from '@/server/apiResponse';
+import { createIncident, getAlertsByIds, listIncidents } from '@/server/observability';
+import { z } from 'zod';
+import type { Alert } from '@/server/observability';
 
 const querySchema = z.object({
-  status: z.enum(["Open", "Mitigating", "Resolved"]).optional().nullable(),
+  status: z.enum(['Open', 'Mitigating', 'Resolved']).optional().nullable(),
   limit: z.coerce.number().min(1).max(200).optional().nullable(),
-  includeAlerts: z.enum(["0", "1"]).optional(),
+  includeAlerts: z.enum(['0', '1']).optional(),
 });
 
 const createSchema = z.object({
   title: z.string().trim().min(1).max(200),
-  severity: z.enum(["info", "warning", "critical"]),
-  status: z.enum(["Open", "Mitigating", "Resolved"]).optional(),
+  severity: z.enum(['info', 'warning', 'critical']),
+  status: z.enum(['Open', 'Mitigating', 'Resolved']).optional(),
   owner: z.string().trim().max(80).optional().nullable(),
   rootCause: z.string().trim().max(120).optional().nullable(),
   summary: z.string().trim().max(5000).optional().nullable(),
@@ -37,7 +33,7 @@ const createSchema = z.object({
 export async function GET(request: Request) {
   return handleApi(request, async () => {
     const limited = await rateLimit(request, {
-      key: "incidents_get",
+      key: 'incidents_get',
       limit: 240,
       windowMs: 60_000,
     });
@@ -45,11 +41,11 @@ export async function GET(request: Request) {
 
     const url = new URL(request.url);
     const q = querySchema.parse(Object.fromEntries(url.searchParams));
-    const instanceId = url.searchParams.get("instanceId")?.trim() || null;
+    const instanceId = url.searchParams.get('instanceId')?.trim() || null;
     const cacheKey = `oracle_api:${url.pathname}${url.search}`;
     return await cachedJson(cacheKey, 5_000, async () => {
       let items = await listIncidents({
-        status: q.status ?? "All",
+        status: q.status ?? 'All',
         limit: q.limit ?? 50,
       });
       const toSummary = (a: Alert) => ({
@@ -86,7 +82,7 @@ export async function GET(request: Request) {
         });
       }
 
-      if (q.includeAlerts === "1") {
+      if (q.includeAlerts === '1') {
         if (!byId) {
           const allIds: number[] = [];
           for (const i of items) allIds.push(...(i.alertIds ?? []));
@@ -114,7 +110,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   return handleApi(request, async () => {
     const limited = await rateLimit(request, {
-      key: "incidents_post",
+      key: 'incidents_post',
       limit: 60,
       windowMs: 60_000,
     });
@@ -122,18 +118,18 @@ export async function POST(request: Request) {
 
     const auth = await requireAdmin(request, {
       strict: true,
-      scope: "alerts_update",
+      scope: 'alerts_update',
     });
     if (auth) return auth;
 
     const bodyRaw = await request.json().catch(() => null);
     const parsed = createSchema.safeParse(bodyRaw);
-    if (!parsed.success) return error({ code: "invalid_request_body" }, 400);
+    if (!parsed.success) return error({ code: 'invalid_request_body' }, 400);
 
     const actor = getAdminActor(request);
     const created = await createIncident({ ...parsed.data, actor });
-    if (!created) return error({ code: "invalid_request_body" }, 400);
-    await invalidateCachedJson("oracle_api:/api/oracle/incidents");
+    if (!created) return error({ code: 'invalid_request_body' }, 400);
+    await invalidateCachedJson('oracle_api:/api/oracle/incidents');
     return { ok: true, incident: created };
   });
 }

@@ -1,47 +1,47 @@
 export type AuditAction =
-  | "user.login"
-  | "user.logout"
-  | "user.create"
-  | "user.update"
-  | "user.delete"
-  | "user.role_change"
-  | "assertion.create"
-  | "assertion.view"
-  | "assertion.update"
-  | "assertion.delete"
-  | "dispute.create"
-  | "dispute.vote"
-  | "dispute.resolve"
-  | "dispute.settle"
-  | "alert.create"
-  | "alert.resolve"
-  | "alert.acknowledge"
-  | "settings.update"
-  | "api_key.create"
-  | "api_key.revoke"
-  | "webhook.create"
-  | "webhook.update"
-  | "webhook.delete"
-  | "export.data"
-  | "admin.action"
-  | "system.backup"
-  | "system.restore"
-  | "security.mfa_enable"
-  | "security.mfa_disable"
-  | "security.password_change";
+  | 'user.login'
+  | 'user.logout'
+  | 'user.create'
+  | 'user.update'
+  | 'user.delete'
+  | 'user.role_change'
+  | 'assertion.create'
+  | 'assertion.view'
+  | 'assertion.update'
+  | 'assertion.delete'
+  | 'dispute.create'
+  | 'dispute.vote'
+  | 'dispute.resolve'
+  | 'dispute.settle'
+  | 'alert.create'
+  | 'alert.resolve'
+  | 'alert.acknowledge'
+  | 'settings.update'
+  | 'api_key.create'
+  | 'api_key.revoke'
+  | 'webhook.create'
+  | 'webhook.update'
+  | 'webhook.delete'
+  | 'export.data'
+  | 'admin.action'
+  | 'system.backup'
+  | 'system.restore'
+  | 'security.mfa_enable'
+  | 'security.mfa_disable'
+  | 'security.password_change';
 
-export type AuditSeverity = "info" | "warning" | "critical" | "security";
+export type AuditSeverity = 'info' | 'warning' | 'critical' | 'security';
 
 export type AuditEntityType =
-  | "user"
-  | "assertion"
-  | "dispute"
-  | "alert"
-  | "settings"
-  | "api_key"
-  | "webhook"
-  | "system"
-  | "security";
+  | 'user'
+  | 'assertion'
+  | 'dispute'
+  | 'alert'
+  | 'settings'
+  | 'api_key'
+  | 'webhook'
+  | 'system'
+  | 'security';
 
 export interface AuditLogEntry {
   id: string;
@@ -50,7 +50,7 @@ export interface AuditLogEntry {
   entityType: AuditEntityType;
   entityId: string;
   actorId: string;
-  actorType: "user" | "system" | "api" | "admin";
+  actorType: 'user' | 'system' | 'api' | 'admin';
   actorAddress?: string;
   severity: AuditSeverity;
   description: string;
@@ -113,7 +113,7 @@ export interface AuditReport {
     }>;
   };
   recommendations: string[];
-  exportFormat: "json" | "csv" | "pdf";
+  exportFormat: 'json' | 'csv' | 'pdf';
 }
 
 export class EnhancedAuditLogger {
@@ -123,72 +123,72 @@ export class EnhancedAuditLogger {
   private readonly RETENTION_DAYS = 365;
 
   private readonly ACTION_LABELS: Record<AuditAction, string> = {
-    "user.login": "User Login",
-    "user.logout": "User Logout",
-    "user.create": "User Created",
-    "user.update": "User Updated",
-    "user.delete": "User Deleted",
-    "user.role_change": "User Role Changed",
-    "assertion.create": "Assertion Created",
-    "assertion.view": "Assertion Viewed",
-    "assertion.update": "Assertion Updated",
-    "assertion.delete": "Assertion Deleted",
-    "dispute.create": "Dispute Created",
-    "dispute.vote": "Vote Cast",
-    "dispute.resolve": "Dispute Resolved",
-    "dispute.settle": "Dispute Settled",
-    "alert.create": "Alert Created",
-    "alert.resolve": "Alert Resolved",
-    "alert.acknowledge": "Alert Acknowledged",
-    "settings.update": "Settings Updated",
-    "api_key.create": "API Key Created",
-    "api_key.revoke": "API Key Revoked",
-    "webhook.create": "Webhook Created",
-    "webhook.update": "Webhook Updated",
-    "webhook.delete": "Webhook Deleted",
-    "export.data": "Data Exported",
-    "admin.action": "Admin Action",
-    "system.backup": "System Backup",
-    "system.restore": "System Restore",
-    "security.mfa_enable": "MFA Enabled",
-    "security.mfa_disable": "MFA Disabled",
-    "security.password_change": "Password Changed",
+    'user.login': 'User Login',
+    'user.logout': 'User Logout',
+    'user.create': 'User Created',
+    'user.update': 'User Updated',
+    'user.delete': 'User Deleted',
+    'user.role_change': 'User Role Changed',
+    'assertion.create': 'Assertion Created',
+    'assertion.view': 'Assertion Viewed',
+    'assertion.update': 'Assertion Updated',
+    'assertion.delete': 'Assertion Deleted',
+    'dispute.create': 'Dispute Created',
+    'dispute.vote': 'Vote Cast',
+    'dispute.resolve': 'Dispute Resolved',
+    'dispute.settle': 'Dispute Settled',
+    'alert.create': 'Alert Created',
+    'alert.resolve': 'Alert Resolved',
+    'alert.acknowledge': 'Alert Acknowledged',
+    'settings.update': 'Settings Updated',
+    'api_key.create': 'API Key Created',
+    'api_key.revoke': 'API Key Revoked',
+    'webhook.create': 'Webhook Created',
+    'webhook.update': 'Webhook Updated',
+    'webhook.delete': 'Webhook Deleted',
+    'export.data': 'Data Exported',
+    'admin.action': 'Admin Action',
+    'system.backup': 'System Backup',
+    'system.restore': 'System Restore',
+    'security.mfa_enable': 'MFA Enabled',
+    'security.mfa_disable': 'MFA Disabled',
+    'security.password_change': 'Password Changed',
   };
 
   private readonly ACTION_CATEGORIES: Record<AuditAction, string> = {
-    "user.login": "Authentication",
-    "user.logout": "Authentication",
-    "user.create": "User Management",
-    "user.update": "User Management",
-    "user.delete": "User Management",
-    "user.role_change": "User Management",
-    "assertion.create": "Oracle Operations",
-    "assertion.view": "Oracle Operations",
-    "assertion.update": "Oracle Operations",
-    "assertion.delete": "Oracle Operations",
-    "dispute.create": "Dispute Resolution",
-    "dispute.vote": "Dispute Resolution",
-    "dispute.resolve": "Dispute Resolution",
-    "dispute.settle": "Dispute Resolution",
-    "alert.create": "Alerting",
-    "alert.resolve": "Alerting",
-    "alert.acknowledge": "Alerting",
-    "settings.update": "Configuration",
-    "api_key.create": "API Management",
-    "api_key.revoke": "API Management",
-    "webhook.create": "Integration",
-    "webhook.update": "Integration",
-    "webhook.delete": "Integration",
-    "export.data": "Data Operations",
-    "admin.action": "Administration",
-    "system.backup": "System Operations",
-    "system.restore": "System Operations",
-    "security.mfa_enable": "Security",
-    "security.mfa_disable": "Security",
-    "security.password_change": "Security",
+    'user.login': 'Authentication',
+    'user.logout': 'Authentication',
+    'user.create': 'User Management',
+    'user.update': 'User Management',
+    'user.delete': 'User Management',
+    'user.role_change': 'User Management',
+    'assertion.create': 'Oracle Operations',
+    'assertion.view': 'Oracle Operations',
+    'assertion.update': 'Oracle Operations',
+    'assertion.delete': 'Oracle Operations',
+    'dispute.create': 'Dispute Resolution',
+    'dispute.vote': 'Dispute Resolution',
+    'dispute.resolve': 'Dispute Resolution',
+    'dispute.settle': 'Dispute Resolution',
+    'alert.create': 'Alerting',
+    'alert.resolve': 'Alerting',
+    'alert.acknowledge': 'Alerting',
+    'settings.update': 'Configuration',
+    'api_key.create': 'API Management',
+    'api_key.revoke': 'API Management',
+    'webhook.create': 'Integration',
+    'webhook.update': 'Integration',
+    'webhook.delete': 'Integration',
+    'export.data': 'Data Operations',
+    'admin.action': 'Administration',
+    'system.backup': 'System Operations',
+    'system.restore': 'System Operations',
+    'security.mfa_enable': 'Security',
+    'security.mfa_disable': 'Security',
+    'security.password_change': 'Security',
   };
 
-  log(entry: Omit<AuditLogEntry, "id" | "timestamp">): AuditLogEntry {
+  log(entry: Omit<AuditLogEntry, 'id' | 'timestamp'>): AuditLogEntry {
     const fullEntry: AuditLogEntry = {
       ...entry,
       id: this.generateId(),
@@ -213,13 +213,13 @@ export class EnhancedAuditLogger {
     userAgent?: string,
   ): AuditLogEntry {
     return this.log({
-      action: success ? "user.login" : "user.login",
-      entityType: "user",
+      action: success ? 'user.login' : 'user.login',
+      entityType: 'user',
       entityId: userId,
       actorId: userId,
-      actorType: "user",
+      actorType: 'user',
       actorAddress: address,
-      severity: success ? "info" : "warning",
+      severity: success ? 'info' : 'warning',
       description: success
         ? `User ${address.slice(0, 6)}...${address.slice(-4)} logged in successfully`
         : `Failed login attempt for ${address.slice(0, 6)}...${address.slice(-4)}`,
@@ -227,31 +227,31 @@ export class EnhancedAuditLogger {
       ipAddress,
       userAgent,
       success,
-      errorMessage: success ? undefined : "Invalid credentials",
+      errorMessage: success ? undefined : 'Invalid credentials',
     });
   }
 
   logDisputeAction(
-    action: "create" | "vote" | "resolve" | "settle",
+    action: 'create' | 'vote' | 'resolve' | 'settle',
     userId: string,
     disputeId: string,
     details: Record<string, unknown>,
     success: boolean,
   ): AuditLogEntry {
     const actionMap: Record<string, AuditAction> = {
-      create: "dispute.create",
-      vote: "dispute.vote",
-      resolve: "dispute.resolve",
-      settle: "dispute.settle",
+      create: 'dispute.create',
+      vote: 'dispute.vote',
+      resolve: 'dispute.resolve',
+      settle: 'dispute.settle',
     };
 
     return this.log({
-      action: actionMap[action] ?? "dispute.create",
-      entityType: "dispute",
+      action: actionMap[action] ?? 'dispute.create',
+      entityType: 'dispute',
       entityId: disputeId,
       actorId: userId,
-      actorType: "user",
-      severity: "info",
+      actorType: 'user',
+      severity: 'info',
       description: `Dispute ${action}: ${disputeId.slice(0, 8)}...`,
       metadata: details,
       success,
@@ -259,24 +259,24 @@ export class EnhancedAuditLogger {
   }
 
   logAlertAction(
-    action: "create" | "resolve" | "acknowledge",
+    action: 'create' | 'resolve' | 'acknowledge',
     userId: string,
     alertId: string,
     alertType: string,
     severity: AuditSeverity,
   ): AuditLogEntry {
     const actionMap: Record<string, AuditAction> = {
-      create: "alert.create",
-      resolve: "alert.resolve",
-      acknowledge: "alert.acknowledge",
+      create: 'alert.create',
+      resolve: 'alert.resolve',
+      acknowledge: 'alert.acknowledge',
     };
 
     return this.log({
-      action: actionMap[action] ?? "alert.create",
-      entityType: "alert",
+      action: actionMap[action] ?? 'alert.create',
+      entityType: 'alert',
       entityId: alertId,
       actorId: userId,
-      actorType: "user",
+      actorType: 'user',
       severity,
       description: `Alert ${action}: ${alertType}`,
       metadata: { alertType },
@@ -291,12 +291,12 @@ export class EnhancedAuditLogger {
     newValue: unknown,
   ): AuditLogEntry {
     return this.log({
-      action: "settings.update",
-      entityType: "settings",
+      action: 'settings.update',
+      entityType: 'settings',
       entityId: settingKey,
       actorId: userId,
-      actorType: "user",
-      severity: "info",
+      actorType: 'user',
+      severity: 'info',
       description: `Settings updated: ${settingKey}`,
       oldValue: oldValue as Record<string, unknown>,
       newValue: newValue as Record<string, unknown>,
@@ -306,24 +306,24 @@ export class EnhancedAuditLogger {
   }
 
   logSecurityEvent(
-    eventType: "mfa_enable" | "mfa_disable" | "password_change",
+    eventType: 'mfa_enable' | 'mfa_disable' | 'password_change',
     userId: string,
     details: Record<string, unknown>,
   ): AuditLogEntry {
     const actionMap: Record<string, AuditAction> = {
-      mfa_enable: "security.mfa_enable",
-      mfa_disable: "security.mfa_disable",
-      password_change: "security.password_change",
+      mfa_enable: 'security.mfa_enable',
+      mfa_disable: 'security.mfa_disable',
+      password_change: 'security.password_change',
     };
 
     return this.log({
-      action: actionMap[eventType] ?? "security.mfa_enable",
-      entityType: "security",
+      action: actionMap[eventType] ?? 'security.mfa_enable',
+      entityType: 'security',
       entityId: userId,
       actorId: userId,
-      actorType: "user",
-      severity: "security",
-      description: `Security event: ${eventType.replace("_", " ")}`,
+      actorType: 'user',
+      severity: 'security',
+      description: `Security event: ${eventType.replace('_', ' ')}`,
       metadata: details,
       success: true,
     });
@@ -335,8 +335,7 @@ export class EnhancedAuditLogger {
 
   getAllLogs(): AuditLogEntry[] {
     return Array.from(this.logs.values()).sort(
-      (a, b) =>
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
     );
   }
 
@@ -353,24 +352,26 @@ export class EnhancedAuditLogger {
       logs = logs.filter((l) => new Date(l.timestamp).getTime() <= end);
     }
 
-    if (filter.actions && filter.actions.length > 0) {
-      logs = logs.filter((l) => filter.actions!.includes(l.action));
+    const { actions, entityTypes, actorIds, severities, entityIds } = filter;
+
+    if (actions && actions.length > 0) {
+      logs = logs.filter((l) => actions.includes(l.action));
     }
 
-    if (filter.entityTypes && filter.entityTypes.length > 0) {
-      logs = logs.filter((l) => filter.entityTypes!.includes(l.entityType));
+    if (entityTypes && entityTypes.length > 0) {
+      logs = logs.filter((l) => entityTypes.includes(l.entityType));
     }
 
-    if (filter.actorIds && filter.actorIds.length > 0) {
-      logs = logs.filter((l) => filter.actorIds!.includes(l.actorId));
+    if (actorIds && actorIds.length > 0) {
+      logs = logs.filter((l) => actorIds.includes(l.actorId));
     }
 
-    if (filter.severities && filter.severities.length > 0) {
-      logs = logs.filter((l) => filter.severities!.includes(l.severity));
+    if (severities && severities.length > 0) {
+      logs = logs.filter((l) => severities.includes(l.severity));
     }
 
-    if (filter.entityIds && filter.entityIds.length > 0) {
-      logs = logs.filter((l) => filter.entityIds!.includes(l.entityId));
+    if (entityIds && entityIds.length > 0) {
+      logs = logs.filter((l) => entityIds.includes(l.entityId));
     }
 
     if (filter.success !== undefined) {
@@ -393,29 +394,21 @@ export class EnhancedAuditLogger {
   getStats(filter?: AuditFilter): AuditStats {
     const logs = filter ? this.filterLogs(filter) : this.getAllLogs();
 
-    const entriesByAction: Record<AuditAction, number> = {} as Record<
-      AuditAction,
-      number
-    >;
+    const entriesByAction: Record<AuditAction, number> = {} as Record<AuditAction, number>;
     const entriesByEntityType: Record<AuditEntityType, number> = {} as Record<
       AuditEntityType,
       number
     >;
-    const entriesBySeverity: Record<AuditSeverity, number> = {} as Record<
-      AuditSeverity,
-      number
-    >;
+    const entriesBySeverity: Record<AuditSeverity, number> = {} as Record<AuditSeverity, number>;
     const entriesByHour: Record<string, number> = {};
     const actorCounts: Map<string, number> = new Map();
 
     logs.forEach((log) => {
       entriesByAction[log.action] = (entriesByAction[log.action] || 0) + 1;
-      entriesByEntityType[log.entityType] =
-        (entriesByEntityType[log.entityType] || 0) + 1;
-      entriesBySeverity[log.severity] =
-        (entriesBySeverity[log.severity] || 0) + 1;
+      entriesByEntityType[log.entityType] = (entriesByEntityType[log.entityType] || 0) + 1;
+      entriesBySeverity[log.severity] = (entriesBySeverity[log.severity] || 0) + 1;
 
-      const hour = log.timestamp.substring(0, 13) + ":00";
+      const hour = log.timestamp.substring(0, 13) + ':00';
       entriesByHour[hour] = (entriesByHour[hour] || 0) + 1;
 
       actorCounts.set(log.actorId, (actorCounts.get(log.actorId) || 0) + 1);
@@ -427,7 +420,7 @@ export class EnhancedAuditLogger {
       .map(([actorId, count]) => ({ actorId, count }));
 
     const recentSecurityEvents = logs
-      .filter((l) => l.severity === "security" || l.severity === "critical")
+      .filter((l) => l.severity === 'security' || l.severity === 'critical')
       .slice(0, 20);
 
     const now = new Date();
@@ -436,15 +429,12 @@ export class EnhancedAuditLogger {
 
     const todayLogs = logs.filter((l) => new Date(l.timestamp) >= oneDayAgo);
     const yesterdayLogs = logs.filter(
-      (l) =>
-        new Date(l.timestamp) >= twoDaysAgo &&
-        new Date(l.timestamp) < oneDayAgo,
+      (l) => new Date(l.timestamp) >= twoDaysAgo && new Date(l.timestamp) < oneDayAgo,
     );
 
     const activityTrend =
       yesterdayLogs.length > 0
-        ? ((todayLogs.length - yesterdayLogs.length) / yesterdayLogs.length) *
-          100
+        ? ((todayLogs.length - yesterdayLogs.length) / yesterdayLogs.length) * 100
         : 0;
 
     return {
@@ -463,7 +453,7 @@ export class EnhancedAuditLogger {
     name: string,
     startDate: string,
     endDate: string,
-    exportFormat: "json" | "csv" | "pdf" = "json",
+    exportFormat: 'json' | 'csv' | 'pdf' = 'json',
   ): AuditReport {
     const filter: AuditFilter = {
       startDate,
@@ -473,25 +463,16 @@ export class EnhancedAuditLogger {
     const logs = this.filterLogs(filter);
     const stats = this.getStats(filter);
 
-    const failedLogins = logs.filter(
-      (l) => l.action === "user.login" && !l.success,
-    ).length;
+    const failedLogins = logs.filter((l) => l.action === 'user.login' && !l.success).length;
 
-    const permissionChanges = logs.filter(
-      (l) => l.action === "user.role_change",
-    ).length;
+    const permissionChanges = logs.filter((l) => l.action === 'user.role_change').length;
 
     const sensitiveOperations = logs.filter((l) =>
-      [
-        "system.backup",
-        "system.restore",
-        "api_key.revoke",
-        "webhook.delete",
-      ].includes(l.action),
+      ['system.backup', 'system.restore', 'api_key.revoke', 'webhook.delete'].includes(l.action),
     ).length;
 
     const unusualActivity = logs
-      .filter((l) => l.severity === "critical" || l.severity === "security")
+      .filter((l) => l.severity === 'critical' || l.severity === 'security')
       .slice(0, 10)
       .map((l) => ({
         description: l.description,
@@ -526,8 +507,8 @@ export class EnhancedAuditLogger {
       generatedAt: new Date().toISOString(),
       summary: {
         totalEvents: logs.length,
-        securityEvents: logs.filter((l) => l.severity === "security").length,
-        criticalEvents: logs.filter((l) => l.severity === "critical").length,
+        securityEvents: logs.filter((l) => l.severity === 'security').length,
+        criticalEvents: logs.filter((l) => l.severity === 'critical').length,
         uniqueActors,
         topActions,
         topEntities,
@@ -543,64 +524,61 @@ export class EnhancedAuditLogger {
     };
   }
 
-  private generateRecommendations(
-    stats: AuditStats,
-    logs: AuditLogEntry[],
-  ): string[] {
+  private generateRecommendations(stats: AuditStats, logs: AuditLogEntry[]): string[] {
     const recommendations: string[] = [];
 
     if (stats.activityTrend > 50) {
       recommendations.push(
-        "Activity has increased significantly (>50%). Consider reviewing for unusual patterns.",
+        'Activity has increased significantly (>50%). Consider reviewing for unusual patterns.',
       );
     }
 
     const failedActions = logs.filter((l) => !l.success);
     if (failedActions.length > stats.totalEntries * 0.1) {
       recommendations.push(
-        "High failure rate detected (>10%). Review failed actions for potential issues.",
+        'High failure rate detected (>10%). Review failed actions for potential issues.',
       );
     }
 
-    const securityEvents = logs.filter((l) => l.severity === "security");
+    const securityEvents = logs.filter((l) => l.severity === 'security');
     if (securityEvents.length > 10) {
       recommendations.push(
-        "Elevated security events detected. Review security logs for potential threats.",
+        'Elevated security events detected. Review security logs for potential threats.',
       );
     }
 
     const topActor = stats.topActors[0];
     if (topActor && topActor.count > stats.totalEntries * 0.5) {
       recommendations.push(
-        "Single actor responsible for >50% of activity. Verify this is expected behavior.",
+        'Single actor responsible for >50% of activity. Verify this is expected behavior.',
       );
     }
 
     if (recommendations.length === 0) {
-      recommendations.push("Audit logs show normal activity patterns.");
-      recommendations.push("All security checks passed.");
+      recommendations.push('Audit logs show normal activity patterns.');
+      recommendations.push('All security checks passed.');
     }
 
     return recommendations.slice(0, 5);
   }
 
-  exportLogs(filter: AuditFilter, format: "json" | "csv"): string {
+  exportLogs(filter: AuditFilter, format: 'json' | 'csv'): string {
     const logs = this.filterLogs(filter);
 
-    if (format === "json") {
+    if (format === 'json') {
       return JSON.stringify(logs, null, 2);
     }
 
     const headers = [
-      "ID",
-      "Timestamp",
-      "Action",
-      "Entity Type",
-      "Entity ID",
-      "Actor ID",
-      "Severity",
-      "Description",
-      "Success",
+      'ID',
+      'Timestamp',
+      'Action',
+      'Entity Type',
+      'Entity ID',
+      'Actor ID',
+      'Severity',
+      'Description',
+      'Success',
     ];
 
     const rows = logs.map((log) => [
@@ -615,13 +593,11 @@ export class EnhancedAuditLogger {
       log.success.toString(),
     ]);
 
-    return [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");
+    return [headers.join(','), ...rows.map((row) => row.join(','))].join('\n');
   }
 
   private flushBuffer(): void {
-    console.log(
-      `[AUDIT] Flushing ${this.logBuffer.length} log entries to persistent storage`,
-    );
+    console.log(`[AUDIT] Flushing ${this.logBuffer.length} log entries to persistent storage`);
     this.logBuffer = [];
   }
 
@@ -630,9 +606,7 @@ export class EnhancedAuditLogger {
   }
 
   clearOldLogs(): number {
-    const cutoff = new Date(
-      Date.now() - this.RETENTION_DAYS * 24 * 60 * 60 * 1000,
-    );
+    const cutoff = new Date(Date.now() - this.RETENTION_DAYS * 24 * 60 * 60 * 1000);
     let removed = 0;
 
     for (const [id, log] of this.logs) {
@@ -650,7 +624,7 @@ export class EnhancedAuditLogger {
   }
 
   getActionCategory(action: AuditAction): string {
-    return this.ACTION_CATEGORIES[action] || "Other";
+    return this.ACTION_CATEGORIES[action] || 'Other';
   }
 }
 
@@ -662,14 +636,14 @@ export function createAuditEntry(
   entityId: string,
   actorId: string,
   description: string,
-): Omit<AuditLogEntry, "id" | "timestamp"> {
+): Omit<AuditLogEntry, 'id' | 'timestamp'> {
   return {
     action,
     entityType,
     entityId,
     actorId,
-    actorType: "user",
-    severity: "info",
+    actorType: 'user',
+    severity: 'info',
     description,
     metadata: {},
     success: true,

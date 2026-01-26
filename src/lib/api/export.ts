@@ -1,11 +1,11 @@
-export type ExportFormat = "csv" | "xlsx" | "json";
+export type ExportFormat = 'csv' | 'xlsx' | 'json';
 
 export interface ExportOptions {
   filename?: string;
   format?: ExportFormat;
   headers?: string[];
   dateFormat?: string;
-  numberFormat?: "decimal" | "currency" | "percentage";
+  numberFormat?: 'decimal' | 'currency' | 'percentage';
   onProgress?: (progress: number) => void;
   compress?: boolean;
   includeTimestamp?: boolean;
@@ -39,7 +39,7 @@ export async function exportData<T extends Record<string, unknown>>(
 ): Promise<ExportResult> {
   const {
     filename = `export-${Date.now()}`,
-    format = "csv",
+    format = 'csv',
     headers,
     onProgress,
     compress = false,
@@ -50,27 +50,27 @@ export async function exportData<T extends Record<string, unknown>>(
   if (!Array.isArray(data)) {
     return {
       success: false,
-      filename: "",
+      filename: '',
       size: 0,
       recordCount: 0,
-      error: "Data must be an array",
+      error: 'Data must be an array',
     };
   }
 
   if (data.length === 0) {
     return {
       success: false,
-      filename: "",
+      filename: '',
       size: 0,
       recordCount: 0,
-      error: "No data to export",
+      error: 'No data to export',
     };
   }
 
   if (data.length > MAX_EXPORT_RECORDS) {
     return {
       success: false,
-      filename: "",
+      filename: '',
       size: 0,
       recordCount: data.length,
       error: `Too many records to export. Maximum allowed is ${MAX_EXPORT_RECORDS} records.`,
@@ -82,30 +82,26 @@ export async function exportData<T extends Record<string, unknown>>(
     const totalBatches = Math.ceil(data.length / effectiveBatchSize);
     let processedBatches = 0;
 
-    const processBatch = async (
-      batchData: T[],
-      batchIndex: number,
-    ): Promise<string> => {
-      const batchHeaders =
-        headers || (batchData[0] ? Object.keys(batchData[0]) : []);
+    const processBatch = async (batchData: T[], batchIndex: number): Promise<string> => {
+      const batchHeaders = headers || (batchData[0] ? Object.keys(batchData[0]) : []);
       const batchFilename = `${filename}_batch_${batchIndex}`;
 
       let content: string;
 
       switch (format) {
-        case "csv":
+        case 'csv':
           content = await exportToCSV(batchData, {
             filename: batchFilename,
             headers: batchHeaders,
           });
           break;
-        case "xlsx":
+        case 'xlsx':
           content = await exportToExcel(batchData, {
             filename: batchFilename,
             headers: batchHeaders,
           });
           break;
-        case "json":
+        case 'json':
           content = await exportToJSON(batchData);
           break;
         default:
@@ -122,7 +118,7 @@ export async function exportData<T extends Record<string, unknown>>(
 
     let finalContent: string;
     const finalFilename = includeTimestamp
-      ? `${filename}_${new Date().toISOString().replace(/[:.]/g, "-").slice(0, -5)}`
+      ? `${filename}_${new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)}`
       : filename;
 
     if (data.length <= effectiveBatchSize) {
@@ -132,17 +128,14 @@ export async function exportData<T extends Record<string, unknown>>(
 
       for (let i = 0; i < data.length; i += effectiveBatchSize) {
         const batchData = data.slice(i, i + effectiveBatchSize);
-        const batchContent = await processBatch(
-          batchData,
-          Math.floor(i / effectiveBatchSize),
-        );
+        const batchContent = await processBatch(batchData, Math.floor(i / effectiveBatchSize));
         batches.push(batchContent);
       }
 
-      finalContent = batches.join("\n");
+      finalContent = batches.join('\n');
     }
 
-    const finalExtension = format === "xlsx" ? "csv" : format;
+    const finalExtension = format === 'xlsx' ? 'csv' : format;
     const finalFilenameWithExt = `${finalFilename}.${finalExtension}`;
 
     let downloadContent = finalContent;
@@ -154,7 +147,7 @@ export async function exportData<T extends Record<string, unknown>>(
         downloadContent = compressed;
         downloadSize = compressed.length;
       } catch (error) {
-        console.warn("Compression failed, using uncompressed content", error);
+        console.warn('Compression failed, using uncompressed content', error);
       }
     }
 
@@ -172,11 +165,10 @@ export async function exportData<T extends Record<string, unknown>>(
 
     return result;
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown export error";
+    const errorMessage = error instanceof Error ? error.message : 'Unknown export error';
     return {
       success: false,
-      filename: "",
+      filename: '',
       size: 0,
       recordCount: 0,
       error: errorMessage,
@@ -189,15 +181,15 @@ async function exportToCSV<T extends Record<string, unknown>>(
   options: { filename: string; headers?: string[] },
 ): Promise<string> {
   if (data.length === 0) {
-    throw new Error("No data to export");
+    throw new Error('No data to export');
   }
 
   const firstItem = data[0];
   if (!firstItem) {
-    throw new Error("No data to export");
+    throw new Error('No data to export');
   }
   const headers = options.headers || Object.keys(firstItem);
-  const csvRows: string[] = [headers.join(",")];
+  const csvRows: string[] = [headers.join(',')];
 
   for (const row of data) {
     const values = headers.map((header) => {
@@ -206,24 +198,24 @@ async function exportToCSV<T extends Record<string, unknown>>(
       const value = row[header];
       return formatCSVValue(value);
     });
-    csvRows.push(values.join(","));
+    csvRows.push(values.join(','));
   }
 
-  return csvRows.join("\n");
+  return csvRows.join('\n');
 }
 
 function formatCSVValue(value: unknown): string {
   if (value === null || value === undefined) {
-    return "";
+    return '';
   }
 
   const stringValue = String(value);
 
   if (
-    stringValue.includes(",") ||
+    stringValue.includes(',') ||
     stringValue.includes('"') ||
-    stringValue.includes("\n") ||
-    stringValue.includes("\r")
+    stringValue.includes('\n') ||
+    stringValue.includes('\r')
   ) {
     return `"${stringValue.replace(/"/g, '""')}"`;
   }
@@ -236,12 +228,12 @@ async function exportToExcel<T extends Record<string, unknown>>(
   options: { filename: string; headers?: string[] },
 ): Promise<string> {
   if (data.length === 0) {
-    throw new Error("No data to export");
+    throw new Error('No data to export');
   }
 
   const firstItem = data[0];
   if (!firstItem) {
-    throw new Error("No data to export");
+    throw new Error('No data to export');
   }
   const headers = options.headers || Object.keys(firstItem);
   const worksheetData = [headers];
@@ -251,37 +243,29 @@ async function exportToExcel<T extends Record<string, unknown>>(
       // Safe: header comes from Object.keys of the same row object
 
       const value = row[header];
-      return value === null || value === undefined ? "" : String(value);
+      return value === null || value === undefined ? '' : String(value);
     });
     worksheetData.push(values);
   }
 
   const csvContent = worksheetData
-    .map((row) =>
-      row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","),
-    )
-    .join("\n");
+    .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    .join('\n');
 
   return csvContent;
 }
 
-async function exportToJSON<T extends Record<string, unknown>>(
-  data: T[],
-): Promise<string> {
+async function exportToJSON<T extends Record<string, unknown>>(data: T[]): Promise<string> {
   return JSON.stringify(data, null, 2);
 }
 
-function downloadFile(
-  content: string,
-  filename: string,
-  mimeType: string,
-): void {
+function downloadFile(content: string, filename: string, mimeType: string): void {
   const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
+  const link = document.createElement('a');
   link.href = url;
   link.download = filename;
-  link.style.display = "none";
+  link.style.display = 'none';
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -290,24 +274,24 @@ function downloadFile(
 
 function getMimeType(format: ExportFormat): string {
   switch (format) {
-    case "csv":
-      return "text/csv;charset=utf-8;";
-    case "xlsx":
-      return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8;";
-    case "json":
-      return "application/json;charset=utf-8;";
+    case 'csv':
+      return 'text/csv;charset=utf-8;';
+    case 'xlsx':
+      return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8;';
+    case 'json':
+      return 'application/json;charset=utf-8;';
     default:
-      return "text/plain;charset=utf-8;";
+      return 'text/plain;charset=utf-8;';
   }
 }
 
 async function compressContent(content: string): Promise<string> {
-  if (typeof CompressionStream === "undefined") {
+  if (typeof CompressionStream === 'undefined') {
     return content;
   }
 
   try {
-    const stream = new CompressionStream("gzip");
+    const stream = new CompressionStream('gzip');
     const writer = stream.writable.getWriter();
     await writer.write(new TextEncoder().encode(content));
     await writer.close();
@@ -321,11 +305,11 @@ async function compressContent(content: string): Promise<string> {
 
 export function formatValueForExport(
   value: unknown,
-  format: "decimal" | "currency" | "percentage" = "decimal",
-  locale: string = "en-US",
+  format: 'decimal' | 'currency' | 'percentage' = 'decimal',
+  locale: string = 'en-US',
 ): string {
   if (value === null || value === undefined) {
-    return "";
+    return '';
   }
 
   const numValue = Number(value);
@@ -335,19 +319,19 @@ export function formatValueForExport(
   }
 
   switch (format) {
-    case "decimal":
+    case 'decimal':
       return numValue.toLocaleString(locale, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       });
-    case "currency":
+    case 'currency':
       return numValue.toLocaleString(locale, {
-        style: "currency",
-        currency: "USD",
+        style: 'currency',
+        currency: 'USD',
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       });
-    case "percentage":
+    case 'percentage':
       return `${(numValue * 100).toFixed(2)}%`;
     default:
       return String(value);
@@ -363,14 +347,14 @@ export function generateExportFilename(
     return `${prefix}.${format}`;
   }
 
-  const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, -5);
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
 
   return `${prefix}-${timestamp}.${format}`;
 }
 
 export function getExportHistory(): ExportHistory[] {
   try {
-    const history = localStorage.getItem("exportHistory");
+    const history = localStorage.getItem('exportHistory');
     return history ? JSON.parse(history) : [];
   } catch {
     return [];
@@ -383,24 +367,24 @@ function saveToExportHistory(result: ExportResult): void {
     const entry: ExportHistory = {
       id: `export-${Date.now()}`,
       filename: result.filename,
-      format: result.filename.split(".").pop() as ExportFormat,
+      format: result.filename.split('.').pop() as ExportFormat,
       timestamp: new Date().toISOString(),
       recordCount: result.recordCount,
       size: result.size,
     };
 
     const updatedHistory = [entry, ...history].slice(0, 50);
-    localStorage.setItem("exportHistory", JSON.stringify(updatedHistory));
+    localStorage.setItem('exportHistory', JSON.stringify(updatedHistory));
   } catch (error) {
-    console.warn("Failed to save export history", error);
+    console.warn('Failed to save export history', error);
   }
 }
 
 export function clearExportHistory(): void {
   try {
-    localStorage.removeItem("exportHistory");
+    localStorage.removeItem('exportHistory');
   } catch (error) {
-    console.warn("Failed to clear export history", error);
+    console.warn('Failed to clear export history', error);
   }
 }
 
@@ -410,30 +394,30 @@ export function validateExportData<T extends Record<string, unknown>>(
   const errors: string[] = [];
 
   if (!Array.isArray(data)) {
-    errors.push("Data must be an array");
+    errors.push('Data must be an array');
     return { valid: false, errors };
   }
 
   if (data.length === 0) {
-    errors.push("Data array is empty");
+    errors.push('Data array is empty');
     return { valid: false, errors };
   }
 
   const firstItem = data[0];
-  if (typeof firstItem !== "object" || firstItem === null) {
-    errors.push("Data items must be objects");
+  if (typeof firstItem !== 'object' || firstItem === null) {
+    errors.push('Data items must be objects');
     return { valid: false, errors };
   }
 
   const keys = Object.keys(firstItem);
   if (keys.length === 0) {
-    errors.push("Data items must have at least one property");
+    errors.push('Data items must have at least one property');
     return { valid: false, errors };
   }
 
   for (let i = 0; i < data.length; i++) {
     const item = data[i];
-    if (typeof item !== "object" || item === null) {
+    if (typeof item !== 'object' || item === null) {
       errors.push(`Item at index ${i} is not an object`);
     }
   }
@@ -452,11 +436,11 @@ export function estimateExportSize(
   const baseSize = recordCount * averageRecordSize;
 
   switch (format) {
-    case "csv":
+    case 'csv':
       return Math.round(baseSize * 1.1);
-    case "xlsx":
+    case 'xlsx':
       return Math.round(baseSize * 1.5);
-    case "json":
+    case 'json':
       return Math.round(baseSize * 1.3);
     default:
       return baseSize;
@@ -464,10 +448,10 @@ export function estimateExportSize(
 }
 
 export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return "0 Bytes";
+  if (bytes === 0) return '0 Bytes';
 
   const k = 1024;
-  const sizes = ["Bytes", "KB", "MB", "GB"];
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
   return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`;

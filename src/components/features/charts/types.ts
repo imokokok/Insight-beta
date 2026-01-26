@@ -1,6 +1,6 @@
-import type { PricePoint } from "@/server/oracle/priceFetcher";
+import type { PricePoint } from '@/server/oracle/priceFetcher';
 
-export type TabKey = "activity" | "tvs" | "sync" | "markets" | "accuracy";
+export type TabKey = 'activity' | 'tvs' | 'sync' | 'markets' | 'accuracy';
 
 export type Translator = (key: string) => string;
 
@@ -27,7 +27,7 @@ export type ChartDataItem = ChartItem & {
   cumulativeVolume: number;
 };
 
-export type SyncChartItem = Omit<SyncMetricItem, "lagBlocks"> & {
+export type SyncChartItem = Omit<SyncMetricItem, 'lagBlocks'> & {
   lagBlocks: number | null;
   label: string;
 };
@@ -46,5 +46,5 @@ export type AccuracyStats = {
 };
 
 export type AccuracyAnomaly = PricePoint & {
-  severity: "critical" | "warning";
+  severity: 'critical' | 'warning';
 };

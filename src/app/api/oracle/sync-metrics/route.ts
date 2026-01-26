@@ -1,6 +1,6 @@
-import { handleApi, rateLimit } from "@/server/apiResponse";
-import { listSyncMetrics } from "@/server/oracle";
-import { z } from "zod";
+import { handleApi, rateLimit } from '@/server/apiResponse';
+import { listSyncMetrics } from '@/server/oracle';
+import { z } from 'zod';
 
 const querySchema = z.object({
   minutes: z.coerce
@@ -15,7 +15,7 @@ const querySchema = z.object({
 export async function GET(request: Request) {
   return handleApi(request, async () => {
     const limited = await rateLimit(request, {
-      key: "sync_metrics_get",
+      key: 'sync_metrics_get',
       limit: 120,
       windowMs: 60_000,
     });
@@ -23,7 +23,7 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const raw = Object.fromEntries(url.searchParams);
     const parsed = querySchema.parse(raw);
-    const instanceId = url.searchParams.get("instanceId") ?? undefined;
+    const instanceId = url.searchParams.get('instanceId') ?? undefined;
     const items = await listSyncMetrics({
       minutes: parsed.minutes,
       limit: parsed.limit,

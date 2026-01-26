@@ -1,33 +1,29 @@
-import type { NextRequest } from "next/server";
-import { handleApi } from "@/server/apiResponse";
-import { logger } from "@/lib/logger";
-import type { AuditLogEntry, AuditFilter } from "@/lib/monitoring/auditLogger";
-import { db } from "@/server/db";
+import type { NextRequest } from 'next/server';
+import { handleApi } from '@/server/apiResponse';
+import { logger } from '@/lib/logger';
+import type { AuditLogEntry, AuditFilter } from '@/lib/monitoring/auditLogger';
+import { db } from '@/server/db';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   return handleApi(request, async () => {
     const { searchParams } = new URL(request.url);
-    const action = searchParams.get("action");
-    const actor = searchParams.get("actor") || undefined;
-    const actorType = searchParams.get("actorType") as
-      | AuditLogEntry["actorType"]
-      | undefined;
-    const severity = searchParams.get("severity") as
-      | AuditLogEntry["severity"]
-      | undefined;
-    const startDate = searchParams.get("startDate") || undefined;
-    const endDate = searchParams.get("endDate") || undefined;
-    const instanceId = searchParams.get("instanceId") || undefined;
-    const limit = Number(searchParams.get("limit")) || 100;
-    const offset = Number(searchParams.get("offset")) || 0;
+    const action = searchParams.get('action');
+    const actor = searchParams.get('actor') || undefined;
+    const actorType = searchParams.get('actorType') as AuditLogEntry['actorType'] | undefined;
+    const severity = searchParams.get('severity') as AuditLogEntry['severity'] | undefined;
+    const startDate = searchParams.get('startDate') || undefined;
+    const endDate = searchParams.get('endDate') || undefined;
+    const instanceId = searchParams.get('instanceId') || undefined;
+    const limit = Number(searchParams.get('limit')) || 100;
+    const offset = Number(searchParams.get('offset')) || 0;
 
     const filter: AuditFilter = {
-      action: action as AuditLogEntry["action"] | undefined,
+      action: action as AuditLogEntry['action'] | undefined,
       actor,
       actorType,
-      severity: severity as AuditLogEntry["severity"] | undefined,
+      severity: severity as AuditLogEntry['severity'] | undefined,
       startDate,
       endDate,
       instanceId,
@@ -40,13 +36,13 @@ export async function GET(request: NextRequest) {
         `
         SELECT * FROM audit_logs
         WHERE 1=1
-          ${filter.action ? "AND action = ANY($1)" : ""}
-          ${filter.actor ? "AND actor = $2" : ""}
-          ${filter.actorType ? "AND actor_type = $3" : ""}
-          ${filter.severity ? "AND severity = $4" : ""}
-          ${filter.startDate ? "AND timestamp >= $5" : ""}
-          ${filter.endDate ? "AND timestamp <= $6" : ""}
-          ${filter.instanceId ? "AND instance_id = $7" : ""}
+          ${filter.action ? 'AND action = ANY($1)' : ''}
+          ${filter.actor ? 'AND actor = $2' : ''}
+          ${filter.actorType ? 'AND actor_type = $3' : ''}
+          ${filter.severity ? 'AND severity = $4' : ''}
+          ${filter.startDate ? 'AND timestamp >= $5' : ''}
+          ${filter.endDate ? 'AND timestamp <= $6' : ''}
+          ${filter.instanceId ? 'AND instance_id = $7' : ''}
         ORDER BY timestamp DESC
         LIMIT $8 OFFSET $9
         `,
@@ -67,13 +63,13 @@ export async function GET(request: NextRequest) {
         `
         SELECT COUNT(*) as count FROM audit_logs
         WHERE 1=1
-          ${filter.action ? "AND action = ANY($1)" : ""}
-          ${filter.actor ? "AND actor = $2" : ""}
-          ${filter.actorType ? "AND actor_type = $3" : ""}
-          ${filter.severity ? "AND severity = $4" : ""}
-          ${filter.startDate ? "AND timestamp >= $5" : ""}
-          ${filter.endDate ? "AND timestamp <= $6" : ""}
-          ${filter.instanceId ? "AND instance_id = $7" : ""}
+          ${filter.action ? 'AND action = ANY($1)' : ''}
+          ${filter.actor ? 'AND actor = $2' : ''}
+          ${filter.actorType ? 'AND actor_type = $3' : ''}
+          ${filter.severity ? 'AND severity = $4' : ''}
+          ${filter.startDate ? 'AND timestamp >= $5' : ''}
+          ${filter.endDate ? 'AND timestamp <= $6' : ''}
+          ${filter.instanceId ? 'AND instance_id = $7' : ''}
         `,
         [
           filter.action ? [filter.action] : null,
@@ -93,7 +89,7 @@ export async function GET(request: NextRequest) {
         offset,
       };
     } catch (error) {
-      logger.error("Failed to query audit logs", { error, filter });
+      logger.error('Failed to query audit logs', { error, filter });
       throw error;
     }
   });
@@ -101,10 +97,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   return handleApi(request, async () => {
-    const entry = (await request.json()) as Omit<
-      AuditLogEntry,
-      "id" | "timestamp"
-    >;
+    const entry = (await request.json()) as Omit<AuditLogEntry, 'id' | 'timestamp'>;
 
     try {
       await db.query(
@@ -131,7 +124,7 @@ export async function POST(request: NextRequest) {
 
       return { ok: true };
     } catch (error) {
-      logger.error("Failed to insert audit log", { error, entry });
+      logger.error('Failed to insert audit log', { error, entry });
       throw error;
     }
   });

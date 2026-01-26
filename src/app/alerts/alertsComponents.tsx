@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import type { Dispatch, SetStateAction } from "react";
-import Link from "next/link";
-import type { Route } from "next";
-import { AlertTriangle, CheckCircle2, Clock } from "lucide-react";
+import type { Dispatch, SetStateAction } from 'react';
+import Link from 'next/link';
+import type { Route } from 'next';
+import { AlertTriangle, CheckCircle2, Clock } from 'lucide-react';
 import {
   CartesianGrid,
   Legend,
@@ -13,10 +13,10 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-} from "recharts";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { cn, formatDurationMinutes, formatTime } from "@/lib/utils";
-import { getUiErrorMessage, type TranslationKey } from "@/i18n/translations";
+} from 'recharts';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { cn, formatDurationMinutes, formatTime } from '@/lib/utils';
+import { getUiErrorMessage, type TranslationKey } from '@/i18n/translations';
 import type {
   Alert,
   AlertRule,
@@ -26,7 +26,7 @@ import type {
   OpsMetrics,
   OpsMetricsSeriesPoint,
   OpsSloStatus,
-} from "@/lib/types/oracleTypes";
+} from '@/lib/types/oracleTypes';
 import {
   alertInsightMap,
   formatSloTarget,
@@ -41,7 +41,7 @@ import {
   statusBadge,
   type RootCauseOption,
   type SloEntry,
-} from "./alertsUtils";
+} from './alertsUtils';
 
 export type IncidentDraft = {
   title: string;
@@ -119,11 +119,8 @@ type IncidentCardProps = {
   onStartEditIncident: (i: IncidentWithAlerts) => void;
   onCancelEditIncident: () => void;
   onSaveIncidentEdit: () => void;
-  onPatchIncidentStatus: (id: number, status: Incident["status"]) => void;
-  onIncidentAction: (
-    id: number,
-    action: "ack_alerts" | "resolve_alerts",
-  ) => void;
+  onPatchIncidentStatus: (id: number, status: Incident['status']) => void;
+  onIncidentAction: (id: number, action: 'ack_alerts' | 'resolve_alerts') => void;
   onApplyQuery: (query: string) => void;
   onScrollToSlo: () => void;
   attachInstanceId: (path: string) => string;
@@ -134,7 +131,7 @@ type EntityPillProps = {
   entityId: string | null | undefined;
   attachInstanceId: (path: string) => string;
   sliceChars?: number;
-  density?: "default" | "compact";
+  density?: 'default' | 'compact';
   onNoHrefClick?: (() => void) | undefined;
 };
 
@@ -143,32 +140,24 @@ export function EntityPill({
   entityId,
   attachInstanceId,
   sliceChars = 18,
-  density = "default",
+  density = 'default',
   onNoHrefClick,
 }: EntityPillProps) {
   if (!entityType || !entityId) return null;
   const rawHref = getEntityHref(entityType, entityId);
   const href = rawHref ? attachInstanceId(rawHref) : null;
-  const display =
-    entityId.length > sliceChars
-      ? `${entityId.slice(0, sliceChars)}…`
-      : entityId;
+  const display = entityId.length > sliceChars ? `${entityId.slice(0, sliceChars)}…` : entityId;
   const text = `${entityType}:${display}`;
   const baseClassName = cn(
-    "rounded-md bg-gray-50 px-2 border border-gray-100 font-mono",
-    density === "compact" ? "py-0.5 text-[11px]" : "py-1 text-xs",
+    'rounded-md border border-gray-100 bg-gray-50 px-2 font-mono',
+    density === 'compact' ? 'py-0.5 text-[11px]' : 'py-1 text-xs',
   );
-  const interactiveClassName = cn(baseClassName, "hover:bg-white");
+  const interactiveClassName = cn(baseClassName, 'hover:bg-white');
 
   if (href) {
-    if (href.startsWith("/api/")) {
+    if (href.startsWith('/api/')) {
       return (
-        <a
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={interactiveClassName}
-        >
+        <a href={href} target="_blank" rel="noopener noreferrer" className={interactiveClassName}>
           {text}
         </a>
       );
@@ -182,11 +171,7 @@ export function EntityPill({
 
   if (onNoHrefClick) {
     return (
-      <button
-        type="button"
-        onClick={onNoHrefClick}
-        className={interactiveClassName}
-      >
+      <button type="button" onClick={onNoHrefClick} className={interactiveClassName}>
         {text}
       </button>
     );
@@ -201,17 +186,17 @@ type RunbookPillProps = {
 };
 
 export function RunbookPill({ label, runbook }: RunbookPillProps) {
-  const raw = (runbook ?? "").trim();
+  const raw = (runbook ?? '').trim();
   if (!raw) return null;
   const internal = getSafeInternalPath(raw);
   if (internal) {
-    if (internal.startsWith("/api/")) {
+    if (internal.startsWith('/api/')) {
       return (
         <a
           href={internal}
           target="_blank"
           rel="noopener noreferrer"
-          className="rounded-md bg-gray-50 px-2 py-1 border border-gray-100 hover:bg-white"
+          className="rounded-md border border-gray-100 bg-gray-50 px-2 py-1 hover:bg-white"
         >
           {label}
         </a>
@@ -220,7 +205,7 @@ export function RunbookPill({ label, runbook }: RunbookPillProps) {
     return (
       <Link
         href={internal as Route}
-        className="rounded-md bg-gray-50 px-2 py-1 border border-gray-100 hover:bg-white"
+        className="rounded-md border border-gray-100 bg-gray-50 px-2 py-1 hover:bg-white"
       >
         {label}
       </Link>
@@ -232,7 +217,7 @@ export function RunbookPill({ label, runbook }: RunbookPillProps) {
       href={external}
       target="_blank"
       rel="noopener noreferrer"
-      className="rounded-md bg-gray-50 px-2 py-1 border border-gray-100 hover:bg-white"
+      className="rounded-md border border-gray-100 bg-gray-50 px-2 py-1 hover:bg-white"
     >
       {label}
     </a>
@@ -262,15 +247,15 @@ export function AlertCard({
           <div className="flex gap-3">
             <div
               className={cn(
-                "mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl shadow-sm",
-                alert.severity === "critical"
-                  ? "bg-rose-100 text-rose-600"
-                  : alert.severity === "warning"
-                    ? "bg-amber-100 text-amber-700"
-                    : "bg-slate-100 text-slate-600",
+                'mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl shadow-sm',
+                alert.severity === 'critical'
+                  ? 'bg-rose-100 text-rose-600'
+                  : alert.severity === 'warning'
+                    ? 'bg-amber-100 text-amber-700'
+                    : 'bg-slate-100 text-slate-600',
               )}
             >
-              {alert.status === "Resolved" ? (
+              {alert.status === 'Resolved' ? (
                 <CheckCircle2 size={18} />
               ) : (
                 <AlertTriangle size={18} />
@@ -278,12 +263,10 @@ export function AlertCard({
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="text-base font-semibold text-purple-950">
-                  {alert.title}
-                </h3>
+                <h3 className="text-base font-semibold text-purple-950">{alert.title}</h3>
                 <span
                   className={cn(
-                    "px-2.5 py-0.5 rounded-full text-xs font-medium border",
+                    'rounded-full border px-2.5 py-0.5 text-xs font-medium',
                     severityBadge(alert.severity),
                   )}
                 >
@@ -291,17 +274,17 @@ export function AlertCard({
                 </span>
                 <span
                   className={cn(
-                    "px-2.5 py-0.5 rounded-full text-xs font-medium ring-1",
+                    'rounded-full px-2.5 py-0.5 text-xs font-medium ring-1',
                     statusBadge(alert.status),
                   )}
                 >
                   {alert.status}
                 </span>
-                <span className="text-xs text-gray-400 font-medium px-2 py-0.5 bg-gray-50 rounded-md border border-gray-100">
+                <span className="rounded-md border border-gray-100 bg-gray-50 px-2 py-0.5 text-xs font-medium text-gray-400">
                   {alert.type}
                 </span>
                 {rule ? (
-                  <span className="text-xs text-gray-500 font-medium px-2 py-0.5 bg-gray-50 rounded-md border border-gray-100">
+                  <span className="rounded-md border border-gray-100 bg-gray-50 px-2 py-0.5 text-xs font-medium text-gray-500">
                     {rule.name}
                   </span>
                 ) : null}
@@ -329,24 +312,22 @@ export function AlertCard({
                 Incident
               </button>
             )}
-            {canAdmin &&
-              alert.status !== "Acknowledged" &&
-              alert.status !== "Resolved" && (
-                <button
-                  type="button"
-                  onClick={() => onUpdateAlert(alert.id, "Acknowledged")}
-                  className="rounded-lg bg-white px-3 py-2 text-xs font-semibold text-purple-700 shadow-sm ring-1 ring-purple-100 hover:bg-purple-50"
-                >
-                  {t("alerts.acknowledge")}
-                </button>
-              )}
-            {canAdmin && alert.status !== "Resolved" && (
+            {canAdmin && alert.status !== 'Acknowledged' && alert.status !== 'Resolved' && (
               <button
                 type="button"
-                onClick={() => onUpdateAlert(alert.id, "Resolved")}
+                onClick={() => onUpdateAlert(alert.id, 'Acknowledged')}
+                className="rounded-lg bg-white px-3 py-2 text-xs font-semibold text-purple-700 shadow-sm ring-1 ring-purple-100 hover:bg-purple-50"
+              >
+                {t('alerts.acknowledge')}
+              </button>
+            )}
+            {canAdmin && alert.status !== 'Resolved' && (
+              <button
+                type="button"
+                onClick={() => onUpdateAlert(alert.id, 'Resolved')}
                 className="rounded-lg bg-white px-3 py-2 text-xs font-semibold text-emerald-700 shadow-sm ring-1 ring-emerald-100 hover:bg-emerald-50"
               >
-                {t("alerts.resolve")}
+                {t('alerts.resolve')}
               </button>
             )}
           </div>
@@ -359,13 +340,11 @@ export function AlertCard({
           return (
             <div className="mb-3 rounded-xl border border-slate-100 bg-white/70 p-3">
               <div className="text-[11px] font-bold uppercase tracking-wider text-gray-500">
-                {t("alerts.explanation")}
+                {t('alerts.explanation')}
               </div>
-              <div className="mt-1 text-sm text-gray-700">
-                {t(insight.explanation)}
-              </div>
+              <div className="mt-1 text-sm text-gray-700">{t(insight.explanation)}</div>
               <div className="mt-3 text-[11px] font-bold uppercase tracking-wider text-gray-500">
-                {t("alerts.recommendedActions")}
+                {t('alerts.recommendedActions')}
               </div>
               <div className="mt-2 flex flex-wrap gap-2">
                 {insight.actions.map((actionKey) => (
@@ -381,12 +360,12 @@ export function AlertCard({
           );
         })()}
         <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500">
-          <span className="flex items-center gap-1.5 rounded-md bg-gray-50 px-2 py-1 border border-gray-100">
+          <span className="flex items-center gap-1.5 rounded-md border border-gray-100 bg-gray-50 px-2 py-1">
             <Clock size={12} />
-            {t("alerts.lastSeen")}: {formatTime(alert.lastSeenAt, locale)}
+            {t('alerts.lastSeen')}: {formatTime(alert.lastSeenAt, locale)}
           </span>
-          <span className="rounded-md bg-gray-50 px-2 py-1 border border-gray-100">
-            {t("alerts.occurrences")}: {alert.occurrences}
+          <span className="rounded-md border border-gray-100 bg-gray-50 px-2 py-1">
+            {t('alerts.occurrences')}: {alert.occurrences}
           </span>
           <EntityPill
             entityType={alert.entityType}
@@ -394,20 +373,19 @@ export function AlertCard({
             attachInstanceId={attachInstanceId}
           />
           {rule?.owner ? (
-            <span className="rounded-md bg-gray-50 px-2 py-1 border border-gray-100">
-              {t("alerts.owner")}:{" "}
-              <span className="font-mono">{rule.owner}</span>
+            <span className="rounded-md border border-gray-100 bg-gray-50 px-2 py-1">
+              {t('alerts.owner')}: <span className="font-mono">{rule.owner}</span>
             </span>
           ) : null}
-          <RunbookPill label={t("alerts.runbook")} runbook={rule?.runbook} />
+          <RunbookPill label={t('alerts.runbook')} runbook={rule?.runbook} />
         </div>
 
         {canAdmin && rule ? (
           <div className="mt-3 flex flex-wrap items-center gap-2">
             {isSilenced ? (
               <>
-                <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-100 rounded-md px-2 py-1">
-                  {t("alerts.silencedUntil")}:{" "}
+                <span className="rounded-md border border-amber-100 bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700">
+                  {t('alerts.silencedUntil')}:{' '}
                   {formatTime(new Date(silencedUntilMs).toISOString(), locale)}
                 </span>
                 <button
@@ -416,7 +394,7 @@ export function AlertCard({
                   onClick={() => onSetRuleSilenceMinutes(rule.id, null)}
                   className="rounded-lg bg-white px-3 py-2 text-xs font-semibold text-amber-800 shadow-sm ring-1 ring-amber-100 hover:bg-amber-50 disabled:opacity-50"
                 >
-                  {t("alerts.unsilence")}
+                  {t('alerts.unsilence')}
                 </button>
               </>
             ) : (
@@ -427,7 +405,7 @@ export function AlertCard({
                   onClick={() => onSetRuleSilenceMinutes(rule.id, 30)}
                   className="rounded-lg bg-white px-3 py-2 text-xs font-semibold text-amber-800 shadow-sm ring-1 ring-amber-100 hover:bg-amber-50 disabled:opacity-50"
                 >
-                  {t("alerts.silence30m")}
+                  {t('alerts.silence30m')}
                 </button>
                 <button
                   type="button"
@@ -435,7 +413,7 @@ export function AlertCard({
                   onClick={() => onSetRuleSilenceMinutes(rule.id, 120)}
                   className="rounded-lg bg-white px-3 py-2 text-xs font-semibold text-amber-800 shadow-sm ring-1 ring-amber-100 hover:bg-amber-50 disabled:opacity-50"
                 >
-                  {t("alerts.silence2h")}
+                  {t('alerts.silence2h')}
                 </button>
                 <button
                   type="button"
@@ -443,7 +421,7 @@ export function AlertCard({
                   onClick={() => onSetRuleSilenceMinutes(rule.id, 1440)}
                   className="rounded-lg bg-white px-3 py-2 text-xs font-semibold text-amber-800 shadow-sm ring-1 ring-amber-100 hover:bg-amber-50 disabled:opacity-50"
                 >
-                  {t("alerts.silence24h")}
+                  {t('alerts.silence24h')}
                 </button>
               </>
             )}
@@ -465,35 +443,25 @@ export function SloStatusCard({
   canAdmin,
 }: SloStatusCardProps) {
   return (
-    <div
-      id="slo-panel"
-      className="mt-3 rounded-lg border border-purple-100/60 bg-white/60 p-2"
-    >
+    <div id="slo-panel" className="mt-3 rounded-lg border border-purple-100/60 bg-white/60 p-2">
       <div className="flex items-start justify-between gap-2">
         <div className="text-[11px] text-purple-700/70">SLO status</div>
         <span
           className={cn(
-            "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1",
+            'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1',
             sloStatusBadge(slo.status),
           )}
         >
-          {slo.status === "met" ? (
-            <CheckCircle2 size={12} />
-          ) : (
-            <AlertTriangle size={12} />
-          )}
+          {slo.status === 'met' ? <CheckCircle2 size={12} /> : <AlertTriangle size={12} />}
           {sloStatusLabel(slo.status)}
         </span>
       </div>
       <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
         {sloEntries.map((entry) => (
-          <div
-            key={entry.key}
-            className="rounded-lg border border-purple-100/60 bg-white/60 p-2"
-          >
+          <div key={entry.key} className="rounded-lg border border-purple-100/60 bg-white/60 p-2">
             <div className="text-[11px] text-purple-700/70">{entry.label}</div>
             <div className="text-sm font-semibold text-purple-950">
-              {formatSloValue(entry.key, entry.current)} /{" "}
+              {formatSloValue(entry.key, entry.current)} /{' '}
               {formatSloTarget(entry.key, entry.target)}
             </div>
           </div>
@@ -512,8 +480,7 @@ export function SloStatusCard({
               onClick={() => onBreachClick(breach.key)}
               className="rounded-md bg-rose-50 px-2 py-1 text-rose-700 ring-1 ring-rose-100 hover:bg-rose-100"
             >
-              {sloLabels[breach.key] ?? breach.key}{" "}
-              {formatSloValue(breach.key, breach.actual)} &gt;{" "}
+              {sloLabels[breach.key] ?? breach.key} {formatSloValue(breach.key, breach.actual)} &gt;{' '}
               {formatSloTarget(breach.key, breach.target)}
             </button>
           ))
@@ -524,7 +491,7 @@ export function SloStatusCard({
           {getUiErrorMessage(sloIncidentError, t)}
         </div>
       ) : null}
-      {canAdmin && slo.status !== "met" ? (
+      {canAdmin && slo.status !== 'met' ? (
         <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-purple-700/70">
           <button
             type="button"
@@ -532,7 +499,7 @@ export function SloStatusCard({
             disabled={sloIncidentCreating}
             className="rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-semibold text-purple-700 shadow-sm ring-1 ring-purple-100 hover:bg-purple-50 disabled:opacity-50"
           >
-            {sloIncidentCreating ? "Creating incident..." : "Create incident"}
+            {sloIncidentCreating ? 'Creating incident...' : 'Create incident'}
           </button>
         </div>
       ) : null}
@@ -563,12 +530,10 @@ export function OpsMetricsCard({
     <div className="rounded-xl border border-purple-100/60 bg-white/50 p-3">
       <div className="flex items-start justify-between gap-2">
         <div className="text-sm font-semibold text-purple-950">
-          {t("oracle.alerts.opsTitle")} (7d)
+          {t('oracle.alerts.opsTitle')} (7d)
         </div>
         <div className="text-[11px] text-purple-700/70">
-          {opsMetrics?.generatedAt
-            ? formatTime(opsMetrics.generatedAt, locale)
-            : "—"}
+          {opsMetrics?.generatedAt ? formatTime(opsMetrics.generatedAt, locale) : '—'}
         </div>
       </div>
 
@@ -579,55 +544,43 @@ export function OpsMetricsCard({
       ) : null}
 
       {opsMetricsLoading ? (
-        <div className="mt-2 text-xs text-purple-700/70">
-          {t("common.loading")}
-        </div>
+        <div className="mt-2 text-xs text-purple-700/70">{t('common.loading')}</div>
       ) : !opsMetrics ? (
-        <div className="mt-2 text-xs text-purple-700/70">
-          {t("common.noData")}
-        </div>
+        <div className="mt-2 text-xs text-purple-700/70">{t('common.noData')}</div>
       ) : (
         <>
           <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
             <div className="rounded-lg border border-purple-100/60 bg-white/60 p-2">
               <div className="text-[11px] text-purple-700/70">
-                {t("oracle.alerts.opsAlertsOpen")}
+                {t('oracle.alerts.opsAlertsOpen')}
               </div>
-              <div className="text-sm font-semibold text-purple-950">
-                {opsMetrics.alerts.open}
-              </div>
+              <div className="text-sm font-semibold text-purple-950">{opsMetrics.alerts.open}</div>
             </div>
             <div className="rounded-lg border border-purple-100/60 bg-white/60 p-2">
               <div className="text-[11px] text-purple-700/70">
-                {t("oracle.alerts.opsAlertsAcknowledged")}
+                {t('oracle.alerts.opsAlertsAcknowledged')}
               </div>
               <div className="text-sm font-semibold text-purple-950">
                 {opsMetrics.alerts.acknowledged}
               </div>
             </div>
             <div className="rounded-lg border border-purple-100/60 bg-white/60 p-2">
-              <div className="text-[11px] text-purple-700/70">
-                {t("oracle.alerts.opsMtta")}
-              </div>
+              <div className="text-[11px] text-purple-700/70">{t('oracle.alerts.opsMtta')}</div>
               <div className="text-sm font-semibold text-purple-950">
-                {formatDurationMinutes(
-                  (opsMetrics.alerts.mttaMs ?? 0) / 60_000,
-                )}
+                {formatDurationMinutes((opsMetrics.alerts.mttaMs ?? 0) / 60_000)}
               </div>
             </div>
             <div className="rounded-lg border border-purple-100/60 bg-white/60 p-2">
               <div className="text-[11px] text-purple-700/70">
-                {t("oracle.alerts.opsAlertMttr")}
+                {t('oracle.alerts.opsAlertMttr')}
               </div>
               <div className="text-sm font-semibold text-purple-950">
-                {formatDurationMinutes(
-                  (opsMetrics.alerts.mttrMs ?? 0) / 60_000,
-                )}
+                {formatDurationMinutes((opsMetrics.alerts.mttrMs ?? 0) / 60_000)}
               </div>
             </div>
             <div className="rounded-lg border border-purple-100/60 bg-white/60 p-2">
               <div className="text-[11px] text-purple-700/70">
-                {t("oracle.alerts.opsIncidentsOpen")}
+                {t('oracle.alerts.opsIncidentsOpen')}
               </div>
               <div className="text-sm font-semibold text-purple-950">
                 {opsMetrics.incidents.open}
@@ -635,40 +588,28 @@ export function OpsMetricsCard({
             </div>
             <div className="rounded-lg border border-purple-100/60 bg-white/60 p-2">
               <div className="text-[11px] text-purple-700/70">
-                {t("oracle.alerts.opsIncidentMttr")}
+                {t('oracle.alerts.opsIncidentMttr')}
               </div>
               <div className="text-sm font-semibold text-purple-950">
-                {formatDurationMinutes(
-                  (opsMetrics.incidents.mttrMs ?? 0) / 60_000,
-                )}
+                {formatDurationMinutes((opsMetrics.incidents.mttrMs ?? 0) / 60_000)}
               </div>
             </div>
           </div>
 
           <div className="mt-3 rounded-lg border border-purple-100/60 bg-white/60 p-2">
             <div className="flex items-start justify-between gap-2">
-              <div className="text-[11px] text-purple-700/70">
-                {t("oracle.alerts.opsTrend")}
-              </div>
+              <div className="text-[11px] text-purple-700/70">{t('oracle.alerts.opsTrend')}</div>
               <div className="text-[11px] text-purple-700/70">7d</div>
             </div>
             {opsMetricsLoading ? (
-              <div className="mt-2 text-xs text-purple-700/70">
-                {t("common.loading")}
-              </div>
+              <div className="mt-2 text-xs text-purple-700/70">{t('common.loading')}</div>
             ) : !hasOpsSeries ? (
-              <div className="mt-2 text-xs text-purple-700/70">
-                {t("common.noData")}
-              </div>
+              <div className="mt-2 text-xs text-purple-700/70">{t('common.noData')}</div>
             ) : (
               <div className="mt-2 h-44 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={opsSeriesChartData}>
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      vertical={false}
-                      stroke="#ede9fe"
-                    />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ede9fe" />
                     <XAxis
                       dataKey="label"
                       tick={{ fontSize: 10 }}
@@ -683,15 +624,15 @@ export function OpsMetricsCard({
                     />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: "rgba(255, 255, 255, 0.9)",
-                        borderRadius: "12px",
-                        border: "1px solid rgba(148, 163, 184, 0.2)",
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        borderRadius: '12px',
+                        border: '1px solid rgba(148, 163, 184, 0.2)',
                       }}
                     />
                     <Legend
                       verticalAlign="bottom"
                       height={18}
-                      wrapperStyle={{ fontSize: "10px" }}
+                      wrapperStyle={{ fontSize: '10px' }}
                     />
                     <Line
                       type="monotone"
@@ -796,23 +737,21 @@ export function IncidentCard({
     <div className="rounded-xl border border-purple-100/60 bg-white/60 p-3">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <div className="truncate text-sm font-semibold text-purple-950">
-            {incident.title}
-          </div>
+          <div className="truncate text-sm font-semibold text-purple-950">{incident.title}</div>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-gray-500">
             <span
               className={cn(
-                "px-2 py-0.5 rounded-full text-[11px] font-semibold border",
+                'rounded-full border px-2 py-0.5 text-[11px] font-semibold',
                 severityBadge(incident.severity),
               )}
             >
               {incident.severity}
             </span>
-            <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold border bg-gray-50 text-gray-600">
+            <span className="rounded-full border bg-gray-50 px-2 py-0.5 text-[11px] font-semibold text-gray-600">
               {incident.status}
             </span>
             {incident.rootCause ? (
-              <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold border bg-purple-50 text-purple-700">
+              <span className="rounded-full border bg-purple-50 px-2 py-0.5 text-[11px] font-semibold text-purple-700">
                 {incident.rootCause}
               </span>
             ) : null}
@@ -851,44 +790,39 @@ export function IncidentCard({
                 }
                 className="rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50"
               >
-                {editingIncidentId === incident.id ? "Cancel" : "Edit"}
+                {editingIncidentId === incident.id ? 'Cancel' : 'Edit'}
               </button>
               {incident.alertIds?.length ? (
                 <>
                   <button
                     type="button"
-                    onClick={() => onIncidentAction(incident.id, "ack_alerts")}
+                    onClick={() => onIncidentAction(incident.id, 'ack_alerts')}
                     className="rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-semibold text-purple-700 shadow-sm ring-1 ring-purple-100 hover:bg-purple-50"
                   >
                     Ack alerts
                   </button>
                   <button
                     type="button"
-                    onClick={() =>
-                      onIncidentAction(incident.id, "resolve_alerts")
-                    }
+                    onClick={() => onIncidentAction(incident.id, 'resolve_alerts')}
                     className="rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-semibold text-emerald-700 shadow-sm ring-1 ring-emerald-100 hover:bg-emerald-50"
                   >
                     Resolve alerts
                   </button>
                 </>
               ) : null}
-              {incident.status !== "Mitigating" &&
-              incident.status !== "Resolved" ? (
+              {incident.status !== 'Mitigating' && incident.status !== 'Resolved' ? (
                 <button
                   type="button"
-                  onClick={() =>
-                    onPatchIncidentStatus(incident.id, "Mitigating")
-                  }
+                  onClick={() => onPatchIncidentStatus(incident.id, 'Mitigating')}
                   className="rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-semibold text-amber-800 shadow-sm ring-1 ring-amber-100 hover:bg-amber-50"
                 >
                   Mitigating
                 </button>
               ) : null}
-              {incident.status !== "Resolved" ? (
+              {incident.status !== 'Resolved' ? (
                 <button
                   type="button"
-                  onClick={() => onPatchIncidentStatus(incident.id, "Resolved")}
+                  onClick={() => onPatchIncidentStatus(incident.id, 'Resolved')}
                   className="rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-semibold text-emerald-700 shadow-sm ring-1 ring-emerald-100 hover:bg-emerald-50"
                 >
                   Resolve
@@ -901,7 +835,7 @@ export function IncidentCard({
 
       <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-500">
         {incident.owner ? (
-          <span className="rounded-md bg-gray-50 px-2 py-1 border border-gray-100">
+          <span className="rounded-md border border-gray-100 bg-gray-50 px-2 py-1">
             Owner: <span className="font-mono">{incident.owner}</span>
           </span>
         ) : null}
@@ -913,7 +847,7 @@ export function IncidentCard({
         />
       </div>
       {incident.summary ? (
-        <div className="mt-2 text-xs text-purple-800/80 whitespace-pre-wrap">
+        <div className="mt-2 whitespace-pre-wrap text-xs text-purple-800/80">
           {incident.summary}
         </div>
       ) : null}
@@ -922,23 +856,17 @@ export function IncidentCard({
         <div className="mt-3 space-y-2 rounded-xl border border-purple-100/60 bg-white/60 p-3">
           <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
             <label className="space-y-1">
-              <div className="text-[11px] font-semibold text-purple-900/80">
-                Title
-              </div>
+              <div className="text-[11px] font-semibold text-purple-900/80">Title</div>
               <input
                 value={incidentDraft.title}
                 onChange={(e) =>
-                  setIncidentDraft((prev) =>
-                    prev ? { ...prev, title: e.target.value } : prev,
-                  )
+                  setIncidentDraft((prev) => (prev ? { ...prev, title: e.target.value } : prev))
                 }
                 className="w-full rounded-lg border border-purple-100 bg-white px-2 py-1.5 text-xs text-purple-950 outline-none ring-purple-200 focus:ring-2"
               />
             </label>
             <label className="space-y-1">
-              <div className="text-[11px] font-semibold text-purple-900/80">
-                Severity
-              </div>
+              <div className="text-[11px] font-semibold text-purple-900/80">Severity</div>
               <select
                 value={incidentDraft.severity}
                 onChange={(e) =>
@@ -959,29 +887,21 @@ export function IncidentCard({
               </select>
             </label>
             <label className="space-y-1">
-              <div className="text-[11px] font-semibold text-purple-900/80">
-                Owner
-              </div>
+              <div className="text-[11px] font-semibold text-purple-900/80">Owner</div>
               <input
                 value={incidentDraft.owner}
                 onChange={(e) =>
-                  setIncidentDraft((prev) =>
-                    prev ? { ...prev, owner: e.target.value } : prev,
-                  )
+                  setIncidentDraft((prev) => (prev ? { ...prev, owner: e.target.value } : prev))
                 }
                 className="w-full rounded-lg border border-purple-100 bg-white px-2 py-1.5 text-xs text-purple-950 outline-none ring-purple-200 focus:ring-2"
               />
             </label>
             <label className="space-y-1">
-              <div className="text-[11px] font-semibold text-purple-900/80">
-                Root cause
-              </div>
+              <div className="text-[11px] font-semibold text-purple-900/80">Root cause</div>
               <select
                 value={incidentDraft.rootCause}
                 onChange={(e) =>
-                  setIncidentDraft((prev) =>
-                    prev ? { ...prev, rootCause: e.target.value } : prev,
-                  )
+                  setIncidentDraft((prev) => (prev ? { ...prev, rootCause: e.target.value } : prev))
                 }
                 className="w-full rounded-lg border border-purple-100 bg-white px-2 py-1.5 text-xs text-purple-950 outline-none ring-purple-200 focus:ring-2"
               >
@@ -993,23 +913,17 @@ export function IncidentCard({
               </select>
             </label>
             <label className="space-y-1">
-              <div className="text-[11px] font-semibold text-purple-900/80">
-                Runbook
-              </div>
+              <div className="text-[11px] font-semibold text-purple-900/80">Runbook</div>
               <input
                 value={incidentDraft.runbook}
                 onChange={(e) =>
-                  setIncidentDraft((prev) =>
-                    prev ? { ...prev, runbook: e.target.value } : prev,
-                  )
+                  setIncidentDraft((prev) => (prev ? { ...prev, runbook: e.target.value } : prev))
                 }
                 className="w-full rounded-lg border border-purple-100 bg-white px-2 py-1.5 text-xs text-purple-950 outline-none ring-purple-200 focus:ring-2"
               />
             </label>
             <label className="space-y-1">
-              <div className="text-[11px] font-semibold text-purple-900/80">
-                Entity Type
-              </div>
+              <div className="text-[11px] font-semibold text-purple-900/80">Entity Type</div>
               <input
                 value={incidentDraft.entityType}
                 onChange={(e) =>
@@ -1021,30 +935,22 @@ export function IncidentCard({
               />
             </label>
             <label className="space-y-1">
-              <div className="text-[11px] font-semibold text-purple-900/80">
-                Entity ID
-              </div>
+              <div className="text-[11px] font-semibold text-purple-900/80">Entity ID</div>
               <input
                 value={incidentDraft.entityId}
                 onChange={(e) =>
-                  setIncidentDraft((prev) =>
-                    prev ? { ...prev, entityId: e.target.value } : prev,
-                  )
+                  setIncidentDraft((prev) => (prev ? { ...prev, entityId: e.target.value } : prev))
                 }
                 className="w-full rounded-lg border border-purple-100 bg-white px-2 py-1.5 text-xs text-purple-950 outline-none ring-purple-200 focus:ring-2"
               />
             </label>
           </div>
-          <label className="space-y-1 block">
-            <div className="text-[11px] font-semibold text-purple-900/80">
-              Summary
-            </div>
+          <label className="block space-y-1">
+            <div className="text-[11px] font-semibold text-purple-900/80">Summary</div>
             <textarea
               value={incidentDraft.summary}
               onChange={(e) =>
-                setIncidentDraft((prev) =>
-                  prev ? { ...prev, summary: e.target.value } : prev,
-                )
+                setIncidentDraft((prev) => (prev ? { ...prev, summary: e.target.value } : prev))
               }
               rows={4}
               className="w-full rounded-lg border border-purple-100 bg-white px-2 py-1.5 text-xs text-purple-950 outline-none ring-purple-200 focus:ring-2"
@@ -1065,9 +971,7 @@ export function IncidentCard({
 
       {incident.alerts?.length ? (
         <div className="mt-3 space-y-2">
-          <div className="text-[11px] font-semibold text-purple-900/80">
-            Linked alerts
-          </div>
+          <div className="text-[11px] font-semibold text-purple-900/80">Linked alerts</div>
           <div className="space-y-1">
             {incident.alerts.map((alert) => (
               <div
@@ -1075,7 +979,7 @@ export function IncidentCard({
                 className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-purple-100/60 bg-white/60 px-2 py-1.5 text-[11px]"
               >
                 <div className="min-w-0">
-                  <span className="font-mono text-gray-500">#{alert.id}</span>{" "}
+                  <span className="font-mono text-gray-500">#{alert.id}</span>{' '}
                   <span className="text-purple-950">{alert.title}</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -1085,11 +989,11 @@ export function IncidentCard({
                     attachInstanceId={attachInstanceId}
                     sliceChars={14}
                     density="compact"
-                    onNoHrefClick={() => onApplyQuery(alert.entityId ?? "")}
+                    onNoHrefClick={() => onApplyQuery(alert.entityId ?? '')}
                   />
                   <span
                     className={cn(
-                      "px-2 py-0.5 rounded-full text-[11px] font-semibold border",
+                      'rounded-full border px-2 py-0.5 text-[11px] font-semibold',
                       severityBadge(alert.severity),
                     )}
                   >
@@ -1097,7 +1001,7 @@ export function IncidentCard({
                   </span>
                   <span
                     className={cn(
-                      "px-2 py-0.5 rounded-full text-[11px] font-semibold ring-1",
+                      'rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1',
                       statusBadge(alert.status),
                     )}
                   >

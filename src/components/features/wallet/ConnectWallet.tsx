@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { Wallet } from "lucide-react";
-import { useToast } from "@/components/ui/toast";
-import { useI18n } from "@/i18n/LanguageProvider";
-import { useWallet } from "@/contexts/WalletContext";
-import { normalizeWalletError } from "@/lib/errors/walletErrors";
-import { logger } from "@/lib/logger";
-import { UserMenu } from "@/components/features/wallet/UserMenu";
+import { Wallet } from 'lucide-react';
+import { useToast } from '@/components/ui/toast';
+import { useI18n } from '@/i18n/LanguageProvider';
+import { useWallet } from '@/contexts/WalletContext';
+import { normalizeWalletError } from '@/lib/errors/walletErrors';
+import { logger } from '@/lib/logger';
+import { UserMenu } from '@/components/features/wallet/UserMenu';
 
 export function ConnectWallet() {
   const { address, connect, isConnecting } = useWallet();
@@ -17,36 +17,36 @@ export function ConnectWallet() {
     try {
       await connect();
       toast({
-        type: "success",
-        title: t("wallet.connected"),
-        message: t("wallet.connectedMsg"),
+        type: 'success',
+        title: t('wallet.connected'),
+        message: t('wallet.connectedMsg'),
       });
     } catch (error: unknown) {
-      logger.error("Failed to connect wallet:", { error });
+      logger.error('Failed to connect wallet:', { error });
       const normalized = normalizeWalletError(error);
-      if (normalized.kind === "WALLET_NOT_FOUND") {
+      if (normalized.kind === 'WALLET_NOT_FOUND') {
         toast({
-          type: "error",
-          title: t("wallet.notFound"),
-          message: t("wallet.install"),
+          type: 'error',
+          title: t('wallet.notFound'),
+          message: t('wallet.install'),
         });
         return;
       }
       const msg =
-        normalized.kind === "USER_REJECTED"
-          ? t("errors.userRejected")
-          : normalized.kind === "REQUEST_PENDING"
-            ? t("errors.requestPending")
-            : normalized.kind === "CHAIN_NOT_ADDED"
-              ? t("errors.chainNotAdded")
-              : normalized.kind === "WRONG_NETWORK"
-                ? t("errors.wrongNetwork")
-                : normalized.kind === "INSUFFICIENT_FUNDS"
-                  ? t("errors.insufficientFunds")
-                  : t("errors.unknownError");
+        normalized.kind === 'USER_REJECTED'
+          ? t('errors.userRejected')
+          : normalized.kind === 'REQUEST_PENDING'
+            ? t('errors.requestPending')
+            : normalized.kind === 'CHAIN_NOT_ADDED'
+              ? t('errors.chainNotAdded')
+              : normalized.kind === 'WRONG_NETWORK'
+                ? t('errors.wrongNetwork')
+                : normalized.kind === 'INSUFFICIENT_FUNDS'
+                  ? t('errors.insufficientFunds')
+                  : t('errors.unknownError');
       toast({
-        type: "error",
-        title: t("wallet.failed"),
+        type: 'error',
+        title: t('wallet.failed'),
         message: msg,
       });
     }
@@ -60,10 +60,10 @@ export function ConnectWallet() {
     <button
       onClick={handleConnect}
       disabled={isConnecting}
-      className="flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      className="flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
     >
       <Wallet size={16} />
-      {isConnecting ? t("wallet.connecting") : t("wallet.connect")}
+      {isConnecting ? t('wallet.connecting') : t('wallet.connect')}
     </button>
   );
 }

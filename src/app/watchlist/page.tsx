@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useState } from "react";
-import type { Route } from "next";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useWatchlist } from "@/hooks/user/useWatchlist";
-import type { BaseResponse } from "@/hooks/ui/useInfiniteList";
-import { useInfiniteList } from "@/hooks/ui/useInfiniteList";
-import type { Assertion } from "@/lib/types/oracleTypes";
-import { AssertionList } from "@/components/features/assertion/AssertionList";
-import { PageHeader } from "@/components/features/common/PageHeader";
-import { useI18n } from "@/i18n/LanguageProvider";
-import { getUiErrorMessage } from "@/i18n/translations";
-import { Star } from "lucide-react";
-import Link from "next/link";
+import { useCallback, useEffect, useState } from 'react';
+import type { Route } from 'next';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useWatchlist } from '@/hooks/user/useWatchlist';
+import type { BaseResponse } from '@/hooks/ui/useInfiniteList';
+import { useInfiniteList } from '@/hooks/ui/useInfiniteList';
+import type { Assertion } from '@/lib/types/oracleTypes';
+import { AssertionList } from '@/components/features/assertion/AssertionList';
+import { PageHeader } from '@/components/features/common/PageHeader';
+import { useI18n } from '@/i18n/LanguageProvider';
+import { getUiErrorMessage } from '@/i18n/translations';
+import { Star } from 'lucide-react';
+import Link from 'next/link';
 
 export default function WatchlistPage() {
   const { t } = useI18n();
@@ -20,21 +20,20 @@ export default function WatchlistPage() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const currentSearch = searchParams?.toString() ?? "";
-  const instanceIdFromUrl = searchParams?.get("instanceId")?.trim() || "";
+  const currentSearch = searchParams?.toString() ?? '';
+  const instanceIdFromUrl = searchParams?.get('instanceId')?.trim() || '';
   const [instanceId, setInstanceId] = useState<string>(() => {
     try {
-      if (typeof window === "undefined") return "default";
-      const saved = window.localStorage.getItem("oracleFilters");
-      if (!saved) return "default";
+      if (typeof window === 'undefined') return 'default';
+      const saved = window.localStorage.getItem('oracleFilters');
+      if (!saved) return 'default';
       const parsed = JSON.parse(saved) as { instanceId?: unknown } | null;
-      const value =
-        parsed && typeof parsed === "object" ? parsed.instanceId : null;
-      if (typeof value === "string" && value.trim()) return value.trim();
+      const value = parsed && typeof parsed === 'object' ? parsed.instanceId : null;
+      if (typeof value === 'string' && value.trim()) return value.trim();
     } catch {
-      return "default";
+      return 'default';
     }
-    return "default";
+    return 'default';
   });
 
   useEffect(() => {
@@ -46,29 +45,23 @@ export default function WatchlistPage() {
   useEffect(() => {
     const normalized = instanceId.trim();
     const params = new URLSearchParams(currentSearch);
-    if (normalized) params.set("instanceId", normalized);
-    else params.delete("instanceId");
+    if (normalized) params.set('instanceId', normalized);
+    else params.delete('instanceId');
     const nextSearch = params.toString();
     const nextUrl = nextSearch ? `${pathname}?${nextSearch}` : pathname;
-    const currentUrl = currentSearch
-      ? `${pathname}?${currentSearch}`
-      : pathname;
-    if (nextUrl !== currentUrl)
-      router.replace(nextUrl as Route, { scroll: false });
+    const currentUrl = currentSearch ? `${pathname}?${currentSearch}` : pathname;
+    if (nextUrl !== currentUrl) router.replace(nextUrl as Route, { scroll: false });
   }, [instanceId, pathname, router, currentSearch]);
 
   useEffect(() => {
     try {
-      const raw = window.localStorage.getItem("oracleFilters");
-      const parsed =
-        raw && raw.trim()
-          ? (JSON.parse(raw) as Record<string, unknown> | null)
-          : null;
+      const raw = window.localStorage.getItem('oracleFilters');
+      const parsed = raw && raw.trim() ? (JSON.parse(raw) as Record<string, unknown> | null) : null;
       const next = {
-        ...(parsed && typeof parsed === "object" ? parsed : {}),
+        ...(parsed && typeof parsed === 'object' ? parsed : {}),
         instanceId,
       };
-      window.localStorage.setItem("oracleFilters", JSON.stringify(next));
+      window.localStorage.setItem('oracleFilters', JSON.stringify(next));
     } catch {
       void 0;
     }
@@ -80,12 +73,12 @@ export default function WatchlistPage() {
       if (previousPageData && previousPageData.nextCursor === null) return null;
 
       const params = new URLSearchParams();
-      if (instanceId) params.set("instanceId", instanceId);
-      params.set("ids", watchlist.join(","));
-      params.set("limit", "30");
+      if (instanceId) params.set('instanceId', instanceId);
+      params.set('ids', watchlist.join(','));
+      params.set('limit', '30');
 
       if (pageIndex > 0 && previousPageData?.nextCursor) {
-        params.set("cursor", String(previousPageData.nextCursor));
+        params.set('cursor', String(previousPageData.nextCursor));
       }
 
       return `/api/oracle/assertions?${params.toString()}`;
@@ -93,37 +86,31 @@ export default function WatchlistPage() {
     [watchlist, mounted, instanceId],
   );
 
-  const { items, loading, loadingMore, hasMore, loadMore, error } =
-    useInfiniteList<Assertion>(getUrl, { revalidateOnFocus: true });
+  const { items, loading, loadingMore, hasMore, loadMore, error } = useInfiniteList<Assertion>(
+    getUrl,
+    { revalidateOnFocus: true },
+  );
 
   return (
     <main className="container mx-auto px-4 py-8 pb-24">
-      <PageHeader title={t("nav.watchlist")} />
+      <PageHeader title={t('nav.watchlist')} />
 
       {!mounted ? (
         <div className="flex flex-col items-center justify-center py-20">
-          <div className="w-8 h-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-purple-200 border-t-purple-600"></div>
         </div>
       ) : watchlist.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+          <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gray-100">
             <Star size={48} className="text-gray-300" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-700 mb-2">
-            {t("common.noData")}
-          </h2>
-          <p className="text-gray-500 max-w-md mb-8">
-            {t("watchlist.emptyDesc")}
-          </p>
+          <h2 className="mb-2 text-2xl font-bold text-gray-700">{t('common.noData')}</h2>
+          <p className="mb-8 max-w-md text-gray-500">{t('watchlist.emptyDesc')}</p>
           <Link
-            href={
-              instanceId
-                ? `/oracle?instanceId=${encodeURIComponent(instanceId)}`
-                : "/oracle"
-            }
-            className="px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors font-medium shadow-lg shadow-purple-500/20"
+            href={instanceId ? `/oracle?instanceId=${encodeURIComponent(instanceId)}` : '/oracle'}
+            className="rounded-xl bg-purple-600 px-6 py-3 font-medium text-white shadow-lg shadow-purple-500/20 transition-colors hover:bg-purple-700"
           >
-            {t("nav.oracle")}
+            {t('nav.oracle')}
           </Link>
         </div>
       ) : (
@@ -139,7 +126,7 @@ export default function WatchlistPage() {
             hasMore={hasMore}
             loadMore={loadMore}
             loadingMore={loadingMore}
-            emptyStateMessage={t("common.noData")}
+            emptyStateMessage={t('common.noData')}
             viewMode="grid"
             instanceId={instanceId}
           />

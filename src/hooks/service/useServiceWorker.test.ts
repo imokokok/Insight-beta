@@ -1,16 +1,16 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { renderHook } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { renderHook } from '@testing-library/react';
 import {
   useServiceWorker,
   useOfflineStatus,
   useCachedData,
-} from "@/hooks/service/useServiceWorker";
+} from '@/hooks/service/useServiceWorker';
 
-describe("useServiceWorker", () => {
+describe('useServiceWorker', () => {
   const originalServiceWorker = navigator.serviceWorker;
 
   beforeEach(() => {
-    Object.defineProperty(navigator, "serviceWorker", {
+    Object.defineProperty(navigator, 'serviceWorker', {
       writable: true,
       configurable: true,
       value: {
@@ -24,7 +24,7 @@ describe("useServiceWorker", () => {
   });
 
   afterEach(() => {
-    Object.defineProperty(navigator, "serviceWorker", {
+    Object.defineProperty(navigator, 'serviceWorker', {
       writable: true,
       configurable: true,
       value: originalServiceWorker,
@@ -32,17 +32,17 @@ describe("useServiceWorker", () => {
     vi.clearAllMocks();
   });
 
-  it("should detect service worker support", () => {
+  it('should detect service worker support', () => {
     const { result } = renderHook(() => useServiceWorker());
     expect(result.current.isSupported).toBe(true);
   });
 });
 
-describe("useOfflineStatus", () => {
+describe('useOfflineStatus', () => {
   const originalOnline = navigator.onLine;
 
   beforeEach(() => {
-    Object.defineProperty(navigator, "onLine", {
+    Object.defineProperty(navigator, 'onLine', {
       writable: true,
       configurable: true,
       value: true,
@@ -50,20 +50,20 @@ describe("useOfflineStatus", () => {
   });
 
   afterEach(() => {
-    Object.defineProperty(navigator, "onLine", {
+    Object.defineProperty(navigator, 'onLine', {
       writable: true,
       configurable: true,
       value: originalOnline,
     });
   });
 
-  it("should return true when online", () => {
+  it('should return true when online', () => {
     const { result } = renderHook(() => useOfflineStatus());
     expect(result.current).toBe(true);
   });
 
-  it("should return false when offline", () => {
-    Object.defineProperty(navigator, "onLine", {
+  it('should return false when offline', () => {
+    Object.defineProperty(navigator, 'onLine', {
       writable: true,
       configurable: true,
       value: false,
@@ -74,7 +74,7 @@ describe("useOfflineStatus", () => {
   });
 });
 
-describe("useCachedData", () => {
+describe('useCachedData', () => {
   beforeEach(() => {
     localStorage.clear();
   });
@@ -83,12 +83,10 @@ describe("useCachedData", () => {
     localStorage.clear();
   });
 
-  it("should return initial state", () => {
-    const fetcher = vi.fn().mockResolvedValue({ data: "test" });
+  it('should return initial state', () => {
+    const fetcher = vi.fn().mockResolvedValue({ data: 'test' });
 
-    const { result } = renderHook(() =>
-      useCachedData("test-key", fetcher, 60000),
-    );
+    const { result } = renderHook(() => useCachedData('test-key', fetcher, 60000));
 
     expect(result.current).toBeDefined();
   });

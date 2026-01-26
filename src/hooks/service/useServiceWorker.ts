@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from 'react';
 
 interface ServiceWorkerState {
   isSupported: boolean;
@@ -20,7 +20,7 @@ export function useServiceWorker() {
   });
 
   useEffect(() => {
-    if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
       setState((prev) => ({ ...prev, isSupported: false }));
       return;
     }
@@ -29,20 +29,17 @@ export function useServiceWorker() {
 
     async function registerSW() {
       try {
-        const registration = await navigator.serviceWorker.register("/sw.js", {
-          scope: "/",
+        const registration = await navigator.serviceWorker.register('/sw.js', {
+          scope: '/',
         });
 
-        registration.addEventListener("updatefound", () => {
+        registration.addEventListener('updatefound', () => {
           setState((prev) => ({ ...prev, isUpdating: true }));
 
           const newWorker = registration.installing;
           if (newWorker) {
-            newWorker.addEventListener("statechange", () => {
-              if (
-                newWorker.state === "installed" &&
-                navigator.serviceWorker.controller
-              ) {
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                 setState((prev) => ({ ...prev, isUpdating: false }));
               }
             });
@@ -57,8 +54,7 @@ export function useServiceWorker() {
       } catch (error) {
         setState((prev) => ({
           ...prev,
-          error:
-            error instanceof Error ? error : new Error("Registration failed"),
+          error: error instanceof Error ? error : new Error('Registration failed'),
         }));
       }
     }
@@ -68,7 +64,7 @@ export function useServiceWorker() {
 
   const skipWaiting = useCallback(() => {
     if (state.registration?.waiting) {
-      state.registration.waiting.postMessage({ type: "SKIP_WAITING" });
+      state.registration.waiting.postMessage({ type: 'SKIP_WAITING' });
     }
   }, [state.registration]);
 
@@ -81,12 +77,9 @@ export function useServiceWorker() {
   }, [state.registration]);
 
   const requestSync = useCallback(
-    async (tag: string = "sync-assertions") => {
+    async (tag: string = 'sync-assertions') => {
       try {
-        if (
-          "sync" in ServiceWorkerRegistration.prototype &&
-          state.registration
-        ) {
+        if ('sync' in ServiceWorkerRegistration.prototype && state.registration) {
           await (
             state.registration as unknown as {
               sync: { register: (tag: string) => Promise<void> };
@@ -115,7 +108,7 @@ export function useOfflineStatus() {
   const [isOnline, setIsOnline] = useState(true);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
 
     setIsOnline(navigator.onLine);
 
@@ -127,12 +120,12 @@ export function useOfflineStatus() {
       setIsOnline(false);
     }
 
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
 
     return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
     };
   }, []);
 
@@ -174,7 +167,7 @@ export function useCachedData<T>(
             return;
           }
         }
-        throw new Error("Offline - No cached data available");
+        throw new Error('Offline - No cached data available');
       }
 
       const result = await fetcher();
@@ -188,7 +181,7 @@ export function useCachedData<T>(
 
       setData(result);
     } catch (err) {
-      const error = err instanceof Error ? err : new Error("Fetch failed");
+      const error = err instanceof Error ? err : new Error('Fetch failed');
 
       if (!data) {
         setError(error);

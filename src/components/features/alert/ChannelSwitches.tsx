@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { Switch } from "@/components/ui/switch";
-import { cn } from "@/lib/utils";
-import type { Channel } from "./AlertRulesManager";
+import { Switch } from '@/components/ui/switch';
+import { cn } from '@/lib/utils';
+import type { Channel } from './AlertRulesManager';
 
 interface ChannelSwitchesProps {
   ruleId: string;
@@ -25,60 +25,55 @@ function ChannelSwitch({
   onToggle: (id: string, channel: Channel, enabled: boolean) => void;
 }) {
   return (
-    <div className="flex items-center justify-between rounded-xl bg-white/60 ring-1 ring-black/5 px-4 py-3">
+    <div className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 ring-1 ring-black/5">
       <div className="text-sm font-semibold text-gray-800">{label}</div>
       <Switch
         checked={checked}
         onCheckedChange={(enabled) => onToggle(ruleId, channel, enabled)}
-        className={cn("data-[state=checked]:bg-purple-600", "h-6 w-11")}
+        className={cn('data-[state=checked]:bg-purple-600', 'h-6 w-11')}
       />
     </div>
   );
 }
 
-export function ChannelSwitches({
-  ruleId,
-  channels,
-  onToggleChannel,
-  t,
-}: ChannelSwitchesProps) {
+export function ChannelSwitches({ ruleId, channels, onToggleChannel, t }: ChannelSwitchesProps) {
   return (
     <>
       <div className="md:col-span-4">
-        <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-          {t("oracle.alerts.channelsWebhook")}
+        <div className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-500">
+          {t('oracle.alerts.channelsWebhook')}
         </div>
         <ChannelSwitch
           ruleId={ruleId}
           channel="webhook"
-          checked={channels.includes("webhook")}
-          label={t("oracle.alerts.channelsWebhook")}
+          checked={channels.includes('webhook')}
+          label={t('oracle.alerts.channelsWebhook')}
           onToggle={onToggleChannel}
         />
       </div>
 
       <div className="md:col-span-4">
-        <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-          {t("oracle.alerts.channelsEmail")}
+        <div className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-500">
+          {t('oracle.alerts.channelsEmail')}
         </div>
         <ChannelSwitch
           ruleId={ruleId}
           channel="email"
-          checked={channels.includes("email")}
-          label={t("oracle.alerts.channelsEmail")}
+          checked={channels.includes('email')}
+          label={t('oracle.alerts.channelsEmail')}
           onToggle={onToggleChannel}
         />
       </div>
 
       <div className="md:col-span-4">
-        <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-          {t("oracle.alerts.channelsTelegram")}
+        <div className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-500">
+          {t('oracle.alerts.channelsTelegram')}
         </div>
         <ChannelSwitch
           ruleId={ruleId}
           channel="telegram"
-          checked={channels.includes("telegram")}
-          label={t("oracle.alerts.channelsTelegram")}
+          checked={channels.includes('telegram')}
+          label={t('oracle.alerts.channelsTelegram')}
           onToggle={onToggleChannel}
         />
       </div>

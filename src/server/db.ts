@@ -1,7 +1,7 @@
-import pg from "pg";
-import { env } from "@/lib/config/env";
-import crypto from "node:crypto";
-import { logger } from "@/lib/logger";
+import pg from 'pg';
+import { env } from '@/lib/config/env';
+import crypto from 'node:crypto';
+import { logger } from '@/lib/logger';
 
 const { Pool } = pg;
 
@@ -13,26 +13,22 @@ type DbAlertRule = {
   id: string;
   enabled: boolean;
   event: string;
-  severity: "info" | "warning" | "critical";
+  severity: 'info' | 'warning' | 'critical';
   silencedUntil?: string | null;
   params?: Record<string, unknown>;
-  channels?: Array<"webhook" | "email" | "telegram">;
+  channels?: Array<'webhook' | 'email' | 'telegram'>;
   recipient?: string | null;
 };
 
 const globalForDbAlerts = globalThis as unknown as {
-  insightDbAlertRulesCache?:
-    | { loadedAtMs: number; rules: DbAlertRule[] }
-    | null
-    | undefined;
+  insightDbAlertRulesCache?: { loadedAtMs: number; rules: DbAlertRule[] } | null | undefined;
   insightDbAlertRulesInflight?: Promise<DbAlertRule[]> | null | undefined;
   insightDbAlertCooldown?: Map<string, number> | undefined;
   insightDbAlertDepth?: number | undefined;
 };
 
-const dbAlertCooldown =
-  globalForDbAlerts.insightDbAlertCooldown ?? new Map<string, number>();
-if (process.env.NODE_ENV !== "production") {
+const dbAlertCooldown = globalForDbAlerts.insightDbAlertCooldown ?? new Map<string, number>();
+if (process.env.NODE_ENV !== 'production') {
   globalForDbAlerts.insightDbAlertCooldown = dbAlertCooldown;
 }
 
@@ -70,36 +66,21 @@ export const db =
   globalForDb.conn ??
   new Pool({
     connectionString: getDbUrl() || undefined,
-    max: Math.max(
-      10,
-      Math.min(50, Number(process.env.INSIGHT_DB_POOL_SIZE) || 20),
-    ),
+    max: Math.max(10, Math.min(50, Number(process.env.INSIGHT_DB_POOL_SIZE) || 20)),
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 10000,
     maxUses: Math.max(1000, Number(process.env.INSIGHT_DB_MAX_USES) || 7500),
-    ssl:
-      process.env.NODE_ENV === "production"
-        ? { rejectUnauthorized: true }
-        : false,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : false,
   });
 
-if (process.env.NODE_ENV !== "production") globalForDb.conn = db;
+if (process.env.NODE_ENV !== 'production') globalForDb.conn = db;
 
 export async function query<T extends pg.QueryResultRow>(
   text: string,
-  params?: (
-    | string
-    | number
-    | boolean
-    | Date
-    | null
-    | undefined
-    | string[]
-    | number[]
-  )[],
+  params?: (string | number | boolean | Date | null | undefined | string[] | number[])[],
 ) {
   if (!getDbUrl()) {
-    throw new Error("missing_database_url");
+    throw new Error('missing_database_url');
   }
   const client = await db.connect();
   const startedAt = Date.now();
@@ -107,9 +88,7 @@ export async function query<T extends pg.QueryResultRow>(
     const res = await client.query<T>(text, params);
     const durationMs = Date.now() - startedAt;
     if ((globalForDbAlerts.insightDbAlertDepth ?? 0) <= 0 && durationMs >= 5) {
-      void maybeAlertDatabaseSlowQuery({ text, durationMs }).catch(
-        () => void 0,
-      );
+      void maybeAlertDatabaseSlowQuery({ text, durationMs }).catch(() => void 0);
     }
     return res;
   } finally {
@@ -119,7 +98,7 @@ export async function query<T extends pg.QueryResultRow>(
 
 export async function getClient() {
   if (!getDbUrl()) {
-    throw new Error("missing_database_url");
+    throw new Error('missing_database_url');
   }
   return db.connect();
 }
@@ -135,9 +114,7 @@ async function getAlertRulesCached(): Promise<DbAlertRule[]> {
   if (globalForDbAlerts.insightDbAlertRulesInflight)
     return globalForDbAlerts.insightDbAlertRulesInflight;
 
-  const p = withDbAlertDepth(() =>
-    import("@/server/observability").then((m) => m.readAlertRules()),
-  )
+  const p = withDbAlertDepth(() => import('@/server/observability').then((m) => m.readAlertRules()))
     .then((rules) => {
       globalForDbAlerts.insightDbAlertRulesCache = { loadedAtMs: now, rules };
       return rules;
@@ -158,25 +135,25 @@ async function getAlertRulesCached(): Promise<DbAlertRule[]> {
 }
 
 function toQueryFingerprint(text: string) {
-  const normalized = text.replace(/\s+/g, " ").trim();
-  const hash = crypto.createHash("sha1").update(normalized).digest("hex");
+  const normalized = text.replace(/\s+/g, ' ').trim();
+  const hash = crypto.createHash('sha1').update(normalized).digest('hex');
   return hash.slice(0, 16);
 }
 
 function extractOperation(text: string): string {
-  const normalized = text.replace(/\s+/g, " ").trim();
-  const first = normalized.split(" ", 1)[0] || "QUERY";
+  const normalized = text.replace(/\s+/g, ' ').trim();
+  const first = normalized.split(' ', 1)[0] || 'QUERY';
   return first.toUpperCase();
 }
 
 function extractTable(text: string): string | null {
-  const normalized = text.replace(/\s+/g, " ").trim();
+  const normalized = text.replace(/\s+/g, ' ').trim();
   const from = /\bfrom\s+([a-zA-Z0-9_."']+)/i.exec(normalized)?.[1];
-  if (from) return from.replace(/['"]/g, "");
+  if (from) return from.replace(/['"]/g, '');
   const into = /\binto\s+([a-zA-Z0-9_."']+)/i.exec(normalized)?.[1];
-  if (into) return into.replace(/['"]/g, "");
+  if (into) return into.replace(/['"]/g, '');
   const update = /\bupdate\s+([a-zA-Z0-9_."']+)/i.exec(normalized)?.[1];
-  if (update) return update.replace(/['"]/g, "");
+  if (update) return update.replace(/['"]/g, '');
   return null;
 }
 
@@ -193,21 +170,21 @@ async function createAlertIfNeeded(
   if (now - lastAt < 30_000) return;
   dbAlertCooldown.set(cooldownKey, now);
 
-  const silencedUntilRaw = (rule.silencedUntil ?? "").trim();
+  const silencedUntilRaw = (rule.silencedUntil ?? '').trim();
   const silencedUntilMs = silencedUntilRaw ? Date.parse(silencedUntilRaw) : NaN;
   const silenced = Number.isFinite(silencedUntilMs) && silencedUntilMs > now;
 
   const depth = globalForDbAlerts.insightDbAlertDepth ?? 0;
   globalForDbAlerts.insightDbAlertDepth = depth + 1;
   try {
-    const { createOrTouchAlert } = await import("@/server/observability");
+    const { createOrTouchAlert } = await import('@/server/observability');
     await createOrTouchAlert({
       fingerprint,
       type: rule.event,
       severity: rule.severity,
       title,
       message,
-      entityType: "db",
+      entityType: 'db',
       entityId,
       notify: silenced
         ? { channels: [] }
@@ -221,14 +198,9 @@ async function createAlertIfNeeded(
   }
 }
 
-async function maybeAlertDatabaseSlowQuery(input: {
-  text: string;
-  durationMs: number;
-}) {
+async function maybeAlertDatabaseSlowQuery(input: { text: string; durationMs: number }) {
   const rules = await getAlertRulesCached();
-  const slowRules = rules.filter(
-    (r) => r.enabled && r.event === "database_slow_query",
-  );
+  const slowRules = rules.filter((r) => r.enabled && r.event === 'database_slow_query');
   if (slowRules.length === 0) return;
 
   const op = extractOperation(input.text);
@@ -237,29 +209,22 @@ async function maybeAlertDatabaseSlowQuery(input: {
 
   for (const rule of slowRules) {
     const thresholdMs = Number(
-      (rule.params as { thresholdMs?: unknown } | undefined)?.thresholdMs ??
-        200,
+      (rule.params as { thresholdMs?: unknown } | undefined)?.thresholdMs ?? 200,
     );
 
     if (!Number.isFinite(thresholdMs) || thresholdMs <= 0) continue;
     if (input.durationMs < thresholdMs) continue;
 
     const fingerprint = `${rule.id}:${fingerprintHash}`;
-    logger.warn("db_slow_query", {
+    logger.warn('db_slow_query', {
       op,
       table,
       fingerprint: fingerprintHash,
       durationMs: input.durationMs,
       thresholdMs,
     });
-    const message = `${op}${table ? ` ${table}` : ""} took ${input.durationMs}ms (threshold ${thresholdMs}ms)`;
+    const message = `${op}${table ? ` ${table}` : ''} took ${input.durationMs}ms (threshold ${thresholdMs}ms)`;
 
-    await createAlertIfNeeded(
-      rule,
-      fingerprint,
-      "Database slow query",
-      message,
-      table ?? op,
-    );
+    await createAlertIfNeeded(rule, fingerprint, 'Database slow query', message, table ?? op);
   }
 }

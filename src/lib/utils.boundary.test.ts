@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   parseRpcUrls,
   isZeroBytes32,
@@ -12,388 +12,369 @@ import {
   getExplorerUrl,
   fetchApiData,
   ApiClientError,
-} from "@/lib/utils";
-import {
-  getCacheKey,
-  clearMemoryCache,
-} from "@/lib/performance/requestOptimization";
+} from '@/lib/utils';
+import { getCacheKey, clearMemoryCache } from '@/lib/performance/requestOptimization';
 
-describe("parseRpcUrls", () => {
-  it("should parse valid RPC URLs", () => {
-    const result = parseRpcUrls(
-      "https://rpc.example.com, wss://ws.example.com",
-    );
-    expect(result).toContain("https://rpc.example.com");
-    expect(result).toContain("wss://ws.example.com");
+describe('parseRpcUrls', () => {
+  it('should parse valid RPC URLs', () => {
+    const result = parseRpcUrls('https://rpc.example.com, wss://ws.example.com');
+    expect(result).toContain('https://rpc.example.com');
+    expect(result).toContain('wss://ws.example.com');
   });
 
-  it("should filter out invalid URLs", () => {
-    const result = parseRpcUrls("https://rpc.example.com, ftp://invalid.com");
+  it('should filter out invalid URLs', () => {
+    const result = parseRpcUrls('https://rpc.example.com, ftp://invalid.com');
     expect(result).toHaveLength(1);
-    expect(result).toContain("https://rpc.example.com");
+    expect(result).toContain('https://rpc.example.com');
   });
 
-  it("should handle empty input", () => {
-    expect(parseRpcUrls("")).toEqual([]);
-    expect(parseRpcUrls("   ")).toEqual([]);
+  it('should handle empty input', () => {
+    expect(parseRpcUrls('')).toEqual([]);
+    expect(parseRpcUrls('   ')).toEqual([]);
   });
 
-  it("should remove duplicates", () => {
-    const result = parseRpcUrls(
-      "https://rpc.example.com, https://rpc.example.com",
-    );
+  it('should remove duplicates', () => {
+    const result = parseRpcUrls('https://rpc.example.com, https://rpc.example.com');
     expect(result).toHaveLength(1);
   });
 
-  it("should handle mixed whitespace", () => {
-    const result = parseRpcUrls(
-      "  https://rpc1.com  \n  https://rpc2.com  \t  ",
-    );
+  it('should handle mixed whitespace', () => {
+    const result = parseRpcUrls('  https://rpc1.com  \n  https://rpc2.com  \t  ');
     expect(result).toHaveLength(2);
   });
 });
 
-describe("isZeroBytes32", () => {
-  it("should return true for zero bytes32", () => {
+describe('isZeroBytes32', () => {
+  it('should return true for zero bytes32', () => {
     expect(
-      isZeroBytes32(
-        "0x0000000000000000000000000000000000000000000000000000000000000000",
-      ),
+      isZeroBytes32('0x0000000000000000000000000000000000000000000000000000000000000000'),
     ).toBe(true);
   });
 
-  it("should return false for non-zero bytes32", () => {
+  it('should return false for non-zero bytes32', () => {
     expect(
-      isZeroBytes32(
-        "0x0000000000000000000000000000000000000000000000000000000000000001",
-      ),
+      isZeroBytes32('0x0000000000000000000000000000000000000000000000000000000000000001'),
     ).toBe(false);
   });
 
-  it("should return true for undefined", () => {
+  it('should return true for undefined', () => {
     expect(isZeroBytes32(undefined)).toBe(true);
   });
 
-  it("should be case insensitive", () => {
+  it('should be case insensitive', () => {
     const zeroBytes32: `0x${string}` =
-      "0x0000000000000000000000000000000000000000000000000000000000000000";
-    expect(isZeroBytes32(zeroBytes32.toUpperCase() as `0x${string}`)).toBe(
-      true,
-    );
-    expect(isZeroBytes32(zeroBytes32.toLowerCase() as `0x${string}`)).toBe(
-      true,
-    );
+      '0x0000000000000000000000000000000000000000000000000000000000000000';
+    expect(isZeroBytes32(zeroBytes32.toUpperCase() as `0x${string}`)).toBe(true);
+    expect(isZeroBytes32(zeroBytes32.toLowerCase() as `0x${string}`)).toBe(true);
   });
 });
 
-describe("toIsoFromSeconds", () => {
-  it("should convert seconds to ISO string", () => {
+describe('toIsoFromSeconds', () => {
+  it('should convert seconds to ISO string', () => {
     const result = toIsoFromSeconds(1704067200n);
     expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T/);
   });
 
-  it("should handle zero", () => {
+  it('should handle zero', () => {
     const result = toIsoFromSeconds(0n);
-    expect(result).toBe("1970-01-01T00:00:00.000Z");
+    expect(result).toBe('1970-01-01T00:00:00.000Z');
   });
 
-  it("should handle large numbers", () => {
+  it('should handle large numbers', () => {
     const result = toIsoFromSeconds(9999999999n);
-    expect(result).toContain("2286");
+    expect(result).toContain('2286');
   });
 });
 
-describe("formatUsdCompact", () => {
-  it("should format large numbers compactly", () => {
-    expect(formatUsdCompact(1000000, "en-US")).toContain("$");
+describe('formatUsdCompact', () => {
+  it('should format large numbers compactly', () => {
+    expect(formatUsdCompact(1000000, 'en-US')).toContain('$');
   });
 
-  it("should handle zero", () => {
-    expect(formatUsdCompact(0, "en-US")).toContain("$0");
+  it('should handle zero', () => {
+    expect(formatUsdCompact(0, 'en-US')).toContain('$0');
   });
 
-  it("should handle negative numbers", () => {
-    const result = formatUsdCompact(-1000, "en-US");
-    expect(result).toContain("$");
-  });
-});
-
-describe("formatUsd", () => {
-  it("should format USD correctly", () => {
-    expect(formatUsd(1000, "en-US")).toContain("$");
-    expect(formatUsd(1000000, "en-US")).toContain("$");
-  });
-
-  it("should handle zero", () => {
-    expect(formatUsd(0, "en-US")).toContain("$0");
+  it('should handle negative numbers', () => {
+    const result = formatUsdCompact(-1000, 'en-US');
+    expect(result).toContain('$');
   });
 });
 
-describe("formatNumberCompact", () => {
-  it("should format numbers compactly", () => {
-    expect(formatNumberCompact(1000000, "en-US")).toBeTruthy();
+describe('formatUsd', () => {
+  it('should format USD correctly', () => {
+    expect(formatUsd(1000, 'en-US')).toContain('$');
+    expect(formatUsd(1000000, 'en-US')).toContain('$');
   });
 
-  it("should handle zero", () => {
-    expect(formatNumberCompact(0, "en-US")).toBe("0");
-  });
-
-  it("should handle small numbers", () => {
-    expect(formatNumberCompact(100, "en-US")).toBe("100");
+  it('should handle zero', () => {
+    expect(formatUsd(0, 'en-US')).toContain('$0');
   });
 });
 
-describe("formatTime", () => {
-  it("should format valid ISO string", () => {
-    const result = formatTime(new Date().toISOString(), "en-US");
+describe('formatNumberCompact', () => {
+  it('should format numbers compactly', () => {
+    expect(formatNumberCompact(1000000, 'en-US')).toBeTruthy();
+  });
+
+  it('should handle zero', () => {
+    expect(formatNumberCompact(0, 'en-US')).toBe('0');
+  });
+
+  it('should handle small numbers', () => {
+    expect(formatNumberCompact(100, 'en-US')).toBe('100');
+  });
+});
+
+describe('formatTime', () => {
+  it('should format valid ISO string', () => {
+    const result = formatTime(new Date().toISOString(), 'en-US');
     expect(result).toBeTruthy();
   });
 
-  it("should return placeholder for null", () => {
-    expect(formatTime(null, "en-US")).toBe("—");
+  it('should return placeholder for null', () => {
+    expect(formatTime(null, 'en-US')).toBe('—');
   });
 
-  it("should return placeholder for undefined", () => {
-    expect(formatTime(undefined, "en-US")).toBe("—");
+  it('should return placeholder for undefined', () => {
+    expect(formatTime(undefined, 'en-US')).toBe('—');
   });
 
-  it("should return placeholder for invalid date", () => {
-    expect(formatTime("invalid-date", "en-US")).toBe("—");
+  it('should return placeholder for invalid date', () => {
+    expect(formatTime('invalid-date', 'en-US')).toBe('—');
   });
 });
 
-describe("calculatePercentage", () => {
-  it("should calculate percentage correctly", () => {
+describe('calculatePercentage', () => {
+  it('should calculate percentage correctly', () => {
     expect(calculatePercentage(50, 100)).toBe(50);
   });
 
-  it("should return 0 when total is 0", () => {
+  it('should return 0 when total is 0', () => {
     expect(calculatePercentage(50, 0)).toBe(0);
   });
 
-  it("should round to nearest integer", () => {
+  it('should round to nearest integer', () => {
     expect(calculatePercentage(1, 3)).toBe(33);
   });
 
-  it("should handle 100%", () => {
+  it('should handle 100%', () => {
     expect(calculatePercentage(100, 100)).toBe(100);
   });
 
-  it("should handle 0%", () => {
+  it('should handle 0%', () => {
     expect(calculatePercentage(0, 100)).toBe(0);
   });
 });
 
-describe("formatDurationMinutes", () => {
-  it("should format hours and minutes", () => {
-    expect(formatDurationMinutes(90)).toBe("1h 30m");
+describe('formatDurationMinutes', () => {
+  it('should format hours and minutes', () => {
+    expect(formatDurationMinutes(90)).toBe('1h 30m');
   });
 
-  it("should format only hours", () => {
-    expect(formatDurationMinutes(120)).toBe("2h");
+  it('should format only hours', () => {
+    expect(formatDurationMinutes(120)).toBe('2h');
   });
 
-  it("should format only minutes", () => {
-    expect(formatDurationMinutes(45)).toBe("45m");
+  it('should format only minutes', () => {
+    expect(formatDurationMinutes(45)).toBe('45m');
   });
 
-  it("should return placeholder for zero", () => {
-    expect(formatDurationMinutes(0)).toBe("—");
+  it('should return placeholder for zero', () => {
+    expect(formatDurationMinutes(0)).toBe('—');
   });
 
-  it("should return placeholder for negative", () => {
-    expect(formatDurationMinutes(-10)).toBe("—");
+  it('should return placeholder for negative', () => {
+    expect(formatDurationMinutes(-10)).toBe('—');
   });
 
-  it("should return placeholder for non-finite", () => {
-    expect(formatDurationMinutes(NaN)).toBe("—");
-    expect(formatDurationMinutes(Infinity)).toBe("—");
-  });
-});
-
-describe("getExplorerUrl", () => {
-  it("should return correct URL for Polygon", () => {
-    const url = getExplorerUrl("Polygon", "0x123", "tx");
-    expect(url).toContain("polygonscan.com");
-    expect(url).toContain("tx/0x123");
-  });
-
-  it("should return correct URL for Arbitrum", () => {
-    const url = getExplorerUrl("Arbitrum", "0x123", "address");
-    expect(url).toContain("arbiscan.io");
-    expect(url).toContain("address/0x123");
-  });
-
-  it("should return null for unknown chain", () => {
-    expect(getExplorerUrl("UnknownChain", "0x123")).toBeNull();
-  });
-
-  it("should return null for null value", () => {
-    expect(getExplorerUrl(null, "0x123")).toBeNull();
-  });
-
-  it("should handle chain by ID", () => {
-    expect(getExplorerUrl("137", "0x123")).toContain("polygonscan.com");
-    expect(getExplorerUrl("42161", "0x123")).toContain("arbiscan.io");
-  });
-
-  it("should handle Amoy testnet", () => {
-    expect(getExplorerUrl("amoy", "0x123")).toContain("amoy.polygonscan.com");
+  it('should return placeholder for non-finite', () => {
+    expect(formatDurationMinutes(NaN)).toBe('—');
+    expect(formatDurationMinutes(Infinity)).toBe('—');
   });
 });
 
-describe("getCacheKey", () => {
+describe('getExplorerUrl', () => {
+  it('should return correct URL for Polygon', () => {
+    const url = getExplorerUrl('Polygon', '0x123', 'tx');
+    expect(url).toContain('polygonscan.com');
+    expect(url).toContain('tx/0x123');
+  });
+
+  it('should return correct URL for Arbitrum', () => {
+    const url = getExplorerUrl('Arbitrum', '0x123', 'address');
+    expect(url).toContain('arbiscan.io');
+    expect(url).toContain('address/0x123');
+  });
+
+  it('should return null for unknown chain', () => {
+    expect(getExplorerUrl('UnknownChain', '0x123')).toBeNull();
+  });
+
+  it('should return null for null value', () => {
+    expect(getExplorerUrl(null, '0x123')).toBeNull();
+  });
+
+  it('should handle chain by ID', () => {
+    expect(getExplorerUrl('137', '0x123')).toContain('polygonscan.com');
+    expect(getExplorerUrl('42161', '0x123')).toContain('arbiscan.io');
+  });
+
+  it('should handle Amoy testnet', () => {
+    expect(getExplorerUrl('amoy', '0x123')).toContain('amoy.polygonscan.com');
+  });
+});
+
+describe('getCacheKey', () => {
   beforeEach(() => {
     clearMemoryCache();
   });
 
-  it("should generate unique keys for different inputs", () => {
-    const key1 = getCacheKey("a", 1);
-    const key2 = getCacheKey("a", 2);
+  it('should generate unique keys for different inputs', () => {
+    const key1 = getCacheKey('a', 1);
+    const key2 = getCacheKey('a', 2);
     expect(key1).not.toBe(key2);
   });
 
-  it("should generate same key for same inputs", () => {
-    const key1 = getCacheKey("test", 123);
-    const key2 = getCacheKey("test", 123);
+  it('should generate same key for same inputs', () => {
+    const key1 = getCacheKey('test', 123);
+    const key2 = getCacheKey('test', 123);
     expect(key1).toBe(key2);
   });
 
-  it("should handle complex objects", () => {
-    const key = getCacheKey({ a: 1, b: "test" });
+  it('should handle complex objects', () => {
+    const key = getCacheKey({ a: 1, b: 'test' });
     expect(key).toBeTruthy();
   });
 
-  it("should handle nested objects with depth", () => {
+  it('should handle nested objects with depth', () => {
     const key = getCacheKey({ a: { b: { c: 1 } } });
     expect(key).toBeTruthy();
   });
 
-  it("should handle special values", () => {
-    expect(getCacheKey(NaN)).toBe("NaN");
-    expect(getCacheKey(Infinity)).toBe("Infinity");
-    expect(getCacheKey(-Infinity)).toBe("-Infinity");
-    expect(getCacheKey(Symbol("sym"))).toContain("Symbol");
+  it('should handle special values', () => {
+    expect(getCacheKey(NaN)).toBe('NaN');
+    expect(getCacheKey(Infinity)).toBe('Infinity');
+    expect(getCacheKey(-Infinity)).toBe('-Infinity');
+    expect(getCacheKey(Symbol('sym'))).toContain('Symbol');
   });
 });
 
-describe("fetchApiData edge cases", () => {
+describe('fetchApiData edge cases', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("should throw ApiClientError for non-ok response", async () => {
+  it('should throw ApiClientError for non-ok response', async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: false,
       status: 400,
-      json: async () => ({ ok: false, error: "bad_request" }),
+      json: async () => ({ ok: false, error: 'bad_request' }),
     });
 
-    await expect(fetchApiData("http://test.com/api")).rejects.toThrow(
-      ApiClientError,
-    );
+    await expect(fetchApiData('http://test.com/api')).rejects.toThrow(ApiClientError);
   });
 
-  it("should handle network errors", async () => {
-    global.fetch = vi.fn().mockRejectedValue(new Error("Network Error"));
+  it('should handle network errors', async () => {
+    global.fetch = vi.fn().mockRejectedValue(new Error('Network Error'));
 
-    await expect(fetchApiData("http://test.com/api")).rejects.toThrow();
+    await expect(fetchApiData('http://test.com/api')).rejects.toThrow();
   });
 
-  it("should handle fast responses", async () => {
+  it('should handle fast responses', async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
       json: async () => ({ ok: true, data: { success: true } }),
     });
 
-    const result = await fetchApiData("http://test.com/api", {}, 5000);
+    const result = await fetchApiData('http://test.com/api', {}, 5000);
     expect(result).toEqual({ success: true });
   });
 
-  it("should handle invalid JSON response", async () => {
+  it('should handle invalid JSON response', async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => {
-        throw new Error("Invalid JSON");
+        throw new Error('Invalid JSON');
       },
     });
 
-    await expect(fetchApiData("http://test.com/api")).rejects.toThrow();
+    await expect(fetchApiData('http://test.com/api')).rejects.toThrow();
   });
 
-  it("should handle response with missing data field", async () => {
+  it('should handle response with missing data field', async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ ok: true }),
     });
 
-    await expect(fetchApiData("http://test.com/api")).rejects.toThrow();
+    await expect(fetchApiData('http://test.com/api')).rejects.toThrow();
   });
 });
 
-describe("Boundary Value Tests", () => {
-  describe("Number boundaries", () => {
-    it("should handle maximum safe integer", () => {
+describe('Boundary Value Tests', () => {
+  describe('Number boundaries', () => {
+    it('should handle maximum safe integer', () => {
       expect(Number.MAX_SAFE_INTEGER).toBe(9007199254740991);
     });
 
-    it("should handle minimum safe integer", () => {
+    it('should handle minimum safe integer', () => {
       expect(Number.MIN_SAFE_INTEGER).toBe(-9007199254740991);
     });
 
-    it("should handle maximum value", () => {
+    it('should handle maximum value', () => {
       expect(Number.MAX_VALUE).toBeGreaterThan(1e308);
     });
 
-    it("should handle very small numbers", () => {
+    it('should handle very small numbers', () => {
       expect(Number.MIN_VALUE).toBeGreaterThan(0);
     });
   });
 
-  describe("String boundaries", () => {
-    it("should handle empty string", () => {
-      expect("").toHaveLength(0);
+  describe('String boundaries', () => {
+    it('should handle empty string', () => {
+      expect('').toHaveLength(0);
     });
 
-    it("should handle very long string", () => {
-      const longString = "a".repeat(10000);
+    it('should handle very long string', () => {
+      const longString = 'a'.repeat(10000);
       expect(longString).toHaveLength(10000);
     });
 
-    it("should handle unicode characters", () => {
-      expect("你好世界🌍").toHaveLength(6);
+    it('should handle unicode characters', () => {
+      expect('你好世界🌍').toHaveLength(6);
     });
 
-    it("should handle special characters", () => {
-      expect("!@#$%^&*(){}[]|\\:\";'<>,.?/`~").toBeTruthy();
+    it('should handle special characters', () => {
+      expect('!@#$%^&*(){}[]|\\:";\'<>,.?/`~').toBeTruthy();
     });
   });
 
-  describe("Array boundaries", () => {
-    it("should handle empty array", () => {
+  describe('Array boundaries', () => {
+    it('should handle empty array', () => {
       const arr: string[] = [];
       expect(arr.length).toBe(0);
     });
 
-    it("should handle very large array", () => {
+    it('should handle very large array', () => {
       const arr = Array(10000).fill(0);
       expect(arr.length).toBe(10000);
     });
 
-    it("should handle array with undefined values", () => {
+    it('should handle array with undefined values', () => {
       const arr = [undefined, null, 1, undefined];
       expect(arr.length).toBe(4);
     });
   });
 
-  describe("Object boundaries", () => {
-    it("should handle empty object", () => {
+  describe('Object boundaries', () => {
+    it('should handle empty object', () => {
       const obj = {};
       expect(Object.keys(obj)).toHaveLength(0);
     });
 
-    it("should handle object with many keys", () => {
+    it('should handle object with many keys', () => {
       const obj: Record<string, number> = {};
       for (let i = 0; i < 1000; i++) {
         obj[`key${i}`] = i;
@@ -401,45 +382,45 @@ describe("Boundary Value Tests", () => {
       expect(Object.keys(obj)).toHaveLength(1000);
     });
 
-    it("should handle nested objects", () => {
+    it('should handle nested objects', () => {
       const obj = { a: { b: { c: { d: { e: 1 } } } } };
       expect(obj.a.b.c.d.e).toBe(1);
     });
 
-    it("should handle object with prototype properties", () => {
+    it('should handle object with prototype properties', () => {
       const obj = { a: 1 };
-      expect(Object.prototype.hasOwnProperty.call(obj, "a")).toBe(true);
-      expect(Object.prototype.hasOwnProperty.call(obj, "toString")).toBe(false);
+      expect(Object.prototype.hasOwnProperty.call(obj, 'a')).toBe(true);
+      expect(Object.prototype.hasOwnProperty.call(obj, 'toString')).toBe(false);
     });
   });
 });
 
-describe("Error Handling", () => {
-  it("should handle ApiClientError correctly", () => {
-    const error = new ApiClientError("test_code", { detail: "test" });
-    expect(error.code).toBe("test_code");
-    expect(error.details).toEqual({ detail: "test" });
-    expect(error.message).toBe("test_code");
+describe('Error Handling', () => {
+  it('should handle ApiClientError correctly', () => {
+    const error = new ApiClientError('test_code', { detail: 'test' });
+    expect(error.code).toBe('test_code');
+    expect(error.details).toEqual({ detail: 'test' });
+    expect(error.message).toBe('test_code');
   });
 
-  it("should throw and catch ApiClientError", () => {
+  it('should throw and catch ApiClientError', () => {
     try {
-      throw new ApiClientError("network_error", { originalError: "timeout" });
+      throw new ApiClientError('network_error', { originalError: 'timeout' });
     } catch (e) {
       if (e instanceof ApiClientError) {
-        expect(e.code).toBe("network_error");
+        expect(e.code).toBe('network_error');
       }
     }
   });
 
-  it("should handle nested error objects", () => {
-    const error = new ApiClientError("complex_error", {
+  it('should handle nested error objects', () => {
+    const error = new ApiClientError('complex_error', {
       nested: {
         deep: {
           value: 123,
         },
       },
     });
-    expect(error.details).toHaveProperty("nested.deep.value");
+    expect(error.details).toHaveProperty('nested.deep.value');
   });
 });

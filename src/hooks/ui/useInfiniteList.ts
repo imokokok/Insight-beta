@@ -1,6 +1,6 @@
-import { useCallback, useMemo } from "react";
-import useSWRInfinite from "swr/infinite";
-import { fetchApiData } from "@/lib/utils";
+import { useCallback, useMemo } from 'react';
+import useSWRInfinite from 'swr/infinite';
+import { fetchApiData } from '@/lib/utils';
 
 export interface BaseResponse<T> {
   items: T[];
@@ -9,10 +9,7 @@ export interface BaseResponse<T> {
 }
 
 export function useInfiniteList<T>(
-  getUrl: (
-    pageIndex: number,
-    previousPageData: BaseResponse<T> | null,
-  ) => string | null,
+  getUrl: (pageIndex: number, previousPageData: BaseResponse<T> | null) => string | null,
   options: {
     refreshInterval?: number;
     revalidateFirstPage?: boolean;
@@ -41,10 +38,7 @@ export function useInfiniteList<T>(
   });
 
   // Flatten items from all pages
-  const items = useMemo(
-    () => (pages ? pages.flatMap((page) => page.items) : []),
-    [pages],
-  );
+  const items = useMemo(() => (pages ? pages.flatMap((page) => page.items) : []), [pages]);
 
   // Check if we can load more
   const lastPage = pages ? pages[pages.length - 1] : null;
@@ -52,11 +46,7 @@ export function useInfiniteList<T>(
 
   // Loading states
   const loading = isLoading || (!pages && !error);
-  const loadingMore = !!(
-    size > 0 &&
-    pages &&
-    typeof pages[size - 1] === "undefined"
-  );
+  const loadingMore = !!(size > 0 && pages && typeof pages[size - 1] === 'undefined');
 
   const loadMore = useCallback(() => {
     if (hasMore && !loadingMore) {

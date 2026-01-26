@@ -5,24 +5,24 @@ import {
   invalidateCachedJson,
   rateLimit,
   requireAdmin,
-} from "@/server/apiResponse";
-import type { Alert } from "@/server/observability";
+} from '@/server/apiResponse';
+import type { Alert } from '@/server/observability';
 import {
   getAlertsByIds,
   getIncident,
   patchIncident,
   updateAlertStatus,
-} from "@/server/observability";
-import { z } from "zod";
+} from '@/server/observability';
+import { z } from 'zod';
 
 const querySchema = z.object({
-  includeAlerts: z.enum(["0", "1"]).optional(),
+  includeAlerts: z.enum(['0', '1']).optional(),
 });
 
 const patchSchema = z.object({
   title: z.string().trim().min(1).max(200).optional(),
-  status: z.enum(["Open", "Mitigating", "Resolved"]).optional(),
-  severity: z.enum(["info", "warning", "critical"]).optional(),
+  status: z.enum(['Open', 'Mitigating', 'Resolved']).optional(),
+  severity: z.enum(['info', 'warning', 'critical']).optional(),
   owner: z.string().trim().max(80).optional().nullable(),
   rootCause: z.string().trim().max(120).optional().nullable(),
   summary: z.string().trim().max(5000).optional().nullable(),
@@ -30,16 +30,13 @@ const patchSchema = z.object({
   alertIds: z.array(z.coerce.number().int().positive()).max(200).optional(),
   entityType: z.string().trim().max(40).optional().nullable(),
   entityId: z.string().trim().max(200).optional().nullable(),
-  action: z.enum(["ack_alerts", "resolve_alerts"]).optional(),
+  action: z.enum(['ack_alerts', 'resolve_alerts']).optional(),
 });
 
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   return handleApi(request, async () => {
     const limited = await rateLimit(request, {
-      key: "incident_get",
+      key: 'incident_get',
       limit: 240,
       windowMs: 60_000,
     });
@@ -48,15 +45,15 @@ export async function GET(
     const { id } = await params;
     const incidentId = Number(id);
     if (!Number.isFinite(incidentId) || incidentId <= 0) {
-      return error({ code: "invalid_request_body" }, 400);
+      return error({ code: 'invalid_request_body' }, 400);
     }
 
     const incident = await getIncident(incidentId);
-    if (!incident) return error({ code: "not_found" }, 404);
+    if (!incident) return error({ code: 'not_found' }, 404);
     const url = new URL(request.url);
     const q = querySchema.parse(Object.fromEntries(url.searchParams));
-    const instanceId = url.searchParams.get("instanceId")?.trim() || null;
-    if (q.includeAlerts === "1") {
+    const instanceId = url.searchParams.get('instanceId')?.trim() || null;
+    if (q.includeAlerts === '1') {
       let alerts = await getAlertsByIds(incident.alertIds ?? []);
       if (instanceId) {
         const marker = `:${instanceId}:`;
@@ -88,13 +85,10 @@ export async function GET(
   });
 }
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   return handleApi(request, async () => {
     const limited = await rateLimit(request, {
-      key: "incident_patch",
+      key: 'incident_patch',
       limit: 60,
       windowMs: 60_000,
     });
@@ -102,43 +96,41 @@ export async function PATCH(
 
     const auth = await requireAdmin(request, {
       strict: true,
-      scope: "alerts_update",
+      scope: 'alerts_update',
     });
     if (auth) return auth;
 
     const { id } = await params;
     const incidentId = Number(id);
     if (!Number.isFinite(incidentId) || incidentId <= 0) {
-      return error({ code: "invalid_request_body" }, 400);
+      return error({ code: 'invalid_request_body' }, 400);
     }
 
     const bodyRaw = await request.json().catch(() => null);
     const parsed = patchSchema.safeParse(bodyRaw);
-    if (!parsed.success) return error({ code: "invalid_request_body" }, 400);
+    if (!parsed.success) return error({ code: 'invalid_request_body' }, 400);
 
     const actor = getAdminActor(request);
     const { action, ...patch } = parsed.data;
     const url = new URL(request.url);
-    const instanceId = url.searchParams.get("instanceId")?.trim() || null;
+    const instanceId = url.searchParams.get('instanceId')?.trim() || null;
 
     if (action) {
       const incident = await getIncident(incidentId);
-      if (!incident) return error({ code: "not_found" }, 404);
+      if (!incident) return error({ code: 'not_found' }, 404);
 
       const ids = incident.alertIds ?? [];
       let allowedIds = ids;
       if (instanceId) {
         const alerts = await getAlertsByIds(ids);
         const marker = `:${instanceId}:`;
-        allowedIds = alerts
-          .filter((a) => a.fingerprint.includes(marker))
-          .map((a) => a.id);
+        allowedIds = alerts.filter((a) => a.fingerprint.includes(marker)).map((a) => a.id);
       }
 
       for (const alertId of allowedIds) {
         await updateAlertStatus({
           id: alertId,
-          status: action === "ack_alerts" ? "Acknowledged" : "Resolved",
+          status: action === 'ack_alerts' ? 'Acknowledged' : 'Resolved',
           actor,
         });
       }
@@ -147,9 +139,9 @@ export async function PATCH(
         patch: {},
         actor,
       });
-      if (!updated) return error({ code: "not_found" }, 404);
-      await invalidateCachedJson("oracle_api:/api/oracle/alerts");
-      await invalidateCachedJson("oracle_api:/api/oracle/incidents");
+      if (!updated) return error({ code: 'not_found' }, 404);
+      await invalidateCachedJson('oracle_api:/api/oracle/alerts');
+      await invalidateCachedJson('oracle_api:/api/oracle/incidents');
       return { ok: true, incident: updated };
     }
 
@@ -158,8 +150,8 @@ export async function PATCH(
       patch,
       actor,
     });
-    if (!updated) return error({ code: "not_found" }, 404);
-    await invalidateCachedJson("oracle_api:/api/oracle/incidents");
+    if (!updated) return error({ code: 'not_found' }, 404);
+    await invalidateCachedJson('oracle_api:/api/oracle/incidents');
     return { ok: true, incident: updated };
   });
 }

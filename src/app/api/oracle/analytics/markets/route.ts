@@ -1,8 +1,8 @@
-import { hasDatabase, query } from "@/server/db";
-import { cachedJson, handleApi, rateLimit } from "@/server/apiResponse";
-import { z } from "zod";
-import { getMemoryStore } from "@/server/memoryBackend";
-import { DEFAULT_ORACLE_INSTANCE_ID } from "@/server/oracleConfig";
+import { hasDatabase, query } from '@/server/db';
+import { cachedJson, handleApi, rateLimit } from '@/server/apiResponse';
+import { z } from 'zod';
+import { getMemoryStore } from '@/server/memoryBackend';
+import { DEFAULT_ORACLE_INSTANCE_ID } from '@/server/oracleConfig';
 
 const marketsParamsSchema = z.object({
   days: z.coerce.number().min(1).max(365).default(30),
@@ -24,7 +24,7 @@ type DbMarketRow = {
 export async function GET(request: Request) {
   return handleApi(request, async () => {
     const limited = await rateLimit(request, {
-      key: "markets_analytics",
+      key: 'markets_analytics',
       limit: 60,
       windowMs: 60_000,
     });
@@ -33,8 +33,7 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const rawParams = Object.fromEntries(url.searchParams);
     const { days, limit } = marketsParamsSchema.parse(rawParams);
-    const instanceId =
-      url.searchParams.get("instanceId")?.trim() || DEFAULT_ORACLE_INSTANCE_ID;
+    const instanceId = url.searchParams.get('instanceId')?.trim() || DEFAULT_ORACLE_INSTANCE_ID;
 
     const compute = async () => {
       if (!hasDatabase()) {
@@ -46,8 +45,7 @@ export async function GET(request: Request) {
         if (inst) {
           for (const a of inst.assertions.values()) {
             const assertedAtMs = new Date(a.assertedAt).getTime();
-            if (!Number.isFinite(assertedAtMs) || assertedAtMs < cutoffMs)
-              continue;
+            if (!Number.isFinite(assertedAtMs) || assertedAtMs < cutoffMs) continue;
 
             const prev = buckets.get(a.market) ?? {
               market: a.market,

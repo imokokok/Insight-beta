@@ -1,24 +1,24 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-const TOKEN_KEY = "insight_admin_token";
-const ACTOR_KEY = "insight_admin_actor";
-const SESSION_EVENT = "insight_admin_session";
+const TOKEN_KEY = 'insight_admin_token';
+const ACTOR_KEY = 'insight_admin_actor';
+const SESSION_EVENT = 'insight_admin_session';
 
 export function useAdminSession(opts?: { actor?: boolean }) {
   const withActor = opts?.actor ?? false;
-  const [adminToken, setAdminTokenState] = useState("");
-  const [adminActor, setAdminActorState] = useState("");
+  const [adminToken, setAdminTokenState] = useState('');
+  const [adminActor, setAdminActorState] = useState('');
 
   const readStorageToken = useCallback(() => {
-    if (typeof window === "undefined") return "";
-    return window.sessionStorage.getItem(TOKEN_KEY) ?? "";
+    if (typeof window === 'undefined') return '';
+    return window.sessionStorage.getItem(TOKEN_KEY) ?? '';
   }, []);
 
   const readStorageActor = useCallback(() => {
-    if (typeof window === "undefined") return "";
-    return window.sessionStorage.getItem(ACTOR_KEY) ?? "";
+    if (typeof window === 'undefined') return '';
+    return window.sessionStorage.getItem(ACTOR_KEY) ?? '';
   }, []);
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export function useAdminSession(opts?: { actor?: boolean }) {
   }, [readStorageActor, readStorageToken, withActor]);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
     const syncFromStorage = () => {
       const token = readStorageToken();
       setAdminTokenState(token);
@@ -51,16 +51,16 @@ export function useAdminSession(opts?: { actor?: boolean }) {
       syncFromStorage();
     };
 
-    window.addEventListener("storage", onStorage);
+    window.addEventListener('storage', onStorage);
     window.addEventListener(SESSION_EVENT, onSession);
     return () => {
-      window.removeEventListener("storage", onStorage);
+      window.removeEventListener('storage', onStorage);
       window.removeEventListener(SESSION_EVENT, onSession);
     };
   }, [readStorageActor, readStorageToken, withActor]);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
     const trimmed = adminToken.trim();
     if (trimmed) window.sessionStorage.setItem(TOKEN_KEY, trimmed);
     else window.sessionStorage.removeItem(TOKEN_KEY);
@@ -68,7 +68,7 @@ export function useAdminSession(opts?: { actor?: boolean }) {
   }, [adminToken]);
 
   useEffect(() => {
-    if (!withActor || typeof window === "undefined") return;
+    if (!withActor || typeof window === 'undefined') return;
     const trimmed = adminActor.trim();
     if (trimmed) window.sessionStorage.setItem(ACTOR_KEY, trimmed);
     else window.sessionStorage.removeItem(ACTOR_KEY);
@@ -86,10 +86,10 @@ export function useAdminSession(opts?: { actor?: boolean }) {
   const headers = useMemo(() => {
     const out: Record<string, string> = {};
     const token = adminToken.trim();
-    if (token) out["x-admin-token"] = token;
+    if (token) out['x-admin-token'] = token;
     if (withActor) {
       const actor = adminActor.trim();
-      if (actor) out["x-admin-actor"] = actor;
+      if (actor) out['x-admin-actor'] = actor;
     }
     return out;
   }, [adminActor, adminToken, withActor]);
@@ -97,7 +97,7 @@ export function useAdminSession(opts?: { actor?: boolean }) {
   return {
     adminToken,
     setAdminToken,
-    adminActor: withActor ? adminActor : "",
+    adminActor: withActor ? adminActor : '',
     setAdminActor: withActor ? setAdminActor : () => void 0,
     headers,
     canAdmin: adminToken.trim().length > 0,

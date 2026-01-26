@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   XAxis,
@@ -15,8 +15,8 @@ import {
   ComposedChart,
   Line,
   Bar,
-} from "recharts";
-import { OracleHealthScore } from "@/components/features/oracle/OracleHealthScore";
+} from 'recharts';
+import { OracleHealthScore } from '@/components/features/oracle/OracleHealthScore';
 import type {
   TabKey,
   Translator,
@@ -24,7 +24,7 @@ import type {
   MarketStat,
   SyncChartItem,
   AccuracyChartItem,
-} from "./types";
+} from './types';
 
 interface ChartsContentProps {
   activeTab: TabKey;
@@ -43,14 +43,14 @@ interface ChartsContentProps {
 }
 
 const COLORS = [
-  "#8b5cf6",
-  "#ec4899",
-  "#f43f5e",
-  "#a855f7",
-  "#6366f1",
-  "#3b82f6",
-  "#0ea5e9",
-  "#10b981",
+  '#8b5cf6',
+  '#ec4899',
+  '#f43f5e',
+  '#a855f7',
+  '#6366f1',
+  '#3b82f6',
+  '#0ea5e9',
+  '#10b981',
 ];
 
 function ChartsContent({
@@ -71,10 +71,10 @@ function ChartsContent({
   return (
     <div className="relative z-10 h-[300px] w-full">
       <ResponsiveContainer width="100%" height="100%">
-        {activeTab === "activity" ? (
+        {activeTab === 'activity' ? (
           !hasAssertionsData ? (
-            <div className="h-full w-full flex items-center justify-center text-sm text-gray-400">
-              {t("oracle.charts.waitingData")}
+            <div className="flex h-full w-full items-center justify-center text-sm text-gray-400">
+              {t('oracle.charts.waitingData')}
             </div>
           ) : (
             <AreaChart data={chartData}>
@@ -92,30 +92,30 @@ function ChartsContent({
               />
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 12, fill: "#9ca3af" }}
+                tick={{ fontSize: 12, fill: '#9ca3af' }}
                 axisLine={false}
                 tickLine={false}
                 dy={10}
               />
               <YAxis
-                tick={{ fontSize: 12, fill: "#9ca3af" }}
+                tick={{ fontSize: 12, fill: '#9ca3af' }}
                 axisLine={false}
                 tickLine={false}
                 dx={-10}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "rgba(255, 255, 255, 0.8)",
-                  borderRadius: "12px",
-                  border: "1px solid rgba(255, 255, 255, 0.5)",
-                  backdropFilter: "blur(8px)",
-                  boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                  backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(255, 255, 255, 0.5)',
+                  backdropFilter: 'blur(8px)',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                 }}
-                itemStyle={{ color: "#4b5563", fontSize: "12px" }}
+                itemStyle={{ color: '#4b5563', fontSize: '12px' }}
                 labelStyle={{
-                  color: "#111827",
-                  fontWeight: "bold",
-                  marginBottom: "4px",
+                  color: '#111827',
+                  fontWeight: 'bold',
+                  marginBottom: '4px',
                 }}
               />
               <Area
@@ -129,10 +129,10 @@ function ChartsContent({
               />
             </AreaChart>
           )
-        ) : activeTab === "tvs" ? (
+        ) : activeTab === 'tvs' ? (
           !hasAssertionsData ? (
-            <div className="h-full w-full flex items-center justify-center text-sm text-gray-400">
-              {t("oracle.charts.waitingData")}
+            <div className="flex h-full w-full items-center justify-center text-sm text-gray-400">
+              {t('oracle.charts.waitingData')}
             </div>
           ) : (
             <AreaChart data={chartData}>
@@ -142,48 +142,44 @@ function ChartsContent({
                   <stop offset="95%" stopColor="#ec4899" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                vertical={false}
-                stroke="#fce7f3"
-              />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#fce7f3" />
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 12, fill: "#9ca3af" }}
+                tick={{ fontSize: 12, fill: '#9ca3af' }}
                 axisLine={false}
                 tickLine={false}
                 dy={10}
               />
               <YAxis
-                tick={{ fontSize: 12, fill: "#9ca3af" }}
+                tick={{ fontSize: 12, fill: '#9ca3af' }}
                 axisLine={false}
                 tickLine={false}
                 dx={-10}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "rgba(255, 255, 255, 0.6)",
-                  borderRadius: "16px",
-                  border: "1px solid rgba(255, 255, 255, 0.6)",
-                  backdropFilter: "blur(12px)",
-                  boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                  padding: "12px",
+                  backgroundColor: 'rgba(255, 255, 255, 0.6)',
+                  borderRadius: '16px',
+                  border: '1px solid rgba(255, 255, 255, 0.6)',
+                  backdropFilter: 'blur(12px)',
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                  padding: '12px',
                 }}
                 itemStyle={{
-                  color: "#4b5563",
-                  fontSize: "12px",
+                  color: '#4b5563',
+                  fontSize: '12px',
                   fontWeight: 500,
                 }}
                 labelStyle={{
-                  color: "#111827",
-                  fontWeight: "bold",
-                  marginBottom: "8px",
-                  fontSize: "13px",
+                  color: '#111827',
+                  fontWeight: 'bold',
+                  marginBottom: '8px',
+                  fontSize: '13px',
                 }}
                 cursor={{
-                  stroke: "#ec4899",
+                  stroke: '#ec4899',
                   strokeWidth: 2,
-                  strokeDasharray: "4 4",
+                  strokeDasharray: '4 4',
                 }}
               />
               <Area
@@ -193,19 +189,19 @@ function ChartsContent({
                 strokeWidth={3}
                 fillOpacity={1}
                 fill="url(#colorVolume)"
-                activeDot={{ r: 6, strokeWidth: 0, fill: "#ec4899" }}
+                activeDot={{ r: 6, strokeWidth: 0, fill: '#ec4899' }}
                 animationDuration={1500}
               />
             </AreaChart>
           )
-        ) : activeTab === "markets" ? (
+        ) : activeTab === 'markets' ? (
           marketsLoading ? (
-            <div className="h-full w-full flex items-center justify-center text-sm text-gray-400">
-              {t("common.loading")}
+            <div className="flex h-full w-full items-center justify-center text-sm text-gray-400">
+              {t('common.loading')}
             </div>
           ) : marketStats.length === 0 ? (
-            <div className="h-full w-full flex items-center justify-center text-sm text-gray-400">
-              {t("oracle.charts.waitingData")}
+            <div className="flex h-full w-full items-center justify-center text-sm text-gray-400">
+              {t('oracle.charts.waitingData')}
             </div>
           ) : (
             <RechartsPieChart>
@@ -219,65 +215,50 @@ function ChartsContent({
                 dataKey="count"
               >
                 {marketStats.map((_entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                  />
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
               <Tooltip
-                formatter={(
-                  value: unknown,
-                  _name: unknown,
-                  props: { payload?: MarketStat },
-                ) => {
-                  const numericValue =
-                    typeof value === "number" ? value : Number(value ?? 0);
-                  const market = props.payload?.market ?? "";
+                formatter={(value: unknown, _name: unknown, props: { payload?: MarketStat }) => {
+                  const numericValue = typeof value === 'number' ? value : Number(value ?? 0);
+                  const market = props.payload?.market ?? '';
                   return [`${numericValue} disputes`, market];
                 }}
                 contentStyle={{
-                  backgroundColor: "rgba(255, 255, 255, 0.85)",
-                  borderRadius: "12px",
-                  border: "1px solid rgba(255, 255, 255, 0.5)",
-                  backdropFilter: "blur(8px)",
-                  boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                  backgroundColor: 'rgba(255, 255, 255, 0.85)',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(255, 255, 255, 0.5)',
+                  backdropFilter: 'blur(8px)',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                 }}
-                itemStyle={{ color: "#4b5563", fontSize: "12px" }}
+                itemStyle={{ color: '#4b5563', fontSize: '12px' }}
               />
               <Legend
                 layout="vertical"
                 align="right"
                 verticalAlign="middle"
-                wrapperStyle={{ fontSize: "12px", maxWidth: "40%" }}
+                wrapperStyle={{ fontSize: '12px', maxWidth: '40%' }}
               />
             </RechartsPieChart>
           )
-        ) : activeTab === "accuracy" ? (
+        ) : activeTab === 'accuracy' ? (
           accuracyLoading ? (
-            <div className="h-full w-full flex items-center justify-center text-sm text-gray-400">
-              {t("common.loading")}
+            <div className="flex h-full w-full items-center justify-center text-sm text-gray-400">
+              {t('common.loading')}
             </div>
           ) : !hasAccuracyData ? (
-            <div className="h-full w-full flex items-center justify-center text-sm text-gray-400">
-              {t("oracle.charts.waitingData")}
+            <div className="flex h-full w-full items-center justify-center text-sm text-gray-400">
+              {t('oracle.charts.waitingData')}
             </div>
           ) : (
-            <div className="relative w-full h-full flex flex-col">
-              <div className="absolute top-0 right-0 z-20">
-                <OracleHealthScore
-                  score={healthScore}
-                  isLoading={accuracyLoading}
-                />
+            <div className="relative flex h-full w-full flex-col">
+              <div className="absolute right-0 top-0 z-20">
+                <OracleHealthScore score={healthScore} isLoading={accuracyLoading} />
               </div>
-              <div className="flex-1 w-full h-full">
+              <div className="h-full w-full flex-1">
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart data={accuracyChartData}>
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      vertical={false}
-                      stroke="#dcfce7"
-                    />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#dcfce7" />
                     <XAxis
                       dataKey="label"
                       scale="point"
@@ -288,7 +269,7 @@ function ChartsContent({
                     <YAxis
                       yAxisId="left"
                       orientation="left"
-                      domain={["auto", "auto"]}
+                      domain={['auto', 'auto']}
                       tick={{ fontSize: 10 }}
                       axisLine={false}
                       tickLine={false}
@@ -303,18 +284,18 @@ function ChartsContent({
                     />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: "rgba(255, 255, 255, 0.9)",
-                        borderRadius: "8px",
-                        border: "none",
-                        boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
-                        fontSize: "12px",
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        borderRadius: '8px',
+                        border: 'none',
+                        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                        fontSize: '12px',
                       }}
                     />
                     <Legend verticalAlign="top" height={36} />
                     <Bar
                       yAxisId="right"
                       dataKey="deviationPct"
-                      name={t("oracle.charts.deviationPercent")}
+                      name={t('oracle.charts.deviationPercent')}
                       barSize={20}
                       fill="#f87171"
                       opacity={0.5}
@@ -323,7 +304,7 @@ function ChartsContent({
                       yAxisId="left"
                       type="monotone"
                       dataKey="oraclePrice"
-                      name={t("oracle.charts.oraclePrice")}
+                      name={t('oracle.charts.oraclePrice')}
                       stroke="#10b981"
                       strokeWidth={2}
                       dot={false}
@@ -332,7 +313,7 @@ function ChartsContent({
                       yAxisId="left"
                       type="monotone"
                       dataKey="referencePrice"
-                      name={t("oracle.charts.referencePrice")}
+                      name={t('oracle.charts.referencePrice')}
                       stroke="#6b7280"
                       strokeWidth={1}
                       strokeDasharray="3 3"
@@ -344,12 +325,12 @@ function ChartsContent({
             </div>
           )
         ) : syncLoading ? (
-          <div className="h-full w-full flex items-center justify-center text-sm text-gray-400">
-            {t("common.loading")}
+          <div className="flex h-full w-full items-center justify-center text-sm text-gray-400">
+            {t('common.loading')}
           </div>
         ) : !hasSyncData ? (
-          <div className="h-full w-full flex items-center justify-center text-sm text-gray-400">
-            {t("oracle.charts.waitingData")}
+          <div className="flex h-full w-full items-center justify-center text-sm text-gray-400">
+            {t('oracle.charts.waitingData')}
           </div>
         ) : (
           <AreaChart data={syncChartData}>
@@ -367,29 +348,28 @@ function ChartsContent({
             />
             <XAxis
               dataKey="label"
-              tick={{ fontSize: 12, fill: "#9ca3af" }}
+              tick={{ fontSize: 12, fill: '#9ca3af' }}
               axisLine={false}
               tickLine={false}
               dy={10}
             />
             <YAxis
-              tick={{ fontSize: 12, fill: "#9ca3af" }}
+              tick={{ fontSize: 12, fill: '#9ca3af' }}
               axisLine={false}
               tickLine={false}
               dx={-10}
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: "rgba(255, 255, 255, 0.85)",
-                borderRadius: "12px",
-                border: "1px solid rgba(255, 255, 255, 0.5)",
-                backdropFilter: "blur(8px)",
-                boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                backgroundColor: 'rgba(255, 255, 255, 0.85)',
+                borderRadius: '12px',
+                border: '1px solid rgba(255, 255, 255, 0.5)',
+                backdropFilter: 'blur(8px)',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
               }}
               formatter={(value: unknown, name: unknown) => {
-                const node = typeof value === "number" ? value : String(value);
-                if (name === "lagBlocks")
-                  return [node, t("oracle.charts.syncLagBlocks")];
+                const node = typeof value === 'number' ? value : String(value);
+                if (name === 'lagBlocks') return [node, t('oracle.charts.syncLagBlocks')];
                 return [node, String(name)];
               }}
             />

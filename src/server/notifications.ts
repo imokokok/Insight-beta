@@ -1,12 +1,12 @@
-import type { Dispute, Assertion } from "@/lib/types/oracleTypes";
-import { logger } from "@/lib/logger";
-import { env } from "@/lib/config/env";
-import type { Transporter } from "nodemailer";
+import type { Dispute, Assertion } from '@/lib/types/oracleTypes';
+import { logger } from '@/lib/logger';
+import { env } from '@/lib/config/env';
+import type { Transporter } from 'nodemailer';
 
 /**
  * Supported notification channels for alert delivery
  */
-export type NotificationChannel = "webhook" | "email" | "telegram";
+export type NotificationChannel = 'webhook' | 'email' | 'telegram';
 
 /**
  * Options for configuring notification delivery
@@ -39,20 +39,19 @@ export async function notifyAlert(
   alert: {
     title: string;
     message: string;
-    severity: "info" | "warning" | "critical";
+    severity: 'info' | 'warning' | 'critical';
     fingerprint: string;
   },
   options?: NotificationOptions,
 ) {
-  const channels = options?.channels || ["webhook"];
+  const channels = options?.channels || ['webhook'];
   for (const channel of channels) {
     try {
-      if (channel === "webhook") await sendWebhookNotification(alert);
-      if (channel === "email")
-        await sendEmailNotification(alert, options?.recipient);
-      if (channel === "telegram") await sendTelegramNotification(alert);
+      if (channel === 'webhook') await sendWebhookNotification(alert);
+      if (channel === 'email') await sendEmailNotification(alert, options?.recipient);
+      if (channel === 'telegram') await sendTelegramNotification(alert);
     } catch (error) {
-      logger.error("Notification channel failed", {
+      logger.error('Notification channel failed', {
         channel,
         error,
         fingerprint: alert.fingerprint,
@@ -88,12 +87,12 @@ async function sleep(ms: number) {
 async function sendWebhookNotification(alert: {
   title: string;
   message: string;
-  severity: "info" | "warning" | "critical";
+  severity: 'info' | 'warning' | 'critical';
   fingerprint: string;
 }) {
   const url = env.INSIGHT_WEBHOOK_URL;
   if (!url) {
-    logger.debug("Webhook notification not configured, skipping", {
+    logger.debug('Webhook notification not configured, skipping', {
       fingerprint: alert.fingerprint,
     });
     return;
@@ -101,80 +100,70 @@ async function sendWebhookNotification(alert: {
 
   try {
     const urlObj = new URL(url);
-    const allowedProtocols = ["https:", "http:", "wss:", "ws:"];
+    const allowedProtocols = ['https:', 'http:', 'wss:', 'ws:'];
     if (!allowedProtocols.includes(urlObj.protocol)) {
-      logger.error("Unsupported webhook URL protocol", {
+      logger.error('Unsupported webhook URL protocol', {
         url: urlObj.toString(),
         protocol: urlObj.protocol,
         fingerprint: alert.fingerprint,
       });
       return;
     }
-    const isHttps = urlObj.protocol === "https:";
+    const isHttps = urlObj.protocol === 'https:';
     const isLocalhost =
-      urlObj.hostname === "localhost" ||
-      urlObj.hostname === "127.0.0.1" ||
-      urlObj.hostname === "::1";
+      urlObj.hostname === 'localhost' ||
+      urlObj.hostname === '127.0.0.1' ||
+      urlObj.hostname === '::1';
 
-    if (process.env.NODE_ENV === "production" && !isHttps && !isLocalhost) {
-      logger.error("Webhook URL must use HTTPS in production", {
+    if (process.env.NODE_ENV === 'production' && !isHttps && !isLocalhost) {
+      logger.error('Webhook URL must use HTTPS in production', {
         url: urlObj.toString(),
         fingerprint: alert.fingerprint,
       });
       return;
     }
   } catch {
-    logger.error("Invalid webhook URL format", {
+    logger.error('Invalid webhook URL format', {
       url,
       fingerprint: alert.fingerprint,
     });
     return;
   }
 
-  const emoji =
-    alert.severity === "critical"
-      ? "🚨"
-      : alert.severity === "warning"
-        ? "⚠️"
-        : "ℹ️";
+  const emoji = alert.severity === 'critical' ? '🚨' : alert.severity === 'warning' ? '⚠️' : 'ℹ️';
   const content = `${emoji} **[${alert.severity.toUpperCase()}] ${
     alert.title
   }**\n${alert.message}\nID: \`${alert.fingerprint}\``;
 
   const timeoutMsRaw = Number(
-    env.INSIGHT_WEBHOOK_TIMEOUT_MS ||
-      env.INSIGHT_DEPENDENCY_TIMEOUT_MS ||
-      10_000,
+    env.INSIGHT_WEBHOOK_TIMEOUT_MS || env.INSIGHT_DEPENDENCY_TIMEOUT_MS || 10_000,
   );
-  const timeoutMs =
-    Number.isFinite(timeoutMsRaw) && timeoutMsRaw > 0 ? timeoutMsRaw : 10_000;
+  const timeoutMs = Number.isFinite(timeoutMsRaw) && timeoutMsRaw > 0 ? timeoutMsRaw : 10_000;
 
   for (let attempt = 1; attempt <= notificationRetryAttempts; attempt++) {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
       const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content }),
         signal: controller.signal,
       }).finally(() => clearTimeout(timeoutId));
 
       if (res.ok) {
-        logger.debug("Webhook notification sent successfully", {
+        logger.debug('Webhook notification sent successfully', {
           fingerprint: alert.fingerprint,
         });
         return;
       }
 
       const retryable =
-        res.status === 408 ||
-        res.status === 429 ||
-        (res.status >= 500 && res.status <= 599);
+        res.status === 408 || res.status === 429 || (res.status >= 500 && res.status <= 599);
 
       if (retryable && attempt < notificationRetryAttempts) {
         const nextDelayMs = getRetryDelayMs(attempt);
-        logger.warn("Webhook notification retrying", {
+        logger.warn('Webhook notification retrying', {
           status: res.status,
           fingerprint: alert.fingerprint,
           attempt,
@@ -184,8 +173,8 @@ async function sendWebhookNotification(alert: {
         continue;
       }
 
-      const body = await res.text().catch(() => "");
-      logger.error("Webhook notification failed", {
+      const body = await res.text().catch(() => '');
+      logger.error('Webhook notification failed', {
         status: res.status,
         fingerprint: alert.fingerprint,
         response: body.slice(0, 500),
@@ -194,7 +183,7 @@ async function sendWebhookNotification(alert: {
     } catch (error) {
       if (attempt < notificationRetryAttempts) {
         const nextDelayMs = getRetryDelayMs(attempt);
-        logger.warn("Webhook notification retrying after error", {
+        logger.warn('Webhook notification retrying after error', {
           error,
           fingerprint: alert.fingerprint,
           attempt,
@@ -204,7 +193,7 @@ async function sendWebhookNotification(alert: {
         continue;
       }
 
-      logger.error("Failed to send webhook notification", {
+      logger.error('Failed to send webhook notification', {
         error,
         fingerprint: alert.fingerprint,
       });
@@ -217,44 +206,36 @@ async function sendTelegramNotification(
   alert: {
     title: string;
     message: string;
-    severity: "info" | "warning" | "critical";
+    severity: 'info' | 'warning' | 'critical';
     fingerprint: string;
   },
   recipient?: string,
 ) {
   const token = env.INSIGHT_TELEGRAM_BOT_TOKEN;
-  const chatId = (recipient || env.INSIGHT_TELEGRAM_CHAT_ID || "").trim();
+  const chatId = (recipient || env.INSIGHT_TELEGRAM_CHAT_ID || '').trim();
   if (!token || !chatId) {
-    logger.debug("Telegram notification not configured, skipping", {
+    logger.debug('Telegram notification not configured, skipping', {
       fingerprint: alert.fingerprint,
     });
     return;
   }
 
-  const emoji =
-    alert.severity === "critical"
-      ? "🚨"
-      : alert.severity === "warning"
-        ? "⚠️"
-        : "ℹ️";
+  const emoji = alert.severity === 'critical' ? '🚨' : alert.severity === 'warning' ? '⚠️' : 'ℹ️';
   const text = `${emoji} [${alert.severity.toUpperCase()}] ${alert.title}\n${alert.message}\nID: ${alert.fingerprint}`;
   const url = `https://api.telegram.org/bot${token}/sendMessage`;
 
   const timeoutMsRaw = Number(
-    env.INSIGHT_TELEGRAM_TIMEOUT_MS ||
-      env.INSIGHT_DEPENDENCY_TIMEOUT_MS ||
-      10_000,
+    env.INSIGHT_TELEGRAM_TIMEOUT_MS || env.INSIGHT_DEPENDENCY_TIMEOUT_MS || 10_000,
   );
-  const timeoutMs =
-    Number.isFinite(timeoutMsRaw) && timeoutMsRaw > 0 ? timeoutMsRaw : 10_000;
+  const timeoutMs = Number.isFinite(timeoutMsRaw) && timeoutMsRaw > 0 ? timeoutMsRaw : 10_000;
 
   for (let attempt = 1; attempt <= notificationRetryAttempts; attempt++) {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
       const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           chat_id: chatId,
           text,
@@ -264,20 +245,18 @@ async function sendTelegramNotification(
       }).finally(() => clearTimeout(timeoutId));
 
       if (res.ok) {
-        logger.debug("Telegram notification sent successfully", {
+        logger.debug('Telegram notification sent successfully', {
           fingerprint: alert.fingerprint,
         });
         return;
       }
 
       const retryable =
-        res.status === 408 ||
-        res.status === 429 ||
-        (res.status >= 500 && res.status <= 599);
+        res.status === 408 || res.status === 429 || (res.status >= 500 && res.status <= 599);
 
       if (retryable && attempt < notificationRetryAttempts) {
         const nextDelayMs = getRetryDelayMs(attempt);
-        logger.warn("Telegram notification retrying", {
+        logger.warn('Telegram notification retrying', {
           status: res.status,
           fingerprint: alert.fingerprint,
           attempt,
@@ -287,8 +266,8 @@ async function sendTelegramNotification(
         continue;
       }
 
-      const body = await res.text().catch(() => "");
-      logger.error("Telegram notification failed", {
+      const body = await res.text().catch(() => '');
+      logger.error('Telegram notification failed', {
         status: res.status,
         fingerprint: alert.fingerprint,
         response: body.slice(0, 500),
@@ -297,7 +276,7 @@ async function sendTelegramNotification(
     } catch (error) {
       if (attempt < notificationRetryAttempts) {
         const nextDelayMs = getRetryDelayMs(attempt);
-        logger.warn("Telegram notification retrying after error", {
+        logger.warn('Telegram notification retrying after error', {
           error,
           fingerprint: alert.fingerprint,
           attempt,
@@ -307,7 +286,7 @@ async function sendTelegramNotification(
         continue;
       }
 
-      logger.error("Failed to send telegram notification", {
+      logger.error('Failed to send telegram notification', {
         error,
         fingerprint: alert.fingerprint,
       });
@@ -328,7 +307,7 @@ async function sendEmailNotification(
   alert: {
     title: string;
     message: string;
-    severity: "info" | "warning" | "critical";
+    severity: 'info' | 'warning' | 'critical';
     fingerprint: string;
   },
   recipient?: string,
@@ -341,22 +320,21 @@ async function sendEmailNotification(
   const fromEmail = env.INSIGHT_FROM_EMAIL;
 
   if (!smtpHost || !smtpPort || !smtpUser || !smtpPass || !fromEmail) {
-    logger.debug("Email notification not configured, skipping");
+    logger.debug('Email notification not configured, skipping');
     return;
   }
 
   const toEmail = recipient || env.INSIGHT_DEFAULT_EMAIL;
   if (!toEmail) {
-    logger.debug("No recipient email configured for notification, skipping");
+    logger.debug('No recipient email configured for notification, skipping');
     return;
   }
 
   try {
     const port = Number(smtpPort);
-    const resolvedPort =
-      Number.isFinite(port) && port >= 1 && port <= 65535 ? port : 587;
+    const resolvedPort = Number.isFinite(port) && port >= 1 && port <= 65535 ? port : 587;
     if (!smtpTransport) {
-      const nodemailer = await import("nodemailer");
+      const nodemailer = await import('nodemailer');
       smtpTransport = nodemailer.createTransport({
         host: smtpHost,
         port: resolvedPort,
@@ -389,14 +367,14 @@ async function sendEmailNotification(
           text,
           html,
         });
-        logger.debug("Email notification sent successfully", {
+        logger.debug('Email notification sent successfully', {
           fingerprint: alert.fingerprint,
         });
         return;
       } catch (error) {
         if (attempt < notificationRetryAttempts) {
           const nextDelayMs = getRetryDelayMs(attempt);
-          logger.warn("Email notification retrying after error", {
+          logger.warn('Email notification retrying after error', {
             error,
             fingerprint: alert.fingerprint,
             attempt,
@@ -409,7 +387,7 @@ async function sendEmailNotification(
       }
     }
   } catch (error) {
-    logger.error("Failed to send email notification", {
+    logger.error('Failed to send email notification', {
       error,
       fingerprint: alert.fingerprint,
     });
@@ -418,11 +396,11 @@ async function sendEmailNotification(
 
 function escapeHtml(input: string) {
   return input
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
 }
 
 /**
@@ -453,9 +431,9 @@ export async function notifyDispute(
   // Send formal notification through configured channels
   await notifyAlert(
     {
-      title: "Dispute Detected",
+      title: 'Dispute Detected',
       message: `Market: ${assertion.market}\nReason: ${dispute.disputeReason}\nAssertion: ${assertion.assertion}`,
-      severity: "critical",
+      severity: 'critical',
       fingerprint: `dispute:${assertion.id}`,
     },
     options,
@@ -470,16 +448,13 @@ export async function notifyDispute(
  * @param recipient - Optional specific recipient for the test notification
  * @returns Promise that resolves when test notification is sent
  */
-export async function sendTestNotification(
-  channel: NotificationChannel,
-  recipient?: string,
-) {
+export async function sendTestNotification(channel: NotificationChannel, recipient?: string) {
   await notifyAlert(
     {
-      title: "Test Notification",
+      title: 'Test Notification',
       message:
         "This is a test notification from Insight. If you're seeing this, your notification system is working correctly!",
-      severity: "info",
+      severity: 'info',
       fingerprint: `test-${Date.now()}`,
     },
     {

@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useState, useCallback, useRef } from "react";
-import { useWallet } from "@/contexts/WalletContext";
+import { useState, useCallback, useRef } from 'react';
+import { useWallet } from '@/contexts/WalletContext';
 import {
   castUMAVote,
   checkUMAVoteStatus,
   type UMAVoteResult,
   type UMAVoteStatus,
-} from "@/lib/blockchain/umaDvm";
-import { logger } from "@/lib/logger";
+} from '@/lib/blockchain/umaDvm';
+import { logger } from '@/lib/logger';
 
 interface UseUMAVoteReturn {
   vote: (assertionId: string, support: boolean) => Promise<UMAVoteResult>;
@@ -31,16 +31,16 @@ export function useUMAVote(): UseUMAVoteReturn {
   const vote = useCallback(
     async (assertionId: string, support: boolean): Promise<UMAVoteResult> => {
       if (!address) {
-        const errorMsg = "Wallet not connected";
+        const errorMsg = 'Wallet not connected';
         setError(errorMsg);
-        logger.warn("UMA vote attempt without wallet connection");
+        logger.warn('UMA vote attempt without wallet connection');
         return { success: false, error: errorMsg };
       }
 
       if (!chainId) {
-        const errorMsg = "Chain not detected";
+        const errorMsg = 'Chain not detected';
         setError(errorMsg);
-        logger.warn("UMA vote attempt without chain detection");
+        logger.warn('UMA vote attempt without chain detection');
         return { success: false, error: errorMsg };
       }
 
@@ -52,11 +52,11 @@ export function useUMAVote(): UseUMAVoteReturn {
         const oracleAddress = process.env.NEXT_PUBLIC_INSIGHT_ORACLE_ADDRESS;
 
         if (!rpcUrl) {
-          throw new Error("RPC URL not configured");
+          throw new Error('RPC URL not configured');
         }
 
         if (!oracleAddress) {
-          throw new Error("Oracle address not configured");
+          throw new Error('Oracle address not configured');
         }
 
         const result = await castUMAVote(
@@ -69,14 +69,14 @@ export function useUMAVote(): UseUMAVoteReturn {
         );
 
         if (!result.success) {
-          setError(result.error || "Vote failed");
-          logger.error("UMA vote failed", {
+          setError(result.error || 'Vote failed');
+          logger.error('UMA vote failed', {
             assertionId,
             support,
             error: result.error,
           });
         } else {
-          logger.info("UMA vote successful", {
+          logger.info('UMA vote successful', {
             assertionId,
             support,
             voter: address,
@@ -87,10 +87,9 @@ export function useUMAVote(): UseUMAVoteReturn {
 
         return result;
       } catch (err) {
-        const errorMsg =
-          err instanceof Error ? err.message : "Unknown error occurred";
+        const errorMsg = err instanceof Error ? err.message : 'Unknown error occurred';
         setError(errorMsg);
-        logger.error("UMA vote error", {
+        logger.error('UMA vote error', {
           error: err,
           assertionId,
           support,
@@ -142,7 +141,7 @@ export function useUMAVote(): UseUMAVoteReturn {
 
         return status;
       } catch (err) {
-        logger.error("Failed to check UMA vote status", {
+        logger.error('Failed to check UMA vote status', {
           error: err,
           assertionId,
           address,

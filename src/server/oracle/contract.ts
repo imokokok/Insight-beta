@@ -1,19 +1,14 @@
-import { createPublicClient, formatEther, http } from "viem";
-import { oracleAbi } from "@/lib/blockchain/oracleAbi";
-import { parseRpcUrls } from "@/lib/utils";
-import { env } from "@/lib/config/env";
+import { createPublicClient, formatEther, http } from 'viem';
+import { oracleAbi } from '@/lib/blockchain/oracleAbi';
+import { parseRpcUrls } from '@/lib/utils';
+import { env } from '@/lib/config/env';
 
 function getRpcTimeoutMs() {
-  const raw = Number(
-    env.INSIGHT_RPC_TIMEOUT_MS || env.INSIGHT_DEPENDENCY_TIMEOUT_MS || 10_000,
-  );
+  const raw = Number(env.INSIGHT_RPC_TIMEOUT_MS || env.INSIGHT_DEPENDENCY_TIMEOUT_MS || 10_000);
   return Number.isFinite(raw) && raw > 0 ? raw : 10_000;
 }
 
-export async function getBondData(
-  rpcUrl: string | undefined,
-  contractAddress: string | undefined,
-) {
+export async function getBondData(rpcUrl: string | undefined, contractAddress: string | undefined) {
   let bondWei: string | null = null;
   let bondEth: string | null = null;
 
@@ -32,7 +27,7 @@ export async function getBondData(
           const bond = (await client.readContract({
             address: contractAddress as `0x${string}`,
             abi: oracleAbi,
-            functionName: "getBond",
+            functionName: 'getBond',
             args: [],
           })) as bigint;
           bondWei = bond.toString(10);
@@ -72,12 +67,12 @@ export async function getOwnerData(
           const ownerAddress = (await client.readContract({
             address: contractAddress as `0x${string}`,
             abi: oracleAbi,
-            functionName: "owner",
+            functionName: 'owner',
             args: [],
           })) as `0x${string}`;
           const code = await client.getBytecode({ address: ownerAddress });
           owner = ownerAddress;
-          isContractOwner = code != null && code !== "0x";
+          isContractOwner = code != null && code !== '0x';
           break;
         } catch {
           continue;

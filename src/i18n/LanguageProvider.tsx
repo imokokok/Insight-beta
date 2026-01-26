@@ -1,14 +1,7 @@
-"use client";
+'use client';
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import type { ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
 import {
   isLang,
   langToHtmlLang,
@@ -16,7 +9,7 @@ import {
   translations,
   type Lang,
   type TranslationKey,
-} from "@/i18n/translations";
+} from '@/i18n/translations';
 
 type I18nContextValue = {
   lang: Lang;
@@ -27,9 +20,9 @@ type I18nContextValue = {
 const I18nContext = createContext<I18nContextValue | null>(null);
 
 function getNestedValue(obj: unknown, path: string) {
-  if (!obj || typeof obj !== "object") return undefined;
-  return path.split(".").reduce<unknown>((acc, part) => {
-    if (!acc || typeof acc !== "object") return undefined;
+  if (!obj || typeof obj !== 'object') return undefined;
+  return path.split('.').reduce<unknown>((acc, part) => {
+    if (!acc || typeof acc !== 'object') return undefined;
     return (acc as Record<string, unknown>)[part];
   }, obj);
 }
@@ -41,7 +34,7 @@ export function LanguageProvider({
   children: ReactNode;
   initialLang?: Lang;
 }) {
-  const [lang, setLangState] = useState<Lang>(initialLang ?? "zh");
+  const [lang, setLangState] = useState<Lang>(initialLang ?? 'zh');
 
   useEffect(() => {
     const stored = window.localStorage.getItem(LANG_STORAGE_KEY);
@@ -62,18 +55,13 @@ export function LanguageProvider({
 
   const t = useCallback(
     (key: TranslationKey) => {
-      const value =
-        getNestedValue(translations[lang], key) ??
-        getNestedValue(translations.en, key);
-      return typeof value === "string" ? value : key;
+      const value = getNestedValue(translations[lang], key) ?? getNestedValue(translations.en, key);
+      return typeof value === 'string' ? value : key;
     },
     [lang],
   );
 
-  const value = useMemo<I18nContextValue>(
-    () => ({ lang, setLang, t }),
-    [lang, setLang, t],
-  );
+  const value = useMemo<I18nContextValue>(() => ({ lang, setLang, t }), [lang, setLang, t]);
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
@@ -81,7 +69,7 @@ export function LanguageProvider({
 export function useI18n() {
   const ctx = useContext(I18nContext);
   if (!ctx) {
-    throw new Error("useI18n must be used within LanguageProvider");
+    throw new Error('useI18n must be used within LanguageProvider');
   }
   return ctx;
 }

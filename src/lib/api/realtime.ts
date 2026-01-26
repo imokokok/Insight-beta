@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import React from "react";
-import { logger } from "@/lib/logger";
+import React from 'react';
+import { logger } from '@/lib/logger';
 
 export type RealtimeEventType =
-  | "assertion_created"
-  | "assertion_disputed"
-  | "assertion_resolved"
-  | "dispute_created"
-  | "dispute_updated"
-  | "alert_created"
-  | "alert_updated"
-  | "sync_status_changed"
-  | "health_score_changed";
+  | 'assertion_created'
+  | 'assertion_disputed'
+  | 'assertion_resolved'
+  | 'dispute_created'
+  | 'dispute_updated'
+  | 'alert_created'
+  | 'alert_updated'
+  | 'sync_status_changed'
+  | 'health_score_changed';
 
 export interface RealtimeEvent {
   type: RealtimeEventType;
@@ -29,11 +29,7 @@ export interface RealtimeEventFilter {
 }
 
 export type RealtimeEventHandler = (event: RealtimeEvent) => void;
-export type RealtimeConnectionStatus =
-  | "connecting"
-  | "connected"
-  | "disconnected"
-  | "reconnecting";
+export type RealtimeConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'reconnecting';
 export type RealtimeStatusCallback = (status: RealtimeConnectionStatus) => void;
 
 const HEARTBEAT_INTERVAL = 30000;
@@ -43,28 +39,27 @@ const MAX_RECONNECT_DELAY = 30000;
 
 export class RealtimeClient {
   private eventSource: EventSource | null = null;
-  private handlers: Map<RealtimeEventType, Set<RealtimeEventHandler>> =
-    new Map();
+  private handlers: Map<RealtimeEventType, Set<RealtimeEventHandler>> = new Map();
   private statusHandlers: Set<RealtimeStatusCallback> = new Set();
   private reconnectAttempts: number = 0;
   private reconnectTimer: NodeJS.Timeout | null = null;
   private heartbeatTimer: NodeJS.Timeout | null = null;
-  private connectionStatus: RealtimeConnectionStatus = "disconnected";
+  private connectionStatus: RealtimeConnectionStatus = 'disconnected';
   private messageQueue: RealtimeEvent[] = [];
   private filters: RealtimeEventFilter[] = [];
   private lastHeartbeat: number = Date.now();
   private messageCount: number = 0;
   private errorCount: number = 0;
 
-  constructor(private url: string = "/api/events") {}
+  constructor(private url: string = '/api/events') {}
 
   connect(instanceId?: string, filters?: RealtimeEventFilter): void {
-    if (this.eventSource && this.connectionStatus === "connected") {
-      logger.debug("Realtime already connected, skipping");
+    if (this.eventSource && this.connectionStatus === 'connected') {
+      logger.debug('Realtime already connected, skipping');
       return;
     }
 
-    this.updateConnectionStatus("connecting");
+    this.updateConnectionStatus('connecting');
     this.disconnect();
 
     if (filters) {
@@ -73,18 +68,18 @@ export class RealtimeClient {
 
     try {
       const params = new URLSearchParams();
-      if (instanceId) params.set("instanceId", instanceId);
+      if (instanceId) params.set('instanceId', instanceId);
 
-      const fullUrl = `${this.url}${params.toString() ? `?${params.toString()}` : ""}`;
+      const fullUrl = `${this.url}${params.toString() ? `?${params.toString()}` : ''}`;
       this.eventSource = new EventSource(fullUrl);
 
       this.setupEventHandlers(fullUrl);
       this.startHeartbeat();
 
-      logger.info("Realtime connection initiated", { url: fullUrl, filters });
+      logger.info('Realtime connection initiated', { url: fullUrl, filters });
     } catch (error) {
-      this.updateConnectionStatus("disconnected");
-      logger.error("Failed to create EventSource", { error });
+      this.updateConnectionStatus('disconnected');
+      logger.error('Failed to create EventSource', { error });
       this.scheduleReconnect(instanceId);
     }
   }
@@ -93,11 +88,11 @@ export class RealtimeClient {
     if (!this.eventSource) return;
 
     this.eventSource.onopen = () => {
-      this.updateConnectionStatus("connected");
+      this.updateConnectionStatus('connected');
       this.reconnectAttempts = 0;
       this.errorCount = 0;
       this.processMessageQueue();
-      logger.info("Realtime connection established", {
+      logger.info('Realtime connection established', {
         url: fullUrl,
         queueSize: this.messageQueue.length,
       });
@@ -105,25 +100,25 @@ export class RealtimeClient {
 
     this.eventSource.onerror = (error) => {
       this.errorCount++;
-      logger.error("Realtime connection error", {
+      logger.error('Realtime connection error', {
         error,
         attempt: this.reconnectAttempts,
         errorCount: this.errorCount,
       });
 
-      if (this.connectionStatus !== "disconnected") {
-        this.updateConnectionStatus("disconnected");
+      if (this.connectionStatus !== 'disconnected') {
+        this.updateConnectionStatus('disconnected');
         this.scheduleReconnect(this.getInstanceIdFromUrl(fullUrl));
       }
     };
 
-    this.eventSource.addEventListener("message", (event) => {
+    this.eventSource.addEventListener('message', (event) => {
       this.handleMessage(event);
     });
 
-    this.eventSource.addEventListener("heartbeat", () => {
+    this.eventSource.addEventListener('heartbeat', () => {
       this.lastHeartbeat = Date.now();
-      logger.debug("Realtime heartbeat received");
+      logger.debug('Realtime heartbeat received');
     });
   }
 
@@ -135,10 +130,10 @@ export class RealtimeClient {
       if (this.shouldDispatchEvent(data)) {
         this.dispatchEvent(data);
       } else {
-        logger.debug("Event filtered out", { eventType: data.type });
+        logger.debug('Event filtered out', { eventType: data.type });
       }
     } catch (error) {
-      logger.error("Failed to parse realtime event", {
+      logger.error('Failed to parse realtime event', {
         error,
         data: event.data,
       });
@@ -168,7 +163,7 @@ export class RealtimeClient {
   private getInstanceIdFromUrl(url: string): string | undefined {
     try {
       const urlObj = new URL(url, window.location.origin);
-      return urlObj.searchParams.get("instanceId") || undefined;
+      return urlObj.searchParams.get('instanceId') || undefined;
     } catch {
       return undefined;
     }
@@ -176,12 +171,12 @@ export class RealtimeClient {
 
   private scheduleReconnect(instanceId?: string): void {
     if (this.reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
-      logger.error("Max reconnect attempts reached, giving up");
-      this.updateConnectionStatus("disconnected");
+      logger.error('Max reconnect attempts reached, giving up');
+      this.updateConnectionStatus('disconnected');
       return;
     }
 
-    this.updateConnectionStatus("reconnecting");
+    this.updateConnectionStatus('reconnecting');
     this.reconnectAttempts++;
 
     const delay = Math.min(
@@ -189,7 +184,7 @@ export class RealtimeClient {
       MAX_RECONNECT_DELAY,
     );
 
-    logger.info("Scheduling reconnect attempt", {
+    logger.info('Scheduling reconnect attempt', {
       attempt: this.reconnectAttempts,
       delay,
     });
@@ -211,10 +206,10 @@ export class RealtimeClient {
       const timeSinceLastHeartbeat = now - this.lastHeartbeat;
 
       if (timeSinceLastHeartbeat > HEARTBEAT_INTERVAL * 2) {
-        logger.warn("Heartbeat timeout detected", {
+        logger.warn('Heartbeat timeout detected', {
           timeSinceLastHeartbeat,
         });
-        this.updateConnectionStatus("disconnected");
+        this.updateConnectionStatus('disconnected');
         this.scheduleReconnect();
       }
     }, HEARTBEAT_INTERVAL);
@@ -230,7 +225,7 @@ export class RealtimeClient {
   private processMessageQueue(): void {
     if (this.messageQueue.length === 0) return;
 
-    logger.info("Processing message queue", { size: this.messageQueue.length });
+    logger.info('Processing message queue', { size: this.messageQueue.length });
 
     const queue = [...this.messageQueue];
     this.messageQueue = [];
@@ -251,8 +246,8 @@ export class RealtimeClient {
     if (this.eventSource) {
       this.eventSource.close();
       this.eventSource = null;
-      this.updateConnectionStatus("disconnected");
-      logger.info("Realtime connection closed", {
+      this.updateConnectionStatus('disconnected');
+      logger.info('Realtime connection closed', {
         messageCount: this.messageCount,
         errorCount: this.errorCount,
       });
@@ -268,10 +263,11 @@ export class RealtimeClient {
     if (!this.handlers.has(eventType)) {
       this.handlers.set(eventType, new Set());
     }
-    const handlers = this.handlers.get(eventType)!;
+    const handlers = this.handlers.get(eventType);
+    if (!handlers) return () => {};
     handlers.add(handler);
 
-    logger.debug("Event handler registered", {
+    logger.debug('Event handler registered', {
       eventType,
       handlerCount: handlers.size,
     });
@@ -298,7 +294,7 @@ export class RealtimeClient {
       if (handlers.size === 0) {
         this.handlers.delete(eventType);
       }
-      logger.debug("Event handler removed", {
+      logger.debug('Event handler removed', {
         eventType,
         remainingHandlers: handlers.size,
       });
@@ -312,7 +308,7 @@ export class RealtimeClient {
         try {
           handler(event);
         } catch (error) {
-          logger.error("Error in realtime event handler", {
+          logger.error('Error in realtime event handler', {
             eventType: event.type,
             error,
           });
@@ -324,13 +320,13 @@ export class RealtimeClient {
   private updateConnectionStatus(status: RealtimeConnectionStatus): void {
     if (this.connectionStatus !== status) {
       this.connectionStatus = status;
-      logger.info("Connection status changed", { status });
+      logger.info('Connection status changed', { status });
 
       this.statusHandlers.forEach((callback) => {
         try {
           callback(status);
         } catch (error) {
-          logger.error("Error in status callback", { error, status });
+          logger.error('Error in status callback', { error, status });
         }
       });
     }
@@ -356,7 +352,7 @@ export class RealtimeClient {
 
   updateFilters(filters: RealtimeEventFilter[]): void {
     this.filters = filters;
-    logger.info("Event filters updated", { filters });
+    logger.info('Event filters updated', { filters });
   }
 }
 
@@ -398,9 +394,7 @@ export function useRealtimeStatus(callback: RealtimeStatusCallback) {
 }
 
 export function useRealtimeStats() {
-  const [stats, setStats] = React.useState(() =>
-    getRealtimeClient().getStats(),
-  );
+  const [stats, setStats] = React.useState(() => getRealtimeClient().getStats());
 
   React.useEffect(() => {
     const interval = setInterval(() => {

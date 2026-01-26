@@ -1,6 +1,6 @@
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
-import { logger } from "@/lib/logger";
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+import { logger } from '@/lib/logger';
 
 export function parseRpcUrls(value: string) {
   const parts = value
@@ -11,7 +11,7 @@ export function parseRpcUrls(value: string) {
   for (const p of parts) {
     try {
       const u = new URL(p);
-      if (!["http:", "https:", "ws:", "wss:"].includes(u.protocol)) continue;
+      if (!['http:', 'https:', 'ws:', 'wss:'].includes(u.protocol)) continue;
       if (!out.includes(p)) out.push(p);
     } catch {
       continue;
@@ -36,9 +36,9 @@ export function toIsoFromSeconds(seconds: bigint) {
 
 export function formatUsdCompact(amount: number, locale: string) {
   const formatted = new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: "USD",
-    notation: "compact",
+    style: 'currency',
+    currency: 'USD',
+    notation: 'compact',
     maximumFractionDigits: 1,
   }).format(amount);
   return formatted;
@@ -46,28 +46,28 @@ export function formatUsdCompact(amount: number, locale: string) {
 
 export function formatUsd(amount: number, locale: string) {
   return new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: "USD",
+    style: 'currency',
+    currency: 'USD',
     maximumFractionDigits: 0,
   }).format(amount);
 }
 
 export function formatNumberCompact(amount: number, locale: string) {
   return new Intl.NumberFormat(locale, {
-    notation: "compact",
+    notation: 'compact',
     maximumFractionDigits: 1,
   }).format(amount);
 }
 
 export function formatTime(iso: string | null | undefined, locale: string) {
-  if (!iso) return "—";
+  if (!iso) return '—';
   const d = new Date(iso);
-  if (!Number.isFinite(d.getTime())) return "—";
+  if (!Number.isFinite(d.getTime())) return '—';
   return new Intl.DateTimeFormat(locale, {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   }).format(d);
 }
 
@@ -77,7 +77,7 @@ export function calculatePercentage(part: number, total: number) {
 }
 
 export function formatDurationMinutes(totalMinutes: number) {
-  if (!Number.isFinite(totalMinutes) || totalMinutes <= 0) return "—";
+  if (!Number.isFinite(totalMinutes) || totalMinutes <= 0) return '—';
   const hours = Math.floor(totalMinutes / 60);
   const minutes = Math.floor(totalMinutes % 60);
   if (hours <= 0) return `${minutes}m`;
@@ -88,29 +88,25 @@ export function formatDurationMinutes(totalMinutes: number) {
 export function getExplorerUrl(
   chain: string | undefined | null,
   value: string,
-  type: "tx" | "address" | "block" = "tx",
+  type: 'tx' | 'address' | 'block' = 'tx',
 ) {
   if (!value) return null;
-  const c = chain?.toLowerCase() || "";
+  const c = chain?.toLowerCase() || '';
 
-  let baseUrl = "";
-  if (c.includes("amoy") || c === "80002")
-    baseUrl = "https://amoy.polygonscan.com";
-  else if (c.includes("polygon") || c === "137")
-    baseUrl = "https://polygonscan.com";
-  else if (c.includes("arbitrum") || c === "42161")
-    baseUrl = "https://arbiscan.io";
-  else if (c.includes("optimism") || c === "10")
-    baseUrl = "https://optimistic.etherscan.io";
-  else if (c.includes("mainnet") || c === "1") baseUrl = "https://etherscan.io";
-  else if (c.includes("base") || c === "8453") baseUrl = "https://basescan.org";
+  let baseUrl = '';
+  if (c.includes('amoy') || c === '80002') baseUrl = 'https://amoy.polygonscan.com';
+  else if (c.includes('polygon') || c === '137') baseUrl = 'https://polygonscan.com';
+  else if (c.includes('arbitrum') || c === '42161') baseUrl = 'https://arbiscan.io';
+  else if (c.includes('optimism') || c === '10') baseUrl = 'https://optimistic.etherscan.io';
+  else if (c.includes('mainnet') || c === '1') baseUrl = 'https://etherscan.io';
+  else if (c.includes('base') || c === '8453') baseUrl = 'https://basescan.org';
   else return null;
 
   return `${baseUrl}/${type}/${value}`;
 }
 
 export async function copyToClipboard(text: string): Promise<boolean> {
-  if (typeof navigator === "undefined") return false;
+  if (typeof navigator === 'undefined') return false;
   try {
     if (navigator.clipboard?.writeText) {
       await navigator.clipboard.writeText(text);
@@ -121,15 +117,15 @@ export async function copyToClipboard(text: string): Promise<boolean> {
   }
 
   try {
-    const el = document.createElement("textarea");
+    const el = document.createElement('textarea');
     el.value = text;
-    el.setAttribute("readonly", "");
-    el.style.position = "fixed";
-    el.style.left = "-9999px";
-    el.style.top = "-9999px";
+    el.setAttribute('readonly', '');
+    el.style.position = 'fixed';
+    el.style.left = '-9999px';
+    el.style.top = '-9999px';
     document.body.appendChild(el);
     el.select();
-    const ok = document.execCommand("copy");
+    const ok = document.execCommand('copy');
     document.body.removeChild(el);
     return ok;
   } catch {
@@ -139,14 +135,14 @@ export async function copyToClipboard(text: string): Promise<boolean> {
 
 export function getAssertionStatusColor(status: string) {
   switch (status) {
-    case "Pending":
-      return "bg-blue-500/10 text-blue-700 ring-1 ring-blue-500/20";
-    case "Disputed":
-      return "bg-rose-500/10 text-rose-700 ring-1 ring-rose-500/20";
-    case "Resolved":
-      return "bg-emerald-500/10 text-emerald-700 ring-1 ring-emerald-500/20";
+    case 'Pending':
+      return 'bg-blue-500/10 text-blue-700 ring-1 ring-blue-500/20';
+    case 'Disputed':
+      return 'bg-rose-500/10 text-rose-700 ring-1 ring-rose-500/20';
+    case 'Resolved':
+      return 'bg-emerald-500/10 text-emerald-700 ring-1 ring-emerald-500/20';
     default:
-      return "bg-gray-500/10 text-gray-700 ring-1 ring-gray-500/20";
+      return 'bg-gray-500/10 text-gray-700 ring-1 ring-gray-500/20';
   }
 }
 
@@ -170,7 +166,7 @@ export class ApiClientError extends Error {
 export function getErrorCode(error: unknown) {
   if (error instanceof ApiClientError) return error.code;
   if (error instanceof Error) return error.message;
-  return "unknown_error";
+  return 'unknown_error';
 }
 
 export function getErrorDetails(error: unknown) {
@@ -180,19 +176,19 @@ export function getErrorDetails(error: unknown) {
 
 function getServerBaseUrl(): string {
   if (
-    typeof window !== "undefined" &&
-    typeof window.location?.origin === "string" &&
-    window.location.origin !== "null"
+    typeof window !== 'undefined' &&
+    typeof window.location?.origin === 'string' &&
+    window.location.origin !== 'null'
   ) {
     return window.location.origin;
   }
   if (process.env.INSIGHT_BASE_URL) {
     return process.env.INSIGHT_BASE_URL;
   }
-  if (process.env.NODE_ENV !== "production") {
-    return "http://localhost:3000";
+  if (process.env.NODE_ENV !== 'production') {
+    return 'http://localhost:3000';
   }
-  return "http://localhost:3000";
+  return 'http://localhost:3000';
 }
 
 export async function fetchApiData<T>(
@@ -202,24 +198,23 @@ export async function fetchApiData<T>(
 ): Promise<T> {
   try {
     const normalizedInput = (() => {
-      if (typeof input === "string" && input.startsWith("/")) {
+      if (typeof input === 'string' && input.startsWith('/')) {
         const base = getServerBaseUrl();
         const url = new URL(input, base);
         if (
-          typeof window !== "undefined" &&
-          url.pathname.startsWith("/api/oracle/") &&
-          !url.searchParams.has("instanceId")
+          typeof window !== 'undefined' &&
+          url.pathname.startsWith('/api/oracle/') &&
+          !url.searchParams.has('instanceId')
         ) {
           try {
-            const saved = window.localStorage.getItem("oracleFilters");
+            const saved = window.localStorage.getItem('oracleFilters');
             if (saved) {
               const parsed = JSON.parse(saved) as {
                 instanceId?: unknown;
               } | null;
-              const instanceId =
-                parsed && typeof parsed === "object" ? parsed.instanceId : null;
-              if (typeof instanceId === "string" && instanceId.trim()) {
-                url.searchParams.set("instanceId", instanceId.trim());
+              const instanceId = parsed && typeof parsed === 'object' ? parsed.instanceId : null;
+              if (typeof instanceId === 'string' && instanceId.trim()) {
+                url.searchParams.set('instanceId', instanceId.trim());
               }
             }
           } catch {
@@ -247,28 +242,28 @@ export async function fetchApiData<T>(
     } catch {
       // If parsing fails, throw http status or generic error
       if (!res.ok) throw new ApiClientError(`http_${res.status}`);
-      throw new ApiClientError("invalid_json");
+      throw new ApiClientError('invalid_json');
     }
 
     if (!res.ok) {
-      if (json && typeof json === "object") {
+      if (json && typeof json === 'object') {
         const record = json as Record<string, unknown>;
         if (record.ok === false) {
           const err = record.error;
-          if (typeof err === "string") throw new ApiClientError(err);
-          if (err && typeof err === "object") {
+          if (typeof err === 'string') throw new ApiClientError(err);
+          if (err && typeof err === 'object') {
             const obj = err as Record<string, unknown>;
-            const code = typeof obj.code === "string" ? obj.code : "api_error";
+            const code = typeof obj.code === 'string' ? obj.code : 'api_error';
             throw new ApiClientError(code, obj.details);
           }
-          throw new ApiClientError("api_error");
+          throw new ApiClientError('api_error');
         }
       }
       throw new ApiClientError(`http_${res.status}`);
     }
 
-    if (!json || typeof json !== "object") {
-      throw new ApiClientError("invalid_api_response");
+    if (!json || typeof json !== 'object') {
+      throw new ApiClientError('invalid_api_response');
     }
 
     const record = json as ApiResponse<T>;
@@ -277,31 +272,31 @@ export async function fetchApiData<T>(
     }
 
     if (record.error) {
-      if (typeof record.error === "string") {
+      if (typeof record.error === 'string') {
         throw new ApiClientError(record.error);
       }
-      if (record.error && typeof record.error === "object") {
+      if (record.error && typeof record.error === 'object') {
         const err = record.error as { code?: unknown; details?: unknown };
-        const code = typeof err.code === "string" ? err.code : "api_error";
+        const code = typeof err.code === 'string' ? err.code : 'api_error';
         throw new ApiClientError(code, err.details);
       }
-      throw new ApiClientError("api_error");
+      throw new ApiClientError('api_error');
     }
 
-    throw new ApiClientError("unknown_error");
+    throw new ApiClientError('unknown_error');
   } catch (error) {
     const name =
-      error && typeof error === "object" && "name" in error
+      error && typeof error === 'object' && 'name' in error
         ? String((error as { name?: unknown }).name)
-        : "";
-    if (name !== "AbortError" && !(error instanceof ApiClientError)) {
-      logger.error("Fetch error:", { error });
+        : '';
+    if (name !== 'AbortError' && !(error instanceof ApiClientError)) {
+      logger.error('Fetch error:', { error });
       // 如果是网络错误，包装成更友好的错误
       if (
         error instanceof Error &&
-        (error.name === "TypeError" || error.message.includes("Network"))
+        (error.name === 'TypeError' || error.message.includes('Network'))
       ) {
-        throw new ApiClientError("network_error", error.message);
+        throw new ApiClientError('network_error', error.message);
       }
     }
     throw error;

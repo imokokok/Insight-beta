@@ -100,10 +100,8 @@ export class CostBenefitAnalyzer {
 
     return {
       totalCost: Number(totalCost.toFixed(2)),
-      costPerAssertion:
-        assertions > 0 ? Number((totalCost / assertions).toFixed(4)) : 0,
-      costPerDispute:
-        disputes > 0 ? Number((totalCost / disputes).toFixed(4)) : 0,
+      costPerAssertion: assertions > 0 ? Number((totalCost / assertions).toFixed(4)) : 0,
+      costPerDispute: disputes > 0 ? Number((totalCost / disputes).toFixed(4)) : 0,
       costPerVote: votes > 0 ? Number((totalCost / votes).toFixed(4)) : 0,
       gasCosts: Number(gasCosts.toFixed(2)),
       bondCosts: Number(bondCosts.toFixed(2)),
@@ -134,10 +132,8 @@ export class CostBenefitAnalyzer {
       disputesResolved: resolvedDisputes,
       disputesPrevented: preventedDisputes,
       averageResolutionTime: avgResolutionHours,
-      accuracyRate:
-        totalAssertions > 0 ? (accurateAssertions / totalAssertions) * 100 : 0,
-      uptimePercentage:
-        totalSeconds > 0 ? (uptimeSeconds / totalSeconds) * 100 : 100,
+      accuracyRate: totalAssertions > 0 ? (accurateAssertions / totalAssertions) * 100 : 0,
+      uptimePercentage: totalSeconds > 0 ? (uptimeSeconds / totalSeconds) * 100 : 100,
       period,
       startDate,
       endDate,
@@ -157,20 +153,11 @@ export class CostBenefitAnalyzer {
 
     const costEfficiencyRatio = totalCosts > 0 ? totalBenefits / totalCosts : 0;
 
-    const breakEvenPoint = this.calculateBreakEvenPoint(
-      costMetrics,
-      benefitMetrics,
-    );
+    const breakEvenPoint = this.calculateBreakEvenPoint(costMetrics, benefitMetrics);
 
-    const efficiencyScore = this.calculateEfficiencyScore(
-      costMetrics,
-      benefitMetrics,
-    );
+    const efficiencyScore = this.calculateEfficiencyScore(costMetrics, benefitMetrics);
 
-    const recommendations = this.generateRecommendations(
-      costMetrics,
-      benefitMetrics,
-    );
+    const recommendations = this.generateRecommendations(costMetrics, benefitMetrics);
 
     return {
       roi: Number(roi.toFixed(4)),
@@ -199,10 +186,7 @@ export class CostBenefitAnalyzer {
     );
   }
 
-  private calculateBreakEvenPoint(
-    costs: CostMetrics,
-    benefits: BenefitMetrics,
-  ): number {
+  private calculateBreakEvenPoint(costs: CostMetrics, benefits: BenefitMetrics): number {
     const monthlyCost = costs.totalCost;
     const monthlyBenefit = this.estimateTotalBenefits(benefits);
 
@@ -212,10 +196,7 @@ export class CostBenefitAnalyzer {
     return Number((monthlyCost / monthlyBenefit).toFixed(1));
   }
 
-  private calculateEfficiencyScore(
-    costs: CostMetrics,
-    benefits: BenefitMetrics,
-  ): number {
+  private calculateEfficiencyScore(costs: CostMetrics, benefits: BenefitMetrics): number {
     const costScore = Math.min(100, 100 - costs.costPerAssertion * 10);
     const valueScore = Math.min(100, (benefits.valuePerAssertion / 1000) * 100);
     const accuracyScore = benefits.accuracyRate;
@@ -231,66 +212,44 @@ export class CostBenefitAnalyzer {
     );
   }
 
-  private generateRecommendations(
-    costs: CostMetrics,
-    benefits: BenefitMetrics,
-  ): string[] {
+  private generateRecommendations(costs: CostMetrics, benefits: BenefitMetrics): string[] {
     const recommendations: string[] = [];
 
     if (costs.costPerAssertion > 10) {
-      recommendations.push(
-        "Consider optimizing gas usage to reduce assertion costs",
-      );
+      recommendations.push('Consider optimizing gas usage to reduce assertion costs');
     }
 
     if (benefits.accuracyRate < 95) {
-      recommendations.push(
-        "Improve data source reliability to increase assertion accuracy",
-      );
+      recommendations.push('Improve data source reliability to increase assertion accuracy');
     }
 
     if (benefits.uptimePercentage < 99.9) {
-      recommendations.push(
-        "Enhance infrastructure redundancy to improve uptime",
-      );
+      recommendations.push('Enhance infrastructure redundancy to improve uptime');
     }
 
     if (costs.operationalCosts > costs.totalCost * 0.3) {
-      recommendations.push(
-        "Review operational overhead for potential cost reductions",
-      );
+      recommendations.push('Review operational overhead for potential cost reductions');
     }
 
     if (benefits.disputesPrevented < benefits.disputesResolved) {
-      recommendations.push(
-        "Implement proactive monitoring to prevent disputes before they occur",
-      );
+      recommendations.push('Implement proactive monitoring to prevent disputes before they occur');
     }
 
     if (recommendations.length === 0) {
-      recommendations.push(
-        "Great job! Your oracle operations are highly efficient",
-      );
-      recommendations.push(
-        "Consider sharing best practices with the community",
-      );
+      recommendations.push('Great job! Your oracle operations are highly efficient');
+      recommendations.push('Consider sharing best practices with the community');
     }
 
     return recommendations.slice(0, 5);
   }
 
-  projectCosts(
-    historicalCosts: CostMetrics[],
-    months: number,
-  ): CostProjection[] {
+  projectCosts(historicalCosts: CostMetrics[], months: number): CostProjection[] {
     if (historicalCosts.length < 2) {
-      return this.getDefaultProjections(months, "cost");
+      return this.getDefaultProjections(months, 'cost');
     }
 
     const recentCosts = historicalCosts.slice(-6);
-    const avgGrowth = this.calculateAverageGrowth(
-      recentCosts.map((c) => c.totalCost),
-    );
+    const avgGrowth = this.calculateAverageGrowth(recentCosts.map((c) => c.totalCost));
     const avgCost = this.calculateMean(recentCosts.map((c) => c.totalCost));
 
     const projections: CostProjection[] = [];
@@ -304,32 +263,21 @@ export class CostBenefitAnalyzer {
         period: `Month ${i}`,
         projectedCost: Number(currentCost.toFixed(2)),
         confidence: Number(confidence.toFixed(2)),
-        factors: [
-          "Historical growth rate",
-          "Network conditions",
-          "Gas price projections",
-        ],
+        factors: ['Historical growth rate', 'Network conditions', 'Gas price projections'],
       });
     }
 
     return projections;
   }
 
-  projectBenefits(
-    historicalBenefits: BenefitMetrics[],
-    months: number,
-  ): BenefitProjection[] {
+  projectBenefits(historicalBenefits: BenefitMetrics[], months: number): BenefitProjection[] {
     if (historicalBenefits.length < 2) {
-      return this.getDefaultProjections(months, "benefit");
+      return this.getDefaultProjections(months, 'benefit');
     }
 
     const recentBenefits = historicalBenefits.slice(-6);
-    const avgGrowth = this.calculateAverageGrowth(
-      recentBenefits.map((b) => b.totalValueSecured),
-    );
-    const avgBenefit = this.calculateMean(
-      recentBenefits.map((b) => b.totalValueSecured),
-    );
+    const avgGrowth = this.calculateAverageGrowth(recentBenefits.map((b) => b.totalValueSecured));
+    const avgBenefit = this.calculateMean(recentBenefits.map((b) => b.totalValueSecured));
 
     const projections: BenefitProjection[] = [];
     let currentBenefit = avgBenefit;
@@ -342,36 +290,24 @@ export class CostBenefitAnalyzer {
         period: `Month ${i}`,
         projectedBenefit: Number(currentBenefit.toFixed(2)),
         confidence: Number(confidence.toFixed(2)),
-        factors: [
-          "Historical growth rate",
-          "Market expansion",
-          "User adoption",
-        ],
+        factors: ['Historical growth rate', 'Market expansion', 'User adoption'],
       });
     }
 
     return projections;
   }
 
-  getEfficiencyBenchmarks(
-    costs: CostMetrics,
-    benefits: BenefitMetrics,
-  ): EfficiencyBenchmark[] {
+  getEfficiencyBenchmarks(costs: CostMetrics, benefits: BenefitMetrics): EfficiencyBenchmark[] {
     return [
       {
-        metric: "Cost per Assertion",
+        metric: 'Cost per Assertion',
         current: costs.costPerAssertion,
         industryAverage: 5.0,
         topQuartile: 2.0,
-        percentile: this.calculatePercentile(
-          costs.costPerAssertion,
-          2.0,
-          5.0,
-          10.0,
-        ),
+        percentile: this.calculatePercentile(costs.costPerAssertion, 2.0, 5.0, 10.0),
       },
       {
-        metric: "Value Secured per Dollar",
+        metric: 'Value Secured per Dollar',
         current: benefits.valuePerAssertion / costs.costPerAssertion,
         industryAverage: 100,
         topQuartile: 500,
@@ -383,43 +319,25 @@ export class CostBenefitAnalyzer {
         ),
       },
       {
-        metric: "Dispute Resolution Time",
+        metric: 'Dispute Resolution Time',
         current: benefits.averageResolutionTime,
         industryAverage: 72,
         topQuartile: 24,
-        percentile: this.calculatePercentile(
-          benefits.averageResolutionTime,
-          24,
-          72,
-          120,
-          true,
-        ),
+        percentile: this.calculatePercentile(benefits.averageResolutionTime, 24, 72, 120, true),
       },
       {
-        metric: "Accuracy Rate",
+        metric: 'Accuracy Rate',
         current: benefits.accuracyRate,
         industryAverage: 95,
         topQuartile: 99,
-        percentile: this.calculatePercentile(
-          benefits.accuracyRate,
-          99,
-          95,
-          90,
-          false,
-        ),
+        percentile: this.calculatePercentile(benefits.accuracyRate, 99, 95, 90, false),
       },
       {
-        metric: "Uptime Percentage",
+        metric: 'Uptime Percentage',
         current: benefits.uptimePercentage,
         industryAverage: 99.5,
         topQuartile: 99.99,
-        percentile: this.calculatePercentile(
-          benefits.uptimePercentage,
-          99.99,
-          99.5,
-          99,
-          false,
-        ),
+        percentile: this.calculatePercentile(benefits.uptimePercentage, 99.99, 99.5, 99, false),
       },
     ];
   }
@@ -463,39 +381,34 @@ export class CostBenefitAnalyzer {
     }
   }
 
-  private getDefaultProjections<T extends "cost" | "benefit">(
+  private getDefaultProjections<T extends 'cost' | 'benefit'>(
     months: number,
     type: T,
-  ): T extends "cost" ? CostProjection[] : BenefitProjection[] {
+  ): T extends 'cost' ? CostProjection[] : BenefitProjection[] {
     const projections: Array<CostProjection | BenefitProjection> = [];
 
     for (let i = 1; i <= months; i++) {
-      if (type === "cost") {
+      if (type === 'cost') {
         projections.push({
           period: `Month ${i}`,
           projectedCost: 1000 * Math.pow(1.05, i),
           confidence: 0.7,
-          factors: ["Historical data insufficient", "Market conditions"],
+          factors: ['Historical data insufficient', 'Market conditions'],
         });
       } else {
         projections.push({
           period: `Month ${i}`,
           projectedBenefit: 50000 * Math.pow(1.08, i),
           confidence: 0.7,
-          factors: ["Historical data insufficient", "Market conditions"],
+          factors: ['Historical data insufficient', 'Market conditions'],
         });
       }
     }
 
-    return projections as T extends "cost"
-      ? CostProjection[]
-      : BenefitProjection[];
+    return projections as T extends 'cost' ? CostProjection[] : BenefitProjection[];
   }
 
-  generateReport(
-    analysis: CostBenefitAnalysis,
-    benchmarks: EfficiencyBenchmark[],
-  ): string {
+  generateReport(analysis: CostBenefitAnalysis, benchmarks: EfficiencyBenchmark[]): string {
     return `
 # Cost-Benefit Analysis Report
 
@@ -520,10 +433,10 @@ export class CostBenefitAnalyzer {
 - **Uptime**: ${analysis.benefitMetrics.uptimePercentage.toFixed(2)}%
 
 ## Recommendations
-${analysis.result.recommendations.map((r) => `- ${r}`).join("\n")}
+${analysis.result.recommendations.map((r) => `- ${r}`).join('\n')}
 
 ## Benchmark Comparison
-${benchmarks.map((b) => `- ${b.metric}: ${b.percentile}th percentile`).join("\n")}
+${benchmarks.map((b) => `- ${b.metric}: ${b.percentile}th percentile`).join('\n')}
     `.trim();
   }
 

@@ -1,11 +1,6 @@
-export type OracleChain =
-  | "Polygon"
-  | "PolygonAmoy"
-  | "Arbitrum"
-  | "Optimism"
-  | "Local";
+export type OracleChain = 'Polygon' | 'PolygonAmoy' | 'Arbitrum' | 'Optimism' | 'Local';
 
-export type OracleStatus = "Pending" | "Disputed" | "Resolved";
+export type OracleStatus = 'Pending' | 'Disputed' | 'Resolved';
 
 export type Assertion = {
   id: string;
@@ -26,7 +21,7 @@ export type Assertion = {
   txHash: string;
 };
 
-export type DisputeStatus = "Voting" | "Pending Execution" | "Executed";
+export type DisputeStatus = 'Voting' | 'Pending Execution' | 'Executed';
 
 export type Dispute = {
   id: string;
@@ -169,8 +164,8 @@ export interface DbDisputeRow {
   total_votes: string | number;
 }
 
-export type AlertSeverity = "info" | "warning" | "critical";
-export type AlertStatus = "Open" | "Acknowledged" | "Resolved";
+export type AlertSeverity = 'info' | 'warning' | 'critical';
+export type AlertStatus = 'Open' | 'Acknowledged' | 'Resolved';
 
 export type Alert = {
   id: number;
@@ -202,24 +197,24 @@ export type AuditLogEntry = {
 };
 
 export type AlertRuleEvent =
-  | "dispute_created"
-  | "liveness_expiring"
-  | "sync_error"
-  | "stale_sync"
-  | "contract_paused"
-  | "sync_backlog"
-  | "backlog_assertions"
-  | "backlog_disputes"
-  | "market_stale"
-  | "execution_delayed"
-  | "low_participation"
-  | "high_vote_divergence"
-  | "high_dispute_rate"
-  | "slow_api_request"
-  | "high_error_rate"
-  | "database_slow_query"
-  | "price_deviation"
-  | "low_gas";
+  | 'dispute_created'
+  | 'liveness_expiring'
+  | 'sync_error'
+  | 'stale_sync'
+  | 'contract_paused'
+  | 'sync_backlog'
+  | 'backlog_assertions'
+  | 'backlog_disputes'
+  | 'market_stale'
+  | 'execution_delayed'
+  | 'low_participation'
+  | 'high_vote_divergence'
+  | 'high_dispute_rate'
+  | 'slow_api_request'
+  | 'high_error_rate'
+  | 'database_slow_query'
+  | 'price_deviation'
+  | 'low_gas';
 export type AlertRule = {
   id: string;
   name: string;
@@ -230,11 +225,11 @@ export type AlertRule = {
   runbook?: string | null;
   silencedUntil?: string | null;
   params?: Record<string, unknown>;
-  channels?: Array<"webhook" | "email" | "telegram">;
+  channels?: Array<'webhook' | 'email' | 'telegram'>;
   recipient?: string | null;
 };
 
-export type IncidentStatus = "Open" | "Mitigating" | "Resolved";
+export type IncidentStatus = 'Open' | 'Mitigating' | 'Resolved';
 
 export type Incident = {
   id: number;
@@ -256,7 +251,7 @@ export type Incident = {
 export type RiskSeverity = AlertSeverity;
 
 export type RiskItem = {
-  entityType: "assertion" | "market";
+  entityType: 'assertion' | 'market';
   entityId: string;
   chain: OracleChain;
   market: string;
@@ -295,7 +290,7 @@ export type OpsMetrics = {
 };
 
 export type OpsSloStatus = {
-  status: "met" | "degraded" | "breached";
+  status: 'met' | 'degraded' | 'breached';
   targets: {
     maxLagBlocks: number;
     maxSyncStalenessMinutes: number;

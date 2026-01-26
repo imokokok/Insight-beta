@@ -1,17 +1,13 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { X, AlertCircle, BarChart2, FileText, Users } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useI18n } from "@/i18n/LanguageProvider";
-import { RoleSelection } from "./Onboarding/RoleSelection";
-import { OnboardingSteps } from "./Onboarding/OnboardingSteps";
+import React, { useState, useEffect } from 'react';
+import { X, AlertCircle, BarChart2, FileText, Users } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useI18n } from '@/i18n/LanguageProvider';
+import { RoleSelection } from './Onboarding/RoleSelection';
+import { OnboardingSteps } from './Onboarding/OnboardingSteps';
 
-export type UserRole =
-  | "developer"
-  | "protocol_team"
-  | "oracle_operator"
-  | "general_user";
+export type UserRole = 'developer' | 'protocol_team' | 'oracle_operator' | 'general_user';
 
 interface OnboardingStep {
   id: string;
@@ -35,7 +31,7 @@ export function Onboarding({ onComplete, className }: OnboardingProps) {
 
   // Check if user has completed onboarding
   useEffect(() => {
-    const hasCompleted = localStorage.getItem("insight-onboarding-completed");
+    const hasCompleted = localStorage.getItem('insight-onboarding-completed');
     if (!hasCompleted) {
       setIsOpen(true);
     }
@@ -43,10 +39,10 @@ export function Onboarding({ onComplete, className }: OnboardingProps) {
 
   // Common welcome step
   const welcomeStep: OnboardingStep = {
-    id: "welcome",
-    title: t("onboarding.welcome"),
-    description: t("onboarding.welcomeDesc"),
-    icon: <AlertCircle className="w-10 h-10 text-purple-600" />,
+    id: 'welcome',
+    title: t('onboarding.welcome'),
+    description: t('onboarding.welcomeDesc'),
+    icon: <AlertCircle className="h-10 w-10 text-purple-600" />,
   };
 
   // Current steps based on role selection
@@ -62,94 +58,82 @@ export function Onboarding({ onComplete, className }: OnboardingProps) {
     const roleStepsConfig = {
       developer: [
         {
-          id: "dev_api",
-          title: t("onboarding.steps.developer.api.title"),
-          description: t("onboarding.steps.developer.api.description"),
-          icon: <FileText className="w-10 h-10 text-blue-600" />,
+          id: 'dev_api',
+          title: t('onboarding.steps.developer.api.title'),
+          description: t('onboarding.steps.developer.api.description'),
+          icon: <FileText className="h-10 w-10 text-blue-600" />,
         },
         {
-          id: "dev_integration",
-          title: t("onboarding.steps.developer.integration.title"),
-          description: t("onboarding.steps.developer.integration.description"),
-          icon: <BarChart2 className="w-10 h-10 text-green-600" />,
+          id: 'dev_integration',
+          title: t('onboarding.steps.developer.integration.title'),
+          description: t('onboarding.steps.developer.integration.description'),
+          icon: <BarChart2 className="h-10 w-10 text-green-600" />,
         },
         {
-          id: "dev_monitoring",
-          title: t("onboarding.steps.developer.monitoring.title"),
-          description: t("onboarding.steps.developer.monitoring.description"),
-          icon: <AlertCircle className="w-10 h-10 text-purple-600" />,
+          id: 'dev_monitoring',
+          title: t('onboarding.steps.developer.monitoring.title'),
+          description: t('onboarding.steps.developer.monitoring.description'),
+          icon: <AlertCircle className="h-10 w-10 text-purple-600" />,
         },
       ],
       protocol_team: [
         {
-          id: "proto_monitoring",
-          title: t("onboarding.steps.protocol_team.monitoring.title"),
-          description: t(
-            "onboarding.steps.protocol_team.monitoring.description",
-          ),
-          icon: <BarChart2 className="w-10 h-10 text-blue-600" />,
+          id: 'proto_monitoring',
+          title: t('onboarding.steps.protocol_team.monitoring.title'),
+          description: t('onboarding.steps.protocol_team.monitoring.description'),
+          icon: <BarChart2 className="h-10 w-10 text-blue-600" />,
         },
         {
-          id: "proto_disputes",
-          title: t("onboarding.steps.protocol_team.disputes.title"),
-          description: t("onboarding.steps.protocol_team.disputes.description"),
-          icon: <Users className="w-10 h-10 text-orange-600" />,
+          id: 'proto_disputes',
+          title: t('onboarding.steps.protocol_team.disputes.title'),
+          description: t('onboarding.steps.protocol_team.disputes.description'),
+          icon: <Users className="h-10 w-10 text-orange-600" />,
         },
         {
-          id: "proto_analytics",
-          title: t("onboarding.steps.protocol_team.analytics.title"),
-          description: t(
-            "onboarding.steps.protocol_team.analytics.description",
-          ),
-          icon: <FileText className="w-10 h-10 text-green-600" />,
+          id: 'proto_analytics',
+          title: t('onboarding.steps.protocol_team.analytics.title'),
+          description: t('onboarding.steps.protocol_team.analytics.description'),
+          icon: <FileText className="h-10 w-10 text-green-600" />,
         },
       ],
       oracle_operator: [
         {
-          id: "op_monitoring",
-          title: t("onboarding.steps.oracle_operator.nodeMonitoring.title"),
-          description: t(
-            "onboarding.steps.oracle_operator.nodeMonitoring.description",
-          ),
-          icon: <BarChart2 className="w-10 h-10 text-blue-600" />,
+          id: 'op_monitoring',
+          title: t('onboarding.steps.oracle_operator.nodeMonitoring.title'),
+          description: t('onboarding.steps.oracle_operator.nodeMonitoring.description'),
+          icon: <BarChart2 className="h-10 w-10 text-blue-600" />,
         },
         {
-          id: "op_sync",
-          title: t("onboarding.steps.oracle_operator.syncStatus.title"),
-          description: t(
-            "onboarding.steps.oracle_operator.syncStatus.description",
-          ),
-          icon: <AlertCircle className="w-10 h-10 text-purple-600" />,
+          id: 'op_sync',
+          title: t('onboarding.steps.oracle_operator.syncStatus.title'),
+          description: t('onboarding.steps.oracle_operator.syncStatus.description'),
+          icon: <AlertCircle className="h-10 w-10 text-purple-600" />,
         },
         {
-          id: "op_alerts",
-          title: t("onboarding.steps.oracle_operator.alerts.title"),
-          description: t("onboarding.steps.oracle_operator.alerts.description"),
-          icon: <Users className="w-10 h-10 text-orange-600" />,
+          id: 'op_alerts',
+          title: t('onboarding.steps.oracle_operator.alerts.title'),
+          description: t('onboarding.steps.oracle_operator.alerts.description'),
+          icon: <Users className="h-10 w-10 text-orange-600" />,
         },
       ],
       general_user: [
         {
-          id: "user_monitoring",
-          title: t("onboarding.steps.general_user.exploration.title"),
-          description: t(
-            "onboarding.steps.general_user.exploration.description",
-          ),
-          icon: <BarChart2 className="w-10 h-10 text-blue-600" />,
+          id: 'user_monitoring',
+          title: t('onboarding.steps.general_user.exploration.title'),
+          description: t('onboarding.steps.general_user.exploration.description'),
+          icon: <BarChart2 className="h-10 w-10 text-blue-600" />,
         },
         {
-          id: "user_assertions",
-          title: t("onboarding.steps.general_user.assertions.title"),
-          description: t(
-            "onboarding.steps.general_user.assertions.description",
-          ),
-          icon: <FileText className="w-10 h-10 text-green-600" />,
+          id: 'user_assertions',
+          title: t('onboarding.steps.general_user.assertions.title'),
+          description: t('onboarding.steps.general_user.assertions.description'),
+          icon: <FileText className="h-10 w-10 text-green-600" />,
         },
         {
-          id: "user_disputes",
-          title: t("onboarding.steps.general_user.disputes.title"),
-          description: t("onboarding.steps.general_user.disputes.description"),
-          icon: <Users className="w-10 h-10 text-orange-600" />,
+          id: 'user_disputes',
+          title: t('onboarding.steps.general_user.disputes.title'),
+          description: t('onboarding.steps.general_user.disputes.description'),
+          icon: <Users className="h-10 w-10 text-orange-600" />,
         },
       ],
     };
@@ -163,7 +147,7 @@ export function Onboarding({ onComplete, className }: OnboardingProps) {
     setSelectedRole(role);
     setShowRoleSelection(false);
     setCurrentStep(0);
-    localStorage.setItem("insight-user-role", role);
+    localStorage.setItem('insight-user-role', role);
   };
 
   const handleNext = () => {
@@ -179,7 +163,7 @@ export function Onboarding({ onComplete, className }: OnboardingProps) {
   };
 
   const handleComplete = () => {
-    localStorage.setItem("insight-onboarding-completed", "true");
+    localStorage.setItem('insight-onboarding-completed', 'true');
     setIsOpen(false);
     onComplete?.();
   };
@@ -189,31 +173,26 @@ export function Onboarding({ onComplete, className }: OnboardingProps) {
   return (
     <div
       className={cn(
-        "fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm",
+        'fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm',
         className,
       )}
     >
-      <div className="w-full max-w-md rounded-lg bg-white shadow-2xl overflow-hidden">
+      <div className="w-full max-w-md overflow-hidden rounded-lg bg-white shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-xl font-bold text-gray-900">
-            {t("onboarding.title")}
-          </h2>
+        <div className="flex items-center justify-between border-b p-6">
+          <h2 className="text-xl font-bold text-gray-900">{t('onboarding.title')}</h2>
           <button
             onClick={handleSkip}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 transition-colors hover:text-gray-600"
           >
-            <X className="w-5 h-5" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Content */}
         <div className="p-6">
           {showRoleSelection ? (
-            <RoleSelection
-              onRoleSelect={handleRoleSelect}
-              onSkip={handleSkip}
-            />
+            <RoleSelection onRoleSelect={handleRoleSelect} onSkip={handleSkip} />
           ) : (
             <OnboardingSteps
               currentStep={currentStep}

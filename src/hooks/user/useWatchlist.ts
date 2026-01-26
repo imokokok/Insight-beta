@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useToast } from "@/components/ui/toast";
-import { useI18n } from "@/i18n/LanguageProvider";
+import { useState, useEffect } from 'react';
+import { useToast } from '@/components/ui/toast';
+import { useI18n } from '@/i18n/LanguageProvider';
 
-const STORAGE_KEY = "insight_watchlist";
+const STORAGE_KEY = 'insight_watchlist';
 
 export function useWatchlist() {
   const [watchlist, setWatchlist] = useState<string[]>([]);
@@ -15,9 +15,9 @@ export function useWatchlist() {
   useEffect(() => {
     setMounted(true);
     if (
-      typeof window === "undefined" ||
+      typeof window === 'undefined' ||
       !window.localStorage ||
-      typeof window.localStorage.getItem !== "function"
+      typeof window.localStorage.getItem !== 'function'
     ) {
       return;
     }
@@ -33,13 +33,11 @@ export function useWatchlist() {
   const toggleWatchlist = (id: string) => {
     setWatchlist((prev) => {
       const isCurrentlyWatched = prev.includes(id);
-      const next = isCurrentlyWatched
-        ? prev.filter((i) => i !== id)
-        : [...prev, id];
+      const next = isCurrentlyWatched ? prev.filter((i) => i !== id) : [...prev, id];
       if (
-        typeof window !== "undefined" &&
+        typeof window !== 'undefined' &&
         window.localStorage &&
-        typeof window.localStorage.setItem === "function"
+        typeof window.localStorage.setItem === 'function'
       ) {
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
       }
@@ -47,16 +45,16 @@ export function useWatchlist() {
       // Show toast notification
       if (isCurrentlyWatched) {
         toast({
-          type: "success",
-          title: t("common.removeFromWatchlist"),
-          message: t("common.success"),
+          type: 'success',
+          title: t('common.removeFromWatchlist'),
+          message: t('common.success'),
           duration: 2000,
         });
       } else {
         toast({
-          type: "success",
-          title: t("common.addToWatchlist"),
-          message: t("common.success"),
+          type: 'success',
+          title: t('common.addToWatchlist'),
+          message: t('common.success'),
           duration: 2000,
         });
       }

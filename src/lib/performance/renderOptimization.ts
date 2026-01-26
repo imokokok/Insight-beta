@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState } from 'react';
 
 export function useStableValue<T>(value: T, deps: unknown[] = []): T {
   const ref = useRef({ value, deps: deps as unknown[] });
@@ -36,14 +36,11 @@ export function useEqualityCheck<T>(
   return state;
 }
 
-export function useIdleCallback<T>(
-  callback: () => T,
-  options?: { timeout?: number },
-): T | null {
+export function useIdleCallback<T>(callback: () => T, options?: { timeout?: number }): T | null {
   const [result, setResult] = useState<T | null>(null);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
 
     let timeoutId: NodeJS.Timeout;
 
@@ -62,7 +59,7 @@ export function useIdleCallback<T>(
 
     return () => {
       clearTimeout(timeoutId);
-      if (typeof window !== "undefined") {
+      if (typeof window !== 'undefined') {
         window.cancelIdleCallback(timeoutId as unknown as number);
       }
     };
@@ -120,19 +117,13 @@ export function createMemoizedComponent<P extends object>(
   arePropsEqual: (prevProps: P, nextProps: P) => boolean = (a, b) =>
     Object.keys(a).length === Object.keys(b).length &&
     Object.keys(a).every((key) =>
-      Object.is(
-        (a as Record<string, unknown>)[key],
-        (b as Record<string, unknown>)[key],
-      ),
+      Object.is((a as Record<string, unknown>)[key], (b as Record<string, unknown>)[key]),
     ),
 ) {
   return React.memo(Component, arePropsEqual);
 }
 
-export function shallowCompare<T extends Record<string, unknown>>(
-  obj1: T,
-  obj2: T,
-): boolean {
+export function shallowCompare<T extends Record<string, unknown>>(obj1: T, obj2: T): boolean {
   const keys1 = Object.keys(obj1);
   const keys2 = Object.keys(obj2);
 
@@ -148,7 +139,7 @@ export function memoize<T extends (...args: never[]) => unknown>(
   const cache = new Map<string, unknown>();
 
   return ((...args: Parameters<typeof fn>) => {
-    const key = args.map((arg) => JSON.stringify(arg)).join(":");
+    const key = args.map((arg) => JSON.stringify(arg)).join(':');
 
     if (cache.has(key)) {
       return cache.get(key);
@@ -166,14 +157,11 @@ export function memoize<T extends (...args: never[]) => unknown>(
   }) as T;
 }
 
-export function useWhyDidYouUpdate(
-  componentName: string,
-  props: Record<string, unknown>,
-) {
+export function useWhyDidYouUpdate(componentName: string, props: Record<string, unknown>) {
   const previousProps = useRef(props);
 
   useEffect(() => {
-    if (process.env.NODE_ENV === "development") {
+    if (process.env.NODE_ENV === 'development') {
       const changedProps = Object.keys(props).filter((key) => {
         const prevValue = previousProps.current[key];
         const currValue = props[key];
@@ -201,11 +189,4 @@ export function useWhyDidYouUpdate(
   }, [componentName, props]);
 }
 
-export {
-  useMemo,
-  useCallback,
-  useEffect,
-  useState,
-  useRef,
-  useLayoutEffect,
-} from "react";
+export { useMemo, useCallback, useEffect, useState, useRef, useLayoutEffect } from 'react';

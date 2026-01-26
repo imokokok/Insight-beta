@@ -1,21 +1,16 @@
-import type {
-  Assertion,
-  Dispute,
-  OracleChain,
-  OracleConfig,
-} from "@/lib/types/oracleTypes";
-import type { SyncMeta } from "./oracleState";
+import type { Assertion, Dispute, OracleChain, OracleConfig } from '@/lib/types/oracleTypes';
+import type { SyncMeta } from './oracleState';
 
 type MemoryAlert = {
   id: number;
   fingerprint: string;
   type: string;
-  severity: "info" | "warning" | "critical";
+  severity: 'info' | 'warning' | 'critical';
   title: string;
   message: string;
   entityType: string | null;
   entityId: string | null;
-  status: "Open" | "Acknowledged" | "Resolved";
+  status: 'Open' | 'Acknowledged' | 'Resolved';
   occurrences: number;
   firstSeenAt: string;
   lastSeenAt: string;
@@ -97,9 +92,9 @@ type MemoryStore = {
 
 function createDefaultConfig(): OracleConfig {
   return {
-    rpcUrl: "",
-    contractAddress: "",
-    chain: "Local",
+    rpcUrl: '',
+    contractAddress: '',
+    chain: 'Local',
     startBlock: 0,
     maxBlockRange: 10_000,
     votingPeriodHours: 72,
@@ -119,7 +114,7 @@ function createDefaultSyncMeta(): SyncMeta {
 function createDefaultInstance(id: string): MemoryOracleInstance {
   return {
     id,
-    name: id === "default" ? "Default" : id,
+    name: id === 'default' ? 'Default' : id,
     enabled: true,
     oracleConfig: createDefaultConfig(),
     sync: {
@@ -146,7 +141,7 @@ export function getMemoryStore(): MemoryStore {
   const g = globalThis as unknown as { __insightMemoryStore?: MemoryStore };
   if (!g.__insightMemoryStore) {
     const instances = new Map<string, MemoryOracleInstance>();
-    instances.set("default", createDefaultInstance("default"));
+    instances.set('default', createDefaultInstance('default'));
     g.__insightMemoryStore = {
       instances,
       kv: new Map(),
@@ -161,7 +156,7 @@ export function getMemoryStore(): MemoryStore {
 
 export function getMemoryInstance(instanceId: string) {
   const mem = getMemoryStore();
-  const id = (instanceId || "default").trim() || "default";
+  const id = (instanceId || 'default').trim() || 'default';
   let inst = mem.instances.get(id);
   if (!inst) {
     inst = createDefaultInstance(id);

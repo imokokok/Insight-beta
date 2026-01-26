@@ -1,35 +1,31 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { ZodError } from "zod";
-import { GET } from "./route";
-import * as oracle from "@/server/oracle";
-import { requireAdmin, error } from "@/server/apiResponse";
-import type { Dispute } from "@/lib/types/oracleTypes";
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { ZodError } from 'zod';
+import { GET } from './route';
+import * as oracle from '@/server/oracle';
+import { requireAdmin, error } from '@/server/apiResponse';
+import type { Dispute } from '@/lib/types/oracleTypes';
 
-vi.mock("@/server/oracle", () => ({
+vi.mock('@/server/oracle', () => ({
   listDisputes: vi.fn(),
   ensureOracleSynced: vi.fn(),
 }));
 
-vi.mock("@/server/apiResponse", () => ({
+vi.mock('@/server/apiResponse', () => ({
   rateLimit: vi.fn(() => null),
   cachedJson: vi.fn(
-    async (
-      _key: string,
-      _ttlMs: number,
-      compute: () => unknown | Promise<unknown>,
-    ) => {
+    async (_key: string, _ttlMs: number, compute: () => unknown | Promise<unknown>) => {
       return await compute();
     },
   ),
-  getAdminActor: vi.fn(() => "test"),
+  getAdminActor: vi.fn(() => 'test'),
   requireAdmin: vi.fn(async (request: Request) => {
-    const token = request.headers.get("x-admin-token")?.trim() ?? "";
+    const token = request.headers.get('x-admin-token')?.trim() ?? '';
     return token ? null : {};
   }),
   handleApi: async (arg1: unknown, arg2?: unknown) => {
     try {
       const fn =
-        typeof arg1 === "function"
+        typeof arg1 === 'function'
           ? (arg1 as () => unknown | Promise<unknown>)
           : (arg2 as () => unknown | Promise<unknown>);
       const data = await fn();
@@ -37,10 +33,10 @@ vi.mock("@/server/apiResponse", () => ({
     } catch (e: unknown) {
       if (e instanceof ZodError) {
         const messages = e.issues.map((i) => i.message);
-        if (messages.includes("invalid_address")) {
-          return { ok: false, error: "invalid_address" };
+        if (messages.includes('invalid_address')) {
+          return { ok: false, error: 'invalid_address' };
         }
-        return { ok: false, error: "invalid_request_body" };
+        return { ok: false, error: 'invalid_request_body' };
       }
       const message = e instanceof Error ? e.message : String(e);
       return { ok: false, error: message };
@@ -52,23 +48,23 @@ vi.mock("@/server/apiResponse", () => ({
   }),
 }));
 
-describe("GET /api/oracle/disputes", () => {
+describe('GET /api/oracle/disputes', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("returns disputes list", async () => {
+  it('returns disputes list', async () => {
     const mockItems: Dispute[] = [
       {
-        id: "0x1",
-        chain: "Local",
-        assertionId: "0xassertion",
-        market: "Test market",
-        disputeReason: "reason",
-        disputer: "0x0000000000000000000000000000000000000001",
+        id: '0x1',
+        chain: 'Local',
+        assertionId: '0xassertion',
+        market: 'Test market',
+        disputeReason: 'reason',
+        disputer: '0x0000000000000000000000000000000000000001',
         disputedAt: new Date().toISOString(),
         votingEndsAt: new Date().toISOString(),
-        status: "Voting",
+        status: 'Voting',
         currentVotesFor: 0,
         currentVotesAgainst: 0,
         totalVotes: 0,
@@ -82,12 +78,8 @@ describe("GET /api/oracle/disputes", () => {
       nextCursor: null,
     });
 
-    const request = new Request(
-      "http://localhost:3000/api/oracle/disputes?limit=10",
-    );
-    type ApiMockResponse<T> =
-      | { ok: true; data: T }
-      | { ok: false; error: string };
+    const request = new Request('http://localhost:3000/api/oracle/disputes?limit=10');
+    type ApiMockResponse<T> = { ok: true; data: T } | { ok: false; error: string };
     const response = (await GET(request)) as unknown as ApiMockResponse<{
       items: Dispute[];
       total: number;
@@ -105,29 +97,24 @@ describe("GET /api/oracle/disputes", () => {
     );
   });
 
-  it("rejects invalid disputer address", async () => {
+  it('rejects invalid disputer address', async () => {
     const request = new Request(
-      "http://localhost:3000/api/oracle/disputes?disputer=not_an_address",
+      'http://localhost:3000/api/oracle/disputes?disputer=not_an_address',
     );
-    type ApiMockResponse =
-      | { ok: true; data: unknown }
-      | { ok: false; error: string };
+    type ApiMockResponse = { ok: true; data: unknown } | { ok: false; error: string };
     const response = (await GET(request)) as unknown as ApiMockResponse;
 
     expect(response.ok).toBe(false);
     if (!response.ok) {
-      expect(response.error).toBe("invalid_address");
+      expect(response.error).toBe('invalid_address');
     }
     expect(oracle.listDisputes).not.toHaveBeenCalled();
   });
 
-  it("triggers sync when authorized", async () => {
-    const request = new Request(
-      "http://localhost:3000/api/oracle/disputes?sync=1",
-      {
-        headers: { "x-admin-token": "valid_token" },
-      },
-    );
+  it('triggers sync when authorized', async () => {
+    const request = new Request('http://localhost:3000/api/oracle/disputes?sync=1', {
+      headers: { 'x-admin-token': 'valid_token' },
+    });
 
     // Mock listDisputes to return empty list
     vi.mocked(oracle.listDisputes).mockResolvedValue({
@@ -136,22 +123,18 @@ describe("GET /api/oracle/disputes", () => {
       nextCursor: null,
     });
 
-    type ApiMockResponse =
-      | { ok: true; data: unknown }
-      | { ok: false; error: string };
+    type ApiMockResponse = { ok: true; data: unknown } | { ok: false; error: string };
     const response = (await GET(request)) as unknown as ApiMockResponse;
 
     expect(response.ok).toBe(true);
     expect(oracle.ensureOracleSynced).toHaveBeenCalled();
   });
 
-  it("requires admin for sync", async () => {
+  it('requires admin for sync', async () => {
     // Mock requireAdmin to return error when no token
-    vi.mocked(requireAdmin).mockResolvedValueOnce(error("unauthorized", 403));
+    vi.mocked(requireAdmin).mockResolvedValueOnce(error('unauthorized', 403));
 
-    const request = new Request(
-      "http://localhost:3000/api/oracle/disputes?sync=1",
-    );
+    const request = new Request('http://localhost:3000/api/oracle/disputes?sync=1');
     // handleApi mock wraps the return value in { ok: true, data: ... }
     const response = (await GET(request)) as unknown as {
       ok: true;
@@ -159,13 +142,13 @@ describe("GET /api/oracle/disputes", () => {
     };
 
     expect(response.ok).toBe(true);
-    expect(response.data).toEqual({ ok: false, error: "unauthorized" });
+    expect(response.data).toEqual({ ok: false, error: 'unauthorized' });
     expect(oracle.ensureOracleSynced).not.toHaveBeenCalled();
   });
 
-  it("passes filters to listDisputes", async () => {
+  it('passes filters to listDisputes', async () => {
     const request = new Request(
-      "http://localhost:3000/api/oracle/disputes?status=Voting&chain=Arbitrum",
+      'http://localhost:3000/api/oracle/disputes?status=Voting&chain=Arbitrum',
     );
 
     vi.mocked(oracle.listDisputes).mockResolvedValue({
@@ -178,8 +161,8 @@ describe("GET /api/oracle/disputes", () => {
 
     expect(oracle.listDisputes).toHaveBeenCalledWith(
       expect.objectContaining({
-        status: "Voting",
-        chain: "Arbitrum",
+        status: 'Voting',
+        chain: 'Arbitrum',
       }),
     );
   });

@@ -48,7 +48,7 @@ export interface APIOperation {
 
 export interface APIParameter {
   name: string;
-  in: "query" | "header" | "path" | "cookie";
+  in: 'query' | 'header' | 'path' | 'cookie';
   description: string;
   required: boolean;
   schema: Schema;
@@ -74,7 +74,7 @@ export interface APIResponse {
 }
 
 export interface Schema {
-  type: "object" | "array" | "string" | "number" | "boolean" | "integer";
+  type: 'object' | 'array' | 'string' | 'number' | 'boolean' | 'integer';
   properties?: Record<string, Schema>;
   items?: Schema;
   required?: string[];
@@ -98,41 +98,33 @@ export interface SecurityRequirement {
 }
 
 export interface DocGenerationOptions {
-  format?: "json" | "html" | "markdown";
+  format?: 'json' | 'html' | 'markdown';
   includeExamples?: boolean;
   includeSecurity?: boolean;
-  theme?: "light" | "dark";
+  theme?: 'light' | 'dark';
 }
 
-const DEFAULT_VERSION = "1.0.0";
-const DEFAULT_THEME = "light";
+const DEFAULT_VERSION = '1.0.0';
+const DEFAULT_THEME = 'light';
 
 export class APIDocGenerator {
   private doc: APIDocumentation;
-  private cache: Map<string, { spec: APIDocumentation; timestamp: number }> =
-    new Map();
+  private cache: Map<string, { spec: APIDocumentation; timestamp: number }> = new Map();
   private cacheTimeout: number = 300000; // 5 minutes
 
-  constructor(config: {
-    title: string;
-    version?: string;
-    description?: string;
-    baseUrl?: string;
-  }) {
+  constructor(config: { title: string; version?: string; description?: string; baseUrl?: string }) {
     this.doc = {
-      openapi: "3.0.0",
+      openapi: '3.0.0',
       info: {
         title: config.title,
         version: config.version || DEFAULT_VERSION,
-        description: config.description || "",
+        description: config.description || '',
       },
       title: config.title,
       version: config.version || DEFAULT_VERSION,
-      description: config.description || "",
-      baseUrl: config.baseUrl || "",
-      servers: config.baseUrl
-        ? [{ url: config.baseUrl, description: "Base URL" }]
-        : undefined,
+      description: config.description || '',
+      baseUrl: config.baseUrl || '',
+      servers: config.baseUrl ? [{ url: config.baseUrl, description: 'Base URL' }] : undefined,
       paths: {},
       components: {
         schemas: {},
@@ -177,7 +169,7 @@ export class APIDocGenerator {
   }
 
   generateOpenAPISpec(options?: DocGenerationOptions): APIDocumentation {
-    const format = options?.format || "json";
+    const format = options?.format || 'json';
     const cacheKey = `${format}-${JSON.stringify(this.doc)}`;
     const cached = this.cache.get(cacheKey);
 
@@ -209,8 +201,8 @@ export class APIDocGenerator {
       margin: 0;
       padding: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: ${theme === "dark" ? "#1a1a1a" : "#ffffff"};
-      color: ${theme === "dark" ? "#ffffff" : "#000000"};
+      background-color: ${theme === 'dark' ? '#1a1a1a' : '#ffffff'};
+      color: ${theme === 'dark' ? '#ffffff' : '#000000'};
     }
     .redoc-wrap {
       height: 100vh;
@@ -231,14 +223,14 @@ export class APIDocGenerator {
     lines.push(`\n**Version:** ${this.doc.info.version}`);
     lines.push(`\n${this.doc.info.description}\n`);
     lines.push(`**Base URL:** \`${this.doc.baseUrl}\`\n`);
-    lines.push("---\n");
+    lines.push('---\n');
 
     if (this.doc.tags && this.doc.tags.length > 0) {
-      lines.push("## Tags\n");
+      lines.push('## Tags\n');
       for (const tag of this.doc.tags) {
         lines.push(`- \`${tag}\`\n`);
       }
-      lines.push("\n");
+      lines.push('\n');
     }
 
     for (const [path, methods] of Object.entries(this.doc.paths)) {
@@ -246,10 +238,10 @@ export class APIDocGenerator {
         const methodUpper = method.toUpperCase();
         lines.push(`## ${methodUpper} ${path}\n`);
         lines.push(`\n**${operation.summary}**\n`);
-        lines.push(operation.description + "\n");
+        lines.push(operation.description + '\n');
 
         if (operation.tags && operation.tags.length > 0) {
-          lines.push(`**Tags:** ${operation.tags.join(", ")}\n`);
+          lines.push(`**Tags:** ${operation.tags.join(', ')}\n`);
         }
 
         if (operation.deprecated) {
@@ -257,82 +249,71 @@ export class APIDocGenerator {
         }
 
         if (operation.parameters && operation.parameters.length > 0) {
-          lines.push("### Parameters\n");
-          lines.push("| Name | In | Type | Required | Description |");
-          lines.push("|------|----|----|----------|------------|");
+          lines.push('### Parameters\n');
+          lines.push('| Name | In | Type | Required | Description |');
+          lines.push('|------|----|----|----------|------------|');
           for (const param of operation.parameters) {
-            const required = param.required ? "Yes" : "No";
-            const type = param.schema.type || "unknown";
+            const required = param.required ? 'Yes' : 'No';
+            const type = param.schema.type || 'unknown';
             lines.push(
               `| \`${param.name}\` | ${param.in} | ${type} | ${required} | ${param.description} |`,
             );
           }
-          lines.push("\n");
+          lines.push('\n');
         }
 
         if (operation.requestBody) {
-          lines.push("### Request Body\n");
-          lines.push(
-            `**Required:** ${operation.requestBody.required ? "Yes" : "No"}\n`,
-          );
-          lines.push(operation.requestBody.description + "\n");
+          lines.push('### Request Body\n');
+          lines.push(`**Required:** ${operation.requestBody.required ? 'Yes' : 'No'}\n`);
+          lines.push(operation.requestBody.description + '\n');
 
-          for (const [contentType, media] of Object.entries(
-            operation.requestBody.content,
-          )) {
+          for (const [contentType, media] of Object.entries(operation.requestBody.content)) {
             const mediaTyped: MediaType = media as MediaType;
             lines.push(`**Content-Type:** ${contentType}\n`);
             if (mediaTyped.schema && mediaTyped.schema.example) {
-              lines.push("```json");
+              lines.push('```json');
               lines.push(JSON.stringify(mediaTyped.schema.example, null, 2));
-              lines.push("```");
+              lines.push('```');
             }
-            lines.push("\n");
+            lines.push('\n');
           }
         }
 
-        if (
-          operation.responses &&
-          Object.keys(operation.responses).length > 0
-        ) {
-          lines.push("### Responses\n");
-          for (const [statusCode, response] of Object.entries(
-            operation.responses,
-          )) {
+        if (operation.responses && Object.keys(operation.responses).length > 0) {
+          lines.push('### Responses\n');
+          for (const [statusCode, response] of Object.entries(operation.responses)) {
             const responseTyped: APIResponse = response as APIResponse;
             lines.push(`#### ${statusCode}\n`);
-            lines.push(responseTyped.description + "\n");
+            lines.push(responseTyped.description + '\n');
             if (responseTyped.content) {
-              for (const [contentType, media] of Object.entries(
-                responseTyped.content,
-              )) {
+              for (const [contentType, media] of Object.entries(responseTyped.content)) {
                 const mediaTyped: MediaType = media as MediaType;
                 lines.push(`**Content-Type:** ${contentType}\n`);
                 if (mediaTyped.schema) {
-                  lines.push("```json");
+                  lines.push('```json');
                   lines.push(JSON.stringify(mediaTyped.schema, null, 2));
-                  lines.push("```");
+                  lines.push('```');
                 }
-                lines.push("\n");
+                lines.push('\n');
               }
             }
           }
         }
 
         if (operation.security && operation.security.length > 0) {
-          lines.push("### Security\n");
+          lines.push('### Security\n');
           for (const scheme of operation.security) {
             lines.push(
               `- ${Object.entries(scheme)
-                .map(([k, v]) => `${k}: ${(v as string[]).join(", ")}`)
-                .join("; ")}\n`,
+                .map(([k, v]) => `${k}: ${(v as string[]).join(', ')}`)
+                .join('; ')}\n`,
             );
           }
         }
       }
     }
 
-    return lines.join("");
+    return lines.join('');
   }
 
   clearCache(): void {
@@ -363,11 +344,10 @@ let docGenerator: APIDocGenerator | null = null;
 export function getAPIDocGenerator(): APIDocGenerator {
   if (!docGenerator) {
     docGenerator = new APIDocGenerator({
-      title: "Insight API",
-      version: "1.0.0",
-      description:
-        "API documentation for the Insight oracle monitoring platform",
-      baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || "/api",
+      title: 'Insight API',
+      version: '1.0.0',
+      description: 'API documentation for the Insight oracle monitoring platform',
+      baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || '/api',
     });
   }
   return docGenerator;
@@ -379,7 +359,7 @@ export function generateAPIDoc(options?: DocGenerationOptions): {
   markdown?: string;
 } {
   const generator = getAPIDocGenerator();
-  const format = options?.format || "json";
+  const format = options?.format || 'json';
   const spec = generator.generateOpenAPISpec(options);
 
   const result: {
@@ -388,9 +368,9 @@ export function generateAPIDoc(options?: DocGenerationOptions): {
     markdown?: string;
   } = { spec };
 
-  if (format === "html") {
+  if (format === 'html') {
     result.html = generator.generateHTML(options);
-  } else if (format === "markdown") {
+  } else if (format === 'markdown') {
     result.markdown = generator.generateMarkdown(options);
   }
 

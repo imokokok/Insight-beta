@@ -1,11 +1,8 @@
-import { useCallback, useRef, useEffect } from "react";
+import { useCallback, useRef, useEffect } from 'react';
 
 const pendingRequests = new Map<string, Promise<unknown>>();
 
-export function deduplicateRequest<T>(
-  key: string,
-  fetcher: () => Promise<T>,
-): Promise<T> {
+export function deduplicateRequest<T>(key: string, fetcher: () => Promise<T>): Promise<T> {
   const existing = pendingRequests.get(key);
   if (existing) {
     return existing as Promise<T>;
@@ -27,36 +24,30 @@ export function deduplicateRequest<T>(
 export function useRequestDeduplication() {
   const pendingRef = useRef(new Map<string, Promise<unknown>>());
 
-  const deduplicate = useCallback(
-    <T>(key: string, fetcher: () => Promise<T>): Promise<T> => {
-      const pending = pendingRef.current;
-      const existing = pending.get(key);
-      if (existing) {
-        return existing as Promise<T>;
-      }
+  const deduplicate = useCallback(<T>(key: string, fetcher: () => Promise<T>): Promise<T> => {
+    const pending = pendingRef.current;
+    const existing = pending.get(key);
+    if (existing) {
+      return existing as Promise<T>;
+    }
 
-      const promise = fetcher()
-        .finally(() => {
-          pending.delete(key);
-        })
-        .catch((error) => {
-          pending.delete(key);
-          throw error;
-        });
+    const promise = fetcher()
+      .finally(() => {
+        pending.delete(key);
+      })
+      .catch((error) => {
+        pending.delete(key);
+        throw error;
+      });
 
-      pending.set(key, promise);
-      return promise;
-    },
-    [],
-  );
+    pending.set(key, promise);
+    return promise;
+  }, []);
 
   return deduplicate;
 }
 
-export function useDebounce<T extends (...args: unknown[]) => void>(
-  callback: T,
-  delay: number,
-): T {
+export function useDebounce<T extends (...args: unknown[]) => void>(callback: T, delay: number): T {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const callbackRef = useRef(callback);
 
@@ -85,10 +76,7 @@ export function useDebounce<T extends (...args: unknown[]) => void>(
   );
 }
 
-export function useThrottle<T extends (...args: unknown[]) => void>(
-  callback: T,
-  limit: number,
-): T {
+export function useThrottle<T extends (...args: unknown[]) => void>(callback: T, limit: number): T {
   const lastRanRef = useRef<number>(0);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const callbackRef = useRef(callback);
@@ -121,9 +109,7 @@ export function useThrottle<T extends (...args: unknown[]) => void>(
   );
 }
 
-export function useStableCallback<
-  T extends (...args: unknown[]) => ReturnType<T>,
->(callback: T): T {
+export function useStableCallback<T extends (...args: unknown[]) => ReturnType<T>>(callback: T): T {
   const callbackRef = useRef(callback);
 
   useEffect(() => {
@@ -147,12 +133,12 @@ export function batched<T>(items: T[], batchSize: number): T[][] {
 }
 
 export function createPrefetchLink(href: string) {
-  if (typeof document === "undefined") return;
+  if (typeof document === 'undefined') return;
 
-  const link = document.createElement("link");
-  link.rel = "prefetch";
+  const link = document.createElement('link');
+  link.rel = 'prefetch';
   link.href = href;
-  link.as = "document";
+  link.as = 'document';
   document.head.appendChild(link);
 
   setTimeout(() => {
@@ -161,7 +147,7 @@ export function createPrefetchLink(href: string) {
 }
 
 export function preloadImage(src: string) {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
 
   const img = new window.Image();
   img.src = src;
@@ -170,22 +156,22 @@ export function preloadImage(src: string) {
 export function getCacheKey(...parts: unknown[]): string {
   return parts
     .map((part) => {
-      if (typeof part === "string") return part;
-      if (typeof part === "number") return part.toString();
-      if (typeof part === "boolean") return String(part);
-      if (part === null) return "null";
-      if (part === undefined) return "undefined";
-      if (Array.isArray(part)) return part.map(getCacheKey).join(",");
-      if (typeof part === "object") {
+      if (typeof part === 'string') return part;
+      if (typeof part === 'number') return part.toString();
+      if (typeof part === 'boolean') return String(part);
+      if (part === null) return 'null';
+      if (part === undefined) return 'undefined';
+      if (Array.isArray(part)) return part.map(getCacheKey).join(',');
+      if (typeof part === 'object') {
         try {
           return JSON.stringify(part);
         } catch {
-          return "";
+          return '';
         }
       }
       return String(part);
     })
-    .join(":");
+    .join(':');
 }
 
 interface CacheEntry<T> {
@@ -240,15 +226,15 @@ export function clearMemoryCache(pattern?: string) {
 }
 
 export function preloadCriticalResources() {
-  if (typeof document === "undefined") return;
+  if (typeof document === 'undefined') return;
 
-  const criticalPaths = ["/oracle", "/disputes", "/alerts"];
+  const criticalPaths = ['/oracle', '/disputes', '/alerts'];
   criticalPaths.forEach((path) => {
-    const link = document.createElement("link");
-    link.rel = "prefetch";
+    const link = document.createElement('link');
+    link.rel = 'prefetch';
     link.href = path;
-    link.as = "document";
-    link.setAttribute("fetchpriority", "high");
+    link.as = 'document';
+    link.setAttribute('fetchpriority', 'high');
     document.head.appendChild(link);
 
     setTimeout(() => {

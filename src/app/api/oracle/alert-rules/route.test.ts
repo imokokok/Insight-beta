@@ -1,28 +1,28 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { ZodError } from "zod";
-import { GET, PUT, POST } from "./route";
-import { rateLimit, requireAdmin } from "@/server/apiResponse";
-import * as observability from "@/server/observability";
-import { notifyAlert } from "@/server/notifications";
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { ZodError } from 'zod';
+import { GET, PUT, POST } from './route';
+import { rateLimit, requireAdmin } from '@/server/apiResponse';
+import * as observability from '@/server/observability';
+import { notifyAlert } from '@/server/notifications';
 
-vi.mock("@/server/observability", () => ({
+vi.mock('@/server/observability', () => ({
   readAlertRules: vi.fn(),
   writeAlertRules: vi.fn(),
   appendAuditLog: vi.fn(),
 }));
 
-vi.mock("@/server/apiResponse", () => ({
+vi.mock('@/server/apiResponse', () => ({
   requireAdmin: vi.fn(() => null),
-  getAdminActor: vi.fn(() => "test"),
+  getAdminActor: vi.fn(() => 'test'),
   rateLimit: vi.fn(() => null),
   handleApi: async (arg1: unknown, arg2?: unknown) => {
     try {
       const fn =
-        typeof arg1 === "function"
+        typeof arg1 === 'function'
           ? (arg1 as () => unknown | Promise<unknown>)
           : (arg2 as () => unknown | Promise<unknown>);
       const data = await fn();
-      if (data && typeof data === "object" && "ok" in data) {
+      if (data && typeof data === 'object' && 'ok' in data) {
         return data as unknown as Response;
       }
       return { ok: true, data } as unknown as Response;
@@ -30,7 +30,7 @@ vi.mock("@/server/apiResponse", () => ({
       if (e instanceof ZodError)
         return {
           ok: false,
-          error: "invalid_request_body",
+          error: 'invalid_request_body',
         } as unknown as Response;
       const message = e instanceof Error ? e.message : String(e);
       return { ok: false, error: message } as unknown as Response;
@@ -39,34 +39,32 @@ vi.mock("@/server/apiResponse", () => ({
   error: (value: unknown) => ({ ok: false, error: value }),
 }));
 
-vi.mock("@/server/notifications", () => ({
+vi.mock('@/server/notifications', () => ({
   notifyAlert: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("@/server/adminAuth", () => ({
+vi.mock('@/server/adminAuth', () => ({
   verifyAdmin: vi.fn(async () => ({ ok: false })),
 }));
 
-describe("GET /api/oracle/alert-rules", () => {
+describe('GET /api/oracle/alert-rules', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("returns rules", async () => {
+  it('returns rules', async () => {
     vi.mocked(observability.readAlertRules).mockResolvedValue([
       {
-        id: "x",
-        name: "X",
+        id: 'x',
+        name: 'X',
         enabled: true,
-        event: "sync_error",
-        severity: "warning",
+        event: 'sync_error',
+        severity: 'warning',
       },
     ]);
 
-    type ApiMockResponse<T> =
-      | { ok: true; data: T }
-      | { ok: false; error: unknown };
-    const req = new Request("http://localhost:3000/api/oracle/alert-rules");
+    type ApiMockResponse<T> = { ok: true; data: T } | { ok: false; error: unknown };
+    const req = new Request('http://localhost:3000/api/oracle/alert-rules');
     const response = (await GET(req)) as unknown as ApiMockResponse<{
       rules: unknown[];
     }>;
@@ -75,54 +73,54 @@ describe("GET /api/oracle/alert-rules", () => {
       expect(response.data.rules).toHaveLength(1);
     }
     expect(rateLimit).toHaveBeenCalledWith(req, {
-      key: "alert_rules_get",
+      key: 'alert_rules_get',
       limit: 240,
       windowMs: 60_000,
     });
     expect(requireAdmin).toHaveBeenCalledWith(req, {
       strict: true,
-      scope: "alert_rules_write",
+      scope: 'alert_rules_write',
     });
   });
 
-  it("returns rate limited when GET is over limit", async () => {
-    const req = new Request("http://localhost:3000/api/oracle/alert-rules");
+  it('returns rate limited when GET is over limit', async () => {
+    const req = new Request('http://localhost:3000/api/oracle/alert-rules');
     const mockedRateLimit = rateLimit as unknown as {
       mockResolvedValueOnce(value: unknown): void;
     };
     mockedRateLimit.mockResolvedValueOnce({
       ok: false,
-      error: { code: "rate_limited" },
+      error: { code: 'rate_limited' },
     });
 
     const response = (await GET(req)) as { ok: boolean; error?: unknown };
     expect(response.ok).toBe(false);
-    expect(response.error).toEqual({ code: "rate_limited" });
+    expect(response.error).toEqual({ code: 'rate_limited' });
   });
 });
 
-describe("POST /api/oracle/alert-rules (test)", () => {
+describe('POST /api/oracle/alert-rules (test)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("sends test notification for rule", async () => {
+  it('sends test notification for rule', async () => {
     vi.mocked(observability.readAlertRules).mockResolvedValue([
       {
-        id: "x",
-        name: "X",
+        id: 'x',
+        name: 'X',
         enabled: true,
-        event: "sync_error",
-        severity: "warning",
-        channels: ["webhook"],
+        event: 'sync_error',
+        severity: 'warning',
+        channels: ['webhook'],
         recipient: null,
       },
     ]);
 
-    const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ ruleId: "x" }),
+    const req = new Request('http://localhost:3000/api/oracle/alert-rules', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ ruleId: 'x' }),
     });
 
     const response = (await POST(req)) as unknown as
@@ -133,23 +131,23 @@ describe("POST /api/oracle/alert-rules (test)", () => {
       expect(response.data.sent).toBe(true);
     }
     expect(rateLimit).toHaveBeenCalledWith(req, {
-      key: "alert_rules_test",
+      key: 'alert_rules_test',
       limit: 30,
       windowMs: 60_000,
     });
     expect(requireAdmin).toHaveBeenCalledWith(req, {
       strict: true,
-      scope: "alert_rules_write",
+      scope: 'alert_rules_write',
     });
     expect(notifyAlert).toHaveBeenCalled();
   });
 
-  it("returns not_found when rule does not exist", async () => {
+  it('returns not_found when rule does not exist', async () => {
     vi.mocked(observability.readAlertRules).mockResolvedValue([]);
-    const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ ruleId: "missing" }),
+    const req = new Request('http://localhost:3000/api/oracle/alert-rules', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ ruleId: 'missing' }),
     });
 
     const response = (await POST(req)) as unknown as {
@@ -157,68 +155,64 @@ describe("POST /api/oracle/alert-rules (test)", () => {
       error?: unknown;
     };
     expect(response.ok).toBe(false);
-    expect(response.error).toEqual({ code: "not_found" });
+    expect(response.error).toEqual({ code: 'not_found' });
   });
 });
 
-describe("PUT /api/oracle/alert-rules", () => {
+describe('PUT /api/oracle/alert-rules', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("writes rules when authorized", async () => {
+  it('writes rules when authorized', async () => {
     const rules = [
       {
-        id: "x",
-        name: "X",
+        id: 'x',
+        name: 'X',
         enabled: true,
-        event: "sync_error",
-        severity: "warning",
+        event: 'sync_error',
+        severity: 'warning',
       },
     ];
-    const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
-      method: "PUT",
-      headers: { "content-type": "application/json" },
+    const req = new Request('http://localhost:3000/api/oracle/alert-rules', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ rules }),
     });
 
-    type ApiMockResponse<T> =
-      | { ok: true; data: T }
-      | { ok: false; error: unknown };
+    type ApiMockResponse<T> = { ok: true; data: T } | { ok: false; error: unknown };
     const response = (await PUT(req)) as unknown as ApiMockResponse<{
       rules: unknown[];
     }>;
     expect(response.ok).toBe(true);
     expect(rateLimit).toHaveBeenCalledWith(req, {
-      key: "alert_rules_put",
+      key: 'alert_rules_put',
       limit: 30,
       windowMs: 60_000,
     });
     expect(requireAdmin).toHaveBeenCalledWith(req, {
       strict: true,
-      scope: "alert_rules_write",
+      scope: 'alert_rules_write',
     });
     expect(observability.writeAlertRules).toHaveBeenCalledWith(rules);
     expect(observability.appendAuditLog).toHaveBeenCalledWith({
-      actor: "test",
-      action: "alert_rules_updated",
-      entityType: "alerts",
+      actor: 'test',
+      action: 'alert_rules_updated',
+      entityType: 'alerts',
       entityId: null,
       details: { count: rules.length },
     });
   });
 
-  it("allows empty rules list", async () => {
+  it('allows empty rules list', async () => {
     const rules: object[] = [];
-    const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
-      method: "PUT",
-      headers: { "content-type": "application/json" },
+    const req = new Request('http://localhost:3000/api/oracle/alert-rules', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ rules }),
     });
 
-    type ApiMockResponse<T> =
-      | { ok: true; data: T }
-      | { ok: false; error: unknown };
+    type ApiMockResponse<T> = { ok: true; data: T } | { ok: false; error: unknown };
     const response = (await PUT(req)) as unknown as ApiMockResponse<{
       rules: unknown[];
     }>;
@@ -226,183 +220,181 @@ describe("PUT /api/oracle/alert-rules", () => {
     expect(observability.writeAlertRules).toHaveBeenCalledWith([]);
   });
 
-  it("rejects invalid request body", async () => {
-    const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
-      method: "PUT",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ foo: "bar" }),
+  it('rejects invalid request body', async () => {
+    const req = new Request('http://localhost:3000/api/oracle/alert-rules', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ foo: 'bar' }),
     });
 
     const response = (await PUT(req)) as { ok: boolean; error?: unknown };
     expect(response.ok).toBe(false);
-    expect(response.error).toEqual({ code: "invalid_request_body" });
+    expect(response.error).toEqual({ code: 'invalid_request_body' });
   });
 
-  it("rejects malformed json body", async () => {
-    const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
-      method: "PUT",
-      headers: { "content-type": "application/json" },
-      body: "not-json",
+  it('rejects malformed json body', async () => {
+    const req = new Request('http://localhost:3000/api/oracle/alert-rules', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: 'not-json',
     });
 
     const response = (await PUT(req)) as { ok: boolean; error?: unknown };
     expect(response.ok).toBe(false);
-    expect(response.error).toEqual({ code: "invalid_request_body" });
+    expect(response.error).toEqual({ code: 'invalid_request_body' });
   });
 
-  it("rejects more than 50 rules", async () => {
+  it('rejects more than 50 rules', async () => {
     const baseRule = {
-      id: "x",
-      name: "X",
+      id: 'x',
+      name: 'X',
       enabled: true,
-      event: "sync_error" as const,
-      severity: "warning" as const,
+      event: 'sync_error' as const,
+      severity: 'warning' as const,
     };
     const rules = Array.from({ length: 51 }, (_, i) => ({
       ...baseRule,
       id: `x-${i}`,
       name: `X-${i}`,
     }));
-    const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
-      method: "PUT",
-      headers: { "content-type": "application/json" },
+    const req = new Request('http://localhost:3000/api/oracle/alert-rules', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ rules }),
     });
 
     const response = (await PUT(req)) as { ok: boolean; error?: unknown };
     expect(response.ok).toBe(false);
-    expect(response.error).toEqual({ code: "invalid_request_body" });
+    expect(response.error).toEqual({ code: 'invalid_request_body' });
   });
 
-  it("rejects rule with invalid event", async () => {
+  it('rejects rule with invalid event', async () => {
     const rules = [
       {
-        id: "x",
-        name: "X",
+        id: 'x',
+        name: 'X',
         enabled: true,
-        event: "unknown_event",
-        severity: "warning",
+        event: 'unknown_event',
+        severity: 'warning',
       },
     ] as unknown[];
-    const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
-      method: "PUT",
-      headers: { "content-type": "application/json" },
+    const req = new Request('http://localhost:3000/api/oracle/alert-rules', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ rules }),
     });
 
     const response = (await PUT(req)) as { ok: boolean; error?: unknown };
     expect(response.ok).toBe(false);
-    expect(response.error).toEqual({ code: "invalid_request_body" });
+    expect(response.error).toEqual({ code: 'invalid_request_body' });
   });
 
-  it("rejects rule with invalid severity", async () => {
+  it('rejects rule with invalid severity', async () => {
     const rules = [
       {
-        id: "x",
-        name: "X",
+        id: 'x',
+        name: 'X',
         enabled: true,
-        event: "sync_error",
-        severity: "low",
+        event: 'sync_error',
+        severity: 'low',
       },
     ] as unknown[];
-    const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
-      method: "PUT",
-      headers: { "content-type": "application/json" },
+    const req = new Request('http://localhost:3000/api/oracle/alert-rules', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ rules }),
     });
 
     const response = (await PUT(req)) as { ok: boolean; error?: unknown };
     expect(response.ok).toBe(false);
-    expect(response.error).toEqual({ code: "invalid_request_body" });
+    expect(response.error).toEqual({ code: 'invalid_request_body' });
   });
 
-  it("rejects email channel without recipient", async () => {
+  it('rejects email channel without recipient', async () => {
     const rules = [
       {
-        id: "x",
-        name: "X",
+        id: 'x',
+        name: 'X',
         enabled: true,
-        event: "sync_error",
-        severity: "warning",
-        channels: ["email"],
+        event: 'sync_error',
+        severity: 'warning',
+        channels: ['email'],
         recipient: null,
       },
     ];
-    const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
-      method: "PUT",
-      headers: { "content-type": "application/json" },
+    const req = new Request('http://localhost:3000/api/oracle/alert-rules', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ rules }),
     });
 
     const response = (await PUT(req)) as { ok: boolean; error?: unknown };
     expect(response.ok).toBe(false);
-    expect(response.error).toEqual({ code: "invalid_request_body" });
+    expect(response.error).toEqual({ code: 'invalid_request_body' });
   });
 
-  it("rejects invalid runbook url", async () => {
+  it('rejects invalid runbook url', async () => {
     const rules = [
       {
-        id: "x",
-        name: "X",
+        id: 'x',
+        name: 'X',
         enabled: true,
-        event: "sync_error",
-        severity: "warning",
-        runbook: "javascript:alert(1)",
+        event: 'sync_error',
+        severity: 'warning',
+        runbook: 'javascript:alert(1)',
       },
     ];
-    const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
-      method: "PUT",
-      headers: { "content-type": "application/json" },
+    const req = new Request('http://localhost:3000/api/oracle/alert-rules', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ rules }),
     });
 
     const response = (await PUT(req)) as { ok: boolean; error?: unknown };
     expect(response.ok).toBe(false);
-    expect(response.error).toEqual({ code: "invalid_request_body" });
+    expect(response.error).toEqual({ code: 'invalid_request_body' });
   });
 
-  it("rejects runbook with whitespace", async () => {
+  it('rejects runbook with whitespace', async () => {
     const rules = [
       {
-        id: "x",
-        name: "X",
+        id: 'x',
+        name: 'X',
         enabled: true,
-        event: "sync_error",
-        severity: "warning",
-        runbook: "https://example.com/a b",
+        event: 'sync_error',
+        severity: 'warning',
+        runbook: 'https://example.com/a b',
       },
     ];
-    const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
-      method: "PUT",
-      headers: { "content-type": "application/json" },
+    const req = new Request('http://localhost:3000/api/oracle/alert-rules', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ rules }),
     });
 
     const response = (await PUT(req)) as { ok: boolean; error?: unknown };
     expect(response.ok).toBe(false);
-    expect(response.error).toEqual({ code: "invalid_request_body" });
+    expect(response.error).toEqual({ code: 'invalid_request_body' });
   });
 
-  it("accepts runbook as internal path", async () => {
+  it('accepts runbook as internal path', async () => {
     const rules = [
       {
-        id: "x",
-        name: "X",
+        id: 'x',
+        name: 'X',
         enabled: true,
-        event: "sync_error",
-        severity: "warning",
-        runbook: "/docs/runbook",
+        event: 'sync_error',
+        severity: 'warning',
+        runbook: '/docs/runbook',
       },
     ];
-    const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
-      method: "PUT",
-      headers: { "content-type": "application/json" },
+    const req = new Request('http://localhost:3000/api/oracle/alert-rules', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ rules }),
     });
 
-    type ApiMockResponse<T> =
-      | { ok: true; data: T }
-      | { ok: false; error: unknown };
+    type ApiMockResponse<T> = { ok: true; data: T } | { ok: false; error: unknown };
     const response = (await PUT(req)) as unknown as ApiMockResponse<{
       rules: unknown[];
     }>;
@@ -412,63 +404,63 @@ describe("PUT /api/oracle/alert-rules", () => {
     }
   });
 
-  it("rejects stale_sync without maxAgeMs", async () => {
+  it('rejects stale_sync without maxAgeMs', async () => {
     const rules = [
       {
-        id: "stale",
-        name: "Stale",
+        id: 'stale',
+        name: 'Stale',
         enabled: true,
-        event: "stale_sync",
-        severity: "warning",
+        event: 'stale_sync',
+        severity: 'warning',
         params: {},
       },
     ];
-    const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
-      method: "PUT",
-      headers: { "content-type": "application/json" },
+    const req = new Request('http://localhost:3000/api/oracle/alert-rules', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ rules }),
     });
 
     const response = (await PUT(req)) as { ok: boolean; error?: unknown };
     expect(response.ok).toBe(false);
-    expect(response.error).toEqual({ code: "invalid_request_body" });
+    expect(response.error).toEqual({ code: 'invalid_request_body' });
   });
 
-  it("rejects high_error_rate without required params", async () => {
+  it('rejects high_error_rate without required params', async () => {
     const rules = [
       {
-        id: "rate",
-        name: "Rate",
+        id: 'rate',
+        name: 'Rate',
         enabled: true,
-        event: "high_error_rate",
-        severity: "critical",
+        event: 'high_error_rate',
+        severity: 'critical',
         params: { thresholdPercent: 10 },
       },
     ];
-    const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
-      method: "PUT",
-      headers: { "content-type": "application/json" },
+    const req = new Request('http://localhost:3000/api/oracle/alert-rules', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ rules }),
     });
 
     const response = (await PUT(req)) as { ok: boolean; error?: unknown };
     expect(response.ok).toBe(false);
-    expect(response.error).toEqual({ code: "invalid_request_body" });
+    expect(response.error).toEqual({ code: 'invalid_request_body' });
   });
 
-  it("returns rate limited when PUT is over limit", async () => {
+  it('returns rate limited when PUT is over limit', async () => {
     const rules = [
       {
-        id: "x",
-        name: "X",
+        id: 'x',
+        name: 'X',
         enabled: true,
-        event: "sync_error",
-        severity: "warning",
+        event: 'sync_error',
+        severity: 'warning',
       },
     ];
-    const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
-      method: "PUT",
-      headers: { "content-type": "application/json" },
+    const req = new Request('http://localhost:3000/api/oracle/alert-rules', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ rules }),
     });
 
@@ -477,24 +469,24 @@ describe("PUT /api/oracle/alert-rules", () => {
     };
     mockedRateLimit.mockResolvedValueOnce({
       ok: false,
-      error: { code: "rate_limited" },
+      error: { code: 'rate_limited' },
     });
 
     const response = (await PUT(req)) as { ok: boolean; error?: unknown };
     expect(response.ok).toBe(false);
-    expect(response.error).toEqual({ code: "rate_limited" });
+    expect(response.error).toEqual({ code: 'rate_limited' });
     expect(observability.writeAlertRules).not.toHaveBeenCalled();
     expect(requireAdmin).not.toHaveBeenCalled();
   });
 
-  it("returns error when not authorized", async () => {
+  it('returns error when not authorized', async () => {
     const rules = [
       {
-        id: "x",
-        name: "X",
+        id: 'x',
+        name: 'X',
         enabled: true,
-        event: "sync_error",
-        severity: "warning",
+        event: 'sync_error',
+        severity: 'warning',
       },
     ];
     const requireAdminMock = requireAdmin as unknown as {
@@ -502,17 +494,17 @@ describe("PUT /api/oracle/alert-rules", () => {
     };
     requireAdminMock.mockResolvedValueOnce({
       ok: false,
-      error: { code: "forbidden" },
+      error: { code: 'forbidden' },
     });
-    const req = new Request("http://localhost:3000/api/oracle/alert-rules", {
-      method: "PUT",
-      headers: { "content-type": "application/json" },
+    const req = new Request('http://localhost:3000/api/oracle/alert-rules', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ rules }),
     });
 
     const response = (await PUT(req)) as { ok: boolean; error?: unknown };
     expect(response.ok).toBe(false);
-    expect(response.error).toEqual({ code: "forbidden" });
+    expect(response.error).toEqual({ code: 'forbidden' });
     expect(observability.writeAlertRules).not.toHaveBeenCalled();
   });
 });

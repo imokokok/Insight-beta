@@ -1,15 +1,8 @@
-import type { createWalletClient } from "viem";
-import { createPublicClient, http, type Address, type Hash } from "viem";
-import type { Chain } from "viem/chains";
-import {
-  arbitrum,
-  hardhat,
-  mainnet,
-  optimism,
-  polygon,
-  polygonAmoy,
-} from "viem/chains";
-import { logger } from "@/lib/logger";
+import type { createWalletClient } from 'viem';
+import { createPublicClient, http, type Address, type Hash } from 'viem';
+import type { Chain } from 'viem/chains';
+import { arbitrum, hardhat, mainnet, optimism, polygon, polygonAmoy } from 'viem/chains';
+import { logger } from '@/lib/logger';
 
 export interface UMAVoteRequest {
   assertionId: string;
@@ -31,73 +24,66 @@ export interface UMAVoteStatus {
 
 const UMA_DVM_ABI = [
   {
-    type: "function",
-    name: "voteFor",
-    stateMutability: "nonpayable",
+    type: 'function',
+    name: 'voteFor',
+    stateMutability: 'nonpayable',
     inputs: [
-      { name: "_assertionId", type: "bytes32" },
-      { name: "_supportsPayout", type: "bool" },
+      { name: '_assertionId', type: 'bytes32' },
+      { name: '_supportsPayout', type: 'bool' },
     ],
     outputs: [],
   },
   {
-    type: "function",
-    name: "hasVoted",
-    stateMutability: "view",
+    type: 'function',
+    name: 'hasVoted',
+    stateMutability: 'view',
     inputs: [
-      { name: "_assertionId", type: "bytes32" },
-      { name: "_voter", type: "address" },
+      { name: '_assertionId', type: 'bytes32' },
+      { name: '_voter', type: 'address' },
     ],
-    outputs: [{ name: "", type: "bool" }],
+    outputs: [{ name: '', type: 'bool' }],
   },
   {
-    type: "function",
-    name: "getVoteTimes",
-    stateMutability: "view",
-    inputs: [{ name: "_assertionId", type: "bytes32" }],
-    outputs: [{ name: "", type: "uint256" }],
+    type: 'function',
+    name: 'getVoteTimes',
+    stateMutability: 'view',
+    inputs: [{ name: '_assertionId', type: 'bytes32' }],
+    outputs: [{ name: '', type: 'uint256' }],
   },
   {
-    type: "function",
-    name: "getVoteTimestamp",
-    stateMutability: "view",
+    type: 'function',
+    name: 'getVoteTimestamp',
+    stateMutability: 'view',
     inputs: [
-      { name: "_assertionId", type: "bytes32" },
-      { name: "_voter", type: "address" },
+      { name: '_assertionId', type: 'bytes32' },
+      { name: '_voter', type: 'address' },
     ],
-    outputs: [{ name: "", type: "uint256" }],
+    outputs: [{ name: '', type: 'uint256' }],
   },
   {
-    type: "event",
-    name: "VoteCommitted",
+    type: 'event',
+    name: 'VoteCommitted',
     inputs: [
-      { name: "requester", type: "address", indexed: true },
-      { name: "identifier", type: "bytes32", indexed: true },
-      { name: "ancillaryData", type: "bytes", indexed: true },
-      { name: "time", type: "uint256", indexed: true },
+      { name: 'requester', type: 'address', indexed: true },
+      { name: 'identifier', type: 'bytes32', indexed: true },
+      { name: 'ancillaryData', type: 'bytes', indexed: true },
+      { name: 'time', type: 'uint256', indexed: true },
     ],
   },
   {
-    type: "event",
-    name: "VoteRevealed",
+    type: 'event',
+    name: 'VoteRevealed',
     inputs: [
-      { name: "requester", type: "address", indexed: true },
-      { name: "identifier", type: "bytes32", indexed: true },
-      { name: "ancillaryData", type: "bytes", indexed: true },
-      { name: "vote", type: "int256", indexed: true },
-      { name: "time", type: "uint256", indexed: true },
+      { name: 'requester', type: 'address', indexed: true },
+      { name: 'identifier', type: 'bytes32', indexed: true },
+      { name: 'ancillaryData', type: 'bytes', indexed: true },
+      { name: 'vote', type: 'int256', indexed: true },
+      { name: 'time', type: 'uint256', indexed: true },
     ],
   },
 ];
 
-const SUPPORTED_CHAINS = [
-  arbitrum,
-  hardhat,
-  mainnet,
-  optimism,
-  polygon,
-  polygonAmoy,
-] as const;
+const SUPPORTED_CHAINS = [arbitrum, hardhat, mainnet, optimism, polygon, polygonAmoy] as const;
 
 export class UMAOracleClient {
   private publicClient: ReturnType<typeof createPublicClient> | null = null;
@@ -115,14 +101,11 @@ export class UMAOracleClient {
 
   private initialize(): void {
     if (!this.rpcUrl) {
-      throw new Error("RPC URL is required");
+      throw new Error('RPC URL is required');
     }
 
-    if (
-      !this.dvmAddress ||
-      this.dvmAddress === "0x0000000000000000000000000000000000000000"
-    ) {
-      throw new Error("Valid DVM address is required");
+    if (!this.dvmAddress || this.dvmAddress === '0x0000000000000000000000000000000000000000') {
+      throw new Error('Valid DVM address is required');
     }
 
     this.chain = this.getChainById(this.chainId);
@@ -140,13 +123,13 @@ export class UMAOracleClient {
         }),
       });
       this.isConnected = true;
-      logger.info("UMA Oracle client initialized", {
+      logger.info('UMA Oracle client initialized', {
         chainId: this.chainId,
         chainName: this.chain.name,
         dvmAddress: this.dvmAddress,
       });
     } catch (error) {
-      logger.error("Failed to initialize UMA Oracle client", {
+      logger.error('Failed to initialize UMA Oracle client', {
         error,
         chainId: this.chainId,
         rpcUrl: this.rpcUrl,
@@ -171,7 +154,7 @@ export class UMAOracleClient {
 
   setWalletClient(walletClient: ReturnType<typeof createWalletClient>): void {
     this.walletClient = walletClient;
-    logger.info("Wallet client set for UMA Oracle");
+    logger.info('Wallet client set for UMA Oracle');
   }
 
   getConnectionStatus(): boolean {
@@ -182,45 +165,43 @@ export class UMAOracleClient {
     if (!this.isConnected || !this.publicClient) {
       return {
         success: false,
-        error: "UMA Oracle client not connected",
+        error: 'UMA Oracle client not connected',
       };
     }
 
     if (!this.walletClient) {
       return {
         success: false,
-        error: "Wallet client not connected",
+        error: 'Wallet client not connected',
       };
     }
 
     if (!this.validateAssertionId(request.assertionId)) {
       return {
         success: false,
-        error: "Invalid assertion ID format",
+        error: 'Invalid assertion ID format',
       };
     }
 
     if (!this.validateAddress(request.voterAddress)) {
       return {
         success: false,
-        error: "Invalid voter address format",
+        error: 'Invalid voter address format',
       };
     }
 
     try {
-      const { request: callRequest } = await this.publicClient.simulateContract(
-        {
-          address: this.dvmAddress,
-          abi: UMA_DVM_ABI,
-          functionName: "voteFor",
-          args: [request.assertionId as `0x${string}`, request.support],
-          account: request.voterAddress,
-        },
-      );
+      const { request: callRequest } = await this.publicClient.simulateContract({
+        address: this.dvmAddress,
+        abi: UMA_DVM_ABI,
+        functionName: 'voteFor',
+        args: [request.assertionId as `0x${string}`, request.support],
+        account: request.voterAddress,
+      });
 
       const hash = await this.walletClient.writeContract(callRequest);
 
-      logger.info("UMA vote submitted successfully", {
+      logger.info('UMA vote submitted successfully', {
         assertionId: request.assertionId,
         support: request.support,
         voter: request.voterAddress,
@@ -234,7 +215,7 @@ export class UMAOracleClient {
       };
     } catch (error) {
       const errorMessage = this.parseError(error);
-      logger.error("UMA vote failed", {
+      logger.error('UMA vote failed', {
         error,
         assertionId: request.assertionId,
         voter: request.voterAddress,
@@ -248,10 +229,7 @@ export class UMAOracleClient {
     }
   }
 
-  async getVoteStatus(
-    assertionId: string,
-    voterAddress: Address,
-  ): Promise<UMAVoteStatus> {
+  async getVoteStatus(assertionId: string, voterAddress: Address): Promise<UMAVoteStatus> {
     if (!this.isConnected || !this.publicClient) {
       return {
         hasVoted: false,
@@ -274,11 +252,11 @@ export class UMAOracleClient {
       const hasVoted = (await this.publicClient.readContract({
         address: this.dvmAddress,
         abi: UMA_DVM_ABI,
-        functionName: "hasVoted",
+        functionName: 'hasVoted',
         args: [assertionId as `0x${string}`, voterAddress],
       })) as boolean;
 
-      logger.debug("UMA vote status checked", {
+      logger.debug('UMA vote status checked', {
         assertionId,
         voterAddress,
         hasVoted,
@@ -288,7 +266,7 @@ export class UMAOracleClient {
         hasVoted,
       };
     } catch (error) {
-      logger.error("Failed to get UMA vote status", {
+      logger.error('Failed to get UMA vote status', {
         error,
         assertionId,
         voterAddress,
@@ -300,10 +278,7 @@ export class UMAOracleClient {
     }
   }
 
-  async getVoteTimestamp(
-    assertionId: string,
-    voterAddress: Address,
-  ): Promise<bigint | null> {
+  async getVoteTimestamp(assertionId: string, voterAddress: Address): Promise<bigint | null> {
     if (!this.isConnected || !this.publicClient) {
       return null;
     }
@@ -320,13 +295,13 @@ export class UMAOracleClient {
       const timestamp = (await this.publicClient.readContract({
         address: this.dvmAddress,
         abi: UMA_DVM_ABI,
-        functionName: "getVoteTimestamp",
+        functionName: 'getVoteTimestamp',
         args: [assertionId as `0x${string}`, voterAddress],
       })) as bigint;
 
       return timestamp;
     } catch (error) {
-      logger.error("Failed to get UMA vote timestamp", {
+      logger.error('Failed to get UMA vote timestamp', {
         error,
         assertionId,
         voterAddress,
@@ -335,10 +310,7 @@ export class UMAOracleClient {
     }
   }
 
-  async waitForTransaction(
-    txHash: Hash,
-    timeout: number = 60000,
-  ): Promise<boolean> {
+  async waitForTransaction(txHash: Hash, timeout: number = 60000): Promise<boolean> {
     if (!this.isConnected || !this.publicClient) {
       return false;
     }
@@ -349,8 +321,8 @@ export class UMAOracleClient {
         timeout,
       });
 
-      const success = receipt.status === "success";
-      logger.info("UMA transaction confirmed", {
+      const success = receipt.status === 'success';
+      logger.info('UMA transaction confirmed', {
         txHash,
         success,
         blockNumber: receipt.blockNumber,
@@ -358,7 +330,7 @@ export class UMAOracleClient {
 
       return success;
     } catch (error) {
-      logger.error("Failed to wait for UMA transaction", {
+      logger.error('Failed to wait for UMA transaction', {
         error,
         txHash,
         timeout,
@@ -371,26 +343,26 @@ export class UMAOracleClient {
     if (error instanceof Error) {
       const message = error.message.toLowerCase();
 
-      if (message.includes("user rejected")) {
-        return "Transaction rejected by user";
+      if (message.includes('user rejected')) {
+        return 'Transaction rejected by user';
       }
-      if (message.includes("insufficient funds")) {
-        return "Insufficient funds for transaction";
+      if (message.includes('insufficient funds')) {
+        return 'Insufficient funds for transaction';
       }
-      if (message.includes("gas")) {
-        return "Gas estimation failed";
+      if (message.includes('gas')) {
+        return 'Gas estimation failed';
       }
-      if (message.includes("nonce")) {
-        return "Invalid transaction nonce";
+      if (message.includes('nonce')) {
+        return 'Invalid transaction nonce';
       }
-      if (message.includes("network")) {
-        return "Network error occurred";
+      if (message.includes('network')) {
+        return 'Network error occurred';
       }
 
       return error.message;
     }
 
-    return "Unknown error occurred";
+    return 'Unknown error occurred';
   }
 }
 
@@ -408,7 +380,11 @@ export function getUMAClient(
     clientCache.set(cacheKey, client);
   }
 
-  return clientCache.get(cacheKey)!;
+  const cachedClient = clientCache.get(cacheKey);
+  if (!cachedClient) {
+    throw new Error('Failed to get UMA client from cache');
+  }
+  return cachedClient;
 }
 
 export async function castUMAVote(
@@ -435,5 +411,8 @@ export async function checkUMAVoteStatus(
   dvmAddress: Address,
 ): Promise<UMAVoteStatus> {
   const client = getUMAClient(chainId, rpcUrl, dvmAddress);
+  if (!client) {
+    throw new Error('Failed to initialize UMA client');
+  }
   return client.getVoteStatus(assertionId, voterAddress);
 }

@@ -1,18 +1,7 @@
-import {
-  error,
-  getAdminActor,
-  handleApi,
-  rateLimit,
-  requireAdmin,
-} from "@/server/apiResponse";
-import {
-  deleteJsonKey,
-  listJsonKeys,
-  readJsonFile,
-  writeJsonFile,
-} from "@/server/kvStore";
-import { appendAuditLog } from "@/server/observability";
-import { z } from "zod";
+import { error, getAdminActor, handleApi, rateLimit, requireAdmin } from '@/server/apiResponse';
+import { deleteJsonKey, listJsonKeys, readJsonFile, writeJsonFile } from '@/server/kvStore';
+import { appendAuditLog } from '@/server/observability';
+import { z } from 'zod';
 
 const getKeySchema = z.object({
   key: z.string().trim().max(200).optional(),
@@ -26,9 +15,8 @@ const putBodySchema = z.object({
   value: z.unknown().refine((val) => {
     if (val === null) return true;
     const type = typeof val;
-    if (type === "string" || type === "number" || type === "boolean")
-      return true;
-    if (type === "object" && !Array.isArray(val)) {
+    if (type === 'string' || type === 'number' || type === 'boolean') return true;
+    if (type === 'object' && !Array.isArray(val)) {
       try {
         JSON.stringify(val);
         return true;
@@ -45,7 +33,7 @@ const putBodySchema = z.object({
       }
     }
     return false;
-  }, "value must be a valid JSON type (string, number, boolean, object, array, or null)"),
+  }, 'value must be a valid JSON type (string, number, boolean, object, array, or null)'),
 });
 
 const deleteKeySchema = z.object({
@@ -55,14 +43,14 @@ const deleteKeySchema = z.object({
 export async function GET(request: Request) {
   return handleApi(request, async () => {
     const limited = await rateLimit(request, {
-      key: "admin_kv_get",
+      key: 'admin_kv_get',
       limit: 120,
       windowMs: 60_000,
     });
     if (limited) return limited;
     const auth = await requireAdmin(request, {
       strict: true,
-      scope: "admin_kv_read",
+      scope: 'admin_kv_read',
     });
     if (auth) return auth;
 
@@ -87,14 +75,14 @@ export async function GET(request: Request) {
 export async function PUT(request: Request) {
   return handleApi(request, async () => {
     const limited = await rateLimit(request, {
-      key: "admin_kv_put",
+      key: 'admin_kv_put',
       limit: 60,
       windowMs: 60_000,
     });
     if (limited) return limited;
     const auth = await requireAdmin(request, {
       strict: true,
-      scope: "admin_kv_write",
+      scope: 'admin_kv_write',
     });
     if (auth) return auth;
 
@@ -102,15 +90,15 @@ export async function PUT(request: Request) {
     const body = putBodySchema.safeParse(parsed);
 
     if (!body.success) {
-      return error({ code: "invalid_request_body" }, 400);
+      return error({ code: 'invalid_request_body' }, 400);
     }
 
     await writeJsonFile(body.data.key, body.data.value);
     const actor = getAdminActor(request);
     await appendAuditLog({
       actor,
-      action: "admin_kv_put",
-      entityType: "kv",
+      action: 'admin_kv_put',
+      entityType: 'kv',
       entityId: body.data.key,
       details: null,
     });
@@ -121,14 +109,14 @@ export async function PUT(request: Request) {
 export async function DELETE(request: Request) {
   return handleApi(request, async () => {
     const limited = await rateLimit(request, {
-      key: "admin_kv_delete",
+      key: 'admin_kv_delete',
       limit: 60,
       windowMs: 60_000,
     });
     if (limited) return limited;
     const auth = await requireAdmin(request, {
       strict: true,
-      scope: "admin_kv_write",
+      scope: 'admin_kv_write',
     });
     if (auth) return auth;
 
@@ -137,15 +125,15 @@ export async function DELETE(request: Request) {
     const params = deleteKeySchema.safeParse(rawParams);
 
     if (!params.success) {
-      return error({ code: "invalid_request_body" }, 400);
+      return error({ code: 'invalid_request_body' }, 400);
     }
 
     await deleteJsonKey(params.data.key);
     const actor = getAdminActor(request);
     await appendAuditLog({
       actor,
-      action: "admin_kv_delete",
-      entityType: "kv",
+      action: 'admin_kv_delete',
+      entityType: 'kv',
       entityId: params.data.key,
       details: null,
     });

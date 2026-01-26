@@ -1,9 +1,4 @@
-import {
-  deleteJsonKey,
-  listJsonKeys,
-  readJsonFile,
-  writeJsonFile,
-} from "@/server/kvStore";
+import { deleteJsonKey, listJsonKeys, readJsonFile, writeJsonFile } from '@/server/kvStore';
 
 type ApiCacheRecord<T> = { expiresAtMs: number; value: T };
 
@@ -12,10 +7,8 @@ const globalForApiCache = globalThis as unknown as {
 };
 
 const insightApiCache =
-  globalForApiCache.insightApiCache ??
-  new Map<string, ApiCacheRecord<unknown>>();
-if (process.env.NODE_ENV !== "production")
-  globalForApiCache.insightApiCache = insightApiCache;
+  globalForApiCache.insightApiCache ?? new Map<string, ApiCacheRecord<unknown>>();
+if (process.env.NODE_ENV !== 'production') globalForApiCache.insightApiCache = insightApiCache;
 
 export async function cachedJson<T>(
   key: string,
@@ -35,8 +28,8 @@ export async function cachedJson<T>(
   }
   if (
     stored &&
-    typeof stored === "object" &&
-    typeof (stored as ApiCacheRecord<unknown>).expiresAtMs === "number" &&
+    typeof stored === 'object' &&
+    typeof (stored as ApiCacheRecord<unknown>).expiresAtMs === 'number' &&
     (stored as ApiCacheRecord<unknown>).expiresAtMs > now
   ) {
     insightApiCache.set(key, stored as ApiCacheRecord<unknown>);

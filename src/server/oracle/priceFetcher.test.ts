@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -6,21 +6,21 @@ afterEach(() => {
   vi.resetModules();
 });
 
-describe("priceFetcher fetchCurrentPrice", () => {
-  it("falls back to deterministic defaults when providers are unavailable", async () => {
-    vi.stubEnv("INSIGHT_REFERENCE_PRICE_PROVIDER", "binance");
-    vi.stubEnv("INSIGHT_DEX_TWAP_POOL", "");
-    vi.stubEnv("INSIGHT_DEX_TWAP_RPC_URL", "");
+describe('priceFetcher fetchCurrentPrice', () => {
+  it('falls back to deterministic defaults when providers are unavailable', async () => {
+    vi.stubEnv('INSIGHT_REFERENCE_PRICE_PROVIDER', 'binance');
+    vi.stubEnv('INSIGHT_DEX_TWAP_POOL', '');
+    vi.stubEnv('INSIGHT_DEX_TWAP_RPC_URL', '');
 
     vi.stubGlobal(
-      "fetch",
+      'fetch',
       vi.fn(async () => {
-        throw new Error("fetch failed");
+        throw new Error('fetch failed');
       }),
     );
 
-    const mod = await import("./priceFetcher");
-    const out = await mod.fetchCurrentPrice("ETH");
+    const mod = await import('./priceFetcher');
+    const out = await mod.fetchCurrentPrice('ETH');
     expect(out.referencePrice).toBe(3500);
     expect(out.oraclePrice).toBe(3500);
   });

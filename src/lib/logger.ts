@@ -1,7 +1,5 @@
 const isProd =
-  typeof process !== "undefined" && process.env
-    ? process.env.NODE_ENV === "production"
-    : false;
+  typeof process !== 'undefined' && process.env ? process.env.NODE_ENV === 'production' : false;
 
 /**
  * Supported log levels with severity ordering
@@ -26,13 +24,13 @@ export type LogLevel = keyof typeof LOG_LEVELS;
  */
 function getLogLevel(): LogLevel {
   const envLevel =
-    typeof process !== "undefined" && process.env
-      ? (process.env.LOG_LEVEL || "").toLowerCase()
-      : "";
+    typeof process !== 'undefined' && process.env
+      ? (process.env.LOG_LEVEL || '').toLowerCase()
+      : '';
   if (envLevel in LOG_LEVELS) {
     return envLevel as LogLevel;
   }
-  return isProd ? "info" : "debug";
+  return isProd ? 'info' : 'debug';
 }
 
 const currentLevel = getLogLevel();
@@ -49,38 +47,36 @@ const urlSubstringRe = /\b(?:https?|wss?|postgres(?:ql)?):\/\/[^\s"'<>]+/gi;
 function redactUrlString(raw: string) {
   try {
     const u = new URL(raw);
-    u.username = "";
-    u.password = "";
-    u.search = "";
-    u.hash = "";
-    const segments = u.pathname.split("/").filter(Boolean);
+    u.username = '';
+    u.password = '';
+    u.search = '';
+    u.hash = '';
+    const segments = u.pathname.split('/').filter(Boolean);
     if (segments.length > 0) {
       for (let i = 0; i < segments.length; i += 1) {
-        const seg = segments[i] ?? "";
+        const seg = segments[i] ?? '';
         const looksLikeToken =
-          seg.length >= 16 &&
-          /^[a-zA-Z0-9_-]+$/.test(seg) &&
-          !seg.includes(".");
-        if (looksLikeToken) segments[i] = "<redacted>";
+          seg.length >= 16 && /^[a-zA-Z0-9_-]+$/.test(seg) && !seg.includes('.');
+        if (looksLikeToken) segments[i] = '<redacted>';
       }
       if (segments.length > 6) {
-        segments.splice(6, segments.length - 6, "…");
+        segments.splice(6, segments.length - 6, '…');
       }
-      u.pathname = "/" + segments.join("/");
+      u.pathname = '/' + segments.join('/');
     }
     return u.toString();
   } catch {
     const trimmed = raw.trim();
     if (trimmed.length <= 140) return trimmed;
-    return trimmed.slice(0, 140) + "…";
+    return trimmed.slice(0, 140) + '…';
   }
 }
 
 function redactUrlsInText(input: string) {
-  if (!input.includes("://")) return input;
+  if (!input.includes('://')) return input;
   return input.replace(urlSubstringRe, (match) => {
     let raw = match;
-    let suffix = "";
+    let suffix = '';
     while (raw.length > 0 && /[),.;\]}]$/.test(raw)) {
       suffix = raw.slice(-1) + suffix;
       raw = raw.slice(0, -1);
@@ -98,9 +94,9 @@ function serializeError(error: Error): Record<string, unknown> {
     cause:
       cause instanceof Error
         ? serializeError(cause)
-        : typeof cause === "string"
+        : typeof cause === 'string'
           ? redactUrlsInText(cause)
-          : typeof cause === "bigint"
+          : typeof cause === 'bigint'
             ? cause.toString(10)
             : cause,
   };
@@ -108,11 +104,11 @@ function serializeError(error: Error): Record<string, unknown> {
 
 function normalizeForJson(value: unknown, seen: WeakSet<object>): unknown {
   if (value instanceof Error) return serializeError(value);
-  if (typeof value === "string") return redactUrlsInText(value);
-  if (typeof value === "bigint") return value.toString(10);
+  if (typeof value === 'string') return redactUrlsInText(value);
+  if (typeof value === 'bigint') return value.toString(10);
   if (value instanceof Date) return value.toISOString();
-  if (!value || typeof value !== "object") return value;
-  if (seen.has(value)) return "[Circular]";
+  if (!value || typeof value !== 'object') return value;
+  if (seen.has(value)) return '[Circular]';
   seen.add(value);
   if (Array.isArray(value)) {
     return value.map((v) => normalizeForJson(v, seen));
@@ -138,11 +134,7 @@ function normalizeMetadata(
 ): Record<string, unknown> | undefined {
   if (metadata === undefined) return undefined;
   const normalized = normalizeForJson(metadata, new WeakSet());
-  if (
-    !normalized ||
-    typeof normalized !== "object" ||
-    Array.isArray(normalized)
-  ) {
+  if (!normalized || typeof normalized !== 'object' || Array.isArray(normalized)) {
     return { metadata: normalized };
   }
   return normalized as Record<string, unknown>;
@@ -152,27 +144,24 @@ let asyncLocalStorage: AsyncLocalStorageLike<LogContext> | null | undefined;
 
 function getAsyncLocalStorage(): AsyncLocalStorageLike<LogContext> | null {
   if (asyncLocalStorage !== undefined) return asyncLocalStorage;
-  if (typeof window !== "undefined") {
+  if (typeof window !== 'undefined') {
     asyncLocalStorage = null;
     return null;
   }
 
-  const runtime =
-    typeof process !== "undefined" && process.env
-      ? process.env.NEXT_RUNTIME
-      : "";
-  if (runtime && runtime !== "nodejs") {
+  const runtime = typeof process !== 'undefined' && process.env ? process.env.NEXT_RUNTIME : '';
+  if (runtime && runtime !== 'nodejs') {
     asyncLocalStorage = null;
     return null;
   }
 
   try {
-    const req = (0, eval)("require") as ((id: string) => unknown) | undefined;
+    const req = (0, eval)('require') as ((id: string) => unknown) | undefined;
     if (!req) {
       asyncLocalStorage = null;
       return null;
     }
-    const mod = req("node:async_hooks") as {
+    const mod = req('node:async_hooks') as {
       AsyncLocalStorage?: new () => AsyncLocalStorageLike<LogContext>;
     };
     if (!mod.AsyncLocalStorage) {
@@ -215,11 +204,7 @@ function shouldLog(level: LogLevel): boolean {
  * @param metadata - Additional metadata for the log
  * @returns Structured log object
  */
-function createLogEntry(
-  level: LogLevel,
-  message: string,
-  metadata?: Record<string, unknown>,
-) {
+function createLogEntry(level: LogLevel, message: string, metadata?: Record<string, unknown>) {
   const timestamp = new Date().toISOString();
   const context = normalizeMetadata(getLogContext());
   const normalizedMetadata = normalizeMetadata(metadata);
@@ -246,9 +231,7 @@ function formatLogEntry(logEntry: ReturnType<typeof createLogEntry>): string {
   // Human-readable format for development
   const { level, timestamp, message, ...metadata } = logEntry;
   const metadataStr =
-    Object.keys(metadata).length > 0
-      ? ` ${JSON.stringify(metadata, null, 2)}`
-      : "";
+    Object.keys(metadata).length > 0 ? ` ${JSON.stringify(metadata, null, 2)}` : '';
   return `${level} [${timestamp}] ${message}${metadataStr}`;
 }
 
@@ -262,8 +245,8 @@ export const logger = {
    * @param metadata - Additional context metadata
    */
   trace: (message: string, metadata?: Record<string, unknown>) => {
-    if (shouldLog("trace")) {
-      const logEntry = createLogEntry("trace", message, metadata);
+    if (shouldLog('trace')) {
+      const logEntry = createLogEntry('trace', message, metadata);
       console.trace(formatLogEntry(logEntry));
     }
   },
@@ -274,8 +257,8 @@ export const logger = {
    * @param metadata - Additional context metadata
    */
   debug: (message: string, metadata?: Record<string, unknown>) => {
-    if (shouldLog("debug")) {
-      const logEntry = createLogEntry("debug", message, metadata);
+    if (shouldLog('debug')) {
+      const logEntry = createLogEntry('debug', message, metadata);
       console.debug(formatLogEntry(logEntry));
     }
   },
@@ -286,8 +269,8 @@ export const logger = {
    * @param metadata - Additional context metadata
    */
   info: (message: string, metadata?: Record<string, unknown>) => {
-    if (shouldLog("info")) {
-      const logEntry = createLogEntry("info", message, metadata);
+    if (shouldLog('info')) {
+      const logEntry = createLogEntry('info', message, metadata);
       console.info(formatLogEntry(logEntry));
     }
   },
@@ -298,8 +281,8 @@ export const logger = {
    * @param metadata - Additional context metadata
    */
   warn: (message: string, metadata?: Record<string, unknown>) => {
-    if (shouldLog("warn")) {
-      const logEntry = createLogEntry("warn", message, metadata);
+    if (shouldLog('warn')) {
+      const logEntry = createLogEntry('warn', message, metadata);
       console.warn(formatLogEntry(logEntry));
     }
   },
@@ -310,8 +293,8 @@ export const logger = {
    * @param metadata - Additional context metadata, should include error object if available
    */
   error: (message: string, metadata?: Record<string, unknown>) => {
-    if (shouldLog("error")) {
-      const logEntry = createLogEntry("error", message, metadata);
+    if (shouldLog('error')) {
+      const logEntry = createLogEntry('error', message, metadata);
       console.error(formatLogEntry(logEntry));
     }
   },
@@ -322,8 +305,8 @@ export const logger = {
    * @param metadata - Additional context metadata, should include error object if available
    */
   fatal: (message: string, metadata?: Record<string, unknown>) => {
-    if (shouldLog("fatal")) {
-      const logEntry = createLogEntry("fatal", message, metadata);
+    if (shouldLog('fatal')) {
+      const logEntry = createLogEntry('fatal', message, metadata);
       console.error(formatLogEntry(logEntry));
     }
   },

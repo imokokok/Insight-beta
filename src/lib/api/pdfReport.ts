@@ -1,4 +1,4 @@
-import { logger } from "@/lib/logger";
+import { logger } from '@/lib/logger';
 
 export interface ReportSection {
   title: string;
@@ -11,11 +11,11 @@ export interface ReportTable {
   headers: string[];
   rows: (string | number)[][];
   caption?: string;
-  style?: "default" | "striped" | "bordered";
+  style?: 'default' | 'striped' | 'bordered';
 }
 
 export interface ReportChart {
-  type: "bar" | "line" | "pie";
+  type: 'bar' | 'line' | 'pie';
   title: string;
   data: unknown;
   caption?: string;
@@ -31,9 +31,9 @@ export interface ReportConfig {
   sections: ReportSection[];
   includeTableOfContents?: boolean;
   includePageNumbers?: boolean;
-  theme?: "light" | "dark" | "blue" | "green";
-  pageSize?: "A4" | "Letter" | "Legal";
-  orientation?: "portrait" | "landscape";
+  theme?: 'light' | 'dark' | 'blue' | 'green';
+  pageSize?: 'A4' | 'Letter' | 'Legal';
+  orientation?: 'portrait' | 'landscape';
   logo?: string;
   watermark?: string;
 }
@@ -81,7 +81,7 @@ export interface ReportTemplate {
 export interface ReportGenerationOptions {
   onProgress?: (progress: number) => void;
   timeout?: number;
-  quality?: "low" | "medium" | "high";
+  quality?: 'low' | 'medium' | 'high';
   compress?: boolean;
 }
 
@@ -133,17 +133,17 @@ export class PDFReportGenerator {
     template?: ReportTemplate,
   ) {
     this.config = {
-      theme: "light",
-      pageSize: "A4",
-      orientation: "portrait",
+      theme: 'light',
+      pageSize: 'A4',
+      orientation: 'portrait',
       includeTableOfContents: true,
       includePageNumbers: true,
       ...config,
     };
     this.metadata = {
       generatedAt: new Date().toISOString(),
-      generatedBy: "Insight Oracle Monitor",
-      version: "1.0.0",
+      generatedBy: 'Insight Oracle Monitor',
+      version: '1.0.0',
       ...metadata,
     };
     this.cache = new ReportCache();
@@ -164,7 +164,7 @@ export class PDFReportGenerator {
     const cached = this.cache.get(cacheKey);
 
     if (cached) {
-      logger.info("Using cached HTML report", { cacheKey });
+      logger.info('Using cached HTML report', { cacheKey });
       return cached;
     }
 
@@ -174,15 +174,13 @@ export class PDFReportGenerator {
 
     const sectionsHTML = this.config.sections
       .map((section) => this.renderSection(section, options))
-      .join("\n");
+      .join('\n');
 
     if (options?.onProgress) {
       options.onProgress(50);
     }
 
-    const tocHTML = this.config.includeTableOfContents
-      ? this.renderTableOfContents()
-      : "";
+    const tocHTML = this.config.includeTableOfContents ? this.renderTableOfContents() : '';
 
     const html = this.renderDocument(sectionsHTML, tocHTML);
 
@@ -196,7 +194,7 @@ export class PDFReportGenerator {
   }
 
   private getCacheKey(): string {
-    return `${this.config.title}-${this.metadata.instanceId || "default"}-${JSON.stringify(this.config.sections)}`;
+    return `${this.config.title}-${this.metadata.instanceId || 'default'}-${JSON.stringify(this.config.sections)}`;
   }
 
   private renderDocument(sectionsHTML: string, tocHTML: string): string {
@@ -406,16 +404,16 @@ export class PDFReportGenerator {
   </style>
 </head>
 <body>
-  ${this.config.logo ? `<img src="${this.config.logo}" class="logo" alt="Logo" />` : ""}
-  ${this.config.watermark ? `<div class="watermark">${this.config.watermark}</div>` : ""}
+  ${this.config.logo ? `<img src="${this.config.logo}" class="logo" alt="Logo" />` : ''}
+  ${this.config.watermark ? `<div class="watermark">${this.config.watermark}</div>` : ''}
   <div class="header">
     <h1>${this.config.title}</h1>
-    ${this.config.subtitle ? `<div class="subtitle">${this.config.subtitle}</div>` : ""}
+    ${this.config.subtitle ? `<div class="subtitle">${this.config.subtitle}</div>` : ''}
     <div class="metadata">
       Generated: ${new Date(this.metadata.generatedAt).toLocaleString()}<br/>
-      ${this.metadata.instanceId ? `Instance: ${this.metadata.instanceId}<br/>` : ""}
-      ${this.config.author ? `Author: ${this.config.author}` : ""}
-      ${this.metadata.template ? `Template: ${this.metadata.template}` : ""}
+      ${this.metadata.instanceId ? `Instance: ${this.metadata.instanceId}<br/>` : ''}
+      ${this.config.author ? `Author: ${this.config.author}` : ''}
+      ${this.metadata.template ? `Template: ${this.metadata.template}` : ''}
     </div>
   </div>
 
@@ -423,7 +421,7 @@ export class PDFReportGenerator {
 
   ${sectionsHTML}
 
-  ${this.config.includePageNumbers ? '<div class="page-number">Page <span class="page-number"></span></div>' : ""}
+  ${this.config.includePageNumbers ? '<div class="page-number">Page <span class="page-number"></span></div>' : ''}
 </body>
 </html>
     `;
@@ -432,115 +430,105 @@ export class PDFReportGenerator {
   private getThemeStyles(): Record<string, string> {
     const themes = {
       light: {
-        body: "color: #333; background: #fff;",
-        primary: "#6366f1",
-        textSecondary: "#4b5563",
-        textTertiary: "#888",
-        background: "#f8fafc",
-        border: "#e5e7eb",
-        striped: "#f9fafb",
-        highlight: "#fef3c7",
-        warning: "#f59e0b",
-        critical: "#fee2e2",
-        error: "#ef4444",
-        success: "#d1fae5",
-        successBorder: "#10b981",
-        watermark: "#000",
+        body: 'color: #333; background: #fff;',
+        primary: '#6366f1',
+        textSecondary: '#4b5563',
+        textTertiary: '#888',
+        background: '#f8fafc',
+        border: '#e5e7eb',
+        striped: '#f9fafb',
+        highlight: '#fef3c7',
+        warning: '#f59e0b',
+        critical: '#fee2e2',
+        error: '#ef4444',
+        success: '#d1fae5',
+        successBorder: '#10b981',
+        watermark: '#000',
       },
       dark: {
-        body: "color: #e5e7eb; background: #1f2937;",
-        primary: "#818cf8",
-        textSecondary: "#9ca3af",
-        textTertiary: "#6b7280",
-        background: "#374151",
-        border: "#4b5563",
-        striped: "#4b5563",
-        highlight: "#fbbf24",
-        warning: "#f59e0b",
-        critical: "#b91c1c",
-        error: "#dc2626",
-        success: "#059669",
-        successBorder: "#10b981",
-        watermark: "#fff",
+        body: 'color: #e5e7eb; background: #1f2937;',
+        primary: '#818cf8',
+        textSecondary: '#9ca3af',
+        textTertiary: '#6b7280',
+        background: '#374151',
+        border: '#4b5563',
+        striped: '#4b5563',
+        highlight: '#fbbf24',
+        warning: '#f59e0b',
+        critical: '#b91c1c',
+        error: '#dc2626',
+        success: '#059669',
+        successBorder: '#10b981',
+        watermark: '#fff',
       },
       blue: {
-        body: "color: #1e3a8a; background: #eff6ff;",
-        primary: "#1e40af",
-        textSecondary: "#1e3a8a",
-        textTertiary: "#64748b",
-        background: "#dbeafe",
-        border: "#bfdbfe",
-        striped: "#eff6ff",
-        highlight: "#fef3c7",
-        warning: "#f59e0b",
-        critical: "#fee2e2",
-        error: "#dc2626",
-        success: "#d1fae5",
-        successBorder: "#10b981",
-        watermark: "#1e40af",
+        body: 'color: #1e3a8a; background: #eff6ff;',
+        primary: '#1e40af',
+        textSecondary: '#1e3a8a',
+        textTertiary: '#64748b',
+        background: '#dbeafe',
+        border: '#bfdbfe',
+        striped: '#eff6ff',
+        highlight: '#fef3c7',
+        warning: '#f59e0b',
+        critical: '#fee2e2',
+        error: '#dc2626',
+        success: '#d1fae5',
+        successBorder: '#10b981',
+        watermark: '#1e40af',
       },
       green: {
-        body: "color: #14532d; background: #f0fdf4;",
-        primary: "#15803d",
-        textSecondary: "#14532d",
-        textTertiary: "#64748b",
-        background: "#dcfce7",
-        border: "#bbf7d0",
-        striped: "#f0fdf4",
-        highlight: "#fef3c7",
-        warning: "#f59e0b",
-        critical: "#fee2e2",
-        error: "#dc2626",
-        success: "#d1fae5",
-        successBorder: "#10b981",
-        watermark: "#15803d",
+        body: 'color: #14532d; background: #f0fdf4;',
+        primary: '#15803d',
+        textSecondary: '#14532d',
+        textTertiary: '#64748b',
+        background: '#dcfce7',
+        border: '#bbf7d0',
+        striped: '#f0fdf4',
+        highlight: '#fef3c7',
+        warning: '#f59e0b',
+        critical: '#fee2e2',
+        error: '#dc2626',
+        success: '#d1fae5',
+        successBorder: '#10b981',
+        watermark: '#15803d',
       },
     };
 
-    return themes[this.config.theme || "light"];
+    return themes[this.config.theme || 'light'];
   }
 
   private getPageSizeStyles(): string {
     const sizes = {
-      A4: "size: A4;",
-      Letter: "size: Letter;",
-      Legal: "size: Legal;",
+      A4: 'size: A4;',
+      Letter: 'size: Letter;',
+      Legal: 'size: Legal;',
     };
 
     const orientations = {
-      portrait: "",
-      landscape: "orientation: landscape;",
+      portrait: '',
+      landscape: 'orientation: landscape;',
     };
 
-    return `${sizes[this.config.pageSize || "A4"]} ${orientations[this.config.orientation || "portrait"]}`;
+    return `${sizes[this.config.pageSize || 'A4']} ${orientations[this.config.orientation || 'portrait']}`;
   }
 
-  private renderSection(
-    section: ReportSection,
-    options?: ReportGenerationOptions,
-  ): string {
-    const headingTag =
-      section.content instanceof Array && section.content.length > 0
-        ? "h3"
-        : "h2";
-    const sectionClass = headingTag === "h2" ? "section" : "subsection";
+  private renderSection(section: ReportSection, options?: ReportGenerationOptions): string {
+    const headingTag = section.content instanceof Array && section.content.length > 0 ? 'h3' : 'h2';
+    const sectionClass = headingTag === 'h2' ? 'section' : 'subsection';
 
     const contentHTML =
-      typeof section.content === "string"
+      typeof section.content === 'string'
         ? `<div class="content">${section.content}</div>`
-        : section.content
-            .map((sub) => this.renderSection(sub, options))
-            .join("\n");
+        : section.content.map((sub) => this.renderSection(sub, options)).join('\n');
 
     const tablesHTML = section.tables
-      ? section.tables.map((table) => this.renderTable(table)).join("\n")
-      : "";
+      ? section.tables.map((table) => this.renderTable(table)).join('\n')
+      : '';
 
     const chartsHTML = section.charts
-      ? section.charts
-          .map((chart) => this.renderChartPlaceholder(chart))
-          .join("\n")
-      : "";
+      ? section.charts.map((chart) => this.renderChartPlaceholder(chart)).join('\n')
+      : '';
 
     return `
       <div class="${sectionClass}">
@@ -553,19 +541,15 @@ export class PDFReportGenerator {
   }
 
   private renderTable(table: ReportTable): string {
-    const styleClass = table.style || "default";
-    const headerRow = table.headers
-      .map((header) => `<th>${header}</th>`)
-      .join("");
+    const styleClass = table.style || 'default';
+    const headerRow = table.headers.map((header) => `<th>${header}</th>`).join('');
     const bodyRows = table.rows
-      .map(
-        (row) => `<tr>${row.map((cell) => `<td>${cell}</td>`).join("")}</tr>`,
-      )
-      .join("");
+      .map((row) => `<tr>${row.map((cell) => `<td>${cell}</td>`).join('')}</tr>`)
+      .join('');
 
     return `
       <table class="${styleClass}">
-        ${table.caption ? `<caption>${table.caption}</caption>` : ""}
+        ${table.caption ? `<caption>${table.caption}</caption>` : ''}
         <thead>
           <tr>${headerRow}</tr>
         </thead>
@@ -577,8 +561,8 @@ export class PDFReportGenerator {
   }
 
   private renderChartPlaceholder(chart: ReportChart): string {
-    const width = chart.width || "100%";
-    const height = chart.height || "300px";
+    const width = chart.width || '100%';
+    const height = chart.height || '300px';
 
     return `
       <div class="chart-container">
@@ -588,7 +572,7 @@ export class PDFReportGenerator {
             <div style="font-size: 10pt;">${chart.type.toUpperCase()} Chart</div>
           </div>
         </div>
-        ${chart.caption ? `<div class="chart-caption">${chart.caption}</div>` : ""}
+        ${chart.caption ? `<div class="chart-caption">${chart.caption}</div>` : ''}
       </div>
     `;
   }
@@ -602,7 +586,7 @@ export class PDFReportGenerator {
         </li>
       `;
       })
-      .join("");
+      .join('');
 
     return `
       <div class="toc">
@@ -620,14 +604,14 @@ export class PDFReportGenerator {
     }
 
     try {
-      const response = await fetch("/api/reports/generate-pdf", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/reports/generate-pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ html, options }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to generate PDF");
+        throw new Error('Failed to generate PDF');
       }
 
       if (options?.onProgress) {
@@ -636,7 +620,7 @@ export class PDFReportGenerator {
 
       return await response.blob();
     } catch (error) {
-      logger.error("Failed to generate PDF", { error });
+      logger.error('Failed to generate PDF', { error });
       throw error;
     }
   }
@@ -646,13 +630,13 @@ export class PDFReportGenerator {
   }
 
   download(filename?: string, options?: ReportGenerationOptions): void {
-    const defaultFilename = `${this.config.title.toLowerCase().replace(/\s+/g, "-")}-${Date.now()}.pdf`;
+    const defaultFilename = `${this.config.title.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.pdf`;
     const finalFilename = filename || defaultFilename;
 
     this.generatePDF(options)
       .then((blob) => {
         const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
+        const link = document.createElement('a');
         link.href = url;
         link.download = finalFilename;
         document.body.appendChild(link);
@@ -661,7 +645,7 @@ export class PDFReportGenerator {
         URL.revokeObjectURL(url);
       })
       .catch((error) => {
-        logger.error("Failed to download PDF", { error });
+        logger.error('Failed to download PDF', { error });
       });
   }
 
@@ -672,50 +656,50 @@ export class PDFReportGenerator {
 
 const reportTemplates: ReportTemplate[] = [
   {
-    id: "default",
-    name: "Default Report",
-    description: "Standard report template with light theme",
+    id: 'default',
+    name: 'Default Report',
+    description: 'Standard report template with light theme',
     config: {
-      theme: "light",
-      pageSize: "A4",
-      orientation: "portrait",
+      theme: 'light',
+      pageSize: 'A4',
+      orientation: 'portrait',
       includeTableOfContents: true,
       includePageNumbers: true,
     },
     isDefault: true,
   },
   {
-    id: "dark",
-    name: "Dark Theme Report",
-    description: "Report with dark theme for better visibility in low light",
+    id: 'dark',
+    name: 'Dark Theme Report',
+    description: 'Report with dark theme for better visibility in low light',
     config: {
-      theme: "dark",
-      pageSize: "A4",
-      orientation: "portrait",
+      theme: 'dark',
+      pageSize: 'A4',
+      orientation: 'portrait',
       includeTableOfContents: true,
       includePageNumbers: true,
     },
   },
   {
-    id: "professional",
-    name: "Professional Report",
-    description: "Professional report with blue theme",
+    id: 'professional',
+    name: 'Professional Report',
+    description: 'Professional report with blue theme',
     config: {
-      theme: "blue",
-      pageSize: "A4",
-      orientation: "portrait",
+      theme: 'blue',
+      pageSize: 'A4',
+      orientation: 'portrait',
       includeTableOfContents: true,
       includePageNumbers: true,
     },
   },
   {
-    id: "landscape",
-    name: "Landscape Report",
-    description: "Report optimized for landscape printing",
+    id: 'landscape',
+    name: 'Landscape Report',
+    description: 'Report optimized for landscape printing',
     config: {
-      theme: "light",
-      pageSize: "A4",
-      orientation: "landscape",
+      theme: 'light',
+      pageSize: 'A4',
+      orientation: 'landscape',
       includeTableOfContents: true,
       includePageNumbers: true,
     },
@@ -747,16 +731,16 @@ export function createOracleReport(
   const template = templateId ? getReportTemplate(templateId) : undefined;
 
   const config: ReportConfig = {
-    title: "Oracle Monitoring Report",
-    subtitle: "UMA Optimistic Oracle Performance Analysis",
-    author: "Insight Oracle Monitor",
+    title: 'Oracle Monitoring Report',
+    subtitle: 'UMA Optimistic Oracle Performance Analysis',
+    author: 'Insight Oracle Monitor',
     date: new Date().toISOString(),
     includeTableOfContents: true,
     includePageNumbers: true,
     ...template?.config,
     sections: [
       {
-        title: "Executive Summary",
+        title: 'Executive Summary',
         content: `
           <p>This report provides a comprehensive analysis of UMA Optimistic Oracle performance and monitoring data. Key metrics include assertion volume, dispute rates, alert statistics, and overall system health.</p>
           <div class="highlight">
@@ -770,88 +754,85 @@ export function createOracleReport(
         `,
       },
       {
-        title: "System Statistics",
-        content: "",
+        title: 'System Statistics',
+        content: '',
         tables: [
           {
-            headers: ["Metric", "Value"],
-            rows: Object.entries(data.stats).map(([key, value]) => [
-              key,
-              String(value),
-            ]),
-            caption: "Overall System Metrics",
-            style: "striped",
+            headers: ['Metric', 'Value'],
+            rows: Object.entries(data.stats).map(([key, value]) => [key, String(value)]),
+            caption: 'Overall System Metrics',
+            style: 'striped',
           },
         ],
       },
       {
-        title: "Assertions Overview",
+        title: 'Assertions Overview',
         content: `
           <p>The following table provides detailed information about recent assertions processed by oracle.</p>
         `,
         tables: [
           {
-            headers: ["ID", "Market", "Status", "Created At", "Bond (USD)"],
+            headers: ['ID', 'Market', 'Status', 'Created At', 'Bond (USD)'],
             rows: data.assertions
               .slice(0, 10)
               .map((a: Assertion) => [
-                a.id || "N/A",
-                a.market || "N/A",
-                a.status || "N/A",
-                a.assertedAt || "N/A",
-                a.bondUsd || "N/A",
+                a.id || 'N/A',
+                a.market || 'N/A',
+                a.status || 'N/A',
+                a.assertedAt || 'N/A',
+                a.bondUsd || 'N/A',
               ]),
-            caption: "Recent Assertions (Top 10)",
-            style: "striped",
+            caption: 'Recent Assertions (Top 10)',
+            style: 'striped',
           },
         ],
       },
       {
-        title: "Disputes Analysis",
+        title: 'Disputes Analysis',
         content: `
           <p>Disputes represent challenges to assertions and require community voting for resolution.</p>
         `,
         tables: [
           {
-            headers: ["ID", "Assertion ID", "Disputer", "Reason", "Status"],
+            headers: ['ID', 'Assertion ID', 'Disputer', 'Reason', 'Status'],
             rows: data.disputes
               .slice(0, 10)
               .map((d: Dispute) => [
-                d.id || "N/A",
-                d.assertionId || "N/A",
-                d.disputer || "N/A",
-                d.reason || "N/A",
-                d.status || "N/A",
+                d.id || 'N/A',
+                d.assertionId || 'N/A',
+                d.disputer || 'N/A',
+                d.reason || 'N/A',
+                d.status || 'N/A',
               ]),
-            caption: "Recent Disputes (Top 10)",
-            style: "striped",
+            caption: 'Recent Disputes (Top 10)',
+            style: 'striped',
           },
         ],
       },
       {
-        title: "Alerts Summary",
+        title: 'Alerts Summary',
         content: `
           <p>Alerts indicate potential issues or anomalies in oracle system that require attention.</p>
         `,
         tables: [
           {
-            headers: ["ID", "Type", "Severity", "Status", "Created At"],
+            headers: ['ID', 'Type', 'Severity', 'Status', 'Created At'],
             rows: data.alerts
               .slice(0, 10)
               .map((a: Alert) => [
-                a.id || "N/A",
-                a.type || "N/A",
-                a.severity || "N/A",
-                a.status || "N/A",
-                a.createdAt || "N/A",
+                a.id || 'N/A',
+                a.type || 'N/A',
+                a.severity || 'N/A',
+                a.status || 'N/A',
+                a.createdAt || 'N/A',
               ]),
-            caption: "Recent Alerts (Top 10)",
-            style: "striped",
+            caption: 'Recent Alerts (Top 10)',
+            style: 'striped',
           },
         ],
       },
       {
-        title: "Recommendations",
+        title: 'Recommendations',
         content: `
           <p>Based on analysis of monitoring data, following recommendations are provided:</p>
           <ul>
@@ -867,7 +848,7 @@ export function createOracleReport(
 
   const metadata: Partial<ReportMetadata> = {
     instanceId,
-    template: templateId || "default",
+    template: templateId || 'default',
   };
 
   return new PDFReportGenerator(config, metadata, template);

@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Input } from "@/components/ui/input";
-import { CheckCircle2, AlertCircle } from "lucide-react";
-import type { AlertRule } from "@/lib/types/oracleTypes";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { CheckCircle2, AlertCircle } from 'lucide-react';
+import type { AlertRule } from '@/lib/types/oracleTypes';
 
 interface RecipientInputProps {
   rule: AlertRule;
@@ -19,12 +19,8 @@ const MAX_RETRY_DELAY = 10000;
 const INITIAL_RETRY_DELAY = 1000;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function RecipientInputComponent({
-  rule,
-  onPatchRule,
-  t,
-}: RecipientInputProps) {
-  const [localValue, setLocalValue] = useState(rule.recipient ?? "");
+function RecipientInputComponent({ rule, onPatchRule, t }: RecipientInputProps) {
+  const [localValue, setLocalValue] = useState(rule.recipient ?? '');
   const [error, setError] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -35,7 +31,7 @@ function RecipientInputComponent({
   const successTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    setLocalValue(rule.recipient ?? "");
+    setLocalValue(rule.recipient ?? '');
   }, [rule.id, rule.recipient]);
 
   useEffect(() => {
@@ -67,21 +63,18 @@ function RecipientInputComponent({
         setRetryCount(0);
         showSuccess();
       } catch (err) {
-        console.error("Failed to update recipient:", err);
+        console.error('Failed to update recipient:', err);
         if (requestId !== requestIdRef.current) return;
 
         if (attempt < MAX_RETRIES) {
           setRetryCount(attempt);
           const nextAttempt = attempt + 1;
-          const delay = Math.min(
-            INITIAL_RETRY_DELAY * Math.pow(2, nextAttempt),
-            MAX_RETRY_DELAY,
-          );
+          const delay = Math.min(INITIAL_RETRY_DELAY * Math.pow(2, nextAttempt), MAX_RETRY_DELAY);
           debounceRef.current = setTimeout(() => {
             executeUpdate(value, requestId, nextAttempt);
           }, delay);
         } else {
-          setError(t("oracle.alerts.updateFailedWithRetry"));
+          setError(t('oracle.alerts.updateFailedWithRetry'));
         }
       } finally {
         if (requestId === requestIdRef.current) {
@@ -107,12 +100,12 @@ function RecipientInputComponent({
       setError(null);
 
       if (!value.trim()) {
-        setError(t("oracle.alerts.recipientRequired"));
+        setError(t('oracle.alerts.recipientRequired'));
         return;
       }
 
       if (!validateEmail(value)) {
-        setError(t("oracle.alerts.recipientInvalidEmail"));
+        setError(t('oracle.alerts.recipientInvalidEmail'));
         return;
       }
 
@@ -129,42 +122,41 @@ function RecipientInputComponent({
 
   const inputClassName = useMemo(() => {
     const baseClass =
-      "h-10 rounded-xl bg-white/70 ring-1 border-transparent focus-visible:ring-2 focus-visible:ring-purple-500/20 transition-all duration-200";
+      'h-10 rounded-xl bg-white/70 ring-1 border-transparent focus-visible:ring-2 focus-visible:ring-purple-500/20 transition-all duration-200';
     if (error) return `${baseClass} ring-red-500 focus-visible:ring-red-500/20`;
-    if (isSuccess)
-      return `${baseClass} ring-green-500 focus-visible:ring-green-500/20`;
+    if (isSuccess) return `${baseClass} ring-green-500 focus-visible:ring-green-500/20`;
     return `${baseClass} ring-black/5`;
   }, [error, isSuccess]);
 
   const characterCountColor = useMemo(() => {
     const percentage = (localValue.length / MAX_LENGTH) * 100;
-    if (percentage >= 90) return "text-red-500";
-    if (percentage >= 75) return "text-orange-500";
-    return "text-gray-400";
+    if (percentage >= 90) return 'text-red-500';
+    if (percentage >= 75) return 'text-orange-500';
+    return 'text-gray-400';
   }, [localValue.length]);
 
   return (
     <div className="md:col-span-12">
-      <div className="flex items-center justify-between mb-2">
+      <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-            {t("oracle.alerts.recipient")}
+          <div className="text-xs font-bold uppercase tracking-wider text-gray-500">
+            {t('oracle.alerts.recipient')}
           </div>
           {retryCount > 0 && (
-            <div className="text-xs text-orange-500 animate-pulse">
-              {t("oracle.alerts.retryAttempt")}
+            <div className="animate-pulse text-xs text-orange-500">
+              {t('oracle.alerts.retryAttempt')}
             </div>
           )}
         </div>
         <div className="flex items-center gap-2">
           {isSuccess && (
             <div
-              className="text-xs text-green-600 font-medium flex items-center gap-1 animate-fade-in"
+              className="flex animate-fade-in items-center gap-1 text-xs font-medium text-green-600"
               role="status"
               aria-live="polite"
             >
-              <CheckCircle2 className="w-3 h-3" />
-              {t("oracle.alerts.saved")}
+              <CheckCircle2 className="h-3 w-3" />
+              {t('oracle.alerts.saved')}
             </div>
           )}
           <div className={`text-xs ${characterCountColor}`} aria-hidden="true">
@@ -174,35 +166,32 @@ function RecipientInputComponent({
       </div>
 
       {isUpdating ? (
-        <div
-          className="h-10 rounded-xl bg-gray-100 animate-pulse"
-          aria-hidden="true"
-        />
+        <div className="h-10 animate-pulse rounded-xl bg-gray-100" aria-hidden="true" />
       ) : (
         <Input
           value={localValue}
           onChange={handleChange}
-          placeholder={t("oracle.alerts.recipientPlaceholder")}
+          placeholder={t('oracle.alerts.recipientPlaceholder')}
           maxLength={MAX_LENGTH}
           aria-invalid={!!error}
-          aria-describedby={error ? "recipient-error" : "recipient-hint"}
-          aria-label={t("oracle.alerts.recipient")}
+          aria-describedby={error ? 'recipient-error' : 'recipient-hint'}
+          aria-label={t('oracle.alerts.recipient')}
           className={inputClassName}
         />
       )}
 
       <div id="recipient-hint" className="sr-only">
-        {t("oracle.alerts.recipientHint")}
+        {t('oracle.alerts.recipientHint')}
       </div>
 
       {error && (
         <div
           id="recipient-error"
-          className="text-red-500 text-sm mt-1 flex items-center gap-1 animate-fade-in"
+          className="mt-1 flex animate-fade-in items-center gap-1 text-sm text-red-500"
           role="alert"
           aria-live="assertive"
         >
-          <AlertCircle className="w-3 h-3 flex-shrink-0" />
+          <AlertCircle className="h-3 w-3 flex-shrink-0" />
           {error}
         </div>
       )}

@@ -1,21 +1,16 @@
-import { hasDatabase, query } from "./db";
-import { getMemoryStore, memoryNowIso } from "@/server/memoryBackend";
+import { hasDatabase, query } from './db';
+import { getMemoryStore, memoryNowIso } from '@/server/memoryBackend';
 
 const MEMORY_MAX_KV_KEYS = 2000;
 
-export async function readJsonFile<T>(
-  key: string,
-  defaultValue: T,
-): Promise<T> {
+export async function readJsonFile<T>(key: string, defaultValue: T): Promise<T> {
   if (!hasDatabase()) {
     const mem = getMemoryStore();
     const item = mem.kv.get(key);
     if (!item) return defaultValue;
     return item.value as T;
   }
-  const result = await query("SELECT value FROM kv_store WHERE key = $1", [
-    key,
-  ]);
+  const result = await query('SELECT value FROM kv_store WHERE key = $1', [key]);
   if (result.rows.length === 0) return defaultValue;
   const firstRow = result.rows[0];
   return firstRow?.value as T;
@@ -53,7 +48,7 @@ export async function deleteJsonKey(key: string): Promise<void> {
     mem.kv.delete(key);
     return;
   }
-  await query("DELETE FROM kv_store WHERE key = $1", [key]);
+  await query('DELETE FROM kv_store WHERE key = $1', [key]);
 }
 
 export async function listJsonKeys({
@@ -81,7 +76,7 @@ export async function listJsonKeys({
       total: filtered.length,
     };
   }
-  let sql = "SELECT key, value, updated_at FROM kv_store";
+  let sql = 'SELECT key, value, updated_at FROM kv_store';
   const params: Array<string | number> = [];
   const conditions: string[] = [];
 
@@ -91,10 +86,10 @@ export async function listJsonKeys({
   }
 
   if (conditions.length > 0) {
-    sql += " WHERE " + conditions.join(" AND ");
+    sql += ' WHERE ' + conditions.join(' AND ');
   }
 
-  sql += " ORDER BY key ASC";
+  sql += ' ORDER BY key ASC';
 
   if (limit) {
     sql += ` LIMIT $${params.length + 1}`;
