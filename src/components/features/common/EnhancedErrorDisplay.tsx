@@ -1,8 +1,7 @@
 'use client';
 
 import { AlertCircle, ExternalLink, RefreshCw, Info, AlertTriangle, XCircle, LifeBuoy } from 'lucide-react';
-import { type ReactNode } from 'react';
-import { normalizeWalletError, type WalletErrorDetail } from '@/lib/errors/walletErrors';
+import { normalizeWalletError } from '@/lib/errors/walletErrors';
 
 interface EnhancedErrorDisplayProps {
   error: unknown;

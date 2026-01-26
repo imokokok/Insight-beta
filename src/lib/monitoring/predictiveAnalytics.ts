@@ -1,5 +1,3 @@
-import { logger } from '@/lib/logger';
-
 export interface PredictionResult {
   prediction: number;
   confidence: number;
@@ -193,7 +191,7 @@ export class PredictiveAnalyticsEngine {
   }
 
   predictDisputeProbability(input: PredictionInput): PredictionResult {
-    const { historicalData, currentValue, timeWindow = 7 } = input;
+    const { historicalData, currentValue: _currentValue, timeWindow = 7 } = input;
     const features = this.extractFeatures(historicalData);
 
     const disputeRateHistory = historicalData
@@ -316,7 +314,6 @@ export class PredictiveAnalyticsEngine {
   detectAnomalies(data: HistoricalDataPoint[]): AnomalyPrediction[] {
     if (data.length < 5) return [];
 
-    const features = this.extractFeatures(data.slice(-20));
     const anomalies: AnomalyPrediction[] = [];
     const values = data.map((d) => d.value);
 
@@ -447,7 +444,7 @@ export class PredictiveAnalyticsEngine {
   private generateRecommendations(
     prediction: number,
     features: TimeSeriesFeatures,
-    riskLevel: 'low' | 'medium' | 'high',
+    _riskLevel: 'low' | 'medium' | 'high',
   ): string[] {
     const recommendations: string[] = [];
 
@@ -458,6 +455,10 @@ export class PredictiveAnalyticsEngine {
 
     if (features.volatility > this.VOLATILITY_THRESHOLD) {
       recommendations.push('Market volatility is elevated. Monitor prices closely before asserting.');
+    }
+
+    if (features.seasonality > this.SEASONALITY_THRESHOLD) {
+      recommendations.push('Strong seasonality detected. Consider timing assertions based on historical patterns.');
     }
 
     if (features.trend > 0.1) {

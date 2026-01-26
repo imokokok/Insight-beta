@@ -1,5 +1,5 @@
-import { useState, useCallback, useMemo, useEffect, type ReactNode } from 'react';
-import { AlertCircle, RefreshCw, Settings, Clock, Activity, BarChart2, X, ChevronRight, HelpCircle, ExternalLink } from 'lucide-react';
+import { useState, useCallback, useMemo } from 'react';
+import { AlertCircle, Activity, BarChart2, ChevronRight, ExternalLink, HelpCircle, X } from 'lucide-react';
 
 export interface ErrorContext {
   errorId: string;
@@ -320,8 +320,6 @@ class ErrorRecoveryManager {
     const errorsByKind: Record<string, number> = {};
     const errorsByHour: Record<string, number> = {};
     let totalErrors = 0;
-    const now = Date.now();
-    const oneDayAgo = now - 24 * 60 * 60 * 1000;
 
     this.errorHistory.forEach((entry) => {
       totalErrors++;
@@ -434,13 +432,14 @@ interface ErrorRecoveryWizardProps {
   onWatchTutorial?: () => void;
 }
 
-export function ErrorRecoveryWizard({ error, onClose, onContactSupport, onWatchTutorial }: ErrorRecoveryWizardProps) {
+export function ErrorRecoveryWizard({ error, onClose, onContactSupport, onWatchTutorial: _onWatchTutorial }: ErrorRecoveryWizardProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
   const [isChecking, setIsChecking] = useState(false);
   const [allCompleted, setAllCompleted] = useState(false);
 
   const errorDetail = useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { normalizeWalletError } = require('@/lib/errors/walletErrors');
     return normalizeWalletError(error);
   }, [error]);
@@ -598,18 +597,18 @@ export function ErrorRecoveryWizard({ error, onClose, onContactSupport, onWatchT
                 <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
                   <span>Step {currentStep + 1} of {workflow.steps.length}</span>
                   <ChevronRight className="h-4 w-4" />
-                  <span className="font-medium text-gray-700">{workflow.steps[currentStep].title}</span>
+                  <span className="font-medium text-gray-700">{workflow.steps[currentStep]?.title || 'Current Step'}</span>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  {workflow.steps[currentStep].title}
+                  {workflow.steps[currentStep]?.title || 'Current Step'}
                 </h3>
                 <p className="text-gray-600 mb-4">
-                  {workflow.steps[currentStep].description}
+                  {workflow.steps[currentStep]?.description || ''}
                 </p>
-                {workflow.steps[currentStep].action && (
+                {workflow.steps[currentStep]?.action && (
                   <div className="p-3 bg-purple-50 rounded-lg">
                     <p className="text-sm text-purple-700 font-medium">
-                      💡 {workflow.steps[currentStep].action}
+                      💡 {workflow.steps[currentStep]?.action || ''}
                     </p>
                   </div>
                 )}
@@ -624,18 +623,18 @@ export function ErrorRecoveryWizard({ error, onClose, onContactSupport, onWatchT
                   Previous
                 </button>
                 <div className="flex-1" />
-                {workflow.steps[currentStep].check && (
+                {workflow.steps[currentStep]?.check && (
                   <button
-                    onClick={() => handleStepComplete(workflow.steps[currentStep].id)}
-                    disabled={isChecking || completedSteps.has(workflow.steps[currentStep].id)}
+                    onClick={() => handleStepComplete(workflow.steps[currentStep]?.id || '')}
+                    disabled={isChecking || completedSteps.has(workflow.steps[currentStep]?.id || '')}
                     className={`px-4 py-2 rounded-lg transition-colors ${
-                      completedSteps.has(workflow.steps[currentStep].id)
+                      completedSteps.has(workflow.steps[currentStep]?.id || '')
                         ? 'bg-green-100 text-green-700'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
                     {isChecking ? 'Checking...' :
-                     completedSteps.has(workflow.steps[currentStep].id) ? '✓ Completed' : 'Check Status'}
+                     completedSteps.has(workflow.steps[currentStep]?.id || '') ? '✓ Completed' : 'Check Status'}
                   </button>
                 )}
                 <button

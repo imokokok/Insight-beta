@@ -240,7 +240,7 @@ interface PWAInstallBannerProps {
 }
 
 export function PWAInstallBanner({ onDismiss }: PWAInstallBannerProps) {
-  const { isInstallable, installPWA, isInstalled, manifest } = usePWA();
+  const { isInstallable, installPWA, isInstalled, manifest: _manifest } = usePWA();
   const [isVisible, setIsVisible] = useState(false);
   const [isInstalling, setIsInstalling] = useState(false);
 
@@ -334,7 +334,7 @@ export function OfflineIndicator({ variant = 'banner' }: OfflineIndicatorProps) 
     return (
       <div className="fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-lg shadow-lg animate-in fade-in slide-in-from-top duration-300">
         <WifiOff className="h-4 w-4 text-amber-600" />
-        <span className="text-sm text-amber-800">You're offline</span>
+        <span className="text-sm text-amber-800">You&apos;re offline</span>
       </div>
     );
   }

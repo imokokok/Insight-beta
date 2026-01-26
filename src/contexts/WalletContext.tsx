@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
+import { createContext, useState, useEffect, useCallback, useMemo, useContext, type ReactNode } from 'react';
 import {
   createWalletClient,
   custom,

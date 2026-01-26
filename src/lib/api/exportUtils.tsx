@@ -1,3 +1,4 @@
+import React, { useState, useCallback } from 'react';
 import { FileSpreadsheet, FileJson, FileText, Download, Loader2 } from 'lucide-react';
 
 export type ExportFormat = 'csv' | 'json' | 'excel' | 'pdf';
@@ -45,7 +46,8 @@ class ExportManager {
         };
       }
 
-      const headers = Object.keys(exportData[0]).map((key) =>
+      const firstRow = exportData[0] as Record<string, unknown>;
+      const headers = Object.keys(firstRow).map((key) =>
         fieldMappings?.[key] || key
       );
 
@@ -59,7 +61,7 @@ class ExportManager {
       };
 
       const rows = exportData.map((row) =>
-        Object.keys(exportData[0])
+        Object.keys(firstRow)
           .map((key) => escapeCSV(row[key]))
           .join(',')
       );
@@ -147,7 +149,8 @@ class ExportManager {
         };
       }
 
-      const headers = Object.keys(exportData[0]).map((key) =>
+      const firstRow = exportData[0] as Record<string, unknown>;
+      const headers = Object.keys(firstRow).map((key) =>
         fieldMappings?.[key] || key
       );
 

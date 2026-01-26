@@ -140,18 +140,15 @@ export function useBatchOperations<T extends { id: string }>(
       try {
         const results: T[] = [];
 
-        for (let i = 0; i < selectedItems.length; i++) {
-          const item = selectedItems[i];
-          const result = await processor(item);
+        const result = await processor(selectedItems);
 
-          if (!result.success) {
-            console.error(`Failed to process item ${item.id}:`, result.error);
-          } else if (result.data) {
-            results.push(result.data);
-          }
-
-          options?.onProgress?.(i + 1, selectedItems.length);
+        if (!result.success) {
+          console.error('Batch processing failed:', result.error);
+        } else if (result.data) {
+          results.push(result.data);
         }
+
+        options?.onProgress?.(selectedItems.length, selectedItems.length);
 
         setItemsState((prevItems) =>
           prevItems.map((item) =>
@@ -218,7 +215,7 @@ export function BatchOperationsToolbar({
   selectedCount,
   totalCount,
   isAllSelected,
-  _isIndeterminate,
+  isIndeterminate: _isIndeterminate,
   isProcessing,
   onSelectAll,
   onDeselectAll,

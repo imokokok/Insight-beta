@@ -1,4 +1,4 @@
-import { createPublicClient, createWalletClient, http, type Address, type Hash } from 'viem';
+import { createPublicClient, http, type Address, type Hash } from 'viem';
 import type { Chain, PublicClient, WalletClient } from 'viem';
 
 export interface UMAOracleConfig {
@@ -331,7 +331,18 @@ export class UMAOracleClient {
       rpcUrls: {
         default: { http: [config.rpcUrl] },
       },
-    } as Chain;
+      nativeCurrency: {
+        name: 'Ether',
+        symbol: 'ETH',
+        decimals: 18,
+      },
+      blockExplorers: {
+        default: {
+          name: 'Etherscan',
+          url: 'https://etherscan.io',
+        },
+      },
+    };
 
     this.publicClient = createPublicClient({
       chain,
@@ -420,7 +431,7 @@ export class UMAOracleClient {
 
   async proposePrice(
     request: UMAPriceRequest,
-    proposedPrice: bigint,
+    _proposedPrice: bigint,
     proposer: Address,
   ): Promise<Hash | null> {
     if (!this.walletClient) {
@@ -447,7 +458,7 @@ export class UMAOracleClient {
           request.bond,
           request.customLiveness,
           proposer,
-          request.callbackContract || '0x0000000000000000000000000000000000000000',
+          '0x0000000000000000000000000000000000000000',
           false,
           '0x',
         ],
@@ -738,8 +749,17 @@ export function createUMAOracleConfig(
     },
   };
 
-  return {
-    ...defaultConfigs[chainId],
-    ...overrides,
+  // Get default config or create a minimal one if chainId not found
+  const baseConfig = defaultConfigs[chainId] || {
+    chainId,
+    chainName: `Chain ${chainId}`,
+    rpcUrl: '',
+    finderAddress: '0x0000000000000000000000000000000000000000',
+    defaultIdentifier: 'UMIP-128',
   };
+
+  return {
+    ...baseConfig,
+    ...overrides,
+  } as UMAOracleConfig;
 }

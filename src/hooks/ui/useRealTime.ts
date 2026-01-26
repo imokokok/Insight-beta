@@ -13,6 +13,19 @@ export type RealTimeEventType =
   | 'alert_triggered'
   | 'system_status';
 
+export const REAL_TIME_EVENT_TYPES: RealTimeEventType[] = [
+  'assertion_created',
+  'assertion_disputed',
+  'assertion_resolved',
+  'dispute_created',
+  'dispute_resolved',
+  'price_proposed',
+  'price_settled',
+  'sync_completed',
+  'alert_triggered',
+  'system_status',
+];
+
 export interface RealTimeEvent {
   type: RealTimeEventType;
   timestamp: number;
@@ -110,7 +123,7 @@ class RealTimeConnectionManager {
         this.handleReconnect();
       };
 
-      Object.values(RealTimeEventType).forEach((eventType) => {
+      REAL_TIME_EVENT_TYPES.forEach((eventType) => {
         this.eventSource?.addEventListener(eventType, (e: MessageEvent) => {
           try {
             const data = JSON.parse(e.data) as RealTimeEvent;
@@ -149,13 +162,8 @@ class RealTimeConnectionManager {
 
   private startHeartbeat(): void {
     this.stopHeartbeat();
-    if (this.options.heartbeatInterval) {
-      this.heartbeatIntervalId = setInterval(() => {
-        if (this.eventSource?.readyState === EventSource.OPEN) {
-          this.eventSource.send('ping');
-        }
-      }, this.options.heartbeatInterval);
-    }
+    // EventSource is read-only, no need for explicit ping
+    // Heartbeat is handled by server sending periodic messages
   }
 
   private stopHeartbeat(): void {
@@ -321,7 +329,7 @@ export function useRealTime(options: UseRealTimeOptions): UseRealTimeReturn {
   ]);
 
   const subscribe = useCallback((eventTypes?: RealTimeEventType[]) => {
-    managerRef.current?.subscribe(eventTypes || Object.values(RealTimeEventType));
+    managerRef.current?.subscribe(eventTypes || REAL_TIME_EVENT_TYPES);
   }, []);
 
   const unsubscribe = useCallback((eventTypes?: RealTimeEventType[]) => {
@@ -332,14 +340,10 @@ export function useRealTime(options: UseRealTimeOptions): UseRealTimeReturn {
     managerRef.current?.unsubscribe();
   }, []);
 
-  const sendMessage = useCallback((message: unknown) => {
-    if (managerRef.current) {
-      const readyState = managerRef.current.getReadyState();
-      if (readyState === EventSource.OPEN) {
-        const eventSource = (managerRef.current as unknown as { eventSource: EventSource }).eventSource;
-        eventSource.send(JSON.stringify(message));
-      }
-    }
+  const sendMessage = useCallback((_message: unknown) => {
+    // EventSource is read-only, cannot send messages to server
+    // This method is kept for API compatibility
+    logger.warn('EventSource does not support sending messages to server');
   }, []);
 
   return {

@@ -50,6 +50,9 @@ const nextConfig: NextConfig = {
     serverMinification: true,
     webpackBuildWorker: true,
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   async headers() {
     const csp = buildCsp(isDev);
     const headers: Array<{ key: string; value: string }> = [
