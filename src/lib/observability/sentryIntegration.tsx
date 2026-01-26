@@ -403,11 +403,11 @@ export function usePerformanceMonitoring() {
     };
   }, [startTransaction, addBreadcrumb]);
 
-  const measureAsyncOperation = useCallback(async <T>(
+  const measureAsyncOperation = useCallback(async function <T>(
     operationName: string,
     operation: () => Promise<T>,
     metadata?: Record<string, unknown>
-  ): Promise<T> => {
+  ): Promise<T> {
     const start = performance.now();
     let transaction: SentryTransaction | null = null;
 
@@ -503,7 +503,7 @@ export function useErrorBoundaryFallback(error: Error, resetError: () => void) {
         </div>
         <h2 className="text-xl font-semibold text-gray-900 mb-2">Something went wrong</h2>
         <p className="text-gray-600 mb-6">
-          An unexpected error occurred. We've been notified and will look into it.
+          An unexpected error occurred. We&apos;ve been notified and will look into it.
         </p>
         <div className="flex gap-3 justify-center">
           <button

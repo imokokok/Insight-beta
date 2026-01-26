@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Check, Square, Trash2, Download, AlertCircle, Loader2 } from 'lucide-react';
 
 interface BatchOperationItem {
@@ -35,7 +35,7 @@ interface UseBatchOperationsReturn<T> {
   setItems: (items: Array<{ id: string; data: Record<string, unknown> }>) => void;
   processBatch: (
     processor: (items: T[]) => Promise<BatchOperationResult<T>>,
-    options?: { onProgress?: (completed: number, total: number) => void }
+    options?: { onProgress?: (completed: number, total: number) => void },
   ) => Promise<BatchOperationResult<T[]>>;
   getSelectedIds: () => string[];
 }
@@ -64,52 +64,47 @@ export function useBatchOperations<T extends { id: string }>(
     return selectedCount > 0 && selectedCount < items.length;
   }, [selectedCount, items.length]);
 
-  const toggleSelect = useCallback((id: string) => {
-    setItemsState((prevItems) => {
-      const currentSelected = prevItems.filter((item) => item.selected).length;
-      const targetItem = prevItems.find((item) => item.id === id);
+  const toggleSelect = useCallback(
+    (id: string) => {
+      setItemsState((prevItems) => {
+        const currentSelected = prevItems.filter((item) => item.selected).length;
+        const targetItem = prevItems.find((item) => item.id === id);
 
-      if (targetItem?.selected) {
+        if (targetItem?.selected) {
+          return prevItems.map((item) => (item.id === id ? { ...item, selected: false } : item));
+        }
+
+        if (currentSelected >= maxSelectable) {
+          console.warn(`Maximum of ${maxSelectable} items can be selected`);
+          return prevItems;
+        }
+
         return prevItems.map((item) =>
-          item.id === id ? { ...item, selected: false } : item
+          item.id === id ? { ...item, selected: !item.selected } : item,
         );
-      }
-
-      if (currentSelected >= maxSelectable) {
-        console.warn(`Maximum of ${maxSelectable} items can be selected`);
-        return prevItems;
-      }
-
-      return prevItems.map((item) =>
-        item.id === id ? { ...item, selected: !item.selected } : item
-      );
-    });
-  }, [maxSelectable]);
+      });
+    },
+    [maxSelectable],
+  );
 
   const toggleSelectAll = useCallback(() => {
     if (isAllSelected) {
-      setItemsState((prevItems) =>
-        prevItems.map((item) => ({ ...item, selected: false }))
-      );
+      setItemsState((prevItems) => prevItems.map((item) => ({ ...item, selected: false })));
     } else {
       setItemsState((prevItems) =>
-        prevItems.slice(0, maxSelectable).map((item) => ({ ...item, selected: true }))
+        prevItems.slice(0, maxSelectable).map((item) => ({ ...item, selected: true })),
       );
     }
   }, [isAllSelected, maxSelectable]);
 
   const selectItems = useCallback((ids: string[]) => {
     setItemsState((prevItems) =>
-      prevItems.map((item) =>
-        ids.includes(item.id) ? { ...item, selected: true } : item
-      )
+      prevItems.map((item) => (ids.includes(item.id) ? { ...item, selected: true } : item)),
     );
   }, []);
 
   const deselectAll = useCallback(() => {
-    setItemsState((prevItems) =>
-      prevItems.map((item) => ({ ...item, selected: false }))
-    );
+    setItemsState((prevItems) => prevItems.map((item) => ({ ...item, selected: false })));
   }, []);
 
   const setItems = useCallback((newItems: Array<{ id: string; data: Record<string, unknown> }>) => {
@@ -118,14 +113,14 @@ export function useBatchOperations<T extends { id: string }>(
         id: item.id,
         selected: false,
         data: item.data,
-      }))
+      })),
     );
   }, []);
 
   const processBatch = useCallback(
     async (
       processor: (items: T[]) => Promise<BatchOperationResult<T>>,
-      options?: { onProgress?: (completed: number, total: number) => void }
+      options?: { onProgress?: (completed: number, total: number) => void },
     ): Promise<BatchOperationResult<T[]>> => {
       if (selectedItems.length === 0) {
         return { success: false, error: 'No items selected' };
@@ -133,7 +128,7 @@ export function useBatchOperations<T extends { id: string }>(
 
       if (requireConfirmation && selectedCount >= confirmationThreshold) {
         const confirmed = window.confirm(
-          `Are you sure you want to process ${selectedCount} items? This action cannot be undone.`
+          `Are you sure you want to process ${selectedCount} items? This action cannot be undone.`,
         );
         if (!confirmed) {
           return { success: false, error: 'Operation cancelled by user' };
@@ -160,10 +155,8 @@ export function useBatchOperations<T extends { id: string }>(
 
         setItemsState((prevItems) =>
           prevItems.map((item) =>
-            results.find((r) => r.id === item.data.id)
-              ? { ...item, selected: false }
-              : item
-          )
+            results.find((r) => r.id === item.data.id) ? { ...item, selected: false } : item,
+          ),
         );
 
         return { success: true, data: results };
@@ -177,7 +170,7 @@ export function useBatchOperations<T extends { id: string }>(
         setIsProcessing(false);
       }
     },
-    [selectedItems, requireConfirmation, confirmationThreshold, selectedCount]
+    [selectedItems, requireConfirmation, confirmationThreshold, selectedCount],
   );
 
   const getSelectedIds = useCallback(() => {
@@ -225,7 +218,7 @@ export function BatchOperationsToolbar({
   selectedCount,
   totalCount,
   isAllSelected,
-  isIndeterminate,
+  _isIndeterminate,
   isProcessing,
   onSelectAll,
   onDeselectAll,
@@ -240,13 +233,13 @@ export function BatchOperationsToolbar({
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg">
-      <div className="max-w-7xl mx-auto px-4 py-3">
+    <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200 bg-white shadow-lg">
+      <div className="mx-auto max-w-7xl px-4 py-3">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <button
               onClick={isAllSelected ? onDeselectAll : onSelectAll}
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
               aria-label={isAllSelected ? 'Deselect all' : 'Select all'}
             >
               {isAllSelected ? (
@@ -272,7 +265,7 @@ export function BatchOperationsToolbar({
               <button
                 key={index}
                 onClick={action.onClick}
-                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors touch-manipulation min-h-[44px] ${
+                className={`flex min-h-[44px] touch-manipulation items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                   action.variant === 'danger'
                     ? 'text-red-600 hover:bg-red-50 active:bg-red-100'
                     : 'text-gray-700 hover:bg-gray-100 active:bg-gray-200'
@@ -286,7 +279,7 @@ export function BatchOperationsToolbar({
             {onDelete && (
               <button
                 onClick={onDelete}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 active:bg-red-100 rounded-lg transition-colors touch-manipulation min-h-[44px]"
+                className="flex min-h-[44px] touch-manipulation items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 active:bg-red-100"
               >
                 <Trash2 className="h-4 w-4" />
                 Delete
@@ -296,7 +289,7 @@ export function BatchOperationsToolbar({
             {onExport && (
               <button
                 onClick={onExport}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 active:bg-gray-200 rounded-lg transition-colors touch-manipulation min-h-[44px]"
+                className="flex min-h-[44px] touch-manipulation items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 active:bg-gray-200"
               >
                 <Download className="h-4 w-4" />
                 Export
@@ -306,7 +299,7 @@ export function BatchOperationsToolbar({
             <button
               onClick={onProcess}
               disabled={isProcessing}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 active:bg-purple-800 rounded-lg transition-colors touch-manipulation min-h-[44px] disabled:opacity-50"
+              className="flex min-h-[44px] touch-manipulation items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-700 active:bg-purple-800 disabled:opacity-50"
             >
               <AlertCircle className="h-4 w-4" />
               Process
@@ -346,9 +339,9 @@ export function BatchActionConfirmDialog({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
-        <div className="flex items-center gap-3 mb-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+      <div className="animate-in fade-in zoom-in w-full max-w-md rounded-2xl bg-white p-6 shadow-xl duration-200">
+        <div className="mb-4 flex items-center gap-3">
           {variant === 'danger' ? (
             <div className="rounded-full bg-red-100 p-2">
               <AlertCircle className="h-6 w-6 text-red-600" />
@@ -361,10 +354,10 @@ export function BatchActionConfirmDialog({
           <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
         </div>
 
-        <p className="text-gray-600 mb-6">{description}</p>
+        <p className="mb-6 text-gray-600">{description}</p>
 
-        <div className="bg-gray-50 rounded-lg p-4 mb-6">
-          <p className="text-sm text-gray-500 mb-1">Items to be processed:</p>
+        <div className="mb-6 rounded-lg bg-gray-50 p-4">
+          <p className="mb-1 text-sm text-gray-500">Items to be processed:</p>
           <p className="text-2xl font-bold text-gray-900">{itemCount}</p>
         </div>
 
@@ -372,14 +365,14 @@ export function BatchActionConfirmDialog({
           <button
             onClick={onClose}
             disabled={isProcessing}
-            className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors disabled:opacity-50"
+            className="flex-1 rounded-lg bg-gray-100 px-4 py-2.5 font-medium text-gray-700 transition-colors hover:bg-gray-200 disabled:opacity-50"
           >
             {cancelText}
           </button>
           <button
             onClick={onConfirm}
             disabled={isProcessing}
-            className={`flex-1 px-4 py-2.5 rounded-lg font-medium transition-colors disabled:opacity-50 ${
+            className={`flex-1 rounded-lg px-4 py-2.5 font-medium transition-colors disabled:opacity-50 ${
               variant === 'danger'
                 ? 'bg-red-600 text-white hover:bg-red-700'
                 : 'bg-purple-600 text-white hover:bg-purple-700'
@@ -417,15 +410,13 @@ export function BatchProgressTracker({
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between mb-2">
+      <div className="mb-2 flex items-center justify-between">
         <span className="text-sm font-medium text-gray-700">{label}</span>
-        {showPercentage && (
-          <span className="text-sm text-gray-500">{percentage}%</span>
-        )}
+        {showPercentage && <span className="text-sm text-gray-500">{percentage}%</span>}
       </div>
-      <div className="w-full bg-gray-200 rounded-full h-2">
+      <div className="h-2 w-full rounded-full bg-gray-200">
         <div
-          className="bg-purple-600 h-2 rounded-full transition-all duration-300 ease-out"
+          className="h-2 rounded-full bg-purple-600 transition-all duration-300 ease-out"
           style={{ width: `${percentage}%` }}
           role="progressbar"
           aria-valuenow={current}

@@ -1,10 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { CheckCircle, Download, RefreshCw, X, Smartphone, Monitor, Globe, Wifi, WifiOff } from 'lucide-react';
-
-interface PWAInstallPrompt {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
-}
+import { CheckCircle, RefreshCw, X, Smartphone, Monitor, Globe, Wifi, WifiOff } from 'lucide-react';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -78,7 +73,7 @@ export function usePWA(): UsePWAReturn {
     if (typeof window === 'undefined') return;
 
     const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOffline(false);
+    const handleOffline = () => setIsOnline(false);
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
@@ -199,6 +194,7 @@ export function usePWA(): UsePWAReturn {
       for (const request of requests) {
         try {
           const response = await queue.match(request);
+          if (!response) continue;
           const data: OfflineDataItem = await response.json();
 
           await fetch(data.type, {
@@ -347,7 +343,7 @@ export function OfflineIndicator({ variant = 'banner' }: OfflineIndicatorProps) 
     <div className="flex items-center justify-center gap-2 px-4 py-3 bg-amber-50 border-t border-amber-200">
       <WifiOff className="h-5 w-5 text-amber-600" />
       <span className="text-sm font-medium text-amber-800">
-        You're currently offline. Some features may be limited.
+        You&apos;re currently offline. Some features may be limited.
       </span>
     </div>
   );

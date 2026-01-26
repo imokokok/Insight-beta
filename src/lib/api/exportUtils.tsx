@@ -1,4 +1,4 @@
-import { FileSpreadsheet, FileJson, FileText, Download, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { FileSpreadsheet, FileJson, FileText, Download, Loader2 } from 'lucide-react';
 
 export type ExportFormat = 'csv' | 'json' | 'excel' | 'pdf';
 export type ExportStatus = 'idle' | 'exporting' | 'success' | 'error';

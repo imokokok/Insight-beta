@@ -1,8 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import {
-  PredictiveAnalyticsEngine,
-  predictiveAnalytics,
-} from './predictiveAnalytics';
+import { PredictiveAnalyticsEngine, predictiveAnalytics } from './predictiveAnalytics';
 
 describe('PredictiveAnalyticsEngine', () => {
   let engine: PredictiveAnalyticsEngine;
@@ -98,9 +95,7 @@ describe('PredictiveAnalyticsEngine', () => {
 
     it('should include risk level in result', () => {
       const input = {
-        historicalData: [
-          { timestamp: Date.now(), value: 0.5, metadata: { disputeRate: 0.5 } },
-        ],
+        historicalData: [{ timestamp: Date.now(), value: 0.5, metadata: { disputeRate: 0.5 } }],
         currentValue: 0.5,
       };
 
@@ -111,9 +106,7 @@ describe('PredictiveAnalyticsEngine', () => {
 
     it('should include recommendations', () => {
       const input = {
-        historicalData: [
-          { timestamp: Date.now(), value: 0.5, metadata: { disputeRate: 0.5 } },
-        ],
+        historicalData: [{ timestamp: Date.now(), value: 0.5, metadata: { disputeRate: 0.5 } }],
         currentValue: 0.5,
       };
 
@@ -125,9 +118,7 @@ describe('PredictiveAnalyticsEngine', () => {
 
     it('should include impact factors', () => {
       const input = {
-        historicalData: [
-          { timestamp: Date.now(), value: 0.3, metadata: { disputeRate: 0.1 } },
-        ],
+        historicalData: [{ timestamp: Date.now(), value: 0.3, metadata: { disputeRate: 0.1 } }],
         currentValue: 0.3,
       };
 
@@ -218,8 +209,8 @@ describe('PredictiveAnalyticsEngine', () => {
       const anomalies = engine.detectAnomalies(data);
 
       expect(anomalies.length).toBeGreaterThan(0);
-      expect(anomalies[0].anomalyType).toBe('spike');
-      expect(anomalies[0].severity).toBeDefined();
+      expect(anomalies[0]?.anomalyType).toBe('spike');
+      expect(anomalies[0]?.severity).toBeDefined();
     });
 
     it('should detect drop anomalies', () => {
@@ -231,7 +222,7 @@ describe('PredictiveAnalyticsEngine', () => {
       const anomalies = engine.detectAnomalies(data);
 
       expect(anomalies.length).toBeGreaterThan(0);
-      expect(anomalies[0].anomalyType).toBe('drop');
+      expect(anomalies[0]?.anomalyType).toBe('drop');
     });
 
     it('should not flag normal variations as anomalies', () => {

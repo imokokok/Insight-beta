@@ -1,5 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { useBatchOperations } from './useBatchOperations';
+import {
+  useBatchOperations,
+  BatchOperationsToolbar,
+  BatchActionConfirmDialog,
+  BatchProgressTracker,
+} from './useBatchOperations';
 
 describe('useBatchOperations', () => {
   interface TestItem {
@@ -43,13 +48,18 @@ describe('useBatchOperations', () => {
 
   describe('toggleSelect', () => {
     it('should toggle item selection', () => {
-      const { toggleSelect, items } = useBatchOperations<TestItem>();
+      const { toggleSelect, setItems, items } = useBatchOperations<TestItem>();
+
+      setItems([
+        { id: '1', data: { id: '1', name: 'Test 1', value: 100 } },
+        { id: '2', data: { id: '2', name: 'Test 2', value: 200 } },
+      ]);
 
       toggleSelect('1');
-      expect(items[0].selected).toBe(true);
+      expect(items[0]?.selected).toBe(true);
 
       toggleSelect('1');
-      expect(items[0].selected).toBe(false);
+      expect(items[0]?.selected).toBe(false);
     });
 
     it('should not throw for non-existent items', () => {
@@ -103,15 +113,16 @@ describe('useBatchOperations', () => {
 
       selectItems(['1', '3']);
 
-      expect(items[0].selected).toBe(true);
-      expect(items[1].selected).toBe(false);
-      expect(items[2].selected).toBe(true);
+      expect(items[0]?.selected).toBe(true);
+      expect(items[1]?.selected).toBe(false);
+      expect(items[2]?.selected).toBe(true);
     });
   });
 
   describe('deselectAll', () => {
     it('should deselect all items', () => {
-      const { deselectAll, toggleSelectAll, setItems, selectedCount } = useBatchOperations<TestItem>();
+      const { deselectAll, toggleSelectAll, setItems, selectedCount } =
+        useBatchOperations<TestItem>();
 
       setItems([
         { id: '1', data: { id: '1', name: 'Test 1', value: 100 } },
@@ -198,9 +209,7 @@ describe('useBatchOperations', () => {
     it('should track processing state', async () => {
       const { processBatch, setItems, isProcessing } = useBatchOperations<TestItem>();
 
-      setItems([
-        { id: '1', data: { id: '1', name: 'Test 1', value: 100 } },
-      ]);
+      setItems([{ id: '1', data: { id: '1', name: 'Test 1', value: 100 } }]);
 
       const processor = vi.fn().mockResolvedValue({ success: true, data: { id: '1' } });
 
@@ -215,8 +224,6 @@ describe('useBatchOperations', () => {
 
 describe('BatchOperationsToolbar', () => {
   it('should not render when no items are selected', () => {
-    const { BatchOperationsToolbar } = require('../../hooks/ui/useBatchOperations');
-    
     const result = BatchOperationsToolbar({
       selectedCount: 0,
       totalCount: 10,
@@ -235,8 +242,6 @@ describe('BatchOperationsToolbar', () => {
 
 describe('BatchActionConfirmDialog', () => {
   it('should not render when isOpen is false', () => {
-    const { BatchActionConfirmDialog } = require('../../hooks/ui/useBatchOperations');
-    
     const result = BatchActionConfirmDialog({
       isOpen: false,
       onClose: vi.fn(),
@@ -252,8 +257,6 @@ describe('BatchActionConfirmDialog', () => {
 
 describe('BatchProgressTracker', () => {
   it('should calculate correct percentage', () => {
-    const { BatchProgressTracker } = require('../../hooks/ui/useBatchOperations');
-    
     const result = BatchProgressTracker({
       current: 5,
       total: 10,

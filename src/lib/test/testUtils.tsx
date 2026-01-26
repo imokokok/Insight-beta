@@ -155,11 +155,11 @@ export function createAsyncTestHelpers() {
     return false;
   };
 
-  const waitForAsync = async <T>(
+  const waitForAsync = async function <T>(
     asyncCondition: () => Promise<boolean>,
     timeout = 5000,
     interval = 100,
-  ): Promise<boolean> => {
+  ): Promise<boolean> {
     const startTime = Date.now();
 
     while (Date.now() - startTime < timeout) {
@@ -209,7 +209,7 @@ export function createRenderHelpers() {
 }
 
 export function createPerformanceHelpers() {
-  const measureExecutionTime = async <T>(fn: () => Promise<T> | T): Promise<{ result: T; duration: number }> => {
+  const measureExecutionTime = async function <T>(fn: () => Promise<T> | T): Promise<{ result: T; duration: number }> {
     const start = performance.now();
     const result = await fn();
     const duration = performance.now() - start;
@@ -260,7 +260,7 @@ export function createPerformanceHelpers() {
 }
 
 export function createNetworkHelpers() {
-  const createMockResponse = <T>(data: T, status = 200, ok = true) => {
+  const createMockResponse = function <T>(data: T, status = 200, ok = true) {
     return {
       ok,
       status,
@@ -394,7 +394,7 @@ export function createMemoryHelpers() {
 }
 
 export function createValidationHelpers() {
-  const createValidator = <T>(schema: Record<keyof T, (value: unknown) => boolean>) => {
+  const createValidator = function <T>(schema: Record<keyof T, (value: unknown) => boolean>) {
     return (data: Partial<T>): { valid: boolean; errors: Partial<Record<keyof T, string>> } => {
       const errors: Partial<Record<keyof T, string>> = {};
       let valid = true;
@@ -415,7 +415,7 @@ export function createValidationHelpers() {
     return value !== null && value !== undefined && value !== '';
   };
 
-  const validateType = <T>(expectedType: string) => {
+  const validateType = function <T>(expectedType: string) {
     return (value: unknown): value is T => {
       if (expectedType === 'string') return typeof value === 'string';
       if (expectedType === 'number') return typeof value === 'number' && !isNaN(value);

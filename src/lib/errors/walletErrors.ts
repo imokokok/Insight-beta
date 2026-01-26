@@ -12,7 +12,7 @@ type NormalizedWalletErrorKind =
   | 'TIMEOUT'
   | 'UNKNOWN';
 
-interface WalletErrorDetail {
+export interface WalletErrorDetail {
   kind: NormalizedWalletErrorKind;
   code?: number;
   rawMessage?: string;
@@ -43,7 +43,12 @@ function getErrorDetails(err: unknown): WalletErrorDetail {
   const rawMessage = getErrorMessage(err);
   const msg = (rawMessage ?? '').toLowerCase();
 
-  if (code === 4001 || msg.includes('user rejected') || msg.includes('rejected by user') || msg.includes('request rejected')) {
+  if (
+    code === 4001 ||
+    msg.includes('user rejected') ||
+    msg.includes('rejected by user') ||
+    msg.includes('request rejected')
+  ) {
     return {
       kind: 'USER_REJECTED',
       code,
@@ -54,7 +59,12 @@ function getErrorDetails(err: unknown): WalletErrorDetail {
     };
   }
 
-  if (code === -32002 || msg.includes('request already pending') || msg.includes('pending') || msg.includes('try again')) {
+  if (
+    code === -32002 ||
+    msg.includes('request already pending') ||
+    msg.includes('pending') ||
+    msg.includes('try again')
+  ) {
     return {
       kind: 'REQUEST_PENDING',
       code,
@@ -65,13 +75,19 @@ function getErrorDetails(err: unknown): WalletErrorDetail {
     };
   }
 
-  if (code === 4902 || msg.includes('add it first') || msg.includes('unrecognized chain') || msg.includes('chain not found')) {
+  if (
+    code === 4902 ||
+    msg.includes('add it first') ||
+    msg.includes('unrecognized chain') ||
+    msg.includes('chain not found')
+  ) {
     return {
       kind: 'CHAIN_NOT_ADDED',
       code,
       rawMessage,
       userMessage: 'This network is not added to your wallet',
-      recoveryAction: 'Click "Add Network" to add it automatically, or add it manually in your wallet settings',
+      recoveryAction:
+        'Click "Add Network" to add it automatically, or add it manually in your wallet settings',
       severity: 'warning',
       documentationLink: 'https://docs.insight.oracle/troubleshooting/network-issues',
     };
@@ -111,7 +127,11 @@ function getErrorDetails(err: unknown): WalletErrorDetail {
     };
   }
 
-  if (msg.includes('insufficient funds') || msg.includes('not enough ether') || msg.includes('balance is lower')) {
+  if (
+    msg.includes('insufficient funds') ||
+    msg.includes('not enough ether') ||
+    msg.includes('balance is lower')
+  ) {
     const match = msg.match(/required.*?(\d+\.?\d*)/);
     const required = match ? match[1] : 'unknown';
     return {
@@ -124,7 +144,11 @@ function getErrorDetails(err: unknown): WalletErrorDetail {
     };
   }
 
-  if (msg.includes('gas') || msg.includes('intrinsic gas') || msg.includes('gas required exceeds')) {
+  if (
+    msg.includes('gas') ||
+    msg.includes('intrinsic gas') ||
+    msg.includes('gas required exceeds')
+  ) {
     return {
       kind: 'GAS_ESTIMATION_FAILED',
       code,
@@ -135,9 +159,13 @@ function getErrorDetails(err: unknown): WalletErrorDetail {
     };
   }
 
-  if (msg.includes('execution reverted') || msg.includes('transaction failed') || msg.includes('call revert')) {
+  if (
+    msg.includes('execution reverted') ||
+    msg.includes('transaction failed') ||
+    msg.includes('call revert')
+  ) {
     let reason = 'Unknown reason';
-    
+
     const reasonMatch = msg.match(/reverted with reason string ['"](.+?)['"]/);
     if (reasonMatch && reasonMatch[1]) {
       reason = reasonMatch[1];
@@ -147,18 +175,22 @@ function getErrorDetails(err: unknown): WalletErrorDetail {
         reason = executionMatch[1].trim();
       }
     }
-    
+
     return {
       kind: 'TRANSACTION_FAILED',
       code,
       rawMessage,
       userMessage: `Transaction failed: ${reason}`,
-      recoveryAction: 'Check if all conditions are met and try again. This may require admin intervention.',
+      recoveryAction:
+        'Check if all conditions are met and try again. This may require admin intervention.',
       severity: 'error',
     };
   }
 
-  if (msg.includes('contract') && (msg.includes('not found') || msg.includes('no code') || msg.includes('could not'))) {
+  if (
+    msg.includes('contract') &&
+    (msg.includes('not found') || msg.includes('no code') || msg.includes('could not'))
+  ) {
     return {
       kind: 'CONTRACT_NOT_FOUND',
       code,
@@ -180,7 +212,8 @@ function getErrorDetails(err: unknown): WalletErrorDetail {
       code,
       rawMessage,
       userMessage: 'Network connection error',
-      recoveryAction: 'Check your internet connection and try again. If the problem persists, try a different RPC URL.',
+      recoveryAction:
+        'Check your internet connection and try again. If the problem persists, try a different RPC URL.',
       severity: 'warning',
     };
   }

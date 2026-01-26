@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, type ReactNode } from 'react';
+import { useState, useEffect, useCallback, createContext, useContext, type ReactNode } from 'react';
 import { Menu, X, ChevronDown, Search, Bell, User, Settings, LogOut } from 'lucide-react';
 
 interface MobileOptimizationsContextType {
@@ -119,7 +119,7 @@ export function MobileHeader({
   showUserMenu = true,
   onMenuClick,
 }: MobileHeaderProps) {
-  const { isMobile, openMobileMenu, isMobileMenuOpen, touchDevice } = useMobileOptimizations();
+  const { isMobile, openMobileMenu, isMobileMenuOpen } = useMobileOptimizations();
   const [showSearchBar, setShowSearchBar] = useState(false);
 
   if (!isMobile) {
@@ -127,12 +127,12 @@ export function MobileHeader({
   }
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-      <div className="flex items-center justify-between h-14 px-4">
+    <header className="fixed left-0 right-0 top-0 z-50 border-b border-gray-200 bg-white shadow-sm">
+      <div className="flex h-14 items-center justify-between px-4">
         <div className="flex items-center gap-3">
           <button
             onClick={onMenuClick || openMobileMenu}
-            className="p-2 -ml-2 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-colors touch-manipulation"
+            className="-ml-2 touch-manipulation rounded-lg p-2 transition-colors hover:bg-gray-100 active:bg-gray-200"
             aria-label="Open menu"
             aria-expanded={isMobileMenuOpen}
           >
@@ -142,14 +142,14 @@ export function MobileHeader({
               <Menu className="h-5 w-5 text-gray-600" />
             )}
           </button>
-          {logo || <span className="font-bold text-lg text-gray-900">Insight</span>}
+          {logo || <span className="text-lg font-bold text-gray-900">Insight</span>}
         </div>
 
         <div className="flex items-center gap-2">
           {showSearch && (
             <button
               onClick={() => setShowSearchBar(!showSearchBar)}
-              className="p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-colors touch-manipulation"
+              className="touch-manipulation rounded-lg p-2 transition-colors hover:bg-gray-100 active:bg-gray-200"
               aria-label="Search"
             >
               <Search className="h-5 w-5 text-gray-600" />
@@ -158,17 +158,17 @@ export function MobileHeader({
 
           {showNotifications && (
             <button
-              className="p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-colors touch-manipulation relative"
+              className="relative touch-manipulation rounded-lg p-2 transition-colors hover:bg-gray-100 active:bg-gray-200"
               aria-label="Notifications"
             >
               <Bell className="h-5 w-5 text-gray-600" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+              <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500" />
             </button>
           )}
 
           {showUserMenu && (
             <button
-              className="p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-colors touch-manipulation"
+              className="touch-manipulation rounded-lg p-2 transition-colors hover:bg-gray-100 active:bg-gray-200"
               aria-label="User menu"
             >
               <User className="h-5 w-5 text-gray-600" />
@@ -180,11 +180,11 @@ export function MobileHeader({
       {showSearchBar && (
         <div className="px-4 pb-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
               type="search"
               placeholder="Search assertions, disputes..."
-              className="w-full pl-10 pr-4 py-2 bg-gray-100 border-0 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full rounded-lg border-0 bg-gray-100 py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
               autoFocus
             />
           </div>
@@ -205,11 +205,7 @@ interface MobileNavigationProps {
   onItemClick?: (href: string) => void;
 }
 
-export function MobileNavigation({
-  items,
-  currentPath = '',
-  onItemClick,
-}: MobileNavigationProps) {
+export function MobileNavigation({ items, currentPath = '', onItemClick }: MobileNavigationProps) {
   const { isMobile, isMobileMenuOpen, closeMobileMenu } = useMobileOptimizations();
 
   if (!isMobile) {
@@ -233,14 +229,14 @@ export function MobileNavigation({
         aria-hidden="true"
       />
 
-      <nav className="relative bg-white h-full w-72 max-w-[85vw] shadow-xl animate-in slide-in-from-left duration-300">
-        <div className="p-4 border-b border-gray-200">
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
+      <nav className="animate-in slide-in-from-left relative h-full w-72 max-w-[85vw] bg-white shadow-xl duration-300">
+        <div className="border-b border-gray-200 p-4">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500">
             Navigation
           </h2>
         </div>
 
-        <ul className="p-2 space-y-1" role="menu">
+        <ul className="space-y-1 p-2" role="menu">
           {items.map((item) => {
             const isActive = currentPath === item.href;
             return (
@@ -251,7 +247,7 @@ export function MobileNavigation({
                     e.preventDefault();
                     handleItemClick(item.href);
                   }}
-                  className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors touch-manipulation ${
+                  className={`flex touch-manipulation items-center gap-3 rounded-lg px-3 py-3 transition-colors ${
                     isActive
                       ? 'bg-purple-50 text-purple-700'
                       : 'text-gray-700 hover:bg-gray-100 active:bg-gray-200'
@@ -262,25 +258,23 @@ export function MobileNavigation({
                   {item.icon && <span className="flex-shrink-0">{item.icon}</span>}
                   <span className="flex-1 font-medium">{item.label}</span>
                   {item.badge !== undefined && item.badge > 0 && (
-                    <span className="flex-shrink-0 px-2 py-0.5 text-xs font-semibold bg-purple-100 text-purple-700 rounded-full">
+                    <span className="flex-shrink-0 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-semibold text-purple-700">
                       {item.badge}
                     </span>
                   )}
-                  {isActive && (
-                    <ChevronDown className="h-4 w-4 rotate-90" aria-hidden="true" />
-                  )}
+                  {isActive && <ChevronDown className="h-4 w-4 rotate-90" aria-hidden="true" />}
                 </a>
               </li>
             );
           })}
         </ul>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 bg-gray-50">
-          <button className="flex items-center gap-3 w-full px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors touch-manipulation">
+        <div className="absolute bottom-0 left-0 right-0 border-t border-gray-200 bg-gray-50 p-4">
+          <button className="flex w-full touch-manipulation items-center gap-3 rounded-lg px-3 py-2 text-gray-700 transition-colors hover:bg-gray-100">
             <Settings className="h-5 w-5" />
             <span className="font-medium">Settings</span>
           </button>
-          <button className="flex items-center gap-3 w-full px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors touch-manipulation">
+          <button className="flex w-full touch-manipulation items-center gap-3 rounded-lg px-3 py-2 text-red-600 transition-colors hover:bg-red-50">
             <LogOut className="h-5 w-5" />
             <span className="font-medium">Disconnect</span>
           </button>
@@ -309,8 +303,6 @@ export function TouchOptimizedButton({
   loading = false,
   className = '',
 }: TouchOptimizedButtonProps) {
-  const { touchDevice } = useMobileOptimizations();
-
   const sizeClasses = {
     sm: 'px-3 py-1.5 text-sm',
     md: 'px-4 py-2 text-sm',
@@ -318,7 +310,8 @@ export function TouchOptimizedButton({
   };
 
   const variantClasses = {
-    primary: 'bg-purple-600 text-white hover:bg-purple-700 active:bg-purple-800 disabled:bg-purple-300',
+    primary:
+      'bg-purple-600 text-white hover:bg-purple-700 active:bg-purple-800 disabled:bg-purple-300',
     secondary: 'bg-gray-100 text-gray-700 hover:bg-gray-200 active:bg-gray-300 disabled:bg-gray-50',
     ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 active:bg-gray-200 disabled:opacity-50',
   };
@@ -327,23 +320,13 @@ export function TouchOptimizedButton({
     <button
       onClick={onClick}
       disabled={disabled || loading}
-      className={`
-        inline-flex items-center justify-center gap-2 font-medium rounded-lg
-        transition-all duration-150 ease-in-out
-        focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2
-        disabled:opacity-50 disabled:cursor-not-allowed
-        touch-manipulation
-        min-h-[44px] min-w-[44px]
-        ${sizeClasses[size]}
-        ${variantClasses[variant]}
-        ${className}
-      `}
+      className={`inline-flex min-h-[44px] min-w-[44px] touch-manipulation items-center justify-center gap-2 rounded-lg font-medium transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${sizeClasses[size]} ${variantClasses[variant]} ${className} `}
       aria-busy={loading}
     >
       {loading ? (
         <>
           <svg
-            className="animate-spin h-4 w-4"
+            className="h-4 w-4 animate-spin"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -384,14 +367,10 @@ export function ResponsiveTable({
   onRowClick,
   emptyMessage = 'No data available',
 }: ResponsiveTableProps) {
-  const { isMobile, isTablet } = useMobileOptimizations();
+  const { isMobile } = useMobileOptimizations();
 
   if (rows.length === 0) {
-    return (
-      <div className="p-8 text-center text-gray-500">
-        {emptyMessage}
-      </div>
-    );
+    return <div className="p-8 text-center text-gray-500">{emptyMessage}</div>;
   }
 
   if (isMobile) {
@@ -402,20 +381,15 @@ export function ResponsiveTable({
             key={rowIndex}
             onClick={() => onRowClick?.(rowIndex)}
             role="listitem"
-            className={`
-              bg-white rounded-lg border border-gray-200 p-4 shadow-sm
-              ${onRowClick ? 'cursor-pointer hover:border-purple-300 hover:shadow-md transition-all' : ''}
-            `}
+            className={`rounded-lg border border-gray-200 bg-white p-4 shadow-sm ${onRowClick ? 'cursor-pointer transition-all hover:border-purple-300 hover:shadow-md' : ''} `}
           >
             <div className="space-y-2">
               {row.map((cell, cellIndex) => (
-                <div key={cellIndex} className="flex justify-between items-start">
-                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <div key={cellIndex} className="flex items-start justify-between">
+                  <span className="text-xs font-medium uppercase tracking-wider text-gray-500">
                     {headers[cellIndex]}
                   </span>
-                  <span className="text-sm text-gray-900 text-right max-w-[60%]">
-                    {cell}
-                  </span>
+                  <span className="max-w-[60%] text-right text-sm text-gray-900">{cell}</span>
                 </div>
               ))}
             </div>
@@ -426,35 +400,30 @@ export function ResponsiveTable({
   }
 
   return (
-    <div className="overflow-x-auto -mx-4 sm:mx-0">
-      <div className="min-w-full inline-block align-middle sm:block">
-        <table className="min-w-full divide-y divide-gray-200 border-collapse">
+    <div className="-mx-4 overflow-x-auto sm:mx-0">
+      <div className="inline-block min-w-full align-middle sm:block">
+        <table className="min-w-full border-collapse divide-y divide-gray-200">
           <thead>
             <tr className="bg-gray-50">
               {headers.map((header, index) => (
                 <th
                   key={index}
-                  className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap"
+                  className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600"
                 >
                   {header}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="divide-y divide-gray-200 bg-white">
             {rows.map((row, rowIndex) => (
               <tr
                 key={rowIndex}
                 onClick={() => onRowClick?.(rowIndex)}
-                className={`
-                  ${onRowClick ? 'cursor-pointer hover:bg-gray-50 transition-colors' : ''}
-                `}
+                className={` ${onRowClick ? 'cursor-pointer transition-colors hover:bg-gray-50' : ''} `}
               >
                 {row.map((cell, cellIndex) => (
-                  <td
-                    key={cellIndex}
-                    className="px-4 py-4 text-sm text-gray-900 whitespace-nowrap"
-                  >
+                  <td key={cellIndex} className="whitespace-nowrap px-4 py-4 text-sm text-gray-900">
                     {cell}
                   </td>
                 ))}
@@ -475,21 +444,21 @@ interface SkeletonLoaderProps {
 export function SkeletonLoader({ type = 'list', count = 3 }: SkeletonLoaderProps) {
   if (type === 'card') {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-6 animate-pulse">
-        <div className="flex items-center gap-4 mb-4">
-          <div className="w-12 h-12 bg-gray-200 rounded-lg" />
+      <div className="animate-pulse rounded-xl border border-gray-200 bg-white p-6">
+        <div className="mb-4 flex items-center gap-4">
+          <div className="h-12 w-12 rounded-lg bg-gray-200" />
           <div className="flex-1">
-            <div className="h-4 bg-gray-200 rounded w-1/2 mb-2" />
-            <div className="h-3 bg-gray-200 rounded w-1/3" />
+            <div className="mb-2 h-4 w-1/2 rounded bg-gray-200" />
+            <div className="h-3 w-1/3 rounded bg-gray-200" />
           </div>
         </div>
         <div className="space-y-2">
-          <div className="h-3 bg-gray-200 rounded w-full" />
-          <div className="h-3 bg-gray-200 rounded w-5/6" />
-          <div className="h-3 bg-gray-200 rounded w-4/6" />
+          <div className="h-3 w-full rounded bg-gray-200" />
+          <div className="h-3 w-5/6 rounded bg-gray-200" />
+          <div className="h-3 w-4/6 rounded bg-gray-200" />
         </div>
-        <div className="mt-4 pt-4 border-t border-gray-100">
-          <div className="h-8 bg-gray-200 rounded w-full" />
+        <div className="mt-4 border-t border-gray-100 pt-4">
+          <div className="h-8 w-full rounded bg-gray-200" />
         </div>
       </div>
     );
@@ -498,15 +467,15 @@ export function SkeletonLoader({ type = 'list', count = 3 }: SkeletonLoaderProps
   if (type === 'table') {
     return (
       <div className="space-y-3">
-        <div className="flex gap-3 p-4 bg-gray-50 rounded-lg">
+        <div className="flex gap-3 rounded-lg bg-gray-50 p-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-4 bg-gray-200 rounded flex-1" />
+            <div key={i} className="h-4 flex-1 rounded bg-gray-200" />
           ))}
         </div>
         {Array.from({ length: count }).map((_, i) => (
-          <div key={i} className="flex gap-3 p-4 bg-white border border-gray-100 rounded-lg">
+          <div key={i} className="flex gap-3 rounded-lg border border-gray-100 bg-white p-4">
             {[1, 2, 3, 4].map((j) => (
-              <div key={j} className="h-4 bg-gray-200 rounded flex-1" />
+              <div key={j} className="h-4 flex-1 rounded bg-gray-200" />
             ))}
           </div>
         ))}
@@ -516,13 +485,13 @@ export function SkeletonLoader({ type = 'list', count = 3 }: SkeletonLoaderProps
 
   if (type === 'chart') {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <div className="h-6 bg-gray-200 rounded w-1/3 mb-6" />
-        <div className="flex items-end gap-2 h-48">
+      <div className="rounded-xl border border-gray-200 bg-white p-6">
+        <div className="mb-6 h-6 w-1/3 rounded bg-gray-200" />
+        <div className="flex h-48 items-end gap-2">
           {Array.from({ length: 12 }).map((_, i) => (
             <div
               key={i}
-              className="flex-1 bg-gray-200 rounded-t animate-pulse"
+              className="flex-1 animate-pulse rounded-t bg-gray-200"
               style={{ height: `${20 + Math.random() * 60}%` }}
             />
           ))}
@@ -534,11 +503,14 @@ export function SkeletonLoader({ type = 'list', count = 3 }: SkeletonLoaderProps
   return (
     <div className="space-y-4">
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="flex items-center gap-4 p-4 bg-white border border-gray-100 rounded-lg">
-          <div className="w-10 h-10 bg-gray-200 rounded-full" />
+        <div
+          key={i}
+          className="flex items-center gap-4 rounded-lg border border-gray-100 bg-white p-4"
+        >
+          <div className="h-10 w-10 rounded-full bg-gray-200" />
           <div className="flex-1 space-y-2">
-            <div className="h-4 bg-gray-200 rounded w-1/2" />
-            <div className="h-3 bg-gray-200 rounded w-1/3" />
+            <div className="h-4 w-1/2 rounded bg-gray-200" />
+            <div className="h-3 w-1/3 rounded bg-gray-200" />
           </div>
         </div>
       ))}

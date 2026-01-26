@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach, Mock } from 'vitest';
-import { normalizeWalletError, type WalletErrorDetail } from './walletErrors';
+import { describe, it, expect } from 'vitest';
+import { normalizeWalletError } from './walletErrors';
 
 describe('Wallet Error Normalization', () => {
   describe('User Rejected Errors', () => {
