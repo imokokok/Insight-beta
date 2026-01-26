@@ -73,11 +73,7 @@ export interface UMASlashingLibrary {
     observedSlash: bigint;
     correctSlash: bigint;
   }>;
-  recordEpochSlashForWallet: (
-    wallet: Address,
-    epoch: bigint,
-    amount: bigint,
-  ) => Promise<Hash>;
+  recordEpochSlashForWallet: (wallet: Address, epoch: bigint, amount: bigint) => Promise<Hash>;
 }
 
 export const UMA_OPTIMISTIC_ORACLE_V2_ABI = [
@@ -361,11 +357,7 @@ export class UMAOracleClient {
   }
 
   private getOOAddress(): Address | null {
-    return (
-      this.config.optimisticOracleV3Address ||
-      this.config.optimisticOracleV2Address ||
-      null
-    );
+    return this.config.optimisticOracleV3Address || this.config.optimisticOracleV2Address || null;
   }
 
   async getPriceRequest(
@@ -444,7 +436,7 @@ export class UMAOracleClient {
     }
 
     try {
-      const { request: callRequest } = await this.publicClient.simulateContract({
+      const simulationResult = await this.publicClient.simulateContract({
         address: ooAddress,
         abi: UMA_OPTIMISTIC_ORACLE_V2_ABI,
         functionName: 'proposePrice',
@@ -465,7 +457,12 @@ export class UMAOracleClient {
         account: proposer,
       });
 
-      return await this.walletClient.writeContract(callRequest);
+      if (!simulationResult || !simulationResult.request) {
+        console.error('Invalid simulation result:', simulationResult);
+        return null;
+      }
+
+      return await this.walletClient.writeContract(simulationResult.request);
     } catch (error) {
       console.error('Failed to propose price:', error);
       return null;
@@ -488,7 +485,7 @@ export class UMAOracleClient {
     }
 
     try {
-      const { request: callRequest } = await this.publicClient.simulateContract({
+      const simulationResult = await this.publicClient.simulateContract({
         address: ooAddress,
         abi: UMA_OPTIMISTIC_ORACLE_V2_ABI,
         functionName: 'disputePrice',
@@ -501,7 +498,12 @@ export class UMAOracleClient {
         value: BigInt(0),
       });
 
-      return await this.walletClient.writeContract(callRequest);
+      if (!simulationResult || !simulationResult.request) {
+        console.error('Invalid simulation result:', simulationResult);
+        return null;
+      }
+
+      return await this.walletClient.writeContract(simulationResult.request);
     } catch (error) {
       console.error('Failed to dispute price:', error);
       return null;
@@ -592,7 +594,7 @@ export class UMAOracleClient {
     }
 
     try {
-      const { request: callRequest } = await this.publicClient.simulateContract({
+      const simulationResult = await this.publicClient.simulateContract({
         address: ooAddress,
         abi: UMA_OPTIMISTIC_ORACLE_V3_ABI,
         functionName: 'assertTruth',
@@ -607,7 +609,12 @@ export class UMAOracleClient {
         account: asserter,
       });
 
-      return await this.walletClient.writeContract(callRequest);
+      if (!simulationResult || !simulationResult.request) {
+        console.error('Invalid simulation result:', simulationResult);
+        return null;
+      }
+
+      return await this.walletClient.writeContract(simulationResult.request);
     } catch (error) {
       console.error('Failed to assert truth:', error);
       return null;
@@ -625,13 +632,18 @@ export class UMAOracleClient {
     }
 
     try {
-      await this.publicClient.simulateContract({
+      const simulationResult = await this.publicClient.simulateContract({
         address: ooAddress,
         abi: UMA_OPTIMISTIC_ORACLE_V3_ABI,
         functionName: 'settleAssertion',
         args: [assertionId as `0x${string}`],
         account: settler,
       });
+
+      if (!simulationResult) {
+        console.error('Invalid simulation result:', simulationResult);
+        return false;
+      }
 
       return true;
     } catch (error) {
@@ -705,9 +717,7 @@ export function decodeIdentifier(hex: string): string {
   if (!matches) {
     return hex;
   }
-  const bytes = Uint8Array.from(
-    matches.map((byte) => parseInt(byte, 16))
-  );
+  const bytes = Uint8Array.from(matches.map((byte) => parseInt(byte, 16)));
   return new TextDecoder().decode(bytes).replace(/\0+$/g, '');
 }
 
@@ -726,7 +736,15 @@ export function createUMAOracleConfig(
     if (fallbackUrl && fallbackUrl.trim()) {
       return fallbackUrl.trim();
     }
-    return '';
+    // 提供默认 RPC URL 以避免空字符串
+    const defaultRpcUrls: Record<string, string> = {
+      ETHEREUM: 'https://mainnet.infura.io/v3/your-infura-key',
+      POLYGON: 'https://polygon-rpc.com',
+      ARBITRUM: 'https://arb1.arbitrum.io/rpc',
+      OPTIMISM: 'https://mainnet.optimism.io',
+      POLYGON_AMOY: 'https://rpc-amoy.polygon.technology',
+    };
+    return defaultRpcUrls[chainKey] || 'https://ethereum.publicnode.com';
   };
 
   const getFinderAddress = (chainKey: string): Address => {
@@ -747,10 +765,25 @@ export function createUMAOracleConfig(
     return undefined;
   };
 
-  const chainConfigs: Record<number, { name: string; key: string; ooV3?: Address; ooV2?: Address }> = {
-    1: { name: 'Ethereum Mainnet', key: 'ETHEREUM', ooV3: '0xA5B9d8a0B0Fa04B710D7ee40D90d2551E58d0F65' },
-    137: { name: 'Polygon Mainnet', key: 'POLYGON', ooV3: '0xDd46919fE564dE5bC5Cfc966aF2B79dc5A60A73d1' },
-    42161: { name: 'Arbitrum One', key: 'ARBITRUM', ooV3: '0x2d0D2cB02b5eBA6e82b8277BDeF58612f650B401' },
+  const chainConfigs: Record<
+    number,
+    { name: string; key: string; ooV3?: Address; ooV2?: Address }
+  > = {
+    1: {
+      name: 'Ethereum Mainnet',
+      key: 'ETHEREUM',
+      ooV3: '0xA5B9d8a0B0Fa04B710D7ee40D90d2551E58d0F65',
+    },
+    137: {
+      name: 'Polygon Mainnet',
+      key: 'POLYGON',
+      ooV3: '0xDd46919fE564dE5bC5Cfc966aF2B79dc5A60A73d',
+    },
+    42161: {
+      name: 'Arbitrum One',
+      key: 'ARBITRUM',
+      ooV3: '0x2d0D2cB02b5eBA6e82b8277BDeF58612f650B401',
+    },
     10: { name: 'Optimism', key: 'OPTIMISM', ooV3: '0x0335B4C63c688d560C24c80295a6Ca09C5eC93d4' },
     80002: { name: 'Polygon Amoy', key: 'POLYGON_AMOY' },
   };
