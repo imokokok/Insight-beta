@@ -66,14 +66,27 @@ export const db =
   globalForDb.conn ??
   new Pool({
     connectionString: getDbUrl() || undefined,
-    max: Math.max(10, Math.min(50, Number(process.env.INSIGHT_DB_POOL_SIZE) || 20)),
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 10000,
+    max: Math.max(10, Math.min(100, Number(process.env.INSIGHT_DB_POOL_SIZE) || 25)),
+    min: Math.max(2, Math.min(10, Number(process.env.INSIGHT_DB_MIN_POOL) || 5)),
+    idleTimeoutMillis: Math.max(10000, Number(process.env.INSIGHT_DB_IDLE_TIMEOUT) || 30000),
+    connectionTimeoutMillis: Math.max(
+      5000,
+      Number(process.env.INSIGHT_DB_CONNECTION_TIMEOUT) || 10000,
+    ),
     maxUses: Math.max(1000, Number(process.env.INSIGHT_DB_MAX_USES) || 7500),
     ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : false,
+    statement_timeout: Math.max(5000, Number(process.env.INSIGHT_DB_STATEMENT_TIMEOUT) || 30000),
   });
 
 if (process.env.NODE_ENV !== 'production') globalForDb.conn = db;
+
+db.on('error', (err) => {
+  logger.error('Unexpected database pool error', { error: err.message });
+});
+
+db.on('connect', () => {
+  logger.debug('New database connection established');
+});
 
 export async function query<T extends pg.QueryResultRow>(
   text: string,

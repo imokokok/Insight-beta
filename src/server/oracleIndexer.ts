@@ -5,7 +5,6 @@ import {
   readOracleState,
   getSyncState,
   fetchAssertion,
-  fetchDispute,
   upsertAssertion,
   upsertDispute,
   updateSyncState,
@@ -13,7 +12,6 @@ import {
   insertVoteEvent,
   insertOracleEvent,
   recomputeDisputeVotes,
-  replayOracleEventsRange,
   type StoredState,
 } from './oracleState';
 import { isZeroBytes32, parseRpcUrls, toIsoFromSeconds } from '@/lib/utils';
@@ -28,10 +26,56 @@ const abi = parseAbi([
   'event VoteCast(bytes32 indexed assertionId, address indexed voter, bool support, uint256 weight)',
 ]);
 
+const DEFAULT_RPC_TIMEOUT_MS = 30_000;
+const MIN_BLOCK_WINDOW = 500n;
+const MAX_BLOCK_WINDOW = 50_000n;
+const ADAPTIVE_GROWTH_FACTOR = 1.5;
+const ADAPTIVE_SHRINK_FACTOR = 0.5;
+const MAX_CONSECUTIVE_EMPTY_RANGES = 3;
+const MAX_RETRY_BACKOFF_MS = 10_000;
+
 function getRpcTimeoutMs() {
-  const raw = Number(env.INSIGHT_RPC_TIMEOUT_MS || env.INSIGHT_DEPENDENCY_TIMEOUT_MS || 10_000);
-  return Number.isFinite(raw) && raw > 0 ? raw : 10_000;
+  const raw = Number(
+    env.INSIGHT_RPC_TIMEOUT_MS || env.INSIGHT_DEPENDENCY_TIMEOUT_MS || DEFAULT_RPC_TIMEOUT_MS,
+  );
+  return Number.isFinite(raw) && raw > 0 ? raw : DEFAULT_RPC_TIMEOUT_MS;
 }
+
+const clientCache = new Map<string, ReturnType<typeof createPublicClient>>();
+const CACHE_TTL_MS = 60_000;
+
+function getCachedClient(url: string): ReturnType<typeof createPublicClient> {
+  const now = Date.now();
+  const cached = clientCache.get(url);
+  if (cached) {
+    const timestamp = (cached as unknown as { _cacheTimestamp?: number })._cacheTimestamp;
+    if (timestamp && now - timestamp < CACHE_TTL_MS) {
+      return cached;
+    }
+    clientCache.delete(url);
+  }
+  const client = createPublicClient({
+    transport: http(url, {
+      timeout: getRpcTimeoutMs(),
+      retryCount: 0,
+    }),
+  });
+  (client as unknown as { _cacheTimestamp?: number })._cacheTimestamp = now;
+  clientCache.set(url, client);
+  return client;
+}
+
+function cleanupClientCache() {
+  const now = Date.now();
+  for (const [url, client] of clientCache.entries()) {
+    const timestamp = (client as unknown as { _cacheTimestamp?: number })._cacheTimestamp;
+    if (timestamp && now - timestamp > CACHE_TTL_MS * 2) {
+      clientCache.delete(url);
+    }
+  }
+}
+
+setInterval(cleanupClientCache, CACHE_TTL_MS);
 
 export async function getOracleEnv(instanceId: string = DEFAULT_ORACLE_INSTANCE_ID) {
   const normalizedInstanceId = (instanceId || DEFAULT_ORACLE_INSTANCE_ID).trim();
@@ -100,7 +144,9 @@ function toSyncErrorCode(error: unknown) {
       lowered.includes('econnrefused') ||
       lowered.includes('timeout') ||
       lowered.includes('timed out') ||
-      lowered.includes('socket')
+      lowered.includes('socket') ||
+      lowered.includes('aborted') ||
+      lowered.includes('abort')
     ) {
       return 'rpc_unreachable';
     }
@@ -219,7 +265,7 @@ async function syncOracleOnce(instanceId: string): Promise<{
     !['1', 'true'].includes((env.INSIGHT_DISABLE_VOTE_TRACKING || '').toLowerCase());
   const effectiveVoteTrackingEnabled = voteTrackingEnabled && !degraded;
   const syncState = await getSyncState(instanceId);
-  let lastProcessedBlock = syncState.lastProcessedBlock;
+  const lastProcessedBlock = syncState.lastProcessedBlock;
   const alertRules = await readAlertRules();
   const enabledRules = (event: string) => alertRules.filter((r) => r.enabled && r.event === event);
 
@@ -243,17 +289,19 @@ async function syncOracleOnce(instanceId: string): Promise<{
   try {
     const withRpc = async <T>(
       op: (client: ReturnType<typeof createPublicClient>) => Promise<T>,
-    ) => {
+    ): Promise<T> => {
       const urlsToTry = rpcUrls.length > 0 ? rpcUrls : [rpcActiveUrl];
       let lastErr: unknown = null;
       for (let i = 0; i < urlsToTry.length; i += 1) {
         const url = i === 0 ? rpcActiveUrl : pickNextRpcUrl(urlsToTry, rpcActiveUrl);
         rpcActiveUrl = url;
-        const client = createPublicClient({
-          transport: http(url, { timeout: getRpcTimeoutMs() }),
-        });
+        const client = getCachedClient(url);
+        const urlStats = rpcStats[url];
+        const baseBackoff = urlStats?.avgLatencyMs
+          ? Math.min(urlStats.avgLatencyMs * 2, MAX_RETRY_BACKOFF_MS)
+          : 1000;
+        const MAX_RETRIES = Math.min(3, Math.max(2, Math.floor(getRpcTimeoutMs() / 5000)));
 
-        const MAX_RETRIES = 3;
         for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
           const t0 = Date.now();
           try {
@@ -263,25 +311,38 @@ async function syncOracleOnce(instanceId: string): Promise<{
           } catch (e) {
             lastErr = e;
             const code = toSyncErrorCode(e);
-
             if (code === 'rpc_unreachable') {
               recordRpcFail(rpcStats, url);
               if (attempt < MAX_RETRIES - 1) {
-                const backoff = 1000 * Math.pow(2, attempt);
+                const backoff = Math.min(baseBackoff * Math.pow(2, attempt), MAX_RETRY_BACKOFF_MS);
+                const jitter = Math.random() * 0.3 * backoff;
+                const totalBackoff = backoff + jitter;
                 logger.warn(
                   `RPC ${redactRpcUrl(url)} unreachable (attempt ${
                     attempt + 1
-                  }/${MAX_RETRIES}), retrying in ${backoff}ms...`,
+                  }/${MAX_RETRIES}), retrying in ${Math.round(totalBackoff)}ms...`,
                 );
-                await new Promise((r) => setTimeout(r, backoff));
+                await new Promise((r) => setTimeout(r, totalBackoff));
                 continue;
               }
+            } else if (code === 'contract_not_found') {
+              throw e;
             } else {
-              break;
+              if (attempt < MAX_RETRIES - 1) {
+                const backoff = Math.min(baseBackoff * Math.pow(2, attempt), MAX_RETRY_BACKOFF_MS);
+                const jitter = Math.random() * 0.2 * backoff;
+                const totalBackoff = backoff + jitter;
+                logger.warn(
+                  `RPC ${redactRpcUrl(url)} error: ${(e as Error).message} (attempt ${
+                    attempt + 1
+                  }/${MAX_RETRIES}), retrying in ${Math.round(totalBackoff)}ms...`,
+                );
+                await new Promise((r) => setTimeout(r, totalBackoff));
+                continue;
+              }
             }
           }
         }
-
         const code = toSyncErrorCode(lastErr);
         if (code !== 'rpc_unreachable') break;
       }
@@ -309,48 +370,57 @@ async function syncOracleOnce(instanceId: string): Promise<{
     const toBlock = safeBlock ?? latest;
     const initialCursor = fromBlock < startBlock ? startBlock : fromBlock;
     let processedHigh = syncState.lastProcessedBlock;
+    const lastWindowSize = syncState.lastProcessedBlock > 0n ? maxBlockRange : MIN_BLOCK_WINDOW;
+    let window = lastWindowSize;
 
     if (initialCursor > toBlock) {
       const durationMs = Date.now() - startedAt;
-      await updateSyncState(
-        syncState.lastProcessedBlock,
-        attemptAt,
-        new Date().toISOString(),
-        durationMs,
-        null,
-        {
-          latestBlock: latest,
-          safeBlock: toBlock,
-          lastSuccessProcessedBlock: syncState.lastProcessedBlock,
-          consecutiveFailures: 0,
-          rpcActiveUrl,
-          rpcStats,
-        },
-        instanceId,
-      );
-      await insertSyncMetric(
-        {
-          lastProcessedBlock: syncState.lastProcessedBlock,
-          latestBlock: latest,
-          safeBlock: toBlock,
-          lagBlocks: latest - syncState.lastProcessedBlock,
+      await Promise.all([
+        updateSyncState(
+          syncState.lastProcessedBlock,
+          attemptAt,
+          new Date().toISOString(),
           durationMs,
-          error: null,
-        },
-        instanceId,
-      );
+          null,
+          {
+            latestBlock: latest,
+            safeBlock: toBlock,
+            lastSuccessProcessedBlock: syncState.lastProcessedBlock,
+            consecutiveFailures: 0,
+            rpcActiveUrl,
+            rpcStats,
+          },
+          instanceId,
+        ),
+        insertSyncMetric(
+          {
+            lastProcessedBlock: syncState.lastProcessedBlock,
+            latestBlock: latest,
+            safeBlock: toBlock,
+            lagBlocks: latest - syncState.lastProcessedBlock,
+            durationMs,
+            error: null,
+          },
+          instanceId,
+        ),
+      ]);
       return { updated: false, state: await readOracleState(instanceId) };
     }
 
     let updated = false;
     let cursor = initialCursor;
-    let window = maxBlockRange > 0n ? maxBlockRange : 10_000n;
+    let consecutiveEmptyRanges = 0;
 
     while (cursor <= toBlock) {
       const rangeTo = cursor + window - 1n <= toBlock ? cursor + window - 1n : toBlock;
+      const rangeSize = rangeTo - cursor + 1n;
+      const rangeStartTime = Date.now();
 
       let attempts = 0;
-      while (true) {
+      let rangeSuccess = false;
+      let logsInRange = 0;
+
+      while (!rangeSuccess && attempts < 3) {
         try {
           const [createdLogs, disputedLogs, resolvedLogs, voteLogs] = await withRpc((client) =>
             Promise.all([
@@ -383,6 +453,11 @@ async function syncOracleOnce(instanceId: string): Promise<{
             ] as const),
           );
 
+          logsInRange =
+            createdLogs.length + disputedLogs.length + resolvedLogs.length + voteLogs.length;
+          const dbOps: Promise<unknown>[] = [];
+          const touchedVotes = new Set<string>();
+
           for (const log of createdLogs) {
             const args = log.args;
             if (!args) continue;
@@ -414,20 +489,21 @@ async function syncOracleOnce(instanceId: string): Promise<{
               txHash,
             };
 
-            await insertOracleEvent(
-              {
-                chain: chain as OracleChain,
-                eventType: 'assertion_created',
-                assertionId: id,
-                txHash,
-                blockNumber,
-                logIndex,
-                payload: assertion,
-              },
-              instanceId,
+            dbOps.push(
+              insertOracleEvent(
+                {
+                  chain: chain as OracleChain,
+                  eventType: 'assertion_created',
+                  assertionId: id,
+                  txHash,
+                  blockNumber,
+                  logIndex,
+                  payload: assertion,
+                },
+                instanceId,
+              ),
             );
-            await upsertAssertion(assertion, instanceId);
-            updated = true;
+            dbOps.push(upsertAssertion(assertion, instanceId));
           }
 
           for (const log of disputedLogs) {
@@ -441,19 +517,22 @@ async function syncOracleOnce(instanceId: string): Promise<{
             const logIndex =
               typeof log.logIndex === 'number' ? log.logIndex : Number(log.logIndex ?? 0);
 
-            const assertion = await fetchAssertion(id, instanceId);
-            if (assertion) {
-              assertion.status = 'Disputed';
-              assertion.disputer = disputer;
-              await upsertAssertion(assertion, instanceId);
-              updated = true;
-            }
+            dbOps.push(
+              fetchAssertion(id, instanceId).then((assertion) => {
+                if (assertion) {
+                  assertion.status = 'Disputed';
+                  assertion.disputer = disputer;
+                  return upsertAssertion(assertion, instanceId);
+                }
+                return null;
+              }),
+            );
 
             const dispute: Dispute = {
               id: `D:${id}`,
               chain: chain as Dispute['chain'],
               assertionId: id,
-              market: assertion?.market ?? id,
+              market: id,
               disputeReason: args.reason as string,
               disputer,
               disputedAt,
@@ -467,46 +546,23 @@ async function syncOracleOnce(instanceId: string): Promise<{
               totalVotes: 0,
             };
 
-            await insertOracleEvent(
-              {
-                chain: chain as OracleChain,
-                eventType: 'assertion_disputed',
-                assertionId: id,
-                txHash,
-                blockNumber,
-                logIndex,
-                payload: dispute,
-              },
-              instanceId,
+            dbOps.push(
+              insertOracleEvent(
+                {
+                  chain: chain as OracleChain,
+                  eventType: 'assertion_disputed',
+                  assertionId: id,
+                  txHash,
+                  blockNumber,
+                  logIndex,
+                  payload: dispute,
+                },
+                instanceId,
+              ),
             );
-            await upsertDispute(dispute, instanceId);
-            updated = true;
-
-            for (const rule of enabledRules('dispute_created')) {
-              const nowMs = Date.now();
-              const silencedUntilRaw = (rule.silencedUntil ?? '').trim();
-              const silencedUntilMs = silencedUntilRaw ? Date.parse(silencedUntilRaw) : NaN;
-              const silenced = Number.isFinite(silencedUntilMs) && silencedUntilMs > nowMs;
-              const fingerprint = `${rule.id}:${instanceId}:${chain}:${id}`;
-              await createOrTouchAlert({
-                fingerprint,
-                type: rule.event,
-                severity: rule.severity,
-                title: 'Dispute detected',
-                message: `${assertion?.market ?? id} disputed: ${dispute.disputeReason}`,
-                entityType: 'assertion',
-                entityId: id,
-                notify: silenced
-                  ? { channels: [] }
-                  : {
-                      channels: rule.channels,
-                      recipient: rule.recipient ?? undefined,
-                    },
-              });
-            }
+            dbOps.push(upsertDispute(dispute, instanceId));
           }
 
-          const touchedVotes = new Set<string>();
           for (const log of voteLogs) {
             const args = log.args;
             if (!args) continue;
@@ -519,175 +575,132 @@ async function syncOracleOnce(instanceId: string): Promise<{
               typeof log.logIndex === 'number' ? log.logIndex : Number(log.logIndex ?? 0);
             const voter = (args.voter as `0x${string}` | undefined) ?? '0x0';
 
-            const inserted = await insertVoteEvent(
-              {
-                chain: chain as OracleChain,
-                assertionId: id,
-                voter,
-                support,
-                weight,
-                txHash,
-                blockNumber,
-                logIndex,
-              },
-              instanceId,
-            );
-            if (inserted) {
-              await insertOracleEvent(
+            dbOps.push(
+              insertVoteEvent(
                 {
                   chain: chain as OracleChain,
-                  eventType: 'vote_cast',
                   assertionId: id,
+                  voter,
+                  support,
+                  weight,
                   txHash,
                   blockNumber,
                   logIndex,
-                  payload: {
-                    chain: chain as OracleChain,
-                    assertionId: id,
-                    voter,
-                    support,
-                    weight: weight.toString(10),
-                    txHash,
-                    blockNumber: blockNumber.toString(10),
-                    logIndex,
-                  },
                 },
                 instanceId,
-              );
-              touchedVotes.add(id);
-              updated = true;
-            }
-          }
-
-          for (const assertionId of touchedVotes) {
-            await recomputeDisputeVotes(assertionId, instanceId);
-          }
-
-          for (const log of resolvedLogs) {
-            const args = log.args;
-            if (!args) continue;
-            const id = args.assertionId as `0x${string}`;
-            const resolvedAt = toIsoFromSeconds(args.resolvedAt as bigint);
-            const outcome = args.outcome as boolean;
-            const txHash = (log.transactionHash as `0x${string}` | undefined) ?? '0x0';
-            const blockNumber = typeof log.blockNumber === 'bigint' ? log.blockNumber : 0n;
-            const logIndex =
-              typeof log.logIndex === 'number' ? log.logIndex : Number(log.logIndex ?? 0);
-
-            await insertOracleEvent(
-              {
-                chain: chain as OracleChain,
-                eventType: 'assertion_resolved',
-                assertionId: id,
-                txHash,
-                blockNumber,
-                logIndex,
-                payload: { assertionId: id, resolvedAt, outcome },
-              },
-              instanceId,
+              ).then((inserted) => {
+                if (inserted) {
+                  touchedVotes.add(id);
+                  return insertOracleEvent(
+                    {
+                      chain: chain as OracleChain,
+                      eventType: 'vote_cast',
+                      assertionId: id,
+                      txHash,
+                      blockNumber,
+                      logIndex,
+                      payload: {
+                        chain: chain as OracleChain,
+                        assertionId: id,
+                        voter,
+                        support,
+                        weight: weight.toString(10),
+                        txHash,
+                        blockNumber: blockNumber.toString(10),
+                        logIndex,
+                      },
+                    },
+                    instanceId,
+                  );
+                }
+                return null;
+              }),
             );
-            const assertion = await fetchAssertion(id, instanceId);
-            if (assertion) {
-              assertion.status = 'Resolved';
-              assertion.resolvedAt = resolvedAt;
-              assertion.settlementResolution = outcome;
-              await upsertAssertion(assertion, instanceId);
-              updated = true;
-            }
-
-            const dispute = await fetchDispute(`D:${id}`, instanceId);
-            if (dispute) {
-              dispute.status = 'Executed';
-              dispute.votingEndsAt = resolvedAt;
-              await upsertDispute(dispute, instanceId);
-              updated = true;
-            }
           }
+
+          await Promise.all([
+            ...dbOps,
+            ...Array.from(touchedVotes).map((id) => recomputeDisputeVotes(id, instanceId)),
+          ]);
 
           if (rangeTo > processedHigh) processedHigh = rangeTo;
-          await updateSyncState(
-            processedHigh,
-            attemptAt,
-            syncState.sync.lastSuccessAt,
-            syncState.sync.lastDurationMs,
-            null,
-            {
-              latestBlock: latest,
-              safeBlock: toBlock,
-              lastSuccessProcessedBlock: processedHigh,
-              consecutiveFailures: 0,
-              rpcActiveUrl,
-              rpcStats,
-            },
-            instanceId,
-          );
-          lastProcessedBlock = processedHigh;
-          cursor = rangeTo + 1n;
-          break;
+          rangeSuccess = true;
+          updated = updated || logsInRange > 0;
+
+          if (logsInRange === 0) {
+            consecutiveEmptyRanges++;
+          } else {
+            consecutiveEmptyRanges = 0;
+            const rangeDuration = Date.now() - rangeStartTime;
+            const logsPerSecond = logsInRange / (rangeDuration / 1000);
+            if (logsPerSecond > 10 && rangeSize < MAX_BLOCK_WINDOW) {
+              window = BigInt(
+                Math.min(Number(window) * ADAPTIVE_GROWTH_FACTOR, Number(MAX_BLOCK_WINDOW)),
+              );
+            }
+          }
         } catch (e) {
-          attempts += 1;
-          if (window > 200n) {
-            window = window / 2n;
-            if (window < 200n) window = 200n;
-            continue;
-          }
-          if (attempts < 3) continue;
-          const replay = await replayOracleEventsRange(cursor, rangeTo, instanceId);
-          if (replay.applied > 0) {
-            updated = true;
-            if (rangeTo > processedHigh) processedHigh = rangeTo;
-            await updateSyncState(
-              processedHigh,
-              attemptAt,
-              syncState.sync.lastSuccessAt,
-              syncState.sync.lastDurationMs,
-              null,
-              {
-                latestBlock: latest,
-                safeBlock: toBlock,
-                lastSuccessProcessedBlock: processedHigh,
-                consecutiveFailures: 0,
-                rpcActiveUrl,
-                rpcStats,
-              },
-              instanceId,
+          attempts++;
+          const rangeDuration = Date.now() - rangeStartTime;
+          if (attempts < 3 && rangeDuration < getRpcTimeoutMs()) {
+            const backoff = Math.min(2000 * Math.pow(2, attempts - 1), MAX_RETRY_BACKOFF_MS);
+            logger.warn(
+              `Range [${cursor}-${rangeTo}] failed (attempt ${attempts}/3), retrying in ${backoff}ms...`,
             );
-            lastProcessedBlock = processedHigh;
-            cursor = rangeTo + 1n;
-            break;
+            await new Promise((r) => setTimeout(r, backoff));
+            window = BigInt(
+              Math.max(Number(window) * ADAPTIVE_SHRINK_FACTOR, Number(MIN_BLOCK_WINDOW)),
+            );
+          } else if (consecutiveEmptyRanges >= MAX_CONSECUTIVE_EMPTY_RANGES) {
+            window = BigInt(
+              Math.max(Number(window) * ADAPTIVE_SHRINK_FACTOR, Number(MIN_BLOCK_WINDOW)),
+            );
+            consecutiveEmptyRanges = 0;
+          } else {
+            window = BigInt(
+              Math.max(Number(window) * ADAPTIVE_SHRINK_FACTOR, Number(MIN_BLOCK_WINDOW)),
+            );
+            throw e;
           }
-          throw e;
         }
       }
+
+      if (rangeSuccess && rangeTo > processedHigh) {
+        processedHigh = rangeTo;
+      }
+      cursor = rangeTo + 1n;
     }
 
-    await updateSyncState(
-      processedHigh > toBlock ? processedHigh : toBlock,
-      attemptAt,
-      new Date().toISOString(),
-      Date.now() - startedAt,
-      null,
-      {
-        latestBlock: latest,
-        safeBlock: toBlock,
-        lastSuccessProcessedBlock: processedHigh > toBlock ? processedHigh : toBlock,
-        consecutiveFailures: 0,
-        rpcActiveUrl,
-        rpcStats,
-      },
-      instanceId,
-    );
-    await insertSyncMetric(
-      {
-        lastProcessedBlock: processedHigh > toBlock ? processedHigh : toBlock,
-        latestBlock: latest,
-        safeBlock: toBlock,
-        lagBlocks: latest - (processedHigh > toBlock ? processedHigh : toBlock),
-        durationMs: Date.now() - startedAt,
-        error: null,
-      },
-      instanceId,
-    );
+    const totalDuration = Date.now() - startedAt;
+    await Promise.all([
+      updateSyncState(
+        processedHigh > toBlock ? processedHigh : toBlock,
+        attemptAt,
+        new Date().toISOString(),
+        totalDuration,
+        null,
+        {
+          latestBlock: latest,
+          safeBlock: toBlock,
+          lastSuccessProcessedBlock: processedHigh > toBlock ? processedHigh : toBlock,
+          consecutiveFailures: 0,
+          rpcActiveUrl,
+          rpcStats,
+        },
+        instanceId,
+      ),
+      insertSyncMetric(
+        {
+          lastProcessedBlock: processedHigh > toBlock ? processedHigh : toBlock,
+          latestBlock: latest,
+          safeBlock: toBlock,
+          lagBlocks: latest - (processedHigh > toBlock ? processedHigh : toBlock),
+          durationMs: totalDuration,
+          error: null,
+        },
+        instanceId,
+      ),
+    ]);
 
     return { updated, state: await readOracleState(instanceId) };
   } catch (e) {

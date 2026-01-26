@@ -270,16 +270,16 @@ export async function listAssertions(
 
   const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
-  const countRes = await query<{ total: string | number }>(
-    `SELECT COUNT(*) as total FROM assertions ${whereClause}`,
-    values,
-  );
-  const total = Number(countRes.rows[0]?.total || 0);
-
   const res = await query<DbAssertionRow>(
     `SELECT * FROM assertions ${whereClause} ORDER BY asserted_at DESC LIMIT $${idx++} OFFSET $${idx}`,
     [...values, limit, offset],
   );
+
+  const { rows: countRows } = await query<{ count: string }>(
+    `SELECT COUNT(*)::bigint as count FROM assertions ${whereClause}`,
+    values,
+  );
+  const total = Number(countRows[0]?.count || 0);
 
   return {
     items: res.rows.map(mapAssertionRow),
@@ -490,16 +490,16 @@ export async function listDisputes(
 
   const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
-  const countRes = await query<{ total: string | number }>(
-    `SELECT COUNT(*) as total FROM disputes ${whereClause}`,
-    values,
-  );
-  const total = Number(countRes.rows[0]?.total || 0);
-
   const res = await query<DbDisputeRow>(
     `SELECT * FROM disputes ${whereClause} ORDER BY disputed_at DESC LIMIT $${idx++} OFFSET $${idx}`,
     [...values, limit, offset],
   );
+
+  const { rows: countRows } = await query<{ count: string }>(
+    `SELECT COUNT(*)::bigint as count FROM disputes ${whereClause}`,
+    values,
+  );
+  const total = Number(countRows[0]?.count || 0);
 
   return {
     items: res.rows.map(mapDisputeRow),
@@ -567,61 +567,42 @@ export function getOracleStats(
         };
       }
 
-      // 1. TVS: Sum of bond_usd for all assertions (or just active ones? Let's do all for "Total Value Secured")
-      // Usually TVS implies current active value. Let's do active (Pending/Disputed).
-      const tvsRes = await query(
+      const statsRes = await query(
         `
-      SELECT SUM(bond_usd) AS tvs
-      FROM assertions
-      WHERE instance_id = $1 AND status IN ('Pending', 'Disputed')
-    `,
-        [normalizedInstanceId],
+        WITH tvs AS (
+          SELECT COALESCE(SUM(bond_usd), 0) as tvs
+          FROM assertions
+          WHERE instance_id = $1 AND status IN ('Pending', 'Disputed')
+        ),
+        active_disputes AS (
+          SELECT COUNT(*)::int as count
+          FROM disputes
+          WHERE instance_id = $1 AND status <> 'Executed'
+        ),
+        resolved_24h AS (
+          SELECT COUNT(*)::int as count
+          FROM assertions
+          WHERE instance_id = $2 AND status = 'Resolved' AND COALESCE(resolved_at, liveness_ends_at) > $3
+        ),
+        avg_res AS (
+          SELECT COALESCE(AVG(EXTRACT(EPOCH FROM (COALESCE(resolved_at, liveness_ends_at) - asserted_at))/60), 0)::numeric as avg_min
+          FROM assertions
+          WHERE instance_id = $1 AND status = 'Resolved'
+        )
+        SELECT
+          (SELECT tvs FROM tvs) as tvs,
+          (SELECT count FROM active_disputes) as active_disputes,
+          (SELECT count FROM resolved_24h) as resolved_24h,
+          (SELECT avg_min FROM avg_res) as avg_resolution_minutes
+      `,
+        [normalizedInstanceId, normalizedInstanceId, oneDayAgo],
       );
-      const tvsRow = tvsRes.rows[0];
-      const tvsUsd = Number(tvsRow?.tvs || 0);
-
-      // 2. Active Disputes
-      const activeDisputesRes = await query(
-        `
-      SELECT COUNT(*) as count 
-      FROM disputes
-      WHERE instance_id = $1 AND status <> 'Executed'
-    `,
-        [normalizedInstanceId],
-      );
-      const activeDisputesRow = activeDisputesRes.rows[0];
-      const activeDisputes = Number(activeDisputesRow?.count || 0);
-
-      // 3. Resolved in last 24h
-      const resolvedRes = await query(
-        `
-      SELECT COUNT(*) as count 
-      FROM assertions 
-      WHERE instance_id = $2 AND status = 'Resolved' AND COALESCE(resolved_at, liveness_ends_at) > $1
-    `,
-        [oneDayAgo, normalizedInstanceId],
-      );
-      const resolvedRow = resolvedRes.rows[0];
-      const resolved24h = Number(resolvedRow?.count || 0);
-
-      // 4. Avg Resolution Time (minutes)
-      // For assertions that are Resolved, avg difference between liveness_ends_at and asserted_at
-      const avgRes = await query(
-        `
-      SELECT AVG(EXTRACT(EPOCH FROM (COALESCE(resolved_at, liveness_ends_at) - asserted_at))/60) as avg_min
-      FROM assertions 
-      WHERE instance_id = $1 AND status = 'Resolved'
-    `,
-        [normalizedInstanceId],
-      );
-      const avgRow = avgRes.rows[0];
-      const avgResolutionMinutes = Number(avgRow?.avg_min || 0);
-
+      const row = statsRes.rows[0];
       return {
-        tvsUsd,
-        activeDisputes,
-        resolved24h,
-        avgResolutionMinutes,
+        tvsUsd: Number(row?.tvs || 0),
+        activeDisputes: Number(row?.active_disputes || 0),
+        resolved24h: Number(row?.resolved_24h || 0),
+        avgResolutionMinutes: Number(row?.avg_resolution_minutes || 0),
       };
     },
     ['oracle-stats', normalizedInstanceId],
@@ -784,9 +765,7 @@ export function getUserStats(
         };
       }
 
-      // Check if DB is empty to use mocks
       if (isDemoModeEnabled() && (await isTableEmpty('assertions', normalizedInstanceId))) {
-        // Mock stats
         const assertions = mockAssertions.filter((a) => a.asserter.toLowerCase() === addressLower);
         const disputes = mockDisputes.filter((d) => d.disputer.toLowerCase() === addressLower);
 
@@ -808,53 +787,52 @@ export function getUserStats(
         };
       }
 
-      // Real DB stats
-      const assertionsRes = await query(
+      const statsRes = await query(
         `
-        SELECT COUNT(*) as count, COALESCE(SUM(bond_usd), 0) as bonded
-        FROM assertions
-        WHERE instance_id = $2 AND LOWER(asserter) = $1
+        WITH assertions_stats AS (
+          SELECT
+            COUNT(*)::int as total_assertions,
+            COALESCE(SUM(bond_usd), 0)::numeric as bonded
+          FROM assertions
+          WHERE instance_id = $2 AND LOWER(asserter) = $1
+        ),
+        disputes_count AS (
+          SELECT COUNT(*)::int as total_disputes
+          FROM disputes
+          WHERE instance_id = $3 AND LOWER(disputer) = $1
+        ),
+        resolved_count AS (
+          SELECT COUNT(*)::int as count
+          FROM assertions
+          WHERE instance_id = $4 AND LOWER(asserter) = $1 AND status = 'Resolved'
+        ),
+        won_count AS (
+          SELECT COUNT(*)::int as count
+          FROM assertions
+          WHERE instance_id = $5 AND LOWER(asserter) = $1 AND status = 'Resolved' AND (settlement_resolution IS TRUE OR settlement_resolution IS NULL)
+        )
+        SELECT
+          (SELECT total_assertions FROM assertions_stats) as total_assertions,
+          (SELECT bonded FROM assertions_stats) as total_bonded_usd,
+          (SELECT total_disputes FROM disputes_count) as total_disputes,
+          (SELECT count FROM resolved_count) as resolved_count,
+          (SELECT count FROM won_count) as won_count
       `,
-        [addressLower, normalizedInstanceId],
+        [
+          addressLower,
+          normalizedInstanceId,
+          normalizedInstanceId,
+          normalizedInstanceId,
+          normalizedInstanceId,
+        ],
       );
 
-      const disputesRes = await query(
-        `
-        SELECT COUNT(*) as count
-        FROM disputes
-        WHERE instance_id = $2 AND LOWER(disputer) = $1
-      `,
-        [addressLower, normalizedInstanceId],
-      );
-
-      const resolvedRes = await query(
-        `
-        SELECT COUNT(*) as count
-        FROM assertions
-        WHERE instance_id = $2 AND LOWER(asserter) = $1 AND status = 'Resolved'
-      `,
-        [addressLower, normalizedInstanceId],
-      );
-
-      const wonRes = await query(
-        `
-        SELECT COUNT(*) as count
-        FROM assertions
-        WHERE instance_id = $2 AND LOWER(asserter) = $1 AND status = 'Resolved' AND (settlement_resolution IS TRUE OR settlement_resolution IS NULL)
-      `,
-        [addressLower, normalizedInstanceId],
-      );
-
-      const assertionsRow = assertionsRes.rows[0];
-      const disputesRow = disputesRes.rows[0];
-      const resolvedRow = resolvedRes.rows[0];
-      const wonRow = wonRes.rows[0];
-
-      const totalAssertions = Number(assertionsRow?.count || 0);
-      const totalBondedUsd = Number(assertionsRow?.bonded || 0);
-      const totalDisputes = Number(disputesRow?.count || 0);
-      const resolvedCount = Number(resolvedRow?.count || 0);
-      const wonCount = Number(wonRow?.count || 0);
+      const row = statsRes.rows[0];
+      const totalAssertions = Number(row?.total_assertions || 0);
+      const totalBondedUsd = Number(row?.total_bonded_usd || 0);
+      const totalDisputes = Number(row?.total_disputes || 0);
+      const resolvedCount = Number(row?.resolved_count || 0);
+      const wonCount = Number(row?.won_count || 0);
 
       const winRate = resolvedCount > 0 ? Math.round((wonCount / resolvedCount) * 100) : 0;
 

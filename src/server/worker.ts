@@ -11,10 +11,45 @@ import { writeJsonFile } from '@/server/kvStore';
 import { fetchCurrentPrice } from '@/server/oracle/priceFetcher';
 import { createPublicClient, http, formatEther, parseAbi } from 'viem';
 
-const SYNC_INTERVAL = 15000; // 15 seconds
+const SYNC_INTERVAL = 15000; // 15 seconds base interval
+const MIN_SYNC_INTERVAL = 5000; // 5 seconds minimum
+const MAX_SYNC_INTERVAL = 60000; // 60 seconds maximum
+const ADAPTIVE_WINDOW_SIZE = 10;
 const workerAlertCooldown = new Map<string, number>();
 const workerRecoveryCooldown = new Map<string, number>();
 const COOLDOWN_MAX_AGE_MS = 24 * 60 * 60_000; // 24 hours - clean entries older than this
+
+const syncPerformanceHistory: { duration: number; updated: boolean; lagBlocks: bigint | null }[] =
+  [];
+
+function calculateAdaptiveInterval(): number {
+  if (syncPerformanceHistory.length < 3) return SYNC_INTERVAL;
+
+  const recent = syncPerformanceHistory.slice(-ADAPTIVE_WINDOW_SIZE);
+  const avgDuration = recent.reduce((sum, p) => sum + p.duration, 0) / recent.length;
+  const updateRate = recent.filter((p) => p.updated).length / recent.length;
+  const avgLag = recent.reduce((sum, p) => sum + (p.lagBlocks ?? 0n), 0n) / BigInt(recent.length);
+
+  let baseInterval = SYNC_INTERVAL;
+
+  if (avgDuration > 10000) {
+    baseInterval = Math.min(MAX_SYNC_INTERVAL, baseInterval * 1.5);
+  } else if (avgDuration < 3000) {
+    baseInterval = Math.max(MIN_SYNC_INTERVAL, baseInterval * 0.8);
+  }
+
+  if (updateRate > 0.3) {
+    baseInterval = Math.max(MIN_SYNC_INTERVAL, baseInterval * 0.7);
+  } else if (updateRate < 0.05 && avgLag < 10n) {
+    baseInterval = Math.min(MAX_SYNC_INTERVAL, baseInterval * 1.3);
+  }
+
+  if (avgLag > 100n) {
+    baseInterval = Math.max(MIN_SYNC_INTERVAL, baseInterval * 0.5);
+  }
+
+  return Math.round(baseInterval);
+}
 
 function cleanupStaleCooldowns(cooldownMap: Map<string, number>, maxAgeMs: number) {
   const nowMs = Date.now();
@@ -195,7 +230,13 @@ async function tickWorker() {
         }
 
         if (shouldAttemptSync && !missingConfig) {
-          await ensureOracleSynced(instanceId);
+          const syncResult = await ensureOracleSynced(instanceId);
+          for (const perf of syncPerformanceHistory) {
+            if (perf.duration === global.insightWorkerLastTickDurationMs) {
+              perf.updated = syncResult.updated;
+              break;
+            }
+          }
         }
 
         const state = await getSyncState(instanceId);
@@ -898,6 +939,40 @@ async function tickWorker() {
     global.insightWorkerLastTickAt = at;
     global.insightWorkerLastTickDurationMs = Date.now() - startedAt;
     global.insightWorkerLastError = lastError;
+
+    let lagBlocks: bigint | null = null;
+    try {
+      const syncState = await getSyncState();
+      if (
+        syncState?.latestBlock !== null &&
+        syncState?.lastProcessedBlock !== null &&
+        syncState.latestBlock !== undefined &&
+        syncState.lastProcessedBlock !== undefined
+      ) {
+        lagBlocks = syncState.latestBlock - syncState.lastProcessedBlock;
+      }
+    } catch {
+      lagBlocks = null;
+    }
+
+    syncPerformanceHistory.push({
+      duration: global.insightWorkerLastTickDurationMs,
+      updated: false,
+      lagBlocks,
+    });
+
+    if (syncPerformanceHistory.length > ADAPTIVE_WINDOW_SIZE * 2) {
+      syncPerformanceHistory.shift();
+    }
+
+    const interval = calculateAdaptiveInterval();
+    if (global.insightWorkerInterval && interval !== SYNC_INTERVAL) {
+      clearInterval(global.insightWorkerInterval);
+      global.insightWorkerInterval = setInterval(() => {
+        void tickWorker();
+      }, interval);
+    }
+
     try {
       await writeJsonFile('worker/heartbeat/v1', {
         at,

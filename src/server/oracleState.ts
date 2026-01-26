@@ -534,6 +534,162 @@ export async function upsertDispute(d: Dispute, instanceId: string = DEFAULT_ORA
   );
 }
 
+export async function upsertAssertionsBatch(
+  assertions: Assertion[],
+  instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
+): Promise<number> {
+  if (assertions.length === 0) return 0;
+
+  await ensureDb();
+  const normalizedInstanceId = normalizeInstanceId(instanceId);
+
+  if (!hasDatabase()) {
+    const mem = getMemoryInstance(normalizedInstanceId);
+    for (const a of assertions) {
+      mem.assertions.set(a.id, a);
+    }
+    pruneMemoryAssertions(mem);
+    return assertions.length;
+  }
+
+  const batchSize = 100;
+  let totalInserted = 0;
+
+  for (let i = 0; i < assertions.length; i += batchSize) {
+    const batch = assertions.slice(i, i + batchSize);
+    const values: (string | number | boolean | null)[] = [];
+    const placeholders: string[] = [];
+
+    for (let j = 0; j < batch.length; j++) {
+      const a = batch[j];
+      if (!a) continue;
+      const offset = j * 17;
+      placeholders.push(
+        `($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7}, $${offset + 8}, $${offset + 9}, $${offset + 10}, $${offset + 11}, $${offset + 12}, $${offset + 13}, $${offset + 14}, $${offset + 15}, $${offset + 16}, $${offset + 17})`,
+      );
+
+      values.push(
+        a.id,
+        normalizedInstanceId,
+        a.chain,
+        a.asserter,
+        a.protocol,
+        a.market,
+        a.assertion,
+        a.assertedAt,
+        a.livenessEndsAt,
+        a.blockNumber ?? null,
+        a.logIndex ?? null,
+        a.resolvedAt ?? null,
+        a.settlementResolution ?? null,
+        a.status,
+        a.bondUsd,
+        a.disputer || null,
+        a.txHash,
+      );
+    }
+
+    await query(
+      `INSERT INTO assertions (
+        id, instance_id, chain, asserter, protocol, market, assertion_data, asserted_at, liveness_ends_at, block_number, log_index, resolved_at, settlement_resolution, status, bond_usd, disputer, tx_hash
+      ) VALUES ${placeholders.join(', ')}
+      ON CONFLICT (id) DO UPDATE SET
+        instance_id = excluded.instance_id,
+        status = excluded.status,
+        disputer = excluded.disputer,
+        bond_usd = excluded.bond_usd,
+        block_number = excluded.block_number,
+        log_index = excluded.log_index,
+        resolved_at = excluded.resolved_at,
+        settlement_resolution = excluded.settlement_resolution
+      `,
+      values,
+    );
+
+    totalInserted += batch.length;
+  }
+
+  return totalInserted;
+}
+
+export async function upsertDisputesBatch(
+  disputes: Dispute[],
+  instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
+): Promise<number> {
+  if (disputes.length === 0) return 0;
+
+  await ensureDb();
+  const normalizedInstanceId = normalizeInstanceId(instanceId);
+
+  if (!hasDatabase()) {
+    const mem = getMemoryInstance(normalizedInstanceId);
+    for (const d of disputes) {
+      mem.disputes.set(d.id, d);
+    }
+    pruneMemoryDisputes(mem);
+    return disputes.length;
+  }
+
+  const batchSize = 100;
+  let totalInserted = 0;
+
+  for (let i = 0; i < disputes.length; i += batchSize) {
+    const batch = disputes.slice(i, i + batchSize);
+    const values: (string | number | null)[] = [];
+    const placeholders: string[] = [];
+
+    for (let j = 0; j < batch.length; j++) {
+      const d = batch[j];
+      if (!d) continue;
+      const offset = j * 16;
+      placeholders.push(
+        `($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7}, $${offset + 8}, $${offset + 9}, $${offset + 10}, $${offset + 11}, $${offset + 12}, $${offset + 13}, $${offset + 14}, $${offset + 15}, $${offset + 16})`,
+      );
+
+      values.push(
+        d.id,
+        normalizedInstanceId,
+        d.chain,
+        d.assertionId,
+        d.market,
+        d.disputeReason,
+        d.disputer,
+        d.disputedAt,
+        d.votingEndsAt,
+        d.txHash ?? null,
+        d.blockNumber ?? null,
+        d.logIndex ?? null,
+        d.status,
+        d.currentVotesFor,
+        d.currentVotesAgainst,
+        d.totalVotes,
+      );
+    }
+
+    await query(
+      `INSERT INTO disputes (
+        id, instance_id, chain, assertion_id, market, reason, disputer, disputed_at, voting_ends_at, tx_hash, block_number, log_index, status, votes_for, votes_against, total_votes
+      ) VALUES ${placeholders.join(', ')}
+      ON CONFLICT (id) DO UPDATE SET
+        instance_id = excluded.instance_id,
+        status = excluded.status,
+        votes_for = excluded.votes_for,
+        votes_against = excluded.votes_against,
+        total_votes = excluded.total_votes,
+        voting_ends_at = excluded.voting_ends_at,
+        tx_hash = excluded.tx_hash,
+        block_number = excluded.block_number,
+        log_index = excluded.log_index
+      `,
+      values,
+    );
+
+    totalInserted += batch.length;
+  }
+
+  return totalInserted;
+}
+
 export async function updateSyncState(
   block: bigint,
   attemptAt: string,

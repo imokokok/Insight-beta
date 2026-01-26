@@ -3,6 +3,7 @@ import { cachedJson, handleApi, rateLimit } from '@/server/apiResponse';
 import { z } from 'zod';
 import { getMemoryStore } from '@/server/memoryBackend';
 import { DEFAULT_ORACLE_INSTANCE_ID } from '@/server/oracleConfig';
+import { globalApiCache } from '@/server/lruCache';
 
 const chartsParamsSchema = z.object({
   days: z.coerce.number().min(1).max(365).default(30),
@@ -27,6 +28,12 @@ export async function GET(request: Request) {
     const rawParams = Object.fromEntries(url.searchParams);
     const { days } = chartsParamsSchema.parse(rawParams);
     const instanceId = url.searchParams.get('instanceId')?.trim() || DEFAULT_ORACLE_INSTANCE_ID;
+
+    const cacheKey = `oracle_charts:${instanceId}:${days}`;
+    const cached = globalApiCache.get(cacheKey);
+    if (cached) {
+      return Response.json(cached);
+    }
 
     const compute = async () => {
       if (!hasDatabase()) {
@@ -54,7 +61,7 @@ export async function GET(request: Request) {
 
       const res = await query(
         `
-        SELECT 
+        SELECT
           DATE(asserted_at) as date,
           COUNT(*) as count,
           SUM(bond_usd) as volume
@@ -76,7 +83,11 @@ export async function GET(request: Request) {
       });
     };
 
-    const cacheKey = `oracle_api:${url.pathname}${url.search}`;
-    return await cachedJson(cacheKey, 30_000, compute);
+    const apiCacheKey = `oracle_api:${url.pathname}${url.search}`;
+    const result = await cachedJson(apiCacheKey, 30_000, compute);
+
+    globalApiCache.set(cacheKey, result, 45_000);
+
+    return Response.json(result);
   });
 }
