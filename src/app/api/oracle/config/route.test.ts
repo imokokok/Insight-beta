@@ -193,7 +193,10 @@ describe('PUT /api/oracle/config', () => {
 
     const response = (await PUT(request)) as { ok: boolean; error?: unknown };
     expect(response.ok).toBe(false);
-    expect(response.error).toEqual({ code: 'invalid_request_body' });
+    expect(response.error).toEqual({
+      code: 'invalid_request_body',
+      details: { message: 'Failed to parse JSON' },
+    });
   });
 
   it('rejects non-object body', async () => {

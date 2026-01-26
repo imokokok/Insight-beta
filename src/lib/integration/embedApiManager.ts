@@ -581,8 +581,16 @@ export function createEmbedWidget(
   const code = embedApiManager.generateWidgetCode(widgetType, options);
   const container = document.getElementById(containerId);
   if (container) {
-    container.innerHTML = code;
+    container.innerHTML = sanitizeHtmlForEmbed(code);
   }
+}
+
+function sanitizeHtmlForEmbed(html: string): string {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const scriptTags = doc.querySelectorAll('script');
+  scriptTags.forEach((script) => script.remove());
+  return doc.body.innerHTML;
 }
 
 export function initializeEmbed(configId: string, token: string, container: HTMLElement): void {
@@ -590,7 +598,10 @@ export function initializeEmbed(configId: string, token: string, container: HTML
   const embedToken = embedApiManager.validateEmbedToken(token);
 
   if (!config || !embedToken) {
-    container.innerHTML = '<div class="error">Invalid embed configuration</div>';
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error';
+    errorDiv.textContent = 'Invalid embed configuration';
+    container.appendChild(errorDiv);
     return;
   }
 

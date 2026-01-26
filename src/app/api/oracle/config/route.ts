@@ -53,20 +53,45 @@ export async function PUT(request: Request) {
     const url = new URL(request.url);
     const instanceId = url.searchParams.get('instanceId');
 
-    const parsed = (await request.json().catch(() => null)) as unknown;
+    let parsed: unknown;
+    try {
+      parsed = await request.json();
+    } catch {
+      return error({ code: 'invalid_request_body', details: { message: 'Failed to parse JSON' } }, 400);
+    }
+
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
       return error({ code: 'invalid_request_body' }, 400);
     }
-    const body = parsed as Partial<OracleConfig>;
+
+    const body = parsed as Record<string, unknown>;
+    const safeBody: Partial<OracleConfig> = {};
+
+    const allowedFields: Array<keyof OracleConfig> = [
+      'rpcUrl',
+      'contractAddress',
+      'chain',
+      'startBlock',
+      'maxBlockRange',
+      'votingPeriodHours',
+      'confirmationBlocks',
+    ];
+
+    for (const field of allowedFields) {
+      if (field in body) {
+        (safeBody as Record<string, unknown>)[field] = body[field];
+      }
+    }
+
     try {
       const patch = validateOracleConfigPatch({
-        rpcUrl: body.rpcUrl,
-        contractAddress: body.contractAddress,
-        chain: body.chain,
-        startBlock: body.startBlock,
-        maxBlockRange: body.maxBlockRange,
-        votingPeriodHours: body.votingPeriodHours,
-        confirmationBlocks: body.confirmationBlocks,
+        rpcUrl: safeBody.rpcUrl,
+        contractAddress: safeBody.contractAddress,
+        chain: safeBody.chain,
+        startBlock: safeBody.startBlock,
+        maxBlockRange: safeBody.maxBlockRange,
+        votingPeriodHours: safeBody.votingPeriodHours,
+        confirmationBlocks: safeBody.confirmationBlocks,
       });
       const updated = instanceId
         ? await writeOracleConfig(patch, instanceId)

@@ -50,6 +50,9 @@ export class RealtimeClient {
   private lastHeartbeat: number = Date.now();
   private messageCount: number = 0;
   private errorCount: number = 0;
+  private boundOnMessage: ((event: MessageEvent) => void) | null = null;
+  private boundOnHeartbeat: (() => void) | null = null;
+  private boundOnError: ((event: Event) => void) | null = null;
 
   constructor(private url: string = '/api/events') {}
 
@@ -87,6 +90,27 @@ export class RealtimeClient {
   private setupEventHandlers(fullUrl: string): void {
     if (!this.eventSource) return;
 
+    this.boundOnMessage = (event: MessageEvent) => {
+      this.handleMessage(event);
+    };
+    this.boundOnHeartbeat = () => {
+      this.lastHeartbeat = Date.now();
+      logger.debug('Realtime heartbeat received');
+    };
+    this.boundOnError = (event: Event) => {
+      this.errorCount++;
+      logger.error('Realtime connection error', {
+        event,
+        attempt: this.reconnectAttempts,
+        errorCount: this.errorCount,
+      });
+
+      if (this.connectionStatus !== 'disconnected') {
+        this.updateConnectionStatus('disconnected');
+        this.scheduleReconnect(this.getInstanceIdFromUrl(fullUrl));
+      }
+    };
+
     this.eventSource.onopen = () => {
       this.updateConnectionStatus('connected');
       this.reconnectAttempts = 0;
@@ -98,28 +122,10 @@ export class RealtimeClient {
       });
     };
 
-    this.eventSource.onerror = (error) => {
-      this.errorCount++;
-      logger.error('Realtime connection error', {
-        error,
-        attempt: this.reconnectAttempts,
-        errorCount: this.errorCount,
-      });
+    this.eventSource.onerror = this.boundOnError;
 
-      if (this.connectionStatus !== 'disconnected') {
-        this.updateConnectionStatus('disconnected');
-        this.scheduleReconnect(this.getInstanceIdFromUrl(fullUrl));
-      }
-    };
-
-    this.eventSource.addEventListener('message', (event) => {
-      this.handleMessage(event);
-    });
-
-    this.eventSource.addEventListener('heartbeat', () => {
-      this.lastHeartbeat = Date.now();
-      logger.debug('Realtime heartbeat received');
-    });
+    this.eventSource.addEventListener('message', this.boundOnMessage);
+    this.eventSource.addEventListener('heartbeat', this.boundOnHeartbeat);
   }
 
   private handleMessage(event: MessageEvent): void {
@@ -244,6 +250,18 @@ export class RealtimeClient {
     }
 
     if (this.eventSource) {
+      if (this.boundOnMessage) {
+        this.eventSource.removeEventListener('message', this.boundOnMessage);
+        this.boundOnMessage = null;
+      }
+      if (this.boundOnHeartbeat) {
+        this.eventSource.removeEventListener('heartbeat', this.boundOnHeartbeat);
+        this.boundOnHeartbeat = null;
+      }
+      if (this.boundOnError) {
+        this.eventSource.onerror = null;
+        this.boundOnError = null;
+      }
       this.eventSource.close();
       this.eventSource = null;
       this.updateConnectionStatus('disconnected');

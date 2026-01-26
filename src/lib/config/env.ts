@@ -154,6 +154,15 @@ export const env = {
   get INSIGHT_DEX_PRICE_INVERT() {
     return (process.env.INSIGHT_DEX_PRICE_INVERT ?? '').trim();
   },
+  get INSIGHT_FALLBACK_BTC_PRICE() {
+    return (process.env.INSIGHT_FALLBACK_BTC_PRICE ?? '').trim();
+  },
+  get INSIGHT_FALLBACK_ETH_PRICE() {
+    return (process.env.INSIGHT_FALLBACK_ETH_PRICE ?? '').trim();
+  },
+  get INSIGHT_FALLBACK_DEFAULT_PRICE() {
+    return (process.env.INSIGHT_FALLBACK_DEFAULT_PRICE ?? '').trim();
+  },
   get POLYGON_AMOY_RPC_URL() {
     return (process.env.POLYGON_AMOY_RPC_URL ?? '').trim();
   },
@@ -319,6 +328,18 @@ const envSchema = z.object({
       .optional(),
   ),
   INSIGHT_DEX_PRICE_INVERT: z.enum(['true', 'false', '1', '0']).optional(),
+  INSIGHT_FALLBACK_BTC_PRICE: z.preprocess(
+    (v) => (v === '' ? undefined : v),
+    z.coerce.number().positive().optional(),
+  ),
+  INSIGHT_FALLBACK_ETH_PRICE: z.preprocess(
+    (v) => (v === '' ? undefined : v),
+    z.coerce.number().positive().optional(),
+  ),
+  INSIGHT_FALLBACK_DEFAULT_PRICE: z.preprocess(
+    (v) => (v === '' ? undefined : v),
+    z.coerce.number().positive().optional(),
+  ),
   INSIGHT_BASE_URL: z.string().url().optional(),
   INSIGHT_CSP_MODE: z.enum(['relaxed', 'strict']).optional(),
   NEXT_PUBLIC_INSIGHT_ORACLE_ADDRESS: z

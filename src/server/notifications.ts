@@ -35,6 +35,15 @@ export interface NotificationOptions {
  * @param options - Optional configuration for notification delivery
  * @returns Promise that resolves when all notifications are sent
  */
+export interface NotificationResult {
+  success: boolean;
+  channelResults: Array<{
+    channel: NotificationChannel;
+    success: boolean;
+    error?: string;
+  }>;
+}
+
 export async function notifyAlert(
   alert: {
     title: string;
@@ -43,21 +52,36 @@ export async function notifyAlert(
     fingerprint: string;
   },
   options?: NotificationOptions,
-) {
+): Promise<NotificationResult> {
   const channels = options?.channels || ['webhook'];
+  const channelResults: NotificationResult['channelResults'] = [];
+
   for (const channel of channels) {
+    let success = false;
+    let errorMsg: string | undefined;
+
     try {
       if (channel === 'webhook') await sendWebhookNotification(alert);
       if (channel === 'email') await sendEmailNotification(alert, options?.recipient);
       if (channel === 'telegram') await sendTelegramNotification(alert);
+      success = true;
     } catch (error) {
+      errorMsg = error instanceof Error ? error.message : String(error);
       logger.error('Notification channel failed', {
         channel,
         error,
         fingerprint: alert.fingerprint,
       });
     }
+
+    channelResults.push({ channel, success, error: errorMsg });
   }
+
+  const allSuccessful = channelResults.every((r) => r.success);
+  return {
+    success: allSuccessful,
+    channelResults,
+  };
 }
 
 let smtpTransport: Transporter | null = null;

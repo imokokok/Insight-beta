@@ -1,4 +1,16 @@
 import { hasDatabase, query } from './db';
+import { logger } from '@/lib/logger';
+
+async function safeRollback() {
+  try {
+    await query('ROLLBACK');
+  } catch (rollbackError) {
+    logger.error('Failed to rollback transaction', {
+      error: rollbackError instanceof Error ? rollbackError.message : String(rollbackError),
+    });
+    throw rollbackError;
+  }
+}
 
 export async function ensureSchema() {
   if (!hasDatabase()) return;
@@ -261,8 +273,11 @@ export async function ensureSchema() {
       ALTER TABLE assertions ALTER COLUMN instance_id SET NOT NULL;
     `);
     await query('COMMIT');
-  } catch {
-    await query('ROLLBACK').catch(() => null);
+  } catch (e) {
+    await safeRollback();
+    logger.error('Migration failed for assertions instance_id', {
+      error: e instanceof Error ? e.message : String(e),
+    });
     throw new Error('Failed to migrate assertions instance_id');
   }
 
@@ -283,8 +298,11 @@ export async function ensureSchema() {
       ALTER TABLE disputes ALTER COLUMN instance_id SET NOT NULL;
     `);
     await query('COMMIT');
-  } catch {
-    await query('ROLLBACK').catch(() => null);
+  } catch (e) {
+    await safeRollback();
+    logger.error('Migration failed for disputes instance_id', {
+      error: e instanceof Error ? e.message : String(e),
+    });
     throw new Error('Failed to migrate disputes instance_id');
   }
 
@@ -302,8 +320,11 @@ export async function ensureSchema() {
       ALTER TABLE votes ALTER COLUMN instance_id SET NOT NULL;
     `);
     await query('COMMIT');
-  } catch {
-    await query('ROLLBACK').catch(() => null);
+  } catch (e) {
+    await safeRollback();
+    logger.error('Migration failed for votes instance_id', {
+      error: e instanceof Error ? e.message : String(e),
+    });
     throw new Error('Failed to migrate votes instance_id');
   }
 

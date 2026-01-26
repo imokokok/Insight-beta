@@ -90,13 +90,17 @@ type MemoryStore = {
   nextAuditId: number;
 };
 
+// Import at the top to avoid circular dependencies
+import { env } from '@/lib/config/env';
+
 function createDefaultConfig(): OracleConfig {
-  // Import env here to avoid circular dependencies
-  const { env } = require('@/lib/config/env');
+  const chainEnv = env.INSIGHT_CHAIN;
+  const validChains: OracleChain[] = ['Polygon', 'PolygonAmoy', 'Arbitrum', 'Optimism', 'Local'];
+  const chain: OracleChain = validChains.includes(chainEnv as OracleChain) ? (chainEnv as OracleChain) : 'Local';
   return {
     rpcUrl: env.INSIGHT_RPC_URL,
     contractAddress: env.INSIGHT_ORACLE_ADDRESS,
-    chain: env.INSIGHT_CHAIN || 'Local',
+    chain,
     startBlock: 0,
     maxBlockRange: 10_000,
     votingPeriodHours: 72,

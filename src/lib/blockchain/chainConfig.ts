@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { arbitrum, hardhat, mainnet, optimism, polygon, polygonAmoy } from 'viem/chains';
 
 export const CHAIN_CONFIG = {
@@ -36,7 +37,12 @@ export const CHAIN_CONFIG = {
 export type ChainId = keyof typeof CHAIN_CONFIG;
 
 export function getChainConfig(chainId: number) {
-  return CHAIN_CONFIG[chainId as ChainId] || CHAIN_CONFIG[mainnet.id];
+  const config = CHAIN_CONFIG[chainId as ChainId];
+  if (!config) {
+    logger.warn(`Unknown chain ID: ${chainId}, falling back to mainnet`);
+    return CHAIN_CONFIG[mainnet.id];
+  }
+  return config;
 }
 
 export function getChainSymbol(chainId: number): string {

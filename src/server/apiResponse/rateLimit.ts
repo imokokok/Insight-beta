@@ -141,12 +141,26 @@ async function rateLimitDb(
   const bucketKey = `${opts.key}:${clientId}`;
   if (now - lastRatePruneAtMs > 5 * 60_000) {
     lastRatePruneAtMs = now;
-    await query(`
-      WITH expired AS (
-        SELECT key FROM rate_limits WHERE reset_at <= NOW() LIMIT 2000
-      )
-      DELETE FROM rate_limits WHERE key IN (SELECT key FROM expired)
-    `).catch(() => null);
+    let deletedCount = 0;
+    let totalDeleted = 0;
+    const maxBatchSize = 10000;
+    const maxTotalDelete = 100000;
+    do {
+      deletedCount = 0;
+      try {
+        const res = await query<{ count: number }>(`
+          WITH expired AS (
+            SELECT key FROM rate_limits WHERE reset_at <= NOW() LIMIT ${maxBatchSize}
+          )
+          DELETE FROM rate_limits WHERE key IN (SELECT key FROM expired)
+          RETURNING (SELECT COUNT(*) FROM deleted)
+        `);
+        deletedCount = Number(res.rows[0]?.count ?? 0);
+        totalDeleted += deletedCount;
+      } catch {
+        break;
+      }
+    } while (deletedCount >= maxBatchSize && totalDeleted < maxTotalDelete);
   }
   const res = await query<{ count: number; reset_at: Date }>(
     `

@@ -80,9 +80,55 @@ class RealTimeConnectionManager {
   private subscribedEvents: Set<RealTimeEventType> = new Set();
   private isManuallyClosed: boolean = false;
   private reconnectAttempts: number = 0;
+  private boundEventHandlers: Map<RealTimeEventType, (e: MessageEvent) => void> = new Map();
+  private boundOnMessage: ((event: MessageEvent) => void) | null = null;
+  private boundOnError: ((event: Event) => void) | null = null;
 
   constructor(options: UseRealTimeOptions) {
     this.options = options;
+  }
+
+  private setupEventSource(url: string): void {
+    this.eventSource = new EventSource(url);
+
+    this.boundOnMessage = (event: MessageEvent) => {
+      try {
+        const data = JSON.parse(event.data) as RealTimeEvent;
+        logger.debug('Real-time event received', { type: data.type });
+        this.options.onEvent?.(data);
+      } catch (error) {
+        logger.error('Failed to parse real-time event', { error, data: event.data });
+      }
+    };
+
+    this.boundOnError = (event: Event) => {
+      logger.error('Real-time connection error', { event });
+      this.options.onError?.(event);
+      this.handleReconnect();
+    };
+
+    this.eventSource.onopen = () => {
+      this.reconnectAttempts = 0;
+      logger.info('Real-time connection established');
+    };
+
+    this.eventSource.onmessage = this.boundOnMessage;
+    this.eventSource.onerror = this.boundOnError;
+
+    this.boundEventHandlers.clear();
+    REAL_TIME_EVENT_TYPES.forEach((eventType) => {
+      const handler = (e: MessageEvent) => {
+        try {
+          const data = JSON.parse(e.data) as RealTimeEvent;
+          logger.debug(`Real-time event ${eventType} received`);
+          this.options.onEvent?.(data);
+        } catch (error) {
+          logger.error(`Failed to parse ${eventType} event`, { error });
+        }
+      };
+      this.boundEventHandlers.set(eventType, handler);
+      this.eventSource?.addEventListener(eventType, handler);
+    });
   }
 
   connect(): void {
@@ -95,45 +141,12 @@ class RealTimeConnectionManager {
 
     try {
       const url = new URL(this.options.url, window.location.origin);
-      
+
       if (this.subscribedEvents.size > 0) {
         url.searchParams.set('events', Array.from(this.subscribedEvents).join(','));
       }
 
-      this.eventSource = new EventSource(url.toString());
-
-      this.eventSource.onopen = () => {
-        this.reconnectAttempts = 0;
-        logger.info('Real-time connection established');
-      };
-
-      this.eventSource.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data) as RealTimeEvent;
-          logger.debug('Real-time event received', { type: data.type });
-          this.options.onEvent?.(data);
-        } catch (error) {
-          logger.error('Failed to parse real-time event', { error, data: event.data });
-        }
-      };
-
-      this.eventSource.onerror = (error) => {
-        logger.error('Real-time connection error', { error });
-        this.options.onError?.(error);
-        this.handleReconnect();
-      };
-
-      REAL_TIME_EVENT_TYPES.forEach((eventType) => {
-        this.eventSource?.addEventListener(eventType, (e: MessageEvent) => {
-          try {
-            const data = JSON.parse(e.data) as RealTimeEvent;
-            logger.debug(`Real-time event ${eventType} received`);
-            this.options.onEvent?.(data);
-          } catch (error) {
-            logger.error(`Failed to parse ${eventType} event`, { error });
-          }
-        });
-      });
+      this.setupEventSource(url.toString());
 
       this.startHeartbeat();
     } catch (error) {
@@ -183,6 +196,18 @@ class RealTimeConnectionManager {
     }
 
     if (this.eventSource) {
+      if (this.boundOnMessage) {
+        this.eventSource.onmessage = null;
+        this.boundOnMessage = null;
+      }
+      if (this.boundOnError) {
+        this.eventSource.onerror = null;
+        this.boundOnError = null;
+      }
+      this.boundEventHandlers.forEach((handler, eventType) => {
+        this.eventSource?.removeEventListener(eventType, handler);
+      });
+      this.boundEventHandlers.clear();
       this.eventSource.close();
       this.eventSource = null;
       this.options.onDisconnect?.();
@@ -196,7 +221,7 @@ class RealTimeConnectionManager {
       const url = new URL(this.options.url, window.location.origin);
       url.searchParams.set('events', Array.from(this.subscribedEvents).join(','));
       this.eventSource.close();
-      this.eventSource = new EventSource(url.toString());
+      this.setupEventSource(url.toString());
     }
   }
 

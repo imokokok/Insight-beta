@@ -715,55 +715,69 @@ export function createUMAOracleConfig(
   chainId: number,
   overrides?: Partial<UMAOracleConfig>,
 ): UMAOracleConfig {
-  const defaultConfigs: Record<number, UMAOracleConfig> = {
-    1: {
-      chainId: 1,
-      chainName: 'Ethereum Mainnet',
-      rpcUrl: 'https://eth-mainnet.g.alchemy.com/v2/demo',
-      finderAddress: '0x40f7A8d8e92818e1d23b405B87F6d69aAD1Eb96e',
-      defaultIdentifier: 'UMIP-128',
-    },
-    137: {
-      chainId: 137,
-      chainName: 'Polygon Mainnet',
-      rpcUrl: 'https://polygon-mainnet.g.alchemy.com/v2/demo',
-      finderAddress: '0x40f7A8d8e92818e1d23b405B87F6d69aAD1Eb96e',
-      defaultIdentifier: 'UMIP-128',
-    },
-    42161: {
-      chainId: 42161,
-      chainName: 'Arbitrum One',
-      rpcUrl: 'https://arb-mainnet.g.alchemy.com/v2/demo',
-      finderAddress: '0x40f7A8d8e92818e1d23b405B87F6d69aAD1Eb96e',
-      defaultIdentifier: 'UMIP-128',
-    },
-    10: {
-      chainId: 10,
-      chainName: 'Optimism',
-      rpcUrl: 'https://opt-mainnet.g.alchemy.com/v2/demo',
-      finderAddress: '0x40f7A8d8e92818e1d23b405B87F6d69aAD1Eb96e',
-      defaultIdentifier: 'UMIP-128',
-    },
-    80002: {
-      chainId: 80002,
-      chainName: 'Polygon Amoy',
-      rpcUrl: 'https://polygon-amoy.g.alchemy.com/v2/demo',
-      finderAddress: '0x40f7A8d8e92818e1d23b405B87F6d69aAD1Eb96e',
-      defaultIdentifier: 'UMIP-128',
-    },
+  const getRpcUrl = (chainKey: string): string => {
+    const envKey = `UMA_${chainKey}_RPC_URL`;
+    const envUrl = process.env[envKey];
+    if (envUrl && envUrl.trim()) {
+      return envUrl.trim();
+    }
+    const fallbackKey = `INSIGHT_${chainKey}_RPC_URL`;
+    const fallbackUrl = process.env[fallbackKey];
+    if (fallbackUrl && fallbackUrl.trim()) {
+      return fallbackUrl.trim();
+    }
+    return '';
   };
 
-  // Get default config or create a minimal one if chainId not found
-  const baseConfig = defaultConfigs[chainId] || {
+  const getFinderAddress = (chainKey: string): Address => {
+    const envKey = `UMA_${chainKey}_FINDER_ADDRESS`;
+    const envAddress = process.env[envKey];
+    if (envAddress && /^0x[a-fA-F0-9]{40}$/.test(envAddress)) {
+      return envAddress as Address;
+    }
+    return '0x0000000000000000000000000000000000000000' as Address;
+  };
+
+  const getOOAddress = (chainKey: string, version: 'v2' | 'v3'): Address | undefined => {
+    const envKey = `UMA_${chainKey}_OPTIMISTIC_ORACLE_${version.toUpperCase()}_ADDRESS`;
+    const envAddress = process.env[envKey];
+    if (envAddress && /^0x[a-fA-F0-9]{40}$/.test(envAddress)) {
+      return envAddress as Address;
+    }
+    return undefined;
+  };
+
+  const chainConfigs: Record<number, { name: string; key: string; ooV3?: Address; ooV2?: Address }> = {
+    1: { name: 'Ethereum Mainnet', key: 'ETHEREUM', ooV3: '0xA5B9d8a0B0Fa04B710D7ee40D90d2551E58d0F65' },
+    137: { name: 'Polygon Mainnet', key: 'POLYGON', ooV3: '0xDd46919fE564dE5bC5Cfc966aF2B79dc5A60A73d1' },
+    42161: { name: 'Arbitrum One', key: 'ARBITRUM', ooV3: '0x2d0D2cB02b5eBA6e82b8277BDeF58612f650B401' },
+    10: { name: 'Optimism', key: 'OPTIMISM', ooV3: '0x0335B4C63c688d560C24c80295a6Ca09C5eC93d4' },
+    80002: { name: 'Polygon Amoy', key: 'POLYGON_AMOY' },
+  };
+
+  const chainConfig = chainConfigs[chainId];
+  if (!chainConfig) {
+    return {
+      chainId,
+      chainName: `Chain ${chainId}`,
+      rpcUrl: getRpcUrl('UNKNOWN'),
+      finderAddress: getFinderAddress('UNKNOWN'),
+      defaultIdentifier: 'UMIP-128',
+    } as UMAOracleConfig;
+  }
+
+  const config: UMAOracleConfig = {
     chainId,
-    chainName: `Chain ${chainId}`,
-    rpcUrl: '',
-    finderAddress: '0x0000000000000000000000000000000000000000',
+    chainName: chainConfig.name,
+    rpcUrl: getRpcUrl(chainConfig.key),
+    finderAddress: getFinderAddress(chainConfig.key),
+    optimisticOracleV3Address: getOOAddress(chainConfig.key, 'v3') || chainConfig.ooV3,
+    optimisticOracleV2Address: getOOAddress(chainConfig.key, 'v2') || chainConfig.ooV2,
     defaultIdentifier: 'UMIP-128',
   };
 
   return {
-    ...baseConfig,
+    ...config,
     ...overrides,
   } as UMAOracleConfig;
 }

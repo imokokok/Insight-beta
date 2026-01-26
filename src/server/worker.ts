@@ -156,8 +156,9 @@ async function tickWorker() {
       return Math.min(30 * 24 * 60 * 60_000, Math.max(60_000, Math.round(raw)));
     };
 
-    const instances = (await listOracleInstances()).filter((i) => i.enabled);
-    for (const inst of instances) {
+    const instances = await listOracleInstances();
+    const enabledInstances = instances.filter((i) => i.enabled);
+    for (const inst of enabledInstances) {
       const instanceId = inst.id;
       try {
         if (isOracleSyncing(instanceId)) continue;

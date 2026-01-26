@@ -3,6 +3,12 @@ import { getMemoryStore, memoryNowIso } from '@/server/memoryBackend';
 
 const MEMORY_MAX_KV_KEYS = 2000;
 
+const SANITIZE_KEY_REGEX = /[^a-zA-Z0-9_\-/.]/g;
+
+function sanitizePrefixForLike(prefix: string): string {
+  return prefix.replace(SANITIZE_KEY_REGEX, '').replace(/%/g, '').replace(/_/g, '');
+}
+
 export async function readJsonFile<T>(key: string, defaultValue: T): Promise<T> {
   if (!hasDatabase()) {
     const mem = getMemoryStore();
@@ -81,8 +87,9 @@ export async function listJsonKeys({
   const conditions: string[] = [];
 
   if (prefix) {
+    const sanitizedPrefix = sanitizePrefixForLike(prefix);
     conditions.push(`key LIKE $${params.length + 1}`);
-    params.push(`${prefix}%`);
+    params.push(`${sanitizedPrefix}%`);
   }
 
   if (conditions.length > 0) {

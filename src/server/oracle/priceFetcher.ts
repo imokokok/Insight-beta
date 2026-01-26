@@ -1,6 +1,13 @@
+import crypto from 'crypto';
 import { env } from '@/lib/config/env';
 import { parseRpcUrls } from '@/lib/utils';
 import { createPublicClient, http, parseAbi } from 'viem';
+
+function secureRandom(): number {
+  const bytes = crypto.randomBytes(4);
+  const num = bytes.readUInt32BE(0);
+  return num / 0x100000000;
+}
 
 export interface PricePoint {
   timestamp: string;
@@ -59,7 +66,12 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
       cache: 'no-store',
     });
     if (!res.ok) {
-      const text = await res.text().catch(() => '');
+      let text = '';
+      try {
+        text = await res.text();
+      } catch {
+        text = 'Failed to read response body';
+      }
       throw new Error(`http_${res.status}:${text.slice(0, 200)}`);
     }
     return (await res.json()) as T;
@@ -76,7 +88,13 @@ function normalizeSymbol(raw: string) {
 
 function fallbackSpotUsd(sym: string) {
   const symbol = normalizeSymbol(sym);
-  return symbol === 'BTC' ? 65000 : symbol === 'ETH' ? 3500 : 100;
+  const rawBtc = env.INSIGHT_FALLBACK_BTC_PRICE;
+  const rawEth = env.INSIGHT_FALLBACK_ETH_PRICE;
+  const rawDefault = env.INSIGHT_FALLBACK_DEFAULT_PRICE;
+  const fallbackBtc = rawBtc ? Number(rawBtc) : 65000;
+  const fallbackEth = rawEth ? Number(rawEth) : 3500;
+  const fallbackDefault = rawDefault ? Number(rawDefault) : 100;
+  return symbol === 'BTC' ? fallbackBtc : symbol === 'ETH' ? fallbackEth : fallbackDefault;
 }
 
 function toBinanceSymbol(sym: string) {
@@ -420,7 +438,7 @@ function syntheticSpotUsd(sym: string) {
   const basePrice = symbol === 'BTC' ? 65000 : symbol === 'ETH' ? 3500 : symbol ? 100 : 3500;
   const time = Date.now();
   const trend = Math.sin(time / (24 * 60 * 60 * 1000 * 7)) * (basePrice * 0.1);
-  const noise = (Math.random() - 0.5) * (basePrice * 0.02);
+  const noise = (secureRandom() - 0.5) * (basePrice * 0.02);
   const refPrice = basePrice + trend + noise;
   return Number(refPrice.toFixed(2));
 }
@@ -437,10 +455,10 @@ function generateMockHistory(symbol: string, safeDays: number): PricePoint[] {
     const time = now - i * msPerDay;
     const date = new Date(time).toISOString();
     const trend = Math.sin(time / (msPerDay * 7)) * (basePrice * 0.1);
-    const noise = (Math.random() - 0.5) * (basePrice * 0.02);
+    const noise = (secureRandom() - 0.5) * (basePrice * 0.02);
     const refPrice = basePrice + trend + noise;
-    const deviationEvent = Math.random() > 0.9 ? basePrice * 0.03 : 0;
-    const oraclePrice = refPrice + (Math.random() - 0.5) * (basePrice * 0.01) + deviationEvent;
+    const deviationEvent = secureRandom() > 0.9 ? basePrice * 0.03 : 0;
+    const oraclePrice = refPrice + (secureRandom() - 0.5) * (basePrice * 0.01) + deviationEvent;
     const deviation = Math.abs(oraclePrice - refPrice) / refPrice;
 
     points.push({
@@ -572,8 +590,8 @@ export async function fetchCurrentPrice(
   const refPrice = syntheticSpotUsd(symbol);
   const basePrice =
     normalizeSymbol(symbol) === 'BTC' ? 65000 : normalizeSymbol(symbol) === 'ETH' ? 3500 : 100;
-  const deviationEvent = Math.random() > 0.9 ? basePrice * 0.03 : 0;
-  const oraclePrice = refPrice + (Math.random() - 0.5) * (basePrice * 0.01) + deviationEvent;
+  const deviationEvent = secureRandom() > 0.9 ? basePrice * 0.03 : 0;
+  const oraclePrice = refPrice + (secureRandom() - 0.5) * (basePrice * 0.01) + deviationEvent;
   return {
     referencePrice: refPrice,
     oraclePrice: Number(oraclePrice.toFixed(2)),
