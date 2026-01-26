@@ -46,6 +46,30 @@ export interface ReportMetadata {
   template?: string;
 }
 
+export interface Assertion {
+  id: string;
+  market: string;
+  status: string;
+  assertedAt: string;
+  bondUsd: string | number;
+}
+
+export interface Dispute {
+  id: string;
+  assertionId: string;
+  disputer: string;
+  reason: string;
+  status: string;
+}
+
+export interface Alert {
+  id: string;
+  type: string;
+  severity: string;
+  status: string;
+  createdAt: string;
+}
+
 export interface ReportTemplate {
   id: string;
   name: string;
@@ -713,9 +737,9 @@ export function addReportTemplate(template: ReportTemplate): void {
 export function createOracleReport(
   data: {
     stats: Record<string, unknown>;
-    assertions: unknown[];
-    disputes: unknown[];
-    alerts: unknown[];
+    assertions: Assertion[];
+    disputes: Dispute[];
+    alerts: Alert[];
   },
   instanceId?: string,
   templateId?: string,
@@ -770,7 +794,7 @@ export function createOracleReport(
             headers: ["ID", "Market", "Status", "Created At", "Bond (USD)"],
             rows: data.assertions
               .slice(0, 10)
-              .map((a: any) => [
+              .map((a: Assertion) => [
                 a.id || "N/A",
                 a.market || "N/A",
                 a.status || "N/A",
@@ -792,7 +816,7 @@ export function createOracleReport(
             headers: ["ID", "Assertion ID", "Disputer", "Reason", "Status"],
             rows: data.disputes
               .slice(0, 10)
-              .map((d: any) => [
+              .map((d: Dispute) => [
                 d.id || "N/A",
                 d.assertionId || "N/A",
                 d.disputer || "N/A",
@@ -814,7 +838,7 @@ export function createOracleReport(
             headers: ["ID", "Type", "Severity", "Status", "Created At"],
             rows: data.alerts
               .slice(0, 10)
-              .map((a: any) => [
+              .map((a: Alert) => [
                 a.id || "N/A",
                 a.type || "N/A",
                 a.severity || "N/A",

@@ -73,7 +73,8 @@ export async function listJsonKeys({
     const slice = filtered.slice(start, end);
     return {
       items: slice.map((key) => {
-        const item = mem.kv.get(key)!;
+        const item = mem.kv.get(key);
+        if (!item) throw new Error(`Key ${key} not found in memory store`);
         return { key, value: item.value, updatedAt: item.updatedAt };
       }),
       total: filtered.length,

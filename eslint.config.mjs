@@ -22,6 +22,7 @@ const config = [
       "coverage/**",
       "tests/**",
       "playwright.config.ts",
+      "node_modules/**",
     ],
     rules: {
       "no-loss-of-precision": "off",
@@ -63,6 +64,9 @@ const config = [
         { argsIgnorePattern: "^_" },
       ],
       "@typescript-eslint/consistent-type-imports": "warn",
+      "@typescript-eslint/no-non-null-assertion": "warn",
+      "@typescript-eslint/explicit-function-return-type": "off",
+      "@typescript-eslint/explicit-module-boundary-types": "off",
     },
   },
   {
