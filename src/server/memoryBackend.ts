@@ -91,10 +91,12 @@ type MemoryStore = {
 };
 
 function createDefaultConfig(): OracleConfig {
+  // Import env here to avoid circular dependencies
+  const { env } = require('@/lib/config/env');
   return {
-    rpcUrl: '',
-    contractAddress: '',
-    chain: 'Local',
+    rpcUrl: env.INSIGHT_RPC_URL,
+    contractAddress: env.INSIGHT_ORACLE_ADDRESS,
+    chain: env.INSIGHT_CHAIN || 'Local',
     startBlock: 0,
     maxBlockRange: 10_000,
     votingPeriodHours: 72,
