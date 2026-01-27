@@ -3,6 +3,7 @@ import { GET } from './route';
 import { rateLimit, cachedJson } from '@/server/apiResponse';
 import { hasDatabase } from '@/server/db';
 import { getMemoryStore } from '@/server/memoryBackend';
+import { globalApiCache } from '@/server/lruCache';
 
 vi.mock('@/server/db', () => ({
   hasDatabase: vi.fn(() => false),
@@ -28,6 +29,21 @@ vi.mock('@/server/memoryBackend', () => {
   memStore.instances.set('default', { assertions: new Map() });
   return {
     getMemoryStore: vi.fn(() => memStore),
+  };
+});
+
+vi.mock('@/server/lruCache', () => {
+  const map = new Map<string, unknown>();
+  return {
+    globalApiCache: {
+      get: vi.fn((key: string) => map.get(key)),
+      set: vi.fn((key: string, value: unknown) => {
+        map.set(key, value);
+      }),
+      clear: vi.fn(() => {
+        map.clear();
+      }),
+    },
   };
 });
 
@@ -64,6 +80,7 @@ vi.mock('@/server/apiResponse', () => ({
 describe('GET /api/oracle/charts', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    globalApiCache.clear();
   });
 
   it('returns chart data from memory backend', async () => {
@@ -105,7 +122,8 @@ describe('GET /api/oracle/charts', () => {
     });
 
     const request = new Request('http://localhost:3000/api/oracle/charts?days=7');
-    const response = (await GET(request)) as unknown as {
+    const raw = await GET(request);
+    const response = (await (raw as Response).json()) as unknown as {
       date: string;
       count: number;
       volume: number;
@@ -149,7 +167,8 @@ describe('GET /api/oracle/charts', () => {
     });
 
     const request = new Request('http://localhost:3000/api/oracle/charts?days=7');
-    const response = (await GET(request)) as unknown as {
+    const raw = await GET(request);
+    const response = (await (raw as Response).json()) as unknown as {
       date: string;
       count: number;
       volume: number;
@@ -221,7 +240,8 @@ describe('GET /api/oracle/charts', () => {
 
     // Test empty data in memory mode
     const request = new Request('http://localhost:3000/api/oracle/charts?days=7');
-    let response = (await GET(request)) as unknown as {
+    const raw = await GET(request);
+    let response = (await (raw as Response).json()) as unknown as {
       date: string;
       count: number;
       volume: number;
@@ -239,7 +259,8 @@ describe('GET /api/oracle/charts', () => {
     };
     queryMock.mockResolvedValue({ rows: [] });
 
-    response = (await GET(request)) as unknown as {
+    const rawDb = await GET(request);
+    response = (await (rawDb as Response).json()) as unknown as {
       date: string;
       count: number;
       volume: number;

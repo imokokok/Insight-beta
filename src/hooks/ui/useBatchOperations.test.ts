@@ -72,105 +72,104 @@ describe('useBatchOperations', () => {
 
   describe('toggleSelectAll', () => {
     it('should select all items when none are selected', () => {
-      const { toggleSelectAll, setItems, items, isAllSelected } = useBatchOperations<TestItem>();
+      const api = useBatchOperations<TestItem>();
 
-      setItems([
+      api.setItems([
         { id: '1', data: { id: '1', name: 'Test 1', value: 100 } },
         { id: '2', data: { id: '2', name: 'Test 2', value: 200 } },
       ]);
 
-      toggleSelectAll();
+      api.toggleSelectAll();
 
-      expect(isAllSelected).toBe(true);
-      expect(items.every((item) => item.selected)).toBe(true);
+      expect(api.isAllSelected).toBe(true);
+      expect(api.items.every((item) => item.selected)).toBe(true);
     });
 
     it('should deselect all items when all are selected', () => {
-      const { toggleSelectAll, setItems, items, isAllSelected } = useBatchOperations<TestItem>();
+      const api = useBatchOperations<TestItem>();
 
-      setItems([
+      api.setItems([
         { id: '1', data: { id: '1', name: 'Test 1', value: 100 } },
         { id: '2', data: { id: '2', name: 'Test 2', value: 200 } },
       ]);
 
-      toggleSelectAll();
-      toggleSelectAll();
+      api.toggleSelectAll();
+      api.toggleSelectAll();
 
-      expect(isAllSelected).toBe(false);
-      expect(items.every((item) => !item.selected)).toBe(true);
+      expect(api.isAllSelected).toBe(false);
+      expect(api.items.every((item) => !item.selected)).toBe(true);
     });
   });
 
   describe('selectItems', () => {
     it('should select specific items by IDs', () => {
-      const { selectItems, setItems, items } = useBatchOperations<TestItem>();
+      const api = useBatchOperations<TestItem>();
 
-      setItems([
+      api.setItems([
         { id: '1', data: { id: '1', name: 'Test 1', value: 100 } },
         { id: '2', data: { id: '2', name: 'Test 2', value: 200 } },
         { id: '3', data: { id: '3', name: 'Test 3', value: 300 } },
       ]);
 
-      selectItems(['1', '3']);
+      api.selectItems(['1', '3']);
 
-      expect(items[0]?.selected).toBe(true);
-      expect(items[1]?.selected).toBe(false);
-      expect(items[2]?.selected).toBe(true);
+      expect(api.items[0]?.selected).toBe(true);
+      expect(api.items[1]?.selected).toBe(false);
+      expect(api.items[2]?.selected).toBe(true);
     });
   });
 
   describe('deselectAll', () => {
     it('should deselect all items', () => {
-      const { deselectAll, toggleSelectAll, setItems, selectedCount } =
-        useBatchOperations<TestItem>();
+      const api = useBatchOperations<TestItem>();
 
-      setItems([
+      api.setItems([
         { id: '1', data: { id: '1', name: 'Test 1', value: 100 } },
         { id: '2', data: { id: '2', name: 'Test 2', value: 200 } },
       ]);
 
-      toggleSelectAll();
-      expect(selectedCount).toBe(2);
+      api.toggleSelectAll();
+      expect(api.selectedCount).toBe(2);
 
-      deselectAll();
-      expect(selectedCount).toBe(0);
+      api.deselectAll();
+      expect(api.selectedCount).toBe(0);
     });
   });
 
   describe('Max Selection Limit', () => {
     it('should respect maxSelectable limit', () => {
-      const { toggleSelect, setItems, selectedCount } = useBatchOperations<TestItem>({
+      const api = useBatchOperations<TestItem>({
         maxSelectable: 2,
       });
 
-      setItems([
+      api.setItems([
         { id: '1', data: { id: '1', name: 'Test 1', value: 100 } },
         { id: '2', data: { id: '2', name: 'Test 2', value: 200 } },
         { id: '3', data: { id: '3', name: 'Test 3', value: 300 } },
       ]);
 
-      toggleSelect('1');
-      toggleSelect('2');
-      expect(selectedCount).toBe(2);
+      api.toggleSelect('1');
+      api.toggleSelect('2');
+      expect(api.selectedCount).toBe(2);
 
-      toggleSelect('3');
-      expect(selectedCount).toBe(2);
+      api.toggleSelect('3');
+      expect(api.selectedCount).toBe(2);
     });
   });
 
   describe('selectedItems', () => {
     it('should return only selected items as data', () => {
-      const { toggleSelect, setItems, selectedItems } = useBatchOperations<TestItem>();
+      const api = useBatchOperations<TestItem>();
 
-      setItems([
+      api.setItems([
         { id: '1', data: { id: '1', name: 'Test 1', value: 100 } },
         { id: '2', data: { id: '2', name: 'Test 2', value: 200 } },
       ]);
 
-      toggleSelect('1');
+      api.toggleSelect('1');
 
-      expect(selectedItems).toHaveLength(1);
-      expect(selectedItems[0]).toHaveProperty('id', '1');
+      expect(api.selectedItems).toHaveLength(1);
+      expect(api.selectedItems[0]).toHaveProperty('id', '1');
     });
   });
 
@@ -191,33 +190,34 @@ describe('useBatchOperations', () => {
 
   describe('Indeterminate State', () => {
     it('should be indeterminate when some items are selected', () => {
-      const { toggleSelect, setItems, isIndeterminate } = useBatchOperations<TestItem>();
+      const api = useBatchOperations<TestItem>();
 
-      setItems([
+      api.setItems([
         { id: '1', data: { id: '1', name: 'Test 1', value: 100 } },
         { id: '2', data: { id: '2', name: 'Test 2', value: 200 } },
         { id: '3', data: { id: '3', name: 'Test 3', value: 300 } },
       ]);
 
-      toggleSelect('1');
+      api.toggleSelect('1');
 
-      expect(isIndeterminate).toBe(true);
+      expect(api.isIndeterminate).toBe(true);
     });
   });
 
   describe('isProcessing', () => {
     it('should track processing state', async () => {
-      const { processBatch, setItems, isProcessing } = useBatchOperations<TestItem>();
+      const api = useBatchOperations<TestItem>();
 
-      setItems([{ id: '1', data: { id: '1', name: 'Test 1', value: 100 } }]);
+      api.setItems([{ id: '1', data: { id: '1', name: 'Test 1', value: 100 } }]);
 
       const processor = vi.fn().mockResolvedValue({ success: true, data: { id: '1' } });
 
-      const promise = processBatch(processor);
-      expect(isProcessing).toBe(true);
+      const promise = api.processBatch(processor);
+      await Promise.resolve();
+      expect(api.isProcessing).toBe(true);
 
       await promise;
-      expect(isProcessing).toBe(false);
+      expect(api.isProcessing).toBe(false);
     });
   });
 });

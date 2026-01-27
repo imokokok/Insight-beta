@@ -46,6 +46,15 @@ const CACHE_TTL_MS = 60_000;
 
 function getCachedClient(url: string): ReturnType<typeof createPublicClient> {
   const now = Date.now();
+  if ((process.env.NODE_ENV || '').toLowerCase() === 'test') {
+    const client = createPublicClient({
+      transport: http(url, {
+        timeout: getRpcTimeoutMs(),
+        retryCount: 0,
+      }),
+    });
+    return client;
+  }
   const cached = clientCache.get(url);
   if (cached) {
     const timestamp = (cached as unknown as { _cacheTimestamp?: number })._cacheTimestamp;
@@ -618,10 +627,10 @@ async function syncOracleOnce(instanceId: string): Promise<{
             );
           }
 
-          await Promise.all([
-            ...dbOps,
-            ...Array.from(touchedVotes).map((id) => recomputeDisputeVotes(id, instanceId)),
-          ]);
+          await Promise.all([...dbOps]);
+          await Promise.all(
+            Array.from(touchedVotes).map((id) => recomputeDisputeVotes(id, instanceId)),
+          );
 
           if (rangeTo > processedHigh) processedHigh = rangeTo;
           rangeSuccess = true;

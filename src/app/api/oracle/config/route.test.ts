@@ -43,7 +43,36 @@ vi.mock('@/server/apiResponse', () => ({
   getAdminActor: vi.fn(() => 'test-actor'),
   invalidateCachedJson: vi.fn(async () => {}),
   handleApi: async (_request: Request, fn: () => unknown | Promise<unknown>) => {
-    return await fn();
+    try {
+      return await fn();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'unknown_error';
+      if (msg.includes('Unexpected token')) {
+        return {
+          ok: false,
+          error: { code: 'invalid_request_body', details: { message: 'Failed to parse JSON' } },
+        };
+      }
+      if (msg === 'invalid_body') {
+        return { ok: false, error: { code: 'invalid_request_body' } };
+      }
+      if (msg === 'invalid_request_body') {
+        const details = (e as any).details;
+        return details
+          ? { ok: false, error: { code: 'invalid_request_body', details } }
+          : { ok: false, error: { code: 'invalid_request_body' } };
+      }
+      if (msg === 'forbidden') {
+        return { ok: false, error: { code: 'forbidden' } };
+      }
+      if (msg === 'invalid_rpc_url') {
+        const field = (e as any).field;
+        return field
+          ? { ok: false, error: { code: 'invalid_rpc_url', details: { field } } }
+          : { ok: false, error: { code: 'invalid_rpc_url' } };
+      }
+      return { ok: false, error: { code: msg || 'unknown_error' } };
+    }
   },
   error: (value: unknown) => ({ ok: false, error: value }),
 }));
@@ -156,7 +185,7 @@ describe('PUT /api/oracle/config', () => {
       scope: 'oracle_config_write',
     });
     expect(validateOracleConfigPatch).toHaveBeenCalledWith(configPatch);
-    expect(writeOracleConfig).toHaveBeenCalledWith(configPatch);
+    expect(writeOracleConfig).toHaveBeenCalledWith(configPatch, undefined);
     expect(getAdminActor).toHaveBeenCalledWith(request);
     expect(appendAuditLog).toHaveBeenCalledWith({
       actor: 'test-actor',

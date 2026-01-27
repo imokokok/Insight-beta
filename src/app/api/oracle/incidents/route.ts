@@ -77,8 +77,10 @@ export async function GET(request: Request) {
         const byIdMap = byId;
         items = items.filter((i) => {
           const ids = i.alertIds ?? [];
-          if (ids.length === 0) return true;
-          return ids.some((id) => byIdMap.has(id));
+          if (ids.length > 0) return ids.some((id) => byIdMap.has(id));
+          const entityId = i.entityId?.trim() || '';
+          if (!entityId) return true;
+          return entityId === instanceId;
         });
       }
 

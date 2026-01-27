@@ -66,12 +66,16 @@ export class PredictiveAnalyticsEngine {
   private readonly ANOMALY_THRESHOLD = 2.5;
 
   extractFeatures(data: HistoricalDataPoint[]): TimeSeriesFeatures {
-    if (data.length < 2) {
+    const values = data
+      .map((d) => d.value)
+      .filter((v) => typeof v === 'number' && Number.isFinite(v));
+
+    if (values.length === 0) {
       return {
-        mean: data[0]?.value || 0,
+        mean: 0,
         stdDev: 0,
-        min: data[0]?.value || 0,
-        max: data[0]?.value || 0,
+        min: 0,
+        max: 0,
         trend: 0,
         seasonality: 0,
         volatility: 0,
@@ -79,7 +83,20 @@ export class PredictiveAnalyticsEngine {
       };
     }
 
-    const values = data.map((d) => d.value);
+    if (values.length === 1) {
+      const only = values[0]!;
+      return {
+        mean: only,
+        stdDev: 0,
+        min: only,
+        max: only,
+        trend: 0,
+        seasonality: 0,
+        volatility: 0,
+        autocorrelation: 0,
+      };
+    }
+
     const n = values.length;
 
     const mean = values.reduce((sum, val) => sum + val, 0) / n;
@@ -117,7 +134,7 @@ export class PredictiveAnalyticsEngine {
 
     for (let i = 0; i < n; i++) {
       const value = values[i];
-      if (value !== undefined) {
+      if (value !== undefined && Number.isFinite(value)) {
         sumX += i;
         sumY += value;
         sumXY += i * value;
@@ -126,7 +143,8 @@ export class PredictiveAnalyticsEngine {
     }
 
     const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
-    const normalizedSlope = slope / (Math.abs(slope) + Math.abs(this.calculateMean(values)));
+    const denom = Math.abs(slope) + Math.abs(this.calculateMean(values));
+    const normalizedSlope = denom === 0 ? 0 : slope / denom;
 
     return normalizedSlope;
   }
@@ -140,7 +158,7 @@ export class PredictiveAnalyticsEngine {
 
     for (let i = 0; i < n; i++) {
       const value = values[i];
-      if (value !== undefined) {
+      if (value !== undefined && Number.isFinite(value)) {
         const angle = (2 * Math.PI * i) / 7;
         sumSin += value * Math.sin(angle);
         sumCos += value * Math.cos(angle);
@@ -164,14 +182,19 @@ export class PredictiveAnalyticsEngine {
     for (let i = 0; i < n - lag; i++) {
       const currentValue = values[i];
       const lagValue = values[i + lag];
-      if (currentValue !== undefined && lagValue !== undefined) {
+      if (
+        currentValue !== undefined &&
+        lagValue !== undefined &&
+        Number.isFinite(currentValue) &&
+        Number.isFinite(lagValue)
+      ) {
         numerator += (currentValue - mean) * (lagValue - mean);
       }
     }
 
     for (let i = 0; i < n; i++) {
       const value = values[i];
-      if (value !== undefined) {
+      if (value !== undefined && Number.isFinite(value)) {
         denominator += Math.pow(value - mean, 2);
       }
     }
@@ -181,7 +204,9 @@ export class PredictiveAnalyticsEngine {
 
   private calculateMean(values: number[]): number {
     if (values.length === 0) return 0;
-    return values.reduce((sum, val) => sum + val, 0) / values.length;
+    const finite = values.filter((v) => typeof v === 'number' && Number.isFinite(v));
+    if (finite.length === 0) return 0;
+    return finite.reduce((sum, val) => sum + val, 0) / finite.length;
   }
 
   private calculateStdDev(values: number[], mean: number): number {
@@ -196,7 +221,7 @@ export class PredictiveAnalyticsEngine {
 
     const disputeRateHistory = historicalData
       .slice(-timeWindow)
-      .map((d): number => d.metadata?.['disputeRate'] as number || 0);
+      .map((d): number => (d.metadata?.['disputeRate'] as number) || 0);
 
     const avgDisputeRate = this.calculateMean(disputeRateHistory);
     const disputeTrend = this.calculateTrend(disputeRateHistory);
@@ -247,15 +272,13 @@ export class PredictiveAnalyticsEngine {
     };
   }
 
-  predictSettlementOutcome(
-    assertionData: {
-      bondAmount: number;
-      livenessPeriod: number;
-      marketVolatility: number;
-      historicalAccuracy: number;
-      disputerActivity: number;
-    },
-  ): PredictionResult {
+  predictSettlementOutcome(assertionData: {
+    bondAmount: number;
+    livenessPeriod: number;
+    marketVolatility: number;
+    historicalAccuracy: number;
+    disputerActivity: number;
+  }): PredictionResult {
     const accuracyData = [{ timestamp: Date.now(), value: assertionData.historicalAccuracy }];
     const features = this.extractFeatures(accuracyData);
 
@@ -298,7 +321,10 @@ export class PredictiveAnalyticsEngine {
       },
     ];
 
-    const recommendations = this.generateSettlementRecommendations(settlementProbability, assertionData);
+    const recommendations = this.generateSettlementRecommendations(
+      settlementProbability,
+      assertionData,
+    );
 
     return {
       prediction: settlementProbability,
@@ -320,12 +346,34 @@ export class PredictiveAnalyticsEngine {
     for (let i = 10; i < values.length; i++) {
       const currentValue = values[i];
       if (currentValue === undefined) continue;
-      
+
       const window = values.slice(i - 10, i);
       const mean = this.calculateMean(window);
-      const stdDev = this.calculateStdDev(window, mean);
+      const stdDev = this.calculateStdDev(
+        window.filter((v) => Number.isFinite(v)),
+        mean,
+      );
 
-      if (stdDev === 0 || mean === 0) continue;
+      if (mean === 0) continue;
+      if (stdDev === 0) {
+        const ratio = currentValue / mean;
+        if (ratio >= 3 || ratio <= 0.3) {
+          const deviation = ((currentValue - mean) / mean) * 100;
+          const anomalyType: 'spike' | 'drop' | 'drift' | 'pattern_break' =
+            deviation > 0 ? 'spike' : 'drop';
+          anomalies.push({
+            isAnomaly: true,
+            anomalyProbability: 0.99,
+            anomalyType,
+            severity: 'high',
+            expectedValue: mean,
+            actualValue: currentValue,
+            deviation,
+            timestamp: data[i]?.timestamp || Date.now(),
+          });
+        }
+        continue;
+      }
 
       const zScore = Math.abs((currentValue - mean) / stdDev);
 
@@ -377,7 +425,12 @@ export class PredictiveAnalyticsEngine {
       },
       {
         name: 'Assertion Volume',
-        score: 1 - Math.min(data.assertionVolume.reduce((a, b) => a + b, 0) / (data.assertionVolume.length * 100), 1),
+        score:
+          1 -
+          Math.min(
+            data.assertionVolume.reduce((a, b) => a + b, 0) / (data.assertionVolume.length * 100),
+            1,
+          ),
         weight: weights.assertionVolume,
         description: 'Volume of assertions being made',
       },
@@ -389,7 +442,12 @@ export class PredictiveAnalyticsEngine {
       },
       {
         name: 'Sync Latency',
-        score: 1 - Math.min(data.syncLatency.reduce((a, b) => a + b, 0) / (data.syncLatency.length * 10000), 1),
+        score:
+          1 -
+          Math.min(
+            data.syncLatency.reduce((a, b) => a + b, 0) / (data.syncLatency.length * 10000),
+            1,
+          ),
         weight: weights.syncLatency,
         description: 'Time to sync new data',
       },
@@ -404,11 +462,11 @@ export class PredictiveAnalyticsEngine {
     const overallScore = factors.reduce((sum, factor) => sum + factor.score * factor.weight, 0);
 
     const riskLevel: 'low' | 'medium' | 'high' | 'critical' =
-      overallScore > 0.8
+      overallScore > 0.85
         ? 'low'
-        : overallScore > 0.6
+        : overallScore > 0.7
           ? 'medium'
-          : overallScore > 0.4
+          : overallScore > 0.6
             ? 'high'
             : 'critical';
 
@@ -449,16 +507,22 @@ export class PredictiveAnalyticsEngine {
     const recommendations: string[] = [];
 
     if (prediction > 0.7) {
-      recommendations.push('High dispute probability detected. Consider increasing bond amount for new assertions.');
+      recommendations.push(
+        'High dispute probability detected. Consider increasing bond amount for new assertions.',
+      );
       recommendations.push('Review recent disputed assertions to identify common issues.');
     }
 
     if (features.volatility > this.VOLATILITY_THRESHOLD) {
-      recommendations.push('Market volatility is elevated. Monitor prices closely before asserting.');
+      recommendations.push(
+        'Market volatility is elevated. Monitor prices closely before asserting.',
+      );
     }
 
     if (features.seasonality > this.SEASONALITY_THRESHOLD) {
-      recommendations.push('Strong seasonality detected. Consider timing assertions based on historical patterns.');
+      recommendations.push(
+        'Strong seasonality detected. Consider timing assertions based on historical patterns.',
+      );
     }
 
     if (features.trend > 0.1) {
@@ -493,11 +557,15 @@ export class PredictiveAnalyticsEngine {
     }
 
     if (data.marketVolatility > 0.3) {
-      recommendations.push('High market volatility may affect settlement. Prepare for potential disputes.');
+      recommendations.push(
+        'High market volatility may affect settlement. Prepare for potential disputes.',
+      );
     }
 
     if (data.livenessPeriod > 7 * 24 * 60 * 60) {
-      recommendations.push('Long liveness period increases exposure. Consider shortening if possible.');
+      recommendations.push(
+        'Long liveness period increases exposure. Consider shortening if possible.',
+      );
     }
 
     if (probability > 0.8) {
@@ -521,13 +589,21 @@ export class PredictiveAnalyticsEngine {
 
     lowScoreFactors.forEach((factor) => {
       if (factor.name === 'Dispute Rate') {
-        recommendations.push('High dispute rate detected. Review assertion quality and consider increasing bonds.');
+        recommendations.push(
+          'High dispute rate detected. Review assertion quality and consider increasing bonds.',
+        );
       } else if (factor.name === 'Error Rate') {
-        recommendations.push('High error rate requires investigation. Check system logs and RPC connectivity.');
+        recommendations.push(
+          'High error rate requires investigation. Check system logs and RPC connectivity.',
+        );
       } else if (factor.name === 'Sync Latency') {
-        recommendations.push('Sync latency is high. Consider upgrading RPC endpoints or increasing resources.');
+        recommendations.push(
+          'Sync latency is high. Consider upgrading RPC endpoints or increasing resources.',
+        );
       } else if (factor.name === 'Liveness Score') {
-        recommendations.push('Liveness score is low. Check if all required services are operational.');
+        recommendations.push(
+          'Liveness score is low. Check if all required services are operational.',
+        );
       }
     });
 
@@ -543,10 +619,13 @@ export const predictiveAnalytics = new PredictiveAnalyticsEngine();
 
 export function usePredictiveAnalytics() {
   return {
-    predictDisputeProbability: (input: PredictionInput) => predictiveAnalytics.predictDisputeProbability(input),
-    predictSettlementOutcome: (data: Parameters<typeof predictiveAnalytics.predictSettlementOutcome>[0]) =>
-      predictiveAnalytics.predictSettlementOutcome(data),
+    predictDisputeProbability: (input: PredictionInput) =>
+      predictiveAnalytics.predictDisputeProbability(input),
+    predictSettlementOutcome: (
+      data: Parameters<typeof predictiveAnalytics.predictSettlementOutcome>[0],
+    ) => predictiveAnalytics.predictSettlementOutcome(data),
     detectAnomalies: (data: HistoricalDataPoint[]) => predictiveAnalytics.detectAnomalies(data),
-    assessRisk: (data: Parameters<typeof predictiveAnalytics.assessRisk>[0]) => predictiveAnalytics.assessRisk(data),
+    assessRisk: (data: Parameters<typeof predictiveAnalytics.assessRisk>[0]) =>
+      predictiveAnalytics.assessRisk(data),
   };
 }

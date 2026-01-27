@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     const cacheKey = `oracle_api:${url.pathname}${url.search}`;
     return await cachedJson(cacheKey, 30_000, async () => {
       const items = await listOracleInstances();
-      return { items };
+      return { instances: items, items };
     });
   });
 }

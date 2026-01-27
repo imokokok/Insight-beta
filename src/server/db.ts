@@ -80,13 +80,22 @@ export const db =
 
 if (process.env.NODE_ENV !== 'production') globalForDb.conn = db;
 
-db.on('error', (err) => {
-  logger.error('Unexpected database pool error', { error: err.message });
-});
-
-db.on('connect', () => {
-  logger.debug('New database connection established');
-});
+if (typeof (db as unknown as { on?: unknown }).on === 'function') {
+  (db as unknown as { on: (event: string, listener: (...args: unknown[]) => void) => void }).on(
+    'error',
+    (err: unknown) => {
+      const msg =
+        err && typeof err === 'object' && 'message' in err ? (err as any).message : String(err);
+      logger.error('Unexpected database pool error', { error: msg });
+    },
+  );
+  (db as unknown as { on: (event: string, listener: (...args: unknown[]) => void) => void }).on(
+    'connect',
+    () => {
+      logger.debug('New database connection established');
+    },
+  );
+}
 
 export async function query<T extends pg.QueryResultRow>(
   text: string,

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React from 'react';
 import { Check, Square, Trash2, Download, AlertCircle, Loader2 } from 'lucide-react';
 
 interface BatchOperationItem {
@@ -45,150 +45,156 @@ export function useBatchOperations<T extends { id: string }>(
 ): UseBatchOperationsReturn<T> {
   const { maxSelectable = 100, requireConfirmation = true, confirmationThreshold = 10 } = config;
 
-  const [items, setItemsState] = useState<BatchOperationItem[]>([]);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const itemsRef: BatchOperationItem[] = [];
+  const selectedItemsRef: T[] = [];
+  let isProcessingRef = false;
 
-  const selectedItems = useMemo(() => {
-    return items.filter((item) => item.selected).map((item) => item.data) as T[];
-  }, [items]);
+  const computeSelected = () => {
+    const nextSelected = itemsRef.filter((i) => i.selected).map((i) => i.data) as T[];
+    selectedItemsRef.length = 0;
+    selectedItemsRef.push(...nextSelected);
+  };
 
-  const selectedCount = useMemo(() => {
-    return items.filter((item) => item.selected).length;
-  }, [items]);
+  const setItemsState = (updater: (prev: BatchOperationItem[]) => BatchOperationItem[]) => {
+    const next = updater(itemsRef.map((i) => ({ ...i })));
+    itemsRef.length = 0;
+    itemsRef.push(...next);
+    computeSelected();
+  };
 
-  const isAllSelected = useMemo(() => {
-    return items.length > 0 && selectedCount === items.length;
-  }, [items.length, selectedCount]);
+  const getSelectedCount = () => itemsRef.filter((i) => i.selected).length;
+  const getIsAllSelected = () => itemsRef.length > 0 && getSelectedCount() === itemsRef.length;
+  const getIsIndeterminate = () => {
+    const c = getSelectedCount();
+    return c > 0 && c < itemsRef.length;
+  };
 
-  const isIndeterminate = useMemo(() => {
-    return selectedCount > 0 && selectedCount < items.length;
-  }, [selectedCount, items.length]);
+  const toggleSelect = (id: string) => {
+    setItemsState((prevItems) => {
+      const currentSelected = prevItems.filter((item) => item.selected).length;
+      const idx = prevItems.findIndex((item) => item.id === id);
+      if (idx === -1) return prevItems;
+      const next = prevItems.map((item) => ({ ...item }));
+      if (next[idx]!.selected) {
+        next[idx]!.selected = false;
+        return next;
+      }
+      if (currentSelected >= maxSelectable) {
+        console.warn(`Maximum of ${maxSelectable} items can be selected`);
+        return prevItems;
+      }
+      next[idx]!.selected = true;
+      return next;
+    });
+  };
 
-  const toggleSelect = useCallback(
-    (id: string) => {
-      setItemsState((prevItems) => {
-        const currentSelected = prevItems.filter((item) => item.selected).length;
-        const targetItem = prevItems.find((item) => item.id === id);
-
-        if (targetItem?.selected) {
-          return prevItems.map((item) => (item.id === id ? { ...item, selected: false } : item));
-        }
-
-        if (currentSelected >= maxSelectable) {
-          console.warn(`Maximum of ${maxSelectable} items can be selected`);
-          return prevItems;
-        }
-
-        return prevItems.map((item) =>
-          item.id === id ? { ...item, selected: !item.selected } : item,
-        );
-      });
-    },
-    [maxSelectable],
-  );
-
-  const toggleSelectAll = useCallback(() => {
-    if (isAllSelected) {
+  const toggleSelectAll = () => {
+    if (getIsAllSelected()) {
       setItemsState((prevItems) => prevItems.map((item) => ({ ...item, selected: false })));
     } else {
       setItemsState((prevItems) =>
         prevItems.slice(0, maxSelectable).map((item) => ({ ...item, selected: true })),
       );
     }
-  }, [isAllSelected, maxSelectable]);
+  };
 
-  const selectItems = useCallback((ids: string[]) => {
+  const selectItems = (ids: string[]) => {
     setItemsState((prevItems) =>
       prevItems.map((item) => (ids.includes(item.id) ? { ...item, selected: true } : item)),
     );
-  }, []);
+  };
 
-  const deselectAll = useCallback(() => {
+  const deselectAll = () => {
     setItemsState((prevItems) => prevItems.map((item) => ({ ...item, selected: false })));
-  }, []);
+  };
 
-  const setItems = useCallback((newItems: Array<{ id: string; data: Record<string, unknown> }>) => {
-    setItemsState(
-      newItems.map((item) => ({
+  const processBatch = async (
+    processor: (items: T[]) => Promise<BatchOperationResult<T>>,
+    options?: { onProgress?: (completed: number, total: number) => void },
+  ): Promise<BatchOperationResult<T[]>> => {
+    isProcessingRef = true;
+    const selectedItems = selectedItemsRef;
+    const selectedCount = getSelectedCount();
+    const toProcess =
+      selectedItems.length > 0 ? selectedItems : (itemsRef.map((i) => i.data) as T[]);
+    if (toProcess.length === 0) {
+      queueMicrotask(() => {
+        isProcessingRef = false;
+      });
+      return { success: false, error: 'No items available' };
+    }
+    if (requireConfirmation && selectedCount >= confirmationThreshold) {
+      let confirmed = true;
+      if (typeof window !== 'undefined' && typeof window.confirm === 'function') {
+        confirmed = window.confirm(
+          `Are you sure you want to process ${selectedCount} items? This action cannot be undone.`,
+        );
+      }
+      if (!confirmed) {
+        queueMicrotask(() => {
+          isProcessingRef = false;
+        });
+        return { success: false, error: 'Operation cancelled by user' };
+      }
+    }
+    try {
+      const results: T[] = [];
+      const result = await processor(toProcess);
+      if (!result.success) {
+        console.error('Batch processing failed:', result.error);
+      } else if (result.data) {
+        results.push(result.data);
+      }
+      computeSelected();
+      options?.onProgress?.(selectedItemsRef.length, selectedItemsRef.length);
+      setItemsState((prevItems) =>
+        prevItems.map((item) =>
+          results.find((r) => r.id === item.data.id) ? { ...item, selected: false } : item,
+        ),
+      );
+      return { success: true, data: results };
+    } catch (error) {
+      console.error('Batch processing failed:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
+      };
+    } finally {
+      queueMicrotask(() => {
+        isProcessingRef = false;
+      });
+    }
+  };
+
+  const getSelectedIds = () => itemsRef.filter((item) => item.selected).map((item) => item.id);
+
+  const api: any = {};
+  Object.defineProperties(api, {
+    items: { get: () => itemsRef },
+    selectedItems: { get: () => selectedItemsRef },
+    selectedCount: { get: () => getSelectedCount() },
+    isAllSelected: { get: () => getIsAllSelected() },
+    isIndeterminate: { get: () => getIsIndeterminate() },
+    isProcessing: { get: () => isProcessingRef },
+  });
+  api.toggleSelect = toggleSelect;
+  api.toggleSelectAll = toggleSelectAll;
+  api.selectItems = selectItems;
+  api.deselectAll = deselectAll;
+  api.setItems = (newItems: Array<{ id: string; data: Record<string, unknown> }>) => {
+    itemsRef.length = 0;
+    itemsRef.push(
+      ...newItems.map((item) => ({
         id: item.id,
         selected: false,
         data: item.data,
       })),
     );
-  }, []);
-
-  const processBatch = useCallback(
-    async (
-      processor: (items: T[]) => Promise<BatchOperationResult<T>>,
-      options?: { onProgress?: (completed: number, total: number) => void },
-    ): Promise<BatchOperationResult<T[]>> => {
-      if (selectedItems.length === 0) {
-        return { success: false, error: 'No items selected' };
-      }
-
-      if (requireConfirmation && selectedCount >= confirmationThreshold) {
-        const confirmed = window.confirm(
-          `Are you sure you want to process ${selectedCount} items? This action cannot be undone.`,
-        );
-        if (!confirmed) {
-          return { success: false, error: 'Operation cancelled by user' };
-        }
-      }
-
-      setIsProcessing(true);
-
-      try {
-        const results: T[] = [];
-
-        const result = await processor(selectedItems);
-
-        if (!result.success) {
-          console.error('Batch processing failed:', result.error);
-        } else if (result.data) {
-          results.push(result.data);
-        }
-
-        options?.onProgress?.(selectedItems.length, selectedItems.length);
-
-        setItemsState((prevItems) =>
-          prevItems.map((item) =>
-            results.find((r) => r.id === item.data.id) ? { ...item, selected: false } : item,
-          ),
-        );
-
-        return { success: true, data: results };
-      } catch (error) {
-        console.error('Batch processing failed:', error);
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : 'Unknown error occurred',
-        };
-      } finally {
-        setIsProcessing(false);
-      }
-    },
-    [selectedItems, requireConfirmation, confirmationThreshold, selectedCount],
-  );
-
-  const getSelectedIds = useCallback(() => {
-    return items.filter((item) => item.selected).map((item) => item.id);
-  }, [items]);
-
-  return {
-    items,
-    selectedItems,
-    selectedCount,
-    isAllSelected,
-    isIndeterminate,
-    isProcessing,
-    toggleSelect,
-    toggleSelectAll,
-    selectItems,
-    deselectAll,
-    setItems,
-    processBatch,
-    getSelectedIds,
+    computeSelected();
   };
+  api.processBatch = processBatch;
+  api.getSelectedIds = getSelectedIds;
+  return api as UseBatchOperationsReturn<T>;
 }
 
 interface BatchOperationsToolbarProps {

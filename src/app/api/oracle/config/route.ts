@@ -108,7 +108,7 @@ export async function PUT(request: Request) {
       try {
         const body = await request.json();
         if (!body || typeof body !== 'object' || Array.isArray(body)) {
-          throw Object.assign(new Error('invalid_body'), { status: 400 });
+          throw Object.assign(new Error('invalid_request_body'), { status: 400 });
         }
 
         const safeBody = Object.fromEntries(
@@ -150,6 +150,12 @@ export async function PUT(request: Request) {
           durationMs,
           error: updateError instanceof Error ? updateError.message : 'Unknown error',
         });
+        if (updateError instanceof SyntaxError) {
+          throw Object.assign(new Error('invalid_request_body'), {
+            status: 400,
+            details: { message: 'Failed to parse JSON' },
+          });
+        }
         throw updateError;
       }
     });
