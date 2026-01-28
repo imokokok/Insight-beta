@@ -1,0 +1,28 @@
+import { getUMALeaderboard } from '@/server/oracle/umaState';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const instanceId = searchParams.get('instanceId') || undefined;
+    const metric = searchParams.get('metric') as
+      | 'proposals'
+      | 'disputes'
+      | 'votes'
+      | 'bond'
+      | undefined;
+    const limit = searchParams.get('limit');
+
+    const leaderboard = await getUMALeaderboard({
+      instanceId,
+      metric,
+      limit: limit ? parseInt(limit) : undefined,
+    });
+
+    return NextResponse.json(leaderboard);
+  } catch (error) {
+    console.error('Failed to get UMA leaderboard:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}

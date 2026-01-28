@@ -4,6 +4,7 @@ import { createOrTouchAlert } from '@/server/observability';
 import { error } from './response';
 
 export type { AdminScope };
+export { verifyAdmin } from '@/server/adminAuth';
 
 const globalForAdmin = globalThis as unknown as {
   insightAdminForbidden?: Map<string, number> | undefined;

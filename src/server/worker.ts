@@ -1,4 +1,6 @@
 import { ensureOracleSynced, getOracleEnv, isOracleSyncing } from './oracleIndexer';
+import { ensureUMASynced, isUMASyncing } from './oracle/umaSync';
+import { listUMAConfigs } from './oracle/umaConfig';
 import crypto from 'crypto';
 import type { PoolClient } from 'pg';
 import { env } from '@/lib/config/env';
@@ -193,6 +195,7 @@ async function tickWorker() {
 
     const instances = await listOracleInstances();
     const enabledInstances = instances.filter((i) => i.enabled);
+
     for (const inst of enabledInstances) {
       const instanceId = inst.id;
       try {
@@ -819,6 +822,25 @@ async function tickWorker() {
           });
         }
       }
+    }
+
+    try {
+      const umaConfigs = await listUMAConfigs();
+      const enabledUMAConfigs = umaConfigs.filter((c) => c.enabled);
+      for (const config of enabledUMAConfigs) {
+        const umaInstanceId = config.id;
+        try {
+          if (isUMASyncing(umaInstanceId)) continue;
+          await ensureUMASynced(umaInstanceId);
+        } catch (e) {
+          logger.error('UMA sync failed', {
+            error: e,
+            instanceId: umaInstanceId,
+          });
+        }
+      }
+    } catch (e) {
+      logger.error('Failed to sync UMA instances', { error: e });
     }
 
     const escalationRules = rules

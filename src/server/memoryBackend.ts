@@ -1,5 +1,15 @@
-import type { Assertion, Dispute, OracleChain, OracleConfig } from '@/lib/types/oracleTypes';
+import type {
+  Assertion,
+  Dispute,
+  OracleChain,
+  OracleConfig,
+  UMAAssertion,
+  UMADispute,
+  UMAVote,
+  UMAConfig,
+} from '@/lib/types/oracleTypes';
 import type { SyncMeta } from './oracleState';
+import type { UMASyncMeta } from './oracle/umaState';
 
 type MemoryAlert = {
   id: number;
@@ -81,8 +91,28 @@ export type MemoryOracleInstance = {
   nextOracleEventId: number;
 };
 
+export type MemoryUMAInstance = {
+  id: string;
+  enabled: boolean;
+  umaConfig: UMAConfig;
+  umaSync: {
+    lastProcessedBlock: bigint;
+    latestBlock?: bigint | null;
+    safeBlock?: bigint | null;
+    lastSuccessProcessedBlock?: bigint | null;
+    consecutiveFailures?: number;
+    rpcActiveUrl?: string | null;
+    rpcStats?: unknown;
+    meta: UMASyncMeta;
+  };
+  umaAssertions: Map<string, UMAAssertion>;
+  umaDisputes: Map<string, UMADispute>;
+  umaVotes: Map<string, UMAVote>;
+};
+
 type MemoryStore = {
   instances: Map<string, MemoryOracleInstance>;
+  umaInstances: Map<string, MemoryUMAInstance>;
   kv: Map<string, MemoryKvItem>;
   alerts: Map<string, MemoryAlert>;
   nextAlertId: number;
@@ -96,7 +126,9 @@ import { env } from '@/lib/config/env';
 function createDefaultConfig(): OracleConfig {
   const chainEnv = env.INSIGHT_CHAIN;
   const validChains: OracleChain[] = ['Polygon', 'PolygonAmoy', 'Arbitrum', 'Optimism', 'Local'];
-  const chain: OracleChain = validChains.includes(chainEnv as OracleChain) ? (chainEnv as OracleChain) : 'Local';
+  const chain: OracleChain = validChains.includes(chainEnv as OracleChain)
+    ? (chainEnv as OracleChain)
+    : 'Local';
   return {
     rpcUrl: env.INSIGHT_RPC_URL,
     contractAddress: env.INSIGHT_ORACLE_ADDRESS,
@@ -150,6 +182,7 @@ export function getMemoryStore(): MemoryStore {
     instances.set('default', createDefaultInstance('default'));
     g.__insightMemoryStore = {
       instances,
+      umaInstances: new Map(),
       kv: new Map(),
       alerts: new Map(),
       nextAlertId: 1,
@@ -167,6 +200,74 @@ export function getMemoryInstance(instanceId: string) {
   if (!inst) {
     inst = createDefaultInstance(id);
     mem.instances.set(id, inst);
+  }
+  return inst;
+}
+
+function createDefaultUMASyncMeta(): UMASyncMeta {
+  return {
+    lastAttemptAt: null,
+    lastSuccessAt: null,
+    lastDurationMs: null,
+    lastError: null,
+  };
+}
+
+function createDefaultUMAConfig(id: string): UMAConfig {
+  const chainDefaults: Record<string, Partial<UMAConfig>> = {
+    Ethereum: {
+      chain: 'Ethereum',
+      optimisticOracleV2Address: '0x9923D42eF195B0fA36D6f80f5629Ce76D1eF8754',
+      optimisticOracleV3Address: '0xA5B9d8a0B0Fa04B710D7ee40D90d2551E58d0F65',
+    },
+    Polygon: {
+      chain: 'Polygon',
+      optimisticOracleV2Address: '0x0b9cA86Ab0a5c94E262a5a9A4f8B5c5f2c3d5f7',
+      optimisticOracleV3Address: '0xDd46919fE564dE5bC5Cfc966aF2B79dc5A60A73d',
+    },
+  };
+
+  return {
+    id,
+    chain: 'Ethereum',
+    rpcUrl: '',
+    startBlock: 0,
+    maxBlockRange: 10_000,
+    votingPeriodHours: 72,
+    confirmationBlocks: 12,
+    enabled: true,
+    ...chainDefaults['Ethereum'],
+  };
+}
+
+function createDefaultUMAInstance(id: string): MemoryUMAInstance {
+  return {
+    id,
+    enabled: true,
+    umaConfig: createDefaultUMAConfig(id),
+    umaSync: {
+      lastProcessedBlock: 0n,
+      latestBlock: null,
+      safeBlock: null,
+      lastSuccessProcessedBlock: null,
+      consecutiveFailures: 0,
+      rpcActiveUrl: null,
+      rpcStats: null,
+      meta: createDefaultUMASyncMeta(),
+    },
+    umaAssertions: new Map(),
+    umaDisputes: new Map(),
+    umaVotes: new Map(),
+  };
+}
+
+export function getMemoryUMAInstance(instanceId: string) {
+  const mem = getMemoryStore();
+  const id = (instanceId || 'uma-mainnet').trim() || 'uma-mainnet';
+  let inst = mem.umaInstances.get(id);
+  if (!inst) {
+    inst = createDefaultUMAInstance(id);
+    mem.umaInstances.set(id, inst);
   }
   return inst;
 }

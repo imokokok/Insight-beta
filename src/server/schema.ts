@@ -374,5 +374,132 @@ export async function ensureSchema() {
     FROM sync_state
     WHERE id = 1
     ON CONFLICT (instance_id) DO NOTHING;
+
+    -- UMA Oracle Tables
+    CREATE TABLE IF NOT EXISTS uma_oracle_config (
+      id TEXT PRIMARY KEY,
+      chain TEXT NOT NULL,
+      rpc_url TEXT,
+      optimistic_oracle_v2_address TEXT,
+      optimistic_oracle_v3_address TEXT,
+      start_block BIGINT DEFAULT 0,
+      max_block_range INTEGER DEFAULT 10000,
+      voting_period_hours INTEGER DEFAULT 72,
+      confirmation_blocks INTEGER DEFAULT 12,
+      enabled BOOLEAN NOT NULL DEFAULT true,
+      created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS uma_sync_state (
+      instance_id TEXT PRIMARY KEY REFERENCES uma_oracle_config(id) ON DELETE CASCADE,
+      last_processed_block BIGINT DEFAULT 0,
+      latest_block BIGINT,
+      safe_block BIGINT,
+      last_success_processed_block BIGINT,
+      consecutive_failures INTEGER DEFAULT 0,
+      rpc_active_url TEXT,
+      rpc_stats JSONB,
+      last_attempt_at TIMESTAMP WITH TIME ZONE,
+      last_success_at TIMESTAMP WITH TIME ZONE,
+      last_duration_ms INTEGER,
+      last_error TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS uma_assertions (
+      id TEXT PRIMARY KEY,
+      instance_id TEXT NOT NULL DEFAULT 'uma-default',
+      chain TEXT NOT NULL,
+      identifier TEXT NOT NULL,
+      ancillary_data TEXT,
+      proposer TEXT NOT NULL,
+      proposed_value NUMERIC,
+      reward NUMERIC,
+      proposed_at TIMESTAMP WITH TIME ZONE NOT NULL,
+      disputed_at TIMESTAMP WITH TIME ZONE,
+      settled_at TIMESTAMP WITH TIME ZONE,
+      settlement_value NUMERIC,
+      status TEXT NOT NULL,
+      bond NUMERIC,
+      dispute_bond NUMERIC,
+      tx_hash TEXT NOT NULL,
+      block_number BIGINT NOT NULL,
+      log_index INTEGER NOT NULL,
+      version TEXT NOT NULL,
+      created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS uma_disputes (
+      id TEXT PRIMARY KEY,
+      instance_id TEXT NOT NULL DEFAULT 'uma-default',
+      chain TEXT NOT NULL,
+      assertion_id TEXT NOT NULL REFERENCES uma_assertions(id),
+      identifier TEXT,
+      ancillary_data TEXT,
+      disputer TEXT NOT NULL,
+      dispute_bond NUMERIC NOT NULL,
+      disputed_at TIMESTAMP WITH TIME ZONE NOT NULL,
+      voting_ends_at TIMESTAMP WITH TIME ZONE,
+      status TEXT NOT NULL,
+      current_votes_for NUMERIC DEFAULT 0,
+      current_votes_against NUMERIC DEFAULT 0,
+      total_votes NUMERIC DEFAULT 0,
+      tx_hash TEXT NOT NULL,
+      block_number BIGINT NOT NULL,
+      log_index INTEGER NOT NULL,
+      version TEXT NOT NULL,
+      created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS uma_votes (
+      id BIGSERIAL PRIMARY KEY,
+      instance_id TEXT NOT NULL DEFAULT 'uma-default',
+      chain TEXT NOT NULL,
+      assertion_id TEXT NOT NULL REFERENCES uma_assertions(id),
+      voter TEXT NOT NULL,
+      support BOOLEAN NOT NULL,
+      weight NUMERIC DEFAULT 0,
+      tx_hash TEXT NOT NULL,
+      block_number BIGINT NOT NULL,
+      log_index INTEGER NOT NULL,
+      created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+      UNIQUE (tx_hash, log_index)
+    );
+
+    -- UMA Indexes
+    CREATE INDEX IF NOT EXISTS idx_uma_assertions_date ON uma_assertions(proposed_at);
+    CREATE INDEX IF NOT EXISTS idx_uma_assertions_status ON uma_assertions(status);
+    CREATE INDEX IF NOT EXISTS idx_uma_assertions_chain ON uma_assertions(chain);
+    CREATE INDEX IF NOT EXISTS idx_uma_assertions_identifier ON uma_assertions(identifier);
+    CREATE INDEX IF NOT EXISTS idx_uma_assertions_instance ON uma_assertions(instance_id);
+    CREATE INDEX IF NOT EXISTS idx_uma_assertions_proposer ON uma_assertions(proposer);
+    CREATE INDEX IF NOT EXISTS idx_uma_assertions_tx_hash ON uma_assertions(tx_hash);
+    CREATE INDEX IF NOT EXISTS idx_uma_assertions_block_number ON uma_assertions(block_number);
+    CREATE INDEX IF NOT EXISTS idx_uma_assertions_status_date ON uma_assertions(status, proposed_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_uma_assertions_chain_date ON uma_assertions(chain, proposed_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_uma_disputes_assertion ON uma_disputes(assertion_id);
+    CREATE INDEX IF NOT EXISTS idx_uma_disputes_status ON uma_disputes(status);
+    CREATE INDEX IF NOT EXISTS idx_uma_disputes_chain ON uma_disputes(chain);
+    CREATE INDEX IF NOT EXISTS idx_uma_disputes_instance ON uma_disputes(instance_id);
+    CREATE INDEX IF NOT EXISTS idx_uma_disputes_disputer ON uma_disputes(disputer);
+    CREATE INDEX IF NOT EXISTS idx_uma_disputes_date ON uma_disputes(disputed_at);
+    CREATE INDEX IF NOT EXISTS idx_uma_disputes_tx_hash ON uma_disputes(tx_hash);
+    CREATE INDEX IF NOT EXISTS idx_uma_votes_assertion ON uma_votes(assertion_id);
+    CREATE INDEX IF NOT EXISTS idx_uma_votes_voter ON uma_votes(voter);
+    CREATE INDEX IF NOT EXISTS idx_uma_votes_instance ON uma_votes(instance_id);
+    CREATE INDEX IF NOT EXISTS idx_uma_sync_state_instance ON uma_sync_state(instance_id);
+
+    -- Initialize default UMA config
+    INSERT INTO uma_oracle_config (
+      id, chain, optimistic_oracle_v2_address, optimistic_oracle_v3_address, enabled
+    )
+    SELECT
+      'uma-mainnet', 'Ethereum',
+      '0x9923D42eF195B0fA36D6f80f5629Ce76D1eF8754',
+      '0xA5B9d8a0B0Fa04B710D7ee40D90d2551E58d0F65',
+      true
+    ON CONFLICT (id) DO NOTHING;
   `);
 }

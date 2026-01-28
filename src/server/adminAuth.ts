@@ -10,7 +10,10 @@ export type AdminScope =
   | 'oracle_sync_trigger'
   | 'alert_rules_write'
   | 'alerts_update'
-  | 'audit_read';
+  | 'audit_read'
+  | 'uma_config_write'
+  | 'uma_sync'
+  | 'uma_admin';
 
 export type AdminRole = 'root' | 'ops' | 'alerts' | 'viewer';
 
