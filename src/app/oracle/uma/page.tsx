@@ -52,27 +52,39 @@ export default function UMAOraclePage() {
   const [leaderboard, setLeaderboard] = useState<UMALeaderboard | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'leaderboard' | 'stats'>('overview');
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     fetchOverview();
     fetchLeaderboard();
+
+    const pollInterval = setInterval(() => {
+      if (!isRefreshing) {
+        fetchOverview();
+      }
+    }, 30000);
+
+    return () => clearInterval(pollInterval);
   }, []);
 
   async function fetchOverview() {
     try {
-      setLoading(true);
+      setIsRefreshing(true);
       const data = await fetchApiData<UMAOverview>('/api/oracle/uma');
       setOverview(data);
+      setLastUpdated(new Date());
     } catch (error) {
       console.error('Failed to fetch UMA overview:', error);
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
     }
   }
 
   async function fetchLeaderboard() {
     try {
-      setLoading(true);
+      setIsRefreshing(true);
       const data = await fetchApiData<UMALeaderboard>(
         '/api/oracle/uma/leaderboard?metric=proposals',
       );
@@ -80,16 +92,19 @@ export default function UMAOraclePage() {
     } catch (error) {
       console.error('Failed to fetch leaderboard:', error);
     } finally {
-      setLoading(false);
+      setIsRefreshing(false);
     }
   }
 
   async function triggerSync() {
     try {
+      setIsRefreshing(true);
       await fetchApiData('/api/oracle/uma/sync', { method: 'POST' });
       await fetchOverview();
     } catch (error) {
       console.error('Failed to trigger sync:', error);
+    } finally {
+      setIsRefreshing(false);
     }
   }
 
@@ -110,26 +125,48 @@ export default function UMAOraclePage() {
   return (
     <div className="min-h-screen bg-[#0A0A0F] text-white">
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-8 flex items-center justify-between">
-          <PageHeader
-            title="UMA Optimistic Oracle"
-            description="Monitor UMA OOv2 and OOv3 assertions, disputes, and votes"
-          />
-          <div className="flex gap-2">
-            <button
-              onClick={triggerSync}
-              className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 transition-colors hover:bg-blue-700"
-            >
-              <RefreshCw className="h-4 w-4" />
-              Sync Now
-            </button>
-            <a
-              href="/api/oracle/uma/config"
-              className="flex items-center gap-2 rounded-lg bg-white/10 px-4 py-2 transition-colors hover:bg-white/20"
-            >
-              <Settings className="h-4 w-4" />
-              Config
-            </a>
+        <div className="mb-8 flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <PageHeader
+              title="UMA Optimistic Oracle"
+              description="Monitor UMA OOv2 and OOv3 assertions, disputes, and votes"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={triggerSync}
+                disabled={isRefreshing}
+                className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 transition-colors hover:bg-blue-700 disabled:opacity-50"
+              >
+                <RefreshCw className={cn('h-4 w-4', isRefreshing && 'animate-spin')} />
+                {isRefreshing ? 'Syncing...' : 'Sync Now'}
+              </button>
+              <a
+                href="/api/oracle/uma/config"
+                className="flex items-center gap-2 rounded-lg bg-white/10 px-4 py-2 transition-colors hover:bg-white/20"
+              >
+                <Settings className="h-4 w-4" />
+                Config
+              </a>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 text-sm">
+            <div className="flex items-center gap-2">
+              <span
+                className={cn(
+                  'h-2 w-2 rounded-full',
+                  overview?.sync.syncing ? 'animate-pulse bg-yellow-400' : 'bg-green-400',
+                )}
+              />
+              <span className="text-gray-400">
+                {overview?.sync.syncing ? 'Syncing...' : 'Idle'}
+              </span>
+            </div>
+            {lastUpdated && (
+              <span className="text-gray-500">
+                Last updated: {lastUpdated.toLocaleTimeString()}
+              </span>
+            )}
           </div>
         </div>
 

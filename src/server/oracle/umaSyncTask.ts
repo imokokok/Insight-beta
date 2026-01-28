@@ -4,12 +4,14 @@ import { logger } from '@/lib/logger';
 
 const UMA_SYNC_INTERVAL_MS = 30_000;
 const MAX_CONSECUTIVE_ERRORS = 5;
+const SYNC_TIMEOUT_MS = 120_000;
 
 interface SyncTaskState {
   running: boolean;
   consecutiveErrors: number;
   lastSyncTime: number;
   instanceIds: string[];
+  lastProgressBlock: Map<string, bigint>;
 }
 
 const syncTaskState: SyncTaskState = {
@@ -17,6 +19,7 @@ const syncTaskState: SyncTaskState = {
   consecutiveErrors: 0,
   lastSyncTime: 0,
   instanceIds: ['uma-mainnet'],
+  lastProgressBlock: new Map(),
 };
 
 export function startUMASyncTask() {
@@ -35,6 +38,7 @@ export function startUMASyncTask() {
     const startTime = Date.now();
     let successCount = 0;
     let failCount = 0;
+    let totalBlocksProcessed = 0n;
 
     for (const instanceId of syncTaskState.instanceIds) {
       try {
@@ -43,16 +47,34 @@ export function startUMASyncTask() {
           continue;
         }
 
-        const result = await ensureUMASynced(instanceId);
+        const syncPromise = ensureUMASynced(instanceId);
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Sync timeout')), SYNC_TIMEOUT_MS),
+        );
+
+        const result = await Promise.race([syncPromise, timeoutPromise]);
+
         if (result.updated) {
           successCount++;
-          logger.info('UMA sync completed', { instanceId, updated: result.updated });
+          const lastBlock = syncTaskState.lastProgressBlock.get(instanceId) ?? 0n;
+          const newBlock = BigInt(result.state?.lastProcessedBlock ?? 0);
+          const blocksDelta = newBlock > lastBlock ? newBlock - lastBlock : 0n;
+          totalBlocksProcessed += blocksDelta;
+          syncTaskState.lastProgressBlock.set(instanceId, newBlock);
+
+          logger.info('UMA sync completed', {
+            instanceId,
+            updated: result.updated,
+            blocksProcessed: blocksDelta.toString(),
+            latestBlock: newBlock.toString(),
+          });
         }
       } catch (error) {
         failCount++;
+        const errorMessage = error instanceof Error ? error.message : 'Unknown';
         logger.error('UMA sync failed', {
           instanceId,
-          error: error instanceof Error ? error.message : 'Unknown',
+          error: errorMessage,
         });
       }
     }
@@ -60,12 +82,20 @@ export function startUMASyncTask() {
     syncTaskState.lastSyncTime = Date.now();
     const durationMs = Date.now() - startTime;
 
+    if (durationMs > SYNC_TIMEOUT_MS) {
+      logger.warn('UMA sync cycle exceeded timeout', {
+        durationMs,
+        timeoutMs: SYNC_TIMEOUT_MS,
+      });
+    }
+
     if (failCount > 0) {
       syncTaskState.consecutiveErrors++;
       logger.warn('UMA sync cycle completed with errors', {
         successCount,
         failCount,
         durationMs,
+        totalBlocksProcessed: totalBlocksProcessed.toString(),
         consecutiveErrors: syncTaskState.consecutiveErrors,
       });
 
@@ -78,7 +108,11 @@ export function startUMASyncTask() {
       }
     } else {
       syncTaskState.consecutiveErrors = 0;
-      logger.debug('UMA sync cycle completed', { successCount, durationMs });
+      logger.info('UMA sync cycle completed', {
+        successCount,
+        durationMs,
+        totalBlocksProcessed: totalBlocksProcessed.toString(),
+      });
     }
 
     if (syncTaskState.running) {
