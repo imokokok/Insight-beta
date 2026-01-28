@@ -4,7 +4,17 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Route } from 'next';
-import { ShieldAlert, Activity, Menu, X, User, ScrollText, KeyRound, Star } from 'lucide-react';
+import {
+  ShieldAlert,
+  Activity,
+  Menu,
+  X,
+  User,
+  ScrollText,
+  KeyRound,
+  Star,
+  Globe,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { useI18n } from '@/i18n/LanguageProvider';
@@ -13,6 +23,11 @@ import { useOracleFilters } from '@/hooks/oracle/useOracleFilters';
 
 const navItems = [
   { key: 'nav.oracle' as const, href: '/oracle' as const, icon: Activity },
+  {
+    key: 'nav.umaOracle' as const,
+    href: '/oracle/uma' as const,
+    icon: Globe,
+  },
   {
     key: 'nav.disputes' as const,
     href: '/disputes' as const,

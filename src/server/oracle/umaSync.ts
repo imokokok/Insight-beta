@@ -1,9 +1,10 @@
 import { createPublicClient, http, parseAbi, getAddress, type Address } from 'viem';
-import type { UMAChain, UMAAssertion, UMADispute } from '@/lib/types/oracleTypes';
+import type { UMAChain, UMAAssertion, UMADispute, UMAVote } from '@/lib/types/oracleTypes';
 import { readUMAConfig, DEFAULT_UMA_INSTANCE_ID } from './umaConfig';
 import {
   upsertUMAAssertion,
   upsertUMADispute,
+  upsertUMAVote,
   updateUMASyncState,
   getUMASyncState,
   type StoredUMAState,
@@ -23,6 +24,7 @@ const OOV3_ABI = parseAbi([
   'event AssertionMade(bytes32 indexed assertionId, bytes32 indexed claim, address indexed asserter, uint64 bond, bytes32 identifier)',
   'event AssertionDisputed(bytes32 indexed assertionId, address indexed disputer)',
   'event AssertionSettled(bytes32 indexed assertionId, bool indexed settledTruth, uint256 payout)',
+  'event VoteEmitted(bytes32 indexed assertionId, address indexed voter, uint256 weight, bool support)',
 ]);
 
 const DEFAULT_RPC_TIMEOUT_MS = 30_000;
@@ -463,6 +465,14 @@ async function syncUMAOnce(
                   toBlock: rangeTo,
                 }),
               ),
+              withRpc((client) =>
+                client.getLogs({
+                  address: ooV3Address,
+                  event: OOV3_ABI[3],
+                  fromBlock: cursor,
+                  toBlock: rangeTo,
+                }),
+              ),
             );
           }
 
@@ -530,6 +540,12 @@ async function syncUMAOnce(
             blockNumber: unknown;
             logIndex: unknown;
           }>;
+          const oov3VoteLogs = (logsResults[6] || []) as Array<{
+            args: { assertionId: unknown; voter: unknown; weight: unknown; support: unknown };
+            transactionHash: unknown;
+            blockNumber: unknown;
+            logIndex: unknown;
+          }>;
 
           logsInRange =
             oov2ProposedLogs.length +
@@ -537,7 +553,8 @@ async function syncUMAOnce(
             oov2SettledLogs.length +
             oov3MadeLogs.length +
             oov3DisputedLogs.length +
-            oov3SettledLogs.length;
+            oov3SettledLogs.length +
+            oov3VoteLogs.length;
           const dbOps: Promise<unknown>[] = [];
 
           for (const log of oov2ProposedLogs) {
@@ -728,6 +745,25 @@ async function syncUMAOnce(
             };
 
             dbOps.push(upsertUMAAssertion(assertion, instanceId));
+          }
+
+          for (const log of oov3VoteLogs) {
+            const args = log.args;
+            if (!args) continue;
+            const assertionId = args.assertionId as string;
+
+            const vote: UMAVote = {
+              chain: chain as UMAChain,
+              assertionId,
+              voter: getAddress(args.voter as string),
+              support: args.support as boolean,
+              weight: args.weight as bigint,
+              txHash: (log.transactionHash as string) ?? '0x0',
+              blockNumber: String(log.blockNumber ?? 0),
+              logIndex: Number(log.logIndex ?? 0),
+            };
+
+            dbOps.push(upsertUMAVote(vote, instanceId));
           }
 
           await Promise.all(dbOps);

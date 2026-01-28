@@ -393,6 +393,7 @@ export const translations = {
       myAssertions: 'My Assertions',
       myDisputes: 'My Disputes',
       oracle: 'Oracle',
+      umaOracle: 'UMA Oracle',
       watchlist: 'Watchlist',
     },
     onboarding: {
@@ -1211,6 +1212,7 @@ export const translations = {
       myAssertions: 'Mis Aserciones',
       myDisputes: 'Mis Disputas',
       oracle: 'Oráculo',
+      umaOracle: 'UMA Oráculo',
       watchlist: 'Lista de seguimiento',
     },
     onboarding: {
@@ -2023,6 +2025,7 @@ export const translations = {
       myAssertions: 'Mes assertions',
       myDisputes: 'Mes contestations',
       oracle: 'Oracle',
+      umaOracle: 'UMA Oracle',
       watchlist: 'Liste de surveillance',
     },
     onboarding: {
@@ -2845,6 +2848,7 @@ export const translations = {
       myAssertions: '내 주장',
       myDisputes: '내 분쟁',
       oracle: '오라클',
+      umaOracle: 'UMA 오라클',
       watchlist: '관심 목록',
     },
     onboarding: {
@@ -3654,6 +3658,7 @@ export const translations = {
       myAssertions: '我的断言',
       myDisputes: '我的争议',
       oracle: '监控台',
+      umaOracle: 'UMA 预言机',
       watchlist: '关注列表',
     },
     onboarding: {
@@ -4179,6 +4184,7 @@ export type TranslationKey =
   | 'howItWorks.step3.title'
   | 'howItWorks.step3.desc'
   | 'nav.oracle'
+  | 'nav.umaOracle'
   | 'nav.disputes'
   | 'nav.alerts'
   | 'nav.adminTokens'
