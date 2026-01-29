@@ -2,6 +2,7 @@ import pg from 'pg';
 import { env } from '@/lib/config/env';
 import crypto from 'node:crypto';
 import { logger } from '@/lib/logger';
+import { DATABASE_CONFIG } from '@/lib/config/constants';
 
 const { Pool } = pg;
 
@@ -66,35 +67,50 @@ export const db =
   globalForDb.conn ??
   new Pool({
     connectionString: getDbUrl() || undefined,
-    max: Math.max(10, Math.min(100, Number(process.env.INSIGHT_DB_POOL_SIZE) || 25)),
+    max: Math.max(
+      10,
+      Math.min(100, Number(process.env.INSIGHT_DB_POOL_SIZE) || DATABASE_CONFIG.DEFAULT_POOL_SIZE),
+    ),
     min: Math.max(2, Math.min(10, Number(process.env.INSIGHT_DB_MIN_POOL) || 5)),
-    idleTimeoutMillis: Math.max(10000, Number(process.env.INSIGHT_DB_IDLE_TIMEOUT) || 30000),
+    idleTimeoutMillis: Math.max(
+      10000,
+      Number(process.env.INSIGHT_DB_IDLE_TIMEOUT) || DATABASE_CONFIG.DEFAULT_IDLE_TIMEOUT,
+    ),
     connectionTimeoutMillis: Math.max(
-      5000,
+      DATABASE_CONFIG.DEFAULT_CONNECTION_TIMEOUT,
       Number(process.env.INSIGHT_DB_CONNECTION_TIMEOUT) || 10000,
     ),
-    maxUses: Math.max(1000, Number(process.env.INSIGHT_DB_MAX_USES) || 7500),
+    maxUses: Math.max(
+      1000,
+      Number(process.env.INSIGHT_DB_MAX_USES) || DATABASE_CONFIG.DEFAULT_MAX_USES,
+    ),
     ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : false,
     statement_timeout: Math.max(5000, Number(process.env.INSIGHT_DB_STATEMENT_TIMEOUT) || 30000),
   });
 
 if (process.env.NODE_ENV !== 'production') globalForDb.conn = db;
 
+interface DatabaseError extends Error {
+  message: string;
+  code?: string;
+  stack?: string;
+}
+
+interface PoolClient {
+  on(event: string, listener: (...args: unknown[]) => void): void;
+}
+
 if (typeof (db as unknown as { on?: unknown }).on === 'function') {
-  (db as unknown as { on: (event: string, listener: (...args: unknown[]) => void) => void }).on(
-    'error',
-    (err: unknown) => {
-      const msg =
-        err && typeof err === 'object' && 'message' in err ? (err as any).message : String(err);
-      logger.error('Unexpected database pool error', { error: msg });
-    },
-  );
-  (db as unknown as { on: (event: string, listener: (...args: unknown[]) => void) => void }).on(
-    'connect',
-    () => {
-      logger.debug('New database connection established');
-    },
-  );
+  (db as unknown as PoolClient).on('error', (err: unknown) => {
+    const errorObj = err instanceof Error ? (err as DatabaseError) : { message: String(err) };
+    logger.error('Unexpected database pool error', {
+      error: errorObj.message,
+      code: (errorObj as DatabaseError).code,
+    });
+  });
+  (db as unknown as PoolClient).on('connect', () => {
+    logger.debug('New database connection established');
+  });
 }
 
 export async function query<T extends pg.QueryResultRow>(

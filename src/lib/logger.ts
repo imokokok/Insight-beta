@@ -44,6 +44,49 @@ type AsyncLocalStorageLike<T> = {
 
 const urlSubstringRe = /\b(?:https?|wss?|postgres(?:ql)?):\/\/[^\s"'<>]+/gi;
 
+const SENSITIVE_FIELDS = [
+  'password',
+  'token',
+  'secret',
+  'key',
+  'privateKey',
+  'mnemonic',
+  'apiKey',
+  'api_key',
+  'apiSecret',
+  'api_secret',
+  'auth',
+  'authorization',
+  'cookie',
+  'session',
+  'csrf',
+  'xsrf',
+  'credential',
+  'passphrase',
+  'seed',
+  'wallet',
+  'signature',
+  'accessToken',
+  'refreshToken',
+  'idToken',
+  'bearer',
+];
+
+const SENSITIVE_PATTERNS = [
+  /[a-f0-9]{64}/gi,
+  /[a-f0-9]{128}/gi,
+  /0x[a-f0-9]{40}/gi,
+  /[a-zA-Z0-9]{32,}_key/gi,
+  /sk-[a-zA-Z0-9]{20,}/gi,
+  /sk_live_[a-zA-Z0-9]{20,}/gi,
+  /sk_test_[a-zA-Z0-9]{20,}/gi,
+  /pk_live_[a-zA-Z0-9]{20,}/gi,
+  /pk_test_[a-zA-Z0-9]{20,}/gi,
+  /Bearer\s+[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+/gi,
+  /Basic\s+[a-zA-Z0-9+/=]+/gi,
+  /[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+\.[a-zA-Z]{2,}/gi,
+];
+
 function redactUrlString(raw: string) {
   try {
     const u = new URL(raw);
@@ -70,6 +113,45 @@ function redactUrlString(raw: string) {
     if (trimmed.length <= 140) return trimmed;
     return trimmed.slice(0, 140) + '…';
   }
+}
+
+function redactSensitiveData(value: string): string {
+  let redacted = value;
+
+  for (const pattern of SENSITIVE_PATTERNS) {
+    redacted = redacted.replace(pattern, '<REDACTED>');
+  }
+
+  return redacted;
+}
+
+function redactSensitiveFields(obj: Record<string, unknown>): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+
+  for (const [key, value] of Object.entries(obj)) {
+    const lowerKey = key.toLowerCase();
+    const isSensitive = SENSITIVE_FIELDS.some((field) => lowerKey.includes(field.toLowerCase()));
+
+    if (isSensitive) {
+      result[key] = '<REDACTED>';
+    } else if (typeof value === 'string') {
+      result[key] = redactSensitiveData(value);
+    } else if (typeof value === 'object' && value !== null) {
+      if (Array.isArray(value)) {
+        result[key] = value.map((item) =>
+          typeof item === 'object' && item !== null
+            ? redactSensitiveFields(item as Record<string, unknown>)
+            : item,
+        );
+      } else {
+        result[key] = redactSensitiveFields(value as Record<string, unknown>);
+      }
+    } else {
+      result[key] = value;
+    }
+  }
+
+  return result;
 }
 
 function redactUrlsInText(input: string) {
@@ -104,7 +186,7 @@ function serializeError(error: Error): Record<string, unknown> {
 
 function normalizeForJson(value: unknown, seen: WeakSet<object>): unknown {
   if (value instanceof Error) return serializeError(value);
-  if (typeof value === 'string') return redactUrlsInText(value);
+  if (typeof value === 'string') return redactUrlsInText(redactSensitiveData(value));
   if (typeof value === 'bigint') return value.toString(10);
   if (value instanceof Date) return value.toISOString();
   if (!value || typeof value !== 'object') return value;
@@ -122,11 +204,13 @@ function normalizeForJson(value: unknown, seen: WeakSet<object>): unknown {
   if (value instanceof Set) {
     return Array.from(value.values()).map((v) => normalizeForJson(v, seen));
   }
+
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
     out[k] = normalizeForJson(v, seen);
   }
-  return out;
+
+  return redactSensitiveFields(out);
 }
 
 function normalizeMetadata(

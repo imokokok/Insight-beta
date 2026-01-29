@@ -274,34 +274,101 @@ export async function readOracleState(
     };
   }
 
-  const [syncRes, instanceRes, legacyConfigRes, assertionsRes, disputesRes] = await Promise.all([
-    query('SELECT * FROM oracle_sync_state WHERE instance_id = $1', [normalizedInstanceId]),
-    query('SELECT chain, contract_address FROM oracle_instances WHERE id = $1', [
-      normalizedInstanceId,
-    ]),
-    normalizedInstanceId === DEFAULT_ORACLE_INSTANCE_ID
-      ? query('SELECT chain, contract_address FROM oracle_config WHERE id = 1')
-      : Promise.resolve({ rows: [] } as { rows: unknown[] }),
-    query<DbAssertionRow>('SELECT * FROM assertions WHERE instance_id = $1', [
-      normalizedInstanceId,
-    ]),
-    query<DbDisputeRow>('SELECT * FROM disputes WHERE instance_id = $1', [normalizedInstanceId]),
-  ]);
+  const combinedRes = await query<{
+    last_processed_block: unknown;
+    last_attempt_at: unknown;
+    last_success_at: unknown;
+    last_duration_ms: unknown;
+    last_error: unknown;
+    chain: unknown;
+    contract_address: unknown;
+    assertions_json: string;
+    disputes_json: string;
+  }>(
+    `
+    WITH instance_config AS (
+      SELECT chain, contract_address 
+      FROM oracle_instances 
+      WHERE id = $1
+      UNION ALL
+      SELECT chain, contract_address 
+      FROM oracle_config 
+      WHERE id = 1 
+        AND $1 = '${DEFAULT_ORACLE_INSTANCE_ID}'
+        AND NOT EXISTS (SELECT 1 FROM oracle_instances WHERE id = $1)
+      LIMIT 1
+    ),
+    sync_data AS (
+      SELECT 
+        last_processed_block,
+        last_attempt_at,
+        last_success_at,
+        last_duration_ms,
+        last_error
+      FROM oracle_sync_state 
+      WHERE instance_id = $1
+    ),
+    assertions_agg AS (
+      SELECT COALESCE(json_agg(a.*), '[]'::json) as assertions_json
+      FROM assertions a
+      WHERE a.instance_id = $1
+    ),
+    disputes_agg AS (
+      SELECT COALESCE(json_agg(d.*), '[]'::json) as disputes_json
+      FROM disputes d
+      WHERE d.instance_id = $1
+    )
+    SELECT 
+      s.last_processed_block,
+      s.last_attempt_at,
+      s.last_success_at,
+      s.last_duration_ms,
+      s.last_error,
+      ic.chain,
+      ic.contract_address,
+      aa.assertions_json,
+      da.disputes_json
+    FROM sync_data s
+    CROSS JOIN instance_config ic
+    CROSS JOIN assertions_agg aa
+    CROSS JOIN disputes_agg da
+  `,
+    [normalizedInstanceId],
+  );
 
-  const syncRow = (syncRes.rows[0] || {}) as Record<string, unknown>;
-  const instanceRow = (instanceRes.rows[0] || legacyConfigRes.rows[0] || {}) as Record<
-    string,
-    unknown
-  >;
+  const row = combinedRes.rows[0];
+
+  const syncRow: Record<string, unknown> = {
+    last_processed_block: row?.last_processed_block,
+    last_attempt_at: row?.last_attempt_at,
+    last_success_at: row?.last_success_at,
+    last_duration_ms: row?.last_duration_ms,
+    last_error: row?.last_error,
+  };
+
+  const instanceRow: Record<string, unknown> = {
+    chain: row?.chain,
+    contract_address: row?.contract_address,
+  };
 
   const assertions: Record<string, Assertion> = {};
-  for (const row of assertionsRes.rows) {
-    assertions[row.id] = mapAssertionRow(row);
+  try {
+    const assertionsData = JSON.parse(row?.assertions_json || '[]') as DbAssertionRow[];
+    for (const assertionRow of assertionsData) {
+      assertions[assertionRow.id] = mapAssertionRow(assertionRow);
+    }
+  } catch {
+    // If JSON parsing fails, fall back to empty assertions
   }
 
   const disputes: Record<string, Dispute> = {};
-  for (const row of disputesRes.rows) {
-    disputes[row.id] = mapDisputeRow(row);
+  try {
+    const disputesData = JSON.parse(row?.disputes_json || '[]') as DbDisputeRow[];
+    for (const disputeRow of disputesData) {
+      disputes[disputeRow.id] = mapDisputeRow(disputeRow);
+    }
+  } catch {
+    // If JSON parsing fails, fall back to empty disputes
   }
 
   return {

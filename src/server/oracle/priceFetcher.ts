@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import { env } from '@/lib/config/env';
 import { parseRpcUrls } from '@/lib/utils';
 import { createPublicClient, http, parseAbi } from 'viem';
+import { DEFAULT_FALLBACK_PRICES } from '@/lib/config/constants';
 
 function secureRandom(): number {
   const bytes = crypto.randomBytes(4);
@@ -91,9 +92,9 @@ function fallbackSpotUsd(sym: string) {
   const rawBtc = env.INSIGHT_FALLBACK_BTC_PRICE;
   const rawEth = env.INSIGHT_FALLBACK_ETH_PRICE;
   const rawDefault = env.INSIGHT_FALLBACK_DEFAULT_PRICE;
-  const fallbackBtc = rawBtc ? Number(rawBtc) : 65000;
-  const fallbackEth = rawEth ? Number(rawEth) : 3500;
-  const fallbackDefault = rawDefault ? Number(rawDefault) : 100;
+  const fallbackBtc = rawBtc ? Number(rawBtc) : DEFAULT_FALLBACK_PRICES.BTC;
+  const fallbackEth = rawEth ? Number(rawEth) : DEFAULT_FALLBACK_PRICES.ETH;
+  const fallbackDefault = rawDefault ? Number(rawDefault) : DEFAULT_FALLBACK_PRICES.DEFAULT;
   return symbol === 'BTC' ? fallbackBtc : symbol === 'ETH' ? fallbackEth : fallbackDefault;
 }
 

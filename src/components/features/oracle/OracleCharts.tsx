@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback, memo } from 'react';
 import { BarChart3 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { fetchApiData } from '@/lib/utils';
@@ -33,6 +33,56 @@ const getTabBorder = (activeTab: TabKey) =>
           ? 'border-orange-100/20'
           : 'border-green-100/20';
 
+const ACCURACY_THRESHOLD_WARNING = 0.02;
+const ACCURACY_THRESHOLD_CRITICAL = 0.05;
+const MAX_ANOMALIES = 5;
+
+const MemoizedChartBackground = memo(ChartBackground);
+const MemoizedChartsHeader = memo(ChartsHeader);
+const MemoizedChartsContent = memo(ChartsContent);
+const MemoizedAccuracySummary = memo(AccuracySummary);
+
+interface LoadingStateProps {
+  className?: string;
+}
+
+const LoadingState = memo(function LoadingState({ className }: LoadingStateProps) {
+  return (
+    <div className={cn('h-[400px] w-full', className)}>
+      <Skeleton className="h-full w-full rounded-2xl" />
+    </div>
+  );
+});
+
+interface ErrorStateProps {
+  error: string;
+  t: Translator;
+}
+
+const ErrorState = memo(function ErrorState({ error, t }: ErrorStateProps) {
+  return (
+    <div className="glass-panel rounded-2xl border-rose-100 bg-rose-50/50 p-6 shadow-sm">
+      <div className="text-sm text-rose-700">{getUiErrorMessage(error, t)}</div>
+    </div>
+  );
+});
+
+interface EmptyStateProps {
+  t: Translator;
+}
+
+const EmptyState = memo(function EmptyState({ t }: EmptyStateProps) {
+  return (
+    <div className="glass-panel flex h-[400px] w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed border-indigo-100/50 bg-white/40 p-8 text-center">
+      <div className="mb-4 rounded-full bg-indigo-50/50 p-4 ring-1 ring-indigo-100">
+        <BarChart3 className="h-8 w-8 text-indigo-300" />
+      </div>
+      <h3 className="mb-1 text-lg font-bold text-gray-700">{t('oracle.charts.noData')}</h3>
+      <p className="max-w-xs text-sm text-gray-400">{t('oracle.charts.waitingData')}</p>
+    </div>
+  );
+});
+
 export function OracleCharts({ instanceId }: { instanceId?: string | null }) {
   const [rawData, setRawData] = useState<ChartItem[]>([]);
   const [rawSyncMetrics, setRawSyncMetrics] = useState<SyncMetricItem[]>([]);
@@ -56,6 +106,10 @@ export function OracleCharts({ instanceId }: { instanceId?: string | null }) {
   const { t, lang } = useI18n();
   const locale = langToLocale[lang];
   const normalizedInstanceId = (instanceId ?? '').trim();
+
+  const handleTabChange = useCallback((tab: TabKey) => {
+    setActiveTab(tab);
+  }, []);
 
   useEffect(() => {
     setRawData([]);
@@ -206,73 +260,50 @@ export function OracleCharts({ instanceId }: { instanceId?: string | null }) {
   const accuracyAnomalies = useMemo<AccuracyAnomaly[]>(() => {
     if (accuracyData.length === 0) return [];
     return accuracyData
-      .filter((p) => p.deviation >= 0.02)
+      .filter((p) => p.deviation >= ACCURACY_THRESHOLD_WARNING)
       .map((p) => {
-        const severity = p.deviation >= 0.05 ? ('critical' as const) : ('warning' as const);
+        const severity =
+          p.deviation >= ACCURACY_THRESHOLD_CRITICAL ? ('critical' as const) : ('warning' as const);
         return {
           ...p,
           severity,
         };
       })
       .sort((a, b) => b.deviation - a.deviation)
-      .slice(0, 5);
+      .slice(0, MAX_ANOMALIES);
   }, [accuracyData]);
 
-  const formatPercent = (value: number | null) => {
+  const formatPercent = useCallback((value: number | null) => {
     if (value === null || !Number.isFinite(value)) return '—';
     return `${(value * 100).toFixed(2)}%`;
-  };
+  }, []);
 
   const hasAssertionsData = chartData.length >= 2;
   const hasSyncData = syncChartData.length >= 2;
   const hasAccuracyData = accuracyChartData.length >= 2;
 
   if (loading) {
-    return (
-      <div className="h-[400px] w-full">
-        <Skeleton className="h-full w-full rounded-2xl" />
-      </div>
-    );
+    return <LoadingState />;
   }
+
   if (activeTab === 'sync' && syncError) {
-    return (
-      <div className="glass-panel rounded-2xl border-rose-100 bg-rose-50/50 p-6 shadow-sm">
-        <div className="text-sm text-rose-700">{getUiErrorMessage(syncError, t)}</div>
-      </div>
-    );
+    return <ErrorState error={syncError} t={t as Translator} />;
   }
+
   if (activeTab === 'markets' && marketsError) {
-    return (
-      <div className="glass-panel rounded-2xl border-rose-100 bg-rose-50/50 p-6 shadow-sm">
-        <div className="text-sm text-rose-700">{getUiErrorMessage(marketsError, t)}</div>
-      </div>
-    );
+    return <ErrorState error={marketsError} t={t as Translator} />;
   }
+
   if (error) {
-    return (
-      <div className="glass-panel rounded-2xl border-rose-100 bg-rose-50/50 p-6 shadow-sm">
-        <div className="text-sm text-rose-700">{getUiErrorMessage(error, t)}</div>
-      </div>
-    );
+    return <ErrorState error={error} t={t as Translator} />;
   }
+
   if (!hasAssertionsData && !hasSyncData) {
-    return (
-      <div className="glass-panel flex h-[400px] w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed border-indigo-100/50 bg-white/40 p-8 text-center">
-        <div className="mb-4 rounded-full bg-indigo-50/50 p-4 ring-1 ring-indigo-100">
-          <BarChart3 className="h-8 w-8 text-indigo-300" />
-        </div>
-        <h3 className="mb-1 text-lg font-bold text-gray-700">{t('oracle.charts.noData')}</h3>
-        <p className="max-w-xs text-sm text-gray-400">{t('oracle.charts.waitingData')}</p>
-      </div>
-    );
+    return <EmptyState t={t as Translator} />;
   }
 
   if (activeTab === 'accuracy' && accuracyError) {
-    return (
-      <div className="glass-panel rounded-2xl border-rose-100 bg-rose-50/50 p-6 shadow-sm">
-        <div className="text-sm text-rose-700">{getUiErrorMessage(accuracyError, t)}</div>
-      </div>
-    );
+    return <ErrorState error={accuracyError} t={t as Translator} />;
   }
 
   const tabBorder = getTabBorder(activeTab);
@@ -284,9 +315,13 @@ export function OracleCharts({ instanceId }: { instanceId?: string | null }) {
         tabBorder,
       )}
     >
-      <ChartBackground activeTab={activeTab} />
-      <ChartsHeader activeTab={activeTab} onTabChange={setActiveTab} t={t as Translator} />
-      <ChartsContent
+      <MemoizedChartBackground activeTab={activeTab} />
+      <MemoizedChartsHeader
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        t={t as Translator}
+      />
+      <MemoizedChartsContent
         activeTab={activeTab}
         t={t as Translator}
         chartData={chartData}
@@ -301,7 +336,7 @@ export function OracleCharts({ instanceId }: { instanceId?: string | null }) {
         hasSyncData={hasSyncData}
         syncChartData={syncChartData}
       />
-      <AccuracySummary
+      <MemoizedAccuracySummary
         activeTab={activeTab}
         accuracyLoading={accuracyLoading}
         hasAccuracyData={hasAccuracyData}

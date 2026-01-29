@@ -50,6 +50,7 @@
     "@sentry/nextjs": "8.49.0",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
+    "isomorphic-dompurify": "^2.35.0",
     "lucide-react": "0.562.0",
     "next": "15.5.9",
     "nodemailer": "^7.0.12",

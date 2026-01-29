@@ -4,6 +4,7 @@ import { createOrTouchAlert } from '@/server/observability';
 import { ensureSchema } from '@/server/schema';
 import { isIP } from 'node:net';
 import { error } from './response';
+import { RATE_LIMIT_CONFIG } from '@/lib/config/constants';
 
 type RateLimitEntry = { count: number; resetAtMs: number };
 
@@ -308,7 +309,10 @@ export async function rateLimit(
     }
   }
 
-  if (insightRate.size > 5000 && now - lastRatePruneAtMs > 60_000) {
+  if (
+    insightRate.size > RATE_LIMIT_CONFIG.DEFAULT_MEMORY_LIMIT &&
+    now - lastRatePruneAtMs > 60_000
+  ) {
     lastRatePruneAtMs = now;
     const keysToDelete: string[] = [];
     for (const [k, v] of insightRate.entries()) {
@@ -318,8 +322,11 @@ export async function rateLimit(
     for (const k of keysToDelete) {
       insightRate.delete(k);
     }
-    if (insightRate.size > 5000) {
-      const excessKeys = Array.from(insightRate.keys()).slice(0, insightRate.size - 4000);
+    if (insightRate.size > RATE_LIMIT_CONFIG.DEFAULT_MEMORY_LIMIT) {
+      const excessKeys = Array.from(insightRate.keys()).slice(
+        0,
+        insightRate.size - Math.floor(RATE_LIMIT_CONFIG.DEFAULT_MEMORY_LIMIT * 0.8),
+      );
       for (const k of excessKeys) {
         insightRate.delete(k);
       }
