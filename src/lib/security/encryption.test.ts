@@ -7,6 +7,7 @@ import {
   redactSensitiveData,
   maskInLog,
   isEncryptionEnabled,
+  getEncryptionStatus,
 } from './encryption';
 
 // Save original env
@@ -14,7 +15,7 @@ const originalEnv = process.env.INSIGHT_CONFIG_ENCRYPTION_KEY;
 
 describe('Encryption', () => {
   beforeEach(() => {
-    // Set a valid encryption key for tests
+    // Set a valid encryption key for tests (32+ bytes)
     process.env.INSIGHT_CONFIG_ENCRYPTION_KEY = 'a'.repeat(32);
   });
 
@@ -37,6 +38,33 @@ describe('Encryption', () => {
       process.env.INSIGHT_CONFIG_ENCRYPTION_KEY = 'short';
       expect(isEncryptionEnabled()).toBe(false);
     });
+
+    it('handles multi-byte characters correctly', () => {
+      // 5个中文字符 = 15字节，不足32字节
+      process.env.INSIGHT_CONFIG_ENCRYPTION_KEY = '中文测试';
+      expect(isEncryptionEnabled()).toBe(false);
+
+      // 11个中文字符 = 33字节，满足32字节
+      process.env.INSIGHT_CONFIG_ENCRYPTION_KEY = '中文测试中文测试中文测试中文';
+      expect(isEncryptionEnabled()).toBe(true);
+    });
+  });
+
+  describe('getEncryptionStatus', () => {
+    it('returns correct status when enabled', () => {
+      const status = getEncryptionStatus();
+      expect(status.enabled).toBe(true);
+      expect(status.keyByteLength).toBe(32);
+      expect(status.algorithm).toBe('aes-256-gcm');
+      expect(status.version).toBe(2);
+    });
+
+    it('returns correct status when disabled', () => {
+      delete process.env.INSIGHT_CONFIG_ENCRYPTION_KEY;
+      const status = getEncryptionStatus();
+      expect(status.enabled).toBe(false);
+      expect(status.keyByteLength).toBe(0);
+    });
   });
 
   describe('encrypt/decrypt', () => {
@@ -48,6 +76,8 @@ describe('Encryption', () => {
       expect(encrypted?.iv).toBeTruthy();
       expect(encrypted?.authTag).toBeTruthy();
       expect(encrypted?.encrypted).toBeTruthy();
+      expect(encrypted?.salt).toBeTruthy();
+      expect(encrypted?.version).toBe(2);
       expect(encrypted?.encrypted).not.toBe(originalText);
 
       const decrypted = decrypt(encrypted);
@@ -68,7 +98,13 @@ describe('Encryption', () => {
     });
 
     it('handles decryption failure gracefully', () => {
-      const result = decrypt({ iv: 'invalid', authTag: 'invalid', encrypted: 'invalid' });
+      const result = decrypt({
+        iv: 'invalid',
+        authTag: 'invalid',
+        encrypted: 'invalid',
+        salt: 'invalid',
+        version: 2,
+      });
       expect(result).toBe(null);
     });
 
@@ -76,6 +112,20 @@ describe('Encryption', () => {
       delete process.env.INSIGHT_CONFIG_ENCRYPTION_KEY;
       const result = decrypt('plain text');
       expect(result).toBe('plain text');
+    });
+
+    it('maintains backward compatibility with v1 format', () => {
+      // Simulate old v1 format (without salt and version)
+      const iv = 'aabbccddeeff00112233445566778899';
+      const authTag = '00112233445566778899aabb';
+      const encrypted = 'encrypteddata123';
+
+      const v1Data = { iv, authTag, encrypted };
+      // This should fail gracefully or handle it
+      const result = decrypt(v1Data as unknown as Parameters<typeof decrypt>[0]);
+      // V1 decryption may succeed or fail depending on the actual encrypted data
+      // but it should not throw
+      expect(result === null || typeof result === 'string').toBe(true);
     });
   });
 

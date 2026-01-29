@@ -34,7 +34,9 @@ async function ensureDb() {
       ]);
       schemaEnsured = true;
     } catch (error) {
-      console.warn('Database connection failed, skipping schema initialization:', error);
+      logger.warn('Database connection failed, skipping schema initialization', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       schemaEnsured = true;
     }
   }
@@ -60,11 +62,18 @@ const ValidationErrors = {
 
 type ValidationErrorCode = (typeof ValidationErrors)[keyof typeof ValidationErrors];
 
+interface ValidationErrorDetails {
+  message: string;
+  field?: string;
+  expected?: string;
+  received?: unknown;
+}
+
 class ValidationError extends Error {
   constructor(
     code: ValidationErrorCode,
     public field?: string,
-    public details?: Record<string, unknown>,
+    public details?: ValidationErrorDetails,
   ) {
     super(code);
     this.name = 'ValidationError';
@@ -445,11 +454,17 @@ export async function readOracleConfig(
         return parseConfigRow(legacy.rows[0]);
       }
     } catch (error) {
-      console.warn('Database query failed, falling back to memory store:', error);
+      logger.warn('Database query failed, falling back to memory store', {
+        instanceId: normalizedInstanceId,
+        error: error instanceof Error ? error.message : String(error),
+      });
       return memoryConfig;
     }
   } catch (error) {
-    console.warn('Error reading oracle config, returning default:', error);
+    logger.warn('Error reading oracle config, returning default', {
+      instanceId,
+      error: error instanceof Error ? error.message : String(error),
+    });
     return createDefaultConfig();
   }
 
@@ -483,6 +498,37 @@ function mergeConfig(prev: OracleConfig, next: Partial<OracleConfig>): OracleCon
   };
 }
 
+/**
+ * 执行数据库事务的通用辅助函数
+ * 自动处理连接获取、事务开始/提交/回滚和连接释放
+ */
+async function withTransaction<T>(fn: (client: PoolClient) => Promise<T>): Promise<T> {
+  const client = await getClient();
+  try {
+    await client.query('BEGIN');
+    const result = await fn(client);
+    await client.query('COMMIT');
+    return result;
+  } catch (error) {
+    try {
+      await client.query('ROLLBACK');
+    } catch (rollbackError) {
+      // 回滚失败是严重问题，需要记录并抛出
+      logger.error('Transaction rollback failed', {
+        rollbackError:
+          rollbackError instanceof Error ? rollbackError.message : String(rollbackError),
+        originalError: error instanceof Error ? error.message : String(error),
+      });
+      throw new Error(
+        `Transaction rollback failed: ${rollbackError instanceof Error ? rollbackError.message : String(rollbackError)}`,
+      );
+    }
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
 export async function writeOracleConfig(
   next: Partial<OracleConfig>,
   instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
@@ -504,56 +550,26 @@ export async function writeOracleConfig(
   // Encrypt sensitive fields
   const encryptedRpcUrl = encryptString(merged.rpcUrl) ?? merged.rpcUrl;
 
-  // Use transaction for data consistency
-  let client: PoolClient | null = null;
-
   try {
-    client = await getClient();
-    await client.query('BEGIN');
-
-    // First write: oracle_instances table
-    await client.query(
-      `INSERT INTO oracle_instances (
-        id, name, enabled, rpc_url, contract_address, chain, start_block, max_block_range, voting_period_hours, confirmation_blocks, updated_at
-      ) VALUES ($1, COALESCE((SELECT name FROM oracle_instances WHERE id = $1), $2), true, $3, $4, $5, $6, $7, $8, $9, NOW())
-      ON CONFLICT (id) DO UPDATE SET
-        rpc_url = excluded.rpc_url,
-        contract_address = excluded.contract_address,
-        chain = excluded.chain,
-        start_block = excluded.start_block,
-        max_block_range = excluded.max_block_range,
-        voting_period_hours = excluded.voting_period_hours,
-        confirmation_blocks = excluded.confirmation_blocks,
-        updated_at = NOW()
-      `,
-      [
-        normalizedInstanceId,
-        defaultName,
-        encryptedRpcUrl,
-        merged.contractAddress,
-        merged.chain,
-        String(merged.startBlock ?? 0),
-        merged.maxBlockRange ?? 10_000,
-        merged.votingPeriodHours ?? 72,
-        merged.confirmationBlocks ?? 12,
-      ],
-    );
-
-    // Second write: oracle_config table (only for default instance, for backward compatibility)
-    if (normalizedInstanceId === DEFAULT_ORACLE_INSTANCE_ID) {
+    await withTransaction(async (client) => {
+      // First write: oracle_instances table
       await client.query(
-        `INSERT INTO oracle_config (id, rpc_url, contract_address, chain, start_block, max_block_range, voting_period_hours, confirmation_blocks)
-         VALUES (1, $1, $2, $3, $4, $5, $6, $7)
-         ON CONFLICT (id) DO UPDATE SET
-           rpc_url = excluded.rpc_url,
-           contract_address = excluded.contract_address,
-           chain = excluded.chain,
-           start_block = excluded.start_block,
-           max_block_range = excluded.max_block_range,
-           voting_period_hours = excluded.voting_period_hours,
-           confirmation_blocks = excluded.confirmation_blocks
+        `INSERT INTO oracle_instances (
+          id, name, enabled, rpc_url, contract_address, chain, start_block, max_block_range, voting_period_hours, confirmation_blocks, updated_at
+        ) VALUES ($1, COALESCE((SELECT name FROM oracle_instances WHERE id = $1), $2), true, $3, $4, $5, $6, $7, $8, $9, NOW())
+        ON CONFLICT (id) DO UPDATE SET
+          rpc_url = excluded.rpc_url,
+          contract_address = excluded.contract_address,
+          chain = excluded.chain,
+          start_block = excluded.start_block,
+          max_block_range = excluded.max_block_range,
+          voting_period_hours = excluded.voting_period_hours,
+          confirmation_blocks = excluded.confirmation_blocks,
+          updated_at = NOW()
         `,
         [
+          normalizedInstanceId,
+          defaultName,
           encryptedRpcUrl,
           merged.contractAddress,
           merged.chain,
@@ -563,27 +579,40 @@ export async function writeOracleConfig(
           merged.confirmationBlocks ?? 12,
         ],
       );
-    }
 
-    await client.query('COMMIT');
-  } catch (error) {
-    if (client) {
-      try {
-        await client.query('ROLLBACK');
-      } catch (rollbackError) {
-        logger.error('Transaction rollback failed', { rollbackError });
+      // Second write: oracle_config table (only for default instance, for backward compatibility)
+      if (normalizedInstanceId === DEFAULT_ORACLE_INSTANCE_ID) {
+        await client.query(
+          `INSERT INTO oracle_config (id, rpc_url, contract_address, chain, start_block, max_block_range, voting_period_hours, confirmation_blocks)
+           VALUES (1, $1, $2, $3, $4, $5, $6, $7)
+           ON CONFLICT (id) DO UPDATE SET
+             rpc_url = excluded.rpc_url,
+             contract_address = excluded.contract_address,
+             chain = excluded.chain,
+             start_block = excluded.start_block,
+             max_block_range = excluded.max_block_range,
+             voting_period_hours = excluded.voting_period_hours,
+             confirmation_blocks = excluded.confirmation_blocks
+          `,
+          [
+            encryptedRpcUrl,
+            merged.contractAddress,
+            merged.chain,
+            String(merged.startBlock ?? 0),
+            merged.maxBlockRange ?? 10_000,
+            merged.votingPeriodHours ?? 72,
+            merged.confirmationBlocks ?? 12,
+          ],
+        );
       }
-    }
+    });
+  } catch (error) {
     logger.error('Database transaction failed', {
-      error,
+      error: error instanceof Error ? error.message : String(error),
       instanceId: normalizedInstanceId,
       operation: 'writeOracleConfig',
     });
     throw error;
-  } finally {
-    if (client) {
-      client.release();
-    }
   }
 
   return merged;
@@ -612,7 +641,9 @@ export async function getConfigEncryptionStatus(): Promise<{
         canDecrypt = decrypted === testData;
       }
     } catch (error) {
-      logger.error('Encryption test failed', { error });
+      logger.error('Encryption test failed', {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 

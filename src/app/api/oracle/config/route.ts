@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import {
   readOracleConfig,
   redactOracleConfig,
@@ -39,6 +40,9 @@ const RATE_LIMITS = {
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
+// 操作超时配置
+const OPERATION_TIMEOUT_MS = 5000;
+
 interface RequestContext {
   requestId: string;
   instanceId?: string;
@@ -51,15 +55,43 @@ function extractInstanceId(url: URL): string | undefined {
 }
 
 /**
- * 创建缓存键，包含权限标识以防止信息泄露
- * 管理员和普通用户看到的内容不同，必须使用不同的缓存键
+ * 创建哈希缓存键，防止长参数导致键过长
+ * 同时包含权限标识以防止信息泄露
  */
 function createCacheKey(instanceId: string | undefined, isAdmin: boolean): string {
   const params = new URLSearchParams();
   if (instanceId) params.set('instanceId', instanceId);
   // 关键：添加权限标识到缓存键，防止信息泄露
   params.set('_role', isAdmin ? 'admin' : 'user');
-  return createSafeCacheKey('/api/oracle/config', params);
+
+  const baseKey = createSafeCacheKey('/api/oracle/config', params);
+
+  // 对长键进行哈希处理
+  if (baseKey.length > 128) {
+    const hash = crypto.createHash('sha256').update(baseKey).digest('hex').slice(0, 32);
+    return `oracle:config:${hash}`;
+  }
+
+  return baseKey;
+}
+
+/**
+ * 带超时的 Promise 包装器
+ */
+async function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  operation: string,
+): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) =>
+      setTimeout(
+        () => reject(new Error(`Operation '${operation}' timed out after ${timeoutMs}ms`)),
+        timeoutMs,
+      ),
+    ),
+  ]);
 }
 
 function logConfigOperation(
@@ -230,18 +262,29 @@ async function handleConfigUpdate(
     masked: true,
   };
 
-  // 并行执行审计日志和缓存失效
-  const auditPromise = appendAuditLog({
-    actor: getAdminActor(request),
-    action: 'oracle_config_updated',
-    entityType: 'oracle',
-    entityId: updated.contractAddress || null,
-    details: auditDetails,
+  // 并行执行审计日志和缓存失效，带超时控制
+  const auditPromise = withTimeout(
+    appendAuditLog({
+      actor: getAdminActor(request),
+      action: 'oracle_config_updated',
+      entityType: 'oracle',
+      entityId: updated.contractAddress || null,
+      details: auditDetails,
+    }),
+    OPERATION_TIMEOUT_MS,
+    'audit_log',
+  ).catch((error) => {
+    logger.warn('Audit log operation timed out or failed', {
+      requestId: context.requestId,
+      error: error instanceof Error ? error.message : String(error),
+    });
   });
 
-  // 精确失效缓存，避免误删
-  const cacheInvalidationPromise = invalidateCachedJson(
-    createCacheKey(context.instanceId, true),
+  // 精确失效缓存，避免误删，带超时控制
+  const cacheInvalidationPromise = withTimeout(
+    invalidateCachedJson(createCacheKey(context.instanceId, true)),
+    OPERATION_TIMEOUT_MS,
+    'cache_invalidation_admin',
   ).catch((error) => {
     logger.warn('Cache invalidation failed for admin cache', {
       requestId: context.requestId,
@@ -250,9 +293,11 @@ async function handleConfigUpdate(
     });
   });
 
-  // 同时失效用户缓存
-  const userCacheInvalidationPromise = invalidateCachedJson(
-    createCacheKey(context.instanceId, false),
+  // 同时失效用户缓存，带超时控制
+  const userCacheInvalidationPromise = withTimeout(
+    invalidateCachedJson(createCacheKey(context.instanceId, false)),
+    OPERATION_TIMEOUT_MS,
+    'cache_invalidation_user',
   ).catch((error) => {
     logger.warn('Cache invalidation failed for user cache', {
       requestId: context.requestId,

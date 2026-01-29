@@ -1,40 +1,58 @@
 import crypto from 'node:crypto';
+import { logger } from '@/lib/logger';
 
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 16;
+const SALT_LENGTH = 32;
+const KEY_LENGTH = 32;
+const ITERATIONS = 100000;
 
 export interface EncryptedData {
   iv: string;
   authTag: string;
   encrypted: string;
+  salt: string;
+  version: number;
 }
 
 function getEncryptionKey(): string {
   return process.env.INSIGHT_CONFIG_ENCRYPTION_KEY ?? '';
 }
 
+/**
+ * 检查加密是否启用
+ * 使用 Buffer.byteLength 确保正确处理多字节字符
+ */
 export function isEncryptionEnabled(): boolean {
-  return getEncryptionKey().length >= 32;
+  const key = getEncryptionKey();
+  return Buffer.byteLength(key, 'utf8') >= 32;
 }
 
-function getKey(): Buffer {
+/**
+ * 使用 PBKDF2 派生加密密钥
+ * 这比简单截断密钥更安全
+ */
+function deriveKey(password: string, salt: Buffer): Buffer {
+  return crypto.pbkdf2Sync(password, salt, ITERATIONS, KEY_LENGTH, 'sha256');
+}
+
+function getKey(salt: Buffer): Buffer {
   if (!isEncryptionEnabled()) {
     throw new Error('Encryption key not configured');
   }
-  // Use first 32 bytes of key
-  return Buffer.from(getEncryptionKey().slice(0, 32), 'utf8');
+  return deriveKey(getEncryptionKey(), salt);
 }
 
 export function encrypt(text: string): EncryptedData | null {
   if (!text) return null;
   if (!isEncryptionEnabled()) {
-    // Return plain text if encryption not configured
     return null;
   }
 
   try {
     const iv = crypto.randomBytes(IV_LENGTH);
-    const cipher = crypto.createCipheriv(ALGORITHM, getKey(), iv);
+    const salt = crypto.randomBytes(SALT_LENGTH);
+    const cipher = crypto.createCipheriv(ALGORITHM, getKey(salt), iv);
 
     let encrypted = cipher.update(text, 'utf8', 'hex');
     encrypted += cipher.final('hex');
@@ -45,13 +63,21 @@ export function encrypt(text: string): EncryptedData | null {
       iv: iv.toString('hex'),
       authTag: authTag.toString('hex'),
       encrypted,
+      salt: salt.toString('hex'),
+      version: 2, // 标记为新版本加密格式
     };
   } catch (error) {
-    console.error('Encryption failed:', error);
+    logger.error('Encryption failed', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return null;
   }
 }
 
+/**
+ * 解密数据
+ * 支持新版本(v2)和旧版本(v1)加密格式
+ */
 export function decrypt(data: EncryptedData | string | null | undefined): string | null {
   if (!data) return null;
 
@@ -61,12 +87,31 @@ export function decrypt(data: EncryptedData | string | null | undefined): string
   }
 
   if (!isEncryptionEnabled()) {
-    console.warn('Decryption attempted but encryption key not configured');
+    logger.warn('Decryption attempted but encryption key not configured');
     return null;
   }
 
   try {
-    const decipher = crypto.createDecipheriv(ALGORITHM, getKey(), Buffer.from(data.iv, 'hex'));
+    // 处理新版本(v2)加密格式
+    if (data.version === 2 && data.salt) {
+      const salt = Buffer.from(data.salt, 'hex');
+      const decipher = crypto.createDecipheriv(
+        ALGORITHM,
+        getKey(salt),
+        Buffer.from(data.iv, 'hex'),
+      );
+
+      decipher.setAuthTag(Buffer.from(data.authTag, 'hex'));
+
+      let decrypted = decipher.update(data.encrypted, 'hex', 'utf8');
+      decrypted += decipher.final('utf8');
+
+      return decrypted;
+    }
+
+    // 处理旧版本(v1)加密格式（向后兼容）
+    const key = Buffer.from(getEncryptionKey().slice(0, 32), 'utf8');
+    const decipher = crypto.createDecipheriv(ALGORITHM, key, Buffer.from(data.iv, 'hex'));
 
     decipher.setAuthTag(Buffer.from(data.authTag, 'hex'));
 
@@ -75,7 +120,11 @@ export function decrypt(data: EncryptedData | string | null | undefined): string
 
     return decrypted;
   } catch (error) {
-    console.error('Decryption failed:', error);
+    logger.error('Decryption failed', {
+      error: error instanceof Error ? error.message : String(error),
+      hasVersion: 'version' in (data || {}),
+      version: (data as EncryptedData)?.version,
+    });
     return null;
   }
 }
@@ -127,4 +176,22 @@ export function maskInLog(value: string | undefined | null): string {
   if (!value) return '';
   if (value.length <= 8) return '***';
   return `${value.slice(0, 4)}***${value.slice(-4)}`;
+}
+
+/**
+ * 获取加密系统状态
+ */
+export function getEncryptionStatus(): {
+  enabled: boolean;
+  keyByteLength: number;
+  algorithm: string;
+  version: number;
+} {
+  const key = getEncryptionKey();
+  return {
+    enabled: isEncryptionEnabled(),
+    keyByteLength: Buffer.byteLength(key, 'utf8'),
+    algorithm: ALGORITHM,
+    version: 2,
+  };
 }
