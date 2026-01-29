@@ -63,30 +63,38 @@ export function hasDatabase() {
   return Boolean(getDbUrl());
 }
 
-export const db =
-  globalForDb.conn ??
-  new Pool({
-    connectionString: getDbUrl() || undefined,
-    max: Math.max(
-      10,
-      Math.min(100, Number(process.env.INSIGHT_DB_POOL_SIZE) || DATABASE_CONFIG.DEFAULT_POOL_SIZE),
-    ),
-    min: Math.max(2, Math.min(10, Number(process.env.INSIGHT_DB_MIN_POOL) || 5)),
-    idleTimeoutMillis: Math.max(
-      10000,
-      Number(process.env.INSIGHT_DB_IDLE_TIMEOUT) || DATABASE_CONFIG.DEFAULT_IDLE_TIMEOUT,
-    ),
-    connectionTimeoutMillis: Math.max(
-      DATABASE_CONFIG.DEFAULT_CONNECTION_TIMEOUT,
-      Number(process.env.INSIGHT_DB_CONNECTION_TIMEOUT) || 10000,
-    ),
-    maxUses: Math.max(
-      1000,
-      Number(process.env.INSIGHT_DB_MAX_USES) || DATABASE_CONFIG.DEFAULT_MAX_USES,
-    ),
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : false,
-    statement_timeout: Math.max(5000, Number(process.env.INSIGHT_DB_STATEMENT_TIMEOUT) || 30000),
-  });
+const poolConfig = {
+  connectionString: getDbUrl() || undefined,
+  max: Math.max(
+    10,
+    Math.min(100, Number(process.env.INSIGHT_DB_POOL_SIZE) || DATABASE_CONFIG.DEFAULT_POOL_SIZE),
+  ),
+  min: Math.max(2, Math.min(10, Number(process.env.INSIGHT_DB_MIN_POOL) || 5)),
+  idleTimeoutMillis: Math.max(
+    10000,
+    Number(process.env.INSIGHT_DB_IDLE_TIMEOUT) || DATABASE_CONFIG.DEFAULT_IDLE_TIMEOUT,
+  ),
+  connectionTimeoutMillis: Math.max(
+    DATABASE_CONFIG.DEFAULT_CONNECTION_TIMEOUT,
+    Number(process.env.INSIGHT_DB_CONNECTION_TIMEOUT) || 10000,
+  ),
+  maxUses: Math.max(
+    1000,
+    Number(process.env.INSIGHT_DB_MAX_USES) || DATABASE_CONFIG.DEFAULT_MAX_USES,
+  ),
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : false,
+  statement_timeout: Math.max(5000, Number(process.env.INSIGHT_DB_STATEMENT_TIMEOUT) || 30000),
+  // Performance optimizations
+  query_timeout: Math.max(5000, Number(process.env.INSIGHT_DB_QUERY_TIMEOUT) || 30000),
+  keepAlive: true,
+  keepAliveInitialDelayMillis: 10000,
+  // Application name for monitoring
+  application_name: `insight-${process.env.NODE_ENV || 'development'}`,
+  // Enable prepared statements caching
+  preparedStatements: true,
+};
+
+export const db = globalForDb.conn ?? new Pool(poolConfig);
 
 if (process.env.NODE_ENV !== 'production') globalForDb.conn = db;
 

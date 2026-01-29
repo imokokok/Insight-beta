@@ -1,330 +1,429 @@
-import type pg from 'pg';
-import { hasDatabase, query } from './db';
+import { hasDatabase, query, getClient } from './db';
 import { logger } from '@/lib/logger';
+import type { PoolClient } from 'pg';
 
-const OPTIMIZATION_DEFAULTS = {
-  maxQueryTimeMs: 5000,
-  slowQueryThresholdMs: 1000,
-  connectionPoolSize: 20,
-  idleTimeoutMs: 30000,
-  maxUsesPerConnection: 1000,
-};
-
-interface QueryOptimizationHint {
-  useIndex?: string;
-  preferSeqScan?: boolean;
-  enableNestLoop?: boolean;
-  workMem?: string;
-  effectiveCacheSize?: string;
+interface SlowQuery {
+  query: string;
+  durationMs: number;
+  timestamp: number;
+  params?: unknown[];
 }
 
-interface OptimizedQueryResult<T> {
-  rows: T[];
-  queryTimeMs: number;
-  isCached: boolean;
-  rowCount: number;
+interface QueryStats {
+  query: string;
+  count: number;
+  totalTime: number;
+  avgTime: number;
+  maxTime: number;
+  minTime: number;
 }
 
-const queryCache = new Map<string, { result: unknown; timestamp: number; ttlMs: number }>();
-const globalForQueryCache = globalThis as unknown as {
-  insightQueryCache?: Map<string, { result: unknown; timestamp: number; ttlMs: number }>;
-};
+const slowQueryLog: SlowQuery[] = [];
+const queryStats = new Map<string, QueryStats>();
+const MAX_SLOW_QUERIES = 100;
+const SLOW_QUERY_THRESHOLD = 50; // ms
 
-const queryCacheRef = globalForQueryCache.insightQueryCache ?? queryCache;
-if (process.env.NODE_ENV !== 'production') globalForQueryCache.insightQueryCache = queryCacheRef;
+export function logSlowQuery(queryText: string, durationMs: number, params?: unknown[]) {
+  if (durationMs < SLOW_QUERY_THRESHOLD) return;
 
-const slowQueries: Array<{ query: string; durationMs: number; timestamp: Date }> = [];
-const globalForSlowQueries = globalThis as unknown as {
-  insightSlowQueries?: Array<{ query: string; durationMs: number; timestamp: Date }>;
-};
+  const entry: SlowQuery = {
+    query: queryText.slice(0, 500),
+    durationMs,
+    timestamp: Date.now(),
+    params: params?.slice(0, 10),
+  };
 
-const slowQueriesRef = globalForSlowQueries.insightSlowQueries ?? slowQueries;
-if (process.env.NODE_ENV !== 'production') globalForSlowQueries.insightSlowQueries = slowQueriesRef;
-
-export function applyQueryHints(sql: string, hints: QueryOptimizationHint): string {
-  if (!hasDatabase()) return sql;
-
-  const hintComments: string[] = [];
-
-  if (hints.useIndex) {
-    hintComments.push(`/*+ IndexScan(${hints.useIndex}) */`);
+  slowQueryLog.unshift(entry);
+  if (slowQueryLog.length > MAX_SLOW_QUERIES) {
+    slowQueryLog.pop();
   }
 
-  if (hints.preferSeqScan) {
-    hintComments.push('/*+ SeqScan(on) */');
-  } else if (hints.preferSeqScan === false) {
-    hintComments.push('/*+ SeqScan(off) */');
-  }
-
-  if (hints.enableNestLoop === false) {
-    hintComments.push('/*+ NoNestLoop */');
-  }
-
-  if (hintComments.length > 0) {
-    return `${hintComments.join(' ')} ${sql}`;
-  }
-
-  return sql;
+  logger.warn('Slow query detected', {
+    query: entry.query,
+    durationMs,
+    params: entry.params,
+  });
 }
 
-export async function optimizedQuery<T extends pg.QueryResultRow>(
-  sql: string,
-  params: (string | number | boolean | Date | null | undefined | string[] | number[])[] = [],
-  options: {
-    cacheTtlMs?: number;
-    queryName?: string;
-    hints?: QueryOptimizationHint;
-    timeoutMs?: number;
-  } = {},
-): Promise<OptimizedQueryResult<T>> {
-  const startTime = performance.now();
-  const cacheKey = options.queryName ?? `${sql}:${JSON.stringify(params)}`;
+export function recordQueryStats(queryText: string, durationMs: number) {
+  const normalized = queryText.replace(/\$\d+/g, '?').replace(/\s+/g, ' ').trim().slice(0, 200);
 
-  const cached = queryCacheRef.get(cacheKey);
-  if (cached && Date.now() - cached.timestamp < cached.ttlMs) {
-    const queryTimeMs = performance.now() - startTime;
-
-    return {
-      rows: cached.result as T[],
-      queryTimeMs,
-      isCached: true,
-      rowCount: (cached.result as T[]).length,
-    };
-  }
-
-  const optimizedSql = options.hints ? applyQueryHints(sql, options.hints) : sql;
-
-  try {
-    const result = await query<T>(optimizedSql, params);
-    const queryTimeMs = performance.now() - startTime;
-
-    if (queryTimeMs > OPTIMIZATION_DEFAULTS.slowQueryThresholdMs) {
-      slowQueriesRef.push({
-        query: optimizedSql.substring(0, 500),
-        durationMs: queryTimeMs,
-        timestamp: new Date(),
-      });
-
-      while (slowQueriesRef.length > 100) {
-        slowQueriesRef.shift();
-      }
-    }
-
-    if (options.cacheTtlMs && options.cacheTtlMs > 0) {
-      queryCacheRef.set(cacheKey, {
-        result: result.rows,
-        timestamp: Date.now(),
-        ttlMs: options.cacheTtlMs,
-      });
-    }
-
-    return {
-      rows: result.rows,
-      queryTimeMs,
-      isCached: false,
-      rowCount: result.rows.length,
-    };
-  } catch (error) {
-    const queryTimeMs = performance.now() - startTime;
-    logger.error('Query execution failed', {
-      query: optimizedSql.substring(0, 500),
-      params: params.length,
-      durationMs: queryTimeMs,
-      error: error instanceof Error ? error.message : 'Unknown error',
+  const existing = queryStats.get(normalized);
+  if (existing) {
+    existing.count++;
+    existing.totalTime += durationMs;
+    existing.avgTime = existing.totalTime / existing.count;
+    existing.maxTime = Math.max(existing.maxTime, durationMs);
+    existing.minTime = Math.min(existing.minTime, durationMs);
+  } else {
+    queryStats.set(normalized, {
+      query: normalized,
+      count: 1,
+      totalTime: durationMs,
+      avgTime: durationMs,
+      maxTime: durationMs,
+      minTime: durationMs,
     });
+  }
+}
+
+export function getSlowQueries(limit: number = 20): SlowQuery[] {
+  return slowQueryLog.slice(0, limit);
+}
+
+export function getQueryStats(): QueryStats[] {
+  return Array.from(queryStats.values())
+    .sort((a, b) => b.avgTime - a.avgTime)
+    .slice(0, 50);
+}
+
+export function clearQueryStats() {
+  queryStats.clear();
+}
+
+export async function withQueryOptimization<T>(
+  queryText: string,
+  params: unknown[],
+  executor: () => Promise<T>,
+): Promise<T> {
+  const start = Date.now();
+  try {
+    const result = await executor();
+    const duration = Date.now() - start;
+
+    recordQueryStats(queryText, duration);
+    logSlowQuery(queryText, duration, params);
+
+    return result;
+  } catch (error) {
+    const duration = Date.now() - start;
+    recordQueryStats(queryText, duration);
     throw error;
   }
 }
 
-export async function batchQuery<T extends pg.QueryResultRow>(
-  queries: Array<{
-    sql: string;
-    params?: (string | number | boolean | Date | null | undefined | string[] | number[])[];
-    name?: string;
-  }>,
-  transaction: boolean = true,
-): Promise<Map<string, OptimizedQueryResult<T>>> {
-  const results = new Map<string, OptimizedQueryResult<T>>();
+interface BatchInsertOptions {
+  batchSize?: number;
+  onProgress?: (inserted: number, total: number) => void;
+}
 
-  if (queries.length === 0) return results;
+export async function batchInsert<T extends Record<string, unknown>>(
+  table: string,
+  rows: T[],
+  options: BatchInsertOptions = {},
+): Promise<number> {
+  if (!hasDatabase() || rows.length === 0) return 0;
 
-  if (transaction && hasDatabase()) {
-    try {
-      await query('BEGIN');
+  const { batchSize = 1000, onProgress } = options;
+  const firstRow = rows[0];
+  if (!firstRow) return 0;
+  const columns = Object.keys(firstRow);
 
-      for (const q of queries) {
-        const result = await optimizedQuery<T>(q.sql, q.params ?? [], { queryName: q.name });
-        results.set(q.name ?? q.sql, result);
+  let inserted = 0;
+
+  for (let i = 0; i < rows.length; i += batchSize) {
+    const batch = rows.slice(i, i + batchSize);
+    const placeholders: string[] = [];
+    const values: unknown[] = [];
+    let paramIndex = 1;
+
+    for (const row of batch) {
+      const rowPlaceholders: string[] = [];
+      for (const col of columns) {
+        rowPlaceholders.push(`$${paramIndex++}`);
+        values.push(row[col]);
       }
+      placeholders.push(`(${rowPlaceholders.join(', ')})`);
+    }
 
-      await query('COMMIT');
+    const queryText = `
+      INSERT INTO ${table} (${columns.join(', ')})
+      VALUES ${placeholders.join(', ')}
+      ON CONFLICT DO NOTHING
+    `;
+
+    try {
+      await query(
+        queryText,
+        values as (string | number | boolean | string[] | number[] | Date | null | undefined)[],
+      );
+      inserted += batch.length;
+      onProgress?.(inserted, rows.length);
     } catch (error) {
-      await query('ROLLBACK').catch(() => {});
+      logger.error('Batch insert failed', {
+        table,
+        batchIndex: i / batchSize,
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
-  } else {
-    for (const q of queries) {
-      const result = await optimizedQuery<T>(q.sql, q.params ?? [], { queryName: q.name });
-      results.set(q.name ?? q.sql, result);
-    }
   }
 
-  return results;
+  return inserted;
 }
 
-export async function invalidateQueryCache(prefix?: string): Promise<number> {
-  let deleted = 0;
+export async function batchUpdate<T extends Record<string, unknown>>(
+  table: string,
+  rows: T[],
+  keyColumn: string,
+  updateColumns: string[],
+  options: BatchInsertOptions = {},
+): Promise<number> {
+  if (!hasDatabase() || rows.length === 0) return 0;
 
-  if (!prefix) {
-    deleted = queryCacheRef.size;
-    queryCacheRef.clear();
-  } else {
-    for (const key of queryCacheRef.keys()) {
-      if (key.startsWith(prefix)) {
-        queryCacheRef.delete(key);
-        deleted++;
+  const { batchSize = 500, onProgress } = options;
+  let updated = 0;
+
+  for (let i = 0; i < rows.length; i += batchSize) {
+    const batch = rows.slice(i, i + batchSize);
+
+    const client = await getClient();
+    try {
+      await client.query('BEGIN');
+
+      for (const row of batch) {
+        const setClause = updateColumns.map((col, idx) => `${col} = $${idx + 1}`).join(', ');
+        const values = updateColumns.map((col) => row[col]);
+        const keyValue = row[keyColumn];
+
+        await client.query(
+          `UPDATE ${table} SET ${setClause} WHERE ${keyColumn} = $${updateColumns.length + 1}`,
+          [...values, keyValue],
+        );
       }
+
+      await client.query('COMMIT');
+      updated += batch.length;
+      onProgress?.(updated, rows.length);
+    } catch (error) {
+      await client.query('ROLLBACK');
+      logger.error('Batch update failed', {
+        table,
+        batchIndex: i / batchSize,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    } finally {
+      client.release();
     }
   }
 
-  return deleted;
+  return updated;
 }
 
-export function getQueryCacheStats(): {
-  size: number;
-  keys: string[];
-  memoryEstimateBytes: number;
-} {
-  let memoryEstimate = 0;
-  const keys: string[] = [];
-
-  for (const [key, value] of queryCacheRef.entries()) {
-    keys.push(key);
-    memoryEstimate += key.length + JSON.stringify(value.result).length;
-  }
-
-  return {
-    size: queryCacheRef.size,
-    keys: keys.slice(0, 20),
-    memoryEstimateBytes: memoryEstimate,
-  };
+interface ConnectionPoolStats {
+  totalCount: number;
+  idleCount: number;
+  waitingCount: number;
 }
 
-export function getSlowQueries(
-  limit: number = 20,
-): Array<{ query: string; durationMs: number; timestamp: Date }> {
-  return slowQueriesRef.sort((a, b) => b.durationMs - a.durationMs).slice(0, limit);
-}
-
-export async function analyzeQueryPerformance(
-  sql: string,
-  params: unknown[] = [],
-): Promise<{
-  planningTimeMs: number;
-  executionTimeMs: number;
-  rowsAffected: number;
-  bufferHits: number;
-  bufferMisses: number;
-}> {
-  if (!hasDatabase()) {
-    return {
-      planningTimeMs: 0,
-      executionTimeMs: 0,
-      rowsAffected: 0,
-      bufferHits: 0,
-      bufferMisses: 0,
-    };
-  }
-
-  try {
-    const explainResult = await query<{
-      Plan?: {
-        'Actual Rows'?: number;
-        'Actual Total Time'?: number;
-        'Planning Time'?: number;
-        'Execution Time'?: number;
-        'Shared Hit Blocks'?: number;
-        'Shared Read Blocks'?: number;
-      };
-    }>(
-      `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) ${sql}`,
-      params as (string | number | boolean | Date | null | undefined | string[] | number[])[],
-    );
-
-    const plan = explainResult.rows[0]?.['Plan'];
-
-    return {
-      planningTimeMs: plan?.['Planning Time'] ?? 0,
-      executionTimeMs: plan?.['Actual Total Time'] ?? 0,
-      rowsAffected: plan?.['Actual Rows'] ?? 0,
-      bufferHits: plan?.['Shared Hit Blocks'] ?? 0,
-      bufferMisses: plan?.['Shared Read Blocks'] ?? 0,
-    };
-  } catch {
-    return {
-      planningTimeMs: 0,
-      executionTimeMs: 0,
-      rowsAffected: 0,
-      bufferHits: 0,
-      bufferMisses: 0,
-    };
-  }
-}
-
-export async function getConnectionPoolStats(): Promise<{
-  totalConnections: number;
-  idleConnections: number;
-  waitingConnections: number;
-  maxConnections: number;
-}> {
-  if (!hasDatabase()) {
-    return {
-      totalConnections: 0,
-      idleConnections: 0,
-      waitingConnections: 0,
-      maxConnections: 0,
-    };
-  }
+export async function getConnectionPoolStats(): Promise<ConnectionPoolStats | null> {
+  if (!hasDatabase()) return null;
 
   try {
     const result = await query<{
-      total: number;
-      idle: number;
-      waiting: number;
-      max: number;
+      total_count: number;
+      idle_count: number;
+      waiting_count: number;
     }>(`
       SELECT 
-        count(*) as total,
-        sum(CASE WHEN state = 'idle' THEN 1 ELSE 0 END) as idle,
-        sum(CASE WHEN state = 'active' THEN 1 ELSE 0 END) as waiting,
-        setting as max
-      FROM pg_stat_activity 
+        count(*) as total_count,
+        count(*) FILTER (WHERE state = 'idle') as idle_count,
+        count(*) FILTER (WHERE wait_event_type = 'Client') as waiting_count
+      FROM pg_stat_activity
       WHERE datname = current_database()
     `);
 
+    const row = result.rows[0];
+    if (!row) {
+      return { totalCount: 0, idleCount: 0, waitingCount: 0 };
+    }
     return {
-      totalConnections: Number(result.rows[0]?.total ?? 0),
-      idleConnections: Number(result.rows[0]?.idle ?? 0),
-      waitingConnections: Number(result.rows[0]?.waiting ?? 0),
-      maxConnections: Number(result.rows[0]?.max ?? 20),
+      totalCount: Number(row.total_count),
+      idleCount: Number(row.idle_count),
+      waitingCount: Number(row.waiting_count),
     };
-  } catch {
-    return {
-      totalConnections: 0,
-      idleConnections: 0,
-      waitingConnections: 0,
-      maxConnections: 20,
-    };
+  } catch (error) {
+    logger.error('Failed to get connection pool stats', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return null;
   }
 }
 
-export function clearSlowQueries(): void {
-  slowQueriesRef.length = 0;
+export async function vacuumTable(tableName: string): Promise<boolean> {
+  if (!hasDatabase()) return false;
+
+  try {
+    await query(`VACUUM ANALYZE ${tableName}`);
+    logger.info('Vacuumed table', { table: tableName });
+    return true;
+  } catch (error) {
+    logger.error('Failed to vacuum table', {
+      table: tableName,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return false;
+  }
 }
 
-export const __TEST__ = {
-  invalidateQueryCache,
-  getQueryCacheStats,
-  getSlowQueries,
-  clearSlowQueries,
-};
+export async function vacuumAllTables(): Promise<{ vacuumed: number; failed: number }> {
+  if (!hasDatabase()) return { vacuumed: 0, failed: 0 };
+
+  try {
+    const result = await query<{ tablename: string }>(`
+      SELECT tablename 
+      FROM pg_tables 
+      WHERE schemaname = 'public'
+    `);
+
+    let vacuumed = 0;
+    let failed = 0;
+
+    for (const { tablename } of result.rows) {
+      const success = await vacuumTable(tablename);
+      if (success) vacuumed++;
+      else failed++;
+    }
+
+    return { vacuumed, failed };
+  } catch (error) {
+    logger.error('Failed to get table list for vacuum', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return { vacuumed: 0, failed: 0 };
+  }
+}
+
+interface TableBloatInfo {
+  tableName: string;
+  bloatRatio: number;
+  estimatedRows: number;
+}
+
+export async function getTableBloat(): Promise<TableBloatInfo[]> {
+  if (!hasDatabase()) return [];
+
+  try {
+    const result = await query<{
+      tablename: string;
+      bloat_ratio: number;
+      estimated_rows: number;
+    }>(`
+      SELECT
+        schemaname || '.' || relname as tablename,
+        CASE WHEN n_live_tup > 0 
+          THEN round(100.0 * n_dead_tup / n_live_tup, 2)
+          ELSE 0 
+        END as bloat_ratio,
+        n_live_tup as estimated_rows
+      FROM pg_stat_user_tables
+      WHERE n_dead_tup > 1000
+      ORDER BY n_dead_tup DESC
+    `);
+
+    return result.rows.map((row) => ({
+      tableName: row.tablename,
+      bloatRatio: Number(row.bloat_ratio),
+      estimatedRows: Number(row.estimated_rows),
+    }));
+  } catch (error) {
+    logger.error('Failed to get table bloat info', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return [];
+  }
+}
+
+export async function explainQuery(queryText: string, params?: unknown[]): Promise<unknown> {
+  if (!hasDatabase()) return null;
+
+  try {
+    const result = await query(
+      `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) ${queryText}`,
+      params as
+        | (string | number | boolean | string[] | number[] | Date | null | undefined)[]
+        | undefined,
+    );
+    return result.rows[0];
+  } catch (error) {
+    logger.error('Failed to explain query', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return null;
+  }
+}
+
+export async function withTransaction<T>(
+  fn: (client: PoolClient) => Promise<T>,
+  options: { timeout?: number } = {},
+): Promise<T> {
+  const client = await getClient();
+  const timeout = options.timeout || 30000;
+
+  try {
+    await client.query('BEGIN');
+
+    const timeoutId = setTimeout(async () => {
+      try {
+        await client.query('ROLLBACK');
+        logger.error('Transaction timeout, rolled back');
+      } catch (e) {
+        logger.error('Failed to rollback timed out transaction', { error: e });
+      }
+    }, timeout);
+
+    try {
+      const result = await fn(client);
+      await client.query('COMMIT');
+      clearTimeout(timeoutId);
+      return result;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      throw error;
+    }
+  } catch (error) {
+    try {
+      await client.query('ROLLBACK');
+    } catch (rollbackError) {
+      logger.error('Transaction rollback failed', {
+        rollbackError:
+          rollbackError instanceof Error ? rollbackError.message : String(rollbackError),
+        originalError: error instanceof Error ? error.message : String(error),
+      });
+      throw new Error(
+        `Transaction rollback failed: ${rollbackError instanceof Error ? rollbackError.message : String(rollbackError)}`,
+      );
+    }
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+export async function getDatabaseSize(): Promise<{ size: string; bytes: number } | null> {
+  if (!hasDatabase()) return null;
+
+  try {
+    const result = await query<{
+      pg_size_pretty: string;
+      pg_database_size: number;
+    }>(`
+      SELECT 
+        pg_size_pretty(pg_database_size(current_database())),
+        pg_database_size(current_database())
+    `);
+
+    const row = result.rows[0];
+    if (!row) return null;
+    return {
+      size: row.pg_size_pretty,
+      bytes: Number(row.pg_database_size),
+    };
+  } catch (error) {
+    logger.error('Failed to get database size', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return null;
+  }
+}

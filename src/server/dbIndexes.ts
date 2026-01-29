@@ -13,6 +13,7 @@ interface IndexDefinition {
 }
 
 const RECOMMENDED_INDEXES: IndexDefinition[] = [
+  // Oracle Instances - Core indexes
   {
     name: 'idx_oracle_instances_chain',
     table: 'oracle_instances',
@@ -31,6 +32,14 @@ const RECOMMENDED_INDEXES: IndexDefinition[] = [
     columns: ['chain', 'enabled'],
     comment: 'Composite index for chain and status queries',
   },
+  {
+    name: 'idx_oracle_instances_updated_at',
+    table: 'oracle_instances',
+    columns: ['updated_at DESC'],
+    comment: 'Recent instance updates',
+  },
+
+  // Assertions - High traffic table
   {
     name: 'idx_assertions_oracle_address',
     table: 'assertions',
@@ -65,6 +74,38 @@ const RECOMMENDED_INDEXES: IndexDefinition[] = [
     comment: 'Composite for oracle-specific time queries',
   },
   {
+    name: 'idx_assertions_status_timestamp',
+    table: 'assertions',
+    columns: ['status', 'assertion_timestamp DESC'],
+    comment: 'Status-based recent queries',
+  },
+  {
+    name: 'idx_assertions_chain_status',
+    table: 'assertions',
+    columns: ['chain', 'status'],
+    comment: 'Chain and status filtering',
+  },
+  {
+    name: 'idx_assertions_protocol',
+    table: 'assertions',
+    columns: ['protocol'],
+    comment: 'Protocol-based queries',
+  },
+  {
+    name: 'idx_assertions_market',
+    table: 'assertions',
+    columns: ['market'],
+    comment: 'Market-based queries',
+  },
+  {
+    name: 'idx_assertions_block_number',
+    table: 'assertions',
+    columns: ['block_number DESC'],
+    comment: 'Block number queries',
+  },
+
+  // Disputes - High traffic table
+  {
     name: 'idx_disputes_assertion_id',
     table: 'disputes',
     columns: ['assertion_id'],
@@ -83,6 +124,20 @@ const RECOMMENDED_INDEXES: IndexDefinition[] = [
     columns: ['oracle_address'],
     comment: 'Find disputes by oracle',
   },
+  {
+    name: 'idx_disputes_status_timestamp',
+    table: 'disputes',
+    columns: ['status', 'disputed_at DESC'],
+    comment: 'Recent disputes by status',
+  },
+  {
+    name: 'idx_disputes_disputer',
+    table: 'disputes',
+    columns: ['disputer'],
+    comment: 'Find disputes by disputer',
+  },
+
+  // Events - Time-series data
   {
     name: 'idx_events_oracle_address',
     table: 'events',
@@ -109,6 +164,14 @@ const RECOMMENDED_INDEXES: IndexDefinition[] = [
     comment: 'Filter by event type',
   },
   {
+    name: 'idx_events_timestamp',
+    table: 'events',
+    columns: ['created_at DESC'],
+    comment: 'Recent events',
+  },
+
+  // Price Data - Time-series
+  {
     name: 'idx_price_data_timestamp',
     table: 'price_data',
     columns: ['timestamp'],
@@ -120,6 +183,8 @@ const RECOMMENDED_INDEXES: IndexDefinition[] = [
     columns: ['oracle_address', 'timestamp'],
     comment: 'Composite for oracle-specific price history',
   },
+
+  // Alerts - Status tracking
   {
     name: 'idx_alerts_severity',
     table: 'alerts',
@@ -139,6 +204,21 @@ const RECOMMENDED_INDEXES: IndexDefinition[] = [
     comment: 'Time-based alert queries',
   },
   {
+    name: 'idx_alerts_status_severity',
+    table: 'alerts',
+    columns: ['status', 'severity'],
+    comment: 'Status and severity filtering',
+  },
+  {
+    name: 'idx_alerts_fingerprint',
+    table: 'alerts',
+    columns: ['fingerprint'],
+    indexMethod: 'hash',
+    comment: 'Fast fingerprint lookups',
+  },
+
+  // Audit Logs
+  {
     name: 'idx_audit_entity',
     table: 'audit_logs',
     columns: ['entity_type', 'entity_id'],
@@ -157,6 +237,8 @@ const RECOMMENDED_INDEXES: IndexDefinition[] = [
     columns: ['created_at'],
     comment: 'Time-based audit queries',
   },
+
+  // Rate Limits
   {
     name: 'idx_rate_limits_key',
     table: 'rate_limits',
@@ -170,6 +252,8 @@ const RECOMMENDED_INDEXES: IndexDefinition[] = [
     columns: ['reset_at'],
     comment: 'Clean up expired rate limits',
   },
+
+  // KV Store
   {
     name: 'idx_kv_store_prefix',
     table: 'kv_store',
@@ -177,6 +261,44 @@ const RECOMMENDED_INDEXES: IndexDefinition[] = [
     isPartial: true,
     condition: "key LIKE 'api_cache/v1/%'",
     comment: 'Cache key lookups',
+  },
+
+  // Sync Metrics - Performance monitoring
+  {
+    name: 'idx_sync_metrics_recorded_at',
+    table: 'sync_metrics',
+    columns: ['recorded_at DESC'],
+    comment: 'Recent sync metrics',
+  },
+  {
+    name: 'idx_sync_metrics_error',
+    table: 'sync_metrics',
+    columns: ['error'],
+    isPartial: true,
+    condition: 'error IS NOT NULL',
+    comment: 'Failed sync queries',
+  },
+
+  // Votes
+  {
+    name: 'idx_votes_assertion_voter',
+    table: 'votes',
+    columns: ['assertion_id', 'voter'],
+    comment: 'Votes by assertion and voter',
+  },
+  {
+    name: 'idx_votes_created_at',
+    table: 'votes',
+    columns: ['created_at DESC'],
+    comment: 'Recent votes',
+  },
+
+  // Oracle Events
+  {
+    name: 'idx_oracle_events_type_timestamp',
+    table: 'oracle_events',
+    columns: ['event_type', 'created_at DESC'],
+    comment: 'Event type with time filtering',
   },
 ];
 

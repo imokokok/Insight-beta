@@ -1,9 +1,9 @@
-import type { NextConfig } from "next";
-import { withSentryConfig } from "@sentry/nextjs";
+import type { NextConfig } from 'next';
+import { withSentryConfig } from '@sentry/nextjs';
 
 function buildCsp(isDev: boolean) {
-  const mode = (process.env.INSIGHT_CSP_MODE ?? "relaxed").toLowerCase();
-  const strict = mode === "strict";
+  const mode = (process.env.INSIGHT_CSP_MODE ?? 'relaxed').toLowerCase();
+  const strict = mode === 'strict';
 
   const scriptSrc = ["'self'"];
   if (!strict || isDev) scriptSrc.push("'unsafe-inline'");
@@ -11,18 +11,18 @@ function buildCsp(isDev: boolean) {
 
   const styleSrc = ["'self'", "'unsafe-inline'"];
 
-  const connectSrc = ["'self'", "https:", "wss:"];
-  if (isDev) connectSrc.push("http:", "ws:");
+  const connectSrc = ["'self'", 'https:', 'wss:'];
+  if (isDev) connectSrc.push('http:', 'ws:');
 
   const directives = [
     "default-src 'self'",
-    `script-src ${scriptSrc.join(" ")}`,
+    `script-src ${scriptSrc.join(' ')}`,
     "script-src-attr 'none'",
-    `style-src ${styleSrc.join(" ")}`,
+    `style-src ${styleSrc.join(' ')}`,
     "img-src 'self' blob: data:",
     "media-src 'self'",
     "font-src 'self' data:",
-    `connect-src ${connectSrc.join(" ")}`,
+    `connect-src ${connectSrc.join(' ')}`,
     "object-src 'none'",
     "frame-src 'none'",
     "worker-src 'self' blob:",
@@ -33,111 +33,151 @@ function buildCsp(isDev: boolean) {
   ];
 
   if (!isDev) {
-    directives.push("upgrade-insecure-requests");
-    directives.push("block-all-mixed-content");
+    directives.push('upgrade-insecure-requests');
+    directives.push('block-all-mixed-content');
   }
 
-  return directives.join("; ");
+  return directives.join('; ');
 }
 
-const isDev = process.env.NODE_ENV === "development";
+const isDev = process.env.NODE_ENV === 'development';
 
 const nextConfig: NextConfig = {
   compress: true,
-  distDir: isDev ? ".next-dev" : ".next",
+  distDir: isDev ? '.next-dev' : '.next',
   experimental: {
     optimizeCss: true,
     serverMinification: true,
     webpackBuildWorker: true,
+    // Additional optimizations
+    optimizePackageImports: ['lucide-react', 'recharts', 'date-fns', 'viem'],
+    turbo: {
+      rules: {
+        '*.svg': {
+          loaders: ['@svgr/webpack'],
+          as: '*.js',
+        },
+      },
+    },
   },
   eslint: {
     ignoreDuringBuilds: true,
   },
+  // Production optimizations
+  productionBrowserSourceMaps: false,
+  poweredByHeader: false,
+  generateEtags: true,
+  // Bundle analyzer in analyze mode
+  // Note: Run ANALYZE=true npm run build to enable bundle analyzer
   async headers() {
     const csp = buildCsp(isDev);
     const headers: Array<{ key: string; value: string }> = [
       {
-        key: "X-DNS-Prefetch-Control",
-        value: "off",
+        key: 'X-DNS-Prefetch-Control',
+        value: 'off',
       },
       {
-        key: "X-XSS-Protection",
-        value: "1; mode=block",
+        key: 'X-XSS-Protection',
+        value: '1; mode=block',
       },
       {
-        key: "X-Frame-Options",
-        value: "DENY",
+        key: 'X-Frame-Options',
+        value: 'DENY',
       },
       {
-        key: "X-Content-Type-Options",
-        value: "nosniff",
+        key: 'X-Content-Type-Options',
+        value: 'nosniff',
       },
       {
-        key: "Referrer-Policy",
-        value: "strict-origin-when-cross-origin",
+        key: 'Referrer-Policy',
+        value: 'strict-origin-when-cross-origin',
       },
       {
-        key: "Permissions-Policy",
+        key: 'Permissions-Policy',
         value:
-          "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=(), interest-cohort=()",
+          'accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=(), interest-cohort=()',
       },
       {
-        key: "Content-Security-Policy",
+        key: 'Content-Security-Policy',
         value: csp,
       },
       {
-        key: "Cross-Origin-Opener-Policy",
-        value: "same-origin",
+        key: 'Cross-Origin-Opener-Policy',
+        value: 'same-origin',
       },
       {
-        key: "Cross-Origin-Resource-Policy",
-        value: "same-origin",
+        key: 'Cross-Origin-Resource-Policy',
+        value: 'same-origin',
       },
     ];
     if (!isDev) {
       headers.push({
-        key: "Strict-Transport-Security",
-        value: "max-age=63072000; includeSubDomains; preload",
+        key: 'Strict-Transport-Security',
+        value: 'max-age=63072000; includeSubDomains; preload',
       });
     }
     return [
       {
         headers,
-        source: "/:path*",
+        source: '/:path*',
       },
     ];
   },
   images: {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    formats: ["image/avif", "image/webp"],
+    formats: ['image/avif', 'image/webp'],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 31536000,
     dangerouslyAllowSVG: false,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox",
     remotePatterns: [
       {
-        protocol: "https",
-        hostname: "**",
-        port: "",
-        pathname: "/**",
+        protocol: 'https',
+        hostname: '**',
+        port: '',
+        pathname: '/**',
       },
     ],
   },
   modularizeImports: {
-    "lucide-react": {
+    'lucide-react': {
       skipDefaultConversion: true,
-      transform: "lucide-react/dist/esm/icons/{{ kebabCase member }}",
+      transform: 'lucide-react/dist/esm/icons/{{ kebabCase member }}',
+    },
+    recharts: {
+      transform: 'recharts/es6/{{ camelCase member }}',
+    },
+    'date-fns': {
+      transform: 'date-fns/{{ member }}',
+    },
+    viem: {
+      transform: 'viem/{{ member }}',
     },
   },
-  output: "standalone",
+  // Code splitting configuration
+  splitChunks: {
+    chunks: 'all',
+    cacheGroups: {
+      vendor: {
+        test: /[\\/]node_modules[\\/]/,
+        name: 'vendors',
+        chunks: 'all',
+      },
+      common: {
+        minChunks: 2,
+        chunks: 'all',
+        enforce: true,
+      },
+    },
+  },
+  output: 'standalone',
   reactStrictMode: true,
   typedRoutes: true,
   webpack: (config) => {
     config.ignoreWarnings = config.ignoreWarnings || [];
     config.ignoreWarnings.push({
       message: /the request of a dependency is an expression/,
-      module:
-        /@opentelemetry\/instrumentation\/build\/esm\/platform\/node\/instrumentation\.js/,
+      module: /@opentelemetry\/instrumentation\/build\/esm\/platform\/node\/instrumentation\.js/,
     });
 
     config.resolve = config.resolve || {};
