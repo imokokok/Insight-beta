@@ -79,6 +79,21 @@ export type OracleConfig = {
   adminToken?: string;
 };
 
+export type OracleConfigPatch = Partial<
+  Pick<
+    OracleConfig,
+    | 'rpcUrl'
+    | 'contractAddress'
+    | 'chain'
+    | 'startBlock'
+    | 'maxBlockRange'
+    | 'votingPeriodHours'
+    | 'confirmationBlocks'
+  >
+>;
+
+export type OracleConfigField = keyof OracleConfigPatch;
+
 export type OracleInstance = {
   id: string;
   name: string;

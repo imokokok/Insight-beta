@@ -1,4 +1,4 @@
-import { hasDatabase, query } from './db';
+import { hasDatabase, query, getClient } from './db';
 import { ensureSchema } from './schema';
 import type {
   OracleChain,
@@ -8,6 +8,9 @@ import type {
 import { getMemoryInstance, getMemoryStore } from '@/server/memoryBackend';
 import { isIP } from 'node:net';
 import { env } from '@/lib/config/env';
+import { encryptString, decryptString, isEncryptionEnabled } from '@/lib/security/encryption';
+import { logger } from '@/lib/logger';
+import type { PoolClient } from 'pg';
 
 export type OracleConfig = SharedOracleConfig;
 
@@ -18,11 +21,11 @@ export function redactOracleConfig(config: OracleConfig): OracleConfig {
 }
 
 let schemaEnsured = false;
+
 async function ensureDb() {
   if (!hasDatabase()) return;
   if (!schemaEnsured) {
     try {
-      // Add timeout to prevent hanging on database connection issues
       await Promise.race([
         ensureSchema(),
         new Promise<never>((_, reject) =>
@@ -31,19 +34,49 @@ async function ensureDb() {
       ]);
       schemaEnsured = true;
     } catch (error) {
-      // If database connection fails, mark schema as ensured to avoid repeated attempts
       console.warn('Database connection failed, skipping schema initialization:', error);
       schemaEnsured = true;
     }
   }
 }
 
-function normalizeUrl(value: unknown) {
+const CHAIN_VALUES: readonly OracleChain[] = [
+  'Polygon',
+  'PolygonAmoy',
+  'Arbitrum',
+  'Optimism',
+  'Local',
+];
+
+const ValidationErrors = {
+  INVALID_REQUEST_BODY: 'invalid_request_body',
+  INVALID_INSTANCE_ID: 'invalid_instance_id',
+  INVALID_RPC_URL: 'invalid_rpc_url',
+  INVALID_CONTRACT_ADDRESS: 'invalid_contract_address',
+  INVALID_CHAIN: 'invalid_chain',
+  INVALID_MAX_BLOCK_RANGE: 'invalid_max_block_range',
+  INVALID_VOTING_PERIOD_HOURS: 'invalid_voting_period_hours',
+} as const;
+
+type ValidationErrorCode = (typeof ValidationErrors)[keyof typeof ValidationErrors];
+
+class ValidationError extends Error {
+  constructor(
+    code: ValidationErrorCode,
+    public field?: string,
+    public details?: Record<string, unknown>,
+  ) {
+    super(code);
+    this.name = 'ValidationError';
+  }
+}
+
+function normalizeUrl(value: unknown): string {
   if (typeof value !== 'string') return '';
   return value.trim();
 }
 
-function normalizeInstanceId(value: unknown) {
+function normalizeInstanceId(value: unknown): string {
   if (typeof value !== 'string') return DEFAULT_ORACLE_INSTANCE_ID;
   const trimmed = value.trim();
   if (!trimmed) return DEFAULT_ORACLE_INSTANCE_ID;
@@ -52,37 +85,41 @@ function normalizeInstanceId(value: unknown) {
   return lowered;
 }
 
-export function validateOracleInstanceId(value: unknown) {
-  if (typeof value !== 'string') throw new Error('invalid_request_body');
+export function validateOracleInstanceId(value: unknown): string {
+  if (typeof value !== 'string') throw new ValidationError(ValidationErrors.INVALID_REQUEST_BODY);
   const trimmed = value.trim().toLowerCase();
   if (!trimmed) return DEFAULT_ORACLE_INSTANCE_ID;
-  if (!/^[a-z0-9][a-z0-9_-]{0,63}$/.test(trimmed)) throw new Error('invalid_instance_id');
+  if (!/^[a-z0-9][a-z0-9_-]{0,63}$/.test(trimmed)) {
+    throw new ValidationError(ValidationErrors.INVALID_INSTANCE_ID);
+  }
   return trimmed;
 }
 
-function allowPrivateRpcUrls() {
+function allowPrivateRpcUrls(): boolean {
   const raw = (env.INSIGHT_ALLOW_PRIVATE_RPC_URLS ?? '').trim().toLowerCase();
   if (raw === '1' || raw === 'true') return true;
   if (raw === '0' || raw === 'false') return false;
   return process.env.NODE_ENV !== 'production';
 }
 
-function isPrivateIpv4(ip: string) {
+function isPrivateIpv4(ip: string): boolean {
   const parts = ip.split('.').map((p) => Number(p));
   if (parts.length !== 4) return false;
   if (parts.some((n) => !Number.isInteger(n) || n < 0 || n > 255)) return false;
   const [a, b] = parts as [number, number, number, number];
-  if (a === 10) return true;
-  if (a === 127) return true;
-  if (a === 0) return true;
-  if (a === 169 && b === 254) return true;
-  if (a === 172 && b >= 16 && b <= 31) return true;
-  if (a === 192 && b === 168) return true;
-  if (a === 100 && b >= 64 && b <= 127) return true;
-  return false;
+
+  return (
+    a === 10 ||
+    a === 127 ||
+    a === 0 ||
+    (a === 169 && b === 254) ||
+    (a === 172 && b >= 16 && b <= 31) ||
+    (a === 192 && b === 168) ||
+    (a === 100 && b >= 64 && b <= 127)
+  );
 }
 
-function isPrivateIpv6(ip: string) {
+function isPrivateIpv6(ip: string): boolean {
   const lower = ip.toLowerCase();
   if (lower === '::1' || lower === '::') return true;
   if (lower.startsWith('fe80:')) return true;
@@ -94,51 +131,62 @@ function isPrivateIpv6(ip: string) {
   return false;
 }
 
-function isPrivateHost(hostname: string) {
+function isPrivateHost(hostname: string): boolean {
   const lower = hostname.trim().toLowerCase();
   if (!lower) return false;
   if (lower === 'localhost') return true;
   if (lower === 'host.docker.internal') return true;
   if (lower.endsWith('.localhost')) return true;
   if (lower.endsWith('.local')) return true;
+
   const ipVer = isIP(lower);
   if (ipVer === 4) return isPrivateIpv4(lower);
   if (ipVer === 6) return isPrivateIpv6(lower);
   return false;
 }
 
-function validateRpcUrl(value: unknown) {
-  if (typeof value !== 'string') throw new Error('invalid_request_body');
+function validateRpcUrl(value: unknown): string {
+  if (typeof value !== 'string') throw new ValidationError(ValidationErrors.INVALID_REQUEST_BODY);
+
   const trimmed = value.trim();
   if (!trimmed) return '';
+
   const parts = trimmed
     .split(/[,\s]+/g)
     .map((s) => s.trim())
     .filter(Boolean);
+
   if (parts.length === 0) return '';
+
   const normalized: string[] = [];
+
   for (const part of parts) {
     let url: URL;
     try {
       url = new URL(part);
     } catch {
-      throw new Error('invalid_rpc_url');
+      throw new ValidationError(ValidationErrors.INVALID_RPC_URL);
     }
+
     if (!['http:', 'https:', 'ws:', 'wss:'].includes(url.protocol)) {
-      throw new Error('invalid_rpc_url');
+      throw new ValidationError(ValidationErrors.INVALID_RPC_URL);
     }
+
     if (url.username || url.password) {
-      throw new Error('invalid_rpc_url');
+      throw new ValidationError(ValidationErrors.INVALID_RPC_URL);
     }
+
     if (!allowPrivateRpcUrls() && isPrivateHost(url.hostname)) {
-      throw new Error('invalid_rpc_url');
+      throw new ValidationError(ValidationErrors.INVALID_RPC_URL);
     }
+
     normalized.push(part);
   }
+
   return normalized.join(',');
 }
 
-function normalizeAddress(value: unknown) {
+function normalizeAddress(value: unknown): string {
   if (typeof value !== 'string') return '';
   const trimmed = value.trim();
   if (!trimmed) return '';
@@ -147,121 +195,189 @@ function normalizeAddress(value: unknown) {
   return lowered;
 }
 
-function validateAddress(value: unknown) {
-  if (typeof value !== 'string') throw new Error('invalid_request_body');
+function validateAddress(value: unknown): string {
+  if (typeof value !== 'string') throw new ValidationError(ValidationErrors.INVALID_REQUEST_BODY);
   const trimmed = value.trim();
   if (!trimmed) return '';
   const lowered = trimmed.toLowerCase();
   if (!/^0x[0-9a-f]{40}$/.test(lowered)) {
-    throw new Error('invalid_contract_address');
+    throw new ValidationError(ValidationErrors.INVALID_CONTRACT_ADDRESS);
   }
   return lowered;
 }
 
 function normalizeChain(value: unknown): OracleChain {
-  if (
-    value === 'Polygon' ||
-    value === 'PolygonAmoy' ||
-    value === 'Arbitrum' ||
-    value === 'Optimism' ||
-    value === 'Local'
-  )
-    return value;
+  if (CHAIN_VALUES.includes(value as OracleChain)) return value as OracleChain;
   return 'Local';
 }
 
 function validateChain(value: unknown): OracleChain {
-  if (typeof value !== 'string') throw new Error('invalid_request_body');
-  if (
-    value === 'Polygon' ||
-    value === 'PolygonAmoy' ||
-    value === 'Arbitrum' ||
-    value === 'Optimism' ||
-    value === 'Local'
-  )
-    return value;
-  throw new Error('invalid_chain');
+  if (typeof value !== 'string') throw new ValidationError(ValidationErrors.INVALID_REQUEST_BODY);
+  if (CHAIN_VALUES.includes(value as OracleChain)) return value as OracleChain;
+  throw new ValidationError(ValidationErrors.INVALID_CHAIN);
 }
 
-function normalizeOptionalNonNegativeInt(value: unknown) {
+function normalizeOptionalNonNegativeInt(value: unknown): number | undefined {
   if (typeof value === 'number' && Number.isInteger(value) && value >= 0) return value;
+
   if (typeof value === 'bigint') {
     if (value < 0n) return undefined;
     if (value > BigInt(Number.MAX_SAFE_INTEGER)) return undefined;
     return Number(value);
   }
+
   if (typeof value !== 'string') return undefined;
   const trimmed = value.trim();
   if (!trimmed) return undefined;
+
   const num = Number(trimmed);
   if (!Number.isInteger(num) || num < 0) return undefined;
   return num;
 }
 
-function validateOptionalNonNegativeInt(value: unknown) {
+function validateOptionalNonNegativeInt(value: unknown): number | undefined {
   if (value === null) return undefined;
   const normalized = normalizeOptionalNonNegativeInt(value);
-  if (normalized === undefined && value !== undefined) throw new Error('invalid_request_body');
+  if (normalized === undefined && value !== undefined) {
+    throw new ValidationError(ValidationErrors.INVALID_REQUEST_BODY);
+  }
   return normalized;
 }
 
-function normalizeOptionalIntInRange(value: unknown, min: number, max: number) {
+function normalizeOptionalIntInRange(value: unknown, min: number, max: number): number | undefined {
   const normalized = normalizeOptionalNonNegativeInt(value);
   if (normalized === undefined) return undefined;
   if (normalized < min || normalized > max) return undefined;
   return normalized;
 }
 
-function validateOptionalIntInRange(value: unknown, min: number, max: number, code: string) {
+function validateOptionalIntInRange(
+  value: unknown,
+  min: number,
+  max: number,
+  code: ValidationErrorCode,
+): number | undefined {
   if (value === null) return undefined;
   if (value === undefined) return undefined;
+
   const normalized = normalizeOptionalNonNegativeInt(value);
-  if (normalized === undefined) throw new Error('invalid_request_body');
-  if (normalized < min || normalized > max) throw new Error(code);
+  if (normalized === undefined) throw new ValidationError(ValidationErrors.INVALID_REQUEST_BODY);
+  if (normalized < min || normalized > max) throw new ValidationError(code);
   return normalized;
 }
 
 type OracleConfigField = keyof OracleConfig;
 
-function withField<T>(field: OracleConfigField, fn: () => T) {
+function withField<T>(field: OracleConfigField, fn: () => T): T {
   try {
     return fn();
   } catch (e) {
-    const code = e instanceof Error ? e.message : 'unknown_error';
-    throw Object.assign(new Error(code), { field });
+    if (e instanceof ValidationError) {
+      throw Object.assign(new Error(e.message), { field });
+    }
+    throw e;
   }
 }
 
-export function validateOracleConfigPatch(next: Partial<OracleConfig>) {
+export function validateOracleConfigPatch(next: Partial<OracleConfig>): Partial<OracleConfig> {
   const patch: Partial<OracleConfig> = {};
-  if (next.rpcUrl !== undefined)
+
+  if (next.rpcUrl !== undefined) {
     patch.rpcUrl = withField('rpcUrl', () => validateRpcUrl(next.rpcUrl));
-  if (next.contractAddress !== undefined)
+  }
+
+  if (next.contractAddress !== undefined) {
     patch.contractAddress = withField('contractAddress', () =>
       validateAddress(next.contractAddress),
     );
-  if (next.chain !== undefined) patch.chain = withField('chain', () => validateChain(next.chain));
-  if (next.startBlock !== undefined)
+  }
+
+  if (next.chain !== undefined) {
+    patch.chain = withField('chain', () => validateChain(next.chain));
+  }
+
+  if (next.startBlock !== undefined) {
     patch.startBlock = withField('startBlock', () =>
       validateOptionalNonNegativeInt(next.startBlock),
     );
-  if (next.maxBlockRange !== undefined)
+  }
+
+  if (next.maxBlockRange !== undefined) {
     patch.maxBlockRange = withField('maxBlockRange', () =>
-      validateOptionalIntInRange(next.maxBlockRange, 100, 200_000, 'invalid_max_block_range'),
+      validateOptionalIntInRange(
+        next.maxBlockRange,
+        100,
+        200_000,
+        ValidationErrors.INVALID_MAX_BLOCK_RANGE,
+      ),
     );
-  if (next.votingPeriodHours !== undefined)
+  }
+
+  if (next.votingPeriodHours !== undefined) {
     patch.votingPeriodHours = withField('votingPeriodHours', () =>
-      validateOptionalIntInRange(next.votingPeriodHours, 1, 720, 'invalid_voting_period_hours'),
+      validateOptionalIntInRange(
+        next.votingPeriodHours,
+        1,
+        720,
+        ValidationErrors.INVALID_VOTING_PERIOD_HOURS,
+      ),
     );
-  if (next.confirmationBlocks !== undefined)
+  }
+
+  if (next.confirmationBlocks !== undefined) {
     patch.confirmationBlocks = withField('confirmationBlocks', () =>
       validateOptionalNonNegativeInt(next.confirmationBlocks),
     );
+  }
+
   return patch;
+}
+
+interface DbInstanceRow {
+  id: string;
+  name: string;
+  enabled: boolean;
+  chain: OracleChain | null;
+  contract_address: string | null;
+}
+
+interface DbConfigRow {
+  rpc_url?: unknown;
+  contract_address?: unknown;
+  chain?: unknown;
+  start_block?: unknown;
+  max_block_range?: unknown;
+  voting_period_hours?: unknown;
+  confirmation_blocks?: unknown;
+}
+
+function parseConfigRow(row: DbConfigRow): OracleConfig {
+  return {
+    rpcUrl: typeof row.rpc_url === 'string' ? (decryptString(row.rpc_url) ?? '') : '',
+    contractAddress: typeof row.contract_address === 'string' ? row.contract_address : '',
+    chain: normalizeChain(row.chain),
+    startBlock: normalizeOptionalNonNegativeInt(row.start_block) ?? 0,
+    maxBlockRange: normalizeOptionalIntInRange(row.max_block_range, 100, 200_000) ?? 10_000,
+    votingPeriodHours: normalizeOptionalIntInRange(row.voting_period_hours, 1, 720) ?? 72,
+    confirmationBlocks: normalizeOptionalNonNegativeInt(row.confirmation_blocks) ?? 12,
+  };
+}
+
+function createDefaultConfig(): OracleConfig {
+  return {
+    rpcUrl: '',
+    contractAddress: '',
+    chain: 'Local',
+    startBlock: 0,
+    maxBlockRange: 10_000,
+    votingPeriodHours: 72,
+    confirmationBlocks: 12,
+  };
 }
 
 export async function listOracleInstances(): Promise<OracleInstance[]> {
   await ensureDb();
+
   if (!hasDatabase()) {
     const mem = getMemoryStore();
     return Array.from(mem.instances.values()).map((inst) => ({
@@ -273,13 +389,9 @@ export async function listOracleInstances(): Promise<OracleInstance[]> {
     }));
   }
 
-  const res = await query<{
-    id: string;
-    name: string;
-    enabled: boolean;
-    chain: OracleChain | null;
-    contract_address: string | null;
-  }>('SELECT id, name, enabled, chain, contract_address FROM oracle_instances ORDER BY id ASC');
+  const res = await query<DbInstanceRow>(
+    'SELECT id, name, enabled, chain, contract_address FROM oracle_instances ORDER BY id ASC',
+  );
 
   if (res.rows.length > 0) {
     return res.rows.map((row) => ({
@@ -309,8 +421,6 @@ export async function readOracleConfig(
   try {
     await ensureDb();
     const normalizedInstanceId = normalizeInstanceId(instanceId);
-
-    // Always try memory store first as fallback
     const memoryConfig = getMemoryInstance(normalizedInstanceId).oracleConfig;
 
     if (!hasDatabase()) {
@@ -318,101 +428,36 @@ export async function readOracleConfig(
     }
 
     try {
-      const res = await query('SELECT * FROM oracle_instances WHERE id = $1', [
+      const res = await query<DbConfigRow>('SELECT * FROM oracle_instances WHERE id = $1', [
         normalizedInstanceId,
       ]);
-      const row = res.rows[0] as
-        | {
-            rpc_url?: unknown;
-            contract_address?: unknown;
-            chain?: unknown;
-            start_block?: unknown;
-            max_block_range?: unknown;
-            voting_period_hours?: unknown;
-            confirmation_blocks?: unknown;
-          }
-        | undefined;
-      if (row) {
-        return {
-          rpcUrl: typeof row.rpc_url === 'string' ? row.rpc_url : '',
-          contractAddress: typeof row.contract_address === 'string' ? row.contract_address : '',
-          chain: normalizeChain(row.chain),
-          startBlock: normalizeOptionalNonNegativeInt(row.start_block) ?? 0,
-          maxBlockRange: normalizeOptionalIntInRange(row.max_block_range, 100, 200_000) ?? 10_000,
-          votingPeriodHours: normalizeOptionalIntInRange(row.voting_period_hours, 1, 720) ?? 72,
-          confirmationBlocks: normalizeOptionalNonNegativeInt(row.confirmation_blocks) ?? 12,
-        };
+
+      if (res.rows[0]) {
+        return parseConfigRow(res.rows[0]);
       }
 
       if (normalizedInstanceId !== DEFAULT_ORACLE_INSTANCE_ID) {
         return memoryConfig;
       }
 
-      const legacy = await query('SELECT * FROM oracle_config WHERE id = 1');
-      const legacyRow = legacy.rows[0] as
-        | {
-            rpc_url?: unknown;
-            contract_address?: unknown;
-            chain?: unknown;
-            start_block?: unknown;
-            max_block_range?: unknown;
-            voting_period_hours?: unknown;
-            confirmation_blocks?: unknown;
-          }
-        | undefined;
-      if (legacyRow) {
-        return {
-          rpcUrl: typeof legacyRow.rpc_url === 'string' ? legacyRow.rpc_url : '',
-          contractAddress:
-            typeof legacyRow.contract_address === 'string' ? legacyRow.contract_address : '',
-          chain: normalizeChain(legacyRow.chain),
-          startBlock: normalizeOptionalNonNegativeInt(legacyRow.start_block) ?? 0,
-          maxBlockRange:
-            normalizeOptionalIntInRange(legacyRow.max_block_range, 100, 200_000) ?? 10_000,
-          votingPeriodHours:
-            normalizeOptionalIntInRange(legacyRow.voting_period_hours, 1, 720) ?? 72,
-          confirmationBlocks: normalizeOptionalNonNegativeInt(legacyRow.confirmation_blocks) ?? 12,
-        };
+      const legacy = await query<DbConfigRow>('SELECT * FROM oracle_config WHERE id = 1');
+      if (legacy.rows[0]) {
+        return parseConfigRow(legacy.rows[0]);
       }
     } catch (error) {
-      // Database query failed, fall back to memory store
       console.warn('Database query failed, falling back to memory store:', error);
       return memoryConfig;
     }
   } catch (error) {
-    // Any other error, return default config
     console.warn('Error reading oracle config, returning default:', error);
-    return {
-      rpcUrl: '',
-      contractAddress: '',
-      chain: 'Local',
-      startBlock: 0,
-      maxBlockRange: 10_000,
-      votingPeriodHours: 72,
-      confirmationBlocks: 12,
-    };
+    return createDefaultConfig();
   }
 
-  // Default fallback
-  return {
-    rpcUrl: '',
-    contractAddress: '',
-    chain: 'Local',
-    startBlock: 0,
-    maxBlockRange: 10_000,
-    votingPeriodHours: 72,
-    confirmationBlocks: 12,
-  };
+  return createDefaultConfig();
 }
 
-export async function writeOracleConfig(
-  next: Partial<OracleConfig>,
-  instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
-) {
-  await ensureDb();
-  const normalizedInstanceId = normalizeInstanceId(instanceId);
-  const prev = await readOracleConfig(normalizedInstanceId);
-  const merged: OracleConfig = {
+function mergeConfig(prev: OracleConfig, next: Partial<OracleConfig>): OracleConfig {
+  return {
     rpcUrl: next.rpcUrl === undefined ? prev.rpcUrl : normalizeUrl(next.rpcUrl),
     contractAddress:
       next.contractAddress === undefined
@@ -436,6 +481,17 @@ export async function writeOracleConfig(
         ? prev.confirmationBlocks
         : (normalizeOptionalNonNegativeInt(next.confirmationBlocks) ?? 12),
   };
+}
+
+export async function writeOracleConfig(
+  next: Partial<OracleConfig>,
+  instanceId: string = DEFAULT_ORACLE_INSTANCE_ID,
+): Promise<OracleConfig> {
+  await ensureDb();
+
+  const normalizedInstanceId = normalizeInstanceId(instanceId);
+  const prev = await readOracleConfig(normalizedInstanceId);
+  const merged = mergeConfig(prev, next);
 
   if (!hasDatabase()) {
     getMemoryInstance(normalizedInstanceId).oracleConfig = merged;
@@ -445,59 +501,125 @@ export async function writeOracleConfig(
   const defaultName =
     normalizedInstanceId === DEFAULT_ORACLE_INSTANCE_ID ? 'Default' : normalizedInstanceId;
 
-  await query(
-    `INSERT INTO oracle_instances (
-      id, name, enabled, rpc_url, contract_address, chain, start_block, max_block_range, voting_period_hours, confirmation_blocks, updated_at
-    ) VALUES ($1, COALESCE((SELECT name FROM oracle_instances WHERE id = $1), $2), true, $3, $4, $5, $6, $7, $8, $9, NOW())
-    ON CONFLICT (id) DO UPDATE SET
-      rpc_url = excluded.rpc_url,
-      contract_address = excluded.contract_address,
-      chain = excluded.chain,
-      start_block = excluded.start_block,
-      max_block_range = excluded.max_block_range,
-      voting_period_hours = excluded.voting_period_hours,
-      confirmation_blocks = excluded.confirmation_blocks,
-      updated_at = NOW()
-    `,
-    [
-      normalizedInstanceId,
-      defaultName,
-      merged.rpcUrl,
-      merged.contractAddress,
-      merged.chain,
-      String(merged.startBlock ?? 0),
-      merged.maxBlockRange ?? 10_000,
-      merged.votingPeriodHours ?? 72,
-      merged.confirmationBlocks ?? 12,
-    ],
-  );
+  // Encrypt sensitive fields
+  const encryptedRpcUrl = encryptString(merged.rpcUrl) ?? merged.rpcUrl;
 
-  if (normalizedInstanceId !== DEFAULT_ORACLE_INSTANCE_ID) {
-    return merged;
+  // Use transaction for data consistency
+  let client: PoolClient | null = null;
+
+  try {
+    client = await getClient();
+    await client.query('BEGIN');
+
+    // First write: oracle_instances table
+    await client.query(
+      `INSERT INTO oracle_instances (
+        id, name, enabled, rpc_url, contract_address, chain, start_block, max_block_range, voting_period_hours, confirmation_blocks, updated_at
+      ) VALUES ($1, COALESCE((SELECT name FROM oracle_instances WHERE id = $1), $2), true, $3, $4, $5, $6, $7, $8, $9, NOW())
+      ON CONFLICT (id) DO UPDATE SET
+        rpc_url = excluded.rpc_url,
+        contract_address = excluded.contract_address,
+        chain = excluded.chain,
+        start_block = excluded.start_block,
+        max_block_range = excluded.max_block_range,
+        voting_period_hours = excluded.voting_period_hours,
+        confirmation_blocks = excluded.confirmation_blocks,
+        updated_at = NOW()
+      `,
+      [
+        normalizedInstanceId,
+        defaultName,
+        encryptedRpcUrl,
+        merged.contractAddress,
+        merged.chain,
+        String(merged.startBlock ?? 0),
+        merged.maxBlockRange ?? 10_000,
+        merged.votingPeriodHours ?? 72,
+        merged.confirmationBlocks ?? 12,
+      ],
+    );
+
+    // Second write: oracle_config table (only for default instance, for backward compatibility)
+    if (normalizedInstanceId === DEFAULT_ORACLE_INSTANCE_ID) {
+      await client.query(
+        `INSERT INTO oracle_config (id, rpc_url, contract_address, chain, start_block, max_block_range, voting_period_hours, confirmation_blocks)
+         VALUES (1, $1, $2, $3, $4, $5, $6, $7)
+         ON CONFLICT (id) DO UPDATE SET
+           rpc_url = excluded.rpc_url,
+           contract_address = excluded.contract_address,
+           chain = excluded.chain,
+           start_block = excluded.start_block,
+           max_block_range = excluded.max_block_range,
+           voting_period_hours = excluded.voting_period_hours,
+           confirmation_blocks = excluded.confirmation_blocks
+        `,
+        [
+          encryptedRpcUrl,
+          merged.contractAddress,
+          merged.chain,
+          String(merged.startBlock ?? 0),
+          merged.maxBlockRange ?? 10_000,
+          merged.votingPeriodHours ?? 72,
+          merged.confirmationBlocks ?? 12,
+        ],
+      );
+    }
+
+    await client.query('COMMIT');
+  } catch (error) {
+    if (client) {
+      try {
+        await client.query('ROLLBACK');
+      } catch (rollbackError) {
+        logger.error('Transaction rollback failed', { rollbackError });
+      }
+    }
+    logger.error('Database transaction failed', {
+      error,
+      instanceId: normalizedInstanceId,
+      operation: 'writeOracleConfig',
+    });
+    throw error;
+  } finally {
+    if (client) {
+      client.release();
+    }
   }
 
-  await query(
-    `INSERT INTO oracle_config (id, rpc_url, contract_address, chain, start_block, max_block_range, voting_period_hours, confirmation_blocks)
-     VALUES (1, $1, $2, $3, $4, $5, $6, $7)
-     ON CONFLICT (id) DO UPDATE SET
-       rpc_url = excluded.rpc_url,
-       contract_address = excluded.contract_address,
-       chain = excluded.chain,
-       start_block = excluded.start_block,
-       max_block_range = excluded.max_block_range,
-       voting_period_hours = excluded.voting_period_hours,
-       confirmation_blocks = excluded.confirmation_blocks
-    `,
-    [
-      merged.rpcUrl,
-      merged.contractAddress,
-      merged.chain,
-      String(merged.startBlock ?? 0),
-      merged.maxBlockRange ?? 10_000,
-      merged.votingPeriodHours ?? 72,
-      merged.confirmationBlocks ?? 12,
-    ],
-  );
-
   return merged;
+}
+
+export async function getConfigEncryptionStatus(): Promise<{
+  enabled: boolean;
+  keyLength: number;
+  canEncrypt: boolean;
+  canDecrypt: boolean;
+}> {
+  const enabled = isEncryptionEnabled();
+  const keyLength = enabled ? env.INSIGHT_CONFIG_ENCRYPTION_KEY.length : 0;
+
+  let canEncrypt = false;
+  let canDecrypt = false;
+
+  if (enabled) {
+    try {
+      // Test encryption/decryption
+      const testData = 'test-encryption';
+      const encrypted = encryptString(testData);
+      if (encrypted) {
+        canEncrypt = true;
+        const decrypted = decryptString(encrypted);
+        canDecrypt = decrypted === testData;
+      }
+    } catch (error) {
+      logger.error('Encryption test failed', { error });
+    }
+  }
+
+  return {
+    enabled,
+    keyLength,
+    canEncrypt,
+    canDecrypt,
+  };
 }

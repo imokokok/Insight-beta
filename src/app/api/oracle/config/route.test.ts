@@ -1,7 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GET, PUT } from './route';
-import { rateLimit, getAdminActor, invalidateCachedJson } from '@/server/apiResponse';
-import { requireAdmin } from '@/server/apiResponse';
 import { verifyAdmin } from '@/server/adminAuth';
 import {
   readOracleConfig,
@@ -10,8 +8,8 @@ import {
   redactOracleConfig,
   type OracleConfig,
 } from '@/server/oracle';
-import { appendAuditLog } from '@/server/observability';
 
+// Mock all dependencies
 vi.mock('@/server/oracle', () => {
   const config: OracleConfig = {
     rpcUrl: 'https://rpc.example',
@@ -24,11 +22,20 @@ vi.mock('@/server/oracle', () => {
   };
   return {
     readOracleConfig: vi.fn(async () => config),
-    writeOracleConfig: vi.fn(async () => config),
+    writeOracleConfig: vi.fn(async (_patch: Partial<OracleConfig>) => ({
+      ...config,
+      ..._patch,
+    })),
     validateOracleConfigPatch: vi.fn((next: Partial<OracleConfig>) => next),
     redactOracleConfig: vi.fn(() => ({
       ...config,
       rpcUrl: '',
+    })),
+    getConfigEncryptionStatus: vi.fn(async () => ({
+      enabled: false,
+      keyLength: 0,
+      canEncrypt: false,
+      canDecrypt: false,
     })),
   };
 });
@@ -37,49 +44,60 @@ vi.mock('@/server/observability', () => ({
   appendAuditLog: vi.fn(async () => {}),
 }));
 
-vi.mock('@/server/apiResponse', () => ({
-  rateLimit: vi.fn(async () => null),
-  requireAdmin: vi.fn(async () => null),
-  getAdminActor: vi.fn(() => 'test-actor'),
-  invalidateCachedJson: vi.fn(async () => {}),
-  handleApi: async (_request: Request, fn: () => unknown | Promise<unknown>) => {
-    try {
-      return await fn();
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : 'unknown_error';
-      if (msg.includes('Unexpected token')) {
-        return {
-          ok: false,
-          error: { code: 'invalid_request_body', details: { message: 'Failed to parse JSON' } },
-        };
+vi.mock('@/server/apiResponse', async () => {
+  const actual =
+    await vi.importActual<typeof import('@/server/apiResponse')>('@/server/apiResponse');
+  return {
+    ...actual,
+    rateLimit: vi.fn(async () => null),
+    requireAdmin: vi.fn(async () => null),
+    getAdminActor: vi.fn(() => 'test-actor'),
+    invalidateCachedJson: vi.fn(async () => {}),
+    handleApi: async (_request: Request, fn: () => unknown | Promise<unknown>) => {
+      try {
+        return await fn();
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : 'unknown_error';
+        if (msg.includes('Unexpected token')) {
+          return {
+            ok: false,
+            error: { code: 'invalid_request_body', details: { message: 'Failed to parse JSON' } },
+          };
+        }
+        if (msg === 'invalid_body' || msg === 'invalid_request_body') {
+          const details = (e as Error & { details?: Record<string, unknown> }).details;
+          return details
+            ? { ok: false, error: { code: 'invalid_request_body', details } }
+            : { ok: false, error: { code: 'invalid_request_body' } };
+        }
+        if (msg === 'forbidden') {
+          return { ok: false, error: { code: 'forbidden' } };
+        }
+        if (msg === 'no_valid_fields') {
+          const details = (e as Error & { details?: Record<string, unknown> }).details;
+          return details
+            ? { ok: false, error: { code: 'no_valid_fields', details } }
+            : { ok: false, error: { code: 'no_valid_fields' } };
+        }
+        if (msg === 'invalid_rpc_url') {
+          const field = (e as Error & { field?: string }).field;
+          return field
+            ? { ok: false, error: { code: 'invalid_rpc_url', details: { field } } }
+            : { ok: false, error: { code: 'invalid_rpc_url' } };
+        }
+        return { ok: false, error: { code: msg || 'unknown_error' } };
       }
-      if (msg === 'invalid_body') {
-        return { ok: false, error: { code: 'invalid_request_body' } };
-      }
-      if (msg === 'invalid_request_body') {
-        const details = (e as any).details;
-        return details
-          ? { ok: false, error: { code: 'invalid_request_body', details } }
-          : { ok: false, error: { code: 'invalid_request_body' } };
-      }
-      if (msg === 'forbidden') {
-        return { ok: false, error: { code: 'forbidden' } };
-      }
-      if (msg === 'invalid_rpc_url') {
-        const field = (e as any).field;
-        return field
-          ? { ok: false, error: { code: 'invalid_rpc_url', details: { field } } }
-          : { ok: false, error: { code: 'invalid_rpc_url' } };
-      }
-      return { ok: false, error: { code: msg || 'unknown_error' } };
-    }
-  },
-  error: (value: unknown) => ({ ok: false, error: value }),
-}));
+    },
+  };
+});
 
 vi.mock('@/server/adminAuth', () => ({
   verifyAdmin: vi.fn(async () => ({ ok: false })),
 }));
+
+// Import mocked modules after vi.mock
+import { rateLimit, requireAdmin, getAdminActor, invalidateCachedJson } from '@/server/apiResponse';
+import { appendAuditLog } from '@/server/observability';
 
 describe('GET /api/oracle/config', () => {
   beforeEach(() => {
@@ -87,8 +105,7 @@ describe('GET /api/oracle/config', () => {
   });
 
   it('returns full config for admin', async () => {
-    const verifyAdminMock = vi.mocked(verifyAdmin);
-    verifyAdminMock.mockResolvedValueOnce({
+    vi.mocked(verifyAdmin).mockResolvedValueOnce({
       ok: true,
       role: 'root',
       tokenId: 'test',
@@ -111,8 +128,7 @@ describe('GET /api/oracle/config', () => {
   });
 
   it('passes instanceId through when provided', async () => {
-    const verifyAdminMock = vi.mocked(verifyAdmin);
-    verifyAdminMock.mockResolvedValueOnce({
+    vi.mocked(verifyAdmin).mockResolvedValueOnce({
       ok: true,
       role: 'root',
       tokenId: 'test',
@@ -143,13 +159,10 @@ describe('GET /api/oracle/config', () => {
 
   it('returns rate limited when GET is over limit', async () => {
     const request = new Request('http://localhost:3000/api/oracle/config');
-    const mockedRateLimit = rateLimit as unknown as {
-      mockResolvedValueOnce(value: unknown): void;
-    };
-    mockedRateLimit.mockResolvedValueOnce({
+    vi.mocked(rateLimit).mockResolvedValueOnce({
       ok: false,
       error: { code: 'rate_limited' },
-    });
+    } as unknown as Awaited<ReturnType<typeof rateLimit>>);
 
     const response = (await GET(request)) as { ok: boolean; error?: unknown };
     expect(response.ok).toBe(false);
@@ -191,10 +204,15 @@ describe('PUT /api/oracle/config', () => {
       actor: 'test-actor',
       action: 'oracle_config_updated',
       entityType: 'oracle',
-      entityId: expect.any(String),
-      details: configPatch,
+      entityId: '0xabc',
+      details: expect.objectContaining({
+        fieldsUpdated: ['rpcUrl', 'maxBlockRange'],
+        previousValues: expect.any(Object),
+        newValues: expect.any(Object),
+        masked: true,
+      }),
     });
-    expect(invalidateCachedJson).toHaveBeenCalledWith('oracle_api:/api/oracle');
+    expect(invalidateCachedJson).toHaveBeenCalledTimes(2);
     expect(response.contractAddress).toBe('0xabc');
   });
 
@@ -237,7 +255,28 @@ describe('PUT /api/oracle/config', () => {
 
     const response = (await PUT(request)) as { ok: boolean; error?: unknown };
     expect(response.ok).toBe(false);
-    expect(response.error).toEqual({ code: 'invalid_request_body' });
+    expect(response.error).toEqual({
+      code: 'invalid_request_body',
+      details: { message: 'Request body must be a non-null object' },
+    });
+  });
+
+  it('rejects empty object body (no valid fields)', async () => {
+    const request = new Request('http://localhost:3000/api/oracle/config', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ unknownField: 'value' }),
+    });
+
+    const response = (await PUT(request)) as { ok: boolean; error?: unknown };
+    expect(response.ok).toBe(false);
+    expect(response.error).toEqual({
+      code: 'no_valid_fields',
+      details: {
+        message: 'No valid configuration fields provided',
+        allowedFields: expect.any(Array),
+      },
+    });
   });
 
   it('returns rate limited when PUT is over limit', async () => {
@@ -246,13 +285,10 @@ describe('PUT /api/oracle/config', () => {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({}),
     });
-    const mockedRateLimit = rateLimit as unknown as {
-      mockResolvedValueOnce(value: unknown): void;
-    };
-    mockedRateLimit.mockResolvedValueOnce({
+    vi.mocked(rateLimit).mockResolvedValueOnce({
       ok: false,
       error: { code: 'rate_limited' },
-    });
+    } as unknown as Awaited<ReturnType<typeof rateLimit>>);
 
     const response = (await PUT(request)) as { ok: boolean; error?: unknown };
     expect(response.ok).toBe(false);
@@ -265,13 +301,10 @@ describe('PUT /api/oracle/config', () => {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({}),
     });
-    const requireAdminMock = requireAdmin as unknown as {
-      mockResolvedValueOnce(value: unknown): void;
-    };
-    requireAdminMock.mockResolvedValueOnce({
+    vi.mocked(requireAdmin).mockResolvedValueOnce({
       ok: false,
       error: { code: 'forbidden' },
-    });
+    } as unknown as Awaited<ReturnType<typeof requireAdmin>>);
 
     const response = (await PUT(request)) as { ok: boolean; error?: unknown };
     expect(response.ok).toBe(false);
@@ -285,10 +318,7 @@ describe('PUT /api/oracle/config', () => {
       body: JSON.stringify({ rpcUrl: 'bad' }),
     });
 
-    const validateMock = validateOracleConfigPatch as unknown as {
-      mockImplementationOnce(fn: (next: Partial<OracleConfig>) => Partial<OracleConfig>): void;
-    };
-    validateMock.mockImplementationOnce(() => {
+    vi.mocked(validateOracleConfigPatch).mockImplementationOnce(() => {
       const err = Object.assign(new Error('invalid_rpc_url'), {
         field: 'rpcUrl',
       });
@@ -310,15 +340,34 @@ describe('PUT /api/oracle/config', () => {
       body: JSON.stringify({ rpcUrl: 'bad' }),
     });
 
-    const validateMock = validateOracleConfigPatch as unknown as {
-      mockImplementationOnce(fn: (next: Partial<OracleConfig>) => Partial<OracleConfig>): void;
-    };
-    validateMock.mockImplementationOnce(() => {
+    vi.mocked(validateOracleConfigPatch).mockImplementationOnce(() => {
       throw new Error('invalid_rpc_url');
     });
 
     const response = (await PUT(request)) as { ok: boolean; error?: unknown };
     expect(response.ok).toBe(false);
     expect(response.error).toEqual({ code: 'invalid_rpc_url' });
+  });
+
+  it('filters out non-allowed fields', async () => {
+    const configPatch = {
+      rpcUrl: 'https://new-rpc',
+      maxBlockRange: 20000,
+      adminToken: 'should-be-filtered',
+      unknownField: 'should-be-filtered',
+    };
+
+    const request = new Request('http://localhost:3000/api/oracle/config', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(configPatch),
+    });
+
+    await PUT(request);
+
+    expect(validateOracleConfigPatch).toHaveBeenCalledWith({
+      rpcUrl: 'https://new-rpc',
+      maxBlockRange: 20000,
+    });
   });
 });

@@ -175,6 +175,9 @@ export const env = {
   get OPTIMISM_RPC_URL() {
     return (process.env.OPTIMISM_RPC_URL ?? '').trim();
   },
+  get INSIGHT_CONFIG_ENCRYPTION_KEY() {
+    return (process.env.INSIGHT_CONFIG_ENCRYPTION_KEY ?? '').trim();
+  },
 };
 
 export function getEnv(key: keyof typeof env): string {
@@ -441,6 +444,7 @@ const envSchema = z.object({
       },
       { message: 'invalid_optimism_rpc_url' },
     ),
+  INSIGHT_CONFIG_ENCRYPTION_KEY: z.string().min(32).optional(),
 });
 
 // Auto-validate on import
