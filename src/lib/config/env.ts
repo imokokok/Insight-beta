@@ -178,6 +178,9 @@ export const env = {
   get INSIGHT_CONFIG_ENCRYPTION_KEY() {
     return (process.env.INSIGHT_CONFIG_ENCRYPTION_KEY ?? '').trim();
   },
+  get INSIGHT_REDIS_URL() {
+    return (process.env.INSIGHT_REDIS_URL ?? '').trim();
+  },
 };
 
 export function getEnv(key: keyof typeof env): string {
@@ -445,6 +448,7 @@ const envSchema = z.object({
       { message: 'invalid_optimism_rpc_url' },
     ),
   INSIGHT_CONFIG_ENCRYPTION_KEY: z.string().min(32).optional(),
+  INSIGHT_REDIS_URL: z.string().url().optional(),
 });
 
 // Auto-validate on import

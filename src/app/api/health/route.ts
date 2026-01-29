@@ -5,6 +5,7 @@ import { requireAdmin } from '@/server/apiResponse';
 import { readJsonFile } from '@/server/kvStore';
 import { getOracleEnv, getSyncState, listOracleInstances } from '@/server/oracle';
 import { readAlertRules } from '@/server/observability';
+import { getRedisStatus, oracleConfigCache } from '@/server/redisCache';
 
 type OracleHealthInstance = {
   id: string;
@@ -264,6 +265,11 @@ export async function GET(request: Request) {
     const includeEnv = auth === null;
     const worker = includeEnv ? await readJsonFile('worker/heartbeat/v1', null) : null;
 
+    // Get Redis status
+    const redisStatus = includeEnv ? await getRedisStatus() : null;
+    const cacheStats =
+      includeEnv && redisStatus?.connected ? await oracleConfigCache.stats() : null;
+
     return {
       status: 'ok',
       timestamp: new Date().toISOString(),
@@ -275,6 +281,12 @@ export async function GET(request: Request) {
       environment: process.env.NODE_ENV,
       env: includeEnv ? envReport : { ok: false, issues: [] },
       worker: includeEnv ? worker : null,
+      redis: includeEnv
+        ? {
+            ...redisStatus,
+            cache: cacheStats,
+          }
+        : null,
     };
   });
 }

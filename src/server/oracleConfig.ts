@@ -11,6 +11,7 @@ import { env } from '@/lib/config/env';
 import { encryptString, decryptString, isEncryptionEnabled } from '@/lib/security/encryption';
 import { logger } from '@/lib/logger';
 import type { PoolClient } from 'pg';
+import { oracleConfigCache } from './redisCache';
 
 export type OracleConfig = SharedOracleConfig;
 
@@ -432,6 +433,20 @@ export async function readOracleConfig(
     const normalizedInstanceId = normalizeInstanceId(instanceId);
     const memoryConfig = getMemoryInstance(normalizedInstanceId).oracleConfig;
 
+    // Try Redis cache first
+    const cacheKey = `config:${normalizedInstanceId}`;
+    try {
+      const cached = await oracleConfigCache.get(cacheKey);
+      if (cached) {
+        logger.debug('Oracle config cache hit', { instanceId: normalizedInstanceId });
+        return cached as OracleConfig;
+      }
+    } catch (cacheError) {
+      logger.warn('Redis cache get failed, continuing without cache', {
+        error: cacheError instanceof Error ? cacheError.message : String(cacheError),
+      });
+    }
+
     if (!hasDatabase()) {
       return memoryConfig;
     }
@@ -441,18 +456,31 @@ export async function readOracleConfig(
         normalizedInstanceId,
       ]);
 
+      let config: OracleConfig;
+
       if (res.rows[0]) {
-        return parseConfigRow(res.rows[0]);
+        config = parseConfigRow(res.rows[0]);
+      } else if (normalizedInstanceId !== DEFAULT_ORACLE_INSTANCE_ID) {
+        config = memoryConfig;
+      } else {
+        const legacy = await query<DbConfigRow>('SELECT * FROM oracle_config WHERE id = 1');
+        if (legacy.rows[0]) {
+          config = parseConfigRow(legacy.rows[0]);
+        } else {
+          config = createDefaultConfig();
+        }
       }
 
-      if (normalizedInstanceId !== DEFAULT_ORACLE_INSTANCE_ID) {
-        return memoryConfig;
+      // Cache the result
+      try {
+        await oracleConfigCache.set(cacheKey, config, 60); // Cache for 60 seconds
+      } catch (cacheError) {
+        logger.warn('Redis cache set failed', {
+          error: cacheError instanceof Error ? cacheError.message : String(cacheError),
+        });
       }
 
-      const legacy = await query<DbConfigRow>('SELECT * FROM oracle_config WHERE id = 1');
-      if (legacy.rows[0]) {
-        return parseConfigRow(legacy.rows[0]);
-      }
+      return config;
     } catch (error) {
       logger.warn('Database query failed, falling back to memory store', {
         instanceId: normalizedInstanceId,
@@ -467,8 +495,6 @@ export async function readOracleConfig(
     });
     return createDefaultConfig();
   }
-
-  return createDefaultConfig();
 }
 
 function mergeConfig(prev: OracleConfig, next: Partial<OracleConfig>): OracleConfig {
@@ -606,6 +632,18 @@ export async function writeOracleConfig(
         );
       }
     });
+
+    // Invalidate cache after successful write
+    try {
+      const cacheKey = `config:${normalizedInstanceId}`;
+      await oracleConfigCache.delete(cacheKey);
+      logger.debug('Oracle config cache invalidated', { instanceId: normalizedInstanceId });
+    } catch (cacheError) {
+      logger.warn('Failed to invalidate cache after config update', {
+        error: cacheError instanceof Error ? cacheError.message : String(cacheError),
+        instanceId: normalizedInstanceId,
+      });
+    }
   } catch (error) {
     logger.error('Database transaction failed', {
       error: error instanceof Error ? error.message : String(error),

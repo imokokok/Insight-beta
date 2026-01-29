@@ -1,0 +1,114 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - INSIGHT_ADMIN_TOKEN_SALT=${INSIGHT_ADMIN_TOKEN_SALT}
+      - INSIGHT_CRON_SECRET=${INSIGHT_CRON_SECRET}
+      - INSIGHT_RPC_URL=${INSIGHT_RPC_URL}
+      - INSIGHT_ORACLE_ADDRESS=${INSIGHT_ORACLE_ADDRESS}
+      - INSIGHT_CHAIN=${INSIGHT_CHAIN:-Local}
+      - INSIGHT_CONFIG_ENCRYPTION_KEY=${INSIGHT_CONFIG_ENCRYPTION_KEY}
+      - NEXT_PUBLIC_INSIGHT_ORACLE_ADDRESS=${NEXT_PUBLIC_INSIGHT_ORACLE_ADDRESS}
+      - INSIGHT_RATE_LIMIT_STORE=${INSIGHT_RATE_LIMIT_STORE:-redis}
+      - INSIGHT_REDIS_URL=redis://redis:6379
+      - INSIGHT_WEBHOOK_URL=${INSIGHT_WEBHOOK_URL}
+      - INSIGHT_DISABLE_EMBEDDED_WORKER=${INSIGHT_DISABLE_EMBEDDED_WORKER:-false}
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - insight-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: npm run worker
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - INSIGHT_ADMIN_TOKEN_SALT=${INSIGHT_ADMIN_TOKEN_SALT}
+      - INSIGHT_CRON_SECRET=${INSIGHT_CRON_SECRET}
+      - INSIGHT_RPC_URL=${INSIGHT_RPC_URL}
+      - INSIGHT_ORACLE_ADDRESS=${INSIGHT_ORACLE_ADDRESS}
+      - INSIGHT_CHAIN=${INSIGHT_CHAIN:-Local}
+      - INSIGHT_CONFIG_ENCRYPTION_KEY=${INSIGHT_CONFIG_ENCRYPTION_KEY}
+      - INSIGHT_REDIS_URL=redis://redis:6379
+      - INSIGHT_WORKER_ID=docker-worker-1
+      - INSIGHT_DISABLE_EMBEDDED_WORKER=true
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - insight-network
+    restart: unless-stopped
+    deploy:
+      replicas: ${WORKER_REPLICAS:-1}
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-insight}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB:-insight}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - insight-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-insight}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    networks:
+      - insight-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - app
+    networks:
+      - insight-network
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  redis-data:
+
+networks:
+  insight-network:
+    driver: bridge
