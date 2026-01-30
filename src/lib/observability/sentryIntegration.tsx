@@ -1,5 +1,10 @@
 import { useEffect, useCallback, useRef } from 'react';
 
+interface LayoutShift extends PerformanceEntry {
+  value: number;
+  hadRecentInput: boolean;
+}
+
 declare global {
   interface Window {
     Sentry?: {
@@ -476,8 +481,11 @@ export function usePerformanceMonitoring() {
           metrics.lcp = entry.startTime;
         } else if (entry.entryType === 'first-input') {
           metrics.fid = entry.startTime;
-        } else if (entry.entryType === 'layout-shift' && !(entry as any).hadRecentInput) {
-          metrics.cls = (metrics.cls || 0) + (entry as any).value;
+        } else if (entry.entryType === 'layout-shift') {
+          const layoutShiftEntry = entry as LayoutShift;
+          if (!layoutShiftEntry.hadRecentInput) {
+            metrics.cls = (metrics.cls || 0) + layoutShiftEntry.value;
+          }
         }
       }
     });

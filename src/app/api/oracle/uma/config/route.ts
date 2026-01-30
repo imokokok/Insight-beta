@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { writeUMAConfig, readUMAConfig } from '@/server/oracle/umaConfig';
+import { writeUMAConfig, readUMAConfig, type UMAConfig } from '@/server/oracle/umaConfig';
 import { handleApi, rateLimit, requireAdmin, verifyAdmin } from '@/server/apiResponse';
 import { logger } from '@/lib/logger';
 
@@ -80,14 +80,14 @@ export async function PUT(request: NextRequest) {
         throw Object.assign(new Error('invalid_request_body'), { status: 400 });
       }
 
-      const safeBody: Record<string, unknown> = {};
+      const safeBody: Partial<UMAConfig> = {};
       for (const field of ALLOWED_FIELDS) {
         if (field in body) {
-          safeBody[field] = body[field];
+          (safeBody as Record<string, unknown>)[field] = body[field];
         }
       }
 
-      const updated = await writeUMAConfig(safeBody as any, instanceId);
+      const updated = await writeUMAConfig(safeBody, instanceId);
 
       const durationMs = Date.now() - startTime;
       logger.info('UMA config updated', {
