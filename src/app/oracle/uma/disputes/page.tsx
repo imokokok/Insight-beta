@@ -6,6 +6,7 @@ import type { Route } from 'next';
 import { ArrowUpRight, RefreshCw } from 'lucide-react';
 import { PageHeader } from '@/components/features/common/PageHeader';
 import { cn, fetchApiData, formatTime } from '@/lib/utils';
+import { logger } from '@/lib/logger';
 
 interface UMADispute {
   id: string;
@@ -54,7 +55,7 @@ export default function UMADisputesPage() {
       setDisputes(data.disputes);
       setTotal(data.total);
     } catch (error) {
-      console.error('Failed to fetch disputes:', error);
+      logger.error('Failed to fetch disputes', { error });
     } finally {
       setLoading(false);
     }

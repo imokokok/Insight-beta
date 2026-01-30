@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { PageHeader } from '@/components/features/common/PageHeader';
 import { cn, fetchApiData, formatTime } from '@/lib/utils';
+import { logger } from '@/lib/logger';
 
 interface UMAOverview {
   instanceId: string;
@@ -75,7 +76,7 @@ export default function UMAOraclePage() {
       setOverview(data);
       setLastUpdated(new Date());
     } catch (error) {
-      console.error('Failed to fetch UMA overview:', error);
+      logger.error('Failed to fetch UMA overview', { error });
     } finally {
       setLoading(false);
       setIsRefreshing(false);
@@ -90,7 +91,7 @@ export default function UMAOraclePage() {
       );
       setLeaderboard(data);
     } catch (error) {
-      console.error('Failed to fetch leaderboard:', error);
+      logger.error('Failed to fetch leaderboard', { error });
     } finally {
       setIsRefreshing(false);
     }
@@ -102,7 +103,7 @@ export default function UMAOraclePage() {
       await fetchApiData('/api/oracle/uma/sync', { method: 'POST' });
       await fetchOverview();
     } catch (error) {
-      console.error('Failed to trigger sync:', error);
+      logger.error('Failed to trigger sync', { error });
     } finally {
       setIsRefreshing(false);
     }
