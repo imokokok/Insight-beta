@@ -14,6 +14,18 @@ contract InsightOracle is Ownable, Pausable {
 
     string public constant VERSION = "1.0.0";
 
+    /**
+     * @notice 断言创建事件
+     * @param assertionId 断言唯一标识（索引）
+     * @param asserter 断言者地址（索引）
+     * @param protocol 协议名称
+     * @param market 市场标识
+     * @param assertion 断言内容
+     * @param bondAmount 质押金额
+     * @param assertedAt 创建时间戳
+     * @param livenessEndsAt 活跃期结束时间
+     * @param txHash 交易哈希
+     */
     event AssertionCreated(
         bytes32 indexed assertionId,
         address indexed asserter,
@@ -26,6 +38,15 @@ contract InsightOracle is Ownable, Pausable {
         bytes32 txHash
     );
 
+    /**
+     * @notice 断言争议事件
+     * @param assertionId 断言唯一标识（索引）
+     * @param disputer 争议者地址（索引）
+     * @param reason 争议理由
+     * @param bondAmount 争议质押金额
+     * @param disputedAt 争议时间戳
+     * @param txHash 交易哈希
+     */
     event AssertionDisputed(
         bytes32 indexed assertionId,
         address indexed disputer,
@@ -35,11 +56,61 @@ contract InsightOracle is Ownable, Pausable {
         bytes32 txHash
     );
 
-    event AssertionResolved(bytes32 indexed assertionId, bool outcome, uint256 resolvedAt);
-    event VoteCast(bytes32 indexed assertionId, address indexed voter, bool support, uint256 weight, uint256 tokenAmount);
+    /**
+     * @notice 断言解决事件
+     * @param assertionId 断言唯一标识（索引）
+     * @param outcome 解决结果（true=断言有效）
+     * @param resolvedAt 解决时间戳
+     */
+    event AssertionResolved(
+        bytes32 indexed assertionId,
+        bool outcome,
+        uint256 resolvedAt
+    );
+
+    /**
+     * @notice 投票事件
+     * @param assertionId 断言唯一标识（索引）
+     * @param voter 投票者地址（索引）
+     * @param support 是否支持断言
+     * @param weight 投票权重
+     * @param tokenAmount 代币数量
+     */
+    event VoteCast(
+        bytes32 indexed assertionId,
+        address indexed voter,
+        bool support,
+        uint256 weight,
+        uint256 tokenAmount
+    );
+
+    /**
+     * @notice 质押金额变更事件
+     * @param oldBond 旧质押金额
+     * @param newBond 新质押金额
+     */
     event BondChanged(uint256 oldBond, uint256 newBond);
+
+    /**
+     * @notice 争议质押金额变更事件
+     * @param oldBond 旧质押金额
+     * @param newBond 新质押金额
+     */
     event DisputeBondChanged(uint256 oldBond, uint256 newBond);
+
+    /**
+     * @notice 奖励领取事件
+     * @param claimer 领取者地址（索引）
+     * @param amount 领取金额
+     */
     event RewardClaimed(address indexed claimer, uint256 amount);
+
+    /**
+     * @notice 惩罚应用事件
+     * @param slashed 被惩罚者地址（索引）
+     * @param amount 惩罚金额
+     * @param reason 惩罚理由
+     */
     event SlashingApplied(address indexed slashed, uint256 amount, string reason);
 
     struct AssertionData {
