@@ -65,17 +65,17 @@ export function CreateAssertionModal({
     }
 
     if (trimmedProtocol.length === 0 || trimmedProtocol.length > 100) {
-      setValidationError(t('oracle.createAssertionModal.bondInvalid'));
+      setValidationError('Protocol must be between 1 and 100 characters');
       return;
     }
 
     if (trimmedMarket.length === 0 || trimmedMarket.length > 200) {
-      setValidationError(t('oracle.createAssertionModal.bondInvalid'));
+      setValidationError('Market must be between 1 and 200 characters');
       return;
     }
 
     if (trimmedAssertion.length === 0 || trimmedAssertion.length > 1000) {
-      setValidationError(t('oracle.createAssertionModal.bondInvalid'));
+      setValidationError('Assertion must be between 1 and 1000 characters');
       return;
     }
 

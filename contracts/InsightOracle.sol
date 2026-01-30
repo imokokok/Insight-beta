@@ -124,6 +124,7 @@ contract InsightOracle is Ownable, Pausable {
         bool disputed;
         bool resolved;
         bool outcome;
+        uint256 disputeBondAmount;
     }
 
     struct VoterInfo {
@@ -230,6 +231,7 @@ contract InsightOracle is Ownable, Pausable {
         require(IERC20(bondToken).transferFrom(msg.sender, address(this), actualBond), "dispute bond transfer failed");
 
         a.disputed = true;
+        a.disputeBondAmount = actualBond;
 
         emit AssertionDisputed(
             assertionId,
@@ -250,7 +252,7 @@ contract InsightOracle is Ownable, Pausable {
         require(tokenAmount > 0, "zero vote weight");
         require(assertions[assertionId].disputed, "not disputed");
 
-        require(!voterInfo[assertionId][msg.sender].support && voterInfo[assertionId][msg.sender].tokenAmount == 0, "already voted");
+        require(voterInfo[assertionId][msg.sender].tokenAmount == 0, "already voted");
 
         require(IERC20(bondToken).transferFrom(msg.sender, address(this), tokenAmount), "vote stake transfer failed");
 
@@ -286,11 +288,11 @@ contract InsightOracle is Ownable, Pausable {
 
             a.outcome = true;
 
-            uint256 totalDisputeBonds = a.bondAmount;
-            uint256 winnerReward = (totalDisputeBonds * 80) / 100;
+            uint256 totalPool = a.bondAmount + a.disputeBondAmount;
+            uint256 winnerReward = (totalPool * 80) / 100;
 
             pendingRewards[a.asserter] += winnerReward;
-            pendingRewards[msg.sender] += totalDisputeBonds - winnerReward;
+            pendingRewards[msg.sender] += totalPool - winnerReward;
         } else {
             a.outcome = true;
             pendingRewards[a.asserter] += a.bondAmount;
@@ -324,9 +326,13 @@ contract InsightOracle is Ownable, Pausable {
         require(!a.outcome, "asserter won");
 
         uint256 slashAmount = (a.bondAmount * 50) / 100;
+        uint256 burnAmount = a.bondAmount - slashAmount;
         pendingRewards[msg.sender] += slashAmount;
 
         emit SlashingApplied(a.asserter, slashAmount, reason);
+        if (burnAmount > 0) {
+            emit SlashingApplied(address(0), burnAmount, "burned");
+        }
     }
 
     function getBond() external view returns (uint256) {
@@ -364,7 +370,8 @@ contract InsightOracle is Ownable, Pausable {
         AssertionData storage a = assertions[assertionId];
         require(a.assertedAt != 0, "missing");
         require(!a.resolved, "resolved");
-        require(a.livenessEndsAt < block.timestamp + MAX_LIVENESS, "max liveness reached");
+        require(additionalSeconds <= MAX_LIVENESS, "additional time exceeds max liveness");
+        require(block.timestamp + additionalSeconds <= block.timestamp + MAX_LIVENESS, "max liveness would be exceeded");
 
         a.livenessEndsAt = uint64(block.timestamp + additionalSeconds);
     }

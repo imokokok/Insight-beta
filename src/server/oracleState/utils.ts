@@ -79,6 +79,26 @@ export function toTimeMs(value: string | undefined): number {
 }
 
 /**
+ * 计算争议状态
+ * 根据数据库状态和时间计算争议当前状态
+ * @param statusFromDb - 数据库中的状态
+ * @param votingEndsAt - 投票结束时间字符串
+ * @returns 计算后的争议状态
+ */
+export function computeDisputeStatus(
+  statusFromDb: Dispute['status'],
+  votingEndsAt: string | undefined,
+): Dispute['status'] {
+  if (statusFromDb === 'Executed') {
+    return 'Executed';
+  }
+  if (votingEndsAt && new Date(votingEndsAt).getTime() <= Date.now()) {
+    return 'Pending Execution';
+  }
+  return 'Voting';
+}
+
+/**
  * 将 BigInt 安全地转换为 Number（防止溢出）
  * @param value - BigInt 值
  * @returns 转换后的 Number，溢出时返回安全边界值
@@ -139,17 +159,11 @@ export function mapAssertionRow(row: DbAssertionRow) {
  * @returns 争议业务对象
  */
 export function mapDisputeRow(row: DbDisputeRow): Dispute {
-  const now = Date.now();
   const votingEndsAt = row.voting_ends_at ? row.voting_ends_at.toISOString() : undefined;
   const statusFromDb = row.status as Dispute['status'];
 
   // 根据时间计算争议状态
-  const computedStatus: Dispute['status'] =
-    statusFromDb === 'Executed'
-      ? 'Executed'
-      : votingEndsAt && new Date(votingEndsAt).getTime() <= now
-        ? 'Pending Execution'
-        : 'Voting';
+  const computedStatus = computeDisputeStatus(statusFromDb, votingEndsAt);
 
   return {
     id: row.id,

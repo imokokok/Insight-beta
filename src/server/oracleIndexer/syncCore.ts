@@ -260,8 +260,10 @@ function calculateSyncRange(
           ? (safeBlock ?? 0n) - maxBlockRange
           : 0n
       : lastProcessedBlock > 10n
-        ? lastProcessedBlock - 10n
-        : 0n;
+        ? lastProcessedBlock - 10n > startBlock
+          ? lastProcessedBlock - 10n
+          : startBlock
+        : startBlock;
 
   const toBlock = safeBlock ?? 0n;
   const initialCursor = fromBlock < startBlock ? startBlock : fromBlock;

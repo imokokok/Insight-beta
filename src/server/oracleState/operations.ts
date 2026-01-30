@@ -16,6 +16,7 @@ import {
   toNullableNumber,
   toNullableString,
   bigintToSafeNumber,
+  computeDisputeStatus,
 } from './utils';
 import { pruneMemoryAssertions, pruneMemoryDisputes, applyVoteSumsDelta } from './memory';
 import type { Assertion, Dispute, OracleChain } from '@/lib/types/oracleTypes';
@@ -209,15 +210,12 @@ export async function readOracleState(
       votes_against: number;
       total_votes: number;
     }[];
-    const now = Date.now();
     for (const disputeRow of disputesData) {
       const votingEndsAt = disputeRow.voting_ends_at;
-      const status: Dispute['status'] =
-        disputeRow.status === 'Executed'
-          ? 'Executed'
-          : votingEndsAt && new Date(votingEndsAt).getTime() <= now
-            ? 'Pending Execution'
-            : 'Voting';
+      const status = computeDisputeStatus(
+        disputeRow.status as Dispute['status'],
+        votingEndsAt ?? undefined,
+      );
 
       disputes[disputeRow.id] = {
         id: disputeRow.id,
@@ -432,14 +430,8 @@ export async function fetchDispute(
   const row = res.rows[0];
   if (!row) return null;
 
-  const now = Date.now();
   const votingEndsAt = row.voting_ends_at?.toISOString();
-  const status: Dispute['status'] =
-    row.status === 'Executed'
-      ? 'Executed'
-      : votingEndsAt && new Date(votingEndsAt).getTime() <= now
-        ? 'Pending Execution'
-        : 'Voting';
+  const status = computeDisputeStatus(row.status as Dispute['status'], votingEndsAt ?? undefined);
 
   return {
     id: row.id,
