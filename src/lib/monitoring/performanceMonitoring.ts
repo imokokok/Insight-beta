@@ -316,11 +316,12 @@ export function initRUM() {
 
   // Periodic report generation
   setInterval(() => {
-    generatePerformanceReport();
+    const report = generatePerformanceReport();
     // Send to analytics in production
-    if (process.env.NODE_ENV === 'production') {
-      // const report = generatePerformanceReport();
-      // sendToAnalytics(report);
+    if (process.env.NODE_ENV === 'production' && report) {
+      import('./analyticsReporter').then(({ reportWebVital }) => {
+        reportWebVital('performance_report', 1, 'good');
+      });
     }
   }, 60000);
 }
@@ -334,7 +335,10 @@ function reportMetric(name: string, value: number) {
 
   // Send to analytics in production
   if (process.env.NODE_ENV === 'production') {
-    // sendToAnalytics({ name, value });
+    import('./analyticsReporter').then(({ reportWebVital }) => {
+      const rating = value < 1000 ? 'good' : value < 3000 ? 'needs-improvement' : 'poor';
+      reportWebVital(name, value, rating);
+    });
   }
 }
 
