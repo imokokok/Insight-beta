@@ -192,6 +192,8 @@ export function useSentry(options: UseSentryOptions): UseSentryReturn {
 
   const isInitialized = useRef(false);
   const initializationPromise = useRef<Promise<void> | null>(null);
+  const errorHandlerRef = useRef<((event: ErrorEvent) => void) | null>(null);
+  const rejectionHandlerRef = useRef<((event: PromiseRejectionEvent) => void) | null>(null);
 
   const initializeSentry = useCallback(async () => {
     if (!enabled || isInitialized.current || !dsn) {
@@ -259,7 +261,8 @@ export function useSentry(options: UseSentryOptions): UseSentryReturn {
         isInitialized.current = true;
 
         if (typeof window !== 'undefined') {
-          window.addEventListener('error', (event) => {
+          // Store handlers in refs for cleanup
+          errorHandlerRef.current = (event: ErrorEvent) => {
             if (window.Sentry && event.error) {
               const eventId = window.Sentry.captureException(event.error, {
                 contexts: {
@@ -272,9 +275,9 @@ export function useSentry(options: UseSentryOptions): UseSentryReturn {
                 onUncaughtException(event.error, eventId);
               }
             }
-          });
+          };
 
-          window.addEventListener('unhandledrejection', (event) => {
+          rejectionHandlerRef.current = (event: PromiseRejectionEvent) => {
             if (window.Sentry && event.reason) {
               const eventId = window.Sentry.captureException(event.reason, {
                 contexts: {
@@ -287,7 +290,10 @@ export function useSentry(options: UseSentryOptions): UseSentryReturn {
                 onUnhandledRejection(event.reason, eventId);
               }
             }
-          });
+          };
+
+          window.addEventListener('error', errorHandlerRef.current);
+          window.addEventListener('unhandledrejection', rejectionHandlerRef.current);
         }
       }
     } catch (error) {
@@ -311,6 +317,20 @@ export function useSentry(options: UseSentryOptions): UseSentryReturn {
     if (!initializationPromise.current) {
       initializationPromise.current = initializeSentry();
     }
+
+    // Cleanup function to remove event listeners
+    return () => {
+      if (typeof window !== 'undefined') {
+        if (errorHandlerRef.current) {
+          window.removeEventListener('error', errorHandlerRef.current);
+          errorHandlerRef.current = null;
+        }
+        if (rejectionHandlerRef.current) {
+          window.removeEventListener('unhandledrejection', rejectionHandlerRef.current);
+          rejectionHandlerRef.current = null;
+        }
+      }
+    };
   }, [initializeSentry]);
 
   const captureException = useCallback(
