@@ -378,13 +378,9 @@ export function initializeConfigManager(): void {
 /**
  * 获取热更新后的环境变量值
  */
-export function getEnv(key: string): string | undefined {
+export function getEnv(key: string, defaultValue?: string): string | undefined {
+  if (defaultValue !== undefined) {
+    return configManager.getOrDefault(key, defaultValue);
+  }
   return configManager.get(key);
-}
-
-/**
- * 获取热更新后的环境变量值（带默认值）
- */
-export function getEnvOrDefault(key: string, defaultValue: string): string {
-  return configManager.getOrDefault(key, defaultValue);
 }

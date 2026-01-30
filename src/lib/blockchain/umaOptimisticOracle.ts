@@ -315,7 +315,7 @@ export const UMA_WHITELIST_ABI = [
   },
 ] as const;
 
-export class UMAOracleClient {
+export class OptimisticOracleClient {
   private publicClient: PublicClient;
   private walletClient: WalletClient | null = null;
   private config: UMAOracleConfig;

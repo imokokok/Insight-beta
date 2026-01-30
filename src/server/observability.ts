@@ -5,27 +5,32 @@ import { getMemoryStore, memoryNowIso } from '@/server/memoryBackend';
 import { notifyAlert, type NotificationOptions } from '@/server/notifications';
 import { getSyncState } from '@/server/oracleState';
 import { env } from '@/lib/config/env';
+import type {
+  AlertSeverity,
+  AlertStatus,
+  Alert,
+  AlertRuleEvent,
+  AlertRule,
+  AuditLogEntry,
+  IncidentStatus,
+  Incident,
+  OpsMetrics,
+  OpsMetricsSeriesPoint,
+  OpsSloStatus,
+} from '@/lib/types/oracleTypes';
 
-export type AlertSeverity = 'info' | 'warning' | 'critical';
-export type AlertStatus = 'Open' | 'Acknowledged' | 'Resolved';
-
-export type Alert = {
-  id: number;
-  fingerprint: string;
-  type: string;
-  severity: AlertSeverity;
-  title: string;
-  message: string;
-  entityType: string | null;
-  entityId: string | null;
-  status: AlertStatus;
-  occurrences: number;
-  firstSeenAt: string;
-  lastSeenAt: string;
-  acknowledgedAt: string | null;
-  resolvedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
+export type {
+  AlertSeverity,
+  AlertStatus,
+  Alert,
+  AlertRuleEvent,
+  AlertRule,
+  AuditLogEntry,
+  IncidentStatus,
+  Incident,
+  OpsMetrics,
+  OpsMetricsSeriesPoint,
+  OpsSloStatus,
 };
 
 type DbAlertRow = {
@@ -55,69 +60,6 @@ type DbAuditRow = {
   entity_id: string | null;
   details: unknown;
   created_at: Date;
-};
-
-export type AlertRuleEvent =
-  | 'dispute_created'
-  | 'liveness_expiring'
-  | 'sync_error'
-  | 'stale_sync'
-  | 'contract_paused'
-  | 'sync_backlog'
-  | 'backlog_assertions'
-  | 'backlog_disputes'
-  | 'market_stale'
-  | 'execution_delayed'
-  | 'low_participation'
-  | 'high_vote_divergence'
-  | 'high_dispute_rate'
-  | 'slow_api_request'
-  | 'high_error_rate'
-  | 'database_slow_query'
-  | 'price_deviation'
-  | 'low_gas';
-
-export type AlertRule = {
-  id: string;
-  name: string;
-  enabled: boolean;
-  event: AlertRuleEvent;
-  severity: AlertSeverity;
-  owner?: string | null;
-  runbook?: string | null;
-  silencedUntil?: string | null;
-  params?: Record<string, unknown>;
-  channels?: Array<'webhook' | 'email' | 'telegram'>;
-  recipient?: string | null;
-};
-
-export type AuditLogEntry = {
-  id: number;
-  createdAt: string;
-  actor: string | null;
-  action: string;
-  entityType: string | null;
-  entityId: string | null;
-  details: unknown;
-};
-
-export type IncidentStatus = 'Open' | 'Mitigating' | 'Resolved';
-
-export type Incident = {
-  id: number;
-  title: string;
-  status: IncidentStatus;
-  severity: AlertSeverity;
-  owner: string | null;
-  rootCause: string | null;
-  summary: string | null;
-  runbook: string | null;
-  alertIds: number[];
-  entityType: string | null;
-  entityId: string | null;
-  createdAt: string;
-  updatedAt: string;
-  resolvedAt: string | null;
 };
 
 let schemaEnsured = false;
@@ -1455,56 +1397,6 @@ export async function listAuditLog(params: {
     nextCursor: offset + res.rows.length < total ? offset + limit : null,
   };
 }
-
-export type OpsMetrics = {
-  generatedAt: string;
-  windowDays: number;
-  alerts: {
-    open: number;
-    acknowledged: number;
-    resolved: number;
-    mttaMs: number | null;
-    mttrMs: number | null;
-  };
-  incidents: {
-    open: number;
-    mitigating: number;
-    resolved: number;
-    mttrMs: number | null;
-  };
-  slo?: OpsSloStatus;
-};
-
-export type OpsMetricsSeriesPoint = {
-  date: string;
-  alertsCreated: number;
-  alertsResolved: number;
-  incidentsCreated: number;
-  incidentsResolved: number;
-};
-
-export type OpsSloStatus = {
-  status: 'met' | 'degraded' | 'breached';
-  targets: {
-    maxLagBlocks: number;
-    maxSyncStalenessMinutes: number;
-    maxAlertMttaMinutes: number;
-    maxAlertMttrMinutes: number;
-    maxIncidentMttrMinutes: number;
-    maxOpenAlerts: number;
-    maxOpenCriticalAlerts: number;
-  };
-  current: {
-    lagBlocks: number | null;
-    syncStalenessMinutes: number | null;
-    alertMttaMinutes: number | null;
-    alertMttrMinutes: number | null;
-    incidentMttrMinutes: number | null;
-    openAlerts: number | null;
-    openCriticalAlerts: number | null;
-  };
-  breaches: Array<{ key: string; target: number; actual: number }>;
-};
 
 function readSloNumber(raw: string, fallback: number, opts?: { min?: number }) {
   const n = Number(raw);

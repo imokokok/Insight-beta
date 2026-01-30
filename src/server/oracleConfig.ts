@@ -1,4 +1,4 @@
-import { hasDatabase, query, getClient } from './db';
+import { hasDatabase, query } from './db';
 import { ensureSchema } from './schema';
 import type {
   OracleChain,
@@ -10,8 +10,8 @@ import { isIP } from 'node:net';
 import { env } from '@/lib/config/env';
 import { encryptString, decryptString, isEncryptionEnabled } from '@/lib/security/encryption';
 import { logger } from '@/lib/logger';
-import type { PoolClient } from 'pg';
 import { oracleConfigCache } from './redisCache';
+import { withTransaction } from './dbOptimization';
 
 export type OracleConfig = SharedOracleConfig;
 
@@ -522,37 +522,6 @@ function mergeConfig(prev: OracleConfig, next: Partial<OracleConfig>): OracleCon
         ? prev.confirmationBlocks
         : (normalizeOptionalNonNegativeInt(next.confirmationBlocks) ?? 12),
   };
-}
-
-/**
- * 执行数据库事务的通用辅助函数
- * 自动处理连接获取、事务开始/提交/回滚和连接释放
- */
-async function withTransaction<T>(fn: (client: PoolClient) => Promise<T>): Promise<T> {
-  const client = await getClient();
-  try {
-    await client.query('BEGIN');
-    const result = await fn(client);
-    await client.query('COMMIT');
-    return result;
-  } catch (error) {
-    try {
-      await client.query('ROLLBACK');
-    } catch (rollbackError) {
-      // 回滚失败是严重问题，需要记录并抛出
-      logger.error('Transaction rollback failed', {
-        rollbackError:
-          rollbackError instanceof Error ? rollbackError.message : String(rollbackError),
-        originalError: error instanceof Error ? error.message : String(error),
-      });
-      throw new Error(
-        `Transaction rollback failed: ${rollbackError instanceof Error ? rollbackError.message : String(rollbackError)}`,
-      );
-    }
-    throw error;
-  } finally {
-    client.release();
-  }
 }
 
 export async function writeOracleConfig(

@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { AlertCircle, RefreshCw, Settings, MessageCircle, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { OracleError, type ErrorRecoveryAction } from '@/lib/errors/OracleError';
+import { OracleError, type ErrorRecoveryAction } from '@/lib/errors';
 
 interface ErrorRecoveryProps {
   error: OracleError | Error;

@@ -35,10 +35,85 @@ export enum ErrorCode {
   NETWORK_ERROR = '4000',
   RPC_ERROR = '4001',
   API_ERROR = '4002',
+  RATE_LIMIT_ERROR = '4003',
 
   // 配置错误 (5xxx)
   CONFIG_ERROR = '5000',
   ENV_MISSING = '5001',
+
+  // 认证授权错误 (6xxx)
+  AUTHENTICATION_ERROR = '6000',
+  AUTHORIZATION_ERROR = '6001',
+}
+
+/**
+ * 错误严重程度
+ */
+export type ErrorSeverity = 'low' | 'medium' | 'high' | 'critical';
+
+/**
+ * 错误恢复动作
+ */
+export interface ErrorRecoveryAction {
+  action: 'retry' | 'refresh' | 'contact_support' | 'check_config' | 'wait';
+  label: string;
+  delay?: number;
+}
+
+/**
+ * 错误恢复指南
+ */
+export const ErrorRecoveryGuide: Record<string, ErrorRecoveryAction[]> = {
+  [ErrorCode.DB_CONNECTION_ERROR]: [
+    { action: 'retry', label: '重试', delay: 3 },
+    { action: 'contact_support', label: '联系支持' },
+  ],
+  [ErrorCode.DB_QUERY_ERROR]: [
+    { action: 'retry', label: '重试', delay: 3 },
+    { action: 'contact_support', label: '联系支持' },
+  ],
+  [ErrorCode.ORACLE_SYNC_ERROR]: [
+    { action: 'retry', label: '重试', delay: 5 },
+    { action: 'check_config', label: '检查配置' },
+  ],
+  [ErrorCode.VALIDATION_ERROR]: [
+    { action: 'refresh', label: '刷新页面' },
+    { action: 'check_config', label: '检查输入' },
+  ],
+  [ErrorCode.AUTHENTICATION_ERROR]: [{ action: 'refresh', label: '重新登录' }],
+  [ErrorCode.AUTHORIZATION_ERROR]: [{ action: 'contact_support', label: '申请权限' }],
+  [ErrorCode.NOT_FOUND]: [{ action: 'refresh', label: '返回首页' }],
+  [ErrorCode.RATE_LIMIT_ERROR]: [
+    { action: 'wait', label: '等待后重试', delay: 60 },
+    { action: 'contact_support', label: '升级套餐' },
+  ],
+  [ErrorCode.TIMEOUT]: [{ action: 'retry', label: '重试', delay: 3 }],
+  [ErrorCode.NETWORK_ERROR]: [
+    { action: 'retry', label: '重试', delay: 3 },
+    { action: 'check_config', label: '检查网络' },
+  ],
+  [ErrorCode.CONFIG_ERROR]: [
+    { action: 'check_config', label: '检查配置' },
+    { action: 'contact_support', label: '联系支持' },
+  ],
+  [ErrorCode.UNKNOWN_ERROR]: [
+    { action: 'retry', label: '重试', delay: 3 },
+    { action: 'contact_support', label: '联系支持' },
+  ],
+};
+
+/**
+ * 错误上下文
+ */
+export interface ErrorContext {
+  userId?: string;
+  requestId?: string;
+  instanceId?: string;
+  endpoint?: string;
+  method?: string;
+  params?: Record<string, unknown>;
+  timestamp?: string;
+  [key: string]: unknown;
 }
 
 /**
@@ -147,15 +222,182 @@ export class DatabaseError extends AppError {
 
 /**
  * Oracle 错误
- * 用于 Oracle 相关操作失败
+ * 用于 Oracle 相关操作失败，支持错误恢复功能
  */
 export class OracleError extends AppError {
+  public readonly severity: ErrorSeverity;
+  public readonly retryable: boolean;
+  public readonly context?: ErrorContext;
+  public readonly originalError?: Error;
+  public readonly timestamp: string;
+
   constructor(
     message: string,
     code: ErrorCode = ErrorCode.ORACLE_SYNC_ERROR,
-    metadata: Record<string, unknown> = {},
+    severity: ErrorSeverity = 'medium',
+    retryable: boolean = true,
+    context?: ErrorContext,
+    originalError?: Error,
   ) {
-    super(message, code, 500, metadata);
+    super(message, code, 500, {
+      ...context,
+      severity,
+      retryable,
+      originalError: originalError?.message,
+    });
+    this.severity = severity;
+    this.retryable = retryable;
+    this.context = context;
+    this.originalError = originalError;
+    this.timestamp = new Date().toISOString();
+  }
+
+  public getRecoveryActions(): ErrorRecoveryAction[] {
+    return ErrorRecoveryGuide[this.code] ?? ErrorRecoveryGuide[ErrorCode.UNKNOWN_ERROR] ?? [];
+  }
+
+  public override toJSON(): {
+    success: false;
+    error: {
+      name: string;
+      message: string;
+      code: ErrorCode;
+      severity: ErrorSeverity;
+      retryable: boolean;
+      timestamp: string;
+      context?: ErrorContext;
+      stack?: string;
+      originalError?: string;
+    };
+  } {
+    return {
+      success: false,
+      error: {
+        name: this.name,
+        message: this.message,
+        code: this.code,
+        severity: this.severity,
+        retryable: this.retryable,
+        timestamp: this.timestamp,
+        context: this.context,
+        stack: this.stack,
+        originalError: this.originalError?.message,
+      },
+    };
+  }
+
+  public static fromError(error: Error, context?: ErrorContext): OracleError {
+    if (error instanceof OracleError) {
+      return error;
+    }
+
+    const message = error.message.toLowerCase();
+
+    if (message.includes('timeout') || message.includes('etimedout')) {
+      return new OracleError(
+        '请求超时，请稍后重试',
+        ErrorCode.TIMEOUT,
+        'medium',
+        true,
+        context,
+        error,
+      );
+    }
+
+    if (
+      message.includes('network') ||
+      message.includes('econnrefused') ||
+      message.includes('enotfound')
+    ) {
+      return new OracleError(
+        '网络连接失败，请检查网络',
+        ErrorCode.NETWORK_ERROR,
+        'high',
+        true,
+        context,
+        error,
+      );
+    }
+
+    if (message.includes('rate limit') || message.includes('too many requests')) {
+      return new OracleError(
+        '请求过于频繁，请稍后再试',
+        ErrorCode.RATE_LIMIT_ERROR,
+        'medium',
+        true,
+        context,
+        error,
+      );
+    }
+
+    if (message.includes('authentication') || message.includes('unauthorized')) {
+      return new OracleError(
+        '认证失败，请重新登录',
+        ErrorCode.AUTHENTICATION_ERROR,
+        'high',
+        false,
+        context,
+        error,
+      );
+    }
+
+    if (message.includes('permission') || message.includes('forbidden')) {
+      return new OracleError(
+        '权限不足，无法执行此操作',
+        ErrorCode.AUTHORIZATION_ERROR,
+        'high',
+        false,
+        context,
+        error,
+      );
+    }
+
+    return new OracleError(
+      error.message || '发生未知错误',
+      ErrorCode.UNKNOWN_ERROR,
+      'medium',
+      true,
+      context,
+      error,
+    );
+  }
+
+  public static databaseError(
+    message: string,
+    originalError?: Error,
+    context?: ErrorContext,
+  ): OracleError {
+    return new OracleError(
+      message,
+      ErrorCode.DB_CONNECTION_ERROR,
+      'critical',
+      true,
+      context,
+      originalError,
+    );
+  }
+
+  public static blockchainError(
+    message: string,
+    originalError?: Error,
+    context?: ErrorContext,
+  ): OracleError {
+    return new OracleError(
+      message,
+      ErrorCode.ORACLE_CONTRACT_ERROR,
+      'high',
+      true,
+      context,
+      originalError,
+    );
+  }
+
+  public static validationError(message: string, context?: ErrorContext): OracleError {
+    return new OracleError(message, ErrorCode.VALIDATION_ERROR, 'low', false, context);
+  }
+
+  public static notFound(resource: string, context?: ErrorContext): OracleError {
+    return new OracleError(`${resource} 不存在`, ErrorCode.NOT_FOUND, 'low', false, context);
   }
 }
 

@@ -7,7 +7,15 @@
  */
 
 import { hasDatabase, query, getClient } from './db';
-import type { OracleConfig } from '@/lib/types/oracleTypes';
+import type {
+  OracleConfig,
+  ConfigTemplate,
+  WebhookConfig,
+  WebhookEvent,
+  BatchConfigUpdate,
+  BatchUpdateResult,
+  WebhookPayload,
+} from '@/lib/types/oracleTypes';
 import { getMemoryInstance } from '@/server/memoryBackend';
 import { encryptString } from '@/lib/security/encryption';
 import { logger } from '@/lib/logger';
@@ -15,59 +23,19 @@ import type { PoolClient } from 'pg';
 import { RedisCache } from './redisCache';
 import crypto from 'node:crypto';
 import { readOracleConfig, writeOracleConfig } from './oracle';
+import { DEFAULT_ORACLE_INSTANCE_ID } from './oracleConfig';
 
-export type { OracleConfig };
+export type {
+  OracleConfig,
+  ConfigTemplate,
+  WebhookConfig,
+  WebhookEvent,
+  BatchConfigUpdate,
+  BatchUpdateResult,
+  WebhookPayload,
+};
 
-export const DEFAULT_ORACLE_INSTANCE_ID = 'default';
-
-// ============================================================================
-// 类型定义
-// ============================================================================
-
-export interface ConfigTemplate {
-  id: string;
-  name: string;
-  description?: string;
-  config: Partial<OracleConfig>;
-  isDefault: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface WebhookConfig {
-  id: string;
-  name: string;
-  url: string;
-  events: WebhookEvent[];
-  secret?: string;
-  enabled: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export type WebhookEvent =
-  | 'config.created'
-  | 'config.updated'
-  | 'config.deleted'
-  | 'config.batch_updated'
-  | 'template.applied';
-
-export interface BatchConfigUpdate {
-  instanceId: string;
-  config: Partial<OracleConfig>;
-}
-
-export interface BatchUpdateResult {
-  success: string[];
-  failed: Array<{ instanceId: string; error: string }>;
-}
-
-export interface WebhookPayload {
-  event: WebhookEvent;
-  timestamp: string;
-  data: unknown;
-  signature?: string;
-}
+export { DEFAULT_ORACLE_INSTANCE_ID };
 
 // ============================================================================
 // Redis 分布式缓存增强

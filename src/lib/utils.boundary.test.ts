@@ -13,7 +13,6 @@ import {
   fetchApiData,
   ApiClientError,
 } from '@/lib/utils';
-import { getCacheKey, clearMemoryCache } from '@/lib/performance/requestOptimization';
 
 describe('parseRpcUrls', () => {
   it('should parse valid RPC URLs', () => {
@@ -222,41 +221,6 @@ describe('getExplorerUrl', () => {
 
   it('should handle Amoy testnet', () => {
     expect(getExplorerUrl('amoy', '0x123')).toContain('amoy.polygonscan.com');
-  });
-});
-
-describe('getCacheKey', () => {
-  beforeEach(() => {
-    clearMemoryCache();
-  });
-
-  it('should generate unique keys for different inputs', () => {
-    const key1 = getCacheKey('a', 1);
-    const key2 = getCacheKey('a', 2);
-    expect(key1).not.toBe(key2);
-  });
-
-  it('should generate same key for same inputs', () => {
-    const key1 = getCacheKey('test', 123);
-    const key2 = getCacheKey('test', 123);
-    expect(key1).toBe(key2);
-  });
-
-  it('should handle complex objects', () => {
-    const key = getCacheKey({ a: 1, b: 'test' });
-    expect(key).toBeTruthy();
-  });
-
-  it('should handle nested objects with depth', () => {
-    const key = getCacheKey({ a: { b: { c: 1 } } });
-    expect(key).toBeTruthy();
-  });
-
-  it('should handle special values', () => {
-    expect(getCacheKey(NaN)).toBe('NaN');
-    expect(getCacheKey(Infinity)).toBe('Infinity');
-    expect(getCacheKey(-Infinity)).toBe('-Infinity');
-    expect(getCacheKey(Symbol('sym'))).toContain('Symbol');
   });
 });
 

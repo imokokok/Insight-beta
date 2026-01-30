@@ -1,4 +1,4 @@
-import { OracleError } from '@/lib/errors/OracleError';
+import { OracleError } from '@/lib/errors';
 
 export interface SqlInjectionCheckResult {
   isSafe: boolean;
@@ -156,19 +156,15 @@ export function validateSqlInput(
   const result = detectSqlInjection(input);
 
   if (!result.isSafe) {
-    throw new OracleError(
+    throw OracleError.validationError(
       `检测到潜在的 SQL 注入攻击: ${result.detectedPatterns.slice(0, 3).join(', ')}`,
-      'VALIDATION_ERROR',
-      result.riskLevel === 'critical'
-        ? 'critical'
-        : result.riskLevel === 'high'
-          ? 'high'
-          : 'medium',
-      false,
       {
         endpoint: context?.endpoint,
-        params: { param: context?.param, input: input.slice(0, 100) },
-        detectedPatterns: result.detectedPatterns,
+        params: {
+          param: context?.param,
+          input: input.slice(0, 100),
+          detectedPatterns: result.detectedPatterns,
+        },
       },
     );
   }
@@ -211,7 +207,7 @@ export function createSqlInjectionMiddleware() {
 
 export function safeSqlIdentifier(identifier: string): string {
   if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(identifier)) {
-    throw new OracleError(`无效的 SQL 标识符: ${identifier}`, 'VALIDATION_ERROR', 'medium', false);
+    throw OracleError.validationError(`无效的 SQL 标识符: ${identifier}`);
   }
   return identifier;
 }
@@ -225,7 +221,7 @@ export function safeSqlOrderBy(orderBy: string, allowedColumns: string[]): strin
 
   for (const col of columns) {
     if (col && !allowedColumns.includes(col)) {
-      throw new OracleError(`不允许的排序列: ${col}`, 'VALIDATION_ERROR', 'medium', false);
+      throw OracleError.validationError(`不允许的排序列: ${col}`);
     }
   }
 
