@@ -1,31 +1,23 @@
 import { NextResponse } from 'next/server';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
+import { getApiDocs } from '@/lib/swagger';
 
-const DOCS_DIR = path.join(process.cwd(), 'docs/generated');
-
+/**
+ * @swagger
+ * /api/docs:
+ *   get:
+ *     summary: 获取 OpenAPI 规范
+ *     description: 返回 API 的 OpenAPI 3.0 规范文档
+ *     tags:
+ *       - Docs
+ *     responses:
+ *       200:
+ *         description: 成功返回 OpenAPI 规范
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
 export async function GET() {
-  try {
-    const openapiPath = path.join(DOCS_DIR, 'openapi.json');
-
-    if (!fs.existsSync(openapiPath)) {
-      return NextResponse.json(
-        {
-          error: "API documentation not generated. Run 'npm run docs:api' first.",
-        },
-        { status: 404 },
-      );
-    }
-
-    const content = fs.readFileSync(openapiPath, 'utf-8');
-    const spec = JSON.parse(content);
-
-    return NextResponse.json(spec, {
-      headers: {
-        'Cache-Control': 'public, max-age=3600',
-      },
-    });
-  } catch {
-    return NextResponse.json({ error: 'Failed to load API documentation' }, { status: 500 });
-  }
+  const spec = getApiDocs();
+  return NextResponse.json(spec);
 }

@@ -7,6 +7,49 @@ import { getOracleEnv, getSyncState, listOracleInstances } from '@/server/oracle
 import { readAlertRules } from '@/server/observability';
 import { getRedisStatus, oracleConfigCache } from '@/server/redisCache';
 
+/**
+ * @swagger
+ * /api/health:
+ *   get:
+ *     summary: 健康检查端点
+ *     description: |
+ *       提供多种健康检查探针：
+ *       - liveness: 应用是否存活
+ *       - readiness: 应用是否就绪
+ *       - validation: 完整配置验证
+ *     tags:
+ *       - Health
+ *     parameters:
+ *       - in: query
+ *         name: probe
+ *         schema:
+ *           type: string
+ *           enum: [liveness, readiness, validation]
+ *         description: 探针类型
+ *     responses:
+ *       200:
+ *         description: 健康状态正常
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: ok
+ *                 probe:
+ *                   type: string
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *       503:
+ *         description: 服务未就绪
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+
 type OracleHealthInstance = {
   id: string;
   chain: string;

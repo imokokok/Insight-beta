@@ -3,6 +3,59 @@ import { cachedJson, handleApi, rateLimit, requireAdmin } from '@/server/apiResp
 import { env } from '@/lib/config/env';
 import crypto from 'node:crypto';
 
+/**
+ * @swagger
+ * /api/oracle/stats:
+ *   get:
+ *     summary: 获取预言机统计
+ *     description: 获取预言机的统计数据，包括 TVS、活跃争议数、24小时解决数等
+ *     tags:
+ *       - Oracle
+ *     parameters:
+ *       - in: query
+ *         name: instanceId
+ *         schema:
+ *           type: string
+ *         description: 预言机实例ID
+ *       - in: query
+ *         name: sync
+ *         schema:
+ *           type: string
+ *           enum: ['0', '1']
+ *         description: 是否强制同步数据（需要管理员权限或 Cron Secret）
+ *     responses:
+ *       200:
+ *         description: 成功获取统计数据
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     tvsUsd:
+ *                       type: number
+ *                       description: 总质押价值（美元）
+ *                     activeDisputes:
+ *                       type: number
+ *                       description: 活跃争议数
+ *                     resolved24h:
+ *                       type: number
+ *                       description: 24小时内解决的争议数
+ *                     avgResolutionMinutes:
+ *                       type: number
+ *                       description: 平均解决时间（分钟）
+ *       401:
+ *         description: 未授权（当请求同步时）
+ *       429:
+ *         description: 请求过于频繁
+ *       500:
+ *         description: 服务器错误
+ */
+
 function timingSafeEqualString(a: string, b: string) {
   const aBuf = Buffer.from(a, 'utf8');
   const bBuf = Buffer.from(b, 'utf8');

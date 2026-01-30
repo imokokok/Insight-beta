@@ -3,6 +3,90 @@ import { ensureOracleSynced } from '@/server/oracle';
 import { listAlerts } from '@/server/observability';
 import { z } from 'zod';
 
+/**
+ * @swagger
+ * /api/oracle/alerts:
+ *   get:
+ *     summary: 获取告警列表
+ *     description: 获取系统告警列表，支持按状态、严重程度筛选
+ *     tags:
+ *       - Alerts
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [Open, Acknowledged, Resolved]
+ *         description: 告警状态筛选
+ *       - in: query
+ *         name: severity
+ *         schema:
+ *           type: string
+ *           enum: [info, warning, critical]
+ *         description: 严重程度筛选
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *         description: 告警类型筛选
+ *       - in: query
+ *         name: q
+ *         schema:
+ *           type: string
+ *         description: 搜索关键词
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 30
+ *           minimum: 1
+ *           maximum: 100
+ *         description: 每页数量
+ *       - in: query
+ *         name: cursor
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *         description: 分页游标
+ *       - in: query
+ *         name: sync
+ *         schema:
+ *           type: string
+ *           enum: ['0', '1']
+ *         description: 是否强制同步（需要管理员权限）
+ *       - in: query
+ *         name: instanceId
+ *         schema:
+ *           type: string
+ *         description: 预言机实例ID
+ *     responses:
+ *       200:
+ *         description: 成功获取告警列表
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     items:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Alert'
+ *                     total:
+ *                       type: integer
+ *                     nextCursor:
+ *                       type: integer
+ *                       nullable: true
+ *       429:
+ *         description: 请求过于频繁
+ *       500:
+ *         description: 服务器错误
+ */
+
 const alertParamsSchema = z.object({
   status: z.enum(['Open', 'Acknowledged', 'Resolved']).optional().nullable(),
   severity: z.enum(['info', 'warning', 'critical']).optional().nullable(),
