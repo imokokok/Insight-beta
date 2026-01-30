@@ -501,5 +501,40 @@ export async function ensureSchema() {
       '0xA5B9d8a0B0Fa04B710D7ee40D90d2551E58d0F65',
       true
     ON CONFLICT (id) DO NOTHING;
+
+    -- Web Vitals Metrics Table
+    CREATE TABLE IF NOT EXISTS web_vitals_metrics (
+      id BIGSERIAL PRIMARY KEY,
+      lcp NUMERIC,
+      fid NUMERIC,
+      cls NUMERIC,
+      fcp NUMERIC,
+      ttfb NUMERIC,
+      inp NUMERIC,
+      page_path TEXT NOT NULL DEFAULT '/',
+      user_agent TEXT,
+      timestamp TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+      created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_web_vitals_page_path ON web_vitals_metrics(page_path);
+    CREATE INDEX IF NOT EXISTS idx_web_vitals_created_at ON web_vitals_metrics(created_at);
+    CREATE INDEX IF NOT EXISTS idx_web_vitals_page_created ON web_vitals_metrics(page_path, created_at);
+
+    -- Config Version History Table
+    CREATE TABLE IF NOT EXISTS oracle_config_history (
+      id BIGSERIAL PRIMARY KEY,
+      instance_id TEXT NOT NULL,
+      changed_by TEXT,
+      change_type TEXT NOT NULL,
+      previous_values JSONB,
+      new_values JSONB,
+      change_reason TEXT,
+      created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_config_history_instance ON oracle_config_history(instance_id);
+    CREATE INDEX IF NOT EXISTS idx_config_history_created_at ON oracle_config_history(created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_config_history_instance_created ON oracle_config_history(instance_id, created_at DESC);
   `);
 }

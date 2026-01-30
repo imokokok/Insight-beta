@@ -35,6 +35,11 @@ const ClientComponentsWrapper = lazy(() =>
     default: mod.ClientComponentsWrapper,
   })),
 );
+const WebVitalsMonitor = lazy(() =>
+  import('@/components/features/common/WebVitalsMonitor').then((mod) => ({
+    default: mod.WebVitalsMonitor,
+  })),
+);
 
 function LoadingPlaceholder({ className }: { className?: string }) {
   return <div className={className} aria-hidden="true" />;
@@ -97,6 +102,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       <body
         className={cn('min-h-screen bg-[var(--background)] font-sans text-purple-950 antialiased')}
       >
+        <Suspense fallback={null}>
+          <WebVitalsMonitor />
+        </Suspense>
         <LanguageProvider initialLang={lang}>
           <WalletProvider>
             <Toaster />

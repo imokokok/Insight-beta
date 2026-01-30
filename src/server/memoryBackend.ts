@@ -118,6 +118,8 @@ type MemoryStore = {
   nextAlertId: number;
   audit: MemoryAudit[];
   nextAuditId: number;
+  metrics: Map<string, unknown>;
+  configHistory?: Map<string, unknown[]>;
 };
 
 // Import at the top to avoid circular dependencies
@@ -188,6 +190,7 @@ export function getMemoryStore(): MemoryStore {
       nextAlertId: 1,
       audit: [],
       nextAuditId: 1,
+      metrics: new Map(),
     };
   }
   return g.__insightMemoryStore;
