@@ -19,13 +19,20 @@ export interface PricePoint {
 
 type CacheEntry<T> = { value: T; expiresAtMs: number };
 
-const SPOT_CACHE_TTL_MS = 10_000;
-const DEX_TWAP_CACHE_TTL_MS = 30_000;
-const POOL_META_CACHE_TTL_MS = 24 * 60 * 60_000;
+// Cache TTL configurations - can be overridden via environment variables
+const SPOT_CACHE_TTL_MS = Number(env.INSIGHT_PRICE_CACHE_TTL_MS) || 10_000;
+const DEX_TWAP_CACHE_TTL_MS = Number(env.INSIGHT_DEX_TWAP_CACHE_TTL_MS) || 30_000;
+const POOL_META_CACHE_TTL_MS = Number(env.INSIGHT_POOL_META_CACHE_TTL_MS) || 24 * 60 * 60_000;
 
 const LAST_GOOD_SPOT_MAX_AGE_MS = 5 * 60_000;
 const LAST_GOOD_DEX_MAX_AGE_MS = 2 * 60_000;
 const PROVIDER_BACKOFF_MAX_MS = 60_000;
+
+// Cache size limits to prevent unbounded memory growth
+const MAX_CACHE_SIZE = 1000;
+const MAX_INFLIGHT_SIZE = 100;
+const MAX_LAST_GOOD_SIZE = 500;
+const MAX_PROVIDER_STATE_SIZE = 100;
 
 const spotCache = new Map<string, CacheEntry<number>>();
 const spotInflight = new Map<string, Promise<number>>();
@@ -46,6 +53,20 @@ type PoolMeta = {
 };
 
 const poolMetaCache = new Map<string, CacheEntry<PoolMeta>>();
+
+/**
+ * Enforce cache size limit using LRU eviction
+ * Removes oldest entries when cache exceeds max size
+ */
+function enforceCacheSizeLimit<T>(cache: Map<string, T>, maxSize: number): void {
+  if (cache.size <= maxSize) return;
+
+  const entriesToRemove = cache.size - maxSize;
+  const keys = Array.from(cache.keys()).slice(0, entriesToRemove);
+  for (const key of keys) {
+    cache.delete(key);
+  }
+}
 
 function getDependencyTimeoutMs() {
   const raw = Number(env.INSIGHT_DEPENDENCY_TIMEOUT_MS || 10_000);
@@ -144,13 +165,21 @@ async function cachedNumber(
   key: string,
   ttlMs: number,
   fetcher: () => Promise<number>,
+  maxCacheSize: number = MAX_CACHE_SIZE,
+  maxInflightSize: number = MAX_INFLIGHT_SIZE,
 ): Promise<number> {
   const hit = getCachedNumber(cache, key);
   if (hit !== null) return hit;
+
+  // Enforce inflight size limit before adding new request
+  enforceCacheSizeLimit(inflight, maxInflightSize);
+
   const existing = inflight.get(key);
   if (existing) return existing;
   const p = fetcher()
     .then((v) => {
+      // Enforce cache size limit before adding new entry
+      enforceCacheSizeLimit(cache, maxCacheSize);
       cache.set(key, { value: v, expiresAtMs: Date.now() + ttlMs });
       return v;
     })
@@ -186,10 +215,12 @@ function canAttemptProvider(key: string) {
 }
 
 function recordProviderOk(key: string) {
+  enforceCacheSizeLimit(providerState, MAX_PROVIDER_STATE_SIZE);
   providerState.set(key, { failCount: 0, nextRetryAtMs: 0 });
 }
 
 function recordProviderFail(key: string) {
+  enforceCacheSizeLimit(providerState, MAX_PROVIDER_STATE_SIZE);
   const prev = providerState.get(key) ?? { failCount: 0, nextRetryAtMs: 0 };
   const failCount = Math.min(20, prev.failCount + 1);
   const backoff = Math.min(PROVIDER_BACKOFF_MAX_MS, 1000 * 2 ** (failCount - 1));
@@ -213,6 +244,7 @@ async function fetchSpotUsdResilient(
     try {
       const v = await fetchSpotUsdWithCache(symbol, provider);
       recordProviderOk(key);
+      enforceCacheSizeLimit(lastGoodSpot, MAX_LAST_GOOD_SIZE);
       lastGoodSpot.set(symbol, { price: v, atMs: Date.now() });
       return v;
     } catch (e) {
@@ -372,6 +404,7 @@ async function fetchDexTwapPriceUsdUncached(
           dec0: Number(dec0),
           dec1: Number(dec1),
         };
+        enforceCacheSizeLimit(poolMetaCache, MAX_CACHE_SIZE);
         poolMetaCache.set(poolKey, {
           value: m,
           expiresAtMs: Date.now() + POOL_META_CACHE_TTL_MS,
@@ -421,6 +454,7 @@ async function fetchDexTwapPriceUsdCached(
   if (existing) return existing;
   const p = fetchDexTwapPriceUsdUncached(input)
     .then((v) => {
+      enforceCacheSizeLimit(dexCache, MAX_CACHE_SIZE);
       dexCache.set(key, {
         value: v,
         expiresAtMs: Date.now() + DEX_TWAP_CACHE_TTL_MS,
@@ -568,7 +602,10 @@ export async function fetchCurrentPrice(
       rpcUrl: opts?.rpcUrl ?? null,
     });
     const nowMs = Date.now();
-    if (dex !== null) lastGoodDex.set(normalizedSymbol, { price: dex, atMs: nowMs });
+    if (dex !== null) {
+      enforceCacheSizeLimit(lastGoodDex, MAX_LAST_GOOD_SIZE);
+      lastGoodDex.set(normalizedSymbol, { price: dex, atMs: nowMs });
+    }
 
     const lastSpot = lastGoodSpot.get(normalizedSymbol);
     const lastDex = lastGoodDex.get(normalizedSymbol);

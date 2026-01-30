@@ -259,6 +259,7 @@ export class RealtimeClient {
         this.boundOnHeartbeat = null;
       }
       if (this.boundOnError) {
+        this.eventSource.removeEventListener('error', this.boundOnError);
         this.eventSource.onerror = null;
         this.boundOnError = null;
       }

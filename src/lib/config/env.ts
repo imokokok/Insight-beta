@@ -163,6 +163,15 @@ export const env = {
   get INSIGHT_FALLBACK_DEFAULT_PRICE() {
     return (process.env.INSIGHT_FALLBACK_DEFAULT_PRICE ?? '').trim();
   },
+  get INSIGHT_PRICE_CACHE_TTL_MS() {
+    return (process.env.INSIGHT_PRICE_CACHE_TTL_MS ?? '').trim();
+  },
+  get INSIGHT_DEX_TWAP_CACHE_TTL_MS() {
+    return (process.env.INSIGHT_DEX_TWAP_CACHE_TTL_MS ?? '').trim();
+  },
+  get INSIGHT_POOL_META_CACHE_TTL_MS() {
+    return (process.env.INSIGHT_POOL_META_CACHE_TTL_MS ?? '').trim();
+  },
   get POLYGON_AMOY_RPC_URL() {
     return (process.env.POLYGON_AMOY_RPC_URL ?? '').trim();
   },
