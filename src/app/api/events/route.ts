@@ -37,8 +37,15 @@ export async function GET(request: NextRequest) {
 
           const eventBus = getEventBus();
           const unsubscribe = eventBus.subscribe((event: unknown) => {
-            const typedEvent = event as { instanceId?: string };
-            if (!instanceId || typedEvent.instanceId === instanceId) {
+            // Runtime type validation for event
+            if (typeof event !== 'object' || event === null) {
+              logger.warn('Invalid event format received', { event });
+              return;
+            }
+            const typedEvent = event as Record<string, unknown>;
+            const eventInstanceId =
+              typeof typedEvent.instanceId === 'string' ? typedEvent.instanceId : undefined;
+            if (!instanceId || eventInstanceId === instanceId) {
               sendEvent(event);
             }
           });

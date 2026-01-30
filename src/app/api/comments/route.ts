@@ -35,6 +35,27 @@ export async function GET(request: NextRequest) {
               ? 'ORDER BY c.likes DESC, c.created_at DESC'
               : 'ORDER BY c.created_at DESC';
 
+      // Build query conditions and parameters safely
+      const conditions: string[] = ['c.is_deleted = false'];
+      const params: (string | number)[] = [];
+      let paramIndex = 1;
+
+      if (filter.entityType) {
+        conditions.push(`c.entity_type = $${paramIndex++}`);
+        params.push(filter.entityType);
+      }
+      if (filter.entityId) {
+        conditions.push(`c.entity_id = $${paramIndex++}`);
+        params.push(filter.entityId);
+      }
+      if (filter.authorAddress) {
+        conditions.push(`c.author_address = $${paramIndex++}`);
+        params.push(filter.authorAddress);
+      }
+
+      // Add limit and offset with correct parameter indices
+      params.push(limit, offset);
+
       const result = await db.query<Comment>(
         `
         SELECT 
@@ -52,26 +73,22 @@ export async function GET(request: NextRequest) {
           c.is_pinned,
           c.is_deleted
         FROM comments c
-        WHERE c.is_deleted = false
-          ${filter.entityType ? 'AND c.entity_type = $1' : ''}
-          ${filter.entityId ? 'AND c.entity_id = $2' : ''}
-          ${filter.authorAddress ? 'AND c.author_address = $3' : ''}
+        WHERE ${conditions.join(' AND ')}
         ${orderByClause}
-        LIMIT $4 OFFSET $5
+        LIMIT $${paramIndex++} OFFSET $${paramIndex++}
         `,
-        [filter.entityType, filter.entityId, filter.authorAddress, limit, offset].filter(Boolean),
+        params,
       );
 
+      // Build count query with same conditions (without limit/offset)
+      const countParams = params.slice(0, -2); // Remove limit and offset
       const countResult = await db.query<{ count: bigint }>(
         `
         SELECT COUNT(*) as count 
         FROM comments c
-        WHERE c.is_deleted = false
-          ${filter.entityType ? 'AND c.entity_type = $1' : ''}
-          ${filter.entityId ? 'AND c.entity_id = $2' : ''}
-          ${filter.authorAddress ? 'AND c.author_address = $3' : ''}
+        WHERE ${conditions.join(' AND ')}
         `,
-        [filter.entityType, filter.entityId, filter.authorAddress].filter(Boolean),
+        countParams,
       );
 
       return {

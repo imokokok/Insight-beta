@@ -95,12 +95,13 @@ export class AppError extends Error {
    * 用于 API 响应
    */
   toJSON() {
+    const isDev = process.env.NODE_ENV === 'development' || process.env.DEBUG === 'true';
     return {
       success: false,
       error: {
         code: this.code,
         message: this.message,
-        ...(process.env.NODE_ENV !== 'production' && {
+        ...(isDev && {
           stack: this.stack,
           metadata: this.metadata,
         }),
