@@ -1,8 +1,9 @@
 import type { NextRequest } from 'next/server';
 import { handleApi } from '@/server/apiResponse';
 import { logger } from '@/lib/logger';
-import type { Comment, CommentCreateInput, CommentFilter } from '@/lib/types/commentTypes';
+import type { Comment, CommentFilter } from '@/lib/types/commentTypes';
 import { db } from '@/server/db';
+import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
 
@@ -104,22 +105,37 @@ export async function GET(request: NextRequest) {
   });
 }
 
+const commentCreateSchema = z.object({
+  entityType: z.enum(['assertion', 'dispute', 'market', 'protocol']),
+  entityId: z.string().min(1).max(100),
+  content: z.string().min(1).max(1000),
+  parentId: z.number().int().positive().optional().nullable(),
+});
+
 export async function POST(request: NextRequest) {
   return handleApi(request, async () => {
-    const input = (await request.json()) as CommentCreateInput;
+    // Check content length before parsing JSON
+    const contentLength = request.headers.get('content-length');
+    if (contentLength && parseInt(contentLength) > 1024 * 1024) {
+      return { error: 'request_body_too_large' };
+    }
+
+    const body = await request.json().catch(() => null);
+    if (!body) {
+      return { error: 'invalid_json' };
+    }
+
+    const parseResult = commentCreateSchema.safeParse(body);
+    if (!parseResult.success) {
+      return { error: 'invalid_request_body', details: parseResult.error.format() };
+    }
+
+    const input = parseResult.data;
     const { searchParams } = new URL(request.url);
     const authorAddress = searchParams.get('authorAddress');
 
-    if (!authorAddress) {
-      return { error: 'missing_author_address' };
-    }
-
-    if (!input.entityType || !input.entityId || !input.content) {
-      return { error: 'invalid_request_body' };
-    }
-
-    if (input.content.length > 1000) {
-      return { error: 'comment_too_long' };
+    if (!authorAddress || !/^0x[a-fA-F0-9]{40}$/.test(authorAddress)) {
+      return { error: 'invalid_author_address' };
     }
 
     try {

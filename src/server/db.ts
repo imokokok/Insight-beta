@@ -78,6 +78,8 @@ const poolConfig = {
     DATABASE_CONFIG.DEFAULT_CONNECTION_TIMEOUT,
     Number(process.env.INSIGHT_DB_CONNECTION_TIMEOUT) || 10000,
   ),
+  // Add acquire timeout to prevent indefinite waiting for connections
+  acquireTimeoutMillis: Math.max(5000, Number(process.env.INSIGHT_DB_ACQUIRE_TIMEOUT) || 10000),
   maxUses: Math.max(
     1000,
     Number(process.env.INSIGHT_DB_MAX_USES) || DATABASE_CONFIG.DEFAULT_MAX_USES,
