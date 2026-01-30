@@ -162,44 +162,54 @@ export class ConfigCacheManager {
 
   /**
    * 使缓存失效
+   *
+   * 注意：必须先清除分布式缓存，再清除本地缓存
+   * 这样可以防止在清除本地缓存和分布式缓存之间，
+   * 其他实例从分布式缓存读取旧数据到本地缓存
    */
   async invalidate(instanceId: string): Promise<void> {
     const key = this.buildKey(instanceId);
 
-    // 清除本地缓存
-    this.localCache.delete(key);
-
-    // 清除分布式缓存
+    // 1. 先清除分布式缓存（关键：必须先清分布式）
     try {
       await this.distributedCache.delete(key);
+      logger.debug('Distributed cache invalidated', { instanceId });
     } catch (error) {
       logger.warn('Distributed cache delete failed', {
         instanceId,
         error: error instanceof Error ? error.message : String(error),
       });
     }
+
+    // 2. 再清除本地缓存
+    this.localCache.delete(key);
+    logger.debug('Local cache invalidated', { instanceId });
   }
 
   /**
    * 批量使缓存失效
+   *
+   * 注意：必须先清除分布式缓存，再清除本地缓存
    */
   async invalidateBatch(instanceIds: string[]): Promise<void> {
     const keys = instanceIds.map((id) => this.buildKey(id));
 
-    // 清除本地缓存
-    for (const key of keys) {
-      this.localCache.delete(key);
-    }
-
-    // 清除分布式缓存
+    // 1. 先清除分布式缓存（关键：必须先清分布式）
     try {
       await this.distributedCache.mdel(keys);
+      logger.debug('Distributed cache batch invalidated', { count: instanceIds.length });
     } catch (error) {
       logger.warn('Distributed cache batch delete failed', {
         count: instanceIds.length,
         error: error instanceof Error ? error.message : String(error),
       });
     }
+
+    // 2. 再清除本地缓存
+    for (const key of keys) {
+      this.localCache.delete(key);
+    }
+    logger.debug('Local cache batch invalidated', { count: instanceIds.length });
   }
 
   /**
