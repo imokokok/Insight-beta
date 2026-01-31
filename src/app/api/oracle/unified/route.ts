@@ -31,7 +31,21 @@ import {
   runCrossProtocolAnalysis,
   type PriceDeviationConfig,
 } from '@/server/oracle/crossProtocolAnalysis';
-import type { OracleProtocol, SupportedChain, UnifiedOracleConfig } from '@/lib/types/unifiedOracleTypes';
+import {
+  getAlerts,
+  acknowledgeAlert,
+  resolveAlert,
+  getAlertRules,
+  createAlertRule,
+  getAlertStats,
+  scanForStaleData,
+  type AlertRuleConfig,
+} from '@/server/oracle/alertService';
+import type {
+  OracleProtocol,
+  SupportedChain,
+  UnifiedOracleConfig,
+} from '@/lib/types/unifiedOracleTypes';
 
 const RATE_LIMITS = {
   GET: { key: 'unified_get', limit: 100, windowMs: 60_000 },
@@ -79,6 +93,12 @@ export async function GET(request: NextRequest) {
           return await getChains();
         case 'stats':
           return await getGlobalStats();
+        case 'alerts':
+          return await getAlertsList(url.searchParams);
+        case 'alertRules':
+          return await getAlertRulesList();
+        case 'alertStats':
+          return await getAlertStatistics();
         default:
           return { error: 'Unknown action' };
       }
@@ -125,6 +145,14 @@ export async function POST(request: NextRequest) {
           return await batchAnalyze(body.symbols, body.config);
         case 'runAnalysis':
           return await runAnalysisJob(body.symbols, body.config);
+        case 'createAlertRule':
+          return await createNewAlertRule(body);
+        case 'acknowledgeAlert':
+          return await acknowledgeAlertById(body.alertId, body.userId);
+        case 'resolveAlert':
+          return await resolveAlertById(body.alertId, body.userId);
+        case 'scanStaleData':
+          return await scanStaleDataJob();
         default:
           return { error: 'Unknown action' };
       }
@@ -627,8 +655,7 @@ async function getTrendAnalysis(searchParams: URLSearchParams) {
     const upCount = trends.filter((t) => t.trend === 'up').length;
     const downCount = trends.filter((t) => t.trend === 'down').length;
     const stableCount = trends.filter((t) => t.trend === 'stable').length;
-    const avgVolatility =
-      trends.reduce((sum, t) => sum + t.volatility, 0) / (trends.length || 1);
+    const avgVolatility = trends.reduce((sum, t) => sum + t.volatility, 0) / (trends.length || 1);
 
     return {
       symbol,
@@ -667,7 +694,16 @@ async function getReliabilityReport(searchParams: URLSearchParams) {
 
   if (!protocol) {
     // 返回所有协议的可靠性报告
-    const protocols: OracleProtocol[] = ['uma', 'chainlink', 'pyth', 'band', 'api3', 'redstone', 'dia', 'flux'];
+    const protocols: OracleProtocol[] = [
+      'uma',
+      'chainlink',
+      'pyth',
+      'band',
+      'api3',
+      'redstone',
+      'dia',
+      'flux',
+    ];
     const reports = await Promise.all(
       protocols.map(async (p) => {
         try {
@@ -1170,4 +1206,189 @@ async function batchUpdateStatus(ids: string[], enabled: boolean) {
     success: results.failed.length === 0,
     results,
   };
+}
+
+// ============================================================================
+// 告警相关函数
+// ============================================================================
+
+async function getAlertsList(searchParams: URLSearchParams) {
+  const status = searchParams.get('status') as 'open' | 'acknowledged' | 'resolved' | undefined;
+  const severity = searchParams.get('severity') as 'info' | 'warning' | 'critical' | undefined;
+  const protocol = searchParams.get('protocol') as OracleProtocol | undefined;
+  const chain = searchParams.get('chain') as SupportedChain | undefined;
+  const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : undefined;
+
+  const alerts = await getAlerts({
+    ...(status && { status }),
+    ...(severity && { severity }),
+    ...(protocol && { protocol }),
+    ...(chain && { chain }),
+    ...(limit && { limit }),
+  });
+
+  return {
+    alerts: alerts.map((alert) => ({
+      id: alert.id,
+      ruleId: alert.ruleId,
+      event: alert.event,
+      severity: alert.severity,
+      title: alert.title,
+      message: alert.message,
+      protocol: alert.protocol,
+      chain: alert.chain,
+      instanceId: alert.instanceId,
+      symbol: alert.symbol,
+      status: alert.status,
+      occurrences: alert.occurrences,
+      createdAt: alert.createdAt,
+      updatedAt: alert.updatedAt,
+    })),
+    total: alerts.length,
+  };
+}
+
+async function getAlertRulesList() {
+  const rules = await getAlertRules();
+  return {
+    rules: rules.map((rule) => ({
+      id: rule.id,
+      name: rule.name,
+      enabled: rule.enabled,
+      event: rule.event,
+      severity: rule.severity,
+      protocols: rule.protocols,
+      chains: rule.chains,
+      symbols: rule.symbols,
+      params: rule.params,
+      channels: rule.channels,
+    })),
+    total: rules.length,
+  };
+}
+
+async function getAlertStatistics() {
+  const stats = await getAlertStats();
+  return {
+    timestamp: new Date().toISOString(),
+    stats,
+  };
+}
+
+async function createNewAlertRule(body: Record<string, unknown>) {
+  const { name, event, severity, params, protocols, chains, symbols } = body;
+
+  if (!name || !event || !severity) {
+    return { error: 'Missing required fields: name, event, severity' };
+  }
+
+  try {
+    const rule = await createAlertRule({
+      name: name as string,
+      enabled: true,
+      event: event as UnifiedAlertEvent,
+      severity: severity as 'info' | 'warning' | 'critical',
+      params: params as AlertRuleConfig['params'],
+      protocols: protocols as OracleProtocol[],
+      chains: chains as SupportedChain[],
+      symbols: symbols as string[],
+    });
+
+    return {
+      success: true,
+      rule: {
+        id: rule.id,
+        name: rule.name,
+        enabled: rule.enabled,
+        event: rule.event,
+        severity: rule.severity,
+      },
+    };
+  } catch (error) {
+    logger.error('Failed to create alert rule', { error });
+    return {
+      error: 'Failed to create alert rule',
+      details: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+async function acknowledgeAlertById(alertId: string, userId: string) {
+  if (!alertId) {
+    return { error: 'Alert ID is required' };
+  }
+
+  try {
+    const alert = await acknowledgeAlert(alertId, userId || 'system');
+    if (!alert) {
+      return { error: 'Alert not found' };
+    }
+
+    return {
+      success: true,
+      alert: {
+        id: alert.id,
+        status: alert.status,
+        acknowledgedAt: alert.acknowledgedAt,
+      },
+    };
+  } catch (error) {
+    logger.error('Failed to acknowledge alert', { error });
+    return {
+      error: 'Failed to acknowledge alert',
+      details: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+async function resolveAlertById(alertId: string, userId: string) {
+  if (!alertId) {
+    return { error: 'Alert ID is required' };
+  }
+
+  try {
+    const alert = await resolveAlert(alertId, userId || 'system');
+    if (!alert) {
+      return { error: 'Alert not found' };
+    }
+
+    return {
+      success: true,
+      alert: {
+        id: alert.id,
+        status: alert.status,
+        resolvedAt: alert.resolvedAt,
+      },
+    };
+  } catch (error) {
+    logger.error('Failed to resolve alert', { error });
+    return {
+      error: 'Failed to resolve alert',
+      details: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+async function scanStaleDataJob() {
+  try {
+    const alerts = await scanForStaleData(300, 'auto-stale-scan');
+    return {
+      success: true,
+      timestamp: new Date().toISOString(),
+      scanned: alerts.length,
+      alertsGenerated: alerts.map((a) => ({
+        id: a.id,
+        title: a.title,
+        severity: a.severity,
+        protocol: a.protocol,
+        symbol: a.symbol,
+      })),
+    };
+  } catch (error) {
+    logger.error('Stale data scan failed', { error });
+    return {
+      error: 'Scan failed',
+      details: error instanceof Error ? error.message : String(error),
+    };
+  }
 }
