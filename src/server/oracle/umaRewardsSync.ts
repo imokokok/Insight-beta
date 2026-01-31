@@ -11,8 +11,6 @@ import { parseRpcUrls } from '@/lib/utils';
 import { env } from '@/lib/config/env';
 import { logger } from '@/lib/logger';
 
-const DEFAULT_SYNC_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
-
 interface RewardsSyncConfig {
   instanceId: string;
   chainId: number;
@@ -47,10 +45,11 @@ export async function syncDVMEvents(instanceId: string = DEFAULT_UMA_INSTANCE_ID
     // Get current block
     // Note: We need to add getBlockNumber to DVMRewardsClient
     // For now, use a fixed range or get it from umaSync state
-    const fromBlock = lastProcessedBlock > 100n ? lastProcessedBlock - 100n : 0n;
-    const toBlock = lastProcessedBlock;
+    const currentBlock = lastProcessedBlock + 1000n; // Assume we process up to 1000 blocks ahead
+    const fromBlock = lastProcessedBlock > 0n ? lastProcessedBlock + 1n : 0n;
+    const toBlock = currentBlock;
 
-    if (fromBlock >= toBlock) {
+    if (fromBlock > toBlock) {
       logger.debug('DVM rewards sync: no new blocks', { instanceId, fromBlock, toBlock });
       return { rewardsSynced: 0, stakingSynced: 0, slashingSynced: 0 };
     }
@@ -205,46 +204,6 @@ async function getRewardsSyncConfig(instanceId: string): Promise<RewardsSyncConf
     logger.error('Failed to get rewards sync config', { error, instanceId });
     return null;
   }
-}
-
-/**
- * 启动奖励同步定时任务
- */
-export function startRewardsSyncTask(
-  instanceId: string = DEFAULT_UMA_INSTANCE_ID,
-  intervalMs: number = DEFAULT_SYNC_INTERVAL_MS,
-): () => void {
-  logger.info('Starting DVM rewards sync task', { instanceId, intervalMs });
-
-  let isRunning = false;
-
-  const runSync = async () => {
-    if (isRunning) {
-      logger.debug('DVM rewards sync already running, skipping', { instanceId });
-      return;
-    }
-
-    isRunning = true;
-    try {
-      await syncDVMEvents(instanceId);
-    } catch (error) {
-      logger.error('DVM rewards sync task error', { error, instanceId });
-    } finally {
-      isRunning = false;
-    }
-  };
-
-  // Run immediately
-  runSync();
-
-  // Schedule periodic sync
-  const intervalId = setInterval(runSync, intervalMs);
-
-  // Return cleanup function
-  return () => {
-    clearInterval(intervalId);
-    logger.info('DVM rewards sync task stopped', { instanceId });
-  };
 }
 
 /**

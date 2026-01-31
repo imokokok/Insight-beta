@@ -1,5 +1,6 @@
 import { ensureUMASynced, isUMASyncing } from './umaSync';
 import { listUMAConfigs } from './umaConfig';
+import { startRewardsSyncTask, startTvlSyncTask } from './umaSyncTasks';
 import { logger } from '@/lib/logger';
 
 const UMA_SYNC_INTERVAL_MS = 30_000;
@@ -12,6 +13,8 @@ interface SyncTaskState {
   lastSyncTime: number;
   instanceIds: string[];
   lastProgressBlock: Map<string, bigint>;
+  rewardsStopFns: Map<string, () => void>;
+  tvlStopFns: Map<string, () => void>;
 }
 
 const syncTaskState: SyncTaskState = {
@@ -20,6 +23,8 @@ const syncTaskState: SyncTaskState = {
   lastSyncTime: 0,
   instanceIds: ['uma-mainnet'],
   lastProgressBlock: new Map(),
+  rewardsStopFns: new Map(),
+  tvlStopFns: new Map(),
 };
 
 export function startUMASyncTask() {
@@ -31,6 +36,14 @@ export function startUMASyncTask() {
   syncTaskState.running = true;
   syncTaskState.consecutiveErrors = 0;
   syncTaskState.lastSyncTime = 0;
+
+  // Start rewards and TVL sync tasks for each instance
+  for (const instanceId of syncTaskState.instanceIds) {
+    const rewardsStopFn = startRewardsSyncTask(instanceId);
+    const tvlStopFn = startTvlSyncTask(instanceId);
+    syncTaskState.rewardsStopFns.set(instanceId, rewardsStopFn);
+    syncTaskState.tvlStopFns.set(instanceId, tvlStopFn);
+  }
 
   logger.info('Starting UMA sync task', { intervalMs: UMA_SYNC_INTERVAL_MS });
 
@@ -125,6 +138,19 @@ export function startUMASyncTask() {
 
 export function stopUMASyncTask() {
   syncTaskState.running = false;
+
+  // Stop all rewards and TVL sync tasks
+  for (const [instanceId, stopFn] of syncTaskState.rewardsStopFns.entries()) {
+    stopFn();
+    logger.debug('Stopped rewards sync task', { instanceId });
+  }
+  for (const [instanceId, stopFn] of syncTaskState.tvlStopFns.entries()) {
+    stopFn();
+    logger.debug('Stopped TVL sync task', { instanceId });
+  }
+  syncTaskState.rewardsStopFns.clear();
+  syncTaskState.tvlStopFns.clear();
+
   logger.info('UMA sync task stopped', {
     lastSyncTime: new Date(syncTaskState.lastSyncTime).toISOString(),
   });
@@ -158,6 +184,15 @@ export async function reloadUMAInstances() {
 export function addUMAInstance(instanceId: string) {
   if (!syncTaskState.instanceIds.includes(instanceId)) {
     syncTaskState.instanceIds.push(instanceId);
+
+    // Start rewards and TVL sync tasks for the new instance if main task is running
+    if (syncTaskState.running) {
+      const rewardsStopFn = startRewardsSyncTask(instanceId);
+      const tvlStopFn = startTvlSyncTask(instanceId);
+      syncTaskState.rewardsStopFns.set(instanceId, rewardsStopFn);
+      syncTaskState.tvlStopFns.set(instanceId, tvlStopFn);
+    }
+
     logger.info('UMA instance added to sync task', { instanceId });
   }
 }
@@ -166,6 +201,19 @@ export function removeUMAInstance(instanceId: string) {
   const index = syncTaskState.instanceIds.indexOf(instanceId);
   if (index > -1) {
     syncTaskState.instanceIds.splice(index, 1);
+
+    // Stop rewards and TVL sync tasks for the removed instance
+    const rewardsStopFn = syncTaskState.rewardsStopFns.get(instanceId);
+    const tvlStopFn = syncTaskState.tvlStopFns.get(instanceId);
+    if (rewardsStopFn) {
+      rewardsStopFn();
+      syncTaskState.rewardsStopFns.delete(instanceId);
+    }
+    if (tvlStopFn) {
+      tvlStopFn();
+      syncTaskState.tvlStopFns.delete(instanceId);
+    }
+
     logger.info('UMA instance removed from sync task', { instanceId });
   }
 }
