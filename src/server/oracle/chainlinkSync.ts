@@ -15,6 +15,7 @@ import type {
   SupportedChain,
   UnifiedPriceFeed,
   UnifiedSyncState,
+  OracleProtocol,
 } from '@/lib/types/unifiedOracleTypes';
 
 // ============================================================================
