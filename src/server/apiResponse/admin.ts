@@ -7,12 +7,12 @@ export type { AdminScope };
 export { verifyAdmin } from '@/server/adminAuth';
 
 const globalForAdmin = globalThis as unknown as {
-  insightAdminForbidden?: Map<string, number> | undefined;
+  oracleMonitorAdminForbidden?: Map<string, number> | undefined;
 };
 
-const adminForbiddenCooldown = globalForAdmin.insightAdminForbidden ?? new Map<string, number>();
+const adminForbiddenCooldown = globalForAdmin.oracleMonitorAdminForbidden ?? new Map<string, number>();
 if (process.env.NODE_ENV !== 'production')
-  globalForAdmin.insightAdminForbidden = adminForbiddenCooldown;
+  globalForAdmin.oracleMonitorAdminForbidden = adminForbiddenCooldown;
 
 function getTokenFromRequest(request: Request) {
   const headerToken = request.headers.get('x-admin-token')?.trim() ?? '';

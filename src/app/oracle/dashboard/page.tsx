@@ -684,7 +684,7 @@ function PriceComparison() {
 
 function getProtocolName(protocolId: string): string {
   const names: Record<string, string> = {
-    insight: 'Insight Oracle',
+    insight: 'OracleMonitor',
     uma: 'UMA Optimistic Oracle',
     chainlink: 'Chainlink Data Feeds',
     pyth: 'Pyth Network',

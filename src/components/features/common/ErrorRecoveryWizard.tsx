@@ -65,7 +65,7 @@ class ErrorRecoveryManager {
         description: 'No cryptocurrency wallet was found in your browser. You need to install a wallet to interact with the blockchain.',
         severity: 'error',
         estimatedTime: '5-10 minutes',
-        documentationUrl: 'https://docs.insight.oracle/getting-started/wallet-setup',
+        documentationUrl: 'https://docs.oracle-monitor.foresight.build/getting-started/wallet-setup',
         steps: [
           {
             id: 'step1',
@@ -99,7 +99,7 @@ class ErrorRecoveryManager {
         description: 'You are connected to the wrong blockchain network. Please switch to a supported network.',
         severity: 'warning',
         estimatedTime: '1-2 minutes',
-        documentationUrl: 'https://docs.insight.oracle/troubleshooting/network-issues',
+        documentationUrl: 'https://docs.oracle-monitor.foresight.build/troubleshooting/network-issues',
         steps: [
           {
             id: 'step1',
@@ -127,7 +127,7 @@ class ErrorRecoveryManager {
         description: 'You don\'t have enough funds to complete this transaction. You need more native tokens for gas fees.',
         severity: 'error',
         estimatedTime: '5-15 minutes',
-        documentationUrl: 'https://docs.insight.oracle/troubleshooting/insufficient-funds',
+        documentationUrl: 'https://docs.oracle-monitor.foresight.build/troubleshooting/insufficient-funds',
         steps: [
           {
             id: 'step1',
@@ -176,7 +176,7 @@ class ErrorRecoveryManager {
         description: 'Unable to connect to the blockchain network. This could be a temporary network issue.',
         severity: 'warning',
         estimatedTime: '2-5 minutes',
-        documentationUrl: 'https://docs.insight.oracle/troubleshooting/connection-issues',
+        documentationUrl: 'https://docs.oracle-monitor.foresight.build/troubleshooting/connection-issues',
         steps: [
           {
             id: 'step1',
@@ -204,7 +204,7 @@ class ErrorRecoveryManager {
         description: 'The transaction failed to execute. This could be due to various reasons including contract state or timing.',
         severity: 'error',
         estimatedTime: '5-10 minutes',
-        documentationUrl: 'https://docs.insight.oracle/troubleshooting/transaction-failed',
+        documentationUrl: 'https://docs.oracle-monitor.foresight.build/troubleshooting/transaction-failed',
         steps: [
           {
             id: 'step1',
@@ -232,7 +232,7 @@ class ErrorRecoveryManager {
         description: 'The smart contract address is invalid or not deployed on this network.',
         severity: 'critical',
         estimatedTime: 'Contact support',
-        documentationUrl: 'https://docs.insight.oracle/troubleshooting/contract-not-found',
+        documentationUrl: 'https://docs.oracle-monitor.foresight.build/troubleshooting/contract-not-found',
         steps: [
           {
             id: 'step1',

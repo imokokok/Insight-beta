@@ -93,8 +93,8 @@ import { tickWorkerOnce, tryAcquireWorkerLock } from './worker';
 describe('worker advisory lock', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    global.insightWorkerLockClient = undefined;
-    global.insightWorkerLockKey = undefined;
+    global.oracleMonitorWorkerLockClient = undefined;
+    global.oracleMonitorWorkerLockKey = undefined;
   });
 
   it('returns true when database is disabled', async () => {
@@ -106,7 +106,7 @@ describe('worker advisory lock', () => {
 
   it('returns true when lock client already exists', async () => {
     hasDatabase.mockReturnValue(true);
-    global.insightWorkerLockClient = {
+    global.oracleMonitorWorkerLockClient = {
       query: vi.fn(),
       release: vi.fn(),
     } as unknown as PoolClient;
@@ -126,8 +126,8 @@ describe('worker advisory lock', () => {
     const ok = await tryAcquireWorkerLock();
     expect(ok).toBe(false);
     expect(client.release).toHaveBeenCalledTimes(1);
-    expect(global.insightWorkerLockClient).toBeUndefined();
-    expect(global.insightWorkerLockKey).toBeUndefined();
+    expect(global.oracleMonitorWorkerLockClient).toBeUndefined();
+    expect(global.oracleMonitorWorkerLockKey).toBeUndefined();
   });
 
   it('returns false and releases client when query throws', async () => {
@@ -144,7 +144,7 @@ describe('worker advisory lock', () => {
     expect(ok).toBe(false);
     expect(logger.error).toHaveBeenCalledWith('Failed to acquire worker lock', expect.any(Object));
     expect(client.release).toHaveBeenCalledTimes(1);
-    expect(global.insightWorkerLockClient).toBeUndefined();
+    expect(global.oracleMonitorWorkerLockClient).toBeUndefined();
   });
 
   it('stores lock client and key when acquired', async () => {
@@ -157,8 +157,8 @@ describe('worker advisory lock', () => {
 
     const ok = await tryAcquireWorkerLock();
     expect(ok).toBe(true);
-    expect(global.insightWorkerLockClient).toBe(client as unknown as PoolClient);
-    expect(global.insightWorkerLockKey).toMatch(/^\d+$/);
+    expect(global.oracleMonitorWorkerLockClient).toBe(client as unknown as PoolClient);
+    expect(global.oracleMonitorWorkerLockKey).toMatch(/^\d+$/);
     expect(client.release).not.toHaveBeenCalled();
   });
 });
@@ -166,8 +166,8 @@ describe('worker advisory lock', () => {
 describe('worker alerts', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    global.insightWorkerTickInProgress = undefined;
-    global.insightWorkerLastError = undefined;
+    global.oracleMonitorWorkerTickInProgress = undefined;
+    global.oracleMonitorWorkerLastError = undefined;
   });
 
   it('emits sync_error missing_config when oracle config is missing', async () => {

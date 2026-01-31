@@ -9,15 +9,15 @@ import { RATE_LIMIT_CONFIG } from '@/lib/config/constants';
 type RateLimitEntry = { count: number; resetAtMs: number };
 
 const globalForRate = globalThis as unknown as {
-  insightRate?: Map<string, RateLimitEntry> | undefined;
-  insightRateAlerts?: Map<string, number> | undefined;
+  oracleMonitorRate?: Map<string, RateLimitEntry> | undefined;
+  oracleMonitorRateAlerts?: Map<string, number> | undefined;
 };
 
-const insightRate = globalForRate.insightRate ?? new Map<string, RateLimitEntry>();
-if (process.env.NODE_ENV !== 'production') globalForRate.insightRate = insightRate;
+const oracleMonitorRate = globalForRate.oracleMonitorRate ?? new Map<string, RateLimitEntry>();
+if (process.env.NODE_ENV !== 'production') globalForRate.oracleMonitorRate = oracleMonitorRate;
 
-const rateAlertCooldown = globalForRate.insightRateAlerts ?? new Map<string, number>();
-if (process.env.NODE_ENV !== 'production') globalForRate.insightRateAlerts = rateAlertCooldown;
+const rateAlertCooldown = globalForRate.oracleMonitorRateAlerts ?? new Map<string, number>();
+if (process.env.NODE_ENV !== 'production') globalForRate.oracleMonitorRateAlerts = rateAlertCooldown;
 
 let lastRatePruneAtMs = 0;
 
@@ -310,32 +310,32 @@ export async function rateLimit(
   }
 
   if (
-    insightRate.size > RATE_LIMIT_CONFIG.DEFAULT_MEMORY_LIMIT &&
+    oracleMonitorRate.size > RATE_LIMIT_CONFIG.DEFAULT_MEMORY_LIMIT &&
     now - lastRatePruneAtMs > 60_000
   ) {
     lastRatePruneAtMs = now;
     const keysToDelete: string[] = [];
-    for (const [k, v] of insightRate.entries()) {
+    for (const [k, v] of oracleMonitorRate.entries()) {
       if (v.resetAtMs <= now) keysToDelete.push(k);
       if (keysToDelete.length >= 1000) break;
     }
     for (const k of keysToDelete) {
-      insightRate.delete(k);
+      oracleMonitorRate.delete(k);
     }
-    if (insightRate.size > RATE_LIMIT_CONFIG.DEFAULT_MEMORY_LIMIT) {
-      const excessKeys = Array.from(insightRate.keys()).slice(
+    if (oracleMonitorRate.size > RATE_LIMIT_CONFIG.DEFAULT_MEMORY_LIMIT) {
+      const excessKeys = Array.from(oracleMonitorRate.keys()).slice(
         0,
-        insightRate.size - Math.floor(RATE_LIMIT_CONFIG.DEFAULT_MEMORY_LIMIT * 0.8),
+        oracleMonitorRate.size - Math.floor(RATE_LIMIT_CONFIG.DEFAULT_MEMORY_LIMIT * 0.8),
       );
       for (const k of excessKeys) {
-        insightRate.delete(k);
+        oracleMonitorRate.delete(k);
       }
     }
   }
   const bucketKey = `${opts.key}:${clientId}`;
-  const existing = insightRate.get(bucketKey);
+  const existing = oracleMonitorRate.get(bucketKey);
   if (!existing || existing.resetAtMs <= now) {
-    insightRate.set(bucketKey, { count: 1, resetAtMs: now + opts.windowMs });
+    oracleMonitorRate.set(bucketKey, { count: 1, resetAtMs: now + opts.windowMs });
     return null;
   }
   if (existing.count >= opts.limit) {
@@ -353,6 +353,6 @@ export async function rateLimit(
     return error({ code: 'rate_limited' }, 429, { headers });
   }
   existing.count += 1;
-  insightRate.set(bucketKey, existing);
+  oracleMonitorRate.set(bucketKey, existing);
   return null;
 }

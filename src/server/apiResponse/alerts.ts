@@ -3,42 +3,42 @@ import { createOrTouchAlert, readAlertRules, type AlertRule } from '@/server/obs
 type ApiRequestBucket = { total: number; errors: number };
 
 const globalForApiAlerts = globalThis as unknown as {
-  insightApiAlertRulesCache?: { loadedAtMs: number; rules: AlertRule[] } | null;
-  insightApiAlertRulesInflight?: Promise<AlertRule[]> | null;
-  insightApiAlertCooldown?: Map<string, number> | undefined;
-  insightApiRequestBuckets?: Map<number, ApiRequestBucket> | undefined;
+  oracleMonitorApiAlertRulesCache?: { loadedAtMs: number; rules: AlertRule[] } | null;
+  oracleMonitorApiAlertRulesInflight?: Promise<AlertRule[]> | null;
+  oracleMonitorApiAlertCooldown?: Map<string, number> | undefined;
+  oracleMonitorApiRequestBuckets?: Map<number, ApiRequestBucket> | undefined;
 };
 
-const apiAlertCooldown = globalForApiAlerts.insightApiAlertCooldown ?? new Map<string, number>();
+const apiAlertCooldown = globalForApiAlerts.oracleMonitorApiAlertCooldown ?? new Map<string, number>();
 const apiRequestBuckets =
-  globalForApiAlerts.insightApiRequestBuckets ?? new Map<number, ApiRequestBucket>();
+  globalForApiAlerts.oracleMonitorApiRequestBuckets ?? new Map<number, ApiRequestBucket>();
 if (process.env.NODE_ENV !== 'production') {
-  globalForApiAlerts.insightApiAlertCooldown = apiAlertCooldown;
-  globalForApiAlerts.insightApiRequestBuckets = apiRequestBuckets;
+  globalForApiAlerts.oracleMonitorApiAlertCooldown = apiAlertCooldown;
+  globalForApiAlerts.oracleMonitorApiRequestBuckets = apiRequestBuckets;
 }
 
 async function getAlertRulesCached(): Promise<AlertRule[]> {
   const now = Date.now();
-  const cached = globalForApiAlerts.insightApiAlertRulesCache;
+  const cached = globalForApiAlerts.oracleMonitorApiAlertRulesCache;
   if (cached && now - cached.loadedAtMs < 5_000) return cached.rules;
-  if (globalForApiAlerts.insightApiAlertRulesInflight)
-    return globalForApiAlerts.insightApiAlertRulesInflight;
+  if (globalForApiAlerts.oracleMonitorApiAlertRulesInflight)
+    return globalForApiAlerts.oracleMonitorApiAlertRulesInflight;
   const p = readAlertRules()
     .then((rules) => {
-      globalForApiAlerts.insightApiAlertRulesCache = { loadedAtMs: now, rules };
+      globalForApiAlerts.oracleMonitorApiAlertRulesCache = { loadedAtMs: now, rules };
       return rules;
     })
     .catch(() => {
-      globalForApiAlerts.insightApiAlertRulesCache = {
+      globalForApiAlerts.oracleMonitorApiAlertRulesCache = {
         loadedAtMs: now,
         rules: [],
       };
       return [];
     })
     .finally(() => {
-      globalForApiAlerts.insightApiAlertRulesInflight = null;
+      globalForApiAlerts.oracleMonitorApiAlertRulesInflight = null;
     });
-  globalForApiAlerts.insightApiAlertRulesInflight = p;
+  globalForApiAlerts.oracleMonitorApiAlertRulesInflight = p;
   return p;
 }
 

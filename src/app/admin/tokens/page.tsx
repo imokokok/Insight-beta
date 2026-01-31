@@ -43,22 +43,22 @@ export default function AdminTokensPage() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    const saved = window.sessionStorage.getItem('insight_admin_token');
+    const saved = window.sessionStorage.getItem('oracle-monitor_admin_token');
     if (saved) setAdminToken(saved);
-    const savedActor = window.sessionStorage.getItem('insight_admin_actor');
+    const savedActor = window.sessionStorage.getItem('oracle-monitor_admin_actor');
     if (savedActor) setAdminActor(savedActor);
   }, []);
 
   useEffect(() => {
     const trimmed = adminToken.trim();
-    if (trimmed) window.sessionStorage.setItem('insight_admin_token', trimmed);
-    else window.sessionStorage.removeItem('insight_admin_token');
+    if (trimmed) window.sessionStorage.setItem('oracle-monitor_admin_token', trimmed);
+    else window.sessionStorage.removeItem('oracle-monitor_admin_token');
   }, [adminToken]);
 
   useEffect(() => {
     const trimmed = adminActor.trim();
-    if (trimmed) window.sessionStorage.setItem('insight_admin_actor', trimmed);
-    else window.sessionStorage.removeItem('insight_admin_actor');
+    if (trimmed) window.sessionStorage.setItem('oracle-monitor_admin_actor', trimmed);
+    else window.sessionStorage.removeItem('oracle-monitor_admin_actor');
   }, [adminActor]);
 
   const buildHeaders = useCallback(() => {

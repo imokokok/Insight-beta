@@ -8,7 +8,7 @@ export const languages: Array<{ code: Lang; label: string }> = [
   { code: 'ko', label: '한국어' },
 ];
 
-export const LANG_STORAGE_KEY = 'insight_lang';
+export const LANG_STORAGE_KEY = 'oracle-monitor_lang';
 
 export function isLang(value: unknown): value is Lang {
   return value === 'zh' || value === 'en' || value === 'es' || value === 'fr' || value === 'ko';

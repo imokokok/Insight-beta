@@ -538,7 +538,7 @@ export async function ensureUnifiedSchema() {
     -- 插入默认协议信息
     INSERT INTO oracle_protocols_info (id, name, description, supported_chains, features, is_active)
     VALUES 
-      ('insight', 'Insight Oracle', '原生乐观预言机实现', 
+      ('insight', 'OracleMonitor', '原生乐观预言机实现', 
        ARRAY['ethereum', 'polygon', 'arbitrum', 'optimism', 'base', 'local'],
        ARRAY['price_feeds', 'dispute_resolution', 'staking'], true)
     ON CONFLICT (id) DO NOTHING;

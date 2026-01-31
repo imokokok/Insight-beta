@@ -2,7 +2,7 @@
  * Unified Oracle Migration Tool
  *
  * 从旧 Schema 迁移到统一 Schema 的工具
- * 支持 Insight Oracle 和 UMA Oracle 的数据迁移
+ * 支持 OracleMonitor 和 UMA Oracle 的数据迁移
  */
 
 import { query } from '@/server/db';
@@ -75,7 +75,7 @@ export async function runMigration(
   };
 
   try {
-    // 1. 迁移 Insight Oracle 实例
+    // 1. 迁移 OracleMonitor 实例
     await migrateInsightInstances(result, finalConfig);
 
     // 2. 迁移 UMA Oracle 实例
@@ -110,17 +110,17 @@ export async function runMigration(
 }
 
 // ============================================================================
-// Insight Oracle 迁移
+// OracleMonitor 迁移
 // ============================================================================
 
 async function migrateInsightInstances(
   result: MigrationResult,
   config: MigrationConfig,
 ): Promise<void> {
-  logger.info('Migrating Insight Oracle instances...');
+  logger.info('Migrating OracleMonitor instances...');
 
   try {
-    // 获取所有 Insight Oracle 实例
+    // 获取所有 OracleMonitor 实例
     const instancesResult = await query(`
       SELECT * FROM oracle_instances
       WHERE id NOT IN (SELECT instance_id FROM unified_oracle_instances WHERE protocol = 'insight')
@@ -269,7 +269,7 @@ async function migrateSyncStates(result: MigrationResult, config: MigrationConfi
   logger.info('Migrating sync states...');
 
   try {
-    // 迁移 Insight Oracle 同步状态
+    // 迁移 OracleMonitor 同步状态
     const insightSyncResult = await query(`
       SELECT * FROM oracle_sync_state
       WHERE instance_id NOT IN (SELECT instance_id FROM unified_sync_state)

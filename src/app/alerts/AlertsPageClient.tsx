@@ -277,7 +277,7 @@ export default function AlertsPageClient() {
       if (!path.startsWith('/oracle') && !path.startsWith('/disputes')) return path;
       const normalized = instanceId.trim();
       if (!normalized) return path;
-      const url = new URL(path, 'http://insight.local');
+      const url = new URL(path, 'http://oracle-monitor.local');
       url.searchParams.set('instanceId', normalized);
       return `${url.pathname}${url.search}${url.hash}`;
     },

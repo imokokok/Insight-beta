@@ -142,7 +142,7 @@ describe('POST /api/oracle/sync', () => {
     vi.stubEnv('INSIGHT_CRON_SECRET', 'test-cron-secret-123456');
     const request = new Request('http://localhost:3000/api/oracle/sync', {
       method: 'POST',
-      headers: { 'x-insight-cron-secret': 'test-cron-secret-123456' },
+      headers: { 'x-oracle-monitor-cron-secret': 'test-cron-secret-123456' },
     });
     const response = (await POST(request)) as unknown as {
       updated: boolean;

@@ -5,12 +5,12 @@ import { logger } from '@/lib/logger';
 type ApiCacheRecord<T> = { expiresAtMs: number; value: T };
 
 const globalForApiCache = globalThis as unknown as {
-  insightApiCache?: Map<string, ApiCacheRecord<unknown>> | undefined;
+  oracleMonitorApiCache?: Map<string, ApiCacheRecord<unknown>> | undefined;
 };
 
-const insightApiCache =
-  globalForApiCache.insightApiCache ?? new Map<string, ApiCacheRecord<unknown>>();
-if (process.env.NODE_ENV !== 'production') globalForApiCache.insightApiCache = insightApiCache;
+const oracleMonitorApiCache =
+  globalForApiCache.oracleMonitorApiCache ?? new Map<string, ApiCacheRecord<unknown>>();
+if (process.env.NODE_ENV !== 'production') globalForApiCache.oracleMonitorApiCache = oracleMonitorApiCache;
 
 const SENSITIVE_PARAM_PATTERNS = [
   /token/i,
@@ -54,7 +54,7 @@ export async function cachedJson<T>(
   compute: () => Promise<T> | T,
 ): Promise<T> {
   const now = Date.now();
-  const mem = insightApiCache.get(key);
+  const mem = oracleMonitorApiCache.get(key);
   if (mem && mem.expiresAtMs > now) return mem.value as T;
 
   const storeKey = `api_cache/v1/${key}`;
@@ -66,13 +66,13 @@ export async function cachedJson<T>(
   }
 
   if (isValidCacheRecord(stored, now)) {
-    insightApiCache.set(key, stored);
+    oracleMonitorApiCache.set(key, stored);
     return stored.value as T;
   }
 
   const value = await compute();
   const record: ApiCacheRecord<T> = { expiresAtMs: now + ttlMs, value };
-  insightApiCache.set(key, record as ApiCacheRecord<unknown>);
+  oracleMonitorApiCache.set(key, record as ApiCacheRecord<unknown>);
   try {
     await writeJsonFile(storeKey, record);
   } catch (writeError) {
@@ -95,12 +95,12 @@ function isValidCacheRecord(value: unknown, now: number): value is ApiCacheRecor
 export async function invalidateCachedJson(prefix: string): Promise<{ memoryDeleted: number; diskDeleted: number }> {
   let memoryDeleted = 0;
   if (!prefix) {
-    memoryDeleted = insightApiCache.size;
-    insightApiCache.clear();
+    memoryDeleted = oracleMonitorApiCache.size;
+    oracleMonitorApiCache.clear();
   } else {
-    for (const key of insightApiCache.keys()) {
+    for (const key of oracleMonitorApiCache.keys()) {
       if (key.startsWith(prefix)) {
-        insightApiCache.delete(key);
+        oracleMonitorApiCache.delete(key);
         memoryDeleted++;
       }
     }

@@ -138,7 +138,7 @@ describe('apiSecurity', () => {
   describe('generateApiKey and validateApiKey', () => {
     it('generates valid API key pair', () => {
       const { key, secret } = generateApiKey();
-      expect(key).toMatch(/^insight_[a-f0-9]+$/);
+      expect(key).toMatch(/^oracle_monitor_[a-f0-9]+$/);
       expect(secret).toHaveLength(64);
     });
 

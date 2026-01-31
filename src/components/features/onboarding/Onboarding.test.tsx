@@ -87,7 +87,7 @@ describe('Onboarding Component', () => {
     fireEvent.click(getStartedButton);
 
     // Check if onboarding is completed in localStorage
-    expect(localStorage.getItem('insight-onboarding-completed')).toBe('true');
+    expect(localStorage.getItem('oracle-monitor-onboarding-completed')).toBe('true');
   });
 
   it('should skip onboarding when Skip Tour is clicked', () => {
@@ -102,12 +102,12 @@ describe('Onboarding Component', () => {
     fireEvent.click(skipButton);
 
     // Check if onboarding is completed in localStorage
-    expect(localStorage.getItem('insight-onboarding-completed')).toBe('true');
+    expect(localStorage.getItem('oracle-monitor-onboarding-completed')).toBe('true');
   });
 
   it('should not render if onboarding is already completed', () => {
     // Set onboarding as completed in localStorage
-    localStorage.setItem('insight-onboarding-completed', 'true');
+    localStorage.setItem('oracle-monitor-onboarding-completed', 'true');
 
     render(
       <LanguageProvider initialLang="en">

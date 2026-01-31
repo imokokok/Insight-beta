@@ -9,7 +9,7 @@
 // ============================================================================
 
 export type OracleProtocol =
-  | 'insight' // 原生 Insight Oracle
+  | 'insight' // 原生 OracleMonitor
   | 'uma' // UMA Optimistic Oracle
   | 'chainlink' // Chainlink Data Feeds
   | 'pyth' // Pyth Network

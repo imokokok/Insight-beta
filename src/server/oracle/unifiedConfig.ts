@@ -74,7 +74,7 @@ export function validateUnifiedConfig(
 
     case 'insight':
       if (!config.contractAddress) {
-        errors.push('Contract address is required for Insight Oracle');
+        errors.push('Contract address is required for OracleMonitor');
       }
       break;
   }

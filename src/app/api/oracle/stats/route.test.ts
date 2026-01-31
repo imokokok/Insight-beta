@@ -73,7 +73,7 @@ describe('GET /api/oracle/stats', () => {
   it('syncs with cron secret and skips admin auth', async () => {
     vi.stubEnv('INSIGHT_CRON_SECRET', 'test-cron-secret-123456');
     const request = new Request('http://localhost:3000/api/oracle/stats?sync=1', {
-      headers: { 'x-insight-cron-secret': 'test-cron-secret-123456' },
+      headers: { 'x-oracle-monitor-cron-secret': 'test-cron-secret-123456' },
     });
     const response = (await GET(request)) as unknown as {
       totalAssertions: number;

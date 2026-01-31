@@ -66,7 +66,7 @@ function timingSafeEqualString(a: string, b: string) {
 function isCronAuthorized(request: Request) {
   const secret = (env.INSIGHT_CRON_SECRET.trim() || env.CRON_SECRET.trim()).trim();
   if (!secret) return false;
-  const gotHeader = request.headers.get('x-insight-cron-secret')?.trim() ?? '';
+  const gotHeader = request.headers.get('x-oracle-monitor-cron-secret')?.trim() ?? '';
   if (gotHeader && timingSafeEqualString(gotHeader, secret)) return true;
   const auth = request.headers.get('authorization')?.trim() ?? '';
   if (!auth) return false;

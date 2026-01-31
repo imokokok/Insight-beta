@@ -76,7 +76,7 @@ describe('RedisCache', () => {
       const result = await cache.get('test-key');
 
       expect(result).toBe('test-value');
-      expect(mockRedisClient.get).toHaveBeenCalledWith('insight:test:v1:test-key');
+      expect(mockRedisClient.get).toHaveBeenCalledWith('oracle-monitor:test:v1:test-key');
     });
 
     it('should return null for non-existent key', async () => {
@@ -128,7 +128,7 @@ describe('RedisCache', () => {
 
       expect(result).toBe(true);
       expect(mockRedisClient.setEx).toHaveBeenCalledWith(
-        'insight:test:v1:key',
+        'oracle-monitor:test:v1:key',
         60,
         expect.stringContaining('value'),
       );
@@ -141,7 +141,7 @@ describe('RedisCache', () => {
 
       expect(result).toBe(true);
       expect(mockRedisClient.setEx).toHaveBeenCalledWith(
-        'insight:test:v1:key',
+        'oracle-monitor:test:v1:key',
         120,
         expect.any(String),
       );
@@ -155,7 +155,7 @@ describe('RedisCache', () => {
       const result = await cache.delete('key');
 
       expect(result).toBe(true);
-      expect(mockRedisClient.del).toHaveBeenCalledWith('insight:test:v1:key');
+      expect(mockRedisClient.del).toHaveBeenCalledWith('oracle-monitor:test:v1:key');
     });
   });
 
@@ -222,8 +222,8 @@ describe('RedisCache', () => {
 
       expect(result).toBe(true);
       expect(mockRedisClient.del).toHaveBeenCalledWith([
-        'insight:test:v1:key1',
-        'insight:test:v1:key2',
+        'oracle-monitor:test:v1:key1',
+        'oracle-monitor:test:v1:key2',
       ]);
     });
   });
@@ -235,7 +235,7 @@ describe('RedisCache', () => {
       const result = await cache.increment('counter', 5);
 
       expect(result).toBe(5);
-      expect(mockRedisClient.incrBy).toHaveBeenCalledWith('insight:test:v1:counter', 5);
+      expect(mockRedisClient.incrBy).toHaveBeenCalledWith('oracle-monitor:test:v1:counter', 5);
     });
   });
 

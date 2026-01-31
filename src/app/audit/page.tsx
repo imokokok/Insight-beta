@@ -10,14 +10,14 @@ export default function AuditPage() {
   const [adminToken, setAdminToken] = useState('');
 
   useEffect(() => {
-    const saved = window.sessionStorage.getItem('insight_admin_token');
+    const saved = window.sessionStorage.getItem('oracle-monitor_admin_token');
     if (saved) setAdminToken(saved);
   }, []);
 
   useEffect(() => {
     const trimmed = adminToken.trim();
-    if (trimmed) window.sessionStorage.setItem('insight_admin_token', trimmed);
-    else window.sessionStorage.removeItem('insight_admin_token');
+    if (trimmed) window.sessionStorage.setItem('oracle-monitor_admin_token', trimmed);
+    else window.sessionStorage.removeItem('oracle-monitor_admin_token');
   }, [adminToken]);
 
   return (

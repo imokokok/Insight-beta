@@ -187,7 +187,7 @@ export function usePWA(): UsePWAReturn {
     setIsSyncing(true);
 
     try {
-      const queue = await caches.open('insight-sync-queue');
+      const queue = await caches.open('oracle-monitor-sync-queue');
       const requests = await queue.keys();
       setPendingSyncCount(requests.length);
 

@@ -62,15 +62,15 @@ describe('db query slow query alerts', () => {
     vi.clearAllMocks();
     process.env.DATABASE_URL = 'postgres://localhost/test';
     const g = globalThis as unknown as {
-      insightDbAlertRulesCache?: unknown;
-      insightDbAlertRulesInflight?: unknown;
-      insightDbAlertCooldown?: Map<string, number>;
-      insightDbAlertDepth?: number;
+      oracleMonitorDbAlertRulesCache?: unknown;
+      oracleMonitorDbAlertRulesInflight?: unknown;
+      oracleMonitorDbAlertCooldown?: Map<string, number>;
+      oracleMonitorDbAlertDepth?: number;
     };
-    g.insightDbAlertRulesCache = null;
-    g.insightDbAlertRulesInflight = null;
-    g.insightDbAlertDepth = 0;
-    g.insightDbAlertCooldown?.clear();
+    g.oracleMonitorDbAlertRulesCache = null;
+    g.oracleMonitorDbAlertRulesInflight = null;
+    g.oracleMonitorDbAlertDepth = 0;
+    g.oracleMonitorDbAlertCooldown?.clear();
   });
 
   afterEach(() => {
