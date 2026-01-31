@@ -49,6 +49,74 @@ const AGGREGATION_CONFIG = {
 };
 
 // ============================================================================
+// 聚合方法枚举
+// ============================================================================
+
+export enum AggregationMethod {
+  MEDIAN = 'median',
+  WEIGHTED_AVERAGE = 'weighted',
+  MEAN = 'mean',
+}
+
+// ============================================================================
+// 工具函数导出
+// ============================================================================
+
+/**
+ * 计算中位数
+ */
+export function calculateMedian(values: number[]): number {
+  if (values.length === 0) return 0;
+
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+
+  if (sorted.length % 2 === 0) {
+    return (sorted[mid - 1]! + sorted[mid]!) / 2;
+  }
+
+  return sorted[mid]!;
+}
+
+/**
+ * 计算加权平均
+ */
+export function calculateWeightedAverage(values: number[], weights: number[]): number {
+  if (values.length !== weights.length) {
+    throw new Error('Values and weights must have the same length');
+  }
+  if (values.length === 0) return 0;
+
+  const totalWeight = weights.reduce((a, b) => a + b, 0);
+  if (totalWeight === 0) return 0;
+
+  const weightedSum = values.reduce((sum, value, i) => sum + value * weights[i]!, 0);
+  return weightedSum / totalWeight;
+}
+
+/**
+ * 检测异常值（使用 IQR 方法）
+ */
+export function detectOutliers(values: number[], threshold: number = 1.5): number[] {
+  if (values.length < 4) return [];
+
+  const sorted = [...values].sort((a, b) => a - b);
+  const q1Index = Math.floor(sorted.length * 0.25);
+  const q3Index = Math.floor(sorted.length * 0.75);
+  const q1 = sorted[q1Index]!;
+  const q3 = sorted[q3Index]!;
+  const iqr = q3 - q1;
+
+  const lowerBound = q1 - threshold * iqr;
+  const upperBound = q3 + threshold * iqr;
+
+  return values
+    .map((value, index) => ({ value, index }))
+    .filter(({ value }) => value < lowerBound || value > upperBound)
+    .map(({ index }) => index);
+}
+
+// ============================================================================
 // 价格聚合引擎
 // ============================================================================
 
