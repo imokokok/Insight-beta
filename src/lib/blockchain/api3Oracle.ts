@@ -217,7 +217,7 @@ export class API3Client {
     this.publicClient = createPublicClient({
       chain: VIEM_CHAIN_MAP[chain],
       transport: http(rpcUrl),
-    });
+    }) as PublicClient;
   }
 
   /**

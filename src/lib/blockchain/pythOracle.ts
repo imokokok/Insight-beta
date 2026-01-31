@@ -199,7 +199,7 @@ export class PythClient {
     this.publicClient = createPublicClient({
       chain: VIEM_CHAIN_MAP[chain],
       transport: http(rpcUrl),
-    });
+    }) as PublicClient;
   }
 
   /**
