@@ -107,7 +107,8 @@ export class RateLimiter {
       // 检查是否超过限制
       if (window.count >= limit) {
         // 记录限流事件
-        await this.recordRateLimitEvent(apiKeyId, tier, windows[i]);
+        const windowName = windows[i]!;
+        await this.recordRateLimitEvent(apiKeyId, tier, windowName);
 
         return {
           allowed: false,
@@ -116,7 +117,7 @@ export class RateLimiter {
             limit,
             remaining: 0,
             resetAt: new Date(window.resetAt),
-            window: windows[i],
+            window: windowName,
           },
         };
       }
@@ -437,8 +438,11 @@ export class BillingSystem {
         return null;
       }
 
-      const tier = devResult.rows[0].tier;
+      const tier = devResult.rows[0]!.tier;
       const pricing = this.tierPricing[tier];
+      if (!pricing) {
+        throw new Error(`Invalid pricing tier: ${tier}`);
+      }
 
       // 获取使用量
       const usageResult = await query(
@@ -533,7 +537,7 @@ export class BillingSystem {
         return null;
       }
 
-      const row = result.rows[0];
+      const row = result.rows[0]!;
       return {
         id: row.id,
         developerId: row.developer_id,
@@ -602,7 +606,7 @@ export class BillingSystem {
         [billId],
       );
 
-      return result.rowCount > 0;
+      return (result.rowCount ?? 0) > 0;
     } catch (error) {
       logger.error('Failed to mark bill as paid', { error, billId });
       return false;

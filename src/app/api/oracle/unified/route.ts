@@ -31,7 +31,7 @@ import {
   runCrossProtocolAnalysis,
   type PriceDeviationConfig,
 } from '@/server/oracle/crossProtocolAnalysis';
-import type { OracleProtocol, SupportedChain } from '@/lib/types/unifiedOracleTypes';
+import type { OracleProtocol, SupportedChain, UnifiedOracleConfig } from '@/lib/types/unifiedOracleTypes';
 
 const RATE_LIMITS = {
   GET: { key: 'unified_get', limit: 100, windowMs: 60_000 },
@@ -877,7 +877,7 @@ async function createInstance(body: Record<string, unknown>) {
       name: name as string,
       protocol: protocol as OracleProtocol,
       chain: chain as SupportedChain,
-      config: config as { rpcUrl: string },
+      config: { ...config, chain: chain as SupportedChain } as UnifiedOracleConfig,
     });
 
     logger.info('Unified instance created', {
@@ -1027,11 +1027,12 @@ async function batchCreateInstances(instances: unknown[]) {
   for (const instanceData of instances) {
     const data = instanceData as Record<string, unknown>;
     try {
+      const chain = data.chain as SupportedChain;
       const instance = await createUnifiedInstance({
         name: data.name as string,
         protocol: data.protocol as OracleProtocol,
-        chain: data.chain as SupportedChain,
-        config: data.config as { rpcUrl: string },
+        chain: chain,
+        config: { ...(data.config as object), chain: chain } as UnifiedOracleConfig,
       });
       results.success.push({
         id: instance.id,

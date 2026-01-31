@@ -17,7 +17,7 @@ import {
   deleteUnifiedInstance,
 } from '@/server/oracle/unifiedConfig';
 import { startChainlinkSync, stopChainlinkSync } from '@/server/oracle/chainlinkSync';
-import type { SupportedChain } from '@/lib/types/unifiedOracleTypes';
+import type { SupportedChain, UnifiedOracleConfig } from '@/lib/types/unifiedOracleTypes';
 
 const RATE_LIMITS = {
   GET: { key: 'chainlink_get', limit: 60, windowMs: 60_000 },
@@ -446,7 +446,7 @@ async function createInstance(body: Record<string, unknown>) {
       name: name as string,
       protocol: 'chainlink',
       chain: chain as SupportedChain,
-      config: config as { rpcUrl: string },
+      config: { ...config, chain: chain as SupportedChain } as UnifiedOracleConfig,
     });
 
     logger.info('Chainlink instance created', {
