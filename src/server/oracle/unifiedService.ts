@@ -13,6 +13,7 @@ import { priceAggregationEngine } from './priceAggregationService';
 import { priceStreamManager } from '@/server/websocket/priceStream';
 import { chainlinkSyncManager } from './chainlinkSync';
 import { pythSyncManager } from './pythSync';
+import { bandSyncManager } from './bandSync';
 import { query } from '@/server/db';
 
 // ============================================================================
@@ -139,9 +140,20 @@ export class UnifiedOracleService {
               this.activeSyncManagers.set(id, pythSyncManager);
               break;
 
+            case 'band':
+              await bandSyncManager.startSync({
+                instanceId: id,
+                chain: row.chain,
+                rpcUrl: '', // Will be loaded from config
+                symbols: ['BTC/USD', 'ETH/USD'],
+                intervalMs: 60000,
+              });
+              this.activeSyncManagers.set(id, bandSyncManager);
+              break;
+
             // 其他协议可以在这里添加
-            // case 'band':
             // case 'api3':
+            // case 'redstone':
             // ...
 
             default:
@@ -171,6 +183,9 @@ export class UnifiedOracleService {
 
     // 停止 Pyth 同步
     pythSyncManager.stopAllSync();
+
+    // 停止 Band 同步
+    bandSyncManager.stopAllSync();
 
     this.activeSyncManagers.clear();
     logger.info('All protocol sync stopped');

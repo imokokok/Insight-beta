@@ -5,6 +5,7 @@
  */
 
 import { query } from '@/server/db';
+import type { QueryResultRow } from '@/server/db';
 import { logger } from '@/lib/logger';
 import type {
   OracleProtocol,
@@ -13,6 +14,52 @@ import type {
   UnifiedAlertRule,
   UnifiedAlertEvent,
 } from '@/lib/types/unifiedOracleTypes';
+
+// ============================================================================
+// 数据库行类型定义
+// ============================================================================
+
+interface AlertRuleRow {
+  id: string;
+  name: string;
+  enabled: boolean;
+  event: string;
+  severity: string;
+  protocols: string[] | null;
+  chains: string[] | null;
+  instances: string[] | null;
+  symbols: string[] | null;
+  params: Record<string, unknown> | null;
+  channels: string[];
+  cooldown_minutes: number;
+  max_notifications_per_hour: number;
+  created_at: Date;
+  updated_at: Date;
+}
+
+interface AlertRow {
+  id: string;
+  rule_id: string | null;
+  event: string;
+  severity: string;
+  title: string;
+  message: string;
+  protocol: string | null;
+  chain: string | null;
+  instance_id: string | null;
+  symbol: string | null;
+  context: Record<string, unknown> | null;
+  status: string;
+  acknowledged_by: string | null;
+  acknowledged_at: Date | null;
+  resolved_by: string | null;
+  resolved_at: Date | null;
+  occurrences: number;
+  first_seen_at: Date;
+  last_seen_at: Date;
+  created_at: Date;
+  updated_at: Date;
+}
 
 // ============================================================================
 // 告警规则管理
@@ -69,9 +116,12 @@ export async function createAlertRule(config: AlertRuleConfig): Promise<UnifiedA
   );
 
   const row = result.rows[0];
+  if (!row) {
+    throw new Error('Failed to create alert rule: no row returned');
+  }
   logger.info('Alert rule created', { ruleId: row.id, name: config.name });
 
-  return mapAlertRuleFromDb(row);
+  return mapAlertRuleFromDb(row as AlertRuleRow);
 }
 
 /**
@@ -85,7 +135,7 @@ export async function getAlertRules(enabledOnly: boolean = false): Promise<Unifi
   sql += ' ORDER BY created_at DESC';
 
   const result = await query(sql);
-  return result.rows.map(mapAlertRuleFromDb);
+  return result.rows.map((row: QueryResultRow) => mapAlertRuleFromDb(row as AlertRuleRow));
 }
 
 /**
@@ -129,11 +179,11 @@ export async function updateAlertRule(
 
   const result = await query(
     `UPDATE unified_alert_rules SET ${setClause.join(', ')} WHERE id = $${paramIndex} RETURNING *`,
-    values,
+    values as (string | number | boolean | Date | null | string[])[],
   );
 
   if (result.rows.length === 0) return null;
-  return mapAlertRuleFromDb(result.rows[0]);
+  return mapAlertRuleFromDb(result.rows[0] as AlertRuleRow);
 }
 
 /**
@@ -184,22 +234,25 @@ export async function generateAlert(
   );
 
   if (cooldownCheck.rows.length > 0) {
-    const lastAlert = new Date(cooldownCheck.rows[0].created_at);
-    const cooldownMinutes = 15; // 默认冷却时间
-    const cooldownEnd = new Date(lastAlert.getTime() + cooldownMinutes * 60 * 1000);
+    const lastAlertRow = cooldownCheck.rows[0];
+    if (lastAlertRow && lastAlertRow.created_at) {
+      const lastAlert = new Date(lastAlertRow.created_at);
+      const cooldownMinutes = 15; // 默认冷却时间
+      const cooldownEnd = new Date(lastAlert.getTime() + cooldownMinutes * 60 * 1000);
 
-    if (new Date() < cooldownEnd) {
-      // 在冷却期内，增加计数而不是创建新告警
-      await query(
-        `
-        UPDATE unified_alerts
-        SET occurrences = occurrences + 1, last_seen_at = NOW()
-        WHERE rule_id = $1 AND event = $2 AND status = 'open'
-        `,
-        [ruleId, event],
-      );
+      if (new Date() < cooldownEnd) {
+        // 在冷却期内，增加计数而不是创建新告警
+        await query(
+          `
+          UPDATE unified_alerts
+          SET occurrences = occurrences + 1, last_seen_at = NOW()
+          WHERE rule_id = $1 AND event = $2 AND status = 'open'
+          `,
+          [ruleId, event],
+        );
 
-      logger.debug('Alert suppressed due to cooldown', { ruleId, event });
+        logger.debug('Alert suppressed due to cooldown', { ruleId, event });
+      }
     }
   }
 
@@ -232,7 +285,11 @@ export async function generateAlert(
     ],
   );
 
-  const alert = mapAlertFromDb(result.rows[0]);
+  const alertRow = result.rows[0];
+  if (!alertRow) {
+    throw new Error('Failed to generate alert: no row returned');
+  }
+  const alert = mapAlertFromDb(alertRow as AlertRow);
   logger.info('Alert generated', { alertId: alert.id, event, severity });
 
   // 发送通知
@@ -279,8 +336,8 @@ export async function getAlerts(filters?: {
     params.push(filters.limit);
   }
 
-  const result = await query(sql, params);
-  return result.rows.map(mapAlertFromDb);
+  const result = await query(sql, params as (string | number | boolean | null | Date | string[])[]);
+  return result.rows.map((row: QueryResultRow) => mapAlertFromDb(row as AlertRow));
 }
 
 /**
@@ -302,7 +359,7 @@ export async function acknowledgeAlert(
 
   if (result.rows.length === 0) return null;
   logger.info('Alert acknowledged', { alertId, acknowledgedBy });
-  return mapAlertFromDb(result.rows[0]);
+  return mapAlertFromDb(result.rows[0] as AlertRow);
 }
 
 /**
@@ -324,7 +381,7 @@ export async function resolveAlert(
 
   if (result.rows.length === 0) return null;
   logger.info('Alert resolved', { alertId, resolvedBy });
-  return mapAlertFromDb(result.rows[0]);
+  return mapAlertFromDb(result.rows[0] as AlertRow);
 }
 
 // ============================================================================
@@ -501,7 +558,12 @@ export async function checkSyncHealth(
 
   if (syncState.rows.length === 0) return alerts;
 
-  const state = syncState.rows[0];
+  const state = syncState.rows[0] as {
+    status: string;
+    last_error?: string;
+    lag_blocks?: number;
+    consecutive_failures?: number;
+  };
 
   // 检查同步状态
   if (state.status === 'error') {
@@ -510,7 +572,7 @@ export async function checkSyncHealth(
       'sync_error',
       'critical',
       `同步错误: ${protocol} - ${chain}`,
-      `实例 ${instanceId} 同步失败: ${state.last_error}`,
+      `实例 ${instanceId} 同步失败: ${state.last_error || 'Unknown error'}`,
       {
         protocol,
         chain,
@@ -523,7 +585,7 @@ export async function checkSyncHealth(
   }
 
   // 检查同步延迟
-  if (state.lag_blocks > 100) {
+  if (state.lag_blocks && state.lag_blocks > 100) {
     const alert = await generateAlert(
       'sync-lag-rule',
       'sync_stale',
@@ -635,21 +697,7 @@ export async function getAlertStats(timeRangeHours: number = 24): Promise<AlertS
 // 辅助函数
 // ============================================================================
 
-interface AlertRuleRow {
-  id: string;
-  name: string;
-  enabled: boolean;
-  event: string;
-  severity: string;
-  protocols: string[] | null;
-  chains: string[] | null;
-  instances: string[] | null;
-  symbols: string[] | null;
-  params: string | null;
-  channels: string[];
-  cooldown_minutes: number;
-  max_notifications_per_hour: number;
-}
+// AlertRuleRow and AlertRow are defined at the top of the file
 
 function mapAlertRuleFromDb(row: AlertRuleRow): UnifiedAlertRule {
   return {
@@ -658,63 +706,41 @@ function mapAlertRuleFromDb(row: AlertRuleRow): UnifiedAlertRule {
     enabled: row.enabled,
     event: row.event as UnifiedAlertEvent,
     severity: row.severity as 'info' | 'warning' | 'critical',
-    protocols: row.protocols || undefined,
-    chains: row.chains || undefined,
+    protocols: row.protocols ? (row.protocols as OracleProtocol[]) : undefined,
+    chains: row.chains ? (row.chains as SupportedChain[]) : undefined,
     instances: row.instances || undefined,
     symbols: row.symbols || undefined,
-    params: row.params ? JSON.parse(row.params) : undefined,
-    channels: row.channels || ['webhook'],
+    params: row.params ? (row.params as Record<string, unknown>) : undefined,
+    channels: (row.channels || ['webhook']) as Array<'email' | 'webhook' | 'telegram' | 'slack' | 'pagerduty'>,
     cooldownMinutes: row.cooldown_minutes,
     maxNotificationsPerHour: row.max_notifications_per_hour,
   };
 }
 
-interface AlertRow {
-  id: string;
-  rule_id: string;
-  event: string;
-  severity: string;
-  title: string;
-  message: string;
-  protocol: string | null;
-  chain: string | null;
-  instance_id: string | null;
-  symbol: string | null;
-  context: string | null;
-  status: string;
-  acknowledged_by: string | null;
-  acknowledged_at: string | null;
-  resolved_by: string | null;
-  resolved_at: string | null;
-  occurrences: number;
-  first_seen_at: string;
-  last_seen_at: string;
-  created_at: string;
-  updated_at: string;
-}
+// AlertRow is defined at the top of the file
 
 function mapAlertFromDb(row: AlertRow): UnifiedAlert {
   return {
     id: row.id,
-    ruleId: row.rule_id,
+    ruleId: row.rule_id || undefined,
     event: row.event as UnifiedAlertEvent,
     severity: row.severity as 'info' | 'warning' | 'critical',
     title: row.title,
     message: row.message,
-    protocol: row.protocol || undefined,
-    chain: row.chain || undefined,
+    protocol: row.protocol ? (row.protocol as OracleProtocol) : undefined,
+    chain: row.chain ? (row.chain as SupportedChain) : undefined,
     instanceId: row.instance_id || undefined,
     symbol: row.symbol || undefined,
-    context: row.context ? JSON.parse(row.context) : {},
+    context: row.context ? (row.context as Record<string, unknown>) : {},
     status: row.status as 'open' | 'acknowledged' | 'resolved',
     acknowledgedBy: row.acknowledged_by || undefined,
-    acknowledgedAt: row.acknowledged_at || undefined,
+    acknowledgedAt: row.acknowledged_at ? new Date(row.acknowledged_at).toISOString() : undefined,
     resolvedBy: row.resolved_by || undefined,
-    resolvedAt: row.resolved_at || undefined,
+    resolvedAt: row.resolved_at ? new Date(row.resolved_at).toISOString() : undefined,
     occurrences: row.occurrences,
-    firstSeenAt: row.first_seen_at,
-    lastSeenAt: row.last_seen_at,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    firstSeenAt: new Date(row.first_seen_at).toISOString(),
+    lastSeenAt: new Date(row.last_seen_at).toISOString(),
+    createdAt: new Date(row.created_at).toISOString(),
+    updatedAt: new Date(row.updated_at).toISOString(),
   };
 }

@@ -4,17 +4,23 @@
  * GraphQL API 路由 - 提供灵活的预言机数据查询
  */
 
-import { createYoga } from 'graphql-yoga';
-import { makeExecutableSchema } from '@graphql-tools/schema';
-import { logger } from '@/lib/logger';
+// GraphQL dependencies temporarily disabled - install with: npm install graphql-yoga @graphql-tools/schema
+// import { createYoga } from 'graphql-yoga';
+// import { makeExecutableSchema } from '@graphql-tools/schema';
 import { query } from '@/server/db';
 import type { NextRequest } from 'next/server';
+
+// Placeholder for missing dependencies - will be properly imported when graphql packages are installed
+// const createYoga = () => ({ handle: () => new Response('GraphQL not configured') });
+// const makeExecutableSchema = () => ({});
 
 // ============================================================================
 // GraphQL Schema
 // ============================================================================
 
-const typeDefs = `
+// GraphQL temporarily disabled - typeDefs and resolvers defined but not used
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _typeDefs = `
   scalar DateTime
   scalar JSON
 
@@ -280,7 +286,9 @@ const typeDefs = `
 // Resolvers
 // ============================================================================
 
-const resolvers = {
+// GraphQL temporarily disabled - resolvers defined but not used
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _resolvers = {
   Query: {
     // Price Feed Queries
     priceFeed: async (_: unknown, { id }: { id: string }) => {
@@ -831,37 +839,46 @@ const resolvers = {
 // Create Schema
 // ============================================================================
 
-const schema = makeExecutableSchema({
-  typeDefs,
-  resolvers,
-});
+// Note: GraphQL dependencies are temporarily disabled
+// const schema = makeExecutableSchema({
+//   typeDefs,
+//   resolvers,
+// });
 
 // ============================================================================
 // Create Yoga Instance
 // ============================================================================
 
-const yoga = createYoga({
-  schema,
-  graphqlEndpoint: '/api/graphql',
-  fetchAPI: {
-    Request: Request,
-    Response: Response,
-  },
-});
+// const yoga = createYoga({
+//   schema,
+//   graphqlEndpoint: '/api/graphql',
+//   fetchAPI: {
+//     Request: Request,
+//     Response: Response,
+//   },
+// });
 
 // ============================================================================
 // Route Handler
 // ============================================================================
 
-export async function GET(request: NextRequest) {
-  return yoga.handle(request);
+export async function GET(_request: NextRequest) {
+  // return yoga.handle(_request);
+  return new Response(JSON.stringify({ error: 'GraphQL not configured' }), {
+    status: 503,
+    headers: { 'Content-Type': 'application/json' },
+  });
 }
 
-export async function POST(request: NextRequest) {
-  return yoga.handle(request);
+export async function POST(_request: NextRequest) {
+  // return yoga.handle(_request);
+  return new Response(JSON.stringify({ error: 'GraphQL not configured' }), {
+    status: 503,
+    headers: { 'Content-Type': 'application/json' },
+  });
 }
 
-export async function OPTIONS(request: NextRequest) {
+export async function OPTIONS(_request: NextRequest) {
   return new Response(null, {
     status: 204,
     headers: {

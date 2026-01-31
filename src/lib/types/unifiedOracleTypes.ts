@@ -221,7 +221,7 @@ export type UnifiedPriceFeed = {
 
   // 元数据
   confidence?: number; // Pyth 等使用
-  sources?: number; // 数据源数量
+  sources?: string[] | number; // 数据源（可以是地址数组或数量）
 
   // 状态
   isStale: boolean;
@@ -491,7 +491,7 @@ export type UnifiedAlertEvent =
 
 export type UnifiedAlert = {
   id: string;
-  ruleId: string;
+  ruleId?: string;
 
   event: UnifiedAlertEvent;
   severity: 'info' | 'warning' | 'critical';

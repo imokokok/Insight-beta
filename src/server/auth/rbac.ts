@@ -288,7 +288,8 @@ export class RBACManager {
       [id]
     );
 
-    if (parseInt(usersWithRole.rows[0].count) > 0) {
+    const userCount = usersWithRole.rows[0]?.count;
+    if (userCount && parseInt(String(userCount)) > 0) {
       throw new Error('Cannot delete role with assigned users');
     }
 
@@ -491,7 +492,7 @@ export class RBACManager {
       );
 
       if (specificResult.rows.length > 0) {
-        return specificResult.rows[0].granted;
+        return Boolean(specificResult.rows[0]?.granted);
       }
 
       // 检查资源类型的通用权限
@@ -503,7 +504,7 @@ export class RBACManager {
       );
 
       if (genericResult.rows.length > 0) {
-        return genericResult.rows[0].granted;
+        return Boolean(genericResult.rows[0]?.granted);
       }
     }
 
@@ -606,7 +607,12 @@ export async function requireAnyPermission(
 ): Promise<void> {
   const hasPerm = await rbac.hasAnyPermission(userId, permissions);
   if (!hasPerm) {
-    throw new PermissionDeniedError(permissions[0]);
+    const firstPerm = permissions[0];
+    if (firstPerm) {
+      throw new PermissionDeniedError(firstPerm);
+    } else {
+      throw new PermissionDeniedError('unknown' as Permission);
+    }
   }
 }
 

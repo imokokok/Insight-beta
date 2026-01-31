@@ -123,6 +123,9 @@ if (typeof (db as unknown as { on?: unknown }).on === 'function') {
   });
 }
 
+// Re-export QueryResultRow for convenience
+export type QueryResultRow = pg.QueryResultRow;
+
 export async function query<T extends pg.QueryResultRow>(
   text: string,
   params?: (string | number | boolean | Date | null | undefined | string[] | number[])[],

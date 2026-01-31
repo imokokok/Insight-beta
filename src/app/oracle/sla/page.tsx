@@ -10,8 +10,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
+// Progress component not available, using custom implementation
 import {
   Activity,
   Clock,
@@ -264,7 +263,13 @@ function SLAReportCard({ report }: { report: SLAReport }) {
           <span>SLA 合规性</span>
           <span className="font-medium">{report.slaCompliance.toFixed(1)}%</span>
         </div>
-        <Progress value={report.slaCompliance} className="h-2" />
+        {/* Custom Progress Bar */}
+        <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-blue-500 transition-all duration-300"
+            style={{ width: `${report.slaCompliance}%` }}
+          />
+        </div>
       </div>
 
       <div className="mt-4 flex items-center gap-4 text-sm text-muted-foreground">

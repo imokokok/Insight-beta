@@ -1,0 +1,25 @@
+# OracleMonitor Worker - Background Sync Service
+# 后台同步服务 Dockerfile
+
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install dependencies
+RUN apk add --no-cache libc6-compat
+
+# Copy package files
+COPY package.json package-lock.json* ./
+RUN npm ci --only=production
+
+# Copy source code
+COPY . .
+
+# Build TypeScript
+RUN npm run build
+
+# Environment
+ENV NODE_ENV=production
+
+# Run worker
+CMD ["node", "dist/worker.js"]

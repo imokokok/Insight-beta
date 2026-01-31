@@ -10,14 +10,25 @@ import type {
   OracleProtocol,
   SupportedChain,
   UnifiedPriceFeed,
-  UnifiedAssertion,
-  UnifiedDispute,
-  ProtocolConfig,
-  ProtocolCapabilities,
-  PriceUpdateCallback,
-  AssertionCallback,
-  DisputeCallback,
 } from '@/lib/types/unifiedOracleTypes';
+
+// Local type definitions
+interface ProtocolConfig {
+  chain: SupportedChain;
+  rpcUrl: string;
+}
+
+interface ProtocolCapabilities {
+  priceFeeds: boolean;
+  assertions: boolean;
+  disputes: boolean;
+  vrf: boolean;
+  customData: boolean;
+}
+
+type PriceUpdateCallback = (feed: UnifiedPriceFeed) => void;
+type AssertionCallback = (assertion: unknown) => void;
+type DisputeCallback = (dispute: unknown) => void;
 
 // ============================================================================
 // 类型定义
@@ -122,7 +133,7 @@ export class SwitchboardClient {
       bsc: '0x6789012345678901234567890123456789012345',
       polygon: '0x7890123456789012345678901234567890123456',
     };
-    return addresses[chain] || addresses.ethereum;
+    return addresses[chain] || addresses.ethereum || '';
   }
 
   getConfig(): SwitchboardConfig {
@@ -204,10 +215,10 @@ export class SwitchboardClient {
 
   private parsePriceData(data: SwitchboardPriceData, symbol: string): UnifiedPriceFeed {
     const price = Number(data.result) / 1e8; // Switchboard 使用 8 位小数
-    const timestamp = new Date(data.timestamp * 1000);
+    const timestampDate = new Date(data.timestamp * 1000);
     const now = new Date();
     const stalenessThreshold = 300; // 5 分钟
-    const isStale = (now.getTime() - timestamp.getTime()) / 1000 > stalenessThreshold;
+    const isStale = (now.getTime() - timestampDate.getTime()) / 1000 > stalenessThreshold;
 
     return {
       id: `${this.config.chain}-${symbol}-${data.roundId}`,
@@ -215,18 +226,19 @@ export class SwitchboardClient {
       protocol: 'switchboard' as OracleProtocol,
       chain: this.config.chain,
       symbol,
+      baseAsset: symbol.split('/')[0] || symbol,
+      quoteAsset: symbol.split('/')[1] || 'USD',
       price,
-      timestamp,
+      priceRaw: data.result,
+      decimals: 8,
+      timestamp: timestampDate.toISOString(),
       blockNumber: data.blockNumber,
+      confidence: 0.95,
+      sources: data.oracleKeys,
       isStale,
-      metadata: {
-        roundId: data.roundId,
-        minResponse: Number(data.minResponse) / 1e8,
-        maxResponse: Number(data.maxResponse) / 1e8,
-        oracleCount: data.oracleKeys.length,
-        median: Number(data.median) / 1e8,
-        stdDeviation: Number(data.stdDeviation) / 1e8,
-      },
+      stalenessSeconds: isStale ? Math.floor((now.getTime() - timestampDate.getTime()) / 1000) : 0,
+      txHash: undefined,
+      logIndex: undefined,
     };
   }
 
@@ -458,21 +470,11 @@ export class SwitchboardClient {
 
   getCapabilities(): ProtocolCapabilities {
     return {
-      supportsPrices: true,
-      supportsAssertions: false, // Switchboard 不支持断言机制
-      supportsDisputes: false,
-      supportsVRF: true,
-      supportsAutomation: true,
-      supportedChains: [
-        'solana',
-        'ethereum',
-        'arbitrum',
-        'optimism',
-        'base',
-        'avalanche',
-        'bsc',
-        'polygon',
-      ] as SupportedChain[],
+      priceFeeds: true,
+      assertions: false, // Switchboard 不支持断言机制
+      disputes: false,
+      vrf: true,
+      customData: true,
     };
   }
 }
@@ -489,9 +491,5 @@ export function createSwitchboardClient(config: SwitchboardConfig): SwitchboardC
 // 导出类型
 // ============================================================================
 
-export type {
-  SwitchboardConfig,
-  SwitchboardPriceData,
-  SwitchboardVRFRequest,
-  SwitchboardAggregator,
-};
+// Types are already exported via 'export interface' above
+// No additional export needed
