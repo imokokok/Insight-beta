@@ -214,6 +214,7 @@ export class SAMLProvider {
   async processResponse(samlResponse: string): Promise<SSOUser | null> {
     try {
       // 解码 SAML 响应
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _decoded = Buffer.from(samlResponse, 'base64').toString('utf-8');
 
       // 简化解析，实际需要使用 SAML 库验证签名和解密

@@ -702,14 +702,16 @@ export class NotificationService {
         return sendTelegramNotification(notification, config);
       case 'pagerduty':
         return sendPagerDutyNotification(notification, config);
-      default:
+      default: {
+        const unknownConfig = config as NotificationConfig;
         return {
           success: false,
-          channel: config.type as unknown as NotificationChannel,
-          error: `Unknown channel type: ${config.type}`,
+          channel: unknownConfig.type as NotificationChannel,
+          error: `Unknown channel type: ${unknownConfig.type}`,
           timestamp: new Date(),
           durationMs: 0,
         };
+      }
     }
   }
 

@@ -166,6 +166,7 @@ const BAND_CHAIN_CONFIG: Record<SupportedChain, { defaultRpcUrl: string }> = {
 export class BandClient {
   private publicClient: PublicClient;
   private chain: SupportedChain;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private _config: BandProtocolConfig;
   private contractAddress: Address;
 

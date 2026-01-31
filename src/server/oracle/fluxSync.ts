@@ -8,8 +8,10 @@ import { query } from '@/server/db';
 import { logger } from '@/lib/logger';
 import {
   FluxClient,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   FLUX_ASSETS,
   type FluxSupportedChain,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   type FluxPriceData,
 } from '@/lib/blockchain/fluxOracle';
 import {
