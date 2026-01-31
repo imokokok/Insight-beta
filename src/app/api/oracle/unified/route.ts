@@ -21,6 +21,7 @@ import { startChainlinkSync, stopChainlinkSync } from '@/server/oracle/chainlink
 import { startPythSync, stopPythSync } from '@/server/oracle/pythSync';
 import { startBandSync, stopBandSync } from '@/server/oracle/bandSync';
 import { startAPI3Sync, stopAPI3Sync } from '@/server/oracle/api3Sync';
+import { startRedStoneSync, stopRedStoneSync } from '@/server/oracle/redstoneSync';
 import {
   detectPriceDeviations,
   analyzePriceTrends,
@@ -664,7 +665,7 @@ async function getReliabilityReport(searchParams: URLSearchParams) {
 
   if (!protocol) {
     // 返回所有协议的可靠性报告
-    const protocols: OracleProtocol[] = ['uma', 'chainlink', 'pyth', 'band', 'api3'];
+    const protocols: OracleProtocol[] = ['uma', 'chainlink', 'pyth', 'band', 'api3', 'redstone'];
     const reports = await Promise.all(
       protocols.map(async (p) => {
         try {
@@ -924,6 +925,9 @@ async function startSync(instanceId: string, protocol: string) {
       case 'api3':
         await startAPI3Sync(instanceId);
         break;
+      case 'redstone':
+        await startRedStoneSync(instanceId);
+        break;
       default:
         return { error: `Sync not implemented for protocol: ${protocol}` };
     }
@@ -967,6 +971,9 @@ async function stopSync(instanceId: string, protocol: string) {
         break;
       case 'api3':
         stopAPI3Sync(instanceId);
+        break;
+      case 'redstone':
+        stopRedStoneSync(instanceId);
         break;
       default:
         return { error: `Sync stop not implemented for protocol: ${protocol}` };
