@@ -455,7 +455,7 @@ export class EmbedApiManager {
   data-token="${token?.token}"
   style="width: 100%; height: 100%;"
 ></div>
-<script src="https://insight.foresight.build/embed/widget.js"></script>`;
+<script src="https://oracle-monitor.foresight.build/embed/widget.js"></script>`;
   }
 
   recordView(configId: string, referrer: string, loadTime: number): void {
@@ -536,7 +536,7 @@ export class EmbedApiManager {
   }
 
   private generateSourceUrl(id: string, type: EmbedType): string {
-    const baseUrl = 'https://insight.foresight.build/embed';
+    const baseUrl = 'https://oracle-monitor.foresight.build/embed';
     const typePath = {
       iframe: 'view',
       widget: 'widget',

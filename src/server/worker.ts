@@ -67,8 +67,8 @@ const pausableAbi = parseAbi(['function paused() view returns (bool)']);
 
 export async function tryAcquireWorkerLock() {
   if (!hasDatabase()) return true;
-  if (global.insightWorkerLockClient) return true;
-  const name = `insight_worker:${env.INSIGHT_WORKER_ID || 'embedded'}`;
+  if (global.oracleMonitorWorkerLockClient) return true;
+  const name = `oracle_monitor_worker:${env.INSIGHT_WORKER_ID || 'embedded'}`;
   const digest = crypto.createHash('sha256').update(name).digest();
   const buffer: Buffer = digest.subarray(0, 8);
   const hexString: string = buffer.toString('hex');
@@ -86,8 +86,8 @@ export async function tryAcquireWorkerLock() {
       client.release();
       return false;
     }
-    global.insightWorkerLockClient = client;
-    global.insightWorkerLockKey = key.toString(10);
+    global.oracleMonitorWorkerLockClient = client;
+    global.oracleMonitorWorkerLockKey = key.toString(10);
     return true;
   } catch (e) {
     logger.error('Failed to acquire worker lock', { error: e });
@@ -97,35 +97,35 @@ export async function tryAcquireWorkerLock() {
 }
 
 async function tickWorker() {
-  if (global.insightWorkerTickInProgress) return;
-  global.insightWorkerTickInProgress = true;
+  if (global.oracleMonitorWorkerTickInProgress) return;
+  global.oracleMonitorWorkerTickInProgress = true;
   const startedAt = Date.now();
   let lastError: string | null = null;
   try {
-    if (hasDatabase() && global.insightWorkerLockClient) {
+    if (hasDatabase() && global.oracleMonitorWorkerLockClient) {
       try {
-        await global.insightWorkerLockClient.query('SELECT 1 as ok');
+        await global.oracleMonitorWorkerLockClient.query('SELECT 1 as ok');
       } catch (e) {
         logger.error('Worker lock client unhealthy', { error: e });
         try {
-          global.insightWorkerLockClient.release();
+          global.oracleMonitorWorkerLockClient.release();
         } catch (releaseError) {
           logger.error('Failed to release worker lock client', {
             error: releaseError,
           });
         }
-        global.insightWorkerLockClient = undefined;
-        global.insightWorkerLockKey = undefined;
-        if (global.insightWorkerInterval) clearInterval(global.insightWorkerInterval);
-        global.insightWorkerInterval = undefined;
-        global.insightWorkerStarted = false;
+        global.oracleMonitorWorkerLockClient = undefined;
+        global.oracleMonitorWorkerLockKey = undefined;
+        if (global.oracleMonitorWorkerInterval) clearInterval(global.oracleMonitorWorkerInterval);
+        global.oracleMonitorWorkerInterval = undefined;
+        global.oracleMonitorWorkerStarted = false;
         setTimeout(() => startWorker(), 5_000);
         return;
       }
     }
 
     const nowMs = Date.now();
-    const lastMaintenanceAt = global.insightWorkerLastMaintenanceAt ?? 0;
+    const lastMaintenanceAt = global.oracleMonitorWorkerLastMaintenanceAt ?? 0;
     if (nowMs - lastMaintenanceAt >= 6 * 60 * 60_000) {
       try {
         await pruneStaleAlerts();
@@ -134,7 +134,7 @@ async function tickWorker() {
       } catch (e) {
         logger.warn('Failed to prune stale alerts', { error: e });
       } finally {
-        global.insightWorkerLastMaintenanceAt = nowMs;
+        global.oracleMonitorWorkerLastMaintenanceAt = nowMs;
       }
     }
     const rules = await readAlertRules();
@@ -236,7 +236,7 @@ async function tickWorker() {
         if (shouldAttemptSync && !missingConfig) {
           const syncResult = await ensureOracleSynced(instanceId);
           for (const perf of syncPerformanceHistory) {
-            if (perf.duration === global.insightWorkerLastTickDurationMs) {
+            if (perf.duration === global.oracleMonitorWorkerLastTickDurationMs) {
               perf.updated = syncResult.updated;
               break;
             }
@@ -964,9 +964,9 @@ async function tickWorker() {
     }
   } finally {
     const at = new Date().toISOString();
-    global.insightWorkerLastTickAt = at;
-    global.insightWorkerLastTickDurationMs = Date.now() - startedAt;
-    global.insightWorkerLastError = lastError;
+    global.oracleMonitorWorkerLastTickAt = at;
+    global.oracleMonitorWorkerLastTickDurationMs = Date.now() - startedAt;
+    global.oracleMonitorWorkerLastError = lastError;
 
     let lagBlocks: bigint | null = null;
     try {
@@ -984,7 +984,7 @@ async function tickWorker() {
     }
 
     syncPerformanceHistory.push({
-      duration: global.insightWorkerLastTickDurationMs,
+      duration: global.oracleMonitorWorkerLastTickDurationMs,
       updated: false,
       lagBlocks,
     });
@@ -994,9 +994,9 @@ async function tickWorker() {
     }
 
     const interval = calculateAdaptiveInterval();
-    if (global.insightWorkerInterval && interval !== SYNC_INTERVAL) {
-      clearInterval(global.insightWorkerInterval);
-      global.insightWorkerInterval = setInterval(() => {
+    if (global.oracleMonitorWorkerInterval && interval !== SYNC_INTERVAL) {
+      clearInterval(global.oracleMonitorWorkerInterval);
+      global.oracleMonitorWorkerInterval = setInterval(() => {
         void tickWorker();
       }, interval);
     }
@@ -1005,48 +1005,48 @@ async function tickWorker() {
       await writeJsonFile('worker/heartbeat/v1', {
         at,
         workerId: env.INSIGHT_WORKER_ID || 'embedded',
-        lockKey: global.insightWorkerLockKey ?? null,
+        lockKey: global.oracleMonitorWorkerLockKey ?? null,
         pid: typeof process !== 'undefined' ? process.pid : null,
         runtime: process.env.NEXT_RUNTIME ?? null,
-        durationMs: global.insightWorkerLastTickDurationMs,
+        durationMs: global.oracleMonitorWorkerLastTickDurationMs,
         lastError,
       });
     } catch (e) {
       logger.error('Failed to write worker heartbeat', { error: e });
     }
-    global.insightWorkerTickInProgress = false;
+    global.oracleMonitorWorkerTickInProgress = false;
   }
 }
 
 function startWorker() {
-  if (global.insightWorkerStarted) return;
+  if (global.oracleMonitorWorkerStarted) return;
   void tryAcquireWorkerLock().then((ok) => {
     if (!ok) {
       setTimeout(() => startWorker(), 30_000);
       return;
     }
 
-    global.insightWorkerStarted = true;
+    global.oracleMonitorWorkerStarted = true;
 
     logger.info('Starting background sync worker...');
 
     void tickWorker();
-    global.insightWorkerInterval = setInterval(() => {
+    global.oracleMonitorWorkerInterval = setInterval(() => {
       void tickWorker();
     }, SYNC_INTERVAL);
   });
 }
 
 declare global {
-  var insightWorkerStarted: boolean;
-  var insightWorkerLockClient: PoolClient | undefined;
-  var insightWorkerLockKey: string | undefined;
-  var insightWorkerInterval: ReturnType<typeof setInterval> | undefined;
-  var insightWorkerTickInProgress: boolean | undefined;
-  var insightWorkerLastTickAt: string | undefined;
-  var insightWorkerLastTickDurationMs: number | undefined;
-  var insightWorkerLastError: string | null | undefined;
-  var insightWorkerLastMaintenanceAt: number | undefined;
+  var oracleMonitorWorkerStarted: boolean;
+  var oracleMonitorWorkerLockClient: PoolClient | undefined;
+  var oracleMonitorWorkerLockKey: string | undefined;
+  var oracleMonitorWorkerInterval: ReturnType<typeof setInterval> | undefined;
+  var oracleMonitorWorkerTickInProgress: boolean | undefined;
+  var oracleMonitorWorkerLastTickAt: string | undefined;
+  var oracleMonitorWorkerLastTickDurationMs: number | undefined;
+  var oracleMonitorWorkerLastError: string | null | undefined;
+  var oracleMonitorWorkerLastMaintenanceAt: number | undefined;
 }
 
 const embeddedWorkerDisabled = ['1', 'true'].includes(

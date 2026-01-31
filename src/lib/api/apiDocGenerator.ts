@@ -344,9 +344,9 @@ let docGenerator: APIDocGenerator | null = null;
 export function getAPIDocGenerator(): APIDocGenerator {
   if (!docGenerator) {
     docGenerator = new APIDocGenerator({
-      title: 'Insight API',
+      title: 'OracleMonitor API',
       version: '1.0.0',
-      description: 'API documentation for the Insight oracle monitoring platform',
+      description: 'API documentation for the OracleMonitor universal oracle monitoring platform',
       baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || '/api',
     });
   }

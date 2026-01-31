@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/toast';
 import { useI18n } from '@/i18n/LanguageProvider';
 
-const STORAGE_KEY = 'insight_watchlist';
+const STORAGE_KEY = 'oracle-monitor_watchlist';
 
 export function useWatchlist() {
   const [watchlist, setWatchlist] = useState<string[]>([]);

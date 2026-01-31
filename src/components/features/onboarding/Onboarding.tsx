@@ -31,7 +31,7 @@ export function Onboarding({ onComplete, className }: OnboardingProps) {
 
   // Check if user has completed onboarding
   useEffect(() => {
-    const hasCompleted = localStorage.getItem('insight-onboarding-completed');
+    const hasCompleted = localStorage.getItem('oracle-monitor-onboarding-completed');
     if (!hasCompleted) {
       setIsOpen(true);
     }
@@ -147,7 +147,7 @@ export function Onboarding({ onComplete, className }: OnboardingProps) {
     setSelectedRole(role);
     setShowRoleSelection(false);
     setCurrentStep(0);
-    localStorage.setItem('insight-user-role', role);
+    localStorage.setItem('oracle-monitor-user-role', role);
   };
 
   const handleNext = () => {
@@ -163,7 +163,7 @@ export function Onboarding({ onComplete, className }: OnboardingProps) {
   };
 
   const handleComplete = () => {
-    localStorage.setItem('insight-onboarding-completed', 'true');
+    localStorage.setItem('oracle-monitor-onboarding-completed', 'true');
     setIsOpen(false);
     onComplete?.();
   };

@@ -94,7 +94,7 @@ export class RedisCache<T> {
    * Build cache key with prefix
    */
   private buildKey(key: string): string {
-    return `insight:${this.prefix}:v${this.version}:${key}`;
+    return `oracle-monitor:${this.prefix}:v${this.version}:${key}`;
   }
 
   /**

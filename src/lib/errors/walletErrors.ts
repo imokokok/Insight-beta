@@ -89,7 +89,7 @@ function getErrorDetails(err: unknown): WalletErrorDetail {
       recoveryAction:
         'Click "Add Network" to add it automatically, or add it manually in your wallet settings',
       severity: 'warning',
-      documentationLink: 'https://docs.insight.oracle/troubleshooting/network-issues',
+      documentationLink: 'https://docs.oracle-monitor.foresight.build/troubleshooting/network-issues',
     };
   }
 
@@ -123,7 +123,7 @@ function getErrorDetails(err: unknown): WalletErrorDetail {
       userMessage: 'No wallet detected',
       recoveryAction: 'Please install MetaMask, Rabby, or another compatible wallet',
       severity: 'error',
-      documentationLink: 'https://docs.insight.oracle/getting-started/wallet-setup',
+      documentationLink: 'https://docs.oracle-monitor.foresight.build/getting-started/wallet-setup',
     };
   }
 

@@ -180,7 +180,7 @@ export function decryptData(encryptedData: string): string {
 }
 
 export function generateApiKey(): { key: string; secret: string } {
-  const newKey = `insight_${crypto.randomBytes(8).toString('hex')}`;
+  const newKey = `oracle_monitor_${crypto.randomBytes(8).toString('hex')}`;
   const secret = crypto.randomBytes(32).toString('hex');
 
   const hashedSecret = crypto.createHash('sha256').update(secret).digest('hex');

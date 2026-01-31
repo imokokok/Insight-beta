@@ -81,7 +81,7 @@ export function UserMenu() {
   const attachInstanceId = (href: string) => {
     const normalized = (instanceId ?? '').trim();
     if (!normalized) return href;
-    const url = new URL(href, 'http://insight.local');
+    const url = new URL(href, 'http://oracle-monitor.local');
     url.searchParams.set('instanceId', normalized);
     return `${url.pathname}${url.search}${url.hash}`;
   };

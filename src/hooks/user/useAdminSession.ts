@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-const TOKEN_KEY = 'insight_admin_token';
-const ACTOR_KEY = 'insight_admin_actor';
-const SESSION_EVENT = 'insight_admin_session';
+const TOKEN_KEY = 'oracle-monitor_admin_token';
+const ACTOR_KEY = 'oracle-monitor_admin_actor';
+const SESSION_EVENT = 'oracle-monitor_admin_session';
 
 export function useAdminSession(opts?: { actor?: boolean }) {
   const withActor = opts?.actor ?? false;

@@ -22,24 +22,24 @@ type DbAlertRule = {
 };
 
 const globalForDbAlerts = globalThis as unknown as {
-  insightDbAlertRulesCache?: { loadedAtMs: number; rules: DbAlertRule[] } | null | undefined;
-  insightDbAlertRulesInflight?: Promise<DbAlertRule[]> | null | undefined;
-  insightDbAlertCooldown?: Map<string, number> | undefined;
-  insightDbAlertDepth?: number | undefined;
+  oracleMonitorDbAlertRulesCache?: { loadedAtMs: number; rules: DbAlertRule[] } | null | undefined;
+  oracleMonitorDbAlertRulesInflight?: Promise<DbAlertRule[]> | null | undefined;
+  oracleMonitorDbAlertCooldown?: Map<string, number> | undefined;
+  oracleMonitorDbAlertDepth?: number | undefined;
 };
 
-const dbAlertCooldown = globalForDbAlerts.insightDbAlertCooldown ?? new Map<string, number>();
+const dbAlertCooldown = globalForDbAlerts.oracleMonitorDbAlertCooldown ?? new Map<string, number>();
 if (process.env.NODE_ENV !== 'production') {
-  globalForDbAlerts.insightDbAlertCooldown = dbAlertCooldown;
+  globalForDbAlerts.oracleMonitorDbAlertCooldown = dbAlertCooldown;
 }
 
 async function withDbAlertDepth<T>(fn: () => Promise<T>): Promise<T> {
-  const depth = globalForDbAlerts.insightDbAlertDepth ?? 0;
-  globalForDbAlerts.insightDbAlertDepth = depth + 1;
+  const depth = globalForDbAlerts.oracleMonitorDbAlertDepth ?? 0;
+  globalForDbAlerts.oracleMonitorDbAlertDepth = depth + 1;
   try {
     return await fn();
   } finally {
-    globalForDbAlerts.insightDbAlertDepth = depth;
+    globalForDbAlerts.oracleMonitorDbAlertDepth = depth;
   }
 }
 
@@ -91,7 +91,7 @@ const poolConfig = {
   keepAlive: true,
   keepAliveInitialDelayMillis: 10000,
   // Application name for monitoring
-  application_name: `insight-${process.env.NODE_ENV || 'development'}`,
+  application_name: `oracle-monitor-${process.env.NODE_ENV || 'development'}`,
   // Enable prepared statements caching
   preparedStatements: true,
 };
@@ -141,7 +141,7 @@ export async function query<T extends pg.QueryResultRow>(
     try {
       const res = await client.query<T>(text, params);
       const durationMs = Date.now() - startedAt;
-      if ((globalForDbAlerts.insightDbAlertDepth ?? 0) <= 0 && durationMs >= 5) {
+      if ((globalForDbAlerts.oracleMonitorDbAlertDepth ?? 0) <= 0 && durationMs >= 5) {
         void maybeAlertDatabaseSlowQuery({ text, durationMs }).catch(() => void 0);
       }
       return res;
@@ -169,28 +169,28 @@ function getAlertCooldownKey(event: string, fingerprint: string) {
 
 async function getAlertRulesCached(): Promise<DbAlertRule[]> {
   const now = Date.now();
-  const cached = globalForDbAlerts.insightDbAlertRulesCache;
+  const cached = globalForDbAlerts.oracleMonitorDbAlertRulesCache;
   if (cached && now - cached.loadedAtMs < 5_000) return cached.rules;
-  if (globalForDbAlerts.insightDbAlertRulesInflight)
-    return globalForDbAlerts.insightDbAlertRulesInflight;
+  if (globalForDbAlerts.oracleMonitorDbAlertRulesInflight)
+    return globalForDbAlerts.oracleMonitorDbAlertRulesInflight;
 
   const p = withDbAlertDepth(() => import('@/server/observability').then((m) => m.readAlertRules()))
     .then((rules) => {
-      globalForDbAlerts.insightDbAlertRulesCache = { loadedAtMs: now, rules };
+      globalForDbAlerts.oracleMonitorDbAlertRulesCache = { loadedAtMs: now, rules };
       return rules;
     })
     .catch(() => {
-      globalForDbAlerts.insightDbAlertRulesCache = {
+      globalForDbAlerts.oracleMonitorDbAlertRulesCache = {
         loadedAtMs: now,
         rules: [],
       };
       return [];
     })
     .finally(() => {
-      globalForDbAlerts.insightDbAlertRulesInflight = null;
+      globalForDbAlerts.oracleMonitorDbAlertRulesInflight = null;
     });
 
-  globalForDbAlerts.insightDbAlertRulesInflight = p;
+  globalForDbAlerts.oracleMonitorDbAlertRulesInflight = p;
   return p;
 }
 
@@ -234,8 +234,8 @@ async function createAlertIfNeeded(
   const silencedUntilMs = silencedUntilRaw ? Date.parse(silencedUntilRaw) : NaN;
   const silenced = Number.isFinite(silencedUntilMs) && silencedUntilMs > now;
 
-  const depth = globalForDbAlerts.insightDbAlertDepth ?? 0;
-  globalForDbAlerts.insightDbAlertDepth = depth + 1;
+  const depth = globalForDbAlerts.oracleMonitorDbAlertDepth ?? 0;
+  globalForDbAlerts.oracleMonitorDbAlertDepth = depth + 1;
   try {
     const { createOrTouchAlert } = await import('@/server/observability');
     await createOrTouchAlert({
@@ -254,7 +254,7 @@ async function createAlertIfNeeded(
           },
     });
   } finally {
-    globalForDbAlerts.insightDbAlertDepth = depth;
+    globalForDbAlerts.oracleMonitorDbAlertDepth = depth;
   }
 }
 

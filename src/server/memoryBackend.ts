@@ -178,11 +178,11 @@ function createDefaultInstance(id: string): MemoryOracleInstance {
 }
 
 export function getMemoryStore(): MemoryStore {
-  const g = globalThis as unknown as { __insightMemoryStore?: MemoryStore };
-  if (!g.__insightMemoryStore) {
+  const g = globalThis as unknown as { __oracleMonitorMemoryStore?: MemoryStore };
+  if (!g.__oracleMonitorMemoryStore) {
     const instances = new Map<string, MemoryOracleInstance>();
     instances.set('default', createDefaultInstance('default'));
-    g.__insightMemoryStore = {
+    g.__oracleMonitorMemoryStore = {
       instances,
       umaInstances: new Map(),
       kv: new Map(),
@@ -193,7 +193,7 @@ export function getMemoryStore(): MemoryStore {
       metrics: new Map(),
     };
   }
-  return g.__insightMemoryStore;
+  return g.__oracleMonitorMemoryStore;
 }
 
 export function getMemoryInstance(instanceId: string) {

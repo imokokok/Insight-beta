@@ -5,7 +5,7 @@ import { logger } from '@/lib/logger';
 
 // Initialize OpenTelemetry SDK
 const initOpenTelemetry = () => {
-  const serviceName = process.env.OTEL_SERVICE_NAME || 'insight-oracle';
+  const serviceName = process.env.OTEL_SERVICE_NAME || 'oracle-monitor';
   const exporterEndpoint =
     process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4318/v1/traces';
 

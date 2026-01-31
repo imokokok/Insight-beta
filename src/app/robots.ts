@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: '/admin/',
     },
-    sitemap: 'https://insight.foresight.build/sitemap.xml',
+    sitemap: 'https://oracle-monitor.foresight.build/sitemap.xml',
   };
 }

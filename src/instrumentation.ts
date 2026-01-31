@@ -33,7 +33,7 @@ async function initWorker() {
 }
 
 export async function register(options: RegisterOptions = {}) {
-  const serviceName = options.serviceName || 'insight-beta';
+  const serviceName = options.serviceName || 'oracle-monitor';
 
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     const startTime = Date.now();
@@ -57,7 +57,7 @@ export function onError(error: Error | unknown) {
   logger.error('Application error detected', {
     message: errorMessage,
     stack: errorStack,
-    service: 'insight-beta',
+    service: 'oracle-monitor',
   });
 
   Sentry.captureException(error);

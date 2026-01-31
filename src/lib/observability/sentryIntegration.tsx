@@ -226,7 +226,7 @@ export function useSentry(options: UseSentryOptions): UseSentryReturn {
           initialScope: {
             tags: {
               ...tags,
-              app: 'insight-oracle',
+              app: 'oracle-monitor',
             },
           },
           beforeSend: (event, hint) => {

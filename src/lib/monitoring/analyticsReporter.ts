@@ -148,7 +148,7 @@ export class AnalyticsReporter {
       metrics,
       metadata: {
         timestamp: new Date().toISOString(),
-        source: 'insight-web-vitals',
+        source: 'oracle-monitor-web-vitals',
         version: process.env.NEXT_PUBLIC_APP_VERSION || 'unknown',
       },
     };
@@ -196,10 +196,10 @@ function generateSessionId(): string {
 function getSessionId(): string {
   if (typeof window === 'undefined') return 'server';
 
-  let sessionId = sessionStorage.getItem('insight_session_id');
+  let sessionId = sessionStorage.getItem('oracle-monitor_session_id');
   if (!sessionId) {
     sessionId = generateSessionId();
-    sessionStorage.setItem('insight_session_id', sessionId);
+    sessionStorage.setItem('oracle-monitor_session_id', sessionId);
   }
   return sessionId;
 }

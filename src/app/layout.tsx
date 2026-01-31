@@ -68,7 +68,7 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       type: 'website',
       locale: langToHtmlLang[lang],
-      url: 'https://insight.foresight.build',
+      url: 'https://oracle-monitor.foresight.build',
       title: translations[lang].app.title,
       description: translations[lang].app.description,
       siteName: 'OracleMonitor',
@@ -78,7 +78,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title: translations[lang].app.title,
       description: translations[lang].app.description,
     },
-    metadataBase: new URL('https://insight.foresight.build'),
+    metadataBase: new URL('https://oracle-monitor.foresight.build'),
   };
 }
 
