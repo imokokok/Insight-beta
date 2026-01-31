@@ -13,6 +13,8 @@ import {
 import { PageHeader } from '@/components/features/common/PageHeader';
 import { cn, fetchApiData, formatTime } from '@/lib/utils';
 import { logger } from '@/lib/logger';
+import { useI18n } from '@/i18n/LanguageProvider';
+import { langToLocale } from '@/i18n/translations';
 
 interface UMAOverview {
   instanceId: string;
@@ -49,6 +51,7 @@ interface UMALeaderboard {
 }
 
 export default function UMAOraclePage() {
+  const { t, lang } = useI18n();
   const [overview, setOverview] = useState<UMAOverview | null>(null);
   const [leaderboard, setLeaderboard] = useState<UMALeaderboard | null>(null);
   const [loading, setLoading] = useState(true);
@@ -67,6 +70,7 @@ export default function UMAOraclePage() {
     }, 30000);
 
     return () => clearInterval(pollInterval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function fetchOverview() {
@@ -128,10 +132,7 @@ export default function UMAOraclePage() {
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8 flex flex-col gap-4">
           <div className="flex items-center justify-between">
-            <PageHeader
-              title="UMA Optimistic Oracle"
-              description="Monitor UMA OOv2 and OOv3 assertions, disputes, and votes"
-            />
+            <PageHeader title={t('uma.title')} description={t('uma.description')} />
             <div className="flex gap-2">
               <button
                 onClick={triggerSync}
@@ -139,14 +140,14 @@ export default function UMAOraclePage() {
                 className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 transition-colors hover:bg-blue-700 disabled:opacity-50"
               >
                 <RefreshCw className={cn('h-4 w-4', isRefreshing && 'animate-spin')} />
-                {isRefreshing ? 'Syncing...' : 'Sync Now'}
+                {isRefreshing ? t('uma.syncing') : t('uma.syncNow')}
               </button>
               <a
                 href="/api/oracle/uma/config"
                 className="flex items-center gap-2 rounded-lg bg-white/10 px-4 py-2 transition-colors hover:bg-white/20"
               >
                 <Settings className="h-4 w-4" />
-                Config
+                {t('uma.config')}
               </a>
             </div>
           </div>
@@ -160,12 +161,12 @@ export default function UMAOraclePage() {
                 )}
               />
               <span className="text-gray-400">
-                {overview?.sync.syncing ? 'Syncing...' : 'Idle'}
+                {overview?.sync.syncing ? t('uma.syncing') : t('uma.idle')}
               </span>
             </div>
             {lastUpdated && (
               <span className="text-gray-500">
-                Last updated: {lastUpdated.toLocaleTimeString()}
+                {t('uma.lastUpdated')}: {lastUpdated.toLocaleTimeString(langToLocale[lang])}
               </span>
             )}
           </div>
@@ -181,7 +182,7 @@ export default function UMAOraclePage() {
                 activeTab === tab ? 'bg-blue-600 text-white' : 'bg-white/5 hover:bg-white/10',
               )}
             >
-              {tab}
+              {t(`uma.${tab}`)}
             </button>
           ))}
         </div>
@@ -189,26 +190,26 @@ export default function UMAOraclePage() {
         {activeTab === 'overview' && overview && (
           <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
             <StatCard
-              title="Chain"
+              title={t('uma.chain')}
               value={overview.config.chain}
               icon={<TrendingUp className="h-5 w-5" />}
             />
             <StatCard
-              title="Assertions"
+              title={t('uma.assertions')}
               value={overview.stats.totalAssertions.toLocaleString()}
               icon={<FileText className="h-5 w-5" />}
             />
             <StatCard
-              title="Disputes"
+              title={t('uma.disputes')}
               value={overview.stats.totalDisputes.toLocaleString()}
               icon={<Gavel className="h-5 w-5" />}
             />
             <StatCard
-              title="Last Sync"
+              title={t('uma.lastSync')}
               value={
                 overview.sync.lastSuccessAt
-                  ? formatTime(overview.sync.lastSuccessAt, 'en')
-                  : 'Never'
+                  ? formatTime(overview.sync.lastSuccessAt, lang)
+                  : t('uma.never')
               }
               icon={<RefreshCw className="h-5 w-5" />}
             />
@@ -218,18 +219,18 @@ export default function UMAOraclePage() {
         {activeTab === 'overview' && overview && (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <div className="rounded-xl bg-white/5 p-6">
-              <h3 className="mb-4 text-lg font-semibold">Sync Status</h3>
+              <h3 className="mb-4 text-lg font-semibold">{t('uma.syncStatus')}</h3>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Processed Block</span>
+                  <span className="text-gray-400">{t('uma.processedBlock')}</span>
                   <span className="font-mono">{overview.sync.lastProcessedBlock}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Latest Block</span>
+                  <span className="text-gray-400">{t('uma.latestBlock')}</span>
                   <span className="font-mono">{overview.sync.latestBlock ?? 'N/A'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Status</span>
+                  <span className="text-gray-400">{t('uma.status')}</span>
                   <span
                     className={cn(
                       'rounded px-2 py-1 text-xs',
@@ -238,7 +239,7 @@ export default function UMAOraclePage() {
                         : 'bg-green-500/20 text-green-400',
                     )}
                   >
-                    {overview.sync.syncing ? 'Syncing' : 'Idle'}
+                    {overview.sync.syncing ? t('uma.syncing') : t('uma.idle')}
                   </span>
                 </div>
                 {overview.sync.lastError && (
@@ -250,7 +251,7 @@ export default function UMAOraclePage() {
             </div>
 
             <div className="rounded-xl bg-white/5 p-6">
-              <h3 className="mb-4 text-lg font-semibold">Contract Addresses</h3>
+              <h3 className="mb-4 text-lg font-semibold">{t('uma.contractAddresses')}</h3>
               <div className="space-y-3">
                 <div>
                   <span className="mb-1 block text-sm text-gray-400">OOv2</span>
@@ -291,10 +292,10 @@ export default function UMAOraclePage() {
                 <thead>
                   <tr className="border-b border-white/10 text-left text-sm text-gray-400">
                     <th className="pb-3 pr-4">#</th>
-                    <th className="pb-3 pr-4">Address</th>
-                    <th className="pb-3 pr-4">Count</th>
+                    <th className="pb-3 pr-4">{t('uma.address')}</th>
+                    <th className="pb-3 pr-4">{t('uma.count')}</th>
                     <th className="pb-3 pr-4">Bond (UMA)</th>
-                    <th className="pb-3">Won</th>
+                    <th className="pb-3">{t('uma.won')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -335,7 +336,7 @@ export default function UMAOraclePage() {
             >
               <div className="mb-4 flex items-center gap-3">
                 <FileText className="h-6 w-6 text-blue-400" />
-                <h3 className="text-lg font-semibold">Assertions</h3>
+                <h3 className="text-lg font-semibold">{t('uma.assertionsTitle')}</h3>
               </div>
               <p className="text-gray-400">
                 View all UMA assertions with filtering by status, identifier, and time.
@@ -350,7 +351,7 @@ export default function UMAOraclePage() {
             >
               <div className="mb-4 flex items-center gap-3">
                 <Gavel className="h-6 w-6 text-orange-400" />
-                <h3 className="text-lg font-semibold">Disputes</h3>
+                <h3 className="text-lg font-semibold">{t('uma.disputesTitle')}</h3>
               </div>
               <p className="text-gray-400">
                 View all active and settled disputes with voting status.
@@ -365,7 +366,7 @@ export default function UMAOraclePage() {
             >
               <div className="mb-4 flex items-center gap-3">
                 <Users className="h-6 w-6 text-purple-400" />
-                <h3 className="text-lg font-semibold">Votes</h3>
+                <h3 className="text-lg font-semibold">{t('uma.votes')}</h3>
               </div>
               <p className="text-gray-400">Query voting records for UMA proposals.</p>
             </a>
@@ -378,7 +379,7 @@ export default function UMAOraclePage() {
             >
               <div className="mb-4 flex items-center gap-3">
                 <TrendingUp className="h-6 w-6 text-green-400" />
-                <h3 className="text-lg font-semibold">Statistics</h3>
+                <h3 className="text-lg font-semibold">{t('uma.statistics')}</h3>
               </div>
               <p className="text-gray-400">
                 View detailed statistics and metrics for UMA oracle activity.

@@ -7,6 +7,7 @@ import { ArrowUpRight, RefreshCw } from 'lucide-react';
 import { PageHeader } from '@/components/features/common/PageHeader';
 import { cn, fetchApiData, formatTime } from '@/lib/utils';
 import { logger } from '@/lib/logger';
+import { useI18n } from '@/i18n/LanguageProvider';
 
 interface UMADispute {
   id: string;
@@ -30,6 +31,7 @@ interface DisputesResponse {
 }
 
 export default function UMADisputesPage() {
+  const { t, lang } = useI18n();
   const [disputes, setDisputes] = useState<UMADispute[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -38,6 +40,7 @@ export default function UMADisputesPage() {
 
   useEffect(() => {
     fetchDisputes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, statusFilter]);
 
   async function fetchDisputes() {
@@ -70,10 +73,13 @@ export default function UMADisputesPage() {
           href="/oracle/uma"
           className="mb-6 inline-flex items-center gap-2 text-gray-400 hover:text-white"
         >
-          ← Back to Dashboard
+          ← {t('oracle.detail.back')}
         </Link>
 
-        <PageHeader title="UMA Disputes" description={`Total ${total.toLocaleString()} disputes`} />
+        <PageHeader
+          title={t('uma.disputesPage.title')}
+          description={`${t('uma.disputesPage.description').replace('{{total}}', total.toLocaleString())}`}
+        />
 
         {/* Filters */}
         <div className="mb-6 flex flex-wrap gap-4">
@@ -85,9 +91,9 @@ export default function UMADisputesPage() {
             }}
             className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm"
           >
-            <option value="all">All Status</option>
-            <option value="Voting">Voting</option>
-            <option value="Resolved">Resolved</option>
+            <option value="all">{t('uma.disputesPage.allStatus')}</option>
+            <option value="Voting">{t('uma.disputesPage.voting')}</option>
+            <option value="Resolved">{t('uma.disputesPage.resolved')}</option>
           </select>
 
           <button
@@ -95,7 +101,7 @@ export default function UMADisputesPage() {
             className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm transition-colors hover:bg-blue-700"
           >
             <RefreshCw className="h-4 w-4" />
-            Refresh
+            {t('common.refresh')}
           </button>
         </div>
 
@@ -104,14 +110,14 @@ export default function UMADisputesPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-white/10 text-left text-sm text-gray-400">
-                <th className="px-6 py-4 font-medium">ID</th>
-                <th className="px-6 py-4 font-medium">Assertion</th>
-                <th className="px-6 py-4 font-medium">Disputer</th>
-                <th className="px-6 py-4 font-medium">Bond</th>
-                <th className="px-6 py-4 font-medium">Votes (For/Against)</th>
-                <th className="px-6 py-4 font-medium">Status</th>
-                <th className="px-6 py-4 font-medium">Created</th>
-                <th className="px-6 py-4 font-medium">Actions</th>
+                <th className="px-6 py-4 font-medium">{t('uma.disputesPage.id')}</th>
+                <th className="px-6 py-4 font-medium">{t('uma.disputesPage.assertion')}</th>
+                <th className="px-6 py-4 font-medium">{t('uma.disputesPage.disputer')}</th>
+                <th className="px-6 py-4 font-medium">{t('uma.disputesPage.bond')}</th>
+                <th className="px-6 py-4 font-medium">{t('disputes.card.votes')}</th>
+                <th className="px-6 py-4 font-medium">{t('uma.disputesPage.status')}</th>
+                <th className="px-6 py-4 font-medium">{t('uma.disputesPage.created')}</th>
+                <th className="px-6 py-4 font-medium">{t('uma.disputesPage.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -149,7 +155,7 @@ export default function UMADisputesPage() {
               ) : disputes.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-6 py-12 text-center text-gray-400">
-                    No disputes found
+                    {t('common.noData')}
                   </td>
                 </tr>
               ) : (
@@ -183,7 +189,7 @@ export default function UMADisputesPage() {
                         <span className="text-gray-500">/</span>
                         <span className="text-orange-400">{Number(dispute.votesAgainst)}</span>
                         <span className="text-xs text-gray-500">
-                          ({dispute.totalVoters} voters)
+                          ({dispute.totalVoters} {t('disputes.totalVotesCast')})
                         </span>
                       </div>
                     </td>
@@ -196,11 +202,13 @@ export default function UMADisputesPage() {
                             : 'bg-green-500/20 text-green-400',
                         )}
                       >
-                        {dispute.status}
+                        {dispute.status === 'Voting'
+                          ? t('uma.disputesPage.voting')
+                          : t('uma.disputesPage.resolved')}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-400">
-                      {formatTime(dispute.createdAt, 'en')}
+                      {formatTime(dispute.createdAt, lang)}
                     </td>
                     <td className="px-6 py-4">
                       <Link
@@ -221,7 +229,8 @@ export default function UMADisputesPage() {
         {!loading && disputes.length > 0 && (
           <div className="mt-6 flex items-center justify-between">
             <div className="text-sm text-gray-400">
-              Page {page} of {totalPages} ({total.toLocaleString()} total)
+              {t('common.page')} {page} {t('common.of')} {totalPages} ({total.toLocaleString()}{' '}
+              {t('common.total')})
             </div>
             <div className="flex gap-2">
               <button
@@ -229,14 +238,14 @@ export default function UMADisputesPage() {
                 disabled={page === 1}
                 className="rounded-lg bg-white/5 px-4 py-2 text-sm hover:bg-white/10 disabled:opacity-50"
               >
-                Previous
+                {t('common.previous')}
               </button>
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
                 className="rounded-lg bg-white/5 px-4 py-2 text-sm hover:bg-white/10 disabled:opacity-50"
               >
-                Next
+                {t('common.next')}
               </button>
             </div>
           </div>

@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import { AlertCircle, RefreshCw, Settings, MessageCircle, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { OracleError, type ErrorRecoveryAction } from '@/lib/errors';
+import { useI18n } from '@/i18n/LanguageProvider';
 
 interface ErrorRecoveryProps {
   error: OracleError | Error;
@@ -35,6 +36,7 @@ function getSeverityColor(severity: string): string {
 }
 
 export function ErrorRecovery({ error, onRetry, onReset }: ErrorRecoveryProps) {
+  const { t } = useI18n();
   const [isRetrying, setIsRetrying] = useState(false);
   const [countdown, setCountdown] = useState(0);
 
@@ -60,6 +62,7 @@ export function ErrorRecovery({ error, onRetry, onReset }: ErrorRecoveryProps) {
     } else {
       executeAction(action.action);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const executeAction = useCallback(
@@ -98,13 +101,14 @@ export function ErrorRecovery({ error, onRetry, onReset }: ErrorRecoveryProps) {
         <div className="flex-1">
           <h3 className="text-lg font-semibold">{oracleError.message}</h3>
           <p className="mt-1 text-sm opacity-80">
-            错误代码: {oracleError.code} | 严重程度: {oracleError.severity}
+            {t('errors.errorCode')}: {oracleError.code} | {t('errors.severity')}:{' '}
+            {oracleError.severity}
           </p>
 
           {oracleError.context && (
             <div className="mt-3 rounded bg-white/30 p-3 text-xs">
               <details>
-                <summary className="cursor-pointer font-medium">错误详情</summary>
+                <summary className="cursor-pointer font-medium">{t('errors.errorDetails')}</summary>
                 <pre className="mt-2 overflow-auto whitespace-pre-wrap">
                   {JSON.stringify(oracleError.context, null, 2)}
                 </pre>
@@ -129,9 +133,7 @@ export function ErrorRecovery({ error, onRetry, onReset }: ErrorRecoveryProps) {
           </div>
 
           {oracleError.retryable && (
-            <p className="mt-3 text-xs opacity-70">
-              此错误可以重试。如果问题持续存在，请联系支持团队。
-            </p>
+            <p className="mt-3 text-xs opacity-70">{t('errors.retryable')}</p>
           )}
         </div>
       </div>

@@ -61,49 +61,50 @@ export interface ErrorRecoveryAction {
 }
 
 /**
- * 错误恢复指南
+ * Error recovery guide with translation keys
+ * Labels should be translated at the component level using t('errors.actionKey')
  */
 export const ErrorRecoveryGuide: Record<string, ErrorRecoveryAction[]> = {
   [ErrorCode.DB_CONNECTION_ERROR]: [
-    { action: 'retry', label: '重试', delay: 3 },
-    { action: 'contact_support', label: '联系支持' },
+    { action: 'retry', label: 'Retry', delay: 3 },
+    { action: 'contact_support', label: 'Contact Support' },
   ],
   [ErrorCode.DB_QUERY_ERROR]: [
-    { action: 'retry', label: '重试', delay: 3 },
-    { action: 'contact_support', label: '联系支持' },
+    { action: 'retry', label: 'Retry', delay: 3 },
+    { action: 'contact_support', label: 'Contact Support' },
   ],
   [ErrorCode.ORACLE_SYNC_ERROR]: [
-    { action: 'retry', label: '重试', delay: 5 },
-    { action: 'check_config', label: '检查配置' },
+    { action: 'retry', label: 'Retry', delay: 5 },
+    { action: 'check_config', label: 'Check Config' },
   ],
   [ErrorCode.VALIDATION_ERROR]: [
-    { action: 'refresh', label: '刷新页面' },
-    { action: 'check_config', label: '检查输入' },
+    { action: 'refresh', label: 'Refresh Page' },
+    { action: 'check_config', label: 'Check Input' },
   ],
-  [ErrorCode.AUTHENTICATION_ERROR]: [{ action: 'refresh', label: '重新登录' }],
-  [ErrorCode.AUTHORIZATION_ERROR]: [{ action: 'contact_support', label: '申请权限' }],
-  [ErrorCode.NOT_FOUND]: [{ action: 'refresh', label: '返回首页' }],
+  [ErrorCode.AUTHENTICATION_ERROR]: [{ action: 'refresh', label: 'Re-login' }],
+  [ErrorCode.AUTHORIZATION_ERROR]: [{ action: 'contact_support', label: 'Request Access' }],
+  [ErrorCode.NOT_FOUND]: [{ action: 'refresh', label: 'Back to Home' }],
   [ErrorCode.RATE_LIMIT_ERROR]: [
-    { action: 'wait', label: '等待后重试', delay: 60 },
-    { action: 'contact_support', label: '升级套餐' },
+    { action: 'wait', label: 'Wait and Retry', delay: 60 },
+    { action: 'contact_support', label: 'Upgrade Plan' },
   ],
-  [ErrorCode.TIMEOUT]: [{ action: 'retry', label: '重试', delay: 3 }],
+  [ErrorCode.TIMEOUT]: [{ action: 'retry', label: 'Retry', delay: 3 }],
   [ErrorCode.NETWORK_ERROR]: [
-    { action: 'retry', label: '重试', delay: 3 },
-    { action: 'check_config', label: '检查网络' },
+    { action: 'retry', label: 'Retry', delay: 3 },
+    { action: 'check_config', label: 'Check Network' },
   ],
   [ErrorCode.CONFIG_ERROR]: [
-    { action: 'check_config', label: '检查配置' },
-    { action: 'contact_support', label: '联系支持' },
+    { action: 'check_config', label: 'Check Config' },
+    { action: 'contact_support', label: 'Contact Support' },
   ],
   [ErrorCode.UNKNOWN_ERROR]: [
-    { action: 'retry', label: '重试', delay: 3 },
-    { action: 'contact_support', label: '联系支持' },
+    { action: 'retry', label: 'Retry', delay: 3 },
+    { action: 'contact_support', label: 'Contact Support' },
   ],
 };
 
 /**
- * 错误上下文
+ * Error context
  */
 export interface ErrorContext {
   userId?: string;
@@ -353,7 +354,7 @@ export class OracleError extends AppError {
     }
 
     return new OracleError(
-      error.message || '发生未知错误',
+      error.message || 'An unknown error occurred',
       ErrorCode.UNKNOWN_ERROR,
       'medium',
       true,
@@ -442,8 +443,8 @@ export function err<E extends AppError>(error: E): Result<never, E> {
 }
 
 /**
- * 异步操作的包装函数
- * 将可能抛出异常的异步操作转换为 Result 类型
+ * Async operation wrapper
+ * Converts Promise that may throw exceptions to Result type
  *
  * @example
  * ```typescript
@@ -468,7 +469,7 @@ export async function tryCatchAsync<T>(
       : error instanceof AppError
         ? error
         : new AppError(
-            error instanceof Error ? error.message : '未知错误',
+            error instanceof Error ? error.message : 'Unknown error',
             ErrorCode.UNKNOWN_ERROR,
             500,
             { originalError: error },
@@ -478,8 +479,8 @@ export async function tryCatchAsync<T>(
 }
 
 /**
- * 同步操作的包装函数
- * 将可能抛出异常的同步操作转换为 Result 类型
+ * Sync operation wrapper
+ * Converts synchronous operations that may throw exceptions to Result type
  */
 export function tryCatch<T>(fn: () => T, errorMapper?: (error: unknown) => AppError): Result<T> {
   try {
@@ -491,7 +492,7 @@ export function tryCatch<T>(fn: () => T, errorMapper?: (error: unknown) => AppEr
       : error instanceof AppError
         ? error
         : new AppError(
-            error instanceof Error ? error.message : '未知错误',
+            error instanceof Error ? error.message : 'Unknown error',
             ErrorCode.UNKNOWN_ERROR,
             500,
             { originalError: error },
@@ -501,8 +502,8 @@ export function tryCatch<T>(fn: () => T, errorMapper?: (error: unknown) => AppEr
 }
 
 /**
- * 断言函数
- * 条件不满足时抛出 ValidationError
+ * Assertion function
+ * Throws ValidationError when condition is not met
  */
 export function assert(condition: boolean, message: string): asserts condition {
   if (!condition) {
@@ -511,54 +512,54 @@ export function assert(condition: boolean, message: string): asserts condition {
 }
 
 /**
- * 断言非空
- * 值为 null 或 undefined 时抛出 ValidationError
+ * Assert non-null
+ * Throws ValidationError when value is null or undefined
  */
 export function assertNonNull<T>(value: T | null | undefined, name: string): asserts value is T {
   if (value === null || value === undefined) {
-    throw new ValidationError(`${name} 不能为空`);
+    throw new ValidationError(`${name} is required`);
   }
 }
 
 /**
- * 全局错误处理器
- * 用于处理未捕获的异常
+ * Global error handler
+ * Used to handle uncaught exceptions
  */
 export function setupGlobalErrorHandlers(): void {
-  // 处理未捕获的 Promise 异常
+  // Handle unhandled Promise rejections
   process.on('unhandledRejection', (reason) => {
-    logger.error('未处理的 Promise 拒绝', { reason });
+    logger.error('Unhandled Promise rejection', { reason });
   });
 
-  // 处理未捕获的异常
+  // Handle uncaught exceptions
   process.on('uncaughtException', (error) => {
-    logger.error('未捕获的异常', {
+    logger.error('Uncaught exception', {
       error: error.message,
       stack: error.stack,
     });
-    // 给日志写入时间后退出
+    // Exit after giving time for logs to be written
     setTimeout(() => process.exit(1), 1000);
   });
 }
 
 /**
- * 错误转换器
- * 将数据库错误转换为应用错误
+ * Error mapper
+ * Converts database errors to application errors
  */
 export function mapDatabaseError(error: unknown): DatabaseError {
   if (error instanceof DatabaseError) return error;
 
-  const message = error instanceof Error ? error.message : '数据库操作失败';
+  const message = error instanceof Error ? error.message : 'Database operation failed';
   return new DatabaseError(message, error instanceof Error ? error : undefined);
 }
 
 /**
- * 错误转换器
- * 将网络错误转换为应用错误
+ * Error mapper
+ * Converts network errors to application errors
  */
 export function mapNetworkError(error: unknown, endpoint?: string): NetworkError {
   if (error instanceof NetworkError) return error;
 
-  const message = error instanceof Error ? error.message : '网络请求失败';
+  const message = error instanceof Error ? error.message : 'Network request failed';
   return new NetworkError(message, endpoint);
 }

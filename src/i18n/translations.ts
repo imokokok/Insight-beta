@@ -59,10 +59,10 @@ export function detectLangFromAcceptLanguage(value: string | null | undefined): 
 
   for (const { lang } of parsed) {
     if (lang.startsWith('zh')) return 'zh';
+    if (lang.startsWith('en')) return 'en';
     if (lang.startsWith('fr')) return 'fr';
     if (lang.startsWith('ko')) return 'ko';
     if (lang.startsWith('es')) return 'es';
-    if (lang.startsWith('en')) return 'en';
   }
 
   return 'en';
@@ -263,6 +263,15 @@ export const translations = {
       optimism: 'Optimism',
       polygon: 'Polygon',
     },
+    validation: {
+      protocolLength: 'Protocol must be between 1 and 100 characters',
+      marketLength: 'Market must be between 1 and 200 characters',
+      assertionLength: 'Assertion must be between 1 and 1000 characters',
+      invalidUrl: 'Invalid URL format',
+    },
+    batch: {
+      processing: 'Processing items',
+    },
     common: {
       addToWatchlist: 'Add to Watchlist',
       all: 'All',
@@ -299,6 +308,39 @@ export const translations = {
       viewDetails: 'View Details',
       viewOnExplorer: 'View on Explorer',
       viewTx: 'View TX',
+      settings: 'Settings',
+      disconnect: 'Disconnect',
+      search: 'Search',
+      notifications: 'Notifications',
+      userMenu: 'User menu',
+      brand: 'Insight',
+      history: 'History',
+      undo: 'Undo',
+      redo: 'Redo',
+      clearHistory: 'Clear history',
+      noHistory: 'No history yet',
+      templates: 'Templates',
+      allSynced: 'All synced',
+      pwaSettings: 'PWA Settings',
+      installation: 'Installation',
+      storage: 'Storage',
+      cacheSize: 'Cache size',
+      networkStatus: 'Network status',
+      progress: 'Progress',
+      uniqueErrorTypes: 'Unique Error Types',
+      topErrors: 'Top Errors',
+      quickActions: 'Quick Actions',
+      somethingWrong: 'Something went wrong',
+      suggestedAction: 'Suggested Action',
+      howToFix: 'How to fix it',
+      copyId: 'Click to copy ID',
+      sharePage: 'Share Page',
+      navigation: 'Navigation',
+      page: 'Page',
+      of: 'of',
+      total: 'total',
+      previous: 'Previous',
+      next: 'Next',
     },
     keyboardShortcuts: {
       title: 'Keyboard Shortcuts',
@@ -369,6 +411,11 @@ export const translations = {
       userRejected: 'You rejected the wallet request.',
       walletNotConnected: 'Wallet not connected',
       wrongNetwork: 'Wrong network. Please switch to the target chain.',
+      severity: 'Severity',
+      severityCritical: 'Critical',
+      severityHigh: 'High',
+      severityMedium: 'Medium',
+      severityLow: 'Low',
     },
     howItWorks: {
       step1: {
@@ -901,6 +948,101 @@ export const translations = {
     },
     watchlist: {
       emptyDesc: "You haven't added any items to your watchlist yet.",
+    },
+    uma: {
+      title: 'UMA Optimistic Oracle',
+      description: 'Monitor UMA OOv2 and OOv3 assertions, disputes, and votes',
+      syncNow: 'Sync Now',
+      syncing: 'Syncing...',
+      config: 'Config',
+      idle: 'Idle',
+      lastUpdated: 'Last updated',
+      overview: 'overview',
+      leaderboard: 'leaderboard',
+      stats: 'stats',
+      chain: 'Chain',
+      assertions: 'Assertions',
+      disputes: 'Disputes',
+      lastSync: 'Last Sync',
+      syncStatus: 'Sync Status',
+      processedBlock: 'Processed Block',
+      latestBlock: 'Latest Block',
+      status: 'Status',
+      contractAddresses: 'Contract Addresses',
+      assertionsTitle: 'Assertions',
+      disputesTitle: 'Disputes',
+      votes: 'Votes',
+      statistics: 'Statistics',
+      address: 'Address',
+      count: 'Count',
+      won: 'Won',
+      never: 'Never',
+      disputesPage: {
+        title: 'UMA Disputes',
+        description: 'Total {{total}} disputes',
+        allStatus: 'All Status',
+        voting: 'Voting',
+        resolved: 'Resolved',
+        id: 'ID',
+        assertion: 'Assertion',
+        disputer: 'Disputer',
+        bond: 'Bond',
+        status: 'Status',
+        created: 'Created',
+        actions: 'Actions',
+      },
+      disputeDetail: {
+        title: 'Dispute Details',
+        totalVotes: 'Total Votes',
+        uniqueVoters: 'Unique Voters',
+        winner: 'Winner',
+        assertionId: 'Assertion ID',
+        identifier: 'Identifier',
+        asserter: 'Asserter',
+        payoutToAsserter: 'Payout to Asserter',
+        payoutToDisputer: 'Payout to Disputer',
+        disputeCreated: 'Dispute Created',
+        votingEnded: 'Voting Ended',
+        resolved: 'Resolved',
+        claim: 'Claim',
+        resolution: 'Resolution',
+        disputeBond: 'Dispute Bond',
+        block: 'Block',
+        transaction: 'Transaction',
+      },
+      assertionsPage: {
+        title: 'UMA Assertions',
+        allStatus: 'All Status',
+        proposed: 'Proposed',
+        settled: 'Settled',
+        allVersions: 'All Versions',
+        id: 'ID',
+        identifier: 'Identifier',
+        version: 'Version',
+        proposer: 'Proposer',
+        proposedAt: 'Proposed At',
+        assertionDetail: {
+          title: 'Assertion Details',
+        },
+      },
+      assertionDetail: {
+        chain: 'Chain',
+        version: 'Version',
+        block: 'Block',
+        proposedValue: 'Proposed Value',
+        settlementValue: 'Settlement Value',
+        bondUMA: 'Bond (UMA)',
+        disputeBond: 'Dispute Bond',
+        disputer: 'Disputer',
+        votesFor: 'Votes For',
+        votesAgainst: 'Votes Against',
+        totalVoters: 'Total Voters',
+        proposed: 'Proposed',
+        disputed: 'Disputed',
+        settled: 'Settled',
+        for: 'For',
+        against: 'Against',
+      },
     },
   },
   es: {
@@ -4791,7 +4933,148 @@ export type TranslationKey =
   | 'common.export'
   | 'common.refresh'
   | 'keyboardShortcuts.title'
-  | 'keyboardShortcuts.pressAny';
+  | 'keyboardShortcuts.pressAny'
+  | 'uma.title'
+  | 'uma.description'
+  | 'uma.syncNow'
+  | 'uma.syncing'
+  | 'uma.config'
+  | 'uma.idle'
+  | 'uma.lastUpdated'
+  | 'uma.overview'
+  | 'uma.leaderboard'
+  | 'uma.stats'
+  | 'uma.chain'
+  | 'uma.assertions'
+  | 'uma.disputes'
+  | 'uma.lastSync'
+  | 'uma.syncStatus'
+  | 'uma.processedBlock'
+  | 'uma.latestBlock'
+  | 'uma.status'
+  | 'uma.contractAddresses'
+  | 'uma.assertionsTitle'
+  | 'uma.disputesTitle'
+  | 'uma.votes'
+  | 'uma.statistics'
+  | 'uma.address'
+  | 'uma.count'
+  | 'uma.won'
+  | 'uma.never'
+  | 'uma.disputesPage.title'
+  | 'uma.disputesPage.description'
+  | 'uma.disputesPage.allStatus'
+  | 'uma.disputesPage.voting'
+  | 'uma.disputesPage.resolved'
+  | 'uma.disputesPage.id'
+  | 'uma.disputesPage.assertion'
+  | 'uma.disputesPage.disputer'
+  | 'uma.disputesPage.bond'
+  | 'uma.disputesPage.status'
+  | 'uma.disputesPage.created'
+  | 'uma.disputesPage.actions'
+  | 'uma.disputeDetail.title'
+  | 'uma.disputeDetail.totalVotes'
+  | 'uma.disputeDetail.uniqueVoters'
+  | 'uma.disputeDetail.winner'
+  | 'uma.disputeDetail.assertionId'
+  | 'uma.disputeDetail.identifier'
+  | 'uma.disputeDetail.asserter'
+  | 'uma.disputeDetail.payoutToAsserter'
+  | 'uma.disputeDetail.payoutToDisputer'
+  | 'uma.disputeDetail.disputeCreated'
+  | 'uma.disputeDetail.votingEnded'
+  | 'uma.disputeDetail.resolved'
+  | 'uma.disputeDetail.claim'
+  | 'uma.disputeDetail.resolution'
+  | 'uma.disputeDetail.disputeBond'
+  | 'uma.disputeDetail.block'
+  | 'uma.disputeDetail.transaction'
+  | 'uma.assertionsPage.title'
+  | 'uma.assertionsPage.allStatus'
+  | 'uma.assertionsPage.proposed'
+  | 'uma.assertionsPage.settled'
+  | 'uma.assertionsPage.allVersions'
+  | 'uma.assertionsPage.id'
+  | 'uma.assertionsPage.identifier'
+  | 'uma.assertionsPage.version'
+  | 'uma.assertionsPage.proposer'
+  | 'uma.assertionsPage.proposedAt'
+  | 'uma.assertionsPage.assertionDetail.title'
+  | 'uma.assertionDetail.chain'
+  | 'uma.assertionDetail.version'
+  | 'uma.assertionDetail.block'
+  | 'uma.assertionDetail.proposedValue'
+  | 'uma.assertionDetail.settlementValue'
+  | 'uma.assertionDetail.bondUMA'
+  | 'uma.assertionDetail.disputeBond'
+  | 'uma.assertionDetail.disputer'
+  | 'uma.assertionDetail.votesFor'
+  | 'uma.assertionDetail.votesAgainst'
+  | 'uma.assertionDetail.totalVoters'
+  | 'uma.assertionDetail.proposed'
+  | 'uma.assertionDetail.disputed'
+  | 'uma.assertionDetail.settled'
+  | 'uma.assertionDetail.for'
+  | 'uma.assertionDetail.against'
+  | 'tooltips.help'
+  | 'tooltips.noContent'
+  | 'tooltips.keyboardShortcuts'
+  | 'tooltips.viewDocs'
+  | 'errors.unknown'
+  | 'errors.retry'
+  | 'errors.contactSupport'
+  | 'errors.refreshPage'
+  | 'errors.errorCode'
+  | 'errors.errorDetails'
+  | 'errors.retryable'
+  | 'errors.noItems'
+  | 'errors.cancelled'
+  | 'errors.processing'
+  | 'common.settings'
+  | 'common.disconnect'
+  | 'common.search'
+  | 'common.notifications'
+  | 'common.userMenu'
+  | 'common.openMenu'
+  | 'common.brand'
+  | 'common.history'
+  | 'common.undo'
+  | 'common.redo'
+  | 'common.clearHistory'
+  | 'common.noHistory'
+  | 'common.templates'
+  | 'common.allSynced'
+  | 'common.pwaSettings'
+  | 'common.installation'
+  | 'common.storage'
+  | 'common.cacheSize'
+  | 'common.networkStatus'
+  | 'common.progress'
+  | 'common.uniqueErrorTypes'
+  | 'common.topErrors'
+  | 'common.quickActions'
+  | 'common.somethingWrong'
+  | 'common.suggestedAction'
+  | 'common.howToFix'
+  | 'common.copyId'
+  | 'common.sharePage'
+  | 'validation.protocolLength'
+  | 'validation.marketLength'
+  | 'validation.assertionLength'
+  | 'validation.invalidUrl'
+  | 'batch.processing'
+  | 'errors.severity'
+  | 'errors.severityCritical'
+  | 'errors.severityHigh'
+  | 'errors.severityMedium'
+  | 'errors.severityLow'
+  | 'common.page'
+  | 'common.of'
+  | 'common.total'
+  | 'common.previous'
+  | 'common.next'
+  | 'common.navigation';
 
 export function getUiErrorMessage(errorCode: string, t: (key: TranslationKey) => string) {
   if (errorCode === 'unknown_error') return t('errors.unknownError');
