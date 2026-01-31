@@ -336,7 +336,7 @@ export class ChainlinkSyncManager {
       return null;
     }
 
-    const row = result.rows[0];
+    const row = result.rows[0]!;
     return {
       id: row.id,
       chain: row.chain as SupportedChain,
@@ -361,13 +361,13 @@ export class ChainlinkSyncManager {
       return null;
     }
 
-    const row = result.rows[0];
+    const row = result.rows[0]!;
     return {
       instanceId: row.instance_id,
-      protocol: row.protocol,
-      chain: row.chain,
+      protocol: row.protocol as OracleProtocol,
+      chain: row.chain as SupportedChain,
       lastProcessedBlock: row.last_processed_block,
-      status: row.status,
+      status: row.status as 'healthy' | 'lagging' | 'stalled' | 'error',
       consecutiveFailures: row.consecutive_failures,
       lastError: row.last_error,
       lastErrorAt: row.last_error_at,
@@ -385,7 +385,7 @@ export class ChainlinkSyncManager {
     if (!instance) return;
 
     const fields: string[] = [];
-    const values: unknown[] = [];
+    const values: (string | number | boolean | Date | null | undefined | string[] | number[])[] = [];
     let paramIndex = 1;
 
     if (updates.lastProcessedBlock !== undefined) {
