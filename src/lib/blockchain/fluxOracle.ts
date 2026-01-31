@@ -1,24 +1,51 @@
 /**
- * Flux Oracle Client
+ * Flux Oracle Integration
  *
- * Flux 是一个去中心化的预言机网络
- * 特点：
- * - 由验证者节点提供数据
- * - 支持自定义数据源
- * - 经济激励机制保证数据准确性
- * - 多链支持
+ * Flux 预言机集成模块
+ * 支持从 Flux API 获取价格数据
  */
 
-import {
-  createPublicClient,
-  http,
-  type PublicClient,
-  type Address,
-  type Chain,
-  formatUnits,
-} from 'viem';
-import { mainnet, arbitrum, optimism, polygon, base, bsc, avalanche } from 'viem/chains';
 import { logger } from '@/lib/logger';
+import type { SupportedChain, UnifiedPriceFeed } from '@/lib/types/unifiedOracleTypes';
+
+// ============================================================================
+// Flux API 配置
+// ============================================================================
+
+const FLUX_API_ENDPOINTS = {
+  mainnet: 'https://api.fluxprotocol.io/api/v1',
+  testnet: 'https://api-testnet.fluxprotocol.io/api/v1',
+};
+
+// ============================================================================
+// Flux Feed IDs
+// ============================================================================
+
+export const FLUX_FEED_IDS: Record<string, string> = {
+  'ETH/USD': 'eth-usd',
+  'BTC/USD': 'btc-usd',
+  'SOL/USD': 'sol-usd',
+  'AVAX/USD': 'avax-usd',
+  'MATIC/USD': 'matic-usd',
+  'BNB/USD': 'bnb-usd',
+  'ARB/USD': 'arb-usd',
+  'OP/USD': 'op-usd',
+  'LINK/USD': 'link-usd',
+  'UNI/USD': 'uni-usd',
+  'AAVE/USD': 'aave-usd',
+  'CRV/USD': 'crv-usd',
+  'SNX/USD': 'snx-usd',
+  'COMP/USD': 'comp-usd',
+  'MKR/USD': 'mkr-usd',
+  'YFI/USD': 'yfi-usd',
+  '1INCH/USD': '1inch-usd',
+  'SUSHI/USD': 'sushi-usd',
+  'USDC/USD': 'usdc-usd',
+  'USDT/USD': 'usdt-usd',
+  'DAI/USD': 'dai-usd',
+  'FRAX/USD': 'frax-usd',
+  'LUSD/USD': 'lusd-usd',
+};
 
 // ============================================================================
 // Types
@@ -26,191 +53,185 @@ import { logger } from '@/lib/logger';
 
 export type FluxSupportedChain =
   | 'ethereum'
+  | 'polygon'
   | 'arbitrum'
   | 'optimism'
-  | 'polygon'
   | 'base'
-  | 'bsc'
-  | 'avalanche';
+  | 'avalanche'
+  | 'bsc';
 
 export interface FluxPriceData {
   symbol: string;
   price: bigint;
-  timestamp: number;
   formattedPrice: number;
+  timestamp: number;
   decimals: number;
   roundId: bigint;
   answeredInRound: bigint;
+  source: string;
 }
 
-export interface FluxProtocolConfig {
-  rpcUrl: string;
-  aggregatorAddress?: Address;
+export interface FluxRoundData {
+  roundId: bigint;
+  price: bigint;
+  startedAt: bigint;
+  updatedAt: bigint;
+  answeredInRound: bigint;
 }
 
 // ============================================================================
-// Chain Configuration
+// Chain 配置
 // ============================================================================
 
-const CHAIN_MAP: Record<FluxSupportedChain, Chain> = {
-  ethereum: mainnet,
-  arbitrum: arbitrum,
-  optimism: optimism,
-  polygon: polygon,
-  base: base,
-  bsc: bsc,
-  avalanche: avalanche,
-};
-
-const FLUX_RPC_URLS: Record<FluxSupportedChain, string> = {
-  ethereum: 'https://eth-mainnet.g.alchemy.com/v2/demo',
-  arbitrum: 'https://arb-mainnet.g.alchemy.com/v2/demo',
-  optimism: 'https://opt-mainnet.g.alchemy.com/v2/demo',
-  polygon: 'https://polygon-mainnet.g.alchemy.com/v2/demo',
-  base: 'https://base-mainnet.g.alchemy.com/v2/demo',
-  bsc: 'https://bsc-dataseed.binance.org',
-  avalanche: 'https://api.avax.network/ext/bc/C/rpc',
-};
-
-// Flux Aggregator 合约地址 (示例地址，实际需要更新)
-const FLUX_AGGREGATOR_ADDRESSES: Record<string, Record<FluxSupportedChain, Address>> = {
-  'ETH/USD': {
-    ethereum: '0x0000000000000000000000000000000000000000',
-    arbitrum: '0x0000000000000000000000000000000000000000',
-    optimism: '0x0000000000000000000000000000000000000000',
-    polygon: '0x0000000000000000000000000000000000000000',
-    base: '0x0000000000000000000000000000000000000000',
-    bsc: '0x0000000000000000000000000000000000000000',
-    avalanche: '0x0000000000000000000000000000000000000000',
-  },
-  'BTC/USD': {
-    ethereum: '0x0000000000000000000000000000000000000000',
-    arbitrum: '0x0000000000000000000000000000000000000000',
-    optimism: '0x0000000000000000000000000000000000000000',
-    polygon: '0x0000000000000000000000000000000000000000',
-    base: '0x0000000000000000000000000000000000000000',
-    bsc: '0x0000000000000000000000000000000000000000',
-    avalanche: '0x0000000000000000000000000000000000000000',
-  },
-};
-
-// Flux 支持的资产
-export const FLUX_ASSETS: Record<string, string> = {
-  'ETH/USD': 'ETH',
-  'BTC/USD': 'BTC',
-  'LINK/USD': 'LINK',
-  'UNI/USD': 'UNI',
-  'AAVE/USD': 'AAVE',
-  'COMP/USD': 'COMP',
-  'MKR/USD': 'MKR',
-  'SNX/USD': 'SNX',
-  'YFI/USD': 'YFI',
-  'CRV/USD': 'CRV',
-  'USDC/USD': 'USDC',
-  'USDT/USD': 'USDT',
-  'DAI/USD': 'DAI',
-  'ARB/USD': 'ARB',
-  'OP/USD': 'OP',
-  'MATIC/USD': 'MATIC',
-  'AVAX/USD': 'AVAX',
-  'BNB/USD': 'BNB',
-};
-
-// Flux Aggregator ABI
-const FLUX_AGGREGATOR_ABI = [
+const FLUX_CHAIN_CONFIG: Record<
+  SupportedChain,
   {
-    inputs: [],
-    name: 'latestRoundData',
-    outputs: [
-      { internalType: 'uint80', name: 'roundId', type: 'uint80' },
-      { internalType: 'int256', name: 'answer', type: 'int256' },
-      { internalType: 'uint256', name: 'startedAt', type: 'uint256' },
-      { internalType: 'uint256', name: 'updatedAt', type: 'uint256' },
-      { internalType: 'uint80', name: 'answeredInRound', type: 'uint80' },
-    ],
-    stateMutability: 'view',
-    type: 'function',
+    defaultRpcUrl: string;
+    apiEndpoint: string;
+    network: 'mainnet' | 'testnet';
+  }
+> = {
+  ethereum: {
+    defaultRpcUrl: 'https://eth-mainnet.g.alchemy.com/v2',
+    apiEndpoint: FLUX_API_ENDPOINTS.mainnet,
+    network: 'mainnet',
   },
-  {
-    inputs: [],
-    name: 'decimals',
-    outputs: [{ internalType: 'uint8', name: '', type: 'uint8' }],
-    stateMutability: 'view',
-    type: 'function',
+  polygon: {
+    defaultRpcUrl: 'https://polygon-mainnet.g.alchemy.com/v2',
+    apiEndpoint: FLUX_API_ENDPOINTS.mainnet,
+    network: 'mainnet',
   },
-  {
-    inputs: [],
-    name: 'description',
-    outputs: [{ internalType: 'string', name: '', type: 'string' }],
-    stateMutability: 'view',
-    type: 'function',
+  arbitrum: {
+    defaultRpcUrl: 'https://arb-mainnet.g.alchemy.com/v2',
+    apiEndpoint: FLUX_API_ENDPOINTS.mainnet,
+    network: 'mainnet',
   },
-] as const;
+  optimism: {
+    defaultRpcUrl: 'https://opt-mainnet.g.alchemy.com/v2',
+    apiEndpoint: FLUX_API_ENDPOINTS.mainnet,
+    network: 'mainnet',
+  },
+  base: {
+    defaultRpcUrl: 'https://base-mainnet.g.alchemy.com/v2',
+    apiEndpoint: FLUX_API_ENDPOINTS.mainnet,
+    network: 'mainnet',
+  },
+  avalanche: {
+    defaultRpcUrl: 'https://avax-mainnet.g.alchemy.com/v2',
+    apiEndpoint: FLUX_API_ENDPOINTS.mainnet,
+    network: 'mainnet',
+  },
+  bsc: {
+    defaultRpcUrl: 'https://bsc-dataseed.binance.org',
+    apiEndpoint: FLUX_API_ENDPOINTS.mainnet,
+    network: 'mainnet',
+  },
+  fantom: {
+    defaultRpcUrl: '',
+    apiEndpoint: '',
+    network: 'mainnet',
+  },
+  celo: {
+    defaultRpcUrl: '',
+    apiEndpoint: '',
+    network: 'mainnet',
+  },
+  gnosis: {
+    defaultRpcUrl: '',
+    apiEndpoint: '',
+    network: 'mainnet',
+  },
+  linea: {
+    defaultRpcUrl: '',
+    apiEndpoint: '',
+    network: 'mainnet',
+  },
+  scroll: {
+    defaultRpcUrl: '',
+    apiEndpoint: '',
+    network: 'mainnet',
+  },
+  mantle: {
+    defaultRpcUrl: '',
+    apiEndpoint: '',
+    network: 'mainnet',
+  },
+  mode: {
+    defaultRpcUrl: '',
+    apiEndpoint: '',
+    network: 'mainnet',
+  },
+  blast: {
+    defaultRpcUrl: '',
+    apiEndpoint: '',
+    network: 'mainnet',
+  },
+  solana: {
+    defaultRpcUrl: '',
+    apiEndpoint: '',
+    network: 'mainnet',
+  },
+  near: {
+    defaultRpcUrl: '',
+    apiEndpoint: '',
+    network: 'mainnet',
+  },
+  aptos: {
+    defaultRpcUrl: '',
+    apiEndpoint: '',
+    network: 'mainnet',
+  },
+  sui: {
+    defaultRpcUrl: '',
+    apiEndpoint: '',
+    network: 'mainnet',
+  },
+  polygonAmoy: {
+    defaultRpcUrl: '',
+    apiEndpoint: FLUX_API_ENDPOINTS.testnet,
+    network: 'testnet',
+  },
+  sepolia: {
+    defaultRpcUrl: '',
+    apiEndpoint: FLUX_API_ENDPOINTS.testnet,
+    network: 'testnet',
+  },
+  goerli: {
+    defaultRpcUrl: '',
+    apiEndpoint: FLUX_API_ENDPOINTS.testnet,
+    network: 'testnet',
+  },
+  mumbai: {
+    defaultRpcUrl: '',
+    apiEndpoint: FLUX_API_ENDPOINTS.testnet,
+    network: 'testnet',
+  },
+  local: {
+    defaultRpcUrl: 'http://localhost:8545',
+    apiEndpoint: '',
+    network: 'mainnet',
+  },
+};
 
 // ============================================================================
-// Flux Client
+// Flux Client Class
 // ============================================================================
 
 export class FluxClient {
-  private publicClient: PublicClient;
-  private chain: FluxSupportedChain;
-  private config: FluxProtocolConfig;
+  private chain: SupportedChain;
+  private apiEndpoint: string;
+  private apiKey?: string;
 
-  constructor(chain: FluxSupportedChain, config: FluxProtocolConfig) {
+  constructor(chain: SupportedChain, options: { rpcUrl?: string; apiKey?: string } = {}) {
     this.chain = chain;
-    this.config = config;
+    this.apiKey = options.apiKey;
 
-    const rpcUrl = config.rpcUrl || FLUX_RPC_URLS[chain];
-
-    this.publicClient = createPublicClient({
-      chain: CHAIN_MAP[chain],
-      transport: http(rpcUrl),
-    });
-  }
-
-  /**
-   * 从链上 Flux Aggregator 读取最新价格数据
-   */
-  async readLatestRoundData(aggregatorAddress: Address): Promise<FluxPriceData | null> {
-    try {
-      const [roundData, decimals] = await Promise.all([
-        this.publicClient.readContract({
-          address: aggregatorAddress,
-          abi: FLUX_AGGREGATOR_ABI,
-          functionName: 'latestRoundData',
-        }),
-        this.publicClient.readContract({
-          address: aggregatorAddress,
-          abi: FLUX_AGGREGATOR_ABI,
-          functionName: 'decimals',
-        }),
-      ]);
-
-      const [roundId, answer, _startedAt, updatedAt, answeredInRound] = roundData;
-
-      // 确保价格是正数
-      if (answer < 0) {
-        throw new Error('Negative price received from Flux oracle');
-      }
-
-      const formattedPrice = parseFloat(formatUnits(answer, decimals));
-
-      return {
-        symbol: '', // 需要外部设置
-        price: answer,
-        timestamp: Number(updatedAt),
-        formattedPrice,
-        decimals,
-        roundId,
-        answeredInRound,
-      };
-    } catch (error) {
-      logger.error('Failed to read Flux latest round data', {
-        aggregatorAddress,
-        error: error instanceof Error ? error.message : String(error),
-      });
-      return null;
+    const chainConfig = FLUX_CHAIN_CONFIG[chain];
+    if (!chainConfig || !chainConfig.apiEndpoint) {
+      throw new Error(`Chain ${chain} not supported by Flux`);
     }
+
+    this.apiEndpoint = chainConfig.apiEndpoint;
   }
 
   /**
@@ -218,142 +239,304 @@ export class FluxClient {
    */
   async fetchPriceFromAPI(symbol: string): Promise<FluxPriceData | null> {
     try {
-      // Flux API endpoint (需要根据实际 API 更新)
-      const url = `https://api.fluxprotocol.org/v1/price/${symbol}`;
+      const feedId = FLUX_FEED_IDS[symbol];
+      if (!feedId) {
+        logger.warn(`No Flux feed found for ${symbol}`);
+        return null;
+      }
 
-      const response = await fetch(url, {
-        headers: {
-          Accept: 'application/json',
-        },
-      });
+      const headers: Record<string, string> = {
+        Accept: 'application/json',
+      };
+
+      if (this.apiKey) {
+        headers['Authorization'] = `Bearer ${this.apiKey}`;
+      }
+
+      const response = await fetch(`${this.apiEndpoint}/prices/${feedId}/latest`, { headers });
 
       if (!response.ok) {
-        // Flux API 可能不存在，使用模拟数据
-        logger.warn(`Flux API not available for ${symbol}, using placeholder`);
+        throw new Error(`Flux API error: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      if (!data || !data.price) {
+        throw new Error('No price data returned from Flux API');
+      }
+
+      const decimals = data.decimals || 8;
+      const price = BigInt(Math.floor(data.price * Math.pow(10, decimals)));
+      const formattedPrice = data.price;
+
+      return {
+        symbol,
+        price,
+        formattedPrice,
+        timestamp: data.timestamp || Math.floor(Date.now() / 1000),
+        decimals,
+        roundId: BigInt(data.roundId || 0),
+        answeredInRound: BigInt(data.answeredInRound || data.roundId || 0),
+        source: 'flux-api',
+      };
+    } catch (error) {
+      logger.error('Failed to fetch Flux price from API', {
+        chain: this.chain,
+        symbol,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * 批量获取多个价格
+   */
+  async fetchMultiplePrices(symbols: string[]): Promise<Map<string, FluxPriceData>> {
+    const prices = new Map<string, FluxPriceData>();
+
+    // Flux API 通常不支持批量查询，需要逐个获取
+    const promises = symbols.map(async (symbol) => {
+      try {
+        const priceData = await this.fetchPriceFromAPI(symbol);
+        if (priceData) {
+          prices.set(symbol, priceData);
+        }
+      } catch (error) {
+        logger.error(`Failed to fetch Flux price for ${symbol}`, {
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    });
+
+    await Promise.all(promises);
+    return prices;
+  }
+
+  /**
+   * 获取指定交易对的价格
+   */
+  async getPriceForSymbol(symbol: string): Promise<UnifiedPriceFeed | null> {
+    try {
+      const priceData = await this.fetchPriceFromAPI(symbol);
+      if (!priceData) {
         return null;
+      }
+
+      return this.convertToUnifiedFeed(priceData);
+    } catch (error) {
+      logger.error(`Failed to get Flux price for ${symbol}`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return null;
+    }
+  }
+
+  /**
+   * 获取多个价格喂价
+   */
+  async getMultiplePrices(symbols: string[]): Promise<UnifiedPriceFeed[]> {
+    const feeds: UnifiedPriceFeed[] = [];
+    const priceDataMap = await this.fetchMultiplePrices(symbols);
+
+    for (const [symbol, priceData] of priceDataMap) {
+      try {
+        const feed = this.convertToUnifiedFeed(priceData);
+        feeds.push(feed);
+      } catch (error) {
+        logger.error(`Failed to convert Flux price for ${symbol}`, {
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
+
+    return feeds;
+  }
+
+  /**
+   * 获取所有可用价格喂价
+   */
+  async getAllAvailableFeeds(): Promise<UnifiedPriceFeed[]> {
+    const symbols = Object.keys(FLUX_FEED_IDS);
+    return this.getMultiplePrices(symbols);
+  }
+
+  /**
+   * 转换为统一价格喂价格式
+   */
+  private convertToUnifiedFeed(priceData: FluxPriceData): UnifiedPriceFeed {
+    const [baseAsset, quoteAsset] = priceData.symbol.split('/');
+    const timestamp = new Date(priceData.timestamp * 1000);
+    const now = new Date();
+    const stalenessSeconds = Math.floor((now.getTime() - timestamp.getTime()) / 1000);
+
+    // Flux 数据通常 < 300秒（5分钟）
+    const isStale = stalenessSeconds > 300;
+
+    return {
+      id: `flux-${this.chain}-${priceData.symbol}-${priceData.timestamp}`,
+      instanceId: `flux-${this.chain}`,
+      protocol: 'flux',
+      chain: this.chain,
+      symbol: priceData.symbol,
+      baseAsset: baseAsset || 'UNKNOWN',
+      quoteAsset: quoteAsset || 'USD',
+      price: priceData.formattedPrice,
+      priceRaw: priceData.price.toString(),
+      decimals: priceData.decimals,
+      timestamp: timestamp.toISOString(),
+      isStale,
+      stalenessSeconds,
+    };
+  }
+
+  /**
+   * 检查价格喂价健康状态
+   */
+  async checkFeedHealth(symbol: string): Promise<{
+    healthy: boolean;
+    lastUpdate: Date;
+    stalenessSeconds: number;
+    issues: string[];
+  }> {
+    const issues: string[] = [];
+
+    try {
+      const priceData = await this.fetchPriceFromAPI(symbol);
+      if (!priceData) {
+        return {
+          healthy: false,
+          lastUpdate: new Date(0),
+          stalenessSeconds: Infinity,
+          issues: [`No feed found for ${symbol}`],
+        };
+      }
+
+      const lastUpdate = new Date(priceData.timestamp * 1000);
+      const now = new Date();
+      const stalenessSeconds = Math.floor((now.getTime() - lastUpdate.getTime()) / 1000);
+
+      // 检查数据新鲜度（Flux 应该 < 300秒）
+      if (stalenessSeconds > 300) {
+        issues.push(`Data is stale: ${stalenessSeconds}s old`);
+      }
+
+      // 检查价格是否为0
+      if (priceData.price === 0n) {
+        issues.push('Price is zero');
+      }
+
+      // 检查轮次
+      if (priceData.answeredInRound < priceData.roundId) {
+        issues.push('Round data may be incomplete');
+      }
+
+      return {
+        healthy: issues.length === 0,
+        lastUpdate,
+        stalenessSeconds,
+        issues,
+      };
+    } catch (error) {
+      return {
+        healthy: false,
+        lastUpdate: new Date(0),
+        stalenessSeconds: Infinity,
+        issues: [`Failed to read feed: ${error instanceof Error ? error.message : String(error)}`],
+      };
+    }
+  }
+
+  /**
+   * 获取历史轮次数据
+   */
+  async getRoundData(symbol: string, roundId: bigint): Promise<FluxRoundData | null> {
+    try {
+      const feedId = FLUX_FEED_IDS[symbol];
+      if (!feedId) {
+        logger.warn(`No Flux feed found for ${symbol}`);
+        return null;
+      }
+
+      const headers: Record<string, string> = {
+        Accept: 'application/json',
+      };
+
+      if (this.apiKey) {
+        headers['Authorization'] = `Bearer ${this.apiKey}`;
+      }
+
+      const response = await fetch(
+        `${this.apiEndpoint}/prices/${feedId}/rounds/${roundId.toString()}`,
+        { headers },
+      );
+
+      if (!response.ok) {
+        throw new Error(`Flux API error: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
 
       return {
-        symbol,
-        price: BigInt(Math.round(data.price * 1e8)),
-        timestamp: data.timestamp,
-        formattedPrice: data.price,
-        decimals: 8,
-        roundId: BigInt(data.roundId || 0),
-        answeredInRound: BigInt(data.answeredInRound || 0),
+        roundId: BigInt(data.roundId),
+        price: BigInt(data.price),
+        startedAt: BigInt(data.startedAt),
+        updatedAt: BigInt(data.updatedAt),
+        answeredInRound: BigInt(data.answeredInRound),
       };
     } catch (error) {
-      logger.error('Failed to fetch Flux price from API', {
+      logger.error('Failed to fetch Flux round data', {
+        chain: this.chain,
         symbol,
+        roundId: roundId.toString(),
         error: error instanceof Error ? error.message : String(error),
       });
       return null;
     }
-  }
-
-  /**
-   * 获取 Aggregator 信息
-   */
-  async getAggregatorInfo(aggregatorAddress: Address): Promise<{
-    decimals: number;
-    description: string;
-  } | null> {
-    try {
-      const [decimals, description] = await Promise.all([
-        this.publicClient.readContract({
-          address: aggregatorAddress,
-          abi: FLUX_AGGREGATOR_ABI,
-          functionName: 'decimals',
-        }),
-        this.publicClient.readContract({
-          address: aggregatorAddress,
-          abi: FLUX_AGGREGATOR_ABI,
-          functionName: 'description',
-        }),
-      ]);
-
-      return { decimals, description };
-    } catch (error) {
-      logger.error('Failed to get Flux aggregator info', {
-        aggregatorAddress,
-        error: error instanceof Error ? error.message : String(error),
-      });
-      return null;
-    }
-  }
-
-  /**
-   * 验证价格新鲜度
-   */
-  isPriceFresh(timestamp: number, maxAgeSeconds: number = 300): boolean {
-    const now = Math.floor(Date.now() / 1000);
-    const age = now - timestamp;
-    return age <= maxAgeSeconds;
-  }
-
-  /**
-   * 获取支持的资产列表
-   */
-  getSupportedAssets(): string[] {
-    return Object.keys(FLUX_ASSETS);
-  }
-
-  /**
-   * 获取 Aggregator 地址
-   */
-  getAggregatorAddress(symbol: string): Address | null {
-    const addresses = FLUX_AGGREGATOR_ADDRESSES[symbol];
-    if (addresses) {
-      return addresses[this.chain];
-    }
-    return null;
-  }
-
-  /**
-   * 获取客户端信息
-   */
-  getClientInfo(): {
-    chain: FluxSupportedChain;
-    rpcUrl: string;
-    supportedAssets: number;
-  } {
-    return {
-      chain: this.chain,
-      rpcUrl: this.config.rpcUrl || FLUX_RPC_URLS[this.chain],
-      supportedAssets: Object.keys(FLUX_ASSETS).length,
-    };
   }
 }
 
 // ============================================================================
-// Utility Functions
+// 工厂函数
 // ============================================================================
 
-/**
- * 创建 Flux 客户端
- */
 export function createFluxClient(
-  chain: FluxSupportedChain,
-  config?: Partial<FluxProtocolConfig>,
+  chain: SupportedChain,
+  options?: { rpcUrl?: string; apiKey?: string },
 ): FluxClient {
-  return new FluxClient(chain, {
-    rpcUrl: FLUX_RPC_URLS[chain],
-    ...config,
-  });
+  return new FluxClient(chain, options);
+}
+
+// ============================================================================
+// 工具函数
+// ============================================================================
+
+/**
+ * 获取支持的 Flux 链列表
+ */
+export function getSupportedFluxChains(): SupportedChain[] {
+  return Object.entries(FLUX_CHAIN_CONFIG)
+    .filter(([_, config]) => config.apiEndpoint !== '')
+    .map(([chain]) => chain as SupportedChain);
 }
 
 /**
- * 获取所有支持的链
+ * 获取所有可用的价格喂价符号
  */
-export function getFluxSupportedChains(): FluxSupportedChain[] {
-  return Object.keys(CHAIN_MAP) as FluxSupportedChain[];
+export function getAvailableFluxSymbols(): string[] {
+  return Object.keys(FLUX_FEED_IDS);
 }
 
 /**
- * 解析 Flux 价格
+ * 检查链是否支持 Flux
  */
-export function parseFluxPrice(price: bigint, decimals: number = 8): number {
-  return parseFloat(formatUnits(price, decimals));
+export function isChainSupportedByFlux(chain: SupportedChain): boolean {
+  return FLUX_CHAIN_CONFIG[chain]?.apiEndpoint !== '';
+}
+
+/**
+ * 获取 Feed ID
+ */
+export function getFluxFeedId(symbol: string): string | undefined {
+  return FLUX_FEED_IDS[symbol];
 }

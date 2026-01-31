@@ -1,24 +1,51 @@
 /**
- * DIA Oracle Client
+ * DIA Oracle Integration
  *
- * DIA (Decentralized Information Asset) 是一个开源的金融数据预言机
- * 特点：
- * - 完全透明和开源的数据源
- * - 支持 2000+ 种资产
- * - 多链部署
- * - 提供传统金融和 DeFi 数据
+ * DIA 预言机集成模块
+ * 支持从 DIA API 获取价格数据
  */
 
-import {
-  createPublicClient,
-  http,
-  type PublicClient,
-  type Address,
-  type Chain,
-  formatUnits,
-} from 'viem';
-import { mainnet, arbitrum, optimism, polygon, base, bsc, avalanche, fantom, moonbeam } from 'viem/chains';
 import { logger } from '@/lib/logger';
+import type { SupportedChain, UnifiedPriceFeed } from '@/lib/types/unifiedOracleTypes';
+
+// ============================================================================
+// DIA API 配置
+// ============================================================================
+
+const DIA_API_ENDPOINTS = {
+  mainnet: 'https://api.diadata.org/v1',
+  testnet: 'https://api.diadata.org/v1',
+};
+
+// ============================================================================
+// DIA Assets
+// ============================================================================
+
+export const DIA_ASSETS: Record<string, string> = {
+  'ETH/USD': 'Ethereum',
+  'BTC/USD': 'Bitcoin',
+  'SOL/USD': 'Solana',
+  'AVAX/USD': 'Avalanche',
+  'MATIC/USD': 'Polygon',
+  'BNB/USD': 'BNB',
+  'ARB/USD': 'Arbitrum',
+  'OP/USD': 'Optimism',
+  'LINK/USD': 'Chainlink',
+  'UNI/USD': 'Uniswap',
+  'AAVE/USD': 'Aave',
+  'CRV/USD': 'Curve',
+  'SNX/USD': 'Synthetix',
+  'COMP/USD': 'Compound',
+  'MKR/USD': 'Maker',
+  'YFI/USD': 'Yearn',
+  '1INCH/USD': '1inch',
+  'SUSHI/USD': 'SushiSwap',
+  'USDC/USD': 'USD Coin',
+  'USDT/USD': 'Tether',
+  'DAI/USD': 'Dai',
+  'FRAX/USD': 'Frax',
+  'LUSD/USD': 'Liquity',
+};
 
 // ============================================================================
 // Types
@@ -26,337 +53,455 @@ import { logger } from '@/lib/logger';
 
 export type DIASupportedChain =
   | 'ethereum'
+  | 'polygon'
   | 'arbitrum'
   | 'optimism'
-  | 'polygon'
   | 'base'
-  | 'bsc'
   | 'avalanche'
-  | 'fantom'
-  | 'moonbeam';
+  | 'bsc';
 
 export interface DIAPriceData {
   symbol: string;
+  asset: string;
   price: bigint;
-  timestamp: number;
   formattedPrice: number;
+  timestamp: number;
   decimals: number;
   source: string;
-}
-
-export interface DIAProtocolConfig {
-  rpcUrl: string;
-  oracleAddress?: Address;
+  volume24h?: number;
+  marketCap?: number;
 }
 
 // ============================================================================
-// Chain Configuration
+// Chain 配置
 // ============================================================================
 
-const CHAIN_MAP: Record<DIASupportedChain, Chain> = {
-  ethereum: mainnet,
-  arbitrum: arbitrum,
-  optimism: optimism,
-  polygon: polygon,
-  base: base,
-  bsc: bsc,
-  avalanche: avalanche,
-  fantom: fantom,
-  moonbeam: moonbeam,
-};
-
-const DIA_RPC_URLS: Record<DIASupportedChain, string> = {
-  ethereum: 'https://eth-mainnet.g.alchemy.com/v2/demo',
-  arbitrum: 'https://arb-mainnet.g.alchemy.com/v2/demo',
-  optimism: 'https://opt-mainnet.g.alchemy.com/v2/demo',
-  polygon: 'https://polygon-mainnet.g.alchemy.com/v2/demo',
-  base: 'https://base-mainnet.g.alchemy.com/v2/demo',
-  bsc: 'https://bsc-dataseed.binance.org',
-  avalanche: 'https://api.avax.network/ext/bc/C/rpc',
-  fantom: 'https://rpc.ftm.tools',
-  moonbeam: 'https://rpc.api.moonbeam.network',
-};
-
-// DIA Oracle 合约地址
-const DIA_ORACLE_ADDRESSES: Record<DIASupportedChain, Address> = {
-  ethereum: '0xa93546947f3015c986695750b8bbEa8e26D65856',
-  arbitrum: '0x598371336011023b76d1f5DED288faD32bF6d2bE',
-  optimism: '0x598371336011023b76d1f5DED288faD32bF6d2bE',
-  polygon: '0x598371336011023b76d1f5DED288faD32bF6d2bE',
-  base: '0x598371336011023b76d1f5DED288faD32bF6d2bE',
-  bsc: '0x598371336011023b76d1f5DED288faD32bF6d2bE',
-  avalanche: '0x598371336011023b76d1f5DED288faD32bF6d2bE',
-  fantom: '0x598371336011023b76d1f5DED288faD32bF6d2bE',
-  moonbeam: '0x598371336011023b76d1f5DED288faD32bF6d2bE',
-};
-
-// DIA 支持的资产列表 (常用资产)
-export const DIA_ASSETS: Record<string, string> = {
-  'ETH/USD': 'ETH',
-  'BTC/USD': 'BTC',
-  'LINK/USD': 'LINK',
-  'UNI/USD': 'UNI',
-  'AAVE/USD': 'AAVE',
-  'COMP/USD': 'COMP',
-  'MKR/USD': 'MKR',
-  'SNX/USD': 'SNX',
-  'YFI/USD': 'YFI',
-  'CRV/USD': 'CRV',
-  'USDC/USD': 'USDC',
-  'USDT/USD': 'USDT',
-  'DAI/USD': 'DAI',
-  'FRAX/USD': 'FRAX',
-  'ARB/USD': 'ARB',
-  'OP/USD': 'OP',
-  'MATIC/USD': 'MATIC',
-  'AVAX/USD': 'AVAX',
-  'BNB/USD': 'BNB',
-  'FTM/USD': 'FTM',
-  'GLMR/USD': 'GLMR',
-  'SOL/USD': 'SOL',
-  'DOGE/USD': 'DOGE',
-  'SHIB/USD': 'SHIB',
-  'XRP/USD': 'XRP',
-  'ADA/USD': 'ADA',
-  'DOT/USD': 'DOT',
-  'LTC/USD': 'LTC',
-  'BCH/USD': 'BCH',
-  'ATOM/USD': 'ATOM',
-  'NEAR/USD': 'NEAR',
-};
-
-// DIA Oracle ABI
-const DIA_ORACLE_ABI = [
+const DIA_CHAIN_CONFIG: Record<
+  SupportedChain,
   {
-    inputs: [{ internalType: 'string', name: 'key', type: 'string' }],
-    name: 'getValue',
-    outputs: [
-      { internalType: 'uint128', name: 'value', type: 'uint128' },
-      { internalType: 'uint128', name: 'timestamp', type: 'uint128' },
-    ],
-    stateMutability: 'view',
-    type: 'function',
+    defaultRpcUrl: string;
+    apiEndpoint: string;
+  }
+> = {
+  ethereum: {
+    defaultRpcUrl: 'https://eth-mainnet.g.alchemy.com/v2',
+    apiEndpoint: DIA_API_ENDPOINTS.mainnet,
   },
-] as const;
+  polygon: {
+    defaultRpcUrl: 'https://polygon-mainnet.g.alchemy.com/v2',
+    apiEndpoint: DIA_API_ENDPOINTS.mainnet,
+  },
+  arbitrum: {
+    defaultRpcUrl: 'https://arb-mainnet.g.alchemy.com/v2',
+    apiEndpoint: DIA_API_ENDPOINTS.mainnet,
+  },
+  optimism: {
+    defaultRpcUrl: 'https://opt-mainnet.g.alchemy.com/v2',
+    apiEndpoint: DIA_API_ENDPOINTS.mainnet,
+  },
+  base: {
+    defaultRpcUrl: 'https://base-mainnet.g.alchemy.com/v2',
+    apiEndpoint: DIA_API_ENDPOINTS.mainnet,
+  },
+  avalanche: {
+    defaultRpcUrl: 'https://avax-mainnet.g.alchemy.com/v2',
+    apiEndpoint: DIA_API_ENDPOINTS.mainnet,
+  },
+  bsc: {
+    defaultRpcUrl: 'https://bsc-dataseed.binance.org',
+    apiEndpoint: DIA_API_ENDPOINTS.mainnet,
+  },
+  fantom: {
+    defaultRpcUrl: '',
+    apiEndpoint: '',
+  },
+  celo: {
+    defaultRpcUrl: '',
+    apiEndpoint: '',
+  },
+  gnosis: {
+    defaultRpcUrl: '',
+    apiEndpoint: '',
+  },
+  linea: {
+    defaultRpcUrl: '',
+    apiEndpoint: '',
+  },
+  scroll: {
+    defaultRpcUrl: '',
+    apiEndpoint: '',
+  },
+  mantle: {
+    defaultRpcUrl: '',
+    apiEndpoint: '',
+  },
+  mode: {
+    defaultRpcUrl: '',
+    apiEndpoint: '',
+  },
+  blast: {
+    defaultRpcUrl: '',
+    apiEndpoint: '',
+  },
+  solana: {
+    defaultRpcUrl: '',
+    apiEndpoint: '',
+  },
+  near: {
+    defaultRpcUrl: '',
+    apiEndpoint: '',
+  },
+  aptos: {
+    defaultRpcUrl: '',
+    apiEndpoint: '',
+  },
+  sui: {
+    defaultRpcUrl: '',
+    apiEndpoint: '',
+  },
+  polygonAmoy: {
+    defaultRpcUrl: '',
+    apiEndpoint: DIA_API_ENDPOINTS.testnet,
+  },
+  sepolia: {
+    defaultRpcUrl: '',
+    apiEndpoint: DIA_API_ENDPOINTS.testnet,
+  },
+  goerli: {
+    defaultRpcUrl: '',
+    apiEndpoint: DIA_API_ENDPOINTS.testnet,
+  },
+  mumbai: {
+    defaultRpcUrl: '',
+    apiEndpoint: DIA_API_ENDPOINTS.testnet,
+  },
+  local: {
+    defaultRpcUrl: 'http://localhost:8545',
+    apiEndpoint: '',
+  },
+};
 
 // ============================================================================
-// DIA Client
+// DIA Client Class
 // ============================================================================
 
 export class DIAClient {
-  private publicClient: PublicClient;
-  private chain: DIASupportedChain;
-  private config: DIAProtocolConfig;
-  private oracleAddress: Address;
+  private chain: SupportedChain;
+  private apiEndpoint: string;
+  private apiKey?: string;
 
-  constructor(chain: DIASupportedChain, config: DIAProtocolConfig) {
+  constructor(chain: SupportedChain, options: { rpcUrl?: string; apiKey?: string } = {}) {
     this.chain = chain;
-    this.config = config;
-    this.oracleAddress = config.oracleAddress || DIA_ORACLE_ADDRESSES[chain];
+    this.apiKey = options.apiKey;
 
-    const rpcUrl = config.rpcUrl || DIA_RPC_URLS[chain];
+    const chainConfig = DIA_CHAIN_CONFIG[chain];
+    if (!chainConfig || !chainConfig.apiEndpoint) {
+      throw new Error(`Chain ${chain} not supported by DIA`);
+    }
 
-    this.publicClient = createPublicClient({
-      chain: CHAIN_MAP[chain],
-      transport: http(rpcUrl),
-    });
+    this.apiEndpoint = chainConfig.apiEndpoint;
   }
 
   /**
-   * 从 DIA API 获取最新价格数据
+   * 从 DIA API 获取价格数据
    */
   async fetchPriceFromAPI(asset: string): Promise<DIAPriceData | null> {
     try {
-      // DIA API endpoint
-      const url = `https://api.diadata.org/v1/quotation/${asset}`;
+      const headers: Record<string, string> = {
+        Accept: 'application/json',
+      };
 
-      const response = await fetch(url, {
-        headers: {
-          Accept: 'application/json',
-        },
-      });
+      if (this.apiKey) {
+        headers['Authorization'] = `Bearer ${this.apiKey}`;
+      }
+
+      // DIA API 使用资产名称而不是 symbol
+      const response = await fetch(`${this.apiEndpoint}/assetQuotation/${asset}`, { headers });
 
       if (!response.ok) {
         throw new Error(`DIA API error: ${response.status} ${response.statusText}`);
       }
-      
+
       const data = await response.json();
 
       if (!data || !data.Price) {
-        throw new Error('Invalid response from DIA API');
+        throw new Error('No price data returned from DIA API');
       }
 
-      // DIA 返回的价格是 float，转换为 bigint (使用 8 位小数)
-      const price = BigInt(Math.round(data.Price * 1e8));
-      const timestamp = Math.floor(new Date(data.Time).getTime() / 1000);
+      // 找到对应的 symbol
+      const symbol =
+        Object.keys(DIA_ASSETS).find((key) => DIA_ASSETS[key] === asset) || `${asset}/USD`;
+
+      const decimals = 8; // DIA 默认使用 8 位小数
+      const price = BigInt(Math.floor(data.Price * Math.pow(10, decimals)));
+      const formattedPrice = data.Price;
 
       return {
-        symbol: asset,
+        symbol,
+        asset,
         price,
-        timestamp,
-        formattedPrice: data.Price,
-        decimals: 8,
-        source: data.Source || 'DIA',
+        formattedPrice,
+        timestamp: data.Time
+          ? Math.floor(new Date(data.Time).getTime() / 1000)
+          : Math.floor(Date.now() / 1000),
+        decimals,
+        source: data.Source || 'dia-api',
+        volume24h: data.Volume24h,
+        marketCap: data.MarketCap,
       };
     } catch (error) {
       logger.error('Failed to fetch DIA price from API', {
+        chain: this.chain,
         asset,
         error: error instanceof Error ? error.message : String(error),
       });
-      return null;
+      throw error;
     }
   }
 
   /**
-   * 从链上 DIA Oracle 合约读取价格
-   */
-  async readPriceFromContract(key: string): Promise<DIAPriceData | null> {
-    try {
-      const [value, timestamp] = await this.publicClient.readContract({
-        address: this.oracleAddress,
-        abi: DIA_ORACLE_ABI,
-        functionName: 'getValue',
-        args: [key],
-      });
-
-      const formattedPrice = parseFloat(formatUnits(value, 8));
-
-      return {
-        symbol: key,
-        price: value,
-        timestamp: Number(timestamp),
-        formattedPrice,
-        decimals: 8,
-        source: 'dia-oracle',
-      };
-    } catch (error) {
-      logger.error('Failed to read DIA price from contract', {
-        key,
-        oracleAddress: this.oracleAddress,
-        error: error instanceof Error ? error.message : String(error),
-      });
-      return null;
-    }
-  }
-
-  /**
-   * 批量获取多个资产价格
+   * 批量获取多个价格
    */
   async fetchMultiplePrices(assets: string[]): Promise<Map<string, DIAPriceData>> {
-    const results = new Map<string, DIAPriceData>();
+    const prices = new Map<string, DIAPriceData>();
 
-    // DIA API 支持批量查询
-    try {
-      const promises = assets.map(async (asset) => {
-        const price = await this.fetchPriceFromAPI(asset);
-        if (price) {
-          results.set(asset, price);
+    // DIA API 通常不支持批量查询，需要逐个获取
+    const promises = assets.map(async (asset) => {
+      try {
+        const priceData = await this.fetchPriceFromAPI(asset);
+        if (priceData) {
+          prices.set(asset, priceData);
         }
-      });
+      } catch (error) {
+        logger.error(`Failed to fetch DIA price for ${asset}`, {
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    });
 
-      await Promise.all(promises);
-    } catch (error) {
-      logger.error('Failed to fetch batch prices from DIA', {
-        error: error instanceof Error ? error.message : String(error),
-      });
-    }
-
-    return results;
+    await Promise.all(promises);
+    return prices;
   }
 
   /**
-   * 获取 DIA 支持的所有资产列表
+   * 获取指定交易对的价格
    */
-  async fetchAllAssets(): Promise<string[]> {
+  async getPriceForSymbol(symbol: string): Promise<UnifiedPriceFeed | null> {
     try {
-      const url = 'https://api.diadata.org/v1/assets';
+      const asset = DIA_ASSETS[symbol];
+      if (!asset) {
+        logger.warn(`No DIA asset found for ${symbol}`);
+        return null;
+      }
 
-      const response = await fetch(url, {
-        headers: {
-          Accept: 'application/json',
-        },
+      const priceData = await this.fetchPriceFromAPI(asset);
+      if (!priceData) {
+        return null;
+      }
+
+      return this.convertToUnifiedFeed(priceData);
+    } catch (error) {
+      logger.error(`Failed to get DIA price for ${symbol}`, {
+        error: error instanceof Error ? error.message : String(error),
       });
+      return null;
+    }
+  }
+
+  /**
+   * 获取多个价格喂价
+   */
+  async getMultiplePricesBySymbols(symbols: string[]): Promise<UnifiedPriceFeed[]> {
+    const feeds: UnifiedPriceFeed[] = [];
+
+    const promises = symbols.map(async (symbol) => {
+      try {
+        const feed = await this.getPriceForSymbol(symbol);
+        if (feed) {
+          feeds.push(feed);
+        }
+      } catch (error) {
+        logger.error(`Failed to get DIA price for ${symbol}`, {
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    });
+
+    await Promise.all(promises);
+    return feeds;
+  }
+
+  /**
+   * 获取所有可用价格喂价
+   */
+  async getAllAvailableFeeds(): Promise<UnifiedPriceFeed[]> {
+    const symbols = Object.keys(DIA_ASSETS);
+    return this.getMultiplePricesBySymbols(symbols);
+  }
+
+  /**
+   * 转换为统一价格喂价格式
+   */
+  private convertToUnifiedFeed(priceData: DIAPriceData): UnifiedPriceFeed {
+    const [baseAsset, quoteAsset] = priceData.symbol.split('/');
+    const timestamp = new Date(priceData.timestamp * 1000);
+    const now = new Date();
+    const stalenessSeconds = Math.floor((now.getTime() - timestamp.getTime()) / 1000);
+
+    // DIA 数据通常 < 300秒（5分钟）
+    const isStale = stalenessSeconds > 300;
+
+    return {
+      id: `dia-${this.chain}-${priceData.symbol}-${priceData.timestamp}`,
+      instanceId: `dia-${this.chain}`,
+      protocol: 'dia',
+      chain: this.chain,
+      symbol: priceData.symbol,
+      baseAsset: baseAsset || 'UNKNOWN',
+      quoteAsset: quoteAsset || 'USD',
+      price: priceData.formattedPrice,
+      priceRaw: priceData.price.toString(),
+      decimals: priceData.decimals,
+      timestamp: timestamp.toISOString(),
+      isStale,
+      stalenessSeconds,
+    };
+  }
+
+  /**
+   * 检查价格喂价健康状态
+   */
+  async checkFeedHealth(symbol: string): Promise<{
+    healthy: boolean;
+    lastUpdate: Date;
+    stalenessSeconds: number;
+    issues: string[];
+  }> {
+    const issues: string[] = [];
+
+    try {
+      const asset = DIA_ASSETS[symbol];
+      if (!asset) {
+        return {
+          healthy: false,
+          lastUpdate: new Date(0),
+          stalenessSeconds: Infinity,
+          issues: [`No asset found for ${symbol}`],
+        };
+      }
+
+      const priceData = await this.fetchPriceFromAPI(asset);
+      if (!priceData) {
+        return {
+          healthy: false,
+          lastUpdate: new Date(0),
+          stalenessSeconds: Infinity,
+          issues: [`No price data for ${symbol}`],
+        };
+      }
+
+      const lastUpdate = new Date(priceData.timestamp * 1000);
+      const now = new Date();
+      const stalenessSeconds = Math.floor((now.getTime() - lastUpdate.getTime()) / 1000);
+
+      // 检查数据新鲜度（DIA 应该 < 300秒）
+      if (stalenessSeconds > 300) {
+        issues.push(`Data is stale: ${stalenessSeconds}s old`);
+      }
+
+      // 检查价格是否为0
+      if (priceData.price === 0n) {
+        issues.push('Price is zero');
+      }
+
+      return {
+        healthy: issues.length === 0,
+        lastUpdate,
+        stalenessSeconds,
+        issues,
+      };
+    } catch (error) {
+      return {
+        healthy: false,
+        lastUpdate: new Date(0),
+        stalenessSeconds: Infinity,
+        issues: [`Failed to read feed: ${error instanceof Error ? error.message : String(error)}`],
+      };
+    }
+  }
+
+  /**
+   * 获取所有可用资产列表
+   */
+  async getAvailableAssets(): Promise<string[]> {
+    try {
+      const headers: Record<string, string> = {
+        Accept: 'application/json',
+      };
+
+      if (this.apiKey) {
+        headers['Authorization'] = `Bearer ${this.apiKey}`;
+      }
+
+      const response = await fetch(`${this.apiEndpoint}/assets`, { headers });
 
       if (!response.ok) {
-        throw new Error(`DIA API error: ${response.status}`);
+        throw new Error(`DIA API error: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
-      
-      if (Array.isArray(data)) {
-        return data.map((item: { Symbol: string }) => item.Symbol);
-      }
-
-      return [];
+      return data || [];
     } catch (error) {
-      logger.error('Failed to fetch DIA assets list', {
+      logger.error('Failed to fetch DIA assets', {
+        chain: this.chain,
         error: error instanceof Error ? error.message : String(error),
       });
-      return Object.keys(DIA_ASSETS);
+      return Object.values(DIA_ASSETS);
     }
   }
-
-  /**
-   * 验证价格新鲜度
-   */
-  isPriceFresh(timestamp: number, maxAgeSeconds: number = 300): boolean {
-    const now = Math.floor(Date.now() / 1000);
-    const age = now - timestamp;
-    return age <= maxAgeSeconds;
-  }
-
-  /**
-   * 获取支持的资产列表
-   */
-  getSupportedAssets(): string[] {
-    return Object.keys(DIA_ASSETS);
-  }
-
-  /**
-   * 获取客户端信息
-   */
-  getClientInfo(): {
-    chain: DIASupportedChain;
-    rpcUrl: string;
-    oracleAddress: Address;
-    supportedAssets: number;
-  } {
-    return {
-      chain: this.chain,
-      rpcUrl: this.config.rpcUrl || DIA_RPC_URLS[this.chain],
-      oracleAddress: this.oracleAddress,
-      supportedAssets: Object.keys(DIA_ASSETS).length,
-    };
-  }
 }
 
 // ============================================================================
-// Utility Functions
+// 工厂函数
 // ============================================================================
 
-/**
- * 创建 DIA 客户端
- */
 export function createDIAClient(
-  chain: DIASupportedChain,
-  config?: Partial<DIAProtocolConfig>,
+  chain: SupportedChain,
+  options?: { rpcUrl?: string; apiKey?: string },
 ): DIAClient {
-  return new DIAClient(chain, {
-    rpcUrl: DIA_RPC_URLS[chain],
-    ...config,
-  });
+  return new DIAClient(chain, options);
+}
+
+// ============================================================================
+// 工具函数
+// ============================================================================
+
+/**
+ * 获取支持的 DIA 链列表
+ */
+export function getSupportedDIAChains(): SupportedChain[] {
+  return Object.entries(DIA_CHAIN_CONFIG)
+    .filter(([_, config]) => config.apiEndpoint !== '')
+    .map(([chain]) => chain as SupportedChain);
 }
 
 /**
- * 获取所有支持的链
+ * 获取所有可用的价格喂价符号
  */
-export function getDIASupportedChains(): DIASupportedChain[] {
-  return Object.keys(CHAIN_MAP) as DIASupportedChain[];
+export function getAvailableDIASymbols(): string[] {
+  return Object.keys(DIA_ASSETS);
 }
 
 /**
- * 解析 DIA 价格
+ * 检查链是否支持 DIA
  */
-export function parseDIAPrice(price: bigint, decimals: number = 8): number {
-  return parseFloat(formatUnits(price, decimals));
+export function isChainSupportedByDIA(chain: SupportedChain): boolean {
+  return DIA_CHAIN_CONFIG[chain]?.apiEndpoint !== '';
+}
+
+/**
+ * 获取资产名称
+ */
+export function getDIAsset(symbol: string): string | undefined {
+  return DIA_ASSETS[symbol];
 }

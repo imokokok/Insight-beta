@@ -142,7 +142,10 @@ export type ProtocolSpecificConfig =
   | ChainlinkProtocolConfig
   | PythProtocolConfig
   | BandProtocolConfig
-  | API3ProtocolConfig;
+  | API3ProtocolConfig
+  | RedStoneProtocolConfig
+  | FluxProtocolConfig
+  | DIAProtocolConfig;
 
 export type UMAProtocolConfig = {
   optimisticOracleV2Address?: string;
@@ -175,6 +178,23 @@ export type API3ProtocolConfig = {
   airnodeAddress?: string;
   endpointId?: string;
   sponsorAddress?: string;
+};
+
+export type RedStoneProtocolConfig = {
+  feedIds?: string[];
+  apiEndpoint?: string;
+  stalenessThreshold?: number;
+};
+
+export type FluxProtocolConfig = {
+  feedId?: string;
+  apiEndpoint?: string;
+  roundId?: bigint;
+};
+
+export type DIAProtocolConfig = {
+  assets?: string[];
+  apiEndpoint?: string;
 };
 
 // ============================================================================
