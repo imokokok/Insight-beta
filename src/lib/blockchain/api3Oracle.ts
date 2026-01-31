@@ -33,11 +33,12 @@ import type {
 // API3 dAPI ABI
 // ============================================================================
 
-const API3_DAPI_ABI = parseAbi([
-  'function readDataFeedWithId(bytes32 dataFeedId) external view returns (int224 value, uint32 timestamp)',
-  'function readDataFeedValueWithId(bytes32 dataFeedId) external view returns (int224 value)',
-  'function dataFeedIdToReader(bytes32 dataFeedId) external view returns (address reader)',
-]);
+// API3_DAPI_ABI 保留供将来使用
+// const API3_DAPI_ABI = parseAbi([
+//   'function readDataFeedWithId(bytes32 dataFeedId) external view returns (int224 value, uint32 timestamp)',
+//   'function readDataFeedValueWithId(bytes32 dataFeedId) external view returns (int224 value)',
+//   'function dataFeedIdToReader(bytes32 dataFeedId) external view returns (address reader)',
+// ]);
 
 // API3 Proxy ABI (用于读取价格)
 const API3_PROXY_ABI = parseAbi([
@@ -137,37 +138,65 @@ const API3_PROXY_ADDRESSES: Record<SupportedChain, Record<string, Address>> = {
 // Chain 配置
 // ============================================================================
 
-const API3_CHAIN_CONFIG: Record<SupportedChain, { viemChain: typeof mainnet; defaultRpcUrl: string }> = {
-  ethereum: { viemChain: mainnet, defaultRpcUrl: 'https://eth-mainnet.g.alchemy.com/v2' },
-  polygon: { viemChain: polygon, defaultRpcUrl: 'https://polygon-mainnet.g.alchemy.com/v2' },
-  arbitrum: { viemChain: arbitrum, defaultRpcUrl: 'https://arb-mainnet.g.alchemy.com/v2' },
-  optimism: { viemChain: optimism, defaultRpcUrl: 'https://opt-mainnet.g.alchemy.com/v2' },
-  base: { viemChain: base, defaultRpcUrl: 'https://base-mainnet.g.alchemy.com/v2' },
-  avalanche: { viemChain: avalanche, defaultRpcUrl: 'https://avax-mainnet.g.alchemy.com/v2' },
-  bsc: { viemChain: bsc, defaultRpcUrl: 'https://bsc-dataseed.binance.org' },
-  sepolia: { viemChain: mainnet, defaultRpcUrl: 'https://eth-sepolia.g.alchemy.com/v2' },
+const API3_CHAIN_CONFIG: Record<SupportedChain, { defaultRpcUrl: string }> = {
+  ethereum: { defaultRpcUrl: 'https://eth-mainnet.g.alchemy.com/v2' },
+  polygon: { defaultRpcUrl: 'https://polygon-mainnet.g.alchemy.com/v2' },
+  arbitrum: { defaultRpcUrl: 'https://arb-mainnet.g.alchemy.com/v2' },
+  optimism: { defaultRpcUrl: 'https://opt-mainnet.g.alchemy.com/v2' },
+  base: { defaultRpcUrl: 'https://base-mainnet.g.alchemy.com/v2' },
+  avalanche: { defaultRpcUrl: 'https://avax-mainnet.g.alchemy.com/v2' },
+  bsc: { defaultRpcUrl: 'https://bsc-dataseed.binance.org' },
+  sepolia: { defaultRpcUrl: 'https://eth-sepolia.g.alchemy.com/v2' },
   // 其他链
-  fantom: { viemChain: mainnet, defaultRpcUrl: '' },
-  celo: { viemChain: mainnet, defaultRpcUrl: '' },
-  gnosis: { viemChain: mainnet, defaultRpcUrl: '' },
-  linea: { viemChain: mainnet, defaultRpcUrl: '' },
-  scroll: { viemChain: mainnet, defaultRpcUrl: '' },
-  mantle: { viemChain: mainnet, defaultRpcUrl: '' },
-  mode: { viemChain: mainnet, defaultRpcUrl: '' },
-  blast: { viemChain: mainnet, defaultRpcUrl: '' },
-  solana: { viemChain: mainnet, defaultRpcUrl: '' },
-  near: { viemChain: mainnet, defaultRpcUrl: '' },
-  aptos: { viemChain: mainnet, defaultRpcUrl: '' },
-  sui: { viemChain: mainnet, defaultRpcUrl: '' },
-  polygonAmoy: { viemChain: polygon, defaultRpcUrl: '' },
-  goerli: { viemChain: mainnet, defaultRpcUrl: '' },
-  mumbai: { viemChain: polygon, defaultRpcUrl: '' },
-  local: { viemChain: mainnet, defaultRpcUrl: 'http://localhost:8545' },
+  fantom: { defaultRpcUrl: '' },
+  celo: { defaultRpcUrl: '' },
+  gnosis: { defaultRpcUrl: '' },
+  linea: { defaultRpcUrl: '' },
+  scroll: { defaultRpcUrl: '' },
+  mantle: { defaultRpcUrl: '' },
+  mode: { defaultRpcUrl: '' },
+  blast: { defaultRpcUrl: '' },
+  solana: { defaultRpcUrl: '' },
+  near: { defaultRpcUrl: '' },
+  aptos: { defaultRpcUrl: '' },
+  sui: { defaultRpcUrl: '' },
+  polygonAmoy: { defaultRpcUrl: '' },
+  goerli: { defaultRpcUrl: '' },
+  mumbai: { defaultRpcUrl: '' },
+  local: { defaultRpcUrl: 'http://localhost:8545' },
 };
 
 // ============================================================================
 // API3 Client Class
 // ============================================================================
+
+// viem chain 映射
+const VIEM_CHAIN_MAP = {
+  ethereum: mainnet,
+  polygon: polygon,
+  arbitrum: arbitrum,
+  optimism: optimism,
+  base: base,
+  avalanche: avalanche,
+  bsc: bsc,
+  sepolia: mainnet,
+  fantom: mainnet,
+  celo: mainnet,
+  gnosis: mainnet,
+  linea: mainnet,
+  scroll: mainnet,
+  mantle: mainnet,
+  mode: mainnet,
+  blast: mainnet,
+  solana: mainnet,
+  near: mainnet,
+  aptos: mainnet,
+  sui: mainnet,
+  polygonAmoy: polygon,
+  goerli: mainnet,
+  mumbai: polygon,
+  local: mainnet,
+} as const;
 
 export class API3Client {
   private publicClient: PublicClient;
@@ -188,7 +217,7 @@ export class API3Client {
     }
 
     this.publicClient = createPublicClient({
-      chain: chainConfig.viemChain,
+      chain: VIEM_CHAIN_MAP[chain],
       transport: http(rpcUrl),
     });
   }
@@ -300,8 +329,8 @@ export class API3Client {
       protocol: 'api3',
       chain: this.chain,
       symbol,
-      baseAsset,
-      quoteAsset,
+      baseAsset: baseAsset || 'UNKNOWN',
+      quoteAsset: quoteAsset || 'USD',
       price: priceData.formattedValue,
       priceRaw: priceData.value.toString(),
       decimals: 18,
