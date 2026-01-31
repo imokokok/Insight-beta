@@ -1,0 +1,82 @@
+groups:
+  - name: oracle-monitor-alerts
+    rules:
+      # High price deviation alert
+      - alert: HighPriceDeviation
+        expr: oracle_price_deviation_percent > 5
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High price deviation detected for {{ $labels.symbol }}"
+          description: "Price deviation is {{ $value }}% for {{ $labels.symbol }} across protocols"
+
+      # Stale price alert
+      - alert: StalePriceData
+        expr: oracle_price_staleness_seconds > 600
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Stale price data for {{ $labels.symbol }}"
+          description: "Price data has not been updated for {{ $value }} seconds"
+
+      # Sync failure alert
+      - alert: OracleSyncFailure
+        expr: oracle_sync_status{status="error"} == 1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Oracle sync failure for {{ $labels.protocol }}"
+          description: "Sync has been failing for {{ $labels.protocol }} on {{ $labels.chain }}"
+
+      # API high error rate
+      - alert: APIHighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High API error rate"
+          description: "API error rate is {{ $value }} requests per second"
+
+      # Database connection issues
+      - alert: DatabaseConnectionFailure
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Database connection failure"
+          description: "Cannot connect to PostgreSQL database"
+
+      # Redis connection issues
+      - alert: RedisConnectionFailure
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis connection failure"
+          description: "Cannot connect to Redis server"
+
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is above 85%"
+
+      # High CPU usage
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is above 80%"

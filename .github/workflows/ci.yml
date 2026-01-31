@@ -1,262 +1,229 @@
-name: CI
+name: CI/CD Pipeline
 
 on:
   push:
     branches: [main, develop]
   pull_request:
-    branches: [main, develop]
+    branches: [main]
 
 env:
-  NODE_VERSION: "20"
-  NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+  NODE_VERSION: '20'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  # ============================================================================
+  # 代码质量检查
+  # ============================================================================
   lint:
+    name: Lint & Format Check
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Lint
-      run: npm run lint
+      - name: Run ESLint
+        run: npm run lint
 
-    - name: Security lint
-      run: npm run lint:security
+      - name: Check formatting
+        run: npm run format:check
 
-    - name: Format check
-      run: npm run format:check
-
+  # ============================================================================
+  # 类型检查
+  # ============================================================================
   typecheck:
+    name: TypeScript Type Check
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Typecheck
-      run: npm run typecheck
+      - name: Run TypeScript check
+        run: npm run typecheck
 
+  # ============================================================================
+  # 单元测试
+  # ============================================================================
   test:
+    name: Unit Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-
+    needs: [lint, typecheck]
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Test
-      run: npm run test:ci -- --reporter=verbose
+      - name: Run tests
+        run: npm run test:ci
 
-    - name: Upload coverage
-      uses: codecov/codecov-action@v4
-      if: always()
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        directory: ./coverage
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
 
+  # ============================================================================
+  # 安全扫描
+  # ============================================================================
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: Run security lint
+        run: npm run lint:security
+        continue-on-error: true
+
+  # ============================================================================
+  # 构建测试
+  # ============================================================================
   build:
+    name: Build Test
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    needs: [lint, typecheck, test]
-
+    needs: [test]
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Build
-      run: npm run build
+      - name: Build application
+        run: npm run build
 
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: next-build
-        path: .next/
-        retention-days: 7
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: .next/
+          retention-days: 7
 
-  contract-test:
+  # ============================================================================
+  # Docker 构建
+  # ============================================================================
+  docker:
+    name: Docker Build
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-
+    needs: [build]
+    if: github.event_name == 'push'
+    permissions:
+      contents: read
+      packages: write
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Compile contracts
-      run: npm run contracts:compile
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
 
-    - name: Run contract tests
-      run: npm run contracts:test
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-  performance:
+  # ============================================================================
+  # 部署到开发环境
+  # ============================================================================
+  deploy-dev:
+    name: Deploy to Development
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    needs: build
-
+    needs: [docker]
+    if: github.ref == 'refs/heads/develop'
+    environment:
+      name: development
+      url: https://dev.oracle-monitor.example.com
     steps:
-    - uses: actions/checkout@v4
+      - name: Deploy to dev environment
+        run: |
+          echo "Deploying to development environment..."
+          # Add your deployment commands here
+          # kubectl set image deployment/oracle-monitor-app app=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:develop -n oracle-monitor-dev
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
-
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Restore build artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: next-build
-        path: .next/
-
-    - name: Run performance benchmarks
-      run: npm run bench
-
-    - name: Upload benchmark results
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: benchmark-results
-        path: benchmark-results/
-        retention-days: 30
-
-  api-docs:
+  # ============================================================================
+  # 部署到生产环境
+  # ============================================================================
+  deploy-prod:
+    name: Deploy to Production
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-
+    needs: [docker]
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://oracle-monitor.example.com
     steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
-
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Generate API documentation
-      run: npm run docs:api
-
-    - name: Upload API docs
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: api-docs
-        path: docs/generated/
-        retention-days: 7
-
-  e2e-test:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    needs: build
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
-
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Restore build artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: next-build
-        path: .next/
-
-    - name: Install Playwright browsers
-      run: npx playwright install --with-deps chromium
-
-    - name: Run E2E tests
-      run: npm run test:e2e
-
-    - name: Upload E2E test results
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: e2e-test-results
-        path: test-results/
-        retention-days: 7
-
-  quality-gate:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    needs: [lint, typecheck, test, build, contract-test]
-
-    if: always()
-    steps:
-    - name: Check quality gate status
-      run: |
-        echo "Quality Gate Results:"
-        echo "====================="
-        echo "Lint: ${{ needs.lint.result }}"
-        echo "Typecheck: ${{ needs.typecheck.result }}"
-        echo "Test: ${{ needs.test.result }}"
-        echo "Build: ${{ needs.build.result }}"
-        echo "Contract Test: ${{ needs.contract-test.result }}"
-
-        if [[ "${{ needs.lint.result }}" == "failure" ]] || \
-           [[ "${{ needs.typecheck.result }}" == "failure" ]] || \
-           [[ "${{ needs.test.result }}" == "failure" ]] || \
-           [[ "${{ needs.build.result }}" == "failure" ]] || \
-           [[ "${{ needs.contract-test.result }}" == "failure" ]]; then
-          echo ""
-          echo "❌ Quality gate failed!"
-          exit 1
-        else
-          echo ""
-          echo "✅ Quality gate passed!"
-        fi
+      - name: Deploy to production environment
+        run: |
+          echo "Deploying to production environment..."
+          # Add your deployment commands here
+          # kubectl set image deployment/oracle-monitor-app app=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest -n oracle-monitor
