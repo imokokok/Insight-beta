@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { PageHeader } from '@/components/features/common/PageHeader';
 import { cn, fetchApiData, formatTime } from '@/lib/utils';
+import { useI18n } from '@/i18n/LanguageProvider';
 
 interface UMADisputeDetail {
   id: string;
@@ -51,6 +52,7 @@ interface UMADisputeDetail {
 }
 
 export default function UMADisputeDetailPage() {
+  const { t, lang } = useI18n();
   const params = useParams();
   const disputeId = params.id as string;
   const [dispute, setDispute] = useState<UMADisputeDetail | null>(null);
@@ -61,6 +63,7 @@ export default function UMADisputeDetailPage() {
     if (disputeId) {
       fetchDispute();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disputeId]);
 
   async function fetchDispute() {
@@ -69,7 +72,7 @@ export default function UMADisputeDetailPage() {
       const data = await fetchApiData<UMADisputeDetail>(`/api/oracle/uma/disputes/${disputeId}`);
       setDispute(data);
     } catch (err) {
-      setError('Dispute not found');
+      setError(t('errors.noItems'));
       console.error('Failed to fetch dispute:', err);
     } finally {
       setLoading(false);
@@ -99,10 +102,10 @@ export default function UMADisputeDetailPage() {
             className="mb-8 inline-flex items-center gap-2 text-gray-400 hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to UMA Dashboard
+            {t('oracle.detail.back')}
           </Link>
           <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-6 text-red-400">
-            {error || 'Dispute not found'}
+            {error || t('errors.noItems')}
           </div>
         </div>
       </div>
@@ -124,11 +127,11 @@ export default function UMADisputeDetailPage() {
           className="mb-6 inline-flex items-center gap-2 text-gray-400 hover:text-white"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to UMA Dashboard
+          {t('oracle.detail.back')}
         </Link>
 
         <PageHeader
-          title="Dispute Details"
+          title={t('uma.disputeDetail.title')}
           description={`${dispute.status} • ${dispute.chain} • ${dispute.id.slice(0, 8)}...${dispute.id.slice(-8)}`}
         />
 
@@ -139,16 +142,17 @@ export default function UMADisputeDetailPage() {
             <div className="rounded-xl bg-white/5 p-6">
               <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
                 <TrendingUp className="h-5 w-5 text-blue-400" />
-                Voting Results
+                {t('disputes.votingProgress')}
               </h3>
 
               <div className="mb-6">
                 <div className="mb-2 flex justify-between text-sm">
                   <span className="text-green-400">
-                    For Assertion ({forPercentage.toFixed(1)}%)
+                    {t('uma.assertionDetail.for')} ({forPercentage.toFixed(1)}%)
                   </span>
                   <span className="text-gray-400">
-                    {Number(dispute.votingRound.votesForAssertion).toLocaleString()} votes
+                    {Number(dispute.votingRound.votesForAssertion).toLocaleString()}{' '}
+                    {t('disputes.card.votes')}
                   </span>
                 </div>
                 <div className="flex h-4 overflow-hidden rounded-full bg-white/10">
@@ -161,23 +165,24 @@ export default function UMADisputeDetailPage() {
                 <div className="mt-1 flex justify-between text-sm">
                   <span />
                   <span className="text-orange-400">
-                    Against ({againstPercentage.toFixed(1)}%) -{' '}
-                    {Number(dispute.votingRound.votesAgainstAssertion).toLocaleString()} votes
+                    {t('uma.assertionDetail.against')} ({againstPercentage.toFixed(1)}%) -{' '}
+                    {Number(dispute.votingRound.votesAgainstAssertion).toLocaleString()}{' '}
+                    {t('disputes.card.votes')}
                   </span>
                 </div>
               </div>
 
               <div className="grid gap-4 md:grid-cols-3">
                 <InfoRow
-                  label="Total Votes"
+                  label={t('uma.disputeDetail.totalVotes')}
                   value={Number(dispute.votingRound.totalVotes).toLocaleString()}
                 />
                 <InfoRow
-                  label="Unique Voters"
+                  label={t('uma.disputeDetail.uniqueVoters')}
                   value={dispute.votingRound.totalUniqueVoters.toString()}
                 />
                 <InfoRow
-                  label="Winner"
+                  label={t('uma.disputeDetail.winner')}
                   value={
                     <span
                       className={cn(
@@ -197,13 +202,19 @@ export default function UMADisputeDetailPage() {
             <div className="rounded-xl bg-white/5 p-6">
               <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
                 <Gavel className="h-5 w-5 text-purple-400" />
-                Related Assertion
+                {t('oracle.detail.relatedAssertion')}
               </h3>
               <div className="grid gap-4 md:grid-cols-2">
-                <InfoRow label="Assertion ID" value={dispute.assertion.id.slice(0, 12) + '...'} />
-                <InfoRow label="Identifier" value={dispute.assertion.identifier} />
                 <InfoRow
-                  label="Asserter"
+                  label={t('uma.disputeDetail.assertionId')}
+                  value={dispute.assertion.id.slice(0, 12) + '...'}
+                />
+                <InfoRow
+                  label={t('uma.disputeDetail.identifier')}
+                  value={dispute.assertion.identifier}
+                />
+                <InfoRow
+                  label={t('uma.disputeDetail.asserter')}
                   value={
                     <a
                       href={`https://etherscan.io/address/${dispute.assertion.asserter}`}
@@ -217,11 +228,13 @@ export default function UMADisputeDetailPage() {
                   }
                 />
                 <InfoRow
-                  label="Bond"
+                  label={t('oracle.card.bond')}
                   value={`${Number(dispute.assertion.bond).toLocaleString()} UMA`}
                 />
                 <div className="md:col-span-2">
-                  <label className="mb-1 block text-sm text-gray-400">Claim</label>
+                  <label className="mb-1 block text-sm text-gray-400">
+                    {t('uma.disputeDetail.claim')}
+                  </label>
                   <code className="block break-all rounded-lg bg-white/5 px-3 py-2 font-mono text-sm">
                     {dispute.assertion.claim || 'N/A'}
                   </code>
@@ -241,10 +254,10 @@ export default function UMADisputeDetailPage() {
                       : 'border border-gray-500/20 bg-gray-500/10',
                 )}
               >
-                <h3 className="mb-4 text-lg font-semibold">Resolution</h3>
+                <h3 className="mb-4 text-lg font-semibold">{t('uma.disputeDetail.resolution')}</h3>
                 <div className="grid gap-4 md:grid-cols-3">
                   <InfoRow
-                    label="Winner"
+                    label={t('uma.disputeDetail.winner')}
                     value={
                       <span
                         className={cn(
@@ -257,11 +270,11 @@ export default function UMADisputeDetailPage() {
                     }
                   />
                   <InfoRow
-                    label="Payout to Asserter"
+                    label={t('uma.disputeDetail.payoutToAsserter')}
                     value={`${Number(dispute.resolution.payoutToAsserter).toLocaleString()} UMA`}
                   />
                   <InfoRow
-                    label="Payout to Disputer"
+                    label={t('uma.disputeDetail.payoutToDisputer')}
                     value={`${Number(dispute.resolution.payoutToDisputer).toLocaleString()} UMA`}
                   />
                 </div>
@@ -275,26 +288,29 @@ export default function UMADisputeDetailPage() {
             <div className="rounded-xl bg-white/5 p-6">
               <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
                 <Clock className="h-5 w-5 text-purple-400" />
-                Timeline
+                {t('oracle.detail.timeline')}
               </h3>
               <div className="space-y-4">
                 <TimelineEvent
-                  label="Dispute Created"
+                  label={t('uma.disputeDetail.disputeCreated')}
                   time={dispute.votingRound.votingEndedAt || 'N/A'}
                   icon={<Gavel className="h-4 w-4" />}
                   active={!!dispute.votingRound.votingEndedAt}
+                  lang={lang}
                 />
                 <TimelineEvent
-                  label="Voting Ended"
+                  label={t('uma.disputeDetail.votingEnded')}
                   time={dispute.votingRound.votingEndedAt || 'Pending'}
                   icon={<Users className="h-4 w-4" />}
                   active={!!dispute.votingRound.votingEndedAt}
+                  lang={lang}
                 />
                 <TimelineEvent
-                  label="Resolved"
+                  label={t('uma.disputeDetail.resolved')}
                   time={dispute.resolvedAt}
                   icon={<CheckCircle className="h-4 w-4" />}
                   active={!!dispute.resolvedAt}
+                  lang={lang}
                 />
               </div>
             </div>
@@ -303,7 +319,7 @@ export default function UMADisputeDetailPage() {
             <div className="rounded-xl bg-white/5 p-6">
               <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
                 <User className="h-5 w-5 text-orange-400" />
-                Disputer
+                {t('disputes.disputer')}
               </h3>
               <a
                 href={`https://etherscan.io/address/${dispute.disputer}`}
@@ -320,17 +336,17 @@ export default function UMADisputeDetailPage() {
             <div className="rounded-xl bg-white/5 p-6">
               <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
                 <AlertCircle className="h-5 w-5 text-yellow-400" />
-                Bond Info
+                {t('oracle.card.bond')}
               </h3>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Dispute Bond</span>
+                  <span className="text-gray-400">{t('uma.disputeDetail.disputeBond')}</span>
                   <span className="font-mono">
                     {Number(dispute.disputeBond).toLocaleString()} UMA
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Block</span>
+                  <span className="text-gray-400">{t('uma.disputeDetail.block')}</span>
                   <span className="font-mono">{Number(dispute.blockNumber).toLocaleString()}</span>
                 </div>
               </div>
@@ -338,7 +354,7 @@ export default function UMADisputeDetailPage() {
 
             {/* Transaction */}
             <div className="rounded-xl bg-white/5 p-6">
-              <h3 className="mb-4 text-lg font-semibold">Transaction</h3>
+              <h3 className="mb-4 text-lg font-semibold">{t('uma.disputeDetail.transaction')}</h3>
               <a
                 href={`https://etherscan.io/tx/${dispute.txHash}`}
                 target="_blank"
@@ -370,11 +386,13 @@ function TimelineEvent({
   time,
   icon,
   active,
+  lang,
 }: {
   label: string;
   time: string | null;
   icon: React.ReactNode;
   active: boolean;
+  lang: string;
 }) {
   return (
     <div className={cn('flex items-start gap-3', !active && 'opacity-50')}>
@@ -388,7 +406,7 @@ function TimelineEvent({
       </div>
       <div>
         <div className="text-sm font-medium">{label}</div>
-        <div className="text-xs text-gray-400">{time ? formatTime(time, 'en') : 'Pending'}</div>
+        <div className="text-xs text-gray-400">{time ? formatTime(time, lang) : 'Pending'}</div>
       </div>
     </div>
   );

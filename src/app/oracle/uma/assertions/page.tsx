@@ -6,6 +6,7 @@ import type { Route } from 'next';
 import { ArrowUpRight, RefreshCw } from 'lucide-react';
 import { PageHeader } from '@/components/features/common/PageHeader';
 import { cn, fetchApiData, formatTime } from '@/lib/utils';
+import { useI18n } from '@/i18n/LanguageProvider';
 
 interface UMAAssertion {
   id: string;
@@ -27,6 +28,7 @@ interface AssertionsResponse {
 }
 
 export default function UMAAssertionsPage() {
+  const { t, lang } = useI18n();
   const [assertions, setAssertions] = useState<UMAAssertion[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -36,6 +38,7 @@ export default function UMAAssertionsPage() {
 
   useEffect(() => {
     fetchAssertions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, statusFilter, versionFilter]);
 
   async function fetchAssertions() {
@@ -71,12 +74,12 @@ export default function UMAAssertionsPage() {
           href="/oracle/uma"
           className="mb-6 inline-flex items-center gap-2 text-gray-400 hover:text-white"
         >
-          ← Back to Dashboard
+          ← {t('oracle.detail.back')}
         </Link>
 
         <PageHeader
-          title="UMA Assertions"
-          description={`Total ${total.toLocaleString()} assertions`}
+          title={t('uma.assertionsPage.title')}
+          description={`${t('uma.disputesPage.description').replace('{{total}}', total.toLocaleString())}`}
         />
 
         {/* Filters */}
@@ -89,10 +92,10 @@ export default function UMAAssertionsPage() {
             }}
             className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm"
           >
-            <option value="all">All Status</option>
-            <option value="Proposed">Proposed</option>
-            <option value="Disputed">Disputed</option>
-            <option value="Settled">Settled</option>
+            <option value="all">{t('uma.assertionsPage.allStatus')}</option>
+            <option value="Proposed">{t('uma.assertionsPage.proposed')}</option>
+            <option value="Disputed">{t('disputes.title')}</option>
+            <option value="Settled">{t('uma.assertionsPage.settled')}</option>
           </select>
 
           <select
@@ -103,7 +106,7 @@ export default function UMAAssertionsPage() {
             }}
             className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm"
           >
-            <option value="all">All Versions</option>
+            <option value="all">{t('uma.assertionsPage.allVersions')}</option>
             <option value="v2">OOv2</option>
             <option value="v3">OOv3</option>
           </select>
@@ -113,7 +116,7 @@ export default function UMAAssertionsPage() {
             className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm transition-colors hover:bg-blue-700"
           >
             <RefreshCw className="h-4 w-4" />
-            Refresh
+            {t('common.refresh')}
           </button>
         </div>
 
@@ -122,14 +125,14 @@ export default function UMAAssertionsPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-white/10 text-left text-sm text-gray-400">
-                <th className="px-6 py-4 font-medium">ID</th>
-                <th className="px-6 py-4 font-medium">Identifier</th>
-                <th className="px-6 py-4 font-medium">Version</th>
-                <th className="px-6 py-4 font-medium">Proposer</th>
-                <th className="px-6 py-4 font-medium">Bond</th>
-                <th className="px-6 py-4 font-medium">Status</th>
-                <th className="px-6 py-4 font-medium">Proposed At</th>
-                <th className="px-6 py-4 font-medium">Actions</th>
+                <th className="px-6 py-4 font-medium">{t('uma.assertionsPage.id')}</th>
+                <th className="px-6 py-4 font-medium">{t('uma.assertionsPage.identifier')}</th>
+                <th className="px-6 py-4 font-medium">{t('uma.assertionsPage.version')}</th>
+                <th className="px-6 py-4 font-medium">{t('uma.assertionsPage.proposer')}</th>
+                <th className="px-6 py-4 font-medium">{t('oracle.card.bond')}</th>
+                <th className="px-6 py-4 font-medium">{t('uma.disputesPage.status')}</th>
+                <th className="px-6 py-4 font-medium">{t('uma.assertionsPage.proposedAt')}</th>
+                <th className="px-6 py-4 font-medium">{t('uma.disputesPage.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -167,7 +170,7 @@ export default function UMAAssertionsPage() {
               ) : assertions.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-6 py-12 text-center text-gray-400">
-                    No assertions found
+                    {t('common.noData')}
                   </td>
                 </tr>
               ) : (
@@ -211,11 +214,13 @@ export default function UMAAssertionsPage() {
                           assertion.status === 'Settled' && 'bg-green-500/20 text-green-400',
                         )}
                       >
-                        {assertion.status}
+                        {assertion.status === 'Proposed' && t('uma.assertionsPage.proposed')}
+                        {assertion.status === 'Disputed' && t('disputes.title')}
+                        {assertion.status === 'Settled' && t('uma.assertionsPage.settled')}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-400">
-                      {formatTime(assertion.proposedAt, 'en')}
+                      {formatTime(assertion.proposedAt, lang)}
                     </td>
                     <td className="px-6 py-4">
                       <Link
@@ -236,7 +241,8 @@ export default function UMAAssertionsPage() {
         {!loading && assertions.length > 0 && (
           <div className="mt-6 flex items-center justify-between">
             <div className="text-sm text-gray-400">
-              Page {page} of {totalPages} ({total.toLocaleString()} total)
+              {t('common.page')} {page} {t('common.of')} {totalPages} ({total.toLocaleString()}{' '}
+              {t('common.total')})
             </div>
             <div className="flex gap-2">
               <button
@@ -244,14 +250,14 @@ export default function UMAAssertionsPage() {
                 disabled={page === 1}
                 className="rounded-lg bg-white/5 px-4 py-2 text-sm hover:bg-white/10 disabled:opacity-50"
               >
-                Previous
+                {t('common.previous')}
               </button>
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
                 className="rounded-lg bg-white/5 px-4 py-2 text-sm hover:bg-white/10 disabled:opacity-50"
               >
-                Next
+                {t('common.next')}
               </button>
             </div>
           </div>
