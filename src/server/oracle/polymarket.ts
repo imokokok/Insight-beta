@@ -1,12 +1,13 @@
 import { hasDatabase, query } from '@/server/db';
-import { writeJsonFile } from '@/server/kvStore';
-import { getMemoryStore, memoryNowIso } from '@/server/memoryBackend';
+import { readJsonFile, writeJsonFile } from '@/server/kvStore';
+import { memoryNowIso } from '@/server/memoryBackend';
 import type { Market, MarketResolution } from '@/lib/blockchain/polymarketMonitor';
 
-export interface MarketRecord extends Market {
+export interface MarketRecord extends Omit<Market, 'createdAt'> {
   id: string;
   createdAt: string;
   updatedAt: string;
+  chain: string;
 }
 
 export interface MarketResolutionRecord extends MarketResolution {
@@ -17,11 +18,17 @@ export interface MarketResolutionRecord extends MarketResolution {
 const MARKETS_KEY = 'polymarket_markets/v1';
 const RESOLUTIONS_KEY = 'polymarket_resolutions/v1';
 
+// Helper to get data from KV store
+async function getKvData<T>(key: string): Promise<Record<string, T>> {
+  const data = await readJsonFile(key, {});
+  return (data as Record<string, T>) || {};
+}
+
 /**
  * 保存市场记录
  */
 export async function upsertMarketRecord(
-  market: Omit<MarketRecord, 'id' | 'createdAt' | 'updatedAt'>,
+  market: Omit<MarketRecord, 'id' | 'createdAt' | 'updatedAt'> & { createdAtBlock: bigint },
 ): Promise<MarketRecord> {
   const id = market.conditionId;
   const now = memoryNowIso();
@@ -49,7 +56,7 @@ export async function upsertMarketRecord(
         market.creator,
         market.collateralToken,
         market.fee.toString(),
-        market.createdAt.toString(),
+        market.createdAtBlock.toString(),
         market.resolved,
         market.resolutionTime ? new Date(Number(market.resolutionTime) * 1000).toISOString() : null,
         market.outcome,
@@ -60,10 +67,10 @@ export async function upsertMarketRecord(
         now,
       ],
     );
-    return formatMarketRecord(result.rows[0]);
+    return formatMarketRecord(result.rows[0] as Record<string, unknown>);
   } else {
-    const store = getMemoryStore<MarketRecord>(MARKETS_KEY);
-    const existing = store.get(id);
+    const data = await getKvData<MarketRecord>(MARKETS_KEY);
+    const existing = data[id];
     const newRecord: MarketRecord = {
       ...existing,
       ...market,
@@ -71,8 +78,8 @@ export async function upsertMarketRecord(
       createdAt: existing?.createdAt || now,
       updatedAt: now,
     };
-    store.set(id, newRecord);
-    await writeJsonFile(MARKETS_KEY, Object.fromEntries(store.entries()));
+    data[id] = newRecord;
+    await writeJsonFile(MARKETS_KEY, data);
     return newRecord;
   }
 }
@@ -109,21 +116,21 @@ export async function insertMarketResolution(
     );
     if (result.rows.length === 0) {
       const existing = await query('SELECT * FROM polymarket_resolutions WHERE id = $1', [id]);
-      return formatResolutionRecord(existing.rows[0]);
+      return formatResolutionRecord(existing.rows[0] as Record<string, unknown>);
     }
-    return formatResolutionRecord(result.rows[0]);
+    return formatResolutionRecord(result.rows[0] as Record<string, unknown>);
   } else {
-    const store = getMemoryStore<MarketResolutionRecord>(RESOLUTIONS_KEY);
-    if (store.has(id)) {
-      return store.get(id) as MarketResolutionRecord;
+    const data = await getKvData<MarketResolutionRecord>(RESOLUTIONS_KEY);
+    if (data[id]) {
+      return data[id] as MarketResolutionRecord;
     }
     const newRecord: MarketResolutionRecord = {
       ...resolution,
       id,
       createdAt: now,
     };
-    store.set(id, newRecord);
-    await writeJsonFile(RESOLUTIONS_KEY, Object.fromEntries(store.entries()));
+    data[id] = newRecord;
+    await writeJsonFile(RESOLUTIONS_KEY, data);
     return newRecord;
   }
 }
@@ -146,7 +153,7 @@ export async function getMarkets(options?: {
     }
 
     const countResult = await query(`SELECT COUNT(*) FROM (${sql}) AS t`, params);
-    const total = parseInt(countResult.rows[0].count, 10);
+    const total = parseInt((countResult.rows[0] as { count: string }).count, 10);
 
     sql += ' ORDER BY created_at DESC';
 
@@ -162,12 +169,12 @@ export async function getMarkets(options?: {
 
     const result = await query(sql, params);
     return {
-      records: result.rows.map(formatMarketRecord),
+      records: result.rows.map((r) => formatMarketRecord(r as Record<string, unknown>)),
       total,
     };
   } else {
-    const store = getMemoryStore<MarketRecord>(MARKETS_KEY);
-    let records = Array.from(store.values());
+    const data = await getKvData<MarketRecord>(MARKETS_KEY);
+    let records = Object.values(data);
 
     if (options?.resolved !== undefined) {
       records = records.filter((r) => r.resolved === options.resolved);
@@ -194,10 +201,10 @@ export async function getMarket(conditionId: string): Promise<MarketRecord | nul
   if (hasDatabase()) {
     const result = await query('SELECT * FROM polymarket_markets WHERE id = $1', [conditionId]);
     if (result.rows.length === 0) return null;
-    return formatMarketRecord(result.rows[0]);
+    return formatMarketRecord(result.rows[0] as Record<string, unknown>);
   } else {
-    const store = getMemoryStore<MarketRecord>(MARKETS_KEY);
-    return store.get(conditionId) || null;
+    const data = await getKvData<MarketRecord>(MARKETS_KEY);
+    return data[conditionId] || null;
   }
 }
 
@@ -219,19 +226,19 @@ export async function getMarketStats(): Promise<{
       query('SELECT COALESCE(SUM(liquidity), 0) as total FROM polymarket_markets'),
     ]);
 
-    const totalMarkets = parseInt(totalResult.rows[0].total, 10);
-    const resolvedMarkets = parseInt(resolvedResult.rows[0].total, 10);
+    const totalMarkets = parseInt((totalResult.rows[0] as { total: string }).total, 10);
+    const resolvedMarkets = parseInt((resolvedResult.rows[0] as { total: string }).total, 10);
 
     return {
       totalMarkets,
       resolvedMarkets,
       activeMarkets: totalMarkets - resolvedMarkets,
-      totalVolume: volumeResult.rows[0].total.toString(),
-      totalLiquidity: liquidityResult.rows[0].total.toString(),
+      totalVolume: (volumeResult.rows[0] as { total: string | number }).total.toString(),
+      totalLiquidity: (liquidityResult.rows[0] as { total: string | number }).total.toString(),
     };
   } else {
-    const store = getMemoryStore<MarketRecord>(MARKETS_KEY);
-    const markets = Array.from(store.values());
+    const data = await getKvData<MarketRecord>(MARKETS_KEY);
+    const markets = Object.values(data);
 
     const resolvedMarkets = markets.filter((m) => m.resolved).length;
     const totalVolume = markets.reduce((sum, m) => sum + BigInt(m.volume), 0n);
@@ -255,15 +262,14 @@ function formatMarketRecord(row: Record<string, unknown>): MarketRecord {
     question: String(row.question || ''),
     creator: String(row.creator) as `0x${string}`,
     collateralToken: String(row.collateral_token || row.collateralToken) as `0x${string}`,
-    fee: BigInt(row.fee || 0),
-    createdAt: BigInt(row.created_at_block || row.createdAt || 0),
+    fee: BigInt((row.fee as string | number | bigint | undefined) ?? 0),
     resolved: Boolean(row.resolved),
     resolutionTime: row.resolution_time
       ? BigInt(new Date(String(row.resolution_time)).getTime() / 1000)
       : undefined,
     outcome: row.outcome !== null ? Number(row.outcome) : undefined,
-    volume: BigInt(row.volume || 0),
-    liquidity: BigInt(row.liquidity || 0),
+    volume: BigInt((row.volume as string | number | bigint | undefined) ?? 0),
+    liquidity: BigInt((row.liquidity as string | number | bigint | undefined) ?? 0),
     chain: String(row.chain || '137'),
     createdAt: String(row.created_at || row.createdAt),
     updatedAt: String(row.updated_at || row.updatedAt),

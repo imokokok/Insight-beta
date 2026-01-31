@@ -1,6 +1,14 @@
-import { createPublicClient, http, type Address, type Hash, parseAbi } from 'viem';
+import { createPublicClient, http, type Address, type Hash, parseAbi, type Log } from 'viem';
 import type { Chain } from 'viem/chains';
 import { logger } from '@/lib/logger';
+
+// Helper type for log args
+type LogArgs = Record<string, unknown>;
+
+// Helper function to safely get log args
+function getLogArgs<T extends LogArgs>(log: Log<bigint, number, false>): T | undefined {
+  return (log as unknown as { args?: T }).args;
+}
 
 export interface DVMRewardConfig {
   chainId: number;
@@ -302,33 +310,52 @@ export class DVMRewardsClient {
       ]);
 
       return {
-        claimed: claimedLogs.map((log) => ({
-          voter: (log.args as { voter: Address }).voter,
-          assertionId: (log.args as { assertionId: `0x${string}` }).assertionId,
-          amount: (log.args as { amount: bigint }).amount,
-          blockNumber: log.blockNumber,
-          txHash: log.transactionHash as Hash,
-        })),
-        staked: stakedLogs.map((log) => ({
-          voter: (log.args as { voter: Address }).voter,
-          amount: (log.args as { amount: bigint }).amount,
-          blockNumber: log.blockNumber,
-          txHash: log.transactionHash as Hash,
-        })),
-        withdrawn: withdrawnLogs.map((log) => ({
-          voter: (log.args as { voter: Address }).voter,
-          amount: (log.args as { amount: bigint }).amount,
-          blockNumber: log.blockNumber,
-          txHash: log.transactionHash as Hash,
-        })),
-        slashed: slashedLogs.map((log) => ({
-          voter: (log.args as { voter: Address }).voter,
-          assertionId: (log.args as { assertionId: `0x${string}` }).assertionId,
-          amount: (log.args as { amount: bigint }).amount,
-          reason: (log.args as { reason: string }).reason,
-          blockNumber: log.blockNumber,
-          txHash: log.transactionHash as Hash,
-        })),
+        claimed: claimedLogs.map((log) => {
+          const args = getLogArgs<{ voter: Address; assertionId: `0x${string}`; amount: bigint }>(
+            log,
+          );
+          return {
+            voter: args?.voter ?? '0x0',
+            assertionId: args?.assertionId ?? '0x0',
+            amount: args?.amount ?? 0n,
+            blockNumber: log.blockNumber,
+            txHash: log.transactionHash as Hash,
+          };
+        }),
+        staked: stakedLogs.map((log) => {
+          const args = getLogArgs<{ voter: Address; amount: bigint }>(log);
+          return {
+            voter: args?.voter ?? '0x0',
+            amount: args?.amount ?? 0n,
+            blockNumber: log.blockNumber,
+            txHash: log.transactionHash as Hash,
+          };
+        }),
+        withdrawn: withdrawnLogs.map((log) => {
+          const args = getLogArgs<{ voter: Address; amount: bigint }>(log);
+          return {
+            voter: args?.voter ?? '0x0',
+            amount: args?.amount ?? 0n,
+            blockNumber: log.blockNumber,
+            txHash: log.transactionHash as Hash,
+          };
+        }),
+        slashed: slashedLogs.map((log) => {
+          const args = getLogArgs<{
+            voter: Address;
+            assertionId: `0x${string}`;
+            amount: bigint;
+            reason: string;
+          }>(log);
+          return {
+            voter: args?.voter ?? '0x0',
+            assertionId: args?.assertionId ?? '0x0',
+            amount: args?.amount ?? 0n,
+            reason: args?.reason ?? '',
+            blockNumber: log.blockNumber,
+            txHash: log.transactionHash as Hash,
+          };
+        }),
       };
     } catch (error) {
       logger.error('Failed to get reward events', { error, fromBlock, toBlock });
@@ -372,14 +399,22 @@ export function createDVMRewardsClient(
     42161: 'Arbitrum One',
     10: 'Optimism',
     8453: 'Base',
+    11155111: 'Sepolia',
     80002: 'Polygon Amoy',
   };
+
+  const dvmAddress = customAddresses?.dvm ?? addresses?.dvm;
+  const votingTokenAddress = customAddresses?.votingToken ?? addresses?.votingToken;
+
+  if (!dvmAddress || !votingTokenAddress) {
+    throw new Error(`Missing contract addresses for chain ID: ${chainId}`);
+  }
 
   return new DVMRewardsClient({
     chainId,
     chainName: chainNames[chainId] || `Chain ${chainId}`,
     rpcUrl,
-    dvmAddress: customAddresses?.dvm || addresses.dvm,
-    votingTokenAddress: customAddresses?.votingToken || addresses.votingToken,
+    dvmAddress,
+    votingTokenAddress,
   });
 }

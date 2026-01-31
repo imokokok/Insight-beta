@@ -1,6 +1,14 @@
-import { createPublicClient, http, type Address, type Hash, parseAbi } from 'viem';
+import { createPublicClient, http, type Address, type Hash, parseAbi, type Log } from 'viem';
 import type { Chain } from 'viem/chains';
 import { logger } from '@/lib/logger';
+
+// Helper type for log args
+type LogArgs = Record<string, unknown>;
+
+// Helper function to safely get log args
+function getLogArgs<T extends LogArgs>(log: Log<bigint, number, false>): T | undefined {
+  return (log as unknown as { args?: T }).args;
+}
 
 export interface GovernanceConfig {
   chainId: number;
@@ -324,40 +332,67 @@ export class UMAGovernanceMonitor {
       ]);
 
       return {
-        created: createdLogs.map((log) => ({
-          proposalId: (log.args as { id: bigint }).id,
-          proposer: (log.args as { proposer: Address }).proposer,
-          startBlock: (log.args as { startBlock: bigint }).startBlock,
-          endBlock: (log.args as { endBlock: bigint }).endBlock,
-          description: (log.args as { description: string }).description,
-          blockNumber: log.blockNumber,
-          txHash: log.transactionHash as Hash,
-        })),
-        votes: voteLogs.map((log) => ({
-          voter: (log.args as { voter: Address }).voter,
-          proposalId: (log.args as { proposalId: bigint }).proposalId,
-          support: Number((log.args as { support: number }).support),
-          votes: (log.args as { votes: bigint }).votes,
-          reason: (log.args as { reason: string }).reason || '',
-          blockNumber: log.blockNumber,
-          txHash: log.transactionHash as Hash,
-        })),
-        canceled: canceledLogs.map((log) => ({
-          proposalId: (log.args as { id: bigint }).id,
-          blockNumber: log.blockNumber,
-          txHash: log.transactionHash as Hash,
-        })),
-        queued: queuedLogs.map((log) => ({
-          proposalId: (log.args as { id: bigint }).id,
-          eta: (log.args as { eta: bigint }).eta,
-          blockNumber: log.blockNumber,
-          txHash: log.transactionHash as Hash,
-        })),
-        executed: executedLogs.map((log) => ({
-          proposalId: (log.args as { id: bigint }).id,
-          blockNumber: log.blockNumber,
-          txHash: log.transactionHash as Hash,
-        })),
+        created: createdLogs.map((log) => {
+          const args = getLogArgs<{
+            id: bigint;
+            proposer: Address;
+            startBlock: bigint;
+            endBlock: bigint;
+            description: string;
+          }>(log);
+          return {
+            proposalId: args?.id ?? 0n,
+            proposer: args?.proposer ?? '0x0',
+            startBlock: args?.startBlock ?? 0n,
+            endBlock: args?.endBlock ?? 0n,
+            description: args?.description ?? '',
+            blockNumber: log.blockNumber,
+            txHash: log.transactionHash as Hash,
+          };
+        }),
+        votes: voteLogs.map((log) => {
+          const args = getLogArgs<{
+            voter: Address;
+            proposalId: bigint;
+            support: number;
+            votes: bigint;
+            reason: string;
+          }>(log);
+          return {
+            voter: args?.voter ?? '0x0',
+            proposalId: args?.proposalId ?? 0n,
+            support: Number(args?.support ?? 0),
+            votes: args?.votes ?? 0n,
+            reason: args?.reason ?? '',
+            blockNumber: log.blockNumber,
+            txHash: log.transactionHash as Hash,
+          };
+        }),
+        canceled: canceledLogs.map((log) => {
+          const args = getLogArgs<{ id: bigint }>(log);
+          return {
+            proposalId: args?.id ?? 0n,
+            blockNumber: log.blockNumber,
+            txHash: log.transactionHash as Hash,
+          };
+        }),
+        queued: queuedLogs.map((log) => {
+          const args = getLogArgs<{ id: bigint; eta: bigint }>(log);
+          return {
+            proposalId: args?.id ?? 0n,
+            eta: args?.eta ?? 0n,
+            blockNumber: log.blockNumber,
+            txHash: log.transactionHash as Hash,
+          };
+        }),
+        executed: executedLogs.map((log) => {
+          const args = getLogArgs<{ id: bigint }>(log);
+          return {
+            proposalId: args?.id ?? 0n,
+            blockNumber: log.blockNumber,
+            txHash: log.transactionHash as Hash,
+          };
+        }),
       };
     } catch (error) {
       logger.error('Failed to get proposal events', { error, fromBlock, toBlock });

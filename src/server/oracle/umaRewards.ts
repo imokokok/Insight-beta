@@ -62,7 +62,7 @@ const SLASHING_KEY = 'uma_slashing/v1';
 
 // Helper to get data from KV store
 async function getKvData<T>(key: string): Promise<Record<string, T>> {
-  const data = await readJsonFile(key);
+  const data = await readJsonFile(key, {});
   return (data as Record<string, T>) || {};
 }
 
@@ -351,9 +351,11 @@ export async function getVoterSlashing(
 /**
  * 获取所有质押者列表
  */
-export async function getAllStakers(
-  options?: { limit?: number; offset?: number; minStake?: string },
-): Promise<{ records: StakingRecord[]; total: number }> {
+export async function getAllStakers(options?: {
+  limit?: number;
+  offset?: number;
+  minStake?: string;
+}): Promise<{ records: StakingRecord[]; total: number }> {
   if (hasDatabase()) {
     let sql = 'SELECT * FROM uma_staking WHERE 1=1';
     const params: (number | string)[] = [];
@@ -452,7 +454,9 @@ export async function getRewardsStats(): Promise<{
 }> {
   if (hasDatabase()) {
     const [rewardsResult, stakingResult, slashingResult] = await Promise.all([
-      query('SELECT COALESCE(SUM(reward_amount), 0) as total FROM uma_voter_rewards WHERE claimed = true'),
+      query(
+        'SELECT COALESCE(SUM(reward_amount), 0) as total FROM uma_voter_rewards WHERE claimed = true',
+      ),
       query('SELECT COALESCE(SUM(staked_amount), 0) as total, COUNT(*) as count FROM uma_staking'),
       query('SELECT COALESCE(SUM(slash_amount), 0) as total FROM uma_slashing'),
     ]);
@@ -467,7 +471,10 @@ export async function getRewardsStats(): Promise<{
       totalStaked: totalStaked.toString(),
       totalSlashed: totalSlashed.toString(),
       activeStakers,
-      averageStake: activeStakers > 0 ? (BigInt(totalStaked.toString()) / BigInt(activeStakers)).toString() : '0',
+      averageStake:
+        activeStakers > 0
+          ? (BigInt(totalStaked.toString()) / BigInt(activeStakers)).toString()
+          : '0',
     };
   } else {
     const rewardsData = await getKvData<VoterRewardRecord>(REWARDS_KEY);

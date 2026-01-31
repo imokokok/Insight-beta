@@ -1,6 +1,11 @@
 import { createDVMRewardsClient } from '@/lib/blockchain/umaDvmRewards';
 import { readUMAConfig, DEFAULT_UMA_INSTANCE_ID } from './umaConfig';
-import { upsertRewardRecord, upsertStakingRecord, insertSlashingRecord } from './umaRewards';
+import {
+  upsertRewardRecord,
+  upsertStakingRecord,
+  insertSlashingRecord,
+  getRewardsStats,
+} from './umaRewards';
 import { getUMASyncState } from './umaState';
 import { parseRpcUrls } from '@/lib/utils';
 import { env } from '@/lib/config/env';
@@ -258,7 +263,7 @@ export async function getRewardsSummary(instanceId: string = DEFAULT_UMA_INSTANC
 
   return {
     ...stats,
-    syncStatus: syncState.lastError ? 'error' : 'synced',
+    syncStatus: syncState.sync.lastError ? 'error' : 'synced',
     lastSyncAt: syncState.sync.lastSuccessAt,
   };
 }

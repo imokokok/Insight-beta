@@ -1,6 +1,14 @@
-import { createPublicClient, http, type Address, type Hash, parseAbi } from 'viem';
+import { createPublicClient, http, type Address, type Hash, parseAbi, type Log } from 'viem';
 import type { Chain } from 'viem/chains';
 import { logger } from '@/lib/logger';
+
+// Helper type for log args
+type LogArgs = Record<string, unknown>;
+
+// Helper function to safely get log args
+function getLogArgs<T extends LogArgs>(log: Log<bigint, number, false>): T | undefined {
+  return (log as unknown as { args?: T }).args;
+}
 
 export interface PolymarketConfig {
   chainId: number;
@@ -125,10 +133,18 @@ export class PolymarketMonitor {
       const markets: Market[] = [];
 
       for (const log of logs) {
-        const conditionId = (log.args as { conditionId: `0x${string}` }).conditionId;
-        const creator = (log.args as { creator: Address }).creator;
-        const collateralToken = (log.args as { collateralToken: Address }).collateralToken;
-        const fee = (log.args as { fee: bigint }).fee;
+        const args = getLogArgs<{
+          conditionId: `0x${string}`;
+          creator: Address;
+          collateralToken: Address;
+          fee: bigint;
+        }>(log);
+        const conditionId = args?.conditionId;
+        const creator = args?.creator;
+        const collateralToken = args?.collateralToken;
+        const fee = args?.fee;
+
+        if (!conditionId || !creator || !collateralToken || fee === undefined) continue;
 
         // Get market details from FPMM
         const fpmmAddress = await this.getFPMMAddress(conditionId);
@@ -173,21 +189,18 @@ export class PolymarketMonitor {
       });
 
       return logs.map((log) => {
-        const args = log.args as {
-          conditionId: `0x${string}`;
-          payoutNumerators: bigint[];
-        };
+        const args = getLogArgs<{ conditionId: `0x${string}`; payoutNumerators: bigint[] }>(log);
 
         // Determine outcome from payout numerators
         let outcome = 0;
-        if (args.payoutNumerators && args.payoutNumerators.length > 0) {
+        if (args?.payoutNumerators && args.payoutNumerators.length > 0) {
           // Find the index with non-zero payout
           outcome = args.payoutNumerators.findIndex((n) => n > 0n);
           if (outcome === -1) outcome = 0;
         }
 
         return {
-          conditionId: args.conditionId,
+          conditionId: args?.conditionId ?? '0x0',
           resolved: true,
           outcome,
           resolutionTime: BigInt(log.blockNumber),

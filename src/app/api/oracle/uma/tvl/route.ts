@@ -34,7 +34,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     const [latest, history] = await Promise.all([
       getLatestTvl(params.chainId),
-      getTvlHistory(params.chainId, { hours: params.hours }),
+      getTvlHistory(params.chainId, params.hours),
     ]);
 
     return NextResponse.json({
@@ -90,7 +90,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const tvlData = await monitor.getFullTvlData();
 
     // Save to database
-    await insertTvlRecord(tvlData);
+    await insertTvlRecord({
+      chainId: tvlData.chainId,
+      timestamp: new Date(tvlData.timestamp).toISOString(),
+      totalStaked: tvlData.totalStaked.toString(),
+      totalBonded: tvlData.totalBonded.toString(),
+      totalRewards: tvlData.totalRewards.toString(),
+      oracleTvl: tvlData.oracleTvl.toString(),
+      dvmTvl: tvlData.dvmTvl.toString(),
+      activeAssertions: tvlData.activeAssertions,
+      activeDisputes: tvlData.activeDisputes,
+    });
 
     return NextResponse.json({
       ok: true,

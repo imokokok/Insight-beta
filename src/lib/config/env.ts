@@ -233,8 +233,8 @@ export const env = {
 
 export function getEnv(key: keyof typeof env): string {
   // Safe: key is validated as keyof typeof env
-
-  return env[key];
+  const value = env[key];
+  return String(value ?? '');
 }
 
 export function isEnvSet(key: keyof typeof env): boolean {

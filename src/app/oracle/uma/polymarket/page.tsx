@@ -21,7 +21,6 @@ interface Market {
   volume: string;
   liquidity: string;
   chain: string;
-  createdAt: string;
   updatedAt: string;
 }
 

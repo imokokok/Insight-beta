@@ -126,7 +126,17 @@ export function startTvlSyncTask(instanceId: string = 'uma-mainnet'): () => void
       });
 
       const tvlData = await monitor.getFullTvlData();
-      await insertTvlRecord(tvlData);
+      await insertTvlRecord({
+        chainId: tvlData.chainId,
+        timestamp: new Date(tvlData.timestamp).toISOString(),
+        totalStaked: tvlData.totalStaked.toString(),
+        totalBonded: tvlData.totalBonded.toString(),
+        totalRewards: tvlData.totalRewards.toString(),
+        oracleTvl: tvlData.oracleTvl.toString(),
+        dvmTvl: tvlData.dvmTvl.toString(),
+        activeAssertions: tvlData.activeAssertions,
+        activeDisputes: tvlData.activeDisputes,
+      });
 
       logger.debug('TVL sync completed', {
         instanceId,

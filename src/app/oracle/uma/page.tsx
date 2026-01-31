@@ -14,7 +14,6 @@ import {
   BarChart3,
   Scale,
 } from 'lucide-react';
-import Link from 'next/link';
 import { PageHeader } from '@/components/features/common/PageHeader';
 import { cn, fetchApiData, formatTime } from '@/lib/utils';
 import { logger } from '@/lib/logger';
@@ -391,7 +390,8 @@ export default function UMAOraclePage() {
               </p>
             </a>
 
-            <Link
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+            <a
               href="/oracle/uma/rewards"
               className="rounded-xl bg-white/5 p-6 transition-colors hover:bg-white/10"
             >
@@ -402,9 +402,10 @@ export default function UMAOraclePage() {
               <p className="text-gray-400">
                 Monitor voter rewards, staking positions, and slashing events.
               </p>
-            </Link>
+            </a>
 
-            <Link
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+            <a
               href="/oracle/uma/tvl"
               className="rounded-xl bg-white/5 p-6 transition-colors hover:bg-white/10"
             >
@@ -415,9 +416,10 @@ export default function UMAOraclePage() {
               <p className="text-gray-400">
                 Track Total Value Locked across UMA contracts on multiple chains.
               </p>
-            </Link>
+            </a>
 
-            <Link
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+            <a
               href="/oracle/uma/polymarket"
               className="rounded-xl bg-white/5 p-6 transition-colors hover:bg-white/10"
             >
@@ -426,9 +428,10 @@ export default function UMAOraclePage() {
                 <h3 className="text-lg font-semibold">Polymarket</h3>
               </div>
               <p className="text-gray-400">Monitor prediction markets powered by UMA oracle.</p>
-            </Link>
+            </a>
 
-            <Link
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+            <a
               href="/oracle/uma/governance"
               className="rounded-xl bg-white/5 p-6 transition-colors hover:bg-white/10"
             >
@@ -437,7 +440,7 @@ export default function UMAOraclePage() {
                 <h3 className="text-lg font-semibold">Governance</h3>
               </div>
               <p className="text-gray-400">Track UMA protocol governance proposals and voting.</p>
-            </Link>
+            </a>
           </div>
         )}
       </div>

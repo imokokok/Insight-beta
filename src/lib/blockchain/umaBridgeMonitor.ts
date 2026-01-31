@@ -1,6 +1,14 @@
-import { createPublicClient, http, type Address, type Hash, parseAbi } from 'viem';
+import { createPublicClient, http, type Address, type Hash, parseAbi, type Log } from 'viem';
 import type { Chain } from 'viem/chains';
 import { logger } from '@/lib/logger';
+
+// Helper type for log args
+type LogArgs = Record<string, unknown>;
+
+// Helper function to safely get log args
+function getLogArgs<T extends LogArgs>(log: Log<bigint, number, false>): T | undefined {
+  return (log as unknown as { args?: T }).args;
+}
 
 export interface BridgeConfig {
   chainId: number;
@@ -106,30 +114,46 @@ export class UMABridgeMonitor {
       ]);
 
       return {
-        sent: sentLogs.map((log) => ({
-          messageId: (log.args as { messageId: `0x${string}` }).messageId,
-          sender: (log.args as { sender: Address }).sender,
-          target: (log.args as { target: Address }).target,
-          targetChainId: Number((log.args as { targetChainId: bigint }).targetChainId),
-          payload: (log.args as { payload: string }).payload,
-          value: (log.args as { value: bigint }).value,
-          status: 'pending' as const,
-          timestamp: Date.now(),
-          blockNumber: log.blockNumber,
-          txHash: log.transactionHash as Hash,
-        })),
-        delivered: deliveredLogs.map((log) => ({
-          messageId: (log.args as { messageId: `0x${string}` }).messageId,
-          success: (log.args as { success: boolean }).success,
-          blockNumber: log.blockNumber,
-          txHash: log.transactionHash as Hash,
-        })),
-        failed: failedLogs.map((log) => ({
-          messageId: (log.args as { messageId: `0x${string}` }).messageId,
-          reason: (log.args as { reason: string }).reason,
-          blockNumber: log.blockNumber,
-          txHash: log.transactionHash as Hash,
-        })),
+        sent: sentLogs.map((log) => {
+          const args = getLogArgs<{
+            messageId: `0x${string}`;
+            sender: Address;
+            target: Address;
+            targetChainId: bigint;
+            payload: string;
+            value: bigint;
+          }>(log);
+          return {
+            messageId: args?.messageId ?? '0x0',
+            sender: args?.sender ?? '0x0',
+            target: args?.target ?? '0x0',
+            targetChainId: Number(args?.targetChainId ?? 0),
+            payload: args?.payload ?? '',
+            value: args?.value ?? 0n,
+            status: 'pending' as const,
+            timestamp: Date.now(),
+            blockNumber: log.blockNumber,
+            txHash: log.transactionHash as Hash,
+          };
+        }),
+        delivered: deliveredLogs.map((log) => {
+          const args = getLogArgs<{ messageId: `0x${string}`; success: boolean }>(log);
+          return {
+            messageId: args?.messageId ?? '0x0',
+            success: args?.success ?? false,
+            blockNumber: log.blockNumber,
+            txHash: log.transactionHash as Hash,
+          };
+        }),
+        failed: failedLogs.map((log) => {
+          const args = getLogArgs<{ messageId: `0x${string}`; reason: string }>(log);
+          return {
+            messageId: args?.messageId ?? '0x0',
+            reason: args?.reason ?? '',
+            blockNumber: log.blockNumber,
+            txHash: log.transactionHash as Hash,
+          };
+        }),
       };
     } catch (error) {
       logger.error('Failed to get bridge events', { error, fromBlock, toBlock });
