@@ -181,7 +181,7 @@ export class BandClient {
     }
 
     // 使用配置的合约地址或默认地址
-    this.contractAddress = config.endpoint as Address || BAND_CONTRACT_ADDRESSES[chain];
+    this.contractAddress = _config.endpoint as Address || BAND_CONTRACT_ADDRESSES[chain];
     if (!this.contractAddress) {
       throw new Error(`No Band contract address for chain ${chain}`);
     }
