@@ -135,10 +135,11 @@ export async function calculateWeightedConsensus(
   }
 
   if (prices.length === 1) {
+    const firstPrice = prices[0]!;
     return {
-      price: prices[0].price,
+      price: firstPrice.price,
       method: 'single_source',
-      confidence: prices[0].confidence || 0.5,
+      confidence: firstPrice.confidence || 0.5,
     };
   }
 
@@ -162,7 +163,7 @@ export async function calculateWeightedConsensus(
   // 计算加权中位数
   const totalWeight = weightedPrices.reduce((sum, wp) => sum + wp.weight, 0);
   let cumulativeWeight = 0;
-  let medianPrice = weightedPrices[0].price;
+  let medianPrice = weightedPrices[0]!.price;
 
   for (const wp of weightedPrices) {
     cumulativeWeight += wp.weight;

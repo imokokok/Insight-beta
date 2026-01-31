@@ -171,7 +171,7 @@ export async function getUnifiedInstance(id: string): Promise<UnifiedOracleInsta
       return null;
     }
 
-    return rowToInstance(result.rows[0]);
+    return rowToInstance(result.rows[0]!);
   } catch (error) {
     logger.error('Failed to get unified instance', {
       id,
@@ -242,7 +242,7 @@ export async function updateUnifiedInstance(
     }
 
     const fields: string[] = [];
-    const values: unknown[] = [];
+    const values: (string | number | boolean | Date | null | undefined | string[] | number[])[] = [];
     let paramIndex = 1;
 
     if (updates.name !== undefined) {
@@ -325,7 +325,7 @@ export async function deleteUnifiedInstance(id: string): Promise<boolean> {
       id,
     ]);
 
-    const deleted = result.rowCount > 0;
+    const deleted = (result.rowCount ?? 0) > 0;
 
     if (deleted) {
       logger.info('Deleted unified oracle instance', { id });
@@ -437,7 +437,7 @@ export async function getConfigTemplate(
       return getDefaultTemplate(protocol, chain);
     }
 
-    return result.rows[0].config;
+    return result.rows[0]!.config;
   } catch (error) {
     logger.error('Failed to get config template', {
       protocol,

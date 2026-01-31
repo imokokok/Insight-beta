@@ -705,8 +705,8 @@ export class NotificationService {
       default:
         return {
           success: false,
-          channel: config.type as NotificationChannel,
-          error: `Unknown channel type: ${(config as NotificationConfig).type}`,
+          channel: config.type as unknown as NotificationChannel,
+          error: `Unknown channel type: ${config.type}`,
           timestamp: new Date(),
           durationMs: 0,
         };

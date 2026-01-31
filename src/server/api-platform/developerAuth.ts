@@ -490,7 +490,7 @@ export class DeveloperManager {
       for (const [key, value] of Object.entries(updates)) {
         if (allowedFields.includes(key) && value !== undefined) {
           fields.push(`${key} = $${paramIndex++}`);
-          values.push(value);
+          values.push(value as string | number | boolean | Date | null | undefined | string[] | number[]);
         }
       }
 

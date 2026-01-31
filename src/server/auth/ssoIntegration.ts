@@ -214,7 +214,7 @@ export class SAMLProvider {
   async processResponse(samlResponse: string): Promise<SSOUser | null> {
     try {
       // 解码 SAML 响应
-      const decoded = Buffer.from(samlResponse, 'base64').toString('utf-8');
+      const _decoded = Buffer.from(samlResponse, 'base64').toString('utf-8');
 
       // 简化解析，实际需要使用 SAML 库验证签名和解密
       logger.warn('SAML response processing not fully implemented', {
@@ -360,7 +360,7 @@ export class SSOManager {
       // 验证域名
       if (config.allowedDomains && config.allowedDomains.length > 0) {
         const domain = ssoUser.email.split('@')[1];
-        if (!config.allowedDomains.includes(domain)) {
+        if (!domain || !config.allowedDomains.includes(domain)) {
           return { success: false, error: 'Email domain not allowed' };
         }
       }
@@ -392,7 +392,7 @@ export class SSOManager {
     );
 
     if (existing.rows.length > 0) {
-      return existing.rows[0].developer_id;
+      return existing.rows[0]!.developer_id;
     }
 
     // 检查邮箱是否已注册
@@ -402,7 +402,7 @@ export class SSOManager {
     );
 
     if (byEmail.rows.length > 0) {
-      return byEmail.rows[0].id;
+      return byEmail.rows[0]!.id;
     }
 
     // 自动创建新开发者
