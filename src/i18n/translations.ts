@@ -411,6 +411,12 @@ export const translations = {
       userRejected: 'You rejected the wallet request.',
       walletNotConnected: 'Wallet not connected',
       wrongNetwork: 'Wrong network. Please switch to the target chain.',
+      requestTimeout: 'Request timeout, please try again later',
+      networkConnectionFailed: 'Network connection failed, please check your network',
+      rateLimitExceeded: 'Too many requests, please try again later',
+      authenticationFailed: 'Authentication failed, please log in again',
+      permissionDenied: 'Permission denied, you cannot perform this action',
+      resourceNotFound: '{resource} not found',
       severity: 'Severity',
       severityCritical: 'Critical',
       severityHigh: 'High',
@@ -1330,6 +1336,12 @@ export const translations = {
       userRejected: 'Has rechazado la solicitud de la cartera.',
       walletNotConnected: 'Cartera no conectada',
       wrongNetwork: 'Red incorrecta. Cambia a la cadena objetivo.',
+      requestTimeout: 'Tiempo de espera agotado, por favor inténtalo de nuevo más tarde',
+      networkConnectionFailed: 'Error de conexión de red, por favor verifica tu conexión',
+      rateLimitExceeded: 'Demasiadas solicitudes, por favor inténtalo de nuevo más tarde',
+      authenticationFailed: 'Error de autenticación, por favor inicia sesión de nuevo',
+      permissionDenied: 'Permiso denegado, no puedes realizar esta acción',
+      resourceNotFound: '{resource} no encontrado',
     },
     howItWorks: {
       step1: {
@@ -2143,6 +2155,12 @@ export const translations = {
       userRejected: 'Vous avez refusé la demande de portefeuille.',
       walletNotConnected: 'Portefeuille non connecté',
       wrongNetwork: 'Mauvais réseau. Veuillez basculer sur la chaîne cible.',
+      requestTimeout: 'Délai de requête dépassé, veuillez réessayer plus tard',
+      networkConnectionFailed: 'Échec de la connexion réseau, veuillez vérifier votre connexion',
+      rateLimitExceeded: 'Trop de requêtes, veuillez réessayer plus tard',
+      authenticationFailed: "Échec de l'authentification, veuillez vous reconnecter",
+      permissionDenied: 'Permission refusée, vous ne pouvez pas effectuer cette action',
+      resourceNotFound: '{resource} non trouvé',
     },
     howItWorks: {
       step1: {
@@ -2966,6 +2984,12 @@ export const translations = {
       userRejected: '지갑 요청을 거부했습니다.',
       walletNotConnected: '지갑이 연결되지 않았습니다',
       wrongNetwork: '잘못된 네트워크입니다. 대상 체인으로 전환하세요.',
+      requestTimeout: '요청 시간 초과, 나중에 다시 시도해주세요',
+      networkConnectionFailed: '네트워크 연결 실패, 네트워크를 확인해주세요',
+      rateLimitExceeded: '요청이 너무 많습니다, 나중에 다시 시도해주세요',
+      authenticationFailed: '인증 실패, 다시 로그인해주세요',
+      permissionDenied: '권한이 없습니다, 이 작업을 수행할 수 없습니다',
+      resourceNotFound: '{resource}을(를) 찾을 수 없습니다',
     },
     howItWorks: {
       step1: {
@@ -3776,6 +3800,12 @@ export const translations = {
       userRejected: '你已取消钱包请求。',
       walletNotConnected: '钱包未连接',
       wrongNetwork: '网络不匹配，请切换到目标链后重试。',
+      requestTimeout: '请求超时，请稍后重试',
+      networkConnectionFailed: '网络连接失败，请检查网络',
+      rateLimitExceeded: '请求过于频繁，请稍后再试',
+      authenticationFailed: '认证失败，请重新登录',
+      permissionDenied: '权限不足，无法执行此操作',
+      resourceNotFound: '{resource} 未找到',
     },
     howItWorks: {
       step1: {
@@ -5069,6 +5099,12 @@ export type TranslationKey =
   | 'errors.severityHigh'
   | 'errors.severityMedium'
   | 'errors.severityLow'
+  | 'errors.requestTimeout'
+  | 'errors.networkConnectionFailed'
+  | 'errors.rateLimitExceeded'
+  | 'errors.authenticationFailed'
+  | 'errors.permissionDenied'
+  | 'errors.resourceNotFound'
   | 'common.page'
   | 'common.of'
   | 'common.total'

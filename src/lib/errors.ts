@@ -202,7 +202,7 @@ export class ValidationError extends AppError {
  */
 export class NotFoundError extends AppError {
   constructor(resource: string, id?: string) {
-    super(`${resource}${id ? ` (${id})` : ''} 未找到`, ErrorCode.NOT_FOUND, 404, { resource, id });
+    super(`errors.resourceNotFound`, ErrorCode.NOT_FOUND, 404, { resource, id });
   }
 }
 
@@ -296,7 +296,7 @@ export class OracleError extends AppError {
 
     if (message.includes('timeout') || message.includes('etimedout')) {
       return new OracleError(
-        '请求超时，请稍后重试',
+        'errors.requestTimeout',
         ErrorCode.TIMEOUT,
         'medium',
         true,
@@ -311,7 +311,7 @@ export class OracleError extends AppError {
       message.includes('enotfound')
     ) {
       return new OracleError(
-        '网络连接失败，请检查网络',
+        'errors.networkConnectionFailed',
         ErrorCode.NETWORK_ERROR,
         'high',
         true,
@@ -322,7 +322,7 @@ export class OracleError extends AppError {
 
     if (message.includes('rate limit') || message.includes('too many requests')) {
       return new OracleError(
-        '请求过于频繁，请稍后再试',
+        'errors.rateLimitExceeded',
         ErrorCode.RATE_LIMIT_ERROR,
         'medium',
         true,
@@ -333,7 +333,7 @@ export class OracleError extends AppError {
 
     if (message.includes('authentication') || message.includes('unauthorized')) {
       return new OracleError(
-        '认证失败，请重新登录',
+        'errors.authenticationFailed',
         ErrorCode.AUTHENTICATION_ERROR,
         'high',
         false,
@@ -344,7 +344,7 @@ export class OracleError extends AppError {
 
     if (message.includes('permission') || message.includes('forbidden')) {
       return new OracleError(
-        '权限不足，无法执行此操作',
+        'errors.permissionDenied',
         ErrorCode.AUTHORIZATION_ERROR,
         'high',
         false,
@@ -354,7 +354,7 @@ export class OracleError extends AppError {
     }
 
     return new OracleError(
-      error.message || 'An unknown error occurred',
+      error.message || 'errors.unknownError',
       ErrorCode.UNKNOWN_ERROR,
       'medium',
       true,
@@ -398,7 +398,10 @@ export class OracleError extends AppError {
   }
 
   public static notFound(resource: string, context?: ErrorContext): OracleError {
-    return new OracleError(`${resource} 不存在`, ErrorCode.NOT_FOUND, 'low', false, context);
+    return new OracleError('errors.resourceNotFound', ErrorCode.NOT_FOUND, 'low', false, {
+      ...context,
+      resource,
+    });
   }
 }
 

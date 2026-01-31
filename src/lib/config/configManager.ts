@@ -1,18 +1,18 @@
 /**
- * 配置管理器 - 支持热更新
+ * Config Manager - Supports hot reload
  *
- * 提供配置的热更新、监听和版本管理功能
+ * Provides hot reload, monitoring, and version management for configurations
  */
 
 import { logger } from '@/lib/logger';
 
 /**
- * 配置变更监听器类型
+ * Config change listener type
  */
 type ConfigChangeListener = (key: string, newValue: string, oldValue: string) => void;
 
 /**
- * 配置项定义
+ * Config item definition
  */
 interface ConfigItem {
   value: string;
@@ -23,13 +23,13 @@ interface ConfigItem {
 }
 
 /**
- * 配置管理器类
+ * Config Manager class
  *
- * 支持：
- * - 热更新配置
- * - 配置变更监听
- * - 配置验证
- * - 配置版本管理
+ * Supports:
+ * - Hot reload configurations
+ * - Config change monitoring
+ * - Config validation
+ * - Config version management
  */
 export class ConfigManager {
   private configs: Map<string, ConfigItem> = new Map();
@@ -38,11 +38,11 @@ export class ConfigManager {
   private readonly reloadIntervalMs: number;
 
   constructor(options?: { reloadIntervalMs?: number }) {
-    this.reloadIntervalMs = options?.reloadIntervalMs ?? 60_000; // 默认 60 秒检查一次
+    this.reloadIntervalMs = options?.reloadIntervalMs ?? 60_000; // Default: check every 60 seconds
   }
 
   /**
-   * 注册配置项
+   * Register a config item
    */
   register(
     key: string,
@@ -72,7 +72,7 @@ export class ConfigManager {
   }
 
   /**
-   * 获取配置值
+   * Get config value
    */
   get(key: string): string | undefined {
     const config = this.configs.get(key);
@@ -80,14 +80,14 @@ export class ConfigManager {
   }
 
   /**
-   * 获取配置值（带默认值）
+   * Get config value (with default)
    */
   getOrDefault(key: string, defaultValue: string): string {
     return this.get(key) ?? defaultValue;
   }
 
   /**
-   * 获取数值类型的配置
+   * Get number type config
    */
   getNumber(key: string, defaultValue: number): number {
     const value = this.get(key);
@@ -97,7 +97,7 @@ export class ConfigManager {
   }
 
   /**
-   * 获取布尔类型的配置
+   * Get boolean type config
    */
   getBoolean(key: string, defaultValue: boolean): boolean {
     const value = this.get(key);
@@ -106,7 +106,7 @@ export class ConfigManager {
   }
 
   /**
-   * 设置配置值（支持热更新）
+   * Set config value (supports hot reload)
    */
   set(key: string, value: string): boolean {
     const config = this.configs.get(key);
@@ -120,7 +120,7 @@ export class ConfigManager {
       return false;
     }
 
-    // 验证新值
+    // Validate new value
     if (config.validator && !config.validator(value)) {
       logger.error('Config validation failed', { key, value });
       return false;
@@ -135,14 +135,14 @@ export class ConfigManager {
       newValue: this.maskSensitiveValue(key, value),
     });
 
-    // 通知监听器
+    // Notify listeners
     this.notifyListeners(key, value, oldValue);
 
     return true;
   }
 
   /**
-   * 监听配置变更
+   * Watch config changes
    */
   watch(listener: ConfigChangeListener): () => void {
     this.listeners.add(listener);
@@ -152,7 +152,7 @@ export class ConfigManager {
   }
 
   /**
-   * 开始自动重载
+   * Start auto reload
    */
   startAutoReload(): void {
     if (this.reloadTimer) {
@@ -168,7 +168,7 @@ export class ConfigManager {
   }
 
   /**
-   * 停止自动重载
+   * Stop auto reload
    */
   stopAutoReload(): void {
     if (this.reloadTimer) {
@@ -179,7 +179,7 @@ export class ConfigManager {
   }
 
   /**
-   * 手动重载配置
+   * Manually reload configs
    */
   reload(): void {
     let changedCount = 0;
@@ -191,7 +191,7 @@ export class ConfigManager {
       if (envValue === undefined) continue;
 
       if (envValue !== config.value) {
-        // 验证新值
+        // Validate new value
         if (config.validator && !config.validator(envValue)) {
           logger.error('Config validation failed during reload', { key, value: envValue });
           continue;
@@ -217,7 +217,7 @@ export class ConfigManager {
   }
 
   /**
-   * 获取所有配置信息
+   * Get all config info
    */
   getAllConfigs(): Array<{
     key: string;
@@ -236,7 +236,7 @@ export class ConfigManager {
   }
 
   /**
-   * 获取配置统计
+   * Get config statistics
    */
   getStats(): {
     total: number;
@@ -282,65 +282,65 @@ export class ConfigManager {
 }
 
 /**
- * 全局配置管理器实例
+ * Global config manager instance
  */
 export const configManager = new ConfigManager({
   reloadIntervalMs: Number(process.env.INSIGHT_CONFIG_RELOAD_INTERVAL_MS) || 60_000,
 });
 
 /**
- * 初始化配置管理器
- * 注册所有应用配置
+ * Initialize config manager
+ * Register all application configurations
  */
 export function initializeConfigManager(): void {
-  // 性能相关配置（支持热更新）
+  // Performance related configs (hot-reloadable)
   configManager.register('INSIGHT_SLOW_REQUEST_MS', '1000', {
-    description: '慢请求阈值（毫秒）',
+    description: 'Slow request threshold (milliseconds)',
     hotReloadable: true,
     validator: (v) => Number(v) > 0,
   });
 
   configManager.register('INSIGHT_RPC_TIMEOUT_MS', '30000', {
-    description: 'RPC 超时时间（毫秒）',
+    description: 'RPC timeout (milliseconds)',
     hotReloadable: true,
     validator: (v) => Number(v) > 0,
   });
 
   configManager.register('INSIGHT_WEBHOOK_TIMEOUT_MS', '10000', {
-    description: 'Webhook 超时时间（毫秒）',
+    description: 'Webhook timeout (milliseconds)',
     hotReloadable: true,
     validator: (v) => Number(v) > 0,
   });
 
-  // SLO 相关配置（支持热更新）
+  // SLO related configs (hot-reloadable)
   configManager.register('INSIGHT_SLO_MAX_LAG_BLOCKS', '200', {
-    description: '最大滞后区块数',
+    description: 'Maximum lag blocks',
     hotReloadable: true,
     validator: (v) => Number(v) >= 0,
   });
 
   configManager.register('INSIGHT_SLO_MAX_SYNC_STALENESS_MINUTES', '30', {
-    description: '最大同步陈旧时间（分钟）',
+    description: 'Maximum sync staleness (minutes)',
     hotReloadable: true,
     validator: (v) => Number(v) > 0,
   });
 
-  // 功能开关（支持热更新）
+  // Feature toggles (hot-reloadable)
   configManager.register('INSIGHT_DEMO_MODE', 'false', {
-    description: '演示模式开关',
+    description: 'Demo mode toggle',
     hotReloadable: true,
     validator: (v) => ['true', 'false', '1', '0'].includes(v.toLowerCase()),
   });
 
   configManager.register('INSIGHT_DISABLE_EMBEDDED_WORKER', 'false', {
-    description: '禁用嵌入式 Worker',
+    description: 'Disable embedded worker',
     hotReloadable: true,
     validator: (v) => ['true', 'false', '1', '0'].includes(v.toLowerCase()),
   });
 
-  // 日志相关配置（支持热更新）
+  // Logging related configs (hot-reloadable)
   configManager.register('INSIGHT_API_LOG_SAMPLE_RATE', '1.0', {
-    description: 'API 日志采样率',
+    description: 'API log sample rate',
     hotReloadable: true,
     validator: (v) => {
       const num = Number(v);
@@ -348,27 +348,27 @@ export function initializeConfigManager(): void {
     },
   });
 
-  // 内存限制配置（支持热更新）
+  // Memory limit configs (hot-reloadable)
   configManager.register('INSIGHT_MEMORY_MAX_VOTE_KEYS', '10000', {
-    description: '最大投票键数量',
+    description: 'Maximum vote keys',
     hotReloadable: true,
     validator: (v) => Number(v) > 0,
   });
 
   configManager.register('INSIGHT_MEMORY_MAX_ASSERTIONS', '1000', {
-    description: '最大断言数量',
+    description: 'Maximum assertions',
     hotReloadable: true,
     validator: (v) => Number(v) > 0,
   });
 
-  // 敏感配置（不支持热更新）
+  // Sensitive configs (not hot-reloadable)
   configManager.register('INSIGHT_ADMIN_TOKEN', '', {
-    description: '管理员令牌',
+    description: 'Admin token',
     hotReloadable: false,
   });
 
   configManager.register('INSIGHT_CRON_SECRET', '', {
-    description: 'Cron 密钥',
+    description: 'Cron secret',
     hotReloadable: false,
   });
 
@@ -376,7 +376,7 @@ export function initializeConfigManager(): void {
 }
 
 /**
- * 获取热更新后的环境变量值
+ * Get hot-reloaded environment variable value
  */
 export function getEnv(key: string, defaultValue?: string): string | undefined {
   if (defaultValue !== undefined) {
