@@ -21,6 +21,13 @@ import { startChainlinkSync, stopChainlinkSync } from '@/server/oracle/chainlink
 import { startPythSync, stopPythSync } from '@/server/oracle/pythSync';
 import { startBandSync, stopBandSync } from '@/server/oracle/bandSync';
 import { startAPI3Sync, stopAPI3Sync } from '@/server/oracle/api3Sync';
+import {
+  detectPriceDeviations,
+  analyzePriceTrends,
+  getProtocolReliabilityReport,
+  runCrossProtocolAnalysis,
+  type PriceDeviationConfig,
+} from '@/server/oracle/crossProtocolAnalysis';
 import type { OracleProtocol, SupportedChain } from '@/lib/types/unifiedOracleTypes';
 
 const RATE_LIMITS = {
@@ -57,6 +64,12 @@ export async function GET(request: NextRequest) {
           return await getPrices(url.searchParams);
         case 'comparison':
           return await getPriceComparison(url.searchParams);
+        case 'deviation':
+          return await getDeviationAnalysis(url.searchParams);
+        case 'trends':
+          return await getTrendAnalysis(url.searchParams);
+        case 'reliability':
+          return await getReliabilityReport(url.searchParams);
         case 'protocols':
           return await getProtocols();
         case 'chains':
@@ -105,6 +118,10 @@ export async function POST(request: NextRequest) {
           return await batchCreateInstances(body.instances);
         case 'batchUpdateStatus':
           return await batchUpdateStatus(body.ids, body.enabled);
+        case 'batchAnalyze':
+          return await batchAnalyze(body.symbols, body.config);
+        case 'runAnalysis':
+          return await runAnalysisJob(body.symbols, body.config);
         default:
           return { error: 'Unknown action' };
       }
@@ -532,6 +549,186 @@ async function getPriceComparison(searchParams: URLSearchParams) {
   };
 }
 
+async function getDeviationAnalysis(searchParams: URLSearchParams) {
+  const symbol = searchParams.get('symbol');
+  const warningThreshold = parseFloat(searchParams.get('warningThreshold') || '0.5');
+  const criticalThreshold = parseFloat(searchParams.get('criticalThreshold') || '1.0');
+  const minDataPoints = parseInt(searchParams.get('minDataPoints') || '3');
+  const timeWindowMinutes = parseInt(searchParams.get('timeWindow') || '5');
+
+  if (!symbol) {
+    return { error: 'Symbol is required for deviation analysis' };
+  }
+
+  try {
+    const config: Partial<PriceDeviationConfig> = {
+      warningThreshold,
+      criticalThreshold,
+      minDataPoints,
+      timeWindowMinutes,
+    };
+
+    const { consensus, deviations, healthy } = await detectPriceDeviations(symbol, config);
+
+    return {
+      symbol,
+      timestamp: new Date().toISOString(),
+      config,
+      consensus,
+      summary: {
+        totalProtocols: consensus.participatingProtocols,
+        healthyProtocols: healthy.length,
+        warningProtocols: deviations.filter((d) => d.severity === 'warning').length,
+        criticalProtocols: deviations.filter((d) => d.severity === 'critical').length,
+      },
+      deviations: deviations.map((d) => ({
+        severity: d.severity,
+        protocol: d.protocol,
+        chain: d.chain,
+        price: d.price,
+        referencePrice: d.referencePrice,
+        deviationPercent: d.deviationPercent,
+        message: d.message,
+      })),
+      healthy: healthy.map((h) => ({
+        protocol: h.protocol,
+        chain: h.chain,
+        price: h.price,
+        confidence: h.confidence,
+      })),
+    };
+  } catch (error) {
+    logger.error('Deviation analysis failed', {
+      symbol,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return {
+      error: 'Deviation analysis failed',
+      details: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+async function getTrendAnalysis(searchParams: URLSearchParams) {
+  const symbol = searchParams.get('symbol');
+  const timeWindowHours = parseInt(searchParams.get('hours') || '1');
+
+  if (!symbol) {
+    return { error: 'Symbol is required for trend analysis' };
+  }
+
+  try {
+    const trends = await analyzePriceTrends(symbol, timeWindowHours);
+
+    // 计算整体趋势统计
+    const upCount = trends.filter((t) => t.trend === 'up').length;
+    const downCount = trends.filter((t) => t.trend === 'down').length;
+    const stableCount = trends.filter((t) => t.trend === 'stable').length;
+    const avgVolatility =
+      trends.reduce((sum, t) => sum + t.volatility, 0) / (trends.length || 1);
+
+    return {
+      symbol,
+      timestamp: new Date().toISOString(),
+      timeWindow: `${timeWindowHours}h`,
+      summary: {
+        totalProtocols: trends.length,
+        upTrends: upCount,
+        downTrends: downCount,
+        stableTrends: stableCount,
+        dominantTrend: upCount > downCount ? 'up' : downCount > upCount ? 'down' : 'mixed',
+        avgVolatility: parseFloat(avgVolatility.toFixed(4)),
+      },
+      trends: trends.map((t) => ({
+        protocol: t.protocol,
+        chain: t.chain,
+        trend: t.trend,
+        changePercent: parseFloat(t.changePercent.toFixed(4)),
+        volatility: parseFloat(t.volatility.toFixed(4)),
+      })),
+    };
+  } catch (error) {
+    logger.error('Trend analysis failed', {
+      symbol,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return {
+      error: 'Trend analysis failed',
+      details: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+async function getReliabilityReport(searchParams: URLSearchParams) {
+  const protocol = searchParams.get('protocol') as OracleProtocol | null;
+
+  if (!protocol) {
+    // 返回所有协议的可靠性报告
+    const protocols: OracleProtocol[] = ['uma', 'chainlink', 'pyth', 'band', 'api3'];
+    const reports = await Promise.all(
+      protocols.map(async (p) => {
+        try {
+          return await getProtocolReliabilityReport(p);
+        } catch (error) {
+          logger.warn(`Failed to get reliability report for ${p}`, { error });
+          return null;
+        }
+      }),
+    );
+
+    const validReports = reports.filter((r) => r !== null);
+
+    return {
+      timestamp: new Date().toISOString(),
+      summary: {
+        totalProtocols: validReports.length,
+        avgReliability:
+          validReports.reduce((sum, r) => sum + r!.reliabilityScore, 0) /
+          (validReports.length || 1),
+      },
+      protocols: validReports.map((r) => ({
+        protocol: r!.protocol,
+        reliabilityScore: r!.reliabilityScore,
+        totalUpdates: r!.totalUpdates,
+        staleUpdates: r!.staleUpdates,
+        avgDeviation: parseFloat(r!.avgDeviationFromMedian.toFixed(4)),
+        maxDeviation: parseFloat(r!.maxDeviationFromMedian.toFixed(4)),
+        lastUpdated: r!.lastUpdated.toISOString(),
+      })),
+    };
+  }
+
+  try {
+    const report = await getProtocolReliabilityReport(protocol);
+
+    return {
+      timestamp: new Date().toISOString(),
+      protocol: report.protocol,
+      reliabilityScore: report.reliabilityScore,
+      metrics: {
+        totalUpdates24h: report.totalUpdates,
+        staleUpdates24h: report.staleUpdates,
+        freshnessRate:
+          report.totalUpdates > 0
+            ? ((report.totalUpdates - report.staleUpdates) / report.totalUpdates) * 100
+            : 0,
+        avgDeviationFromMedian: parseFloat(report.avgDeviationFromMedian.toFixed(4)),
+        maxDeviationFromMedian: parseFloat(report.maxDeviationFromMedian.toFixed(4)),
+      },
+      lastUpdated: report.lastUpdated.toISOString(),
+    };
+  } catch (error) {
+    logger.error('Reliability report failed', {
+      protocol,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return {
+      error: 'Reliability report failed',
+      details: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
 async function getProtocols() {
   const protocols = await query(`
     SELECT 
@@ -839,6 +1036,79 @@ async function batchCreateInstances(instances: unknown[]) {
     success: results.failed.length === 0,
     results,
   };
+}
+
+async function batchAnalyze(symbols: string[], config: Partial<PriceDeviationConfig> = {}) {
+  if (!Array.isArray(symbols) || symbols.length === 0) {
+    return { error: 'Symbols array is required' };
+  }
+
+  try {
+    const results = await runCrossProtocolAnalysis(symbols, config);
+
+    return {
+      success: true,
+      timestamp: new Date().toISOString(),
+      summary: {
+        symbolsAnalyzed: results.analyzed,
+        alertsGenerated: results.alertsGenerated,
+      },
+      results: results.details.map((r) => ({
+        symbol: r.symbol,
+        consensus: r.consensus,
+        deviationSummary: {
+          total: r.deviations.length,
+          warning: r.deviations.filter((d) => d.severity === 'warning').length,
+          critical: r.deviations.filter((d) => d.severity === 'critical').length,
+        },
+        trendSummary: {
+          up: r.trends.filter((t) => t.trend === 'up').length,
+          down: r.trends.filter((t) => t.trend === 'down').length,
+          stable: r.trends.filter((t) => t.trend === 'stable').length,
+        },
+      })),
+    };
+  } catch (error) {
+    logger.error('Batch analysis failed', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return {
+      error: 'Batch analysis failed',
+      details: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+async function runAnalysisJob(symbols: string[], config: Partial<PriceDeviationConfig> = {}) {
+  if (!Array.isArray(symbols) || symbols.length === 0) {
+    return { error: 'Symbols array is required' };
+  }
+
+  const startTime = Date.now();
+
+  try {
+    const results = await runCrossProtocolAnalysis(symbols, config);
+    const durationMs = Date.now() - startTime;
+
+    return {
+      success: true,
+      timestamp: new Date().toISOString(),
+      durationMs,
+      summary: {
+        symbolsAnalyzed: results.analyzed,
+        alertsGenerated: results.alertsGenerated,
+      },
+      message: `Analysis job completed: ${results.analyzed} symbols analyzed, ${results.alertsGenerated} alerts generated`,
+    };
+  } catch (error) {
+    logger.error('Analysis job failed', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return {
+      error: 'Analysis job failed',
+      details: error instanceof Error ? error.message : String(error),
+    };
+  }
 }
 
 async function batchUpdateStatus(ids: string[], enabled: boolean) {
