@@ -1,23 +1,19 @@
-import { NextResponse } from 'next/server';
-import { getApiDocs } from '@/lib/swagger';
-
 /**
- * @swagger
- * /api/docs:
- *   get:
- *     summary: 获取 OpenAPI 规范
- *     description: 返回 API 的 OpenAPI 3.0 规范文档
- *     tags:
- *       - Docs
- *     responses:
- *       200:
- *         description: 成功返回 OpenAPI 规范
- *         content:
- *           application/json:
- *             schema:
- *               type: object
+ * Swagger UI API Documentation
+ *
+ * API 文档页面
  */
-export async function GET() {
+
+import { getApiDocs } from '@/lib/swagger';
+import SwaggerUI from 'swagger-ui-react';
+import 'swagger-ui-react/swagger-ui.css';
+
+export default function ApiDocsPage() {
   const spec = getApiDocs();
-  return NextResponse.json(spec);
+
+  return (
+    <section className="container mx-auto p-4">
+      <SwaggerUI spec={spec} />
+    </section>
+  );
 }

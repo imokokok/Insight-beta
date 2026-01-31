@@ -1,3 +1,9 @@
+/**
+ * Swagger/OpenAPI Configuration
+ *
+ * API 文档配置
+ */
+
 import { createSwaggerSpec } from 'next-swagger-doc';
 
 export const getApiDocs = () => {
@@ -8,189 +14,111 @@ export const getApiDocs = () => {
       info: {
         title: 'OracleMonitor API',
         version: '1.0.0',
-        description: 'REST API documentation for Universal Oracle Monitoring Platform supporting Chainlink, Pyth, API3, DIA, Band, RedStone and more',
+        description: 'Universal Oracle Monitoring Platform API',
         contact: {
           name: 'OracleMonitor Team',
         },
       },
       servers: [
         {
-          url: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api',
-          description: 'API Server',
+          url: 'http://localhost:3000/api',
+          description: 'Development server',
+        },
+        {
+          url: 'https://api.oracle-monitor.example.com/api',
+          description: 'Production server',
         },
       ],
       tags: [
-        { name: 'Oracle', description: 'Oracle Core Functions' },
-        { name: 'Assertions', description: 'Assertion Management' },
-        { name: 'Disputes', description: 'Dispute Management' },
-        { name: 'Alerts', description: 'Alert Management' },
-        { name: 'Config', description: 'Configuration Management' },
-        { name: 'UMA', description: 'UMA Protocol Integration' },
-        { name: 'Admin', description: 'Admin Interface' },
-        { name: 'Health', description: 'Health Check' },
+        {
+          name: 'Oracle',
+          description: 'Oracle data endpoints',
+        },
+        {
+          name: 'Analytics',
+          description: 'Analytics and reporting endpoints',
+        },
+        {
+          name: 'Health',
+          description: 'Health check endpoints',
+        },
       ],
       components: {
-        securitySchemes: {
-          bearerAuth: {
-            type: 'http',
-            scheme: 'bearer',
-            bearerFormat: 'JWT',
-            description: 'Admin Token Authentication',
-          },
-        },
         schemas: {
-          Assertion: {
-            type: 'object',
-            properties: {
-              id: { type: 'string', description: 'Unique assertion identifier' },
-              claim: { type: 'string', description: 'Assertion claim content' },
-              asserter: { type: 'string', description: 'Asserter address' },
-              bond: { type: 'string', description: 'Bond amount' },
-              expirationTime: {
-                type: 'string',
-                format: 'date-time',
-                description: 'Expiration time',
-              },
-              status: {
-                type: 'string',
-                enum: ['pending', 'expired', 'disputed', 'settled'],
-                description: 'Assertion status',
-              },
-              createdAt: { type: 'string', format: 'date-time' },
-              updatedAt: { type: 'string', format: 'date-time' },
-            },
-            required: ['id', 'claim', 'asserter', 'status'],
-          },
-          Dispute: {
-            type: 'object',
-            properties: {
-              id: { type: 'string', description: 'Unique dispute identifier' },
-              assertionId: { type: 'string', description: 'Associated assertion ID' },
-              disputer: { type: 'string', description: 'Disputer address' },
-              bond: { type: 'string', description: 'Dispute bond amount' },
-              status: {
-                type: 'string',
-                enum: ['active', 'resolved', 'rejected'],
-                description: 'Dispute status',
-              },
-              createdAt: { type: 'string', format: 'date-time' },
-              resolvedAt: { type: 'string', format: 'date-time', nullable: true },
-            },
-            required: ['id', 'assertionId', 'disputer', 'status'],
-          },
-          Alert: {
-            type: 'object',
-            properties: {
-              id: { type: 'string', description: 'Unique alert identifier' },
-              type: {
-                type: 'string',
-                enum: ['assertion', 'dispute', 'system'],
-                description: 'Alert type',
-              },
-              severity: {
-                type: 'string',
-                enum: ['low', 'medium', 'high', 'critical'],
-                description: 'Severity level',
-              },
-              message: { type: 'string', description: 'Alert message' },
-              metadata: { type: 'object', description: 'Additional metadata' },
-              acknowledged: { type: 'boolean', description: 'Whether acknowledged' },
-              createdAt: { type: 'string', format: 'date-time' },
-            },
-            required: ['id', 'type', 'severity', 'message'],
-          },
-          OracleConfig: {
+          UnifiedPriceFeed: {
             type: 'object',
             properties: {
               id: { type: 'string' },
-              key: { type: 'string', description: 'Configuration key' },
-              value: { type: 'object', description: 'Configuration value' },
-              description: { type: 'string', description: 'Configuration description' },
-              updatedBy: { type: 'string', description: 'Updater address' },
-              createdAt: { type: 'string', format: 'date-time' },
-              updatedAt: { type: 'string', format: 'date-time' },
+              instanceId: { type: 'string' },
+              protocol: { type: 'string', enum: ['uma', 'chainlink', 'pyth', 'band', 'api3'] },
+              chain: { type: 'string' },
+              symbol: { type: 'string' },
+              baseAsset: { type: 'string' },
+              quoteAsset: { type: 'string' },
+              price: { type: 'number' },
+              priceRaw: { type: 'string' },
+              decimals: { type: 'number' },
+              timestamp: { type: 'string', format: 'date-time' },
+              blockNumber: { type: 'number' },
+              confidence: { type: 'number' },
+              sources: { type: 'number' },
+              isStale: { type: 'boolean' },
+              stalenessSeconds: { type: 'number' },
             },
-            required: ['id', 'key', 'value'],
           },
-          ApiResponse: {
+          CrossOracleComparison: {
             type: 'object',
             properties: {
-              success: { type: 'boolean', description: 'Whether request succeeded' },
-              data: { type: 'object', description: 'Response data' },
-              error: { type: 'string', description: 'Error message', nullable: true },
-              meta: {
-                type: 'object',
-                properties: {
-                  page: { type: 'integer', description: 'Current page number' },
-                  limit: { type: 'integer', description: 'Items per page' },
-                  total: { type: 'integer', description: 'Total records' },
-                  totalPages: { type: 'integer', description: 'Total pages' },
+              id: { type: 'string' },
+              symbol: { type: 'string' },
+              baseAsset: { type: 'string' },
+              quoteAsset: { type: 'string' },
+              prices: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    protocol: { type: 'string' },
+                    instanceId: { type: 'string' },
+                    price: { type: 'number' },
+                    timestamp: { type: 'string', format: 'date-time' },
+                    confidence: { type: 'number' },
+                    isStale: { type: 'boolean' },
+                  },
                 },
               },
+              avgPrice: { type: 'number' },
+              medianPrice: { type: 'number' },
+              minPrice: { type: 'number' },
+              maxPrice: { type: 'number' },
+              priceRange: { type: 'number' },
+              priceRangePercent: { type: 'number' },
+              maxDeviation: { type: 'number' },
+              maxDeviationPercent: { type: 'number' },
+              outlierProtocols: { type: 'array', items: { type: 'string' } },
+              recommendedPrice: { type: 'number' },
+              recommendationSource: { type: 'string' },
+              timestamp: { type: 'string', format: 'date-time' },
             },
-            required: ['success'],
           },
-          ErrorResponse: {
+          DeviationTrend: {
             type: 'object',
             properties: {
-              success: { type: 'boolean', example: false },
-              error: { type: 'string', description: 'Error description' },
-              code: { type: 'string', description: 'Error code' },
-              details: {
-                type: 'object',
-                description: 'Detailed error information',
-                nullable: true,
-              },
+              symbol: { type: 'string' },
+              trendDirection: { type: 'string', enum: ['increasing', 'decreasing', 'stable'] },
+              trendStrength: { type: 'number' },
+              avgDeviation: { type: 'number' },
+              maxDeviation: { type: 'number' },
+              volatility: { type: 'number' },
+              anomalyScore: { type: 'number' },
+              recommendation: { type: 'string' },
             },
-            required: ['success', 'error'],
           },
-          OracleStats: {
+          Error: {
             type: 'object',
             properties: {
-              tvsUsd: { type: 'number', description: 'Total value secured (USD)' },
-              activeDisputes: { type: 'number', description: 'Active disputes count' },
-              resolved24h: { type: 'number', description: 'Disputes resolved in 24h' },
-              avgResolutionMinutes: {
-                type: 'number',
-                description: 'Average resolution time (minutes)',
-              },
+              error: { type: 'string' },
             },
-            required: ['tvsUsd', 'activeDisputes', 'resolved24h', 'avgResolutionMinutes'],
-          },
-          AuditLogEntry: {
-            type: 'object',
-            properties: {
-              id: { type: 'string', description: 'Unique log identifier' },
-              timestamp: { type: 'string', format: 'date-time', description: 'Log timestamp' },
-              action: { type: 'string', description: 'Action type' },
-              actor: { type: 'string', description: 'Actor' },
-              actorType: {
-                type: 'string',
-                enum: ['user', 'admin', 'system', 'anonymous'],
-                description: 'Actor type',
-              },
-              severity: {
-                type: 'string',
-                enum: ['info', 'warning', 'critical'],
-                description: 'Severity level',
-              },
-              details: { type: 'object', description: 'Detailed content' },
-              ip: { type: 'string', description: 'IP address' },
-              userAgent: { type: 'string', description: 'User agent' },
-              success: { type: 'boolean', description: 'Whether successful' },
-              errorMessage: { type: 'string', description: 'Error message', nullable: true },
-            },
-            required: ['id', 'timestamp', 'action', 'actor', 'severity', 'success'],
-          },
-          PaginationMeta: {
-            type: 'object',
-            properties: {
-              total: { type: 'integer', description: 'Total records' },
-              limit: { type: 'integer', description: 'Items per page' },
-              offset: { type: 'integer', description: 'Offset' },
-              nextCursor: { type: 'integer', description: 'Next page cursor', nullable: true },
-            },
-            required: ['total', 'limit', 'offset'],
           },
         },
       },
