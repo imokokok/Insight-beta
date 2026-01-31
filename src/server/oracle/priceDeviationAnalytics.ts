@@ -84,7 +84,7 @@ export class PriceDeviationAnalytics {
   async analyzeDeviationTrend(symbol: string): Promise<DeviationTrend> {
     try {
       const dataPoints = await this.fetchDeviationHistory(symbol);
-      
+
       if (dataPoints.length < this.config.minDataPoints) {
         return {
           symbol,
@@ -98,24 +98,24 @@ export class PriceDeviationAnalytics {
         };
       }
 
-      const deviations = dataPoints.map(d => d.maxDeviationPercent);
+      const deviations = dataPoints.map((d) => d.maxDeviationPercent);
       const avgDeviation = this.calculateAverage(deviations);
       const maxDeviation = Math.max(...deviations);
       const volatility = this.calculateStandardDeviation(deviations);
-      
+
       // 计算趋势
       const trendDirection = this.calculateTrendDirection(deviations);
       const trendStrength = this.calculateTrendStrength(deviations);
-      
+
       // 计算异常分数
       const anomalyScore = this.calculateAnomalyScore(dataPoints);
-      
+
       // 生成建议
       const recommendation = this.generateRecommendation(
         trendDirection,
         trendStrength,
         avgDeviation,
-        anomalyScore
+        anomalyScore,
       );
 
       return {
@@ -139,9 +139,11 @@ export class PriceDeviationAnalytics {
    */
   async generateReport(symbols?: string[]): Promise<DeviationReport> {
     try {
-      const targetSymbols = symbols || await this.getActiveSymbols();
+      const targetSymbols = symbols || (await this.getActiveSymbols());
       const endTime = new Date();
-      const startTime = new Date(endTime.getTime() - this.config.analysisWindowHours * 60 * 60 * 1000);
+      const startTime = new Date(
+        endTime.getTime() - this.config.analysisWindowHours * 60 * 60 * 1000,
+      );
 
       const trends: DeviationTrend[] = [];
       const anomalies: PriceDeviationPoint[] = [];
@@ -153,13 +155,13 @@ export class PriceDeviationAnalytics {
       for (const symbol of targetSymbols) {
         const trend = await this.analyzeDeviationTrend(symbol);
         trends.push(trend);
-        
+
         totalDeviation += trend.avgDeviation;
-        
+
         if (trend.avgDeviation > this.config.deviationThreshold * 100) {
           highDeviationCount++;
         }
-        
+
         if (trend.volatility > maxVolatility) {
           maxVolatility = trend.volatility;
           mostVolatileSymbol = symbol;
@@ -200,22 +202,24 @@ export class PriceDeviationAnalytics {
     try {
       const dataPoints = await this.fetchDeviationHistory(symbol);
       const anomalies: PriceDeviationPoint[] = [];
-      
+
       // 计算统计阈值
-      const deviations = dataPoints.map(d => d.maxDeviationPercent);
+      const deviations = dataPoints.map((d) => d.maxDeviationPercent);
       const mean = this.calculateAverage(deviations);
       const stdDev = this.calculateStandardDeviation(deviations);
       const threshold = mean + 2 * stdDev; // 2 sigma
 
       for (const point of dataPoints) {
-        if (point.maxDeviationPercent > threshold || 
-            point.maxDeviationPercent > this.config.deviationThreshold * 100) {
+        if (
+          point.maxDeviationPercent > threshold ||
+          point.maxDeviationPercent > this.config.deviationThreshold * 100
+        ) {
           anomalies.push(point);
         }
       }
 
-      return anomalies.sort((a, b) => 
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      return anomalies.sort(
+        (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
       );
     } catch (error) {
       logger.error('Failed to detect anomalies', { error, symbol });
@@ -226,12 +230,14 @@ export class PriceDeviationAnalytics {
   /**
    * 比较多个交易对的偏差表现
    */
-  async compareSymbols(symbols: string[]): Promise<Array<{
-    symbol: string;
-    rank: number;
-    avgDeviation: number;
-    stability: number;
-  }>> {
+  async compareSymbols(symbols: string[]): Promise<
+    Array<{
+      symbol: string;
+      rank: number;
+      avgDeviation: number;
+      stability: number;
+    }>
+  > {
     const comparisons = await Promise.all(
       symbols.map(async (symbol) => {
         const trend = await this.analyzeDeviationTrend(symbol);
@@ -240,7 +246,7 @@ export class PriceDeviationAnalytics {
           avgDeviation: trend.avgDeviation,
           stability: 1 / (1 + trend.volatility), // 稳定性分数
         };
-      })
+      }),
     );
 
     // 按平均偏差排序（偏差越小越好）
@@ -273,10 +279,10 @@ export class PriceDeviationAnalytics {
         AND timestamp > NOW() - INTERVAL '${this.config.analysisWindowHours} hours'
       ORDER BY timestamp ASC
       `,
-      [symbol]
+      [symbol],
     );
 
-    return result.rows.map(row => ({
+    return result.rows.map((row) => ({
       timestamp: row.timestamp,
       symbol: row.symbol,
       protocols: Object.keys(row.prices || {}),
@@ -296,9 +302,9 @@ export class PriceDeviationAnalytics {
       FROM unified_price_feeds 
       WHERE timestamp > NOW() - INTERVAL '1 hour'
       ORDER BY symbol
-      `
+      `,
     );
-    return result.rows.map(row => row.symbol);
+    return result.rows.map((row) => row.symbol);
   }
 
   // ============================================================================
@@ -313,22 +319,22 @@ export class PriceDeviationAnalytics {
   private calculateStandardDeviation(values: number[]): number {
     if (values.length < 2) return 0;
     const mean = this.calculateAverage(values);
-    const squaredDiffs = values.map(v => Math.pow(v - mean, 2));
+    const squaredDiffs = values.map((v) => Math.pow(v - mean, 2));
     const avgSquaredDiff = this.calculateAverage(squaredDiffs);
     return Math.sqrt(avgSquaredDiff);
   }
 
   private calculateTrendDirection(values: number[]): 'increasing' | 'decreasing' | 'stable' {
     if (values.length < 2) return 'stable';
-    
+
     const firstHalf = values.slice(0, Math.floor(values.length / 2));
     const secondHalf = values.slice(Math.floor(values.length / 2));
-    
+
     const firstAvg = this.calculateAverage(firstHalf);
     const secondAvg = this.calculateAverage(secondHalf);
-    
+
     const change = (secondAvg - firstAvg) / firstAvg;
-    
+
     if (change > 0.1) return 'increasing';
     if (change < -0.1) return 'decreasing';
     return 'stable';
@@ -336,41 +342,44 @@ export class PriceDeviationAnalytics {
 
   private calculateTrendStrength(values: number[]): number {
     if (values.length < 2) return 0;
-    
+
     // 使用线性回归计算趋势强度
     const n = values.length;
     const indices = Array.from({ length: n }, (_, i) => i);
-    
+
     const avgX = this.calculateAverage(indices);
     const avgY = this.calculateAverage(values);
-    
+
     let numerator = 0;
     let denominator = 0;
-    
+
     for (let i = 0; i < n; i++) {
-      numerator += (indices[i] - avgX) * (values[i] - avgY);
-      denominator += Math.pow(indices[i] - avgX, 2);
+      const index = indices[i];
+      const value = values[i];
+      if (index !== undefined && value !== undefined) {
+        numerator += (index - avgX) * (value - avgY);
+        denominator += Math.pow(index - avgX, 2);
+      }
     }
-    
+
     if (denominator === 0) return 0;
-    
+
     const slope = numerator / denominator;
     const normalizedSlope = Math.min(Math.abs(slope) / (avgY * 0.1), 1);
-    
+
     return normalizedSlope;
   }
 
   private calculateAnomalyScore(dataPoints: PriceDeviationPoint[]): number {
     if (dataPoints.length === 0) return 0;
-    
-    const outlierRatio = dataPoints.filter(
-      d => d.outlierProtocols.length > 0
-    ).length / dataPoints.length;
-    
-    const highDeviationRatio = dataPoints.filter(
-      d => d.maxDeviationPercent > this.config.deviationThreshold * 100
-    ).length / dataPoints.length;
-    
+
+    const outlierRatio =
+      dataPoints.filter((d) => d.outlierProtocols.length > 0).length / dataPoints.length;
+
+    const highDeviationRatio =
+      dataPoints.filter((d) => d.maxDeviationPercent > this.config.deviationThreshold * 100)
+        .length / dataPoints.length;
+
     return Math.min((outlierRatio + highDeviationRatio) / 2, 1);
   }
 
@@ -378,30 +387,30 @@ export class PriceDeviationAnalytics {
     trendDirection: string,
     trendStrength: number,
     avgDeviation: number,
-    anomalyScore: number
+    anomalyScore: number,
   ): string {
     const parts: string[] = [];
-    
+
     if (anomalyScore > 0.7) {
       parts.push('High anomaly detected. Investigate data sources immediately.');
     } else if (anomalyScore > 0.4) {
       parts.push('Moderate anomalies observed. Monitor closely.');
     }
-    
+
     if (trendDirection === 'increasing' && trendStrength > 0.5) {
       parts.push('Deviation trend is increasing significantly.');
     }
-    
+
     if (avgDeviation > 5) {
       parts.push('Average deviation is very high (>5%).');
     } else if (avgDeviation > 1) {
       parts.push('Average deviation is elevated (>1%).');
     }
-    
+
     if (parts.length === 0) {
       return 'Price deviation is within normal ranges.';
     }
-    
+
     return parts.join(' ');
   }
 }

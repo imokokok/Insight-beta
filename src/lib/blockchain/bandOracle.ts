@@ -113,9 +113,9 @@ export class BandClient {
         `${endpoint}?symbols=${encodeURIComponent(symbol)}&min_count=${this.config.minCount}&ask_count=${this.config.askCount}`,
         {
           headers: {
-            'Accept': 'application/json',
+            Accept: 'application/json',
           },
-        }
+        },
       );
 
       if (!response.ok) {
@@ -205,12 +205,15 @@ export class BandClient {
   async healthCheck(): Promise<{ healthy: boolean; latency: number }> {
     const start = Date.now();
     try {
-      const response = await fetch(`${this.config.bandEndpoint}/oracle/v1/request_prices?symbols=BTC&min_count=3&ask_count=4`, {
-        headers: { 'Accept': 'application/json' },
-      });
+      const response = await fetch(
+        `${this.config.bandEndpoint}/oracle/v1/request_prices?symbols=BTC&min_count=3&ask_count=4`,
+        {
+          headers: { Accept: 'application/json' },
+        },
+      );
       const latency = Date.now() - start;
       return { healthy: response.ok, latency };
-    } catch (error) {
+    } catch {
       return { healthy: false, latency: Date.now() - start };
     }
   }

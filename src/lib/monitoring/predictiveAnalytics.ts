@@ -84,7 +84,19 @@ export class PredictiveAnalyticsEngine {
     }
 
     if (values.length === 1) {
-      const only = values[0]!;
+      const only = values[0];
+      if (only === undefined) {
+        return {
+          mean: 0,
+          stdDev: 0,
+          min: 0,
+          max: 0,
+          trend: 0,
+          seasonality: 0,
+          volatility: 0,
+          autocorrelation: 0,
+        };
+      }
       return {
         mean: only,
         stdDev: 0,

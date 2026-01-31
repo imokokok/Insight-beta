@@ -1,6 +1,6 @@
 /**
  * GraphQL API Route
- * 
+ *
  * GraphQL API 路由 - 提供灵活的预言机数据查询
  */
 
@@ -19,7 +19,6 @@ import type { NextRequest } from 'next/server';
 // ============================================================================
 
 // GraphQL temporarily disabled - typeDefs and resolvers defined but not used
-// @ts-ignore - Will be used when GraphQL is enabled
 const _typeDefs = `
   scalar DateTime
   scalar JSON
@@ -287,15 +286,11 @@ const _typeDefs = `
 // ============================================================================
 
 // GraphQL temporarily disabled - resolvers defined but not used
-// @ts-ignore - Will be used when GraphQL is enabled
 const _resolvers = {
   Query: {
     // Price Feed Queries
     priceFeed: async (_: unknown, { id }: { id: string }) => {
-      const result = await query(
-        `SELECT * FROM unified_price_feeds WHERE id = $1`,
-        [id]
-      );
+      const result = await query(`SELECT * FROM unified_price_feeds WHERE id = $1`, [id]);
       return result.rows[0] || null;
     },
 
@@ -313,7 +308,7 @@ const _resolvers = {
         symbol?: string;
         limit?: number;
         offset?: number;
-      }
+      },
     ) => {
       let sql = `SELECT * FROM unified_price_feeds WHERE 1=1`;
       const params: (string | number)[] = [];
@@ -341,17 +336,13 @@ const _resolvers = {
 
     latestPrice: async (
       _: unknown,
-      {
-        protocol,
-        chain,
-        symbol,
-      }: { protocol: string; chain: string; symbol: string }
+      { protocol, chain, symbol }: { protocol: string; chain: string; symbol: string },
     ) => {
       const result = await query(
         `SELECT * FROM unified_price_feeds 
          WHERE protocol = $1 AND chain = $2 AND symbol = $3
          ORDER BY timestamp DESC LIMIT 1`,
-        [protocol, chain, symbol]
+        [protocol, chain, symbol],
       );
       return result.rows[0] || null;
     },
@@ -370,24 +361,21 @@ const _resolvers = {
         symbol: string;
         from: string;
         to: string;
-      }
+      },
     ) => {
       const result = await query(
         `SELECT * FROM unified_price_feeds 
          WHERE protocol = $1 AND chain = $2 AND symbol = $3
          AND timestamp >= $4 AND timestamp <= $5
          ORDER BY timestamp ASC`,
-        [protocol, chain, symbol, from, to]
+        [protocol, chain, symbol, from, to],
       );
       return result.rows;
     },
 
     // Oracle Instance Queries
     oracleInstance: async (_: unknown, { id }: { id: string }) => {
-      const result = await query(
-        `SELECT * FROM unified_oracle_instances WHERE id = $1`,
-        [id]
-      );
+      const result = await query(`SELECT * FROM unified_oracle_instances WHERE id = $1`, [id]);
       return result.rows[0] || null;
     },
 
@@ -405,7 +393,7 @@ const _resolvers = {
         enabled?: boolean;
         limit?: number;
         offset?: number;
-      }
+      },
     ) => {
       let sql = `SELECT * FROM unified_oracle_instances WHERE 1=1`;
       const params: (string | number | boolean)[] = [];
@@ -433,9 +421,7 @@ const _resolvers = {
 
     // Alert Queries
     alert: async (_: unknown, { id }: { id: string }) => {
-      const result = await query(`SELECT * FROM unified_alerts WHERE id = $1`, [
-        id,
-      ]);
+      const result = await query(`SELECT * FROM unified_alerts WHERE id = $1`, [id]);
       return result.rows[0] || null;
     },
 
@@ -455,7 +441,7 @@ const _resolvers = {
         chain?: string;
         limit?: number;
         offset?: number;
-      }
+      },
     ) => {
       let sql = `SELECT * FROM unified_alerts WHERE 1=1`;
       const params: (string | number)[] = [];
@@ -486,38 +472,27 @@ const _resolvers = {
     },
 
     alertStats: async () => {
-      const [
-        totalResult,
-        bySeverityResult,
-        byStatusResult,
-        byProtocolResult,
-        recentResult,
-      ] = await Promise.all([
-        query('SELECT COUNT(*) as total FROM unified_alerts'),
-        query(
-          'SELECT severity, COUNT(*) as count FROM unified_alerts GROUP BY severity'
-        ),
-        query(
-          'SELECT status, COUNT(*) as count FROM unified_alerts GROUP BY status'
-        ),
-        query(
-          'SELECT protocol, COUNT(*) as count FROM unified_alerts WHERE protocol IS NOT NULL GROUP BY protocol'
-        ),
-        query(
-          `SELECT COUNT(*) as count FROM unified_alerts WHERE created_at > NOW() - INTERVAL '24 hours'`
-        ),
-      ]);
+      const [totalResult, bySeverityResult, byStatusResult, byProtocolResult, recentResult] =
+        await Promise.all([
+          query('SELECT COUNT(*) as total FROM unified_alerts'),
+          query('SELECT severity, COUNT(*) as count FROM unified_alerts GROUP BY severity'),
+          query('SELECT status, COUNT(*) as count FROM unified_alerts GROUP BY status'),
+          query(
+            'SELECT protocol, COUNT(*) as count FROM unified_alerts WHERE protocol IS NOT NULL GROUP BY protocol',
+          ),
+          query(
+            `SELECT COUNT(*) as count FROM unified_alerts WHERE created_at > NOW() - INTERVAL '24 hours'`,
+          ),
+        ]);
 
       return {
         total: parseInt(totalResult.rows[0]?.total || 0),
         bySeverity: Object.fromEntries(
-          bySeverityResult.rows.map((r) => [r.severity, parseInt(r.count)])
+          bySeverityResult.rows.map((r) => [r.severity, parseInt(r.count)]),
         ),
-        byStatus: Object.fromEntries(
-          byStatusResult.rows.map((r) => [r.status, parseInt(r.count)])
-        ),
+        byStatus: Object.fromEntries(byStatusResult.rows.map((r) => [r.status, parseInt(r.count)])),
         byProtocol: Object.fromEntries(
-          byProtocolResult.rows.map((r) => [r.protocol, parseInt(r.count)])
+          byProtocolResult.rows.map((r) => [r.protocol, parseInt(r.count)]),
         ),
         recent24h: parseInt(recentResult.rows[0]?.count || 0),
         avgResolutionTime: 0,
@@ -532,7 +507,7 @@ const _resolvers = {
         FROM unified_price_feeds
         WHERE symbol = $1
         ORDER BY protocol, chain, timestamp DESC`,
-        [symbol]
+        [symbol],
       );
 
       const prices = result.rows.map((row) => ({
@@ -549,8 +524,7 @@ const _resolvers = {
       }
 
       const priceValues = prices.map((p) => p.price);
-      const averagePrice =
-        priceValues.reduce((a, b) => a + b, 0) / priceValues.length;
+      const averagePrice = priceValues.reduce((a, b) => a + b, 0) / priceValues.length;
       const sortedPrices = [...priceValues].sort((a, b) => a - b);
       const medianPrice = sortedPrices[Math.floor(sortedPrices.length / 2)];
       const minPrice = Math.min(...priceValues);
@@ -570,10 +544,7 @@ const _resolvers = {
       };
     },
 
-    crossProtocolComparison: async (
-      _: unknown,
-      { symbols }: { symbols: string[] }
-    ) => {
+    crossProtocolComparison: async (_: unknown, { symbols }: { symbols: string[] }) => {
       const comparisons = await Promise.all(
         symbols.map(async (symbol) => {
           const result = await query(
@@ -582,7 +553,7 @@ const _resolvers = {
             FROM unified_price_feeds
             WHERE symbol = $1
             ORDER BY protocol, chain, timestamp DESC`,
-            [symbol]
+            [symbol],
           );
 
           const prices = result.rows.map((row) => ({
@@ -597,8 +568,7 @@ const _resolvers = {
           if (prices.length === 0) return null;
 
           const priceValues = prices.map((p) => p.price);
-          const averagePrice =
-            priceValues.reduce((a, b) => a + b, 0) / priceValues.length;
+          const averagePrice = priceValues.reduce((a, b) => a + b, 0) / priceValues.length;
           const sortedPrices = [...priceValues].sort((a, b) => a - b);
           const medianPrice = sortedPrices[Math.floor(sortedPrices.length / 2)];
 
@@ -609,14 +579,11 @@ const _resolvers = {
             medianPrice,
             minPrice: Math.min(...priceValues),
             maxPrice: Math.max(...priceValues),
-            deviation:
-              ((Math.max(...priceValues) - Math.min(...priceValues)) /
-                averagePrice) *
-              100,
+            deviation: ((Math.max(...priceValues) - Math.min(...priceValues)) / averagePrice) * 100,
             recommendedPrice: medianPrice,
             timestamp: new Date(),
           };
-        })
+        }),
       );
 
       return comparisons.filter(Boolean);
@@ -657,27 +624,22 @@ const _resolvers = {
     },
 
     globalStats: async () => {
-      const [
-        instancesResult,
-        protocolsResult,
-        chainsResult,
-        pricesResult,
-        alertsResult,
-      ] = await Promise.all([
-        query('SELECT COUNT(*), COUNT(CASE WHEN enabled THEN 1 END) FROM unified_oracle_instances'),
-        query('SELECT COUNT(DISTINCT protocol) FROM unified_oracle_instances'),
-        query('SELECT COUNT(DISTINCT chain) FROM unified_oracle_instances'),
-        query(
-          `SELECT COUNT(*) FROM unified_price_feeds WHERE timestamp > NOW() - INTERVAL '1 hour'`
-        ),
-        query(`SELECT COUNT(*) FROM unified_alerts WHERE status = 'open'`),
-      ]);
+      const [instancesResult, protocolsResult, chainsResult, pricesResult, alertsResult] =
+        await Promise.all([
+          query(
+            'SELECT COUNT(*), COUNT(CASE WHEN enabled THEN 1 END) FROM unified_oracle_instances',
+          ),
+          query('SELECT COUNT(DISTINCT protocol) FROM unified_oracle_instances'),
+          query('SELECT COUNT(DISTINCT chain) FROM unified_oracle_instances'),
+          query(
+            `SELECT COUNT(*) FROM unified_price_feeds WHERE timestamp > NOW() - INTERVAL '1 hour'`,
+          ),
+          query(`SELECT COUNT(*) FROM unified_alerts WHERE status = 'open'`),
+        ]);
 
       return {
         totalInstances: parseInt(instancesResult.rows[0]?.count || 0),
-        activeInstances: parseInt(
-          instancesResult.rows[0]?.count || 0
-        ),
+        activeInstances: parseInt(instancesResult.rows[0]?.count || 0),
         totalProtocols: parseInt(protocolsResult.rows[0]?.count || 0),
         totalChains: parseInt(chainsResult.rows[0]?.count || 0),
         totalPriceUpdates1h: parseInt(pricesResult.rows[0]?.count || 0),
@@ -702,14 +664,14 @@ const _resolvers = {
         chain: string;
         address?: string;
         config?: Record<string, unknown>;
-      }
+      },
     ) => {
       const result = await query(
         `INSERT INTO unified_oracle_instances 
          (name, protocol, chain, address, config, enabled, created_at, updated_at)
          VALUES ($1, $2, $3, $4, $5, true, NOW(), NOW())
          RETURNING *`,
-        [name, protocol, chain, address, JSON.stringify(config || {})]
+        [name, protocol, chain, address, JSON.stringify(config || {})],
       );
       return result.rows[0];
     },
@@ -726,7 +688,7 @@ const _resolvers = {
         name?: string;
         config?: Record<string, unknown>;
         enabled?: boolean;
-      }
+      },
     ) => {
       const updates: string[] = [];
       const values: (string | boolean)[] = [];
@@ -751,41 +713,32 @@ const _resolvers = {
       const result = await query(
         `UPDATE unified_oracle_instances SET ${updates.join(', ')} 
          WHERE id = $${paramIndex} RETURNING *`,
-        values
+        values,
       );
       return result.rows[0];
     },
 
     deleteOracleInstance: async (_: unknown, { id }: { id: string }) => {
-      const result = await query(
-        'DELETE FROM unified_oracle_instances WHERE id = $1',
-        [id]
-      );
+      const result = await query('DELETE FROM unified_oracle_instances WHERE id = $1', [id]);
       return (result.rowCount ?? 0) > 0;
     },
 
-    acknowledgeAlert: async (
-      _: unknown,
-      { id, userId }: { id: string; userId: string }
-    ) => {
+    acknowledgeAlert: async (_: unknown, { id, userId }: { id: string; userId: string }) => {
       const result = await query(
         `UPDATE unified_alerts 
          SET status = 'acknowledged', acknowledged_by = $2, acknowledged_at = NOW(), updated_at = NOW()
          WHERE id = $1 RETURNING *`,
-        [id, userId]
+        [id, userId],
       );
       return result.rows[0];
     },
 
-    resolveAlert: async (
-      _: unknown,
-      { id, userId }: { id: string; userId: string }
-    ) => {
+    resolveAlert: async (_: unknown, { id, userId }: { id: string; userId: string }) => {
       const result = await query(
         `UPDATE unified_alerts 
          SET status = 'resolved', resolved_by = $2, resolved_at = NOW(), updated_at = NOW()
          WHERE id = $1 RETURNING *`,
-        [id, userId]
+        [id, userId],
       );
       return result.rows[0];
     },
@@ -795,7 +748,7 @@ const _resolvers = {
         `UPDATE unified_sync_state 
          SET status = 'active', updated_at = NOW()
          WHERE instance_id = $1 RETURNING *`,
-        [instanceId]
+        [instanceId],
       );
       return result.rows[0];
     },
@@ -805,7 +758,7 @@ const _resolvers = {
         `UPDATE unified_sync_state 
          SET status = 'stopped', updated_at = NOW()
          WHERE instance_id = $1 RETURNING *`,
-        [instanceId]
+        [instanceId],
       );
       return result.rows[0];
     },
@@ -813,10 +766,9 @@ const _resolvers = {
 
   OracleInstance: {
     syncStatus: async (parent: { id: string }) => {
-      const result = await query(
-        'SELECT * FROM unified_sync_state WHERE instance_id = $1',
-        [parent.id]
-      );
+      const result = await query('SELECT * FROM unified_sync_state WHERE instance_id = $1', [
+        parent.id,
+      ]);
       return result.rows[0] || null;
     },
     latestPrices: async (parent: { id: string }) => {
@@ -828,7 +780,7 @@ const _resolvers = {
         WHERE instance_id = $1
         ORDER BY symbol, timestamp DESC
         LIMIT 10`,
-        [parent.id]
+        [parent.id],
       );
       return result.rows;
     },
@@ -879,6 +831,10 @@ export async function POST(_request: NextRequest) {
 }
 
 export async function OPTIONS(_request: NextRequest) {
+  // 引用未使用的变量以避免 TypeScript 错误
+  void _typeDefs;
+  void _resolvers;
+
   return new Response(null, {
     status: 204,
     headers: {

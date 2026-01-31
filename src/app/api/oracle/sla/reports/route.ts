@@ -4,7 +4,8 @@
  * SLA 报告 API 路由
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { generateSLAReport } from '@/server/monitoring/slaMonitor';
 import { query } from '@/server/db';
 import { logger } from '@/lib/logger';
@@ -13,7 +14,7 @@ export async function GET(_request: NextRequest) {
   try {
     // 获取所有活跃的协议和链
     const instances = await query(
-      `SELECT DISTINCT protocol, chain FROM unified_oracle_instances WHERE enabled = true`
+      `SELECT DISTINCT protocol, chain FROM unified_oracle_instances WHERE enabled = true`,
     );
 
     // 为每个实例生成报告
@@ -29,15 +30,12 @@ export async function GET(_request: NextRequest) {
           });
           return null;
         }
-      })
+      }),
     );
 
     return NextResponse.json(reports.filter(Boolean));
   } catch (error) {
     logger.error('Failed to get SLA reports', { error });
-    return NextResponse.json(
-      { error: 'Failed to get SLA reports' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to get SLA reports' }, { status: 500 });
   }
 }

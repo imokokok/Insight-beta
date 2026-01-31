@@ -10,7 +10,7 @@
 
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -95,7 +95,18 @@ export default function UnifiedDashboardPage() {
 
     ws.onmessage = (event) => {
       const message = JSON.parse(event.data);
-      handleWebSocketMessage(message);
+      if (typeof message !== 'object' || message === null) return;
+
+      const msg = message as { type: string; data: unknown };
+
+      switch (msg.type) {
+        case 'price_update':
+          // 处理价格更新
+          break;
+        case 'comparison_update':
+          setComparison(msg.data as CrossOracleComparison);
+          break;
+      }
     };
 
     return () => {
@@ -105,74 +116,59 @@ export default function UnifiedDashboardPage() {
 
   // 初始数据加载
   useEffect(() => {
-    loadDashboardData();
-  }, []);
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+
+        // 并行加载所有数据
+        const [statsRes, protocolsRes, historyRes] = await Promise.all([
+          fetch('/api/oracle/unified/stats'),
+          fetch('/api/oracle/unified/protocols'),
+          fetch(`/api/oracle/unified/comparison/history?symbol=${selectedSymbol}&hours=24`),
+        ]);
+
+        if (statsRes.ok) {
+          setDashboardStats(await statsRes.json());
+        }
+
+        if (protocolsRes.ok) {
+          setProtocolStats(await protocolsRes.json());
+        }
+
+        if (historyRes.ok) {
+          setPriceHistory(await historyRes.json());
+        }
+      } catch (error) {
+        console.error('Failed to load dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, [selectedSymbol]);
 
   // 当选择变化时加载对比数据
   useEffect(() => {
-    loadComparisonData();
+    const fetchComparisonData = async () => {
+      try {
+        const chain = selectedChain === 'all' ? undefined : selectedChain;
+        const url = new URL('/api/oracle/unified/comparison', window.location.origin);
+        url.searchParams.set('symbol', selectedSymbol);
+        if (chain) url.searchParams.set('chain', chain);
+
+        const response = await fetch(url);
+        if (response.ok) {
+          const data = await response.json();
+          setComparison(data);
+        }
+      } catch (error) {
+        console.error('Failed to load comparison data:', error);
+      }
+    };
+
+    fetchComparisonData();
   }, [selectedSymbol, selectedChain]);
-
-  const handleWebSocketMessage = useCallback((message: unknown) => {
-    if (typeof message !== 'object' || message === null) return;
-
-    const msg = message as { type: string; data: unknown };
-
-    switch (msg.type) {
-      case 'price_update':
-        // 处理价格更新
-        break;
-      case 'comparison_update':
-        setComparison(msg.data as CrossOracleComparison);
-        break;
-    }
-  }, []);
-
-  const loadDashboardData = async () => {
-    try {
-      setLoading(true);
-
-      // 并行加载所有数据
-      const [statsRes, protocolsRes, historyRes] = await Promise.all([
-        fetch('/api/oracle/unified/stats'),
-        fetch('/api/oracle/unified/protocols'),
-        fetch(`/api/oracle/unified/comparison/history?symbol=${selectedSymbol}&hours=24`),
-      ]);
-
-      if (statsRes.ok) {
-        setDashboardStats(await statsRes.json());
-      }
-
-      if (protocolsRes.ok) {
-        setProtocolStats(await protocolsRes.json());
-      }
-
-      if (historyRes.ok) {
-        setPriceHistory(await historyRes.json());
-      }
-    } catch (error) {
-      console.error('Failed to load dashboard data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadComparisonData = async () => {
-    try {
-      const chain = selectedChain === 'all' ? undefined : selectedChain;
-      const url = new URL('/api/oracle/unified/comparison', window.location.origin);
-      url.searchParams.set('symbol', selectedSymbol);
-      if (chain) url.searchParams.set('chain', chain);
-
-      const response = await fetch(url);
-      if (response.ok) {
-        const data = await response.json();
-        setComparison(data);
-      }
-    } catch (error) {
-      console.error('Failed to load comparison data:', error);
-    }
-  };
 
   // ============================================================================
   // 渲染函数

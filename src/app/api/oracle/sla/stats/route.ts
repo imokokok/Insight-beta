@@ -4,7 +4,8 @@
  * SLA 统计 API 路由
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getGlobalSLAStats } from '@/server/monitoring/slaMonitor';
 import { logger } from '@/lib/logger';
 
@@ -14,9 +15,6 @@ export async function GET(_request: NextRequest) {
     return NextResponse.json(stats);
   } catch (error) {
     logger.error('Failed to get SLA stats', { error });
-    return NextResponse.json(
-      { error: 'Failed to get SLA stats' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to get SLA stats' }, { status: 500 });
   }
 }

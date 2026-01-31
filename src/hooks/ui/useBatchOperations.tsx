@@ -75,15 +75,17 @@ export function useBatchOperations<T extends { id: string }>(
       const idx = prevItems.findIndex((item) => item.id === id);
       if (idx === -1) return prevItems;
       const next = prevItems.map((item) => ({ ...item }));
-      if (next[idx]!.selected) {
-        next[idx]!.selected = false;
+      const item = next[idx];
+      if (!item) return prevItems;
+      if (item.selected) {
+        item.selected = false;
         return next;
       }
       if (currentSelected >= maxSelectable) {
         console.warn(`Maximum of ${maxSelectable} items can be selected`);
         return prevItems;
       }
-      next[idx]!.selected = true;
+      item.selected = true;
       return next;
     });
   };
@@ -168,7 +170,7 @@ export function useBatchOperations<T extends { id: string }>(
 
   const getSelectedIds = () => itemsRef.filter((item) => item.selected).map((item) => item.id);
 
-  const api: any = {};
+  const api: Partial<UseBatchOperationsReturn<T>> = {};
   Object.defineProperties(api, {
     items: { get: () => itemsRef },
     selectedItems: { get: () => selectedItemsRef },

@@ -1,19 +1,16 @@
 /**
  * Swagger UI API Documentation
  *
- * API 文档页面
+ * API 文档页面 - 返回 Swagger JSON 规范
  */
 
 import { getApiDocs } from '@/lib/swagger';
-import SwaggerUI from 'swagger-ui-react';
-import 'swagger-ui-react/swagger-ui.css';
 
-export default function ApiDocsPage() {
+export async function GET() {
   const spec = getApiDocs();
-
-  return (
-    <section className="container mx-auto p-4">
-      <SwaggerUI spec={spec} />
-    </section>
-  );
+  return new Response(JSON.stringify(spec), {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
 }

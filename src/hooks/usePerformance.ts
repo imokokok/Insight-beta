@@ -9,6 +9,7 @@ import {
 } from 'react';
 
 export function useDeepMemo<T>(factory: () => T, deps: DependencyList): T {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   return useMemo(factory, deps);
 }
 
@@ -16,6 +17,7 @@ export function useDeepCallback<T extends (...args: unknown[]) => unknown>(
   callback: T,
   deps: DependencyList,
 ): T {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   return useCallback(callback, deps);
 }
 
@@ -117,6 +119,7 @@ export function useAsyncData<T>(
 
   useEffect(() => {
     refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 
   return { data, error, loading, refresh };

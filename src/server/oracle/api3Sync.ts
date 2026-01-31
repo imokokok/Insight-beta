@@ -129,17 +129,17 @@ export class API3SyncManager {
       }
 
       // 创建 API3 客户端
-      const client = createAPI3Client(
-        instance.chain,
-        instance.config.rpcUrl,
-        instance.config.protocolConfig
-      );
+      const client = createAPI3Client({
+        chain: instance.chain as SupportedChain,
+        rpcUrl: instance.config.rpcUrl,
+        ...instance.config.protocolConfig,
+      });
 
-      // 获取当前区块号
-      const blockNumber = await client.getBlockNumber();
+      // API3 使用 API 获取数据，不需要区块号
+      const blockNumber = 0;
 
       // 获取所有可用价格喂价
-      const symbols = getAvailableAPI3Symbols(instance.chain);
+      const symbols = getAvailableAPI3Symbols();
 
       if (symbols.length === 0) {
         logger.warn(`No available feeds for API3 on ${instance.chain}`);
@@ -194,10 +194,7 @@ export class API3SyncManager {
   /**
    * 保存价格喂价到数据库
    */
-  private async savePriceFeeds(
-    instanceId: string,
-    feeds: UnifiedPriceFeed[]
-  ): Promise<void> {
+  private async savePriceFeeds(instanceId: string, feeds: UnifiedPriceFeed[]): Promise<void> {
     if (feeds.length === 0) return;
 
     const values = feeds.map((feed) => [
@@ -226,12 +223,13 @@ export class API3SyncManager {
       const batch = values.slice(i, i + SYNC_CONFIG.batchSize);
 
       const placeholders = batch
-        .map((_, idx) =>
-          `($${idx * 18 + 1}, $${idx * 18 + 2}, $${idx * 18 + 3}, $${idx * 18 + 4},
+        .map(
+          (_, idx) =>
+            `($${idx * 18 + 1}, $${idx * 18 + 2}, $${idx * 18 + 3}, $${idx * 18 + 4},
             $${idx * 18 + 5}, $${idx * 18 + 6}, $${idx * 18 + 7}, $${idx * 18 + 8},
             $${idx * 18 + 9}, $${idx * 18 + 10}, $${idx * 18 + 11}, $${idx * 18 + 12},
             $${idx * 18 + 13}, $${idx * 18 + 14}, $${idx * 18 + 15}, $${idx * 18 + 16},
-            $${idx * 18 + 17}, $${idx * 18 + 18})`
+            $${idx * 18 + 17}, $${idx * 18 + 18})`,
         )
         .join(',');
 
@@ -251,7 +249,7 @@ export class API3SyncManager {
           is_stale = EXCLUDED.is_stale,
           staleness_seconds = EXCLUDED.staleness_seconds,
           updated_at = NOW()`,
-        flatValues
+        flatValues,
       );
     }
   }
@@ -259,10 +257,7 @@ export class API3SyncManager {
   /**
    * 保存价格更新记录
    */
-  private async savePriceUpdates(
-    instanceId: string,
-    feeds: UnifiedPriceFeed[]
-  ): Promise<void> {
+  private async savePriceUpdates(instanceId: string, feeds: UnifiedPriceFeed[]): Promise<void> {
     for (const feed of feeds) {
       const lastPrice = this.lastPrices.get(feed.symbol);
 
@@ -290,7 +285,7 @@ export class API3SyncManager {
               priceChange * 100,
               feed.timestamp,
               feed.blockNumber || 0,
-            ]
+            ],
           );
         }
       }
@@ -317,7 +312,7 @@ export class API3SyncManager {
       `SELECT id, chain, enabled, config, protocol_config
        FROM unified_oracle_instances
        WHERE id = $1 AND protocol = 'api3'`,
-      [instanceId]
+      [instanceId],
     );
 
     if (result.rows.length === 0) {
@@ -341,10 +336,9 @@ export class API3SyncManager {
    * 获取同步状态
    */
   private async getSyncState(instanceId: string): Promise<Partial<UnifiedSyncState> | null> {
-    const result = await query(
-      `SELECT * FROM unified_sync_state WHERE instance_id = $1`,
-      [instanceId]
-    );
+    const result = await query(`SELECT * FROM unified_sync_state WHERE instance_id = $1`, [
+      instanceId,
+    ]);
 
     if (result.rows.length === 0) {
       return null;
@@ -368,13 +362,14 @@ export class API3SyncManager {
    */
   private async updateSyncState(
     instanceId: string,
-    updates: Partial<UnifiedSyncState>
+    updates: Partial<UnifiedSyncState>,
   ): Promise<void> {
     const instance = await this.getInstanceConfig(instanceId);
     if (!instance) return;
 
     const fields: string[] = [];
-    const values: (string | number | boolean | Date | null | undefined | string[] | number[])[] = [];
+    const values: (string | number | boolean | Date | null | undefined | string[] | number[])[] =
+      [];
     let paramIndex = 1;
 
     if (updates.lastProcessedBlock !== undefined) {
@@ -421,7 +416,7 @@ export class API3SyncManager {
       ) VALUES ($1, 'api3', $2, 0, 'healthy', 0)
       ON CONFLICT (instance_id) DO UPDATE SET
         ${fields.join(', ')}`,
-      [instanceId, instance.chain, ...values]
+      [instanceId, instance.chain, ...values],
     );
   }
 
@@ -439,7 +434,7 @@ export class API3SyncManager {
       `DELETE FROM unified_price_feeds
        WHERE protocol = 'api3' AND timestamp < $1
        RETURNING id`,
-      [cutoffDate.toISOString()]
+      [cutoffDate.toISOString()],
     );
 
     // 清理旧的价格更新记录
@@ -447,7 +442,7 @@ export class API3SyncManager {
       `DELETE FROM unified_price_updates
        WHERE protocol = 'api3' AND timestamp < $1
        RETURNING id`,
-      [cutoffDate.toISOString()]
+      [cutoffDate.toISOString()],
     );
 
     logger.info(`API3 cleanup completed`, {

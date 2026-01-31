@@ -88,7 +88,7 @@ export default function SLADashboardPage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary"></div>
+        <div className="border-primary h-12 w-12 animate-spin rounded-full border-b-2"></div>
       </div>
     );
   }
@@ -99,9 +99,7 @@ export default function SLADashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">SLA 监控面板</h1>
-          <p className="text-muted-foreground mt-1">
-            Service Level Agreement Monitoring
-          </p>
+          <p className="text-muted-foreground mt-1">Service Level Agreement Monitoring</p>
         </div>
         <Button variant="outline" size="sm" onClick={refresh} disabled={refreshing}>
           <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
@@ -117,7 +115,13 @@ export default function SLADashboardPage() {
             value={`${stats.overallCompliance.toFixed(1)}%`}
             subtitle="SLA Compliance"
             icon={<Shield className="h-5 w-5" />}
-            status={stats.overallCompliance >= 95 ? 'healthy' : stats.overallCompliance >= 80 ? 'warning' : 'critical'}
+            status={
+              stats.overallCompliance >= 95
+                ? 'healthy'
+                : stats.overallCompliance >= 80
+                  ? 'warning'
+                  : 'critical'
+            }
           />
           <StatCard
             title="合规协议"
@@ -154,12 +158,10 @@ export default function SLADashboardPage() {
         <CardContent>
           <div className="space-y-4">
             {reports.length > 0 ? (
-              reports.map((report, index) => (
-                <SLAReportCard key={index} report={report} />
-              ))
+              reports.map((report, index) => <SLAReportCard key={index} report={report} />)
             ) : (
               <div className="py-8 text-center">
-                <Server className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                <Server className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
                 <p className="text-muted-foreground">暂无 SLA 数据</p>
               </div>
             )}
@@ -193,14 +195,12 @@ function StatCard({
     <Card>
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
-          <div className={`rounded-lg p-2 ${statusColors[status]}`}>
-            {icon}
-          </div>
+          <div className={`rounded-lg p-2 ${statusColors[status]}`}>{icon}</div>
         </div>
         <div className="mt-4">
-          <p className="text-sm text-muted-foreground">{title}</p>
+          <p className="text-muted-foreground text-sm">{title}</p>
           <p className="text-3xl font-bold">{value}</p>
-          <p className="text-sm text-muted-foreground">{subtitle}</p>
+          <p className="text-muted-foreground text-sm">{subtitle}</p>
         </div>
       </CardContent>
     </Card>
@@ -218,20 +218,22 @@ function SLAReportCard({ report }: { report: SLAReport }) {
 
   return (
     <div className="rounded-lg border p-4">
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className={`h-3 w-3 rounded-full ${config.color}`} />
           <div>
             <p className="font-medium">
               {report.protocol.toUpperCase()} - {report.chain}
             </p>
-            <p className="text-sm text-muted-foreground">周期: {report.period}</p>
+            <p className="text-muted-foreground text-sm">周期: {report.period}</p>
           </div>
         </div>
-        <Badge variant={config.badge as any}>{config.label}</Badge>
+        <Badge variant={config.badge as 'default' | 'secondary' | 'destructive' | 'outline'}>
+          {config.label}
+        </Badge>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+      <div className="mb-4 grid grid-cols-2 gap-4 md:grid-cols-4">
         <MetricItem
           label="正常运行时间"
           value={`${report.uptime.toFixed(2)}%`}
@@ -264,15 +266,15 @@ function SLAReportCard({ report }: { report: SLAReport }) {
           <span className="font-medium">{report.slaCompliance.toFixed(1)}%</span>
         </div>
         {/* Custom Progress Bar */}
-        <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
-          <div 
+        <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+          <div
             className="h-full bg-blue-500 transition-all duration-300"
             style={{ width: `${report.slaCompliance}%` }}
           />
         </div>
       </div>
 
-      <div className="mt-4 flex items-center gap-4 text-sm text-muted-foreground">
+      <div className="text-muted-foreground mt-4 flex items-center gap-4 text-sm">
         <span>总请求: {report.totalRequests.toLocaleString()}</span>
         <span>失败: {report.failedRequests.toLocaleString()}</span>
         <span>
@@ -300,12 +302,12 @@ function MetricItem({
 }) {
   return (
     <div className="space-y-1">
-      <div className="flex items-center gap-2 text-muted-foreground">
+      <div className="text-muted-foreground flex items-center gap-2">
         {icon}
         <span className="text-xs">{label}</span>
       </div>
       <p className="text-lg font-medium">{value}</p>
-      <p className="text-xs text-muted-foreground">目标: {target}</p>
+      <p className="text-muted-foreground text-xs">目标: {target}</p>
     </div>
   );
 }

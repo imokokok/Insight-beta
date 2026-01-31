@@ -67,25 +67,25 @@ export default function UMAAssertionDetailPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const fetchAssertion = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchApiData<UMAAssertionDetail>(
+          `/api/oracle/uma/assertions/${assertionId}`,
+        );
+        setAssertion(data);
+      } catch (err) {
+        setError('Assertion not found');
+        console.error('Failed to fetch assertion:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (assertionId) {
       fetchAssertion();
     }
   }, [assertionId]);
-
-  async function fetchAssertion() {
-    try {
-      setLoading(true);
-      const data = await fetchApiData<UMAAssertionDetail>(
-        `/api/oracle/uma/assertions/${assertionId}`,
-      );
-      setAssertion(data);
-    } catch (err) {
-      setError('Assertion not found');
-      console.error('Failed to fetch assertion:', err);
-    } finally {
-      setLoading(false);
-    }
-  }
 
   if (loading) {
     return (

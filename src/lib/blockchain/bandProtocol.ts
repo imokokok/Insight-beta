@@ -13,12 +13,7 @@ import {
   parseAbi,
   formatUnits,
 } from 'viem';
-import {
-  mainnet,
-  polygon,
-  bsc,
-  fantom,
-} from 'viem/chains';
+import { mainnet, polygon, bsc, fantom } from 'viem/chains';
 import { logger } from '@/lib/logger';
 import type {
   SupportedChain,
@@ -168,11 +163,7 @@ export class BandClient {
   private chain: SupportedChain;
   private contractAddress: Address;
 
-  constructor(
-    chain: SupportedChain,
-    rpcUrl: string,
-    _config: BandProtocolConfig = {}
-  ) {
+  constructor(chain: SupportedChain, rpcUrl: string, _config: BandProtocolConfig = {}) {
     this.chain = chain;
 
     const chainConfig = BAND_CHAIN_CONFIG[chain];
@@ -181,7 +172,7 @@ export class BandClient {
     }
 
     // 使用配置的合约地址或默认地址
-    this.contractAddress = _config.endpoint as Address || BAND_CONTRACT_ADDRESSES[chain];
+    this.contractAddress = (_config.endpoint as Address) || BAND_CONTRACT_ADDRESSES[chain];
     if (!this.contractAddress) {
       throw new Error(`No Band contract address for chain ${chain}`);
     }
@@ -195,19 +186,22 @@ export class BandClient {
   /**
    * 获取最新价格数据
    */
-  async getLatestPrice(base: string, quote: string): Promise<{
+  async getLatestPrice(
+    base: string,
+    quote: string,
+  ): Promise<{
     rate: bigint;
     lastUpdatedBase: bigint;
     lastUpdatedQuote: bigint;
     formattedRate: number;
   }> {
     try {
-      const priceData = await this.publicClient.readContract({
+      const priceData = (await this.publicClient.readContract({
         address: this.contractAddress,
         abi: BAND_STANDARD_DATASET_ABI,
         functionName: 'getReferenceData',
         args: [base, quote],
-      }) as [bigint, bigint, bigint];
+      })) as [bigint, bigint, bigint];
 
       const rate = priceData[0];
       const lastUpdatedBase = priceData[1];
@@ -281,17 +275,15 @@ export class BandClient {
    * 批量获取价格
    */
   async getBulkPrices(symbols: string[]): Promise<UnifiedPriceFeed[]> {
-    const pairs = symbols
-      .map((symbol) => BAND_PRICE_PAIRS[symbol])
-      .filter(Boolean);
+    const pairs = symbols.map((symbol) => BAND_PRICE_PAIRS[symbol]).filter(Boolean);
 
     if (pairs.length === 0) {
       return [];
     }
 
     try {
-      const bases = pairs.map((p) => p!.base);
-      const quotes = pairs.map((p) => p!.quote);
+      const bases = pairs.map((p) => p?.base).filter((b): b is string => b !== undefined);
+      const quotes = pairs.map((p) => p?.quote).filter((q): q is string => q !== undefined);
 
       const priceData = await this.publicClient.readContract({
         address: this.contractAddress,
@@ -303,7 +295,8 @@ export class BandClient {
       const feeds: UnifiedPriceFeed[] = [];
 
       for (let i = 0; i < symbols.length; i++) {
-        const symbol = symbols[i]!;
+        const symbol = symbols[i];
+        if (!symbol) continue;
         const data = priceData[i] as [bigint, bigint, bigint] | undefined;
 
         if (!data) continue;
@@ -316,9 +309,7 @@ export class BandClient {
 
         const now = new Date();
         const lastUpdate = new Date(Number(lastUpdatedBase) * 1000);
-        const stalenessSeconds = Math.floor(
-          (now.getTime() - lastUpdate.getTime()) / 1000
-        );
+        const stalenessSeconds = Math.floor((now.getTime() - lastUpdate.getTime()) / 1000);
 
         // Band 数据通常很新鲜
         const isStale = stalenessSeconds > 300; // 5 分钟
@@ -357,16 +348,14 @@ export class BandClient {
   private async getUnifiedPriceFeed(
     symbol: string,
     base: string,
-    quote: string
+    quote: string,
   ): Promise<UnifiedPriceFeed> {
     const priceData = await this.getLatestPrice(base, quote);
     const [baseAsset, quoteAsset] = symbol.split('/');
 
     const now = new Date();
     const lastUpdate = new Date(Number(priceData.lastUpdatedBase) * 1000);
-    const stalenessSeconds = Math.floor(
-      (now.getTime() - lastUpdate.getTime()) / 1000
-    );
+    const stalenessSeconds = Math.floor((now.getTime() - lastUpdate.getTime()) / 1000);
 
     // Band 数据通常很新鲜
     const isStale = stalenessSeconds > 300; // 5 分钟
@@ -391,7 +380,10 @@ export class BandClient {
   /**
    * 检查价格喂价健康状态
    */
-  async checkFeedHealth(base: string, quote: string): Promise<{
+  async checkFeedHealth(
+    base: string,
+    quote: string,
+  ): Promise<{
     healthy: boolean;
     lastUpdate: Date;
     stalenessSeconds: number;
@@ -403,9 +395,7 @@ export class BandClient {
       const priceData = await this.getLatestPrice(base, quote);
       const lastUpdate = new Date(Number(priceData.lastUpdatedBase) * 1000);
       const now = new Date();
-      const stalenessSeconds = Math.floor(
-        (now.getTime() - lastUpdate.getTime()) / 1000
-      );
+      const stalenessSeconds = Math.floor((now.getTime() - lastUpdate.getTime()) / 1000);
 
       // 检查数据新鲜度
       if (stalenessSeconds > 300) {
@@ -428,9 +418,7 @@ export class BandClient {
         healthy: false,
         lastUpdate: new Date(0),
         stalenessSeconds: Infinity,
-        issues: [
-          `Failed to read feed: ${error instanceof Error ? error.message : String(error)}`,
-        ],
+        issues: [`Failed to read feed: ${error instanceof Error ? error.message : String(error)}`],
       };
     }
   }
@@ -450,7 +438,7 @@ export class BandClient {
 export function createBandClient(
   chain: SupportedChain,
   rpcUrl: string,
-  config?: BandProtocolConfig
+  config?: BandProtocolConfig,
 ): BandClient {
   return new BandClient(chain, rpcUrl, config);
 }

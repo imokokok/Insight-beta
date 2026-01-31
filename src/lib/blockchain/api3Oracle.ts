@@ -57,14 +57,33 @@ export class Api3Client {
   }
 
   private getDefaultServerAddress(chain: SupportedChain): string {
-    const addresses: Record<string, string> = {
+    const addresses: Record<SupportedChain, string> = {
       ethereum: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
       polygon: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
       arbitrum: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
       optimism: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
       base: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
+      avalanche: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
+      bsc: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
+      fantom: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
+      celo: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
+      gnosis: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
+      linea: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
+      scroll: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
+      mantle: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
+      mode: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
+      blast: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
+      solana: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
+      near: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
+      aptos: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
+      sui: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
+      polygonAmoy: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
+      sepolia: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
+      goerli: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
+      mumbai: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
+      local: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
     };
-    return addresses[chain] || addresses.ethereum;
+    return addresses[chain] ?? addresses.ethereum;
   }
 
   // ============================================================================
@@ -103,7 +122,7 @@ export class Api3Client {
     try {
       const response = await fetch(endpoint, {
         headers: {
-          'Accept': 'application/json',
+          Accept: 'application/json',
         },
       });
 
@@ -194,11 +213,11 @@ export class Api3Client {
     const start = Date.now();
     try {
       const response = await fetch('https://api.api3.org/api/v1/dapi/ETH/USD', {
-        headers: { 'Accept': 'application/json' },
+        headers: { Accept: 'application/json' },
       });
       const latency = Date.now() - start;
       return { healthy: response.ok, latency };
-    } catch (error) {
+    } catch {
       return { healthy: false, latency: Date.now() - start };
     }
   }
@@ -211,3 +230,33 @@ export class Api3Client {
 export function createApi3Client(config: Api3Config): Api3Client {
   return new Api3Client(config);
 }
+
+// 为了保持向后兼容的别名
+export { createApi3Client as createAPI3Client };
+
+/**
+ * 获取可用的 API3 dAPI 符号列表
+ */
+export function getAvailableApi3Symbols(): string[] {
+  // API3 支持的常用 dAPI 符号
+  return [
+    'ETH/USD',
+    'BTC/USD',
+    'LINK/USD',
+    'MATIC/USD',
+    'AVAX/USD',
+    'BNB/USD',
+    'UNI/USD',
+    'AAVE/USD',
+    'COMP/USD',
+    'MKR/USD',
+    'SNX/USD',
+    'YFI/USD',
+    'CRV/USD',
+    'SUSHI/USD',
+    '1INCH/USD',
+  ];
+}
+
+// 为了保持向后兼容的别名
+export { getAvailableApi3Symbols as getAvailableAPI3Symbols };

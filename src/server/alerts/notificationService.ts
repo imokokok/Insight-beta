@@ -207,10 +207,10 @@ async function sendSMSNotification(
   try {
     let apiUrl: string;
     let body: Record<string, unknown>;
-    let headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
 
     switch (config.provider) {
-      case 'twilio':
+      case 'twilio': {
         apiUrl = `https://api.twilio.com/2010-04-01/Accounts/${config.accountSid}/Messages.json`;
         const auth = Buffer.from(`${config.accountSid}:${config.authToken}`).toString('base64');
         headers['Authorization'] = `Basic ${auth}`;
@@ -220,6 +220,7 @@ async function sendSMSNotification(
           Body: `[${notification.severity.toUpperCase()}] ${notification.title}: ${notification.message.slice(0, 100)}`,
         };
         break;
+      }
       default:
         throw new Error(`SMS provider ${config.provider} not implemented`);
     }
@@ -519,18 +520,15 @@ async function sendTelegramNotification(
 
     const results = await Promise.all(
       config.chatIds.map(async (chatId) => {
-        const response = await fetch(
-          `https://api.telegram.org/bot${config.botToken}/sendMessage`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              chat_id: chatId,
-              text,
-              parse_mode: config.parseMode,
-            }),
-          },
-        );
+        const response = await fetch(`https://api.telegram.org/bot${config.botToken}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: chatId,
+            text,
+            parse_mode: config.parseMode,
+          }),
+        });
 
         if (!response.ok) {
           throw new Error(`Telegram API error: ${response.status}`);

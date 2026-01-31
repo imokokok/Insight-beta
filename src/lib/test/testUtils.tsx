@@ -37,7 +37,11 @@ export function createMockHelpers<T extends object>(target: T) {
         configurable: true,
       });
     }
-    return mocks.get(prop)!;
+    const mockFn = mocks.get(prop);
+    if (!mockFn) {
+      throw new Error(`Mock for property ${String(prop)} not found`);
+    }
+    return mockFn;
   };
 
   const mockImplementation = (prop: keyof T, impl: (...args: unknown[]) => unknown) => {

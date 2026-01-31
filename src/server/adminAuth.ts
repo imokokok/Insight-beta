@@ -43,7 +43,7 @@ async function withTokenStoreLock<T>(key: string, fn: () => Promise<T>): Promise
     await existingLock;
   }
 
-  let resolveLock: () => void;
+  let resolveLock: (() => void) | undefined;
   const lockPromise = new Promise<void>((resolve) => {
     resolveLock = resolve;
   });
@@ -52,7 +52,9 @@ async function withTokenStoreLock<T>(key: string, fn: () => Promise<T>): Promise
   try {
     return await fn();
   } finally {
-    resolveLock!();
+    if (resolveLock) {
+      resolveLock();
+    }
     tokenStoreLock.delete(key);
   }
 }

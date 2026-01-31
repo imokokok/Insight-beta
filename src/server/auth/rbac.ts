@@ -44,18 +44,12 @@ export type Permission =
   | 'system:audit'
   | 'system:admin';
 
-export type ResourceType =
-  | 'instance'
-  | 'price'
-  | 'alert'
-  | 'user'
-  | 'role'
-  | 'system';
+export type ResourceType = 'instance' | 'price' | 'alert' | 'user' | 'role' | 'system';
 
 export interface Role {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   permissions: Permission[];
   isSystem: boolean;
   createdAt: Date;
@@ -143,13 +137,7 @@ export const SYSTEM_ROLES: Omit<Role, 'id' | 'createdAt' | 'updatedAt'>[] = [
   {
     name: 'viewer',
     description: '观察者 - 只读权限',
-    permissions: [
-      'instance:read',
-      'price:read',
-      'price:compare',
-      'alert:read',
-      'system:read',
-    ],
+    permissions: ['instance:read', 'price:read', 'price:compare', 'alert:read', 'system:read'],
     isSystem: true,
   },
   {
@@ -193,46 +181,39 @@ export class RBACManager {
     }
   }
 
-  async createRole(
-    role: Omit<Role, 'id' | 'createdAt' | 'updatedAt'>
-  ): Promise<Role> {
+  async createRole(role: Omit<Role, 'id' | 'createdAt' | 'updatedAt'>): Promise<Role> {
     const result = await query(
       `INSERT INTO rbac_roles (name, description, permissions, is_system, created_at, updated_at)
        VALUES ($1, $2, $3, $4, NOW(), NOW())
        RETURNING *`,
-      [
-        role.name,
-        role.description,
-        JSON.stringify(role.permissions),
-        role.isSystem,
-      ]
+      [role.name, role.description, JSON.stringify(role.permissions), role.isSystem],
     );
 
-    return this.mapRoleFromDb(result.rows[0]);
+    const row = result.rows[0];
+    if (!row) {
+      throw new Error('Failed to create role');
+    }
+    return this.mapRoleFromDb(row as Record<string, unknown>);
   }
 
   async getRoleById(id: string): Promise<Role | null> {
     const result = await query('SELECT * FROM rbac_roles WHERE id = $1', [id]);
-    return result.rows[0] ? this.mapRoleFromDb(result.rows[0]) : null;
+    return result.rows[0] ? this.mapRoleFromDb(result.rows[0] as Record<string, unknown>) : null;
   }
 
   async getRoleByName(name: string): Promise<Role | null> {
-    const result = await query('SELECT * FROM rbac_roles WHERE name = $1', [
-      name,
-    ]);
-    return result.rows[0] ? this.mapRoleFromDb(result.rows[0]) : null;
+    const result = await query('SELECT * FROM rbac_roles WHERE name = $1', [name]);
+    return result.rows[0] ? this.mapRoleFromDb(result.rows[0] as Record<string, unknown>) : null;
   }
 
   async getAllRoles(): Promise<Role[]> {
-    const result = await query(
-      'SELECT * FROM rbac_roles ORDER BY created_at DESC'
-    );
+    const result = await query('SELECT * FROM rbac_roles ORDER BY created_at DESC');
     return result.rows.map(this.mapRoleFromDb);
   }
 
   async updateRole(
     id: string,
-    updates: Partial<Omit<Role, 'id' | 'createdAt' | 'updatedAt'>>
+    updates: Partial<Omit<Role, 'id' | 'createdAt' | 'updatedAt'>>,
   ): Promise<Role | null> {
     const role = await this.getRoleById(id);
     if (!role) return null;
@@ -264,7 +245,7 @@ export class RBACManager {
 
     const result = await query(
       `UPDATE rbac_roles SET ${sets.join(', ')} WHERE id = $${paramIndex} RETURNING *`,
-      values
+      values,
     );
 
     // 清除缓存
@@ -285,7 +266,7 @@ export class RBACManager {
     // 检查是否有用户正在使用此角色
     const usersWithRole = await query(
       'SELECT COUNT(*) as count FROM rbac_user_roles WHERE role_id = $1',
-      [id]
+      [id],
     );
 
     const userCount = usersWithRole.rows[0]?.count;
@@ -305,18 +286,14 @@ export class RBACManager {
   // 用户角色管理
   // ============================================================================
 
-  async assignRole(
-    userId: string,
-    roleId: string,
-    assignedBy: string
-  ): Promise<void> {
+  async assignRole(userId: string, roleId: string, assignedBy: string): Promise<void> {
     await query(
       `INSERT INTO rbac_user_roles (user_id, role_id, assigned_by, assigned_at)
        VALUES ($1, $2, $3, NOW())
        ON CONFLICT (user_id, role_id) DO UPDATE SET
        assigned_by = EXCLUDED.assigned_by,
        assigned_at = EXCLUDED.assigned_at`,
-      [userId, roleId, assignedBy]
+      [userId, roleId, assignedBy],
     );
 
     // 清除用户权限缓存
@@ -326,10 +303,10 @@ export class RBACManager {
   }
 
   async removeRole(userId: string, roleId: string): Promise<void> {
-    await query(
-      'DELETE FROM rbac_user_roles WHERE user_id = $1 AND role_id = $2',
-      [userId, roleId]
-    );
+    await query('DELETE FROM rbac_user_roles WHERE user_id = $1 AND role_id = $2', [
+      userId,
+      roleId,
+    ]);
 
     // 清除用户权限缓存
     this.clearUserCache(userId);
@@ -342,17 +319,14 @@ export class RBACManager {
       `SELECT r.* FROM rbac_roles r
        INNER JOIN rbac_user_roles ur ON r.id = ur.role_id
        WHERE ur.user_id = $1`,
-      [userId]
+      [userId],
     );
 
     return result.rows.map(this.mapRoleFromDb);
   }
 
   async getUsersWithRole(roleId: string): Promise<string[]> {
-    const result = await query(
-      'SELECT user_id FROM rbac_user_roles WHERE role_id = $1',
-      [roleId]
-    );
+    const result = await query('SELECT user_id FROM rbac_user_roles WHERE role_id = $1', [roleId]);
 
     return result.rows.map((row) => row.user_id);
   }
@@ -383,10 +357,7 @@ export class RBACManager {
     return permissionList;
   }
 
-  async hasPermission(
-    userId: string,
-    permission: Permission
-  ): Promise<boolean> {
+  async hasPermission(userId: string, permission: Permission): Promise<boolean> {
     const permissions = await this.getUserPermissions(userId);
 
     // 超级管理员拥有所有权限
@@ -395,10 +366,7 @@ export class RBACManager {
     return permissions.includes(permission);
   }
 
-  async hasAnyPermission(
-    userId: string,
-    permissions: Permission[]
-  ): Promise<boolean> {
+  async hasAnyPermission(userId: string, permissions: Permission[]): Promise<boolean> {
     const userPermissions = await this.getUserPermissions(userId);
 
     // 超级管理员拥有所有权限
@@ -407,10 +375,7 @@ export class RBACManager {
     return permissions.some((p) => userPermissions.includes(p));
   }
 
-  async hasAllPermissions(
-    userId: string,
-    permissions: Permission[]
-  ): Promise<boolean> {
+  async hasAllPermissions(userId: string, permissions: Permission[]): Promise<boolean> {
     const userPermissions = await this.getUserPermissions(userId);
 
     // 超级管理员拥有所有权限
@@ -419,10 +384,7 @@ export class RBACManager {
     return permissions.every((p) => userPermissions.includes(p));
   }
 
-  async checkPermission(
-    userId: string,
-    permission: Permission
-  ): Promise<void> {
+  async checkPermission(userId: string, permission: Permission): Promise<void> {
     const hasPerm = await this.hasPermission(userId, permission);
     if (!hasPerm) {
       throw new PermissionDeniedError(permission);
@@ -438,7 +400,7 @@ export class RBACManager {
     resourceType: ResourceType,
     resourceId: string | undefined,
     permission: Permission,
-    granted: boolean = true
+    granted: boolean = true,
   ): Promise<void> {
     await query(
       `INSERT INTO rbac_resource_permissions 
@@ -447,7 +409,7 @@ export class RBACManager {
        ON CONFLICT (role_id, resource_type, resource_id, permission) DO UPDATE SET
        granted = EXCLUDED.granted,
        created_at = EXCLUDED.created_at`,
-      [roleId, resourceType, resourceId || null, permission, granted]
+      [roleId, resourceType, resourceId || null, permission, granted],
     );
 
     this.invalidateCache();
@@ -457,13 +419,13 @@ export class RBACManager {
     roleId: string,
     resourceType: ResourceType,
     resourceId: string | undefined,
-    permission: Permission
+    permission: Permission,
   ): Promise<void> {
     await query(
       `DELETE FROM rbac_resource_permissions 
        WHERE role_id = $1 AND resource_type = $2 
        AND resource_id = $3 AND permission = $4`,
-      [roleId, resourceType, resourceId || null, permission]
+      [roleId, resourceType, resourceId || null, permission],
     );
 
     this.invalidateCache();
@@ -473,7 +435,7 @@ export class RBACManager {
     userId: string,
     resourceType: ResourceType,
     resourceId: string,
-    permission: Permission
+    permission: Permission,
   ): Promise<boolean> {
     // 首先检查基础权限
     const hasBasePerm = await this.hasPermission(userId, permission);
@@ -488,7 +450,7 @@ export class RBACManager {
         `SELECT granted FROM rbac_resource_permissions
          WHERE role_id = $1 AND resource_type = $2 
          AND resource_id = $3 AND permission = $4`,
-        [role.id, resourceType, resourceId, permission]
+        [role.id, resourceType, resourceId, permission],
       );
 
       if (specificResult.rows.length > 0) {
@@ -500,7 +462,7 @@ export class RBACManager {
         `SELECT granted FROM rbac_resource_permissions
          WHERE role_id = $1 AND resource_type = $2 
          AND resource_id IS NULL AND permission = $3`,
-        [role.id, resourceType, permission]
+        [role.id, resourceType, permission],
       );
 
       if (genericResult.rows.length > 0) {
@@ -561,15 +523,15 @@ export class RBACManager {
   // 辅助方法
   // ============================================================================
 
-  private mapRoleFromDb(row: any): Role {
+  private mapRoleFromDb(row: Record<string, unknown>): Role {
     return {
-      id: row.id,
-      name: row.name,
-      description: row.description,
-      permissions: row.permissions || [],
-      isSystem: row.is_system,
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
+      id: String(row.id),
+      name: String(row.name),
+      description: row.description ? String(row.description) : undefined,
+      permissions: Array.isArray(row.permissions) ? (row.permissions as Permission[]) : [],
+      isSystem: Boolean(row.is_system),
+      createdAt: new Date(String(row.created_at)),
+      updatedAt: new Date(String(row.updated_at)),
     };
   }
 }
@@ -594,16 +556,13 @@ export class PermissionDeniedError extends Error {
 
 export const rbac = RBACManager.getInstance();
 
-export async function requirePermission(
-  userId: string,
-  permission: Permission
-): Promise<void> {
+export async function requirePermission(userId: string, permission: Permission): Promise<void> {
   return rbac.checkPermission(userId, permission);
 }
 
 export async function requireAnyPermission(
   userId: string,
-  permissions: Permission[]
+  permissions: Permission[],
 ): Promise<void> {
   const hasPerm = await rbac.hasAnyPermission(userId, permissions);
   if (!hasPerm) {
@@ -632,15 +591,15 @@ export function createPermissionMiddleware(permission: Permission) {
 
 export function createResourcePermissionMiddleware(
   resourceType: ResourceType,
-  getResourceId: (context: any) => string
+  getResourceId: (context: Record<string, unknown>) => string,
 ) {
-  return async (userId: string, context: any): Promise<void> => {
+  return async (userId: string, context: Record<string, unknown>): Promise<void> => {
     const resourceId = getResourceId(context);
     const hasPerm = await rbac.checkResourcePermission(
       userId,
       resourceType,
       resourceId,
-      `${resourceType}:read` as Permission
+      `${resourceType}:read` as Permission,
     );
 
     if (!hasPerm) {

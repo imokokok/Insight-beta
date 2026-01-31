@@ -4,7 +4,8 @@
  * 价格偏差分析 API
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { priceDeviationAnalytics } from '@/server/oracle/priceDeviationAnalytics';
 import { logger } from '@/lib/logger';
 
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
         if (!symbol) {
           return NextResponse.json(
             { error: 'Symbol is required for trend analysis' },
-            { status: 400 }
+            { status: 400 },
           );
         }
         const trend = await priceDeviationAnalytics.analyzeDeviationTrend(symbol);
@@ -45,7 +46,7 @@ export async function GET(request: NextRequest) {
         if (!symbol) {
           return NextResponse.json(
             { error: 'Symbol is required for anomaly detection' },
-            { status: 400 }
+            { status: 400 },
           );
         }
         const anomalies = await priceDeviationAnalytics.detectAnomalies(symbol);
@@ -56,7 +57,7 @@ export async function GET(request: NextRequest) {
         if (!symbolsParam) {
           return NextResponse.json(
             { error: 'Symbols are required for comparison' },
-            { status: 400 }
+            { status: 400 },
           );
         }
         const symbols = symbolsParam.split(',');
@@ -67,16 +68,13 @@ export async function GET(request: NextRequest) {
       default:
         return NextResponse.json(
           { error: 'Invalid type. Use: trend, report, anomalies, compare' },
-          { status: 400 }
+          { status: 400 },
         );
     }
   } catch (error) {
     logger.error('Deviation analytics API error', {
       error: error instanceof Error ? error.message : String(error),
     });
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

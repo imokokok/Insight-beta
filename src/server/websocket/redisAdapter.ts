@@ -7,7 +7,8 @@
  * - 自动故障转移和重连
  */
 
-import { createClient, RedisClientType } from 'redis';
+import type { RedisClientType } from 'redis';
+import { createClient } from 'redis';
 import { logger } from '@/lib/logger';
 
 // ============================================================================
@@ -139,7 +140,8 @@ export class WebSocketRedisAdapter {
 
     try {
       const fullChannel = `${this.config.channelPrefix}${channel}`;
-      const messageObj = typeof message === 'object' && message !== null ? message : { data: message };
+      const messageObj =
+        typeof message === 'object' && message !== null ? message : { data: message };
       const serialized = JSON.stringify({
         ...messageObj,
         _instanceId: this.config.instanceId,
@@ -212,6 +214,7 @@ export class WebSocketRedisAdapter {
       }
 
       // 移除内部字段
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { _instanceId, _timestamp, ...data } = parsed;
 
       // 调用注册的处理器

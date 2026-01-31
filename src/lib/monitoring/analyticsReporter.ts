@@ -144,6 +144,11 @@ export class AnalyticsReporter {
    * 发送批量数据
    */
   private async sendBatch(metrics: PerformanceMetric[]): Promise<void> {
+    const endpoint = this.config.endpoint;
+    if (!endpoint) {
+      throw new Error('Analytics endpoint not configured');
+    }
+
     const payload = {
       metrics,
       metadata: {
@@ -153,7 +158,7 @@ export class AnalyticsReporter {
       },
     };
 
-    const response = await fetch(this.config.endpoint!, {
+    const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
