@@ -1,278 +1,103 @@
 /**
  * Unified Oracle API Routes
  *
- * 通用预言机监控平台统一 API 入口
- * 支持多预言机协议的统一管理和查询
+ * 通用预言机平台 API
+ * - 价格对比
+ * - 协议统计
+ * - 告警管理
  */
 
 import type { NextRequest } from 'next/server';
-import { query } from '@/server/db';
+import { NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
-import { handleApi, rateLimit } from '@/server/apiResponse';
-import {
-  createUnifiedInstance,
-  listUnifiedInstances,
-  getUnifiedInstance,
-  updateUnifiedInstance,
-  deleteUnifiedInstance,
-  getInstanceStats,
-} from '@/server/oracle/unifiedConfig';
-import { startChainlinkSync, stopChainlinkSync } from '@/server/oracle/chainlinkSync';
-import { startPythSync, stopPythSync } from '@/server/oracle/pythSync';
-import { startBandSync, stopBandSync } from '@/server/oracle/bandSync';
-import { startAPI3Sync, stopAPI3Sync } from '@/server/oracle/api3Sync';
-import { startRedStoneSync, stopRedStoneSync } from '@/server/oracle/redstoneSync';
-import { startDIASync, stopDIASync } from '@/server/oracle/diaSync';
-import { startFluxSync, stopFluxSync } from '@/server/oracle/fluxSync';
-import {
-  detectPriceDeviations,
-  analyzePriceTrends,
-  getProtocolReliabilityReport,
-  runCrossProtocolAnalysis,
-  type PriceDeviationConfig,
-} from '@/server/oracle/crossProtocolAnalysis';
-import {
-  getAlerts,
-  acknowledgeAlert,
-  resolveAlert,
-  getAlertRules,
-  createAlertRule,
-  getAlertStats,
-  scanForStaleData,
-  type AlertRuleConfig,
-} from '@/server/oracle/alertService';
-import type {
-  OracleProtocol,
-  SupportedChain,
-  UnifiedOracleConfig,
-} from '@/lib/types/unifiedOracleTypes';
-
-const RATE_LIMITS = {
-  GET: { key: 'unified_get', limit: 100, windowMs: 60_000 },
-  POST: { key: 'unified_post', limit: 20, windowMs: 60_000 },
-  PUT: { key: 'unified_put', limit: 20, windowMs: 60_000 },
-  DELETE: { key: 'unified_delete', limit: 10, windowMs: 60_000 },
-} as const;
+import { aggregatePrices, getHistoricalComparisons } from '@/server/oracle/priceAggregationService';
+import { query } from '@/server/db';
+import type { SupportedChain } from '@/lib/types/unifiedOracleTypes';
 
 // ============================================================================
-// GET /api/oracle/unified
+// GET /api/oracle/unified/comparison
+// 获取价格对比数据
 // ============================================================================
 
 export async function GET(request: NextRequest) {
-  const requestId = crypto.randomUUID();
-  const startTime = Date.now();
-
   try {
-    return await handleApi(request, async () => {
-      const limited = await rateLimit(request, RATE_LIMITS.GET);
-      if (limited) return limited;
+    const { searchParams } = new URL(request.url);
+    const symbol = searchParams.get('symbol');
+    const chain = searchParams.get('chain') as SupportedChain | null;
+    const type = searchParams.get('type') || 'comparison';
 
-      const url = new URL(request.url);
-      const action = url.searchParams.get('action') || 'overview';
+    switch (type) {
+      case 'comparison':
+        if (!symbol) {
+          return NextResponse.json({ error: 'Symbol parameter is required' }, { status: 400 });
+        }
+        return await getComparison(symbol, chain);
 
-      switch (action) {
-        case 'overview':
-          return await getOverview();
-        case 'instances':
-          return await listInstances(url.searchParams);
-        case 'instance':
-          return await getInstance(url.searchParams.get('id'));
-        case 'prices':
-          return await getPrices(url.searchParams);
-        case 'comparison':
-          return await getPriceComparison(url.searchParams);
-        case 'deviation':
-          return await getDeviationAnalysis(url.searchParams);
-        case 'trends':
-          return await getTrendAnalysis(url.searchParams);
-        case 'reliability':
-          return await getReliabilityReport(url.searchParams);
-        case 'protocols':
-          return await getProtocols();
-        case 'chains':
-          return await getChains();
-        case 'stats':
-          return await getGlobalStats();
-        case 'alerts':
-          return await getAlertsList(url.searchParams);
-        case 'alertRules':
-          return await getAlertRulesList();
-        case 'alertStats':
-          return await getAlertStatistics();
-        default:
-          return { error: 'Unknown action' };
+      case 'history': {
+        if (!symbol) {
+          return NextResponse.json({ error: 'Symbol parameter is required' }, { status: 400 });
+        }
+        const hours = parseInt(searchParams.get('hours') || '24', 10);
+        return await getHistory(symbol, hours);
       }
-    });
+
+      case 'stats':
+        return await getStats();
+
+      case 'protocols':
+        return await getProtocols();
+
+      case 'alerts': {
+        const status = searchParams.get('status') || 'open';
+        return await getAlerts(status);
+      }
+
+      default:
+        return NextResponse.json({ error: 'Invalid type parameter' }, { status: 400 });
+    }
   } catch (error) {
-    const durationMs = Date.now() - startTime;
-    logger.error('Unified API GET failed', {
-      requestId,
-      error: error instanceof Error ? error.message : 'Unknown',
-      durationMs,
+    logger.error('Unified API error', {
+      error: error instanceof Error ? error.message : String(error),
     });
-    throw error;
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
 // ============================================================================
-// POST /api/oracle/unified
+// POST /api/oracle/unified/comparison
+// 触发价格聚合
 // ============================================================================
 
 export async function POST(request: NextRequest) {
-  const requestId = crypto.randomUUID();
-  const startTime = Date.now();
-
   try {
-    return await handleApi(request, async () => {
-      const limited = await rateLimit(request, RATE_LIMITS.POST);
-      if (limited) return limited;
+    const body = await request.json();
+    const { symbols, chain } = body;
 
-      const body = await request.json();
-      const { action } = body;
+    if (!symbols || !Array.isArray(symbols) || symbols.length === 0) {
+      return NextResponse.json({ error: 'Symbols array is required' }, { status: 400 });
+    }
 
-      switch (action) {
-        case 'create':
-          return await createInstance(body);
-        case 'start':
-          return await startSync(body.instanceId, body.protocol);
-        case 'stop':
-          return await stopSync(body.instanceId, body.protocol);
-        case 'batchCreate':
-          return await batchCreateInstances(body.instances);
-        case 'batchUpdateStatus':
-          return await batchUpdateStatus(body.ids, body.enabled);
-        case 'batchAnalyze':
-          return await batchAnalyze(body.symbols, body.config);
-        case 'runAnalysis':
-          return await runAnalysisJob(body.symbols, body.config);
-        case 'createAlertRule':
-          return await createNewAlertRule(body);
-        case 'acknowledgeAlert':
-          return await acknowledgeAlertById(body.alertId, body.userId);
-        case 'resolveAlert':
-          return await resolveAlertById(body.alertId, body.userId);
-        case 'scanStaleData':
-          return await scanStaleDataJob();
-        default:
-          return { error: 'Unknown action' };
+    const results = [];
+    for (const symbol of symbols) {
+      const comparison = await aggregatePrices(symbol, chain);
+      if (comparison) {
+        results.push(comparison);
       }
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: results,
+      meta: {
+        requested: symbols.length,
+        returned: results.length,
+      },
     });
   } catch (error) {
-    const durationMs = Date.now() - startTime;
-    logger.error('Unified API POST failed', {
-      requestId,
-      error: error instanceof Error ? error.message : 'Unknown',
-      durationMs,
+    logger.error('Failed to aggregate prices', {
+      error: error instanceof Error ? error.message : String(error),
     });
-    throw error;
-  }
-}
-
-// ============================================================================
-// PUT /api/oracle/unified
-// ============================================================================
-
-export async function PUT(request: NextRequest) {
-  const requestId = crypto.randomUUID();
-  const startTime = Date.now();
-
-  try {
-    return await handleApi(request, async () => {
-      const limited = await rateLimit(request, RATE_LIMITS.PUT);
-      if (limited) return limited;
-
-      const body = await request.json();
-      const { id, updates } = body;
-
-      if (!id) {
-        return { error: 'Instance ID is required' };
-      }
-
-      const instance = await updateUnifiedInstance(id, updates);
-
-      if (!instance) {
-        return { error: 'Instance not found' };
-      }
-
-      logger.info('Unified instance updated', { id, updates: Object.keys(updates) });
-
-      return {
-        success: true,
-        instance: {
-          id: instance.id,
-          name: instance.name,
-          protocol: instance.protocol,
-          chain: instance.chain,
-          enabled: instance.enabled,
-          updatedAt: instance.updatedAt,
-        },
-      };
-    });
-  } catch (error) {
-    const durationMs = Date.now() - startTime;
-    logger.error('Unified API PUT failed', {
-      requestId,
-      error: error instanceof Error ? error.message : 'Unknown',
-      durationMs,
-    });
-    throw error;
-  }
-}
-
-// ============================================================================
-// DELETE /api/oracle/unified
-// ============================================================================
-
-export async function DELETE(request: NextRequest) {
-  const requestId = crypto.randomUUID();
-  const startTime = Date.now();
-
-  try {
-    return await handleApi(request, async () => {
-      const limited = await rateLimit(request, RATE_LIMITS.DELETE);
-      if (limited) return limited;
-
-      const url = new URL(request.url);
-      const id = url.searchParams.get('id');
-
-      if (!id) {
-        return { error: 'Instance ID is required' };
-      }
-
-      // 获取实例信息以停止同步
-      const instance = await getUnifiedInstance(id);
-      if (instance) {
-        // 停止同步
-        switch (instance.protocol) {
-          case 'chainlink':
-            stopChainlinkSync(id);
-            break;
-          // 其他协议类似处理
-        }
-      }
-
-      // 删除实例
-      const deleted = await deleteUnifiedInstance(id);
-
-      if (!deleted) {
-        return { error: 'Instance not found' };
-      }
-
-      logger.info('Unified instance deleted', { id });
-
-      return {
-        success: true,
-        message: 'Instance deleted successfully',
-      };
-    });
-  } catch (error) {
-    const durationMs = Date.now() - startTime;
-    logger.error('Unified API DELETE failed', {
-      requestId,
-      error: error instanceof Error ? error.message : 'Unknown',
-      durationMs,
-    });
-    throw error;
+    return NextResponse.json({ error: 'Failed to aggregate prices' }, { status: 500 });
   }
 }
 
@@ -280,1115 +105,155 @@ export async function DELETE(request: NextRequest) {
 // 辅助函数
 // ============================================================================
 
-async function getOverview() {
-  const stats = await getInstanceStats();
+async function getComparison(symbol: string, chain?: SupportedChain | null) {
+  const comparison = await aggregatePrices(symbol, chain || undefined);
 
-  // 获取最近的价格更新
-  const recentPrices = await query(`
-    SELECT 
-      protocol,
-      COUNT(*) as update_count,
-      COUNT(DISTINCT symbol) as symbol_count
-    FROM unified_price_feeds
-    WHERE timestamp > NOW() - INTERVAL '1 hour'
-    GROUP BY protocol
-    ORDER BY update_count DESC
-  `);
+  if (!comparison) {
+    return NextResponse.json({ error: 'No comparison data available' }, { status: 404 });
+  }
 
-  // 获取同步状态概览
-  const syncOverview = await query(`
-    SELECT
-      protocol,
-      COUNT(*) as total,
-      COUNT(*) FILTER (WHERE status = 'healthy') as healthy,
-      COUNT(*) FILTER (WHERE status = 'error') as error
-    FROM unified_sync_state
-    GROUP BY protocol
-    ORDER BY total DESC
-  `);
-
-  // 获取活跃告警
-  const activeAlerts = await query(`
-    SELECT
-      severity,
-      COUNT(*) as count
-    FROM unified_alerts
-    WHERE status = 'open'
-    GROUP BY severity
-    ORDER BY 
-      CASE severity
-        WHEN 'critical' THEN 1
-        WHEN 'warning' THEN 2
-        WHEN 'info' THEN 3
-      END
-  `);
-
-  return {
-    timestamp: new Date().toISOString(),
-    instances: stats,
-    prices: {
-      recentUpdates: recentPrices.rows,
-      totalUpdates1h: recentPrices.rows.reduce((sum, row) => sum + parseInt(row.update_count), 0),
-    },
-    sync: syncOverview.rows,
-    alerts: {
-      active: activeAlerts.rows,
-      totalActive: activeAlerts.rows.reduce((sum, row) => sum + parseInt(row.count), 0),
-    },
-  };
+  return NextResponse.json(comparison);
 }
 
-async function listInstances(searchParams: URLSearchParams) {
-  const protocol = searchParams.get('protocol') as OracleProtocol | undefined;
-  const chain = searchParams.get('chain') as SupportedChain | undefined;
-  const enabled = searchParams.get('enabled');
-
-  const filters = {
-    ...(protocol && { protocol }),
-    ...(chain && { chain }),
-    ...(enabled !== null && { enabled: enabled === 'true' }),
-  };
-
-  const instances = await listUnifiedInstances(
-    Object.keys(filters).length > 0 ? filters : undefined,
-  );
-
-  return {
-    instances: instances.map((instance) => ({
-      id: instance.id,
-      name: instance.name,
-      protocol: instance.protocol,
-      chain: instance.chain,
-      enabled: instance.enabled,
-      createdAt: instance.createdAt,
-      updatedAt: instance.updatedAt,
-    })),
-    total: instances.length,
-    filters,
-  };
+async function getHistory(symbol: string, hours: number) {
+  const history = await getHistoricalComparisons(symbol, hours);
+  return NextResponse.json(history);
 }
 
-async function getInstance(id: string | null) {
-  if (!id) {
-    return { error: 'Instance ID is required' };
-  }
-
-  const instance = await getUnifiedInstance(id);
-
-  if (!instance) {
-    return { error: 'Instance not found' };
-  }
-
-  // 获取同步状态
-  const syncState = await query(`SELECT * FROM unified_sync_state WHERE instance_id = $1`, [id]);
-
-  // 获取最新数据（根据协议类型）
-  let latestData: unknown = null;
-
-  if (instance.protocol === 'chainlink') {
-    const prices = await query(
-      `SELECT symbol, price, timestamp, is_stale
-       FROM unified_price_feeds
-       WHERE instance_id = $1
-       ORDER BY timestamp DESC
-       LIMIT 10`,
-      [id],
-    );
-    latestData = prices.rows;
-  } else if (['uma', 'insight'].includes(instance.protocol)) {
-    const assertions = await query(
-      `SELECT id, identifier, status, proposed_at, disputed
-       FROM unified_assertions
-       WHERE instance_id = $1
-       ORDER BY proposed_at DESC
-       LIMIT 10`,
-      [id],
-    );
-    latestData = assertions.rows;
-  }
-
-  return {
-    instance: {
-      id: instance.id,
-      name: instance.name,
-      protocol: instance.protocol,
-      chain: instance.chain,
-      enabled: instance.enabled,
-      config: {
-        rpcUrl: instance.config.rpcUrl,
-        startBlock: instance.config.startBlock,
-        maxBlockRange: instance.config.maxBlockRange,
-        confirmationBlocks: instance.config.confirmationBlocks,
-        syncIntervalMs: instance.config.syncIntervalMs,
-      },
-      createdAt: instance.createdAt,
-      updatedAt: instance.updatedAt,
-    },
-    sync: syncState.rows[0] || null,
-    latestData,
-  };
-}
-
-async function getPrices(searchParams: URLSearchParams) {
-  const protocol = searchParams.get('protocol') as OracleProtocol | undefined;
-  const chain = searchParams.get('chain') as SupportedChain | undefined;
-  const symbol = searchParams.get('symbol');
-  const instanceId = searchParams.get('instanceId');
-  const limit = parseInt(searchParams.get('limit') || '20');
-  const offset = parseInt(searchParams.get('offset') || '0');
-
-  let sql = `SELECT * FROM unified_price_feeds WHERE 1=1`;
-  const params: (string | number | boolean | Date | null | undefined | string[] | number[])[] = [];
-  let paramIndex = 1;
-
-  if (protocol) {
-    sql += ` AND protocol = $${paramIndex++}`;
-    params.push(protocol);
-  }
-
-  if (chain) {
-    sql += ` AND chain = $${paramIndex++}`;
-    params.push(chain);
-  }
-
-  if (symbol) {
-    sql += ` AND symbol = $${paramIndex++}`;
-    params.push(symbol);
-  }
-
-  if (instanceId) {
-    sql += ` AND instance_id = $${paramIndex++}`;
-    params.push(instanceId);
-  }
-
-  // 获取总数
-  const countResult = await query(`SELECT COUNT(*) as total FROM (${sql}) as subquery`, params);
-  const total = parseInt(countResult.rows[0]?.total || 0);
-
-  // 获取数据
-  sql += ` ORDER BY timestamp DESC LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
-  params.push(limit, offset);
-
-  const result = await query(sql, params);
-
-  return {
-    prices: result.rows.map((row) => ({
-      id: row.id,
-      protocol: row.protocol,
-      chain: row.chain,
-      symbol: row.symbol,
-      baseAsset: row.base_asset,
-      quoteAsset: row.quote_asset,
-      price: parseFloat(row.price),
-      decimals: row.decimals,
-      timestamp: row.timestamp,
-      isStale: row.is_stale,
-      stalenessSeconds: row.staleness_seconds,
-    })),
-    pagination: {
-      total,
-      limit,
-      offset,
-      hasMore: offset + limit < total,
-    },
-  };
-}
-
-async function getPriceComparison(searchParams: URLSearchParams) {
-  const symbol = searchParams.get('symbol');
-
-  if (!symbol) {
-    return { error: 'Symbol is required for comparison' };
-  }
-
-  // 获取所有协议的最新价格
-  const prices = await query(
-    `SELECT DISTINCT ON (protocol, chain)
-      protocol,
-      chain,
-      price,
-      timestamp,
-      confidence,
-      is_stale
-    FROM unified_price_feeds
-    WHERE symbol = $1
-    ORDER BY protocol, chain, timestamp DESC`,
-    [symbol],
-  );
-
-  if (prices.rows.length === 0) {
-    return {
-      symbol,
-      available: false,
-      message: 'No price data available for this symbol',
-    };
-  }
-
-  // 计算统计数据
-  const priceValues = prices.rows.map((row) => parseFloat(row.price));
-  const avgPrice = priceValues.reduce((a, b) => a + b, 0) / priceValues.length;
-  const sortedPrices = [...priceValues].sort((a, b) => a - b);
-  const medianPrice = sortedPrices[Math.floor(sortedPrices.length / 2)];
-  const minPrice = Math.min(...priceValues);
-  const maxPrice = Math.max(...priceValues);
-  const priceRange = maxPrice - minPrice;
-  const priceRangePercent = (priceRange / avgPrice) * 100;
-
-  // 找出异常值（偏离平均值超过1%）
-  const threshold = avgPrice * 0.01;
-  const outliers = prices.rows.filter((row) => {
-    const price = parseFloat(row.price);
-    return Math.abs(price - avgPrice) > threshold;
-  });
-
-  // 推荐价格（使用中位数）
-  const recommendedPrice = medianPrice;
-
-  return {
-    symbol,
-    timestamp: new Date().toISOString(),
-    available: true,
-    prices: prices.rows.map((row) => ({
-      protocol: row.protocol,
-      chain: row.chain,
-      price: parseFloat(row.price),
-      timestamp: row.timestamp,
-      confidence: row.confidence,
-      isStale: row.is_stale,
-    })),
-    statistics: {
-      count: prices.rows.length,
-      avgPrice,
-      medianPrice,
-      minPrice,
-      maxPrice,
-      priceRange,
-      priceRangePercent,
-    },
-    outliers: outliers.map((row) => ({
-      protocol: row.protocol,
-      chain: row.chain,
-      price: parseFloat(row.price),
-      deviation: parseFloat(row.price) - avgPrice,
-      deviationPercent: ((parseFloat(row.price) - avgPrice) / avgPrice) * 100,
-    })),
-    recommended: {
-      price: recommendedPrice,
-      source: 'median',
-      confidence: prices.rows.length > 2 ? 'high' : 'medium',
-    },
-  };
-}
-
-async function getDeviationAnalysis(searchParams: URLSearchParams) {
-  const symbol = searchParams.get('symbol');
-  const warningThreshold = parseFloat(searchParams.get('warningThreshold') || '0.5');
-  const criticalThreshold = parseFloat(searchParams.get('criticalThreshold') || '1.0');
-  const minDataPoints = parseInt(searchParams.get('minDataPoints') || '3');
-  const timeWindowMinutes = parseInt(searchParams.get('timeWindow') || '5');
-
-  if (!symbol) {
-    return { error: 'Symbol is required for deviation analysis' };
-  }
-
+async function getStats() {
   try {
-    const config: Partial<PriceDeviationConfig> = {
-      warningThreshold,
-      criticalThreshold,
-      minDataPoints,
-      timeWindowMinutes,
-    };
-
-    const { consensus, deviations, healthy } = await detectPriceDeviations(symbol, config);
-
-    return {
-      symbol,
-      timestamp: new Date().toISOString(),
-      config,
-      consensus,
-      summary: {
-        totalProtocols: consensus.participatingProtocols,
-        healthyProtocols: healthy.length,
-        warningProtocols: deviations.filter((d) => d.severity === 'warning').length,
-        criticalProtocols: deviations.filter((d) => d.severity === 'critical').length,
-      },
-      deviations: deviations.map((d) => ({
-        severity: d.severity,
-        protocol: d.protocol,
-        chain: d.chain,
-        price: d.price,
-        referencePrice: d.referencePrice,
-        deviationPercent: d.deviationPercent,
-        message: d.message,
-      })),
-      healthy: healthy.map((h) => ({
-        protocol: h.protocol,
-        chain: h.chain,
-        price: h.price,
-        confidence: h.confidence,
-      })),
-    };
-  } catch (error) {
-    logger.error('Deviation analysis failed', {
-      symbol,
-      error: error instanceof Error ? error.message : String(error),
-    });
-    return {
-      error: 'Deviation analysis failed',
-      details: error instanceof Error ? error.message : String(error),
-    };
-  }
-}
-
-async function getTrendAnalysis(searchParams: URLSearchParams) {
-  const symbol = searchParams.get('symbol');
-  const timeWindowHours = parseInt(searchParams.get('hours') || '1');
-
-  if (!symbol) {
-    return { error: 'Symbol is required for trend analysis' };
-  }
-
-  try {
-    const trends = await analyzePriceTrends(symbol, timeWindowHours);
-
-    // 计算整体趋势统计
-    const upCount = trends.filter((t) => t.trend === 'up').length;
-    const downCount = trends.filter((t) => t.trend === 'down').length;
-    const stableCount = trends.filter((t) => t.trend === 'stable').length;
-    const avgVolatility = trends.reduce((sum, t) => sum + t.volatility, 0) / (trends.length || 1);
-
-    return {
-      symbol,
-      timestamp: new Date().toISOString(),
-      timeWindow: `${timeWindowHours}h`,
-      summary: {
-        totalProtocols: trends.length,
-        upTrends: upCount,
-        downTrends: downCount,
-        stableTrends: stableCount,
-        dominantTrend: upCount > downCount ? 'up' : downCount > upCount ? 'down' : 'mixed',
-        avgVolatility: parseFloat(avgVolatility.toFixed(4)),
-      },
-      trends: trends.map((t) => ({
-        protocol: t.protocol,
-        chain: t.chain,
-        trend: t.trend,
-        changePercent: parseFloat(t.changePercent.toFixed(4)),
-        volatility: parseFloat(t.volatility.toFixed(4)),
-      })),
-    };
-  } catch (error) {
-    logger.error('Trend analysis failed', {
-      symbol,
-      error: error instanceof Error ? error.message : String(error),
-    });
-    return {
-      error: 'Trend analysis failed',
-      details: error instanceof Error ? error.message : String(error),
-    };
-  }
-}
-
-async function getReliabilityReport(searchParams: URLSearchParams) {
-  const protocol = searchParams.get('protocol') as OracleProtocol | null;
-
-  if (!protocol) {
-    // 返回所有协议的可靠性报告
-    const protocols: OracleProtocol[] = [
-      'uma',
-      'chainlink',
-      'pyth',
-      'band',
-      'api3',
-      'redstone',
-      'dia',
-      'flux',
-    ];
-    const reports = await Promise.all(
-      protocols.map(async (p) => {
-        try {
-          return await getProtocolReliabilityReport(p);
-        } catch (error) {
-          logger.warn(`Failed to get reliability report for ${p}`, { error });
-          return null;
-        }
-      }),
+    // 获取协议数量
+    const protocolsResult = await query(
+      `SELECT COUNT(DISTINCT protocol) as count FROM unified_oracle_instances WHERE enabled = true`,
     );
 
-    const validReports = reports.filter((r) => r !== null);
+    // 获取价格喂价数量
+    const feedsResult = await query(
+      `SELECT COUNT(*) as count FROM unified_price_feeds 
+       WHERE timestamp > NOW() - INTERVAL '5 minutes'`,
+    );
 
-    return {
-      timestamp: new Date().toISOString(),
-      summary: {
-        totalProtocols: validReports.length,
-        avgReliability:
-          validReports.reduce((sum, r) => sum + r!.reliabilityScore, 0) /
-          (validReports.length || 1),
-      },
-      protocols: validReports.map((r) => ({
-        protocol: r!.protocol,
-        reliabilityScore: r!.reliabilityScore,
-        totalUpdates: r!.totalUpdates,
-        staleUpdates: r!.staleUpdates,
-        avgDeviation: parseFloat(r!.avgDeviationFromMedian.toFixed(4)),
-        maxDeviation: parseFloat(r!.maxDeviationFromMedian.toFixed(4)),
-        lastUpdated: r!.lastUpdated.toISOString(),
-      })),
+    // 获取活跃告警数量
+    const alertsResult = await query(
+      `SELECT COUNT(*) as count FROM unified_alerts WHERE status = 'open'`,
+    );
+
+    // 计算平均偏差
+    const deviationResult = await query(
+      `SELECT AVG(max_deviation_percent) as avg_deviation 
+       FROM cross_oracle_comparisons 
+       WHERE timestamp > NOW() - INTERVAL '1 hour'`,
+    );
+
+    const stats = {
+      totalProtocols: parseInt(protocolsResult.rows[0]?.count || '0', 10),
+      totalFeeds: parseInt(feedsResult.rows[0]?.count || '0', 10),
+      activeAlerts: parseInt(alertsResult.rows[0]?.count || '0', 10),
+      avgDeviation: parseFloat(deviationResult.rows[0]?.avg_deviation || '0'),
     };
-  }
 
-  try {
-    const report = await getProtocolReliabilityReport(protocol);
-
-    return {
-      timestamp: new Date().toISOString(),
-      protocol: report.protocol,
-      reliabilityScore: report.reliabilityScore,
-      metrics: {
-        totalUpdates24h: report.totalUpdates,
-        staleUpdates24h: report.staleUpdates,
-        freshnessRate:
-          report.totalUpdates > 0
-            ? ((report.totalUpdates - report.staleUpdates) / report.totalUpdates) * 100
-            : 0,
-        avgDeviationFromMedian: parseFloat(report.avgDeviationFromMedian.toFixed(4)),
-        maxDeviationFromMedian: parseFloat(report.maxDeviationFromMedian.toFixed(4)),
-      },
-      lastUpdated: report.lastUpdated.toISOString(),
-    };
+    return NextResponse.json(stats);
   } catch (error) {
-    logger.error('Reliability report failed', {
-      protocol,
+    logger.error('Failed to get stats', {
       error: error instanceof Error ? error.message : String(error),
     });
-    return {
-      error: 'Reliability report failed',
-      details: error instanceof Error ? error.message : String(error),
-    };
+    return NextResponse.json({ error: 'Failed to get stats' }, { status: 500 });
   }
 }
 
 async function getProtocols() {
-  const protocols = await query(`
-    SELECT 
-      id,
-      name,
-      description,
-      supported_chains,
-      features,
-      tvl,
-      market_share,
-      is_active
-    FROM oracle_protocols_info
-    WHERE is_active = true
-    ORDER BY name
-  `);
+  try {
+    const result = await query(
+      `SELECT 
+        p.id as protocol,
+        p.name,
+        p.supported_chains as "supportedChains",
+        COUNT(DISTINCT i.id) as "totalFeeds",
+        AVG(CASE 
+          WHEN s.status = 'healthy' THEN 100 
+          WHEN s.status = 'lagging' THEN 80 
+          WHEN s.status = 'error' THEN 0 
+          ELSE 50 
+        END) as uptime,
+        AVG(s.avg_sync_duration_ms) as "avgLatency",
+        CASE 
+          WHEN COUNT(CASE WHEN s.status = 'error' THEN 1 END) > 0 THEN 'down'
+          WHEN COUNT(CASE WHEN s.status = 'lagging' THEN 1 END) > 0 THEN 'degraded'
+          ELSE 'healthy'
+        END as status
+      FROM oracle_protocols_info p
+      LEFT JOIN unified_oracle_instances i ON p.id = i.protocol AND i.enabled = true
+      LEFT JOIN unified_sync_state s ON i.id = s.instance_id
+      WHERE p.is_active = true
+      GROUP BY p.id, p.name, p.supported_chains`,
+    );
 
-  // 获取每个协议的实例数量
-  const instanceCounts = await query(`
-    SELECT protocol, COUNT(*) as count
-    FROM unified_oracle_instances
-    WHERE enabled = true
-    GROUP BY protocol
-  `);
-
-  const countMap = new Map(instanceCounts.rows.map((row) => [row.protocol, parseInt(row.count)]));
-
-  return {
-    protocols: protocols.rows.map((row) => ({
-      id: row.id,
-      name: row.name,
-      description: row.description,
-      supportedChains: row.supported_chains,
-      features: row.features,
-      tvl: row.tvl,
-      marketShare: row.market_share,
-      activeInstances: countMap.get(row.id) || 0,
-    })),
-    total: protocols.rows.length,
-  };
-}
-
-async function getChains() {
-  const chains = await query(`
-    SELECT DISTINCT chain
-    FROM unified_oracle_instances
-    WHERE enabled = true
-    ORDER BY chain
-  `);
-
-  // 获取每个链的协议支持情况
-  const chainProtocols = await query(`
-    SELECT 
-      chain,
-      protocol,
-      COUNT(*) as instance_count
-    FROM unified_oracle_instances
-    WHERE enabled = true
-    GROUP BY chain, protocol
-    ORDER BY chain, instance_count DESC
-  `);
-
-  const chainMap = new Map<string, Array<{ protocol: string; instances: number }>>();
-
-  for (const row of chainProtocols.rows) {
-    if (!chainMap.has(row.chain)) {
-      chainMap.set(row.chain, []);
-    }
-    const chainData = chainMap.get(row.chain);
-    if (chainData) {
-      chainData.push({
-        protocol: row.protocol,
-        instances: parseInt(row.instance_count),
-      });
-    }
-  }
-
-  return {
-    chains: chains.rows.map((row) => ({
-      id: row.chain,
-      protocols: chainMap.get(row.chain) || [],
-    })),
-    total: chains.rows.length,
-  };
-}
-
-async function getGlobalStats() {
-  const instanceStats = await getInstanceStats();
-
-  // 24小时价格更新统计
-  const priceStats = await query(`
-    SELECT
-      protocol,
-      COUNT(*) as update_count,
-      COUNT(DISTINCT symbol) as symbol_count,
-      AVG(price) as avg_price
-    FROM unified_price_feeds
-    WHERE timestamp > NOW() - INTERVAL '24 hours'
-    GROUP BY protocol
-    ORDER BY update_count DESC
-  `);
-
-  // 同步性能统计
-  const syncStats = await query(`
-    SELECT
-      protocol,
-      AVG(last_sync_duration_ms) as avg_duration,
-      MAX(last_sync_duration_ms) as max_duration,
-      COUNT(*) FILTER (WHERE status = 'healthy') as healthy_count,
-      COUNT(*) FILTER (WHERE status = 'error') as error_count
-    FROM unified_sync_state
-    GROUP BY protocol
-  `);
-
-  return {
-    instances: instanceStats,
-    prices: {
-      last24h: priceStats.rows.map((row) => ({
-        protocol: row.protocol,
-        updates: parseInt(row.update_count),
-        symbols: parseInt(row.symbol_count),
-        avgPrice: parseFloat(row.avg_price || 0),
-      })),
-    },
-    sync: syncStats.rows.map((row) => ({
+    const protocols = result.rows.map((row) => ({
       protocol: row.protocol,
-      avgDurationMs: parseFloat(row.avg_duration || 0),
-      maxDurationMs: parseFloat(row.max_duration || 0),
-      healthy: parseInt(row.healthy_count),
-      error: parseInt(row.error_count),
-    })),
-  };
-}
+      name: row.name,
+      supportedChains: row.supportedChains || [],
+      totalFeeds: parseInt(row.totalFeeds || '0', 10),
+      uptime: parseFloat(row.uptime || '99.9'),
+      avgLatency: parseInt(row.avgLatency || '100', 10),
+      status: row.status,
+    }));
 
-async function createInstance(body: Record<string, unknown>) {
-  const { name, protocol, chain, config } = body;
-
-  if (!name || !protocol || !chain || !config) {
-    return { error: 'Missing required fields: name, protocol, chain, config' };
-  }
-
-  try {
-    const instance = await createUnifiedInstance({
-      name: name as string,
-      protocol: protocol as OracleProtocol,
-      chain: chain as SupportedChain,
-      config: { ...config, chain: chain as SupportedChain } as UnifiedOracleConfig,
-    });
-
-    logger.info('Unified instance created', {
-      id: instance.id,
-      protocol: instance.protocol,
-      chain: instance.chain,
-    });
-
-    return {
-      success: true,
-      instance: {
-        id: instance.id,
-        name: instance.name,
-        protocol: instance.protocol,
-        chain: instance.chain,
-        enabled: instance.enabled,
-        createdAt: instance.createdAt,
-      },
-    };
+    return NextResponse.json(protocols);
   } catch (error) {
-    logger.error('Failed to create unified instance', {
+    logger.error('Failed to get protocols', {
       error: error instanceof Error ? error.message : String(error),
     });
-    return {
-      error: 'Failed to create instance',
-      details: error instanceof Error ? error.message : String(error),
-    };
+    return NextResponse.json({ error: 'Failed to get protocols' }, { status: 500 });
   }
 }
 
-async function startSync(instanceId: string, protocol: string) {
-  if (!instanceId) {
-    return { error: 'Instance ID is required' };
-  }
-
+async function getAlerts(status: string) {
   try {
-    switch (protocol) {
-      case 'chainlink':
-        await startChainlinkSync(instanceId);
-        break;
-      case 'pyth':
-        await startPythSync(instanceId);
-        break;
-      case 'band':
-        await startBandSync(instanceId);
-        break;
-      case 'api3':
-        await startAPI3Sync(instanceId);
-        break;
-      case 'redstone':
-        await startRedStoneSync(instanceId);
-        break;
-      case 'dia':
-        await startDIASync(instanceId);
-        break;
-      case 'flux':
-        await startFluxSync(instanceId);
-        break;
-      default:
-        return { error: `Sync not implemented for protocol: ${protocol}` };
-    }
-
-    logger.info('Sync started', { instanceId, protocol });
-
-    return {
-      success: true,
-      message: 'Sync started successfully',
-      instanceId,
-      protocol,
-    };
-  } catch (error) {
-    logger.error('Failed to start sync', {
-      instanceId,
-      protocol,
-      error: error instanceof Error ? error.message : String(error),
-    });
-    return {
-      error: 'Failed to start sync',
-      details: error instanceof Error ? error.message : String(error),
-    };
-  }
-}
-
-async function stopSync(instanceId: string, protocol: string) {
-  if (!instanceId) {
-    return { error: 'Instance ID is required' };
-  }
-
-  try {
-    switch (protocol) {
-      case 'chainlink':
-        stopChainlinkSync(instanceId);
-        break;
-      case 'pyth':
-        stopPythSync(instanceId);
-        break;
-      case 'band':
-        stopBandSync(instanceId);
-        break;
-      case 'api3':
-        stopAPI3Sync(instanceId);
-        break;
-      case 'redstone':
-        stopRedStoneSync(instanceId);
-        break;
-      case 'dia':
-        stopDIASync(instanceId);
-        break;
-      case 'flux':
-        stopFluxSync(instanceId);
-        break;
-      default:
-        return { error: `Sync stop not implemented for protocol: ${protocol}` };
-    }
-
-    logger.info('Sync stopped', { instanceId, protocol });
-
-    return {
-      success: true,
-      message: 'Sync stopped successfully',
-      instanceId,
-      protocol,
-    };
-  } catch (error) {
-    logger.error('Failed to stop sync', {
-      instanceId,
-      protocol,
-      error: error instanceof Error ? error.message : String(error),
-    });
-    return {
-      error: 'Failed to stop sync',
-      details: error instanceof Error ? error.message : String(error),
-    };
-  }
-}
-
-async function batchCreateInstances(instances: unknown[]) {
-  if (!Array.isArray(instances) || instances.length === 0) {
-    return { error: 'Instances array is required' };
-  }
-
-  const results = {
-    success: [] as Array<Record<string, unknown>>,
-    failed: [] as Array<{ instance: unknown; error: string }>,
-  };
-
-  for (const instanceData of instances) {
-    const data = instanceData as Record<string, unknown>;
-    try {
-      const chain = data.chain as SupportedChain;
-      const instance = await createUnifiedInstance({
-        name: data.name as string,
-        protocol: data.protocol as OracleProtocol,
-        chain: chain,
-        config: { ...(data.config as object), chain: chain } as UnifiedOracleConfig,
-      });
-      results.success.push({
-        id: instance.id,
-        name: instance.name,
-        protocol: instance.protocol,
-        chain: instance.chain,
-      });
-    } catch (error) {
-      results.failed.push({
-        instance: instanceData,
-        error: error instanceof Error ? error.message : String(error),
-      });
-    }
-  }
-
-  logger.info('Batch create completed', {
-    total: instances.length,
-    success: results.success.length,
-    failed: results.failed.length,
-  });
-
-  return {
-    success: results.failed.length === 0,
-    results,
-  };
-}
-
-async function batchAnalyze(symbols: string[], config: Partial<PriceDeviationConfig> = {}) {
-  if (!Array.isArray(symbols) || symbols.length === 0) {
-    return { error: 'Symbols array is required' };
-  }
-
-  try {
-    const results = await runCrossProtocolAnalysis(symbols, config);
-
-    return {
-      success: true,
-      timestamp: new Date().toISOString(),
-      summary: {
-        symbolsAnalyzed: results.analyzed,
-        alertsGenerated: results.alertsGenerated,
-      },
-      results: results.details.map((r) => ({
-        symbol: r.symbol,
-        consensus: r.consensus,
-        deviationSummary: {
-          total: r.deviations.length,
-          warning: r.deviations.filter((d) => d.severity === 'warning').length,
-          critical: r.deviations.filter((d) => d.severity === 'critical').length,
-        },
-        trendSummary: {
-          up: r.trends.filter((t) => t.trend === 'up').length,
-          down: r.trends.filter((t) => t.trend === 'down').length,
-          stable: r.trends.filter((t) => t.trend === 'stable').length,
-        },
-      })),
-    };
-  } catch (error) {
-    logger.error('Batch analysis failed', {
-      error: error instanceof Error ? error.message : String(error),
-    });
-    return {
-      error: 'Batch analysis failed',
-      details: error instanceof Error ? error.message : String(error),
-    };
-  }
-}
-
-async function runAnalysisJob(symbols: string[], config: Partial<PriceDeviationConfig> = {}) {
-  if (!Array.isArray(symbols) || symbols.length === 0) {
-    return { error: 'Symbols array is required' };
-  }
-
-  const startTime = Date.now();
-
-  try {
-    const results = await runCrossProtocolAnalysis(symbols, config);
-    const durationMs = Date.now() - startTime;
-
-    return {
-      success: true,
-      timestamp: new Date().toISOString(),
-      durationMs,
-      summary: {
-        symbolsAnalyzed: results.analyzed,
-        alertsGenerated: results.alertsGenerated,
-      },
-      message: `Analysis job completed: ${results.analyzed} symbols analyzed, ${results.alertsGenerated} alerts generated`,
-    };
-  } catch (error) {
-    logger.error('Analysis job failed', {
-      error: error instanceof Error ? error.message : String(error),
-    });
-    return {
-      error: 'Analysis job failed',
-      details: error instanceof Error ? error.message : String(error),
-    };
-  }
-}
-
-async function batchUpdateStatus(ids: string[], enabled: boolean) {
-  if (!Array.isArray(ids) || ids.length === 0) {
-    return { error: 'IDs array is required' };
-  }
-
-  const results = {
-    updated: [] as string[],
-    failed: [] as Array<{ id: string; error: string }>,
-  };
-
-  for (const id of ids) {
-    try {
-      const instance = await updateUnifiedInstance(id, { enabled });
-      if (instance) {
-        results.updated.push(id);
-      } else {
-        results.failed.push({ id, error: 'Instance not found' });
-      }
-    } catch (error) {
-      results.failed.push({
+    const result = await query(
+      `SELECT 
         id,
-        error: error instanceof Error ? error.message : String(error),
-      });
-    }
-  }
+        event,
+        severity,
+        title,
+        message,
+        protocol,
+        chain,
+        symbol,
+        context,
+        status,
+        occurrences,
+        first_seen_at as "firstSeenAt",
+        last_seen_at as "lastSeenAt",
+        created_at as "createdAt"
+      FROM unified_alerts
+      WHERE status = $1
+      ORDER BY created_at DESC
+      LIMIT 100`,
+      [status],
+    );
 
-  logger.info('Batch update status completed', {
-    total: ids.length,
-    updated: results.updated.length,
-    failed: results.failed.length,
-    enabled,
-  });
+    const alerts = result.rows.map((row) => ({
+      id: row.id,
+      event: row.event,
+      severity: row.severity,
+      title: row.title,
+      message: row.message,
+      protocol: row.protocol,
+      chain: row.chain,
+      symbol: row.symbol,
+      context: row.context,
+      status: row.status,
+      occurrences: row.occurrences,
+      firstSeenAt: row.firstSeenAt,
+      lastSeenAt: row.lastSeenAt,
+      createdAt: row.createdAt,
+    }));
 
-  return {
-    success: results.failed.length === 0,
-    results,
-  };
-}
-
-// ============================================================================
-// 告警相关函数
-// ============================================================================
-
-async function getAlertsList(searchParams: URLSearchParams) {
-  const status = searchParams.get('status') as 'open' | 'acknowledged' | 'resolved' | undefined;
-  const severity = searchParams.get('severity') as 'info' | 'warning' | 'critical' | undefined;
-  const protocol = searchParams.get('protocol') as OracleProtocol | undefined;
-  const chain = searchParams.get('chain') as SupportedChain | undefined;
-  const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : undefined;
-
-  const alerts = await getAlerts({
-    ...(status && { status }),
-    ...(severity && { severity }),
-    ...(protocol && { protocol }),
-    ...(chain && { chain }),
-    ...(limit && { limit }),
-  });
-
-  return {
-    alerts: alerts.map((alert) => ({
-      id: alert.id,
-      ruleId: alert.ruleId,
-      event: alert.event,
-      severity: alert.severity,
-      title: alert.title,
-      message: alert.message,
-      protocol: alert.protocol,
-      chain: alert.chain,
-      instanceId: alert.instanceId,
-      symbol: alert.symbol,
-      status: alert.status,
-      occurrences: alert.occurrences,
-      createdAt: alert.createdAt,
-      updatedAt: alert.updatedAt,
-    })),
-    total: alerts.length,
-  };
-}
-
-async function getAlertRulesList() {
-  const rules = await getAlertRules();
-  return {
-    rules: rules.map((rule) => ({
-      id: rule.id,
-      name: rule.name,
-      enabled: rule.enabled,
-      event: rule.event,
-      severity: rule.severity,
-      protocols: rule.protocols,
-      chains: rule.chains,
-      symbols: rule.symbols,
-      params: rule.params,
-      channels: rule.channels,
-    })),
-    total: rules.length,
-  };
-}
-
-async function getAlertStatistics() {
-  const stats = await getAlertStats();
-  return {
-    timestamp: new Date().toISOString(),
-    stats,
-  };
-}
-
-async function createNewAlertRule(body: Record<string, unknown>) {
-  const { name, event, severity, params, protocols, chains, symbols } = body;
-
-  if (!name || !event || !severity) {
-    return { error: 'Missing required fields: name, event, severity' };
-  }
-
-  try {
-    const rule = await createAlertRule({
-      name: name as string,
-      enabled: true,
-      event: event as UnifiedAlertEvent,
-      severity: severity as 'info' | 'warning' | 'critical',
-      params: params as AlertRuleConfig['params'],
-      protocols: protocols as OracleProtocol[],
-      chains: chains as SupportedChain[],
-      symbols: symbols as string[],
+    return NextResponse.json(alerts);
+  } catch (error) {
+    logger.error('Failed to get alerts', {
+      error: error instanceof Error ? error.message : String(error),
     });
-
-    return {
-      success: true,
-      rule: {
-        id: rule.id,
-        name: rule.name,
-        enabled: rule.enabled,
-        event: rule.event,
-        severity: rule.severity,
-      },
-    };
-  } catch (error) {
-    logger.error('Failed to create alert rule', { error });
-    return {
-      error: 'Failed to create alert rule',
-      details: error instanceof Error ? error.message : String(error),
-    };
-  }
-}
-
-async function acknowledgeAlertById(alertId: string, userId: string) {
-  if (!alertId) {
-    return { error: 'Alert ID is required' };
-  }
-
-  try {
-    const alert = await acknowledgeAlert(alertId, userId || 'system');
-    if (!alert) {
-      return { error: 'Alert not found' };
-    }
-
-    return {
-      success: true,
-      alert: {
-        id: alert.id,
-        status: alert.status,
-        acknowledgedAt: alert.acknowledgedAt,
-      },
-    };
-  } catch (error) {
-    logger.error('Failed to acknowledge alert', { error });
-    return {
-      error: 'Failed to acknowledge alert',
-      details: error instanceof Error ? error.message : String(error),
-    };
-  }
-}
-
-async function resolveAlertById(alertId: string, userId: string) {
-  if (!alertId) {
-    return { error: 'Alert ID is required' };
-  }
-
-  try {
-    const alert = await resolveAlert(alertId, userId || 'system');
-    if (!alert) {
-      return { error: 'Alert not found' };
-    }
-
-    return {
-      success: true,
-      alert: {
-        id: alert.id,
-        status: alert.status,
-        resolvedAt: alert.resolvedAt,
-      },
-    };
-  } catch (error) {
-    logger.error('Failed to resolve alert', { error });
-    return {
-      error: 'Failed to resolve alert',
-      details: error instanceof Error ? error.message : String(error),
-    };
-  }
-}
-
-async function scanStaleDataJob() {
-  try {
-    const alerts = await scanForStaleData(300, 'auto-stale-scan');
-    return {
-      success: true,
-      timestamp: new Date().toISOString(),
-      scanned: alerts.length,
-      alertsGenerated: alerts.map((a) => ({
-        id: a.id,
-        title: a.title,
-        severity: a.severity,
-        protocol: a.protocol,
-        symbol: a.symbol,
-      })),
-    };
-  } catch (error) {
-    logger.error('Stale data scan failed', { error });
-    return {
-      error: 'Scan failed',
-      details: error instanceof Error ? error.message : String(error),
-    };
+    return NextResponse.json({ error: 'Failed to get alerts' }, { status: 500 });
   }
 }

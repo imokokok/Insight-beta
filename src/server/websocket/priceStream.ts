@@ -1,558 +1,601 @@
 /**
  * WebSocket Price Stream Service
  *
- * WebSocket 实时价格流服务
- * 提供实时价格更新、告警通知、系统状态推送
+ * 实时价格数据流服务
+ * - 支持多协议实时价格推送
+ * - 订阅特定交易对
+ * - 跨协议价格对比流
  */
 
-import { Server as SocketServer, Socket } from 'socket.io';
-import { Server as HttpServer } from 'http';
 import { logger } from '@/lib/logger';
-import { query } from '@/server/db';
-import type { UnifiedPriceFeed, UnifiedAlert } from '@/lib/types/unifiedOracleTypes';
+import { priceAggregationEngine } from '@/server/oracle/priceAggregationService';
+import type {
+  CrossOracleComparison,
+  OracleProtocol,
+  SupportedChain,
+} from '@/lib/types/unifiedOracleTypes';
 
 // ============================================================================
 // 类型定义
 // ============================================================================
 
-export interface PriceStreamConfig {
-  port?: number;
-  corsOrigin?: string | string[];
-  heartbeatInterval?: number;
-  maxClients?: number;
-}
+type WebSocketClient = {
+  id: string;
+  ws: WebSocket;
+  subscriptions: Set<string>;
+  isAlive: boolean;
+  connectedAt: Date;
+};
 
-export interface Subscription {
-  type: 'price' | 'alert' | 'status';
-  symbols?: string[];
-  protocols?: string[];
-  chains?: string[];
-  severity?: string[];
-}
+type PriceStreamMessage =
+  | { type: 'subscribe'; symbols: string[]; chain?: SupportedChain }
+  | { type: 'unsubscribe'; symbols: string[] }
+  | { type: 'ping' }
+  | { type: 'get_comparison'; symbol: string; chain?: SupportedChain };
 
-export interface PriceUpdateMessage {
-  type: 'price_update';
-  data: UnifiedPriceFeed;
+type PriceStreamResponse =
+  | { type: 'price_update'; data: PriceUpdateData }
+  | { type: 'comparison_update'; data: CrossOracleComparison }
+  | { type: 'pong' }
+  | { type: 'error'; message: string }
+  | { type: 'subscribed'; symbols: string[] }
+  | { type: 'unsubscribed'; symbols: string[] };
+
+type PriceUpdateData = {
+  symbol: string;
+  protocol: OracleProtocol;
+  chain: SupportedChain;
+  price: number;
   timestamp: string;
-}
-
-export interface AlertMessage {
-  type: 'alert';
-  data: UnifiedAlert;
-  timestamp: string;
-}
-
-export interface StatusMessage {
-  type: 'status';
-  data: {
-    protocol: string;
-    chain: string;
-    status: 'healthy' | 'warning' | 'error';
-    latency: number;
-    lastUpdate: string;
-  };
-  timestamp: string;
-}
-
-export type WebSocketMessage = PriceUpdateMessage | AlertMessage | StatusMessage;
+  change24h?: number;
+  volume24h?: number;
+};
 
 // ============================================================================
-// WebSocket 服务
+// 配置
 // ============================================================================
 
-export class PriceStreamService {
-  private io: SocketServer | null = null;
-  private config: PriceStreamConfig;
-  private clients: Map<string, Socket> = new Map();
-  private subscriptions: Map<string, Subscription[]> = new Map();
-  private priceInterval?: NodeJS.Timeout;
-  private alertInterval?: NodeJS.Timeout;
-  private statusInterval?: NodeJS.Timeout;
-  private isRunning: boolean = false;
+const STREAM_CONFIG = {
+  // 心跳间隔（毫秒）
+  heartbeatInterval: 30000,
 
-  constructor(config: PriceStreamConfig = {}) {
-    this.config = {
-      port: config.port || 3001,
-      corsOrigin: config.corsOrigin || '*',
-      heartbeatInterval: config.heartbeatInterval || 30000,
-      maxClients: config.maxClients || 1000,
-    };
-  }
+  // 价格推送间隔（毫秒）
+  pricePushInterval: 5000,
 
-  // ============================================================================
-  // 启动/停止
-  // ============================================================================
+  // 对比数据推送间隔（毫秒）
+  comparisonInterval: 10000,
 
-  start(httpServer?: HttpServer): void {
-    if (this.isRunning) return;
+  // 最大客户端连接数
+  maxClients: 1000,
 
-    try {
-      if (httpServer) {
-        this.io = new SocketServer(httpServer, {
-          cors: {
-            origin: this.config.corsOrigin,
-            methods: ['GET', 'POST'],
-          },
-          transports: ['websocket', 'polling'],
-        });
-      } else {
-        this.io = new SocketServer(this.config.port, {
-          cors: {
-            origin: this.config.corsOrigin,
-            methods: ['GET', 'POST'],
-          },
-          transports: ['websocket', 'polling'],
-        });
-      }
+  // 每个客户端最大订阅数
+  maxSubscriptionsPerClient: 50,
 
-      this.setupEventHandlers();
-      this.startBroadcasting();
-      this.isRunning = true;
+  // 数据新鲜度阈值（秒）
+  dataFreshnessThreshold: 60,
+};
 
-      logger.info('PriceStream WebSocket service started', {
-        port: this.config.port,
-        maxClients: this.config.maxClients,
-      });
-    } catch (error) {
-      logger.error('Failed to start PriceStream service', { error });
-      throw error;
+// ============================================================================
+// 价格流管理器
+// ============================================================================
+
+export class PriceStreamManager {
+  private clients: Map<string, WebSocketClient> = new Map();
+  private symbolSubscriptions: Map<string, Set<string>> = new Map();
+  private heartbeatInterval?: NodeJS.Timeout;
+  private pricePushInterval?: NodeJS.Timeout;
+  private comparisonInterval?: NodeJS.Timeout;
+  private lastPrices: Map<string, PriceUpdateData> = new Map();
+  private isRunning = false;
+
+  /**
+   * 启动价格流服务
+   */
+  start(): void {
+    if (this.isRunning) {
+      logger.warn('Price stream manager already running');
+      return;
     }
+
+    logger.info('Starting price stream manager');
+    this.isRunning = true;
+
+    // 启动心跳检测
+    this.heartbeatInterval = setInterval(() => {
+      this.checkClientHealth();
+    }, STREAM_CONFIG.heartbeatInterval);
+
+    // 启动价格推送
+    this.pricePushInterval = setInterval(() => {
+      this.pushPriceUpdates();
+    }, STREAM_CONFIG.pricePushInterval);
+
+    // 启动对比数据推送
+    this.comparisonInterval = setInterval(() => {
+      this.pushComparisonUpdates();
+    }, STREAM_CONFIG.comparisonInterval);
+
+    logger.info('Price stream manager started');
   }
 
+  /**
+   * 停止价格流服务
+   */
   stop(): void {
     if (!this.isRunning) return;
 
-    this.stopBroadcasting();
-
-    if (this.io) {
-      this.io.close();
-      this.io = null;
-    }
-
-    this.clients.clear();
-    this.subscriptions.clear();
+    logger.info('Stopping price stream manager');
     this.isRunning = false;
 
-    logger.info('PriceStream WebSocket service stopped');
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+    }
+    if (this.pricePushInterval) {
+      clearInterval(this.pricePushInterval);
+    }
+    if (this.comparisonInterval) {
+      clearInterval(this.comparisonInterval);
+    }
+
+    // 关闭所有客户端连接
+    for (const client of this.clients.values()) {
+      client.ws.close();
+    }
+    this.clients.clear();
+    this.symbolSubscriptions.clear();
+
+    logger.info('Price stream manager stopped');
   }
 
-  // ============================================================================
-  // 事件处理
-  // ============================================================================
+  /**
+   * 添加客户端
+   */
+  addClient(id: string, ws: WebSocket): void {
+    if (this.clients.size >= STREAM_CONFIG.maxClients) {
+      logger.warn('Max clients reached, rejecting new connection');
+      ws.close(1013, 'Server capacity exceeded');
+      return;
+    }
 
-  private setupEventHandlers(): void {
-    if (!this.io) return;
+    const client: WebSocketClient = {
+      id,
+      ws,
+      subscriptions: new Set(),
+      isAlive: true,
+      connectedAt: new Date(),
+    };
 
-    this.io.on('connection', (socket: Socket) => {
-      // 检查最大客户端数
-      if (this.clients.size >= (this.config.maxClients || 1000)) {
-        socket.emit('error', { message: 'Server at capacity' });
-        socket.disconnect();
-        return;
+    this.clients.set(id, client);
+
+    // 设置消息处理器
+    ws.onmessage = (event) => {
+      this.handleMessage(id, event.data as string);
+    };
+
+    // 设置关闭处理器
+    ws.onclose = () => {
+      this.removeClient(id);
+    };
+
+    // 设置错误处理器
+    ws.onerror = (error) => {
+      logger.error(`WebSocket error for client ${id}`, { error });
+    };
+
+    // 设置 pong 处理器 (使用类型断言)
+    (ws as unknown as { onpong: (() => void) | null }).onpong = () => {
+      const client = this.clients.get(id);
+      if (client) {
+        client.isAlive = true;
       }
+    };
 
-      this.clients.set(socket.id, socket);
-      logger.debug('Client connected', { socketId: socket.id, totalClients: this.clients.size });
-
-      // 发送欢迎消息
-      socket.emit('connected', {
-        message: 'Connected to OracleMonitor Price Stream',
-        timestamp: new Date().toISOString(),
-      });
-
-      // 处理订阅
-      socket.on('subscribe', (subscription: Subscription) => {
-        this.handleSubscribe(socket.id, subscription);
-      });
-
-      // 处理取消订阅
-      socket.on('unsubscribe', (subscription: Subscription) => {
-        this.handleUnsubscribe(socket.id, subscription);
-      });
-
-      // 处理心跳
-      socket.on('ping', () => {
-        socket.emit('pong', { timestamp: new Date().toISOString() });
-      });
-
-      // 处理断开连接
-      socket.on('disconnect', (reason) => {
-        this.clients.delete(socket.id);
-        this.subscriptions.delete(socket.id);
-        logger.debug('Client disconnected', { socketId: socket.id, reason });
-      });
-
-      // 处理错误
-      socket.on('error', (error) => {
-        logger.error('Socket error', { socketId: socket.id, error });
-      });
+    logger.info(`Client ${id} connected`, {
+      totalClients: this.clients.size,
     });
   }
 
-  // ============================================================================
-  // 订阅管理
-  // ============================================================================
+  /**
+   * 移除客户端
+   */
+  removeClient(id: string): void {
+    const client = this.clients.get(id);
+    if (!client) return;
 
-  private handleSubscribe(clientId: string, subscription: Subscription): void {
-    const subs = this.subscriptions.get(clientId) || [];
-    subs.push(subscription);
-    this.subscriptions.set(clientId, subs);
-
-    logger.debug('Client subscribed', { clientId, subscription });
-
-    // 立即发送一次数据
-    this.sendImmediateUpdate(clientId, subscription);
-  }
-
-  private handleUnsubscribe(clientId: string, subscription: Subscription): void {
-    const subs = this.subscriptions.get(clientId) || [];
-    const filtered = subs.filter(
-      (sub) =>
-        !(
-          sub.type === subscription.type &&
-          JSON.stringify(sub.symbols) === JSON.stringify(subscription.symbols) &&
-          JSON.stringify(sub.protocols) === JSON.stringify(subscription.protocols)
-        )
-    );
-    this.subscriptions.set(clientId, filtered);
-
-    logger.debug('Client unsubscribed', { clientId, subscription });
-  }
-
-  // ============================================================================
-  // 广播逻辑
-  // ============================================================================
-
-  private startBroadcasting(): void {
-    // 价格更新广播 (每 5 秒)
-    this.priceInterval = setInterval(async () => {
-      await this.broadcastPriceUpdates();
-    }, 5000);
-
-    // 告警广播 (每 10 秒)
-    this.alertInterval = setInterval(async () => {
-      await this.broadcastAlerts();
-    }, 10000);
-
-    // 状态广播 (每 30 秒)
-    this.statusInterval = setInterval(async () => {
-      await this.broadcastStatus();
-    }, 30000);
-  }
-
-  private stopBroadcasting(): void {
-    if (this.priceInterval) {
-      clearInterval(this.priceInterval);
-      this.priceInterval = undefined;
+    // 取消所有订阅
+    for (const symbol of client.subscriptions) {
+      this.unsubscribeFromSymbol(id, symbol);
     }
-    if (this.alertInterval) {
-      clearInterval(this.alertInterval);
-      this.alertInterval = undefined;
-    }
-    if (this.statusInterval) {
-      clearInterval(this.statusInterval);
-      this.statusInterval = undefined;
+
+    this.clients.delete(id);
+    logger.info(`Client ${id} disconnected`, {
+      totalClients: this.clients.size,
+    });
+  }
+
+  /**
+   * 处理客户端消息
+   */
+  private handleMessage(clientId: string, data: string): void {
+    try {
+      const message = JSON.parse(data) as PriceStreamMessage;
+      const client = this.clients.get(clientId);
+
+      if (!client) return;
+
+      switch (message.type) {
+        case 'subscribe':
+          this.handleSubscribe(clientId, message.symbols, message.chain);
+          break;
+
+        case 'unsubscribe':
+          this.handleUnsubscribe(clientId, message.symbols);
+          break;
+
+        case 'ping':
+          this.sendToClient(clientId, { type: 'pong' });
+          break;
+
+        case 'get_comparison':
+          this.handleGetComparison(clientId, message.symbol, message.chain);
+          break;
+
+        default:
+          this.sendToClient(clientId, {
+            type: 'error',
+            message: 'Unknown message type',
+          });
+      }
+    } catch (error) {
+      logger.error(`Failed to handle message from client ${clientId}`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      this.sendToClient(clientId, {
+        type: 'error',
+        message: 'Invalid message format',
+      });
     }
   }
 
-  private async broadcastPriceUpdates(): Promise<void> {
-    if (!this.io || this.clients.size === 0) return;
+  /**
+   * 处理订阅请求
+   */
+  private handleSubscribe(clientId: string, symbols: string[], chain?: SupportedChain): void {
+    const client = this.clients.get(clientId);
+    if (!client) return;
+
+    // 检查订阅数量限制
+    if (client.subscriptions.size + symbols.length > STREAM_CONFIG.maxSubscriptionsPerClient) {
+      this.sendToClient(clientId, {
+        type: 'error',
+        message: `Max subscriptions per client is ${STREAM_CONFIG.maxSubscriptionsPerClient}`,
+      });
+      return;
+    }
+
+    for (const symbol of symbols) {
+      const subscriptionKey = chain ? `${symbol}:${chain}` : symbol;
+
+      client.subscriptions.add(subscriptionKey);
+
+      // 添加到全局订阅映射
+      if (!this.symbolSubscriptions.has(subscriptionKey)) {
+        this.symbolSubscriptions.set(subscriptionKey, new Set());
+      }
+      this.symbolSubscriptions.get(subscriptionKey)!.add(clientId);
+    }
+
+    this.sendToClient(clientId, { type: 'subscribed', symbols });
+
+    // 立即推送一次当前数据
+    this.pushCurrentData(clientId, symbols, chain);
+
+    logger.debug(`Client ${clientId} subscribed to ${symbols.join(', ')}`, {
+      chain,
+    });
+  }
+
+  /**
+   * 处理取消订阅请求
+   */
+  private handleUnsubscribe(clientId: string, symbols: string[]): void {
+    const client = this.clients.get(clientId);
+    if (!client) return;
+
+    for (const symbol of symbols) {
+      this.unsubscribeFromSymbol(clientId, symbol);
+      client.subscriptions.delete(symbol);
+    }
+
+    this.sendToClient(clientId, { type: 'unsubscribed', symbols });
+
+    logger.debug(`Client ${clientId} unsubscribed from ${symbols.join(', ')}`);
+  }
+
+  /**
+   * 取消订阅特定交易对
+   */
+  private unsubscribeFromSymbol(clientId: string, symbol: string): void {
+    const subscribers = this.symbolSubscriptions.get(symbol);
+    if (subscribers) {
+      subscribers.delete(clientId);
+      if (subscribers.size === 0) {
+        this.symbolSubscriptions.delete(symbol);
+      }
+    }
+  }
+
+  /**
+   * 处理获取对比数据请求
+   */
+  private async handleGetComparison(
+    clientId: string,
+    symbol: string,
+    chain?: SupportedChain,
+  ): Promise<void> {
+    try {
+      const comparison = await priceAggregationEngine.aggregatePrices(symbol, chain);
+
+      if (comparison) {
+        this.sendToClient(clientId, {
+          type: 'comparison_update',
+          data: comparison,
+        });
+      } else {
+        this.sendToClient(clientId, {
+          type: 'error',
+          message: `No comparison data available for ${symbol}`,
+        });
+      }
+    } catch (error) {
+      logger.error(`Failed to get comparison for ${symbol}`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      this.sendToClient(clientId, {
+        type: 'error',
+        message: 'Failed to get comparison data',
+      });
+    }
+  }
+
+  /**
+   * 推送当前数据给新订阅的客户端
+   */
+  private async pushCurrentData(
+    clientId: string,
+    symbols: string[],
+    chain?: SupportedChain,
+  ): Promise<void> {
+    for (const symbol of symbols) {
+      // 推送最新价格
+      const lastPrice = this.lastPrices.get(symbol);
+      if (lastPrice) {
+        this.sendToClient(clientId, {
+          type: 'price_update',
+          data: lastPrice,
+        });
+      }
+
+      // 推送对比数据
+      try {
+        const comparison = await priceAggregationEngine.aggregatePrices(symbol, chain);
+        if (comparison) {
+          this.sendToClient(clientId, {
+            type: 'comparison_update',
+            data: comparison,
+          });
+        }
+      } catch (error) {
+        logger.error(`Failed to push current comparison for ${symbol}`, {
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
+  }
+
+  /**
+   * 检查客户端健康状态
+   */
+  private checkClientHealth(): void {
+    for (const [clientId, client] of this.clients.entries()) {
+      if (!client.isAlive) {
+        logger.debug(`Client ${clientId} is not alive, terminating connection`);
+        // 使用类型断言访问 terminate 方法
+        (client.ws as unknown as { terminate(): void }).terminate();
+        this.removeClient(clientId);
+        continue;
+      }
+
+      client.isAlive = false;
+      // 使用类型断言访问 ping 方法
+      (client.ws as unknown as { ping(): void }).ping();
+    }
+  }
+
+  /**
+   * 推送价格更新
+   */
+  private async pushPriceUpdates(): Promise<void> {
+    if (this.symbolSubscriptions.size === 0) return;
 
     try {
-      // 获取最新价格
+      // 获取所有订阅的交易对的最新价格
+      const symbols = Array.from(this.symbolSubscriptions.keys());
+
+      for (const symbol of symbols) {
+        const subscribers = this.symbolSubscriptions.get(symbol);
+        if (!subscribers || subscribers.size === 0) continue;
+
+        // 获取最新价格数据
+        const priceData = await this.fetchLatestPrice(symbol);
+        if (!priceData) continue;
+
+        // 检查价格是否有变化
+        const lastPrice = this.lastPrices.get(symbol);
+        if (lastPrice && lastPrice.price === priceData.price) {
+          continue; // 价格未变化，跳过
+        }
+
+        // 更新缓存
+        this.lastPrices.set(symbol, priceData);
+
+        // 推送给所有订阅者
+        for (const clientId of subscribers) {
+          this.sendToClient(clientId, {
+            type: 'price_update',
+            data: priceData,
+          });
+        }
+      }
+    } catch (error) {
+      logger.error('Failed to push price updates', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
+  /**
+   * 推送对比数据更新
+   */
+  private async pushComparisonUpdates(): Promise<void> {
+    if (this.symbolSubscriptions.size === 0) return;
+
+    try {
+      const symbols = Array.from(this.symbolSubscriptions.keys());
+
+      for (const symbol of symbols) {
+        const subscribers = this.symbolSubscriptions.get(symbol);
+        if (!subscribers || subscribers.size === 0) continue;
+
+        // 获取对比数据
+        const comparison = await priceAggregationEngine.aggregatePrices(symbol);
+        if (!comparison) continue;
+
+        // 推送给所有订阅者
+        for (const clientId of subscribers) {
+          this.sendToClient(clientId, {
+            type: 'comparison_update',
+            data: comparison,
+          });
+        }
+      }
+    } catch (error) {
+      logger.error('Failed to push comparison updates', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
+  /**
+   * 获取最新价格
+   */
+  private async fetchLatestPrice(symbol: string): Promise<PriceUpdateData | null> {
+    try {
+      // 从数据库获取最新价格
+      const { query } = await import('@/server/db');
       const result = await query(
-        `
-        SELECT DISTINCT ON (protocol, chain, symbol)
-          id, instance_id, protocol, chain, symbol, price, timestamp,
-          block_number, is_stale, metadata
+        `SELECT 
+          protocol,
+          chain,
+          price,
+          timestamp,
+          symbol
         FROM unified_price_feeds
-        WHERE timestamp > NOW() - INTERVAL '1 minute'
-        ORDER BY protocol, chain, symbol, timestamp DESC
-        LIMIT 100
-        `
+        WHERE symbol = $1
+        ORDER BY timestamp DESC
+        LIMIT 1`,
+        [symbol],
       );
 
-      const prices: UnifiedPriceFeed[] = result.rows.map((row) => ({
-        id: row.id,
-        instanceId: row.instance_id,
-        protocol: row.protocol,
-        chain: row.chain,
+      if (result.rows.length === 0) {
+        return null;
+      }
+
+      const row = result.rows[0]!;
+
+      return {
         symbol: row.symbol,
+        protocol: row.protocol as OracleProtocol,
+        chain: row.chain as SupportedChain,
         price: parseFloat(row.price),
-        timestamp: new Date(row.timestamp),
-        blockNumber: row.block_number,
-        isStale: row.is_stale,
-        metadata: row.metadata ? JSON.parse(row.metadata) : {},
-      }));
-
-      // 广播给订阅了价格的客户端
-      for (const [clientId, socket] of this.clients) {
-        const subs = this.subscriptions.get(clientId) || [];
-        const priceSubs = subs.filter((sub) => sub.type === 'price');
-
-        for (const price of prices) {
-          for (const sub of priceSubs) {
-            if (this.matchesSubscription(price, sub)) {
-              const message: PriceUpdateMessage = {
-                type: 'price_update',
-                data: price,
-                timestamp: new Date().toISOString(),
-              };
-              socket.emit('message', message);
-            }
-          }
-        }
-      }
+        timestamp: row.timestamp,
+      };
     } catch (error) {
-      logger.error('Failed to broadcast price updates', { error });
+      logger.error(`Failed to fetch latest price for ${symbol}`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return null;
     }
   }
 
-  private async broadcastAlerts(): Promise<void> {
-    if (!this.io || this.clients.size === 0) return;
+  /**
+   * 发送消息给客户端
+   */
+  private sendToClient(clientId: string, message: PriceStreamResponse): void {
+    const client = this.clients.get(clientId);
+    if (!client || client.ws.readyState !== WebSocket.OPEN) return;
 
     try {
-      // 获取活跃告警
-      const result = await query(
-        `
-        SELECT id, rule_id, event, severity, title, message,
-          protocol, chain, instance_id, symbol, context, status,
-          created_at
-        FROM unified_alerts
-        WHERE status = 'open'
-        AND created_at > NOW() - INTERVAL '1 hour'
-        ORDER BY created_at DESC
-        LIMIT 50
-        `
-      );
-
-      const alerts: UnifiedAlert[] = result.rows.map((row) => ({
-        id: row.id,
-        ruleId: row.rule_id,
-        event: row.event,
-        severity: row.severity,
-        title: row.title,
-        message: row.message,
-        protocol: row.protocol,
-        chain: row.chain,
-        instanceId: row.instance_id,
-        symbol: row.symbol,
-        context: row.context ? JSON.parse(row.context) : {},
-        status: row.status,
-        createdAt: row.created_at,
-      }));
-
-      // 广播给订阅了告警的客户端
-      for (const [clientId, socket] of this.clients) {
-        const subs = this.subscriptions.get(clientId) || [];
-        const alertSubs = subs.filter((sub) => sub.type === 'alert');
-
-        for (const alert of alerts) {
-          for (const sub of alertSubs) {
-            if (this.matchesAlertSubscription(alert, sub)) {
-              const message: AlertMessage = {
-                type: 'alert',
-                data: alert,
-                timestamp: new Date().toISOString(),
-              };
-              socket.emit('message', message);
-            }
-          }
-        }
-      }
+      client.ws.send(JSON.stringify(message));
     } catch (error) {
-      logger.error('Failed to broadcast alerts', { error });
+      logger.error(`Failed to send message to client ${clientId}`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 
-  private async broadcastStatus(): Promise<void> {
-    if (!this.io || this.clients.size === 0) return;
-
-    try {
-      // 获取同步状态
-      const result = await query(
-        `
-        SELECT protocol, chain, status, last_sync_at, last_error
-        FROM unified_sync_state
-        WHERE updated_at > NOW() - INTERVAL '5 minutes'
-        `
-      );
-
-      const statuses = result.rows.map((row) => ({
-        protocol: row.protocol,
-        chain: row.chain,
-        status: row.status,
-        lastUpdate: row.last_sync_at,
-      }));
-
-      // 广播给订阅了状态的客户端
-      for (const [clientId, socket] of this.clients) {
-        const subs = this.subscriptions.get(clientId) || [];
-        const statusSubs = subs.filter((sub) => sub.type === 'status');
-
-        for (const status of statuses) {
-          for (const sub of statusSubs) {
-            if (
-              !sub.protocols?.length ||
-              sub.protocols.includes(status.protocol)
-            ) {
-              const message: StatusMessage = {
-                type: 'status',
-                data: {
-                  ...status,
-                  status: this.mapStatus(status.status),
-                  latency: 0,
-                  lastUpdate: status.lastUpdate?.toISOString() || new Date().toISOString(),
-                },
-                timestamp: new Date().toISOString(),
-              };
-              socket.emit('message', message);
-            }
-          }
-        }
-      }
-    } catch (error) {
-      logger.error('Failed to broadcast status', { error });
+  /**
+   * 广播消息给所有客户端
+   */
+  broadcast(message: PriceStreamResponse): void {
+    for (const clientId of this.clients.keys()) {
+      this.sendToClient(clientId, message);
     }
   }
 
-  // ============================================================================
-  // 辅助方法
-  // ============================================================================
-
-  private matchesSubscription(price: UnifiedPriceFeed, sub: Subscription): boolean {
-    if (sub.symbols?.length && !sub.symbols.includes(price.symbol)) {
-      return false;
-    }
-    if (sub.protocols?.length && !sub.protocols.includes(price.protocol)) {
-      return false;
-    }
-    if (sub.chains?.length && !sub.chains.includes(price.chain)) {
-      return false;
-    }
-    return true;
-  }
-
-  private matchesAlertSubscription(alert: UnifiedAlert, sub: Subscription): boolean {
-    if (sub.severity?.length && alert.severity && !sub.severity.includes(alert.severity)) {
-      return false;
-    }
-    if (sub.protocols?.length && alert.protocol && !sub.protocols.includes(alert.protocol)) {
-      return false;
-    }
-    if (sub.chains?.length && alert.chain && !sub.chains.includes(alert.chain)) {
-      return false;
-    }
-    return true;
-  }
-
-  private mapStatus(status: string): 'healthy' | 'warning' | 'error' {
-    switch (status) {
-      case 'healthy':
-      case 'active':
-        return 'healthy';
-      case 'warning':
-      case 'stale':
-        return 'warning';
-      case 'error':
-      default:
-        return 'error';
-    }
-  }
-
-  private async sendImmediateUpdate(clientId: string, subscription: Subscription): Promise<void> {
-    const socket = this.clients.get(clientId);
-    if (!socket) return;
-
-    try {
-      if (subscription.type === 'price') {
-        // 发送最新价格
-        const symbols = subscription.symbols || ['ETH/USD', 'BTC/USD'];
-        const result = await query(
-          `
-          SELECT DISTINCT ON (protocol, chain, symbol)
-            id, instance_id, protocol, chain, symbol, price, timestamp,
-            block_number, is_stale, metadata
-          FROM unified_price_feeds
-          WHERE symbol = ANY($1)
-          ORDER BY protocol, chain, symbol, timestamp DESC
-          LIMIT 20
-          `,
-          [symbols]
-        );
-
-        const prices = result.rows.map((row) => ({
-          id: row.id,
-          instanceId: row.instance_id,
-          protocol: row.protocol,
-          chain: row.chain,
-          symbol: row.symbol,
-          price: parseFloat(row.price),
-          timestamp: new Date(row.timestamp),
-          blockNumber: row.block_number,
-          isStale: row.is_stale,
-          metadata: row.metadata ? JSON.parse(row.metadata) : {},
-        }));
-
-        for (const price of prices) {
-          if (this.matchesSubscription(price, subscription)) {
-            const message: PriceUpdateMessage = {
-              type: 'price_update',
-              data: price,
-              timestamp: new Date().toISOString(),
-            };
-            socket.emit('message', message);
-          }
-        }
-      }
-    } catch (error) {
-      logger.error('Failed to send immediate update', { error, clientId });
-    }
-  }
-
-  // ============================================================================
-  // 公共 API
-  // ============================================================================
-
-  broadcast(message: WebSocketMessage): void {
-    if (!this.io) return;
-    this.io.emit('message', message);
-  }
-
+  /**
+   * 获取统计信息
+   */
   getStats(): {
-    connectedClients: number;
+    totalClients: number;
     totalSubscriptions: number;
     isRunning: boolean;
   } {
-    let totalSubs = 0;
-    for (const subs of this.subscriptions.values()) {
-      totalSubs += subs.length;
+    let totalSubscriptions = 0;
+    for (const client of this.clients.values()) {
+      totalSubscriptions += client.subscriptions.size;
     }
 
     return {
-      connectedClients: this.clients.size,
-      totalSubscriptions: totalSubs,
+      totalClients: this.clients.size,
+      totalSubscriptions,
       isRunning: this.isRunning,
     };
   }
 }
 
 // ============================================================================
-// 单例实例
+// 单例导出
 // ============================================================================
 
-let priceStreamService: PriceStreamService | null = null;
+export const priceStreamManager = new PriceStreamManager();
 
-export function getPriceStreamService(config?: PriceStreamConfig): PriceStreamService {
-  if (!priceStreamService) {
-    priceStreamService = new PriceStreamService(config);
-  }
-  return priceStreamService;
+// ============================================================================
+// 便捷函数
+// ============================================================================
+
+export function startPriceStream(): void {
+  priceStreamManager.start();
 }
 
-export function resetPriceStreamService(): void {
-  if (priceStreamService) {
-    priceStreamService.stop();
-    priceStreamService = null;
-  }
+export function stopPriceStream(): void {
+  priceStreamManager.stop();
+}
+
+export function addStreamClient(id: string, ws: WebSocket): void {
+  priceStreamManager.addClient(id, ws);
+}
+
+export function getStreamStats(): ReturnType<typeof priceStreamManager.getStats> {
+  return priceStreamManager.getStats();
 }
