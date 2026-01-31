@@ -15,16 +15,9 @@ import {
 } from '@/lib/blockchain/diaOracle';
 import {
   getUnifiedInstance,
+  updateSyncState,
+  recordSyncError,
 } from '@/server/oracle/unifiedConfig';
-
-// TODO: These functions need to be implemented in unifiedConfig.ts
-// import { updateSyncState, recordSyncError } from '@/server/oracle/unifiedConfig';
-const updateSyncState = async (_instanceId: string, _updates: unknown): Promise<void> => {
-  logger.warn('updateSyncState not implemented');
-};
-const recordSyncError = async (_instanceId: string, _error: string, _protocol?: string): Promise<void> => {
-  logger.warn('recordSyncError not implemented');
-};
 
 // Local type definition until properly exported
 type PriceFeedRecord = {
@@ -170,9 +163,8 @@ async function syncDIAInstance(instanceId: string): Promise<void> {
     // 批量插入价格数据
     const records: PriceFeedRecord[] = [];
     for (const [asset, priceData] of prices) {
-      const symbol = Object.keys(DIA_ASSETS).find(
-        (key) => DIA_ASSETS[key] === asset
-      ) || `${asset}/USD`;
+      const symbol =
+        Object.keys(DIA_ASSETS).find((key) => DIA_ASSETS[key] === asset) || `${asset}/USD`;
 
       records.push({
         protocol: 'dia',
@@ -271,7 +263,8 @@ async function batchInsertPriceFeeds(records: PriceFeedRecord[]): Promise<void> 
   for (let i = 0; i < records.length; i += BATCH_SIZE) {
     const batch = records.slice(i, i + BATCH_SIZE);
 
-    const values: (string | number | boolean | Date | null | undefined | string[] | number[])[] = [];
+    const values: (string | number | boolean | Date | null | undefined | string[] | number[])[] =
+      [];
     const placeholders: string[] = [];
     let paramIndex = 1;
 
@@ -361,7 +354,7 @@ export function stopAllDIASyncs(): void {
 export async function initializeDIASyncs(): Promise<void> {
   try {
     const result = await query(
-      `SELECT id FROM unified_oracle_instances WHERE protocol = 'dia' AND enabled = true`
+      `SELECT id FROM unified_oracle_instances WHERE protocol = 'dia' AND enabled = true`,
     );
 
     for (const row of result.rows) {

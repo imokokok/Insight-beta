@@ -6,22 +6,12 @@
 
 import { query } from '@/server/db';
 import { logger } from '@/lib/logger';
-import {
-  FluxClient,
-  type FluxSupportedChain,
-} from '@/lib/blockchain/fluxOracle';
+import { FluxClient, type FluxSupportedChain } from '@/lib/blockchain/fluxOracle';
 import {
   getUnifiedInstance,
+  updateSyncState,
+  recordSyncError,
 } from '@/server/oracle/unifiedConfig';
-
-// TODO: These functions need to be implemented in unifiedConfig.ts
-// import { updateSyncState, recordSyncError } from '@/server/oracle/unifiedConfig';
-const updateSyncState = async (_instanceId: string, _updates: unknown): Promise<void> => {
-  logger.warn('updateSyncState not implemented');
-};
-const recordSyncError = async (_instanceId: string, _error: string, _protocol?: string): Promise<void> => {
-  logger.warn('recordSyncError not implemented');
-};
 
 // Local type definition until properly exported
 type PriceFeedRecord = {
@@ -130,7 +120,9 @@ async function syncFluxInstance(instanceId: string): Promise<void> {
     });
 
     // 获取价格
-    const priceData = await client.fetchPriceFromAPI((instance.config as { symbol?: string }).symbol || 'ETH/USD');
+    const priceData = await client.fetchPriceFromAPI(
+      (instance.config as { symbol?: string }).symbol || 'ETH/USD',
+    );
 
     if (!priceData) {
       throw new Error('No price fetched from Flux');
@@ -266,7 +258,7 @@ export function stopAllFluxSyncs(): void {
 export async function initializeFluxSyncs(): Promise<void> {
   try {
     const result = await query(
-      `SELECT id FROM unified_oracle_instances WHERE protocol = 'flux' AND enabled = true`
+      `SELECT id FROM unified_oracle_instances WHERE protocol = 'flux' AND enabled = true`,
     );
 
     for (const row of result.rows) {

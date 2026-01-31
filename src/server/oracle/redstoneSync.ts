@@ -15,16 +15,9 @@ import {
 } from '@/lib/blockchain/redstoneOracle';
 import {
   getUnifiedInstance,
+  updateSyncState,
+  recordSyncError,
 } from '@/server/oracle/unifiedConfig';
-
-// TODO: These functions need to be implemented in unifiedConfig.ts
-// import { updateSyncState, recordSyncError } from '@/server/oracle/unifiedConfig';
-const updateSyncState = async (_instanceId: string, _updates: unknown): Promise<void> => {
-  logger.warn('updateSyncState not implemented');
-};
-const recordSyncError = async (_instanceId: string, _error: string, _protocol?: string): Promise<void> => {
-  logger.warn('recordSyncError not implemented');
-};
 
 // Local type definition until properly exported
 type PriceFeedRecord = {
@@ -158,7 +151,8 @@ async function syncRedStoneInstance(instanceId: string): Promise<void> {
     });
 
     // 获取配置的 Feed IDs 或使用默认值
-    const feedIds = (instance.config as { feedIds?: string[] }).feedIds || Object.keys(REDSTONE_FEED_IDS);
+    const feedIds =
+      (instance.config as { feedIds?: string[] }).feedIds || Object.keys(REDSTONE_FEED_IDS);
 
     // 批量获取价格
     const prices = await client.fetchMultiplePrices(feedIds);
@@ -171,7 +165,7 @@ async function syncRedStoneInstance(instanceId: string): Promise<void> {
     const records: PriceFeedRecord[] = [];
     for (const [feedId, priceData] of prices) {
       const symbol = REDSTONE_FEED_IDS[feedId] || feedId;
-      
+
       records.push({
         protocol: 'redstone',
         chain: instance.chain,
@@ -269,7 +263,8 @@ async function batchInsertPriceFeeds(records: PriceFeedRecord[]): Promise<void> 
   for (let i = 0; i < records.length; i += BATCH_SIZE) {
     const batch = records.slice(i, i + BATCH_SIZE);
 
-    const values: (string | number | boolean | Date | null | undefined | string[] | number[])[] = [];
+    const values: (string | number | boolean | Date | null | undefined | string[] | number[])[] =
+      [];
     const placeholders: string[] = [];
     let paramIndex = 1;
 
@@ -387,7 +382,7 @@ export function stopAllRedStoneSyncs(): void {
 export async function initializeRedStoneSyncs(): Promise<void> {
   try {
     const result = await query(
-      `SELECT id FROM unified_oracle_instances WHERE protocol = 'redstone' AND enabled = true`
+      `SELECT id FROM unified_oracle_instances WHERE protocol = 'redstone' AND enabled = true`,
     );
 
     for (const row of result.rows) {
