@@ -166,8 +166,7 @@ const BAND_CHAIN_CONFIG: Record<SupportedChain, { defaultRpcUrl: string }> = {
 export class BandClient {
   private publicClient: PublicClient;
   private chain: SupportedChain;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private _config: BandProtocolConfig;
+  private config: BandProtocolConfig;
   private contractAddress: Address;
 
   constructor(
@@ -176,7 +175,7 @@ export class BandClient {
     config: BandProtocolConfig = {}
   ) {
     this.chain = chain;
-    this._config = config;
+    this.config = config;
 
     const chainConfig = BAND_CHAIN_CONFIG[chain];
     if (!chainConfig) {

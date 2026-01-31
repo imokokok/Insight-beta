@@ -194,7 +194,7 @@ export class PythClient {
     if (!contractAddress) {
       throw new Error(`No Pyth contract address for chain ${chain}`);
     }
-    this.contractAddress = contractAddress;
+    this.contractAddress = contractAddress as Address;
 
     this.publicClient = createPublicClient({
       chain: VIEM_CHAIN_MAP[chain],

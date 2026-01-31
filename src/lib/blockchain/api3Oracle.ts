@@ -201,8 +201,7 @@ const VIEM_CHAIN_MAP = {
 export class API3Client {
   private publicClient: PublicClient;
   private chain: SupportedChain;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private _config: API3ProtocolConfig;
+  private config: API3ProtocolConfig;
 
   constructor(
     chain: SupportedChain,
@@ -210,7 +209,7 @@ export class API3Client {
     config: API3ProtocolConfig = {}
   ) {
     this.chain = chain;
-    this._config = config;
+    this.config = config;
 
     const chainConfig = API3_CHAIN_CONFIG[chain];
     if (!chainConfig) {
