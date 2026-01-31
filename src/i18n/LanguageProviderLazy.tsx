@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, useRef } from 'react';
 import type { ReactNode } from 'react';
 import {
   isLang,
@@ -17,8 +17,8 @@ import {
   formatRelativeTime,
   getNestedValue,
 } from '@/i18n/utils';
-import type { InterpolationValues, PluralOptions } from '@/i18n/types';
-import { translations } from './translations';
+import type { InterpolationValues, PluralOptions, TranslationNamespace } from '@/i18n/types';
+import { loadTranslations, isTranslationLoaded, preloadTranslations } from './loader';
 
 export type TranslationKey = string;
 
@@ -33,18 +33,32 @@ type I18nContextValue = {
     currency: (value: number, currency: string, options?: Intl.NumberFormatOptions) => string;
     relativeTime: (value: number, unit: Intl.RelativeTimeFormatUnit, options?: Intl.RelativeTimeFormatOptions) => string;
   };
+  isLoading: boolean;
 };
 
 const I18nContext = createContext<I18nContextValue | null>(null);
 
-export function LanguageProvider({
+const fallbackTranslations: Record<Lang, TranslationNamespace> = {
+  en: {},
+  zh: {},
+  es: {},
+  fr: {},
+  ko: {},
+};
+
+export function LanguageProviderLazy({
   children,
   initialLang,
+  defaultTranslations,
 }: {
   children: ReactNode;
   initialLang?: Lang;
+  defaultTranslations?: TranslationNamespace;
 }) {
   const [lang, setLangState] = useState<Lang>(initialLang ?? 'zh');
+  const [translations, setTranslations] = useState<TranslationNamespace>(defaultTranslations ?? fallbackTranslations[lang]);
+  const [isLoading, setIsLoading] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     const stored = window.localStorage.getItem(LANG_STORAGE_KEY);
@@ -57,6 +71,34 @@ export function LanguageProvider({
     window.localStorage.setItem(LANG_STORAGE_KEY, lang);
     document.documentElement.lang = langToHtmlLang[lang];
     document.cookie = `${encodeURIComponent(LANG_STORAGE_KEY)}=${encodeURIComponent(lang)}; path=/; max-age=31536000; samesite=lax`;
+
+    if (!isTranslationLoaded(lang)) {
+      setIsLoading(true);
+      
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      abortControllerRef.current = new AbortController();
+
+      loadTranslations(lang)
+        .then((loaded) => {
+          if (!abortControllerRef.current?.signal.aborted) {
+            setTranslations(loaded);
+          }
+        })
+        .catch(console.error)
+        .finally(() => {
+          if (!abortControllerRef.current?.signal.aborted) {
+            setIsLoading(false);
+          }
+        });
+    } else {
+      loadTranslations(lang).then(setTranslations).catch(console.error);
+    }
+
+    return () => {
+      abortControllerRef.current?.abort();
+    };
   }, [lang]);
 
   const setLang = useCallback((next: Lang) => {
@@ -65,7 +107,7 @@ export function LanguageProvider({
 
   const t = useCallback(
     (key: TranslationKey, values?: InterpolationValues): string => {
-      const translationValue = getNestedValue(translations[lang], key) ?? getNestedValue(translations.en, key);
+      const translationValue = getNestedValue(translations, key);
       
       if (typeof translationValue !== 'string') {
         return key;
@@ -77,12 +119,12 @@ export function LanguageProvider({
       
       return translationValue;
     },
-    [lang]
+    [translations]
   );
 
   const tn = useCallback(
     (key: TranslationKey, count: number, forms: PluralOptions['forms']): string => {
-      const template = getNestedValue(translations[lang], key) ?? getNestedValue(translations.en, key);
+      const template = getNestedValue(translations, key);
       
       if (typeof template !== 'string') {
         return handlePlural({ count, forms }, lang);
@@ -91,7 +133,7 @@ export function LanguageProvider({
       const pluralResult = handlePlural({ count, forms }, lang);
       return interpolate(template, { count, value: pluralResult });
     },
-    [lang]
+    [translations, lang]
   );
 
   const format = useMemo(
@@ -113,8 +155,9 @@ export function LanguageProvider({
     setLang, 
     t, 
     tn,
-    format 
-  }), [lang, setLang, t, tn, format]);
+    format,
+    isLoading,
+  }), [lang, setLang, t, tn, format, isLoading]);
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
@@ -122,7 +165,9 @@ export function LanguageProvider({
 export function useI18n() {
   const ctx = useContext(I18nContext);
   if (!ctx) {
-    throw new Error('useI18n must be used within LanguageProvider');
+    throw new Error('useI18n must be used within LanguageProviderLazy');
   }
   return ctx;
 }
+
+export { preloadTranslations };
