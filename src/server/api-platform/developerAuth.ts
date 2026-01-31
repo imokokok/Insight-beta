@@ -128,7 +128,7 @@ export class APIKeyManager {
         throw new Error('Developer not found or inactive');
       }
 
-      const developerTier = devResult.rows[0].tier;
+      const developerTier = devResult.rows[0]!.tier;
 
       // 生成 API Key
       const keyPlaintext = this.generateSecureKey();
@@ -218,6 +218,9 @@ export class APIKeyManager {
       }
 
       const row = result.rows[0];
+      if (!row) {
+        return { success: false, error: 'Invalid API key' };
+      }
 
       // 验证 key hash
       const storedHash = Buffer.from(row.key_hash, 'hex');
@@ -452,7 +455,7 @@ export class DeveloperManager {
         return null;
       }
 
-      const row = result.rows[0];
+      const row = result.rows[0]!;
       return {
         id: row.id,
         email: row.email,
@@ -481,7 +484,7 @@ export class DeveloperManager {
     try {
       const allowedFields = ['name', 'organization', 'status', 'tier'];
       const fields: string[] = [];
-      const values: unknown[] = [];
+      const values: (string | number | boolean | Date | null | undefined | string[] | number[])[] = [];
       let paramIndex = 1;
 
       for (const [key, value] of Object.entries(updates)) {
@@ -546,7 +549,7 @@ export class DeveloperManager {
   ): Promise<{ developers: Developer[]; total: number }> {
     try {
       let whereClause = '';
-      const values: unknown[] = [];
+      const values: (string | number | boolean | Date | null | undefined | string[] | number[])[] = [];
       let paramIndex = 1;
 
       if (filters?.status) {
@@ -566,7 +569,7 @@ export class DeveloperManager {
         `SELECT COUNT(*) as total FROM developers ${whereClause}`,
         values,
       );
-      const total = parseInt(countResult.rows[0].total);
+      const total = parseInt(countResult.rows[0]?.total || '0');
 
       // 获取分页数据
       let query_sql = `SELECT * FROM developers ${whereClause} ORDER BY created_at DESC`;

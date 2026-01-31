@@ -7,7 +7,7 @@
 
 import { query } from '@/server/db';
 import { logger } from '@/lib/logger';
-import { RATE_LIMIT_TIERS, type RateLimitConfig } from './developerAuth';
+import { RATE_LIMIT_TIERS } from './developerAuth';
 
 // ============================================================================
 // Types
@@ -76,6 +76,9 @@ export class RateLimiter {
     endpoint?: string,
   ): Promise<{ allowed: boolean; status: RateLimitStatus }> {
     const config = RATE_LIMIT_TIERS[tier] || RATE_LIMIT_TIERS.free;
+    if (!config) {
+      throw new Error(`Invalid rate limit tier: ${tier}`);
+    }
     const now = Date.now();
 
     // 检查多个时间窗口
@@ -90,8 +93,8 @@ export class RateLimiter {
 
     for (let i = 0; i < windows.length; i++) {
       const windowKey = `${apiKeyId}:${windows[i]}`;
-      const limit = limits[i];
-      const duration = durations[i];
+      const limit = limits[i]!;
+      const duration = durations[i]!;
 
       const window = this.getWindow(windowKey);
 

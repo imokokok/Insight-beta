@@ -431,7 +431,7 @@ export class AlertRuleEngine {
    */
   private evaluateCustomCondition(
     condition: AlertCondition,
-    context: AlertEvaluationContext,
+    _context: AlertEvaluationContext,
   ): boolean {
     // 自定义条件通过 JavaScript 函数实现
     // 这里可以根据 params 中的配置执行自定义逻辑
@@ -477,7 +477,7 @@ export class AlertRuleEngine {
   /**
    * 确定告警严重性
    */
-  private determineSeverity(rule: AlertRule, context: AlertEvaluationContext): AlertSeverity {
+  private determineSeverity(rule: AlertRule, _context: AlertEvaluationContext): AlertSeverity {
     // 根据规则优先级和上下文确定严重性
     if (rule.priority >= 80) {
       return 'critical';
