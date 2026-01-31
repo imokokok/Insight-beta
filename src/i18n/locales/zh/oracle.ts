@@ -1,6 +1,6 @@
 export const oracle = {
-  description: '实时跟踪 UMA 乐观预言机断言和争议。',
-  title: '预言机监控',
+  description: '通用多协议预言机监控平台，支持 Chainlink、Pyth、API3、DIA、Band、RedStone 等。',
+  title: '通用预言机监控',
   newAssertion: '新建断言',
   searchPlaceholder: '搜索断言…',
   myActivity: '我的活动',

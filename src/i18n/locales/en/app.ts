@@ -1,7 +1,7 @@
 export const app = {
-  brand: 'Insight',
-  description: 'Visual monitoring of UMA Optimistic Oracle disputes and settlements.',
-  logoAlt: 'Insight logo',
-  subtitle: 'Oracle Monitor',
-  title: 'Insight · UMA Settlement Monitor',
+  brand: 'OracleMonitor',
+  description: 'Universal multi-protocol oracle monitoring platform supporting Chainlink, Pyth, API3, DIA, Band, RedStone, and more.',
+  logoAlt: 'OracleMonitor logo',
+  subtitle: 'Universal Oracle Monitor',
+  title: 'OracleMonitor · Multi-Protocol Oracle Aggregator',
 };

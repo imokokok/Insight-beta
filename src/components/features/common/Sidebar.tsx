@@ -24,9 +24,14 @@ import { useOracleFilters } from '@/hooks/oracle/useOracleFilters';
 const navItems = [
   { key: 'nav.oracle' as const, href: '/oracle' as const, icon: Activity },
   {
+    key: 'nav.unifiedOracle' as const,
+    href: '/oracle/dashboard' as const,
+    icon: Globe,
+  },
+  {
     key: 'nav.umaOracle' as const,
     href: '/oracle/uma' as const,
-    icon: Globe,
+    icon: ShieldAlert,
   },
   {
     key: 'nav.disputes' as const,

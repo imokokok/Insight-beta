@@ -1,7 +1,7 @@
 {
-  "name": "Insight Oracle Monitor",
-  "short_name": "Insight",
-  "description": "Real-time monitoring and dispute resolution for UMA Optimistic Oracle",
+  "name": "Oracle Monitor",
+  "short_name": "OracleMonitor",
+  "description": "Universal multi-protocol oracle monitoring platform supporting Chainlink, Pyth, API3, DIA, Band, RedStone, and more",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

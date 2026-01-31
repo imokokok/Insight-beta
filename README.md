@@ -1,4 +1,4 @@
-# Insight
+# OracleMonitor
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Next.js](https://img.shields.io/badge/Next.js-15-black)
@@ -7,20 +7,20 @@
 
 [English](README.md) | [中文](README.zh-CN.md)
 
-**Insight** is an oracle monitoring and dispute resolution interface, supporting real-time visualization of oracle data and participation in dispute resolution.
+**OracleMonitor** is a universal multi-protocol oracle monitoring platform, supporting real-time aggregation and monitoring of oracle data from Chainlink, Pyth, API3, DIA, Band, RedStone, and more.
 
 ## Features
 
-- **Real-time Monitoring**: Oracle data trends, volume, sync status
-- **Dispute Resolution**: Browse, vote, resolve disputes
-- **Assertion Management**: Create and track assertions
-- **Multi-chain Support**: Polygon, Arbitrum, Optimism, Local
+- **Multi-Protocol Support**: Chainlink, Pyth, API3, DIA, Band, RedStone, and more
+- **Real-time Monitoring**: Oracle price feeds, data trends, sync status
+- **Unified Dashboard**: Aggregate view of all oracle protocols
+- **Multi-chain Support**: Ethereum, Polygon, Arbitrum, Optimism, Base, Avalanche, BSC
 
 ## Quick Start
 
 ```bash
-git clone https://github.com/your-org/insight.git
-cd insight
+git clone https://github.com/your-org/oracle-monitor.git
+cd oracle-monitor
 npm install
 cp .env.example .env.local
 npm run dev

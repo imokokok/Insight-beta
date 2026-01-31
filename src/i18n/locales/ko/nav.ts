@@ -7,5 +7,6 @@ export const nav = {
   myDisputes: '내 분쟁',
   oracle: '오라클',
   umaOracle: 'UMA 오라클',
+  unifiedOracle: '통합 오라클',
   watchlist: '관심 목록',
 };

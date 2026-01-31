@@ -7,5 +7,6 @@ export const nav = {
   myDisputes: 'Mis Disputas',
   oracle: 'Oracle',
   umaOracle: 'Oracle UMA',
+  unifiedOracle: 'Oracle Unificado',
   watchlist: 'Lista de Seguimiento',
 };

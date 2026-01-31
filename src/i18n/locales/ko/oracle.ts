@@ -1,6 +1,6 @@
 export const oracle = {
-  description: 'UMA 낙관적 오라클 어서션 및 분쟁의 실시간 추적.',
-  title: '오라클 모니터',
+  description: 'Chainlink, Pyth, API3, DIA, Band, RedStone 등을 지원하는 범용 다중 프로토콜 오라클 모니터링 플랫폼.',
+  title: '범용 오라클 모니터',
   newAssertion: '새 어서션',
   searchPlaceholder: '어서션 검색…',
   myActivity: '내 활동',

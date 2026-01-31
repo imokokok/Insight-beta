@@ -1,6 +1,6 @@
 export const oracle = {
-  description: 'Seguimiento en tiempo real de aserciones y disputas del UMA Optimistic Oracle.',
-  title: 'Monitor de Oracle',
+  description: 'Plataforma universal de monitoreo de oráculos multi-protocolo compatible con Chainlink, Pyth, API3, DIA, Band, RedStone y más.',
+  title: 'Monitor Universal de Oráculos',
   newAssertion: 'Nueva Aserción',
   searchPlaceholder: 'Buscar aserciones…',
   myActivity: 'Mi Actividad',

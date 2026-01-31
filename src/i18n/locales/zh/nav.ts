@@ -7,5 +7,6 @@ export const nav = {
   myDisputes: '我的争议',
   oracle: '预言机',
   umaOracle: 'UMA 预言机',
+  unifiedOracle: '统一预言机',
   watchlist: '关注列表',
 };

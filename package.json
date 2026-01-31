@@ -1,7 +1,8 @@
 {
-  "name": "insight",
+  "name": "oracle-monitor",
   "version": "0.1.0",
   "private": true,
+  "description": "Universal Oracle Monitoring Platform - Multi-protocol oracle data monitoring and aggregation",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
