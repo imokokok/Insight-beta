@@ -33,6 +33,8 @@
     "test:coverage:threshold": "vitest run --coverage --passWithNoThresholdErrors",
     "analyze:bundle": "node scripts/analyze-bundle.mjs",
     "docs:api": "node scripts/generate-api-docs.mjs",
+    "i18n:extract": "tsx scripts/extract-translation-keys.ts",
+    "i18n:validate": "tsx scripts/validate-translations.ts",
     "changeset": "changeset",
     "changeset:add": "changeset add",
     "changeset:version": "changeset version",
