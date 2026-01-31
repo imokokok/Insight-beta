@@ -103,32 +103,60 @@ const BAND_PRICE_PAIRS: Record<string, { base: string; quote: string }> = {
 // Chain 配置
 // ============================================================================
 
-const BAND_CHAIN_CONFIG: Record<SupportedChain, { viemChain: typeof mainnet; defaultRpcUrl: string }> = {
-  ethereum: { viemChain: mainnet, defaultRpcUrl: 'https://eth-mainnet.g.alchemy.com/v2' },
-  polygon: { viemChain: polygon, defaultRpcUrl: 'https://polygon-mainnet.g.alchemy.com/v2' },
-  bsc: { viemChain: bsc, defaultRpcUrl: 'https://bsc-dataseed.binance.org' },
-  fantom: { viemChain: fantom, defaultRpcUrl: 'https://rpc.ftm.tools' },
+// viem chain 映射
+const VIEM_CHAIN_MAP = {
+  ethereum: mainnet,
+  polygon: polygon,
+  bsc: bsc,
+  fantom: fantom,
+  arbitrum: mainnet,
+  optimism: mainnet,
+  base: mainnet,
+  avalanche: mainnet,
+  celo: mainnet,
+  gnosis: mainnet,
+  linea: mainnet,
+  scroll: mainnet,
+  mantle: mainnet,
+  mode: mainnet,
+  blast: mainnet,
+  solana: mainnet,
+  near: mainnet,
+  aptos: mainnet,
+  sui: mainnet,
+  polygonAmoy: polygon,
+  sepolia: mainnet,
+  goerli: mainnet,
+  mumbai: polygon,
+  local: mainnet,
+} as const;
+
+const BAND_CHAIN_CONFIG: Record<SupportedChain, { defaultRpcUrl: string }> = {
+  ethereum: { defaultRpcUrl: 'https://eth-mainnet.g.alchemy.com/v2' },
+  polygon: { defaultRpcUrl: 'https://polygon-mainnet.g.alchemy.com/v2' },
+  bsc: { defaultRpcUrl: 'https://bsc-dataseed.binance.org' },
+  fantom: { defaultRpcUrl: 'https://rpc.ftm.tools' },
   // 其他链
-  arbitrum: { viemChain: mainnet, defaultRpcUrl: '' },
-  optimism: { viemChain: mainnet, defaultRpcUrl: '' },
-  base: { viemChain: mainnet, defaultRpcUrl: '' },
-  avalanche: { viemChain: mainnet, defaultRpcUrl: '' },
-  celo: { viemChain: mainnet, defaultRpcUrl: '' },
-  gnosis: { viemChain: mainnet, defaultRpcUrl: '' },
-  linea: { viemChain: mainnet, defaultRpcUrl: '' },
-  scroll: { viemChain: mainnet, defaultRpcUrl: '' },
-  mantle: { viemChain: mainnet, defaultRpcUrl: '' },
-  mode: { viemChain: mainnet, defaultRpcUrl: '' },
-  blast: { viemChain: mainnet, defaultRpcUrl: '' },
-  solana: { viemChain: mainnet, defaultRpcUrl: '' },
-  near: { viemChain: mainnet, defaultRpcUrl: '' },
-  aptos: { viemChain: mainnet, defaultRpcUrl: '' },
-  sui: { viemChain: mainnet, defaultRpcUrl: '' },
-  polygonAmoy: { viemChain: polygon, defaultRpcUrl: '' },
-  sepolia: { viemChain: mainnet, defaultRpcUrl: '' },
-  goerli: { viemChain: mainnet, defaultRpcUrl: '' },
-  mumbai: { viemChain: polygon, defaultRpcUrl: '' },
-  local: { viemChain: mainnet, defaultRpcUrl: 'http://localhost:8545' },
+  arbitrum: { defaultRpcUrl: '' },
+  optimism: { defaultRpcUrl: '' },
+  base: { defaultRpcUrl: '' },
+  avalanche: { defaultRpcUrl: '' },
+  celo: { defaultRpcUrl: '' },
+  gnosis: { defaultRpcUrl: '' },
+  linea: { defaultRpcUrl: '' },
+  scroll: { defaultRpcUrl: '' },
+  mantle: { defaultRpcUrl: '' },
+  mode: { defaultRpcUrl: '' },
+  blast: { defaultRpcUrl: '' },
+  solana: { defaultRpcUrl: '' },
+  near: { defaultRpcUrl: '' },
+  aptos: { defaultRpcUrl: '' },
+  sui: { defaultRpcUrl: '' },
+  polygonAmoy: { defaultRpcUrl: '' },
+  sepolia: { defaultRpcUrl: '' },
+  goerli: { defaultRpcUrl: '' },
+  mumbai: { defaultRpcUrl: '' },
+  local: { defaultRpcUrl: 'http://localhost:8545' },
 };
 
 // ============================================================================
@@ -161,7 +189,7 @@ export class BandClient {
     }
 
     this.publicClient = createPublicClient({
-      chain: chainConfig.viemChain,
+      chain: VIEM_CHAIN_MAP[chain],
       transport: http(rpcUrl),
     });
   }
@@ -278,13 +306,12 @@ export class BandClient {
 
       for (let i = 0; i < symbols.length; i++) {
         const symbol = symbols[i];
-        const data = priceData[i];
+        const data = priceData[i] as [bigint, bigint, bigint] | undefined;
 
         if (!data) continue;
 
         const rate = data[0];
         const lastUpdatedBase = data[1];
-        const lastUpdatedQuote = data[2];
 
         const [baseAsset, quoteAsset] = symbol.split('/');
         const formattedRate = parseFloat(formatUnits(rate, 18));
@@ -304,8 +331,8 @@ export class BandClient {
           protocol: 'band',
           chain: this.chain,
           symbol,
-          baseAsset,
-          quoteAsset,
+          baseAsset: baseAsset || 'UNKNOWN',
+          quoteAsset: quoteAsset || 'USD',
           price: formattedRate,
           priceRaw: rate.toString(),
           decimals: 18,
@@ -352,8 +379,8 @@ export class BandClient {
       protocol: 'band',
       chain: this.chain,
       symbol,
-      baseAsset,
-      quoteAsset,
+      baseAsset: baseAsset || 'UNKNOWN',
+      quoteAsset: quoteAsset || 'USD',
       price: priceData.formattedRate,
       priceRaw: priceData.rate.toString(),
       decimals: 18,
