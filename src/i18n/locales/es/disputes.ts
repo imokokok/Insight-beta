@@ -1,0 +1,21 @@
+export const disputes = {
+  card: {
+    dispute: 'Disputa',
+    disputer: 'Disputante',
+    votes: 'Votos',
+  },
+  description: 'Monitorea disputas activas, rastrea el progreso de votación y analiza resultados.',
+  disputedAt: 'Disputado En',
+  disputer: 'Disputante',
+  emptyDesc: 'Actualmente no hay disputas activas en el sistema.',
+  emptyTitle: 'Sin Disputas Activas',
+  endsAt: 'Termina',
+  reason: 'Razón de la Disputa',
+  reject: 'Rechazar Aserción',
+  support: 'Apoyar Aserción',
+  title: 'Resolución de Disputas',
+  totalVotesCast: 'Total de Votos Emitidos',
+  umaDvmActive: 'UMA DVM Activo',
+  viewOnUma: 'Ver en UMA',
+  votingProgress: 'Progreso de Votación',
+};

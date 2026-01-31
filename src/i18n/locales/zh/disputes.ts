@@ -1,0 +1,21 @@
+export const disputes = {
+  card: {
+    dispute: '争议',
+    disputer: '争议者',
+    votes: '投票',
+  },
+  description: '监控活跃争议，跟踪投票进度，分析结果。',
+  disputedAt: '争议时间',
+  disputer: '争议者',
+  emptyDesc: '系统中当前没有活跃的争议。',
+  emptyTitle: '无活跃争议',
+  endsAt: '结束',
+  reason: '争议原因',
+  reject: '拒绝断言',
+  support: '支持断言',
+  title: '争议解决',
+  totalVotesCast: '总投票数',
+  umaDvmActive: 'UMA DVM 活跃',
+  viewOnUma: '在 UMA 上查看',
+  votingProgress: '投票进度',
+};

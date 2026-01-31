@@ -1,0 +1,21 @@
+export const disputes = {
+  card: {
+    dispute: '분쟁',
+    disputer: '분쟁자',
+    votes: '투표',
+  },
+  description: '활성 분쟁을 모니터링하고, 투표 진행 상황을 추적하며, 결과를 분석합니다.',
+  disputedAt: '분쟁 일시',
+  disputer: '분쟁자',
+  emptyDesc: '현재 시스템에 활성 분쟁이 없습니다.',
+  emptyTitle: '활성 분쟁 없음',
+  endsAt: '종료',
+  reason: '분쟁 사유',
+  reject: '어서션 거부',
+  support: '어서션 지지',
+  title: '분쟁 해결',
+  totalVotesCast: '총 투표 수',
+  umaDvmActive: 'UMA DVM 활성',
+  viewOnUma: 'UMA에서 보기',
+  votingProgress: '투표 진행률',
+};
