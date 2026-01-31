@@ -338,7 +338,7 @@ export class ChainlinkClient {
     const stalenessSeconds = Math.floor((now.getTime() - updatedAt.getTime()) / 1000);
 
     // 判断数据是否过期（默认1小时）
-    const stalenessThreshold = this.config.stalenessThreshold || 3600;
+    const stalenessThreshold = (this.config as { stalenessThreshold?: number }).stalenessThreshold || 3600;
     const isStale = stalenessSeconds > stalenessThreshold;
 
     return {
@@ -347,8 +347,8 @@ export class ChainlinkClient {
       protocol: 'chainlink',
       chain: this.chain,
       symbol,
-      baseAsset,
-      quoteAsset,
+      baseAsset: baseAsset || 'UNKNOWN',
+      quoteAsset: quoteAsset || 'USD',
       price: formattedPrice,
       priceRaw: priceData.answer.toString(),
       decimals: priceData.decimals,

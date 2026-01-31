@@ -190,10 +190,11 @@ export class PythClient {
     }
 
     // 使用配置的合约地址或默认地址
-    this.contractAddress = config.pythContractAddress || PYTH_CONTRACT_ADDRESSES[chain];
-    if (!this.contractAddress) {
+    const contractAddress = config.pythContractAddress || PYTH_CONTRACT_ADDRESSES[chain];
+    if (!contractAddress) {
       throw new Error(`No Pyth contract address for chain ${chain}`);
     }
+    this.contractAddress = contractAddress;
 
     this.publicClient = createPublicClient({
       chain: VIEM_CHAIN_MAP[chain],
@@ -431,7 +432,7 @@ export class PythClient {
         abi: PYTH_ABI,
         functionName: 'getEmaPrice',
         args: [priceId as `0x${string}`],
-      });
+      }) as [bigint, bigint, number, bigint];
 
       const price = priceData[0];
       const conf = priceData[1];

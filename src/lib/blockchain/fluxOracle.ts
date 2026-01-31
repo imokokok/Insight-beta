@@ -186,7 +186,7 @@ export class FluxClient {
         }),
       ]);
 
-      const [roundId, answer, startedAt, updatedAt, answeredInRound] = roundData;
+      const [roundId, answer, _startedAt, updatedAt, answeredInRound] = roundData;
 
       // 确保价格是正数
       if (answer < 0) {
