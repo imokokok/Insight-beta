@@ -6,7 +6,6 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BandClient, createBandClient } from './bandOracle';
-import type { UnifiedPriceFeed } from '@/lib/types/unifiedOracleTypes';
 
 // Mock fetch globally
 const mockFetch = vi.fn();
@@ -175,7 +174,7 @@ describe('BandClient', () => {
       const prices = await client.getMultiplePrices(['BTC', 'ETH']);
 
       expect(prices).toHaveLength(1);
-      expect(prices[0].symbol).toBe('BTC');
+      expect(prices[0]?.symbol).toBe('BTC');
     });
   });
 

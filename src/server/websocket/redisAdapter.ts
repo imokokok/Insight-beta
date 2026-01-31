@@ -139,8 +139,9 @@ export class WebSocketRedisAdapter {
 
     try {
       const fullChannel = `${this.config.channelPrefix}${channel}`;
+      const messageObj = typeof message === 'object' && message !== null ? message : { data: message };
       const serialized = JSON.stringify({
-        ...message,
+        ...messageObj,
         _instanceId: this.config.instanceId,
         _timestamp: Date.now(),
       });

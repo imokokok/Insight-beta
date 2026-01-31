@@ -63,7 +63,6 @@ export interface BandOracleResponse {
 
 export class BandClient {
   private config: BandConfig;
-  private protocol: OracleProtocol = 'band';
 
   constructor(config: BandConfig) {
     this.config = {

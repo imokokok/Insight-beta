@@ -19,7 +19,7 @@ import type { NextRequest } from 'next/server';
 // ============================================================================
 
 // GraphQL temporarily disabled - typeDefs and resolvers defined but not used
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// @ts-ignore - Will be used when GraphQL is enabled
 const _typeDefs = `
   scalar DateTime
   scalar JSON
@@ -287,7 +287,7 @@ const _typeDefs = `
 // ============================================================================
 
 // GraphQL temporarily disabled - resolvers defined but not used
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// @ts-ignore - Will be used when GraphQL is enabled
 const _resolvers = {
   Query: {
     // Price Feed Queries

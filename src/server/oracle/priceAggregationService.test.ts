@@ -7,12 +7,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   PriceAggregationEngine,
-  AggregationMethod,
   calculateMedian,
   calculateWeightedAverage,
   detectOutliers,
 } from './priceAggregationService';
-import type { UnifiedPriceFeed, CrossOracleComparison } from '@/lib/types/unifiedOracleTypes';
+import type { UnifiedPriceFeed } from '@/lib/types/unifiedOracleTypes';
 
 // Mock database query
 vi.mock('@/server/db', () => ({
