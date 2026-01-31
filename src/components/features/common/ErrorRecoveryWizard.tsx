@@ -110,7 +110,7 @@ class ErrorRecoveryManager {
           {
             id: 'step2',
             title: 'Select Correct Network',
-            description: 'Choose the network required by Insight (Polygon, Arbitrum, or Optimism).',
+            description: 'Choose the network required by OracleMonitor (Polygon, Arbitrum, or Optimism).',
             action: 'Select Polygon, Arbitrum, or Optimism',
           },
           {

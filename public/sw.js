@@ -286,7 +286,7 @@ class ServiceWorkerManager {
   private async handlePush(event: PushEvent): Promise<void> {
     console.log('[SW] Push received');
 
-    let data = { title: 'Insight', body: 'New notification', icon: '/icon-192.png', data: {} };
+    let data = { title: 'OracleMonitor', body: 'New notification', icon: '/icon-192.png', data: {} };
 
     if (event.data) {
       try {

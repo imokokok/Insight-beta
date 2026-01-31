@@ -477,7 +477,7 @@ export async function sendTestNotification(channel: NotificationChannel, recipie
     {
       title: 'Test Notification',
       message:
-        "This is a test notification from Insight. If you're seeing this, your notification system is working correctly!",
+        "This is a test notification from OracleMonitor. If you're seeing this, your notification system is working correctly!",
       severity: 'info',
       fingerprint: `test-${Date.now()}`,
     },

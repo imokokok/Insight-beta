@@ -6,11 +6,11 @@ export const getApiDocs = () => {
     definition: {
       openapi: '3.0.0',
       info: {
-        title: 'Insight Oracle API',
+        title: 'OracleMonitor API',
         version: '1.0.0',
-        description: 'REST API documentation for Oracle monitoring and dispute resolution system',
+        description: 'REST API documentation for Universal Oracle Monitoring Platform supporting Chainlink, Pyth, API3, DIA, Band, RedStone and more',
         contact: {
-          name: 'Insight Team',
+          name: 'OracleMonitor Team',
         },
       },
       servers: [

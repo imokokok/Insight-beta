@@ -71,7 +71,7 @@ export async function generateMetadata(): Promise<Metadata> {
       url: 'https://insight.foresight.build',
       title: translations[lang].app.title,
       description: translations[lang].app.description,
-      siteName: 'Insight Oracle',
+      siteName: 'OracleMonitor',
     },
     twitter: {
       card: 'summary_large_image',
@@ -97,7 +97,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <meta name="theme-color" content="#6366f1" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Insight" />
+        <meta name="apple-mobile-web-app-title" content="OracleMonitor" />
       </head>
       <body
         className={cn('min-h-screen bg-[var(--background)] font-sans text-purple-950 antialiased')}

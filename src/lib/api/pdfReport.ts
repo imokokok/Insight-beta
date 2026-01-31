@@ -142,7 +142,7 @@ export class PDFReportGenerator {
     };
     this.metadata = {
       generatedAt: new Date().toISOString(),
-      generatedBy: 'Insight Oracle Monitor',
+      generatedBy: 'OracleMonitor',
       version: '1.0.0',
       ...metadata,
     };
@@ -732,8 +732,8 @@ export function createOracleReport(
 
   const config: ReportConfig = {
     title: 'Oracle Monitoring Report',
-    subtitle: 'UMA Optimistic Oracle Performance Analysis',
-    author: 'Insight Oracle Monitor',
+    subtitle: 'Universal Oracle Performance Analysis',
+    author: 'OracleMonitor',
     date: new Date().toISOString(),
     includeTableOfContents: true,
     includePageNumbers: true,

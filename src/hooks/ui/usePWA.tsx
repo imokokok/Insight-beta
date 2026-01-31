@@ -278,10 +278,10 @@ export function PWAInstallBanner({ onDismiss }: PWAInstallBannerProps) {
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                Install Insight
+                Install OracleMonitor
               </h3>
               <p className="text-sm text-gray-600 mb-3">
-                Install Insight as an app for a faster, more immersive experience.
+                Install OracleMonitor as an app for a faster, more immersive experience.
               </p>
               <div className="flex gap-2">
                 <button

@@ -218,12 +218,12 @@ class APIRegistry {
     return {
       openapi: '3.0.3',
       info: {
-        title: 'Insight Oracle API',
+        title: 'OracleMonitor API',
         version: '1.0.0',
-        description: 'Oracle monitoring and dispute resolution API',
+        description: 'Universal Oracle Monitoring Platform API supporting Chainlink, Pyth, API3, DIA, Band, RedStone and more',
         contact: {
           name: 'API Support',
-          email: 'api@insight.foresight.build',
+          email: 'api@oracle-monitor.foresight.build',
         },
       },
       servers: [
@@ -646,7 +646,7 @@ export function generateSwaggerUI(openapiUrl: string): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Insight Oracle API Documentation</title>
+  <title>OracleMonitor API Documentation</title>
   <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui.css" />
   <style>
     html { box-sizing: border-box; overflow: -moz-scrollbars-vertical; overflow-y: scroll; }

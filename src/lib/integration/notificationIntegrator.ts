@@ -312,9 +312,9 @@ export class NotificationIntegrator {
         },
         { name: 'Bond', value: `$${bondUsd.toLocaleString()}`, inline: true },
       ],
-      footer: 'Insight Oracle Monitor',
+      footer: 'OracleMonitor',
       timestamp: new Date().toISOString(),
-      url: `https://insight.foresight.build/oracle/${assertionId}`,
+      url: `https://oracle-monitor.foresight.build/oracle/${assertionId}`,
     };
   }
 
@@ -345,9 +345,9 @@ export class NotificationIntegrator {
           inline: true,
         },
       ],
-      footer: 'Insight Oracle Monitor',
+      footer: 'OracleMonitor',
       timestamp: new Date().toISOString(),
-      url: `https://insight.foresight.build/disputes/${assertionId}`,
+      url: `https://oracle-monitor.foresight.build/disputes/${assertionId}`,
     };
   }
 
@@ -377,9 +377,9 @@ export class NotificationIntegrator {
         { name: 'Severity', value: severity.toUpperCase(), inline: true },
         { name: 'Recommended Action', value: recommendedAction, inline: false },
       ],
-      footer: 'Insight Oracle Monitor',
+      footer: 'OracleMonitor',
       timestamp: new Date().toISOString(),
-      url: 'https://insight.foresight.build/alerts',
+      url: 'https://oracle-monitor.foresight.build/alerts',
     };
   }
 
@@ -405,9 +405,9 @@ export class NotificationIntegrator {
         { name: 'Health Score', value: `${score}/100`, inline: true },
         { name: 'Issues Found', value: issues.length.toString(), inline: true },
       ],
-      footer: 'Insight Oracle Monitor',
+      footer: 'OracleMonitor',
       timestamp: new Date().toISOString(),
-      url: 'https://insight.foresight.build/oracle',
+      url: 'https://oracle-monitor.foresight.build/oracle',
     };
   }
 
@@ -419,7 +419,7 @@ export class NotificationIntegrator {
       const response = await fetch(config.webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: '🔔 Insight Oracle - Test notification' }),
+        body: JSON.stringify({ text: '🔔 OracleMonitor - Test notification' }),
       });
 
       return response.ok;
@@ -439,7 +439,7 @@ export class NotificationIntegrator {
         body: JSON.stringify({
           username: config.username,
           avatar_url: config.avatarUrl,
-          content: '🔔 Insight Oracle - Test notification',
+          content: '🔔 OracleMonitor - Test notification',
         }),
       });
 
@@ -476,7 +476,7 @@ export function createSlackConfig(
   return {
     webhookUrl,
     channel,
-    username: 'Insight Oracle',
+    username: 'OracleMonitor',
     iconEmoji: ':owl:',
     isActive: true,
     mentionUsers: [],
@@ -487,8 +487,8 @@ export function createSlackConfig(
 export function createDiscordConfig(webhookUrl: string): DiscordConfig {
   return {
     webhookUrl,
-    username: 'Insight Oracle',
-    avatarUrl: 'https://insight.foresight.build/logo-owl.png',
+    username: 'OracleMonitor',
+    avatarUrl: 'https://oracle-monitor.foresight.build/logo-owl.png',
     isActive: true,
     mentionEveryone: false,
   };

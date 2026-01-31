@@ -490,7 +490,7 @@ export class ComplianceReportGenerator {
         organizationName,
         systemName: effectiveSystemName,
         version: '1.0.0',
-        assessorName: 'Insight Oracle Compliance System',
+        assessorName: 'OracleMonitor Compliance System',
         assessorQualification: 'Automated Assessment',
         testingPeriod: `${startDate} to ${endDate}`,
         totalControlsTested: totalControls,

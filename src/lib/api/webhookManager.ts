@@ -304,7 +304,7 @@ export class WebhookManager {
 
     const testPayload = this.createPayload('custom', {
       type: 'test',
-      message: 'This is a test webhook delivery from Insight Oracle',
+      message: 'This is a test webhook delivery from OracleMonitor',
       timestamp: new Date().toISOString(),
     });
 

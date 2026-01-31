@@ -42,8 +42,8 @@ describe('Onboarding Component', () => {
       </LanguageProvider>,
     );
 
-    expect(screen.getByText('Welcome to Insight')).toBeInTheDocument();
-    expect(screen.getByText(/Insight is your gateway to Oracle monitoring/)).toBeInTheDocument();
+    expect(screen.getByText('Welcome to OracleMonitor')).toBeInTheDocument();
+    expect(screen.getByText(/OracleMonitor is your gateway to Universal Oracle monitoring/)).toBeInTheDocument();
   });
 
   it('should display next step when Next button is clicked', () => {
@@ -116,7 +116,7 @@ describe('Onboarding Component', () => {
     );
 
     // Check if onboarding is not rendered
-    expect(screen.queryByText('Welcome to Insight')).not.toBeInTheDocument();
+    expect(screen.queryByText('Welcome to OracleMonitor')).not.toBeInTheDocument();
   });
 });
 

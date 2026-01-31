@@ -39,7 +39,7 @@ export const common = {
   search: '搜索',
   notifications: '通知',
   userMenu: '用户菜单',
-  brand: 'Insight',
+  brand: 'OracleMonitor',
   history: '历史记录',
   undo: '撤销',
   redo: '重做',

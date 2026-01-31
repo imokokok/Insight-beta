@@ -9,7 +9,7 @@ export default function ApiDocsPage() {
   return (
     <div className="bg-background min-h-screen">
       <div className="container mx-auto py-8">
-        <h1 className="mb-8 text-center text-3xl font-bold">Insight API 文档</h1>
+        <h1 className="mb-8 text-center text-3xl font-bold">OracleMonitor API 文档</h1>
         <SwaggerUI url="/api/docs" />
       </div>
     </div>
