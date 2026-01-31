@@ -166,16 +166,14 @@ const BAND_CHAIN_CONFIG: Record<SupportedChain, { defaultRpcUrl: string }> = {
 export class BandClient {
   private publicClient: PublicClient;
   private chain: SupportedChain;
-  private config: BandProtocolConfig;
   private contractAddress: Address;
 
   constructor(
     chain: SupportedChain,
     rpcUrl: string,
-    config: BandProtocolConfig = {}
+    _config: BandProtocolConfig = {}
   ) {
     this.chain = chain;
-    this.config = config;
 
     const chainConfig = BAND_CHAIN_CONFIG[chain];
     if (!chainConfig) {
