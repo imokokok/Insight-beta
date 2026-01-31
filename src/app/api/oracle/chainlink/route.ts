@@ -324,7 +324,7 @@ async function getPrices(searchParams: URLSearchParams) {
     SELECT * FROM unified_price_feeds
     WHERE protocol = 'chainlink'
   `;
-  const params: unknown[] = [];
+  const params: (string | number | boolean | Date | null | undefined | string[] | number[])[] = [];
   let paramIndex = 1;
 
   if (instanceId) {

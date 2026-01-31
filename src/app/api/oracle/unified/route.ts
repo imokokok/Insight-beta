@@ -410,7 +410,7 @@ async function getPrices(searchParams: URLSearchParams) {
   const offset = parseInt(searchParams.get('offset') || '0');
 
   let sql = `SELECT * FROM unified_price_feeds WHERE 1=1`;
-  const params: unknown[] = [];
+  const params: (string | number | boolean | Date | null | undefined | string[] | number[])[] = [];
   let paramIndex = 1;
 
   if (protocol) {

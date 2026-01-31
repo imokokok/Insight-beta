@@ -191,7 +191,7 @@ export async function listUnifiedInstances(filters?: {
 }): Promise<UnifiedOracleInstance[]> {
   try {
     let sql = `SELECT * FROM unified_oracle_instances WHERE 1=1`;
-    const params: unknown[] = [];
+    const params: (string | number | boolean | Date | null | undefined | string[] | number[])[] = [];
     let paramIndex = 1;
 
     if (filters?.protocol) {
