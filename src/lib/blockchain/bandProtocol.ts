@@ -166,7 +166,7 @@ const BAND_CHAIN_CONFIG: Record<SupportedChain, { defaultRpcUrl: string }> = {
 export class BandClient {
   private publicClient: PublicClient;
   private chain: SupportedChain;
-  private config: BandProtocolConfig;
+  private _config: BandProtocolConfig;
   private contractAddress: Address;
 
   constructor(
@@ -175,7 +175,7 @@ export class BandClient {
     config: BandProtocolConfig = {}
   ) {
     this.chain = chain;
-    this.config = config;
+    this._config = config;
 
     const chainConfig = BAND_CHAIN_CONFIG[chain];
     if (!chainConfig) {
@@ -209,7 +209,7 @@ export class BandClient {
         abi: BAND_STANDARD_DATASET_ABI,
         functionName: 'getReferenceData',
         args: [base, quote],
-      });
+      }) as [bigint, bigint, bigint];
 
       const rate = priceData[0];
       const lastUpdatedBase = priceData[1];
@@ -292,8 +292,8 @@ export class BandClient {
     }
 
     try {
-      const bases = pairs.map((p) => p.base);
-      const quotes = pairs.map((p) => p.quote);
+      const bases = pairs.map((p) => p!.base);
+      const quotes = pairs.map((p) => p!.quote);
 
       const priceData = await this.publicClient.readContract({
         address: this.contractAddress,
@@ -305,7 +305,7 @@ export class BandClient {
       const feeds: UnifiedPriceFeed[] = [];
 
       for (let i = 0; i < symbols.length; i++) {
-        const symbol = symbols[i];
+        const symbol = symbols[i]!;
         const data = priceData[i] as [bigint, bigint, bigint] | undefined;
 
         if (!data) continue;

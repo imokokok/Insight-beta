@@ -201,7 +201,7 @@ const VIEM_CHAIN_MAP = {
 export class API3Client {
   private publicClient: PublicClient;
   private chain: SupportedChain;
-  private config: API3ProtocolConfig;
+  private _config: API3ProtocolConfig;
 
   constructor(
     chain: SupportedChain,
@@ -209,7 +209,7 @@ export class API3Client {
     config: API3ProtocolConfig = {}
   ) {
     this.chain = chain;
-    this.config = config;
+    this._config = config;
 
     const chainConfig = API3_CHAIN_CONFIG[chain];
     if (!chainConfig) {
