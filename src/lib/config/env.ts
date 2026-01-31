@@ -190,6 +190,45 @@ export const env = {
   get INSIGHT_REDIS_URL() {
     return (process.env.INSIGHT_REDIS_URL ?? '').trim();
   },
+  // UMA DVM & Rewards
+  get UMA_ETHEREUM_DVM_ADDRESS() {
+    return (process.env.UMA_ETHEREUM_DVM_ADDRESS ?? '').trim();
+  },
+  get UMA_ETHEREUM_VOTING_TOKEN_ADDRESS() {
+    return (process.env.UMA_ETHEREUM_VOTING_TOKEN_ADDRESS ?? '').trim();
+  },
+  get UMA_POLYGON_DVM_ADDRESS() {
+    return (process.env.UMA_POLYGON_DVM_ADDRESS ?? '').trim();
+  },
+  get UMA_POLYGON_VOTING_TOKEN_ADDRESS() {
+    return (process.env.UMA_POLYGON_VOTING_TOKEN_ADDRESS ?? '').trim();
+  },
+  get UMA_ARBITRUM_DVM_ADDRESS() {
+    return (process.env.UMA_ARBITRUM_DVM_ADDRESS ?? '').trim();
+  },
+  get UMA_ARBITRUM_VOTING_TOKEN_ADDRESS() {
+    return (process.env.UMA_ARBITRUM_VOTING_TOKEN_ADDRESS ?? '').trim();
+  },
+  // UMA Bridge
+  get UMA_ETHEREUM_BRIDGE_ADDRESS() {
+    return (process.env.UMA_ETHEREUM_BRIDGE_ADDRESS ?? '').trim();
+  },
+  get UMA_POLYGON_BRIDGE_ADDRESS() {
+    return (process.env.UMA_POLYGON_BRIDGE_ADDRESS ?? '').trim();
+  },
+  get UMA_ARBITRUM_BRIDGE_ADDRESS() {
+    return (process.env.UMA_ARBITRUM_BRIDGE_ADDRESS ?? '').trim();
+  },
+  // UMA Sync Intervals
+  get UMA_REWARDS_SYNC_INTERVAL_MS() {
+    return parseInt(process.env.UMA_REWARDS_SYNC_INTERVAL_MS ?? '300000', 10);
+  },
+  get UMA_TVL_SYNC_INTERVAL_MS() {
+    return parseInt(process.env.UMA_TVL_SYNC_INTERVAL_MS ?? '600000', 10);
+  },
+  get BASE_RPC_URL() {
+    return (process.env.BASE_RPC_URL ?? '').trim();
+  },
 };
 
 export function getEnv(key: keyof typeof env): string {

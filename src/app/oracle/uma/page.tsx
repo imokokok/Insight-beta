@@ -9,7 +9,12 @@ import {
   FileText,
   TrendingUp,
   Settings,
+  Coins,
+  Layers,
+  BarChart3,
+  Scale,
 } from 'lucide-react';
+import Link from 'next/link';
 import { PageHeader } from '@/components/features/common/PageHeader';
 import { cn, fetchApiData, formatTime } from '@/lib/utils';
 import { logger } from '@/lib/logger';
@@ -385,6 +390,54 @@ export default function UMAOraclePage() {
                 View detailed statistics and metrics for UMA oracle activity.
               </p>
             </a>
+
+            <Link
+              href="/oracle/uma/rewards"
+              className="rounded-xl bg-white/5 p-6 transition-colors hover:bg-white/10"
+            >
+              <div className="mb-4 flex items-center gap-3">
+                <Coins className="h-6 w-6 text-yellow-400" />
+                <h3 className="text-lg font-semibold">Rewards & Staking</h3>
+              </div>
+              <p className="text-gray-400">
+                Monitor voter rewards, staking positions, and slashing events.
+              </p>
+            </Link>
+
+            <Link
+              href="/oracle/uma/tvl"
+              className="rounded-xl bg-white/5 p-6 transition-colors hover:bg-white/10"
+            >
+              <div className="mb-4 flex items-center gap-3">
+                <Layers className="h-6 w-6 text-cyan-400" />
+                <h3 className="text-lg font-semibold">TVL Monitor</h3>
+              </div>
+              <p className="text-gray-400">
+                Track Total Value Locked across UMA contracts on multiple chains.
+              </p>
+            </Link>
+
+            <Link
+              href="/oracle/uma/polymarket"
+              className="rounded-xl bg-white/5 p-6 transition-colors hover:bg-white/10"
+            >
+              <div className="mb-4 flex items-center gap-3">
+                <BarChart3 className="h-6 w-6 text-pink-400" />
+                <h3 className="text-lg font-semibold">Polymarket</h3>
+              </div>
+              <p className="text-gray-400">Monitor prediction markets powered by UMA oracle.</p>
+            </Link>
+
+            <Link
+              href="/oracle/uma/governance"
+              className="rounded-xl bg-white/5 p-6 transition-colors hover:bg-white/10"
+            >
+              <div className="mb-4 flex items-center gap-3">
+                <Scale className="h-6 w-6 text-indigo-400" />
+                <h3 className="text-lg font-semibold">Governance</h3>
+              </div>
+              <p className="text-gray-400">Track UMA protocol governance proposals and voting.</p>
+            </Link>
           </div>
         )}
       </div>

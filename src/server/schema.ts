@@ -536,5 +536,124 @@ export async function ensureSchema() {
     CREATE INDEX IF NOT EXISTS idx_config_history_instance ON oracle_config_history(instance_id);
     CREATE INDEX IF NOT EXISTS idx_config_history_created_at ON oracle_config_history(created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_config_history_instance_created ON oracle_config_history(instance_id, created_at DESC);
+
+    -- UMA Voter Rewards Table
+    CREATE TABLE IF NOT EXISTS uma_voter_rewards (
+      id TEXT PRIMARY KEY,
+      voter TEXT NOT NULL,
+      assertion_id TEXT NOT NULL,
+      reward_amount NUMERIC NOT NULL DEFAULT 0,
+      claimed BOOLEAN NOT NULL DEFAULT false,
+      claimed_at TIMESTAMP WITH TIME ZONE,
+      claim_deadline TIMESTAMP WITH TIME ZONE NOT NULL,
+      chain TEXT NOT NULL,
+      block_number BIGINT NOT NULL,
+      tx_hash TEXT NOT NULL,
+      created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_uma_rewards_voter ON uma_voter_rewards(voter);
+    CREATE INDEX IF NOT EXISTS idx_uma_rewards_assertion ON uma_voter_rewards(assertion_id);
+    CREATE INDEX IF NOT EXISTS idx_uma_rewards_claimed ON uma_voter_rewards(claimed);
+    CREATE INDEX IF NOT EXISTS idx_uma_rewards_voter_claimed ON uma_voter_rewards(voter, claimed);
+    CREATE INDEX IF NOT EXISTS idx_uma_rewards_created_at ON uma_voter_rewards(created_at DESC);
+
+    -- UMA Staking Table
+    CREATE TABLE IF NOT EXISTS uma_staking (
+      id TEXT PRIMARY KEY,
+      voter TEXT NOT NULL UNIQUE,
+      staked_amount NUMERIC NOT NULL DEFAULT 0,
+      pending_rewards NUMERIC NOT NULL DEFAULT 0,
+      last_update_time TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+      cooldown_end TIMESTAMP WITH TIME ZONE,
+      chain TEXT NOT NULL,
+      block_number BIGINT NOT NULL,
+      tx_hash TEXT NOT NULL,
+      created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_uma_staking_voter ON uma_staking(voter);
+    CREATE INDEX IF NOT EXISTS idx_uma_staking_amount ON uma_staking(staked_amount DESC);
+    CREATE INDEX IF NOT EXISTS idx_uma_staking_cooldown ON uma_staking(cooldown_end);
+
+    -- UMA Slashing Table
+    CREATE TABLE IF NOT EXISTS uma_slashing (
+      id TEXT PRIMARY KEY,
+      voter TEXT NOT NULL,
+      assertion_id TEXT NOT NULL,
+      slash_amount NUMERIC NOT NULL DEFAULT 0,
+      reason TEXT NOT NULL,
+      timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
+      chain TEXT NOT NULL,
+      block_number BIGINT NOT NULL,
+      tx_hash TEXT NOT NULL,
+      created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_uma_slashing_voter ON uma_slashing(voter);
+    CREATE INDEX IF NOT EXISTS idx_uma_slashing_assertion ON uma_slashing(assertion_id);
+    CREATE INDEX IF NOT EXISTS idx_uma_slashing_timestamp ON uma_slashing(timestamp DESC);
+    CREATE INDEX IF NOT EXISTS idx_uma_slashing_voter_timestamp ON uma_slashing(voter, timestamp DESC);
+
+    -- UMA TVL History Table
+    CREATE TABLE IF NOT EXISTS uma_tvl (
+      id TEXT PRIMARY KEY,
+      chain_id INTEGER NOT NULL,
+      timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
+      total_staked NUMERIC NOT NULL DEFAULT 0,
+      total_bonded NUMERIC NOT NULL DEFAULT 0,
+      total_rewards NUMERIC NOT NULL DEFAULT 0,
+      oracle_tvl NUMERIC NOT NULL DEFAULT 0,
+      dvm_tvl NUMERIC NOT NULL DEFAULT 0,
+      active_assertions INTEGER NOT NULL DEFAULT 0,
+      active_disputes INTEGER NOT NULL DEFAULT 0,
+      created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_uma_tvl_chain ON uma_tvl(chain_id);
+    CREATE INDEX IF NOT EXISTS idx_uma_tvl_timestamp ON uma_tvl(timestamp DESC);
+    CREATE INDEX IF NOT EXISTS idx_uma_tvl_chain_timestamp ON uma_tvl(chain_id, timestamp DESC);
+
+    -- Polymarket Markets Table
+    CREATE TABLE IF NOT EXISTS polymarket_markets (
+      id TEXT PRIMARY KEY,
+      condition_id TEXT NOT NULL,
+      question TEXT NOT NULL DEFAULT '',
+      creator TEXT NOT NULL,
+      collateral_token TEXT NOT NULL,
+      fee NUMERIC NOT NULL DEFAULT 0,
+      created_at_block BIGINT NOT NULL,
+      resolved BOOLEAN NOT NULL DEFAULT false,
+      resolution_time TIMESTAMP WITH TIME ZONE,
+      outcome INTEGER,
+      volume NUMERIC NOT NULL DEFAULT 0,
+      liquidity NUMERIC NOT NULL DEFAULT 0,
+      chain TEXT NOT NULL DEFAULT '137',
+      created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_polymarket_markets_condition ON polymarket_markets(condition_id);
+    CREATE INDEX IF NOT EXISTS idx_polymarket_markets_resolved ON polymarket_markets(resolved);
+    CREATE INDEX IF NOT EXISTS idx_polymarket_markets_creator ON polymarket_markets(creator);
+    CREATE INDEX IF NOT EXISTS idx_polymarket_markets_created_at ON polymarket_markets(created_at DESC);
+
+    -- Polymarket Resolutions Table
+    CREATE TABLE IF NOT EXISTS polymarket_resolutions (
+      id TEXT PRIMARY KEY,
+      condition_id TEXT NOT NULL,
+      resolved BOOLEAN NOT NULL DEFAULT true,
+      outcome INTEGER NOT NULL,
+      resolution_time TIMESTAMP WITH TIME ZONE NOT NULL,
+      resolver TEXT NOT NULL,
+      tx_hash TEXT NOT NULL,
+      chain TEXT NOT NULL DEFAULT '137',
+      created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_polymarket_resolutions_condition ON polymarket_resolutions(condition_id);
+    CREATE INDEX IF NOT EXISTS idx_polymarket_resolutions_time ON polymarket_resolutions(resolution_time DESC);
   `);
 }

@@ -1,6 +1,7 @@
 import { ensureOracleSynced, getOracleEnv, isOracleSyncing } from './oracleIndexer';
 import { ensureUMASynced, isUMASyncing } from './oracle/umaSync';
 import { listUMAConfigs } from './oracle/umaConfig';
+import { startRewardsSyncTask, startTvlSyncTask } from './oracle/umaSyncTasks';
 import crypto from 'crypto';
 import type { PoolClient } from 'pg';
 import { env } from '@/lib/config/env';
@@ -832,6 +833,11 @@ async function tickWorker() {
         try {
           if (isUMASyncing(umaInstanceId)) continue;
           await ensureUMASynced(umaInstanceId);
+
+          // Start rewards and TVL sync tasks if not already running
+          // These are idempotent - they won't start duplicate tasks
+          startRewardsSyncTask(umaInstanceId);
+          startTvlSyncTask(umaInstanceId);
         } catch (e) {
           logger.error('UMA sync failed', {
             error: e,
