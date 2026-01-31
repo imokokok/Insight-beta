@@ -19,6 +19,7 @@ import {
 } from '@/server/oracle/unifiedConfig';
 import { startChainlinkSync, stopChainlinkSync } from '@/server/oracle/chainlinkSync';
 import { startPythSync, stopPythSync } from '@/server/oracle/pythSync';
+import { startBandSync, stopBandSync } from '@/server/oracle/bandSync';
 import type { OracleProtocol, SupportedChain } from '@/lib/types/unifiedOracleTypes';
 
 const RATE_LIMITS = {
@@ -719,6 +720,9 @@ async function startSync(instanceId: string, protocol: string) {
       case 'pyth':
         await startPythSync(instanceId);
         break;
+      case 'band':
+        await startBandSync(instanceId);
+        break;
       default:
         return { error: `Sync not implemented for protocol: ${protocol}` };
     }
@@ -756,6 +760,9 @@ async function stopSync(instanceId: string, protocol: string) {
         break;
       case 'pyth':
         stopPythSync(instanceId);
+        break;
+      case 'band':
+        stopBandSync(instanceId);
         break;
       default:
         return { error: `Sync stop not implemented for protocol: ${protocol}` };
