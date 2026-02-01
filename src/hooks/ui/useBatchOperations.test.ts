@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { renderHook } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { useBatchOperations } from './useBatchOperations';
 
 describe('useBatchOperations', () => {
@@ -33,10 +33,12 @@ describe('useBatchOperations', () => {
     it('should set items with correct structure', () => {
       const { result } = renderTestHook(() => useBatchOperations<TestItem>());
 
-      result.current.setItems([
-        { id: '1', data: { id: '1', name: 'Test 1', value: 100 } },
-        { id: '2', data: { id: '2', name: 'Test 2', value: 200 } },
-      ]);
+      act(() => {
+        result.current.setItems([
+          { id: '1', data: { id: '1', name: 'Test 1', value: 100 }, selected: false },
+          { id: '2', data: { id: '2', name: 'Test 2', value: 200 }, selected: false },
+        ]);
+      });
 
       expect(result.current.items).toHaveLength(2);
       expect(result.current.items[0]).toHaveProperty('id', '1');
@@ -49,22 +51,28 @@ describe('useBatchOperations', () => {
     it('should toggle item selection', () => {
       const { result } = renderTestHook(() => useBatchOperations<TestItem>());
 
-      result.current.setItems([
-        { id: '1', data: { id: '1', name: 'Test 1', value: 100 } },
-        { id: '2', data: { id: '2', name: 'Test 2', value: 200 } },
-      ]);
+      act(() => {
+        result.current.setItems([
+          { id: '1', data: { id: '1', name: 'Test 1', value: 100 }, selected: false },
+          { id: '2', data: { id: '2', name: 'Test 2', value: 200 }, selected: false },
+        ]);
+      });
 
-      result.current.toggleSelect('1');
+      act(() => {
+        result.current.toggleSelect('1');
+      });
       expect(result.current.items[0]?.selected).toBe(true);
 
-      result.current.toggleSelect('1');
+      act(() => {
+        result.current.toggleSelect('1');
+      });
       expect(result.current.items[0]?.selected).toBe(false);
     });
 
     it('should not throw for non-existent items', () => {
       const { result } = renderTestHook(() => useBatchOperations<TestItem>());
 
-      expect(() => result.current.toggleSelect('non-existent')).not.toThrow();
+      expect(() => act(() => result.current.toggleSelect('non-existent'))).not.toThrow();
       expect(result.current.items).toEqual([]);
     });
   });
@@ -73,12 +81,16 @@ describe('useBatchOperations', () => {
     it('should select all items when none are selected', () => {
       const { result } = renderTestHook(() => useBatchOperations<TestItem>());
 
-      result.current.setItems([
-        { id: '1', data: { id: '1', name: 'Test 1', value: 100 } },
-        { id: '2', data: { id: '2', name: 'Test 2', value: 200 } },
-      ]);
+      act(() => {
+        result.current.setItems([
+          { id: '1', data: { id: '1', name: 'Test 1', value: 100 }, selected: false },
+          { id: '2', data: { id: '2', name: 'Test 2', value: 200 }, selected: false },
+        ]);
+      });
 
-      result.current.toggleSelectAll();
+      act(() => {
+        result.current.toggleSelectAll();
+      });
 
       expect(result.current.isAllSelected).toBe(true);
       expect(result.current.items.every((item) => item.selected)).toBe(true);
@@ -87,13 +99,19 @@ describe('useBatchOperations', () => {
     it('should deselect all items when all are selected', () => {
       const { result } = renderTestHook(() => useBatchOperations<TestItem>());
 
-      result.current.setItems([
-        { id: '1', data: { id: '1', name: 'Test 1', value: 100 } },
-        { id: '2', data: { id: '2', name: 'Test 2', value: 200 } },
-      ]);
+      act(() => {
+        result.current.setItems([
+          { id: '1', data: { id: '1', name: 'Test 1', value: 100 }, selected: false },
+          { id: '2', data: { id: '2', name: 'Test 2', value: 200 }, selected: false },
+        ]);
+      });
 
-      result.current.toggleSelectAll();
-      result.current.toggleSelectAll();
+      act(() => {
+        result.current.toggleSelectAll();
+      });
+      act(() => {
+        result.current.toggleSelectAll();
+      });
 
       expect(result.current.isAllSelected).toBe(false);
       expect(result.current.items.every((item) => !item.selected)).toBe(true);
@@ -104,13 +122,17 @@ describe('useBatchOperations', () => {
     it('should select specific items by IDs', () => {
       const { result } = renderTestHook(() => useBatchOperations<TestItem>());
 
-      result.current.setItems([
-        { id: '1', data: { id: '1', name: 'Test 1', value: 100 } },
-        { id: '2', data: { id: '2', name: 'Test 2', value: 200 } },
-        { id: '3', data: { id: '3', name: 'Test 3', value: 300 } },
-      ]);
+      act(() => {
+        result.current.setItems([
+          { id: '1', data: { id: '1', name: 'Test 1', value: 100 }, selected: false },
+          { id: '2', data: { id: '2', name: 'Test 2', value: 200 }, selected: false },
+          { id: '3', data: { id: '3', name: 'Test 3', value: 300 }, selected: false },
+        ]);
+      });
 
-      result.current.selectItems(['1', '3']);
+      act(() => {
+        result.current.selectItems(['1', '3']);
+      });
 
       expect(result.current.items[0]?.selected).toBe(true);
       expect(result.current.items[1]?.selected).toBe(false);
@@ -122,15 +144,21 @@ describe('useBatchOperations', () => {
     it('should deselect all items', () => {
       const { result } = renderTestHook(() => useBatchOperations<TestItem>());
 
-      result.current.setItems([
-        { id: '1', data: { id: '1', name: 'Test 1', value: 100 } },
-        { id: '2', data: { id: '2', name: 'Test 2', value: 200 } },
-      ]);
+      act(() => {
+        result.current.setItems([
+          { id: '1', data: { id: '1', name: 'Test 1', value: 100 }, selected: false },
+          { id: '2', data: { id: '2', name: 'Test 2', value: 200 }, selected: false },
+        ]);
+      });
 
-      result.current.toggleSelectAll();
+      act(() => {
+        result.current.toggleSelectAll();
+      });
       expect(result.current.selectedCount).toBe(2);
 
-      result.current.deselectAll();
+      act(() => {
+        result.current.deselectAll();
+      });
       expect(result.current.selectedCount).toBe(0);
     });
   });
@@ -139,13 +167,17 @@ describe('useBatchOperations', () => {
     it('should respect maxSelectable limit', () => {
       const { result } = renderTestHook(() => useBatchOperations<TestItem>({ maxSelectable: 2 }));
 
-      result.current.setItems([
-        { id: '1', data: { id: '1', name: 'Test 1', value: 100 } },
-        { id: '2', data: { id: '2', name: 'Test 2', value: 200 } },
-        { id: '3', data: { id: '3', name: 'Test 3', value: 300 } },
-      ]);
+      act(() => {
+        result.current.setItems([
+          { id: '1', data: { id: '1', name: 'Test 1', value: 100 }, selected: false },
+          { id: '2', data: { id: '2', name: 'Test 2', value: 200 }, selected: false },
+          { id: '3', data: { id: '3', name: 'Test 3', value: 300 }, selected: false },
+        ]);
+      });
 
-      result.current.selectItems(['1', '2', '3']);
+      act(() => {
+        result.current.selectItems(['1', '2', '3']);
+      });
 
       const selectedCount = result.current.items.filter((item) => item.selected).length;
       expect(selectedCount).toBeLessThanOrEqual(2);
@@ -156,18 +188,21 @@ describe('useBatchOperations', () => {
     it('should return only selected items as data', () => {
       const { result } = renderTestHook(() => useBatchOperations<TestItem>());
 
-      result.current.setItems([
-        { id: '1', data: { id: '1', name: 'Test 1', value: 100 } },
-        { id: '2', data: { id: '2', name: 'Test 2', value: 200 } },
-        { id: '3', data: { id: '3', name: 'Test 3', value: 300 } },
-      ]);
+      act(() => {
+        result.current.setItems([
+          { id: '1', data: { id: '1', name: 'Test 1', value: 100 }, selected: false },
+          { id: '2', data: { id: '2', name: 'Test 2', value: 200 }, selected: false },
+          { id: '3', data: { id: '3', name: 'Test 3', value: 300 }, selected: false },
+        ]);
+      });
 
-      result.current.toggleSelect('1');
-      result.current.toggleSelect('3');
+      act(() => {
+        result.current.selectItems(['1', '3']);
+      });
 
       expect(result.current.selectedItems).toHaveLength(2);
-      expect(result.current.selectedItems[0]?.id).toBe('1');
-      expect(result.current.selectedItems[1]?.id).toBe('3');
+      expect(result.current.selectedItems[0]?.data.name).toBe('Test 1');
+      expect(result.current.selectedItems[1]?.data.name).toBe('Test 3');
     });
   });
 
@@ -175,12 +210,16 @@ describe('useBatchOperations', () => {
     it('should return IDs of selected items', () => {
       const { result } = renderTestHook(() => useBatchOperations<TestItem>());
 
-      result.current.setItems([
-        { id: '1', data: { id: '1', name: 'Test 1', value: 100 } },
-        { id: '2', data: { id: '2', name: 'Test 2', value: 200 } },
-      ]);
+      act(() => {
+        result.current.setItems([
+          { id: '1', data: { id: '1', name: 'Test 1', value: 100 }, selected: false },
+          { id: '2', data: { id: '2', name: 'Test 2', value: 200 }, selected: false },
+        ]);
+      });
 
-      result.current.toggleSelect('1');
+      act(() => {
+        result.current.toggleSelect('1');
+      });
 
       expect(result.current.getSelectedIds()).toEqual(['1']);
     });
@@ -190,12 +229,16 @@ describe('useBatchOperations', () => {
     it('should be indeterminate when some items are selected', () => {
       const { result } = renderTestHook(() => useBatchOperations<TestItem>());
 
-      result.current.setItems([
-        { id: '1', data: { id: '1', name: 'Test 1', value: 100 } },
-        { id: '2', data: { id: '2', name: 'Test 2', value: 200 } },
-      ]);
+      act(() => {
+        result.current.setItems([
+          { id: '1', data: { id: '1', name: 'Test 1', value: 100 }, selected: false },
+          { id: '2', data: { id: '2', name: 'Test 2', value: 200 }, selected: false },
+        ]);
+      });
 
-      result.current.toggleSelect('1');
+      act(() => {
+        result.current.toggleSelect('1');
+      });
 
       expect(result.current.isAllSelected).toBe(false);
       expect(result.current.isIndeterminate).toBe(true);

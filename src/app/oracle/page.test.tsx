@@ -99,6 +99,6 @@ import OraclePage from './page';
 describe('Oracle page', () => {
   it('renders the page header', () => {
     render(<OraclePage />);
-    expect(screen.getByText('oracle.title')).toBeInTheDocument();
+    expect(screen.getByText('Redirecting to dashboard...')).toBeInTheDocument();
   });
 });

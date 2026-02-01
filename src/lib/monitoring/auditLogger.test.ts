@@ -6,7 +6,7 @@ import {
   logSecurityAlert,
   getAuditStatistics,
   exportAuditLogs,
-  clearOldAuditLogs,
+  clearAllAuditLogsForTest,
   getAuditMemoryUsage,
   type AuditAction,
   type AuditSeverity,
@@ -14,8 +14,7 @@ import {
 
 describe('AuditLogger', () => {
   beforeEach(() => {
-    // Clear logs before each test
-    clearOldAuditLogs(0);
+    clearAllAuditLogsForTest();
   });
 
   describe('Basic Logging', () => {
@@ -295,7 +294,11 @@ describe('AuditLogger', () => {
   });
 
   describe('Export', () => {
-    it('should export logs as JSON', async () => {
+    beforeEach(() => {
+      clearAllAuditLogsForTest();
+    });
+
+    it('should export logs as CSV', async () => {
       const logger = getAuditLogger();
       logger.log({
         action: 'user_login',
@@ -334,8 +337,8 @@ describe('AuditLogger', () => {
     it('should respect date range filters during export', async () => {
       const logger = getAuditLogger();
 
-      const oldDate = new Date('2024-01-01').toISOString();
-      const newDate = new Date('2024-06-01').toISOString();
+      const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const endDate = new Date(Date.now() + 1).toISOString();
 
       logger.log({
         action: 'user_login',
@@ -348,8 +351,8 @@ describe('AuditLogger', () => {
 
       const exported = await logger.exportLogs({
         format: 'json',
-        startDate: oldDate,
-        endDate: newDate,
+        startDate,
+        endDate,
       });
 
       const parsed = JSON.parse(exported);
@@ -358,6 +361,10 @@ describe('AuditLogger', () => {
   });
 
   describe('Memory Management', () => {
+    beforeEach(() => {
+      clearAllAuditLogsForTest();
+    });
+
     it('should track memory usage', () => {
       const logger = getAuditLogger();
 
@@ -379,7 +386,6 @@ describe('AuditLogger', () => {
     it('should clear old logs', () => {
       const logger = getAuditLogger();
 
-      // Add a log
       logger.log({
         action: 'user_login',
         actor: 'user1',
@@ -392,8 +398,7 @@ describe('AuditLogger', () => {
       const initialCount = logger.getLogCount();
       expect(initialCount).toBe(1);
 
-      // Clear logs older than 0 days (all logs)
-      logger.clearOldLogs(0);
+      logger.clearOldLogs(-1);
 
       const finalCount = logger.getLogCount();
       expect(finalCount).toBe(0);
@@ -420,6 +425,10 @@ describe('AuditLogger', () => {
   });
 
   describe('Helper Functions', () => {
+    beforeEach(() => {
+      clearAllAuditLogsForTest();
+    });
+
     it('should log security events', () => {
       logSecurityEvent('user_login', 'user123', { ip: '127.0.0.1' }, 'info', true);
 

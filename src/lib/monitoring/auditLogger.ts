@@ -407,6 +407,11 @@ class SecurityAuditLogger {
     });
   }
 
+  clearAllLogsForTest(): void {
+    this.logs = [];
+    this.persistenceQueue = [];
+  }
+
   getLogCount(): number {
     return this.logs.length;
   }
@@ -583,6 +588,11 @@ export function archiveAuditLogs(
 export function clearOldAuditLogs(daysToKeep: number = 30): void {
   const logger = getAuditLogger();
   logger.clearOldLogs(daysToKeep);
+}
+
+export function clearAllAuditLogsForTest(): void {
+  const logger = getAuditLogger();
+  logger.clearAllLogsForTest();
 }
 
 export function getAuditMemoryUsage(): {
