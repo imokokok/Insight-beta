@@ -20,6 +20,18 @@ const getSharedStore = () => {
   return new Map();
 };
 
+// Shared file storage for kvStore mock
+const getSharedFileStore = () => {
+  if (typeof globalThis !== 'undefined') {
+    const g = globalThis as unknown as { __umaFileStore?: Record<string, unknown> };
+    if (!g.__umaFileStore) {
+      g.__umaFileStore = {};
+    }
+    return g.__umaFileStore;
+  }
+  return {};
+};
+
 // Mock dependencies
 vi.mock('@/server/db', () => ({
   hasDatabase: vi.fn(() => false),
@@ -27,8 +39,15 @@ vi.mock('@/server/db', () => ({
 }));
 
 vi.mock('@/server/kvStore', () => ({
-  readJsonFile: vi.fn(() => Promise.resolve({})),
-  writeJsonFile: vi.fn(() => Promise.resolve()),
+  readJsonFile: vi.fn((key: string) => {
+    const store = getSharedFileStore();
+    return Promise.resolve(store[key] || {});
+  }),
+  writeJsonFile: vi.fn((key: string, data: Record<string, unknown>) => {
+    const store = getSharedFileStore();
+    store[key] = data;
+    return Promise.resolve();
+  }),
 }));
 
 vi.mock('@/server/memoryBackend', () => ({
@@ -39,10 +58,16 @@ vi.mock('@/server/memoryBackend', () => ({
 describe('umaRewards', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    getSharedStore().clear();
+    const fileStore = getSharedFileStore();
+    Object.keys(fileStore).forEach((key) => delete fileStore[key]);
   });
 
   afterEach(() => {
     vi.resetAllMocks();
+    getSharedStore().clear();
+    const fileStore = getSharedFileStore();
+    Object.keys(fileStore).forEach((key) => delete fileStore[key]);
   });
 
   describe('upsertRewardRecord', () => {

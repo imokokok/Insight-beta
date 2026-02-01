@@ -1,5 +1,6 @@
 export const oracle = {
-  description: 'Chainlink, Pyth, API3, DIA, Band, RedStone 등을 지원하는 범용 다중 프로토콜 오라클 모니터링 플랫폼.',
+  description:
+    'Chainlink, Pyth, API3, DIA, Band, RedStone 등을 지원하는 범용 다중 프로토콜 오라클 모니터링 플랫폼.',
   title: '범용 오라클 모니터',
   newAssertion: '새 어서션',
   searchPlaceholder: '어서션 검색…',
@@ -90,5 +91,9 @@ export const oracle = {
     assertionsHistory: '어서션 기록',
     disputesHistory: '분쟁 기록',
     title: '주소 프로필',
+  },
+  createAssertionModal: {
+    protocolNotSupported:
+      '이 프로토콜은 어설션을 지원하지 않습니다. 다음 중 하나를 선택하세요: {{supportedProtocols}}.',
   },
 };

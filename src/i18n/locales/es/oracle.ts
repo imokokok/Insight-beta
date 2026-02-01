@@ -1,5 +1,6 @@
 export const oracle = {
-  description: 'Plataforma universal de monitoreo de oráculos multi-protocolo compatible con Chainlink, Pyth, API3, DIA, Band, RedStone y más.',
+  description:
+    'Plataforma universal de monitoreo de oráculos multi-protocolo compatible con Chainlink, Pyth, API3, DIA, Band, RedStone y más.',
   title: 'Monitor Universal de Oráculos',
   newAssertion: 'Nueva Aserción',
   searchPlaceholder: 'Buscar aserciones…',
@@ -90,5 +91,9 @@ export const oracle = {
     assertionsHistory: 'Historial de Aserciones',
     disputesHistory: 'Historial de Disputas',
     title: 'Perfil de Dirección',
+  },
+  createAssertionModal: {
+    protocolNotSupported:
+      'Este protocolo no admite aserciones. Por favor selecciona uno de: {{supportedProtocols}}.',
   },
 };

@@ -42,8 +42,8 @@ describe('Onboarding Component', () => {
       </LanguageProvider>,
     );
 
-    expect(screen.getByText('Welcome to OracleMonitor')).toBeInTheDocument();
-    expect(screen.getByText(/OracleMonitor is your gateway to Universal Oracle monitoring/)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Welcome to OracleMonitor');
+    expect(screen.getByText(/Your universal oracle monitoring platform/)).toBeInTheDocument();
   });
 
   it('should display next step when Next button is clicked', () => {
@@ -62,8 +62,8 @@ describe('Onboarding Component', () => {
     fireEvent.click(nextButton);
 
     // Check if we're on the next step
-    expect(screen.getByText('Assertion Creation')).toBeInTheDocument();
-    expect(screen.getByText(/Create and track assertions/)).toBeInTheDocument();
+    expect(screen.getByText('Assertion Tracking')).toBeInTheDocument();
+    expect(screen.getByText(/Track oracle assertions/)).toBeInTheDocument();
   });
 
   it('should complete onboarding when Get Started is clicked', () => {

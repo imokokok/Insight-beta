@@ -1,5 +1,6 @@
 export const oracle = {
-  description: "Plateforme universelle de surveillance d'oracles multi-protocoles prenant en charge Chainlink, Pyth, API3, DIA, Band, RedStone et plus.",
+  description:
+    "Plateforme universelle de surveillance d'oracles multi-protocoles prenant en charge Chainlink, Pyth, API3, DIA, Band, RedStone et plus.",
   title: 'Moniteur Universel de Oracle',
   newAssertion: 'Nouvelle Assertion',
   searchPlaceholder: 'Rechercher des assertions…',
@@ -92,5 +93,9 @@ export const oracle = {
     assertionsHistory: 'Historique des Assertions',
     disputesHistory: 'Historique des Litiges',
     title: "Profil de l'Adresse",
+  },
+  createAssertionModal: {
+    protocolNotSupported:
+      "Ce protocole ne prend pas en charge les assertions. Veuillez sélectionner l'un des éléments suivants : {{supportedProtocols}}.",
   },
 };
