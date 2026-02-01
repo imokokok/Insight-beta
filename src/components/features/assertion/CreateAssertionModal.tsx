@@ -9,6 +9,7 @@ import { useOracleTransaction } from '@/hooks/oracle/useOracleTransaction';
 import { useModalBehavior } from '@/hooks/ui/useModalBehavior';
 import { ProtocolSelector } from '@/components/features/protocol/ProtocolSelector';
 import type { OracleProtocol, OracleChain, SupportedChain } from '@/lib/types';
+import { SUPPORTED_ASSERTION_PROTOCOLS } from '@/lib/types';
 import { supportsAssertions } from '@/lib/blockchain/protocolFactory';
 
 import { InfoTooltip } from '@/components/features/common/InfoTooltip';
@@ -163,7 +164,11 @@ export function CreateAssertionModal({
             />
             {!protocolSupportsAssertions && (
               <p className="mt-1 text-xs text-amber-600">
-                This protocol does not support assertions. Please select UMA or Insight.
+                {t('oracle.createAssertionModal.protocolNotSupported', {
+                  supportedProtocols: SUPPORTED_ASSERTION_PROTOCOLS.map((p) =>
+                    p.toUpperCase(),
+                  ).join(', '),
+                })}
               </p>
             )}
           </div>

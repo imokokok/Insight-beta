@@ -60,6 +60,9 @@ export const PROTOCOL_DESCRIPTIONS: Record<OracleProtocol, string> = {
   dia: 'Transparent and verifiable data feeds',
 };
 
+// 支持断言功能的协议列表
+export const SUPPORTED_ASSERTION_PROTOCOLS: OracleProtocol[] = ['insight', 'uma'];
+
 export type OracleFeature =
   | 'price_feeds'
   | 'randomness'

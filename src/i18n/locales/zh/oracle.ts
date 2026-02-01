@@ -91,4 +91,7 @@ export const oracle = {
     disputesHistory: '争议历史',
     title: '地址资料',
   },
+  createAssertionModal: {
+    protocolNotSupported: '该协议不支持断言功能。请选择以下之一：{{supportedProtocols}}。',
+  },
 };

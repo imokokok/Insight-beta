@@ -1,5 +1,6 @@
 export const oracle = {
-  description: 'Universal multi-protocol oracle monitoring platform supporting Chainlink, Pyth, API3, DIA, Band, RedStone, and more.',
+  description:
+    'Universal multi-protocol oracle monitoring platform supporting Chainlink, Pyth, API3, DIA, Band, RedStone, and more.',
   title: 'Universal Oracle Monitor',
   newAssertion: 'New Assertion',
   searchPlaceholder: 'Search assertions…',
@@ -90,5 +91,9 @@ export const oracle = {
     assertionsHistory: 'Assertions History',
     disputesHistory: 'Disputes History',
     title: 'Address Profile',
+  },
+  createAssertionModal: {
+    protocolNotSupported:
+      'This protocol does not support assertions. Please select one of: {{supportedProtocols}}.',
   },
 };

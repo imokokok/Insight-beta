@@ -204,7 +204,7 @@ export function Sidebar() {
                         : 'text-gray-400 group-hover:text-purple-500',
                     )}
                   />
-                  <span>Protocols</span>
+                  <span>{t('nav.protocols')}</span>
                 </div>
                 {isProtocolsExpanded ? (
                   <ChevronDown size={16} className="text-gray-400" />
