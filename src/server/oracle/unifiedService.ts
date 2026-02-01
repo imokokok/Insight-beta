@@ -14,7 +14,13 @@ import { priceStreamManager } from '@/server/websocket/priceStream';
 import { chainlinkSyncManager } from './chainlinkSync';
 import { pythSyncManager } from './pythSync';
 import { bandSyncManager } from './bandSync';
+import { API3SyncManager } from './api3Sync';
+import { startRedStoneSync, stopRedStoneSync } from './redstoneSync';
+import { SwitchboardSyncService } from './switchboardSync';
+import { startFluxSync, stopFluxSync } from './fluxSync';
+import { startDIASync, stopDIASync } from './diaSync';
 import { query } from '@/server/db';
+import { getUnifiedInstance } from './unifiedConfig';
 
 // ============================================================================
 // 服务配置
@@ -118,8 +124,8 @@ export class UnifiedOracleService {
     try {
       // 获取所有启用的实例
       const result = await query(
-        `SELECT id, protocol, chain, enabled 
-         FROM unified_oracle_instances 
+        `SELECT id, protocol, chain, enabled
+         FROM unified_oracle_instances
          WHERE enabled = true`,
       );
 
@@ -151,10 +157,28 @@ export class UnifiedOracleService {
               this.activeSyncManagers.set(id, bandSyncManager);
               break;
 
-            // 其他协议可以在这里添加
-            // case 'api3':
-            // case 'redstone':
-            // ...
+            case 'api3':
+              await this.startAPI3Sync(id);
+              break;
+
+            case 'redstone':
+              await startRedStoneSync(id);
+              this.activeSyncManagers.set(id, { stopAllSync: () => stopRedStoneSync(id) });
+              break;
+
+            case 'switchboard':
+              await this.startSwitchboardSync(id);
+              break;
+
+            case 'flux':
+              await startFluxSync(id);
+              this.activeSyncManagers.set(id, { stopAllSync: () => stopFluxSync(id) });
+              break;
+
+            case 'dia':
+              await startDIASync(id);
+              this.activeSyncManagers.set(id, { stopAllSync: () => stopDIASync(id) });
+              break;
 
             default:
               logger.warn(`Unknown protocol: ${protocol}, skipping sync for ${id}`);
@@ -172,6 +196,44 @@ export class UnifiedOracleService {
         error: error instanceof Error ? error.message : String(error),
       });
     }
+  }
+
+  /**
+   * 启动 API3 同步
+   */
+  private async startAPI3Sync(instanceId: string): Promise<void> {
+    const manager = new API3SyncManager();
+    await manager.startSync(instanceId);
+    this.activeSyncManagers.set(instanceId, {
+      stopAllSync: () => manager.stopSync(instanceId),
+    });
+  }
+
+  /**
+   * 启动 Switchboard 同步
+   */
+  private async startSwitchboardSync(instanceId: string): Promise<void> {
+    const instance = await getUnifiedInstance(instanceId);
+    if (!instance) {
+      throw new Error(`Instance ${instanceId} not found`);
+    }
+
+    // 从 protocolConfig 中获取 symbols 或使用默认值
+    const symbols = (instance.config.protocolConfig as { symbols?: string[] } | undefined)
+      ?.symbols || ['BTC/USD', 'ETH/USD'];
+
+    const service = new SwitchboardSyncService({
+      instanceId,
+      chain: instance.chain,
+      rpcUrl: instance.config.rpcUrl || '',
+      symbols,
+      intervalMs: instance.config.syncIntervalMs || 60000,
+    });
+
+    await service.start();
+    this.activeSyncManagers.set(instanceId, {
+      stopAllSync: () => service.stop(),
+    });
   }
 
   /**
