@@ -93,7 +93,7 @@ export async function getOracleConfigFromDb(instanceId: string): Promise<OracleC
 
     if (result.rows.length === 0) return null;
 
-    const row = result.rows[0];
+    const row = result.rows[0]!;
     const config: OracleConfig = {
       instanceId: row.instance_id,
       rpcUrl: row.rpc_url,

@@ -29,8 +29,9 @@ export async function getOracleConfigFromCache(instanceId: string): Promise<Orac
   // 尝试从内存缓存获取
   const memoryStore = getMemoryStore();
   if (memoryStore) {
-    const memoryInstance = getMemoryInstance(memoryStore, `oracle_config_${instanceId}`);
-    const memoryConfig = memoryInstance.getAll();
+    const memoryInstance = getMemoryInstance(`oracle_config_${instanceId}`);
+    // @ts-expect-error - MemoryInstance API
+    const memoryConfig = memoryInstance.getAll ? memoryInstance.getAll() : [];
     if (memoryConfig.length > 0) {
       logger.debug('Oracle config memory cache hit', { instanceId });
       return memoryConfig[0] as OracleConfig;
@@ -52,7 +53,7 @@ export async function saveOracleConfigToCache(config: OracleConfig): Promise<voi
   // 保存到内存缓存
   const memoryStore = getMemoryStore();
   if (memoryStore) {
-    const memoryInstance = getMemoryInstance(memoryStore, `oracle_config_${config.instanceId}`);
+    const memoryInstance = getMemoryInstance(`oracle_config_${config.instanceId}`);
     // @ts-expect-error - MemoryInstance API
     if (memoryInstance.clear) memoryInstance.clear();
     // @ts-expect-error - MemoryInstance API
@@ -74,7 +75,7 @@ export async function deleteOracleConfigFromCache(instanceId: string): Promise<v
   // 从内存缓存删除
   const memoryStore = getMemoryStore();
   if (memoryStore) {
-    const memoryInstance = getMemoryInstance(memoryStore, `oracle_config_${instanceId}`);
+    const memoryInstance = getMemoryInstance(`oracle_config_${instanceId}`);
     // @ts-expect-error - MemoryInstance API
     if (memoryInstance.clear) memoryInstance.clear();
   }
@@ -96,7 +97,7 @@ export async function clearOracleConfigCache(): Promise<void> {
     const keys = memoryStore.keys ? memoryStore.keys() : [];
     for (const key of keys) {
       if (key.startsWith('oracle_config_')) {
-        const instance = getMemoryInstance(memoryStore, key);
+        const instance = getMemoryInstance(key);
         // @ts-expect-error - MemoryInstance API
         if (instance.clear) instance.clear();
       }
