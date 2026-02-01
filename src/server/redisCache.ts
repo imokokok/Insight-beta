@@ -1,6 +1,7 @@
 import { logger } from '@/lib/logger';
 import { env } from '@/lib/config/env';
 import type { RedisClientType } from 'redis';
+import { cacheProtection, hotKeyDetector } from '@/lib/cache/CacheProtection';
 
 // Redis client type - dynamically imported to avoid bundling issues
 let redisClient: RedisClientType | null = null;
@@ -98,17 +99,28 @@ export class RedisCache<T> {
   }
 
   /**
-   * Get value from cache
+   * Get value from cache with penetration protection
    */
   async get(key: string): Promise<T | null> {
     if (!isRedisAvailable()) return null;
+
+    // Record hot key access
+    hotKeyDetector.recordAccess(key);
 
     try {
       const client = await getRedisClient();
       if (!client) return null;
 
       const data = await client.get(this.buildKey(key));
-      if (!data) return null;
+
+      // Handle cache miss with bloom filter check
+      if (!data) {
+        // If bloom filter says key doesn't exist, return null immediately
+        if (!cacheProtection.mightExist(key)) {
+          return null;
+        }
+        return null;
+      }
 
       const parsed = JSON.parse(data);
 
@@ -124,6 +136,9 @@ export class RedisCache<T> {
         return null;
       }
 
+      // Record in bloom filter on successful get
+      cacheProtection.recordExists(key);
+
       return parsed.value as T;
     } catch (error) {
       logger.error('Redis cache get error', {
@@ -135,7 +150,7 @@ export class RedisCache<T> {
   }
 
   /**
-   * Set value in cache
+   * Set value in cache with penetration protection
    */
   async set(key: string, value: T, ttl?: number): Promise<boolean> {
     if (!isRedisAvailable()) return false;
@@ -155,6 +170,15 @@ export class RedisCache<T> {
       };
 
       await client.setEx(this.buildKey(key), effectiveTtl, JSON.stringify(data));
+
+      // Record in bloom filter if value is not null (for cache penetration protection)
+      if (value !== null) {
+        cacheProtection.recordExists(key);
+      } else {
+        // Record null value cached for statistics
+        cacheProtection.recordNullValueCached();
+      }
+
       return true;
     } catch (error) {
       logger.error('Redis cache set error', {

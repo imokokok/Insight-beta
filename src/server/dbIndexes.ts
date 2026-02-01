@@ -38,6 +38,20 @@ const RECOMMENDED_INDEXES: IndexDefinition[] = [
     columns: ['updated_at DESC'],
     comment: 'Recent instance updates',
   },
+  // NEW: High-frequency query optimization indexes
+  {
+    name: 'idx_oracle_instances_protocol_chain',
+    table: 'oracle_instances',
+    columns: ['protocol', 'chain'],
+    comment: 'Protocol and chain combined queries for multi-protocol monitoring',
+  },
+  {
+    name: 'idx_oracle_instances_address',
+    table: 'oracle_instances',
+    columns: ['address'],
+    indexMethod: 'hash',
+    comment: 'Fast address lookups',
+  },
 
   // Assertions - High traffic table
   {
@@ -103,6 +117,19 @@ const RECOMMENDED_INDEXES: IndexDefinition[] = [
     columns: ['block_number DESC'],
     comment: 'Block number queries',
   },
+  // NEW: Instance-based status queries for monitoring dashboard
+  {
+    name: 'idx_assertions_instance_status',
+    table: 'assertions',
+    columns: ['instance_id', 'status'],
+    comment: 'Instance status filtering for monitoring dashboard',
+  },
+  {
+    name: 'idx_assertions_asserted_at',
+    table: 'assertions',
+    columns: ['asserted_at DESC'],
+    comment: 'Recent assertions time-based queries',
+  },
 
   // Disputes - High traffic table
   {
@@ -135,6 +162,13 @@ const RECOMMENDED_INDEXES: IndexDefinition[] = [
     table: 'disputes',
     columns: ['disputer'],
     comment: 'Find disputes by disputer',
+  },
+  // NEW: Instance-based dispute queries
+  {
+    name: 'idx_disputes_instance_status',
+    table: 'disputes',
+    columns: ['instance_id', 'status'],
+    comment: 'Instance dispute status filtering',
   },
 
   // Events - Time-series data
