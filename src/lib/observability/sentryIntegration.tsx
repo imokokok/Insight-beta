@@ -5,20 +5,22 @@ interface LayoutShift extends PerformanceEntry {
   hadRecentInput: boolean;
 }
 
+interface SentryGlobal {
+  init: (config: SentryConfig) => void;
+  setUser: (user: SentryUser | null) => void;
+  setTag: (key: string, value: string) => void;
+  setContext: (name: string, context: Record<string, unknown>) => void;
+  captureException: (error: unknown, context?: Record<string, unknown>) => string;
+  captureMessage: (message: string, level?: SentrySeverity) => string;
+  addBreadcrumb: (breadcrumb: SentryBreadcrumb) => void;
+  startTransaction: (context: { name: string; op: string }) => SentryTransaction;
+  withScope: (callback: (scope: unknown) => void) => void;
+  close: () => Promise<void>;
+}
+
 declare global {
   interface Window {
-    Sentry?: {
-      init: (config: SentryConfig) => void;
-      setUser: (user: SentryUser | null) => void;
-      setTag: (key: string, value: string) => void;
-      setContext: (name: string, context: Record<string, unknown>) => void;
-      captureException: (error: unknown, context?: Record<string, unknown>) => string;
-      captureMessage: (message: string, level?: SentrySeverity) => string;
-      addBreadcrumb: (breadcrumb: SentryBreadcrumb) => void;
-      startTransaction: (context: { name: string; op: string }) => SentryTransaction;
-      withScope: (callback: (scope: unknown) => void) => void;
-      close: () => Promise<void>;
-    };
+    Sentry?: SentryGlobal;
   }
 }
 
@@ -51,42 +53,30 @@ export interface SentryUser {
 export interface SentryEvent {
   event_id?: string;
   message?: string;
-  level?: SentrySeverity;
-  logger?: string;
-  platform?: string;
   timestamp?: number;
+  level?: SentrySeverity;
+  platform?: string;
+  logger?: string;
+  runtime?: { name: string; version: string };
+  request?: SentryRequest;
+  exception?: { values: SentryException[] };
+  contexts?: Record<string, Record<string, unknown>>;
   tags?: Record<string, string>;
   extra?: Record<string, unknown>;
-  contexts?: Record<string, Record<string, unknown>>;
-  breadcrumbs?: SentryBreadcrumb[];
-  request?: SentryRequest;
-  exception?: SentryException;
 }
 
 export interface SentryTransactionEvent extends SentryEvent {
   type: 'transaction';
-  transaction: string;
   spans?: SentrySpan[];
-  measurements?: Record<string, { value: number; unit: string }>;
-  trace?: {
-    trace_id: string;
-    span_id: string;
-    parent_span_id?: string;
-  };
+  transaction?: string;
+  contexts?: { trace?: { span_id: string; trace_id: string } };
 }
 
 export interface SentryException {
-  values: Array<{
-    type: string;
-    value: string;
-    stacktrace?: {
-      frames: SentryStackFrame[];
-    };
-    mechanism?: {
-      type: string;
-      handled: boolean;
-    };
-  }>;
+  type?: string;
+  value?: string;
+  mechanism?: { type: string; handled: boolean };
+  stacktrace?: { frames: SentryStackFrame[] };
 }
 
 export interface SentryStackFrame {
@@ -94,17 +84,12 @@ export interface SentryStackFrame {
   lineno?: number;
   colno?: number;
   function?: string;
-  module?: string;
-  abs_path?: string;
-  context?: string[];
-  pre_context?: string[];
-  post_context?: string[];
   in_app?: boolean;
 }
 
 export interface SentryHint {
   originalException?: unknown;
-  syntheticException?: unknown;
+  syntheticException?: Error;
 }
 
 export interface SentryBreadcrumb {
@@ -112,52 +97,52 @@ export interface SentryBreadcrumb {
   category?: string;
   message?: string;
   level?: SentrySeverity;
-  timestamp?: number;
   data?: Record<string, unknown>;
+  timestamp?: number;
 }
 
 export interface SentryRequest {
   url?: string;
   method?: string;
-  query_string?: string;
   headers?: Record<string, string>;
-  cookies?: string;
+  cookies?: Record<string, string>;
+  query_string?: string;
   data?: unknown;
-  env?: Record<string, string>;
 }
 
 export interface SentrySpan {
-  span_id: string;
-  trace_id: string;
+  span_id?: string;
+  trace_id?: string;
   parent_span_id?: string;
-  op: string;
+  op?: string;
   description?: string;
-  start_timestamp: number;
-  timestamp: number;
   status?: string;
-  data?: Record<string, unknown>;
+  start_timestamp?: number;
+  timestamp?: number;
   tags?: Record<string, string>;
+  data?: Record<string, unknown>;
+  setStatus?: (status: string) => void;
+  setData?: (key: string, value: unknown) => void;
+  finish?: () => void;
 }
 
 export interface SentryTransaction {
-  startChild: (options: { op: string; description: string }) => SentrySpan;
-  finish: () => void;
   setStatus: (status: string) => void;
-  setTag: (key: string, value: string) => void;
   setData: (key: string, value: unknown) => void;
+  finish: () => void;
 }
 
-export type SentrySeverity = 'fatal' | 'error' | 'warning' | 'info' | 'debug' | 'log';
+export type SentrySeverity = 'debug' | 'info' | 'warning' | 'error' | 'fatal';
 
 interface UseSentryOptions {
   dsn: string;
+  enabled: boolean;
   environment?: string;
   release?: string;
+  maxBreadcrumbs?: number;
+  tags?: Record<string, string>;
   userId?: string;
   userEmail?: string;
-  tags?: Record<string, string>;
-  maxBreadcrumbs?: number;
-  enabled?: boolean;
   onError?: (error: unknown, eventId: string) => void;
   onUncaughtException?: (error: Error, eventId: string) => void;
   onUnhandledRejection?: (reason: unknown, eventId: string) => void;
@@ -178,27 +163,62 @@ interface UseSentryReturn {
 export function useSentry(options: UseSentryOptions): UseSentryReturn {
   const {
     dsn,
-    environment = process.env.NODE_ENV || 'development',
+    enabled,
+    environment,
     release,
+    maxBreadcrumbs = 100,
+    tags = {},
     userId,
     userEmail,
-    tags = {},
-    maxBreadcrumbs = 100,
-    enabled = true,
     onError,
     onUncaughtException,
     onUnhandledRejection,
   } = options;
 
   const isInitialized = useRef(false);
-  const initializationPromise = useRef<Promise<void> | null>(null);
   const errorHandlerRef = useRef<((event: ErrorEvent) => void) | null>(null);
   const rejectionHandlerRef = useRef<((event: PromiseRejectionEvent) => void) | null>(null);
 
-  const initializeSentry = useCallback(async () => {
-    if (!enabled || isInitialized.current || !dsn) {
-      return;
-    }
+  const initializeSentry = useCallback(() => {
+    return {
+      dsn,
+      environment,
+      release,
+      maxBreadcrumbs,
+      tags,
+      userId,
+      userEmail,
+      onError,
+      onUncaughtException,
+      onUnhandledRejection,
+    };
+  }, [
+    dsn,
+    environment,
+    release,
+    maxBreadcrumbs,
+    tags,
+    userId,
+    userEmail,
+    onError,
+    onUncaughtException,
+    onUnhandledRejection,
+  ]);
+
+  useEffect(() => {
+    if (!enabled || typeof window === 'undefined') return;
+    if (isInitialized.current) return;
+
+    const cleanup = () => {
+      if (errorHandlerRef.current) {
+        window.removeEventListener('error', errorHandlerRef.current);
+        errorHandlerRef.current = null;
+      }
+      if (rejectionHandlerRef.current) {
+        window.removeEventListener('unhandledrejection', rejectionHandlerRef.current);
+        rejectionHandlerRef.current = null;
+      }
+    };
 
     if (typeof window === 'undefined') return;
 
@@ -208,186 +228,195 @@ export function useSentry(options: UseSentryOptions): UseSentryReturn {
       script.async = true;
       script.crossOrigin = 'anonymous';
 
-      await new Promise<void>((resolve, reject) => {
+      const loadPromise = new Promise<void>((resolve, reject) => {
         script.onload = () => resolve();
         script.onerror = () => reject(new Error('Failed to load Sentry SDK'));
-        document.head.appendChild(script);
       });
 
-      if (window.Sentry) {
-        window.Sentry.init({
-          dsn,
-          environment,
-          release,
-          maxBreadcrumbs,
-          attachStacktrace: true,
-          sendDefaultPii: false,
-          serverName: typeof window !== 'undefined' ? window.location.hostname : undefined,
-          initialScope: {
-            tags: {
-              ...tags,
-              app: 'oracle-monitor',
-            },
-          },
-          beforeSend: (event, hint) => {
-            const error = hint.originalException;
-            if (onError) {
-              const eventId = event.event_id || 'unknown';
-              onError(error, eventId);
-            }
-            return event;
-          },
-          beforeSendTransaction: (event) => {
-            return event;
-          },
-        });
+      document.head.appendChild(script);
 
-        if (userId) {
-          window.Sentry.setUser({
-            id: userId,
-            email: userEmail,
-          });
-        }
-
-        Object.entries(tags).forEach(([key, value]) => {
-          window.Sentry?.setTag(key, value);
-        });
-
-        window.Sentry.setContext('runtime', {
-          browser: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
-          language: typeof navigator !== 'undefined' ? navigator.language : 'unknown',
-        });
-
-        isInitialized.current = true;
-
-        if (typeof window !== 'undefined') {
-          // Store handlers in refs for cleanup
-          errorHandlerRef.current = (event: ErrorEvent) => {
-            if (window.Sentry && event.error) {
-              const eventId = window.Sentry.captureException(event.error, {
-                contexts: {
-                  navigation: {
-                    current_url: window.location.href,
-                  },
+      loadPromise
+        .then(() => {
+          if (window.Sentry) {
+            window.Sentry.init({
+              dsn,
+              environment,
+              release,
+              maxBreadcrumbs,
+              attachStacktrace: true,
+              sendDefaultPii: false,
+              serverName: typeof window !== 'undefined' ? window.location.hostname : undefined,
+              initialScope: {
+                tags: {
+                  ...tags,
+                  app: 'oracle-monitor',
                 },
-              });
-              if (onUncaughtException) {
-                onUncaughtException(event.error, eventId);
-              }
-            }
-          };
+              },
+              beforeSend: (event: SentryEvent, hint: SentryHint) => {
+                const error = hint.originalException;
+                if (onError && error) {
+                  const eventId = event.event_id || 'unknown';
+                  onError(error, eventId);
+                }
+                return event;
+              },
+              beforeSendTransaction: (event: SentryTransactionEvent) => {
+                return event;
+              },
+            });
 
-          rejectionHandlerRef.current = (event: PromiseRejectionEvent) => {
-            if (window.Sentry && event.reason) {
-              const eventId = window.Sentry.captureException(event.reason, {
-                contexts: {
-                  promise: {
-                    reason: String(event.reason),
-                  },
-                },
+            if (userId && window.Sentry) {
+              window.Sentry.setUser({
+                id: userId,
+                email: userEmail,
               });
-              if (onUnhandledRejection) {
-                onUnhandledRejection(event.reason, eventId);
-              }
             }
-          };
 
-          window.addEventListener('error', errorHandlerRef.current);
-          window.addEventListener('unhandledrejection', rejectionHandlerRef.current);
-        }
-      }
+            if (window.Sentry) {
+              Object.entries(tags).forEach(([key, value]) => {
+                window.Sentry?.setTag(key, value);
+              });
+
+              window.Sentry.setContext('runtime', {
+                browser: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
+                language: typeof navigator !== 'undefined' ? navigator.language : 'unknown',
+              });
+            }
+
+            isInitialized.current = true;
+
+            if (typeof window !== 'undefined' && window.Sentry) {
+              errorHandlerRef.current = (event: ErrorEvent) => {
+                if (event.error) {
+                  const sentry = window.Sentry;
+                  if (sentry) {
+                    const eventId = sentry.captureException(event.error, {
+                      extra: {
+                        navigation: {
+                          current_url: window.location.href,
+                        },
+                      },
+                    });
+                    if (onUncaughtException) {
+                      onUncaughtException(event.error, eventId);
+                    }
+                  }
+                }
+              };
+
+              rejectionHandlerRef.current = (event: PromiseRejectionEvent) => {
+                if (event.reason) {
+                  const sentry = window.Sentry;
+                  if (sentry) {
+                    const eventId = sentry.captureException(event.reason, {
+                      extra: {
+                        promise: {
+                          reason: String(event.reason),
+                        },
+                      },
+                    });
+                    if (onUnhandledRejection) {
+                      onUnhandledRejection(event.reason, eventId);
+                    }
+                  }
+                }
+              };
+
+              window.addEventListener('error', errorHandlerRef.current);
+              window.addEventListener('unhandledrejection', rejectionHandlerRef.current);
+            }
+          }
+        })
+        .catch((error) => {
+          console.warn('Failed to initialize Sentry:', error);
+        });
     } catch (error) {
-      console.error('Failed to initialize Sentry:', error);
+      console.warn('Sentry initialization error:', error);
     }
+
+    return cleanup;
   }, [
+    initializeSentry,
     dsn,
+    enabled,
     environment,
     release,
+    maxBreadcrumbs,
+    tags,
     userId,
     userEmail,
-    tags,
-    maxBreadcrumbs,
-    enabled,
     onError,
     onUncaughtException,
     onUnhandledRejection,
   ]);
 
-  useEffect(() => {
-    if (!initializationPromise.current) {
-      initializationPromise.current = initializeSentry();
-    }
-
-    // Cleanup function to remove event listeners
-    return () => {
-      if (typeof window !== 'undefined') {
-        if (errorHandlerRef.current) {
-          window.removeEventListener('error', errorHandlerRef.current);
-          errorHandlerRef.current = null;
-        }
-        if (rejectionHandlerRef.current) {
-          window.removeEventListener('unhandledrejection', rejectionHandlerRef.current);
-          rejectionHandlerRef.current = null;
-        }
-      }
-    };
-  }, [initializeSentry]);
-
   const captureException = useCallback(
     (error: unknown, context?: Record<string, unknown>): string => {
-      if (!window.Sentry || !isInitialized.current) {
+      const sentry = window.Sentry;
+      if (!sentry || !isInitialized.current) {
         console.warn('Sentry not initialized, logging to console:', error);
         return 'mock-event-id';
       }
 
-      const contexts = context ? { additional: context } : undefined;
-      return window.Sentry.captureException(error, { contexts });
+      const extraContext = context ? { additional: context } : undefined;
+      return sentry.captureException(error, { extra: extraContext });
     },
     [],
   );
 
   const captureMessage = useCallback((message: string, level: SentrySeverity = 'info'): string => {
-    if (!window.Sentry || !isInitialized.current) {
+    const sentry = window.Sentry;
+    if (!sentry || !isInitialized.current) {
       console.warn('Sentry not initialized, logging to console:', message);
       return 'mock-event-id';
     }
 
-    return window.Sentry.captureMessage(message, level);
+    return sentry.captureMessage(message, level);
   }, []);
 
   const addBreadcrumb = useCallback((breadcrumb: SentryBreadcrumb) => {
-    if (!window.Sentry || !isInitialized.current) return;
+    const sentry = window.Sentry;
+    if (!sentry || !isInitialized.current) return;
 
-    window.Sentry.addBreadcrumb({
+    sentry.addBreadcrumb({
       ...breadcrumb,
       timestamp: breadcrumb.timestamp || Date.now() / 1000,
     });
   }, []);
 
   const setUser = useCallback((user: SentryUser | null) => {
-    if (!window.Sentry || !isInitialized.current) return;
-    window.Sentry.setUser(user);
+    const sentry = window.Sentry;
+    if (!sentry || !isInitialized.current) return;
+
+    sentry.setUser(user);
   }, []);
 
   const setTag = useCallback((key: string, value: string) => {
-    if (!window.Sentry || !isInitialized.current) return;
-    window.Sentry.setTag(key, value);
+    const sentry = window.Sentry;
+    if (!sentry || !isInitialized.current) return;
+
+    sentry.setTag(key, value);
   }, []);
 
   const setContext = useCallback((name: string, context: Record<string, unknown>) => {
-    if (!window.Sentry || !isInitialized.current) return;
-    window.Sentry.setContext(name, context);
+    const sentry = window.Sentry;
+    if (!sentry || !isInitialized.current) return;
+
+    sentry.setContext(name, context);
   }, []);
 
   const startTransaction = useCallback((name: string, op: string): SentryTransaction | null => {
-    if (!window.Sentry || !isInitialized.current) return null;
+    const sentry = window.Sentry;
+    if (!sentry || !isInitialized.current) return null;
 
-    return window.Sentry.startTransaction({ name, op });
+    return sentry.startTransaction({ name, op });
   }, []);
 
   const close = useCallback(async () => {
-    if (!window.Sentry || !isInitialized.current) return;
-    await window.Sentry.close();
+    const sentry = window.Sentry;
+    if (!sentry || !isInitialized.current) return;
+
+    await sentry.close();
     isInitialized.current = false;
   }, []);
 
