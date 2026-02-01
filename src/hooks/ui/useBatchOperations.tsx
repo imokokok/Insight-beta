@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Check, Square, Trash2, Download, AlertCircle, Loader2 } from 'lucide-react';
 
 interface BatchOperationItem {
@@ -40,91 +40,121 @@ interface UseBatchOperationsReturn<T> {
   getSelectedIds: () => string[];
 }
 
+/**
+ * 批量操作 Hook
+ * 
+ * 提供批量选择、处理和操作的功能
+ * 
+ * @example
+ * ```typescript
+ * const {
+ *   items,
+ *   selectedItems,
+ *   selectedCount,
+ *   toggleSelect,
+ *   toggleSelectAll,
+ *   processBatch,
+ * } = useBatchOperations<MyItem>({
+ *   maxSelectable: 50,
+ *   requireConfirmation: true,
+ *   confirmationThreshold: 10,
+ * });
+ * ```
+ */
 export function useBatchOperations<T extends { id: string }>(
   config: BatchOperationConfig = {},
 ): UseBatchOperationsReturn<T> {
   const { maxSelectable = 100, requireConfirmation = true, confirmationThreshold = 10 } = config;
 
-  const itemsRef: BatchOperationItem[] = [];
-  const selectedItemsRef: T[] = [];
-  let isProcessingRef = false;
+  // 使用 React state 替代 ref，确保 UI 更新
+  const [items, setItemsState] = useState<BatchOperationItem[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const computeSelected = () => {
-    const nextSelected = itemsRef.filter((i) => i.selected).map((i) => i.data) as T[];
-    selectedItemsRef.length = 0;
-    selectedItemsRef.push(...nextSelected);
-  };
+  // 计算选中的项目
+  const selectedItems = useMemo(() => {
+    return items.filter((i) => i.selected).map((i) => i.data) as T[];
+  }, [items]);
 
-  const setItemsState = (updater: (prev: BatchOperationItem[]) => BatchOperationItem[]) => {
-    const next = updater(itemsRef.map((i) => ({ ...i })));
-    itemsRef.length = 0;
-    itemsRef.push(...next);
-    computeSelected();
-  };
+  const selectedCount = useMemo(() => {
+    return items.filter((i) => i.selected).length;
+  }, [items]);
 
-  const getSelectedCount = () => itemsRef.filter((i) => i.selected).length;
-  const getIsAllSelected = () => itemsRef.length > 0 && getSelectedCount() === itemsRef.length;
-  const getIsIndeterminate = () => {
-    const c = getSelectedCount();
-    return c > 0 && c < itemsRef.length;
-  };
+  const isAllSelected = useMemo(() => {
+    return items.length > 0 && selectedCount === items.length;
+  }, [items.length, selectedCount]);
 
-  const toggleSelect = (id: string) => {
+  const isIndeterminate = useMemo(() => {
+    return selectedCount > 0 && selectedCount < items.length;
+  }, [selectedCount, items.length]);
+
+  const toggleSelect = useCallback((id: string) => {
     setItemsState((prevItems) => {
       const currentSelected = prevItems.filter((item) => item.selected).length;
       const idx = prevItems.findIndex((item) => item.id === id);
       if (idx === -1) return prevItems;
+
       const next = prevItems.map((item) => ({ ...item }));
       const item = next[idx];
       if (!item) return prevItems;
+
       if (item.selected) {
         item.selected = false;
-        return next;
+      } else {
+        if (currentSelected >= maxSelectable) {
+          console.warn(`Maximum of ${maxSelectable} items can be selected`);
+          return prevItems;
+        }
+        item.selected = true;
       }
-      if (currentSelected >= maxSelectable) {
-        console.warn(`Maximum of ${maxSelectable} items can be selected`);
-        return prevItems;
-      }
-      item.selected = true;
       return next;
     });
-  };
+  }, [maxSelectable]);
 
-  const toggleSelectAll = () => {
-    if (getIsAllSelected()) {
-      setItemsState((prevItems) => prevItems.map((item) => ({ ...item, selected: false })));
-    } else {
-      setItemsState((prevItems) =>
-        prevItems.slice(0, maxSelectable).map((item) => ({ ...item, selected: true })),
-      );
-    }
-  };
+  const toggleSelectAll = useCallback(() => {
+    setItemsState((prevItems) => {
+      const allSelected = prevItems.length > 0 && prevItems.every((item) => item.selected);
+      if (allSelected) {
+        return prevItems.map((item) => ({ ...item, selected: false }));
+      } else {
+        return prevItems.slice(0, maxSelectable).map((item) => ({ ...item, selected: true }));
+      }
+    });
+  }, [maxSelectable]);
 
-  const selectItems = (ids: string[]) => {
+  const selectItems = useCallback((ids: string[]) => {
     setItemsState((prevItems) =>
       prevItems.map((item) => (ids.includes(item.id) ? { ...item, selected: true } : item)),
     );
-  };
+  }, []);
 
-  const deselectAll = () => {
+  const deselectAll = useCallback(() => {
     setItemsState((prevItems) => prevItems.map((item) => ({ ...item, selected: false })));
-  };
+  }, []);
 
-  const processBatch = async (
+  const setItems = useCallback((newItems: Array<{ id: string; data: Record<string, unknown> }>) => {
+    setItemsState(
+      newItems.map((item) => ({
+        id: item.id,
+        selected: false,
+        data: item.data,
+      })),
+    );
+  }, []);
+
+  const processBatch = useCallback(async (
     processor: (items: T[]) => Promise<BatchOperationResult<T>>,
     options?: { onProgress?: (completed: number, total: number) => void },
   ): Promise<BatchOperationResult<T[]>> => {
-    isProcessingRef = true;
-    const selectedItems = selectedItemsRef;
-    const selectedCount = getSelectedCount();
-    const toProcess =
-      selectedItems.length > 0 ? selectedItems : (itemsRef.map((i) => i.data) as T[]);
-    if (toProcess.length === 0) {
-      queueMicrotask(() => {
-        isProcessingRef = false;
-      });
+    setIsProcessing(true);
+
+    const itemsToProcess = selectedItems.length > 0 ? selectedItems : (items.map((i) => i.data) as T[]);
+
+    if (itemsToProcess.length === 0) {
+      setIsProcessing(false);
       return { success: false, error: 'No items available' };
     }
+
+    // 确认对话框
     if (requireConfirmation && selectedCount >= confirmationThreshold) {
       let confirmed = true;
       if (typeof window !== 'undefined' && typeof window.confirm === 'function') {
@@ -133,27 +163,30 @@ export function useBatchOperations<T extends { id: string }>(
         );
       }
       if (!confirmed) {
-        queueMicrotask(() => {
-          isProcessingRef = false;
-        });
+        setIsProcessing(false);
         return { success: false, error: 'Operation cancelled by user' };
       }
     }
+
     try {
       const results: T[] = [];
-      const result = await processor(toProcess);
+      const result = await processor(itemsToProcess);
+
       if (!result.success) {
         console.error('Batch processing failed:', result.error);
       } else if (result.data) {
         results.push(result.data);
       }
-      computeSelected();
-      options?.onProgress?.(selectedItemsRef.length, selectedItemsRef.length);
+
+      options?.onProgress?.(itemsToProcess.length, itemsToProcess.length);
+
+      // 取消已处理项目的选择状态
       setItemsState((prevItems) =>
         prevItems.map((item) =>
           results.find((r) => r.id === item.data.id) ? { ...item, selected: false } : item,
         ),
       );
+
       return { success: true, data: results };
     } catch (error) {
       console.error('Batch processing failed:', error);
@@ -162,41 +195,29 @@ export function useBatchOperations<T extends { id: string }>(
         error: error instanceof Error ? error.message : 'Unknown error occurred',
       };
     } finally {
-      queueMicrotask(() => {
-        isProcessingRef = false;
-      });
+      setIsProcessing(false);
     }
-  };
+  }, [items, selectedItems, selectedCount, requireConfirmation, confirmationThreshold]);
 
-  const getSelectedIds = () => itemsRef.filter((item) => item.selected).map((item) => item.id);
+  const getSelectedIds = useCallback(() => {
+    return items.filter((item) => item.selected).map((item) => item.id);
+  }, [items]);
 
-  const api: Partial<UseBatchOperationsReturn<T>> = {};
-  Object.defineProperties(api, {
-    items: { get: () => itemsRef },
-    selectedItems: { get: () => selectedItemsRef },
-    selectedCount: { get: () => getSelectedCount() },
-    isAllSelected: { get: () => getIsAllSelected() },
-    isIndeterminate: { get: () => getIsIndeterminate() },
-    isProcessing: { get: () => isProcessingRef },
-  });
-  api.toggleSelect = toggleSelect;
-  api.toggleSelectAll = toggleSelectAll;
-  api.selectItems = selectItems;
-  api.deselectAll = deselectAll;
-  api.setItems = (newItems: Array<{ id: string; data: Record<string, unknown> }>) => {
-    itemsRef.length = 0;
-    itemsRef.push(
-      ...newItems.map((item) => ({
-        id: item.id,
-        selected: false,
-        data: item.data,
-      })),
-    );
-    computeSelected();
+  return {
+    items,
+    selectedItems,
+    selectedCount,
+    isAllSelected,
+    isIndeterminate,
+    isProcessing,
+    toggleSelect,
+    toggleSelectAll,
+    selectItems,
+    deselectAll,
+    setItems,
+    processBatch,
+    getSelectedIds,
   };
-  api.processBatch = processBatch;
-  api.getSelectedIds = getSelectedIds;
-  return api as UseBatchOperationsReturn<T>;
 }
 
 interface BatchOperationsToolbarProps {
@@ -219,6 +240,9 @@ interface BatchOperationsToolbarProps {
   }>;
 }
 
+/**
+ * 批量操作工具栏组件
+ */
 export function BatchOperationsToolbar({
   selectedCount,
   totalCount,
@@ -329,6 +353,9 @@ interface BatchActionConfirmDialogProps {
   itemCount: number;
 }
 
+/**
+ * 批量操作确认对话框
+ */
 export function BatchActionConfirmDialog({
   isOpen,
   onClose,
@@ -405,6 +432,9 @@ interface BatchProgressTrackerProps {
   showPercentage?: boolean;
 }
 
+/**
+ * 批量处理进度追踪器
+ */
 export function BatchProgressTracker({
   current,
   total,
