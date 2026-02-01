@@ -60,6 +60,37 @@ export type {
 } from './price';
 
 // ============================================================================
+// 比较分析类型
+// ============================================================================
+
+export type {
+  PriceDeviationLevel,
+  PriceDeviationCell,
+  PriceHeatmapRow,
+  PriceHeatmapData,
+  LatencyMetric,
+  LatencyAnalysis,
+  LatencyTrendPoint,
+  LatencyTrend,
+  CostType,
+  ProtocolCost,
+  CostEfficiencyMetric,
+  CostComparison,
+  CostRecommendation,
+  RealtimeComparisonItem,
+  RealtimeProtocolData,
+  ComparisonFilter,
+  ComparisonSort,
+  ComparisonConfig,
+  ComparisonView,
+  ComparisonApiResponse,
+  HeatmapApiResponse,
+  LatencyApiResponse,
+  CostApiResponse,
+  RealtimeApiResponse,
+} from './comparison';
+
+// ============================================================================
 // 断言和争议类型
 // ============================================================================
 
