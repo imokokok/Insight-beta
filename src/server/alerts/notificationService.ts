@@ -56,6 +56,7 @@ export interface SMSConfig {
   region?: string;
   fromNumber: string;
   toNumbers: string[];
+  templateCode?: string; // 阿里云短信模板代码
 }
 
 export interface WebhookConfig {
@@ -205,45 +206,16 @@ async function sendSMSNotification(
   const startTime = Date.now();
 
   try {
-    let apiUrl: string;
-    let body: Record<string, unknown>;
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-
     switch (config.provider) {
-      case 'twilio': {
-        apiUrl = `https://api.twilio.com/2010-04-01/Accounts/${config.accountSid}/Messages.json`;
-        const auth = Buffer.from(`${config.accountSid}:${config.authToken}`).toString('base64');
-        headers['Authorization'] = `Basic ${auth}`;
-        body = {
-          From: config.fromNumber,
-          To: config.toNumbers[0],
-          Body: `[${notification.severity.toUpperCase()}] ${notification.title}: ${notification.message.slice(0, 100)}`,
-        };
-        break;
-      }
+      case 'twilio':
+        return await sendTwilioSMS(notification, config, startTime);
+      case 'aws_sns':
+        return await sendAWSSNS(notification, config, startTime);
+      case 'aliyun':
+        return await sendAliyunSMS(notification, config, startTime);
       default:
         throw new Error(`SMS provider ${config.provider} not implemented`);
     }
-
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers,
-      body: new URLSearchParams(body as Record<string, string>),
-    });
-
-    if (!response.ok) {
-      throw new Error(`SMS API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    return {
-      success: true,
-      channel: 'sms',
-      messageId: data.sid,
-      timestamp: new Date(),
-      durationMs: Date.now() - startTime,
-    };
   } catch (error) {
     return {
       success: false,
@@ -253,6 +225,331 @@ async function sendSMSNotification(
       durationMs: Date.now() - startTime,
     };
   }
+}
+
+/**
+ * 发送 Twilio SMS
+ */
+async function sendTwilioSMS(
+  notification: AlertNotification,
+  config: SMSConfig,
+  startTime: number,
+): Promise<NotificationResult> {
+  const apiUrl = `https://api.twilio.com/2010-04-01/Accounts/${config.accountSid}/Messages.json`;
+  const auth = Buffer.from(`${config.accountSid}:${config.authToken}`).toString('base64');
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/x-www-form-urlencoded',
+    Authorization: `Basic ${auth}`,
+  };
+  const toNumber = config.toNumbers[0];
+  if (!toNumber) {
+    throw new Error('No recipient phone number provided');
+  }
+
+  const body: Record<string, string> = {
+    From: config.fromNumber,
+    To: toNumber,
+    Body: `[${notification.severity.toUpperCase()}] ${notification.title}: ${notification.message.slice(0, 100)}`,
+  };
+
+  const response = await fetch(apiUrl, {
+    method: 'POST',
+    headers,
+    body: new URLSearchParams(body),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Twilio API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+
+  return {
+    success: true,
+    channel: 'sms',
+    messageId: data.sid,
+    timestamp: new Date(),
+    durationMs: Date.now() - startTime,
+  };
+}
+
+/**
+ * 发送 AWS SNS SMS
+ */
+async function sendAWSSNS(
+  notification: AlertNotification,
+  config: SMSConfig,
+  startTime: number,
+): Promise<NotificationResult> {
+  const region = config.region || 'us-east-1';
+  const apiUrl = `https://sns.${region}.amazonaws.com/`;
+
+  const message = `[${notification.severity.toUpperCase()}] ${notification.title}: ${notification.message.slice(0, 100)}`;
+
+  // 构建 AWS Signature V4
+  const now = new Date();
+  const amzDate = now.toISOString().replace(/[:-]|\..*/g, '');
+  const dateStamp = amzDate.slice(0, 8);
+
+  const toNumber = config.toNumbers[0];
+  if (!toNumber) {
+    throw new Error('No recipient phone number provided');
+  }
+
+  const payload: Record<string, string> = {
+    Action: 'Publish',
+    Message: message,
+    PhoneNumber: toNumber,
+    'MessageAttributes.entry.1.Name': 'AWS.SNS.SMS.SenderID',
+    'MessageAttributes.entry.1.Value.DataType': 'String',
+    'MessageAttributes.entry.1.Value.StringValue': config.fromNumber,
+  };
+
+  const body = new URLSearchParams(payload).toString();
+
+  // 计算签名
+  const accessKeyId = config.accessKeyId;
+  if (!accessKeyId) {
+    throw new Error('AWS access key ID is required');
+  }
+
+  const signature = await calculateAWSSignature(
+    accessKeyId,
+    config.secretAccessKey!,
+    region,
+    'sns',
+    body,
+    dateStamp,
+    amzDate,
+  );
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'X-Amz-Date': amzDate,
+    Authorization: `AWS4-HMAC-SHA256 Credential=${accessKeyId}/${dateStamp}/${region}/sns/aws4_request, SignedHeaders=host;x-amz-date, Signature=${signature}`,
+  };
+
+  const response = await fetch(apiUrl, {
+    method: 'POST',
+    headers,
+    body,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`AWS SNS API error: ${response.status} - ${errorText}`);
+  }
+
+  const data = await response.text();
+  const messageIdMatch = data.match(/<MessageId>(.*?)<\/MessageId>/);
+
+  return {
+    success: true,
+    channel: 'sms',
+    messageId: messageIdMatch?.[1] || 'unknown',
+    timestamp: new Date(),
+    durationMs: Date.now() - startTime,
+  };
+}
+
+/**
+ * 发送阿里云 SMS
+ */
+async function sendAliyunSMS(
+  notification: AlertNotification,
+  config: SMSConfig,
+  startTime: number,
+): Promise<NotificationResult> {
+  const apiUrl = 'https://dysmsapi.aliyuncs.com/';
+
+  const message = `[${notification.severity.toUpperCase()}] ${notification.title}: ${notification.message.slice(0, 100)}`;
+
+  const toNumber = config.toNumbers[0];
+  if (!toNumber) {
+    throw new Error('No recipient phone number provided');
+  }
+
+  const accessKeyId = config.accessKeyId;
+  if (!accessKeyId) {
+    throw new Error('Aliyun access key ID is required');
+  }
+
+  // 构建请求参数
+  const params: Record<string, string> = {
+    Action: 'SendSms',
+    Version: '2017-05-25',
+    RegionId: config.region || 'cn-hangzhou',
+    PhoneNumbers: toNumber,
+    SignName: config.fromNumber,
+    TemplateCode: config.templateCode || 'SMS_12345678',
+    TemplateParam: JSON.stringify({ message }),
+    AccessKeyId: accessKeyId,
+    SignatureMethod: 'HMAC-SHA1',
+    Timestamp: new Date().toISOString(),
+    SignatureVersion: '1.0',
+    SignatureNonce: crypto.randomUUID(),
+    Format: 'JSON',
+  };
+
+  // 计算签名
+  const signature = await calculateAliyunSignature(config.secretAccessKey!, params);
+  params.Signature = signature;
+
+  const body = new URLSearchParams(params).toString();
+
+  const response = await fetch(apiUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(`Aliyun SMS API error: ${errorData.Message || response.status}`);
+  }
+
+  const data = await response.json();
+
+  if (data.Code !== 'OK') {
+    throw new Error(`Aliyun SMS error: ${data.Message}`);
+  }
+
+  return {
+    success: true,
+    channel: 'sms',
+    messageId: data.BizId,
+    timestamp: new Date(),
+    durationMs: Date.now() - startTime,
+  };
+}
+
+/**
+ * 计算 AWS Signature V4
+ */
+async function calculateAWSSignature(
+  _accessKeyId: string,
+  secretKey: string,
+  region: string,
+  service: string,
+  payload: string,
+  dateStamp: string,
+  amzDate: string,
+): Promise<string> {
+  const algorithm = 'AWS4-HMAC-SHA256';
+  const method = 'POST';
+  const uri = '/';
+  const queryString = '';
+  const host = `sns.${region}.amazonaws.com`;
+
+  // 创建规范请求
+  const canonicalHeaders = `host:${host}\nx-amz-date:${amzDate}\n`;
+  const signedHeaders = 'host;x-amz-date';
+  const payloadHash = await sha256(payload);
+
+  const canonicalRequest = `${method}\n${uri}\n${queryString}\n${canonicalHeaders}\n${signedHeaders}\n${payloadHash}`;
+
+  // 创建待签名字符串
+  const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;
+  const stringToSign = `${algorithm}\n${amzDate}\n${credentialScope}\n${await sha256(canonicalRequest)}`;
+
+  // 计算签名
+  const signingKey = await getAWSSigningKey(secretKey, dateStamp, region, service);
+  const signatureBuffer = await hmacSHA256(signingKey, stringToSign);
+  const signature = Array.from(new Uint8Array(signatureBuffer))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+
+  return signature;
+}
+
+/**
+ * 计算阿里云签名
+ */
+async function calculateAliyunSignature(
+  secretKey: string,
+  params: Record<string, string>,
+): Promise<string> {
+  // 按参数名排序
+  const sortedParams = Object.keys(params)
+    .sort()
+    .reduce<Record<string, string>>((acc, key) => {
+      const value = params[key];
+      if (value !== undefined) {
+        acc[key] = value;
+      }
+      return acc;
+    }, {});
+
+  // 构建规范查询字符串
+  const canonicalQueryString = Object.entries(sortedParams)
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    .join('&');
+
+  // 构建待签名字符串
+  const stringToSign = `POST&${encodeURIComponent('/')}&${encodeURIComponent(canonicalQueryString)}`;
+
+  // 计算签名
+  const key = `${secretKey}&`;
+  const signature = await hmacSHA1(key, stringToSign);
+
+  return signature;
+}
+
+/**
+ * 获取 AWS 签名密钥
+ */
+async function getAWSSigningKey(
+  secretKey: string,
+  dateStamp: string,
+  region: string,
+  service: string,
+): Promise<ArrayBuffer> {
+  const kDate = await hmacSHA256(`AWS4${secretKey}`, dateStamp);
+  const kRegion = await hmacSHA256(kDate, region);
+  const kService = await hmacSHA256(kRegion, service);
+  const kSigning = await hmacSHA256(kService, 'aws4_request');
+  return kSigning;
+}
+
+/**
+ * HMAC-SHA256
+ */
+async function hmacSHA256(key: string | ArrayBuffer, message: string): Promise<ArrayBuffer> {
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw',
+    typeof key === 'string' ? new TextEncoder().encode(key) : key,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+  return crypto.subtle.sign('HMAC', cryptoKey, new TextEncoder().encode(message));
+}
+
+/**
+ * HMAC-SHA1
+ */
+async function hmacSHA1(key: string, message: string): Promise<string> {
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(key),
+    { name: 'HMAC', hash: 'SHA-1' },
+    false,
+    ['sign'],
+  );
+  const signature = await crypto.subtle.sign('HMAC', cryptoKey, new TextEncoder().encode(message));
+  return btoa(String.fromCharCode(...new Uint8Array(signature)));
+}
+
+/**
+ * SHA256 哈希
+ */
+async function sha256(message: string): Promise<string> {
+  const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(message));
+  return Array.from(new Uint8Array(hash))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
 }
 
 // ============================================================================

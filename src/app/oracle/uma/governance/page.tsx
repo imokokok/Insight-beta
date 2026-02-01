@@ -12,7 +12,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { PageHeader } from '@/components/features/common/PageHeader';
-import { cn } from '@/lib/utils';
+import { cn, fetchApiData } from '@/lib/utils';
 import { logger } from '@/lib/logger';
 
 type ProposalState =
@@ -77,14 +77,27 @@ export default function GovernancePage() {
     try {
       setIsRefreshing(true);
 
-      // Note: This is a placeholder - actual implementation would call the governance API
-      // const data = await fetchApiData<{ proposals: Proposal[]; stats: GovernanceStats }>(
-      //   '/api/oracle/uma/governance'
-      // );
-      // setProposals(data.proposals);
-      // setStats(data.stats);
+      const response = await fetchApiData<{
+        data: {
+          proposals: Proposal[];
+          stats: GovernanceStats;
+        };
+      }>('/api/oracle/uma/governance');
 
-      // For now, show empty state
+      setProposals(response.data.proposals || []);
+      setStats(
+        response.data.stats || {
+          totalProposals: 0,
+          activeProposals: 0,
+          executedProposals: 0,
+          totalVotes: 0,
+          uniqueVoters: 0,
+          averageParticipation: 0,
+        },
+      );
+    } catch (error) {
+      logger.error('Failed to fetch governance data', { error });
+      // 显示空状态
       setProposals([]);
       setStats({
         totalProposals: 0,
@@ -94,8 +107,6 @@ export default function GovernancePage() {
         uniqueVoters: 0,
         averageParticipation: 0,
       });
-    } catch (error) {
-      logger.error('Failed to fetch governance data', { error });
     } finally {
       setLoading(false);
       setIsRefreshing(false);
