@@ -9,11 +9,14 @@
 
 [English](README.md) | [中文](README.zh-CN.md)
 
-**OracleMonitor** is a universal multi-protocol oracle monitoring platform, supporting real-time aggregation and monitoring of oracle data from 10+ protocols including Chainlink, Pyth, Band, API3, RedStone, Switchboard, and more.
+**OracleMonitor** is a universal multi-protocol oracle monitoring platform, supporting real-time aggregation and monitoring of oracle data from 10+ protocols.
 
 ## ✨ Features
 
-### Multi-Protocol Support
+### Multi-Protocol Support (8 Protocols Integrated)
+
+#### Fully Integrated ✅
+
 - **UMA** - Optimistic Oracle with assertion and dispute mechanisms
 - **Chainlink** - Industry-standard price feeds and data oracles
 - **Pyth** - Low-latency financial data from institutional sources
@@ -24,7 +27,10 @@
 - **Flux** - Decentralized oracle aggregator
 - **DIA** - Transparent and verifiable data feeds
 
+> **Note**: All 8 protocols are now fully integrated into the unified service with real-time price aggregation.
+
 ### Core Capabilities
+
 - 🔴 **Real-time Price Aggregation** - Aggregate prices from multiple protocols with intelligent outlier detection
 - 📊 **Cross-Protocol Comparison** - Compare prices across different oracle networks
 - 🔔 **Smart Alerting** - Price deviation alerts, staleness detection, sync health monitoring
@@ -36,6 +42,7 @@
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js 20+
 - PostgreSQL 16+
 - Redis 7+
@@ -78,6 +85,7 @@ docker run -p 3000:3000 --env-file .env oracle-monitor
 ## 📖 Documentation
 
 ### Architecture
+
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
 │   Dashboard     │────▶│   Next.js API   │────▶│  Price Engine   │
@@ -100,6 +108,7 @@ docker run -p 3000:3000 --env-file .env oracle-monitor
 ### API Endpoints
 
 #### REST API
+
 ```bash
 # Get price comparison across protocols
 GET /api/oracle/unified?type=comparison&symbol=ETH/USD
@@ -116,17 +125,71 @@ GET /api/oracle/unified?type=protocols
 # Trigger price aggregation
 POST /api/oracle/unified
 Body: { "symbols": ["ETH/USD", "BTC/USD"] }
+
+# UMA Governance
+GET /api/oracle/uma/governance?chain=ethereum
+
+# UMA Bridge Monitoring
+GET /api/oracle/uma/bridge?chain=ethereum
+```
+
+#### GraphQL API
+
+```bash
+# GraphQL endpoint
+POST /api/graphql
+
+# Example queries
+query {
+  priceFeed(symbol: "ETH/USD") {
+    symbol
+    price
+    protocol
+    timestamp
+  }
+
+  priceComparison(symbol: "ETH/USD") {
+    symbol
+    prices {
+      protocol
+      price
+    }
+    aggregatedPrice
+    deviation
+  }
+
+  globalStats {
+    totalProtocols
+    totalPriceFeeds
+    totalAlerts
+    lastUpdate
+  }
+}
+
+mutation {
+  createOracleInstance(input: {
+    protocol: "chainlink"
+    chain: "ethereum"
+    rpcUrl: "https://..."
+  }) {
+    id
+    status
+  }
+}
 ```
 
 #### WebSocket API
+
 ```javascript
 const ws = new WebSocket('ws://localhost:3001');
 
 // Subscribe to price updates
-ws.send(JSON.stringify({
-  type: 'subscribe',
-  symbols: ['ETH/USD', 'BTC/USD']
-}));
+ws.send(
+  JSON.stringify({
+    type: 'subscribe',
+    symbols: ['ETH/USD', 'BTC/USD'],
+  }),
+);
 
 // Handle updates
 ws.onmessage = (event) => {
@@ -141,6 +204,7 @@ ws.onmessage = (event) => {
 ```
 
 ### Supported Trading Pairs
+
 - ETH/USD, BTC/USD, LINK/USD
 - MATIC/USD, AVAX/USD, BNB/USD
 - UNI/USD, AAVE/USD, MKR/USD
@@ -150,6 +214,7 @@ ws.onmessage = (event) => {
 ## 🛠️ Development
 
 ### Project Structure
+
 ```
 ├── src/
 │   ├── app/                    # Next.js app router
@@ -174,6 +239,7 @@ ws.onmessage = (event) => {
 4. Update types in `src/lib/types/unifiedOracleTypes.ts`
 
 Example:
+
 ```typescript
 // src/lib/blockchain/newProtocolOracle.ts
 export class NewProtocolClient {
@@ -187,25 +253,27 @@ export class NewProtocolClient {
 
 ### Environment Variables
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `DATABASE_URL` | PostgreSQL connection string | Yes |
-| `REDIS_URL` | Redis connection string | Yes |
-| `ETHEREUM_RPC_URL` | Ethereum RPC endpoint | Yes |
-| `POLYGON_RPC_URL` | Polygon RPC endpoint | No |
-| `JWT_SECRET` | JWT signing secret | Yes |
-| `SENTRY_DSN` | Sentry error tracking | No |
+| Variable           | Description                  | Required |
+| ------------------ | ---------------------------- | -------- |
+| `DATABASE_URL`     | PostgreSQL connection string | Yes      |
+| `REDIS_URL`        | Redis connection string      | Yes      |
+| `ETHEREUM_RPC_URL` | Ethereum RPC endpoint        | Yes      |
+| `POLYGON_RPC_URL`  | Polygon RPC endpoint         | No       |
+| `JWT_SECRET`       | JWT signing secret           | Yes      |
+| `SENTRY_DSN`       | Sentry error tracking        | No       |
 
 See `.env.example` for complete list.
 
 ## 📊 Monitoring
 
 ### Health Checks
+
 - `/api/health` - Application health
 - `/api/health/db` - Database connectivity
 - `/api/health/redis` - Redis connectivity
 
 ### Metrics
+
 - Price feed latency
 - Sync success rate
 - WebSocket connections
