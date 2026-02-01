@@ -23,8 +23,10 @@ const TEST_CONFIG = {
  * 等待页面加载完成
  */
 async function waitForPageLoad(page: Page): Promise<void> {
-  await page.waitForLoadState('networkidle');
+  // Use domcontentloaded instead of networkidle to avoid timeout issues
   await page.waitForLoadState('domcontentloaded');
+  // Add a small delay to ensure React has hydrated
+  await page.waitForTimeout(500);
 }
 
 /**
