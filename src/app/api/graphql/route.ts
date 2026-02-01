@@ -2,12 +2,157 @@
  * GraphQL API Route
  *
  * GraphQL API 路由 - 提供灵活的预言机数据查询
+ * 支持 Query, Mutation 和 Subscription
  */
 
-import { createYoga } from 'graphql-yoga';
-import { makeExecutableSchema } from '@graphql-tools/schema';
+import { createYoga, createSchema } from 'graphql-yoga';
 import { query } from '@/server/db';
 import type { NextRequest } from 'next/server';
+
+// ============================================================================
+// PubSub System for Subscriptions
+// ============================================================================
+
+type SubscriptionPayload = {
+  priceUpdate?: PriceFeedPayload;
+  alertCreated?: AlertPayload;
+  syncStatusUpdate?: SyncStatusPayload;
+};
+
+type PriceFeedPayload = {
+  id: string;
+  instanceId: string;
+  protocol: string;
+  chain: string;
+  symbol: string;
+  price: number;
+  timestamp: Date;
+  blockNumber?: number;
+  isStale: boolean;
+  metadata?: Record<string, unknown>;
+};
+
+type AlertPayload = {
+  id: string;
+  ruleId: string;
+  event: string;
+  severity: string;
+  title: string;
+  message: string;
+  protocol?: string;
+  chain?: string;
+  instanceId?: string;
+  symbol?: string;
+  context?: Record<string, unknown>;
+  status: string;
+  occurrences: number;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+type SyncStatusPayload = {
+  id: string;
+  instanceId: string;
+  protocol: string;
+  status: string;
+  lastSyncAt?: Date;
+  lastProcessedBlock?: number;
+  lagBlocks?: number;
+  errorCount: number;
+  lastError?: string;
+  updatedAt: Date;
+};
+
+type Listener = (payload: SubscriptionPayload) => void;
+
+class PubSub {
+  private listeners: Map<string, Set<Listener>> = new Map();
+
+  subscribe(event: string, listener: Listener): () => void {
+    if (!this.listeners.has(event)) {
+      this.listeners.set(event, new Set());
+    }
+    this.listeners.get(event)!.add(listener);
+
+    return () => {
+      this.listeners.get(event)?.delete(listener);
+    };
+  }
+
+  publish(event: string, payload: SubscriptionPayload): void {
+    const eventListeners = this.listeners.get(event);
+    if (eventListeners) {
+      eventListeners.forEach((listener) => listener(payload));
+    }
+  }
+
+  // Helper methods for specific events
+  subscribePriceUpdate(
+    protocol: string | undefined,
+    chain: string | undefined,
+    symbol: string | undefined,
+    listener: Listener,
+  ): () => void {
+    const eventKey = this.getPriceUpdateEventKey(protocol, chain, symbol);
+    return this.subscribe(eventKey, listener);
+  }
+
+  subscribeAlertCreated(
+    severity: string | undefined,
+    protocol: string | undefined,
+    listener: Listener,
+  ): () => void {
+    const eventKey = this.getAlertCreatedEventKey(severity, protocol);
+    return this.subscribe(eventKey, listener);
+  }
+
+  subscribeSyncStatusUpdate(instanceId: string, listener: Listener): () => void {
+    return this.subscribe(`sync:${instanceId}`, listener);
+  }
+
+  publishPriceUpdate(payload: PriceFeedPayload): void {
+    // Publish to specific channel
+    const specificKey = this.getPriceUpdateEventKey(
+      payload.protocol,
+      payload.chain,
+      payload.symbol,
+    );
+    this.publish(specificKey, { priceUpdate: payload });
+
+    // Publish to wildcard channels
+    this.publish(`price:${payload.protocol}:*`, { priceUpdate: payload });
+    this.publish(`price:*:${payload.symbol}`, { priceUpdate: payload });
+    this.publish('price:*:*', { priceUpdate: payload });
+  }
+
+  publishAlertCreated(payload: AlertPayload): void {
+    const specificKey = this.getAlertCreatedEventKey(payload.severity, payload.protocol);
+    this.publish(specificKey, { alertCreated: payload });
+    this.publish('alert:*', { alertCreated: payload });
+  }
+
+  publishSyncStatusUpdate(instanceId: string, payload: SyncStatusPayload): void {
+    this.publish(`sync:${instanceId}`, { syncStatusUpdate: payload });
+  }
+
+  private getPriceUpdateEventKey(
+    protocol: string | undefined,
+    chain: string | undefined,
+    symbol: string | undefined,
+  ): string {
+    return `price:${protocol || '*'}:${chain || '*'}:${symbol || '*'}`;
+  }
+
+  private getAlertCreatedEventKey(
+    severity: string | undefined,
+    protocol: string | undefined,
+  ): string {
+    return `alert:${severity || '*'}:${protocol || '*'}`;
+  }
+}
+
+// Global PubSub instance
+export const pubsub = new PubSub();
 
 // ============================================================================
 // GraphQL Schema
@@ -360,7 +505,7 @@ const resolvers = {
         `SELECT * FROM unified_price_feeds 
          WHERE protocol = $1 AND chain = $2 AND symbol = $3
          AND timestamp >= $4 AND timestamp <= $5
-         ORDER BY timestamp ASC`,
+         ORDER BY timestamp DESC`,
         [protocol, chain, symbol, from, to],
       );
       return result.rows;
@@ -368,7 +513,7 @@ const resolvers = {
 
     // Oracle Instance Queries
     oracleInstance: async (_: unknown, { id }: { id: string }) => {
-      const result = await query(`SELECT * FROM unified_oracle_instances WHERE id = $1`, [id]);
+      const result = await query('SELECT * FROM unified_oracle_instances WHERE id = $1', [id]);
       return result.rows[0] || null;
     },
 
@@ -414,7 +559,7 @@ const resolvers = {
 
     // Alert Queries
     alert: async (_: unknown, { id }: { id: string }) => {
-      const result = await query(`SELECT * FROM unified_alerts WHERE id = $1`, [id]);
+      const result = await query('SELECT * FROM unified_alerts WHERE id = $1', [id]);
       return result.rows[0] || null;
     },
 
@@ -467,113 +612,139 @@ const resolvers = {
     alertStats: async () => {
       const [totalResult, bySeverityResult, byStatusResult, byProtocolResult, recentResult] =
         await Promise.all([
-          query('SELECT COUNT(*) as total FROM unified_alerts'),
-          query('SELECT severity, COUNT(*) as count FROM unified_alerts GROUP BY severity'),
-          query('SELECT status, COUNT(*) as count FROM unified_alerts GROUP BY status'),
+          query('SELECT COUNT(*) FROM unified_alerts'),
+          query(`SELECT severity, COUNT(*) FROM unified_alerts GROUP BY severity`),
+          query(`SELECT status, COUNT(*) FROM unified_alerts GROUP BY status`),
           query(
-            'SELECT protocol, COUNT(*) as count FROM unified_alerts WHERE protocol IS NOT NULL GROUP BY protocol',
+            `SELECT protocol, COUNT(*) FROM unified_alerts WHERE protocol IS NOT NULL GROUP BY protocol`,
           ),
           query(
-            `SELECT COUNT(*) as count FROM unified_alerts WHERE created_at > NOW() - INTERVAL '24 hours'`,
+            `SELECT COUNT(*) FROM unified_alerts WHERE created_at > NOW() - INTERVAL '24 hours'`,
           ),
         ]);
 
+      const bySeverity: Record<string, number> = {};
+      bySeverityResult.rows.forEach((row) => {
+        bySeverity[row.severity as string] = parseInt(row.count as string);
+      });
+
+      const byStatus: Record<string, number> = {};
+      byStatusResult.rows.forEach((row) => {
+        byStatus[row.status as string] = parseInt(row.count as string);
+      });
+
+      const byProtocol: Record<string, number> = {};
+      byProtocolResult.rows.forEach((row) => {
+        byProtocol[row.protocol as string] = parseInt(row.count as string);
+      });
+
       return {
-        total: parseInt(totalResult.rows[0]?.total || 0),
-        bySeverity: Object.fromEntries(
-          bySeverityResult.rows.map((r) => [r.severity, parseInt(r.count)]),
-        ),
-        byStatus: Object.fromEntries(byStatusResult.rows.map((r) => [r.status, parseInt(r.count)])),
-        byProtocol: Object.fromEntries(
-          byProtocolResult.rows.map((r) => [r.protocol, parseInt(r.count)]),
-        ),
+        total: parseInt(totalResult.rows[0]?.count || 0),
+        bySeverity,
+        byStatus,
+        byProtocol,
         recent24h: parseInt(recentResult.rows[0]?.count || 0),
-        avgResolutionTime: 0,
+        avgResolutionTime: null,
       };
     },
 
-    // Price Comparison
+    // Price Comparison Queries
     priceComparison: async (_: unknown, { symbol }: { symbol: string }) => {
       const result = await query(
-        `SELECT DISTINCT ON (protocol, chain)
-          protocol, chain, price, timestamp, is_stale
+        `SELECT 
+          protocol,
+          chain,
+          price,
+          timestamp,
+          CASE WHEN timestamp < NOW() - INTERVAL '5 minutes' THEN true ELSE false END as is_stale
         FROM unified_price_feeds
         WHERE symbol = $1
-        ORDER BY protocol, chain, timestamp DESC`,
+        AND timestamp > NOW() - INTERVAL '1 hour'
+        ORDER BY timestamp DESC`,
         [symbol],
       );
 
       const prices = result.rows.map((row) => ({
-        protocol: row.protocol,
-        chain: row.chain,
-        price: parseFloat(row.price),
-        timestamp: row.timestamp,
-        isStale: row.is_stale,
-        confidence: row.metadata?.confidence || 1,
+        protocol: row.protocol as string,
+        chain: row.chain as string,
+        price: parseFloat(row.price as string),
+        timestamp: row.timestamp as Date,
+        confidence: 0.95,
+        isStale: row.is_stale as boolean,
       }));
 
       if (prices.length === 0) {
         return null;
       }
 
-      const priceValues = prices.map((p) => p.price);
-      const averagePrice = priceValues.reduce((a, b) => a + b, 0) / priceValues.length;
-      const sortedPrices = [...priceValues].sort((a, b) => a - b);
-      const medianPrice = sortedPrices[Math.floor(sortedPrices.length / 2)];
-      const minPrice = Math.min(...priceValues);
-      const maxPrice = Math.max(...priceValues);
-      const deviation = ((maxPrice - minPrice) / averagePrice) * 100;
+      const priceValues = prices.map((p: { price: number }) => p.price);
+      const avg = priceValues.reduce((a: number, b: number) => a + b, 0) / priceValues.length;
+      const sorted = [...priceValues].sort((a, b) => a - b);
+      const median = sorted[Math.floor(sorted.length / 2)];
+      const min = Math.min(...priceValues);
+      const max = Math.max(...priceValues);
+      const deviation = ((max - min) / avg) * 100;
 
       return {
         symbol,
         prices,
-        averagePrice,
-        medianPrice,
-        minPrice,
-        maxPrice,
+        averagePrice: avg,
+        medianPrice: median,
+        minPrice: min,
+        maxPrice: max,
         deviation,
-        recommendedPrice: medianPrice,
+        recommendedPrice: median,
         timestamp: new Date(),
       };
     },
 
     crossProtocolComparison: async (_: unknown, { symbols }: { symbols: string[] }) => {
       const comparisons = await Promise.all(
-        symbols.map(async (symbol) => {
+        symbols.map(async (symbol: string) => {
           const result = await query(
-            `SELECT DISTINCT ON (protocol, chain)
-              protocol, chain, price, timestamp, is_stale
+            `SELECT 
+              protocol,
+              chain,
+              price,
+              timestamp,
+              CASE WHEN timestamp < NOW() - INTERVAL '5 minutes' THEN true ELSE false END as is_stale
             FROM unified_price_feeds
             WHERE symbol = $1
-            ORDER BY protocol, chain, timestamp DESC`,
+            AND timestamp > NOW() - INTERVAL '1 hour'
+            ORDER BY timestamp DESC`,
             [symbol],
           );
 
           const prices = result.rows.map((row) => ({
-            protocol: row.protocol,
-            chain: row.chain,
-            price: parseFloat(row.price),
-            timestamp: row.timestamp,
-            isStale: row.is_stale,
-            confidence: row.metadata?.confidence || 1,
+            protocol: row.protocol as string,
+            chain: row.chain as string,
+            price: parseFloat(row.price as string),
+            timestamp: row.timestamp as Date,
+            confidence: 0.95,
+            isStale: row.is_stale as boolean,
           }));
 
-          if (prices.length === 0) return null;
+          if (prices.length === 0) {
+            return null;
+          }
 
-          const priceValues = prices.map((p) => p.price);
-          const averagePrice = priceValues.reduce((a, b) => a + b, 0) / priceValues.length;
-          const sortedPrices = [...priceValues].sort((a, b) => a - b);
-          const medianPrice = sortedPrices[Math.floor(sortedPrices.length / 2)];
+          const priceValues = prices.map((p: { price: number }) => p.price);
+          const avg = priceValues.reduce((a: number, b: number) => a + b, 0) / priceValues.length;
+          const sorted = [...priceValues].sort((a, b) => a - b);
+          const median = sorted[Math.floor(sorted.length / 2)];
+          const min = Math.min(...priceValues);
+          const max = Math.max(...priceValues);
+          const deviation = ((max - min) / avg) * 100;
 
           return {
             symbol,
             prices,
-            averagePrice,
-            medianPrice,
-            minPrice: Math.min(...priceValues),
-            maxPrice: Math.max(...priceValues),
-            deviation: ((Math.max(...priceValues) - Math.min(...priceValues)) / averagePrice) * 100,
-            recommendedPrice: medianPrice,
+            averagePrice: avg,
+            medianPrice: median,
+            minPrice: min,
+            maxPrice: max,
+            deviation,
+            recommendedPrice: median,
             timestamp: new Date(),
           };
         }),
@@ -582,18 +753,18 @@ const resolvers = {
       return comparisons.filter(Boolean);
     },
 
-    // Statistics
+    // Statistics Queries
     protocolStats: async (_: unknown, { protocol }: { protocol?: string }) => {
       let sql = `
         SELECT 
-          protocol,
-          COUNT(DISTINCT instance_id) as total_instances,
-          COUNT(DISTINCT CASE WHEN us.status = 'healthy' THEN instance_id END) as active_instances,
+          upf.protocol,
+          COUNT(DISTINCT upf.instance_id) as total_instances,
+          COUNT(DISTINCT CASE WHEN uoi.enabled THEN upf.instance_id END) as active_instances,
           COUNT(*) as total_prices,
-          AVG(EXTRACT(EPOCH FROM (NOW() - timestamp))) as avg_latency
+          AVG(EXTRACT(EPOCH FROM (upf.timestamp - uoi.created_at))) as avg_latency
         FROM unified_price_feeds upf
-        LEFT JOIN unified_sync_state us ON upf.instance_id = us.instance_id
-        WHERE 1=1
+        JOIN unified_oracle_instances uoi ON upf.instance_id = uoi.id
+        WHERE upf.timestamp > NOW() - INTERVAL '24 hours'
       `;
       const params: string[] = [];
 
@@ -606,11 +777,11 @@ const resolvers = {
 
       const result = await query(sql, params);
       return result.rows.map((row) => ({
-        protocol: row.protocol,
-        totalInstances: parseInt(row.total_instances),
-        activeInstances: parseInt(row.active_instances),
-        totalPrices: parseInt(row.total_prices),
-        averageLatency: parseFloat(row.avg_latency) || 0,
+        protocol: row.protocol as string,
+        totalInstances: parseInt(row.total_instances as string),
+        activeInstances: parseInt(row.active_instances as string),
+        totalPrices: parseInt(row.total_prices as string),
+        averageLatency: parseFloat(row.avg_latency as string) || 0,
         uptime: 99.5,
         lastUpdate: new Date(),
       }));
@@ -757,6 +928,132 @@ const resolvers = {
     },
   },
 
+  Subscription: {
+    priceUpdate: {
+      subscribe: async function* (
+        _: unknown,
+        { protocol, chain, symbol }: { protocol?: string; chain?: string; symbol?: string },
+      ) {
+        const eventKey = `price:${protocol || '*'}:${chain || '*'}:${symbol || '*'}`;
+
+        // Create an async iterator that listens to pubsub events
+        const queue: PriceFeedPayload[] = [];
+        let resolveNext: ((value: IteratorResult<PriceFeedPayload>) => void) | null = null;
+
+        const unsubscribe = pubsub.subscribe(eventKey, (payload) => {
+          if (payload.priceUpdate) {
+            if (resolveNext) {
+              resolveNext({ value: payload.priceUpdate, done: false });
+              resolveNext = null;
+            } else {
+              queue.push(payload.priceUpdate);
+            }
+          }
+        });
+
+        try {
+          while (true) {
+            if (queue.length > 0) {
+              yield { priceUpdate: queue.shift()! };
+            } else {
+              const promise = new Promise<IteratorResult<PriceFeedPayload>>((resolve) => {
+                resolveNext = resolve;
+              });
+              const result = await promise;
+              if (!result.done) {
+                yield { priceUpdate: result.value };
+              }
+            }
+          }
+        } finally {
+          unsubscribe();
+        }
+      },
+      resolve: (payload: { priceUpdate: PriceFeedPayload }) => payload.priceUpdate,
+    },
+
+    alertCreated: {
+      subscribe: async function* (
+        _: unknown,
+        { severity, protocol }: { severity?: string; protocol?: string },
+      ) {
+        const eventKey = `alert:${severity || '*'}:${protocol || '*'}`;
+
+        const queue: AlertPayload[] = [];
+        let resolveNext: ((value: IteratorResult<AlertPayload>) => void) | null = null;
+
+        const unsubscribe = pubsub.subscribe(eventKey, (payload) => {
+          if (payload.alertCreated) {
+            if (resolveNext) {
+              resolveNext({ value: payload.alertCreated, done: false });
+              resolveNext = null;
+            } else {
+              queue.push(payload.alertCreated);
+            }
+          }
+        });
+
+        try {
+          while (true) {
+            if (queue.length > 0) {
+              yield { alertCreated: queue.shift()! };
+            } else {
+              const promise = new Promise<IteratorResult<AlertPayload>>((resolve) => {
+                resolveNext = resolve;
+              });
+              const result = await promise;
+              if (!result.done) {
+                yield { alertCreated: result.value };
+              }
+            }
+          }
+        } finally {
+          unsubscribe();
+        }
+      },
+      resolve: (payload: { alertCreated: AlertPayload }) => payload.alertCreated,
+    },
+
+    syncStatusUpdate: {
+      subscribe: async function* (_: unknown, { instanceId }: { instanceId: string }) {
+        const eventKey = `sync:${instanceId}`;
+
+        const queue: SyncStatusPayload[] = [];
+        let resolveNext: ((value: IteratorResult<SyncStatusPayload>) => void) | null = null;
+
+        const unsubscribe = pubsub.subscribe(eventKey, (payload) => {
+          if (payload.syncStatusUpdate) {
+            if (resolveNext) {
+              resolveNext({ value: payload.syncStatusUpdate, done: false });
+              resolveNext = null;
+            } else {
+              queue.push(payload.syncStatusUpdate);
+            }
+          }
+        });
+
+        try {
+          while (true) {
+            if (queue.length > 0) {
+              yield { syncStatusUpdate: queue.shift()! };
+            } else {
+              const promise = new Promise<IteratorResult<SyncStatusPayload>>((resolve) => {
+                resolveNext = resolve;
+              });
+              const result = await promise;
+              if (!result.done) {
+                yield { syncStatusUpdate: result.value };
+              }
+            }
+          }
+        } finally {
+          unsubscribe();
+        }
+      },
+      resolve: (payload: { syncStatusUpdate: SyncStatusPayload }) => payload.syncStatusUpdate,
+    },
+  },
+
   OracleInstance: {
     syncStatus: async (parent: { id: string }) => {
       const result = await query('SELECT * FROM unified_sync_state WHERE instance_id = $1', [
@@ -784,7 +1081,7 @@ const resolvers = {
 // Create Schema
 // ============================================================================
 
-const schema = makeExecutableSchema({
+const schema = createSchema({
   typeDefs,
   resolvers,
 });
@@ -799,6 +1096,10 @@ const yoga = createYoga({
   fetchAPI: {
     Request: Request,
     Response: Response,
+  },
+  // Enable subscriptions
+  graphiql: {
+    subscriptionsProtocol: 'SSE', // Server-Sent Events for subscriptions
   },
 });
 
