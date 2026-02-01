@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -66,24 +65,25 @@ export function ProtocolSelector({
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger>
-        <Button
-          variant={variant}
-          size={size}
-          disabled={disabled}
-          className={cn(
-            'w-full justify-between gap-2',
-            size === 'sm' && 'h-8 text-xs',
-            size === 'lg' && 'h-12 text-base',
-            className,
-          )}
-        >
-          <span className="flex items-center gap-2">
-            <span className="text-lg">{getIcon(value)}</span>
-            <span className="truncate">{getDisplayValue(value)}</span>
-          </span>
-          <ChevronDown className={cn('h-4 w-4 transition-transform', open && 'rotate-180')} />
-        </Button>
+      <DropdownMenuTrigger
+        className={cn(
+          'border-input bg-background ring-offset-background hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring inline-flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+          size === 'sm' && 'h-8 px-2 text-xs',
+          size === 'lg' && 'h-12 px-4 text-base',
+          variant === 'outline' &&
+            'border-input bg-background hover:bg-accent hover:text-accent-foreground',
+          variant === 'ghost' &&
+            'hover:bg-accent hover:text-accent-foreground border-transparent bg-transparent',
+          variant === 'default' && 'bg-primary text-primary-foreground hover:bg-primary/90',
+          disabled && 'pointer-events-none opacity-50',
+          className,
+        )}
+      >
+        <span className="flex items-center gap-2">
+          <span className="text-lg">{getIcon(value)}</span>
+          <span className="truncate">{getDisplayValue(value)}</span>
+        </span>
+        <ChevronDown className={cn('h-4 w-4 transition-transform', open && 'rotate-180')} />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-64">
         {protocols.map((protocol) => (
@@ -163,21 +163,22 @@ export function ProtocolMultiSelector({
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger>
-        <Button
-          variant={variant}
-          size={size}
-          disabled={disabled}
-          className={cn(
-            'w-full justify-between gap-2',
-            size === 'sm' && 'h-8 text-xs',
-            size === 'lg' && 'h-12 text-base',
-            className,
-          )}
-        >
-          <span className="truncate">{getDisplayText()}</span>
-          <ChevronDown className={cn('h-4 w-4 transition-transform', open && 'rotate-180')} />
-        </Button>
+      <DropdownMenuTrigger
+        className={cn(
+          'border-input bg-background ring-offset-background hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring inline-flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+          size === 'sm' && 'h-8 px-2 text-xs',
+          size === 'lg' && 'h-12 px-4 text-base',
+          variant === 'outline' &&
+            'border-input bg-background hover:bg-accent hover:text-accent-foreground',
+          variant === 'ghost' &&
+            'hover:bg-accent hover:text-accent-foreground border-transparent bg-transparent',
+          variant === 'default' && 'bg-primary text-primary-foreground hover:bg-primary/90',
+          disabled && 'pointer-events-none opacity-50',
+          className,
+        )}
+      >
+        <span className="truncate">{getDisplayText()}</span>
+        <ChevronDown className={cn('h-4 w-4 transition-transform', open && 'rotate-180')} />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-64">
         <div className="flex items-center justify-between border-b px-2 py-1.5">
