@@ -33,7 +33,13 @@ import {
   Globe,
   Zap,
   BarChart3,
+  RefreshCw,
+  Filter,
 } from 'lucide-react';
+import { ProtocolSelector } from '@/components/features/protocol/ProtocolSelector';
+import { ProtocolCard } from '@/components/features/protocol/ProtocolCard';
+import { EmptyState } from '@/components/features/common/EmptyState';
+import { Button } from '@/components/ui/button';
 import type {
   CrossOracleComparison,
   OracleProtocol,
@@ -73,6 +79,8 @@ export default function UnifiedDashboardPage() {
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
   const [wsConnected, setWsConnected] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('comparison');
+  const [selectedProtocol, setSelectedProtocol] = useState<OracleProtocol | 'all'>('all');
 
   // WebSocket 连接
   useEffect(() => {
@@ -177,7 +185,7 @@ export default function UnifiedDashboardPage() {
   return (
     <div className="container mx-auto space-y-6 p-6">
       {/* 页面标题 */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Unified Oracle Dashboard</h1>
           <p className="text-muted-foreground mt-1">
@@ -199,6 +207,34 @@ export default function UnifiedDashboardPage() {
             )}
           </Badge>
         </div>
+      </div>
+
+      {/* 筛选栏 */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center">
+        <div className="flex items-center gap-2">
+          <Filter className="text-muted-foreground h-4 w-4" />
+          <span className="text-sm font-medium">Filter by Protocol:</span>
+        </div>
+        <div className="w-full md:w-64">
+          <ProtocolSelector
+            value={selectedProtocol}
+            onChange={(protocol) => setSelectedProtocol(protocol as OracleProtocol | 'all')}
+            showAll={true}
+          />
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            setSelectedProtocol('all');
+            setSelectedSymbol('ETH/USD');
+            setSelectedChain('all');
+          }}
+          className="ml-auto"
+        >
+          <RefreshCw className="mr-2 h-4 w-4" />
+          Reset Filters
+        </Button>
       </div>
 
       {/* 统计卡片 */}
@@ -232,12 +268,7 @@ export default function UnifiedDashboardPage() {
       </div>
 
       {/* 主内容区 */}
-      <Tabs
-        defaultValue="comparison"
-        className="space-y-4"
-        value="comparison"
-        onValueChange={() => {}}
-      >
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="comparison">Price Comparison</TabsTrigger>
           <TabsTrigger value="protocols">Protocol Status</TabsTrigger>
@@ -388,38 +419,35 @@ export default function UnifiedDashboardPage() {
 
         {/* 协议状态 */}
         <TabsContent value="protocols">
-          <Card>
-            <CardHeader>
-              <CardTitle>Protocol Health Status</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {protocolStats.map((protocol) => (
-                  <div
-                    key={protocol.protocol}
-                    className="flex items-center justify-between rounded-lg border p-4"
-                  >
-                    <div className="flex items-center gap-4">
-                      <ProtocolBadge protocol={protocol.protocol} />
-                      <div>
-                        <div className="font-medium">{protocol.name}</div>
-                        <div className="text-muted-foreground text-sm">
-                          {protocol.totalFeeds} feeds • {protocol.avgLatency}ms avg latency
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-6">
-                      <div className="text-right">
-                        <div className="text-muted-foreground text-sm">Uptime</div>
-                        <div className="font-mono">{protocol.uptime.toFixed(2)}%</div>
-                      </div>
-                      <StatusBadge status={protocol.status} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {protocolStats
+              .filter((p) => selectedProtocol === 'all' || p.protocol === selectedProtocol)
+              .map((protocol) => (
+                <ProtocolCard
+                  key={protocol.protocol}
+                  protocol={protocol.protocol}
+                  stats={{
+                    currentPrice: 0,
+                    updates24h: protocol.totalFeeds,
+                    uptime: protocol.uptime,
+                  }}
+                  isLoading={loading}
+                />
+              ))}
+          </div>
+          {protocolStats.filter(
+            (p) => selectedProtocol === 'all' || p.protocol === selectedProtocol,
+          ).length === 0 && (
+            <EmptyState
+              variant="search"
+              title="No protocols found"
+              description="Try adjusting your protocol filter."
+              action={{
+                label: 'Clear filter',
+                onClick: () => setSelectedProtocol('all'),
+              }}
+            />
+          )}
         </TabsContent>
 
         {/* 价格历史 */}
@@ -558,35 +586,6 @@ function ProtocolBadge({ protocol }: { protocol: OracleProtocol }) {
   return (
     <Badge variant="outline" className={colors[protocol] || colors.insight}>
       {protocol.toUpperCase()}
-    </Badge>
-  );
-}
-
-function StatusBadge({ status }: { status: 'healthy' | 'degraded' | 'down' }) {
-  const configs = {
-    healthy: {
-      icon: <CheckCircle className="mr-1 h-3 w-3" />,
-      className: 'bg-green-500/10 text-green-600 border-green-500/20',
-      label: 'Healthy',
-    },
-    degraded: {
-      icon: <AlertTriangle className="mr-1 h-3 w-3" />,
-      className: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
-      label: 'Degraded',
-    },
-    down: {
-      icon: <AlertTriangle className="mr-1 h-3 w-3" />,
-      className: 'bg-red-500/10 text-red-600 border-red-500/20',
-      label: 'Down',
-    },
-  };
-
-  const config = configs[status];
-
-  return (
-    <Badge variant="outline" className={config.className}>
-      {config.icon}
-      {config.label}
     </Badge>
   );
 }

@@ -14,25 +14,45 @@ import {
   KeyRound,
   Star,
   Globe,
+  ChevronDown,
+  ChevronRight,
+  LayoutDashboard,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { ConnectWallet } from '@/components/features/wallet/ConnectWallet';
 import { useOracleFilters } from '@/hooks/oracle/useOracleFilters';
+import { ORACLE_PROTOCOLS, PROTOCOL_DISPLAY_NAMES } from '@/lib/types';
+import type { OracleProtocol } from '@/lib/types';
 
-const navItems = [
-  { key: 'nav.oracle' as const, href: '/oracle' as const, icon: Activity },
+const PROTOCOL_ICONS: Record<OracleProtocol, string> = {
+  insight: '🔮',
+  uma: '⚖️',
+  chainlink: '🔗',
+  pyth: '🐍',
+  band: '🎸',
+  api3: '📡',
+  redstone: '💎',
+  switchboard: '🎛️',
+  flux: '⚡',
+  dia: '📊',
+};
+
+const mainNavItems = [
+  {
+    key: 'nav.dashboard' as const,
+    href: '/oracle/dashboard' as const,
+    icon: LayoutDashboard,
+  },
   {
     key: 'nav.unifiedOracle' as const,
-    href: '/oracle/dashboard' as const,
+    href: '/oracle/unified' as const,
     icon: Globe,
   },
-  {
-    key: 'nav.umaOracle' as const,
-    href: '/oracle/uma' as const,
-    icon: ShieldAlert,
-  },
+];
+
+const secondaryNavItems = [
   {
     key: 'nav.disputes' as const,
     href: '/disputes' as const,
@@ -63,6 +83,7 @@ export function Sidebar() {
   const searchParams = useSearchParams();
   const [isOpen, setIsOpen] = useState(false);
   const [logoSrc, setLogoSrc] = useState('/logo-owl.png');
+  const [isProtocolsExpanded, setIsProtocolsExpanded] = useState(true);
   const { t } = useI18n();
   const { instanceId } = useOracleFilters();
   const instanceIdFromUrl = searchParams?.get('instanceId')?.trim() || null;
@@ -75,6 +96,12 @@ export function Sidebar() {
     url.searchParams.set('instanceId', normalized);
     return `${url.pathname}${url.search}${url.hash}`;
   };
+
+  const isProtocolActive = (protocol: OracleProtocol) => {
+    return pathname === `/oracle/protocols/${protocol}`;
+  };
+
+  const isProtocolsSectionActive = pathname?.startsWith('/oracle/protocols');
 
   return (
     <>
@@ -126,8 +153,98 @@ export function Sidebar() {
             </div>
           </div>
 
-          <nav className="flex-1 space-y-2">
-            {navItems.map((item) => {
+          <nav className="flex-1 space-y-1 overflow-y-auto">
+            {/* Main Navigation */}
+            {mainNavItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.href;
+              const href = attachInstanceId(item.href) as Route;
+
+              return (
+                <Link
+                  key={item.href}
+                  href={href}
+                  className={cn(
+                    'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
+                    isActive
+                      ? 'bg-white text-purple-700 shadow-md shadow-purple-500/5 ring-1 ring-white/60'
+                      : 'text-gray-600 hover:bg-white/40 hover:text-purple-700 hover:shadow-sm',
+                  )}
+                >
+                  <Icon
+                    size={20}
+                    className={cn(
+                      'transition-colors duration-200',
+                      isActive ? 'text-purple-600' : 'text-gray-400 group-hover:text-purple-500',
+                    )}
+                  />
+                  {t(item.key)}
+                </Link>
+              );
+            })}
+
+            {/* Protocols Section */}
+            <div className="pt-2">
+              <button
+                onClick={() => setIsProtocolsExpanded(!isProtocolsExpanded)}
+                className={cn(
+                  'group flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
+                  isProtocolsSectionActive
+                    ? 'bg-white text-purple-700 shadow-md shadow-purple-500/5 ring-1 ring-white/60'
+                    : 'text-gray-600 hover:bg-white/40 hover:text-purple-700 hover:shadow-sm',
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <Activity
+                    size={20}
+                    className={cn(
+                      'transition-colors duration-200',
+                      isProtocolsSectionActive
+                        ? 'text-purple-600'
+                        : 'text-gray-400 group-hover:text-purple-500',
+                    )}
+                  />
+                  <span>Protocols</span>
+                </div>
+                {isProtocolsExpanded ? (
+                  <ChevronDown size={16} className="text-gray-400" />
+                ) : (
+                  <ChevronRight size={16} className="text-gray-400" />
+                )}
+              </button>
+
+              {/* Protocol List */}
+              {isProtocolsExpanded && (
+                <div className="ml-4 mt-1 space-y-1 border-l-2 border-gray-200 pl-3">
+                  {ORACLE_PROTOCOLS.map((protocol) => {
+                    const isActive = isProtocolActive(protocol);
+                    const href = `/oracle/protocols/${protocol}`;
+
+                    return (
+                      <Link
+                        key={protocol}
+                        href={href as Route}
+                        className={cn(
+                          'group flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-all duration-200',
+                          isActive
+                            ? 'bg-purple-50 text-purple-700'
+                            : 'text-gray-500 hover:bg-gray-50 hover:text-purple-600',
+                        )}
+                      >
+                        <span className="text-base">{PROTOCOL_ICONS[protocol]}</span>
+                        <span className="truncate">{PROTOCOL_DISPLAY_NAMES[protocol]}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Divider */}
+            <div className="my-2 border-t border-gray-200" />
+
+            {/* Secondary Navigation */}
+            {secondaryNavItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
               const href = attachInstanceId(item.href) as Route;

@@ -7,7 +7,9 @@ import { useWallet } from '@/contexts/WalletContext';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { useOracleTransaction } from '@/hooks/oracle/useOracleTransaction';
 import { useModalBehavior } from '@/hooks/ui/useModalBehavior';
-import type { OracleChain } from '@/lib/types/oracleTypes';
+import { ProtocolSelector } from '@/components/features/protocol/ProtocolSelector';
+import type { OracleProtocol, OracleChain, SupportedChain } from '@/lib/types';
+import { supportsAssertions } from '@/lib/blockchain/protocolFactory';
 
 import { InfoTooltip } from '@/components/features/common/InfoTooltip';
 
@@ -15,9 +17,10 @@ interface CreateAssertionModalProps {
   isOpen: boolean;
   onClose: () => void;
   contractAddress?: string;
-  chain?: OracleChain;
+  chain?: OracleChain | SupportedChain;
   onSuccess?: () => void;
   instanceId?: string;
+  defaultProtocol?: OracleProtocol;
 }
 
 export function CreateAssertionModal({
@@ -27,6 +30,7 @@ export function CreateAssertionModal({
   chain,
   onSuccess,
   instanceId,
+  defaultProtocol = 'insight',
 }: CreateAssertionModalProps) {
   const { address } = useWallet();
   const { t } = useI18n();
@@ -35,6 +39,7 @@ export function CreateAssertionModal({
   const marketInputRef = useRef<HTMLInputElement>(null);
   useModalBehavior(isOpen, onClose, dialogRef);
 
+  const [selectedProtocol, setSelectedProtocol] = useState<OracleProtocol>(defaultProtocol);
   const [protocol, setProtocol] = useState('');
   const [market, setMarket] = useState('');
   const [assertion, setAssertion] = useState('');
@@ -45,9 +50,17 @@ export function CreateAssertionModal({
 
   if (!isOpen) return null;
 
+  // 检查所选协议是否支持断言
+  const protocolSupportsAssertions = supportsAssertions(selectedProtocol);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setValidationError(null);
+
+    if (!protocolSupportsAssertions) {
+      setValidationError(`Protocol ${selectedProtocol} does not support assertions`);
+      return;
+    }
 
     const trimmedProtocol = protocol.trim();
     const trimmedMarket = market.trim();
@@ -83,7 +96,7 @@ export function CreateAssertionModal({
       functionName: 'createAssertion',
       args: [trimmedProtocol, trimmedMarket, trimmedAssertion, parseEther(bond), 7200n],
       contractAddress,
-      chain,
+      chain: chain as OracleChain,
       successTitle: t('oracle.tx.assertionCreatedTitle'),
       successMessage: t('oracle.tx.assertionCreatedMsg'),
       onConfirmed: () => {
@@ -136,6 +149,25 @@ export function CreateAssertionModal({
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Protocol Selection */}
+          <div>
+            <label className="mb-1 flex items-center gap-1.5 text-sm font-medium text-gray-700">
+              Oracle Protocol
+              <InfoTooltip content="Select the oracle protocol for this assertion" />
+            </label>
+            <ProtocolSelector
+              value={selectedProtocol}
+              onChange={(protocol) => setSelectedProtocol(protocol as OracleProtocol)}
+              showAll={false}
+              className="w-full"
+            />
+            {!protocolSupportsAssertions && (
+              <p className="mt-1 text-xs text-amber-600">
+                This protocol does not support assertions. Please select UMA or Insight.
+              </p>
+            )}
+          </div>
+
           <div>
             <label className="mb-1 flex items-center gap-1.5 text-sm font-medium text-gray-700">
               {t('oracle.createAssertionModal.protocolLabel')}
@@ -225,17 +257,19 @@ export function CreateAssertionModal({
             </button>
             <button
               type="submit"
-              disabled={isSubmitting || isConfirming || !address}
+              disabled={isSubmitting || isConfirming || !address || !protocolSupportsAssertions}
               className="flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-50"
             >
               {(isSubmitting || isConfirming) && <Loader2 size={16} className="animate-spin" />}
               {!address
                 ? t('wallet.connect')
-                : isSubmitting
-                  ? t('oracle.detail.submitting')
-                  : isConfirming
-                    ? t('oracle.detail.confirming')
-                    : t('oracle.createAssertionModal.submit')}
+                : !protocolSupportsAssertions
+                  ? 'Protocol Not Supported'
+                  : isSubmitting
+                    ? t('oracle.detail.submitting')
+                    : isConfirming
+                      ? t('oracle.detail.confirming')
+                      : t('oracle.createAssertionModal.submit')}
             </button>
           </div>
         </form>
