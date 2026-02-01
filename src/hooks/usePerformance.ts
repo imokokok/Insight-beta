@@ -143,7 +143,7 @@ export function useIntersectionObserver(
     observer.observe(ref.current);
 
     return () => observer.disconnect();
-  }, [options.root, options.rootMargin, options.threshold]);
+  }, [options.root, options.rootMargin, options.threshold, options]);
 
   return [ref, isIntersecting];
 }

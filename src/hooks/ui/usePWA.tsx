@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import Image from 'next/image';
 import { CheckCircle, RefreshCw, X, Smartphone, Monitor, Globe, Wifi, WifiOff } from 'lucide-react';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -269,31 +270,29 @@ export function PWAInstallBanner({ onDismiss }: PWAInstallBannerProps) {
   if (!isVisible || !isInstallable) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 p-4 animate-in slide-in-from-bottom duration-300">
-      <div className="max-w-lg mx-auto bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+    <div className="animate-in slide-in-from-bottom fixed bottom-0 left-0 right-0 z-50 p-4 duration-300">
+      <div className="mx-auto max-w-lg overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
         <div className="p-4">
           <div className="flex items-start gap-4">
-            <div className="flex-shrink-0 w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-purple-100">
               <Smartphone className="h-6 w-6 text-purple-600" />
             </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                Install OracleMonitor
-              </h3>
-              <p className="text-sm text-gray-600 mb-3">
+            <div className="min-w-0 flex-1">
+              <h3 className="mb-1 text-lg font-semibold text-gray-900">Install OracleMonitor</h3>
+              <p className="mb-3 text-sm text-gray-600">
                 Install OracleMonitor as an app for a faster, more immersive experience.
               </p>
               <div className="flex gap-2">
                 <button
                   onClick={handleInstall}
                   disabled={isInstalling}
-                  className="flex-1 px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
+                  className="flex-1 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-700 disabled:opacity-50"
                 >
                   {isInstalling ? 'Installing...' : 'Install'}
                 </button>
                 <button
                   onClick={handleDismiss}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
+                  className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200"
                 >
                   Not now
                 </button>
@@ -301,7 +300,7 @@ export function PWAInstallBanner({ onDismiss }: PWAInstallBannerProps) {
             </div>
             <button
               onClick={handleDismiss}
-              className="flex-shrink-0 p-1 hover:bg-gray-100 rounded-lg transition-colors"
+              className="flex-shrink-0 rounded-lg p-1 transition-colors hover:bg-gray-100"
             >
               <X className="h-5 w-5 text-gray-400" />
             </button>
@@ -323,7 +322,7 @@ export function OfflineIndicator({ variant = 'banner' }: OfflineIndicatorProps) 
 
   if (variant === 'badge') {
     return (
-      <div className="flex items-center gap-1 px-2 py-1 bg-amber-100 text-amber-800 text-xs font-medium rounded-full">
+      <div className="flex items-center gap-1 rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800">
         <WifiOff className="h-3 w-3" />
         Offline
       </div>
@@ -332,7 +331,7 @@ export function OfflineIndicator({ variant = 'banner' }: OfflineIndicatorProps) 
 
   if (variant === 'toast') {
     return (
-      <div className="fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-lg shadow-lg animate-in fade-in slide-in-from-top duration-300">
+      <div className="animate-in fade-in slide-in-from-top fixed right-4 top-4 z-50 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 shadow-lg duration-300">
         <WifiOff className="h-4 w-4 text-amber-600" />
         <span className="text-sm text-amber-800">You&apos;re offline</span>
       </div>
@@ -340,7 +339,7 @@ export function OfflineIndicator({ variant = 'banner' }: OfflineIndicatorProps) 
   }
 
   return (
-    <div className="flex items-center justify-center gap-2 px-4 py-3 bg-amber-50 border-t border-amber-200">
+    <div className="flex items-center justify-center gap-2 border-t border-amber-200 bg-amber-50 px-4 py-3">
       <WifiOff className="h-5 w-5 text-amber-600" />
       <span className="text-sm font-medium text-amber-800">
         You&apos;re currently offline. Some features may be limited.
@@ -369,22 +368,18 @@ export function SyncStatus({ showDetails = false }: SyncStatusProps) {
     <div className="flex items-center gap-2">
       {isSyncing ? (
         <>
-          <RefreshCw className="h-4 w-4 text-purple-600 animate-spin" />
+          <RefreshCw className="h-4 w-4 animate-spin text-purple-600" />
           <span className="text-sm text-purple-600">Syncing...</span>
         </>
       ) : !isOnline ? (
         <>
           <WifiOff className="h-4 w-4 text-amber-600" />
-          <span className="text-sm text-amber-600">
-            {pendingSyncCount} pending
-          </span>
+          <span className="text-sm text-amber-600">{pendingSyncCount} pending</span>
         </>
       ) : (
         <>
-          <RefreshCw className="h-4 w-4 text-amber-600 animate-spin" />
-          <span className="text-sm text-amber-600">
-            {pendingSyncCount} pending sync
-          </span>
+          <RefreshCw className="h-4 w-4 animate-spin text-amber-600" />
+          <span className="text-sm text-amber-600">{pendingSyncCount} pending sync</span>
         </>
       )}
 
@@ -392,7 +387,7 @@ export function SyncStatus({ showDetails = false }: SyncStatusProps) {
         <button
           onClick={syncOfflineData}
           disabled={!isOnline || isSyncing}
-          className="text-xs text-purple-600 hover:text-purple-700 underline disabled:opacity-50"
+          className="text-xs text-purple-600 underline hover:text-purple-700 disabled:opacity-50"
         >
           Sync now
         </button>
@@ -406,14 +401,8 @@ interface PWASettingsProps {
 }
 
 export function PWASettings({ onClose }: PWASettingsProps) {
-  const {
-    isInstalled,
-    isOnline,
-    clearCache,
-    getCacheSize,
-    updateServiceWorker,
-    manifest,
-  } = usePWA();
+  const { isInstalled, isOnline, clearCache, getCacheSize, updateServiceWorker, manifest } =
+    usePWA();
 
   const [cacheSize, setCacheSize] = useState<number | null>(null);
   const [isClearing, setIsClearing] = useState(false);
@@ -438,22 +427,25 @@ export function PWASettings({ onClose }: PWASettingsProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b border-gray-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+      <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white shadow-xl">
+        <div className="border-b border-gray-200 p-6">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">PWA Settings</h2>
-            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+            <button
+              onClick={onClose}
+              className="rounded-lg p-2 transition-colors hover:bg-gray-100"
+            >
               <X className="h-5 w-5 text-gray-500" />
             </button>
           </div>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="space-y-6 p-6">
           <div className="space-y-4">
             <h3 className="text-sm font-medium text-gray-900">Installation</h3>
-            
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+
+            <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
               <div className="flex items-center gap-3">
                 {isInstalled ? (
                   <CheckCircle className="h-5 w-5 text-green-600" />
@@ -467,12 +459,15 @@ export function PWASettings({ onClose }: PWASettingsProps) {
             </div>
 
             {manifest && (
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <img
-                  src={manifest.icons[0]?.src || '/icon-192.png'}
-                  alt=""
-                  className="w-10 h-10 rounded-lg"
-                />
+              <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-3">
+                <div className="relative h-10 w-10">
+                  <Image
+                    src={manifest.icons[0]?.src || '/icon-192.png'}
+                    alt=""
+                    fill
+                    className="rounded-lg object-cover"
+                  />
+                </div>
                 <div>
                   <p className="text-sm font-medium text-gray-900">{manifest.name}</p>
                   <p className="text-xs text-gray-500">{manifest.short_name}</p>
@@ -483,8 +478,8 @@ export function PWASettings({ onClose }: PWASettingsProps) {
 
           <div className="space-y-4">
             <h3 className="text-sm font-medium text-gray-900">Storage</h3>
-            
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+
+            <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
               <div className="flex items-center gap-3">
                 <Globe className="h-5 w-5 text-gray-400" />
                 <span className="text-sm text-gray-700">Cache size</span>
@@ -494,7 +489,7 @@ export function PWASettings({ onClose }: PWASettingsProps) {
               </span>
             </div>
 
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
               <div className="flex items-center gap-3">
                 {isOnline ? (
                   <Wifi className="h-5 w-5 text-green-600" />
@@ -503,7 +498,9 @@ export function PWASettings({ onClose }: PWASettingsProps) {
                 )}
                 <span className="text-sm text-gray-700">Network status</span>
               </div>
-              <span className={`text-sm font-medium ${isOnline ? 'text-green-600' : 'text-amber-600'}`}>
+              <span
+                className={`text-sm font-medium ${isOnline ? 'text-green-600' : 'text-amber-600'}`}
+              >
                 {isOnline ? 'Online' : 'Offline'}
               </span>
             </div>
@@ -512,7 +509,7 @@ export function PWASettings({ onClose }: PWASettingsProps) {
           <div className="space-y-3">
             <button
               onClick={updateServiceWorker}
-              className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200"
             >
               <RefreshCw className="h-4 w-4" />
               Update Service Worker
@@ -521,7 +518,7 @@ export function PWASettings({ onClose }: PWASettingsProps) {
             <button
               onClick={handleClearCache}
               disabled={isClearing}
-              className="w-full px-4 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-red-50 px-4 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-100 disabled:opacity-50"
             >
               {isClearing ? (
                 <>
