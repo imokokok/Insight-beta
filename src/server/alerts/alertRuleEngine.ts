@@ -760,6 +760,13 @@ export class AlertRuleEngine {
   getRule(id: string): AlertRule | undefined {
     return this.rules.get(id);
   }
+
+  /**
+   * 获取规则数量
+   */
+  getRuleCount(): number {
+    return this.rules.size;
+  }
 }
 
 // ============================================================================

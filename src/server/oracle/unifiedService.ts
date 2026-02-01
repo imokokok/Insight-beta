@@ -21,6 +21,8 @@ import { startFluxSync, stopFluxSync } from './fluxSync';
 import { startDIASync, stopDIASync } from './diaSync';
 import { query } from '@/server/db';
 import { getUnifiedInstance } from './unifiedConfig';
+import { AlertRuleEngine } from '@/server/alerts/alertRuleEngine';
+import type { SupportedChain } from '@/lib/types/unifiedOracleTypes';
 
 // ============================================================================
 // 服务配置
@@ -32,6 +34,9 @@ const SERVICE_CONFIG = {
 
   // 健康检查间隔
   healthCheckIntervalMs: 60000, // 1分钟
+
+  // 告警检查间隔
+  alertCheckIntervalMs: 60000, // 1分钟
 
   // 默认聚合的交易对
   defaultSymbols: ['ETH/USD', 'BTC/USD', 'LINK/USD', 'MATIC/USD', 'AVAX/USD'],
@@ -49,6 +54,12 @@ export class UnifiedOracleService {
   private aggregationInterval?: NodeJS.Timeout;
   private healthCheckInterval?: NodeJS.Timeout;
   private activeSyncManagers: Map<string, unknown> = new Map();
+  private alertRuleEngine: AlertRuleEngine;
+  private alertCheckInterval?: NodeJS.Timeout;
+
+  constructor() {
+    this.alertRuleEngine = new AlertRuleEngine();
+  }
 
   /**
    * 启动统一服务
@@ -81,6 +92,9 @@ export class UnifiedOracleService {
       // 5. 启动健康检查
       this.startHealthCheck();
 
+      // 6. 启动告警规则引擎
+      await this.startAlertEngine();
+
       this.isRunning = true;
       logger.info('Unified oracle service started successfully');
     } catch (error) {
@@ -105,6 +119,9 @@ export class UnifiedOracleService {
     }
     if (this.healthCheckInterval) {
       clearInterval(this.healthCheckInterval);
+    }
+    if (this.alertCheckInterval) {
+      clearInterval(this.alertCheckInterval);
     }
 
     // 停止所有同步服务
@@ -147,14 +164,7 @@ export class UnifiedOracleService {
               break;
 
             case 'band':
-              await bandSyncManager.startSync({
-                instanceId: id,
-                chain: row.chain,
-                rpcUrl: '', // Will be loaded from config
-                symbols: ['BTC/USD', 'ETH/USD'],
-                intervalMs: 60000,
-              });
-              this.activeSyncManagers.set(id, bandSyncManager);
+              await this.startBandSync(id, row.chain);
               break;
 
             case 'api3':
@@ -210,6 +220,46 @@ export class UnifiedOracleService {
   }
 
   /**
+   * 启动 Band 同步
+   */
+  private async startBandSync(instanceId: string, chain: string): Promise<void> {
+    const instance = await getUnifiedInstance(instanceId);
+    if (!instance) {
+      throw new Error(`Instance ${instanceId} not found`);
+    }
+
+    // 从 protocolConfig 中获取配置或使用默认值
+    const protocolConfig = instance.config.protocolConfig as
+      | {
+          symbols?: string[];
+          bandEndpoint?: string;
+        }
+      | undefined;
+
+    const symbols = protocolConfig?.symbols || SERVICE_CONFIG.defaultSymbols;
+    const bandEndpoint = protocolConfig?.bandEndpoint;
+
+    // 动态导入 BandSyncService 以避免循环依赖
+    const { BandSyncService } = await import('./bandSync');
+
+    const service = new BandSyncService({
+      instanceId,
+      chain: chain as SupportedChain,
+      rpcUrl: instance.config.rpcUrl || '',
+      bandEndpoint,
+      symbols,
+      intervalMs: instance.config.syncIntervalMs || 60000,
+    });
+
+    await service.start();
+    this.activeSyncManagers.set(instanceId, {
+      stopAllSync: () => service.stop(),
+    });
+
+    logger.info('Band sync started', { instanceId, chain, symbolsCount: symbols.length });
+  }
+
+  /**
    * 启动 Switchboard 同步
    */
   private async startSwitchboardSync(instanceId: string): Promise<void> {
@@ -219,8 +269,9 @@ export class UnifiedOracleService {
     }
 
     // 从 protocolConfig 中获取 symbols 或使用默认值
-    const symbols = (instance.config.protocolConfig as { symbols?: string[] } | undefined)
-      ?.symbols || ['BTC/USD', 'ETH/USD'];
+    const symbols =
+      (instance.config.protocolConfig as { symbols?: string[] } | undefined)?.symbols ||
+      SERVICE_CONFIG.defaultSymbols;
 
     const service = new SwitchboardSyncService({
       instanceId,
@@ -240,14 +291,46 @@ export class UnifiedOracleService {
    * 停止所有协议同步
    */
   private async stopAllProtocolSync(): Promise<void> {
+    logger.info('Stopping all protocol sync services...');
+
     // 停止 Chainlink 同步
-    chainlinkSyncManager.stopAllSync();
+    try {
+      chainlinkSyncManager.stopAllSync();
+      logger.debug('Chainlink sync stopped');
+    } catch (error) {
+      logger.error('Error stopping Chainlink sync', { error });
+    }
 
     // 停止 Pyth 同步
-    pythSyncManager.stopAllSync();
+    try {
+      pythSyncManager.stopAllSync();
+      logger.debug('Pyth sync stopped');
+    } catch (error) {
+      logger.error('Error stopping Pyth sync', { error });
+    }
 
     // 停止 Band 同步
-    bandSyncManager.stopAllSync();
+    try {
+      bandSyncManager.stopAllSync();
+      logger.debug('Band sync stopped');
+    } catch (error) {
+      logger.error('Error stopping Band sync', { error });
+    }
+
+    // 停止所有活跃的同步管理器
+    for (const [instanceId, manager] of this.activeSyncManagers.entries()) {
+      try {
+        const syncManager = manager as { stopAllSync?: () => void; stop?: () => void };
+        if (typeof syncManager.stopAllSync === 'function') {
+          syncManager.stopAllSync();
+        } else if (typeof syncManager.stop === 'function') {
+          syncManager.stop();
+        }
+        logger.debug(`Sync stopped for instance: ${instanceId}`);
+      } catch (error) {
+        logger.error(`Error stopping sync for ${instanceId}`, { error });
+      }
+    }
 
     this.activeSyncManagers.clear();
     logger.info('All protocol sync stopped');
@@ -294,6 +377,60 @@ export class UnifiedOracleService {
       logger.error('Price aggregation failed', {
         error: error instanceof Error ? error.message : String(error),
       });
+    }
+  }
+
+  /**
+   * 启动告警规则引擎
+   */
+  private async startAlertEngine(): Promise<void> {
+    try {
+      // 加载告警规则
+      await this.alertRuleEngine.loadRules();
+      logger.info('Alert rules loaded', { count: this.alertRuleEngine.getRuleCount() });
+
+      // 启动定期检查
+      this.alertCheckInterval = setInterval(() => {
+        this.checkAlerts();
+      }, SERVICE_CONFIG.alertCheckIntervalMs);
+
+      logger.info('Alert engine started');
+    } catch (error) {
+      logger.error('Failed to start alert engine', { error });
+    }
+  }
+
+  /**
+   * 检查告警规则
+   */
+  private async checkAlerts(): Promise<void> {
+    try {
+      // 获取最新的价格数据用于告警检查
+      const priceData = await query(`
+        SELECT DISTINCT ON (symbol) 
+          symbol,
+          price,
+          protocol,
+          chain,
+          timestamp
+        FROM unified_price_feeds
+        ORDER BY symbol, timestamp DESC
+      `);
+
+      // 为每个价格数据评估规则
+      for (const row of priceData.rows) {
+        const context = {
+          symbol: row.symbol,
+          price: parseFloat(row.price),
+          protocol: row.protocol,
+          chain: row.chain,
+          timestamp: row.timestamp,
+        };
+
+        await this.alertRuleEngine.evaluateAllRules(context);
+      }
+    } catch (error) {
+      logger.error('Alert check failed', { error });
     }
   }
 
