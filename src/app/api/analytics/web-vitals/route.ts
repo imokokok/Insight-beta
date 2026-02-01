@@ -1,138 +1,62 @@
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { hasDatabase, query } from '@/server/db';
-import { getMemoryStore } from '@/server/memoryBackend';
 import { logger } from '@/lib/logger';
-import { z } from 'zod';
 
-const webVitalsSchema = z.object({
-  lcp: z.number().min(0).optional(),
-  fid: z.number().min(0).optional(),
-  cls: z.number().min(0).optional(),
-  fcp: z.number().min(0).optional(),
-  ttfb: z.number().min(0).optional(),
-  inp: z.number().min(0).optional(),
-  timestamp: z.string().datetime().optional(),
-  url: z.string().url().optional(),
-  userAgent: z.string().optional(),
-});
+/**
+ * Web Vitals 指标上报接口
+ *
+ * 接收客户端性能指标数据，用于监控和分析应用性能
+ */
 
-export async function POST(request: Request) {
+// 存储最近的 Web Vitals 数据（内存存储，生产环境建议使用数据库）
+const webVitalsStore: WebVitalsRecord[] = [];
+const MAX_STORE_SIZE = 1000;
+
+interface WebVitalsRecord {
+  lcp?: number;
+  fid?: number;
+  cls?: number;
+  fcp?: number;
+  ttfb?: number;
+  inp?: number;
+  timestamp: string;
+  url: string;
+  userAgent: string;
+}
+
+/**
+ * POST /api/analytics/web-vitals
+ * 接收 Web Vitals 性能指标数据
+ */
+export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const result = webVitalsSchema.safeParse(body);
+    const data: WebVitalsRecord = await request.json();
 
-    if (!result.success) {
-      return NextResponse.json(
-        { error: 'Invalid Web Vitals data', details: result.error.format() },
-        { status: 400 },
-      );
+    // 验证必要字段
+    if (!data.timestamp || !data.url) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const data = result.data;
-
-    // Log poor metrics
-    const poorMetrics: string[] = [];
-    if (data.lcp && data.lcp > 4000) poorMetrics.push(`LCP: ${data.lcp}ms`);
-    if (data.fid && data.fid > 300) poorMetrics.push(`FID: ${data.fid}ms`);
-    if (data.cls && data.cls > 0.25) poorMetrics.push(`CLS: ${data.cls}`);
-    if (data.fcp && data.fcp > 3000) poorMetrics.push(`FCP: ${data.fcp}ms`);
-    if (data.ttfb && data.ttfb > 1800) poorMetrics.push(`TTFB: ${data.ttfb}ms`);
-    if (data.inp && data.inp > 500) poorMetrics.push(`INP: ${data.inp}ms`);
-
-    if (poorMetrics.length > 0) {
-      logger.warn('Poor Web Vitals detected', {
-        metrics: poorMetrics,
-        url: data.url,
-        userAgent: data.userAgent,
-      });
-
-      // Create alert for consistently poor performance
-      if (hasDatabase()) {
-        try {
-          await query(
-            `
-            INSERT INTO alerts (
-              fingerprint, type, severity, title, message, 
-              entity_type, entity_id, status, occurrences, 
-              first_seen_at, last_seen_at, created_at, updated_at
-            )
-            VALUES (
-              $1, $2, $3, $4, $5,
-              $6, $7, 'Open', 1,
-              NOW(), NOW(), NOW(), NOW()
-            )
-            ON CONFLICT (fingerprint) DO UPDATE SET
-              severity = EXCLUDED.severity,
-              title = EXCLUDED.title,
-              message = EXCLUDED.message,
-              occurrences = alerts.occurrences + 1,
-              last_seen_at = NOW(),
-              updated_at = NOW()
-            `,
-            [
-              `web-vitals:poor:${new URL(data.url || 'http://localhost').pathname}`,
-              'poor_web_vitals',
-              'warning',
-              'Poor Web Vitals Detected',
-              `Poor metrics: ${poorMetrics.join(', ')}`,
-              'page',
-              data.url,
-            ],
-          );
-        } catch (dbError) {
-          logger.error('Failed to create Web Vitals alert', { error: dbError });
-        }
-      }
-    }
-
-    // Store metrics in memory for quick access
-    const mem = getMemoryStore();
-    const pagePath = data.url ? new URL(data.url).pathname : 'unknown';
-    const key = `web-vitals:${pagePath}:${Date.now()}`;
-
-    mem.metrics.set(key, {
+    // 添加记录到存储
+    webVitalsStore.push({
       ...data,
-      receivedAt: new Date().toISOString(),
+      timestamp: new Date().toISOString(),
     });
 
-    // Keep only last 1000 metrics in memory
-    const metricKeys = Array.from(mem.metrics.keys()).filter((k) => k.startsWith('web-vitals:'));
-    if (metricKeys.length > 1000) {
-      const sorted = metricKeys.sort();
-      for (let i = 0; i < sorted.length - 1000; i++) {
-        const keyToDelete = sorted[i];
-        if (keyToDelete) {
-          mem.metrics.delete(keyToDelete);
-        }
-      }
+    // 限制存储大小
+    if (webVitalsStore.length > MAX_STORE_SIZE) {
+      webVitalsStore.shift();
     }
 
-    // Store in database if available
-    if (hasDatabase()) {
-      try {
-        await query(
-          `
-          INSERT INTO web_vitals_metrics (
-            lcp, fid, cls, fcp, ttfb, inp,
-            page_path, user_agent, timestamp, created_at
-          )
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
-          `,
-          [
-            data.lcp ?? null,
-            data.fid ?? null,
-            data.cls ?? null,
-            data.fcp ?? null,
-            data.ttfb ?? null,
-            data.inp ?? null,
-            pagePath,
-            data.userAgent?.slice(0, 500) ?? null,
-            data.timestamp ?? new Date().toISOString(),
-          ],
-        );
-      } catch (dbError) {
-        logger.error('Failed to store Web Vitals in database', { error: dbError });
-      }
+    // 记录性能警告
+    if (data.lcp && data.lcp > 2500) {
+      logger.warn('Poor LCP detected', { value: data.lcp, url: data.url });
+    }
+    if (data.cls && data.cls > 0.1) {
+      logger.warn('Poor CLS detected', { value: data.cls, url: data.url });
+    }
+    if (data.fid && data.fid > 100) {
+      logger.warn('Poor FID detected', { value: data.fid, url: data.url });
     }
 
     return NextResponse.json({ success: true });
@@ -142,74 +66,70 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const pagePath = searchParams.get('path') || '/';
-  const hours = parseInt(searchParams.get('hours') || '24', 10);
-
+/**
+ * GET /api/analytics/web-vitals
+ * 获取 Web Vitals 统计数据（仅管理员访问）
+ */
+export async function GET(request: NextRequest) {
   try {
-    if (!hasDatabase()) {
-      // Return from memory
-      const mem = getMemoryStore();
-      const metrics: unknown[] = [];
-
-      for (const [key, value] of mem.metrics.entries()) {
-        if (key.includes(pagePath) || pagePath === '/') {
-          metrics.push(value);
-        }
-      }
-
-      return NextResponse.json({
-        metrics: metrics.slice(-100),
-        source: 'memory',
-      });
+    // 验证管理员权限（简化版，实际应使用更严格的认证）
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Query from database
-    const result = await query(
-      `
-      SELECT 
-        AVG(lcp) as avg_lcp,
-        AVG(fid) as avg_fid,
-        AVG(cls) as avg_cls,
-        AVG(fcp) as avg_fcp,
-        AVG(ttfb) as avg_ttfb,
-        AVG(inp) as avg_inp,
-        COUNT(*) as total_samples,
-        COUNT(lcp) as lcp_samples,
-        COUNT(fid) as fid_samples,
-        COUNT(cls) as cls_samples
-      FROM web_vitals_metrics
-      WHERE page_path = $1 
-        AND created_at > NOW() - INTERVAL '${Math.min(hours, 168)} hours'
-      `,
-      [pagePath],
-    );
-
-    const row = result.rows[0];
+    // 计算统计数据
+    const stats = calculateStats();
 
     return NextResponse.json({
-      summary: {
-        avgLcp: row?.avg_lcp ? Math.round(Number(row.avg_lcp)) : null,
-        avgFid: row?.avg_fid ? Math.round(Number(row.avg_fid)) : null,
-        avgCls: row?.avg_cls ? Number(row.avg_cls).toFixed(3) : null,
-        avgFcp: row?.avg_fcp ? Math.round(Number(row.avg_fcp)) : null,
-        avgTtfb: row?.avg_ttfb ? Math.round(Number(row.avg_ttfb)) : null,
-        avgInp: row?.avg_inp ? Math.round(Number(row.avg_inp)) : null,
-        totalSamples: Number(row?.total_samples || 0),
-      },
-      thresholds: {
-        lcp: { good: 2500, poor: 4000 },
-        fid: { good: 100, poor: 300 },
-        cls: { good: 0.1, poor: 0.25 },
-        fcp: { good: 1800, poor: 3000 },
-        ttfb: { good: 800, poor: 1800 },
-        inp: { good: 200, poor: 500 },
-      },
-      source: 'database',
+      data: webVitalsStore.slice(-100), // 返回最近 100 条
+      stats,
+      total: webVitalsStore.length,
     });
   } catch (error) {
-    logger.error('Failed to fetch Web Vitals', { error });
+    logger.error('Failed to get Web Vitals stats', { error });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
+}
+
+/**
+ * 计算 Web Vitals 统计数据
+ */
+function calculateStats() {
+  if (webVitalsStore.length === 0) {
+    return null;
+  }
+
+  const calculateMetric = (key: keyof WebVitalsRecord) => {
+    const values = webVitalsStore
+      .map((r) => r[key] as number | undefined)
+      .filter((v): v is number => v !== undefined && v > 0);
+
+    if (values.length === 0) return null;
+
+    const sorted = [...values].sort((a, b) => a - b);
+    const sum = values.reduce((a, b) => a + b, 0);
+
+    return {
+      count: values.length,
+      avg: Math.round((sum / values.length) * 100) / 100,
+      min: Math.round(sorted[0] * 100) / 100,
+      max: Math.round(sorted[sorted.length - 1] * 100) / 100,
+      p50: Math.round(sorted[Math.floor(sorted.length * 0.5)] * 100) / 100,
+      p75: Math.round(sorted[Math.floor(sorted.length * 0.75)] * 100) / 100,
+      p90: Math.round(sorted[Math.floor(sorted.length * 0.9)] * 100) / 100,
+      p95: Math.round(sorted[Math.floor(sorted.length * 0.95)] * 100) / 100,
+    };
+  };
+
+  return {
+    lcp: calculateMetric('lcp'),
+    fid: calculateMetric('fid'),
+    cls: calculateMetric('cls'),
+    fcp: calculateMetric('fcp'),
+    ttfb: calculateMetric('ttfb'),
+    inp: calculateMetric('inp'),
+    totalRecords: webVitalsStore.length,
+    lastUpdated: new Date().toISOString(),
+  };
 }
