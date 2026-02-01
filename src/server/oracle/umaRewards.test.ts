@@ -8,6 +8,18 @@ import {
   getRewardsStats,
 } from './umaRewards';
 
+// Shared memory store for tests
+const getSharedStore = () => {
+  if (typeof globalThis !== 'undefined') {
+    const g = globalThis as unknown as { __umaTestStore?: Map<string, unknown> };
+    if (!g.__umaTestStore) {
+      g.__umaTestStore = new Map();
+    }
+    return g.__umaTestStore;
+  }
+  return new Map();
+};
+
 // Mock dependencies
 vi.mock('@/server/db', () => ({
   hasDatabase: vi.fn(() => false),
@@ -20,7 +32,7 @@ vi.mock('@/server/kvStore', () => ({
 }));
 
 vi.mock('@/server/memoryBackend', () => ({
-  getMemoryStore: vi.fn(() => new Map()),
+  getMemoryStore: vi.fn(() => getSharedStore()),
   memoryNowIso: vi.fn(() => '2024-01-01T00:00:00.000Z'),
 }));
 

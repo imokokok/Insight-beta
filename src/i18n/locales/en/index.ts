@@ -7,6 +7,7 @@ import { disputes } from './disputes';
 import { errorPage } from './errorPage';
 import { errors } from './errors';
 import { nav } from './nav';
+import onboarding from './onboarding';
 import { oracle } from './oracle';
 import { status } from './status';
 import { wallet } from './wallet';
@@ -21,6 +22,7 @@ export const enTranslations = {
   errorPage,
   errors,
   nav,
+  onboarding,
   oracle,
   status,
   wallet,
