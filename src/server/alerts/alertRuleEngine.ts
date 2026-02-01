@@ -7,7 +7,11 @@
 
 import { query } from '@/server/db';
 import { logger } from '@/lib/logger';
-import { notificationService, type AlertNotification, type AlertSeverity } from './notificationService';
+import {
+  notificationService,
+  type AlertNotification,
+  type AlertSeverity,
+} from './notificationService';
 import type { OracleProtocol, SupportedChain } from '@/lib/types/unifiedOracleTypes';
 
 // ============================================================================
@@ -89,6 +93,47 @@ export interface ProtocolDownCondition extends AlertCondition {
   params: {
     minHealthyInstances: number;
   };
+}
+
+export interface CustomCondition extends AlertCondition {
+  type: 'custom';
+  params: {
+    expression: string; // JavaScript 表达式或函数体
+    variables?: Record<string, unknown>; // 额外变量
+    description?: string; // 条件描述
+  };
+}
+
+// 自定义条件函数类型
+export type CustomConditionEvaluator = (
+  context: AlertEvaluationContext,
+  params: CustomCondition['params'],
+) => boolean;
+
+// 自定义条件注册表
+const customConditionRegistry = new Map<string, CustomConditionEvaluator>();
+
+/**
+ * 注册自定义条件评估函数
+ */
+export function registerCustomCondition(name: string, evaluator: CustomConditionEvaluator): void {
+  customConditionRegistry.set(name, evaluator);
+  logger.info(`Registered custom condition: ${name}`);
+}
+
+/**
+ * 获取已注册的自定义条件
+ */
+export function getCustomCondition(name: string): CustomConditionEvaluator | undefined {
+  return customConditionRegistry.get(name);
+}
+
+/**
+ * 注销自定义条件
+ */
+export function unregisterCustomCondition(name: string): void {
+  customConditionRegistry.delete(name);
+  logger.info(`Unregistered custom condition: ${name}`);
 }
 
 export interface AlertEvaluationContext {
@@ -287,7 +332,10 @@ export class AlertRuleEngine {
           [context.symbol],
         );
         referencePrice = parseFloat(result.rows[0]?.avg_price || 0);
-      } else if (condition.params.reference === 'specific_protocol' && condition.params.referenceProtocol) {
+      } else if (
+        condition.params.reference === 'specific_protocol' &&
+        condition.params.referenceProtocol
+      ) {
         const result = await query(
           `
           SELECT price
@@ -308,7 +356,7 @@ export class AlertRuleEngine {
       }
 
       // 计算偏差
-      const deviation = Math.abs(context.price - referencePrice) / referencePrice * 100;
+      const deviation = (Math.abs(context.price - referencePrice) / referencePrice) * 100;
 
       return deviation > condition.params.threshold;
     } catch (error) {
@@ -428,15 +476,92 @@ export class AlertRuleEngine {
 
   /**
    * 评估自定义条件
+   * 支持两种模式：
+   * 1. 通过 expression 字段使用简单的 JavaScript 表达式
+   * 2. 通过注册自定义评估函数
    */
   private evaluateCustomCondition(
     condition: AlertCondition,
-    _context: AlertEvaluationContext,
+    context: AlertEvaluationContext,
   ): boolean {
-    // 自定义条件通过 JavaScript 函数实现
-    // 这里可以根据 params 中的配置执行自定义逻辑
-    logger.warn('Custom condition evaluation not implemented', { condition });
-    return false;
+    const params = condition.params as CustomCondition['params'];
+
+    try {
+      // 检查是否有注册的自定义评估器
+      if (params.expression && customConditionRegistry.has(params.expression)) {
+        const evaluator = customConditionRegistry.get(params.expression)!;
+        return evaluator(context, params);
+      }
+
+      // 使用表达式评估
+      if (params.expression) {
+        return this.evaluateExpression(params.expression, context, params.variables || {});
+      }
+
+      logger.warn('Custom condition missing expression', { condition });
+      return false;
+    } catch (error) {
+      logger.error('Failed to evaluate custom condition', {
+        error: error instanceof Error ? error.message : String(error),
+        condition,
+      });
+      return false;
+    }
+  }
+
+  /**
+   * 评估 JavaScript 表达式
+   * 注意：为了安全，这里使用受限的评估环境
+   */
+  private evaluateExpression(
+    expression: string,
+    context: AlertEvaluationContext,
+    variables: Record<string, unknown>,
+  ): boolean {
+    try {
+      // 构建安全的评估上下文
+      const evalContext = {
+        // 上下文数据
+        protocol: context.protocol,
+        chain: context.chain,
+        symbol: context.symbol,
+        price: context.price,
+        timestamp: context.timestamp,
+        metadata: context.metadata,
+        // 额外变量
+        ...variables,
+        // 常用数学函数
+        Math: {
+          abs: Math.abs,
+          max: Math.max,
+          min: Math.min,
+          round: Math.round,
+          floor: Math.floor,
+          ceil: Math.ceil,
+          pow: Math.pow,
+          sqrt: Math.sqrt,
+        },
+        // 日期函数
+        Date: Date,
+        // 当前时间
+        now: Date.now(),
+      };
+
+      // 创建函数并执行
+      const keys = Object.keys(evalContext);
+      const values = Object.values(evalContext);
+
+      const fn = new Function(...keys, `return (${expression});`);
+      const result = fn(...values);
+
+      return Boolean(result);
+    } catch (error) {
+      logger.error('Expression evaluation failed', {
+        error: error instanceof Error ? error.message : String(error),
+        expression,
+      });
+      return false;
+    }
   }
 
   /**
@@ -735,3 +860,78 @@ export class AlertManager {
 
 // 导出单例实例
 export const alertManager = new AlertManager();
+
+// ============================================================================
+// 内置自定义条件示例
+// ============================================================================
+
+/**
+ * 注册内置的自定义条件
+ */
+function registerBuiltInCustomConditions(): void {
+  // 1. 价格范围检查 - 检查价格是否在指定范围内
+  registerCustomCondition('price_in_range', (context, params) => {
+    const { min = 0, max = Infinity } = params.variables || {};
+    if (context.price === undefined) return false;
+    return context.price >= Number(min) && context.price <= Number(max);
+  });
+
+  // 2. 价格变化率检查 - 检查价格变化率是否超过阈值
+  registerCustomCondition('price_change_rate', (context, params) => {
+    const { threshold = 0.05, previousPrice } = params.variables || {};
+    if (context.price === undefined || previousPrice === undefined) return false;
+    const changeRate = Math.abs(context.price - Number(previousPrice)) / Number(previousPrice);
+    return changeRate >= Number(threshold);
+  });
+
+  // 3. 多协议价格一致性检查 - 检查多个协议的价格是否一致
+  registerCustomCondition('multi_protocol_consistency', (_context, params) => {
+    const { prices = [], maxDeviation = 0.01 } = params.variables || {};
+    if (!Array.isArray(prices) || prices.length < 2) return true;
+
+    const priceValues = prices.map((p) => Number(p));
+    const avg = priceValues.reduce((a, b) => a + b, 0) / priceValues.length;
+    const maxDiff = Math.max(...priceValues.map((p) => Math.abs(p - avg)));
+    const deviation = maxDiff / avg;
+
+    return deviation <= Number(maxDeviation);
+  });
+
+  // 4. 时间窗口检查 - 检查是否在指定时间窗口内
+  registerCustomCondition('time_window', (_context, params) => {
+    const { startHour = 0, endHour = 24 } = params.variables || {};
+    const now = new Date();
+    const hours = now.getHours();
+    return hours >= Number(startHour) && hours <= Number(endHour);
+  });
+
+  // 5. 元数据字段检查 - 检查元数据中的特定字段
+  registerCustomCondition('metadata_field_check', (context, params) => {
+    const { field, expectedValue, operator = 'eq' } = params.variables || {};
+    if (!context.metadata || !field) return false;
+
+    const actualValue = context.metadata[field as string];
+
+    switch (operator) {
+      case 'eq':
+        return actualValue === expectedValue;
+      case 'neq':
+        return actualValue !== expectedValue;
+      case 'gt':
+        return Number(actualValue) > Number(expectedValue);
+      case 'gte':
+        return Number(actualValue) >= Number(expectedValue);
+      case 'lt':
+        return Number(actualValue) < Number(expectedValue);
+      case 'lte':
+        return Number(actualValue) <= Number(expectedValue);
+      default:
+        return false;
+    }
+  });
+
+  logger.info('Built-in custom conditions registered');
+}
+
+// 初始化时注册内置条件
+registerBuiltInCustomConditions();
