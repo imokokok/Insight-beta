@@ -88,63 +88,90 @@ export default function UnifiedDashboardPage() {
     let reconnectTimeout: NodeJS.Timeout | null = null;
     let reconnectAttempts = 0;
     const MAX_RECONNECT_ATTEMPTS = 5;
+    let isUnmounting = false;
 
     const connect = () => {
-      ws = new WebSocket(process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001');
+      // 如果组件正在卸载，不要创建新连接
+      if (isUnmounting) return;
 
-      ws.onopen = () => {
-        setWsConnected(true);
-        reconnectAttempts = 0;
-        // 订阅默认交易对
-        ws?.send(
-          JSON.stringify({
-            type: 'subscribe',
-            symbols: ['ETH/USD', 'BTC/USD', 'LINK/USD'],
-          }),
-        );
-      };
+      try {
+        const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001';
+        ws = new WebSocket(wsUrl);
 
-      ws.onclose = () => {
-        setWsConnected(false);
-        ws = null;
-
-        // 自动重连
-        if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-          reconnectAttempts++;
-          reconnectTimeout = setTimeout(connect, 3000 * reconnectAttempts);
-        }
-      };
-
-      ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
-      };
-
-      ws.onmessage = (event) => {
-        try {
-          const message = JSON.parse(event.data);
-          if (typeof message !== 'object' || message === null) return;
-
-          const msg = message as { type: string; data: unknown };
-
-          switch (msg.type) {
-            case 'price_update':
-              // 处理价格更新
-              break;
-            case 'comparison_update':
-              setComparison(msg.data as CrossOracleComparison);
-              break;
+        ws.onopen = () => {
+          if (isUnmounting) {
+            ws?.close();
+            return;
           }
-        } catch (error) {
-          console.error('Failed to parse WebSocket message:', error);
+          setWsConnected(true);
+          reconnectAttempts = 0;
+          // 订阅默认交易对
+          if (ws?.readyState === WebSocket.OPEN) {
+            ws.send(
+              JSON.stringify({
+                type: 'subscribe',
+                symbols: ['ETH/USD', 'BTC/USD', 'LINK/USD'],
+              }),
+            );
+          }
+        };
+
+        ws.onclose = (event) => {
+          setWsConnected(false);
+          ws = null;
+
+          // 只有在非主动关闭且未卸载时才重连
+          if (!isUnmounting && !event.wasClean && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+            reconnectAttempts++;
+            reconnectTimeout = setTimeout(connect, Math.min(3000 * reconnectAttempts, 15000));
+          }
+        };
+
+        ws.onerror = () => {
+          // 只在非开发环境或首次连接时记录错误，避免开发模式下频繁重连的噪音
+          if (process.env.NODE_ENV === 'production' || reconnectAttempts === 0) {
+            console.warn('WebSocket connection error, will retry...');
+          }
+          // 错误发生后让 onclose 处理重连逻辑
+        };
+
+        ws.onmessage = (event) => {
+          try {
+            const message = JSON.parse(event.data);
+            if (typeof message !== 'object' || message === null) return;
+
+            const msg = message as { type: string; data: unknown };
+
+            switch (msg.type) {
+              case 'price_update':
+                // 处理价格更新
+                break;
+              case 'comparison_update':
+                setComparison(msg.data as CrossOracleComparison);
+                break;
+            }
+          } catch {
+            // 静默处理解析错误，避免控制台噪音
+          }
+        };
+      } catch {
+        // WebSocket 创建失败时的静默处理
+        if (!isUnmounting && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+          reconnectAttempts++;
+          reconnectTimeout = setTimeout(connect, Math.min(3000 * reconnectAttempts, 15000));
         }
-      };
+      }
     };
 
     connect();
 
     return () => {
+      isUnmounting = true;
       if (reconnectTimeout) clearTimeout(reconnectTimeout);
-      ws?.close();
+      if (ws) {
+        ws.onclose = null; // 移除 onclose 处理器避免重连
+        ws.close();
+      }
     };
   }, []);
 
