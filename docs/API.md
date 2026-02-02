@@ -195,3 +195,178 @@ Create token (returns plaintext token only once):
 ### DELETE `/api/admin/tokens?id=...` (Admin)
 
 Revoke a token.
+
+---
+
+## WebSocket
+
+Real-time data streaming via WebSocket.
+
+### Connection
+
+```
+ws://localhost:3001
+```
+
+Or in production:
+
+```
+wss://your-domain.com/api/ws
+```
+
+### Message Format
+
+All messages are JSON with the following structure:
+
+```json
+{
+  "type": "message_type",
+  "data": { ... }
+}
+```
+
+### Client -> Server Messages
+
+#### Subscribe to Price Updates
+
+```json
+{
+  "type": "subscribe",
+  "symbols": ["ETH/USD", "BTC/USD", "LINK/USD"]
+}
+```
+
+#### Unsubscribe from Price Updates
+
+```json
+{
+  "type": "unsubscribe",
+  "symbols": ["ETH/USD"]
+}
+```
+
+#### Ping (Keep Connection Alive)
+
+```json
+{
+  "type": "ping"
+}
+```
+
+### Server -> Client Messages
+
+#### Price Update
+
+```json
+{
+  "type": "price_update",
+  "data": {
+    "symbol": "ETH/USD",
+    "price": 3500.5,
+    "timestamp": "2024-01-15T10:30:00Z",
+    "sources": ["chainlink", "pyth"],
+    "confidence": 0.98
+  }
+}
+```
+
+#### Comparison Update
+
+```json
+{
+  "type": "comparison_update",
+  "data": {
+    "symbol": "ETH/USD",
+    "consensusPrice": 3500.5,
+    "deviations": [
+      { "protocol": "chainlink", "price": 3501.0, "deviation": 0.01 },
+      { "protocol": "pyth", "price": 3500.0, "deviation": -0.01 }
+    ],
+    "timestamp": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+#### Error
+
+```json
+{
+  "type": "error",
+  "data": {
+    "code": "invalid_symbol",
+    "message": "Symbol not supported"
+  }
+}
+```
+
+#### Pong (Ping Response)
+
+```json
+{
+  "type": "pong",
+  "data": {
+    "timestamp": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+### Error Codes
+
+- `invalid_message`: Message format is invalid
+- `invalid_symbol`: Requested symbol is not supported
+- `rate_limited`: Too many requests
+- `subscription_limit`: Maximum subscriptions reached
+- `internal_error`: Server internal error
+
+### Reconnection Strategy
+
+Clients should implement exponential backoff reconnection:
+
+1. First retry: 1 second
+2. Second retry: 2 seconds
+3. Third retry: 4 seconds
+4. Maximum retry: 30 seconds
+5. Maximum attempts: 5
+
+### Example Usage (JavaScript)
+
+```javascript
+const ws = new WebSocket('ws://localhost:3001');
+
+ws.onopen = () => {
+  console.log('Connected to WebSocket');
+
+  // Subscribe to price updates
+  ws.send(
+    JSON.stringify({
+      type: 'subscribe',
+      symbols: ['ETH/USD', 'BTC/USD'],
+    }),
+  );
+};
+
+ws.onmessage = (event) => {
+  const message = JSON.parse(event.data);
+
+  switch (message.type) {
+    case 'price_update':
+      console.log('Price update:', message.data);
+      break;
+    case 'comparison_update':
+      console.log('Comparison update:', message.data);
+      break;
+    case 'error':
+      console.error('WebSocket error:', message.data);
+      break;
+  }
+};
+
+ws.onclose = () => {
+  console.log('Disconnected from WebSocket');
+  // Implement reconnection logic here
+};
+
+ws.onerror = (error) => {
+  console.error('WebSocket error:', error);
+};
+```

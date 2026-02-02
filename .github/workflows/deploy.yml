@@ -42,17 +42,32 @@ jobs:
           NODE_ENV: production
           INSIGHT_DEMO_MODE: "false"
 
+      - name: Build and push Docker image
+        run: |
+          echo "Building Docker image for staging..."
+          docker build -t insight-beta:staging .
+          echo "Docker image built successfully"
+          # 如果有 Docker Registry，取消下面的注释
+          # docker tag insight-beta:staging your-registry/insight-beta:staging
+          # docker push your-registry/insight-beta:staging
+
       - name: Deploy to Staging
         run: |
           echo "Deploying to staging environment..."
-          # Add your staging deployment commands here
-          # Example: rsync, docker push, kubectl apply, etc.
+          # 使用 Docker Compose 部署
+          docker-compose -f docker-compose.staging.yml down || true
+          docker-compose -f docker-compose.staging.yml up -d
+          # 等待服务启动
+          sleep 10
 
       - name: Run smoke tests
         run: |
           echo "Running smoke tests..."
-          # Add smoke tests to verify deployment
-          curl -f https://staging.yourapp.com/api/health?probe=liveness || exit 1
+          # 检查应用健康状态
+          curl -f http://localhost:3000/api/health?probe=liveness || exit 1
+          # 检查 API 响应
+          curl -f http://localhost:3000/api/oracle/health || exit 1
+          echo "Smoke tests passed!"
 
   deploy-production:
     runs-on: ubuntu-latest
@@ -84,26 +99,56 @@ jobs:
           echo "Running security checks..."
           npm audit --audit-level=high
 
+      - name: Build and push Docker image
+        run: |
+          echo "Building Docker image for production..."
+          docker build -t insight-beta:production .
+          docker tag insight-beta:production insight-beta:latest
+          echo "Docker image built successfully"
+          # 如果有 Docker Registry，取消下面的注释
+          # docker tag insight-beta:production your-registry/insight-beta:production
+          # docker tag insight-beta:production your-registry/insight-beta:latest
+          # docker push your-registry/insight-beta:production
+          # docker push your-registry/insight-beta:latest
+
       - name: Deploy to Production
         run: |
           echo "Deploying to production environment..."
-          # Add your production deployment commands here
-          # Example: rsync, docker push, kubectl apply, etc.
+          # 使用 Docker Compose 部署
+          docker-compose -f docker-compose.yml down || true
+          docker-compose -f docker-compose.yml up -d
+          # 等待服务启动
+          sleep 15
 
       - name: Run smoke tests
         run: |
           echo "Running smoke tests..."
-          # Add smoke tests to verify deployment
-          curl -f https://yourapp.com/api/health?probe=liveness || exit 1
+          # 检查应用健康状态
+          curl -f http://localhost:3000/api/health?probe=liveness || exit 1
+          # 检查 API 响应
+          curl -f http://localhost:3000/api/oracle/health || exit 1
+          # 检查关键端点
+          curl -f http://localhost:3000/api/oracle/stats || exit 1
+          echo "Smoke tests passed!"
 
       - name: Notify on success
         if: success()
         run: |
-          echo "Deployment successful!"
-          # Add notification logic (Slack, email, etc.)
+          echo "🚀 Production deployment successful!"
+          echo "Version: ${{ github.sha }}"
+          echo "Deployed at: $(date)"
+          # 可以添加 Slack 通知
+          # curl -X POST -H 'Content-type: application/json' \
+          #   --data '{"text":"✅ Production deployment successful!"}' \
+          #   ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Notify on failure
         if: failure()
         run: |
-          echo "Deployment failed!"
-          # Add notification logic (Slack, email, etc.)
+          echo "❌ Production deployment failed!"
+          echo "Version: ${{ github.sha }}"
+          echo "Failed at: $(date)"
+          # 可以添加 Slack 通知
+          # curl -X POST -H 'Content-type: application/json' \
+          #   --data '{"text":"🚨 Production deployment failed!"}' \
+          #   ${{ secrets.SLACK_WEBHOOK_URL }}
