@@ -433,7 +433,7 @@ export default function ManipulationConfigPage() {
                   onValueChange={(value) =>
                     setConfig((prev) => ({
                       ...prev,
-                      liquidityChangeThreshold: value / 100,
+                      liquidityChangeThreshold: (value[0] ?? 0) / 100,
                     }))
                   }
                   min={10}
@@ -581,7 +581,7 @@ export default function ManipulationConfigPage() {
                   onValueChange={(value) =>
                     setConfig((prev) => ({
                       ...prev,
-                      correlationThreshold: value / 100,
+                      correlationThreshold: (value[0] ?? 0) / 100,
                     }))
                   }
                   min={50}
