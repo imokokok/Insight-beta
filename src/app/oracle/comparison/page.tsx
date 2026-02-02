@@ -12,6 +12,7 @@
 
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useToast } from '@/hooks/ui/use-toast';
+import { useI18n } from '@/i18n';
 import { ComparisonControls } from '@/components/features/comparison/ComparisonControls';
 import { PriceHeatmap } from '@/components/features/comparison/PriceHeatmap';
 import { LatencyAnalysisView } from '@/components/features/comparison/LatencyAnalysis';
@@ -318,6 +319,7 @@ function generateMockRealtimeData(protocols: string[]): RealtimeComparisonItem[]
 
 export default function ComparisonPage() {
   const { toast } = useToast();
+  const { t } = useI18n();
 
   // State
   const [currentView, setCurrentView] = useState<ComparisonView>('heatmap');
@@ -359,8 +361,8 @@ export default function ComparisonPage() {
       setLastUpdated(new Date());
     } catch {
       toast({
-        title: '数据加载失败',
-        description: '请稍后重试',
+        title: t('comparison.toast.loadError'),
+        description: t('comparison.toast.retryLater'),
         variant: 'error',
       });
     } finally {
@@ -473,8 +475,8 @@ export default function ComparisonPage() {
             if (heatmapData) {
               exportHeatmapToCSV(heatmapData);
               toast({
-                title: '导出成功',
-                description: '热力图数据已导出为 CSV',
+                title: t('comparison.toast.exportSuccess'),
+                description: t('comparison.toast.heatmapExported'),
                 variant: 'success',
               });
             }
@@ -482,20 +484,32 @@ export default function ComparisonPage() {
           case 'latency':
             if (latencyData) {
               exportLatencyToCSV(latencyData);
-              toast({ title: '导出成功', description: '延迟数据已导出为 CSV', variant: 'success' });
+              toast({
+                title: t('comparison.toast.exportSuccess'),
+                description: t('comparison.toast.latencyExported'),
+                variant: 'success',
+              });
             }
             break;
           case 'cost':
             if (costData) {
               exportCostToCSV(costData);
-              toast({ title: '导出成功', description: '成本数据已导出为 CSV', variant: 'success' });
+              toast({
+                title: t('comparison.toast.exportSuccess'),
+                description: t('comparison.toast.costExported'),
+                variant: 'success',
+              });
             }
             break;
           case 'realtime':
           case 'table':
             if (realtimeData) {
               exportRealtimeToCSV(realtimeData);
-              toast({ title: '导出成功', description: '实时数据已导出为 CSV', variant: 'success' });
+              toast({
+                title: t('comparison.toast.exportSuccess'),
+                description: t('comparison.toast.realtimeExported'),
+                variant: 'success',
+              });
             }
             break;
         }
@@ -508,8 +522,8 @@ export default function ComparisonPage() {
           realtime: realtimeData,
         });
         toast({
-          title: '导出成功',
-          description: '所有数据已导出为 JSON',
+          title: t('comparison.toast.exportSuccess'),
+          description: t('comparison.toast.allExported'),
           variant: 'success',
         });
       }
@@ -526,10 +540,8 @@ export default function ComparisonPage() {
       {/* 页面标题 */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">预言机比较分析</h1>
-          <p className="text-muted-foreground mt-1">
-            多维度对比分析各预言机协议的价格、延迟和成本效益
-          </p>
+          <h1 className="text-3xl font-bold tracking-tight">{t('comparison.title')}</h1>
+          <p className="text-muted-foreground mt-1">{t('comparison.description')}</p>
         </div>
         <div className="flex items-center gap-2">
           {isLive && (
@@ -538,7 +550,7 @@ export default function ComparisonPage() {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
               </span>
-              实时连接中
+              {t('comparison.liveConnected')}
             </span>
           )}
         </div>
@@ -609,19 +621,19 @@ export default function ComparisonPage() {
 
       {/* 使用说明 */}
       <div className="bg-muted/30 rounded-lg border p-4">
-        <h3 className="mb-2 font-medium">使用说明</h3>
+        <h3 className="mb-2 font-medium">{t('comparison.usage.title')}</h3>
         <ul className="text-muted-foreground list-inside list-disc space-y-1 text-sm">
           <li>
-            <strong>价格热力图</strong>：直观显示各协议间的价格偏离程度，颜色越深表示偏离越大
+            <strong>{t('comparison.views.heatmap')}</strong>：{t('comparison.usage.heatmap')}
           </li>
           <li>
-            <strong>延迟分析</strong>：查看各协议的更新延迟、P50/P90/P99 百分位数和趋势
+            <strong>{t('comparison.views.latency')}</strong>：{t('comparison.usage.latency')}
           </li>
           <li>
-            <strong>成本效益</strong>：对比各协议的成本结构、性价比评分和使用建议
+            <strong>{t('comparison.views.cost')}</strong>：{t('comparison.usage.cost')}
           </li>
           <li>
-            <strong>实时对比</strong>：WebSocket 实时推送价格更新，适合监控高频变化
+            <strong>{t('comparison.views.realtime')}</strong>：{t('comparison.usage.realtime')}
           </li>
         </ul>
       </div>

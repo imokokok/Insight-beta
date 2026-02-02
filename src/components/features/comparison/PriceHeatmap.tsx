@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowUpRight, Minus, AlertTriangle, Info } from 'lucide-react';
+import { useI18n } from '@/i18n';
 import type { PriceHeatmapData, PriceDeviationCell, PriceDeviationLevel } from '@/lib/types/oracle';
 import { cn } from '@/lib/utils';
 
@@ -18,26 +19,26 @@ interface PriceHeatmapProps {
 
 const deviationConfig: Record<
   PriceDeviationLevel,
-  { color: string; label: string; icon: React.ReactNode }
+  { color: string; labelKey: string; icon: React.ReactNode }
 > = {
   low: {
     color: 'bg-emerald-500/20 hover:bg-emerald-500/30 border-emerald-500/30',
-    label: '正常',
+    labelKey: 'comparison.status.normal',
     icon: <Minus className="h-3 w-3" />,
   },
   medium: {
     color: 'bg-yellow-500/20 hover:bg-yellow-500/30 border-yellow-500/30',
-    label: '轻微偏离',
+    labelKey: 'comparison.status.slightDeviation',
     icon: <ArrowUpRight className="h-3 w-3" />,
   },
   high: {
     color: 'bg-orange-500/20 hover:bg-orange-500/30 border-orange-500/30',
-    label: '显著偏离',
+    labelKey: 'comparison.status.significantDeviation',
     icon: <ArrowUpRight className="h-3 w-3" />,
   },
   critical: {
     color: 'bg-red-500/20 hover:bg-red-500/30 border-red-500/30',
-    label: '严重偏离',
+    labelKey: 'comparison.status.criticalDeviation',
     icon: <AlertTriangle className="h-3 w-3" />,
   },
 };
@@ -64,6 +65,7 @@ export function PriceHeatmap({
   onCellClick,
   selectedProtocols,
 }: PriceHeatmapProps) {
+  const { t } = useI18n();
   const [hoveredCell, setHoveredCell] = useState<string | null>(null);
 
   const filteredData = useMemo(() => {
@@ -107,12 +109,12 @@ export function PriceHeatmap({
     return (
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>价格偏离热力图</CardTitle>
-          <CardDescription>暂无数据</CardDescription>
+          <CardTitle>{t('comparison.heatmap.title')}</CardTitle>
+          <CardDescription>{t('comparison.status.noData')}</CardDescription>
         </CardHeader>
         <CardContent className="text-muted-foreground flex h-64 items-center justify-center">
           <Info className="mr-2 h-5 w-5" />
-          选择资产对和协议以查看热力图
+          {t('comparison.heatmap.selectAssetPair')}
         </CardContent>
       </Card>
     );
@@ -126,20 +128,22 @@ export function PriceHeatmap({
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-lg font-semibold">价格偏离热力图</CardTitle>
+              <CardTitle className="text-lg font-semibold">
+                {t('comparison.heatmap.title')}
+              </CardTitle>
               <CardDescription className="text-muted-foreground mt-1 text-sm">
-                实时显示各预言机协议间的价格偏离程度
+                {t('comparison.heatmap.description')}
               </CardDescription>
             </div>
             <div className="flex items-center gap-3">
               {criticalDeviations > 0 && (
                 <Badge variant="destructive" className="gap-1">
                   <AlertTriangle className="h-3 w-3" />
-                  {criticalDeviations} 个严重偏离
+                  {criticalDeviations} {t('comparison.heatmap.criticalCount')}
                 </Badge>
               )}
               <span className="text-muted-foreground text-xs">
-                更新于 {new Date(lastUpdated).toLocaleTimeString()}
+                {t('comparison.heatmap.updatedAt')} {new Date(lastUpdated).toLocaleTimeString()}
               </span>
             </div>
           </div>
@@ -147,11 +151,13 @@ export function PriceHeatmap({
         <CardContent>
           {/* Legend */}
           <div className="mb-4 flex items-center gap-4 text-xs">
-            <span className="text-muted-foreground">偏离程度：</span>
+            <span className="text-muted-foreground">{t('comparison.heatmap.deviationLevel')}</span>
             {(Object.keys(deviationConfig) as PriceDeviationLevel[]).map((level) => (
               <div key={level} className="flex items-center gap-1.5">
                 <div className={cn('h-3 w-3 rounded border', deviationConfig[level].color)} />
-                <span className="text-muted-foreground">{deviationConfig[level].label}</span>
+                <span className="text-muted-foreground">
+                  {t(deviationConfig[level].labelKey as any)}
+                </span>
               </div>
             ))}
           </div>
@@ -162,7 +168,7 @@ export function PriceHeatmap({
               {/* Header Row */}
               <div className="flex">
                 <div className="text-muted-foreground w-28 flex-shrink-0 border-b p-2 text-xs font-medium">
-                  资产对
+                  {t('comparison.heatmap.assetPair')}
                 </div>
                 {protocols.map((protocol) => (
                   <div
@@ -173,7 +179,7 @@ export function PriceHeatmap({
                   </div>
                 ))}
                 <div className="text-muted-foreground w-24 flex-shrink-0 border-b p-2 text-center text-xs font-medium">
-                  最大偏离
+                  {t('comparison.heatmap.maxDeviation')}
                 </div>
               </div>
 
@@ -184,7 +190,7 @@ export function PriceHeatmap({
                   <div className="bg-muted/30 w-28 flex-shrink-0 border-b border-r p-2">
                     <div className="text-sm font-medium">{row.symbol}</div>
                     <div className="text-muted-foreground text-xs">
-                      共识: {formatPrice(row.consensusPrice)}
+                      {t('comparison.heatmap.consensus')} {formatPrice(row.consensusPrice)}
                     </div>
                   </div>
 
@@ -245,15 +251,21 @@ export function PriceHeatmap({
                               {row.symbol} - {protocol}
                             </div>
                             <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-                              <span className="text-muted-foreground">当前价格:</span>
+                              <span className="text-muted-foreground">
+                                {t('comparison.heatmap.tooltip.currentPrice')}:
+                              </span>
                               <span className="font-medium">{formatPrice(cell.price)}</span>
 
-                              <span className="text-muted-foreground">参考价格:</span>
+                              <span className="text-muted-foreground">
+                                {t('comparison.heatmap.tooltip.referencePrice')}:
+                              </span>
                               <span className="font-medium">
                                 {formatPrice(cell.referencePrice)}
                               </span>
 
-                              <span className="text-muted-foreground">偏离值:</span>
+                              <span className="text-muted-foreground">
+                                {t('comparison.heatmap.tooltip.deviationValue')}:
+                              </span>
                               <span
                                 className={cn(
                                   'font-medium',
@@ -264,7 +276,9 @@ export function PriceHeatmap({
                                 {cell.deviation.toFixed(4)}
                               </span>
 
-                              <span className="text-muted-foreground">偏离百分比:</span>
+                              <span className="text-muted-foreground">
+                                {t('comparison.heatmap.tooltip.deviationPercent')}:
+                              </span>
                               <span
                                 className={cn(
                                   'font-medium',
@@ -275,16 +289,20 @@ export function PriceHeatmap({
                                 {formatDeviation(cell.deviationPercent)}
                               </span>
 
-                              <span className="text-muted-foreground">更新时间:</span>
+                              <span className="text-muted-foreground">
+                                {t('comparison.heatmap.tooltip.updateTime')}:
+                              </span>
                               <span className="font-medium">
                                 {new Date(cell.timestamp).toLocaleTimeString()}
                               </span>
 
                               {cell.isStale && (
                                 <>
-                                  <span className="text-muted-foreground">状态:</span>
+                                  <span className="text-muted-foreground">
+                                    {t('comparison.heatmap.tooltip.status')}:
+                                  </span>
                                   <Badge variant="secondary" className="text-xs">
-                                    陈旧
+                                    {t('comparison.status.stale')}
                                   </Badge>
                                 </>
                               )}
@@ -318,12 +336,17 @@ export function PriceHeatmap({
           {/* Summary Footer */}
           <div className="text-muted-foreground mt-4 flex items-center justify-between border-t pt-4 text-sm">
             <div className="flex items-center gap-4">
-              <span>总计 {filteredData.totalPairs} 个资产对</span>
-              <span>{protocols.length} 个协议</span>
+              <span>
+                {t('comparison.heatmap.totalPairs')} {filteredData.totalPairs}{' '}
+                {t('comparison.heatmap.assetPairs')}
+              </span>
+              <span>
+                {protocols.length} {t('comparison.heatmap.protocols')}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <Info className="h-4 w-4" />
-              <span>点击单元格查看详情</span>
+              <span>{t('comparison.heatmap.clickForDetails')}</span>
             </div>
           </div>
         </CardContent>

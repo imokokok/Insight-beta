@@ -29,6 +29,7 @@ import {
   CartesianGrid,
   Tooltip as RechartsTooltip,
 } from 'recharts';
+import { useI18n } from '@/i18n';
 import type { CostComparison } from '@/lib/types/oracle';
 import { cn } from '@/lib/utils';
 
@@ -37,15 +38,8 @@ interface CostEfficiencyProps {
   isLoading?: boolean;
 }
 
-const useCaseLabels: Record<string, string> = {
-  defi_protocol: 'DeFi 协议',
-  trading: '交易应用',
-  enterprise: '企业应用',
-  hobby: '个人/实验',
-};
-
-function formatCost(value: number): string {
-  if (value === 0) return '免费';
+function formatCost(value: number, t: (key: string) => string): string {
+  if (value === 0) return t('comparison.cost.free');
   if (value < 1) return `$${(value * 100).toFixed(0)}¢`;
   if (value < 1000) return `$${value.toFixed(0)}`;
   return `$${(value / 1000).toFixed(1)}k`;
@@ -59,18 +53,20 @@ function getCostLevelColor(score: number): string {
 }
 
 export function CostEfficiencyView({ data, isLoading }: CostEfficiencyProps) {
+  const { t } = useI18n();
+
   const radarData = useMemo(() => {
     if (!data) return [];
     return data.protocols.map((p) => ({
       protocol: p.protocol,
-      成本优势: p.costScore,
-      综合价值: p.valueScore,
-      数据准确性: p.accuracyScore,
-      可用性: p.uptimeScore,
-      覆盖范围: Math.min(100, (p.feedsCount / 100) * 100),
-      多链支持: Math.min(100, (p.chainsCount / 10) * 100),
+      [t('comparison.cost.radar.costAdvantage')]: p.costScore,
+      [t('comparison.cost.radar.overallValue')]: p.valueScore,
+      [t('comparison.cost.radar.accuracy')]: p.accuracyScore,
+      [t('comparison.cost.radar.uptime')]: p.uptimeScore,
+      [t('comparison.cost.radar.coverage')]: Math.min(100, (p.feedsCount / 100) * 100),
+      [t('comparison.cost.radar.multiChain')]: Math.min(100, (p.chainsCount / 10) * 100),
     }));
-  }, [data]);
+  }, [data, t]);
 
   const costComparisonData = useMemo(() => {
     if (!data) return [];
@@ -106,12 +102,12 @@ export function CostEfficiencyView({ data, isLoading }: CostEfficiencyProps) {
     return (
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>成本效益分析</CardTitle>
-          <CardDescription>暂无数据</CardDescription>
+          <CardTitle>{t('comparison.cost.title')}</CardTitle>
+          <CardDescription>{t('comparison.status.noData')}</CardDescription>
         </CardHeader>
         <CardContent className="text-muted-foreground flex h-64 items-center justify-center">
           <DollarSign className="mr-2 h-5 w-5" />
-          成本数据加载中...
+          {t('comparison.cost.loading')}
         </CardContent>
       </Card>
     );
@@ -130,14 +126,14 @@ export function CostEfficiencyView({ data, isLoading }: CostEfficiencyProps) {
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-lg font-semibold">成本效益分析</CardTitle>
+            <CardTitle className="text-lg font-semibold">{t('comparison.cost.title')}</CardTitle>
             <CardDescription className="text-muted-foreground mt-1 text-sm">
-              各预言机协议的成本结构和性价比对比
+              {t('comparison.cost.description')}
             </CardDescription>
           </div>
           <Badge variant="outline" className="text-xs">
             <Wallet className="mr-1 h-3 w-3" />
-            月度估算
+            {t('comparison.cost.monthlyEstimate')}
           </Badge>
         </div>
       </CardHeader>
@@ -150,11 +146,11 @@ export function CostEfficiencyView({ data, isLoading }: CostEfficiencyProps) {
               <div>
                 <p className="flex items-center gap-1 text-sm font-medium text-violet-600">
                   <Award className="h-4 w-4" />
-                  最佳性价比
+                  {t('comparison.cost.bestValue')}
                 </p>
                 <p className="mt-1 text-xl font-bold capitalize">{bestValue.protocol}</p>
                 <p className="text-muted-foreground mt-1 text-sm">
-                  价值评分: {bestValue.valueScore.toFixed(0)}/100
+                  {t('comparison.cost.valueScore')}: {bestValue.valueScore.toFixed(0)}/100
                 </p>
               </div>
               <div className="rounded-full bg-violet-100 p-2 text-violet-600">
@@ -169,11 +165,11 @@ export function CostEfficiencyView({ data, isLoading }: CostEfficiencyProps) {
               <div>
                 <p className="flex items-center gap-1 text-sm font-medium text-emerald-600">
                   <DollarSign className="h-4 w-4" />
-                  最低成本
+                  {t('comparison.cost.lowestCost')}
                 </p>
                 <p className="mt-1 text-xl font-bold capitalize">{cheapest.protocol}</p>
                 <p className="text-muted-foreground mt-1 text-sm">
-                  成本评分: {cheapest.costScore.toFixed(0)}/100
+                  {t('comparison.cost.costScore')}: {cheapest.costScore.toFixed(0)}/100
                 </p>
               </div>
               <div className="rounded-full bg-emerald-100 p-2 text-emerald-600">
@@ -188,7 +184,7 @@ export function CostEfficiencyView({ data, isLoading }: CostEfficiencyProps) {
               <div>
                 <p className="flex items-center gap-1 text-sm font-medium text-blue-600">
                   <BarChart3 className="h-4 w-4" />
-                  最多喂价
+                  {t('comparison.cost.mostFeeds')}
                 </p>
                 <p className="mt-1 text-xl font-bold capitalize">
                   {
@@ -198,7 +194,7 @@ export function CostEfficiencyView({ data, isLoading }: CostEfficiencyProps) {
                   }
                 </p>
                 <p className="text-muted-foreground mt-1 text-sm">
-                  {Math.max(...protocols.map((p) => p.feedsCount))} 个喂价对
+                  {Math.max(...protocols.map((p) => p.feedsCount))} {t('comparison.cost.feedPairs')}
                 </p>
               </div>
               <div className="rounded-full bg-blue-100 p-2 text-blue-600">
@@ -210,9 +206,11 @@ export function CostEfficiencyView({ data, isLoading }: CostEfficiencyProps) {
 
         <Tabs defaultValue="radar" className="w-full" value="radar" onValueChange={() => {}}>
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="radar">综合评分</TabsTrigger>
-            <TabsTrigger value="costs">成本对比</TabsTrigger>
-            <TabsTrigger value="recommendations">使用建议</TabsTrigger>
+            <TabsTrigger value="radar">{t('comparison.cost.tabs.overallScore')}</TabsTrigger>
+            <TabsTrigger value="costs">{t('comparison.cost.tabs.costComparison')}</TabsTrigger>
+            <TabsTrigger value="recommendations">
+              {t('comparison.cost.tabs.recommendations')}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="radar" className="space-y-4">
@@ -243,12 +241,24 @@ export function CostEfficiencyView({ data, isLoading }: CostEfficiencyProps) {
               <table className="w-full text-sm">
                 <thead className="bg-muted/50">
                   <tr>
-                    <th className="px-4 py-2 text-left font-medium">协议</th>
-                    <th className="px-4 py-2 text-right font-medium">成本评分</th>
-                    <th className="px-4 py-2 text-right font-medium">价值评分</th>
-                    <th className="px-4 py-2 text-right font-medium">准确性</th>
-                    <th className="px-4 py-2 text-right font-medium">可用性</th>
-                    <th className="px-4 py-2 text-center font-medium">喂价数</th>
+                    <th className="px-4 py-2 text-left font-medium">
+                      {t('comparison.table.protocol')}
+                    </th>
+                    <th className="px-4 py-2 text-right font-medium">
+                      {t('comparison.cost.costScore')}
+                    </th>
+                    <th className="px-4 py-2 text-right font-medium">
+                      {t('comparison.cost.valueScore')}
+                    </th>
+                    <th className="px-4 py-2 text-right font-medium">
+                      {t('comparison.cost.accuracy')}
+                    </th>
+                    <th className="px-4 py-2 text-right font-medium">
+                      {t('comparison.cost.uptime')}
+                    </th>
+                    <th className="px-4 py-2 text-center font-medium">
+                      {t('comparison.cost.feedCount')}
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -306,18 +316,18 @@ export function CostEfficiencyView({ data, isLoading }: CostEfficiencyProps) {
                     formatter={(value: number | undefined, name: string | undefined) => {
                       if (value === undefined || name === undefined) return ['', name || ''];
                       if (name === 'roi') return [`${value.toFixed(1)}x`, 'ROI'];
-                      return [formatCost(value), name];
+                      return [formatCost(value, t), name];
                     }}
                   />
                   <Bar
                     dataKey="costPerFeed"
-                    name="每喂价成本"
+                    name={t('comparison.cost.costPerFeed')}
                     fill="#8b5cf6"
                     radius={[4, 4, 0, 0]}
                   />
                   <Bar
                     dataKey="costPerUpdate"
-                    name="每千次更新"
+                    name={t('comparison.cost.costPer1000Updates')}
                     fill="#10b981"
                     radius={[4, 4, 0, 0]}
                   />
@@ -331,17 +341,19 @@ export function CostEfficiencyView({ data, isLoading }: CostEfficiencyProps) {
                   <div className="mb-2 flex items-center justify-between">
                     <span className="font-medium capitalize">{protocol.protocol}</span>
                     <Badge variant="outline" className="text-xs">
-                      {protocol.chainsCount} 条链
+                      {protocol.chainsCount} {t('comparison.cost.chains')}
                     </Badge>
                   </div>
                   <div className="space-y-1 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">每喂价:</span>
-                      <span>{formatCost(protocol.costPerFeed)}</span>
+                      <span className="text-muted-foreground">{t('comparison.cost.perFeed')}:</span>
+                      <span>{formatCost(protocol.costPerFeed, t)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">每更新:</span>
-                      <span>{formatCost(protocol.costPerUpdate)}</span>
+                      <span className="text-muted-foreground">
+                        {t('comparison.cost.perUpdate')}:
+                      </span>
+                      <span>{formatCost(protocol.costPerUpdate, t)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">ROI:</span>
@@ -371,19 +383,24 @@ export function CostEfficiencyView({ data, isLoading }: CostEfficiencyProps) {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <h4 className="font-semibold">{useCaseLabels[rec.useCase]}</h4>
-                        <Badge className="text-xs">推荐: {rec.recommendedProtocol}</Badge>
+                        <h4 className="font-semibold">
+                          {t(`comparison.cost.useCase.${rec.useCase}`)}
+                        </h4>
+                        <Badge className="text-xs">
+                          {t('comparison.cost.recommended')}: {rec.recommendedProtocol}
+                        </Badge>
                       </div>
                       <p className="text-muted-foreground mt-1 text-sm">{rec.reason}</p>
                       <div className="mt-3 flex items-center gap-4 text-sm">
                         <span className="text-muted-foreground">
-                          预估月成本:{' '}
+                          {t('comparison.cost.estimatedMonthlyCost')}:{' '}
                           <span className="text-foreground font-medium">
-                            {formatCost(rec.estimatedMonthlyCost)}
+                            {formatCost(rec.estimatedMonthlyCost, t)}
                           </span>
                         </span>
                         <span className="text-muted-foreground">
-                          备选: {rec.alternatives.slice(0, 2).join(', ')}
+                          {t('comparison.cost.alternatives')}:{' '}
+                          {rec.alternatives.slice(0, 2).join(', ')}
                         </span>
                       </div>
                     </div>
@@ -395,11 +412,10 @@ export function CostEfficiencyView({ data, isLoading }: CostEfficiencyProps) {
             <div className="bg-muted/30 flex items-start gap-3 rounded-lg border p-4">
               <Info className="text-muted-foreground mt-0.5 h-5 w-5 flex-shrink-0" />
               <div className="text-muted-foreground text-sm">
-                <p className="text-foreground mb-1 font-medium">成本计算说明</p>
-                <p>
-                  成本估算基于公开的价格信息和链上 Gas
-                  费用。实际成本可能因使用量、链上拥堵情况和协议定价策略而有所不同。建议直接联系协议方获取准确报价。
+                <p className="text-foreground mb-1 font-medium">
+                  {t('comparison.cost.calculationNote')}
                 </p>
+                <p>{t('comparison.cost.calculationDescription')}</p>
               </div>
             </div>
           </TabsContent>

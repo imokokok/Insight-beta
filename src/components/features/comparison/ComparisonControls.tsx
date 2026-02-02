@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Filter, Settings, RefreshCw, Download, Clock, Eye, EyeOff, X } from 'lucide-react';
+import { useI18n } from '@/i18n';
 import type {
   ComparisonFilter,
   ComparisonConfig,
@@ -44,26 +45,30 @@ interface ComparisonControlsProps {
 }
 
 const timeRangeOptions = [
-  { value: '1h', label: '1小时' },
-  { value: '24h', label: '24小时' },
-  { value: '7d', label: '7天' },
-  { value: '30d', label: '30天' },
+  { value: '1h', labelKey: 'comparison.timeRange.1h' },
+  { value: '24h', labelKey: 'comparison.timeRange.24h' },
+  { value: '7d', labelKey: 'comparison.timeRange.7d' },
+  { value: '30d', labelKey: 'comparison.timeRange.30d' },
 ];
 
 const refreshIntervalOptions = [
-  { value: 5000, label: '5秒' },
-  { value: 10000, label: '10秒' },
-  { value: 30000, label: '30秒' },
-  { value: 60000, label: '1分钟' },
-  { value: 300000, label: '5分钟' },
+  { value: 5000, labelKey: 'comparison.timeRange.5s' },
+  { value: 10000, labelKey: 'comparison.timeRange.10s' },
+  { value: 30000, labelKey: 'comparison.timeRange.30s' },
+  { value: 60000, labelKey: 'comparison.timeRange.1m' },
+  { value: 300000, labelKey: 'comparison.timeRange.5m' },
 ];
 
-const viewOptions: { value: ComparisonView; label: string; icon: React.ReactNode }[] = [
-  { value: 'heatmap', label: '价格热力图', icon: <Filter className="h-4 w-4" /> },
-  { value: 'latency', label: '延迟分析', icon: <Clock className="h-4 w-4" /> },
-  { value: 'cost', label: '成本效益', icon: <Settings className="h-4 w-4" /> },
-  { value: 'realtime', label: '实时对比', icon: <RefreshCw className="h-4 w-4" /> },
-  { value: 'table', label: '数据表格', icon: <Eye className="h-4 w-4" /> },
+const viewOptions: { value: ComparisonView; labelKey: string; icon: React.ReactNode }[] = [
+  { value: 'heatmap', labelKey: 'comparison.views.heatmap', icon: <Filter className="h-4 w-4" /> },
+  { value: 'latency', labelKey: 'comparison.views.latency', icon: <Clock className="h-4 w-4" /> },
+  { value: 'cost', labelKey: 'comparison.views.cost', icon: <Settings className="h-4 w-4" /> },
+  {
+    value: 'realtime',
+    labelKey: 'comparison.views.realtime',
+    icon: <RefreshCw className="h-4 w-4" />,
+  },
+  { value: 'table', labelKey: 'comparison.views.table', icon: <Eye className="h-4 w-4" /> },
 ];
 
 export function ComparisonControls({
@@ -78,6 +83,7 @@ export function ComparisonControls({
   isLoading,
   availableSymbols = [],
 }: ComparisonControlsProps) {
+  const { t } = useI18n();
   const [showFilters, setShowFilters] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [symbolSearch, setSymbolSearch] = useState('');
@@ -136,7 +142,7 @@ export function ComparisonControls({
                 className="flex items-center gap-1.5 whitespace-nowrap"
               >
                 {option.icon}
-                {option.label}
+                {t(option.labelKey as any)}
               </Button>
             ))}
           </div>
@@ -150,7 +156,7 @@ export function ComparisonControls({
               <PopoverTrigger asChild>
                 <Button variant="outline" size="sm" className="relative">
                   <Filter className="mr-1 h-4 w-4" />
-                  筛选
+                  {t('comparison.controls.filter')}
                   {activeFilterCount > 0 && (
                     <Badge
                       variant="default"
@@ -164,18 +170,18 @@ export function ComparisonControls({
               <PopoverContent className="w-80" align="end">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-medium">筛选条件</h4>
+                    <h4 className="font-medium">{t('comparison.controls.filterConditions')}</h4>
                     {activeFilterCount > 0 && (
                       <Button variant="ghost" size="sm" onClick={clearFilters}>
                         <X className="mr-1 h-3 w-3" />
-                        清除
+                        {t('comparison.controls.clear')}
                       </Button>
                     )}
                   </div>
 
                   {/* Protocol Filter */}
                   <div className="space-y-2">
-                    <Label className="text-xs">协议</Label>
+                    <Label className="text-xs">{t('comparison.controls.protocol')}</Label>
                     <div className="flex flex-wrap gap-1">
                       {ORACLE_PROTOCOLS.map((protocol) => (
                         <Badge
@@ -193,9 +199,9 @@ export function ComparisonControls({
                   {/* Symbol Filter */}
                   {availableSymbols.length > 0 && (
                     <div className="space-y-2">
-                      <Label className="text-xs">资产对</Label>
+                      <Label className="text-xs">{t('comparison.controls.assetPair')}</Label>
                       <Input
-                        placeholder="搜索资产对..."
+                        placeholder={t('comparison.controls.searchAssetPair')}
                         value={symbolSearch}
                         onChange={(e) => setSymbolSearch(e.target.value)}
                         className="h-8 text-sm"
@@ -222,7 +228,7 @@ export function ComparisonControls({
 
                   {/* Deviation Filter */}
                   <div className="space-y-2">
-                    <Label className="text-xs">最小偏离度 (%)</Label>
+                    <Label className="text-xs">{t('comparison.controls.minDeviation')}</Label>
                     <Input
                       type="number"
                       placeholder="0.1"
@@ -239,7 +245,7 @@ export function ComparisonControls({
 
                   {/* Stale Filter */}
                   <div className="flex items-center justify-between">
-                    <Label className="text-xs">显示陈旧数据</Label>
+                    <Label className="text-xs">{t('comparison.controls.showStaleData')}</Label>
                     <Button
                       variant={filter.showStale ? 'default' : 'outline'}
                       size="sm"
@@ -262,16 +268,16 @@ export function ComparisonControls({
               <PopoverTrigger asChild>
                 <Button variant="outline" size="sm">
                   <Settings className="mr-1 h-4 w-4" />
-                  设置
+                  {t('comparison.controls.settings')}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-72" align="end">
                 <div className="space-y-4">
-                  <h4 className="font-medium">显示设置</h4>
+                  <h4 className="font-medium">{t('comparison.controls.displaySettings')}</h4>
 
                   {/* Time Range */}
                   <div className="space-y-2">
-                    <Label className="text-xs">时间范围</Label>
+                    <Label className="text-xs">{t('comparison.controls.timeRange')}</Label>
                     <Select
                       value={config.timeRange}
                       onValueChange={(value: string) =>
@@ -287,7 +293,7 @@ export function ComparisonControls({
                       <SelectContent>
                         {timeRangeOptions.map((option) => (
                           <SelectItem key={option.value} value={option.value}>
-                            {option.label}
+                            {t(option.labelKey as any)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -296,7 +302,7 @@ export function ComparisonControls({
 
                   {/* Refresh Interval */}
                   <div className="space-y-2">
-                    <Label className="text-xs">刷新间隔</Label>
+                    <Label className="text-xs">{t('comparison.controls.refreshInterval')}</Label>
                     <Select
                       value={config.refreshInterval.toString()}
                       onValueChange={(value: string) =>
@@ -312,7 +318,7 @@ export function ComparisonControls({
                       <SelectContent>
                         {refreshIntervalOptions.map((option) => (
                           <SelectItem key={option.value} value={option.value.toString()}>
-                            {option.label}
+                            {t(option.labelKey as any)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -321,7 +327,9 @@ export function ComparisonControls({
 
                   {/* Reference Price Method */}
                   <div className="space-y-2">
-                    <Label className="text-xs">参考价格计算方式</Label>
+                    <Label className="text-xs">
+                      {t('comparison.controls.referencePriceMethod')}
+                    </Label>
                     <Select
                       value={config.referencePriceMethod}
                       onValueChange={(value: string) =>
@@ -335,19 +343,23 @@ export function ComparisonControls({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="median">中位数</SelectItem>
-                        <SelectItem value="mean">平均值</SelectItem>
-                        <SelectItem value="weighted">加权平均</SelectItem>
+                        <SelectItem value="median">{t('comparison.controls.median')}</SelectItem>
+                        <SelectItem value="mean">{t('comparison.controls.mean')}</SelectItem>
+                        <SelectItem value="weighted">
+                          {t('comparison.controls.weightedAverage')}
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   {/* Deviation Thresholds */}
                   <div className="space-y-2">
-                    <Label className="text-xs">偏离阈值设置</Label>
+                    <Label className="text-xs">{t('comparison.controls.deviationThreshold')}</Label>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <span className="text-muted-foreground text-xs">轻微</span>
+                        <span className="text-muted-foreground text-xs">
+                          {t('comparison.controls.slight')}
+                        </span>
                         <Input
                           type="number"
                           value={config.deviationThresholds.low}
@@ -364,7 +376,9 @@ export function ComparisonControls({
                         />
                       </div>
                       <div>
-                        <span className="text-muted-foreground text-xs">严重</span>
+                        <span className="text-muted-foreground text-xs">
+                          {t('comparison.controls.severe')}
+                        </span>
                         <Input
                           type="number"
                           value={config.deviationThresholds.critical}
@@ -388,19 +402,23 @@ export function ComparisonControls({
 
             <Button variant="outline" size="sm" onClick={onRefresh} disabled={isLoading}>
               <RefreshCw className={cn('mr-1 h-4 w-4', isLoading && 'animate-spin')} />
-              刷新
+              {t('comparison.controls.refresh')}
             </Button>
 
             <DropdownMenu>
               <DropdownMenuTrigger>
                 <Button variant="outline" size="sm">
                   <Download className="mr-1 h-4 w-4" />
-                  导出
+                  {t('comparison.controls.export')}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onExport('json')}>导出为 JSON</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onExport('csv')}>导出为 CSV</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onExport('json')}>
+                  {t('comparison.controls.exportJSON')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onExport('csv')}>
+                  {t('comparison.controls.exportCSV')}
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -409,7 +427,9 @@ export function ComparisonControls({
         {/* Active Filters Display */}
         {activeFilterCount > 0 && (
           <div className="mt-3 flex flex-wrap items-center gap-2 border-t pt-3">
-            <span className="text-muted-foreground text-xs">已启用筛选:</span>
+            <span className="text-muted-foreground text-xs">
+              {t('comparison.controls.filterActive')}
+            </span>
             {filter.protocols?.map((protocol) => (
               <Badge key={protocol} variant="secondary" className="text-xs capitalize">
                 {PROTOCOL_DISPLAY_NAMES[protocol]}
@@ -430,7 +450,7 @@ export function ComparisonControls({
             ))}
             {filter.minDeviation && (
               <Badge variant="secondary" className="text-xs">
-                偏离 &gt; {filter.minDeviation}%
+                {t('comparison.table.deviation')} &gt; {filter.minDeviation}%
               </Badge>
             )}
           </div>

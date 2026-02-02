@@ -3,6 +3,8 @@ import { app } from './app';
 import { audit } from './audit';
 import { chain } from './chain';
 import { common } from './common';
+import { comparison } from './comparison';
+import { dashboard } from './dashboard';
 import { disputes } from './disputes';
 import { errorPage } from './errorPage';
 import { errors } from './errors';
@@ -18,6 +20,8 @@ export const enTranslations = {
   audit,
   chain,
   common,
+  comparison,
+  dashboard,
   disputes,
   errorPage,
   errors,

@@ -26,6 +26,7 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from 'recharts';
+import { useI18n } from '@/i18n';
 import type { RealtimeComparisonItem, ComparisonFilter } from '@/lib/types/oracle';
 import { cn } from '@/lib/utils';
 
@@ -78,6 +79,7 @@ export function RealtimeComparisonView({
   filter,
   onFilterChange,
 }: RealtimeComparisonProps) {
+  const { t } = useI18n();
   void filter;
   void onFilterChange;
   const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
@@ -167,12 +169,12 @@ export function RealtimeComparisonView({
     return (
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>实时价格对比</CardTitle>
-          <CardDescription>暂无数据</CardDescription>
+          <CardTitle>{t('comparison.realtime.title')}</CardTitle>
+          <CardDescription>{t('comparison.status.noData')}</CardDescription>
         </CardHeader>
         <CardContent className="text-muted-foreground flex h-64 items-center justify-center">
           <Activity className="mr-2 h-5 w-5" />
-          等待实时数据...
+          {t('comparison.realtime.waitingForData')}
         </CardContent>
       </Card>
     );
@@ -184,31 +186,31 @@ export function RealtimeComparisonView({
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-              实时价格对比
+              {t('comparison.realtime.title')}
               {isLive && (
                 <Badge variant="default" className="animate-pulse gap-1 bg-emerald-500 text-white">
                   <Wifi className="h-3 w-3" />
-                  实时
+                  {t('comparison.realtime.liveBadge')}
                 </Badge>
               )}
             </CardTitle>
             <CardDescription className="text-muted-foreground mt-1 text-sm">
-              跨协议实时价格监控与对比分析
+              {t('comparison.realtime.description')}
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
             {lastUpdated && (
               <span className="text-muted-foreground text-xs">
-                更新于 {lastUpdated.toLocaleTimeString()}
+                {t('comparison.realtime.updatedAt')} {lastUpdated.toLocaleTimeString()}
               </span>
             )}
             <Button variant="outline" size="sm" onClick={onRefresh} disabled={isLoading}>
               <RefreshCw className={cn('mr-1 h-4 w-4', isLoading && 'animate-spin')} />
-              刷新
+              {t('comparison.controls.refresh')}
             </Button>
             <Button variant="outline" size="sm">
               <Download className="mr-1 h-4 w-4" />
-              导出
+              {t('comparison.controls.export')}
             </Button>
           </div>
         </div>
@@ -217,23 +219,27 @@ export function RealtimeComparisonView({
         {/* Summary Stats */}
         <div className="grid grid-cols-4 gap-4">
           <div className="bg-muted/20 rounded-lg border p-3">
-            <p className="text-muted-foreground text-xs">监控资产</p>
+            <p className="text-muted-foreground text-xs">
+              {t('comparison.realtime.monitoredAssets')}
+            </p>
             <p className="text-xl font-bold">{data.length}</p>
           </div>
           <div className="bg-muted/20 rounded-lg border p-3">
-            <p className="text-muted-foreground text-xs">活跃协议</p>
+            <p className="text-muted-foreground text-xs">
+              {t('comparison.realtime.activeProtocols')}
+            </p>
             <p className="text-xl font-bold">
               {new Set(data.flatMap((d) => d.protocols.map((p) => p.protocol))).size}
             </p>
           </div>
           <div className="bg-muted/20 rounded-lg border p-3">
-            <p className="text-muted-foreground text-xs">最大价差</p>
+            <p className="text-muted-foreground text-xs">{t('comparison.realtime.maxSpread')}</p>
             <p className="text-xl font-bold text-orange-600">
               {Math.max(...data.map((d) => d.spread.percent)).toFixed(2)}%
             </p>
           </div>
           <div className="bg-muted/20 rounded-lg border p-3">
-            <p className="text-muted-foreground text-xs">平均延迟</p>
+            <p className="text-muted-foreground text-xs">{t('comparison.realtime.avgLatency')}</p>
             <p className="text-xl font-bold">
               {formatLatency(
                 data.flatMap((d) => d.protocols).reduce((sum, p) => sum + p.latency, 0) /
@@ -247,7 +253,7 @@ export function RealtimeComparisonView({
           {/* Price List */}
           <div className="overflow-hidden rounded-lg border">
             <div className="bg-muted/30 flex items-center justify-between border-b p-3">
-              <span className="text-sm font-medium">资产对</span>
+              <span className="text-sm font-medium">{t('comparison.table.assetPair')}</span>
               <div className="flex items-center gap-4 text-xs">
                 <button
                   onClick={() => handleSort('symbol')}
@@ -256,7 +262,8 @@ export function RealtimeComparisonView({
                     sortField === 'symbol' && 'text-primary font-medium',
                   )}
                 >
-                  名称 {sortField === 'symbol' && (sortDirection === 'asc' ? '↑' : '↓')}
+                  {t('comparison.realtime.name')}{' '}
+                  {sortField === 'symbol' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </button>
                 <button
                   onClick={() => handleSort('spread')}
@@ -265,7 +272,8 @@ export function RealtimeComparisonView({
                     sortField === 'spread' && 'text-primary font-medium',
                   )}
                 >
-                  价差 {sortField === 'spread' && (sortDirection === 'asc' ? '↑' : '↓')}
+                  {t('comparison.realtime.spread')}{' '}
+                  {sortField === 'spread' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </button>
               </div>
             </div>
@@ -299,7 +307,7 @@ export function RealtimeComparisonView({
                       <div>
                         <p className="text-sm font-medium">{item.symbol}</p>
                         <p className="text-muted-foreground text-xs">
-                          {item.protocols.length} 个协议
+                          {item.protocols.length} {t('comparison.realtime.protocols')}
                         </p>
                       </div>
                     </div>
@@ -330,7 +338,9 @@ export function RealtimeComparisonView({
               <>
                 {/* Price Chart */}
                 <div className="h-48 rounded-lg border p-4">
-                  <h4 className="mb-2 text-sm font-medium">{selectedItem.symbol} - 协议价格分布</h4>
+                  <h4 className="mb-2 text-sm font-medium">
+                    {selectedItem.symbol} - {t('comparison.realtime.protocolPriceDistribution')}
+                  </h4>
                   <ResponsiveContainer width="100%" height="85%">
                     <LineChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
@@ -346,15 +356,19 @@ export function RealtimeComparisonView({
                       />
                       <RechartsTooltip
                         formatter={(value: number | undefined) => {
-                          if (value === undefined) return ['', '价格'];
-                          return [formatPrice(value), '价格'];
+                          if (value === undefined) return ['', t('comparison.realtime.price')];
+                          return [formatPrice(value), t('comparison.realtime.price')];
                         }}
                       />
                       <ReferenceLine
                         y={selectedItem.consensus.median}
                         stroke="#8b5cf6"
                         strokeDasharray="3 3"
-                        label={{ value: '中位数', position: 'right', fontSize: 10 }}
+                        label={{
+                          value: t('comparison.realtime.median'),
+                          position: 'right',
+                          fontSize: 10,
+                        }}
                       />
                       <Line
                         type="monotone"
@@ -370,8 +384,12 @@ export function RealtimeComparisonView({
                 {/* Protocol Details */}
                 <div className="overflow-hidden rounded-lg border">
                   <div className="bg-muted/30 flex items-center justify-between border-b p-3">
-                    <span className="text-sm font-medium">协议详情</span>
-                    <span className="text-muted-foreground text-xs">偏离共识价</span>
+                    <span className="text-sm font-medium">
+                      {t('comparison.realtime.protocolDetails')}
+                    </span>
+                    <span className="text-muted-foreground text-xs">
+                      {t('comparison.realtime.deviationFromConsensus')}
+                    </span>
                   </div>
                   <div className="max-h-48 overflow-y-auto">
                     {selectedItem.protocols
@@ -411,7 +429,7 @@ export function RealtimeComparisonView({
                                 {isStale ? (
                                   <Badge variant="secondary" className="text-xs">
                                     <WifiOff className="mr-1 h-3 w-3" />
-                                    陈旧
+                                    {t('comparison.status.stale')}
                                   </Badge>
                                 ) : (
                                   <span
@@ -440,19 +458,25 @@ export function RealtimeComparisonView({
                 <div className="bg-muted/20 rounded-lg border p-3">
                   <div className="grid grid-cols-3 gap-4 text-center">
                     <div>
-                      <p className="text-muted-foreground text-xs">中位数</p>
+                      <p className="text-muted-foreground text-xs">
+                        {t('comparison.realtime.median')}
+                      </p>
                       <p className="font-mono font-medium">
                         {formatPrice(selectedItem.consensus.median)}
                       </p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground text-xs">平均值</p>
+                      <p className="text-muted-foreground text-xs">
+                        {t('comparison.realtime.mean')}
+                      </p>
                       <p className="font-mono font-medium">
                         {formatPrice(selectedItem.consensus.mean)}
                       </p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground text-xs">价差范围</p>
+                      <p className="text-muted-foreground text-xs">
+                        {t('comparison.realtime.spreadRange')}
+                      </p>
                       <p className="font-mono font-medium">
                         {formatPrice(selectedItem.spread.absolute)}
                       </p>
@@ -463,7 +487,7 @@ export function RealtimeComparisonView({
             ) : (
               <div className="text-muted-foreground flex h-64 items-center justify-center rounded-lg border">
                 <Filter className="mr-2 h-5 w-5" />
-                选择资产对查看详情
+                {t('comparison.realtime.selectAssetPair')}
               </div>
             )}
           </div>

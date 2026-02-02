@@ -19,6 +19,7 @@ import {
   ReferenceLine,
   Cell,
 } from 'recharts';
+import { useI18n } from '@/i18n';
 import type { LatencyAnalysis, LatencyTrend } from '@/lib/types/oracle';
 import { cn } from '@/lib/utils';
 
@@ -30,9 +31,9 @@ interface LatencyAnalysisProps {
 }
 
 const statusConfig = {
-  healthy: { color: 'bg-emerald-500', label: '健康', icon: Zap },
-  degraded: { color: 'bg-yellow-500', label: '降级', icon: AlertCircle },
-  stale: { color: 'bg-red-500', label: '陈旧', icon: Clock },
+  healthy: { color: 'bg-emerald-500', labelKey: 'comparison.status.healthy', icon: Zap },
+  degraded: { color: 'bg-yellow-500', labelKey: 'comparison.status.degraded', icon: AlertCircle },
+  stale: { color: 'bg-red-500', labelKey: 'comparison.status.stale', icon: Clock },
 };
 
 function formatLatency(ms: number): string {
@@ -52,6 +53,7 @@ export function LatencyAnalysisView({
   isLoading,
   selectedSymbol,
 }: LatencyAnalysisProps) {
+  const { t } = useI18n();
   // This state setter is used in future enhancements
 
   void useState<string | null>(null);
@@ -101,43 +103,43 @@ export function LatencyAnalysisView({
     const { summary } = data;
     return [
       {
-        title: '平均延迟',
+        title: t('comparison.latency.summary.avgLatency'),
         value: formatLatency(summary.avgLatency),
         icon: Clock,
         trend: summary.avgLatency < 5000 ? 'down' : 'up',
-        trendValue: '较上小时',
+        trendValue: t('comparison.latency.vsLastHour'),
         color: 'text-blue-600',
         bgColor: 'bg-blue-50',
       },
       {
-        title: '最大延迟',
+        title: t('comparison.latency.summary.maxLatency'),
         value: formatLatency(summary.maxLatency),
         icon: Activity,
         trend: null,
-        trendValue: '当前峰值',
+        trendValue: t('comparison.latency.currentPeak'),
         color: 'text-orange-600',
         bgColor: 'bg-orange-50',
       },
       {
-        title: '健康节点',
+        title: t('comparison.latency.summary.healthyNodes'),
         value: summary.healthyFeeds.toString(),
         icon: Zap,
         trend: 'up',
-        trendValue: '正常运行',
+        trendValue: t('comparison.latency.normalOperation'),
         color: 'text-emerald-600',
         bgColor: 'bg-emerald-50',
       },
       {
-        title: '降级节点',
+        title: t('comparison.latency.summary.degradedNodes'),
         value: (summary.degradedFeeds + summary.staleFeeds).toString(),
         icon: AlertCircle,
         trend: summary.degradedFeeds + summary.staleFeeds > 0 ? 'up' : 'down',
-        trendValue: '需要关注',
+        trendValue: t('comparison.latency.needsAttention'),
         color: 'text-red-600',
         bgColor: 'bg-red-50',
       },
     ];
-  }, [data]);
+  }, [data, t]);
 
   if (isLoading) {
     return (
@@ -162,12 +164,12 @@ export function LatencyAnalysisView({
     return (
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>延迟分析</CardTitle>
-          <CardDescription>暂无数据</CardDescription>
+          <CardTitle>{t('comparison.latency.title')}</CardTitle>
+          <CardDescription>{t('comparison.status.noData')}</CardDescription>
         </CardHeader>
         <CardContent className="text-muted-foreground flex h-64 items-center justify-center">
           <Server className="mr-2 h-5 w-5" />
-          选择资产对以查看延迟分析
+          {t('comparison.latency.selectAssetPair')}
         </CardContent>
       </Card>
     );
@@ -178,15 +180,15 @@ export function LatencyAnalysisView({
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-lg font-semibold">延迟分析</CardTitle>
+            <CardTitle className="text-lg font-semibold">{t('comparison.latency.title')}</CardTitle>
             <CardDescription className="text-muted-foreground mt-1 text-sm">
-              各预言机协议的更新延迟和频率分析
+              {t('comparison.latency.description')}
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-xs">
               <Clock className="mr-1 h-3 w-3" />
-              实时
+              {t('comparison.latency.live')}
             </Badge>
           </div>
         </div>
@@ -227,9 +229,9 @@ export function LatencyAnalysisView({
         {/* Tabs for different views */}
         <Tabs defaultValue="latency" className="w-full" value="latency" onValueChange={() => {}}>
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="latency">延迟分布</TabsTrigger>
-            <TabsTrigger value="frequency">更新频率</TabsTrigger>
-            <TabsTrigger value="trends">趋势分析</TabsTrigger>
+            <TabsTrigger value="latency">{t('comparison.latency.tabs.distribution')}</TabsTrigger>
+            <TabsTrigger value="frequency">{t('comparison.latency.tabs.frequency')}</TabsTrigger>
+            <TabsTrigger value="trends">{t('comparison.latency.tabs.trends')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="latency" className="space-y-4">
@@ -252,7 +254,7 @@ export function LatencyAnalysisView({
                             <p className="mb-2 font-semibold capitalize">{label}</p>
                             <div className="space-y-1">
                               <p>
-                                当前延迟:{' '}
+                                {t('comparison.latency.currentLatency')}:{' '}
                                 <span className="font-medium">{formatLatency(data.latency)}</span>
                               </p>
                               <p>
@@ -271,7 +273,12 @@ export function LatencyAnalysisView({
                       return null;
                     }}
                   />
-                  <ReferenceLine y={5000} stroke="#ef4444" strokeDasharray="3 3" label="阈值" />
+                  <ReferenceLine
+                    y={5000}
+                    stroke="#ef4444"
+                    strokeDasharray="3 3"
+                    label={t('comparison.latency.threshold')}
+                  />
                   <Bar dataKey="latency" radius={[4, 4, 0, 0]}>
                     {chartData.map((entry, index) => (
                       <Cell
@@ -295,12 +302,20 @@ export function LatencyAnalysisView({
               <table className="w-full text-sm">
                 <thead className="bg-muted/50">
                   <tr>
-                    <th className="px-4 py-2 text-left font-medium">协议</th>
-                    <th className="px-4 py-2 text-left font-medium">资产对</th>
-                    <th className="px-4 py-2 text-right font-medium">当前延迟</th>
+                    <th className="px-4 py-2 text-left font-medium">
+                      {t('comparison.table.protocol')}
+                    </th>
+                    <th className="px-4 py-2 text-left font-medium">
+                      {t('comparison.table.assetPair')}
+                    </th>
+                    <th className="px-4 py-2 text-right font-medium">
+                      {t('comparison.latency.currentLatency')}
+                    </th>
                     <th className="px-4 py-2 text-right font-medium">P50</th>
                     <th className="px-4 py-2 text-right font-medium">P90</th>
-                    <th className="px-4 py-2 text-center font-medium">状态</th>
+                    <th className="px-4 py-2 text-center font-medium">
+                      {t('comparison.table.status')}
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -331,7 +346,7 @@ export function LatencyAnalysisView({
                             className="gap-1 text-xs"
                           >
                             <StatusIcon className="h-3 w-3" />
-                            {statusConfig[metric.status].label}
+                            {t(statusConfig[metric.status].labelKey as any)}
                           </Badge>
                         </td>
                       </tr>
@@ -364,7 +379,7 @@ export function LatencyAnalysisView({
                           <div className="rounded-lg border bg-white p-3 text-sm shadow-lg">
                             <p className="mb-2 font-semibold capitalize">{data.protocol}</p>
                             <p>
-                              更新频率:{' '}
+                              {t('comparison.latency.updateFrequency')}:{' '}
                               <span className="font-medium">{formatFrequency(data.frequency)}</span>
                             </p>
                           </div>
@@ -411,7 +426,7 @@ export function LatencyAnalysisView({
             ) : (
               <div className="text-muted-foreground flex h-64 items-center justify-center">
                 <Activity className="mr-2 h-5 w-5" />
-                选择资产对以查看趋势分析
+                {t('comparison.latency.selectAssetPairTrends')}
               </div>
             )}
           </TabsContent>
