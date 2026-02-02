@@ -4,6 +4,15 @@
  * 2. Webhook 通知
  * 3. 配置模板与继承
  * 4. 批量操作
+ *
+ * @deprecated 此文件已拆分为模块化结构，请从 @/server/config 导入
+ *
+ * 新的导入方式：
+ * - import { ConfigCacheManager } from '@/server/config/cache'
+ * - import { notifyConfigChange } from '@/server/config/webhook'
+ * - import { listConfigTemplates } from '@/server/config/template'
+ *
+ * 此文件保留用于向后兼容，将在未来版本中移除
  */
 
 import { hasDatabase, query, getClient } from './db';

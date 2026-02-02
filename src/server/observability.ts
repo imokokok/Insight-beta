@@ -1,3 +1,15 @@
+/**
+ * Observability Module - 可观测性模块
+ *
+ * @deprecated 此文件正在重构中，新的类型和常量已从 @/server/observability 导出
+ *
+ * 新的导入方式：
+ * - import { DbAlertRow, DbAuditRow } from '@/server/observability/types'
+ * - import { VALID_RULE_EVENTS, VALID_SEVERITIES } from '@/server/observability/constants'
+ *
+ * 此文件保留用于向后兼容，将在未来版本中移除
+ */
+
 import { hasDatabase, query } from '@/server/db';
 import { ensureSchema } from '@/server/schema';
 import { readJsonFile, writeJsonFile } from '@/server/kvStore';
@@ -5,6 +17,31 @@ import { getMemoryStore, memoryNowIso } from '@/server/memoryBackend';
 import { notifyAlert, type NotificationOptions } from '@/server/notifications';
 import { getSyncState } from '@/server/oracleState';
 import { env } from '@/lib/config/env';
+
+// Import from new modular structure
+import type { DbAlertRow, DbAuditRow } from './observability/types';
+
+import {
+  ALERT_RULES_KEY,
+  INCIDENTS_KEY,
+  MEMORY_MAX_ALERTS,
+  MEMORY_MAX_AUDIT,
+  VALID_RULE_EVENTS,
+  VALID_SEVERITIES,
+} from './observability/constants';
+
+// Re-export for external use
+export type { DbAlertRow, DbAuditRow, NotificationChannel } from './observability/types';
+
+export {
+  ALERT_RULES_KEY,
+  INCIDENTS_KEY,
+  MEMORY_MAX_ALERTS,
+  MEMORY_MAX_AUDIT,
+  VALID_RULE_EVENTS,
+  VALID_SEVERITIES,
+} from './observability/constants';
+
 import type {
   AlertSeverity,
   AlertStatus,
@@ -33,34 +70,7 @@ export type {
   OpsSloStatus,
 };
 
-type DbAlertRow = {
-  id: number | string;
-  fingerprint: string;
-  type: string;
-  severity: AlertSeverity;
-  title: string;
-  message: string;
-  entity_type: string | null;
-  entity_id: string | null;
-  status: AlertStatus;
-  occurrences: number | string;
-  first_seen_at: Date;
-  last_seen_at: Date;
-  acknowledged_at: Date | null;
-  resolved_at: Date | null;
-  created_at: Date;
-  updated_at: Date;
-};
-
-type DbAuditRow = {
-  id: number | string;
-  actor: string | null;
-  action: string;
-  entity_type: string | null;
-  entity_id: string | null;
-  details: unknown;
-  created_at: Date;
-};
+// DbAlertRow and DbAuditRow are now imported from './observability/types'
 
 let schemaEnsured = false;
 async function ensureDb() {
@@ -71,33 +81,9 @@ async function ensureDb() {
   }
 }
 
-const ALERT_RULES_KEY = 'alert_rules/v1';
-const INCIDENTS_KEY = 'incidents/v1';
-const MEMORY_MAX_ALERTS = 2000;
-const MEMORY_MAX_AUDIT = 5000;
-
-const validRuleEvents: AlertRuleEvent[] = [
-  'dispute_created',
-  'liveness_expiring',
-  'sync_error',
-  'stale_sync',
-  'contract_paused',
-  'sync_backlog',
-  'backlog_assertions',
-  'backlog_disputes',
-  'market_stale',
-  'execution_delayed',
-  'low_participation',
-  'high_vote_divergence',
-  'high_dispute_rate',
-  'slow_api_request',
-  'high_error_rate',
-  'database_slow_query',
-  'price_deviation',
-  'low_gas',
-];
-
-const validSeverities: AlertSeverity[] = ['info', 'warning', 'critical'];
+// Constants are now imported from './observability/constants'
+// ALERT_RULES_KEY, INCIDENTS_KEY, MEMORY_MAX_ALERTS, MEMORY_MAX_AUDIT
+// VALID_RULE_EVENTS, VALID_SEVERITIES
 
 function normalizeRuleChannels(
   channels: unknown,
@@ -271,14 +257,14 @@ function normalizeStoredRule(input: unknown): AlertRule | null {
   if (!id) return null;
 
   const event = typeof obj.event === 'string' ? obj.event : '';
-  if (!validRuleEvents.includes(event as AlertRuleEvent)) return null;
+  if (!VALID_RULE_EVENTS.includes(event as AlertRuleEvent)) return null;
   const safeEvent = event as AlertRuleEvent;
 
   const name = typeof obj.name === 'string' && obj.name.trim() ? obj.name.trim() : id;
   const enabled = typeof obj.enabled === 'boolean' ? obj.enabled : true;
 
   const severityRaw = typeof obj.severity === 'string' ? obj.severity : '';
-  const severity = validSeverities.includes(severityRaw as AlertSeverity)
+  const severity = VALID_SEVERITIES.includes(severityRaw as AlertSeverity)
     ? (severityRaw as AlertSeverity)
     : 'warning';
 
@@ -566,7 +552,7 @@ function normalizeIncident(input: unknown, fallbackId: number): Incident | null 
 
   const status = normalizeIncidentStatus(obj.status);
   const severityRaw = typeof obj.severity === 'string' ? obj.severity : '';
-  const severity = validSeverities.includes(severityRaw as AlertSeverity)
+  const severity = VALID_SEVERITIES.includes(severityRaw as AlertSeverity)
     ? (severityRaw as AlertSeverity)
     : 'warning';
 
