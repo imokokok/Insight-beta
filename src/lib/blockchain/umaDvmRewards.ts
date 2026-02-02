@@ -66,8 +66,8 @@ const DVM_REWARDS_ABI = parseAbi([
   'function getStake(address voter) view returns (uint256)',
   'function getCooldown(address voter) view returns (uint256)',
 
-  // 惩罚相关函数
-  'function getSlashingHistory(address voter) view returns (tuple(bytes32 assertionId, uint256 amount, uint256 timestamp, string reason)[])',
+  // 惩罚相关函数 - 使用简单类型避免 parseAbi 限制
+  'function getSlashingHistory(address voter) view returns (bytes32[] memory, uint256[] memory, uint256[] memory, string[] memory)',
   'function wasSlashed(address voter, bytes32 assertionId) view returns (bool)',
 
   // 事件
@@ -190,24 +190,21 @@ export class DVMRewardsClient {
    */
   async getSlashingHistory(voter: Address): Promise<SlashingEvent[]> {
     try {
-      const history = (await this.publicClient.readContract({
+      const result = (await this.publicClient.readContract({
         address: this.config.dvmAddress,
         abi: DVM_REWARDS_ABI,
         functionName: 'getSlashingHistory',
         args: [voter],
-      })) as Array<{
-        assertionId: `0x${string}`;
-        amount: bigint;
-        timestamp: bigint;
-        reason: string;
-      }>;
+      })) as readonly [readonly `0x${string}`[], readonly bigint[], readonly bigint[], readonly string[]];
 
-      return history.map((item) => ({
+      const [assertionIds, amounts, timestamps, reasons] = result;
+
+      return assertionIds.map((assertionId, index) => ({
         voter,
-        assertionId: item.assertionId,
-        slashAmount: item.amount,
-        reason: item.reason,
-        timestamp: item.timestamp,
+        assertionId,
+        slashAmount: amounts[index] ?? 0n,
+        reason: reasons[index] ?? '',
+        timestamp: timestamps[index] ?? 0n,
         txHash: '0x0' as Hash, // 需要从事件中获取
       }));
     } catch (error) {

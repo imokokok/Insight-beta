@@ -152,7 +152,7 @@ class PubSub {
 }
 
 // Global PubSub instance
-export const pubsub = new PubSub();
+const pubsub = new PubSub();
 
 // ============================================================================
 // GraphQL Schema
