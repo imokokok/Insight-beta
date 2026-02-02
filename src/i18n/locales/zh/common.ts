@@ -67,4 +67,13 @@ export const common = {
   total: '总计',
   previous: '上一页',
   next: '下一页',
+  // Error Boundary
+  errorBoundary: {
+    title: '出错了',
+    description: '很抱歉，应用遇到了意外错误。请尝试刷新页面或返回首页。',
+    retry: '重试',
+    backToHome: '返回首页',
+    componentError: '组件加载失败',
+    clickToRetry: '点击重试',
+  },
 };

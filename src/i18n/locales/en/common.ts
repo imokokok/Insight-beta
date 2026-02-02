@@ -67,4 +67,13 @@ export const common = {
   total: 'total',
   previous: 'Previous',
   next: 'Next',
+  // Error Boundary
+  errorBoundary: {
+    title: 'Something Went Wrong',
+    description: 'Sorry, the application encountered an unexpected error. Please try refreshing the page or return to home.',
+    retry: 'Retry',
+    backToHome: 'Back to Home',
+    componentError: 'Component Failed to Load',
+    clickToRetry: 'Click to Retry',
+  },
 };

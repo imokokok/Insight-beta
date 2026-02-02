@@ -5,6 +5,7 @@ import React, { Component } from 'react';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import Link from 'next/link';
+import { useI18n } from '@/i18n';
 
 interface Props {
   children: ReactNode;
@@ -85,6 +86,32 @@ export class ErrorBoundary extends Component<Props, State> {
 }
 
 /**
+ * 小型错误降级 UI（用于组件级别）
+ */
+interface MiniErrorFallbackProps {
+  onRetry: () => void;
+}
+
+function MiniErrorFallback({ onRetry }: MiniErrorFallbackProps) {
+  const { t } = useTranslation();
+
+  return (
+    <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+      <div className="flex items-center gap-2 text-red-800">
+        <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+        <span className="text-sm font-medium">{t('common.errorBoundary.componentError')}</span>
+      </div>
+      <button
+        onClick={onRetry}
+        className="mt-2 text-sm text-red-600 hover:text-red-800"
+      >
+        {t('common.errorBoundary.clickToRetry')}
+      </button>
+    </div>
+  );
+}
+
+/**
  * 默认错误降级 UI
  */
 interface DefaultErrorFallbackProps {
@@ -93,17 +120,17 @@ interface DefaultErrorFallbackProps {
 }
 
 function DefaultErrorFallback({ error, onRetry }: DefaultErrorFallbackProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="flex min-h-[400px] flex-col items-center justify-center p-8 text-center">
       <div className="mb-6 rounded-full bg-red-100 p-4">
-        <AlertTriangle className="h-12 w-12 text-red-600" />
+        <AlertTriangle className="h-12 w-12 text-red-600" aria-hidden="true" />
       </div>
 
-      <h2 className="mb-2 text-2xl font-bold text-gray-900">出错了</h2>
+      <h2 className="mb-2 text-2xl font-bold text-gray-900">{t('common.errorBoundary.title')}</h2>
 
-      <p className="mb-6 max-w-md text-gray-600">
-        很抱歉，应用遇到了意外错误。请尝试刷新页面或返回首页。
-      </p>
+      <p className="mb-6 max-w-md text-gray-600">{t('common.errorBoundary.description')}</p>
 
       {process.env.NODE_ENV === 'development' && error && (
         <div className="mb-6 max-w-2xl overflow-auto rounded-lg bg-gray-100 p-4 text-left">
@@ -116,14 +143,14 @@ function DefaultErrorFallback({ error, onRetry }: DefaultErrorFallbackProps) {
 
       <div className="flex gap-4">
         <Button onClick={onRetry} variant="outline" className="flex items-center gap-2">
-          <RefreshCw className="h-4 w-4" />
-          重试
+          <RefreshCw className="h-4 w-4" aria-hidden="true" />
+          {t('common.errorBoundary.retry')}
         </Button>
 
         <Link href="/">
           <Button className="flex items-center gap-2">
-            <Home className="h-4 w-4" />
-            返回首页
+            <Home className="h-4 w-4" aria-hidden="true" />
+            {t('common.errorBoundary.backToHome')}
           </Button>
         </Link>
       </div>
@@ -168,18 +195,7 @@ export class MiniErrorBoundary extends Component<MiniErrorBoundaryProps, MiniErr
       }
 
       return (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-          <div className="flex items-center gap-2 text-red-800">
-            <AlertTriangle className="h-4 w-4" />
-            <span className="text-sm font-medium">组件加载失败</span>
-          </div>
-          <button
-            onClick={this.handleRetry}
-            className="mt-2 text-sm text-red-600 hover:text-red-800"
-          >
-            点击重试
-          </button>
-        </div>
+        <MiniErrorFallback onRetry={this.handleRetry} />
       );
     }
 
