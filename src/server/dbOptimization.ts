@@ -181,16 +181,21 @@ export async function batchUpdate<T extends Record<string, unknown>>(
     try {
       await client.query('BEGIN');
 
-      for (const row of batch) {
-        const setClause = updateColumns.map((col, idx) => `${col} = $${idx + 1}`).join(', ');
-        const values = updateColumns.map((col) => row[col]);
-        const keyValue = row[keyColumn];
+      // 使用 CASE WHEN 语法进行批量更新，避免 N+1 查询
+      const caseStatements = updateColumns
+        .map(
+          (col) =>
+            `${col} = CASE ${keyColumn} ${batch.map((_, idx) => `WHEN $${idx + 1} THEN $${batch.length + idx + 1}`).join(' ')} END`,
+        )
+        .join(', ');
 
-        await client.query(
-          `UPDATE ${table} SET ${setClause} WHERE ${keyColumn} = $${updateColumns.length + 1}`,
-          [...values, keyValue],
-        );
-      }
+      const keyValues = batch.map((row) => row[keyColumn]);
+      const updateValues = updateColumns.flatMap((col) => batch.map((row) => row[col]));
+
+      await client.query(
+        `UPDATE ${table} SET ${caseStatements} WHERE ${keyColumn} IN (${batch.map((_, idx) => `$${idx + 1}`).join(',')})`,
+        [...keyValues, ...updateValues],
+      );
 
       await client.query('COMMIT');
       updated += batch.length;

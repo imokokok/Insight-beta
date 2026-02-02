@@ -26,16 +26,15 @@ export async function GET(request: NextRequest) {
       sortBy: sortBy as 'newest' | 'oldest' | 'most_liked',
     };
 
-    try {
-      const orderByClause =
-        sortBy === 'newest'
-          ? 'ORDER BY c.created_at DESC'
-          : sortBy === 'oldest'
-            ? 'ORDER BY c.created_at ASC'
-            : sortBy === 'most_liked'
-              ? 'ORDER BY c.likes DESC, c.created_at DESC'
-              : 'ORDER BY c.created_at DESC';
+    // 使用白名单映射防止 SQL 注入
+    const SORT_BY_MAP: Record<string, string> = {
+      newest: 'ORDER BY c.created_at DESC',
+      oldest: 'ORDER BY c.created_at ASC',
+      most_liked: 'ORDER BY c.likes DESC, c.created_at DESC',
+    };
+    const orderByClause = SORT_BY_MAP[sortBy] || SORT_BY_MAP['newest'];
 
+    try {
       // Build query conditions and parameters safely
       const conditions: string[] = ['c.is_deleted = false'];
       const params: (string | number)[] = [];

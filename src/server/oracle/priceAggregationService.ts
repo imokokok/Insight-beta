@@ -535,18 +535,11 @@ export class PriceAggregationEngine {
 
   /**
    * 批量聚合多个交易对
+   * 使用 Promise.all 并行处理以提高性能
    */
   async aggregateMultipleSymbols(symbols: string[]): Promise<CrossOracleComparison[]> {
-    const results: CrossOracleComparison[] = [];
-
-    for (const symbol of symbols) {
-      const comparison = await this.aggregatePrices(symbol);
-      if (comparison) {
-        results.push(comparison);
-      }
-    }
-
-    return results;
+    const results = await Promise.all(symbols.map((symbol) => this.aggregatePrices(symbol)));
+    return results.filter((r): r is CrossOracleComparison => r !== null);
   }
 
   /**
