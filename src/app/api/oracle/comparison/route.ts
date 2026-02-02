@@ -278,7 +278,7 @@ export async function GET(request: NextRequest) {
     const symbols = symbolsParam
       ? symbolsParam.split(',')
       : ['ETH/USD', 'BTC/USD', 'LINK/USD', 'MATIC/USD'];
-    const protocols = protocolsParam ? protocolsParam.split(',') : ORACLE_PROTOCOLS;
+    const protocols = (protocolsParam ? protocolsParam.split(',') : ORACLE_PROTOCOLS) as OracleProtocol[];
 
     // 检查数据源健康状态
     const health = await checkDataSourceHealth();
@@ -306,7 +306,7 @@ export async function GET(request: NextRequest) {
       case 'heatmap':
         try {
           response.heatmap = useRealData
-            ? await generateRealHeatmapData(symbols, protocols as any[])
+            ? await generateRealHeatmapData(symbols, protocols)
             : generateMockHeatmapData(symbols, protocols);
         } catch {
           response.heatmap = generateMockHeatmapData(symbols, protocols);
@@ -317,7 +317,7 @@ export async function GET(request: NextRequest) {
       case 'latency':
         try {
           response.latency = useRealData
-            ? await generateRealLatencyData(protocols as any[])
+            ? await generateRealLatencyData(protocols)
             : generateMockLatencyData(protocols);
         } catch {
           response.latency = generateMockLatencyData(protocols);
@@ -333,7 +333,7 @@ export async function GET(request: NextRequest) {
       case 'realtime':
         try {
           response.realtime = useRealData
-            ? await generateRealRealtimeData(protocols as any[])
+            ? await generateRealRealtimeData(protocols)
             : generateMockRealtimeData(protocols);
         } catch {
           response.realtime = generateMockRealtimeData(protocols);
@@ -346,7 +346,7 @@ export async function GET(request: NextRequest) {
         // 获取所有类型的数据
         try {
           response.heatmap = useRealData
-            ? await generateRealHeatmapData(symbols, protocols as any[])
+            ? await generateRealHeatmapData(symbols, protocols as string[])
             : generateMockHeatmapData(symbols, protocols);
         } catch {
           response.heatmap = generateMockHeatmapData(symbols, protocols);
@@ -355,7 +355,7 @@ export async function GET(request: NextRequest) {
 
         try {
           response.latency = useRealData
-            ? await generateRealLatencyData(protocols as any[])
+            ? await generateRealLatencyData(protocols as string[])
             : generateMockLatencyData(protocols);
         } catch {
           response.latency = generateMockLatencyData(protocols);
@@ -365,7 +365,7 @@ export async function GET(request: NextRequest) {
 
         try {
           response.realtime = useRealData
-            ? await generateRealRealtimeData(protocols as any[])
+            ? await generateRealRealtimeData(protocols)
             : generateMockRealtimeData(protocols);
         } catch {
           response.realtime = generateMockRealtimeData(protocols);

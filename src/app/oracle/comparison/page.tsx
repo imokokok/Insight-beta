@@ -66,6 +66,8 @@ const defaultFilter: ComparisonFilter = {
   showStale: false,
 };
 
+const MAX_RECONNECT_ATTEMPTS = 5;
+
 // ============================================================================
 // 模拟数据生成器（开发用）
 // ============================================================================
@@ -342,6 +344,8 @@ export default function ComparisonPage() {
   // Refs
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
+  const reconnectAttempts = useRef(0);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // ============================================================================
   // 数据获取
@@ -383,6 +387,7 @@ export default function ComparisonPage() {
 
     ws.onopen = () => {
       setIsLive(true);
+      reconnectAttempts.current = 0;
       ws.send(
         JSON.stringify({
           type: 'subscribe_comparison',
@@ -393,13 +398,31 @@ export default function ComparisonPage() {
 
     ws.onclose = () => {
       setIsLive(false);
+      wsRef.current = null;
+
+      // 自动重连逻辑
+      if (reconnectAttempts.current < MAX_RECONNECT_ATTEMPTS) {
+        reconnectAttempts.current++;
+        reconnectTimeoutRef.current = setTimeout(() => {
+          connectWebSocket();
+        }, 3000 * reconnectAttempts.current);
+      }
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      setIsLive(false);
     };
 
     ws.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      if (message.type === 'comparison_update') {
-        setRealtimeData(message.data);
-        setLastUpdated(new Date());
+      try {
+        const message = JSON.parse(event.data);
+        if (message.type === 'comparison_update') {
+          setRealtimeData(message.data);
+          setLastUpdated(new Date());
+        }
+      } catch (error) {
+        console.error('Failed to parse WebSocket message:', error);
       }
     };
 

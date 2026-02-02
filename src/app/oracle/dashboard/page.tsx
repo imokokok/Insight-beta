@@ -84,41 +84,67 @@ export default function UnifiedDashboardPage() {
 
   // WebSocket 连接
   useEffect(() => {
-    const ws = new WebSocket(process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001');
+    let ws: WebSocket | null = null;
+    let reconnectTimeout: NodeJS.Timeout | null = null;
+    let reconnectAttempts = 0;
+    const MAX_RECONNECT_ATTEMPTS = 5;
 
-    ws.onopen = () => {
-      setWsConnected(true);
-      // 订阅默认交易对
-      ws.send(
-        JSON.stringify({
-          type: 'subscribe',
-          symbols: ['ETH/USD', 'BTC/USD', 'LINK/USD'],
-        }),
-      );
+    const connect = () => {
+      ws = new WebSocket(process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001');
+
+      ws.onopen = () => {
+        setWsConnected(true);
+        reconnectAttempts = 0;
+        // 订阅默认交易对
+        ws?.send(
+          JSON.stringify({
+            type: 'subscribe',
+            symbols: ['ETH/USD', 'BTC/USD', 'LINK/USD'],
+          }),
+        );
+      };
+
+      ws.onclose = () => {
+        setWsConnected(false);
+        ws = null;
+
+        // 自动重连
+        if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+          reconnectAttempts++;
+          reconnectTimeout = setTimeout(connect, 3000 * reconnectAttempts);
+        }
+      };
+
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const message = JSON.parse(event.data);
+          if (typeof message !== 'object' || message === null) return;
+
+          const msg = message as { type: string; data: unknown };
+
+          switch (msg.type) {
+            case 'price_update':
+              // 处理价格更新
+              break;
+            case 'comparison_update':
+              setComparison(msg.data as CrossOracleComparison);
+              break;
+          }
+        } catch (error) {
+          console.error('Failed to parse WebSocket message:', error);
+        }
+      };
     };
 
-    ws.onclose = () => {
-      setWsConnected(false);
-    };
-
-    ws.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      if (typeof message !== 'object' || message === null) return;
-
-      const msg = message as { type: string; data: unknown };
-
-      switch (msg.type) {
-        case 'price_update':
-          // 处理价格更新
-          break;
-        case 'comparison_update':
-          setComparison(msg.data as CrossOracleComparison);
-          break;
-      }
-    };
+    connect();
 
     return () => {
-      ws.close();
+      if (reconnectTimeout) clearTimeout(reconnectTimeout);
+      ws?.close();
     };
   }, []);
 

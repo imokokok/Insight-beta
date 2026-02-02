@@ -6,11 +6,17 @@ type ApiCacheRecord<T> = { expiresAtMs: number; value: T };
 
 const globalForApiCache = globalThis as unknown as {
   oracleMonitorApiCache?: Map<string, ApiCacheRecord<unknown>> | undefined;
+  oracleMonitorApiCacheLocks?: Map<string, Promise<unknown>> | undefined;
 };
 
 const oracleMonitorApiCache =
   globalForApiCache.oracleMonitorApiCache ?? new Map<string, ApiCacheRecord<unknown>>();
-if (process.env.NODE_ENV !== 'production') globalForApiCache.oracleMonitorApiCache = oracleMonitorApiCache;
+const oracleMonitorApiCacheLocks =
+  globalForApiCache.oracleMonitorApiCacheLocks ?? new Map<string, Promise<unknown>>();
+if (process.env.NODE_ENV !== 'production') {
+  globalForApiCache.oracleMonitorApiCache = oracleMonitorApiCache;
+  globalForApiCache.oracleMonitorApiCacheLocks = oracleMonitorApiCacheLocks;
+}
 
 const SENSITIVE_PARAM_PATTERNS = [
   /token/i,
@@ -40,11 +46,7 @@ export function createSafeCacheKey(pathname: string, searchParams: URLSearchPara
     .sort()
     .map((key) => `${key}=${filteredParams[key]}`)
     .join('&');
-  const paramHash = crypto
-    .createHash('sha256')
-    .update(sortedParams)
-    .digest('hex')
-    .slice(0, 16);
+  const paramHash = crypto.createHash('sha256').update(sortedParams).digest('hex').slice(0, 16);
   return `api:${pathname}:${paramHash}`;
 }
 
@@ -56,6 +58,16 @@ export async function cachedJson<T>(
   const now = Date.now();
   const mem = oracleMonitorApiCache.get(key);
   if (mem && mem.expiresAtMs > now) return mem.value as T;
+
+  // 检查是否有正在进行的计算
+  const existingLock = oracleMonitorApiCacheLocks.get(key);
+  if (existingLock) {
+    await existingLock;
+    const cached = oracleMonitorApiCache.get(key);
+    if (cached && cached.expiresAtMs > Date.now()) {
+      return cached.value as T;
+    }
+  }
 
   const storeKey = `api_cache/v1/${key}`;
   let stored: unknown = null;
@@ -70,18 +82,28 @@ export async function cachedJson<T>(
     return stored.value as T;
   }
 
-  const value = await compute();
-  const record: ApiCacheRecord<T> = { expiresAtMs: now + ttlMs, value };
-  oracleMonitorApiCache.set(key, record as ApiCacheRecord<unknown>);
-  try {
-    await writeJsonFile(storeKey, record);
-  } catch (writeError) {
-    logger.warn('Failed to write API cache to persistent storage', {
-      key: storeKey,
-      error: writeError instanceof Error ? writeError.message : String(writeError),
-    });
-  }
-  return value;
+  // 创建计算锁
+  const computePromise = (async () => {
+    try {
+      const value = await compute();
+      const record: ApiCacheRecord<T> = { expiresAtMs: Date.now() + ttlMs, value };
+      oracleMonitorApiCache.set(key, record as ApiCacheRecord<unknown>);
+      try {
+        await writeJsonFile(storeKey, record);
+      } catch (writeError) {
+        logger.warn('Failed to write API cache to persistent storage', {
+          key: storeKey,
+          error: writeError instanceof Error ? writeError.message : String(writeError),
+        });
+      }
+      return value;
+    } finally {
+      oracleMonitorApiCacheLocks.delete(key);
+    }
+  })();
+
+  oracleMonitorApiCacheLocks.set(key, computePromise);
+  return computePromise;
 }
 
 function isValidCacheRecord(value: unknown, now: number): value is ApiCacheRecord<unknown> {
@@ -92,7 +114,9 @@ function isValidCacheRecord(value: unknown, now: number): value is ApiCacheRecor
   return true;
 }
 
-export async function invalidateCachedJson(prefix: string): Promise<{ memoryDeleted: number; diskDeleted: number }> {
+export async function invalidateCachedJson(
+  prefix: string,
+): Promise<{ memoryDeleted: number; diskDeleted: number }> {
   let memoryDeleted = 0;
   if (!prefix) {
     memoryDeleted = oracleMonitorApiCache.size;
@@ -126,9 +150,7 @@ export async function invalidateCachedJson(prefix: string): Promise<{ memoryDele
     const items = page?.items ?? [];
     if (items.length === 0) break;
 
-    const deleteResults = await Promise.allSettled(
-      items.map((i) => deleteJsonKey(i.key)),
-    );
+    const deleteResults = await Promise.allSettled(items.map((i) => deleteJsonKey(i.key)));
     diskDeleted += deleteResults.filter((r) => r.status === 'fulfilled').length;
 
     for (const result of deleteResults) {

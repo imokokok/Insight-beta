@@ -466,6 +466,9 @@ export function useWebSocket(options: UseWebSocketOptions) {
         setIsConnected(false);
         onClose?.(event.code, event.reason);
 
+        // 清理 socketRef，防止连接泄露
+        socketRef.current = null;
+
         if (autoReconnect && reconnectAttemptsRef.current < maxReconnectAttempts) {
           reconnectAttemptsRef.current++;
           reconnectTimeoutRef.current = setTimeout(() => {

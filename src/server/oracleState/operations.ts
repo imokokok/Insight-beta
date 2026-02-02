@@ -4,7 +4,7 @@
  * 提供断言、争议、投票等核心数据操作的 CRUD 功能
  */
 
-import { hasDatabase, query } from '../db';
+import { hasDatabase, query, getClient } from '../db';
 import { ensureSchema } from '../schema';
 import { getMemoryInstance } from '../memoryBackend';
 import { STATE_VERSION, BATCH_SIZE, MAX_SYNC_METRICS } from './constants';
@@ -599,64 +599,75 @@ export async function upsertAssertionsBatch(
     return assertions.length;
   }
 
-  // 数据库模式：分批处理
+  // 数据库模式：使用事务包裹所有批次
+  const client = await getClient();
   let totalInserted = 0;
 
-  for (let i = 0; i < assertions.length; i += BATCH_SIZE) {
-    const batch = assertions.slice(i, i + BATCH_SIZE);
-    const values: (string | number | boolean | null)[] = [];
-    const placeholders: string[] = [];
+  try {
+    await client.query('BEGIN');
 
-    for (let j = 0; j < batch.length; j++) {
-      const a = batch[j];
-      if (!a) continue;
-      const offset = j * 17;
-      placeholders.push(
-        `($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7}, $${offset + 8}, $${offset + 9}, $${offset + 10}, $${offset + 11}, $${offset + 12}, $${offset + 13}, $${offset + 14}, $${offset + 15}, $${offset + 16}, $${offset + 17})`,
+    for (let i = 0; i < assertions.length; i += BATCH_SIZE) {
+      const batch = assertions.slice(i, i + BATCH_SIZE);
+      const values: (string | number | boolean | null)[] = [];
+      const placeholders: string[] = [];
+
+      for (let j = 0; j < batch.length; j++) {
+        const a = batch[j];
+        if (!a) continue;
+        const offset = j * 17;
+        placeholders.push(
+          `($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7}, $${offset + 8}, $${offset + 9}, $${offset + 10}, $${offset + 11}, $${offset + 12}, $${offset + 13}, $${offset + 14}, $${offset + 15}, $${offset + 16}, $${offset + 17})`,
+        );
+
+        values.push(
+          a.id,
+          normalizedInstanceId,
+          a.chain,
+          a.asserter,
+          a.protocol,
+          a.market,
+          a.assertion,
+          a.assertedAt,
+          a.livenessEndsAt,
+          a.blockNumber ?? null,
+          a.logIndex ?? null,
+          a.resolvedAt ?? null,
+          a.settlementResolution ?? null,
+          a.status,
+          a.bondUsd,
+          a.disputer || null,
+          a.txHash,
+        );
+      }
+
+      await client.query(
+        `INSERT INTO assertions (
+          id, instance_id, chain, asserter, protocol, market, assertion_data, asserted_at, liveness_ends_at, block_number, log_index, resolved_at, settlement_resolution, status, bond_usd, disputer, tx_hash
+        ) VALUES ${placeholders.join(', ')}
+        ON CONFLICT (id) DO UPDATE SET
+          instance_id = excluded.instance_id,
+          status = excluded.status,
+          disputer = excluded.disputer,
+          bond_usd = excluded.bond_usd,
+          block_number = excluded.block_number,
+          log_index = excluded.log_index,
+          resolved_at = excluded.resolved_at,
+          settlement_resolution = excluded.settlement_resolution
+        `,
+        values,
       );
 
-      values.push(
-        a.id,
-        normalizedInstanceId,
-        a.chain,
-        a.asserter,
-        a.protocol,
-        a.market,
-        a.assertion,
-        a.assertedAt,
-        a.livenessEndsAt,
-        a.blockNumber ?? null,
-        a.logIndex ?? null,
-        a.resolvedAt ?? null,
-        a.settlementResolution ?? null,
-        a.status,
-        a.bondUsd,
-        a.disputer || null,
-        a.txHash,
-      );
+      totalInserted += batch.length;
     }
 
-    await query(
-      `INSERT INTO assertions (
-        id, instance_id, chain, asserter, protocol, market, assertion_data, asserted_at, liveness_ends_at, block_number, log_index, resolved_at, settlement_resolution, status, bond_usd, disputer, tx_hash
-      ) VALUES ${placeholders.join(', ')}
-      ON CONFLICT (id) DO UPDATE SET
-        instance_id = excluded.instance_id,
-        status = excluded.status,
-        disputer = excluded.disputer,
-        bond_usd = excluded.bond_usd,
-        block_number = excluded.block_number,
-        log_index = excluded.log_index,
-        resolved_at = excluded.resolved_at,
-        settlement_resolution = excluded.settlement_resolution
-      `,
-      values,
-    );
-
-    totalInserted += batch.length;
+    await client.query('COMMIT');
+    return totalInserted;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
   }
-
-  return totalInserted;
 }
 
 /**
