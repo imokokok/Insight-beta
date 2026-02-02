@@ -5,11 +5,13 @@
  */
 
 import { useEffect, useRef, useCallback, useMemo } from 'react';
+import { logger } from '@/lib/logger';
 
 // ============================================================================
 // 防抖和节流
 // ============================================================================
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function debounce<T extends (...args: any[]) => any>(
   fn: T,
   delay: number,
@@ -21,6 +23,7 @@ export function debounce<T extends (...args: any[]) => any>(
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function throttle<T extends (...args: any[]) => any>(
   fn: T,
   limit: number,
@@ -264,7 +267,9 @@ export function useLazyLoad<T>(
             setData(result);
             setHasLoaded(true);
           } catch (error) {
-            console.error('Lazy load failed:', error);
+            logger.error('Lazy load failed', {
+              error: error instanceof Error ? error.message : String(error),
+            });
           } finally {
             setIsLoading(false);
           }

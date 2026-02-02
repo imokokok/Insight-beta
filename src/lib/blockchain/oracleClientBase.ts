@@ -62,10 +62,10 @@ export function formatPriceValue(price: bigint, decimals: number = 8): number {
  */
 export function parseSymbolPair(symbol: string): { base: string; quote: string } | null {
   const parts = symbol.split('/');
-  if (parts.length !== 2) {
+  if (parts.length !== 2 || !parts[0] || !parts[1]) {
     return null;
   }
-  return { base: parts[0]!, quote: parts[1]! };
+  return { base: parts[0], quote: parts[1] };
 }
 
 /**
