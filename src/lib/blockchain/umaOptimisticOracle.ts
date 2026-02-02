@@ -1,5 +1,6 @@
 import { createPublicClient, http, type Address, type Hash } from 'viem';
 import type { Chain, PublicClient, WalletClient } from 'viem';
+import { logger } from '@/lib/logger';
 
 export interface UMAOracleConfig {
   chainId: number;
@@ -393,7 +394,9 @@ export class OptimisticOracleClient {
         customLiveness: request.customLiveness,
       };
     } catch (error) {
-      console.error('Failed to get price request:', error);
+      logger.error('Failed to get price request', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return null;
     }
   }
@@ -416,7 +419,9 @@ export class OptimisticOracleClient {
         ],
       });
     } catch (error) {
-      console.error('Failed to check price:', error);
+      logger.error('Failed to check price', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return false;
     }
   }
@@ -458,13 +463,15 @@ export class OptimisticOracleClient {
       });
 
       if (!simulationResult || !simulationResult.request) {
-        console.error('Invalid simulation result:', simulationResult);
+        logger.error('Invalid simulation result', { simulationResult });
         return null;
       }
 
       return await this.walletClient.writeContract(simulationResult.request);
     } catch (error) {
-      console.error('Failed to propose price:', error);
+      logger.error('Failed to propose price', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return null;
     }
   }
@@ -499,13 +506,15 @@ export class OptimisticOracleClient {
       });
 
       if (!simulationResult || !simulationResult.request) {
-        console.error('Invalid simulation result:', simulationResult);
+        logger.error('Invalid simulation result', { simulationResult });
         return null;
       }
 
       return await this.walletClient.writeContract(simulationResult.request);
     } catch (error) {
-      console.error('Failed to dispute price:', error);
+      logger.error('Failed to dispute price', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return null;
     }
   }
@@ -541,7 +550,9 @@ export class OptimisticOracleClient {
         settledAt: result.result[1],
       };
     } catch (error) {
-      console.error('Failed to settle price:', error);
+      logger.error('Failed to settle price', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return null;
     }
   }
@@ -572,7 +583,9 @@ export class OptimisticOracleClient {
         noDataPresent: assertion.noDataPresent,
       };
     } catch (error) {
-      console.error('Failed to get assertion:', error);
+      logger.error('Failed to get assertion', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return null;
     }
   }
@@ -610,13 +623,15 @@ export class OptimisticOracleClient {
       });
 
       if (!simulationResult || !simulationResult.request) {
-        console.error('Invalid simulation result:', simulationResult);
+        logger.error('Invalid simulation result', { simulationResult });
         return null;
       }
 
       return await this.walletClient.writeContract(simulationResult.request);
     } catch (error) {
-      console.error('Failed to assert truth:', error);
+      logger.error('Failed to assert truth', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return null;
     }
   }
@@ -641,13 +656,15 @@ export class OptimisticOracleClient {
       });
 
       if (!simulationResult) {
-        console.error('Invalid simulation result:', simulationResult);
+        logger.error('Invalid simulation result', { simulationResult });
         return false;
       }
 
       return true;
     } catch (error) {
-      console.error('Failed to settle assertion:', error);
+      logger.error('Failed to settle assertion', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return false;
     }
   }
@@ -666,7 +683,9 @@ export class OptimisticOracleClient {
         args: [assertionId as `0x${string}`],
       });
     } catch (error) {
-      console.error('Failed to get assertion result:', error);
+      logger.error('Failed to get assertion result', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return null;
     }
   }
@@ -685,7 +704,9 @@ export class OptimisticOracleClient {
         args: [assertionId as `0x${string}`],
       });
     } catch (error) {
-      console.error('Failed to check if assertion is disputed:', error);
+      logger.error('Failed to check if assertion is disputed', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return null;
     }
   }
