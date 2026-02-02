@@ -587,3 +587,98 @@ export async function fetchApiData<T>(
     throw error;
   }
 }
+
+/**
+ * 通用的 Fetch 错误处理工具函数
+ * 统一处理 API 请求的错误，包括网络错误、HTTP 错误等
+ *
+ * @param url - 请求 URL
+ * @param options - fetch 选项
+ * @param errorContext - 错误上下文信息，用于日志记录
+ * @returns 解析后的 JSON 数据
+ * @throws ApiClientError 统一格式的错误
+ *
+ * @example
+ * ```typescript
+ * const data = await fetchWithErrorHandling<PriceData>(
+ *   'https://api.example.com/price',
+ *   { method: 'GET' },
+ *   'Failed to fetch price data'
+ * );
+ * ```
+ */
+export async function fetchWithErrorHandling<T>(
+  url: string,
+  options?: RequestInit,
+  errorContext?: string,
+): Promise<T> {
+  try {
+    const response = await fetch(url, options);
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status} ${response.statusText}`);
+    }
+    return (await response.json()) as T;
+  } catch (error) {
+    logger.error(errorContext || 'API request failed', {
+      error: error instanceof Error ? error.message : String(error),
+      url,
+    });
+    throw error;
+  }
+}
+
+/**
+ * 带超时的 fetch 请求
+ * 自动处理 AbortController 和超时逻辑
+ *
+ * @param url - 请求 URL
+ * @param options - fetch 选项
+ * @param timeoutMs - 超时时间（毫秒），默认 5000
+ * @returns fetch Response
+ * @throws Error 超时或请求失败
+ *
+ * @example
+ * ```typescript
+ * const response = await fetchWithTimeout(
+ *   'https://api.example.com/data',
+ *   { method: 'GET' },
+ *   10000
+ * );
+ * const data = await response.json();
+ * ```
+ */
+export async function fetchWithTimeout(
+  url: string,
+  options?: RequestInit,
+  timeoutMs: number = 5000,
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    return response;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+/**
+ * 获取错误信息字符串
+ * 统一处理 Error 对象和其他类型的错误
+ *
+ * @param error - 错误对象
+ * @returns 错误信息字符串
+ *
+ * @example
+ * ```typescript
+ * try {
+ *   await someOperation();
+ * } catch (error) {
+ *   const message = getErrorMessage(error);
+ *   logger.error('Operation failed', { message });
+ * }
+ * ```
+ */
+export function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}

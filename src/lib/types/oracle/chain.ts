@@ -41,8 +41,8 @@ export type ChainInfo = {
   supportedProtocols: OracleProtocol[];
 };
 
-export type OracleChain = 'Polygon' | 'PolygonAmoy' | 'Arbitrum' | 'Optimism' | 'Local';
-export type UMAChain = 'Ethereum' | 'Polygon' | 'Arbitrum' | 'Optimism' | 'Base' | 'PolygonAmoy';
+// 从 oracleTypes.ts 重新导出以保持一致性
+export type { OracleChain, UMAChain } from '../oracleTypes';
 
 export const CHAIN_DISPLAY_NAMES: Record<SupportedChain, string> = {
   ethereum: 'Ethereum',

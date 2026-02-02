@@ -8,6 +8,7 @@ import { createPublicClient, http, type PublicClient } from 'viem';
 import { logger } from '@/lib/logger';
 import { redactRpcUrl } from '@/server/oracleIndexer/rpcClient';
 import { getRpcTimeoutMs } from '@/server/oracleIndexer/rpcClient';
+// parseRpcUrls is imported but not used in this file - removed to avoid TS error
 
 const MAX_RETRY_BACKOFF_MS = 30000;
 const RPC_CLIENT_CACHE = new Map<string, PublicClient>();
@@ -192,13 +193,6 @@ export class RpcManager {
 
     return 'unknown';
   }
-}
-
-export function parseRpcUrls(rpcUrl: string): string[] {
-  return rpcUrl
-    .split(',')
-    .map((url) => url.trim())
-    .filter(Boolean);
 }
 
 export function readRpcStats(statsJson?: string | null): RpcStats {
