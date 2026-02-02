@@ -178,14 +178,13 @@ function generateMockLatencyData(protocols: string[]): LatencyAnalysis {
     summary: {
       avgLatency: latencies.reduce((a, b) => a + b, 0) / latencies.length,
       maxLatency: Math.max(...latencies),
+      minLatency: Math.min(...latencies),
+      totalFeeds: metrics.length,
       staleFeeds: staleCount,
       degradedFeeds: degradedCount,
       healthyFeeds: metrics.length - staleCount - degradedCount,
     },
-    timeRange: {
-      from: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-      to: new Date().toISOString(),
-    },
+    lastUpdated: new Date().toISOString(),
   };
 }
 

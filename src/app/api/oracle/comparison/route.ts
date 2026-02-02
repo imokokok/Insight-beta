@@ -18,12 +18,18 @@ import type {
   RealtimeComparisonItem,
 } from '@/lib/types/oracle';
 import { ORACLE_PROTOCOLS } from '@/lib/types/oracle';
+import {
+  generateRealHeatmapData,
+  generateRealLatencyData,
+  generateRealRealtimeData,
+  checkDataSourceHealth,
+} from '@/server/oracle/realDataService';
 
 // ============================================================================
-// 模拟数据生成器（实际项目中替换为真实数据库查询）
+// 模拟数据生成器（当真实数据不可用时降级使用）
 // ============================================================================
 
-function generateHeatmapData(symbols: string[], protocols: string[]): PriceHeatmapData {
+function generateMockHeatmapData(symbols: string[], protocols: string[]): PriceHeatmapData {
   const rows = symbols.map((symbol) => {
     const basePrice = symbol.includes('BTC') ? 45000 : symbol.includes('ETH') ? 3000 : 20;
     const consensusPrice = basePrice * (1 + (Math.random() - 0.5) * 0.02);
@@ -80,7 +86,7 @@ function generateHeatmapData(symbols: string[], protocols: string[]): PriceHeatm
   };
 }
 
-function generateLatencyData(protocols: string[]): LatencyAnalysis {
+function generateMockLatencyData(protocols: string[]): LatencyAnalysis {
   const symbols = ['ETH/USD', 'BTC/USD', 'LINK/USD', 'MATIC/USD'];
   const chains = ['ethereum', 'arbitrum', 'optimism', 'base'];
 
@@ -88,7 +94,7 @@ function generateLatencyData(protocols: string[]): LatencyAnalysis {
 
   protocols.forEach((protocol) => {
     symbols.forEach((symbol) => {
-      const chain = chains[Math.floor(Math.random() * chains.length)];
+      const chain = chains[Math.floor(Math.random() * chains.length)] ?? 'ethereum';
       const latencyMs = Math.random() * 10000 + 1000;
 
       let status: 'healthy' | 'degraded' | 'stale' = 'healthy';
@@ -99,59 +105,56 @@ function generateLatencyData(protocols: string[]): LatencyAnalysis {
         protocol: protocol as any,
         symbol,
         chain: chain as any,
-        lastUpdateTimestamp: new Date(Date.now() - latencyMs).toISOString(),
         latencyMs,
         latencySeconds: latencyMs / 1000,
-        blockLag: Math.floor(Math.random() * 10),
-        updateFrequency: 300 + Math.random() * 300,
-        expectedFrequency: 300,
+        blockLag: Math.floor(latencyMs / 12000),
+        updateFrequency: Math.random() * 60000 + 30000,
+        expectedFrequency: 60000,
         frequencyDeviation: (Math.random() - 0.5) * 20,
         percentile50: latencyMs * 0.8,
         percentile90: latencyMs * 1.2,
         percentile99: latencyMs * 1.5,
         status,
+        lastUpdateTimestamp: new Date().toISOString(),
       });
     });
   });
 
   const latencies = metrics.map((m) => m.latencyMs);
-  const staleCount = metrics.filter((m) => m.status === 'stale').length;
-  const degradedCount = metrics.filter((m) => m.status === 'degraded').length;
 
   return {
     metrics,
     summary: {
       avgLatency: latencies.reduce((a, b) => a + b, 0) / latencies.length,
       maxLatency: Math.max(...latencies),
-      staleFeeds: staleCount,
-      degradedFeeds: degradedCount,
-      healthyFeeds: metrics.length - staleCount - degradedCount,
+      minLatency: Math.min(...latencies),
+      totalFeeds: metrics.length,
+      healthyFeeds: metrics.filter((m) => m.status === 'healthy').length,
+      degradedFeeds: metrics.filter((m) => m.status === 'degraded').length,
+      staleFeeds: metrics.filter((m) => m.status === 'stale').length,
     },
-    timeRange: {
-      from: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-      to: new Date().toISOString(),
-    },
+    lastUpdated: new Date().toISOString(),
   };
 }
 
-function generateCostData(protocols: string[]): CostComparison {
+function generateMockCostData(protocols: string[]): CostComparison {
   const protocolMetrics = protocols.map((protocol) => {
-    const costScore = Math.random() * 100;
-    const valueScore = Math.random() * 100;
+    const costScore = Math.random() * 40 + 60;
+    const valueScore = Math.random() * 30 + 70;
 
     return {
       protocol: protocol as any,
       costScore,
       valueScore,
-      feedsCount: Math.floor(Math.random() * 200) + 50,
-      chainsCount: Math.floor(Math.random() * 10) + 1,
-      avgUpdateFrequency: 300 + Math.random() * 300,
-      accuracyScore: 95 + Math.random() * 5,
-      uptimeScore: 99 + Math.random(),
+      feedsCount: Math.floor(Math.random() * 50) + 10,
+      chainsCount: Math.floor(Math.random() * 5) + 1,
+      avgUpdateFrequency: Math.random() * 300 + 60,
+      accuracyScore: Math.random() * 10 + 90,
+      uptimeScore: Math.random() * 5 + 95,
       costPerFeed: Math.random() * 100,
       costPerChain: Math.random() * 500,
       costPerUpdate: Math.random() * 0.01,
-      roi: 0.5 + Math.random() * 2,
+      roi: valueScore / costScore,
     };
   });
 
@@ -211,8 +214,8 @@ function generateCostData(protocols: string[]): CostComparison {
   };
 }
 
-function generateRealtimeData(protocols: string[]): RealtimeComparisonItem[] {
-  const symbols = ['ETH/USD', 'BTC/USD', 'LINK/USD', 'MATIC/USD', 'AVAX/USD', 'SOL/USD'];
+function generateMockRealtimeData(protocols: string[]): RealtimeComparisonItem[] {
+  const symbols = ['ETH/USD', 'BTC/USD', 'LINK/USD', 'MATIC/USD'];
 
   return symbols.map((symbol) => {
     const basePrice = symbol.includes('BTC') ? 45000 : symbol.includes('ETH') ? 3000 : 20;
@@ -266,99 +269,173 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type') || 'all';
-
-    // 获取筛选参数
     const symbolsParam = searchParams.get('symbols');
     const protocolsParam = searchParams.get('protocols');
 
     const symbols = symbolsParam
       ? symbolsParam.split(',')
-      : ['ETH/USD', 'BTC/USD', 'LINK/USD', 'MATIC/USD', 'AVAX/USD', 'SOL/USD'];
+      : ['ETH/USD', 'BTC/USD', 'LINK/USD', 'MATIC/USD'];
     const protocols = protocolsParam ? protocolsParam.split(',') : ORACLE_PROTOCOLS;
 
-    let responseData: any = {};
+    // 检查数据源健康状态
+    const health = await checkDataSourceHealth();
+    const useRealData = health.chainlink || health.pyth;
+
+    const response: {
+      heatmap?: PriceHeatmapData;
+      latency?: LatencyAnalysis;
+      cost?: CostComparison;
+      realtime?: RealtimeComparisonItem[];
+      meta: {
+        dataSource: 'real' | 'mock';
+        health: typeof health;
+        timestamp: string;
+      };
+    } = {
+      meta: {
+        dataSource: useRealData ? 'real' : 'mock',
+        health,
+        timestamp: new Date().toISOString(),
+      },
+    };
 
     switch (type) {
       case 'heatmap':
-        responseData = generateHeatmapData(symbols, protocols);
+        try {
+          response.heatmap = useRealData
+            ? await generateRealHeatmapData(symbols, protocols as any[])
+            : generateMockHeatmapData(symbols, protocols);
+        } catch {
+          response.heatmap = generateMockHeatmapData(symbols, protocols);
+          response.meta.dataSource = 'mock';
+        }
         break;
 
       case 'latency':
-        responseData = generateLatencyData(protocols);
+        try {
+          response.latency = useRealData
+            ? await generateRealLatencyData(protocols as any[])
+            : generateMockLatencyData(protocols);
+        } catch {
+          response.latency = generateMockLatencyData(protocols);
+          response.meta.dataSource = 'mock';
+        }
         break;
 
       case 'cost':
-        responseData = generateCostData(protocols);
+        // 成本数据暂时使用模拟数据（需要实际的成本计算逻辑）
+        response.cost = generateMockCostData(protocols);
         break;
 
       case 'realtime':
-        responseData = generateRealtimeData(protocols);
+        try {
+          response.realtime = useRealData
+            ? await generateRealRealtimeData(protocols as any[])
+            : generateMockRealtimeData(protocols);
+        } catch {
+          response.realtime = generateMockRealtimeData(protocols);
+          response.meta.dataSource = 'mock';
+        }
         break;
 
       case 'all':
       default:
-        responseData = {
-          heatmap: generateHeatmapData(symbols, protocols),
-          latency: generateLatencyData(protocols),
-          cost: generateCostData(protocols),
-          realtime: generateRealtimeData(protocols),
-        };
+        // 获取所有类型的数据
+        try {
+          response.heatmap = useRealData
+            ? await generateRealHeatmapData(symbols, protocols as any[])
+            : generateMockHeatmapData(symbols, protocols);
+        } catch {
+          response.heatmap = generateMockHeatmapData(symbols, protocols);
+          response.meta.dataSource = 'mock';
+        }
+
+        try {
+          response.latency = useRealData
+            ? await generateRealLatencyData(protocols as any[])
+            : generateMockLatencyData(protocols);
+        } catch {
+          response.latency = generateMockLatencyData(protocols);
+        }
+
+        response.cost = generateMockCostData(protocols);
+
+        try {
+          response.realtime = useRealData
+            ? await generateRealRealtimeData(protocols as any[])
+            : generateMockRealtimeData(protocols);
+        } catch {
+          response.realtime = generateMockRealtimeData(protocols);
+        }
         break;
     }
 
-    return NextResponse.json({
-      data: responseData,
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        type,
-        symbols,
-        protocols,
-      },
-    });
+    return NextResponse.json(response);
   } catch (error) {
     console.error('Comparison API error:', error);
-    return NextResponse.json({ error: 'Failed to fetch comparison data' }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: 'Internal server error',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 },
+    );
   }
 }
 
-// 获取历史趋势数据
+// ============================================================================
+// POST - 获取历史数据
+// ============================================================================
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { symbol, protocol, hours = 24 } = body;
 
-    // 生成历史数据点
-    const dataPoints = [];
-    const now = Date.now();
-    const interval = (hours * 60 * 60 * 1000) / 100; // 100 个数据点
-
-    for (let i = 0; i < 100; i++) {
-      const timestamp = new Date(now - (100 - i) * interval).toISOString();
-      const basePrice = symbol.includes('BTC') ? 45000 : symbol.includes('ETH') ? 3000 : 20;
-
-      dataPoints.push({
-        timestamp,
-        price: basePrice * (1 + (Math.random() - 0.5) * 0.05),
-        deviation: (Math.random() - 0.5) * 2,
-        latency: Math.random() * 5000,
-      });
+    if (!symbol || !protocol) {
+      return NextResponse.json(
+        { error: 'Missing required parameters: symbol, protocol' },
+        { status: 400 },
+      );
     }
 
+    // 生成历史趋势数据（实际项目中从数据库查询）
+    const dataPoints = Math.min(hours * 4, 96); // 每15分钟一个点，最多96个点
+    const now = Date.now();
+    const interval = (hours * 60 * 60 * 1000) / dataPoints;
+
+    const history = Array.from({ length: dataPoints }, (_, i) => {
+      const timestamp = new Date(now - (dataPoints - i) * interval).toISOString();
+      const basePrice = symbol.includes('BTC') ? 45000 : symbol.includes('ETH') ? 3000 : 20;
+      const randomWalk = (Math.random() - 0.5) * 0.02;
+      const price = basePrice * (1 + randomWalk);
+
+      return {
+        timestamp,
+        price,
+        deviation: randomWalk * 100,
+        latency: Math.random() * 5000 + 1000,
+      };
+    });
+
     return NextResponse.json({
-      data: {
-        symbol,
-        protocol,
-        hours,
-        dataPoints,
-      },
+      symbol,
+      protocol,
+      hours,
+      data: history,
       meta: {
+        dataSource: 'mock',
         timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
       },
     });
   } catch (error) {
     console.error('History API error:', error);
-    return NextResponse.json({ error: 'Failed to fetch history data' }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: 'Internal server error',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 },
+    );
   }
 }

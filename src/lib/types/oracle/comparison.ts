@@ -70,14 +70,13 @@ export type LatencyAnalysis = {
   summary: {
     avgLatency: number;
     maxLatency: number;
+    minLatency: number;
+    totalFeeds: number;
     staleFeeds: number;
     degradedFeeds: number;
     healthyFeeds: number;
   };
-  timeRange: {
-    from: string;
-    to: string;
-  };
+  lastUpdated: string;
 };
 
 export type LatencyTrendPoint = {
