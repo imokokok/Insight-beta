@@ -498,8 +498,10 @@ export async function fetchApiData<T>(
                 url.searchParams.set('instanceId', instanceId.trim());
               }
             }
-          } catch {
-            void 0;
+          } catch (error) {
+            logger.warn('Failed to parse saved oracle filters from localStorage', {
+              error: error instanceof Error ? error.message : String(error),
+            });
           }
         }
         return url;
