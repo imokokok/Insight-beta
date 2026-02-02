@@ -284,8 +284,10 @@ export async function copyToClipboard(text: string): Promise<boolean> {
       await navigator.clipboard.writeText(text);
       return true;
     }
-  } catch {
-    void 0;
+  } catch (error) {
+    logger.warn('Failed to copy to clipboard using navigator.clipboard', {
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
 
   try {
