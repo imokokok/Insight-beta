@@ -13,16 +13,9 @@ import {
   parseAbi,
   formatUnits,
 } from 'viem';
-import {
-  mainnet,
-  polygon,
-  arbitrum,
-  optimism,
-  base,
-  avalanche,
-  bsc,
-} from 'viem/chains';
+import { mainnet, polygon, arbitrum, optimism, base, avalanche, bsc } from 'viem/chains';
 import { logger } from '@/lib/logger';
+import { DEFAULT_STALENESS_THRESHOLDS } from '@/lib/config/constants';
 import type {
   SupportedChain,
   UnifiedPriceFeed,
@@ -176,11 +169,7 @@ export class PythClient {
   private config: PythProtocolConfig;
   private contractAddress: Address;
 
-  constructor(
-    chain: SupportedChain,
-    rpcUrl: string,
-    config: PythProtocolConfig = {}
-  ) {
+  constructor(chain: SupportedChain, rpcUrl: string, config: PythProtocolConfig = {}) {
     this.chain = chain;
     this.config = config;
 
@@ -214,12 +203,12 @@ export class PythClient {
     confidence: number;
   }> {
     try {
-      const priceData = await this.publicClient.readContract({
+      const priceData = (await this.publicClient.readContract({
         address: this.contractAddress,
         abi: PYTH_ABI,
         functionName: 'getPrice',
         args: [priceId as `0x${string}`],
-      }) as [bigint, bigint, number, bigint];
+      })) as [bigint, bigint, number, bigint];
 
       // 解析价格数据
       const price = priceData[0]; // int64
@@ -303,7 +292,7 @@ export class PythClient {
       try {
         // 查找对应的 symbol
         const symbol = Object.entries(PYTH_PRICE_FEED_IDS).find(
-          ([_, id]) => id.toLowerCase() === priceId.toLowerCase()
+          ([_, id]) => id.toLowerCase() === priceId.toLowerCase(),
         )?.[0];
 
         if (symbol) {
@@ -323,21 +312,16 @@ export class PythClient {
   /**
    * 转换为统一价格喂价格式
    */
-  private async getUnifiedPriceFeed(
-    symbol: string,
-    priceId: string
-  ): Promise<UnifiedPriceFeed> {
+  private async getUnifiedPriceFeed(symbol: string, priceId: string): Promise<UnifiedPriceFeed> {
     const priceData = await this.getLatestPrice(priceId);
     const [baseAsset, quoteAsset] = symbol.split('/');
 
     const now = new Date();
     const publishTime = new Date(Number(priceData.publishTime) * 1000);
-    const stalenessSeconds = Math.floor(
-      (now.getTime() - publishTime.getTime()) / 1000
-    );
+    const stalenessSeconds = Math.floor((now.getTime() - publishTime.getTime()) / 1000);
 
     // 判断数据是否过期
-    const stalenessThreshold = this.config.stalenessThreshold || 60; // Pyth 默认 60 秒
+    const stalenessThreshold = this.config.stalenessThreshold || DEFAULT_STALENESS_THRESHOLDS.PYTH;
     const isStale = stalenessSeconds > stalenessThreshold;
 
     // 计算置信度百分比
@@ -377,12 +361,11 @@ export class PythClient {
       const priceData = await this.getLatestPrice(priceId);
       const lastUpdate = new Date(Number(priceData.publishTime) * 1000);
       const now = new Date();
-      const stalenessSeconds = Math.floor(
-        (now.getTime() - lastUpdate.getTime()) / 1000
-      );
+      const stalenessSeconds = Math.floor((now.getTime() - lastUpdate.getTime()) / 1000);
 
       // 检查数据新鲜度
-      const stalenessThreshold = this.config.stalenessThreshold || 60;
+      const stalenessThreshold =
+        this.config.stalenessThreshold || DEFAULT_STALENESS_THRESHOLDS.PYTH;
       if (stalenessSeconds > stalenessThreshold) {
         issues.push(`Data is stale: ${stalenessSeconds}s old`);
       }
@@ -409,9 +392,7 @@ export class PythClient {
         healthy: false,
         lastUpdate: new Date(0),
         stalenessSeconds: Infinity,
-        issues: [
-          `Failed to read feed: ${error instanceof Error ? error.message : String(error)}`,
-        ],
+        issues: [`Failed to read feed: ${error instanceof Error ? error.message : String(error)}`],
       };
     }
   }
@@ -427,12 +408,12 @@ export class PythClient {
     formattedPrice: number;
   }> {
     try {
-      const priceData = await this.publicClient.readContract({
+      const priceData = (await this.publicClient.readContract({
         address: this.contractAddress,
         abi: PYTH_ABI,
         functionName: 'getEmaPrice',
         args: [priceId as `0x${string}`],
-      }) as [bigint, bigint, number, bigint];
+      })) as [bigint, bigint, number, bigint];
 
       const price = priceData[0];
       const conf = priceData[1];
@@ -473,7 +454,7 @@ export class PythClient {
 export function createPythClient(
   chain: SupportedChain,
   rpcUrl: string,
-  config?: PythProtocolConfig
+  config?: PythProtocolConfig,
 ): PythClient {
   return new PythClient(chain, rpcUrl, config);
 }
