@@ -267,6 +267,28 @@ export function useRealTime(options: UseRealTimeOptions): UseRealTimeReturn {
   const [eventCount, setEventCount] = useState(0);
   const [isSupported, setIsSupported] = useState(true);
 
+  // 使用 ref 存储回调以避免依赖问题
+  const callbacksRef = useRef({
+    onEvent,
+    onConnect,
+    onDisconnect,
+    onError,
+    onReconnect,
+    onMaxReconnectAttemptsReached,
+  });
+
+  // 更新 ref 中的回调
+  useEffect(() => {
+    callbacksRef.current = {
+      onEvent,
+      onConnect,
+      onDisconnect,
+      onError,
+      onReconnect,
+      onMaxReconnectAttemptsReached,
+    };
+  }, [onEvent, onConnect, onDisconnect, onError, onReconnect, onMaxReconnectAttemptsReached]);
+
   useEffect(() => {
     if (typeof EventSource === 'undefined') {
       setIsSupported(false);
@@ -288,7 +310,7 @@ export function useRealTime(options: UseRealTimeOptions): UseRealTimeReturn {
           status: 'connected',
           lastConnected: Date.now(),
         }));
-        onEvent?.(event);
+        callbacksRef.current.onEvent?.(event);
       },
       onConnect: () => {
         setConnectionState((prev) => ({
@@ -297,7 +319,7 @@ export function useRealTime(options: UseRealTimeOptions): UseRealTimeReturn {
           lastConnected: Date.now(),
           retryCount: 0,
         }));
-        onConnect?.();
+        callbacksRef.current.onConnect?.();
       },
       onDisconnect: () => {
         setConnectionState((prev) => ({
@@ -305,15 +327,15 @@ export function useRealTime(options: UseRealTimeOptions): UseRealTimeReturn {
           status: 'disconnected',
           lastDisconnected: Date.now(),
         }));
-        onDisconnect?.();
+        callbacksRef.current.onDisconnect?.();
       },
-      onError: () => {
+      onError: (error) => {
         setConnectionState((prev) => ({
           ...prev,
           status: 'error',
           errorCount: prev.errorCount + 1,
         }));
-        onError?.(new Event('error'));
+        callbacksRef.current.onError?.(error);
       },
       onReconnect: (attempt) => {
         setConnectionState((prev) => ({
@@ -321,14 +343,14 @@ export function useRealTime(options: UseRealTimeOptions): UseRealTimeReturn {
           status: 'reconnecting',
           retryCount: attempt,
         }));
-        onReconnect?.(attempt);
+        callbacksRef.current.onReconnect?.(attempt);
       },
       onMaxReconnectAttemptsReached: () => {
         setConnectionState((prev) => ({
           ...prev,
           status: 'disconnected',
         }));
-        onMaxReconnectAttemptsReached?.();
+        callbacksRef.current.onMaxReconnectAttemptsReached?.();
       },
     });
 
@@ -341,20 +363,7 @@ export function useRealTime(options: UseRealTimeOptions): UseRealTimeReturn {
     return () => {
       manager.disconnect();
     };
-  }, [
-    url,
-    enabled,
-    autoReconnect,
-    reconnectInterval,
-    maxReconnectAttempts,
-    heartbeatInterval,
-    onEvent,
-    onConnect,
-    onDisconnect,
-    onError,
-    onReconnect,
-    onMaxReconnectAttemptsReached,
-  ]);
+  }, [url, enabled, autoReconnect, reconnectInterval, maxReconnectAttempts, heartbeatInterval]);
 
   const subscribe = useCallback((eventTypes?: RealTimeEventType[]) => {
     managerRef.current?.subscribe(eventTypes || REAL_TIME_EVENT_TYPES);

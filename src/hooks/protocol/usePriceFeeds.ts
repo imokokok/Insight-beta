@@ -16,11 +16,24 @@ interface PriceFeedsResponse {
 }
 
 const fetcher = async (url: string) => {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error('Failed to fetch price feeds');
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch price feeds: ${response.status} ${response.statusText}`);
+    }
+    return response.json();
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Request timeout: failed to fetch price feeds within 30 seconds');
+    }
+    throw error;
   }
-  return response.json();
 };
 
 export function usePriceFeeds(options: UsePriceFeedsOptions = {}) {

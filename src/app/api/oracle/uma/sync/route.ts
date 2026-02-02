@@ -20,6 +20,10 @@ export async function GET(request: NextRequest) {
       const instanceId = url.searchParams.get('instanceId') || 'uma-mainnet';
 
       const config = await readUMAConfig(instanceId);
+      if (!config) {
+        return { error: 'Config not found' };
+      }
+
       const syncState = await getUMASyncState(instanceId);
       const syncing = isUMASyncing(instanceId);
 

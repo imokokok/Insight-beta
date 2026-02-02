@@ -209,16 +209,24 @@ export class Api3Client {
   // 健康检查
   // ============================================================================
 
-  async healthCheck(): Promise<{ healthy: boolean; latency: number }> {
+  async healthCheck(): Promise<{ healthy: boolean; latency: number; error?: string }> {
     const start = Date.now();
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
     try {
       const response = await fetch('https://api.api3.org/api/v1/dapi/ETH/USD', {
         headers: { Accept: 'application/json' },
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
       const latency = Date.now() - start;
       return { healthy: response.ok, latency };
-    } catch {
-      return { healthy: false, latency: Date.now() - start };
+    } catch (error) {
+      clearTimeout(timeoutId);
+      const latency = Date.now() - start;
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      return { healthy: false, latency, error: errorMsg };
     }
   }
 }

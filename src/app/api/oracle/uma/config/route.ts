@@ -35,11 +35,14 @@ export async function GET(request: NextRequest) {
 
       const admin = await verifyAdmin(request, { strict: false, scope: 'uma_config_write' });
 
+      const config = await readUMAConfig(instanceId);
+      if (!config) {
+        return { error: 'Config not found' };
+      }
+
       if (admin.ok) {
-        const config = await readUMAConfig(instanceId);
         return config;
       } else {
-        const config = await readUMAConfig(instanceId);
         return {
           id: config.id,
           chain: config.chain,

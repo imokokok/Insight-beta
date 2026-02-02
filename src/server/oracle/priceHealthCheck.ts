@@ -98,7 +98,18 @@ export async function checkSymbolHealth(
       };
     }
 
-    const latestPrice = result.rows[0]!;
+    const latestPrice = result.rows[0];
+    if (!latestPrice) {
+      return {
+        symbol,
+        isHealthy: false,
+        lastUpdate: null,
+        ageMs: 0,
+        price: null,
+        deviation: null,
+        issues: ['无法获取最新价格'],
+      } as PriceHealthStatus;
+    }
     const lastUpdate = new Date(latestPrice.timestamp as string);
     const ageMs = Date.now() - lastUpdate.getTime();
     const price = latestPrice.price as number;

@@ -171,7 +171,9 @@ export async function getUnifiedInstance(id: string): Promise<UnifiedOracleInsta
       return null;
     }
 
-    return rowToInstance(result.rows[0]!);
+    const row = result.rows[0];
+    if (!row) return null;
+    return rowToInstance(row);
   } catch (error) {
     logger.error('Failed to get unified instance', {
       id,
@@ -439,7 +441,11 @@ export async function getConfigTemplate(
       return getDefaultTemplate(protocol, chain);
     }
 
-    return result.rows[0]!.config;
+    const row = result.rows[0];
+    if (!row || !('config' in row)) {
+      return getDefaultTemplate(protocol, chain);
+    }
+    return row.config as object;
   } catch (error) {
     logger.error('Failed to get config template', {
       protocol,
@@ -653,7 +659,12 @@ export async function updateSyncState(instanceId: string, updates: SyncStateUpda
       return;
     }
 
-    const { protocol, chain } = instanceResult.rows[0]!;
+    const instanceRow = instanceResult.rows[0];
+    if (!instanceRow) {
+      logger.warn(`Cannot update sync state: instance ${instanceId} not found`);
+      return;
+    }
+    const { protocol, chain } = instanceRow as { protocol: string; chain: string };
 
     // 使用 UPSERT 语法
     await query(
@@ -715,8 +726,11 @@ export async function recordSyncError(
         [instanceId],
       );
       if (instanceResult.rows.length > 0) {
-        protocolName = instanceResult.rows[0]!.protocol as string;
-        chainName = instanceResult.rows[0]!.chain as string;
+        const row = instanceResult.rows[0];
+        if (row) {
+          protocolName = row.protocol as string;
+          chainName = row.chain as string;
+        }
       }
     }
 
@@ -777,13 +791,14 @@ export async function getSyncState(instanceId: string): Promise<{
       return null;
     }
 
-    const row = result.rows[0]!;
+    const row = result.rows[0];
+    if (!row) return null;
     return {
-      status: row.status,
-      lastSyncAt: row.last_sync_at,
-      lastSyncDurationMs: row.last_sync_duration_ms,
-      consecutiveFailures: row.consecutive_failures || 0,
-      errorMessage: row.error_message,
+      status: row.status as string,
+      lastSyncAt: row.last_sync_at as Date,
+      lastSyncDurationMs: row.last_sync_duration_ms as number,
+      consecutiveFailures: (row.consecutive_failures as number) || 0,
+      errorMessage: row.error_message ? (row.error_message as string) : null,
     };
   } catch (error) {
     logger.error('Failed to get sync state', {

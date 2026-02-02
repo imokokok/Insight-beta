@@ -23,7 +23,7 @@ const UMA_CONFIG_CACHE_TTL = 60_000;
 
 export async function readUMAConfig(
   instanceId: string = DEFAULT_UMA_INSTANCE_ID,
-): Promise<UMAConfig> {
+): Promise<UMAConfig | null> {
   const now = Date.now();
   if (umaConfigCache && now - umaConfigCacheTime < UMA_CONFIG_CACHE_TTL) {
     return umaConfigCache;
@@ -59,7 +59,8 @@ export async function readUMAConfig(
     }>(`SELECT * FROM uma_oracle_config WHERE id = $1`, [normalizedInstanceId]);
 
     if (res.rows.length > 0) {
-      const row = res.rows[0]!;
+      const row = res.rows[0];
+      if (!row) return getDefaultUMAConfig(normalizedInstanceId);
       const config: UMAConfig = {
         id: row.id,
         chain: (row.chain as UMAChain) || 'Ethereum',
@@ -142,6 +143,10 @@ export async function writeUMAConfig(
   const normalizedInstanceId = instanceId.trim() || DEFAULT_UMA_INSTANCE_ID;
   const fullConfig = await readUMAConfig(normalizedInstanceId);
 
+  if (!fullConfig) {
+    throw new Error(`UMA config not found for instance: ${normalizedInstanceId}`);
+  }
+
   const mergedConfig: UMAConfig = {
     ...fullConfig,
     ...config,
@@ -192,7 +197,8 @@ export async function listUMAConfigs(): Promise<UMAConfig[]> {
   await ensureSchema();
 
   if (!hasDatabase()) {
-    return [await readUMAConfig(DEFAULT_UMA_INSTANCE_ID)];
+    const config = await readUMAConfig(DEFAULT_UMA_INSTANCE_ID);
+    return config ? [config] : [];
   }
 
   try {
@@ -209,21 +215,24 @@ export async function listUMAConfigs(): Promise<UMAConfig[]> {
       enabled: boolean;
     }>(`SELECT * FROM uma_oracle_config ORDER BY id`);
 
-    return res.rows.map((row) => ({
-      id: row.id,
-      chain: (row.chain as UMAChain) || 'Ethereum',
-      rpcUrl: row.rpc_url || '',
-      optimisticOracleV2Address: row.optimistic_oracle_v2_address || undefined,
-      optimisticOracleV3Address: row.optimistic_oracle_v3_address || undefined,
-      startBlock: row.start_block ?? undefined,
-      maxBlockRange: row.max_block_range ?? undefined,
-      votingPeriodHours: row.voting_period_hours ?? undefined,
-      confirmationBlocks: row.confirmation_blocks ?? undefined,
-      enabled: row.enabled,
-    }));
+    return res.rows.map(
+      (row): UMAConfig => ({
+        id: row.id,
+        chain: (row.chain as UMAChain) || 'Ethereum',
+        rpcUrl: row.rpc_url || '',
+        optimisticOracleV2Address: row.optimistic_oracle_v2_address || undefined,
+        optimisticOracleV3Address: row.optimistic_oracle_v3_address || undefined,
+        startBlock: row.start_block ?? undefined,
+        maxBlockRange: row.max_block_range ?? undefined,
+        votingPeriodHours: row.voting_period_hours ?? undefined,
+        confirmationBlocks: row.confirmation_blocks ?? undefined,
+        enabled: row.enabled,
+      }),
+    );
   } catch (error) {
     console.error('Failed to list UMA configs:', error);
-    return [await readUMAConfig(DEFAULT_UMA_INSTANCE_ID)];
+    const config = await readUMAConfig(DEFAULT_UMA_INSTANCE_ID);
+    return config ? [config] : [];
   }
 }
 

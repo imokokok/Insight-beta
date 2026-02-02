@@ -7,6 +7,7 @@ import {
   useCallback,
   useMemo,
   useContext,
+  useRef,
   type ReactNode,
 } from 'react';
 import { createWalletClient, custom, type WalletClient, type Address, type Chain } from 'viem';
@@ -105,6 +106,10 @@ export function WalletProvider({ children }: WalletProviderProps) {
     });
   }, []);
 
+  // 使用 ref 存储 handleError 以避免依赖问题
+  const handleErrorRef = useRef(handleError);
+  handleErrorRef.current = handleError;
+
   useEffect(() => {
     if (typeof window === 'undefined' || !window.ethereum) return;
 
@@ -138,7 +143,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
       // MetaMask often sends disconnect events when switching chains or accounts, which are not errors
       if (error instanceof Error) {
         logger.error('Wallet disconnect failed', { error });
-        handleError(error, 'disconnect');
+        handleErrorRef.current(error, 'disconnect');
       } else {
         logger.info('Wallet disconnected', { error });
       }
@@ -169,7 +174,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
       provider.removeListener?.('chainChanged', handleChainChanged);
       provider.removeListener?.('disconnect', handleDisconnect);
     };
-  }, [handleError]);
+  }, []);
 
   const connect = useCallback(async () => {
     if (typeof window === 'undefined' || !window.ethereum) {

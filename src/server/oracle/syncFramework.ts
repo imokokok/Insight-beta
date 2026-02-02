@@ -198,13 +198,17 @@ class SyncManager {
 
     state.isRunning = true;
 
+    if (!instance) {
+      throw new Error(`Instance ${instanceId} not found`);
+    }
+
     try {
       const context: SyncContext = {
         instanceId,
-        protocol: instance!.protocol as OracleProtocol,
-        chain: instance!.chain as SupportedChain,
-        rpcUrl: instance!.config.rpcUrl as string,
-        config: instance!.config,
+        protocol: instance.protocol as OracleProtocol,
+        chain: instance.chain as SupportedChain,
+        rpcUrl: instance.config.rpcUrl as string,
+        config: instance.config,
       };
 
       const records = await syncFn(context);
@@ -248,13 +252,20 @@ class SyncManager {
         errorMessage,
       });
 
-      // Retry logic
+      // Retry logic with exponential backoff and jitter
       if (state.consecutiveErrors < config.maxRetries) {
+        const backoffMs = Math.min(
+          config.retryDelayMs * Math.pow(2, state.consecutiveErrors - 1),
+          60000, // 最大 60 秒
+        );
+        const jitter = Math.random() * 0.1 * backoffMs; // 10% 抖动
+
         logger.info(`Retrying sync for instance ${instanceId}`, {
           attempt: state.consecutiveErrors,
           maxRetries: config.maxRetries,
+          delayMs: Math.round(backoffMs + jitter),
         });
-        await new Promise((resolve) => setTimeout(resolve, config.retryDelayMs));
+        await new Promise((resolve) => setTimeout(resolve, backoffMs + jitter));
         state.isRunning = false;
         await this.executeSync(instanceId, instance, syncFn, config);
         return;

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 interface PerformanceMetrics {
   fcp: number | null;
@@ -67,6 +67,10 @@ export function PerformanceMonitor({ children, onMetrics }: Props): React.ReactE
     }
   };
 
+  // 使用 ref 存储 onMetrics 以避免依赖循环
+  const onMetricsRef = useRef(onMetrics);
+  onMetricsRef.current = onMetrics;
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -79,7 +83,7 @@ export function PerformanceMonitor({ children, onMetrics }: Props): React.ReactE
           setMetrics((prev) => {
             const newMetrics = { ...prev, fcp: metric.value };
             sendToAnalytics(metric);
-            onMetrics?.(newMetrics);
+            onMetricsRef.current?.(newMetrics);
             return newMetrics;
           });
         };
@@ -88,7 +92,7 @@ export function PerformanceMonitor({ children, onMetrics }: Props): React.ReactE
           setMetrics((prev) => {
             const newMetrics = { ...prev, lcp: metric.value };
             sendToAnalytics(metric);
-            onMetrics?.(newMetrics);
+            onMetricsRef.current?.(newMetrics);
             return newMetrics;
           });
         };
@@ -97,7 +101,7 @@ export function PerformanceMonitor({ children, onMetrics }: Props): React.ReactE
           setMetrics((prev) => {
             const newMetrics = { ...prev, fid: metric.value };
             sendToAnalytics(metric);
-            onMetrics?.(newMetrics);
+            onMetricsRef.current?.(newMetrics);
             return newMetrics;
           });
         };
@@ -106,7 +110,7 @@ export function PerformanceMonitor({ children, onMetrics }: Props): React.ReactE
           setMetrics((prev) => {
             const newMetrics = { ...prev, cls: metric.value };
             sendToAnalytics(metric);
-            onMetrics?.(newMetrics);
+            onMetricsRef.current?.(newMetrics);
             return newMetrics;
           });
         };
@@ -115,7 +119,7 @@ export function PerformanceMonitor({ children, onMetrics }: Props): React.ReactE
           setMetrics((prev) => {
             const newMetrics = { ...prev, inp: metric.value };
             sendToAnalytics(metric);
-            onMetrics?.(newMetrics);
+            onMetricsRef.current?.(newMetrics);
             return newMetrics;
           });
         };
@@ -124,7 +128,7 @@ export function PerformanceMonitor({ children, onMetrics }: Props): React.ReactE
           setMetrics((prev) => {
             const newMetrics = { ...prev, ttfb: metric.value };
             sendToAnalytics(metric);
-            onMetrics?.(newMetrics);
+            onMetricsRef.current?.(newMetrics);
             return newMetrics;
           });
         };
@@ -141,7 +145,7 @@ export function PerformanceMonitor({ children, onMetrics }: Props): React.ReactE
     };
 
     initWebVitals();
-  }, [onMetrics, metrics]);
+  }, []);
 
   if (!isSupported) {
     return <>{children}</>;
