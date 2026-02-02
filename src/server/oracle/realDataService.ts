@@ -39,10 +39,59 @@ const CONFIG = {
     'OP/USD',
   ],
 
-  // RPC URLs（从环境变量获取，或使用默认值）
+  // 公共 RPC URLs（作为回退）
+  publicRpcUrls: {
+    ethereum: [
+      'https://ethereum.publicnode.com',
+      'https://eth.llamarpc.com',
+      'https://rpc.ankr.com/eth',
+    ],
+    polygon: [
+      'https://polygon-rpc.com',
+      'https://polygon.publicnode.com',
+      'https://rpc.ankr.com/polygon',
+    ],
+    arbitrum: [
+      'https://arb1.arbitrum.io/rpc',
+      'https://arbitrum.publicnode.com',
+      'https://rpc.ankr.com/arbitrum',
+    ],
+    optimism: [
+      'https://mainnet.optimism.io',
+      'https://optimism.publicnode.com',
+      'https://rpc.ankr.com/optimism',
+    ],
+    base: ['https://mainnet.base.org', 'https://base.publicnode.com', 'https://rpc.ankr.com/base'],
+  } as Record<SupportedChain, string[]>,
+
+  // RPC URLs（从环境变量获取，或使用公共 RPC）
   getRpcUrl: (chain: SupportedChain): string => {
-    const envVar = `RPC_URL_${chain.toUpperCase()}`;
-    return process.env[envVar] || process.env.NEXT_PUBLIC_ALCHEMY_RPC_URL || '';
+    // 首先检查环境变量
+    const envVar = `${chain.toUpperCase()}_RPC_URL`;
+    const envUrl = process.env[envVar];
+    if (envUrl) return envUrl;
+
+    // 检查通用环境变量
+    const alchemyKey = process.env.ALCHEMY_API_KEY || process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;
+    if (alchemyKey) {
+      const alchemyUrls: Partial<Record<SupportedChain, string>> = {
+        ethereum: `https://eth-mainnet.g.alchemy.com/v2/${alchemyKey}`,
+        polygon: `https://polygon-mainnet.g.alchemy.com/v2/${alchemyKey}`,
+        arbitrum: `https://arb-mainnet.g.alchemy.com/v2/${alchemyKey}`,
+        optimism: `https://opt-mainnet.g.alchemy.com/v2/${alchemyKey}`,
+        base: `https://base-mainnet.g.alchemy.com/v2/${alchemyKey}`,
+      };
+      return alchemyUrls[chain] || '';
+    }
+
+    // 使用公共 RPC（随机选择一个）
+    const publicUrls = CONFIG.publicRpcUrls[chain];
+    if (publicUrls && publicUrls.length > 0) {
+      const randomIndex = Math.floor(Math.random() * publicUrls.length);
+      return publicUrls[randomIndex] || '';
+    }
+
+    return '';
   },
 
   // 缓存时间（毫秒）
@@ -154,16 +203,15 @@ export async function fetchPythPrices(): Promise<
   Array<{ symbol: string; price: number; timestamp: string; latency: number; confidence: number }>
 > {
   const cacheKey = 'pyth-all';
-  const cached =
-    cache.get<
-      Array<{
-        symbol: string;
-        price: number;
-        timestamp: string;
-        latency: number;
-        confidence: number;
-      }>
-    >(cacheKey);
+  const cached = cache.get<
+    Array<{
+      symbol: string;
+      price: number;
+      timestamp: string;
+      latency: number;
+      confidence: number;
+    }>
+  >(cacheKey);
   if (cached) return cached;
 
   try {
