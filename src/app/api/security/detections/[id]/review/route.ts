@@ -4,10 +4,10 @@ import { logger } from '@/lib/utils/logger';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const { status, notes } = body;
 
@@ -31,7 +31,7 @@ export async function POST(
       .eq('id', id);
 
     if (error) {
-      logger.error('Failed to update detection review:', error);
+      logger.error('Failed to update detection review', { error: error.message });
       return NextResponse.json(
         { error: 'Failed to update detection' },
         { status: 500 }
@@ -43,7 +43,8 @@ export async function POST(
       message: `Detection marked as ${status}`,
     });
   } catch (error) {
-    logger.error('Error reviewing detection:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Error reviewing detection', { error: errorMessage });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

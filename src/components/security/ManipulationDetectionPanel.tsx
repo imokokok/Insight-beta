@@ -23,7 +23,7 @@ import {
   ChevronUp,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { ManipulationDetection } from '@/lib/types/security/manipulation';
+import type { ManipulationDetection } from '@/lib/types/security/detection';
 
 interface DetectionMetrics {
   totalDetections: number;

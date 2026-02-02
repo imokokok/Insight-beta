@@ -2,6 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 
+interface TrendData {
+  date: string;
+  total: number;
+  critical: number;
+  high: number;
+  medium: number;
+  low: number;
+}
+
+interface DetectionTrendRow {
+  detected_at: string;
+  severity: 'critical' | 'high' | 'medium' | 'low';
+  type: string;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -19,7 +34,7 @@ export async function GET(request: NextRequest) {
       .order('detected_at', { ascending: true });
 
     if (error) {
-      logger.error('Failed to fetch trends:', error);
+      logger.error('Failed to fetch trends', { error: error.message });
       return NextResponse.json(
         { error: 'Failed to fetch trends' },
         { status: 500 }
@@ -27,7 +42,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Generate date range
-    const trends: Record<string, { date: string; total: number; critical: number; high: number; medium: number; low: number }> = {};
+    const trends: Record<string, TrendData> = {};
     
     for (let i = 0; i < days; i++) {
       const date = new Date(Date.now() - (days - 1 - i) * 24 * 60 * 60 * 1000);
@@ -43,17 +58,22 @@ export async function GET(request: NextRequest) {
     }
 
     // Aggregate detections
-    detections?.forEach((detection) => {
+    (detections as DetectionTrendRow[] || []).forEach((detection) => {
       const dateStr = new Date(detection.detected_at).toISOString().split('T')[0];
-      if (trends[dateStr]) {
-        trends[dateStr].total++;
-        trends[dateStr][detection.severity as keyof typeof trends[string]]++;
+      const trend = trends[dateStr];
+      if (trend) {
+        trend.total++;
+        const severity = detection.severity;
+        if (severity === 'critical') trend.critical++;
+        else if (severity === 'high') trend.high++;
+        else if (severity === 'medium') trend.medium++;
+        else if (severity === 'low') trend.low++;
       }
     });
 
     // Calculate type distribution
     const typeCounts: Record<string, number> = {};
-    detections?.forEach((detection) => {
+    (detections as DetectionTrendRow[] || []).forEach((detection) => {
       typeCounts[detection.type] = (typeCounts[detection.type] || 0) + 1;
     });
 
@@ -63,7 +83,7 @@ export async function GET(request: NextRequest) {
 
     // Calculate severity distribution
     const severityCounts: Record<string, number> = {};
-    detections?.forEach((detection) => {
+    (detections as DetectionTrendRow[] || []).forEach((detection) => {
       severityCounts[detection.severity] = (severityCounts[detection.severity] || 0) + 1;
     });
 
@@ -77,7 +97,8 @@ export async function GET(request: NextRequest) {
       severityDistribution,
     });
   } catch (error) {
-    logger.error('Error in trends API:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Error in trends API', { error: errorMessage });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

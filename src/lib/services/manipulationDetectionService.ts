@@ -10,7 +10,7 @@ import type {
   DetectionRule,
   PriceDataPoint,
   TransactionData,
-} from '@/lib/types/security/manipulation';
+} from '@/lib/types/security/detection';
 import type { OracleProtocol, SupportedChain } from '@/lib/types';
 
 export interface DetectionServiceConfig {

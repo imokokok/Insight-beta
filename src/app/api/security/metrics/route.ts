@@ -3,6 +3,15 @@ import { manipulationDetectionService } from '@/lib/services/manipulationDetecti
 import { createSupabaseClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 
+interface MetricsRow {
+  total_detections: number;
+  detections_by_type: Record<string, number>;
+  detections_by_severity: Record<string, number>;
+  false_positives: number;
+  average_confidence: number;
+  last_detection_time: string | null;
+}
+
 export async function GET() {
   try {
     const serviceMetrics = manipulationDetectionService.getMetrics();
@@ -17,23 +26,25 @@ export async function GET() {
       .single();
 
     if (error && error.code !== 'PGRST116') {
-      logger.error('Failed to fetch metrics from database:', error);
+      logger.error('Failed to fetch metrics from database', { error: error.message });
     }
 
-    const metrics = dbMetrics || serviceMetrics;
+    const dbData = dbMetrics as MetricsRow | null;
+    const useDbMetrics = dbData && !error;
 
     return NextResponse.json({
       metrics: {
-        totalDetections: metrics.total_detections || metrics.totalDetections || 0,
-        detectionsByType: metrics.detections_by_type || metrics.detectionsByType || {},
-        detectionsBySeverity: metrics.detections_by_severity || metrics.detectionsBySeverity || {},
-        falsePositives: metrics.false_positives || metrics.falsePositives || 0,
-        averageConfidence: metrics.average_confidence || metrics.averageConfidence || 0,
-        lastDetectionTime: metrics.last_detection_time || metrics.lastDetectionTime,
+        totalDetections: useDbMetrics ? dbData.total_detections : serviceMetrics.totalDetections,
+        detectionsByType: useDbMetrics ? dbData.detections_by_type : serviceMetrics.detectionsByType,
+        detectionsBySeverity: useDbMetrics ? dbData.detections_by_severity : serviceMetrics.detectionsBySeverity,
+        falsePositives: useDbMetrics ? dbData.false_positives : serviceMetrics.falsePositives,
+        averageConfidence: useDbMetrics ? dbData.average_confidence : serviceMetrics.averageConfidence,
+        lastDetectionTime: useDbMetrics ? dbData.last_detection_time : serviceMetrics.lastDetectionTime,
       },
     });
   } catch (error) {
-    logger.error('Error in metrics API:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Error in metrics API', { error: errorMessage });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

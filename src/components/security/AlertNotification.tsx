@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { X, AlertTriangle, AlertCircle, Shield, ExternalLink, Bell } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { ManipulationDetection } from '@/lib/types/security/manipulation';
+import type { ManipulationDetection } from '@/lib/types/security/detection';
 
 interface AlertNotificationProps {
   className?: string;

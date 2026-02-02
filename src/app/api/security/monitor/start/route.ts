@@ -4,9 +4,22 @@ import { createSupabaseClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 import type { OracleProtocol, SupportedChain } from '@/lib/types';
 
+interface StartMonitorBody {
+  protocol?: string;
+  symbol?: string;
+  chain?: string;
+  allFeeds?: boolean;
+}
+
+interface FeedRow {
+  protocol: string;
+  symbol: string;
+  chain: string;
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json().catch(() => ({}));
+    const body: StartMonitorBody = await request.json().catch(() => ({}));
     const { protocol, symbol, chain, allFeeds } = body;
 
     await manipulationDetectionService.initialize();
@@ -19,14 +32,14 @@ export async function POST(request: NextRequest) {
         .eq('is_active', true);
 
       if (error) {
-        logger.error('Failed to fetch feeds:', error);
+        logger.error('Failed to fetch feeds', { error: error.message });
         return NextResponse.json(
           { error: 'Failed to fetch feeds' },
           { status: 500 }
         );
       }
 
-      for (const feed of feeds || []) {
+      for (const feed of (feeds as FeedRow[] || [])) {
         await manipulationDetectionService.startMonitoring(
           feed.protocol as OracleProtocol,
           feed.symbol,
@@ -60,7 +73,8 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     );
   } catch (error) {
-    logger.error('Error starting monitor:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Error starting monitor', { error: errorMessage });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

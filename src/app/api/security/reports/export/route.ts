@@ -2,6 +2,25 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 
+interface DetectionRow {
+  id: string;
+  detected_at: string;
+  protocol: string;
+  symbol: string;
+  chain: string;
+  type: string;
+  severity: string;
+  confidence_score: number;
+  price_impact: number | null;
+  financial_impact_usd: number | null;
+  status: string;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  notes: string | null;
+  evidence: unknown;
+  suspicious_transactions: unknown;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -29,7 +48,7 @@ export async function GET(request: NextRequest) {
     const { data: detections, error } = await query;
 
     if (error) {
-      logger.error('Failed to fetch detections for export:', error);
+      logger.error('Failed to fetch detections for export', { error: error.message });
       return NextResponse.json(
         { error: 'Failed to fetch detections' },
         { status: 500 }
@@ -79,7 +98,7 @@ export async function GET(request: NextRequest) {
         '备注',
       ];
 
-      const rows = detections?.map((d) => [
+      const rows = (detections as DetectionRow[] || []).map((d) => [
         d.id,
         new Date(d.detected_at).toLocaleString('zh-CN'),
         d.protocol,
@@ -96,7 +115,7 @@ export async function GET(request: NextRequest) {
         d.notes || 'N/A',
       ]);
 
-      const csvContent = [headers.join(','), ...rows!.map((r) => r.join(','))].join('\n');
+      const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
 
       return new NextResponse(csvContent, {
         headers: {
@@ -122,7 +141,7 @@ export async function GET(request: NextRequest) {
           byType: {} as Record<string, number>,
           byProtocol: {} as Record<string, number>,
         },
-        detections: detections?.map((d) => ({
+        detections: (detections as DetectionRow[] || []).map((d) => ({
           id: d.id,
           detectedAt: d.detected_at,
           protocol: d.protocol,
@@ -146,7 +165,7 @@ export async function GET(request: NextRequest) {
       };
 
       // Calculate summary statistics
-      detections?.forEach((d) => {
+      (detections as DetectionRow[] || []).forEach((d) => {
         report.summary.bySeverity[d.severity] = (report.summary.bySeverity[d.severity] || 0) + 1;
         report.summary.byType[d.type] = (report.summary.byType[d.type] || 0) + 1;
         report.summary.byProtocol[d.protocol] = (report.summary.byProtocol[d.protocol] || 0) + 1;
@@ -165,7 +184,8 @@ export async function GET(request: NextRequest) {
       { status: 400 }
     );
   } catch (error) {
-    logger.error('Error in export API:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Error in export API', { error: errorMessage });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -29,7 +29,7 @@ import {
   Check,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { ManipulationDetection } from '@/lib/types/security/manipulation';
+import type { ManipulationDetection } from '@/lib/types/security/detection';
 
 const severityConfig = {
   critical: {

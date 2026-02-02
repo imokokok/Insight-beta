@@ -3,9 +3,16 @@ import { manipulationDetectionService } from '@/lib/services/manipulationDetecti
 import { logger } from '@/lib/utils/logger';
 import type { OracleProtocol, SupportedChain } from '@/lib/types';
 
+interface StopMonitorBody {
+  protocol?: string;
+  symbol?: string;
+  chain?: string;
+  allFeeds?: boolean;
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json().catch(() => ({}));
+    const body: StopMonitorBody = await request.json().catch(() => ({}));
     const { protocol, symbol, chain, allFeeds } = body;
 
     if (allFeeds) {
@@ -35,7 +42,8 @@ export async function POST(request: NextRequest) {
       message: 'Stopped all monitoring',
     });
   } catch (error) {
-    logger.error('Error stopping monitor:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Error stopping monitor', { error: errorMessage });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

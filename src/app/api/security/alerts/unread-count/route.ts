@@ -15,7 +15,7 @@ export async function GET() {
       .gte('detected_at', oneDayAgo);
 
     if (error) {
-      logger.error('Failed to fetch unread count:', error);
+      logger.error('Failed to fetch unread count', { error: error.message });
       return NextResponse.json(
         { error: 'Failed to fetch count' },
         { status: 500 }
@@ -24,7 +24,8 @@ export async function GET() {
 
     return NextResponse.json({ count: count || 0 });
   } catch (error) {
-    logger.error('Error in unread count API:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Error in unread count API', { error: errorMessage });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

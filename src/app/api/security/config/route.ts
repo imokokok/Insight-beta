@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 
+interface ConfigRow {
+  config: Record<string, unknown>;
+}
+
 const DEFAULT_CONFIG = {
   zScoreThreshold: 3,
   minConfidenceScore: 0.7,
@@ -39,14 +43,15 @@ export async function GET() {
       .single();
 
     if (error && error.code !== 'PGRST116') {
-      logger.error('Failed to fetch detection config:', error);
+      logger.error('Failed to fetch detection config', { error: error.message });
     }
 
-    const config = data?.config || DEFAULT_CONFIG;
+    const config = (data as ConfigRow | null)?.config || DEFAULT_CONFIG;
 
     return NextResponse.json({ config });
   } catch (error) {
-    logger.error('Error in config GET API:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Error in config GET API', { error: errorMessage });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -77,7 +82,7 @@ export async function POST(request: NextRequest) {
       });
 
     if (error) {
-      logger.error('Failed to save detection config:', error);
+      logger.error('Failed to save detection config', { error: error.message });
       return NextResponse.json(
         { error: 'Failed to save configuration' },
         { status: 500 }
@@ -91,7 +96,8 @@ export async function POST(request: NextRequest) {
       message: 'Configuration saved successfully',
     });
   } catch (error) {
-    logger.error('Error in config POST API:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Error in config POST API', { error: errorMessage });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

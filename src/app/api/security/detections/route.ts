@@ -1,7 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { manipulationDetectionService } from '@/lib/services/manipulationDetectionService';
 import { createSupabaseClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
+
+interface DetectionRow {
+  id: string;
+  protocol: string;
+  symbol: string;
+  chain: string;
+  feed_key: string;
+  type: string;
+  severity: string;
+  confidence_score: number;
+  detected_at: string;
+  evidence: unknown;
+  suspicious_transactions: unknown;
+  related_blocks: number[];
+  price_impact: number | null;
+  financial_impact_usd: number | null;
+  affected_addresses: string[];
+  status: string;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  notes: string | null;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -37,14 +58,14 @@ export async function GET(request: NextRequest) {
     const { data, error } = await query;
 
     if (error) {
-      logger.error('Failed to fetch detections:', error);
+      logger.error('Failed to fetch detections', { error: error.message });
       return NextResponse.json(
         { error: 'Failed to fetch detections' },
         { status: 500 }
       );
     }
 
-    const detections = data.map((row) => ({
+    const detections = (data as DetectionRow[] || []).map((row) => ({
       id: row.id,
       protocol: row.protocol,
       symbol: row.symbol,
@@ -68,7 +89,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ detections });
   } catch (error) {
-    logger.error('Error in detections API:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Error in detections API', { error: errorMessage });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

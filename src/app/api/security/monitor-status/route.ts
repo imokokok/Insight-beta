@@ -6,7 +6,7 @@ import { logger } from '@/lib/utils/logger';
 export async function GET() {
   try {
     const isRunning = manipulationDetectionService.isMonitoring();
-    const activeMonitors = manipulationDetectionService.getActiveMonitors();
+    const activeMonitors: string[] = manipulationDetectionService.getActiveMonitors();
     
     const supabase = createSupabaseClient();
     
@@ -17,7 +17,7 @@ export async function GET() {
       .gte('detected_at', oneHourAgo);
 
     if (error) {
-      logger.error('Failed to fetch recent detections:', error);
+      logger.error('Failed to fetch recent detections', { error: error.message });
     }
 
     const recentDetectionCount = recentDetections?.length || 0;
@@ -41,7 +41,8 @@ export async function GET() {
       },
     });
   } catch (error) {
-    logger.error('Error in monitor status API:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Error in monitor status API', { error: errorMessage });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

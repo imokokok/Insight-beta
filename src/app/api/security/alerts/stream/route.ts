@@ -1,6 +1,26 @@
 import { NextResponse } from 'next/server';
 import { createSupabaseClient } from '@/lib/supabase/server';
-import { logger } from '@/lib/utils/logger';
+
+interface PostgresChangePayload {
+  new: {
+    id: string;
+    protocol: string;
+    symbol: string;
+    chain: string;
+    feed_key: string;
+    type: string;
+    severity: string;
+    confidence_score: number;
+    detected_at: string;
+    evidence: unknown;
+    suspicious_transactions: unknown;
+    related_blocks: number[];
+    price_impact: number | null;
+    financial_impact_usd: number | null;
+    affected_addresses: string[];
+    status: string;
+  };
+}
 
 export async function GET() {
   const encoder = new TextEncoder();
@@ -27,7 +47,7 @@ export async function GET() {
             schema: 'public',
             table: 'manipulation_detections',
           },
-          (payload) => {
+          (payload: PostgresChangePayload) => {
             const detection = {
               id: payload.new.id,
               protocol: payload.new.protocol,
