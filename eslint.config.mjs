@@ -10,6 +10,8 @@ const config = [
   {
     ignores: [
       "contracts/**",
+      "contracts/test/**",
+      "**/*.test.js",
       "test/**",
       "scripts/**",
       "typechain-types/**",

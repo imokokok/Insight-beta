@@ -1,0 +1,10 @@
+{
+  "detectors_to_exclude": "naming-convention,solc-version",
+  "filter_paths": "node_modules|contracts/test|contracts/mocks",
+  "compile_force_framework": "hardhat",
+  "hardhat_artifacts_directory": "artifacts",
+  "hardhat_cache_directory": "cache",
+  "solc_remaps": [
+    "@openzeppelin/contracts/=node_modules/@openzeppelin/contracts/"
+  ]
+}

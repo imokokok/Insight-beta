@@ -7,7 +7,6 @@
 // RPC Manager
 export {
   RpcManager,
-  parseRpcUrls,
   readRpcStats,
   type RpcStats,
   type RpcManagerConfig,

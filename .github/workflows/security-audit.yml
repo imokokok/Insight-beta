@@ -1,0 +1,123 @@
+name: Security Audit
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'contracts/**'
+      - '.github/workflows/security-audit.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'contracts/**'
+  schedule:
+    - cron: '0 0 * * 0'
+
+jobs:
+  slither-analysis:
+    name: Slither Static Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Slither
+        run: pip3 install slither-analyzer
+
+      - name: Run Slither analysis
+        run: |
+          slither . --config-file slither.config.json \
+            --sarif results.sarif || true
+
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
+
+      - name: Check for high severity issues
+        run: |
+          slither . --config-file slither.config.json --fail-high || true
+
+  mythril-analysis:
+    name: Mythril Symbolic Execution
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Mythril
+        run: pip3 install mythril
+
+      - name: Run Mythril on InsightOracle
+        run: |
+          myth analyze contracts/InsightOracle.sol \
+            --solc-json slither.config.json \
+            --execution-timeout 300 \
+            --max-depth 50 || true
+
+  contract-tests:
+    name: Contract Security Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run contract tests with coverage
+        run: npm run contracts:test
+
+      - name: Check coverage threshold
+        run: |
+          npx hardhat coverage
+          if [ $(cat coverage/lcov.info | grep -c 'LF:') -lt 80 ]; then
+            echo "Coverage below threshold"
+            exit 1
+          fi
+
+  dependency-check:
+    name: Dependency Security Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Run npm audit
+        run: npm audit --audit-level=high
+
+      - name: Check for known vulnerabilities
+        run: npx audit-ci --moderate
