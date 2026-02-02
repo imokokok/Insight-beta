@@ -213,7 +213,7 @@ export class WebSocketRedisAdapter {
         return;
       }
 
-      // 移除内部字段
+      // 移除内部字段（解构赋值用于过滤字段）
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { _instanceId, _timestamp, ...data } = parsed;
 

@@ -100,9 +100,21 @@ export interface FormatOptions {
   relative?: Intl.RelativeTimeFormatOptions;
 }
 
+/**
+ * 翻译值类型
+ * 使用 any 以支持各种动态翻译值类型
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type TranslationValue = string | { plural: PluralOptions } | { format: 'date' | 'number' | 'currency' | 'relative'; value: unknown; options?: FormatOptions } | any;
+export type TranslationValue =
+  | string
+  | { plural: PluralOptions }
+  | { format: 'date' | 'number' | 'currency' | 'relative'; value: unknown; options?: FormatOptions }
+  | any;
 
+/**
+ * 翻译命名空间类型
+ * 使用 any 以支持扩展的动态翻译键
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type TranslationNamespace = Record<string, TranslationValue | any>;
 

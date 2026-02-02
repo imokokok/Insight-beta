@@ -8,15 +8,29 @@ import {
   type RefObject,
 } from 'react';
 
+/**
+ * useDeepMemo - 深度比较依赖的 useMemo
+ *
+ * 注意：此 hook 有意不使用依赖数组的浅比较，
+ * 由调用者确保依赖的正确性。
+ */
 export function useDeepMemo<T>(factory: () => T, deps: DependencyList): T {
+  // 由调用者管理依赖比较逻辑
   // eslint-disable-next-line react-hooks/exhaustive-deps
   return useMemo(factory, deps);
 }
 
+/**
+ * useDeepCallback - 深度比较依赖的 useCallback
+ *
+ * 注意：此 hook 有意不使用依赖数组的浅比较，
+ * 由调用者确保依赖的正确性。
+ */
 export function useDeepCallback<T extends (...args: unknown[]) => unknown>(
   callback: T,
   deps: DependencyList,
 ): T {
+  // 由调用者管理依赖比较逻辑
   // eslint-disable-next-line react-hooks/exhaustive-deps
   return useCallback(callback, deps);
 }
@@ -119,6 +133,7 @@ export function useAsyncData<T>(
 
   useEffect(() => {
     refresh();
+    // refresh 由 deps 控制，避免无限循环
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 
