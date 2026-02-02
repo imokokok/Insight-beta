@@ -93,7 +93,7 @@ interface MiniErrorFallbackProps {
 }
 
 function MiniErrorFallback({ onRetry }: MiniErrorFallbackProps) {
-  const { t } = useTranslation();
+  const { t } = useI18n();
 
   return (
     <div className="rounded-lg border border-red-200 bg-red-50 p-4">
@@ -101,10 +101,7 @@ function MiniErrorFallback({ onRetry }: MiniErrorFallbackProps) {
         <AlertTriangle className="h-4 w-4" aria-hidden="true" />
         <span className="text-sm font-medium">{t('common.errorBoundary.componentError')}</span>
       </div>
-      <button
-        onClick={onRetry}
-        className="mt-2 text-sm text-red-600 hover:text-red-800"
-      >
+      <button onClick={onRetry} className="mt-2 text-sm text-red-600 hover:text-red-800">
         {t('common.errorBoundary.clickToRetry')}
       </button>
     </div>
@@ -120,7 +117,7 @@ interface DefaultErrorFallbackProps {
 }
 
 function DefaultErrorFallback({ error, onRetry }: DefaultErrorFallbackProps) {
-  const { t } = useTranslation();
+  const { t } = useI18n();
 
   return (
     <div className="flex min-h-[400px] flex-col items-center justify-center p-8 text-center">
@@ -194,9 +191,7 @@ export class MiniErrorBoundary extends Component<MiniErrorBoundaryProps, MiniErr
         return this.props.fallback;
       }
 
-      return (
-        <MiniErrorFallback onRetry={this.handleRetry} />
-      );
+      return <MiniErrorFallback onRetry={this.handleRetry} />;
     }
 
     return this.props.children;
