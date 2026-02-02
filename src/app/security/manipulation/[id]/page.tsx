@@ -190,7 +190,7 @@ export default function ManipulationDetailPage() {
             </p>
           </div>
         </div>
-        <Badge className={status.color}>{status.label}</Badge>
+        <Badge className={status?.color ?? 'bg-gray-100 text-gray-800'}>{status?.label ?? '未知'}</Badge>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

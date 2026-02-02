@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { X, AlertTriangle, AlertCircle, Shield, ExternalLink, Bell } from 'lucide-react';
+import { X, AlertTriangle, AlertCircle, Shield, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ManipulationDetection } from '@/lib/types/security/detection';
 

@@ -491,7 +491,7 @@ export class ManipulationDetector {
 
   private updatePriceHistory(
     feedKey: string,
-    currentPrice: number,
+    _currentPrice: number,
     historicalData: PriceDataPoint[],
   ): void {
     const existing = this.priceHistory.get(feedKey) || [];

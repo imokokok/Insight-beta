@@ -6,8 +6,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  LineChart,
-  Line,
   BarChart,
   Bar,
   PieChart,
@@ -24,13 +22,8 @@ import {
 } from 'recharts';
 import {
   TrendingUp,
-  Calendar,
   Download,
-  Filter,
-  Activity,
-  AlertTriangle,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 interface TrendData {
   date: string;
@@ -45,29 +38,25 @@ interface TypeDistribution {
   name: string;
   value: number;
   color: string;
+  [key: string]: string | number;
 }
 
 interface DetectionTrendsChartProps {
   className?: string;
 }
 
-const severityColors = {
-  critical: '#ef4444',
-  high: '#f97316',
-  medium: '#eab308',
-  low: '#3b82f6',
-};
+const COLORS = ['#ef4444', '#f97316', '#eab308', '#3b82f6', '#8b5cf6', '#ec4899'];
 
-const typeColors = [
-  '#ef4444',
-  '#f97316',
-  '#eab308',
-  '#22c55e',
-  '#3b82f6',
-  '#8b5cf6',
-  '#ec4899',
-  '#6b7280',
-];
+const typeColors: Record<string, string> = {
+  flash_loan_attack: '#ef4444',
+  price_manipulation: '#f97316',
+  oracle_manipulation: '#eab308',
+  sandwich_attack: '#3b82f6',
+  front_running: '#8b5cf6',
+  back_running: '#ec4899',
+  liquidity_manipulation: '#06b6d4',
+  statistical_anomaly: '#84cc16',
+};
 
 const typeLabels: Record<string, string> = {
   flash_loan_attack: '闪电贷攻击',
@@ -81,46 +70,57 @@ const typeLabels: Record<string, string> = {
 };
 
 export function DetectionTrendsChart({ className }: DetectionTrendsChartProps) {
-  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('7d');
-  const [trendData, setTrendData] = useState<TrendData[]>([]);
+  const [trends, setTrends] = useState<TrendData[]>([]);
   const [typeDistribution, setTypeDistribution] = useState<TypeDistribution[]>([]);
-  const [severityDistribution, setSeverityDistribution] = useState<TypeDistribution[]>([]);
+  const [severityDistribution, setSeverityDistribution] = useState<Array<{ name: string; value: number }>>([]);
   const [loading, setLoading] = useState(true);
+  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('7d');
 
   useEffect(() => {
-    fetchTrendData();
+    fetchTrends();
   }, [timeRange]);
 
-  const fetchTrendData = async () => {
-    setLoading(true);
+  const fetchTrends = async () => {
     try {
+      setLoading(true);
       const response = await fetch(`/api/security/trends?range=${timeRange}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch trends');
+      }
       const data = await response.json();
-      setTrendData(data.trends || []);
-      setTypeDistribution(data.typeDistribution || []);
+      setTrends(data.trends || []);
+      
+      // Transform type distribution with colors
+      const typedDist = (data.typeDistribution || []).map((item: { name: string; value: number }, index: number) => ({
+        ...item,
+        color: typeColors[item.name] || COLORS[index % COLORS.length],
+      }));
+      setTypeDistribution(typedDist);
+      
       setSeverityDistribution(data.severityDistribution || []);
     } catch (error) {
-      console.error('Failed to fetch trend data:', error);
+      console.error('Error fetching trends:', error);
     } finally {
       setLoading(false);
     }
   };
 
   const exportData = () => {
-    const csvContent = [
-      ['Date', 'Total', 'Critical', 'High', 'Medium', 'Low'].join(','),
-      ...trendData.map((row) =>
-        [row.date, row.total, row.critical, row.high, row.medium, row.low].join(',')
-      ),
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
+    const data = {
+      trends,
+      typeDistribution,
+      severityDistribution,
+      exportedAt: new Date().toISOString(),
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `detection-trends-${timeRange}.csv`;
+    a.download = `detection-trends-${timeRange}-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
     a.click();
-    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   if (loading) {
@@ -130,7 +130,7 @@ export function DetectionTrendsChart({ className }: DetectionTrendsChartProps) {
           <Skeleton className="h-6 w-48" />
         </CardHeader>
         <CardContent>
-          <Skeleton className="h-[300px] w-full" />
+          <Skeleton className="h-64 w-full" />
         </CardContent>
       </Card>
     );
@@ -138,177 +138,161 @@ export function DetectionTrendsChart({ className }: DetectionTrendsChartProps) {
 
   return (
     <Card className={className}>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            检测趋势分析
-          </CardTitle>
-          <div className="flex items-center gap-2">
-            <div className="flex bg-muted rounded-lg p-1">
-              {(['7d', '30d', '90d'] as const).map((range) => (
-                <Button
-                  key={range}
-                  variant={timeRange === range ? 'secondary' : 'ghost'}
-                  size="sm"
-                  className="text-xs"
-                  onClick={() => setTimeRange(range)}
-                >
-                  {range === '7d' ? '7天' : range === '30d' ? '30天' : '90天'}
-                </Button>
-              ))}
-            </div>
-            <Button variant="outline" size="icon" onClick={exportData}>
-              <Download className="h-4 w-4" />
-            </Button>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div className="flex items-center gap-2">
+          <TrendingUp className="h-5 w-5 text-muted-foreground" />
+          <CardTitle>检测趋势分析</CardTitle>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+            {(['7d', '30d', '90d'] as const).map((range) => (
+              <Button
+                key={range}
+                variant={timeRange === range ? 'secondary' : 'ghost'}
+                size="sm"
+                className="h-7 text-xs"
+                onClick={() => setTimeRange(range)}
+              >
+                {range === '7d' ? '7天' : range === '30d' ? '30天' : '90天'}
+              </Button>
+            ))}
           </div>
+          <Button variant="outline" size="sm" className="h-7" onClick={exportData}>
+            <Download className="h-3 w-3 mr-1" />
+            导出
+          </Button>
         </div>
       </CardHeader>
-
       <CardContent>
-        <Tabs defaultValue="trend" className="w-full">
+        <Tabs defaultValue="trends" className="space-y-4">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="trend">趋势图</TabsTrigger>
-            <TabsTrigger value="severity">严重程度分布</TabsTrigger>
-            <TabsTrigger value="type">类型分布</TabsTrigger>
+            <TabsTrigger value="trends">趋势图</TabsTrigger>
+            <TabsTrigger value="types">类型分布</TabsTrigger>
+            <TabsTrigger value="severity">严重程度</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="trend" className="mt-4">
-            <div className="h-[300px]">
+          <TabsContent value="trends" className="space-y-4">
+            <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={trendData}>
-                  <defs>
-                    <linearGradient id="colorCritical" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={severityColors.critical} stopOpacity={0.8} />
-                      <stop offset="95%" stopColor={severityColors.critical} stopOpacity={0} />
-                    </linearGradient>
-                    <linearGradient id="colorHigh" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={severityColors.high} stopOpacity={0.8} />
-                      <stop offset="95%" stopColor={severityColors.high} stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" />
+                <AreaChart data={trends}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                   <XAxis
                     dataKey="date"
-                    tickFormatter={(value) =>
-                      new Date(value).toLocaleDateString('zh-CN', {
-                        month: 'short',
-                        day: 'numeric',
-                      })
-                    }
+                    tickFormatter={(value: string) => {
+                      const date = new Date(value);
+                      return `${date.getMonth() + 1}/${date.getDate()}`;
+                    }}
+                    className="text-xs"
                   />
-                  <YAxis />
+                  <YAxis className="text-xs" />
                   <Tooltip
-                    contentStyle={{ borderRadius: '8px' }}
-                    labelFormatter={(value) =>
-                      new Date(value).toLocaleDateString('zh-CN', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })
-                    }
+                    content={({ active, payload, label }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div className="bg-background border rounded-lg p-3 shadow-lg">
+                            <p className="font-medium mb-2">{label}</p>
+                            {payload.map((p, i) => (
+                              <p key={i} className="text-sm" style={{ color: p.color }}>
+                                {p.name}: {p.value}
+                              </p>
+                            ))}
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
                   />
                   <Legend />
                   <Area
                     type="monotone"
                     dataKey="critical"
+                    stackId="1"
+                    stroke="#ef4444"
+                    fill="#ef4444"
                     name="严重"
-                    stroke={severityColors.critical}
-                    fillOpacity={1}
-                    fill="url(#colorCritical)"
                   />
                   <Area
                     type="monotone"
                     dataKey="high"
+                    stackId="1"
+                    stroke="#f97316"
+                    fill="#f97316"
                     name="高危"
-                    stroke={severityColors.high}
-                    fillOpacity={1}
-                    fill="url(#colorHigh)"
                   />
                   <Area
                     type="monotone"
                     dataKey="medium"
+                    stackId="1"
+                    stroke="#eab308"
+                    fill="#eab308"
                     name="中危"
-                    stroke={severityColors.medium}
-                    fill={severityColors.medium}
-                    fillOpacity={0.6}
                   />
                   <Area
                     type="monotone"
                     dataKey="low"
+                    stackId="1"
+                    stroke="#3b82f6"
+                    fill="#3b82f6"
                     name="低危"
-                    stroke={severityColors.low}
-                    fill={severityColors.low}
-                    fillOpacity={0.6}
                   />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </TabsContent>
 
-          <TabsContent value="severity" className="mt-4">
-            <div className="h-[300px]">
+          <TabsContent value="types">
+            <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={severityDistribution}
+                    data={typeDistribution}
                     cx="50%"
                     cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={5}
-                    dataKey="value"
-                    label={({ name, percent }) =>
-                      `${name} ${(percent * 100).toFixed(0)}%`
+                    labelLine={false}
+                    label={({ name, percent }: { name: string; percent?: number }) =>
+                      `${typeLabels[name] || name} ${((percent || 0) * 100).toFixed(0)}%`
                     }
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
                   >
-                    {severityDistribution.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={
-                          severityColors[entry.name as keyof typeof severityColors] ||
-                          typeColors[index % typeColors.length]
-                        }
-                      />
+                    {typeDistribution.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="type" className="mt-4">
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={typeDistribution}
-                  layout="vertical"
-                  margin={{ left: 100 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" />
-                  <YAxis
-                    dataKey="name"
-                    type="category"
-                    width={100}
-                    tickFormatter={(value) => typeLabels[value] || value}
-                  />
                   <Tooltip
                     formatter={(value: number, name: string) => [
                       value,
                       typeLabels[name] || name,
                     ]}
                   />
-                  <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                    {typeDistribution.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={typeColors[index % typeColors.length]}
-                      />
-                    ))}
-                  </Bar>
+                  <Legend
+                    formatter={(value: string) => typeLabels[value] || value}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="severity">
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={severityDistribution}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="name" className="text-xs" />
+                  <YAxis className="text-xs" />
+                  <Tooltip
+                    formatter={(value: number, name: string) => {
+                      const labels: Record<string, string> = {
+                        critical: '严重',
+                        high: '高危',
+                        medium: '中危',
+                        low: '低危',
+                      };
+                      return [value, labels[name] || name];
+                    }}
+                  />
+                  <Bar dataKey="value" fill="#3b82f6" />
                 </BarChart>
               </ResponsiveContainer>
             </div>

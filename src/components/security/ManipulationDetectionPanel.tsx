@@ -13,8 +13,6 @@ import {
   AlertTriangle,
   AlertCircle,
   CheckCircle,
-  Activity,
-  TrendingUp,
   Clock,
   ExternalLink,
   Filter,

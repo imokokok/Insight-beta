@@ -1,7 +1,6 @@
 import { ManipulationDetector } from '@/lib/security/manipulationDetector';
 import { logger } from '@/lib/utils/logger';
 import type {
-  ManipulationDetection,
   ManipulationDetectionConfig,
   DetectionMetrics,
 } from '@/lib/types/security/detection';
