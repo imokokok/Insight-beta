@@ -84,124 +84,18 @@ docker run -p 3000:3000 --env-file .env oracle-monitor
 
 ## 📖 Documentation
 
-### Architecture
+完整文档请访问 [docs/README.md](./docs/README.md)
 
-```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   Dashboard     │────▶│   Next.js API   │────▶│  Price Engine   │
-│   (Next.js)     │     │   Routes        │     │  (Aggregation)  │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
-         │                                               │
-         │                       ┌─────────────────┐     │
-         └──────────────────────▶│  WebSocket      │◀────┘
-                                 │  Price Stream   │
-                                 └─────────────────┘
-                                          │
-                    ┌─────────────────────┼─────────────────────┐
-                    ▼                     ▼                     ▼
-            ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
-            │   Chainlink  │    │     Pyth     │    │     Band     │
-            │    Sync      │    │    Sync      │    │    Sync      │
-            └──────────────┘    └──────────────┘    └──────────────┘
-```
+### 快速导航
 
-### API Endpoints
-
-#### REST API
-
-```bash
-# Get price comparison across protocols
-GET /api/oracle/unified?type=comparison&symbol=ETH/USD
-
-# Get historical price data
-GET /api/oracle/unified?type=history&symbol=ETH/USD&hours=24
-
-# Get platform statistics
-GET /api/oracle/unified?type=stats
-
-# Get protocol list
-GET /api/oracle/unified?type=protocols
-
-# Trigger price aggregation
-POST /api/oracle/unified
-Body: { "symbols": ["ETH/USD", "BTC/USD"] }
-
-# UMA Governance
-GET /api/oracle/uma/governance?chain=ethereum
-
-# UMA Bridge Monitoring
-GET /api/oracle/uma/bridge?chain=ethereum
-```
-
-#### GraphQL API
-
-```bash
-# GraphQL endpoint
-POST /api/graphql
-
-# Example queries
-query {
-  priceFeed(symbol: "ETH/USD") {
-    symbol
-    price
-    protocol
-    timestamp
-  }
-
-  priceComparison(symbol: "ETH/USD") {
-    symbol
-    prices {
-      protocol
-      price
-    }
-    aggregatedPrice
-    deviation
-  }
-
-  globalStats {
-    totalProtocols
-    totalPriceFeeds
-    totalAlerts
-    lastUpdate
-  }
-}
-
-mutation {
-  createOracleInstance(input: {
-    protocol: "chainlink"
-    chain: "ethereum"
-    rpcUrl: "https://..."
-  }) {
-    id
-    status
-  }
-}
-```
-
-#### WebSocket API
-
-```javascript
-const ws = new WebSocket('ws://localhost:3001');
-
-// Subscribe to price updates
-ws.send(
-  JSON.stringify({
-    type: 'subscribe',
-    symbols: ['ETH/USD', 'BTC/USD'],
-  }),
-);
-
-// Handle updates
-ws.onmessage = (event) => {
-  const data = JSON.parse(event.data);
-  if (data.type === 'price_update') {
-    console.log('New price:', data.data);
-  }
-  if (data.type === 'comparison_update') {
-    console.log('Price comparison:', data.data);
-  }
-};
-```
+| 文档                                    | 说明                   |
+| --------------------------------------- | ---------------------- |
+| [用户手册](./docs/USER_MANUAL.md)       | 终端用户指南           |
+| [开发指南](./docs/DEVELOPMENT_GUIDE.md) | 开发环境设置和编码规范 |
+| [架构文档](./docs/ARCHITECTURE.md)      | 系统架构设计           |
+| [API 文档](./docs/API.md)               | 完整的 API 参考        |
+| [部署指南](./docs/DEPLOYMENT.md)        | 生产环境部署           |
+| [故障排除](./TROUBLESHOOTING.md)        | 常见问题解决           |
 
 ### Supported Trading Pairs
 
@@ -213,71 +107,16 @@ ws.onmessage = (event) => {
 
 ## 🛠️ Development
 
-### Project Structure
-
-```
-├── src/
-│   ├── app/                    # Next.js app router
-│   │   ├── api/               # API routes
-│   │   └── oracle/            # Dashboard pages
-│   ├── lib/
-│   │   ├── blockchain/        # Oracle protocol clients
-│   │   └── types/             # TypeScript types
-│   └── server/
-│       ├── oracle/            # Sync services & aggregation
-│       └── websocket/         # WebSocket server
-├── docker-compose.yml         # Docker deployment
-├── Dockerfile                 # Main app container
-└── Dockerfile.worker          # Background worker
-```
-
-### Adding a New Protocol
-
-1. Create client in `src/lib/blockchain/{protocol}Oracle.ts`
-2. Create sync service in `src/server/oracle/{protocol}Sync.ts`
-3. Add to unified service in `src/server/oracle/unifiedService.ts`
-4. Update types in `src/lib/types/unifiedOracleTypes.ts`
-
-Example:
-
-```typescript
-// src/lib/blockchain/newProtocolOracle.ts
-export class NewProtocolClient {
-  async getPrice(symbol: string): Promise<UnifiedPriceFeed> {
-    // Implementation
-  }
-}
-```
+详见 [开发指南](./docs/DEVELOPMENT_GUIDE.md)
 
 ## 🔧 Configuration
 
-### Environment Variables
-
-| Variable           | Description                  | Required |
-| ------------------ | ---------------------------- | -------- |
-| `DATABASE_URL`     | PostgreSQL connection string | Yes      |
-| `REDIS_URL`        | Redis connection string      | Yes      |
-| `ETHEREUM_RPC_URL` | Ethereum RPC endpoint        | Yes      |
-| `POLYGON_RPC_URL`  | Polygon RPC endpoint         | No       |
-| `JWT_SECRET`       | JWT signing secret           | Yes      |
-| `SENTRY_DSN`       | Sentry error tracking        | No       |
-
-See `.env.example` for complete list.
+详见 [部署指南](./docs/DEPLOYMENT.md#环境变量)
 
 ## 📊 Monitoring
 
-### Health Checks
-
-- `/api/health` - Application health
-- `/api/health/db` - Database connectivity
-- `/api/health/redis` - Redis connectivity
-
-### Metrics
-
-- Price feed latency
-- Sync success rate
-- WebSocket connections
-- API request rates
+- Health Check: `/api/health`
+- 详见 [监控文档](./monitoring/README.md)
 
 ## 🤝 Contributing
 
