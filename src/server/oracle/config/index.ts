@@ -199,7 +199,7 @@ export async function refreshConfigCache(
 }
 
 // 默认导出
-export default {
+const oracleConfigService = {
   get: getOracleConfig,
   save: saveOracleConfig,
   delete: deleteOracleConfig,
@@ -208,3 +208,5 @@ export default {
   exists: oracleConfigExists,
   refreshCache: refreshConfigCache,
 };
+
+export default oracleConfigService;

@@ -489,8 +489,10 @@ export class AlertRuleEngine {
     try {
       // 检查是否有注册的自定义评估器
       if (params.expression && customConditionRegistry.has(params.expression)) {
-        const evaluator = customConditionRegistry.get(params.expression)!;
-        return evaluator(context, params);
+        const evaluator = customConditionRegistry.get(params.expression);
+        if (evaluator) {
+          return evaluator(context, params);
+        }
       }
 
       // 使用表达式评估

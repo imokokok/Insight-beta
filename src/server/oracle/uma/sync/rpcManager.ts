@@ -69,7 +69,11 @@ export class RpcManager {
         }),
       );
     }
-    return RPC_CLIENT_CACHE.get(cacheKey)!;
+    const client = RPC_CLIENT_CACHE.get(cacheKey);
+    if (!client) {
+      throw new Error(`Failed to get or create RPC client for ${cacheKey}`);
+    }
+    return client;
   }
 
   private pickNextUrl(): string {

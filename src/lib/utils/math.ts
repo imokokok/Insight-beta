@@ -11,7 +11,14 @@ export function calculateMedian(values: number[]): number {
   if (values.length === 0) return 0;
   const sorted = [...values].sort((a, b) => a - b);
   const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2 !== 0 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2;
+  if (sorted.length % 2 !== 0) {
+    const median = sorted[mid];
+    return median === undefined ? 0 : median;
+  }
+  const left = sorted[mid - 1];
+  const right = sorted[mid];
+  if (left === undefined || right === undefined) return 0;
+  return (left + right) / 2;
 }
 
 /**

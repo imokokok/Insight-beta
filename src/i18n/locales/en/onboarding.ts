@@ -1,4 +1,4 @@
-export default {
+const onboarding = {
   title: 'Welcome to OracleMonitor',
   description: 'Your comprehensive oracle monitoring solution across multiple protocols.',
   getStarted: 'Get Started',
@@ -88,3 +88,5 @@ export default {
     },
   },
 };
+
+export default onboarding;

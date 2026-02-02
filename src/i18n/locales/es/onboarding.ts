@@ -1,4 +1,4 @@
-export default {
+const onboarding = {
   title: 'Bienvenido a OracleMonitor',
   description: 'Tu solución integral de monitoreo de oráculos para múltiples protocolos.',
   getStarted: 'Comenzar',
@@ -88,3 +88,5 @@ export default {
     },
   },
 };
+
+export default onboarding;

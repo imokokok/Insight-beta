@@ -142,7 +142,7 @@ export function ComparisonControls({
                 className="flex items-center gap-1.5 whitespace-nowrap"
               >
                 {option.icon}
-                {t(option.labelKey as any)}
+                {t(option.labelKey)}
               </Button>
             ))}
           </div>
@@ -293,7 +293,7 @@ export function ComparisonControls({
                       <SelectContent>
                         {timeRangeOptions.map((option) => (
                           <SelectItem key={option.value} value={option.value}>
-                            {t(option.labelKey as any)}
+                            {t(option.labelKey)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -318,7 +318,7 @@ export function ComparisonControls({
                       <SelectContent>
                         {refreshIntervalOptions.map((option) => (
                           <SelectItem key={option.value} value={option.value.toString()}>
-                            {t(option.labelKey as any)}
+                            {t(option.labelKey)}
                           </SelectItem>
                         ))}
                       </SelectContent>

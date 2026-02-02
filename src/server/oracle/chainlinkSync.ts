@@ -337,7 +337,8 @@ export class ChainlinkSyncManager {
       return null;
     }
 
-    const row = result.rows[0]!;
+    const row = result.rows[0];
+    if (!row) return null;
     return {
       id: row.id,
       chain: row.chain as SupportedChain,
@@ -362,7 +363,8 @@ export class ChainlinkSyncManager {
       return null;
     }
 
-    const row = result.rows[0]!;
+    const row = result.rows[0];
+    if (!row) return null;
     return {
       instanceId: row.instance_id,
       protocol: row.protocol as OracleProtocol,

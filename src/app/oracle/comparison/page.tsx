@@ -374,7 +374,7 @@ export default function ComparisonPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [filter, toast]);
+  }, [filter, toast, t]);
 
   // ============================================================================
   // WebSocket 连接
@@ -553,7 +553,7 @@ export default function ComparisonPage() {
         });
       }
     },
-    [currentView, heatmapData, latencyData, costData, realtimeData, toast],
+    [currentView, heatmapData, latencyData, costData, realtimeData, toast, t],
   );
 
   // ============================================================================

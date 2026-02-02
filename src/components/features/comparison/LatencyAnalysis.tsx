@@ -346,7 +346,7 @@ export function LatencyAnalysisView({
                             className="gap-1 text-xs"
                           >
                             <StatusIcon className="h-3 w-3" />
-                            {t(statusConfig[metric.status].labelKey as any)}
+                            {t(statusConfig[metric.status].labelKey)}
                           </Badge>
                         </td>
                       </tr>

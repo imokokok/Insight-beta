@@ -1,4 +1,4 @@
-export default {
+const onboarding = {
   title: 'OracleMonitor에 오신 것을 환영합니다',
   description: '다중 프로토콜을 위한 포괄적인 오라클 모니터링 솔루션.',
   getStarted: '시작하기',
@@ -88,3 +88,5 @@ export default {
     },
   },
 };
+
+export default onboarding;

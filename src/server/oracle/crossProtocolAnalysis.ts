@@ -135,7 +135,10 @@ export async function calculateWeightedConsensus(
   }
 
   if (prices.length === 1) {
-    const firstPrice = prices[0]!;
+    const firstPrice = prices[0];
+    if (!firstPrice) {
+      throw new Error('No prices available for consensus calculation');
+    }
     return {
       price: firstPrice.price,
       method: 'single_source',
@@ -163,7 +166,8 @@ export async function calculateWeightedConsensus(
   // 计算加权中位数
   const totalWeight = weightedPrices.reduce((sum, wp) => sum + wp.weight, 0);
   let cumulativeWeight = 0;
-  let medianPrice = weightedPrices[0]!.price;
+  const firstWeightedPrice = weightedPrices[0];
+  let medianPrice = firstWeightedPrice?.price ?? 0;
 
   for (const wp of weightedPrices) {
     cumulativeWeight += wp.weight;

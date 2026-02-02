@@ -178,7 +178,10 @@ export class WebSocketRedisAdapter {
       });
     }
 
-    this.messageHandlers.get(channel)!.add(handler);
+    const handlers = this.messageHandlers.get(channel);
+    if (handlers) {
+      handlers.add(handler);
+    }
     logger.debug('Subscribed to channel', { channel });
   }
 

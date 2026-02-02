@@ -72,7 +72,10 @@ class PubSub {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set());
     }
-    this.listeners.get(event)!.add(listener);
+    const eventListeners = this.listeners.get(event);
+    if (eventListeners) {
+      eventListeners.add(listener);
+    }
 
     return () => {
       this.listeners.get(event)?.delete(listener);
@@ -954,7 +957,10 @@ const resolvers = {
         try {
           while (true) {
             if (queue.length > 0) {
-              yield { priceUpdate: queue.shift()! };
+              const item = queue.shift();
+              if (item) {
+                yield { priceUpdate: item };
+              }
             } else {
               const promise = new Promise<IteratorResult<PriceFeedPayload>>((resolve) => {
                 resolveNext = resolve;
@@ -1035,7 +1041,10 @@ const resolvers = {
         try {
           while (true) {
             if (queue.length > 0) {
-              yield { syncStatusUpdate: queue.shift()! };
+              const item = queue.shift();
+              if (item) {
+                yield { syncStatusUpdate: item };
+              }
             } else {
               const promise = new Promise<IteratorResult<SyncStatusPayload>>((resolve) => {
                 resolveNext = resolve;

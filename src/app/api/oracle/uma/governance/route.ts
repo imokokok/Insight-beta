@@ -210,7 +210,19 @@ async function fetchGovernanceStats(chain: string): Promise<GovernanceStats> {
     );
 
     if (result.rows.length > 0) {
-      const row = result.rows[0]!;
+      const row = result.rows[0];
+      if (!row) {
+        return {
+          totalProposals: 0,
+          activeProposals: 0,
+          executedProposals: 0,
+          defeatedProposals: 0,
+          totalVotes: 0,
+          uniqueVoters: 0,
+          averageParticipation: 0,
+          totalVotingPower: '0',
+        };
+      }
       return {
         totalProposals: parseInt(row.totalProposals as string),
         activeProposals: parseInt(row.activeProposals as string),

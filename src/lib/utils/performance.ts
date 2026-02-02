@@ -73,8 +73,10 @@ export function usePerformanceMonitor(componentName: string) {
 
     return () => {
       if (process.env.NODE_ENV === 'development') {
+        // 保存 ref 值到变量，避免 cleanup 时引用已改变
+        const finalRenderCount = metricsRef.current.renderCount;
         logger.debug(`[Performance] ${componentName} unmounted`, {
-          totalRenders: metricsRef.current.renderCount,
+          totalRenders: finalRenderCount,
           componentName,
         });
       }
@@ -210,7 +212,10 @@ export function createMemoizedCalculator<T, R>(
     const key = keyGenerator ? keyGenerator(input) : JSON.stringify(input);
 
     if (cache.has(key)) {
-      return cache.get(key)!;
+      const cached = cache.get(key);
+      if (cached !== undefined) {
+        return cached;
+      }
     }
 
     const result = calculator(input);

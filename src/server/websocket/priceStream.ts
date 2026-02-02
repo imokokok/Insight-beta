@@ -282,7 +282,10 @@ export class PriceStreamManager {
       if (!this.symbolSubscriptions.has(subscriptionKey)) {
         this.symbolSubscriptions.set(subscriptionKey, new Set());
       }
-      this.symbolSubscriptions.get(subscriptionKey)!.add(clientId);
+      const subscriptionSet = this.symbolSubscriptions.get(subscriptionKey);
+      if (subscriptionSet) {
+        subscriptionSet.add(clientId);
+      }
     }
 
     this.sendToClient(clientId, { type: 'subscribed', symbols });
@@ -511,14 +514,15 @@ export class PriceStreamManager {
         return null;
       }
 
-      const row = result.rows[0]!;
+      const row = result.rows[0];
+      if (!row) return null;
 
       return {
-        symbol: row.symbol,
+        symbol: row.symbol as string,
         protocol: row.protocol as OracleProtocol,
         chain: row.chain as SupportedChain,
-        price: parseFloat(row.price),
-        timestamp: row.timestamp,
+        price: parseFloat(row.price as string),
+        timestamp: row.timestamp as string,
       };
     } catch (error) {
       logger.error(`Failed to fetch latest price for ${symbol}`, {

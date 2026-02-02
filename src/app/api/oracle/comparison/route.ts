@@ -346,7 +346,7 @@ export async function GET(request: NextRequest) {
         // 获取所有类型的数据
         try {
           response.heatmap = useRealData
-            ? await generateRealHeatmapData(symbols, protocols as string[])
+            ? await generateRealHeatmapData(symbols, protocols as OracleProtocol[])
             : generateMockHeatmapData(symbols, protocols);
         } catch {
           response.heatmap = generateMockHeatmapData(symbols, protocols);
@@ -355,7 +355,7 @@ export async function GET(request: NextRequest) {
 
         try {
           response.latency = useRealData
-            ? await generateRealLatencyData(protocols as string[])
+            ? await generateRealLatencyData(protocols as OracleProtocol[])
             : generateMockLatencyData(protocols);
         } catch {
           response.latency = generateMockLatencyData(protocols);

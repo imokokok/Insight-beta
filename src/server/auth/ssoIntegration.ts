@@ -86,8 +86,11 @@ export class OAuth2Provider {
    * 生成授权 URL
    */
   getAuthorizationUrl(redirectUri: string, state: string): string {
+    if (!this.config.clientId || !this.config.authorizationUrl) {
+      throw new Error('SSO configuration missing clientId or authorizationUrl');
+    }
     const params = new URLSearchParams({
-      client_id: this.config.clientId!,
+      client_id: this.config.clientId,
       redirect_uri: redirectUri,
       response_type: 'code',
       state,
@@ -107,15 +110,18 @@ export class OAuth2Provider {
     idToken?: string;
   } | null> {
     try {
-      const response = await fetch(this.config.tokenUrl!, {
+      if (!this.config.tokenUrl || !this.config.clientId || !this.config.clientSecret) {
+        throw new Error('SSO configuration missing tokenUrl, clientId or clientSecret');
+      }
+      const response = await fetch(this.config.tokenUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: new URLSearchParams({
           grant_type: 'authorization_code',
-          client_id: this.config.clientId!,
-          client_secret: this.config.clientSecret!,
+          client_id: this.config.clientId,
+          client_secret: this.config.clientSecret,
           code,
           redirect_uri: redirectUri,
         }),
@@ -144,7 +150,10 @@ export class OAuth2Provider {
    */
   async getUserInfo(accessToken: string): Promise<SSOUser | null> {
     try {
-      const response = await fetch(this.config.userInfoUrl!, {
+      if (!this.config.userInfoUrl) {
+        throw new Error('SSO configuration missing userInfoUrl');
+      }
+      const response = await fetch(this.config.userInfoUrl, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -392,7 +401,10 @@ export class SSOManager {
     );
 
     if (existing.rows.length > 0) {
-      return existing.rows[0]!.developer_id;
+      const row = existing.rows[0];
+      if (row && 'developer_id' in row) {
+        return row.developer_id as string;
+      }
     }
 
     // 检查邮箱是否已注册
@@ -402,7 +414,10 @@ export class SSOManager {
     );
 
     if (byEmail.rows.length > 0) {
-      return byEmail.rows[0]!.id;
+      const row = byEmail.rows[0];
+      if (row && 'id' in row) {
+        return row.id as string;
+      }
     }
 
     // 自动创建新开发者

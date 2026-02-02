@@ -128,7 +128,11 @@ export class APIKeyManager {
         throw new Error('Developer not found or inactive');
       }
 
-      const developerTier = devResult.rows[0]!.tier;
+      const devRow = devResult.rows[0];
+      if (!devRow || !('tier' in devRow)) {
+        throw new Error('Developer data invalid');
+      }
+      const developerTier = devRow.tier as string;
 
       // 生成 API Key
       const keyPlaintext = this.generateSecureKey();
@@ -455,18 +459,19 @@ export class DeveloperManager {
         return null;
       }
 
-      const row = result.rows[0]!;
+      const row = result.rows[0];
+      if (!row) return null;
       return {
-        id: row.id,
-        email: row.email,
-        name: row.name,
-        organization: row.organization,
-        status: row.status,
-        tier: row.tier,
-        createdAt: new Date(row.created_at),
-        updatedAt: new Date(row.updated_at),
-        lastLoginAt: row.last_login_at ? new Date(row.last_login_at) : undefined,
-        metadata: row.metadata,
+        id: row.id as string,
+        email: row.email as string,
+        name: row.name as string,
+        organization: row.organization as string | undefined,
+        status: (row.status as 'active' | 'suspended' | 'inactive') || 'active',
+        tier: (row.tier as 'free' | 'basic' | 'pro' | 'enterprise') || 'free',
+        createdAt: new Date(row.created_at as string),
+        updatedAt: new Date(row.updated_at as string),
+        lastLoginAt: row.last_login_at ? new Date(row.last_login_at as string) : undefined,
+        metadata: row.metadata as Record<string, unknown> | undefined,
       };
     } catch (error) {
       logger.error('Failed to get developer', { error, developerId });

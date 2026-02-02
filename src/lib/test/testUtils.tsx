@@ -524,7 +524,10 @@ export function createIntegrationHelpers() {
       if (!listeners.has(event)) {
         listeners.set(event, new Set());
       }
-      listeners.get(event)!.add(callback);
+      const eventListeners = listeners.get(event);
+      if (eventListeners) {
+        eventListeners.add(callback);
+      }
     };
 
     const off = (event: string, callback: (...args: unknown[]) => void) => {

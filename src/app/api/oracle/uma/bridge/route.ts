@@ -219,7 +219,8 @@ async function fetchBridgeStats(chain: string): Promise<BridgeStats> {
     );
 
     if (result.rows.length > 0) {
-      const row = result.rows[0]!;
+      const row = result.rows[0];
+      if (!row) return getDefaultBridgeStats();
       return {
         totalTransactions: parseInt(row.totalTransactions as string),
         pendingTransactions: parseInt(row.pendingTransactions as string),

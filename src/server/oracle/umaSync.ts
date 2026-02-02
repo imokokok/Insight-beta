@@ -184,6 +184,9 @@ function pickNextRpcUrl(urls: string[], current: string): string {
 
 export async function getUMAEnv(instanceId: string = DEFAULT_UMA_INSTANCE_ID) {
   const config = await readUMAConfig(instanceId);
+  if (!config) {
+    throw new Error(`UMA config not found for instance: ${instanceId}`);
+  }
   const chain = config.chain || 'Ethereum';
 
   const getRpcUrl = () => {

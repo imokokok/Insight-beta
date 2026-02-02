@@ -229,7 +229,8 @@ export async function patchIncident(input: {
   const idx = store.items.findIndex((i) => i.id === input.id);
   if (idx < 0) return null;
 
-  const prev = store.items[idx]!;
+  const prev = store.items[idx];
+  if (!prev) return null;
   const now = memoryNowIso();
 
   const next: Incident = {

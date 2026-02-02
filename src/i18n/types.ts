@@ -102,20 +102,19 @@ export interface FormatOptions {
 
 /**
  * 翻译值类型
- * 使用 any 以支持各种动态翻译值类型
+ * 支持各种动态翻译值类型
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type TranslationValue =
   | string
   | { plural: PluralOptions }
   | { format: 'date' | 'number' | 'currency' | 'relative'; value: unknown; options?: FormatOptions }
-  | any;
+  | TranslationValue[]
+  | { [key: string]: TranslationValue };
 
 /**
  * 翻译命名空间类型
- * 使用 any 以支持扩展的动态翻译键
+ * 支持扩展的动态翻译键
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type TranslationNamespace = Record<string, TranslationValue | any>;
+export type TranslationNamespace = Record<string, TranslationValue>;
 
 export type Translations = Record<Lang, TranslationNamespace>;

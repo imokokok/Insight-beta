@@ -339,7 +339,8 @@ export class PythSyncManager {
       return null;
     }
 
-    const row = result.rows[0]!;
+    const row = result.rows[0];
+    if (!row) return null;
     return {
       id: row.id as string,
       chain: row.chain as SupportedChain,
@@ -365,7 +366,8 @@ export class PythSyncManager {
       return null;
     }
 
-    const row = result.rows[0]!;
+    const row = result.rows[0];
+    if (!row) return null;
     return {
       instanceId: row.instance_id as string,
       protocol: row.protocol as OracleProtocol,

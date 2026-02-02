@@ -1,4 +1,4 @@
-export default {
+const onboarding = {
   title: '欢迎使用 OracleMonitor',
   description: '适用于多种协议的综合预言机监控解决方案。',
   getStarted: '开始使用',
@@ -88,3 +88,5 @@ export default {
     },
   },
 };
+
+export default onboarding;

@@ -9,13 +9,13 @@ import type {
   PriceHeatmapData,
   LatencyAnalysis,
   CostComparison,
-} from '@/lib/types/oracle';
+} from '@/lib/types/oracle/comparison';
 
 // ============================================================================
 // CSV 导出
 // ============================================================================
 
-function convertToCSV(data: Record<string, any>[]): string {
+function convertToCSV(data: Record<string, unknown>[]): string {
   if (data.length === 0) return '';
 
   const firstRow = data[0];
@@ -62,7 +62,7 @@ function downloadFile(content: string, filename: string, mimeType: string) {
 // ============================================================================
 
 export function exportRealtimeToCSV(data: RealtimeComparisonItem[]) {
-  const flatData: Record<string, any>[] = [];
+  const flatData: Record<string, string | number>[] = [];
 
   data.forEach((item) => {
     item.protocols.forEach((protocol) => {
@@ -97,7 +97,7 @@ export function exportRealtimeToJSON(data: RealtimeComparisonItem[]) {
 // ============================================================================
 
 export function exportHeatmapToCSV(data: PriceHeatmapData) {
-  const flatData: Record<string, any>[] = [];
+  const flatData: Record<string, string | number>[] = [];
 
   data.rows.forEach((row) => {
     row.cells.forEach((cell) => {
@@ -249,7 +249,7 @@ export function exportAllToJSON(data: {
 // Excel 导出 (使用简单的 HTML table 格式)
 // ============================================================================
 
-export function exportToExcel(data: Record<string, any>[]) {
+export function exportToExcel(data: Record<string, unknown>[]) {
   const headers = Object.keys(data[0] || {});
 
   let html = `

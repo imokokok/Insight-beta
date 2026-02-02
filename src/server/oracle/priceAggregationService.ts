@@ -72,10 +72,14 @@ export function calculateMedian(values: number[]): number {
   const mid = Math.floor(sorted.length / 2);
 
   if (sorted.length % 2 === 0) {
-    return (sorted[mid - 1]! + sorted[mid]!) / 2;
+    const left = sorted[mid - 1];
+    const right = sorted[mid];
+    if (left === undefined || right === undefined) return 0;
+    return (left + right) / 2;
   }
 
-  return sorted[mid]!;
+  const median = sorted[mid];
+  return median === undefined ? 0 : median;
 }
 
 /**
@@ -90,7 +94,10 @@ export function calculateWeightedAverage(values: number[], weights: number[]): n
   const totalWeight = weights.reduce((a, b) => a + b, 0);
   if (totalWeight === 0) return 0;
 
-  const weightedSum = values.reduce((sum, value, i) => sum + value * weights[i]!, 0);
+  const weightedSum = values.reduce((sum, value, i) => {
+    const weight = weights[i];
+    return weight === undefined ? sum : sum + value * weight;
+  }, 0);
   return weightedSum / totalWeight;
 }
 
@@ -103,8 +110,9 @@ export function detectOutliers(values: number[], threshold: number = 1.5): numbe
   const sorted = [...values].sort((a, b) => a - b);
   const q1Index = Math.floor(sorted.length * 0.25);
   const q3Index = Math.floor(sorted.length * 0.75);
-  const q1 = sorted[q1Index]!;
-  const q3 = sorted[q3Index]!;
+  const q1 = sorted[q1Index];
+  const q3 = sorted[q3Index];
+  if (q1 === undefined || q3 === undefined) return [];
   const iqr = q3 - q1;
 
   const lowerBound = q1 - threshold * iqr;
@@ -275,10 +283,14 @@ export class PriceAggregationEngine {
     const mid = Math.floor(sorted.length / 2);
 
     if (sorted.length % 2 === 0) {
-      return (sorted[mid - 1]! + sorted[mid]!) / 2;
+      const left = sorted[mid - 1];
+      const right = sorted[mid];
+      if (left === undefined || right === undefined) return 0;
+      return (left + right) / 2;
     }
 
-    return sorted[mid]!;
+    const median = sorted[mid];
+    return median === undefined ? 0 : median;
   }
 
   /**
@@ -370,7 +382,10 @@ export class PriceAggregationEngine {
     const validPrices = prices.filter((p) => !outliers.some((o) => o.protocol === p.protocol));
 
     if (validPrices.length === 0) return 'median_all';
-    if (validPrices.length === 1) return validPrices[0]!.protocol;
+    if (validPrices.length === 1) {
+      const first = validPrices[0];
+      return first === undefined ? 'median_all' : first.protocol;
+    }
 
     switch (AGGREGATION_CONFIG.aggregationMethod) {
       case 'mean':

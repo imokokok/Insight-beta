@@ -93,8 +93,9 @@ export class RateLimiter {
 
     for (let i = 0; i < windows.length; i++) {
       const windowKey = `${apiKeyId}:${windows[i]}`;
-      const limit = limits[i]!;
-      const duration = durations[i]!;
+      const limit = limits[i];
+      const duration = durations[i];
+      if (limit === undefined || duration === undefined) continue;
 
       const window = this.getWindow(windowKey);
 
@@ -107,8 +108,10 @@ export class RateLimiter {
       // 检查是否超过限制
       if (window.count >= limit) {
         // 记录限流事件
-        const windowName = windows[i]!;
-        await this.recordRateLimitEvent(apiKeyId, tier, windowName);
+        const windowName = windows[i];
+        if (windowName !== undefined) {
+          await this.recordRateLimitEvent(apiKeyId, tier, windowName);
+        }
 
         return {
           allowed: false,
@@ -117,7 +120,7 @@ export class RateLimiter {
             limit,
             remaining: 0,
             resetAt: new Date(window.resetAt),
-            window: windowName,
+            window: windowName ?? 'unknown',
           },
         };
       }
@@ -438,7 +441,11 @@ export class BillingSystem {
         return null;
       }
 
-      const tier = devResult.rows[0]!.tier;
+      const tierRow = devResult.rows[0];
+      if (!tierRow || !('tier' in tierRow)) {
+        return null;
+      }
+      const tier = tierRow.tier as string;
       const pricing = this.tierPricing[tier];
       if (!pricing) {
         throw new Error(`Invalid pricing tier: ${tier}`);
@@ -537,20 +544,21 @@ export class BillingSystem {
         return null;
       }
 
-      const row = result.rows[0]!;
+      const row = result.rows[0];
+      if (!row) return null;
       return {
-        id: row.id,
-        developerId: row.developer_id,
-        period: row.period,
-        tier: row.tier,
-        baseCost: parseFloat(row.base_cost),
-        overageCost: parseFloat(row.overage_cost),
-        totalCost: parseFloat(row.total_cost),
-        requestCount: row.request_count,
-        overageRequests: row.overage_requests,
-        status: row.status,
-        createdAt: new Date(row.created_at),
-        paidAt: row.paid_at ? new Date(row.paid_at) : undefined,
+        id: row.id as string,
+        developerId: row.developer_id as string,
+        period: row.period as string,
+        tier: row.tier as string,
+        baseCost: parseFloat(row.base_cost as string),
+        overageCost: parseFloat(row.overage_cost as string),
+        totalCost: parseFloat(row.total_cost as string),
+        requestCount: row.request_count as number,
+        overageRequests: row.overage_requests as number,
+        status: (row.status as 'pending' | 'paid' | 'failed' | 'waived') ?? 'pending',
+        createdAt: new Date(row.created_at as string),
+        paidAt: row.paid_at ? new Date(row.paid_at as string) : undefined,
       };
     } catch (error) {
       logger.error('Failed to get bill', { error, developerId, period });

@@ -89,7 +89,10 @@ export function RealtimeComparisonView({
   // Auto-scroll effect for live updates
   useEffect(() => {
     if (isLive && data && data.length > 0 && !selectedSymbol) {
-      setSelectedSymbol(data[0]!.symbol);
+      const firstItem = data[0];
+      if (firstItem) {
+        setSelectedSymbol(firstItem.symbol);
+      }
     }
   }, [isLive, data, selectedSymbol]);
 
