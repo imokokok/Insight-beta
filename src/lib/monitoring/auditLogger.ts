@@ -86,12 +86,85 @@ const BATCH_SIZE = 100;
 const PERSISTENCE_RETRY_ATTEMPTS = 3;
 const PERSISTENCE_RETRY_DELAY = 1000;
 
+/**
+ * 循环缓冲区 - 用于高效存储固定数量的日志条目
+ * 当缓冲区满时，新条目会覆盖最旧的条目
+ */
+class CircularBuffer<T> {
+  private buffer: (T | undefined)[];
+  private head = 0;
+  private tail = 0;
+  private count = 0;
+  private readonly capacity: number;
+
+  constructor(capacity: number) {
+    this.capacity = capacity;
+    this.buffer = new Array(capacity);
+  }
+
+  push(item: T): void {
+    this.buffer[this.head] = item;
+    this.head = (this.head + 1) % this.capacity;
+
+    if (this.count < this.capacity) {
+      this.count++;
+    } else {
+      this.tail = this.head;
+    }
+  }
+
+  *[Symbol.iterator](): Iterator<T> {
+    for (let i = 0; i < this.count; i++) {
+      const index = (this.tail + i) % this.capacity;
+      const item = this.buffer[index];
+      if (item !== undefined) {
+        yield item;
+      }
+    }
+  }
+
+  toArray(): T[] {
+    const result: T[] = [];
+    for (const item of this) {
+      result.push(item);
+    }
+    return result;
+  }
+
+  get length(): number {
+    return this.count;
+  }
+
+  clear(): void {
+    this.buffer.fill(undefined);
+    this.head = 0;
+    this.tail = 0;
+    this.count = 0;
+  }
+
+  /**
+   * 过滤并返回符合条件的条目
+   */
+  filter(predicate: (item: T) => boolean): T[] {
+    const result: T[] = [];
+    for (const item of this) {
+      if (predicate(item)) {
+        result.push(item);
+      }
+    }
+    return result;
+  }
+}
+
 class SecurityAuditLogger {
-  private logs: AuditLogEntry[] = [];
+  private logs: CircularBuffer<AuditLogEntry>;
   private persistenceQueue: AuditLogEntry[] = [];
   private isPersisting = false;
   private persistenceTimer: NodeJS.Timeout | null = null;
-  private maxLogs: number = MAX_LOGS;
+
+  constructor(maxLogs: number = MAX_LOGS) {
+    this.logs = new CircularBuffer<AuditLogEntry>(maxLogs);
+  }
 
   log(entry: Omit<AuditLogEntry, 'id' | 'timestamp'>): void {
     const auditEntry: AuditLogEntry = {
@@ -102,10 +175,6 @@ class SecurityAuditLogger {
 
     this.logs.push(auditEntry);
     this.persistenceQueue.push(auditEntry);
-
-    if (this.logs.length > this.maxLogs) {
-      this.logs = this.logs.slice(-this.maxLogs);
-    }
 
     logger.info('Audit log entry', {
       action: auditEntry.action,
@@ -118,7 +187,7 @@ class SecurityAuditLogger {
   }
 
   query(filter: AuditFilter): AuditLogEntry[] {
-    let results = [...this.logs];
+    let results = this.logs.toArray();
 
     if (filter.search) {
       const searchLower = filter.search.toLowerCase();
@@ -337,7 +406,12 @@ class SecurityAuditLogger {
         await this.saveArchive(archiveData, `audit-archive-${cutoff.slice(0, 10)}.json`);
       }
 
-      this.logs = this.logs.filter((log) => log.timestamp >= cutoff);
+      // 重新创建缓冲区，排除已归档的日志
+      const remainingLogs = this.logs.filter((log) => log.timestamp >= cutoff);
+      this.logs.clear();
+      for (const log of remainingLogs) {
+        this.logs.push(log);
+      }
 
       logger.info('Audit logs archived', {
         cutoff,
@@ -397,7 +471,11 @@ class SecurityAuditLogger {
     const cutoff = cutoffDate.toISOString();
 
     const beforeCount = this.logs.length;
-    this.logs = this.logs.filter((log) => log.timestamp >= cutoff);
+    const remainingLogs = this.logs.filter((log) => log.timestamp >= cutoff);
+    this.logs.clear();
+    for (const log of remainingLogs) {
+      this.logs.push(log);
+    }
     const afterCount = this.logs.length;
 
     logger.info('Old audit logs cleared', {
@@ -408,7 +486,7 @@ class SecurityAuditLogger {
   }
 
   clearAllLogsForTest(): void {
-    this.logs = [];
+    this.logs.clear();
     this.persistenceQueue = [];
   }
 
@@ -421,7 +499,8 @@ class SecurityAuditLogger {
     queueSize: number;
     memoryEstimate: string;
   } {
-    const totalSize = JSON.stringify(this.logs).length;
+    const logsArray = this.logs.toArray();
+    const totalSize = JSON.stringify(logsArray).length;
     const queueSize = this.persistenceQueue.length;
     const memoryEstimate = this.formatBytes(totalSize);
 
