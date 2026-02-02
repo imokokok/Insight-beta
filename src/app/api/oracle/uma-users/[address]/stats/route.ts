@@ -3,8 +3,13 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 /**
- * @deprecated 此端点已弃用，请使用 /api/oracle/uma-users/{address}/stats
  * 获取 UMA 用户统计信息
+ * @param request - Next.js 请求对象
+ * @param params - 路由参数，包含用户地址
+ * @returns 用户统计信息
+ *
+ * @example
+ * GET /api/oracle/uma-users/0x123.../stats?instanceId=xxx
  */
 export async function GET(
   request: NextRequest,
@@ -21,14 +26,7 @@ export async function GET(
 
     const stats = await getUMAUserStats(address, instanceId);
 
-    // 添加弃用警告头
-    return NextResponse.json(stats, {
-      headers: {
-        Deprecation: 'true',
-        Sunset: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(), // 90天后停用
-        Link: `</api/oracle/uma-users/${address}/stats>; rel="successor-version"`,
-      },
-    });
+    return NextResponse.json(stats);
   } catch (error) {
     console.error('Failed to get UMA user stats:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

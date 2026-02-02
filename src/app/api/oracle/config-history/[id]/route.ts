@@ -7,8 +7,13 @@ const paramsSchema = z.object({
 });
 
 /**
- * @deprecated 此端点已弃用，请使用 /api/oracle/config-history/{id}
  * 获取配置历史记录详情
+ * @param _request - 请求对象
+ * @param params - 路由参数，包含历史记录 ID
+ * @returns 配置历史记录详情
+ *
+ * @example
+ * GET /api/oracle/config-history/123
  */
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -19,14 +24,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: 'History entry not found' }, { status: 404 });
     }
 
-    // 添加弃用警告头
-    return NextResponse.json(entry, {
-      headers: {
-        Deprecation: 'true',
-        Sunset: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
-        Link: `</api/oracle/config-history/${id}>; rel="successor-version"`,
-      },
-    });
+    return NextResponse.json(entry);
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Invalid ID', details: error.format() }, { status: 400 });
@@ -42,8 +40,17 @@ const rollbackSchema = z.object({
 });
 
 /**
- * @deprecated 此端点已弃用，请使用 /api/oracle/config-history/{id}
  * 回滚到指定的配置版本
+ * @param request - 请求对象
+ * @param params - 路由参数，包含历史记录 ID
+ * @returns 回滚结果
+ *
+ * @example
+ * POST /api/oracle/config-history/123
+ * {
+ *   "changeReason": "Rollback to previous version",
+ *   "changedBy": "admin"
+ * }
  */
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -60,21 +67,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: result.error }, { status: 400 });
     }
 
-    // 添加弃用警告头
-    return NextResponse.json(
-      {
-        success: true,
-        message: 'Configuration rolled back successfully',
-        config: result.config,
-      },
-      {
-        headers: {
-          Deprecation: 'true',
-          Sunset: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
-          Link: `</api/oracle/config-history/${id}>; rel="successor-version"`,
-        },
-      },
-    );
+    return NextResponse.json({
+      success: true,
+      message: 'Configuration rolled back successfully',
+      config: result.config,
+    });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

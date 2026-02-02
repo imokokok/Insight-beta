@@ -85,6 +85,7 @@ type Schema =
       example?: string;
       format?: string;
       nullable?: boolean;
+      pattern?: string;
     }
   | { type: 'number'; description?: string; example?: number; nullable?: boolean }
   | { type: 'integer'; description?: string; example?: number; nullable?: boolean }
@@ -220,7 +221,8 @@ class APIRegistry {
       info: {
         title: 'OracleMonitor API',
         version: '1.0.0',
-        description: 'Universal Oracle Monitoring Platform API supporting Chainlink, Pyth, API3, DIA, Band, RedStone and more',
+        description:
+          'Universal Oracle Monitoring Platform API supporting Chainlink, Pyth, API3, DIA, Band, RedStone and more',
         contact: {
           name: 'API Support',
           email: 'api@oracle-monitor.foresight.build',
@@ -626,6 +628,244 @@ apiRegistry.registerPath('/api/analytics/web-vitals', 'post', {
             type: 'object',
             properties: {
               success: { type: 'boolean' },
+            },
+          },
+        },
+      },
+    },
+  },
+});
+
+// 扁平化后的 API 路由 - UMA Users
+apiRegistry.registerPath('/api/oracle/uma-users/{address}/assertions', 'get', {
+  summary: 'Get UMA user assertions (flattened)',
+  tags: ['UMA Users'],
+  parameters: [
+    {
+      name: 'address',
+      in: 'path',
+      required: true,
+      schema: { type: 'string', pattern: '^0x[a-fA-F0-9]{40}$' },
+      description: 'User Ethereum address',
+    },
+    {
+      name: 'instanceId',
+      in: 'query',
+      schema: { type: 'string' },
+      description: 'Instance ID',
+    },
+    {
+      name: 'status',
+      in: 'query',
+      schema: { type: 'string', enum: ['Active', 'Disputed', 'Resolved'] },
+      description: 'Filter by status',
+    },
+    {
+      name: 'limit',
+      in: 'query',
+      schema: { type: 'integer', example: 100 },
+      description: 'Number of results to return',
+    },
+    {
+      name: 'offset',
+      in: 'query',
+      schema: { type: 'integer', example: 0 },
+      description: 'Pagination offset',
+    },
+  ],
+  responses: {
+    '200': {
+      description: 'List of user assertions',
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              assertions: { type: 'array', items: { $ref: '#/components/schemas/Assertion' } },
+              total: { type: 'integer' },
+              limit: { type: 'integer' },
+              offset: { type: 'integer' },
+            },
+          },
+        },
+      },
+    },
+    '400': {
+      description: 'Invalid address',
+      content: {
+        'application/json': {
+          schema: { $ref: '#/components/schemas/Error' },
+        },
+      },
+    },
+  },
+});
+
+apiRegistry.registerPath('/api/oracle/uma-users/{address}/stats', 'get', {
+  summary: 'Get UMA user stats (flattened)',
+  tags: ['UMA Users'],
+  parameters: [
+    {
+      name: 'address',
+      in: 'path',
+      required: true,
+      schema: { type: 'string', pattern: '^0x[a-fA-F0-9]{40}$' },
+      description: 'User Ethereum address',
+    },
+    {
+      name: 'instanceId',
+      in: 'query',
+      schema: { type: 'string' },
+      description: 'Instance ID',
+    },
+  ],
+  responses: {
+    '200': {
+      description: 'User statistics',
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              totalAssertions: { type: 'integer' },
+              activeAssertions: { type: 'integer' },
+              disputedAssertions: { type: 'integer' },
+              resolvedAssertions: { type: 'integer' },
+              totalBonded: { type: 'number' },
+            },
+          },
+        },
+      },
+    },
+    '400': {
+      description: 'Invalid address',
+      content: {
+        'application/json': {
+          schema: { $ref: '#/components/schemas/Error' },
+        },
+      },
+    },
+  },
+});
+
+// 扁平化后的 API 路由 - Config History
+apiRegistry.registerPath('/api/oracle/config-history/{id}', 'get', {
+  summary: 'Get config history entry (flattened)',
+  tags: ['Config History'],
+  parameters: [
+    {
+      name: 'id',
+      in: 'path',
+      required: true,
+      schema: { type: 'integer' },
+      description: 'History entry ID',
+    },
+  ],
+  responses: {
+    '200': {
+      description: 'History entry details',
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              id: { type: 'integer' },
+              config: { type: 'object' },
+              changedAt: { type: 'string', format: 'date-time' },
+              changedBy: { type: 'string' },
+              changeReason: { type: 'string' },
+            },
+          },
+        },
+      },
+    },
+    '404': {
+      description: 'History entry not found',
+      content: {
+        'application/json': {
+          schema: { $ref: '#/components/schemas/Error' },
+        },
+      },
+    },
+  },
+});
+
+apiRegistry.registerPath('/api/oracle/config-history/{id}', 'post', {
+  summary: 'Rollback to config version (flattened)',
+  tags: ['Config History'],
+  parameters: [
+    {
+      name: 'id',
+      in: 'path',
+      required: true,
+      schema: { type: 'integer' },
+      description: 'History entry ID',
+    },
+  ],
+  requestBody: {
+    required: false,
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object',
+          properties: {
+            changeReason: { type: 'string' },
+            changedBy: { type: 'string' },
+          },
+        },
+      },
+    },
+  },
+  responses: {
+    '200': {
+      description: 'Rollback successful',
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              success: { type: 'boolean' },
+              message: { type: 'string' },
+              config: { type: 'object' },
+            },
+          },
+        },
+      },
+    },
+    '400': {
+      description: 'Rollback failed',
+      content: {
+        'application/json': {
+          schema: { $ref: '#/components/schemas/Error' },
+        },
+      },
+    },
+  },
+});
+
+apiRegistry.registerPath('/api/oracle/config-history/stats', 'get', {
+  summary: 'Get config history stats (flattened)',
+  tags: ['Config History'],
+  parameters: [
+    {
+      name: 'instanceId',
+      in: 'query',
+      schema: { type: 'string' },
+      description: 'Instance ID',
+    },
+  ],
+  responses: {
+    '200': {
+      description: 'History statistics',
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              totalChanges: { type: 'integer' },
+              changesLast24h: { type: 'integer' },
+              changesLast7d: { type: 'integer' },
+              mostChangedFields: { type: 'array', items: { type: 'string' } },
             },
           },
         },

@@ -1,0 +1,2257 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "OracleMonitor API",
+    "version": "1.0.0",
+    "description": "Universal Oracle Monitoring Platform API",
+    "contact": {
+      "name": "API Support",
+      "email": "api@oracle-monitor.foresight.build"
+    }
+  },
+  "servers": [
+    {
+      "url": "/api",
+      "description": "Current server"
+    }
+  ],
+  "paths": {
+    "/admin/kv": {
+      "get": {
+        "summary": "GET /admin/kv",
+        "description": "Endpoint for GET requests to /admin/kv",
+        "tags": ["Admin"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "PUT /admin/kv",
+        "description": "Endpoint for PUT requests to /admin/kv",
+        "tags": ["Admin"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "delete": {
+        "summary": "DELETE /admin/kv",
+        "description": "Endpoint for DELETE requests to /admin/kv",
+        "tags": ["Admin"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/admin/tokens": {
+      "get": {
+        "summary": "GET /admin/tokens",
+        "description": "Endpoint for GET requests to /admin/tokens",
+        "tags": ["Admin"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /admin/tokens",
+        "description": "Endpoint for POST requests to /admin/tokens",
+        "tags": ["Admin"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "delete": {
+        "summary": "DELETE /admin/tokens",
+        "description": "Endpoint for DELETE requests to /admin/tokens",
+        "tags": ["Admin"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/analytics/web-vitals": {
+      "get": {
+        "summary": "GET /analytics/web-vitals",
+        "description": "Endpoint for GET requests to /analytics/web-vitals",
+        "tags": ["Other"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /analytics/web-vitals",
+        "description": "Endpoint for POST requests to /analytics/web-vitals",
+        "tags": ["Other"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/audit/logs": {
+      "get": {
+        "summary": "GET /audit/logs",
+        "description": "Endpoint for GET requests to /audit/logs",
+        "tags": ["Other"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /audit/logs",
+        "description": "Endpoint for POST requests to /audit/logs",
+        "tags": ["Other"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/audit": {
+      "get": {
+        "summary": "GET /audit",
+        "description": "Endpoint for GET requests to /audit",
+        "tags": ["Other"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /audit",
+        "description": "Endpoint for POST requests to /audit",
+        "tags": ["Other"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/audit/stats": {
+      "get": {
+        "summary": "GET /audit/stats",
+        "description": "Endpoint for GET requests to /audit/stats",
+        "tags": ["Other"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/comments": {
+      "get": {
+        "summary": "GET /comments",
+        "description": "Endpoint for GET requests to /comments",
+        "tags": ["Comments"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /comments",
+        "description": "Endpoint for POST requests to /comments",
+        "tags": ["Comments"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/docs/openapi.json": {
+      "get": {
+        "summary": "GET /docs/openapi.json",
+        "description": "Endpoint for GET requests to /docs/openapi.json",
+        "tags": ["Docs"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/docs": {
+      "get": {
+        "summary": "GET /docs",
+        "description": "Endpoint for GET requests to /docs",
+        "tags": ["Docs"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/docs/swagger": {
+      "get": {
+        "summary": "GET /docs/swagger",
+        "description": "Endpoint for GET requests to /docs/swagger",
+        "tags": ["Docs"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "summary": "GET /events",
+        "description": "Endpoint for GET requests to /events",
+        "tags": ["Events"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/export": {
+      "get": {
+        "summary": "GET /export",
+        "description": "Endpoint for GET requests to /export",
+        "tags": ["Export"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/graphql": {
+      "get": {
+        "summary": "GET /graphql",
+        "description": "Endpoint for GET requests to /graphql",
+        "tags": ["GraphQL"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /graphql",
+        "description": "Endpoint for POST requests to /graphql",
+        "tags": ["GraphQL"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "GET /health",
+        "description": "Endpoint for GET requests to /health",
+        "tags": ["Health"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/alert-rules": {
+      "get": {
+        "summary": "GET /oracle/alert-rules",
+        "description": "Endpoint for GET requests to /oracle/alert-rules",
+        "tags": ["Other"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /oracle/alert-rules",
+        "description": "Endpoint for POST requests to /oracle/alert-rules",
+        "tags": ["Other"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "PUT /oracle/alert-rules",
+        "description": "Endpoint for PUT requests to /oracle/alert-rules",
+        "tags": ["Other"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/alerts/:id": {
+      "patch": {
+        "summary": "PATCH /oracle/alerts/:id",
+        "description": "Endpoint for PATCH requests to /oracle/alerts/:id",
+        "tags": ["Alerts"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/alerts": {
+      "get": {
+        "summary": "GET /oracle/alerts",
+        "description": "Endpoint for GET requests to /oracle/alerts",
+        "tags": ["Alerts"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/analytics/accuracy": {
+      "get": {
+        "summary": "GET /oracle/analytics/accuracy",
+        "description": "Endpoint for GET requests to /oracle/analytics/accuracy",
+        "tags": ["Analytics"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/analytics/deviation": {
+      "get": {
+        "summary": "GET /oracle/analytics/deviation",
+        "description": "Endpoint for GET requests to /oracle/analytics/deviation",
+        "tags": ["Analytics"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/analytics/markets": {
+      "get": {
+        "summary": "GET /oracle/analytics/markets",
+        "description": "Endpoint for GET requests to /oracle/analytics/markets",
+        "tags": ["Analytics"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/assertions/:id/evidence": {
+      "get": {
+        "summary": "GET /oracle/assertions/:id/evidence",
+        "description": "Endpoint for GET requests to /oracle/assertions/:id/evidence",
+        "tags": ["Assertions"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/assertions/:id": {
+      "get": {
+        "summary": "GET /oracle/assertions/:id",
+        "description": "Endpoint for GET requests to /oracle/assertions/:id",
+        "tags": ["Assertions"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/assertions/:id/timeline": {
+      "get": {
+        "summary": "GET /oracle/assertions/:id/timeline",
+        "description": "Endpoint for GET requests to /oracle/assertions/:id/timeline",
+        "tags": ["Assertions"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/assertions": {
+      "get": {
+        "summary": "GET /oracle/assertions",
+        "description": "Endpoint for GET requests to /oracle/assertions",
+        "tags": ["Assertions"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/audit": {
+      "get": {
+        "summary": "GET /oracle/audit",
+        "description": "Endpoint for GET requests to /oracle/audit",
+        "tags": ["Audit"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/chainlink": {
+      "get": {
+        "summary": "GET /oracle/chainlink",
+        "description": "Endpoint for GET requests to /oracle/chainlink",
+        "tags": ["Other"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /oracle/chainlink",
+        "description": "Endpoint for POST requests to /oracle/chainlink",
+        "tags": ["Other"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "PUT /oracle/chainlink",
+        "description": "Endpoint for PUT requests to /oracle/chainlink",
+        "tags": ["Other"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "delete": {
+        "summary": "DELETE /oracle/chainlink",
+        "description": "Endpoint for DELETE requests to /oracle/chainlink",
+        "tags": ["Other"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/charts": {
+      "get": {
+        "summary": "GET /oracle/charts",
+        "description": "Endpoint for GET requests to /oracle/charts",
+        "tags": ["Charts"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/comparison": {
+      "get": {
+        "summary": "GET /oracle/comparison",
+        "description": "Endpoint for GET requests to /oracle/comparison",
+        "tags": ["Other"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /oracle/comparison",
+        "description": "Endpoint for POST requests to /oracle/comparison",
+        "tags": ["Other"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/config/batch": {
+      "post": {
+        "summary": "POST /oracle/config/batch",
+        "description": "Endpoint for POST requests to /oracle/config/batch",
+        "tags": ["Config"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/config/cache": {
+      "get": {
+        "summary": "GET /oracle/config/cache",
+        "description": "Endpoint for GET requests to /oracle/config/cache",
+        "tags": ["Config"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /oracle/config/cache",
+        "description": "Endpoint for POST requests to /oracle/config/cache",
+        "tags": ["Config"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/config/clone": {
+      "post": {
+        "summary": "POST /oracle/config/clone",
+        "description": "Endpoint for POST requests to /oracle/config/clone",
+        "tags": ["Config"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/config/diff": {
+      "post": {
+        "summary": "POST /oracle/config/diff",
+        "description": "Endpoint for POST requests to /oracle/config/diff",
+        "tags": ["Config"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/config/export": {
+      "get": {
+        "summary": "GET /oracle/config/export",
+        "description": "Endpoint for GET requests to /oracle/config/export",
+        "tags": ["Config"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /oracle/config/export",
+        "description": "Endpoint for POST requests to /oracle/config/export",
+        "tags": ["Config"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/config/history/:id": {
+      "get": {
+        "summary": "GET /oracle/config/history/:id",
+        "description": "Endpoint for GET requests to /oracle/config/history/:id",
+        "tags": ["Config"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /oracle/config/history/:id",
+        "description": "Endpoint for POST requests to /oracle/config/history/:id",
+        "tags": ["Config"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/config/history": {
+      "get": {
+        "summary": "GET /oracle/config/history",
+        "description": "Endpoint for GET requests to /oracle/config/history",
+        "tags": ["Config"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/config/history/stats": {
+      "get": {
+        "summary": "GET /oracle/config/history/stats",
+        "description": "Endpoint for GET requests to /oracle/config/history/stats",
+        "tags": ["Config"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/config": {
+      "get": {
+        "summary": "GET /oracle/config",
+        "description": "Endpoint for GET requests to /oracle/config",
+        "tags": ["Config"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "PUT /oracle/config",
+        "description": "Endpoint for PUT requests to /oracle/config",
+        "tags": ["Config"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/config/search": {
+      "get": {
+        "summary": "GET /oracle/config/search",
+        "description": "Endpoint for GET requests to /oracle/config/search",
+        "tags": ["Config"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/config/templates": {
+      "get": {
+        "summary": "GET /oracle/config/templates",
+        "description": "Endpoint for GET requests to /oracle/config/templates",
+        "tags": ["Config"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /oracle/config/templates",
+        "description": "Endpoint for POST requests to /oracle/config/templates",
+        "tags": ["Config"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "PUT /oracle/config/templates",
+        "description": "Endpoint for PUT requests to /oracle/config/templates",
+        "tags": ["Config"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "delete": {
+        "summary": "DELETE /oracle/config/templates",
+        "description": "Endpoint for DELETE requests to /oracle/config/templates",
+        "tags": ["Config"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/config/validate": {
+      "post": {
+        "summary": "POST /oracle/config/validate",
+        "description": "Endpoint for POST requests to /oracle/config/validate",
+        "tags": ["Config"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/config/versions": {
+      "get": {
+        "summary": "GET /oracle/config/versions",
+        "description": "Endpoint for GET requests to /oracle/config/versions",
+        "tags": ["Config"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /oracle/config/versions",
+        "description": "Endpoint for POST requests to /oracle/config/versions",
+        "tags": ["Config"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/config/webhooks": {
+      "get": {
+        "summary": "GET /oracle/config/webhooks",
+        "description": "Endpoint for GET requests to /oracle/config/webhooks",
+        "tags": ["Config"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /oracle/config/webhooks",
+        "description": "Endpoint for POST requests to /oracle/config/webhooks",
+        "tags": ["Config"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "PUT /oracle/config/webhooks",
+        "description": "Endpoint for PUT requests to /oracle/config/webhooks",
+        "tags": ["Config"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "delete": {
+        "summary": "DELETE /oracle/config/webhooks",
+        "description": "Endpoint for DELETE requests to /oracle/config/webhooks",
+        "tags": ["Config"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/config-history/:id": {
+      "get": {
+        "summary": "GET /oracle/config-history/:id",
+        "description": "Endpoint for GET requests to /oracle/config-history/:id",
+        "tags": ["Config"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /oracle/config-history/:id",
+        "description": "Endpoint for POST requests to /oracle/config-history/:id",
+        "tags": ["Config"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/config-history/stats": {
+      "get": {
+        "summary": "GET /oracle/config-history/stats",
+        "description": "Endpoint for GET requests to /oracle/config-history/stats",
+        "tags": ["Config"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/disputes": {
+      "get": {
+        "summary": "GET /oracle/disputes",
+        "description": "Endpoint for GET requests to /oracle/disputes",
+        "tags": ["Disputes"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/incidents/:id": {
+      "get": {
+        "summary": "GET /oracle/incidents/:id",
+        "description": "Endpoint for GET requests to /oracle/incidents/:id",
+        "tags": ["Incidents"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "patch": {
+        "summary": "PATCH /oracle/incidents/:id",
+        "description": "Endpoint for PATCH requests to /oracle/incidents/:id",
+        "tags": ["Incidents"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/incidents": {
+      "get": {
+        "summary": "GET /oracle/incidents",
+        "description": "Endpoint for GET requests to /oracle/incidents",
+        "tags": ["Incidents"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /oracle/incidents",
+        "description": "Endpoint for POST requests to /oracle/incidents",
+        "tags": ["Incidents"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/instances": {
+      "get": {
+        "summary": "GET /oracle/instances",
+        "description": "Endpoint for GET requests to /oracle/instances",
+        "tags": ["Instances"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/leaderboard": {
+      "get": {
+        "summary": "GET /oracle/leaderboard",
+        "description": "Endpoint for GET requests to /oracle/leaderboard",
+        "tags": ["Leaderboard"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/notification-channels/:id/test": {
+      "post": {
+        "summary": "POST /oracle/notification-channels/:id/test",
+        "description": "Endpoint for POST requests to /oracle/notification-channels/:id/test",
+        "tags": ["Other"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/notification-channels": {
+      "get": {
+        "summary": "GET /oracle/notification-channels",
+        "description": "Endpoint for GET requests to /oracle/notification-channels",
+        "tags": ["Other"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /oracle/notification-channels",
+        "description": "Endpoint for POST requests to /oracle/notification-channels",
+        "tags": ["Other"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "patch": {
+        "summary": "PATCH /oracle/notification-channels",
+        "description": "Endpoint for PATCH requests to /oracle/notification-channels",
+        "tags": ["Other"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "delete": {
+        "summary": "DELETE /oracle/notification-channels",
+        "description": "Endpoint for DELETE requests to /oracle/notification-channels",
+        "tags": ["Other"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/ops-metrics": {
+      "get": {
+        "summary": "GET /oracle/ops-metrics",
+        "description": "Endpoint for GET requests to /oracle/ops-metrics",
+        "tags": ["Ops Metrics"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/risks": {
+      "get": {
+        "summary": "GET /oracle/risks",
+        "description": "Endpoint for GET requests to /oracle/risks",
+        "tags": ["Risks"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/sla/reports": {
+      "get": {
+        "summary": "GET /oracle/sla/reports",
+        "description": "Endpoint for GET requests to /oracle/sla/reports",
+        "tags": ["Reports"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/sla/stats": {
+      "get": {
+        "summary": "GET /oracle/sla/stats",
+        "description": "Endpoint for GET requests to /oracle/sla/stats",
+        "tags": ["Other"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/stats": {
+      "get": {
+        "summary": "GET /oracle/stats",
+        "description": "Endpoint for GET requests to /oracle/stats",
+        "tags": ["Stats"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/stats/user": {
+      "get": {
+        "summary": "GET /oracle/stats/user",
+        "description": "Endpoint for GET requests to /oracle/stats/user",
+        "tags": ["Stats"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/status": {
+      "get": {
+        "summary": "GET /oracle/status",
+        "description": "Endpoint for GET requests to /oracle/status",
+        "tags": ["Status"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/sync": {
+      "get": {
+        "summary": "GET /oracle/sync",
+        "description": "Endpoint for GET requests to /oracle/sync",
+        "tags": ["Sync"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /oracle/sync",
+        "description": "Endpoint for POST requests to /oracle/sync",
+        "tags": ["Sync"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/sync-metrics": {
+      "get": {
+        "summary": "GET /oracle/sync-metrics",
+        "description": "Endpoint for GET requests to /oracle/sync-metrics",
+        "tags": ["Sync"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/uma/assertions/:id": {
+      "get": {
+        "summary": "GET /oracle/uma/assertions/:id",
+        "description": "Endpoint for GET requests to /oracle/uma/assertions/:id",
+        "tags": ["UMA"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/uma/assertions": {
+      "get": {
+        "summary": "GET /oracle/uma/assertions",
+        "description": "Endpoint for GET requests to /oracle/uma/assertions",
+        "tags": ["UMA"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/uma/bridge": {
+      "get": {
+        "summary": "GET /oracle/uma/bridge",
+        "description": "Endpoint for GET requests to /oracle/uma/bridge",
+        "tags": ["UMA"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/uma/config": {
+      "get": {
+        "summary": "GET /oracle/uma/config",
+        "description": "Endpoint for GET requests to /oracle/uma/config",
+        "tags": ["UMA"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "PUT /oracle/uma/config",
+        "description": "Endpoint for PUT requests to /oracle/uma/config",
+        "tags": ["UMA"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "delete": {
+        "summary": "DELETE /oracle/uma/config",
+        "description": "Endpoint for DELETE requests to /oracle/uma/config",
+        "tags": ["UMA"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/uma/disputes": {
+      "get": {
+        "summary": "GET /oracle/uma/disputes",
+        "description": "Endpoint for GET requests to /oracle/uma/disputes",
+        "tags": ["UMA"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/uma/governance": {
+      "get": {
+        "summary": "GET /oracle/uma/governance",
+        "description": "Endpoint for GET requests to /oracle/uma/governance",
+        "tags": ["UMA"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/uma/leaderboard": {
+      "get": {
+        "summary": "GET /oracle/uma/leaderboard",
+        "description": "Endpoint for GET requests to /oracle/uma/leaderboard",
+        "tags": ["UMA"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/uma/polymarket": {
+      "get": {
+        "summary": "GET /oracle/uma/polymarket",
+        "description": "Endpoint for GET requests to /oracle/uma/polymarket",
+        "tags": ["UMA"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/uma/rewards": {
+      "get": {
+        "summary": "GET /oracle/uma/rewards",
+        "description": "Endpoint for GET requests to /oracle/uma/rewards",
+        "tags": ["UMA"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /oracle/uma/rewards",
+        "description": "Endpoint for POST requests to /oracle/uma/rewards",
+        "tags": ["UMA"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/uma": {
+      "get": {
+        "summary": "GET /oracle/uma",
+        "description": "Endpoint for GET requests to /oracle/uma",
+        "tags": ["UMA"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/uma/slashing": {
+      "get": {
+        "summary": "GET /oracle/uma/slashing",
+        "description": "Endpoint for GET requests to /oracle/uma/slashing",
+        "tags": ["UMA"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/uma/staking": {
+      "get": {
+        "summary": "GET /oracle/uma/staking",
+        "description": "Endpoint for GET requests to /oracle/uma/staking",
+        "tags": ["UMA"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/uma/stats": {
+      "get": {
+        "summary": "GET /oracle/uma/stats",
+        "description": "Endpoint for GET requests to /oracle/uma/stats",
+        "tags": ["UMA"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/uma/sync": {
+      "get": {
+        "summary": "GET /oracle/uma/sync",
+        "description": "Endpoint for GET requests to /oracle/uma/sync",
+        "tags": ["UMA"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /oracle/uma/sync",
+        "description": "Endpoint for POST requests to /oracle/uma/sync",
+        "tags": ["UMA"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/uma/task": {
+      "get": {
+        "summary": "GET /oracle/uma/task",
+        "description": "Endpoint for GET requests to /oracle/uma/task",
+        "tags": ["UMA"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /oracle/uma/task",
+        "description": "Endpoint for POST requests to /oracle/uma/task",
+        "tags": ["UMA"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/uma/tvl": {
+      "get": {
+        "summary": "GET /oracle/uma/tvl",
+        "description": "Endpoint for GET requests to /oracle/uma/tvl",
+        "tags": ["UMA"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /oracle/uma/tvl",
+        "description": "Endpoint for POST requests to /oracle/uma/tvl",
+        "tags": ["UMA"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/uma/users/[address]/assertions": {
+      "get": {
+        "summary": "GET /oracle/uma/users/[address]/assertions",
+        "description": "Endpoint for GET requests to /oracle/uma/users/[address]/assertions",
+        "tags": ["UMA"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/uma/users/[address]/stats": {
+      "get": {
+        "summary": "GET /oracle/uma/users/[address]/stats",
+        "description": "Endpoint for GET requests to /oracle/uma/users/[address]/stats",
+        "tags": ["UMA"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/uma/votes": {
+      "get": {
+        "summary": "GET /oracle/uma/votes",
+        "description": "Endpoint for GET requests to /oracle/uma/votes",
+        "tags": ["UMA"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/uma-users/[address]/assertions": {
+      "get": {
+        "summary": "GET /oracle/uma-users/[address]/assertions",
+        "description": "Endpoint for GET requests to /oracle/uma-users/[address]/assertions",
+        "tags": ["UMA"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/uma-users/[address]/stats": {
+      "get": {
+        "summary": "GET /oracle/uma-users/[address]/stats",
+        "description": "Endpoint for GET requests to /oracle/uma-users/[address]/stats",
+        "tags": ["UMA"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oracle/unified": {
+      "get": {
+        "summary": "GET /oracle/unified",
+        "description": "Endpoint for GET requests to /oracle/unified",
+        "tags": ["Other"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /oracle/unified",
+        "description": "Endpoint for POST requests to /oracle/unified",
+        "tags": ["Other"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/reports/generate-pdf": {
+      "post": {
+        "summary": "POST /reports/generate-pdf",
+        "description": "Endpoint for POST requests to /reports/generate-pdf",
+        "tags": ["Reports"],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/v1/health": {}
+  },
+  "tags": [
+    {
+      "name": "Admin",
+      "description": "Admin operations"
+    },
+    {
+      "name": "Alerts",
+      "description": "Alerts operations"
+    },
+    {
+      "name": "Analytics",
+      "description": "Analytics operations"
+    },
+    {
+      "name": "Assertions",
+      "description": "Assertions operations"
+    },
+    {
+      "name": "Audit",
+      "description": "Audit operations"
+    },
+    {
+      "name": "Charts",
+      "description": "Charts operations"
+    },
+    {
+      "name": "Comments",
+      "description": "Comments operations"
+    },
+    {
+      "name": "Config",
+      "description": "Config operations"
+    },
+    {
+      "name": "Disputes",
+      "description": "Disputes operations"
+    },
+    {
+      "name": "Docs",
+      "description": "Docs operations"
+    },
+    {
+      "name": "Events",
+      "description": "Events operations"
+    },
+    {
+      "name": "Export",
+      "description": "Export operations"
+    },
+    {
+      "name": "GraphQL",
+      "description": "GraphQL operations"
+    },
+    {
+      "name": "Health",
+      "description": "Health operations"
+    },
+    {
+      "name": "Incidents",
+      "description": "Incidents operations"
+    },
+    {
+      "name": "Instances",
+      "description": "Instances operations"
+    },
+    {
+      "name": "Leaderboard",
+      "description": "Leaderboard operations"
+    },
+    {
+      "name": "Ops Metrics",
+      "description": "Ops Metrics operations"
+    },
+    {
+      "name": "Other",
+      "description": "Other operations"
+    },
+    {
+      "name": "Reports",
+      "description": "Reports operations"
+    },
+    {
+      "name": "Risks",
+      "description": "Risks operations"
+    },
+    {
+      "name": "Stats",
+      "description": "Stats operations"
+    },
+    {
+      "name": "Status",
+      "description": "Status operations"
+    },
+    {
+      "name": "Sync",
+      "description": "Sync operations"
+    },
+    {
+      "name": "UMA",
+      "description": "UMA operations"
+    }
+  ]
+}

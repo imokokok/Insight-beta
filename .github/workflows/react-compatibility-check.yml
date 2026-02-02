@@ -1,0 +1,177 @@
+name: React 19 Compatibility Check
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # 每周一运行
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+jobs:
+  compatibility-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check React version
+        id: react-version
+        run: |
+          REACT_VERSION=$(node -p "require('./package.json').dependencies.react")
+          echo "React version: $REACT_VERSION"
+          echo "version=$REACT_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Check Next.js version
+        id: next-version
+        run: |
+          NEXT_VERSION=$(node -p "require('./package.json').dependencies.next")
+          echo "Next.js version: $NEXT_VERSION"
+          echo "version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+
+      - name: TypeScript type check
+        run: npm run typecheck
+
+      - name: ESLint check
+        run: npm run lint
+
+      - name: Run tests
+        run: npm run test:ci
+
+      - name: Build check
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: Check for deprecated React APIs
+        run: |
+          echo "Checking for deprecated React APIs..."
+          
+          # 检查 React.PropTypes
+          if grep -r "React\.PropTypes" src/ --include="*.ts" --include="*.tsx" 2>/dev/null; then
+            echo "⚠️  Found React.PropTypes usage (deprecated in React 19)"
+          fi
+          
+          # 检查 ReactDOM.render
+          if grep -r "ReactDOM\.render" src/ --include="*.ts" --include="*.tsx" 2>/dev/null; then
+            echo "⚠️  Found ReactDOM.render usage (deprecated in React 19)"
+          fi
+          
+          # 检查 defaultProps
+          if grep -r "defaultProps" src/ --include="*.ts" --include="*.tsx" 2>/dev/null; then
+            echo "⚠️  Found defaultProps usage (deprecated in React 19)"
+          fi
+          
+          echo "✅ Deprecated API check complete"
+
+      - name: Check dependency compatibility
+        run: |
+          echo "Checking dependency compatibility..."
+          
+          # 检查 peer dependencies
+          npm ls react react-dom --depth=0 || true
+          
+          # 检查是否有冲突的 React 版本
+          if npm ls react 2>&1 | grep -q "invalid"; then
+            echo "❌ Found conflicting React versions"
+            exit 1
+          fi
+          
+          echo "✅ Dependency compatibility check complete"
+
+      - name: Generate compatibility report
+        if: always()
+        run: |
+          cat > react-compatibility-report.md << 'EOF'
+          # React 19 兼容性检查报告
+
+          **检查时间**: ${{ github.event.head_commit.timestamp || github.event.schedule }}
+          **工作流运行**: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+          ## 版本信息
+
+          - **React**: ${{ steps.react-version.outputs.version }}
+          - **Next.js**: ${{ steps.next-version.outputs.version }}
+
+          ## 检查结果
+
+          | 检查项 | 状态 |
+          |--------|------|
+          | TypeScript 类型检查 | ${{ job.status == 'success' && '✅ 通过' || '❌ 失败' }} |
+          | ESLint 检查 | ${{ job.status == 'success' && '✅ 通过' || '❌ 失败' }} |
+          | 单元测试 | ${{ job.status == 'success' && '✅ 通过' || '❌ 失败' }} |
+          | 构建测试 | ${{ job.status == 'success' && '✅ 通过' || '❌ 失败' }} |
+
+          ## 已知问题
+
+          当前项目存在一些非空断言警告（`!` 操作符），这些不是 React 19 引入的问题，建议逐步修复。
+
+          ## 建议
+
+          1. 定期运行 `npm outdated` 检查依赖更新
+          2. 关注 React 19 官方发布说明
+          3. 在开发环境中启用严格模式
+          4. 逐步修复非空断言警告
+
+          ---
+          *此报告由 GitHub Actions 自动生成*
+          EOF
+
+          cat react-compatibility-report.md
+
+      - name: Upload compatibility report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: react-compatibility-report
+          path: react-compatibility-report.md
+
+      - name: Create issue on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `🚨 React 19 兼容性检查失败 - ${new Date().toISOString().split('T')[0]}`;
+            const body = `## React 19 兼容性检查失败
+
+          工作流运行: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+          ### 失败信息
+
+          请查看工作流日志获取详细信息。
+
+          ### 可能的原因
+
+          1. TypeScript 类型错误
+          2. ESLint 错误
+          3. 测试失败
+          4. 构建失败
+          5. 依赖冲突
+
+          ### 建议操作
+
+          1. 查看工作流日志
+          2. 在本地运行相同的检查
+          3. 修复问题后重新运行工作流
+
+          ---
+          *此 Issue 由 GitHub Actions 自动生成*`;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['bug', 'react-19', 'compatibility']
+            });

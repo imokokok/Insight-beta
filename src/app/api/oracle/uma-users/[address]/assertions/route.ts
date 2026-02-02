@@ -4,8 +4,13 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 /**
- * @deprecated 此端点已弃用，请使用 /api/oracle/uma-users/{address}/assertions
  * 获取 UMA 用户的断言列表
+ * @param request - Next.js 请求对象
+ * @param params - 路由参数，包含用户地址
+ * @returns 用户的断言列表
+ *
+ * @example
+ * GET /api/oracle/uma-users/0x123.../assertions?status=Active&limit=10
  */
 export async function GET(
   request: NextRequest,
@@ -34,22 +39,12 @@ export async function GET(
       (a) => a.proposer.toLowerCase() === address.toLowerCase(),
     );
 
-    // 添加弃用警告头
-    return NextResponse.json(
-      {
-        assertions: userAssertions,
-        total: userAssertions.length,
-        limit: 100,
-        offset: parseInt(offset || '0'),
-      },
-      {
-        headers: {
-          Deprecation: 'true',
-          Sunset: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(), // 90天后停用
-          Link: `</api/oracle/uma-users/${address}/assertions>; rel="successor-version"`,
-        },
-      },
-    );
+    return NextResponse.json({
+      assertions: userAssertions,
+      total: userAssertions.length,
+      limit: 100,
+      offset: parseInt(offset || '0'),
+    });
   } catch (error) {
     console.error('Failed to get user assertions:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

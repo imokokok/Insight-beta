@@ -1,0 +1,83 @@
+name: ADR Review Reminder
+
+on:
+  schedule:
+    # 每月 1 号运行
+    - cron: '0 0 1 * *'
+  workflow_dispatch:
+
+jobs:
+  check-adr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check ADR files
+        id: check-adr
+        run: |
+          echo "Checking ADR files..."
+          ADR_COUNT=$(find docs/adr -name "*.md" -not -name "README.md" | wc -l)
+          echo "Found $ADR_COUNT ADR files"
+          echo "adr_count=$ADR_COUNT" >> $GITHUB_OUTPUT
+
+      - name: Create ADR review issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `📋 Monthly ADR Review - ${new Date().toISOString().split('T')[0]}`;
+            const body = `## ADR 月度审查提醒
+
+这是自动生成的 ADR 审查提醒。
+
+### 当前状态
+- ADR 总数: ${{ steps.check-adr.outputs.adr_count }}
+- 审查日期: ${new Date().toISOString().split('T')[0]}
+
+### 审查清单
+
+请检查以下项目：
+
+- [ ] 所有 ADR 状态是否准确（提议中/已接受/已弃用/已取代）
+- [ ] 是否有需要更新的 ADR
+- [ ] 是否有需要新增的 ADR（记录最近的架构决策）
+- [ ] ADR 索引（README.md）是否最新
+- [ ] 是否有已弃用的 ADR 需要清理
+
+### 最近变更
+
+请查看最近的提交，确认是否有需要记录的架构决策。
+
+### 相关链接
+
+- [ADR 目录](../docs/adr/)
+- [ADR 索引](../docs/adr/README.md)
+
+---
+*此 Issue 由 GitHub Actions 自动生成*
+`;
+
+            // 检查是否已存在相同标题的 open issue
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              creator: 'github-actions[bot]'
+            });
+
+            const exists = issues.data.find(issue => issue.title === title);
+            if (exists) {
+              console.log('ADR review issue already exists:', exists.html_url);
+              return;
+            }
+
+            // 创建新 issue
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['documentation', 'adr', 'maintenance']
+            });
+
+            console.log('Created ADR review issue');

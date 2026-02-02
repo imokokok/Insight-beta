@@ -1,22 +1,16 @@
 #!/usr/bin/env node
-import { generateAPIDoc } from "../src/lib/apiDocGenerator";
-import { generateMarkdown } from "../src/lib/apiDocGenerator";
-import { getAPIDocGenerator } from "../src/lib/apiDocGenerator";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const ROUTE_DIR = path.join(__dirname, "../src/app/api");
-const DOCS_DIR = path.join(__dirname, "../docs");
 const OUTPUT_DIR = path.join(__dirname, "../docs/generated");
 
-interface RouteInfo {
-  filePath: string;
-  routePath: string;
-  methods: string[];
-}
-
-function findRouteFiles(dir: string, basePath = ""): RouteInfo[] {
-  const routes: RouteInfo[] = [];
+function findRouteFiles(dir, basePath = "") {
+  const routes = [];
 
   if (!fs.existsSync(dir)) {
     return routes;
@@ -47,17 +41,17 @@ function findRouteFiles(dir: string, basePath = ""): RouteInfo[] {
   return routes;
 }
 
-function detectMethods(filePath: string): string[] {
-  const methods: string[] = [];
+function detectMethods(filePath) {
+  const methods = [];
 
   try {
     const content = fs.readFileSync(filePath, "utf-8");
 
-    if (/export\s+async\s+function\s+GET\s*\(/m.test(content)) methods.push("get");
-    if (/export\s+async\s+function\s+POST\s*\(/m.test(content)) methods.push("post");
-    if (/export\s+async\s+function\s+PUT\s*\(/m.test(content)) methods.push("put");
-    if (/export\s+async\s+function\s+PATCH\s*\(/m.test(content)) methods.push("patch");
-    if (/export\s+async\s+function\s+DELETE\s*\(/m.test(content)) methods.push("delete");
+    if (/export\s+async\s+function\s+GET\s*\(/m.test(content)) methods.push("GET");
+    if (/export\s+async\s+function\s+POST\s*\(/m.test(content)) methods.push("POST");
+    if (/export\s+async\s+function\s+PUT\s*\(/m.test(content)) methods.push("PUT");
+    if (/export\s+async\s+function\s+PATCH\s*\(/m.test(content)) methods.push("PATCH");
+    if (/export\s+async\s+function\s+DELETE\s*\(/m.test(content)) methods.push("DELETE");
   } catch (error) {
     console.error(`Error reading file: ${filePath}`, error);
   }
@@ -65,19 +59,7 @@ function detectMethods(filePath: string): string[] {
   return methods;
 }
 
-function parseRouteSegment(segment: string): string {
-  if (segment.startsWith("[") && segment.endsWith("]")) {
-    return `:${segment.slice(1, -1)}`;
-  }
-  return segment;
-}
-
-function buildRoutePath(parts: string[]): string {
-  const pathParts = parts.filter(Boolean).map(parseRouteSegment);
-  return pathParts.length > 0 ? `/${pathParts.join("/")}` : "/";
-}
-
-function categorizeRoute(routePath: string): string {
+function categorizeRoute(routePath) {
   if (routePath.includes("/oracle/assertions")) return "Assertions";
   if (routePath.includes("/oracle/disputes")) return "Disputes";
   if (routePath.includes("/oracle/alerts")) return "Alerts";
@@ -94,6 +76,9 @@ function categorizeRoute(routePath: string): string {
   if (routePath.includes("/oracle/stats")) return "Stats";
   if (routePath.includes("/oracle/ops-metrics")) return "Ops Metrics";
   if (routePath.includes("/oracle/sync-metrics")) return "Sync Metrics";
+  if (routePath.includes("/oracle/uma")) return "UMA";
+  if (routePath.includes("/oracle/uma-users")) return "UMA Users";
+  if (routePath.includes("/oracle/config-history")) return "Config History";
   if (routePath.includes("/admin")) return "Admin";
   if (routePath.includes("/export")) return "Export";
   if (routePath.includes("/reports")) return "Reports";
@@ -101,34 +86,93 @@ function categorizeRoute(routePath: string): string {
   if (routePath.includes("/events")) return "Events";
   if (routePath.includes("/comments")) return "Comments";
   if (routePath.includes("/docs")) return "Docs";
+  if (routePath.includes("/graphql")) return "GraphQL";
   return "Other";
 }
 
-function generateApiDocumentation(): void {
-  console.log("🔍 Scanning API routes...\n");
+function generateMarkdown(routes) {
+  const now = new Date().toISOString();
+  let markdown = `# API 路由文档\n\n`;
+  markdown += `> 自动生成于: ${now}\n\n`;
+  markdown += `## 概述\n\n`;
+  markdown += `本文档列出了所有可用的 API 路由。\n\n`;
 
-  const routes = findRouteFiles(ROUTE_DIR);
+  // 按类别分组
+  const byCategory = {};
+  for (const route of routes) {
+    const category = categorizeRoute(route.routePath);
+    if (!byCategory[category]) {
+      byCategory[category] = [];
+    }
+    byCategory[category].push(route);
+  }
 
-  console.log(`📝 Found ${routes.length} API routes\n`);
+  // 生成目录
+  markdown += `## 目录\n\n`;
+  for (const category of Object.keys(byCategory).sort()) {
+    markdown += `- [${category}](#${category.toLowerCase().replace(/\s+/g, '-')})\n`;
+  }
+  markdown += `\n`;
 
-  const generator = getAPIDocGenerator();
+  // 生成各部分内容
+  for (const [category, categoryRoutes] of Object.entries(byCategory).sort()) {
+    markdown += `## ${category}\n\n`;
+    markdown += `| 方法 | 路径 | 文件 |\n`;
+    markdown += `|------|------|------|\n`;
 
-  generator.addTag("Oracle");
-  generator.addTag("Admin");
-  generator.addTag("Health");
-  generator.addContact("Insight Team", "dev@insight.example");
+    for (const route of categoryRoutes.sort((a, b) => a.routePath.localeCompare(b.routePath))) {
+      const methods = route.methods.join(", ") || "-";
+      const fileName = path.relative(ROUTE_DIR, route.filePath);
+      markdown += `| ${methods} | \`${route.routePath}\` | \`${fileName}\` |\n`;
+    }
+    markdown += `\n`;
+  }
+
+  // 统计信息
+  markdown += `## 统计\n\n`;
+  markdown += `- 总路由数: ${routes.length}\n`;
+  markdown += `- 类别数: ${Object.keys(byCategory).length}\n\n`;
+
+  return markdown;
+}
+
+function generateOpenAPISpec(routes) {
+  const spec = {
+    openapi: "3.0.3",
+    info: {
+      title: "OracleMonitor API",
+      version: "1.0.0",
+      description: "Universal Oracle Monitoring Platform API",
+      contact: {
+        name: "API Support",
+        email: "api@oracle-monitor.foresight.build",
+      },
+    },
+    servers: [
+      {
+        url: "/api",
+        description: "Current server",
+      },
+    ],
+    paths: {},
+    tags: [],
+  };
+
+  const categories = new Set();
 
   for (const route of routes) {
     const category = categorizeRoute(route.routePath);
+    categories.add(category);
 
-    const operation: Record<string, import("../src/lib/apiDocGenerator").APIOperation> = {};
+    if (!spec.paths[route.routePath]) {
+      spec.paths[route.routePath] = {};
+    }
 
     for (const method of route.methods) {
-      operation[method] = {
-        summary: `${method.toUpperCase()} ${route.routePath}`,
-        description: `Endpoint for ${method.toUpperCase()} requests to ${route.routePath}`,
+      spec.paths[route.routePath][method.toLowerCase()] = {
+        summary: `${method} ${route.routePath}`,
+        description: `Endpoint for ${method} requests to ${route.routePath}`,
         tags: [category],
-        parameters: [],
         responses: {
           "200": {
             description: "Successful response",
@@ -142,31 +186,44 @@ function generateApiDocumentation(): void {
         },
       };
     }
-
-    if (Object.keys(operation).length > 0) {
-      generator.addPath(route.routePath, operation);
-    }
   }
 
-  const markdown = generator.generateMarkdown({ includeExamples: true });
+  spec.tags = Array.from(categories).sort().map((name) => ({
+    name,
+    description: `${name} operations`,
+  }));
+
+  return spec;
+}
+
+function generateApiDocumentation() {
+  console.log("🔍 Scanning API routes...\n");
+
+  const routes = findRouteFiles(ROUTE_DIR);
+
+  console.log(`📝 Found ${routes.length} API routes\n`);
 
   if (!fs.existsSync(OUTPUT_DIR)) {
     fs.mkdirSync(OUTPUT_DIR, { recursive: true });
   }
 
+  // 生成 Markdown 文档
+  const markdown = generateMarkdown(routes);
   const markdownPath = path.join(OUTPUT_DIR, "api-routes.md");
   fs.writeFileSync(markdownPath, markdown);
   console.log(`✅ Generated API documentation: ${markdownPath}\n`);
 
-  const jsonSpec = generator.generateOpenAPISpec({ format: "json" });
+  // 生成 OpenAPI 规范
+  const openApiSpec = generateOpenAPISpec(routes);
   const jsonPath = path.join(OUTPUT_DIR, "openapi.json");
-  fs.writeFileSync(jsonPath, JSON.stringify(jsonSpec, null, 2));
+  fs.writeFileSync(jsonPath, JSON.stringify(openApiSpec, null, 2));
   console.log(`✅ Generated OpenAPI spec: ${jsonPath}\n`);
 
+  // 统计信息
   console.log("📊 Route Summary:");
   console.log("================\n");
 
-  const categoryCount: Record<string, number> = {};
+  const categoryCount = {};
   for (const route of routes) {
     const category = categorizeRoute(route.routePath);
     categoryCount[category] = (categoryCount[category] || 0) + 1;
@@ -181,7 +238,7 @@ function generateApiDocumentation(): void {
   console.log("\n✨ API documentation generation complete!");
 }
 
-function main(): void {
+function main() {
   try {
     generateApiDocumentation();
   } catch (error) {

@@ -7,8 +7,12 @@ const querySchema = z.object({
 });
 
 /**
- * @deprecated 此端点已弃用，请使用 /api/oracle/config-history/stats
  * 获取配置历史统计信息
+ * @param request - 请求对象
+ * @returns 配置历史统计信息
+ *
+ * @example
+ * GET /api/oracle/config-history/stats?instanceId=xxx
  */
 export async function GET(request: Request) {
   try {
@@ -17,14 +21,7 @@ export async function GET(request: Request) {
 
     const stats = await getConfigHistoryStats(params.instanceId);
 
-    // 添加弃用警告头
-    return NextResponse.json(stats, {
-      headers: {
-        Deprecation: 'true',
-        Sunset: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
-        Link: '</api/oracle/config-history/stats>; rel="successor-version"',
-      },
-    });
+    return NextResponse.json(stats);
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
