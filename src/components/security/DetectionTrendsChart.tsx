@@ -249,8 +249,8 @@ export function DetectionTrendsChart({ className }: DetectionTrendsChartProps) {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, percent }: { name: string; percent?: number }) =>
-                      `${typeLabels[name] || name} ${((percent || 0) * 100).toFixed(0)}%`
+                    label={(props: { name?: string; percent?: number }) =>
+                      `${typeLabels[props.name || ''] || props.name || ''} ${((props.percent || 0) * 100).toFixed(0)}%`
                     }
                     outerRadius={80}
                     fill="#8884d8"
@@ -261,9 +261,9 @@ export function DetectionTrendsChart({ className }: DetectionTrendsChartProps) {
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value: number, name: string) => [
-                      value,
-                      typeLabels[name] || name,
+                    formatter={(value, name) => [
+                      value as number,
+                      typeLabels[name as string] || (name as string),
                     ]}
                   />
                   <Legend
@@ -282,14 +282,14 @@ export function DetectionTrendsChart({ className }: DetectionTrendsChartProps) {
                   <XAxis dataKey="name" className="text-xs" />
                   <YAxis className="text-xs" />
                   <Tooltip
-                    formatter={(value: number, name: string) => {
+                    formatter={(value, name) => {
                       const labels: Record<string, string> = {
                         critical: '严重',
                         high: '高危',
                         medium: '中危',
                         low: '低危',
                       };
-                      return [value, labels[name] || name];
+                      return [value as number, labels[name as string] || (name as string)];
                     }}
                   />
                   <Bar dataKey="value" fill="#3b82f6" />

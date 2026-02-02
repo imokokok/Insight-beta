@@ -306,8 +306,8 @@ export default function ManipulationConfigPage() {
                 </div>
                 <Slider
                   value={[config.zScoreThreshold]}
-                  onValueChange={([value]: [number]) =>
-                    setConfig((prev) => ({ ...prev, zScoreThreshold: value }))
+                  onValueChange={(value) =>
+                    setConfig((prev) => ({ ...prev, zScoreThreshold: value[0] }))
                   }
                   min={1}
                   max={5}
@@ -329,8 +329,8 @@ export default function ManipulationConfigPage() {
                 </div>
                 <Slider
                   value={[config.minConfidenceScore * 100]}
-                  onValueChange={([value]: [number]) =>
-                    setConfig((prev) => ({ ...prev, minConfidenceScore: value / 100 }))
+                  onValueChange={(value) =>
+                    setConfig((prev) => ({ ...prev, minConfidenceScore: value[0] / 100 }))
                   }
                   min={50}
                   max={95}
@@ -349,8 +349,8 @@ export default function ManipulationConfigPage() {
                 </div>
                 <Slider
                   value={[config.maxPriceDeviationPercent]}
-                  onValueChange={([value]: [number]) =>
-                    setConfig((prev) => ({ ...prev, maxPriceDeviationPercent: value }))
+                  onValueChange={(value) =>
+                    setConfig((prev) => ({ ...prev, maxPriceDeviationPercent: value[0] }))
                   }
                   min={1}
                   max={20}
@@ -430,7 +430,7 @@ export default function ManipulationConfigPage() {
                 </div>
                 <Slider
                   value={[config.liquidityChangeThreshold * 100]}
-                  onValueChange={([value]: [number]) =>
+                  onValueChange={(value) =>
                     setConfig((prev) => ({
                       ...prev,
                       liquidityChangeThreshold: value / 100,
@@ -498,10 +498,10 @@ export default function ManipulationConfigPage() {
                 </div>
                 <Slider
                   value={[config.notificationCooldownMs / 60000]}
-                  onValueChange={([value]: [number]) =>
+                  onValueChange={(value) =>
                     setConfig((prev) => ({
                       ...prev,
-                      notificationCooldownMs: value * 60000,
+                      notificationCooldownMs: value[0] * 60000,
                     }))
                   }
                   min={1}
@@ -555,8 +555,8 @@ export default function ManipulationConfigPage() {
                 </div>
                 <Slider
                   value={[config.timeWindowMs / 60000]}
-                  onValueChange={([value]: [number]) =>
-                    setConfig((prev) => ({ ...prev, timeWindowMs: value * 60000 }))
+                  onValueChange={(value) =>
+                    setConfig((prev) => ({ ...prev, timeWindowMs: value[0] * 60000 }))
                   }
                   min={1}
                   max={30}
@@ -578,7 +578,7 @@ export default function ManipulationConfigPage() {
                 </div>
                 <Slider
                   value={[config.correlationThreshold * 100]}
-                  onValueChange={([value]: [number]) =>
+                  onValueChange={(value) =>
                     setConfig((prev) => ({
                       ...prev,
                       correlationThreshold: value / 100,
