@@ -228,22 +228,26 @@ export class PythClient {
    * 获取多个价格喂价
    */
   async getMultiplePrices(symbols: string[]): Promise<UnifiedPriceFeed[]> {
-    const feeds: UnifiedPriceFeed[] = [];
-
-    for (const symbol of symbols) {
-      try {
-        const feed = await this.getPriceForSymbol(symbol);
-        if (feed) {
-          feeds.push(feed);
+    const results = await Promise.allSettled(
+      symbols.map(async (symbol) => {
+        try {
+          return await this.getPriceForSymbol(symbol);
+        } catch (error) {
+          logger.error(`Failed to get Pyth price for ${symbol}`, {
+            error: error instanceof Error ? error.message : String(error),
+          });
+          return null;
         }
-      } catch (error) {
-        logger.error(`Failed to get Pyth price for ${symbol}`, {
-          error: error instanceof Error ? error.message : String(error),
-        });
-      }
-    }
+      }),
+    );
 
-    return feeds;
+    return results
+      .filter(
+        (result): result is PromiseFulfilledResult<UnifiedPriceFeed | null> =>
+          result.status === 'fulfilled',
+      )
+      .map((result) => result.value)
+      .filter((feed): feed is UnifiedPriceFeed => feed !== null);
   }
 
   /**

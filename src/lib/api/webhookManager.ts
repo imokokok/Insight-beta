@@ -249,7 +249,6 @@ export class WebhookManager {
         signal: controller.signal,
       });
 
-      clearTimeout(timeoutId);
       const duration = Date.now() - startTime;
 
       let responseBody = '';
@@ -277,7 +276,6 @@ export class WebhookManager {
         };
       }
     } catch (error) {
-      clearTimeout(timeoutId);
       const duration = Date.now() - startTime;
 
       return {
@@ -287,6 +285,8 @@ export class WebhookManager {
         error: error instanceof Error ? error.message : 'Unknown error',
         duration,
       };
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 

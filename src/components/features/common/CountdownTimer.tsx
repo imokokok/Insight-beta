@@ -46,6 +46,17 @@ export function CountdownTimer({ targetDate, label, className, onExpire }: Count
       const result = calculateTimeLeft();
       setTimeLeft((prev) => {
         if (prev?.isExpired) return prev;
+        // 只在值变化时更新
+        if (
+          prev &&
+          prev.days === result.days &&
+          prev.hours === result.hours &&
+          prev.minutes === result.minutes &&
+          prev.seconds === result.seconds &&
+          prev.isExpired === result.isExpired
+        ) {
+          return prev;
+        }
         if (result.isExpired && !prev?.isExpired) {
           onExpire?.();
         }

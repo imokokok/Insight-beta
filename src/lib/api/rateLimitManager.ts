@@ -570,8 +570,10 @@ export class RateLimitManager {
   private matchesRule(endpoint: string, method: string, rule: RateLimitRule): boolean {
     if (rule.method !== '*' && rule.method !== method) return false;
 
-    const pattern = rule.endpointPattern.replace(/\*/g, '.*').replace(/\/api\//g, '/api/');
-    const escapedPattern = pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // 先转义特殊字符，然后再替换 * 为 .*
+    const escapedPattern = rule.endpointPattern
+      .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      .replace(/\\\*/g, '.*');
     // eslint-disable-next-line security/detect-non-literal-regexp
     const regex = new RegExp(`^${escapedPattern}$`);
     return regex.test(endpoint);

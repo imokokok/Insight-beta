@@ -10,8 +10,8 @@ interface SentryGlobal {
   setUser: (user: SentryUser | null) => void;
   setTag: (key: string, value: string) => void;
   setContext: (name: string, context: Record<string, unknown>) => void;
-  captureException: (error: unknown, context?: Record<string, unknown>) => string;
-  captureMessage: (message: string, level?: SentrySeverity) => string;
+  captureException: (error: unknown, context?: Record<string, unknown>) => string | void;
+  captureMessage: (message: string, level?: SentrySeverity) => string | void;
   addBreadcrumb: (breadcrumb: SentryBreadcrumb) => void;
   startTransaction: (context: { name: string; op: string }) => SentryTransaction;
   withScope: (callback: (scope: unknown) => void) => void;
@@ -290,13 +290,14 @@ export function useSentry(options: UseSentryOptions): UseSentryReturn {
                 if (event.error) {
                   const sentry = window.Sentry;
                   if (sentry) {
-                    const eventId = sentry.captureException(event.error, {
-                      extra: {
-                        navigation: {
-                          current_url: window.location.href,
+                    const eventId =
+                      sentry.captureException(event.error, {
+                        extra: {
+                          navigation: {
+                            current_url: window.location.href,
+                          },
                         },
-                      },
-                    });
+                      }) || 'unknown';
                     if (onUncaughtException) {
                       onUncaughtException(event.error, eventId);
                     }
@@ -308,13 +309,14 @@ export function useSentry(options: UseSentryOptions): UseSentryReturn {
                 if (event.reason) {
                   const sentry = window.Sentry;
                   if (sentry) {
-                    const eventId = sentry.captureException(event.reason, {
-                      extra: {
-                        promise: {
-                          reason: String(event.reason),
+                    const eventId =
+                      sentry.captureException(event.reason, {
+                        extra: {
+                          promise: {
+                            reason: String(event.reason),
+                          },
                         },
-                      },
-                    });
+                      }) || 'unknown';
                     if (onUnhandledRejection) {
                       onUnhandledRejection(event.reason, eventId);
                     }
@@ -359,7 +361,7 @@ export function useSentry(options: UseSentryOptions): UseSentryReturn {
       }
 
       const extraContext = context ? { additional: context } : undefined;
-      return sentry.captureException(error, { extra: extraContext });
+      return sentry.captureException(error, { extra: extraContext }) || 'unknown';
     },
     [],
   );
@@ -371,7 +373,7 @@ export function useSentry(options: UseSentryOptions): UseSentryReturn {
       return 'mock-event-id';
     }
 
-    return sentry.captureMessage(message, level);
+    return sentry.captureMessage(message, level) || 'unknown';
   }, []);
 
   const addBreadcrumb = useCallback((breadcrumb: SentryBreadcrumb) => {

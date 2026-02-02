@@ -76,39 +76,57 @@ export function PerformanceMonitor({ children, onMetrics }: Props): React.ReactE
         const { onFCP, onLCP, onFID, onCLS, onINP, onTTFB } = webVitals;
 
         const handleFCP: MetricHandler = (metric) => {
-          setMetrics((prev) => ({ ...prev, fcp: metric.value }));
-          sendToAnalytics(metric);
-          onMetrics?.({ ...metrics, fcp: metric.value });
+          setMetrics((prev) => {
+            const newMetrics = { ...prev, fcp: metric.value };
+            sendToAnalytics(metric);
+            onMetrics?.(newMetrics);
+            return newMetrics;
+          });
         };
 
         const handleLCP: MetricHandler = (metric) => {
-          setMetrics((prev) => ({ ...prev, lcp: metric.value }));
-          sendToAnalytics(metric);
-          onMetrics?.({ ...metrics, lcp: metric.value });
+          setMetrics((prev) => {
+            const newMetrics = { ...prev, lcp: metric.value };
+            sendToAnalytics(metric);
+            onMetrics?.(newMetrics);
+            return newMetrics;
+          });
         };
 
         const handleFID: MetricHandler = (metric) => {
-          setMetrics((prev) => ({ ...prev, fid: metric.value }));
-          sendToAnalytics(metric);
-          onMetrics?.({ ...metrics, fid: metric.value });
+          setMetrics((prev) => {
+            const newMetrics = { ...prev, fid: metric.value };
+            sendToAnalytics(metric);
+            onMetrics?.(newMetrics);
+            return newMetrics;
+          });
         };
 
         const handleCLS: MetricHandler = (metric) => {
-          setMetrics((prev) => ({ ...prev, cls: metric.value }));
-          sendToAnalytics(metric);
-          onMetrics?.({ ...metrics, cls: metric.value });
+          setMetrics((prev) => {
+            const newMetrics = { ...prev, cls: metric.value };
+            sendToAnalytics(metric);
+            onMetrics?.(newMetrics);
+            return newMetrics;
+          });
         };
 
         const handleINP: MetricHandler = (metric) => {
-          setMetrics((prev) => ({ ...prev, inp: metric.value }));
-          sendToAnalytics(metric);
-          onMetrics?.({ ...metrics, inp: metric.value });
+          setMetrics((prev) => {
+            const newMetrics = { ...prev, inp: metric.value };
+            sendToAnalytics(metric);
+            onMetrics?.(newMetrics);
+            return newMetrics;
+          });
         };
 
         const handleTTFB: MetricHandler = (metric) => {
-          setMetrics((prev) => ({ ...prev, ttfb: metric.value }));
-          sendToAnalytics(metric);
-          onMetrics?.({ ...metrics, ttfb: metric.value });
+          setMetrics((prev) => {
+            const newMetrics = { ...prev, ttfb: metric.value };
+            sendToAnalytics(metric);
+            onMetrics?.(newMetrics);
+            return newMetrics;
+          });
         };
 
         onFCP(handleFCP);

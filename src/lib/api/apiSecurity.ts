@@ -111,18 +111,34 @@ if (nonceCache.size > NONCE_CACHE_MAX_SIZE) {
   cleanupNonceCache();
 }
 
-setInterval(() => {
-  cleanupNonceCache();
-  if (nonceCache.size > NONCE_CACHE_MAX_SIZE) {
-    const entriesToDelete = Array.from(nonceCache.entries())
-      .sort(([, a], [, b]) => a - b)
-      .slice(0, Math.floor(NONCE_CACHE_MAX_SIZE * 0.3))
-      .map(([key]) => key);
-    for (const key of entriesToDelete) {
-      nonceCache.delete(key);
+// 存储 interval ID 以便清理
+let nonceCacheInterval: NodeJS.Timeout | null = null;
+
+export function startNonceCacheCleanup(): void {
+  if (nonceCacheInterval) return;
+  nonceCacheInterval = setInterval(() => {
+    cleanupNonceCache();
+    if (nonceCache.size > NONCE_CACHE_MAX_SIZE) {
+      const entriesToDelete = Array.from(nonceCache.entries())
+        .sort(([, a], [, b]) => a - b)
+        .slice(0, Math.floor(NONCE_CACHE_MAX_SIZE * 0.3))
+        .map(([key]) => key);
+      for (const key of entriesToDelete) {
+        nonceCache.delete(key);
+      }
     }
+  }, 60 * 1000);
+}
+
+export function stopNonceCacheCleanup(): void {
+  if (nonceCacheInterval) {
+    clearInterval(nonceCacheInterval);
+    nonceCacheInterval = null;
   }
-}, 60 * 1000);
+}
+
+// 自动启动清理
+startNonceCacheCleanup();
 
 export function verifyNonce(nonce: string): boolean {
   if (nonceCache.has(nonce)) {

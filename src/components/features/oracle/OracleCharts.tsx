@@ -137,9 +137,11 @@ export function OracleCharts({ instanceId }: { instanceId?: string | null }) {
     return () => controller.abort();
   }, [normalizedInstanceId]);
 
+  const [syncDataLoaded, setSyncDataLoaded] = useState(false);
+
   useEffect(() => {
     if (activeTab !== 'sync') return;
-    if (syncLoading || rawSyncMetrics.length > 0 || syncError) return;
+    if (syncLoading || syncDataLoaded || syncError) return;
     const controller = new AbortController();
     setSyncLoading(true);
     const url = new URLSearchParams({
@@ -150,11 +152,14 @@ export function OracleCharts({ instanceId }: { instanceId?: string | null }) {
     fetchApiData<{ items: SyncMetricItem[] }>(`/api/oracle/sync-metrics?${url.toString()}`, {
       signal: controller.signal,
     })
-      .then((r) => setRawSyncMetrics(r.items))
+      .then((r) => {
+        setRawSyncMetrics(r.items);
+        setSyncDataLoaded(true);
+      })
       .catch((e: unknown) => setSyncError(e instanceof Error ? e.message : 'unknown_error'))
       .finally(() => setSyncLoading(false));
     return () => controller.abort();
-  }, [activeTab, normalizedInstanceId, rawSyncMetrics.length, syncError, syncLoading]);
+  }, [activeTab, normalizedInstanceId, syncDataLoaded, syncError, syncLoading]);
 
   useEffect(() => {
     if (activeTab !== 'markets') return;

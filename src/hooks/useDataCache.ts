@@ -81,10 +81,14 @@ export function useDataCache<T>(fetcher: (key: string) => Promise<T>, options: C
           isStale: false,
         });
       } catch {
-        // 静默失败，保留旧数据
+        // 静默失败，保留旧数据但标记为过期
         const cached = cacheRef.current.get(key);
         if (cached) {
-          cached.isStale = true;
+          // 创建新对象而不是修改现有对象
+          cacheRef.current.set(key, {
+            ...cached,
+            isStale: true,
+          });
         }
       }
     },

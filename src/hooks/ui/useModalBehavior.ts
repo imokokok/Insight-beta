@@ -80,5 +80,6 @@ export function useModalBehavior(
       document.body.style.overflow = prevOverflow;
       if (previouslyFocused) previouslyFocused.focus();
     };
-  }, [isOpen, onClose, dialogRef]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, onClose]);
 }

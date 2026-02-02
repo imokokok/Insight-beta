@@ -31,36 +31,37 @@ export function useWatchlist() {
   }, []);
 
   const toggleWatchlist = (id: string) => {
-    setWatchlist((prev) => {
-      const isCurrentlyWatched = prev.includes(id);
-      const next = isCurrentlyWatched ? prev.filter((i) => i !== id) : [...prev, id];
-      if (
-        typeof window !== 'undefined' &&
-        window.localStorage &&
-        typeof window.localStorage.setItem === 'function'
-      ) {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      }
+    const isCurrentlyWatched = watchlist.includes(id);
+    const next = isCurrentlyWatched ? watchlist.filter((i) => i !== id) : [...watchlist, id];
 
-      // Show toast notification
-      if (isCurrentlyWatched) {
-        toast({
-          type: 'success',
-          title: t('common.removeFromWatchlist'),
-          message: t('common.success'),
-          duration: 2000,
-        });
-      } else {
-        toast({
-          type: 'success',
-          title: t('common.addToWatchlist'),
-          message: t('common.success'),
-          duration: 2000,
-        });
-      }
+    // 先更新状态
+    setWatchlist(next);
 
-      return next;
-    });
+    // 然后在 useEffect 中处理副作用
+    if (
+      typeof window !== 'undefined' &&
+      window.localStorage &&
+      typeof window.localStorage.setItem === 'function'
+    ) {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    }
+
+    // Show toast notification
+    if (isCurrentlyWatched) {
+      toast({
+        type: 'success',
+        title: t('common.removeFromWatchlist'),
+        message: t('common.success'),
+        duration: 2000,
+      });
+    } else {
+      toast({
+        type: 'success',
+        title: t('common.addToWatchlist'),
+        message: t('common.success'),
+        duration: 2000,
+      });
+    }
   };
 
   const isWatched = (id: string) => watchlist.includes(id);

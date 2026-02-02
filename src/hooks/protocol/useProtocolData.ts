@@ -16,11 +16,24 @@ interface ProtocolDataResponse {
 }
 
 const fetcher = async (url: string) => {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error('Failed to fetch protocol data');
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch protocol data: ${response.status} ${response.statusText}`);
+    }
+    return response.json();
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Request timeout: failed to fetch protocol data within 30 seconds');
+    }
+    throw error;
   }
-  return response.json();
 };
 
 export function useProtocolData(options: UseProtocolDataOptions = {}) {

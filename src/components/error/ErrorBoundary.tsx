@@ -46,8 +46,21 @@ export class ErrorBoundary extends Component<Props, State> {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
 
     // 可以在这里发送错误到监控服务
-    if (typeof window !== 'undefined' && (window as any).Sentry) {
-      (window as any).Sentry.captureException(error, {
+    const sentry =
+      (typeof window !== 'undefined' &&
+        (
+          window as unknown as {
+            Sentry?: {
+              captureException: (
+                error: Error,
+                context?: { extra?: Record<string, unknown> },
+              ) => void;
+            };
+          }
+        ).Sentry) ||
+      null;
+    if (sentry) {
+      sentry.captureException(error, {
         extra: { errorInfo: errorInfo.componentStack },
       });
     }

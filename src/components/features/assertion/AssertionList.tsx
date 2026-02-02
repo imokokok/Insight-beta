@@ -1,5 +1,5 @@
 import type { ComponentPropsWithoutRef } from 'react';
-import { memo, forwardRef } from 'react';
+import { memo, forwardRef, useCallback } from 'react';
 import Link from 'next/link';
 import type { Route } from 'next';
 import { CheckCircle2, Clock, ArrowUpRight, RotateCw, FileQuestion, Star } from 'lucide-react';
@@ -84,6 +84,15 @@ export const AssertionList = memo(function AssertionList({
   const { t, lang } = useI18n();
   const locale = langToLocale[lang];
   const { isWatched, toggleWatchlist } = useWatchlist();
+
+  const handleToggleWatchlist = useCallback(
+    (e: React.MouseEvent, id: string) => {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleWatchlist(id);
+    },
+    [toggleWatchlist],
+  );
 
   if (loading && items.length === 0) {
     return <SkeletonList viewMode={viewMode} />;
@@ -200,11 +209,7 @@ export const AssertionList = memo(function AssertionList({
 
             <div className="flex items-center gap-2">
               <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  toggleWatchlist(item.id);
-                }}
+                onClick={(e) => handleToggleWatchlist(e, item.id)}
                 className={cn(
                   'rounded-lg p-1.5 transition-all duration-200',
                   isWatched(item.id)
