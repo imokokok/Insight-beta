@@ -538,17 +538,17 @@ export async function fetchReferencePriceHistory(
       const msPerDay = 24 * 60 * 60_000;
       const nowMs = Date.now();
       const last = lastGoodSpot.get(normalizedSymbol);
-      const base =
+      const basePrice =
         last && nowMs - last.atMs <= LAST_GOOD_SPOT_MAX_AGE_MS
           ? last.price
-          : fallbackSpotUsd(normalizedSymbol);
+          : (fallbackSpotUsd(normalizedSymbol) ?? 0);
       const points: PricePoint[] = [];
       for (let i = safeDays; i >= 0; i -= 1) {
         const at = new Date(nowMs - i * msPerDay).toISOString();
         points.push({
           timestamp: at,
-          oraclePrice: Number(base.toFixed(6)),
-          referencePrice: Number(base.toFixed(6)),
+          oraclePrice: Number(basePrice.toFixed(6)),
+          referencePrice: Number(basePrice.toFixed(6)),
           deviation: 0,
         });
       }
@@ -616,8 +616,9 @@ export async function fetchCurrentPrice(
       lastDex && nowMs - lastDex.atMs <= LAST_GOOD_DEX_MAX_AGE_MS ? lastDex.price : null;
     const fallback = fallbackSpotUsd(normalizedSymbol);
 
-    const resolvedReference = referencePrice ?? dex ?? lastSpotPrice ?? lastDexPrice ?? fallback;
-    const resolvedOracle = dex ?? lastDexPrice ?? referencePrice ?? lastSpotPrice ?? fallback;
+    const resolvedReference =
+      referencePrice ?? dex ?? lastSpotPrice ?? lastDexPrice ?? fallback ?? 0;
+    const resolvedOracle = dex ?? lastDexPrice ?? referencePrice ?? lastSpotPrice ?? fallback ?? 0;
 
     return {
       referencePrice: Number(resolvedReference.toFixed(6)),
