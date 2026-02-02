@@ -13,9 +13,9 @@ import {
   parseAbi,
   formatUnits,
 } from 'viem';
-import { mainnet, polygon, arbitrum, optimism, base, avalanche, bsc, fantom } from 'viem/chains';
 import { logger } from '@/lib/logger';
 import { DEFAULT_STALENESS_THRESHOLDS } from '@/lib/config/constants';
+import { VIEM_CHAIN_MAP } from './chainConfig';
 import type {
   SupportedChain,
   UnifiedPriceFeed,
@@ -42,36 +42,8 @@ const AGGREGATOR_ABI = parseAbi([
 // ]);
 
 // ============================================================================
-// Chain 配置
+// Chainlink 特定配置
 // ============================================================================
-
-// viem chain 映射
-const VIEM_CHAIN_MAP = {
-  ethereum: mainnet,
-  polygon: polygon,
-  arbitrum: arbitrum,
-  optimism: optimism,
-  base: base,
-  avalanche: avalanche,
-  bsc: bsc,
-  fantom: fantom,
-  celo: mainnet,
-  gnosis: mainnet,
-  linea: mainnet,
-  scroll: mainnet,
-  mantle: mainnet,
-  mode: mainnet,
-  blast: mainnet,
-  solana: mainnet,
-  near: mainnet,
-  aptos: mainnet,
-  sui: mainnet,
-  polygonAmoy: polygon,
-  sepolia: mainnet,
-  goerli: mainnet,
-  mumbai: polygon,
-  local: mainnet,
-} as const;
 
 const CHAINLINK_CHAIN_CONFIG: Record<
   SupportedChain,
