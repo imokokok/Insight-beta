@@ -307,7 +307,7 @@ export default function ManipulationConfigPage() {
                 <Slider
                   value={[config.zScoreThreshold]}
                   onValueChange={(value) =>
-                    setConfig((prev) => ({ ...prev, zScoreThreshold: value[0] }))
+                    setConfig((prev) => ({ ...prev, zScoreThreshold: value[0] ?? 0 }))
                   }
                   min={1}
                   max={5}
@@ -330,7 +330,7 @@ export default function ManipulationConfigPage() {
                 <Slider
                   value={[config.minConfidenceScore * 100]}
                   onValueChange={(value) =>
-                    setConfig((prev) => ({ ...prev, minConfidenceScore: value[0] / 100 }))
+                    setConfig((prev) => ({ ...prev, minConfidenceScore: value[0] ?? 0 / 100 }))
                   }
                   min={50}
                   max={95}
@@ -350,7 +350,7 @@ export default function ManipulationConfigPage() {
                 <Slider
                   value={[config.maxPriceDeviationPercent]}
                   onValueChange={(value) =>
-                    setConfig((prev) => ({ ...prev, maxPriceDeviationPercent: value[0] }))
+                    setConfig((prev) => ({ ...prev, maxPriceDeviationPercent: value[0] ?? 0 }))
                   }
                   min={1}
                   max={20}
@@ -501,7 +501,7 @@ export default function ManipulationConfigPage() {
                   onValueChange={(value) =>
                     setConfig((prev) => ({
                       ...prev,
-                      notificationCooldownMs: value[0] * 60000,
+                      notificationCooldownMs: value[0] ?? 0 * 60000,
                     }))
                   }
                   min={1}
@@ -556,7 +556,7 @@ export default function ManipulationConfigPage() {
                 <Slider
                   value={[config.timeWindowMs / 60000]}
                   onValueChange={(value) =>
-                    setConfig((prev) => ({ ...prev, timeWindowMs: value[0] * 60000 }))
+                    setConfig((prev) => ({ ...prev, timeWindowMs: value[0] ?? 0 * 60000 }))
                   }
                   min={1}
                   max={30}
