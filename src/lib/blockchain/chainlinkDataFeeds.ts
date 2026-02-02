@@ -45,7 +45,7 @@ const AGGREGATOR_ABI = parseAbi([
 // Chainlink 特定配置
 // ============================================================================
 
-const CHAINLINK_CHAIN_CONFIG: Record<
+export const CHAINLINK_CHAIN_CONFIG: Record<
   SupportedChain,
   {
     feedRegistry?: Address;
@@ -97,7 +97,7 @@ const CHAINLINK_CHAIN_CONFIG: Record<
 };
 
 // 常用价格喂价地址映射
-const POPULAR_FEEDS: Record<SupportedChain, Record<string, Address>> = {
+export const POPULAR_FEEDS: Record<SupportedChain, Record<string, Address>> = {
   ethereum: {
     'ETH/USD': '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
     'BTC/USD': '0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c',
