@@ -441,15 +441,15 @@ export class ManipulationDetector {
 
   private detectLiquidityManipulation(
     feedKey: string,
-    currentPrice: number,
+    _currentPrice: number,
   ): { type: ManipulationType; severity: DetectionSeverity; confidence: number; evidence: DetectionEvidence[]; suspiciousTxs: SuspiciousTransaction[] } | null {
     const history = this.priceHistory.get(feedKey);
     if (!history || history.length < 2) {
       return null;
     }
 
-    const currentLiquidity = history[history.length - 1].liquidity || 0;
-    const previousLiquidity = history[history.length - 2].liquidity || currentLiquidity;
+    const currentLiquidity = history[history.length - 1]!.liquidity || 0;
+    const previousLiquidity = history[history.length - 2]!.liquidity || currentLiquidity;
 
     if (previousLiquidity === 0) {
       return null;
@@ -553,7 +553,7 @@ export class ManipulationDetector {
     const history = this.priceHistory.get(feedKey);
     if (!history || history.length < 2) return undefined;
     
-    const previousPrice = history[history.length - 2].price;
+    const previousPrice = history[history.length - 2]!.price;
     return ((currentPrice - previousPrice) / previousPrice) * 100;
   }
 
@@ -570,7 +570,7 @@ export class ManipulationDetector {
     return totalValue;
   }
 
-  private extractRelatedBlocks(txs: SuspiciousTransaction[]): number[] {
+  private extractRelatedBlocks(_txs: SuspiciousTransaction[]): number[] {
     // 从交易中提取区块号（简化实现）
     return [];
   }

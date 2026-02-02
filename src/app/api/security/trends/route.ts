@@ -42,25 +42,25 @@ export async function GET(request: NextRequest) {
     }
 
     // Generate date range
-    const trends: Record<string, TrendData> = {};
+    const trends = new Map<string, TrendData>();
     
     for (let i = 0; i < days; i++) {
       const date = new Date(Date.now() - (days - 1 - i) * 24 * 60 * 60 * 1000);
       const dateStr = date.toISOString().split('T')[0];
-      trends[dateStr] = {
+      trends.set(dateStr, {
         date: dateStr,
         total: 0,
         critical: 0,
         high: 0,
         medium: 0,
         low: 0,
-      };
+      });
     }
 
     // Aggregate detections
     (detections as DetectionTrendRow[] || []).forEach((detection) => {
       const dateStr = new Date(detection.detected_at).toISOString().split('T')[0];
-      const trend = trends[dateStr];
+      const trend = trends.get(dateStr);
       if (trend) {
         trend.total++;
         const severity = detection.severity;
@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
       .sort((a, b) => b.value - a.value);
 
     return NextResponse.json({
-      trends: Object.values(trends),
+      trends: Array.from(trends.values()),
       typeDistribution,
       severityDistribution,
     });
