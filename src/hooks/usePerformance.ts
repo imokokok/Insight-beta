@@ -172,7 +172,10 @@ export function useLocalStorage<T>(
           window.localStorage.setItem(key, JSON.stringify(valueToStore));
         }
       } catch (error) {
-        console.warn('Error saving to localStorage:', error);
+        // Silently ignore localStorage errors in production
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Error saving to localStorage:', error);
+        }
       }
     },
     [key, storedValue],

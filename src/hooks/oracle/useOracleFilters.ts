@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/logger';
 
 const STORAGE_KEY = 'oracleFilters';
 const DEFAULT_INSTANCE_ID = 'default';
@@ -42,7 +43,9 @@ export function useOracleFilters() {
         const filters: OracleFilters = { instanceId: normalized };
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
       } catch (error) {
-        console.error('Failed to save instanceId:', error);
+        logger.error('Failed to save instanceId', {
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
       }
     }
   };
@@ -54,7 +57,9 @@ export function useOracleFilters() {
       try {
         window.localStorage.removeItem(STORAGE_KEY);
       } catch (error) {
-        console.error('Failed to clear instanceId:', error);
+        logger.error('Failed to clear instanceId', {
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
       }
     }
   };

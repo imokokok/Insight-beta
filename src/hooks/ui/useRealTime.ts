@@ -158,7 +158,10 @@ class RealTimeConnectionManager {
   private handleReconnect(): void {
     if (this.isManuallyClosed) return;
     if (!this.options.autoReconnect) return;
-    if (this.reconnectAttempts >= (this.options.maxReconnectAttempts || DEFAULT_MAX_RECONNECT_ATTEMPTS)) {
+    if (
+      this.reconnectAttempts >=
+      (this.options.maxReconnectAttempts || DEFAULT_MAX_RECONNECT_ATTEMPTS)
+    ) {
       logger.warn('Max reconnect attempts reached');
       this.options.onMaxReconnectAttemptsReached?.();
       return;
@@ -417,7 +420,7 @@ export function useWebSocket(options: UseWebSocketOptions) {
 
   const connect = useCallback(() => {
     if (typeof WebSocket === 'undefined') {
-      console.warn('WebSocket is not supported');
+      logger.warn('WebSocket is not supported');
       return;
     }
 
@@ -427,7 +430,8 @@ export function useWebSocket(options: UseWebSocketOptions) {
 
     try {
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = url.startsWith('ws://') || url.startsWith('wss://') ? url : `${protocol}//${url}`;
+      const wsUrl =
+        url.startsWith('ws://') || url.startsWith('wss://') ? url : `${protocol}//${url}`;
 
       socketRef.current = new WebSocket(wsUrl);
 
@@ -443,7 +447,9 @@ export function useWebSocket(options: UseWebSocketOptions) {
           setLastMessage(data);
           onMessage?.(data);
         } catch (parseError) {
-          console.error('Failed to parse WebSocket message', parseError);
+          logger.error('Failed to parse WebSocket message', {
+            error: parseError instanceof Error ? parseError.message : 'Unknown error',
+          });
         }
       };
 
@@ -464,10 +470,21 @@ export function useWebSocket(options: UseWebSocketOptions) {
         onError?.(event);
       };
     } catch (err) {
-      console.error('Failed to create WebSocket connection', err);
+      logger.error('Failed to create WebSocket connection', {
+        error: err instanceof Error ? err.message : 'Unknown error',
+      });
       setError(err as Event);
     }
-  }, [url, autoReconnect, reconnectInterval, maxReconnectAttempts, onOpen, onMessage, onClose, onError]);
+  }, [
+    url,
+    autoReconnect,
+    reconnectInterval,
+    maxReconnectAttempts,
+    onOpen,
+    onMessage,
+    onClose,
+    onError,
+  ]);
 
   const disconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {
@@ -483,7 +500,7 @@ export function useWebSocket(options: UseWebSocketOptions) {
     if (socketRef.current?.readyState === WebSocket.OPEN) {
       socketRef.current.send(JSON.stringify(data));
     } else {
-      console.warn('WebSocket is not connected');
+      logger.warn('WebSocket is not connected');
     }
   }, []);
 

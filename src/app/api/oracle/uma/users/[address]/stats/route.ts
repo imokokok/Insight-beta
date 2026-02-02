@@ -1,4 +1,5 @@
 import { getUMAUserStats } from '@/server/oracle/umaState';
+import { logger } from '@/lib/logger';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
@@ -30,7 +31,9 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('Failed to get UMA user stats:', error);
+    logger.error('Failed to get UMA user stats', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

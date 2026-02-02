@@ -7,6 +7,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { notificationConfigService } from '@/server/alerts/notificationConfigService';
+import { logger } from '@/lib/logger';
 
 export async function POST(
   _request: NextRequest,
@@ -32,7 +33,9 @@ export async function POST(
       message: result.message,
     });
   } catch (error) {
-    console.error('Failed to test notification channel:', error);
+    logger.error('Failed to test notification channel', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
     return NextResponse.json(
       {
         success: false,

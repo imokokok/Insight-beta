@@ -7,6 +7,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { notificationConfigService } from '@/server/alerts/notificationConfigService';
+import { logger } from '@/lib/logger';
 import type { NotificationChannel } from '@/server/alerts/notificationService';
 
 // ============================================================================
@@ -32,7 +33,9 @@ export async function GET(request: NextRequest) {
       count: channels.length,
     });
   } catch (error) {
-    console.error('Failed to get notification channels:', error);
+    logger.error('Failed to get notification channels', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
     return NextResponse.json(
       {
         success: false,
@@ -99,7 +102,9 @@ export async function POST(request: NextRequest) {
       { status: 201 },
     );
   } catch (error) {
-    console.error('Failed to create notification channel:', error);
+    logger.error('Failed to create notification channel', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
     return NextResponse.json(
       {
         success: false,
@@ -147,7 +152,9 @@ export async function DELETE(request: NextRequest) {
       message: 'Channel deleted successfully',
     });
   } catch (error) {
-    console.error('Failed to delete notification channel:', error);
+    logger.error('Failed to delete notification channel', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
     return NextResponse.json(
       {
         success: false,
@@ -202,7 +209,9 @@ export async function PATCH(request: NextRequest) {
       data: updatedChannel,
     });
   } catch (error) {
-    console.error('Failed to update notification channel:', error);
+    logger.error('Failed to update notification channel', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
     return NextResponse.json(
       {
         success: false,

@@ -1,4 +1,5 @@
 import { listUMAAssertions } from '@/server/oracle/umaState';
+import { logger } from '@/lib/logger';
 import type { UMAAssertion } from '@/lib/types/oracleTypes';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
@@ -51,7 +52,9 @@ export async function GET(
       },
     );
   } catch (error) {
-    console.error('Failed to get user assertions:', error);
+    logger.error('Failed to get user assertions', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

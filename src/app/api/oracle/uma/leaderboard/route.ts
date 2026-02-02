@@ -1,4 +1,5 @@
 import { getUMALeaderboard } from '@/server/oracle/umaState';
+import { logger } from '@/lib/logger';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
@@ -22,7 +23,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(leaderboard);
   } catch (error) {
-    console.error('Failed to get UMA leaderboard:', error);
+    logger.error('Failed to get UMA leaderboard', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -1,4 +1,5 @@
 import { listUMAVotes, fetchUMAVote } from '@/server/oracle/umaState';
+import { logger } from '@/lib/logger';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
@@ -36,7 +37,9 @@ export async function GET(request: NextRequest) {
       offset: parseInt(offset || '0'),
     });
   } catch (error) {
-    console.error('Failed to list UMA votes:', error);
+    logger.error('Failed to list UMA votes', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
