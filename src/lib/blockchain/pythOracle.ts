@@ -26,12 +26,12 @@ import type {
 // Pyth ABI
 // ============================================================================
 
+// PythStructs.Price 结构体: (int64 price, uint64 conf, int32 expo, uint publishTime)
 const PYTH_ABI = parseAbi([
-  'function getPrice(bytes32 id) external view returns (PythStructs.Price memory price)',
-  'function getEmaPrice(bytes32 id) external view returns (PythStructs.Price memory price)',
-  'function getPriceUnsafe(bytes32 id) external view returns (PythStructs.Price memory price)',
-  'function getPriceNoOlderThan(bytes32 id, uint age) external view returns (PythStructs.Price memory price)',
-  'function parsePriceFeedUpdates(bytes[] calldata updateData, bytes32[] calldata priceIds, uint64 minPublishTime, uint64 maxPublishTime) external payable returns (PythStructs.PriceFeed[] memory priceFeeds)',
+  'function getPrice(bytes32 id) external view returns (int64 price, uint64 conf, int32 expo, uint publishTime)',
+  'function getEmaPrice(bytes32 id) external view returns (int64 price, uint64 conf, int32 expo, uint publishTime)',
+  'function getPriceUnsafe(bytes32 id) external view returns (int64 price, uint64 conf, int32 expo, uint publishTime)',
+  'function getPriceNoOlderThan(bytes32 id, uint age) external view returns (int64 price, uint64 conf, int32 expo, uint publishTime)',
 ]);
 
 // PythStructs.Price
@@ -46,7 +46,7 @@ const PYTH_ABI = parseAbi([
 // Pyth 合约地址配置
 // ============================================================================
 
-const PYTH_CONTRACT_ADDRESSES: Record<SupportedChain, Address | undefined> = {
+export const PYTH_CONTRACT_ADDRESSES: Record<SupportedChain, Address | undefined> = {
   ethereum: '0x4305FB66699C3B2702D4d05CF36551390A4c69C6',
   polygon: '0x8250f4aF4B972684F7b336503E2D6dFeDeB1487a',
   arbitrum: '0xff1a0f4744e8582DF1aE09D5611b887B6a12925C',
@@ -78,7 +78,7 @@ const PYTH_CONTRACT_ADDRESSES: Record<SupportedChain, Address | undefined> = {
 // 常用价格喂价 ID (Pyth 使用 32 字节的 ID)
 // ============================================================================
 
-const PYTH_PRICE_FEED_IDS: Record<string, string> = {
+export const PYTH_PRICE_FEED_IDS: Record<string, string> = {
   'ETH/USD': '0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
   'BTC/USD': '0xe62df6c8b4a85fe1f67dab44abcabdeb54c0f983b2d28b4583c5d9483c324d5b',
   'SOL/USD': '0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d',
