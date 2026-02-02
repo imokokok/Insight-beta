@@ -16,14 +16,17 @@ import type {
   LatencyAnalysis,
   CostComparison,
   RealtimeComparisonItem,
-} from '@/lib/types/oracle';
+} from '@/lib/types/oracle/comparison';
 import { ORACLE_PROTOCOLS } from '@/lib/types/oracle';
+import type { OracleProtocol } from '@/lib/types/oracle/protocol';
+import type { SupportedChain } from '@/lib/types/oracle/chain';
 import {
   generateRealHeatmapData,
   generateRealLatencyData,
   generateRealRealtimeData,
   checkDataSourceHealth,
 } from '@/server/oracle/realDataService';
+import { logger } from '@/lib/logger';
 
 // ============================================================================
 // 模拟数据生成器（当真实数据不可用时降级使用）
@@ -45,7 +48,7 @@ function generateMockHeatmapData(symbols: string[], protocols: string[]): PriceH
       else if (absDeviation > 0.5) deviationLevel = 'medium';
 
       return {
-        protocol: protocol as any,
+        protocol: protocol as OracleProtocol,
         symbol,
         price,
         referencePrice: consensusPrice,
@@ -79,7 +82,7 @@ function generateMockHeatmapData(symbols: string[], protocols: string[]): PriceH
 
   return {
     rows,
-    protocols: protocols as any[],
+    protocols: protocols as OracleProtocol[],
     lastUpdated: new Date().toISOString(),
     totalPairs: symbols.length,
     criticalDeviations,
@@ -102,9 +105,9 @@ function generateMockLatencyData(protocols: string[]): LatencyAnalysis {
       else if (latencyMs > 30000) status = 'degraded';
 
       metrics.push({
-        protocol: protocol as any,
+        protocol: protocol as OracleProtocol,
         symbol,
-        chain: chain as any,
+        chain: chain as SupportedChain,
         latencyMs,
         latencySeconds: latencyMs / 1000,
         blockLag: Math.floor(latencyMs / 12000),
@@ -143,7 +146,7 @@ function generateMockCostData(protocols: string[]): CostComparison {
     const valueScore = Math.random() * 30 + 70;
 
     return {
-      protocol: protocol as any,
+      protocol: protocol as OracleProtocol,
       costScore,
       valueScore,
       feedsCount: Math.floor(Math.random() * 50) + 10,
@@ -174,7 +177,7 @@ function generateMockCostData(protocols: string[]): CostComparison {
       recommendedProtocol: bestValue.protocol,
       reason: '综合性价比最高，适合需要高可靠性的 DeFi 协议',
       estimatedMonthlyCost: 500 + Math.random() * 1000,
-      alternatives: protocols.slice(0, 2) as any[],
+      alternatives: protocols.slice(0, 2) as OracleProtocol[],
     },
     {
       useCase: 'trading',
@@ -183,7 +186,7 @@ function generateMockCostData(protocols: string[]): CostComparison {
       ).protocol,
       reason: '更新频率快，延迟低，适合高频交易场景',
       estimatedMonthlyCost: 1000 + Math.random() * 2000,
-      alternatives: protocols.slice(1, 3) as any[],
+      alternatives: protocols.slice(1, 3) as OracleProtocol[],
     },
     {
       useCase: 'enterprise',
@@ -192,14 +195,14 @@ function generateMockCostData(protocols: string[]): CostComparison {
       ).protocol,
       reason: '高可用性和企业级支持',
       estimatedMonthlyCost: 2000 + Math.random() * 3000,
-      alternatives: protocols.slice(2, 4) as any[],
+      alternatives: protocols.slice(2, 4) as OracleProtocol[],
     },
     {
       useCase: 'hobby',
       recommendedProtocol: cheapest.protocol,
       reason: '成本最低，适合个人项目和小型实验',
       estimatedMonthlyCost: Math.random() * 100,
-      alternatives: protocols.slice(0, 2) as any[],
+      alternatives: protocols.slice(0, 2) as OracleProtocol[],
     },
   ];
 
@@ -225,7 +228,7 @@ function generateMockRealtimeData(protocols: string[]): RealtimeComparisonItem[]
       const price = basePrice * (1 + deviation / 100);
 
       return {
-        protocol: protocol as any,
+        protocol: protocol as OracleProtocol,
         price,
         timestamp: new Date().toISOString(),
         confidence: 0.8 + Math.random() * 0.2,
@@ -372,7 +375,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error('Comparison API error:', error);
+    logger.error('Comparison API error', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
     return NextResponse.json(
       {
         error: 'Internal server error',
@@ -429,7 +434,9 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('History API error:', error);
+    logger.error('History API error', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
     return NextResponse.json(
       {
         error: 'Internal server error',

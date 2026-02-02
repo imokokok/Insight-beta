@@ -63,16 +63,18 @@ export function usePerformanceMonitor(componentName: string) {
     metricsRef.current.mountTime = performance.now() - mountStart;
 
     if (process.env.NODE_ENV === 'development') {
-      console.log(
-        `[Performance] ${componentName} mounted in ${metricsRef.current.mountTime.toFixed(2)}ms`,
-      );
+      logger.debug(`[Performance] ${componentName} mounted`, {
+        mountTime: metricsRef.current.mountTime,
+        componentName,
+      });
     }
 
     return () => {
       if (process.env.NODE_ENV === 'development') {
-        console.log(
-          `[Performance] ${componentName} unmounted. Total renders: ${metricsRef.current.renderCount}`,
-        );
+        logger.debug(`[Performance] ${componentName} unmounted`, {
+          totalRenders: metricsRef.current.renderCount,
+          componentName,
+        });
       }
     };
   }, [componentName]);
@@ -88,9 +90,10 @@ export function usePerformanceMonitor(componentName: string) {
     metricsRef.current.renderCount++;
 
     if (process.env.NODE_ENV === 'development' && metricsRef.current.renderTime > 16) {
-      console.warn(
-        `[Performance] ${componentName} render took ${metricsRef.current.renderTime.toFixed(2)}ms (>${16}ms)`,
-      );
+      logger.warn(`[Performance] ${componentName} render took longer than 16ms`, {
+        renderTime: metricsRef.current.renderTime,
+        componentName,
+      });
     }
   }, [componentName]);
 

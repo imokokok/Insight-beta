@@ -12,6 +12,7 @@ import {
   detectOutliers,
 } from './priceAggregationService';
 import type { UnifiedPriceFeed } from '@/lib/types/unifiedOracleTypes';
+import type { OracleProtocol } from '@/lib/types/oracle/protocol';
 
 // Mock database query
 vi.mock('@/server/db', () => ({
@@ -37,7 +38,7 @@ describe('PriceAggregationEngine', () => {
       ];
 
       (query as any).mockResolvedValueOnce({
-        rows: mockPrices.map(p => ({
+        rows: mockPrices.map((p) => ({
           ...p,
           instanceId: `${p.protocol}-instance`,
           price_raw: p.priceRaw,
@@ -76,8 +77,8 @@ describe('PriceAggregationEngine', () => {
 
       (query as any).mockResolvedValueOnce({
         rows: mockPrices
-          .filter(p => !p.isStale)
-          .map(p => ({
+          .filter((p) => !p.isStale)
+          .map((p) => ({
             ...p,
             instanceId: `${p.protocol}-instance`,
             price_raw: p.priceRaw,
@@ -107,7 +108,7 @@ describe('PriceAggregationEngine', () => {
       ];
 
       (query as any).mockResolvedValueOnce({
-        rows: mockPrices.map(p => ({
+        rows: mockPrices.map((p) => ({
           ...p,
           instanceId: `${p.protocol}-instance`,
           price_raw: p.priceRaw,
@@ -200,12 +201,12 @@ describe('Utility Functions', () => {
 function createMockPriceFeed(
   protocol: string,
   price: number,
-  overrides: Partial<UnifiedPriceFeed> = {}
+  overrides: Partial<UnifiedPriceFeed> = {},
 ): UnifiedPriceFeed {
   return {
     id: `${protocol}-eth-usd-123`,
     instanceId: `${protocol}-instance`,
-    protocol: protocol as any,
+    protocol: protocol as OracleProtocol,
     chain: 'ethereum',
     symbol: 'ETH/USD',
     baseAsset: 'ETH',
