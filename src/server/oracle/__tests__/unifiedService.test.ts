@@ -138,8 +138,8 @@ describe('UnifiedOracleService', () => {
       // AggregationManager.aggregate should be called
       const { AggregationManager } = await import('../managers/AggregationManager');
       const mockResults = vi.mocked(AggregationManager).mock.results;
-      if (mockResults.length > 0 && mockResults[0]) {
-        const mockInstance = mockResults[0].value;
+      if (mockResults.length > 0 && mockResults[0] && mockResults[0].value) {
+        const mockInstance = mockResults[0].value as { aggregate: ReturnType<typeof vi.fn> };
         expect(mockInstance.aggregate).toHaveBeenCalledWith(symbols);
       }
     });

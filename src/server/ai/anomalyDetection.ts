@@ -166,6 +166,8 @@ export class AnomalyDetectionService {
 
     // Check the most recent data point
     const latest = data[data.length - 1];
+    if (!latest) return anomalies;
+
     const zScore = Math.abs((latest.price - mean) / stdDev);
 
     if (zScore > this.config.zScoreThreshold) {
@@ -209,13 +211,13 @@ export class AnomalyDetectionService {
     const trend = this.calculateMovingAverage(prices, this.config.seasonalPeriod);
 
     // Detrended series
-    const detrended = prices.map((p, i) => p - (trend[i] || p));
+    const detrended = prices.map((p, i) => p - (trend[i] ?? p));
 
     // Calculate seasonal component
     const seasonal = this.calculateSeasonalComponent(detrended);
 
     // Residuals
-    const residuals = detrended.map((d, i) => d - (seasonal[i % this.config.seasonalPeriod] || 0));
+    const residuals = detrended.map((d, i) => d - (seasonal[i % this.config.seasonalPeriod] ?? 0));
 
     // Detect anomalies in residuals
     const residualMean = this.calculateMean(residuals);
@@ -223,11 +225,19 @@ export class AnomalyDetectionService {
 
     const latestIndex = residuals.length - 1;
     const latestResidual = residuals[latestIndex];
+    if (latestResidual === undefined) return anomalies;
+
     const zScore = Math.abs((latestResidual - residualMean) / residualStdDev);
 
     if (zScore > this.config.zScoreThreshold) {
       const latest = data[data.length - 1];
-      const expectedPrice = trend[latestIndex] + seasonal[latestIndex % this.config.seasonalPeriod];
+      if (!latest) return anomalies;
+
+      const trendValue = trend[latestIndex];
+      const seasonalValue = seasonal[latestIndex % this.config.seasonalPeriod];
+      if (trendValue === undefined || seasonalValue === undefined) return anomalies;
+
+      const expectedPrice = trendValue + seasonalValue;
       const deviation = Math.abs((latest.price - expectedPrice) / expectedPrice);
 
       anomalies.push({
@@ -242,8 +252,8 @@ export class AnomalyDetectionService {
         severity: this.calculateSeverity(deviation),
         details: {
           zScore,
-          trend: trend[latestIndex],
-          seasonal: seasonal[latestIndex % this.config.seasonalPeriod],
+          trend: trendValue,
+          seasonal: seasonalValue,
           residual: latestResidual,
         },
       });
@@ -277,6 +287,7 @@ export class AnomalyDetectionService {
 
     if (zScore > this.config.zScoreThreshold && meanChange > 0.05) {
       const latest = data[data.length - 1];
+      if (!latest) return anomalies;
 
       anomalies.push({
         isAnomaly: true,
@@ -372,7 +383,7 @@ export class AnomalyDetectionService {
 
     for (let i = 0; i < values.length; i++) {
       if (i < period - 1) {
-        result.push(values[i]);
+        result.push(values[i] ?? 0);
         continue;
       }
 
@@ -392,11 +403,24 @@ export class AnomalyDetectionService {
 
     for (let i = 0; i < detrended.length; i++) {
       const periodIndex = i % this.config.seasonalPeriod;
-      seasonal[periodIndex] += detrended[i];
-      counts[periodIndex]++;
+      const currentSeasonal = seasonal[periodIndex];
+      const currentCount = counts[periodIndex];
+      const detrendedValue = detrended[i];
+
+      if (
+        currentSeasonal !== undefined &&
+        currentCount !== undefined &&
+        detrendedValue !== undefined
+      ) {
+        seasonal[periodIndex] = currentSeasonal + detrendedValue;
+        counts[periodIndex] = currentCount + 1;
+      }
     }
 
-    return seasonal.map((sum, i) => (counts[i] > 0 ? sum / counts[i] : 0));
+    return seasonal.map((sum, i) => {
+      const count = counts[i];
+      return count && count > 0 ? (sum ?? 0) / count : 0;
+    });
   }
 
   /**

@@ -3,7 +3,7 @@
  * Supports read/write splitting for better performance
  */
 
-import type { PoolClient, QueryResult } from 'pg';
+import type { PoolClient, QueryResult, QueryResultRow } from 'pg';
 import { Pool } from 'pg';
 import { logger } from '@/lib/logger';
 
@@ -159,6 +159,9 @@ class ConnectionManager {
 
     // Round-robin selection of read pool
     const pool = this.readPools[this.currentReadIndex];
+    if (!pool) {
+      throw new Error('Read pool not available');
+    }
     this.currentReadIndex = (this.currentReadIndex + 1) % this.readPools.length;
     return pool;
   }
@@ -166,7 +169,7 @@ class ConnectionManager {
   /**
    * Execute a query with automatic routing
    */
-  async query<T = unknown>(
+  async query<T extends QueryResultRow = QueryResultRow>(
     sql: string,
     params?: unknown[],
     mode: QueryMode = 'write',
@@ -208,14 +211,20 @@ class ConnectionManager {
   /**
    * Execute a read query (routed to read replicas)
    */
-  async readQuery<T = unknown>(sql: string, params?: unknown[]): Promise<QueryResult<T>> {
+  async readQuery<T extends QueryResultRow = QueryResultRow>(
+    sql: string,
+    params?: unknown[],
+  ): Promise<QueryResult<T>> {
     return this.query<T>(sql, params, 'read');
   }
 
   /**
    * Execute a write query (routed to primary)
    */
-  async writeQuery<T = unknown>(sql: string, params?: unknown[]): Promise<QueryResult<T>> {
+  async writeQuery<T extends QueryResultRow = QueryResultRow>(
+    sql: string,
+    params?: unknown[],
+  ): Promise<QueryResult<T>> {
     return this.query<T>(sql, params, 'write');
   }
 
@@ -317,6 +326,9 @@ class ConnectionManager {
 export const connectionManager = new ConnectionManager();
 
 // Backward compatibility - default query function
-export async function query<T = unknown>(sql: string, params?: unknown[]): Promise<QueryResult<T>> {
+export async function query<T extends QueryResultRow = QueryResultRow>(
+  sql: string,
+  params?: unknown[],
+): Promise<QueryResult<T>> {
   return connectionManager.query<T>(sql, params, 'write');
 }
