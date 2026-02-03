@@ -19,7 +19,7 @@ function buildCsp(isDev: boolean) {
     `script-src ${scriptSrc.join(' ')}`,
     "script-src-attr 'none'",
     `style-src ${styleSrc.join(' ')}`,
-    "img-src 'self' blob: data:",
+    "img-src 'self' blob: data: https:",
     "media-src 'self'",
     "font-src 'self' data:",
     `connect-src ${connectSrc.join(' ')}`,
@@ -49,7 +49,6 @@ const nextConfig: NextConfig = {
     optimizeCss: true,
     serverMinification: true,
     webpackBuildWorker: true,
-    // Additional optimizations
     optimizePackageImports: ['lucide-react', 'recharts', 'date-fns', 'viem'],
     turbo: {
       rules: {
@@ -63,12 +62,34 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // Production optimizations
   productionBrowserSourceMaps: false,
   poweredByHeader: false,
   generateEtags: true,
-  // Bundle analyzer in analyze mode
-  // Note: Run ANALYZE=true npm run build to enable bundle analyzer
+
+  // CDN Configuration
+  assetPrefix: process.env.CDN_URL || undefined,
+
+  // Image optimization with CDN
+  images: {
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    formats: ['image/avif', 'image/webp'],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 31536000,
+    dangerouslyAllowSVG: false,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox",
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+        port: '',
+        pathname: '/**',
+      },
+    ],
+    // Use CDN for images if configured
+    path: process.env.CDN_IMAGE_URL || '/_next/image',
+  },
+
+  // Headers for CDN caching
   async headers() {
     const csp = buildCsp(isDev);
     const headers: Array<{ key: string; value: string }> = [
@@ -110,35 +131,46 @@ const nextConfig: NextConfig = {
         value: 'same-origin',
       },
     ];
+
     if (!isDev) {
       headers.push({
         key: 'Strict-Transport-Security',
         value: 'max-age=63072000; includeSubDomains; preload',
       });
     }
+
     return [
       {
         headers,
         source: '/:path*',
       },
+      // CDN Cache headers for static assets
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+          {
+            key: 'CDN-Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      // Cache headers for images
+      {
+        source: '/_next/image/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
     ];
   },
-  images: {
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    formats: ['image/avif', 'image/webp'],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    minimumCacheTTL: 31536000,
-    dangerouslyAllowSVG: false,
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox",
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**',
-        port: '',
-        pathname: '/**',
-      },
-    ],
-  },
+
   modularizeImports: {
     'lucide-react': {
       skipDefaultConversion: true,
@@ -154,7 +186,7 @@ const nextConfig: NextConfig = {
       transform: 'viem/{{ member }}',
     },
   },
-  // Code splitting configuration
+
   splitChunks: {
     chunks: 'all',
     cacheGroups: {
@@ -170,9 +202,11 @@ const nextConfig: NextConfig = {
       },
     },
   },
+
   output: 'standalone',
   reactStrictMode: true,
   typedRoutes: true,
+
   webpack: (config) => {
     config.ignoreWarnings = config.ignoreWarnings || [];
     config.ignoreWarnings.push({

@@ -1,0 +1,23 @@
+{
+  "name": "@oracle-monitor/shared",
+  "version": "1.0.0",
+  "description": "Shared utilities and types for Oracle Monitor microservices",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "eslint src --ext .ts",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "redis": "^4.7.1",
+    "winston": "^3.11.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.7.3",
+    "vitest": "^4.0.18"
+  }
+}

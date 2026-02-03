@@ -1,49 +1,95 @@
 {
-  "name": "Oracle Monitor",
-  "short_name": "OracleMonitor",
-  "description": "Universal multi-protocol oracle monitoring platform supporting Chainlink, Pyth, API3, DIA, Band, RedStone, and more",
+  "name": "Oracle Monitor - Universal Oracle Monitoring Platform",
+  "short_name": "Oracle Monitor",
+  "description": "Multi-protocol oracle data monitoring and aggregation platform",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#6366f1",
+  "background_color": "#0a0a0a",
+  "theme_color": "#3b82f6",
   "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
   "icons": [
     {
-      "src": "/logo-owl.png",
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable any"
     },
     {
-      "src": "/logo-owl.png",
+      "src": "/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable any"
     }
   ],
-  "categories": ["finance", "business", "utilities"],
-  "screenshots": [],
+  "categories": ["finance", "utilities", "productivity"],
+  "screenshots": [
+    {
+      "src": "/screenshots/dashboard.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Oracle Monitor Dashboard"
+    },
+    {
+      "src": "/screenshots/mobile.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Oracle Monitor Mobile View"
+    }
+  ],
   "shortcuts": [
     {
-      "name": "View Oracle",
-      "short_name": "Oracle",
-      "description": "View oracle monitoring dashboard",
-      "url": "/oracle",
-      "icons": [{ "src": "/logo-owl.png", "sizes": "96x96" }]
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "View the main dashboard",
+      "url": "/",
+      "icons": [{ "src": "/icons/dashboard.png", "sizes": "96x96" }]
     },
     {
-      "name": "View Disputes",
-      "short_name": "Disputes",
-      "description": "View active disputes",
-      "url": "/disputes",
-      "icons": [{ "src": "/logo-owl.png", "sizes": "96x96" }]
-    },
-    {
-      "name": "View Alerts",
+      "name": "Alerts",
       "short_name": "Alerts",
-      "description": "View system alerts",
+      "description": "View active alerts",
       "url": "/alerts",
-      "icons": [{ "src": "/logo-owl.png", "sizes": "96x96" }]
+      "icons": [{ "src": "/icons/alerts.png", "sizes": "96x96" }]
     }
   ],
   "related_applications": [],
