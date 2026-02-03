@@ -18,6 +18,9 @@ export {
   SOLANA_CACHE_CONFIG,
 } from './config';
 
+// RPC Client
+export { SolanaRpcClient, createSolanaRpcClient } from './rpc';
+
 // Connection
 export {
   solanaConnectionManager,

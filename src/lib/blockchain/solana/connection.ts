@@ -1,50 +1,77 @@
 /**
  * Solana Connection Manager
  *
- * Solana RPC 连接管理 (Mock Implementation)
+ * Solana RPC 连接管理
  */
 
 import { SOLANA_RPC_ENDPOINTS, SOLANA_CONNECTION_CONFIG, SOLANA_RETRY_CONFIG } from './config';
-import type { Connection, AccountInfo, SolanaPubkey } from './types';
+import type { Connection, AccountInfo } from './types';
 import { SolanaError, SolanaErrorCode } from './types';
+import type { SolanaRpcClient } from './rpc';
+import { createSolanaRpcClient } from './rpc';
 
 // ============================================================================
-// Mock Connection Implementation
+// Connection Adapter
 // ============================================================================
 
-class MockConnection implements Connection {
-  constructor(_endpoint: string) {
-    // Endpoint stored for future use
-  }
+class RpcConnectionAdapter implements Connection {
+  constructor(private rpcClient: SolanaRpcClient) {}
 
-  async getAccountInfo(_pubkey: SolanaPubkey): Promise<AccountInfo<Buffer> | null> {
-    // Mock implementation - return null for now
-    return null;
-  }
+  async getAccountInfo(pubkey: string): Promise<AccountInfo<Buffer> | null> {
+    const accountInfo = await this.rpcClient.getAccountInfo(pubkey);
+    if (!accountInfo) return null;
 
-  async getMultipleAccountsInfo(_pubkeys: SolanaPubkey[]): Promise<(AccountInfo<Buffer> | null)[]> {
-    // Mock implementation - return array of nulls
-    return _pubkeys.map(() => null);
-  }
+    // Convert base64 data to Buffer
+    let data: Buffer;
+    if (Array.isArray(accountInfo.data)) {
+      data = Buffer.from(accountInfo.data[0], 'base64');
+    } else {
+      data = Buffer.from(accountInfo.data, 'base64');
+    }
 
-  async getSlot(): Promise<number> {
-    // Mock implementation - return current timestamp as slot
-    return Math.floor(Date.now() / 1000);
-  }
-
-  async getLatestBlockhash(
-    _commitment?: string,
-  ): Promise<{ blockhash: string; lastValidBlockHeight: number }> {
-    // Mock implementation
     return {
-      blockhash: 'mock-blockhash-' + Date.now(),
-      lastValidBlockHeight: Math.floor(Date.now() / 1000) + 100,
+      data,
+      executable: accountInfo.executable,
+      lamports: accountInfo.lamports,
+      owner: accountInfo.owner,
+      rentEpoch: accountInfo.rentEpoch,
     };
   }
 
+  async getMultipleAccountsInfo(pubkeys: string[]): Promise<(AccountInfo<Buffer> | null)[]> {
+    const accounts = await this.rpcClient.getMultipleAccounts(pubkeys);
+    return accounts.map((accountInfo) => {
+      if (!accountInfo) return null;
+
+      let data: Buffer;
+      if (Array.isArray(accountInfo.data)) {
+        data = Buffer.from(accountInfo.data[0], 'base64');
+      } else {
+        data = Buffer.from(accountInfo.data, 'base64');
+      }
+
+      return {
+        data,
+        executable: accountInfo.executable,
+        lamports: accountInfo.lamports,
+        owner: accountInfo.owner,
+        rentEpoch: accountInfo.rentEpoch,
+      };
+    });
+  }
+
+  async getSlot(): Promise<number> {
+    return this.rpcClient.getSlot(SOLANA_CONNECTION_CONFIG.commitment);
+  }
+
+  async getLatestBlockhash(
+    commitment?: string,
+  ): Promise<{ blockhash: string; lastValidBlockHeight: number }> {
+    return this.rpcClient.getLatestBlockhash(commitment);
+  }
+
   async getBlockTime(slot: number): Promise<number | null> {
-    // Mock implementation - return slot as timestamp
-    return slot;
+    return this.rpcClient.getBlockTime(slot);
   }
 }
 
@@ -53,37 +80,56 @@ class MockConnection implements Connection {
 // ============================================================================
 
 class SolanaConnectionManager {
-  private connections: Map<string, Connection> = new Map();
+  private connections: Map<string, RpcConnectionAdapter> = new Map();
+  private rpcClients: Map<string, SolanaRpcClient> = new Map();
   private currentEndpointIndex: Map<string, number> = new Map();
 
   /**
    * Get or create connection
    */
-  getConnection(chain: 'solana' | 'solanaDevnet' = 'solana', customRpcUrl?: string): Connection {
+  getConnection(
+    chain: 'solana' | 'solanaDevnet' = 'solana',
+    customRpcUrl?: string,
+  ): RpcConnectionAdapter {
     const cacheKey = `${chain}:${customRpcUrl || 'default'}`;
 
     if (this.connections.has(cacheKey)) {
       return this.connections.get(cacheKey)!;
     }
 
-    const endpoints = customRpcUrl
-      ? [customRpcUrl]
-      : chain === 'solanaDevnet'
-        ? SOLANA_RPC_ENDPOINTS.devnet
-        : SOLANA_RPC_ENDPOINTS.mainnet;
+    const rpcClient = createSolanaRpcClient(chain, customRpcUrl);
+    const connection = new RpcConnectionAdapter(rpcClient);
 
-    const endpoint = endpoints[0] ?? 'https://api.mainnet-beta.solana.com';
-    const connection = new MockConnection(endpoint);
     this.connections.set(cacheKey, connection);
+    this.rpcClients.set(cacheKey, rpcClient);
     this.currentEndpointIndex.set(cacheKey, 0);
 
     return connection;
   }
 
   /**
+   * Get RPC client
+   */
+  getRpcClient(
+    chain: 'solana' | 'solanaDevnet' = 'solana',
+    customRpcUrl?: string,
+  ): SolanaRpcClient {
+    const cacheKey = `${chain}:${customRpcUrl || 'default'}`;
+
+    if (this.rpcClients.has(cacheKey)) {
+      return this.rpcClients.get(cacheKey)!;
+    }
+
+    const rpcClient = createSolanaRpcClient(chain, customRpcUrl);
+    this.rpcClients.set(cacheKey, rpcClient);
+
+    return rpcClient;
+  }
+
+  /**
    * Rotate to next endpoint on failure
    */
-  rotateEndpoint(chain: 'solana' | 'solanaDevnet', customRpcUrl?: string): Connection {
+  rotateEndpoint(chain: 'solana' | 'solanaDevnet', customRpcUrl?: string): RpcConnectionAdapter {
     const cacheKey = `${chain}:${customRpcUrl || 'default'}`;
     const endpoints = customRpcUrl
       ? [customRpcUrl]
@@ -102,10 +148,13 @@ class SolanaConnectionManager {
 
     // Create new connection with next endpoint
     const nextEndpoint = endpoints[nextIndex] ?? 'https://api.mainnet-beta.solana.com';
-    const connection = new MockConnection(nextEndpoint);
-    this.connections.set(cacheKey, connection);
+    const rpcClient = createSolanaRpcClient(chain, nextEndpoint);
+    const connection = new RpcConnectionAdapter(rpcClient);
 
-    console.log(`[Solana] Rotated to endpoint: ${endpoints[nextIndex]}`);
+    this.connections.set(cacheKey, connection);
+    this.rpcClients.set(cacheKey, rpcClient);
+
+    console.log(`[Solana] Rotated to endpoint: ${nextEndpoint}`);
 
     return connection;
   }
@@ -113,11 +162,14 @@ class SolanaConnectionManager {
   /**
    * Get multiple connections for load balancing
    */
-  getAllConnections(chain: 'solana' | 'solanaDevnet' = 'solana'): Connection[] {
+  getAllConnections(chain: 'solana' | 'solanaDevnet' = 'solana'): RpcConnectionAdapter[] {
     const endpoints =
       chain === 'solanaDevnet' ? SOLANA_RPC_ENDPOINTS.devnet : SOLANA_RPC_ENDPOINTS.mainnet;
 
-    return endpoints.map((endpoint) => new MockConnection(endpoint));
+    return endpoints.map((endpoint) => {
+      const rpcClient = createSolanaRpcClient(chain, endpoint);
+      return new RpcConnectionAdapter(rpcClient);
+    });
   }
 
   /**
@@ -125,6 +177,7 @@ class SolanaConnectionManager {
    */
   closeAll(): void {
     this.connections.clear();
+    this.rpcClients.clear();
     this.currentEndpointIndex.clear();
   }
 }
