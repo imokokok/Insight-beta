@@ -62,7 +62,8 @@ export class AggregationManager {
         prices: (result.prices || []).map((p) => ({
           protocol: String(p.protocol),
           price: p.price,
-          timestamp: typeof p.timestamp === 'string' ? new Date(p.timestamp).getTime() : p.timestamp,
+          timestamp:
+            typeof p.timestamp === 'string' ? new Date(p.timestamp).getTime() : p.timestamp,
         })),
         aggregatedPrice: result.avgPrice || result.medianPrice || 0,
         deviation: result.maxDeviation || 0,
@@ -87,8 +88,14 @@ export class AggregationManager {
       // Broadcast to WebSocket clients
       for (const comparison of results) {
         priceStreamManager.broadcast({
-          type: 'comparison_update',
-          data: comparison,
+          type: 'price_update',
+          data: {
+            symbol: comparison.symbol,
+            protocol: 'insight' as import('@/lib/types/unifiedOracleTypes').OracleProtocol,
+            chain: 'ethereum' as import('@/lib/types/unifiedOracleTypes').SupportedChain,
+            price: comparison.aggregatedPrice,
+            timestamp: new Date().toISOString(),
+          },
         });
       }
     } catch (error) {
