@@ -182,8 +182,8 @@ export default function GovernancePage() {
         <div className="mb-8 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <PageHeader
-              title="UMA Governance"
-              description="Monitor UMA protocol governance proposals and voting"
+              title="Optimistic Oracle Governance"
+              description="Monitor governance proposals and voting for optimistic oracle protocols"
             />
             <div className="flex gap-2">
               <button
@@ -339,28 +339,22 @@ export default function GovernancePage() {
           </div>
 
           <div className="rounded-xl bg-white/5 p-6">
-            <h3 className="mb-4 text-lg font-semibold">About UMA Governance</h3>
+            <h3 className="mb-4 text-lg font-semibold">About Optimistic Oracle Governance</h3>
             <div className="space-y-3 text-gray-400">
               <p>
-                UMA uses a decentralized governance system where UMA token holders can propose and
-                vote on protocol changes.
+                Optimistic oracle protocols use decentralized governance systems where token holders
+                can propose and vote on protocol changes, including dispute resolution parameters,
+                bond requirements, and system upgrades.
               </p>
               <ul className="list-inside list-disc space-y-1">
-                <li>Any UMA holder with sufficient tokens can create proposals</li>
+                <li>Token holders with sufficient stake can create proposals</li>
                 <li>Proposals go through a voting period before execution</li>
                 <li>Successful proposals are queued in the timelock before execution</li>
                 <li>Governance controls protocol parameters and upgrades</li>
               </ul>
               <p className="text-sm">
-                Learn more at{' '}
-                <a
-                  href="https://docs.umaproject.org/governance"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-400 hover:underline"
-                >
-                  docs.umaproject.org
-                </a>
+                Currently showing UMA protocol governance. Support for additional optimistic oracle
+                protocols coming soon.
               </p>
             </div>
           </div>

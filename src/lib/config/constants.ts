@@ -17,6 +17,8 @@ export const SUPPORTED_CHAINS = [
   'base',
   'avalanche',
   'bsc',
+  'solana',
+  'solanaDevnet',
   'local',
 ] as const;
 
@@ -31,6 +33,8 @@ export const CHAIN_ID_MAP: Record<SupportedChain, number> = {
   base: 8453,
   avalanche: 43114,
   bsc: 56,
+  solana: 101,
+  solanaDevnet: 103,
   local: 31337,
 };
 
@@ -43,6 +47,8 @@ export const CHAIN_NAME_MAP: Record<number, SupportedChain> = {
   8453: 'base',
   43114: 'avalanche',
   56: 'bsc',
+  101: 'solana',
+  103: 'solanaDevnet',
   31337: 'local',
 };
 

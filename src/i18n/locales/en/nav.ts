@@ -8,7 +8,7 @@ export const nav = {
   myDisputes: 'My Disputes',
   oracle: 'Oracle',
   protocols: 'Protocols',
-  umaOracle: 'UMA Oracle',
+  optimisticOracle: 'Optimistic Oracle',
   unifiedOracle: 'Unified Oracle',
   watchlist: 'Watchlist',
 };

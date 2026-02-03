@@ -98,7 +98,7 @@ export default function UMADisputeDetailPage() {
       <div className="min-h-screen bg-[#0A0A0F] text-white">
         <div className="container mx-auto px-4 py-8">
           <Link
-            href="/oracle/uma"
+            href="/oracle/optimistic"
             className="mb-8 inline-flex items-center gap-2 text-gray-400 hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
