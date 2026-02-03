@@ -111,15 +111,13 @@ export function calculateQueryComplexity(
   // 计算字段复杂度
   for (const [field, weight] of Object.entries(FIELD_COMPLEXITY_WEIGHTS)) {
     // eslint-disable-next-line security/detect-non-literal-regexp
-    const regex = new RegExp(`\\b${field.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g');
+    const regex = new RegExp(`\\b${field}\\b`, 'g');
     const matches = query.match(regex);
     if (matches) {
       // 列表字段需要乘以 limit
       if (['priceFeeds', 'oracleInstances', 'alerts', 'historicalPrices'].includes(field)) {
         // eslint-disable-next-line security/detect-non-literal-regexp
-        const limitMatch = query.match(
-          new RegExp(`${field.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\([^)]*limit:\\s*(\\d+)`),
-        );
+        const limitMatch = query.match(new RegExp(`${field}\\s*\\([^)]*limit:\\s*(\\d+)`));
         const limit = limitMatch && limitMatch[1] ? parseInt(limitMatch[1], 10) : 10;
         complexity += weight * Math.min(limit, 100); // 限制最大乘数
       } else {
