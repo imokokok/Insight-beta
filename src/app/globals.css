@@ -2,13 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================================
+   CSS Variables - 设计令牌
+   使用 CSS 变量确保整个应用的一致性
+   ============================================================================ */
+
 :root {
+  /* 颜色系统 */
   --background: #fafafa;
-  --foreground: #171717;
+  --foreground: #18181b;
   --card: #ffffff;
-  --card-foreground: #171717;
+  --card-foreground: #18181b;
   --popover: #ffffff;
-  --popover-foreground: #171717;
+  --popover-foreground: #18181b;
   --primary: #8b5cf6;
   --primary-foreground: #ffffff;
   --secondary: #f4f4f5;
@@ -19,12 +25,45 @@
   --accent-foreground: #18181b;
   --destructive: #ef4444;
   --destructive-foreground: #fafafa;
-  --border: #e4e4e7;
+  --border: rgba(139, 92, 246, 0.1);
   --input: #e4e4e7;
   --ring: #8b5cf6;
   --radius: 0.5rem;
+
+  /* 语义化颜色 */
   --success: #22c55e;
+  --success-light: #dcfce7;
+  --success-dark: #15803d;
   --warning: #f59e0b;
+  --warning-light: #fef3c7;
+  --warning-dark: #b45309;
+  --error: #ef4444;
+  --error-light: #fee2e2;
+  --error-dark: #b91c1c;
+  --info: #3b82f6;
+  --info-light: #dbeafe;
+  --info-dark: #1d4ed8;
+
+  /* 玻璃拟态 */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-bg-light: rgba(255, 255, 255, 0.5);
+  --glass-border: rgba(255, 255, 255, 0.6);
+  --glass-shadow: 0 8px 20px -4px rgba(139, 92, 246, 0.1), 0 6px 12px -6px rgba(139, 92, 246, 0.1);
+
+  /* 动画 */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================================================
+   基础样式
+   ============================================================================ */
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 html,
@@ -34,101 +73,486 @@ body {
 }
 
 body {
-  @apply antialiased bg-slate-50 text-gray-900;
-  background-image: 
-    radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
-    radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
-    radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
+  @apply antialiased;
+  background-color: var(--background);
+  color: var(--foreground);
+  font-feature-settings: "rlig" 1, "calt" 1;
 }
 
+/* 背景渐变效果 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -30;
+  background-color: var(--background);
+}
+
+/* 网格渐变背景 */
+.mesh-gradient {
+  position: fixed;
+  inset: 0;
+  z-index: -20;
+  background: 
+    radial-gradient(circle at 0% 0%, hsla(253, 16%, 7%, 0.03) 0, transparent 50%),
+    radial-gradient(circle at 50% 0%, hsla(225, 39%, 30%, 0.03) 0, transparent 50%),
+    radial-gradient(circle at 100% 0%, hsla(339, 49%, 30%, 0.03) 0, transparent 50%);
+  pointer-events: none;
+}
+
+/* 动画背景元素 */
+.animated-blobs {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.animated-blobs > div {
+  position: absolute;
+  border-radius: 50%;
+  mix-blend-mode: multiply;
+  filter: blur(120px);
+  animation: pulse 8s ease-in-out infinite;
+}
+
+.blob-1 {
+  left: -10%;
+  top: -20%;
+  height: 60%;
+  width: 60%;
+  background: linear-gradient(to bottom right, rgba(253, 224, 71, 0.3), rgba(251, 191, 36, 0.3));
+  animation-delay: 0s;
+}
+
+.blob-2 {
+  right: -10%;
+  top: 10%;
+  height: 60%;
+  width: 50%;
+  background: linear-gradient(to bottom right, rgba(103, 232, 249, 0.3), rgba(96, 165, 250, 0.3));
+  animation-delay: 2s;
+}
+
+.blob-3 {
+  bottom: -10%;
+  left: -10%;
+  height: 60%;
+  width: 50%;
+  background: linear-gradient(to bottom right, rgba(244, 114, 182, 0.3), rgba(168, 85, 247, 0.3));
+  animation-delay: 4s;
+}
+
+.blob-4 {
+  bottom: -20%;
+  right: 10%;
+  height: 50%;
+  width: 50%;
+  background: linear-gradient(to bottom right, rgba(163, 230, 53, 0.3), rgba(52, 211, 153, 0.3));
+  animation-delay: 6s;
+}
+
+/* ============================================================================
+   玻璃拟态组件
+   ============================================================================ */
+
 .glass-panel {
-  @apply bg-white/70 backdrop-blur-xl border border-white/60 shadow-xl shadow-indigo-500/5;
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
 }
 
 .glass-card {
-  @apply bg-white/60 backdrop-blur-md border border-white/50 shadow-lg shadow-indigo-500/5 transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1 hover:bg-white/90;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.05), 0 2px 4px -2px rgba(139, 92, 246, 0.05);
+  transition: all var(--transition-normal);
+}
+
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 15px -3px rgba(139, 92, 246, 0.15), 0 4px 6px -4px rgba(139, 92, 246, 0.1);
+  transform: translateY(-2px);
 }
 
 .glass-input {
-  @apply bg-white/50 backdrop-blur-sm border-white/30 focus:bg-white/80 transition-all focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/30;
+  background: var(--glass-bg-light);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: all var(--transition-fast);
 }
 
+.glass-input:focus {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(139, 92, 246, 0.3);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+/* ============================================================================
+   按钮组件
+   ============================================================================ */
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-primary {
+    @apply btn;
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+    box-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.2), 0 2px 4px -2px rgba(139, 92, 246, 0.2);
+  }
+
+  .btn-primary:hover {
+    background-color: #7c3aed;
+    box-shadow: 0 10px 15px -3px rgba(139, 92, 246, 0.3), 0 4px 6px -4px rgba(139, 92, 246, 0.3);
+    transform: translateY(-1px);
+  }
+
+  .btn-primary:active {
+    transform: translateY(0);
+  }
+
+  .btn-primary:focus {
+    --tw-ring-color: var(--primary);
+  }
+
+  .btn-secondary {
+    @apply btn;
+    background-color: var(--secondary);
+    color: var(--secondary-foreground);
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  .btn-secondary:hover {
+    background-color: #e4e4e7;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary:active {
+    transform: translateY(0);
+  }
+
+  .btn-ghost {
+    @apply btn;
+    background-color: transparent;
+    color: #71717a;
+  }
+
+  .btn-ghost:hover {
+    background-color: var(--secondary);
+    color: var(--foreground);
+  }
+
+  .btn-ghost:focus {
+    --tw-ring-color: #71717a;
+  }
+
+  .btn-destructive {
+    @apply btn;
+    background-color: var(--destructive);
+    color: var(--destructive-foreground);
+  }
+
+  .btn-destructive:hover {
+    background-color: var(--error-dark);
+  }
+
+  .btn-destructive:focus {
+    --tw-ring-color: var(--destructive);
+  }
+}
+
+/* ============================================================================
+   卡片组件
+   ============================================================================ */
+
+@layer components {
+  .card {
+    @apply rounded-xl border bg-white shadow-sm transition-all duration-200;
+    border-color: var(--border);
+  }
+
+  .card:hover {
+    box-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.1), 0 2px 4px -2px rgba(139, 92, 246, 0.1);
+  }
+
+  .card-header {
+    @apply flex flex-col space-y-1.5 p-6;
+  }
+
+  .card-title {
+    @apply text-lg font-semibold leading-none tracking-tight;
+    color: #4c1d95;
+  }
+
+  .card-description {
+    @apply text-sm;
+    color: rgba(109, 40, 217, 0.7);
+  }
+
+  .card-content {
+    @apply p-6 pt-0;
+  }
+
+  .card-footer {
+    @apply flex items-center p-6 pt-0;
+  }
+}
+
+/* ============================================================================
+   表单组件
+   ============================================================================ */
+
+@layer components {
+  .input {
+    @apply w-full rounded-lg border px-4 py-2 text-sm transition-all duration-200 focus:outline-none focus:ring-2;
+    border-color: var(--input);
+    background-color: white;
+    color: var(--foreground);
+  }
+
+  .input::placeholder {
+    color: var(--muted-foreground);
+  }
+
+  .input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  }
+
+  .label {
+    @apply text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70;
+  }
+
+  .textarea {
+    @apply input min-h-[80px] resize-y;
+  }
+}
+
+/* ============================================================================
+   徽章组件
+   ============================================================================ */
+
+@layer components {
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors;
+  }
+
+  .badge-success {
+    background-color: var(--success-light);
+    color: var(--success-dark);
+  }
+
+  .badge-warning {
+    background-color: var(--warning-light);
+    color: var(--warning-dark);
+  }
+
+  .badge-error {
+    background-color: var(--error-light);
+    color: var(--error-dark);
+  }
+
+  .badge-info {
+    background-color: var(--info-light);
+    color: var(--info-dark);
+  }
+
+  .badge-outline {
+    @apply border;
+    border-color: var(--border);
+    background-color: transparent;
+  }
+}
+
+/* ============================================================================
+   工具类
+   ============================================================================ */
+
 @layer utilities {
+  /* 滚动条样式 */
   .scrollbar-thin {
     scrollbar-width: thin;
     scrollbar-color: theme('colors.gray.400') transparent;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background-color: theme('colors.gray.400');
     border-radius: 3px;
   }
-  
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: theme('colors.gray.500');
+  }
+
+  /* 文字平衡 */
   .text-balance {
     text-wrap: balance;
   }
-  
+
+  /* 渐变动画 */
   .animate-gradient {
     background-size: 200% 200%;
     animation: gradient 8s ease infinite;
   }
-  
-  @keyframes gradient {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
+
+  /* 隐藏滚动条但保持功能 */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* 文字截断 */
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
   }
 }
 
-@layer components {
-  .btn-primary {
-    @apply inline-flex items-center justify-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-primary-500/20 transition-all duration-200 hover:bg-primary-700 hover:shadow-xl hover:shadow-primary-500/30 hover:-translate-y-0.5 active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
+/* ============================================================================
+   动画关键帧
+   ============================================================================ */
+
+@keyframes gradient {
+  0%, 100% {
+    background-position: 0% 50%;
   }
-  
-  .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-900 shadow-lg shadow-gray-200/50 transition-all duration-200 hover:bg-gray-50 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none border border-gray-200;
+  50% {
+    background-position: 100% 50%;
   }
-  
-  .btn-ghost {
-    @apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-gray-700 transition-all duration-200 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
   }
-  
-  .card {
-    @apply rounded-xl border bg-white shadow-sm transition-all duration-200 hover:shadow-md;
+  to {
+    opacity: 1;
   }
-  
-  .input {
-    @apply w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 placeholder:text-gray-500 transition-all duration-200 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
   }
-  
-  .badge {
-    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  
-  .badge-success {
-    @apply bg-green-100 text-green-800;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
   }
-  
-  .badge-warning {
-    @apply bg-yellow-100 text-yellow-800;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  
-  .badge-error {
-    @apply bg-red-100 text-red-800;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
   }
-  
-  .badge-info {
-    @apply bg-blue-100 text-blue-800;
+  50% {
+    transform: translateY(-10px);
   }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1.2);
+    opacity: 0;
+  }
+}
+
+/* ============================================================================
+   响应式工具
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  .hide-mobile {
+    display: none !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .show-mobile {
+    display: none !important;
+  }
+}
+
+/* ============================================================================
+   焦点样式（无障碍）
+   ============================================================================ */
+
+*:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* 减少动画偏好 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================================
+   选择文本样式
+   ============================================================================ */
+
+::selection {
+  background-color: rgba(139, 92, 246, 0.2);
+  color: var(--foreground);
 }

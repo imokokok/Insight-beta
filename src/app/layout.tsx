@@ -108,25 +108,13 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <LanguageProvider initialLang={lang}>
           <WalletProvider>
             <Toaster />
-            <div className="fixed inset-0 -z-30 bg-[#fafafa]" />
-            <div className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(circle_at_top_left,_var(--tw-gradient-stops))] from-yellow-100/60 via-pink-100/60 to-cyan-100/60 opacity-80" />
-            <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-              <div
-                className="absolute left-[-10%] top-[-20%] h-[60%] w-[60%] animate-pulse rounded-full bg-gradient-to-br from-yellow-300/30 to-orange-300/30 mix-blend-multiply blur-[120px]"
-                style={{ animationDuration: '8s' }}
-              />
-              <div
-                className="absolute right-[-10%] top-[10%] h-[60%] w-[50%] animate-pulse rounded-full bg-gradient-to-br from-cyan-300/30 to-blue-300/30 mix-blend-multiply blur-[120px]"
-                style={{ animationDuration: '10s' }}
-              />
-              <div
-                className="absolute bottom-[-10%] left-[-10%] h-[60%] w-[50%] animate-pulse rounded-full bg-gradient-to-br from-pink-300/30 to-purple-300/30 mix-blend-multiply blur-[120px]"
-                style={{ animationDuration: '12s' }}
-              />
-              <div
-                className="absolute bottom-[-20%] right-[10%] h-[50%] w-[50%] animate-pulse rounded-full bg-gradient-to-br from-lime-300/30 to-emerald-300/30 mix-blend-multiply blur-[120px]"
-                style={{ animationDuration: '9s' }}
-              />
+            {/* 背景层 */}
+            <div className="mesh-gradient" />
+            <div className="animated-blobs">
+              <div className="blob-1" />
+              <div className="blob-2" />
+              <div className="blob-3" />
+              <div className="blob-4" />
             </div>
             <div className="flex min-h-screen">
               <Suspense fallback={<LoadingPlaceholder className="hidden w-64 md:block" />}>
