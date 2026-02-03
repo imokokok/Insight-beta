@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -14,7 +15,7 @@ interface StatsCardProps {
   className?: string;
 }
 
-export function StatsCard({ title, value, icon, trend, loading, className }: StatsCardProps) {
+function StatsCardComponent({ title, value, icon, trend, loading, className }: StatsCardProps) {
   if (loading) {
     return (
       <Card className={className}>
@@ -87,3 +88,5 @@ export function StatsCard({ title, value, icon, trend, loading, className }: Sta
     </Card>
   );
 }
+
+export const StatsCard = memo(StatsCardComponent);

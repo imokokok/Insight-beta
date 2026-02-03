@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { AlertTriangle } from 'lucide-react';
 import { ProtocolBadge } from './ProtocolBadge';
@@ -10,7 +11,7 @@ interface PriceComparisonCardProps {
   className?: string;
 }
 
-export function PriceComparisonCard({ comparison, className }: PriceComparisonCardProps) {
+function PriceComparisonCardComponent({ comparison, className }: PriceComparisonCardProps) {
   return (
     <div className={className}>
       <div className="grid gap-4 md:grid-cols-2">
@@ -106,3 +107,5 @@ function StatItem({ label, value }: { label: string; value: number }) {
     </div>
   );
 }
+
+export const PriceComparisonCard = memo(PriceComparisonCardComponent);

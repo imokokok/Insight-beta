@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { memo, useState } from 'react';
 
 import {
   Activity,
@@ -58,7 +58,7 @@ const PROTOCOL_COLORS: Record<OracleProtocol, string> = {
   dia: 'from-emerald-500 to-green-500',
 };
 
-export function ProtocolCard({
+function ProtocolCardComponent({
   protocol,
   stats,
   isLoading = false,
@@ -283,6 +283,8 @@ export function ProtocolCard({
   );
 }
 
+export const ProtocolCard = memo(ProtocolCardComponent);
+
 // Compact version for lists
 interface ProtocolCardCompactProps {
   protocol: OracleProtocol;
@@ -291,7 +293,7 @@ interface ProtocolCardCompactProps {
   className?: string;
 }
 
-export function ProtocolCardCompact({
+function ProtocolCardCompactComponent({
   protocol,
   isActive = false,
   onClick,
@@ -326,6 +328,8 @@ export function ProtocolCardCompact({
     </div>
   );
 }
+
+export const ProtocolCardCompact = memo(ProtocolCardCompactComponent);
 
 // Helper function
 function formatTimeAgo(timestamp: string): string {

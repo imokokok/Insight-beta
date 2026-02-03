@@ -10,7 +10,7 @@ spec:
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxSurge: 1
+      maxSurge: 25%
       maxUnavailable: 0
   selector:
     matchLabels:
@@ -19,7 +19,23 @@ spec:
     metadata:
       labels:
         app: oracle-monitor-app
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/api/metrics"
     spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - oracle-monitor-app
+                topologyKey: kubernetes.io/hostname
       containers:
         - name: app
           image: oracle-monitor:latest
@@ -45,24 +61,62 @@ spec:
             httpGet:
               path: /api/health
               port: 3000
+              httpHeaders:
+                - name: Accept
+                  value: application/json
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 3
+            successThreshold: 1
           readinessProbe:
             httpGet:
               path: /api/health
               port: 3000
+              httpHeaders:
+                - name: Accept
+                  value: application/json
             initialDelaySeconds: 10
             periodSeconds: 5
             timeoutSeconds: 3
             failureThreshold: 3
+            successThreshold: 1
+          startupProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 30
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1001
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /app/.next/cache
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: cache
+          emptyDir:
+            sizeLimit: 500Mi
+      terminationGracePeriodSeconds: 60
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: oracle-monitor-app
   namespace: oracle-monitor
+  labels:
+    app: oracle-monitor-app
 spec:
   selector:
     app: oracle-monitor-app
@@ -70,10 +124,13 @@ spec:
     - name: http
       port: 3000
       targetPort: 3000
+      protocol: TCP
     - name: websocket
       port: 3001
       targetPort: 3001
+      protocol: TCP
   type: ClusterIP
+  sessionAffinity: None
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -83,8 +140,17 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
     nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      add_header X-Frame-Options "SAMEORIGIN" always;
+      add_header X-Content-Type-Options "nosniff" always;
+      add_header X-XSS-Protection "1; mode=block" always;
 spec:
   ingressClassName: nginx
   tls:
@@ -102,3 +168,14 @@ spec:
                 name: oracle-monitor-app
                 port:
                   number: 3000
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: oracle-monitor-app-pdb
+  namespace: oracle-monitor
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: oracle-monitor-app

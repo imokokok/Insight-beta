@@ -50,6 +50,12 @@ const nextConfig: NextConfig = {
     serverMinification: true,
     webpackBuildWorker: true,
     optimizePackageImports: ['lucide-react', 'recharts', 'date-fns', 'viem'],
+    ppr: true,
+    reactCompiler: true,
+    staleTimes: {
+      dynamic: 30,
+      static: 180,
+    },
     turbo: {
       rules: {
         '*.svg': {
