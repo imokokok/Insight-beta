@@ -32,6 +32,41 @@ updates:
     ignore:
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
+    automerged-dependencies:
+      - dependency-type: "direct"
+      - dependency-type: "indirect"
+      - update-types:
+          - "version-update:semver-patch"
+          - "version-update:semver-minor"
+    package-rules:
+      - match-dependencies:
+          - "@types/node"
+        update-types:
+          - "version-update:semver-major"
+        automerged-dependencies: []
+      - match-update-types:
+          - "security"
+        labels:
+          - "dependencies"
+          - "security"
+          - "automerge"
+        review-status: required
+        commit-message:
+          prefix: "fix(deps)"
+      - match-update-types:
+          - "version-update:semver-patch"
+        labels:
+          - "dependencies"
+          - "patch"
+          - "automerge"
+        ignore-conditions:
+          - dependency-name: "@types/node"
+      - match-update-types:
+          - "version-update:semver-minor"
+        labels:
+          - "dependencies"
+          - "minor"
+        rebase-strategy: auto
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -43,6 +78,15 @@ updates:
     labels:
       - "ci"
       - "dependencies"
+    commit-message:
+      prefix: "chore(ci)"
+    package-rules:
+      - match-update-types:
+          - "version-update:semver-patch"
+        labels:
+          - "ci"
+          - "dependencies"
+          - "automerge"
 
   - package-ecosystem: "docker"
     directory: "/"
@@ -54,3 +98,5 @@ updates:
     labels:
       - "docker"
       - "dependencies"
+    commit-message:
+      prefix: "chore(docker)"

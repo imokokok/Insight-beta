@@ -40,6 +40,11 @@
     "changeset:add": "changeset add",
     "changeset:version": "changeset version",
     "changeset:publish": "changeset publish",
+    "storybook": "storybook dev -p 6006",
+    "storybook:build": "storybook build",
+    "storybook:preview": "storybook preview",
+    "test:chaos": "tsx scripts/chaos-test.ts",
+    "test:chaos:dry-run": "CHAOS_DRY_RUN=true CHAOS_ENABLED=true tsx scripts/chaos-test.ts",
     "prepare": "husky"
   },
   "dependencies": {
@@ -121,7 +126,7 @@
     "eslint-config-next": "15.5.9",
     "eslint-plugin-perfectionist": "4.3.0",
     "eslint-plugin-security": "3.0.1",
-    "ethers": "^6.16.0",
+    "ethers": "^6.17.0",
     "hardhat": "2.28.3",
     "hardhat-gas-reporter": "^2.3.0",
     "husky": "9.1.7",
