@@ -49,11 +49,17 @@ const SERVICE_CONFIG = {
 // 统一服务管理器
 // ============================================================================
 
+/** Sync manager interface for stopping sync services */
+interface SyncManager {
+  stopAllSync?: () => void;
+  stop?: () => void;
+}
+
 export class UnifiedOracleService {
   private isRunning = false;
   private aggregationInterval?: NodeJS.Timeout;
   private healthCheckInterval?: NodeJS.Timeout;
-  private activeSyncManagers: Map<string, unknown> = new Map();
+  private activeSyncManagers: Map<string, SyncManager> = new Map();
   private alertRuleEngine: AlertRuleEngine;
   private alertCheckInterval?: NodeJS.Timeout;
 
@@ -320,11 +326,10 @@ export class UnifiedOracleService {
     // 停止所有活跃的同步管理器
     for (const [instanceId, manager] of this.activeSyncManagers.entries()) {
       try {
-        const syncManager = manager as { stopAllSync?: () => void; stop?: () => void };
-        if (typeof syncManager.stopAllSync === 'function') {
-          syncManager.stopAllSync();
-        } else if (typeof syncManager.stop === 'function') {
-          syncManager.stop();
+        if (typeof manager.stopAllSync === 'function') {
+          manager.stopAllSync();
+        } else if (typeof manager.stop === 'function') {
+          manager.stop();
         }
         logger.debug(`Sync stopped for instance: ${instanceId}`);
       } catch (error) {

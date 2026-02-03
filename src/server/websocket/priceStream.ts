@@ -1,10 +1,10 @@
 /**
  * WebSocket Price Stream Service
  *
- * 实时价格数据流服务
- * - 支持多协议实时价格推送
- * - 订阅特定交易对
- * - 跨协议价格对比流
+ * Real-time price data streaming service
+ * - Supports multi-protocol real-time price push
+ * - Subscribe to specific trading pairs
+ * - Cross-protocol price comparison stream
  */
 
 import { logger } from '@/lib/logger';
@@ -16,12 +16,21 @@ import type {
 } from '@/lib/types/unifiedOracleTypes';
 
 // ============================================================================
-// 类型定义
+// Type Definitions
 // ============================================================================
+
+/**
+ * Extended WebSocket interface with additional methods
+ */
+interface ExtendedWebSocket extends WebSocket {
+  terminate?(): void;
+  ping?(): void;
+  onpong?: (() => void) | null;
+}
 
 type WebSocketClient = {
   id: string;
-  ws: WebSocket;
+  ws: ExtendedWebSocket;
   subscriptions: Set<string>;
   isAlive: boolean;
   connectedAt: Date;
@@ -52,31 +61,31 @@ type PriceUpdateData = {
 };
 
 // ============================================================================
-// 配置
+// Configuration
 // ============================================================================
 
 const STREAM_CONFIG = {
-  // 心跳间隔（毫秒）
+  /** Heartbeat interval in milliseconds */
   heartbeatInterval: 30000,
 
-  // 价格推送间隔（毫秒）
+  /** Price push interval in milliseconds */
   pricePushInterval: 5000,
 
-  // 对比数据推送间隔（毫秒）
+  /** Comparison data push interval in milliseconds */
   comparisonInterval: 10000,
 
-  // 最大客户端连接数
+  /** Maximum number of client connections */
   maxClients: 1000,
 
-  // 每个客户端最大订阅数
+  /** Maximum subscriptions per client */
   maxSubscriptionsPerClient: 50,
 
-  // 数据新鲜度阈值（秒）
+  /** Data freshness threshold in seconds */
   dataFreshnessThreshold: 60,
-};
+} as const;
 
 // ============================================================================
-// 价格流管理器
+// Price Stream Manager
 // ============================================================================
 
 export class PriceStreamManager {
@@ -89,7 +98,7 @@ export class PriceStreamManager {
   private isRunning = false;
 
   /**
-   * 启动价格流服务
+   * Start the price stream service
    */
   start(): void {
     if (this.isRunning) {
@@ -100,17 +109,17 @@ export class PriceStreamManager {
     logger.info('Starting price stream manager');
     this.isRunning = true;
 
-    // 启动心跳检测
+    // Start heartbeat check
     this.heartbeatInterval = setInterval(() => {
       this.checkClientHealth();
     }, STREAM_CONFIG.heartbeatInterval);
 
-    // 启动价格推送
+    // Start price push
     this.pricePushInterval = setInterval(() => {
       this.pushPriceUpdates();
     }, STREAM_CONFIG.pricePushInterval);
 
-    // 启动对比数据推送
+    // Start comparison data push
     this.comparisonInterval = setInterval(() => {
       this.pushComparisonUpdates();
     }, STREAM_CONFIG.comparisonInterval);
@@ -119,7 +128,7 @@ export class PriceStreamManager {
   }
 
   /**
-   * 停止价格流服务
+   * Stop the price stream service
    */
   stop(): void {
     if (!this.isRunning) return;
@@ -137,7 +146,7 @@ export class PriceStreamManager {
       clearInterval(this.comparisonInterval);
     }
 
-    // 关闭所有客户端连接
+    // Close all client connections
     for (const client of this.clients.values()) {
       client.ws.close();
     }
@@ -148,9 +157,9 @@ export class PriceStreamManager {
   }
 
   /**
-   * 添加客户端
+   * Add a client
    */
-  addClient(id: string, ws: WebSocket): void {
+  addClient(id: string, ws: ExtendedWebSocket): void {
     if (this.clients.size >= STREAM_CONFIG.maxClients) {
       logger.warn('Max clients reached, rejecting new connection');
       ws.close(1013, 'Server capacity exceeded');
@@ -167,23 +176,23 @@ export class PriceStreamManager {
 
     this.clients.set(id, client);
 
-    // 设置消息处理器
+    // Set message handler
     ws.onmessage = (event) => {
       this.handleMessage(id, event.data as string);
     };
 
-    // 设置关闭处理器
+    // Set close handler
     ws.onclose = () => {
       this.removeClient(id);
     };
 
-    // 设置错误处理器
+    // Set error handler
     ws.onerror = (error) => {
       logger.error(`WebSocket error for client ${id}`, { error });
     };
 
-    // 设置 pong 处理器 (使用类型断言)
-    (ws as unknown as { onpong: (() => void) | null }).onpong = () => {
+    // Set pong handler
+    ws.onpong = () => {
       const client = this.clients.get(id);
       if (client) {
         client.isAlive = true;
@@ -196,13 +205,13 @@ export class PriceStreamManager {
   }
 
   /**
-   * 移除客户端
+   * Remove a client
    */
   removeClient(id: string): void {
     const client = this.clients.get(id);
     if (!client) return;
 
-    // 取消所有订阅
+    // Unsubscribe from all symbols
     for (const symbol of client.subscriptions) {
       this.unsubscribeFromSymbol(id, symbol);
     }
@@ -214,7 +223,7 @@ export class PriceStreamManager {
   }
 
   /**
-   * 处理客户端消息
+   * Handle client messages
    */
   private handleMessage(clientId: string, data: string): void {
     try {
@@ -258,13 +267,13 @@ export class PriceStreamManager {
   }
 
   /**
-   * 处理订阅请求
+   * Handle subscription request
    */
   private handleSubscribe(clientId: string, symbols: string[], chain?: SupportedChain): void {
     const client = this.clients.get(clientId);
     if (!client) return;
 
-    // 检查订阅数量限制
+    // Check subscription limit
     if (client.subscriptions.size + symbols.length > STREAM_CONFIG.maxSubscriptionsPerClient) {
       this.sendToClient(clientId, {
         type: 'error',
@@ -278,7 +287,7 @@ export class PriceStreamManager {
 
       client.subscriptions.add(subscriptionKey);
 
-      // 添加到全局订阅映射
+      // Add to global subscription mapping
       if (!this.symbolSubscriptions.has(subscriptionKey)) {
         this.symbolSubscriptions.set(subscriptionKey, new Set());
       }
@@ -290,7 +299,7 @@ export class PriceStreamManager {
 
     this.sendToClient(clientId, { type: 'subscribed', symbols });
 
-    // 立即推送一次当前数据
+    // Push current data immediately
     this.pushCurrentData(clientId, symbols, chain);
 
     logger.debug(`Client ${clientId} subscribed to ${symbols.join(', ')}`, {
@@ -299,7 +308,7 @@ export class PriceStreamManager {
   }
 
   /**
-   * 处理取消订阅请求
+   * Handle unsubscribe request
    */
   private handleUnsubscribe(clientId: string, symbols: string[]): void {
     const client = this.clients.get(clientId);
@@ -316,7 +325,7 @@ export class PriceStreamManager {
   }
 
   /**
-   * 取消订阅特定交易对
+   * Unsubscribe from a specific symbol
    */
   private unsubscribeFromSymbol(clientId: string, symbol: string): void {
     const subscribers = this.symbolSubscriptions.get(symbol);
@@ -329,7 +338,7 @@ export class PriceStreamManager {
   }
 
   /**
-   * 处理获取对比数据请求
+   * Handle get comparison data request
    */
   private async handleGetComparison(
     clientId: string,
@@ -362,7 +371,7 @@ export class PriceStreamManager {
   }
 
   /**
-   * 推送当前数据给新订阅的客户端
+   * Push current data to newly subscribed client
    */
   private async pushCurrentData(
     clientId: string,
@@ -370,7 +379,7 @@ export class PriceStreamManager {
     chain?: SupportedChain,
   ): Promise<void> {
     for (const symbol of symbols) {
-      // 推送最新价格
+      // Push latest price
       const lastPrice = this.lastPrices.get(symbol);
       if (lastPrice) {
         this.sendToClient(clientId, {
@@ -379,7 +388,7 @@ export class PriceStreamManager {
         });
       }
 
-      // 推送对比数据
+      // Push comparison data
       try {
         const comparison = await priceAggregationEngine.aggregatePrices(symbol, chain);
         if (comparison) {
@@ -397,52 +406,52 @@ export class PriceStreamManager {
   }
 
   /**
-   * 检查客户端健康状态
+   * Check client health status
    */
   private checkClientHealth(): void {
     for (const [clientId, client] of this.clients.entries()) {
       if (!client.isAlive) {
         logger.debug(`Client ${clientId} is not alive, terminating connection`);
-        // 使用类型断言访问 terminate 方法
-        (client.ws as unknown as { terminate(): void }).terminate();
+        // Use optional chaining for terminate method
+        client.ws.terminate?.();
         this.removeClient(clientId);
         continue;
       }
 
       client.isAlive = false;
-      // 使用类型断言访问 ping 方法
-      (client.ws as unknown as { ping(): void }).ping();
+      // Use optional chaining for ping method
+      client.ws.ping?.();
     }
   }
 
   /**
-   * 推送价格更新
+   * Push price updates
    */
   private async pushPriceUpdates(): Promise<void> {
     if (this.symbolSubscriptions.size === 0) return;
 
     try {
-      // 获取所有订阅的交易对的最新价格
+      // Get latest prices for all subscribed symbols
       const symbols = Array.from(this.symbolSubscriptions.keys());
 
       for (const symbol of symbols) {
         const subscribers = this.symbolSubscriptions.get(symbol);
         if (!subscribers || subscribers.size === 0) continue;
 
-        // 获取最新价格数据
+        // Get latest price data
         const priceData = await this.fetchLatestPrice(symbol);
         if (!priceData) continue;
 
-        // 检查价格是否有变化
+        // Check if price has changed
         const lastPrice = this.lastPrices.get(symbol);
         if (lastPrice && lastPrice.price === priceData.price) {
-          continue; // 价格未变化，跳过
+          continue; // Price unchanged, skip
         }
 
-        // 更新缓存
+        // Update cache
         this.lastPrices.set(symbol, priceData);
 
-        // 推送给所有订阅者
+        // Push to all subscribers
         for (const clientId of subscribers) {
           this.sendToClient(clientId, {
             type: 'price_update',
@@ -458,7 +467,7 @@ export class PriceStreamManager {
   }
 
   /**
-   * 推送对比数据更新
+   * Push comparison data updates
    */
   private async pushComparisonUpdates(): Promise<void> {
     if (this.symbolSubscriptions.size === 0) return;
@@ -470,11 +479,11 @@ export class PriceStreamManager {
         const subscribers = this.symbolSubscriptions.get(symbol);
         if (!subscribers || subscribers.size === 0) continue;
 
-        // 获取对比数据
+        // Get comparison data
         const comparison = await priceAggregationEngine.aggregatePrices(symbol);
         if (!comparison) continue;
 
-        // 推送给所有订阅者
+        // Push to all subscribers
         for (const clientId of subscribers) {
           this.sendToClient(clientId, {
             type: 'comparison_update',
@@ -490,11 +499,11 @@ export class PriceStreamManager {
   }
 
   /**
-   * 获取最新价格
+   * Get latest price
    */
   private async fetchLatestPrice(symbol: string): Promise<PriceUpdateData | null> {
     try {
-      // 从数据库获取最新价格
+      // Get latest price from database
       const { query } = await import('@/server/db');
       const result = await query(
         `SELECT 
@@ -533,7 +542,7 @@ export class PriceStreamManager {
   }
 
   /**
-   * 发送消息给客户端
+   * Send message to client
    */
   private sendToClient(clientId: string, message: PriceStreamResponse): void {
     const client = this.clients.get(clientId);
@@ -549,7 +558,7 @@ export class PriceStreamManager {
   }
 
   /**
-   * 广播消息给所有客户端
+   * Broadcast message to all clients
    */
   broadcast(message: PriceStreamResponse): void {
     for (const clientId of this.clients.keys()) {
@@ -558,7 +567,7 @@ export class PriceStreamManager {
   }
 
   /**
-   * 获取统计信息
+   * Get statistics
    */
   getStats(): {
     totalClients: number;
@@ -579,13 +588,13 @@ export class PriceStreamManager {
 }
 
 // ============================================================================
-// 单例导出
+// Singleton Export
 // ============================================================================
 
 export const priceStreamManager = new PriceStreamManager();
 
 // ============================================================================
-// 便捷函数
+// Convenience Functions
 // ============================================================================
 
 export function startPriceStream(): void {
@@ -596,10 +605,13 @@ export function stopPriceStream(): void {
   priceStreamManager.stop();
 }
 
-export function addStreamClient(id: string, ws: WebSocket): void {
+export function addStreamClient(id: string, ws: ExtendedWebSocket): void {
   priceStreamManager.addClient(id, ws);
 }
 
 export function getStreamStats(): ReturnType<typeof priceStreamManager.getStats> {
   return priceStreamManager.getStats();
 }
+
+// Re-export ExtendedWebSocket type for consumers
+export type { ExtendedWebSocket };
