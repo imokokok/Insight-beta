@@ -70,7 +70,11 @@ describe('HealthCheckManager', () => {
       const { query } = await import('@/server/db');
       vi.mocked(query).mockResolvedValueOnce({
         rows: [{ instance_id: 'instance-1', status: 'error', consecutive_failures: 5 }],
-      });
+        command: 'SELECT',
+        rowCount: 1,
+        oid: 0,
+        fields: [],
+      } as unknown as import('pg').QueryResult);
 
       const result = await manager.performHealthCheck();
 

@@ -19,7 +19,7 @@ export function isRedisAvailable(): boolean {
 /**
  * Get or create Redis client
  */
-async function getRedisClient(): Promise<RedisClientType | null> {
+export async function getRedisClient(): Promise<RedisClientType | null> {
   if (!isRedisAvailable()) return null;
 
   if (redisClient) return redisClient;

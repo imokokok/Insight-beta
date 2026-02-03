@@ -86,7 +86,10 @@ describe('AggregationManager', () => {
       const { priceAggregationEngine } = await import('../../priceAggregationService');
       expect(priceAggregationEngine.aggregateMultipleSymbols).toHaveBeenCalledWith(symbols);
       expect(results).toHaveLength(1);
-      expect(results[0].symbol).toBe('ETH/USD');
+      const firstResult = results[0];
+      if (firstResult) {
+        expect(firstResult.symbol).toBe('ETH/USD');
+      }
     });
 
     it('should use default symbols when not provided', async () => {

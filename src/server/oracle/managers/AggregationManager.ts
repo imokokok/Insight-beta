@@ -59,9 +59,13 @@ export class AggregationManager {
 
       return results.map((result) => ({
         symbol: result.symbol,
-        prices: result.prices || [],
-        aggregatedPrice: result.aggregatedPrice,
-        deviation: result.deviation,
+        prices: (result.prices || []).map((p) => ({
+          protocol: String(p.protocol),
+          price: p.price,
+          timestamp: typeof p.timestamp === 'string' ? new Date(p.timestamp).getTime() : p.timestamp,
+        })),
+        aggregatedPrice: result.avgPrice || result.medianPrice || 0,
+        deviation: result.maxDeviation || 0,
       }));
     } catch (error) {
       logger.error('Price aggregation failed', {

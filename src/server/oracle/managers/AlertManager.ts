@@ -6,7 +6,7 @@
 import { logger } from '@/lib/logger';
 import { query } from '@/server/db';
 import { AlertRuleEngine } from '@/server/alerts/alertRuleEngine';
-import type { AlertContext } from '../types/serviceTypes';
+import type { OracleProtocol, SupportedChain } from '@/lib/types/unifiedOracleTypes';
 
 export class AlertManager {
   private alertRuleEngine: AlertRuleEngine;
@@ -70,12 +70,12 @@ export class AlertManager {
 
       // Evaluate rules for each price
       for (const row of priceData.rows) {
-        const context: AlertContext = {
+        const context = {
           symbol: row.symbol,
           price: parseFloat(row.price),
-          protocol: row.protocol,
-          chain: row.chain,
-          timestamp: row.timestamp,
+          protocol: row.protocol as OracleProtocol,
+          chain: row.chain as SupportedChain,
+          timestamp: new Date(row.timestamp),
         };
 
         await this.alertRuleEngine.evaluateAllRules(context);
