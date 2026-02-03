@@ -41,7 +41,7 @@ describe('InsightOracleSecure', function () {
 
     // Deploy MockERC20
     const MockERC20Factory = await ethers.getContractFactory('MockERC20');
-    token = await MockERC20Factory.deploy('Mock Token', 'MTK');
+    token = (await MockERC20Factory.deploy('Mock Token', 'MTK')) as unknown as MockERC20;
     await token.waitForDeployment();
 
     // Deploy InsightOracleSecure with multisig
@@ -49,11 +49,11 @@ describe('InsightOracleSecure', function () {
     const requiredSignatures = 2;
 
     const InsightOracleSecureFactory = await ethers.getContractFactory('InsightOracleSecure');
-    oracle = await InsightOracleSecureFactory.deploy(
+    oracle = (await InsightOracleSecureFactory.deploy(
       await token.getAddress(),
       initialSigners,
       requiredSignatures
-    );
+    )) as unknown as InsightOracleSecure;
     await oracle.waitForDeployment();
 
     // Mint tokens to test accounts
