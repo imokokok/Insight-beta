@@ -1,11 +1,11 @@
 import type { PriceData } from '@oracle-monitor/shared';
 import { BaseSyncService } from '@oracle-monitor/shared';
 import { Connection, PublicKey } from '@solana/web3.js';
-import { PythHttpClient, getPythProgramKeyForCluster } from '@pythnetwork/client';
+import { PythHttpClient, getPythProgramKeyForCluster, PriceStatus } from '@pythnetwork/client';
 
 interface PythConfig {
   cluster: 'mainnet-beta' | 'devnet' | 'testnet';
-  customPriceIds?: string[];
+  customPriceIds?: Record<string, string>;
 }
 
 // Pyth price feed IDs for common symbols
@@ -35,7 +35,11 @@ export class PythSyncService extends BaseSyncService {
     await super.initialize(config);
 
     // Parse custom config
-    this.pythConfig = (config.customConfig as PythConfig) || { cluster: 'mainnet-beta' };
+    const customConfig = config.customConfig as Record<string, unknown> | undefined;
+    this.pythConfig = {
+      cluster: (customConfig?.cluster as PythConfig['cluster']) || 'mainnet-beta',
+      customPriceIds: customConfig?.customPriceIds as Record<string, string> | undefined,
+    };
 
     // Initialize Solana connection
     this.connection = new Connection(config.rpcUrl, 'confirmed');
@@ -69,20 +73,26 @@ export class PythSyncService extends BaseSyncService {
             continue;
           }
 
-          const priceAccount = pythData.productPrice.get(new PublicKey(priceId));
+          // Use the price account key string to look up in the map
+          const priceAccount = pythData.productPrice.get(priceId);
           if (!priceAccount) {
             this.logger.warn(`Price account not found for ${symbol}`);
             continue;
           }
 
-          // Check if price is valid
-          if (priceAccount.aggregate.priceType === 'unknown') {
-            this.logger.warn(`Invalid price type for ${symbol}`);
+          // Check if price is valid - use status instead of priceType
+          if (priceAccount.status !== PriceStatus.Trading) {
+            this.logger.warn(`Invalid price status for ${symbol}: ${priceAccount.status}`);
             continue;
           }
 
-          const price = priceAccount.aggregate.price;
-          const confidence = priceAccount.aggregate.confidence;
+          const price = priceAccount.price;
+          const confidence = priceAccount.confidence;
+
+          if (price === undefined || confidence === undefined) {
+            this.logger.warn(`Missing price or confidence for ${symbol}`);
+            continue;
+          }
 
           prices.push({
             symbol,
@@ -109,6 +119,7 @@ export class PythSyncService extends BaseSyncService {
   }
 
   private getPriceIds(): Record<string, string> {
-    return { ...PYTH_PRICE_IDS, ...(this.pythConfig.customPriceIds || {}) };
+    const customIds = this.pythConfig.customPriceIds || {};
+    return { ...PYTH_PRICE_IDS, ...customIds };
   }
 }
