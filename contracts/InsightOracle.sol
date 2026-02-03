@@ -3,16 +3,43 @@ pragma solidity 0.8.24;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
-contract InsightOracle is Ownable, Pausable {
+contract InsightOracle is Ownable, Pausable, ReentrancyGuard {
     uint256 public constant MAX_LIVENESS = 30 days;
     uint256 public constant MAX_ACTIVE_ASSERTIONS = 1000;
     uint256 public constant MIN_BOND_AMOUNT = 0.01 ether;
     uint256 public constant MIN_DISPUTE_BOND = 0.01 ether;
 
-    string public constant VERSION = "1.0.0";
+    string public constant VERSION = "1.1.0";
+
+    // Custom errors
+    error InvalidTokenAddress();
+    error BondTooLow(uint256 provided, uint256 minimum);
+    error DisputeBondTooLow(uint256 provided, uint256 minimum);
+    error ProtocolLengthInvalid();
+    error MarketLengthInvalid();
+    error AssertionLengthInvalid();
+    error ReasonTooLong();
+    error RateLimitExceeded();
+    error AssertionAlreadyExists();
+    error AssertionNotFound();
+    error AssertionAlreadyDisputed();
+    error AssertionAlreadyResolved();
+    error LivenessPeriodEnded();
+    error LivenessPeriodNotEnded();
+    error AsserterCannotDispute();
+    error NoRewardsToClaim();
+    error TransferFailed();
+    error VoteAlreadyCast();
+    error NotDisputed();
+    error NoVotesCast();
+    error QuorumNotReached();
+    error InvalidMerkleProof();
+    error MaxLivenessExceeded();
+    error ZeroAddress();
 
     /**
      * @notice 断言创建事件
@@ -147,7 +174,7 @@ contract InsightOracle is Ownable, Pausable {
     bytes32 public governorMerkleRoot;
 
     constructor(address _bondToken) Ownable(msg.sender) {
-        require(_bondToken != address(0), "invalid token");
+        if (_bondToken == address(0)) revert InvalidTokenAddress();
         bondToken = _bondToken;
         defaultBond = 0.1 ether;
         defaultDisputeBond = 0.05 ether;
@@ -155,7 +182,7 @@ contract InsightOracle is Ownable, Pausable {
 
     modifier whenNotPausedAndNotResolved(bytes32 assertionId) {
         require(!paused(), "paused");
-        require(!assertions[assertionId].resolved, "resolved");
+        if (assertions[assertionId].resolved) revert AssertionAlreadyResolved();
         _;
     }
 
@@ -165,15 +192,23 @@ contract InsightOracle is Ownable, Pausable {
         string calldata assertionText,
         uint256 bondAmount
     ) external whenNotPaused returns (bytes32 assertionId) {
-        require(bytes(protocol).length > 0 && bytes(protocol).length <= 100, "protocol length");
-        require(bytes(market).length > 0 && bytes(market).length <= 100, "market length");
-        require(bytes(assertionText).length > 0 && bytes(assertionText).length <= 1000, "assertion length");
+        uint256 protocolLen = bytes(protocol).length;
+        if (protocolLen == 0 || protocolLen > 100) revert ProtocolLengthInvalid();
+
+        uint256 marketLen = bytes(market).length;
+        if (marketLen == 0 || marketLen > 100) revert MarketLengthInvalid();
+
+        uint256 assertionLen = bytes(assertionText).length;
+        if (assertionLen == 0 || assertionLen > 1000) revert AssertionLengthInvalid();
 
         uint256 actualBond = bondAmount == 0 ? defaultBond : bondAmount;
-        require(actualBond >= MIN_BOND_AMOUNT, "bond too low");
-        require(activeAssertions[msg.sender] < MAX_ACTIVE_ASSERTIONS, "rate limit");
+        if (actualBond < MIN_BOND_AMOUNT) revert BondTooLow(actualBond, MIN_BOND_AMOUNT);
 
-        nonce++;
+        if (activeAssertions[msg.sender] >= MAX_ACTIVE_ASSERTIONS) revert RateLimitExceeded();
+
+        unchecked {
+            nonce++;
+        }
 
         assertionId = keccak256(abi.encodePacked(
             nonce,
@@ -186,9 +221,11 @@ contract InsightOracle is Ownable, Pausable {
         ));
 
         AssertionData storage a = assertions[assertionId];
-        require(a.assertedAt == 0, "exists");
+        if (a.assertedAt != 0) revert AssertionAlreadyExists();
 
-        require(IERC20(bondToken).transferFrom(msg.sender, address(this), actualBond), "bond transfer failed");
+        if (!IERC20(bondToken).transferFrom(msg.sender, address(this), actualBond)) {
+            revert TransferFailed();
+        }
 
         a.asserter = msg.sender;
         a.protocol = protocol;
@@ -198,7 +235,9 @@ contract InsightOracle is Ownable, Pausable {
         a.assertedAt = uint64(block.timestamp);
         a.livenessEndsAt = uint64(block.timestamp + 1 days);
 
-        activeAssertions[msg.sender] += 1;
+        unchecked {
+            activeAssertions[msg.sender]++;
+        }
 
         emit AssertionCreated(
             assertionId,
@@ -209,7 +248,7 @@ contract InsightOracle is Ownable, Pausable {
             actualBond,
             a.assertedAt,
             a.livenessEndsAt,
-            bytes32(0)
+            blockhash(block.number - 1)
         );
     }
 
@@ -217,18 +256,21 @@ contract InsightOracle is Ownable, Pausable {
         bytes32 assertionId,
         string calldata reason,
         uint256 bondAmount
-    ) external whenNotPausedAndNotResolved(assertionId) payable {
-        require(bytes(reason).length <= 500, "reason too long");
+    ) external whenNotPausedAndNotResolved(assertionId) {
+        if (bytes(reason).length > 500) revert ReasonTooLong();
 
         AssertionData storage a = assertions[assertionId];
-        require(a.assertedAt != 0, "missing");
-        require(!a.disputed, "already disputed");
-        require(block.timestamp < a.livenessEndsAt, "liveness ended");
-        require(msg.sender != a.asserter, "asserter cannot dispute");
+        if (a.assertedAt == 0) revert AssertionNotFound();
+        if (a.disputed) revert AssertionAlreadyDisputed();
+        if (block.timestamp >= a.livenessEndsAt) revert LivenessPeriodEnded();
+        if (msg.sender == a.asserter) revert AsserterCannotDispute();
 
         uint256 actualBond = bondAmount == 0 ? defaultDisputeBond : bondAmount;
-        require(actualBond >= MIN_DISPUTE_BOND, "dispute bond too low");
-        require(IERC20(bondToken).transferFrom(msg.sender, address(this), actualBond), "dispute bond transfer failed");
+        if (actualBond < MIN_DISPUTE_BOND) revert DisputeBondTooLow(actualBond, MIN_DISPUTE_BOND);
+
+        if (!IERC20(bondToken).transferFrom(msg.sender, address(this), actualBond)) {
+            revert TransferFailed();
+        }
 
         a.disputed = true;
         a.disputeBondAmount = actualBond;
@@ -239,7 +281,7 @@ contract InsightOracle is Ownable, Pausable {
             reason,
             actualBond,
             block.timestamp,
-            bytes32(0)
+            blockhash(block.number - 1)
         );
     }
 
@@ -249,15 +291,20 @@ contract InsightOracle is Ownable, Pausable {
         uint256 tokenAmount,
         bytes32[] calldata merkleProof
     ) external whenNotPausedAndNotResolved(assertionId) {
-        require(tokenAmount > 0, "zero vote weight");
-        require(assertions[assertionId].disputed, "not disputed");
+        if (tokenAmount == 0) revert BondTooLow(0, 1);
+        if (!assertions[assertionId].disputed) revert NotDisputed();
 
-        require(voterInfo[assertionId][msg.sender].tokenAmount == 0, "already voted");
+        if (voterInfo[assertionId][msg.sender].tokenAmount != 0) revert VoteAlreadyCast();
 
-        require(IERC20(bondToken).transferFrom(msg.sender, address(this), tokenAmount), "vote stake transfer failed");
+        if (!IERC20(bondToken).transferFrom(msg.sender, address(this), tokenAmount)) {
+            revert TransferFailed();
+        }
 
-        bytes32 leaf = keccak256(abi.encodePacked(msg.sender, tokenAmount));
-        require(MerkleProof.verify(merkleProof, governorMerkleRoot, leaf), "invalid merkle proof");
+        // Use abi.encode instead of abi.encodePacked to prevent hash collisions
+        bytes32 leaf = keccak256(abi.encode(msg.sender, tokenAmount));
+        if (!MerkleProof.verify(merkleProof, governorMerkleRoot, leaf)) {
+            revert InvalidMerkleProof();
+        }
 
         voterInfo[assertionId][msg.sender] = VoterInfo({
             weight: tokenAmount,
@@ -276,26 +323,36 @@ contract InsightOracle is Ownable, Pausable {
 
     function resolveAssertion(bytes32 assertionId) external whenNotPausedAndNotResolved(assertionId) {
         AssertionData storage a = assertions[assertionId];
-        require(a.assertedAt != 0, "missing");
-        require(block.timestamp >= a.livenessEndsAt, "still in liveness");
+        if (a.assertedAt == 0) revert AssertionNotFound();
+        if (block.timestamp < a.livenessEndsAt) revert LivenessPeriodNotEnded();
 
         if (a.disputed) {
-            require(totalVotesFor[assertionId] > 0 || totalVotesAgainst[assertionId] > 0, "no votes cast");
+            if (totalVotesFor[assertionId] == 0 && totalVotesAgainst[assertionId] == 0) {
+                revert NoVotesCast();
+            }
+
             uint256 totalVotingPower = totalVotesFor[assertionId] + totalVotesAgainst[assertionId];
             uint256 quorumThreshold = (totalVotingPower * 51) / 100;
 
-            require(totalVotesFor[assertionId] >= quorumThreshold, "quorum not reached");
+            if (totalVotesFor[assertionId] < quorumThreshold) revert QuorumNotReached();
 
             a.outcome = true;
 
             uint256 totalPool = a.bondAmount + a.disputeBondAmount;
             uint256 winnerReward = (totalPool * 80) / 100;
 
-            pendingRewards[a.asserter] += winnerReward;
-            pendingRewards[msg.sender] += totalPool - winnerReward;
+            // Prevent zero address reward
+            if (a.asserter != address(0)) {
+                pendingRewards[a.asserter] += winnerReward;
+            }
+            if (msg.sender != address(0)) {
+                pendingRewards[msg.sender] += totalPool - winnerReward;
+            }
         } else {
             a.outcome = true;
-            pendingRewards[a.asserter] += a.bondAmount;
+            if (a.asserter != address(0)) {
+                pendingRewards[a.asserter] += a.bondAmount;
+            }
         }
 
         a.resolved = true;
@@ -310,24 +367,32 @@ contract InsightOracle is Ownable, Pausable {
         emit AssertionResolved(assertionId, a.outcome, block.timestamp);
     }
 
-    function claimRewards() external {
+    function claimRewards() external nonReentrant {
         uint256 reward = pendingRewards[msg.sender];
-        require(reward > 0, "no rewards");
+        if (reward == 0) revert NoRewardsToClaim();
 
         pendingRewards[msg.sender] = 0;
-        require(IERC20(bondToken).transfer(msg.sender, reward), "reward transfer failed");
+
+        if (!IERC20(bondToken).transfer(msg.sender, reward)) {
+            // Restore state if transfer fails
+            pendingRewards[msg.sender] = reward;
+            revert TransferFailed();
+        }
 
         emit RewardClaimed(msg.sender, reward);
     }
 
     function slashAsserter(bytes32 assertionId, string calldata reason) external onlyOwner {
         AssertionData storage a = assertions[assertionId];
-        require(a.resolved, "not resolved");
-        require(!a.outcome, "asserter won");
+        if (!a.resolved) revert AssertionNotFound();
+        if (a.outcome) revert("asserter won");
 
         uint256 slashAmount = (a.bondAmount * 50) / 100;
         uint256 burnAmount = a.bondAmount - slashAmount;
-        pendingRewards[msg.sender] += slashAmount;
+
+        if (msg.sender != address(0)) {
+            pendingRewards[msg.sender] += slashAmount;
+        }
 
         emit SlashingApplied(a.asserter, slashAmount, reason);
         if (burnAmount > 0) {
@@ -344,14 +409,14 @@ contract InsightOracle is Ownable, Pausable {
     }
 
     function setDefaultBond(uint256 _bond) external onlyOwner {
-        require(_bond >= MIN_BOND_AMOUNT, "bond below minimum");
+        if (_bond < MIN_BOND_AMOUNT) revert BondTooLow(_bond, MIN_BOND_AMOUNT);
         uint256 oldBond = defaultBond;
         defaultBond = _bond;
         emit BondChanged(oldBond, _bond);
     }
 
     function setDefaultDisputeBond(uint256 _bond) external onlyOwner {
-        require(_bond >= MIN_DISPUTE_BOND, "dispute bond below minimum");
+        if (_bond < MIN_DISPUTE_BOND) revert DisputeBondTooLow(_bond, MIN_DISPUTE_BOND);
         uint256 oldBond = defaultDisputeBond;
         defaultDisputeBond = _bond;
         emit DisputeBondChanged(oldBond, _bond);
@@ -362,16 +427,18 @@ contract InsightOracle is Ownable, Pausable {
     }
 
     function setBondToken(address _bondToken) external onlyOwner {
-        require(_bondToken != address(0), "invalid token");
+        if (_bondToken == address(0)) revert InvalidTokenAddress();
         bondToken = _bondToken;
     }
 
     function extendLiveness(bytes32 assertionId, uint256 additionalSeconds) external onlyOwner {
         AssertionData storage a = assertions[assertionId];
-        require(a.assertedAt != 0, "missing");
-        require(!a.resolved, "resolved");
-        require(additionalSeconds <= MAX_LIVENESS, "additional time exceeds max liveness");
-        require(block.timestamp + additionalSeconds <= block.timestamp + MAX_LIVENESS, "max liveness would be exceeded");
+        if (a.assertedAt == 0) revert AssertionNotFound();
+        if (a.resolved) revert AssertionAlreadyResolved();
+        if (additionalSeconds > MAX_LIVENESS) revert MaxLivenessExceeded();
+        if (block.timestamp + additionalSeconds > block.timestamp + MAX_LIVENESS) {
+            revert MaxLivenessExceeded();
+        }
 
         a.livenessEndsAt = uint64(block.timestamp + additionalSeconds);
     }
