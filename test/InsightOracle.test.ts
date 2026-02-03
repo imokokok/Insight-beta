@@ -29,12 +29,12 @@ describe('InsightOracle', function () {
 
     // Deploy MockERC20
     const MockERC20Factory = await ethers.getContractFactory('MockERC20');
-    token = await MockERC20Factory.deploy('Mock Token', 'MTK');
+    token = (await MockERC20Factory.deploy('Mock Token', 'MTK')) as unknown as MockERC20;
     await token.waitForDeployment();
 
     // Deploy InsightOracle
     const InsightOracleFactory = await ethers.getContractFactory('InsightOracle');
-    oracle = await InsightOracleFactory.deploy(await token.getAddress());
+    oracle = (await InsightOracleFactory.deploy(await token.getAddress())) as unknown as InsightOracle;
     await oracle.waitForDeployment();
 
     // Mint tokens to test accounts
