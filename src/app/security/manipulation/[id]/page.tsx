@@ -9,7 +9,13 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
@@ -162,7 +168,7 @@ export default function ManipulationDetailPage() {
           <AlertDescription>{error || 'Detection not found'}</AlertDescription>
         </Alert>
         <Button className="mt-4" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
+          <ArrowLeft className="mr-2 h-4 w-4" />
           返回
         </Button>
       </div>
@@ -175,31 +181,31 @@ export default function ManipulationDetailPage() {
 
   return (
     <div className="container mx-auto py-8">
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="outline" size="icon" onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
+            <h1 className="flex items-center gap-2 text-2xl font-bold">
               <Shield className="h-6 w-6" />
               检测详情
             </h1>
-            <p className="text-muted-foreground text-sm">
-              ID: {detection.id}
-            </p>
+            <p className="text-muted-foreground text-sm">ID: {detection.id}</p>
           </div>
         </div>
-        <Badge className={status?.color ?? 'bg-gray-100 text-gray-800'}>{status?.label ?? '未知'}</Badge>
+        <Badge className={status?.color ?? 'bg-gray-100 text-gray-800'}>
+          {status?.label ?? '未知'}
+        </Badge>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="space-y-6 lg:col-span-2">
           <Card className={cn('border-l-4', severity.borderColor.replace('border-', 'border-l-'))}>
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-3">
-                  <div className={cn('p-2 rounded-lg', severity.bgColor)}>
+                  <div className={cn('rounded-lg p-2', severity.bgColor)}>
                     <SeverityIcon className={cn('h-6 w-6', severity.textColor)} />
                   </div>
                   <div>
@@ -210,37 +216,39 @@ export default function ManipulationDetailPage() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <Badge
-                    variant="outline"
-                    className={cn('text-lg px-3 py-1', severity.textColor)}
-                  >
+                  <Badge variant="outline" className={cn('px-3 py-1 text-lg', severity.textColor)}>
                     {(detection.confidenceScore * 100).toFixed(0)}% 置信度
                   </Badge>
-                  <div className="text-sm text-muted-foreground mt-2">
-                    <Clock className="h-3 w-3 inline mr-1" />
+                  <div className="text-muted-foreground mt-2 text-sm">
+                    <Clock className="mr-1 inline h-3 w-3" />
                     {new Date(detection.detectedAt).toLocaleString()}
                   </div>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                 <div className="bg-muted rounded-lg p-3">
-                  <div className="text-xs text-muted-foreground mb-1">严重程度</div>
-                  <div className={cn('font-semibold', severity.textColor)}>
-                    {severity.label}
-                  </div>
+                  <div className="text-muted-foreground mb-1 text-xs">严重程度</div>
+                  <div className={cn('font-semibold', severity.textColor)}>{severity.label}</div>
                 </div>
                 <div className="bg-muted rounded-lg p-3">
-                  <div className="text-xs text-muted-foreground mb-1">价格影响</div>
-                  <div className={cn('font-semibold', detection.priceImpact && detection.priceImpact > 0 ? 'text-green-600' : 'text-red-600')}>
+                  <div className="text-muted-foreground mb-1 text-xs">价格影响</div>
+                  <div
+                    className={cn(
+                      'font-semibold',
+                      detection.priceImpact && detection.priceImpact > 0
+                        ? 'text-green-600'
+                        : 'text-red-600',
+                    )}
+                  >
                     {detection.priceImpact
                       ? `${detection.priceImpact > 0 ? '+' : ''}${detection.priceImpact.toFixed(2)}%`
                       : 'N/A'}
                   </div>
                 </div>
                 <div className="bg-muted rounded-lg p-3">
-                  <div className="text-xs text-muted-foreground mb-1">资金影响</div>
+                  <div className="text-muted-foreground mb-1 text-xs">资金影响</div>
                   <div className="font-semibold">
                     {detection.financialImpactUsd
                       ? `$${detection.financialImpactUsd.toLocaleString()}`
@@ -248,10 +256,8 @@ export default function ManipulationDetailPage() {
                   </div>
                 </div>
                 <div className="bg-muted rounded-lg p-3">
-                  <div className="text-xs text-muted-foreground mb-1">可疑交易</div>
-                  <div className="font-semibold">
-                    {detection.suspiciousTransactions.length} 笔
-                  </div>
+                  <div className="text-muted-foreground mb-1 text-xs">可疑交易</div>
+                  <div className="font-semibold">{detection.suspiciousTransactions.length} 笔</div>
                 </div>
               </div>
             </CardContent>
@@ -274,14 +280,11 @@ export default function ManipulationDetailPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {detection.evidence.map((item, index) => (
-                    <div
-                      key={index}
-                      className="p-4 rounded-lg border bg-muted/50"
-                    >
+                    <div key={index} className="bg-muted/50 rounded-lg border p-4">
                       <div className="flex items-start justify-between">
                         <div>
                           <div className="font-medium">{item.type}</div>
-                          <div className="text-sm text-muted-foreground mt-1">
+                          <div className="text-muted-foreground mt-1 text-sm">
                             {item.description}
                           </div>
                         </div>
@@ -291,7 +294,7 @@ export default function ManipulationDetailPage() {
                       </div>
                       {item.data && (
                         <div className="mt-2 text-xs">
-                          <pre className="bg-muted p-2 rounded overflow-x-auto">
+                          <pre className="bg-muted overflow-x-auto rounded p-2">
                             {JSON.stringify(item.data, null, 2)}
                           </pre>
                         </div>
@@ -314,14 +317,14 @@ export default function ManipulationDetailPage() {
                   {detection.suspiciousTransactions.map((tx, index) => (
                     <div
                       key={index}
-                      className="p-4 rounded-lg border flex items-center justify-between"
+                      className="flex items-center justify-between rounded-lg border p-4"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-muted rounded">
-                          <Hash className="h-4 w-4 text-muted-foreground" />
+                        <div className="bg-muted rounded p-2">
+                          <Hash className="text-muted-foreground h-4 w-4" />
                         </div>
                         <div>
-                          <div className="font-mono text-sm flex items-center gap-2">
+                          <div className="flex items-center gap-2 font-mono text-sm">
                             {tx.hash.slice(0, 20)}...{tx.hash.slice(-8)}
                             <Button
                               variant="ghost"
@@ -336,7 +339,7 @@ export default function ManipulationDetailPage() {
                               )}
                             </Button>
                           </div>
-                          <div className="text-xs text-muted-foreground mt-1">
+                          <div className="text-muted-foreground mt-1 text-xs">
                             {typeLabels[tx.type] || tx.type}
                             {tx.valueUsd && ` · $${tx.valueUsd.toLocaleString()}`}
                           </div>
@@ -346,9 +349,9 @@ export default function ManipulationDetailPage() {
                         href={`https://etherscan.io/tx/${tx.hash}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3"
+                        className="ring-offset-background focus-visible:ring-ring border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex h-9 items-center justify-center rounded-md border px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
                       >
-                        <ExternalLink className="h-3 w-3 mr-1" />
+                        <ExternalLink className="mr-1 h-3 w-3" />
                         查看
                       </a>
                     </div>
@@ -420,30 +423,26 @@ export default function ManipulationDetailPage() {
               >
                 {submitting ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
                     提交中...
                   </>
                 ) : (
                   <>
-                    <CheckCircle className="h-4 w-4 mr-2" />
+                    <CheckCircle className="mr-2 h-4 w-4" />
                     提交审核
                   </>
                 )}
               </Button>
 
               {detection.reviewedBy && (
-                <div className="pt-4 border-t text-sm text-muted-foreground">
+                <div className="text-muted-foreground border-t pt-4 text-sm">
                   <div>审核人: {detection.reviewedBy}</div>
                   <div>
                     审核时间:{' '}
-                    {detection.reviewedAt
-                      ? new Date(detection.reviewedAt).toLocaleString()
-                      : 'N/A'}
+                    {detection.reviewedAt ? new Date(detection.reviewedAt).toLocaleString() : 'N/A'}
                   </div>
                   {detection.notes && (
-                    <div className="mt-2 p-2 bg-muted rounded">
-                      备注: {detection.notes}
-                    </div>
+                    <div className="bg-muted mt-2 rounded p-2">备注: {detection.notes}</div>
                   )}
                 </div>
               )}
@@ -469,7 +468,7 @@ export default function ManipulationDetailPage() {
                   className={cn(
                     detection.priceImpact && detection.priceImpact > 0
                       ? 'text-green-600'
-                      : 'text-red-600'
+                      : 'text-red-600',
                   )}
                 >
                   {detection.priceImpact

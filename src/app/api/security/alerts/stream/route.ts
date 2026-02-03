@@ -24,7 +24,7 @@ interface PostgresChangePayload {
 
 export async function GET() {
   const encoder = new TextEncoder();
-  
+
   const stream = new ReadableStream({
     async start(controller) {
       const sendEvent = (data: unknown) => {
@@ -37,7 +37,7 @@ export async function GET() {
 
       // Set up Supabase realtime subscription
       const supabase = createSupabaseClient();
-      
+
       const subscription = supabase
         .channel('manipulation_detections')
         .on(
@@ -68,7 +68,7 @@ export async function GET() {
             };
 
             sendEvent({ type: 'detection', detection });
-          }
+          },
         )
         .subscribe();
 
@@ -93,7 +93,7 @@ export async function GET() {
     headers: {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
+      Connection: 'keep-alive',
     },
   });
 }

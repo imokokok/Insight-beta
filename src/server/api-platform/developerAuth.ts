@@ -299,11 +299,7 @@ export class APIKeyManager {
   /**
    * 撤销 API Key
    */
-  async revokeAPIKey(
-    keyId: string,
-    reason: string,
-    revokedBy?: string,
-  ): Promise<boolean> {
+  async revokeAPIKey(keyId: string, reason: string, revokedBy?: string): Promise<boolean> {
     try {
       const result = await query(
         `
@@ -395,10 +391,7 @@ export class DeveloperManager {
   ): Promise<Developer | null> {
     try {
       // 检查邮箱是否已存在
-      const existing = await query(
-        `SELECT id FROM developers WHERE email = $1`,
-        [email],
-      );
+      const existing = await query(`SELECT id FROM developers WHERE email = $1`, [email]);
 
       if (existing.rows.length > 0) {
         throw new Error('Email already registered');
@@ -450,10 +443,7 @@ export class DeveloperManager {
    */
   async getDeveloper(developerId: string): Promise<Developer | null> {
     try {
-      const result = await query(
-        `SELECT * FROM developers WHERE id = $1`,
-        [developerId],
-      );
+      const result = await query(`SELECT * FROM developers WHERE id = $1`, [developerId]);
 
       if (result.rows.length === 0) {
         return null;
@@ -489,13 +479,16 @@ export class DeveloperManager {
     try {
       const allowedFields = ['name', 'organization', 'status', 'tier'];
       const fields: string[] = [];
-      const values: (string | number | boolean | Date | null | undefined | string[] | number[])[] = [];
+      const values: (string | number | boolean | Date | null | undefined | string[] | number[])[] =
+        [];
       let paramIndex = 1;
 
       for (const [key, value] of Object.entries(updates)) {
         if (allowedFields.includes(key) && value !== undefined) {
           fields.push(`${key} = $${paramIndex++}`);
-          values.push(value as string | number | boolean | Date | null | undefined | string[] | number[]);
+          values.push(
+            value as string | number | boolean | Date | null | undefined | string[] | number[],
+          );
         }
       }
 
@@ -530,10 +523,7 @@ export class DeveloperManager {
    */
   async recordLogin(developerId: string): Promise<void> {
     try {
-      await query(
-        `UPDATE developers SET last_login_at = NOW() WHERE id = $1`,
-        [developerId],
-      );
+      await query(`UPDATE developers SET last_login_at = NOW() WHERE id = $1`, [developerId]);
     } catch (error) {
       logger.error('Failed to record login', { error, developerId });
     }
@@ -554,7 +544,8 @@ export class DeveloperManager {
   ): Promise<{ developers: Developer[]; total: number }> {
     try {
       let whereClause = '';
-      const values: (string | number | boolean | Date | null | undefined | string[] | number[])[] = [];
+      const values: (string | number | boolean | Date | null | undefined | string[] | number[])[] =
+        [];
       let paramIndex = 1;
 
       if (filters?.status) {

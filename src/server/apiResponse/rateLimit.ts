@@ -17,7 +17,8 @@ const oracleMonitorRate = globalForRate.oracleMonitorRate ?? new Map<string, Rat
 if (process.env.NODE_ENV !== 'production') globalForRate.oracleMonitorRate = oracleMonitorRate;
 
 const rateAlertCooldown = globalForRate.oracleMonitorRateAlerts ?? new Map<string, number>();
-if (process.env.NODE_ENV !== 'production') globalForRate.oracleMonitorRateAlerts = rateAlertCooldown;
+if (process.env.NODE_ENV !== 'production')
+  globalForRate.oracleMonitorRateAlerts = rateAlertCooldown;
 
 let lastRatePruneAtMs = 0;
 

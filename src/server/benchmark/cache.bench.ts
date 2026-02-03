@@ -3,11 +3,11 @@ import { bench, describe } from 'vitest';
 // Simple in-memory cache implementation for benchmarking
 class SimpleCache<T> {
   private cache = new Map<string, { value: T; expiry: number }>();
-  
+
   set(key: string, value: T, ttlMs: number): void {
     this.cache.set(key, { value, expiry: Date.now() + ttlMs });
   }
-  
+
   get(key: string): T | undefined {
     const entry = this.cache.get(key);
     if (!entry) return undefined;
@@ -17,15 +17,15 @@ class SimpleCache<T> {
     }
     return entry.value;
   }
-  
+
   delete(key: string): boolean {
     return this.cache.delete(key);
   }
-  
+
   clear(): void {
     this.cache.clear();
   }
-  
+
   size(): number {
     return this.cache.size;
   }
@@ -34,7 +34,7 @@ class SimpleCache<T> {
 describe('Cache Operations Benchmarks', () => {
   const cache = new SimpleCache<{ price: number; timestamp: number }>();
   const testData = { price: 1234.56, timestamp: Date.now() };
-  
+
   bench('cache set operation', () => {
     cache.set('test-key', testData, 60000);
   });
@@ -72,9 +72,9 @@ describe('Price Cache Benchmarks', () => {
     timestamp: number;
     confidence: number;
   }
-  
+
   const priceCache = new SimpleCache<PriceData>();
-  
+
   bench('cache price update', () => {
     const price: PriceData = {
       pair: 'ETH/USD',
@@ -91,16 +91,20 @@ describe('Price Cache Benchmarks', () => {
 
   bench('batch price cache operations', () => {
     const pairs = ['ETH/USD', 'BTC/USD', 'LINK/USD', 'UNI/USD', 'AAVE/USD'];
-    pairs.forEach(pair => {
-      priceCache.set(pair, {
+    pairs.forEach((pair) => {
+      priceCache.set(
         pair,
-        price: Math.random() * 5000,
-        timestamp: Date.now(),
-        confidence: 0.9 + Math.random() * 0.1,
-      }, 30000);
+        {
+          pair,
+          price: Math.random() * 5000,
+          timestamp: Date.now(),
+          confidence: 0.9 + Math.random() * 0.1,
+        },
+        30000,
+      );
     });
-    
-    pairs.forEach(pair => {
+
+    pairs.forEach((pair) => {
       priceCache.get(pair);
     });
   });

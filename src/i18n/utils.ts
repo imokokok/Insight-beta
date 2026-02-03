@@ -27,24 +27,37 @@ export function interpolate(template: string, values: InterpolationValues): stri
 export function handlePlural(options: PluralOptions, lang: Lang): string {
   const { count, forms } = options;
   const rule = getPluralRule(lang, count);
-  
+
   if ('one' in forms && 'other' in forms && Object.keys(forms).length === 2) {
     return count === 1 ? forms.one : forms.other;
   }
-  
+
   return (forms as Record<PluralRule, string>)[rule] ?? forms.other ?? String(count);
 }
 
-export function formatDate(value: Date | number | string, lang: Lang, options?: Intl.DateTimeFormatOptions): string {
+export function formatDate(
+  value: Date | number | string,
+  lang: Lang,
+  options?: Intl.DateTimeFormatOptions,
+): string {
   const date = value instanceof Date ? value : new Date(value);
   return new Intl.DateTimeFormat(localeMap[lang], options).format(date);
 }
 
-export function formatNumber(value: number, lang: Lang, options?: Intl.NumberFormatOptions): string {
+export function formatNumber(
+  value: number,
+  lang: Lang,
+  options?: Intl.NumberFormatOptions,
+): string {
   return new Intl.NumberFormat(localeMap[lang], options).format(value);
 }
 
-export function formatCurrency(value: number, lang: Lang, currency: string, options?: Intl.NumberFormatOptions): string {
+export function formatCurrency(
+  value: number,
+  lang: Lang,
+  currency: string,
+  options?: Intl.NumberFormatOptions,
+): string {
   return new Intl.NumberFormat(localeMap[lang], {
     style: 'currency',
     currency,
@@ -52,7 +65,12 @@ export function formatCurrency(value: number, lang: Lang, currency: string, opti
   }).format(value);
 }
 
-export function formatRelativeTime(value: number, unit: Intl.RelativeTimeFormatUnit, lang: Lang, options?: Intl.RelativeTimeFormatOptions): string {
+export function formatRelativeTime(
+  value: number,
+  unit: Intl.RelativeTimeFormatUnit,
+  lang: Lang,
+  options?: Intl.RelativeTimeFormatOptions,
+): string {
   return new Intl.RelativeTimeFormat(localeMap[lang], options).format(value, unit);
 }
 

@@ -1,5 +1,13 @@
 import { useState, useCallback, useMemo } from 'react';
-import { AlertCircle, Activity, BarChart2, ChevronRight, ExternalLink, HelpCircle, X } from 'lucide-react';
+import {
+  AlertCircle,
+  Activity,
+  BarChart2,
+  ChevronRight,
+  ExternalLink,
+  HelpCircle,
+  X,
+} from 'lucide-react';
 
 export interface ErrorContext {
   errorId: string;
@@ -62,15 +70,18 @@ class ErrorRecoveryManager {
       {
         errorKind: 'WALLET_NOT_FOUND',
         title: 'Wallet Not Detected',
-        description: 'No cryptocurrency wallet was found in your browser. You need to install a wallet to interact with the blockchain.',
+        description:
+          'No cryptocurrency wallet was found in your browser. You need to install a wallet to interact with the blockchain.',
         severity: 'error',
         estimatedTime: '5-10 minutes',
-        documentationUrl: 'https://docs.oracle-monitor.foresight.build/getting-started/wallet-setup',
+        documentationUrl:
+          'https://docs.oracle-monitor.foresight.build/getting-started/wallet-setup',
         steps: [
           {
             id: 'step1',
             title: 'Choose a Wallet',
-            description: 'Select a wallet that supports your browser and network. MetaMask is recommended for most users.',
+            description:
+              'Select a wallet that supports your browser and network. MetaMask is recommended for most users.',
             action: 'Choose MetaMask, Rabby, or Coinbase Wallet',
           },
           {
@@ -96,21 +107,25 @@ class ErrorRecoveryManager {
       {
         errorKind: 'WRONG_NETWORK',
         title: 'Incorrect Network',
-        description: 'You are connected to the wrong blockchain network. Please switch to a supported network.',
+        description:
+          'You are connected to the wrong blockchain network. Please switch to a supported network.',
         severity: 'warning',
         estimatedTime: '1-2 minutes',
-        documentationUrl: 'https://docs.oracle-monitor.foresight.build/troubleshooting/network-issues',
+        documentationUrl:
+          'https://docs.oracle-monitor.foresight.build/troubleshooting/network-issues',
         steps: [
           {
             id: 'step1',
             title: 'Open Wallet Network Selector',
-            description: 'Click on the network dropdown in your wallet extension (usually top right corner).',
+            description:
+              'Click on the network dropdown in your wallet extension (usually top right corner).',
             action: 'Click network dropdown',
           },
           {
             id: 'step2',
             title: 'Select Correct Network',
-            description: 'Choose the network required by OracleMonitor (Polygon, Arbitrum, or Optimism).',
+            description:
+              'Choose the network required by OracleMonitor (Polygon, Arbitrum, or Optimism).',
             action: 'Select Polygon, Arbitrum, or Optimism',
           },
           {
@@ -124,10 +139,12 @@ class ErrorRecoveryManager {
       {
         errorKind: 'INSUFFICIENT_FUNDS',
         title: 'Insufficient Balance',
-        description: 'You don\'t have enough funds to complete this transaction. You need more native tokens for gas fees.',
+        description:
+          "You don't have enough funds to complete this transaction. You need more native tokens for gas fees.",
         severity: 'error',
         estimatedTime: '5-15 minutes',
-        documentationUrl: 'https://docs.oracle-monitor.foresight.build/troubleshooting/insufficient-funds',
+        documentationUrl:
+          'https://docs.oracle-monitor.foresight.build/troubleshooting/insufficient-funds',
         steps: [
           {
             id: 'step1',
@@ -152,7 +169,8 @@ class ErrorRecoveryManager {
       {
         errorKind: 'USER_REJECTED',
         title: 'Transaction Rejected',
-        description: 'You rejected the transaction in your wallet. You can retry once you\'re ready.',
+        description:
+          "You rejected the transaction in your wallet. You can retry once you're ready.",
         severity: 'info',
         estimatedTime: '1 minute',
         steps: [
@@ -173,10 +191,12 @@ class ErrorRecoveryManager {
       {
         errorKind: 'NETWORK_ERROR',
         title: 'Connection Error',
-        description: 'Unable to connect to the blockchain network. This could be a temporary network issue.',
+        description:
+          'Unable to connect to the blockchain network. This could be a temporary network issue.',
         severity: 'warning',
         estimatedTime: '2-5 minutes',
-        documentationUrl: 'https://docs.oracle-monitor.foresight.build/troubleshooting/connection-issues',
+        documentationUrl:
+          'https://docs.oracle-monitor.foresight.build/troubleshooting/connection-issues',
         steps: [
           {
             id: 'step1',
@@ -187,7 +207,8 @@ class ErrorRecoveryManager {
           {
             id: 'step2',
             title: 'Try Different RPC',
-            description: 'The RPC endpoint might be temporarily unavailable. Try again later or switch networks.',
+            description:
+              'The RPC endpoint might be temporarily unavailable. Try again later or switch networks.',
             action: 'Wait and retry',
           },
           {
@@ -201,10 +222,12 @@ class ErrorRecoveryManager {
       {
         errorKind: 'TRANSACTION_FAILED',
         title: 'Transaction Failed',
-        description: 'The transaction failed to execute. This could be due to various reasons including contract state or timing.',
+        description:
+          'The transaction failed to execute. This could be due to various reasons including contract state or timing.',
         severity: 'error',
         estimatedTime: '5-10 minutes',
-        documentationUrl: 'https://docs.oracle-monitor.foresight.build/troubleshooting/transaction-failed',
+        documentationUrl:
+          'https://docs.oracle-monitor.foresight.build/troubleshooting/transaction-failed',
         steps: [
           {
             id: 'step1',
@@ -221,7 +244,8 @@ class ErrorRecoveryManager {
           {
             id: 'step3',
             title: 'Contact Support',
-            description: 'If the issue persists, contact the support team with the transaction hash.',
+            description:
+              'If the issue persists, contact the support team with the transaction hash.',
             action: 'Open support ticket',
           },
         ],
@@ -232,7 +256,8 @@ class ErrorRecoveryManager {
         description: 'The smart contract address is invalid or not deployed on this network.',
         severity: 'critical',
         estimatedTime: 'Contact support',
-        documentationUrl: 'https://docs.oracle-monitor.foresight.build/troubleshooting/contract-not-found',
+        documentationUrl:
+          'https://docs.oracle-monitor.foresight.build/troubleshooting/contract-not-found',
         steps: [
           {
             id: 'step1',
@@ -257,7 +282,8 @@ class ErrorRecoveryManager {
       {
         errorKind: 'TIMEOUT',
         title: 'Request Timeout',
-        description: 'The request took too long to complete. The server may be overloaded or experiencing issues.',
+        description:
+          'The request took too long to complete. The server may be overloaded or experiencing issues.',
         severity: 'warning',
         estimatedTime: '2-5 minutes',
         steps: [
@@ -276,7 +302,8 @@ class ErrorRecoveryManager {
           {
             id: 'step3',
             title: 'Try Later',
-            description: 'If the issue persists, the server might be under high load. Try again later.',
+            description:
+              'If the issue persists, the server might be under high load. Try again later.',
             action: 'Come back later',
           },
         ],
@@ -298,7 +325,7 @@ class ErrorRecoveryManager {
 
   logError(error: unknown, context: ErrorContext): string {
     const errorId = `ERR-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
+
     this.errorHistory.push({
       context: { ...context, errorId },
       error,
@@ -323,7 +350,7 @@ class ErrorRecoveryManager {
 
     this.errorHistory.forEach((entry) => {
       totalErrors++;
-      
+
       const errorDetail = this.normalizeError(entry.error);
       errorsByKind[errorDetail.kind] = (errorsByKind[errorDetail.kind] || 0) + 1;
 
@@ -363,11 +390,13 @@ class ErrorRecoveryManager {
     const recent = this.errorHistory
       .filter((e) => this.normalizeError(e.error).kind === kind)
       .sort((a, b) => b.timestamp - a.timestamp);
-    
+
     return recent[0]?.timestamp || 0;
   }
 
-  private calculateTrend(errorsByHour: Record<string, number>): 'increasing' | 'stable' | 'decreasing' {
+  private calculateTrend(
+    errorsByHour: Record<string, number>,
+  ): 'increasing' | 'stable' | 'decreasing' {
     const hours = Object.keys(errorsByHour).sort();
     if (hours.length < 2) return 'stable';
 
@@ -376,13 +405,15 @@ class ErrorRecoveryManager {
 
     if (olderHours.length === 0) return 'stable';
 
-    const recentAvg = recentHours.reduce((sum, h) => sum + (errorsByHour[h] || 0), 0) / recentHours.length;
-    const olderAvg = olderHours.reduce((sum, h) => sum + (errorsByHour[h] || 0), 0) / olderHours.length;
+    const recentAvg =
+      recentHours.reduce((sum, h) => sum + (errorsByHour[h] || 0), 0) / recentHours.length;
+    const olderAvg =
+      olderHours.reduce((sum, h) => sum + (errorsByHour[h] || 0), 0) / olderHours.length;
 
     if (olderAvg === 0) return 'stable';
-    
+
     const change = (recentAvg - olderAvg) / olderAvg;
-    
+
     if (change > 0.2) return 'increasing';
     if (change < -0.2) return 'decreasing';
     return 'stable';
@@ -416,7 +447,8 @@ class ErrorRecoveryManager {
     insights.push({
       type: 'tip',
       title: 'Pro Tip',
-      description: 'Most errors can be resolved by checking your network connection and wallet settings first.',
+      description:
+        'Most errors can be resolved by checking your network connection and wallet settings first.',
     });
 
     return insights;
@@ -432,7 +464,12 @@ interface ErrorRecoveryWizardProps {
   onWatchTutorial?: () => void;
 }
 
-export function ErrorRecoveryWizard({ error, onClose, onContactSupport, onWatchTutorial: _onWatchTutorial }: ErrorRecoveryWizardProps) {
+export function ErrorRecoveryWizard({
+  error,
+  onClose,
+  onContactSupport,
+  onWatchTutorial: _onWatchTutorial,
+}: ErrorRecoveryWizardProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
   const [isChecking, setIsChecking] = useState(false);
@@ -452,27 +489,30 @@ export function ErrorRecoveryWizard({ error, onClose, onContactSupport, onWatchT
     return errorRecoveryManager.generateInsights();
   }, []);
 
-  const handleStepComplete = useCallback(async (stepId: string) => {
-    setIsChecking(true);
-    
-    const workflow = errorRecoveryManager.getWorkflow(errorDetail.kind);
-    const step = workflow?.steps.find(s => s.id === stepId);
-    
-    if (step?.check) {
-      const passed = await step.check();
-      if (passed) {
-        setCompletedSteps(prev => new Set([...prev, stepId]));
+  const handleStepComplete = useCallback(
+    async (stepId: string) => {
+      setIsChecking(true);
+
+      const workflow = errorRecoveryManager.getWorkflow(errorDetail.kind);
+      const step = workflow?.steps.find((s) => s.id === stepId);
+
+      if (step?.check) {
+        const passed = await step.check();
+        if (passed) {
+          setCompletedSteps((prev) => new Set([...prev, stepId]));
+        }
+      } else {
+        setCompletedSteps((prev) => new Set([...prev, stepId]));
       }
-    } else {
-      setCompletedSteps(prev => new Set([...prev, stepId]));
-    }
-    
-    setIsChecking(false);
-  }, [errorDetail.kind]);
+
+      setIsChecking(false);
+    },
+    [errorDetail.kind],
+  );
 
   const handleNext = useCallback(() => {
     if (currentStep < (workflow?.steps.length || 0) - 1) {
-      setCurrentStep(prev => prev + 1);
+      setCurrentStep((prev) => prev + 1);
     } else {
       setAllCompleted(true);
     }
@@ -480,7 +520,7 @@ export function ErrorRecoveryWizard({ error, onClose, onContactSupport, onWatchT
 
   const handlePrevious = useCallback(() => {
     if (currentStep > 0) {
-      setCurrentStep(prev => prev - 1);
+      setCurrentStep((prev) => prev - 1);
     }
   }, [currentStep]);
 
@@ -492,21 +532,27 @@ export function ErrorRecoveryWizard({ error, onClose, onContactSupport, onWatchT
 
   if (!workflow) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-        <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
-          <div className="flex items-center gap-3 mb-4">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+          <div className="mb-4 flex items-center gap-3">
             <AlertCircle className="h-6 w-6 text-red-600" />
             <h2 className="text-lg font-semibold">Unknown Error</h2>
           </div>
-          <p className="text-gray-600 mb-4">{errorDetail.userMessage}</p>
-          <p className="text-sm text-gray-500 mb-6">{errorDetail.recoveryAction}</p>
+          <p className="mb-4 text-gray-600">{errorDetail.userMessage}</p>
+          <p className="mb-6 text-sm text-gray-500">{errorDetail.recoveryAction}</p>
           <div className="flex gap-3">
             {onContactSupport && (
-              <button onClick={onContactSupport} className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg">
+              <button
+                onClick={onContactSupport}
+                className="flex-1 rounded-lg bg-purple-600 px-4 py-2 text-white"
+              >
                 Contact Support
               </button>
             )}
-            <button onClick={onClose} className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg">
+            <button
+              onClick={onClose}
+              className="flex-1 rounded-lg bg-gray-100 px-4 py-2 text-gray-700"
+            >
               Close
             </button>
           </div>
@@ -516,24 +562,35 @@ export function ErrorRecoveryWizard({ error, onClose, onContactSupport, onWatchT
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between mb-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white shadow-xl">
+        <div className="border-b border-gray-200 p-6">
+          <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className={`rounded-full p-2 ${
-                workflow.severity === 'critical' ? 'bg-red-100' :
-                workflow.severity === 'error' ? 'bg-red-50' :
-                workflow.severity === 'warning' ? 'bg-amber-50' : 'bg-blue-50'
-              }`}>
+              <div
+                className={`rounded-full p-2 ${
+                  workflow.severity === 'critical'
+                    ? 'bg-red-100'
+                    : workflow.severity === 'error'
+                      ? 'bg-red-50'
+                      : workflow.severity === 'warning'
+                        ? 'bg-amber-50'
+                        : 'bg-blue-50'
+                }`}
+              >
                 <Activity className="h-6 w-6 text-red-600" />
               </div>
               <div>
                 <h2 className="text-lg font-semibold text-gray-900">{workflow.title}</h2>
-                <p className="text-sm text-gray-500">{workflow.estimatedTime} • {workflow.steps.length} steps</p>
+                <p className="text-sm text-gray-500">
+                  {workflow.estimatedTime} • {workflow.steps.length} steps
+                </p>
               </div>
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+            <button
+              onClick={onClose}
+              className="rounded-lg p-2 transition-colors hover:bg-gray-100"
+            >
               <X className="h-5 w-5 text-gray-500" />
             </button>
           </div>
@@ -545,7 +602,7 @@ export function ErrorRecoveryWizard({ error, onClose, onContactSupport, onWatchT
               href={workflow.documentationUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-sm text-purple-600 hover:text-purple-700 mt-3"
+              className="mt-3 inline-flex items-center gap-2 text-sm text-purple-600 hover:text-purple-700"
             >
               <ExternalLink className="h-4 w-4" />
               View Documentation
@@ -553,8 +610,8 @@ export function ErrorRecoveryWizard({ error, onClose, onContactSupport, onWatchT
           )}
         </div>
 
-        <div className="p-4 border-b border-gray-100 bg-gray-50">
-          <div className="flex items-center gap-2 mb-2">
+        <div className="border-b border-gray-100 bg-gray-50 p-4">
+          <div className="mb-2 flex items-center gap-2">
             <BarChart2 className="h-4 w-4 text-gray-500" />
             <span className="text-sm font-medium text-gray-700">Progress</span>
           </div>
@@ -563,9 +620,13 @@ export function ErrorRecoveryWizard({ error, onClose, onContactSupport, onWatchT
               <div
                 key={step.id}
                 className={`h-2 flex-1 rounded-full transition-colors ${
-                  index < currentStep ? 'bg-green-500' :
-                  index === currentStep ? 'bg-purple-500' :
-                  completedSteps.has(step.id) ? 'bg-green-300' : 'bg-gray-200'
+                  index < currentStep
+                    ? 'bg-green-500'
+                    : index === currentStep
+                      ? 'bg-purple-500'
+                      : completedSteps.has(step.id)
+                        ? 'bg-green-300'
+                        : 'bg-gray-200'
                 }`}
               />
             ))}
@@ -574,19 +635,39 @@ export function ErrorRecoveryWizard({ error, onClose, onContactSupport, onWatchT
 
         <div className="p-6">
           {allCompleted ? (
-            <div className="text-center py-8">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <div className="py-8 text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+                <svg
+                  className="h-8 w-8 text-green-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Recovery Steps Completed!</h3>
-              <p className="text-gray-600 mb-6">You&apos;ve completed all the recovery steps. Try the operation again.</p>
-              <div className="flex gap-3 justify-center">
-                <button onClick={handleRetry} className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
+              <h3 className="mb-2 text-lg font-semibold text-gray-900">
+                Recovery Steps Completed!
+              </h3>
+              <p className="mb-6 text-gray-600">
+                You&apos;ve completed all the recovery steps. Try the operation again.
+              </p>
+              <div className="flex justify-center gap-3">
+                <button
+                  onClick={handleRetry}
+                  className="rounded-lg bg-gray-100 px-6 py-2 text-gray-700 hover:bg-gray-200"
+                >
                   Start Over
                 </button>
-                <button onClick={onClose} className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                <button
+                  onClick={onClose}
+                  className="rounded-lg bg-purple-600 px-6 py-2 text-white hover:bg-purple-700"
+                >
                   Done
                 </button>
               </div>
@@ -594,20 +675,24 @@ export function ErrorRecoveryWizard({ error, onClose, onContactSupport, onWatchT
           ) : (
             <>
               <div className="mb-6">
-                <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-                  <span>Step {currentStep + 1} of {workflow.steps.length}</span>
+                <div className="mb-2 flex items-center gap-2 text-sm text-gray-500">
+                  <span>
+                    Step {currentStep + 1} of {workflow.steps.length}
+                  </span>
                   <ChevronRight className="h-4 w-4" />
-                  <span className="font-medium text-gray-700">{workflow.steps[currentStep]?.title || 'Current Step'}</span>
+                  <span className="font-medium text-gray-700">
+                    {workflow.steps[currentStep]?.title || 'Current Step'}
+                  </span>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                <h3 className="mb-2 text-lg font-semibold text-gray-900">
                   {workflow.steps[currentStep]?.title || 'Current Step'}
                 </h3>
-                <p className="text-gray-600 mb-4">
+                <p className="mb-4 text-gray-600">
                   {workflow.steps[currentStep]?.description || ''}
                 </p>
                 {workflow.steps[currentStep]?.action && (
-                  <div className="p-3 bg-purple-50 rounded-lg">
-                    <p className="text-sm text-purple-700 font-medium">
+                  <div className="rounded-lg bg-purple-50 p-3">
+                    <p className="text-sm font-medium text-purple-700">
                       💡 {workflow.steps[currentStep]?.action || ''}
                     </p>
                   </div>
@@ -618,7 +703,7 @@ export function ErrorRecoveryWizard({ error, onClose, onContactSupport, onWatchT
                 <button
                   onClick={handlePrevious}
                   disabled={currentStep === 0}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="rounded-lg bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Previous
                 </button>
@@ -626,20 +711,25 @@ export function ErrorRecoveryWizard({ error, onClose, onContactSupport, onWatchT
                 {workflow.steps[currentStep]?.check && (
                   <button
                     onClick={() => handleStepComplete(workflow.steps[currentStep]?.id || '')}
-                    disabled={isChecking || completedSteps.has(workflow.steps[currentStep]?.id || '')}
-                    className={`px-4 py-2 rounded-lg transition-colors ${
+                    disabled={
+                      isChecking || completedSteps.has(workflow.steps[currentStep]?.id || '')
+                    }
+                    className={`rounded-lg px-4 py-2 transition-colors ${
                       completedSteps.has(workflow.steps[currentStep]?.id || '')
                         ? 'bg-green-100 text-green-700'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
-                    {isChecking ? 'Checking...' :
-                     completedSteps.has(workflow.steps[currentStep]?.id || '') ? '✓ Completed' : 'Check Status'}
+                    {isChecking
+                      ? 'Checking...'
+                      : completedSteps.has(workflow.steps[currentStep]?.id || '')
+                        ? '✓ Completed'
+                        : 'Check Status'}
                   </button>
                 )}
                 <button
                   onClick={handleNext}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                  className="rounded-lg bg-purple-600 px-4 py-2 text-white hover:bg-purple-700"
                 >
                   {currentStep === workflow.steps.length - 1 ? 'Complete' : 'Next'}
                 </button>
@@ -649,24 +739,24 @@ export function ErrorRecoveryWizard({ error, onClose, onContactSupport, onWatchT
         </div>
 
         {insights.length > 0 && (
-          <div className="p-4 bg-gray-50 border-t border-gray-200">
-            <h4 className="text-sm font-medium text-gray-700 mb-3">💡 Insights</h4>
+          <div className="border-t border-gray-200 bg-gray-50 p-4">
+            <h4 className="mb-3 text-sm font-medium text-gray-700">💡 Insights</h4>
             <div className="space-y-2">
               {insights.slice(0, 2).map((insight, index) => (
                 <div
                   key={index}
-                  className={`p-3 rounded-lg ${
-                    insight.type === 'warning' ? 'bg-amber-50 text-amber-800' :
-                    insight.type === 'tip' ? 'bg-blue-50 text-blue-800' :
-                    'bg-green-50 text-green-800'
+                  className={`rounded-lg p-3 ${
+                    insight.type === 'warning'
+                      ? 'bg-amber-50 text-amber-800'
+                      : insight.type === 'tip'
+                        ? 'bg-blue-50 text-blue-800'
+                        : 'bg-green-50 text-green-800'
                   }`}
                 >
                   <p className="text-sm font-medium">{insight.title}</p>
-                  <p className="text-xs mt-1 opacity-80">{insight.description}</p>
+                  <p className="mt-1 text-xs opacity-80">{insight.description}</p>
                   {insight.action && (
-                    <button className="text-xs font-medium mt-2 underline">
-                      {insight.action}
-                    </button>
+                    <button className="mt-2 text-xs font-medium underline">{insight.action}</button>
                   )}
                 </div>
               ))}
@@ -688,40 +778,53 @@ export function ErrorDashboard({ onErrorClick }: ErrorDashboardProps) {
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'critical': return 'bg-red-100 text-red-700 border-red-200';
-      case 'error': return 'bg-red-50 text-red-700 border-red-200';
-      case 'warning': return 'bg-amber-50 text-amber-700 border-amber-200';
-      default: return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'critical':
+        return 'bg-red-100 text-red-700 border-red-200';
+      case 'error':
+        return 'bg-red-50 text-red-700 border-red-200';
+      case 'warning':
+        return 'bg-amber-50 text-amber-700 border-amber-200';
+      default:
+        return 'bg-blue-50 text-blue-700 border-blue-200';
     }
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="rounded-xl border border-gray-200 bg-white p-6">
+      <div className="mb-6 flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900">Error Analytics</h3>
-        <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${
-          stats.trend === 'increasing' ? 'bg-red-100 text-red-700' :
-          stats.trend === 'decreasing' ? 'bg-green-100 text-green-700' :
-          'bg-gray-100 text-gray-700'
-        }`}>
+        <div
+          className={`flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium ${
+            stats.trend === 'increasing'
+              ? 'bg-red-100 text-red-700'
+              : stats.trend === 'decreasing'
+                ? 'bg-green-100 text-green-700'
+                : 'bg-gray-100 text-gray-700'
+          }`}
+        >
           <Activity className="h-4 w-4" />
-          {stats.trend === 'increasing' ? 'Trending Up' :
-           stats.trend === 'decreasing' ? 'Trending Down' : 'Stable'}
+          {stats.trend === 'increasing'
+            ? 'Trending Up'
+            : stats.trend === 'decreasing'
+              ? 'Trending Down'
+              : 'Stable'}
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="p-4 bg-gray-50 rounded-lg">
+      <div className="mb-6 grid grid-cols-2 gap-4">
+        <div className="rounded-lg bg-gray-50 p-4">
           <p className="text-sm text-gray-500">Total Errors (24h)</p>
           <p className="text-2xl font-bold text-gray-900">{stats.totalErrors}</p>
         </div>
-        <div className="p-4 bg-gray-50 rounded-lg">
+        <div className="rounded-lg bg-gray-50 p-4">
           <p className="text-sm text-gray-500">Unique Error Types</p>
-          <p className="text-2xl font-bold text-gray-900">{Object.keys(stats.errorsByKind).length}</p>
+          <p className="text-2xl font-bold text-gray-900">
+            {Object.keys(stats.errorsByKind).length}
+          </p>
         </div>
       </div>
 
-      <div className="space-y-3 mb-6">
+      <div className="mb-6 space-y-3">
         <h4 className="text-sm font-medium text-gray-700">Top Errors</h4>
         {stats.topErrors.map(({ kind, count }) => {
           const workflow = errorRecoveryManager.getWorkflow(kind);
@@ -729,11 +832,13 @@ export function ErrorDashboard({ onErrorClick }: ErrorDashboardProps) {
             <div
               key={kind}
               onClick={() => onErrorClick?.(kind)}
-              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+              className="flex cursor-pointer items-center justify-between rounded-lg bg-gray-50 p-3 transition-colors hover:bg-gray-100"
             >
               <div className="flex items-center gap-3">
                 {workflow && (
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getSeverityColor(workflow.severity)}`}>
+                  <span
+                    className={`rounded-full border px-2 py-1 text-xs font-medium ${getSeverityColor(workflow.severity)}`}
+                  >
                     {workflow.severity}
                   </span>
                 )}
@@ -751,7 +856,7 @@ export function ErrorDashboard({ onErrorClick }: ErrorDashboardProps) {
           <a
             key={workflow.errorKind}
             href={`#recover-${workflow.errorKind}`}
-            className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-colors"
+            className="flex items-center justify-between rounded-lg border border-gray-200 p-3 transition-colors hover:border-purple-300 hover:bg-purple-50"
           >
             <div className="flex items-center gap-3">
               <HelpCircle className="h-4 w-4 text-gray-400" />

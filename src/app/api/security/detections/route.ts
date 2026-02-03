@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createSupabaseClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 
@@ -27,19 +28,23 @@ interface DetectionRow {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    
+
     const protocol = searchParams.get('protocol') || undefined;
     const symbol = searchParams.get('symbol') || undefined;
     const chain = searchParams.get('chain') || undefined;
     const type = searchParams.get('type') || undefined;
     const severity = searchParams.get('severity') || undefined;
-    const startTime = searchParams.get('startTime') ? parseInt(searchParams.get('startTime')!) : undefined;
-    const endTime = searchParams.get('endTime') ? parseInt(searchParams.get('endTime')!) : undefined;
+    const startTime = searchParams.get('startTime')
+      ? parseInt(searchParams.get('startTime')!)
+      : undefined;
+    const endTime = searchParams.get('endTime')
+      ? parseInt(searchParams.get('endTime')!)
+      : undefined;
     const limit = parseInt(searchParams.get('limit') || '100');
     const offset = parseInt(searchParams.get('offset') || '0');
 
     const supabase = createSupabaseClient();
-    
+
     let query = supabase
       .from('manipulation_detections')
       .select('*')
@@ -59,13 +64,10 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       logger.error('Failed to fetch detections', { error: error.message });
-      return NextResponse.json(
-        { error: 'Failed to fetch detections' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Failed to fetch detections' }, { status: 500 });
     }
 
-    const detections = (data as DetectionRow[] || []).map((row) => ({
+    const detections = ((data as DetectionRow[]) || []).map((row) => ({
       id: row.id,
       protocol: row.protocol,
       symbol: row.symbol,
@@ -91,9 +93,6 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     logger.error('Error in detections API', { error: errorMessage });
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

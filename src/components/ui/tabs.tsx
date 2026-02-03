@@ -27,7 +27,7 @@ const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
         }
         onValueChange?.(newValue);
       },
-      [isControlled, onValueChange]
+      [isControlled, onValueChange],
     );
 
     return (
@@ -37,7 +37,7 @@ const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
         </div>
       </TabsContext.Provider>
     );
-  }
+  },
 );
 Tabs.displayName = 'Tabs';
 

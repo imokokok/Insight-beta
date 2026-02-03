@@ -167,11 +167,7 @@ export class RateLimiter {
   /**
    * 记录 API 调用
    */
-  private async recordAPICall(
-    apiKeyId: string,
-    tier: string,
-    endpoint?: string,
-  ): Promise<void> {
+  private async recordAPICall(apiKeyId: string, tier: string, endpoint?: string): Promise<void> {
     try {
       const period = this.getCurrentPeriod();
 
@@ -267,10 +263,7 @@ export class UsageAnalytics {
   /**
    * 获取开发者使用统计
    */
-  async getDeveloperUsage(
-    developerId: string,
-    period?: string,
-  ): Promise<UsageMetrics | null> {
+  async getDeveloperUsage(developerId: string, period?: string): Promise<UsageMetrics | null> {
     try {
       const targetPeriod = period || this.getCurrentPeriod();
 
@@ -303,10 +296,9 @@ export class UsageAnalytics {
       }
 
       // 获取 API Key 信息
-      const keyResult = await query(
-        `SELECT id FROM api_keys WHERE developer_id = $1 LIMIT 1`,
-        [developerId],
-      );
+      const keyResult = await query(`SELECT id FROM api_keys WHERE developer_id = $1 LIMIT 1`, [
+        developerId,
+      ]);
 
       return {
         developerId,
@@ -329,10 +321,7 @@ export class UsageAnalytics {
   /**
    * 获取 API Key 使用统计
    */
-  async getAPIKeyUsage(
-    apiKeyId: string,
-    period?: string,
-  ): Promise<Partial<UsageMetrics> | null> {
+  async getAPIKeyUsage(apiKeyId: string, period?: string): Promise<Partial<UsageMetrics> | null> {
     try {
       const targetPeriod = period || this.getCurrentPeriod();
 
@@ -419,7 +408,10 @@ export class UsageAnalytics {
 // ============================================================================
 
 export class BillingSystem {
-  private tierPricing: Record<string, { basePrice: number; includedRequests: number; overagePrice: number }> = {
+  private tierPricing: Record<
+    string,
+    { basePrice: number; includedRequests: number; overagePrice: number }
+  > = {
     free: { basePrice: 0, includedRequests: 1000, overagePrice: 0 },
     basic: { basePrice: 29, includedRequests: 10000, overagePrice: 0.001 },
     pro: { basePrice: 99, includedRequests: 100000, overagePrice: 0.0005 },
@@ -432,10 +424,7 @@ export class BillingSystem {
   async generateBill(developerId: string, period: string): Promise<BillingRecord | null> {
     try {
       // 获取开发者信息
-      const devResult = await query(
-        `SELECT tier FROM developers WHERE id = $1`,
-        [developerId],
-      );
+      const devResult = await query(`SELECT tier FROM developers WHERE id = $1`, [developerId]);
 
       if (devResult.rows.length === 0) {
         return null;
@@ -624,7 +613,10 @@ export class BillingSystem {
   /**
    * 获取定价信息
    */
-  getPricingInfo(): Record<string, { basePrice: number; includedRequests: number; overagePrice: number }> {
+  getPricingInfo(): Record<
+    string,
+    { basePrice: number; includedRequests: number; overagePrice: number }
+  > {
     return { ...this.tierPricing };
   }
 }

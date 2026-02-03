@@ -711,7 +711,9 @@ function mapAlertRuleFromDb(row: AlertRuleRow): UnifiedAlertRule {
     instances: row.instances || undefined,
     symbols: row.symbols || undefined,
     params: row.params ? (row.params as Record<string, unknown>) : undefined,
-    channels: (row.channels || ['webhook']) as Array<'email' | 'webhook' | 'telegram' | 'slack' | 'pagerduty'>,
+    channels: (row.channels || ['webhook']) as Array<
+      'email' | 'webhook' | 'telegram' | 'slack' | 'pagerduty'
+    >,
     cooldownMinutes: row.cooldown_minutes,
     maxNotificationsPerHour: row.max_notifications_per_hour,
   };

@@ -39,12 +39,14 @@ interface UseBatchHistoryReturn<T> {
   deleteTemplate: (templateId: string) => void;
 }
 
-export function useBatchHistory<T>(config: {
-  maxHistorySize?: number;
-  maxHistoryAge?: number;
-  autoSave?: boolean;
-  storageKey?: string;
-} = {}): UseBatchHistoryReturn<T> {
+export function useBatchHistory<T>(
+  config: {
+    maxHistorySize?: number;
+    maxHistoryAge?: number;
+    autoSave?: boolean;
+    storageKey?: string;
+  } = {},
+): UseBatchHistoryReturn<T> {
   const {
     maxHistorySize = 50,
     maxHistoryAge = 7 * 24 * 60 * 60 * 1000,
@@ -67,8 +69,7 @@ export function useBatchHistory<T>(config: {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed.history)) {
           const filteredHistory = parsed.history.filter(
-            (entry: HistoryEntry<T>) =>
-              Date.now() - entry.timestamp < maxHistoryAge
+            (entry: HistoryEntry<T>) => Date.now() - entry.timestamp < maxHistoryAge,
           );
           setHistory(filteredHistory);
           historyRef.current = filteredHistory;
@@ -94,13 +95,13 @@ export function useBatchHistory<T>(config: {
           JSON.stringify({
             history: newHistory.slice(-maxHistorySize),
             templates: newTemplates,
-          })
+          }),
         );
       } catch (error) {
         console.error('Failed to save history:', error);
       }
     },
-    [autoSave, storageKey, maxHistorySize]
+    [autoSave, storageKey, maxHistorySize],
   );
 
   const canUndo = currentIndex >= 0;
@@ -131,7 +132,7 @@ export function useBatchHistory<T>(config: {
 
       return entry.id;
     },
-    [maxHistorySize, saveToStorage, templates]
+    [maxHistorySize, saveToStorage, templates],
   );
 
   const undo = useCallback(() => {
@@ -186,7 +187,7 @@ export function useBatchHistory<T>(config: {
 
       return template.id;
     },
-    [templates, saveToStorage]
+    [templates, saveToStorage],
   );
 
   const applyTemplate = useCallback(
@@ -195,13 +196,13 @@ export function useBatchHistory<T>(config: {
       if (!template) return;
 
       const newTemplates = templates.map((t) =>
-        t.id === templateId ? { ...t, lastUsed: Date.now(), usageCount: t.usageCount + 1 } : t
+        t.id === templateId ? { ...t, lastUsed: Date.now(), usageCount: t.usageCount + 1 } : t,
       );
 
       setTemplates(newTemplates);
       saveToStorage(historyRef.current, newTemplates);
     },
-    [templates, saveToStorage]
+    [templates, saveToStorage],
   );
 
   const deleteTemplate = useCallback(
@@ -210,7 +211,7 @@ export function useBatchHistory<T>(config: {
       setTemplates(newTemplates);
       saveToStorage(historyRef.current, newTemplates);
     },
-    [templates, saveToStorage]
+    [templates, saveToStorage],
   );
 
   return {
@@ -260,12 +261,12 @@ export function BatchHistoryPanel<T>({
   };
 
   return (
-    <div className={`bg-white rounded-xl border border-gray-200 p-4 ${className}`}>
-      <div className="flex items-center justify-between mb-4">
+    <div className={`rounded-xl border border-gray-200 bg-white p-4 ${className}`}>
+      <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <History className="h-5 w-5 text-gray-500" />
           <h3 className="text-lg font-semibold text-gray-900">History</h3>
-          <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">
+          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
             {history.length}
           </span>
         </div>
@@ -273,7 +274,7 @@ export function BatchHistoryPanel<T>({
           <button
             onClick={onUndo}
             disabled={!canUndo}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="rounded-lg p-2 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
             title="Undo"
           >
             <Undo2 className="h-4 w-4 text-gray-600" />
@@ -281,14 +282,14 @@ export function BatchHistoryPanel<T>({
           <button
             onClick={onRedo}
             disabled={!canRedo}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="rounded-lg p-2 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
             title="Redo"
           >
             <Redo2 className="h-4 w-4 text-gray-600" />
           </button>
           <button
             onClick={onClear}
-            className="p-2 hover:bg-red-50 rounded-lg transition-colors"
+            className="rounded-lg p-2 transition-colors hover:bg-red-50"
             title="Clear history"
           >
             <Trash2 className="h-4 w-4 text-red-600" />
@@ -296,32 +297,30 @@ export function BatchHistoryPanel<T>({
         </div>
       </div>
 
-      <div className="space-y-2 max-h-64 overflow-y-auto">
+      <div className="max-h-64 space-y-2 overflow-y-auto">
         {history.length === 0 ? (
-          <p className="text-center text-gray-500 py-8">No history yet</p>
+          <p className="py-8 text-center text-gray-500">No history yet</p>
         ) : (
           history.map((entry, index) => (
             <div
               key={entry.id}
               onClick={() => onItemClick(index)}
-              className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
+              className={`flex cursor-pointer items-center gap-3 rounded-lg p-3 transition-colors ${
                 index === currentIndex
-                  ? 'bg-purple-50 border border-purple-200'
+                  ? 'border border-purple-200 bg-purple-50'
                   : 'hover:bg-gray-50'
               }`}
             >
-              <div className="flex-shrink-0 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gray-100">
                 <Clock className="h-4 w-4 text-gray-500" />
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
-                  {entry.description}
-                </p>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-gray-900">{entry.description}</p>
                 <p className="text-xs text-gray-500">{formatTime(entry.timestamp)}</p>
               </div>
               {index === currentIndex && (
                 <div className="flex-shrink-0">
-                  <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full">
+                  <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs text-purple-700">
                     Current
                   </span>
                 </div>
@@ -350,57 +349,52 @@ export function BatchTemplatesPanel({
   className = '',
 }: BatchTemplatesPanelProps) {
   return (
-    <div className={`bg-white rounded-xl border border-gray-200 p-4 ${className}`}>
-      <div className="flex items-center justify-between mb-4">
+    <div className={`rounded-xl border border-gray-200 bg-white p-4 ${className}`}>
+      <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Save className="h-5 w-5 text-gray-500" />
           <h3 className="text-lg font-semibold text-gray-900">Templates</h3>
-          <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">
+          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
             {templates.length}
           </span>
         </div>
         <button
           onClick={onSave}
-          className="px-3 py-1.5 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors"
+          className="rounded-lg bg-purple-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-purple-700"
         >
           Save Current
         </button>
       </div>
 
-      <div className="space-y-2 max-h-64 overflow-y-auto">
+      <div className="max-h-64 space-y-2 overflow-y-auto">
         {templates.length === 0 ? (
-          <p className="text-center text-gray-500 py-8">
+          <p className="py-8 text-center text-gray-500">
             No templates saved yet. Save your current batch operations as a template.
           </p>
         ) : (
           templates.map((template) => (
-            <div
-              key={template.id}
-              className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
-            >
-              <div className="flex-1 min-w-0">
+            <div key={template.id} className="flex items-center gap-3 rounded-lg bg-gray-50 p-3">
+              <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-gray-900">{template.name}</p>
-                <p className="text-xs text-gray-500 truncate">{template.description}</p>
-                <div className="flex items-center gap-2 mt-1">
+                <p className="truncate text-xs text-gray-500">{template.description}</p>
+                <div className="mt-1 flex items-center gap-2">
                   <span className="text-xs text-gray-400">
                     {template.operations.length} operations
                   </span>
                   <span className="text-xs text-gray-400">•</span>
-                  <span className="text-xs text-gray-400">
-                    Used {template.usageCount} times
-                  </span>
+                  <span className="text-xs text-gray-400">Used {template.usageCount} times</span>
                 </div>
               </div>
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => onApply(template.id)}
-                  className="px-3 py-1.5 bg-purple-100 text-purple-700 text-xs font-medium rounded-lg hover:bg-purple-200 transition-colors"
+                  className="rounded-lg bg-purple-100 px-3 py-1.5 text-xs font-medium text-purple-700 transition-colors hover:bg-purple-200"
                 >
                   Apply
                 </button>
                 <button
                   onClick={() => onDelete(template.id)}
-                  className="p-1.5 hover:bg-red-50 rounded-lg transition-colors"
+                  className="rounded-lg p-1.5 transition-colors hover:bg-red-50"
                 >
                   <Trash2 className="h-4 w-4 text-red-600" />
                 </button>

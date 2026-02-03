@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { manipulationDetectionService } from '@/lib/services/manipulationDetectionService';
 import { logger } from '@/lib/utils/logger';
 import type { OracleProtocol, SupportedChain } from '@/lib/types';
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
       manipulationDetectionService.stopMonitoring(
         protocol as OracleProtocol,
         symbol,
-        chain as SupportedChain
+        chain as SupportedChain,
       );
 
       return NextResponse.json({
@@ -44,9 +45,6 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     logger.error('Error stopping monitor', { error: errorMessage });
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -123,7 +123,7 @@ export function AlertNotification({ className }: AlertNotificationProps) {
   }
 
   return (
-    <div className={cn('fixed top-4 right-4 z-50 space-y-2 w-96', className)}>
+    <div className={cn('fixed right-4 top-4 z-50 w-96 space-y-2', className)}>
       {alerts.map((alert, index) => {
         const detection = alert.detection;
         const config = severityConfig[detection.severity];
@@ -134,7 +134,7 @@ export function AlertNotification({ className }: AlertNotificationProps) {
             key={alert.id}
             className={cn(
               'transform transition-all duration-300 ease-out',
-              'translate-x-0 opacity-100'
+              'translate-x-0 opacity-100',
             )}
             style={{
               transitionDelay: `${index * 50}ms`,
@@ -142,52 +142,49 @@ export function AlertNotification({ className }: AlertNotificationProps) {
           >
             <Card
               className={cn(
-                'border-l-4 shadow-lg overflow-hidden',
+                'overflow-hidden border-l-4 shadow-lg',
                 config.borderColor,
-                config.bgColor
+                config.bgColor,
               )}
             >
               <div className="p-4">
                 <div className="flex items-start gap-3">
-                  <div className={cn('p-2 rounded-full', config.color)}>
+                  <div className={cn('rounded-full p-2', config.color)}>
                     <Icon className="h-4 w-4 text-white" />
                   </div>
-                  <div className="flex-1 min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <h4 className="font-semibold text-sm">
+                      <h4 className="text-sm font-semibold">
                         {typeLabels[detection.type] || detection.type}
                       </h4>
-                      <Badge
-                        variant="outline"
-                        className={cn('text-xs', config.textColor)}
-                      >
+                      <Badge variant="outline" className={cn('text-xs', config.textColor)}>
                         {detection.severity === 'critical'
                           ? '严重'
                           : detection.severity === 'high'
-                          ? '高危'
-                          : detection.severity === 'medium'
-                          ? '中危'
-                          : '低危'}
+                            ? '高危'
+                            : detection.severity === 'medium'
+                              ? '中危'
+                              : '低危'}
                       </Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-muted-foreground mt-1 text-xs">
                       {detection.protocol}:{detection.chain}:{detection.symbol}
                     </p>
-                    <p className="text-xs mt-1">
+                    <p className="mt-1 text-xs">
                       置信度: {(detection.confidenceScore * 100).toFixed(1)}%
                     </p>
                     {detection.priceImpact && (
-                      <p className="text-xs mt-1">
+                      <p className="mt-1 text-xs">
                         价格影响: {detection.priceImpact > 0 ? '+' : ''}
                         {detection.priceImpact.toFixed(2)}%
                       </p>
                     )}
-                    <div className="flex items-center gap-2 mt-3">
+                    <div className="mt-3 flex items-center gap-2">
                       <a
                         href={`/security/manipulation/${detection.id}`}
-                        className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-7 text-xs px-3"
+                        className="ring-offset-background focus-visible:ring-ring border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex h-7 items-center justify-center rounded-md border px-3 text-sm text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
                       >
-                        <ExternalLink className="h-3 w-3 mr-1" />
+                        <ExternalLink className="mr-1 h-3 w-3" />
                         查看详情
                       </a>
                       <Button
@@ -196,7 +193,7 @@ export function AlertNotification({ className }: AlertNotificationProps) {
                         className="h-7 text-xs"
                         onClick={() => removeAlert(alert.id)}
                       >
-                        <X className="h-3 w-3 mr-1" />
+                        <X className="mr-1 h-3 w-3" />
                         忽略
                       </Button>
                     </div>

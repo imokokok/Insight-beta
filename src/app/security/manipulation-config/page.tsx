@@ -31,22 +31,22 @@ interface DetectionConfig {
   timeWindowMs: number;
   minDataPoints: number;
   maxPriceDeviationPercent: number;
-  
+
   // Flash loan
   flashLoanMinAmountUsd: number;
-  
+
   // Sandwich attack
   sandwichProfitThresholdUsd: number;
-  
+
   // Liquidity
   liquidityChangeThreshold: number;
-  
+
   // Correlation
   correlationThreshold: number;
-  
+
   // Enabled rules
   enabledRules: string[];
-  
+
   // Alert settings
   alertChannels: {
     email: boolean;
@@ -85,11 +85,36 @@ const defaultConfig: DetectionConfig = {
 };
 
 const detectionRules = [
-  { id: 'statistical_anomaly', name: '统计异常检测', description: '基于Z-score的统计异常检测', icon: Activity },
-  { id: 'flash_loan_attack', name: '闪电贷攻击检测', description: '检测闪电贷攻击模式', icon: AlertTriangle },
-  { id: 'sandwich_attack', name: '三明治攻击检测', description: '检测三明治攻击模式', icon: Shield },
-  { id: 'liquidity_manipulation', name: '流动性操纵检测', description: '检测流动性异常变化', icon: Activity },
-  { id: 'oracle_manipulation', name: '预言机操纵检测', description: '检测预言机价格操纵', icon: AlertTriangle },
+  {
+    id: 'statistical_anomaly',
+    name: '统计异常检测',
+    description: '基于Z-score的统计异常检测',
+    icon: Activity,
+  },
+  {
+    id: 'flash_loan_attack',
+    name: '闪电贷攻击检测',
+    description: '检测闪电贷攻击模式',
+    icon: AlertTriangle,
+  },
+  {
+    id: 'sandwich_attack',
+    name: '三明治攻击检测',
+    description: '检测三明治攻击模式',
+    icon: Shield,
+  },
+  {
+    id: 'liquidity_manipulation',
+    name: '流动性操纵检测',
+    description: '检测流动性异常变化',
+    icon: Activity,
+  },
+  {
+    id: 'oracle_manipulation',
+    name: '预言机操纵检测',
+    description: '检测预言机价格操纵',
+    icon: AlertTriangle,
+  },
   { id: 'front_running', name: '抢先交易检测', description: '检测MEV抢先交易', icon: Shield },
   { id: 'back_running', name: '尾随交易检测', description: '检测MEV尾随交易', icon: Shield },
 ];
@@ -165,8 +190,8 @@ export default function ManipulationConfigPage() {
   if (loading) {
     return (
       <div className="container mx-auto py-8">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="flex h-64 items-center justify-center">
+          <div className="border-primary h-8 w-8 animate-spin rounded-full border-b-2"></div>
         </div>
       </div>
     );
@@ -174,35 +199,33 @@ export default function ManipulationConfigPage() {
 
   return (
     <div className="container mx-auto py-8">
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
+          <h1 className="flex items-center gap-2 text-3xl font-bold">
             <Settings className="h-8 w-8" />
             价格操纵检测配置
           </h1>
-          <p className="text-muted-foreground mt-1">
-            配置检测规则、阈值和告警设置
-          </p>
+          <p className="text-muted-foreground mt-1">配置检测规则、阈值和告警设置</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={resetConfig} disabled={saving}>
-            <RotateCcw className="h-4 w-4 mr-2" />
+            <RotateCcw className="mr-2 h-4 w-4" />
             重置
           </Button>
           <Button onClick={saveConfig} disabled={saving}>
             {saving ? (
               <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
                 保存中...
               </>
             ) : saved ? (
               <>
-                <CheckCircle className="h-4 w-4 mr-2" />
+                <CheckCircle className="mr-2 h-4 w-4" />
                 已保存
               </>
             ) : (
               <>
-                <Save className="h-4 w-4 mr-2" />
+                <Save className="mr-2 h-4 w-4" />
                 保存配置
               </>
             )}
@@ -232,9 +255,7 @@ export default function ManipulationConfigPage() {
                 <Shield className="h-5 w-5" />
                 启用的检测规则
               </CardTitle>
-              <CardDescription>
-                选择要启用的价格操纵检测规则
-              </CardDescription>
+              <CardDescription>选择要启用的价格操纵检测规则</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {detectionRules.map((rule) => {
@@ -245,28 +266,23 @@ export default function ManipulationConfigPage() {
                   <div
                     key={rule.id}
                     className={cn(
-                      'flex items-center justify-between p-4 rounded-lg border transition-all',
-                      isEnabled
-                        ? 'bg-primary/5 border-primary/20'
-                        : 'bg-muted/50 border-muted'
+                      'flex items-center justify-between rounded-lg border p-4 transition-all',
+                      isEnabled ? 'bg-primary/5 border-primary/20' : 'bg-muted/50 border-muted',
                     )}
                   >
                     <div className="flex items-start gap-3">
                       <div
-                        className={cn(
-                          'p-2 rounded-lg',
-                          isEnabled ? 'bg-primary/10' : 'bg-muted'
-                        )}
+                        className={cn('rounded-lg p-2', isEnabled ? 'bg-primary/10' : 'bg-muted')}
                       >
                         <Icon
                           className={cn(
                             'h-5 w-5',
-                            isEnabled ? 'text-primary' : 'text-muted-foreground'
+                            isEnabled ? 'text-primary' : 'text-muted-foreground',
                           )}
                         />
                       </div>
                       <div>
-                        <div className="font-medium flex items-center gap-2">
+                        <div className="flex items-center gap-2 font-medium">
                           {rule.name}
                           {isEnabled && (
                             <Badge variant="secondary" className="text-xs">
@@ -274,15 +290,10 @@ export default function ManipulationConfigPage() {
                             </Badge>
                           )}
                         </div>
-                        <div className="text-sm text-muted-foreground">
-                          {rule.description}
-                        </div>
+                        <div className="text-muted-foreground text-sm">{rule.description}</div>
                       </div>
                     </div>
-                    <Switch
-                      checked={isEnabled}
-                      onCheckedChange={() => toggleRule(rule.id)}
-                    />
+                    <Switch checked={isEnabled} onCheckedChange={() => toggleRule(rule.id)} />
                   </div>
                 );
               })}
@@ -313,7 +324,7 @@ export default function ManipulationConfigPage() {
                   max={5}
                   step={0.1}
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-xs">
                   标准差倍数，超过此值视为异常（推荐: 3）
                 </p>
               </div>
@@ -343,9 +354,7 @@ export default function ManipulationConfigPage() {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <Label>最大价格偏离 (%)</Label>
-                  <span className="text-sm font-medium">
-                    {config.maxPriceDeviationPercent}%
-                  </span>
+                  <span className="text-sm font-medium">{config.maxPriceDeviationPercent}%</span>
                 </div>
                 <Slider
                   value={[config.maxPriceDeviationPercent]}
@@ -374,7 +383,7 @@ export default function ManipulationConfigPage() {
                   min={5}
                   max={50}
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-xs">
                   进行统计检测所需的最小历史数据点数量
                 </p>
               </div>
@@ -452,9 +461,7 @@ export default function ManipulationConfigPage() {
                 <Bell className="h-5 w-5" />
                 告警渠道
               </CardTitle>
-              <CardDescription>
-                配置检测告警的通知方式
-              </CardDescription>
+              <CardDescription>配置检测告警的通知方式</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {[
@@ -465,13 +472,11 @@ export default function ManipulationConfigPage() {
               ].map((channel) => (
                 <div
                   key={channel.key}
-                  className="flex items-center justify-between p-3 rounded-lg border"
+                  className="flex items-center justify-between rounded-lg border p-3"
                 >
                   <div>
                     <div className="font-medium">{channel.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {channel.description}
-                    </div>
+                    <div className="text-muted-foreground text-sm">{channel.description}</div>
                   </div>
                   <Switch
                     checked={config.alertChannels[channel.key as keyof typeof config.alertChannels]}
@@ -508,17 +513,17 @@ export default function ManipulationConfigPage() {
                   max={60}
                   step={1}
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-xs">
                   同一数据源的告警间隔时间，避免重复通知
                 </p>
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-lg border bg-yellow-50">
+              <div className="flex items-center justify-between rounded-lg border bg-yellow-50 p-3">
                 <div className="flex items-start gap-2">
-                  <Info className="h-5 w-5 text-yellow-600 mt-0.5" />
+                  <Info className="mt-0.5 h-5 w-5 text-yellow-600" />
                   <div>
                     <div className="font-medium">自动阻断可疑数据源</div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-muted-foreground text-sm">
                       检测到严重操纵时自动阻断该数据源
                     </div>
                   </div>
@@ -541,9 +546,7 @@ export default function ManipulationConfigPage() {
           <Card>
             <CardHeader>
               <CardTitle>高级配置</CardTitle>
-              <CardDescription>
-                高级检测参数，修改前请了解其含义
-              </CardDescription>
+              <CardDescription>高级检测参数，修改前请了解其含义</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
@@ -562,9 +565,7 @@ export default function ManipulationConfigPage() {
                   max={30}
                   step={1}
                 />
-                <p className="text-xs text-muted-foreground">
-                  检测分析的时间窗口范围
-                </p>
+                <p className="text-muted-foreground text-xs">检测分析的时间窗口范围</p>
               </div>
 
               <Separator />
@@ -588,9 +589,7 @@ export default function ManipulationConfigPage() {
                   max={95}
                   step={5}
                 />
-                <p className="text-xs text-muted-foreground">
-                  多源价格相关性验证阈值
-                </p>
+                <p className="text-muted-foreground text-xs">多源价格相关性验证阈值</p>
               </div>
             </CardContent>
           </Card>

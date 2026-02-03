@@ -10,7 +10,8 @@ const globalForAdmin = globalThis as unknown as {
   oracleMonitorAdminForbidden?: Map<string, number> | undefined;
 };
 
-const adminForbiddenCooldown = globalForAdmin.oracleMonitorAdminForbidden ?? new Map<string, number>();
+const adminForbiddenCooldown =
+  globalForAdmin.oracleMonitorAdminForbidden ?? new Map<string, number>();
 if (process.env.NODE_ENV !== 'production')
   globalForAdmin.oracleMonitorAdminForbidden = adminForbiddenCooldown;
 

@@ -1,6 +1,6 @@
 /**
  * Price Manipulation Detection Types
- * 
+ *
  * Types matching the API response format
  */
 

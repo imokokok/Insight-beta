@@ -108,7 +108,7 @@ export class ManipulationDetector {
     recentTransactions: TransactionData[],
   ): Promise<ManipulationDetection | null> {
     const feedKey = `${protocol}:${chain}:${symbol}`;
-    
+
     // 更新价格历史
     this.updatePriceHistory(feedKey, currentPrice, historicalData);
 
@@ -150,7 +150,7 @@ export class ManipulationDetector {
 
     // 选择最高置信度的检测结果
     const bestDetection = detections.reduce((best, current) =>
-      current.confidence > best.confidence ? current : best
+      current.confidence > best.confidence ? current : best,
     );
 
     // 检查置信度阈值
@@ -205,7 +205,13 @@ export class ManipulationDetector {
   private detectStatisticalAnomaly(
     feedKey: string,
     currentPrice: number,
-  ): { type: ManipulationType; severity: DetectionSeverity; confidence: number; evidence: DetectionEvidence[]; suspiciousTxs: SuspiciousTransaction[] } | null {
+  ): {
+    type: ManipulationType;
+    severity: DetectionSeverity;
+    confidence: number;
+    evidence: DetectionEvidence[];
+    suspiciousTxs: SuspiciousTransaction[];
+  } | null {
     const history = this.priceHistory.get(feedKey);
     if (!history || history.length < this.config.minDataPoints) {
       return null;
@@ -215,7 +221,7 @@ export class ManipulationDetector {
     const prices = history.map((p) => p.price);
     const mean = prices.reduce((a, b) => a + b, 0) / prices.length;
     const stdDev = Math.sqrt(
-      prices.reduce((sum, p) => sum + Math.pow(p - mean, 2), 0) / prices.length
+      prices.reduce((sum, p) => sum + Math.pow(p - mean, 2), 0) / prices.length,
     );
 
     // 计算Z-score
@@ -269,17 +275,23 @@ export class ManipulationDetector {
   private detectFlashLoanAttack(
     transactions: TransactionData[],
     _currentPrice: number,
-  ): { type: ManipulationType; severity: DetectionSeverity; confidence: number; evidence: DetectionEvidence[]; suspiciousTxs: SuspiciousTransaction[] } | null {
+  ): {
+    type: ManipulationType;
+    severity: DetectionSeverity;
+    confidence: number;
+    evidence: DetectionEvidence[];
+    suspiciousTxs: SuspiciousTransaction[];
+  } | null {
     const suspiciousTxs: SuspiciousTransaction[] = [];
     let totalFlashLoanValue = 0;
 
     for (const tx of transactions) {
       // 检测闪电贷特征
       const isFlashLoan = this.isFlashLoanTransaction(tx);
-      
+
       if (isFlashLoan) {
         const valueUsd = this.estimateTransactionValue(tx);
-        
+
         if (valueUsd >= this.config.flashLoanMinAmountUsd) {
           suspiciousTxs.push({
             hash: tx.hash,
@@ -306,7 +318,7 @@ export class ManipulationDetector {
     // 计算置信度
     const confidence = Math.min(
       suspiciousTxs.length * 0.3 + (totalFlashLoanValue / this.config.flashLoanMinAmountUsd) * 0.1,
-      1
+      1,
     );
 
     const evidence: DetectionEvidence[] = [
@@ -335,9 +347,13 @@ export class ManipulationDetector {
   // 三明治攻击检测
   // ============================================================================
 
-  private detectSandwichAttack(
-    transactions: TransactionData[],
-  ): { type: ManipulationType; severity: DetectionSeverity; confidence: number; evidence: DetectionEvidence[]; suspiciousTxs: SuspiciousTransaction[] } | null {
+  private detectSandwichAttack(transactions: TransactionData[]): {
+    type: ManipulationType;
+    severity: DetectionSeverity;
+    confidence: number;
+    evidence: DetectionEvidence[];
+    suspiciousTxs: SuspiciousTransaction[];
+  } | null {
     if (transactions.length < 3) {
       return null;
     }
@@ -402,7 +418,7 @@ export class ManipulationDetector {
               method: this.extractMethodSignature(nextTx.input),
               input: nextTx.input,
               type: 'back_run',
-            }
+            },
           );
         }
       }
@@ -442,7 +458,13 @@ export class ManipulationDetector {
   private detectLiquidityManipulation(
     feedKey: string,
     _currentPrice: number,
-  ): { type: ManipulationType; severity: DetectionSeverity; confidence: number; evidence: DetectionEvidence[]; suspiciousTxs: SuspiciousTransaction[] } | null {
+  ): {
+    type: ManipulationType;
+    severity: DetectionSeverity;
+    confidence: number;
+    evidence: DetectionEvidence[];
+    suspiciousTxs: SuspiciousTransaction[];
+  } | null {
     const history = this.priceHistory.get(feedKey);
     if (!history || history.length < 2) {
       return null;
@@ -496,13 +518,13 @@ export class ManipulationDetector {
   ): void {
     const existing = this.priceHistory.get(feedKey) || [];
     const combined = [...existing, ...historicalData];
-    
+
     // 只保留时间窗口内的数据
     const cutoff = Date.now() - this.config.timeWindowMs;
     const filtered = combined
       .filter((p) => p.timestamp > cutoff)
       .sort((a, b) => a.timestamp - b.timestamp);
-    
+
     this.priceHistory.set(feedKey, filtered);
   }
 
@@ -513,7 +535,7 @@ export class ManipulationDetector {
       '0x6b07c94f', // flashLoanSimple
       '0x3d7b66bf', // flashLoan (Aave V3)
     ];
-    
+
     const methodSig = tx.input.slice(0, 10);
     return flashLoanSignatures.includes(methodSig);
   }
@@ -526,21 +548,21 @@ export class ManipulationDetector {
       '0x5c11d795', // swapExactTokensForETHSupportingFeeOnTransferTokens
       '0xb6f9de95', // swapExactETHForTokensSupportingFeeOnTransferTokens
     ];
-    
+
     const methodSig = tx.input.slice(0, 10);
     return swapSignatures.includes(methodSig);
   }
 
   private extractMethodSignature(input: string): string {
     if (input.length < 10) return 'unknown';
-    
+
     const signatures: Record<string, string> = {
       '0x38ed1739': 'swapExactTokensForTokens',
       '0x8803dbee': 'swapTokensForExactTokens',
       '0xc3018a0e': 'flashLoan',
       '0x6b07c94f': 'flashLoanSimple',
     };
-    
+
     return signatures[input.slice(0, 10)] || `0x${input.slice(2, 10)}`;
   }
 
@@ -552,21 +574,19 @@ export class ManipulationDetector {
   private calculatePriceImpact(feedKey: string, currentPrice: number): number | undefined {
     const history = this.priceHistory.get(feedKey);
     if (!history || history.length < 2) return undefined;
-    
+
     const previousPrice = history[history.length - 2]!.price;
     return ((currentPrice - previousPrice) / previousPrice) * 100;
   }
 
-  private estimateFinancialImpact(
-    detection: { type: ManipulationType; suspiciousTxs: SuspiciousTransaction[] },
-  ): number | undefined {
+  private estimateFinancialImpact(detection: {
+    type: ManipulationType;
+    suspiciousTxs: SuspiciousTransaction[];
+  }): number | undefined {
     if (detection.suspiciousTxs.length === 0) return undefined;
-    
-    const totalValue = detection.suspiciousTxs.reduce(
-      (sum, tx) => sum + (tx.valueUsd || 0),
-      0
-    );
-    
+
+    const totalValue = detection.suspiciousTxs.reduce((sum, tx) => sum + (tx.valueUsd || 0), 0);
+
     return totalValue;
   }
 

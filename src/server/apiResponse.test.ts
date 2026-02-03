@@ -177,7 +177,8 @@ describe('rateLimit function', () => {
   it('falls back to memory when KV storage is unavailable', async () => {
     const prevTrust = process.env.INSIGHT_TRUST_PROXY;
     const prevStore = process.env.INSIGHT_RATE_LIMIT_STORE;
-    (globalThis as unknown as { oracleMonitorRate?: Map<string, unknown> }).oracleMonitorRate = new Map();
+    (globalThis as unknown as { oracleMonitorRate?: Map<string, unknown> }).oracleMonitorRate =
+      new Map();
     try {
       process.env.INSIGHT_TRUST_PROXY = 'true';
       process.env.INSIGHT_RATE_LIMIT_STORE = 'kv';
@@ -208,7 +209,8 @@ describe('rateLimit function', () => {
   it('uses x-real-ip when trust proxy is enabled', async () => {
     (env as unknown as Record<string, string>).INSIGHT_TRUST_PROXY = 'true';
     (env as unknown as Record<string, string>).INSIGHT_RATE_LIMIT_STORE = 'memory';
-    (globalThis as unknown as { oracleMonitorRate?: Map<string, unknown> }).oracleMonitorRate = new Map();
+    (globalThis as unknown as { oracleMonitorRate?: Map<string, unknown> }).oracleMonitorRate =
+      new Map();
 
     const limit = 1;
     const windowMs = 60_000;
@@ -229,7 +231,8 @@ describe('rateLimit function', () => {
   it('parses Forwarded header when trust proxy is enabled', async () => {
     (env as unknown as Record<string, string>).INSIGHT_TRUST_PROXY = 'true';
     (env as unknown as Record<string, string>).INSIGHT_RATE_LIMIT_STORE = 'memory';
-    (globalThis as unknown as { oracleMonitorRate?: Map<string, unknown> }).oracleMonitorRate = new Map();
+    (globalThis as unknown as { oracleMonitorRate?: Map<string, unknown> }).oracleMonitorRate =
+      new Map();
 
     const limit = 1;
     const windowMs = 60_000;
@@ -250,7 +253,8 @@ describe('rateLimit function', () => {
   it('prefers x-vercel-forwarded-for over x-real-ip', async () => {
     (env as unknown as Record<string, string>).INSIGHT_TRUST_PROXY = 'true';
     (env as unknown as Record<string, string>).INSIGHT_RATE_LIMIT_STORE = 'memory';
-    (globalThis as unknown as { oracleMonitorRate?: Map<string, unknown> }).oracleMonitorRate = new Map();
+    (globalThis as unknown as { oracleMonitorRate?: Map<string, unknown> }).oracleMonitorRate =
+      new Map();
 
     const limit = 1;
     const windowMs = 60_000;
@@ -277,8 +281,9 @@ describe('rateLimit function', () => {
 describe('cachedJson function', () => {
   beforeEach(() => {
     // Clear any existing memory cache and reset mocks
-    (globalThis as unknown as { oracleMonitorApiCache?: Map<string, unknown> }).oracleMonitorApiCache =
-      new Map();
+    (
+      globalThis as unknown as { oracleMonitorApiCache?: Map<string, unknown> }
+    ).oracleMonitorApiCache = new Map();
     vi.clearAllMocks();
   });
 

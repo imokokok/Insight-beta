@@ -1,11 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createSupabaseClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const body = await request.json();
@@ -14,7 +12,7 @@ export async function POST(
     if (!status || !['confirmed', 'false_positive', 'under_investigation'].includes(status)) {
       return NextResponse.json(
         { error: 'Invalid status. Must be confirmed, false_positive, or under_investigation' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -32,10 +30,7 @@ export async function POST(
 
     if (error) {
       logger.error('Failed to update detection review', { error: error.message });
-      return NextResponse.json(
-        { error: 'Failed to update detection' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Failed to update detection' }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -45,9 +40,6 @@ export async function POST(
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     logger.error('Error reviewing detection', { error: errorMessage });
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

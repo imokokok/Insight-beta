@@ -117,7 +117,7 @@ export class SLAMonitor {
     try {
       // 获取所有活跃的实例
       const instances = await query(
-        `SELECT DISTINCT protocol, chain FROM unified_oracle_instances WHERE enabled = true`
+        `SELECT DISTINCT protocol, chain FROM unified_oracle_instances WHERE enabled = true`,
       );
 
       for (const instance of instances.rows) {
@@ -128,10 +128,7 @@ export class SLAMonitor {
     }
   }
 
-  private async collectProtocolMetrics(
-    protocol: string,
-    chain: string
-  ): Promise<void> {
+  private async collectProtocolMetrics(protocol: string, chain: string): Promise<void> {
     const now = new Date();
     const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
 
@@ -160,7 +157,7 @@ export class SLAMonitor {
     protocol: string,
     chain: string,
     from: Date,
-    to: Date
+    to: Date,
   ): Promise<number> {
     const result = await query(
       `SELECT 
@@ -169,7 +166,7 @@ export class SLAMonitor {
       FROM unified_price_feeds
       WHERE protocol = $1 AND chain = $2
       AND timestamp >= $3 AND timestamp <= $4`,
-      [protocol, chain, from, to]
+      [protocol, chain, from, to],
     );
 
     const total = parseInt(result.rows[0]?.total || 0);
@@ -182,7 +179,7 @@ export class SLAMonitor {
     protocol: string,
     chain: string,
     from: Date,
-    to: Date
+    to: Date,
   ): Promise<{ avg: number; max: number }> {
     const result = await query(
       `SELECT 
@@ -191,7 +188,7 @@ export class SLAMonitor {
       FROM unified_price_feeds
       WHERE protocol = $1 AND chain = $2
       AND timestamp >= $3 AND timestamp <= $4`,
-      [protocol, chain, from, to]
+      [protocol, chain, from, to],
     );
 
     return {
@@ -204,7 +201,7 @@ export class SLAMonitor {
     protocol: string,
     chain: string,
     from: Date,
-    to: Date
+    to: Date,
   ): Promise<number> {
     // 获取该协议的价格数据
     const protocolPrices = await query(
@@ -213,7 +210,7 @@ export class SLAMonitor {
       WHERE protocol = $1 AND chain = $2
       AND timestamp >= $3 AND timestamp <= $4
       ORDER BY timestamp DESC`,
-      [protocol, chain, from, to]
+      [protocol, chain, from, to],
     );
 
     if (protocolPrices.rows.length === 0) return 100;
@@ -224,7 +221,7 @@ export class SLAMonitor {
       FROM unified_price_feeds
       WHERE chain = $1 AND timestamp >= $2 AND timestamp <= $3
       ORDER BY timestamp DESC`,
-      [chain, from, to]
+      [chain, from, to],
     );
 
     // 计算准确性（价格偏差在 1% 以内的比例）
@@ -233,14 +230,13 @@ export class SLAMonitor {
 
     for (const price of protocolPrices.rows) {
       const otherPrices = allPrices.rows.filter(
-        (p) => p.symbol === price.symbol && p.protocol !== protocol
+        (p) => p.symbol === price.symbol && p.protocol !== protocol,
       );
 
       if (otherPrices.length === 0) continue;
 
       const avgPrice =
-        otherPrices.reduce((sum, p) => sum + parseFloat(p.price), 0) /
-        otherPrices.length;
+        otherPrices.reduce((sum, p) => sum + parseFloat(p.price), 0) / otherPrices.length;
       const deviation = Math.abs((parseFloat(price.price) - avgPrice) / avgPrice);
 
       if (deviation <= 0.01) accurateCount++;
@@ -258,7 +254,7 @@ export class SLAMonitor {
       FROM unified_sync_state
       WHERE protocol = $1 AND chain = $2
       AND updated_at >= NOW() - INTERVAL '24 hours'`,
-      [protocol, chain]
+      [protocol, chain],
     );
 
     const total = parseInt(result.rows[0]?.total_checks || 0);
@@ -275,7 +271,7 @@ export class SLAMonitor {
       latency: { avg: number; max: number };
       accuracy: number;
       uptime: number;
-    }
+    },
   ): Promise<void> {
     const timestamp = new Date();
 
@@ -307,7 +303,7 @@ export class SLAMonitor {
         this.config.availabilityTarget,
         this.config.criticalThreshold,
         this.getMetricStatus(metrics.availability, this.config.availabilityTarget),
-      ]
+      ],
     );
   }
 
@@ -330,7 +326,7 @@ export class SLAMonitor {
   async generateReport(
     protocol: string,
     chain: string,
-    period: '1h' | '24h' | '7d' | '30d' = '24h'
+    period: '1h' | '24h' | '7d' | '30d' = '24h',
   ): Promise<SLAReport> {
     const now = new Date();
     const periodMap = {
@@ -348,20 +344,16 @@ export class SLAMonitor {
       WHERE protocol = $1 AND chain = $2
       AND timestamp >= $3 AND timestamp <= $4
       GROUP BY metric_type`,
-      [protocol, chain, from, now]
+      [protocol, chain, from, now],
     );
 
-    const metricMap = new Map(
-      metrics.rows.map((row) => [row.metric_type, row])
-    );
+    const metricMap = new Map(metrics.rows.map((row) => [row.metric_type, row]));
 
     const uptime = parseFloat(metricMap.get('uptime')?.avg_value || 99.9);
     const avgLatency = parseFloat(metricMap.get('latency')?.avg_value || 0);
     const maxLatency = parseFloat(metricMap.get('latency')?.max_value || 0);
     const accuracy = parseFloat(metricMap.get('accuracy')?.avg_value || 99.9);
-    const availability = parseFloat(
-      metricMap.get('availability')?.avg_value || 99.9
-    );
+    const availability = parseFloat(metricMap.get('availability')?.avg_value || 99.9);
 
     // 计算 SLA 合规性
     const slaCompliance = this.calculateSLACompliance({
@@ -379,7 +371,7 @@ export class SLAMonitor {
       FROM unified_price_feeds
       WHERE protocol = $1 AND chain = $2
       AND timestamp >= $3`,
-      [protocol, chain, from]
+      [protocol, chain, from],
     );
 
     const totalRequests = parseInt(requestStats.rows[0]?.total || 0);
@@ -412,10 +404,8 @@ export class SLAMonitor {
     availability: number;
   }): number {
     const uptimeScore = Math.min(metrics.uptime / this.config.uptimeTarget, 1) * 25;
-    const latencyScore =
-      Math.min(this.config.latencyTarget / metrics.latency, 1) * 25;
-    const accuracyScore =
-      Math.min(metrics.accuracy / this.config.accuracyTarget, 1) * 25;
+    const latencyScore = Math.min(this.config.latencyTarget / metrics.latency, 1) * 25;
+    const accuracyScore = Math.min(metrics.accuracy / this.config.accuracyTarget, 1) * 25;
     const availabilityScore =
       Math.min(metrics.availability / this.config.availabilityTarget, 1) * 25;
 
@@ -432,7 +422,7 @@ export class SLAMonitor {
     protocol: string,
     chain: string,
     from: Date,
-    to: Date
+    to: Date,
   ): Promise<SLADetail[]> {
     const result = await query(
       `SELECT timestamp, metric_type, value, target
@@ -441,7 +431,7 @@ export class SLAMonitor {
       AND timestamp >= $3 AND timestamp <= $4
       ORDER BY timestamp DESC
       LIMIT 100`,
-      [protocol, chain, from, to]
+      [protocol, chain, from, to],
     );
 
     return result.rows.map((row) => ({
@@ -474,7 +464,7 @@ export class SLAMonitor {
         AVG(CASE WHEN metric_type = 'availability' THEN value END) as availability
       FROM sla_metrics
       WHERE timestamp >= NOW() - INTERVAL '24 hours'
-      GROUP BY protocol, chain`
+      GROUP BY protocol, chain`,
     );
 
     let totalCompliance = 0;
@@ -537,7 +527,7 @@ export class SLAMonitor {
       FROM sla_metrics
       WHERE timestamp >= NOW() - INTERVAL '1 hour'
       AND value < target
-      ORDER BY timestamp DESC`
+      ORDER BY timestamp DESC`,
     );
 
     for (const row of result.rows) {
@@ -586,7 +576,7 @@ export function resetSLAMonitor(): void {
 export async function generateSLAReport(
   protocol: string,
   chain: string,
-  period: '1h' | '24h' | '7d' | '30d' = '24h'
+  period: '1h' | '24h' | '7d' | '30d' = '24h',
 ): Promise<SLAReport> {
   return getSLAMonitor().generateReport(protocol, chain, period);
 }

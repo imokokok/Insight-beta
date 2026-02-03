@@ -2,12 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
-import {
-  isLang,
-  langToHtmlLang,
-  LANG_STORAGE_KEY,
-  type Lang,
-} from '@/i18n/types';
+import { isLang, langToHtmlLang, LANG_STORAGE_KEY, type Lang } from '@/i18n/types';
 import {
   interpolate,
   handlePlural,
@@ -31,7 +26,11 @@ type I18nContextValue = {
     date: (value: Date | number | string, options?: Intl.DateTimeFormatOptions) => string;
     number: (value: number, options?: Intl.NumberFormatOptions) => string;
     currency: (value: number, currency: string, options?: Intl.NumberFormatOptions) => string;
-    relativeTime: (value: number, unit: Intl.RelativeTimeFormatUnit, options?: Intl.RelativeTimeFormatOptions) => string;
+    relativeTime: (
+      value: number,
+      unit: Intl.RelativeTimeFormatUnit,
+      options?: Intl.RelativeTimeFormatOptions,
+    ) => string;
   };
 };
 
@@ -65,33 +64,35 @@ export function LanguageProvider({
 
   const t = useCallback(
     (key: TranslationKey, values?: InterpolationValues): string => {
-      const translationValue = getNestedValue(translations[lang], key) ?? getNestedValue(translations.en, key);
-      
+      const translationValue =
+        getNestedValue(translations[lang], key) ?? getNestedValue(translations.en, key);
+
       if (typeof translationValue !== 'string') {
         return key;
       }
-      
+
       if (values) {
         return interpolate(translationValue, values);
       }
-      
+
       return translationValue;
     },
-    [lang]
+    [lang],
   );
 
   const tn = useCallback(
     (key: TranslationKey, count: number, forms: PluralOptions['forms']): string => {
-      const template = getNestedValue(translations[lang], key) ?? getNestedValue(translations.en, key);
-      
+      const template =
+        getNestedValue(translations[lang], key) ?? getNestedValue(translations.en, key);
+
       if (typeof template !== 'string') {
         return handlePlural({ count, forms }, lang);
       }
-      
+
       const pluralResult = handlePlural({ count, forms }, lang);
       return interpolate(template, { count, value: pluralResult });
     },
-    [lang]
+    [lang],
   );
 
   const format = useMemo(
@@ -102,19 +103,25 @@ export function LanguageProvider({
         formatNumber(value, lang, options),
       currency: (value: number, currency: string, options?: Intl.NumberFormatOptions) =>
         formatCurrency(value, lang, currency, options),
-      relativeTime: (value: number, unit: Intl.RelativeTimeFormatUnit, options?: Intl.RelativeTimeFormatOptions) =>
-        formatRelativeTime(value, unit, lang, options),
+      relativeTime: (
+        value: number,
+        unit: Intl.RelativeTimeFormatUnit,
+        options?: Intl.RelativeTimeFormatOptions,
+      ) => formatRelativeTime(value, unit, lang, options),
     }),
-    [lang]
+    [lang],
   );
 
-  const value = useMemo<I18nContextValue>(() => ({ 
-    lang, 
-    setLang, 
-    t, 
-    tn,
-    format 
-  }), [lang, setLang, t, tn, format]);
+  const value = useMemo<I18nContextValue>(
+    () => ({
+      lang,
+      setLang,
+      t,
+      tn,
+      format,
+    }),
+    [lang, setLang, t, tn, format],
+  );
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }

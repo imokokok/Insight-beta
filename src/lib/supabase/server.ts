@@ -1,6 +1,6 @@
 /**
  * Supabase Server Client
- * 
+ *
  * Server-side Supabase client for API routes
  */
 
@@ -39,8 +39,20 @@ function createMockClient(): any {
   return {
     from: () => ({
       select: () => ({
-        eq: () => ({ single: async () => ({ data: null, error: { code: 'PGRST116', message: 'No data found' } }) }),
-        order: () => ({ limit: () => ({ single: async () => ({ data: null, error: { code: 'PGRST116', message: 'No data found' } }) }) }),
+        eq: () => ({
+          single: async () => ({
+            data: null,
+            error: { code: 'PGRST116', message: 'No data found' },
+          }),
+        }),
+        order: () => ({
+          limit: () => ({
+            single: async () => ({
+              data: null,
+              error: { code: 'PGRST116', message: 'No data found' },
+            }),
+          }),
+        }),
         gte: () => ({ order: () => ({ data: [], error: null }) }),
         lte: () => ({ data: [], error: null }),
         data: [],

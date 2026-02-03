@@ -278,7 +278,9 @@ export async function GET(request: NextRequest) {
     const symbols = symbolsParam
       ? symbolsParam.split(',')
       : ['ETH/USD', 'BTC/USD', 'LINK/USD', 'MATIC/USD'];
-    const protocols = (protocolsParam ? protocolsParam.split(',') : ORACLE_PROTOCOLS) as OracleProtocol[];
+    const protocols = (
+      protocolsParam ? protocolsParam.split(',') : ORACLE_PROTOCOLS
+    ) as OracleProtocol[];
 
     // 检查数据源健康状态
     const health = await checkDataSourceHealth();

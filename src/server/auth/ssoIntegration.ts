@@ -103,7 +103,10 @@ export class OAuth2Provider {
   /**
    * 交换授权码获取令牌
    */
-  async exchangeCode(code: string, redirectUri: string): Promise<{
+  async exchangeCode(
+    code: string,
+    redirectUri: string,
+  ): Promise<{
     accessToken: string;
     refreshToken?: string;
     expiresIn?: number;
@@ -390,10 +393,7 @@ export class SSOManager {
   /**
    * 查找或创建开发者
    */
-  private async findOrCreateDeveloper(
-    ssoUser: SSOUser,
-    config: SSOConfig,
-  ): Promise<string> {
+  private async findOrCreateDeveloper(ssoUser: SSOUser, config: SSOConfig): Promise<string> {
     // 先查找现有开发者
     const existing = await query(
       `SELECT developer_id FROM sso_sessions WHERE external_id = $1 AND provider = $2`,
@@ -408,10 +408,7 @@ export class SSOManager {
     }
 
     // 检查邮箱是否已注册
-    const byEmail = await query(
-      `SELECT id FROM developers WHERE email = $1`,
-      [ssoUser.email],
-    );
+    const byEmail = await query(`SELECT id FROM developers WHERE email = $1`, [ssoUser.email]);
 
     if (byEmail.rows.length > 0) {
       const row = byEmail.rows[0];

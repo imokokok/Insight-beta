@@ -195,7 +195,12 @@ export class DVMRewardsClient {
         abi: DVM_REWARDS_ABI,
         functionName: 'getSlashingHistory',
         args: [voter],
-      })) as readonly [readonly `0x${string}`[], readonly bigint[], readonly bigint[], readonly string[]];
+      })) as readonly [
+        readonly `0x${string}`[],
+        readonly bigint[],
+        readonly bigint[],
+        readonly string[],
+      ];
 
       const [assertionIds, amounts, timestamps, reasons] = result;
 

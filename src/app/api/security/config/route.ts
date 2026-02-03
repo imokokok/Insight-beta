@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createSupabaseClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 
@@ -35,7 +36,7 @@ const DEFAULT_CONFIG = {
 export async function GET() {
   try {
     const supabase = createSupabaseClient();
-    
+
     const { data, error } = await supabase
       .from('detection_config')
       .select('config')
@@ -52,10 +53,7 @@ export async function GET() {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     logger.error('Error in config GET API', { error: errorMessage });
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -65,28 +63,20 @@ export async function POST(request: NextRequest) {
     const { config } = body;
 
     if (!config) {
-      return NextResponse.json(
-        { error: 'Missing config in request body' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Missing config in request body' }, { status: 400 });
     }
 
     const supabase = createSupabaseClient();
 
-    const { error } = await supabase
-      .from('detection_config')
-      .upsert({
-        id: 'default',
-        config,
-        updated_at: new Date().toISOString(),
-      });
+    const { error } = await supabase.from('detection_config').upsert({
+      id: 'default',
+      config,
+      updated_at: new Date().toISOString(),
+    });
 
     if (error) {
       logger.error('Failed to save detection config', { error: error.message });
-      return NextResponse.json(
-        { error: 'Failed to save configuration' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Failed to save configuration' }, { status: 500 });
     }
 
     logger.info('Detection configuration updated');
@@ -98,9 +88,6 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     logger.error('Error in config POST API', { error: errorMessage });
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

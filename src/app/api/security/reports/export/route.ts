@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createSupabaseClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 
@@ -24,7 +25,7 @@ interface DetectionRow {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    
+
     const format = searchParams.get('format') || 'csv';
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
@@ -49,10 +50,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       logger.error('Failed to fetch detections for export', { error: error.message });
-      return NextResponse.json(
-        { error: 'Failed to fetch detections' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Failed to fetch detections' }, { status: 500 });
     }
 
     const typeLabels: Record<string, string> = {
@@ -98,7 +96,7 @@ export async function GET(request: NextRequest) {
         '备注',
       ];
 
-      const rows = (detections as DetectionRow[] || []).map((d) => [
+      const rows = ((detections as DetectionRow[]) || []).map((d) => [
         d.id,
         new Date(d.detected_at).toLocaleString('zh-CN'),
         d.protocol,
@@ -141,7 +139,7 @@ export async function GET(request: NextRequest) {
           byType: {} as Record<string, number>,
           byProtocol: {} as Record<string, number>,
         },
-        detections: (detections as DetectionRow[] || []).map((d) => ({
+        detections: ((detections as DetectionRow[]) || []).map((d) => ({
           id: d.id,
           detectedAt: d.detected_at,
           protocol: d.protocol,
@@ -165,7 +163,7 @@ export async function GET(request: NextRequest) {
       };
 
       // Calculate summary statistics
-      (detections as DetectionRow[] || []).forEach((d) => {
+      ((detections as DetectionRow[]) || []).forEach((d) => {
         report.summary.bySeverity[d.severity] = (report.summary.bySeverity[d.severity] || 0) + 1;
         report.summary.byType[d.type] = (report.summary.byType[d.type] || 0) + 1;
         report.summary.byProtocol[d.protocol] = (report.summary.byProtocol[d.protocol] || 0) + 1;
@@ -179,16 +177,10 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    return NextResponse.json(
-      { error: 'Unsupported format. Use csv or json' },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: 'Unsupported format. Use csv or json' }, { status: 400 });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     logger.error('Error in export API', { error: errorMessage });
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

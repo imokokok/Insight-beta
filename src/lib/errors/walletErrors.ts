@@ -89,7 +89,8 @@ function getErrorDetails(err: unknown): WalletErrorDetail {
       recoveryAction:
         'Click "Add Network" to add it automatically, or add it manually in your wallet settings',
       severity: 'warning',
-      documentationLink: 'https://docs.oracle-monitor.foresight.build/troubleshooting/network-issues',
+      documentationLink:
+        'https://docs.oracle-monitor.foresight.build/troubleshooting/network-issues',
     };
   }
 

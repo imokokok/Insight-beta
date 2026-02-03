@@ -388,7 +388,8 @@ export class ChainlinkSyncManager {
     if (!instance) return;
 
     const fields: string[] = [];
-    const values: (string | number | boolean | Date | null | undefined | string[] | number[])[] = [];
+    const values: (string | number | boolean | Date | null | undefined | string[] | number[])[] =
+      [];
     let paramIndex = 1;
 
     if (updates.lastProcessedBlock !== undefined) {

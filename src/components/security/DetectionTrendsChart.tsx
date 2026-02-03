@@ -20,10 +20,7 @@ import {
   AreaChart,
   Area,
 } from 'recharts';
-import {
-  TrendingUp,
-  Download,
-} from 'lucide-react';
+import { TrendingUp, Download } from 'lucide-react';
 
 interface TrendData {
   date: string;
@@ -72,7 +69,9 @@ const typeLabels: Record<string, string> = {
 export function DetectionTrendsChart({ className }: DetectionTrendsChartProps) {
   const [trends, setTrends] = useState<TrendData[]>([]);
   const [typeDistribution, setTypeDistribution] = useState<TypeDistribution[]>([]);
-  const [severityDistribution, setSeverityDistribution] = useState<Array<{ name: string; value: number }>>([]);
+  const [severityDistribution, setSeverityDistribution] = useState<
+    Array<{ name: string; value: number }>
+  >([]);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('7d');
 
@@ -89,14 +88,16 @@ export function DetectionTrendsChart({ className }: DetectionTrendsChartProps) {
       }
       const data = await response.json();
       setTrends(data.trends || []);
-      
+
       // Transform type distribution with colors
-      const typedDist = (data.typeDistribution || []).map((item: { name: string; value: number }, index: number) => ({
-        ...item,
-        color: typeColors[item.name] || COLORS[index % COLORS.length],
-      }));
+      const typedDist = (data.typeDistribution || []).map(
+        (item: { name: string; value: number }, index: number) => ({
+          ...item,
+          color: typeColors[item.name] || COLORS[index % COLORS.length],
+        }),
+      );
       setTypeDistribution(typedDist);
-      
+
       setSeverityDistribution(data.severityDistribution || []);
     } catch (error) {
       console.error('Error fetching trends:', error);
@@ -140,11 +141,11 @@ export function DetectionTrendsChart({ className }: DetectionTrendsChartProps) {
     <Card className={className}>
       <CardHeader className="flex flex-row items-center justify-between">
         <div className="flex items-center gap-2">
-          <TrendingUp className="h-5 w-5 text-muted-foreground" />
+          <TrendingUp className="text-muted-foreground h-5 w-5" />
           <CardTitle>检测趋势分析</CardTitle>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+          <div className="bg-muted flex items-center gap-1 rounded-lg p-1">
             {(['7d', '30d', '90d'] as const).map((range) => (
               <Button
                 key={range}
@@ -158,7 +159,7 @@ export function DetectionTrendsChart({ className }: DetectionTrendsChartProps) {
             ))}
           </div>
           <Button variant="outline" size="sm" className="h-7" onClick={exportData}>
-            <Download className="h-3 w-3 mr-1" />
+            <Download className="mr-1 h-3 w-3" />
             导出
           </Button>
         </div>
@@ -189,8 +190,8 @@ export function DetectionTrendsChart({ className }: DetectionTrendsChartProps) {
                     content={({ active, payload, label }) => {
                       if (active && payload && payload.length) {
                         return (
-                          <div className="bg-background border rounded-lg p-3 shadow-lg">
-                            <p className="font-medium mb-2">{label}</p>
+                          <div className="bg-background rounded-lg border p-3 shadow-lg">
+                            <p className="mb-2 font-medium">{label}</p>
                             {payload.map((p, i) => (
                               <p key={i} className="text-sm" style={{ color: p.color }}>
                                 {p.name}: {p.value}
@@ -266,9 +267,7 @@ export function DetectionTrendsChart({ className }: DetectionTrendsChartProps) {
                       typeLabels[name as string] || (name as string),
                     ]}
                   />
-                  <Legend
-                    formatter={(value: string) => typeLabels[value] || value}
-                  />
+                  <Legend formatter={(value: string) => typeLabels[value] || value} />
                 </PieChart>
               </ResponsiveContainer>
             </div>

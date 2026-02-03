@@ -26,7 +26,8 @@ vi.mock('@/server/notifications', () => ({
 describe('observability (memory)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (globalThis as unknown as { __oracleMonitorMemoryStore?: unknown }).__oracleMonitorMemoryStore = undefined;
+    (globalThis as unknown as { __oracleMonitorMemoryStore?: unknown }).__oracleMonitorMemoryStore =
+      undefined;
     vi.mocked(hasDatabase).mockReturnValue(false);
   });
 

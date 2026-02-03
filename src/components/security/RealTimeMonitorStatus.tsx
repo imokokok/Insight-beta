@@ -125,7 +125,7 @@ export function RealTimeMonitorStatus({ className }: RealTimeMonitorStatusProps)
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Activity className="h-5 w-5 text-primary" />
+            <Activity className="text-primary h-5 w-5" />
             <CardTitle className="text-lg">实时监控状态</CardTitle>
           </div>
           <div className="flex items-center gap-2">
@@ -141,14 +141,14 @@ export function RealTimeMonitorStatus({ className }: RealTimeMonitorStatusProps)
             {status?.isRunning ? (
               <>
                 <span className="relative flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex h-3 w-3 rounded-full bg-green-500"></span>
                 </span>
                 <span className="text-sm font-medium text-green-600">运行中</span>
               </>
             ) : (
               <>
-                <span className="inline-flex rounded-full h-3 w-3 bg-gray-400"></span>
+                <span className="inline-flex h-3 w-3 rounded-full bg-gray-400"></span>
                 <span className="text-sm font-medium text-gray-500">已停止</span>
               </>
             )}
@@ -165,7 +165,7 @@ export function RealTimeMonitorStatus({ className }: RealTimeMonitorStatusProps)
                 {actionLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <Square className="h-4 w-4 mr-1" />
+                  <Square className="mr-1 h-4 w-4" />
                 )}
                 停止监控
               </Button>
@@ -179,7 +179,7 @@ export function RealTimeMonitorStatus({ className }: RealTimeMonitorStatusProps)
                 {actionLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <Play className="h-4 w-4 mr-1" />
+                  <Play className="mr-1 h-4 w-4" />
                 )}
                 开始监控
               </Button>
@@ -190,21 +190,23 @@ export function RealTimeMonitorStatus({ className }: RealTimeMonitorStatusProps)
         {status?.isRunning && (
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-muted rounded-lg p-3">
-              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+              <div className="text-muted-foreground mb-1 flex items-center gap-2">
                 <TrendingUp className="h-4 w-4" />
                 <span className="text-xs">监控中数据源</span>
               </div>
               <div className="text-2xl font-bold">{status.activeMonitors.length}</div>
             </div>
             <div className="bg-muted rounded-lg p-3">
-              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+              <div className="text-muted-foreground mb-1 flex items-center gap-2">
                 <Shield className="h-4 w-4" />
                 <span className="text-xs">近期检测</span>
               </div>
-              <div className={cn(
-                "text-2xl font-bold",
-                status.recentDetections > 0 ? "text-red-500" : "text-green-500"
-              )}>
+              <div
+                className={cn(
+                  'text-2xl font-bold',
+                  status.recentDetections > 0 ? 'text-red-500' : 'text-green-500',
+                )}
+              >
                 {status.recentDetections}
               </div>
             </div>
@@ -229,25 +231,21 @@ export function RealTimeMonitorStatus({ className }: RealTimeMonitorStatusProps)
           </div>
         )}
 
-        <div className="flex items-center justify-between pt-2 border-t">
+        <div className="flex items-center justify-between border-t pt-2">
           <div className="flex items-center space-x-2">
-            <Switch
-              id="auto-start"
-              checked={autoStart}
-              onCheckedChange={setAutoStart}
-            />
-            <Label htmlFor="auto-start" className="text-sm cursor-pointer">
+            <Switch id="auto-start" checked={autoStart} onCheckedChange={setAutoStart} />
+            <Label htmlFor="auto-start" className="cursor-pointer text-sm">
               自动启动
             </Label>
           </div>
           <Button variant="ghost" size="sm">
-            <Settings className="h-4 w-4 mr-1" />
+            <Settings className="mr-1 h-4 w-4" />
             配置
           </Button>
         </div>
 
         {status?.lastCheckTime && (
-          <div className="text-xs text-muted-foreground text-center">
+          <div className="text-muted-foreground text-center text-xs">
             上次检查: {new Date(status.lastCheckTime).toLocaleTimeString()}
           </div>
         )}

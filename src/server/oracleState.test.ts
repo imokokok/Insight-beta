@@ -30,7 +30,8 @@ vi.mock('./schema', () => ({
 describe('oracleState', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (globalThis as unknown as { __oracleMonitorMemoryStore?: unknown }).__oracleMonitorMemoryStore = undefined;
+    (globalThis as unknown as { __oracleMonitorMemoryStore?: unknown }).__oracleMonitorMemoryStore =
+      undefined;
     vi.mocked(hasDatabase).mockReturnValue(true);
   });
 

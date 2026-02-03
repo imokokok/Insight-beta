@@ -9,7 +9,8 @@ const globalForApiAlerts = globalThis as unknown as {
   oracleMonitorApiRequestBuckets?: Map<number, ApiRequestBucket> | undefined;
 };
 
-const apiAlertCooldown = globalForApiAlerts.oracleMonitorApiAlertCooldown ?? new Map<string, number>();
+const apiAlertCooldown =
+  globalForApiAlerts.oracleMonitorApiAlertCooldown ?? new Map<string, number>();
 const apiRequestBuckets =
   globalForApiAlerts.oracleMonitorApiRequestBuckets ?? new Map<number, ApiRequestBucket>();
 if (process.env.NODE_ENV !== 'production') {

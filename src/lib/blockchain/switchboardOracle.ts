@@ -158,7 +158,7 @@ export class SwitchboardClient {
     try {
       // 调用 Switchboard API 获取价格
       const response = await fetch(
-        `${this.config.apiEndpoint}/api/v1/aggregators/${feedId}/latest`
+        `${this.config.apiEndpoint}/api/v1/aggregators/${feedId}/latest`,
       );
 
       if (!response.ok) {
@@ -178,18 +178,14 @@ export class SwitchboardClient {
       this.getLatestPrice(symbol).catch((error) => {
         logger.error(`Failed to get price for ${symbol}`, { error });
         return null;
-      })
+      }),
     );
 
     const results = await Promise.all(promises);
     return results.filter((price): price is UnifiedPriceFeed => price !== null);
   }
 
-  async getHistoricalPrices(
-    symbol: string,
-    from: Date,
-    to: Date
-  ): Promise<UnifiedPriceFeed[]> {
+  async getHistoricalPrices(symbol: string, from: Date, to: Date): Promise<UnifiedPriceFeed[]> {
     const feedId = this.getFeedId(symbol);
     if (!feedId) {
       throw new Error(`Price feed ID not found for symbol: ${symbol}`);
@@ -198,7 +194,7 @@ export class SwitchboardClient {
     try {
       const response = await fetch(
         `${this.config.apiEndpoint}/api/v1/aggregators/${feedId}/history?` +
-          `from=${from.toISOString()}&to=${to.toISOString()}`
+          `from=${from.toISOString()}&to=${to.toISOString()}`,
       );
 
       if (!response.ok) {
@@ -250,7 +246,7 @@ export class SwitchboardClient {
     callbackAddress: string,
     callbackFunction: string,
     numWords: number = 1,
-    minConfirmations: number = 3
+    minConfirmations: number = 3,
   ): Promise<string> {
     try {
       const response = await fetch(`${this.config.apiEndpoint}/api/v1/vrf/request`, {
@@ -283,9 +279,7 @@ export class SwitchboardClient {
 
   async getVRFStatus(requestId: string): Promise<SwitchboardVRFRequest> {
     try {
-      const response = await fetch(
-        `${this.config.apiEndpoint}/api/v1/vrf/requests/${requestId}`
-      );
+      const response = await fetch(`${this.config.apiEndpoint}/api/v1/vrf/requests/${requestId}`);
 
       if (!response.ok) {
         throw new Error(`Failed to get VRF status: ${response.statusText}`);
@@ -305,7 +299,7 @@ export class SwitchboardClient {
   async getAggregators(): Promise<SwitchboardAggregator[]> {
     try {
       const response = await fetch(
-        `${this.config.apiEndpoint}/api/v1/queues/${this.config.queueAddress}/aggregators`
+        `${this.config.apiEndpoint}/api/v1/queues/${this.config.queueAddress}/aggregators`,
       );
 
       if (!response.ok) {

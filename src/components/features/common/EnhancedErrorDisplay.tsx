@@ -1,6 +1,14 @@
 'use client';
 
-import { AlertCircle, ExternalLink, RefreshCw, Info, AlertTriangle, XCircle, LifeBuoy } from 'lucide-react';
+import {
+  AlertCircle,
+  ExternalLink,
+  RefreshCw,
+  Info,
+  AlertTriangle,
+  XCircle,
+  LifeBuoy,
+} from 'lucide-react';
 import { normalizeWalletError } from '@/lib/errors/walletErrors';
 
 interface EnhancedErrorDisplayProps {
@@ -81,45 +89,45 @@ export function EnhancedErrorDisplay({
           <Icon className={`h-6 w-6 ${config.iconColor}`} aria-hidden="true" />
         </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 mb-2">
+        <div className="min-w-0 flex-1">
+          <div className="mb-2 flex items-center gap-3">
             <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
             <span
-              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.badgeColor}`}
+              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${config.badgeColor}`}
             >
               {errorKindLabels[errorDetail.kind] || errorDetail.kind}
             </span>
           </div>
 
-          <p className="text-gray-700 mb-3">{errorDetail.userMessage}</p>
+          <p className="mb-3 text-gray-700">{errorDetail.userMessage}</p>
 
           {errorDetail.recoveryAction && (
-            <div className="flex items-start gap-2 mb-4 p-3 bg-white/60 rounded-lg">
-              <LifeBuoy className="h-5 w-5 text-gray-500 mt-0.5 flex-shrink-0" />
+            <div className="mb-4 flex items-start gap-2 rounded-lg bg-white/60 p-3">
+              <LifeBuoy className="mt-0.5 h-5 w-5 flex-shrink-0 text-gray-500" />
               <div>
                 <p className="text-sm font-medium text-gray-700">Suggested Action</p>
-                <p className="text-sm text-gray-600 mt-0.5">{errorDetail.recoveryAction}</p>
+                <p className="mt-0.5 text-sm text-gray-600">{errorDetail.recoveryAction}</p>
               </div>
             </div>
           )}
 
           {showDetails && errorDetail.rawMessage && (
             <details className="mt-4">
-              <summary className="text-sm text-gray-600 cursor-pointer hover:text-gray-800">
+              <summary className="cursor-pointer text-sm text-gray-600 hover:text-gray-800">
                 Technical Details
               </summary>
-              <pre className="mt-2 p-3 bg-gray-100 rounded-lg text-xs text-gray-700 overflow-x-auto">
+              <pre className="mt-2 overflow-x-auto rounded-lg bg-gray-100 p-3 text-xs text-gray-700">
                 {errorDetail.rawMessage}
                 {errorDetail.code && `\nError Code: ${errorDetail.code}`}
               </pre>
             </details>
           )}
 
-          <div className="flex flex-wrap items-center gap-3 mt-4 pt-4 border-t border-gray-200/50">
+          <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-gray-200/50 pt-4">
             {onRetry && (
               <button
                 onClick={onRetry}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-all hover:border-gray-400 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
               >
                 <RefreshCw className="h-4 w-4" />
                 Try Again
@@ -131,7 +139,7 @@ export function EnhancedErrorDisplay({
                 href={errorDetail.documentationLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-purple-700 hover:text-purple-800 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-purple-700 transition-colors hover:text-purple-800"
               >
                 <ExternalLink className="h-4 w-4" />
                 View Documentation
@@ -141,7 +149,7 @@ export function EnhancedErrorDisplay({
             {onContactSupport && (
               <button
                 onClick={onContactSupport}
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-gray-800"
               >
                 <LifeBuoy className="h-4 w-4" />
                 Contact Support
@@ -209,15 +217,15 @@ export function ErrorRecoveryGuide({ error }: ErrorRecoveryGuideProps) {
   }
 
   return (
-    <div className="mt-4 p-4 bg-white rounded-lg border border-gray-200">
-      <div className="flex items-center gap-2 mb-3">
+    <div className="mt-4 rounded-lg border border-gray-200 bg-white p-4">
+      <div className="mb-3 flex items-center gap-2">
         <Icon className={`h-5 w-5 ${config.iconColor}`} />
         <h4 className="font-medium text-gray-900">{quickFix.title}</h4>
       </div>
       <ol className="space-y-2">
         {quickFix.steps.map((step, index) => (
           <li key={index} className="flex items-start gap-2 text-sm text-gray-600">
-            <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center rounded-full bg-purple-100 text-purple-700 text-xs font-medium">
+            <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-purple-100 text-xs font-medium text-purple-700">
               {index + 1}
             </span>
             {step}
@@ -248,14 +256,14 @@ export function TransactionErrorModal({
   const errorDetail = normalizeWalletError(error);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div
-        className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200"
+        className="animate-in fade-in zoom-in w-full max-w-md rounded-2xl bg-white p-6 shadow-xl duration-200"
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
       >
-        <div className="flex items-center gap-3 mb-4">
+        <div className="mb-4 flex items-center gap-3">
           <div className="rounded-full bg-red-100 p-2">
             <AlertCircle className="h-6 w-6 text-red-600" />
           </div>
@@ -268,14 +276,14 @@ export function TransactionErrorModal({
         </div>
 
         <div className="space-y-4">
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm font-medium text-gray-900 mb-1">What happened?</p>
+          <div className="rounded-lg bg-gray-50 p-4">
+            <p className="mb-1 text-sm font-medium text-gray-900">What happened?</p>
             <p className="text-sm text-gray-600">{errorDetail.userMessage}</p>
           </div>
 
           {errorDetail.recoveryAction && (
-            <div className="p-4 bg-blue-50 rounded-lg">
-              <p className="text-sm font-medium text-blue-900 mb-1">How to fix it</p>
+            <div className="rounded-lg bg-blue-50 p-4">
+              <p className="mb-1 text-sm font-medium text-blue-900">How to fix it</p>
               <p className="text-sm text-blue-700">{errorDetail.recoveryAction}</p>
             </div>
           )}
@@ -283,21 +291,21 @@ export function TransactionErrorModal({
           <ErrorRecoveryGuide error={error} />
         </div>
 
-        <div className="flex gap-3 mt-6">
+        <div className="mt-6 flex gap-3">
           {onRetry && (
             <button
               onClick={() => {
                 onRetry();
                 onClose();
               }}
-              className="flex-1 px-4 py-2.5 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+              className="flex-1 rounded-lg bg-purple-600 px-4 py-2.5 font-medium text-white transition-colors hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
             >
               Try Again
             </button>
           )}
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+            className="flex-1 rounded-lg bg-gray-100 px-4 py-2.5 font-medium text-gray-700 transition-colors hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
           >
             Close
           </button>

@@ -15,9 +15,9 @@ interface MetricsRow {
 export async function GET() {
   try {
     const serviceMetrics = manipulationDetectionService.getMetrics();
-    
+
     const supabase = createSupabaseClient();
-    
+
     const { data: dbMetrics, error } = await supabase
       .from('detection_metrics')
       .select('*')
@@ -35,19 +35,24 @@ export async function GET() {
     return NextResponse.json({
       metrics: {
         totalDetections: useDbMetrics ? dbData.total_detections : serviceMetrics.totalDetections,
-        detectionsByType: useDbMetrics ? dbData.detections_by_type : serviceMetrics.detectionsByType,
-        detectionsBySeverity: useDbMetrics ? dbData.detections_by_severity : serviceMetrics.detectionsBySeverity,
+        detectionsByType: useDbMetrics
+          ? dbData.detections_by_type
+          : serviceMetrics.detectionsByType,
+        detectionsBySeverity: useDbMetrics
+          ? dbData.detections_by_severity
+          : serviceMetrics.detectionsBySeverity,
         falsePositives: useDbMetrics ? dbData.false_positives : serviceMetrics.falsePositives,
-        averageConfidence: useDbMetrics ? dbData.average_confidence : serviceMetrics.averageConfidence,
-        lastDetectionTime: useDbMetrics ? dbData.last_detection_time : serviceMetrics.lastDetectionTime,
+        averageConfidence: useDbMetrics
+          ? dbData.average_confidence
+          : serviceMetrics.averageConfidence,
+        lastDetectionTime: useDbMetrics
+          ? dbData.last_detection_time
+          : serviceMetrics.lastDetectionTime,
       },
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     logger.error('Error in metrics API', { error: errorMessage });
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

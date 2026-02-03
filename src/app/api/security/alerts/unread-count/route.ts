@@ -16,19 +16,13 @@ export async function GET() {
 
     if (error) {
       logger.error('Failed to fetch unread count', { error: error.message });
-      return NextResponse.json(
-        { error: 'Failed to fetch count' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Failed to fetch count' }, { status: 500 });
     }
 
     return NextResponse.json({ count: count || 0 });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     logger.error('Error in unread count API', { error: errorMessage });
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

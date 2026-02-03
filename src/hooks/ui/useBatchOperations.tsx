@@ -42,9 +42,9 @@ interface UseBatchOperationsReturn<T> {
 
 /**
  * 批量操作 Hook
- * 
+ *
  * 提供批量选择、处理和操作的功能
- * 
+ *
  * @example
  * ```typescript
  * const {
@@ -87,28 +87,31 @@ export function useBatchOperations<T extends { id: string }>(
     return selectedCount > 0 && selectedCount < items.length;
   }, [selectedCount, items.length]);
 
-  const toggleSelect = useCallback((id: string) => {
-    setItemsState((prevItems) => {
-      const currentSelected = prevItems.filter((item) => item.selected).length;
-      const idx = prevItems.findIndex((item) => item.id === id);
-      if (idx === -1) return prevItems;
+  const toggleSelect = useCallback(
+    (id: string) => {
+      setItemsState((prevItems) => {
+        const currentSelected = prevItems.filter((item) => item.selected).length;
+        const idx = prevItems.findIndex((item) => item.id === id);
+        if (idx === -1) return prevItems;
 
-      const next = prevItems.map((item) => ({ ...item }));
-      const item = next[idx];
-      if (!item) return prevItems;
+        const next = prevItems.map((item) => ({ ...item }));
+        const item = next[idx];
+        if (!item) return prevItems;
 
-      if (item.selected) {
-        item.selected = false;
-      } else {
-        if (currentSelected >= maxSelectable) {
-          console.warn(`Maximum of ${maxSelectable} items can be selected`);
-          return prevItems;
+        if (item.selected) {
+          item.selected = false;
+        } else {
+          if (currentSelected >= maxSelectable) {
+            console.warn(`Maximum of ${maxSelectable} items can be selected`);
+            return prevItems;
+          }
+          item.selected = true;
         }
-        item.selected = true;
-      }
-      return next;
-    });
-  }, [maxSelectable]);
+        return next;
+      });
+    },
+    [maxSelectable],
+  );
 
   const toggleSelectAll = useCallback(() => {
     setItemsState((prevItems) => {
@@ -141,63 +144,67 @@ export function useBatchOperations<T extends { id: string }>(
     );
   }, []);
 
-  const processBatch = useCallback(async (
-    processor: (items: T[]) => Promise<BatchOperationResult<T>>,
-    options?: { onProgress?: (completed: number, total: number) => void },
-  ): Promise<BatchOperationResult<T[]>> => {
-    setIsProcessing(true);
+  const processBatch = useCallback(
+    async (
+      processor: (items: T[]) => Promise<BatchOperationResult<T>>,
+      options?: { onProgress?: (completed: number, total: number) => void },
+    ): Promise<BatchOperationResult<T[]>> => {
+      setIsProcessing(true);
 
-    const itemsToProcess = selectedItems.length > 0 ? selectedItems : (items.map((i) => i.data) as T[]);
+      const itemsToProcess =
+        selectedItems.length > 0 ? selectedItems : (items.map((i) => i.data) as T[]);
 
-    if (itemsToProcess.length === 0) {
-      setIsProcessing(false);
-      return { success: false, error: 'No items available' };
-    }
-
-    // 确认对话框
-    if (requireConfirmation && selectedCount >= confirmationThreshold) {
-      let confirmed = true;
-      if (typeof window !== 'undefined' && typeof window.confirm === 'function') {
-        confirmed = window.confirm(
-          `Are you sure you want to process ${selectedCount} items? This action cannot be undone.`,
-        );
-      }
-      if (!confirmed) {
+      if (itemsToProcess.length === 0) {
         setIsProcessing(false);
-        return { success: false, error: 'Operation cancelled by user' };
-      }
-    }
-
-    try {
-      const results: T[] = [];
-      const result = await processor(itemsToProcess);
-
-      if (!result.success) {
-        console.error('Batch processing failed:', result.error);
-      } else if (result.data) {
-        results.push(result.data);
+        return { success: false, error: 'No items available' };
       }
 
-      options?.onProgress?.(itemsToProcess.length, itemsToProcess.length);
+      // 确认对话框
+      if (requireConfirmation && selectedCount >= confirmationThreshold) {
+        let confirmed = true;
+        if (typeof window !== 'undefined' && typeof window.confirm === 'function') {
+          confirmed = window.confirm(
+            `Are you sure you want to process ${selectedCount} items? This action cannot be undone.`,
+          );
+        }
+        if (!confirmed) {
+          setIsProcessing(false);
+          return { success: false, error: 'Operation cancelled by user' };
+        }
+      }
 
-      // 取消已处理项目的选择状态
-      setItemsState((prevItems) =>
-        prevItems.map((item) =>
-          results.find((r) => r.id === item.data.id) ? { ...item, selected: false } : item,
-        ),
-      );
+      try {
+        const results: T[] = [];
+        const result = await processor(itemsToProcess);
 
-      return { success: true, data: results };
-    } catch (error) {
-      console.error('Batch processing failed:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred',
-      };
-    } finally {
-      setIsProcessing(false);
-    }
-  }, [items, selectedItems, selectedCount, requireConfirmation, confirmationThreshold]);
+        if (!result.success) {
+          console.error('Batch processing failed:', result.error);
+        } else if (result.data) {
+          results.push(result.data);
+        }
+
+        options?.onProgress?.(itemsToProcess.length, itemsToProcess.length);
+
+        // 取消已处理项目的选择状态
+        setItemsState((prevItems) =>
+          prevItems.map((item) =>
+            results.find((r) => r.id === item.data.id) ? { ...item, selected: false } : item,
+          ),
+        );
+
+        return { success: true, data: results };
+      } catch (error) {
+        console.error('Batch processing failed:', error);
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error occurred',
+        };
+      } finally {
+        setIsProcessing(false);
+      }
+    },
+    [items, selectedItems, selectedCount, requireConfirmation, confirmationThreshold],
+  );
 
   const getSelectedIds = useCallback(() => {
     return items.filter((item) => item.selected).map((item) => item.id);

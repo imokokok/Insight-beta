@@ -155,7 +155,7 @@ export class SwitchboardSyncService {
         price.stalenessSeconds,
         price.txHash,
         price.logIndex,
-      ]
+      ],
     );
   }
 
@@ -171,13 +171,7 @@ export class SwitchboardSyncService {
         last_error = EXCLUDED.last_error,
         updated_at = NOW()
       `,
-      [
-        this.config.instanceId,
-        'switchboard',
-        status,
-        this.lastSyncAt,
-        error || null,
-      ]
+      [this.config.instanceId, 'switchboard', status, this.lastSyncAt, error || null],
     );
   }
 
@@ -198,7 +192,7 @@ export class SwitchboardSyncService {
 const syncServices: Map<string, SwitchboardSyncService> = new Map();
 
 export async function startSwitchboardSync(
-  config: SwitchboardSyncConfig
+  config: SwitchboardSyncConfig,
 ): Promise<SwitchboardSyncService> {
   // 停止现有的同步服务
   const existing = syncServices.get(config.instanceId);

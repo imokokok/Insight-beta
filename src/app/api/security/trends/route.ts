@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createSupabaseClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
 
@@ -35,15 +36,12 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       logger.error('Failed to fetch trends', { error: error.message });
-      return NextResponse.json(
-        { error: 'Failed to fetch trends' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Failed to fetch trends' }, { status: 500 });
     }
 
     // Generate date range
     const trends = new Map<string, TrendData>();
-    
+
     for (let i = 0; i < days; i++) {
       const date = new Date(Date.now() - (days - 1 - i) * 24 * 60 * 60 * 1000);
       const dateStr = date.toISOString().split('T')[0]!;
@@ -58,7 +56,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Aggregate detections
-    (detections as DetectionTrendRow[] || []).forEach((detection) => {
+    ((detections as DetectionTrendRow[]) || []).forEach((detection) => {
       const dateStr = new Date(detection.detected_at).toISOString().split('T')[0]!;
       const trend = trends.get(dateStr);
       if (trend) {
@@ -73,7 +71,7 @@ export async function GET(request: NextRequest) {
 
     // Calculate type distribution
     const typeCounts: Record<string, number> = {};
-    (detections as DetectionTrendRow[] || []).forEach((detection) => {
+    ((detections as DetectionTrendRow[]) || []).forEach((detection) => {
       typeCounts[detection.type] = (typeCounts[detection.type] || 0) + 1;
     });
 
@@ -83,7 +81,7 @@ export async function GET(request: NextRequest) {
 
     // Calculate severity distribution
     const severityCounts: Record<string, number> = {};
-    (detections as DetectionTrendRow[] || []).forEach((detection) => {
+    ((detections as DetectionTrendRow[]) || []).forEach((detection) => {
       severityCounts[detection.severity] = (severityCounts[detection.severity] || 0) + 1;
     });
 
@@ -99,9 +97,6 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     logger.error('Error in trends API', { error: errorMessage });
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -7,9 +7,9 @@ export async function GET() {
   try {
     const isRunning = manipulationDetectionService.isMonitoring();
     const activeMonitors: string[] = manipulationDetectionService.getActiveMonitors();
-    
+
     const supabase = createSupabaseClient();
-    
+
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
     const { data: recentDetections, error } = await supabase
       .from('manipulation_detections')
@@ -21,7 +21,7 @@ export async function GET() {
     }
 
     const recentDetectionCount = recentDetections?.length || 0;
-    
+
     let systemHealth: 'healthy' | 'degraded' | 'unhealthy' = 'healthy';
     if (recentDetectionCount > 10) {
       systemHealth = 'degraded';
@@ -43,9 +43,6 @@ export async function GET() {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     logger.error('Error in monitor status API', { error: errorMessage });
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

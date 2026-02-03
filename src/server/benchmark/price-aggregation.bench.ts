@@ -31,7 +31,7 @@ describe('Price Aggregation Benchmarks', () => {
 
   bench('weighted average aggregation', () => {
     const totalWeight = mockPrices.reduce((acc, p) => acc + p.confidence, 0);
-    const weightedSum = mockPrices.reduce((acc, p) => acc + (p.price * p.confidence), 0);
+    const weightedSum = mockPrices.reduce((acc, p) => acc + p.price * p.confidence, 0);
     const weightedAvg = weightedSum / totalWeight;
     void weightedAvg;
   });
@@ -43,33 +43,33 @@ describe('Price Aggregation Benchmarks', () => {
   });
 
   bench('outlier detection with IQR', () => {
-    const prices = outlierPrices.map(p => p.price);
+    const prices = outlierPrices.map((p) => p.price);
     const sorted = [...prices].sort((a, b) => a - b);
     const q1 = sorted[Math.floor(sorted.length * 0.25)] ?? 0;
     const q3 = sorted[Math.floor(sorted.length * 0.75)] ?? 0;
     const iqr = q3 - q1;
     const lowerBound = q1 - 1.5 * iqr;
     const upperBound = q3 + 1.5 * iqr;
-    const filtered = prices.filter(p => p >= lowerBound && p <= upperBound);
+    const filtered = prices.filter((p) => p >= lowerBound && p <= upperBound);
     void filtered;
   });
 
   bench('outlier detection with Z-score', () => {
-    const prices = outlierPrices.map(p => p.price);
+    const prices = outlierPrices.map((p) => p.price);
     const mean = prices.reduce((a, b) => a + b, 0) / prices.length;
     const variance = prices.reduce((acc, p) => acc + Math.pow(p - mean, 2), 0) / prices.length;
     const stdDev = Math.sqrt(variance);
-    const filtered = prices.filter(p => Math.abs((p - mean) / stdDev) < 2);
+    const filtered = prices.filter((p) => Math.abs((p - mean) / stdDev) < 2);
     void filtered;
   });
 
   bench('complete aggregation pipeline', () => {
     // Simulate full aggregation pipeline
-    const validPrices = mockPrices.filter(p => p.confidence > 0.8);
+    const validPrices = mockPrices.filter((p) => p.confidence > 0.8);
     const totalWeight = validPrices.reduce((acc, p) => acc + p.confidence, 0);
-    const weightedSum = validPrices.reduce((acc, p) => acc + (p.price * p.confidence), 0);
+    const weightedSum = validPrices.reduce((acc, p) => acc + p.price * p.confidence, 0);
     const aggregated = weightedSum / totalWeight;
-    const confidence = Math.min(...validPrices.map(p => p.confidence));
+    const confidence = Math.min(...validPrices.map((p) => p.confidence));
     void aggregated;
     void confidence;
   });
@@ -84,8 +84,8 @@ describe('Protocol Data Fetching Benchmarks', () => {
       timestamp: Date.now() - i * 1000,
       confidence: 0.9 + Math.random() * 0.1,
     }));
-    
-    const parsed = updates.map(u => ({
+
+    const parsed = updates.map((u) => ({
       ...u,
       price: Math.round(u.price * 100) / 100,
     }));
@@ -95,7 +95,7 @@ describe('Protocol Data Fetching Benchmarks', () => {
   bench('calculate price deviation', () => {
     const prices = Array.from({ length: 100 }, () => 1000 + Math.random() * 10);
     const mean = prices.reduce((a, b) => a + b, 0) / prices.length;
-    const deviations = prices.map(p => Math.abs((p - mean) / mean) * 100);
+    const deviations = prices.map((p) => Math.abs((p - mean) / mean) * 100);
     const maxDeviation = Math.max(...deviations);
     void maxDeviation;
   });

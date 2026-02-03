@@ -147,9 +147,7 @@ export async function calculateWeightedConsensus(
   }
 
   // 获取协议可靠性评分
-  const reliabilityScores = await getProtocolReliabilityScores(
-    prices.map((p) => p.protocol),
-  );
+  const reliabilityScores = await getProtocolReliabilityScores(prices.map((p) => p.protocol));
 
   // 计算权重（结合置信度和可靠性）
   const weightedPrices = prices.map((p) => {
@@ -205,9 +203,7 @@ export async function detectPriceDeviations(
   const prices = await getCrossProtocolPrices(symbol, finalConfig.timeWindowMinutes);
 
   if (prices.length < finalConfig.minDataPoints) {
-    throw new Error(
-      `Insufficient data points: ${prices.length} < ${finalConfig.minDataPoints}`,
-    );
+    throw new Error(`Insufficient data points: ${prices.length} < ${finalConfig.minDataPoints}`);
   }
 
   // 计算共识价格（使用加权中位数）
@@ -229,7 +225,11 @@ export async function detectPriceDeviations(
     consensusMethod: consensusResult.method as 'median' | 'weighted' | 'trimmed_mean',
     participatingProtocols: prices.length,
     confidenceLevel:
-      consensusResult.confidence > 0.8 ? 'high' : consensusResult.confidence > 0.5 ? 'medium' : 'low',
+      consensusResult.confidence > 0.8
+        ? 'high'
+        : consensusResult.confidence > 0.5
+          ? 'medium'
+          : 'low',
     priceRange: {
       min: minPrice,
       max: maxPrice,
@@ -381,7 +381,8 @@ export async function getProtocolReliabilityReport(
   const maxDeviation = parseFloat(row.max_deviation) || 0;
 
   // 计算可靠性评分
-  const freshnessScore = totalUpdates > 0 ? ((totalUpdates - staleUpdates) / totalUpdates) * 100 : 0;
+  const freshnessScore =
+    totalUpdates > 0 ? ((totalUpdates - staleUpdates) / totalUpdates) * 100 : 0;
   const accuracyScore = Math.max(0, 100 - avgDeviation * 10);
   const reliabilityScore = freshnessScore * 0.5 + accuracyScore * 0.5;
 
@@ -503,9 +504,7 @@ export async function batchAnalyzeSymbols(
     try {
       const { consensus, deviations, healthy } = await detectPriceDeviations(symbol, config);
       const trends = await analyzePriceTrends(symbol, 1);
-      const reliability = await getProtocolReliabilityScores(
-        healthy.map((p) => p.protocol),
-      );
+      const reliability = await getProtocolReliabilityScores(healthy.map((p) => p.protocol));
 
       results.push({
         symbol,

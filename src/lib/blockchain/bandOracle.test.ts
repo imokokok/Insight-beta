@@ -154,15 +154,18 @@ describe('BandClient', () => {
       mockFetch
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({
-            price_results: [{
-              symbol: 'BTC',
-              rate: '45000000000000000000000',
-              multiplier: '1000000000000000000',
-              last_update: new Date().toISOString(),
-              block_height: '12345678',
-            }],
-          }),
+          json: () =>
+            Promise.resolve({
+              price_results: [
+                {
+                  symbol: 'BTC',
+                  rate: '45000000000000000000000',
+                  multiplier: '1000000000000000000',
+                  last_update: new Date().toISOString(),
+                  block_height: '12345678',
+                },
+              ],
+            }),
         })
         .mockResolvedValueOnce({
           ok: false,
@@ -219,9 +222,9 @@ describe('BandClient', () => {
   describe('updateConfig', () => {
     it('should update config values', () => {
       const client = new BandClient(mockConfig);
-      
+
       client.updateConfig({ minCount: 10, askCount: 15 });
-      
+
       const config = client.getConfig();
       expect(config.minCount).toBe(10);
       expect(config.askCount).toBe(15);

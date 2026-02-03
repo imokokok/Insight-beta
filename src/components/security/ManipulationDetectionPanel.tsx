@@ -153,7 +153,10 @@ export function ManipulationDetectionPanel({
     });
   };
 
-  const handleReviewDetection = async (detectionId: string, status: 'confirmed' | 'false_positive') => {
+  const handleReviewDetection = async (
+    detectionId: string,
+    status: 'confirmed' | 'false_positive',
+  ) => {
     try {
       await fetch(`/api/security/detections/${detectionId}/review`, {
         method: 'POST',
@@ -189,7 +192,7 @@ export function ManipulationDetectionPanel({
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-primary" />
+            <Shield className="text-primary h-5 w-5" />
             <CardTitle className="text-lg">价格操纵检测</CardTitle>
           </div>
           <div className="flex items-center gap-2">
@@ -206,7 +209,7 @@ export function ManipulationDetectionPanel({
       </CardHeader>
 
       <Tabs defaultValue="detections" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mx-4 mb-4">
+        <TabsList className="mx-4 mb-4 grid w-full grid-cols-2">
           <TabsTrigger value="detections">检测记录</TabsTrigger>
           <TabsTrigger value="metrics">统计指标</TabsTrigger>
         </TabsList>
@@ -214,11 +217,11 @@ export function ManipulationDetectionPanel({
         <TabsContent value="detections" className="m-0">
           <div className="px-4 pb-3">
             <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-muted-foreground" />
+              <Filter className="text-muted-foreground h-4 w-4" />
               <select
                 value={filterSeverity}
                 onChange={(e) => setFilterSeverity(e.target.value)}
-                className="text-sm border rounded px-2 py-1 bg-background"
+                className="bg-background rounded border px-2 py-1 text-sm"
               >
                 <option value="all">全部级别</option>
                 <option value="critical">严重</option>
@@ -230,10 +233,10 @@ export function ManipulationDetectionPanel({
           </div>
 
           <ScrollArea className="h-[400px]">
-            <div className="px-4 pb-4 space-y-3">
+            <div className="space-y-3 px-4 pb-4">
               {detections.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <CheckCircle className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                <div className="text-muted-foreground py-8 text-center">
+                  <CheckCircle className="mx-auto mb-2 h-12 w-12 opacity-50" />
                   <p>未检测到价格操纵行为</p>
                 </div>
               ) : (
@@ -246,24 +249,27 @@ export function ManipulationDetectionPanel({
                     <div
                       key={detection.id}
                       className={cn(
-                        'border rounded-lg p-3 transition-all cursor-pointer',
+                        'cursor-pointer rounded-lg border p-3 transition-all',
                         severity.borderColor,
                         severity.bgColor,
-                        selectedDetection?.id === detection.id && 'ring-2 ring-primary'
+                        selectedDetection?.id === detection.id && 'ring-primary ring-2',
                       )}
                       onClick={() => setSelectedDetection(detection)}
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex items-start gap-2">
-                          <SeverityIcon className={cn('h-5 w-5 mt-0.5', severity.textColor)} />
+                          <SeverityIcon className={cn('mt-0.5 h-5 w-5', severity.textColor)} />
                           <div>
                             <div className="flex items-center gap-2">
                               <span className="font-medium">{typeLabels[detection.type]}</span>
-                              <Badge variant="outline" className={cn('text-xs', severity.textColor)}>
+                              <Badge
+                                variant="outline"
+                                className={cn('text-xs', severity.textColor)}
+                              >
                                 {severity.label}
                               </Badge>
                             </div>
-                            <div className="text-sm text-muted-foreground mt-1">
+                            <div className="text-muted-foreground mt-1 text-sm">
                               {detection.protocol} · {detection.symbol} · {detection.chain}
                             </div>
                           </div>
@@ -273,12 +279,12 @@ export function ManipulationDetectionPanel({
                             variant="secondary"
                             className={cn(
                               'text-xs',
-                              detection.confidenceScore > 0.9 && 'bg-red-100 text-red-700'
+                              detection.confidenceScore > 0.9 && 'bg-red-100 text-red-700',
                             )}
                           >
                             {(detection.confidenceScore * 100).toFixed(0)}% 置信度
                           </Badge>
-                          <div className="text-xs text-muted-foreground mt-1">
+                          <div className="text-muted-foreground mt-1 text-xs">
                             {new Date(detection.detectedAt).toLocaleString()}
                           </div>
                         </div>
@@ -287,8 +293,14 @@ export function ManipulationDetectionPanel({
                       {detection.priceImpact && (
                         <div className="mt-2 flex items-center gap-4 text-sm">
                           <span className="text-muted-foreground">
-                            价格影响: <span className={detection.priceImpact > 0 ? 'text-green-600' : 'text-red-600'}>
-                              {detection.priceImpact > 0 ? '+' : ''}{detection.priceImpact.toFixed(2)}%
+                            价格影响:{' '}
+                            <span
+                              className={
+                                detection.priceImpact > 0 ? 'text-green-600' : 'text-red-600'
+                              }
+                            >
+                              {detection.priceImpact > 0 ? '+' : ''}
+                              {detection.priceImpact.toFixed(2)}%
                             </span>
                           </span>
                           {detection.financialImpactUsd && (
@@ -311,12 +323,12 @@ export function ManipulationDetectionPanel({
                         >
                           {isExpanded ? (
                             <>
-                              <ChevronUp className="h-3 w-3 mr-1" />
+                              <ChevronUp className="mr-1 h-3 w-3" />
                               收起证据
                             </>
                           ) : (
                             <>
-                              <ChevronDown className="h-3 w-3 mr-1" />
+                              <ChevronDown className="mr-1 h-3 w-3" />
                               查看证据 ({detection.evidence.length})
                             </>
                           )}
@@ -327,10 +339,10 @@ export function ManipulationDetectionPanel({
                         <div className="mt-2 space-y-2">
                           <Separator />
                           {detection.evidence.map((evidence, idx) => (
-                            <div key={idx} className="text-sm pl-4 border-l-2 border-muted">
+                            <div key={idx} className="border-muted border-l-2 pl-4 text-sm">
                               <div className="font-medium">{evidence.type}</div>
                               <div className="text-muted-foreground">{evidence.description}</div>
-                              <div className="text-xs text-muted-foreground mt-1">
+                              <div className="text-muted-foreground mt-1 text-xs">
                                 置信度: {(evidence.confidence * 100).toFixed(0)}%
                               </div>
                             </div>
@@ -341,14 +353,18 @@ export function ManipulationDetectionPanel({
                               <Separator />
                               <div className="text-sm font-medium">可疑交易</div>
                               {detection.suspiciousTransactions.map((tx, idx) => (
-                                <div key={idx} className="text-sm pl-4 flex items-center gap-2">
+                                <div key={idx} className="flex items-center gap-2 pl-4 text-sm">
                                   <ExternalLink className="h-3 w-3" />
-                                  <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                                  <code className="bg-muted rounded px-1 py-0.5 text-xs">
                                     {tx.hash.slice(0, 16)}...
                                   </code>
-                                  <span className="text-muted-foreground">{typeLabels[tx.type] || tx.type}</span>
+                                  <span className="text-muted-foreground">
+                                    {typeLabels[tx.type] || tx.type}
+                                  </span>
                                   {tx.valueUsd && (
-                                    <span className="text-muted-foreground">${tx.valueUsd.toLocaleString()}</span>
+                                    <span className="text-muted-foreground">
+                                      ${tx.valueUsd.toLocaleString()}
+                                    </span>
                                   )}
                                 </div>
                               ))}
@@ -356,7 +372,7 @@ export function ManipulationDetectionPanel({
                           )}
 
                           {detection.status === 'pending' && (
-                            <div className="flex gap-2 mt-3">
+                            <div className="mt-3 flex gap-2">
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -366,7 +382,7 @@ export function ManipulationDetectionPanel({
                                   handleReviewDetection(detection.id, 'confirmed');
                                 }}
                               >
-                                <CheckCircle className="h-3 w-3 mr-1" />
+                                <CheckCircle className="mr-1 h-3 w-3" />
                                 确认有效
                               </Button>
                               <Button
@@ -378,7 +394,7 @@ export function ManipulationDetectionPanel({
                                   handleReviewDetection(detection.id, 'false_positive');
                                 }}
                               >
-                                <AlertCircle className="h-3 w-3 mr-1" />
+                                <AlertCircle className="mr-1 h-3 w-3" />
                                 误报
                               </Button>
                             </div>
@@ -400,7 +416,7 @@ export function ManipulationDetectionPanel({
                 <Card>
                   <CardContent className="p-4">
                     <div className="text-2xl font-bold">{metrics.totalDetections}</div>
-                    <div className="text-sm text-muted-foreground">总检测数</div>
+                    <div className="text-muted-foreground text-sm">总检测数</div>
                   </CardContent>
                 </Card>
                 <Card>
@@ -408,7 +424,7 @@ export function ManipulationDetectionPanel({
                     <div className="text-2xl font-bold">
                       {(metrics.averageConfidence * 100).toFixed(1)}%
                     </div>
-                    <div className="text-sm text-muted-foreground">平均置信度</div>
+                    <div className="text-muted-foreground text-sm">平均置信度</div>
                   </CardContent>
                 </Card>
               </div>
@@ -427,13 +443,13 @@ export function ManipulationDetectionPanel({
                       return (
                         <div key={severity} className="flex items-center gap-2">
                           <div className="w-16 text-xs">{config.label}</div>
-                          <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                          <div className="bg-muted h-2 flex-1 overflow-hidden rounded-full">
                             <div
                               className={cn('h-full rounded-full', config.color)}
                               style={{ width: `${percentage}%` }}
                             />
                           </div>
-                          <div className="w-8 text-xs text-right">{count}</div>
+                          <div className="w-8 text-right text-xs">{count}</div>
                         </div>
                       );
                     })}
@@ -458,7 +474,7 @@ export function ManipulationDetectionPanel({
               </Card>
 
               {metrics.lastDetectionTime && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="text-muted-foreground flex items-center gap-2 text-sm">
                   <Clock className="h-4 w-4" />
                   上次检测: {new Date(metrics.lastDetectionTime).toLocaleString()}
                 </div>

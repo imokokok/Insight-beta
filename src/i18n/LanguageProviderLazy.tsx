@@ -1,13 +1,16 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, useRef } from 'react';
-import type { ReactNode } from 'react';
 import {
-  isLang,
-  langToHtmlLang,
-  LANG_STORAGE_KEY,
-  type Lang,
-} from '@/i18n/types';
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+} from 'react';
+import type { ReactNode } from 'react';
+import { isLang, langToHtmlLang, LANG_STORAGE_KEY, type Lang } from '@/i18n/types';
 import {
   interpolate,
   handlePlural,
@@ -31,7 +34,11 @@ type I18nContextValue = {
     date: (value: Date | number | string, options?: Intl.DateTimeFormatOptions) => string;
     number: (value: number, options?: Intl.NumberFormatOptions) => string;
     currency: (value: number, currency: string, options?: Intl.NumberFormatOptions) => string;
-    relativeTime: (value: number, unit: Intl.RelativeTimeFormatUnit, options?: Intl.RelativeTimeFormatOptions) => string;
+    relativeTime: (
+      value: number,
+      unit: Intl.RelativeTimeFormatUnit,
+      options?: Intl.RelativeTimeFormatOptions,
+    ) => string;
   };
   isLoading: boolean;
 };
@@ -56,7 +63,9 @@ export function LanguageProviderLazy({
   defaultTranslations?: TranslationNamespace;
 }) {
   const [lang, setLangState] = useState<Lang>(initialLang ?? 'zh');
-  const [translations, setTranslations] = useState<TranslationNamespace>(defaultTranslations ?? fallbackTranslations[lang]);
+  const [translations, setTranslations] = useState<TranslationNamespace>(
+    defaultTranslations ?? fallbackTranslations[lang],
+  );
   const [isLoading, setIsLoading] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -74,7 +83,7 @@ export function LanguageProviderLazy({
 
     if (!isTranslationLoaded(lang)) {
       setIsLoading(true);
-      
+
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
@@ -108,32 +117,32 @@ export function LanguageProviderLazy({
   const t = useCallback(
     (key: TranslationKey, values?: InterpolationValues): string => {
       const translationValue = getNestedValue(translations, key);
-      
+
       if (typeof translationValue !== 'string') {
         return key;
       }
-      
+
       if (values) {
         return interpolate(translationValue, values);
       }
-      
+
       return translationValue;
     },
-    [translations]
+    [translations],
   );
 
   const tn = useCallback(
     (key: TranslationKey, count: number, forms: PluralOptions['forms']): string => {
       const template = getNestedValue(translations, key);
-      
+
       if (typeof template !== 'string') {
         return handlePlural({ count, forms }, lang);
       }
-      
+
       const pluralResult = handlePlural({ count, forms }, lang);
       return interpolate(template, { count, value: pluralResult });
     },
-    [translations, lang]
+    [translations, lang],
   );
 
   const format = useMemo(
@@ -144,20 +153,26 @@ export function LanguageProviderLazy({
         formatNumber(value, lang, options),
       currency: (value: number, currency: string, options?: Intl.NumberFormatOptions) =>
         formatCurrency(value, lang, currency, options),
-      relativeTime: (value: number, unit: Intl.RelativeTimeFormatUnit, options?: Intl.RelativeTimeFormatOptions) =>
-        formatRelativeTime(value, unit, lang, options),
+      relativeTime: (
+        value: number,
+        unit: Intl.RelativeTimeFormatUnit,
+        options?: Intl.RelativeTimeFormatOptions,
+      ) => formatRelativeTime(value, unit, lang, options),
     }),
-    [lang]
+    [lang],
   );
 
-  const value = useMemo<I18nContextValue>(() => ({ 
-    lang, 
-    setLang, 
-    t, 
-    tn,
-    format,
-    isLoading,
-  }), [lang, setLang, t, tn, format, isLoading]);
+  const value = useMemo<I18nContextValue>(
+    () => ({
+      lang,
+      setLang,
+      t,
+      tn,
+      format,
+      isLoading,
+    }),
+    [lang, setLang, t, tn, format, isLoading],
+  );
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }

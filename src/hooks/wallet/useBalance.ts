@@ -19,7 +19,9 @@ export function useBalance() {
     async () => {
       if (!address) return null;
       if (typeof window === 'undefined' || !window.ethereum) {
-        const err: BalanceError = new Error('Wallet not detected. Please install MetaMask or another Web3 wallet.') as BalanceError;
+        const err: BalanceError = new Error(
+          'Wallet not detected. Please install MetaMask or another Web3 wallet.',
+        ) as BalanceError;
         err.code = 'NO_WALLET';
         throw err;
       }

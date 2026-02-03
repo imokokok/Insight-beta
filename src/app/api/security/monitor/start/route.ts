@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { manipulationDetectionService } from '@/lib/services/manipulationDetectionService';
 import { createSupabaseClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/utils/logger';
@@ -33,18 +34,15 @@ export async function POST(request: NextRequest) {
 
       if (error) {
         logger.error('Failed to fetch feeds', { error: error.message });
-        return NextResponse.json(
-          { error: 'Failed to fetch feeds' },
-          { status: 500 }
-        );
+        return NextResponse.json({ error: 'Failed to fetch feeds' }, { status: 500 });
       }
 
-      for (const feed of (feeds as FeedRow[] || [])) {
+      for (const feed of (feeds as FeedRow[]) || []) {
         await manipulationDetectionService.startMonitoring(
           feed.protocol as OracleProtocol,
           feed.symbol,
           feed.chain as SupportedChain,
-          10000
+          10000,
         );
       }
 
@@ -59,7 +57,7 @@ export async function POST(request: NextRequest) {
         protocol as OracleProtocol,
         symbol,
         chain as SupportedChain,
-        10000
+        10000,
       );
 
       return NextResponse.json({
@@ -70,14 +68,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       { error: 'Missing required parameters: protocol, symbol, chain or allFeeds' },
-      { status: 400 }
+      { status: 400 },
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     logger.error('Error starting monitor', { error: errorMessage });
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

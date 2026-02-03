@@ -48,9 +48,10 @@ let totalAlertsGenerated = 0;
 /**
  * 启动分析调度器
  */
-export function startAnalysisScheduler(
-  config: Partial<SchedulerConfig> = {},
-): { success: boolean; message: string } {
+export function startAnalysisScheduler(config: Partial<SchedulerConfig> = {}): {
+  success: boolean;
+  message: string;
+} {
   const finalConfig = { ...DEFAULT_SCHEDULER_CONFIG, ...config };
 
   if (!finalConfig.enabled) {
@@ -219,9 +220,7 @@ export function getSchedulerStatus(): {
   nextRunTime: Date | null;
 } {
   const intervalMs = DEFAULT_SCHEDULER_CONFIG.intervalMinutes * 60 * 1000;
-  const nextRunTime = lastRunTime
-    ? new Date(lastRunTime.getTime() + intervalMs)
-    : null;
+  const nextRunTime = lastRunTime ? new Date(lastRunTime.getTime() + intervalMs) : null;
 
   return {
     isRunning,
@@ -236,9 +235,10 @@ export function getSchedulerStatus(): {
 /**
  * 更新调度器配置
  */
-export function updateSchedulerConfig(
-  updates: Partial<SchedulerConfig>,
-): { success: boolean; message: string } {
+export function updateSchedulerConfig(updates: Partial<SchedulerConfig>): {
+  success: boolean;
+  message: string;
+} {
   const wasRunning = schedulerInterval !== null;
 
   // 如果正在运行，先停止

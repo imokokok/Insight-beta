@@ -47,27 +47,27 @@ export interface UnifiedAlertRule {
   enabled: boolean;
   status: AlertRuleStatus;
   priority: number;
-  
+
   // Event configuration
   event: AlertRuleEvent;
   severity: AlertRuleSeverity;
-  
+
   // Conditions
   conditions: AlertCondition[];
   conditionLogic: 'AND' | 'OR';
-  
+
   // Notification configuration
   notificationChannels: NotificationChannel[];
   recipient?: string;
-  
+
   // Throttling
   throttleMinutes: number;
   silencedUntil?: Date;
-  
+
   // Metadata
   owner?: string;
   runbook?: string;
-  
+
   // Timestamps
   createdAt: Date;
   updatedAt: Date;
@@ -206,7 +206,7 @@ export class UnifiedAlertRuleService {
 
       const result = await query(MIGRATE_ALERT_RULES);
       const migrated = result.rowCount || 0;
-      
+
       logger.info('Migrated alert rules from legacy table', { migrated });
       return { migrated };
     } catch (error) {
@@ -240,7 +240,7 @@ export class UnifiedAlertRuleService {
   async reloadCache(): Promise<void> {
     try {
       const result = await query(
-        `SELECT * FROM unified_alert_rules WHERE enabled = true ORDER BY priority DESC, created_at DESC`
+        `SELECT * FROM unified_alert_rules WHERE enabled = true ORDER BY priority DESC, created_at DESC`,
       );
 
       this.ruleCache.clear();
@@ -268,9 +268,9 @@ export class UnifiedAlertRuleService {
     status?: AlertRuleStatus;
   }): Promise<UnifiedAlertRule[]> {
     await this.initializeCache();
-    
+
     let rules = Array.from(this.ruleCache.values());
-    
+
     if (options?.enabled !== undefined) {
       rules = rules.filter((r) => r.enabled === options.enabled);
     }
@@ -283,7 +283,7 @@ export class UnifiedAlertRuleService {
     if (options?.status) {
       rules = rules.filter((r) => r.status === options.status);
     }
-    
+
     return rules;
   }
 
@@ -292,30 +292,24 @@ export class UnifiedAlertRuleService {
    */
   async getRule(id: string): Promise<UnifiedAlertRule | null> {
     await this.initializeCache();
-    
+
     // Try cache first
     const cached = this.ruleCache.get(id);
     if (cached) return cached;
 
     // Fallback to database
-    const result = await query(
-      'SELECT * FROM unified_alert_rules WHERE id = $1',
-      [id]
-    );
-    
+    const result = await query('SELECT * FROM unified_alert_rules WHERE id = $1', [id]);
+
     const row = result.rows[0];
     if (!row) return null;
-    
+
     return this.rowToRule(row as Record<string, unknown>);
   }
 
   /**
    * 创建规则
    */
-  async createRule(
-    input: CreateAlertRuleInput,
-    createdBy?: string
-  ): Promise<UnifiedAlertRule> {
+  async createRule(input: CreateAlertRuleInput, createdBy?: string): Promise<UnifiedAlertRule> {
     try {
       const result = await query(
         `INSERT INTO unified_alert_rules (
@@ -329,7 +323,7 @@ export class UnifiedAlertRuleService {
           input.name,
           input.description ?? null,
           input.enabled ?? true,
-          input.enabled ?? true ? 'active' : 'disabled',
+          (input.enabled ?? true) ? 'active' : 'disabled',
           input.priority ?? 0,
           input.event,
           input.severity,
@@ -341,7 +335,7 @@ export class UnifiedAlertRuleService {
           input.owner ?? null,
           input.runbook ?? null,
           createdBy ?? null,
-        ]
+        ],
       );
 
       const row = result.rows[0];
@@ -350,7 +344,7 @@ export class UnifiedAlertRuleService {
       }
 
       const rule = this.rowToRule(row);
-      
+
       // Update cache
       if (rule.enabled) {
         this.ruleCache.set(rule.id, rule);
@@ -367,10 +361,7 @@ export class UnifiedAlertRuleService {
   /**
    * 更新规则
    */
-  async updateRule(
-    id: string,
-    input: UpdateAlertRuleInput
-  ): Promise<UnifiedAlertRule | null> {
+  async updateRule(id: string, input: UpdateAlertRuleInput): Promise<UnifiedAlertRule | null> {
     try {
       const existing = await this.getRule(id);
       if (!existing) return null;
@@ -450,7 +441,7 @@ export class UnifiedAlertRuleService {
       const result = await query(
         `UPDATE unified_alert_rules SET ${updates.join(', ')}
          WHERE id = $${paramIndex} RETURNING *`,
-        values
+        values,
       );
 
       const row = result.rows[0];
@@ -478,10 +469,9 @@ export class UnifiedAlertRuleService {
    */
   async deleteRule(id: string): Promise<boolean> {
     try {
-      const result = await query(
-        'DELETE FROM unified_alert_rules WHERE id = $1 RETURNING id',
-        [id]
-      );
+      const result = await query('DELETE FROM unified_alert_rules WHERE id = $1 RETURNING id', [
+        id,
+      ]);
 
       const deleted = result.rowCount !== null && result.rowCount > 0;
       if (deleted) {
@@ -501,7 +491,7 @@ export class UnifiedAlertRuleService {
    */
   async batchUpdateRules(
     rules: Partial<UnifiedAlertRule>[],
-    updatedBy?: string
+    updatedBy?: string,
   ): Promise<UnifiedAlertRule[]> {
     const results: UnifiedAlertRule[] = [];
 
@@ -516,7 +506,7 @@ export class UnifiedAlertRuleService {
             notificationChannels: rule.notificationChannels || ['webhook'],
             ...rule,
           } as CreateAlertRuleInput,
-          updatedBy
+          updatedBy,
         );
         results.push(newRule);
       } else {
@@ -537,7 +527,7 @@ export class UnifiedAlertRuleService {
   async silenceRule(
     id: string,
     until: Date,
-    _silencedBy?: string
+    _silencedBy?: string,
   ): Promise<UnifiedAlertRule | null> {
     return this.updateRule(id, {
       status: 'silenced',
@@ -601,10 +591,10 @@ export class UnifiedAlertRuleService {
       active = Math.max(active, parseInt(row.active as string));
       disabled = Math.max(disabled, parseInt(row.disabled as string));
       silenced = Math.max(silenced, parseInt(row.silenced as string));
-      
+
       const event = row.event as string;
       const severity = row.severity as string;
-      
+
       byEvent[event] = (byEvent[event] || 0) + 1;
       bySeverity[severity] = (bySeverity[severity] || 0) + 1;
     }

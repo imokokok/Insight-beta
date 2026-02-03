@@ -511,7 +511,9 @@ export async function listUMAAssertions(params: {
     let assertions = Array.from(mem.umaAssertions.values());
     if (params.status) assertions = assertions.filter((a) => a.status === params.status);
     if (params.identifier)
-      assertions = assertions.filter((a) => params.identifier ? a.identifier.includes(params.identifier) : false);
+      assertions = assertions.filter((a) =>
+        params.identifier ? a.identifier.includes(params.identifier) : false,
+      );
     const total = assertions.length;
     assertions = assertions
       .sort((a, b) => new Date(b.proposedAt).getTime() - new Date(a.proposedAt).getTime())
@@ -686,7 +688,9 @@ export async function listUMAVotes(params: {
     let votes = Array.from(mem.umaVotes.values());
     if (params.assertionId) votes = votes.filter((v) => v.assertionId === params.assertionId);
     if (params.voter)
-      votes = votes.filter((v) => params.voter ? v.voter.toLowerCase() === params.voter.toLowerCase() : false);
+      votes = votes.filter((v) =>
+        params.voter ? v.voter.toLowerCase() === params.voter.toLowerCase() : false,
+      );
     const total = votes.length;
     votes = votes
       .sort((a, b) => Number(b.blockNumber) - Number(a.blockNumber))

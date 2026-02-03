@@ -155,9 +155,7 @@ export function PriceHeatmap({
             {(Object.keys(deviationConfig) as PriceDeviationLevel[]).map((level) => (
               <div key={level} className="flex items-center gap-1.5">
                 <div className={cn('h-3 w-3 rounded border', deviationConfig[level].color)} />
-                <span className="text-muted-foreground">
-                  {t(deviationConfig[level].labelKey)}
-                </span>
+                <span className="text-muted-foreground">{t(deviationConfig[level].labelKey)}</span>
               </div>
             ))}
           </div>

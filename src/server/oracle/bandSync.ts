@@ -134,7 +134,7 @@ export class BandSyncService {
         price.stalenessSeconds,
         price.txHash,
         price.logIndex,
-      ]
+      ],
     );
   }
 
@@ -150,7 +150,7 @@ export class BandSyncService {
         last_error = EXCLUDED.last_error,
         updated_at = NOW()
       `,
-      [this.config.instanceId, 'band', status, this.lastSyncAt, error || null]
+      [this.config.instanceId, 'band', status, this.lastSyncAt, error || null],
     );
   }
 
@@ -208,7 +208,10 @@ class BandSyncManager {
     return this.syncs.get(instanceId)?.getStatus() || null;
   }
 
-  getAllSyncStatuses(): Array<{ instanceId: string; status: ReturnType<BandSyncService['getStatus']> }> {
+  getAllSyncStatuses(): Array<{
+    instanceId: string;
+    status: ReturnType<BandSyncService['getStatus']>;
+  }> {
     return Array.from(this.syncs.entries()).map(([instanceId, sync]) => ({
       instanceId,
       status: sync.getStatus(),

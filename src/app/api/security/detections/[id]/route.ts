@@ -24,10 +24,7 @@ interface DetectionRow {
   notes: string | null;
 }
 
-export async function GET(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const supabase = createSupabaseClient();
@@ -40,10 +37,7 @@ export async function GET(
 
     if (error) {
       logger.error('Failed to fetch detection', { error: error.message });
-      return NextResponse.json(
-        { error: 'Detection not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Detection not found' }, { status: 404 });
     }
 
     const row = data as DetectionRow;
@@ -74,9 +68,6 @@ export async function GET(
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     logger.error('Error in detection detail API', { error: errorMessage });
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
