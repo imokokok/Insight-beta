@@ -73,14 +73,3 @@ export function roundTo(value: number, decimals: number): number {
   const factor = Math.pow(10, decimals);
   return Math.round(value * factor) / factor;
 }
-
-/**
- * 格式化大数字
- */
-export function formatCompactNumber(value: number): string {
-  const formatter = new Intl.NumberFormat('en-US', {
-    notation: 'compact',
-    maximumFractionDigits: 2,
-  });
-  return formatter.format(value);
-}

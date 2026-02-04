@@ -255,14 +255,6 @@ function saveExportHistory(entry: ExportHistory): void {
   }
 }
 
-export function clearExportHistory(): void {
-  try {
-    localStorage.removeItem('exportHistory');
-  } catch (error) {
-    logger.warn('Failed to clear export history', { error });
-  }
-}
-
 export function validateExportData<T extends Record<string, unknown>>(
   data: T[],
 ): { valid: boolean; errors: string[] } {
