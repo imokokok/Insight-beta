@@ -302,7 +302,7 @@ export default function ProtocolPage() {
                     </Button>
                   </Link>
                   {capabilities.assertions && (
-                    <Link href="/oracle/my-assertions">
+                    <Link href="/my-assertions">
                       <Button variant="outline" className="gap-2">
                         <Shield className="h-4 w-4" />
                         My Assertions
@@ -310,7 +310,7 @@ export default function ProtocolPage() {
                     </Link>
                   )}
                   {capabilities.disputes && (
-                    <Link href="/oracle/my-disputes">
+                    <Link href="/my-disputes">
                       <Button variant="outline" className="gap-2">
                         <AlertTriangle className="h-4 w-4" />
                         My Disputes
@@ -395,7 +395,7 @@ export default function ProtocolPage() {
                     description="View and manage assertions for this protocol."
                     action={{
                       label: 'View My Assertions',
-                      onClick: () => router.push('/oracle/my-assertions'),
+                      onClick: () => router.push('/my-assertions'),
                     }}
                   />
                 </CardContent>
@@ -413,7 +413,7 @@ export default function ProtocolPage() {
                     description="View and manage disputes for this protocol."
                     action={{
                       label: 'View My Disputes',
-                      onClick: () => router.push('/oracle/my-disputes'),
+                      onClick: () => router.push('/my-disputes'),
                     }}
                   />
                 </CardContent>

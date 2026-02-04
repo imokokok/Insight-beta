@@ -183,7 +183,7 @@ const nextConfig: NextConfig = {
 
   output: 'standalone',
   reactStrictMode: true,
-  typedRoutes: false,
+  typedRoutes: true,
 
   // Disable Turbopack and use webpack
   turbopack: {},
