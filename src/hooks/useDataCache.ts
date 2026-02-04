@@ -4,7 +4,7 @@
  * 提供数据缓存、预取和失效管理功能
  */
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { LRUCache } from '@/lib/utils/performance';
 
 interface CacheOptions {
@@ -25,16 +25,6 @@ export function useDataCache<T>(fetcher: (key: string) => Promise<T>, options: C
   const cacheRef = useRef(new LRUCache<string, CacheEntry<T>>(maxSize));
   const [loading, setLoading] = useState<Set<string>>(new Set());
   const [errors, setErrors] = useState<Map<string, Error>>(new Map());
-
-  // 清理过期缓存
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // LRUCache 会自动处理大小限制，但我们需要处理 TTL
-      // 这里简化处理，实际使用时可以遍历检查
-    }, 60000);
-
-    return () => clearInterval(interval);
-  }, []);
 
   const fetch = useCallback(
     async (key: string): Promise<T> => {
