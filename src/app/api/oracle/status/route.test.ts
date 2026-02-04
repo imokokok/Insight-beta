@@ -7,7 +7,6 @@ import {
   readOracleState,
   getSyncState,
   isOracleSyncing,
-  getOwnerData,
   redactOracleConfig,
 } from '@/server/oracle';
 
@@ -88,7 +87,6 @@ describe('GET /api/oracle/status', () => {
     const readOracleStateMock = vi.mocked(readOracleState);
     const getSyncStateMock = vi.mocked(getSyncState);
     const isOracleSyncingMock = vi.mocked(isOracleSyncing);
-    const getOwnerDataMock = vi.mocked(getOwnerData);
 
     verifyAdminMock.mockResolvedValueOnce({
       ok: true,
@@ -133,7 +131,6 @@ describe('GET /api/oracle/status', () => {
     expect(readOracleStateMock).toHaveBeenCalled();
     expect(getSyncStateMock).toHaveBeenCalled();
     expect(isOracleSyncingMock).toHaveBeenCalled();
-    expect(getOwnerDataMock).toHaveBeenCalled();
 
     expect(response.state.chain).toBe('mainnet');
     expect(response.state.contractAddress).toBe('0xabc');
@@ -149,8 +146,8 @@ describe('GET /api/oracle/status', () => {
     expect(response.state.syncing).toBe(true);
     expect(response.state.configError).toBe(null);
     expect(response.state.configErrors).toEqual([]);
-    expect(response.state.owner).toBe('0xowner');
-    expect(response.state.ownerIsContract).toBe(true);
+    expect(response.state.owner).toBe(null);
+    expect(response.state.ownerIsContract).toBe(null);
   });
 
   it('includes config error when lastError is contract_not_found', async () => {

@@ -75,10 +75,7 @@ export async function runMigration(
   };
 
   try {
-    // 1. 迁移 OracleMonitor 实例
-    await migrateInsightInstances(result, finalConfig);
-
-    // 2. 迁移 UMA Oracle 实例
+    // 1. 迁移 UMA Oracle 实例
     await migrateUMAInstances(result, finalConfig);
 
     // 3. 迁移同步状态
@@ -105,81 +102,6 @@ export async function runMigration(
       duration: `${result.duration}ms`,
     });
 
-    throw error;
-  }
-}
-
-// ============================================================================
-// OracleMonitor 迁移
-// ============================================================================
-
-async function migrateInsightInstances(
-  result: MigrationResult,
-  config: MigrationConfig,
-): Promise<void> {
-  logger.info('Migrating OracleMonitor instances...');
-
-  try {
-    // 获取所有 OracleMonitor 实例
-    const instancesResult = await query(`
-      SELECT * FROM oracle_instances
-      WHERE id NOT IN (SELECT instance_id FROM unified_oracle_instances WHERE protocol = 'insight')
-    `);
-
-    logger.info(`Found ${instancesResult.rows.length} Insight instances to migrate`);
-
-    for (const row of instancesResult.rows) {
-      try {
-        const instanceId = row.id as string;
-        const chain = (row.chain || 'local') as SupportedChain;
-
-        if (!config.dryRun) {
-          await query(
-            `INSERT INTO unified_oracle_instances (
-              id, name, protocol, chain, enabled, config, protocol_config, metadata, created_at, updated_at
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-            ON CONFLICT (id) DO NOTHING`,
-            [
-              instanceId,
-              row.name || 'Default',
-              'insight' as OracleProtocol,
-              chain,
-              row.enabled ?? true,
-              JSON.stringify({
-                rpcUrl: row.rpc_url || '',
-                contractAddress: row.contract_address,
-                startBlock: row.start_block,
-                maxBlockRange: row.max_block_range,
-                votingPeriodHours: row.voting_period_hours,
-                confirmationBlocks: row.confirmation_blocks,
-              }),
-              JSON.stringify({}),
-              JSON.stringify({ migrated: true, migratedAt: new Date().toISOString() }),
-              row.created_at || new Date().toISOString(),
-              row.updated_at || new Date().toISOString(),
-            ],
-          );
-        }
-
-        result.migrated.instances++;
-        logger.debug(`Migrated Insight instance: ${instanceId}`);
-      } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : String(error);
-        result.errors.push({
-          table: 'oracle_instances',
-          id: row.id as string,
-          error: errorMsg,
-        });
-
-        if (!config.skipErrors) {
-          throw error;
-        }
-      }
-    }
-  } catch (error) {
-    logger.error('Failed to migrate Insight instances', {
-      error: error instanceof Error ? error.message : String(error),
-    });
     throw error;
   }
 }
@@ -269,58 +191,6 @@ async function migrateSyncStates(result: MigrationResult, config: MigrationConfi
   logger.info('Migrating sync states...');
 
   try {
-    // 迁移 OracleMonitor 同步状态
-    const insightSyncResult = await query(`
-      SELECT * FROM oracle_sync_state
-      WHERE instance_id NOT IN (SELECT instance_id FROM unified_sync_state)
-    `);
-
-    for (const row of insightSyncResult.rows) {
-      try {
-        if (!config.dryRun) {
-          await query(
-            `INSERT INTO unified_sync_state (
-              instance_id, protocol, chain, last_processed_block, latest_block, safe_block,
-              lag_blocks, last_sync_at, last_sync_duration_ms, avg_sync_duration_ms,
-              status, consecutive_failures, last_error, last_error_at, active_rpc_url, rpc_health
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
-            ON CONFLICT (instance_id) DO NOTHING`,
-            [
-              row.instance_id,
-              'insight',
-              row.chain || 'local',
-              row.last_processed_block || 0,
-              row.latest_block,
-              row.safe_block,
-              row.lag_blocks,
-              row.last_attempt_at,
-              row.last_duration_ms,
-              null, // avg_sync_duration_ms
-              row.last_error ? 'error' : 'healthy',
-              row.consecutive_failures || 0,
-              row.last_error,
-              row.last_error ? row.last_attempt_at : null,
-              row.rpc_active_url,
-              'healthy',
-            ],
-          );
-        }
-
-        result.migrated.syncStates++;
-      } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : String(error);
-        result.errors.push({
-          table: 'oracle_sync_state',
-          id: row.instance_id as string,
-          error: errorMsg,
-        });
-
-        if (!config.skipErrors) {
-          throw error;
-        }
-      }
-    }
-
     // 迁移 UMA 同步状态
     const umaSyncResult = await query(`
       SELECT * FROM uma_sync_state

@@ -40,8 +40,7 @@ export async function getOracleEnv(
 
   // 合并配置优先级：环境变量 > 配置 > 链默认值
   const rpcUrl = (useEnvOverrides ? env.INSIGHT_RPC_URL : '') || config.rpcUrl || chainRpcUrl;
-  const contractAddress = ((useEnvOverrides ? env.INSIGHT_ORACLE_ADDRESS : '') ||
-    config.contractAddress) as Address;
+  const contractAddress = (config.contractAddress || '') as Address;
   const startBlock = BigInt(config.startBlock ?? 0);
   const maxBlockRange = BigInt(config.maxBlockRange ?? 10_000);
   const votingPeriodMs = Number(config.votingPeriodHours ?? 72) * 3600 * 1000;

@@ -133,7 +133,7 @@ function createDefaultConfig(): OracleConfig {
     : 'Local';
   return {
     rpcUrl: env.INSIGHT_RPC_URL,
-    contractAddress: env.INSIGHT_ORACLE_ADDRESS,
+    contractAddress: '',
     chain,
     startBlock: 0,
     maxBlockRange: 10_000,

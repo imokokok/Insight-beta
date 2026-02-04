@@ -1,4 +1,4 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { DisputeList } from './DisputeList';
@@ -22,7 +22,7 @@ vi.mock('next/link', () => ({
     className,
   }: {
     href: string;
-    children: React.ReactNode;
+    children: ReactNode;
     className?: string;
   }) => (
     <a href={href} className={className} data-testid="mock-link">

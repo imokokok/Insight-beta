@@ -75,13 +75,6 @@ export async function getOptimisticOracleOverview(
         successRate: 97.8,
         avgResolutionTime: 172800, // 2 days in seconds
       },
-      {
-        protocol: 'insight',
-        totalAssertions: 3250,
-        totalDisputes: 45,
-        successRate: 98.6,
-        avgResolutionTime: 86400, // 1 day in seconds
-      },
     ];
 
     const chains: ChainStats[] = [
@@ -128,18 +121,6 @@ export async function getOptimisticOracleOverview(
           assertionId: 'assertion-0',
           disputer: '0xabcd...efgh',
           bond: '5000',
-        },
-      },
-      {
-        id: 'resolution-1',
-        type: 'resolution',
-        protocol: 'insight',
-        chain: 'polygon',
-        timestamp: new Date(Date.now() - 900000).toISOString(),
-        details: {
-          assertionId: 'assertion-2',
-          result: 'approved',
-          payout: '7500',
         },
       },
     ];
@@ -218,9 +199,6 @@ export async function syncOptimisticOracleData(
   switch (protocol) {
     case 'uma':
       // await syncUMAData(chain, force);
-      break;
-    case 'insight':
-      // await syncInsightOracleData(chain, force);
       break;
     default:
       // 同步所有协议

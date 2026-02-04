@@ -9,7 +9,6 @@
 // ============================================================================
 
 export type OracleProtocol =
-  | 'insight' // 原生 OracleMonitor
   | 'uma' // UMA Optimistic Oracle
   | 'chainlink' // Chainlink Data Feeds
   | 'pyth' // Pyth Network
@@ -21,7 +20,6 @@ export type OracleProtocol =
   | 'dia'; // DIA
 
 export const ORACLE_PROTOCOLS: OracleProtocol[] = [
-  'insight',
   'uma',
   'chainlink',
   'pyth',

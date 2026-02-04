@@ -2,7 +2,7 @@
 
 # Database Design
 
-This document describes the database schema, table structure design, and index optimization strategies for the Insight project.
+This document describes the database schema, table structure design, and index optimization strategies for the OracleMonitor project.
 
 ## 1. Overview
 

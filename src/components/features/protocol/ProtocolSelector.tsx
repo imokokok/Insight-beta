@@ -23,7 +23,6 @@ interface ProtocolSelectorProps {
 }
 
 const PROTOCOL_ICONS: Record<OracleProtocol, string> = {
-  insight: '🔮',
   uma: '⚖️',
   chainlink: '🔗',
   pyth: '🐍',

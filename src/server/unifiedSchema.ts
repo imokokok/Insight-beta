@@ -538,13 +538,6 @@ export async function ensureUnifiedSchema() {
     -- 插入默认协议信息
     INSERT INTO oracle_protocols_info (id, name, description, supported_chains, features, is_active)
     VALUES 
-      ('insight', 'OracleMonitor', '原生乐观预言机实现', 
-       ARRAY['ethereum', 'polygon', 'arbitrum', 'optimism', 'base', 'local'],
-       ARRAY['price_feeds', 'dispute_resolution', 'staking'], true)
-    ON CONFLICT (id) DO NOTHING;
-
-    INSERT INTO oracle_protocols_info (id, name, description, supported_chains, features, is_active)
-    VALUES 
       ('uma', 'UMA Optimistic Oracle', 'UMA 乐观预言机 V2/V3', 
        ARRAY['ethereum', 'polygon', 'arbitrum', 'optimism', 'base', 'polygonAmoy'],
        ARRAY['price_feeds', 'dispute_resolution', 'governance'], true)
@@ -592,28 +585,6 @@ export async function migrateFromLegacySchema() {
   logger.info('Starting migration from legacy schema...');
 
   try {
-    // 迁移 Insight Oracle 实例
-    await query(`
-      INSERT INTO unified_oracle_instances (id, name, protocol, chain, enabled, config, metadata)
-      SELECT 
-        id,
-        name,
-        'insight' as protocol,
-        COALESCE(chain, 'local'),
-        enabled,
-        jsonb_build_object(
-          'rpcUrl', rpc_url,
-          'contractAddress', contract_address,
-          'startBlock', start_block,
-          'maxBlockRange', max_block_range,
-          'votingPeriodHours', voting_period_hours,
-          'confirmationBlocks', confirmation_blocks
-        ),
-        '{}'
-      FROM oracle_instances
-      ON CONFLICT (id) DO NOTHING;
-    `);
-
     // 迁移 UMA Oracle 实例
     await query(`
       INSERT INTO unified_oracle_instances (id, name, protocol, chain, enabled, config, protocol_config)

@@ -1,10 +1,8 @@
 import {
   getAssertion,
   getDisputeByAssertionId,
-  getOracleEnv,
   readOracleConfig,
   redactOracleConfig,
-  getBondData,
 } from '@/server/oracle';
 import { cachedJson, error, handleApi, rateLimit } from '@/server/apiResponse';
 import { verifyAdmin } from '@/server/adminAuth';
@@ -41,15 +39,12 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
         ['1', 'true'].includes((env.INSIGHT_ENABLE_VOTING || '').toLowerCase()) &&
         !['1', 'true'].includes((env.INSIGHT_DISABLE_VOTE_TRACKING || '').toLowerCase());
 
-      const envConfig = instanceId ? await getOracleEnv(instanceId) : await getOracleEnv();
-      const { bondWei, bondEth } = await getBondData(envConfig.rpcUrl, envConfig.contractAddress);
-
       return {
         assertion,
         dispute,
         config: includeSecrets ? config : redactOracleConfig(config),
-        bondWei,
-        bondEth,
+        bondWei: null,
+        bondEth: null,
         voteTrackingEnabled: voteTrackingEnabled && !degraded,
       };
     };

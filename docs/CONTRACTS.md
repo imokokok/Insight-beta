@@ -2,108 +2,124 @@
 
 # Smart Contract Documentation
 
-## 1. Contract Overview
+## Overview
 
-**InsightOracle** is the core contract of the system, responsible for managing assertion lifecycle, dispute resolution, and bond management.
+This document describes the smart contract integrations supported by OracleMonitor. The platform currently focuses on **UMA Optimistic Oracle** for assertion and dispute mechanisms.
 
-- **Contract Name**: `InsightOracle`
-- **Inheritance**: `Ownable`, `Pausable`
-- **Solidity Version**: `^0.8.24`
+## Supported Protocols
 
-## 2. Core Mechanisms
+### UMA Optimistic Oracle
 
-### 2.1 Assertion Lifecycle
+**UMA** (Universal Market Access) is an optimistic oracle that allows any verifiable truth to be recorded on-chain. It uses an optimistic mechanism where assertions are assumed true unless disputed.
 
-1. **Creation**: User submits assertion, stakes bond. Assertion enters `Liveness` period.
-2. **Dispute**: During `Liveness` period, anyone can initiate challenge by paying dispute bond.
-3. **Resolution**:
-   - If no challenge: After `Liveness` period, assertion is considered true.
-   - If challenged: Enters arbitration/voting process (handled by external governance contract or Owner), finally calls `resolveAssertion` to decide outcome.
+#### Key Contracts
 
-### 2.2 Key Parameters
+- **OptimisticOracleV2** - Main contract for assertions and disputes
+- **OptimisticOracleV3** - Enhanced version with improved features
+- **Voting Contract** - Handles dispute resolution through UMA's DVM (Data Verification Mechanism)
 
-- `MAX_LIVENESS`: Max challenge period duration (30 days)
-- `MAX_ACTIVE_ASSERTIONS`: Max active assertions per user (1000)
-- `defaultBond`: Default bond amount
+#### Assertion Lifecycle
 
-## 3. Interface Description
+1. **Creation**: Asserter submits assertion with bond
+2. **Liveness Period**: Challenge window (default 2 hours)
+3. **Dispute**: Challenger can dispute by posting bond
+4. **Resolution**:
+   - If no dispute: Assertion is settled as true
+   - If disputed: UMA's DVM votes on the outcome
 
-### 3.1 Write Operations
+#### Integration Details
 
-#### `createAssertion`
-
-Create new assertion.
-
-```solidity
-function createAssertion(
-    string calldata protocol,
-    string calldata market,
-    string calldata assertionText,
-    uint256 bondUsd,
-    uint256 livenessSeconds
-) external returns (bytes32 assertionId)
+```typescript
+// Example: Creating an assertion via UMA
+const assertion = {
+  claim: string, // The claim being asserted
+  asserter: address, // Address making the assertion
+  callbackRecipient: address,
+  escalationManager: address,
+  caller: address,
+  expirationTime: timestamp,
+  currency: address, // Bond token (usually WETH or USDC)
+  bond: uint256, // Bond amount
+  identifier: bytes32, // Price identifier
+  domainId: bytes32,
+  // ... other fields
+};
 ```
 
-- **Events**: Triggers `AssertionCreated`
+#### Events
 
-#### `disputeAssertion`
-
-Initiate challenge against assertion in active period.
+The indexer listens to these events:
 
 ```solidity
-function disputeAssertion(bytes32 assertionId, string calldata reason) external
-```
-
-- **Requirements**: Assertion not expired, not resolved, not disputed.
-- **Events**: Triggers `AssertionDisputed`
-
-#### `resolveAssertion` (Admin/Governance)
-
-Decide assertion result.
-
-```solidity
-function resolveAssertion(bytes32 assertionId, bool outcome) external onlyOwner
-```
-
-- **Events**: Triggers `AssertionResolved`
-
-### 3.2 Read Operations
-
-- `assertions(bytes32 id)`: Get assertion details struct.
-- `getBond()`: Get current default bond setting.
-
-## 4. Events
-
-Indexer listens to the following events to sync data:
-
-```solidity
-event AssertionCreated(
+event AssertionMade(
     bytes32 indexed assertionId,
+    bytes32 indexed domainId,
+    bytes claim,
     address indexed asserter,
-    string protocol,
-    string market,
-    string assertion,
-    uint256 bondUsd,
-    uint256 assertedAt,
-    uint256 livenessEndsAt,
-    bytes32 txHash
+    address callbackRecipient,
+    address escalationManager,
+    address caller,
+    uint64 expirationTime,
+    IERC20 currency,
+    uint256 bond,
+    bytes32 indexed identifier
 );
 
 event AssertionDisputed(
     bytes32 indexed assertionId,
-    address indexed disputer,
-    string reason,
-    uint256 disputedAt
+    address indexed caller,
+    address indexed disputer
 );
 
-event AssertionResolved(
+event AssertionSettled(
     bytes32 indexed assertionId,
-    bool outcome,
-    uint256 resolvedAt
+    address indexed bondRecipient,
+    bool disputed,
+    bool settlementResolution,
+    address settleCaller
 );
 ```
 
-## 5. Access Control
+### Other Oracle Protocols
 
-- **Owner**: Has `resolveAssertion`, `pause`, `unpause`, `setDefaultBond` permissions.
-- **Pausable**: When contract is paused, creating and disputing assertions are prohibited, but resolving assertions is allowed.
+OracleMonitor also supports monitoring of the following protocols (read-only):
+
+- **Chainlink** - Price feed contracts
+- **Pyth** - Low-latency price updates
+- **Band** - Cross-chain data oracle
+- **API3** - First-party oracle network
+- **RedStone** - Modular oracle design
+- **Switchboard** - Permissionless oracle network
+- **Flux** - Decentralized oracle aggregator
+- **DIA** - Transparent data feeds
+
+## Configuration
+
+### UMA Contract Addresses
+
+| Network          | OptimisticOracleV2 | OptimisticOracleV3 |
+| ---------------- | ------------------ | ------------------ |
+| Ethereum Mainnet | 0xC5...            | 0xfb...            |
+| Polygon          | 0xee...            | 0x595...           |
+| Arbitrum         | 0xe2...            | 0x2a...            |
+| Optimism         | 0xee...            | 0x2a...            |
+| Base             | 0xee...            | 0x2a...            |
+
+See [UMA Documentation](https://docs.umaproject.org/) for the latest contract addresses.
+
+## Security Considerations
+
+1. **Bond Management**: Ensure sufficient bond amounts to prevent spam
+2. **Liveness Period**: Configure appropriate challenge windows
+3. **Dispute Resolution**: Understand UMA's DVM voting process
+4. **Contract Upgrades**: Monitor for contract upgrades and migrations
+
+## Resources
+
+- [UMA Documentation](https://docs.umaproject.org/)
+- [UMA GitHub](https://github.com/UMAprotocol)
+- [Optimistic Oracle Tutorial](https://docs.umaproject.org/developers/optimistic-oracle)
+
+---
+
+**Note**: This platform previously supported a custom InsightOracle contract. That functionality has been deprecated in favor of industry-standard protocols like UMA.

@@ -71,12 +71,6 @@ export function validateUnifiedConfig(
       }
       break;
     }
-
-    case 'insight':
-      if (!config.contractAddress) {
-        errors.push('Contract address is required for OracleMonitor');
-      }
-      break;
   }
 
   return {
@@ -488,11 +482,6 @@ function getDefaultTemplate(
       protocolConfig: {
         votingPeriodHours: 72,
       },
-    },
-    insight: {
-      maxBlockRange: 5000,
-      confirmationBlocks: 6,
-      syncIntervalMs: 30000,
     },
     band: {
       maxBlockRange: 10000,

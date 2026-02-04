@@ -36,7 +36,6 @@ import { getProtocolCapabilities } from '@/lib/blockchain/protocolFactory';
 import { cn } from '@/lib/utils';
 
 const PROTOCOL_ICONS: Record<OracleProtocol, string> = {
-  insight: '🔮',
   uma: '⚖️',
   chainlink: '🔗',
   pyth: '🐍',
@@ -110,7 +109,7 @@ export default function ProtocolPage() {
           </div>
           <div className="flex items-center gap-2">
             {hasDedicatedPage && (
-              <Link href={hasDedicatedPage}>
+              <Link href={hasDedicatedPage as any}>
                 <Button variant="outline" className="gap-2">
                   <BarChart3 className="h-4 w-4" />
                   Advanced Monitor
@@ -139,7 +138,7 @@ export default function ProtocolPage() {
                   View detailed metrics, node operators, and protocol-specific analytics.
                 </p>
               </div>
-              <Link href={hasDedicatedPage}>
+              <Link href={hasDedicatedPage as any}>
                 <Button className="gap-2">
                   Open Monitor
                   <ArrowLeft className="h-4 w-4 rotate-180" />

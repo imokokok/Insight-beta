@@ -3,7 +3,6 @@
  */
 
 export type OracleProtocol =
-  | 'insight'
   | 'uma'
   | 'chainlink'
   | 'pyth'
@@ -15,7 +14,6 @@ export type OracleProtocol =
   | 'dia';
 
 export const ORACLE_PROTOCOLS: OracleProtocol[] = [
-  'insight',
   'uma',
   'chainlink',
   'pyth',
@@ -28,7 +26,6 @@ export const ORACLE_PROTOCOLS: OracleProtocol[] = [
 ];
 
 export const PROTOCOL_DISPLAY_NAMES: Record<OracleProtocol, string> = {
-  insight: 'Insight Oracle',
   uma: 'UMA',
   chainlink: 'Chainlink',
   pyth: 'Pyth Network',
@@ -41,7 +38,6 @@ export const PROTOCOL_DISPLAY_NAMES: Record<OracleProtocol, string> = {
 };
 
 export const PROTOCOL_DESCRIPTIONS: Record<OracleProtocol, string> = {
-  insight: '原生 OracleMonitor 协议',
   uma: 'Optimistic Oracle with assertion and dispute mechanisms',
   chainlink: 'Industry-standard decentralized oracle network',
   pyth: 'Low-latency financial data from institutional sources',
@@ -53,7 +49,7 @@ export const PROTOCOL_DESCRIPTIONS: Record<OracleProtocol, string> = {
   dia: 'Transparent and verifiable data feeds',
 };
 
-export const SUPPORTED_ASSERTION_PROTOCOLS: OracleProtocol[] = ['insight', 'uma'];
+export const SUPPORTED_ASSERTION_PROTOCOLS: OracleProtocol[] = ['uma'];
 
 export type OracleFeature =
   | 'price_feeds'
@@ -79,14 +75,6 @@ export type OracleProtocolInfo = {
 };
 
 export const PROTOCOL_INFO: Record<OracleProtocol, OracleProtocolInfo> = {
-  insight: {
-    id: 'insight',
-    name: 'Insight Oracle',
-    description: PROTOCOL_DESCRIPTIONS.insight,
-    website: 'https://oraclemonitor.io',
-    supportedChains: ['ethereum', 'polygon', 'arbitrum', 'optimism'],
-    features: ['price_feeds', 'dispute_resolution'],
-  },
   uma: {
     id: 'uma',
     name: 'UMA',

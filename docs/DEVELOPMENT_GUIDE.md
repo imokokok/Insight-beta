@@ -5,8 +5,8 @@
 ## 1. Environment Setup
 
 ```bash
-git clone https://github.com/insight-oracle/insight.git
-cd insight
+git clone https://github.com/your-org/oracle-monitor.git
+cd oracle-monitor
 npm install
 cp .env.example .env.local
 npm run dev
@@ -60,10 +60,10 @@ npm test -- --coverage      # Test coverage
 ### Local Development Database
 
 ```bash
-docker run --name insight-db \
+docker run --name oracle-monitor-db \
   -e POSTGRES_PASSWORD=password \
   -e POSTGRES_USER=postgres \
-  -e POSTGRES_DB=insight \
+  -e POSTGRES_DB=oracle_monitor \
   -p 5432:5432 -d postgres
 ```
 
@@ -90,17 +90,17 @@ Admin APIs require authentication:
 ### Core Functions
 
 ```typescript
-import { handleApi } from "@/server/apiResponse";
-import { cachedJson } from "@/server/apiResponse";
-import { requireAdmin } from "@/server/apiResponse";
+import { handleApi } from '@/server/apiResponse';
+import { cachedJson } from '@/server/apiResponse';
+import { requireAdmin } from '@/server/apiResponse';
 
 export async function GET(request: Request) {
   return handleApi(request, async () => {
-    return { data: "result" };
+    return { data: 'result' };
   });
 }
 
-const data = await cachedJson("cache-key", 60000, async () => {
+const data = await cachedJson('cache-key', 60000, async () => {
   return await fetchData();
 });
 ```

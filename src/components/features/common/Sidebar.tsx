@@ -27,7 +27,6 @@ import { ORACLE_PROTOCOLS, PROTOCOL_DISPLAY_NAMES } from '@/lib/types';
 import type { OracleProtocol } from '@/lib/types';
 
 const PROTOCOL_ICONS: Record<OracleProtocol, string> = {
-  insight: '🔮',
   uma: '⚖️',
   chainlink: '🔗',
   pyth: '🐍',

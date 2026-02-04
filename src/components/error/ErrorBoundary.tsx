@@ -1,7 +1,7 @@
 'use client';
 
 import type { ErrorInfo, ReactNode } from 'react';
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import Link from 'next/link';

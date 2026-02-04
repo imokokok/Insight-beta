@@ -1,4 +1,3 @@
-import React from 'react';
 import { FileText, BarChart2, AlertCircle, Users } from 'lucide-react';
 import { useI18n } from '@/i18n/LanguageProvider';
 import type { UserRole } from '../Onboarding';

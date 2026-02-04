@@ -278,7 +278,6 @@ function PriceFeedRow({ feed, showProtocol, showChain }: PriceFeedRowProps) {
 
 function ProtocolBadge({ protocol }: { protocol: OracleProtocol }) {
   const colors: Record<OracleProtocol, string> = {
-    insight: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
     uma: 'bg-red-500/10 text-red-500 border-red-500/20',
     chainlink: 'bg-blue-600/10 text-blue-600 border-blue-600/20',
     pyth: 'bg-purple-500/10 text-purple-500 border-purple-500/20',

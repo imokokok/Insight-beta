@@ -50,24 +50,12 @@ const nextConfig: NextConfig = {
     serverMinification: true,
     webpackBuildWorker: true,
     optimizePackageImports: ['lucide-react', 'recharts', 'date-fns', 'viem'],
-    ppr: true,
-    reactCompiler: true,
     staleTimes: {
       dynamic: 30,
       static: 180,
     },
-    turbo: {
-      rules: {
-        '*.svg': {
-          loaders: ['@svgr/webpack'],
-          as: '*.js',
-        },
-      },
-    },
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+
   productionBrowserSourceMaps: false,
   poweredByHeader: false,
   generateEtags: true,
@@ -193,25 +181,12 @@ const nextConfig: NextConfig = {
     },
   },
 
-  splitChunks: {
-    chunks: 'all',
-    cacheGroups: {
-      vendor: {
-        test: /[\\/]node_modules[\\/]/,
-        name: 'vendors',
-        chunks: 'all',
-      },
-      common: {
-        minChunks: 2,
-        chunks: 'all',
-        enforce: true,
-      },
-    },
-  },
-
   output: 'standalone',
   reactStrictMode: true,
-  typedRoutes: true,
+  typedRoutes: false,
+
+  // Disable Turbopack and use webpack
+  turbopack: {},
 
   webpack: (config) => {
     config.ignoreWarnings = config.ignoreWarnings || [];

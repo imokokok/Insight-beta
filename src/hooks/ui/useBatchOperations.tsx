@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Check, Square, Trash2, Download, AlertCircle, Loader2 } from 'lucide-react';
 
 interface BatchOperationItem {

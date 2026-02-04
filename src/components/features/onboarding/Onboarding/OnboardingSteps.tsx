@@ -1,4 +1,4 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 import { Check, ArrowRight } from 'lucide-react';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { cn } from '@/lib/utils';
@@ -7,7 +7,7 @@ interface OnboardingStep {
   id: string;
   title: string;
   description: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   target?: string;
 }
 

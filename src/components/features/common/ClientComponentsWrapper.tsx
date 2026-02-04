@@ -1,10 +1,10 @@
 'use client';
 
-import React from 'react';
+import type { ReactNode } from 'react';
 import { Onboarding } from '@/components/features/onboarding/Onboarding';
 
 interface ClientComponentsWrapperProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export function ClientComponentsWrapper({ children }: ClientComponentsWrapperProps) {

@@ -1,5 +1,4 @@
 import {
-  getOwnerData,
   getSyncState,
   getOracleEnv,
   isOracleSyncing,
@@ -52,10 +51,6 @@ export async function GET(request: Request) {
       ) {
         if (!configErrors.includes(lastError)) configErrors.push(lastError);
       }
-      const ownerInfo = await getOwnerData(
-        envConfig.rpcUrl || config.rpcUrl,
-        String(envConfig.contractAddress || config.contractAddress || ''),
-      );
       return {
         config: includeSecrets ? config : redactOracleConfig(config),
         state: {
@@ -75,8 +70,8 @@ export async function GET(request: Request) {
           sync: state.sync,
           configError: configErrors[0] ?? null,
           configErrors,
-          owner: ownerInfo.owner,
-          ownerIsContract: ownerInfo.isContractOwner,
+          owner: null,
+          ownerIsContract: null,
         },
       };
     };

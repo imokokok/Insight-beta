@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { X, AlertCircle, BarChart2, FileText, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useI18n } from '@/i18n/LanguageProvider';

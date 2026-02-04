@@ -107,12 +107,14 @@ export async function POST(request: Request) {
       },
     });
     if (result.updated) {
-      revalidateTag('oracle-stats');
-      revalidateTag(`oracle-stats:${normalizedInstanceId}`);
-      revalidateTag('oracle-leaderboard');
-      revalidateTag(`oracle-leaderboard:${normalizedInstanceId}`);
-      revalidateTag('user-stats');
-      revalidateTag(`user-stats:${normalizedInstanceId}`);
+      // Next.js 16 revalidateTag requires options as second parameter
+      const revalidateOptions = { revalidate: 0 } as any;
+      revalidateTag('oracle-stats', revalidateOptions);
+      revalidateTag(`oracle-stats:${normalizedInstanceId}`, revalidateOptions);
+      revalidateTag('oracle-leaderboard', revalidateOptions);
+      revalidateTag(`oracle-leaderboard:${normalizedInstanceId}`, revalidateOptions);
+      revalidateTag('user-stats', revalidateOptions);
+      revalidateTag(`user-stats:${normalizedInstanceId}`, revalidateOptions);
       await invalidateCachedJson('oracle_api:/api/oracle');
     }
     const isDemo = instanceId

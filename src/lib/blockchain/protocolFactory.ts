@@ -102,8 +102,6 @@ export function getProtocolCapabilities(protocol: OracleProtocol): ProtocolCapab
         customData: false,
         governance: true,
       };
-    case 'insight':
-      return { priceFeeds: false, assertions: true, disputes: true, vrf: false, customData: false };
     default:
       return {
         priceFeeds: false,
@@ -151,7 +149,6 @@ export class OracleProtocolClientFactory {
 
 export function getProtocolDisplayInfo(protocol: OracleProtocol) {
   const displayNames: Record<OracleProtocol, string> = {
-    insight: 'Insight Oracle',
     uma: 'UMA',
     chainlink: 'Chainlink',
     pyth: 'Pyth Network',
@@ -164,7 +161,6 @@ export function getProtocolDisplayInfo(protocol: OracleProtocol) {
   };
 
   const descriptions: Record<OracleProtocol, string> = {
-    insight: '原生 OracleMonitor 协议',
     uma: 'Optimistic Oracle with assertion and dispute mechanisms',
     chainlink: 'Industry-standard decentralized oracle network',
     pyth: 'Low-latency financial data from institutional sources',
@@ -177,7 +173,6 @@ export function getProtocolDisplayInfo(protocol: OracleProtocol) {
   };
 
   const icons: Record<OracleProtocol, string> = {
-    insight: '🔮',
     uma: '⚖️',
     chainlink: '🔗',
     pyth: '🐍',

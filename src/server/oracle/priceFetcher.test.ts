@@ -11,6 +11,7 @@ describe('priceFetcher fetchCurrentPrice', () => {
     vi.stubEnv('INSIGHT_REFERENCE_PRICE_PROVIDER', 'binance');
     vi.stubEnv('INSIGHT_DEX_TWAP_POOL', '');
     vi.stubEnv('INSIGHT_DEX_TWAP_RPC_URL', '');
+    vi.stubEnv('INSIGHT_FALLBACK_ETH_PRICE', '3500');
 
     vi.stubGlobal(
       'fetch',

@@ -31,9 +31,6 @@ export const env = {
   get INSIGHT_ALLOW_PRIVATE_RPC_URLS() {
     return (process.env.INSIGHT_ALLOW_PRIVATE_RPC_URLS ?? '').trim();
   },
-  get INSIGHT_ORACLE_ADDRESS() {
-    return (process.env.INSIGHT_ORACLE_ADDRESS ?? '').trim();
-  },
   get INSIGHT_CHAIN() {
     return (process.env.INSIGHT_CHAIN ?? '').trim();
   },
@@ -306,10 +303,6 @@ const envSchema = z.object({
       { message: 'invalid_rpc_url' },
     ),
   INSIGHT_ALLOW_PRIVATE_RPC_URLS: z.enum(['true', 'false', '1', '0']).optional(),
-  INSIGHT_ORACLE_ADDRESS: z
-    .string()
-    .regex(/^0x[a-fA-F0-9]{40}$/, 'invalid_address')
-    .optional(),
   INSIGHT_CHAIN: z.enum(['Polygon', 'PolygonAmoy', 'Arbitrum', 'Optimism', 'Local']).optional(),
   INSIGHT_SLOW_REQUEST_MS: z.coerce.number().int().min(0).optional(),
   INSIGHT_SLO_MAX_LAG_BLOCKS: z.coerce.number().int().min(0).optional(),
@@ -396,13 +389,7 @@ const envSchema = z.object({
   ),
   INSIGHT_BASE_URL: z.string().url().optional(),
   INSIGHT_CSP_MODE: z.enum(['relaxed', 'strict']).optional(),
-  NEXT_PUBLIC_INSIGHT_ORACLE_ADDRESS: z
-    .string()
-    .optional()
-    .transform((v) => (v ?? '').trim())
-    .refine((value) => !value || /^0x[a-fA-F0-9]{40}$/.test(value), {
-      message: 'invalid_address',
-    }),
+
   POLYGON_AMOY_RPC_URL: z
     .string()
     .optional()

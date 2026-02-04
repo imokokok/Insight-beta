@@ -4,7 +4,6 @@
  * 通用乐观预言机API端点
  * 支持多协议乐观预言机数据查询
  * - UMA
- * - Insight Oracle
  * - 其他乐观预言机协议
  */
 
@@ -26,7 +25,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const { searchParams } = new URL(request.url);
 
   // 查询参数
-  const protocol = searchParams.get('protocol') || 'all'; // 'all' | 'uma' | 'insight'
+  const protocol = searchParams.get('protocol') || 'all'; // 'all' | 'uma'
   const chain = searchParams.get('chain') || 'all';
   const includeInactive = searchParams.get('includeInactive') === 'true';
 

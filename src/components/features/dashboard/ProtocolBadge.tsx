@@ -19,7 +19,6 @@ const protocolStyles: Record<OracleProtocol, string> = {
   flux: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
   dia: 'bg-pink-500/10 text-pink-600 border-pink-500/20',
   uma: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20',
-  insight: 'bg-gray-500/10 text-gray-600 border-gray-500/20',
 };
 
 export function ProtocolBadge({ protocol, className }: ProtocolBadgeProps) {
@@ -28,7 +27,7 @@ export function ProtocolBadge({ protocol, className }: ProtocolBadgeProps) {
       variant="outline"
       className={cn(
         'font-medium capitalize transition-colors',
-        protocolStyles[protocol] || protocolStyles.insight,
+        protocolStyles[protocol],
         className,
       )}
     >

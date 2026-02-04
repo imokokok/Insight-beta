@@ -33,7 +33,6 @@ interface ProtocolCardProps {
 }
 
 const PROTOCOL_ICONS: Record<OracleProtocol, string> = {
-  insight: '🔮',
   uma: '⚖️',
   chainlink: '🔗',
   pyth: '🐍',
@@ -46,7 +45,6 @@ const PROTOCOL_ICONS: Record<OracleProtocol, string> = {
 };
 
 const PROTOCOL_COLORS: Record<OracleProtocol, string> = {
-  insight: 'from-blue-500 to-cyan-500',
   uma: 'from-red-500 to-orange-500',
   chainlink: 'from-blue-600 to-blue-400',
   pyth: 'from-purple-500 to-pink-500',

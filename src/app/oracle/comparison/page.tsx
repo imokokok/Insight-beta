@@ -10,7 +10,7 @@
 
 'use client';
 
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useToast } from '@/hooks/ui/use-toast';
 import { useI18n } from '@/i18n';
 import { ComparisonControls } from '@/components/features/comparison/ComparisonControls';
