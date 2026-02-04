@@ -75,7 +75,7 @@ const roleScopes: Record<AdminRole, ReadonlySet<AdminScope>> = {
   viewer: new Set(['audit_read']),
 };
 
-function timingSafeEqualString(a: string, b: string) {
+export function timingSafeEqualString(a: string, b: string) {
   const aBytes = new TextEncoder().encode(a);
   const bBytes = new TextEncoder().encode(b);
   const maxLen = Math.max(aBytes.length, bBytes.length);

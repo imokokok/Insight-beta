@@ -10,15 +10,8 @@ import {
 import { appendAuditLog } from '@/server/observability';
 import { revalidateTag } from 'next/cache';
 import { env } from '@/lib/config/env';
-import crypto from 'node:crypto';
+import { timingSafeEqualString } from '@/server/adminAuth';
 import { DEFAULT_ORACLE_INSTANCE_ID } from '@/server/oracleConfig';
-
-function timingSafeEqualString(a: string, b: string) {
-  const aBuf = Buffer.from(a, 'utf8');
-  const bBuf = Buffer.from(b, 'utf8');
-  if (aBuf.length !== bBuf.length) return false;
-  return crypto.timingSafeEqual(aBuf, bBuf);
-}
 
 function isCronAuthorized(request: Request) {
   const secret = (env.INSIGHT_CRON_SECRET.trim() || env.CRON_SECRET.trim()).trim();

@@ -1,7 +1,7 @@
 import { ensureOracleSynced, getOracleStats } from '@/server/oracle';
 import { cachedJson, handleApi, rateLimit, requireAdmin } from '@/server/apiResponse';
 import { env } from '@/lib/config/env';
-import crypto from 'node:crypto';
+import { timingSafeEqualString } from '@/server/adminAuth';
 
 /**
  * @swagger
@@ -55,13 +55,6 @@ import crypto from 'node:crypto';
  *       500:
  *         description: 服务器错误
  */
-
-function timingSafeEqualString(a: string, b: string) {
-  const aBuf = Buffer.from(a, 'utf8');
-  const bBuf = Buffer.from(b, 'utf8');
-  if (aBuf.length !== bBuf.length) return false;
-  return crypto.timingSafeEqual(aBuf, bBuf);
-}
 
 function isCronAuthorized(request: Request) {
   const secret = (env.INSIGHT_CRON_SECRET.trim() || env.CRON_SECRET.trim()).trim();
