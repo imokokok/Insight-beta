@@ -50,7 +50,7 @@ class PWAManager {
       this.state.isInstallable = false;
       this.state.deferredPrompt = null;
       this.notifyListeners();
-      console.log('PWA was installed');
+      logger.debug('PWA was installed');
     });
 
     // Listen for online/offline events
@@ -124,7 +124,7 @@ class PWAManager {
    */
   async registerServiceWorker(): Promise<ServiceWorkerRegistration | null> {
     if (!('serviceWorker' in navigator)) {
-      console.log('Service workers are not supported');
+      logger.debug('Service workers are not supported');
       return null;
     }
 
@@ -133,7 +133,7 @@ class PWAManager {
         scope: '/',
       });
 
-      console.log('Service worker registered:', registration);
+      logger.debug('Service worker registered:', registration);
 
       // Handle updates
       registration.addEventListener('updatefound', () => {
@@ -142,7 +142,7 @@ class PWAManager {
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
               // New service worker available
-              console.log('New service worker available');
+              logger.debug('New service worker available');
             }
           });
         }
@@ -160,7 +160,7 @@ class PWAManager {
    */
   async requestNotificationPermission(): Promise<NotificationPermission> {
     if (!('Notification' in window)) {
-      console.log('Notifications are not supported');
+      logger.debug('Notifications are not supported');
       return 'denied';
     }
 

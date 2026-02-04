@@ -394,7 +394,7 @@ export default function OptimisticOraclePage() {
               </p>
             </a>
 
-            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+            { }
             <a
               href="/oracle/optimistic/rewards"
               className="rounded-xl bg-white/5 p-6 transition-colors hover:bg-white/10"
@@ -408,7 +408,7 @@ export default function OptimisticOraclePage() {
               </p>
             </a>
 
-            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+            { }
             <a
               href="/oracle/optimistic/tvl"
               className="rounded-xl bg-white/5 p-6 transition-colors hover:bg-white/10"
@@ -422,7 +422,7 @@ export default function OptimisticOraclePage() {
               </p>
             </a>
 
-            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+            { }
             <a
               href="/oracle/optimistic/polymarket"
               className="rounded-xl bg-white/5 p-6 transition-colors hover:bg-white/10"
@@ -436,7 +436,7 @@ export default function OptimisticOraclePage() {
               </p>
             </a>
 
-            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+            { }
             <a
               href="/oracle/optimistic/governance"
               className="rounded-xl bg-white/5 p-6 transition-colors hover:bg-white/10"

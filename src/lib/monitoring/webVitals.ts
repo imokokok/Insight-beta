@@ -39,7 +39,7 @@ class WebVitalsCollector {
 
     // Log to console in development
     if (process.env.NODE_ENV === 'development') {
-      console.log('[Web Vitals]', report);
+      logger.debug('[Web Vitals]', report);
     }
 
     // Send to analytics endpoint

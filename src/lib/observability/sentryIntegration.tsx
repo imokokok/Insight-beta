@@ -1,4 +1,5 @@
 import { useEffect, useCallback, useRef } from 'react';
+import { logger } from '@/lib/logger';
 
 interface LayoutShift extends PerformanceEntry {
   value: number;
@@ -330,10 +331,10 @@ export function useSentry(options: UseSentryOptions): UseSentryReturn {
           }
         })
         .catch((error) => {
-          console.warn('Failed to initialize Sentry:', error);
+          logger.warn('Failed to initialize Sentry:', { error });
         });
     } catch (error) {
-      console.warn('Sentry initialization error:', error);
+      logger.warn('Sentry initialization error:', { error });
     }
 
     return cleanup;
@@ -356,7 +357,7 @@ export function useSentry(options: UseSentryOptions): UseSentryReturn {
     (error: unknown, context?: Record<string, unknown>): string => {
       const sentry = window.Sentry;
       if (!sentry || !isInitialized.current) {
-        console.warn('Sentry not initialized, logging to console:', error);
+        logger.warn('Sentry not initialized, logging to console:', { error });
         return 'mock-event-id';
       }
 
@@ -369,7 +370,7 @@ export function useSentry(options: UseSentryOptions): UseSentryReturn {
   const captureMessage = useCallback((message: string, level: SentrySeverity = 'info'): string => {
     const sentry = window.Sentry;
     if (!sentry || !isInitialized.current) {
-      console.warn('Sentry not initialized, logging to console:', message);
+      logger.warn('Sentry not initialized, logging to console:', { message });
       return 'mock-event-id';
     }
 
@@ -544,7 +545,7 @@ export function usePerformanceMonitoring() {
     try {
       observer.observe({ entryTypes: ['largest-contentful-paint', 'first-input', 'layout-shift'] });
     } catch {
-      console.warn('PerformanceObserver not supported');
+      logger.warn('PerformanceObserver not supported');
     }
 
     return () => observer.disconnect();

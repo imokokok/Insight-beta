@@ -23,13 +23,9 @@ export { SolanaRpcClient, createSolanaRpcClient } from './rpc';
 
 // Connection
 export {
-  solanaConnectionManager,
-  withRetry,
-  fetchAccountInfo,
-  fetchMultipleAccounts,
-  getLatestSlot,
-  getLatestBlockhash,
-  getBlockTime,
+  SolanaConnectionManager,
+  getSolanaConnectionManager,
+  resetSolanaConnectionManager,
 } from './connection';
 
 // Clients

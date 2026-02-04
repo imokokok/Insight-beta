@@ -97,8 +97,9 @@ vi.mock('@/components/AssertionList', () => ({
 import OraclePage from './page';
 
 describe('Oracle page', () => {
-  it('renders the page header', () => {
+  it('renders the oracle platform page', () => {
     render(<OraclePage />);
-    expect(screen.getByText('Redirecting to dashboard...')).toBeInTheDocument();
+    // The page should render with oracle platform content
+    expect(screen.getByText('Universal Oracle')).toBeInTheDocument();
   });
 });

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import { logger } from '@/lib/logger';
 
 interface PerformanceMetrics {
   fcp: number | null;
@@ -62,7 +63,7 @@ export function PerformanceMonitor({ children, onMetrics }: Props): React.ReactE
           }).catch(() => {});
         }
       } catch {
-        console.warn('Failed to send performance metric');
+        logger.warn('Failed to send performance metric');
       }
     }
   };

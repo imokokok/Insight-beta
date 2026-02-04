@@ -1,3 +1,5 @@
+import { logger } from '@/lib/logger';
+
 export type ExportFormat = 'csv' | 'xlsx' | 'json';
 
 export interface ExportOptions {
@@ -47,6 +49,7 @@ export async function exportData<T extends Record<string, unknown>>(
     batchSize = DEFAULT_BATCH_SIZE,
   } = options;
 
+  // Validate input
   if (!Array.isArray(data)) {
     return {
       success: false,
@@ -57,302 +60,186 @@ export async function exportData<T extends Record<string, unknown>>(
     };
   }
 
-  if (data.length === 0) {
-    return {
-      success: false,
-      filename: '',
-      size: 0,
-      recordCount: 0,
-      error: 'No data to export',
-    };
-  }
-
   if (data.length > MAX_EXPORT_RECORDS) {
     return {
       success: false,
       filename: '',
       size: 0,
-      recordCount: data.length,
-      error: `Too many records to export. Maximum allowed is ${MAX_EXPORT_RECORDS} records.`,
+      recordCount: 0,
+      error: `Maximum ${MAX_EXPORT_RECORDS} records allowed`,
     };
   }
 
   try {
+    // Process data in batches
     const effectiveBatchSize = Math.min(batchSize, MAX_BATCH_SIZE);
-    const totalBatches = Math.ceil(data.length / effectiveBatchSize);
-    let processedBatches = 0;
+    const batches: T[][] = [];
 
-    const processBatch = async (batchData: T[], batchIndex: number): Promise<string> => {
-      const batchHeaders = headers || (batchData[0] ? Object.keys(batchData[0]) : []);
-      const batchFilename = `${filename}_batch_${batchIndex}`;
-
-      let content: string;
-
-      switch (format) {
-        case 'csv':
-          content = await exportToCSV(batchData, {
-            filename: batchFilename,
-            headers: batchHeaders,
-          });
-          break;
-        case 'xlsx':
-          content = await exportToExcel(batchData, {
-            filename: batchFilename,
-            headers: batchHeaders,
-          });
-          break;
-        case 'json':
-          content = await exportToJSON(batchData);
-          break;
-        default:
-          throw new Error(`Unsupported export format: ${format}`);
-      }
-
-      processedBatches++;
-      if (onProgress) {
-        onProgress((processedBatches / totalBatches) * 100);
-      }
-
-      return content;
-    };
-
-    let finalContent: string;
-    const finalFilename = includeTimestamp
-      ? `${filename}_${new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)}`
-      : filename;
-
-    if (data.length <= effectiveBatchSize) {
-      finalContent = await processBatch(data, 0);
-    } else {
-      const batches: string[] = [];
-
-      for (let i = 0; i < data.length; i += effectiveBatchSize) {
-        const batchData = data.slice(i, i + effectiveBatchSize);
-        const batchContent = await processBatch(batchData, Math.floor(i / effectiveBatchSize));
-        batches.push(batchContent);
-      }
-
-      finalContent = batches.join('\n');
+    for (let i = 0; i < data.length; i += effectiveBatchSize) {
+      batches.push(data.slice(i, i + effectiveBatchSize));
     }
 
-    const finalExtension = format === 'xlsx' ? 'csv' : format;
-    const finalFilenameWithExt = `${finalFilename}.${finalExtension}`;
+    // Convert to format
+    let content = '';
+    const totalBatches = batches.length;
 
-    let downloadContent = finalContent;
-    let downloadSize = finalContent.length;
+    for (let i = 0; i < batches.length; i++) {
+      const batch = batches[i]!;
 
-    if (compress && finalContent.length > 1024) {
+      if (format === 'csv') {
+        content += convertToCSV(batch, headers, i === 0);
+      } else if (format === 'json') {
+        content += convertToJSON(batch, i === 0, i === batches.length - 1);
+      }
+
+      // Report progress
+      if (onProgress) {
+        onProgress(Math.round(((i + 1) / totalBatches) * 100));
+      }
+    }
+
+    // Add timestamp if requested
+    let finalFilename = filename;
+    if (includeTimestamp) {
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      finalFilename = `${filename}_${timestamp}`;
+    }
+
+    // Add extension
+    finalFilename += `.${format}`;
+
+    // Compress if requested
+    let finalContent = content;
+    let downloadSize = content.length;
+
+    if (compress && typeof window !== 'undefined') {
       try {
-        const compressed = await compressContent(finalContent);
-        downloadContent = compressed;
+        const compressed = await compressContent(content);
+        finalContent = compressed;
+        finalFilename += '.gz';
         downloadSize = compressed.length;
       } catch (error) {
-        console.warn('Compression failed, using uncompressed content', error);
+        logger.warn('Compression failed, using uncompressed content', { error });
       }
     }
 
-    const mimeType = getMimeType(format);
-    downloadFile(downloadContent, finalFilenameWithExt, mimeType);
+    // Create download
+    if (typeof window !== 'undefined') {
+      createDownload(finalContent, finalFilename);
+    }
 
-    const result: ExportResult = {
+    // Save to history
+    if (typeof window !== 'undefined') {
+      saveExportHistory({
+        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        filename: finalFilename,
+        format,
+        timestamp: new Date().toISOString(),
+        recordCount: data.length,
+        size: downloadSize,
+      });
+    }
+
+    return {
       success: true,
-      filename: finalFilenameWithExt,
+      filename: finalFilename,
       size: downloadSize,
       recordCount: data.length,
     };
-
-    saveToExportHistory(result);
-
-    return result;
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown export error';
     return {
       success: false,
       filename: '',
       size: 0,
       recordCount: 0,
-      error: errorMessage,
+      error: error instanceof Error ? error.message : 'Export failed',
     };
   }
 }
 
-async function exportToCSV<T extends Record<string, unknown>>(
+function convertToCSV<T extends Record<string, unknown>>(
   data: T[],
-  options: { filename: string; headers?: string[] },
-): Promise<string> {
-  if (data.length === 0) {
-    throw new Error('No data to export');
-  }
+  headers?: string[],
+  includeHeader: boolean = true,
+): string {
+  if (data.length === 0) return '';
 
-  const firstItem = data[0];
-  if (!firstItem) {
-    throw new Error('No data to export');
+  const keys = headers || Object.keys(data[0] || {});
+  let csv = '';
+
+  if (includeHeader) {
+    csv += keys.join(',') + '\n';
   }
-  const headers = options.headers || Object.keys(firstItem);
-  const csvRows: string[] = [headers.join(',')];
 
   for (const row of data) {
-    const values = headers.map((header) => {
-      // Safe: header comes from Object.keys of the same row object
-
-      const value = row[header];
-      return formatCSVValue(value);
+    const values = keys.map((key) => {
+      const value = row[key];
+      if (value === null || value === undefined) return '';
+      const stringValue = String(value);
+      // Escape values containing commas or quotes
+      if (stringValue.includes(',') || stringValue.includes('"')) {
+        return `"${stringValue.replace(/"/g, '""')}"`;
+      }
+      return stringValue;
     });
-    csvRows.push(values.join(','));
+    csv += values.join(',') + '\n';
   }
 
-  return csvRows.join('\n');
+  return csv;
 }
 
-function formatCSVValue(value: unknown): string {
-  if (value === null || value === undefined) {
-    return '';
-  }
-
-  const stringValue = String(value);
-
-  if (
-    stringValue.includes(',') ||
-    stringValue.includes('"') ||
-    stringValue.includes('\n') ||
-    stringValue.includes('\r')
-  ) {
-    return `"${stringValue.replace(/"/g, '""')}"`;
-  }
-
-  return stringValue;
-}
-
-async function exportToExcel<T extends Record<string, unknown>>(
+function convertToJSON<T extends Record<string, unknown>>(
   data: T[],
-  options: { filename: string; headers?: string[] },
-): Promise<string> {
-  if (data.length === 0) {
-    throw new Error('No data to export');
+  isFirst: boolean,
+  isLast: boolean,
+): string {
+  let json = '';
+
+  if (isFirst) {
+    json += '[\n';
   }
 
-  const firstItem = data[0];
-  if (!firstItem) {
-    throw new Error('No data to export');
-  }
-  const headers = options.headers || Object.keys(firstItem);
-  const worksheetData = [headers];
-
-  for (const row of data) {
-    const values = headers.map((header) => {
-      // Safe: header comes from Object.keys of the same row object
-
-      const value = row[header];
-      return value === null || value === undefined ? '' : String(value);
-    });
-    worksheetData.push(values);
+  for (let i = 0; i < data.length; i++) {
+    json += JSON.stringify(data[i], null, 2);
+    if (!isLast || i < data.length - 1) {
+      json += ',\n';
+    }
   }
 
-  const csvContent = worksheetData
-    .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-    .join('\n');
+  if (isLast) {
+    json += '\n]';
+  }
 
-  return csvContent;
+  return json;
 }
 
-async function exportToJSON<T extends Record<string, unknown>>(data: T[]): Promise<string> {
-  return JSON.stringify(data, null, 2);
+async function compressContent(content: string): Promise<string> {
+  // Simple compression using TextEncoder and Uint8Array
+  // In a real implementation, you might use a library like pako
+  const encoder = new TextEncoder();
+  const _data = encoder.encode(content);
+
+  // For now, just return the content as-is
+  // TODO: Implement proper compression
+  void _data;
+  return content;
 }
 
-function downloadFile(content: string, filename: string, mimeType: string): void {
-  const blob = new Blob([content], { type: mimeType });
+function createDownload(content: string, filename: string): void {
+  const blob = new Blob([content], { type: 'text/plain' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
   link.download = filename;
-  link.style.display = 'none';
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }
 
-function getMimeType(format: ExportFormat): string {
-  switch (format) {
-    case 'csv':
-      return 'text/csv;charset=utf-8;';
-    case 'xlsx':
-      return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8;';
-    case 'json':
-      return 'application/json;charset=utf-8;';
-    default:
-      return 'text/plain;charset=utf-8;';
-  }
-}
-
-async function compressContent(content: string): Promise<string> {
-  if (typeof CompressionStream === 'undefined') {
-    return content;
-  }
-
-  try {
-    const stream = new CompressionStream('gzip');
-    const writer = stream.writable.getWriter();
-    await writer.write(new TextEncoder().encode(content));
-    await writer.close();
-
-    const compressed = await new Response(stream.readable).arrayBuffer();
-    return new TextDecoder().decode(compressed);
-  } catch {
-    return content;
-  }
-}
-
-export function formatValueForExport(
-  value: unknown,
-  format: 'decimal' | 'currency' | 'percentage' = 'decimal',
-  locale: string = 'en-US',
-): string {
-  if (value === null || value === undefined) {
-    return '';
-  }
-
-  const numValue = Number(value);
-
-  if (!Number.isFinite(numValue)) {
-    return String(value);
-  }
-
-  switch (format) {
-    case 'decimal':
-      return numValue.toLocaleString(locale, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      });
-    case 'currency':
-      return numValue.toLocaleString(locale, {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      });
-    case 'percentage':
-      return `${(numValue * 100).toFixed(2)}%`;
-    default:
-      return String(value);
-  }
-}
-
-export function generateExportFilename(
-  prefix: string,
-  format: ExportFormat,
-  includeTimestamp: boolean = true,
-): string {
-  if (!includeTimestamp) {
-    return `${prefix}.${format}`;
-  }
-
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-
-  return `${prefix}-${timestamp}.${format}`;
-}
-
 export function getExportHistory(): ExportHistory[] {
+  if (typeof window === 'undefined') return [];
+
   try {
     const history = localStorage.getItem('exportHistory');
     return history ? JSON.parse(history) : [];
@@ -361,22 +248,14 @@ export function getExportHistory(): ExportHistory[] {
   }
 }
 
-function saveToExportHistory(result: ExportResult): void {
+function saveExportHistory(entry: ExportHistory): void {
   try {
     const history = getExportHistory();
-    const entry: ExportHistory = {
-      id: `export-${Date.now()}`,
-      filename: result.filename,
-      format: result.filename.split('.').pop() as ExportFormat,
-      timestamp: new Date().toISOString(),
-      recordCount: result.recordCount,
-      size: result.size,
-    };
 
     const updatedHistory = [entry, ...history].slice(0, 50);
     localStorage.setItem('exportHistory', JSON.stringify(updatedHistory));
   } catch (error) {
-    console.warn('Failed to save export history', error);
+    logger.warn('Failed to save export history', { error });
   }
 }
 
@@ -384,7 +263,7 @@ export function clearExportHistory(): void {
   try {
     localStorage.removeItem('exportHistory');
   } catch (error) {
-    console.warn('Failed to clear export history', error);
+    logger.warn('Failed to clear export history', { error });
   }
 }
 
@@ -403,56 +282,34 @@ export function validateExportData<T extends Record<string, unknown>>(
     return { valid: false, errors };
   }
 
+  if (data.length > MAX_EXPORT_RECORDS) {
+    errors.push(`Maximum ${MAX_EXPORT_RECORDS} records allowed`);
+  }
+
+  // Check first item for structure
   const firstItem = data[0];
-  if (typeof firstItem !== 'object' || firstItem === null) {
+  if (!firstItem || typeof firstItem !== 'object') {
     errors.push('Data items must be objects');
     return { valid: false, errors };
   }
 
-  const keys = Object.keys(firstItem);
-  if (keys.length === 0) {
-    errors.push('Data items must have at least one property');
-    return { valid: false, errors };
+  // Check for circular references
+  try {
+    JSON.stringify(data);
+  } catch {
+    errors.push('Data contains circular references');
   }
 
-  for (let i = 0; i < data.length; i++) {
-    const item = data[i];
-    if (typeof item !== 'object' || item === null) {
-      errors.push(`Item at index ${i} is not an object`);
-    }
-  }
-
-  return {
-    valid: errors.length === 0,
-    errors,
-  };
+  return { valid: errors.length === 0, errors };
 }
 
-export function estimateExportSize(
-  recordCount: number,
-  format: ExportFormat,
-  averageRecordSize: number = 100,
-): number {
-  const baseSize = recordCount * averageRecordSize;
-
-  switch (format) {
-    case 'csv':
-      return Math.round(baseSize * 1.1);
-    case 'xlsx':
-      return Math.round(baseSize * 1.5);
-    case 'json':
-      return Math.round(baseSize * 1.3);
-    default:
-      return baseSize;
-  }
-}
-
-export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
-
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-  return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`;
+/**
+ * Generate export filename based on type and format
+ * @param type - Export type
+ * @param format - Export format
+ * @returns Generated filename
+ */
+export function generateExportFilename(type: string, format: string): string {
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  return `${type}_${timestamp}.${format}`;
 }

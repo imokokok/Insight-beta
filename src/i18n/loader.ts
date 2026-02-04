@@ -1,4 +1,5 @@
 import type { Lang, TranslationNamespace } from './types';
+import { logger } from '@/lib/logger';
 
 export type TranslationModule = () => Promise<{ default: TranslationNamespace }>;
 
@@ -30,7 +31,7 @@ export async function loadTranslations(lang: Lang): Promise<TranslationNamespace
     loadedTranslations[lang] = translationModule.default;
     return translationModule.default;
   } catch (error) {
-    console.warn(`Failed to load translations for ${lang}, falling back to English`, error);
+    logger.warn(`Failed to load translations for ${lang}, falling back to English`, { error });
     if (lang !== 'en') {
       return loadTranslations('en');
     }

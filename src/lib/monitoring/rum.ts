@@ -6,6 +6,7 @@
  */
 
 import { onCLS, onFCP, onFID, onLCP, onTTFB, onINP } from 'web-vitals';
+import { logger } from '@/lib/logger';
 
 // ============================================================================
 // Types & Interfaces
@@ -80,7 +81,7 @@ class WebVitalsMonitor {
     this.metrics.set(name, metric);
 
     if (DEFAULT_CONFIG.debug) {
-      console.log(`[RUM] ${name}:`, metric.value);
+      logger.debug(`[RUM] ${name}:`, { value: metric.value });
     }
 
     // Send to analytics
@@ -160,7 +161,7 @@ class ResourceMonitor {
 
       this.observer.observe({ entryTypes: ['resource'] });
     } catch {
-      console.warn('[RUM] Resource monitoring not supported');
+      logger.warn('[RUM] Resource monitoring not supported');
     }
   }
 
@@ -184,7 +185,7 @@ class ResourceMonitor {
     }
 
     if (DEFAULT_CONFIG.debug && entry.duration > 3000) {
-      console.warn(`[RUM] Slow resource: ${entry.name} (${entry.duration.toFixed(0)}ms)`);
+      logger.warn(`[RUM] Slow resource: ${entry.name} (${entry.duration.toFixed(0)}ms)`);
     }
   }
 
@@ -362,7 +363,7 @@ class RUMManager {
     this.initialized = true;
 
     if (DEFAULT_CONFIG.debug) {
-      console.log('[RUM] Initialized');
+      logger.debug('[RUM] Initialized');
     }
 
     // Expose for debugging
@@ -393,7 +394,7 @@ class RUMManager {
       try {
         performance.measure(name, startMark, endMark);
       } catch (e) {
-        console.warn(`[RUM] Failed to measure ${name}:`, e);
+        logger.warn(`[RUM] Failed to measure ${name}:`, { error: e });
       }
     }
   }

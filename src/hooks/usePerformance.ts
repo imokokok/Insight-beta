@@ -7,6 +7,7 @@ import {
   type DependencyList,
   type RefObject,
 } from 'react';
+import { logger } from '@/lib/logger';
 
 /**
  * useDeepMemo - 深度比较依赖的 useMemo
@@ -189,7 +190,7 @@ export function useLocalStorage<T>(
       } catch (error) {
         // Silently ignore localStorage errors in production
         if (process.env.NODE_ENV === 'development') {
-          console.warn('Error saving to localStorage:', error);
+          logger.warn('Error saving to localStorage:', { error });
         }
       }
     },

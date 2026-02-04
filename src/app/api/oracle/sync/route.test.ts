@@ -126,9 +126,9 @@ describe('POST /api/oracle/sync', () => {
         lastProcessedBlock: '100',
       },
     });
-    expect(revalidateTag).toHaveBeenCalledWith('oracle-stats');
-    expect(revalidateTag).toHaveBeenCalledWith('oracle-leaderboard');
-    expect(revalidateTag).toHaveBeenCalledWith('user-stats');
+    expect(revalidateTag).toHaveBeenCalledWith('oracle-stats', expect.any(Object));
+    expect(revalidateTag).toHaveBeenCalledWith('oracle-leaderboard', expect.any(Object));
+    expect(revalidateTag).toHaveBeenCalledWith('user-stats', expect.any(Object));
     expect(invalidateCachedJson).toHaveBeenCalledWith('oracle_api:/api/oracle');
 
     expect(response.updated).toBe(true);

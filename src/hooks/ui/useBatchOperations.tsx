@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { Check, Square, Trash2, Download, AlertCircle, Loader2 } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 interface BatchOperationItem {
   id: string;
@@ -102,7 +103,7 @@ export function useBatchOperations<T extends { id: string }>(
           item.selected = false;
         } else {
           if (currentSelected >= maxSelectable) {
-            console.warn(`Maximum of ${maxSelectable} items can be selected`);
+            logger.warn(`Maximum of ${maxSelectable} items can be selected`);
             return prevItems;
           }
           item.selected = true;
