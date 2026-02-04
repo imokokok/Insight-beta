@@ -3,6 +3,8 @@
  * Helper functions for Progressive Web App features
  */
 
+import { logger } from '@/lib/logger';
+
 export interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
   readonly userChoice: Promise<{
@@ -133,7 +135,7 @@ class PWAManager {
         scope: '/',
       });
 
-      logger.debug('Service worker registered:', registration);
+      logger.debug('Service worker registered', { registration: registration.scope });
 
       // Handle updates
       registration.addEventListener('updatefound', () => {

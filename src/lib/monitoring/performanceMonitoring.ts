@@ -330,7 +330,7 @@ export function initRUM() {
 function reportMetric(name: string, value: number) {
   // Log in development
   if (process.env.NODE_ENV === 'development') {
-    logger.debug(`[Web Vitals] ${name}:`, value);
+    logger.debug(`[Web Vitals] ${name}:`, { value });
   }
 
   // Send to analytics in production

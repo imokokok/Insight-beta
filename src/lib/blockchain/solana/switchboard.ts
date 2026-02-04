@@ -129,7 +129,7 @@ function parseAggregatorAccount(data: Buffer): Partial<AggregatorAccountData> {
 // ============================================================================
 
 export class SwitchboardSolanaClient {
-  constructor(private connection: Connection) {}
+  constructor(_connection: Connection) {}
 
   /**
    * Get price feed for a symbol
@@ -173,7 +173,7 @@ export class SwitchboardSolanaClient {
    * Get aggregator account data
    */
   async getAggregator(address: string): Promise<SwitchboardAggregator> {
-    const accountInfo = await fetchAccountInfo(this.connection, address);
+    const accountInfo = await fetchAccountInfo(address);
 
     if (!accountInfo) {
       throw new SolanaError(

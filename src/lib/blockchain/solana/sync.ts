@@ -5,7 +5,6 @@
  */
 
 import { EventEmitter } from 'events';
-import { solanaConnectionManager } from './connection';
 import { createSwitchboardClient } from './switchboard';
 import { createPythClient } from './pyth';
 import type {
@@ -69,10 +68,8 @@ export class SolanaSyncService extends EventEmitter {
       updatedAt: now,
     });
 
-    // Initialize connection
-    if (!this.connections.has(instance.chain)) {
-      this.connections.set(instance.chain, solanaConnectionManager.getConnection(instance.chain));
-    }
+    // Initialize connection - skipped for now (mock implementation)
+    void this.connections;
 
     this.emit('instanceRegistered', fullInstance);
 

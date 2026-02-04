@@ -26,6 +26,13 @@ export {
   SolanaConnectionManager,
   getSolanaConnectionManager,
   resetSolanaConnectionManager,
+  solanaConnectionManager,
+  withRetry,
+  fetchAccountInfo,
+  fetchMultipleAccounts,
+  getLatestSlot,
+  getLatestBlockhash,
+  getBlockTime,
 } from './connection';
 
 // Clients

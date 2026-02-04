@@ -89,7 +89,7 @@ function parsePythPriceAccount(data: Buffer): PythPriceAccount {
 // ============================================================================
 
 export class PythSolanaClient {
-  constructor(private connection: Connection) {}
+  constructor(_connection: Connection) {}
 
   /**
    * Get price feed for a symbol
@@ -127,7 +127,7 @@ export class PythSolanaClient {
    * Get price account data
    */
   async getPriceData(address: string): Promise<PythPriceData> {
-    const accountInfo = await fetchAccountInfo(this.connection, address);
+    const accountInfo = await fetchAccountInfo(address);
 
     if (!accountInfo) {
       throw new SolanaError(
