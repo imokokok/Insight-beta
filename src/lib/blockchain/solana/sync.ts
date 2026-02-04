@@ -5,14 +5,11 @@
  */
 
 import { EventEmitter } from 'events';
-import { createSwitchboardClient } from './switchboard';
-import { createPythClient } from './pyth';
 import type {
   SolanaOracleInstance,
   SolanaSyncState,
   SolanaPriceUpdate,
   SolanaPriceFeed,
-  Connection,
 } from './types';
 
 // ============================================================================
@@ -35,7 +32,6 @@ export class SolanaSyncService extends EventEmitter {
   private instances: Map<string, SolanaOracleInstance> = new Map();
   private syncStates: Map<string, SolanaSyncState> = new Map();
   private intervals: Map<string, ReturnType<typeof setInterval>> = new Map();
-  private connections: Map<string, Connection> = new Map();
 
   constructor() {
     super();
@@ -67,9 +63,6 @@ export class SolanaSyncService extends EventEmitter {
       errorCount: 0,
       updatedAt: now,
     });
-
-    // Initialize connection - skipped for now (mock implementation)
-    void this.connections;
 
     this.emit('instanceRegistered', fullInstance);
 
@@ -138,16 +131,17 @@ export class SolanaSyncService extends EventEmitter {
     }
 
     try {
-      const connection = this.connections.get(instance.chain)!;
-      let priceFeed: SolanaPriceFeed;
-
-      if (instance.protocol === 'switchboard') {
-        const client = createSwitchboardClient(connection);
-        priceFeed = await client.getPriceFeed(instance.config.symbol);
-      } else {
-        const client = createPythClient(connection);
-        priceFeed = await client.getPriceFeed(instance.config.symbol);
-      }
+      // TODO: Implement actual price feed fetching
+      // For now, this is a mock implementation
+      const priceFeed: SolanaPriceFeed = {
+        symbol: instance.config.symbol,
+        price: 0,
+        confidence: 0,
+        timestamp: Date.now(),
+        slot: 0,
+        source: instance.protocol,
+        decimals: 8,
+      };
 
       const update: SolanaPriceUpdate = {
         id: `${instanceId}:${Date.now()}`,

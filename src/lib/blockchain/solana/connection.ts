@@ -5,7 +5,6 @@
  */
 
 import { logger } from '@/lib/logger';
-import type { SolanaAddress } from './types';
 
 // ============================================================================
 // Simple Account Info Interface
@@ -78,53 +77,11 @@ export const solanaConnectionManager = {
 };
 
 /**
- * Fetch account info with retry logic
+ * Fetch account info
  */
-export async function fetchAccountInfo(_address: SolanaAddress): Promise<SimpleAccountInfo | null> {
+export async function fetchAccountInfo(_address: string): Promise<SimpleAccountInfo | null> {
+  // TODO: Implement actual Solana RPC call
   return null;
-}
-
-/**
- * Fetch multiple accounts with retry logic
- */
-export async function fetchMultipleAccounts(
-  _addresses: SolanaAddress[],
-): Promise<(SimpleAccountInfo | null)[]> {
-  return [];
-}
-
-/**
- * Get latest slot
- */
-export async function getLatestSlot(): Promise<number> {
-  return 0;
-}
-
-/**
- * Get latest blockhash
- */
-export async function getLatestBlockhash(): Promise<{
-  blockhash: string;
-  lastValidBlockHeight: number;
-}> {
-  return {
-    blockhash: 'mock-blockhash',
-    lastValidBlockHeight: 0,
-  };
-}
-
-/**
- * Get block time
- */
-export async function getBlockTime(_slot: number): Promise<number | null> {
-  return null;
-}
-
-/**
- * Execute with retry
- */
-export async function withRetry<T>(operation: () => Promise<T>, _context?: string): Promise<T> {
-  return operation();
 }
 
 export { SolanaConnectionManager };

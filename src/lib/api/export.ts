@@ -216,12 +216,8 @@ function convertToJSON<T extends Record<string, unknown>>(
 async function compressContent(content: string): Promise<string> {
   // Simple compression using TextEncoder and Uint8Array
   // In a real implementation, you might use a library like pako
-  const encoder = new TextEncoder();
-  const _data = encoder.encode(content);
-
   // For now, just return the content as-is
   // TODO: Implement proper compression
-  void _data;
   return content;
 }
 

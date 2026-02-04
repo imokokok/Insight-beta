@@ -4,7 +4,7 @@
  * 提供各种性能优化工具函数和 Hooks
  */
 
-import { useEffect, useRef, useCallback, useMemo } from 'react';
+import { useEffect, useRef, useCallback, useMemo, useState } from 'react';
 import { logger } from '@/lib/logger';
 
 // ============================================================================
@@ -251,8 +251,6 @@ export function scheduleOnFrame(callback: () => void): () => void {
 // ============================================================================
 // 懒加载 Hook
 // ============================================================================
-
-import { useState } from 'react';
 
 export function useLazyLoad<T>(
   loader: () => Promise<T>,

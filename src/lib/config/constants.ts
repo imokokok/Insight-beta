@@ -167,14 +167,14 @@ export const CACHE_TTLS = {
   user: 1800,
 } as const;
 
-// Legacy exports for backward compatibility
+// Cache configuration for SWR and other cache mechanisms
 export const CACHE_CONFIG = {
   DEFAULT_TTL: 300,
+  DEFAULT_CACHE_TTL: 300,
   MAX_SIZE: 1000,
   DEFAULT_REFRESH_INTERVAL: 30000,
   DEFAULT_DEDUPING_INTERVAL: 2000,
   DEFAULT_LRU_CACHE_SIZE: 500,
-  DEFAULT_CACHE_TTL: 300,
 } as const;
 
 // ============================================================================
