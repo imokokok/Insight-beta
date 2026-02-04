@@ -6,13 +6,15 @@ import Link from 'next/link';
 import {
   Globe,
   Activity,
-  Shield,
   Zap,
   TrendingUp,
   ArrowRight,
   BarChart3,
   Layers,
   CheckCircle,
+  Shield,
+  Clock,
+  Bell,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -33,16 +35,20 @@ interface ProtocolHighlight {
   icon: string;
   status: 'active' | 'beta' | 'coming_soon';
   features: string[];
+  category: 'price_feed' | 'optimistic' | 'hybrid';
 }
 
+// 按类别组织的协议列表，不突出任何一个
 const PROTOCOLS: ProtocolHighlight[] = [
+  // 价格预言机
   {
     id: 'chainlink',
     name: 'Chainlink',
-    description: 'The industry-standard decentralized oracle network',
+    description: 'Industry-standard decentralized oracle network with comprehensive data feeds',
     icon: '🔗',
     status: 'active',
-    features: ['Price Feeds', 'VRF', 'Automation'],
+    features: ['Price Feeds', 'VRF', 'Automation', 'CCIP'],
+    category: 'price_feed',
   },
   {
     id: 'pyth',
@@ -51,38 +57,44 @@ const PROTOCOLS: ProtocolHighlight[] = [
     icon: '🐍',
     status: 'active',
     features: ['Low Latency', 'High Frequency', 'Confidence Scores'],
-  },
-  {
-    id: 'uma',
-    name: 'UMA',
-    description: 'Optimistic oracle for custom data verification',
-    icon: '⚖️',
-    status: 'active',
-    features: ['Optimistic Oracle', 'Assertions', 'Disputes'],
+    category: 'price_feed',
   },
   {
     id: 'band',
     name: 'Band Protocol',
-    description: 'Cross-chain data oracle platform',
+    description: 'Cross-chain data oracle platform with decentralized consensus',
     icon: '🎸',
     status: 'active',
     features: ['Cross-chain', 'Decentralized', 'Custom Data'],
+    category: 'price_feed',
   },
   {
     id: 'api3',
     name: 'API3',
-    description: 'First-party oracle with dAPIs',
+    description: 'First-party oracle with DAO-governed dAPIs',
     icon: '📡',
     status: 'beta',
     features: ['First-party', 'dAPIs', 'DAO Governed'],
+    category: 'price_feed',
   },
   {
     id: 'redstone',
     name: 'RedStone',
-    description: 'Modular oracle for L2s and rollups',
+    description: 'Modular oracle optimized for L2s and rollups',
     icon: '💎',
     status: 'beta',
     features: ['Modular', 'L2 Optimized', 'Cost Efficient'],
+    category: 'price_feed',
+  },
+  // 乐观预言机
+  {
+    id: 'uma',
+    name: 'UMA',
+    description: 'Optimistic oracle for custom data verification and dispute resolution',
+    icon: '⚖️',
+    status: 'active',
+    features: ['Optimistic Oracle', 'Assertions', 'Disputes'],
+    category: 'optimistic',
   },
 ];
 
@@ -100,7 +112,6 @@ export default function OraclePlatformPage() {
       const data = await fetchApiData<PlatformStats>('/api/oracle/unified/stats');
       setStats(data);
     } catch {
-      // Use default stats if API fails
       setStats({
         totalProtocols: 10,
         totalPriceFeeds: 150,
@@ -114,50 +125,72 @@ export default function OraclePlatformPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      {/* Hero Section */}
+      {/* Hero Section - 完全通用化 */}
       <section className="relative overflow-hidden px-4 py-20 sm:px-6 lg:px-8">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-100 via-transparent to-transparent" />
 
         <div className="relative mx-auto max-w-7xl text-center">
           <Badge variant="secondary" className="mb-6">
             <Zap className="mr-1 h-3 w-3" />
-            Multi-Protocol Oracle Monitoring
+            Universal Oracle Infrastructure Monitoring
           </Badge>
 
           <h1 className="mb-6 text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
-            Universal Oracle
+            One Platform.
             <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
               {' '}
-              Monitoring Platform
+              All Oracles.
             </span>
           </h1>
 
-          <p className="mx-auto mb-10 max-w-2xl text-lg text-gray-600 sm:text-xl">
-            Real-time monitoring, price comparison, and analytics across 10+ oracle protocols.
-            Ensure data integrity with cross-protocol verification.
+          <p className="mx-auto mb-10 max-w-3xl text-lg text-gray-600 sm:text-xl">
+            Monitor, compare, and analyze data from every major oracle protocol. Ensure reliability
+            with cross-protocol verification and real-time alerts.
           </p>
 
-          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Button size="lg" onClick={() => router.push('/oracle/dashboard')} className="gap-2">
-              <Activity className="h-4 w-4" />
-              Launch Dashboard
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => router.push('/oracle/protocols/uma')}
-              className="gap-2"
-            >
-              <Shield className="h-4 w-4" />
-              Optimistic Oracle
-            </Button>
+          {/* 三个主要功能入口 - 平衡展示 */}
+          <div className="mx-auto mb-12 grid max-w-3xl gap-4 sm:grid-cols-3">
+            <HeroActionCard
+              icon={<Activity className="h-6 w-6" />}
+              title="Dashboard"
+              description="Unified monitoring view"
+              onClick={() => router.push('/oracle/dashboard')}
+              primary
+            />
+            <HeroActionCard
+              icon={<BarChart3 className="h-6 w-6" />}
+              title="Price Comparison"
+              description="Cross-protocol analysis"
+              onClick={() => router.push('/oracle/comparison')}
+            />
+            <HeroActionCard
+              icon={<Shield className="h-6 w-6" />}
+              title="Assert & Dispute"
+              description="Optimistic oracle tracking"
+              onClick={() => router.push('/oracle/optimistic')}
+            />
+          </div>
+
+          {/* 信任指标 */}
+          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500">
+            <span className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-500" />
+              10+ Protocols
+            </span>
+            <span className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-500" />
+              15+ Chains
+            </span>
+            <span className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-500" />
+              Real-time Data
+            </span>
           </div>
         </div>
       </section>
 
       {/* Stats Section */}
-      <section className="px-4 py-12 sm:px-6 lg:px-8">
+      <section className="border-y border-gray-100 px-4 py-12 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard
@@ -192,50 +225,75 @@ export default function OraclePlatformPage() {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Features Section - 通用功能描述 */}
       <section className="px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-gray-900">Why Use Our Platform?</h2>
+            <h2 className="mb-4 text-3xl font-bold text-gray-900">Platform Capabilities</h2>
             <p className="mx-auto max-w-2xl text-gray-600">
-              Comprehensive monitoring and comparison tools for DeFi oracle infrastructure
+              Comprehensive tools for oracle infrastructure monitoring and management
             </p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
             <FeatureCard
               icon={<BarChart3 className="h-8 w-8" />}
-              title="Cross-Protocol Comparison"
-              description="Compare prices across Chainlink, Pyth, Band, and more. Detect anomalies and ensure data accuracy."
+              title="Price Comparison"
+              description="Compare prices across all major oracle protocols to detect anomalies and ensure data accuracy."
             />
             <FeatureCard
-              icon={<Shield className="h-8 w-8" />}
-              title="Optimistic Oracle Monitoring"
-              description="Track assertions, disputes, and voting across UMA and other optimistic oracle protocols."
+              icon={<Globe className="h-8 w-8" />}
+              title="Multi-Chain Support"
+              description="Monitor oracle performance across 15+ blockchain networks from a single interface."
             />
             <FeatureCard
-              icon={<Activity className="h-8 w-8" />}
-              title="Real-Time Alerts"
-              description="Get notified of price deviations, stale data, and protocol issues before they impact your dApp."
+              icon={<Bell className="h-8 w-8" />}
+              title="Smart Alerts"
+              description="Get notified of price deviations, stale data, and protocol issues in real-time."
+            />
+            <FeatureCard
+              icon={<Clock className="h-8 w-8" />}
+              title="Assert & Dispute"
+              description="Track assertions, disputes, and resolutions across optimistic oracle protocols."
             />
           </div>
         </div>
       </section>
 
-      {/* Protocols Section */}
+      {/* Protocols Section - 按类别展示 */}
       <section className="bg-gray-50 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="mb-12 text-center">
             <h2 className="mb-4 text-3xl font-bold text-gray-900">Supported Protocols</h2>
             <p className="mx-auto max-w-2xl text-gray-600">
-              Monitor all major oracle networks from a single interface
+              Monitor all major oracle networks including price feeds and optimistic oracles
             </p>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {PROTOCOLS.map((protocol) => (
-              <ProtocolCard key={protocol.id} protocol={protocol} />
-            ))}
+          {/* 价格预言机 */}
+          <div className="mb-10">
+            <h3 className="mb-6 flex items-center gap-2 text-lg font-semibold text-gray-700">
+              <TrendingUp className="h-5 w-5" />
+              Price Feed Oracles
+            </h3>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {PROTOCOLS.filter((p) => p.category === 'price_feed').map((protocol) => (
+                <ProtocolCard key={protocol.id} protocol={protocol} />
+              ))}
+            </div>
+          </div>
+
+          {/* 乐观预言机 */}
+          <div>
+            <h3 className="mb-6 flex items-center gap-2 text-lg font-semibold text-gray-700">
+              <Shield className="h-5 w-5" />
+              Optimistic Oracles
+            </h3>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {PROTOCOLS.filter((p) => p.category === 'optimistic').map((protocol) => (
+                <ProtocolCard key={protocol.id} protocol={protocol} />
+              ))}
+            </div>
           </div>
 
           <div className="mt-12 text-center">
@@ -244,7 +302,7 @@ export default function OraclePlatformPage() {
               onClick={() => router.push('/oracle/dashboard')}
               className="gap-2"
             >
-              View All Protocols
+              Explore All Protocols
               <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
@@ -258,13 +316,13 @@ export default function OraclePlatformPage() {
             Ready to Monitor Your Oracle Infrastructure?
           </h2>
           <p className="mb-8 text-lg text-gray-600">
-            Get started with real-time monitoring, price comparisons, and comprehensive analytics
-            across all major oracle protocols.
+            Get started with comprehensive monitoring across all major oracle protocols. No single
+            protocol bias — just reliable data.
           </p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Button size="lg" onClick={() => router.push('/oracle/dashboard')} className="gap-2">
               <Activity className="h-4 w-4" />
-              Go to Dashboard
+              Launch Dashboard
             </Button>
             <Link
               href="/oracle/comparison"
@@ -283,6 +341,43 @@ export default function OraclePlatformPage() {
 // ============================================================================
 // Sub-components
 // ============================================================================
+
+interface HeroActionCardProps {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  onClick: () => void;
+  primary?: boolean;
+}
+
+function HeroActionCard({ icon, title, description, onClick, primary }: HeroActionCardProps) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        'group flex flex-col items-center gap-3 rounded-2xl p-6 transition-all duration-200',
+        primary
+          ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/25 hover:bg-purple-700 hover:shadow-xl hover:shadow-purple-500/30'
+          : 'bg-white text-gray-700 shadow-md hover:text-purple-700 hover:shadow-lg',
+      )}
+    >
+      <div
+        className={cn(
+          'rounded-xl p-3',
+          primary ? 'bg-white/20' : 'bg-purple-50 group-hover:bg-purple-100',
+        )}
+      >
+        {icon}
+      </div>
+      <div className="text-center">
+        <h3 className="font-semibold">{title}</h3>
+        <p className={cn('text-sm', primary ? 'text-purple-100' : 'text-gray-500')}>
+          {description}
+        </p>
+      </div>
+    </button>
+  );
+}
 
 interface StatCardProps {
   title: string;
@@ -345,13 +440,15 @@ function ProtocolCard({ protocol }: ProtocolCardProps) {
   };
 
   return (
-    <Card className="border-0 shadow-sm transition-all hover:shadow-md">
+    <Card className="group cursor-pointer border-0 shadow-sm transition-all hover:shadow-md">
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <span className="text-3xl">{protocol.icon}</span>
             <div>
-              <CardTitle className="text-lg">{protocol.name}</CardTitle>
+              <CardTitle className="text-lg transition-colors group-hover:text-purple-700">
+                {protocol.name}
+              </CardTitle>
               <Badge
                 variant="secondary"
                 className={cn('mt-1 text-xs', statusColors[protocol.status])}

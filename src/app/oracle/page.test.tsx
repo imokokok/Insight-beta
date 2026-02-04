@@ -101,6 +101,7 @@ describe('Oracle page', () => {
   it('renders the oracle platform page', () => {
     render(<OraclePage />);
     // The page should render with oracle platform content
-    expect(screen.getByText('Universal Oracle')).toBeInTheDocument();
+    expect(screen.getByText('One Platform.')).toBeInTheDocument();
+    expect(screen.getByText('All Oracles.')).toBeInTheDocument();
   });
 });

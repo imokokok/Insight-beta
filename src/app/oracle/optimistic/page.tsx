@@ -13,20 +13,49 @@ import {
   Layers,
   BarChart3,
   Scale,
+  Shield,
+  ChevronDown,
 } from 'lucide-react';
 import { PageHeader } from '@/components/features/common/PageHeader';
-import { cn, fetchApiData, formatTime } from '@/lib/utils';
+import { cn, fetchApiData } from '@/lib/utils';
 import { logger } from '@/lib/logger';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { langToLocale } from '@/i18n/translations';
 
+// 支持多协议乐观预言机
+interface OptimisticProtocol {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  supportedChains: string[];
+}
+
+const SUPPORTED_PROTOCOLS: OptimisticProtocol[] = [
+  {
+    id: 'uma',
+    name: 'UMA',
+    description: 'Universal Market Access - Optimistic oracle for custom data verification',
+    icon: '⚖️',
+    supportedChains: ['ethereum', 'polygon', 'arbitrum', 'optimism', 'base'],
+  },
+  {
+    id: 'optimistic',
+    name: 'Optimistic Oracle (Generic)',
+    description: 'Generic optimistic oracle interface supporting multiple implementations',
+    icon: '🛡️',
+    supportedChains: ['ethereum', 'arbitrum', 'optimism'],
+  },
+];
+
 interface OptimisticOracleOverview {
   instanceId: string;
   timestamp: string;
+  protocol: string;
   config: {
     chain: string;
-    ooV2Address: string;
-    ooV3Address: string;
+    ooV2Address?: string;
+    ooV3Address?: string;
     enabled: boolean;
   };
   sync: {
@@ -40,11 +69,12 @@ interface OptimisticOracleOverview {
     totalAssertions: number;
     totalDisputes: number;
   };
-  availableInstances: Array<{ id: string; chain: string }>;
+  availableInstances: Array<{ id: string; chain: string; protocol: string }>;
 }
 
 interface OptimisticOracleLeaderboard {
   metric: string;
+  protocol: string;
   top: Array<{
     address: string;
     count: number;
@@ -56,12 +86,14 @@ interface OptimisticOracleLeaderboard {
 
 export default function OptimisticOraclePage() {
   const { lang } = useI18n();
+  const [selectedProtocol, setSelectedProtocol] = useState<string>('uma');
   const [overview, setOverview] = useState<OptimisticOracleOverview | null>(null);
   const [leaderboard, setLeaderboard] = useState<OptimisticOracleLeaderboard | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'leaderboard' | 'stats'>('overview');
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showProtocolDropdown, setShowProtocolDropdown] = useState(false);
 
   useEffect(() => {
     fetchOverview();
@@ -75,12 +107,14 @@ export default function OptimisticOraclePage() {
 
     return () => clearInterval(pollInterval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [selectedProtocol]);
 
   async function fetchOverview() {
     try {
       setIsRefreshing(true);
-      const data = await fetchApiData<OptimisticOracleOverview>('/api/oracle/uma');
+      const data = await fetchApiData<OptimisticOracleOverview>(
+        `/api/oracle/optimistic?protocol=${selectedProtocol}`,
+      );
       setOverview(data);
       setLastUpdated(new Date());
     } catch (error) {
@@ -95,7 +129,7 @@ export default function OptimisticOraclePage() {
     try {
       setIsRefreshing(true);
       const data = await fetchApiData<OptimisticOracleLeaderboard>(
-        '/api/oracle/uma/leaderboard?metric=proposals',
+        `/api/oracle/optimistic/leaderboard?protocol=${selectedProtocol}&metric=proposals`,
       );
       setLeaderboard(data);
     } catch (error) {
@@ -108,7 +142,9 @@ export default function OptimisticOraclePage() {
   async function triggerSync() {
     try {
       setIsRefreshing(true);
-      await fetchApiData('/api/oracle/uma/sync', { method: 'POST' });
+      await fetchApiData(`/api/oracle/optimistic/sync?protocol=${selectedProtocol}`, {
+        method: 'POST',
+      });
       await fetchOverview();
     } catch (error) {
       logger.error('Failed to trigger sync', { error });
@@ -116,6 +152,8 @@ export default function OptimisticOraclePage() {
       setIsRefreshing(false);
     }
   }
+
+  const currentProtocol = SUPPORTED_PROTOCOLS.find((p) => p.id === selectedProtocol);
 
   if (loading) {
     return (
@@ -137,10 +175,44 @@ export default function OptimisticOraclePage() {
         <div className="mb-8 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <PageHeader
-              title="Optimistic Oracle"
-              description="Monitor optimistic oracle assertions, disputes, and voting across multiple protocols including UMA"
+              title="Optimistic Oracle Monitor"
+              description="Track assertions, disputes, and resolutions across multiple optimistic oracle protocols"
             />
             <div className="flex gap-2">
+              {/* Protocol Selector */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowProtocolDropdown(!showProtocolDropdown)}
+                  className="flex items-center gap-2 rounded-lg bg-white/10 px-4 py-2 transition-colors hover:bg-white/20"
+                >
+                  <span className="text-lg">{currentProtocol?.icon}</span>
+                  <span>{currentProtocol?.name}</span>
+                  <ChevronDown className="h-4 w-4" />
+                </button>
+                {showProtocolDropdown && (
+                  <div className="absolute right-0 top-full z-50 mt-2 w-64 rounded-lg border border-white/10 bg-[#1A1A1F] shadow-xl">
+                    {SUPPORTED_PROTOCOLS.map((protocol) => (
+                      <button
+                        key={protocol.id}
+                        onClick={() => {
+                          setSelectedProtocol(protocol.id);
+                          setShowProtocolDropdown(false);
+                        }}
+                        className={cn(
+                          'flex w-full items-start gap-3 p-3 text-left transition-colors hover:bg-white/5',
+                          selectedProtocol === protocol.id && 'bg-white/10',
+                        )}
+                      >
+                        <span className="text-2xl">{protocol.icon}</span>
+                        <div>
+                          <div className="font-medium">{protocol.name}</div>
+                          <div className="text-xs text-gray-400">{protocol.description}</div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               <button
                 onClick={triggerSync}
                 disabled={isRefreshing}
@@ -150,7 +222,7 @@ export default function OptimisticOraclePage() {
                 {isRefreshing ? 'Syncing...' : 'Sync Now'}
               </button>
               <a
-                href="/api/oracle/uma/config"
+                href={`/api/oracle/optimistic/config?protocol=${selectedProtocol}`}
                 className="flex items-center gap-2 rounded-lg bg-white/10 px-4 py-2 transition-colors hover:bg-white/20"
               >
                 <Settings className="h-4 w-4" />
@@ -197,6 +269,11 @@ export default function OptimisticOraclePage() {
         {activeTab === 'overview' && overview && (
           <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
             <StatCard
+              title="Protocol"
+              value={overview.protocol}
+              icon={<Shield className="h-5 w-5" />}
+            />
+            <StatCard
               title="Chain"
               value={overview.config.chain}
               icon={<TrendingUp className="h-5 w-5" />}
@@ -210,15 +287,6 @@ export default function OptimisticOraclePage() {
               title="Disputes"
               value={overview.stats.totalDisputes.toLocaleString()}
               icon={<Gavel className="h-5 w-5" />}
-            />
-            <StatCard
-              title="Last Sync"
-              value={
-                overview.sync.lastSuccessAt
-                  ? formatTime(overview.sync.lastSuccessAt, lang)
-                  : 'Never'
-              }
-              icon={<RefreshCw className="h-5 w-5" />}
             />
           </div>
         )}
@@ -257,37 +325,43 @@ export default function OptimisticOraclePage() {
               </div>
             </div>
 
-            <div className="rounded-xl bg-white/5 p-6">
-              <h3 className="mb-4 text-lg font-semibold">Contract Addresses</h3>
-              <div className="space-y-3">
-                <div>
-                  <span className="mb-1 block text-sm text-gray-400">OOv2</span>
-                  <a
-                    href={`https://etherscan.io/address/${overview.config.ooV2Address}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 font-mono text-sm transition-colors hover:text-blue-400"
-                  >
-                    {overview.config.ooV2Address?.slice(0, 6)}...
-                    {overview.config.ooV2Address?.slice(-4)}
-                    <ArrowUpRight className="h-3 w-3" />
-                  </a>
-                </div>
-                <div>
-                  <span className="mb-1 block text-sm text-gray-400">OOv3</span>
-                  <a
-                    href={`https://etherscan.io/address/${overview.config.ooV3Address}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 font-mono text-sm transition-colors hover:text-blue-400"
-                  >
-                    {overview.config.ooV3Address?.slice(0, 6)}...
-                    {overview.config.ooV3Address?.slice(-4)}
-                    <ArrowUpRight className="h-3 w-3" />
-                  </a>
+            {overview.config.ooV2Address && (
+              <div className="rounded-xl bg-white/5 p-6">
+                <h3 className="mb-4 text-lg font-semibold">Contract Addresses</h3>
+                <div className="space-y-3">
+                  {overview.config.ooV2Address && (
+                    <div>
+                      <span className="mb-1 block text-sm text-gray-400">Optimistic Oracle V2</span>
+                      <a
+                        href={`https://etherscan.io/address/${overview.config.ooV2Address}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 font-mono text-sm transition-colors hover:text-blue-400"
+                      >
+                        {overview.config.ooV2Address?.slice(0, 6)}...
+                        {overview.config.ooV2Address?.slice(-4)}
+                        <ArrowUpRight className="h-3 w-3" />
+                      </a>
+                    </div>
+                  )}
+                  {overview.config.ooV3Address && (
+                    <div>
+                      <span className="mb-1 block text-sm text-gray-400">Optimistic Oracle V3</span>
+                      <a
+                        href={`https://etherscan.io/address/${overview.config.ooV3Address}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 font-mono text-sm transition-colors hover:text-blue-400"
+                      >
+                        {overview.config.ooV3Address?.slice(0, 6)}...
+                        {overview.config.ooV3Address?.slice(-4)}
+                        <ArrowUpRight className="h-3 w-3" />
+                      </a>
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -311,7 +385,7 @@ export default function OptimisticOraclePage() {
                       <td className="py-3 pr-4 text-gray-400">{index + 1}</td>
                       <td className="py-3 pr-4">
                         <a
-                          href={`/api/oracle/uma/users/${item.address}/stats`}
+                          href={`/api/oracle/optimistic/users/${item.address}/stats?protocol=${selectedProtocol}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="font-mono transition-colors hover:text-blue-400"
@@ -336,7 +410,7 @@ export default function OptimisticOraclePage() {
         {activeTab === 'stats' && (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <a
-              href="/api/oracle/uma/assertions"
+              href={`/api/oracle/optimistic/assertions?protocol=${selectedProtocol}`}
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-xl bg-white/5 p-6 transition-colors hover:bg-white/10"
@@ -352,7 +426,7 @@ export default function OptimisticOraclePage() {
             </a>
 
             <a
-              href="/api/oracle/uma/disputes"
+              href={`/api/oracle/optimistic/disputes?protocol=${selectedProtocol}`}
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-xl bg-white/5 p-6 transition-colors hover:bg-white/10"
@@ -367,7 +441,7 @@ export default function OptimisticOraclePage() {
             </a>
 
             <a
-              href="/api/oracle/uma/votes"
+              href={`/api/oracle/optimistic/votes?protocol=${selectedProtocol}`}
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-xl bg-white/5 p-6 transition-colors hover:bg-white/10"
@@ -380,7 +454,7 @@ export default function OptimisticOraclePage() {
             </a>
 
             <a
-              href="/api/oracle/uma/stats"
+              href={`/api/oracle/optimistic/stats?protocol=${selectedProtocol}`}
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-xl bg-white/5 p-6 transition-colors hover:bg-white/10"
@@ -394,7 +468,6 @@ export default function OptimisticOraclePage() {
               </p>
             </a>
 
-            { }
             <a
               href="/oracle/optimistic/rewards"
               className="rounded-xl bg-white/5 p-6 transition-colors hover:bg-white/10"
@@ -408,7 +481,6 @@ export default function OptimisticOraclePage() {
               </p>
             </a>
 
-            { }
             <a
               href="/oracle/optimistic/tvl"
               className="rounded-xl bg-white/5 p-6 transition-colors hover:bg-white/10"
@@ -422,7 +494,6 @@ export default function OptimisticOraclePage() {
               </p>
             </a>
 
-            { }
             <a
               href="/oracle/optimistic/polymarket"
               className="rounded-xl bg-white/5 p-6 transition-colors hover:bg-white/10"
@@ -436,7 +507,6 @@ export default function OptimisticOraclePage() {
               </p>
             </a>
 
-            { }
             <a
               href="/oracle/optimistic/governance"
               className="rounded-xl bg-white/5 p-6 transition-colors hover:bg-white/10"

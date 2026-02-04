@@ -14,7 +14,6 @@ export type OracleProtocol =
   | 'dia';
 
 export const ORACLE_PROTOCOLS: OracleProtocol[] = [
-  'uma',
   'chainlink',
   'pyth',
   'band',
@@ -23,10 +22,10 @@ export const ORACLE_PROTOCOLS: OracleProtocol[] = [
   'switchboard',
   'flux',
   'dia',
+  'uma',
 ];
 
 export const PROTOCOL_DISPLAY_NAMES: Record<OracleProtocol, string> = {
-  uma: 'UMA',
   chainlink: 'Chainlink',
   pyth: 'Pyth Network',
   band: 'Band Protocol',
@@ -35,10 +34,10 @@ export const PROTOCOL_DISPLAY_NAMES: Record<OracleProtocol, string> = {
   switchboard: 'Switchboard',
   flux: 'Flux',
   dia: 'DIA',
+  uma: 'UMA',
 };
 
 export const PROTOCOL_DESCRIPTIONS: Record<OracleProtocol, string> = {
-  uma: 'Optimistic Oracle with assertion and dispute mechanisms',
   chainlink: 'Industry-standard decentralized oracle network',
   pyth: 'Low-latency financial data from institutional sources',
   band: 'Cross-chain data oracle platform',
@@ -47,9 +46,29 @@ export const PROTOCOL_DESCRIPTIONS: Record<OracleProtocol, string> = {
   switchboard: 'Solana and EVM compatible oracle network',
   flux: 'Decentralized oracle aggregator',
   dia: 'Transparent and verifiable data feeds',
+  uma: 'Optimistic oracle for custom data verification',
 };
 
+// 支持多个乐观预言机协议，不只是 UMA
 export const SUPPORTED_ASSERTION_PROTOCOLS: OracleProtocol[] = ['uma'];
+
+// 乐观预言机协议特定配置
+export const OPTIMISTIC_ORACLE_PROTOCOLS = [
+  {
+    id: 'uma',
+    name: 'UMA',
+    description: 'Universal Market Access - Optimistic oracle with DVM',
+    icon: '⚖️',
+    category: 'optimistic',
+  },
+  {
+    id: 'optimistic-generic',
+    name: 'Optimistic Oracle (Generic)',
+    description: 'Generic optimistic oracle interface',
+    icon: '🛡️',
+    category: 'optimistic',
+  },
+] as const;
 
 export type OracleFeature =
   | 'price_feeds'
@@ -72,17 +91,11 @@ export type OracleProtocolInfo = {
   features: OracleFeature[];
   tvl?: number;
   marketShare?: number;
+  // 协议类别
+  category: 'price_feed' | 'optimistic' | 'hybrid';
 };
 
 export const PROTOCOL_INFO: Record<OracleProtocol, OracleProtocolInfo> = {
-  uma: {
-    id: 'uma',
-    name: 'UMA',
-    description: PROTOCOL_DESCRIPTIONS.uma,
-    website: 'https://umaproject.org',
-    supportedChains: ['ethereum', 'polygon', 'arbitrum', 'optimism', 'base'],
-    features: ['price_feeds', 'dispute_resolution', 'governance'],
-  },
   chainlink: {
     id: 'chainlink',
     name: 'Chainlink',
@@ -90,6 +103,7 @@ export const PROTOCOL_INFO: Record<OracleProtocol, OracleProtocolInfo> = {
     website: 'https://chain.link',
     supportedChains: ['ethereum', 'polygon', 'arbitrum', 'optimism', 'base', 'avalanche', 'bsc'],
     features: ['price_feeds', 'randomness', 'automation', 'ccip', 'functions'],
+    category: 'price_feed',
   },
   pyth: {
     id: 'pyth',
@@ -98,6 +112,7 @@ export const PROTOCOL_INFO: Record<OracleProtocol, OracleProtocolInfo> = {
     website: 'https://pyth.network',
     supportedChains: ['ethereum', 'polygon', 'arbitrum', 'optimism', 'base', 'avalanche', 'solana'],
     features: ['price_feeds'],
+    category: 'price_feed',
   },
   band: {
     id: 'band',
@@ -106,6 +121,7 @@ export const PROTOCOL_INFO: Record<OracleProtocol, OracleProtocolInfo> = {
     website: 'https://bandprotocol.com',
     supportedChains: ['ethereum', 'polygon', 'arbitrum', 'optimism'],
     features: ['price_feeds'],
+    category: 'price_feed',
   },
   api3: {
     id: 'api3',
@@ -114,6 +130,7 @@ export const PROTOCOL_INFO: Record<OracleProtocol, OracleProtocolInfo> = {
     website: 'https://api3.org',
     supportedChains: ['ethereum', 'polygon', 'arbitrum', 'optimism'],
     features: ['price_feeds'],
+    category: 'price_feed',
   },
   redstone: {
     id: 'redstone',
@@ -122,6 +139,7 @@ export const PROTOCOL_INFO: Record<OracleProtocol, OracleProtocolInfo> = {
     website: 'https://redstone.finance',
     supportedChains: ['ethereum', 'polygon', 'arbitrum', 'optimism', 'base'],
     features: ['price_feeds'],
+    category: 'price_feed',
   },
   switchboard: {
     id: 'switchboard',
@@ -130,6 +148,7 @@ export const PROTOCOL_INFO: Record<OracleProtocol, OracleProtocolInfo> = {
     website: 'https://switchboard.xyz',
     supportedChains: ['ethereum', 'polygon', 'arbitrum', 'optimism', 'solana'],
     features: ['price_feeds', 'randomness'],
+    category: 'price_feed',
   },
   flux: {
     id: 'flux',
@@ -138,6 +157,7 @@ export const PROTOCOL_INFO: Record<OracleProtocol, OracleProtocolInfo> = {
     website: 'https://fluxprotocol.org',
     supportedChains: ['ethereum', 'polygon', 'arbitrum'],
     features: ['price_feeds'],
+    category: 'price_feed',
   },
   dia: {
     id: 'dia',
@@ -146,5 +166,30 @@ export const PROTOCOL_INFO: Record<OracleProtocol, OracleProtocolInfo> = {
     website: 'https://diadata.org',
     supportedChains: ['ethereum', 'polygon', 'arbitrum', 'optimism', 'base'],
     features: ['price_feeds'],
+    category: 'price_feed',
+  },
+  uma: {
+    id: 'uma',
+    name: 'UMA',
+    description: PROTOCOL_DESCRIPTIONS.uma,
+    website: 'https://umaproject.org',
+    supportedChains: ['ethereum', 'polygon', 'arbitrum', 'optimism', 'base'],
+    features: ['price_feeds', 'dispute_resolution', 'governance'],
+    category: 'optimistic',
   },
 };
+
+// 按类别获取协议
+export function getProtocolsByCategory(
+  category: 'price_feed' | 'optimistic' | 'hybrid',
+): OracleProtocol[] {
+  return Object.values(PROTOCOL_INFO)
+    .filter((p) => p.category === category)
+    .map((p) => p.id);
+}
+
+// 获取所有价格预言机
+export const PRICE_FEED_PROTOCOLS = getProtocolsByCategory('price_feed');
+
+// 获取所有乐观预言机
+export const OPTIMISTIC_PROTOCOLS = getProtocolsByCategory('optimistic');

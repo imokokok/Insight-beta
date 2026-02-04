@@ -23,7 +23,6 @@ interface ProtocolSelectorProps {
 }
 
 const PROTOCOL_ICONS: Record<OracleProtocol, string> = {
-  uma: '⚖️',
   chainlink: '🔗',
   pyth: '🐍',
   band: '🎸',
@@ -32,6 +31,7 @@ const PROTOCOL_ICONS: Record<OracleProtocol, string> = {
   switchboard: '🎛️',
   flux: '⚡',
   dia: '📊',
+  uma: '⚖️',
 };
 
 export function ProtocolSelector({

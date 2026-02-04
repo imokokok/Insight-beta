@@ -16,6 +16,9 @@ export {
   PROTOCOL_DESCRIPTIONS,
   SUPPORTED_ASSERTION_PROTOCOLS,
   PROTOCOL_INFO,
+  PRICE_FEED_PROTOCOLS,
+  OPTIMISTIC_PROTOCOLS,
+  getProtocolsByCategory,
 } from './protocol';
 
 // ============================================================================

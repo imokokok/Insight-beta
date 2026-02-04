@@ -17,17 +17,18 @@ import {
   ChevronDown,
   ChevronRight,
   LayoutDashboard,
+  TrendingUp,
+  Shield,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { ConnectWallet } from '@/components/features/wallet/ConnectWallet';
 import { useOracleFilters } from '@/hooks/oracle/useOracleFilters';
-import { ORACLE_PROTOCOLS, PROTOCOL_DISPLAY_NAMES } from '@/lib/types';
+import { PROTOCOL_DISPLAY_NAMES, PRICE_FEED_PROTOCOLS, OPTIMISTIC_PROTOCOLS } from '@/lib/types';
 import type { OracleProtocol } from '@/lib/types';
 
 const PROTOCOL_ICONS: Record<OracleProtocol, string> = {
-  uma: '⚖️',
   chainlink: '🔗',
   pyth: '🐍',
   band: '🎸',
@@ -36,6 +37,7 @@ const PROTOCOL_ICONS: Record<OracleProtocol, string> = {
   switchboard: '🎛️',
   flux: '⚡',
   dia: '📊',
+  uma: '⚖️',
 };
 
 const mainNavItems = [
@@ -82,7 +84,10 @@ export function Sidebar() {
   const searchParams = useSearchParams();
   const [isOpen, setIsOpen] = useState(false);
   const [logoSrc, setLogoSrc] = useState('/logo-owl.png');
-  const [isProtocolsExpanded, setIsProtocolsExpanded] = useState(true);
+  const [expandedSections, setExpandedSections] = useState({
+    priceFeeds: true,
+    optimistic: true,
+  });
   const { t } = useI18n();
   const { instanceId } = useOracleFilters();
   const instanceIdFromUrl = searchParams?.get('instanceId')?.trim() || null;
@@ -100,7 +105,14 @@ export function Sidebar() {
     return pathname === `/oracle/protocols/${protocol}`;
   };
 
-  const isProtocolsSectionActive = pathname?.startsWith('/oracle/protocols');
+  const isOptimisticActive = pathname?.startsWith('/oracle/optimistic');
+
+  const toggleSection = (section: 'priceFeeds' | 'optimistic') => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  };
 
   return (
     <>
@@ -182,40 +194,109 @@ export function Sidebar() {
               );
             })}
 
-            {/* Protocols Section */}
+            {/* Price Feed Protocols Section */}
             <div className="pt-2">
               <button
-                onClick={() => setIsProtocolsExpanded(!isProtocolsExpanded)}
+                onClick={() => toggleSection('priceFeeds')}
                 className={cn(
                   'group flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
-                  isProtocolsSectionActive
+                  pathname?.startsWith('/oracle/protocols') && !isOptimisticActive
                     ? 'bg-white text-purple-700 shadow-md shadow-purple-500/5 ring-1 ring-white/60'
                     : 'text-gray-600 hover:bg-white/40 hover:text-purple-700 hover:shadow-sm',
                 )}
               >
                 <div className="flex items-center gap-3">
-                  <Activity
+                  <TrendingUp
                     size={20}
                     className={cn(
                       'transition-colors duration-200',
-                      isProtocolsSectionActive
+                      pathname?.startsWith('/oracle/protocols') && !isOptimisticActive
                         ? 'text-purple-600'
                         : 'text-gray-400 group-hover:text-purple-500',
                     )}
                   />
-                  <span>{t('nav.protocols')}</span>
+                  <span>Price Feeds</span>
                 </div>
-                {isProtocolsExpanded ? (
+                {expandedSections.priceFeeds ? (
                   <ChevronDown size={16} className="text-gray-400" />
                 ) : (
                   <ChevronRight size={16} className="text-gray-400" />
                 )}
               </button>
 
-              {/* Protocol List */}
-              {isProtocolsExpanded && (
+              {/* Price Feed Protocol List */}
+              {expandedSections.priceFeeds && (
                 <div className="ml-4 mt-1 space-y-1 border-l-2 border-gray-200 pl-3">
-                  {ORACLE_PROTOCOLS.map((protocol) => {
+                  {PRICE_FEED_PROTOCOLS.map((protocol) => {
+                    const isActive = isProtocolActive(protocol);
+                    const href = `/oracle/protocols/${protocol}`;
+
+                    return (
+                      <Link
+                        key={protocol}
+                        href={href as Route}
+                        className={cn(
+                          'group flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-all duration-200',
+                          isActive
+                            ? 'bg-purple-50 text-purple-700'
+                            : 'text-gray-500 hover:bg-gray-50 hover:text-purple-600',
+                        )}
+                      >
+                        <span className="text-base">{PROTOCOL_ICONS[protocol]}</span>
+                        <span className="truncate">{PROTOCOL_DISPLAY_NAMES[protocol]}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Optimistic Oracle Section */}
+            <div className="pt-2">
+              <button
+                onClick={() => toggleSection('optimistic')}
+                className={cn(
+                  'group flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
+                  isOptimisticActive
+                    ? 'bg-white text-purple-700 shadow-md shadow-purple-500/5 ring-1 ring-white/60'
+                    : 'text-gray-600 hover:bg-white/40 hover:text-purple-700 hover:shadow-sm',
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <Shield
+                    size={20}
+                    className={cn(
+                      'transition-colors duration-200',
+                      isOptimisticActive
+                        ? 'text-purple-600'
+                        : 'text-gray-400 group-hover:text-purple-500',
+                    )}
+                  />
+                  <span>Optimistic Oracle</span>
+                </div>
+                {expandedSections.optimistic ? (
+                  <ChevronDown size={16} className="text-gray-400" />
+                ) : (
+                  <ChevronRight size={16} className="text-gray-400" />
+                )}
+              </button>
+
+              {/* Optimistic Protocol List */}
+              {expandedSections.optimistic && (
+                <div className="ml-4 mt-1 space-y-1 border-l-2 border-gray-200 pl-3">
+                  <Link
+                    href="/oracle/optimistic"
+                    className={cn(
+                      'group flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-all duration-200',
+                      pathname === '/oracle/optimistic'
+                        ? 'bg-purple-50 text-purple-700'
+                        : 'text-gray-500 hover:bg-gray-50 hover:text-purple-600',
+                    )}
+                  >
+                    <Activity size={16} className="text-gray-400" />
+                    <span className="truncate">Overview</span>
+                  </Link>
+                  {OPTIMISTIC_PROTOCOLS.map((protocol) => {
                     const isActive = isProtocolActive(protocol);
                     const href = `/oracle/protocols/${protocol}`;
 
