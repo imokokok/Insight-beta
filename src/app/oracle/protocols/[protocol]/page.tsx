@@ -51,7 +51,9 @@ const PROTOCOL_ICONS: Record<OracleProtocol, string> = {
 const PROTOCOL_MONITOR_PAGES: Partial<Record<OracleProtocol, string>> = {
   chainlink: '/oracle/protocols/chainlink',
   pyth: '/oracle/protocols/pyth',
-  uma: '/oracle/optimistic',
+  uma: '/oracle/protocols/uma',
+  band: '/oracle/protocols/band',
+  api3: '/oracle/protocols/api3',
 };
 
 export default function ProtocolPage() {

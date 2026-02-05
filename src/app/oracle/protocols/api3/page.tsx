@@ -25,149 +25,153 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 
-interface PythPriceFeed {
+interface API3DataFeed {
   id: string;
   symbol: string;
   price: number;
-  confidence: number;
-  expo: number;
-  publishTime: string;
+  deviation: number;
+  heartbeat: number;
+  lastUpdate: string;
   status: 'active' | 'stale' | 'error';
-  sources: number;
+  dAPI: string;
 }
 
-interface PythPublisher {
+interface API3Airnode {
   id: string;
   name: string;
   status: 'active' | 'inactive';
-  lastPublish: string;
-  totalPublishes: number;
-  accuracy: number;
+  lastHeartbeat: string;
+  totalRequests: number;
+  successRate: number;
+  region: string;
 }
 
-interface PythStats {
+interface API3Stats {
   totalFeeds: number;
   activeFeeds: number;
   staleFeeds: number;
-  totalPublishers: number;
-  avgConfidence: number;
+  totalAirnodes: number;
+  avgDeviation: number;
   networkUptime: number;
 }
 
 const SUPPORTED_CHAINS = [
   { id: 'ethereum', name: 'Ethereum', icon: '⬡' },
-  { id: 'solana', name: 'Solana', icon: '◎' },
   { id: 'arbitrum', name: 'Arbitrum', icon: '🔷' },
   { id: 'optimism', name: 'Optimism', icon: '🔴' },
   { id: 'base', name: 'Base', icon: '🔵' },
-  { id: 'avalanche', name: 'Avalanche', icon: '❄️' },
   { id: 'polygon', name: 'Polygon', icon: '💜' },
+  { id: 'avalanche', name: 'Avalanche', icon: '❄️' },
+  { id: 'bsc', name: 'BSC', icon: '🟡' },
 ];
 
-export default function PythMonitorPage() {
+export default function API3MonitorPage() {
   const router = useRouter();
-  const [feeds, setFeeds] = useState<PythPriceFeed[]>([]);
-  const [publishers, setPublishers] = useState<PythPublisher[]>([]);
-  const [stats, setStats] = useState<PythStats | null>(null);
+  const [feeds, setFeeds] = useState<API3DataFeed[]>([]);
+  const [airnodes, setAirnodes] = useState<API3Airnode[]>([]);
+  const [stats, setStats] = useState<API3Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedChain, setSelectedChain] = useState<string>('all');
   const [activeTab, setActiveTab] = useState('feeds');
 
   useEffect(() => {
-    fetchPythData();
-    const interval = setInterval(fetchPythData, 30000);
+    fetchAPI3Data();
+    const interval = setInterval(fetchAPI3Data, 30000);
     return () => clearInterval(interval);
   }, [selectedChain]);
 
-  async function fetchPythData() {
+  async function fetchAPI3Data() {
     try {
       setLoading(true);
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      const mockFeeds: PythPriceFeed[] = [
+      const mockFeeds: API3DataFeed[] = [
         {
-          id: '0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43',
+          id: 'api3-1',
           symbol: 'BTC/USD',
           price: 67432.15,
-          confidence: 0.05,
-          expo: -8,
-          publishTime: new Date(Date.now() - 30000).toISOString(),
+          deviation: 0.5,
+          heartbeat: 86400,
+          lastUpdate: new Date(Date.now() - 30000).toISOString(),
           status: 'active',
-          sources: 12,
+          dAPI: '0x1234...5678',
         },
         {
-          id: '0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
+          id: 'api3-2',
           symbol: 'ETH/USD',
           price: 3254.78,
-          confidence: 0.02,
-          expo: -8,
-          publishTime: new Date(Date.now() - 45000).toISOString(),
+          deviation: 0.5,
+          heartbeat: 86400,
+          lastUpdate: new Date(Date.now() - 45000).toISOString(),
           status: 'active',
-          sources: 15,
+          dAPI: '0x8765...4321',
         },
         {
-          id: '0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cf2b1c9c12345',
-          symbol: 'SOL/USD',
-          price: 98.45,
-          confidence: 0.03,
-          expo: -8,
-          publishTime: new Date(Date.now() - 120000).toISOString(),
+          id: 'api3-3',
+          symbol: 'AVAX/USD',
+          price: 35.45,
+          deviation: 1.0,
+          heartbeat: 86400,
+          lastUpdate: new Date(Date.now() - 120000).toISOString(),
           status: 'stale',
-          sources: 8,
+          dAPI: '0xabcd...efgh',
         },
         {
-          id: '0x2f95862b045670cd22bee3114c39763a4a08beeb663b145d283c31e7f6b1234',
-          symbol: 'LINK/USD',
-          price: 18.45,
-          confidence: 0.01,
-          expo: -8,
-          publishTime: new Date(Date.now() - 60000).toISOString(),
+          id: 'api3-4',
+          symbol: 'MATIC/USD',
+          price: 0.85,
+          deviation: 1.0,
+          heartbeat: 86400,
+          lastUpdate: new Date(Date.now() - 60000).toISOString(),
           status: 'active',
-          sources: 10,
+          dAPI: '0xijkl...mnop',
         },
       ];
 
-      const mockPublishers: PythPublisher[] = [
+      const mockAirnodes: API3Airnode[] = [
         {
-          id: 'pub-1',
-          name: 'Jump Crypto',
+          id: 'node-1',
+          name: 'API3 Foundation',
           status: 'active',
-          lastPublish: new Date(Date.now() - 30000).toISOString(),
-          totalPublishes: 2500000,
-          accuracy: 99.9,
+          lastHeartbeat: new Date(Date.now() - 30000).toISOString(),
+          totalRequests: 2500000,
+          successRate: 99.9,
+          region: 'US-East',
         },
         {
-          id: 'pub-2',
-          name: 'Jane Street',
+          id: 'node-2',
+          name: 'Blockdaemon',
           status: 'active',
-          lastPublish: new Date(Date.now() - 45000).toISOString(),
-          totalPublishes: 1800000,
-          accuracy: 99.8,
+          lastHeartbeat: new Date(Date.now() - 45000).toISOString(),
+          totalRequests: 1800000,
+          successRate: 99.8,
+          region: 'EU-West',
         },
         {
-          id: 'pub-3',
-          name: 'Wintermute',
+          id: 'node-3',
+          name: 'Chainlayer',
           status: 'active',
-          lastPublish: new Date(Date.now() - 60000).toISOString(),
-          totalPublishes: 1200000,
-          accuracy: 99.7,
+          lastHeartbeat: new Date(Date.now() - 60000).toISOString(),
+          totalRequests: 1200000,
+          successRate: 99.7,
+          region: 'APAC',
         },
       ];
 
-      const mockStats: PythStats = {
-        totalFeeds: 400,
-        activeFeeds: 398,
+      const mockStats: API3Stats = {
+        totalFeeds: 150,
+        activeFeeds: 148,
         staleFeeds: 2,
-        totalPublishers: 45,
-        avgConfidence: 99.7,
-        networkUptime: 99.99,
+        totalAirnodes: 25,
+        avgDeviation: 0.75,
+        networkUptime: 99.98,
       };
 
       setFeeds(mockFeeds);
-      setPublishers(mockPublishers);
+      setAirnodes(mockAirnodes);
       setStats(mockStats);
     } catch (error) {
-      console.error('Failed to fetch Pyth data:', error);
+      console.error('Failed to fetch API3 data:', error);
     } finally {
       setLoading(false);
     }
@@ -222,19 +226,19 @@ export default function PythMonitorPage() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="flex items-center gap-3">
-              <span className="text-4xl">🐍</span>
+              <span className="text-4xl">🌊</span>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Pyth Network</h1>
-                <p className="text-sm text-gray-500">Low-Latency Financial Data Oracle</p>
+                <h1 className="text-2xl font-bold text-gray-900">API3</h1>
+                <p className="text-sm text-gray-500">First-Party Oracle Solution</p>
               </div>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={fetchPythData} disabled={loading} className="gap-2">
+            <Button variant="outline" onClick={fetchAPI3Data} disabled={loading} className="gap-2">
               <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
               Refresh
             </Button>
-            <Link href="https://pyth.network" target="_blank" rel="noopener noreferrer">
+            <Link href="https://api3.org" target="_blank" rel="noopener noreferrer">
               <Button variant="outline" className="gap-2">
                 <ExternalLink className="h-4 w-4" />
                 Official Site
@@ -260,8 +264,8 @@ export default function PythMonitorPage() {
               subtitle={`${stats.staleFeeds} stale`}
             />
             <StatCard
-              title="Avg Confidence"
-              value={`${stats.avgConfidence}%`}
+              title="Avg Deviation"
+              value={`${stats.avgDeviation}%`}
               icon={<Shield className="h-5 w-5" />}
               color="purple"
             />
@@ -302,11 +306,11 @@ export default function PythMonitorPage() {
           <TabsList>
             <TabsTrigger value="feeds" className="gap-2">
               <TrendingUp className="h-4 w-4" />
-              Price Feeds
+              Data Feeds
             </TabsTrigger>
-            <TabsTrigger value="publishers" className="gap-2">
+            <TabsTrigger value="airnodes" className="gap-2">
               <Building2 className="h-4 w-4" />
-              Publishers
+              Airnodes
             </TabsTrigger>
             <TabsTrigger value="analytics" className="gap-2">
               <BarChart3 className="h-4 w-4" />
@@ -317,7 +321,7 @@ export default function PythMonitorPage() {
           <TabsContent value="feeds" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Price Feeds</CardTitle>
+                <CardTitle>Data Feeds (dAPIs)</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
@@ -326,8 +330,8 @@ export default function PythMonitorPage() {
                       <tr className="border-b text-left text-sm text-gray-500">
                         <th className="pb-3 font-medium">Symbol</th>
                         <th className="pb-3 font-medium">Price</th>
-                        <th className="pb-3 font-medium">Confidence</th>
-                        <th className="pb-3 font-medium">Sources</th>
+                        <th className="pb-3 font-medium">Deviation</th>
+                        <th className="pb-3 font-medium">Heartbeat</th>
                         <th className="pb-3 font-medium">Last Update</th>
                         <th className="pb-3 font-medium">Status</th>
                       </tr>
@@ -343,15 +347,10 @@ export default function PythMonitorPage() {
                               maximumFractionDigits: 8,
                             })}
                           </td>
-                          <td className="py-4">
-                            <div className="flex items-center gap-2">
-                              <Progress value={feed.confidence * 100} className="h-2 w-20" />
-                              <span className="text-sm">{(feed.confidence * 100).toFixed(1)}%</span>
-                            </div>
-                          </td>
-                          <td className="py-4">{feed.sources}</td>
+                          <td className="py-4">{feed.deviation}%</td>
+                          <td className="py-4">{feed.heartbeat / 3600}h</td>
                           <td className="py-4 text-sm text-gray-500">
-                            {formatTimeAgo(feed.publishTime)}
+                            {formatTimeAgo(feed.lastUpdate)}
                           </td>
                           <td className="py-4">{getStatusBadge(feed.status)}</td>
                         </tr>
@@ -363,42 +362,44 @@ export default function PythMonitorPage() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="publishers" className="space-y-4">
+          <TabsContent value="airnodes" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Data Publishers</CardTitle>
+                <CardTitle>Airnodes</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {publishers.map((publisher) => (
-                    <Card key={publisher.id} className="border-0 bg-gray-50">
+                  {airnodes.map((airnode) => (
+                    <Card key={airnode.id} className="border-0 bg-gray-50">
                       <CardContent className="p-4">
                         <div className="mb-3 flex items-start justify-between">
                           <div>
-                            <h4 className="font-semibold">{publisher.name}</h4>
-                            <Badge
-                              variant={publisher.status === 'active' ? 'default' : 'secondary'}
-                            >
-                              {publisher.status}
+                            <h4 className="font-semibold">{airnode.name}</h4>
+                            <Badge variant={airnode.status === 'active' ? 'default' : 'secondary'}>
+                              {airnode.status}
                             </Badge>
                           </div>
                           <Building2 className="h-5 w-5 text-gray-400" />
                         </div>
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
-                            <span className="text-gray-500">Accuracy</span>
-                            <span className="font-medium">{publisher.accuracy}%</span>
+                            <span className="text-gray-500">Region</span>
+                            <span className="font-medium">{airnode.region}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-gray-500">Total Publishes</span>
+                            <span className="text-gray-500">Success Rate</span>
+                            <span className="font-medium">{airnode.successRate}%</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Total Requests</span>
                             <span className="font-medium">
-                              {publisher.totalPublishes.toLocaleString()}
+                              {airnode.totalRequests.toLocaleString()}
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-gray-500">Last Publish</span>
+                            <span className="text-gray-500">Last Heartbeat</span>
                             <span className="font-medium">
-                              {formatTimeAgo(publisher.lastPublish)}
+                              {formatTimeAgo(airnode.lastHeartbeat)}
                             </span>
                           </div>
                         </div>
@@ -430,36 +431,36 @@ export default function PythMonitorPage() {
                   </div>
                   <div>
                     <div className="mb-2 flex justify-between text-sm">
-                      <span>Publisher Participation</span>
-                      <span>94%</span>
+                      <span>Airnode Participation</span>
+                      <span>98%</span>
                     </div>
-                    <Progress value={94} />
+                    <Progress value={98} />
                   </div>
                   <div>
                     <div className="mb-2 flex justify-between text-sm">
-                      <span>Update Frequency</span>
-                      <span>99.8%</span>
+                      <span>First-Party Data Quality</span>
+                      <span>99.9%</span>
                     </div>
-                    <Progress value={99.8} />
+                    <Progress value={99.9} />
                   </div>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader>
-                  <CardTitle>About Pyth Network</CardTitle>
+                  <CardTitle>About API3</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm text-gray-600">
                   <p>
-                    Pyth Network is a next-generation oracle solution that delivers high-fidelity,
-                    high-frequency financial data to decentralized applications across multiple
-                    blockchains.
+                    API3 is a first-party oracle solution that enables API providers to operate
+                    their own oracle nodes (Airnodes), delivering data directly to smart contracts
+                    without third-party intermediaries.
                   </p>
                   <ul className="list-inside list-disc space-y-1">
-                    <li>First-party data from institutional sources</li>
-                    <li>Sub-second price updates</li>
-                    <li>Confidence intervals for every price</li>
-                    <li>400+ price feeds across 50+ blockchains</li>
+                    <li>First-party oracle architecture</li>
+                    <li>DAO-governed dAPIs</li>
+                    <li>Quantifiable security via staking</li>
+                    <li>OEV (Oracle Extractable Value) capture</li>
                   </ul>
                 </CardContent>
               </Card>

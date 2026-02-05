@@ -25,149 +25,151 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 
-interface PythPriceFeed {
+interface BandPriceFeed {
   id: string;
   symbol: string;
   price: number;
   confidence: number;
-  expo: number;
-  publishTime: string;
+  requestID: string;
+  resolveTime: string;
   status: 'active' | 'stale' | 'error';
-  sources: number;
+  dataSourceCount: number;
 }
 
-interface PythPublisher {
+interface BandValidator {
   id: string;
   name: string;
   status: 'active' | 'inactive';
-  lastPublish: string;
-  totalPublishes: number;
+  lastUpdate: string;
+  totalRequests: number;
   accuracy: number;
+  votingPower: number;
 }
 
-interface PythStats {
+interface BandStats {
   totalFeeds: number;
   activeFeeds: number;
   staleFeeds: number;
-  totalPublishers: number;
+  totalValidators: number;
   avgConfidence: number;
   networkUptime: number;
 }
 
 const SUPPORTED_CHAINS = [
   { id: 'ethereum', name: 'Ethereum', icon: '⬡' },
-  { id: 'solana', name: 'Solana', icon: '◎' },
-  { id: 'arbitrum', name: 'Arbitrum', icon: '🔷' },
-  { id: 'optimism', name: 'Optimism', icon: '🔴' },
-  { id: 'base', name: 'Base', icon: '🔵' },
-  { id: 'avalanche', name: 'Avalanche', icon: '❄️' },
-  { id: 'polygon', name: 'Polygon', icon: '💜' },
+  { id: 'cosmos', name: 'Cosmos', icon: '⚛️' },
+  { id: 'osmosis', name: 'Osmosis', icon: '🧪' },
+  { id: ' injective', name: 'Injective', icon: '💉' },
+  { id: 'secret', name: 'Secret Network', icon: '🤫' },
 ];
 
-export default function PythMonitorPage() {
+export default function BandMonitorPage() {
   const router = useRouter();
-  const [feeds, setFeeds] = useState<PythPriceFeed[]>([]);
-  const [publishers, setPublishers] = useState<PythPublisher[]>([]);
-  const [stats, setStats] = useState<PythStats | null>(null);
+  const [feeds, setFeeds] = useState<BandPriceFeed[]>([]);
+  const [validators, setValidators] = useState<BandValidator[]>([]);
+  const [stats, setStats] = useState<BandStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedChain, setSelectedChain] = useState<string>('all');
   const [activeTab, setActiveTab] = useState('feeds');
 
   useEffect(() => {
-    fetchPythData();
-    const interval = setInterval(fetchPythData, 30000);
+    fetchBandData();
+    const interval = setInterval(fetchBandData, 30000);
     return () => clearInterval(interval);
   }, [selectedChain]);
 
-  async function fetchPythData() {
+  async function fetchBandData() {
     try {
       setLoading(true);
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      const mockFeeds: PythPriceFeed[] = [
+      const mockFeeds: BandPriceFeed[] = [
         {
-          id: '0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43',
+          id: 'band-1',
           symbol: 'BTC/USD',
           price: 67432.15,
-          confidence: 0.05,
-          expo: -8,
-          publishTime: new Date(Date.now() - 30000).toISOString(),
+          confidence: 0.98,
+          requestID: '12345',
+          resolveTime: new Date(Date.now() - 30000).toISOString(),
           status: 'active',
-          sources: 12,
+          dataSourceCount: 7,
         },
         {
-          id: '0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
+          id: 'band-2',
           symbol: 'ETH/USD',
           price: 3254.78,
-          confidence: 0.02,
-          expo: -8,
-          publishTime: new Date(Date.now() - 45000).toISOString(),
+          confidence: 0.97,
+          requestID: '12346',
+          resolveTime: new Date(Date.now() - 45000).toISOString(),
           status: 'active',
-          sources: 15,
+          dataSourceCount: 7,
         },
         {
-          id: '0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cf2b1c9c12345',
-          symbol: 'SOL/USD',
-          price: 98.45,
-          confidence: 0.03,
-          expo: -8,
-          publishTime: new Date(Date.now() - 120000).toISOString(),
+          id: 'band-3',
+          symbol: 'ATOM/USD',
+          price: 8.45,
+          confidence: 0.96,
+          requestID: '12347',
+          resolveTime: new Date(Date.now() - 120000).toISOString(),
           status: 'stale',
-          sources: 8,
+          dataSourceCount: 5,
         },
         {
-          id: '0x2f95862b045670cd22bee3114c39763a4a08beeb663b145d283c31e7f6b1234',
-          symbol: 'LINK/USD',
-          price: 18.45,
-          confidence: 0.01,
-          expo: -8,
-          publishTime: new Date(Date.now() - 60000).toISOString(),
+          id: 'band-4',
+          symbol: 'OSMO/USD',
+          price: 0.85,
+          confidence: 0.95,
+          requestID: '12348',
+          resolveTime: new Date(Date.now() - 60000).toISOString(),
           status: 'active',
-          sources: 10,
+          dataSourceCount: 4,
         },
       ];
 
-      const mockPublishers: PythPublisher[] = [
+      const mockValidators: BandValidator[] = [
         {
-          id: 'pub-1',
-          name: 'Jump Crypto',
+          id: 'val-1',
+          name: 'Band Foundation',
           status: 'active',
-          lastPublish: new Date(Date.now() - 30000).toISOString(),
-          totalPublishes: 2500000,
+          lastUpdate: new Date(Date.now() - 30000).toISOString(),
+          totalRequests: 2500000,
           accuracy: 99.9,
+          votingPower: 15.5,
         },
         {
-          id: 'pub-2',
-          name: 'Jane Street',
+          id: 'val-2',
+          name: 'Cosmostation',
           status: 'active',
-          lastPublish: new Date(Date.now() - 45000).toISOString(),
-          totalPublishes: 1800000,
+          lastUpdate: new Date(Date.now() - 45000).toISOString(),
+          totalRequests: 1800000,
           accuracy: 99.8,
+          votingPower: 12.3,
         },
         {
-          id: 'pub-3',
-          name: 'Wintermute',
+          id: 'val-3',
+          name: 'Forbole',
           status: 'active',
-          lastPublish: new Date(Date.now() - 60000).toISOString(),
-          totalPublishes: 1200000,
+          lastUpdate: new Date(Date.now() - 60000).toISOString(),
+          totalRequests: 1200000,
           accuracy: 99.7,
+          votingPower: 8.7,
         },
       ];
 
-      const mockStats: PythStats = {
-        totalFeeds: 400,
-        activeFeeds: 398,
+      const mockStats: BandStats = {
+        totalFeeds: 230,
+        activeFeeds: 228,
         staleFeeds: 2,
-        totalPublishers: 45,
-        avgConfidence: 99.7,
-        networkUptime: 99.99,
+        totalValidators: 72,
+        avgConfidence: 97.5,
+        networkUptime: 99.95,
       };
 
       setFeeds(mockFeeds);
-      setPublishers(mockPublishers);
+      setValidators(mockValidators);
       setStats(mockStats);
     } catch (error) {
-      console.error('Failed to fetch Pyth data:', error);
+      console.error('Failed to fetch Band data:', error);
     } finally {
       setLoading(false);
     }
@@ -222,19 +224,19 @@ export default function PythMonitorPage() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="flex items-center gap-3">
-              <span className="text-4xl">🐍</span>
+              <span className="text-4xl">🎸</span>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Pyth Network</h1>
-                <p className="text-sm text-gray-500">Low-Latency Financial Data Oracle</p>
+                <h1 className="text-2xl font-bold text-gray-900">Band Protocol</h1>
+                <p className="text-sm text-gray-500">Cross-Chain Data Oracle Platform</p>
               </div>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={fetchPythData} disabled={loading} className="gap-2">
+            <Button variant="outline" onClick={fetchBandData} disabled={loading} className="gap-2">
               <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
               Refresh
             </Button>
-            <Link href="https://pyth.network" target="_blank" rel="noopener noreferrer">
+            <Link href="https://bandprotocol.com" target="_blank" rel="noopener noreferrer">
               <Button variant="outline" className="gap-2">
                 <ExternalLink className="h-4 w-4" />
                 Official Site
@@ -304,9 +306,9 @@ export default function PythMonitorPage() {
               <TrendingUp className="h-4 w-4" />
               Price Feeds
             </TabsTrigger>
-            <TabsTrigger value="publishers" className="gap-2">
+            <TabsTrigger value="validators" className="gap-2">
               <Building2 className="h-4 w-4" />
-              Publishers
+              Validators
             </TabsTrigger>
             <TabsTrigger value="analytics" className="gap-2">
               <BarChart3 className="h-4 w-4" />
@@ -327,7 +329,7 @@ export default function PythMonitorPage() {
                         <th className="pb-3 font-medium">Symbol</th>
                         <th className="pb-3 font-medium">Price</th>
                         <th className="pb-3 font-medium">Confidence</th>
-                        <th className="pb-3 font-medium">Sources</th>
+                        <th className="pb-3 font-medium">Data Sources</th>
                         <th className="pb-3 font-medium">Last Update</th>
                         <th className="pb-3 font-medium">Status</th>
                       </tr>
@@ -349,9 +351,9 @@ export default function PythMonitorPage() {
                               <span className="text-sm">{(feed.confidence * 100).toFixed(1)}%</span>
                             </div>
                           </td>
-                          <td className="py-4">{feed.sources}</td>
+                          <td className="py-4">{feed.dataSourceCount}</td>
                           <td className="py-4 text-sm text-gray-500">
-                            {formatTimeAgo(feed.publishTime)}
+                            {formatTimeAgo(feed.resolveTime)}
                           </td>
                           <td className="py-4">{getStatusBadge(feed.status)}</td>
                         </tr>
@@ -363,42 +365,46 @@ export default function PythMonitorPage() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="publishers" className="space-y-4">
+          <TabsContent value="validators" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Data Publishers</CardTitle>
+                <CardTitle>Band Validators</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {publishers.map((publisher) => (
-                    <Card key={publisher.id} className="border-0 bg-gray-50">
+                  {validators.map((validator) => (
+                    <Card key={validator.id} className="border-0 bg-gray-50">
                       <CardContent className="p-4">
                         <div className="mb-3 flex items-start justify-between">
                           <div>
-                            <h4 className="font-semibold">{publisher.name}</h4>
+                            <h4 className="font-semibold">{validator.name}</h4>
                             <Badge
-                              variant={publisher.status === 'active' ? 'default' : 'secondary'}
+                              variant={validator.status === 'active' ? 'default' : 'secondary'}
                             >
-                              {publisher.status}
+                              {validator.status}
                             </Badge>
                           </div>
                           <Building2 className="h-5 w-5 text-gray-400" />
                         </div>
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
-                            <span className="text-gray-500">Accuracy</span>
-                            <span className="font-medium">{publisher.accuracy}%</span>
+                            <span className="text-gray-500">Voting Power</span>
+                            <span className="font-medium">{validator.votingPower}%</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-gray-500">Total Publishes</span>
+                            <span className="text-gray-500">Accuracy</span>
+                            <span className="font-medium">{validator.accuracy}%</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Total Requests</span>
                             <span className="font-medium">
-                              {publisher.totalPublishes.toLocaleString()}
+                              {validator.totalRequests.toLocaleString()}
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-gray-500">Last Publish</span>
+                            <span className="text-gray-500">Last Update</span>
                             <span className="font-medium">
-                              {formatTimeAgo(publisher.lastPublish)}
+                              {formatTimeAgo(validator.lastUpdate)}
                             </span>
                           </div>
                         </div>
@@ -430,36 +436,35 @@ export default function PythMonitorPage() {
                   </div>
                   <div>
                     <div className="mb-2 flex justify-between text-sm">
-                      <span>Publisher Participation</span>
-                      <span>94%</span>
+                      <span>Validator Participation</span>
+                      <span>96%</span>
                     </div>
-                    <Progress value={94} />
+                    <Progress value={96} />
                   </div>
                   <div>
                     <div className="mb-2 flex justify-between text-sm">
-                      <span>Update Frequency</span>
-                      <span>99.8%</span>
+                      <span>Data Source Reliability</span>
+                      <span>98.5%</span>
                     </div>
-                    <Progress value={99.8} />
+                    <Progress value={98.5} />
                   </div>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader>
-                  <CardTitle>About Pyth Network</CardTitle>
+                  <CardTitle>About Band Protocol</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm text-gray-600">
                   <p>
-                    Pyth Network is a next-generation oracle solution that delivers high-fidelity,
-                    high-frequency financial data to decentralized applications across multiple
-                    blockchains.
+                    Band Protocol is a cross-chain data oracle platform that aggregates and connects
+                    real-world data and APIs to smart contracts across multiple blockchain networks.
                   </p>
                   <ul className="list-inside list-disc space-y-1">
-                    <li>First-party data from institutional sources</li>
-                    <li>Sub-second price updates</li>
-                    <li>Confidence intervals for every price</li>
-                    <li>400+ price feeds across 50+ blockchains</li>
+                    <li>Cross-chain data delivery via IBC</li>
+                    <li>Decentralized validator network</li>
+                    <li>Economic security through staking</li>
+                    <li>Support for Cosmos ecosystem and beyond</li>
                   </ul>
                 </CardContent>
               </Card>
