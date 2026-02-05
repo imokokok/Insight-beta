@@ -98,7 +98,7 @@ export interface TimeSeriesPoint {
 // 统计检测器
 // ============================================================================
 
-class StatisticalDetector {
+export class StatisticalDetector {
   /**
    * 计算 Z-Score
    */
@@ -177,7 +177,7 @@ class StatisticalDetector {
 // 时间序列检测器
 // ============================================================================
 
-class TimeSeriesDetector {
+export class TimeSeriesDetector {
   /**
    * 计算移动平均
    */
@@ -296,10 +296,10 @@ class TimeSeriesDetector {
 }
 
 // ============================================================================
-// 机器学习检测器 (简化版孤立森林)
+// 机器学习检测器
 // ============================================================================
 
-class MLDetector {
+export class MLDetector {
   /**
    * 简化版孤立森林检测
    * 使用随机分割来识别异常点
@@ -430,7 +430,7 @@ class MLDetector {
 // 行为模式检测器
 // ============================================================================
 
-class BehaviorPatternDetector {
+export class BehaviorPatternDetector {
   /**
    * 检测行为模式变化
    */
@@ -460,7 +460,7 @@ class BehaviorPatternDetector {
   /**
    * 计算模式相似度 (余弦相似度)
    */
-  private calculatePatternSimilarity(pattern1: number[], pattern2: number[]): number {
+  calculatePatternSimilarity(pattern1: number[], pattern2: number[]): number {
     const minLength = Math.min(pattern1.length, pattern2.length);
     const p1 = pattern1.slice(0, minLength);
     const p2 = pattern2.slice(0, minLength);
@@ -521,10 +521,14 @@ class BehaviorPatternDetector {
 // ============================================================================
 
 export class AnomalyDetectionService {
+  private static instance: AnomalyDetectionService;
   private statisticalDetector = new StatisticalDetector();
   private timeSeriesDetector = new TimeSeriesDetector();
   private mlDetector = new MLDetector();
   private behaviorDetector = new BehaviorPatternDetector();
+
+  // Store for anomaly history
+  private anomalyHistory: Map<string, AnomalyDetection[]> = new Map();
 
   private defaultConfig: DetectionConfig = {
     zScoreThreshold: 2.5,
@@ -546,6 +550,15 @@ export class AnomalyDetectionService {
   };
 
   private recentDetections: Map<string, Date> = new Map();
+
+  private constructor() {}
+
+  static getInstance(): AnomalyDetectionService {
+    if (!AnomalyDetectionService.instance) {
+      AnomalyDetectionService.instance = new AnomalyDetectionService();
+    }
+    return AnomalyDetectionService.instance;
+  }
 
   /**
    * 执行多维度异常检测
@@ -598,6 +611,10 @@ export class AnomalyDetectionService {
     if (anomalies.length > 0) {
       this.recentDetections.set(symbol, new Date());
     }
+
+    // 存储到历史记录
+    const existingHistory = this.anomalyHistory.get(symbol) ?? [];
+    this.anomalyHistory.set(symbol, [...existingHistory, ...anomalies]);
 
     // 按严重程度排序
     return this.sortBySeverity(anomalies);
@@ -910,7 +927,131 @@ export class AnomalyDetectionService {
    */
   clearHistory(): void {
     this.recentDetections.clear();
+    this.anomalyHistory.clear();
     logger.info('Anomaly detection history cleared');
+  }
+
+  /**
+   * 获取异常历史
+   */
+  getAnomalyHistory(symbol: string): AnomalyDetection[] {
+    return this.anomalyHistory.get(symbol) ?? [];
+  }
+
+  /**
+   * 根据ID获取异常
+   */
+  getAnomalyById(id: string): AnomalyDetection | undefined {
+    for (const anomalies of this.anomalyHistory.values()) {
+      const found = anomalies.find((a) => a.id === id);
+      if (found) return found;
+    }
+    return undefined;
+  }
+
+  /**
+   * 更新异常状态
+   */
+  updateAnomalyStatus(id: string, status: AnomalyDetection['status']): boolean {
+    for (const anomalies of this.anomalyHistory.values()) {
+      const anomaly = anomalies.find((a) => a.id === id);
+      if (anomaly) {
+        anomaly.status = status;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * 获取异常统计
+   */
+  getAnomalyStats(): {
+    totalAnomalies: number;
+    bySymbol: Record<string, number>;
+    byType: Record<string, number>;
+    bySeverity: Record<string, number>;
+  } {
+    const bySymbol: Record<string, number> = {};
+    const byType: Record<string, number> = {};
+    const bySeverity: Record<string, number> = {};
+    let totalAnomalies = 0;
+
+    for (const [symbol, anomalies] of this.anomalyHistory.entries()) {
+      bySymbol[symbol] = anomalies.length;
+      totalAnomalies += anomalies.length;
+
+      for (const anomaly of anomalies) {
+        byType[anomaly.type] = (byType[anomaly.type] ?? 0) + 1;
+        bySeverity[anomaly.severity] = (bySeverity[anomaly.severity] ?? 0) + 1;
+      }
+    }
+
+    return {
+      totalAnomalies,
+      bySymbol,
+      byType,
+      bySeverity,
+    };
+  }
+
+  /**
+   * 关联不同symbol的异常
+   */
+  correlateAnomalies(
+    symbols: string[],
+    timeWindowMs: number,
+  ): Array<{
+    symbols: string[];
+    anomalies: AnomalyDetection[];
+    timeRange: { start: Date; end: Date };
+  }> | null {
+    const allAnomalies: AnomalyDetection[] = [];
+
+    for (const symbol of symbols) {
+      const anomalies = this.anomalyHistory.get(symbol) ?? [];
+      allAnomalies.push(...anomalies);
+    }
+
+    if (allAnomalies.length === 0) return [];
+
+    // Group anomalies by time window
+    const groups: AnomalyDetection[][] = [];
+    const sorted = allAnomalies.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+
+    let currentGroup: AnomalyDetection[] = [];
+    for (const anomaly of sorted) {
+      if (currentGroup.length === 0) {
+        currentGroup.push(anomaly);
+      } else {
+        const lastAnomaly = currentGroup[currentGroup.length - 1];
+        if (
+          lastAnomaly &&
+          anomaly.timestamp.getTime() - lastAnomaly.timestamp.getTime() <= timeWindowMs
+        ) {
+          currentGroup.push(anomaly);
+        } else {
+          groups.push(currentGroup);
+          currentGroup = [anomaly];
+        }
+      }
+    }
+    if (currentGroup.length > 0) {
+      groups.push(currentGroup);
+    }
+
+    return groups.map((group) => {
+      const firstAnomaly = group[0];
+      const lastAnomaly = group[group.length - 1];
+      return {
+        symbols: [...new Set(group.map((a) => a.symbol))],
+        anomalies: group,
+        timeRange: {
+          start: firstAnomaly?.timestamp ?? new Date(),
+          end: lastAnomaly?.timestamp ?? new Date(),
+        },
+      };
+    });
   }
 }
 
@@ -918,4 +1059,4 @@ export class AnomalyDetectionService {
 // 单例导出
 // ============================================================================
 
-export const anomalyDetectionService = new AnomalyDetectionService();
+export const anomalyDetectionService = AnomalyDetectionService.getInstance();
