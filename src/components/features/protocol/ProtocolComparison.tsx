@@ -34,7 +34,7 @@ import { CheckCircle, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { type OracleProtocol, PROTOCOL_DISPLAY_NAMES } from '@/lib/types';
 
-interface ProtocolMetrics {
+export interface ProtocolMetrics {
   protocol: OracleProtocol;
   price: number;
   latency: number;
@@ -45,7 +45,7 @@ interface ProtocolMetrics {
   supportedChains: number;
 }
 
-interface ProtocolComparisonProps {
+export interface ProtocolComparisonProps {
   protocols: OracleProtocol[];
   symbol: string;
   className?: string;

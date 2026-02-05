@@ -18,13 +18,13 @@ import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface PriceDataPoint {
+export interface PriceDataPoint {
   timestamp: string;
   price: number;
   volume?: number;
 }
 
-interface PriceHistoryChartProps {
+export interface PriceHistoryChartProps {
   data: PriceDataPoint[];
   symbol: string;
   title?: string;

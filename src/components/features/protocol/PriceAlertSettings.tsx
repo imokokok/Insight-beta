@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface PriceAlert {
+export interface PriceAlert {
   id: string;
   symbol: string;
   condition: 'above' | 'below' | 'change_percent';
@@ -37,7 +37,7 @@ interface PriceAlert {
   createdAt: string;
 }
 
-interface PriceAlertSettingsProps {
+export interface PriceAlertSettingsProps {
   symbol: string;
   currentPrice: number;
   className?: string;
