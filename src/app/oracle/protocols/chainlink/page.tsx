@@ -16,6 +16,7 @@ import {
   ExternalLink,
   BarChart3,
   Layers,
+  Bell,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,6 +24,13 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
+import {
+  PriceHistoryChart,
+  generateMockPriceHistory,
+} from '@/components/features/protocol/PriceHistoryChart';
+import { ProtocolComparison } from '@/components/features/protocol/ProtocolComparison';
+import { PriceAlertSettings } from '@/components/features/protocol/PriceAlertSettings';
+import { ORACLE_PROTOCOLS } from '@/lib/types';
 
 interface ChainlinkFeed {
   id: string;
@@ -328,6 +336,18 @@ export default function ChainlinkMonitorPage() {
               <Globe className="h-4 w-4" />
               Node Operators
             </TabsTrigger>
+            <TabsTrigger value="charts" className="gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Charts
+            </TabsTrigger>
+            <TabsTrigger value="comparison" className="gap-2">
+              <Activity className="h-4 w-4" />
+              Compare
+            </TabsTrigger>
+            <TabsTrigger value="alerts" className="gap-2">
+              <Bell className="h-4 w-4" />
+              Alerts
+            </TabsTrigger>
             <TabsTrigger value="analytics" className="gap-2">
               <BarChart3 className="h-4 w-4" />
               Analytics
@@ -431,6 +451,32 @@ export default function ChainlinkMonitorPage() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="charts" className="space-y-4">
+            <div className="grid gap-4 lg:grid-cols-2">
+              <PriceHistoryChart
+                data={generateMockPriceHistory(3254.78, 168)}
+                symbol="ETH/USD"
+                title="ETH/USD Price History"
+              />
+              <PriceHistoryChart
+                data={generateMockPriceHistory(67432.15, 168)}
+                symbol="BTC/USD"
+                title="BTC/USD Price History"
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="comparison" className="space-y-4">
+            <ProtocolComparison protocols={ORACLE_PROTOCOLS} symbol="ETH/USD" />
+          </TabsContent>
+
+          <TabsContent value="alerts" className="space-y-4">
+            <div className="grid gap-4 lg:grid-cols-2">
+              <PriceAlertSettings symbol="ETH/USD" currentPrice={3254.78} />
+              <PriceAlertSettings symbol="BTC/USD" currentPrice={67432.15} />
+            </div>
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-4">
