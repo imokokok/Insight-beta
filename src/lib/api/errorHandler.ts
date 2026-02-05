@@ -44,15 +44,3 @@ export function withErrorHandling<T extends (...args: any[]) => Promise<NextResp
     }
   }) as T;
 }
-
-export function handleValidationError(message: string): NextResponse {
-  return createErrorResponse('VALIDATION_ERROR', message, 400);
-}
-
-export function handleNotFoundError(resource: string): NextResponse {
-  return createErrorResponse('NOT_FOUND', `${resource} not found`, 404);
-}
-
-export function handleUnauthorizedError(message: string = 'Unauthorized'): NextResponse {
-  return createErrorResponse('UNAUTHORIZED', message, 401);
-}

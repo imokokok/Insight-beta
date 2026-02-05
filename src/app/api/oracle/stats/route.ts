@@ -1,7 +1,6 @@
 import { ensureOracleSynced, getOracleStats } from '@/server/oracle';
 import { cachedJson, handleApi, rateLimit, requireAdmin } from '@/server/apiResponse';
-import { env } from '@/lib/config/env';
-import { timingSafeEqualString } from '@/server/adminAuth';
+import { isCronAuthorized } from '@/server/cronAuth';
 
 /**
  * @swagger
@@ -55,19 +54,6 @@ import { timingSafeEqualString } from '@/server/adminAuth';
  *       500:
  *         description: 服务器错误
  */
-
-function isCronAuthorized(request: Request) {
-  const secret = (env.INSIGHT_CRON_SECRET.trim() || env.CRON_SECRET.trim()).trim();
-  if (!secret) return false;
-  const gotHeader = request.headers.get('x-oracle-monitor-cron-secret')?.trim() ?? '';
-  if (gotHeader && timingSafeEqualString(gotHeader, secret)) return true;
-  const auth = request.headers.get('authorization')?.trim() ?? '';
-  if (!auth) return false;
-  if (!auth.toLowerCase().startsWith('bearer ')) return false;
-  const token = auth.slice(7).trim();
-  if (!token) return false;
-  return timingSafeEqualString(token, secret);
-}
 
 export async function GET(request: Request) {
   return handleApi(request, async () => {

@@ -1,13 +1,12 @@
 /**
- * Pyth Sync Module
+ * Base Sync Manager - 通用同步管理器基类
  *
- * Pyth 价格喂价同步模块
- * 负责定时同步价格数据到数据库
+ * 为所有预言机协议同步服务提供统一的抽象层
+ * 消除 Chainlink/Pyth/Band 等同步服务的重复代码
  */
 
 import { logger } from '@/lib/logger';
 import { query } from '@/server/db';
-import { createPythClient, getAvailablePythSymbols } from '@/lib/blockchain/pythOracle';
 import type {
   SupportedChain,
   UnifiedPriceFeed,
@@ -19,54 +18,137 @@ import type {
 // 同步配置
 // ============================================================================
 
-const SYNC_CONFIG = {
-  // 默认同步间隔（毫秒）- Pyth 更新更频繁
-  defaultIntervalMs: 30000, // 30秒
+export interface SyncConfig {
+  // 默认同步间隔（毫秒）
+  defaultIntervalMs: number;
 
   // 批量插入大小
-  batchSize: 100,
+  batchSize: number;
 
   // 最大并发请求数
+  maxConcurrency: number;
+
+  // 价格变化阈值（触发更新记录）
+  priceChangeThreshold: number;
+
+  // 数据保留时间（天）
+  dataRetentionDays: number;
+}
+
+// 默认配置
+export const DEFAULT_SYNC_CONFIG: SyncConfig = {
+  defaultIntervalMs: 60000, // 1分钟
+  batchSize: 100,
   maxConcurrency: 5,
-
-  // 价格变化阈值（触发更新）
-  priceChangeThreshold: 0.0005, // 0.05%
-
-  // 数据保留时间
+  priceChangeThreshold: 0.001, // 0.1%
   dataRetentionDays: 90,
 };
 
 // ============================================================================
-// Pyth Sync Manager
+// 客户端接口定义
 // ============================================================================
 
-export class PythSyncManager {
-  private syncIntervals: Map<string, NodeJS.Timeout> = new Map();
-  private isRunning: Map<string, boolean> = new Map();
-  private lastPrices: Map<string, number> = new Map();
+export interface IOracleClient {
+  getBlockNumber(): Promise<bigint>;
+  getPriceForSymbol(symbol: string): Promise<UnifiedPriceFeed | null>;
+}
+
+// ============================================================================
+// 实例配置类型
+// ============================================================================
+
+export interface InstanceConfig {
+  id: string;
+  chain: SupportedChain;
+  enabled: boolean;
+  config: {
+    rpcUrl: string;
+    protocolConfig?: Record<string, unknown>;
+    syncIntervalMs?: number;
+  };
+}
+
+// ============================================================================
+// 抽象基类
+// ============================================================================
+
+export abstract class BaseSyncManager {
+  // 协议标识（子类必须实现）
+  protected abstract readonly protocol: OracleProtocol;
+
+  // 同步配置（子类可覆盖）
+  protected syncConfig: SyncConfig = { ...DEFAULT_SYNC_CONFIG };
+
+  // 运行状态
+  protected syncIntervals: Map<string, NodeJS.Timeout> = new Map();
+  protected isRunning: Map<string, boolean> = new Map();
+  protected lastPrices: Map<string, number> = new Map();
+
+  /**
+   * 获取客户端实例 - 子类必须实现
+   */
+  protected abstract createClient(
+    chain: SupportedChain,
+    rpcUrl: string,
+    protocolConfig?: Record<string, unknown>,
+  ): IOracleClient;
+
+  /**
+   * 获取所有可用价格符号 - 子类必须实现
+   */
+  protected abstract getAvailableSymbols(chain: SupportedChain): string[];
+
+  /**
+   * 获取实例配置 - 可从数据库或配置中心获取
+   */
+  protected async getInstanceConfig(instanceId: string): Promise<InstanceConfig | null> {
+    const result = await query(
+      `SELECT id, chain, enabled, config, protocol_config 
+       FROM unified_oracle_instances 
+       WHERE id = $1 AND protocol = $2`,
+      [instanceId, this.protocol],
+    );
+
+    if (result.rows.length === 0) {
+      return null;
+    }
+
+    const row = result.rows[0];
+    if (!row) return null;
+
+    return {
+      id: row.id as string,
+      chain: row.chain as SupportedChain,
+      enabled: row.enabled as boolean,
+      config: {
+        rpcUrl: (row.config as Record<string, string>)?.rpcUrl || '',
+        protocolConfig: (row.protocol_config as Record<string, unknown>) || {},
+        syncIntervalMs: (row.config as Record<string, number>)?.syncIntervalMs,
+      },
+    };
+  }
 
   /**
    * 启动实例同步
    */
   async startSync(instanceId: string): Promise<void> {
     if (this.isRunning.get(instanceId)) {
-      logger.warn(`Pyth sync already running for instance ${instanceId}`);
+      logger.warn(`${this.protocol} sync already running for instance ${instanceId}`);
       return;
     }
 
-    // 获取实例配置
     const instance = await this.getInstanceConfig(instanceId);
     if (!instance) {
-      logger.error(`Instance ${instanceId} not found`);
+      logger.error(`Instance ${instanceId} not found for ${this.protocol}`);
       return;
     }
 
     if (!instance.enabled) {
-      logger.info(`Instance ${instanceId} is disabled, skipping sync`);
+      logger.info(`Instance ${instanceId} is disabled, skipping ${this.protocol} sync`);
       return;
     }
 
-    logger.info(`Starting Pyth sync for instance ${instanceId}`, {
+    logger.info(`Starting ${this.protocol} sync for instance ${instanceId}`, {
       chain: instance.chain,
     });
 
@@ -76,10 +158,10 @@ export class PythSyncManager {
     await this.syncInstance(instanceId);
 
     // 设置定时同步
-    const intervalMs = instance.config.syncIntervalMs || SYNC_CONFIG.defaultIntervalMs;
+    const intervalMs = instance.config.syncIntervalMs || this.syncConfig.defaultIntervalMs;
     const interval = setInterval(() => {
       this.syncInstance(instanceId).catch((error) => {
-        logger.error(`Scheduled sync failed for instance ${instanceId}`, {
+        logger.error(`Scheduled ${this.protocol} sync failed for instance ${instanceId}`, {
           error: error instanceof Error ? error.message : String(error),
         });
       });
@@ -104,7 +186,7 @@ export class PythSyncManager {
       this.syncIntervals.delete(instanceId);
     }
     this.isRunning.set(instanceId, false);
-    logger.info(`Stopped Pyth sync for instance ${instanceId}`);
+    logger.info(`Stopped ${this.protocol} sync for instance ${instanceId}`);
   }
 
   /**
@@ -114,7 +196,7 @@ export class PythSyncManager {
     for (const [instanceId, interval] of this.syncIntervals.entries()) {
       clearInterval(interval);
       this.isRunning.set(instanceId, false);
-      logger.info(`Stopped Pyth sync for instance ${instanceId}`);
+      logger.info(`Stopped ${this.protocol} sync for instance ${instanceId}`);
     }
     this.syncIntervals.clear();
   }
@@ -122,7 +204,7 @@ export class PythSyncManager {
   /**
    * 同步单个实例
    */
-  private async syncInstance(instanceId: string): Promise<void> {
+  protected async syncInstance(instanceId: string): Promise<void> {
     const startTime = Date.now();
 
     try {
@@ -131,8 +213,8 @@ export class PythSyncManager {
         throw new Error(`Instance ${instanceId} not found`);
       }
 
-      // 创建 Pyth 客户端
-      const client = createPythClient(
+      // 创建客户端
+      const client = this.createClient(
         instance.chain,
         instance.config.rpcUrl,
         instance.config.protocolConfig,
@@ -142,14 +224,14 @@ export class PythSyncManager {
       const blockNumber = await client.getBlockNumber();
 
       // 获取所有可用价格喂价
-      const symbols = getAvailablePythSymbols();
+      const symbols = this.getAvailableSymbols(instance.chain);
 
       if (symbols.length === 0) {
-        logger.warn(`No available feeds for Pyth on ${instance.chain}`);
+        logger.warn(`No available feeds for ${this.protocol} on ${instance.chain}`);
         return;
       }
 
-      logger.debug(`Syncing ${symbols.length} feeds for Pyth instance ${instanceId}`);
+      logger.debug(`Syncing ${symbols.length} feeds for ${this.protocol} instance ${instanceId}`);
 
       // 批量获取价格
       const priceFeeds: UnifiedPriceFeed[] = [];
@@ -160,7 +242,7 @@ export class PythSyncManager {
             priceFeeds.push(feed);
           }
         } catch (error) {
-          logger.error(`Failed to get Pyth price for ${symbol}`, {
+          logger.error(`Failed to get ${this.protocol} price for ${symbol}`, {
             error: error instanceof Error ? error.message : String(error),
           });
         }
@@ -182,14 +264,14 @@ export class PythSyncManager {
         consecutiveFailures: 0,
       });
 
-      logger.info(`Pyth sync completed for instance ${instanceId}`, {
+      logger.info(`${this.protocol} sync completed for instance ${instanceId}`, {
         feedsCount: priceFeeds.length,
         duration: `${duration}ms`,
         blockNumber: Number(blockNumber),
       });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      logger.error(`Pyth sync failed for instance ${instanceId}`, {
+      logger.error(`${this.protocol} sync failed for instance ${instanceId}`, {
         error: errorMessage,
       });
 
@@ -209,7 +291,7 @@ export class PythSyncManager {
   /**
    * 保存价格喂价到数据库
    */
-  private async savePriceFeeds(instanceId: string, feeds: UnifiedPriceFeed[]): Promise<void> {
+  protected async savePriceFeeds(instanceId: string, feeds: UnifiedPriceFeed[]): Promise<void> {
     if (feeds.length === 0) return;
 
     const values = feeds.map((feed) => [
@@ -234,16 +316,16 @@ export class PythSyncManager {
     ]);
 
     // 批量插入
-    for (let i = 0; i < values.length; i += SYNC_CONFIG.batchSize) {
-      const batch = values.slice(i, i + SYNC_CONFIG.batchSize);
+    for (let i = 0; i < values.length; i += this.syncConfig.batchSize) {
+      const batch = values.slice(i, i + this.syncConfig.batchSize);
 
       const placeholders = batch
         .map(
           (_, idx) =>
-            `($${idx * 18 + 1}, $${idx * 18 + 2}, $${idx * 18 + 3}, $${idx * 18 + 4},
-            $${idx * 18 + 5}, $${idx * 18 + 6}, $${idx * 18 + 7}, $${idx * 18 + 8},
-            $${idx * 18 + 9}, $${idx * 18 + 10}, $${idx * 18 + 11}, $${idx * 18 + 12},
-            $${idx * 18 + 13}, $${idx * 18 + 14}, $${idx * 18 + 15}, $${idx * 18 + 16},
+            `($${idx * 18 + 1}, $${idx * 18 + 2}, $${idx * 18 + 3}, $${idx * 18 + 4}, 
+            $${idx * 18 + 5}, $${idx * 18 + 6}, $${idx * 18 + 7}, $${idx * 18 + 8}, 
+            $${idx * 18 + 9}, $${idx * 18 + 10}, $${idx * 18 + 11}, $${idx * 18 + 12}, 
+            $${idx * 18 + 13}, $${idx * 18 + 14}, $${idx * 18 + 15}, $${idx * 18 + 16}, 
             $${idx * 18 + 17}, $${idx * 18 + 18})`,
         )
         .join(',');
@@ -272,7 +354,7 @@ export class PythSyncManager {
   /**
    * 保存价格更新记录
    */
-  private async savePriceUpdates(instanceId: string, feeds: UnifiedPriceFeed[]): Promise<void> {
+  protected async savePriceUpdates(instanceId: string, feeds: UnifiedPriceFeed[]): Promise<void> {
     for (const feed of feeds) {
       const lastPrice = this.lastPrices.get(feed.symbol);
 
@@ -280,7 +362,7 @@ export class PythSyncManager {
       if (lastPrice !== undefined) {
         const priceChange = Math.abs(feed.price - lastPrice) / lastPrice;
 
-        if (priceChange >= SYNC_CONFIG.priceChangeThreshold) {
+        if (priceChange >= this.syncConfig.priceChangeThreshold) {
           const updateId = `update-${feed.id}`;
 
           await query(
@@ -311,47 +393,9 @@ export class PythSyncManager {
   }
 
   /**
-   * 获取实例配置
-   */
-  private async getInstanceConfig(instanceId: string): Promise<{
-    id: string;
-    chain: SupportedChain;
-    enabled: boolean;
-    config: {
-      rpcUrl: string;
-      protocolConfig?: Record<string, unknown>;
-      syncIntervalMs?: number;
-    };
-  } | null> {
-    const result = await query(
-      `SELECT id, chain, enabled, config, protocol_config
-       FROM unified_oracle_instances
-       WHERE id = $1 AND protocol = 'pyth'`,
-      [instanceId],
-    );
-
-    if (result.rows.length === 0) {
-      return null;
-    }
-
-    const row = result.rows[0];
-    if (!row) return null;
-    return {
-      id: row.id as string,
-      chain: row.chain as SupportedChain,
-      enabled: row.enabled as boolean,
-      config: {
-        rpcUrl: (row.config as Record<string, string>)?.rpcUrl || '',
-        protocolConfig: (row.protocol_config as Record<string, unknown>) || {},
-        syncIntervalMs: (row.config as Record<string, number>)?.syncIntervalMs,
-      },
-    };
-  }
-
-  /**
    * 获取同步状态
    */
-  private async getSyncState(instanceId: string): Promise<Partial<UnifiedSyncState> | null> {
+  protected async getSyncState(instanceId: string): Promise<Partial<UnifiedSyncState> | null> {
     const result = await query(`SELECT * FROM unified_sync_state WHERE instance_id = $1`, [
       instanceId,
     ]);
@@ -362,6 +406,7 @@ export class PythSyncManager {
 
     const row = result.rows[0];
     if (!row) return null;
+
     return {
       instanceId: row.instance_id as string,
       protocol: row.protocol as OracleProtocol,
@@ -377,7 +422,7 @@ export class PythSyncManager {
   /**
    * 更新同步状态
    */
-  private async updateSyncState(
+  protected async updateSyncState(
     instanceId: string,
     updates: Partial<UnifiedSyncState>,
   ): Promise<void> {
@@ -430,10 +475,10 @@ export class PythSyncManager {
     await query(
       `INSERT INTO unified_sync_state (
         instance_id, protocol, chain, last_processed_block, status, consecutive_failures
-      ) VALUES ($1, 'pyth', $2, 0, 'healthy', 0)
+      ) VALUES ($1, $2, $3, 0, 'healthy', 0)
       ON CONFLICT (instance_id) DO UPDATE SET
         ${fields.join(', ')}`,
-      [instanceId, instance.chain, ...values],
+      [instanceId, this.protocol, instance.chain, ...values],
     );
   }
 
@@ -442,55 +487,31 @@ export class PythSyncManager {
    */
   async cleanupOldData(): Promise<void> {
     const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - SYNC_CONFIG.dataRetentionDays);
+    cutoffDate.setDate(cutoffDate.getDate() - this.syncConfig.dataRetentionDays);
 
-    logger.info(`Cleaning up Pyth data older than ${SYNC_CONFIG.dataRetentionDays} days`);
+    logger.info(
+      `Cleaning up ${this.protocol} data older than ${this.syncConfig.dataRetentionDays} days`,
+    );
 
     // 清理旧的价格喂价数据
     const feedsResult = await query(
-      `DELETE FROM unified_price_feeds
-       WHERE protocol = 'pyth' AND timestamp < $1
+      `DELETE FROM unified_price_feeds 
+       WHERE protocol = $1 AND timestamp < $2 
        RETURNING id`,
-      [cutoffDate.toISOString()],
+      [this.protocol, cutoffDate.toISOString()],
     );
 
     // 清理旧的价格更新记录
     const updatesResult = await query(
-      `DELETE FROM unified_price_updates
-       WHERE protocol = 'pyth' AND timestamp < $1
+      `DELETE FROM unified_price_updates 
+       WHERE protocol = $1 AND timestamp < $2 
        RETURNING id`,
-      [cutoffDate.toISOString()],
+      [this.protocol, cutoffDate.toISOString()],
     );
 
-    logger.info(`Pyth cleanup completed`, {
+    logger.info(`${this.protocol} cleanup completed`, {
       deletedFeeds: feedsResult.rowCount,
       deletedUpdates: updatesResult.rowCount,
     });
   }
-}
-
-// ============================================================================
-// 单例导出
-// ============================================================================
-
-export const pythSyncManager = new PythSyncManager();
-
-// ============================================================================
-// 便捷函数
-// ============================================================================
-
-export async function startPythSync(instanceId: string): Promise<void> {
-  return pythSyncManager.startSync(instanceId);
-}
-
-export function stopPythSync(instanceId: string): void {
-  return pythSyncManager.stopSync(instanceId);
-}
-
-export function stopAllPythSync(): void {
-  return pythSyncManager.stopAllSync();
-}
-
-export async function cleanupPythData(): Promise<void> {
-  return pythSyncManager.cleanupOldData();
 }

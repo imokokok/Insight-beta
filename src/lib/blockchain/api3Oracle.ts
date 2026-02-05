@@ -1,232 +1,308 @@
 /**
  * API3 Oracle Client
  *
- * API3 预言机客户端
- * API3 是一个第一方预言机网络，提供 dAPI 和 Airnode 服务
+ * API3 预言机集成模块
+ * 支持 dAPI 和 Airnode 数据获取
  */
 
+import {
+  createPublicClient,
+  http,
+  type PublicClient,
+  type Address,
+  parseAbi,
+  formatUnits,
+} from 'viem';
 import { logger } from '@/lib/logger';
+import { VIEM_CHAIN_MAP } from './chainConfig';
 import type {
-  OracleProtocol,
   SupportedChain,
   UnifiedPriceFeed,
+  API3ProtocolConfig,
+  OracleProtocol,
 } from '@/lib/types/unifiedOracleTypes';
 
 // ============================================================================
-// 类型定义
+// API3 dAPI 合约 ABI
 // ============================================================================
 
-interface ProtocolConfig {
-  chain: SupportedChain;
-  rpcUrl: string;
-}
+const DAPI_ABI = parseAbi([
+  'function readDataFeedWithDapiNameHash(bytes32 dapiNameHash) external view returns (int224 value, uint32 timestamp)',
+  'function dataFeedIdToReaderToWhitelistStatus(bytes32 dataFeedId, address reader) external view returns (uint64 expirationTimestamp, uint192 indefiniteWhitelistCount)',
+]);
 
-interface ProtocolCapabilities {
-  priceFeeds: boolean;
-  assertions: boolean;
-  disputes: boolean;
-  vrf: boolean;
-  customData: boolean;
-}
+// ============================================================================
+// API3 合约地址配置
+// ============================================================================
 
-export interface Api3Config extends ProtocolConfig {
-  chain: SupportedChain;
-  rpcUrl: string;
-  api3ServerV1?: string; // API3 Server V1 合约地址
-  dapiNames?: string[]; // dAPI 名称列表
-}
+export const API3_DAPI_SERVER_ADDRESSES: Record<SupportedChain, Address | undefined> = {
+  ethereum: '0x9EB9798Dc1b602067DFe5C6A463dBae0D60c67fE',
+  polygon: '0x9EB9798Dc1b602067DFe5C6A463dBae0D60c67fE',
+  arbitrum: '0x9EB9798Dc1b602067DFe5C6A463dBae0D60c67fE',
+  optimism: '0x9EB9798Dc1b602067DFe5C6A463dBae0D60c67fE',
+  base: '0x9EB9798Dc1b602067DFe5C6A463dBae0D60c67fE',
+  avalanche: '0x9EB9798Dc1b602067DFe5C6A463dBae0D60c67fE',
+  bsc: '0x9EB9798Dc1b602067DFe5C6A463dBae0D60c67fE',
+  fantom: '0x9EB9798Dc1b602067DFe5C6A463dBae0D60c67fE',
+  // 其他链暂不支持
+  celo: undefined,
+  gnosis: undefined,
+  linea: undefined,
+  scroll: undefined,
+  mantle: undefined,
+  mode: undefined,
+  blast: undefined,
+  solana: undefined,
+  near: undefined,
+  aptos: undefined,
+  sui: undefined,
+  polygonAmoy: undefined,
+  sepolia: '0x9EB9798Dc1b602067DFe5C6A463dBae0D60c67fE',
+  goerli: undefined,
+  mumbai: undefined,
+  local: undefined,
+};
 
-export interface Api3PriceData {
-  value: string;
-  timestamp: number;
+// ============================================================================
+// 支持的 dAPI
+// ============================================================================
+
+export const API3_SUPPORTED_DAPIS: Record<SupportedChain, string[]> = {
+  ethereum: ['ETH/USD', 'BTC/USD', 'USDC/USD', 'USDT/USD', 'DAI/USD', 'LINK/USD'],
+  polygon: ['MATIC/USD', 'ETH/USD', 'BTC/USD', 'USDC/USD'],
+  arbitrum: ['ETH/USD', 'BTC/USD', 'USDC/USD', 'ARB/USD'],
+  optimism: ['ETH/USD', 'BTC/USD', 'USDC/USD', 'OP/USD'],
+  base: ['ETH/USD', 'BTC/USD', 'USDC/USD'],
+  avalanche: ['AVAX/USD', 'ETH/USD', 'BTC/USD'],
+  bsc: ['BNB/USD', 'ETH/USD', 'BTC/USD'],
+  fantom: ['FTM/USD', 'ETH/USD', 'BTC/USD'],
+  // 其他链
+  celo: [],
+  gnosis: [],
+  linea: [],
+  scroll: [],
+  mantle: [],
+  mode: [],
+  blast: [],
+  solana: [],
+  near: [],
+  aptos: [],
+  sui: [],
+  polygonAmoy: [],
+  sepolia: ['ETH/USD', 'BTC/USD'],
+  goerli: [],
+  mumbai: [],
+  local: [],
+};
+
+// ============================================================================
+// dAPI 名称到哈希的映射
+// ============================================================================
+
+function encodeDapiName(dapiName: string): string {
+  // 简化的编码，实际应该使用 ethers.utils.formatBytes32String
+  return `0x${Buffer.from(dapiName.padEnd(32, '\0')).toString('hex')}`;
 }
 
 // ============================================================================
 // API3 客户端
 // ============================================================================
 
-export class Api3Client {
-  private config: Api3Config;
+export class API3Client {
+  private publicClient: PublicClient;
+  private chain: SupportedChain;
 
-  constructor(config: Api3Config) {
-    this.config = {
-      ...config,
-      api3ServerV1: config.api3ServerV1 || this.getDefaultServerAddress(config.chain),
-    };
-    logger.info('Api3Client initialized', { chain: config.chain });
-  }
+  private _config: API3ProtocolConfig;
+  private dapiServerAddress: Address;
 
-  private getDefaultServerAddress(chain: SupportedChain): string {
-    const addresses: Record<SupportedChain, string> = {
-      ethereum: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
-      polygon: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
-      arbitrum: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
-      optimism: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
-      base: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
-      avalanche: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
-      bsc: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
-      fantom: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
-      celo: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
-      gnosis: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
-      linea: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
-      scroll: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
-      mantle: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
-      mode: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
-      blast: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
-      solana: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
-      near: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
-      aptos: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
-      sui: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
-      polygonAmoy: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
-      sepolia: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
-      goerli: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
-      mumbai: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
-      local: '0x709944a48cAf3FC80500F9B5E38A3dD3e2b4Cf5A',
-    };
-    return addresses[chain] ?? addresses.ethereum;
-  }
+  constructor(chain: SupportedChain, rpcUrl: string, config: API3ProtocolConfig = {}) {
+    this.chain = chain;
+    this._config = config;
 
-  // ============================================================================
-  // 价格 Feed 方法
-  // ============================================================================
-
-  async getPrice(dapiName: string): Promise<UnifiedPriceFeed> {
-    try {
-      const priceData = await this.fetchPriceFromApi3(dapiName);
-      return this.parsePriceData(priceData, dapiName);
-    } catch (error) {
-      logger.error('Failed to get API3 price', { error, dapiName });
-      throw error;
+    const contractAddress = config.airnodeAddress || API3_DAPI_SERVER_ADDRESSES[chain];
+    if (!contractAddress) {
+      throw new Error(`No API3 dAPI server address for chain ${chain}`);
     }
+    this.dapiServerAddress = contractAddress as `0x${string}`;
+
+    this.publicClient = createPublicClient({
+      chain: VIEM_CHAIN_MAP[chain],
+      transport: http(rpcUrl),
+    }) as PublicClient;
   }
 
-  async getMultiplePrices(dapiNames: string[]): Promise<UnifiedPriceFeed[]> {
-    const results: UnifiedPriceFeed[] = [];
-
-    for (const dapiName of dapiNames) {
-      try {
-        const price = await this.getPrice(dapiName);
-        results.push(price);
-      } catch (error) {
-        logger.error('Failed to get price for dAPI', { error, dapiName });
-      }
-    }
-
-    return results;
-  }
-
-  private async fetchPriceFromApi3(dapiName: string): Promise<Api3PriceData> {
-    // 使用 API3 的 API 获取价格数据
-    const endpoint = `https://api.api3.org/api/v1/dapi/${encodeURIComponent(dapiName)}`;
-
+  /**
+   * 读取 dAPI 数据
+   */
+  async readDataFeed(dapiName: string): Promise<{
+    value: bigint;
+    timestamp: number;
+    formattedValue: number;
+  }> {
     try {
-      const response = await fetch(endpoint, {
-        headers: {
-          Accept: 'application/json',
-        },
+      const dapiNameHash = encodeDapiName(dapiName);
+
+      const result = await this.publicClient.readContract({
+        address: this.dapiServerAddress,
+        abi: DAPI_ABI,
+        functionName: 'readDataFeedWithDapiNameHash',
+        args: [dapiNameHash as `0x${string}`],
       });
 
-      if (!response.ok) {
-        throw new Error(`API3 API error: ${response.status} ${response.statusText}`);
-      }
+      const value = result[0];
+      const timestamp = result[1];
 
-      const data = await response.json();
-
-      if (!data.value || !data.timestamp) {
-        throw new Error(`No price data available for ${dapiName}`);
-      }
+      // API3 使用 18 位小数
+      const formattedValue = parseFloat(formatUnits(value, 18));
 
       return {
-        value: data.value,
-        timestamp: data.timestamp,
+        value,
+        timestamp: Number(timestamp),
+        formattedValue,
       };
     } catch (error) {
-      logger.error('API3 API request failed', { error, dapiName });
+      logger.error('Failed to read API3 dAPI', {
+        chain: this.chain,
+        dapiName,
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
 
-  private parsePriceData(data: Api3PriceData, dapiName: string): UnifiedPriceFeed {
-    const price = parseFloat(data.value) / 1e18; // API3 使用 18 位小数
+  /**
+   * 获取指定交易对的价格
+   */
+  async getPriceForSymbol(symbol: string): Promise<UnifiedPriceFeed | null> {
+    try {
+      const data = await this.readDataFeed(symbol);
+      return this.parsePriceData(data, symbol);
+    } catch (error) {
+      logger.error(`Failed to get API3 price for ${symbol}`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return null;
+    }
+  }
+
+  /**
+   * 获取多个价格
+   */
+  async getMultiplePrices(symbols: string[]): Promise<UnifiedPriceFeed[]> {
+    const results = await Promise.allSettled(
+      symbols.map(async (symbol) => {
+        try {
+          return await this.getPriceForSymbol(symbol);
+        } catch (error) {
+          logger.error(`Failed to get API3 price for ${symbol}`, {
+            error: error instanceof Error ? error.message : String(error),
+          });
+          return null;
+        }
+      }),
+    );
+
+    return results
+      .filter(
+        (result): result is PromiseFulfilledResult<UnifiedPriceFeed | null> =>
+          result.status === 'fulfilled',
+      )
+      .map((result) => result.value)
+      .filter((feed): feed is UnifiedPriceFeed => feed !== null);
+  }
+
+  /**
+   * 获取所有可用价格
+   */
+  async getAllAvailableFeeds(): Promise<UnifiedPriceFeed[]> {
+    const symbols = API3_SUPPORTED_DAPIS[this.chain] || [];
+    return this.getMultiplePrices(symbols);
+  }
+
+  /**
+   * 解析价格数据
+   */
+  private parsePriceData(
+    data: {
+      value: bigint;
+      timestamp: number;
+      formattedValue: number;
+    },
+    symbol: string,
+  ): UnifiedPriceFeed {
     const timestampDate = new Date(data.timestamp * 1000);
     const now = new Date();
     const stalenessThreshold = 300; // 5 分钟
     const isStale = (now.getTime() - timestampDate.getTime()) / 1000 > stalenessThreshold;
 
-    // 解析 dAPI 名称 (例如: "ETH/USD" -> base: "ETH", quote: "USD")
-    const [baseAsset, quoteAsset] = dapiName.split('/');
+    const [baseAsset, quoteAsset] = symbol.split('/');
 
     return {
-      id: `api3-${this.config.chain}-${dapiName}-${data.timestamp}`,
-      instanceId: this.config.api3ServerV1 || '',
+      id: `api3-${this.chain}-${symbol}-${data.timestamp}`,
+      instanceId: `api3-${this.chain}`,
       protocol: 'api3' as OracleProtocol,
-      chain: this.config.chain,
-      symbol: dapiName,
-      baseAsset: baseAsset || dapiName,
+      chain: this.chain,
+      symbol,
+      baseAsset: baseAsset || 'UNKNOWN',
       quoteAsset: quoteAsset || 'USD',
-      price,
-      priceRaw: data.value,
+      price: data.formattedValue,
+      priceRaw: data.value.toString(),
       decimals: 18,
       timestamp: timestampDate.toISOString(),
-      blockNumber: undefined,
-      confidence: 0.95,
+      confidence: 0.98,
       sources: 1,
       isStale,
       stalenessSeconds: isStale ? Math.floor((now.getTime() - timestampDate.getTime()) / 1000) : 0,
-      txHash: undefined,
-      logIndex: undefined,
     };
   }
 
-  // ============================================================================
-  // 配置方法
-  // ============================================================================
-
-  getConfig(): Api3Config {
-    return { ...this.config };
+  /**
+   * 获取当前区块号
+   */
+  async getBlockNumber(): Promise<bigint> {
+    return this.publicClient.getBlockNumber();
   }
 
-  updateConfig(updates: Partial<Api3Config>): void {
-    this.config = { ...this.config, ...updates };
-    logger.info('Api3Client config updated', { chain: this.config.chain });
-  }
-
-  // ============================================================================
-  // 协议能力
-  // ============================================================================
-
-  getCapabilities(): ProtocolCapabilities {
-    return {
-      priceFeeds: true,
-      assertions: false,
-      disputes: false,
-      vrf: false,
-      customData: true, // 支持自定义数据源
-    };
-  }
-
-  // ============================================================================
-  // 健康检查
-  // ============================================================================
-
-  async healthCheck(): Promise<{ healthy: boolean; latency: number; error?: string }> {
-    const start = Date.now();
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
+  /**
+   * 检查 dAPI 健康状态
+   */
+  async checkDapiHealth(dapiName: string): Promise<{
+    healthy: boolean;
+    lastUpdate: Date;
+    stalenessSeconds: number;
+    issues: string[];
+  }> {
+    const issues: string[] = [];
 
     try {
-      const response = await fetch('https://api.api3.org/api/v1/dapi/ETH/USD', {
-        headers: { Accept: 'application/json' },
-        signal: controller.signal,
-      });
-      clearTimeout(timeoutId);
-      const latency = Date.now() - start;
-      return { healthy: response.ok, latency };
+      const data = await this.readDataFeed(dapiName);
+      const lastUpdate = new Date(data.timestamp * 1000);
+      const now = new Date();
+      const stalenessSeconds = Math.floor((now.getTime() - lastUpdate.getTime()) / 1000);
+
+      // 检查数据新鲜度
+      if (stalenessSeconds > 300) {
+        issues.push(`Data is stale: ${stalenessSeconds}s old`);
+      }
+
+      // 检查价格是否为0
+      if (data.value === 0n) {
+        issues.push('Price is zero');
+      }
+
+      return {
+        healthy: issues.length === 0,
+        lastUpdate,
+        stalenessSeconds,
+        issues,
+      };
     } catch (error) {
-      clearTimeout(timeoutId);
-      const latency = Date.now() - start;
-      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-      return { healthy: false, latency, error: errorMsg };
+      return {
+        healthy: false,
+        lastUpdate: new Date(0),
+        stalenessSeconds: Infinity,
+        issues: [`Failed to read dAPI: ${error instanceof Error ? error.message : String(error)}`],
+      };
     }
   }
 }
@@ -235,36 +311,40 @@ export class Api3Client {
 // 工厂函数
 // ============================================================================
 
-export function createApi3Client(config: Api3Config): Api3Client {
-  return new Api3Client(config);
+export function createAPI3Client(
+  chain: SupportedChain,
+  rpcUrl: string,
+  config?: API3ProtocolConfig,
+): API3Client {
+  return new API3Client(chain, rpcUrl, config);
 }
-
-// 为了保持向后兼容的别名
-export { createApi3Client as createAPI3Client };
 
 /**
- * 获取可用的 API3 dAPI 符号列表
+ * 获取支持的 API3 链列表
  */
-export function getAvailableApi3Symbols(): string[] {
-  // API3 支持的常用 dAPI 符号
-  return [
-    'ETH/USD',
-    'BTC/USD',
-    'LINK/USD',
-    'MATIC/USD',
-    'AVAX/USD',
-    'BNB/USD',
-    'UNI/USD',
-    'AAVE/USD',
-    'COMP/USD',
-    'MKR/USD',
-    'SNX/USD',
-    'YFI/USD',
-    'CRV/USD',
-    'SUSHI/USD',
-    '1INCH/USD',
-  ];
+export function getSupportedAPI3Chains(): SupportedChain[] {
+  return Object.entries(API3_DAPI_SERVER_ADDRESSES)
+    .filter(([_, address]) => address !== undefined)
+    .map(([chain]) => chain as SupportedChain);
 }
 
-// 为了保持向后兼容的别名
-export { getAvailableApi3Symbols as getAvailableAPI3Symbols };
+/**
+ * 获取指定链的可用 dAPI 列表
+ */
+export function getAvailableAPI3Dapis(chain: SupportedChain): string[] {
+  return API3_SUPPORTED_DAPIS[chain] || [];
+}
+
+/**
+ * 检查链是否支持 API3
+ */
+export function isChainSupportedByAPI3(chain: SupportedChain): boolean {
+  return API3_DAPI_SERVER_ADDRESSES[chain] !== undefined;
+}
+
+/**
+ * 获取 dAPI 服务器地址
+ */
+export function getDapiServerAddress(chain: SupportedChain): Address | undefined {
+  return API3_DAPI_SERVER_ADDRESSES[chain];
+}

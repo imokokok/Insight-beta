@@ -16,7 +16,7 @@ import {
   updateUnifiedInstance,
   deleteUnifiedInstance,
 } from '@/server/oracle/unifiedConfig';
-import { startChainlinkSync, stopChainlinkSync } from '@/server/oracle/chainlinkSync';
+import { startChainlinkSync, stopChainlinkSync } from '@/server/oracle/sync/ChainlinkSync';
 import type { SupportedChain, UnifiedOracleConfig } from '@/lib/types/unifiedOracleTypes';
 
 const RATE_LIMITS = {

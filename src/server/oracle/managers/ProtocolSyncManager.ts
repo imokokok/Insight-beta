@@ -5,17 +5,16 @@
 
 import { logger } from '@/lib/logger';
 import { query } from '@/server/db';
-import { getUnifiedInstance } from '../unifiedConfig';
-import { chainlinkSyncManager } from '../chainlinkSync';
-import { pythSyncManager } from '../pythSync';
-import { bandSyncManager } from '../bandSync';
-import { API3SyncManager } from '../api3Sync';
-import { startRedStoneSync, stopRedStoneSync } from '../redstoneSync';
-import { SwitchboardSyncService } from '../switchboardSync';
-import { startFluxSync, stopFluxSync } from '../fluxSync';
-import { startDIASync, stopDIASync } from '../diaSync';
+// import { getUnifiedInstance } from '../unifiedConfig';
+import {
+  chainlinkSyncManager,
+  pythSyncManager,
+  bandSyncManager,
+  diaSyncManager,
+  api3SyncManager,
+  redstoneSyncManager,
+} from '../sync';
 import type { SyncManager, ProtocolSyncConfig } from '../types/serviceTypes';
-import type { SupportedChain } from '@/lib/types/unifiedOracleTypes';
 
 export class ProtocolSyncManager {
   private activeSyncManagers: Map<string, SyncManager> = new Map();
@@ -62,7 +61,7 @@ export class ProtocolSyncManager {
    * Start a specific protocol sync
    */
   private async startProtocolSync(config: ProtocolSyncConfig): Promise<void> {
-    const { instanceId, protocol, chain } = config;
+    const { instanceId, protocol } = config;
 
     switch (protocol) {
       case 'chainlink':
@@ -76,112 +75,28 @@ export class ProtocolSyncManager {
         break;
 
       case 'band':
-        await this.startBandSync(instanceId, chain);
-        break;
-
-      case 'api3':
-        await this.startAPI3Sync(instanceId);
-        break;
-
-      case 'redstone':
-        await startRedStoneSync(instanceId);
-        this.activeSyncManagers.set(instanceId, {
-          stopAllSync: () => stopRedStoneSync(instanceId),
-        });
-        break;
-
-      case 'switchboard':
-        await this.startSwitchboardSync(instanceId);
-        break;
-
-      case 'flux':
-        await startFluxSync(instanceId);
-        this.activeSyncManagers.set(instanceId, {
-          stopAllSync: () => stopFluxSync(instanceId),
-        });
+        await bandSyncManager.startSync(instanceId);
+        this.activeSyncManagers.set(instanceId, bandSyncManager);
         break;
 
       case 'dia':
-        await startDIASync(instanceId);
-        this.activeSyncManagers.set(instanceId, {
-          stopAllSync: () => stopDIASync(instanceId),
-        });
+        await diaSyncManager.startSync(instanceId);
+        this.activeSyncManagers.set(instanceId, diaSyncManager);
+        break;
+
+      case 'api3':
+        await api3SyncManager.startSync(instanceId);
+        this.activeSyncManagers.set(instanceId, api3SyncManager);
+        break;
+
+      case 'redstone':
+        await redstoneSyncManager.startSync(instanceId);
+        this.activeSyncManagers.set(instanceId, redstoneSyncManager);
         break;
 
       default:
         logger.warn(`Unknown protocol: ${protocol}, skipping sync for ${instanceId}`);
     }
-  }
-
-  /**
-   * Start Band sync
-   */
-  private async startBandSync(instanceId: string, chain: string): Promise<void> {
-    const instance = await getUnifiedInstance(instanceId);
-    if (!instance) {
-      throw new Error(`Instance ${instanceId} not found`);
-    }
-
-    const protocolConfig = instance.config.protocolConfig as
-      | {
-          symbols?: string[];
-          bandEndpoint?: string;
-        }
-      | undefined;
-
-    const symbols = protocolConfig?.symbols || ['ETH/USD', 'BTC/USD', 'LINK/USD'];
-    const bandEndpoint = protocolConfig?.bandEndpoint;
-
-    const { BandSyncService } = await import('../bandSync');
-
-    const service = new BandSyncService({
-      instanceId,
-      chain: chain as SupportedChain,
-      rpcUrl: instance.config.rpcUrl || '',
-      bandEndpoint,
-      symbols,
-      intervalMs: instance.config.syncIntervalMs || 60000,
-    });
-
-    await service.start();
-    this.activeSyncManagers.set(instanceId, { stopAllSync: () => service.stop() });
-
-    logger.info('Band sync started', { instanceId, chain, symbolsCount: symbols.length });
-  }
-
-  /**
-   * Start API3 sync
-   */
-  private async startAPI3Sync(instanceId: string): Promise<void> {
-    const manager = new API3SyncManager();
-    await manager.startSync(instanceId);
-    this.activeSyncManagers.set(instanceId, {
-      stopAllSync: () => manager.stopSync(instanceId),
-    });
-  }
-
-  /**
-   * Start Switchboard sync
-   */
-  private async startSwitchboardSync(instanceId: string): Promise<void> {
-    const instance = await getUnifiedInstance(instanceId);
-    if (!instance) {
-      throw new Error(`Instance ${instanceId} not found`);
-    }
-
-    const symbols = (instance.config.protocolConfig as { symbols?: string[] } | undefined)
-      ?.symbols || ['ETH/USD', 'BTC/USD', 'LINK/USD'];
-
-    const service = new SwitchboardSyncService({
-      instanceId,
-      chain: instance.chain,
-      rpcUrl: instance.config.rpcUrl || '',
-      symbols,
-      intervalMs: instance.config.syncIntervalMs || 60000,
-    });
-
-    await service.start();
-    this.activeSyncManagers.set(instanceId, { stopAllSync: () => service.stop() });
   }
 
   /**
@@ -210,6 +125,27 @@ export class ProtocolSyncManager {
       logger.debug('Band sync stopped');
     } catch (error) {
       logger.error('Error stopping Band sync', { error });
+    }
+
+    try {
+      diaSyncManager.stopAllSync();
+      logger.debug('DIA sync stopped');
+    } catch (error) {
+      logger.error('Error stopping DIA sync', { error });
+    }
+
+    try {
+      api3SyncManager.stopAllSync();
+      logger.debug('API3 sync stopped');
+    } catch (error) {
+      logger.error('Error stopping API3 sync', { error });
+    }
+
+    try {
+      redstoneSyncManager.stopAllSync();
+      logger.debug('RedStone sync stopped');
+    } catch (error) {
+      logger.error('Error stopping RedStone sync', { error });
     }
 
     // Stop all active sync managers

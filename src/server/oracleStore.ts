@@ -1,5 +1,4 @@
-import { hasDatabase, query } from './db';
-import { ensureSchema } from './schema';
+import { hasDatabase, query, ensureDb } from './db';
 import type {
   Assertion,
   Dispute,
@@ -17,15 +16,6 @@ import { DEFAULT_ORACLE_INSTANCE_ID } from '@/server/oracleConfig';
 import { env } from '@/lib/config/env';
 
 export type { Assertion, Dispute } from '@/lib/types/oracleTypes';
-
-let schemaEnsured = false;
-async function ensureDb() {
-  if (!hasDatabase()) return;
-  if (!schemaEnsured) {
-    await ensureSchema();
-    schemaEnsured = true;
-  }
-}
 
 function normalizeInstanceId(instanceId?: string | null) {
   const trimmed = (instanceId ?? DEFAULT_ORACLE_INSTANCE_ID).trim();

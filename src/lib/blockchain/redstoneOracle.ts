@@ -1,226 +1,189 @@
 /**
- * RedStone Oracle Integration
+ * RedStone Oracle Client
  *
  * RedStone 预言机集成模块
- * 支持从 RedStone API 和 EVM 合约获取价格数据
+ * 支持拉取式 (pull-based) 价格数据获取
  */
 
-import { createPublicClient, http, type PublicClient } from 'viem';
-import { mainnet, polygon, arbitrum, optimism, base, avalanche, bsc } from 'viem/chains';
+import {
+  createPublicClient,
+  http,
+  type PublicClient,
+  type Address,
+  parseAbi,
+  formatUnits,
+} from 'viem';
 import { logger } from '@/lib/logger';
-import type { SupportedChain, UnifiedPriceFeed } from '@/lib/types/unifiedOracleTypes';
+import { VIEM_CHAIN_MAP } from './chainConfig';
+import type {
+  SupportedChain,
+  UnifiedPriceFeed,
+  RedStoneProtocolConfig,
+  OracleProtocol,
+} from '@/lib/types/unifiedOracleTypes';
+
+// ============================================================================
+// RedStone ABI
+// ============================================================================
+
+const REDSTONE_ABI = parseAbi([
+  'function getPrice(bytes32 feedId) external view returns (uint256 price, uint256 timestamp)',
+  'function getPrices(bytes32[] calldata feedIds) external view returns (uint256[] memory prices, uint256[] memory timestamps)',
+  'function getOracle() external view returns (address)',
+]);
+
+// ============================================================================
+// RedStone 合约地址配置
+// ============================================================================
+
+export const REDSTONE_CONTRACT_ADDRESSES: Record<SupportedChain, Address | undefined> = {
+  ethereum: '0x6E1389D6E59e83B854c59e7eE608F6B8D5F67355',
+  polygon: '0x6E1389D6E59e83B854c59e7eE608F6B8D5F67355',
+  arbitrum: '0x6E1389D6E59e83B854c59e7eE608F6B8D5F67355',
+  optimism: '0x6E1389D6E59e83B854c59e7eE608F6B8D5F67355',
+  base: '0x6E1389D6E59e83B854c59e7eE608F6B8D5F67355',
+  avalanche: '0x6E1389D6E59e83B854c59e7eE608F6B8D5F67355',
+  bsc: '0x6E1389D6E59e83B854c59e7eE608F6B8D5F67355',
+  fantom: '0x6E1389D6E59e83B854c59e7eE608F6B8D5F67355',
+  // 其他链暂不支持
+  celo: undefined,
+  gnosis: undefined,
+  linea: undefined,
+  scroll: undefined,
+  mantle: undefined,
+  mode: undefined,
+  blast: undefined,
+  solana: undefined,
+  near: undefined,
+  aptos: undefined,
+  sui: undefined,
+  polygonAmoy: undefined,
+  sepolia: '0x6E1389D6E59e83B854c59e7eE608F6B8D5F67355',
+  goerli: undefined,
+  mumbai: undefined,
+  local: undefined,
+};
 
 // ============================================================================
 // RedStone Feed IDs
 // ============================================================================
 
 export const REDSTONE_FEED_IDS: Record<string, string> = {
-  'ETH/USD': 'ETH',
-  'BTC/USD': 'BTC',
-  'SOL/USD': 'SOL',
-  'AVAX/USD': 'AVAX',
-  'MATIC/USD': 'MATIC',
-  'BNB/USD': 'BNB',
-  'ARB/USD': 'ARB',
-  'OP/USD': 'OP',
-  'LINK/USD': 'LINK',
-  'UNI/USD': 'UNI',
-  'AAVE/USD': 'AAVE',
-  'CRV/USD': 'CRV',
-  'SNX/USD': 'SNX',
-  'COMP/USD': 'COMP',
-  'MKR/USD': 'MKR',
-  'YFI/USD': 'YFI',
-  '1INCH/USD': '1INCH',
-  'SUSHI/USD': 'SUSHI',
-  'USDC/USD': 'USDC',
-  'USDT/USD': 'USDT',
-  'DAI/USD': 'DAI',
-  'FRAX/USD': 'FRAX',
-  'LUSD/USD': 'LUSD',
+  'ETH/USD': '0x4554480000000000000000000000000000000000000000000000000000000000',
+  'BTC/USD': '0x4254430000000000000000000000000000000000000000000000000000000000',
+  'AVAX/USD': '0x4156415800000000000000000000000000000000000000000000000000000000',
+  'SOL/USD': '0x534f4c0000000000000000000000000000000000000000000000000000000000',
+  'ARB/USD': '0x4152420000000000000000000000000000000000000000000000000000000000',
+  'OP/USD': '0x4f50000000000000000000000000000000000000000000000000000000000000',
+  'MATIC/USD': '0x4d41544943000000000000000000000000000000000000000000000000000000',
+  'BNB/USD': '0x424e420000000000000000000000000000000000000000000000000000000000',
+  'USDC/USD': '0x5553444300000000000000000000000000000000000000000000000000000000',
+  'USDT/USD': '0x5553445400000000000000000000000000000000000000000000000000000000',
+  'DAI/USD': '0x4441490000000000000000000000000000000000000000000000000000000000',
+  'LINK/USD': '0x4c494e4b00000000000000000000000000000000000000000000000000000000',
+  'UNI/USD': '0x554e490000000000000000000000000000000000000000000000000000000000',
+  'AAVE/USD': '0x4141564500000000000000000000000000000000000000000000000000000000',
 };
 
 // ============================================================================
-// Types
+// 支持的链和资产
 // ============================================================================
 
-export type RedStoneSupportedChain =
-  | 'ethereum'
-  | 'polygon'
-  | 'arbitrum'
-  | 'optimism'
-  | 'base'
-  | 'avalanche'
-  | 'bsc';
-
-export interface RedStonePriceData {
-  symbol: string;
-  price: bigint;
-  formattedPrice: number;
-  timestamp: number;
-  decimals: number;
-  source: string;
-}
-
-// ============================================================================
-// Chain 配置
-// ============================================================================
-
-const VIEM_CHAIN_MAP = {
-  ethereum: mainnet,
-  polygon: polygon,
-  arbitrum: arbitrum,
-  optimism: optimism,
-  base: base,
-  avalanche: avalanche,
-  bsc: bsc,
-  sepolia: mainnet,
-  fantom: mainnet,
-  celo: mainnet,
-  gnosis: mainnet,
-  linea: mainnet,
-  scroll: mainnet,
-  mantle: mainnet,
-  mode: mainnet,
-  blast: mainnet,
-  solana: mainnet,
-  near: mainnet,
-  aptos: mainnet,
-  sui: mainnet,
-  polygonAmoy: polygon,
-  goerli: mainnet,
-  mumbai: polygon,
-  local: mainnet,
-} as const;
-
-const REDSTONE_CHAIN_CONFIG: Record<
-  SupportedChain,
-  { defaultRpcUrl: string; apiEndpoint: string }
-> = {
-  ethereum: {
-    defaultRpcUrl: 'https://eth-mainnet.g.alchemy.com/v2',
-    apiEndpoint: 'https://api.redstone.finance/prices',
-  },
-  polygon: {
-    defaultRpcUrl: 'https://polygon-mainnet.g.alchemy.com/v2',
-    apiEndpoint: 'https://api.redstone.finance/prices',
-  },
-  arbitrum: {
-    defaultRpcUrl: 'https://arb-mainnet.g.alchemy.com/v2',
-    apiEndpoint: 'https://api.redstone.finance/prices',
-  },
-  optimism: {
-    defaultRpcUrl: 'https://opt-mainnet.g.alchemy.com/v2',
-    apiEndpoint: 'https://api.redstone.finance/prices',
-  },
-  base: {
-    defaultRpcUrl: 'https://base-mainnet.g.alchemy.com/v2',
-    apiEndpoint: 'https://api.redstone.finance/prices',
-  },
-  avalanche: {
-    defaultRpcUrl: 'https://avax-mainnet.g.alchemy.com/v2',
-    apiEndpoint: 'https://api.redstone.finance/prices',
-  },
-  bsc: {
-    defaultRpcUrl: 'https://bsc-dataseed.binance.org',
-    apiEndpoint: 'https://api.redstone.finance/prices',
-  },
-  fantom: { defaultRpcUrl: '', apiEndpoint: '' },
-  celo: { defaultRpcUrl: '', apiEndpoint: '' },
-  gnosis: { defaultRpcUrl: '', apiEndpoint: '' },
-  linea: { defaultRpcUrl: '', apiEndpoint: '' },
-  scroll: { defaultRpcUrl: '', apiEndpoint: '' },
-  mantle: { defaultRpcUrl: '', apiEndpoint: '' },
-  mode: { defaultRpcUrl: '', apiEndpoint: '' },
-  blast: { defaultRpcUrl: '', apiEndpoint: '' },
-  solana: { defaultRpcUrl: '', apiEndpoint: '' },
-  near: { defaultRpcUrl: '', apiEndpoint: '' },
-  aptos: { defaultRpcUrl: '', apiEndpoint: '' },
-  sui: { defaultRpcUrl: '', apiEndpoint: '' },
-  polygonAmoy: { defaultRpcUrl: '', apiEndpoint: '' },
-  sepolia: { defaultRpcUrl: '', apiEndpoint: '' },
-  goerli: { defaultRpcUrl: '', apiEndpoint: '' },
-  mumbai: { defaultRpcUrl: '', apiEndpoint: '' },
-  local: { defaultRpcUrl: 'http://localhost:8545', apiEndpoint: '' },
+export const REDSTONE_SUPPORTED_SYMBOLS: Record<SupportedChain, string[]> = {
+  ethereum: [
+    'ETH/USD',
+    'BTC/USD',
+    'USDC/USD',
+    'USDT/USD',
+    'DAI/USD',
+    'LINK/USD',
+    'UNI/USD',
+    'AAVE/USD',
+  ],
+  polygon: ['MATIC/USD', 'ETH/USD', 'BTC/USD', 'USDC/USD', 'USDT/USD'],
+  arbitrum: ['ETH/USD', 'BTC/USD', 'USDC/USD', 'USDT/USD', 'ARB/USD'],
+  optimism: ['ETH/USD', 'BTC/USD', 'USDC/USD', 'USDT/USD', 'OP/USD'],
+  base: ['ETH/USD', 'BTC/USD', 'USDC/USD', 'USDT/USD'],
+  avalanche: ['AVAX/USD', 'ETH/USD', 'BTC/USD', 'USDC/USD', 'USDT/USD'],
+  bsc: ['BNB/USD', 'ETH/USD', 'BTC/USD', 'USDC/USD', 'USDT/USD'],
+  fantom: ['ETH/USD', 'BTC/USD', 'USDC/USD', 'USDT/USD'],
+  // 其他链
+  celo: [],
+  gnosis: [],
+  linea: [],
+  scroll: [],
+  mantle: [],
+  mode: [],
+  blast: [],
+  solana: [],
+  near: [],
+  aptos: [],
+  sui: [],
+  polygonAmoy: [],
+  sepolia: ['ETH/USD', 'BTC/USD'],
+  goerli: [],
+  mumbai: [],
+  local: [],
 };
 
 // ============================================================================
-// RedStone Client Class
+// RedStone 客户端
 // ============================================================================
 
 export class RedStoneClient {
-  private publicClient: PublicClient | null;
+  private publicClient: PublicClient;
   private chain: SupportedChain;
-  private apiEndpoint: string;
 
-  constructor(chain: SupportedChain, options: { rpcUrl?: string; apiKey?: string } = {}) {
+  private _config: RedStoneProtocolConfig;
+  private contractAddress: Address;
+
+  constructor(chain: SupportedChain, rpcUrl: string, config: RedStoneProtocolConfig = {}) {
     this.chain = chain;
+    this._config = config;
 
-    const chainConfig = REDSTONE_CHAIN_CONFIG[chain];
-    if (!chainConfig || !chainConfig.apiEndpoint) {
-      throw new Error(`Chain ${chain} not supported by RedStone`);
+    const contractAddress = config.apiEndpoint || REDSTONE_CONTRACT_ADDRESSES[chain];
+    if (!contractAddress) {
+      throw new Error(`No RedStone contract address for chain ${chain}`);
     }
+    this.contractAddress = contractAddress as `0x${string}`;
 
-    this.apiEndpoint = chainConfig.apiEndpoint;
-
-    // 初始化 RPC 客户端（可选，RedStone 主要使用 API）
-    if (options.rpcUrl) {
-      this.publicClient = createPublicClient({
-        chain: VIEM_CHAIN_MAP[chain],
-        transport: http(options.rpcUrl),
-      }) as PublicClient;
-    } else {
-      this.publicClient = null;
-    }
+    this.publicClient = createPublicClient({
+      chain: VIEM_CHAIN_MAP[chain],
+      transport: http(rpcUrl),
+    }) as PublicClient;
   }
 
   /**
-   * 从 RedStone API 获取价格数据
+   * 获取单个价格
    */
-  async fetchPriceFromAPI(symbol: string): Promise<RedStonePriceData | null> {
+  async getPrice(feedId: string): Promise<{
+    price: bigint;
+    timestamp: number;
+    formattedPrice: number;
+  }> {
     try {
-      const feedId = REDSTONE_FEED_IDS[symbol];
-      if (!feedId) {
-        logger.warn(`No RedStone feed found for ${symbol}`);
-        return null;
-      }
+      const result = await this.publicClient.readContract({
+        address: this.contractAddress,
+        abi: REDSTONE_ABI,
+        functionName: 'getPrice',
+        args: [feedId as `0x${string}`],
+      });
 
-      const response = await fetch(
-        `${this.apiEndpoint}?symbol=${feedId}&provider=redstone&limit=1`,
-        {
-          headers: {
-            Accept: 'application/json',
-          },
-        },
-      );
+      const price = result[0];
+      const timestamp = result[1];
 
-      if (!response.ok) {
-        throw new Error(`RedStone API error: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-
-      if (!data || !data[0]) {
-        throw new Error('No price data returned from RedStone API');
-      }
-
-      const priceData = data[0];
-      const price = BigInt(priceData.value);
-      const decimals = priceData.decimals || 8;
-      const formattedPrice = Number(price) / Math.pow(10, decimals);
+      // RedStone 使用 8 位小数
+      const formattedPrice = parseFloat(formatUnits(price, 8));
 
       return {
-        symbol,
         price,
+        timestamp: Number(timestamp),
         formattedPrice,
-        timestamp: priceData.timestamp || Math.floor(Date.now() / 1000),
-        decimals,
-        source: 'redstone-api',
       };
     } catch (error) {
-      logger.error('Failed to fetch RedStone price from API', {
+      logger.error('Failed to get RedStone price', {
         chain: this.chain,
-        symbol,
+        feedId,
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -228,73 +191,18 @@ export class RedStoneClient {
   }
 
   /**
-   * 批量获取多个价格
-   */
-  async fetchMultiplePrices(symbols: string[]): Promise<Map<string, RedStonePriceData>> {
-    const prices = new Map<string, RedStonePriceData>();
-
-    // RedStone 支持批量查询
-    const feedIds = symbols.map((s) => REDSTONE_FEED_IDS[s]).filter(Boolean);
-
-    if (feedIds.length === 0) {
-      return prices;
-    }
-
-    try {
-      const symbolsParam = feedIds.join(',');
-      const response = await fetch(`${this.apiEndpoint}?symbol=${symbolsParam}&provider=redstone`, {
-        headers: {
-          Accept: 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`RedStone API error: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-
-      for (const item of data) {
-        const symbol = Object.keys(REDSTONE_FEED_IDS).find(
-          (key) => REDSTONE_FEED_IDS[key] === item.symbol,
-        );
-
-        if (symbol) {
-          const decimals = item.decimals || 8;
-          const price = BigInt(item.value);
-
-          prices.set(symbol, {
-            symbol,
-            price,
-            formattedPrice: Number(price) / Math.pow(10, decimals),
-            timestamp: item.timestamp || Math.floor(Date.now() / 1000),
-            decimals,
-            source: 'redstone-api',
-          });
-        }
-      }
-    } catch (error) {
-      logger.error('Failed to fetch multiple RedStone prices', {
-        chain: this.chain,
-        symbols,
-        error: error instanceof Error ? error.message : String(error),
-      });
-    }
-
-    return prices;
-  }
-
-  /**
    * 获取指定交易对的价格
    */
   async getPriceForSymbol(symbol: string): Promise<UnifiedPriceFeed | null> {
     try {
-      const priceData = await this.fetchPriceFromAPI(symbol);
-      if (!priceData) {
+      const feedId = REDSTONE_FEED_IDS[symbol];
+      if (!feedId) {
+        logger.warn(`No RedStone feed found for ${symbol}`);
         return null;
       }
 
-      return this.convertToUnifiedFeed(priceData);
+      const data = await this.getPrice(feedId);
+      return this.parsePriceData(data, symbol);
     } catch (error) {
       logger.error(`Failed to get RedStone price for ${symbol}`, {
         error: error instanceof Error ? error.message : String(error),
@@ -304,65 +212,85 @@ export class RedStoneClient {
   }
 
   /**
-   * 获取多个价格喂价
+   * 获取多个价格
    */
   async getMultiplePrices(symbols: string[]): Promise<UnifiedPriceFeed[]> {
-    const feeds: UnifiedPriceFeed[] = [];
-    const priceDataMap = await this.fetchMultiplePrices(symbols);
+    const results = await Promise.allSettled(
+      symbols.map(async (symbol) => {
+        try {
+          return await this.getPriceForSymbol(symbol);
+        } catch (error) {
+          logger.error(`Failed to get RedStone price for ${symbol}`, {
+            error: error instanceof Error ? error.message : String(error),
+          });
+          return null;
+        }
+      }),
+    );
 
-    for (const [symbol, priceData] of priceDataMap) {
-      try {
-        const feed = this.convertToUnifiedFeed(priceData);
-        feeds.push(feed);
-      } catch (error) {
-        logger.error(`Failed to convert RedStone price for ${symbol}`, {
-          error: error instanceof Error ? error.message : String(error),
-        });
-      }
-    }
-
-    return feeds;
+    return results
+      .filter(
+        (result): result is PromiseFulfilledResult<UnifiedPriceFeed | null> =>
+          result.status === 'fulfilled',
+      )
+      .map((result) => result.value)
+      .filter((feed): feed is UnifiedPriceFeed => feed !== null);
   }
 
   /**
-   * 获取所有可用价格喂价
+   * 获取所有可用价格
    */
   async getAllAvailableFeeds(): Promise<UnifiedPriceFeed[]> {
-    const symbols = Object.keys(REDSTONE_FEED_IDS);
+    const symbols = REDSTONE_SUPPORTED_SYMBOLS[this.chain] || [];
     return this.getMultiplePrices(symbols);
   }
 
   /**
-   * 转换为统一价格喂价格式
+   * 解析价格数据
    */
-  private convertToUnifiedFeed(priceData: RedStonePriceData): UnifiedPriceFeed {
-    const [baseAsset, quoteAsset] = priceData.symbol.split('/');
-    const timestamp = new Date(priceData.timestamp * 1000);
+  private parsePriceData(
+    data: {
+      price: bigint;
+      timestamp: number;
+      formattedPrice: number;
+    },
+    symbol: string,
+  ): UnifiedPriceFeed {
+    const timestampDate = new Date(data.timestamp * 1000);
     const now = new Date();
-    const stalenessSeconds = Math.floor((now.getTime() - timestamp.getTime()) / 1000);
+    const stalenessThreshold = 300; // 5 分钟
+    const isStale = (now.getTime() - timestampDate.getTime()) / 1000 > stalenessThreshold;
 
-    // RedStone 数据通常很新鲜（< 60秒）
-    const isStale = stalenessSeconds > 60;
+    const [baseAsset, quoteAsset] = symbol.split('/');
 
     return {
-      id: `redstone-${this.chain}-${priceData.symbol}-${priceData.timestamp}`,
+      id: `redstone-${this.chain}-${symbol}-${data.timestamp}`,
       instanceId: `redstone-${this.chain}`,
-      protocol: 'redstone',
+      protocol: 'redstone' as OracleProtocol,
       chain: this.chain,
-      symbol: priceData.symbol,
+      symbol,
       baseAsset: baseAsset || 'UNKNOWN',
       quoteAsset: quoteAsset || 'USD',
-      price: priceData.formattedPrice,
-      priceRaw: priceData.price.toString(),
-      decimals: priceData.decimals,
-      timestamp: timestamp.toISOString(),
+      price: data.formattedPrice,
+      priceRaw: data.price.toString(),
+      decimals: 8,
+      timestamp: timestampDate.toISOString(),
+      confidence: 0.97,
+      sources: 1,
       isStale,
-      stalenessSeconds,
+      stalenessSeconds: isStale ? Math.floor((now.getTime() - timestampDate.getTime()) / 1000) : 0,
     };
   }
 
   /**
-   * 检查价格喂价健康状态
+   * 获取当前区块号
+   */
+  async getBlockNumber(): Promise<bigint> {
+    return this.publicClient.getBlockNumber();
+  }
+
+  /**
+   * 检查 Feed 健康状态
    */
   async checkFeedHealth(symbol: string): Promise<{
     healthy: boolean;
@@ -373,27 +301,28 @@ export class RedStoneClient {
     const issues: string[] = [];
 
     try {
-      const priceData = await this.fetchPriceFromAPI(symbol);
-      if (!priceData) {
+      const feedId = REDSTONE_FEED_IDS[symbol];
+      if (!feedId) {
         return {
           healthy: false,
           lastUpdate: new Date(0),
           stalenessSeconds: Infinity,
-          issues: [`No feed found for ${symbol}`],
+          issues: [`No feed ID found for ${symbol}`],
         };
       }
 
-      const lastUpdate = new Date(priceData.timestamp * 1000);
+      const data = await this.getPrice(feedId);
+      const lastUpdate = new Date(data.timestamp * 1000);
       const now = new Date();
       const stalenessSeconds = Math.floor((now.getTime() - lastUpdate.getTime()) / 1000);
 
-      // 检查数据新鲜度（RedStone 应该 < 60秒）
-      if (stalenessSeconds > 60) {
+      // 检查数据新鲜度
+      if (stalenessSeconds > 300) {
         issues.push(`Data is stale: ${stalenessSeconds}s old`);
       }
 
       // 检查价格是否为0
-      if (priceData.price === 0n) {
+      if (data.price === 0n) {
         issues.push('Price is zero');
       }
 
@@ -412,16 +341,6 @@ export class RedStoneClient {
       };
     }
   }
-
-  /**
-   * 获取当前区块号（如果配置了 RPC）
-   */
-  async getBlockNumber(): Promise<bigint | null> {
-    if (!this.publicClient) {
-      return null;
-    }
-    return this.publicClient.getBlockNumber();
-  }
 }
 
 // ============================================================================
@@ -430,36 +349,33 @@ export class RedStoneClient {
 
 export function createRedStoneClient(
   chain: SupportedChain,
-  options?: { rpcUrl?: string; apiKey?: string },
+  rpcUrl: string,
+  config?: RedStoneProtocolConfig,
 ): RedStoneClient {
-  return new RedStoneClient(chain, options);
+  return new RedStoneClient(chain, rpcUrl, config);
 }
-
-// ============================================================================
-// 工具函数
-// ============================================================================
 
 /**
  * 获取支持的 RedStone 链列表
  */
 export function getSupportedRedStoneChains(): SupportedChain[] {
-  return Object.entries(REDSTONE_CHAIN_CONFIG)
-    .filter(([_, config]) => config.apiEndpoint !== '')
+  return Object.entries(REDSTONE_CONTRACT_ADDRESSES)
+    .filter(([_, address]) => address !== undefined)
     .map(([chain]) => chain as SupportedChain);
 }
 
 /**
- * 获取所有可用的价格喂价符号
+ * 获取指定链的可用 symbols
  */
-export function getAvailableRedStoneSymbols(): string[] {
-  return Object.keys(REDSTONE_FEED_IDS);
+export function getAvailableRedStoneSymbols(chain: SupportedChain): string[] {
+  return REDSTONE_SUPPORTED_SYMBOLS[chain] || [];
 }
 
 /**
  * 检查链是否支持 RedStone
  */
 export function isChainSupportedByRedStone(chain: SupportedChain): boolean {
-  return REDSTONE_CHAIN_CONFIG[chain]?.apiEndpoint !== '';
+  return REDSTONE_CONTRACT_ADDRESSES[chain] !== undefined;
 }
 
 /**
