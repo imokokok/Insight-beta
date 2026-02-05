@@ -1,104 +1,43 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import {
-  ArrowLeft,
-  RefreshCw,
-  Activity,
-  Shield,
-  Globe,
-  TrendingUp,
-  Clock,
-  AlertTriangle,
-  CheckCircle,
-  ExternalLink,
-  BarChart3,
-  Layers,
-  Bell,
-} from 'lucide-react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
+import { Activity, Shield, Globe, TrendingUp, Clock, BarChart3, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { cn } from '@/lib/utils';
+import { ProtocolPageLayout } from '@/components/features/protocol/ProtocolPageLayout';
+import { FeedTable, commonFeedColumns } from '@/components/features/protocol/FeedTable';
+import { StatCard } from '@/components/ui/StatCard';
+import { StatusBadge } from '@/components/ui/StatusBadge';
 import {
   PriceHistoryChart,
   generateMockPriceHistory,
-} from '@/components/features/protocol/PriceHistoryChart';
-import { ProtocolComparison } from '@/components/features/protocol/ProtocolComparison';
-import { PriceAlertSettings } from '@/components/features/protocol/PriceAlertSettings';
+  ProtocolComparison,
+  PriceAlertSettings,
+} from '@/components/features/protocol';
+import { formatTimeAgo, truncateAddress } from '@/lib/utils/format';
 import { ORACLE_PROTOCOLS } from '@/lib/types';
+import { SUPPORTED_CHAINS } from '@/lib/types/protocol';
+import type { ChainlinkFeed, ChainlinkNode, ChainlinkStats } from '@/lib/types/protocol';
 
-interface ChainlinkFeed {
-  id: string;
-  name: string;
-  symbol: string;
-  price: number;
-  decimals: number;
-  updatedAt: string;
-  roundId: string;
-  answeredInRound: string;
-  chain: string;
-  contractAddress: string;
-  heartbeat: number;
-  deviationThreshold: number;
-  status: 'active' | 'stale' | 'error';
-}
-
-interface ChainlinkNode {
-  id: string;
-  name: string;
-  address: string;
-  status: 'active' | 'inactive';
-  lastSubmission: string;
-  totalSubmissions: number;
-  successRate: number;
-}
-
-interface ChainlinkStats {
-  totalFeeds: number;
-  activeFeeds: number;
-  staleFeeds: number;
-  totalNodes: number;
-  avgUpdateLatency: number;
-  networkUptime: number;
-}
-
-const SUPPORTED_CHAINS = [
-  { id: 'ethereum', name: 'Ethereum', icon: '⬡' },
-  { id: 'polygon', name: 'Polygon', icon: '💜' },
-  { id: 'arbitrum', name: 'Arbitrum', icon: '🔷' },
-  { id: 'optimism', name: 'Optimism', icon: '🔴' },
-  { id: 'base', name: 'Base', icon: '🔵' },
-  { id: 'avalanche', name: 'Avalanche', icon: '❄️' },
-  { id: 'bsc', name: 'BSC', icon: '🟡' },
-];
+// Chainlink 支持的链
+const CHAINLINK_CHAINS = SUPPORTED_CHAINS.filter((c) =>
+  ['ethereum', 'polygon', 'arbitrum', 'optimism', 'base', 'avalanche', 'bsc'].includes(c.id),
+);
 
 export default function ChainlinkMonitorPage() {
-  const router = useRouter();
   const [feeds, setFeeds] = useState<ChainlinkFeed[]>([]);
   const [nodes, setNodes] = useState<ChainlinkNode[]>([]);
   const [stats, setStats] = useState<ChainlinkStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedChain, setSelectedChain] = useState<string>('all');
-  const [activeTab, setActiveTab] = useState('feeds');
 
-  useEffect(() => {
-    fetchChainlinkData();
-    const interval = setInterval(fetchChainlinkData, 30000);
-    return () => clearInterval(interval);
-  }, [selectedChain]);
-
-  async function fetchChainlinkData() {
+  const fetchChainlinkData = useCallback(async () => {
     try {
       setLoading(true);
-      // 模拟 API 调用 - 实际项目中替换为真实 API
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      // 生成模拟数据
+      // 模拟数据
       const mockFeeds: ChainlinkFeed[] = [
         {
           id: 'eth-usd',
@@ -151,29 +90,38 @@ export default function ChainlinkMonitorPage() {
         {
           id: 'node-1',
           name: 'Chainlink Labs 1',
-          address: '0x1234...5678',
+          address: '0x1234567890abcdef1234567890abcdef12345678',
           status: 'active',
-          lastSubmission: new Date(Date.now() - 60000).toISOString(),
+          lastUpdate: new Date(Date.now() - 60000).toISOString(),
           totalSubmissions: 15420,
+          accuracy: 99.8,
+          lastSubmission: new Date(Date.now() - 60000).toISOString(),
           successRate: 99.8,
+          totalRequests: 15420,
         },
         {
           id: 'node-2',
           name: 'Chainlink Labs 2',
-          address: '0xabcd...efgh',
+          address: '0xabcdef1234567890abcdef1234567890abcdef12',
           status: 'active',
-          lastSubmission: new Date(Date.now() - 90000).toISOString(),
+          lastUpdate: new Date(Date.now() - 90000).toISOString(),
           totalSubmissions: 12350,
+          accuracy: 99.5,
+          lastSubmission: new Date(Date.now() - 90000).toISOString(),
           successRate: 99.5,
+          totalRequests: 12350,
         },
         {
           id: 'node-3',
           name: 'Independent Node A',
-          address: '0x9876...5432',
+          address: '0x9876543210fedcba9876543210fedcba98765432',
           status: 'inactive',
-          lastSubmission: new Date(Date.now() - 86400000).toISOString(),
+          lastUpdate: new Date(Date.now() - 86400000).toISOString(),
           totalSubmissions: 8750,
+          accuracy: 97.2,
+          lastSubmission: new Date(Date.now() - 86400000).toISOString(),
           successRate: 97.2,
+          totalRequests: 8750,
         },
       ];
 
@@ -184,6 +132,7 @@ export default function ChainlinkMonitorPage() {
         totalNodes: 25,
         avgUpdateLatency: 45000,
         networkUptime: 99.9,
+        totalSubmissions: 500000,
       };
 
       setFeeds(mockFeeds);
@@ -194,378 +143,262 @@ export default function ChainlinkMonitorPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  function getStatusBadge(status: string) {
-    switch (status) {
-      case 'active':
-        return (
-          <Badge className="bg-green-100 text-green-700">
-            <CheckCircle className="mr-1 h-3 w-3" />
-            Active
-          </Badge>
-        );
-      case 'stale':
-        return (
-          <Badge className="bg-yellow-100 text-yellow-700">
-            <Clock className="mr-1 h-3 w-3" />
-            Stale
-          </Badge>
-        );
-      case 'error':
-        return (
-          <Badge className="bg-red-100 text-red-700">
-            <AlertTriangle className="mr-1 h-3 w-3" />
-            Error
-          </Badge>
-        );
-      default:
-        return <Badge variant="secondary">Unknown</Badge>;
-    }
-  }
+  useEffect(() => {
+    fetchChainlinkData();
+    const interval = setInterval(fetchChainlinkData, 30000);
+    return () => clearInterval(interval);
+  }, [fetchChainlinkData]);
 
-  function formatTimeAgo(timestamp: string): string {
-    const seconds = Math.floor((Date.now() - new Date(timestamp).getTime()) / 1000);
-    if (seconds < 60) return `${seconds}s ago`;
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-    return `${Math.floor(seconds / 86400)}d ago`;
-  }
+  // 使用 useMemo 优化筛选性能
+  const filteredFeeds = useMemo(() => {
+    if (selectedChain === 'all') return feeds;
+    return feeds.filter((feed) => feed.chain === selectedChain);
+  }, [feeds, selectedChain]);
 
-  const filteredFeeds =
-    selectedChain === 'all' ? feeds : feeds.filter((feed) => feed.chain === selectedChain);
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto space-y-6 p-4 md:p-6">
-        {/* Header */}
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => router.push('/oracle')}>
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div className="flex items-center gap-3">
-              <span className="text-4xl">🔗</span>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Chainlink Monitor</h1>
-                <p className="text-sm text-gray-500">Decentralized Oracle Network Monitoring</p>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              onClick={fetchChainlinkData}
-              disabled={loading}
-              className="gap-2"
-            >
-              <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
-              Refresh
-            </Button>
-            <Link href="https://chain.link" target="_blank" rel="noopener noreferrer">
-              <Button variant="outline" className="gap-2">
-                <ExternalLink className="h-4 w-4" />
-                Official Site
-              </Button>
-            </Link>
-          </div>
-        </div>
-
-        {/* Stats Cards */}
-        {stats && (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard
-              title="Total Feeds"
-              value={stats.totalFeeds}
-              icon={<Layers className="h-5 w-5" />}
-              color="blue"
-            />
-            <StatCard
-              title="Active Feeds"
-              value={stats.activeFeeds}
-              icon={<Activity className="h-5 w-5" />}
-              color="green"
-              subtitle={`${stats.staleFeeds} stale`}
-            />
-            <StatCard
-              title="Network Uptime"
-              value={`${stats.networkUptime}%`}
-              icon={<Shield className="h-5 w-5" />}
-              color="purple"
-            />
-            <StatCard
-              title="Avg Latency"
-              value={`${(stats.avgUpdateLatency / 1000).toFixed(1)}s`}
-              icon={<Clock className="h-5 w-5" />}
-              color="orange"
-            />
-          </div>
-        )}
-
-        {/* Chain Selector */}
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant={selectedChain === 'all' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setSelectedChain('all')}
-          >
-            All Chains
-          </Button>
-          {SUPPORTED_CHAINS.map((chain) => (
-            <Button
-              key={chain.id}
-              variant={selectedChain === chain.id ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setSelectedChain(chain.id)}
-              className="gap-1"
-            >
-              <span>{chain.icon}</span>
-              {chain.name}
-            </Button>
-          ))}
-        </div>
-
-        {/* Main Content Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="feeds" className="gap-2">
-              <TrendingUp className="h-4 w-4" />
-              Price Feeds
-            </TabsTrigger>
-            <TabsTrigger value="nodes" className="gap-2">
-              <Globe className="h-4 w-4" />
-              Node Operators
-            </TabsTrigger>
-            <TabsTrigger value="charts" className="gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Charts
-            </TabsTrigger>
-            <TabsTrigger value="comparison" className="gap-2">
-              <Activity className="h-4 w-4" />
-              Compare
-            </TabsTrigger>
-            <TabsTrigger value="alerts" className="gap-2">
-              <Bell className="h-4 w-4" />
-              Alerts
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Analytics
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="feeds" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Price Feeds</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b text-left text-sm text-gray-500">
-                        <th className="pb-3 font-medium">Pair</th>
-                        <th className="pb-3 font-medium">Price</th>
-                        <th className="pb-3 font-medium">Chain</th>
-                        <th className="pb-3 font-medium">Last Update</th>
-                        <th className="pb-3 font-medium">Status</th>
-                        <th className="pb-3 font-medium">Contract</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredFeeds.map((feed) => (
-                        <tr key={feed.id} className="border-b last:border-0">
-                          <td className="py-4 font-medium">{feed.name}</td>
-                          <td className="py-4 font-mono">
-                            $
-                            {feed.price.toLocaleString('en-US', {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: feed.decimals,
-                            })}
-                          </td>
-                          <td className="py-4 capitalize">{feed.chain}</td>
-                          <td className="py-4 text-sm text-gray-500">
-                            {formatTimeAgo(feed.updatedAt)}
-                          </td>
-                          <td className="py-4">{getStatusBadge(feed.status)}</td>
-                          <td className="py-4">
-                            <a
-                              href={`https://etherscan.io/address/${feed.contractAddress}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="font-mono text-sm text-blue-600 hover:underline"
-                            >
-                              {feed.contractAddress.slice(0, 6)}...
-                              {feed.contractAddress.slice(-4)}
-                            </a>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="nodes" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Node Operators</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {nodes.map((node) => (
-                    <Card key={node.id} className="border-0 bg-gray-50">
-                      <CardContent className="p-4">
-                        <div className="mb-3 flex items-start justify-between">
-                          <div>
-                            <h4 className="font-semibold">{node.name}</h4>
-                            <p className="font-mono text-sm text-gray-500">{node.address}</p>
-                          </div>
-                          <Badge variant={node.status === 'active' ? 'default' : 'secondary'}>
-                            {node.status}
-                          </Badge>
-                        </div>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-gray-500">Success Rate</span>
-                            <span className="font-medium">{node.successRate}%</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-500">Total Submissions</span>
-                            <span className="font-medium">
-                              {node.totalSubmissions.toLocaleString()}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-500">Last Submission</span>
-                            <span className="font-medium">
-                              {formatTimeAgo(node.lastSubmission)}
-                            </span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="charts" className="space-y-4">
-            <div className="grid gap-4 lg:grid-cols-2">
-              <PriceHistoryChart
-                data={generateMockPriceHistory(3254.78, 168)}
-                symbol="ETH/USD"
-                title="ETH/USD Price History"
-              />
-              <PriceHistoryChart
-                data={generateMockPriceHistory(67432.15, 168)}
-                symbol="BTC/USD"
-                title="BTC/USD Price History"
-              />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="comparison" className="space-y-4">
-            <ProtocolComparison protocols={ORACLE_PROTOCOLS} symbol="ETH/USD" />
-          </TabsContent>
-
-          <TabsContent value="alerts" className="space-y-4">
-            <div className="grid gap-4 lg:grid-cols-2">
-              <PriceAlertSettings symbol="ETH/USD" currentPrice={3254.78} />
-              <PriceAlertSettings symbol="BTC/USD" currentPrice={67432.15} />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="analytics" className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Network Health</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <div className="mb-2 flex justify-between text-sm">
-                      <span>Feed Coverage</span>
-                      <span>
-                        {(((stats?.activeFeeds || 0) / (stats?.totalFeeds || 1)) * 100).toFixed(1)}%
-                      </span>
-                    </div>
-                    <Progress
-                      value={((stats?.activeFeeds || 0) / (stats?.totalFeeds || 1)) * 100}
-                    />
-                  </div>
-                  <div>
-                    <div className="mb-2 flex justify-between text-sm">
-                      <span>Node Participation</span>
-                      <span>92%</span>
-                    </div>
-                    <Progress value={92} />
-                  </div>
-                  <div>
-                    <div className="mb-2 flex justify-between text-sm">
-                      <span>Update Frequency</span>
-                      <span>98.5%</span>
-                    </div>
-                    <Progress value={98.5} />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>About Chainlink</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm text-gray-600">
-                  <p>
-                    Chainlink is the industry-standard decentralized oracle network, providing
-                    secure and reliable data feeds for smart contracts across multiple blockchain
-                    networks.
-                  </p>
-                  <ul className="list-inside list-disc space-y-1">
-                    <li>Decentralized network of independent node operators</li>
-                    <li>Multiple layers of data aggregation and validation</li>
-                    <li>Support for 1000+ price feeds across 15+ chains</li>
-                    <li>Proven security with billions in secured value</li>
-                  </ul>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </div>
+  // 统计卡片
+  const statsContent = stats && (
+    <>
+      <StatCard
+        title="Total Feeds"
+        value={stats.totalFeeds}
+        icon={<TrendingUp className="h-5 w-5" />}
+        color="blue"
+      />
+      <StatCard
+        title="Active Feeds"
+        value={stats.activeFeeds}
+        icon={<Activity className="h-5 w-5" />}
+        color="green"
+        subtitle={`${stats.staleFeeds} stale`}
+      />
+      <StatCard
+        title="Network Uptime"
+        value={`${stats.networkUptime}%`}
+        icon={<Shield className="h-5 w-5" />}
+        color="purple"
+      />
+      <StatCard
+        title="Avg Latency"
+        value={`${(stats.avgUpdateLatency / 1000).toFixed(1)}s`}
+        icon={<Clock className="h-5 w-5" />}
+        color="orange"
+      />
+    </>
   );
-}
 
-interface StatCardProps {
-  title: string;
-  value: number | string;
-  icon: React.ReactNode;
-  color: 'blue' | 'green' | 'purple' | 'orange';
-  subtitle?: string;
-}
+  // 链选择器
+  const chainSelectorContent = (
+    <>
+      <Button
+        variant={selectedChain === 'all' ? 'default' : 'outline'}
+        size="sm"
+        onClick={() => setSelectedChain('all')}
+      >
+        All Chains
+      </Button>
+      {CHAINLINK_CHAINS.map((chain) => (
+        <Button
+          key={chain.id}
+          variant={selectedChain === chain.id ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setSelectedChain(chain.id)}
+          className="gap-1"
+        >
+          <span>{chain.icon}</span>
+          {chain.name}
+        </Button>
+      ))}
+    </>
+  );
 
-function StatCard({ title, value, icon, color, subtitle }: StatCardProps) {
-  const colorClasses = {
-    blue: 'bg-blue-50 text-blue-600',
-    green: 'bg-green-50 text-green-600',
-    purple: 'bg-purple-50 text-purple-600',
-    orange: 'bg-orange-50 text-orange-600',
-  };
+  // 表格列配置
+  const feedColumns = [
+    commonFeedColumns.name,
+    commonFeedColumns.price,
+    commonFeedColumns.chain,
+    commonFeedColumns.updatedAt,
+    commonFeedColumns.status,
+    {
+      key: 'contractAddress',
+      header: 'Contract',
+      render: (value: unknown) => (
+        <a
+          href={`https://etherscan.io/address/${String(value)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-mono text-sm text-blue-600 hover:underline"
+        >
+          {truncateAddress(String(value))}
+        </a>
+      ),
+    },
+  ];
+
+  // 标签页配置
+  const tabs = [
+    {
+      id: 'feeds',
+      label: 'Price Feeds',
+      icon: <TrendingUp className="h-4 w-4" />,
+      content: (
+        <FeedTable
+          feeds={filteredFeeds as unknown as Record<string, unknown>[]}
+          columns={feedColumns}
+          title="Price Feeds"
+        />
+      ),
+    },
+    {
+      id: 'nodes',
+      label: 'Node Operators',
+      icon: <Globe className="h-4 w-4" />,
+      content: (
+        <Card>
+          <CardContent className="p-6">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {nodes.map((node) => (
+                <Card key={node.id} className="border-0 bg-gray-50">
+                  <CardContent className="p-4">
+                    <div className="mb-3 flex items-start justify-between">
+                      <div>
+                        <h4 className="font-semibold">{node.name}</h4>
+                        <p className="font-mono text-sm text-gray-500">
+                          {truncateAddress(node.address)}
+                        </p>
+                      </div>
+                      <StatusBadge status={node.status} size="sm" />
+                    </div>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Success Rate</span>
+                        <span className="font-medium">{node.successRate}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Total Submissions</span>
+                        <span className="font-medium">
+                          {node.totalSubmissions.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Last Submission</span>
+                        <span className="font-medium">{formatTimeAgo(node.lastSubmission)}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      ),
+    },
+    {
+      id: 'charts',
+      label: 'Charts',
+      icon: <BarChart3 className="h-4 w-4" />,
+      content: (
+        <div className="grid gap-4 lg:grid-cols-2">
+          <PriceHistoryChart
+            data={generateMockPriceHistory(3254.78, 168)}
+            symbol="ETH/USD"
+            title="ETH/USD Price History"
+          />
+          <PriceHistoryChart
+            data={generateMockPriceHistory(67432.15, 168)}
+            symbol="BTC/USD"
+            title="BTC/USD Price History"
+          />
+        </div>
+      ),
+    },
+    {
+      id: 'comparison',
+      label: 'Compare',
+      icon: <Activity className="h-4 w-4" />,
+      content: <ProtocolComparison protocols={ORACLE_PROTOCOLS} symbol="ETH/USD" />,
+    },
+    {
+      id: 'alerts',
+      label: 'Alerts',
+      icon: <Bell className="h-4 w-4" />,
+      content: (
+        <div className="grid gap-4 lg:grid-cols-2">
+          <PriceAlertSettings symbol="ETH/USD" currentPrice={3254.78} />
+          <PriceAlertSettings symbol="BTC/USD" currentPrice={67432.15} />
+        </div>
+      ),
+    },
+    {
+      id: 'analytics',
+      label: 'Analytics',
+      icon: <BarChart3 className="h-4 w-4" />,
+      content: (
+        <div className="grid gap-4 md:grid-cols-2">
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="mb-4 font-semibold">Network Health</h3>
+              <div className="space-y-4">
+                <div>
+                  <div className="mb-2 flex justify-between text-sm">
+                    <span>Feed Coverage</span>
+                    <span>
+                      {(((stats?.activeFeeds || 0) / (stats?.totalFeeds || 1)) * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                  <Progress value={((stats?.activeFeeds || 0) / (stats?.totalFeeds || 1)) * 100} />
+                </div>
+                <div>
+                  <div className="mb-2 flex justify-between text-sm">
+                    <span>Node Participation</span>
+                    <span>92%</span>
+                  </div>
+                  <Progress value={92} />
+                </div>
+                <div>
+                  <div className="mb-2 flex justify-between text-sm">
+                    <span>Update Frequency</span>
+                    <span>98.5%</span>
+                  </div>
+                  <Progress value={98.5} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="mb-4 font-semibold">About Chainlink</h3>
+              <p className="mb-3 text-sm text-gray-600">
+                Chainlink is the industry-standard decentralized oracle network, providing secure
+                and reliable data feeds for smart contracts across multiple blockchain networks.
+              </p>
+              <ul className="list-inside list-disc space-y-1 text-sm text-gray-600">
+                <li>Decentralized network of independent node operators</li>
+                <li>Multiple layers of data aggregation and validation</li>
+                <li>Support for 1000+ price feeds across 15+ chains</li>
+                <li>Proven security with billions in secured value</li>
+              </ul>
+            </CardContent>
+          </Card>
+        </div>
+      ),
+    },
+  ];
 
   return (
-    <Card className="border-0 shadow-sm">
-      <CardContent className="flex items-center gap-4 p-6">
-        <div className={cn('rounded-lg p-3', colorClasses[color])}>{icon}</div>
-        <div>
-          <p className="text-sm text-gray-600">{title}</p>
-          <p className="text-2xl font-bold">{value}</p>
-          {subtitle && <p className="text-xs text-gray-500">{subtitle}</p>}
-        </div>
-      </CardContent>
-    </Card>
+    <ProtocolPageLayout
+      protocol="chainlink"
+      title="Chainlink Monitor"
+      description="Decentralized Oracle Network Monitoring"
+      icon="🔗"
+      officialUrl="https://chain.link"
+      loading={loading}
+      onRefresh={fetchChainlinkData}
+      stats={statsContent}
+      chainSelector={chainSelectorContent}
+      tabs={tabs}
+      defaultTab="feeds"
+    />
   );
 }

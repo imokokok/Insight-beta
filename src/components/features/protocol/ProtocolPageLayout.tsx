@@ -14,7 +14,7 @@ export interface ProtocolPageLayoutProps {
   description: string;
   icon: string;
   officialUrl: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   loading?: boolean;
   onRefresh?: () => void;
   tabs: {
