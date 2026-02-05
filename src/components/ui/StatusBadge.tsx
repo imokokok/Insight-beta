@@ -15,6 +15,7 @@ export type StatusType =
   | 'disputed'
   | 'expired'
   | 'inactive'
+  | 'resolved'
   | 'unknown';
 
 interface StatusBadgeProps {
@@ -71,6 +72,11 @@ const statusConfig: Record<
     label: 'Inactive',
     icon: <Minus className="mr-1 h-3 w-3" />,
     className: 'bg-gray-100 text-gray-700 hover:bg-gray-100',
+  },
+  resolved: {
+    label: 'Resolved',
+    icon: <CheckCircle className="mr-1 h-3 w-3" />,
+    className: 'bg-green-100 text-green-700 hover:bg-green-100',
   },
   unknown: {
     label: 'Unknown',

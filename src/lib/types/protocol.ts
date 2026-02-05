@@ -91,6 +91,7 @@ export interface UMAAssertion {
   expirationTime: string;
   settlementTime?: string;
   disputedBy?: string;
+  disputeCount: number;
 }
 
 export interface UMADispute {
