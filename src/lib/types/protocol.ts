@@ -164,6 +164,12 @@ export interface RedStoneService {
 export interface SwitchboardAggregator {
   id: string;
   name: string;
+  symbol: string;
+  price: number;
+  decimals: number;
+  updatedAt: string;
+  chain: string;
+  status: 'active' | 'stale' | 'error';
   queueId: string;
   batchSize: number;
   minOracleResults: number;
