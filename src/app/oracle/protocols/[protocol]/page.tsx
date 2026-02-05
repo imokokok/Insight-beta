@@ -54,6 +54,10 @@ const PROTOCOL_MONITOR_PAGES: Partial<Record<OracleProtocol, string>> = {
   uma: '/oracle/protocols/uma',
   band: '/oracle/protocols/band',
   api3: '/oracle/protocols/api3',
+  redstone: '/oracle/protocols/redstone',
+  switchboard: '/oracle/protocols/switchboard',
+  dia: '/oracle/protocols/dia',
+  flux: '/oracle/protocols/flux',
 };
 
 export default function ProtocolPage() {
