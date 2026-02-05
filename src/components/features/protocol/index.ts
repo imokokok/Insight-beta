@@ -27,5 +27,14 @@ export {
   type PriceAlertSettingsProps,
 } from './PriceAlertSettings';
 
-// Re-export from PriceFeedTable if it exists
-export { PriceFeedTable } from './PriceFeedTable';
+// Protocol Page Layout Component
+export { ProtocolPageLayout, type ProtocolPageLayoutProps } from './ProtocolPageLayout';
+
+// Feed Table Component
+export {
+  FeedTable,
+  feedColumnRenderers,
+  commonFeedColumns,
+  type FeedColumn,
+  type FeedTableProps,
+} from './FeedTable';
