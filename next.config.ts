@@ -1,5 +1,6 @@
 import type { NextConfig } from 'next';
 import { withSentryConfig } from '@sentry/nextjs';
+import withBundleAnalyzer from '@next/bundle-analyzer';
 
 function buildCsp(isDev: boolean) {
   const mode = (process.env.INSIGHT_CSP_MODE ?? 'relaxed').toLowerCase();
@@ -49,7 +50,17 @@ const nextConfig: NextConfig = {
     optimizeCss: true,
     serverMinification: true,
     webpackBuildWorker: true,
-    optimizePackageImports: ['lucide-react', 'recharts', 'date-fns', 'viem'],
+    optimizePackageImports: [
+      'lucide-react',
+      'recharts',
+      'date-fns',
+      'viem',
+      'react-virtuoso',
+      'sonner',
+      '@radix-ui/react-popover',
+      '@radix-ui/react-select',
+      '@radix-ui/react-tooltip',
+    ],
     staleTimes: {
       dynamic: 30,
       static: 180,
@@ -228,4 +239,10 @@ const sentryWebpackPluginOptions = {
   silent: true,
 };
 
-export default withSentryConfig(nextConfig, sentryWebpackPluginOptions);
+// Bundle Analyzer 配置
+const bundleAnalyzerConfig = withBundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+  openAnalyzer: true,
+});
+
+export default bundleAnalyzerConfig(withSentryConfig(nextConfig, sentryWebpackPluginOptions));

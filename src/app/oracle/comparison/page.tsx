@@ -10,15 +10,11 @@
 
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, Suspense, lazy } from 'react';
 import { useToast } from '@/hooks/ui/use-toast';
 import { useI18n } from '@/i18n';
 import { ComparisonControls } from '@/components/features/comparison/ComparisonControls';
-import { PriceHeatmap } from '@/components/features/comparison/PriceHeatmap';
-import { LatencyAnalysisView } from '@/components/features/comparison/LatencyAnalysis';
-import { CostEfficiencyView } from '@/components/features/comparison/CostEfficiency';
-import { RealtimeComparisonView } from '@/components/features/comparison/RealtimeComparison';
-import { VirtualTable } from '@/components/features/comparison/VirtualTable';
+import { ChartSkeleton, TableSkeleton } from '@/components/common/PageSkeleton';
 import type {
   ComparisonFilter,
   ComparisonConfig,
@@ -39,6 +35,40 @@ import {
   exportCostToCSV,
   exportAllToJSON,
 } from '@/lib/utils/export';
+
+// ============================================================================
+// 动态导入大型组件
+// ============================================================================
+
+const PriceHeatmap = lazy(() =>
+  import('@/components/features/comparison/PriceHeatmap').then((mod) => ({
+    default: mod.PriceHeatmap,
+  })),
+);
+
+const LatencyAnalysisView = lazy(() =>
+  import('@/components/features/comparison/LatencyAnalysis').then((mod) => ({
+    default: mod.LatencyAnalysisView,
+  })),
+);
+
+const CostEfficiencyView = lazy(() =>
+  import('@/components/features/comparison/CostEfficiency').then((mod) => ({
+    default: mod.CostEfficiencyView,
+  })),
+);
+
+const RealtimeComparisonView = lazy(() =>
+  import('@/components/features/comparison/RealtimeComparison').then((mod) => ({
+    default: mod.RealtimeComparisonView,
+  })),
+);
+
+const VirtualTable = lazy(() =>
+  import('@/components/features/comparison/VirtualTable').then((mod) => ({
+    default: mod.VirtualTable,
+  })),
+);
 
 // ============================================================================
 // 默认配置
@@ -609,40 +639,52 @@ export default function ComparisonPage() {
       {/* 主内容区 */}
       <div className="space-y-4 sm:space-y-6">
         {currentView === 'heatmap' && (
-          <PriceHeatmap
-            data={heatmapData}
-            isLoading={isLoading}
-            onCellClick={handleCellClick}
-            selectedProtocols={filter.protocols}
-          />
+          <Suspense fallback={<ChartSkeleton className="h-96" />}>
+            <PriceHeatmap
+              data={heatmapData}
+              isLoading={isLoading}
+              onCellClick={handleCellClick}
+              selectedProtocols={filter.protocols}
+            />
+          </Suspense>
         )}
 
         {currentView === 'latency' && (
-          <LatencyAnalysisView data={latencyData} isLoading={isLoading} />
+          <Suspense fallback={<ChartSkeleton className="h-96" />}>
+            <LatencyAnalysisView data={latencyData} isLoading={isLoading} />
+          </Suspense>
         )}
 
-        {currentView === 'cost' && <CostEfficiencyView data={costData} isLoading={isLoading} />}
+        {currentView === 'cost' && (
+          <Suspense fallback={<ChartSkeleton className="h-96" />}>
+            <CostEfficiencyView data={costData} isLoading={isLoading} />
+          </Suspense>
+        )}
 
         {currentView === 'realtime' && (
-          <RealtimeComparisonView
-            data={realtimeData}
-            isLoading={isLoading}
-            isLive={isLive}
-            onRefresh={fetchData}
-            lastUpdated={lastUpdated}
-            filter={filter}
-            onFilterChange={setFilter}
-          />
+          <Suspense fallback={<ChartSkeleton className="h-96" />}>
+            <RealtimeComparisonView
+              data={realtimeData}
+              isLoading={isLoading}
+              isLive={isLive}
+              onRefresh={fetchData}
+              lastUpdated={lastUpdated}
+              filter={filter}
+              onFilterChange={setFilter}
+            />
+          </Suspense>
         )}
 
         {currentView === 'table' && (
-          <VirtualTable
-            data={realtimeData}
-            isLoading={isLoading}
-            onExport={handleExport}
-            rowHeight={52}
-            containerHeight={600}
-          />
+          <Suspense fallback={<TableSkeleton rows={10} />}>
+            <VirtualTable
+              data={realtimeData}
+              isLoading={isLoading}
+              onExport={handleExport}
+              rowHeight={52}
+              containerHeight={600}
+            />
+          </Suspense>
         )}
       </div>
 

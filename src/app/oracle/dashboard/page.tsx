@@ -10,7 +10,7 @@
 
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, Suspense, lazy } from 'react';
 import { logger } from '@/lib/logger';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -31,14 +31,24 @@ import {
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn, fetchApiData } from '@/lib/utils';
+import { ChartSkeleton } from '@/components/common/PageSkeleton';
 
-// Import oracle components
-import {
-  PriceFeedList,
-  ProtocolHealthGrid,
-  AlertPanel,
-  OracleCharts,
-} from '@/components/features/oracle';
+// Dynamic imports for oracle components
+const PriceFeedList = lazy(() =>
+  import('@/components/features/oracle').then((mod) => ({ default: mod.PriceFeedList })),
+);
+
+const ProtocolHealthGrid = lazy(() =>
+  import('@/components/features/oracle').then((mod) => ({ default: mod.ProtocolHealthGrid })),
+);
+
+const AlertPanel = lazy(() =>
+  import('@/components/features/oracle').then((mod) => ({ default: mod.AlertPanel })),
+);
+
+const OracleCharts = lazy(() =>
+  import('@/components/features/oracle').then((mod) => ({ default: mod.OracleCharts })),
+);
 
 // ============================================================================
 // Types
@@ -280,17 +290,25 @@ export default function UnifiedDashboardPage() {
           {/* Top Row: Charts */}
           <div className="grid gap-4 sm:gap-6 xl:grid-cols-3">
             <div className="xl:col-span-2">
-              <OracleCharts />
+              <Suspense fallback={<ChartSkeleton className="h-96" />}>
+                <OracleCharts />
+              </Suspense>
             </div>
             <div>
-              <PriceFeedList limit={10} className="h-full" />
+              <Suspense fallback={<ChartSkeleton className="h-96" />}>
+                <PriceFeedList limit={10} className="h-full" />
+              </Suspense>
             </div>
           </div>
 
           {/* Middle Row: Protocol Health & Alerts Preview */}
           <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
-            <ProtocolHealthGrid />
-            <AlertPanel maxAlerts={5} />
+            <Suspense fallback={<ChartSkeleton className="h-64" />}>
+              <ProtocolHealthGrid />
+            </Suspense>
+            <Suspense fallback={<ChartSkeleton className="h-64" />}>
+              <AlertPanel maxAlerts={5} />
+            </Suspense>
           </div>
         </TabsContent>
 
@@ -298,7 +316,9 @@ export default function UnifiedDashboardPage() {
         <TabsContent value="feeds" className="space-y-6">
           <div className="grid gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2">
-              <PriceFeedList limit={50} />
+              <Suspense fallback={<ChartSkeleton className="h-96" />}>
+                <PriceFeedList limit={50} />
+              </Suspense>
             </div>
             <div className="space-y-6">
               <Card>
@@ -330,7 +350,9 @@ export default function UnifiedDashboardPage() {
 
         {/* Health Tab */}
         <TabsContent value="health" className="space-y-6">
-          <ProtocolHealthGrid />
+          <Suspense fallback={<ChartSkeleton className="h-96" />}>
+            <ProtocolHealthGrid />
+          </Suspense>
 
           <div className="grid gap-6 lg:grid-cols-3">
             <Card>
@@ -426,7 +448,9 @@ export default function UnifiedDashboardPage() {
         <TabsContent value="alerts" className="space-y-6">
           <div className="grid gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2">
-              <AlertPanel maxAlerts={50} showAcknowledged />
+              <Suspense fallback={<ChartSkeleton className="h-96" />}>
+                <AlertPanel maxAlerts={50} showAcknowledged />
+              </Suspense>
             </div>
             <div className="space-y-6">
               <Card>

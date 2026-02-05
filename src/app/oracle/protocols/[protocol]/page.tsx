@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, Suspense, lazy } from 'react';
 import { Activity, Shield, TrendingUp, Globe, BarChart3, Bell, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -14,16 +14,49 @@ import {
 } from '@/components/features/protocol/FeedTable';
 import { StatCard } from '@/components/ui/StatCard';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import {
-  PriceHistoryChart,
-  generateMockPriceHistory,
-  ProtocolComparison,
-  PriceAlertSettings,
-} from '@/components/features/protocol';
 import { formatTimeAgo, truncateAddress } from '@/lib/utils/format';
 import { ORACLE_PROTOCOLS, type OracleProtocol } from '@/lib/types';
 import { SUPPORTED_CHAINS } from '@/lib/types/protocol';
 import { getProtocolConfig } from '@/lib/protocol-config';
+import { ChartSkeleton } from '@/components/common/PageSkeleton';
+
+// Dynamic imports for heavy components with recharts
+const PriceHistoryChart = lazy(() =>
+  import('@/components/features/protocol').then((mod) => ({
+    default: mod.PriceHistoryChart,
+  })),
+);
+
+const ProtocolComparison = lazy(() =>
+  import('@/components/features/protocol').then((mod) => ({
+    default: mod.ProtocolComparison,
+  })),
+);
+
+const PriceAlertSettings = lazy(() =>
+  import('@/components/features/protocol').then((mod) => ({
+    default: mod.PriceAlertSettings,
+  })),
+);
+
+// Dynamic import for generateMockPriceHistory
+const generateMockPriceHistory = (basePrice: number, hours: number) => {
+  const data = [];
+  const now = new Date();
+  for (let i = hours; i >= 0; i--) {
+    const time = new Date(now.getTime() - i * 60 * 60 * 1000);
+    const volatility = 0.02;
+    const trend = Math.sin(i / 12) * 0.01;
+    const randomChange = (Math.random() - 0.5) * volatility;
+    const price = basePrice * (1 + trend + randomChange);
+    data.push({
+      timestamp: time.toISOString(),
+      price: Number(price.toFixed(2)),
+      volume: Math.floor(Math.random() * 1000000),
+    });
+  }
+  return data;
+};
 
 export default function UnifiedProtocolPage() {
   const params = useParams();
@@ -252,18 +285,20 @@ export default function UnifiedProtocolPage() {
         label: 'Charts',
         icon: <BarChart3 className="h-4 w-4" />,
         content: (
-          <div className="grid gap-4 lg:grid-cols-2">
-            <PriceHistoryChart
-              data={generateMockPriceHistory(3254.78, 168)}
-              symbol="ETH/USD"
-              title="ETH/USD Price History"
-            />
-            <PriceHistoryChart
-              data={generateMockPriceHistory(67432.15, 168)}
-              symbol="BTC/USD"
-              title="BTC/USD Price History"
-            />
-          </div>
+          <Suspense fallback={<ChartSkeleton className="h-96" />}>
+            <div className="grid gap-4 lg:grid-cols-2">
+              <PriceHistoryChart
+                data={generateMockPriceHistory(3254.78, 168)}
+                symbol="ETH/USD"
+                title="ETH/USD Price History"
+              />
+              <PriceHistoryChart
+                data={generateMockPriceHistory(67432.15, 168)}
+                symbol="BTC/USD"
+                title="BTC/USD Price History"
+              />
+            </div>
+          </Suspense>
         ),
       });
     }
@@ -274,7 +309,11 @@ export default function UnifiedProtocolPage() {
         id: 'comparison',
         label: 'Compare',
         icon: <Activity className="h-4 w-4" />,
-        content: <ProtocolComparison protocols={ORACLE_PROTOCOLS} symbol="ETH/USD" />,
+        content: (
+          <Suspense fallback={<ChartSkeleton className="h-96" />}>
+            <ProtocolComparison protocols={ORACLE_PROTOCOLS} symbol="ETH/USD" />
+          </Suspense>
+        ),
       });
     }
 
@@ -285,10 +324,12 @@ export default function UnifiedProtocolPage() {
         label: 'Alerts',
         icon: <Bell className="h-4 w-4" />,
         content: (
-          <div className="grid gap-4 lg:grid-cols-2">
-            <PriceAlertSettings symbol="ETH/USD" currentPrice={3254.78} />
-            <PriceAlertSettings symbol="BTC/USD" currentPrice={67432.15} />
-          </div>
+          <Suspense fallback={<ChartSkeleton className="h-96" />}>
+            <div className="grid gap-4 lg:grid-cols-2">
+              <PriceAlertSettings symbol="ETH/USD" currentPrice={3254.78} />
+              <PriceAlertSettings symbol="BTC/USD" currentPrice={67432.15} />
+            </div>
+          </Suspense>
         ),
       });
     }

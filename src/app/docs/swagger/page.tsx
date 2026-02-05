@@ -8,20 +8,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import dynamic from 'next/dynamic';
-
-// 动态导入 SwaggerUI，减少初始包大小
-const SwaggerUI = dynamic(() => import('swagger-ui-react').then((mod) => mod.default), {
-  ssr: false,
-  loading: () => (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="text-center">
-        <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-purple-600 border-t-transparent"></div>
-        <p className="text-gray-600">Loading Swagger UI...</p>
-      </div>
-    </div>
-  ),
-});
+import { DynamicSwaggerUI } from '@/lib/dynamic-imports';
 
 export default function SwaggerPage() {
   const [spec, setSpec] = useState<object | null>(null);
@@ -86,7 +73,7 @@ export default function SwaggerPage() {
         </div>
       </div>
       <div className="swagger-container">
-        {spec && <SwaggerUI spec={spec} docExpansion="list" />}
+        {spec && <DynamicSwaggerUI spec={spec} docExpansion="list" />}
       </div>
     </div>
   );

@@ -13,7 +13,7 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-} from 'recharts';
+} from '@/components/charts';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { cn, formatDurationMinutes, formatTime } from '@/lib/utils';
 import { getUiErrorMessage, type TranslationKey } from '@/i18n/translations';

@@ -1,13 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense, lazy } from 'react';
 import type { Route } from 'next';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { PageHeader } from '@/components/features/common/PageHeader';
-import { ConnectWallet } from '@/components/features/wallet/ConnectWallet';
-import { AssertionList } from '@/components/features/assertion/AssertionList';
-import { UserStatsCard } from '@/components/features/wallet/UserStatsCard';
 import { useOracleData } from '@/hooks/oracle/useOracleData';
 import { useUserStats } from '@/hooks/user/useUserStats';
 import { useWallet } from '@/contexts/WalletContext';
@@ -16,6 +13,26 @@ import { getUiErrorMessage, type TranslationKey } from '@/i18n/translations';
 import { LayoutGrid, List, Search, Wallet, FileText, ChevronDown } from 'lucide-react';
 import { cn, fetchApiData } from '@/lib/utils';
 import type { OracleConfig, OracleStatus, OracleInstance } from '@/lib/types/oracleTypes';
+import { CardSkeleton } from '@/components/common/PageSkeleton';
+
+// Dynamic imports for heavy components
+const ConnectWallet = lazy(() =>
+  import('@/components/features/wallet/ConnectWallet').then((mod) => ({
+    default: mod.ConnectWallet,
+  })),
+);
+
+const AssertionList = lazy(() =>
+  import('@/components/features/assertion/AssertionList').then((mod) => ({
+    default: mod.AssertionList,
+  })),
+);
+
+const UserStatsCard = lazy(() =>
+  import('@/components/features/wallet/UserStatsCard').then((mod) => ({
+    default: mod.UserStatsCard,
+  })),
+);
 
 type Translate = (key: TranslationKey) => string;
 type ViewMode = 'grid' | 'list';
@@ -28,7 +45,9 @@ function NoWalletState({ t }: NoWalletStateProps) {
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 space-y-8 pb-20 duration-700">
       <PageHeader title={t('nav.myAssertions')} description={t('oracle.myAssertions.description')}>
-        <ConnectWallet />
+        <Suspense fallback={<div className="h-9 w-32 animate-pulse rounded-lg bg-gray-200" />}>
+          <ConnectWallet />
+        </Suspense>
       </PageHeader>
 
       <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -41,7 +60,9 @@ function NoWalletState({ t }: NoWalletStateProps) {
         <p className="mx-auto mb-8 max-w-md text-gray-500">
           {t('oracle.myAssertions.connectWalletDesc')}
         </p>
-        <ConnectWallet />
+        <Suspense fallback={<div className="h-10 w-32 animate-pulse rounded-lg bg-gray-200" />}>
+          <ConnectWallet />
+        </Suspense>
       </div>
     </div>
   );
@@ -539,11 +560,15 @@ export default function MyAssertionsPage() {
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 space-y-8 pb-20 duration-700">
       <PageHeader title={t('nav.myAssertions')} description={t('oracle.myAssertions.description')}>
-        <ConnectWallet />
+        <Suspense fallback={<div className="h-9 w-32 animate-pulse rounded-lg bg-gray-200" />}>
+          <ConnectWallet />
+        </Suspense>
       </PageHeader>
 
       <div className="animate-in fade-in slide-in-from-bottom-8 delay-100 duration-700">
-        <UserStatsCard stats={stats} loading={statsLoading} />
+        <Suspense fallback={<CardSkeleton className="h-32" />}>
+          <UserStatsCard stats={stats} loading={statsLoading} />
+        </Suspense>
       </div>
 
       <MyAssertionsToolbar
@@ -570,15 +595,17 @@ export default function MyAssertionsPage() {
         {!loading && !error && items.length === 0 ? (
           <AssertionsEmptyState instanceId={instanceId} t={t} />
         ) : (
-          <AssertionList
-            items={items}
-            loading={loading}
-            viewMode={viewMode}
-            hasMore={hasMore}
-            loadMore={loadMore}
-            loadingMore={loadingMore}
-            instanceId={instanceId}
-          />
+          <Suspense fallback={<CardSkeleton className="h-96" />}>
+            <AssertionList
+              items={items}
+              loading={loading}
+              viewMode={viewMode}
+              hasMore={hasMore}
+              loadMore={loadMore}
+              loadingMore={loadingMore}
+              instanceId={instanceId}
+            />
+          </Suspense>
         )}
       </div>
     </div>

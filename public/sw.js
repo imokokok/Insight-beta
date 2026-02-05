@@ -1,40 +1,44 @@
 /**
- * Oracle Monitor Service Worker
- * Provides offline support and caching strategies
+ * Service Worker for Insight Beta
+ *
+ * 提供离线缓存、资源预加载和性能优化
  */
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const CACHE_NAME = 'oracle-monitor-v1';
-const STATIC_CACHE = 'static-v1';
-const DYNAMIC_CACHE = 'dynamic-v1';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+const CACHE_NAME = 'insight-beta-v1';
+const STATIC_CACHE = 'insight-static-v1';
+const DYNAMIC_CACHE = 'insight-dynamic-v1';
+const IMAGE_CACHE = 'insight-images-v1';
 
-// Assets to cache on install
-const STATIC_ASSETS = ['/', '/manifest.json', '/favicon.ico', '/offline.html'];
+// 预缓存的关键资源
+const PRECACHE_URLS = [
+  '/',
+  '/oracle',
+  '/oracle/dashboard',
+  '/_next/static/css/_app.css',
+  '/_next/static/chunks/main.js',
+  '/_next/static/chunks/framework.js',
+  '/_next/static/chunks/pages/_app.js',
+];
 
-// Install event - cache static assets
+// 安装时预缓存关键资源
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing...');
-
   event.waitUntil(
     caches
       .open(STATIC_CACHE)
       .then((cache) => {
-        console.log('[SW] Caching static assets');
-        return cache.addAll(STATIC_ASSETS);
+        console.log('[SW] Pre-caching static assets');
+        return cache.addAll(PRECACHE_URLS);
       })
+      .then(() => self.skipWaiting())
       .catch((err) => {
-        console.error('[SW] Failed to cache static assets:', err);
+        console.error('[SW] Pre-cache failed:', err);
       }),
   );
-
-  // Activate immediately
-  self.skipWaiting();
 });
 
-// Activate event - clean up old caches
+// 激活时清理旧缓存
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating...');
-
   event.waitUntil(
     caches
       .keys()
@@ -43,13 +47,11 @@ self.addEventListener('activate', (event) => {
           cacheNames
             .filter((name) => {
               return (
-                name.startsWith('oracle-monitor-') ||
-                name.startsWith('static-') ||
-                name.startsWith('dynamic-')
+                name.startsWith('insight-') &&
+                name !== STATIC_CACHE &&
+                name !== DYNAMIC_CACHE &&
+                name !== IMAGE_CACHE
               );
-            })
-            .filter((name) => {
-              return name !== STATIC_CACHE && name !== DYNAMIC_CACHE;
             })
             .map((name) => {
               console.log('[SW] Deleting old cache:', name);
@@ -57,50 +59,73 @@ self.addEventListener('activate', (event) => {
             }),
         );
       })
-      .then(() => {
-        console.log('[SW] Claiming clients');
-        return self.clients.claim();
-      }),
+      .then(() => self.clients.claim()),
   );
 });
 
-// Fetch event - serve from cache or network
+// 拦截请求并提供缓存
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET requests
+  // 跳过非 GET 请求
   if (request.method !== 'GET') {
     return;
   }
 
-  // Skip cross-origin requests
-  if (url.origin !== self.location.origin) {
+  // 跳过 chrome-extension 和 other 协议
+  if (!url.protocol.startsWith('http')) {
     return;
   }
 
-  // API requests - network first, cache fallback
+  // API 请求 - 网络优先，失败时返回缓存
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(networkFirst(request));
     return;
   }
 
-  // Static assets - cache first, network fallback
-  if (isStaticAsset(request)) {
-    event.respondWith(cacheFirst(request));
+  // 图片资源 - 缓存优先
+  if (request.destination === 'image') {
+    event.respondWith(imageCache(request));
     return;
   }
 
-  // Dynamic content - stale while revalidate
-  event.respondWith(staleWhileRevalidate(request));
+  // Next.js 静态资源 - 缓存优先
+  if (url.pathname.startsWith('/_next/static/')) {
+    event.respondWith(cacheFirst(request, STATIC_CACHE));
+    return;
+  }
+
+  // 字体资源 - 缓存优先
+  if (request.destination === 'font') {
+    event.respondWith(cacheFirst(request, STATIC_CACHE));
+    return;
+  }
+
+  // 页面导航 - 网络优先
+  if (request.mode === 'navigate') {
+    event.respondWith(networkFirst(request));
+    return;
+  }
+
+  // 其他资源 - 缓存优先
+  event.respondWith(cacheFirst(request, DYNAMIC_CACHE));
 });
 
-// Cache strategies
-async function cacheFirst(request) {
-  const cache = await caches.open(STATIC_CACHE);
+// 缓存优先策略
+async function cacheFirst(request, cacheName) {
+  const cache = await caches.open(cacheName);
   const cached = await cache.match(request);
 
   if (cached) {
+    // 后台更新缓存
+    fetch(request)
+      .then((response) => {
+        if (response.ok) {
+          cache.put(request, response.clone());
+        }
+      })
+      .catch(() => {});
     return cached;
   }
 
@@ -112,10 +137,11 @@ async function cacheFirst(request) {
     return response;
   } catch (error) {
     console.error('[SW] Cache first failed:', error);
-    return new Response('Offline', { status: 503 });
+    return new Response('Network error', { status: 408 });
   }
 }
 
+// 网络优先策略
 async function networkFirst(request) {
   const cache = await caches.open(DYNAMIC_CACHE);
 
@@ -125,118 +151,80 @@ async function networkFirst(request) {
       cache.put(request, networkResponse.clone());
     }
     return networkResponse;
-  } catch (error) {
-    console.log('[SW] Network failed, trying cache');
+  } catch {
+    console.log('[SW] Network failed, trying cache:', request.url);
     const cached = await cache.match(request);
     if (cached) {
       return cached;
     }
-    throw error;
+    return new Response('Network error', { status: 408 });
   }
 }
 
-async function staleWhileRevalidate(request) {
-  const cache = await caches.open(DYNAMIC_CACHE);
+// 图片缓存策略
+async function imageCache(request) {
+  const cache = await caches.open(IMAGE_CACHE);
   const cached = await cache.match(request);
 
-  const fetchPromise = fetch(request)
-    .then((response) => {
-      if (response.ok) {
-        cache.put(request, response.clone());
+  if (cached) {
+    return cached;
+  }
+
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      // 限制图片缓存数量
+      const keys = await cache.keys();
+      if (keys.length > 100) {
+        await cache.delete(keys[0]);
       }
-      return response;
-    })
-    .catch((error) => {
-      console.error('[SW] Stale while revalidate fetch failed:', error);
-    });
-
-  return cached || fetchPromise;
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch (error) {
+    console.error('[SW] Image cache failed:', error);
+    return new Response('Image load failed', { status: 408 });
+  }
 }
 
-// Helper functions
-function isStaticAsset(request) {
-  const staticExtensions = [
-    '.js',
-    '.css',
-    '.png',
-    '.jpg',
-    '.jpeg',
-    '.gif',
-    '.svg',
-    '.ico',
-    '.woff',
-    '.woff2',
-    '.ttf',
-    '.eot',
-    '.json',
-  ];
-
-  const url = new URL(request.url);
-  return staticExtensions.some((ext) => url.pathname.endsWith(ext));
-}
-
-// Background sync for offline form submissions
+// 后台同步
 self.addEventListener('sync', (event) => {
-  if (event.tag === 'sync-alerts') {
-    event.waitUntil(syncAlerts());
+  if (event.tag === 'background-sync') {
+    event.waitUntil(doBackgroundSync());
   }
 });
 
-async function syncAlerts() {
-  // Implementation for syncing alerts when back online
-  console.log('[SW] Syncing alerts...');
+async function doBackgroundSync() {
+  console.log('[SW] Background sync executed');
+  // 可以在这里执行后台数据同步
 }
 
-// Push notifications
+// 推送通知
 self.addEventListener('push', (event) => {
-  if (!event.data) return;
-
   const data = event.data.json();
-  const options = {
-    body: data.body,
-    icon: '/icons/icon-192x192.png',
-    badge: '/icons/badge-72x72.png',
-    tag: data.tag || 'default',
-    requireInteraction: data.requireInteraction || false,
-    actions: data.actions || [],
-    data: data.data || {},
-  };
-
-  event.waitUntil(self.registration.showNotification(data.title, options));
-});
-
-// Notification click handler
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-
-  const notificationData = event.notification.data;
-  let url = '/';
-
-  if (notificationData && notificationData.url) {
-    url = notificationData.url;
-  }
-
   event.waitUntil(
-    self.clients.matchAll({ type: 'window' }).then((clientList) => {
-      // Focus existing window if open
-      for (const client of clientList) {
-        if (client.url === url && 'focus' in client) {
-          return client.focus();
-        }
-      }
-      // Open new window
-      if (self.clients.openWindow) {
-        return self.clients.openWindow(url);
-      }
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: '/icon-192x192.png',
+      badge: '/badge-72x72.png',
+      data: data.data,
+      actions: data.actions || [],
     }),
   );
 });
 
-// Message handler from main thread
+// 通知点击
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    // eslint-disable-next-line no-undef
+    clients.openWindow(event.notification.data?.url || '/'),
+  );
+});
+
+// 消息处理
 self.addEventListener('message', (event) => {
   if (event.data === 'skipWaiting') {
     self.skipWaiting();
   }
 });
-
-console.log('[SW] Service worker loaded');
