@@ -5,9 +5,9 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { calculateMedian } from '@/lib/utils/math';
 import {
   PriceAggregationEngine,
-  calculateMedian,
   calculateWeightedAverage,
   detectOutliers,
 } from './priceAggregationService';

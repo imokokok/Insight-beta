@@ -1,3 +1,5 @@
+import { calculateMean } from '@/lib/utils/math';
+
 export interface CostMetrics {
   totalCost: number;
   costPerAssertion: number;
@@ -250,7 +252,7 @@ export class CostBenefitAnalyzer {
 
     const recentCosts = historicalCosts.slice(-6);
     const avgGrowth = this.calculateAverageGrowth(recentCosts.map((c) => c.totalCost));
-    const avgCost = this.calculateMean(recentCosts.map((c) => c.totalCost));
+    const avgCost = calculateMean(recentCosts.map((c) => c.totalCost));
 
     const projections: CostProjection[] = [];
     let currentCost = avgCost;
@@ -277,7 +279,7 @@ export class CostBenefitAnalyzer {
 
     const recentBenefits = historicalBenefits.slice(-6);
     const avgGrowth = this.calculateAverageGrowth(recentBenefits.map((b) => b.totalValueSecured));
-    const avgBenefit = this.calculateMean(recentBenefits.map((b) => b.totalValueSecured));
+    const avgBenefit = calculateMean(recentBenefits.map((b) => b.totalValueSecured));
 
     const projections: BenefitProjection[] = [];
     let currentBenefit = avgBenefit;
@@ -304,14 +306,14 @@ export class CostBenefitAnalyzer {
         current: costs.costPerAssertion,
         industryAverage: 5.0,
         topQuartile: 2.0,
-        percentile: this.calculatePercentile(costs.costPerAssertion, 2.0, 5.0, 10.0),
+        percentile: this.calculateScorePercentile(costs.costPerAssertion, 2.0, 5.0, 10.0),
       },
       {
         metric: 'Value Secured per Dollar',
         current: benefits.valuePerAssertion / costs.costPerAssertion,
         industryAverage: 100,
         topQuartile: 500,
-        percentile: this.calculatePercentile(
+        percentile: this.calculateScorePercentile(
           benefits.valuePerAssertion / costs.costPerAssertion,
           500,
           100,
@@ -323,21 +325,33 @@ export class CostBenefitAnalyzer {
         current: benefits.averageResolutionTime,
         industryAverage: 72,
         topQuartile: 24,
-        percentile: this.calculatePercentile(benefits.averageResolutionTime, 24, 72, 120, true),
+        percentile: this.calculateScorePercentile(
+          benefits.averageResolutionTime,
+          24,
+          72,
+          120,
+          true,
+        ),
       },
       {
         metric: 'Accuracy Rate',
         current: benefits.accuracyRate,
         industryAverage: 95,
         topQuartile: 99,
-        percentile: this.calculatePercentile(benefits.accuracyRate, 99, 95, 90, false),
+        percentile: this.calculateScorePercentile(benefits.accuracyRate, 99, 95, 90, false),
       },
       {
         metric: 'Uptime Percentage',
         current: benefits.uptimePercentage,
         industryAverage: 99.5,
         topQuartile: 99.99,
-        percentile: this.calculatePercentile(benefits.uptimePercentage, 99.99, 99.5, 99, false),
+        percentile: this.calculateScorePercentile(
+          benefits.uptimePercentage,
+          99.99,
+          99.5,
+          99,
+          false,
+        ),
       },
     ];
   }
@@ -354,14 +368,13 @@ export class CostBenefitAnalyzer {
       }
     }
 
-    return growthRates.length > 0 ? this.calculateMean(growthRates) : 0;
+    return growthRates.length > 0 ? calculateMean(growthRates) : 0;
   }
 
-  private calculateMean(values: number[]): number {
-    return values.reduce((sum, val) => sum + val, 0) / values.length;
-  }
+  // 注意：calculateMean 现在从 @/lib/utils/math 导入
 
-  private calculatePercentile(
+  // 这是一个评分函数，不是统计百分位数函数
+  private calculateScorePercentile(
     current: number,
     topQuartile: number,
     average: number,

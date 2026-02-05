@@ -5,6 +5,7 @@
 
 import { logger } from '@/lib/logger';
 import { query } from '@/server/db';
+import { calculateMean, calculateStdDev } from '@/lib/utils/math';
 
 export interface AnomalyConfig {
   // Z-score threshold for statistical anomalies
@@ -115,8 +116,8 @@ export class AnomalyDetectionService {
 
       const anomalies: AnomalyResult[] = [];
       const prices = protocolData.map((p) => p.price);
-      const mean = this.calculateMean(prices);
-      const stdDev = this.calculateStdDev(prices, mean);
+      const mean = calculateMean(prices);
+      const stdDev = calculateStdDev(prices, mean);
 
       for (const data of protocolData) {
         const zScore = Math.abs((data.price - mean) / stdDev);
@@ -161,8 +162,8 @@ export class AnomalyDetectionService {
   private detectStatisticalAnomalies(symbol: string, data: PriceDataPoint[]): AnomalyResult[] {
     const anomalies: AnomalyResult[] = [];
     const prices = data.map((d) => d.price);
-    const mean = this.calculateMean(prices);
-    const stdDev = this.calculateStdDev(prices, mean);
+    const mean = calculateMean(prices);
+    const stdDev = calculateStdDev(prices, mean);
 
     // Check the most recent data point
     const latest = data[data.length - 1];
@@ -220,8 +221,8 @@ export class AnomalyDetectionService {
     const residuals = detrended.map((d, i) => d - (seasonal[i % this.config.seasonalPeriod] ?? 0));
 
     // Detect anomalies in residuals
-    const residualMean = this.calculateMean(residuals);
-    const residualStdDev = this.calculateStdDev(residuals, residualMean);
+    const residualMean = calculateMean(residuals);
+    const residualStdDev = calculateStdDev(residuals, residualMean);
 
     const latestIndex = residuals.length - 1;
     const latestResidual = residuals[latestIndex];
@@ -274,11 +275,11 @@ export class AnomalyDetectionService {
     const firstHalf = prices.slice(0, midPoint);
     const secondHalf = prices.slice(midPoint);
 
-    const firstMean = this.calculateMean(firstHalf);
-    const secondMean = this.calculateMean(secondHalf);
+    const firstMean = calculateMean(firstHalf);
+    const secondMean = calculateMean(secondHalf);
 
-    const firstStdDev = this.calculateStdDev(firstHalf, firstMean);
-    const secondStdDev = this.calculateStdDev(secondHalf, secondMean);
+    const firstStdDev = calculateStdDev(firstHalf, firstMean);
+    const secondStdDev = calculateStdDev(secondHalf, secondMean);
 
     // Check for significant change in mean
     const meanChange = Math.abs(secondMean - firstMean) / firstMean;
@@ -358,21 +359,6 @@ export class AnomalyDetectionService {
       timestamp: new Date(row.timestamp).getTime(),
       confidence: row.confidence ? parseFloat(row.confidence) : undefined,
     }));
-  }
-
-  /**
-   * Calculate mean
-   */
-  private calculateMean(values: number[]): number {
-    return values.reduce((sum, val) => sum + val, 0) / values.length;
-  }
-
-  /**
-   * Calculate standard deviation
-   */
-  private calculateStdDev(values: number[], mean: number): number {
-    const variance = values.reduce((sum, val) => sum + (val - mean) ** 2, 0) / values.length;
-    return Math.sqrt(variance);
   }
 
   /**

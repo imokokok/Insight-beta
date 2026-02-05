@@ -40,12 +40,25 @@ export function calculateMean(values: number[]): number {
 }
 
 /**
+ * 计算平均值（过滤非有限数）
+ */
+export function calculateMeanSafe(values: number[]): number {
+  if (values.length === 0) return 0;
+  const finite = values.filter((v) => typeof v === 'number' && Number.isFinite(v));
+  if (finite.length === 0) return 0;
+  return finite.reduce((sum, val) => sum + val, 0) / finite.length;
+}
+
+/**
  * 计算标准差
  */
-export function calculateStdDev(values: number[]): number {
+export function calculateStdDev(values: number[]): number;
+export function calculateStdDev(values: number[], mean: number): number;
+export function calculateStdDev(values: number[], mean?: number): number {
   if (values.length === 0) return 0;
-  const mean = calculateMean(values);
-  const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
+  const calculatedMean = mean ?? calculateMean(values);
+  const variance =
+    values.reduce((sum, val) => sum + Math.pow(val - calculatedMean, 2), 0) / values.length;
   return Math.sqrt(variance);
 }
 

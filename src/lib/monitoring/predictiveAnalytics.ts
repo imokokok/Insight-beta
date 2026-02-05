@@ -1,3 +1,5 @@
+import { calculateMeanSafe, calculateStdDev } from '@/lib/utils/math';
+
 export interface PredictionResult {
   prediction: number;
   confidence: number;
@@ -155,7 +157,7 @@ export class PredictiveAnalyticsEngine {
     }
 
     const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
-    const denom = Math.abs(slope) + Math.abs(this.calculateMean(values));
+    const denom = Math.abs(slope) + Math.abs(calculateMeanSafe(values));
     const normalizedSlope = denom === 0 ? 0 : slope / denom;
 
     return normalizedSlope;
@@ -178,7 +180,7 @@ export class PredictiveAnalyticsEngine {
     }
 
     const amplitude = Math.sqrt(Math.pow(sumSin / n, 2) + Math.pow(sumCos / n, 2));
-    const mean = this.calculateMean(values);
+    const mean = calculateMeanSafe(values);
 
     return amplitude / (mean || 1);
   }
@@ -187,7 +189,7 @@ export class PredictiveAnalyticsEngine {
     if (values.length <= lag) return 0;
 
     const n = values.length;
-    const mean = this.calculateMean(values);
+    const mean = calculateMeanSafe(values);
     let numerator = 0;
     let denominator = 0;
 
@@ -214,19 +216,6 @@ export class PredictiveAnalyticsEngine {
     return denominator === 0 ? 0 : numerator / denominator;
   }
 
-  private calculateMean(values: number[]): number {
-    if (values.length === 0) return 0;
-    const finite = values.filter((v) => typeof v === 'number' && Number.isFinite(v));
-    if (finite.length === 0) return 0;
-    return finite.reduce((sum, val) => sum + val, 0) / finite.length;
-  }
-
-  private calculateStdDev(values: number[], mean: number): number {
-    if (values.length === 0) return 0;
-    const squaredDiffs = values.map((val) => Math.pow(val - mean, 2));
-    return Math.sqrt(squaredDiffs.reduce((sum, val) => sum + val, 0) / values.length);
-  }
-
   predictDisputeProbability(input: PredictionInput): PredictionResult {
     const { historicalData, timeWindow = 7 } = input;
     const features = this.extractFeatures(historicalData);
@@ -235,7 +224,7 @@ export class PredictiveAnalyticsEngine {
       .slice(-timeWindow)
       .map((d): number => (d.metadata?.['disputeRate'] as number) || 0);
 
-    const avgDisputeRate = this.calculateMean(disputeRateHistory);
+    const avgDisputeRate = calculateMeanSafe(disputeRateHistory);
     const disputeTrend = this.calculateTrend(disputeRateHistory);
 
     const volatilityPenalty = Math.min(features.volatility, 1) * 0.2;
@@ -360,8 +349,8 @@ export class PredictiveAnalyticsEngine {
       if (currentValue === undefined) continue;
 
       const window = values.slice(i - 10, i);
-      const mean = this.calculateMean(window);
-      const stdDev = this.calculateStdDev(
+      const mean = calculateMeanSafe(window);
+      const stdDev = calculateStdDev(
         window.filter((v) => Number.isFinite(v)),
         mean,
       );
