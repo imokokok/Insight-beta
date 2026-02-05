@@ -175,27 +175,34 @@ export default function UnifiedDashboardPage() {
       {/* Header */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Oracle Dashboard</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl font-bold sm:text-3xl">Oracle Dashboard</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             Real-time monitoring across multiple oracle protocols
           </p>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="text-muted-foreground flex items-center gap-2 text-sm">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+          <div className="text-muted-foreground flex items-center gap-2 text-xs sm:text-sm">
             <Clock className="h-4 w-4" />
-            Last updated: {lastUpdated.toLocaleTimeString()}
+            <span className="hidden sm:inline">Last updated: </span>
+            {lastUpdated.toLocaleTimeString()}
           </div>
-          <Badge variant={wsConnected ? 'default' : 'destructive'}>
+          <Badge variant={wsConnected ? 'default' : 'destructive'} className="text-xs">
             {wsConnected ? 'Live' : 'Disconnected'}
           </Badge>
-          <Button variant="outline" size="icon" onClick={handleRefresh} disabled={loading}>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleRefresh}
+            disabled={loading}
+            className="h-8 w-8 sm:h-9 sm:w-9"
+          >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           </Button>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6 lg:gap-4">
         <StatCard
           title="Protocols"
           value={stats?.totalProtocols ?? 0}
@@ -247,30 +254,32 @@ export default function UnifiedDashboardPage() {
 
       {/* Main Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:w-auto">
-          <TabsTrigger value="overview">
-            <Zap className="mr-2 h-4 w-4" />
-            Overview
+        <TabsList className="grid w-full grid-cols-4 lg:w-auto">
+          <TabsTrigger value="overview" className="px-2 text-xs sm:px-4 sm:text-sm">
+            <Zap className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Overview</span>
+            <span className="sm:hidden">Overview</span>
           </TabsTrigger>
-          <TabsTrigger value="feeds">
-            <BarChart3 className="mr-2 h-4 w-4" />
-            Price Feeds
+          <TabsTrigger value="feeds" className="px-2 text-xs sm:px-4 sm:text-sm">
+            <BarChart3 className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Price Feeds</span>
+            <span className="sm:hidden">Feeds</span>
           </TabsTrigger>
-          <TabsTrigger value="health">
-            <Activity className="mr-2 h-4 w-4" />
+          <TabsTrigger value="health" className="px-2 text-xs sm:px-4 sm:text-sm">
+            <Activity className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
             Health
           </TabsTrigger>
-          <TabsTrigger value="alerts">
-            <AlertTriangle className="mr-2 h-4 w-4" />
+          <TabsTrigger value="alerts" className="px-2 text-xs sm:px-4 sm:text-sm">
+            <AlertTriangle className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
             Alerts
           </TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-6">
+        <TabsContent value="overview" className="space-y-4 sm:space-y-6">
           {/* Top Row: Charts */}
-          <div className="grid gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-2">
+          <div className="grid gap-4 sm:gap-6 xl:grid-cols-3">
+            <div className="xl:col-span-2">
               <OracleCharts />
             </div>
             <div>
@@ -279,7 +288,7 @@ export default function UnifiedDashboardPage() {
           </div>
 
           {/* Middle Row: Protocol Health & Alerts Preview */}
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
             <ProtocolHealthGrid />
             <AlertPanel maxAlerts={5} />
           </div>

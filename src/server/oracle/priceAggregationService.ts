@@ -577,6 +577,39 @@ export class PriceAggregationEngine {
       timestamp: row.timestamp,
     }));
   }
+
+  /**
+   * 获取聚合价格
+   */
+  async getAggregatedPrice(
+    symbol: string,
+    chain?: SupportedChain,
+  ): Promise<{
+    price: number;
+    timestamp: number;
+    primarySource: string;
+    confidence?: number;
+  } | null> {
+    const comparison = await this.aggregatePrices(symbol, chain);
+    if (!comparison) return null;
+
+    return {
+      price: comparison.recommendedPrice,
+      timestamp: new Date(comparison.timestamp).getTime(),
+      primarySource: comparison.recommendationSource,
+      confidence: 0.95, // Default confidence
+    };
+  }
+
+  /**
+   * 获取跨预言机对比（别名方法）
+   */
+  async getCrossOracleComparison(
+    symbol: string,
+    chain?: SupportedChain,
+  ): Promise<CrossOracleComparison | null> {
+    return this.aggregatePrices(symbol, chain);
+  }
 }
 
 // ============================================================================

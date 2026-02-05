@@ -125,59 +125,70 @@ export function PriceHeatmap({
   return (
     <TooltipProvider delayDuration={100}>
       <Card className="w-full">
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
+        <CardHeader className="px-3 pb-2 sm:px-6">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <CardTitle className="text-lg font-semibold">
+              <CardTitle className="text-base font-semibold sm:text-lg">
                 {t('comparison.heatmap.title')}
               </CardTitle>
-              <CardDescription className="text-muted-foreground mt-1 text-sm">
+              <CardDescription className="text-muted-foreground mt-1 text-xs sm:text-sm">
                 {t('comparison.heatmap.description')}
               </CardDescription>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               {criticalDeviations > 0 && (
-                <Badge variant="destructive" className="gap-1">
+                <Badge variant="destructive" className="gap-1 text-xs">
                   <AlertTriangle className="h-3 w-3" />
-                  {criticalDeviations} {t('comparison.heatmap.criticalCount')}
+                  {criticalDeviations}
                 </Badge>
               )}
               <span className="text-muted-foreground text-xs">
-                {t('comparison.heatmap.updatedAt')} {new Date(lastUpdated).toLocaleTimeString()}
+                {new Date(lastUpdated).toLocaleTimeString()}
               </span>
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-3 sm:px-6">
           {/* Legend */}
-          <div className="mb-4 flex items-center gap-4 text-xs">
-            <span className="text-muted-foreground">{t('comparison.heatmap.deviationLevel')}</span>
+          <div className="mb-3 flex flex-wrap items-center gap-2 text-xs sm:mb-4 sm:gap-4">
+            <span className="text-muted-foreground hidden sm:inline">
+              {t('comparison.heatmap.deviationLevel')}
+            </span>
             {(Object.keys(deviationConfig) as PriceDeviationLevel[]).map((level) => (
-              <div key={level} className="flex items-center gap-1.5">
-                <div className={cn('h-3 w-3 rounded border', deviationConfig[level].color)} />
-                <span className="text-muted-foreground">{t(deviationConfig[level].labelKey)}</span>
+              <div key={level} className="flex items-center gap-1 sm:gap-1.5">
+                <div
+                  className={cn(
+                    'h-2.5 w-2.5 rounded border sm:h-3 sm:w-3',
+                    deviationConfig[level].color,
+                  )}
+                />
+                <span className="text-muted-foreground text-xs">
+                  {t(deviationConfig[level].labelKey)}
+                </span>
               </div>
             ))}
           </div>
 
           {/* Heatmap Grid */}
-          <div className="overflow-x-auto">
+          <div className="-mx-3 overflow-x-auto px-3 sm:-mx-6 sm:px-6">
             <div className="inline-block min-w-full">
               {/* Header Row */}
               <div className="flex">
-                <div className="text-muted-foreground w-28 flex-shrink-0 border-b p-2 text-xs font-medium">
+                <div className="text-muted-foreground w-20 flex-shrink-0 border-b p-1.5 text-xs font-medium sm:w-28 sm:p-2">
                   {t('comparison.heatmap.assetPair')}
                 </div>
                 {protocols.map((protocol) => (
                   <div
                     key={protocol}
-                    className="w-24 flex-shrink-0 border-b p-2 text-center text-xs font-medium capitalize"
+                    className="w-16 flex-shrink-0 border-b p-1.5 text-center text-xs font-medium capitalize sm:w-24 sm:p-2"
                   >
-                    {protocol}
+                    <span className="hidden sm:inline">{protocol}</span>
+                    <span className="sm:hidden">{protocol.slice(0, 4)}</span>
                   </div>
                 ))}
-                <div className="text-muted-foreground w-24 flex-shrink-0 border-b p-2 text-center text-xs font-medium">
-                  {t('comparison.heatmap.maxDeviation')}
+                <div className="text-muted-foreground w-16 flex-shrink-0 border-b p-1.5 text-center text-xs font-medium sm:w-24 sm:p-2">
+                  <span className="hidden sm:inline">{t('comparison.heatmap.maxDeviation')}</span>
+                  <span className="sm:hidden">Max</span>
                 </div>
               </div>
 
@@ -185,10 +196,10 @@ export function PriceHeatmap({
               {rows.map((row) => (
                 <div key={row.symbol} className="group flex">
                   {/* Symbol Cell */}
-                  <div className="bg-muted/30 w-28 flex-shrink-0 border-b border-r p-2">
-                    <div className="text-sm font-medium">{row.symbol}</div>
-                    <div className="text-muted-foreground text-xs">
-                      {t('comparison.heatmap.consensus')} {formatPrice(row.consensusPrice)}
+                  <div className="bg-muted/30 w-20 flex-shrink-0 border-b border-r p-1.5 sm:w-28 sm:p-2">
+                    <div className="text-xs font-medium sm:text-sm">{row.symbol}</div>
+                    <div className="text-muted-foreground hidden text-xs sm:block">
+                      {formatPrice(row.consensusPrice)}
                     </div>
                   </div>
 
@@ -202,7 +213,7 @@ export function PriceHeatmap({
                       return (
                         <div
                           key={protocol}
-                          className="bg-muted/10 w-24 flex-shrink-0 border-b border-r p-1"
+                          className="bg-muted/10 w-16 flex-shrink-0 border-b border-r p-1 sm:w-24"
                         />
                       );
                     }
@@ -215,7 +226,7 @@ export function PriceHeatmap({
                         <TooltipTrigger asChild>
                           <button
                             className={cn(
-                              'w-24 flex-shrink-0 border-b border-r p-1 transition-all duration-200',
+                              'w-16 flex-shrink-0 border-b border-r p-0.5 transition-all duration-200 sm:w-24 sm:p-1',
                               config.color,
                               isHovered && 'ring-primary ring-2 ring-inset',
                               'focus:ring-primary focus:outline-none focus:ring-2 focus:ring-inset',
@@ -224,20 +235,20 @@ export function PriceHeatmap({
                             onMouseLeave={() => setHoveredCell(null)}
                             onClick={() => onCellClick?.(cell)}
                           >
-                            <div className="flex h-12 flex-col items-center justify-center">
-                              <div className="flex items-center gap-1">
+                            <div className="flex h-8 flex-col items-center justify-center sm:h-12">
+                              <div className="flex items-center gap-0.5 sm:gap-1">
                                 <span
                                   className={cn(
-                                    'text-sm font-semibold',
+                                    'text-xs font-semibold sm:text-sm',
                                     isPositive ? 'text-emerald-600' : 'text-red-600',
                                   )}
                                 >
                                   {isPositive ? '+' : ''}
                                   {formatDeviation(cell.deviationPercent)}
                                 </span>
-                                {config.icon}
+                                <span className="hidden sm:inline">{config.icon}</span>
                               </div>
-                              <span className="text-muted-foreground text-xs">
+                              <span className="text-muted-foreground hidden text-xs sm:block">
                                 {formatPrice(cell.price)}
                               </span>
                             </div>
@@ -312,7 +323,7 @@ export function PriceHeatmap({
                   })}
 
                   {/* Max Deviation Cell */}
-                  <div className="flex w-24 flex-shrink-0 items-center justify-center border-b p-2">
+                  <div className="flex w-16 flex-shrink-0 items-center justify-center border-b p-1.5 sm:w-24 sm:p-2">
                     <Badge
                       variant={
                         row.maxDeviation > 1
@@ -332,18 +343,13 @@ export function PriceHeatmap({
           </div>
 
           {/* Summary Footer */}
-          <div className="text-muted-foreground mt-4 flex items-center justify-between border-t pt-4 text-sm">
-            <div className="flex items-center gap-4">
-              <span>
-                {t('comparison.heatmap.totalPairs')} {filteredData.totalPairs}{' '}
-                {t('comparison.heatmap.assetPairs')}
-              </span>
-              <span>
-                {protocols.length} {t('comparison.heatmap.protocols')}
-              </span>
+          <div className="text-muted-foreground mt-3 flex flex-col gap-2 border-t pt-3 text-xs sm:mt-4 sm:flex-row sm:items-center sm:justify-between sm:pt-4 sm:text-sm">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <span>{filteredData.totalPairs} pairs</span>
+              <span>{protocols.length} protocols</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Info className="h-4 w-4" />
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <Info className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               <span>{t('comparison.heatmap.clickForDetails')}</span>
             </div>
           </div>

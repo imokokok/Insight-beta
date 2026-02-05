@@ -561,16 +561,18 @@ export default function ComparisonPage() {
   // ============================================================================
 
   return (
-    <div className="container mx-auto space-y-6 p-6">
+    <div className="container mx-auto space-y-4 p-3 sm:space-y-6 sm:p-6">
       {/* 页面标题 */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t('comparison.title')}</h1>
-          <p className="text-muted-foreground mt-1">{t('comparison.description')}</p>
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t('comparison.title')}</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
+            {t('comparison.description')}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           {isLive && (
-            <span className="flex items-center gap-1.5 text-sm text-emerald-600">
+            <span className="flex items-center gap-1.5 text-xs text-emerald-600 sm:text-sm">
               <span className="relative flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
@@ -605,7 +607,7 @@ export default function ComparisonPage() {
       />
 
       {/* 主内容区 */}
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {currentView === 'heatmap' && (
           <PriceHeatmap
             data={heatmapData}
@@ -645,9 +647,9 @@ export default function ComparisonPage() {
       </div>
 
       {/* 使用说明 */}
-      <div className="bg-muted/30 rounded-lg border p-4">
-        <h3 className="mb-2 font-medium">{t('comparison.usage.title')}</h3>
-        <ul className="text-muted-foreground list-inside list-disc space-y-1 text-sm">
+      <div className="bg-muted/30 rounded-lg border p-3 sm:p-4">
+        <h3 className="mb-2 text-sm font-medium sm:text-base">{t('comparison.usage.title')}</h3>
+        <ul className="text-muted-foreground list-inside list-disc space-y-1 text-xs sm:text-sm">
           <li>
             <strong>{t('comparison.views.heatmap')}</strong>：{t('comparison.usage.heatmap')}
           </li>

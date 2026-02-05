@@ -12,11 +12,11 @@ interface ChartsHeaderProps {
 
 function ChartsHeader({ activeTab, onTabChange, t }: ChartsHeaderProps) {
   return (
-    <div className="relative z-10 mb-8 flex flex-col items-center justify-between gap-6 sm:flex-row">
-      <div className="flex items-center gap-3">
+    <div className="relative z-10 mb-4 flex flex-col items-start justify-between gap-3 sm:mb-8 sm:flex-row sm:items-center sm:gap-6">
+      <div className="flex items-center gap-2 sm:gap-3">
         <div
           className={cn(
-            'rounded-xl p-3 shadow-inner ring-1 backdrop-blur-md transition-colors duration-500',
+            'rounded-lg p-2 shadow-inner ring-1 backdrop-blur-md transition-colors duration-500 sm:rounded-xl sm:p-3',
             activeTab === 'activity'
               ? 'bg-gradient-to-br from-purple-500/10 to-indigo-500/10 text-purple-600 ring-purple-500/20'
               : activeTab === 'tvs'
@@ -29,19 +29,19 @@ function ChartsHeader({ activeTab, onTabChange, t }: ChartsHeaderProps) {
           )}
         >
           {activeTab === 'activity' ? (
-            <Activity className="h-6 w-6" />
+            <Activity className="h-5 w-5 sm:h-6 sm:w-6" />
           ) : activeTab === 'tvs' ? (
-            <PieChart className="h-6 w-6" />
+            <PieChart className="h-5 w-5 sm:h-6 sm:w-6" />
           ) : activeTab === 'sync' ? (
-            <Clock className="h-6 w-6" />
+            <Clock className="h-5 w-5 sm:h-6 sm:w-6" />
           ) : activeTab === 'markets' ? (
-            <BarChart3 className="h-6 w-6" />
+            <BarChart3 className="h-5 w-5 sm:h-6 sm:w-6" />
           ) : (
-            <Target className="h-6 w-6" />
+            <Target className="h-5 w-5 sm:h-6 sm:w-6" />
           )}
         </div>
         <div>
-          <h3 className="text-lg font-bold text-gray-800">
+          <h3 className="text-base font-bold text-gray-800 sm:text-lg">
             {activeTab === 'activity'
               ? t('oracle.charts.dailyAssertions')
               : activeTab === 'tvs'
@@ -52,7 +52,7 @@ function ChartsHeader({ activeTab, onTabChange, t }: ChartsHeaderProps) {
                     ? t('oracle.charts.topMarkets')
                     : t('oracle.charts.dataQuality')}
           </h3>
-          <p className="text-sm text-gray-500">
+          <p className="hidden text-xs text-gray-500 sm:block sm:text-sm">
             {activeTab === 'activity'
               ? t('oracle.charts.activityDesc')
               : activeTab === 'tvs'
@@ -66,66 +66,71 @@ function ChartsHeader({ activeTab, onTabChange, t }: ChartsHeaderProps) {
         </div>
       </div>
 
-      <div className="flex max-w-full items-center gap-1 overflow-x-auto rounded-xl border border-gray-200/50 bg-gray-100/50 p-1 backdrop-blur-sm">
+      <div className="flex w-full max-w-full items-center gap-0.5 overflow-x-auto rounded-lg border border-gray-200/50 bg-gray-100/50 p-0.5 backdrop-blur-sm sm:w-auto sm:gap-1 sm:rounded-xl sm:p-1">
         <button
           onClick={() => onTabChange('activity')}
           className={cn(
-            'flex items-center gap-2 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all duration-300',
+            'flex items-center gap-1 whitespace-nowrap rounded-md px-2 py-1.5 text-xs font-medium transition-all duration-300 sm:gap-2 sm:rounded-lg sm:px-4 sm:py-2 sm:text-sm',
             activeTab === 'activity'
               ? 'bg-white text-purple-700 shadow-sm ring-1 ring-black/5'
               : 'text-gray-500 hover:bg-white/50 hover:text-gray-700',
           )}
         >
-          <Activity size={14} />
-          {t('oracle.charts.dailyAssertions')}
+          <Activity size={12} className="sm:h-3.5 sm:w-3.5" />
+          <span className="hidden sm:inline">{t('oracle.charts.dailyAssertions')}</span>
+          <span className="sm:hidden">Activity</span>
         </button>
         <button
           onClick={() => onTabChange('tvs')}
           className={cn(
-            'flex items-center gap-2 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all duration-300',
+            'flex items-center gap-1 whitespace-nowrap rounded-md px-2 py-1.5 text-xs font-medium transition-all duration-300 sm:gap-2 sm:rounded-lg sm:px-4 sm:py-2 sm:text-sm',
             activeTab === 'tvs'
               ? 'bg-white text-pink-700 shadow-sm ring-1 ring-black/5'
               : 'text-gray-500 hover:bg-white/50 hover:text-gray-700',
           )}
         >
-          <PieChart size={14} />
-          {t('oracle.charts.tvsCumulative')}
+          <PieChart size={12} className="sm:h-3.5 sm:w-3.5" />
+          <span className="hidden sm:inline">{t('oracle.charts.tvsCumulative')}</span>
+          <span className="sm:hidden">TVS</span>
         </button>
         <button
           onClick={() => onTabChange('sync')}
           className={cn(
-            'flex items-center gap-2 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all duration-300',
+            'flex items-center gap-1 whitespace-nowrap rounded-md px-2 py-1.5 text-xs font-medium transition-all duration-300 sm:gap-2 sm:rounded-lg sm:px-4 sm:py-2 sm:text-sm',
             activeTab === 'sync'
               ? 'bg-white text-blue-700 shadow-sm ring-1 ring-black/5'
               : 'text-gray-500 hover:bg-white/50 hover:text-gray-700',
           )}
         >
-          <Clock size={14} />
-          {t('oracle.charts.syncHealth')}
+          <Clock size={12} className="sm:h-3.5 sm:w-3.5" />
+          <span className="hidden sm:inline">{t('oracle.charts.syncHealth')}</span>
+          <span className="sm:hidden">Sync</span>
         </button>
         <button
           onClick={() => onTabChange('markets')}
           className={cn(
-            'flex items-center gap-2 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all duration-300',
+            'flex items-center gap-1 whitespace-nowrap rounded-md px-2 py-1.5 text-xs font-medium transition-all duration-300 sm:gap-2 sm:rounded-lg sm:px-4 sm:py-2 sm:text-sm',
             activeTab === 'markets'
               ? 'bg-white text-orange-700 shadow-sm ring-1 ring-black/5'
               : 'text-gray-500 hover:bg-white/50 hover:text-gray-700',
           )}
         >
-          <BarChart3 size={14} />
-          {t('oracle.charts.topMarkets')}
+          <BarChart3 size={12} className="sm:h-3.5 sm:w-3.5" />
+          <span className="hidden sm:inline">{t('oracle.charts.topMarkets')}</span>
+          <span className="sm:hidden">Markets</span>
         </button>
         <button
           onClick={() => onTabChange('accuracy')}
           className={cn(
-            'flex items-center gap-2 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all duration-300',
+            'flex items-center gap-1 whitespace-nowrap rounded-md px-2 py-1.5 text-xs font-medium transition-all duration-300 sm:gap-2 sm:rounded-lg sm:px-4 sm:py-2 sm:text-sm',
             activeTab === 'accuracy'
               ? 'bg-white text-green-700 shadow-sm ring-1 ring-black/5'
               : 'text-gray-500 hover:bg-white/50 hover:text-gray-700',
           )}
         >
-          <Target size={14} />
-          {t('oracle.charts.dataQuality')}
+          <Target size={12} className="sm:h-3.5 sm:w-3.5" />
+          <span className="hidden sm:inline">{t('oracle.charts.dataQuality')}</span>
+          <span className="sm:hidden">Quality</span>
         </button>
       </div>
     </div>

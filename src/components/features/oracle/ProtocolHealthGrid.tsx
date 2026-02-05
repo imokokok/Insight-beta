@@ -67,10 +67,10 @@ export function ProtocolHealthGrid({ className }: ProtocolHealthGridProps) {
 
   return (
     <Card className={cn('overflow-hidden', className)}>
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold">Protocol Health</CardTitle>
-          <div className="flex gap-2">
+      <CardHeader className="px-3 pb-2 sm:px-6">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <CardTitle className="text-base font-semibold sm:text-lg">Protocol Health</CardTitle>
+          <div className="flex flex-wrap gap-1 sm:gap-2">
             <StatusLegend
               status="excellent"
               count={healthData.filter((h) => h.status === 'excellent').length}
@@ -91,7 +91,7 @@ export function ProtocolHealthGrid({ className }: ProtocolHealthGridProps) {
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-2 p-2 sm:grid-cols-2 sm:gap-4 sm:p-4 xl:grid-cols-3">
           {healthData.map((protocol) => (
             <ProtocolHealthCard key={protocol.protocol} data={protocol} />
           ))}
@@ -147,20 +147,22 @@ function ProtocolHealthCard({ data }: { data: ProtocolHealth }) {
   return (
     <div
       className={cn(
-        'relative rounded-xl border-2 p-4 transition-all duration-200',
+        'relative rounded-xl border-2 p-3 transition-all duration-200 sm:p-4',
         'hover:shadow-md',
         config.bgColor,
         config.borderColor,
       )}
     >
-      <div className="mb-3 flex items-start justify-between">
+      <div className="mb-2 flex items-start justify-between sm:mb-3">
         <div className="flex items-center gap-2">
-          <div className={cn('rounded-lg p-2', config.bgColor.replace('50', '100'))}>
-            <Icon className={cn('h-5 w-5', config.color)} />
+          <div className={cn('rounded-lg p-1.5 sm:p-2', config.bgColor.replace('50', '100'))}>
+            <Icon className={cn('h-4 w-4 sm:h-5 sm:w-5', config.color)} />
           </div>
           <div>
-            <h4 className="font-semibold">{PROTOCOL_DISPLAY_NAMES[data.protocol]}</h4>
-            <Badge variant="secondary" className="text-xs">
+            <h4 className="text-sm font-semibold sm:text-base">
+              {PROTOCOL_DISPLAY_NAMES[data.protocol]}
+            </h4>
+            <Badge variant="secondary" className="mt-0.5 text-xs">
               {config.label}
             </Badge>
           </div>
@@ -171,15 +173,15 @@ function ProtocolHealthCard({ data }: { data: ProtocolHealth }) {
         </div>
       </div>
 
-      <div className="mb-3">
-        <div className="mb-1 flex items-center justify-between text-sm">
+      <div className="mb-2 sm:mb-3">
+        <div className="mb-1 flex items-center justify-between text-xs sm:text-sm">
           <span className="text-muted-foreground">Health Score</span>
           <span className={cn('font-bold', config.color)}>{data.score}/100</span>
         </div>
-        <Progress value={data.score} className="h-2" />
+        <Progress value={data.score} className="h-1.5 sm:h-2" />
       </div>
 
-      <div className="grid grid-cols-2 gap-2 text-xs">
+      <div className="grid grid-cols-2 gap-1.5 text-xs sm:gap-2">
         <MetricItem
           icon={<Activity className="h-3 w-3" />}
           label="Accuracy"
@@ -215,11 +217,11 @@ function MetricItem({
   value: string;
 }) {
   return (
-    <div className="flex items-center gap-2 rounded-lg bg-white/50 p-2">
+    <div className="flex items-center gap-1.5 rounded-lg bg-white/50 p-1.5 sm:gap-2 sm:p-2">
       <span className="text-muted-foreground">{icon}</span>
       <div>
         <div className="text-muted-foreground text-[10px] uppercase">{label}</div>
-        <div className="font-medium">{value}</div>
+        <div className="text-xs font-medium sm:text-sm">{value}</div>
       </div>
     </div>
   );

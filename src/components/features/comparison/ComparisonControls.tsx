@@ -129,20 +129,31 @@ export function ComparisonControls({
 
   return (
     <Card className="w-full">
-      <CardContent className="p-4">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+      <CardContent className="p-3 sm:p-4">
+        <div className="flex flex-col gap-3 sm:gap-4 lg:flex-row lg:items-center">
           {/* View Selector */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0">
+          <div className="-mx-1 flex items-center gap-1.5 overflow-x-auto px-1 pb-1 sm:gap-2 sm:pb-2 lg:pb-0">
             {viewOptions.map((option) => (
               <Button
                 key={option.value}
                 variant={currentView === option.value ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => onViewChange(option.value)}
-                className="flex items-center gap-1.5 whitespace-nowrap"
+                className="flex items-center gap-1 whitespace-nowrap px-2 text-xs sm:gap-1.5 sm:px-3 sm:text-sm"
               >
                 {option.icon}
-                {t(option.labelKey)}
+                <span className="hidden sm:inline">{t(option.labelKey)}</span>
+                <span className="sm:hidden">
+                  {option.value === 'heatmap'
+                    ? 'Heat'
+                    : option.value === 'latency'
+                      ? 'Lat'
+                      : option.value === 'cost'
+                        ? 'Cost'
+                        : option.value === 'realtime'
+                          ? 'Live'
+                          : 'Table'}
+                </span>
               </Button>
             ))}
           </div>
@@ -150,24 +161,29 @@ export function ComparisonControls({
           <div className="flex-1" />
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             {/* Filter Popover */}
             <Popover open={showFilters} onOpenChange={setShowFilters}>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className="relative">
-                  <Filter className="mr-1 h-4 w-4" />
-                  {t('comparison.controls.filter')}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="relative px-2 text-xs sm:px-3 sm:text-sm"
+                >
+                  <Filter className="mr-1 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">{t('comparison.controls.filter')}</span>
+                  <span className="sm:hidden">Filter</span>
                   {activeFilterCount > 0 && (
                     <Badge
                       variant="default"
-                      className="ml-1 flex h-5 w-5 items-center justify-center p-0 text-xs"
+                      className="ml-1 flex h-4 w-4 items-center justify-center p-0 text-xs sm:h-5 sm:w-5"
                     >
                       {activeFilterCount}
                     </Badge>
                   )}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-80" align="end">
+              <PopoverContent className="w-72 sm:w-80" align="end">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h4 className="font-medium">{t('comparison.controls.filterConditions')}</h4>
@@ -266,9 +282,10 @@ export function ComparisonControls({
             {/* Settings Popover */}
             <Popover open={showSettings} onOpenChange={setShowSettings}>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <Settings className="mr-1 h-4 w-4" />
-                  {t('comparison.controls.settings')}
+                <Button variant="outline" size="sm" className="px-2 text-xs sm:px-3 sm:text-sm">
+                  <Settings className="mr-1 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">{t('comparison.controls.settings')}</span>
+                  <span className="sm:hidden">Settings</span>
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-72" align="end">
@@ -400,16 +417,26 @@ export function ComparisonControls({
               </PopoverContent>
             </Popover>
 
-            <Button variant="outline" size="sm" onClick={onRefresh} disabled={isLoading}>
-              <RefreshCw className={cn('mr-1 h-4 w-4', isLoading && 'animate-spin')} />
-              {t('comparison.controls.refresh')}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onRefresh}
+              disabled={isLoading}
+              className="px-2 text-xs sm:px-3 sm:text-sm"
+            >
+              <RefreshCw
+                className={cn('mr-1 h-3.5 w-3.5 sm:h-4 sm:w-4', isLoading && 'animate-spin')}
+              />
+              <span className="hidden sm:inline">{t('comparison.controls.refresh')}</span>
+              <span className="sm:hidden">Refresh</span>
             </Button>
 
             <DropdownMenu>
               <DropdownMenuTrigger>
-                <Button variant="outline" size="sm">
-                  <Download className="mr-1 h-4 w-4" />
-                  {t('comparison.controls.export')}
+                <Button variant="outline" size="sm" className="px-2 text-xs sm:px-3 sm:text-sm">
+                  <Download className="mr-1 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">{t('comparison.controls.export')}</span>
+                  <span className="sm:hidden">Export</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">

@@ -1,0 +1,204 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// 价格历史数据模型
+// ============================================================================
+
+model PriceHistoryRaw {
+  id          BigInt   @id @default(autoincrement())
+  symbol      String   @db.VarChar(50)
+  protocol    String   @db.VarChar(50)
+  chain       String   @db.VarChar(50)
+  price       Decimal  @db.Decimal(36, 18)
+  priceRaw    String   @map("price_raw") @db.VarChar(78)
+  decimals    Int      @default(8)
+  timestamp   DateTime @db.Timestamptz()
+  blockNumber BigInt?  @map("block_number")
+  confidence  Decimal? @db.Decimal(5, 4)
+  volume24h   Decimal? @map("volume_24h") @db.Decimal(36, 18)
+  change24h   Decimal? @map("change_24h") @db.Decimal(10, 4)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  @@index([symbol, timestamp(sort: Desc)])
+  @@index([protocol, timestamp(sort: Desc)])
+  @@index([chain, timestamp(sort: Desc)])
+  @@index([timestamp(sort: Desc)])
+  @@index([symbol, protocol, chain, timestamp(sort: Desc)])
+  @@map("price_history_raw")
+}
+
+model PriceHistoryMin1 {
+  id          BigInt   @id @default(autoincrement())
+  symbol      String   @db.VarChar(50)
+  protocol    String   @db.VarChar(50)
+  chain       String   @db.VarChar(50)
+  priceOpen   Decimal  @map("price_open") @db.Decimal(36, 18)
+  priceHigh   Decimal  @map("price_high") @db.Decimal(36, 18)
+  priceLow    Decimal  @map("price_low") @db.Decimal(36, 18)
+  priceClose  Decimal  @map("price_close") @db.Decimal(36, 18)
+  volume      BigInt   @default(0)
+  timestamp   DateTime @db.Timestamptz()
+  sampleCount Int      @default(0) @map("sample_count")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  @@unique([symbol, protocol, chain, timestamp])
+  @@index([symbol, timestamp(sort: Desc)])
+  @@index([timestamp(sort: Desc)])
+  @@map("price_history_min1")
+}
+
+model PriceHistoryMin5 {
+  id          BigInt   @id @default(autoincrement())
+  symbol      String   @db.VarChar(50)
+  protocol    String   @db.VarChar(50)
+  chain       String   @db.VarChar(50)
+  priceOpen   Decimal  @map("price_open") @db.Decimal(36, 18)
+  priceHigh   Decimal  @map("price_high") @db.Decimal(36, 18)
+  priceLow    Decimal  @map("price_low") @db.Decimal(36, 18)
+  priceClose  Decimal  @map("price_close") @db.Decimal(36, 18)
+  volume      BigInt   @default(0)
+  timestamp   DateTime @db.Timestamptz()
+  sampleCount Int      @default(0) @map("sample_count")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  @@unique([symbol, protocol, chain, timestamp])
+  @@index([symbol, timestamp(sort: Desc)])
+  @@index([timestamp(sort: Desc)])
+  @@map("price_history_min5")
+}
+
+model PriceHistoryHour1 {
+  id          BigInt   @id @default(autoincrement())
+  symbol      String   @db.VarChar(50)
+  protocol    String   @db.VarChar(50)
+  chain       String   @db.VarChar(50)
+  priceOpen   Decimal  @map("price_open") @db.Decimal(36, 18)
+  priceHigh   Decimal  @map("price_high") @db.Decimal(36, 18)
+  priceLow    Decimal  @map("price_low") @db.Decimal(36, 18)
+  priceClose  Decimal  @map("price_close") @db.Decimal(36, 18)
+  volume      BigInt   @default(0)
+  timestamp   DateTime @db.Timestamptz()
+  sampleCount Int      @default(0) @map("sample_count")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  @@unique([symbol, protocol, chain, timestamp])
+  @@index([symbol, timestamp(sort: Desc)])
+  @@index([timestamp(sort: Desc)])
+  @@map("price_history_hour1")
+}
+
+model PriceHistoryDay1 {
+  id          BigInt   @id @default(autoincrement())
+  symbol      String   @db.VarChar(50)
+  protocol    String   @db.VarChar(50)
+  chain       String   @db.VarChar(50)
+  priceOpen   Decimal  @map("price_open") @db.Decimal(36, 18)
+  priceHigh   Decimal  @map("price_high") @db.Decimal(36, 18)
+  priceLow    Decimal  @map("price_low") @db.Decimal(36, 18)
+  priceClose  Decimal  @map("price_close") @db.Decimal(36, 18)
+  volume      BigInt   @default(0)
+  timestamp   DateTime @db.Timestamptz()
+  sampleCount Int      @default(0) @map("sample_count")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  @@unique([symbol, protocol, chain, timestamp])
+  @@index([symbol, timestamp(sort: Desc)])
+  @@index([timestamp(sort: Desc)])
+  @@map("price_history_day1")
+}
+
+// ============================================================================
+// Solana 数据模型
+// ============================================================================
+
+model SolanaPriceFeed {
+  id          String   @id @default(uuid())
+  symbol      String   @db.VarChar(50)
+  name        String   @db.VarChar(100)
+  price       Decimal  @db.Decimal(36, 18)
+  confidence  Decimal  @db.Decimal(5, 4)
+  timestamp   DateTime @db.Timestamptz()
+  slot        BigInt
+  signature   String   @db.VarChar(100)
+  source      String   @db.VarChar(50)
+  status      String   @default("active") @db.VarChar(20)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  histories SolanaPriceHistory[]
+
+  @@index([symbol])
+  @@index([timestamp(sort: Desc)])
+  @@index([status])
+  @@map("solana_price_feeds")
+}
+
+model SolanaPriceHistory {
+  id        String   @id @default(uuid())
+  feedId    String   @map("feed_id")
+  price     Decimal  @db.Decimal(36, 18)
+  confidence Decimal @db.Decimal(5, 4)
+  timestamp DateTime @db.Timestamptz()
+  slot      BigInt
+  signature String   @db.VarChar(100)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  feed SolanaPriceFeed @relation(fields: [feedId], references: [id], onDelete: Cascade)
+
+  @@index([feedId, timestamp(sort: Desc)])
+  @@map("solana_price_histories")
+}
+
+model SolanaOracleInstance {
+  id          String   @id @default(uuid())
+  name        String   @db.VarChar(100)
+  programId   String   @map("program_id") @db.VarChar(50)
+  cluster     String   @db.VarChar(20)
+  rpcUrl      String   @map("rpc_url") @db.VarChar(200)
+  isActive    Boolean  @default(true) @map("is_active")
+  lastSyncAt  DateTime? @map("last_sync_at") @db.Timestamptz()
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  @@map("solana_oracle_instances")
+}
+
+model SolanaSyncStatus {
+  id            String   @id @default(uuid())
+  instanceId    String   @map("instance_id")
+  feedSymbol    String   @map("feed_symbol") @db.VarChar(50)
+  lastSlot      BigInt   @map("last_slot")
+  lastSignature String   @map("last_signature") @db.VarChar(100)
+  lastTimestamp DateTime @map("last_timestamp") @db.Timestamptz()
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  @@unique([instanceId, feedSymbol])
+  @@map("solana_sync_status")
+}
+
+model SolanaAlert {
+  id          String   @id @default(uuid())
+  type        String   @db.VarChar(50)
+  severity    String   @db.VarChar(20)
+  symbol      String   @db.VarChar(50)
+  message     String   @db.Text
+  details     Json?
+  status      String   @default("active") @db.VarChar(20)
+  resolvedAt  DateTime? @map("resolved_at") @db.Timestamptz()
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  @@index([symbol, status])
+  @@index([severity, status])
+  @@index([createdAt(sort: Desc)])
+  @@map("solana_alerts")
+}

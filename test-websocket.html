@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Test - Oracle Monitor</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+        }
+        .status {
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .connected {
+            background: #d4edda;
+            color: #155724;
+        }
+        .disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .log {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #007bff;
+            padding-left: 10px;
+        }
+        .controls {
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            margin-right: 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .connect-btn {
+            background: #28a745;
+            color: white;
+        }
+        .disconnect-btn {
+            background: #dc3545;
+            color: white;
+        }
+        .subscribe-btn {
+            background: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔌 WebSocket Test - Oracle Monitor</h1>
+    
+    <div id="status" class="status disconnected">Disconnected</div>
+    
+    <div class="controls">
+        <button class="connect-btn" onclick="connect()">Connect</button>
+        <button class="disconnect-btn" onclick="disconnect()">Disconnect</button>
+        <button class="subscribe-btn" onclick="subscribe()">Subscribe BTC/USD</button>
+    </div>
+    
+    <h3>Event Log:</h3>
+    <div id="log" class="log"></div>
+
+    <script>
+        let ws = null;
+        const logEl = document.getElementById('log');
+        const statusEl = document.getElementById('status');
+
+        function log(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            const time = new Date().toLocaleTimeString();
+            entry.textContent = `[${time}] ${message}`;
+            entry.style.borderLeftColor = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : '#007bff';
+            logEl.appendChild(entry);
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        function updateStatus(connected) {
+            if (connected) {
+                statusEl.textContent = 'Connected';
+                statusEl.className = 'status connected';
+            } else {
+                statusEl.textContent = 'Disconnected';
+                statusEl.className = 'status disconnected';
+            }
+        }
+
+        function connect() {
+            if (ws) {
+                log('Already connected', 'error');
+                return;
+            }
+
+            log('Connecting to ws://localhost:3001...');
+            
+            try {
+                ws = new WebSocket('ws://localhost:3001');
+                
+                ws.onopen = () => {
+                    log('Connected successfully!', 'success');
+                    updateStatus(true);
+                };
+                
+                ws.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    log(`Received: ${JSON.stringify(data, null, 2)}`, 'success');
+                };
+                
+                ws.onerror = (error) => {
+                    log(`Error: ${error}`, 'error');
+                    updateStatus(false);
+                };
+                
+                ws.onclose = () => {
+                    log('Connection closed');
+                    updateStatus(false);
+                    ws = null;
+                };
+            } catch (error) {
+                log(`Failed to connect: ${error}`, 'error');
+            }
+        }
+
+        function disconnect() {
+            if (!ws) {
+                log('Not connected', 'error');
+                return;
+            }
+            
+            ws.close();
+            log('Disconnecting...');
+        }
+
+        function subscribe() {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                log('Not connected', 'error');
+                return;
+            }
+            
+            const message = {
+                type: 'subscribe',
+                symbols: ['BTC/USD', 'ETH/USD']
+            };
+            
+            ws.send(JSON.stringify(message));
+            log(`Subscribed to: ${message.symbols.join(', ')}`);
+        }
+
+        // Auto-connect on page load
+        window.onload = () => {
+            log('Page loaded. Click "Connect" to start.');
+        };
+    </script>
+</body>
+</html>

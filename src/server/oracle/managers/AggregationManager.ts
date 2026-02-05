@@ -91,10 +91,10 @@ export class AggregationManager {
           type: 'price_update',
           data: {
             symbol: comparison.symbol,
-            protocol: 'uma' as import('@/lib/types/unifiedOracleTypes').OracleProtocol,
             chain: 'ethereum' as import('@/lib/types/unifiedOracleTypes').SupportedChain,
             price: comparison.aggregatedPrice,
-            timestamp: new Date().toISOString(),
+            timestamp: Date.now(),
+            source: 'uma' as import('@/lib/types/unifiedOracleTypes').OracleProtocol,
           },
         });
       }

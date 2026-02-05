@@ -102,13 +102,13 @@ export function AlertPanel({
 
   return (
     <Card className={cn('overflow-hidden', className)}>
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
+      <CardHeader className="px-3 pb-2 sm:px-6">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
-            <CardTitle className="text-lg font-semibold">Active Alerts</CardTitle>
+            <CardTitle className="text-base font-semibold sm:text-lg">Active Alerts</CardTitle>
             <Bell className="text-muted-foreground h-4 w-4" />
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-1 sm:gap-2">
             <FilterBadge
               severity="critical"
               count={alertCounts.critical}
@@ -132,15 +132,17 @@ export function AlertPanel({
       </CardHeader>
       <CardContent className="p-0">
         {filteredAlerts.length === 0 ? (
-          <div className="flex h-[300px] flex-col items-center justify-center p-8 text-center">
-            <div className="mb-4 rounded-full bg-green-50 p-4">
-              <CheckCircle2 className="h-8 w-8 text-green-500" />
+          <div className="flex h-[200px] flex-col items-center justify-center p-4 text-center sm:h-[300px] sm:p-8">
+            <div className="mb-3 rounded-full bg-green-50 p-3 sm:mb-4 sm:p-4">
+              <CheckCircle2 className="h-6 w-6 text-green-500 sm:h-8 sm:w-8" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900">All Clear</h3>
-            <p className="text-muted-foreground text-sm">No active alerts matching your filters</p>
+            <h3 className="text-base font-medium text-gray-900 sm:text-lg">All Clear</h3>
+            <p className="text-muted-foreground text-xs sm:text-sm">
+              No active alerts matching your filters
+            </p>
           </div>
         ) : (
-          <ScrollArea className="h-[400px]">
+          <ScrollArea className="h-[300px] sm:h-[400px]">
             <div className="divide-y">
               {filteredAlerts.map((alert) => (
                 <AlertItem
@@ -204,46 +206,56 @@ function AlertItem({
 
   return (
     <div
-      className={cn('relative p-4 transition-colors', config.bgColor, isResolved && 'opacity-60')}
+      className={cn(
+        'relative p-2 transition-colors sm:p-4',
+        config.bgColor,
+        isResolved && 'opacity-60',
+      )}
     >
-      <div className="flex items-start gap-3">
-        <div className={cn('mt-0.5 rounded-full p-1.5', config.bgColor.replace('50', '100'))}>
-          <Icon className={cn('h-4 w-4', config.color)} />
+      <div className="flex items-start gap-2 sm:gap-3">
+        <div
+          className={cn('mt-0.5 rounded-full p-1 sm:p-1.5', config.bgColor.replace('50', '100'))}
+        >
+          <Icon className={cn('h-3.5 w-3.5 sm:h-4 sm:w-4', config.color)} />
         </div>
 
         <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-2">
-            <div>
-              <h4 className={cn('font-medium', config.color)}>{alert.title}</h4>
-              <p className="mt-0.5 text-sm text-gray-600">{alert.message}</p>
+          <div className="flex items-start justify-between gap-1 sm:gap-2">
+            <div className="min-w-0 flex-1">
+              <h4 className={cn('truncate text-sm font-medium sm:text-base', config.color)}>
+                {alert.title}
+              </h4>
+              <p className="mt-0.5 line-clamp-2 text-xs text-gray-600 sm:text-sm">
+                {alert.message}
+              </p>
             </div>
-            <div className="flex gap-1">
+            <div className="flex flex-shrink-0 gap-0.5 sm:gap-1">
               {!isResolved && !isAcknowledged && (
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7"
+                  className="h-6 w-6 sm:h-7 sm:w-7"
                   onClick={onAcknowledge}
                   title="Acknowledge"
                 >
-                  <CheckCircle2 className="h-4 w-4" />
+                  <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </Button>
               )}
               {!isResolved && (
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7"
+                  className="h-6 w-6 sm:h-7 sm:w-7"
                   onClick={onResolve}
                   title="Resolve"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </Button>
               )}
             </div>
           </div>
 
-          <div className="text-muted-foreground mt-2 flex flex-wrap items-center gap-2 text-xs">
+          <div className="text-muted-foreground mt-1.5 flex flex-wrap items-center gap-1.5 text-xs sm:mt-2 sm:gap-2">
             {alert.protocol && (
               <Badge variant="secondary" className="text-xs">
                 {PROTOCOL_DISPLAY_NAMES[alert.protocol]}
@@ -260,7 +272,7 @@ function AlertItem({
             </span>
             <span className="flex items-center gap-1">
               <Shield className="h-3 w-3" />
-              {alert.occurrences} occurrences
+              {alert.occurrences}
             </span>
           </div>
         </div>
