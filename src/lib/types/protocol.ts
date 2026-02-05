@@ -187,36 +187,30 @@ export interface SwitchboardOracle extends BaseProtocolNode {
 
 export interface DIAScraper {
   id: string;
-  exchange: string;
-  pair: string;
+  name: string;
+  type: 'cex' | 'dex' | 'defi';
   status: 'active' | 'inactive';
   reliability: number;
   lastUpdate: string;
-  updateFrequency: number;
+  totalAssets: number;
 }
 
 export interface DIAAsset extends BaseProtocolFeed {
   source: string;
-  volume24h: number;
-  marketCap: number;
+  confidence: number;
+  method: string;
 }
 
 // ==================== Flux 特定类型 ====================
 
-export interface FluxRequest {
-  id: string;
-  requester: string;
-  dataSource: string;
-  status: 'pending' | 'fulfilled' | 'expired';
-  createdAt: string;
-  fulfilledAt?: string;
-  finalityThreshold: number;
-  providers: FluxProvider[];
+export interface FluxDataRequest extends BaseProtocolFeed {
+  finality: number;
+  providers: number;
+  reward: string;
 }
 
 export interface FluxProvider extends BaseProtocolNode {
-  stake: number;
-  responseTime: number;
+  stake: string;
   accuracy: number;
 }
 
