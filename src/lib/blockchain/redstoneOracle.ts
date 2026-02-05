@@ -15,6 +15,7 @@ import {
 } from 'viem';
 import { logger } from '@/lib/logger';
 import { VIEM_CHAIN_MAP } from './chainConfig';
+import { calculateDataFreshness } from './oracleClientBase';
 import type {
   SupportedChain,
   UnifiedPriceFeed,
@@ -255,9 +256,7 @@ export class RedStoneClient {
     symbol: string,
   ): UnifiedPriceFeed {
     const timestampDate = new Date(data.timestamp * 1000);
-    const now = new Date();
-    const stalenessThreshold = 300; // 5 分钟
-    const isStale = (now.getTime() - timestampDate.getTime()) / 1000 > stalenessThreshold;
+    const { isStale, stalenessSeconds } = calculateDataFreshness(timestampDate, 300);
 
     const [baseAsset, quoteAsset] = symbol.split('/');
 
@@ -276,7 +275,7 @@ export class RedStoneClient {
       confidence: 0.97,
       sources: 1,
       isStale,
-      stalenessSeconds: isStale ? Math.floor((now.getTime() - timestampDate.getTime()) / 1000) : 0,
+      stalenessSeconds,
     };
   }
 

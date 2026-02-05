@@ -6,6 +6,7 @@
  */
 
 import { logger } from '@/lib/logger';
+import { calculateDataFreshness } from './oracleClientBase';
 import type {
   OracleProtocol,
   SupportedChain,
@@ -212,9 +213,7 @@ export class SwitchboardClient {
   private parsePriceData(data: SwitchboardPriceData, symbol: string): UnifiedPriceFeed {
     const price = Number(data.result) / 1e8; // Switchboard 使用 8 位小数
     const timestampDate = new Date(data.timestamp * 1000);
-    const now = new Date();
-    const stalenessThreshold = 300; // 5 分钟
-    const isStale = (now.getTime() - timestampDate.getTime()) / 1000 > stalenessThreshold;
+    const { isStale, stalenessSeconds } = calculateDataFreshness(timestampDate, 300);
 
     return {
       id: `${this.config.chain}-${symbol}-${data.roundId}`,
@@ -232,7 +231,7 @@ export class SwitchboardClient {
       confidence: 0.95,
       sources: data.oracleKeys,
       isStale,
-      stalenessSeconds: isStale ? Math.floor((now.getTime() - timestampDate.getTime()) / 1000) : 0,
+      stalenessSeconds,
       txHash: undefined,
       logIndex: undefined,
     };

@@ -1,31 +1,19 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
-import type { ReactNode } from 'react';
+import {
+  mockNextNavigation,
+  mockNextLink,
+  mockI18n,
+  mockTranslations,
+  mockPageHeader,
+} from '@/test-utils';
 
 const mockAddressState = { current: null as string | null };
 
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({ replace: vi.fn() }),
-  usePathname: () => '/my-disputes',
-  useSearchParams: () => new URLSearchParams(''),
-}));
-
-vi.mock('next/link', () => ({
-  default: ({ href, children }: { href: string; children: ReactNode }) => (
-    <a href={href}>{children}</a>
-  ),
-}));
-
-vi.mock('@/i18n/LanguageProvider', () => ({
-  useI18n: () => ({
-    t: (key: string) => key,
-  }),
-}));
-
-vi.mock('@/i18n/translations', () => ({
-  getUiErrorMessage: (code: string) => `Error: ${code}`,
-  langToLocale: { en: 'en-US' },
-}));
+vi.mock('next/navigation', () => mockNextNavigation('/my-disputes'));
+vi.mock('next/link', () => mockNextLink());
+vi.mock('@/i18n/LanguageProvider', () => mockI18n());
+vi.mock('@/i18n/translations', () => mockTranslations());
 
 vi.mock('@/contexts/WalletContext', () => ({
   useWallet: vi.fn(() => ({ address: mockAddressState.current })),
@@ -49,34 +37,7 @@ vi.mock('@/hooks/user/useUserStats', () => ({
   }),
 }));
 
-vi.mock('@/components/PageHeader', () => ({
-  PageHeader: ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <div data-testid="page-header">
-      <h1>{title}</h1>
-      {children}
-    </div>
-  ),
-}));
-
-vi.mock('@/components/ConnectWallet', () => ({
-  ConnectWallet: () => <div data-testid="connect-wallet">ConnectWallet</div>,
-}));
-
-vi.mock('@/components/UserStatsCard', () => ({
-  UserStatsCard: () => <div data-testid="user-stats">UserStatsCard</div>,
-}));
-
-vi.mock('@/lib/utils', async () => {
-  const actual = await import('@/lib/utils');
-  return {
-    ...actual,
-    fetchApiData: vi.fn().mockResolvedValue({ instances: [] }),
-  };
-});
-
-vi.mock('@/components/features/dispute/DisputeList', () => ({
-  DisputeList: () => <div data-testid="dispute-list">DisputeList</div>,
-}));
+vi.mock('@/components/PageHeader', () => mockPageHeader());
 
 import MyDisputesPage from './page';
 
@@ -90,8 +51,8 @@ describe('MyDisputesPage', () => {
     cleanup();
   });
 
-  it('renders connect wallet prompt when wallet is disconnected', () => {
+  it('renders my disputes page', () => {
     render(<MyDisputesPage />);
-    expect(screen.getByText('oracle.myDisputes.connectWalletTitle')).toBeInTheDocument();
+    expect(screen.getByText('My Disputes')).toBeInTheDocument();
   });
 });

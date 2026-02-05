@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { manipulationDetectionService } from '@/lib/services/manipulationDetectionService';
 import { createSupabaseClient } from '@/lib/supabase/server';
-import { logger } from '@/lib/utils/logger';
+import { logger } from '@/lib/logger';
 import type { OracleProtocol, SupportedChain } from '@/lib/types';
 
 interface StartMonitorBody {

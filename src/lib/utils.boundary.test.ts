@@ -5,7 +5,6 @@ import {
   toIsoFromSeconds,
   formatUsdCompact,
   formatUsd,
-  formatNumberCompact,
   formatTime,
   calculatePercentage,
   formatDurationMinutes,
@@ -108,20 +107,6 @@ describe('formatUsd', () => {
 
   it('should handle zero', () => {
     expect(formatUsd(0, 'en-US')).toContain('$0');
-  });
-});
-
-describe('formatNumberCompact', () => {
-  it('should format numbers compactly', () => {
-    expect(formatNumberCompact(1000000, 'en-US')).toBeTruthy();
-  });
-
-  it('should handle zero', () => {
-    expect(formatNumberCompact(0, 'en-US')).toBe('0');
-  });
-
-  it('should handle small numbers', () => {
-    expect(formatNumberCompact(100, 'en-US')).toBe('100');
   });
 });
 

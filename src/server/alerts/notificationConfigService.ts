@@ -17,7 +17,7 @@ import type {
   TelegramConfig,
   PagerDutyConfig,
   NotificationConfig,
-} from './notificationService';
+} from './notifications';
 
 // ============================================================================
 // Types

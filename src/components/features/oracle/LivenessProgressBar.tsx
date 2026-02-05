@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { InfoTooltip } from '@/components/features/common/InfoTooltip';
-import { Clock } from 'lucide-react';
+import { Tooltip } from '@/components/features/common/Tooltip';
+import { Clock, Info } from 'lucide-react';
 
 interface LivenessProgressBarProps {
   startDate: string | number;
@@ -68,7 +68,11 @@ export function LivenessProgressBar({
       <div className="flex justify-between text-xs font-medium uppercase tracking-wide text-gray-500">
         <span className="flex items-center gap-1">
           {label}
-          {tooltip && <InfoTooltip content={tooltip} side="right" />}
+          {tooltip && (
+            <Tooltip content={tooltip} position="right" theme="info">
+              <Info size={14} className="cursor-help text-gray-400 hover:text-purple-600" />
+            </Tooltip>
+          )}
         </span>
         <span
           className={cn(

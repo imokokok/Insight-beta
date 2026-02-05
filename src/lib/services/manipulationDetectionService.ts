@@ -1,5 +1,5 @@
 import { ManipulationDetector } from '@/lib/security/manipulationDetector';
-import { logger } from '@/lib/utils/logger';
+import { logger } from '@/lib/logger';
 import type { ManipulationDetectionConfig, DetectionMetrics } from '@/lib/types/security/detection';
 import type { OracleProtocol, SupportedChain } from '@/lib/types';
 

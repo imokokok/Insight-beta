@@ -7,11 +7,9 @@
 
 import { query } from '@/server/db';
 import { logger } from '@/lib/logger';
-import {
-  notificationService,
-  type AlertNotification,
-  type AlertSeverity,
-} from './notificationService';
+import { NotificationService, type AlertNotification, type AlertSeverity } from './notifications';
+
+const notificationService = new NotificationService();
 import type { OracleProtocol, SupportedChain } from '@/lib/types/unifiedOracleTypes';
 
 // ============================================================================

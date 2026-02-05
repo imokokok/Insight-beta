@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { manipulationDetectionService } from '@/lib/services/manipulationDetectionService';
 import { createSupabaseClient } from '@/lib/supabase/server';
-import { logger } from '@/lib/utils/logger';
+import { logger } from '@/lib/logger';
 
 interface MetricsRow {
   total_detections: number;

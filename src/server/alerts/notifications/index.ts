@@ -29,8 +29,10 @@ export {
   formatEmailBody,
   truncateText,
   sleep,
-  fetchWithTimeout,
 } from './utils';
+
+// Re-export fetchWithTimeout from lib/utils
+export { fetchWithTimeout } from '@/lib/utils';
 
 // Channel implementations
 export { sendEmailNotification } from './email';

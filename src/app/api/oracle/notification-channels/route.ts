@@ -8,7 +8,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { notificationConfigService } from '@/server/alerts/notificationConfigService';
 import { logger } from '@/lib/logger';
-import type { NotificationChannel } from '@/server/alerts/notificationService';
+import type { NotificationChannel } from '@/server/alerts/notifications';
 
 // ============================================================================
 // GET /api/oracle/notification-channels

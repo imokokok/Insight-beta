@@ -1,33 +1,21 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
+import {
+  mockNextNavigation,
+  mockNextLink,
+  mockI18n,
+  mockTranslations,
+  mockPageHeader,
+  mockAssertionList,
+} from '@/test-utils';
 
-vi.mock('next/link', () => ({
-  default: ({ href, children }: { href: string; children: React.ReactNode }) => (
-    <a href={href}>{children}</a>
-  ),
-}));
-
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({ replace: vi.fn() }),
-  usePathname: () => '/watchlist',
-  useSearchParams: () => new URLSearchParams(''),
-}));
-
-vi.mock('@/i18n/LanguageProvider', () => ({
-  useI18n: () => ({
-    t: (key: string) => key,
-  }),
-}));
-
-vi.mock('@/i18n/translations', () => ({
-  getUiErrorMessage: () => 'uiError',
-  langToLocale: { en: 'en-US' },
-}));
-
+vi.mock('next/link', () => mockNextLink());
+vi.mock('next/navigation', () => mockNextNavigation('/watchlist'));
+vi.mock('@/i18n/LanguageProvider', () => mockI18n());
+vi.mock('@/i18n/translations', () => mockTranslations());
 vi.mock('@/hooks/user/useWatchlist', () => ({
   useWatchlist: () => ({ watchlist: ['0xabc'], mounted: true }),
 }));
-
 vi.mock('@/hooks/ui/useInfiniteList', () => ({
   useInfiniteList: () => ({
     items: [],
@@ -38,14 +26,8 @@ vi.mock('@/hooks/ui/useInfiniteList', () => ({
     error: null,
   }),
 }));
-
-vi.mock('@/components/PageHeader', () => ({
-  PageHeader: ({ title }: { title: string }) => <h1>{title}</h1>,
-}));
-
-vi.mock('@/components/AssertionList', () => ({
-  AssertionList: () => <div>AssertionList</div>,
-}));
+vi.mock('@/components/PageHeader', () => mockPageHeader());
+vi.mock('@/components/AssertionList', () => mockAssertionList());
 
 import WatchlistPage from './page';
 
@@ -60,6 +42,6 @@ describe('WatchlistPage', () => {
 
   it('renders watchlist page', () => {
     render(<WatchlistPage />);
-    expect(screen.getByText('nav.watchlist')).toBeInTheDocument();
+    expect(screen.getByText('Watchlist')).toBeInTheDocument();
   });
 });

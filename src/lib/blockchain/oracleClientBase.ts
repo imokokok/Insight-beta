@@ -46,6 +46,23 @@ export function isPriceStale(timestamp: number, threshold: number): boolean {
 }
 
 /**
+ * 计算数据新鲜度状态
+ * @param timestamp - 数据时间戳 (Date 或毫秒时间戳)
+ * @param thresholdSeconds - 陈旧阈值 (秒)，默认 300 (5分钟)
+ * @returns 包含 isStale 和 stalenessSeconds 的对象
+ */
+export function calculateDataFreshness(
+  timestamp: Date | number,
+  thresholdSeconds: number = 300,
+): { isStale: boolean; stalenessSeconds: number } {
+  const timestampMs = timestamp instanceof Date ? timestamp.getTime() : timestamp;
+  const now = Date.now();
+  const stalenessSeconds = Math.floor((now - timestampMs) / 1000);
+  const isStale = stalenessSeconds > thresholdSeconds;
+  return { isStale, stalenessSeconds: isStale ? stalenessSeconds : 0 };
+}
+
+/**
  * 格式化价格
  * @param price - 原始价格
  * @param decimals - 小数位数
@@ -75,17 +92,6 @@ export function parseSymbolPair(symbol: string): { base: string; quote: string }
  */
 export function normalizeSymbol(symbol: string): string {
   return symbol.toUpperCase().replace(/-/g, '/');
-}
-
-/**
- * 计算价格偏差百分比
- * @param price1 - 价格1
- * @param price2 - 价格2
- * @returns 偏差百分比
- */
-export function calculatePriceDeviation(price1: number, price2: number): number {
-  if (price2 === 0) return 0;
-  return Math.abs((price1 - price2) / price2) * 100;
 }
 
 /**

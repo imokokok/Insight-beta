@@ -10,10 +10,14 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
-import { withErrorHandling, createErrorResponse } from '@/lib/api/errorHandler';
 import { getOptimisticOracleOverview } from '@/server/oracle/optimisticService';
 
 export const dynamic = 'force-dynamic';
+
+function createErrorResponse(code: string, message: string, status: number = 500): NextResponse {
+  logger.error('API Error', { code, message, status });
+  return NextResponse.json({ success: false, error: { code, message } }, { status });
+}
 
 /**
  * GET /api/oracle/optimistic
@@ -21,7 +25,7 @@ export const dynamic = 'force-dynamic';
  * 获取乐观预言机总览数据
  * 支持协议筛选和链筛选
  */
-export const GET = withErrorHandling(async (request: NextRequest) => {
+export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
 
   // 查询参数
@@ -55,7 +59,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     logger.error('Failed to fetch optimistic oracle overview', { error });
     return createErrorResponse('INTERNAL_ERROR', 'Failed to fetch optimistic oracle data', 500);
   }
-});
+}
 
 /**
  * POST /api/oracle/optimistic
@@ -63,7 +67,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
  * 触发乐观预言机数据同步
  * 支持按协议和链同步
  */
-export const POST = withErrorHandling(async (request: NextRequest) => {
+export async function POST(request: NextRequest) {
   const body = await request.json();
   const { protocol = 'all', chain = 'all', force = false } = body;
 
@@ -86,4 +90,4 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     logger.error('Failed to trigger sync', { error });
     return createErrorResponse('SYNC_ERROR', 'Failed to trigger optimistic oracle sync', 500);
   }
-});
+}

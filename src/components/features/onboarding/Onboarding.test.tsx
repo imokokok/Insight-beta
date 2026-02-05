@@ -1,9 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Onboarding } from './Onboarding';
-import { HelpTooltip } from '@/components/features/common/HelpTooltip';
-import { FeatureCallout } from '@/components/features/common/FeatureCallout';
-import { AlertCircle } from 'lucide-react';
+import { Tooltip } from '@/components/features/common/Tooltip';
 import { LanguageProvider } from '@/i18n/LanguageProvider';
 import { LANG_STORAGE_KEY } from '@/i18n/translations';
 
@@ -120,12 +118,12 @@ describe('Onboarding Component', () => {
   });
 });
 
-describe('HelpTooltip Component', () => {
+describe('Tooltip Component', () => {
   it('should display tooltip on hover', () => {
     render(
-      <HelpTooltip content="This is a tooltip">
+      <Tooltip content="This is a tooltip">
         <button>Hover me</button>
-      </HelpTooltip>,
+      </Tooltip>,
     );
 
     const button = screen.getByText('Hover me');
@@ -146,32 +144,16 @@ describe('HelpTooltip Component', () => {
     expect(screen.queryByText('This is a tooltip')).not.toBeInTheDocument();
   });
 
-  it('should display tooltip with title', () => {
+  it('should display tooltip with info theme', () => {
     render(
-      <HelpTooltip content="This is a tooltip" title="Tooltip Title">
+      <Tooltip content="This is a tooltip" theme="info">
         <button>Hover me</button>
-      </HelpTooltip>,
+      </Tooltip>,
     );
 
     const button = screen.getByText('Hover me');
     fireEvent.mouseEnter(button);
 
-    expect(screen.getByText('Tooltip Title')).toBeInTheDocument();
     expect(screen.getByText('This is a tooltip')).toBeInTheDocument();
-  });
-});
-
-describe('FeatureCallout Component', () => {
-  it('should render feature callout with title and description', () => {
-    render(
-      <FeatureCallout
-        title="Feature Title"
-        description="Feature description text"
-        icon={<AlertCircle />}
-      />,
-    );
-
-    expect(screen.getByText('Feature Title')).toBeInTheDocument();
-    expect(screen.getByText('Feature description text')).toBeInTheDocument();
   });
 });

@@ -24,10 +24,3 @@ export {
   AlertEscalationManager,
   AlertDeduplicationManager,
 } from './managers';
-
-// 主服务
-export { AlertManagementService } from './service';
-
-// 单例实例
-import { AlertManagementService } from './service';
-export const alertManagementService = new AlertManagementService();

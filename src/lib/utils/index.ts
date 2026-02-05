@@ -5,7 +5,7 @@
  */
 
 // UI 工具
-export { cn, getAssertionStatusColor } from './ui';
+export { cn } from './ui';
 
 // 格式化工具
 export {
@@ -14,7 +14,6 @@ export {
   truncateAddress,
   formatUsdCompact,
   formatUsd,
-  formatNumberCompact,
   formatTime,
   calculatePercentage,
   formatDurationMinutes,
@@ -28,7 +27,6 @@ export {
   getErrorCode,
   getErrorDetails,
   fetchApiData,
-  fetchWithErrorHandling,
   fetchWithTimeout,
   getErrorMessage,
 } from './api';
@@ -37,13 +35,4 @@ export {
 export { isZeroBytes32, getExplorerUrl, parseRpcUrls } from './blockchain';
 
 // 数学工具
-export {
-  calculateMedian,
-  calculatePercentile,
-  calculateMean,
-  calculateMeanSafe,
-  calculateStdDev,
-  calculateCV,
-  calculateDeviation,
-  roundTo,
-} from './math';
+export { calculateMedian, calculateMean, calculateStdDev, calculateDeviation } from './math';

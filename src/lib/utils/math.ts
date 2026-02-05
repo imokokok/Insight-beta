@@ -22,31 +22,11 @@ export function calculateMedian(values: number[]): number {
 }
 
 /**
- * 计算百分位数
- */
-export function calculatePercentile(values: number[], percentile: number): number {
-  if (values.length === 0) return 0;
-  const sorted = [...values].sort((a, b) => a - b);
-  const index = Math.ceil((percentile / 100) * sorted.length) - 1;
-  return sorted[Math.max(0, index)] ?? sorted[0] ?? 0;
-}
-
-/**
  * 计算平均值
  */
 export function calculateMean(values: number[]): number {
   if (values.length === 0) return 0;
   return values.reduce((sum, val) => sum + val, 0) / values.length;
-}
-
-/**
- * 计算平均值（过滤非有限数）
- */
-export function calculateMeanSafe(values: number[]): number {
-  if (values.length === 0) return 0;
-  const finite = values.filter((v) => typeof v === 'number' && Number.isFinite(v));
-  if (finite.length === 0) return 0;
-  return finite.reduce((sum, val) => sum + val, 0) / finite.length;
 }
 
 /**
@@ -63,26 +43,9 @@ export function calculateStdDev(values: number[], mean?: number): number {
 }
 
 /**
- * 计算变异系数 (CV)
- */
-export function calculateCV(values: number[]): number {
-  const mean = calculateMean(values);
-  if (mean === 0) return 0;
-  return (calculateStdDev(values) / mean) * 100;
-}
-
-/**
  * 计算价格偏差百分比
  */
 export function calculateDeviation(actual: number, expected: number): number {
   if (expected === 0) return 0;
   return ((actual - expected) / expected) * 100;
-}
-
-/**
- * 四舍五入到指定小数位
- */
-export function roundTo(value: number, decimals: number): number {
-  const factor = Math.pow(10, decimals);
-  return Math.round(value * factor) / factor;
 }

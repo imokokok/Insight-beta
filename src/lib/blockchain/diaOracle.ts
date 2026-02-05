@@ -6,6 +6,7 @@
  */
 
 import { logger } from '@/lib/logger';
+import { calculateDataFreshness } from './oracleClientBase';
 import type {
   OracleProtocol,
   SupportedChain,
@@ -168,9 +169,7 @@ export class DIAClient {
     symbol: string,
   ): UnifiedPriceFeed {
     const timestampDate = new Date(data.timestamp);
-    const now = new Date();
-    const stalenessThreshold = 300; // 5 分钟
-    const isStale = (now.getTime() - timestampDate.getTime()) / 1000 > stalenessThreshold;
+    const { isStale, stalenessSeconds } = calculateDataFreshness(timestampDate, 300);
 
     const [baseAsset, quoteAsset] = symbol.split('/');
 
@@ -189,7 +188,7 @@ export class DIAClient {
       confidence: 0.95,
       sources: [data.source],
       isStale,
-      stalenessSeconds: isStale ? Math.floor((now.getTime() - timestampDate.getTime()) / 1000) : 0,
+      stalenessSeconds,
     };
   }
 

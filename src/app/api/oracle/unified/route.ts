@@ -8,10 +8,14 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
-import { withErrorHandling, createErrorResponse } from '@/lib/api/errorHandler';
 import { getUnifiedPriceData, compareProtocols } from '@/server/oracle/unifiedService';
 
 export const dynamic = 'force-dynamic';
+
+function createErrorResponse(code: string, message: string, status: number = 500): NextResponse {
+  logger.error('API Error', { code, message, status });
+  return NextResponse.json({ success: false, error: { code, message } }, { status });
+}
 
 /**
  * GET /api/oracle/unified
@@ -19,7 +23,7 @@ export const dynamic = 'force-dynamic';
  * 获取聚合价格数据
  * 支持多协议价格对比和异常检测
  */
-export const GET = withErrorHandling(async (request: NextRequest) => {
+export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
 
   const pair = searchParams.get('pair'); // e.g., 'ETH/USD'
@@ -52,7 +56,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     logger.error('Failed to fetch unified oracle data', { error });
     return createErrorResponse('INTERNAL_ERROR', 'Failed to fetch unified oracle data', 500);
   }
-});
+}
 
 /**
  * POST /api/oracle/unified
@@ -60,7 +64,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
  * 执行跨协议价格比较
  * 检测价格偏差和异常
  */
-export const POST = withErrorHandling(async (request: NextRequest) => {
+export async function POST(request: NextRequest) {
   const body = await request.json();
   const {
     pair,
@@ -96,4 +100,4 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     logger.error('Failed to compare protocols', { error });
     return createErrorResponse('COMPARISON_ERROR', 'Failed to compare oracle protocols', 500);
   }
-});
+}

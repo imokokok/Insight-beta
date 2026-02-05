@@ -34,13 +34,6 @@ const AGGREGATOR_ABI = parseAbi([
   'function getRoundData(uint80 _roundId) external view returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound)',
 ]);
 
-// Feed Registry ABI (保留供将来使用)
-// const FEED_REGISTRY_ABI = parseAbi([
-//   'function latestRoundData(address base, address quote) external view returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound)',
-//   'function decimals(address base, address quote) external view returns (uint8)',
-//   'function getFeed(address base, address quote) external view returns (address)',
-// ]);
-
 // ============================================================================
 // Chainlink 特定配置
 // ============================================================================

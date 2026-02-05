@@ -8,13 +8,13 @@ import {
   formatPriceValue,
   parseSymbolPair,
   normalizeSymbol,
-  calculatePriceDeviation,
   isValidAddressFormat,
   createLogger,
   processBatch,
   withRetry,
   DEFAULT_STALENESS_THRESHOLDS,
 } from './oracleClientBase';
+import { calculateDeviation } from '@/lib/utils/math';
 import { logger } from '@/lib/logger';
 
 // Mock logger
@@ -92,17 +92,17 @@ describe('normalizeSymbol', () => {
   });
 });
 
-describe('calculatePriceDeviation', () => {
+describe('calculateDeviation', () => {
   it('should calculate deviation correctly', () => {
-    expect(calculatePriceDeviation(110, 100)).toBe(10);
+    expect(calculateDeviation(110, 100)).toBe(10);
   });
 
   it('should return 0 when reference price is 0', () => {
-    expect(calculatePriceDeviation(100, 0)).toBe(0);
+    expect(calculateDeviation(100, 0)).toBe(0);
   });
 
-  it('should calculate absolute deviation', () => {
-    expect(calculatePriceDeviation(90, 100)).toBe(10);
+  it('should calculate signed deviation', () => {
+    expect(calculateDeviation(90, 100)).toBe(-10);
   });
 });
 

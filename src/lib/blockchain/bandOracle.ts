@@ -6,6 +6,7 @@
  */
 
 import { logger } from '@/lib/logger';
+import { calculateDataFreshness } from './oracleClientBase';
 import type {
   OracleProtocol,
   SupportedChain,
@@ -145,9 +146,7 @@ export class BandClient {
   private parsePriceData(data: BandPriceData, symbol: string): UnifiedPriceFeed {
     const price = data.rate / data.multiplier;
     const timestampDate = new Date(data.lastUpdate);
-    const now = new Date();
-    const stalenessThreshold = 300; // 5 分钟
-    const isStale = (now.getTime() - timestampDate.getTime()) / 1000 > stalenessThreshold;
+    const { isStale, stalenessSeconds } = calculateDataFreshness(timestampDate, 300);
 
     return {
       id: `band-${this.config.chain}-${symbol}-${data.blockHeight}`,
@@ -165,7 +164,7 @@ export class BandClient {
       confidence: 0.9,
       sources: this.config.askCount,
       isStale,
-      stalenessSeconds: isStale ? Math.floor((now.getTime() - timestampDate.getTime()) / 1000) : 0,
+      stalenessSeconds,
       txHash: undefined,
       logIndex: undefined,
     };

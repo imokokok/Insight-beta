@@ -5,91 +5,16 @@ import { esTranslations } from './locales/es';
 import { frTranslations } from './locales/fr';
 import { koTranslations } from './locales/ko';
 
+// Re-export types and constants from types.ts to avoid duplication
 export type { Lang };
-
-export const languages: Array<{ code: Lang; label: string }> = [
-  { code: 'zh', label: '中文' },
-  { code: 'en', label: 'English' },
-  { code: 'es', label: 'Español' },
-  { code: 'fr', label: 'Français' },
-  { code: 'ko', label: '한국어' },
-];
-
-export const LANG_STORAGE_KEY = 'oracle-monitor_lang';
-
-export function isLang(value: unknown): value is Lang {
-  return value === 'zh' || value === 'en' || value === 'es' || value === 'fr' || value === 'ko';
-}
-
-interface ParsedLanguage {
-  lang: string;
-  q: number;
-}
-
-function parseAcceptLanguage(header: string): ParsedLanguage[] {
-  const parts = header.split(',');
-  const parsed: ParsedLanguage[] = [];
-
-  for (const part of parts) {
-    const trimmed = part.trim();
-    if (!trimmed) continue;
-
-    let lang = trimmed;
-    let q = 1.0;
-
-    const semicolonIndex = trimmed.indexOf(';');
-    if (semicolonIndex >= 0) {
-      lang = trimmed.slice(0, semicolonIndex);
-      const qParamPart = trimmed.slice(semicolonIndex);
-      const qMatch = qParamPart.match(/q=([0-9.]+)/);
-      if (qMatch && qMatch[1]) {
-        const qValue = parseFloat(qMatch[1]);
-        if (!Number.isNaN(qValue)) {
-          q = Math.min(1, Math.max(0, qValue));
-        }
-      }
-    }
-
-    const baseLang = lang.split('-')[0]?.split('_')[0]?.toLowerCase() ?? 'en';
-    parsed.push({ lang: baseLang, q });
-  }
-
-  parsed.sort((a, b) => b.q - a.q);
-  return parsed;
-}
-
-export function detectLangFromAcceptLanguage(value: string | null | undefined): Lang {
-  const header = value ?? '';
-  if (!header.trim()) return 'en';
-
-  const parsed = parseAcceptLanguage(header);
-
-  for (const { lang } of parsed) {
-    if (lang.startsWith('zh')) return 'zh';
-    if (lang.startsWith('en')) return 'en';
-    if (lang.startsWith('fr')) return 'fr';
-    if (lang.startsWith('ko')) return 'ko';
-    if (lang.startsWith('es')) return 'es';
-  }
-
-  return 'en';
-}
-
-export const langToHtmlLang: Record<Lang, string> = {
-  en: 'en',
-  es: 'es',
-  fr: 'fr',
-  ko: 'ko',
-  zh: 'zh-CN',
-};
-
-export const langToLocale: Record<Lang, string> = {
-  en: 'en-US',
-  es: 'es-ES',
-  fr: 'fr-FR',
-  ko: 'ko-KR',
-  zh: 'zh-CN',
-};
+export {
+  languages,
+  LANG_STORAGE_KEY,
+  isLang,
+  detectLangFromAcceptLanguage,
+  langToHtmlLang,
+  langToLocale,
+} from './types';
 
 // Export all translations
 export const translations = {

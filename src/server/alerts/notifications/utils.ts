@@ -129,25 +129,4 @@ export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/**
- * 带超时控制的 fetch
- */
-export async function fetchWithTimeout(
-  url: string,
-  options: RequestInit & { timeoutMs?: number } = {},
-): Promise<Response> {
-  const { timeoutMs = 10000, ...fetchOptions } = options;
-
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-
-  try {
-    const response = await fetch(url, {
-      ...fetchOptions,
-      signal: controller.signal,
-    });
-    return response;
-  } finally {
-    clearTimeout(timeoutId);
-  }
-}
+// fetchWithTimeout 已从 lib/utils/api.ts 导入，这里不再重复定义
