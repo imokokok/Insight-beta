@@ -1,95 +1,128 @@
+/**
+ * Data Export API
+ *
+ * Provides data export functionality in multiple formats
+ */
+
 import type { NextRequest } from 'next/server';
-import { handleApi } from '@/server/apiResponse';
-import { generateExportFilename } from '@/lib/api/export';
-import { z } from 'zod';
+import { NextResponse } from 'next/server';
+import type { ExportOptions } from '@/server/export/dataExportService';
+import { dataExportService } from '@/server/export/dataExportService';
+import { logger } from '@/lib/logger';
 
-export const dynamic = 'force-dynamic';
-
-// 输入验证 schema
-const exportQuerySchema = z.object({
-  type: z.enum(['assertions', 'disputes', 'alerts']),
-  format: z.enum(['csv', 'json', 'xlsx']).default('csv'),
-  instanceId: z.string().optional(),
-  status: z.string().optional(),
-  chain: z.string().optional(),
-  limit: z.coerce.number().min(1).max(10000).default(1000),
-});
-
+/**
+ * GET /api/export/templates
+ *
+ * Returns available export templates
+ */
 export async function GET(request: NextRequest) {
-  return handleApi(request, async () => {
+  try {
     const { searchParams } = new URL(request.url);
+    const templateId = searchParams.get('template');
 
-    // 解析和验证参数
-    const parseResult = exportQuerySchema.safeParse({
-      type: searchParams.get('type'),
-      format: searchParams.get('format') || 'csv',
-      instanceId: searchParams.get('instanceId') || undefined,
-      status: searchParams.get('status') || undefined,
-      chain: searchParams.get('chain') || undefined,
-      limit: searchParams.get('limit'),
+    if (templateId) {
+      const template = dataExportService.getTemplate(templateId);
+      if (!template) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Template not found',
+          },
+          { status: 404 },
+        );
+      }
+      return NextResponse.json({
+        success: true,
+        data: template,
+      });
+    }
+
+    const templates = dataExportService.getTemplates();
+    return NextResponse.json({
+      success: true,
+      data: templates,
     });
+  } catch (error) {
+    logger.error('Failed to fetch export templates', { error });
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to fetch templates',
+      },
+      { status: 500 },
+    );
+  }
+}
 
-    if (!parseResult.success) {
-      return { error: 'invalid_parameters', details: parseResult.error.format() };
+/**
+ * POST /api/export
+ *
+ * Export data in specified format
+ *
+ * Body: {
+ *   data: any[],
+ *   options: ExportOptions
+ * }
+ */
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { data, options } = body as { data: unknown[]; options: ExportOptions };
+
+    // Validate options
+    const validationErrors = dataExportService.validateExportOptions(options);
+    if (validationErrors.length > 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Validation failed',
+          details: validationErrors,
+        },
+        { status: 400 },
+      );
     }
 
-    const { type, format, instanceId, status, chain, limit } = parseResult.data;
-
-    let data: unknown[] = [];
-
-    switch (type) {
-      case 'assertions': {
-        const params = new URLSearchParams();
-        if (instanceId) params.set('instanceId', instanceId);
-        if (status) params.set('status', status);
-        if (chain) params.set('chain', chain);
-        params.set('limit', String(limit));
-
-        const response = await fetch(
-          `${process.env.INSIGHT_BASE_URL || 'http://localhost:3000'}/api/oracle/assertions?${params.toString()}`,
-        );
-        const result = await response.json();
-        data = result.items || [];
-        break;
-      }
-      case 'disputes': {
-        const params = new URLSearchParams();
-        if (instanceId) params.set('instanceId', instanceId);
-        if (status) params.set('status', status);
-        if (chain) params.set('chain', chain);
-        params.set('limit', String(limit));
-
-        const response = await fetch(
-          `${process.env.INSIGHT_BASE_URL || 'http://localhost:3000'}/api/oracle/disputes?${params.toString()}`,
-        );
-        const result = await response.json();
-        data = result.items || [];
-        break;
-      }
-      case 'alerts': {
-        const params = new URLSearchParams();
-        if (instanceId) params.set('instanceId', instanceId);
-        if (status) params.set('status', status);
-        params.set('limit', String(limit));
-
-        const response = await fetch(
-          `${process.env.INSIGHT_BASE_URL || 'http://localhost:3000'}/api/oracle/alerts?${params.toString()}`,
-        );
-        const result = await response.json();
-        data = result.items || [];
-        break;
-      }
-      default:
-        return { error: 'invalid_type' };
+    // Validate data
+    if (!Array.isArray(data)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Data must be an array',
+        },
+        { status: 400 },
+      );
     }
 
-    const filename = generateExportFilename(type, format);
+    const result = await dataExportService.exportData(data, options);
 
-    return {
-      ok: true,
-      data,
-      filename,
-      format,
-    };
-  });
+    // Return based on format
+    if (typeof result.data === 'string') {
+      return new NextResponse(result.data, {
+        headers: {
+          'Content-Type': result.contentType,
+          'Content-Disposition': `attachment; filename="${result.filename}"`,
+          'X-Export-Size': String(result.size),
+          'X-Export-Generated-At': result.generatedAt.toISOString(),
+        },
+      });
+    } else {
+      return new NextResponse(result.data, {
+        headers: {
+          'Content-Type': result.contentType,
+          'Content-Disposition': `attachment; filename="${result.filename}"`,
+          'X-Export-Size': String(result.size),
+          'X-Export-Generated-At': result.generatedAt.toISOString(),
+        },
+      });
+    }
+  } catch (error) {
+    logger.error('Export failed', { error });
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Export failed',
+      },
+      { status: 500 },
+    );
+  }
 }
