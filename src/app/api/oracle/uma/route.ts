@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { listUMAAssertions, listUMADisputes, getUMASyncState } from '@/server/oracle/umaState';
 import { listUMAConfigs } from '@/server/oracle/umaConfig';
-import { isUMASyncing } from '@/server/oracle/umaSync';
+import { isUMASyncing } from '@/server/oracle/uma/sync';
 import { handleApi, rateLimit } from '@/server/apiResponse';
 import { logger } from '@/lib/logger';
 

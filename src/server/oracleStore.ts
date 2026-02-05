@@ -1,4 +1,5 @@
-import { hasDatabase, query, ensureDb } from './db';
+import { hasDatabase, query } from './db';
+import { ensureDb } from './db/DbInitializer';
 import type {
   Assertion,
   Dispute,

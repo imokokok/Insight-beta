@@ -215,8 +215,9 @@ export class QueryBuilder {
 // ============================================================================
 
 import { query } from './connectionManager';
+import type { QueryResultRow } from 'pg';
 
-export abstract class BaseRepository<T, RowType = Record<string, unknown>> {
+export abstract class BaseRepository<T, RowType extends QueryResultRow = Record<string, unknown>> {
   protected abstract tableName: string;
   protected abstract mapRow(row: RowType): T;
 
@@ -293,7 +294,9 @@ export abstract class BaseRepository<T, RowType = Record<string, unknown>> {
 
     const result = await query<RowType>(sql, values);
     if (result.rows.length === 0) return null;
-    return this.mapRow(result.rows[0]);
+    const row = result.rows[0];
+    if (!row) return null;
+    return this.mapRow(row);
   }
 
   /**
@@ -307,7 +310,9 @@ export abstract class BaseRepository<T, RowType = Record<string, unknown>> {
 
     const result = await query<RowType>(sql, values);
     if (result.rows.length === 0) return null;
-    return this.mapRow(result.rows[0]);
+    const row = result.rows[0];
+    if (!row) return null;
+    return this.mapRow(row);
   }
 
   /**

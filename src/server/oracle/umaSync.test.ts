@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { getUMAEnv, ensureUMASynced, isUMASyncing, replayUMAEventsRange } from './umaSync';
+import { getUMAEnv, ensureUMASynced, isUMASyncing, replayUMAEventsRange } from './uma/sync';
 import { readUMAConfig } from './umaConfig';
 import { getUMASyncState } from './umaState';
 import type { UMAConfig } from '@/lib/types/oracle/uma';
@@ -224,7 +224,7 @@ describe('UMA Sync', () => {
 
       // Start first sync
       const promise1 = ensureUMASynced('test-instance');
-      
+
       // Immediately start second sync - should return same promise
       const promise2 = ensureUMASynced('test-instance');
 
@@ -303,7 +303,7 @@ describe('UMA Sync Error Handling', () => {
     // The actual timeout handling is tested in integration tests.
     // Mock RPC timeout
     mockGetBlockNumber.mockRejectedValue(new Error('timeout'));
-    
+
     const mockConfig: UMAConfig = {
       id: 'test-instance',
       chain: 'Ethereum',

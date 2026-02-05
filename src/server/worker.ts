@@ -14,7 +14,7 @@ import { createOrTouchAlert, pruneStaleAlerts, readAlertRules } from '@/server/o
 import { getSyncState, listOracleInstances, readOracleState } from '@/server/oracle';
 import { fetchCurrentPrice } from '@/server/oracle/priceFetcher';
 import { ensureOracleSynced, getOracleEnv, isOracleSyncing } from '@/server/oracleIndexer';
-import { ensureUMASynced, isUMASyncing } from '@/server/oracle/umaSync';
+import { ensureUMASynced, isUMASyncing } from '@/server/oracle/uma/sync';
 import { listUMAConfigs } from '@/server/oracle/umaConfig';
 import { startRewardsSyncTask, startTvlSyncTask } from '@/server/oracle/umaSyncTasks';
 import { writeJsonFile } from '@/server/kvStore';

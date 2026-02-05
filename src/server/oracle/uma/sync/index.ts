@@ -1,39 +1,44 @@
-/**
- * UMA Sync Module
- *
- * UMA 同步模块 - 统一导出
- */
-
-// RPC Manager
+export { ensureUMASynced, isUMASyncing, replayUMAEventsRange } from './syncCore';
+export { getUMAEnv } from './env';
+export type { UMAEnv, RpcStats, RpcStatsItem, SyncWindow } from './types';
 export {
-  RpcManager,
-  readRpcStats,
-  type RpcStats,
-  type RpcManagerConfig,
-  type RpcManagerState,
-} from './rpcManager';
-
-// Log Processor
-export {
+  getCachedUMAClient,
+  cleanupUMAClientCache,
   OOV2_ABI,
   OOV3_ABI,
-  processLogResults,
-  processOOV2ProposedLogs,
-  processOOV2DisputedLogs,
-  processOOV2SettledLogs,
-  processOOV3MadeLogs,
-  processOOV3DisputedLogs,
-  processOOV3SettledLogs,
-  processOOV3VoteLogs,
-  type LogFetchConfig,
-  type ProcessedLogs,
-} from './logProcessor';
-
-// Window Manager
+  toSyncErrorCode,
+  redactRpcUrl,
+  readRpcStats,
+  recordRpcOk,
+  recordRpcFail,
+  pickNextRpcUrl,
+  getChainId,
+} from './rpcUtils';
 export {
-  WindowManager,
-  calculateInitialCursor,
-  calculateTargetBlock,
-  type WindowConfig,
-  type WindowState,
+  processOOv2ProposedLogs,
+  processOOv2DisputedLogs,
+  processOOv2SettledLogs,
+  processOOv3MadeLogs,
+  processOOv3DisputedLogs,
+  processOOv3SettledLogs,
+  processOOv3VoteLogs,
+} from './logProcessor';
+export {
+  calculateInitialWindow,
+  shouldGrowWindow,
+  growWindow,
+  shrinkWindow,
+  calculateBackoff,
+  updateWindowAfterRange,
 } from './windowManager';
+export {
+  DEFAULT_RPC_TIMEOUT_MS,
+  MIN_BLOCK_WINDOW,
+  MAX_BLOCK_WINDOW,
+  ADAPTIVE_GROWTH_FACTOR,
+  ADAPTIVE_SHRINK_FACTOR,
+  MAX_CONSECUTIVE_EMPTY_RANGES,
+  MAX_RETRY_BACKOFF_MS,
+  CACHE_TTL_MS,
+  getRpcTimeoutMs,
+} from './constants';

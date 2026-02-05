@@ -112,12 +112,10 @@ export class API3Client {
   private publicClient: PublicClient;
   private chain: SupportedChain;
 
-  private _config: API3ProtocolConfig;
   private dapiServerAddress: Address;
 
   constructor(chain: SupportedChain, rpcUrl: string, config: API3ProtocolConfig = {}) {
     this.chain = chain;
-    this._config = config;
 
     const contractAddress = config.airnodeAddress || API3_DAPI_SERVER_ADDRESSES[chain];
     if (!contractAddress) {

@@ -134,12 +134,10 @@ export class RedStoneClient {
   private publicClient: PublicClient;
   private chain: SupportedChain;
 
-  private _config: RedStoneProtocolConfig;
   private contractAddress: Address;
 
   constructor(chain: SupportedChain, rpcUrl: string, config: RedStoneProtocolConfig = {}) {
     this.chain = chain;
-    this._config = config;
 
     const contractAddress = config.apiEndpoint || REDSTONE_CONTRACT_ADDRESSES[chain];
     if (!contractAddress) {

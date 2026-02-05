@@ -1,136 +1,106 @@
-/**
- * UMA Sync Window Manager
- *
- * 管理同步窗口大小和自适应调整
- */
+import { logger } from '@/lib/logger';
+import {
+  MIN_BLOCK_WINDOW,
+  MAX_BLOCK_WINDOW,
+  ADAPTIVE_GROWTH_FACTOR,
+  ADAPTIVE_SHRINK_FACTOR,
+  MAX_CONSECUTIVE_EMPTY_RANGES,
+  MAX_RETRY_BACKOFF_MS,
+} from './constants';
 
-export interface WindowConfig {
-  minWindow: bigint;
-  maxWindow: bigint;
-  targetLogsPerWindow: number;
-}
-
-export interface WindowState {
-  currentSize: bigint;
-  consecutiveEmptyRanges: number;
-}
-
-export class WindowManager {
-  private config: WindowConfig;
-  private state: WindowState;
-
-  constructor(config: WindowConfig, initialSize?: bigint) {
-    this.config = config;
-    this.state = {
-      currentSize: initialSize || config.minWindow,
-      consecutiveEmptyRanges: 0,
-    };
-  }
-
-  getCurrentSize(): bigint {
-    return this.state.currentSize;
-  }
-
-  /**
-   * 根据日志数量调整窗口大小
-   */
-  adjustWindow(logsCount: number): void {
-    if (logsCount === 0) {
-      this.state.consecutiveEmptyRanges++;
-      // 连续空范围时增加窗口大小
-      if (this.state.consecutiveEmptyRanges >= 2) {
-        this.increaseWindow();
-        this.state.consecutiveEmptyRanges = 0;
-      }
-    } else {
-      this.state.consecutiveEmptyRanges = 0;
-      // 日志太多时减小窗口
-      if (logsCount > this.config.targetLogsPerWindow * 2) {
-        this.decreaseWindow();
-      }
-    }
-  }
-
-  /**
-   * 增加窗口大小（指数增长，但不超过最大值）
-   */
-  private increaseWindow(): void {
-    const newSize = this.state.currentSize * 2n;
-    this.state.currentSize = newSize > this.config.maxWindow ? this.config.maxWindow : newSize;
-  }
-
-  /**
-   * 减小窗口大小（减半，但不小于最小值）
-   */
-  private decreaseWindow(): void {
-    const newSize = this.state.currentSize / 2n;
-    this.state.currentSize = newSize < this.config.minWindow ? this.config.minWindow : newSize;
-  }
-
-  /**
-   * 计算下一个范围
-   */
-  calculateNextRange(cursor: bigint, toBlock: bigint): { from: bigint; to: bigint } | null {
-    if (cursor > toBlock) {
-      return null;
-    }
-
-    const rangeTo =
-      cursor + this.state.currentSize - 1n <= toBlock
-        ? cursor + this.state.currentSize - 1n
-        : toBlock;
-
-    return { from: cursor, to: rangeTo };
-  }
-
-  /**
-   * 获取状态快照
-   */
-  getState(): WindowState {
-    return { ...this.state };
-  }
-
-  /**
-   * 重置窗口大小
-   */
-  reset(initialSize?: bigint): void {
-    this.state.currentSize = initialSize || this.config.minWindow;
-    this.state.consecutiveEmptyRanges = 0;
-  }
-}
-
-/**
- * 计算初始游标位置
- */
-export function calculateInitialCursor(
-  lastProcessedBlock: bigint,
+export function calculateInitialWindow(
+  syncState: { lastProcessedBlock: bigint },
   startBlock: bigint,
   safeBlock: bigint | null,
   maxBlockRange: bigint,
-): bigint {
-  // 如果从未处理过，从安全块或起始块开始
-  if (lastProcessedBlock === 0n) {
-    if (startBlock > 0n) {
-      return startBlock;
-    }
-    if (safeBlock && safeBlock > maxBlockRange) {
-      return safeBlock - maxBlockRange;
-    }
-    return 0n;
-  }
+): { fromBlock: bigint; initialCursor: bigint; window: bigint } {
+  const fromBlock =
+    syncState.lastProcessedBlock === 0n
+      ? startBlock > 0n
+        ? startBlock
+        : (safeBlock ?? 0n) > maxBlockRange
+          ? (safeBlock ?? 0n) - maxBlockRange
+          : 0n
+      : syncState.lastProcessedBlock > 10n
+        ? syncState.lastProcessedBlock - 10n
+        : 0n;
 
-  // 否则从上次处理位置前 10 个块开始（处理可能的重组）
-  return lastProcessedBlock > 10n ? lastProcessedBlock - 10n : 0n;
+  const initialCursor = fromBlock < startBlock ? startBlock : fromBlock;
+  const lastWindowSize = syncState.lastProcessedBlock > 0n ? maxBlockRange : MIN_BLOCK_WINDOW;
+
+  return { fromBlock, initialCursor, window: lastWindowSize };
 }
 
-/**
- * 计算目标块
- */
-export function calculateTargetBlock(
-  latestBlock: bigint,
-  confirmationBlocks: bigint,
-): { safeBlock: bigint; targetBlock: bigint } {
-  const safeBlock = latestBlock > confirmationBlocks ? latestBlock - confirmationBlocks : 0n;
+export function shouldGrowWindow(
+  logsInRange: number,
+  rangeDuration: number,
+  rangeSize: bigint,
+): boolean {
+  if (logsInRange === 0) return false;
+  const logsPerSecond = logsInRange / (rangeDuration / 1000);
+  return logsPerSecond > 10 && rangeSize < MAX_BLOCK_WINDOW;
+}
 
-  return { safeBlock, targetBlock: safeBlock };
+export function growWindow(currentWindow: bigint): bigint {
+  return BigInt(Math.min(Number(currentWindow) * ADAPTIVE_GROWTH_FACTOR, Number(MAX_BLOCK_WINDOW)));
+}
+
+export function shrinkWindow(currentWindow: bigint): bigint {
+  return BigInt(Math.max(Number(currentWindow) * ADAPTIVE_SHRINK_FACTOR, Number(MIN_BLOCK_WINDOW)));
+}
+
+export function calculateBackoff(attempt: number, baseBackoff: number): number {
+  const backoff = Math.min(baseBackoff * Math.pow(2, attempt), MAX_RETRY_BACKOFF_MS);
+  const jitter = Math.random() * 0.3 * backoff;
+  return backoff + jitter;
+}
+
+export function updateWindowAfterRange(
+  window: bigint,
+  logsInRange: number,
+  consecutiveEmptyRanges: number,
+  rangeDuration: number,
+  rangeSize: bigint,
+): { newWindow: bigint; newConsecutiveEmptyRanges: number } {
+  if (logsInRange === 0) {
+    const newConsecutiveEmptyRanges = consecutiveEmptyRanges + 1;
+    if (newConsecutiveEmptyRanges >= MAX_CONSECUTIVE_EMPTY_RANGES) {
+      return {
+        newWindow: shrinkWindow(window),
+        newConsecutiveEmptyRanges: 0,
+      };
+    }
+    return { newWindow: window, newConsecutiveEmptyRanges };
+  }
+
+  if (shouldGrowWindow(logsInRange, rangeDuration, rangeSize)) {
+    return {
+      newWindow: growWindow(window),
+      newConsecutiveEmptyRanges: 0,
+    };
+  }
+
+  return { newWindow: window, newConsecutiveEmptyRanges: 0 };
+}
+
+export function logRangeRetry(
+  cursor: bigint,
+  rangeTo: bigint,
+  attempt: number,
+  backoff: number,
+): void {
+  logger.warn(
+    `UMA Range [${cursor}-${rangeTo}] failed (attempt ${attempt}/3), retrying in ${Math.round(backoff)}ms...`,
+  );
+}
+
+export function logRpcRetry(
+  url: string,
+  attempt: number,
+  maxRetries: number,
+  backoff: number,
+): void {
+  logger.warn(
+    `UMA RPC ${url} unreachable (attempt ${attempt}/${maxRetries}), retrying in ${Math.round(backoff)}ms...`,
+  );
 }

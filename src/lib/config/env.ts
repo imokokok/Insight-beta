@@ -226,6 +226,9 @@ export const env = {
   get BASE_RPC_URL() {
     return (process.env.BASE_RPC_URL ?? '').trim();
   },
+  get SOLANA_RPC_URL() {
+    return (process.env.SOLANA_RPC_URL ?? '').trim();
+  },
 };
 
 export function getEnv(key: keyof typeof env): string {

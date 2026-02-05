@@ -1,4 +1,4 @@
-import { ensureUMASynced, isUMASyncing } from './umaSync';
+import { ensureUMASynced, isUMASyncing } from './uma/sync';
 import { listUMAConfigs } from './umaConfig';
 import { startRewardsSyncTask, startTvlSyncTask } from './umaSyncTasks';
 import { logger } from '@/lib/logger';

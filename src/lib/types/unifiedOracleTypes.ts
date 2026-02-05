@@ -157,6 +157,7 @@ export type ChainlinkProtocolConfig = {
   linkTokenAddress?: string;
   heartbeat?: number; // 价格更新间隔（秒）
   deviationThreshold?: number; // 偏差阈值（%）
+  timeout?: number; // RPC 超时时间（毫秒）
   decimals?: number;
   description?: string;
 };
@@ -193,6 +194,23 @@ export type FluxProtocolConfig = {
 export type DIAProtocolConfig = {
   assets?: string[];
   apiEndpoint?: string;
+};
+
+// ============================================================================
+// 基础预言机配置
+// ============================================================================
+
+export type BaseOracleConfig = {
+  timeout?: number;
+  stalenessThreshold?: number;
+  retries?: number;
+  retryDelay?: number;
+};
+
+export type OracleHealthStatus = {
+  healthy: boolean;
+  reason?: string;
+  lastUpdate: number | string;
 };
 
 // ============================================================================

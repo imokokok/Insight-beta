@@ -58,12 +58,10 @@ export const DIA_SUPPORTED_ASSETS: Record<SupportedChain, string[]> = {
 export class DIAClient {
   private chain: SupportedChain;
 
-  private _config: DIAProtocolConfig;
   private apiEndpoint: string;
 
   constructor(chain: SupportedChain, _rpcUrl: string, config: DIAProtocolConfig = {}) {
     this.chain = chain;
-    this._config = config;
     this.apiEndpoint = config.apiEndpoint || DIA_API_BASE;
   }
 

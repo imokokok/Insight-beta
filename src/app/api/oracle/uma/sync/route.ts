@@ -1,5 +1,5 @@
 import type { NextRequest } from 'next/server';
-import { ensureUMASynced, isUMASyncing } from '@/server/oracle/umaSync';
+import { ensureUMASynced, isUMASyncing } from '@/server/oracle/uma/sync';
 import { getUMASyncState } from '@/server/oracle/umaState';
 import { readUMAConfig } from '@/server/oracle/umaConfig';
 import { handleApi, rateLimit, requireAdmin } from '@/server/apiResponse';
