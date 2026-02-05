@@ -136,7 +136,13 @@ export interface API3Airnode extends BaseProtocolNode {
 
 export interface RedStonePackage {
   id: string;
+  name: string;
   symbol: string;
+  price: number;
+  decimals: number;
+  updatedAt: string;
+  chain: string;
+  status: 'active' | 'stale' | 'error';
   dataFeedId: string;
   timestamp: string;
   value: number;
@@ -147,6 +153,7 @@ export interface RedStoneService {
   id: string;
   name: string;
   status: 'active' | 'inactive';
+  lastUpdate: string;
   dataPackages: number;
   avgLatency: number;
   reliability: number;
