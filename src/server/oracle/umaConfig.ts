@@ -1,6 +1,7 @@
 import { query, hasDatabase } from '../db';
 import { ensureSchema } from '../schema';
 import type { UMAChain } from '@/lib/types/oracleTypes';
+import { logger } from '@/lib/logger';
 
 export interface UMAConfig {
   id: string;
@@ -78,7 +79,7 @@ export async function readUMAConfig(
       return config;
     }
   } catch (error) {
-    console.error('Failed to read UMA config from database:', error);
+    logger.error('Failed to read UMA config from database', { error });
   }
 
   const defaultConfig = getDefaultUMAConfig(normalizedInstanceId);
@@ -230,7 +231,7 @@ export async function listUMAConfigs(): Promise<UMAConfig[]> {
       }),
     );
   } catch (error) {
-    console.error('Failed to list UMA configs:', error);
+    logger.error('Failed to list UMA configs', { error });
     const config = await readUMAConfig(DEFAULT_UMA_INSTANCE_ID);
     return config ? [config] : [];
   }

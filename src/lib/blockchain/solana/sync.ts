@@ -131,8 +131,11 @@ export class SolanaSyncService extends EventEmitter {
     }
 
     try {
-      // TODO: Implement actual price feed fetching
-      // For now, this is a mock implementation
+      // FIXME: Implement actual price feed fetching
+      // This is currently a mock implementation.
+      // To implement properly, integrate with Solana price feed programs
+      // such as Pyth Network or Chainlink on Solana.
+      // Issue: Need to add @solana/web3.js and implement RPC calls.
       const priceFeed: SolanaPriceFeed = {
         symbol: instance.config.symbol,
         price: 0,

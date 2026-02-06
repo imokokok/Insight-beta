@@ -22,6 +22,7 @@ import {
 } from '@/i18n/utils';
 import type { InterpolationValues, PluralOptions, TranslationNamespace } from '@/i18n/types';
 import { loadTranslations, isTranslationLoaded, preloadTranslations } from './loader';
+import { logger } from '@/lib/logger';
 
 export type TranslationKey = string;
 
@@ -95,14 +96,16 @@ export function LanguageProviderLazy({
             setTranslations(loaded);
           }
         })
-        .catch(console.error)
+        .catch((error) => logger.error('Failed to load translations', { error }))
         .finally(() => {
           if (!abortControllerRef.current?.signal.aborted) {
             setIsLoading(false);
           }
         });
     } else {
-      loadTranslations(lang).then(setTranslations).catch(console.error);
+      loadTranslations(lang)
+        .then(setTranslations)
+        .catch((error) => logger.error('Failed to load translations', { error }));
     }
 
     return () => {

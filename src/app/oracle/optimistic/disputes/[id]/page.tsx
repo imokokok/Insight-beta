@@ -17,6 +17,7 @@ import {
 import { PageHeader } from '@/components/features/common/PageHeader';
 import { cn, fetchApiData, formatTime } from '@/lib/utils';
 import { useI18n } from '@/i18n/LanguageProvider';
+import { logger } from '@/lib/logger';
 
 interface UMADisputeDetail {
   id: string;
@@ -73,7 +74,7 @@ export default function UMADisputeDetailPage() {
       setDispute(data);
     } catch (err) {
       setError(t('errors.noItems'));
-      console.error('Failed to fetch dispute:', err);
+      logger.error('Failed to fetch dispute', { error: err });
     } finally {
       setLoading(false);
     }

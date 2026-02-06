@@ -416,11 +416,11 @@ if (require.main === module) {
       const dryRun = args.includes('--dry-run');
       runMigration({ dryRun })
         .then((result) => {
-          console.log('Migration result:', JSON.stringify(result, null, 2));
+          logger.info('Migration result', { result });
           process.exit(result.success ? 0 : 1);
         })
         .catch((error) => {
-          console.error('Migration failed:', error);
+          logger.error('Migration failed', { error });
           process.exit(1);
         });
       break;
@@ -429,11 +429,11 @@ if (require.main === module) {
     case 'rollback': {
       rollbackMigration()
         .then((result) => {
-          console.log('Rollback result:', JSON.stringify(result, null, 2));
+          logger.info('Rollback result', { result });
           process.exit(result.success ? 0 : 1);
         })
         .catch((error) => {
-          console.error('Rollback failed:', error);
+          logger.error('Rollback failed', { error });
           process.exit(1);
         });
       break;
@@ -442,18 +442,18 @@ if (require.main === module) {
     case 'verify': {
       verifyMigration()
         .then((result) => {
-          console.log('Verification result:', JSON.stringify(result, null, 2));
+          logger.info('Verification result', { result });
           process.exit(result.valid ? 0 : 1);
         })
         .catch((error) => {
-          console.error('Verification failed:', error);
+          logger.error('Verification failed', { error });
           process.exit(1);
         });
       break;
     }
 
     default:
-      console.log(`
+      logger.info(`
 Usage: tsx unifiedMigration.ts <command> [options]
 
 Commands:

@@ -7,6 +7,7 @@ import { ArrowUpRight, RefreshCw } from 'lucide-react';
 import { PageHeader } from '@/components/features/common/PageHeader';
 import { cn, fetchApiData, formatTime } from '@/lib/utils';
 import { useI18n } from '@/i18n/LanguageProvider';
+import { logger } from '@/lib/logger';
 
 interface UMAAssertion {
   id: string;
@@ -59,7 +60,7 @@ export default function UMAAssertionsPage() {
       setAssertions(data.assertions);
       setTotal(data.total);
     } catch (error) {
-      console.error('Failed to fetch assertions:', error);
+      logger.error('Failed to fetch assertions', { error });
     } finally {
       setLoading(false);
     }

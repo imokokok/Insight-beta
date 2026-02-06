@@ -6,6 +6,7 @@
 
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
 
 // ============================================================================
 // GET /api/solana/price
@@ -31,7 +32,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('[Solana API] Error fetching price:', error);
+    logger.error('[Solana API] Error fetching price', { error });
     return NextResponse.json(
       {
         error: 'Failed to fetch price',
@@ -75,7 +76,7 @@ export async function POST(request: NextRequest) {
       data: priceFeeds,
     });
   } catch (error) {
-    console.error('[Solana API] Error fetching batch prices:', error);
+    logger.error('[Solana API] Error fetching batch prices', { error });
     return NextResponse.json(
       {
         error: 'Failed to fetch batch prices',

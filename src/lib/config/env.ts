@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { logger } from '@/lib/logger';
 
 export const env = {
   get DATABASE_URL() {
@@ -499,15 +500,14 @@ try {
       if (isProd) {
         throw new Error(`Invalid environment variables: ${JSON.stringify(parsed.error.format())}`);
       }
-      console.error(
-        '❌ Invalid environment variables:',
-        JSON.stringify(parsed.error.format(), null, 2),
-      );
+      logger.error('Invalid environment variables', {
+        error: parsed.error.format(),
+      });
     }
   }
 } catch (e) {
   if (e instanceof z.ZodError) {
-    console.error('❌ Invalid environment variables:', JSON.stringify(e.format(), null, 2));
+    logger.error('Invalid environment variables', { error: e.format() });
     if (process.env.NODE_ENV === 'production') {
       throw new Error(`Invalid environment variables: ${JSON.stringify(e.format())}`);
     }

@@ -23,6 +23,7 @@ import {
   Info,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { logger } from '@/lib/logger';
 
 interface DetectionConfig {
   // Statistical anomaly
@@ -138,7 +139,7 @@ export default function ManipulationConfigPage() {
         setConfig({ ...defaultConfig, ...data.config });
       }
     } catch (err) {
-      console.error('Failed to fetch config:', err);
+      logger.error('Failed to fetch config', { error: err });
     } finally {
       setLoading(false);
     }

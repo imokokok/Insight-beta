@@ -5,6 +5,7 @@ import { Copy, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
 import { useI18n } from '@/i18n/LanguageProvider';
+import { logger } from '@/lib/logger';
 
 interface CopyButtonProps {
   text: string;
@@ -34,7 +35,7 @@ export function CopyButton({ text, label, className, iconSize = 14 }: CopyButton
 
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy', err);
+      logger.error('Failed to copy', { error: err });
     }
   };
 

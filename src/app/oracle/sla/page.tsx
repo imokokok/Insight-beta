@@ -23,6 +23,7 @@ import {
   Shield,
   Server,
 } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 interface SLAStats {
   overallCompliance: number;
@@ -67,7 +68,7 @@ export default function SLADashboardPage() {
         setReports(await reportsRes.json());
       }
     } catch (error) {
-      console.error('Failed to fetch SLA data:', error);
+      logger.error('Failed to fetch SLA data', { error });
     }
   };
 

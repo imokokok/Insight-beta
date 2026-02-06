@@ -3,6 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useState, useEffect, useCallback, useMemo, Suspense, lazy } from 'react';
 import { Activity, Shield, TrendingUp, Globe, BarChart3, Bell, Clock } from 'lucide-react';
+import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -90,7 +91,7 @@ export default function UnifiedProtocolPage() {
         setPublishers(config.mockData.publishers);
       }
     } catch (error) {
-      console.error(`Failed to fetch ${protocol} data:`, error);
+      logger.error(`Failed to fetch ${protocol} data`, { error });
     } finally {
       setLoading(false);
     }

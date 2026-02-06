@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { PageHeader } from '@/components/features/common/PageHeader';
 import { cn, fetchApiData, formatTime } from '@/lib/utils';
+import { logger } from '@/lib/logger';
 
 interface UMAAssertionDetail {
   id: string;
@@ -76,7 +77,7 @@ export default function UMAAssertionDetailPage() {
         setAssertion(data);
       } catch (err) {
         setError('Assertion not found');
-        console.error('Failed to fetch assertion:', err);
+        logger.error('Failed to fetch assertion', { error: err });
       } finally {
         setLoading(false);
       }

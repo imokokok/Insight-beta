@@ -265,6 +265,7 @@ export async function fetchApiData<T>(
  * 通用的 Fetch 错误处理工具函数
  * 统一处理 API 请求的错误，包括网络错误、HTTP 错误等
  *
+ * @deprecated 使用 fetchApiData 替代，它提供了更完整的错误处理和超时机制
  * @param url - 请求 URL
  * @param options - fetch 选项
  * @param errorContext - 错误上下文信息，用于日志记录
@@ -273,11 +274,7 @@ export async function fetchApiData<T>(
  *
  * @example
  * ```typescript
- * const data = await fetchWithErrorHandling<PriceData>(
- *   'https://api.example.com/price',
- *   { method: 'GET' },
- *   'Failed to fetch price data'
- * );
+ * const data = await fetchApiData<PriceData>('https://api.example.com/price');
  * ```
  */
 export async function fetchWithErrorHandling<T>(
@@ -304,6 +301,7 @@ export async function fetchWithErrorHandling<T>(
  * 带超时的 fetch 请求
  * 自动处理 AbortController 和超时逻辑
  *
+ * @deprecated 使用 fetchApiData 替代，它提供了更完整的错误处理和超时机制
  * @param url - 请求 URL
  * @param options - fetch 选项
  * @param timeoutMs - 超时时间（毫秒），默认 5000
@@ -312,12 +310,7 @@ export async function fetchWithErrorHandling<T>(
  *
  * @example
  * ```typescript
- * const response = await fetchWithTimeout(
- *   'https://api.example.com/data',
- *   { method: 'GET' },
- *   10000
- * );
- * const data = await response.json();
+ * const data = await fetchApiData<ApiResponse>('https://api.example.com/data', {}, 10000);
  * ```
  */
 export async function fetchWithTimeout(

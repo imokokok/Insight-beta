@@ -13,6 +13,7 @@
 import { useEffect, useState, useCallback, useRef, Suspense, lazy } from 'react';
 import { useToast } from '@/components/ui/toast';
 import { useI18n } from '@/i18n';
+import { logger } from '@/lib/logger';
 import { ComparisonControls } from '@/components/features/comparison/ComparisonControls';
 import { ChartSkeleton, TableSkeleton } from '@/components/common/PageSkeleton';
 import type {
@@ -440,7 +441,7 @@ export default function ComparisonPage() {
     };
 
     ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
+      logger.error('WebSocket error', { error });
       setIsLive(false);
     };
 
@@ -452,7 +453,7 @@ export default function ComparisonPage() {
           setLastUpdated(new Date());
         }
       } catch (error) {
-        console.error('Failed to parse WebSocket message:', error);
+        logger.error('Failed to parse WebSocket message', { error });
       }
     };
 

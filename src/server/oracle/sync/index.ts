@@ -75,6 +75,8 @@ export {
   cleanupRedStoneData,
 } from './RedStoneSync';
 
+import { logger } from '@/lib/logger';
+
 // ============================================================================
 // 协议类型
 // ============================================================================
@@ -156,7 +158,7 @@ export function stopProtocolSync(protocol: OracleProtocol, instanceId: string): 
 export function stopAllProtocolSync(): void {
   for (const [protocol, manager] of syncManagers.entries()) {
     manager.stopAllSync();
-    console.log(`Stopped all ${protocol} syncs`);
+    logger.info(`Stopped all ${protocol} syncs`);
   }
 }
 
@@ -197,32 +199,32 @@ export async function cleanupAllOldData(): Promise<{
     getSyncManager('chainlink')
       .cleanupOldData()
       .then(() => {
-        console.log('Chainlink data cleanup completed');
+        logger.info('Chainlink data cleanup completed');
       }),
     getSyncManager('pyth')
       .cleanupOldData()
       .then(() => {
-        console.log('Pyth data cleanup completed');
+        logger.info('Pyth data cleanup completed');
       }),
     getSyncManager('band')
       .cleanupOldData()
       .then(() => {
-        console.log('Band data cleanup completed');
+        logger.info('Band data cleanup completed');
       }),
     getSyncManager('dia')
       .cleanupOldData()
       .then(() => {
-        console.log('DIA data cleanup completed');
+        logger.info('DIA data cleanup completed');
       }),
     getSyncManager('api3')
       .cleanupOldData()
       .then(() => {
-        console.log('API3 data cleanup completed');
+        logger.info('API3 data cleanup completed');
       }),
     getSyncManager('redstone')
       .cleanupOldData()
       .then(() => {
-        console.log('RedStone data cleanup completed');
+        logger.info('RedStone data cleanup completed');
       }),
   ]);
 
