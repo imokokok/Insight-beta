@@ -5,6 +5,7 @@
  */
 
 import { calculateMean, calculateMedian } from '@/lib/utils/math';
+
 import { AGGREGATION_CONFIG } from './config';
 
 /**

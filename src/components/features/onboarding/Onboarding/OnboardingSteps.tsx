@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
+
 import { Check, ArrowRight } from 'lucide-react';
+
 import { useI18n } from '@/i18n/LanguageProvider';
 import { cn } from '@/lib/utils';
 

@@ -2,8 +2,10 @@
 
 /* eslint-disable no-restricted-syntax */
 
-import { cn } from '@/lib/utils';
 import { Activity, PieChart, Clock, BarChart3, Target } from 'lucide-react';
+
+import { cn } from '@/lib/utils';
+
 import type { TabKey, Translator } from './types';
 
 interface ChartsHeaderProps {

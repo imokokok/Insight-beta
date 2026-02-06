@@ -1,7 +1,8 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { logger } from '@/lib/logger';
+
 import { cacheManager } from '@/lib/api/optimization/cache';
+import { logger } from '@/lib/logger';
 
 /**
  * Web Vitals 指标上报接口

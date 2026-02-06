@@ -7,14 +7,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Separator } from '@/components/ui/separator';
+
 import {
   Bell,
   Mail,
@@ -28,6 +21,15 @@ import {
   Settings,
   Activity,
 } from 'lucide-react';
+
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { logger } from '@/lib/logger';
 
 interface MonitoringStats {
@@ -95,9 +97,9 @@ export function MonitoringDashboard() {
 
       setStats(statsData);
       setConfig(configData);
-    } catch (err) {
-      logger.error('Failed to load monitoring data', { error: err });
-      setError(err instanceof Error ? err.message : 'Failed to load data');
+    } catch (error: unknown) {
+      logger.error('Failed to load monitoring data', { error });
+      setError(error instanceof Error ? error.message : 'Failed to load data');
     } finally {
       setLoading(false);
     }
@@ -126,10 +128,10 @@ export function MonitoringDashboard() {
       } else {
         setTestResult({ success: false, message: data.message || `Failed to send via ${channel}` });
       }
-    } catch (err) {
+    } catch (error: unknown) {
       setTestResult({
         success: false,
-        message: err instanceof Error ? err.message : 'Failed to send test notification',
+        message: error instanceof Error ? error.message : 'Failed to send test notification',
       });
     } finally {
       setTestingChannel(null);
@@ -153,9 +155,9 @@ export function MonitoringDashboard() {
 
       // 刷新数据
       await fetchData();
-    } catch (err) {
-      logger.error('Failed to update config', { error: err });
-      setError(err instanceof Error ? err.message : 'Failed to update config');
+    } catch (error: unknown) {
+      logger.error('Failed to update config', { error });
+      setError(error instanceof Error ? error.message : 'Failed to update config');
     } finally {
       setSaving(false);
     }

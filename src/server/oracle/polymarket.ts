@@ -1,7 +1,7 @@
+import type { Market, MarketResolution } from '@/lib/blockchain/polymarketMonitor';
 import { hasDatabase, query } from '@/server/db';
 import { readJsonFile, writeJsonFile } from '@/server/kvStore';
 import { memoryNowIso } from '@/server/memoryBackend';
-import type { Market, MarketResolution } from '@/lib/blockchain/polymarketMonitor';
 
 export interface MarketRecord extends Omit<Market, 'createdAt'> {
   id: string;

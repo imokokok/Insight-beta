@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+
 import type { TabKey } from './types';
 
 function ChartBackground({ activeTab }: { activeTab: TabKey }) {

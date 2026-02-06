@@ -1,7 +1,8 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { manipulationDetectionService } from '@/lib/services/manipulationDetectionService';
+
 import { logger } from '@/lib/logger';
+import { manipulationDetectionService } from '@/lib/services/manipulationDetectionService';
 import type { OracleProtocol, SupportedChain } from '@/lib/types';
 
 interface StopMonitorBody {

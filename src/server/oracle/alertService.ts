@@ -4,8 +4,6 @@
  * 提供价格偏差告警、数据过期告警、系统健康告警等功能
  */
 
-import { query } from '@/server/db';
-import type { QueryResultRow } from '@/server/db';
 import { logger } from '@/lib/logger';
 import type {
   OracleProtocol,
@@ -14,6 +12,8 @@ import type {
   UnifiedAlertRule,
   UnifiedAlertEvent,
 } from '@/lib/types/unifiedOracleTypes';
+import { query } from '@/server/db';
+import type { QueryResultRow } from '@/server/db';
 
 // ============================================================================
 // 数据库行类型定义

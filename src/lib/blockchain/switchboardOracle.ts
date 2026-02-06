@@ -6,12 +6,13 @@
  */
 
 import { logger } from '@/lib/logger';
-import { calculateDataFreshness } from './oracleClientBase';
 import type {
   OracleProtocol,
   SupportedChain,
   UnifiedPriceFeed,
 } from '@/lib/types/unifiedOracleTypes';
+
+import { calculateDataFreshness } from './oracleClientBase';
 
 // Local type definitions
 interface ProtocolConfig {

@@ -1,6 +1,8 @@
 import Link from 'next/link';
+
 import { useComponentPreload } from '@/hooks/usePreload';
 import { cn } from '@/lib/utils';
+
 import type { Route } from 'next';
 
 interface PreloadLinkProps<T extends string = string> {

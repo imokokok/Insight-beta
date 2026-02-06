@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 /**
  * 负载测试套件
  * 模拟高并发场景下的系统表现
- * 
+ *
  * NOTE: 这些测试需要真实的数据库和 API 环境
  * 在 CI 环境中跳过这些测试
  */

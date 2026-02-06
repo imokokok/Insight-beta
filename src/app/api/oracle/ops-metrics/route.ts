@@ -1,6 +1,7 @@
+import { z } from 'zod';
+
 import { cachedJson, handleApi, rateLimit } from '@/server/apiResponse';
 import { getOpsMetrics, getOpsMetricsSeries } from '@/server/observability';
-import { z } from 'zod';
 
 const querySchema = z.object({
   windowDays: z.coerce.number().int().min(1).max(90).default(7),

@@ -8,7 +8,9 @@ import type { AuditLogEntry } from '@/lib/types/oracleTypes';
 import { hasDatabase, query } from '@/server/db';
 import { getMemoryStore, memoryNowIso } from '@/server/memoryBackend';
 import { ensureSchema } from '@/server/schema';
+
 import { MEMORY_MAX_AUDIT } from './constants';
+
 import type { DbAuditRow } from './types';
 
 let schemaEnsured = false;

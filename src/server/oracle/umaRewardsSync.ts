@@ -1,4 +1,8 @@
 import { createDVMRewardsClient } from '@/lib/blockchain/umaDvmRewards';
+import { env } from '@/lib/config/env';
+import { logger } from '@/lib/logger';
+import { parseRpcUrls } from '@/lib/utils';
+
 import { readUMAConfig, DEFAULT_UMA_INSTANCE_ID } from './umaConfig';
 import {
   upsertRewardRecord,
@@ -7,9 +11,6 @@ import {
   getRewardsStats,
 } from './umaRewards';
 import { getUMASyncState } from './umaState';
-import { parseRpcUrls } from '@/lib/utils';
-import { env } from '@/lib/config/env';
-import { logger } from '@/lib/logger';
 
 interface RewardsSyncConfig {
   instanceId: string;

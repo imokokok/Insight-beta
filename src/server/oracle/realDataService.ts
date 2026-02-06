@@ -5,14 +5,15 @@
  * 用于替换模拟数据，提供真实的比较分析
  */
 
-import { logger } from '@/lib/logger';
 import {
   createChainlinkClient,
   getAvailableFeedsForChain,
 } from '@/lib/blockchain/chainlinkDataFeeds';
 import { createPythClient, getAvailablePythSymbols } from '@/lib/blockchain/pythOracle';
-import type { SupportedChain, OracleProtocol } from '@/lib/types/oracle';
+import { logger } from '@/lib/logger';
 import type {
+  SupportedChain,
+  OracleProtocol,
   PriceHeatmapData,
   PriceDeviationCell,
   LatencyAnalysis,

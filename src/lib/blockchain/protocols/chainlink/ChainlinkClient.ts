@@ -5,8 +5,10 @@
  */
 
 import { parseAbi, type Address } from 'viem';
-import { BaseOracleClient } from '../../base/BaseOracleClient';
+
 import type { SupportedChain, ChainlinkProtocolConfig } from '@/lib/types/unifiedOracleTypes';
+
+import { BaseOracleClient } from '../../base/BaseOracleClient';
 
 // ============================================================================
 // Chainlink ABI
@@ -55,8 +57,12 @@ export class ChainlinkClient extends BaseOracleClient {
     const contractAddress = this.getContractAddress();
     if (!contractAddress) return null;
 
-    // 对于 Chainlink，feedId 就是合约地址
+    // 验证 feedId 是否为有效的以太坊地址
     const feedAddress = feedId as Address;
+    if (!feedAddress || !feedAddress.startsWith('0x') || feedAddress.length !== 42) {
+      console.warn(`Invalid feed address: ${feedAddress}`);
+      return null;
+    }
 
     try {
       const [roundData, decimals] = await Promise.all([
@@ -72,13 +78,29 @@ export class ChainlinkClient extends BaseOracleClient {
         }),
       ]);
 
+      // 验证返回数据的完整性
+      if (!roundData || roundData.length < 4) {
+        console.warn(`Invalid round data from ${feedAddress}`);
+        return null;
+      }
+
+      const price = roundData[1];
+      const timestamp = Number(roundData[3]);
+
+      // 验证价格和时间的有效性
+      if (price === undefined || price === null || isNaN(timestamp)) {
+        console.warn(`Invalid price or timestamp from ${feedAddress}`);
+        return null;
+      }
+
       return {
-        price: roundData[1], // answer
-        timestamp: Number(roundData[3]), // updatedAt
-        decimals: Number(decimals),
+        price,
+        timestamp,
+        decimals: Number(decimals) || 8,
         confidence: 1, // Chainlink 不提供 confidence
       };
-    } catch {
+    } catch (error) {
+      console.error(`Error fetching price from ${feedAddress}:`, error);
       return null;
     }
   }

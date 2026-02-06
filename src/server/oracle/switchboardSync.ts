@@ -4,10 +4,10 @@
  * Switchboard 数据同步服务
  */
 
-import { query } from '@/server/db';
-import { logger } from '@/lib/logger';
 import { SwitchboardClient } from '@/lib/blockchain/switchboardOracle';
+import { logger } from '@/lib/logger';
 import type { SupportedChain, UnifiedPriceFeed } from '@/lib/types/unifiedOracleTypes';
+import { query } from '@/server/db';
 
 export interface SwitchboardSyncConfig {
   instanceId: string;

@@ -2,7 +2,9 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
-import { isLang, langToHtmlLang, LANG_STORAGE_KEY, type Lang } from '@/i18n/types';
+
+import type { InterpolationValues, PluralOptions, Lang } from '@/i18n/types';
+import { isLang, langToHtmlLang, LANG_STORAGE_KEY } from '@/i18n/types';
 import {
   interpolate,
   handlePlural,
@@ -12,7 +14,7 @@ import {
   formatRelativeTime,
   getNestedValue,
 } from '@/i18n/utils';
-import type { InterpolationValues, PluralOptions } from '@/i18n/types';
+
 import { translations } from './translations';
 
 export type TranslationKey = string;

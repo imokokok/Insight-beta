@@ -3,9 +3,11 @@
  * Supports read/write splitting for better performance
  */
 
-import type { PoolClient, QueryResult, QueryResultRow } from 'pg';
 import { Pool } from 'pg';
+
 import { logger } from '@/lib/logger';
+
+import type { PoolClient, QueryResult, QueryResultRow } from 'pg';
 
 export interface DatabaseConfig {
   write: {

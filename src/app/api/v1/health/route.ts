@@ -6,14 +6,14 @@
 
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+
 import { withApiVersion, type ApiVersion } from '@/lib/api/apiVersion';
-import { error, rateLimit } from '@/server/apiResponse';
-import { hasDatabase, query } from '@/server/db';
 import { env, getEnvReport } from '@/lib/config/env';
-import { requireAdmin } from '@/server/apiResponse';
+import { error, rateLimit, requireAdmin } from '@/server/apiResponse';
+import { hasDatabase, query } from '@/server/db';
 import { readJsonFile } from '@/server/kvStore';
-import { getOracleEnv, getSyncState, listOracleInstances } from '@/server/oracle';
 import { readAlertRules } from '@/server/observability';
+import { getOracleEnv, getSyncState, listOracleInstances } from '@/server/oracle';
 
 async function getOracleHealth(includeSync: boolean) {
   const instances = await listOracleInstances();

@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+
 import { cn } from '@/lib/utils';
 
 interface DropdownMenuContextValue {
@@ -39,10 +40,17 @@ function DropdownMenu({ children, open: controlledOpen, onOpenChange }: Dropdown
 interface DropdownMenuTriggerProps {
   children: React.ReactNode;
   className?: string;
+  asChild?: boolean;
 }
 
-function DropdownMenuTrigger({ children, className }: DropdownMenuTriggerProps) {
+function DropdownMenuTrigger({ children, className, asChild }: DropdownMenuTriggerProps) {
   const { setOpen, open } = useDropdownMenuContext();
+
+  if (asChild && React.isValidElement(children)) {
+    return React.cloneElement(children, {
+      onClick: () => setOpen(!open),
+    } as React.HTMLAttributes<HTMLElement>);
+  }
 
   return (
     <button type="button" className={cn('', className)} onClick={() => setOpen(!open)}>
@@ -94,4 +102,14 @@ function DropdownMenuItem({ className, inset, ...props }: DropdownMenuItemProps)
   );
 }
 
-export { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem };
+function DropdownMenuSeparator({ className }: { className?: string }) {
+  return <div className={cn('bg-border -mx-1 my-1 h-px', className)} />;
+}
+
+export {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+};

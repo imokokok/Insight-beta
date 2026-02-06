@@ -4,8 +4,7 @@
  * 提供类型转换、数据映射和通用工具函数
  */
 
-import type { DbAssertionRow, DbDisputeRow } from '@/lib/types/oracleTypes';
-import type { Dispute } from '@/lib/types/oracleTypes';
+import type { DbAssertionRow, DbDisputeRow, Dispute } from '@/lib/types/oracleTypes';
 
 /**
  * 将值转换为 BigInt，失败时返回默认值

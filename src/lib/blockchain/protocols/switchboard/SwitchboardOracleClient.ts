@@ -5,11 +5,6 @@
  * 支持 Solana 和 EVM 链的数据获取
  */
 
-import type {
-  OracleProtocol,
-  SupportedChain,
-  UnifiedPriceFeed,
-} from '@/lib/types/unifiedOracleTypes';
 import {
   BaseOracleClient,
   type OracleClientConfig,
@@ -17,6 +12,11 @@ import {
   type OracleClientCapabilities,
 } from '@/lib/blockchain/core';
 import { PriceFetchError } from '@/lib/blockchain/core/types';
+import type {
+  OracleProtocol,
+  SupportedChain,
+  UnifiedPriceFeed,
+} from '@/lib/types/unifiedOracleTypes';
 
 // ============================================================================
 // Switchboard API 配置

@@ -3,9 +3,11 @@
 /* eslint-disable no-restricted-syntax */
 
 import type { Dispatch, SetStateAction } from 'react';
+
 import Link from 'next/link';
-import type { Route } from 'next';
+
 import { AlertTriangle, CheckCircle2, Clock } from 'lucide-react';
+
 import {
   CartesianGrid,
   Legend,
@@ -17,7 +19,6 @@ import {
   YAxis,
 } from '@/components/charts';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { cn, formatDurationMinutes, formatTime } from '@/lib/utils';
 import { getUiErrorMessage, type TranslationKey } from '@/i18n/translations';
 import type {
   Alert,
@@ -29,6 +30,7 @@ import type {
   OpsMetricsSeriesPoint,
   OpsSloStatus,
 } from '@/lib/types/oracleTypes';
+import { cn, formatDurationMinutes, formatTime } from '@/lib/utils';
 import {
   alertInsightMap,
   formatSloTarget,
@@ -44,6 +46,8 @@ import {
   type RootCauseOption,
   type SloEntry,
 } from '@/lib/utils/alertsUtils';
+
+import type { Route } from 'next';
 
 export type IncidentDraft = {
   title: string;

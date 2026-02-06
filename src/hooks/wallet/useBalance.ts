@@ -1,6 +1,7 @@
 import useSWR from 'swr';
-import { useWallet } from '@/contexts/WalletContext';
 import { formatEther } from 'viem';
+
+import { useWallet } from '@/contexts/WalletContext';
 import { getChainSymbol } from '@/lib/blockchain/chainConfig';
 
 interface BalanceError extends Error {
@@ -35,8 +36,8 @@ export function useBalance() {
         }
         const balanceWei = BigInt(result as string);
         return formatEther(balanceWei);
-      } catch (e) {
-        const message = e instanceof Error ? e.message : 'Failed to fetch balance';
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Failed to fetch balance';
         const err: BalanceError = new Error(message) as BalanceError;
         err.code = 'RPC_ERROR';
         throw err;

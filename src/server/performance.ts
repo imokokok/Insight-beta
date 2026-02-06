@@ -1,5 +1,6 @@
-import { logger } from '@/lib/logger';
 import type { NextRequest, NextResponse } from 'next/server';
+
+import { logger } from '@/lib/logger';
 
 const PERFORMANCE_THRESHOLDS = {
   slowRequestMs: 1000,

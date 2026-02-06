@@ -13,15 +13,17 @@ import {
   parseAbi,
   formatUnits,
 } from 'viem';
-import { logger } from '@/lib/logger';
+
 import { DEFAULT_STALENESS_THRESHOLDS } from '@/lib/config/constants';
-import { VIEM_CHAIN_MAP } from './chainConfig';
 import { getChainRpcConfig, type ChainRpcConfig } from '@/lib/config/rpcConfig';
+import { logger } from '@/lib/logger';
 import type {
   SupportedChain,
   UnifiedPriceFeed,
   ChainlinkProtocolConfig,
 } from '@/lib/types/unifiedOracleTypes';
+
+import { VIEM_CHAIN_MAP } from './chainConfig';
 
 // ============================================================================
 // Chainlink ABI

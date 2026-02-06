@@ -6,8 +6,9 @@
 
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { priceDeviationAnalytics } from '@/server/oracle/priceDeviationAnalytics';
+
 import { logger } from '@/lib/logger';
+import { priceDeviationAnalytics } from '@/server/oracle/priceDeviationAnalytics';
 
 /**
  * GET /api/oracle/analytics/deviation

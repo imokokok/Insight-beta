@@ -5,8 +5,8 @@
  */
 
 import { logger } from '@/lib/logger';
-import { notifyAlert, type NotificationChannel } from '@/server/notifications';
 import type { ManipulationAlert } from '@/lib/types/security/detection';
+import { notifyAlert, type NotificationChannel } from '@/server/notifications';
 
 export interface AlertChannelConfig {
   email?: boolean;

@@ -1,6 +1,7 @@
-import { oracleConfigCache } from '@/server/redisCache';
-import { getMemoryInstance, getMemoryStore } from '@/server/memoryBackend';
 import { logger } from '@/lib/logger';
+import { getMemoryInstance, getMemoryStore } from '@/server/memoryBackend';
+import { oracleConfigCache } from '@/server/redisCache';
+
 import type { OracleConfig } from './types';
 
 const CACHE_VERSION = 'v1';

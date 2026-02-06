@@ -1,5 +1,7 @@
 import { useCallback, useMemo } from 'react';
+
 import useSWRInfinite from 'swr/infinite';
+
 import { fetchApiData } from '@/lib/utils';
 
 export interface BaseResponse<T> {

@@ -364,7 +364,10 @@ export class SafeExpressionEvaluator {
    * 解析单个值
    */
   private static parseValue(token: string, context: EvaluatorContext): unknown {
-    // 数字
+    // 数字 - 添加长度限制防止 ReDoS
+    if (token.length > 50) {
+      throw new Error(`Token too long: ${token.substring(0, 50)}...`);
+    }
     // eslint-disable-next-line security/detect-unsafe-regex
     if (/^-?\d+(\.\d+)?$/.test(token)) {
       return parseFloat(token);

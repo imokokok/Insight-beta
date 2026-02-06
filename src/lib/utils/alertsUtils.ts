@@ -1,6 +1,6 @@
-import { formatDurationMinutes } from '@/lib/utils';
-import type { AlertSeverity, AlertStatus, OpsSloStatus } from '@/lib/types/oracleTypes';
 import type { TranslationKey } from '@/i18n/translations';
+import type { AlertSeverity, AlertStatus, OpsSloStatus } from '@/lib/types/oracleTypes';
+import { formatDurationMinutes } from '@/lib/utils';
 
 export type RootCauseOption = { value: string; label: string };
 

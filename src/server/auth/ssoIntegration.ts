@@ -5,8 +5,8 @@
  * 支持 OAuth2、SAML、OIDC 等多种协议
  */
 
-import { query } from '@/server/db';
 import { logger } from '@/lib/logger';
+import { query } from '@/server/db';
 
 // ============================================================================
 // Types

@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+
 import {
   MIN_BLOCK_WINDOW,
   MAX_BLOCK_WINDOW,

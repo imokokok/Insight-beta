@@ -1,5 +1,6 @@
-import type { Address } from 'viem';
 import type { UMAChain } from '@/lib/types/oracleTypes';
+
+import type { Address } from 'viem';
 
 export type RpcStatsItem = {
   ok: number;

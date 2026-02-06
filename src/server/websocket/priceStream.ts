@@ -9,12 +9,12 @@
  */
 
 import { logger } from '@/lib/logger';
-import { priceAggregationEngine } from '@/server/oracle/priceAggregationService';
 import type {
   CrossOracleComparison,
   OracleProtocol,
   SupportedChain,
 } from '@/lib/types/unifiedOracleTypes';
+import { priceAggregationEngine } from '@/server/oracle/priceAggregationService';
 
 // ============================================================================
 // Type Definitions

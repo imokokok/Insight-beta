@@ -5,7 +5,9 @@
  */
 
 import { type ComponentType, type ReactNode } from 'react';
+
 import dynamic from 'next/dynamic';
+
 import { logger } from '@/lib/logger';
 
 // ============================================================================

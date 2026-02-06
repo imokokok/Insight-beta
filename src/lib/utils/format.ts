@@ -201,6 +201,41 @@ export function toIsoFromSeconds(seconds: bigint): string {
 }
 
 /**
+ * 将时间戳格式化为本地时间字符串
+ *
+ * @param timestamp - ISO 日期字符串、Date 对象或 Unix 时间戳（毫秒）
+ * @returns 格式化后的本地时间字符串
+ *
+ * @example
+ * ```typescript
+ * formatTimestamp('2024-01-01T12:00:00Z'); // Returns: 'Jan 1, 12:00:00 PM'
+ * formatTimestamp(1704110400000); // Returns: 'Jan 1, 12:00:00 PM'
+ * ```
+ */
+export function formatTimestamp(timestamp: string | number | Date): string {
+  if (!timestamp) return '—';
+
+  let date: Date;
+  if (typeof timestamp === 'number') {
+    date = new Date(timestamp);
+  } else if (typeof timestamp === 'string') {
+    date = new Date(timestamp);
+  } else {
+    date = timestamp;
+  }
+
+  if (!Number.isFinite(date.getTime())) return '—';
+
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  }).format(date);
+}
+
+/**
  * 将文本复制到剪贴板
  *
  * 优先使用现代 Clipboard API，如果不支持则回退到 document.execCommand

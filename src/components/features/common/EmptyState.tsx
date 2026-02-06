@@ -1,75 +1,50 @@
-'use client';
+/**
+ * Empty State Component
+ *
+ * 空状态组件 - 用于无数据时展示
+ */
 
 import type { ReactNode } from 'react';
-import { Inbox, Search, AlertCircle, Box } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 
-type EmptyStateVariant = 'default' | 'search' | 'error' | 'data';
+import { Search, ShieldCheck, Brain, BarChart3 } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+
+import type { LucideIcon } from 'lucide-react';
 
 interface EmptyStateProps {
-  title?: string;
+  icon?: LucideIcon;
+  title: string;
   description?: string;
-  icon?: ReactNode;
-  variant?: EmptyStateVariant;
   action?: {
     label: string;
     onClick: () => void;
   };
   className?: string;
+  children?: ReactNode;
 }
 
-const variantConfig: Record<
-  EmptyStateVariant,
-  {
-    icon: ReactNode;
-    defaultTitle: string;
-    defaultDescription: string;
-  }
-> = {
-  default: {
-    icon: <Inbox className="h-12 w-12" />,
-    defaultTitle: 'No items found',
-    defaultDescription: 'There are no items to display at the moment.',
-  },
-  search: {
-    icon: <Search className="h-12 w-12" />,
-    defaultTitle: 'No results found',
-    defaultDescription: 'Try adjusting your search or filters to find what you are looking for.',
-  },
-  error: {
-    icon: <AlertCircle className="h-12 w-12" />,
-    defaultTitle: 'Something went wrong',
-    defaultDescription: 'An error occurred while loading the data. Please try again.',
-  },
-  data: {
-    icon: <Box className="h-12 w-12" />,
-    defaultTitle: 'No data available',
-    defaultDescription: 'There is no data available for the selected criteria.',
-  },
-};
-
 export function EmptyState({
+  icon: Icon,
   title,
   description,
-  icon,
-  variant = 'default',
   action,
   className,
+  children,
 }: EmptyStateProps) {
-  const config = variantConfig[variant];
-
   return (
-    <div
-      className={cn('flex flex-col items-center justify-center px-4 py-12 text-center', className)}
-    >
-      <div className="text-muted-foreground/50 mb-4">{icon || config.icon}</div>
-      <h3 className="text-foreground mb-2 text-lg font-semibold">{title || config.defaultTitle}</h3>
-      <p className="text-muted-foreground mb-6 max-w-sm text-sm">
-        {description || config.defaultDescription}
-      </p>
+    <div className={cn('flex flex-col items-center justify-center py-12 text-center', className)}>
+      {Icon && (
+        <div className="mb-4 rounded-full bg-gray-100 p-4">
+          <Icon className="h-12 w-12 text-gray-400" />
+        </div>
+      )}
+      <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+      {description && <p className="mt-2 max-w-sm text-sm text-gray-500">{description}</p>}
+      {children && <div className="mt-4">{children}</div>}
       {action && (
-        <Button onClick={action.onClick} variant="outline">
+        <Button onClick={action.onClick} className="mt-4" variant="outline">
           {action.label}
         </Button>
       )}
@@ -77,47 +52,133 @@ export function EmptyState({
   );
 }
 
-// 预定义的空状态
+// 预定义的空状态场景
+
 export function EmptySearchState({
   searchTerm,
   onClear,
+  className,
 }: {
-  searchTerm: string;
-  onClear: () => void;
+  searchTerm?: string;
+  onClear?: () => void;
+  className?: string;
 }) {
   return (
     <EmptyState
-      variant="search"
-      title={`No results for "${searchTerm}"`}
-      description="Try adjusting your search terms or filters."
-      action={{ label: 'Clear search', onClick: onClear }}
+      icon={Search}
+      title={searchTerm ? `No results for "${searchTerm}"` : 'No results found'}
+      description="Try adjusting your search or filters to find what you're looking for."
+      className={className}
+      action={
+        onClear
+          ? {
+              label: 'Clear filters',
+              onClick: onClear,
+            }
+          : undefined
+      }
     />
   );
 }
 
-export function EmptyDataState({
-  message = 'No data available',
+export function EmptySecurityState({
   onRefresh,
+  className,
 }: {
-  message?: string;
   onRefresh?: () => void;
+  className?: string;
 }) {
   return (
     <EmptyState
-      variant="data"
-      title={message}
-      action={onRefresh ? { label: 'Refresh', onClick: onRefresh } : undefined}
+      icon={ShieldCheck}
+      title="No Detections Found"
+      description="Great news! No suspicious activities have been detected. The system is actively monitoring and will alert you immediately when threats are identified."
+      className={className}
+      action={
+        onRefresh
+          ? {
+              label: 'Refresh',
+              onClick: onRefresh,
+            }
+          : undefined
+      }
     />
   );
 }
 
-export function ErrorState({ error, onRetry }: { error?: string; onRetry: () => void }) {
+export function EmptyAnomalyState({
+  onRefresh,
+  className,
+}: {
+  onRefresh?: () => void;
+  className?: string;
+}) {
   return (
     <EmptyState
-      variant="error"
-      title="Error loading data"
-      description={error || 'An unexpected error occurred.'}
-      action={{ label: 'Try again', onClick: onRetry }}
+      icon={Brain}
+      title="No Anomalies Detected"
+      description="ML models are actively monitoring price feeds. When anomalies are detected, they will appear here with detailed analysis and confidence scores."
+      className={className}
+      action={
+        onRefresh
+          ? {
+              label: 'Refresh',
+              onClick: onRefresh,
+            }
+          : undefined
+      }
+    />
+  );
+}
+
+export function EmptyDeviationState({
+  onRefresh,
+  className,
+}: {
+  onRefresh?: () => void;
+  className?: string;
+}) {
+  return (
+    <EmptyState
+      icon={BarChart3}
+      title="No Deviation Data"
+      description="Price deviation analysis will appear here once data is collected. This helps identify when different oracle protocols report significantly different prices."
+      className={className}
+      action={
+        onRefresh
+          ? {
+              label: 'Refresh',
+              onClick: onRefresh,
+            }
+          : undefined
+      }
+    />
+  );
+}
+
+export function EmptyErrorState({
+  error,
+  onRetry,
+  className,
+}: {
+  error?: string;
+  onRetry?: () => void;
+  className?: string;
+}) {
+  return (
+    <EmptyState
+      icon={Search}
+      title="Failed to load data"
+      description={error || 'Something went wrong while loading the data. Please try again.'}
+      className={className}
+      action={
+        onRetry
+          ? {
+              label: 'Try again',
+              onClick: onRetry,
+            }
+          : undefined
+      }
     />
   );
 }

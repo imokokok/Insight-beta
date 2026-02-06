@@ -1,7 +1,8 @@
-import { cachedJson, handleApi, rateLimit, requireAdmin } from '@/server/apiResponse';
-import { ensureOracleSynced } from '@/server/oracle';
-import { listAlerts } from '@/server/observability';
 import { z } from 'zod';
+
+import { cachedJson, handleApi, rateLimit, requireAdmin } from '@/server/apiResponse';
+import { listAlerts } from '@/server/observability';
+import { ensureOracleSynced } from '@/server/oracle';
 
 /**
  * @swagger

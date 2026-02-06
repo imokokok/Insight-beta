@@ -3,11 +3,12 @@
 /* eslint-disable no-restricted-syntax */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+
 import { PageHeader } from '@/components/features/common/PageHeader';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage } from '@/i18n/translations';
 import { fetchApiData, getErrorCode, copyToClipboard, formatTime, cn } from '@/lib/utils';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 type AdminRole = 'root' | 'ops' | 'alerts' | 'viewer';
 
@@ -90,8 +91,8 @@ export default function AdminTokensPage() {
         headers: buildHeaders(),
       });
       setItems(data.items);
-    } catch (e) {
-      setError(getErrorCode(e));
+    } catch (error: unknown) {
+      setError(getErrorCode(error));
     } finally {
       setLoading(false);
     }
@@ -117,8 +118,8 @@ export default function AdminTokensPage() {
       setNewTokenValue(data.token);
       setLabel('');
       await load();
-    } catch (e) {
-      setError(getErrorCode(e));
+    } catch (error: unknown) {
+      setError(getErrorCode(error));
     } finally {
       setCreating(false);
     }
@@ -133,8 +134,8 @@ export default function AdminTokensPage() {
         headers: buildHeaders(),
       });
       await load();
-    } catch (e) {
-      setError(getErrorCode(e));
+    } catch (error: unknown) {
+      setError(getErrorCode(error));
     } finally {
       setRevokingId(null);
     }

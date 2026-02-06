@@ -1,9 +1,18 @@
 import type { ComponentPropsWithoutRef } from 'react';
 import { memo, forwardRef, useCallback } from 'react';
+
 import Link from 'next/link';
-import type { Route } from 'next';
+
 import { CheckCircle2, Clock, ArrowUpRight, RotateCw, FileQuestion, Star } from 'lucide-react';
 import { Virtuoso, VirtuosoGrid } from 'react-virtuoso';
+
+import { CopyButton } from '@/components/features/common/CopyButton';
+import { SkeletonList } from '@/components/features/common/SkeletonList';
+import { LivenessProgressBar } from '@/components/features/oracle/LivenessProgressBar';
+import { useWatchlist } from '@/hooks/user/useWatchlist';
+import { useI18n } from '@/i18n/LanguageProvider';
+import { langToLocale } from '@/i18n/translations';
+import type { Assertion, OracleStatus } from '@/lib/types/oracleTypes';
 import {
   cn,
   formatTime,
@@ -12,13 +21,8 @@ import {
   truncateAddress,
   getAssertionStatusColor,
 } from '@/lib/utils';
-import { useI18n } from '@/i18n/LanguageProvider';
-import { langToLocale } from '@/i18n/translations';
-import { useWatchlist } from '@/hooks/user/useWatchlist';
-import type { Assertion, OracleStatus } from '@/lib/types/oracleTypes';
-import { CopyButton } from '@/components/features/common/CopyButton';
-import { SkeletonList } from '@/components/features/common/SkeletonList';
-import { LivenessProgressBar } from '@/components/features/oracle/LivenessProgressBar';
+
+import type { Route } from 'next';
 
 interface AssertionListProps {
   items: Assertion[];

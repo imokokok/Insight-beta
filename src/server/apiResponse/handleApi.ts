@@ -1,9 +1,11 @@
-import { env } from '@/lib/config/env';
-import { logger, withLogContext } from '@/lib/logger';
 import { context, trace } from '@opentelemetry/api';
 import { ZodError } from 'zod';
-import { error, ok } from './response';
+
+import { env } from '@/lib/config/env';
+import { logger, withLogContext } from '@/lib/logger';
+
 import { runApiAlerts } from './alerts';
+import { error, ok } from './response';
 
 function getActiveTraceContext(): {
   traceId: string | null;
@@ -325,9 +327,9 @@ export async function handleApi<T>(
           sampleRate,
           slowMs,
         );
-      } catch (e) {
+      } catch (error: unknown) {
         return await handleApiError(
-          e,
+          error,
           request,
           requestId,
           traceCtx.traceId,

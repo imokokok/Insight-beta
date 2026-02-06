@@ -3,9 +3,22 @@
 /* eslint-disable no-restricted-syntax */
 
 import { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+
+import { CheckCircle, BarChart3 } from 'lucide-react';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+} from 'recharts';
+
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import {
   Select,
@@ -22,19 +35,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-} from 'recharts';
-import { CheckCircle, BarChart3 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { type OracleProtocol, PROTOCOL_DISPLAY_NAMES } from '@/lib/types';
+import { cn } from '@/lib/utils';
 
 export interface ProtocolMetrics {
   protocol: OracleProtocol;

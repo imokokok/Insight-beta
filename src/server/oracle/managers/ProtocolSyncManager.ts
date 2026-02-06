@@ -5,6 +5,7 @@
 
 import { logger } from '@/lib/logger';
 import { query } from '@/server/db';
+
 // import { getUnifiedInstance } from '../unifiedConfig';
 import {
   chainlinkSyncManager,
@@ -14,6 +15,7 @@ import {
   api3SyncManager,
   redstoneSyncManager,
 } from '../sync';
+
 import type { SyncManager, ProtocolSyncConfig } from '../types/serviceTypes';
 
 export class ProtocolSyncManager {

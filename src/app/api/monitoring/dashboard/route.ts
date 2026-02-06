@@ -6,9 +6,10 @@
 
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+
+import { env } from '@/lib/config/env';
 import { logger } from '@/lib/logger';
 import { alertService } from '@/lib/services/detection/alertService';
-import { env } from '@/lib/config/env';
 
 export const dynamic = 'force-dynamic';
 

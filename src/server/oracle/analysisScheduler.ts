@@ -5,8 +5,9 @@
  * 自动定期运行价格偏差分析和生成告警
  */
 
-import { runCrossProtocolAnalysis, type PriceDeviationConfig } from './crossProtocolAnalysis';
 import { logger } from '@/lib/logger';
+
+import { runCrossProtocolAnalysis, type PriceDeviationConfig } from './crossProtocolAnalysis';
 
 // ============================================================================
 // Configuration

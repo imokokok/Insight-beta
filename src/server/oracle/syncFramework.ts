@@ -5,16 +5,18 @@
  * 提供统一的同步任务管理、状态跟踪和错误处理
  */
 
-import { query } from '@/server/db';
+import crypto from 'crypto';
+
 import { logger } from '@/lib/logger';
+import type { SupportedChain } from '@/lib/types/oracle/chain';
+import type { OracleProtocol } from '@/lib/types/oracle/protocol';
 import { sleep } from '@/lib/utils';
+import { query } from '@/server/db';
 import {
   getUnifiedInstance,
   updateSyncState,
   recordSyncError,
 } from '@/server/oracle/unifiedConfig';
-import type { OracleProtocol } from '@/lib/types/oracle/protocol';
-import type { SupportedChain } from '@/lib/types/oracle/chain';
 
 // ============================================================================
 // Types
@@ -80,6 +82,7 @@ class SyncManager {
   private syncIntervals = new Map<string, NodeJS.Timeout>();
   private syncFunctions = new Map<OracleProtocol, SyncFunction>();
   private priceWriter: PriceWriter | null = null;
+  private syncExecutionLocks = new Map<string, Promise<void>>();
 
   /**
    * 注册协议特定的同步函数
@@ -192,10 +195,22 @@ class SyncManager {
     syncFn: SyncFunction,
     config: SyncConfig,
   ): Promise<void> {
+    // 等待之前的同步完成（防止竞态条件）
+    while (this.syncExecutionLocks.has(instanceId)) {
+      await this.syncExecutionLocks.get(instanceId);
+    }
+
     const state = this.syncStates.get(instanceId);
     if (!state || state.isRunning) {
       return;
     }
+
+    // 创建执行锁
+    let lockResolve: () => void;
+    const lockPromise = new Promise<void>((resolve) => {
+      lockResolve = resolve;
+    });
+    this.syncExecutionLocks.set(instanceId, lockPromise);
 
     state.isRunning = true;
 
@@ -259,7 +274,8 @@ class SyncManager {
           config.retryDelayMs * Math.pow(2, state.consecutiveErrors - 1),
           60000, // 最大 60 秒
         );
-        const jitter = Math.random() * 0.1 * backoffMs; // 10% 抖动
+        // 使用 crypto 生成更安全的抖动值
+        const jitter = (crypto.randomInt(0, 0xffffffff) / 0xffffffff) * 0.1 * backoffMs;
 
         logger.info(`Retrying sync for instance ${instanceId}`, {
           attempt: state.consecutiveErrors,
@@ -267,12 +283,20 @@ class SyncManager {
           delayMs: Math.round(backoffMs + jitter),
         });
         await new Promise((resolve) => setTimeout(resolve, backoffMs + jitter));
+        // 使用 setImmediate 避免递归调用栈溢出
         state.isRunning = false;
-        await this.executeSync(instanceId, instance, syncFn, config);
+        this.syncExecutionLocks.delete(instanceId);
+        lockResolve!();
+        // 使用 setImmediate 将重试放入事件循环，避免递归栈溢出
+        setImmediate(() => {
+          void this.executeSync(instanceId, instance, syncFn, config);
+        });
         return;
       }
     } finally {
       state.isRunning = false;
+      this.syncExecutionLocks.delete(instanceId);
+      lockResolve!();
     }
   }
 }
@@ -291,36 +315,53 @@ export async function writePriceFeeds(records: PriceFeedRecord[]): Promise<void>
   if (records.length === 0) return;
 
   try {
-    for (const record of records) {
+    // 批量插入优化：每批最多100条记录
+    const BATCH_SIZE = 100;
+
+    for (let i = 0; i < records.length; i += BATCH_SIZE) {
+      const batch = records.slice(i, i + BATCH_SIZE);
+
+      // 构建批量插入的占位符
+      const placeholders = batch
+        .map(
+          (_, idx) =>
+            `($${idx * 12 + 1}, $${idx * 12 + 2}, $${idx * 12 + 3}, $${idx * 12 + 4}, $${idx * 12 + 5}, $${idx * 12 + 6}, ` +
+            `$${idx * 12 + 7}, $${idx * 12 + 8}, $${idx * 12 + 9}, $${idx * 12 + 10}, $${idx * 12 + 11}, $${idx * 12 + 12})`,
+        )
+        .join(', ');
+
+      // 展平参数数组
+      const params = batch.flatMap((record) => [
+        record.protocol,
+        record.chain,
+        record.instanceId,
+        record.symbol,
+        record.baseAsset,
+        record.quoteAsset,
+        record.price,
+        record.timestamp,
+        record.blockNumber,
+        record.confidence,
+        record.source,
+        JSON.stringify(record.metadata || {}),
+      ]);
+
       await query(
         `INSERT INTO oracle_price_feeds (
           protocol, chain, instance_id, symbol, base_asset, quote_asset,
           price, timestamp, block_number, confidence, source, metadata
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        ) VALUES ${placeholders}
         ON CONFLICT (protocol, chain, instance_id, symbol, timestamp)
         DO UPDATE SET
           price = EXCLUDED.price,
           block_number = EXCLUDED.block_number,
           confidence = EXCLUDED.confidence,
           metadata = EXCLUDED.metadata`,
-        [
-          record.protocol,
-          record.chain,
-          record.instanceId,
-          record.symbol,
-          record.baseAsset,
-          record.quoteAsset,
-          record.price,
-          record.timestamp,
-          record.blockNumber,
-          record.confidence,
-          record.source,
-          JSON.stringify(record.metadata || {}),
-        ],
+        params,
       );
     }
 
-    logger.debug(`Wrote ${records.length} price records to database`);
+    logger.debug(`Wrote ${records.length} price records to database in batches`);
   } catch (error) {
     logger.error('Failed to write price feeds', { error, count: records.length });
     throw error;

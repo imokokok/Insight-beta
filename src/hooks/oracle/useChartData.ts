@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { fetchApiData } from '@/lib/utils';
-import { logger } from '@/lib/logger';
+
 import type { ChartItem } from '@/components/features/charts/types';
+import { logger } from '@/lib/logger';
+import { fetchApiData } from '@/lib/utils';
 
 export interface UseChartDataReturn {
   data: ChartItem[];
@@ -36,10 +37,10 @@ export function useChartData(instanceId?: string | null): UseChartDataReturn {
         const url = `/api/oracle/charts?${params.toString()}`;
         const charts = await fetchApiData<ChartItem[]>(url, { signal });
         setData(charts);
-      } catch (e) {
+      } catch (error: unknown) {
         if (signal?.aborted) return;
-        logger.error('Failed to fetch chart data:', { error: e });
-        setError(e instanceof Error ? e.message : 'unknown_error');
+        logger.error('Failed to fetch chart data:', { error });
+        setError(error instanceof Error ? error.message : 'unknown_error');
       } finally {
         setLoading(false);
       }

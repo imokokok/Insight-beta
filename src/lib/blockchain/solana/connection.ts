@@ -4,8 +4,8 @@
  * Solana RPC 连接管理
  */
 
-import { logger } from '@/lib/logger';
 import { env } from '@/lib/config/env';
+import { logger } from '@/lib/logger';
 
 // ============================================================================
 // Simple Account Info Interface
@@ -52,9 +52,17 @@ type AccountInfoResponse = {
 class SolanaConnectionManager {
   private rpcUrl: string;
   private requestId: number = 0;
+  private defaultTimeoutMs: number = 30000; // 默认30秒超时
 
   constructor() {
     this.rpcUrl = env.SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com';
+  }
+
+  /**
+   * 设置请求超时
+   */
+  setTimeout(timeoutMs: number): void {
+    this.defaultTimeoutMs = timeoutMs;
   }
 
   async initialize(): Promise<void> {
@@ -73,7 +81,14 @@ class SolanaConnectionManager {
     }
   }
 
-  private async makeRpcCall<T>(method: string, params: unknown[]): Promise<T | null> {
+  private async makeRpcCall<T>(
+    method: string,
+    params: unknown[],
+    timeoutMs?: number,
+  ): Promise<T | null> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs || this.defaultTimeoutMs);
+
     try {
       this.requestId++;
       const response = await fetch(this.rpcUrl, {
@@ -87,10 +102,20 @@ class SolanaConnectionManager {
           method,
           params,
         }),
+        signal: controller.signal,
       });
+
+      // 清除超时
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         logger.error('Solana RPC error', { status: response.status, method });
+        // 确保响应体被消耗，避免连接泄漏
+        try {
+          await response.text();
+        } catch {
+          // 忽略读取错误
+        }
         return null;
       }
 
@@ -103,6 +128,17 @@ class SolanaConnectionManager {
 
       return data.result ?? null;
     } catch (error) {
+      clearTimeout(timeoutId);
+
+      // 检查是否是超时错误
+      if (error instanceof Error && error.name === 'AbortError') {
+        logger.error('Solana RPC call timed out', {
+          method,
+          timeoutMs: timeoutMs || this.defaultTimeoutMs,
+        });
+        return null;
+      }
+
       logger.error('Solana RPC call failed', {
         error: error instanceof Error ? error.message : String(error),
         method,

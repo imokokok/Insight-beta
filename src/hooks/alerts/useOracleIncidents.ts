@@ -5,8 +5,9 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { fetchApiData, getErrorCode } from '@/lib/utils';
+
 import type { IncidentWithAlerts } from '@/app/alerts/alertsComponents';
+import { fetchApiData, getErrorCode } from '@/lib/utils';
 
 export interface UseOracleIncidentsReturn {
   incidents: IncidentWithAlerts[];
@@ -32,8 +33,8 @@ export function useOracleIncidents(instanceId: string): UseOracleIncidentsReturn
         `/api/oracle/incidents?${params.toString()}`,
       );
       setIncidents(data.items ?? []);
-    } catch (e) {
-      setIncidentsError(getErrorCode(e));
+    } catch (error: unknown) {
+      setIncidentsError(getErrorCode(error));
     } finally {
       setIncidentsLoading(false);
     }

@@ -10,6 +10,7 @@ import {
   type Histogram,
   type Counter,
 } from '@opentelemetry/api';
+
 import { logger } from '@/lib/logger';
 
 // ============================================================================

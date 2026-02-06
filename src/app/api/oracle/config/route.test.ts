@@ -56,8 +56,8 @@ vi.mock('@/server/apiResponse', async () => {
     handleApi: async (_request: Request, fn: () => unknown | Promise<unknown>) => {
       try {
         return await fn();
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : 'unknown_error';
+      } catch (error: unknown) {
+        const msg = error instanceof Error ? error.message : 'unknown_error';
         if (msg.includes('Unexpected token')) {
           return {
             ok: false,
@@ -65,7 +65,7 @@ vi.mock('@/server/apiResponse', async () => {
           };
         }
         if (msg === 'invalid_body' || msg === 'invalid_request_body') {
-          const details = (e as Error & { details?: Record<string, unknown> }).details;
+          const details = (error as Error & { details?: Record<string, unknown> }).details;
           return details
             ? { ok: false, error: { code: 'invalid_request_body', details } }
             : { ok: false, error: { code: 'invalid_request_body' } };
@@ -74,13 +74,13 @@ vi.mock('@/server/apiResponse', async () => {
           return { ok: false, error: { code: 'forbidden' } };
         }
         if (msg === 'no_valid_fields') {
-          const details = (e as Error & { details?: Record<string, unknown> }).details;
+          const details = (error as Error & { details?: Record<string, unknown> }).details;
           return details
             ? { ok: false, error: { code: 'no_valid_fields', details } }
             : { ok: false, error: { code: 'no_valid_fields' } };
         }
         if (msg === 'invalid_rpc_url') {
-          const field = (e as Error & { field?: string }).field;
+          const field = (error as Error & { field?: string }).field;
           return field
             ? { ok: false, error: { code: 'invalid_rpc_url', details: { field } } }
             : { ok: false, error: { code: 'invalid_rpc_url' } };

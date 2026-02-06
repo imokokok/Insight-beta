@@ -1,17 +1,19 @@
-import { hasDatabase, query } from './db';
-import { ensureSchema } from './schema';
+import { isIP } from 'node:net';
+
+import { env } from '@/lib/config/env';
+import { logger } from '@/lib/logger';
+import { encryptString, decryptString, isEncryptionEnabled } from '@/lib/security/encryption';
 import type {
   OracleChain,
   OracleConfig as SharedOracleConfig,
   OracleInstance,
 } from '@/lib/types/oracleTypes';
 import { getMemoryInstance, getMemoryStore } from '@/server/memoryBackend';
-import { isIP } from 'node:net';
-import { env } from '@/lib/config/env';
-import { encryptString, decryptString, isEncryptionEnabled } from '@/lib/security/encryption';
-import { logger } from '@/lib/logger';
-import { oracleConfigCache } from './redisCache';
+
+import { hasDatabase, query } from './db';
 import { withTransaction } from './dbOptimization';
+import { oracleConfigCache } from './redisCache';
+import { ensureSchema } from './schema';
 
 export type OracleConfig = SharedOracleConfig;
 
@@ -278,11 +280,11 @@ type OracleConfigField = keyof OracleConfig;
 function withField<T>(field: OracleConfigField, fn: () => T): T {
   try {
     return fn();
-  } catch (e) {
-    if (e instanceof ValidationError) {
-      throw Object.assign(new Error(e.message), { field });
+  } catch (error: unknown) {
+    if (error instanceof ValidationError) {
+      throw Object.assign(new Error(error.message), { field });
     }
-    throw e;
+    throw error;
   }
 }
 

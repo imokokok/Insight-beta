@@ -8,9 +8,12 @@
  */
 
 import { Connection, PublicKey, type Commitment } from '@solana/web3.js';
-import type { SolanaPriceFeed, SolanaOracleInstance } from './types';
-import { SolanaError, SolanaErrorCode } from './types';
+
 import { logger } from '@/lib/logger';
+
+import { SolanaError, SolanaErrorCode } from './types';
+
+import type { SolanaPriceFeed, SolanaOracleInstance } from './types';
 
 // ============================================================================
 // Chainlink Solana Configuration
@@ -45,20 +48,76 @@ class BN {
     private data: Buffer,
     private offset: number,
     private length: number = 8,
-  ) {}
+  ) {
+    // 验证参数
+    if (offset < 0 || offset >= data.length) {
+      throw new Error(`Invalid offset: ${offset}`);
+    }
+    if (length <= 0 || offset + length > data.length) {
+      throw new Error(`Invalid length: ${length}`);
+    }
+  }
 
   toNumber(): number {
-    if (this.length <= 6) {
-      return this.data.readUIntLE(this.offset, this.length);
+    try {
+      if (this.length <= 6) {
+        return this.data.readUIntLE(this.offset, this.length);
+      }
+
+      // 对于大数，使用 BigInt 进行转换并检查溢出
+      const hex = this.data.slice(this.offset, this.offset + this.length).toString('hex');
+      const bigIntVal = BigInt('0x' + hex);
+
+      // 检查是否超出安全整数范围
+      if (bigIntVal > BigInt(Number.MAX_SAFE_INTEGER)) {
+        logger.warn('BN value exceeds safe integer range, returning MAX_SAFE_INTEGER');
+        return Number.MAX_SAFE_INTEGER;
+      }
+      if (bigIntVal < BigInt(Number.MIN_SAFE_INTEGER)) {
+        logger.warn('BN value below safe integer range, returning MIN_SAFE_INTEGER');
+        return Number.MIN_SAFE_INTEGER;
+      }
+
+      return Number(bigIntVal);
+    } catch (error) {
+      logger.error('BN toNumber conversion failed', {
+        error,
+        offset: this.offset,
+        length: this.length,
+      });
+      return 0;
     }
-    // For larger numbers, return as string to avoid precision loss
-    const hex = this.data.slice(this.offset, this.offset + this.length).toString('hex');
-    return parseInt(hex, 16);
   }
 
   toString(): string {
-    const hex = this.data.slice(this.offset, this.offset + this.length).toString('hex');
-    return BigInt('0x' + hex).toString();
+    try {
+      const hex = this.data.slice(this.offset, this.offset + this.length).toString('hex');
+      return BigInt('0x' + hex).toString();
+    } catch (error) {
+      logger.error('BN toString conversion failed', {
+        error,
+        offset: this.offset,
+        length: this.length,
+      });
+      return '0';
+    }
+  }
+
+  /**
+   * 获取 BigInt 值（推荐用于大数）
+   */
+  toBigInt(): bigint {
+    try {
+      const hex = this.data.slice(this.offset, this.offset + this.length).toString('hex');
+      return BigInt('0x' + hex);
+    } catch (error) {
+      logger.error('BN toBigInt conversion failed', {
+        error,
+        offset: this.offset,
+        length: this.length,
+      });
+      return 0n;
+    }
   }
 }
 
@@ -325,13 +384,34 @@ export function clearChainlinkClientCache(): void {
 // Chainlink Feed Addresses (Mainnet)
 // ============================================================================
 
+// Chainlink Solana Mainnet Price Feeds
+// 来源: https://docs.chain.link/data-feeds/price-feeds/addresses?network=solana
 export const CHAINLINK_SOLANA_FEEDS: Record<string, string> = {
-  'BTC/USD': '8SXvChNYFhRq4EZuZvnhjrB3jJRQCpx4U4UVU5nN8e5A',
-  'ETH/USD': '5zJdr4tF3K5H4J7K8L9M0N1O2P3Q4R5S6T7U8V9W0X1Y2Z3A4B5C6D7E8F9G0H1I2J',
-  'SOL/USD': '7UV8W9X0Y1Z2A3B4C5D6E7F8G9H0I1J2K3L4M5N6O7P8Q9R0S1T2U3V4W5X6Y7Z8A9B0',
-  'USDC/USD': '9C1D2E3F4G5H6I7J8K9L0M1N2O3P4Q5R6S7T8U9V0W1X2Y3Z4A5B6C7D8E9F0G1H2I3J4K5L',
-  'USDT/USD': 'A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6A7B8C9D0E1F2G3H4I5J6K7L8',
+  // 已验证的 Chainlink Solana 价格源
+  // 注意: Chainlink 在 Solana 上的部署有限，以下地址需要验证
+  // 建议通过 addFeed 方法动态添加或使用配置文件
 };
+
+/**
+ * 验证 Solana 地址格式
+ */
+function isValidSolanaAddress(address: string): boolean {
+  // Solana 地址是 base58 编码，长度 32-44 字符
+  if (!address || typeof address !== 'string') return false;
+  if (address.length < 32 || address.length > 44) return false;
+  // 基本 base58 字符检查
+  return /^[1-9A-HJ-NP-Za-km-z]+$/.test(address);
+}
+
+/**
+ * 添加 Chainlink 价格源
+ */
+export function addChainlinkFeed(symbol: string, address: string): void {
+  if (!isValidSolanaAddress(address)) {
+    throw new Error(`Invalid Solana address for ${symbol}: ${address}`);
+  }
+  CHAINLINK_SOLANA_FEEDS[symbol] = address;
+}
 
 /**
  * Get Chainlink feed address for a symbol

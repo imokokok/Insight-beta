@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 import {
   cachedJson,
   error,
@@ -8,7 +10,6 @@ import {
   requireAdmin,
 } from '@/server/apiResponse';
 import { createIncident, getAlertsByIds, listIncidents } from '@/server/observability';
-import { z } from 'zod';
 import type { Alert } from '@/server/observability';
 
 const querySchema = z.object({

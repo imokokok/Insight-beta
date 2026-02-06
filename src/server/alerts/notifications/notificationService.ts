@@ -5,6 +5,10 @@
  */
 
 import { logger } from '@/lib/logger';
+
+import { sendEmailNotification } from './email';
+import { sendSMSNotification } from './sms';
+
 import type {
   NotificationChannel,
   AlertSeverity,
@@ -19,8 +23,6 @@ import type {
   TelegramConfig,
   PagerDutyConfig,
 } from './types';
-import { sendEmailNotification } from './email';
-import { sendSMSNotification } from './sms';
 
 export class NotificationService {
   private configs: Map<string, NotificationConfig> = new Map();

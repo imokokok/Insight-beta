@@ -4,8 +4,9 @@
  * 邮件通知渠道实现
  */
 
-import type { AlertNotification, EmailConfig, NotificationResult } from './types';
 import { formatEmailBody } from './utils';
+
+import type { AlertNotification, EmailConfig, NotificationResult } from './types';
 
 /**
  * 发送邮件通知

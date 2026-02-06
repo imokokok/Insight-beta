@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import { createSupabaseClient } from '@/lib/supabase/server';
+
 import { logger } from '@/lib/logger';
+import { createSupabaseClient } from '@/lib/supabase/server';
 
 interface DetectionRow {
   id: string;

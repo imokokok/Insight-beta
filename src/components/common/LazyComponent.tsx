@@ -8,9 +8,11 @@
 
 import React, { Suspense, lazy } from 'react';
 import type { ComponentType, ReactNode } from 'react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+
 import { RefreshCw, AlertCircle } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 // ============================================================================
 // Types

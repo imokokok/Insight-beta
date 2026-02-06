@@ -1,4 +1,5 @@
 import type { NextRequest } from 'next/server';
+
 import crypto from 'crypto';
 
 export interface AuthResult {

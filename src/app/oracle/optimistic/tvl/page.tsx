@@ -3,11 +3,13 @@
 /* eslint-disable no-restricted-syntax */
 
 import { useEffect, useState } from 'react';
+
 import { TrendingUp, Layers, Activity, DollarSign, RefreshCw, BarChart3 } from 'lucide-react';
+
 import { PageHeader } from '@/components/features/common/PageHeader';
-import { cn, fetchApiData, formatTime } from '@/lib/utils';
-import { logger } from '@/lib/logger';
 import { useI18n } from '@/i18n/LanguageProvider';
+import { logger } from '@/lib/logger';
+import { cn, fetchApiData, formatTime } from '@/lib/utils';
 
 interface TVLData {
   chainId: number;

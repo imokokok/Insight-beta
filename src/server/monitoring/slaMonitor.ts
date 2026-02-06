@@ -4,8 +4,8 @@
  * SLA 监控服务 - 服务质量监控和报告
  */
 
-import { query } from '@/server/db';
 import { logger } from '@/lib/logger';
+import { query } from '@/server/db';
 
 // ============================================================================
 // 类型定义

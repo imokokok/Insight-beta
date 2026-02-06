@@ -16,7 +16,10 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+
 import { glob } from 'glob';
+
+import { AppError, toAppError } from '../src/lib/errors/AppError';
 
 // Configuration
 const SRC_DIR = path.join(process.cwd(), 'src');
@@ -150,8 +153,11 @@ async function validateTranslations() {
 
   const enKeys = langKeys.get('en');
   if (!enKeys) {
-    log('❌ English translation file not found!', 'red');
-    process.exit(1);
+    throw new AppError('English translation file not found', {
+      category: 'NOT_FOUND',
+      statusCode: 404,
+      code: 'TRANSLATIONS_NOT_FOUND',
+    });
   }
 
   log(`   English: ${enKeys.size} keys`, 'blue');
@@ -247,7 +253,11 @@ async function validateTranslations() {
 }
 
 // Run validation
-validateTranslations().catch((error) => {
-  console.error('Validation failed:', error);
+validateTranslations().catch((error: unknown) => {
+  const appError = toAppError(error);
+  log(`\n❌ Validation failed: ${appError.message}`, 'red');
+  if (appError.code) {
+    log(`   Error code: ${appError.code}`, 'red');
+  }
   process.exit(1);
 });

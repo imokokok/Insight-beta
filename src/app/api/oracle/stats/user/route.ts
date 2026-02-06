@@ -1,7 +1,8 @@
-import { getUserStats } from '@/server/oracle';
-import { handleApi, rateLimit, cachedJson } from '@/server/apiResponse';
-import { z } from 'zod';
 import { isAddress } from 'viem';
+import { z } from 'zod';
+
+import { handleApi, rateLimit, cachedJson } from '@/server/apiResponse';
+import { getUserStats } from '@/server/oracle';
 
 const statsParamsSchema = z.object({
   address: z.string().refine((value) => isAddress(value), { message: 'invalid_address' }),

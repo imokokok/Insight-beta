@@ -6,6 +6,7 @@
 import { logger } from '@/lib/logger';
 import { query } from '@/server/db';
 import { priceStreamManager } from '@/server/websocket/priceStream';
+
 import type { HealthCheckResult } from '../types/serviceTypes';
 
 export class HealthCheckManager {

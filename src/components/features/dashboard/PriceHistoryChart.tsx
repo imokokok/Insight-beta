@@ -10,9 +10,10 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts';
+
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { formatPrice } from '@/lib/utils';
 import type { CrossProtocolComparison } from '@/lib/types';
+import { formatPrice } from '@/lib/utils';
 
 interface PriceHistoryChartProps {
   data: CrossProtocolComparison[];

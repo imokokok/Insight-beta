@@ -10,6 +10,7 @@
  */
 
 import { WebSocket } from 'ws';
+
 import { logger } from '../../lib/logger';
 import { metrics } from '../../lib/monitoring/metrics';
 

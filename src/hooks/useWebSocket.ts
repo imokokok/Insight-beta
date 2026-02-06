@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { logger } from '@/lib/logger';
+
 import { WS_CONFIG } from '@/lib/config/constants';
+import { logger } from '@/lib/logger';
 
 export interface WebSocketOptions {
   /** 重连次数 */

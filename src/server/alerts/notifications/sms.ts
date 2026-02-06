@@ -4,8 +4,9 @@
  * 短信通知渠道实现
  */
 
-import type { AlertNotification, SMSConfig, NotificationResult } from './types';
 import { formatPlainText, truncateText } from './utils';
+
+import type { AlertNotification, SMSConfig, NotificationResult } from './types';
 
 /**
  * 发送短信通知

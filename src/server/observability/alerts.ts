@@ -5,12 +5,14 @@
  */
 
 import type { Alert, AlertSeverity, AlertStatus } from '@/lib/types/oracleTypes';
-import type { NotificationOptions } from '@/server/notifications';
 import { hasDatabase, query } from '@/server/db';
 import { getMemoryStore, memoryNowIso } from '@/server/memoryBackend';
+import type { NotificationOptions } from '@/server/notifications';
 import { notifyAlert } from '@/server/notifications';
 import { ensureSchema } from '@/server/schema';
+
 import { MEMORY_MAX_ALERTS } from './constants';
+
 import type { DbAlertRow } from './types';
 
 let schemaEnsured = false;

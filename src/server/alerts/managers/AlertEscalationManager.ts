@@ -5,6 +5,7 @@
  */
 
 import { logger } from '@/lib/logger';
+
 import type { Alert, EscalationPolicy, EscalationLevel } from '../types';
 
 export class AlertEscalationManager {

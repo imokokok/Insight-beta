@@ -6,13 +6,13 @@
  */
 
 import { logger } from '@/lib/logger';
-import { query } from '@/server/db';
 import type {
   SupportedChain,
   UnifiedPriceFeed,
   UnifiedSyncState,
   OracleProtocol,
 } from '@/lib/types/unifiedOracleTypes';
+import { query } from '@/server/db';
 
 // ============================================================================
 // 同步配置

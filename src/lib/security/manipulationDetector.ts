@@ -8,6 +8,7 @@
  * 4. 时序分析 - 检测异常时间模式
  */
 
+import { logger } from '@/lib/logger';
 import type {
   ManipulationDetection,
   ManipulationType,
@@ -18,7 +19,6 @@ import type {
   DetectionMetrics,
 } from '@/lib/types/security/detection';
 import type { OracleProtocol, SupportedChain } from '@/lib/types/unifiedOracleTypes';
-import { logger } from '@/lib/logger';
 
 // ============================================================================
 // 配置常量

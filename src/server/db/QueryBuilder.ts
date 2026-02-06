@@ -215,6 +215,7 @@ export class QueryBuilder {
 // ============================================================================
 
 import { query } from './connectionManager';
+
 import type { QueryResultRow } from 'pg';
 
 export abstract class BaseRepository<T, RowType extends QueryResultRow = Record<string, unknown>> {

@@ -2,10 +2,12 @@
 
 /* eslint-disable no-restricted-syntax */
 
-import { usePathname, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
+import { useState } from 'react';
+
 import Image from 'next/image';
-import type { Route } from 'next';
+import Link from 'next/link';
+import { usePathname, useSearchParams } from 'next/navigation';
+
 import {
   ShieldAlert,
   Activity,
@@ -21,14 +23,18 @@ import {
   LayoutDashboard,
   TrendingUp,
   Shield,
+  Brain,
+  ArrowRightLeft,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useState } from 'react';
-import { useI18n } from '@/i18n/LanguageProvider';
+
 import { ConnectWallet } from '@/components/features/wallet/ConnectWallet';
 import { useOracleFilters } from '@/hooks/oracle/useOracleFilters';
+import { useI18n } from '@/i18n/LanguageProvider';
 import { PROTOCOL_DISPLAY_NAMES, PRICE_FEED_PROTOCOLS, OPTIMISTIC_PROTOCOLS } from '@/lib/types';
 import type { OracleProtocol } from '@/lib/types';
+import { cn } from '@/lib/utils';
+
+import type { Route } from 'next';
 
 const PROTOCOL_ICONS: Record<OracleProtocol, string> = {
   chainlink: '🔗',
@@ -52,6 +58,11 @@ const mainNavItems = [
     key: 'nav.unifiedOracle' as const,
     href: '/oracle/unified' as const,
     icon: Globe,
+  },
+  {
+    key: 'nav.security' as const,
+    href: '/security/dashboard' as const,
+    icon: Shield,
   },
 ];
 
@@ -89,6 +100,7 @@ export function Sidebar() {
   const [expandedSections, setExpandedSections] = useState({
     priceFeeds: true,
     optimistic: true,
+    analytics: true,
   });
   const { t } = useI18n();
   const { instanceId } = useOracleFilters();
@@ -109,7 +121,7 @@ export function Sidebar() {
 
   const isOptimisticActive = pathname?.startsWith('/oracle/optimistic');
 
-  const toggleSection = (section: 'priceFeeds' | 'optimistic') => {
+  const toggleSection = (section: 'priceFeeds' | 'optimistic' | 'analytics') => {
     setExpandedSections((prev) => ({
       ...prev,
       [section]: !prev[section],
@@ -321,6 +333,67 @@ export function Sidebar() {
                       </Link>
                     );
                   })}
+                </div>
+              )}
+            </div>
+
+            {/* Analytics Section */}
+            <div className="pt-2">
+              <button
+                onClick={() => toggleSection('analytics')}
+                className={cn(
+                  'group flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
+                  pathname?.startsWith('/oracle/analytics')
+                    ? 'bg-white text-purple-700 shadow-md shadow-purple-500/5 ring-1 ring-white/60'
+                    : 'text-gray-600 hover:bg-white/40 hover:text-purple-700 hover:shadow-sm',
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <Brain
+                    size={20}
+                    className={cn(
+                      'transition-colors duration-200',
+                      pathname?.startsWith('/oracle/analytics')
+                        ? 'text-purple-600'
+                        : 'text-gray-400 group-hover:text-purple-500',
+                    )}
+                  />
+                  <span>AI Analytics</span>
+                </div>
+                {expandedSections.analytics ? (
+                  <ChevronDown size={16} className="text-gray-400" />
+                ) : (
+                  <ChevronRight size={16} className="text-gray-400" />
+                )}
+              </button>
+
+              {/* Analytics Submenu */}
+              {expandedSections.analytics && (
+                <div className="ml-4 mt-1 space-y-1 border-l-2 border-gray-200 pl-3">
+                  <a
+                    href="/oracle/analytics/anomalies"
+                    className={cn(
+                      'group flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-all duration-200',
+                      pathname === '/oracle/analytics/anomalies'
+                        ? 'bg-purple-50 text-purple-700'
+                        : 'text-gray-500 hover:bg-gray-50 hover:text-purple-600',
+                    )}
+                  >
+                    <Brain size={16} className="text-gray-400" />
+                    <span className="truncate">ML Anomalies</span>
+                  </a>
+                  <a
+                    href="/oracle/analytics/deviation"
+                    className={cn(
+                      'group flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-all duration-200',
+                      pathname === '/oracle/analytics/deviation'
+                        ? 'bg-purple-50 text-purple-700'
+                        : 'text-gray-500 hover:bg-gray-50 hover:text-purple-600',
+                    )}
+                  >
+                    <ArrowRightLeft size={16} className="text-gray-400" />
+                    <span className="truncate">Price Deviation</span>
+                  </a>
                 </div>
               )}
             </div>

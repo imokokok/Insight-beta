@@ -1,9 +1,8 @@
 import type { ComponentPropsWithoutRef } from 'react';
 import { memo, forwardRef } from 'react';
+
 import Link from 'next/link';
-import type { Route } from 'next';
-import { Virtuoso, VirtuosoGrid } from 'react-virtuoso';
-import { SkeletonList } from '@/components/features/common/SkeletonList';
+
 import {
   CheckCircle2,
   Clock,
@@ -13,11 +12,16 @@ import {
   Gavel,
   Star,
 } from 'lucide-react';
-import { cn, formatTime, getExplorerUrl, truncateAddress } from '@/lib/utils';
+import { Virtuoso, VirtuosoGrid } from 'react-virtuoso';
+
+import { SkeletonList } from '@/components/features/common/SkeletonList';
 import { useWatchlist } from '@/hooks/user/useWatchlist';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { langToLocale, type TranslationKey } from '@/i18n/translations';
 import type { Dispute, DisputeStatus } from '@/lib/types/oracleTypes';
+import { cn, formatTime, getExplorerUrl, truncateAddress } from '@/lib/utils';
+
+import type { Route } from 'next';
 
 interface DisputeListProps {
   items: Dispute[];

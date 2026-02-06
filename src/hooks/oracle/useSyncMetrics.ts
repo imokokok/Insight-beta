@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { fetchApiData } from '@/lib/utils';
-import { logger } from '@/lib/logger';
+
 import type { SyncMetricItem } from '@/components/features/charts/types';
+import { logger } from '@/lib/logger';
+import { fetchApiData } from '@/lib/utils';
 
 export interface UseSyncMetricsReturn {
   data: SyncMetricItem[];
@@ -42,10 +43,10 @@ export function useSyncMetrics(
         const url = `/api/oracle/sync-metrics?${params.toString()}`;
         const metrics = await fetchApiData<SyncMetricItem[]>(url, { signal });
         setData(metrics);
-      } catch (e) {
+      } catch (error: unknown) {
         if (signal?.aborted) return;
-        logger.error('Failed to fetch sync metrics:', { error: e });
-        setError(e instanceof Error ? e.message : 'unknown_error');
+        logger.error('Failed to fetch sync metrics:', { error });
+        setError(error instanceof Error ? error.message : 'unknown_error');
       } finally {
         setLoading(false);
       }

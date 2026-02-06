@@ -5,21 +5,24 @@
  */
 
 import crypto from 'crypto';
-import type { PoolClient } from 'pg';
+
+import { createPublicClient, http, formatEther, parseAbi } from 'viem';
+
 import { env } from '@/lib/config/env';
 import { logger } from '@/lib/logger';
 import { getClient, hasDatabase, query } from '@/server/db';
+import { writeJsonFile } from '@/server/kvStore';
 import { getMemoryStore } from '@/server/memoryBackend';
 import { createOrTouchAlert, pruneStaleAlerts, readAlertRules } from '@/server/observability';
 import { getSyncState, listOracleInstances, readOracleState } from '@/server/oracle';
-import type { SyncState } from '@/server/oracleState/types';
 import { fetchCurrentPrice } from '@/server/oracle/priceFetcher';
-import { ensureOracleSynced, getOracleEnv, isOracleSyncing } from '@/server/oracleIndexer';
 import { ensureUMASynced, isUMASyncing } from '@/server/oracle/uma/sync';
 import { listUMAConfigs } from '@/server/oracle/umaConfig';
 import { startRewardsSyncTask, startTvlSyncTask } from '@/server/oracle/umaSyncTasks';
-import { writeJsonFile } from '@/server/kvStore';
-import { createPublicClient, http, formatEther, parseAbi } from 'viem';
+import { ensureOracleSynced, getOracleEnv, isOracleSyncing } from '@/server/oracleIndexer';
+import type { SyncState } from '@/server/oracleState/types';
+
+import type { PoolClient } from 'pg';
 
 const pausableAbi = parseAbi(['function paused() view returns (bool)']);
 
@@ -364,8 +367,8 @@ async function processStaleSyncRules(
         staleRecoveryAttempted = true;
         try {
           await ensureOracleSynced(instanceId);
-        } catch (e) {
-          logger.warn('Stale sync recovery failed', { error: e, instanceId });
+        } catch (error: unknown) {
+          logger.warn('Stale sync recovery failed', { error, instanceId });
         }
       }
     }

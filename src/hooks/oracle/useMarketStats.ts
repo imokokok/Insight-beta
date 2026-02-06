@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { fetchApiData } from '@/lib/utils';
-import { logger } from '@/lib/logger';
+
 import type { MarketStat } from '@/components/features/charts/types';
+import { logger } from '@/lib/logger';
+import { fetchApiData } from '@/lib/utils';
 
 export interface UseMarketStatsReturn {
   data: MarketStat[];
@@ -41,10 +42,10 @@ export function useMarketStats(
         const url = `/api/oracle/market-stats?${params.toString()}`;
         const stats = await fetchApiData<MarketStat[]>(url, { signal });
         setData(stats);
-      } catch (e) {
+      } catch (error: unknown) {
         if (signal?.aborted) return;
-        logger.error('Failed to fetch market stats:', { error: e });
-        setError(e instanceof Error ? e.message : 'unknown_error');
+        logger.error('Failed to fetch market stats:', { error });
+        setError(error instanceof Error ? error.message : 'unknown_error');
       } finally {
         setLoading(false);
       }

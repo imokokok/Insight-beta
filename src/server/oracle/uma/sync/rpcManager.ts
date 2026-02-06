@@ -5,13 +5,42 @@
  */
 
 import { createPublicClient, http, type PublicClient } from 'viem';
+
 import { logger } from '@/lib/logger';
-import { redactRpcUrl } from '@/server/oracleIndexer/rpcClient';
-import { getRpcTimeoutMs } from '@/server/oracleIndexer/rpcClient';
+import { redactRpcUrl, getRpcTimeoutMs } from '@/server/oracleIndexer/rpcClient';
 // parseRpcUrls is imported but not used in this file - removed to avoid TS error
 
 const MAX_RETRY_BACKOFF_MS = 30000;
+const MAX_CACHE_SIZE = 100; // 限制缓存大小防止内存泄漏
 const RPC_CLIENT_CACHE = new Map<string, PublicClient>();
+const CACHE_ACCESS_ORDER: string[] = []; // 用于LRU策略
+
+// 清理过期缓存的函数
+function cleanupCache(): void {
+  while (RPC_CLIENT_CACHE.size > MAX_CACHE_SIZE && CACHE_ACCESS_ORDER.length > 0) {
+    const oldestKey = CACHE_ACCESS_ORDER.shift();
+    if (oldestKey) {
+      RPC_CLIENT_CACHE.delete(oldestKey);
+    }
+  }
+}
+
+// 获取缓存客户端（带LRU更新）
+function getCachedClient(cacheKey: string, factory: () => PublicClient): PublicClient {
+  // 更新访问顺序
+  const index = CACHE_ACCESS_ORDER.indexOf(cacheKey);
+  if (index > -1) {
+    CACHE_ACCESS_ORDER.splice(index, 1);
+  }
+  CACHE_ACCESS_ORDER.push(cacheKey);
+
+  if (!RPC_CLIENT_CACHE.has(cacheKey)) {
+    cleanupCache();
+    RPC_CLIENT_CACHE.set(cacheKey, factory());
+  }
+
+  return RPC_CLIENT_CACHE.get(cacheKey)!;
+}
 
 export interface RpcStats {
   [url: string]: {
@@ -62,19 +91,11 @@ export class RpcManager {
 
   private getClient(url: string): PublicClient {
     const cacheKey = `${url}-${this.chainId}`;
-    if (!RPC_CLIENT_CACHE.has(cacheKey)) {
-      RPC_CLIENT_CACHE.set(
-        cacheKey,
-        createPublicClient({
-          transport: http(url, { timeout: getRpcTimeoutMs() }),
-        }),
-      );
-    }
-    const client = RPC_CLIENT_CACHE.get(cacheKey);
-    if (!client) {
-      throw new Error(`Failed to get or create RPC client for ${cacheKey}`);
-    }
-    return client;
+    return getCachedClient(cacheKey, () =>
+      createPublicClient({
+        transport: http(url, { timeout: getRpcTimeoutMs() }),
+      }),
+    );
   }
 
   private pickNextUrl(): string {

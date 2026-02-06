@@ -4,6 +4,8 @@
  * 提供连接复用、自动重连、订阅管理等功能
  */
 
+import { randomUUID } from 'crypto';
+
 import { logger } from '@/lib/logger';
 
 // ============================================================================
@@ -218,9 +220,22 @@ export class WebSocketConnectionPool {
     }
 
     const connectionId = this.generateConnectionId();
+
+    // 创建 WebSocket 连接，添加异常处理
+    let ws: WebSocket;
+    try {
+      ws = new WebSocket(url);
+    } catch (error) {
+      logger.error('Failed to create WebSocket connection', {
+        url,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return null;
+    }
+
     const connection: PooledConnection = {
       id: connectionId,
-      ws: new WebSocket(url),
+      ws,
       url,
       subscriptions: new Map(),
       isConnected: false,
@@ -563,12 +578,14 @@ export class WebSocketConnectionPool {
   // ============================================================================
 
   private generateConnectionId(): string {
-    return `conn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    // 使用 crypto.randomUUID() 替代 Math.random() 生成安全ID
+    return `conn_${Date.now()}_${randomUUID().replace(/-/g, '').slice(0, 9)}`;
   }
 
   private generateSubscriptionId(channel: string, params?: Record<string, unknown>): string {
     const paramsStr = params ? JSON.stringify(params) : '';
-    return `sub_${channel}_${paramsStr}_${Date.now()}`;
+    // 使用 crypto.randomUUID() 替代简单时间戳
+    return `sub_${channel}_${paramsStr}_${randomUUID().replace(/-/g, '').slice(0, 9)}`;
   }
 
   // ============================================================================

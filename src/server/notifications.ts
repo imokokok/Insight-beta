@@ -1,7 +1,8 @@
-import type { Dispute, Assertion } from '@/lib/types/oracleTypes';
-import { logger } from '@/lib/logger';
 import { env } from '@/lib/config/env';
+import { logger } from '@/lib/logger';
+import type { Dispute, Assertion } from '@/lib/types/oracleTypes';
 import { sleep } from '@/lib/utils';
+
 import type { Transporter } from 'nodemailer';
 
 /**

@@ -1,5 +1,6 @@
-import type { Lang, TranslationNamespace } from './types';
 import { logger } from '@/lib/logger';
+
+import type { Lang, TranslationNamespace } from './types';
 
 export type TranslationModule = () => Promise<{ default: TranslationNamespace }>;
 

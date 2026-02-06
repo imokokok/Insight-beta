@@ -4,16 +4,15 @@
  * POST /api/oracle/config/versions/rollback           - 回滚到指定版本
  */
 
-import { handleApi, rateLimit, requireAdmin } from '@/server/apiResponse';
+import { logger } from '@/lib/logger';
+import { handleApi, rateLimit, requireAdmin, getAdminActor } from '@/server/apiResponse';
+import { appendAuditLog } from '@/server/observability';
 import {
   getConfigVersions,
   rollbackConfigVersion,
   ensureEnhancedSchema,
 } from '@/server/oracleConfigEnhanced';
-import { appendAuditLog } from '@/server/observability';
-import { getAdminActor } from '@/server/apiResponse';
 import { generateRequestId } from '@/server/performance';
-import { logger } from '@/lib/logger';
 
 const RATE_LIMITS = {
   GET: { key: 'oracle_config_versions_get', limit: 120, windowMs: 60_000 },

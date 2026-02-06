@@ -3,10 +3,13 @@
 /* eslint-disable no-restricted-syntax */
 
 import { memo } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+
 import { AlertTriangle } from 'lucide-react';
-import { ProtocolBadge } from './ProtocolBadge';
+
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import type { CrossProtocolComparison } from '@/lib/types';
+
+import { ProtocolBadge } from './ProtocolBadge';
 
 interface PriceComparisonCardProps {
   comparison: CrossProtocolComparison;

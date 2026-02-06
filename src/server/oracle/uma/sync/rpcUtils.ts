@@ -1,6 +1,9 @@
 import { createPublicClient, http, parseAbi } from 'viem';
+
 import { logger } from '@/lib/logger';
+
 import { CACHE_TTL_MS, getRpcTimeoutMs } from './constants';
+
 import type { RpcStats } from './types';
 
 const umaClientCache = new Map<string, ReturnType<typeof createPublicClient>>();
@@ -61,16 +64,33 @@ export function cleanupUMAClientCache() {
 // 启动缓存清理定时器，并保存引用以便 graceful shutdown
 const cleanupInterval = setInterval(cleanupUMAClientCache, CACHE_TTL_MS);
 
+// 添加最大缓存生命周期保护（24小时）
+const MAX_CACHE_LIFETIME_MS = 24 * 60 * 60 * 1000;
+let cacheCreatedAt = Date.now();
+
+// 定期检查和强制清理
+const lifetimeCheckInterval = setInterval(() => {
+  if (Date.now() - cacheCreatedAt > MAX_CACHE_LIFETIME_MS) {
+    clearInterval(cleanupInterval);
+    clearInterval(lifetimeCheckInterval);
+    umaClientCache.clear();
+    cacheCreatedAt = Date.now(); // 重置计时器
+    logger.warn('UMA client cache force cleared due to max lifetime');
+  }
+}, CACHE_TTL_MS);
+
 // Graceful shutdown 处理
 if (typeof process !== 'undefined') {
   process.on('SIGTERM', () => {
     clearInterval(cleanupInterval);
+    clearInterval(lifetimeCheckInterval);
     umaClientCache.clear();
     logger.info('UMA client cache cleaned up on SIGTERM');
   });
 
   process.on('SIGINT', () => {
     clearInterval(cleanupInterval);
+    clearInterval(lifetimeCheckInterval);
     umaClientCache.clear();
     logger.info('UMA client cache cleaned up on SIGINT');
   });

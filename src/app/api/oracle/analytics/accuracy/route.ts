@@ -1,7 +1,8 @@
-import { cachedJson, handleApi, rateLimit } from '@/server/apiResponse';
 import { z } from 'zod';
-import { fetchReferencePriceHistory } from '@/server/oracle/priceFetcher';
+
+import { cachedJson, handleApi, rateLimit } from '@/server/apiResponse';
 import { getOracleEnv, readOracleConfig } from '@/server/oracle';
+import { fetchReferencePriceHistory } from '@/server/oracle/priceFetcher';
 
 const paramsSchema = z.object({
   symbol: z.string().default('ETH'),

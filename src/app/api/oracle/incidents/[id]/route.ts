@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 import {
   error,
   getAdminActor,
@@ -13,7 +15,6 @@ import {
   patchIncident,
   updateAlertStatus,
 } from '@/server/observability';
-import { z } from 'zod';
 
 const querySchema = z.object({
   includeAlerts: z.enum(['0', '1']).optional(),

@@ -1,7 +1,8 @@
 import type { NextRequest } from 'next/server';
-import { listUMAAssertions } from '@/server/oracle/umaState';
-import { handleApi, rateLimit } from '@/server/apiResponse';
+
 import { logger } from '@/lib/logger';
+import { handleApi, rateLimit } from '@/server/apiResponse';
+import { listUMAAssertions } from '@/server/oracle/umaState';
 
 const RATE_LIMITS = {
   GET: { key: 'uma_assertions_get', limit: 120, windowMs: 60_000 },

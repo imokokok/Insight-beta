@@ -5,7 +5,6 @@
  * 支持多预言机协议的统一配置管理
  */
 
-import { query } from '@/server/db';
 import { logger } from '@/lib/logger';
 import type {
   UnifiedOracleInstance,
@@ -14,6 +13,7 @@ import type {
   SupportedChain,
   ProtocolSpecificConfig,
 } from '@/lib/types/unifiedOracleTypes';
+import { query } from '@/server/db';
 
 // ============================================================================
 // 配置验证
@@ -752,12 +752,12 @@ export async function recordSyncError(
     );
 
     logger.warn('Recorded sync error', { instanceId, protocol: protocolName, error });
-  } catch (err) {
+  } catch (error: unknown) {
     logger.error('Failed to record sync error', {
       instanceId,
-      error: err instanceof Error ? err.message : String(err),
+      error: error instanceof Error ? error.message : String(error),
     });
-    throw err;
+    throw error;
   }
 }
 

@@ -6,9 +6,11 @@
 
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+
+import { z } from 'zod';
+
 import { logger } from '@/lib/logger';
 import { alertService } from '@/lib/services/detection/alertService';
-import { z } from 'zod';
 
 const configSchema = z.object({
   channels: z

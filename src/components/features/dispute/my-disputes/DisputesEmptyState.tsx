@@ -1,5 +1,7 @@
 import Link from 'next/link';
+
 import { Wallet } from 'lucide-react';
+
 import type { TranslationKey } from '@/i18n/translations';
 
 type Translate = (key: TranslationKey) => string;

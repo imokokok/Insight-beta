@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { cn } from '@/lib/utils';
-import { Tooltip } from '@/components/features/common/Tooltip';
+
 import { Clock, Info } from 'lucide-react';
+
+import { Tooltip } from '@/components/features/common/Tooltip';
+import { cn } from '@/lib/utils';
 
 interface LivenessProgressBarProps {
   startDate: string | number;

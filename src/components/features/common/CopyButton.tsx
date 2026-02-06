@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+
 import { Copy, Check } from 'lucide-react';
-import { cn } from '@/lib/utils';
+
 import { useToast } from '@/components/ui/toast';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { logger } from '@/lib/logger';
+import { cn } from '@/lib/utils';
 
 interface CopyButtonProps {
   text: string;
@@ -34,8 +36,8 @@ export function CopyButton({ text, label, className, iconSize = 14 }: CopyButton
       });
 
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      logger.error('Failed to copy', { error: err });
+    } catch (error: unknown) {
+      logger.error('Failed to copy', { error });
     }
   };
 

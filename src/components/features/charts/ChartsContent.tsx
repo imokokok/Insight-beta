@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+
 import {
   XAxis,
   YAxis,
@@ -17,7 +18,9 @@ import {
   Line,
   Bar,
 } from 'recharts';
+
 import { OracleHealthScore } from '@/components/features/oracle/OracleHealthScore';
+
 import type {
   TabKey,
   Translator,

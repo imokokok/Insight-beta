@@ -4,8 +4,9 @@
  * 支持多预言机协议的统一数据存储
  */
 
-import { hasDatabase, query } from './db';
 import { logger } from '@/lib/logger';
+
+import { hasDatabase, query } from './db';
 
 // 保留供将来使用的事务回滚函数
 // async function safeRollback() {

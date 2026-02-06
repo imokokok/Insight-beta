@@ -1,18 +1,13 @@
 'use client';
 
-import { cn } from '@/lib/utils';
 import { useEffect, useState, useMemo, useCallback, memo } from 'react';
+
 import { BarChart3 } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
-import { fetchApiData } from '@/lib/utils';
-import { useI18n } from '@/i18n/LanguageProvider';
-import { getUiErrorMessage, langToLocale } from '@/i18n/translations';
-import { ChartBackground } from '@/components/features/charts/ChartBackground';
-import { ChartsHeader } from '@/components/features/charts/ChartsHeader';
-import { ChartsContent } from '@/components/features/charts/ChartsContent';
+
 import { AccuracySummary } from '@/components/features/charts/AccuracySummary';
-import type { PricePoint } from '@/server/oracle/priceFetcher';
-import { calculateHealthScore } from '@/server/oracle/priceFetcher';
+import { ChartBackground } from '@/components/features/charts/ChartBackground';
+import { ChartsContent } from '@/components/features/charts/ChartsContent';
+import { ChartsHeader } from '@/components/features/charts/ChartsHeader';
 import type {
   ChartItem,
   SyncMetricItem,
@@ -21,6 +16,12 @@ import type {
   TabKey,
   Translator,
 } from '@/components/features/charts/types';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useI18n } from '@/i18n/LanguageProvider';
+import { getUiErrorMessage, langToLocale } from '@/i18n/translations';
+import { cn, fetchApiData } from '@/lib/utils';
+import type { PricePoint } from '@/server/oracle/priceFetcher';
+import { calculateHealthScore } from '@/server/oracle/priceFetcher';
 
 const getTabBorder = (activeTab: TabKey) =>
   activeTab === 'activity'

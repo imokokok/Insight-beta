@@ -1,7 +1,8 @@
-import { logger } from '@/lib/logger';
-import { env } from '@/lib/config/env';
-import type { RedisClientType } from 'redis';
 import { cacheProtection, hotKeyDetector } from '@/lib/cache/CacheProtection';
+import { env } from '@/lib/config/env';
+import { logger } from '@/lib/logger';
+
+import type { RedisClientType } from 'redis';
 
 // Redis client type - dynamically imported to avoid bundling issues
 let redisClient: RedisClientType | null = null;

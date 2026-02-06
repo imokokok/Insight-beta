@@ -3,11 +3,7 @@
 /* eslint-disable no-restricted-syntax */
 
 import { useEffect, useState } from 'react';
-import { cn, fetchApiData } from '@/lib/utils';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Progress } from '@/components/ui/progress';
+
 import {
   Activity,
   CheckCircle2,
@@ -21,8 +17,13 @@ import {
   Zap,
 } from 'lucide-react';
 
-import { PROTOCOL_DISPLAY_NAMES, ORACLE_PROTOCOLS } from '@/lib/types/oracle/protocol';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 import type { ProtocolPerformanceRanking } from '@/lib/types/oracle/price';
+import { PROTOCOL_DISPLAY_NAMES, ORACLE_PROTOCOLS } from '@/lib/types/oracle/protocol';
+import { cn, fetchApiData } from '@/lib/utils';
 
 interface ProtocolHealthGridProps {
   className?: string;

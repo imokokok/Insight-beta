@@ -9,9 +9,11 @@
 
 'use client';
 
-import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import type { Route } from 'next';
 import { useCallback, useMemo, useEffect, useRef } from 'react';
+
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+
+import type { Route } from 'next';
 
 interface UseUrlStateOptions<T> {
   /** 是否替换当前历史记录 */

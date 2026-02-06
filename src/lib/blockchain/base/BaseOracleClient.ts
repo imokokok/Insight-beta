@@ -5,14 +5,16 @@
  */
 
 import { createPublicClient, http, type Address, formatUnits, type Chain } from 'viem';
+
 import { logger } from '@/lib/logger';
-import { VIEM_CHAIN_MAP } from '../chainConfig';
+import type { PriceFeedCore, PriceFeedCoreArray, Nullable } from '@/lib/types/oracle';
 import type {
   SupportedChain,
   OracleHealthStatus,
   BaseOracleConfig,
 } from '@/lib/types/unifiedOracleTypes';
-import type { PriceFeedCore, PriceFeedCoreArray, Nullable } from '@/lib/types/oracle';
+
+import { VIEM_CHAIN_MAP } from '../chainConfig';
 
 // ============================================================================
 // 抽象基类

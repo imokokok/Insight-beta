@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
-import { getConfigHistoryEntry, rollbackConfig } from '@/server/oracleConfigHistory';
+
 import { z } from 'zod';
+
+import { getConfigHistoryEntry, rollbackConfig } from '@/server/oracleConfigHistory';
 
 const paramsSchema = z.object({
   id: z.coerce.number().int().positive(),

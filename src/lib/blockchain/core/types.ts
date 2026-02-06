@@ -4,12 +4,13 @@
  * 提供统一的类型系统，支持所有预言机协议
  */
 
-import type { Address } from 'viem';
 import type {
   OracleProtocol,
   SupportedChain,
   UnifiedPriceFeed,
 } from '@/lib/types/unifiedOracleTypes';
+
+import type { Address } from 'viem';
 
 // ============================================================================
 // 客户端配置类型

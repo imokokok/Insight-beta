@@ -2,26 +2,29 @@
 
 /* eslint-disable no-restricted-syntax */
 
-import { useParams } from 'next/navigation';
 import { useState, useEffect, useCallback, useMemo, Suspense, lazy } from 'react';
+
+import { useParams } from 'next/navigation';
+
 import { Activity, Shield, TrendingUp, Globe, BarChart3, Bell, Clock } from 'lucide-react';
-import { logger } from '@/lib/logger';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { ProtocolPageLayout } from '@/components/features/protocol/ProtocolPageLayout';
+
+import { StatCard } from '@/components/features/common/StatCard';
 import {
   FeedTable,
   commonFeedColumns,
   type FeedColumn,
 } from '@/components/features/protocol/FeedTable';
-import { StatCard } from '@/components/features/common/StatCard';
+import { ProtocolPageLayout } from '@/components/features/protocol/ProtocolPageLayout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { ChartSkeleton } from '@/components/ui/skeleton';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import { formatTimeAgo, truncateAddress } from '@/lib/utils/format';
+import { logger } from '@/lib/logger';
+import { getProtocolConfig } from '@/lib/protocol-config';
 import { ORACLE_PROTOCOLS, type OracleProtocol } from '@/lib/types';
 import { SUPPORTED_CHAINS } from '@/lib/types/protocol';
-import { getProtocolConfig } from '@/lib/protocol-config';
-import { ChartSkeleton } from '@/components/ui/skeleton';
+import { formatTimeAgo, truncateAddress } from '@/lib/utils/format';
 
 // Dynamic imports for heavy components with recharts
 const PriceHistoryChart = lazy(() =>

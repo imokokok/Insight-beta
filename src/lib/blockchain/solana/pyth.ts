@@ -5,9 +5,10 @@
  */
 
 import { SOLANA_PRICE_FEEDS } from './config';
-import type { SolanaPriceFeed, PythPriceData, Connection } from './types';
-import { SolanaError, SolanaErrorCode } from './types';
 import { fetchAccountInfo } from './connection';
+import { SolanaError, SolanaErrorCode } from './types';
+
+import type { SolanaPriceFeed, PythPriceData, Connection } from './types';
 
 // ============================================================================
 // Pyth Account Layout

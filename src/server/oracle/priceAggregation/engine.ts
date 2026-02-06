@@ -5,7 +5,6 @@
  */
 
 import { logger } from '@/lib/logger';
-import { query } from '@/server/db';
 import type {
   CrossOracleComparison,
   OracleProtocol,
@@ -13,6 +12,8 @@ import type {
   UnifiedPriceFeed,
 } from '@/lib/types/unifiedOracleTypes';
 import { calculateMean, calculateMedian } from '@/lib/utils/math';
+import { query } from '@/server/db';
+
 import { AGGREGATION_CONFIG } from './config';
 import { calculateProtocolWeightedAverage, determineRecommendationSource } from './utils';
 
@@ -123,40 +124,45 @@ export class PriceAggregationEngine {
       }
     >
   > {
-    let sql = `
-      SELECT DISTINCT ON (protocol)
-        id,
-        instance_id as "instanceId",
-        protocol,
-        chain,
-        symbol,
-        base_asset as "baseAsset",
-        quote_asset as "quoteAsset",
-        price,
-        price_raw as "priceRaw",
-        decimals,
-        timestamp,
-        block_number as "blockNumber",
-        confidence,
-        sources,
-        is_stale as "isStale",
-        staleness_seconds as "stalenessSeconds",
-        tx_hash as "txHash",
-        log_index as "logIndex"
-      FROM unified_price_feeds
-      WHERE symbol = $1
-        AND timestamp > NOW() - INTERVAL '5 minutes'
-        AND is_stale = false
+    // 优化查询：使用窗口函数代替 DISTINCT ON，性能更好
+    // 同时添加 LIMIT 防止大数据集问题
+    const sql = `
+      WITH latest_prices AS (
+        SELECT
+          id,
+          instance_id as "instanceId",
+          protocol,
+          chain,
+          symbol,
+          base_asset as "baseAsset",
+          quote_asset as "quoteAsset",
+          price,
+          price_raw as "priceRaw",
+          decimals,
+          timestamp,
+          block_number as "blockNumber",
+          confidence,
+          sources,
+          is_stale as "isStale",
+          staleness_seconds as "stalenessSeconds",
+          tx_hash as "txHash",
+          log_index as "logIndex",
+          ROW_NUMBER() OVER (PARTITION BY protocol ORDER BY timestamp DESC) as rn
+        FROM unified_price_feeds
+        WHERE symbol = $1
+          AND timestamp > NOW() - INTERVAL '5 minutes'
+          AND is_stale = false
+          ${chain ? 'AND chain = $2' : ''}
+      )
+      SELECT * FROM latest_prices
+      WHERE rn = 1
+      LIMIT 100
     `;
 
     const params: (string | SupportedChain)[] = [symbol];
-
     if (chain) {
-      sql += ` AND chain = $2`;
       params.push(chain);
     }
-
-    sql += ` ORDER BY protocol, timestamp DESC`;
 
     const result = await query(sql, params);
 

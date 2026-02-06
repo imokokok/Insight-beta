@@ -8,6 +8,7 @@
  */
 
 import React, { useEffect, useRef, useCallback } from 'react';
+
 import { logger } from '@/lib/logger';
 
 export interface PerformanceMetrics {

@@ -6,7 +6,9 @@
  * DELETE /api/oracle/config/webhooks/[id] - 删除 webhook
  */
 
-import { handleApi, rateLimit, requireAdmin } from '@/server/apiResponse';
+import { logger } from '@/lib/logger';
+import { handleApi, rateLimit, requireAdmin, getAdminActor } from '@/server/apiResponse';
+import { appendAuditLog } from '@/server/observability';
 import {
   listWebhookConfigs,
   getWebhookConfig,
@@ -15,11 +17,8 @@ import {
   deleteWebhookConfig,
   ensureEnhancedSchema,
 } from '@/server/oracleConfigEnhanced';
-import { appendAuditLog } from '@/server/observability';
-import { getAdminActor } from '@/server/apiResponse';
-import { generateRequestId } from '@/server/performance';
-import { logger } from '@/lib/logger';
 import type { WebhookEvent } from '@/server/oracleConfigEnhanced';
+import { generateRequestId } from '@/server/performance';
 
 const RATE_LIMITS = {
   GET: { key: 'oracle_config_webhooks_get', limit: 120, windowMs: 60_000 },

@@ -3,20 +3,21 @@
 /* eslint-disable no-restricted-syntax */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+
 import Link from 'next/link';
-import type { Route } from 'next';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+
 import { RefreshCw, ShieldAlert } from 'lucide-react';
-import { PageHeader } from '@/components/features/common/PageHeader';
+
 import { AlertRulesManager } from '@/components/features/alert/AlertRulesManager';
+import { PageHeader } from '@/components/features/common/PageHeader';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { fetchApiData, getErrorCode } from '@/lib/utils';
+import { useOracleIncidents, useOracleRisks, useOracleOpsMetrics } from '@/hooks/alerts';
+import { useDebounce } from '@/hooks/useDebounce';
+import { useAdminSession } from '@/hooks/user/useAdminSession';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage, langToLocale } from '@/i18n/translations';
-import { useAdminSession } from '@/hooks/user/useAdminSession';
-import { useDebounce } from '@/hooks/useDebounce';
 import { DEBOUNCE_CONFIG } from '@/lib/config/constants';
-import { useOracleIncidents, useOracleRisks, useOracleOpsMetrics } from '@/hooks/alerts';
 import type {
   Alert,
   AlertRule,
@@ -26,14 +27,7 @@ import type {
   OpsMetrics,
   OracleInstance,
 } from '@/lib/types/oracleTypes';
-import {
-  AlertCard,
-  IncidentCard,
-  OpsMetricsCard,
-  type IncidentDraft,
-  type IncidentWithAlerts,
-  type OpsSeriesPoint,
-} from './alertsComponents';
+import { fetchApiData, getErrorCode } from '@/lib/utils';
 import {
   formatSloTarget,
   formatSloValue,
@@ -44,6 +38,17 @@ import {
   sloLabels,
   sloStatusLabel,
 } from '@/lib/utils/alertsUtils';
+
+import {
+  AlertCard,
+  IncidentCard,
+  OpsMetricsCard,
+  type IncidentDraft,
+  type IncidentWithAlerts,
+  type OpsSeriesPoint,
+} from './alertsComponents';
+
+import type { Route } from 'next';
 
 export default function AlertsPageClient() {
   const { t, lang } = useI18n();
@@ -155,8 +160,8 @@ export default function AlertsPageClient() {
         headers: adminHeaders,
       });
       setRules(data.rules ?? []);
-    } catch (e) {
-      setRulesError(getErrorCode(e));
+    } catch (error: unknown) {
+      setRulesError(getErrorCode(error));
     }
   }, [adminHeaders, canAdmin]);
 
@@ -236,8 +241,8 @@ export default function AlertsPageClient() {
       ]);
       setItems(alertsData.items ?? []);
       setNextCursor(alertsData.nextCursor ?? null);
-    } catch (e) {
-      setError(getErrorCode(e));
+    } catch (error: unknown) {
+      setError(getErrorCode(error));
     } finally {
       setLoading(false);
     }
@@ -369,8 +374,8 @@ export default function AlertsPageClient() {
       });
       await reloadIncidents();
       scrollToIncidents();
-    } catch (e) {
-      setSloIncidentError(getErrorCode(e));
+    } catch (error: unknown) {
+      setSloIncidentError(getErrorCode(error));
     } finally {
       setSloIncidentCreating(false);
     }
@@ -529,8 +534,8 @@ export default function AlertsPageClient() {
         if (cancelled) return;
         setItems(data.items ?? []);
         setNextCursor(data.nextCursor ?? null);
-      } catch (e) {
-        if (!cancelled) setError(getErrorCode(e));
+      } catch (error: unknown) {
+        if (!cancelled) setError(getErrorCode(error));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -549,8 +554,8 @@ export default function AlertsPageClient() {
       const data = await fetchAlerts(nextCursor);
       setItems((prev) => prev.concat(data.items ?? []));
       setNextCursor(data.nextCursor ?? null);
-    } catch (e) {
-      setError(getErrorCode(e));
+    } catch (error: unknown) {
+      setError(getErrorCode(error));
     }
   };
 
@@ -585,8 +590,8 @@ export default function AlertsPageClient() {
         body: JSON.stringify({ rules: nextRules }),
       });
       setRules(data.rules ?? nextRules);
-    } catch (e) {
-      setError(getErrorCode(e));
+    } catch (error: unknown) {
+      setError(getErrorCode(error));
     } finally {
       setRulesSaving(false);
     }

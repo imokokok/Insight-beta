@@ -6,10 +6,12 @@
 
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+
 import { z } from 'zod';
+
 import { logger } from '@/lib/logger';
-import { generateRequestId } from '@/server/performance';
 import type { ApiResponse, PaginatedResult, PaginationParams } from '@/lib/types';
+import { generateRequestId } from '@/server/performance';
 
 // ============================================================================
 // 类型定义

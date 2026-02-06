@@ -15,18 +15,19 @@ import {
   keccak256,
   stringToBytes,
 } from 'viem';
-import type {
-  OracleProtocol,
-  SupportedChain,
-  UnifiedPriceFeed,
-} from '@/lib/types/unifiedOracleTypes';
+
+import { VIEM_CHAIN_MAP } from '@/lib/blockchain/chainConfig';
 import {
   BaseOracleClient,
   type OracleClientConfig,
   type OracleHealthStatus,
   type OracleClientCapabilities,
 } from '@/lib/blockchain/core';
-import { VIEM_CHAIN_MAP } from '@/lib/blockchain/chainConfig';
+import type {
+  OracleProtocol,
+  SupportedChain,
+  UnifiedPriceFeed,
+} from '@/lib/types/unifiedOracleTypes';
 
 // ============================================================================
 // UMA ABI

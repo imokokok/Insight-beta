@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+
 import { logger } from '@/lib/logger';
 
 const ALGORITHM = 'aes-256-gcm';

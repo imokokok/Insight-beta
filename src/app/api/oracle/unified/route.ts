@@ -13,15 +13,18 @@
 
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+
+import { randomUUID } from 'crypto';
+
 import { logger } from '@/lib/logger';
+import { metrics } from '@/lib/monitoring/metrics';
+import type { ErrorCode } from '@/lib/types/oracle';
 import {
   unifiedOracleGetSchema,
   unifiedOraclePostSchema,
   formatZodError,
 } from '@/lib/validation/oracleSchemas';
 import { getUnifiedPriceData, compareProtocols } from '@/server/oracle/unifiedService';
-import { metrics } from '@/lib/monitoring/metrics';
-import type { ErrorCode } from '@/lib/types/oracle';
 
 export const dynamic = 'force-dynamic';
 
@@ -95,7 +98,7 @@ function createSuccessResponse<T>(
 function getTraceId(request: NextRequest): string {
   return (
     request.headers.get('x-trace-id') ||
-    `trace_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    `trace_${Date.now()}_${randomUUID().replace(/-/g, '').slice(0, 9)}`
   );
 }
 
@@ -199,11 +202,22 @@ export async function GET(request: NextRequest) {
  * 执行跨协议价格比较
  * 检测价格偏差和异常
  */
+// 最大请求体大小限制 (1MB)
+const MAX_REQUEST_BODY_SIZE = 1024 * 1024;
+
 export async function POST(request: NextRequest) {
   const startTime = performance.now();
   const traceId = getTraceId(request);
 
   try {
+    // 0. 检查请求体大小
+    const contentLength = request.headers.get('content-length');
+    if (contentLength && parseInt(contentLength) > MAX_REQUEST_BODY_SIZE) {
+      throw new ValidationError(
+        `Request body too large. Maximum size is ${MAX_REQUEST_BODY_SIZE / 1024 / 1024}MB`,
+      );
+    }
+
     // 1. 解析和验证请求体
     let body: unknown;
     try {

@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import type { Route } from 'next';
+
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+
 import {
   AlertTriangle,
   ExternalLink,
@@ -14,12 +15,15 @@ import {
   Gavel,
   Search,
 } from 'lucide-react';
+
 import { PageHeader } from '@/components/features/common/PageHeader';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { calculatePercentage, cn, fetchApiData, formatTime, truncateAddress } from '@/lib/utils';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage, langToLocale, type TranslationKey } from '@/i18n/translations';
 import type { Dispute, DisputeStatus, OracleChain } from '@/lib/types/oracleTypes';
+import { calculatePercentage, cn, fetchApiData, formatTime, truncateAddress } from '@/lib/utils';
+
+import type { Route } from 'next';
 
 type Translate = (key: TranslationKey) => string;
 
@@ -458,8 +462,8 @@ export default function DisputesPage() {
         setItems(data.items ?? []);
         setNextCursor(data.nextCursor ?? null);
         setVoteTrackingEnabled(data.voteTrackingEnabled ?? true);
-      } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : 'unknown_error');
+      } catch (error: unknown) {
+        if (!cancelled) setError(error instanceof Error ? error.message : 'unknown_error');
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -494,8 +498,8 @@ export default function DisputesPage() {
       setItems((prev) => prev.concat(data.items ?? []));
       setNextCursor(data.nextCursor ?? null);
       setVoteTrackingEnabled(data.voteTrackingEnabled ?? voteTrackingEnabled);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'unknown_error');
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'unknown_error');
     } finally {
       setLoadingMore(false);
     }

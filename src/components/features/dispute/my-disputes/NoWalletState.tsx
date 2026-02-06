@@ -1,6 +1,7 @@
+import { Wallet } from 'lucide-react';
+
 import { PageHeader } from '@/components/features/common/PageHeader';
 import { ConnectWallet } from '@/components/features/wallet/ConnectWallet';
-import { Wallet } from 'lucide-react';
 import type { TranslationKey } from '@/i18n/translations';
 
 type Translate = (key: TranslationKey) => string;

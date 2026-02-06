@@ -4,8 +4,8 @@
  */
 
 import { logger } from '@/lib/logger';
-import { query } from '@/server/db';
 import { calculateMean, calculateStdDev } from '@/lib/utils/math';
+import { query } from '@/server/db';
 
 export interface AnomalyConfig {
   // Z-score threshold for statistical anomalies

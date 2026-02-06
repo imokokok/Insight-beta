@@ -54,20 +54,22 @@ export {
 
 // 统一配置管理类
 import { logger } from '@/lib/logger';
-import type { OracleConfig } from './types';
-import { DEFAULT_ORACLE_INSTANCE_ID } from './types';
-import { validateOracleInstanceId, redactOracleConfig } from './validation';
+
+import {
+  getOracleConfigFromCache,
+  saveOracleConfigToCache,
+  deleteOracleConfigFromCache,
+} from './cache';
 import {
   getOracleConfigFromDb,
   saveOracleConfigToDb,
   deleteOracleConfigFromDb,
   listOracleConfigsFromDb,
 } from './database';
-import {
-  getOracleConfigFromCache,
-  saveOracleConfigToCache,
-  deleteOracleConfigFromCache,
-} from './cache';
+import { DEFAULT_ORACLE_INSTANCE_ID } from './types';
+import { validateOracleInstanceId, redactOracleConfig } from './validation';
+
+import type { OracleConfig } from './types';
 
 /**
  * 获取 Oracle 配置（带缓存）

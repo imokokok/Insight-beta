@@ -3,8 +3,10 @@
 /* eslint-disable no-restricted-syntax */
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
 import {
   Globe,
   Activity,
@@ -18,11 +20,12 @@ import {
   Bell,
   TrendingUp,
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+import { StatCard } from '@/components/features/common/StatCard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn, fetchApiData } from '@/lib/utils';
-import { StatCard } from '@/components/features/common/StatCard';
 
 interface PlatformStats {
   totalProtocols: number;

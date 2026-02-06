@@ -1,5 +1,6 @@
-import type { UMAOracleConfig } from './types';
 import { getRpcUrl, getFinderAddress, getOOAddress, CHAIN_CONFIGS } from './utils';
+
+import type { UMAOracleConfig } from './types';
 
 export function createUMAOracleConfig(
   chainId: number,

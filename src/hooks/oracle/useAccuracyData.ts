@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { fetchApiData } from '@/lib/utils';
+
 import { logger } from '@/lib/logger';
+import { fetchApiData } from '@/lib/utils';
 import type { PricePoint } from '@/server/oracle/priceFetcher';
 
 export interface UseAccuracyDataReturn {
@@ -42,10 +43,10 @@ export function useAccuracyData(
         const url = `/api/oracle/accuracy?${params.toString()}`;
         const accuracy = await fetchApiData<PricePoint[]>(url, { signal });
         setData(accuracy);
-      } catch (e) {
+      } catch (error: unknown) {
         if (signal?.aborted) return;
-        logger.error('Failed to fetch accuracy data:', { error: e });
-        setError(e instanceof Error ? e.message : 'unknown_error');
+        logger.error('Failed to fetch accuracy data:', { error });
+        setError(error instanceof Error ? error.message : 'unknown_error');
       } finally {
         setLoading(false);
       }

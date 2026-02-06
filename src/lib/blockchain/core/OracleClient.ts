@@ -5,6 +5,7 @@
  */
 
 import { type PublicClient, createPublicClient, http, type Chain } from 'viem';
+
 import { logger } from '@/lib/logger';
 import type { OracleProtocol, SupportedChain, PriceFeed, OracleHealthStatus } from '@/lib/types';
 

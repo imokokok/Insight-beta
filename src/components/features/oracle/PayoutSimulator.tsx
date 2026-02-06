@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+
+import { Calculator, DollarSign } from 'lucide-react';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calculator, DollarSign } from 'lucide-react';
 import { useI18n } from '@/i18n/LanguageProvider';
 
 interface PayoutSimulatorProps {

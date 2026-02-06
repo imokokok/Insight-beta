@@ -1,8 +1,10 @@
 import type { createWalletClient } from 'viem';
 import { createPublicClient, http, type Address, type Hash } from 'viem';
-import type { Chain } from 'viem/chains';
 import { arbitrum, hardhat, mainnet, optimism, polygon, polygonAmoy } from 'viem/chains';
+
 import { logger } from '@/lib/logger';
+
+import type { Chain } from 'viem/chains';
 
 export interface UMAVoteRequest {
   assertionId: string;

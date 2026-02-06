@@ -1,6 +1,8 @@
 import { createPublicClient, http, type Address, parseAbi } from 'viem';
-import type { Chain } from 'viem/chains';
+
 import { logger } from '@/lib/logger';
+
+import type { Chain } from 'viem/chains';
 
 export interface TVLConfig {
   chainId: number;

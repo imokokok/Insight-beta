@@ -1,3 +1,5 @@
+import { verifyAdmin } from '@/server/adminAuth';
+import { cachedJson, handleApi, rateLimit } from '@/server/apiResponse';
 import {
   getSyncState,
   getOracleEnv,
@@ -6,8 +8,6 @@ import {
   readOracleState,
   redactOracleConfig,
 } from '@/server/oracle';
-import { cachedJson, handleApi, rateLimit } from '@/server/apiResponse';
-import { verifyAdmin } from '@/server/adminAuth';
 
 export async function GET(request: Request) {
   return handleApi(request, async () => {

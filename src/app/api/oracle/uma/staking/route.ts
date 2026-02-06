@@ -1,8 +1,10 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+
 import { z } from 'zod';
-import { getVoterStaking, getAllStakers } from '@/server/oracle/umaRewards';
+
 import { logger } from '@/lib/logger';
+import { getVoterStaking, getAllStakers } from '@/server/oracle/umaRewards';
 
 const querySchema = z.object({
   voter: z

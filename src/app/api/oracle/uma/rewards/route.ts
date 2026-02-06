@@ -1,10 +1,12 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+
 import { z } from 'zod';
-import { getVoterRewards, getRewardsStats, calculateVoterStats } from '@/server/oracle/umaRewards';
-import { syncDVMEvents } from '@/server/oracle/umaRewardsSync';
+
 import { requireAuth } from '@/lib/auth';
 import { logger } from '@/lib/logger';
+import { getVoterRewards, getRewardsStats, calculateVoterStats } from '@/server/oracle/umaRewards';
+import { syncDVMEvents } from '@/server/oracle/umaRewardsSync';
 
 const querySchema = z.object({
   voter: z

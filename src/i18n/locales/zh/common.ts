@@ -67,6 +67,22 @@ export const common = {
   total: '总计',
   previous: '上一页',
   next: '下一页',
+  // Time
+  time: {
+    secondShort: '秒',
+    minuteShort: '分',
+    hourShort: '时',
+    dayShort: '天',
+  },
+  // Time Ago
+  timeAgo: {
+    justNow: '刚刚',
+    never: '从未',
+    seconds: '{{seconds}}秒前',
+    minutes: '{{minutes}}分钟前',
+    hours: '{{hours}}小时前',
+    days: '{{days}}天前',
+  },
   // Error Boundary
   errorBoundary: {
     title: '出错了',

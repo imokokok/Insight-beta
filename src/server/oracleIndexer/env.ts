@@ -5,9 +5,11 @@
  */
 
 import { env } from '@/lib/config/env';
+
 import { DEFAULT_ORACLE_INSTANCE_ID, readOracleConfig } from '../oracleConfig';
-import type { Address } from 'viem';
+
 import type { OracleEnv } from './types';
+import type { Address } from 'viem';
 
 /**
  * 获取 Oracle 环境配置

@@ -1,5 +1,6 @@
-import { hasDatabase, query } from './db';
 import { logger } from '@/lib/logger';
+
+import { hasDatabase, query } from './db';
 
 interface IndexDefinition {
   name: string;

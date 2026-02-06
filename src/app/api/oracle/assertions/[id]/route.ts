@@ -1,12 +1,12 @@
+import { env } from '@/lib/config/env';
+import { verifyAdmin } from '@/server/adminAuth';
+import { cachedJson, error, handleApi, rateLimit } from '@/server/apiResponse';
 import {
   getAssertion,
   getDisputeByAssertionId,
   readOracleConfig,
   redactOracleConfig,
 } from '@/server/oracle';
-import { cachedJson, error, handleApi, rateLimit } from '@/server/apiResponse';
-import { verifyAdmin } from '@/server/adminAuth';
-import { env } from '@/lib/config/env';
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   return handleApi(request, async () => {

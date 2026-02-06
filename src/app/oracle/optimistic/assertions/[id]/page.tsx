@@ -3,8 +3,10 @@
 /* eslint-disable no-restricted-syntax */
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
+
 import {
   ArrowLeft,
   ExternalLink,
@@ -16,9 +18,10 @@ import {
   DollarSign,
   Hash,
 } from 'lucide-react';
+
 import { PageHeader } from '@/components/features/common/PageHeader';
-import { cn, fetchApiData, formatTime } from '@/lib/utils';
 import { logger } from '@/lib/logger';
+import { cn, fetchApiData, formatTime } from '@/lib/utils';
 
 interface UMAAssertionDetail {
   id: string;
@@ -77,9 +80,9 @@ export default function UMAAssertionDetailPage() {
           `/api/oracle/uma/assertions/${assertionId}`,
         );
         setAssertion(data);
-      } catch (err) {
+      } catch (error: unknown) {
         setError('Assertion not found');
-        logger.error('Failed to fetch assertion', { error: err });
+        logger.error('Failed to fetch assertion', { error });
       } finally {
         setLoading(false);
       }

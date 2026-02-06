@@ -3,6 +3,7 @@
 /* eslint-disable no-restricted-syntax */
 
 import { useEffect, useState } from 'react';
+
 import {
   Scale,
   FileText,
@@ -13,9 +14,10 @@ import {
   RefreshCw,
   AlertCircle,
 } from 'lucide-react';
+
 import { PageHeader } from '@/components/features/common/PageHeader';
-import { cn, fetchApiData } from '@/lib/utils';
 import { logger } from '@/lib/logger';
+import { cn, fetchApiData } from '@/lib/utils';
 
 type ProposalState =
   | 'Pending'

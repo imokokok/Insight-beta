@@ -5,8 +5,9 @@
  */
 
 import { type Address, formatUnits } from 'viem';
-import { logger } from '@/lib/logger';
+
 import { DEFAULT_STALENESS_THRESHOLDS } from '@/lib/config/constants';
+import { logger } from '@/lib/logger';
 import type { SupportedChain } from '@/lib/types/unifiedOracleTypes';
 
 // ============================================================================

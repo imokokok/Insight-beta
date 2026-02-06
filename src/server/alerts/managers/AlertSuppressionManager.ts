@@ -5,6 +5,7 @@
  */
 
 import { logger } from '@/lib/logger';
+
 import type { Alert, SuppressionRule, SuppressionCondition } from '../types';
 
 export class AlertSuppressionManager {

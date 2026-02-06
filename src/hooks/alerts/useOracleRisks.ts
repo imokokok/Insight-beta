@@ -5,8 +5,9 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { fetchApiData, getErrorCode } from '@/lib/utils';
+
 import type { RiskItem } from '@/lib/types/oracleTypes';
+import { fetchApiData, getErrorCode } from '@/lib/utils';
 
 export interface UseOracleRisksReturn {
   risks: RiskItem[];
@@ -31,8 +32,8 @@ export function useOracleRisks(instanceId: string): UseOracleRisksReturn {
         `/api/oracle/risks?${params.toString()}`,
       );
       setRisks(data.items ?? []);
-    } catch (e) {
-      setRisksError(getErrorCode(e));
+    } catch (error: unknown) {
+      setRisksError(getErrorCode(error));
     } finally {
       setRisksLoading(false);
     }

@@ -13,14 +13,16 @@ import {
   parseAbi,
   formatUnits,
 } from 'viem';
-import { logger } from '@/lib/logger';
+
 import { DEFAULT_STALENESS_THRESHOLDS } from '@/lib/config/constants';
-import { VIEM_CHAIN_MAP } from './chainConfig';
+import { logger } from '@/lib/logger';
 import type {
   SupportedChain,
   UnifiedPriceFeed,
   PythProtocolConfig,
 } from '@/lib/types/unifiedOracleTypes';
+
+import { VIEM_CHAIN_MAP } from './chainConfig';
 
 // ============================================================================
 // Pyth ABI

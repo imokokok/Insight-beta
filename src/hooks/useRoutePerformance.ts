@@ -10,7 +10,9 @@
 'use client';
 
 import { useEffect, useRef, useCallback } from 'react';
+
 import { usePathname, useSearchParams } from 'next/navigation';
+
 import { logger } from '@/lib/logger';
 
 interface RouteMetrics {

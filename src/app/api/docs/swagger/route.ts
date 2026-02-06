@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+
 import { generateSwaggerUI } from '@/lib/api/openapi';
 
 export async function GET() {

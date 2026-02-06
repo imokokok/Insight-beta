@@ -5,17 +5,20 @@
  */
 
 import { EventEmitter } from 'events';
+
+import { logger } from '@/lib/logger';
+
+import { getChainlinkClient } from './chainlink-client';
+import { getPythClient } from './pyth-client';
+
+import type { ChainlinkSolanaClient } from './chainlink-client';
+import type { PythSolanaClient } from './pyth-client';
 import type {
   SolanaOracleInstance,
   SolanaSyncState,
   SolanaPriceUpdate,
   SolanaPriceFeed,
 } from './types';
-import type { PythSolanaClient } from './pyth-client';
-import { getPythClient } from './pyth-client';
-import type { ChainlinkSolanaClient } from './chainlink-client';
-import { getChainlinkClient } from './chainlink-client';
-import { logger } from '@/lib/logger';
 
 // ============================================================================
 // Sync Configuration
@@ -39,9 +42,25 @@ export class SolanaSyncService extends EventEmitter {
   private intervals: Map<string, ReturnType<typeof setInterval>> = new Map();
   private pythClients: Map<string, PythSolanaClient> = new Map();
   private chainlinkClients: Map<string, ChainlinkSolanaClient> = new Map();
+  private syncLocks = new Map<string, Promise<void>>();
 
   constructor() {
     super();
+    // 设置最大监听器数量防止内存泄漏
+    this.setMaxListeners(100);
+  }
+
+  /**
+   * 销毁服务，清理所有资源
+   */
+  destroy(): void {
+    this.stopAll();
+    this.instances.clear();
+    this.syncStates.clear();
+    this.pythClients.clear();
+    this.chainlinkClients.clear();
+    this.syncLocks.clear();
+    this.removeAllListeners();
   }
 
   /**
@@ -85,29 +104,48 @@ export class SolanaSyncService extends EventEmitter {
       throw new Error(`Instance not found: ${instanceId}`);
     }
 
-    // Stop existing sync
-    this.stopSync(instanceId);
-
-    const state = this.syncStates.get(instanceId);
-    if (!state) {
-      throw new Error(`Sync state not found for instance: ${instanceId}`);
+    // 等待之前的同步操作完成（防止竞态条件）
+    while (this.syncLocks.has(instanceId)) {
+      await this.syncLocks.get(instanceId);
     }
-    state.status = 'active';
-    state.errorCount = 0;
-    state.updatedAt = new Date();
 
-    // Start sync loop
-    const interval = setInterval(
-      () => this.syncInstance(instanceId),
-      instance.config.updateInterval || SYNC_CONFIG.defaultInterval,
-    );
+    // 再次检查状态
+    if (this.intervals.has(instanceId)) {
+      return; // 已经在同步中
+    }
 
-    this.intervals.set(instanceId, interval);
+    // 创建锁
+    let lockResolve: () => void;
+    const lockPromise = new Promise<void>((resolve) => {
+      lockResolve = resolve;
+    });
+    this.syncLocks.set(instanceId, lockPromise);
 
-    // Initial sync
-    await this.syncInstance(instanceId);
+    try {
+      const state = this.syncStates.get(instanceId);
+      if (!state) {
+        throw new Error(`Sync state not found for instance: ${instanceId}`);
+      }
+      state.status = 'active';
+      state.errorCount = 0;
+      state.updatedAt = new Date();
 
-    this.emit('syncStarted', instanceId);
+      // Start sync loop
+      const interval = setInterval(
+        () => this.syncInstance(instanceId),
+        instance.config.updateInterval || SYNC_CONFIG.defaultInterval,
+      );
+
+      this.intervals.set(instanceId, interval);
+
+      // Initial sync
+      await this.syncInstance(instanceId);
+
+      this.emit('syncStarted', instanceId);
+    } finally {
+      this.syncLocks.delete(instanceId);
+      lockResolve!();
+    }
   }
 
   /**

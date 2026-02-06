@@ -4,10 +4,12 @@
  */
 
 import { logger } from '@/lib/logger';
-import { priceAggregationEngine } from '../priceAggregationService';
-import { priceStreamManager } from '@/server/websocket/priceStream';
-import type { AggregationResult } from '../types/serviceTypes';
 import type { SupportedChain, OracleProtocol } from '@/lib/types/unifiedOracleTypes';
+import { priceStreamManager } from '@/server/websocket/priceStream';
+
+import { priceAggregationEngine } from '../priceAggregationService';
+
+import type { AggregationResult } from '../types/serviceTypes';
 
 export class AggregationManager {
   private aggregationInterval?: NodeJS.Timeout;

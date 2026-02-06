@@ -10,7 +10,9 @@ import {
   useRef,
 } from 'react';
 import type { ReactNode } from 'react';
-import { isLang, langToHtmlLang, LANG_STORAGE_KEY, type Lang } from '@/i18n/types';
+
+import type { InterpolationValues, PluralOptions, TranslationNamespace, Lang } from '@/i18n/types';
+import { isLang, langToHtmlLang, LANG_STORAGE_KEY } from '@/i18n/types';
 import {
   interpolate,
   handlePlural,
@@ -20,9 +22,9 @@ import {
   formatRelativeTime,
   getNestedValue,
 } from '@/i18n/utils';
-import type { InterpolationValues, PluralOptions, TranslationNamespace } from '@/i18n/types';
-import { loadTranslations, isTranslationLoaded, preloadTranslations } from './loader';
 import { logger } from '@/lib/logger';
+
+import { loadTranslations, isTranslationLoaded, preloadTranslations } from './loader';
 
 export type TranslationKey = string;
 

@@ -1,11 +1,15 @@
 import './globals.css';
 import type { ReactNode } from 'react';
-import { cn } from '@/lib/utils';
-import { LanguageProvider } from '@/i18n/LanguageProvider';
-import { Toaster } from 'sonner';
-import { WalletProvider } from '@/contexts/WalletContext';
+import { lazy, Suspense } from 'react';
+
 import { cookies, headers } from 'next/headers';
-import type { Metadata } from 'next';
+
+import { Toaster } from 'sonner';
+
+import { ResourceHints } from '@/components/common/ResourceHints';
+import { ServiceWorkerRegister } from '@/components/common/ServiceWorkerRegister';
+import { WalletProvider } from '@/contexts/WalletContext';
+import { LanguageProvider } from '@/i18n/LanguageProvider';
 import {
   detectLangFromAcceptLanguage,
   isLang,
@@ -13,9 +17,9 @@ import {
   LANG_STORAGE_KEY,
   translations,
 } from '@/i18n/translations';
-import { lazy, Suspense } from 'react';
-import { ResourceHints } from '@/components/common/ResourceHints';
-import { ServiceWorkerRegister } from '@/components/common/ServiceWorkerRegister';
+import { cn } from '@/lib/utils';
+
+import type { Metadata } from 'next';
 
 const Sidebar = lazy(() =>
   import('@/components/features/common/Sidebar').then((mod) => ({

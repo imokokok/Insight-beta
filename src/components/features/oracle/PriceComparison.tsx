@@ -7,17 +7,18 @@
 
 'use client';
 
-import { useEffect, useCallback } from 'react';
-import { useForm } from 'react-hook-form';
+import { useEffect, useCallback, useState, useRef } from 'react';
+
 import { zodResolver } from '@hookform/resolvers/zod';
+import { RefreshCw, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
+import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { RefreshCw, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
 import { logger } from '@/lib/logger';
-import { useState } from 'react';
 
 // ============================================================================
 // Types
@@ -88,32 +89,86 @@ export function PriceComparison() {
     },
   });
 
+  // 使用 ref 存储 AbortController 以便取消请求
+  const abortControllerRef = useRef<AbortController | null>(null);
+
   const fetchComparison = useCallback(async (formData: FormData) => {
+    // 取消之前的请求
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    // 创建新的 AbortController
+    abortControllerRef.current = new AbortController();
+
     setLoading(true);
     setError(null);
-    try {
-      const response = await fetch(
-        `/api/oracle/unified?action=comparison&symbol=${encodeURIComponent(formData.symbol)}`,
-      );
-      if (!response.ok) {
-        throw new Error(`Failed to fetch comparison: ${response.statusText}`);
+
+    // 重试配置
+    const maxRetries = 3;
+    let lastError: Error | null = null;
+
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        const response = await fetch(
+          `/api/oracle/unified?action=comparison&symbol=${encodeURIComponent(formData.symbol)}`,
+          {
+            signal: abortControllerRef.current.signal,
+          },
+        );
+        if (!response.ok) {
+          throw new Error(`Failed to fetch comparison: ${response.statusText}`);
+        }
+        const data = await response.json();
+        if (data.error) {
+          throw new Error(data.error);
+        }
+        setComparison(data);
+        setLoading(false);
+        return; // 成功，退出重试循环
+      } catch (error: unknown) {
+        // 如果是取消请求，直接返回
+        if (error instanceof Error && error.name === 'AbortError') {
+          logger.debug('Request aborted', { symbol: formData.symbol });
+          return;
+        }
+
+        lastError = error instanceof Error ? error : new Error(String(error));
+
+        // 如果不是最后一次尝试，等待后重试
+        if (attempt < maxRetries - 1) {
+          const backoffMs = Math.min(1000 * Math.pow(2, attempt), 5000);
+          logger.info(`Retrying fetch comparison`, {
+            symbol: formData.symbol,
+            attempt: attempt + 1,
+            maxRetries,
+            backoffMs,
+          });
+          await new Promise((resolve) => setTimeout(resolve, backoffMs));
+        }
       }
-      const data = await response.json();
-      if (data.error) {
-        throw new Error(data.error);
-      }
-      setComparison(data);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch comparison';
-      setError(errorMessage);
-      logger.error('Failed to fetch comparison', { error: err, symbol: formData.symbol });
     }
+
+    // 所有重试都失败了
+    const errorMessage = lastError?.message || 'Failed to fetch comparison';
+    setError(errorMessage);
+    logger.error('Failed to fetch comparison after retries', {
+      error: lastError,
+      symbol: formData.symbol,
+      attempts: maxRetries,
+    });
     setLoading(false);
   }, []);
 
   // Initial fetch
   useEffect(() => {
     handleSubmit(fetchComparison)();
+
+    // 清理函数：组件卸载时取消进行中的请求
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [handleSubmit, fetchComparison]);
 
   // Handle symbol input change - convert to uppercase
@@ -123,7 +178,13 @@ export function PriceComparison() {
 
   // 计算偏差
   const calculateDeviation = (price: number, reference: number): number => {
-    return ((price - reference) / reference) * 100;
+    // 防止除以零
+    if (!reference || reference === 0 || !isFinite(reference)) {
+      return 0;
+    }
+    const deviation = ((price - reference) / reference) * 100;
+    // 检查结果有效性
+    return isFinite(deviation) ? deviation : 0;
   };
 
   // 获取偏差颜色

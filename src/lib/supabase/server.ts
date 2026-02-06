@@ -4,9 +4,10 @@
  * Server-side Supabase client for API routes
  */
 
-import type { SupabaseClient } from '@supabase/supabase-js';
 import { env } from '@/lib/config/env';
 import { logger } from '@/lib/logger';
+
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 // 简化的 Supabase 客户端类型
 export type TypedSupabaseClient = SupabaseClient;

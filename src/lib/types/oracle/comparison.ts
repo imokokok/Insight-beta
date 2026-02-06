@@ -4,8 +4,8 @@
  * 用于价格偏离热力图、延迟分析、成本效益分析等功能
  */
 
-import type { OracleProtocol } from './protocol';
 import type { SupportedChain } from './chain';
+import type { OracleProtocol } from './protocol';
 
 // ============================================================================
 // 价格偏离分析

@@ -1,19 +1,23 @@
 'use client';
 
 import { useEffect, useState, Suspense, lazy } from 'react';
-import type { Route } from 'next';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+
 import Link from 'next/link';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+
+import { LayoutGrid, List, Search, Wallet, FileText, ChevronDown } from 'lucide-react';
+
 import { PageHeader } from '@/components/features/common/PageHeader';
+import { CardSkeleton } from '@/components/ui/skeleton';
+import { useWallet } from '@/contexts/WalletContext';
 import { useOracleData } from '@/hooks/oracle/useOracleData';
 import { useUserStats } from '@/hooks/user/useUserStats';
-import { useWallet } from '@/contexts/WalletContext';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage, type TranslationKey } from '@/i18n/translations';
-import { LayoutGrid, List, Search, Wallet, FileText, ChevronDown } from 'lucide-react';
-import { cn, fetchApiData } from '@/lib/utils';
 import type { OracleConfig, OracleStatus, OracleInstance } from '@/lib/types/oracleTypes';
-import { CardSkeleton } from '@/components/ui/skeleton';
+import { cn, fetchApiData } from '@/lib/utils';
+
+import type { Route } from 'next';
 
 // Dynamic imports for heavy components
 const ConnectWallet = lazy(() =>

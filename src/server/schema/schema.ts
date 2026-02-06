@@ -1,15 +1,17 @@
-import { hasDatabase, query } from '@/server/db';
 import { logger } from '@/lib/logger';
-import type { QueryFn } from './types';
+import { hasDatabase, query } from '@/server/db';
+
 import {
   createCoreTables,
   createCoreIndexes,
   runCoreMigrations,
   insertCoreInitialData,
 } from './coreTables';
-import { createUMATables, createUMAIndexes, insertUMAInitialData } from './umaTables';
 import { createMonitoringTables, createMonitoringIndexes } from './monitoringTables';
+import { createUMATables, createUMAIndexes, insertUMAInitialData } from './umaTables';
 import { createUtilityTables, createUtilityIndexes } from './utilityTables';
+
+import type { QueryFn } from './types';
 
 /**
  * Safely rollback a transaction, logging any errors

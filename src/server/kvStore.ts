@@ -1,5 +1,6 @@
-import { hasDatabase, query } from './db';
 import { getMemoryStore, memoryNowIso } from '@/server/memoryBackend';
+
+import { hasDatabase, query } from './db';
 
 const MEMORY_MAX_KV_KEYS = 2000;
 

@@ -5,11 +5,6 @@
  * Band 是一个跨链数据预言机平台
  */
 
-import type {
-  OracleProtocol,
-  SupportedChain,
-  UnifiedPriceFeed,
-} from '@/lib/types/unifiedOracleTypes';
 import {
   BaseOracleClient,
   type OracleClientConfig,
@@ -17,6 +12,11 @@ import {
   type OracleClientCapabilities,
 } from '@/lib/blockchain/core';
 import { PriceFetchError } from '@/lib/blockchain/core/types';
+import type {
+  OracleProtocol,
+  SupportedChain,
+  UnifiedPriceFeed,
+} from '@/lib/types/unifiedOracleTypes';
 
 // ============================================================================
 // Band API 配置

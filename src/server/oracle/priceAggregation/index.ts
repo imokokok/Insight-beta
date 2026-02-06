@@ -21,6 +21,7 @@ export { PriceAggregationEngine } from './engine';
 
 // 单例实例
 import { PriceAggregationEngine } from './engine';
+
 export const priceAggregationEngine = new PriceAggregationEngine();
 
 // 便捷函数

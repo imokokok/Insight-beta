@@ -1,9 +1,10 @@
-import type { Lang } from './types';
 import { enTranslations } from './locales/en';
-import { zhTranslations } from './locales/zh';
 import { esTranslations } from './locales/es';
 import { frTranslations } from './locales/fr';
 import { koTranslations } from './locales/ko';
+import { zhTranslations } from './locales/zh';
+
+import type { Lang } from './types';
 
 // Re-export types and constants from types.ts to avoid duplication
 export type { Lang };

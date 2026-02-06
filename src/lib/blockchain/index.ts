@@ -108,16 +108,17 @@ export {
 // 初始化 - 注册所有协议客户端
 // ============================================================================
 
+import type { SupportedChain, OracleProtocol } from '@/lib/types/unifiedOracleTypes';
+
 import { oracleClientFactory } from './core';
-import { PythOracleClient } from './protocols/pyth';
-import { ChainlinkOracleClient } from './protocols/chainlink';
-import { UMAOracleClient } from './protocols/uma';
-import { BandOracleClient } from './protocols/band';
-import { DIAOracleClient } from './protocols/dia';
-import { RedStoneOracleClient } from './protocols/redstone';
 import { API3OracleClient } from './protocols/api3';
+import { BandOracleClient } from './protocols/band';
+import { ChainlinkOracleClient } from './protocols/chainlink';
+import { DIAOracleClient } from './protocols/dia';
+import { PythOracleClient } from './protocols/pyth';
+import { RedStoneOracleClient } from './protocols/redstone';
 import { SwitchboardOracleClient } from './protocols/switchboard';
-import type { SupportedChain } from '@/lib/types/unifiedOracleTypes';
+import { UMAOracleClient } from './protocols/uma';
 
 // 注册 Pyth 客户端
 oracleClientFactory.register('pyth', PythOracleClient, [
@@ -218,7 +219,6 @@ oracleClientFactory.register('switchboard', SwitchboardOracleClient, [
 // 便捷函数
 // ============================================================================
 
-import type { OracleProtocol } from '@/lib/types/unifiedOracleTypes';
 import type { IOracleClient, OracleClientConfig } from './core';
 
 /**

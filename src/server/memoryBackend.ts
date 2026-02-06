@@ -8,8 +8,9 @@ import type {
   UMAVote,
   UMAConfig,
 } from '@/lib/types/oracleTypes';
-import type { SyncMeta } from './oracleState';
+
 import type { UMASyncMeta } from './oracle/umaState';
+import type { SyncMeta } from './oracleState';
 
 type MemoryAlert = {
   id: number;

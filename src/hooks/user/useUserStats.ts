@@ -1,6 +1,7 @@
 import useSWR from 'swr';
-import { fetchApiData } from '@/lib/utils';
+
 import type { UserStats } from '@/lib/types/oracleTypes';
+import { fetchApiData } from '@/lib/utils';
 
 export function useUserStats(address?: string | null, instanceId?: string | null) {
   const normalizedInstanceId = (instanceId ?? '').trim();

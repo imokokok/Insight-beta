@@ -1,14 +1,16 @@
 'use client';
 
-import { cn } from '@/lib/utils';
-import type { AlertRule } from '@/lib/types/oracleTypes';
-import type { Channel } from './AlertRulesManager';
-import { AlertRuleHeader } from './AlertRuleHeader';
-import { AlertRuleBasicFields } from './AlertRuleBasicFields';
-import { ChannelSwitches } from './ChannelSwitches';
-import { RecipientInput } from '@/components/features/common/RecipientInput';
-import { EventParamsInputs } from '@/components/features/assertion/EventParamsInputs';
 import { CommonParamsInputs } from '@/components/features/assertion/CommonParamsInputs';
+import { EventParamsInputs } from '@/components/features/assertion/EventParamsInputs';
+import { RecipientInput } from '@/components/features/common/RecipientInput';
+import type { AlertRule } from '@/lib/types/oracleTypes';
+import { cn } from '@/lib/utils';
+
+import { AlertRuleBasicFields } from './AlertRuleBasicFields';
+import { AlertRuleHeader } from './AlertRuleHeader';
+import { ChannelSwitches } from './ChannelSwitches';
+
+import type { Channel } from './AlertRulesManager';
 
 interface AlertRuleCardProps {
   rule: AlertRule;

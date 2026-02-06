@@ -5,7 +5,9 @@
  * 提供跨协议价格数据聚合、比较和异常检测
  */
 
+import { createOracleClient } from '@/lib/blockchain';
 import { logger } from '@/lib/logger';
+import type { OracleProtocol } from '@/lib/types/oracle';
 
 export interface UnifiedPriceData {
   pair: string;
@@ -80,63 +82,96 @@ export async function getUnifiedPriceData(query: UnifiedQuery): Promise<UnifiedP
 
   logger.info('Fetching unified price data', { pair, protocols });
 
-  // 模拟从多个协议获取价格数据
-  const mockSources: PriceSource[] = [
-    {
-      protocol: 'chainlink',
-      price: 3254.78,
-      timestamp: new Date(Date.now() - 120000).toISOString(),
-      latency: 450,
-      confidence: 99.5,
-      status: 'active',
-    },
-    {
-      protocol: 'pyth',
-      price: 3254.82,
-      timestamp: new Date(Date.now() - 500).toISOString(),
-      latency: 350,
-      confidence: 99.8,
-      status: 'active',
-    },
-    {
-      protocol: 'band',
-      price: 3254.65,
-      timestamp: new Date(Date.now() - 180000).toISOString(),
-      latency: 600,
-      confidence: 98.5,
-      status: 'active',
-    },
-    {
-      protocol: 'api3',
-      price: 3255.12,
-      timestamp: new Date(Date.now() - 300000).toISOString(),
-      latency: 800,
-      confidence: 97.2,
-      status: 'stale',
-    },
-  ];
+  // 定义要查询的协议列表
+  const targetProtocols: OracleProtocol[] = protocols
+    ? (protocols.filter((p): p is OracleProtocol =>
+        ['chainlink', 'pyth', 'band', 'api3', 'uma'].includes(p),
+      ) as OracleProtocol[])
+    : ['chainlink', 'pyth', 'band', 'api3'];
+
+  // 从真实数据源获取价格
+  const sources: PriceSource[] = [];
+
+  for (const protocol of targetProtocols) {
+    const startTime = Date.now();
+    try {
+      const client = createOracleClient({ protocol, chain: 'ethereum' });
+      const feed = await client.getPrice(pair);
+      const latency = Date.now() - startTime;
+
+      if (feed) {
+        sources.push({
+          protocol,
+          price: feed.price,
+          timestamp: new Date(feed.timestamp).toISOString(),
+          latency,
+          confidence: (feed.confidence ?? 0) * 100, // 转换为百分比
+          status: feed.isStale ? 'stale' : 'active',
+        });
+      } else {
+        sources.push({
+          protocol,
+          price: 0,
+          timestamp: new Date().toISOString(),
+          latency,
+          confidence: 0,
+          status: 'error',
+        });
+      }
+    } catch (error) {
+      logger.error(`Failed to fetch price from ${protocol}`, { pair, error });
+      sources.push({
+        protocol,
+        price: 0,
+        timestamp: new Date().toISOString(),
+        latency: Date.now() - startTime,
+        confidence: 0,
+        status: 'error',
+      });
+    }
+  }
 
   // 过滤指定协议
   const filteredSources = protocols
-    ? mockSources.filter((s) => protocols.includes(s.protocol))
-    : mockSources;
+    ? sources.filter((s) => protocols.includes(s.protocol))
+    : sources;
 
   // 计算加权平均价格
   const activeSources = filteredSources.filter((s) => s.status === 'active');
+
+  // 如果没有活跃的数据源，返回错误状态
+  if (activeSources.length === 0) {
+    return {
+      pair,
+      aggregatedPrice: 0,
+      confidence: 0,
+      sources: filteredSources,
+      deviation: {
+        maxDeviation: 0,
+        avgDeviation: 0,
+        outlierProtocols: [],
+        isAnomaly: false,
+      },
+      lastUpdated: new Date().toISOString(),
+    };
+  }
+
   const totalWeight = activeSources.reduce((sum, s) => sum + s.confidence, 0);
   const aggregatedPrice =
-    activeSources.reduce((sum, s) => sum + s.price * s.confidence, 0) / totalWeight;
+    totalWeight > 0
+      ? activeSources.reduce((sum, s) => sum + s.price * s.confidence, 0) / totalWeight
+      : 0;
 
   // 计算偏差
   const prices = activeSources.map((s) => s.price);
   const maxPrice = Math.max(...prices);
   const minPrice = Math.min(...prices);
-  const maxDeviation = ((maxPrice - minPrice) / minPrice) * 100;
+  const maxDeviation = minPrice > 0 ? ((maxPrice - minPrice) / minPrice) * 100 : 0;
 
   // 检测异常值
   const meanPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
   const outlierProtocols = activeSources
-    .filter((s) => Math.abs(s.price - meanPrice) / meanPrice > 0.005)
+    .filter((s) => meanPrice > 0 && Math.abs(s.price - meanPrice) / meanPrice > 0.005)
     .map((s) => s.protocol);
 
   return {
@@ -163,44 +198,59 @@ export async function compareProtocols(query: ComparisonQuery): Promise<Protocol
 
   logger.info('Comparing protocols', { pair, protocols, deviationThreshold });
 
-  // 模拟协议价格数据
-  const mockProtocols: ProtocolPriceInfo[] = [
-    {
-      protocol: 'chainlink',
-      price: 3254.78,
-      timestamp: new Date(Date.now() - 120000).toISOString(),
-      roundId: '123456789',
-    },
-    {
-      protocol: 'pyth',
-      price: 3254.82,
-      timestamp: new Date(Date.now() - 500).toISOString(),
-      confidence: 0.02,
-    },
-    {
-      protocol: 'band',
-      price: 3254.65,
-      timestamp: new Date(Date.now() - 180000).toISOString(),
-      blockNumber: 18923456,
-    },
-    {
-      protocol: 'uma',
-      price: 3254.91,
-      timestamp: new Date(Date.now() - 360000).toISOString(),
-    },
-  ];
+  // 定义要查询的协议列表
+  const targetProtocols: OracleProtocol[] = protocols
+    ? (protocols.filter((p): p is OracleProtocol =>
+        ['chainlink', 'pyth', 'band', 'api3', 'uma'].includes(p),
+      ) as OracleProtocol[])
+    : ['chainlink', 'pyth', 'band', 'api3'];
 
-  // 过滤指定协议
-  const filteredProtocols = protocols
-    ? mockProtocols.filter((p) => protocols.includes(p.protocol))
-    : mockProtocols;
+  // 从真实数据源获取价格
+  const protocolData: ProtocolPriceInfo[] = [];
+
+  for (const protocol of targetProtocols) {
+    try {
+      const client = createOracleClient({ protocol, chain: 'ethereum' });
+      const feed = await client.getPrice(pair);
+
+      if (feed) {
+        protocolData.push({
+          protocol,
+          price: feed.price,
+          timestamp: new Date(feed.timestamp).toISOString(),
+          blockNumber: feed.blockNumber,
+          confidence: feed.confidence,
+        });
+      }
+    } catch (error) {
+      logger.error(`Failed to fetch price from ${protocol} for comparison`, { pair, error });
+    }
+  }
+
+  // 如果没有获取到任何数据，返回空结果
+  if (protocolData.length === 0) {
+    return {
+      pair,
+      protocols: [],
+      analysis: {
+        highestPrice: { protocol: '', price: 0 },
+        lowestPrice: { protocol: '', price: 0 },
+        priceRange: 0,
+        priceRangePercent: 0,
+        medianPrice: 0,
+        meanPrice: 0,
+        recommendations: ['No price data available from any protocol'],
+      },
+      timestamp: new Date().toISOString(),
+    };
+  }
 
   // 计算统计数据
-  const prices = filteredProtocols.map((p) => p.price);
+  const prices = protocolData.map((p) => p.price);
   const highestPrice = Math.max(...prices);
   const lowestPrice = Math.min(...prices);
   const priceRange = highestPrice - lowestPrice;
-  const priceRangePercent = (priceRange / lowestPrice) * 100;
+  const priceRangePercent = lowestPrice > 0 ? (priceRange / lowestPrice) * 100 : 0;
 
   const sortedPrices = [...prices].sort((a, b) => a - b);
   let medianPrice: number;
@@ -224,20 +274,22 @@ export async function compareProtocols(query: ComparisonQuery): Promise<Protocol
     recommendations.push('Significant price divergence detected - verify data sources');
   }
   if (highestPrice > meanPrice * 1.01) {
-    const highProtocol = filteredProtocols.find((p) => p.price === highestPrice);
-    recommendations.push(`${highProtocol?.protocol} shows elevated price`);
+    const highProtocol = protocolData.find((p) => p.price === highestPrice);
+    if (highProtocol) {
+      recommendations.push(`${highProtocol.protocol} shows elevated price`);
+    }
   }
 
   return {
     pair,
-    protocols: filteredProtocols,
+    protocols: protocolData,
     analysis: {
       highestPrice: {
-        protocol: filteredProtocols.find((p) => p.price === highestPrice)?.protocol || '',
+        protocol: protocolData.find((p) => p.price === highestPrice)?.protocol || '',
         price: highestPrice,
       },
       lowestPrice: {
-        protocol: filteredProtocols.find((p) => p.price === lowestPrice)?.protocol || '',
+        protocol: protocolData.find((p) => p.price === lowestPrice)?.protocol || '',
         price: lowestPrice,
       },
       priceRange: Number(priceRange.toFixed(8)),

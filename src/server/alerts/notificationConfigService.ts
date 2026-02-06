@@ -5,8 +5,9 @@
  * 支持从数据库加载和管理通知渠道配置
  */
 
-import { query } from '@/server/db';
 import { logger } from '@/lib/logger';
+import { query } from '@/server/db';
+
 import type {
   NotificationChannel,
   EmailConfig,

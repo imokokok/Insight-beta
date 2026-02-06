@@ -1,8 +1,10 @@
 'use client';
 
 import React from 'react';
-import { logger } from '@/lib/logger';
+
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+
+import { logger } from '@/lib/logger';
 
 interface Props {
   children: React.ReactNode;

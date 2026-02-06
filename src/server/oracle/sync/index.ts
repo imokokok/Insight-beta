@@ -82,12 +82,14 @@ import { logger } from '@/lib/logger';
 // ============================================================================
 
 import type { OracleProtocol } from '@/lib/types/unifiedOracleTypes';
-import { ChainlinkSyncManager } from './ChainlinkSync';
-import { PythSyncManager } from './PythSync';
-import { BandSyncManager } from './BandSync';
-import { DIASyncManager } from './DIASync';
+
 import { API3SyncManager } from './API3Sync';
+import { BandSyncManager } from './BandSync';
+import { ChainlinkSyncManager } from './ChainlinkSync';
+import { DIASyncManager } from './DIASync';
+import { PythSyncManager } from './PythSync';
 import { RedStoneSyncManager } from './RedStoneSync';
+
 import type { BaseSyncManager } from './BaseSyncManager';
 
 // ============================================================================

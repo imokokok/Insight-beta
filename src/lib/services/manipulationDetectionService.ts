@@ -1,8 +1,9 @@
-import type { DetectionMetrics } from '@/lib/types/security/detection';
-import type { OracleProtocol, SupportedChain } from '@/lib/types';
-import { MonitoringService } from './detection/monitoringService';
-import { MetricsService } from './detection/metricsService';
 import { logger } from '@/lib/logger';
+import type { OracleProtocol, SupportedChain } from '@/lib/types';
+import type { DetectionMetrics } from '@/lib/types/security/detection';
+
+import { MetricsService } from './detection/metricsService';
+import { MonitoringService } from './detection/monitoringService';
 
 export class ManipulationDetectionService {
   private monitoringService: MonitoringService;

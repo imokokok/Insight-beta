@@ -1,7 +1,8 @@
 import { LayoutGrid, List, Search, ChevronDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import type { OracleConfig, OracleInstance, DisputeStatus } from '@/lib/types/oracleTypes';
+
 import type { TranslationKey } from '@/i18n/translations';
+import type { OracleConfig, OracleInstance, DisputeStatus } from '@/lib/types/oracleTypes';
+import { cn } from '@/lib/utils';
 
 type Translate = (key: TranslationKey) => string;
 type ViewMode = 'grid' | 'list';

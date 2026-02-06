@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect, useMemo, useState, type KeyboardEvent } from 'react';
+
+import { Download, ScrollText, RotateCw } from 'lucide-react';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { cn, fetchApiData, formatTime, getErrorCode } from '@/lib/utils';
-import type { AuditLogEntry } from '@/lib/types/oracleTypes';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage, langToLocale } from '@/i18n/translations';
-import { Download, ScrollText, RotateCw } from 'lucide-react';
+import type { AuditLogEntry } from '@/lib/types/oracleTypes';
+import { cn, fetchApiData, formatTime, getErrorCode } from '@/lib/utils';
 
 type AuditListResponse = {
   items: AuditLogEntry[];
@@ -85,8 +87,8 @@ export function AuditLogViewer({
         setTotal(data.total);
         setNextCursor(data.nextCursor);
         setItems((prev) => (replace ? data.items : [...prev, ...data.items]));
-      } catch (e) {
-        setError(getErrorCode(e));
+      } catch (error: unknown) {
+        setError(getErrorCode(error));
       } finally {
         if (isFirst) setLoading(false);
         else setLoadingMore(false);
@@ -208,8 +210,8 @@ export function AuditLogViewer({
         );
       }
       download(new Blob([rows.join('\n')], { type: 'text/csv' }), `${baseName}.csv`);
-    } catch (e) {
-      setError(getErrorCode(e));
+    } catch (error: unknown) {
+      setError(getErrorCode(error));
     } finally {
       setExporting(false);
     }

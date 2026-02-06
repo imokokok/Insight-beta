@@ -1,6 +1,7 @@
+import type { UMAChain, UMAAssertion, UMADispute, UMAVote } from '@/lib/types/oracleTypes';
+
 import { hasDatabase, query } from '../db';
 import { ensureSchema } from '../schema';
-import type { UMAChain, UMAAssertion, UMADispute, UMAVote } from '@/lib/types/oracleTypes';
 import { DEFAULT_UMA_INSTANCE_ID } from './umaConfig';
 import { getMemoryUMAInstance } from '../memoryBackend';
 

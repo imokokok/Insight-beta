@@ -11,4 +11,5 @@ export const nav = {
   optimisticOracle: 'Oracle Optimiste',
   unifiedOracle: 'Oracle Unifié',
   watchlist: 'Liste de Surveillance',
+  security: 'Sécurité',
 };

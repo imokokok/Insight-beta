@@ -2,13 +2,15 @@
 
 /* eslint-disable no-restricted-syntax */
 
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
 import { ArrowLeft, RefreshCw, ExternalLink } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { cn } from '@/lib/utils';
 import { type OracleProtocol } from '@/lib/types';
+import { cn } from '@/lib/utils';
 
 export interface ProtocolPageLayoutProps {
   protocol: OracleProtocol;

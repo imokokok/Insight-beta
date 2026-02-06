@@ -5,9 +5,10 @@
  */
 
 import { SOLANA_PRICE_FEEDS } from './config';
-import type { SolanaPriceFeed, SwitchboardAggregator, Connection } from './types';
-import { SolanaError, SolanaErrorCode } from './types';
 import { fetchAccountInfo } from './connection';
+import { SolanaError, SolanaErrorCode } from './types';
+
+import type { SolanaPriceFeed, SwitchboardAggregator, Connection } from './types';
 
 // ============================================================================
 // Switchboard Account Layout

@@ -4,8 +4,8 @@
  * 定义客户端所需的所有依赖接口，便于测试和替换实现
  */
 
-import type { Address, Hash, PublicClient, Chain } from 'viem';
 import type { UMAOracleConfig, UMAPriceRequest, UMAAssertion } from './types';
+import type { Address, Hash, PublicClient, Chain } from 'viem';
 
 // ============================================================================
 // 日志接口

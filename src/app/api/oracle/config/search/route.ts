@@ -3,10 +3,10 @@
  * GET /api/oracle/config/search - 搜索和过滤配置
  */
 
+import { logger } from '@/lib/logger';
 import { handleApi, rateLimit, requireAdmin } from '@/server/apiResponse';
 import { searchConfigs, ensureEnhancedSchema } from '@/server/oracleConfigEnhanced';
 import { generateRequestId } from '@/server/performance';
-import { logger } from '@/lib/logger';
 
 const RATE_LIMIT = { key: 'oracle_config_search', limit: 120, windowMs: 60_000 };
 

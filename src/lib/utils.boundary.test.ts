@@ -355,9 +355,9 @@ describe('Error Handling', () => {
   it('should throw and catch ApiClientError', () => {
     try {
       throw new ApiClientError('network_error', { originalError: 'timeout' });
-    } catch (e) {
-      if (e instanceof ApiClientError) {
-        expect(e.code).toBe('network_error');
+    } catch (error: unknown) {
+      if (error instanceof ApiClientError) {
+        expect(error.code).toBe('network_error');
       }
     }
   });

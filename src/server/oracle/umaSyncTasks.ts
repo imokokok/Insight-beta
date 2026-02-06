@@ -1,10 +1,11 @@
-import { syncDVMEvents } from './umaRewardsSync';
 import { createTvlMonitor } from '@/lib/blockchain/umaTvlMonitor';
-import { insertTvlRecord } from './umaTvl';
-import { readUMAConfig } from './umaConfig';
-import { parseRpcUrls } from '@/lib/utils';
 import { env } from '@/lib/config/env';
 import { logger } from '@/lib/logger';
+import { parseRpcUrls } from '@/lib/utils';
+
+import { readUMAConfig } from './umaConfig';
+import { syncDVMEvents } from './umaRewardsSync';
+import { insertTvlRecord } from './umaTvl';
 
 // Track active sync tasks
 const activeSyncTasks = new Map<string, () => void>();

@@ -1,14 +1,17 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import useSWR from 'swr';
+
 import { AlertTriangle, Bell, Loader2, Save, ShieldAlert } from 'lucide-react';
+import useSWR from 'swr';
+
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/toast';
-import { cn, fetchApiData, getErrorCode } from '@/lib/utils';
+import { useAdminSession } from '@/hooks/user/useAdminSession';
 import { useI18n } from '@/i18n/LanguageProvider';
 import type { AlertRule } from '@/lib/types/oracleTypes';
-import { useAdminSession } from '@/hooks/user/useAdminSession';
+import { cn, fetchApiData, getErrorCode } from '@/lib/utils';
+
 import { AlertRuleCard } from './AlertRuleCard';
 import { validateAlertRule, normalizeChannels } from './AlertRules/alertValidation';
 
@@ -155,8 +158,8 @@ export function AlertRulesManager({
         type: 'success',
       });
       setHasChanges(false);
-    } catch (e) {
-      const code = getErrorCode(e);
+    } catch (error: unknown) {
+      const code = getErrorCode(error);
       toast({
         message: code === 'forbidden' ? t('errors.forbidden') : t('errors.apiError'),
         title: t('oracle.alerts.error'),
@@ -192,8 +195,8 @@ export function AlertRulesManager({
         title: t('oracle.alerts.testSent'),
         type: 'success',
       });
-    } catch (e) {
-      const code = getErrorCode(e);
+    } catch (error: unknown) {
+      const code = getErrorCode(error);
       toast({
         message: code === 'forbidden' ? t('errors.forbidden') : t('oracle.alerts.testFailed'),
         title: t('oracle.alerts.error'),

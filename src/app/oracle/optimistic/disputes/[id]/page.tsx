@@ -3,8 +3,10 @@
 /* eslint-disable no-restricted-syntax */
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
+
 import {
   ArrowLeft,
   ExternalLink,
@@ -16,10 +18,11 @@ import {
   AlertCircle,
   TrendingUp,
 } from 'lucide-react';
+
 import { PageHeader } from '@/components/features/common/PageHeader';
-import { cn, fetchApiData, formatTime } from '@/lib/utils';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { logger } from '@/lib/logger';
+import { cn, fetchApiData, formatTime } from '@/lib/utils';
 
 interface UMADisputeDetail {
   id: string;
@@ -74,9 +77,9 @@ export default function UMADisputeDetailPage() {
       setLoading(true);
       const data = await fetchApiData<UMADisputeDetail>(`/api/oracle/uma/disputes/${disputeId}`);
       setDispute(data);
-    } catch (err) {
+    } catch (error: unknown) {
       setError(t('errors.noItems'));
-      logger.error('Failed to fetch dispute', { error: err });
+      logger.error('Failed to fetch dispute', { error });
     } finally {
       setLoading(false);
     }

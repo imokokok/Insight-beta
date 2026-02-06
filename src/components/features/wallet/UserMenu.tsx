@@ -1,16 +1,20 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+
 import Link from 'next/link';
-import type { Route } from 'next';
 import { useSearchParams } from 'next/navigation';
+
 import { LogOut, Copy, Check, FileText, AlertTriangle, ChevronDown } from 'lucide-react';
+import { arbitrum, hardhat, mainnet, optimism, polygon, polygonAmoy } from 'viem/chains';
+
 import { useWallet } from '@/contexts/WalletContext';
 import { useBalance } from '@/hooks/wallet/useBalance';
+import { useSwitchChainWithFeedback } from '@/hooks/wallet/useSwitchChainWithFeedback';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { cn } from '@/lib/utils';
-import { arbitrum, hardhat, mainnet, optimism, polygon, polygonAmoy } from 'viem/chains';
-import { useSwitchChainWithFeedback } from '@/hooks/wallet/useSwitchChainWithFeedback';
+
+import type { Route } from 'next';
 
 export function UserMenu() {
   const { address, chainId, disconnect } = useWallet();

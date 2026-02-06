@@ -1,8 +1,10 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+
 import { z } from 'zod';
-import { getVoterSlashing } from '@/server/oracle/umaRewards';
+
 import { logger } from '@/lib/logger';
+import { getVoterSlashing } from '@/server/oracle/umaRewards';
 
 const querySchema = z.object({
   voter: z.string().regex(/^0x[a-fA-F0-9]{40}$/),

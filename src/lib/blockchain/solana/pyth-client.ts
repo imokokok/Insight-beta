@@ -5,11 +5,14 @@
  * 使用 @pythnetwork/client 获取真实价格数据
  */
 
-import { Connection, PublicKey, type Commitment } from '@solana/web3.js';
 import { PriceStatus, PythHttpClient, getPythProgramKeyForCluster } from '@pythnetwork/client';
-import type { SolanaPriceFeed, SolanaOracleInstance } from './types';
-import { SolanaError, SolanaErrorCode } from './types';
+import { Connection, PublicKey, type Commitment } from '@solana/web3.js';
+
 import { logger } from '@/lib/logger';
+
+import { SolanaError, SolanaErrorCode } from './types';
+
+import type { SolanaPriceFeed, SolanaOracleInstance } from './types';
 
 // ============================================================================
 // Pyth Client Configuration
@@ -29,6 +32,7 @@ const DEFAULT_COMMITMENT: Commitment = 'confirmed';
 export class PythSolanaClient {
   private connection: Connection;
   private pythClient: PythHttpClient;
+  private defaultTimeoutMs: number = 30000; // 默认30秒超时
 
   constructor(
     rpcUrl: string,
@@ -41,12 +45,39 @@ export class PythSolanaClient {
   }
 
   /**
+   * 设置请求超时
+   */
+  setTimeout(timeoutMs: number): void {
+    this.defaultTimeoutMs = timeoutMs;
+  }
+
+  /**
+   * 带超时的 Promise 包装器
+   */
+  private async withTimeout<T>(
+    promise: Promise<T>,
+    timeoutMs: number,
+    errorMessage: string,
+  ): Promise<T> {
+    return Promise.race([
+      promise,
+      new Promise<T>((_, reject) => setTimeout(() => reject(new Error(errorMessage)), timeoutMs)),
+    ]);
+  }
+
+  /**
    * Fetch price data for a single price feed
    */
   async fetchPrice(feedAddress: string, symbol: string): Promise<SolanaPriceFeed> {
     try {
       const publicKey = new PublicKey(feedAddress);
-      const accountInfo = await this.connection.getAccountInfo(publicKey);
+
+      // 使用超时控制获取账户信息
+      const accountInfo = await this.withTimeout(
+        this.connection.getAccountInfo(publicKey),
+        this.defaultTimeoutMs,
+        'Timeout getting account info',
+      );
 
       if (!accountInfo) {
         throw new SolanaError(
@@ -55,8 +86,12 @@ export class PythSolanaClient {
         );
       }
 
-      // Get all price data from Pyth
-      const priceData = await this.pythClient.getData();
+      // 使用超时控制获取价格数据
+      const priceData = await this.withTimeout(
+        this.pythClient.getData(),
+        this.defaultTimeoutMs,
+        'Timeout fetching price data',
+      );
 
       // Find the specific price feed
       const priceAccount = priceData.productPrice.get(feedAddress);
@@ -96,6 +131,21 @@ export class PythSolanaClient {
     } catch (error) {
       if (error instanceof SolanaError) {
         throw error;
+      }
+
+      // 检查是否是超时错误
+      if (error instanceof Error && error.message.includes('Timeout')) {
+        logger.error('Pyth price fetch timed out', {
+          error: error.message,
+          feedAddress,
+          symbol,
+          timeoutMs: this.defaultTimeoutMs,
+        });
+        throw new SolanaError(
+          `Timeout fetching Pyth price for ${symbol}`,
+          SolanaErrorCode.RPC_ERROR,
+          error,
+        );
       }
 
       logger.error('Failed to fetch Pyth price', {

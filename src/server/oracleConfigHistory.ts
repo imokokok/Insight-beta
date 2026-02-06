@@ -1,6 +1,8 @@
+import { logger } from '@/lib/logger';
+
 import { hasDatabase, query } from './db';
 import { getMemoryStore } from './memoryBackend';
-import { logger } from '@/lib/logger';
+
 import type { OracleConfig } from './oracleConfig';
 
 export type ConfigChangeType = 'create' | 'update' | 'delete' | 'rollback';

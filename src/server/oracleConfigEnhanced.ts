@@ -15,7 +15,10 @@
  * 此文件保留用于向后兼容，将在未来版本中移除
  */
 
-import { hasDatabase, query, getClient } from './db';
+import crypto from 'node:crypto';
+
+import { logger } from '@/lib/logger';
+import { encryptString } from '@/lib/security/encryption';
 import type {
   OracleConfig,
   ConfigTemplate,
@@ -26,13 +29,13 @@ import type {
   WebhookPayload,
 } from '@/lib/types/oracleTypes';
 import { getMemoryInstance } from '@/server/memoryBackend';
-import { encryptString } from '@/lib/security/encryption';
-import { logger } from '@/lib/logger';
-import type { PoolClient } from 'pg';
-import { RedisCache } from './redisCache';
-import crypto from 'node:crypto';
+
+import { hasDatabase, query, getClient } from './db';
 import { readOracleConfig, writeOracleConfig } from './oracle';
 import { DEFAULT_ORACLE_INSTANCE_ID } from './oracleConfig';
+import { RedisCache } from './redisCache';
+
+import type { PoolClient } from 'pg';
 
 export type {
   OracleConfig,
@@ -1298,11 +1301,11 @@ async function logWebhookDelivery(
        VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
       [webhookId, event, JSON.stringify(payload), success, errorMessage || null, retryCount],
     );
-  } catch (err) {
+  } catch (error: unknown) {
     logger.error('Failed to log webhook delivery', {
       webhookId,
       event,
-      error: err instanceof Error ? err.message : String(err),
+      error: error instanceof Error ? error.message : String(error),
     });
   }
 }

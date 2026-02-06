@@ -1,4 +1,5 @@
 import { alerts } from './alerts';
+import { analytics } from './analytics';
 import { app } from './app';
 import { audit } from './audit';
 import { chain } from './chain';
@@ -16,6 +17,7 @@ import { wallet } from './wallet';
 
 export const zhTranslations = {
   alerts,
+  analytics,
   app,
   audit,
   chain,

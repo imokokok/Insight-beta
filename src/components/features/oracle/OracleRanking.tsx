@@ -8,10 +8,12 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+import { RefreshCw, Trophy, TrendingUp, TrendingDown, Minus, Activity } from 'lucide-react';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Trophy, TrendingUp, TrendingDown, Minus, Activity } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { logger } from '@/lib/logger';
 
 // ============================================================================
@@ -60,10 +62,10 @@ export function OracleRanking() {
         throw new Error(data.error);
       }
       setRanking(data);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch ranking';
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch ranking';
       setError(errorMessage);
-      logger.error('Failed to fetch ranking', { error: err });
+      logger.error('Failed to fetch ranking', { error });
     }
     setLoading(false);
   }, []);

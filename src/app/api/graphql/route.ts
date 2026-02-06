@@ -5,9 +5,11 @@
  * 支持 Query, Mutation 和 Subscription
  */
 
-import { createYoga, createSchema } from 'graphql-yoga';
-import { query } from '@/server/db';
 import type { NextRequest } from 'next/server';
+
+import { createYoga, createSchema } from 'graphql-yoga';
+
+import { query } from '@/server/db';
 
 // ============================================================================
 // PubSub System for Subscriptions

@@ -1,18 +1,22 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import type { Route } from 'next';
+
+import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useWatchlist } from '@/hooks/user/useWatchlist';
-import type { BaseResponse } from '@/hooks/ui/useInfiniteList';
-import { useInfiniteList } from '@/hooks/ui/useInfiniteList';
-import type { Assertion } from '@/lib/types/oracleTypes';
+
+import { Star } from 'lucide-react';
+
 import { AssertionList } from '@/components/features/assertion/AssertionList';
 import { PageHeader } from '@/components/features/common/PageHeader';
+import type { BaseResponse } from '@/hooks/ui/useInfiniteList';
+import { useInfiniteList } from '@/hooks/ui/useInfiniteList';
+import { useWatchlist } from '@/hooks/user/useWatchlist';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage } from '@/i18n/translations';
-import { Star } from 'lucide-react';
-import Link from 'next/link';
+import type { Assertion } from '@/lib/types/oracleTypes';
+
+import type { Route } from 'next';
 
 export default function WatchlistPage() {
   const { t } = useI18n();

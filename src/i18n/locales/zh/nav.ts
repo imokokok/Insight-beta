@@ -11,4 +11,5 @@ export const nav = {
   optimisticOracle: '乐观预言机',
   unifiedOracle: '统一预言机',
   watchlist: '关注列表',
+  security: '安全检测',
 };

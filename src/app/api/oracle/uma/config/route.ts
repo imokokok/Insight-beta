@@ -1,8 +1,9 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { writeUMAConfig, readUMAConfig, type UMAConfig } from '@/server/oracle/umaConfig';
-import { handleApi, rateLimit, requireAdmin, verifyAdmin } from '@/server/apiResponse';
+
 import { logger } from '@/lib/logger';
+import { handleApi, rateLimit, requireAdmin, verifyAdmin } from '@/server/apiResponse';
+import { writeUMAConfig, readUMAConfig, type UMAConfig } from '@/server/oracle/umaConfig';
 
 const RATE_LIMITS = {
   GET: { key: 'uma_config_get', limit: 120, windowMs: 60_000 },

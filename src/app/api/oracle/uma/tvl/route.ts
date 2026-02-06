@@ -1,13 +1,14 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+
 import { z } from 'zod';
-import { getLatestTvl, getTvlHistory } from '@/server/oracle/umaTvl';
+
 import { createTvlMonitor } from '@/lib/blockchain/umaTvlMonitor';
-import { readUMAConfig } from '@/server/oracle/umaConfig';
-import { insertTvlRecord } from '@/server/oracle/umaTvl';
-import { parseRpcUrls } from '@/lib/utils';
 import { env } from '@/lib/config/env';
 import { logger } from '@/lib/logger';
+import { parseRpcUrls } from '@/lib/utils';
+import { readUMAConfig } from '@/server/oracle/umaConfig';
+import { insertTvlRecord, getLatestTvl, getTvlHistory } from '@/server/oracle/umaTvl';
 
 const querySchema = z.object({
   chainId: z

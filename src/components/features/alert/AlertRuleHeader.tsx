@@ -1,9 +1,10 @@
 'use client';
 
 import { AlertTriangle, Info, ShieldAlert } from 'lucide-react';
+
 import { Switch } from '@/components/ui/switch';
-import { cn } from '@/lib/utils';
 import type { AlertRule, AlertSeverity } from '@/lib/types/oracleTypes';
+import { cn } from '@/lib/utils';
 
 interface AlertRuleHeaderProps {
   rule: AlertRule;

@@ -9,10 +9,7 @@
 /* eslint-disable no-restricted-syntax */
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-// Progress component not available, using custom implementation
+
 import {
   Activity,
   Clock,
@@ -25,6 +22,13 @@ import {
   Shield,
   Server,
 } from 'lucide-react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+// Progress component not available, using custom implementation
+
 import { logger } from '@/lib/logger';
 
 interface SLAStats {

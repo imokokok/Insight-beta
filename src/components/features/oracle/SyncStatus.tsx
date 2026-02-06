@@ -1,10 +1,11 @@
 'use client';
 
-import useSWR from 'swr';
 import { Activity, AlertCircle } from 'lucide-react';
-import { fetchApiData, cn, formatTime } from '@/lib/utils';
+import useSWR from 'swr';
+
 import { useI18n } from '@/i18n/LanguageProvider';
 import { langToLocale } from '@/i18n/translations';
+import { fetchApiData, cn, formatTime } from '@/lib/utils';
 
 interface SyncResponse {
   chain: string;

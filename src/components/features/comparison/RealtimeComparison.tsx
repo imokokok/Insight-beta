@@ -1,10 +1,7 @@
 'use client';
 
 import { useMemo, useState, useEffect, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+
 import {
   Activity,
   RefreshCw,
@@ -26,6 +23,11 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from 'recharts';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useI18n } from '@/i18n';
 import type { RealtimeComparisonItem, ComparisonFilter } from '@/lib/types/oracle';
 import { cn, formatPrice } from '@/lib/utils';

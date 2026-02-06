@@ -5,8 +5,9 @@
  */
 
 import { NextResponse } from 'next/server';
-import { performanceMonitor } from '@/server/monitoring/performanceMonitor';
+
 import { logger } from '@/lib/logger';
+import { performanceMonitor } from '@/server/monitoring/performanceMonitor';
 
 /**
  * GET /api/monitoring/health

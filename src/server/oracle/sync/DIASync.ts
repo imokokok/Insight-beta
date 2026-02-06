@@ -6,6 +6,7 @@
 
 import { createDIAClient, getAvailableDIASymbols } from '@/lib/blockchain/diaOracle';
 import type { SupportedChain } from '@/lib/types/unifiedOracleTypes';
+
 import { BaseSyncManager, type IOracleClient, type SyncConfig } from './BaseSyncManager';
 
 // ============================================================================

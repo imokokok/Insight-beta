@@ -6,8 +6,9 @@
 
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { getGlobalSLAStats } from '@/server/monitoring/slaMonitor';
+
 import { logger } from '@/lib/logger';
+import { getGlobalSLAStats } from '@/server/monitoring/slaMonitor';
 
 export async function GET(_request: NextRequest) {
   try {

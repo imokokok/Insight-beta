@@ -7,9 +7,11 @@
  * - 自动故障转移和重连
  */
 
-import type { RedisClientType } from 'redis';
 import { createClient } from 'redis';
+
 import { logger } from '@/lib/logger';
+
+import type { RedisClientType } from 'redis';
 
 // ============================================================================
 // 类型定义

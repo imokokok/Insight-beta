@@ -1,6 +1,7 @@
+import { z } from 'zod';
+
 import { error, handleApi, rateLimit, requireAdmin } from '@/server/apiResponse';
 import { listAuditLog } from '@/server/observability';
-import { z } from 'zod';
 
 const paramsSchema = z.object({
   limit: z.coerce.number().min(1).max(100).default(50),

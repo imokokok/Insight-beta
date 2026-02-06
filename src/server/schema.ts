@@ -1,5 +1,6 @@
-import { hasDatabase, query } from './db';
 import { logger } from '@/lib/logger';
+
+import { hasDatabase, query } from './db';
 
 async function safeRollback() {
   try {
@@ -273,10 +274,10 @@ export async function ensureSchema() {
       ALTER TABLE assertions ALTER COLUMN instance_id SET NOT NULL;
     `);
     await query('COMMIT');
-  } catch (e) {
+  } catch (error: unknown) {
     await safeRollback();
     logger.error('Migration failed for assertions instance_id', {
-      error: e instanceof Error ? e.message : String(e),
+      error: error instanceof Error ? error.message : String(error),
     });
     throw new Error('Failed to migrate assertions instance_id');
   }
@@ -298,10 +299,10 @@ export async function ensureSchema() {
       ALTER TABLE disputes ALTER COLUMN instance_id SET NOT NULL;
     `);
     await query('COMMIT');
-  } catch (e) {
+  } catch (error: unknown) {
     await safeRollback();
     logger.error('Migration failed for disputes instance_id', {
-      error: e instanceof Error ? e.message : String(e),
+      error: error instanceof Error ? error.message : String(error),
     });
     throw new Error('Failed to migrate disputes instance_id');
   }
@@ -320,10 +321,10 @@ export async function ensureSchema() {
       ALTER TABLE votes ALTER COLUMN instance_id SET NOT NULL;
     `);
     await query('COMMIT');
-  } catch (e) {
+  } catch (error: unknown) {
     await safeRollback();
     logger.error('Migration failed for votes instance_id', {
-      error: e instanceof Error ? e.message : String(e),
+      error: error instanceof Error ? error.message : String(error),
     });
     throw new Error('Failed to migrate votes instance_id');
   }

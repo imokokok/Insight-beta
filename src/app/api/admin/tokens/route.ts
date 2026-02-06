@@ -1,7 +1,8 @@
+import { z } from 'zod';
+
+import { createAdminToken, listAdminTokens, revokeAdminToken } from '@/server/adminAuth';
 import { error, getAdminActor, handleApi, rateLimit, requireAdmin } from '@/server/apiResponse';
 import { appendAuditLog } from '@/server/observability';
-import { createAdminToken, listAdminTokens, revokeAdminToken } from '@/server/adminAuth';
-import { z } from 'zod';
 
 const createSchema = z.object({
   label: z.string().trim().min(1).max(80),

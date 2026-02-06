@@ -1,9 +1,10 @@
 import useSWR from 'swr';
-import { fetchApiData } from '@/lib/utils';
-import type { Assertion, OracleConfig, OracleStats, OracleStatus } from '@/lib/types/oracleTypes';
+
 import type { BaseResponse } from '@/hooks/ui/useInfiniteList';
 import { useInfiniteList } from '@/hooks/ui/useInfiniteList';
 import { CACHE_CONFIG } from '@/lib/config/constants';
+import type { Assertion, OracleConfig, OracleStats, OracleStatus } from '@/lib/types/oracleTypes';
+import { fetchApiData } from '@/lib/utils';
 
 export function useOracleData(
   filterStatus: OracleStatus | 'All',

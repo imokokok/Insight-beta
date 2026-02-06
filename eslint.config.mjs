@@ -3,6 +3,7 @@ import js from "@eslint/js";
 import security from "eslint-plugin-security";
 import tseslint from "@typescript-eslint/eslint-plugin";
 import tsParser from "@typescript-eslint/parser";
+import importPlugin from "eslint-plugin-import";
 
 const compat = new FlatCompat({ baseDirectory: import.meta.dirname });
 
@@ -36,6 +37,7 @@ const config = [
     plugins: {
       security,
       "@typescript-eslint": tseslint,
+      import: importPlugin,
     },
     languageOptions: {
       parser: tsParser,
@@ -47,6 +49,14 @@ const config = [
         console: "readonly",
         process: "readonly",
         BigInt: "readonly",
+      },
+    },
+    settings: {
+      "import/resolver": {
+        typescript: {
+          alwaysTryTypes: true,
+          project: "./tsconfig.json",
+        },
       },
     },
     rules: {
@@ -69,6 +79,45 @@ const config = [
       "@typescript-eslint/no-non-null-assertion": "warn",
       "@typescript-eslint/explicit-function-return-type": "off",
       "@typescript-eslint/explicit-module-boundary-types": "off",
+      // Import ordering rules
+      "import/order": [
+        "warn",
+        {
+          groups: [
+            "builtin",
+            "external",
+            "internal",
+            ["parent", "sibling", "index"],
+            "object",
+            "type",
+          ],
+          pathGroups: [
+            {
+              pattern: "react",
+              group: "builtin",
+              position: "before",
+            },
+            {
+              pattern: "next/**",
+              group: "builtin",
+              position: "before",
+            },
+            {
+              pattern: "@/**",
+              group: "internal",
+              position: "before",
+            },
+          ],
+          pathGroupsExcludedImportTypes: ["react", "next"],
+          "newlines-between": "always",
+          alphabetize: {
+            order: "asc",
+            caseInsensitive: true,
+          },
+        },
+      ],
+      "import/no-duplicates": "warn",
+      "import/newline-after-import": "warn",
     },
   },
   // i18n rules for JSX files (non-test files only)
@@ -95,6 +144,7 @@ const config = [
       "@typescript-eslint/no-non-null-assertion": "off",
       "security/detect-object-injection": "off",
       "no-restricted-syntax": "off",
+      "import/order": "off",
     },
   },
 ];

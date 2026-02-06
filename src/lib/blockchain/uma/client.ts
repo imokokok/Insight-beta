@@ -1,8 +1,10 @@
 import { type Address, type Hash, type PublicClient, type WalletClient } from 'viem';
-import type { UMAOracleConfig, UMAPriceRequest, UMAAssertion } from './types';
+
 import { UMA_OPTIMISTIC_ORACLE_V2_ABI, UMA_OPTIMISTIC_ORACLE_V3_ABI } from './abi';
-import type { IServiceContainer } from './interfaces';
 import { createServiceContainer } from './di-container';
+
+import type { IServiceContainer } from './interfaces';
+import type { UMAOracleConfig, UMAPriceRequest, UMAAssertion } from './types';
 
 export interface OptimisticOracleClientOptions {
   config: UMAOracleConfig;

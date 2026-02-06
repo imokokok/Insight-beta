@@ -5,7 +5,7 @@
  */
 
 import { env } from '@/lib/config/env';
-import type { getMemoryInstance } from '../memoryBackend';
+
 import {
   DEFAULT_MEMORY_MAX_VOTE_KEYS,
   DEFAULT_MEMORY_VOTE_BLOCK_WINDOW,
@@ -13,6 +13,8 @@ import {
   DEFAULT_MEMORY_MAX_DISPUTES,
 } from './constants';
 import { toTimeMs } from './utils';
+
+import type { getMemoryInstance } from '../memoryBackend';
 import type { VoteSums } from './types';
 
 /**

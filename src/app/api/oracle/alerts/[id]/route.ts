@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 import {
   error,
   getAdminActor,
@@ -7,7 +9,6 @@ import {
   requireAdmin,
 } from '@/server/apiResponse';
 import { updateAlertStatus } from '@/server/observability';
-import { z } from 'zod';
 
 const patchSchema = z.object({
   status: z.enum(['Open', 'Acknowledged', 'Resolved']),

@@ -2,6 +2,7 @@
 
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
+
 import type { Channel } from './AlertRulesManager';
 
 interface ChannelSwitchesProps {

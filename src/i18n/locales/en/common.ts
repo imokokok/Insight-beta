@@ -67,6 +67,22 @@ export const common = {
   total: 'total',
   previous: 'Previous',
   next: 'Next',
+  // Time
+  time: {
+    secondShort: 's',
+    minuteShort: 'm',
+    hourShort: 'h',
+    dayShort: 'd',
+  },
+  // Time Ago
+  timeAgo: {
+    justNow: 'Just now',
+    never: 'Never',
+    seconds: '{{seconds}}s ago',
+    minutes: '{{minutes}}m ago',
+    hours: '{{hours}}h ago',
+    days: '{{days}}d ago',
+  },
   // Error Boundary
   errorBoundary: {
     title: 'Something Went Wrong',

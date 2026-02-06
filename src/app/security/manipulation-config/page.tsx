@@ -1,16 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Slider } from '@/components/ui/slider';
-import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+
 import {
   Settings,
   Bell,
@@ -22,8 +13,19 @@ import {
   AlertTriangle,
   Info,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { logger } from '@/lib/logger';
+import { cn } from '@/lib/utils';
 
 interface DetectionConfig {
   // Statistical anomaly
@@ -138,8 +140,8 @@ export default function ManipulationConfigPage() {
         const data = await response.json();
         setConfig({ ...defaultConfig, ...data.config });
       }
-    } catch (err) {
-      logger.error('Failed to fetch config', { error: err });
+    } catch (error: unknown) {
+      logger.error('Failed to fetch config', { error });
     } finally {
       setLoading(false);
     }
@@ -161,8 +163,8 @@ export default function ManipulationConfigPage() {
 
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'Unknown error');
     } finally {
       setSaving(false);
     }

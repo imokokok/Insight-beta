@@ -1,3 +1,8 @@
+import { createPublicClient, http, parseAbi } from 'viem';
+
+import { env } from '@/lib/config/env';
+import { parseRpcUrls } from '@/lib/utils';
+import { verifyAdmin } from '@/server/adminAuth';
 import { handleApi, rateLimit } from '@/server/apiResponse';
 import {
   getAssertion,
@@ -7,10 +12,6 @@ import {
   readOracleConfig,
   redactOracleConfig,
 } from '@/server/oracle';
-import { verifyAdmin } from '@/server/adminAuth';
-import { createPublicClient, http, parseAbi } from 'viem';
-import { parseRpcUrls } from '@/lib/utils';
-import { env } from '@/lib/config/env';
 
 const eventsAbi = parseAbi([
   'event AssertionCreated(bytes32 indexed assertionId,address indexed asserter,string protocol,string market,string assertion,uint256 bondUsd,uint256 assertedAt,uint256 livenessEndsAt,bytes32 txHash)',

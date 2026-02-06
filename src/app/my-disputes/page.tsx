@@ -1,22 +1,25 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { Route } from 'next';
+
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+
 import { PageHeader } from '@/components/features/common/PageHeader';
-import { ConnectWallet } from '@/components/features/wallet/ConnectWallet';
 import { DisputeList } from '@/components/features/dispute/DisputeList';
-import { UserStatsCard } from '@/components/features/wallet/UserStatsCard';
-import { NoWalletState } from '@/components/features/dispute/my-disputes/NoWalletState';
-import { MyDisputesToolbar } from '@/components/features/dispute/my-disputes/MyDisputesToolbar';
 import { DisputesEmptyState } from '@/components/features/dispute/my-disputes/DisputesEmptyState';
+import { MyDisputesToolbar } from '@/components/features/dispute/my-disputes/MyDisputesToolbar';
+import { NoWalletState } from '@/components/features/dispute/my-disputes/NoWalletState';
+import { ConnectWallet } from '@/components/features/wallet/ConnectWallet';
+import { UserStatsCard } from '@/components/features/wallet/UserStatsCard';
+import { useWallet } from '@/contexts/WalletContext';
 import { useDisputes } from '@/hooks/dispute/useDisputes';
 import { useUserStats } from '@/hooks/user/useUserStats';
-import { useWallet } from '@/contexts/WalletContext';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage } from '@/i18n/translations';
-import { fetchApiData } from '@/lib/utils';
 import type { OracleConfig, OracleInstance, DisputeStatus } from '@/lib/types/oracleTypes';
+import { fetchApiData } from '@/lib/utils';
+
+import type { Route } from 'next';
 
 type ViewMode = 'grid' | 'list';
 

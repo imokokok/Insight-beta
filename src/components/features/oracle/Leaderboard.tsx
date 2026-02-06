@@ -1,12 +1,15 @@
 'use client';
 
-import { useI18n } from '@/i18n/LanguageProvider';
-import { Award, TrendingUp, User, Trophy, ShieldCheck, Loader2 } from 'lucide-react';
-import { cn, fetchApiData } from '@/lib/utils';
 import { useEffect, useState, memo } from 'react';
-import type { LeaderboardStats } from '@/lib/types/oracleTypes';
-import { logger } from '@/lib/logger';
+
 import Link from 'next/link';
+
+import { Award, TrendingUp, User, Trophy, ShieldCheck, Loader2 } from 'lucide-react';
+
+import { useI18n } from '@/i18n/LanguageProvider';
+import { logger } from '@/lib/logger';
+import type { LeaderboardStats } from '@/lib/types/oracleTypes';
+import { cn, fetchApiData } from '@/lib/utils';
 
 interface RankItemProps {
   rank: number;

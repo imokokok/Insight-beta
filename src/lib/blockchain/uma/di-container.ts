@@ -5,8 +5,9 @@
  */
 
 import { createPublicClient, http, type Chain, type PublicClient } from 'viem';
+
 import { logger as appLogger } from '@/lib/logger';
-import type { UMAOracleConfig } from './types';
+
 import type {
   ILogger,
   IChainFactory,
@@ -16,6 +17,7 @@ import type {
   IOracleAddressResolver,
   IServiceContainer,
 } from './interfaces';
+import type { UMAOracleConfig } from './types';
 
 // ============================================================================
 // 默认实现

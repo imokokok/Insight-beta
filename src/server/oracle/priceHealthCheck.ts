@@ -5,8 +5,8 @@
  * 监控价格数据的新鲜度和准确性，检测异常价格
  */
 
-import { query } from '@/server/db';
 import { logger } from '@/lib/logger';
+import { query } from '@/server/db';
 import { notifyAlert } from '@/server/notifications';
 
 // ============================================================================

@@ -1,11 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+
 import { X, AlertCircle, BarChart2, FileText, Users } from 'lucide-react';
-import { cn } from '@/lib/utils';
+
 import { useI18n } from '@/i18n/LanguageProvider';
-import { RoleSelection } from './Onboarding/RoleSelection';
+import { cn } from '@/lib/utils';
+
 import { OnboardingSteps } from './Onboarding/OnboardingSteps';
+import { RoleSelection } from './Onboarding/RoleSelection';
 
 export type UserRole = 'developer' | 'protocol_team' | 'oracle_operator' | 'general_user';
 

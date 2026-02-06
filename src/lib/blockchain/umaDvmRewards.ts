@@ -1,6 +1,8 @@
 import { createPublicClient, http, type Address, type Hash, parseAbi, type Log } from 'viem';
-import type { Chain } from 'viem/chains';
+
 import { logger } from '@/lib/logger';
+
+import type { Chain } from 'viem/chains';
 
 // Helper type for log args
 type LogArgs = Record<string, unknown>;

@@ -5,19 +5,21 @@
  */
 
 import crypto from 'node:crypto';
+
 import { logger } from '@/lib/logger';
-import { query } from '../db';
-import { hasDatabase } from '../db';
+import type { Assertion, Dispute, OracleChain } from '@/lib/types/oracleTypes';
+
+import { query, hasDatabase } from '../db';
 import { getMemoryInstance } from '../memoryBackend';
 import { DEFAULT_ORACLE_INSTANCE_ID } from '../oracleConfig';
-import { normalizeInstanceId } from './utils';
 import {
   upsertAssertion,
   upsertDispute,
   insertVoteEvent,
   recomputeDisputeVotes,
 } from './operations';
-import type { Assertion, Dispute, OracleChain } from '@/lib/types/oracleTypes';
+import { normalizeInstanceId } from './utils';
+
 import type { ReplayResult } from './types';
 
 /**

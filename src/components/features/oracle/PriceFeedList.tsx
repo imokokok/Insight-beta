@@ -3,17 +3,19 @@
 /* eslint-disable no-restricted-syntax */
 
 import React, { useEffect, useState, useMemo, useDeferredValue } from 'react';
-import { cn, fetchApiData, formatTimeAgo } from '@/lib/utils';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+import { TrendingUp, TrendingDown, Minus, AlertCircle, Clock } from 'lucide-react';
+
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-import { TrendingUp, TrendingDown, Minus, AlertCircle, Clock } from 'lucide-react';
-import { logger } from '@/lib/logger';
 import { useWebSocket } from '@/hooks/useWebSocket';
+import { logger } from '@/lib/logger';
 import type { PriceFeed, PriceUpdate } from '@/lib/types/oracle/price';
 import type { OracleProtocol } from '@/lib/types/oracle/protocol';
 import { PROTOCOL_DISPLAY_NAMES } from '@/lib/types/oracle/protocol';
+import { cn, fetchApiData, formatTimeAgo } from '@/lib/utils';
 
 interface PriceFeedListProps {
   protocols?: OracleProtocol[];
@@ -114,8 +116,8 @@ export function PriceFeedList({
           ),
         );
       }
-    } catch (err) {
-      logger.error('Failed to process WebSocket message', { error: err });
+    } catch (error: unknown) {
+      logger.error('Failed to process WebSocket message', { error });
     }
   }, [lastMessage]);
 

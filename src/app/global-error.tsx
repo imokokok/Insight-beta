@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { AlertTriangle, RefreshCcw, Home } from 'lucide-react';
-import { translations, type Lang } from '@/i18n/translations';
+
 import * as Sentry from '@sentry/nextjs';
+import { AlertTriangle, RefreshCcw, Home } from 'lucide-react';
+
+import { translations, type Lang } from '@/i18n/translations';
 
 export default function GlobalError({
   error,

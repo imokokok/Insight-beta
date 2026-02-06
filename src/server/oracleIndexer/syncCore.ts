@@ -5,9 +5,11 @@
  */
 
 import { parseAbi, type Address, type PublicClient } from 'viem';
+
 import { logger } from '@/lib/logger';
-import { isZeroBytes32, parseRpcUrls, toIsoFromSeconds } from '@/lib/utils';
 import type { Assertion, Dispute, OracleChain } from '@/lib/types/oracleTypes';
+import { isZeroBytes32, parseRpcUrls, toIsoFromSeconds } from '@/lib/utils';
+
 import {
   readOracleState,
   getSyncState,
@@ -19,17 +21,6 @@ import {
   insertOracleEvent,
   recomputeDisputeVotes,
 } from '../oracleState';
-import { fetchAssertion } from '../oracleState/operations';
-import {
-  readAlertRules,
-  createOrTouchAlert,
-  type AlertRule,
-  type AlertSeverity,
-} from '../observability';
-import type { NotificationChannel } from '../notifications';
-import { getOracleEnv, isDegradedMode, isVoteTrackingEnabled } from './env';
-import { getCachedClient, getRpcTimeoutMs, pickNextRpcUrl } from './rpcClient';
-import { readRpcStats, recordRpcOk, recordRpcFail, toSyncErrorCode } from './rpcStats';
 import {
   MIN_BLOCK_WINDOW,
   MAX_BLOCK_WINDOW,
@@ -37,6 +28,18 @@ import {
   ADAPTIVE_SHRINK_FACTOR,
   MAX_RETRY_BACKOFF_MS,
 } from './constants';
+import { getOracleEnv, isDegradedMode, isVoteTrackingEnabled } from './env';
+import {
+  readAlertRules,
+  createOrTouchAlert,
+  type AlertRule,
+  type AlertSeverity,
+} from '../observability';
+import { getCachedClient, getRpcTimeoutMs, pickNextRpcUrl } from './rpcClient';
+import { readRpcStats, recordRpcOk, recordRpcFail, toSyncErrorCode } from './rpcStats';
+import { fetchAssertion } from '../oracleState/operations';
+
+import type { NotificationChannel } from '../notifications';
 import type { SyncResult, RpcStats } from './types';
 
 /** 合约 ABI */
@@ -210,9 +213,9 @@ function createRpcWrapper(
           const result = await op(client);
           recordRpcOk(rpcStats, url, Date.now() - t0);
           return result;
-        } catch (e) {
-          lastErr = e;
-          const code = toSyncErrorCode(e);
+        } catch (error: unknown) {
+          lastErr = error;
+          const code = toSyncErrorCode(error);
 
           if (code === 'rpc_unreachable') {
             recordRpcFail(rpcStats, url);
@@ -223,7 +226,7 @@ function createRpcWrapper(
               continue;
             }
           } else if (code === 'contract_not_found') {
-            throw e;
+            throw error;
           } else {
             if (attempt < maxRetries - 1) {
               const backoff = Math.min(baseBackoff * Math.pow(2, attempt), MAX_RETRY_BACKOFF_MS);
@@ -364,7 +367,7 @@ async function executeSync(
             );
           }
         }
-      } catch (e) {
+      } catch (error: unknown) {
         attempts++;
         if (attempts < 3) {
           const backoff = Math.min(2000 * Math.pow(2, attempts - 1), MAX_RETRY_BACKOFF_MS);
@@ -376,7 +379,7 @@ async function executeSync(
             Math.max(Number(window) * ADAPTIVE_SHRINK_FACTOR, Number(MIN_BLOCK_WINDOW)),
           );
         } else {
-          throw e;
+          throw error;
         }
       }
     }

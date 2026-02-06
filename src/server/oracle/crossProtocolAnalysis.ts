@@ -5,9 +5,9 @@
  * 提供高级价格偏差检测、置信度评分、趋势分析等功能
  */
 
-import { query } from '@/server/db';
 import { logger } from '@/lib/logger';
 import type { OracleProtocol, SupportedChain } from '@/lib/types/unifiedOracleTypes';
+import { query } from '@/server/db';
 
 // ============================================================================
 // Types

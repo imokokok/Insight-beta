@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
-import { getConfigHistoryStats } from '@/server/oracleConfigHistory';
+
 import { z } from 'zod';
+
+import { getConfigHistoryStats } from '@/server/oracleConfigHistory';
 
 const querySchema = z.object({
   instanceId: z.string().optional(),

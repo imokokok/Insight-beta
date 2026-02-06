@@ -7,9 +7,9 @@
 import type { Incident, IncidentStatus, AlertSeverity } from '@/lib/types/oracleTypes';
 import { readJsonFile, writeJsonFile } from '@/server/kvStore';
 import { memoryNowIso } from '@/server/memoryBackend';
-import { INCIDENTS_KEY } from './constants';
-import { VALID_SEVERITIES } from './constants';
+
 import { appendAuditLog } from './audit';
+import { INCIDENTS_KEY, VALID_SEVERITIES } from './constants';
 
 type IncidentStoreV1 = {
   version: 1;

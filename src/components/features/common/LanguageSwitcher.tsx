@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+
 import { Globe } from 'lucide-react';
-import { cn } from '@/lib/utils';
+
 import { useI18n } from '@/i18n/LanguageProvider';
 import { languages, type Lang } from '@/i18n/translations';
+import { cn } from '@/lib/utils';
 
 export function LanguageSwitcher({ className }: { className?: string }) {
   const { lang, setLang, t } = useI18n();

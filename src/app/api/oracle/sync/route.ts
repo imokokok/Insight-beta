@@ -1,4 +1,7 @@
-import { ensureOracleSynced, getOracleEnv, isTableEmpty, readOracleState } from '@/server/oracle';
+import { revalidateTag } from 'next/cache';
+
+import { env } from '@/lib/config/env';
+import { timingSafeEqualString } from '@/server/adminAuth';
 import {
   error,
   getAdminActor,
@@ -8,22 +11,56 @@ import {
   requireAdmin,
 } from '@/server/apiResponse';
 import { appendAuditLog } from '@/server/observability';
-import { revalidateTag } from 'next/cache';
-import { env } from '@/lib/config/env';
-import { timingSafeEqualString } from '@/server/adminAuth';
+import { ensureOracleSynced, getOracleEnv, isTableEmpty, readOracleState } from '@/server/oracle';
 import { DEFAULT_ORACLE_INSTANCE_ID } from '@/server/oracleConfig';
 
-function isCronAuthorized(request: Request) {
-  const secret = (env.INSIGHT_CRON_SECRET.trim() || env.CRON_SECRET.trim()).trim();
-  if (!secret) return false;
+function isCronAuthorized(request: Request): boolean {
+  const secret = (env.INSIGHT_CRON_SECRET?.trim() || env.CRON_SECRET?.trim() || '').trim();
+  if (!secret || secret.length < 16) {
+    // 如果密钥未设置或太短，拒绝所有 cron 请求（安全默认）
+    return false;
+  }
+
+  // 检查专用 cron 密钥头
   const gotHeader = request.headers.get('x-oracle-monitor-cron-secret')?.trim() ?? '';
-  if (gotHeader && timingSafeEqualString(gotHeader, secret)) return true;
+  if (gotHeader) {
+    return timingSafeEqualString(gotHeader, secret);
+  }
+
+  // 检查 Authorization Bearer token
   const auth = request.headers.get('authorization')?.trim() ?? '';
   if (!auth) return false;
   if (!auth.toLowerCase().startsWith('bearer ')) return false;
   const token = auth.slice(7).trim();
   if (!token) return false;
   return timingSafeEqualString(token, secret);
+}
+
+/**
+ * 验证请求是否具有同步权限
+ * 必须满足以下条件之一：
+ * 1. 有效的 cron 密钥
+ * 2. 有效的管理员权限
+ */
+async function verifySyncPermission(
+  request: Request,
+): Promise<{ authorized: boolean; response?: Response }> {
+  // 首先检查 cron 授权
+  if (isCronAuthorized(request)) {
+    return { authorized: true };
+  }
+
+  // 然后检查管理员权限
+  const authResult = await requireAdmin(request, {
+    strict: true,
+    scope: 'oracle_sync_trigger',
+  });
+
+  if (authResult) {
+    return { authorized: false, response: authResult };
+  }
+
+  return { authorized: true };
 }
 
 export async function GET(request: Request) {
@@ -65,12 +102,10 @@ export async function POST(request: Request) {
     const normalizedInstanceId =
       (instanceId ?? DEFAULT_ORACLE_INSTANCE_ID).trim() || DEFAULT_ORACLE_INSTANCE_ID;
 
-    if (!isCronAuthorized(request)) {
-      const auth = await requireAdmin(request, {
-        strict: true,
-        scope: 'oracle_sync_trigger',
-      });
-      if (auth) return auth;
+    // 验证同步权限
+    const permissionCheck = await verifySyncPermission(request);
+    if (!permissionCheck.authorized) {
+      return permissionCheck.response || error({ code: 'unauthorized' }, 401);
     }
 
     const envConfig = instanceId ? await getOracleEnv(instanceId) : await getOracleEnv();
@@ -80,8 +115,8 @@ export async function POST(request: Request) {
     let result: { updated: boolean };
     try {
       result = instanceId ? await ensureOracleSynced(instanceId) : await ensureOracleSynced();
-    } catch (e) {
-      const code = e instanceof Error ? e.message : 'sync_failed';
+    } catch (err: unknown) {
+      const code = err instanceof Error ? err.message : 'sync_failed';
       if (code === 'rpc_unreachable') return error({ code }, 502);
       if (code === 'contract_not_found') return error({ code }, 400);
       if (code === 'sync_failed') return error({ code }, 502);

@@ -1,6 +1,7 @@
-import type { NextConfig } from 'next';
-import { withSentryConfig } from '@sentry/nextjs';
 import withBundleAnalyzer from '@next/bundle-analyzer';
+import { withSentryConfig } from '@sentry/nextjs';
+
+import type { NextConfig } from 'next';
 
 function buildCsp(isDev: boolean) {
   const mode = (process.env.INSIGHT_CSP_MODE ?? 'relaxed').toLowerCase();
@@ -83,12 +84,36 @@ const nextConfig: NextConfig = {
     dangerouslyAllowSVG: false,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox",
     remotePatterns: [
+      // 只允许特定域名的图片，提高安全性
       {
         protocol: 'https',
-        hostname: '**',
+        hostname: '**.vercel.app',
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: '**.githubusercontent.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'raw.githubusercontent.com',
+        port: '',
+        pathname: '/**',
+      },
+      // 允许项目特定的 CDN 域名
+      ...(process.env.CDN_IMAGE_URL
+        ? [
+            {
+              protocol: 'https' as const,
+              hostname: new URL(process.env.CDN_IMAGE_URL).hostname,
+              port: '',
+              pathname: '/**' as const,
+            },
+          ]
+        : []),
     ],
     // Use CDN for images if configured
     path: process.env.CDN_IMAGE_URL || '/_next/image',

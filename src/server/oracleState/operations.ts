@@ -4,11 +4,14 @@
  * 提供断言、争议、投票等核心数据操作的 CRUD 功能
  */
 
+import type { Assertion, Dispute, OracleChain } from '@/lib/types/oracleTypes';
+
 import { hasDatabase, query, getClient } from '../db';
-import { ensureSchema } from '../schema';
 import { getMemoryInstance } from '../memoryBackend';
+import { ensureSchema } from '../schema';
 import { STATE_VERSION, BATCH_SIZE, MAX_SYNC_METRICS } from './constants';
 import { DEFAULT_ORACLE_INSTANCE_ID } from '../oracleConfig';
+import { pruneMemoryAssertions, pruneMemoryDisputes, applyVoteSumsDelta } from './memory';
 import {
   normalizeInstanceId,
   toBigIntOr,
@@ -18,8 +21,7 @@ import {
   bigintToSafeNumber,
   computeDisputeStatus,
 } from './utils';
-import { pruneMemoryAssertions, pruneMemoryDisputes, applyVoteSumsDelta } from './memory';
-import type { Assertion, Dispute, OracleChain } from '@/lib/types/oracleTypes';
+
 import type {
   StoredState,
   SyncState,

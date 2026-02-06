@@ -1,25 +1,28 @@
 'use client';
 
 import React from 'react';
+
+import { MoreHorizontal, TrendingUp, TrendingDown, Minus, Clock } from 'lucide-react';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { PROTOCOL_DISPLAY_NAMES } from '@/lib/types/oracle';
-import { StatusBadge } from './TableStatusBadge';
-import {
-  createFormatters,
-  getDeviationColor,
-  getLatencyColor,
-  getSpreadVariant,
-} from './TableFormatters';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, TrendingUp, TrendingDown, Minus, Clock } from 'lucide-react';
 import { useI18n } from '@/i18n';
+import { PROTOCOL_DISPLAY_NAMES } from '@/lib/types/oracle';
+import { cn } from '@/lib/utils';
+
+import {
+  createFormatters,
+  getDeviationColor,
+  getLatencyColor,
+  getSpreadVariant,
+} from './TableFormatters';
+import { StatusBadge } from './TableStatusBadge';
 
 export interface TableRowData {
   id: string;

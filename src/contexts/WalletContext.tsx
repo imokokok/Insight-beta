@@ -10,10 +10,12 @@ import {
   useRef,
   type ReactNode,
 } from 'react';
+
 import { createWalletClient, custom, type WalletClient, type Address, type Chain } from 'viem';
 import { arbitrum, hardhat, mainnet, optimism, polygon, polygonAmoy } from 'viem/chains';
-import { logger } from '@/lib/logger';
+
 import { normalizeWalletError } from '@/lib/errors/walletErrors';
+import { logger } from '@/lib/logger';
 
 interface WalletState {
   address: Address | null;
@@ -203,8 +205,8 @@ export function WalletProvider({ children }: WalletProviderProps) {
           chainId: parseInt(id, 16),
         });
       }
-    } catch (err) {
-      handleError(err, 'connect');
+    } catch (error: unknown) {
+      handleError(error, 'connect');
     } finally {
       setIsConnecting(false);
     }
@@ -266,8 +268,8 @@ export function WalletProvider({ children }: WalletProviderProps) {
         });
         setChainId(targetChainId);
         logger.info('Network added successfully', { targetChainId });
-      } catch (err) {
-        handleError(err, 'addNetwork');
+      } catch (error: unknown) {
+        handleError(error, 'addNetwork');
       }
     },
     [clearError, handleError],

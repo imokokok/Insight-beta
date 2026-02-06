@@ -4,9 +4,9 @@
  */
 
 import { logger } from '@/lib/logger';
-import { query } from '@/server/db';
-import { AlertRuleEngine } from '@/server/alerts/alertRuleEngine';
 import type { OracleProtocol, SupportedChain } from '@/lib/types/unifiedOracleTypes';
+import { AlertRuleEngine } from '@/server/alerts/alertRuleEngine';
+import { query } from '@/server/db';
 
 export class AlertManager {
   private alertRuleEngine: AlertRuleEngine;

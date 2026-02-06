@@ -4,11 +4,6 @@
  * 基于新的核心架构实现的 DIA 协议客户端
  */
 
-import type {
-  OracleProtocol,
-  SupportedChain,
-  UnifiedPriceFeed,
-} from '@/lib/types/unifiedOracleTypes';
 import {
   BaseOracleClient,
   type OracleClientConfig,
@@ -16,6 +11,11 @@ import {
   type OracleClientCapabilities,
 } from '@/lib/blockchain/core';
 import { PriceFetchError } from '@/lib/blockchain/core/types';
+import type {
+  OracleProtocol,
+  SupportedChain,
+  UnifiedPriceFeed,
+} from '@/lib/types/unifiedOracleTypes';
 
 // ============================================================================
 // DIA API 配置

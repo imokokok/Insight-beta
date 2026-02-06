@@ -5,8 +5,9 @@
  */
 
 import type { OracleProtocol, SupportedChain } from '@/lib/types/unifiedOracleTypes';
-import type { IOracleClient, OracleClientConfig } from './types';
+
 import type { BaseOracleClient } from './BaseOracleClient';
+import type { IOracleClient, OracleClientConfig } from './types';
 
 // ============================================================================
 // 客户端注册表类型

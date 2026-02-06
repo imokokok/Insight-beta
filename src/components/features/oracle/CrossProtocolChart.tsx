@@ -8,10 +8,12 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+
 import { RefreshCw, LineChart, Calendar, AlertCircle } from 'lucide-react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { logger } from '@/lib/logger';
 
 // ============================================================================
@@ -75,10 +77,10 @@ export function CrossProtocolChart() {
         throw new Error(data.error);
       }
       setChartData(data);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch chart data';
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch chart data';
       setError(errorMessage);
-      logger.error('Failed to fetch chart data', { error: err, symbol, timeframe });
+      logger.error('Failed to fetch chart data', { error, symbol, timeframe });
     }
     setLoading(false);
   }, [symbol, timeframe]);

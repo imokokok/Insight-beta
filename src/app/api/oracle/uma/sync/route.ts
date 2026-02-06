@@ -1,9 +1,10 @@
 import type { NextRequest } from 'next/server';
-import { ensureUMASynced, isUMASyncing } from '@/server/oracle/uma/sync';
-import { getUMASyncState } from '@/server/oracle/umaState';
-import { readUMAConfig } from '@/server/oracle/umaConfig';
-import { handleApi, rateLimit, requireAdmin } from '@/server/apiResponse';
+
 import { logger } from '@/lib/logger';
+import { handleApi, rateLimit, requireAdmin } from '@/server/apiResponse';
+import { ensureUMASynced, isUMASyncing } from '@/server/oracle/uma/sync';
+import { readUMAConfig } from '@/server/oracle/umaConfig';
+import { getUMASyncState } from '@/server/oracle/umaState';
 
 const RATE_LIMITS = {
   GET: { key: 'uma_sync_get', limit: 60, windowMs: 60_000 },

@@ -6,9 +6,10 @@
 
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { generateSLAReport } from '@/server/monitoring/slaMonitor';
-import { query } from '@/server/db';
+
 import { logger } from '@/lib/logger';
+import { query } from '@/server/db';
+import { generateSLAReport } from '@/server/monitoring/slaMonitor';
 
 export async function GET(_request: NextRequest) {
   try {

@@ -1,7 +1,8 @@
+import { logger } from '@/lib/logger';
+import type { UMAChain } from '@/lib/types/oracleTypes';
+
 import { query, hasDatabase } from '../db';
 import { ensureSchema } from '../schema';
-import type { UMAChain } from '@/lib/types/oracleTypes';
-import { logger } from '@/lib/logger';
 
 export interface UMAConfig {
   id: string;

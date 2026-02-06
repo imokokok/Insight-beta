@@ -4,11 +4,6 @@
  * 基于新的核心架构实现的 Pyth 协议客户端
  */
 
-import type {
-  OracleProtocol,
-  SupportedChain,
-  UnifiedPriceFeed,
-} from '@/lib/types/unifiedOracleTypes';
 import {
   BaseOracleClient,
   type OracleClientConfig,
@@ -16,6 +11,11 @@ import {
   type OracleClientCapabilities,
 } from '@/lib/blockchain/core';
 import { PriceFetchError } from '@/lib/blockchain/core/types';
+import type {
+  OracleProtocol,
+  SupportedChain,
+  UnifiedPriceFeed,
+} from '@/lib/types/unifiedOracleTypes';
 
 // ============================================================================
 // Pyth 特定类型
@@ -56,7 +56,8 @@ const DEFAULT_PRICE_FEED_IDS: Record<string, string> = {
   'BNB/USD': '0x2f95862b045670cd22bee3114c39763a4a08beeb663b145d283c31d7d1101c4f',
   'UNI/USD': '0x78d185a741d07edb3412b09008b7c5cfb9bbbd7d568bf00ba737b456ba171501',
   'AAVE/USD': '0x2b9ab1e972a281585084148ba1389800799bd4be63b957507db1349314e47445',
-  'MKR/USD': '0xd8812e4e277098b2a5d3bf8ceef2c5e3a22e4b4e5e6f7a8b9c0d1e2f3a4b5c6d',
+  // MKR/USD 价格ID - 从环境变量获取或配置文件中读取
+  // 如需添加，请在配置中设置或通过 addPriceFeed 方法添加
 };
 
 // ============================================================================
@@ -291,18 +292,65 @@ export class PythOracleClient extends BaseOracleClient {
   }
 
   private adjustPrice(price: bigint, expo: number): number {
-    const decimal = 10 ** Math.abs(expo);
-    if (expo < 0) {
-      return Number(price) / decimal;
+    // 验证 price 的有效性
+    if (price === undefined || price === null) {
+      this.logger.warn('Invalid price value: null or undefined');
+      return 0;
     }
-    return Number(price) * decimal;
+
+    // 检查 price 是否超出安全范围
+    const MAX_SAFE_PRICE = BigInt(Number.MAX_SAFE_INTEGER);
+    if (price > MAX_SAFE_PRICE) {
+      this.logger.warn(`Price value too large: ${price.toString()}, using max safe integer`);
+      return Number.MAX_SAFE_INTEGER;
+    }
+
+    const decimal = 10 ** Math.abs(expo);
+    const priceNum = Number(price);
+
+    if (expo < 0) {
+      const result = priceNum / decimal;
+      // 检查结果是否为有效数字
+      if (!isFinite(result) || isNaN(result)) {
+        this.logger.warn(`Invalid price calculation: ${priceNum} / ${decimal} = ${result}`);
+        return 0;
+      }
+      return result;
+    }
+
+    const result = priceNum * decimal;
+    // 检查结果是否为有效数字
+    if (!isFinite(result) || isNaN(result)) {
+      this.logger.warn(`Invalid price calculation: ${priceNum} * ${decimal} = ${result}`);
+      return 0;
+    }
+    return result;
   }
 
   private calculateConfidence(conf: string, price: string): number {
-    const confValue = BigInt(conf);
-    const priceValue = BigInt(price);
-    if (priceValue === 0n) return 0;
-    return 1 - Number(confValue) / Number(priceValue);
+    try {
+      const confValue = BigInt(conf);
+      const priceValue = BigInt(price);
+
+      // 检查 priceValue 是否为 0 或无效
+      if (priceValue === 0n) return 0;
+
+      const priceNum = Number(priceValue);
+      // 再次检查转换后的数值
+      if (!priceNum || priceNum === 0 || !isFinite(priceNum)) {
+        return 0;
+      }
+
+      const confNum = Number(confValue);
+      if (!isFinite(confNum)) {
+        return 0;
+      }
+
+      return 1 - confNum / priceNum;
+    } catch (error) {
+      this.logger.warn('Failed to calculate confidence', { conf, price, error });
+      return 0;
+    }
   }
 }
 

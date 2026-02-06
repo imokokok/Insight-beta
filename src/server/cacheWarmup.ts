@@ -1,7 +1,8 @@
+import { hotKeyDetector } from '@/lib/cache/CacheProtection';
 import { logger } from '@/lib/logger';
+
 import { query } from './db';
 import { oracleStatsCache, oracleConfigCache, apiResponseCache } from './redisCache';
-import { hotKeyDetector } from '@/lib/cache/CacheProtection';
 
 /**
  * Cache warmup service for pre-loading hot data

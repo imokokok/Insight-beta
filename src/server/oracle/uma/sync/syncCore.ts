@@ -1,10 +1,20 @@
-import type { createPublicClient } from 'viem';
-import { parseRpcUrls } from '@/lib/utils';
 import { logger } from '@/lib/logger';
-import type { StoredUMAState } from '../../umaState';
-import { getUMASyncState, updateUMASyncState } from '../../umaState';
+import { parseRpcUrls } from '@/lib/utils';
+import { query } from '@/server/db';
+import type { StoredUMAState } from '@/server/oracle/umaState';
+import { getUMASyncState, updateUMASyncState } from '@/server/oracle/umaState';
 
+import { getRpcTimeoutMs, MAX_RETRY_BACKOFF_MS } from './constants';
 import { getUMAEnv } from './env';
+import {
+  processOOv2ProposedLogs,
+  processOOv2DisputedLogs,
+  processOOv2SettledLogs,
+  processOOv3MadeLogs,
+  processOOv3DisputedLogs,
+  processOOv3SettledLogs,
+  processOOv3VoteLogs,
+} from './logProcessor';
 import {
   getCachedUMAClient,
   OOV2_ABI,
@@ -18,39 +28,52 @@ import {
   getChainId,
 } from './rpcUtils';
 import {
-  processOOv2ProposedLogs,
-  processOOv2DisputedLogs,
-  processOOv2SettledLogs,
-  processOOv3MadeLogs,
-  processOOv3DisputedLogs,
-  processOOv3SettledLogs,
-  processOOv3VoteLogs,
-} from './logProcessor';
-import {
   calculateInitialWindow,
   shrinkWindow,
   calculateBackoff,
   updateWindowAfterRange,
   logRangeRetry,
 } from './windowManager';
-import { getRpcTimeoutMs, MAX_RETRY_BACKOFF_MS } from './constants';
 
+import type { createPublicClient } from 'viem';
+
+// 使用原子操作锁来防止竞态条件
 const umaInflightByInstance = new Map<
   string,
   Promise<{ updated: boolean; state: StoredUMAState }>
 >();
+const umaSyncLocks = new Map<string, Promise<void>>();
 
 export async function ensureUMASynced(
   instanceId: string = 'default',
 ): Promise<{ updated: boolean; state: StoredUMAState }> {
   const normalizedInstanceId = (instanceId || 'default').trim();
+
+  // 使用锁确保原子性检查-设置操作
+  while (umaSyncLocks.has(normalizedInstanceId)) {
+    await umaSyncLocks.get(normalizedInstanceId);
+  }
+
+  // 再次检查，避免在等待锁期间其他线程已完成同步
   const existing = umaInflightByInstance.get(normalizedInstanceId);
   if (existing) return existing;
-  const p = syncUMAOnce(normalizedInstanceId).finally(() => {
-    umaInflightByInstance.delete(normalizedInstanceId);
+
+  let lockResolve: () => void;
+  const lockPromise = new Promise<void>((resolve) => {
+    lockResolve = resolve;
   });
-  umaInflightByInstance.set(normalizedInstanceId, p);
-  return p;
+  umaSyncLocks.set(normalizedInstanceId, lockPromise);
+
+  try {
+    const p = syncUMAOnce(normalizedInstanceId).finally(() => {
+      umaInflightByInstance.delete(normalizedInstanceId);
+    });
+    umaInflightByInstance.set(normalizedInstanceId, p);
+    return p;
+  } finally {
+    umaSyncLocks.delete(normalizedInstanceId);
+    lockResolve!();
+  }
 }
 
 export function isUMASyncing(instanceId?: string) {
@@ -116,9 +139,9 @@ async function syncUMAOnce(
             const result = await op(client);
             recordRpcOk(rpcStats, url, Date.now() - t0);
             return result;
-          } catch (e) {
-            lastErr = e;
-            const code = toSyncErrorCode(e);
+          } catch (error: unknown) {
+            lastErr = error;
+            const code = toSyncErrorCode(error);
             if (code === 'rpc_unreachable') {
               recordRpcFail(rpcStats, url);
               if (attempt < MAX_RETRIES - 1) {
@@ -130,12 +153,12 @@ async function syncUMAOnce(
                 continue;
               }
             } else if (code === 'contract_not_found') {
-              throw e;
+              throw error;
             } else {
               if (attempt < MAX_RETRIES - 1) {
                 const backoff = calculateBackoff(attempt, baseBackoff);
                 logger.warn(
-                  `UMA RPC ${redactRpcUrl(url)} error: ${(e as Error).message} (attempt ${attempt + 1}/${MAX_RETRIES}), retrying in ${Math.round(backoff)}ms...`,
+                  `UMA RPC ${redactRpcUrl(url)} error: ${(error as Error).message} (attempt ${attempt + 1}/${MAX_RETRIES}), retrying in ${Math.round(backoff)}ms...`,
                 );
                 await new Promise((r) => setTimeout(r, backoff));
                 continue;
@@ -324,6 +347,7 @@ async function syncUMAOnce(
             oov3SettledLogs.length +
             oov3VoteLogs.length;
 
+          // 使用数据库事务包装所有数据库操作，确保数据一致性
           const dbOps: Promise<unknown>[] = [];
 
           dbOps.push(...(await processOOv2ProposedLogs(oov2ProposedLogs, chain, instanceId)));
@@ -338,7 +362,35 @@ async function syncUMAOnce(
           dbOps.push(...(await processOOv3SettledLogs(oov3SettledLogs, chain, instanceId)));
           dbOps.push(...(await processOOv3VoteLogs(oov3VoteLogs, chain, instanceId)));
 
-          await Promise.all(dbOps);
+          // 在事务中执行所有数据库操作
+          await query('BEGIN');
+          try {
+            // 使用 allSettled 替代 all，确保所有操作都被尝试执行
+            const results = await Promise.allSettled(dbOps);
+
+            // 检查是否有失败的操作
+            const failures = results.filter(
+              (r): r is PromiseRejectedResult => r.status === 'rejected',
+            );
+            if (failures.length > 0) {
+              // 记录所有失败
+              logger.error('Some database operations failed in transaction', {
+                chain,
+                instanceId,
+                failureCount: failures.length,
+                errors: failures.map((f) => f.reason?.message || String(f.reason)),
+              });
+              await query('ROLLBACK');
+              throw new Error(
+                `Transaction failed: ${failures.length} operations failed. First error: ${failures[0]?.reason?.message || String(failures[0]?.reason)}`,
+              );
+            }
+
+            await query('COMMIT');
+          } catch (error) {
+            await query('ROLLBACK');
+            throw error;
+          }
 
           if (rangeTo > processedHigh) processedHigh = rangeTo;
           rangeSuccess = true;
@@ -354,7 +406,7 @@ async function syncUMAOnce(
           );
           currentWindow = newWindow;
           consecutiveEmptyRanges = newConsecutiveEmptyRanges;
-        } catch (e) {
+        } catch (error: unknown) {
           attempts++;
           const rangeDuration = Date.now() - rangeStartTime;
           if (attempts < 3 && rangeDuration < getRpcTimeoutMs()) {
@@ -367,7 +419,7 @@ async function syncUMAOnce(
             consecutiveEmptyRanges = 0;
           } else {
             currentWindow = shrinkWindow(currentWindow);
-            throw e;
+            throw error;
           }
         }
       }
@@ -397,9 +449,9 @@ async function syncUMAOnce(
     );
 
     return { updated, state: await getUMASyncState(instanceId) };
-  } catch (e) {
-    const code = toSyncErrorCode(e);
-    logger.error('UMA sync failed', { error: e, instanceId, code });
+  } catch (error: unknown) {
+    const code = toSyncErrorCode(error);
+    logger.error('UMA sync failed', { error, instanceId, code });
     await updateUMASyncState(
       lastProcessedBlock,
       attemptAt,
@@ -416,7 +468,7 @@ async function syncUMAOnce(
       },
       instanceId,
     );
-    throw e;
+    throw error;
   }
 }
 

@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+
+import { AuditLogViewer } from '@/components/features/common/AuditLogViewer';
 import { PageHeader } from '@/components/features/common/PageHeader';
 import { useI18n } from '@/i18n/LanguageProvider';
-import { AuditLogViewer } from '@/components/features/common/AuditLogViewer';
 
 export default function AuditPage() {
   const { t } = useI18n();

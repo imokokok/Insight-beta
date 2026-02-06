@@ -1,10 +1,12 @@
+import { createPublicClient, http, parseAbi, type Address } from 'viem';
+
+import { env } from '@/lib/config/env';
 import { logger } from '@/lib/logger';
 import type { Assertion } from '@/lib/types/oracleTypes';
+import { parseRpcUrls, toIsoFromSeconds } from '@/lib/utils';
+
 import { DEFAULT_ORACLE_INSTANCE_ID, readOracleConfig } from './oracleConfig';
 import { getSyncState, fetchAssertion, upsertAssertion, updateSyncState } from './oracleState';
-import { parseRpcUrls, toIsoFromSeconds } from '@/lib/utils';
-import { env } from '@/lib/config/env';
-import { createPublicClient, http, parseAbi, type Address } from 'viem';
 
 const abi = parseAbi([
   'event AssertionCreated(bytes32 indexed assertionId,address indexed asserter,string protocol,string market,string assertion,uint256 bondUsd,uint256 assertedAt,uint256 livenessEndsAt,bytes32 txHash)',

@@ -5,7 +5,9 @@
  */
 
 import { logger } from '@/lib/logger';
+
 import { redactRpcUrl } from './rpcClient';
+
 import type { RpcStats } from './types';
 
 /**

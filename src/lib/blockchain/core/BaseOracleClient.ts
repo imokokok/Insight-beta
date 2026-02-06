@@ -9,13 +9,15 @@
  * - 结构化日志
  */
 
-import type { Address } from 'viem';
 import { logger as defaultLogger } from '@/lib/logger';
 import type {
   OracleProtocol,
   SupportedChain,
   UnifiedPriceFeed,
 } from '@/lib/types/unifiedOracleTypes';
+
+import { PriceFetchError } from './types';
+
 import type {
   IOracleClient,
   OracleClientConfig,
@@ -26,7 +28,7 @@ import type {
   BatchPriceResult,
   OracleClientLogger,
 } from './types';
-import { PriceFetchError } from './types';
+import type { Address } from 'viem';
 
 // ============================================================================
 // 默认配置常量
@@ -323,22 +325,37 @@ export abstract class BaseOracleClient implements IOracleClient {
     fn: (item: T) => Promise<R>,
     limit: number,
   ): Promise<R[]> {
-    const results: R[] = [];
+    const results: R[] = new Array(items.length);
     const executing: Promise<void>[] = [];
 
     for (const [index, item] of items.entries()) {
-      const promise = fn(item).then((result) => {
-        results[index] = result;
-      });
+      const promise = fn(item)
+        .then((result) => {
+          results[index] = result;
+        })
+        .catch((error) => {
+          this.logger.error('Concurrency operation failed', {
+            error: error instanceof Error ? error.message : String(error),
+            index,
+          });
+          results[index] = null as unknown as R;
+        });
 
       executing.push(promise);
 
       if (executing.length >= limit) {
         await Promise.race(executing);
-        executing.splice(
-          executing.findIndex((p) => p === promise),
-          1,
+        // 清理已完成的 promise
+        const completedIndex = executing.findIndex(
+          (p) =>
+            p === promise ||
+            Promise.resolve(p)
+              .then(() => true)
+              .catch(() => true),
         );
+        if (completedIndex > -1) {
+          executing.splice(completedIndex, 1);
+        }
       }
     }
 

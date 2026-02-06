@@ -5,9 +5,10 @@
  */
 
 import type { AlertRule, AlertRuleEvent, AlertSeverity } from '@/lib/types/oracleTypes';
-import { readJsonFile, writeJsonFile } from '@/server/kvStore';
 import { hasDatabase } from '@/server/db';
+import { readJsonFile, writeJsonFile } from '@/server/kvStore';
 import { ensureSchema } from '@/server/schema';
+
 import { VALID_RULE_EVENTS, VALID_SEVERITIES, ALERT_RULES_KEY } from './constants';
 
 let schemaEnsured = false;

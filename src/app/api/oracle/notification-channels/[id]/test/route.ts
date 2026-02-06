@@ -6,8 +6,9 @@
 
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { notificationConfigService } from '@/server/alerts/notificationConfigService';
+
 import { logger } from '@/lib/logger';
+import { notificationConfigService } from '@/server/alerts/notificationConfigService';
 
 export async function POST(
   _request: NextRequest,

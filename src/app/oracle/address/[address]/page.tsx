@@ -1,20 +1,24 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { Route } from 'next';
+
 import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
+
 import { ExternalLink, LayoutGrid, List as ListIcon } from 'lucide-react';
-import { useI18n } from '@/i18n/LanguageProvider';
-import { getUiErrorMessage } from '@/i18n/translations';
-import { UserStatsCard } from '@/components/features/wallet/UserStatsCard';
+
 import { AssertionList } from '@/components/features/assertion/AssertionList';
+import { CopyButton } from '@/components/features/common/CopyButton';
 import { DisputeList } from '@/components/features/dispute/DisputeList';
 import { AddressAvatar } from '@/components/features/wallet/AddressAvatar';
-import { CopyButton } from '@/components/features/common/CopyButton';
-import { cn, getExplorerUrl } from '@/lib/utils';
-import { useOracleData } from '@/hooks/oracle/useOracleData';
+import { UserStatsCard } from '@/components/features/wallet/UserStatsCard';
 import { useDisputes } from '@/hooks/dispute/useDisputes';
+import { useOracleData } from '@/hooks/oracle/useOracleData';
 import { useUserStats } from '@/hooks/user/useUserStats';
+import { useI18n } from '@/i18n/LanguageProvider';
+import { getUiErrorMessage } from '@/i18n/translations';
+import { cn, getExplorerUrl } from '@/lib/utils';
+
+import type { Route } from 'next';
 
 export default function AddressProfilePage() {
   const params = useParams();

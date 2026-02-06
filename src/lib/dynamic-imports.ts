@@ -1,5 +1,7 @@
-import dynamic, { type DynamicOptions, type Loader } from 'next/dynamic';
 import type { ComponentType } from 'react';
+
+import dynamic, { type DynamicOptions, type Loader } from 'next/dynamic';
+
 import { createLoadingComponent, type LoadingType } from '@/components/common/DynamicLoading';
 import { logger } from '@/lib/logger';
 

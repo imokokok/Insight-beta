@@ -1,5 +1,7 @@
-import { hasDatabase, query, getClient } from './db';
 import { logger } from '@/lib/logger';
+
+import { hasDatabase, query, getClient } from './db';
+
 import type { PoolClient } from 'pg';
 
 interface SlowQuery {
@@ -373,8 +375,8 @@ export async function withTransaction<T>(
       try {
         await client.query('ROLLBACK');
         logger.error('Transaction timeout, rolled back');
-      } catch (e) {
-        logger.error('Failed to rollback timed out transaction', { error: e });
+      } catch (error: unknown) {
+        logger.error('Failed to rollback timed out transaction', { error });
       }
     }, timeout);
 

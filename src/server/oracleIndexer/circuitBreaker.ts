@@ -4,8 +4,9 @@
  * 防止服务故障时的级联反应，提高系统稳定性
  */
 
-import { CIRCUIT_BREAKER_CONFIG } from './constants';
 import { logger } from '@/lib/logger';
+
+import { CIRCUIT_BREAKER_CONFIG } from './constants';
 
 type CircuitState = 'closed' | 'open' | 'half-open';
 

@@ -1,10 +1,12 @@
 'use client';
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Input } from '@/components/ui/input';
+
 import { CheckCircle2, AlertCircle } from 'lucide-react';
-import type { AlertRule } from '@/lib/types/oracleTypes';
+
+import { Input } from '@/components/ui/input';
 import { logger } from '@/lib/logger';
+import type { AlertRule } from '@/lib/types/oracleTypes';
 
 interface RecipientInputProps {
   rule: AlertRule;
@@ -63,8 +65,8 @@ function RecipientInputComponent({ rule, onPatchRule, t }: RecipientInputProps) 
         await onPatchRule(rule.id, { recipient: value });
         setRetryCount(0);
         showSuccess();
-      } catch (err) {
-        logger.error('Failed to update recipient', { error: err });
+      } catch (error: unknown) {
+        logger.error('Failed to update recipient', { error });
         if (requestId !== requestIdRef.current) return;
 
         if (attempt < MAX_RETRIES) {

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+
 import { logger } from '@/lib/logger';
 
 const STORAGE_KEY = 'oracleFilters';

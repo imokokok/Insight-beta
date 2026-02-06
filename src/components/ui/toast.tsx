@@ -1,7 +1,8 @@
 'use client';
 
-import { toast as sonnerToast, type ExternalToast } from 'sonner';
 import { useCallback } from 'react';
+
+import { toast as sonnerToast, type ExternalToast } from 'sonner';
 
 export type ToastType = 'success' | 'error' | 'info';
 

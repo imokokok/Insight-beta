@@ -1,8 +1,10 @@
-import pg from 'pg';
-import { env } from '@/lib/config/env';
 import crypto from 'node:crypto';
-import { logger } from '@/lib/logger';
+
+import pg from 'pg';
+
 import { DATABASE_CONFIG } from '@/lib/config/constants';
+import { env } from '@/lib/config/env';
+import { logger } from '@/lib/logger';
 
 const { Pool } = pg;
 
@@ -134,13 +136,23 @@ export async function query<T extends pg.QueryResultRow>(
     throw new Error('missing_database_url');
   }
   const startedAt = Date.now();
+  // 使用 AbortController 实现可取消的超时
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
+
   try {
     const client = await Promise.race([
       db.connect(),
-      new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('database_connection_timeout')), 5000),
-      ),
+      new Promise<never>((_, reject) => {
+        controller.signal.addEventListener('abort', () => {
+          reject(new Error('database_connection_timeout'));
+        });
+      }),
     ]);
+
+    // 连接成功后清除超时
+    clearTimeout(timeoutId);
+
     try {
       const res = await client.query<T>(text, params);
       const durationMs = Date.now() - startedAt;
@@ -152,6 +164,7 @@ export async function query<T extends pg.QueryResultRow>(
       client.release();
     }
   } catch (error) {
+    clearTimeout(timeoutId);
     if (error instanceof Error && error.message === 'database_connection_timeout') {
       throw new Error('database_connection_timeout');
     }

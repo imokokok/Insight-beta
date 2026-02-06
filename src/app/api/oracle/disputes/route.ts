@@ -1,8 +1,9 @@
-import { ensureOracleSynced, listDisputes } from '@/server/oracle';
-import { cachedJson, handleApi, rateLimit, requireAdmin } from '@/server/apiResponse';
-import { z } from 'zod';
 import { isAddress } from 'viem';
+import { z } from 'zod';
+
 import { env } from '@/lib/config/env';
+import { cachedJson, handleApi, rateLimit, requireAdmin } from '@/server/apiResponse';
+import { ensureOracleSynced, listDisputes } from '@/server/oracle';
 
 /**
  * @swagger
@@ -94,12 +95,13 @@ import { env } from '@/lib/config/env';
 const disputesParamsSchema = z.object({
   status: z.enum(['Voting', 'Pending Execution', 'Executed']).optional().nullable(),
   chain: z.enum(['Polygon', 'PolygonAmoy', 'Arbitrum', 'Optimism', 'Local']).optional().nullable(),
-  q: z.string().optional().nullable(),
+  q: z.string().max(100).optional().nullable(), // 添加长度限制
   limit: z.coerce.number().min(1).max(100).default(30),
   cursor: z.coerce.number().min(0).default(0),
   sync: z.enum(['0', '1']).optional(),
   disputer: z
     .string()
+    .max(50) // 添加长度限制
     .optional()
     .nullable()
     .refine((value) => !value || isAddress(value), {
@@ -119,7 +121,27 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const rawParams = Object.fromEntries(url.searchParams);
     const instanceId = url.searchParams.get('instanceId');
-    const params = disputesParamsSchema.parse(rawParams);
+
+    // 使用 safeParse 进行参数验证，提供更好的错误处理
+    const parseResult = disputesParamsSchema.safeParse(rawParams);
+    if (!parseResult.success) {
+      const errorMessage = parseResult.error.issues.map((i) => i.message).join(', ');
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: {
+            code: 'invalid_request_params',
+            message: `Invalid request parameters: ${errorMessage}`,
+            details: parseResult.error.issues,
+          },
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
+    }
+    const params = parseResult.data;
 
     if (params.sync === '1') {
       const auth = await requireAdmin(request, {

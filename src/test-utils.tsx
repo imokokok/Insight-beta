@@ -6,8 +6,10 @@
 
 /* eslint-disable no-restricted-syntax */
 
-import { vi } from 'vitest';
 import type { ReactNode } from 'react';
+
+import { vi } from 'vitest';
+
 import type * as LucideReact from 'lucide-react';
 
 // ============================================================================

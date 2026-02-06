@@ -12,11 +12,8 @@ import {
   parseAbi,
   formatUnits,
 } from 'viem';
-import type {
-  OracleProtocol,
-  SupportedChain,
-  UnifiedPriceFeed,
-} from '@/lib/types/unifiedOracleTypes';
+
+import { VIEM_CHAIN_MAP } from '@/lib/blockchain/chainConfig';
 import {
   BaseOracleClient,
   type OracleClientConfig,
@@ -24,7 +21,11 @@ import {
   type OracleClientCapabilities,
 } from '@/lib/blockchain/core';
 import { PriceFetchError } from '@/lib/blockchain/core/types';
-import { VIEM_CHAIN_MAP } from '@/lib/blockchain/chainConfig';
+import type {
+  OracleProtocol,
+  SupportedChain,
+  UnifiedPriceFeed,
+} from '@/lib/types/unifiedOracleTypes';
 
 // ============================================================================
 // Chainlink ABI

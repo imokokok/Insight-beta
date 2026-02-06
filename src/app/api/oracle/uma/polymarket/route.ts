@@ -1,8 +1,10 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+
 import { z } from 'zod';
-import { getMarkets, getMarket, getMarketStats } from '@/server/oracle/polymarket';
+
 import { logger } from '@/lib/logger';
+import { getMarkets, getMarket, getMarketStats } from '@/server/oracle/polymarket';
 
 const querySchema = z.object({
   conditionId: z.string().optional(),

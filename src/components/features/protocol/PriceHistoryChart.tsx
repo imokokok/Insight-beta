@@ -3,6 +3,8 @@
 /* eslint-disable no-restricted-syntax */
 
 import { useState, useMemo } from 'react';
+
+import { TrendingUp, TrendingDown, Calendar } from 'lucide-react';
 import {
   LineChart,
   Line,
@@ -14,10 +16,10 @@ import {
   Area,
   AreaChart,
 } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, TrendingDown, Calendar } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
 export interface PriceDataPoint {

@@ -6,13 +6,14 @@
  */
 
 import { logger } from '@/lib/logger';
-import { calculateDataFreshness } from './oracleClientBase';
 import type {
   OracleProtocol,
   SupportedChain,
   UnifiedPriceFeed,
   DIAProtocolConfig,
 } from '@/lib/types/unifiedOracleTypes';
+
+import { calculateDataFreshness } from './oracleClientBase';
 
 // ============================================================================
 // DIA API 配置

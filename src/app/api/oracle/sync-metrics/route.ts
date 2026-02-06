@@ -1,6 +1,7 @@
+import { z } from 'zod';
+
 import { handleApi, rateLimit } from '@/server/apiResponse';
 import { listSyncMetrics } from '@/server/oracle';
-import { z } from 'zod';
 
 const querySchema = z.object({
   minutes: z.coerce

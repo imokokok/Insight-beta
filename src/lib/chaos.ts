@@ -1,8 +1,9 @@
 // Chaos Engineering Utilities
 // This module provides utilities for injecting chaos into the system
 
-import { chaosTests, globalChaosConfig } from '../../chaos.config';
 import { logger } from '@/lib/logger';
+
+import { chaosTests, globalChaosConfig } from '../../chaos.config';
 
 // Chaos injection utilities
 export class ChaosInjector {

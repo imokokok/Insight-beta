@@ -4,8 +4,9 @@
  * 展示系统监控状态和告警配置
  */
 
-import type { Metadata } from 'next';
 import { MonitoringDashboard } from '@/components/features/monitoring/MonitoringDashboard';
+
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Monitoring Dashboard | OracleMonitor',

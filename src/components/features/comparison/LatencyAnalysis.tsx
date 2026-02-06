@@ -1,10 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Skeleton } from '@/components/ui/skeleton';
+
 import { Clock, Zap, AlertCircle, TrendingUp, TrendingDown, Activity, Server } from 'lucide-react';
 import {
   BarChart,
@@ -19,6 +16,11 @@ import {
   ReferenceLine,
   Cell,
 } from 'recharts';
+
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useI18n } from '@/i18n';
 import type { LatencyAnalysis, LatencyTrend } from '@/lib/types/oracle';
 import { cn } from '@/lib/utils';

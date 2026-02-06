@@ -400,10 +400,10 @@ export async function runCoreMigrations(
       ALTER TABLE assertions ALTER COLUMN instance_id SET NOT NULL;
     `);
     await queryFn('COMMIT');
-  } catch (e) {
+  } catch (error: unknown) {
     await safeRollback();
     logger.error('Migration failed for assertions instance_id', {
-      error: e instanceof Error ? e.message : String(e),
+      error: error instanceof Error ? error.message : String(error),
     });
     throw new Error('Failed to migrate assertions instance_id');
   }
@@ -423,10 +423,10 @@ export async function runCoreMigrations(
       ALTER TABLE disputes ALTER COLUMN instance_id SET NOT NULL;
     `);
     await queryFn('COMMIT');
-  } catch (e) {
+  } catch (error: unknown) {
     await safeRollback();
     logger.error('Migration failed for disputes instance_id', {
-      error: e instanceof Error ? e.message : String(e),
+      error: error instanceof Error ? error.message : String(error),
     });
     throw new Error('Failed to migrate disputes instance_id');
   }
@@ -443,10 +443,10 @@ export async function runCoreMigrations(
       ALTER TABLE votes ALTER COLUMN instance_id SET NOT NULL;
     `);
     await queryFn('COMMIT');
-  } catch (e) {
+  } catch (error: unknown) {
     await safeRollback();
     logger.error('Migration failed for votes instance_id', {
-      error: e instanceof Error ? e.message : String(e),
+      error: error instanceof Error ? error.message : String(error),
     });
     throw new Error('Failed to migrate votes instance_id');
   }

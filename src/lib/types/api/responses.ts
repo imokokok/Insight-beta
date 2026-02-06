@@ -11,8 +11,8 @@ import type {
   ConfigTemplate,
 } from '../domain/oracle';
 import type { PriceFeed, PriceHistory, CrossOracleComparison } from '../domain/price';
-import type { Assertion, Dispute, UMAUserStats, UMALeaderboardEntry } from '../domain/uma';
 import type { SecurityDetection, Alert, AlertRule, AuditLog } from '../domain/security';
+import type { Assertion, Dispute, UMAUserStats, UMALeaderboardEntry } from '../domain/uma';
 
 // ============================================================================
 // Oracle 响应

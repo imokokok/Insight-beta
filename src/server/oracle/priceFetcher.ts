@@ -1,8 +1,10 @@
 import crypto from 'crypto';
+
+import { createPublicClient, http, parseAbi } from 'viem';
+
+import { DEFAULT_FALLBACK_PRICES } from '@/lib/config/constants';
 import { env } from '@/lib/config/env';
 import { parseRpcUrls } from '@/lib/utils';
-import { createPublicClient, http, parseAbi } from 'viem';
-import { DEFAULT_FALLBACK_PRICES } from '@/lib/config/constants';
 
 function secureRandom(): number {
   const bytes = crypto.randomBytes(4);
@@ -247,8 +249,8 @@ async function fetchSpotUsdResilient(
       enforceCacheSizeLimit(lastGoodSpot, MAX_LAST_GOOD_SIZE);
       lastGoodSpot.set(symbol, { price: v, atMs: Date.now() });
       return v;
-    } catch (e) {
-      lastErr = e;
+    } catch (error: unknown) {
+      lastErr = error;
       recordProviderFail(key);
     }
   }

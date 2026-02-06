@@ -1,8 +1,9 @@
-import { hasDatabase, query } from '@/server/db';
-import { ensureSchema } from '@/server/schema';
 import { logger } from '@/lib/logger';
 import { encryptString, decryptString, isEncryptionEnabled } from '@/lib/security/encryption';
+import { hasDatabase, query } from '@/server/db';
 import { withTransaction } from '@/server/dbOptimization';
+import { ensureSchema } from '@/server/schema';
+
 import type { OracleConfig } from './types';
 
 let schemaEnsured = false;

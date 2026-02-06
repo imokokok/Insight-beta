@@ -10,6 +10,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+
 import { DynamicSwaggerUI } from '@/lib/dynamic-imports';
 
 export default function SwaggerPage() {

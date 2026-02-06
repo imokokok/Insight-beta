@@ -3,11 +3,11 @@
  * POST /api/oracle/config/diff - 对比两个配置
  */
 
+import { logger } from '@/lib/logger';
+import type { OracleConfig } from '@/lib/types/oracleTypes';
 import { handleApi, rateLimit, requireAdmin } from '@/server/apiResponse';
 import { diffConfigs, formatConfigDiff, ensureEnhancedSchema } from '@/server/oracleConfigEnhanced';
 import { generateRequestId } from '@/server/performance';
-import { logger } from '@/lib/logger';
-import type { OracleConfig } from '@/lib/types/oracleTypes';
 
 const RATE_LIMIT = { key: 'oracle_config_diff', limit: 60, windowMs: 60_000 };
 

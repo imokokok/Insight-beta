@@ -11,4 +11,5 @@ export const nav = {
   optimisticOracle: '낙관적 오라클',
   unifiedOracle: '통합 오라클',
   watchlist: '관심 목록',
+  security: '보안',
 };

@@ -5,8 +5,9 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { fetchApiData, getErrorCode } from '@/lib/utils';
+
 import type { OpsMetrics, OpsMetricsSeriesPoint } from '@/lib/types/oracleTypes';
+import { fetchApiData, getErrorCode } from '@/lib/utils';
 
 export interface UseOracleOpsMetricsReturn {
   opsMetrics: OpsMetrics | null;
@@ -36,8 +37,8 @@ export function useOracleOpsMetrics(instanceId: string): UseOracleOpsMetricsRetu
       }>(`/api/oracle/ops-metrics?${params.toString()}`);
       setOpsMetrics(data.metrics ?? null);
       setOpsMetricsSeries(data.series ?? null);
-    } catch (e) {
-      setOpsMetricsError(getErrorCode(e));
+    } catch (error: unknown) {
+      setOpsMetricsError(getErrorCode(error));
       setOpsMetricsSeries(null);
     } finally {
       setOpsMetricsLoading(false);

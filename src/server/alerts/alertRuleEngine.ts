@@ -7,7 +7,9 @@
 
 import { query } from '@/server/db';
 import { logger } from '@/lib/logger';
+
 import { NotificationService, type AlertNotification, type AlertSeverity } from './notifications';
+
 import { SafeExpressionEvaluator } from '@/lib/security/safeExpressionEvaluator';
 
 const notificationService = new NotificationService();

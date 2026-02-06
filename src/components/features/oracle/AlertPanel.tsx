@@ -3,12 +3,7 @@
 /* eslint-disable no-restricted-syntax */
 
 import { useEffect, useState, useCallback } from 'react';
-import { cn, fetchApiData, formatTimeAgo } from '@/lib/utils';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
+
 import {
   AlertTriangle,
   AlertCircle,
@@ -19,10 +14,17 @@ import {
   Clock,
   Shield,
 } from 'lucide-react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Skeleton } from '@/components/ui/skeleton';
 import { logger } from '@/lib/logger';
 import type { Alert, AlertSeverity, AlertStatus } from '@/lib/types/oracle/alert';
 import type { OracleProtocol } from '@/lib/types/oracle/protocol';
 import { PROTOCOL_DISPLAY_NAMES } from '@/lib/types/oracle/protocol';
+import { cn, fetchApiData, formatTimeAgo } from '@/lib/utils';
 
 interface AlertPanelProps {
   protocols?: OracleProtocol[];
@@ -73,8 +75,8 @@ export function AlertPanel({
       setAlerts((prev) =>
         prev.map((a) => (a.id === alertId ? { ...a, status: 'Acknowledged' as AlertStatus } : a)),
       );
-    } catch (err) {
-      logger.error('Failed to acknowledge alert', { error: err });
+    } catch (error: unknown) {
+      logger.error('Failed to acknowledge alert', { error });
     }
   };
 
@@ -86,8 +88,8 @@ export function AlertPanel({
       setAlerts((prev) =>
         prev.map((a) => (a.id === alertId ? { ...a, status: 'Resolved' as AlertStatus } : a)),
       );
-    } catch (err) {
-      logger.error('Failed to resolve alert', { error: err });
+    } catch (error: unknown) {
+      logger.error('Failed to resolve alert', { error });
     }
   };
 

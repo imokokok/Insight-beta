@@ -2,9 +2,10 @@
 
 /* eslint-disable no-restricted-syntax */
 
+import { useState } from 'react';
+
 import { Input } from '@/components/ui/input';
 import type { AlertRule, AlertSeverity } from '@/lib/types/oracleTypes';
-import { useState } from 'react';
 
 interface AlertRuleBasicFieldsProps {
   rule: AlertRule;

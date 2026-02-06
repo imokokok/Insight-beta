@@ -1,7 +1,8 @@
+import { logger } from '@/lib/logger';
+
 import { ensureUMASynced, isUMASyncing } from './uma/sync';
 import { listUMAConfigs } from './umaConfig';
 import { startRewardsSyncTask, startTvlSyncTask } from './umaSyncTasks';
-import { logger } from '@/lib/logger';
 
 const UMA_SYNC_INTERVAL_MS = 30_000;
 const MAX_CONSECUTIVE_ERRORS = 5;

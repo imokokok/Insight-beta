@@ -1,6 +1,7 @@
+import { z } from 'zod';
+
 import { cachedJson, handleApi, rateLimit } from '@/server/apiResponse';
 import { getRiskItems } from '@/server/oracle';
-import { z } from 'zod';
 
 const querySchema = z.object({
   limit: z.coerce.number().min(1).max(200).optional(),

@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+
 import type { TabKey, Translator, AccuracyStats, AccuracyAnomaly } from './types';
 
 const ANOMALY_WARNING_THRESHOLD = 0.02;

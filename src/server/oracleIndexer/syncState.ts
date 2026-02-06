@@ -6,6 +6,7 @@
 
 import { DEFAULT_ORACLE_INSTANCE_ID } from '../oracleConfig';
 import { syncOracleOnce } from './syncCore';
+
 import type { SyncResult } from './types';
 
 /** 进行中的同步任务映射 */

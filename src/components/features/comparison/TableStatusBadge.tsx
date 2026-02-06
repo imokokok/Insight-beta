@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+
 import { Badge } from '@/components/ui/badge';
 import { useI18n } from '@/i18n';
 

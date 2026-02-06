@@ -1,7 +1,9 @@
-import type { Address } from 'viem';
-import { readUMAConfig, DEFAULT_UMA_INSTANCE_ID } from '../../umaConfig';
 import { env } from '@/lib/config/env';
+
+import { readUMAConfig, DEFAULT_UMA_INSTANCE_ID } from '../../umaConfig';
+
 import type { UMAEnv } from './types';
+import type { Address } from 'viem';
 
 export async function getUMAEnv(instanceId: string = DEFAULT_UMA_INSTANCE_ID): Promise<UMAEnv> {
   const config = await readUMAConfig(instanceId);

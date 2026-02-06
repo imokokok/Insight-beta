@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect } from 'react';
-import { reportWebVitals } from '@/lib/monitoring/webVitals';
+
 import { logger } from '@/lib/logger';
+import { reportWebVitals } from '@/lib/monitoring/webVitals';
 
 export function WebVitalsMonitor() {
   useEffect(() => {

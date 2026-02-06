@@ -1,8 +1,9 @@
 'use client';
 
 import { DollarSign, AlertCircle, CheckCircle2, Clock, ArrowUpRight } from 'lucide-react';
-import { useI18n } from '@/i18n/LanguageProvider';
+
 import { Skeleton } from '@/components/ui/skeleton';
+import { useI18n } from '@/i18n/LanguageProvider';
 
 interface OracleStatsBannerProps {
   stats: {

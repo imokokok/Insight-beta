@@ -5,6 +5,11 @@
 
 import { logger } from '@/lib/logger';
 import type { PriceHistoryRecord } from '@/server/priceHistory/priceHistoryService';
+
+import { BehaviorPatternDetector } from './BehaviorPatternDetector';
+import { MLDetector } from './MLDetector';
+import { StatisticalDetector } from './StatisticalDetector';
+import { TimeSeriesDetector } from './TimeSeriesDetector';
 import {
   type AnomalyDetection,
   type AnomalyType,
@@ -13,10 +18,6 @@ import {
   type AnomalyEvidence,
   type DetectionConfig,
 } from './types';
-import { StatisticalDetector } from './StatisticalDetector';
-import { TimeSeriesDetector } from './TimeSeriesDetector';
-import { MLDetector } from './MLDetector';
-import { BehaviorPatternDetector } from './BehaviorPatternDetector';
 
 // 默认配置
 export const DEFAULT_DETECTION_CONFIG: DetectionConfig = {

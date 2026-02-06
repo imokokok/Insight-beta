@@ -10,17 +10,15 @@
  * 此文件保留用于向后兼容，将在未来版本中移除
  */
 
+import { env } from '@/lib/config/env';
 import { hasDatabase, query } from '@/server/db';
-import { ensureSchema } from '@/server/schema';
 import { readJsonFile, writeJsonFile } from '@/server/kvStore';
 import { getMemoryStore, memoryNowIso } from '@/server/memoryBackend';
 import { notifyAlert, type NotificationOptions } from '@/server/notifications';
 import { getSyncState } from '@/server/oracleState';
-import { env } from '@/lib/config/env';
+import { ensureSchema } from '@/server/schema';
 
 // Import from new modular structure
-import type { DbAlertRow, DbAuditRow } from './observability/types';
-
 import {
   ALERT_RULES_KEY,
   INCIDENTS_KEY,
@@ -29,6 +27,8 @@ import {
   VALID_RULE_EVENTS,
   VALID_SEVERITIES,
 } from './observability/constants';
+
+import type { DbAlertRow, DbAuditRow } from './observability/types';
 
 // Re-export for external use
 export type { DbAlertRow, DbAuditRow, NotificationChannel } from './observability/types';

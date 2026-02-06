@@ -13,10 +13,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, Suspense, lazy } from 'react';
-import { logger } from '@/lib/logger';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import {
   Activity,
   AlertTriangle,
@@ -28,11 +25,16 @@ import {
   Clock,
   Layers,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { fetchApiData, cn } from '@/lib/utils';
-import { ChartSkeleton } from '@/components/ui/skeleton';
+
 import { StatCard } from '@/components/features/common/StatCard';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChartSkeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useWebSocket } from '@/hooks/useWebSocket';
+import { logger } from '@/lib/logger';
+import { fetchApiData, cn } from '@/lib/utils';
 
 // Dynamic imports for oracle components
 const PriceFeedList = lazy(() =>
@@ -93,8 +95,8 @@ export default function UnifiedDashboardPage() {
         setStats(message.data);
         setLastUpdated(new Date());
       }
-    } catch (err) {
-      logger.error('Failed to process WebSocket message', { err });
+    } catch (error: unknown) {
+      logger.error('Failed to process WebSocket message', { error });
     }
   }, [lastMessage]);
 
