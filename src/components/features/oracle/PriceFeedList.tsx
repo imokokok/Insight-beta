@@ -2,7 +2,7 @@
 
 /* eslint-disable no-restricted-syntax */
 
-import { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useDeferredValue } from 'react';
 import { cn, fetchApiData, formatTimeAgo } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TrendingUp, TrendingDown, Minus, AlertCircle, Clock } from 'lucide-react';
 import { logger } from '@/lib/logger';
+import { useWebSocket } from '@/hooks/useWebSocket';
 import type { PriceFeed, PriceUpdate } from '@/lib/types/oracle/price';
 import type { OracleProtocol } from '@/lib/types/oracle/protocol';
 import { PROTOCOL_DISPLAY_NAMES } from '@/lib/types/oracle/protocol';
@@ -36,11 +37,25 @@ export function PriceFeedList({
 }: PriceFeedListProps) {
   const [feeds, setFeeds] = useState<FeedWithUpdate[]>([]);
   const [loading, setLoading] = useState(true);
-  const [wsConnected, setWsConnected] = useState(false);
   const [, setError] = useState<string | null>(null);
+
+  // WebSocket 连接
+  const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001';
+  const { isConnected, sendMessage, lastMessage } = useWebSocket(wsUrl, {
+    autoConnect: true,
+    onConnect: () => {
+      sendMessage({
+        type: 'subscribe_feeds',
+        protocols,
+        symbols,
+      });
+    },
+  });
 
   // 初始数据获取
   useEffect(() => {
+    let isActive = true;
+
     const fetchFeeds = async () => {
       try {
         setLoading(true);
@@ -50,74 +65,67 @@ export function PriceFeedList({
         params.set('limit', limit.toString());
         if (showStale) params.set('showStale', 'true');
 
-        const data = await fetchApiData<PriceFeed[]>(`/api/oracle/feeds?${params.toString()}`);
+        const controller = new AbortController();
+        const data = await fetchApiData<PriceFeed[]>(`/api/oracle/feeds?${params.toString()}`, {
+          signal: controller.signal,
+        });
+
+        if (!isActive) return;
         setFeeds(data);
         setError(null);
       } catch {
+        if (!isActive) return;
         // 使用模拟数据作为 fallback
         setFeeds(generateMockFeeds());
         setError(null);
       } finally {
-        setLoading(false);
+        if (isActive) {
+          setLoading(false);
+        }
       }
     };
 
     fetchFeeds();
-  }, [protocols, symbols, limit, showStale]);
-
-  // WebSocket 实时更新
-  useEffect(() => {
-    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001';
-    const ws = new WebSocket(wsUrl);
-
-    ws.onopen = () => {
-      setWsConnected(true);
-      ws.send(
-        JSON.stringify({
-          type: 'subscribe_feeds',
-          protocols,
-          symbols,
-        }),
-      );
-    };
-
-    ws.onclose = () => {
-      setWsConnected(false);
-    };
-
-    ws.onmessage = (event) => {
-      try {
-        const message = JSON.parse(event.data);
-        if (message.type === 'price_update') {
-          const update: PriceUpdate = message.data;
-          setFeeds((prev) =>
-            prev.map((feed) =>
-              feed.id === update.feedId
-                ? {
-                    ...feed,
-                    price: update.currentPrice,
-                    previousPrice: update.previousPrice,
-                    priceChangePercent: update.priceChangePercent,
-                    timestamp: update.timestamp,
-                  }
-                : feed,
-            ),
-          );
-        }
-      } catch (err) {
-        logger.error('Failed to parse WebSocket message', { error: err });
-      }
-    };
 
     return () => {
-      ws.close();
+      isActive = false;
     };
-  }, [protocols, symbols]);
+  }, [protocols, symbols, limit, showStale]);
+
+  // 处理 WebSocket 消息
+  useEffect(() => {
+    if (!lastMessage) return;
+
+    try {
+      const message = lastMessage as { type: string; data: PriceUpdate };
+      if (message.type === 'price_update') {
+        const update: PriceUpdate = message.data;
+        setFeeds((prev) =>
+          prev.map((feed) =>
+            feed.id === update.feedId
+              ? {
+                  ...feed,
+                  price: update.currentPrice,
+                  previousPrice: update.previousPrice,
+                  priceChangePercent: update.priceChangePercent,
+                  timestamp: update.timestamp,
+                }
+              : feed,
+          ),
+        );
+      }
+    } catch (err) {
+      logger.error('Failed to process WebSocket message', { error: err });
+    }
+  }, [lastMessage]);
+
+  // 使用 useDeferredValue 避免频繁更新阻塞 UI
+  const deferredFeeds = useDeferredValue(feeds);
 
   // 按协议分组
   const groupedFeeds = useMemo(() => {
     const groups: Record<string, FeedWithUpdate[]> = {};
-    feeds.forEach((feed) => {
+    deferredFeeds.forEach((feed: FeedWithUpdate) => {
       const protocol = feed.protocol;
       if (!groups[protocol]) {
         groups[protocol] = [];
@@ -125,7 +133,7 @@ export function PriceFeedList({
       groups[protocol].push(feed);
     });
     return groups;
-  }, [feeds]);
+  }, [deferredFeeds]);
 
   if (loading) {
     return <PriceFeedListSkeleton className={className} />;
@@ -136,8 +144,8 @@ export function PriceFeedList({
       <CardHeader className="flex flex-row items-center justify-between px-3 pb-2 sm:px-6">
         <div className="flex items-center gap-2">
           <CardTitle className="text-base font-semibold sm:text-lg">Live Price Feeds</CardTitle>
-          <Badge variant={wsConnected ? 'default' : 'secondary'} className="text-xs">
-            {wsConnected ? 'Live' : 'Static'}
+          <Badge variant={isConnected ? 'default' : 'secondary'} className="text-xs">
+            {isConnected ? 'Live' : 'Static'}
           </Badge>
         </div>
         <span className="text-muted-foreground text-xs">{feeds.length} feeds</span>
@@ -164,7 +172,7 @@ export function PriceFeedList({
   );
 }
 
-function PriceFeedItem({ feed }: { feed: FeedWithUpdate }) {
+const PriceFeedItem = React.memo(function PriceFeedItem({ feed }: { feed: FeedWithUpdate }) {
   const priceChange = feed.priceChangePercent ?? 0;
   const isPositive = priceChange > 0;
   const isNegative = priceChange < 0;
@@ -222,7 +230,7 @@ function PriceFeedItem({ feed }: { feed: FeedWithUpdate }) {
       </div>
     </div>
   );
-}
+});
 
 function PriceFeedListSkeleton({ className }: { className?: string }) {
   return (

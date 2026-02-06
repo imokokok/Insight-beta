@@ -170,10 +170,53 @@ export class PythSolanaClient {
   }
 
   /**
-   * Get multiple price feeds
+   * 并发控制辅助函数
    */
-  async getMultiplePriceFeeds(symbols: string[]): Promise<SolanaPriceFeed[]> {
-    const results = await Promise.allSettled(symbols.map((symbol) => this.getPriceFeed(symbol)));
+  private async runWithConcurrencyLimit<T>(
+    items: string[],
+    fn: (item: string) => Promise<T>,
+    concurrencyLimit: number = 5,
+  ): Promise<PromiseSettledResult<T>[]> {
+    const results: PromiseSettledResult<T>[] = [];
+    const executing: Promise<void>[] = [];
+
+    for (const item of items) {
+      const promise = fn(item).then(
+        (value): PromiseSettledResult<T> => ({ status: 'fulfilled', value }),
+        (reason): PromiseSettledResult<T> => ({ status: 'rejected', reason }),
+      );
+
+      results.push(promise as unknown as PromiseSettledResult<T>);
+
+      if (items.length >= concurrencyLimit) {
+        const execution = promise.then(() => {});
+        executing.push(execution);
+
+        if (executing.length >= concurrencyLimit) {
+          await Promise.race(executing);
+          executing.splice(
+            executing.findIndex((p) => p === execution),
+            1,
+          );
+        }
+      }
+    }
+
+    return Promise.all(results);
+  }
+
+  /**
+   * Get multiple price feeds with concurrency limit
+   */
+  async getMultiplePriceFeeds(
+    symbols: string[],
+    concurrencyLimit: number = 5,
+  ): Promise<SolanaPriceFeed[]> {
+    const results = await this.runWithConcurrencyLimit(
+      symbols,
+      (symbol) => this.getPriceFeed(symbol),
+      concurrencyLimit,
+    );
 
     return results
       .filter(

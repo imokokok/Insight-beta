@@ -1,52 +1,33 @@
-import {
-  createPublicClient,
-  http,
-  type Address,
-  type Hash,
-  type Chain,
-  type PublicClient,
-  type WalletClient,
-} from 'viem';
-import { logger } from '@/lib/logger';
+import { type Address, type Hash, type PublicClient, type WalletClient } from 'viem';
 import type { UMAOracleConfig, UMAPriceRequest, UMAAssertion } from './types';
 import { UMA_OPTIMISTIC_ORACLE_V2_ABI, UMA_OPTIMISTIC_ORACLE_V3_ABI } from './abi';
-import { formatIdentifier, formatAncillaryData } from './utils';
+import type { IServiceContainer } from './interfaces';
+import { createServiceContainer } from './di-container';
+
+export interface OptimisticOracleClientOptions {
+  config: UMAOracleConfig;
+  walletClient?: WalletClient;
+  container?: IServiceContainer;
+}
 
 export class OptimisticOracleClient {
   private publicClient: PublicClient;
   private walletClient: WalletClient | null = null;
-  private config: UMAOracleConfig;
+  private _config: UMAOracleConfig;
+  private container: IServiceContainer;
 
-  constructor(config: UMAOracleConfig, walletClient?: WalletClient) {
-    const chain: Chain = {
-      id: config.chainId,
-      name: config.chainName,
-      rpcUrls: {
-        default: { http: [config.rpcUrl] },
-      },
-      nativeCurrency: {
-        name: 'Ether',
-        symbol: 'ETH',
-        decimals: 18,
-      },
-      blockExplorers: {
-        default: {
-          name: 'Etherscan',
-          url: 'https://etherscan.io',
-        },
-      },
-    };
+  constructor(options: OptimisticOracleClientOptions) {
+    const { config, walletClient, container } = options;
 
-    this.publicClient = createPublicClient({
-      chain,
-      transport: http(config.rpcUrl, { timeout: 30_000 }),
-    });
+    this._config = config;
+    this.container = container ?? createServiceContainer(this._config);
+
+    const chain = this.container.chainFactory.createChain(config);
+    this.publicClient = this.container.publicClientFactory.createClient(chain, config.rpcUrl);
 
     if (walletClient) {
       this.walletClient = walletClient;
     }
-
-    this.config = config;
   }
 
   setWalletClient(walletClient: WalletClient): void {
@@ -54,7 +35,11 @@ export class OptimisticOracleClient {
   }
 
   private getOOAddress(): Address | null {
-    return this.config.optimisticOracleV3Address || this.config.optimisticOracleV2Address || null;
+    return this.container.addressResolver.getOOAddress();
+  }
+
+  private getOOV3Address(): Address | null {
+    return this.container.addressResolver.getOOV3Address();
   }
 
   async getPriceRequest(
@@ -73,9 +58,9 @@ export class OptimisticOracleClient {
         abi: UMA_OPTIMISTIC_ORACLE_V2_ABI,
         functionName: 'getRequest',
         args: [
-          formatIdentifier(identifier) as `0x${string}`,
+          this.container.identifierFormatter.format(identifier),
           timestamp,
-          formatAncillaryData(ancillaryData),
+          this.container.ancillaryDataFormatter.format(ancillaryData),
         ],
       });
 
@@ -90,7 +75,7 @@ export class OptimisticOracleClient {
         customLiveness: request.customLiveness,
       };
     } catch (error) {
-      logger.error('Failed to get price request', {
+      this.container.logger.error('Failed to get price request', {
         error: error instanceof Error ? error.message : String(error),
       });
       return null;
@@ -109,13 +94,13 @@ export class OptimisticOracleClient {
         abi: UMA_OPTIMISTIC_ORACLE_V2_ABI,
         functionName: 'hasPrice',
         args: [
-          formatIdentifier(identifier) as `0x${string}`,
+          this.container.identifierFormatter.format(identifier),
           timestamp,
-          formatAncillaryData(ancillaryData),
+          this.container.ancillaryDataFormatter.format(ancillaryData),
         ],
       });
     } catch (error) {
-      logger.error('Failed to check price', {
+      this.container.logger.error('Failed to check price', {
         error: error instanceof Error ? error.message : String(error),
       });
       return false;
@@ -142,9 +127,9 @@ export class OptimisticOracleClient {
         abi: UMA_OPTIMISTIC_ORACLE_V2_ABI,
         functionName: 'proposePrice',
         args: [
-          formatIdentifier(request.identifier) as `0x${string}`,
+          this.container.identifierFormatter.format(request.identifier),
           request.timestamp,
-          formatAncillaryData(request.ancillaryData),
+          this.container.ancillaryDataFormatter.format(request.ancillaryData),
           request.currency,
           request.reward,
           request.finalFee,
@@ -159,13 +144,13 @@ export class OptimisticOracleClient {
       });
 
       if (!simulationResult || !simulationResult.request) {
-        logger.error('Invalid simulation result', { simulationResult });
+        this.container.logger.error('Invalid simulation result', { simulationResult });
         return null;
       }
 
       return await this.walletClient.writeContract(simulationResult.request);
     } catch (error) {
-      logger.error('Failed to propose price', {
+      this.container.logger.error('Failed to propose price', {
         error: error instanceof Error ? error.message : String(error),
       });
       return null;
@@ -193,22 +178,22 @@ export class OptimisticOracleClient {
         abi: UMA_OPTIMISTIC_ORACLE_V2_ABI,
         functionName: 'disputePrice',
         args: [
-          formatIdentifier(identifier) as `0x${string}`,
+          this.container.identifierFormatter.format(identifier),
           timestamp,
-          formatAncillaryData(ancillaryData),
+          this.container.ancillaryDataFormatter.format(ancillaryData),
         ],
         account: disputer,
         value: BigInt(0),
       });
 
       if (!simulationResult || !simulationResult.request) {
-        logger.error('Invalid simulation result', { simulationResult });
+        this.container.logger.error('Invalid simulation result', { simulationResult });
         return null;
       }
 
       return await this.walletClient.writeContract(simulationResult.request);
     } catch (error) {
-      logger.error('Failed to dispute price', {
+      this.container.logger.error('Failed to dispute price', {
         error: error instanceof Error ? error.message : String(error),
       });
       return null;
@@ -235,9 +220,9 @@ export class OptimisticOracleClient {
         abi: UMA_OPTIMISTIC_ORACLE_V2_ABI,
         functionName: 'settle',
         args: [
-          formatIdentifier(identifier) as `0x${string}`,
+          this.container.identifierFormatter.format(identifier),
           timestamp,
-          formatAncillaryData(ancillaryData),
+          this.container.ancillaryDataFormatter.format(ancillaryData),
         ],
       });
 
@@ -246,7 +231,7 @@ export class OptimisticOracleClient {
         settledAt: result.result[1],
       };
     } catch (error) {
-      logger.error('Failed to settle price', {
+      this.container.logger.error('Failed to settle price', {
         error: error instanceof Error ? error.message : String(error),
       });
       return null;
@@ -254,7 +239,7 @@ export class OptimisticOracleClient {
   }
 
   async getAssertion(assertionId: string): Promise<UMAAssertion | null> {
-    const ooAddress = this.config.optimisticOracleV3Address;
+    const ooAddress = this.getOOV3Address();
     if (!ooAddress) {
       throw new Error('OOv3 address not configured');
     }
@@ -279,7 +264,7 @@ export class OptimisticOracleClient {
         noDataPresent: assertion.noDataPresent,
       };
     } catch (error) {
-      logger.error('Failed to get assertion', {
+      this.container.logger.error('Failed to get assertion', {
         error: error instanceof Error ? error.message : String(error),
       });
       return null;
@@ -297,7 +282,7 @@ export class OptimisticOracleClient {
       throw new Error('Wallet client not set');
     }
 
-    const ooAddress = this.config.optimisticOracleV3Address;
+    const ooAddress = this.getOOV3Address();
     if (!ooAddress) {
       throw new Error('OOv3 address not configured');
     }
@@ -307,18 +292,25 @@ export class OptimisticOracleClient {
         address: ooAddress,
         abi: UMA_OPTIMISTIC_ORACLE_V3_ABI,
         functionName: 'assertTruth',
-        args: [claim, currency, bond, formatIdentifier(identifier) as `0x${string}`, false, '0x'],
+        args: [
+          claim,
+          currency,
+          bond,
+          this.container.identifierFormatter.format(identifier),
+          false,
+          '0x',
+        ],
         account: asserter,
       });
 
       if (!simulationResult || !simulationResult.request) {
-        logger.error('Invalid simulation result', { simulationResult });
+        this.container.logger.error('Invalid simulation result', { simulationResult });
         return null;
       }
 
       return await this.walletClient.writeContract(simulationResult.request);
     } catch (error) {
-      logger.error('Failed to assert truth', {
+      this.container.logger.error('Failed to assert truth', {
         error: error instanceof Error ? error.message : String(error),
       });
       return null;
@@ -330,7 +322,7 @@ export class OptimisticOracleClient {
       throw new Error('Wallet client not set');
     }
 
-    const ooAddress = this.config.optimisticOracleV3Address;
+    const ooAddress = this.getOOV3Address();
     if (!ooAddress) {
       throw new Error('OOv3 address not configured');
     }
@@ -345,13 +337,13 @@ export class OptimisticOracleClient {
       });
 
       if (!simulationResult) {
-        logger.error('Invalid simulation result', { simulationResult });
+        this.container.logger.error('Invalid simulation result', { simulationResult });
         return false;
       }
 
       return true;
     } catch (error) {
-      logger.error('Failed to settle assertion', {
+      this.container.logger.error('Failed to settle assertion', {
         error: error instanceof Error ? error.message : String(error),
       });
       return false;
@@ -359,7 +351,7 @@ export class OptimisticOracleClient {
   }
 
   async getAssertionResult(assertionId: string): Promise<boolean | null> {
-    const ooAddress = this.config.optimisticOracleV3Address;
+    const ooAddress = this.getOOV3Address();
     if (!ooAddress) {
       throw new Error('OOv3 address not configured');
     }
@@ -372,7 +364,7 @@ export class OptimisticOracleClient {
         args: [assertionId as `0x${string}`],
       });
     } catch (error) {
-      logger.error('Failed to get assertion result', {
+      this.container.logger.error('Failed to get assertion result', {
         error: error instanceof Error ? error.message : String(error),
       });
       return null;
@@ -380,7 +372,7 @@ export class OptimisticOracleClient {
   }
 
   async isAssertionDisputed(assertionId: string): Promise<boolean | null> {
-    const ooAddress = this.config.optimisticOracleV3Address;
+    const ooAddress = this.getOOV3Address();
     if (!ooAddress) {
       throw new Error('OOv3 address not configured');
     }
@@ -393,7 +385,7 @@ export class OptimisticOracleClient {
         args: [assertionId as `0x${string}`],
       });
     } catch (error) {
-      logger.error('Failed to check if assertion is disputed', {
+      this.container.logger.error('Failed to check if assertion is disputed', {
         error: error instanceof Error ? error.message : String(error),
       });
       return null;

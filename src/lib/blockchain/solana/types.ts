@@ -50,7 +50,7 @@ export interface SolanaPriceFeed {
   confidence: number;
   timestamp: number;
   slot: number;
-  source: 'switchboard' | 'pyth' | 'aggregate';
+  source: 'switchboard' | 'pyth' | 'chainlink' | 'aggregate';
   decimals: number;
 }
 
@@ -110,7 +110,7 @@ export interface SolanaOracleConfig {
 
 export interface SolanaOracleInstance {
   id: string;
-  protocol: 'switchboard' | 'pyth';
+  protocol: 'switchboard' | 'pyth' | 'chainlink';
   chain: 'solana' | 'solanaDevnet';
   address: SolanaAddress;
   config: {
@@ -143,7 +143,7 @@ export interface SolanaSyncState {
 export interface SolanaPriceUpdate {
   id: string;
   instanceId: string;
-  protocol: 'switchboard' | 'pyth';
+  protocol: 'switchboard' | 'pyth' | 'chainlink';
   chain: 'solana' | 'solanaDevnet';
   symbol: string;
   price: number;

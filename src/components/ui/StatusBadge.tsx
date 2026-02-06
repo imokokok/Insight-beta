@@ -2,6 +2,7 @@
  * StatusBadge Component - 可复用的状态徽章组件
  */
 
+import React from 'react';
 import { Clock, CheckCircle, AlertTriangle, XCircle, Minus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -85,7 +86,12 @@ const statusConfig: Record<
   },
 };
 
-export function StatusBadge({ status, showIcon = true, className, size = 'md' }: StatusBadgeProps) {
+export const StatusBadge = React.memo(function StatusBadge({
+  status,
+  showIcon = true,
+  className,
+  size = 'md',
+}: StatusBadgeProps) {
   const config = statusConfig[status] || statusConfig.unknown;
 
   const sizeClasses = {
@@ -100,7 +106,7 @@ export function StatusBadge({ status, showIcon = true, className, size = 'md' }:
       {config.label}
     </Badge>
   );
-}
+});
 
 /**
  * 获取状态配置（用于自定义渲染）

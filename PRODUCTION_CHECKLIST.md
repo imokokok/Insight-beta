@@ -1,61 +1,114 @@
 # Production Checklist (Pre-flight)
 
-Ready to launch? Follow this checklist to ensure your Insight Oracle node is secure, stable, and monitored.
+Ready to launch? Follow this checklist to ensure your OracleMonitor is secure, stable, and monitored.
 
 ## 1. Security & Environment
 
-- [ ] **Secure Admin Token**:
-  - Generate a random string for `INSIGHT_ADMIN_TOKEN_SALT` (at least 32 chars).
-  - Do **not** set `INSIGHT_ADMIN_TOKEN` (root token) in production unless strictly necessary for initial bootstrapping. Instead, use the API to generate scoped tokens.
-  - Rotate the Salt periodically if you suspect a leak (this invalidates all tokens).
+- [ ] **Admin Token**:
+  - Set a strong `ADMIN_TOKEN` (at least 32 random characters)
+  - Set a secure `JWT_SECRET` for token signing
+  - Do not commit these to version control
 
 - [ ] **HTTPS / HSTS**:
-  - Ensure your domain handles SSL termination.
-  - The middleware is configured to send `Strict-Transport-Security` headers.
+  - Ensure your domain handles SSL termination
+  - Configure HSTS headers in your load balancer
 
 - [ ] **Database Connection**:
-  - Use a connection pooler (e.g., Supabase Transaction Mode, PgBouncer) for `DATABASE_URL`.
-  - The app defaults to `max: 10` connections. Adjust based on your DB tier.
+  - Use a connection pooler (PgBouncer, Supabase Transaction Mode) for `DATABASE_URL`
+  - Recommended: 10-20 max connections per app instance
 
 ## 2. Infrastructure & Data
 
 - [ ] **Database Schema**:
-  - The application **automatically applies** the database schema on startup. No manual migration command is needed.
-  - Ensure the database user has `CREATE TABLE` and `CREATE INDEX` permissions.
+  - Run migrations: `npm run db:migrate:prod`
+  - Verify tables are created successfully
 
 - [ ] **Backups**:
-  - Enable Point-in-Time Recovery (PITR) or daily backups on your database provider.
+  - Enable Point-in-Time Recovery (PITR) on PostgreSQL
+  - Set up daily automated backups
+  - Test restore procedure
 
-- [ ] **Worker Configuration**:
-  - **Single Instance (Recommended for simple setups)**: Leave `INSIGHT_DISABLE_EMBEDDED_WORKER` unset. The worker runs inside the Next.js process.
-  - **Microservices (Scale)**: Set `INSIGHT_DISABLE_EMBEDDED_WORKER=true` on the API nodes, and run a separate worker node (e.g., `npm run worker` or a custom entrypoint).
+- [ ] **Redis**:
+  - Ensure `REDIS_URL` is configured
+  - Set up Redis persistence (AOF or RDB)
 
-## 3. Oracle Configuration
+## 3. RPC Configuration
 
-- [ ] **RPC Provider**:
-  - Use a reliable, paid RPC provider (Alchemy, Infura, etc.) for `INSIGHT_RPC_URL`.
-  - **Critical**: Public RPCs often rate-limit or fail, causing the oracle to miss events.
+- [ ] **RPC Providers**:
+  - Configure RPC URLs for all supported chains:
+    - `ETHEREUM_RPC_URL`
+    - `POLYGON_RPC_URL`
+    - `ARBITRUM_RPC_URL`
+    - `OPTIMISM_RPC_URL`
+    - `BASE_RPC_URL`
+    - `AVALANCHE_RPC_URL`
+    - `BSC_RPC_URL`
+    - `SOLANA_RPC_URL`
+  - **Critical**: Use paid providers (Alchemy, Infura, QuickNode) for production
 
-- [ ] **Contract Address**:
-  - Verify `INSIGHT_ORACLE_ADDRESS` matches the deployed contract on your target chain (`INSIGHT_CHAIN`).
+- [ ] **Rate Limiting**:
+  - Verify RPC rate limits match your expected traffic
+  - Set up multiple RPC endpoints for failover
 
 ## 4. Monitoring & Alerts
 
-- [ ] **Webhooks**:
-  - Set `INSIGHT_WEBHOOK_URL` to a Slack/Discord webhook to receive real-time alerts (Sync Error, Price Deviation, etc.).
+- [ ] **Error Tracking**:
+  - Set `SENTRY_DSN` for error tracking
+  - Configure alert rules in Sentry
 
-- [ ] **Logs**:
-  - Logs are JSON-formatted in production. Integrate with Datadog/CloudWatch/Logtail.
-  - Tune `INSIGHT_API_LOG_SAMPLE_RATE` (default 0.01) if you need more/less traffic visibility.
+- [ ] **Notification Channels**:
+  - Configure `SLACK_WEBHOOK_URL` for alerts
+  - Or set up `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID`
+  - Test notification delivery
 
 - [ ] **Health Check**:
-  - Monitor `/api/health` from an external uptime service (Pingdom, UptimeRobot).
+  - Monitor `/api/health` from external service (UptimeRobot, Pingdom)
+  - Set up alerts for health check failures
+
+- [ ] **Logs**:
+  - Configure log aggregation (Datadog, CloudWatch, etc.)
+  - Set `LOG_LEVEL=info` for production
 
 ## 5. Post-Deployment Verification
 
-1. **Check Sync Status**:
-   Call `GET /api/oracle/stats` and verify `lastProcessedBlock` is increasing.
-2. **Verify Alerts**:
-   Manually trigger a test alert (or wait for a system event) to verify Webhook delivery.
-3. **Test Rate Limits**:
-   Spam an endpoint (e.g., `/api/oracle/risks`) and verify you get `429 Too Many Requests`.
+```bash
+# Run production check
+npm run check:prod
+```
+
+Manual verification:
+
+1. **Health Check**:
+
+   ```bash
+   curl https://your-domain.com/api/health
+   ```
+
+2. **Database Connectivity**:
+
+   ```bash
+   curl https://your-domain.com/api/health?probe=readiness
+   ```
+
+3. **Price Data**:
+
+   ```bash
+   curl https://your-domain.com/api/oracle/unified?symbol=ETH/USD
+   ```
+
+4. **Test Rate Limiting**:
+   ```bash
+   # Should return 429 after too many requests
+   for i in {1..150}; do
+     curl -s -o /dev/null -w "%{http_code}\n" https://your-domain.com/api/health
+   done
+   ```
+
+## 6. Security Checklist
+
+- [ ] CORS is properly configured
+- [ ] Rate limiting is enabled
+- [ ] Input validation is working
+- [ ] Admin endpoints require authentication
+- [ ] Sensitive data is not logged
+- [ ] Dependencies are up to date (`npm audit`)

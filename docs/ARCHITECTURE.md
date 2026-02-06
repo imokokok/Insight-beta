@@ -446,20 +446,21 @@
 
 ## 技术栈
 
-| 层级     | 技术                   | 用途                     |
-| -------- | ---------------------- | ------------------------ |
-| 前端框架 | Next.js 15             | React 框架，支持 SSR/SSG |
-| 语言     | TypeScript 5.7         | 类型安全                 |
-| 样式     | Tailwind CSS           | 原子化 CSS               |
-| UI 组件  | Radix UI + 自定义      | 可访问性组件             |
-| 状态管理 | SWR                    | 数据获取和缓存           |
-| 区块链   | Viem                   | 与智能合约交互           |
-| 后端     | Next.js API Routes     | API 端点                 |
-| 数据库   | PostgreSQL             | 主数据库                 |
-| 缓存     | Redis                  | 缓存和会话               |
-| 测试     | Vitest + Playwright    | 单元测试和 E2E           |
-| 监控     | Sentry + OpenTelemetry | 错误追踪和可观测性       |
-| 部署     | Vercel                 | 托管和 CI/CD             |
+| 层级     | 技术                | 用途                     |
+| -------- | ------------------- | ------------------------ |
+| 前端框架 | Next.js 16          | React 框架，支持 SSR/SSG |
+| 语言     | TypeScript 5.7      | 类型安全                 |
+| 样式     | Tailwind CSS 3.4    | 原子化 CSS               |
+| UI 组件  | Radix UI + 自定义   | 可访问性组件             |
+| 状态管理 | SWR                 | 数据获取和缓存           |
+| 区块链   | Viem 2.43           | 与智能合约交互           |
+| 后端     | Next.js API Routes  | API 端点                 |
+| 数据库   | PostgreSQL 16       | 主数据库                 |
+| ORM      | Prisma 6            | 数据库操作               |
+| 缓存     | Redis 7             | 缓存和会话               |
+| 测试     | Vitest + Playwright | 单元测试和 E2E           |
+| 监控     | Sentry + Web Vitals | 错误追踪和性能监控       |
+| 部署     | Docker + K8s        | 容器化部署               |
 
 ## 扩展性设计
 

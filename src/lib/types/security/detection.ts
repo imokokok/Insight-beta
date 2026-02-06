@@ -62,11 +62,13 @@ export interface ManipulationDetection {
 
 export interface DetectionMetrics {
   totalDetections: number;
-  detectionsByType: Record<string, number>;
-  detectionsBySeverity: Record<string, number>;
+  detectionsByType?: Record<string, number>;
+  detectionsBySeverity?: Record<string, number>;
   falsePositives: number;
-  averageConfidence: number;
-  lastDetectionTime?: number;
+  averageConfidence?: number;
+  lastDetectionTime?: string | number;
+  totalAlerts?: number;
+  averageDetectionTime?: number;
 }
 
 export interface ManipulationDetectionConfig {
@@ -88,4 +90,17 @@ export interface ManipulationDetectionConfig {
   };
   autoBlockSuspiciousFeeds: boolean;
   notificationCooldownMs: number;
+}
+
+export interface ManipulationAlert {
+  id: string;
+  protocol: string;
+  symbol: string;
+  chain: string;
+  type: ManipulationType;
+  severity: DetectionSeverity;
+  confidence: number;
+  detectedAt: number;
+  message: string;
+  details?: Record<string, unknown>;
 }

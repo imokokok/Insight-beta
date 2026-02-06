@@ -17,6 +17,8 @@ export interface StatCardProps {
   loading?: boolean;
   /** 颜色主题 */
   color: StatCardColor;
+  /** 副标题 */
+  subtitle?: string;
   /** 趋势数据 */
   trend?: {
     value: number;
@@ -58,6 +60,7 @@ export const StatCard = memo(function StatCard({
   icon,
   loading = false,
   color,
+  subtitle,
   trend,
   className,
   onClick,
@@ -111,6 +114,7 @@ export const StatCard = memo(function StatCard({
             </span>
           )}
         </div>
+        {subtitle && <div className="mt-1 text-xs text-gray-500">{subtitle}</div>}
       </CardContent>
     </Card>
   );

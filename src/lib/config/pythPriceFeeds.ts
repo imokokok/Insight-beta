@@ -5,6 +5,8 @@
  * 用于所有 Pyth 相关服务（主应用和微服务）
  */
 
+import { logger } from '@/lib/logger';
+
 // ============================================================================
 // EVM 链价格喂价 IDs (32字节 hex 格式)
 // ============================================================================
@@ -21,25 +23,78 @@ export const PYTH_PRICE_FEED_IDS: Record<string, string> = {
   // Layer 2 代币
   'ARB/USD': '0x3fa4252848f9f0a1450fbbf400fc13e3461d0919e0aaaf49facf448471fd3ce4',
   'OP/USD': '0x385e76cc5f875b51cf3554064d092f422d62b4755e385b5e6219d8a5b1cc1c3c',
-  'BASE/USD': '0x0e9ec6a9de8e4c7c3caeb3c8f87eeb5b7e2e7e3f3e3e3e3e3e3e3e3e3e3e3e3e', // 示例
+  // 'BASE/USD': '0x...', // TODO: 添加正确的 price feed ID
 
   // DeFi 代币
   'LINK/USD': '0x8ac0c70fff57e9aefdf5edf44b51d62c2d433617cbb900000000000000000000',
-  'UNI/USD': '0x78d185a741d07edb3412b120000000000000000000000000000000000000000',
-  'AAVE/USD': '0x2b9ab1e972000000000000000000000000000000000000000000000000000000',
-  'CRV/USD': '0x5dbbdb28d1e0b1a0000000000000000000000000000000000000000000000000',
-  'SNX/USD': '0x39d020f000000000000000000000000000000000000000000000000000000000',
-  'COMP/USD': '0x4a8e0c8d6c9e5f00000000000000000000000000000000000000000000000000',
-  'MKR/USD': '0x3a810ff000000000000000000000000000000000000000000000000000000000',
-  'YFI/USD': '0x2d5a570000000000000000000000000000000000000000000000000000000000',
-  '1INCH/USD': '0x2495a3b000000000000000000000000000000000000000000000000000000000',
-  'SUSHI/USD': '0x26b3800000000000000000000000000000000000000000000000000000000000',
+  // 'UNI/USD': '0x...', // TODO: 添加正确的 price feed ID
+  // 'AAVE/USD': '0x...', // TODO: 添加正确的 price feed ID
 
   // 稳定币
   'USDC/USD': '0xeaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a',
   'USDT/USD': '0x2b89b9dc8fdf9f34709a5b106b472f0f39bb6ca9ce04b0fd7f2e971688e2e53b',
-  'DAI/USD': '0x87c5ccb6f4d1f7a0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e', // 示例
+  // 'DAI/USD': '0x...', // TODO: 添加正确的 price feed ID
 };
+
+// ============================================================================
+// 配置验证
+// ============================================================================
+
+/**
+ * 验证 price feed ID 格式
+ */
+function isValidPriceFeedId(id: string): boolean {
+  // 必须是 66 字符的 hex 字符串 (0x + 64 字符)
+  return /^0x[a-f0-9]{64}$/i.test(id);
+}
+
+/**
+ * 检查是否为占位符 ID（包含大量连续的 0）
+ */
+function isPlaceholderId(id: string): boolean {
+  return /0{10,}/i.test(id);
+}
+
+/**
+ * 验证并清理 price feed 配置
+ * 在应用启动时调用
+ */
+export function validatePythPriceFeeds(): {
+  valid: string[];
+  invalid: string[];
+  placeholders: string[];
+} {
+  const valid: string[] = [];
+  const invalid: string[] = [];
+  const placeholders: string[] = [];
+
+  for (const [symbol, id] of Object.entries(PYTH_PRICE_FEED_IDS)) {
+    if (!isValidPriceFeedId(id)) {
+      invalid.push(symbol);
+      logger.warn(`Invalid price feed ID format for ${symbol}: ${id}`);
+    } else if (isPlaceholderId(id)) {
+      placeholders.push(symbol);
+      logger.warn(`Placeholder price feed ID detected for ${symbol}: ${id}`);
+    } else {
+      valid.push(symbol);
+    }
+  }
+
+  logger.info('Pyth price feed validation complete', {
+    total: Object.keys(PYTH_PRICE_FEED_IDS).length,
+    valid: valid.length,
+    invalid: invalid.length,
+    placeholders: placeholders.length,
+  });
+
+  return { valid, invalid, placeholders };
+}
+
+// 在模块加载时自动验证
+if (typeof window === 'undefined') {
+  // 只在服务端执行
+  validatePythPriceFeeds();
+}
 
 // ============================================================================
 // Solana 链价格喂价 IDs (Base58 格式)

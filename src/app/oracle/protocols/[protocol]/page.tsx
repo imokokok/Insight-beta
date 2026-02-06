@@ -15,7 +15,7 @@ import {
   commonFeedColumns,
   type FeedColumn,
 } from '@/components/features/protocol/FeedTable';
-import { StatCard } from '@/components/ui/StatCard';
+import { StatCard } from '@/components/features/common/StatCard';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { formatTimeAgo, truncateAddress } from '@/lib/utils/format';
 import { ORACLE_PROTOCOLS, type OracleProtocol } from '@/lib/types';

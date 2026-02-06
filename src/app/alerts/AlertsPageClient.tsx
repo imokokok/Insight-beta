@@ -16,6 +16,7 @@ import { getUiErrorMessage, langToLocale } from '@/i18n/translations';
 import { useAdminSession } from '@/hooks/user/useAdminSession';
 import { useDebounce } from '@/hooks/useDebounce';
 import { DEBOUNCE_CONFIG } from '@/lib/config/constants';
+import { useOracleIncidents, useOracleRisks, useOracleOpsMetrics } from '@/hooks/alerts';
 import type {
   Alert,
   AlertRule,
@@ -23,9 +24,7 @@ import type {
   AlertStatus,
   Incident,
   OpsMetrics,
-  OpsMetricsSeriesPoint,
   OracleInstance,
-  RiskItem,
 } from '@/lib/types/oracleTypes';
 import {
   AlertCard,
@@ -45,118 +44,6 @@ import {
   sloLabels,
   sloStatusLabel,
 } from '@/lib/utils/alertsUtils';
-
-function useOracleIncidents(instanceId: string) {
-  const [incidents, setIncidents] = useState<IncidentWithAlerts[]>([]);
-  const [incidentsError, setIncidentsError] = useState<string | null>(null);
-  const [incidentsLoading, setIncidentsLoading] = useState(false);
-
-  const reloadIncidents = useCallback(async () => {
-    setIncidentsError(null);
-    setIncidentsLoading(true);
-    try {
-      const params = new URLSearchParams();
-      params.set('limit', '20');
-      params.set('includeAlerts', '1');
-      if (instanceId) params.set('instanceId', instanceId);
-      const data = await fetchApiData<{ items: IncidentWithAlerts[] }>(
-        `/api/oracle/incidents?${params.toString()}`,
-      );
-      setIncidents(data.items ?? []);
-    } catch (e) {
-      setIncidentsError(getErrorCode(e));
-    } finally {
-      setIncidentsLoading(false);
-    }
-  }, [instanceId]);
-
-  useEffect(() => {
-    void reloadIncidents();
-  }, [reloadIncidents]);
-
-  return {
-    incidents,
-    incidentsError,
-    incidentsLoading,
-    reloadIncidents,
-  };
-}
-
-function useOracleRisks(instanceId: string) {
-  const [risks, setRisks] = useState<RiskItem[]>([]);
-  const [risksError, setRisksError] = useState<string | null>(null);
-  const [risksLoading, setRisksLoading] = useState(false);
-
-  const reloadRisks = useCallback(async () => {
-    setRisksError(null);
-    setRisksLoading(true);
-    try {
-      const params = new URLSearchParams();
-      params.set('limit', '20');
-      if (instanceId) params.set('instanceId', instanceId);
-      const data = await fetchApiData<{ items: RiskItem[] }>(
-        `/api/oracle/risks?${params.toString()}`,
-      );
-      setRisks(data.items ?? []);
-    } catch (e) {
-      setRisksError(getErrorCode(e));
-    } finally {
-      setRisksLoading(false);
-    }
-  }, [instanceId]);
-
-  useEffect(() => {
-    void reloadRisks();
-  }, [reloadRisks]);
-
-  return {
-    risks,
-    risksError,
-    risksLoading,
-    reloadRisks,
-  };
-}
-
-function useOracleOpsMetrics(instanceId: string) {
-  const [opsMetrics, setOpsMetrics] = useState<OpsMetrics | null>(null);
-  const [opsMetricsSeries, setOpsMetricsSeries] = useState<OpsMetricsSeriesPoint[] | null>(null);
-  const [opsMetricsError, setOpsMetricsError] = useState<string | null>(null);
-  const [opsMetricsLoading, setOpsMetricsLoading] = useState(false);
-
-  const reloadOpsMetrics = useCallback(async () => {
-    setOpsMetricsError(null);
-    setOpsMetricsLoading(true);
-    try {
-      const params = new URLSearchParams();
-      params.set('windowDays', '7');
-      params.set('seriesDays', '7');
-      if (instanceId) params.set('instanceId', instanceId);
-      const data = await fetchApiData<{
-        metrics: OpsMetrics;
-        series: OpsMetricsSeriesPoint[] | null;
-      }>(`/api/oracle/ops-metrics?${params.toString()}`);
-      setOpsMetrics(data.metrics ?? null);
-      setOpsMetricsSeries(data.series ?? null);
-    } catch (e) {
-      setOpsMetricsError(getErrorCode(e));
-      setOpsMetricsSeries(null);
-    } finally {
-      setOpsMetricsLoading(false);
-    }
-  }, [instanceId]);
-
-  useEffect(() => {
-    void reloadOpsMetrics();
-  }, [reloadOpsMetrics]);
-
-  return {
-    opsMetrics,
-    opsMetricsSeries,
-    opsMetricsError,
-    opsMetricsLoading,
-    reloadOpsMetrics,
-  };
-}
 
 export default function AlertsPageClient() {
   const { t, lang } = useI18n();

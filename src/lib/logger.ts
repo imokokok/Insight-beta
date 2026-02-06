@@ -44,47 +44,73 @@ type AsyncLocalStorageLike<T> = {
 
 const urlSubstringRe = /\b(?:https?|wss?|postgres(?:ql)?):\/\/[^\s"'<>]+/gi;
 
-const SENSITIVE_FIELDS = [
-  'password',
-  'token',
-  'secret',
-  'key',
-  'privateKey',
-  'mnemonic',
-  'apiKey',
-  'api_key',
-  'apiSecret',
-  'api_secret',
-  'auth',
-  'authorization',
-  'cookie',
-  'session',
-  'csrf',
-  'xsrf',
-  'credential',
-  'passphrase',
-  'seed',
-  'wallet',
-  'signature',
-  'accessToken',
-  'refreshToken',
-  'idToken',
-  'bearer',
+// ============================================================================
+// 敏感字段配置
+// ============================================================================
+
+interface RedactionRule {
+  field: string;
+  pattern?: RegExp;
+  replace?: string;
+  exactMatch?: boolean;
+}
+
+// 结构化脱敏规则 - 更精确的匹配
+const REDACTION_RULES: RedactionRule[] = [
+  // 精确字段匹配
+  { field: 'password', exactMatch: true },
+  { field: 'token', exactMatch: true },
+  { field: 'secret', exactMatch: true },
+  { field: 'privateKey', exactMatch: true },
+  { field: 'mnemonic', exactMatch: true },
+  { field: 'apiKey', exactMatch: true },
+  { field: 'apiSecret', exactMatch: true },
+  { field: 'passphrase', exactMatch: true },
+  { field: 'seed', exactMatch: true },
+  { field: 'signature', exactMatch: true },
+  { field: 'accessToken', exactMatch: true },
+  { field: 'refreshToken', exactMatch: true },
+  { field: 'idToken', exactMatch: true },
+
+  // 包含匹配的字段
+  { field: 'authorization', exactMatch: false },
+  { field: 'cookie', exactMatch: false },
+  { field: 'csrf', exactMatch: false },
+  { field: 'xsrf', exactMatch: false },
+  { field: 'credential', exactMatch: false },
+  { field: 'wallet', exactMatch: false },
+
+  // 特定模式匹配
+  {
+    field: 'authorization',
+    pattern: /^Bearer\s+(.+)$/i,
+    replace: 'Bearer <REDACTED>',
+  },
 ];
 
+// 敏感数据正则模式 - 更精确的匹配
 const SENSITIVE_PATTERNS = [
-  /[a-f0-9]{64}/gi,
-  /[a-f0-9]{128}/gi,
-  /0x[a-f0-9]{40}/gi,
-  /[a-zA-Z0-9]{32,}_key/gi,
-  /sk-[a-zA-Z0-9]{20,}/gi,
-  /sk_live_[a-zA-Z0-9]{20,}/gi,
-  /sk_test_[a-zA-Z0-9]{20,}/gi,
-  /pk_live_[a-zA-Z0-9]{20,}/gi,
-  /pk_test_[a-zA-Z0-9]{20,}/gi,
-  /Bearer\s+[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+/gi,
-  /Basic\s+[a-zA-Z0-9+/=]+/gi,
-  /[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+\.[a-zA-Z]{2,}/gi,
+  // 以太坊私钥 (64位 hex)
+  { pattern: /\b0x[a-f0-9]{64}\b/gi, name: 'eth_private_key' },
+  // API Keys - Stripe 格式
+  { pattern: /\b(sk|pk)_(live|test)_[a-zA-Z0-9]{24,}\b/gi, name: 'stripe_key' },
+  // JWT Token
+  { pattern: /\beyJ[a-zA-Z0-9_-]*\.eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*\b/g, name: 'jwt_token' },
+  // 基础认证头
+  { pattern: /\bBasic\s+[a-zA-Z0-9+/=]{20,}\b/gi, name: 'basic_auth' },
+] as const;
+
+// 字段名模式（用于检测敏感字段）
+const SENSITIVE_FIELD_PATTERNS = [
+  /^password$/i,
+  /^token$/i,
+  /^secret$/i,
+  /key$/i,
+  /secret$/i,
+  /token$/i,
+  /password$/i,
+  /auth$/i,
+  /credential/i,
 ];
 
 function redactUrlString(raw: string) {
@@ -118,19 +144,63 @@ function redactUrlString(raw: string) {
 function redactSensitiveData(value: string): string {
   let redacted = value;
 
-  for (const pattern of SENSITIVE_PATTERNS) {
+  // 使用新的结构化模式
+  for (const { pattern } of SENSITIVE_PATTERNS) {
     redacted = redacted.replace(pattern, '<REDACTED>');
   }
 
   return redacted;
 }
 
+/**
+ * 检查字段名是否敏感
+ */
+function isSensitiveField(fieldName: string): boolean {
+  const lowerName = fieldName.toLowerCase();
+  return SENSITIVE_FIELD_PATTERNS.some((pattern) => pattern.test(lowerName));
+}
+
+/**
+ * 应用结构化脱敏规则
+ */
+function applyRedactionRules(fieldName: string, value: string): string | null {
+  const lowerName = fieldName.toLowerCase();
+
+  for (const rule of REDACTION_RULES) {
+    const fieldMatch = rule.exactMatch
+      ? lowerName === rule.field.toLowerCase()
+      : lowerName.includes(rule.field.toLowerCase());
+
+    if (fieldMatch) {
+      // 如果有特定模式，尝试匹配
+      if (rule.pattern && rule.replace) {
+        if (rule.pattern.test(value)) {
+          return value.replace(rule.pattern, rule.replace);
+        }
+      }
+      // 完全脱敏
+      return '<REDACTED>';
+    }
+  }
+
+  return null; // 没有匹配的规则
+}
+
 function redactSensitiveFields(obj: Record<string, unknown>): Record<string, unknown> {
   const result: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(obj)) {
-    const lowerKey = key.toLowerCase();
-    const isSensitive = SENSITIVE_FIELDS.some((field) => lowerKey.includes(field.toLowerCase()));
+    // 首先检查结构化规则
+    if (typeof value === 'string') {
+      const redacted = applyRedactionRules(key, value);
+      if (redacted !== null) {
+        result[key] = redacted;
+        continue;
+      }
+    }
+
+    // 使用字段名模式匹配
+    const isSensitive = isSensitiveField(key);
 
     if (isSensitive) {
       result[key] = '<REDACTED>';

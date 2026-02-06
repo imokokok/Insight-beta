@@ -1,4 +1,4 @@
-import type { PriceData } from '@oracle-monitor/shared';
+import type { PriceData, SyncConfig } from '@oracle-monitor/shared';
 import { BaseSyncService } from '@oracle-monitor/shared';
 import { Connection } from '@solana/web3.js';
 import { PythHttpClient, getPythProgramKeyForCluster, PriceStatus } from '@pythnetwork/client';
@@ -21,9 +21,7 @@ export class PythSyncService extends BaseSyncService {
     });
   }
 
-  async initialize(
-    config: Parameters<typeof BaseSyncService.prototype.initialize>[0],
-  ): Promise<void> {
+  async initialize(config: SyncConfig): Promise<void> {
     await super.initialize(config);
 
     const customConfig = config.customConfig as PythConfig | undefined;

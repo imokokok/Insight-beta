@@ -2,7 +2,7 @@
 
 /* eslint-disable no-restricted-syntax */
 
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback, memo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -73,7 +73,7 @@ const viewOptions: { value: ComparisonView; labelKey: string; icon: React.ReactN
   { value: 'table', labelKey: 'comparison.views.table', icon: <Eye className="h-4 w-4" /> },
 ];
 
-export function ComparisonControls({
+export const ComparisonControls = memo(function ComparisonControls({
   filter,
   config,
   currentView,
@@ -487,4 +487,4 @@ export function ComparisonControls({
       </CardContent>
     </Card>
   );
-}
+});

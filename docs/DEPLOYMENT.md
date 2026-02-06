@@ -6,48 +6,83 @@
 
 Minimum required:
 
-- `DATABASE_URL`
+- `DATABASE_URL` - PostgreSQL connection string
+- `REDIS_URL` - Redis connection string
 
-Optional but strongly recommended:
+Optional but recommended:
 
-- `INSIGHT_ADMIN_TOKEN_SALT`: Enable revocable/rotatable multi-admin tokens
-- `INSIGHT_SLOW_REQUEST_MS`: Slow request threshold (ms)
-- `INSIGHT_MEMORY_MAX_VOTE_KEYS`: Max vote deduplication entries in memory without database (default 200000)
-- `INSIGHT_MEMORY_VOTE_BLOCK_WINDOW`: Block window for vote elimination without database (default 50000)
+- `ADMIN_TOKEN` - Admin authentication token
+- `JWT_SECRET` - JWT signing secret
+- `SENTRY_DSN` - Sentry error tracking
+- `LOG_LEVEL` - Log level (debug, info, warn, error)
 
-If you still want to use a single Root Token (only recommended for bootstrapping/emergency):
+### RPC Configuration
 
-- `INSIGHT_ADMIN_TOKEN`
+- `ETHEREUM_RPC_URL` - Ethereum mainnet RPC
+- `POLYGON_RPC_URL` - Polygon mainnet RPC
+- `ARBITRUM_RPC_URL` - Arbitrum mainnet RPC
+- `OPTIMISM_RPC_URL` - Optimism mainnet RPC
+- `BASE_RPC_URL` - Base mainnet RPC
+- `AVALANCHE_RPC_URL` - Avalanche mainnet RPC
+- `BSC_RPC_URL` - BSC mainnet RPC
+- `SOLANA_RPC_URL` - Solana mainnet RPC
+
+Or use provider API keys:
+
+- `ALCHEMY_API_KEY` - Alchemy API key
+- `INFURA_API_KEY` - Infura API key
+
+### Notification Channels
+
+- `SLACK_WEBHOOK_URL` - Slack webhook for alerts
+- `TELEGRAM_BOT_TOKEN` - Telegram bot token
+- `TELEGRAM_CHAT_ID` - Telegram chat ID
+- `PAGERDUTY_API_KEY` - PagerDuty API key
 
 ## 2) Docker Deployment
 
 Build image:
 
 ```bash
-docker build -t insight:latest .
+docker build -t oracle-monitor:latest .
 ```
 
 Start (example):
 
 ```bash
 docker run --rm -p 3000:3000 \
-  -e DATABASE_URL='postgres://...' \
-  -e INSIGHT_ADMIN_TOKEN_SALT='change-me-to-a-random-string' \
-  insight:latest
+  -e DATABASE_URL='postgresql://...' \
+  -e REDIS_URL='redis://...' \
+  -e ADMIN_TOKEN='your-admin-token' \
+  oracle-monitor:latest
 ```
 
 Health check:
 
-- `GET /api/health`
+- `GET /api/health` - Basic health check
+- `GET /api/health?probe=readiness` - Readiness probe
+- `GET /api/health?probe=liveness` - Liveness probe
 
-Note: Do not run `next dev` and `next build` in the same working directory simultaneously, both read/write the `.next` directory, which may rarely cause page collection failures during build. Production deployment should only run `next build` + `next start` (or use Docker image directly).
+## 3) Database Setup
 
-## 3) Initialize Admin Token (Recommended Flow)
+```bash
+# Run migrations
+npm run db:migrate:prod
 
-1. Use temporary Root Token or existing root permission token to call:
+# Seed initial data (optional)
+npm run db:seed
+```
 
-- `POST /api/admin/tokens` (with `x-admin-token` and `x-admin-actor`)
+## 4) Post-Deployment Verification
 
-2. Distribute the returned plaintext token to corresponding roles (returned only once).
+```bash
+# Run production check
+npm run check:prod
+```
 
-3. Regularly rotate and revoke old tokens using `DELETE /api/admin/tokens?id=...`.
+This will verify:
+
+- Database connectivity
+- Redis connectivity
+- RPC endpoints
+- Health check endpoints

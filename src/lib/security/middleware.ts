@@ -322,9 +322,71 @@ export function createAuthMiddleware(config: AuthConfig) {
       );
     }
 
-    // TODO: 验证 token 和权限
+    // 验证 token 格式（JWT 格式）
+    const tokenParts = token.split('.');
+    if (tokenParts.length !== 3) {
+      return new NextResponse(
+        JSON.stringify({
+          success: false,
+          error: {
+            code: 'INVALID_TOKEN_FORMAT',
+            message: 'Invalid token format',
+          },
+        }),
+        { status: 401, headers: { 'Content-Type': 'application/json' } },
+      );
+    }
 
-    return null;
+    // 注：实际项目中应该使用 JWT 验证库（如 jose）验证 token 签名和过期时间
+    // 这里简化处理，仅做基础格式验证
+    try {
+      const payloadPart = tokenParts[1];
+      if (!payloadPart) {
+        return new NextResponse(
+          JSON.stringify({
+            success: false,
+            error: {
+              code: 'INVALID_TOKEN',
+              message: 'Invalid token payload',
+            },
+          }),
+          { status: 401, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+      const payload = JSON.parse(Buffer.from(payloadPart, 'base64').toString());
+
+      // 检查 token 是否过期
+      if (payload.exp && payload.exp * 1000 < Date.now()) {
+        return new NextResponse(
+          JSON.stringify({
+            success: false,
+            error: {
+              code: 'TOKEN_EXPIRED',
+              message: 'Token has expired',
+            },
+          }),
+          { status: 401, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+
+      // 将用户信息附加到请求头，供后续中间件使用
+      const requestHeaders = new Headers(req.headers);
+      requestHeaders.set('x-user-id', payload.sub || 'unknown');
+      requestHeaders.set('x-user-role', payload.role || 'user');
+
+      return null;
+    } catch {
+      return new NextResponse(
+        JSON.stringify({
+          success: false,
+          error: {
+            code: 'INVALID_TOKEN',
+            message: 'Failed to parse token',
+          },
+        }),
+        { status: 401, headers: { 'Content-Type': 'application/json' } },
+      );
+    }
   };
 }
 

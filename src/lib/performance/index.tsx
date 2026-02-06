@@ -6,6 +6,7 @@
 
 import { type ComponentType, type ReactNode } from 'react';
 import dynamic from 'next/dynamic';
+import { logger } from '@/lib/logger';
 
 // ============================================================================
 // 动态导入配置
@@ -84,12 +85,12 @@ export function prefetchRoute(route: string): void {
 
 /**
  * 智能预加载（基于用户行为）
+ * @returns 清理函数，用于移除事件监听器
  */
-export function setupSmartPrefetch(): void {
-  if (typeof window === 'undefined') return;
+export function setupSmartPrefetch(): () => void {
+  if (typeof window === 'undefined') return () => {};
 
-  // 监听鼠标悬停
-  document.addEventListener('mouseover', (e) => {
+  const handleMouseOver = (e: MouseEvent) => {
     const target = e.target as HTMLElement;
     const link = target.closest('a[href^="/"]');
 
@@ -100,7 +101,18 @@ export function setupSmartPrefetch(): void {
         processPrefetchQueue();
       }
     }
-  });
+  };
+
+  // 使用节流优化性能
+  const throttledHandler = throttle((e: unknown) => handleMouseOver(e as MouseEvent), 100);
+
+  // 监听鼠标悬停
+  document.addEventListener('mouseover', throttledHandler);
+
+  // 返回清理函数
+  return () => {
+    document.removeEventListener('mouseover', throttledHandler);
+  };
 }
 
 function processPrefetchQueue(): void {
@@ -208,7 +220,7 @@ export function collectPerformanceMetrics(): PerformanceMetrics {
  */
 export function reportPerformanceMetrics(metrics: PerformanceMetrics): void {
   // 可以发送到分析服务
-  console.log('Performance Metrics:', metrics);
+  logger.debug('Performance Metrics collected', metrics as Record<string, unknown>);
 
   // 示例：发送到 API
   if (process.env.NODE_ENV === 'production') {
@@ -286,10 +298,10 @@ export function registerServiceWorker(): void {
     navigator.serviceWorker
       .register('/sw.js')
       .then((registration) => {
-        console.log('SW registered:', registration.scope);
+        logger.info('Service Worker registered', { scope: registration.scope });
       })
       .catch((error) => {
-        console.log('SW registration failed:', error);
+        logger.error('Service Worker registration failed', { error });
       });
   });
 }

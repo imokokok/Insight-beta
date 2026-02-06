@@ -58,7 +58,23 @@ export function cleanupUMAClientCache() {
   }
 }
 
-setInterval(cleanupUMAClientCache, CACHE_TTL_MS);
+// 启动缓存清理定时器，并保存引用以便 graceful shutdown
+const cleanupInterval = setInterval(cleanupUMAClientCache, CACHE_TTL_MS);
+
+// Graceful shutdown 处理
+if (typeof process !== 'undefined') {
+  process.on('SIGTERM', () => {
+    clearInterval(cleanupInterval);
+    umaClientCache.clear();
+    logger.info('UMA client cache cleaned up on SIGTERM');
+  });
+
+  process.on('SIGINT', () => {
+    clearInterval(cleanupInterval);
+    umaClientCache.clear();
+    logger.info('UMA client cache cleaned up on SIGINT');
+  });
+}
 
 export function toSyncErrorCode(error: unknown) {
   if (error instanceof Error) {

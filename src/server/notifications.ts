@@ -7,7 +7,7 @@ import type { Transporter } from 'nodemailer';
 /**
  * Supported notification channels for alert delivery
  */
-export type NotificationChannel = 'webhook' | 'email' | 'telegram';
+export type NotificationChannel = 'webhook' | 'email' | 'telegram' | 'slack';
 
 /**
  * Options for configuring notification delivery
@@ -65,6 +65,7 @@ export async function notifyAlert(
       if (channel === 'webhook') await sendWebhookNotification(alert);
       if (channel === 'email') await sendEmailNotification(alert, options?.recipient);
       if (channel === 'telegram') await sendTelegramNotification(alert);
+      if (channel === 'slack') await sendSlackNotification(alert);
       success = true;
     } catch (error) {
       errorMsg = error instanceof Error ? error.message : String(error);
@@ -215,6 +216,169 @@ async function sendWebhookNotification(alert: {
       }
 
       logger.error('Failed to send webhook notification', {
+        error,
+        fingerprint: alert.fingerprint,
+      });
+      return;
+    }
+  }
+}
+
+/**
+ * Sends a notification via Slack webhook
+ *
+ * @param alert - The alert details to send
+ * @returns Promise that resolves when Slack notification is sent or skipped
+ * @internal
+ */
+async function sendSlackNotification(alert: {
+  title: string;
+  message: string;
+  severity: 'info' | 'warning' | 'critical';
+  fingerprint: string;
+}) {
+  const webhookUrl = env.INSIGHT_SLACK_WEBHOOK_URL;
+  if (!webhookUrl) {
+    logger.debug('Slack notification not configured, skipping', {
+      fingerprint: alert.fingerprint,
+    });
+    return;
+  }
+
+  // Validate webhook URL
+  try {
+    const urlObj = new URL(webhookUrl);
+    if (!urlObj.hostname.includes('slack.com')) {
+      logger.error('Invalid Slack webhook URL', {
+        url: webhookUrl,
+        fingerprint: alert.fingerprint,
+      });
+      return;
+    }
+  } catch {
+    logger.error('Invalid Slack webhook URL format', {
+      url: webhookUrl,
+      fingerprint: alert.fingerprint,
+    });
+    return;
+  }
+
+  const color =
+    alert.severity === 'critical'
+      ? '#dc2626'
+      : alert.severity === 'warning'
+        ? '#f59e0b'
+        : '#3b82f6';
+  const emoji = alert.severity === 'critical' ? '🚨' : alert.severity === 'warning' ? '⚠️' : 'ℹ️';
+
+  const payload = {
+    text: `${emoji} OracleMonitor Alert`,
+    blocks: [
+      {
+        type: 'header',
+        text: {
+          type: 'plain_text',
+          text: `${emoji} ${alert.title}`,
+          emoji: true,
+        },
+      },
+      {
+        type: 'section',
+        fields: [
+          {
+            type: 'mrkdwn',
+            text: `*Severity:*\n${alert.severity.toUpperCase()}`,
+          },
+          {
+            type: 'mrkdwn',
+            text: `*Time:*\n${new Date().toISOString()}`,
+          },
+        ],
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `*Message:*\n${alert.message}`,
+        },
+      },
+      {
+        type: 'context',
+        elements: [
+          {
+            type: 'mrkdwn',
+            text: `ID: \`${alert.fingerprint}\``,
+          },
+        ],
+      },
+    ],
+    attachments: [
+      {
+        color,
+        fallback: `${alert.title}: ${alert.message}`,
+      },
+    ],
+  };
+
+  const timeoutMsRaw = Number(
+    env.INSIGHT_SLACK_TIMEOUT_MS || env.INSIGHT_DEPENDENCY_TIMEOUT_MS || 10_000,
+  );
+  const timeoutMs = Number.isFinite(timeoutMsRaw) && timeoutMsRaw > 0 ? timeoutMsRaw : 10_000;
+
+  for (let attempt = 1; attempt <= notificationRetryAttempts; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      const res = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      }).finally(() => clearTimeout(timeoutId));
+
+      if (res.ok) {
+        logger.debug('Slack notification sent successfully', {
+          fingerprint: alert.fingerprint,
+        });
+        return;
+      }
+
+      const retryable =
+        res.status === 408 || res.status === 429 || (res.status >= 500 && res.status <= 599);
+
+      if (retryable && attempt < notificationRetryAttempts) {
+        const nextDelayMs = getRetryDelayMs(attempt);
+        logger.warn('Slack notification retrying', {
+          status: res.status,
+          fingerprint: alert.fingerprint,
+          attempt,
+          nextDelayMs,
+        });
+        await sleep(nextDelayMs);
+        continue;
+      }
+
+      const body = await res.text().catch(() => '');
+      logger.error('Slack notification failed', {
+        status: res.status,
+        fingerprint: alert.fingerprint,
+        response: body.slice(0, 500),
+      });
+      return;
+    } catch (error) {
+      if (attempt < notificationRetryAttempts) {
+        const nextDelayMs = getRetryDelayMs(attempt);
+        logger.warn('Slack notification retrying after error', {
+          error,
+          fingerprint: alert.fingerprint,
+          attempt,
+          nextDelayMs,
+        });
+        await sleep(nextDelayMs);
+        continue;
+      }
+
+      logger.error('Failed to send Slack notification', {
         error,
         fingerprint: alert.fingerprint,
       });

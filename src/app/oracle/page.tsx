@@ -2,7 +2,7 @@
 
 /* eslint-disable no-restricted-syntax */
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -106,11 +106,7 @@ export default function OraclePlatformPage() {
   const [stats, setStats] = useState<PlatformStats | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchPlatformStats();
-  }, []);
-
-  async function fetchPlatformStats() {
+  const fetchPlatformStats = useCallback(async () => {
     try {
       const data = await fetchApiData<PlatformStats>('/api/oracle/unified/stats');
       setStats(data);
@@ -124,7 +120,11 @@ export default function OraclePlatformPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    fetchPlatformStats();
+  }, [fetchPlatformStats]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
@@ -353,7 +353,13 @@ interface HeroActionCardProps {
   primary?: boolean;
 }
 
-function HeroActionCard({ icon, title, description, onClick, primary }: HeroActionCardProps) {
+const HeroActionCard = React.memo(function HeroActionCard({
+  icon,
+  title,
+  description,
+  onClick,
+  primary,
+}: HeroActionCardProps) {
   return (
     <button
       onClick={onClick}
@@ -380,7 +386,7 @@ function HeroActionCard({ icon, title, description, onClick, primary }: HeroActi
       </div>
     </button>
   );
-}
+});
 
 // Note: StatCard component has been extracted to @/components/features/common/StatCard
 
@@ -390,7 +396,11 @@ interface FeatureCardProps {
   description: string;
 }
 
-function FeatureCard({ icon, title, description }: FeatureCardProps) {
+const FeatureCard = React.memo(function FeatureCard({
+  icon,
+  title,
+  description,
+}: FeatureCardProps) {
   return (
     <Card className="border-0 shadow-sm transition-shadow hover:shadow-md">
       <CardContent className="p-6">
@@ -400,13 +410,13 @@ function FeatureCard({ icon, title, description }: FeatureCardProps) {
       </CardContent>
     </Card>
   );
-}
+});
 
 interface ProtocolCardProps {
   protocol: ProtocolHighlight;
 }
 
-function ProtocolCard({ protocol }: ProtocolCardProps) {
+const ProtocolCard = React.memo(function ProtocolCard({ protocol }: ProtocolCardProps) {
   const statusColors = {
     active: 'bg-green-100 text-green-700',
     beta: 'bg-yellow-100 text-yellow-700',
@@ -455,4 +465,4 @@ function ProtocolCard({ protocol }: ProtocolCardProps) {
       </CardContent>
     </Card>
   );
-}
+});

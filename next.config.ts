@@ -100,7 +100,7 @@ const nextConfig: NextConfig = {
     const headers: Array<{ key: string; value: string }> = [
       {
         key: 'X-DNS-Prefetch-Control',
-        value: 'off',
+        value: 'on',
       },
       {
         key: 'X-XSS-Protection',
@@ -199,7 +199,7 @@ const nextConfig: NextConfig = {
   // Disable Turbopack and use webpack
   turbopack: {},
 
-  webpack: (config) => {
+  webpack: (config, { isServer }) => {
     config.ignoreWarnings = config.ignoreWarnings || [];
     config.ignoreWarnings.push({
       message: /the request of a dependency is an expression/,
@@ -227,6 +227,38 @@ const nextConfig: NextConfig = {
       string_decoder: false,
       process: false,
     };
+
+    // Tree-shaking 优化
+    if (!isServer) {
+      config.optimization = config.optimization || {};
+      config.optimization.usedExports = true;
+      config.optimization.sideEffects = false;
+
+      // 分割 vendor chunk
+      config.optimization.splitChunks = {
+        chunks: 'all',
+        cacheGroups: {
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            chunks: 'all',
+            priority: 10,
+          },
+          recharts: {
+            test: /[\\/]node_modules[\\/]recharts[\\/]/,
+            name: 'recharts',
+            chunks: 'async',
+            priority: 20,
+          },
+          viem: {
+            test: /[\\/]node_modules[\\/]viem[\\/]/,
+            name: 'viem',
+            chunks: 'async',
+            priority: 20,
+          },
+        },
+      };
+    }
 
     return config;
   },

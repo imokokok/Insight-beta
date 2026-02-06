@@ -31,10 +31,65 @@ interface CacheEntry<T> {
 export class MemoryCache implements CacheProvider {
   private store = new Map<string, CacheEntry<unknown>>();
   private maxSize: number;
+  private regexCache = new Map<string, RegExp>(); // 缓存编译后的正则表达式
+  private prefixIndex = new Map<string, Set<string>>(); // 前缀索引，用于快速清除
 
   constructor(maxSize: number = 1000) {
     this.maxSize = maxSize;
     this.startCleanup();
+  }
+
+  /**
+   * 提取 key 的前缀（冒号分隔的第一部分）
+   */
+  private extractPrefix(key: string): string | null {
+    const colonIndex = key.indexOf(':');
+    return colonIndex > 0 ? key.slice(0, colonIndex) : null;
+  }
+
+  /**
+   * 更新前缀索引
+   */
+  private addToPrefixIndex(key: string): void {
+    const prefix = this.extractPrefix(key);
+    if (prefix) {
+      let keys = this.prefixIndex.get(prefix);
+      if (!keys) {
+        keys = new Set();
+        this.prefixIndex.set(prefix, keys);
+      }
+      keys.add(key);
+    }
+  }
+
+  /**
+   * 从前缀索引中移除
+   */
+  private removeFromPrefixIndex(key: string): void {
+    const prefix = this.extractPrefix(key);
+    if (prefix) {
+      const keys = this.prefixIndex.get(prefix);
+      if (keys) {
+        keys.delete(key);
+        if (keys.size === 0) {
+          this.prefixIndex.delete(prefix);
+        }
+      }
+    }
+  }
+
+  /**
+   * 获取或创建正则表达式（带缓存）
+   */
+  private getRegex(pattern: string): RegExp {
+    const cached = this.regexCache.get(pattern);
+    if (cached) {
+      return cached;
+    }
+    // eslint-disable-next-line security/detect-non-literal-regexp
+    const regex = new RegExp(pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    this.regexCache.set(pattern, regex);
+    return regex;
   }
 
   async get<T>(key: string): Promise<T | null> {
@@ -58,6 +113,7 @@ export class MemoryCache implements CacheProvider {
       const oldestKey = this.store.keys().next().value;
       if (oldestKey) {
         this.store.delete(oldestKey);
+        this.removeFromPrefixIndex(oldestKey);
       }
     }
 
@@ -65,23 +121,40 @@ export class MemoryCache implements CacheProvider {
       value,
       expiresAt: Date.now() + ttlMs,
     });
+
+    // 更新前缀索引
+    this.addToPrefixIndex(key);
   }
 
   async delete(key: string): Promise<void> {
     this.store.delete(key);
+    this.removeFromPrefixIndex(key);
   }
 
   async clear(pattern?: string): Promise<void> {
     if (!pattern) {
       this.store.clear();
+      this.prefixIndex.clear();
       return;
     }
 
-    // eslint-disable-next-line security/detect-non-literal-regexp
-    const regex = new RegExp(pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    // 如果 pattern 是简单的前缀（如 "price:"），使用索引快速清除
+    if (pattern.endsWith('*') && !pattern.slice(0, -1).includes('*')) {
+      const prefix = pattern.slice(0, -1);
+      const keys = this.prefixIndex.get(prefix);
+      if (keys) {
+        keys.forEach((key) => this.store.delete(key));
+        this.prefixIndex.delete(prefix);
+        return;
+      }
+    }
+
+    // 回退到正则匹配
+    const regex = this.getRegex(pattern);
     for (const key of this.store.keys()) {
       if (regex.test(key)) {
         this.store.delete(key);
+        this.removeFromPrefixIndex(key);
       }
     }
   }
@@ -98,8 +171,7 @@ export class MemoryCache implements CacheProvider {
 
   async keys(pattern: string): Promise<string[]> {
     const result: string[] = [];
-    // eslint-disable-next-line security/detect-non-literal-regexp
-    const regex = new RegExp(pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    const regex = this.getRegex(pattern);
 
     for (const key of this.store.keys()) {
       if (regex.test(key)) {
@@ -115,6 +187,7 @@ export class MemoryCache implements CacheProvider {
       for (const [key, entry] of this.store.entries()) {
         if (now > entry.expiresAt) {
           this.store.delete(key);
+          this.removeFromPrefixIndex(key);
         }
       }
     }, 60000); // 每分钟清理一次

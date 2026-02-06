@@ -14,6 +14,8 @@ import {
   translations,
 } from '@/i18n/translations';
 import { lazy, Suspense } from 'react';
+import { ResourceHints } from '@/components/common/ResourceHints';
+import { ServiceWorkerRegister } from '@/components/common/ServiceWorkerRegister';
 
 const Sidebar = lazy(() =>
   import('@/components/features/common/Sidebar').then((mod) => ({
@@ -38,6 +40,11 @@ const ClientComponentsWrapper = lazy(() =>
 const WebVitalsMonitor = lazy(() =>
   import('@/components/features/common/WebVitalsMonitor').then((mod) => ({
     default: mod.WebVitalsMonitor,
+  })),
+);
+const ResourcePreloader = lazy(() =>
+  import('@/components/features/common/ResourcePreloader').then((mod) => ({
+    default: mod.ResourcePreloader,
   })),
 );
 
@@ -83,15 +90,16 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  const c = await cookies();
+  // 并行获取 cookies 和 headers - 性能优化
+  const [c, h] = await Promise.all([cookies(), headers()]);
   const cookieLang = c.get(LANG_STORAGE_KEY)?.value;
-  const h = await headers();
   const lang = isLang(cookieLang)
     ? cookieLang
     : detectLangFromAcceptLanguage(h.get('accept-language'));
   return (
     <html lang={langToHtmlLang[lang]}>
       <head>
+        <ResourceHints />
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/logo-owl.png" />
         <meta name="theme-color" content="#6366f1" />
@@ -104,6 +112,12 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       >
         <Suspense fallback={null}>
           <WebVitalsMonitor />
+        </Suspense>
+        <Suspense fallback={null}>
+          <ResourcePreloader />
+        </Suspense>
+        <Suspense fallback={null}>
+          <ServiceWorkerRegister />
         </Suspense>
         <LanguageProvider initialLang={lang}>
           <WalletProvider>

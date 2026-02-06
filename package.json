@@ -49,6 +49,7 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/auto-instrumentations-node": "0.67.3",
     "@opentelemetry/exporter-trace-otlp-http": "0.210.0",
@@ -74,6 +75,7 @@
     "puppeteer": "^24.36.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
+    "react-hook-form": "^7.71.1",
     "react-virtuoso": "4.18.1",
     "recharts": "3.6.0",
     "redis": "^4.7.1",
@@ -83,7 +85,7 @@
     "tailwind-merge": "3.4.0",
     "viem": "2.43.5",
     "web-vitals": "4.2.4",
-    "zod": "3.24.2"
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.4.1",

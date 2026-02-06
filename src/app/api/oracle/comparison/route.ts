@@ -11,6 +11,7 @@
 
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import type {
   PriceHeatmapData,
   LatencyAnalysis,
@@ -27,6 +28,41 @@ import {
   checkDataSourceHealth,
 } from '@/server/oracle/realDataService';
 import { logger } from '@/lib/logger';
+
+// ============================================================================
+// 输入验证 Schema
+// ============================================================================
+
+const symbolSchema = z
+  .string()
+  .max(20, 'Symbol too long')
+  .regex(/^[A-Z0-9]+\/[A-Z]+$/, 'Invalid symbol format (e.g., ETH/USD)');
+
+const comparisonQuerySchema = z.object({
+  type: z.enum(['heatmap', 'latency', 'cost', 'realtime', 'all']).default('all'),
+  symbols: z
+    .string()
+    .max(500, 'Symbols parameter too long')
+    .optional()
+    .transform((val) => (val ? val.split(',') : ['ETH/USD', 'BTC/USD', 'LINK/USD', 'MATIC/USD']))
+    .refine((arr) => arr.length <= 20, 'Too many symbols (max 20)')
+    .refine((arr) => arr.every((s) => symbolSchema.safeParse(s).success), 'Invalid symbol format'),
+  protocols: z
+    .string()
+    .optional()
+    .transform((val) => (val ? val.split(',') : ORACLE_PROTOCOLS))
+    .refine((arr) => arr.length <= 10, 'Too many protocols (max 10)')
+    .refine(
+      (arr) => arr.every((p) => ORACLE_PROTOCOLS.includes(p as OracleProtocol)),
+      'Invalid protocol',
+    ),
+});
+
+const historyQuerySchema = z.object({
+  symbol: symbolSchema,
+  protocol: z.enum(ORACLE_PROTOCOLS as [string, ...string[]]),
+  hours: z.number().int().min(1).max(168).default(24), // 最多7天
+});
 
 // ============================================================================
 // 模拟数据生成器（当真实数据不可用时降级使用）
@@ -271,16 +307,32 @@ function generateMockRealtimeData(protocols: string[]): RealtimeComparisonItem[]
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const type = searchParams.get('type') || 'all';
-    const symbolsParam = searchParams.get('symbols');
-    const protocolsParam = searchParams.get('protocols');
 
-    const symbols = symbolsParam
-      ? symbolsParam.split(',')
-      : ['ETH/USD', 'BTC/USD', 'LINK/USD', 'MATIC/USD'];
-    const protocols = (
-      protocolsParam ? protocolsParam.split(',') : ORACLE_PROTOCOLS
-    ) as OracleProtocol[];
+    // 验证输入参数
+    const validationResult = comparisonQuerySchema.safeParse({
+      type: searchParams.get('type') || 'all',
+      symbols: searchParams.get('symbols') || undefined,
+      protocols: searchParams.get('protocols') || undefined,
+    });
+
+    if (!validationResult.success) {
+      logger.warn('Comparison API validation error', {
+        errors: validationResult.error.errors,
+        url: request.url,
+      });
+      return NextResponse.json(
+        {
+          error: 'Invalid parameters',
+          details: validationResult.error.errors.map((e) => ({
+            field: e.path.join('.'),
+            message: e.message,
+          })),
+        },
+        { status: 400 },
+      );
+    }
+
+    const { type, symbols, protocols } = validationResult.data;
 
     // 检查数据源健康状态
     const health = await checkDataSourceHealth();
@@ -304,14 +356,22 @@ export async function GET(request: NextRequest) {
       },
     };
 
+    // 将验证后的 protocols 转换为 OracleProtocol[]
+    const typedProtocols = protocols.map((p) => p as OracleProtocol);
+
     switch (type) {
       case 'heatmap':
         try {
           response.heatmap = useRealData
-            ? await generateRealHeatmapData(symbols, protocols)
-            : generateMockHeatmapData(symbols, protocols);
-        } catch {
-          response.heatmap = generateMockHeatmapData(symbols, protocols);
+            ? await generateRealHeatmapData(symbols, typedProtocols)
+            : generateMockHeatmapData(symbols, typedProtocols);
+        } catch (error) {
+          logger.warn('Failed to generate heatmap data, falling back to mock', {
+            error: error instanceof Error ? error.message : 'Unknown error',
+            symbols,
+            protocols: typedProtocols,
+          });
+          response.heatmap = generateMockHeatmapData(symbols, typedProtocols);
           response.meta.dataSource = 'mock';
         }
         break;
@@ -319,26 +379,34 @@ export async function GET(request: NextRequest) {
       case 'latency':
         try {
           response.latency = useRealData
-            ? await generateRealLatencyData(protocols)
-            : generateMockLatencyData(protocols);
-        } catch {
-          response.latency = generateMockLatencyData(protocols);
+            ? await generateRealLatencyData(typedProtocols)
+            : generateMockLatencyData(typedProtocols);
+        } catch (error) {
+          logger.warn('Failed to generate latency data, falling back to mock', {
+            error: error instanceof Error ? error.message : 'Unknown error',
+            protocols: typedProtocols,
+          });
+          response.latency = generateMockLatencyData(typedProtocols);
           response.meta.dataSource = 'mock';
         }
         break;
 
       case 'cost':
         // 成本数据暂时使用模拟数据（需要实际的成本计算逻辑）
-        response.cost = generateMockCostData(protocols);
+        response.cost = generateMockCostData(typedProtocols);
         break;
 
       case 'realtime':
         try {
           response.realtime = useRealData
-            ? await generateRealRealtimeData(protocols)
-            : generateMockRealtimeData(protocols);
-        } catch {
-          response.realtime = generateMockRealtimeData(protocols);
+            ? await generateRealRealtimeData(typedProtocols)
+            : generateMockRealtimeData(typedProtocols);
+        } catch (error) {
+          logger.warn('Failed to generate realtime data, falling back to mock', {
+            error: error instanceof Error ? error.message : 'Unknown error',
+            protocols: typedProtocols,
+          });
+          response.realtime = generateMockRealtimeData(typedProtocols);
           response.meta.dataSource = 'mock';
         }
         break;
@@ -348,29 +416,42 @@ export async function GET(request: NextRequest) {
         // 获取所有类型的数据
         try {
           response.heatmap = useRealData
-            ? await generateRealHeatmapData(symbols, protocols as OracleProtocol[])
-            : generateMockHeatmapData(symbols, protocols);
-        } catch {
-          response.heatmap = generateMockHeatmapData(symbols, protocols);
+            ? await generateRealHeatmapData(symbols, typedProtocols)
+            : generateMockHeatmapData(symbols, typedProtocols);
+        } catch (error) {
+          logger.warn('Failed to generate heatmap data, falling back to mock', {
+            error: error instanceof Error ? error.message : 'Unknown error',
+            symbols,
+            protocols: typedProtocols,
+          });
+          response.heatmap = generateMockHeatmapData(symbols, typedProtocols);
           response.meta.dataSource = 'mock';
         }
 
         try {
           response.latency = useRealData
-            ? await generateRealLatencyData(protocols as OracleProtocol[])
-            : generateMockLatencyData(protocols);
-        } catch {
-          response.latency = generateMockLatencyData(protocols);
+            ? await generateRealLatencyData(typedProtocols)
+            : generateMockLatencyData(typedProtocols);
+        } catch (error) {
+          logger.warn('Failed to generate latency data, falling back to mock', {
+            error: error instanceof Error ? error.message : 'Unknown error',
+            protocols: typedProtocols,
+          });
+          response.latency = generateMockLatencyData(typedProtocols);
         }
 
-        response.cost = generateMockCostData(protocols);
+        response.cost = generateMockCostData(typedProtocols);
 
         try {
           response.realtime = useRealData
-            ? await generateRealRealtimeData(protocols)
-            : generateMockRealtimeData(protocols);
-        } catch {
-          response.realtime = generateMockRealtimeData(protocols);
+            ? await generateRealRealtimeData(typedProtocols)
+            : generateMockRealtimeData(typedProtocols);
+        } catch (error) {
+          logger.warn('Failed to generate realtime data, falling back to mock', {
+            error: error instanceof Error ? error.message : 'Unknown error',
+            protocols: typedProtocols,
+          });
+          response.realtime = generateMockRealtimeData(typedProtocols);
         }
         break;
     }
@@ -397,14 +478,28 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { symbol, protocol, hours = 24 } = body;
 
-    if (!symbol || !protocol) {
+    // 验证输入参数
+    const validationResult = historyQuerySchema.safeParse(body);
+
+    if (!validationResult.success) {
+      logger.warn('History API validation error', {
+        errors: validationResult.error.errors,
+        body,
+      });
       return NextResponse.json(
-        { error: 'Missing required parameters: symbol, protocol' },
+        {
+          error: 'Invalid parameters',
+          details: validationResult.error.errors.map((e) => ({
+            field: e.path.join('.'),
+            message: e.message,
+          })),
+        },
         { status: 400 },
       );
     }
+
+    const { symbol, protocol, hours } = validationResult.data;
 
     // 生成历史趋势数据（实际项目中从数据库查询）
     const dataPoints = Math.min(hours * 4, 96); // 每15分钟一个点，最多96个点

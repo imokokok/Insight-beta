@@ -4,11 +4,14 @@
  * Server-side Supabase client for API routes
  */
 
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { env } from '@/lib/config/env';
 import { logger } from '@/lib/logger';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createSupabaseClient(): any {
+// 简化的 Supabase 客户端类型
+export type TypedSupabaseClient = SupabaseClient;
+
+export function createSupabaseClient(): TypedSupabaseClient {
   const supabaseUrl = env.SUPABASE_URL;
   const supabaseKey = env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -27,7 +30,7 @@ export function createSupabaseClient(): any {
         autoRefreshToken: false,
         persistSession: false,
       },
-    });
+    }) as TypedSupabaseClient;
   } catch {
     logger.warn('@supabase/supabase-js not installed, using mock client');
     return createMockClient();

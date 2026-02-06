@@ -100,13 +100,15 @@ body::before {
   pointer-events: none;
 }
 
-/* 动画背景元素 */
+/* 动画背景元素 - 性能优化版 */
 .animated-blobs {
   position: fixed;
   inset: 0;
   z-index: -10;
   overflow: hidden;
   pointer-events: none;
+  /* 使用 contain 优化渲染 */
+  contain: layout style paint;
 }
 
 .animated-blobs > div {
@@ -115,6 +117,25 @@ body::before {
   mix-blend-mode: multiply;
   filter: blur(120px);
   animation: pulse 8s ease-in-out infinite;
+  /* 添加 will-change 优化动画性能 */
+  will-change: transform, opacity;
+  /* 使用 transform 代替位置属性 */
+  transform: translateZ(0);
+}
+
+/* 减少动画偏好支持 */
+@media (prefers-reduced-motion: reduce) {
+  .animated-blobs > div {
+    animation: none;
+    opacity: 0.5;
+  }
+}
+
+/* 低性能设备降级 */
+@media (prefers-reduced-motion: reduce), (max-width: 768px) {
+  .animated-blobs {
+    display: none;
+  }
 }
 
 .blob-1 {
@@ -373,6 +394,45 @@ body::before {
     border-color: var(--border);
     background-color: transparent;
   }
+}
+
+/* ============================================================================
+   CSS Containment - 性能优化
+   ============================================================================ */
+
+/* 大型列表容器 - 限制渲染范围 */
+.contain-layout {
+  contain: layout;
+}
+
+.contain-paint {
+  contain: paint;
+}
+
+.contain-content {
+  contain: content;
+}
+
+.contain-strict {
+  contain: strict;
+}
+
+/* 虚拟列表优化 */
+.virtual-list-container {
+  contain: layout style paint;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 500px;
+}
+
+/* 卡片网格优化 */
+.card-grid {
+  contain: layout style;
+}
+
+/* 复杂组件隔离 */
+.isolate-component {
+  contain: layout style paint;
+  isolation: isolate;
 }
 
 /* ============================================================================

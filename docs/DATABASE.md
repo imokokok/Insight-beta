@@ -2,124 +2,130 @@
 
 # Database Design
 
-This document describes the database schema, table structure design, and index optimization strategies for the OracleMonitor project.
+This document describes the database schema for OracleMonitor.
 
-## 1. Overview
+## Overview
 
-The project uses PostgreSQL as the relational database, primarily for storing:
+- **Database**: PostgreSQL 16+
+- **ORM**: Prisma
+- **Primary Data**: Price history from multiple oracle protocols
 
-- On-chain synced oracle data (assertions, disputes, votes)
-- System configuration and sync status
-- Monitoring alerts and audit logs
-- Internal KV storage and rate limiting data
+## Core Tables
 
-## 2. Core Business Tables
+### Price History
 
-### 2.1 Assertions
+#### `price_history_raw`
 
-Stores all on-chain created assertion data.
+Raw price data from all protocols.
 
-| Field              | Type      | Description                         |
-| ------------------ | --------- | ----------------------------------- |
-| `id`               | TEXT (PK) | Assertion ID (Hash)                 |
-| `chain`            | TEXT      | Chain name                          |
-| `asserter`         | TEXT      | Creator address                     |
-| `protocol`         | TEXT      | Protocol name                       |
-| `market`           | TEXT      | Market identifier                   |
-| `assertion_data`   | TEXT      | Assertion content                   |
-| `bond_usd`         | NUMERIC   | Bond amount (USD)                   |
-| `asserted_at`      | TIMESTAMP | Creation time                       |
-| `liveness_ends_at` | TIMESTAMP | Challenge period end time           |
-| `resolved_at`      | TIMESTAMP | Resolution time                     |
-| `status`           | TEXT      | Status (Active, Disputed, Resolved) |
-| `tx_hash`          | TEXT      | Creation transaction hash           |
+| Field          | Type           | Description                           |
+| -------------- | -------------- | ------------------------------------- |
+| `id`           | BigInt (PK)    | Auto-increment ID                     |
+| `symbol`       | String         | Trading pair (e.g., ETH/USD)          |
+| `protocol`     | String         | Protocol name (chainlink, pyth, etc.) |
+| `chain`        | String         | Blockchain network                    |
+| `price`        | Decimal(36,18) | Price value                           |
+| `price_raw`    | String         | Raw price string                      |
+| `decimals`     | Int            | Price decimals                        |
+| `timestamp`    | DateTime       | Price timestamp                       |
+| `block_number` | BigInt         | Block number                          |
+| `confidence`   | Decimal(5,4)   | Confidence score                      |
+| `volume_24h`   | Decimal(36,18) | 24h volume                            |
+| `change_24h`   | Decimal(10,4)  | 24h change percentage                 |
+| `created_at`   | DateTime       | Record creation time                  |
 
-### 2.2 Disputes
+**Indexes**:
 
-Stores disputes initiated against assertions.
+- `(symbol, timestamp DESC)`
+- `(protocol, timestamp DESC)`
+- `(chain, timestamp DESC)`
+- `(symbol, protocol, chain, timestamp DESC)`
 
-| Field           | Type      | Description             |
-| --------------- | --------- | ----------------------- |
-| `id`            | TEXT (PK) | Dispute ID              |
-| `assertion_id`  | TEXT (FK) | Related assertion ID    |
-| `disputer`      | TEXT      | Challenger address      |
-| `reason`        | TEXT      | Dispute reason          |
-| `disputed_at`   | TIMESTAMP | Dispute initiation time |
-| `status`        | TEXT      | Dispute status          |
-| `votes_for`     | NUMERIC   | Votes in support        |
-| `votes_against` | NUMERIC   | Votes against           |
+#### `price_history_min1` / `price_history_min5` / `price_history_hour1` / `price_history_day1`
 
-### 2.3 Votes
+Aggregated price data at different time intervals (OHLCV format).
 
-Stores voting records during dispute governance.
+| Field          | Type           | Description          |
+| -------------- | -------------- | -------------------- |
+| `id`           | BigInt (PK)    | Auto-increment ID    |
+| `symbol`       | String         | Trading pair         |
+| `protocol`     | String         | Protocol name        |
+| `chain`        | String         | Blockchain network   |
+| `price_open`   | Decimal(36,18) | Opening price        |
+| `price_high`   | Decimal(36,18) | High price           |
+| `price_low`    | Decimal(36,18) | Low price            |
+| `price_close`  | Decimal(36,18) | Closing price        |
+| `volume`       | BigInt         | Trading volume       |
+| `timestamp`    | DateTime       | Candle timestamp     |
+| `sample_count` | Int            | Number of samples    |
+| `created_at`   | DateTime       | Record creation time |
 
-| Field          | Type        | Description             |
-| -------------- | ----------- | ----------------------- |
-| `id`           | SERIAL (PK) | Auto-increment ID       |
-| `assertion_id` | TEXT (FK)   | Related assertion ID    |
-| `voter`        | TEXT        | Voter address           |
-| `support`      | BOOLEAN     | Whether in support      |
-| `weight`       | NUMERIC     | Voting weight           |
-| `tx_hash`      | TEXT        | Voting transaction hash |
+**Indexes**:
 
-## 3. System Configuration and Status Tables
+- `(symbol, timestamp DESC)`
+- Unique: `(symbol, protocol, chain, timestamp)`
 
-### 3.1 Oracle Config
+### Solana Data
 
-Single-row table, stores global configuration.
+#### `solana_price_feeds`
 
-- `rpc_url`: Chain RPC address
-- `contract_address`: Contract address
-- `voting_period_hours`: Voting period duration
-- `start_block`: Index starting block
+Solana price feed metadata.
 
-### 3.2 Sync State
+| Field        | Type           | Description           |
+| ------------ | -------------- | --------------------- |
+| `id`         | String (PK)    | UUID                  |
+| `symbol`     | String         | Trading pair          |
+| `name`       | String         | Feed name             |
+| `price`      | Decimal(36,18) | Current price         |
+| `confidence` | Decimal(5,4)   | Confidence score      |
+| `timestamp`  | DateTime       | Last update           |
+| `slot`       | BigInt         | Solana slot           |
+| `signature`  | String         | Transaction signature |
+| `source`     | String         | Data source           |
+| `status`     | String         | active/inactive       |
+| `created_at` | DateTime       | Creation time         |
+| `updated_at` | DateTime       | Last update           |
 
-Single-row table, tracks indexer sync progress.
+#### `solana_price_history`
 
-- `last_processed_block`: Last processed block
-- `safe_block`: Confirmed safe block height
-- `lag_blocks`: Sync lag block count
+Solana price history records.
 
-## 4. Monitoring and Operations Tables
+| Field        | Type           | Description           |
+| ------------ | -------------- | --------------------- |
+| `id`         | String (PK)    | UUID                  |
+| `feed_id`    | String         | Reference to feed     |
+| `price`      | Decimal(36,18) | Price value           |
+| `confidence` | Decimal(5,4)   | Confidence score      |
+| `timestamp`  | DateTime       | Record time           |
+| `slot`       | BigInt         | Solana slot           |
+| `signature`  | String         | Transaction signature |
 
-### 4.1 Alerts
+## Database Operations
 
-Stores various alert information triggered by the system.
+### Migrations
 
-- `fingerprint`: Alert fingerprint (deduplication)
-- `type`: Alert type (e.g., `slow_api_request`)
-- `severity`: Severity level (`info`, `warning`, `critical`)
-- `status`: Status (`Open`, `Acknowledged`, `Resolved`)
+```bash
+# Development
+npm run db:migrate
 
-### 4.2 Audit Log
-
-Records audit trails of key operations.
-
-- `actor`: Operator (Admin ID)
-- `action`: Action type
-- `details`: Operation details JSON
-
-## 5. Performance Optimization (Indexes)
-
-To ensure query performance, we have created indexes on frequently queried fields.
-
-### 5.1 Common Query Indexes
-
-```sql
--- Assertions: Query by time, status, creator
-CREATE INDEX idx_assertions_status_date ON assertions(status, asserted_at DESC);
-CREATE INDEX idx_assertions_asserter_date ON assertions(LOWER(asserter), asserted_at DESC);
-
--- Disputes: Query by status, time
-CREATE INDEX idx_disputes_status_date ON disputes(status, disputed_at DESC);
-
--- Alerts: Alert list filtering
-CREATE INDEX idx_alerts_status_last_seen_at ON alerts(status, last_seen_at DESC);
+# Production
+npm run db:migrate:prod
 ```
 
-### 5.2 Maintenance Recommendations
+### Studio (GUI)
 
-- Regularly check `pg_stat_statements` to discover slow queries.
-- For the `alerts` table, regularly archive or clean up old `Resolved` alerts.
-- The `sync_metrics` table grows rapidly over time, configure regular cleanup strategy (e.g., keep last 30 days).
+```bash
+npm run db:studio
+```
+
+### Backup Strategy
+
+1. **Automated Backups**: Daily full backups
+2. **Point-in-Time Recovery**: Enable PITR on PostgreSQL
+3. **Retention**: 30 days minimum
+
+## Performance Optimization
+
+- Partition large tables by timestamp
+- Use appropriate indexes for query patterns
+- Connection pooling via PgBouncer or Supabase Transaction Mode

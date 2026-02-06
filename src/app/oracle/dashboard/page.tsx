@@ -32,6 +32,7 @@ import { Button } from '@/components/ui/button';
 import { fetchApiData, cn } from '@/lib/utils';
 import { ChartSkeleton } from '@/components/ui/skeleton';
 import { StatCard } from '@/components/features/common/StatCard';
+import { useWebSocket } from '@/hooks/useWebSocket';
 
 // Dynamic imports for oracle components
 const PriceFeedList = lazy(() =>
@@ -68,93 +69,51 @@ interface DashboardStats {
 // ============================================================================
 
 export default function UnifiedDashboardPage() {
-  const [wsConnected, setWsConnected] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
-  // WebSocket Connection
+  // WebSocket Connection using useWebSocket hook
+  const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001';
+  const { isConnected, sendMessage, lastMessage } = useWebSocket(wsUrl, {
+    autoConnect: true,
+    onConnect: () => {
+      sendMessage({ type: 'subscribe_dashboard' });
+    },
+  });
+
+  // Handle WebSocket messages
   useEffect(() => {
-    let ws: WebSocket | null = null;
-    let reconnectTimeout: NodeJS.Timeout | null = null;
-    let reconnectAttempts = 0;
-    const MAX_RECONNECT_ATTEMPTS = 5;
-    let isUnmounting = false;
+    if (!lastMessage) return;
 
-    const connect = () => {
-      if (isUnmounting) return;
-
-      try {
-        const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001';
-        ws = new WebSocket(wsUrl);
-
-        ws.onopen = () => {
-          if (isUnmounting) {
-            ws?.close();
-            return;
-          }
-          setWsConnected(true);
-          reconnectAttempts = 0;
-          // Subscribe to dashboard updates
-          ws?.send(
-            JSON.stringify({
-              type: 'subscribe_dashboard',
-            }),
-          );
-        };
-
-        ws.onclose = () => {
-          if (isUnmounting) return;
-          setWsConnected(false);
-          if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-            reconnectAttempts++;
-            const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
-            reconnectTimeout = setTimeout(connect, delay);
-          }
-        };
-
-        ws.onerror = (error) => {
-          logger.error('WebSocket error', { error });
-        };
-
-        ws.onmessage = (event) => {
-          try {
-            const message = JSON.parse(event.data);
-            if (message.type === 'stats_update') {
-              setStats(message.data);
-              setLastUpdated(new Date());
-            }
-          } catch (err) {
-            logger.error('Failed to parse WebSocket message', { err });
-          }
-        };
-      } catch (error) {
-        logger.error('WebSocket connection error', { error });
+    try {
+      const message = lastMessage as { type: string; data: DashboardStats };
+      if (message.type === 'stats_update') {
+        setStats(message.data);
+        setLastUpdated(new Date());
       }
-    };
-
-    connect();
-
-    return () => {
-      isUnmounting = true;
-      if (reconnectTimeout) {
-        clearTimeout(reconnectTimeout);
-      }
-      if (ws) {
-        ws.close();
-      }
-    };
-  }, []);
+    } catch (err) {
+      logger.error('Failed to process WebSocket message', { err });
+    }
+  }, [lastMessage]);
 
   // Fetch initial stats
   const fetchStats = useCallback(async () => {
+    const isActive = true;
+
     try {
       setLoading(true);
-      const data = await fetchApiData<DashboardStats>('/api/oracle/stats');
+      const controller = new AbortController();
+      const data = await fetchApiData<DashboardStats>('/api/oracle/stats', {
+        signal: controller.signal,
+      });
+
+      if (!isActive) return;
       setStats(data);
       setLastUpdated(new Date());
     } catch {
+      if (!isActive) return;
       // Use mock data as fallback
       setStats({
         totalProtocols: 9,
@@ -165,20 +124,33 @@ export default function UnifiedDashboardPage() {
         priceUpdates24h: 1245678,
       });
     } finally {
-      setLoading(false);
+      if (isActive) {
+        setLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
-    fetchStats();
-    const interval = setInterval(fetchStats, 60000);
-    return () => clearInterval(interval);
+    let isActive = true;
+
+    const fetchWithAbort = async () => {
+      if (!isActive) return;
+      await fetchStats();
+    };
+
+    fetchWithAbort();
+    const interval = setInterval(fetchWithAbort, 60000);
+
+    return () => {
+      isActive = false;
+      clearInterval(interval);
+    };
   }, [fetchStats]);
 
-  const handleRefresh = () => {
+  const handleRefresh = useCallback(() => {
     setLoading(true);
     fetchStats();
-  };
+  }, [fetchStats]);
 
   return (
     <div className="container mx-auto p-6">
@@ -196,8 +168,8 @@ export default function UnifiedDashboardPage() {
             <span className="hidden sm:inline">Last updated: </span>
             {lastUpdated.toLocaleTimeString()}
           </div>
-          <Badge variant={wsConnected ? 'default' : 'destructive'} className="text-xs">
-            {wsConnected ? 'Live' : 'Disconnected'}
+          <Badge variant={isConnected ? 'default' : 'destructive'} className="text-xs">
+            {isConnected ? 'Live' : 'Disconnected'}
           </Badge>
           <Button
             variant="outline"
@@ -513,9 +485,3 @@ export default function UnifiedDashboardPage() {
     </div>
   );
 }
-
-// ============================================================================
-// Sub-components
-// ============================================================================
-
-// Note: StatCard component has been extracted to @/components/features/common/StatCard

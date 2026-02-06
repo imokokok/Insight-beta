@@ -85,6 +85,7 @@ const MAX_LOGS = 10000;
 const BATCH_SIZE = 100;
 const PERSISTENCE_RETRY_ATTEMPTS = 3;
 const PERSISTENCE_RETRY_DELAY = 1000;
+const FETCH_TIMEOUT_MS = 5000; // 添加超时配置
 
 /**
  * 循环缓冲区 - 用于高效存储固定数量的日志条目
@@ -555,22 +556,46 @@ class SecurityAuditLogger {
     let attempt = 0;
 
     while (attempt < PERSISTENCE_RETRY_ATTEMPTS) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
       try {
-        await fetch('/api/audit/batch', {
+        const response = await fetch('/api/audit/batch', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(entries),
+          signal: controller.signal,
         });
+
+        clearTimeout(timeout);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         return;
       } catch (error) {
+        clearTimeout(timeout);
         attempt++;
+
+        const isAbortError = error instanceof Error && error.name === 'AbortError';
+        const errorMessage = isAbortError ? 'Request timeout' : String(error);
+
         if (attempt < PERSISTENCE_RETRY_ATTEMPTS) {
-          await new Promise((resolve) => setTimeout(resolve, PERSISTENCE_RETRY_DELAY * attempt));
+          const delay = PERSISTENCE_RETRY_DELAY * attempt;
+          logger.warn('Persistence attempt failed, retrying', {
+            attempt,
+            error: errorMessage,
+            delay,
+          });
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        } else {
+          logger.error('Failed to persist audit logs after all retries', {
+            attempts: attempt,
+            error: errorMessage,
+            entryCount: entries.length,
+          });
         }
-        logger.warn('Persistence attempt failed, retrying', {
-          attempt,
-          error,
-        });
       }
     }
 

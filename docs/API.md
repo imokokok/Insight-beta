@@ -19,354 +19,321 @@ Common error codes:
 - `forbidden`: Insufficient permissions
 - `rate_limited`: Too many requests
 - `invalid_request_body`: Invalid request parameters
-- `invalid_address`: Invalid address format
-- `missing_config`: Missing required configuration
-- `rpc_unreachable`: RPC node unreachable
-- `sync_failed`: Sync failed
-- `unknown_error`: Unknown error
+- `unauthorized`: Authentication required
+- `not_found`: Resource not found
+- `internal_error`: Server error
 
-When `INSIGHT_ADMIN_TOKEN` or `INSIGHT_ADMIN_TOKEN_SALT` is set, admin/write endpoints require authentication:
+Authentication:
 
-- `x-admin-token: <token>` or `Authorization: Bearer <token>`
+- Admin endpoints require `Authorization: Bearer <token>` header
 
 ## Health
 
 ### GET `/api/health`
 
-Used for deployment/monitoring health checks, checks DB connectivity.
+Health check endpoint with multiple probes:
+
+- `?probe=liveness` - Application is running
+- `?probe=readiness` - Application is ready to serve traffic
+- `?probe=validation` - Full configuration validation
 
 ## Oracle
 
-### GET `/api/oracle/config`
+### Price Data
 
-Read Oracle configuration (`OracleConfig`).
+#### GET `/api/oracle/unified`
 
-### PUT `/api/oracle/config` (Admin)
+Get unified price data from multiple protocols.
 
-Update Oracle configuration (supports partial field patch).
+Query params:
 
-Request body example:
+- `symbol` - Trading pair (e.g., ETH/USD)
+- `chain` - Blockchain network
+- `protocols` - Comma-separated protocol list
 
-```json
-{
-  "rpcUrl": "https://...",
-  "contractAddress": "0x...",
-  "chain": "Polygon",
-  "startBlock": 0,
-  "maxBlockRange": 10000,
-  "votingPeriodHours": 72
-}
-```
+#### GET `/api/oracle/comparison`
 
-### GET `/api/oracle/status`
+Compare prices across different protocols.
 
-View sync status and progress (`OracleStatusSnapshot`).
+#### GET `/api/oracle/chainlink`
 
-### POST `/api/oracle/sync` (Admin)
+Get Chainlink price feed data.
 
-Trigger a sync.
+### UMA Protocol
 
-### GET `/api/oracle/assertions`
+#### GET `/api/oracle/uma`
 
-Query assertion list, supports parameters:
+Get UMA protocol overview data.
 
-- `status`: `Pending | Disputed | Resolved` - Assertion status filter
-- `chain`: `Polygon | Arbitrum | Optimism | Local` - Blockchain network filter
-- `q`: Keywords (market/assertion/address etc.)
-- `limit`: Result limit, 1-100, default 30
-- `cursor`: Pagination cursor, default 0
-- `sync`: `0 | 1` - Admin only, whether to trigger sync first
-- `asserter`: Asserter address, filter assertions from specific address
-- `ids`: Comma-separated assertion IDs, exact filter for multiple assertions
+#### GET `/api/oracle/uma/assertions`
 
-Returns:
+List UMA assertions.
 
-```json
-{
-  "items": [...],
-  "total": 100,
-  "nextCursor": 30
-}
-```
+Query params:
 
-### GET `/api/oracle/assertions/[id]`
+- `status` - Filter by status (active, disputed, resolved)
+- `limit` - Result limit (1-100, default 30)
+- `cursor` - Pagination cursor
 
-Query assertion details.
+#### GET `/api/oracle/uma/assertions/[id]`
 
-### GET `/api/oracle/disputes`
+Get assertion details.
 
-Query dispute list/statistics.
+#### GET `/api/oracle/uma/disputes`
 
-### GET `/api/oracle/stats`
+List disputes.
 
-Oracle global statistics (TVS, active disputes, 24h resolved, average resolution time, etc.).
+#### GET `/api/oracle/uma/votes`
 
-### GET `/api/oracle/charts`
+Get voting data.
 
-Chart aggregated data (daily assertions, cumulative TVS, etc.).
+#### GET `/api/oracle/uma/stats`
 
-### GET `/api/oracle/leaderboard`
+Get UMA protocol statistics.
 
-Leaderboard data (top asserters/top disputers).
+#### GET `/api/oracle/uma/governance`
 
-## Alerts & Rules
+Get governance data.
 
-### GET `/api/oracle/alerts`
+#### POST `/api/oracle/uma/sync`
 
-Query alert list.
+Trigger UMA data sync (Admin).
 
-- `status`: `Open | Acknowledged | Resolved`
-- `severity`: `info | warning | critical`
-- `type`: Alert type filter
-- `q`: Keyword search
-- `limit`: Default 30
-- `cursor`: Pagination cursor
+### General
 
-### GET `/api/oracle/alert-rules` (Admin)
+#### GET `/api/oracle/assertions`
 
-Get all alert rules.
+List all assertions across protocols.
 
-### PUT `/api/oracle/alert-rules` (Admin)
+#### GET `/api/oracle/assertions/[id]`
 
-Fully update alert rules.
+Get assertion details.
 
-Request body:
+#### GET `/api/oracle/disputes`
 
-```json
-{
-  "rules": [
-    {
-      "id": "rule_1",
-      "name": "High Dispute Rate",
-      "enabled": true,
-      "event": "high_dispute_rate",
-      "severity": "warning",
-      "params": { ... },
-      "channels": ["webhook"],
-      "recipient": "https://..."
-    }
-  ]
-}
-```
+List all disputes.
 
-### POST `/api/oracle/alert-rules` (Admin)
+#### GET `/api/oracle/stats`
 
-Test alert rule (send test notification).
+Get oracle statistics.
 
-Request body: `{ "ruleId": "..." }`
+#### GET `/api/oracle/status`
 
-## Admin KV (Advanced)
+Get sync status.
 
-KV is used for backend internal state/configuration JSON, mainly for ops/debugging.
+#### POST `/api/oracle/sync`
 
-### GET `/api/admin/kv` (Admin)
+Trigger sync (Admin).
 
-- `?key=...`: Read single key
-- `?prefix=...&limit=...&offset=...`: List keys
+### Configuration
 
-### PUT `/api/admin/kv` (Admin)
+#### GET `/api/oracle/config`
 
-Write a JSON:
+Get oracle configuration.
 
-```json
-{ "key": "oracle-config.json", "value": {} }
-```
+#### PUT `/api/oracle/config`
 
-### DELETE `/api/admin/kv?key=...` (Admin)
+Update configuration (Admin).
 
-Delete a key.
+#### GET `/api/oracle/config/history`
 
-## Admin Tokens (RBAC)
+Get configuration history.
 
-When `INSIGHT_ADMIN_TOKEN_SALT` is set, you can use DB-persisted multiple tokens (revocable, rotatable), with role-based capability limits.
+#### GET `/api/oracle/config/versions`
 
-### GET `/api/admin/tokens` (Admin)
+List configuration versions.
 
-List created tokens (does not include plaintext/hash).
+### Alerts
 
-### POST `/api/admin/tokens` (Admin)
+#### GET `/api/oracle/alerts`
 
-Create token (returns plaintext token only once):
+List alerts.
 
-```json
-{ "label": "alerts-bot", "role": "alerts" }
-```
+#### POST `/api/oracle/alerts`
 
-### DELETE `/api/admin/tokens?id=...` (Admin)
+Create alert (Admin).
 
-Revoke a token.
+#### GET `/api/oracle/alerts/[id]`
 
----
+Get alert details.
 
-## WebSocket
+#### PUT `/api/oracle/alerts/[id]`
 
-Real-time data streaming via WebSocket.
+Update alert (Admin).
 
-### Connection
+#### DELETE `/api/oracle/alerts/[id]`
 
-```
-ws://localhost:3001
-```
+Delete alert (Admin).
 
-Or in production:
+#### GET `/api/oracle/alert-rules`
 
-```
-wss://your-domain.com/api/ws
-```
+List alert rules.
 
-### Message Format
+### Analytics
 
-All messages are JSON with the following structure:
+#### GET `/api/oracle/analytics/deviation`
 
-```json
-{
-  "type": "message_type",
-  "data": { ... }
-}
-```
+Get price deviation analysis.
 
-### Client -> Server Messages
+#### GET `/api/oracle/analytics/markets`
 
-#### Subscribe to Price Updates
+Get market analytics.
 
-```json
-{
-  "type": "subscribe",
-  "symbols": ["ETH/USD", "BTC/USD", "LINK/USD"]
-}
-```
+#### GET `/api/oracle/analytics/accuracy`
 
-#### Unsubscribe from Price Updates
+Get accuracy metrics.
 
-```json
-{
-  "type": "unsubscribe",
-  "symbols": ["ETH/USD"]
-}
-```
+### Charts
 
-#### Ping (Keep Connection Alive)
+#### GET `/api/oracle/charts`
 
-```json
-{
-  "type": "ping"
-}
-```
+Get chart data for price history.
 
-### Server -> Client Messages
+Query params:
 
-#### Price Update
+- `symbol` - Trading pair
+- `timeframe` - 1m, 5m, 1h, 1d
+- `from` - Start timestamp
+- `to` - End timestamp
 
-```json
-{
-  "type": "price_update",
-  "data": {
-    "symbol": "ETH/USD",
-    "price": 3500.5,
-    "timestamp": "2024-01-15T10:30:00Z",
-    "sources": ["chainlink", "pyth"],
-    "confidence": 0.98
-  }
-}
-```
+### Incidents
 
-#### Comparison Update
+#### GET `/api/oracle/incidents`
 
-```json
-{
-  "type": "comparison_update",
-  "data": {
-    "symbol": "ETH/USD",
-    "consensusPrice": 3500.5,
-    "deviations": [
-      { "protocol": "chainlink", "price": 3501.0, "deviation": 0.01 },
-      { "protocol": "pyth", "price": 3500.0, "deviation": -0.01 }
-    ],
-    "timestamp": "2024-01-15T10:30:00Z"
-  }
-}
-```
+List incidents.
 
-#### Error
+#### GET `/api/oracle/incidents/[id]`
 
-```json
-{
-  "type": "error",
-  "data": {
-    "code": "invalid_symbol",
-    "message": "Symbol not supported"
-  }
-}
-```
+Get incident details.
 
-#### Pong (Ping Response)
+### SLA
 
-```json
-{
-  "type": "pong",
-  "data": {
-    "timestamp": "2024-01-15T10:30:00Z"
-  }
-}
-```
+#### GET `/api/oracle/sla/stats`
 
-### Error Codes
+Get SLA statistics.
 
-- `invalid_message`: Message format is invalid
-- `invalid_symbol`: Requested symbol is not supported
-- `rate_limited`: Too many requests
-- `subscription_limit`: Maximum subscriptions reached
-- `internal_error`: Server internal error
+#### GET `/api/oracle/sla/reports`
 
-### Reconnection Strategy
+Get SLA reports.
 
-Clients should implement exponential backoff reconnection:
+## Security
 
-1. First retry: 1 second
-2. Second retry: 2 seconds
-3. Third retry: 4 seconds
-4. Maximum retry: 30 seconds
-5. Maximum attempts: 5
+#### GET `/api/security/detections`
 
-### Example Usage (JavaScript)
+List security detections.
 
-```javascript
-const ws = new WebSocket('ws://localhost:3001');
+#### GET `/api/security/detections/[id]`
 
-ws.onopen = () => {
-  console.log('Connected to WebSocket');
+Get detection details.
 
-  // Subscribe to price updates
-  ws.send(
-    JSON.stringify({
-      type: 'subscribe',
-      symbols: ['ETH/USD', 'BTC/USD'],
-    }),
-  );
-};
+#### POST `/api/security/detections/[id]/review`
 
-ws.onmessage = (event) => {
-  const message = JSON.parse(event.data);
+Review detection (Admin).
 
-  switch (message.type) {
-    case 'price_update':
-      console.log('Price update:', message.data);
-      break;
-    case 'comparison_update':
-      console.log('Comparison update:', message.data);
-      break;
-    case 'error':
-      console.error('WebSocket error:', message.data);
-      break;
-  }
-};
+#### GET `/api/security/alerts/unread-count`
 
-ws.onclose = () => {
-  console.log('Disconnected from WebSocket');
-  // Implement reconnection logic here
-};
+Get unread alert count.
 
-ws.onerror = (error) => {
-  console.error('WebSocket error:', error);
-};
-```
+#### GET `/api/security/alerts/stream`
+
+Stream security alerts (SSE).
+
+#### GET `/api/security/metrics`
+
+Get security metrics.
+
+#### GET `/api/security/trends`
+
+Get security trends.
+
+#### GET `/api/security/monitor-status`
+
+Get monitor status.
+
+#### POST `/api/security/monitor/start`
+
+Start monitoring (Admin).
+
+#### POST `/api/security/monitor/stop`
+
+Stop monitoring (Admin).
+
+#### GET `/api/security/config`
+
+Get security configuration.
+
+#### PUT `/api/security/config`
+
+Update security configuration (Admin).
+
+#### GET `/api/security/reports/export`
+
+Export security report.
+
+## Monitoring
+
+#### GET `/api/monitoring/health`
+
+Get detailed health metrics.
+
+#### GET `/api/monitoring/metrics`
+
+Get system metrics.
+
+#### GET `/api/monitoring/statistics`
+
+Get monitoring statistics.
+
+## Admin
+
+#### GET `/api/admin/tokens`
+
+List admin tokens (Admin).
+
+#### POST `/api/admin/tokens`
+
+Create admin token (Admin).
+
+#### DELETE `/api/admin/tokens`
+
+Revoke admin token (Admin).
+
+#### GET `/api/admin/kv`
+
+Get KV store data (Admin).
+
+#### POST `/api/admin/kv`
+
+Set KV store data (Admin).
+
+## Analytics
+
+#### POST `/api/analytics/web-vitals`
+
+Report web vitals metrics.
+
+## Solana
+
+#### GET `/api/solana/price`
+
+Get Solana price data.
+
+## GraphQL
+
+#### POST `/api/graphql`
+
+GraphQL endpoint for complex queries.
+
+## Documentation
+
+#### GET `/api/docs`
+
+API documentation (Swagger UI).
+
+#### GET `/api/docs/swagger`
+
+Swagger JSON spec.
+
+#### GET `/api/docs/openapi.json`
+
+OpenAPI specification.

@@ -1,6 +1,63 @@
 import { z } from 'zod';
 import { logger } from '@/lib/logger';
 
+// ============================================================================
+// 共享验证函数
+// ============================================================================
+
+/**
+ * 验证 PostgreSQL URL
+ */
+const validatePostgresUrl = (value: string | undefined): boolean => {
+  if (!value) return true;
+  try {
+    const url = new URL(value);
+    return ['postgres:', 'postgresql:'].includes(url.protocol);
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * 验证 RPC URL（支持多个 URL，逗号或空格分隔）
+ */
+const validateRpcUrl = (value: string | undefined): boolean => {
+  if (!value) return true;
+  const urls = value
+    .split(/[,\s]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (urls.length === 0) return true;
+  return urls.every((u) => {
+    try {
+      const url = new URL(u);
+      return ['http:', 'https:', 'ws:', 'wss:'].includes(url.protocol);
+    } catch {
+      return false;
+    }
+  });
+};
+
+/**
+ * 创建 URL 验证 schema（用于 RPC URLs）
+ */
+const createRpcUrlSchema = (fieldName: string) =>
+  z
+    .string()
+    .optional()
+    .transform((v) => (v ?? '').trim())
+    .refine(validateRpcUrl, { message: `invalid_${fieldName}` });
+
+/**
+ * 创建 PostgreSQL URL 验证 schema
+ */
+const createPostgresUrlSchema = (fieldName: string) =>
+  z
+    .string()
+    .optional()
+    .transform((v) => (v ?? '').trim())
+    .refine(validatePostgresUrl, { message: `invalid_${fieldName}` });
+
 export const env = {
   get DATABASE_URL() {
     return (process.env.DATABASE_URL ?? '').trim();
@@ -109,6 +166,12 @@ export const env = {
   },
   get INSIGHT_TELEGRAM_TIMEOUT_MS() {
     return (process.env.INSIGHT_TELEGRAM_TIMEOUT_MS ?? '').trim();
+  },
+  get INSIGHT_SLACK_WEBHOOK_URL() {
+    return (process.env.INSIGHT_SLACK_WEBHOOK_URL ?? process.env.SLACK_WEBHOOK_URL ?? '').trim();
+  },
+  get INSIGHT_SLACK_TIMEOUT_MS() {
+    return (process.env.INSIGHT_SLACK_TIMEOUT_MS ?? '').trim();
   },
   get INSIGHT_SMTP_HOST() {
     return (process.env.INSIGHT_SMTP_HOST ?? '').trim();
@@ -245,67 +308,15 @@ export function isEnvSet(key: keyof typeof env): boolean {
 }
 
 const envSchema = z.object({
-  DATABASE_URL: z
-    .string()
-    .optional()
-    .transform((v) => (v ?? '').trim())
-    .refine(
-      (value) => {
-        if (!value) return true;
-        try {
-          const url = new URL(value);
-          return ['postgres:', 'postgresql:'].includes(url.protocol);
-        } catch {
-          return false;
-        }
-      },
-      { message: 'invalid_database_url' },
-    ),
-  SUPABASE_DB_URL: z
-    .string()
-    .optional()
-    .transform((v) => (v ?? '').trim())
-    .refine(
-      (value) => {
-        if (!value) return true;
-        try {
-          const url = new URL(value);
-          return ['postgres:', 'postgresql:'].includes(url.protocol);
-        } catch {
-          return false;
-        }
-      },
-      { message: 'invalid_supabase_db_url' },
-    ),
+  DATABASE_URL: createPostgresUrlSchema('database_url'),
+  SUPABASE_DB_URL: createPostgresUrlSchema('supabase_db_url'),
   SUPABASE_URL: z.string().url().optional(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
   INSIGHT_ADMIN_TOKEN: z.string().min(1).optional(),
   INSIGHT_ADMIN_TOKEN_SALT: z.string().min(16).optional(),
   INSIGHT_CRON_SECRET: z.string().min(16).optional(),
   CRON_SECRET: z.string().min(16).optional(),
-  INSIGHT_RPC_URL: z
-    .string()
-    .optional()
-    .transform((v) => (v ?? '').trim())
-    .refine(
-      (value) => {
-        if (!value) return true;
-        const urls = value
-          .split(/[,\s]+/)
-          .map((s) => s.trim())
-          .filter(Boolean);
-        if (urls.length === 0) return true;
-        return urls.every((u) => {
-          try {
-            const url = new URL(u);
-            return ['http:', 'https:', 'ws:', 'wss:'].includes(url.protocol);
-          } catch {
-            return false;
-          }
-        });
-      },
-      { message: 'invalid_rpc_url' },
-    ),
+  INSIGHT_RPC_URL: createRpcUrlSchema('rpc_url'),
   INSIGHT_ALLOW_PRIVATE_RPC_URLS: z.enum(['true', 'false', '1', '0']).optional(),
   INSIGHT_CHAIN: z.enum(['Polygon', 'PolygonAmoy', 'Arbitrum', 'Optimism', 'Local']).optional(),
   INSIGHT_SLOW_REQUEST_MS: z.coerce.number().int().min(0).optional(),
@@ -342,6 +353,12 @@ const envSchema = z.object({
   INSIGHT_TELEGRAM_BOT_TOKEN: z.string().optional(),
   INSIGHT_TELEGRAM_CHAT_ID: z.string().optional(),
   INSIGHT_TELEGRAM_TIMEOUT_MS: z.preprocess(
+    (v) => (v === '' ? undefined : v),
+    z.coerce.number().int().min(1).optional(),
+  ),
+  INSIGHT_SLACK_WEBHOOK_URL: z.string().url().optional(),
+  SLACK_WEBHOOK_URL: z.string().url().optional(),
+  INSIGHT_SLACK_TIMEOUT_MS: z.preprocess(
     (v) => (v === '' ? undefined : v),
     z.coerce.number().int().min(1).optional(),
   ),
@@ -394,98 +411,11 @@ const envSchema = z.object({
   INSIGHT_BASE_URL: z.string().url().optional(),
   INSIGHT_CSP_MODE: z.enum(['relaxed', 'strict']).optional(),
 
-  POLYGON_AMOY_RPC_URL: z
-    .string()
-    .optional()
-    .transform((v) => (v ?? '').trim())
-    .refine(
-      (value) => {
-        if (!value) return true;
-        const urls = value
-          .split(/[,\s]+/)
-          .map((s) => s.trim())
-          .filter(Boolean);
-        if (urls.length === 0) return true;
-        return urls.every((u) => {
-          try {
-            const url = new URL(u);
-            return ['http:', 'https:', 'ws:', 'wss:'].includes(url.protocol);
-          } catch {
-            return false;
-          }
-        });
-      },
-      { message: 'invalid_polygon_amoy_rpc_url' },
-    ),
-  POLYGON_RPC_URL: z
-    .string()
-    .optional()
-    .transform((v) => (v ?? '').trim())
-    .refine(
-      (value) => {
-        if (!value) return true;
-        const urls = value
-          .split(/[,\s]+/)
-          .map((s) => s.trim())
-          .filter(Boolean);
-        if (urls.length === 0) return true;
-        return urls.every((u) => {
-          try {
-            const url = new URL(u);
-            return ['http:', 'https:', 'ws:', 'wss:'].includes(url.protocol);
-          } catch {
-            return false;
-          }
-        });
-      },
-      { message: 'invalid_polygon_rpc_url' },
-    ),
-  ARBITRUM_RPC_URL: z
-    .string()
-    .optional()
-    .transform((v) => (v ?? '').trim())
-    .refine(
-      (value) => {
-        if (!value) return true;
-        const urls = value
-          .split(/[,\s]+/)
-          .map((s) => s.trim())
-          .filter(Boolean);
-        if (urls.length === 0) return true;
-        return urls.every((u) => {
-          try {
-            const url = new URL(u);
-            return ['http:', 'https:', 'ws:', 'wss:'].includes(url.protocol);
-          } catch {
-            return false;
-          }
-        });
-      },
-      { message: 'invalid_arbitrum_rpc_url' },
-    ),
-  OPTIMISM_RPC_URL: z
-    .string()
-    .optional()
-    .transform((v) => (v ?? '').trim())
-    .refine(
-      (value) => {
-        if (!value) return true;
-        const urls = value
-          .split(/[,\s]+/)
-          .map((s) => s.trim())
-          .filter(Boolean);
-        if (urls.length === 0) return true;
-        return urls.every((u) => {
-          try {
-            const url = new URL(u);
-            return ['http:', 'https:', 'ws:', 'wss:'].includes(url.protocol);
-          } catch {
-            return false;
-          }
-        });
-      },
-      { message: 'invalid_optimism_rpc_url' },
-    ),
+  // 使用共享验证函数简化 RPC URL 验证
+  POLYGON_AMOY_RPC_URL: createRpcUrlSchema('polygon_amoy_rpc_url'),
+  POLYGON_RPC_URL: createRpcUrlSchema('polygon_rpc_url'),
+  ARBITRUM_RPC_URL: createRpcUrlSchema('arbitrum_rpc_url'),
+  OPTIMISM_RPC_URL: createRpcUrlSchema('optimism_rpc_url'),
   INSIGHT_CONFIG_ENCRYPTION_KEY: z.string().min(32).optional(),
   INSIGHT_REDIS_URL: z.string().url().optional(),
 });

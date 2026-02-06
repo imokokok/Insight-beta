@@ -8,6 +8,7 @@
 import { query } from '@/server/db';
 import { logger } from '@/lib/logger';
 import { NotificationService, type AlertNotification, type AlertSeverity } from './notifications';
+import { SafeExpressionEvaluator } from '@/lib/security/safeExpressionEvaluator';
 
 const notificationService = new NotificationService();
 import type { OracleProtocol, SupportedChain } from '@/lib/types/unifiedOracleTypes';
@@ -510,114 +511,34 @@ export class AlertRuleEngine {
   }
 
   /**
-   * 评估 JavaScript 表达式
+   * 评估表达式
    *
-   * 安全改进：
+   * 使用 SafeExpressionEvaluator 替代 new Function()，提供更强的安全保障：
    * 1. 表达式长度限制（防止 DoS）
    * 2. 禁止危险关键字（eval, Function, require 等）
    * 3. 只允许白名单中的操作符和函数
-   * 4. 超时保护（防止无限循环）
-   *
-   * 注意：虽然使用了 new Function，但通过以下措施保证安全：
-   * - 严格的输入验证
-   * - 受限的执行上下文
-   * - 表达式复杂度限制
+   * 4. 自定义词法分析和语法解析，无代码执行风险
    */
   private evaluateExpression(
     expression: string,
     context: AlertEvaluationContext,
     variables: Record<string, unknown>,
   ): boolean {
-    try {
-      // 1. 长度检查
-      const MAX_EXPRESSION_LENGTH = 500;
-      if (expression.length > MAX_EXPRESSION_LENGTH) {
-        logger.warn('Expression too long', {
-          length: expression.length,
-          max: MAX_EXPRESSION_LENGTH,
-        });
-        return false;
-      }
+    // 构建评估上下文
+    const evalContext = {
+      // 上下文数据
+      protocol: context.protocol,
+      chain: context.chain,
+      symbol: context.symbol,
+      price: context.price,
+      timestamp: context.timestamp,
+      metadata: context.metadata,
+      // 额外变量（只接受基本类型）
+      ...this.sanitizeVariables(variables),
+    };
 
-      // 2. 危险关键字检查
-      const dangerousPatterns = [
-        /eval\s*\(/i,
-        /Function\s*\(/i,
-        /require\s*\(/i,
-        /import\s*\(/i,
-        /process/i,
-        /global/i,
-        /window/i,
-        /document/i,
-        /fetch\s*\(/i,
-        /XMLHttpRequest/i,
-        /WebSocket/i,
-        /setTimeout/i,
-        /setInterval/i,
-        /while\s*\(/i,
-        /for\s*\(/i,
-      ];
-
-      for (const pattern of dangerousPatterns) {
-        if (pattern.test(expression)) {
-          logger.warn('Expression contains dangerous pattern', {
-            expression,
-            pattern: pattern.source,
-          });
-          return false;
-        }
-      }
-
-      // 3. 只允许白名单字符（数学表达式、比较、逻辑运算）
-      const allowedPattern = /^[\w\s+\-*/%<>=!&|().,:[\]"'${}_]+$/;
-      if (!allowedPattern.test(expression)) {
-        logger.warn('Expression contains invalid characters', { expression });
-        return false;
-      }
-
-      // 构建安全的评估上下文
-      const evalContext = {
-        // 上下文数据
-        protocol: context.protocol,
-        chain: context.chain,
-        symbol: context.symbol,
-        price: context.price,
-        timestamp: context.timestamp,
-        metadata: context.metadata,
-        // 额外变量（只接受基本类型）
-        ...this.sanitizeVariables(variables),
-        // 常用数学函数（白名单）
-        Math: {
-          abs: Math.abs,
-          max: Math.max,
-          min: Math.min,
-          round: Math.round,
-          floor: Math.floor,
-          ceil: Math.ceil,
-          pow: Math.pow,
-          sqrt: Math.sqrt,
-          PI: Math.PI,
-          E: Math.E,
-        },
-        // 当前时间戳（只读）
-        now: Date.now(),
-      };
-
-      // 创建函数并执行
-      const keys = Object.keys(evalContext);
-      const values = Object.values(evalContext);
-
-      const fn = new Function(...keys, `return (${expression});`);
-      const result = fn(...values);
-
-      return Boolean(result);
-    } catch (error) {
-      logger.error('Expression evaluation failed', {
-        error: error instanceof Error ? error.message : String(error),
-        expression: expression.substring(0, 100),
-      });
-      return false;
-    }
+    // 使用安全的表达式评估器
+    return SafeExpressionEvaluator.evaluate(expression, evalContext);
   }
 
   /**

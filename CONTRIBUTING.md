@@ -1,50 +1,25 @@
 # Contributing to Insight
 
-First off, thanks for taking the time to contribute! 🎉
+感谢你的贡献！
 
-The following is a set of guidelines for contributing to Insight. These are mostly guidelines, not rules. Use your best judgment, and feel free to propose changes to this document in a pull request.
+## 贡献流程
 
-## Code of Conduct
+1. **提交 Issue** - 报告 bug 或建议新功能
+2. **Fork 仓库** - 创建你的分支
+3. **提交 PR** - 遵循以下规范
 
-This project and everyone participating in it is governed by our Code of Conduct. By participating, you are expected to uphold this code.
+## 提交规范
 
-## How Can I Contribute?
+- 使用现在时态 ("Add feature" 而非 "Added feature")
+- 使用祈使语气 ("Move cursor to..." 而非 "Moves cursor to...")
+- 首行限制在 72 字符以内
 
-### Reporting Bugs
+## 开发设置
 
-- **Ensure the bug was not already reported** by searching on GitHub under [Issues](https://github.com/your-org/insight/issues).
-- If you're unable to find an open issue addressing the problem, open a new one. Be sure to include a **title and clear description**, as much relevant information as possible, and a **code sample** or an **executable test case** demonstrating the expected behavior that is not occurring.
+```bash
+npm install
+npm run dev
+npm test
+```
 
-### Suggesting Enhancements
-
-- Open a new issue with a clear title and detailed description.
-- Explain why this enhancement would be useful to most users.
-
-### Pull Requests
-
-- Fill in the required template
-- Do not include issue numbers in the PR title
-- Include screenshots and animated GIFs in your pull request whenever possible.
-- Follow the style guides.
-
-## Styleguides
-
-### Git Commit Messages
-
-- Use the present tense ("Add feature" not "Added feature")
-- Use the imperative mood ("Move cursor to..." not "Moves cursor to...")
-- Limit the first line to 72 characters or less
-- Reference issues and pull requests liberally after the first line
-
-### JavaScript / TypeScript Styleguide
-
-- All JavaScript must adhere to [Prettier](https://prettier.io) standard.
-- Run `npm run lint` before committing to ensure no linting errors.
-
-## Development Setup
-
-For a detailed guide on setting up your development environment and understanding the project structure, please refer to the [Development Guide](docs/DEVELOPMENT_GUIDE.md).
-
-1.  Run `npm install` to install dependencies.
-2.  Run `npm run dev` to start the local development server.
-3.  Ensure all tests pass using `npm test`.
+详细开发指南请参考 [Development Guide](docs/DEVELOPMENT_GUIDE.md)

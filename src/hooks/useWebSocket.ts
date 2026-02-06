@@ -214,6 +214,11 @@ export function useWebSocket(url: string, options: WebSocketOptions = {}) {
     clearTimers();
 
     if (wsRef.current) {
+      // 彻底清理事件监听器，防止内存泄漏
+      wsRef.current.onopen = null;
+      wsRef.current.onclose = null;
+      wsRef.current.onerror = null;
+      wsRef.current.onmessage = null;
       wsRef.current.close();
       wsRef.current = null;
     }

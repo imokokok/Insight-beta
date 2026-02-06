@@ -79,17 +79,101 @@ interface TransactionData {
 }
 
 // ============================================================================
+// 循环价格缓冲区 - 优化内存使用
+// ============================================================================
+
+class CircularPriceBuffer {
+  private buffer: (PriceDataPoint | undefined)[];
+  private head = 0;
+  private count = 0;
+
+  constructor(private capacity: number) {
+    this.buffer = new Array(capacity);
+  }
+
+  /**
+   * 添加数据点
+   */
+  push(item: PriceDataPoint): void {
+    this.buffer[this.head] = item;
+    this.head = (this.head + 1) % this.capacity;
+    if (this.count < this.capacity) {
+      this.count++;
+    }
+  }
+
+  /**
+   * 批量添加数据点
+   */
+  pushMany(items: PriceDataPoint[]): void {
+    for (const item of items) {
+      this.push(item);
+    }
+  }
+
+  /**
+   * 获取时间戳之后的数据点（使用生成器避免创建新数组）
+   */
+  *getItemsSince(cutoff: number): Generator<PriceDataPoint> {
+    // 从最新数据开始遍历
+    for (let i = 0; i < this.count; i++) {
+      const idx = (this.head - 1 - i + this.capacity) % this.capacity;
+      const item = this.buffer[idx];
+      if (item && item.timestamp > cutoff) {
+        yield item;
+      }
+    }
+  }
+
+  /**
+   * 获取所有数据点（按时间排序）
+   */
+  getAllSorted(): PriceDataPoint[] {
+    const result: PriceDataPoint[] = [];
+    for (let i = 0; i < this.count; i++) {
+      const idx = (this.head - 1 - i + this.capacity) % this.capacity;
+      const item = this.buffer[idx];
+      if (item) {
+        result.push(item);
+      }
+    }
+    // 按时间戳升序排序
+    return result.reverse();
+  }
+
+  /**
+   * 获取数据点数量
+   */
+  get length(): number {
+    return this.count;
+  }
+
+  /**
+   * 清空缓冲区
+   */
+  clear(): void {
+    this.buffer.fill(undefined);
+    this.head = 0;
+    this.count = 0;
+  }
+}
+
+// ============================================================================
 // 检测引擎主类
 // ============================================================================
 
 export class ManipulationDetector {
   private config: ManipulationDetectionConfig;
-  private priceHistory: Map<string, PriceDataPoint[]> = new Map();
+  private priceHistory: Map<string, CircularPriceBuffer> = new Map();
   private detectionHistory: ManipulationDetection[] = [];
   private lastAlertTime: Map<string, number> = new Map();
+  private readonly maxPriceHistoryPerFeed: number;
 
   constructor(config: Partial<ManipulationDetectionConfig> = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };
+    // 根据时间窗口和数据点间隔计算最大历史记录数
+    // 假设每5秒一个数据点，时间窗口为5分钟
+    this.maxPriceHistoryPerFeed = Math.ceil(this.config.timeWindowMs / 5000) + 100;
   }
 
   // ============================================================================
@@ -212,8 +296,8 @@ export class ManipulationDetector {
     evidence: DetectionEvidence[];
     suspiciousTxs: SuspiciousTransaction[];
   } | null {
-    const history = this.priceHistory.get(feedKey);
-    if (!history || history.length < this.config.minDataPoints) {
+    const history = this.getSortedPriceHistory(feedKey);
+    if (history.length < this.config.minDataPoints) {
       return null;
     }
 
@@ -467,8 +551,8 @@ export class ManipulationDetector {
     evidence: DetectionEvidence[];
     suspiciousTxs: SuspiciousTransaction[];
   } | null {
-    const history = this.priceHistory.get(feedKey);
-    if (!history || history.length < 2) {
+    const history = this.getSortedPriceHistory(feedKey);
+    if (history.length < 2) {
       return null;
     }
 
@@ -520,16 +604,24 @@ export class ManipulationDetector {
     _currentPrice: number,
     historicalData: PriceDataPoint[],
   ): void {
-    const existing = this.priceHistory.get(feedKey) || [];
-    const combined = [...existing, ...historicalData];
+    // 获取或创建循环缓冲区
+    let buffer = this.priceHistory.get(feedKey);
+    if (!buffer) {
+      buffer = new CircularPriceBuffer(this.maxPriceHistoryPerFeed);
+      this.priceHistory.set(feedKey, buffer);
+    }
 
-    // 只保留时间窗口内的数据
-    const cutoff = Date.now() - this.config.timeWindowMs;
-    const filtered = combined
-      .filter((p) => p.timestamp > cutoff)
-      .sort((a, b) => a.timestamp - b.timestamp);
+    // 批量添加历史数据
+    buffer.pushMany(historicalData);
+  }
 
-    this.priceHistory.set(feedKey, filtered);
+  /**
+   * 获取排序后的价格历史
+   */
+  private getSortedPriceHistory(feedKey: string): PriceDataPoint[] {
+    const buffer = this.priceHistory.get(feedKey);
+    if (!buffer) return [];
+    return buffer.getAllSorted();
   }
 
   private isFlashLoanTransaction(tx: TransactionData): boolean {
@@ -576,8 +668,8 @@ export class ManipulationDetector {
   }
 
   private calculatePriceImpact(feedKey: string, currentPrice: number): number | undefined {
-    const history = this.priceHistory.get(feedKey);
-    if (!history || history.length < 2) return undefined;
+    const history = this.getSortedPriceHistory(feedKey);
+    if (history.length < 2) return undefined;
 
     const previousItem = history[history.length - 2];
     if (!previousItem) return undefined;

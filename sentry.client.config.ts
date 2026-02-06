@@ -1,9 +1,10 @@
 import * as Sentry from '@sentry/nextjs';
+import { logger } from './src/lib/logger';
 
 const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
 
 if (!dsn) {
-  console.warn('Sentry DSN not configured, error tracking disabled');
+  logger.warn('Sentry DSN not configured, error tracking disabled');
 }
 
 Sentry.init({
@@ -94,12 +95,6 @@ Sentry.init({
 
   // 启用自动会话追踪
   autoSessionTracking: true,
-
-  // 会话超时（毫秒）
-  sessionTrackingIntervalMs: 30000,
-
-  // 启用错误去重
-  dedupe: true,
 
   // 最大面包屑数量
   maxBreadcrumbs: 100,

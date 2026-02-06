@@ -57,58 +57,71 @@ async function extractUsedKeys(): Promise<Set<string>> {
     ignore: ['**/*.test.ts', '**/*.spec.ts', '**/node_modules/**'],
   });
 
-  for (const file of files) {
-    const content = fs.readFileSync(path.join(SRC_DIR, file), 'utf-8');
+  // 使用 Promise.all 并行读取文件，提高性能
+  await Promise.all(
+    files.map(async (file: string) => {
+      const content = await fs.promises.readFile(path.join(SRC_DIR, file), 'utf-8');
 
-    for (const pattern of patterns) {
-      let match;
-      while ((match = pattern.exec(content)) !== null) {
-        const key = match[1];
-        // Skip dynamic keys (containing variables)
-        if (!key.includes('${') && !key.includes('+')) {
-          usedKeys.add(key);
+      for (const pattern of patterns) {
+        let match;
+        while ((match = pattern.exec(content)) !== null) {
+          const key = match[1];
+          // Skip dynamic keys (containing variables)
+          if (!key.includes('${') && !key.includes('+')) {
+            usedKeys.add(key);
+          }
         }
       }
-    }
-  }
+    }),
+  );
 
   return usedKeys;
 }
 
 // Get all keys from translation files
-function getAllTranslationKeys(): Map<string, Set<string>> {
+async function getAllTranslationKeys(): Promise<Map<string, Set<string>>> {
   const langKeys = new Map<string, Set<string>>();
 
-  const langDirs = fs.readdirSync(LOCALES_DIR).filter((dir) => {
-    return fs.statSync(path.join(LOCALES_DIR, dir)).isDirectory();
-  });
+  const langDirs = await fs.promises.readdir(LOCALES_DIR);
+  const validLangDirs = await Promise.all(
+    langDirs.map(async (dir) => {
+      const stat = await fs.promises.stat(path.join(LOCALES_DIR, dir));
+      return stat.isDirectory() ? dir : null;
+    }),
+  );
 
-  for (const lang of langDirs) {
+  for (const lang of validLangDirs.filter((dir): dir is string => dir !== null)) {
     const keys = new Set<string>();
     const langDir = path.join(LOCALES_DIR, lang);
 
     // Read index.ts to get all namespaces
     const indexPath = path.join(langDir, 'index.ts');
-    if (fs.existsSync(indexPath)) {
-      const indexContent = fs.readFileSync(indexPath, 'utf-8');
+    try {
+      const indexContent = await fs.promises.readFile(indexPath, 'utf-8');
       const namespaceMatches = indexContent.match(/import \{ (\w+) \} from/g);
 
       if (namespaceMatches) {
-        for (const match of namespaceMatches) {
-          const nsName = match.match(/import \{ (\w+) \} from/)?.[1];
-          if (nsName) {
-            const nsFile = path.join(langDir, `${nsName}.ts`);
-            if (fs.existsSync(nsFile)) {
-              // Simple regex extraction (not perfect but works for most cases)
-              const content = fs.readFileSync(nsFile, 'utf-8');
-              const exportMatch = content.match(/export const \w+ = \{([\s\S]*?)\};/);
-              if (exportMatch) {
-                extractKeysFromText(exportMatch[1], nsName, keys);
+        await Promise.all(
+          namespaceMatches.map(async (match) => {
+            const nsName = match.match(/import \{ (\w+) \} from/)?.[1];
+            if (nsName) {
+              const nsFile = path.join(langDir, `${nsName}.ts`);
+              try {
+                // Simple regex extraction (not perfect but works for most cases)
+                const content = await fs.promises.readFile(nsFile, 'utf-8');
+                const exportMatch = content.match(/export const \w+ = \{([\s\S]*?)\};/);
+                if (exportMatch) {
+                  extractKeysFromText(exportMatch[1], nsName, keys);
+                }
+              } catch {
+                // File doesn't exist or can't be read, skip
               }
             }
-          }
-        }
+          }),
+        );
       }
+    } catch {
+      // index.ts doesn't exist, skip
     }
 
     langKeys.set(lang, keys);
@@ -133,7 +146,7 @@ async function validateTranslations() {
   log(`   Found ${usedKeys.size} unique translation keys in code`, 'green');
 
   log('\n📚 Loading translation files...', 'cyan');
-  const langKeys = getAllTranslationKeys();
+  const langKeys = await getAllTranslationKeys();
 
   const enKeys = langKeys.get('en');
   if (!enKeys) {

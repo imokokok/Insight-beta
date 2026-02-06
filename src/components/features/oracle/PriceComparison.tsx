@@ -7,13 +7,17 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { RefreshCw, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
 import { logger } from '@/lib/logger';
+import { useState } from 'react';
 
 // ============================================================================
 // Types
@@ -51,21 +55,45 @@ interface PriceComparisonData {
 }
 
 // ============================================================================
+// Form Schema
+// ============================================================================
+
+const formSchema = z.object({
+  symbol: z
+    .string()
+    .min(1, '请输入交易对')
+    .regex(/^[A-Z0-9]+\/[A-Z0-9]+$/, '格式应为 XXX/XXX (如: ETH/USD)'),
+});
+
+type FormData = z.infer<typeof formSchema>;
+
+// ============================================================================
 // Component
 // ============================================================================
 
 export function PriceComparison() {
-  const [symbol, setSymbol] = useState('ETH/USD');
   const [comparison, setComparison] = useState<PriceComparisonData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchComparison = useCallback(async () => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+  } = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      symbol: 'ETH/USD',
+    },
+  });
+
+  const fetchComparison = useCallback(async (formData: FormData) => {
     setLoading(true);
     setError(null);
     try {
       const response = await fetch(
-        `/api/oracle/unified?action=comparison&symbol=${encodeURIComponent(symbol)}`,
+        `/api/oracle/unified?action=comparison&symbol=${encodeURIComponent(formData.symbol)}`,
       );
       if (!response.ok) {
         throw new Error(`Failed to fetch comparison: ${response.statusText}`);
@@ -78,22 +106,19 @@ export function PriceComparison() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch comparison';
       setError(errorMessage);
-      logger.error('Failed to fetch comparison', { error: err, symbol });
+      logger.error('Failed to fetch comparison', { error: err, symbol: formData.symbol });
     }
     setLoading(false);
-  }, [symbol]);
+  }, []);
 
+  // Initial fetch
   useEffect(() => {
-    fetchComparison();
-  }, [fetchComparison]);
+    handleSubmit(fetchComparison)();
+  }, [handleSubmit, fetchComparison]);
 
+  // Handle symbol input change - convert to uppercase
   const handleSymbolChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSymbol(e.target.value.toUpperCase());
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    fetchComparison();
+    setValue('symbol', e.target.value.toUpperCase(), { shouldValidate: true });
   };
 
   // 计算偏差
@@ -125,14 +150,19 @@ export function PriceComparison() {
             <TrendingUp className="h-5 w-5" />
             跨协议价格对比
           </CardTitle>
-          <form onSubmit={handleSubmit} className="flex gap-2">
-            <Input
-              type="text"
-              value={symbol}
-              onChange={handleSymbolChange}
-              placeholder="输入交易对 (如: ETH/USD)"
-              className="w-40"
-            />
+          <form onSubmit={handleSubmit(fetchComparison)} className="flex items-start gap-2">
+            <div className="flex flex-col">
+              <Input
+                type="text"
+                {...register('symbol', { onChange: handleSymbolChange })}
+                placeholder="输入交易对 (如: ETH/USD)"
+                className="w-40"
+                aria-invalid={errors.symbol ? 'true' : 'false'}
+              />
+              {errors.symbol && (
+                <span className="mt-1 text-xs text-red-500">{errors.symbol.message}</span>
+              )}
+            </div>
             <Button type="submit" variant="outline" size="sm" disabled={loading}>
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             </Button>

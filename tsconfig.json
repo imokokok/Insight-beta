@@ -36,7 +36,9 @@
     "src/**/*.tsx",
     ".next-dev/types/**/*.ts",
     ".next-dev/types/**/*.d.ts",
-    ".next/dev/types/**/*.ts"
+    ".next/dev/types/**/*.ts",
+    "websocket-server.ts",
+    ".next-dev/dev/types/**/*.ts"
   ],
   "exclude": ["node_modules", "contracts", "test", "hardhat.config.ts"]
 }

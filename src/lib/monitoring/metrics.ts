@@ -10,6 +10,7 @@ import {
   type Histogram,
   type Counter,
 } from '@opentelemetry/api';
+import { logger } from '@/lib/logger';
 
 // ============================================================================
 // 全局 Meter
@@ -55,7 +56,7 @@ export const metrics = {
       }
       histogram.record(value, attributes);
     } catch (error) {
-      console.error(`Failed to record histogram ${name}:`, error);
+      logger.error(`Failed to record histogram ${name}`, { error });
     }
   },
 
@@ -77,7 +78,7 @@ export const metrics = {
       }
       counter.add(value, attributes);
     } catch (error) {
-      console.error(`Failed to increment counter ${name}:`, error);
+      logger.error(`Failed to increment counter ${name}`, { error });
     }
   },
 
@@ -150,16 +151,13 @@ export function trackPerformance(
   metricName: string,
   attributes?: Record<string, string | number | boolean>,
 ) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return function <T extends (...args: any[]) => any>(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    _target: any,
+  return function <T extends (...args: unknown[]) => unknown>(
+    _target: object,
     _propertyKey: string,
     descriptor: PropertyDescriptor,
   ): PropertyDescriptor {
-    const originalMethod = descriptor.value;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    descriptor.value = async function (...args: any[]): Promise<ReturnType<T>> {
+    const originalMethod = descriptor.value as T;
+    descriptor.value = async function (...args: unknown[]): Promise<unknown> {
       const startTime = performance.now();
       try {
         const result = await originalMethod.apply(this, args);

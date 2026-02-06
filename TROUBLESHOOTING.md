@@ -1,64 +1,84 @@
 # Troubleshooting Guide
 
-This guide helps you resolve common issues when running Insight Oracle in production.
+This guide helps you resolve common issues when running OracleMonitor in production.
 
 ## 1. Startup Failures
 
-### "Invalid environment variables"
+### "Cannot find module" or build errors
 
-The application validates environment variables on startup.
+- Ensure all dependencies are installed: `npm install`
+- Rebuild the application: `npm run build`
 
-- **INSIGHT_ADMIN_TOKEN_SALT**: Must be at least 16 characters.
-- **INSIGHT_RPC_URL**: Must be a valid URL (http/https/ws/wss).
-- **INSIGHT_ORACLE_ADDRESS**: Must be a valid 0x Ethereum address.
+### Database connection errors
 
-### "missing_database_url"
+- Verify `DATABASE_URL` is correctly set
+- Check PostgreSQL is running and accessible
+- Ensure database user has proper permissions
 
-While the app can run in memory-only mode for development, some features (like Admin API or persistent indexing) might require a database.
+## 2. Price Sync Issues
 
-- Ensure `DATABASE_URL` is set in `.env.production`.
-- If using Supabase, ensure you are using the Transaction Pooler URL (port 6543) instead of the Session URL (port 5432) for better stability in serverless environments.
+### Prices not updating
 
-## 2. Sync Issues
+- Check RPC provider status and rate limits
+- Verify `ETHEREUM_RPC_URL` or other chain RPC URLs are set
+- Check logs: `docker logs <container> | grep -i error`
 
-### Oracle not syncing (Last processed block is 0)
+### RPC rate limiting
 
-- Check your **RPC Provider**: Public RPCs often rate-limit requests. Use a paid provider (Alchemy, Infura, QuickNode).
-- Check **Chain ID**: Ensure `INSIGHT_CHAIN` matches the network of your `INSIGHT_RPC_URL`.
-- Check Logs:
-  ```bash
-  # View logs (if using PM2 or Docker)
-  docker logs insight-oracle | grep "error"
-  ```
-- Look for `eth_getLogs` errors or timeouts.
+- Use paid RPC providers (Alchemy, Infura, QuickNode)
+- Configure multiple RPC endpoints for failover
+- Monitor RPC usage and upgrade plan if needed
 
-### "Worker lock client unhealthy"
+## 3. Performance Issues
 
-This means the background worker lost connection to the database.
+### High response times
 
-- This usually self-heals.
-- If persistent, restart the worker process.
+- Check database query performance
+- Verify Redis cache is working: `npm run check:prod`
+- Monitor memory and CPU usage
 
-## 3. Performance & Scaling
+### Database connection errors
 
-### "Too Many Requests" (429)
+- Use connection pooler (PgBouncer)
+- Increase `max_connections` in PostgreSQL
+- Check for connection leaks
 
-The API has built-in rate limiting.
+## 4. Alert Issues
 
-- Default limit is usually generous (e.g., 100-1000 req/min).
-- If you are hitting this from your own frontend, consider increasing the limit in `src/server/apiResponse/rateLimit.ts` or whitelisting your IP.
+### Alerts not sending
 
-### Database Connection Exhaustion
+- Verify `SLACK_WEBHOOK_URL` or Telegram settings
+- Check alert rules are configured correctly
+- Review alert logs in application logs
 
-- **Symptom**: `remaining connection slots are reserved for non-replication superuser connections`
-- **Fix**: Use a connection pooler (PgBouncer/Supabase Transaction Mode). Do not connect directly to Postgres from Next.js Serverless functions without a pooler.
+## 5. Verification
 
-## 4. Verification
-
-Use the included script to verify system health:
+Run the production check script:
 
 ```bash
 npm run check:prod
 ```
 
-If the output shows `Syncing` or `Synced`, the core logic is working.
+This will verify:
+
+- Database connectivity
+- Redis connectivity
+- RPC endpoints
+- Health check endpoints
+
+## 6. Common Error Codes
+
+| Error                        | Cause                        | Solution                     |
+| ---------------------------- | ---------------------------- | ---------------------------- |
+| `database_connection_failed` | Cannot connect to PostgreSQL | Check DATABASE_URL           |
+| `redis_connection_failed`    | Cannot connect to Redis      | Check REDIS_URL              |
+| `rpc_unavailable`            | RPC endpoint not responding  | Check RPC URLs               |
+| `rate_limited`               | Too many requests            | Wait or increase rate limits |
+| `unauthorized`               | Invalid or missing token     | Check ADMIN_TOKEN            |
+
+## 7. Getting Help
+
+1. Check application logs: `docker logs <container>`
+2. Review error tracking in Sentry (if configured)
+3. Check health endpoint: `/api/health?probe=validation`
+4. Review documentation in `/docs`
