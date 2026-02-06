@@ -19,7 +19,7 @@ import { formatTimeAgo, truncateAddress } from '@/lib/utils/format';
 import { ORACLE_PROTOCOLS, type OracleProtocol } from '@/lib/types';
 import { SUPPORTED_CHAINS } from '@/lib/types/protocol';
 import { getProtocolConfig } from '@/lib/protocol-config';
-import { ChartSkeleton } from '@/components/common/PageSkeleton';
+import { ChartSkeleton } from '@/components/ui/skeleton';
 
 // Dynamic imports for heavy components with recharts
 const PriceHistoryChart = lazy(() =>

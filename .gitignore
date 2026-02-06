@@ -9,3 +9,28 @@ cache/
 typechain-types/
 *.tsbuildinfo
 test-results/
+
+# 服务构建输出
+services/**/dist/
+
+# Lighthouse CI 输出
+.lighthouseci/
+
+# Storybook 构建输出
+storybook-static/
+
+# 测试覆盖率报告
+coverage/
+
+# 生成的文档
+docs/generated/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 操作系统
+.DS_Store
+Thumbs.db

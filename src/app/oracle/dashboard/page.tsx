@@ -31,7 +31,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn, fetchApiData } from '@/lib/utils';
-import { ChartSkeleton } from '@/components/common/PageSkeleton';
+import { ChartSkeleton } from '@/components/ui/skeleton';
 
 // Dynamic imports for oracle components
 const PriceFeedList = lazy(() =>

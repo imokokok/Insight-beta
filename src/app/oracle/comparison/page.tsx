@@ -15,7 +15,7 @@ import { useToast } from '@/components/ui/toast';
 import { useI18n } from '@/i18n';
 import { logger } from '@/lib/logger';
 import { ComparisonControls } from '@/components/features/comparison/ComparisonControls';
-import { ChartSkeleton, TableSkeleton } from '@/components/common/PageSkeleton';
+import { ChartSkeleton } from '@/components/ui/skeleton';
 import type {
   ComparisonFilter,
   ComparisonConfig,
@@ -677,7 +677,16 @@ export default function ComparisonPage() {
         )}
 
         {currentView === 'table' && (
-          <Suspense fallback={<TableSkeleton rows={10} />}>
+          <Suspense
+            fallback={
+              <div className="space-y-2">
+                <div className="h-10 animate-pulse rounded-lg bg-gray-200" />
+                {Array.from({ length: 10 }).map((_, i) => (
+                  <div key={i} className="h-12 animate-pulse rounded-lg bg-gray-100" />
+                ))}
+              </div>
+            }
+          >
             <VirtualTable
               data={realtimeData}
               isLoading={isLoading}

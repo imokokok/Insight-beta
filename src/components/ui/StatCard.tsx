@@ -76,21 +76,4 @@ export function StatCard({
   );
 }
 
-/**
- * StatCard Skeleton - 加载状态
- */
-export function StatCardSkeleton({ className }: { className?: string }) {
-  return (
-    <Card className={cn('border-0 shadow-sm', className)}>
-      <CardContent className="flex items-center gap-4 p-6">
-        <div className="animate-pulse rounded-lg bg-gray-100 p-3">
-          <div className="h-5 w-5 rounded bg-gray-200" />
-        </div>
-        <div className="flex-1 space-y-2">
-          <div className="h-4 w-20 animate-pulse rounded bg-gray-200" />
-          <div className="h-8 w-16 animate-pulse rounded bg-gray-200" />
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+// Note: StatCardSkeleton is defined in skeleton.tsx, import from there

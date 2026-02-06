@@ -213,28 +213,6 @@ export function usePreload(options: UsePreloadOptions = {}) {
 }
 
 /**
- * 使用路由预加载的 Hook
- * 在路由切换前预加载目标页面组件
- */
-export function useRoutePreload() {
-  const preloadRoute = useCallback((route: string) => {
-    // 根据路由预加载对应组件
-    const routeComponentMap: Record<string, () => Promise<unknown>> = {
-      '/oracle/dashboard': () => import('@/app/oracle/dashboard/page'),
-      '/oracle/comparison': () => import('@/app/oracle/comparison/page'),
-      '/oracle/optimistic': () => import('@/app/oracle/optimistic/page'),
-    };
-
-    const loader = routeComponentMap[route];
-    if (loader) {
-      preloadManager.preload(`route:${route}`, loader, { idle: true });
-    }
-  }, []);
-
-  return { preloadRoute };
-}
-
-/**
  * 使用组件预加载的 Hook
  * 当用户悬停在链接上时预加载组件
  */

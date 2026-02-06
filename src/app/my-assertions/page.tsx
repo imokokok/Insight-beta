@@ -13,7 +13,7 @@ import { getUiErrorMessage, type TranslationKey } from '@/i18n/translations';
 import { LayoutGrid, List, Search, Wallet, FileText, ChevronDown } from 'lucide-react';
 import { cn, fetchApiData } from '@/lib/utils';
 import type { OracleConfig, OracleStatus, OracleInstance } from '@/lib/types/oracleTypes';
-import { CardSkeleton } from '@/components/common/PageSkeleton';
+import { CardSkeleton } from '@/components/ui/skeleton';
 
 // Dynamic imports for heavy components
 const ConnectWallet = lazy(() =>
