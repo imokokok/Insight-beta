@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { PageHeader } from '@/components/features/common/PageHeader';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { calculatePercentage, cn, fetchApiData, formatTime } from '@/lib/utils';
+import { calculatePercentage, cn, fetchApiData, formatTime, truncateAddress } from '@/lib/utils';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage, langToLocale, type TranslationKey } from '@/i18n/translations';
 import type { Dispute, DisputeStatus, OracleChain } from '@/lib/types/oracleTypes';
@@ -176,12 +176,6 @@ function statusLabel(status: DisputeStatus, t: Translate) {
   return t('status.executed');
 }
 
-function shortAddress(value: string) {
-  if (!value) return '—';
-  if (value.length <= 12) return value;
-  return `${value.slice(0, 6)}...${value.slice(-4)}`;
-}
-
 function umaAssertionUrl(dispute: Dispute) {
   const id =
     dispute.assertionId || (dispute.id.startsWith('D:') ? dispute.id.slice(2) : dispute.id);
@@ -257,7 +251,7 @@ function DisputeReason({ dispute, t, locale }: DisputeReasonProps) {
       <div className="flex items-center justify-between border-t border-purple-100/50 pt-3 text-sm">
         <div className="flex flex-col">
           <span className="text-xs text-purple-400">{t('disputes.disputer')}</span>
-          <span className="font-mono text-purple-600">{shortAddress(dispute.disputer)}</span>
+          <span className="font-mono text-purple-600">{truncateAddress(dispute.disputer)}</span>
         </div>
         <div className="flex flex-col items-end">
           <span className="text-xs text-purple-400">{t('disputes.disputedAt')}</span>

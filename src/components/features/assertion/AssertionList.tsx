@@ -4,7 +4,14 @@ import Link from 'next/link';
 import type { Route } from 'next';
 import { CheckCircle2, Clock, ArrowUpRight, RotateCw, FileQuestion, Star } from 'lucide-react';
 import { Virtuoso, VirtuosoGrid } from 'react-virtuoso';
-import { cn, formatTime, formatUsd, getExplorerUrl } from '@/lib/utils';
+import {
+  cn,
+  formatTime,
+  formatUsd,
+  getExplorerUrl,
+  truncateAddress,
+  getAssertionStatusColor,
+} from '@/lib/utils';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { langToLocale } from '@/i18n/translations';
 import { useWatchlist } from '@/hooks/user/useWatchlist';
@@ -23,17 +30,6 @@ interface AssertionListProps {
   emptyStateMessage?: string;
   onCreateAssertion?: () => void;
   instanceId?: string | null;
-}
-
-const STATUS_COLORS: Record<string, string> = {
-  Pending: 'bg-blue-50 text-blue-700 ring-blue-500/30 ring-1',
-  Disputed: 'bg-rose-50 text-rose-700 ring-rose-500/30 ring-1',
-  Resolved: 'bg-emerald-50 text-emerald-700 ring-emerald-500/30 ring-1',
-  default: 'bg-gray-50 text-gray-700 ring-gray-500/30 ring-1',
-};
-
-function getStatusColor(status: OracleStatus) {
-  return STATUS_COLORS[status] || STATUS_COLORS.default;
 }
 
 // Grid Components for Virtuoso
@@ -124,12 +120,6 @@ export const AssertionList = memo(function AssertionList({
     if (status === 'Pending') return t('common.pending');
     if (status === 'Disputed') return t('common.disputed');
     return t('common.resolved');
-  };
-
-  const shortAddress = (value: string) => {
-    if (!value) return '—';
-    if (value.length <= 12) return value;
-    return `${value.slice(0, 6)}...${value.slice(-4)}`;
   };
 
   const Footer = () => {
@@ -232,7 +222,7 @@ export const AssertionList = memo(function AssertionList({
                 <span
                   className={cn(
                     'rounded-full px-2.5 py-1 text-xs font-semibold',
-                    getStatusColor(item.status),
+                    getAssertionStatusColor(item.status),
                   )}
                 >
                   {statusLabel(item.status)}
@@ -267,7 +257,7 @@ export const AssertionList = memo(function AssertionList({
                 <span
                   className={cn(
                     'rounded-full px-2 py-0.5 font-medium',
-                    getStatusColor(item.status),
+                    getAssertionStatusColor(item.status),
                   )}
                 >
                   {statusLabel(item.status)}
@@ -292,7 +282,7 @@ export const AssertionList = memo(function AssertionList({
                 {(() => {
                   const explorerUrl = getExplorerUrl(item.chain, item.asserter, 'address');
                   if (!explorerUrl) {
-                    return shortAddress(item.asserter);
+                    return truncateAddress(item.asserter);
                   }
                   return (
                     <button
@@ -304,7 +294,7 @@ export const AssertionList = memo(function AssertionList({
                       }}
                       className="transition-colors hover:text-purple-600 hover:underline"
                     >
-                      {shortAddress(item.asserter)}
+                      {truncateAddress(item.asserter)}
                     </button>
                   );
                 })()}

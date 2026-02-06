@@ -197,430 +197,249 @@ export type DIAProtocolConfig = {
 };
 
 // ============================================================================
-// 基础预言机配置
+// 基础配置类型
 // ============================================================================
 
 export type BaseOracleConfig = {
   timeout?: number;
-  stalenessThreshold?: number;
   retries?: number;
-  retryDelay?: number;
+  apiKey?: string;
+  stalenessThreshold?: number;
 };
+
+// ============================================================================
+// 健康状态类型
+// ============================================================================
 
 export type OracleHealthStatus = {
   healthy: boolean;
   reason?: string;
-  lastUpdate: number | string;
+  lastUpdate: number;
 };
 
 // ============================================================================
-// 通用数据实体
+// 价格数据类型
 // ============================================================================
 
 export type UnifiedPriceFeed = {
   id: string;
-  instanceId: string;
-  protocol: OracleProtocol;
-  chain: SupportedChain;
-
-  // 价格数据
   symbol: string;
-  baseAsset: string;
-  quoteAsset: string;
+  protocol?: OracleProtocol;
+  chain?: SupportedChain;
+  instanceId?: string;
   price: number;
-  priceRaw: string; // 原始精度
-  decimals: number;
-
-  // 时间戳
-  timestamp: string;
-  blockNumber?: number;
-
-  // 元数据
-  confidence?: number; // Pyth 等使用
-  sources?: string[] | number; // 数据源（可以是地址数组或数量）
-
-  // 状态
-  isStale: boolean;
+  priceRaw?: bigint;
+  timestamp: number;
+  confidence?: number;
+  source?: string;
+  sources?: string[];
+  decimals?: number;
+  isStale?: boolean;
   stalenessSeconds?: number;
-
-  // 交易信息
+  baseAsset?: string;
+  quoteAsset?: string;
+  blockNumber?: number;
   txHash?: string;
   logIndex?: number;
 };
 
 export type UnifiedPriceUpdate = {
-  id: string;
   feedId: string;
-  instanceId: string;
-  protocol: OracleProtocol;
-
-  previousPrice: number;
-  currentPrice: number;
-  priceChange: number;
-  priceChangePercent: number;
-
-  timestamp: string;
-  blockNumber?: number;
+  symbol: string;
+  price: bigint;
+  timestamp: number;
+  confidence?: number;
   txHash?: string;
+  blockNumber?: number;
 };
+
+// ============================================================================
+// 断言和争议类型
+// ============================================================================
 
 export type UnifiedAssertion = {
   id: string;
-  instanceId: string;
+  assertionId: string;
   protocol: OracleProtocol;
   chain: SupportedChain;
-
-  // 断言内容
-  identifier: string;
-  description?: string;
-  proposer: string;
-  proposedValue?: string;
-
-  // 时间线
-  proposedAt: string;
-  expiresAt?: string;
-  settledAt?: string;
-
-  // 状态
-  status: 'active' | 'expired' | 'disputed' | 'settled' | 'cancelled';
-  settlementValue?: string;
-
-  // 经济参数
-  bondAmount?: number;
-  bondToken?: string;
-  reward?: number;
-
-  // 争议信息
-  disputed?: boolean;
+  asserter: string;
+  claim: string;
+  bond: bigint;
+  liveness: number;
+  expirationTime: number;
+  status: 'Pending' | 'Disputed' | 'Resolved' | 'Expired';
   disputer?: string;
-  disputedAt?: string;
-
-  // 交易信息
-  txHash: string;
-  blockNumber: number;
-  logIndex: number;
+  disputeTimestamp?: number;
+  settlementTimestamp?: number;
+  settlementResolution?: boolean;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type UnifiedDispute = {
   id: string;
-  instanceId: string;
-  protocol: OracleProtocol;
-  chain: SupportedChain;
-
+  disputeId: string;
   assertionId: string;
-  disputer: string;
-  reason?: string;
-
-  disputedAt: string;
-  votingEndsAt?: string;
-  resolvedAt?: string;
-
-  status: 'active' | 'resolved' | 'dismissed';
-  outcome?: 'valid' | 'invalid';
-
-  // 投票统计
-  votesFor?: number;
-  votesAgainst?: number;
-  totalVotes?: number;
-
-  // 经济参数
-  disputeBond?: number;
-
-  // 交易信息
-  txHash: string;
-  blockNumber: number;
-  logIndex: number;
-};
-
-// ============================================================================
-// 通用统计指标
-// ============================================================================
-
-export type UnifiedOracleStats = {
-  instanceId: string;
   protocol: OracleProtocol;
   chain: SupportedChain;
-
-  // 通用指标
-  totalUpdates: number;
-  updates24h: number;
-  lastUpdateAt: string;
-
-  // 价格特定指标
-  currentPrice?: number;
-  priceChange24h?: number;
-  volatility24h?: number;
-
-  // 断言特定指标
-  totalAssertions?: number;
-  activeAssertions?: number;
-  disputedAssertions?: number;
-  settledAssertions?: number;
-
-  // 争议特定指标
-  totalDisputes?: number;
-  activeDisputes?: number;
-  resolvedDisputes?: number;
-
-  // 性能指标
-  avgResponseTime?: number;
-  uptime?: number;
-
-  // 经济指标
-  totalVolume?: number;
-  totalValueLocked?: number;
-
+  disputer: string;
+  status: 'Voting' | 'Pending Execution' | 'Executed';
+  votingStartTime?: number;
+  votingEndTime?: number;
+  createdAt: string;
   updatedAt: string;
 };
 
 // ============================================================================
-// 跨预言机对比
+// 统计和警报类型
 // ============================================================================
 
+export type UnifiedOracleStats = {
+  protocol: OracleProtocol;
+  chain: SupportedChain;
+  totalAssertions: number;
+  totalDisputes: number;
+  pendingAssertions: number;
+  activeDisputes: number;
+  avgBondSize: bigint;
+  totalVolume: bigint;
+  lastUpdated: number;
+};
+
+export type UnifiedAlertRule = {
+  id: string;
+  name: string;
+  enabled: boolean;
+  event: UnifiedAlertEvent;
+  severity: 'info' | 'warning' | 'critical';
+  protocols?: OracleProtocol[];
+  chains?: SupportedChain[];
+  instances?: string[];
+  symbols?: string[];
+  params?: Record<string, unknown>;
+  channels?: Array<'email' | 'webhook' | 'telegram' | 'slack' | 'pagerduty'>;
+  cooldownMinutes?: number;
+  maxNotificationsPerHour?: number;
+};
+
+export type UnifiedAlert = {
+  id: string;
+  ruleId?: string;
+  event: UnifiedAlertEvent;
+  severity: 'info' | 'warning' | 'critical';
+  title: string;
+  message: string;
+  protocol?: OracleProtocol;
+  chain?: SupportedChain;
+  instanceId?: string;
+  symbol?: string;
+  context?: Record<string, unknown>;
+  status: 'open' | 'acknowledged' | 'resolved';
+  acknowledgedBy?: string;
+  acknowledgedAt?: string;
+  resolvedBy?: string;
+  resolvedAt?: string;
+  occurrences?: number;
+  firstSeenAt?: string;
+  lastSeenAt?: string;
+  createdAt: string;
+  updatedAt?: string;
+};
+
+export type UnifiedAlertEvent = string;
+
+// ============================================================================
+// 同步状态类型
+// ============================================================================
+
+export type UnifiedSyncState = {
+  instanceId?: string;
+  protocol?: OracleProtocol;
+  chain?: SupportedChain;
+  lastSyncedBlock?: number;
+  lastSyncedAt?: number;
+  lastProcessedBlock?: number;
+  lastSyncAt?: string;
+  lastSyncDurationMs?: number;
+  avgSyncDurationMs?: number;
+  isSyncing?: boolean;
+  status?: 'healthy' | 'lagging' | 'stalled' | 'error';
+  error?: string;
+  lastError?: string;
+  lastErrorAt?: string;
+  retryCount?: number;
+  consecutiveFailures?: number;
+};
+
+// ============================================================================
+// 配置模板类型
+// ============================================================================
+
+export type ConfigTemplate = {
+  id: string;
+  name: string;
+  description: string;
+  protocol: OracleProtocol;
+  chain: SupportedChain;
+  config: Partial<UnifiedOracleConfig>;
+  isDefault?: boolean;
+};
+
+// ============================================================================
+// 跨协议比较类型
+// ============================================================================
+
+export type CrossProtocolComparison = {
+  symbol: string;
+  timestamp: number;
+  prices: Record<
+    OracleProtocol,
+    {
+      price: number;
+      confidence: number;
+      timestamp: number;
+    }
+  >;
+  priceDeviation: number;
+  recommendedProtocol?: OracleProtocol;
+};
+
+// 跨预言机价格比较（用于价格聚合引擎）
 export type CrossOracleComparison = {
   id: string;
   symbol: string;
   baseAsset: string;
   quoteAsset: string;
-
-  // 各预言机价格
   prices: Array<{
     protocol: OracleProtocol;
     instanceId: string;
     price: number;
-    timestamp: string;
-    confidence?: number;
-    isStale: boolean;
+    timestamp: number;
+    confidence: number;
+    isStale?: boolean;
   }>;
-
-  // 对比分析
   avgPrice: number;
   medianPrice: number;
   minPrice: number;
   maxPrice: number;
   priceRange: number;
   priceRangePercent: number;
-
-  // 偏差分析
   maxDeviation: number;
   maxDeviationPercent: number;
   outlierProtocols: OracleProtocol[];
-
-  // 推荐
   recommendedPrice: number;
   recommendationSource: string;
-
   timestamp: string;
 };
 
-export type OraclePerformanceRanking = {
+export type ProtocolPerformanceRanking = {
   protocol: OracleProtocol;
-  rank: number;
   score: number;
-
-  // 细分指标
-  accuracy: number;
-  uptime: number;
-  latency: number;
-  coverage: number; // 覆盖的资产/链数量
-  costEfficiency: number;
-
-  // 统计
-  totalFeeds: number;
-  supportedChains: number;
-  avgUpdateFrequency: number;
-
-  // 趋势
-  trend: 'up' | 'stable' | 'down';
-  trendPercent: number;
-};
-
-// ============================================================================
-// 告警与监控
-// ============================================================================
-
-export type UnifiedAlertRule = {
-  id: string;
-  name: string;
-  enabled: boolean;
-
-  // 触发条件
-  event: UnifiedAlertEvent;
-  severity: 'info' | 'warning' | 'critical';
-
-  // 过滤条件
-  protocols?: OracleProtocol[];
-  chains?: SupportedChain[];
-  instances?: string[];
-  symbols?: string[];
-
-  // 阈值配置
-  params?: {
-    priceDeviationPercent?: number;
-    stalenessSeconds?: number;
-    minConfidence?: number;
-    maxLatencyMs?: number;
-    uptimeThreshold?: number;
-    [key: string]: unknown;
+  rank: number;
+  metrics: {
+    latency: number;
+    reliability: number;
+    cost: number;
+    coverage: number;
   };
-
-  // 通知配置
-  channels: Array<'webhook' | 'email' | 'telegram' | 'slack' | 'pagerduty'>;
-  recipients?: string[];
-
-  // 抑制配置
-  cooldownMinutes?: number;
-  maxNotificationsPerHour?: number;
-
-  runbook?: string;
-  owner?: string;
-};
-
-export type UnifiedAlertEvent =
-  // 价格相关
-  | 'price_deviation'
-  | 'price_stale'
-  | 'price_volatility_spike'
-  | 'price_update_failed'
-
-  // 断言相关
-  | 'assertion_created'
-  | 'assertion_expiring'
-  | 'assertion_disputed'
-  | 'assertion_settled'
-
-  // 争议相关
-  | 'dispute_created'
-  | 'dispute_resolved'
-  | 'voting_period_ending'
-
-  // 系统相关
-  | 'sync_error'
-  | 'sync_stale'
-  | 'rpc_failure'
-  | 'contract_error'
-
-  // 性能相关
-  | 'high_latency'
-  | 'low_uptime'
-  | 'rate_limit_hit';
-
-export type UnifiedAlert = {
-  id: string;
-  ruleId?: string;
-
-  event: UnifiedAlertEvent;
-  severity: 'info' | 'warning' | 'critical';
-
-  title: string;
-  message: string;
-
-  // 关联实体
-  protocol?: OracleProtocol;
-  chain?: SupportedChain;
-  instanceId?: string;
-  symbol?: string;
-  assertionId?: string;
-  disputeId?: string;
-
-  // 上下文数据
-  context: Record<string, unknown>;
-
-  // 状态
-  status: 'open' | 'acknowledged' | 'resolved';
-  acknowledgedBy?: string;
-  acknowledgedAt?: string;
-  resolvedBy?: string;
-  resolvedAt?: string;
-
-  // 统计
-  occurrences: number;
-  firstSeenAt: string;
-  lastSeenAt: string;
-
-  createdAt: string;
-  updatedAt: string;
-};
-
-// ============================================================================
-// API 响应类型
-// ============================================================================
-
-export type PaginatedResponse<T> = {
-  data: T[];
-  pagination: {
-    page: number;
-    pageSize: number;
-    total: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  };
-};
-
-export type UnifiedApiResponse<T> =
-  | { success: true; data: T; meta?: Record<string, unknown> }
-  | { success: false; error: { code: string; message: string; details?: unknown } };
-
-// ============================================================================
-// 配置模板
-// ============================================================================
-
-export type UnifiedConfigTemplate = {
-  id: string;
-  name: string;
-  description?: string;
-  protocol: OracleProtocol;
-
-  // 模板配置
-  config: Partial<UnifiedOracleConfig>;
-
-  // 适用条件
-  supportedChains: SupportedChain[];
-  requirements?: string[];
-
-  // 元数据
-  isDefault: boolean;
-  isOfficial: boolean;
-  author?: string;
-
-  // 统计
-  usageCount: number;
-  rating?: number;
-
-  createdAt: string;
-  updatedAt: string;
-};
-
-// ============================================================================
-// 同步状态
-// ============================================================================
-
-export type UnifiedSyncState = {
-  instanceId: string;
-  protocol: OracleProtocol;
-  chain: SupportedChain;
-
-  // 区块同步状态
-  lastProcessedBlock: number;
-  latestBlock: number;
-  safeBlock: number;
-  lagBlocks: number;
-
-  // 同步性能
-  lastSyncAt: string;
-  lastSyncDurationMs: number;
-  avgSyncDurationMs: number;
-
-  // 健康状态
-  status: 'healthy' | 'lagging' | 'stalled' | 'error';
-  consecutiveFailures: number;
-  lastError?: string;
-  lastErrorAt?: string;
-
-  // RPC 状态
-  activeRpcUrl?: string;
-  rpcHealth: 'healthy' | 'degraded' | 'unhealthy';
-
-  updatedAt: string;
 };

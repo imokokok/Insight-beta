@@ -28,7 +28,7 @@ import {
 } from 'recharts';
 import { useI18n } from '@/i18n';
 import type { RealtimeComparisonItem, ComparisonFilter } from '@/lib/types/oracle';
-import { cn } from '@/lib/utils';
+import { cn, formatPrice } from '@/lib/utils';
 
 interface RealtimeComparisonProps {
   data?: RealtimeComparisonItem[];
@@ -52,12 +52,6 @@ const protocolColors: Record<string, string> = {
   uma: '#f59e0b',
   insight: '#8b5cf6',
 };
-
-function formatPrice(price: number): string {
-  if (price >= 1000) return `$${price.toLocaleString()}`;
-  if (price >= 1) return `$${price.toFixed(2)}`;
-  return `$${price.toFixed(4)}`;
-}
 
 function formatDeviation(value: number): string {
   const absValue = Math.abs(value);

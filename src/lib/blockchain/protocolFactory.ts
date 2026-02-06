@@ -5,6 +5,7 @@
  */
 
 import type { OracleProtocol, PriceFeed } from '@/lib/types';
+import { PROTOCOL_DISPLAY_NAMES, PROTOCOL_DESCRIPTIONS } from '@/lib/types/oracle/protocol';
 
 // ============================================================================
 // 统一客户端接口
@@ -147,47 +148,23 @@ export class OracleProtocolClientFactory {
 // 便捷函数
 // ============================================================================
 
+const PROTOCOL_ICONS: Record<OracleProtocol, string> = {
+  uma: '⚖️',
+  chainlink: '🔗',
+  pyth: '🐍',
+  band: '🎸',
+  api3: '📡',
+  redstone: '💎',
+  switchboard: '🎛️',
+  flux: '⚡',
+  dia: '📊',
+};
+
 export function getProtocolDisplayInfo(protocol: OracleProtocol) {
-  const displayNames: Record<OracleProtocol, string> = {
-    uma: 'UMA',
-    chainlink: 'Chainlink',
-    pyth: 'Pyth Network',
-    band: 'Band Protocol',
-    api3: 'API3',
-    redstone: 'RedStone',
-    switchboard: 'Switchboard',
-    flux: 'Flux',
-    dia: 'DIA',
-  };
-
-  const descriptions: Record<OracleProtocol, string> = {
-    uma: 'Optimistic Oracle with assertion and dispute mechanisms',
-    chainlink: 'Industry-standard decentralized oracle network',
-    pyth: 'Low-latency financial data from institutional sources',
-    band: 'Cross-chain data oracle platform',
-    api3: 'First-party oracle with Airnode',
-    redstone: 'Modular oracle with on-demand data',
-    switchboard: 'Solana and EVM compatible oracle network',
-    flux: 'Decentralized oracle aggregator',
-    dia: 'Transparent and verifiable data feeds',
-  };
-
-  const icons: Record<OracleProtocol, string> = {
-    uma: '⚖️',
-    chainlink: '🔗',
-    pyth: '🐍',
-    band: '🎸',
-    api3: '📡',
-    redstone: '💎',
-    switchboard: '🎛️',
-    flux: '⚡',
-    dia: '📊',
-  };
-
   return {
-    name: displayNames[protocol],
-    description: descriptions[protocol],
-    icon: icons[protocol],
+    name: PROTOCOL_DISPLAY_NAMES[protocol],
+    description: PROTOCOL_DESCRIPTIONS[protocol],
+    icon: PROTOCOL_ICONS[protocol],
     capabilities: getProtocolCapabilities(protocol),
   };
 }

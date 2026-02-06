@@ -303,7 +303,7 @@ export abstract class BaseSyncManager {
       feed.baseAsset,
       feed.quoteAsset,
       feed.price,
-      feed.priceRaw,
+      feed.priceRaw?.toString(),
       feed.decimals,
       feed.timestamp,
       feed.blockNumber || 0,

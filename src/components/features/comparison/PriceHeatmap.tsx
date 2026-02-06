@@ -49,7 +49,7 @@ function formatDeviation(value: number): string {
   return `${absValue.toFixed(2)}%`;
 }
 
-function formatPrice(value: number): string {
+function formatHeatmapPrice(value: number): string {
   if (value >= 1000) {
     return `$${(value / 1000).toFixed(2)}k`;
   }
@@ -199,7 +199,7 @@ export function PriceHeatmap({
                   <div className="bg-muted/30 w-20 flex-shrink-0 border-b border-r p-1.5 sm:w-28 sm:p-2">
                     <div className="text-xs font-medium sm:text-sm">{row.symbol}</div>
                     <div className="text-muted-foreground hidden text-xs sm:block">
-                      {formatPrice(row.consensusPrice)}
+                      {formatHeatmapPrice(row.consensusPrice)}
                     </div>
                   </div>
 
@@ -249,7 +249,7 @@ export function PriceHeatmap({
                                 <span className="hidden sm:inline">{config.icon}</span>
                               </div>
                               <span className="text-muted-foreground hidden text-xs sm:block">
-                                {formatPrice(cell.price)}
+                                {formatHeatmapPrice(cell.price)}
                               </span>
                             </div>
                           </button>
@@ -263,13 +263,13 @@ export function PriceHeatmap({
                               <span className="text-muted-foreground">
                                 {t('comparison.heatmap.tooltip.currentPrice')}:
                               </span>
-                              <span className="font-medium">{formatPrice(cell.price)}</span>
+                              <span className="font-medium">{formatHeatmapPrice(cell.price)}</span>
 
                               <span className="text-muted-foreground">
                                 {t('comparison.heatmap.tooltip.referencePrice')}:
                               </span>
                               <span className="font-medium">
-                                {formatPrice(cell.referencePrice)}
+                                {formatHeatmapPrice(cell.referencePrice)}
                               </span>
 
                               <span className="text-muted-foreground">

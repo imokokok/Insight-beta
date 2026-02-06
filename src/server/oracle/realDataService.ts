@@ -174,7 +174,7 @@ export async function fetchChainlinkPrices(
           results.push({
             symbol,
             price: feed.price,
-            timestamp: feed.timestamp,
+            timestamp: String(feed.timestamp),
             latency: feedLatency,
           });
         }
@@ -236,7 +236,7 @@ export async function fetchPythPrices(): Promise<
           results.push({
             symbol,
             price: feed.price,
-            timestamp: feed.timestamp,
+            timestamp: String(feed.timestamp),
             latency: feedLatency,
             confidence: feed.confidence || 0.95,
           });

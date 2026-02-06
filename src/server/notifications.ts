@@ -1,6 +1,7 @@
 import type { Dispute, Assertion } from '@/lib/types/oracleTypes';
 import { logger } from '@/lib/logger';
 import { env } from '@/lib/config/env';
+import { sleep } from '@/lib/utils';
 import type { Transporter } from 'nodemailer';
 
 /**
@@ -95,10 +96,6 @@ function getRetryDelayMs(attempt: number) {
   const capped = Math.min(exp, notificationRetryMaxDelayMs);
   const jitter = 0.8 + Math.random() * 0.4;
   return Math.round(capped * jitter);
-}
-
-async function sleep(ms: number) {
-  await new Promise<void>((resolve) => setTimeout(resolve, ms));
 }
 
 /**

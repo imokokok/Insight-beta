@@ -11,7 +11,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef, Suspense, lazy } from 'react';
-import { useToast } from '@/hooks/ui/use-toast';
+import { useToast } from '@/components/ui/toast';
 import { useI18n } from '@/i18n';
 import { ComparisonControls } from '@/components/features/comparison/ComparisonControls';
 import { ChartSkeleton, TableSkeleton } from '@/components/common/PageSkeleton';
@@ -398,8 +398,8 @@ export default function ComparisonPage() {
     } catch {
       toast({
         title: t('comparison.toast.loadError'),
-        description: t('comparison.toast.retryLater'),
-        variant: 'error',
+        message: t('comparison.toast.retryLater'),
+        type: 'error',
       });
     } finally {
       setIsLoading(false);
@@ -514,8 +514,8 @@ export default function ComparisonPage() {
     (cell: PriceDeviationCell) => {
       toast({
         title: `${cell.symbol} - ${PROTOCOL_DISPLAY_NAMES[cell.protocol]}`,
-        description: `价格: $${cell.price.toFixed(4)} | 偏离: ${cell.deviationPercent.toFixed(2)}%`,
-        variant: 'info',
+        message: `价格: $${cell.price.toFixed(4)} | 偏离: ${cell.deviationPercent.toFixed(2)}%`,
+        type: 'info',
       });
     },
     [toast],
@@ -531,8 +531,8 @@ export default function ComparisonPage() {
               exportHeatmapToCSV(heatmapData);
               toast({
                 title: t('comparison.toast.exportSuccess'),
-                description: t('comparison.toast.heatmapExported'),
-                variant: 'success',
+                message: t('comparison.toast.heatmapExported'),
+                type: 'success',
               });
             }
             break;
@@ -541,8 +541,8 @@ export default function ComparisonPage() {
               exportLatencyToCSV(latencyData);
               toast({
                 title: t('comparison.toast.exportSuccess'),
-                description: t('comparison.toast.latencyExported'),
-                variant: 'success',
+                message: t('comparison.toast.latencyExported'),
+                type: 'success',
               });
             }
             break;
@@ -551,8 +551,8 @@ export default function ComparisonPage() {
               exportCostToCSV(costData);
               toast({
                 title: t('comparison.toast.exportSuccess'),
-                description: t('comparison.toast.costExported'),
-                variant: 'success',
+                message: t('comparison.toast.costExported'),
+                type: 'success',
               });
             }
             break;
@@ -562,8 +562,8 @@ export default function ComparisonPage() {
               exportRealtimeToCSV(realtimeData);
               toast({
                 title: t('comparison.toast.exportSuccess'),
-                description: t('comparison.toast.realtimeExported'),
-                variant: 'success',
+                message: t('comparison.toast.realtimeExported'),
+                type: 'success',
               });
             }
             break;
@@ -578,8 +578,8 @@ export default function ComparisonPage() {
         });
         toast({
           title: t('comparison.toast.exportSuccess'),
-          description: t('comparison.toast.allExported'),
-          variant: 'success',
+          message: t('comparison.toast.allExported'),
+          type: 'success',
         });
       }
     },

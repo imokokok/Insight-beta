@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { cn, fetchApiData } from '@/lib/utils';
+import { cn, fetchApiData, formatTimeAgo } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TrendingUp, TrendingDown, Minus, AlertCircle, Clock } from 'lucide-react';
+import { logger } from '@/lib/logger';
 import type { PriceFeed, PriceUpdate } from '@/lib/types/oracle/price';
 import type { OracleProtocol } from '@/lib/types/oracle/protocol';
 import { PROTOCOL_DISPLAY_NAMES } from '@/lib/types/oracle/protocol';
@@ -102,7 +103,7 @@ export function PriceFeedList({
           );
         }
       } catch (err) {
-        console.error('Failed to parse WebSocket message:', err);
+        logger.error('Failed to parse WebSocket message', { error: err });
       }
     };
 
@@ -166,20 +167,13 @@ function PriceFeedItem({ feed }: { feed: FeedWithUpdate }) {
   const isPositive = priceChange > 0;
   const isNegative = priceChange < 0;
 
-  const formatPrice = (price: number, decimals: number) => {
+  const formatFeedPrice = (price: number, decimals: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals,
     }).format(price);
-  };
-
-  const formatTimeAgo = (timestamp: string) => {
-    const seconds = Math.floor((Date.now() - new Date(timestamp).getTime()) / 1000);
-    if (seconds < 60) return `${seconds}s ago`;
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-    return `${Math.floor(seconds / 3600)}h ago`;
   };
 
   return (
@@ -208,7 +202,7 @@ function PriceFeedItem({ feed }: { feed: FeedWithUpdate }) {
 
       <div className="text-right">
         <div className="font-mono text-sm font-medium sm:text-base">
-          {formatPrice(feed.price, feed.decimals)}
+          {formatFeedPrice(feed.price, feed.decimals)}
         </div>
         <div
           className={cn(

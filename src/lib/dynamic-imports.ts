@@ -1,6 +1,7 @@
 import dynamic, { type DynamicOptions, type Loader } from 'next/dynamic';
 import type { ComponentType } from 'react';
 import { createLoadingComponent, type LoadingType } from '@/components/common/DynamicLoading';
+import { logger } from '@/lib/logger';
 
 // ============================================================================
 // 动态导入配置类型定义
@@ -91,10 +92,10 @@ class PreloadManager {
       loader()
         .then(() => {
           this.preloadedModules.add(key);
-          console.log(`[PreloadManager] Preloaded: ${key}`);
+          logger.debug(`[PreloadManager] Preloaded: ${key}`);
         })
         .catch((err) => {
-          console.warn(`[PreloadManager] Failed to preload ${key}:`, err);
+          logger.warn(`[PreloadManager] Failed to preload ${key}:`, { error: err });
         });
     };
 
@@ -151,64 +152,6 @@ export const DynamicChart = createDynamicComponent({
 });
 
 /**
- * 动态面积图组件
- */
-export const DynamicAreaChart = createDynamicComponent({
-  loader: () => import('recharts').then((mod) => ({ default: mod.AreaChart })),
-  loadingType: 'chart',
-  ssr: false,
-  height: 256,
-});
-
-/**
- * 动态柱状图组件
- */
-export const DynamicBarChart = createDynamicComponent({
-  loader: () => import('recharts').then((mod) => ({ default: mod.BarChart })),
-  loadingType: 'chart',
-  ssr: false,
-  height: 256,
-});
-
-/**
- * 动态饼图组件
- */
-export const DynamicPieChart = createDynamicComponent({
-  loader: () => import('recharts').then((mod) => ({ default: mod.PieChart })),
-  loadingType: 'chart',
-  ssr: false,
-  height: 256,
-});
-
-/**
- * 动态组合图表组件 - 包含完整的图表组件集合
- * 用于需要多个 recharts 组件的场景
- */
-export const DynamicRecharts = createDynamicComponent({
-  loader: () =>
-    import('recharts').then((mod) => ({
-      default: mod.LineChart,
-      LineChart: mod.LineChart,
-      Line: mod.Line,
-      AreaChart: mod.AreaChart,
-      Area: mod.Area,
-      BarChart: mod.BarChart,
-      Bar: mod.Bar,
-      PieChart: mod.PieChart,
-      Pie: mod.Pie,
-      XAxis: mod.XAxis,
-      YAxis: mod.YAxis,
-      CartesianGrid: mod.CartesianGrid,
-      Tooltip: mod.Tooltip,
-      Legend: mod.Legend,
-      ResponsiveContainer: mod.ResponsiveContainer,
-    })),
-  loadingType: 'chart',
-  ssr: false,
-  height: 256,
-});
-
-/**
  * 动态 Swagger UI 组件
  */
 export const DynamicSwaggerUI = createDynamicComponent<{
@@ -221,26 +164,6 @@ export const DynamicSwaggerUI = createDynamicComponent<{
   loadingText: 'Loading Swagger UI...',
   ssr: false,
   height: '100vh',
-});
-
-/**
- * 动态虚拟列表组件（react-virtuoso）
- */
-export const DynamicVirtualList = createDynamicComponent({
-  loader: () => import('react-virtuoso').then((mod) => ({ default: mod.Virtuoso })),
-  loadingType: 'card',
-  ssr: false,
-  height: 400,
-});
-
-/**
- * 动态表格虚拟列表组件
- */
-export const DynamicTableVirtuoso = createDynamicComponent({
-  loader: () => import('react-virtuoso').then((mod) => ({ default: mod.TableVirtuoso })),
-  loadingType: 'card',
-  ssr: false,
-  height: 400,
 });
 
 // ============================================================================

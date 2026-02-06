@@ -11,6 +11,7 @@ import {
   Legend,
 } from 'recharts';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { formatPrice } from '@/lib/utils';
 import type { CrossProtocolComparison } from '@/lib/types';
 
 interface PriceHistoryChartProps {
@@ -20,10 +21,6 @@ interface PriceHistoryChartProps {
 }
 
 export function PriceHistoryChart({ data, symbol, className }: PriceHistoryChartProps) {
-  const formatPrice = (value: number) => {
-    return `$${Number(value).toLocaleString()}`;
-  };
-
   const formatTime = (timestamp: string) => {
     return new Date(timestamp).toLocaleTimeString('en-US', {
       hour: '2-digit',

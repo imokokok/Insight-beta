@@ -5,10 +5,10 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { sleep } from '@/lib/utils';
 import {
   syncManager,
   createPriceFeedRecord,
-  sleep,
   withTimeout,
   withRetry,
   DEFAULT_SYNC_CONFIG,

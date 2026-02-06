@@ -122,11 +122,4 @@ export function truncateText(text: string, maxLength: number): string {
   return text.slice(0, maxLength - 3) + '...';
 }
 
-/**
- * 延迟函数
- */
-export function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 // fetchWithTimeout 已从 lib/utils/api.ts 导入，这里不再重复定义

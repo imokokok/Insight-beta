@@ -137,7 +137,7 @@ export function CrossProtocolChart() {
       return padding.top + chartHeight - ratio * chartHeight;
     };
 
-    const formatPrice = (price: number) => {
+    const formatChartPrice = (price: number) => {
       if (price >= 1000) {
         return `$${(price / 1000).toFixed(2)}k`;
       }
@@ -171,7 +171,7 @@ export function CrossProtocolChart() {
               textAnchor="end"
               className="fill-gray-500 text-xs"
             >
-              {formatPrice(maxPrice - ratio * (maxPrice - minPrice))}
+              {formatChartPrice(maxPrice - ratio * (maxPrice - minPrice))}
             </text>
           </g>
         ))}

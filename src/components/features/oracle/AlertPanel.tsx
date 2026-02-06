@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { cn, fetchApiData } from '@/lib/utils';
+import { cn, fetchApiData, formatTimeAgo } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -17,6 +17,7 @@ import {
   Clock,
   Shield,
 } from 'lucide-react';
+import { logger } from '@/lib/logger';
 import type { Alert, AlertSeverity, AlertStatus } from '@/lib/types/oracle/alert';
 import type { OracleProtocol } from '@/lib/types/oracle/protocol';
 import { PROTOCOL_DISPLAY_NAMES } from '@/lib/types/oracle/protocol';
@@ -71,7 +72,7 @@ export function AlertPanel({
         prev.map((a) => (a.id === alertId ? { ...a, status: 'Acknowledged' as AlertStatus } : a)),
       );
     } catch (err) {
-      console.error('Failed to acknowledge alert:', err);
+      logger.error('Failed to acknowledge alert', { error: err });
     }
   };
 
@@ -84,7 +85,7 @@ export function AlertPanel({
         prev.map((a) => (a.id === alertId ? { ...a, status: 'Resolved' as AlertStatus } : a)),
       );
     } catch (err) {
-      console.error('Failed to resolve alert:', err);
+      logger.error('Failed to resolve alert', { error: err });
     }
   };
 
@@ -192,14 +193,6 @@ function AlertItem({
 
   const config = severityConfig[alert.severity];
   const Icon = config.icon;
-
-  const formatTimeAgo = (timestamp: string) => {
-    const seconds = Math.floor((Date.now() - new Date(timestamp).getTime()) / 1000);
-    if (seconds < 60) return `${seconds}s ago`;
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-    return `${Math.floor(seconds / 86400)}d ago`;
-  };
 
   const isResolved = alert.status.toLowerCase() === 'resolved';
   const isAcknowledged = alert.status.toLowerCase() === 'acknowledged';

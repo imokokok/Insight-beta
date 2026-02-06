@@ -83,7 +83,7 @@ export function PriceHistoryChart({
   }, [filteredData]);
 
   // Format price for display
-  const formatPrice = (price: number) => {
+  const formatChartPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
@@ -130,7 +130,7 @@ export function PriceHistoryChart({
             </CardTitle>
             {stats && (
               <div className="mt-1 flex items-center gap-2">
-                <span className="text-2xl font-bold">{formatPrice(stats.current)}</span>
+                <span className="text-2xl font-bold">{formatChartPrice(stats.current)}</span>
                 <Badge
                   variant={stats.isPositive ? 'default' : 'destructive'}
                   className={cn(
@@ -165,15 +165,15 @@ export function PriceHistoryChart({
           <div className="grid grid-cols-4 gap-4 text-sm">
             <div>
               <p className="text-muted-foreground">High</p>
-              <p className="font-medium text-green-600">{formatPrice(stats.high)}</p>
+              <p className="font-medium text-green-600">{formatChartPrice(stats.high)}</p>
             </div>
             <div>
               <p className="text-muted-foreground">Low</p>
-              <p className="font-medium text-red-600">{formatPrice(stats.low)}</p>
+              <p className="font-medium text-red-600">{formatChartPrice(stats.low)}</p>
             </div>
             <div>
               <p className="text-muted-foreground">Open</p>
-              <p className="font-medium">{formatPrice(stats.open)}</p>
+              <p className="font-medium">{formatChartPrice(stats.open)}</p>
             </div>
             <div>
               <p className="text-muted-foreground">Change</p>
@@ -181,7 +181,7 @@ export function PriceHistoryChart({
                 className={cn('font-medium', stats.isPositive ? 'text-green-600' : 'text-red-600')}
               >
                 {stats.isPositive ? '+' : ''}
-                {formatPrice(stats.change)}
+                {formatChartPrice(stats.change)}
               </p>
             </div>
           </div>
@@ -246,7 +246,7 @@ export function PriceHistoryChart({
                         <p className="text-muted-foreground text-sm">
                           {formatDate(data.timestamp)}
                         </p>
-                        <p className="text-lg font-bold">{formatPrice(data.price)}</p>
+                        <p className="text-lg font-bold">{formatChartPrice(data.price)}</p>
                         {data.volume && (
                           <p className="text-muted-foreground text-sm">
                             Vol: {data.volume.toLocaleString()}
@@ -299,7 +299,7 @@ export function PriceHistoryChart({
                         <p className="text-muted-foreground text-sm">
                           {formatDate(data.timestamp)}
                         </p>
-                        <p className="text-lg font-bold">{formatPrice(data.price)}</p>
+                        <p className="text-lg font-bold">{formatChartPrice(data.price)}</p>
                         {data.volume && (
                           <p className="text-muted-foreground text-sm">
                             Vol: {data.volume.toLocaleString()}

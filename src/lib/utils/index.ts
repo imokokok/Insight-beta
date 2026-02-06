@@ -5,7 +5,7 @@
  */
 
 // UI 工具
-export { cn } from './ui';
+export { cn, getAssertionStatusColor } from './ui';
 
 // 格式化工具
 export {
@@ -36,3 +36,7 @@ export { isZeroBytes32, getExplorerUrl, parseRpcUrls } from './blockchain';
 
 // 数学工具
 export { calculateMedian, calculateMean, calculateStdDev, calculateDeviation } from './math';
+
+// 通用工具
+export { sleep } from './common';
+export { isServer, isClient } from './environment';

@@ -8,6 +8,7 @@ import { logger } from '@/lib/logger';
 import { query } from '@/server/db';
 import type {
   CrossOracleComparison,
+  OracleProtocol,
   SupportedChain,
   UnifiedPriceFeed,
 } from '@/lib/types/unifiedOracleTypes';
@@ -62,14 +63,19 @@ export class PriceAggregationEngine {
         symbol,
         baseAsset: baseAsset || symbol,
         quoteAsset: quoteAsset || 'USD',
-        prices: prices.map((p) => ({
-          protocol: p.protocol,
-          instanceId: p.instanceId,
-          price: p.price,
-          timestamp: p.timestamp,
-          confidence: p.confidence,
-          isStale: p.isStale,
-        })),
+        prices: prices
+          .filter(
+            (p): p is UnifiedPriceFeed & { protocol: OracleProtocol; instanceId: string } =>
+              p.protocol !== undefined && p.instanceId !== undefined,
+          )
+          .map((p) => ({
+            protocol: p.protocol,
+            instanceId: p.instanceId,
+            price: p.price,
+            timestamp: p.timestamp,
+            confidence: p.confidence ?? 1,
+            isStale: p.isStale,
+          })),
         avgPrice,
         medianPrice,
         minPrice,
@@ -78,7 +84,12 @@ export class PriceAggregationEngine {
         priceRangePercent,
         maxDeviation,
         maxDeviationPercent,
-        outlierProtocols: outliers.map((o) => o.protocol),
+        outlierProtocols: outliers
+          .filter(
+            (o): o is UnifiedPriceFeed & { protocol: OracleProtocol; instanceId: string } =>
+              o.protocol !== undefined && o.instanceId !== undefined,
+          )
+          .map((o) => o.protocol),
         recommendedPrice,
         recommendationSource: this.determineRecommendationSource(prices, outliers),
         timestamp: new Date().toISOString(),
@@ -192,8 +203,11 @@ export class PriceAggregationEngine {
     prices: Array<UnifiedPriceFeed & { instanceId: string }>,
     outliers: Array<UnifiedPriceFeed & { instanceId: string }>,
   ): number {
-    // 过滤掉异常值
-    const validPrices = prices.filter((p) => !outliers.some((o) => o.protocol === p.protocol));
+    // 过滤掉异常值和 protocol 为 undefined 的价格
+    const validPrices = prices.filter(
+      (p): p is UnifiedPriceFeed & { protocol: OracleProtocol; instanceId: string } =>
+        p.protocol !== undefined && !outliers.some((o) => o.protocol === p.protocol),
+    );
 
     if (validPrices.length === 0) {
       // 如果所有价格都是异常值，使用中位数
@@ -205,7 +219,9 @@ export class PriceAggregationEngine {
         return calculateMean(validPrices.map((p) => p.price));
 
       case 'weighted':
-        return calculateProtocolWeightedAverage(validPrices);
+        return calculateProtocolWeightedAverage(
+          validPrices.map((p) => ({ protocol: p.protocol, price: p.price })),
+        );
 
       case 'median':
       default:
@@ -220,12 +236,14 @@ export class PriceAggregationEngine {
     prices: Array<UnifiedPriceFeed & { instanceId: string }>,
     outliers: Array<UnifiedPriceFeed & { instanceId: string }>,
   ): string {
-    const validPrices = prices.filter((p) => !outliers.some((o) => o.protocol === p.protocol));
+    const validPrices = prices.filter(
+      (p) => p.protocol !== undefined && !outliers.some((o) => o.protocol === p.protocol),
+    );
 
     if (validPrices.length === 0) return 'median_all';
     if (validPrices.length === 1) {
       const first = validPrices[0];
-      return first === undefined ? 'median_all' : first.protocol;
+      return first?.protocol ?? 'median_all';
     }
 
     return determineRecommendationSource(validPrices.length);

@@ -312,11 +312,11 @@ export class PythClient {
       baseAsset: baseAsset || 'UNKNOWN',
       quoteAsset: quoteAsset || 'USD',
       price: priceData.formattedPrice,
-      priceRaw: priceData.price.toString(),
+      priceRaw: priceData.price,
       decimals: Math.abs(priceData.expo),
-      timestamp: publishTime.toISOString(),
+      timestamp: publishTime.getTime(),
       confidence: confidencePercent,
-      sources: 1, // Pyth 聚合多个源，但作为一个整体
+      sources: ['pyth'], // Pyth 聚合多个源，但作为一个整体
       isStale,
       stalenessSeconds,
     };

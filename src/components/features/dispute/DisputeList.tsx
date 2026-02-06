@@ -13,7 +13,7 @@ import {
   Gavel,
   Star,
 } from 'lucide-react';
-import { cn, formatTime, getExplorerUrl } from '@/lib/utils';
+import { cn, formatTime, getExplorerUrl, truncateAddress } from '@/lib/utils';
 import { useWatchlist } from '@/hooks/user/useWatchlist';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { langToLocale, type TranslationKey } from '@/i18n/translations';
@@ -109,12 +109,6 @@ function statusLabel(status: DisputeStatus, t: Translate) {
   if (status === 'Voting') return t('status.voting');
   if (status === 'Pending Execution') return t('status.pendingExecution');
   return t('status.executed');
-}
-
-function shortAddress(value: string) {
-  if (!value) return '—';
-  if (value.length <= 12) return value;
-  return `${value.slice(0, 6)}...${value.slice(-4)}`;
 }
 
 type DisputeCardProps = {
@@ -267,7 +261,7 @@ function DisputeCard({
           <div className={cn(viewMode === 'grid' ? 'rounded-xl bg-gray-50/50 p-3' : 'text-right')}>
             <div className="mb-1 text-xs text-gray-500">{t('disputes.card.disputer')}</div>
             <div className="flex items-center justify-end gap-1 font-mono text-xs font-medium text-gray-700">
-              {shortAddress(item.disputer)}
+              {truncateAddress(item.disputer)}
               {(() => {
                 const explorerUrl = getExplorerUrl(item.chain, item.disputer);
                 return explorerUrl ? (

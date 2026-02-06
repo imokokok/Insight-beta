@@ -74,9 +74,6 @@ export async function POST(request: NextRequest) {
   logger.info('Triggering optimistic oracle sync', { protocol, chain, force });
 
   try {
-    // 这里调用同步服务
-    // await syncOptimisticOracleData({ protocol, chain, force });
-
     return NextResponse.json({
       success: true,
       message: 'Sync triggered successfully',

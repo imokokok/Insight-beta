@@ -233,7 +233,7 @@ export abstract class BaseOracleClient {
     return {
       symbol,
       price: Number(formatUnits(rawPrice.price, rawPrice.decimals)),
-      timestamp: String(rawPrice.timestamp),
+      timestamp: Number(rawPrice.timestamp),
       confidence: rawPrice.confidence ?? 1,
       sources: [this.getProtocolName()],
       chain: this.chain,

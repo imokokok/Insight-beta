@@ -117,26 +117,6 @@ export function formatUsd(amount: number, locale: string): string {
 }
 
 /**
- * 将数字格式化为紧凑格式（不带货币符号）
- *
- * @param amount - 要格式化的数字
- * @param locale - 区域设置
- * @returns 格式化后的数字字符串
- *
- * @example
- * ```typescript
- * formatNumberCompact(1234567, 'en-US'); // Returns: '1.2M'
- * formatNumberCompact(1500, 'en-US');    // Returns: '1.5K'
- * ```
- */
-export function formatNumberCompact(amount: number, locale: string): string {
-  return new Intl.NumberFormat(locale, {
-    notation: 'compact',
-    maximumFractionDigits: 1,
-  }).format(amount);
-}
-
-/**
  * 将 ISO 日期字符串格式化为本地化的日期时间格式
  *
  * @param iso - ISO 8601 格式的日期字符串

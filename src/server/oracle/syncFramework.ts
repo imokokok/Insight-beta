@@ -7,6 +7,7 @@
 
 import { query } from '@/server/db';
 import { logger } from '@/lib/logger';
+import { sleep } from '@/lib/utils';
 import {
   getUnifiedInstance,
   updateSyncState,
@@ -357,10 +358,6 @@ export function createPriceFeedRecord(
     source: context.protocol,
     metadata,
   };
-}
-
-export async function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export function withTimeout<T>(

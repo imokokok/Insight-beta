@@ -318,9 +318,9 @@ export class ChainlinkClient {
       baseAsset: baseAsset || 'UNKNOWN',
       quoteAsset: quoteAsset || 'USD',
       price: formattedPrice,
-      priceRaw: priceData.answer.toString(),
+      priceRaw: priceData.answer,
       decimals: priceData.decimals,
-      timestamp: updatedAt.toISOString(),
+      timestamp: updatedAt.getTime(),
       isStale,
       stalenessSeconds,
     };
