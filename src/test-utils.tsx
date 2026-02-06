@@ -117,8 +117,7 @@ export function mockLucideReact() {
 // Setup Helpers
 // ============================================================================
 
-export function setupCommonMocks(pathname: string = '/') {
-  vi.mock('next/navigation', () => mockNextNavigation(pathname));
-  vi.mock('@/i18n/LanguageProvider', () => mockI18n());
-  vi.mock('@/i18n/translations', () => mockTranslations());
-}
+// Note: vi.mock cannot be used inside functions as it gets hoisted to the top of the file.
+// Use the mock functions above directly in your test files at the module level.
+// Example:
+//   vi.mock('next/navigation', () => mockNextNavigation('/my-path'));

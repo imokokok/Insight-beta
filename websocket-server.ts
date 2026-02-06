@@ -8,6 +8,7 @@
  */
 
 import { WebSocketServer } from 'ws';
+import type { IncomingMessage } from 'http';
 import { logger } from './src/lib/logger';
 import {
   startWebSocketServer,
@@ -23,7 +24,7 @@ const wss = new WebSocketServer({
   port: PORT,
   host: HOST,
   // 允许跨域
-  verifyClient: (info) => {
+  verifyClient: (info: { origin: string; secure: boolean; req: IncomingMessage }) => {
     // 可以在这里添加认证逻辑
     logger.debug(`WebSocket connection attempt from ${info.origin}`);
     return true;

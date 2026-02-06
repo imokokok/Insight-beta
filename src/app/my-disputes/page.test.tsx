@@ -15,6 +15,8 @@ vi.mock('next/link', () => mockNextLink());
 vi.mock('@/i18n/LanguageProvider', () => mockI18n());
 vi.mock('@/i18n/translations', () => mockTranslations());
 
+import Page from './page';
+
 vi.mock('@/contexts/WalletContext', () => ({
   useWallet: vi.fn(() => ({ address: mockAddressState.current })),
 }));
@@ -39,8 +41,6 @@ vi.mock('@/hooks/user/useUserStats', () => ({
 
 vi.mock('@/components/PageHeader', () => mockPageHeader());
 
-import MyDisputesPage from './page';
-
 describe('MyDisputesPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -52,7 +52,7 @@ describe('MyDisputesPage', () => {
   });
 
   it('renders my disputes page', () => {
-    render(<MyDisputesPage />);
-    expect(screen.getByText('My Disputes')).toBeInTheDocument();
+    render(<Page />);
+    expect(screen.getByText('nav.myDisputes')).toBeInTheDocument();
   });
 });
