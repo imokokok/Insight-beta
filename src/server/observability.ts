@@ -1384,8 +1384,8 @@ export async function listAuditLog(params: {
   };
 }
 
-function readSloNumber(raw: string, fallback: number, opts?: { min?: number }) {
-  const n = Number(raw);
+function readSloNumber(raw: string | number, fallback: number, opts?: { min?: number }) {
+  const n = typeof raw === 'string' ? Number(raw) : raw;
   if (!Number.isFinite(n)) return fallback;
   const min = opts?.min ?? 0;
   return Math.max(min, n);

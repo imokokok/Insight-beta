@@ -1,486 +1,393 @@
+/**
+ * Environment Variables - 环境变量配置
+ *
+ * 使用 Zod 进行类型安全的验证和解析
+ */
+
 import { z } from 'zod';
-import { logger } from '@/lib/logger';
 
 // ============================================================================
-// 共享验证函数
+// 辅助函数
 // ============================================================================
 
-/**
- * 验证 PostgreSQL URL
- */
-const validatePostgresUrl = (value: string | undefined): boolean => {
-  if (!value) return true;
-  try {
-    const url = new URL(value);
-    return ['postgres:', 'postgresql:'].includes(url.protocol);
-  } catch {
-    return false;
-  }
-};
-
-/**
- * 验证 RPC URL（支持多个 URL，逗号或空格分隔）
- */
-const validateRpcUrl = (value: string | undefined): boolean => {
-  if (!value) return true;
-  const urls = value
-    .split(/[,\s]+/)
-    .map((s) => s.trim())
-    .filter(Boolean);
-  if (urls.length === 0) return true;
-  return urls.every((u) => {
-    try {
-      const url = new URL(u);
-      return ['http:', 'https:', 'ws:', 'wss:'].includes(url.protocol);
-    } catch {
-      return false;
-    }
-  });
-};
-
-/**
- * 创建 URL 验证 schema（用于 RPC URLs）
- */
-const createRpcUrlSchema = (fieldName: string) =>
-  z
+function optionalString(defaultValue?: string) {
+  return z
     .string()
     .optional()
-    .transform((v) => (v ?? '').trim())
-    .refine(validateRpcUrl, { message: `invalid_${fieldName}` });
-
-/**
- * 创建 PostgreSQL URL 验证 schema
- */
-const createPostgresUrlSchema = (fieldName: string) =>
-  z
-    .string()
-    .optional()
-    .transform((v) => (v ?? '').trim())
-    .refine(validatePostgresUrl, { message: `invalid_${fieldName}` });
-
-export const env = {
-  get DATABASE_URL() {
-    return (process.env.DATABASE_URL ?? '').trim();
-  },
-  get SUPABASE_DB_URL() {
-    return (process.env.SUPABASE_DB_URL ?? '').trim();
-  },
-  get SUPABASE_URL() {
-    return (process.env.SUPABASE_URL ?? '').trim();
-  },
-  get SUPABASE_SERVICE_ROLE_KEY() {
-    return (process.env.SUPABASE_SERVICE_ROLE_KEY ?? '').trim();
-  },
-  get INSIGHT_ADMIN_TOKEN() {
-    return (process.env.INSIGHT_ADMIN_TOKEN ?? '').trim();
-  },
-  get INSIGHT_ADMIN_TOKEN_SALT() {
-    return (process.env.INSIGHT_ADMIN_TOKEN_SALT ?? '').trim();
-  },
-  get INSIGHT_CRON_SECRET() {
-    return (process.env.INSIGHT_CRON_SECRET ?? '').trim();
-  },
-  get CRON_SECRET() {
-    return (process.env.CRON_SECRET ?? '').trim();
-  },
-  get INSIGHT_RPC_URL() {
-    return (process.env.INSIGHT_RPC_URL ?? '').trim();
-  },
-  get INSIGHT_ALLOW_PRIVATE_RPC_URLS() {
-    return (process.env.INSIGHT_ALLOW_PRIVATE_RPC_URLS ?? '').trim();
-  },
-  get INSIGHT_CHAIN() {
-    return (process.env.INSIGHT_CHAIN ?? '').trim();
-  },
-  get INSIGHT_SLOW_REQUEST_MS() {
-    return (process.env.INSIGHT_SLOW_REQUEST_MS ?? '').trim();
-  },
-  get INSIGHT_SLO_MAX_LAG_BLOCKS() {
-    return (process.env.INSIGHT_SLO_MAX_LAG_BLOCKS ?? '').trim();
-  },
-  get INSIGHT_SLO_MAX_SYNC_STALENESS_MINUTES() {
-    return (process.env.INSIGHT_SLO_MAX_SYNC_STALENESS_MINUTES ?? '').trim();
-  },
-  get INSIGHT_SLO_MAX_ALERT_MTTA_MINUTES() {
-    return (process.env.INSIGHT_SLO_MAX_ALERT_MTTA_MINUTES ?? '').trim();
-  },
-  get INSIGHT_SLO_MAX_ALERT_MTTR_MINUTES() {
-    return (process.env.INSIGHT_SLO_MAX_ALERT_MTTR_MINUTES ?? '').trim();
-  },
-  get INSIGHT_SLO_MAX_INCIDENT_MTTR_MINUTES() {
-    return (process.env.INSIGHT_SLO_MAX_INCIDENT_MTTR_MINUTES ?? '').trim();
-  },
-  get INSIGHT_SLO_MAX_OPEN_ALERTS() {
-    return (process.env.INSIGHT_SLO_MAX_OPEN_ALERTS ?? '').trim();
-  },
-  get INSIGHT_SLO_MAX_OPEN_CRITICAL_ALERTS() {
-    return (process.env.INSIGHT_SLO_MAX_OPEN_CRITICAL_ALERTS ?? '').trim();
-  },
-  get INSIGHT_MEMORY_MAX_VOTE_KEYS() {
-    return (process.env.INSIGHT_MEMORY_MAX_VOTE_KEYS ?? '').trim();
-  },
-  get INSIGHT_MEMORY_VOTE_BLOCK_WINDOW() {
-    return (process.env.INSIGHT_MEMORY_VOTE_BLOCK_WINDOW ?? '').trim();
-  },
-  get INSIGHT_MEMORY_MAX_ASSERTIONS() {
-    return (process.env.INSIGHT_MEMORY_MAX_ASSERTIONS ?? '').trim();
-  },
-  get INSIGHT_MEMORY_MAX_DISPUTES() {
-    return (process.env.INSIGHT_MEMORY_MAX_DISPUTES ?? '').trim();
-  },
-  get INSIGHT_DISABLE_EMBEDDED_WORKER() {
-    return (process.env.INSIGHT_DISABLE_EMBEDDED_WORKER ?? '').trim();
-  },
-  get INSIGHT_DEMO_MODE() {
-    return (process.env.INSIGHT_DEMO_MODE ?? '').trim();
-  },
-  get INSIGHT_WORKER_ID() {
-    return (process.env.INSIGHT_WORKER_ID ?? '').trim();
-  },
-  get INSIGHT_TRUST_PROXY() {
-    return (process.env.INSIGHT_TRUST_PROXY ?? '').trim();
-  },
-  get INSIGHT_RATE_LIMIT_STORE() {
-    return (process.env.INSIGHT_RATE_LIMIT_STORE ?? '').trim();
-  },
-  get INSIGHT_API_LOG_SAMPLE_RATE() {
-    return (process.env.INSIGHT_API_LOG_SAMPLE_RATE ?? '').trim();
-  },
-  get INSIGHT_DEPENDENCY_TIMEOUT_MS() {
-    return (process.env.INSIGHT_DEPENDENCY_TIMEOUT_MS ?? '').trim();
-  },
-  get INSIGHT_RPC_TIMEOUT_MS() {
-    return (process.env.INSIGHT_RPC_TIMEOUT_MS ?? '').trim();
-  },
-  get INSIGHT_WEBHOOK_TIMEOUT_MS() {
-    return (process.env.INSIGHT_WEBHOOK_TIMEOUT_MS ?? '').trim();
-  },
-  get INSIGHT_WEBHOOK_URL() {
-    return (process.env.INSIGHT_WEBHOOK_URL ?? '').trim();
-  },
-  get INSIGHT_TELEGRAM_BOT_TOKEN() {
-    return (process.env.INSIGHT_TELEGRAM_BOT_TOKEN ?? '').trim();
-  },
-  get INSIGHT_TELEGRAM_CHAT_ID() {
-    return (process.env.INSIGHT_TELEGRAM_CHAT_ID ?? '').trim();
-  },
-  get INSIGHT_TELEGRAM_TIMEOUT_MS() {
-    return (process.env.INSIGHT_TELEGRAM_TIMEOUT_MS ?? '').trim();
-  },
-  get INSIGHT_SLACK_WEBHOOK_URL() {
-    return (process.env.INSIGHT_SLACK_WEBHOOK_URL ?? process.env.SLACK_WEBHOOK_URL ?? '').trim();
-  },
-  get INSIGHT_SLACK_TIMEOUT_MS() {
-    return (process.env.INSIGHT_SLACK_TIMEOUT_MS ?? '').trim();
-  },
-  get INSIGHT_SMTP_HOST() {
-    return (process.env.INSIGHT_SMTP_HOST ?? '').trim();
-  },
-  get INSIGHT_SMTP_PORT() {
-    return (process.env.INSIGHT_SMTP_PORT ?? '').trim();
-  },
-  get INSIGHT_SMTP_USER() {
-    return (process.env.INSIGHT_SMTP_USER ?? '').trim();
-  },
-  get INSIGHT_SMTP_PASS() {
-    return (process.env.INSIGHT_SMTP_PASS ?? '').trim();
-  },
-  get INSIGHT_FROM_EMAIL() {
-    return (process.env.INSIGHT_FROM_EMAIL ?? '').trim();
-  },
-  get INSIGHT_DEFAULT_EMAIL() {
-    return (process.env.INSIGHT_DEFAULT_EMAIL ?? '').trim();
-  },
-  get INSIGHT_ENABLE_VOTING() {
-    return (process.env.INSIGHT_ENABLE_VOTING ?? '').trim();
-  },
-  get INSIGHT_DISABLE_VOTE_TRACKING() {
-    return (process.env.INSIGHT_DISABLE_VOTE_TRACKING ?? '').trim();
-  },
-  get INSIGHT_VOTING_DEGRADATION() {
-    return (process.env.INSIGHT_VOTING_DEGRADATION ?? '').trim();
-  },
-  get INSIGHT_REFERENCE_PRICE_PROVIDER() {
-    return (process.env.INSIGHT_REFERENCE_PRICE_PROVIDER ?? '').trim();
-  },
-  get INSIGHT_PRICE_SYMBOL() {
-    return (process.env.INSIGHT_PRICE_SYMBOL ?? '').trim();
-  },
-  get INSIGHT_DEX_TWAP_POOL() {
-    return (process.env.INSIGHT_DEX_TWAP_POOL ?? '').trim();
-  },
-  get INSIGHT_DEX_TWAP_SECONDS() {
-    return (process.env.INSIGHT_DEX_TWAP_SECONDS ?? '').trim();
-  },
-  get INSIGHT_DEX_PRICE_INVERT() {
-    return (process.env.INSIGHT_DEX_PRICE_INVERT ?? '').trim();
-  },
-  get INSIGHT_FALLBACK_BTC_PRICE() {
-    return (process.env.INSIGHT_FALLBACK_BTC_PRICE ?? '').trim();
-  },
-  get INSIGHT_FALLBACK_ETH_PRICE() {
-    return (process.env.INSIGHT_FALLBACK_ETH_PRICE ?? '').trim();
-  },
-  get INSIGHT_FALLBACK_DEFAULT_PRICE() {
-    return (process.env.INSIGHT_FALLBACK_DEFAULT_PRICE ?? '').trim();
-  },
-  get INSIGHT_PRICE_CACHE_TTL_MS() {
-    return (process.env.INSIGHT_PRICE_CACHE_TTL_MS ?? '').trim();
-  },
-  get INSIGHT_DEX_TWAP_CACHE_TTL_MS() {
-    return (process.env.INSIGHT_DEX_TWAP_CACHE_TTL_MS ?? '').trim();
-  },
-  get INSIGHT_POOL_META_CACHE_TTL_MS() {
-    return (process.env.INSIGHT_POOL_META_CACHE_TTL_MS ?? '').trim();
-  },
-  get POLYGON_AMOY_RPC_URL() {
-    return (process.env.POLYGON_AMOY_RPC_URL ?? '').trim();
-  },
-  get POLYGON_RPC_URL() {
-    return (process.env.POLYGON_RPC_URL ?? '').trim();
-  },
-  get ARBITRUM_RPC_URL() {
-    return (process.env.ARBITRUM_RPC_URL ?? '').trim();
-  },
-  get OPTIMISM_RPC_URL() {
-    return (process.env.OPTIMISM_RPC_URL ?? '').trim();
-  },
-  get INSIGHT_CONFIG_ENCRYPTION_KEY() {
-    return (process.env.INSIGHT_CONFIG_ENCRYPTION_KEY ?? '').trim();
-  },
-  get INSIGHT_REDIS_URL() {
-    return (process.env.INSIGHT_REDIS_URL ?? '').trim();
-  },
-  // UMA DVM & Rewards
-  get UMA_ETHEREUM_DVM_ADDRESS() {
-    return (process.env.UMA_ETHEREUM_DVM_ADDRESS ?? '').trim();
-  },
-  get UMA_ETHEREUM_VOTING_TOKEN_ADDRESS() {
-    return (process.env.UMA_ETHEREUM_VOTING_TOKEN_ADDRESS ?? '').trim();
-  },
-  get UMA_POLYGON_DVM_ADDRESS() {
-    return (process.env.UMA_POLYGON_DVM_ADDRESS ?? '').trim();
-  },
-  get UMA_POLYGON_VOTING_TOKEN_ADDRESS() {
-    return (process.env.UMA_POLYGON_VOTING_TOKEN_ADDRESS ?? '').trim();
-  },
-  get UMA_ARBITRUM_DVM_ADDRESS() {
-    return (process.env.UMA_ARBITRUM_DVM_ADDRESS ?? '').trim();
-  },
-  get UMA_ARBITRUM_VOTING_TOKEN_ADDRESS() {
-    return (process.env.UMA_ARBITRUM_VOTING_TOKEN_ADDRESS ?? '').trim();
-  },
-  // UMA Bridge
-  get UMA_ETHEREUM_BRIDGE_ADDRESS() {
-    return (process.env.UMA_ETHEREUM_BRIDGE_ADDRESS ?? '').trim();
-  },
-  get UMA_POLYGON_BRIDGE_ADDRESS() {
-    return (process.env.UMA_POLYGON_BRIDGE_ADDRESS ?? '').trim();
-  },
-  get UMA_ARBITRUM_BRIDGE_ADDRESS() {
-    return (process.env.UMA_ARBITRUM_BRIDGE_ADDRESS ?? '').trim();
-  },
-  // UMA Sync Intervals
-  get UMA_REWARDS_SYNC_INTERVAL_MS() {
-    return parseInt(process.env.UMA_REWARDS_SYNC_INTERVAL_MS ?? '300000', 10);
-  },
-  get UMA_TVL_SYNC_INTERVAL_MS() {
-    return parseInt(process.env.UMA_TVL_SYNC_INTERVAL_MS ?? '600000', 10);
-  },
-  get BASE_RPC_URL() {
-    return (process.env.BASE_RPC_URL ?? '').trim();
-  },
-  get SOLANA_RPC_URL() {
-    return (process.env.SOLANA_RPC_URL ?? '').trim();
-  },
-};
-
-export function getEnv(key: keyof typeof env): string {
-  // Safe: key is validated as keyof typeof env
-  const value = env[key];
-  return String(value ?? '');
+    .default(defaultValue ?? '');
 }
 
-export function isEnvSet(key: keyof typeof env): boolean {
-  // Safe: key is validated as keyof typeof env
-
-  return !!env[key];
+function optionalNumber(defaultValue: number) {
+  return z.coerce.number().optional().default(defaultValue);
 }
+
+function optionalBoolean(defaultValue: boolean) {
+  return z.coerce.boolean().optional().default(defaultValue);
+}
+
+function urlString() {
+  return z.string().url().optional().or(z.literal(''));
+}
+
+// ============================================================================
+// 环境变量 Schema 定义
+// ============================================================================
 
 const envSchema = z.object({
-  DATABASE_URL: createPostgresUrlSchema('database_url'),
-  SUPABASE_DB_URL: createPostgresUrlSchema('supabase_db_url'),
-  SUPABASE_URL: z.string().url().optional(),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
-  INSIGHT_ADMIN_TOKEN: z.string().min(1).optional(),
-  INSIGHT_ADMIN_TOKEN_SALT: z.string().min(16).optional(),
-  INSIGHT_CRON_SECRET: z.string().min(16).optional(),
-  CRON_SECRET: z.string().min(16).optional(),
-  INSIGHT_RPC_URL: createRpcUrlSchema('rpc_url'),
-  INSIGHT_ALLOW_PRIVATE_RPC_URLS: z.enum(['true', 'false', '1', '0']).optional(),
-  INSIGHT_CHAIN: z.enum(['Polygon', 'PolygonAmoy', 'Arbitrum', 'Optimism', 'Local']).optional(),
-  INSIGHT_SLOW_REQUEST_MS: z.coerce.number().int().min(0).optional(),
-  INSIGHT_SLO_MAX_LAG_BLOCKS: z.coerce.number().int().min(0).optional(),
-  INSIGHT_SLO_MAX_SYNC_STALENESS_MINUTES: z.coerce.number().int().min(0).optional(),
-  INSIGHT_SLO_MAX_ALERT_MTTA_MINUTES: z.coerce.number().int().min(0).optional(),
-  INSIGHT_SLO_MAX_ALERT_MTTR_MINUTES: z.coerce.number().int().min(0).optional(),
-  INSIGHT_SLO_MAX_INCIDENT_MTTR_MINUTES: z.coerce.number().int().min(0).optional(),
-  INSIGHT_SLO_MAX_OPEN_ALERTS: z.coerce.number().int().min(0).optional(),
-  INSIGHT_SLO_MAX_OPEN_CRITICAL_ALERTS: z.coerce.number().int().min(0).optional(),
-  INSIGHT_MEMORY_MAX_VOTE_KEYS: z.coerce.number().int().min(1).optional(),
-  INSIGHT_MEMORY_VOTE_BLOCK_WINDOW: z.coerce.bigint().min(0n).optional(),
-  INSIGHT_MEMORY_MAX_ASSERTIONS: z.coerce.number().int().min(1).optional(),
-  INSIGHT_MEMORY_MAX_DISPUTES: z.coerce.number().int().min(1).optional(),
-  INSIGHT_DISABLE_EMBEDDED_WORKER: z.enum(['true', 'false', '1', '0']).optional(),
-  INSIGHT_DEMO_MODE: z.enum(['true', 'false', '1', '0']).optional(),
-  INSIGHT_WORKER_ID: z.string().min(1).optional(),
-  INSIGHT_TRUST_PROXY: z.enum(['true', 'false', '1', '0', 'cloudflare']).optional(),
-  INSIGHT_RATE_LIMIT_STORE: z.enum(['auto', 'db', 'kv', 'memory', 'redis']).optional(),
-  INSIGHT_API_LOG_SAMPLE_RATE: z.coerce.number().min(0).max(1).optional(),
-  INSIGHT_DEPENDENCY_TIMEOUT_MS: z.preprocess(
-    (v) => (v === '' ? undefined : v),
-    z.coerce.number().int().min(1).optional(),
-  ),
-  INSIGHT_RPC_TIMEOUT_MS: z.preprocess(
-    (v) => (v === '' ? undefined : v),
-    z.coerce.number().int().min(1).optional(),
-  ),
-  INSIGHT_WEBHOOK_TIMEOUT_MS: z.preprocess(
-    (v) => (v === '' ? undefined : v),
-    z.coerce.number().int().min(1).optional(),
-  ),
-  INSIGHT_WEBHOOK_URL: z.string().url().optional(),
-  INSIGHT_TELEGRAM_BOT_TOKEN: z.string().optional(),
-  INSIGHT_TELEGRAM_CHAT_ID: z.string().optional(),
-  INSIGHT_TELEGRAM_TIMEOUT_MS: z.preprocess(
-    (v) => (v === '' ? undefined : v),
-    z.coerce.number().int().min(1).optional(),
-  ),
-  INSIGHT_SLACK_WEBHOOK_URL: z.string().url().optional(),
-  SLACK_WEBHOOK_URL: z.string().url().optional(),
-  INSIGHT_SLACK_TIMEOUT_MS: z.preprocess(
-    (v) => (v === '' ? undefined : v),
-    z.coerce.number().int().min(1).optional(),
-  ),
-  INSIGHT_SMTP_HOST: z.string().optional(),
-  INSIGHT_SMTP_PORT: z.string().optional(),
-  INSIGHT_SMTP_USER: z.string().optional(),
-  INSIGHT_SMTP_PASS: z.string().optional(),
-  INSIGHT_FROM_EMAIL: z.string().email().optional(),
-  INSIGHT_DEFAULT_EMAIL: z.string().email().optional(),
-  INSIGHT_ENABLE_VOTING: z.enum(['true', 'false', '1', '0']).optional(),
-  INSIGHT_DISABLE_VOTE_TRACKING: z.enum(['true', 'false', '1', '0']).optional(),
-  INSIGHT_VOTING_DEGRADATION: z.enum(['true', 'false', '1', '0']).optional(),
-  INSIGHT_REFERENCE_PRICE_PROVIDER: z.enum(['binance', 'coinbase', 'mock']).optional(),
-  INSIGHT_PRICE_SYMBOL: z
-    .string()
-    .optional()
-    .transform((v) => (v ?? '').trim())
-    .refine((v) => !v || /^[A-Z0-9]{1,12}$/.test(v), {
-      message: 'invalid_price_symbol',
-    }),
-  INSIGHT_DEX_TWAP_POOL: z
-    .string()
-    .optional()
-    .transform((v) => (v ?? '').trim())
-    .refine((v) => !v || /^0x[a-fA-F0-9]{40}$/.test(v), {
-      message: 'invalid_dex_twap_pool',
-    }),
-  INSIGHT_DEX_TWAP_SECONDS: z.preprocess(
-    (v) => (v === '' ? undefined : v),
-    z.coerce
-      .number()
-      .int()
-      .min(60)
-      .max(7 * 24 * 3600)
-      .optional(),
-  ),
-  INSIGHT_DEX_PRICE_INVERT: z.enum(['true', 'false', '1', '0']).optional(),
-  INSIGHT_FALLBACK_BTC_PRICE: z.preprocess(
-    (v) => (v === '' ? undefined : v),
-    z.coerce.number().positive().optional(),
-  ),
-  INSIGHT_FALLBACK_ETH_PRICE: z.preprocess(
-    (v) => (v === '' ? undefined : v),
-    z.coerce.number().positive().optional(),
-  ),
-  INSIGHT_FALLBACK_DEFAULT_PRICE: z.preprocess(
-    (v) => (v === '' ? undefined : v),
-    z.coerce.number().positive().optional(),
-  ),
-  INSIGHT_BASE_URL: z.string().url().optional(),
-  INSIGHT_CSP_MODE: z.enum(['relaxed', 'strict']).optional(),
+  // =============================================================================
+  // 基础配置
+  // =============================================================================
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  NEXT_RUNTIME: z.enum(['nodejs', 'edge']).optional(),
 
-  // 使用共享验证函数简化 RPC URL 验证
-  POLYGON_AMOY_RPC_URL: createRpcUrlSchema('polygon_amoy_rpc_url'),
-  POLYGON_RPC_URL: createRpcUrlSchema('polygon_rpc_url'),
-  ARBITRUM_RPC_URL: createRpcUrlSchema('arbitrum_rpc_url'),
-  OPTIMISM_RPC_URL: createRpcUrlSchema('optimism_rpc_url'),
-  INSIGHT_CONFIG_ENCRYPTION_KEY: z.string().min(32).optional(),
-  INSIGHT_REDIS_URL: z.string().url().optional(),
+  // =============================================================================
+  // 数据库配置
+  // =============================================================================
+  DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
+  REDIS_URL: z.string().min(1, 'REDIS_URL is required'),
+
+  // Supabase 配置（可选）
+  SUPABASE_URL: optionalString(),
+  SUPABASE_SERVICE_ROLE_KEY: optionalString(),
+  SUPABASE_DB_URL: optionalString(),
+
+  // =============================================================================
+  // RPC 配置 - 主网
+  // =============================================================================
+  ETHEREUM_RPC_URL: optionalString(),
+  POLYGON_RPC_URL: optionalString(),
+  ARBITRUM_RPC_URL: optionalString(),
+  OPTIMISM_RPC_URL: optionalString(),
+  BASE_RPC_URL: optionalString(),
+  AVALANCHE_RPC_URL: optionalString(),
+  BSC_RPC_URL: optionalString(),
+  FANTOM_RPC_URL: optionalString(),
+  SOLANA_RPC_URL: optionalString(),
+
+  // Alchemy 配置
+  ALCHEMY_API_KEY: optionalString(),
+  ALCHEMY_ETHEREUM_URL: optionalString(),
+  ALCHEMY_POLYGON_URL: optionalString(),
+  ALCHEMY_ARBITRUM_URL: optionalString(),
+  ALCHEMY_OPTIMISM_URL: optionalString(),
+  ALCHEMY_BASE_URL: optionalString(),
+  ALCHEMY_AVALANCHE_URL: optionalString(),
+
+  // Infura 配置
+  INFURA_API_KEY: optionalString(),
+  INFURA_ETHEREUM_URL: optionalString(),
+  INFURA_POLYGON_URL: optionalString(),
+  INFURA_ARBITRUM_URL: optionalString(),
+  INFURA_OPTIMISM_URL: optionalString(),
+  INFURA_AVALANCHE_URL: optionalString(),
+
+  // QuickNode 配置
+  QUICKNODE_ETHEREUM_URL: optionalString(),
+  QUICKNODE_POLYGON_URL: optionalString(),
+  QUICKNODE_ARBITRUM_URL: optionalString(),
+  QUICKNODE_OPTIMISM_URL: optionalString(),
+  QUICKNODE_BASE_URL: optionalString(),
+  QUICKNODE_SOLANA_URL: optionalString(),
+
+  // =============================================================================
+  // RPC 配置 - 测试网
+  // =============================================================================
+  SEPOLIA_RPC_URL: optionalString(),
+  GOERLI_RPC_URL: optionalString(),
+  MUMBAI_RPC_URL: optionalString(),
+  POLYGON_AMOY_RPC_URL: optionalString(),
+
+  // =============================================================================
+  // WebSocket 配置
+  // =============================================================================
+  WS_PORT: optionalNumber(3001),
+  WS_HOST: optionalString('0.0.0.0'),
+
+  // =============================================================================
+  // 监控和日志
+  // =============================================================================
+  SENTRY_DSN: urlString(),
+  SENTRY_ORG: optionalString(),
+  SENTRY_PROJECT: optionalString(),
+  SENTRY_AUTH_TOKEN: optionalString(),
+  LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
+
+  // =============================================================================
+  // 安全
+  // =============================================================================
+  INSIGHT_ADMIN_TOKEN: optionalString(),
+  INSIGHT_ADMIN_TOKEN_SALT: optionalString(),
+  INSIGHT_CRON_SECRET: optionalString(),
+  CRON_SECRET: optionalString(),
+  JWT_SECRET: optionalString(),
+
+  // =============================================================================
+  // Insight 特定配置
+  // =============================================================================
+  INSIGHT_RPC_URL: optionalString(),
+  INSIGHT_ALLOW_PRIVATE_RPC_URLS: optionalBoolean(false),
+  INSIGHT_CHAIN: optionalString('ethereum'),
+  INSIGHT_SLOW_REQUEST_MS: optionalNumber(5000),
+
+  // SLO 配置
+  INSIGHT_SLO_MAX_LAG_BLOCKS: optionalNumber(10),
+  INSIGHT_SLO_MAX_SYNC_STALENESS_MINUTES: optionalNumber(5),
+  INSIGHT_SLO_MAX_ALERT_MTTA_MINUTES: optionalNumber(5),
+  INSIGHT_SLO_MAX_ALERT_MTTR_MINUTES: optionalNumber(30),
+  INSIGHT_SLO_MAX_INCIDENT_MTTR_MINUTES: optionalNumber(60),
+  INSIGHT_SLO_MAX_OPEN_ALERTS: optionalNumber(100),
+  INSIGHT_SLO_MAX_OPEN_CRITICAL_ALERTS: optionalNumber(10),
+
+  // 内存配置
+  INSIGHT_MEMORY_MAX_VOTE_KEYS: optionalNumber(1000),
+  INSIGHT_MEMORY_VOTE_BLOCK_WINDOW: optionalNumber(100),
+  INSIGHT_MEMORY_MAX_ASSERTIONS: optionalNumber(10000),
+  INSIGHT_MEMORY_MAX_DISPUTES: optionalNumber(5000),
+
+  // 缓存配置
+  INSIGHT_PRICE_CACHE_TTL_MS: optionalNumber(30000),
+  INSIGHT_DEX_TWAP_CACHE_TTL_MS: optionalNumber(60000),
+  INSIGHT_POOL_META_CACHE_TTL_MS: optionalNumber(300000),
+
+  // 价格回退配置
+  INSIGHT_FALLBACK_BTC_PRICE: optionalNumber(30000),
+  INSIGHT_FALLBACK_ETH_PRICE: optionalNumber(2000),
+  INSIGHT_FALLBACK_DEFAULT_PRICE: optionalNumber(1),
+
+  // DEX TWAP 配置
+  INSIGHT_DEX_TWAP_POOL: optionalString(),
+  INSIGHT_DEX_TWAP_SECONDS: optionalNumber(1800),
+  INSIGHT_DEX_PRICE_INVERT: optionalBoolean(false),
+
+  // 参考价格提供商
+  INSIGHT_REFERENCE_PRICE_PROVIDER: optionalString('chainlink'),
+
+  // 功能开关
+  INSIGHT_DISABLE_EMBEDDED_WORKER: optionalBoolean(false),
+  INSIGHT_DEMO_MODE: optionalBoolean(false),
+  INSIGHT_WORKER_ID: optionalString(),
+  INSIGHT_TRUST_PROXY: optionalBoolean(false),
+
+  // 投票功能
+  INSIGHT_VOTING_DEGRADATION: optionalBoolean(false),
+  INSIGHT_ENABLE_VOTING: optionalBoolean(true),
+  INSIGHT_DISABLE_VOTE_TRACKING: optionalBoolean(false),
+
+  // 限流配置
+  INSIGHT_RATE_LIMIT_STORE: optionalString('memory'),
+  INSIGHT_API_LOG_SAMPLE_RATE: optionalNumber(1),
+
+  // 超时配置
+  INSIGHT_DEPENDENCY_TIMEOUT_MS: optionalNumber(5000),
+  INSIGHT_RPC_TIMEOUT_MS: optionalNumber(30000),
+  INSIGHT_WEBHOOK_TIMEOUT_MS: optionalNumber(10000),
+
+  // =============================================================================
+  // 告警通知配置
+  // =============================================================================
+  // Webhook
+  INSIGHT_WEBHOOK_URL: urlString(),
+
+  // Telegram
+  INSIGHT_TELEGRAM_BOT_TOKEN: optionalString(),
+  INSIGHT_TELEGRAM_CHAT_ID: optionalString(),
+  INSIGHT_TELEGRAM_TIMEOUT_MS: optionalNumber(10000),
+
+  // Slack
+  SLACK_WEBHOOK_URL: urlString(),
+  INSIGHT_SLACK_WEBHOOK_URL: urlString(),
+  INSIGHT_SLACK_TIMEOUT_MS: optionalNumber(10000),
+
+  // SMTP
+  INSIGHT_SMTP_HOST: optionalString(),
+  INSIGHT_SMTP_PORT: optionalNumber(587),
+  INSIGHT_SMTP_USER: optionalString(),
+  INSIGHT_SMTP_PASS: optionalString(),
+  INSIGHT_FROM_EMAIL: optionalString(),
+  INSIGHT_DEFAULT_EMAIL: optionalString(),
+
+  // PagerDuty
+  PAGERDUTY_API_KEY: optionalString(),
+
+  // =============================================================================
+  // UMA 配置
+  // =============================================================================
+  UMA_REWARDS_SYNC_INTERVAL_MS: optionalNumber(60000),
+  UMA_TVL_SYNC_INTERVAL_MS: optionalNumber(60000),
+
+  // =============================================================================
+  // CDN 配置
+  // =============================================================================
+  CDN_URL: optionalString(),
+  CDN_IMAGE_URL: optionalString(),
+
+  // =============================================================================
+  // CSP 配置
+  // =============================================================================
+  INSIGHT_CSP_MODE: z.enum(['strict', 'relaxed']).default('relaxed'),
+
+  // =============================================================================
+  // 其他配置
+  // =============================================================================
+  INSIGHT_CONFIG_ENCRYPTION_KEY: optionalString(),
+  INSIGHT_REDIS_URL: optionalString(),
+  INSIGHT_PRICE_SYMBOL: optionalString('ETH/USD'),
 });
 
-// Auto-validate on import
-try {
+// ============================================================================
+// 解析环境变量
+// ============================================================================
+
+function parseEnv() {
+  // 在客户端只暴露 NEXT_PUBLIC_ 开头的变量
   const isServer = typeof window === 'undefined';
-  const isProd = process.env.NODE_ENV === 'production';
-  if (isServer && typeof process !== 'undefined' && process.env) {
-    const parsed = envSchema.safeParse(process.env);
-    if (!parsed.success) {
-      if (isProd) {
-        throw new Error(`Invalid environment variables: ${JSON.stringify(parsed.error.format())}`);
-      }
-      logger.error('Invalid environment variables', {
-        error: parsed.error.format(),
-      });
+
+  const rawEnv = {
+    ...process.env,
+  };
+
+  const result = envSchema.safeParse(rawEnv);
+
+  if (!result.success) {
+    const errors = result.error.errors.map((e) => `  - ${e.path.join('.')}: ${e.message}`);
+
+    // 在构建时抛出错误
+    if (isServer && process.env.NODE_ENV === 'production') {
+      throw new Error(`Environment validation failed:\n${errors.join('\n')}`);
     }
+
+    // 开发环境只打印警告
+    console.warn('Environment validation warnings:\n' + errors.join('\n'));
+
+    // 返回默认值
+    return envSchema.parse({});
   }
-} catch (e) {
-  if (e instanceof z.ZodError) {
-    logger.error('Invalid environment variables', { error: e.format() });
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error(`Invalid environment variables: ${JSON.stringify(e.format())}`);
-    }
-  } else {
-    throw e;
+
+  return result.data;
+}
+
+// ============================================================================
+// 导出验证后的环境变量
+// ============================================================================
+
+export const env = parseEnv();
+
+// ============================================================================
+// 类型导出
+// ============================================================================
+
+export type Env = z.infer<typeof envSchema>;
+
+// ============================================================================
+// 便捷访问函数
+// ============================================================================
+
+/**
+ * 获取 RPC URL 的优先级：
+ * 1. 直接配置的 RPC_URL
+ * 2. Alchemy URL
+ * 3. Infura URL
+ * 4. QuickNode URL
+ */
+export function getRpcUrl(chain: string): string | undefined {
+  const upperChain = chain.toUpperCase();
+
+  // 1. 直接配置
+  const directUrl = env[`${upperChain}_RPC_URL` as keyof typeof env];
+  if (directUrl) return directUrl as string;
+
+  // 2. Alchemy
+  if (env.ALCHEMY_API_KEY) {
+    const alchemyUrl = env[`ALCHEMY_${upperChain}_URL` as keyof typeof env];
+    if (alchemyUrl) return alchemyUrl as string;
+  }
+
+  // 3. Infura
+  if (env.INFURA_API_KEY) {
+    const infuraUrl = env[`INFURA_${upperChain}_URL` as keyof typeof env];
+    if (infuraUrl) return infuraUrl as string;
+  }
+
+  // 4. QuickNode
+  const quicknodeUrl = env[`QUICKNODE_${upperChain}_URL` as keyof typeof env];
+  if (quicknodeUrl) return quicknodeUrl as string;
+
+  return undefined;
+}
+
+/**
+ * 检查是否处于开发环境
+ */
+export function isDevelopment(): boolean {
+  return env.NODE_ENV === 'development';
+}
+
+/**
+ * 检查是否处于生产环境
+ */
+export function isProduction(): boolean {
+  return env.NODE_ENV === 'production';
+}
+
+/**
+ * 检查是否处于测试环境
+ */
+export function isTest(): boolean {
+  return env.NODE_ENV === 'test';
+}
+
+/**
+ * 检查是否启用了演示模式
+ */
+export function isDemoMode(): boolean {
+  return env.INSIGHT_DEMO_MODE;
+}
+
+/**
+ * 获取日志级别
+ */
+export function getLogLevel(): typeof env.LOG_LEVEL {
+  return env.LOG_LEVEL;
+}
+
+/**
+ * 检查是否配置了告警通知
+ */
+export function hasAlertConfig(): boolean {
+  return !!(
+    env.INSIGHT_SLACK_WEBHOOK_URL ||
+    env.SLACK_WEBHOOK_URL ||
+    env.INSIGHT_TELEGRAM_BOT_TOKEN ||
+    env.INSIGHT_WEBHOOK_URL ||
+    env.INSIGHT_SMTP_HOST
+  );
+}
+
+/**
+ * 获取告警超时时间
+ */
+export function getAlertTimeoutMs(channel: 'slack' | 'telegram' | 'webhook'): number {
+  switch (channel) {
+    case 'slack':
+      return env.INSIGHT_SLACK_TIMEOUT_MS;
+    case 'telegram':
+      return env.INSIGHT_TELEGRAM_TIMEOUT_MS;
+    case 'webhook':
+      return env.INSIGHT_WEBHOOK_TIMEOUT_MS;
+    default:
+      return 10000;
   }
 }
 
-export function getEnvReport() {
-  const issues: string[] = [];
-  try {
-    envSchema.parse(process.env);
-  } catch (e) {
-    if (e instanceof z.ZodError) {
-      for (const err of e.issues) {
-        issues.push(`${err.path.join('.')}: ${err.message}`);
-      }
-    } else {
-      issues.push(e instanceof Error ? e.message : String(e));
-    }
-  }
-  const isProd = process.env.NODE_ENV === 'production';
-  if (isProd) {
-    const demoModeEnabled = ['1', 'true'].includes(
-      (process.env.INSIGHT_DEMO_MODE ?? '').toLowerCase(),
-    );
-    if (demoModeEnabled) issues.push('INSIGHT_DEMO_MODE: demo_mode_enabled_in_production');
-    const hasDatabaseConfig = Boolean(process.env.DATABASE_URL || process.env.SUPABASE_DB_URL);
-    if (!hasDatabaseConfig) issues.push('DATABASE_URL: required_in_production');
-    const hasAdminToken = Boolean((process.env.INSIGHT_ADMIN_TOKEN ?? '').trim());
-    const hasAdminSalt = Boolean((process.env.INSIGHT_ADMIN_TOKEN_SALT ?? '').trim());
-    if (!hasAdminToken && !hasAdminSalt) issues.push('INSIGHT_ADMIN_TOKEN: required_in_production');
-    const hasCronSecret = Boolean(
-      (process.env.INSIGHT_CRON_SECRET ?? '').trim() || (process.env.CRON_SECRET ?? '').trim(),
-    );
-    if (!hasCronSecret) issues.push('CRON_SECRET: required_in_production');
-    const allowPrivateRpc =
-      (process.env.INSIGHT_ALLOW_PRIVATE_RPC_URLS ?? '').trim().toLowerCase() === 'true' ||
-      (process.env.INSIGHT_ALLOW_PRIVATE_RPC_URLS ?? '').trim() === '1';
-    if (allowPrivateRpc) issues.push('INSIGHT_ALLOW_PRIVATE_RPC_URLS: enabled_in_production');
-  }
+/**
+ * 获取环境变量报告
+ */
+export function getEnvReport(): Record<string, string> {
   return {
-    ok: issues.length === 0,
-    issues,
+    NODE_ENV: env.NODE_ENV,
+    DATABASE_URL: env.DATABASE_URL ? 'configured' : 'not configured',
+    REDIS_URL: env.REDIS_URL ? 'configured' : 'not configured',
+    INSIGHT_CHAIN: env.INSIGHT_CHAIN,
+    INSIGHT_DEMO_MODE: String(env.INSIGHT_DEMO_MODE),
   };
 }

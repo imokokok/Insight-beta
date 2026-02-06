@@ -1180,11 +1180,9 @@ async function tickWorker(): Promise<void> {
       recipient: r.recipient,
     }));
 
-    const degraded = ['1', 'true'].includes((env.INSIGHT_VOTING_DEGRADATION || '').toLowerCase());
+    const degraded = env.INSIGHT_VOTING_DEGRADATION;
     const effectiveVoteTrackingEnabled =
-      ['1', 'true'].includes((env.INSIGHT_ENABLE_VOTING || '').toLowerCase()) &&
-      !['1', 'true'].includes((env.INSIGHT_DISABLE_VOTE_TRACKING || '').toLowerCase()) &&
-      !degraded;
+      env.INSIGHT_ENABLE_VOTING && !env.INSIGHT_DISABLE_VOTE_TRACKING && !degraded;
 
     const instances = await listOracleInstances();
     const enabledInstances = instances.filter((i) => i.enabled);
@@ -1334,9 +1332,7 @@ export function resetWorkerState(): void {
 }
 
 // Auto-start worker if not disabled
-const embeddedWorkerDisabled = ['1', 'true'].includes(
-  env.INSIGHT_DISABLE_EMBEDDED_WORKER.toLowerCase(),
-);
+const embeddedWorkerDisabled = env.INSIGHT_DISABLE_EMBEDDED_WORKER;
 
 if (!embeddedWorkerDisabled) {
   startWorker();

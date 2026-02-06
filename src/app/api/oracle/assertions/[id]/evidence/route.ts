@@ -27,10 +27,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       windowMs: 60_000,
     });
     if (limited) return limited;
-    const degraded = ['1', 'true'].includes((env.INSIGHT_VOTING_DEGRADATION || '').toLowerCase());
-    const voteTrackingEnabled =
-      ['1', 'true'].includes((env.INSIGHT_ENABLE_VOTING || '').toLowerCase()) &&
-      !['1', 'true'].includes((env.INSIGHT_DISABLE_VOTE_TRACKING || '').toLowerCase());
+    const degraded = env.INSIGHT_VOTING_DEGRADATION;
+    const voteTrackingEnabled = env.INSIGHT_ENABLE_VOTING && !env.INSIGHT_DISABLE_VOTE_TRACKING;
 
     const url = new URL(request.url);
     const instanceId = url.searchParams.get('instanceId');

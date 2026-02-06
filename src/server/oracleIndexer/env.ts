@@ -62,7 +62,7 @@ export async function getOracleEnv(
  * @returns 是否降级
  */
 export function isDegradedMode(): boolean {
-  return ['1', 'true'].includes((env.INSIGHT_VOTING_DEGRADATION || '').toLowerCase());
+  return env.INSIGHT_VOTING_DEGRADATION;
 }
 
 /**
@@ -70,7 +70,5 @@ export function isDegradedMode(): boolean {
  * @returns 是否启用
  */
 export function isVoteTrackingEnabled(): boolean {
-  const enabled = ['1', 'true'].includes((env.INSIGHT_ENABLE_VOTING || '').toLowerCase());
-  const disabled = ['1', 'true'].includes((env.INSIGHT_DISABLE_VOTE_TRACKING || '').toLowerCase());
-  return enabled && !disabled;
+  return env.INSIGHT_ENABLE_VOTING && !env.INSIGHT_DISABLE_VOTE_TRACKING;
 }

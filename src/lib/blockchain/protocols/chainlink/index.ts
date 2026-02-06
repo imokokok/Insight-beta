@@ -1,7 +1,13 @@
-export { ChainlinkClient, createChainlinkClient } from './ChainlinkClient';
+/**
+ * Chainlink Protocol Module - Chainlink 协议模块
+ *
+ * 基于新架构的 Chainlink 预言机客户端
+ */
+
 export {
-  CHAINLINK_CONTRACT_ADDRESSES,
-  CHAINLINK_FEED_IDS,
-  isChainSupportedByChainlink,
+  ChainlinkOracleClient,
+  createChainlinkClient,
   getSupportedChainlinkSymbols,
-} from './ChainlinkClient';
+  isSymbolSupportedByChainlink,
+  getChainlinkFeedAddress,
+} from './ChainlinkOracleClient';

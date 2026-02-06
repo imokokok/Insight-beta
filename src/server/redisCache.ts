@@ -7,7 +7,7 @@ import { cacheProtection, hotKeyDetector } from '@/lib/cache/CacheProtection';
 let redisClient: RedisClientType | null = null;
 let redisConnected = false;
 
-const REDIS_URL = env.INSIGHT_REDIS_URL || process.env.INSIGHT_REDIS_URL || '';
+const REDIS_URL = env.INSIGHT_REDIS_URL || env.REDIS_URL || '';
 
 /**
  * Check if Redis is configured and available

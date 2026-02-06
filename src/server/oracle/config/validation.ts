@@ -11,10 +11,7 @@ import {
  * 检查是否允许使用私有 RPC URL
  */
 function allowPrivateRpcUrls(): boolean {
-  const raw = (env.INSIGHT_ALLOW_PRIVATE_RPC_URLS ?? '').trim().toLowerCase();
-  if (raw === '1' || raw === 'true') return true;
-  if (raw === '0' || raw === 'false') return false;
-  return process.env.NODE_ENV !== 'production';
+  return env.INSIGHT_ALLOW_PRIVATE_RPC_URLS;
 }
 
 /**

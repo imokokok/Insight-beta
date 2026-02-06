@@ -350,7 +350,7 @@ async function fetchDexTwapPriceUsdUncached(
     ? Math.min(7 * 24 * 3600, Math.max(60, Math.floor(secondsRaw)))
     : 1800;
 
-  const invert = ['1', 'true'].includes((env.INSIGHT_DEX_PRICE_INVERT || '').trim().toLowerCase());
+  const invert = env.INSIGHT_DEX_PRICE_INVERT;
 
   const rpcUrl = getDexRpcUrl(input.rpcUrl);
   if (!rpcUrl) return null;
@@ -440,10 +440,10 @@ async function fetchDexTwapPriceUsdUncached(
 async function fetchDexTwapPriceUsdCached(
   input: { rpcUrl?: string | null } = {},
 ): Promise<number | null> {
-  const pool = (env.INSIGHT_DEX_TWAP_POOL || '').trim();
+  const pool = env.INSIGHT_DEX_TWAP_POOL;
   if (!pool) return null;
-  const seconds = Number(env.INSIGHT_DEX_TWAP_SECONDS || 1800);
-  const invert = ['1', 'true'].includes((env.INSIGHT_DEX_PRICE_INVERT || '').trim().toLowerCase());
+  const seconds = env.INSIGHT_DEX_TWAP_SECONDS;
+  const invert = env.INSIGHT_DEX_PRICE_INVERT;
   const rpcUrl = getDexRpcUrl(input.rpcUrl);
   const key = `dex:${pool.toLowerCase()}:${Math.floor(
     Number.isFinite(seconds) ? seconds : 1800,

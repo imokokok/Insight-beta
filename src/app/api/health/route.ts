@@ -73,8 +73,8 @@ type OracleHealthInstance = {
 // 工具函数
 // ============================================================================
 
-function readSloNumber(raw: string, fallback: number, opts?: { min?: number }) {
-  const n = Number(raw);
+function readSloNumber(raw: string | number, fallback: number, opts?: { min?: number }) {
+  const n = typeof raw === 'string' ? Number(raw) : raw;
   if (!Number.isFinite(n)) return fallback;
   const min = opts?.min ?? 0;
   return Math.max(min, n);
@@ -109,9 +109,7 @@ async function checkDatabaseStatus(): Promise<'connected' | 'disconnected' | 'no
 // ============================================================================
 
 async function checkWorkerStatus(): Promise<boolean> {
-  const embeddedWorkerDisabled = ['1', 'true'].includes(
-    env.INSIGHT_DISABLE_EMBEDDED_WORKER.toLowerCase(),
-  );
+  const embeddedWorkerDisabled = env.INSIGHT_DISABLE_EMBEDDED_WORKER;
 
   if (embeddedWorkerDisabled) return true;
 
@@ -299,7 +297,7 @@ async function handleLivenessProbe() {
 
 async function handleReadinessProbe() {
   const isProd = process.env.NODE_ENV === 'production';
-  const demoModeEnabled = ['1', 'true'].includes(env.INSIGHT_DEMO_MODE.toLowerCase());
+  const demoModeEnabled = env.INSIGHT_DEMO_MODE;
 
   const [databaseStatus, workerOk, oracleHealth] = await Promise.all([
     checkDatabaseStatus(),
@@ -331,7 +329,7 @@ async function handleReadinessProbe() {
 
 async function handleValidationProbe(request: Request) {
   const isProd = process.env.NODE_ENV === 'production';
-  const demoModeEnabled = ['1', 'true'].includes(env.INSIGHT_DEMO_MODE.toLowerCase());
+  const demoModeEnabled = env.INSIGHT_DEMO_MODE;
 
   const [databaseStatus, workerOk, oracleHealth, alertConfig, envReport, auth] = await Promise.all([
     checkDatabaseStatus(),

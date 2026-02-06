@@ -22,7 +22,7 @@ async function initOpenTelemetryCore() {
 }
 
 async function initWorker() {
-  const disabled = ['1', 'true'].includes(env.INSIGHT_DISABLE_EMBEDDED_WORKER.toLowerCase());
+  const disabled = env.INSIGHT_DISABLE_EMBEDDED_WORKER;
   if (!disabled && process.env.NEXT_RUNTIME === 'nodejs') {
     try {
       await import('./server/worker' /* webpackExclude: /worker/ */);

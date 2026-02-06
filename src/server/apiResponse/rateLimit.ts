@@ -53,10 +53,8 @@ async function maybeAlertRateLimited(input: { key: string; limit: number; window
 
 function getClientIp(request: Request) {
   try {
-    const trustMode = (env.INSIGHT_TRUST_PROXY || '').toLowerCase();
-    const trustAny = ['1', 'true'].includes(trustMode);
-    const trustCloudflare = trustMode === 'cloudflare';
-    if (!trustAny && !trustCloudflare) return 'unknown';
+    const trustProxy = env.INSIGHT_TRUST_PROXY;
+    if (!trustProxy) return 'unknown';
 
     const normalize = (raw: string | null | undefined) => {
       try {
@@ -95,10 +93,7 @@ function getClientIp(request: Request) {
 
     const cfRay = request.headers.get('cf-ray')?.trim() ?? '';
     const cf = normalize(request.headers.get('cf-connecting-ip'));
-    if (trustCloudflare) {
-      if (cf && cfRay) return cf;
-      return 'unknown';
-    }
+    if (cf && cfRay) return cf;
 
     if (cf) return cf;
     const vercel = normalize(request.headers.get('x-vercel-forwarded-for'));

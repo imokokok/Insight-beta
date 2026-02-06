@@ -151,10 +151,8 @@ export async function GET(request: Request) {
             cursor: params.cursor,
             disputer: params.disputer ?? undefined,
           }));
-      const degraded = ['1', 'true'].includes((env.INSIGHT_VOTING_DEGRADATION || '').toLowerCase());
-      const voteTrackingEnabled =
-        ['1', 'true'].includes((env.INSIGHT_ENABLE_VOTING || '').toLowerCase()) &&
-        !['1', 'true'].includes((env.INSIGHT_DISABLE_VOTE_TRACKING || '').toLowerCase());
+      const degraded = env.INSIGHT_VOTING_DEGRADATION;
+      const voteTrackingEnabled = env.INSIGHT_ENABLE_VOTING && !env.INSIGHT_DISABLE_VOTE_TRACKING;
       return {
         items,
         total,

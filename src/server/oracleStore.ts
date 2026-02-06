@@ -24,7 +24,7 @@ function normalizeInstanceId(instanceId?: string | null) {
 }
 
 function isDemoModeEnabled() {
-  return ['1', 'true'].includes(env.INSIGHT_DEMO_MODE.toLowerCase());
+  return env.INSIGHT_DEMO_MODE;
 }
 
 export function isDemoMode() {

@@ -90,7 +90,7 @@ async function handler(request: NextRequest, version: ApiVersion) {
   }
 
   const isProd = process.env.NODE_ENV === 'production';
-  const demoModeEnabled = ['1', 'true'].includes(env.INSIGHT_DEMO_MODE.toLowerCase());
+  const demoModeEnabled = env.INSIGHT_DEMO_MODE;
 
   if (probe === 'readiness') {
     const databaseStatus = hasDatabase()
@@ -99,9 +99,7 @@ async function handler(request: NextRequest, version: ApiVersion) {
           .catch(() => 'disconnected')
       : 'not_configured';
 
-    const embeddedWorkerDisabled = ['1', 'true'].includes(
-      env.INSIGHT_DISABLE_EMBEDDED_WORKER.toLowerCase(),
-    );
+    const embeddedWorkerDisabled = env.INSIGHT_DISABLE_EMBEDDED_WORKER;
     const heartbeat = embeddedWorkerDisabled
       ? null
       : await readJsonFile('worker/heartbeat/v1', null);
@@ -139,9 +137,7 @@ async function handler(request: NextRequest, version: ApiVersion) {
         .catch(() => 'disconnected')
     : 'not_configured';
 
-  const embeddedWorkerDisabled = ['1', 'true'].includes(
-    env.INSIGHT_DISABLE_EMBEDDED_WORKER.toLowerCase(),
-  );
+  const embeddedWorkerDisabled = env.INSIGHT_DISABLE_EMBEDDED_WORKER;
   const heartbeat = embeddedWorkerDisabled ? null : await readJsonFile('worker/heartbeat/v1', null);
   const at = heartbeat && typeof heartbeat === 'object' ? (heartbeat as { at?: unknown }).at : null;
   const atMs = typeof at === 'string' ? Date.parse(at) : NaN;
