@@ -1,33 +1,34 @@
-import { defineConfig } from "vitest/config";
-import react from "@vitejs/plugin-react";
-import path from "path";
+import path from 'path';
+
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      '@': path.resolve(__dirname, './src'),
     },
   },
   test: {
     coverage: {
       exclude: [
-        "src/**/*.d.ts",
-        "src/**/*.test.ts",
-        "src/**/*.test.tsx",
-        "src/**/*.spec.ts",
-        "src/**/*.bench.ts",
-        "src/types/**",
-        "src/app/**/*.tsx",
-        "src/i18n/**",
-        "src/lib/mockData.ts",
-        "src/instrumentation.ts",
-        "src/middleware.ts",
+        'src/**/*.d.ts',
+        'src/**/*.test.ts',
+        'src/**/*.test.tsx',
+        'src/**/*.spec.ts',
+        'src/**/*.bench.ts',
+        'src/types/**',
+        'src/app/**/*.tsx',
+        'src/i18n/**',
+        'src/lib/mockData.ts',
+        'src/instrumentation.ts',
+        'src/middleware.ts',
       ],
-      include: ["src/**/*.{ts,tsx}"],
-      provider: "v8",
-      reporter: ["text", "json", "html", "lcov", "cobertura"],
-      reportsDirectory: "./coverage",
+      include: ['src/**/*.{ts,tsx}'],
+      provider: 'v8',
+      reporter: ['text', 'json', 'html', 'lcov', 'cobertura'],
+      reportsDirectory: './coverage',
       reportsOnFailure: true,
       thresholds: {
         branches: 80,
@@ -53,11 +54,11 @@ export default defineConfig({
         statements: [50, 80],
       },
     },
-    environment: "jsdom",
+    environment: 'jsdom',
     globals: true,
-    include: ["src/**/*.{test,spec,bench}.?(c|m)[jt]s?(x)"],
-    exclude: ["tests/**", "node_modules/**"],
-    setupFiles: ["./vitest.setup.ts"],
+    include: ['src/**/*.{test,spec,bench}.?(c|m)[jt]s?(x)'],
+    exclude: ['tests/**', 'node_modules/**'],
+    setupFiles: ['./vitest.preload.ts', './vitest.setup.ts'],
     testTimeout: 10000,
     hookTimeout: 10000,
     teardownTimeout: 5000,

@@ -14,7 +14,9 @@ export type AdminScope =
   | 'audit_read'
   | 'uma_config_write'
   | 'uma_sync'
-  | 'uma_admin';
+  | 'uma_admin'
+  | 'monitoring_read'
+  | 'monitoring_write';
 
 export type AdminRole = 'root' | 'ops' | 'alerts' | 'viewer';
 

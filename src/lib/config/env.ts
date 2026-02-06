@@ -43,8 +43,8 @@ const envSchema = z.object({
   // =============================================================================
   // 数据库配置
   // =============================================================================
-  DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
-  REDIS_URL: z.string().min(1, 'REDIS_URL is required'),
+  DATABASE_URL: optionalString('postgresql://localhost:5432/insight'),
+  REDIS_URL: optionalString('redis://localhost:6379'),
 
   // Supabase 配置（可选）
   SUPABASE_URL: optionalString(),
@@ -111,6 +111,9 @@ const envSchema = z.object({
   SENTRY_PROJECT: optionalString(),
   SENTRY_AUTH_TOKEN: optionalString(),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
+
+  // 日志采样率 (0.0 - 1.0)，生产环境建议 0.1 (10%)
+  LOG_SAMPLE_RATE: optionalNumber(1),
 
   // =============================================================================
   // 安全

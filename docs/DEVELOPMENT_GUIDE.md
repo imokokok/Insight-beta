@@ -55,7 +55,7 @@ npm run contracts:test      # Contract tests
 npm test -- --coverage      # Test coverage
 ```
 
-## 6. Database
+## 6. Database & Cache
 
 ### Local Development Database
 
@@ -67,12 +67,49 @@ docker run --name oracle-monitor-db \
   -p 5432:5432 -d postgres
 ```
 
+### Redis Cache (Optional for dev, Required for production)
+
+```bash
+docker run --name oracle-monitor-redis \
+  -p 6379:6379 -d redis:7-alpine
+```
+
 ### Database Tables
 
 - `assertions`: Assertion information
 - `disputes`: Dispute information
 - `rate_limits`: API rate limiting
 - `kv_store`: Configuration and state storage
+
+### Rate Limiting Configuration
+
+Rate limiting supports two storage backends:
+
+| Storage | Environment Variable              | Use Case                     |
+| ------- | --------------------------------- | ---------------------------- |
+| Memory  | `INSIGHT_RATE_LIMIT_STORE=memory` | Development, single instance |
+| Redis   | `INSIGHT_RATE_LIMIT_STORE=redis`  | Production, multi-instance   |
+
+```bash
+# Development (default)
+INSIGHT_RATE_LIMIT_STORE=memory
+
+# Production
+INSIGHT_RATE_LIMIT_STORE=redis
+REDIS_URL=redis://localhost:6379
+```
+
+### Logging Configuration
+
+```bash
+# Log level: debug, info, warn, error
+LOG_LEVEL=info
+
+# Log sampling rate (0.0 - 1.0)
+# Production: 0.1 (10%) to reduce log volume
+# Development: 1.0 (100%)
+LOG_SAMPLE_RATE=1.0
+```
 
 ## 7. API Development
 

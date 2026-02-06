@@ -1,6 +1,4 @@
-import "@testing-library/jest-dom";
-
-process.env.LOG_LEVEL = "fatal";
+import '@testing-library/jest-dom';
 
 const storage = new Map<string, string>();
 
@@ -25,13 +23,13 @@ const localStorageMock: Storage = {
   },
 };
 
-Object.defineProperty(globalThis, "localStorage", {
+Object.defineProperty(globalThis, 'localStorage', {
   value: localStorageMock,
   configurable: true,
 });
 
-if (typeof window !== "undefined") {
-  Object.defineProperty(window, "localStorage", {
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'localStorage', {
     value: localStorageMock,
     configurable: true,
   });

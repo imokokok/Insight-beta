@@ -1,5 +1,6 @@
-const isProd =
-  typeof process !== 'undefined' && process.env ? process.env.NODE_ENV === 'production' : false;
+import { env } from './config/env';
+
+const isProd = env.NODE_ENV === 'production';
 
 /**
  * Supported log levels with severity ordering
@@ -17,6 +18,27 @@ const LOG_LEVELS = {
  * Log level type
  */
 export type LogLevel = keyof typeof LOG_LEVELS;
+
+/**
+ * 采样配置 - 用于生产环境日志采样
+ */
+const LOG_SAMPLE_RATE = isProd
+  ? env.LOG_SAMPLE_RATE // 生产环境默认 10% 采样（通过 env 配置）
+  : 1; // 开发环境 100%
+
+/**
+ * 采样计数器
+ */
+let logSampleCounter = 0;
+
+/**
+ * 检查是否应该采样当前日志
+ */
+function shouldSample(): boolean {
+  if (LOG_SAMPLE_RATE >= 1) return true;
+  logSampleCounter++;
+  return logSampleCounter % Math.ceil(1 / LOG_SAMPLE_RATE) === 0;
+}
 
 /**
  * Extracts log level from environment or defaults based on environment
@@ -411,7 +433,7 @@ export const logger = {
    * @param metadata - Additional context metadata
    */
   debug: (message: string, metadata?: Record<string, unknown>) => {
-    if (shouldLog('debug')) {
+    if (shouldLog('debug') && shouldSample()) {
       const logEntry = createLogEntry('debug', message, metadata);
       console.debug(formatLogEntry(logEntry));
     }
@@ -423,7 +445,7 @@ export const logger = {
    * @param metadata - Additional context metadata
    */
   info: (message: string, metadata?: Record<string, unknown>) => {
-    if (shouldLog('info')) {
+    if (shouldLog('info') && shouldSample()) {
       const logEntry = createLogEntry('info', message, metadata);
       console.info(formatLogEntry(logEntry));
     }

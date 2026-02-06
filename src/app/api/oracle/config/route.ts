@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 
+import { ValidationError } from '@/lib/errors';
 import { logger } from '@/lib/logger';
 import { maskInLog, redactSensitiveData } from '@/lib/security/encryption';
 import { verifyAdmin } from '@/server/adminAuth';
@@ -201,8 +202,8 @@ export async function GET(request: Request) {
 
 function validateRequestBody(body: unknown): Record<string, unknown> {
   if (!body || typeof body !== 'object' || Array.isArray(body)) {
-    throw Object.assign(new Error('invalid_request_body'), {
-      status: 400,
+    throw new ValidationError('Request body must be a non-null object', {
+      code: 'INVALID_REQUEST_BODY',
       details: { message: 'Request body must be a non-null object' },
     });
   }
@@ -215,8 +216,8 @@ function extractAllowedFields(body: Record<string, unknown>): Partial<OracleConf
   );
 
   if (Object.keys(safeBody).length === 0) {
-    throw Object.assign(new Error('no_valid_fields'), {
-      status: 400,
+    throw new ValidationError('No valid configuration fields provided', {
+      code: 'NO_VALID_FIELDS',
       details: { message: 'No valid configuration fields provided', allowedFields: ALLOWED_FIELDS },
     });
   }

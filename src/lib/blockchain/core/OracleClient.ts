@@ -125,26 +125,40 @@ async function withRetry<T>(
 // ============================================================================
 
 export abstract class OracleClient {
-  protected client: PublicClient;
+  protected client!: PublicClient;
   protected options: OracleClientOptions;
   protected retryStrategy: RetryStrategy;
   protected lastHealthCheck?: OracleHealthStatus;
   protected healthCheckInterval?: NodeJS.Timeout;
+  private initialized = false;
 
   constructor(options: OracleClientOptions, retryStrategy?: RetryStrategy) {
     this.options = options;
     this.retryStrategy = retryStrategy || DefaultRetryStrategy;
 
+    // 延迟初始化，子类可以调用 initialize() 方法
+  }
+
+  /**
+   * 初始化客户端
+   * 必须在子类构造函数中调用
+   */
+  protected async initialize(): Promise<void> {
+    if (this.initialized) return;
+
+    const chain = await this.getChainConfig(this.options.chain);
+
     // 创建 viem 客户端
     this.client = createPublicClient({
-      chain: this.getChainConfig(options.chain),
-      transport: http(options.rpcUrl, {
-        timeout: options.timeout || 30000,
+      chain,
+      transport: http(this.options.rpcUrl, {
+        timeout: this.options.timeout || 30000,
       }),
     });
 
     // 启动健康检查
     this.startHealthCheck();
+    this.initialized = true;
   }
 
   // ============================================================================
@@ -221,28 +235,41 @@ export abstract class OracleClient {
   /**
    * 获取链配置
    */
-  protected getChainConfig(chain: SupportedChain): Chain {
-    // 这里应该返回对应的 viem Chain 配置
-    // 简化起见，使用动态导入
-    const chainConfigs: Record<string, () => Promise<Chain>> = {
-      ethereum: async () => (await import('viem/chains')).mainnet,
-      polygon: async () => (await import('viem/chains')).polygon,
-      arbitrum: async () => (await import('viem/chains')).arbitrum,
-      optimism: async () => (await import('viem/chains')).optimism,
-      base: async () => (await import('viem/chains')).base,
-      avalanche: async () => (await import('viem/chains')).avalanche,
-      bsc: async () => (await import('viem/chains')).bsc,
-      fantom: async () => (await import('viem/chains')).fantom,
-      sepolia: async () => (await import('viem/chains')).sepolia,
+  protected async getChainConfig(chain: SupportedChain): Promise<Chain> {
+    // 使用动态导入获取 viem Chain 配置
+    const viemChains = await import('viem/chains');
+
+    // 定义 viem 支持的链映射
+    const chainMap: Partial<Record<SupportedChain, Chain>> = {
+      ethereum: viemChains.mainnet,
+      polygon: viemChains.polygon,
+      arbitrum: viemChains.arbitrum,
+      optimism: viemChains.optimism,
+      base: viemChains.base,
+      avalanche: viemChains.avalanche,
+      bsc: viemChains.bsc,
+      fantom: viemChains.fantom,
+      celo: viemChains.celo,
+      gnosis: viemChains.gnosis,
+      linea: viemChains.linea,
+      scroll: viemChains.scroll,
+      mantle: viemChains.mantle,
+      mode: viemChains.mode,
+      blast: viemChains.blast,
+      sepolia: viemChains.sepolia,
+      goerli: viemChains.goerli,
+      polygonAmoy: viemChains.polygonAmoy,
     };
 
-    const getChain = chainConfigs[chain];
-    if (!getChain) {
-      throw new OracleClientError(`Unsupported chain: ${chain}`, 'UNSUPPORTED_CHAIN');
+    const chainConfig = chainMap[chain];
+    if (!chainConfig) {
+      throw new OracleClientError(
+        `Unsupported chain or chain not available in viem: ${chain}`,
+        'UNSUPPORTED_CHAIN',
+      );
     }
 
-    // 注意：实际使用时需要 await，这里简化处理
-    return getChain() as unknown as Chain;
+    return chainConfig;
   }
 
   /**
