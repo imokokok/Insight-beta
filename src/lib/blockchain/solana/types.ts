@@ -118,6 +118,7 @@ export interface SolanaOracleInstance {
     symbol: string;
     decimals: number;
     updateInterval: number;
+    rpcUrl?: string;
   };
   enabled: boolean;
   createdAt: Date;

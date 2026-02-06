@@ -1,38 +1,43 @@
 /**
  * Solana Blockchain Module
  *
- * Solana 区块链模块导出
+ * Solana 区块链模块统一导出
  */
 
 // Types
-export * from './types';
+export type {
+  SolanaAddress,
+  SolanaSignature,
+  SolanaPubkey,
+  SolanaPriceFeed,
+  SolanaOracleInstance,
+  SolanaOracleConfig,
+  SolanaSyncState,
+  SolanaPriceUpdate,
+  SolanaTransaction,
+  SwitchboardAggregator,
+  PythPriceData,
+} from './types';
 
-// Config
-export {
-  SOLANA_RPC_ENDPOINTS,
-  SOLANA_COMMITMENT,
-  SOLANA_PROGRAM_IDS,
-  SOLANA_PRICE_FEEDS,
-  SOLANA_CONNECTION_CONFIG,
-  SOLANA_RETRY_CONFIG,
-  SOLANA_CACHE_CONFIG,
-} from './config';
+export { SolanaError, SolanaErrorCode } from './types';
 
-// RPC Client
-export { SolanaRpcClient, createSolanaRpcClient } from './rpc';
-
-// Connection
-export {
-  SolanaConnectionManager,
-  getSolanaConnectionManager,
-  resetSolanaConnectionManager,
-  solanaConnectionManager,
-  fetchAccountInfo,
-} from './connection';
-
-// Clients
-export { SwitchboardSolanaClient, createSwitchboardClient } from './switchboard';
-export { PythSolanaClient, createPythClient } from './pyth';
-
-// Sync
+// Sync Service
 export { SolanaSyncService, solanaSyncService } from './sync';
+
+// Pyth Client
+export {
+  PythSolanaClient,
+  createPythClient,
+  getPythClient,
+  clearPythClientCache,
+} from './pyth-client';
+
+// Chainlink Client
+export {
+  ChainlinkSolanaClient,
+  createChainlinkClient,
+  getChainlinkClient,
+  clearChainlinkClientCache,
+  CHAINLINK_SOLANA_FEEDS,
+  getChainlinkFeedAddress,
+} from './chainlink-client';

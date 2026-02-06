@@ -11,6 +11,11 @@ import type {
   SolanaPriceUpdate,
   SolanaPriceFeed,
 } from './types';
+import type { PythSolanaClient } from './pyth-client';
+import { getPythClient } from './pyth-client';
+import type { ChainlinkSolanaClient } from './chainlink-client';
+import { getChainlinkClient } from './chainlink-client';
+import { logger } from '@/lib/logger';
 
 // ============================================================================
 // Sync Configuration
@@ -32,6 +37,8 @@ export class SolanaSyncService extends EventEmitter {
   private instances: Map<string, SolanaOracleInstance> = new Map();
   private syncStates: Map<string, SolanaSyncState> = new Map();
   private intervals: Map<string, ReturnType<typeof setInterval>> = new Map();
+  private pythClients: Map<string, PythSolanaClient> = new Map();
+  private chainlinkClients: Map<string, ChainlinkSolanaClient> = new Map();
 
   constructor() {
     super();
@@ -193,51 +200,105 @@ export class SolanaSyncService extends EventEmitter {
   }
 
   /**
+   * Get or create Pyth client for instance
+   */
+  private getPythClient(instance: SolanaOracleInstance): PythSolanaClient {
+    const clientKey = `${instance.chain}:${instance.config.rpcUrl || 'default'}`;
+
+    if (!this.pythClients.has(clientKey)) {
+      const cluster = instance.chain === 'solanaDevnet' ? 'devnet' : 'mainnet-beta';
+      const rpcUrl = instance.config.rpcUrl || this.getDefaultRpcUrl(cluster);
+      const client = getPythClient(rpcUrl, cluster);
+      this.pythClients.set(clientKey, client);
+    }
+
+    return this.pythClients.get(clientKey)!;
+  }
+
+  /**
+   * Get or create Chainlink client for instance
+   */
+  private getChainlinkClient(instance: SolanaOracleInstance): ChainlinkSolanaClient {
+    const clientKey = `${instance.chain}:${instance.config.rpcUrl || 'default'}`;
+
+    if (!this.chainlinkClients.has(clientKey)) {
+      const cluster = instance.chain === 'solanaDevnet' ? 'devnet' : 'mainnet-beta';
+      const rpcUrl = instance.config.rpcUrl || this.getDefaultRpcUrl(cluster);
+      const client = getChainlinkClient(rpcUrl, cluster);
+      this.chainlinkClients.set(clientKey, client);
+    }
+
+    return this.chainlinkClients.get(clientKey)!;
+  }
+
+  /**
+   * Get default RPC URL for cluster
+   */
+  private getDefaultRpcUrl(cluster: 'mainnet-beta' | 'devnet'): string {
+    if (cluster === 'devnet') {
+      return 'https://api.devnet.solana.com';
+    }
+    return process.env.SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com';
+  }
+
+  /**
    * Fetch price from Pyth Network
-   * Note: This is a placeholder implementation.
-   * In production, integrate with @pythnetwork/client
+   * Uses @pythnetwork/client to fetch real price data from Solana
    */
   private async fetchFromPyth(instance: SolanaOracleInstance): Promise<SolanaPriceFeed> {
-    // TODO: Integrate with actual Pyth Network client
-    // Example implementation:
-    // const connection = new Connection(instance.config.rpcUrl);
-    // const priceAccount = await connection.getAccountInfo(
-    //   new PublicKey(instance.config.feedAddress)
-    // );
-    // const priceData = parsePriceData(priceAccount.data);
+    try {
+      const client = this.getPythClient(instance);
+      const priceFeed = await client.fetchPrice(
+        instance.config.feedAddress,
+        instance.config.symbol,
+      );
 
-    // Placeholder: Return mock data for now
-    return {
-      symbol: instance.config.symbol,
-      price: 0,
-      confidence: 0,
-      timestamp: Date.now(),
-      slot: 0,
-      source: 'pyth',
-      decimals: instance.config.decimals || 8,
-    };
+      logger.debug('Fetched Pyth price from Solana', {
+        symbol: instance.config.symbol,
+        price: priceFeed.price,
+        slot: priceFeed.slot,
+      });
+
+      return priceFeed;
+    } catch (error) {
+      logger.error('Failed to fetch Pyth price from Solana', {
+        error: error instanceof Error ? error.message : String(error),
+        symbol: instance.config.symbol,
+        feedAddress: instance.config.feedAddress,
+      });
+
+      throw error;
+    }
   }
 
   /**
    * Fetch price from Chainlink on Solana
-   * Note: This is a placeholder implementation.
-   * In production, integrate with Chainlink Solana programs
+   * Uses Chainlink Solana SDK to fetch real price data
    */
   private async fetchFromChainlink(instance: SolanaOracleInstance): Promise<SolanaPriceFeed> {
-    // TODO: Integrate with actual Chainlink Solana client
-    // Chainlink on Solana uses different program structure
-    // Reference: https://docs.chain.link/data-feeds/solana
+    try {
+      const client = this.getChainlinkClient(instance);
+      const priceFeed = await client.fetchPrice(
+        instance.config.feedAddress,
+        instance.config.symbol,
+      );
 
-    // Placeholder: Return mock data for now
-    return {
-      symbol: instance.config.symbol,
-      price: 0,
-      confidence: 0,
-      timestamp: Date.now(),
-      slot: 0,
-      source: 'chainlink',
-      decimals: instance.config.decimals || 8,
-    };
+      logger.debug('Fetched Chainlink price from Solana', {
+        symbol: instance.config.symbol,
+        price: priceFeed.price,
+        slot: priceFeed.slot,
+      });
+
+      return priceFeed;
+    } catch (error) {
+      logger.error('Failed to fetch Chainlink price from Solana', {
+        error: error instanceof Error ? error.message : String(error),
+        symbol: instance.config.symbol,
+        feedAddress: instance.config.feedAddress,
+      });
+
+      throw error;
+    }
   }
 
   /**
