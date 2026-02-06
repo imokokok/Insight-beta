@@ -1,40 +1,36 @@
 /**
- * Types Index - 统一导出所有类型定义
+ * Types - 统一类型导出
  *
- * 这是类型定义的中央出口，所有类型都从这里导出
- * 保持向后兼容性
+ * 这是所有类型的统一入口，按领域组织
  */
 
-// ============================================================================
-// Oracle 类型（主要模块）
-// ============================================================================
+// 领域类型（核心领域模型）
+export * from './domain';
 
-export * from './oracle';
+// API 类型（请求/响应）
+export * from './api';
 
-// ============================================================================
-// 其他类型模块
-// ============================================================================
+// 数据库类型（Prisma 模型扩展）
+export * from './database';
 
-export * from './permissions';
-export * from './commentTypes';
+// 工具类型
+export type Nullable<T> = T | null;
+export type Optional<T> = T | undefined;
+export type NullableOptional<T> = T | null | undefined;
 
-// ============================================================================
-// 向后兼容的别名导出
-// ============================================================================
+export type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
+};
 
-// 为了向后兼容，保留一些常用的类型别名
-export type {
-  // 这些别名确保旧代码可以继续使用
-  PriceFeed as UnifiedPriceFeed,
-  PriceUpdate as UnifiedPriceUpdate,
-  Assertion as UnifiedAssertion,
-  Dispute as UnifiedDispute,
-  OracleStats as UnifiedOracleStats,
-  AlertRule as UnifiedAlertRule,
-  Alert as UnifiedAlert,
-  AlertEvent as UnifiedAlertEvent,
-  SyncState as UnifiedSyncState,
-  ConfigTemplate as UnifiedConfigTemplate,
-  CrossProtocolComparison,
-  ProtocolPerformanceRanking,
-} from './oracle';
+export type DeepRequired<T> = {
+  [P in keyof T]-?: T[P] extends object ? DeepRequired<T[P]> : T[P];
+};
+
+// 类型守卫辅助
+export function isDefined<T>(value: T | undefined | null): value is T {
+  return value !== undefined && value !== null;
+}
+
+export function isNotEmpty<T>(array: T[] | undefined | null): array is T[] {
+  return isDefined(array) && array.length > 0;
+}
