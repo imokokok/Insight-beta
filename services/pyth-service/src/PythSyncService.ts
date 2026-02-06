@@ -1,21 +1,13 @@
 import type { PriceData } from '@oracle-monitor/shared';
 import { BaseSyncService } from '@oracle-monitor/shared';
-import { Connection, PublicKey } from '@solana/web3.js';
+import { Connection } from '@solana/web3.js';
 import { PythHttpClient, getPythProgramKeyForCluster, PriceStatus } from '@pythnetwork/client';
+import { getAvailablePythSymbols, mergePriceFeedIds } from './config/pythPriceFeeds';
 
 interface PythConfig {
   cluster: 'mainnet-beta' | 'devnet' | 'testnet';
   customPriceIds?: Record<string, string>;
 }
-
-// Pyth price feed IDs for common symbols
-const PYTH_PRICE_IDS: Record<string, string> = {
-  'BTC/USD': 'GVXRSBjFk6e6J3NbVPXohRJetcUXxt93nkhU233t2Jnp',
-  'ETH/USD': 'JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWdB',
-  'SOL/USD': 'H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712k4LcF21',
-  'AVAX/USD': 'FVb5h1VmHPfVb1RfqZckchq18GxRv4iKt8T4eVTQAqdz',
-  'ARB/USD': '4mRGHzjGnQNKeCbWdmytccPYyxyGoJtZWSrVfPFa9D6f',
-};
 
 export class PythSyncService extends BaseSyncService {
   private connection: Connection | null = null;
@@ -34,23 +26,21 @@ export class PythSyncService extends BaseSyncService {
   ): Promise<void> {
     await super.initialize(config);
 
-    // Parse custom config
-    const customConfig = config.customConfig as Record<string, unknown> | undefined;
+    const customConfig = config.customConfig as PythConfig | undefined;
     this.pythConfig = {
-      cluster: (customConfig?.cluster as PythConfig['cluster']) || 'mainnet-beta',
-      customPriceIds: customConfig?.customPriceIds as Record<string, string> | undefined,
+      cluster: customConfig?.cluster || 'mainnet-beta',
+      customPriceIds: customConfig?.customPriceIds,
     };
 
-    // Initialize Solana connection
     this.connection = new Connection(config.rpcUrl, 'confirmed');
 
-    // Initialize Pyth client
     const pythProgramKey = getPythProgramKeyForCluster(this.pythConfig.cluster);
     this.pythClient = new PythHttpClient(this.connection, pythProgramKey);
 
     this.logger.info('Pyth service initialized', {
       cluster: this.pythConfig.cluster,
       symbols: config.symbols,
+      availableSymbols: getAvailablePythSymbols(),
     });
   }
 
@@ -73,14 +63,12 @@ export class PythSyncService extends BaseSyncService {
             continue;
           }
 
-          // Use the price account key string to look up in the map
           const priceAccount = pythData.productPrice.get(priceId);
           if (!priceAccount) {
             this.logger.warn(`Price account not found for ${symbol}`);
             continue;
           }
 
-          // Check if price is valid - use status instead of priceType
           if (priceAccount.status !== PriceStatus.Trading) {
             this.logger.warn(`Invalid price status for ${symbol}: ${priceAccount.status}`);
             continue;
@@ -100,7 +88,7 @@ export class PythSyncService extends BaseSyncService {
             timestamp: Date.now(),
             protocol: 'pyth',
             chain: this.config.chain,
-            confidence: confidence / price, // Normalize confidence as percentage
+            confidence: confidence / price,
             source: priceId,
           });
         } catch (error) {
@@ -119,7 +107,6 @@ export class PythSyncService extends BaseSyncService {
   }
 
   private getPriceIds(): Record<string, string> {
-    const customIds = this.pythConfig.customPriceIds || {};
-    return { ...PYTH_PRICE_IDS, ...customIds };
+    return mergePriceFeedIds(this.pythConfig.customPriceIds);
   }
 }

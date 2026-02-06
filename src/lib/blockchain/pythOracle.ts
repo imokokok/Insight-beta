@@ -76,28 +76,17 @@ export const PYTH_CONTRACT_ADDRESSES: Record<SupportedChain, Address | undefined
 
 // ============================================================================
 // 常用价格喂价 ID (Pyth 使用 32 字节的 ID)
+// 从统一配置文件导入
 // ============================================================================
 
-export const PYTH_PRICE_FEED_IDS: Record<string, string> = {
-  'ETH/USD': '0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
-  'BTC/USD': '0xe62df6c8b4a85fe1f67dab44abcabdeb54c0f983b2d28b4583c5d9483c324d5b',
-  'SOL/USD': '0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d',
-  'AVAX/USD': '0x93da3352f9f1d105fdfe4971cfa80e9dd777bfc5d0f683ebb6e1294b92137bb7',
-  'MATIC/USD': '0x5de33a9112c2b700b8d30b8a3402c103578ccfa2765696471cc672bd5cf6ac52',
-  'BNB/USD': '0x2f95862b045670cd22bee3114c39763a4a08beeb663b145d283c31d7d1101c4f',
-  'ARB/USD': '0x3fa4252848f9f0a1450fbbf400fc13e3461d0919e0aaaf49facf448471fd3ce4',
-  'OP/USD': '0x385e76cc5f875b51cf3554064d092f422d62b4755e385b5e6219d8a5b1cc1c3c',
-  'LINK/USD': '0x8ac0c70fff57e9aefdf5edf44b51d62c2d433617cbb900000000000000000000',
-  'UNI/USD': '0x78d185a741d07edb3412b120000000000000000000000000000000000000000',
-  'AAVE/USD': '0x2b9ab1e972000000000000000000000000000000000000000000000000000000',
-  'CRV/USD': '0x5dbbdb28d1e0b1a0000000000000000000000000000000000000000000000000',
-  'SNX/USD': '0x39d020f000000000000000000000000000000000000000000000000000000000',
-  'COMP/USD': '0x4a8e0c8d6c9e5f00000000000000000000000000000000000000000000000000',
-  'MKR/USD': '0x3a810ff000000000000000000000000000000000000000000000000000000000',
-  'YFI/USD': '0x2d5a570000000000000000000000000000000000000000000000000000000000',
-  '1INCH/USD': '0x2495a3b000000000000000000000000000000000000000000000000000000000',
-  'SUSHI/USD': '0x26b3800000000000000000000000000000000000000000000000000000000000',
-};
+import {
+  PYTH_PRICE_FEED_IDS,
+  getPriceFeedId as getPythPriceFeedId,
+  getAvailablePythSymbols as getPythAvailableSymbols,
+} from '@/lib/config/pythPriceFeeds';
+
+// 重新导出以保持向后兼容
+export { PYTH_PRICE_FEED_IDS };
 
 // ============================================================================
 // Pyth 特定配置
@@ -452,7 +441,7 @@ export function getSupportedPythChains(): SupportedChain[] {
  * 获取所有可用的价格喂价符号
  */
 export function getAvailablePythSymbols(): string[] {
-  return Object.keys(PYTH_PRICE_FEED_IDS);
+  return getPythAvailableSymbols();
 }
 
 /**
@@ -466,7 +455,7 @@ export function isChainSupportedByPyth(chain: SupportedChain): boolean {
  * 获取价格喂价 ID
  */
 export function getPriceFeedId(symbol: string): string | undefined {
-  return PYTH_PRICE_FEED_IDS[symbol];
+  return getPythPriceFeedId(symbol);
 }
 
 /**

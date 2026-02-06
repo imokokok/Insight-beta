@@ -23,12 +23,20 @@ export abstract class BaseSyncService {
 
   private readonly serviceName: string;
   private readonly protocol: string;
-  private errorWindow: number[] = [];
+
+  // EWMA (Exponentially Weighted Moving Average) 错误率计算
+  private readonly ewmaAlpha: number; // 平滑因子，默认 0.1 表示新样本权重 10%
+  private errorRateEwma: number; // EWMA 错误率
 
   constructor(options: SyncServiceOptions) {
     this.serviceName = options.serviceName;
     this.protocol = options.protocol;
     this.logger = createLogger({ serviceName: options.serviceName });
+
+    // 可配置的 EWMA 平滑因子，可通过环境变量调整
+    // 较小的值（如 0.05）对历史数据更敏感，较大的值（如 0.2）对新数据更敏感
+    this.ewmaAlpha = parseFloat(process.env.SYNC_EWMA_ALPHA || '0.1');
+    this.errorRateEwma = 0;
   }
 
   /**
@@ -155,18 +163,39 @@ export abstract class BaseSyncService {
   }
 
   /**
-   * Update error rate based on sliding window
+   * Update error rate using EWMA (Exponentially Weighted Moving Average)
+   *
+   * EWMA 相比滑动窗口的优势：
+   * 1. 不需要存储历史数据，内存效率高
+   * 2. 对近期错误更敏感，能快速响应问题
+   * 3. 平滑因子可配置，适应不同场景
+   *
+   * 公式: EWMA_t = α * x_t + (1 - α) * EWMA_{t-1}
+   * 其中 α 是平滑因子，x_t 是当前样本（0 或 1）
    */
   private updateErrorRate(isError: boolean): void {
-    const windowSize = 100;
-    this.errorWindow.push(isError ? 1 : 0);
+    const currentValue = isError ? 1 : 0;
 
-    if (this.errorWindow.length > windowSize) {
-      this.errorWindow.shift();
+    // 首次计算时直接赋值
+    if (this.health.syncCount === 0) {
+      this.errorRateEwma = currentValue;
+    } else {
+      // EWMA 公式
+      this.errorRateEwma =
+        this.ewmaAlpha * currentValue + (1 - this.ewmaAlpha) * this.errorRateEwma;
     }
 
-    const errorCount = this.errorWindow.reduce((a, b) => a + b, 0);
-    this.health.errorRate = errorCount / this.errorWindow.length;
+    this.health.errorRate = this.errorRateEwma;
+
+    // 记录调试信息
+    if (this.health.syncCount % 10 === 0) {
+      this.logger.debug('Error rate updated', {
+        errorRate: this.errorRateEwma.toFixed(4),
+        alpha: this.ewmaAlpha,
+        isError,
+        syncCount: this.health.syncCount,
+      });
+    }
   }
 
   /**

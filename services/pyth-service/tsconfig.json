@@ -13,7 +13,7 @@
     "moduleResolution": "node",
     "baseUrl": ".",
     "paths": {
-      "@oracle-monitor/shared": ["../shared/dist"]
+      "@oracle-monitor/shared": ["../../node_modules/@oracle-monitor/shared/dist"]
     }
   },
   "include": ["src/**/*"],

@@ -318,37 +318,65 @@ export abstract class BaseSyncManager {
     // 批量插入
     for (let i = 0; i < values.length; i += this.syncConfig.batchSize) {
       const batch = values.slice(i, i + this.syncConfig.batchSize);
-
-      const placeholders = batch
-        .map(
-          (_, idx) =>
-            `($${idx * 18 + 1}, $${idx * 18 + 2}, $${idx * 18 + 3}, $${idx * 18 + 4}, 
-            $${idx * 18 + 5}, $${idx * 18 + 6}, $${idx * 18 + 7}, $${idx * 18 + 8}, 
-            $${idx * 18 + 9}, $${idx * 18 + 10}, $${idx * 18 + 11}, $${idx * 18 + 12}, 
-            $${idx * 18 + 13}, $${idx * 18 + 14}, $${idx * 18 + 15}, $${idx * 18 + 16}, 
-            $${idx * 18 + 17}, $${idx * 18 + 18})`,
-        )
-        .join(',');
-
-      const flatValues = batch.flat();
-
-      await query(
-        `INSERT INTO unified_price_feeds (
-          id, instance_id, protocol, chain, symbol, base_asset, quote_asset,
-          price, price_raw, decimals, timestamp, block_number, confidence,
-          sources, is_stale, staleness_seconds, tx_hash, log_index
-        ) VALUES ${placeholders}
-        ON CONFLICT (id) DO UPDATE SET
-          price = EXCLUDED.price,
-          price_raw = EXCLUDED.price_raw,
-          timestamp = EXCLUDED.timestamp,
-          block_number = EXCLUDED.block_number,
-          is_stale = EXCLUDED.is_stale,
-          staleness_seconds = EXCLUDED.staleness_seconds,
-          updated_at = NOW()`,
-        flatValues,
-      );
+      await this.insertPriceFeedBatch(batch);
     }
+  }
+
+  /**
+   * 批量插入价格喂价数据
+   * 使用辅助函数生成占位符，代码更清晰易维护
+   */
+  private async insertPriceFeedBatch(batch: unknown[][]): Promise<void> {
+    const columns = 18;
+    const placeholders = this.buildPlaceholders(batch.length, columns);
+    const flatValues = batch.flat() as (
+      | string
+      | number
+      | boolean
+      | Date
+      | null
+      | undefined
+      | string[]
+      | number[]
+    )[];
+
+    await query(
+      `INSERT INTO unified_price_feeds (
+        id, instance_id, protocol, chain, symbol, base_asset, quote_asset,
+        price, price_raw, decimals, timestamp, block_number, confidence,
+        sources, is_stale, staleness_seconds, tx_hash, log_index
+      ) VALUES ${placeholders}
+      ON CONFLICT (id) DO UPDATE SET
+        price = EXCLUDED.price,
+        price_raw = EXCLUDED.price_raw,
+        timestamp = EXCLUDED.timestamp,
+        block_number = EXCLUDED.block_number,
+        is_stale = EXCLUDED.is_stale,
+        staleness_seconds = EXCLUDED.staleness_seconds,
+        updated_at = NOW()`,
+      flatValues,
+    );
+  }
+
+  /**
+   * 构建 SQL 占位符字符串
+   * @param rowCount 行数
+   * @param columnCount 列数
+   * @returns 占位符字符串，如 "($1,$2,...),($3,$4,...)"
+   */
+  private buildPlaceholders(rowCount: number, columnCount: number): string {
+    const rows: string[] = [];
+    let paramIndex = 1;
+
+    for (let i = 0; i < rowCount; i++) {
+      const params: string[] = [];
+      for (let j = 0; j < columnCount; j++) {
+        params.push(`$${paramIndex++}`);
+      }
+      rows.push(`(${params.join(',')})`);
+    }
+
+    return rows.join(',');
   }
 
   /**

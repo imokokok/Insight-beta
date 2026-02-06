@@ -24,16 +24,14 @@ import {
   Zap,
   BarChart3,
   RefreshCw,
-  TrendingUp,
-  TrendingDown,
   Shield,
   Clock,
   Layers,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { cn, fetchApiData } from '@/lib/utils';
+import { fetchApiData, cn } from '@/lib/utils';
 import { ChartSkeleton } from '@/components/ui/skeleton';
+import { StatCard } from '@/components/features/common/StatCard';
 
 // Dynamic imports for oracle components
 const PriceFeedList = lazy(() =>
@@ -520,65 +518,4 @@ export default function UnifiedDashboardPage() {
 // Sub-components
 // ============================================================================
 
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  icon: React.ReactNode;
-  loading?: boolean;
-  color: 'blue' | 'green' | 'red' | 'purple' | 'orange' | 'cyan';
-  trend?: { value: number; isPositive: boolean };
-}
-
-function StatCard({ title, value, icon, loading, color, trend }: StatCardProps) {
-  const colorClasses = {
-    blue: 'bg-blue-50 text-blue-600 border-blue-100',
-    green: 'bg-green-50 text-green-600 border-green-100',
-    red: 'bg-red-50 text-red-600 border-red-100',
-    purple: 'bg-purple-50 text-purple-600 border-purple-100',
-    orange: 'bg-orange-50 text-orange-600 border-orange-100',
-    cyan: 'bg-cyan-50 text-cyan-600 border-cyan-100',
-  };
-
-  if (loading) {
-    return (
-      <Card className="border">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-8 w-8 rounded-lg" />
-          </div>
-          <Skeleton className="mt-2 h-8 w-16" />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card className={cn('border transition-all hover:shadow-md', colorClasses[color])}>
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-medium opacity-80">{title}</span>
-          <div className={cn('rounded-lg p-2', colorClasses[color].split(' ')[0])}>{icon}</div>
-        </div>
-        <div className="mt-2 flex items-baseline gap-2">
-          <span className="text-2xl font-bold">{value}</span>
-          {trend && (
-            <span
-              className={cn(
-                'flex items-center text-xs',
-                trend.isPositive ? 'text-green-600' : 'text-red-600',
-              )}
-            >
-              {trend.isPositive ? (
-                <TrendingUp className="mr-1 h-3 w-3" />
-              ) : (
-                <TrendingDown className="mr-1 h-3 w-3" />
-              )}
-              {trend.value}
-            </span>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+// Note: StatCard component has been extracted to @/components/features/common/StatCard

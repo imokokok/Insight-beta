@@ -9,7 +9,6 @@ import {
   Globe,
   Activity,
   Zap,
-  TrendingUp,
   ArrowRight,
   BarChart3,
   Layers,
@@ -17,11 +16,13 @@ import {
   Shield,
   Clock,
   Bell,
+  TrendingUp,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn, fetchApiData } from '@/lib/utils';
+import { StatCard } from '@/components/features/common/StatCard';
 
 interface PlatformStats {
   totalProtocols: number;
@@ -381,36 +382,7 @@ function HeroActionCard({ icon, title, description, onClick, primary }: HeroActi
   );
 }
 
-interface StatCardProps {
-  title: string;
-  value: number | string;
-  icon: React.ReactNode;
-  loading?: boolean;
-  color: 'blue' | 'green' | 'purple' | 'orange';
-}
-
-function StatCard({ title, value, icon, loading, color }: StatCardProps) {
-  const colorClasses = {
-    blue: 'bg-blue-50 text-blue-600',
-    green: 'bg-green-50 text-green-600',
-    purple: 'bg-purple-50 text-purple-600',
-    orange: 'bg-orange-50 text-orange-600',
-  };
-
-  return (
-    <Card className="border-0 shadow-sm">
-      <CardContent className="flex items-center gap-4 p-6">
-        <div className={cn('rounded-lg p-3', colorClasses[color])}>{icon}</div>
-        <div>
-          <p className="text-sm text-gray-600">{title}</p>
-          <p className={cn('text-2xl font-bold', loading && 'animate-pulse')}>
-            {loading ? '...' : value}
-          </p>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+// Note: StatCard component has been extracted to @/components/features/common/StatCard
 
 interface FeatureCardProps {
   icon: React.ReactNode;
