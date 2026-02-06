@@ -85,9 +85,9 @@ export async function getUnifiedPriceData(query: UnifiedQuery): Promise<UnifiedP
   // 定义要查询的协议列表
   const targetProtocols: OracleProtocol[] = protocols
     ? (protocols.filter((p): p is OracleProtocol =>
-        ['chainlink', 'pyth', 'band', 'api3', 'uma'].includes(p),
+        ['chainlink', 'pyth', 'band', 'api3', 'uma', 'flux'].includes(p),
       ) as OracleProtocol[])
-    : ['chainlink', 'pyth', 'band', 'api3'];
+    : ['chainlink', 'pyth', 'band', 'api3', 'flux'];
 
   // 从真实数据源获取价格
   const sources: PriceSource[] = [];
@@ -201,9 +201,9 @@ export async function compareProtocols(query: ComparisonQuery): Promise<Protocol
   // 定义要查询的协议列表
   const targetProtocols: OracleProtocol[] = protocols
     ? (protocols.filter((p): p is OracleProtocol =>
-        ['chainlink', 'pyth', 'band', 'api3', 'uma'].includes(p),
+        ['chainlink', 'pyth', 'band', 'api3', 'uma', 'flux'].includes(p),
       ) as OracleProtocol[])
-    : ['chainlink', 'pyth', 'band', 'api3'];
+    : ['chainlink', 'pyth', 'band', 'api3', 'flux'];
 
   // 从真实数据源获取价格
   const protocolData: ProtocolPriceInfo[] = [];

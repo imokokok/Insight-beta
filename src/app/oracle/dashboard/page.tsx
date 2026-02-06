@@ -335,7 +335,7 @@ export default function UnifiedDashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {['Chainlink', 'Pyth Network', 'Band Protocol', 'API3', 'RedStone'].map(
+                  {['Chainlink', 'Pyth Network', 'Band Protocol', 'API3', 'RedStone', 'Flux'].map(
                     (protocol) => (
                       <div key={protocol} className="flex items-center justify-between">
                         <span className="text-sm">{protocol}</span>
@@ -363,7 +363,7 @@ export default function UnifiedDashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {['Chainlink', 'Pyth Network', 'Band Protocol', 'API3', 'RedStone'].map(
+                  {['Chainlink', 'Pyth Network', 'Band Protocol', 'API3', 'RedStone', 'Flux'].map(
                     (protocol) => (
                       <div key={protocol} className="flex items-center justify-between">
                         <span className="text-sm">{protocol}</span>
@@ -394,7 +394,7 @@ export default function UnifiedDashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {['Chainlink', 'Pyth Network', 'Band Protocol', 'API3', 'RedStone'].map(
+                  {['Chainlink', 'Pyth Network', 'Band Protocol', 'API3', 'RedStone', 'Flux'].map(
                     (protocol) => (
                       <div key={protocol} className="flex items-center justify-between">
                         <span className="text-sm">{protocol}</span>

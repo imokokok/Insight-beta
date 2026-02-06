@@ -14,6 +14,7 @@ import {
   diaSyncManager,
   api3SyncManager,
   redstoneSyncManager,
+  fluxSyncManager,
 } from '../sync';
 
 import type { SyncManager, ProtocolSyncConfig } from '../types/serviceTypes';
@@ -96,6 +97,11 @@ export class ProtocolSyncManager {
         this.activeSyncManagers.set(instanceId, redstoneSyncManager);
         break;
 
+      case 'flux':
+        await fluxSyncManager.startSync(instanceId);
+        this.activeSyncManagers.set(instanceId, fluxSyncManager);
+        break;
+
       default:
         logger.warn(`Unknown protocol: ${protocol}, skipping sync for ${instanceId}`);
     }
@@ -148,6 +154,13 @@ export class ProtocolSyncManager {
       logger.debug('RedStone sync stopped');
     } catch (error) {
       logger.error('Error stopping RedStone sync', { error });
+    }
+
+    try {
+      fluxSyncManager.stopAllSync();
+      logger.debug('Flux sync stopped');
+    } catch (error) {
+      logger.error('Error stopping Flux sync', { error });
     }
 
     // Stop all active sync managers

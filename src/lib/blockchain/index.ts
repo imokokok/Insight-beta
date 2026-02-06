@@ -104,6 +104,16 @@ export {
   isChainSupportedBySwitchboard,
 } from './protocols/switchboard';
 
+// Flux
+export {
+  FluxOracleClient,
+  createFluxClient,
+  getSupportedFluxSymbols,
+  isSymbolSupportedByFlux,
+  isChainSupportedByFlux,
+  getFluxFeedId,
+} from './protocols/flux';
+
 // ============================================================================
 // 初始化 - 注册所有协议客户端
 // ============================================================================
@@ -115,6 +125,7 @@ import { API3OracleClient } from './protocols/api3';
 import { BandOracleClient } from './protocols/band';
 import { ChainlinkOracleClient } from './protocols/chainlink';
 import { DIAOracleClient } from './protocols/dia';
+import { FluxOracleClient } from './protocols/flux';
 import { PythOracleClient } from './protocols/pyth';
 import { RedStoneOracleClient } from './protocols/redstone';
 import { SwitchboardOracleClient } from './protocols/switchboard';
@@ -213,6 +224,19 @@ oracleClientFactory.register('switchboard', SwitchboardOracleClient, [
   'optimism',
   'base',
   'avalanche',
+]);
+
+// 注册 Flux 客户端
+oracleClientFactory.register('flux', FluxOracleClient, [
+  'ethereum',
+  'polygon',
+  'arbitrum',
+  'optimism',
+  'base',
+  'avalanche',
+  'bsc',
+  'fantom',
+  'sepolia',
 ]);
 
 // ============================================================================

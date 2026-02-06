@@ -75,6 +75,15 @@ export {
   cleanupRedStoneData,
 } from './RedStoneSync';
 
+export {
+  FluxSyncManager,
+  fluxSyncManager,
+  startFluxSync,
+  stopFluxSync,
+  stopAllFluxSync,
+  cleanupFluxData,
+} from './FluxSync';
+
 import { logger } from '@/lib/logger';
 
 // ============================================================================
@@ -87,6 +96,7 @@ import { API3SyncManager } from './API3Sync';
 import { BandSyncManager } from './BandSync';
 import { ChainlinkSyncManager } from './ChainlinkSync';
 import { DIASyncManager } from './DIASync';
+import { FluxSyncManager } from './FluxSync';
 import { PythSyncManager } from './PythSync';
 import { RedStoneSyncManager } from './RedStoneSync';
 
@@ -121,6 +131,9 @@ export function getSyncManager(protocol: OracleProtocol): BaseSyncManager {
         break;
       case 'redstone':
         syncManagers.set(protocol, new RedStoneSyncManager());
+        break;
+      case 'flux':
+        syncManagers.set(protocol, new FluxSyncManager());
         break;
       default:
         throw new Error(`Unsupported protocol: ${protocol}`);
@@ -186,6 +199,7 @@ export async function cleanupAllOldData(): Promise<{
   dia: { deletedFeeds: number; deletedUpdates: number };
   api3: { deletedFeeds: number; deletedUpdates: number };
   redstone: { deletedFeeds: number; deletedUpdates: number };
+  flux: { deletedFeeds: number; deletedUpdates: number };
 }> {
   const results = {
     chainlink: { deletedFeeds: 0, deletedUpdates: 0 },
@@ -194,6 +208,7 @@ export async function cleanupAllOldData(): Promise<{
     dia: { deletedFeeds: 0, deletedUpdates: 0 },
     api3: { deletedFeeds: 0, deletedUpdates: 0 },
     redstone: { deletedFeeds: 0, deletedUpdates: 0 },
+    flux: { deletedFeeds: 0, deletedUpdates: 0 },
   };
 
   // 并行清理所有协议
@@ -227,6 +242,11 @@ export async function cleanupAllOldData(): Promise<{
       .cleanupOldData()
       .then(() => {
         logger.info('RedStone data cleanup completed');
+      }),
+    getSyncManager('flux')
+      .cleanupOldData()
+      .then(() => {
+        logger.info('Flux data cleanup completed');
       }),
   ]);
 
@@ -263,6 +283,7 @@ export const SUPPORTED_SYNC_PROTOCOLS: OracleProtocol[] = [
   'dia',
   'api3',
   'redstone',
+  'flux',
 ];
 
 /**

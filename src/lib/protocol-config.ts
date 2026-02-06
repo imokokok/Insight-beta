@@ -336,7 +336,7 @@ export const PROTOCOL_CONFIGS: Record<OracleProtocol, ProtocolConfig> = {
     'Flux',
     'Decentralized Oracle Aggregator',
     'https://fluxprotocol.org',
-    ['ethereum', 'polygon', 'arbitrum'],
+    ['ethereum', 'polygon', 'arbitrum', 'optimism', 'base', 'avalanche', 'bsc', 'fantom'],
   ),
   dia: createBasicConfig(
     'dia',
