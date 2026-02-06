@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { POPULAR_FEEDS, CHAINLINK_CHAIN_CONFIG } from './chainlinkDataFeeds';
+import { POPULAR_FEEDS, CHAINLINK_FEED_REGISTRY } from './chainlinkDataFeeds';
 
 describe('Chainlink Data Feeds Configuration', () => {
   describe('POPULAR_FEEDS', () => {
@@ -85,50 +85,13 @@ describe('Chainlink Data Feeds Configuration', () => {
     });
   });
 
-  describe('CHAINLINK_CHAIN_CONFIG', () => {
-    it('should have Ethereum mainnet config with feed registry', () => {
-      expect(CHAINLINK_CHAIN_CONFIG.ethereum).toBeDefined();
-      expect(CHAINLINK_CHAIN_CONFIG.ethereum.feedRegistry).toBeDefined();
-      expect(CHAINLINK_CHAIN_CONFIG.ethereum.feedRegistry).toMatch(/^0x[a-f0-9]{40}$/i);
-      expect(CHAINLINK_CHAIN_CONFIG.ethereum.defaultRpcUrl).toBeTruthy();
+  describe('CHAINLINK_FEED_REGISTRY', () => {
+    it('should have Ethereum mainnet feed registry', () => {
+      expect(CHAINLINK_FEED_REGISTRY.ethereum).toBeDefined();
+      expect(CHAINLINK_FEED_REGISTRY.ethereum).toMatch(/^0x[a-f0-9]{40}$/i);
     });
 
-    it('should have Polygon config', () => {
-      expect(CHAINLINK_CHAIN_CONFIG.polygon).toBeDefined();
-      expect(CHAINLINK_CHAIN_CONFIG.polygon.defaultRpcUrl).toBeTruthy();
-    });
-
-    it('should have Arbitrum config', () => {
-      expect(CHAINLINK_CHAIN_CONFIG.arbitrum).toBeDefined();
-      expect(CHAINLINK_CHAIN_CONFIG.arbitrum.defaultRpcUrl).toBeTruthy();
-    });
-
-    it('should have Optimism config', () => {
-      expect(CHAINLINK_CHAIN_CONFIG.optimism).toBeDefined();
-      expect(CHAINLINK_CHAIN_CONFIG.optimism.defaultRpcUrl).toBeTruthy();
-    });
-
-    it('should have Base config', () => {
-      expect(CHAINLINK_CHAIN_CONFIG.base).toBeDefined();
-      expect(CHAINLINK_CHAIN_CONFIG.base.defaultRpcUrl).toBeTruthy();
-    });
-
-    it('should have Avalanche config', () => {
-      expect(CHAINLINK_CHAIN_CONFIG.avalanche).toBeDefined();
-      expect(CHAINLINK_CHAIN_CONFIG.avalanche.defaultRpcUrl).toBeTruthy();
-    });
-
-    it('should have BSC config', () => {
-      expect(CHAINLINK_CHAIN_CONFIG.bsc).toBeDefined();
-      expect(CHAINLINK_CHAIN_CONFIG.bsc.defaultRpcUrl).toBeTruthy();
-    });
-
-    it('should have Fantom config', () => {
-      expect(CHAINLINK_CHAIN_CONFIG.fantom).toBeDefined();
-      expect(CHAINLINK_CHAIN_CONFIG.fantom.defaultRpcUrl).toBeTruthy();
-    });
-
-    it('should have config for all supported chains', () => {
+    it('should have feed registry for all supported chains', () => {
       const supportedChains = [
         'ethereum',
         'polygon',
@@ -157,7 +120,9 @@ describe('Chainlink Data Feeds Configuration', () => {
       ];
 
       supportedChains.forEach((chain) => {
-        expect(CHAINLINK_CHAIN_CONFIG[chain as keyof typeof CHAINLINK_CHAIN_CONFIG]).toBeDefined();
+        expect(
+          CHAINLINK_FEED_REGISTRY[chain as keyof typeof CHAINLINK_FEED_REGISTRY],
+        ).toBeDefined();
       });
     });
   });

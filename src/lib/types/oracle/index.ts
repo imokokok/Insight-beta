@@ -146,7 +146,7 @@ export type { WebhookEvent, WebhookConfig, WebhookPayload } from './webhook';
 // API 响应类型
 // ============================================================================
 
-export type { ApiOk, ApiError, PaginatedResponse, ApiResponse, ListResult } from './api';
+export type { ApiOk, ApiError, PaginatedResponse, ListResult } from './api';
 
 // ============================================================================
 // 数据库类型
@@ -173,3 +173,31 @@ export type {
 // ============================================================================
 
 export type { OracleStatus, OracleStatusSnapshot } from './legacy';
+
+// ============================================================================
+// 公共类型（新增）
+// ============================================================================
+
+export type {
+  PriceFeedCore,
+  PriceFeedCoreArray,
+  AssertionCore,
+  DisputeCore,
+  AlertCore,
+  AlertRuleCore,
+  SyncStateCore,
+  ConfigTemplateCore,
+  OracleStatsCore,
+  CrossProtocolComparisonCore,
+  PaginationParams,
+  PaginationMeta,
+  TimeRangeParams,
+  SortParams,
+  FilterParams,
+  ErrorCode,
+  AppError,
+  Nullable,
+  Optional,
+  AsyncResult,
+  ApiResponse,
+} from './common';

@@ -9,10 +9,10 @@ import { logger } from '@/lib/logger';
 import { VIEM_CHAIN_MAP } from '../chainConfig';
 import type {
   SupportedChain,
-  UnifiedPriceFeed,
   OracleHealthStatus,
   BaseOracleConfig,
 } from '@/lib/types/unifiedOracleTypes';
+import type { PriceFeedCore, PriceFeedCoreArray, Nullable } from '@/lib/types/oracle';
 
 // ============================================================================
 // 抽象基类
@@ -74,19 +74,7 @@ export abstract class BaseOracleClient {
   /**
    * 获取单个资产的价格
    */
-  public async getPriceForSymbol(
-    symbol: string,
-  ): Promise<Omit<
-    UnifiedPriceFeed,
-    | 'id'
-    | 'instanceId'
-    | 'protocol'
-    | 'baseAsset'
-    | 'quoteAsset'
-    | 'priceRaw'
-    | 'decimals'
-    | 'isStale'
-  > | null> {
+  public async getPriceForSymbol(symbol: string): Promise<Nullable<PriceFeedCore>> {
     try {
       const contractAddress = this.getContractAddress();
       if (!contractAddress) {
@@ -119,25 +107,16 @@ export abstract class BaseOracleClient {
   /**
    * 批量获取多个资产的价格
    */
-  public async getMultiplePrices(
-    symbols: string[],
-  ): Promise<
-    Array<
-      Omit<
-        UnifiedPriceFeed,
-        | 'id'
-        | 'instanceId'
-        | 'protocol'
-        | 'baseAsset'
-        | 'quoteAsset'
-        | 'priceRaw'
-        | 'decimals'
-        | 'isStale'
-      >
-    >
-  > {
-    const results = await Promise.all(symbols.map((symbol) => this.getPriceForSymbol(symbol)));
-    return results.filter((price): price is NonNullable<typeof price> => price !== null);
+  public async getMultiplePrices(symbols: string[]): Promise<PriceFeedCoreArray> {
+    const results = await Promise.allSettled(
+      symbols.map((symbol) => this.getPriceForSymbol(symbol)),
+    );
+    return results
+      .filter(
+        (result): result is PromiseFulfilledResult<PriceFeedCore> =>
+          result.status === 'fulfilled' && result.value !== null,
+      )
+      .map((result) => result.value);
   }
 
   /**
@@ -184,21 +163,7 @@ export abstract class BaseOracleClient {
   /**
    * 获取所有可用喂价
    */
-  public async getAllAvailableFeeds(): Promise<
-    Array<
-      Omit<
-        UnifiedPriceFeed,
-        | 'id'
-        | 'instanceId'
-        | 'protocol'
-        | 'baseAsset'
-        | 'quoteAsset'
-        | 'priceRaw'
-        | 'decimals'
-        | 'isStale'
-      >
-    >
-  > {
+  public async getAllAvailableFeeds(): Promise<PriceFeedCoreArray> {
     const symbols = this.getSupportedSymbols();
     return this.getMultiplePrices(symbols);
   }
@@ -219,17 +184,7 @@ export abstract class BaseOracleClient {
       confidence?: number;
     },
     _contractAddress: Address,
-  ): Omit<
-    UnifiedPriceFeed,
-    | 'id'
-    | 'instanceId'
-    | 'protocol'
-    | 'baseAsset'
-    | 'quoteAsset'
-    | 'priceRaw'
-    | 'decimals'
-    | 'isStale'
-  > {
+  ): PriceFeedCore {
     return {
       symbol,
       price: Number(formatUnits(rawPrice.price, rawPrice.decimals)),

@@ -16,6 +16,7 @@ import {
 import { logger } from '@/lib/logger';
 import { DEFAULT_STALENESS_THRESHOLDS } from '@/lib/config/constants';
 import { VIEM_CHAIN_MAP } from './chainConfig';
+import { getChainRpcConfig, type ChainRpcConfig } from '@/lib/config/rpcConfig';
 import type {
   SupportedChain,
   UnifiedPriceFeed,
@@ -38,55 +39,34 @@ const AGGREGATOR_ABI = parseAbi([
 // Chainlink 特定配置
 // ============================================================================
 
-export const CHAINLINK_CHAIN_CONFIG: Record<
-  SupportedChain,
-  {
-    feedRegistry?: Address;
-    defaultRpcUrl: string;
-  }
-> = {
-  ethereum: {
-    feedRegistry: '0x47Fb2585D2C56Fe188D0E6ec6a473f24e99F1A76',
-    defaultRpcUrl: 'https://eth-mainnet.g.alchemy.com/v2',
-  },
-  polygon: {
-    defaultRpcUrl: 'https://polygon-mainnet.g.alchemy.com/v2',
-  },
-  arbitrum: {
-    defaultRpcUrl: 'https://arb-mainnet.g.alchemy.com/v2',
-  },
-  optimism: {
-    defaultRpcUrl: 'https://opt-mainnet.g.alchemy.com/v2',
-  },
-  base: {
-    defaultRpcUrl: 'https://base-mainnet.g.alchemy.com/v2',
-  },
-  avalanche: {
-    defaultRpcUrl: 'https://avax-mainnet.g.alchemy.com/v2',
-  },
-  bsc: {
-    defaultRpcUrl: 'https://bsc-dataseed.binance.org',
-  },
-  fantom: {
-    defaultRpcUrl: 'https://rpc.ftm.tools',
-  },
-  // 其他链不支持 Chainlink
-  celo: { defaultRpcUrl: '' },
-  gnosis: { defaultRpcUrl: '' },
-  linea: { defaultRpcUrl: '' },
-  scroll: { defaultRpcUrl: '' },
-  mantle: { defaultRpcUrl: '' },
-  mode: { defaultRpcUrl: '' },
-  blast: { defaultRpcUrl: '' },
-  solana: { defaultRpcUrl: '' },
-  near: { defaultRpcUrl: '' },
-  aptos: { defaultRpcUrl: '' },
-  sui: { defaultRpcUrl: '' },
-  polygonAmoy: { defaultRpcUrl: '' },
-  sepolia: { defaultRpcUrl: '' },
-  goerli: { defaultRpcUrl: '' },
-  mumbai: { defaultRpcUrl: '' },
-  local: { defaultRpcUrl: 'http://localhost:8545' },
+/**
+ * Chainlink Feed Registry 地址
+ */
+export const CHAINLINK_FEED_REGISTRY: Record<SupportedChain, Address | undefined> = {
+  ethereum: '0x47Fb2585D2C56Fe188D0E6ec6a473f24e99F1A76',
+  polygon: undefined,
+  arbitrum: undefined,
+  optimism: undefined,
+  base: undefined,
+  avalanche: undefined,
+  bsc: undefined,
+  fantom: undefined,
+  celo: undefined,
+  gnosis: undefined,
+  linea: undefined,
+  scroll: undefined,
+  mantle: undefined,
+  mode: undefined,
+  blast: undefined,
+  solana: undefined,
+  near: undefined,
+  aptos: undefined,
+  sui: undefined,
+  polygonAmoy: undefined,
+  sepolia: undefined,
+  goerli: undefined,
+  mumbai: undefined,
+  local: undefined,
 };
 
 // 常用价格喂价地址映射
@@ -175,19 +155,25 @@ export class ChainlinkClient {
   private publicClient: PublicClient;
   private chain: SupportedChain;
   private config: ChainlinkProtocolConfig;
+  private rpcConfig: ChainRpcConfig;
 
-  constructor(chain: SupportedChain, rpcUrl: string, config: ChainlinkProtocolConfig = {}) {
+  constructor(chain: SupportedChain, rpcUrl?: string, config: ChainlinkProtocolConfig = {}) {
     this.chain = chain;
     this.config = config;
+    this.rpcConfig = getChainRpcConfig(chain);
 
-    const chainConfig = CHAINLINK_CHAIN_CONFIG[chain];
-    if (!chainConfig) {
-      throw new Error(`Chain ${chain} not supported by Chainlink`);
+    // 使用传入的 RPC URL 或从配置获取
+    const primaryRpcUrl = rpcUrl || this.rpcConfig.primary;
+
+    if (!primaryRpcUrl) {
+      throw new Error(
+        `No RPC URL available for chain ${chain}. Please configure ${chain.toUpperCase()}_RPC_URL environment variable.`,
+      );
     }
 
     this.publicClient = createPublicClient({
       chain: VIEM_CHAIN_MAP[chain],
-      transport: http(rpcUrl),
+      transport: http(primaryRpcUrl, { timeout: config.timeout ?? 30000 }),
     }) as PublicClient;
   }
 
@@ -257,25 +243,19 @@ export class ChainlinkClient {
   }
 
   /**
-   * 获取多个价格喂价
+   * 获取多个价格喂价（优化：使用 Promise.allSettled 并行执行）
    */
   async getMultiplePrices(symbols: string[]): Promise<UnifiedPriceFeed[]> {
-    const feeds: UnifiedPriceFeed[] = [];
+    const results = await Promise.allSettled(
+      symbols.map((symbol) => this.getPriceForSymbol(symbol)),
+    );
 
-    for (const symbol of symbols) {
-      try {
-        const feed = await this.getPriceForSymbol(symbol);
-        if (feed) {
-          feeds.push(feed);
-        }
-      } catch (error) {
-        logger.error(`Failed to get price for ${symbol}`, {
-          error: error instanceof Error ? error.message : String(error),
-        });
-      }
-    }
-
-    return feeds;
+    return results
+      .filter(
+        (result): result is PromiseFulfilledResult<UnifiedPriceFeed> =>
+          result.status === 'fulfilled' && result.value !== null,
+      )
+      .map((result) => result.value);
   }
 
   /**
@@ -460,10 +440,12 @@ export function createChainlinkClient(
 /**
  * 获取支持的 Chainlink 链列表
  */
-export function getSupportedChainlinkChains(): SupportedChain[] {
-  return Object.entries(CHAINLINK_CHAIN_CONFIG)
-    .filter(([_, config]) => config.defaultRpcUrl !== '')
-    .map(([chain]) => chain as SupportedChain);
+export async function getSupportedChainlinkChains(): Promise<SupportedChain[]> {
+  const { getChainRpcConfig } = await import('@/lib/config/rpcConfig');
+  return Object.keys(POPULAR_FEEDS).filter((chain) => {
+    const config = getChainRpcConfig(chain as SupportedChain);
+    return config.primary !== '' && config.supportedProtocols.includes('chainlink');
+  }) as SupportedChain[];
 }
 
 /**
@@ -476,8 +458,10 @@ export function getAvailableFeedsForChain(chain: SupportedChain): string[] {
 /**
  * 检查链是否支持 Chainlink
  */
-export function isChainSupportedByChainlink(chain: SupportedChain): boolean {
-  return CHAINLINK_CHAIN_CONFIG[chain]?.defaultRpcUrl !== '';
+export async function isChainSupportedByChainlink(chain: SupportedChain): Promise<boolean> {
+  const { getChainRpcConfig } = await import('@/lib/config/rpcConfig');
+  const config = getChainRpcConfig(chain);
+  return config.primary !== '' && config.supportedProtocols.includes('chainlink');
 }
 
 /**
