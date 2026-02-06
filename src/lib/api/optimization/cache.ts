@@ -101,10 +101,9 @@ export class MemoryCache implements CacheProvider {
 // ============================================================================
 
 export class RedisCache implements CacheProvider {
-  private client: unknown; // 实际使用时应该是 Redis 客户端
-
-  constructor(client: unknown) {
-    this.client = client;
+  // 实际使用时应该是 Redis 客户端
+  constructor(_client: unknown) {
+    // client 参数保留供将来使用
   }
 
   async get<T>(key: string): Promise<T | null> {
@@ -118,11 +117,11 @@ export class RedisCache implements CacheProvider {
     }
   }
 
-  async set<T>(key: string, value: T, ttlMs?: number): Promise<void> {
+  async set<T>(_key: string, _value: T, _ttlMs?: number): Promise<void> {
     try {
-      logger.debug('Redis set', { key, ttlMs });
+      logger.debug('Redis set', { key: _key, ttlMs: _ttlMs });
     } catch (error) {
-      logger.error('Redis set failed', { key, error });
+      logger.error('Redis set failed', { key: _key, error });
     }
   }
 

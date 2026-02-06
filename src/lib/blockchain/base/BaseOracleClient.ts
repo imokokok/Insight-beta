@@ -4,7 +4,7 @@
  * 统一所有预言机客户端的公共逻辑，减少重复代码
  */
 
-import { createPublicClient, http, type Address, formatUnits } from 'viem';
+import { createPublicClient, http, type Address, formatUnits, type Chain } from 'viem';
 import { logger } from '@/lib/logger';
 import { VIEM_CHAIN_MAP } from '../chainConfig';
 import type {
@@ -28,7 +28,7 @@ export abstract class BaseOracleClient {
     this.config = config;
 
     this.publicClient = createPublicClient({
-      chain: VIEM_CHAIN_MAP[chain] as any,
+      chain: VIEM_CHAIN_MAP[chain] as Chain,
       transport: http(rpcUrl, { timeout: config.timeout ?? 30000 }),
     }) as ReturnType<typeof createPublicClient>;
   }

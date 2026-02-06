@@ -27,6 +27,18 @@ vi.mock('@/lib/utils', () => ({
   formatTime: () => '2024-01-01',
   formatUsd: (value: string) => `$${value}`,
   getExplorerUrl: () => null,
+  getAssertionStatusColor: (status: string) => {
+    const colors: Record<string, string> = {
+      Pending: 'bg-yellow-100 text-yellow-800',
+      Resolved: 'bg-green-100 text-green-800',
+      Disputed: 'bg-red-100 text-red-800',
+    };
+    return colors[status] || 'bg-gray-100 text-gray-800';
+  },
+  truncateAddress: (address: string) => {
+    if (!address || address.length < 10) return address;
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  },
 }));
 
 vi.mock('next/link', () => ({

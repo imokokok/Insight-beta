@@ -76,7 +76,7 @@ export type GetAuditLogsResponse = ApiResponse<PaginatedResult<AuditLog>>;
 // 健康检查
 // ============================================================================
 
-export interface HealthStatus {
+export interface HealthCheckDetails {
   status: 'healthy' | 'degraded' | 'unhealthy';
   timestamp: string;
   version: string;
@@ -88,7 +88,7 @@ export interface HealthStatus {
   };
 }
 
-export type HealthCheckResponse = ApiResponse<HealthStatus>;
+export type HealthCheckResponse = ApiResponse<HealthCheckDetails>;
 
 // ============================================================================
 // 错误响应

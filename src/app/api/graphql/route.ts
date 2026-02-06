@@ -1002,7 +1002,8 @@ const resolvers = {
         try {
           while (true) {
             if (queue.length > 0) {
-              yield { alertCreated: queue.shift()! };
+              const alert = queue.shift();
+              if (alert) yield { alertCreated: alert };
             } else {
               const promise = new Promise<IteratorResult<AlertPayload>>((resolve) => {
                 resolveNext = resolve;

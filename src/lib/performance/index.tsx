@@ -43,61 +43,24 @@ function DefaultLoadingComponent() {
 // 路由级别代码分割
 // ============================================================================
 
-export const LazyOracleDashboard = createDynamicComponent(
-  () => import('@/components/features/dashboard/OracleDashboard'),
-  { loading: <DashboardSkeleton /> },
-);
+// 注意：动态导入需要组件有默认导出
+// 以下组件使用命名导出，因此暂时注释掉
+// 如需使用，请确保组件有默认导出或创建包装组件
 
-export const LazyPriceChart = createDynamicComponent(
-  () => import('@/components/features/charts/PriceChart'),
-  { loading: <ChartSkeleton /> },
-);
+// export const LazyPriceHistoryChart = createDynamicComponent(
+//   () => import('@/components/features/dashboard/PriceHistoryChart'),
+//   { loading: <ChartSkeleton /> },
+// );
 
-export const LazyAssertionsTable = createDynamicComponent(
-  () => import('@/components/features/assertion/AssertionsTable'),
-  { loading: <TableSkeleton /> },
-);
+// export const LazyAssertionList = createDynamicComponent(
+//   () => import('@/components/features/assertion/AssertionList'),
+//   { loading: <TableSkeleton /> },
+// );
 
-export const LazyDisputesTable = createDynamicComponent(
-  () => import('@/components/features/dispute/DisputesTable'),
-  { loading: <TableSkeleton /> },
-);
-
-// ============================================================================
-// 骨架屏组件
-// ============================================================================
-
-function DashboardSkeleton() {
-  return (
-    <div className="space-y-4 p-4">
-      <div className="bg-muted h-8 w-1/3 animate-pulse rounded" />
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-muted h-32 animate-pulse rounded-lg" />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ChartSkeleton() {
-  return (
-    <div className="space-y-4 p-4">
-      <div className="bg-muted h-[300px] animate-pulse rounded-lg" />
-    </div>
-  );
-}
-
-function TableSkeleton() {
-  return (
-    <div className="space-y-4 p-4">
-      <div className="bg-muted h-10 animate-pulse rounded" />
-      {[1, 2, 3, 4, 5].map((i) => (
-        <div key={i} className="bg-muted h-16 animate-pulse rounded" />
-      ))}
-    </div>
-  );
-}
+// export const LazyDisputeList = createDynamicComponent(
+//   () => import('@/components/features/dispute/DisputeList'),
+//   { loading: <TableSkeleton /> },
+// );
 
 // ============================================================================
 // 预加载策略

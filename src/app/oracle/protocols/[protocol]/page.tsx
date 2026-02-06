@@ -1,5 +1,7 @@
 'use client';
 
+/* eslint-disable no-restricted-syntax */
+
 import { useParams } from 'next/navigation';
 import { useState, useEffect, useCallback, useMemo, Suspense, lazy } from 'react';
 import { Activity, Shield, TrendingUp, Globe, BarChart3, Bell, Clock } from 'lucide-react';

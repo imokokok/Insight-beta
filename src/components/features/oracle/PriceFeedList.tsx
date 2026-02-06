@@ -1,5 +1,7 @@
 'use client';
 
+/* eslint-disable no-restricted-syntax */
+
 import { useEffect, useState, useMemo } from 'react';
 import { cn, fetchApiData, formatTimeAgo } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

@@ -82,21 +82,6 @@ export interface PriceSource {
 // ============================================================================
 
 export interface CrossProtocolComparison {
-  symbol: string;
-  timestamp: number;
-  prices: Record<
-    OracleProtocol,
-    {
-      price: number;
-      confidence: number;
-      timestamp: number;
-    }
-  >;
-  priceDeviation: number;
-  recommendedProtocol?: OracleProtocol;
-}
-
-export interface CrossOracleComparison {
   id: EntityId;
   symbol: string;
   baseAsset: string;
@@ -122,6 +107,9 @@ export interface CrossOracleComparison {
   recommendationSource: string;
   timestamp: Timestamp;
 }
+
+// CrossOracleComparison 是 CrossProtocolComparison 的别名，用于向后兼容
+export type CrossOracleComparison = CrossProtocolComparison;
 
 // ============================================================================
 // 价格偏差检测

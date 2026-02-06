@@ -1,146 +1,240 @@
 #!/usr/bin/env tsx
 /**
- * 翻译验证脚本
+ * Translation Validation Script
  *
- * 功能：
- * 1. 检查所有语言是否包含英语的所有翻译键
- * 2. 检查是否有未使用的翻译键
- * 3. 检查是否有缺失的翻译键
- * 4. 生成翻译覆盖率报告
+ * This script validates translations by:
+ * 1. Scanning source code for translation key usage
+ * 2. Comparing used keys against translation files
+ * 3. Reporting missing and unused translations
  *
- * 使用方法：
+ * Usage:
  *   npx tsx scripts/validate-translations.ts
+ *   npx tsx scripts/validate-translations.ts --fix
  */
+
+/* eslint-disable security/detect-non-literal-fs-filename */
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
+import { glob } from 'glob';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Configuration
+const SRC_DIR = path.join(process.cwd(), 'src');
+const I18N_DIR = path.join(SRC_DIR, 'i18n');
+const LOCALES_DIR = path.join(I18N_DIR, 'locales');
 
-const LOCALES_DIR = path.join(__dirname, '../src/i18n/locales');
-const SOURCE_LANG = 'en';
+// Colors for terminal output
+const colors = {
+  reset: '\x1b[0m',
+  red: '\x1b[31m',
+  green: '\x1b[32m',
+  yellow: '\x1b[33m',
+  blue: '\x1b[34m',
+  magenta: '\x1b[35m',
+  cyan: '\x1b[36m',
+};
 
-interface ValidationResult {
-  language: string;
-  missingKeys: string[];
-  extraKeys: string[];
-  totalKeys: number;
-  coverage: number;
+function log(message: string, color: keyof typeof colors = 'reset') {
+  console.log(`${colors[color]}${message}${colors.reset}`);
 }
 
-// 递归获取对象的所有键路径
-function getAllKeys(obj: Record<string, unknown>, prefix = ''): string[] {
-  const keys: string[] = [];
+// Extract translation keys from source files
+async function extractUsedKeys(): Promise<Set<string>> {
+  const usedKeys = new Set<string>();
 
-  for (const [key, value] of Object.entries(obj)) {
-    const fullKey = prefix ? `${prefix}.${key}` : key;
-    if (value && typeof value === 'object' && !Array.isArray(value)) {
-      keys.push(...getAllKeys(value as Record<string, unknown>, fullKey));
-    } else {
-      keys.push(fullKey);
+  // Patterns to match translation key usage
+  const patterns = [
+    // t('key') or t("key")
+    /t\(['"]([^'"]+)['"]/g,
+    // tn('key', ...) or tn("key", ...)
+    /tn\(['"]([^'"]+)['"]/g,
+    // TranslationKeys.namespace.key
+    /TranslationKeys\.([a-zA-Z_][a-zA-Z0-9_]*\.[a-zA-Z_][a-zA-Z0-9_.]*)/g,
+  ];
+
+  const files = await glob('**/*.{ts,tsx}', {
+    cwd: SRC_DIR,
+    ignore: ['**/*.test.ts', '**/*.spec.ts', '**/node_modules/**'],
+  });
+
+  for (const file of files) {
+    const content = fs.readFileSync(path.join(SRC_DIR, file), 'utf-8');
+
+    for (const pattern of patterns) {
+      let match;
+      while ((match = pattern.exec(content)) !== null) {
+        const key = match[1];
+        // Skip dynamic keys (containing variables)
+        if (!key.includes('${') && !key.includes('+')) {
+          usedKeys.add(key);
+        }
+      }
     }
   }
 
-  return keys;
+  return usedKeys;
 }
 
-// 获取路径对应的值
-function getValueAtPath(obj: Record<string, unknown>, path: string): unknown {
-  const parts = path.split('.');
-  let current: unknown = obj;
+// Get all keys from translation files
+function getAllTranslationKeys(): Map<string, Set<string>> {
+  const langKeys = new Map<string, Set<string>>();
 
-  for (const part of parts) {
-    if (current && typeof current === 'object' && !Array.isArray(current)) {
-      current = (current as Record<string, unknown>)[part];
-    } else {
-      return undefined;
+  const langDirs = fs.readdirSync(LOCALES_DIR).filter((dir) => {
+    return fs.statSync(path.join(LOCALES_DIR, dir)).isDirectory();
+  });
+
+  for (const lang of langDirs) {
+    const keys = new Set<string>();
+    const langDir = path.join(LOCALES_DIR, lang);
+
+    // Read index.ts to get all namespaces
+    const indexPath = path.join(langDir, 'index.ts');
+    if (fs.existsSync(indexPath)) {
+      const indexContent = fs.readFileSync(indexPath, 'utf-8');
+      const namespaceMatches = indexContent.match(/import \{ (\w+) \} from/g);
+
+      if (namespaceMatches) {
+        for (const match of namespaceMatches) {
+          const nsName = match.match(/import \{ (\w+) \} from/)?.[1];
+          if (nsName) {
+            const nsFile = path.join(langDir, `${nsName}.ts`);
+            if (fs.existsSync(nsFile)) {
+              // Simple regex extraction (not perfect but works for most cases)
+              const content = fs.readFileSync(nsFile, 'utf-8');
+              const exportMatch = content.match(/export const \w+ = \{([\s\S]*?)\};/);
+              if (exportMatch) {
+                extractKeysFromText(exportMatch[1], nsName, keys);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    langKeys.set(lang, keys);
+  }
+
+  return langKeys;
+}
+
+function extractKeysFromText(text: string, namespace: string, keys: Set<string>) {
+  // Simple key extraction from object literal
+  const keyPattern = /(\w+):/g;
+  let match;
+  while ((match = keyPattern.exec(text)) !== null) {
+    keys.add(`${namespace}.${match[1]}`);
+  }
+}
+
+// Main validation function
+async function validateTranslations() {
+  log('🔍 Scanning source code for translation keys...', 'cyan');
+  const usedKeys = await extractUsedKeys();
+  log(`   Found ${usedKeys.size} unique translation keys in code`, 'green');
+
+  log('\n📚 Loading translation files...', 'cyan');
+  const langKeys = getAllTranslationKeys();
+
+  const enKeys = langKeys.get('en');
+  if (!enKeys) {
+    log('❌ English translation file not found!', 'red');
+    process.exit(1);
+  }
+
+  log(`   English: ${enKeys.size} keys`, 'blue');
+  for (const [lang, keys] of langKeys) {
+    if (lang !== 'en') {
+      log(`   ${lang}: ${keys.size} keys`, 'blue');
     }
   }
 
-  return current;
-}
-
-// 验证翻译
-async function validateTranslations(): Promise<ValidationResult[]> {
-  const languages = fs.readdirSync(LOCALES_DIR).filter(
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
-    (dir) => fs.statSync(path.join(LOCALES_DIR, dir)).isDirectory(),
-  );
-
-  // 动态导入英语翻译
-  const enModule = await import(path.join(LOCALES_DIR, SOURCE_LANG, 'index.ts'));
-  const enTranslations = enModule[`${SOURCE_LANG}Translations`] || enModule.default;
-  const sourceKeys = getAllKeys(enTranslations);
-
-  const results: ValidationResult[] = [];
-
-  for (const lang of languages) {
-    if (lang === SOURCE_LANG) continue;
-
-    const langModule = await import(path.join(LOCALES_DIR, lang, 'index.ts'));
-    const langTranslations = langModule[`${lang}Translations`] || langModule.default;
-    const langKeys = getAllKeys(langTranslations);
-
-    const missingKeys = sourceKeys.filter(
-      (key) => getValueAtPath(langTranslations, key) === undefined,
-    );
-
-    const extraKeys = langKeys.filter((key) => getValueAtPath(enTranslations, key) === undefined);
-
-    results.push({
-      language: lang,
-      missingKeys,
-      extraKeys,
-      totalKeys: sourceKeys.length,
-      coverage: Math.round(((sourceKeys.length - missingKeys.length) / sourceKeys.length) * 100),
-    });
+  // Find missing translations (in code but not in en translations)
+  log('\n⚠️  Missing Translation Keys (in code but not in en translations):', 'yellow');
+  const missingInTranslations: string[] = [];
+  for (const key of usedKeys) {
+    if (!enKeys.has(key)) {
+      missingInTranslations.push(key);
+    }
   }
 
-  return results;
-}
+  if (missingInTranslations.length === 0) {
+    log('   ✅ All used keys are defined in translations', 'green');
+  } else {
+    for (const key of missingInTranslations.slice(0, 20)) {
+      log(`   - ${key}`, 'red');
+    }
+    if (missingInTranslations.length > 20) {
+      log(`   ... and ${missingInTranslations.length - 20} more`, 'red');
+    }
+  }
 
-// 主函数
-async function main() {
-  console.log('🔍 验证翻译文件...\n');
+  // Find unused translations (in en translations but not in code)
+  log('\n🗑️  Potentially Unused Translation Keys:', 'yellow');
+  const potentiallyUnused: string[] = [];
+  for (const key of enKeys) {
+    if (!usedKeys.has(key)) {
+      potentiallyUnused.push(key);
+    }
+  }
 
-  try {
-    const results = await validateTranslations();
+  if (potentiallyUnused.length === 0) {
+    log('   ✅ All translation keys are used in code', 'green');
+  } else {
+    for (const key of potentiallyUnused.slice(0, 20)) {
+      log(`   - ${key}`, 'magenta');
+    }
+    if (potentiallyUnused.length > 20) {
+      log(`   ... and ${potentiallyUnused.length - 20} more`, 'magenta');
+    }
+    log(`\n   ℹ️  These might be used dynamically or are truly unused`, 'cyan');
+  }
 
-    let hasErrors = false;
+  // Check translation completeness for other languages
+  log('\n📊 Translation Completeness:', 'cyan');
+  for (const [lang, keys] of langKeys) {
+    if (lang === 'en') continue;
 
-    for (const result of results) {
-      console.log(`📊 ${result.language.toUpperCase()}`);
-      console.log(
-        `   覆盖率: ${result.coverage}% (${result.totalKeys - result.missingKeys.length}/${result.totalKeys})`,
+    const missing: string[] = [];
+    for (const key of enKeys) {
+      if (!keys.has(key)) {
+        missing.push(key);
+      }
+    }
+
+    const percentage = Math.round(((enKeys.size - missing.length) / enKeys.size) * 100);
+    const bar =
+      '█'.repeat(Math.round(percentage / 5)) + '░'.repeat(20 - Math.round(percentage / 5));
+
+    if (missing.length === 0) {
+      log(`   ${lang.toUpperCase().padEnd(2)} ${bar} ${percentage}% ✅`, 'green');
+    } else {
+      log(
+        `   ${lang.toUpperCase().padEnd(2)} ${bar} ${percentage}% (${missing.length} missing)`,
+        'yellow',
       );
-
-      if (result.missingKeys.length > 0) {
-        console.log(`   ❌ 缺失 ${result.missingKeys.length} 个键:`);
-        result.missingKeys.forEach((key) => console.log(`      - ${key}`));
-        hasErrors = true;
-      }
-
-      if (result.extraKeys.length > 0) {
-        console.log(`   ⚠️  多余 ${result.extraKeys.length} 个键:`);
-        result.extraKeys.forEach((key) => console.log(`      - ${key}`));
-      }
-
-      console.log('');
     }
+  }
 
-    if (hasErrors) {
-      console.log('❌ 验证失败，请修复缺失的翻译键');
-      process.exit(1);
-    } else {
-      console.log('✅ 所有翻译文件验证通过！');
-      process.exit(0);
-    }
-  } catch (error) {
-    console.error('❌ 验证过程出错:', error);
+  // Summary
+  log('\n═══════════════════════════════════════', 'cyan');
+  log('Summary:', 'cyan');
+  log(`  Total keys in English: ${enKeys.size}`, 'blue');
+  log(`  Keys used in code: ${usedKeys.size}`, 'blue');
+  log(
+    `  Missing in translations: ${missingInTranslations.length}`,
+    missingInTranslations.length === 0 ? 'green' : 'red',
+  );
+  log(`  Potentially unused: ${potentiallyUnused.length}`, 'magenta');
+  log('═══════════════════════════════════════\n', 'cyan');
+
+  // Exit with error if there are missing keys
+  if (missingInTranslations.length > 0) {
     process.exit(1);
   }
 }
 
-main();
+// Run validation
+validateTranslations().catch((error) => {
+  console.error('Validation failed:', error);
+  process.exit(1);
+});

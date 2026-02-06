@@ -32,9 +32,23 @@ type I18nContextValue = {
       options?: Intl.RelativeTimeFormatOptions,
     ) => string;
   };
+  isLoading: boolean;
 };
 
 const I18nContext = createContext<I18nContextValue | null>(null);
+
+function getInitialLang(serverLang?: Lang): Lang {
+  if (typeof window === 'undefined') {
+    return serverLang ?? 'zh';
+  }
+
+  const stored = window.localStorage.getItem(LANG_STORAGE_KEY);
+  if (isLang(stored)) {
+    return stored;
+  }
+
+  return serverLang ?? 'zh';
+}
 
 export function LanguageProvider({
   children,
@@ -43,13 +57,11 @@ export function LanguageProvider({
   children: ReactNode;
   initialLang?: Lang;
 }) {
-  const [lang, setLangState] = useState<Lang>(initialLang ?? 'zh');
+  const [lang, setLangState] = useState<Lang>(() => getInitialLang(initialLang));
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
-    const stored = window.localStorage.getItem(LANG_STORAGE_KEY);
-    if (isLang(stored)) {
-      setLangState(stored);
-    }
+    setIsHydrated(true);
   }, []);
 
   useEffect(() => {
@@ -119,8 +131,9 @@ export function LanguageProvider({
       t,
       tn,
       format,
+      isLoading: !isHydrated,
     }),
-    [lang, setLang, t, tn, format],
+    [lang, setLang, t, tn, format, isHydrated],
   );
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;

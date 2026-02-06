@@ -1,5 +1,7 @@
 'use client';
 
+/* eslint-disable no-restricted-syntax */
+
 import { usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';

@@ -1,5 +1,7 @@
 'use client';
 
+/* eslint-disable no-restricted-syntax */
+
 import { useEffect, useState } from 'react';
 import { TrendingUp, Layers, Activity, DollarSign, RefreshCw, BarChart3 } from 'lucide-react';
 import { PageHeader } from '@/components/features/common/PageHeader';

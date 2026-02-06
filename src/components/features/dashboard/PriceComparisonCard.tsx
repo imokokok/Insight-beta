@@ -1,10 +1,12 @@
 'use client';
 
+/* eslint-disable no-restricted-syntax */
+
 import { memo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { AlertTriangle } from 'lucide-react';
 import { ProtocolBadge } from './ProtocolBadge';
-import type { CrossProtocolComparison, OracleProtocol } from '@/lib/types';
+import type { CrossProtocolComparison } from '@/lib/types';
 
 interface PriceComparisonCardProps {
   comparison: CrossProtocolComparison;
@@ -22,30 +24,23 @@ function PriceComparisonCardComponent({ comparison, className }: PriceComparison
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {comparison.prices.map(
-                (price: {
-                  protocol: string;
-                  instanceId: string;
-                  price: number;
-                  timestamp: string;
-                }) => (
-                  <div
-                    key={price.protocol}
-                    className="flex items-center justify-between rounded-lg bg-gray-50 p-3 transition-colors hover:bg-gray-100"
-                  >
-                    <div className="flex items-center gap-3">
-                      <ProtocolBadge protocol={price.protocol as OracleProtocol} />
-                      <span className="text-sm text-gray-500">{price.instanceId}</span>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-mono font-medium">${price.price.toLocaleString()}</div>
-                      <div className="text-xs text-gray-400">
-                        {new Date(price.timestamp).toLocaleTimeString()}
-                      </div>
+              {comparison.prices.map((price) => (
+                <div
+                  key={price.protocol}
+                  className="flex items-center justify-between rounded-lg bg-gray-50 p-3 transition-colors hover:bg-gray-100"
+                >
+                  <div className="flex items-center gap-3">
+                    <ProtocolBadge protocol={price.protocol} />
+                    <span className="text-sm text-gray-500">{price.instanceId}</span>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-mono font-medium">${price.price.toLocaleString()}</div>
+                    <div className="text-xs text-gray-400">
+                      {new Date(price.timestamp).toLocaleTimeString()}
                     </div>
                   </div>
-                ),
-              )}
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>

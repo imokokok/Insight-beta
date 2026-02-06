@@ -113,12 +113,12 @@ function calculateStats() {
     return {
       count: values.length,
       avg: Math.round((sum / values.length) * 100) / 100,
-      min: Math.round(sorted[0]! * 100) / 100,
-      max: Math.round(sorted[sorted.length - 1]! * 100) / 100,
-      p50: Math.round(sorted[Math.floor(sorted.length * 0.5)]! * 100) / 100,
-      p75: Math.round(sorted[Math.floor(sorted.length * 0.75)]! * 100) / 100,
-      p90: Math.round(sorted[Math.floor(sorted.length * 0.9)]! * 100) / 100,
-      p95: Math.round(sorted[Math.floor(sorted.length * 0.95)]! * 100) / 100,
+      min: Math.round((sorted[0] ?? 0) * 100) / 100,
+      max: Math.round((sorted[sorted.length - 1] ?? 0) * 100) / 100,
+      p50: Math.round((sorted[Math.floor(sorted.length * 0.5)] ?? 0) * 100) / 100,
+      p75: Math.round((sorted[Math.floor(sorted.length * 0.75)] ?? 0) * 100) / 100,
+      p90: Math.round((sorted[Math.floor(sorted.length * 0.9)] ?? 0) * 100) / 100,
+      p95: Math.round((sorted[Math.floor(sorted.length * 0.95)] ?? 0) * 100) / 100,
     };
   };
 

@@ -5,6 +5,8 @@
  * 使用动态导入减少初始加载时间
  */
 
+/* eslint-disable no-restricted-syntax */
+
 'use client';
 
 import { useEffect, useState } from 'react';

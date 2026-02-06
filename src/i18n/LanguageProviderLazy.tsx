@@ -54,6 +54,19 @@ const fallbackTranslations: Record<Lang, TranslationNamespace> = {
   ko: {},
 };
 
+function getInitialLang(serverLang?: Lang): Lang {
+  if (typeof window === 'undefined') {
+    return serverLang ?? 'zh';
+  }
+
+  const stored = window.localStorage.getItem(LANG_STORAGE_KEY);
+  if (isLang(stored)) {
+    return stored;
+  }
+
+  return serverLang ?? 'zh';
+}
+
 export function LanguageProviderLazy({
   children,
   initialLang,
@@ -63,18 +76,16 @@ export function LanguageProviderLazy({
   initialLang?: Lang;
   defaultTranslations?: TranslationNamespace;
 }) {
-  const [lang, setLangState] = useState<Lang>(initialLang ?? 'zh');
+  const [lang, setLangState] = useState<Lang>(() => getInitialLang(initialLang));
   const [translations, setTranslations] = useState<TranslationNamespace>(
     defaultTranslations ?? fallbackTranslations[lang],
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    const stored = window.localStorage.getItem(LANG_STORAGE_KEY);
-    if (isLang(stored)) {
-      setLangState(stored);
-    }
+    setIsHydrated(true);
   }, []);
 
   useEffect(() => {
@@ -172,9 +183,9 @@ export function LanguageProviderLazy({
       t,
       tn,
       format,
-      isLoading,
+      isLoading: isLoading || !isHydrated,
     }),
-    [lang, setLang, t, tn, format, isLoading],
+    [lang, setLang, t, tn, format, isLoading, isHydrated],
   );
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;

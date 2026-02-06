@@ -1,5 +1,7 @@
 'use client';
 
+/* eslint-disable no-restricted-syntax */
+
 import type { Dispatch, SetStateAction } from 'react';
 import Link from 'next/link';
 import type { Route } from 'next';
@@ -41,7 +43,7 @@ import {
   statusBadge,
   type RootCauseOption,
   type SloEntry,
-} from './alertsUtils';
+} from '@/lib/utils/alertsUtils';
 
 export type IncidentDraft = {
   title: string;

@@ -6,16 +6,27 @@
 
 import type { Prisma } from '@prisma/client';
 
-// 重新导出 Prisma 类型
+// 重新导出 Prisma 类型 - 只导出实际存在的模型
 export type {
-  OracleConfig as OracleConfigDB,
-  PriceHistory,
-  Assertion as AssertionDB,
-  Dispute as DisputeDB,
-  Alert as AlertDB,
-  AuditLog as AuditLogDB,
+  PriceHistoryRaw,
+  PriceHistoryMin1,
+  PriceHistoryMin5,
+  PriceHistoryHour1,
+  PriceHistoryDay1,
+  SolanaPriceFeed,
+  SolanaPriceHistory,
+  SolanaOracleInstance,
+  SolanaSyncStatus,
+  SolanaAlert,
   Prisma,
 } from '@prisma/client';
+
+// 为了保持向后兼容，定义类型别名
+export type OracleConfigDB = never;
+export type AssertionDB = never;
+export type DisputeDB = never;
+export type AlertDB = never;
+export type AuditLogDB = never;
 
 // ============================================================================
 // 数据库查询选项

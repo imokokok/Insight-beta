@@ -7,6 +7,7 @@ import { logger } from '@/lib/logger';
 import { priceAggregationEngine } from '../priceAggregationService';
 import { priceStreamManager } from '@/server/websocket/priceStream';
 import type { AggregationResult } from '../types/serviceTypes';
+import type { SupportedChain, OracleProtocol } from '@/lib/types/unifiedOracleTypes';
 
 export class AggregationManager {
   private aggregationInterval?: NodeJS.Timeout;
@@ -91,10 +92,10 @@ export class AggregationManager {
           type: 'price_update',
           data: {
             symbol: comparison.symbol,
-            chain: 'ethereum' as import('@/lib/types/unifiedOracleTypes').SupportedChain,
+            chain: 'ethereum' as SupportedChain,
             price: comparison.aggregatedPrice,
             timestamp: Date.now(),
-            source: 'uma' as import('@/lib/types/unifiedOracleTypes').OracleProtocol,
+            source: 'uma' as OracleProtocol,
           },
         });
       }

@@ -34,12 +34,10 @@ export async function GET(request: NextRequest) {
     const chain = searchParams.get('chain') || undefined;
     const type = searchParams.get('type') || undefined;
     const severity = searchParams.get('severity') || undefined;
-    const startTime = searchParams.get('startTime')
-      ? parseInt(searchParams.get('startTime')!)
-      : undefined;
-    const endTime = searchParams.get('endTime')
-      ? parseInt(searchParams.get('endTime')!)
-      : undefined;
+    const startTimeParam = searchParams.get('startTime');
+    const startTime = startTimeParam ? parseInt(startTimeParam) : undefined;
+    const endTimeParam = searchParams.get('endTime');
+    const endTime = endTimeParam ? parseInt(endTimeParam) : undefined;
     const limit = parseInt(searchParams.get('limit') || '100');
     const offset = parseInt(searchParams.get('offset') || '0');
 

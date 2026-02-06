@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ZodError } from 'zod';
 import { GET } from './route';
 import * as oracle from '@/server/oracle';
 import type { Assertion } from '@/lib/types/oracleTypes';
@@ -9,38 +8,19 @@ vi.mock('@/server/oracle', () => ({
   ensureOracleSynced: vi.fn(),
 }));
 
-// Mock apiResponse to just return the data or response
-vi.mock('@/server/apiResponse', () => ({
+// Mock rateLimit to allow requests
+vi.mock('@/server/apiResponse/rateLimit', () => ({
   rateLimit: vi.fn(() => null),
-  cachedJson: vi.fn(
-    async (_key: string, _ttlMs: number, compute: () => unknown | Promise<unknown>) => {
-      return await compute();
-    },
-  ),
-  requireAdmin: vi.fn(async (request: Request) => {
-    const token = request.headers.get('x-admin-token')?.trim() ?? '';
-    return token ? null : {};
-  }),
-  handleApi: async (arg1: unknown, arg2?: unknown) => {
-    try {
-      const fn =
-        typeof arg1 === 'function'
-          ? (arg1 as () => unknown | Promise<unknown>)
-          : (arg2 as () => unknown | Promise<unknown>);
-      const data = await fn();
-      return { ok: true, data };
-    } catch (e: unknown) {
-      if (e instanceof ZodError) {
-        const messages = e.issues.map((i) => i.message);
-        if (messages.includes('invalid_address')) {
-          return { ok: false, error: 'invalid_address' };
-        }
-        return { ok: false, error: 'invalid_request_body' };
-      }
-      const message = e instanceof Error ? e.message : String(e);
-      return { ok: false, error: message };
-    }
-  },
+}));
+
+// Mock admin check
+vi.mock('@/server/apiResponse/admin', () => ({
+  requireAdmin: vi.fn(() => null),
+}));
+
+// Mock cron auth
+vi.mock('@/server/cronAuth', () => ({
+  isCronAuthorized: vi.fn(() => false),
 }));
 
 describe('GET /api/oracle/assertions', () => {
@@ -72,21 +52,17 @@ describe('GET /api/oracle/assertions', () => {
     });
 
     const request = new Request('http://localhost:3000/api/oracle/assertions?limit=10');
-    type ApiMockResponse<T> = { ok: true; data: T } | { ok: false; error: string };
-    const response = (await GET(request)) as unknown as ApiMockResponse<{
-      items: Assertion[];
-      total: number;
-      nextCursor: number | null;
-    }>;
+    const response = await GET(request);
+    const data = await response.json();
 
-    expect(response.ok).toBe(true);
-    if (response.ok) {
-      expect(response.data.items).toEqual(mockItems);
-    }
+    expect(response.status).toBe(200);
+    expect(data.ok).toBe(true);
+    expect(data.data.items).toEqual(mockItems);
     expect(oracle.listAssertions).toHaveBeenCalledWith(
       expect.objectContaining({
         limit: 10,
       }),
+      undefined,
     );
   });
 
@@ -104,6 +80,7 @@ describe('GET /api/oracle/assertions', () => {
       expect.objectContaining({
         chain: 'Optimism',
       }),
+      undefined,
     );
   });
 
@@ -127,13 +104,11 @@ describe('GET /api/oracle/assertions', () => {
     const request = new Request(
       'http://localhost:3000/api/oracle/assertions?asserter=not_an_address',
     );
-    type ApiMockResponse = { ok: true; data: unknown } | { ok: false; error: string };
-    const response = (await GET(request)) as unknown as ApiMockResponse;
+    const response = await GET(request);
+    const data = await response.json();
 
-    expect(response.ok).toBe(false);
-    if (!response.ok) {
-      expect(response.error).toBe('invalid_address');
-    }
+    expect(response.status).toBe(400);
+    expect(data.ok).toBe(false);
     expect(oracle.listAssertions).not.toHaveBeenCalled();
   });
 });

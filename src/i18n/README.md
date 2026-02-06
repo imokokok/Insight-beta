@@ -6,44 +6,37 @@
 
 - 🌍 **5 种语言支持**：中文、英语、西班牙语、法语、韩语
 - 📝 **TypeScript 完整类型支持**：翻译键类型安全
-- 🚀 **懒加载支持**：翻译文件按需加载
+- 🚀 **懒加载支持**：翻译文件按需加载（推荐）
 - 🧪 **自动化测试**：翻译覆盖率测试
 - 📅 **完整的格式化**：日期、数字、货币、相对时间
 - 🔢 **复数规则支持**：基于 Intl.PluralRules
 - 🔄 **SSR 支持**：Next.js 服务端渲染兼容
 - 💾 **语言持久化**：localStorage + cookie
 
-## 目录结构
-
-```
-src/i18n/
-├── LanguageProvider.tsx    # 语言上下文 Provider
-├── LanguageProviderLazy.tsx # 懒加载版本 Provider
-├── loader.ts               # 翻译文件加载器
-├── translations.ts         # 翻译导出和工具函数
-├── types.ts                # 类型定义
-├── utils.ts                # 工具函数（插值、复数、格式化）
-├── index.ts                # 入口文件
-├── README.md               # 本文档
-├── __tests__/              # 测试文件
-│   └── translations-coverage.test.ts
-└── locales/                # 翻译文件
-    ├── en/                 # 英语
-    ├── zh/                 # 中文
-    ├── es/                 # 西班牙语
-    ├── fr/                 # 法语
-    └── ko/                 # 韩语
-```
-
 ## 快速开始
 
-### 1. 在组件中使用翻译
+### 1. 在根布局中使用（推荐懒加载版本）
 
 ```tsx
-import { useI18n } from '@/i18n/LanguageProvider';
+// app/layout.tsx
+import { LanguageProviderLazy } from '@/i18n';
+
+export default function RootLayout({ children }) {
+  return <LanguageProviderLazy initialLang="en">{children}</LanguageProviderLazy>;
+}
+```
+
+### 2. 在组件中使用翻译
+
+```tsx
+import { useI18n } from '@/i18n';
 
 export function MyComponent() {
-  const { t, tn, format, lang, setLang } = useI18n();
+  const { t, tn, format, lang, setLang, isLoading } = useI18n();
+
+  if (isLoading) {
+    return <div>Loading translations...</div>;
+  }
 
   return (
     <div>
@@ -61,29 +54,49 @@ export function MyComponent() {
       <span>{format.number(1234567.89)}</span>
       <span>{format.currency(100, 'USD')}</span>
       <span>{format.relativeTime(-1, 'day')}</span>
+
+      {/* 切换语言 */}
+      <button onClick={() => setLang('zh')}>Switch to Chinese</button>
     </div>
   );
 }
 ```
 
-### 2. 切换语言
+### 3. 使用语言切换器组件
 
 ```tsx
-import { useI18n } from '@/i18n/LanguageProvider';
+import { LanguageSwitcher } from '@/components/features/common/LanguageSwitcher';
 
-export function LanguageSwitcher() {
-  const { lang, setLang } = useI18n();
-
+export function Header() {
   return (
-    <select value={lang} onChange={(e) => setLang(e.target.value as Lang)}>
-      <option value="zh">中文</option>
-      <option value="en">English</option>
-      <option value="es">Español</option>
-      <option value="fr">Français</option>
-      <option value="ko">한국어</option>
-    </select>
+    <header>
+      <LanguageSwitcher />
+    </header>
   );
 }
+```
+
+## 目录结构
+
+```
+src/i18n/
+├── LanguageProvider.tsx       # 同步加载版本 Provider
+├── LanguageProviderLazy.tsx   # ⚡ 懒加载版本 Provider（推荐）
+├── loader.ts                  # 翻译文件加载器
+├── translations.ts            # 翻译导出和工具函数
+├── types.ts                   # 类型定义
+├── utils.ts                   # 工具函数（插值、复数、格式化）
+├── keys.ts                    # 类型安全的翻译键
+├── index.ts                   # 入口文件
+├── README.md                  # 本文档
+├── __tests__/                 # 测试文件
+│   └── translations-coverage.test.ts
+└── locales/                   # 翻译文件
+    ├── en/                    # 英语（源语言）
+    ├── zh/                    # 中文
+    ├── es/                    # 西班牙语
+    ├── fr/                    # 法语
+    └── ko/                    # 韩语
 ```
 
 ## API 参考
@@ -92,30 +105,26 @@ export function LanguageSwitcher() {
 
 返回以下对象：
 
-| 属性                  | 类型                                                                                                     | 说明           |
-| --------------------- | -------------------------------------------------------------------------------------------------------- | -------------- |
-| `lang`                | `Lang`                                                                                                   | 当前语言代码   |
-| `setLang`             | `(lang: Lang) => void`                                                                                   | 切换语言       |
-| `t`                   | `(key: string, values?: Record<string, string \| number>) => string`                                     | 基础翻译       |
-| `tn`                  | `(key: string, count: number, forms: PluralForms) => string`                                             | 复数翻译       |
-| `format.date`         | `(value: Date \| number \| string, options?: Intl.DateTimeFormatOptions) => string`                      | 日期格式化     |
-| `format.number`       | `(value: number, options?: Intl.NumberFormatOptions) => string`                                          | 数字格式化     |
-| `format.currency`     | `(value: number, currency: string, options?: Intl.NumberFormatOptions) => string`                        | 货币格式化     |
-| `format.relativeTime` | `(value: number, unit: Intl.RelativeTimeFormatUnit, options?: Intl.RelativeTimeFormatOptions) => string` | 相对时间格式化 |
+| 属性                  | 类型                                                                                                     | 说明                             |
+| --------------------- | -------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| `lang`                | `Lang`                                                                                                   | 当前语言代码                     |
+| `setLang`             | `(lang: Lang) => void`                                                                                   | 切换语言                         |
+| `t`                   | `(key: string, values?: Record<string, string \| number>) => string`                                     | 基础翻译                         |
+| `tn`                  | `(key: string, count: number, forms: PluralForms) => string`                                             | 复数翻译                         |
+| `format.date`         | `(value: Date \| number \| string, options?: Intl.DateTimeFormatOptions) => string`                      | 日期格式化                       |
+| `format.number`       | `(value: number, options?: Intl.NumberFormatOptions) => string`                                          | 数字格式化                       |
+| `format.currency`     | `(value: number, currency: string, options?: Intl.NumberFormatOptions) => string`                        | 货币格式化                       |
+| `format.relativeTime` | `(value: number, unit: Intl.RelativeTimeFormatUnit, options?: Intl.RelativeTimeFormatOptions) => string` | 相对时间格式化                   |
+| `isLoading`           | `boolean`                                                                                                | 翻译是否正在加载（仅懒加载版本） |
 
-### 翻译键格式
+### Provider 对比
 
-使用点号分隔的命名空间路径：
-
-```
-namespace.subNamespace.key
-```
-
-例如：
-
-- `app.title` - 应用标题
-- `wallet.connect` - 连接钱包
-- `errors.unknownError` - 未知错误
+| 特性     | `LanguageProviderLazy` (推荐)                            | `LanguageProvider` (同步)                                      |
+| -------- | -------------------------------------------------------- | -------------------------------------------------------------- |
+| 加载方式 | 按需懒加载                                               | 全部打包                                                       |
+| 首屏性能 | ✅ 更好                                                  | 较差                                                           |
+| 适用场景 | 大多数应用                                               | 小型应用或需要立即访问所有翻译                                 |
+| 用法     | `import { LanguageProviderLazy, useI18n } from '@/i18n'` | `import { LanguageProviderEager, useI18nEager } from '@/i18n'` |
 
 ## 添加新翻译
 
@@ -144,9 +153,13 @@ export const common = {
 };
 ```
 
-### 3. 运行测试验证
+### 3. 运行验证脚本
 
 ```bash
+# 验证翻译完整性
+npx tsx scripts/validate-translations.ts
+
+# 运行测试
 npm test -- src/i18n/__tests__/translations-coverage.test.ts
 ```
 
@@ -185,7 +198,17 @@ export const langToLocale: Record<Lang, string> = {
 
 5. 复制其他语言的文件结构并翻译
 
-6. 更新 `src/i18n/translations.ts`：
+6. 更新 `src/i18n/loader.ts`：
+
+```ts
+const translationLoaders: Record<Lang, TranslationModule> = {
+  // ...
+  ja: () =>
+    import('./locales/ja').then((m) => ({ default: m.jaTranslations as TranslationNamespace })),
+};
+```
+
+7. 更新 `src/i18n/translations.ts`：
 
 ```ts
 import { jaTranslations } from './locales/ja';
@@ -194,16 +217,6 @@ export const translations = {
   // ...
   ja: jaTranslations,
 } as const;
-```
-
-7. 更新 `src/i18n/loader.ts`：
-
-```ts
-const translationLoaders: Record<Lang, TranslationModule> = {
-  // ...
-  ja: () =>
-    import('./locales/ja').then((m) => ({ default: m.jaTranslations as TranslationNamespace })),
-};
 ```
 
 8. 更新测试文件 `src/i18n/__tests__/translations-coverage.test.ts`
@@ -275,6 +288,17 @@ welcomeMessage: ('Welcome, {{name}}! You have {{count}} new messages.',
   t('welcomeMessage', { name: 'John', count: 5 }));
 ```
 
+### 5. 类型安全的翻译键
+
+使用 `createTranslationKey` 确保键名正确：
+
+```ts
+import { createTranslationKey } from '@/i18n';
+
+const key = createTranslationKey('common.confirm'); // ✅ 类型检查
+const badKey = createTranslationKey('common.nonexistent'); // ❌ TypeScript 错误
+```
+
 ## 测试
 
 ### 运行翻译覆盖率测试
@@ -291,13 +315,21 @@ npm test -- src/i18n/__tests__/translations-coverage.test.ts
 
 - 所有语言都包含英语的翻译键
 - 报告各语言的翻译覆盖率
+- 检查空翻译和重复翻译
+
+### 验证脚本
+
+```bash
+# 扫描代码中的翻译键并验证
+npx tsx scripts/validate-translations.ts
+```
 
 ## 工具函数
 
 ### 语言检测
 
 ```ts
-import { detectLangFromAcceptLanguage, isLang } from '@/i18n/types';
+import { detectLangFromAcceptLanguage, isLang } from '@/i18n';
 
 // 从 Accept-Language Header 检测语言
 const lang = detectLangFromAcceptLanguage('zh-CN,zh;q=0.9,en;q=0.8');
@@ -316,20 +348,17 @@ import { getUiErrorMessage } from '@/i18n/translations';
 const message = getUiErrorMessage('wallet_not_connected', t);
 ```
 
-## 懒加载
+## CI/CD 集成
 
-对于大型应用，可以使用懒加载版本：
+建议在 CI 流程中添加翻译检查：
 
-```tsx
-import { LanguageProviderLazy } from '@/i18n/LanguageProviderLazy';
+```yaml
+# .github/workflows/ci.yml
+- name: Validate Translations
+  run: npx tsx scripts/validate-translations.ts
 
-export default function App() {
-  return (
-    <LanguageProviderLazy initialLang="en">
-      <YourApp />
-    </LanguageProviderLazy>
-  );
-}
+- name: Run i18n Tests
+  run: npm test -- src/i18n/__tests__/translations-coverage.test.ts
 ```
 
 ## 注意事项
@@ -338,4 +367,67 @@ export default function App() {
 2. **避免在翻译键中使用 HTML**：使用组件组合代替
 3. **日期/数字格式化使用 `format` 对象**：确保本地化正确
 4. **语言切换会自动持久化**：无需手动处理 localStorage
-5. **SSR 时注意 hydration**：确保服务端和客户端初始语言一致
+5. **SSR 时注意 hydration**：使用 `isLoading` 状态避免闪烁
+6. **ESLint 会警告硬编码文本**：确保所有用户可见文本都使用 `t()`
+
+## 性能优化
+
+### 预加载翻译
+
+```ts
+import { preloadTranslationsLazy } from '@/i18n';
+
+// 在用户可能切换语言前预加载
+preloadTranslationsLazy('es');
+```
+
+### 代码分割
+
+懒加载版本会自动将每种语言的翻译打包成单独的 chunk：
+
+```
+dist/
+├── en-translations.js  # 英语翻译（首屏加载）
+├── zh-translations.js  # 中文翻译（按需加载）
+├── es-translations.js  # 西班牙语翻译（按需加载）
+└── ...
+```
+
+## 迁移指南
+
+### 从同步版本迁移到懒加载版本
+
+1. 更新导入：
+
+```ts
+// 之前
+import { LanguageProvider, useI18n } from '@/i18n/LanguageProvider';
+
+// 之后
+import { LanguageProviderLazy, useI18n } from '@/i18n';
+```
+
+2. 处理加载状态：
+
+```tsx
+function MyComponent() {
+  const { t, isLoading } = useI18n();
+
+  if (isLoading) {
+    return <Skeleton />;
+  }
+
+  return <div>{t('some.key')}</div>;
+}
+```
+
+3. 更新布局文件：
+
+```tsx
+// app/layout.tsx
+import { LanguageProviderLazy } from '@/i18n';
+
+export default function RootLayout({ children }) {
+  return <LanguageProviderLazy initialLang="en">{children}</LanguageProviderLazy>;
+}
+```

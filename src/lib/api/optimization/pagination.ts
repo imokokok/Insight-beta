@@ -116,10 +116,8 @@ export function createCursorPaginatedResult<T extends Record<string, unknown>>(
   const resultData = pageData.slice(0, limit);
 
   // 生成下一页游标
-  const nextCursor =
-    hasMore && resultData.length > 0
-      ? String(resultData[resultData.length - 1][cursorField])
-      : undefined;
+  const lastItem = resultData[resultData.length - 1];
+  const nextCursor = hasMore && lastItem !== undefined ? String(lastItem[cursorField]) : undefined;
 
   return {
     data: resultData,
@@ -132,8 +130,6 @@ export function createCursorPaginatedResult<T extends Record<string, unknown>>(
 // Prisma 分页辅助
 // ============================================================================
 
-import type { Prisma } from '@prisma/client';
-
 export interface PrismaPaginationOptions {
   page?: number;
   limit?: number;
@@ -145,7 +141,7 @@ export interface PrismaPaginationOptions {
 export function buildPrismaPagination(options: PrismaPaginationOptions): {
   skip?: number;
   take: number;
-  cursor?: Prisma.UserWhereUniqueInput;
+  cursor?: { id: string };
   orderBy?: Record<string, 'asc' | 'desc'>;
 } {
   const { page = 1, limit = 20, cursor, sortBy, sortOrder = 'desc' } = options;

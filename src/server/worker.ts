@@ -12,6 +12,7 @@ import { getClient, hasDatabase, query } from '@/server/db';
 import { getMemoryStore } from '@/server/memoryBackend';
 import { createOrTouchAlert, pruneStaleAlerts, readAlertRules } from '@/server/observability';
 import { getSyncState, listOracleInstances, readOracleState } from '@/server/oracle';
+import type { SyncState } from '@/server/oracleState/types';
 import { fetchCurrentPrice } from '@/server/oracle/priceFetcher';
 import { ensureOracleSynced, getOracleEnv, isOracleSyncing } from '@/server/oracleIndexer';
 import { ensureUMASynced, isUMASyncing } from '@/server/oracle/uma/sync';
@@ -228,7 +229,7 @@ interface WorkerSyncState {
   owner: string | null;
 }
 
-function adaptSyncState(state: import('@/server/oracleState/types').SyncState): WorkerSyncState {
+function adaptSyncState(state: SyncState): WorkerSyncState {
   return {
     latestBlock: state.latestBlock,
     lastProcessedBlock: state.lastProcessedBlock,

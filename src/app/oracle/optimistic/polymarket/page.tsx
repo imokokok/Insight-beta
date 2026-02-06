@@ -1,5 +1,7 @@
 'use client';
 
+/* eslint-disable no-restricted-syntax */
+
 import { useEffect, useState } from 'react';
 import { BarChart3, TrendingUp, CheckCircle, RefreshCw, Activity } from 'lucide-react';
 import { PageHeader } from '@/components/features/common/PageHeader';

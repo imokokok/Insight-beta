@@ -365,9 +365,11 @@ export class ManipulationDetector {
 
     // 查找三明治模式：同一地址在目标交易前后进行相反方向的交易
     for (let i = 1; i < sortedTxs.length - 1; i++) {
-      const prevTx = sortedTxs[i - 1]!;
-      const targetTx = sortedTxs[i]!;
-      const nextTx = sortedTxs[i + 1]!;
+      const prevTx = sortedTxs[i - 1];
+      const targetTx = sortedTxs[i];
+      const nextTx = sortedTxs[i + 1];
+
+      if (!prevTx || !targetTx || !nextTx) continue;
 
       // 检查是否可能是三明治攻击
       if (
@@ -470,8 +472,10 @@ export class ManipulationDetector {
       return null;
     }
 
-    const currentLiquidity = history[history.length - 1]!.liquidity || 0;
-    const previousLiquidity = history[history.length - 2]!.liquidity || currentLiquidity;
+    const currentItem = history[history.length - 1];
+    const previousItem = history[history.length - 2];
+    const currentLiquidity = currentItem?.liquidity ?? 0;
+    const previousLiquidity = previousItem?.liquidity ?? currentLiquidity;
 
     if (previousLiquidity === 0) {
       return null;
@@ -575,7 +579,9 @@ export class ManipulationDetector {
     const history = this.priceHistory.get(feedKey);
     if (!history || history.length < 2) return undefined;
 
-    const previousPrice = history[history.length - 2]!.price;
+    const previousItem = history[history.length - 2];
+    if (!previousItem) return undefined;
+    const previousPrice = previousItem.price;
     return ((currentPrice - previousPrice) / previousPrice) * 100;
   }
 

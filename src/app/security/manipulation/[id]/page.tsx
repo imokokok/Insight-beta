@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -101,11 +101,7 @@ export default function ManipulationDetailPage() {
   const [submitting, setSubmitting] = useState(false);
   const [copiedHash, setCopiedHash] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchDetection();
-  }, [params.id]);
-
-  const fetchDetection = async () => {
+  const fetchDetection = useCallback(async () => {
     try {
       const response = await fetch(`/api/security/detections/${params.id}`);
       if (!response.ok) {
@@ -119,7 +115,11 @@ export default function ManipulationDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [params.id]);
+
+  useEffect(() => {
+    fetchDetection();
+  }, [fetchDetection]);
 
   const handleReview = async () => {
     setSubmitting(true);

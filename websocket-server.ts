@@ -18,10 +18,82 @@ import { WebSocketServer } from 'ws';
 import type { IncomingMessage } from 'http';
 import { logger } from './src/lib/logger';
 import { wsManager, type ExtendedWebSocket } from './src/server/websocket/WebSocketManager';
-import { metrics } from './src/lib/monitoring/metrics';
+import { metrics, startMemoryMetrics } from './src/lib/monitoring/metrics';
 
 const PORT = parseInt(process.env.WS_PORT || '3001', 10);
 const HOST = process.env.WS_HOST || '0.0.0.0';
+
+// ============================================================================
+// 认证配置
+// ============================================================================
+
+const ALLOWED_ORIGINS = process.env.WS_ALLOWED_ORIGINS?.split(',') || [
+  'http://localhost:3000',
+  'https://localhost:3000',
+];
+
+const API_KEY = process.env.WS_API_KEY;
+
+/**
+ * 验证 WebSocket 连接请求
+ */
+function verifyClient(info: { origin: string; secure: boolean; req: IncomingMessage }): boolean {
+  const { origin, req } = info;
+
+  // 1. 验证 Origin
+  if (origin && !ALLOWED_ORIGINS.includes(origin)) {
+    logger.warn(`WebSocket connection rejected: invalid origin`, { origin });
+    return false;
+  }
+
+  // 2. 验证 API Key（如果配置了）
+  if (API_KEY) {
+    const url = new URL(req.url || '', `http://${req.headers.host}`);
+    const providedKey = url.searchParams.get('apiKey');
+    if (providedKey !== API_KEY) {
+      logger.warn(`WebSocket connection rejected: invalid API key`, {
+        origin,
+        ip: req.socket.remoteAddress,
+      });
+      return false;
+    }
+  }
+
+  // 3. 速率限制检查（基于 IP）
+  const clientIp = req.socket.remoteAddress;
+  if (clientIp && !checkConnectionRateLimit(clientIp)) {
+    logger.warn(`WebSocket connection rejected: rate limit exceeded`, {
+      origin,
+      ip: clientIp,
+    });
+    return false;
+  }
+
+  logger.debug(`WebSocket connection verified`, { origin, ip: clientIp });
+  return true;
+}
+
+// 简单的 IP 速率限制
+const connectionAttempts = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_MAX = 10; // 每窗口最大连接数
+const RATE_LIMIT_WINDOW = 60000; // 1 分钟窗口
+
+function checkConnectionRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const record = connectionAttempts.get(ip);
+
+  if (!record || now > record.resetTime) {
+    connectionAttempts.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+    return true;
+  }
+
+  if (record.count >= RATE_LIMIT_MAX) {
+    return false;
+  }
+
+  record.count++;
+  return true;
+}
 
 // ============================================================================
 // 创建 WebSocket 服务器
@@ -30,12 +102,7 @@ const HOST = process.env.WS_HOST || '0.0.0.0';
 const wss = new WebSocketServer({
   port: PORT,
   host: HOST,
-  // 允许跨域
-  verifyClient: (info: { origin: string; secure: boolean; req: IncomingMessage }) => {
-    // 可以在这里添加认证逻辑
-    logger.debug(`WebSocket connection attempt from ${info.origin}`);
-    return true;
-  },
+  verifyClient,
 });
 
 // ============================================================================
@@ -46,7 +113,7 @@ wss.on('listening', () => {
   logger.info(`WebSocket server listening on ws://${HOST}:${PORT}`);
 
   // 启动内存指标收集
-  const stopMemoryMetrics = metrics.startMemoryMetrics?.(60000);
+  const stopMemoryMetrics = startMemoryMetrics(60000);
 
   // 优雅关闭处理
   process.on('SIGTERM', () => gracefulShutdown(stopMemoryMetrics));

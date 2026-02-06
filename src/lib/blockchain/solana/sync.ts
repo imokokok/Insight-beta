@@ -81,7 +81,10 @@ export class SolanaSyncService extends EventEmitter {
     // Stop existing sync
     this.stopSync(instanceId);
 
-    const state = this.syncStates.get(instanceId)!;
+    const state = this.syncStates.get(instanceId);
+    if (!state) {
+      throw new Error(`Sync state not found for instance: ${instanceId}`);
+    }
     state.status = 'active';
     state.errorCount = 0;
     state.updatedAt = new Date();

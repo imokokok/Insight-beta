@@ -13,6 +13,15 @@ export * from './api';
 // 数据库类型（Prisma 模型扩展）
 export * from './database';
 
+// Oracle 协议类型和常量
+export {
+  PROTOCOL_DISPLAY_NAMES,
+  PRICE_FEED_PROTOCOLS,
+  OPTIMISTIC_PROTOCOLS,
+  ORACLE_PROTOCOLS,
+  PROTOCOL_INFO,
+} from './oracle/protocol';
+
 // 工具类型
 export type Nullable<T> = T | null;
 export type Optional<T> = T | undefined;

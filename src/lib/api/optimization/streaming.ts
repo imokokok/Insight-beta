@@ -18,7 +18,6 @@ export interface NDJSONStreamOptions {
 export class NDJSONStream<T> extends Readable {
   private buffer: T[] = [];
   private isReading = false;
-  private flushTimer?: NodeJS.Timeout;
 
   constructor(
     private dataSource: AsyncIterable<T>,

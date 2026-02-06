@@ -150,13 +150,15 @@ export function trackPerformance(
   metricName: string,
   attributes?: Record<string, string | number | boolean>,
 ) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return function <T extends (...args: any[]) => any>(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _target: any,
     _propertyKey: string,
     descriptor: PropertyDescriptor,
   ): PropertyDescriptor {
     const originalMethod = descriptor.value;
-
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     descriptor.value = async function (...args: any[]): Promise<ReturnType<T>> {
       const startTime = performance.now();
       try {

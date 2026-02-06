@@ -8,6 +8,8 @@
  * - 跨协议数据分析
  */
 
+/* eslint-disable no-restricted-syntax */
+
 'use client';
 
 import { useEffect, useState, useCallback, Suspense, lazy } from 'react';

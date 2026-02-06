@@ -4,8 +4,11 @@
  * 提供统一的测试 mock 配置和工具函数
  */
 
+/* eslint-disable no-restricted-syntax */
+
 import { vi } from 'vitest';
 import type { ReactNode } from 'react';
+import type * as LucideReact from 'lucide-react';
 
 // ============================================================================
 // Next.js Navigation Mocks
@@ -94,7 +97,7 @@ export function mockAssertionList() {
 // ============================================================================
 
 export function mockLucideReact() {
-  return async (importOriginal: () => Promise<typeof import('lucide-react')>) => {
+  return async (importOriginal: () => Promise<typeof LucideReact>) => {
     const actual = await importOriginal();
     return {
       ...actual,

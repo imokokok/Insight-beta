@@ -10,8 +10,8 @@
  */
 
 import { WebSocket } from 'ws';
-import { logger } from '@/lib/logger';
-import { metrics } from '@/lib/monitoring/metrics';
+import { logger } from '../../lib/logger';
+import { metrics } from '../../lib/monitoring/metrics';
 
 // ============================================================================
 // 配置常量
@@ -210,7 +210,7 @@ export class WebSocketManager {
     const message = JSON.stringify(data);
     let sentCount = 0;
 
-    for (const ws of this.connections.values()) {
+    for (const ws of Array.from(this.connections.values())) {
       if (ws.readyState !== WebSocket.OPEN) continue;
       if (filter && !filter(ws)) continue;
 
@@ -342,7 +342,7 @@ export class WebSocketManager {
     this.heartbeatInterval = setInterval(() => {
       const now = Date.now();
 
-      for (const [clientId, ws] of this.connections.entries()) {
+      for (const [clientId, ws] of Array.from(this.connections.entries())) {
         // 检查是否超时
         if (now - ws.lastPing > CONFIG.HEARTBEAT_TIMEOUT) {
           logger.warn('WebSocket client timeout, terminating', { clientId });
@@ -367,7 +367,7 @@ export class WebSocketManager {
     this.cleanupInterval = setInterval(() => {
       let cleanedCount = 0;
 
-      for (const [clientId, ws] of this.connections.entries()) {
+      for (const [clientId, ws] of Array.from(this.connections.entries())) {
         // 清理已关闭的连接
         if (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING) {
           this.connections.delete(clientId);
@@ -391,7 +391,7 @@ export class WebSocketManager {
     const messagesPerSecond = windowMs > 0 ? this.messageStats.total / (windowMs / 1000) : 0;
 
     let subscriptionsCount = 0;
-    for (const ws of this.connections.values()) {
+    for (const ws of Array.from(this.connections.values())) {
       subscriptionsCount += ws.subscriptions.size;
     }
 
@@ -423,7 +423,7 @@ export class WebSocketManager {
     }
 
     // 关闭所有连接
-    for (const [clientId] of this.connections.entries()) {
+    for (const [clientId] of Array.from(this.connections.entries())) {
       this.disconnect(clientId, 1001, 'Server shutting down');
     }
 

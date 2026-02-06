@@ -27,11 +27,28 @@ interface RateLimitRecord {
 // 内存存储（生产环境应使用 Redis）
 const rateLimitStore = new Map<string, RateLimitRecord>();
 
+function getClientIp(req: NextRequest): string {
+  // 从各种 header 中获取真实 IP
+  const forwarded = req.headers.get('x-forwarded-for');
+  if (forwarded) {
+    return forwarded.split(',')[0]?.trim() ?? 'unknown';
+  }
+  const realIp = req.headers.get('x-real-ip');
+  if (realIp) {
+    return realIp;
+  }
+  // 返回未知标识
+  return 'unknown';
+}
+
 export async function rateLimit(
   req: NextRequest,
   config: RateLimitConfig,
 ): Promise<{ allowed: boolean; remaining: number; resetTime: number }> {
-  const key = config.keyGenerator ? config.keyGenerator(req) : `${req.ip}:${req.nextUrl.pathname}`;
+  const clientIp = getClientIp(req);
+  const key = config.keyGenerator
+    ? config.keyGenerator(req)
+    : `${clientIp}:${req.nextUrl.pathname}`;
 
   const now = Date.now();
   const record = rateLimitStore.get(key);
@@ -51,7 +68,7 @@ export async function rateLimit(
 
   if (record.count >= config.maxRequests) {
     logger.warn('Rate limit exceeded', {
-      ip: req.ip,
+      ip: clientIp,
       path: req.nextUrl.pathname,
       key,
     });
@@ -214,8 +231,8 @@ export function createCorsMiddleware(config: Partial<CorsConfig> = {}) {
     // 处理预检请求
     if (req.method === 'OPTIONS') {
       const headers: Record<string, string> = {
-        'Access-Control-Allow-Methods': fullConfig.allowedMethods!.join(', '),
-        'Access-Control-Allow-Headers': fullConfig.allowedHeaders!.join(', '),
+        'Access-Control-Allow-Methods': (fullConfig.allowedMethods ?? []).join(', '),
+        'Access-Control-Allow-Headers': (fullConfig.allowedHeaders ?? []).join(', '),
         'Access-Control-Max-Age': String(fullConfig.maxAge),
       };
 
@@ -354,7 +371,7 @@ export function createLoggingMiddleware() {
       requestId,
       method: req.method,
       path: req.nextUrl.pathname,
-      ip: req.ip,
+      ip: getClientIp(req),
       userAgent: req.headers.get('user-agent'),
     });
 

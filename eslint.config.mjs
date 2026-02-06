@@ -71,6 +71,22 @@ const config = [
       "@typescript-eslint/explicit-module-boundary-types": "off",
     },
   },
+  // i18n rules for JSX files (non-test files only)
+  {
+    files: ["**/*.tsx", "**/*.ts"],
+    ignores: ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
+    rules: {
+      // Warn on hardcoded text in JSX (basic detection)
+      "no-restricted-syntax": [
+        "warn",
+        {
+          selector: "JSXText[value=/\\s*[a-zA-Z]{3,}\\s*$/]",
+          message: "Hardcoded text detected. Use i18n t() function instead.",
+        },
+      ],
+    },
+  },
+  // Test files - disable strict rules
   {
     files: ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
     rules: {
@@ -78,6 +94,7 @@ const config = [
       "@typescript-eslint/consistent-type-imports": "off",
       "@typescript-eslint/no-non-null-assertion": "off",
       "security/detect-object-injection": "off",
+      "no-restricted-syntax": "off",
     },
   },
 ];

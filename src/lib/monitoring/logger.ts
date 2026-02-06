@@ -275,9 +275,9 @@ export class StructuredLogger {
     if (!match) return undefined;
 
     return {
-      function: match[1],
-      file: match[2],
-      line: parseInt(match[3], 10),
+      function: match[1] ?? 'unknown',
+      file: match[2] ?? 'unknown',
+      line: parseInt(match[3] ?? '0', 10),
     };
   }
 

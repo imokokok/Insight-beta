@@ -205,11 +205,11 @@ export async function compareProtocols(query: ComparisonQuery): Promise<Protocol
   const sortedPrices = [...prices].sort((a, b) => a - b);
   let medianPrice: number;
   if (sortedPrices.length % 2 === 0) {
-    const mid1 = sortedPrices[sortedPrices.length / 2 - 1];
-    const mid2 = sortedPrices[sortedPrices.length / 2];
-    medianPrice = (mid1! + mid2!) / 2;
+    const mid1 = sortedPrices[sortedPrices.length / 2 - 1] ?? 0;
+    const mid2 = sortedPrices[sortedPrices.length / 2] ?? 0;
+    medianPrice = (mid1 + mid2) / 2;
   } else {
-    medianPrice = sortedPrices[Math.floor(sortedPrices.length / 2)]!;
+    medianPrice = sortedPrices[Math.floor(sortedPrices.length / 2)] ?? 0;
   }
   const meanPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
 

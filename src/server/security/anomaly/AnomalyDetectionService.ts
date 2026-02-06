@@ -574,8 +574,9 @@ export class AnomalyDetectionService {
 
     for (let i = 0; i < symbols.length; i++) {
       for (let j = i + 1; j < symbols.length; j++) {
-        const symbol1 = symbols[i]!;
-        const symbol2 = symbols[j]!;
+        const symbol1 = symbols[i];
+        const symbol2 = symbols[j];
+        if (!symbol1 || !symbol2) continue;
 
         const anomalies1 = this.getAnomalyHistory(symbol1).filter(
           (a) => a.status === 'active' && Date.now() - a.timestamp.getTime() < timeWindowMs,

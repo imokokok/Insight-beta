@@ -1,5 +1,7 @@
 'use client';
 
+/* eslint-disable no-restricted-syntax */
+
 import { Input } from '@/components/ui/input';
 import type { AlertRule, AlertSeverity } from '@/lib/types/oracleTypes';
 import { useState } from 'react';

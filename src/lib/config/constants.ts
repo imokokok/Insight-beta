@@ -1,215 +1,198 @@
 /**
- * Application Constants
+ * 全局配置常量
  *
- * 应用常量配置
+ * 集中管理应用中的魔法数字和配置项
  */
 
 // ============================================================================
-// Chain Constants
+// WebSocket 配置
 // ============================================================================
 
-export const SUPPORTED_CHAINS = [
-  'ethereum',
-  'polygon',
-  'polygonAmoy',
-  'arbitrum',
-  'optimism',
-  'base',
-  'avalanche',
-  'bsc',
-  'solana',
-  'solanaDevnet',
-  'local',
-] as const;
-
-export type SupportedChain = (typeof SUPPORTED_CHAINS)[number];
-
-export const CHAIN_ID_MAP: Record<SupportedChain, number> = {
-  ethereum: 1,
-  polygon: 137,
-  polygonAmoy: 80002,
-  arbitrum: 42161,
-  optimism: 10,
-  base: 8453,
-  avalanche: 43114,
-  bsc: 56,
-  solana: 101,
-  solanaDevnet: 103,
-  local: 31337,
-};
-
-export const CHAIN_NAME_MAP: Record<number, SupportedChain> = {
-  1: 'ethereum',
-  137: 'polygon',
-  80002: 'polygonAmoy',
-  42161: 'arbitrum',
-  10: 'optimism',
-  8453: 'base',
-  43114: 'avalanche',
-  56: 'bsc',
-  101: 'solana',
-  103: 'solanaDevnet',
-  31337: 'local',
-};
-
-// ============================================================================
-// Oracle Protocol Constants
-// ============================================================================
-
-export const ORACLE_PROTOCOLS = [
-  'chainlink',
-  'pyth',
-  'uma',
-  'api3',
-  'band',
-  'flux',
-  'dia',
-] as const;
-
-export type OracleProtocol = (typeof ORACLE_PROTOCOLS)[number];
-
-// ============================================================================
-// Price Feed Constants
-// ============================================================================
-
-export const DEFAULT_SYMBOLS = [
-  'ETH/USD',
-  'BTC/USD',
-  'LINK/USD',
-  'MATIC/USD',
-  'AVAX/USD',
-  'BNB/USD',
-  'SOL/USD',
-  'ARB/USD',
-  'OP/USD',
-  'BASE/USD',
-] as const;
-
-export const SYMBOL_METADATA: Record<
-  string,
-  {
-    baseAsset: string;
-    quoteAsset: string;
-    decimals: number;
-    category: 'crypto' | 'forex' | 'commodity';
-  }
-> = {
-  'ETH/USD': { baseAsset: 'ETH', quoteAsset: 'USD', decimals: 8, category: 'crypto' },
-  'BTC/USD': { baseAsset: 'BTC', quoteAsset: 'USD', decimals: 8, category: 'crypto' },
-  'LINK/USD': { baseAsset: 'LINK', quoteAsset: 'USD', decimals: 8, category: 'crypto' },
-  'MATIC/USD': { baseAsset: 'MATIC', quoteAsset: 'USD', decimals: 8, category: 'crypto' },
-  'AVAX/USD': { baseAsset: 'AVAX', quoteAsset: 'USD', decimals: 8, category: 'crypto' },
-  'BNB/USD': { baseAsset: 'BNB', quoteAsset: 'USD', decimals: 8, category: 'crypto' },
-  'SOL/USD': { baseAsset: 'SOL', quoteAsset: 'USD', decimals: 8, category: 'crypto' },
-  'ARB/USD': { baseAsset: 'ARB', quoteAsset: 'USD', decimals: 8, category: 'crypto' },
-  'OP/USD': { baseAsset: 'OP', quoteAsset: 'USD', decimals: 8, category: 'crypto' },
-  'BASE/USD': { baseAsset: 'BASE', quoteAsset: 'USD', decimals: 8, category: 'crypto' },
-};
-
-// ============================================================================
-// Sync Constants
-// ============================================================================
-
-export const SYNC_DEFAULTS = {
-  intervalMs: 60000,
-  maxRetries: 3,
-  retryDelayMs: 5000,
-  batchSize: 20,
-  confirmationBlocks: 10,
-  maxBlockRange: 2000n,
-  minWindowSize: 100n,
-  maxWindowSize: 10000n,
+export const WS_CONFIG = {
+  /** 最大重连次数 */
+  MAX_RECONNECT_ATTEMPTS: 5,
+  /** 基础重连延迟（毫秒） */
+  BASE_RECONNECT_DELAY_MS: 1000,
+  /** 最大重连延迟（毫秒） */
+  MAX_RECONNECT_DELAY_MS: 30000,
+  /** 退避乘数 */
+  BACKOFF_MULTIPLIER: 2,
+  /** 心跳间隔（毫秒） */
+  HEARTBEAT_INTERVAL: 30000,
+  /** 心跳超时（毫秒） */
+  HEARTBEAT_TIMEOUT: 60000,
 } as const;
 
 // ============================================================================
-// API Constants
+// 分页配置
 // ============================================================================
 
-export const API_TIMEOUTS = {
-  default: 10000,
-  long: 30000,
-  upload: 60000,
-} as const;
-
-export const RATE_LIMITS = {
-  default: 100,
-  authenticated: 1000,
-  admin: 10000,
+export const PAGINATION_CONFIG = {
+  /** 默认每页条数 */
+  DEFAULT_PAGE_SIZE: 20,
+  /** 最大每页条数 */
+  MAX_PAGE_SIZE: 100,
+  /** 默认页码 */
+  DEFAULT_PAGE: 1,
 } as const;
 
 // ============================================================================
-// Alert Constants
+// 防抖/节流配置
 // ============================================================================
 
-export const ALERT_SEVERITIES = ['critical', 'warning', 'info'] as const;
-export type AlertSeverity = (typeof ALERT_SEVERITIES)[number];
-
-export const ALERT_CHANNELS = [
-  'email',
-  'sms',
-  'webhook',
-  'slack',
-  'discord',
-  'telegram',
-  'pagerduty',
-] as const;
-export type AlertChannel = (typeof ALERT_CHANNELS)[number];
-
-// ============================================================================
-// Cache Constants
-// ============================================================================
-
-export const CACHE_TTLS = {
-  price: 60,
-  config: 300,
-  stats: 600,
-  leaderboard: 300,
-  user: 1800,
+export const DEBOUNCE_CONFIG = {
+  /** 搜索输入防抖延迟（毫秒） */
+  SEARCH_DELAY: 300,
+  /** 窗口调整节流延迟（毫秒） */
+  RESIZE_DELAY: 200,
+  /** 滚动节流延迟（毫秒） */
+  SCROLL_DELAY: 100,
 } as const;
 
-// Cache configuration for SWR and other cache mechanisms
+// ============================================================================
+// 缓存配置
+// ============================================================================
+
 export const CACHE_CONFIG = {
-  DEFAULT_TTL: 300,
-  MAX_SIZE: 1000,
-  DEFAULT_REFRESH_INTERVAL: 30000,
-  DEFAULT_DEDUPING_INTERVAL: 2000,
-  DEFAULT_LRU_CACHE_SIZE: 500,
+  /** 默认缓存时间（毫秒） */
+  DEFAULT_CACHE_TIME: 5 * 60 * 1000, // 5分钟
+  /** 默认刷新间隔（毫秒） */
+  DEFAULT_REFRESH_INTERVAL: 30 * 1000, // 30秒
+  /** 默认去重间隔（毫秒） */
+  DEFAULT_DEDUPING_INTERVAL: 2000, // 2秒
+  /** 本地存储前缀 */
+  STORAGE_PREFIX: 'oracle_',
 } as const;
 
 // ============================================================================
-// Database Config
+// 告警阈值配置
 // ============================================================================
 
-export const DATABASE_CONFIG = {
-  DEFAULT_POOL_SIZE: 10,
-  DEFAULT_QUERY_TIMEOUT: 30000,
-  DEFAULT_IDLE_TIMEOUT: 300000,
-  DEFAULT_CONNECTION_TIMEOUT: 10000,
-  DEFAULT_MAX_USES: 7500,
+export const ALERT_THRESHOLDS = {
+  /** 精度警告阈值 */
+  ACCURACY: {
+    WARNING: 0.02,
+    CRITICAL: 0.05,
+  },
+  /** 最大显示异常数 */
+  MAX_DISPLAY_ANOMALIES: 5,
+  /** 价格偏差警告阈值 */
+  PRICE_DEVIATION: {
+    WARNING: 0.01,
+    CRITICAL: 0.05,
+  },
 } as const;
 
 // ============================================================================
-// Price Config
+// UI 配置
 // ============================================================================
 
-export const DEFAULT_FALLBACK_PRICES: Record<string, number> = {
-  'ETH/USD': 2000,
-  'BTC/USD': 40000,
-  'LINK/USD': 15,
-  'MATIC/USD': 1,
-  'AVAX/USD': 30,
-  'BNB/USD': 300,
-  'SOL/USD': 100,
-  'ARB/USD': 1.5,
-  'OP/USD': 2,
-  'BASE/USD': 1,
+export const UI_CONFIG = {
+  /** 动画持续时间（毫秒） */
+  ANIMATION_DURATION: 300,
+  /** Toast 显示时间（毫秒） */
+  TOAST_DURATION: 5000,
+  /** 模态框遮罩透明度 */
+  MODAL_OVERLAY_OPACITY: 0.5,
+  /** 表格行高 */
+  TABLE_ROW_HEIGHT: 48,
+  /** 最大显示标签数 */
+  MAX_VISIBLE_TAGS: 3,
 } as const;
 
 // ============================================================================
-// Staleness Thresholds (seconds)
+// 协议配置
 // ============================================================================
 
-export const DEFAULT_STALENESS_THRESHOLDS = {
+export const PROTOCOL_COLORS = Object.freeze({
+  chainlink: '#375bd2',
+  pyth: '#e6c35c',
+  band: '#00b2a9',
+  api3: '#7ce3cb',
+  redstone: '#ff6b6b',
+  uma: '#ff4d4d',
+  default: '#888888',
+} as const);
+
+export const PROTOCOL_NAMES = Object.freeze({
+  chainlink: 'Chainlink',
+  pyth: 'Pyth Network',
+  band: 'Band Protocol',
+  api3: 'API3',
+  redstone: 'RedStone',
+  uma: 'UMA',
+} as const);
+
+// ============================================================================
+// 状态配置
+// ============================================================================
+
+export const STATUS_CONFIG = Object.freeze({
+  excellent: {
+    color: 'text-green-600',
+    bgColor: 'bg-green-50',
+    borderColor: 'border-green-200',
+    label: 'Excellent',
+  },
+  good: {
+    color: 'text-emerald-600',
+    bgColor: 'bg-emerald-50',
+    borderColor: 'border-emerald-200',
+    label: 'Good',
+  },
+  warning: {
+    color: 'text-amber-600',
+    bgColor: 'bg-amber-50',
+    borderColor: 'border-amber-200',
+    label: 'Warning',
+  },
+  critical: {
+    color: 'text-rose-600',
+    bgColor: 'bg-rose-50',
+    borderColor: 'border-rose-200',
+    label: 'Critical',
+  },
+  info: {
+    color: 'text-blue-600',
+    bgColor: 'bg-blue-50',
+    borderColor: 'border-blue-200',
+    label: 'Info',
+  },
+} as const);
+
+// ============================================================================
+// 时间配置
+// ============================================================================
+
+export const TIME_CONFIG = {
+  /** 一分钟（毫秒） */
+  ONE_MINUTE: 60 * 1000,
+  /** 一小时（毫秒） */
+  ONE_HOUR: 60 * 60 * 1000,
+  /** 一天（毫秒） */
+  ONE_DAY: 24 * 60 * 60 * 1000,
+  /** 一周（毫秒） */
+  ONE_WEEK: 7 * 24 * 60 * 60 * 1000,
+} as const;
+
+// ============================================================================
+// 图表配置
+// ============================================================================
+
+export const CHART_CONFIG = {
+  /** 默认显示数据点数 */
+  DEFAULT_DATA_POINTS: 50,
+  /** 最大显示数据点数 */
+  MAX_DATA_POINTS: 200,
+  /** 刷新间隔（毫秒） */
+  REFRESH_INTERVAL: 5000,
+} as const;
+
+// ============================================================================
+// 数据新鲜度阈值配置（秒）
+// ============================================================================
+
+export const DEFAULT_STALENESS_THRESHOLDS = Object.freeze({
   PYTH: 60,
   CHAINLINK: 3600,
   BAND: 300,
@@ -219,14 +202,42 @@ export const DEFAULT_STALENESS_THRESHOLDS = {
   FLUX: 300,
   DIA: 300,
   UMA: 600,
-} as const;
+} as const);
 
 // ============================================================================
-// Rate Limit Config
+// 速率限制配置
 // ============================================================================
 
 export const RATE_LIMIT_CONFIG = {
-  DEFAULT_REQUESTS_PER_MINUTE: 100,
-  DEFAULT_WINDOW_MS: 60000,
+  /** 默认内存限制 */
   DEFAULT_MEMORY_LIMIT: 10000,
+  /** 默认窗口大小（毫秒） */
+  DEFAULT_WINDOW_MS: 60000,
+  /** 默认最大请求数 */
+  DEFAULT_MAX_REQUESTS: 100,
 } as const;
+
+// ============================================================================
+// 数据库配置
+// ============================================================================
+
+export const DATABASE_CONFIG = {
+  /** 默认连接池大小 */
+  DEFAULT_POOL_SIZE: 10,
+  /** 默认空闲超时（毫秒） */
+  DEFAULT_IDLE_TIMEOUT: 30000,
+  /** 默认连接超时（毫秒） */
+  DEFAULT_CONNECTION_TIMEOUT: 5000,
+  /** 默认最大使用次数 */
+  DEFAULT_MAX_USES: 7500,
+} as const;
+
+// ============================================================================
+// 默认回退价格配置
+// ============================================================================
+
+export const DEFAULT_FALLBACK_PRICES = Object.freeze({
+  BTC: 50000,
+  ETH: 3000,
+  DEFAULT: 100,
+} as const);

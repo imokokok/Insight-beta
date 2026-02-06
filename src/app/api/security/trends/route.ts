@@ -44,7 +44,8 @@ export async function GET(request: NextRequest) {
 
     for (let i = 0; i < days; i++) {
       const date = new Date(Date.now() - (days - 1 - i) * 24 * 60 * 60 * 1000);
-      const dateStr = date.toISOString().split('T')[0]!;
+      const dateStr = date.toISOString().split('T')[0] ?? '';
+      if (!dateStr) continue;
       trends.set(dateStr, {
         date: dateStr,
         total: 0,
@@ -57,7 +58,7 @@ export async function GET(request: NextRequest) {
 
     // Aggregate detections
     ((detections as DetectionTrendRow[]) || []).forEach((detection) => {
-      const dateStr = new Date(detection.detected_at).toISOString().split('T')[0]!;
+      const dateStr = new Date(detection.detected_at).toISOString().split('T')[0] ?? '';
       const trend = trends.get(dateStr);
       if (trend) {
         trend.total++;

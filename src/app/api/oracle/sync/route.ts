@@ -101,7 +101,7 @@ export async function POST(request: Request) {
     });
     if (result.updated) {
       // Next.js 16 revalidateTag requires options as second parameter
-      const revalidateOptions = { revalidate: 0 } as any;
+      const revalidateOptions = { revalidate: 0 } as unknown as Parameters<typeof revalidateTag>[1];
       revalidateTag('oracle-stats', revalidateOptions);
       revalidateTag(`oracle-stats:${normalizedInstanceId}`, revalidateOptions);
       revalidateTag('oracle-leaderboard', revalidateOptions);

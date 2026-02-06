@@ -1,5 +1,7 @@
 'use client';
 
+/* eslint-disable no-restricted-syntax */
+
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import type { Route } from 'next';
@@ -12,6 +14,8 @@ import { fetchApiData, getErrorCode } from '@/lib/utils';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage, langToLocale } from '@/i18n/translations';
 import { useAdminSession } from '@/hooks/user/useAdminSession';
+import { useDebounce } from '@/hooks/useDebounce';
+import { DEBOUNCE_CONFIG } from '@/lib/config/constants';
 import type {
   Alert,
   AlertRule,
@@ -40,7 +44,7 @@ import {
   sloAlertTypes,
   sloLabels,
   sloStatusLabel,
-} from './alertsUtils';
+} from '@/lib/utils/alertsUtils';
 
 function useOracleIncidents(instanceId: string) {
   const [incidents, setIncidents] = useState<IncidentWithAlerts[]>([]);
@@ -179,6 +183,8 @@ export default function AlertsPageClient() {
   const [filterSeverity, setFilterSeverity] = useState<AlertSeverity | 'All'>('All');
   const [filterType, setFilterType] = useState<string | 'All'>('All');
   const [query, setQuery] = useState('');
+  // 使用防抖处理搜索输入，减少不必要的 API 请求
+  const debouncedQuery = useDebounce(query, DEBOUNCE_CONFIG.SEARCH_DELAY);
   const [nextCursor, setNextCursor] = useState<number | null>(null);
   const [instanceId, setInstanceId] = useState<string>(getInitialInstanceId);
   const [instances, setInstances] = useState<OracleInstance[] | null>(null);
@@ -292,7 +298,8 @@ export default function AlertsPageClient() {
       if (filterStatus !== 'All') params.set('status', filterStatus);
       if (filterSeverity !== 'All') params.set('severity', filterSeverity);
       if (filterType !== 'All') params.set('type', filterType);
-      if (query.trim()) params.set('q', query.trim());
+      // 使用防抖后的查询值
+      if (debouncedQuery.trim()) params.set('q', debouncedQuery.trim());
       params.set('limit', '30');
       if (cursor !== null) params.set('cursor', String(cursor));
       return await fetchApiData<{
@@ -301,7 +308,7 @@ export default function AlertsPageClient() {
         nextCursor: number | null;
       }>(`/api/oracle/alerts?${params.toString()}`, { signal });
     },
-    [filterSeverity, filterStatus, filterType, instanceId, query],
+    [filterSeverity, filterStatus, filterType, instanceId, debouncedQuery],
   );
 
   const focusOpenCritical = useCallback(() => {
@@ -333,12 +340,15 @@ export default function AlertsPageClient() {
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await fetchAlerts(null);
-      setItems(data.items ?? []);
-      setNextCursor(data.nextCursor ?? null);
-      void reloadIncidents();
-      void reloadRisks();
-      void reloadOpsMetrics();
+      // 并行执行所有请求，提高性能
+      const [alertsData] = await Promise.all([
+        fetchAlerts(null),
+        reloadIncidents(),
+        reloadRisks(),
+        reloadOpsMetrics(),
+      ]);
+      setItems(alertsData.items ?? []);
+      setNextCursor(alertsData.nextCursor ?? null);
     } catch (e) {
       setError(getErrorCode(e));
     } finally {
@@ -912,12 +922,12 @@ export default function AlertsPageClient() {
                     const incidentQuery =
                       incident.entityId?.trim() ||
                       (incident.alerts ?? [])
-                        .map((alert) => alert.entityId ?? '')
-                        .find((x) => x.trim()) ||
+                        .map((alert: Alert) => alert.entityId ?? '')
+                        .find((x: string) => x.trim()) ||
                       '';
                     const isSloIncident =
                       incident.entityType === 'slo' ||
-                      (incident.alerts ?? []).some((alert) => sloAlertTypes.has(alert.type));
+                      (incident.alerts ?? []).some((alert: Alert) => sloAlertTypes.has(alert.type));
                     return (
                       <IncidentCard
                         key={incident.id}
