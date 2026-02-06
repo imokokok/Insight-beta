@@ -874,6 +874,513 @@ apiRegistry.registerPath('/api/oracle/config-history/stats', 'get', {
   },
 });
 
+// ============================================================================
+// Unified Oracle API - 统一预言机 API
+// ============================================================================
+
+apiRegistry.registerSchema('UnifiedPriceFeed', {
+  type: 'object',
+  properties: {
+    id: { type: 'string', description: 'Unique feed identifier' },
+    symbol: { type: 'string', description: 'Trading pair symbol (e.g., ETH/USD)' },
+    protocol: {
+      type: 'string',
+      enum: ['chainlink', 'pyth', 'band', 'dia', 'redstone', 'api3', 'switchboard', 'uma'],
+      description: 'Oracle protocol',
+    },
+    chain: { type: 'string', description: 'Blockchain network' },
+    price: { type: 'number', description: 'Current price' },
+    priceRaw: { type: 'string', description: 'Raw price value (bigint as string)' },
+    timestamp: { type: 'integer', description: 'Last update timestamp (ms)' },
+    confidence: { type: 'number', description: 'Confidence score (0-1)' },
+    source: { type: 'string', description: 'Data source' },
+    decimals: { type: 'integer', description: 'Price decimals' },
+    isStale: { type: 'boolean', description: 'Whether the data is stale' },
+    stalenessSeconds: { type: 'integer', description: 'Seconds since last update' },
+    baseAsset: { type: 'string', description: 'Base asset symbol' },
+    quoteAsset: { type: 'string', description: 'Quote asset symbol' },
+  },
+  required: ['id', 'symbol', 'protocol', 'chain', 'price', 'timestamp'],
+});
+
+apiRegistry.registerSchema('PlatformStats', {
+  type: 'object',
+  properties: {
+    totalProtocols: { type: 'integer', description: 'Number of supported protocols' },
+    totalPriceFeeds: { type: 'integer', description: 'Total number of price feeds' },
+    supportedChains: { type: 'integer', description: 'Number of supported chains' },
+    avgUpdateLatency: { type: 'integer', description: 'Average update latency in ms' },
+    lastUpdated: { type: 'string', format: 'date-time', description: 'Last statistics update' },
+  },
+  required: ['totalProtocols', 'totalPriceFeeds', 'supportedChains'],
+});
+
+apiRegistry.registerPath('/api/oracle/unified/stats', 'get', {
+  summary: 'Get unified platform statistics',
+  tags: ['Unified Oracle'],
+  responses: {
+    '200': {
+      description: 'Platform statistics',
+      content: {
+        'application/json': {
+          schema: { $ref: '#/components/schemas/PlatformStats' },
+        },
+      },
+    },
+  },
+});
+
+apiRegistry.registerPath('/api/oracle/unified/feeds', 'get', {
+  summary: 'Get unified price feeds',
+  tags: ['Unified Oracle'],
+  parameters: [
+    {
+      name: 'protocol',
+      in: 'query',
+      schema: {
+        type: 'string',
+        enum: ['chainlink', 'pyth', 'band', 'dia', 'redstone', 'api3', 'switchboard'],
+      },
+      description: 'Filter by protocol',
+    },
+    {
+      name: 'chain',
+      in: 'query',
+      schema: { type: 'string' },
+      description: 'Filter by chain',
+    },
+    {
+      name: 'symbol',
+      in: 'query',
+      schema: { type: 'string' },
+      description: 'Filter by symbol (e.g., ETH/USD)',
+    },
+    {
+      name: 'page',
+      in: 'query',
+      schema: { type: 'integer', example: 1 },
+      description: 'Page number',
+    },
+    {
+      name: 'limit',
+      in: 'query',
+      schema: { type: 'integer', example: 20 },
+      description: 'Items per page',
+    },
+  ],
+  responses: {
+    '200': {
+      description: 'List of price feeds',
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              data: { type: 'array', items: { $ref: '#/components/schemas/UnifiedPriceFeed' } },
+              pagination: {
+                type: 'object',
+                properties: {
+                  page: { type: 'integer' },
+                  limit: { type: 'integer' },
+                  total: { type: 'integer' },
+                  totalPages: { type: 'integer' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+});
+
+apiRegistry.registerPath('/api/oracle/unified/feeds/{id}', 'get', {
+  summary: 'Get specific price feed by ID',
+  tags: ['Unified Oracle'],
+  parameters: [
+    {
+      name: 'id',
+      in: 'path',
+      required: true,
+      schema: { type: 'string' },
+      description: 'Feed identifier',
+    },
+  ],
+  responses: {
+    '200': {
+      description: 'Price feed details',
+      content: {
+        'application/json': {
+          schema: { $ref: '#/components/schemas/UnifiedPriceFeed' },
+        },
+      },
+    },
+    '404': {
+      description: 'Feed not found',
+      content: {
+        'application/json': {
+          schema: { $ref: '#/components/schemas/Error' },
+        },
+      },
+    },
+  },
+});
+
+// ============================================================================
+// Price Comparison API - 价格比较 API
+// ============================================================================
+
+apiRegistry.registerSchema('PriceComparison', {
+  type: 'object',
+  properties: {
+    symbol: { type: 'string', description: 'Trading pair symbol' },
+    comparisons: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          protocol: { type: 'string', description: 'Protocol name' },
+          price: { type: 'number', description: 'Price value' },
+          timestamp: { type: 'integer', description: 'Update timestamp' },
+          latency: { type: 'integer', description: 'Response latency in ms' },
+          confidence: { type: 'number', description: 'Confidence score' },
+        },
+      },
+    },
+    deviation: {
+      type: 'object',
+      properties: {
+        absolute: { type: 'number', description: 'Absolute price difference' },
+        percentage: { type: 'number', description: 'Percentage difference' },
+      },
+    },
+    anomalyDetected: { type: 'boolean', description: 'Whether anomaly was detected' },
+    severity: {
+      type: 'string',
+      enum: ['low', 'medium', 'high', 'critical'],
+      description: 'Anomaly severity',
+    },
+  },
+  required: ['symbol', 'comparisons'],
+});
+
+apiRegistry.registerPath('/api/oracle/comparison/{symbol}', 'get', {
+  summary: 'Compare prices across protocols',
+  tags: ['Price Comparison'],
+  parameters: [
+    {
+      name: 'symbol',
+      in: 'path',
+      required: true,
+      schema: { type: 'string', example: 'ETH/USD' },
+      description: 'Trading pair symbol',
+    },
+    {
+      name: 'protocols',
+      in: 'query',
+      schema: { type: 'string', example: 'chainlink,pyth,band' },
+      description: 'Comma-separated list of protocols to compare',
+    },
+  ],
+  responses: {
+    '200': {
+      description: 'Price comparison results',
+      content: {
+        'application/json': {
+          schema: { $ref: '#/components/schemas/PriceComparison' },
+        },
+      },
+    },
+    '400': {
+      description: 'Invalid symbol or protocols',
+      content: {
+        'application/json': {
+          schema: { $ref: '#/components/schemas/Error' },
+        },
+      },
+    },
+  },
+});
+
+apiRegistry.registerPath('/api/oracle/comparison/{symbol}/anomaly', 'get', {
+  summary: 'Detect price anomalies for symbol',
+  tags: ['Price Comparison'],
+  parameters: [
+    {
+      name: 'symbol',
+      in: 'path',
+      required: true,
+      schema: { type: 'string', example: 'ETH/USD' },
+      description: 'Trading pair symbol',
+    },
+    {
+      name: 'threshold',
+      in: 'query',
+      schema: { type: 'number', example: 1.0 },
+      description: 'Deviation threshold percentage',
+    },
+  ],
+  responses: {
+    '200': {
+      description: 'Anomaly detection results',
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              symbol: { type: 'string' },
+              anomalyDetected: { type: 'boolean' },
+              severity: { type: 'string', enum: ['low', 'medium', 'high', 'critical'] },
+              details: {
+                type: 'object',
+                properties: {
+                  maxDeviation: { type: 'number' },
+                  protocols: { type: 'array', items: { type: 'string' } },
+                  recommendedAction: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+});
+
+// ============================================================================
+// Health & Monitoring API - 健康监控 API
+// ============================================================================
+
+apiRegistry.registerSchema('HealthStatus', {
+  type: 'object',
+  properties: {
+    status: {
+      type: 'string',
+      enum: ['healthy', 'degraded', 'unhealthy'],
+      description: 'Overall health status',
+    },
+    timestamp: { type: 'string', format: 'date-time', description: 'Check timestamp' },
+    services: {
+      type: 'object',
+      properties: {
+        database: { type: 'string', enum: ['connected', 'disconnected'] },
+        cache: { type: 'string', enum: ['connected', 'disconnected'] },
+        blockchain: { type: 'string', enum: ['connected', 'disconnected'] },
+      },
+    },
+    latency: {
+      type: 'object',
+      properties: { database: { type: 'integer' }, cache: { type: 'integer' } },
+    },
+    version: { type: 'string', description: 'API version' },
+  },
+  required: ['status', 'timestamp'],
+});
+
+apiRegistry.registerPath('/api/health', 'get', {
+  summary: 'Get system health status',
+  tags: ['Health'],
+  responses: {
+    '200': {
+      description: 'Health status',
+      content: {
+        'application/json': {
+          schema: { $ref: '#/components/schemas/HealthStatus' },
+        },
+      },
+    },
+  },
+});
+
+apiRegistry.registerPath('/api/v1/health', 'get', {
+  summary: 'Get detailed health status (v1)',
+  tags: ['Health'],
+  responses: {
+    '200': {
+      description: 'Detailed health status',
+      content: {
+        'application/json': {
+          schema: { $ref: '#/components/schemas/HealthStatus' },
+        },
+      },
+    },
+  },
+});
+
+// ============================================================================
+// Watchlist API - 关注列表 API
+// ============================================================================
+
+apiRegistry.registerSchema('WatchlistItem', {
+  type: 'object',
+  properties: {
+    id: { type: 'string', description: 'Watchlist item ID' },
+    symbol: { type: 'string', description: 'Trading pair symbol' },
+    protocol: { type: 'string', description: 'Protocol name' },
+    targetPrice: { type: 'number', description: 'Target price for alert' },
+    alertThreshold: { type: 'number', description: 'Alert threshold percentage' },
+    createdAt: { type: 'string', format: 'date-time' },
+    updatedAt: { type: 'string', format: 'date-time' },
+  },
+  required: ['id', 'symbol', 'protocol'],
+});
+
+apiRegistry.registerPath('/api/watchlist', 'get', {
+  summary: 'Get user watchlist',
+  tags: ['Watchlist'],
+  responses: {
+    '200': {
+      description: 'User watchlist',
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              items: { type: 'array', items: { $ref: '#/components/schemas/WatchlistItem' } },
+              total: { type: 'integer' },
+            },
+          },
+        },
+      },
+    },
+    '401': {
+      description: 'Unauthorized',
+      content: {
+        'application/json': {
+          schema: { $ref: '#/components/schemas/Error' },
+        },
+      },
+    },
+  },
+  security: [{ bearerAuth: [] }],
+});
+
+apiRegistry.registerPath('/api/watchlist', 'post', {
+  summary: 'Add item to watchlist',
+  tags: ['Watchlist'],
+  requestBody: {
+    required: true,
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object',
+          properties: {
+            symbol: { type: 'string', description: 'Trading pair symbol' },
+            protocol: { type: 'string', description: 'Protocol name' },
+            targetPrice: { type: 'number' },
+            alertThreshold: { type: 'number' },
+          },
+          required: ['symbol', 'protocol'],
+        },
+      },
+    },
+  },
+  responses: {
+    '201': {
+      description: 'Item added successfully',
+      content: {
+        'application/json': {
+          schema: { $ref: '#/components/schemas/WatchlistItem' },
+        },
+      },
+    },
+    '400': {
+      description: 'Invalid input',
+      content: {
+        'application/json': {
+          schema: { $ref: '#/components/schemas/Error' },
+        },
+      },
+    },
+  },
+  security: [{ bearerAuth: [] }],
+});
+
+apiRegistry.registerPath('/api/watchlist/{id}', 'put', {
+  summary: 'Update watchlist item',
+  tags: ['Watchlist'],
+  parameters: [
+    {
+      name: 'id',
+      in: 'path',
+      required: true,
+      schema: { type: 'string' },
+      description: 'Watchlist item ID',
+    },
+  ],
+  requestBody: {
+    required: true,
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object',
+          properties: {
+            targetPrice: { type: 'number' },
+            alertThreshold: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
+  responses: {
+    '200': {
+      description: 'Item updated successfully',
+      content: {
+        'application/json': {
+          schema: { $ref: '#/components/schemas/WatchlistItem' },
+        },
+      },
+    },
+    '404': {
+      description: 'Item not found',
+      content: {
+        'application/json': {
+          schema: { $ref: '#/components/schemas/Error' },
+        },
+      },
+    },
+  },
+  security: [{ bearerAuth: [] }],
+});
+
+apiRegistry.registerPath('/api/watchlist/{id}', 'delete', {
+  summary: 'Remove item from watchlist',
+  tags: ['Watchlist'],
+  parameters: [
+    {
+      name: 'id',
+      in: 'path',
+      required: true,
+      schema: { type: 'string' },
+      description: 'Watchlist item ID',
+    },
+  ],
+  responses: {
+    '200': {
+      description: 'Item removed successfully',
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              success: { type: 'boolean' },
+            },
+          },
+        },
+      },
+    },
+    '404': {
+      description: 'Item not found',
+      content: {
+        'application/json': {
+          schema: { $ref: '#/components/schemas/Error' },
+        },
+      },
+    },
+  },
+  security: [{ bearerAuth: [] }],
+});
+
 // 生成 OpenAPI JSON
 export function generateOpenAPISpec(baseUrl: string): OpenAPISpec {
   return apiRegistry.getSpec(baseUrl);
