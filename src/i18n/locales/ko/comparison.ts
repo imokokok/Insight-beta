@@ -216,4 +216,66 @@ export const comparison = {
     realtimeExported: '실시간 데이터가 CSV로 날볂내기되었습니다',
     allExported: '모든 데이터가 JSON으로 날볂내기되었습니다',
   },
+  // 가격 비교
+  priceComparison: {
+    title: '프로토콜 간 가격 비교',
+    placeholder: '거래 쌍 입력 (예: ETH/USD)',
+    chain: '체인',
+    price: '가격',
+    deviation: '편차',
+    averagePrice: '평균 가격',
+    medianPrice: '중앙값',
+    priceRange: '가격 범위',
+    recommendedPrice: '권장 가격',
+    noData: '비교 데이터 없음',
+    enterPairHint: '거래 쌍을 입력하세요 (예: ETH/USD, BTC/USD)',
+  },
+  // 오라클 순위
+  ranking: {
+    title: '오라클 성능 순위',
+    bestPerformance: '최고 성능:',
+    rank: '순위',
+    reliabilityScore: '신뢰도 점수',
+    uptime: '가동 시간',
+    responseTime: '응답 시간',
+    priceDeviation: '가격 편차',
+    noData: '순위 데이터 없음',
+    waitingForSync: '데이터 동기화 대기 중...',
+    excellent: '우수',
+    good: '양호',
+    needsImprovement: '개선 필요',
+  },
+  // 크로스 프로토콜 차트
+  crossProtocolChart: {
+    title: '프로토콜 간 가격 추세',
+    timeRange: {
+      '1h': '1시간',
+      '6h': '6시간',
+      '1d': '1일',
+      '7d': '7일',
+      '30d': '30일',
+    },
+    noData: '역사적 데이터 없음',
+    selectHint: '거래 쌍과 시간 범위를 선택하여 추세 보기',
+  },
+  // 폼 검증
+  validation: {
+    enterTradingPair: '거래 쌍을 입력하세요',
+    pairFormat: '형식은 XXX/XXX (예: ETH/USD)',
+  },
+  // 추천
+  recommendations: {
+    chainlink: {
+      reason: '전반적으로 최고의 가치, 높은 신뢰성이 필요한 DeFi 프로토콜에 적합',
+    },
+    pyth: {
+      reason: '빠른 업데이트 주파수, 낮은 지연 시간, 고빈도 거래에 적합',
+    },
+    api3: {
+      reason: '높은 가용성 및 기업급 지원',
+    },
+    band: {
+      reason: '최저 비용, 개인 프로젝트 및 소규모 실험에 적합',
+    },
+  },
 };

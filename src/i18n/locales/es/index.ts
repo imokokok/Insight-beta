@@ -11,6 +11,8 @@ import { errors } from './errors';
 import { nav } from './nav';
 import onboarding from './onboarding';
 import { oracle } from './oracle';
+import { security } from './security';
+import { sla } from './sla';
 import { status } from './status';
 import { wallet } from './wallet';
 
@@ -28,6 +30,8 @@ export const esTranslations = {
   nav,
   onboarding,
   oracle,
+  security,
+  sla,
   status,
   wallet,
 };

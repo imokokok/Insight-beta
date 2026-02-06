@@ -92,4 +92,54 @@ export const common = {
     componentError: '组件加载失败',
     clickToRetry: '点击重试',
   },
+  // 组件加载
+  componentLoading: {
+    loading: '加载中...',
+    loadError: '组件加载时发生错误，请重试',
+    unexpectedError: '发生了意外错误，请稍后重试',
+  },
+  // 表单验证
+  form: {
+    required: '必填',
+    invalid: '无效',
+    enterTradingPair: '请输入交易对',
+    pairFormat: '格式应为 XXX/XXX (如: ETH/USD)',
+  },
+  // 数据状态
+  dataStatus: {
+    noData: '暂无数据',
+    noComparisonData: '暂无对比数据',
+    noRankingData: '暂无排名数据',
+    noHistoricalData: '暂无历史数据',
+    enterPairHint: '请输入交易对查看数据',
+    selectPairAndTimeRange: '选择交易对和时间范围查看趋势',
+    waitingForSync: '等待数据同步完成...',
+  },
+  // 表格表头
+  table: {
+    protocol: '协议',
+    chain: '链',
+    price: '价格',
+    deviation: '偏差',
+    status: '状态',
+    rank: '排名',
+  },
+  // 统计标签
+  stats: {
+    averagePrice: '平均价格',
+    medianPrice: '中位数',
+    priceRange: '价格范围',
+    recommendedPrice: '推荐价格',
+    reliabilityScore: '可靠性分数',
+    uptime: '在线率',
+    responseTime: '响应时间',
+    priceDeviation: '价格偏差',
+  },
+  // 评分
+  ratings: {
+    excellent: '优秀',
+    good: '良好',
+    needsImprovement: '需改进',
+    normal: '正常',
+  },
 };

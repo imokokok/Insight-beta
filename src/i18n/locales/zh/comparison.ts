@@ -222,4 +222,66 @@ export const comparison = {
     realtimeExported: '实时数据已导出为 CSV',
     allExported: '所有数据已导出为 JSON',
   },
+  // 价格对比组件
+  priceComparison: {
+    title: '跨协议价格对比',
+    placeholder: '输入交易对 (如: ETH/USD)',
+    chain: '链',
+    price: '价格',
+    deviation: '偏差',
+    averagePrice: '平均价格',
+    medianPrice: '中位数',
+    priceRange: '价格范围',
+    recommendedPrice: '推荐价格',
+    noData: '暂无对比数据',
+    enterPairHint: '请输入交易对（如：ETH/USD, BTC/USD）查看价格对比',
+  },
+  // 预言机排名组件
+  ranking: {
+    title: '预言机性能排名',
+    bestPerformance: '最佳表现:',
+    rank: '排名',
+    reliabilityScore: '可靠性分数',
+    uptime: '在线率',
+    responseTime: '响应时间',
+    priceDeviation: '价格偏差',
+    noData: '暂无排名数据',
+    waitingForSync: '等待预言机数据同步完成...',
+    excellent: '优秀',
+    good: '良好',
+    needsImprovement: '需改进',
+  },
+  // 跨协议图表
+  crossProtocolChart: {
+    title: '跨协议价格走势',
+    timeRange: {
+      '1h': '1小时',
+      '6h': '6小时',
+      '1d': '1天',
+      '7d': '7天',
+      '30d': '30天',
+    },
+    noData: '暂无历史数据',
+    selectHint: '选择交易对和时间范围查看价格走势',
+  },
+  // 表单验证
+  validation: {
+    enterTradingPair: '请输入交易对',
+    pairFormat: '格式应为 XXX/XXX (如: ETH/USD)',
+  },
+  // 推荐
+  recommendations: {
+    chainlink: {
+      reason: '综合性价比最高，适合需要高可靠性的 DeFi 协议',
+    },
+    pyth: {
+      reason: '更新频率快，延迟低，适合高频交易场景',
+    },
+    api3: {
+      reason: '高可用性和企业级支持',
+    },
+    band: {
+      reason: '成本最低，适合个人项目和小型实验',
+    },
+  },
 };

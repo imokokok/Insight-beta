@@ -67,4 +67,80 @@ export const common = {
   total: 'total',
   previous: 'Anterior',
   next: 'Siguiente',
+  // Time
+  time: {
+    secondShort: 's',
+    minuteShort: 'm',
+    hourShort: 'h',
+    dayShort: 'd',
+  },
+  // Time Ago
+  timeAgo: {
+    justNow: 'Justo ahora',
+    never: 'Nunca',
+    seconds: 'hace {{seconds}}s',
+    minutes: 'hace {{minutes}}m',
+    hours: 'hace {{hours}}h',
+    days: 'hace {{days}}d',
+  },
+  // Error Boundary
+  errorBoundary: {
+    title: 'Algo salió mal',
+    description:
+      'Lo sentimos, la aplicación encontró un error inesperado. Por favor intente refrescar la página o volver al inicio.',
+    retry: 'Reintentar',
+    backToHome: 'Volver al Inicio',
+    componentError: 'Error al cargar componente',
+    clickToRetry: 'Haz clic para reintentar',
+  },
+  // Component Loading
+  componentLoading: {
+    loading: 'Cargando...',
+    loadError: 'Error al cargar componente, por favor reintente',
+    unexpectedError: 'Ocurrió un error inesperado, por favor intente más tarde',
+  },
+  // Form Validation
+  form: {
+    required: 'Requerido',
+    invalid: 'Inválido',
+    enterTradingPair: 'Por favor ingrese par de trading',
+    pairFormat: 'Formato debe ser XXX/XXX (ej.: ETH/USD)',
+  },
+  // Data Status
+  dataStatus: {
+    noData: 'Sin datos',
+    noComparisonData: 'Sin datos de comparación',
+    noRankingData: 'Sin datos de ranking',
+    noHistoricalData: 'Sin datos históricos',
+    enterPairHint: 'Ingrese un par de trading para ver datos',
+    selectPairAndTimeRange: 'Seleccione par y rango de tiempo para ver tendencias',
+    waitingForSync: 'Esperando sincronización de datos...',
+  },
+  // Table Headers
+  table: {
+    protocol: 'Protocolo',
+    chain: 'Cadena',
+    price: 'Precio',
+    deviation: 'Desviación',
+    status: 'Estado',
+    rank: 'Ranking',
+  },
+  // Stats Labels
+  stats: {
+    averagePrice: 'Precio Promedio',
+    medianPrice: 'Mediana',
+    priceRange: 'Rango de Precio',
+    recommendedPrice: 'Precio Recomendado',
+    reliabilityScore: 'Puntuación de Confiabilidad',
+    uptime: 'Tiempo de Actividad',
+    responseTime: 'Tiempo de Respuesta',
+    priceDeviation: 'Desviación de Precio',
+  },
+  // Ratings
+  ratings: {
+    excellent: 'Excelente',
+    good: 'Bueno',
+    needsImprovement: 'Necesita Mejora',
+    normal: 'Normal',
+  },
 };

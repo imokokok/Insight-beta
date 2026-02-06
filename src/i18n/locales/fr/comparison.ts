@@ -217,4 +217,66 @@ export const comparison = {
     realtimeExported: 'Données temps réel exportées',
     allExported: 'Toutes les données exportées en JSON',
   },
+  // Comparaison de Prix
+  priceComparison: {
+    title: 'Comparaison de Prix entre Protocoles',
+    placeholder: 'Entrez paire de trading (ex.: ETH/USD)',
+    chain: 'Chaîne',
+    price: 'Prix',
+    deviation: 'Déviation',
+    averagePrice: 'Prix Moyen',
+    medianPrice: 'Médiane',
+    priceRange: 'Plage de Prix',
+    recommendedPrice: 'Prix Recommandé',
+    noData: 'Aucune donnée de comparaison',
+    enterPairHint: 'Entrez une paire (ex.: ETH/USD, BTC/USD) pour voir la comparaison',
+  },
+  // Classement des Oracles
+  ranking: {
+    title: 'Classement de Performance des Oracles',
+    bestPerformance: 'Meilleure Performance:',
+    rank: 'Rang',
+    reliabilityScore: 'Score de Fiabilité',
+    uptime: 'Temps de Fonctionnement',
+    responseTime: 'Temps de Réponse',
+    priceDeviation: 'Déviation de Prix',
+    noData: 'Aucune donnée de classement',
+    waitingForSync: 'En attente de synchronisation...',
+    excellent: 'Excellent',
+    good: 'Bon',
+    needsImprovement: 'À Améliorer',
+  },
+  // Graphique Protocoles Croisés
+  crossProtocolChart: {
+    title: 'Tendances de Prix entre Protocoles',
+    timeRange: {
+      '1h': '1 Heure',
+      '6h': '6 Heures',
+      '1d': '1 Jour',
+      '7d': '7 Jours',
+      '30d': '30 Jours',
+    },
+    noData: 'Aucune donnée historique',
+    selectHint: 'Sélectionnez paire et plage de temps pour voir les tendances',
+  },
+  // Validation Formulaire
+  validation: {
+    enterTradingPair: 'Veuillez entrer une paire de trading',
+    pairFormat: 'Format doit être XXX/XXX (ex.: ETH/USD)',
+  },
+  // Recommandations
+  recommendations: {
+    chainlink: {
+      reason: 'Meilleure valeur globale, adapté aux protocoles DeFi nécessitant haute fiabilité',
+    },
+    pyth: {
+      reason: 'Fréquence rapide, faible latence, adapté au trading haute fréquence',
+    },
+    api3: {
+      reason: 'Haute disponibilité et support entreprise',
+    },
+    band: {
+      reason: 'Coût le plus bas, adapté aux projets personnels',
+    },
+  },
 };

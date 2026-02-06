@@ -67,4 +67,80 @@ export const common = {
   total: '총',
   previous: '이전',
   next: '다음',
+  // Time
+  time: {
+    secondShort: '초',
+    minuteShort: '분',
+    hourShort: '시',
+    dayShort: '일',
+  },
+  // Time Ago
+  timeAgo: {
+    justNow: '방금',
+    never: '없음',
+    seconds: '{{seconds}}초 전',
+    minutes: '{{minutes}}분 전',
+    hours: '{{hours}}시간 전',
+    days: '{{days}}일 전',
+  },
+  // Error Boundary
+  errorBoundary: {
+    title: '문제가 발생했습니다',
+    description:
+      '죄송합니다. 애플리케이션에서 예상치 못한 오류가 발생했습니다. 페이지를 새로고침하거나 홈으로 돌아가보세요.',
+    retry: '재시도',
+    backToHome: '홈으로 돌아가기',
+    componentError: '컴포넌트 로드 실패',
+    clickToRetry: '재시도하려면 클릭',
+  },
+  // Component Loading
+  componentLoading: {
+    loading: '로딩 중...',
+    loadError: '컴포넌트 로드 중 오류가 발생했습니다. 다시 시도해주세요',
+    unexpectedError: '예상치 못한 오류가 발생했습니다. 나중에 다시 시도해주세요',
+  },
+  // Form Validation
+  form: {
+    required: '필수',
+    invalid: '유효하지 않음',
+    enterTradingPair: '거래 쌍을 입력하세요',
+    pairFormat: '형식은 XXX/XXX (예: ETH/USD)',
+  },
+  // Data Status
+  dataStatus: {
+    noData: '데이터 없음',
+    noComparisonData: '비교 데이터 없음',
+    noRankingData: '순위 데이터 없음',
+    noHistoricalData: '역사적 데이터 없음',
+    enterPairHint: '데이터를 보려면 거래 쌍을 입력하세요',
+    selectPairAndTimeRange: '추세를 보려면 거래 쌍과 시간 범위를 선택하세요',
+    waitingForSync: '데이터 동기화 대기 중...',
+  },
+  // Table Headers
+  table: {
+    protocol: '프로토콜',
+    chain: '체인',
+    price: '가격',
+    deviation: '편차',
+    status: '상태',
+    rank: '순위',
+  },
+  // Stats Labels
+  stats: {
+    averagePrice: '평균 가격',
+    medianPrice: '중앙값',
+    priceRange: '가격 범위',
+    recommendedPrice: '권장 가격',
+    reliabilityScore: '신뢰도 점수',
+    uptime: '가동 시간',
+    responseTime: '응답 시간',
+    priceDeviation: '가격 편차',
+  },
+  // Ratings
+  ratings: {
+    excellent: '우수',
+    good: '양호',
+    needsImprovement: '개선 필요',
+    normal: '정상',
+  },
 };

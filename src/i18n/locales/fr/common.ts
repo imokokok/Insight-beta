@@ -67,4 +67,80 @@ export const common = {
   total: 'total',
   previous: 'Précédent',
   next: 'Suivant',
+  // Time
+  time: {
+    secondShort: 's',
+    minuteShort: 'm',
+    hourShort: 'h',
+    dayShort: 'j',
+  },
+  // Time Ago
+  timeAgo: {
+    justNow: "À l'instant",
+    never: 'Jamais',
+    seconds: 'il y a {{seconds}}s',
+    minutes: 'il y a {{minutes}}m',
+    hours: 'il y a {{hours}}h',
+    days: 'il y a {{days}}j',
+  },
+  // Error Boundary
+  errorBoundary: {
+    title: "Quelque chose s'est mal passé",
+    description:
+      "Désolé, l'application a rencontré une erreur inattendue. Veuillez essayer de rafraîchir la page ou retourner à l'accueil.",
+    retry: 'Réessayer',
+    backToHome: "Retour à l'Accueil",
+    componentError: 'Échec du chargement du composant',
+    clickToRetry: 'Cliquez pour réessayer',
+  },
+  // Component Loading
+  componentLoading: {
+    loading: 'Chargement...',
+    loadError: 'Erreur lors du chargement du composant, veuillez réessayer',
+    unexpectedError: "Une erreur inattendue s'est produite, veuillez réessayer plus tard",
+  },
+  // Form Validation
+  form: {
+    required: 'Requis',
+    invalid: 'Invalide',
+    enterTradingPair: 'Veuillez entrer une paire de trading',
+    pairFormat: 'Format doit être XXX/XXX (ex.: ETH/USD)',
+  },
+  // Data Status
+  dataStatus: {
+    noData: 'Aucune donnée',
+    noComparisonData: 'Aucune donnée de comparaison',
+    noRankingData: 'Aucune donnée de classement',
+    noHistoricalData: 'Aucune donnée historique',
+    enterPairHint: 'Entrez une paire de trading pour voir les données',
+    selectPairAndTimeRange: 'Sélectionnez paire et plage de temps pour voir les tendances',
+    waitingForSync: 'En attente de synchronisation...',
+  },
+  // Table Headers
+  table: {
+    protocol: 'Protocole',
+    chain: 'Chaîne',
+    price: 'Prix',
+    deviation: 'Déviation',
+    status: 'Statut',
+    rank: 'Rang',
+  },
+  // Stats Labels
+  stats: {
+    averagePrice: 'Prix Moyen',
+    medianPrice: 'Médiane',
+    priceRange: 'Plage de Prix',
+    recommendedPrice: 'Prix Recommandé',
+    reliabilityScore: 'Score de Fiabilité',
+    uptime: 'Temps de Fonctionnement',
+    responseTime: 'Temps de Réponse',
+    priceDeviation: 'Déviation de Prix',
+  },
+  // Ratings
+  ratings: {
+    excellent: 'Excellent',
+    good: 'Bon',
+    needsImprovement: 'À Améliorer',
+    normal: 'Normal',
+  },
 };

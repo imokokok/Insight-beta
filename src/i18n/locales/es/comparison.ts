@@ -220,4 +220,67 @@ export const comparison = {
     realtimeExported: 'Datos en tiempo real exportados como CSV',
     allExported: 'Todos los datos exportados como JSON',
   },
+  // Comparación de Precios
+  priceComparison: {
+    title: 'Comparación de Precios entre Protocolos',
+    placeholder: 'Ingrese par de trading (ej.: ETH/USD)',
+    chain: 'Cadena',
+    price: 'Precio',
+    deviation: 'Desviación',
+    averagePrice: 'Precio Promedio',
+    medianPrice: 'Mediana',
+    priceRange: 'Rango de Precio',
+    recommendedPrice: 'Precio Recomendado',
+    noData: 'Sin datos de comparación',
+    enterPairHint: 'Ingrese un par de trading (ej.: ETH/USD, BTC/USD) para ver comparación',
+  },
+  // Ranking de Oráculos
+  ranking: {
+    title: 'Ranking de Rendimiento de Oráculos',
+    bestPerformance: 'Mejor Rendimiento:',
+    rank: 'Ranking',
+    reliabilityScore: 'Puntuación de Confiabilidad',
+    uptime: 'Tiempo de Actividad',
+    responseTime: 'Tiempo de Respuesta',
+    priceDeviation: 'Desviación de Precio',
+    noData: 'Sin datos de ranking',
+    waitingForSync: 'Esperando sincronización de datos...',
+    excellent: 'Excelente',
+    good: 'Bueno',
+    needsImprovement: 'Necesita Mejora',
+  },
+  // Gráfico de Protocolos Cruzados
+  crossProtocolChart: {
+    title: 'Tendencias de Precios entre Protocolos',
+    timeRange: {
+      '1h': '1 Hora',
+      '6h': '6 Horas',
+      '1d': '1 Día',
+      '7d': '7 Días',
+      '30d': '30 Días',
+    },
+    noData: 'Sin datos históricos',
+    selectHint: 'Seleccione par y rango de tiempo para ver tendencias',
+  },
+  // Validación de Formulario
+  validation: {
+    enterTradingPair: 'Por favor ingrese par de trading',
+    pairFormat: 'Formato debe ser XXX/XXX (ej.: ETH/USD)',
+  },
+  // Recomendaciones
+  recommendations: {
+    chainlink: {
+      reason: 'Mejor valor general, adecuado para protocolos DeFi que requieren alta confiabilidad',
+    },
+    pyth: {
+      reason:
+        'Frecuencia de actualización rápida, baja latencia, adecuado para trading de alta frecuencia',
+    },
+    api3: {
+      reason: 'Alta disponibilidad y soporte empresarial',
+    },
+    band: {
+      reason: 'Costo más bajo, adecuado para proyectos personales y experimentos pequeños',
+    },
+  },
 };

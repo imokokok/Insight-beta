@@ -93,4 +93,54 @@ export const common = {
     componentError: 'Component Failed to Load',
     clickToRetry: 'Click to Retry',
   },
+  // Component Loading
+  componentLoading: {
+    loading: 'Loading...',
+    loadError: 'Error loading component, please retry',
+    unexpectedError: 'An unexpected error occurred, please try again later',
+  },
+  // Form Validation
+  form: {
+    required: 'Required',
+    invalid: 'Invalid',
+    enterTradingPair: 'Please enter trading pair',
+    pairFormat: 'Format should be XXX/XXX (e.g.: ETH/USD)',
+  },
+  // Data Status
+  dataStatus: {
+    noData: 'No Data',
+    noComparisonData: 'No comparison data available',
+    noRankingData: 'No ranking data available',
+    noHistoricalData: 'No historical data available',
+    enterPairHint: 'Enter a trading pair to view data',
+    selectPairAndTimeRange: 'Select trading pair and time range to view trends',
+    waitingForSync: 'Waiting for data synchronization...',
+  },
+  // Table Headers
+  table: {
+    protocol: 'Protocol',
+    chain: 'Chain',
+    price: 'Price',
+    deviation: 'Deviation',
+    status: 'Status',
+    rank: 'Rank',
+  },
+  // Stats Labels
+  stats: {
+    averagePrice: 'Average Price',
+    medianPrice: 'Median',
+    priceRange: 'Price Range',
+    recommendedPrice: 'Recommended Price',
+    reliabilityScore: 'Reliability Score',
+    uptime: 'Uptime',
+    responseTime: 'Response Time',
+    priceDeviation: 'Price Deviation',
+  },
+  // Ratings
+  ratings: {
+    excellent: 'Excellent',
+    good: 'Good',
+    needsImprovement: 'Needs Improvement',
+    normal: 'Normal',
+  },
 };

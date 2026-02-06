@@ -253,4 +253,66 @@ export const comparison = {
     realtimeExported: 'Realtime data exported as CSV',
     allExported: 'All data exported as JSON',
   },
+  // Price Comparison Component
+  priceComparison: {
+    title: 'Cross-Protocol Price Comparison',
+    placeholder: 'Enter trading pair (e.g.: ETH/USD)',
+    chain: 'Chain',
+    price: 'Price',
+    deviation: 'Deviation',
+    averagePrice: 'Average Price',
+    medianPrice: 'Median',
+    priceRange: 'Price Range',
+    recommendedPrice: 'Recommended Price',
+    noData: 'No comparison data',
+    enterPairHint: 'Enter a trading pair (e.g.: ETH/USD, BTC/USD) to view price comparison',
+  },
+  // Oracle Ranking Component
+  ranking: {
+    title: 'Oracle Performance Ranking',
+    bestPerformance: 'Best Performance:',
+    rank: 'Rank',
+    reliabilityScore: 'Reliability Score',
+    uptime: 'Uptime',
+    responseTime: 'Response Time',
+    priceDeviation: 'Price Deviation',
+    noData: 'No ranking data',
+    waitingForSync: 'Waiting for oracle data synchronization...',
+    excellent: 'Excellent',
+    good: 'Good',
+    needsImprovement: 'Needs Improvement',
+  },
+  // Cross Protocol Chart
+  crossProtocolChart: {
+    title: 'Cross-Protocol Price Trends',
+    timeRange: {
+      '1h': '1 Hour',
+      '6h': '6 Hours',
+      '1d': '1 Day',
+      '7d': '7 Days',
+      '30d': '30 Days',
+    },
+    noData: 'No historical data',
+    selectHint: 'Select trading pair and time range to view price trends',
+  },
+  // Form Validation
+  validation: {
+    enterTradingPair: 'Please enter trading pair',
+    pairFormat: 'Format should be XXX/XXX (e.g.: ETH/USD)',
+  },
+  // Recommendations
+  recommendations: {
+    chainlink: {
+      reason: 'Best overall value, suitable for DeFi protocols requiring high reliability',
+    },
+    pyth: {
+      reason: 'Fast update frequency, low latency, suitable for high-frequency trading',
+    },
+    api3: {
+      reason: 'High availability and enterprise-grade support',
+    },
+    band: {
+      reason: 'Lowest cost, suitable for personal projects and small experiments',
+    },
+  },
 };
