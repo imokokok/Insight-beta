@@ -249,40 +249,5 @@ export function exportAllToJSON(data: {
 // Excel 导出 (使用简单的 HTML table 格式)
 // ============================================================================
 
-export function exportToExcel(data: Record<string, unknown>[]) {
-  const headers = Object.keys(data[0] || {});
-
-  let html = `
-    <html xmlns:o="urn:schemas-microsoft-com:office:office" 
-          xmlns:x="urn:schemas-microsoft-com:office:excel" 
-          xmlns="http://www.w3.org/TR/REC-html40">
-    <head>
-      <meta charset="UTF-8">
-      <style>
-        table { border-collapse: collapse; }
-        th { background-color: #f0f0f0; font-weight: bold; border: 1px solid #ccc; padding: 8px; }
-        td { border: 1px solid #ccc; padding: 8px; }
-      </style>
-    </head>
-    <body>
-      <table>
-        <thead>
-          <tr>${headers.map((h) => `<th>${h}</th>`).join('')}</tr>
-        </thead>
-        <tbody>
-  `;
-
-  for (const row of data) {
-    html += '<tr>' + headers.map((h) => `<td>${row[h] ?? ''}</td>`).join('') + '</tr>';
-  }
-
-  html += `
-        </tbody>
-      </table>
-    </body>
-    </html>
-  `;
-
-  const filename = `oracle-export-${new Date().toISOString().split('T')[0]}.xls`;
-  downloadFile(html, filename, 'application/vnd.ms-excel');
-}
+// Note: exportToExcel function removed - not used in the application
+// If needed in the future, it can be re-implemented here
