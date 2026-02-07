@@ -6,7 +6,6 @@
  */
 
 import { logger } from '@/lib/logger';
-import { wsConnectionPool } from '@/lib/websocket/ConnectionPool';
 import { query } from '@/server/db';
 import { syncManager } from '@/server/oracle/syncFramework';
 
@@ -116,15 +115,7 @@ export async function gracefulShutdown(
     logger.info('Stopping sync tasks');
     syncManager.stopAllSyncs();
 
-    // 4. 关闭 WebSocket 连接
-    logger.info('Closing WebSocket connections');
-    try {
-      wsConnectionPool.destroy();
-    } catch (error) {
-      logger.error('Error closing WebSocket connections', { error });
-    }
-
-    // 5. 执行注册的关闭回调
+    // 4. 执行注册的关闭回调
     logger.info(`Executing ${state.shutdownCallbacks.length} shutdown callbacks`);
     for (const callback of state.shutdownCallbacks) {
       try {
@@ -134,7 +125,7 @@ export async function gracefulShutdown(
       }
     }
 
-    // 6. 关闭数据库连接
+    // 5. 关闭数据库连接
     logger.info('Closing database connections');
     try {
       await query('SELECT 1'); // 确保连接池正常工作
