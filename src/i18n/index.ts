@@ -57,9 +57,9 @@ export {
   detectLangFromAcceptLanguage,
 } from './types';
 
-// Type-safe translation keys
-export type { TranslationKey, TranslationNamespace as TranslationNamespaceType } from './keys';
-export { TranslationKeys, createTranslationKey } from './keys';
+// Type-safe translation keys (keys.ts removed - not used in production)
+// export type { TranslationKey, TranslationNamespace as TranslationNamespaceType } from './keys';
+// export { TranslationKeys, createTranslationKey } from './keys';
 
 // Formatting utilities
 export {

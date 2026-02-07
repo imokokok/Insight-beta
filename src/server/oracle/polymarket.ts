@@ -1,7 +1,34 @@
-import type { Market, MarketResolution } from '@/lib/blockchain/polymarketMonitor';
 import { hasDatabase, query } from '@/server/db';
 import { readJsonFile, writeJsonFile } from '@/server/kvStore';
 import { memoryNowIso } from '@/server/memoryBackend';
+
+// ============================================================================
+// Types (inlined from deleted polymarketMonitor.ts)
+// ============================================================================
+
+export interface Market {
+  conditionId: string;
+  question: string;
+  creator: `0x${string}`;
+  collateralToken: `0x${string}`;
+  fee: bigint;
+  resolved: boolean;
+  resolutionTime?: bigint;
+  outcome?: number;
+  volume: bigint;
+  liquidity: bigint;
+  chain: string;
+  createdAtBlock: bigint;
+}
+
+export interface MarketResolution {
+  conditionId: string;
+  resolved: boolean;
+  outcome: number;
+  resolutionTime: bigint;
+  resolver: `0x${string}`;
+  txHash: `0x${string}`;
+}
 
 export interface MarketRecord extends Omit<Market, 'createdAt'> {
   id: string;
@@ -271,6 +298,7 @@ function formatMarketRecord(row: Record<string, unknown>): MarketRecord {
     volume: BigInt((row.volume as string | number | bigint | undefined) ?? 0),
     liquidity: BigInt((row.liquidity as string | number | bigint | undefined) ?? 0),
     chain: String(row.chain || '137'),
+    createdAtBlock: BigInt((row.created_at_block as string | number | bigint | undefined) ?? 0),
     createdAt: String(row.created_at || row.createdAt),
     updatedAt: String(row.updated_at || row.updatedAt),
   };
