@@ -5,34 +5,22 @@
  */
 
 // ============================================================================
-// 核心模块
+// 核心模块 (被 FluxOracleClient 使用)
 // ============================================================================
 
-export {
-  // 基类
-  BaseOracleClient,
-  // 工厂
-  OracleClientFactory,
-  oracleClientFactory,
-} from './core';
+export { BaseOracleClient, OracleClientFactory, oracleClientFactory } from './core';
 
-// 错误类重新导出
 export { OracleClientError, PriceFetchError, HealthCheckError } from './core/types';
 
 export type {
-  // 接口
   IOracleClient,
-  // 配置类型
   OracleClientConfig,
   RequiredOracleClientConfig,
-  // 状态类型
   OracleHealthStatus,
   HealthStatus,
   OracleClientCapabilities,
-  // 选项类型
   PriceFetchOptions,
   BatchPriceResult,
-  // 日志类型
   OracleClientLogger,
 } from './core';
 
@@ -60,5 +48,3 @@ export { createRedStoneClient, getAvailableRedStoneSymbols } from './redstoneOra
 
 // Flux
 export { createFluxClient, getSupportedFluxSymbols } from './protocols/flux';
-
-// UMA - No exports currently used
