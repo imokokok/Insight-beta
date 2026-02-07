@@ -6,5 +6,4 @@
 
 export { ProtocolBadge } from './ProtocolBadge';
 export { AlertsPanel } from './AlertsPanel';
-export { PriceComparisonCard } from './PriceComparisonCard';
 export { PriceHistoryChart } from './PriceHistoryChart';

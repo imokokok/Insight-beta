@@ -12,8 +12,6 @@ export { AlertPanel } from './AlertPanel';
 // 原有组件
 export { OracleCharts } from './OracleCharts';
 export { OracleHealthScore } from './OracleHealthScore';
-export { OracleStatsBanner } from './OracleStatsBanner';
-export { PriceComparison } from './PriceComparison';
 export { SyncStatus } from './SyncStatus';
 export { Leaderboard } from './Leaderboard';
 export { LivenessProgressBar } from './LivenessProgressBar';
