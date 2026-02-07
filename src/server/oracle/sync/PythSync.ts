@@ -1,68 +1,50 @@
 /**
- * Pyth Sync Module (Refactored)
+ * Pyth Sync Module (Refactored with SyncManagerFactory)
  *
- * 使用 BaseSyncManager 重构的 Pyth 同步模块
- * 代码量从 496 行减少到 ~70 行
+ * 使用 SyncManagerFactory 重构的 Pyth 同步模块
+ * 代码量从 70 行减少到 ~25 行
  * 支持更频繁的同步间隔（30秒）
  */
 
 import { createPythClient, getAvailablePythSymbols } from '@/lib/blockchain/pythOracle';
-import type { SupportedChain } from '@/lib/types/unifiedOracleTypes';
-
-import { BaseSyncManager, type IOracleClient, type SyncConfig } from './BaseSyncManager';
+import { createSingletonSyncManager } from '@/lib/shared';
 
 // ============================================================================
-// Pyth Sync Manager
+// 使用工厂创建 Pyth 同步管理器
 // ============================================================================
 
-export class PythSyncManager extends BaseSyncManager {
-  protected readonly protocol = 'pyth' as const;
-
-  // Pyth 使用更频繁的同步间隔（30秒）和更低的价格变化阈值（0.05%）
-  protected syncConfig: SyncConfig = {
-    defaultIntervalMs: 30000, // 30秒
-    batchSize: 100,
-    maxConcurrency: 5,
-    priceChangeThreshold: 0.0005, // 0.05%
-    dataRetentionDays: 90,
-  };
-
-  protected createClient(
-    chain: SupportedChain,
-    rpcUrl: string,
-    protocolConfig?: Record<string, unknown>,
-  ): IOracleClient {
-    return createPythClient(chain, rpcUrl, protocolConfig);
-  }
-
-  protected getAvailableSymbols(_chain: SupportedChain): string[] {
-    // Pyth 的 symbols 是全局的，不依赖于特定链
-    return getAvailablePythSymbols();
-  }
-}
+const pythSync = createSingletonSyncManager(
+  {
+    protocol: 'pyth',
+    syncConfig: {
+      defaultIntervalMs: 30000, // 30秒
+      batchSize: 100,
+      maxConcurrency: 5,
+      priceChangeThreshold: 0.0005, // 0.05%
+      dataRetentionDays: 90,
+    },
+  },
+  (chain, rpcUrl, protocolConfig) => createPythClient(chain, rpcUrl, protocolConfig),
+  // Pyth 的 symbols 是全局的，不依赖于特定链
+  () => getAvailablePythSymbols()
+);
 
 // ============================================================================
-// 单例导出
+// 导出便捷函数和管理器实例
 // ============================================================================
 
-export const pythSyncManager = new PythSyncManager();
+export const pythSyncManager = pythSync.manager;
 
-// ============================================================================
-// 便捷函数
-// ============================================================================
+export const startPythSync = pythSync.startSync;
+export const stopPythSync = pythSync.stopSync;
+export const stopAllPythSync = pythSync.stopAllSync;
+export const cleanupPythData = pythSync.cleanupData;
 
-export async function startPythSync(instanceId: string): Promise<void> {
-  return pythSyncManager.startSync(instanceId);
-}
-
-export function stopPythSync(instanceId: string): void {
-  pythSyncManager.stopSync(instanceId);
-}
-
-export function stopAllPythSync(): void {
-  pythSyncManager.stopAllSync();
-}
-
-export async function cleanupPythData(): Promise<void> {
-  return pythSyncManager.cleanupOldData();
-}
+// 保持向后兼容的默认导出
+export default {
+  startSync: startPythSync,
+  stopSync: stopPythSync,
+  stopAllSync: stopAllPythSync,
+  cleanupData: cleanupPythData,
+  manager: pythSyncManager,
+};

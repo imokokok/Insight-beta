@@ -1,65 +1,48 @@
 /**
- * API3 Sync Module
+ * API3 Sync Module (Refactored with SyncManagerFactory)
  *
- * 使用 BaseSyncManager 的 API3 同步模块
+ * 使用 SyncManagerFactory 重构的 API3 同步模块
+ * 代码量从 65 行减少到 ~20 行
  */
 
 import { createAPI3Client, getAvailableAPI3Dapis } from '@/lib/blockchain/api3Oracle';
-import type { SupportedChain } from '@/lib/types/unifiedOracleTypes';
-
-import { BaseSyncManager, type IOracleClient, type SyncConfig } from './BaseSyncManager';
+import { createSingletonSyncManager } from '@/lib/shared';
 
 // ============================================================================
-// API3 Sync Manager
+// 使用工厂创建 API3 同步管理器
 // ============================================================================
 
-export class API3SyncManager extends BaseSyncManager {
-  protected readonly protocol = 'api3' as const;
-
-  // API3 使用标准同步间隔（1分钟）
-  protected syncConfig: SyncConfig = {
-    defaultIntervalMs: 60000, // 1分钟
-    batchSize: 50,
-    maxConcurrency: 5,
-    priceChangeThreshold: 0.001, // 0.1%
-    dataRetentionDays: 90,
-  };
-
-  protected createClient(
-    chain: SupportedChain,
-    rpcUrl: string,
-    protocolConfig?: Record<string, unknown>,
-  ): IOracleClient {
-    return createAPI3Client(chain, rpcUrl, protocolConfig);
-  }
-
-  protected getAvailableSymbols(chain: SupportedChain): string[] {
-    return getAvailableAPI3Dapis(chain);
-  }
-}
+const api3Sync = createSingletonSyncManager(
+  {
+    protocol: 'api3',
+    syncConfig: {
+      defaultIntervalMs: 60000, // 1分钟
+      batchSize: 50,
+      maxConcurrency: 5,
+      priceChangeThreshold: 0.001, // 0.1%
+      dataRetentionDays: 90,
+    },
+  },
+  (chain, rpcUrl, protocolConfig) => createAPI3Client(chain, rpcUrl, protocolConfig),
+  (chain) => getAvailableAPI3Dapis(chain)
+);
 
 // ============================================================================
-// 单例导出
+// 导出便捷函数和管理器实例
 // ============================================================================
 
-export const api3SyncManager = new API3SyncManager();
+export const api3SyncManager = api3Sync.manager;
 
-// ============================================================================
-// 便捷函数
-// ============================================================================
+export const startAPI3Sync = api3Sync.startSync;
+export const stopAPI3Sync = api3Sync.stopSync;
+export const stopAllAPI3Sync = api3Sync.stopAllSync;
+export const cleanupAPI3Data = api3Sync.cleanupData;
 
-export async function startAPI3Sync(instanceId: string): Promise<void> {
-  return api3SyncManager.startSync(instanceId);
-}
-
-export function stopAPI3Sync(instanceId: string): void {
-  api3SyncManager.stopSync(instanceId);
-}
-
-export function stopAllAPI3Sync(): void {
-  api3SyncManager.stopAllSync();
-}
-
-export async function cleanupAPI3Data(): Promise<void> {
-  return api3SyncManager.cleanupOldData();
-}
+// 保持向后兼容的默认导出
+export default {
+  startSync: startAPI3Sync,
+  stopSync: stopAPI3Sync,
+  stopAllSync: stopAllAPI3Sync,
+  cleanupData: cleanupAPI3Data,
+  manager: api3SyncManager,
+};

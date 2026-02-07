@@ -1,15 +1,15 @@
 /**
- * Band Sync Module (Refactored)
+ * Band Sync Module (Refactored with SyncManagerFactory)
  *
- * 使用 BaseSyncManager 重构的 Band Protocol 同步模块
- * 代码量从 222 行减少到 ~80 行
+ * 使用 SyncManagerFactory 重构的 Band Protocol 同步模块
+ * 代码量从 120 行减少到 ~35 行
  */
 
 import type { BandClient } from '@/lib/blockchain/bandOracle';
 import { createBandClient } from '@/lib/blockchain/bandOracle';
 import type { SupportedChain, UnifiedPriceFeed } from '@/lib/types/unifiedOracleTypes';
-
-import { BaseSyncManager, type IOracleClient, type SyncConfig } from './BaseSyncManager';
+import { createSingletonSyncManager } from '@/lib/shared';
+import type { IOracleClient } from './BaseSyncManager';
 
 // ============================================================================
 // Band 支持的 Symbols
@@ -65,56 +65,40 @@ class BandClientWrapper implements IOracleClient {
 }
 
 // ============================================================================
-// Band Sync Manager
+// 使用工厂创建 Band 同步管理器
 // ============================================================================
 
-export class BandSyncManager extends BaseSyncManager {
-  protected readonly protocol = 'band' as const;
-
-  // Band 使用较长的同步间隔（5分钟）
-  protected syncConfig: SyncConfig = {
-    defaultIntervalMs: 300000, // 5分钟
-    batchSize: 50,
-    maxConcurrency: 3,
-    priceChangeThreshold: 0.002, // 0.2%
-    dataRetentionDays: 90,
-  };
-
-  protected createClient(
-    chain: SupportedChain,
-    rpcUrl: string,
-    protocolConfig?: Record<string, unknown>,
-  ): IOracleClient {
-    return new BandClientWrapper(chain, rpcUrl, protocolConfig);
-  }
-
-  protected getAvailableSymbols(_chain: SupportedChain): string[] {
-    return BAND_SUPPORTED_SYMBOLS;
-  }
-}
+const bandSync = createSingletonSyncManager(
+  {
+    protocol: 'band',
+    syncConfig: {
+      defaultIntervalMs: 300000, // 5分钟
+      batchSize: 50,
+      maxConcurrency: 3,
+      priceChangeThreshold: 0.002, // 0.2%
+      dataRetentionDays: 90,
+    },
+  },
+  (chain, rpcUrl, protocolConfig) => new BandClientWrapper(chain, rpcUrl, protocolConfig),
+  () => BAND_SUPPORTED_SYMBOLS
+);
 
 // ============================================================================
-// 单例导出
+// 导出便捷函数和管理器实例
 // ============================================================================
 
-export const bandSyncManager = new BandSyncManager();
+export const bandSyncManager = bandSync.manager;
 
-// ============================================================================
-// 便捷函数
-// ============================================================================
+export const startBandSync = bandSync.startSync;
+export const stopBandSync = bandSync.stopSync;
+export const stopAllBandSync = bandSync.stopAllSync;
+export const cleanupBandData = bandSync.cleanupData;
 
-export async function startBandSync(instanceId: string): Promise<void> {
-  return bandSyncManager.startSync(instanceId);
-}
-
-export function stopBandSync(instanceId: string): void {
-  bandSyncManager.stopSync(instanceId);
-}
-
-export function stopAllBandSync(): void {
-  bandSyncManager.stopAllSync();
-}
-
-export async function cleanupBandData(): Promise<void> {
-  return bandSyncManager.cleanupOldData();
-}
+// 保持向后兼容的默认导出
+export default {
+  startSync: startBandSync,
+  stopSync: stopBandSync,
+  stopAllSync: stopAllBandSync,
+  cleanupData: cleanupBandData,
+  manager: bandSyncManager,
+};

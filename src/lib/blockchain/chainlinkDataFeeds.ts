@@ -1,29 +1,21 @@
 /**
- * Chainlink Data Feeds Integration
+ * Chainlink Data Feeds Integration (Refactored with EvmOracleClient)
  *
- * Chainlink 价格喂价集成模块
- * 支持多链价格数据获取和监控
+ * 使用 EvmOracleClient 基类重构的 Chainlink 价格喂价集成模块
+ * 代码量从 474 行减少到 ~200 行
  */
 
-import {
-  createPublicClient,
-  http,
-  type PublicClient,
-  type Address,
-  parseAbi,
-  formatUnits,
-} from 'viem';
+import { type Address, parseAbi, formatUnits } from 'viem';
 
 import { DEFAULT_STALENESS_THRESHOLDS } from '@/lib/config/constants';
-import { getChainRpcConfig, type ChainRpcConfig } from '@/lib/config/rpcConfig';
-import { logger } from '@/lib/logger';
+import { EvmOracleClient, type EvmOracleClientConfig } from '@/lib/shared';
+import { ErrorHandler } from '@/lib/shared/errors/ErrorHandler';
+import { LoggerFactory } from '@/lib/shared/logger/LoggerFactory';
 import type {
   SupportedChain,
   UnifiedPriceFeed,
   ChainlinkProtocolConfig,
 } from '@/lib/types/unifiedOracleTypes';
-
-import { VIEM_CHAIN_MAP } from './chainConfig';
 
 // ============================================================================
 // Chainlink ABI
@@ -38,40 +30,9 @@ const AGGREGATOR_ABI = parseAbi([
 ]);
 
 // ============================================================================
-// Chainlink 特定配置
+// Chainlink 配置
 // ============================================================================
 
-/**
- * Chainlink Feed Registry 地址
- */
-export const CHAINLINK_FEED_REGISTRY: Record<SupportedChain, Address | undefined> = {
-  ethereum: '0x47Fb2585D2C56Fe188D0E6ec6a473f24e99F1A76',
-  polygon: undefined,
-  arbitrum: undefined,
-  optimism: undefined,
-  base: undefined,
-  avalanche: undefined,
-  bsc: undefined,
-  fantom: undefined,
-  celo: undefined,
-  gnosis: undefined,
-  linea: undefined,
-  scroll: undefined,
-  mantle: undefined,
-  mode: undefined,
-  blast: undefined,
-  solana: undefined,
-  near: undefined,
-  aptos: undefined,
-  sui: undefined,
-  polygonAmoy: undefined,
-  sepolia: undefined,
-  goerli: undefined,
-  mumbai: undefined,
-  local: undefined,
-};
-
-// 常用价格喂价地址映射
 export const POPULAR_FEEDS: Record<SupportedChain, Record<string, Address>> = {
   ethereum: {
     'ETH/USD': '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
@@ -150,39 +111,52 @@ export const POPULAR_FEEDS: Record<SupportedChain, Record<string, Address>> = {
 };
 
 // ============================================================================
-// Chainlink Client Class
+// Chainlink Client (使用 EvmOracleClient 基类)
 // ============================================================================
 
-export class ChainlinkClient {
-  private publicClient: PublicClient;
-  private chain: SupportedChain;
+export class ChainlinkClient extends EvmOracleClient {
+  readonly protocol = 'chainlink' as const;
+  readonly chain: SupportedChain;
+  
+  private feedAddresses: Map<string, Address> = new Map();
   private config: ChainlinkProtocolConfig;
-  private rpcConfig: ChainRpcConfig;
 
-  constructor(chain: SupportedChain, rpcUrl?: string, config: ChainlinkProtocolConfig = {}) {
+  constructor(chain: SupportedChain, rpcUrl: string, config: ChainlinkProtocolConfig = {}) {
+    super({
+      chain,
+      protocol: 'chainlink',
+      rpcUrl,
+      timeoutMs: config.timeout ?? 30000,
+      defaultDecimals: 8,
+    });
+    
     this.chain = chain;
     this.config = config;
-    this.rpcConfig = getChainRpcConfig(chain);
-
-    // 使用传入的 RPC URL 或从配置获取
-    const primaryRpcUrl = rpcUrl || this.rpcConfig.primary;
-
-    if (!primaryRpcUrl) {
-      throw new Error(
-        `No RPC URL available for chain ${chain}. Please configure ${chain.toUpperCase()}_RPC_URL environment variable.`,
-      );
+    this.logger = LoggerFactory.createOracleLogger('chainlink', chain);
+    
+    // 初始化 feed 地址映射
+    const feeds = POPULAR_FEEDS[chain] || {};
+    for (const [symbol, address] of Object.entries(feeds)) {
+      this.feedAddresses.set(symbol, address);
     }
-
-    this.publicClient = createPublicClient({
-      chain: VIEM_CHAIN_MAP[chain],
-      transport: http(primaryRpcUrl, { timeout: config.timeout ?? 30000 }),
-    }) as PublicClient;
   }
 
-  /**
-   * 获取最新价格数据
-   */
-  async getLatestPrice(feedAddress: Address): Promise<{
+  // ============================================================================
+  // 实现抽象方法
+  // ============================================================================
+
+  protected resolveContractAddress(): Address | undefined {
+    // Chainlink 没有单一合约地址，每个 feed 有自己的地址
+    return undefined;
+  }
+
+  protected getFeedId(symbol: string): string | undefined {
+    const normalizedSymbol = this.normalizeSymbol(symbol);
+    const address = this.feedAddresses.get(normalizedSymbol);
+    return address || undefined;
+  }
+
+  protected async fetchRawPriceData(feedId: string): Promise<{
     roundId: bigint;
     answer: bigint;
     startedAt: bigint;
@@ -191,20 +165,22 @@ export class ChainlinkClient {
     decimals: number;
     description: string;
   }> {
+    const address = feedId as Address;
+    
     try {
       const [roundData, decimals, description] = await Promise.all([
         this.publicClient.readContract({
-          address: feedAddress,
+          address,
           abi: AGGREGATOR_ABI,
           functionName: 'latestRoundData',
         }),
         this.publicClient.readContract({
-          address: feedAddress,
+          address,
           abi: AGGREGATOR_ABI,
           functionName: 'decimals',
         }),
         this.publicClient.readContract({
-          address: feedAddress,
+          address,
           abi: AGGREGATOR_ABI,
           functionName: 'description',
         }),
@@ -220,32 +196,67 @@ export class ChainlinkClient {
         description,
       };
     } catch (error) {
-      logger.error('Failed to get Chainlink price', {
+      ErrorHandler.logError(this.logger, 'Failed to fetch Chainlink price', error, {
         chain: this.chain,
-        feedAddress,
-        error: error instanceof Error ? error.message : String(error),
+        feedAddress: address,
       });
       throw error;
     }
   }
 
+  protected parsePriceFromContract(
+    rawData: {
+      roundId: bigint;
+      answer: bigint;
+      startedAt: bigint;
+      updatedAt: bigint;
+      answeredInRound: bigint;
+      decimals: number;
+      description: string;
+    },
+    symbol: string,
+    feedId: string
+  ): UnifiedPriceFeed | null {
+    const [baseAsset, quoteAsset] = symbol.split('/');
+    const formattedPrice = this.formatPrice(rawData.answer, rawData.decimals);
+    
+    const updatedAt = new Date(Number(rawData.updatedAt) * 1000);
+    const stalenessSeconds = this.calculateStalenessSeconds(rawData.updatedAt);
+    
+    const stalenessThreshold =
+      this.config.stalenessThreshold || DEFAULT_STALENESS_THRESHOLDS.CHAINLINK;
+    const isStale = stalenessSeconds > stalenessThreshold;
+
+    return {
+      id: `chainlink-${this.chain}-${symbol}-${rawData.roundId.toString()}`,
+      instanceId: `chainlink-${this.chain}`,
+      protocol: 'chainlink',
+      chain: this.chain,
+      symbol,
+      baseAsset: baseAsset || 'UNKNOWN',
+      quoteAsset: quoteAsset || 'USD',
+      price: formattedPrice,
+      priceRaw: rawData.answer,
+      decimals: rawData.decimals,
+      timestamp: updatedAt.getTime(),
+      isStale,
+      stalenessSeconds,
+    };
+  }
+
+  // ============================================================================
+  // 公共方法
+  // ============================================================================
+
   /**
-   * 获取指定交易对的价格
+   * 获取指定交易对的价格（兼容旧接口）
    */
   async getPriceForSymbol(symbol: string): Promise<UnifiedPriceFeed | null> {
-    const feeds = POPULAR_FEEDS[this.chain];
-    const feedAddress = feeds?.[symbol];
-
-    if (!feedAddress) {
-      logger.warn(`No Chainlink feed found for ${symbol} on ${this.chain}`);
-      return null;
-    }
-
-    return this.getUnifiedPriceFeed(symbol, feedAddress);
+    return this.fetchPrice(symbol);
   }
 
   /**
-   * 获取多个价格喂价（优化：使用 Promise.allSettled 并行执行）
+   * 获取多个价格喂价
    */
   async getMultiplePrices(symbols: string[]): Promise<UnifiedPriceFeed[]> {
     const results = await Promise.allSettled(
@@ -263,48 +274,22 @@ export class ChainlinkClient {
   /**
    * 获取所有可用价格喂价
    */
-  async getAllAvailableFeeds(): Promise<UnifiedPriceFeed[]> {
-    const feeds = POPULAR_FEEDS[this.chain];
-    const symbols = Object.keys(feeds);
+  async fetchAllFeeds(): Promise<UnifiedPriceFeed[]> {
+    const symbols = Array.from(this.feedAddresses.keys());
     return this.getMultiplePrices(symbols);
   }
 
   /**
-   * 转换为统一价格喂价格式
+   * 获取客户端能力
    */
-  private async getUnifiedPriceFeed(
-    symbol: string,
-    feedAddress: Address,
-  ): Promise<UnifiedPriceFeed> {
-    const priceData = await this.getLatestPrice(feedAddress);
-    const [baseAsset, quoteAsset] = symbol.split('/');
-
-    const formattedPrice = parseFloat(formatUnits(priceData.answer, priceData.decimals));
-
-    const now = new Date();
-    const updatedAt = new Date(Number(priceData.updatedAt) * 1000);
-    const stalenessSeconds = Math.floor((now.getTime() - updatedAt.getTime()) / 1000);
-
-    // 判断数据是否过期（默认1小时）
-    const stalenessThreshold =
-      (this.config as { stalenessThreshold?: number }).stalenessThreshold ||
-      DEFAULT_STALENESS_THRESHOLDS.CHAINLINK;
-    const isStale = stalenessSeconds > stalenessThreshold;
-
+  getCapabilities() {
     return {
-      id: `chainlink-${this.chain}-${symbol}-${priceData.roundId.toString()}`,
-      instanceId: `chainlink-${this.chain}`,
-      protocol: 'chainlink',
-      chain: this.chain,
-      symbol,
-      baseAsset: baseAsset || 'UNKNOWN',
-      quoteAsset: quoteAsset || 'USD',
-      price: formattedPrice,
-      priceRaw: priceData.answer,
-      decimals: priceData.decimals,
-      timestamp: updatedAt.getTime(),
-      isStale,
-      stalenessSeconds,
+      priceFeeds: true,
+      assertions: false,
+      disputes: false,
+      vrf: false,
+      customData: false,
+      batchQueries: true,
     };
   }
 
@@ -320,24 +305,21 @@ export class ChainlinkClient {
     const issues: string[] = [];
 
     try {
-      const priceData = await this.getLatestPrice(feedAddress);
-      const lastUpdate = new Date(Number(priceData.updatedAt) * 1000);
+      const rawData = await this.fetchRawPriceData(feedAddress);
+      const lastUpdate = new Date(Number(rawData.updatedAt) * 1000);
       const now = new Date();
       const stalenessSeconds = Math.floor((now.getTime() - lastUpdate.getTime()) / 1000);
 
-      // 检查数据新鲜度
-      const heartbeat = this.config.heartbeat || 3600; // 默认1小时
+      const heartbeat = this.config.heartbeat || 3600;
       if (stalenessSeconds > heartbeat) {
         issues.push(`Data is stale: ${stalenessSeconds}s old`);
       }
 
-      // 检查价格是否为0
-      if (priceData.answer === 0n) {
+      if (rawData.answer === 0n) {
         issues.push('Price is zero');
       }
 
-      // 检查轮次是否有效
-      if (priceData.answeredInRound < priceData.roundId) {
+      if (rawData.answeredInRound < rawData.roundId) {
         issues.push('Round data may be incomplete');
       }
 
@@ -352,74 +334,9 @@ export class ChainlinkClient {
         healthy: false,
         lastUpdate: new Date(0),
         stalenessSeconds: Infinity,
-        issues: [`Failed to read feed: ${error instanceof Error ? error.message : String(error)}`],
+        issues: [`Failed to read feed: ${ErrorHandler.normalizeError(error).message}`],
       };
     }
-  }
-
-  /**
-   * 获取喂价合约元数据
-   */
-  async getFeedMetadata(feedAddress: Address): Promise<{
-    decimals: number;
-    description: string;
-    version: bigint;
-  }> {
-    const [decimals, description, version] = await Promise.all([
-      this.publicClient.readContract({
-        address: feedAddress,
-        abi: AGGREGATOR_ABI,
-        functionName: 'decimals',
-      }),
-      this.publicClient.readContract({
-        address: feedAddress,
-        abi: AGGREGATOR_ABI,
-        functionName: 'description',
-      }),
-      this.publicClient.readContract({
-        address: feedAddress,
-        abi: AGGREGATOR_ABI,
-        functionName: 'version',
-      }),
-    ]);
-
-    return { decimals, description, version };
-  }
-
-  /**
-   * 获取历史价格数据
-   */
-  async getHistoricalPrice(
-    feedAddress: Address,
-    roundId: bigint,
-  ): Promise<{
-    roundId: bigint;
-    answer: bigint;
-    startedAt: bigint;
-    updatedAt: bigint;
-    answeredInRound: bigint;
-  }> {
-    const data = await this.publicClient.readContract({
-      address: feedAddress,
-      abi: AGGREGATOR_ABI,
-      functionName: 'getRoundData',
-      args: [roundId],
-    });
-
-    return {
-      roundId: data[0],
-      answer: data[1],
-      startedAt: data[2],
-      updatedAt: data[3],
-      answeredInRound: data[4],
-    };
-  }
-
-  /**
-   * 获取当前区块号
-   */
-  async getBlockNumber(): Promise<bigint> {
-    return this.publicClient.getBlockNumber();
   }
 }
 
@@ -440,30 +357,10 @@ export function createChainlinkClient(
 // ============================================================================
 
 /**
- * 获取支持的 Chainlink 链列表
- */
-export async function getSupportedChainlinkChains(): Promise<SupportedChain[]> {
-  const { getChainRpcConfig } = await import('@/lib/config/rpcConfig');
-  return Object.keys(POPULAR_FEEDS).filter((chain) => {
-    const config = getChainRpcConfig(chain as SupportedChain);
-    return config.primary !== '' && config.supportedProtocols.includes('chainlink');
-  }) as SupportedChain[];
-}
-
-/**
  * 获取指定链的可用价格喂价列表
  */
 export function getAvailableFeedsForChain(chain: SupportedChain): string[] {
   return Object.keys(POPULAR_FEEDS[chain] || {});
-}
-
-/**
- * 检查链是否支持 Chainlink
- */
-export async function isChainSupportedByChainlink(chain: SupportedChain): Promise<boolean> {
-  const { getChainRpcConfig } = await import('@/lib/config/rpcConfig');
-  const config = getChainRpcConfig(chain);
-  return config.primary !== '' && config.supportedProtocols.includes('chainlink');
 }
 
 /**

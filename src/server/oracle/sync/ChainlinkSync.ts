@@ -1,60 +1,49 @@
 /**
- * Chainlink Sync Module (Refactored)
+ * Chainlink Sync Module (Refactored with SyncManagerFactory)
  *
- * 使用 BaseSyncManager 重构的 Chainlink 同步模块
- * 代码量从 499 行减少到 ~60 行
+ * 使用 SyncManagerFactory 重构的 Chainlink 同步模块
+ * 代码量从 60 行减少到 ~20 行
  */
 
 import {
   createChainlinkClient,
   getAvailableFeedsForChain,
 } from '@/lib/blockchain/chainlinkDataFeeds';
-import type { SupportedChain } from '@/lib/types/unifiedOracleTypes';
-
-import { BaseSyncManager, type IOracleClient } from './BaseSyncManager';
+import { createSingletonSyncManager } from '@/lib/shared';
 
 // ============================================================================
-// Chainlink Sync Manager
+// 使用工厂创建 Chainlink 同步管理器
 // ============================================================================
 
-export class ChainlinkSyncManager extends BaseSyncManager {
-  protected readonly protocol = 'chainlink' as const;
-
-  protected createClient(
-    chain: SupportedChain,
-    rpcUrl: string,
-    protocolConfig?: Record<string, unknown>,
-  ): IOracleClient {
-    return createChainlinkClient(chain, rpcUrl, protocolConfig);
-  }
-
-  protected getAvailableSymbols(chain: SupportedChain): string[] {
-    return getAvailableFeedsForChain(chain);
-  }
-}
+const chainlinkSync = createSingletonSyncManager(
+  {
+    protocol: 'chainlink',
+    syncConfig: {
+      defaultIntervalMs: 60000,
+      batchSize: 100,
+      maxConcurrency: 5,
+    },
+  },
+  (chain, rpcUrl, protocolConfig) => createChainlinkClient(chain, rpcUrl, protocolConfig),
+  (chain) => getAvailableFeedsForChain(chain)
+);
 
 // ============================================================================
-// 单例导出
+// 导出便捷函数和管理器实例
 // ============================================================================
 
-export const chainlinkSyncManager = new ChainlinkSyncManager();
+export const chainlinkSyncManager = chainlinkSync.manager;
 
-// ============================================================================
-// 便捷函数
-// ============================================================================
+export const startChainlinkSync = chainlinkSync.startSync;
+export const stopChainlinkSync = chainlinkSync.stopSync;
+export const stopAllChainlinkSync = chainlinkSync.stopAllSync;
+export const cleanupChainlinkData = chainlinkSync.cleanupData;
 
-export async function startChainlinkSync(instanceId: string): Promise<void> {
-  return chainlinkSyncManager.startSync(instanceId);
-}
-
-export function stopChainlinkSync(instanceId: string): void {
-  chainlinkSyncManager.stopSync(instanceId);
-}
-
-export function stopAllChainlinkSync(): void {
-  chainlinkSyncManager.stopAllSync();
-}
-
-export async function cleanupChainlinkData(): Promise<void> {
-  return chainlinkSyncManager.cleanupOldData();
-}
+// 保持向后兼容的默认导出
+export default {
+  startSync: startChainlinkSync,
+  stopSync: stopChainlinkSync,
+  stopAllSync: stopAllChainlinkSync,
+  cleanupData: cleanupChainlinkData,
+  manager: chainlinkSyncManager,
+};

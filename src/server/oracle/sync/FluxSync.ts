@@ -1,60 +1,52 @@
 /**
- * Flux Sync Module
+ * Flux Sync Module (Refactored with SyncManagerFactory)
  *
- * 使用 BaseSyncManager 重构的 Flux 同步模块
- * 支持 Flux 预言机价格数据同步
+ * 使用 SyncManagerFactory 重构的 Flux 同步模块
+ * 代码量从 60 行减少到 ~20 行
  */
 
 import { createFluxClient, getSupportedFluxSymbols } from '@/lib/blockchain/protocols/flux';
-import type { SupportedChain } from '@/lib/types/unifiedOracleTypes';
-
-import { BaseSyncManager, type IOracleClient } from './BaseSyncManager';
+import { createSingletonSyncManager } from '@/lib/shared';
 
 // ============================================================================
-// Flux Sync Manager
+// 使用工厂创建 Flux 同步管理器
 // ============================================================================
 
-export class FluxSyncManager extends BaseSyncManager {
-  protected readonly protocol = 'flux' as const;
-
-  protected createClient(
-    chain: SupportedChain,
-    rpcUrl: string,
-    protocolConfig?: Record<string, unknown>,
-  ): IOracleClient {
-    return createFluxClient(chain, {
+const fluxSync = createSingletonSyncManager(
+  {
+    protocol: 'flux',
+    syncConfig: {
+      defaultIntervalMs: 60000, // 1分钟
+      batchSize: 50,
+      maxConcurrency: 5,
+      priceChangeThreshold: 0.001, // 0.1%
+      dataRetentionDays: 90,
+    },
+  },
+  (chain, rpcUrl, protocolConfig) =>
+    createFluxClient(chain, {
       rpcUrl,
       ...protocolConfig,
-    }) as unknown as IOracleClient;
-  }
-
-  protected getAvailableSymbols(chain: SupportedChain): string[] {
-    return getSupportedFluxSymbols(chain);
-  }
-}
+    }) as unknown as ReturnType<Parameters<typeof createSingletonSyncManager>[1]>,
+  (chain) => getSupportedFluxSymbols(chain)
+);
 
 // ============================================================================
-// 单例导出
+// 导出便捷函数和管理器实例
 // ============================================================================
 
-export const fluxSyncManager = new FluxSyncManager();
+export const fluxSyncManager = fluxSync.manager;
 
-// ============================================================================
-// 便捷函数
-// ============================================================================
+export const startFluxSync = fluxSync.startSync;
+export const stopFluxSync = fluxSync.stopSync;
+export const stopAllFluxSync = fluxSync.stopAllSync;
+export const cleanupFluxData = fluxSync.cleanupData;
 
-export async function startFluxSync(instanceId: string): Promise<void> {
-  return fluxSyncManager.startSync(instanceId);
-}
-
-export function stopFluxSync(instanceId: string): void {
-  fluxSyncManager.stopSync(instanceId);
-}
-
-export function stopAllFluxSync(): void {
-  fluxSyncManager.stopAllSync();
-}
-
-export async function cleanupFluxData(): Promise<void> {
-  return fluxSyncManager.cleanupOldData();
-}
+// 保持向后兼容的默认导出
+export default {
+  startSync: startFluxSync,
+  stopSync: stopFluxSync,
+  stopAllSync: stopAllFluxSync,
+  cleanupData: cleanupFluxData,
+  manager: fluxSyncManager,
+};

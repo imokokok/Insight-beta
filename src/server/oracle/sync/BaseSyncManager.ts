@@ -13,6 +13,7 @@ import type {
   OracleProtocol,
 } from '@/lib/types/unifiedOracleTypes';
 import { query } from '@/server/db';
+import { BatchInserter } from '@/lib/shared';
 
 // ============================================================================
 // 同步配置
@@ -83,6 +84,9 @@ export abstract class BaseSyncManager {
   protected syncIntervals: Map<string, NodeJS.Timeout> = new Map();
   protected isRunning: Map<string, boolean> = new Map();
   protected lastPrices: Map<string, number> = new Map();
+
+  // 批量插入器（使用共享模块，延迟初始化）
+  private priceFeedInserter?: BatchInserter<Record<string, unknown>>;
 
   /**
    * 获取客户端实例 - 子类必须实现
@@ -289,94 +293,59 @@ export abstract class BaseSyncManager {
   }
 
   /**
-   * 保存价格喂价到数据库
+   * 获取批量插入器（延迟初始化）
+   */
+  private getPriceFeedInserter(): BatchInserter<Record<string, unknown>> {
+    if (!this.priceFeedInserter) {
+      this.priceFeedInserter = new BatchInserter({
+        tableName: 'unified_price_feeds',
+        columns: [
+          'id', 'instance_id', 'protocol', 'chain', 'symbol', 'base_asset', 'quote_asset',
+          'price', 'price_raw', 'decimals', 'timestamp', 'block_number', 'confidence',
+          'sources', 'is_stale', 'staleness_seconds', 'tx_hash', 'log_index'
+        ],
+        batchSize: this.syncConfig.batchSize,
+        onConflict: `ON CONFLICT (id) DO UPDATE SET
+          price = EXCLUDED.price,
+          price_raw = EXCLUDED.price_raw,
+          timestamp = EXCLUDED.timestamp,
+          block_number = EXCLUDED.block_number,
+          is_stale = EXCLUDED.is_stale,
+          staleness_seconds = EXCLUDED.staleness_seconds,
+          updated_at = NOW()`
+      });
+    }
+    return this.priceFeedInserter;
+  }
+
+  /**
+   * 保存价格喂价到数据库（使用 BatchInserter）
    */
   protected async savePriceFeeds(instanceId: string, feeds: UnifiedPriceFeed[]): Promise<void> {
     if (feeds.length === 0) return;
 
-    const values = feeds.map((feed) => [
-      feed.id,
-      instanceId,
-      feed.protocol,
-      feed.chain,
-      feed.symbol,
-      feed.baseAsset,
-      feed.quoteAsset,
-      feed.price,
-      feed.priceRaw?.toString(),
-      feed.decimals,
-      feed.timestamp,
-      feed.blockNumber || 0,
-      feed.confidence || null,
-      feed.sources || null,
-      feed.isStale,
-      feed.stalenessSeconds || 0,
-      feed.txHash || null,
-      feed.logIndex || null,
-    ]);
+    const records = feeds.map((feed) => ({
+      id: feed.id,
+      instance_id: instanceId,
+      protocol: feed.protocol,
+      chain: feed.chain,
+      symbol: feed.symbol,
+      base_asset: feed.baseAsset,
+      quote_asset: feed.quoteAsset,
+      price: feed.price,
+      price_raw: feed.priceRaw?.toString() ?? null,
+      decimals: feed.decimals,
+      timestamp: feed.timestamp,
+      block_number: feed.blockNumber || 0,
+      confidence: feed.confidence ?? null,
+      sources: feed.sources ?? null,
+      is_stale: feed.isStale,
+      staleness_seconds: feed.stalenessSeconds || 0,
+      tx_hash: feed.txHash ?? null,
+      log_index: feed.logIndex ?? null,
+    }));
 
-    // 批量插入
-    for (let i = 0; i < values.length; i += this.syncConfig.batchSize) {
-      const batch = values.slice(i, i + this.syncConfig.batchSize);
-      await this.insertPriceFeedBatch(batch);
-    }
-  }
-
-  /**
-   * 批量插入价格喂价数据
-   * 使用辅助函数生成占位符，代码更清晰易维护
-   */
-  private async insertPriceFeedBatch(batch: unknown[][]): Promise<void> {
-    const columns = 18;
-    const placeholders = this.buildPlaceholders(batch.length, columns);
-    const flatValues = batch.flat() as (
-      | string
-      | number
-      | boolean
-      | Date
-      | null
-      | undefined
-      | string[]
-      | number[]
-    )[];
-
-    await query(
-      `INSERT INTO unified_price_feeds (
-        id, instance_id, protocol, chain, symbol, base_asset, quote_asset,
-        price, price_raw, decimals, timestamp, block_number, confidence,
-        sources, is_stale, staleness_seconds, tx_hash, log_index
-      ) VALUES ${placeholders}
-      ON CONFLICT (id) DO UPDATE SET
-        price = EXCLUDED.price,
-        price_raw = EXCLUDED.price_raw,
-        timestamp = EXCLUDED.timestamp,
-        block_number = EXCLUDED.block_number,
-        is_stale = EXCLUDED.is_stale,
-        staleness_seconds = EXCLUDED.staleness_seconds,
-        updated_at = NOW()`,
-      flatValues,
-    );
-  }
-
-  /**
-   * 构建 SQL 占位符字符串
-   * @param rowCount 行数
-   * @param columnCount 列数
-   * @returns 占位符字符串，如 "($1,$2,...),($3,$4,...)"
-   */
-  private buildPlaceholders(rowCount: number, columnCount: number): string {
-    const rows: string[] = [];
-    let paramIndex = 1;
-
-    for (let i = 0; i < rowCount; i++) {
-      const params: string[] = [];
-      for (let j = 0; j < columnCount; j++) {
-        params.push(`$${paramIndex++}`);
-      }
-      rows.push(`(${params.join(',')})`);
-    }
-
-    return rows.join(',');
+    await this.getPriceFeedInserter().insert(records);
   }
 
   /**

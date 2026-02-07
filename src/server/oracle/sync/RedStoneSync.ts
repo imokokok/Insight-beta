@@ -1,65 +1,48 @@
 /**
- * RedStone Sync Module
+ * RedStone Sync Module (Refactored with SyncManagerFactory)
  *
- * 使用 BaseSyncManager 的 RedStone 同步模块
+ * 使用 SyncManagerFactory 重构的 RedStone 同步模块
+ * 代码量从 65 行减少到 ~20 行
  */
 
 import { createRedStoneClient, getAvailableRedStoneSymbols } from '@/lib/blockchain/redstoneOracle';
-import type { SupportedChain } from '@/lib/types/unifiedOracleTypes';
-
-import { BaseSyncManager, type IOracleClient, type SyncConfig } from './BaseSyncManager';
+import { createSingletonSyncManager } from '@/lib/shared';
 
 // ============================================================================
-// RedStone Sync Manager
+// 使用工厂创建 RedStone 同步管理器
 // ============================================================================
 
-export class RedStoneSyncManager extends BaseSyncManager {
-  protected readonly protocol = 'redstone' as const;
-
-  // RedStone 使用较频繁的同步间隔（30秒）
-  protected syncConfig: SyncConfig = {
-    defaultIntervalMs: 30000, // 30秒
-    batchSize: 50,
-    maxConcurrency: 5,
-    priceChangeThreshold: 0.0005, // 0.05%
-    dataRetentionDays: 90,
-  };
-
-  protected createClient(
-    chain: SupportedChain,
-    rpcUrl: string,
-    protocolConfig?: Record<string, unknown>,
-  ): IOracleClient {
-    return createRedStoneClient(chain, rpcUrl, protocolConfig);
-  }
-
-  protected getAvailableSymbols(chain: SupportedChain): string[] {
-    return getAvailableRedStoneSymbols(chain);
-  }
-}
+const redstoneSync = createSingletonSyncManager(
+  {
+    protocol: 'redstone',
+    syncConfig: {
+      defaultIntervalMs: 30000, // 30秒
+      batchSize: 50,
+      maxConcurrency: 5,
+      priceChangeThreshold: 0.0005, // 0.05%
+      dataRetentionDays: 90,
+    },
+  },
+  (chain, rpcUrl, protocolConfig) => createRedStoneClient(chain, rpcUrl, protocolConfig),
+  (chain) => getAvailableRedStoneSymbols(chain)
+);
 
 // ============================================================================
-// 单例导出
+// 导出便捷函数和管理器实例
 // ============================================================================
 
-export const redstoneSyncManager = new RedStoneSyncManager();
+export const redstoneSyncManager = redstoneSync.manager;
 
-// ============================================================================
-// 便捷函数
-// ============================================================================
+export const startRedStoneSync = redstoneSync.startSync;
+export const stopRedStoneSync = redstoneSync.stopSync;
+export const stopAllRedStoneSync = redstoneSync.stopAllSync;
+export const cleanupRedStoneData = redstoneSync.cleanupData;
 
-export async function startRedStoneSync(instanceId: string): Promise<void> {
-  return redstoneSyncManager.startSync(instanceId);
-}
-
-export function stopRedStoneSync(instanceId: string): void {
-  redstoneSyncManager.stopSync(instanceId);
-}
-
-export function stopAllRedStoneSync(): void {
-  redstoneSyncManager.stopAllSync();
-}
-
-export async function cleanupRedStoneData(): Promise<void> {
-  return redstoneSyncManager.cleanupOldData();
-}
+// 保持向后兼容的默认导出
+export default {
+  startSync: startRedStoneSync,
+  stopSync: stopRedStoneSync,
+  stopAllSync: stopAllRedStoneSync,
+  cleanupData: cleanupRedStoneData,
+  manager: redstoneSyncManager,
+};

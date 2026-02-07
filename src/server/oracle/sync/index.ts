@@ -22,7 +22,6 @@ export {
 // ============================================================================
 
 export {
-  ChainlinkSyncManager,
   chainlinkSyncManager,
   startChainlinkSync,
   stopChainlinkSync,
@@ -30,8 +29,14 @@ export {
   cleanupChainlinkData,
 } from './ChainlinkSync';
 
+import type { api3SyncManager as _api3SyncManager } from './API3Sync';
+import type { bandSyncManager as _bandSyncManager } from './BandSync';
+import type { BaseSyncManager } from './BaseSyncManager';
+import type { chainlinkSyncManager as _chainlinkSyncManager } from './ChainlinkSync';
+
+export type ChainlinkSyncManager = typeof _chainlinkSyncManager;
+
 export {
-  PythSyncManager,
   pythSyncManager,
   startPythSync,
   stopPythSync,
@@ -39,8 +44,13 @@ export {
   cleanupPythData,
 } from './PythSync';
 
+import type { diaSyncManager as _diaSyncManager } from './DIASync';
+import type { fluxSyncManager as _fluxSyncManager } from './FluxSync';
+import type { pythSyncManager as _pythSyncManager } from './PythSync';
+
+export type PythSyncManager = typeof _pythSyncManager;
+
 export {
-  BandSyncManager,
   bandSyncManager,
   startBandSync,
   stopBandSync,
@@ -48,8 +58,9 @@ export {
   cleanupBandData,
 } from './BandSync';
 
+export type BandSyncManager = typeof _bandSyncManager;
+
 export {
-  DIASyncManager,
   diaSyncManager,
   startDIASync,
   stopDIASync,
@@ -57,8 +68,9 @@ export {
   cleanupDIAData,
 } from './DIASync';
 
+export type DIASyncManager = typeof _diaSyncManager;
+
 export {
-  API3SyncManager,
   api3SyncManager,
   startAPI3Sync,
   stopAPI3Sync,
@@ -66,8 +78,9 @@ export {
   cleanupAPI3Data,
 } from './API3Sync';
 
+export type API3SyncManager = typeof _api3SyncManager;
+
 export {
-  RedStoneSyncManager,
   redstoneSyncManager,
   startRedStoneSync,
   stopRedStoneSync,
@@ -75,14 +88,20 @@ export {
   cleanupRedStoneData,
 } from './RedStoneSync';
 
+import type { redstoneSyncManager as _redstoneSyncManager } from './RedStoneSync';
+
+export type RedStoneSyncManager = typeof _redstoneSyncManager;
+
 export {
-  FluxSyncManager,
   fluxSyncManager,
   startFluxSync,
   stopFluxSync,
   stopAllFluxSync,
   cleanupFluxData,
 } from './FluxSync';
+
+
+export type FluxSyncManager = typeof _fluxSyncManager;
 
 import { logger } from '@/lib/logger';
 
@@ -92,15 +111,6 @@ import { logger } from '@/lib/logger';
 
 import type { OracleProtocol } from '@/lib/types/unifiedOracleTypes';
 
-import { API3SyncManager } from './API3Sync';
-import { BandSyncManager } from './BandSync';
-import { ChainlinkSyncManager } from './ChainlinkSync';
-import { DIASyncManager } from './DIASync';
-import { FluxSyncManager } from './FluxSync';
-import { PythSyncManager } from './PythSync';
-import { RedStoneSyncManager } from './RedStoneSync';
-
-import type { BaseSyncManager } from './BaseSyncManager';
 
 // ============================================================================
 // Sync Manager 工厂
@@ -113,28 +123,43 @@ const syncManagers: Map<OracleProtocol, BaseSyncManager> = new Map();
  */
 export function getSyncManager(protocol: OracleProtocol): BaseSyncManager {
   if (!syncManagers.has(protocol)) {
+    // 动态导入避免循环依赖
     switch (protocol) {
-      case 'chainlink':
-        syncManagers.set(protocol, new ChainlinkSyncManager());
+      case 'chainlink': {
+        const { chainlinkSyncManager } = require('./ChainlinkSync');
+        syncManagers.set(protocol, chainlinkSyncManager);
         break;
-      case 'pyth':
-        syncManagers.set(protocol, new PythSyncManager());
+      }
+      case 'pyth': {
+        const { pythSyncManager } = require('./PythSync');
+        syncManagers.set(protocol, pythSyncManager);
         break;
-      case 'band':
-        syncManagers.set(protocol, new BandSyncManager());
+      }
+      case 'band': {
+        const { bandSyncManager } = require('./BandSync');
+        syncManagers.set(protocol, bandSyncManager);
         break;
-      case 'dia':
-        syncManagers.set(protocol, new DIASyncManager());
+      }
+      case 'dia': {
+        const { diaSyncManager } = require('./DIASync');
+        syncManagers.set(protocol, diaSyncManager);
         break;
-      case 'api3':
-        syncManagers.set(protocol, new API3SyncManager());
+      }
+      case 'api3': {
+        const { api3SyncManager } = require('./API3Sync');
+        syncManagers.set(protocol, api3SyncManager);
         break;
-      case 'redstone':
-        syncManagers.set(protocol, new RedStoneSyncManager());
+      }
+      case 'redstone': {
+        const { redstoneSyncManager } = require('./RedStoneSync');
+        syncManagers.set(protocol, redstoneSyncManager);
         break;
-      case 'flux':
-        syncManagers.set(protocol, new FluxSyncManager());
+      }
+      case 'flux': {
+        const { fluxSyncManager } = require('./FluxSync');
+        syncManagers.set(protocol, fluxSyncManager);
         break;
+      }
       default:
         throw new Error(`Unsupported protocol: ${protocol}`);
     }

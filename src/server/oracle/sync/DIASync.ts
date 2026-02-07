@@ -1,65 +1,48 @@
 /**
- * DIA Sync Module
+ * DIA Sync Module (Refactored with SyncManagerFactory)
  *
- * 使用 BaseSyncManager 的 DIA 同步模块
+ * 使用 SyncManagerFactory 重构的 DIA 同步模块
+ * 代码量从 65 行减少到 ~20 行
  */
 
 import { createDIAClient, getAvailableDIASymbols } from '@/lib/blockchain/diaOracle';
-import type { SupportedChain } from '@/lib/types/unifiedOracleTypes';
-
-import { BaseSyncManager, type IOracleClient, type SyncConfig } from './BaseSyncManager';
+import { createSingletonSyncManager } from '@/lib/shared';
 
 // ============================================================================
-// DIA Sync Manager
+// 使用工厂创建 DIA 同步管理器
 // ============================================================================
 
-export class DIASyncManager extends BaseSyncManager {
-  protected readonly protocol = 'dia' as const;
-
-  // DIA 使用较长的同步间隔（10分钟）
-  protected syncConfig: SyncConfig = {
-    defaultIntervalMs: 600000, // 10分钟
-    batchSize: 50,
-    maxConcurrency: 3,
-    priceChangeThreshold: 0.005, // 0.5%
-    dataRetentionDays: 90,
-  };
-
-  protected createClient(
-    chain: SupportedChain,
-    rpcUrl: string,
-    protocolConfig?: Record<string, unknown>,
-  ): IOracleClient {
-    return createDIAClient(chain, rpcUrl, protocolConfig);
-  }
-
-  protected getAvailableSymbols(chain: SupportedChain): string[] {
-    return getAvailableDIASymbols(chain);
-  }
-}
+const diaSync = createSingletonSyncManager(
+  {
+    protocol: 'dia',
+    syncConfig: {
+      defaultIntervalMs: 600000, // 10分钟
+      batchSize: 50,
+      maxConcurrency: 3,
+      priceChangeThreshold: 0.005, // 0.5%
+      dataRetentionDays: 90,
+    },
+  },
+  (chain, rpcUrl, protocolConfig) => createDIAClient(chain, rpcUrl, protocolConfig),
+  (chain) => getAvailableDIASymbols(chain)
+);
 
 // ============================================================================
-// 单例导出
+// 导出便捷函数和管理器实例
 // ============================================================================
 
-export const diaSyncManager = new DIASyncManager();
+export const diaSyncManager = diaSync.manager;
 
-// ============================================================================
-// 便捷函数
-// ============================================================================
+export const startDIASync = diaSync.startSync;
+export const stopDIASync = diaSync.stopSync;
+export const stopAllDIASync = diaSync.stopAllSync;
+export const cleanupDIAData = diaSync.cleanupData;
 
-export async function startDIASync(instanceId: string): Promise<void> {
-  return diaSyncManager.startSync(instanceId);
-}
-
-export function stopDIASync(instanceId: string): void {
-  diaSyncManager.stopSync(instanceId);
-}
-
-export function stopAllDIASync(): void {
-  diaSyncManager.stopAllSync();
-}
-
-export async function cleanupDIAData(): Promise<void> {
-  return diaSyncManager.cleanupOldData();
-}
+// 保持向后兼容的默认导出
+export default {
+  startSync: startDIASync,
+  stopSync: stopDIASync,
+  stopAllSync: stopAllDIASync,
+  cleanupData: cleanupDIAData,
+  manager: diaSyncManager,
+};
