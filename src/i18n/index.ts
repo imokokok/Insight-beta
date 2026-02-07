@@ -89,12 +89,11 @@ export {
   preloadTranslations as preloadTranslationsLazy,
 } from './LanguageProviderLazy';
 
-// Legacy: Eager-loaded Language Provider
-// Use this only if you need all translations immediately
-export {
-  LanguageProvider as LanguageProviderEager,
-  useI18n as useI18nEager,
-} from './LanguageProvider';
+// Legacy: Eager-loaded Language Provider (deprecated - use LanguageProviderLazy instead)
+// export {
+//   LanguageProvider as LanguageProviderEager,
+//   useI18n as useI18nEager,
+// } from './LanguageProvider';
 
 // Types
 export type { TranslationKey as TranslationKeyString } from './LanguageProvider';
