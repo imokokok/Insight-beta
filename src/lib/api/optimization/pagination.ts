@@ -83,51 +83,6 @@ export function createPaginatedResult<T>(
 }
 
 // ============================================================================
-// 游标分页
-// ============================================================================
-
-export interface CursorPaginationInput<T> {
-  data: T[];
-  limit: number;
-  cursorField: keyof T;
-  cursor?: string;
-}
-
-export interface CursorPaginationOutput<T> {
-  data: T[];
-  nextCursor?: string;
-  hasMore: boolean;
-}
-
-export function createCursorPaginatedResult<T extends Record<string, unknown>>(
-  input: CursorPaginationInput<T>,
-): CursorPaginationOutput<T> {
-  const { data, limit, cursorField, cursor } = input;
-
-  // 如果有游标，从游标位置开始
-  let startIndex = 0;
-  if (cursor) {
-    startIndex = data.findIndex((item) => String(item[cursorField]) === cursor) + 1;
-    if (startIndex === 0) startIndex = 0; // 游标未找到，从头开始
-  }
-
-  // 获取一页数据
-  const pageData = data.slice(startIndex, startIndex + limit + 1);
-  const hasMore = pageData.length > limit;
-  const resultData = pageData.slice(0, limit);
-
-  // 生成下一页游标
-  const lastItem = resultData[resultData.length - 1];
-  const nextCursor = hasMore && lastItem !== undefined ? String(lastItem[cursorField]) : undefined;
-
-  return {
-    data: resultData,
-    nextCursor,
-    hasMore,
-  };
-}
-
-// ============================================================================
 // Prisma 分页辅助
 // ============================================================================
 
@@ -163,21 +118,6 @@ export function buildPrismaPagination(options: PrismaPaginationOptions): {
   }
 
   return result;
-}
-
-// ============================================================================
-// 分页元数据
-// ============================================================================
-
-export function buildPaginationMeta(pagination: PaginationOutput): Record<string, string> {
-  return {
-    'X-Page': String(pagination.page),
-    'X-Limit': String(pagination.limit),
-    'X-Total': String(pagination.total),
-    'X-Total-Pages': String(pagination.totalPages),
-    'X-Has-Next': String(pagination.hasNext),
-    'X-Has-Prev': String(pagination.hasPrev),
-  };
 }
 
 // ============================================================================

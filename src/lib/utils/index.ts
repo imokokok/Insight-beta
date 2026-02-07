@@ -28,7 +28,6 @@ export {
   getErrorCode,
   getErrorDetails,
   fetchApiData,
-  fetchWithTimeout,
   getErrorMessage,
 } from './api';
 

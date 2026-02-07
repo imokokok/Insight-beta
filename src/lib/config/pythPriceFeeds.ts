@@ -187,17 +187,3 @@ export function getPriceFeedIdsForSymbols(
 
   return result;
 }
-
-/**
- * 合并自定义价格 IDs
- * @param customIds 自定义价格 IDs
- * @param useSolanaIds 是否使用 Solana 格式 IDs
- * @returns 合并后的 IDs
- */
-export function mergePriceFeedIds(
-  customIds?: Record<string, string>,
-  useSolanaIds = false,
-): Record<string, string> {
-  const baseIds = useSolanaIds ? PYTH_SOLANA_PRICE_FEED_IDS : PYTH_PRICE_FEED_IDS;
-  return { ...baseIds, ...customIds };
-}

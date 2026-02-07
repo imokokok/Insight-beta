@@ -409,26 +409,11 @@ export function getChainRpcConfig(chain: SupportedChain): ChainRpcConfig {
   };
 }
 
-export function getAllChainConfigs(): Record<SupportedChain, ChainRpcConfig> {
-  const configs = {} as Record<SupportedChain, ChainRpcConfig>;
-
-  for (const chain of Object.keys(CHAIN_CONFIG) as SupportedChain[]) {
-    configs[chain] = getChainRpcConfig(chain);
-  }
-
-  return configs;
-}
-
 export function getSupportedChains(): SupportedChain[] {
   return Object.keys(CHAIN_CONFIG).filter((chain) => {
     const config = getChainRpcConfig(chain as SupportedChain);
     return config.primary !== '';
   }) as SupportedChain[];
-}
-
-export function isChainSupported(chain: SupportedChain): boolean {
-  const config = getChainRpcConfig(chain);
-  return config.primary !== '';
 }
 
 export function validateRpcConfig(): { valid: boolean; errors: string[] } {

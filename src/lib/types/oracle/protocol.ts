@@ -49,27 +49,6 @@ export const PROTOCOL_DESCRIPTIONS: Record<OracleProtocol, string> = {
   uma: 'Optimistic oracle for custom data verification',
 };
 
-// 支持多个乐观预言机协议，不只是 UMA
-export const SUPPORTED_ASSERTION_PROTOCOLS: OracleProtocol[] = ['uma'];
-
-// 乐观预言机协议特定配置
-export const OPTIMISTIC_ORACLE_PROTOCOLS = [
-  {
-    id: 'uma',
-    name: 'UMA',
-    description: 'Universal Market Access - Optimistic oracle with DVM',
-    icon: '⚖️',
-    category: 'optimistic',
-  },
-  {
-    id: 'optimistic-generic',
-    name: 'Optimistic Oracle (Generic)',
-    description: 'Generic optimistic oracle interface',
-    icon: '🛡️',
-    category: 'optimistic',
-  },
-] as const;
-
 export type OracleFeature =
   | 'price_feeds'
   | 'randomness'

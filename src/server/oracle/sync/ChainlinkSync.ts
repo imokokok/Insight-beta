@@ -48,11 +48,11 @@ export async function startChainlinkSync(instanceId: string): Promise<void> {
 }
 
 export function stopChainlinkSync(instanceId: string): void {
-  return chainlinkSyncManager.stopSync(instanceId);
+  chainlinkSyncManager.stopSync(instanceId);
 }
 
 export function stopAllChainlinkSync(): void {
-  return chainlinkSyncManager.stopAllSync();
+  chainlinkSyncManager.stopAllSync();
 }
 
 export async function cleanupChainlinkData(): Promise<void> {

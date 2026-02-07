@@ -400,120 +400,6 @@ export class TaggedCache {
 }
 
 // ============================================================================
-// 缓存装饰器
-// ============================================================================
-
-export interface CacheOptions {
-  ttl: number;
-  keyGenerator?: (...args: unknown[]) => string;
-  condition?: (...args: unknown[]) => boolean;
-  tags?: string[];
-}
-
-export function withCache<T extends (...args: unknown[]) => Promise<unknown>>(
-  cache: CacheProvider,
-  options: CacheOptions,
-): (fn: T) => T {
-  const taggedCache = new TaggedCache(cache);
-
-  return (fn: T): T => {
-    return (async (...args: Parameters<T>): Promise<ReturnType<T>> => {
-      // 检查条件
-      if (options.condition && !options.condition(...args)) {
-        return fn(...args) as ReturnType<T>;
-      }
-
-      // 生成缓存键
-      const key = options.keyGenerator
-        ? options.keyGenerator(...args)
-        : `${fn.name}:${JSON.stringify(args)}`;
-
-      // 尝试从缓存获取
-      const cached = await taggedCache.get<ReturnType<T>>(key);
-      if (cached !== null) {
-        logger.debug('Cache hit', { key });
-        return cached;
-      }
-
-      // 执行函数
-      const result = await fn(...args);
-
-      // 存入缓存
-      if (options.tags && options.tags.length > 0) {
-        await taggedCache.setWithTags(key, result, options.tags, options.ttl);
-      } else {
-        await taggedCache.set(key, result, options.ttl);
-      }
-      logger.debug('Cache miss, stored', { key });
-
-      return result as ReturnType<T>;
-    }) as T;
-  };
-}
-
-// ============================================================================
-// 响应缓存中间件
-// ============================================================================
-
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
-
-export interface ResponseCacheConfig {
-  ttl: number;
-  vary?: string[];
-  keyGenerator?: (req: NextRequest) => string;
-  tags?: string[];
-}
-
-export function withResponseCache(cache: CacheProvider, config: ResponseCacheConfig) {
-  const taggedCache = new TaggedCache(cache);
-
-  return async (
-    req: NextRequest,
-    handler: (req: NextRequest) => Promise<NextResponse>,
-  ): Promise<NextResponse> => {
-    // 只缓存 GET 请求
-    if (req.method !== 'GET') {
-      return handler(req);
-    }
-
-    const key = config.keyGenerator ? config.keyGenerator(req) : `response:${req.url}`;
-
-    // 尝试从缓存获取
-    const cached = await taggedCache.get<{ body: unknown; headers: Record<string, string> }>(key);
-    if (cached) {
-      logger.debug('Response cache hit', { key });
-      return NextResponse.json(cached.body, { headers: cached.headers });
-    }
-
-    // 执行处理器
-    const response = await handler(req);
-
-    // 缓存响应
-    if (response.status === 200) {
-      try {
-        const body = await response.clone().json();
-        const headers: Record<string, string> = {};
-        response.headers.forEach((value, key) => {
-          headers[key] = value;
-        });
-
-        if (config.tags && config.tags.length > 0) {
-          await taggedCache.setWithTags(key, { body, headers }, config.tags, config.ttl);
-        } else {
-          await taggedCache.set(key, { body, headers }, config.ttl);
-        }
-        logger.debug('Response cache stored', { key });
-      } catch (error) {
-        logger.warn('Failed to cache response', { key, error });
-      }
-    }
-
-    return response;
-  };
-}
-
-// ============================================================================
 // 缓存管理器
 // ============================================================================
 
@@ -532,20 +418,6 @@ export class CacheManager {
 
   get tagged(): TaggedCache {
     return this.taggedCache;
-  }
-
-  /**
-   * 创建带缓存的函数
-   */
-  wrap<T extends (...args: unknown[]) => Promise<unknown>>(fn: T, options: CacheOptions): T {
-    return withCache(this.cache, options)(fn) as T;
-  }
-
-  /**
-   * 创建响应缓存中间件
-   */
-  middleware(config: ResponseCacheConfig) {
-    return withResponseCache(this.cache, config);
   }
 
   /**
@@ -595,11 +467,4 @@ export function generateCacheKey(prefix: string, ...parts: unknown[]): string {
     .join(':');
 
   return `${prefix}:${serialized}`;
-}
-
-/**
- * 创建基于实例的缓存键
- */
-export function createInstanceKey(instanceId: string | null | undefined, baseKey: string): string {
-  return instanceId ? `${baseKey}:instance:${instanceId}` : baseKey;
 }

@@ -31,7 +31,7 @@ export {
 } from './utils';
 
 // Re-export from lib/utils
-export { fetchWithTimeout, sleep } from '@/lib/utils';
+export { sleep } from '@/lib/utils';
 
 // Channel implementations
 export { sendEmailNotification } from './email';

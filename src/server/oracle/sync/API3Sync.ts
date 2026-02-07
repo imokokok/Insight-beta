@@ -53,11 +53,11 @@ export async function startAPI3Sync(instanceId: string): Promise<void> {
 }
 
 export function stopAPI3Sync(instanceId: string): void {
-  return api3SyncManager.stopSync(instanceId);
+  api3SyncManager.stopSync(instanceId);
 }
 
 export function stopAllAPI3Sync(): void {
-  return api3SyncManager.stopAllSync();
+  api3SyncManager.stopAllSync();
 }
 
 export async function cleanupAPI3Data(): Promise<void> {

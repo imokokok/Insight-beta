@@ -56,11 +56,11 @@ export async function startPythSync(instanceId: string): Promise<void> {
 }
 
 export function stopPythSync(instanceId: string): void {
-  return pythSyncManager.stopSync(instanceId);
+  pythSyncManager.stopSync(instanceId);
 }
 
 export function stopAllPythSync(): void {
-  return pythSyncManager.stopAllSync();
+  pythSyncManager.stopAllSync();
 }
 
 export async function cleanupPythData(): Promise<void> {

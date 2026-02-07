@@ -53,11 +53,11 @@ export async function startDIASync(instanceId: string): Promise<void> {
 }
 
 export function stopDIASync(instanceId: string): void {
-  return diaSyncManager.stopSync(instanceId);
+  diaSyncManager.stopSync(instanceId);
 }
 
 export function stopAllDIASync(): void {
-  return diaSyncManager.stopAllSync();
+  diaSyncManager.stopAllSync();
 }
 
 export async function cleanupDIAData(): Promise<void> {

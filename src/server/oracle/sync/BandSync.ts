@@ -108,11 +108,11 @@ export async function startBandSync(instanceId: string): Promise<void> {
 }
 
 export function stopBandSync(instanceId: string): void {
-  return bandSyncManager.stopSync(instanceId);
+  bandSyncManager.stopSync(instanceId);
 }
 
 export function stopAllBandSync(): void {
-  return bandSyncManager.stopAllSync();
+  bandSyncManager.stopAllSync();
 }
 
 export async function cleanupBandData(): Promise<void> {

@@ -48,11 +48,11 @@ export async function startFluxSync(instanceId: string): Promise<void> {
 }
 
 export function stopFluxSync(instanceId: string): void {
-  return fluxSyncManager.stopSync(instanceId);
+  fluxSyncManager.stopSync(instanceId);
 }
 
 export function stopAllFluxSync(): void {
-  return fluxSyncManager.stopAllSync();
+  fluxSyncManager.stopAllSync();
 }
 
 export async function cleanupFluxData(): Promise<void> {

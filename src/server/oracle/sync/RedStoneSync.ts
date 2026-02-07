@@ -53,11 +53,11 @@ export async function startRedStoneSync(instanceId: string): Promise<void> {
 }
 
 export function stopRedStoneSync(instanceId: string): void {
-  return redstoneSyncManager.stopSync(instanceId);
+  redstoneSyncManager.stopSync(instanceId);
 }
 
 export function stopAllRedStoneSync(): void {
-  return redstoneSyncManager.stopAllSync();
+  redstoneSyncManager.stopAllSync();
 }
 
 export async function cleanupRedStoneData(): Promise<void> {

@@ -1,10 +1,9 @@
-import type { createWalletClient } from 'viem';
-import { createPublicClient, http, type Address, type Hash } from 'viem';
+import { createPublicClient, http } from 'viem';
 import { arbitrum, hardhat, mainnet, optimism, polygon, polygonAmoy } from 'viem/chains';
 
 import { logger } from '@/lib/logger';
 
-import type { Chain } from 'viem/chains';
+import type { createWalletClient, Address, Hash, Chain } from 'viem';
 
 export interface UMAVoteRequest {
   assertionId: string;
@@ -387,34 +386,4 @@ export function getUMAClient(
     throw new Error('Failed to get UMA client from cache');
   }
   return cachedClient;
-}
-
-export async function castUMAVote(
-  assertionId: string,
-  support: boolean,
-  voterAddress: Address,
-  chainId: number,
-  rpcUrl: string,
-  dvmAddress: Address,
-): Promise<UMAVoteResult> {
-  const client = getUMAClient(chainId, rpcUrl, dvmAddress);
-  return client.voteFor({
-    assertionId,
-    support,
-    voterAddress,
-  });
-}
-
-export async function checkUMAVoteStatus(
-  assertionId: string,
-  voterAddress: Address,
-  chainId: number,
-  rpcUrl: string,
-  dvmAddress: Address,
-): Promise<UMAVoteStatus> {
-  const client = getUMAClient(chainId, rpcUrl, dvmAddress);
-  if (!client) {
-    throw new Error('Failed to initialize UMA client');
-  }
-  return client.getVoteStatus(assertionId, voterAddress);
 }

@@ -21,9 +21,6 @@ export type {
 
 export { SolanaError, SolanaErrorCode } from './types';
 
-// Sync Service
-export { SolanaSyncService, solanaSyncService } from './sync';
-
 // Pyth Client
 export {
   PythSolanaClient,
