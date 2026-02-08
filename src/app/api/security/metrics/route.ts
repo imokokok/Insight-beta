@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
 import { manipulationDetectionService } from '@/lib/services/manipulationDetectionService';
-import { createSupabaseClient } from '@/lib/supabase/server';
+import { createSupabaseClient, SUPABASE_ERROR_CODES } from '@/lib/supabase/server';
 
 interface MetricsRow {
   total_detections: number;
@@ -26,7 +26,7 @@ export async function GET() {
       .limit(1)
       .single();
 
-    if (error && error.code !== 'PGRST116') {
+    if (error && error.code !== SUPABASE_ERROR_CODES.NO_DATA) {
       logger.error('Failed to fetch metrics from database', { error: error.message });
     }
 

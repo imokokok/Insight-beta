@@ -12,6 +12,11 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 // 简化的 Supabase 客户端类型
 export type TypedSupabaseClient = SupabaseClient;
 
+// Supabase 错误代码常量
+export const SUPABASE_ERROR_CODES = {
+  NO_DATA: 'PGRST116',
+} as const;
+
 export function createSupabaseClient(): TypedSupabaseClient {
   const supabaseUrl = env.SUPABASE_URL;
   const supabaseKey = env.SUPABASE_SERVICE_ROLE_KEY;
@@ -71,14 +76,14 @@ function createMockClient(): MockSupabaseClient {
         eq: () => ({
           single: async () => ({
             data: null,
-            error: { code: 'PGRST116', message: 'No data found' },
+            error: { code: SUPABASE_ERROR_CODES.NO_DATA, message: 'No data found' },
           }),
         }),
         order: () => ({
           limit: () => ({
             single: async () => ({
               data: null,
-              error: { code: 'PGRST116', message: 'No data found' },
+              error: { code: SUPABASE_ERROR_CODES.NO_DATA, message: 'No data found' },
             }),
           }),
         }),

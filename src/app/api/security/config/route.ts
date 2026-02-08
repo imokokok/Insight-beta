@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
-import { createSupabaseClient } from '@/lib/supabase/server';
+import { createSupabaseClient, SUPABASE_ERROR_CODES } from '@/lib/supabase/server';
 
 interface ConfigRow {
   config: Record<string, unknown>;
@@ -44,7 +44,7 @@ export async function GET() {
       .eq('id', 'default')
       .single();
 
-    if (error && error.code !== 'PGRST116') {
+    if (error && error.code !== SUPABASE_ERROR_CODES.NO_DATA) {
       logger.error('Failed to fetch detection config', { error: error.message });
     }
 
