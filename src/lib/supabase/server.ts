@@ -18,7 +18,7 @@ export function createSupabaseClient(): TypedSupabaseClient {
 
   if (!supabaseUrl || !supabaseKey) {
     logger.warn('Missing Supabase environment variables, using mock client');
-    return createMockClient();
+    return createMockClient() as unknown as TypedSupabaseClient;
   }
 
   // Try to use actual supabase client if available
@@ -34,12 +34,37 @@ export function createSupabaseClient(): TypedSupabaseClient {
     }) as TypedSupabaseClient;
   } catch {
     logger.warn('@supabase/supabase-js not installed, using mock client');
-    return createMockClient();
+    return createMockClient() as unknown as TypedSupabaseClient;
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function createMockClient(): any {
+type MockQueryBuilder = {
+  eq: () => { single: () => Promise<{ data: null; error: { code: string; message: string } }> };
+  order: () => {
+    limit: () => {
+      single: () => Promise<{ data: null; error: { code: string; message: string } }>;
+    };
+  };
+  gte: () => { order: () => { data: []; error: null } };
+  lte: () => { data: []; error: null };
+  data: [];
+  error: null;
+};
+
+type MockSupabaseClient = {
+  from: () => {
+    select: () => MockQueryBuilder;
+    insert: () => { data: null; error: null };
+    update: () => { eq: () => { data: null; error: null } };
+    upsert: () => { data: null; error: null };
+    delete: () => { eq: () => { data: null; error: null } };
+  };
+  channel: () => {
+    on: () => { subscribe: () => { unsubscribe: () => void } };
+  };
+};
+
+function createMockClient(): MockSupabaseClient {
   return {
     from: () => ({
       select: () => ({

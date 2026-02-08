@@ -5,6 +5,8 @@
  * 支持基本的数学运算、比较和逻辑运算
  */
 
+/* eslint-disable security/detect-possible-timing-attacks */
+
 import { logger } from '@/lib/logger';
 
 export interface EvaluatorContext {
@@ -143,8 +145,8 @@ export class SafeExpressionEvaluator {
     let current = '';
 
     for (let i = 0; i < expression.length; i++) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const char: string = expression[i]!;
+      const char = expression[i];
+      if (char === undefined) continue;
 
       // 跳过空白字符
       if (/\s/.test(char)) {
@@ -229,11 +231,12 @@ export class SafeExpressionEvaluator {
   /**
    * 解析并评估表达式
    */
+
   private static parseExpression(tokens: string[], context: EvaluatorContext): unknown {
     // 处理逻辑运算符 (||, &&)
     for (let i = tokens.length - 1; i >= 0; i--) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const token = tokens[i]!;
+      const token = tokens[i];
+      if (token === undefined) continue;
       if (token === '||' || token === '&&') {
         const left = this.parseExpression(tokens.slice(0, i), context);
         const right = this.parseExpression(tokens.slice(i + 1), context);
@@ -246,8 +249,8 @@ export class SafeExpressionEvaluator {
 
     // 处理比较运算符
     for (let i = tokens.length - 1; i >= 0; i--) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const token = tokens[i]!;
+      const token = tokens[i];
+      if (token === undefined) continue;
       const op = this.COMPARISON_OPS[token];
       if (op) {
         const left = this.parseExpression(tokens.slice(0, i), context);
@@ -258,8 +261,8 @@ export class SafeExpressionEvaluator {
 
     // 处理加减法
     for (let i = 0; i < tokens.length; i++) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const token = tokens[i]!;
+      const token = tokens[i];
+      if (token === undefined) continue;
       if (token === '+' || token === '-') {
         const left = this.parseExpression(tokens.slice(0, i), context);
         const right = this.parseExpression(tokens.slice(i + 1), context);
@@ -272,8 +275,8 @@ export class SafeExpressionEvaluator {
 
     // 处理乘除法
     for (let i = 0; i < tokens.length; i++) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const token = tokens[i]!;
+      const token = tokens[i];
+      if (token === undefined) continue;
       if (token === '*' || token === '/' || token === '%') {
         const left = this.parseExpression(tokens.slice(0, i), context);
         const right = this.parseExpression(tokens.slice(i + 1), context);
@@ -291,8 +294,10 @@ export class SafeExpressionEvaluator {
 
     // 处理函数调用
     if (tokens.length >= 3 && tokens[1] === '(' && tokens[tokens.length - 1] === ')') {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const funcName = tokens[0]!;
+      const funcName = tokens[0];
+      if (funcName === undefined) {
+        throw new Error('Function name is undefined');
+      }
       if (!this.MATH_FUNCTIONS[funcName]) {
         throw new Error(`Unknown function: ${funcName}`);
       }
@@ -302,8 +307,10 @@ export class SafeExpressionEvaluator {
 
     // 处理数组访问
     if (tokens.length >= 3 && tokens[1] === '[' && tokens[tokens.length - 1] === ']') {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const arrayName = tokens[0]!;
+      const arrayName = tokens[0];
+      if (arrayName === undefined) {
+        throw new Error('Array name is undefined');
+      }
       const index = this.parseExpression(tokens.slice(2, -1), context);
       const array = this.getValue(arrayName, context);
       if (Array.isArray(array)) {
@@ -324,8 +331,11 @@ export class SafeExpressionEvaluator {
 
     // 单 token
     if (tokens.length === 1) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      return this.parseValue(tokens[0]!, context);
+      const token = tokens[0];
+      if (token === undefined) {
+        throw new Error('Token is undefined');
+      }
+      return this.parseValue(token, context);
     }
 
     throw new Error(`Invalid expression: ${tokens.join(' ')}`);
@@ -340,9 +350,7 @@ export class SafeExpressionEvaluator {
     let depth = 0;
 
     for (const token of tokens) {
-      // eslint-disable-next-line security/detect-possible-timing-attacks
       if (token === '(') depth++;
-      // eslint-disable-next-line security/detect-possible-timing-attacks
       if (token === ')') depth--;
 
       if (token === ',' && depth === 0) {
@@ -382,15 +390,11 @@ export class SafeExpressionEvaluator {
     }
 
     // 布尔值
-    // eslint-disable-next-line security/detect-possible-timing-attacks
     if (token === 'true') return true;
-    // eslint-disable-next-line security/detect-possible-timing-attacks
     if (token === 'false') return false;
 
     // null/undefined
-    // eslint-disable-next-line security/detect-possible-timing-attacks
     if (token === 'null') return null;
-    // eslint-disable-next-line security/detect-possible-timing-attacks
     if (token === 'undefined') return undefined;
 
     // 常量
