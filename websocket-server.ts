@@ -1,6 +1,8 @@
 import { WebSocketServer } from 'ws';
-import type { IncomingMessage } from 'http';
+
 import { logger } from './src/lib/logger';
+
+import type { IncomingMessage } from 'http';
 
 const PORT = parseInt(process.env.WS_PORT || '3001', 10);
 const HOST = process.env.WS_HOST || '0.0.0.0';
@@ -12,6 +14,9 @@ const API_KEY = process.env.WS_API_KEY;
 const connectionAttempts = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT_MAX = 10;
 const RATE_LIMIT_WINDOW = 60000;
+const RATE_LIMIT_CLEANUP_INTERVAL = 300000; // 5分钟清理一次过期的限流记录
+
+let rateLimitCleanupTimer: NodeJS.Timeout | null = null;
 
 const clients = new Map<
   string,
@@ -37,6 +42,32 @@ function checkConnectionRateLimit(ip: string): boolean {
 
   record.count++;
   return true;
+}
+
+function cleanupExpiredRateLimitRecords(): void {
+  const now = Date.now();
+  const expiredIps: string[] = [];
+
+  for (const [ip, record] of connectionAttempts.entries()) {
+    if (now > record.resetTime) {
+      expiredIps.push(ip);
+    }
+  }
+
+  for (const ip of expiredIps) {
+    connectionAttempts.delete(ip);
+  }
+
+  if (expiredIps.length > 0) {
+    logger.debug(`Cleaned up ${expiredIps.length} expired rate limit records`);
+  }
+}
+
+function startRateLimitCleanup(): void {
+  if (rateLimitCleanupTimer) return;
+  rateLimitCleanupTimer = setInterval(() => {
+    cleanupExpiredRateLimitRecords();
+  }, RATE_LIMIT_CLEANUP_INTERVAL);
 }
 
 function verifyClient(info: { origin: string; secure: boolean; req: IncomingMessage }): boolean {
@@ -242,6 +273,10 @@ function getStats(): Record<string, unknown> {
 
 process.on('SIGTERM', () => {
   logger.info('Received SIGTERM, shutting down gracefully');
+  if (rateLimitCleanupTimer) {
+    clearInterval(rateLimitCleanupTimer);
+    rateLimitCleanupTimer = null;
+  }
   wss.close(() => {
     logger.info('WebSocket server closed');
     process.exit(0);
@@ -250,11 +285,18 @@ process.on('SIGTERM', () => {
 
 process.on('SIGINT', () => {
   logger.info('Received SIGINT, shutting down gracefully');
+  if (rateLimitCleanupTimer) {
+    clearInterval(rateLimitCleanupTimer);
+    rateLimitCleanupTimer = null;
+  }
   wss.close(() => {
     logger.info('WebSocket server closed');
     process.exit(0);
   });
 });
+
+// 启动限流记录清理定时器
+startRateLimitCleanup();
 
 logger.info('Starting WebSocket server...', {
   port: PORT,

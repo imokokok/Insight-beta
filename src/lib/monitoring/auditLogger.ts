@@ -86,6 +86,7 @@ const BATCH_SIZE = 100;
 const PERSISTENCE_RETRY_ATTEMPTS = 3;
 const PERSISTENCE_RETRY_DELAY = 1000;
 const FETCH_TIMEOUT_MS = 5000; // 添加超时配置
+const MAX_PERSISTENCE_QUEUE_SIZE = 5000; // 持久化队列最大大小
 
 /**
  * 循环缓冲区 - 用于高效存储固定数量的日志条目
@@ -175,6 +176,19 @@ class SecurityAuditLogger {
     };
 
     this.logs.push(auditEntry);
+
+    // 检查队列大小限制
+    if (this.persistenceQueue.length >= MAX_PERSISTENCE_QUEUE_SIZE) {
+      // 移除最旧的条目（队列的前20%）
+      const removeCount = Math.floor(MAX_PERSISTENCE_QUEUE_SIZE * 0.2);
+      this.persistenceQueue.splice(0, removeCount);
+      logger.warn('Audit persistence queue limit reached, dropped oldest entries', {
+        droppedCount: removeCount,
+        currentSize: this.persistenceQueue.length,
+        maxSize: MAX_PERSISTENCE_QUEUE_SIZE,
+      });
+    }
+
     this.persistenceQueue.push(auditEntry);
 
     logger.info('Audit log entry', {

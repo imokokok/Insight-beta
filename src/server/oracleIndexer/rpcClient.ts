@@ -12,6 +12,8 @@ import { DEFAULT_RPC_TIMEOUT_MS, CACHE_TTL_MS } from './constants';
 
 /** 客户端缓存 */
 const clientCache = new Map<string, PublicClient & { _cacheTimestamp?: number }>();
+const MAX_CACHE_SIZE = 100; // 最大缓存客户端数量
+let cleanupTimer: NodeJS.Timeout | null = null;
 
 /**
  * 获取 RPC 超时时间
@@ -53,6 +55,12 @@ export function getCachedClient(url: string): PublicClient {
     clientCache.delete(url);
   }
 
+  // 检查缓存大小限制
+  if (clientCache.size >= MAX_CACHE_SIZE) {
+    // 清理最旧的缓存条目
+    cleanupOldestClients(Math.floor(MAX_CACHE_SIZE * 0.2));
+  }
+
   // 创建新客户端
   const client = createPublicClient({
     transport: http(url, {
@@ -64,6 +72,24 @@ export function getCachedClient(url: string): PublicClient {
   client._cacheTimestamp = now;
   clientCache.set(url, client);
   return client;
+}
+
+/**
+ * 清理最旧的客户端缓存
+ */
+function cleanupOldestClients(count: number): void {
+  const sorted = Array.from(clientCache.entries()).sort((a, b) => {
+    const tsA = a[1]._cacheTimestamp ?? 0;
+    const tsB = b[1]._cacheTimestamp ?? 0;
+    return tsA - tsB;
+  });
+
+  for (let i = 0; i < Math.min(count, sorted.length); i++) {
+    const entry = sorted[i];
+    if (entry) {
+      clientCache.delete(entry[0]);
+    }
+  }
 }
 
 /**
@@ -80,7 +106,20 @@ export function cleanupClientCache(): void {
 }
 
 // 定期清理缓存
-setInterval(cleanupClientCache, CACHE_TTL_MS);
+export function startCleanupTimer(): void {
+  if (cleanupTimer) return;
+  cleanupTimer = setInterval(cleanupClientCache, CACHE_TTL_MS);
+}
+
+export function stopCleanupTimer(): void {
+  if (cleanupTimer) {
+    clearInterval(cleanupTimer);
+    cleanupTimer = null;
+  }
+}
+
+// 启动清理定时器
+startCleanupTimer();
 
 /**
  * 脱敏 RPC URL

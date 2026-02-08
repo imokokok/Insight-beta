@@ -9,9 +9,11 @@ interface PendingRequest {
 const pendingRequests = new Map<string, PendingRequest>();
 const MAX_PENDING_AGE_MS = 30_000;
 const MAX_CONCURRENT_REQUESTS = 50;
+const MAX_PENDING_REQUESTS = 1000; // 最大pending请求数限制
 
 let concurrentCount = 0;
 const requestQueue: (() => void)[] = [];
+let cleanupTimer: NodeJS.Timeout | null = null;
 
 function processQueue() {
   while (concurrentCount < MAX_CONCURRENT_REQUESTS && requestQueue.length > 0) {
@@ -29,6 +31,16 @@ export function deduplicateRequest<T>(
   ttlMs: number = 5000,
 ): Promise<T> {
   const now = Date.now();
+
+  // 检查pending请求数量限制
+  if (pendingRequests.size >= MAX_PENDING_REQUESTS) {
+    // 清理最旧的请求
+    cleanupOldestRequests(Math.floor(MAX_PENDING_REQUESTS * 0.2));
+    logger.warn('Pending requests limit reached, cleaned up oldest entries', {
+      currentSize: pendingRequests.size,
+      maxSize: MAX_PENDING_REQUESTS,
+    });
+  }
 
   const existing = pendingRequests.get(key);
   if (existing) {
@@ -105,19 +117,44 @@ function cleanupExpiredRequests(): void {
   }
 }
 
-setInterval(() => {
-  cleanupExpiredRequests();
-
-  const stats = {
-    pending: pendingRequests.size,
-    concurrent: concurrentCount,
-    queued: requestQueue.length,
-  };
-
-  if (stats.pending > 100 || stats.queued > 10) {
-    logger.warn('High request deduplication stats', stats);
+function cleanupOldestRequests(count: number): void {
+  const sorted = Array.from(pendingRequests.entries()).sort(
+    (a, b) => a[1].createdAt - b[1].createdAt,
+  );
+  for (let i = 0; i < Math.min(count, sorted.length); i++) {
+    const entry = sorted[i];
+    if (entry) {
+      pendingRequests.delete(entry[0]);
+    }
   }
-}, 10_000);
+}
+
+function startCleanupTimer(): void {
+  if (cleanupTimer) return;
+  cleanupTimer = setInterval(() => {
+    cleanupExpiredRequests();
+
+    const stats = {
+      pending: pendingRequests.size,
+      concurrent: concurrentCount,
+      queued: requestQueue.length,
+    };
+
+    if (stats.pending > 100 || stats.queued > 10) {
+      logger.warn('High request deduplication stats', stats);
+    }
+  }, 10_000);
+}
+
+export function stopCleanupTimer(): void {
+  if (cleanupTimer) {
+    clearInterval(cleanupTimer);
+    cleanupTimer = null;
+  }
+}
+
+// 启动清理定时器
+startCleanupTimer();
 
 export function getRequestStats(): {
   pending: number;

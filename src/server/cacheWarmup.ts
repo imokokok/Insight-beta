@@ -285,9 +285,17 @@ export class CacheWarmupService {
 
     // Schedule periodic warmup
     this.warmupInterval = setInterval(
-      async () => {
-        await this.warmupCriticalCache();
-        await this.warmupHotKeys();
+      () => {
+        this.warmupCriticalCache().catch((error) => {
+          logger.error('Periodic warmup critical cache failed', {
+            error: error instanceof Error ? error.message : String(error),
+          });
+        });
+        this.warmupHotKeys().catch((error) => {
+          logger.error('Periodic warmup hot keys failed', {
+            error: error instanceof Error ? error.message : String(error),
+          });
+        });
       },
       intervalMinutes * 60 * 1000,
     );

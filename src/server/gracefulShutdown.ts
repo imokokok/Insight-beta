@@ -6,7 +6,6 @@
  */
 
 import { logger } from '@/lib/logger';
-import { query } from '@/server/db';
 import { syncManager } from '@/server/oracle/syncFramework';
 
 // ============================================================================
@@ -128,8 +127,9 @@ export async function gracefulShutdown(
     // 5. 关闭数据库连接
     logger.info('Closing database connections');
     try {
-      await query('SELECT 1'); // 确保连接池正常工作
-      // 注意：pg Pool 没有直接的 close 方法，依赖进程退出自动清理
+      const { db } = await import('@/server/db');
+      await db.end();
+      logger.info('Database connections closed successfully');
     } catch (error) {
       logger.error('Error closing database connections', { error });
     }
