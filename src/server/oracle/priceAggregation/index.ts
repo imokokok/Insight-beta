@@ -4,6 +4,9 @@
  * 价格聚合模块统一导出
  */
 
+// 类型导入
+import type { CrossOracleComparison, SupportedChain } from '@/lib/types/unifiedOracleTypes';
+
 // 配置
 export { AGGREGATION_CONFIG, AggregationMethod } from './config';
 
@@ -25,7 +28,6 @@ import { PriceAggregationEngine } from './engine';
 export const priceAggregationEngine = new PriceAggregationEngine();
 
 // 便捷函数
-import type { CrossOracleComparison, SupportedChain } from '@/lib/types/unifiedOracleTypes';
 
 export async function aggregatePrices(
   symbol: string,

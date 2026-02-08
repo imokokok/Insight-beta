@@ -8,13 +8,9 @@
  * - 装饰器支持
  */
 
-import type { OracleProtocol, SupportedChain } from '@/lib/types/unifiedOracleTypes';
-import {
-  OracleClientError,
-  PriceFetchError,
-  HealthCheckError,
-} from '@/lib/blockchain/core/types';
+import { OracleClientError, PriceFetchError, HealthCheckError } from '@/lib/blockchain/core/types';
 import type { Logger } from '@/lib/shared/logger/LoggerFactory';
+import type { OracleProtocol, SupportedChain } from '@/lib/types/unifiedOracleTypes';
 
 /**
  * 标准化错误对象
@@ -44,7 +40,7 @@ export class ErrorHandler {
     error: unknown,
     protocol: OracleProtocol,
     chain: SupportedChain,
-    symbol: string
+    symbol: string,
   ): PriceFetchError {
     const normalized = normalizeError(error);
     return new PriceFetchError(
@@ -52,7 +48,7 @@ export class ErrorHandler {
       protocol,
       chain,
       symbol,
-      normalized
+      normalized,
     );
   }
 
@@ -62,14 +58,14 @@ export class ErrorHandler {
   static createHealthCheckError(
     error: unknown,
     protocol: OracleProtocol,
-    chain: SupportedChain
+    chain: SupportedChain,
   ): HealthCheckError {
     const normalized = normalizeError(error);
     return new HealthCheckError(
       `Health check failed: ${normalized.message}`,
       protocol,
       chain,
-      normalized
+      normalized,
     );
   }
 
@@ -81,7 +77,7 @@ export class ErrorHandler {
     code: string,
     protocol: OracleProtocol,
     chain: SupportedChain,
-    cause?: unknown
+    cause?: unknown,
   ): OracleClientError {
     return new OracleClientError(message, code, protocol, chain, cause);
   }
@@ -93,7 +89,7 @@ export class ErrorHandler {
     logger: Logger,
     message: string,
     error: unknown,
-    meta?: Record<string, unknown>
+    meta?: Record<string, unknown>,
   ): void {
     const normalized = normalizeError(error);
     logger.error(message, {
@@ -110,7 +106,7 @@ export class ErrorHandler {
     logger: Logger,
     message: string,
     error: unknown,
-    meta?: Record<string, unknown>
+    meta?: Record<string, unknown>,
   ): void {
     const normalized = normalizeError(error);
     logger.warn(message, {
@@ -129,7 +125,7 @@ export class ErrorHandler {
       baseDelay: number;
       maxDelay: number;
       onRetry?: (attempt: number, error: Error) => void;
-    }
+    },
   ): Promise<T> {
     const { maxRetries, baseDelay, maxDelay, onRetry } = options;
     let lastError: Error | undefined;
@@ -170,29 +166,23 @@ export function withRetry(options: {
   maxDelay: number;
   logger?: Logger;
 }) {
-  return function (
-    _target: unknown,
-    propertyKey: string,
-    descriptor: PropertyDescriptor
-  ) {
+  return function (_target: unknown, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
 
+    const logger = options.logger;
     descriptor.value = async function (...args: unknown[]) {
-      return ErrorHandler.withRetry(
-        () => originalMethod.apply(this, args),
-        {
-          ...options,
-          onRetry: options.logger
-            ? (attempt, error) => {
-                options.logger!.warn(`${propertyKey} failed, retrying`, {
-                  attempt,
-                  maxRetries: options.maxRetries,
-                  error: error.message,
-                });
-              }
-            : undefined,
-        }
-      );
+      return ErrorHandler.withRetry(() => originalMethod.apply(this, args), {
+        ...options,
+        onRetry: logger
+          ? (attempt, error) => {
+              logger.warn(`${propertyKey} failed, retrying`, {
+                attempt,
+                maxRetries: options.maxRetries,
+                error: error.message,
+              });
+            }
+          : undefined,
+      });
     };
 
     return descriptor;
@@ -207,11 +197,7 @@ export function withErrorHandling(options: {
   logger?: Logger;
   logMessage?: string;
 }) {
-  return function (
-    _target: unknown,
-    propertyKey: string,
-    descriptor: PropertyDescriptor
-  ) {
+  return function (_target: unknown, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
 
     descriptor.value = async function (...args: unknown[]) {

@@ -8,6 +8,7 @@
 export { PriceFeedList } from './PriceFeedList';
 export { ProtocolHealthGrid } from './ProtocolHealthGrid';
 export { AlertPanel } from './AlertPanel';
+export { ProtocolFilter } from './ProtocolFilter';
 
 // 原有组件
 export { OracleCharts } from './OracleCharts';

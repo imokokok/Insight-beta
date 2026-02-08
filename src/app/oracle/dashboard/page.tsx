@@ -1,14 +1,11 @@
 /**
- * Unified Oracle Dashboard
+ * Unified Oracle Dashboard - Sidebar Layout
  *
  * 通用预言机监控平台主仪表板
- * - 实时价格 Feed 监控
- * - 协议健康度指标
- * - 活跃警报展示
- * - 跨协议数据分析
+ * - 左侧协议过滤器侧边栏
+ * - 右侧主内容区
+ * - 响应式布局适配
  */
-
-/* eslint-disable no-restricted-syntax */
 
 'use client';
 
@@ -24,6 +21,8 @@ import {
   Shield,
   Clock,
   Layers,
+  Menu,
+  AlertCircle,
 } from 'lucide-react';
 
 import { StatCard } from '@/components/features/common/StatCard';
@@ -32,6 +31,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartSkeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useDataRefresh } from '@/hooks/useDataRefresh';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { logger } from '@/lib/logger';
 import { fetchApiData, cn } from '@/lib/utils';
@@ -53,6 +53,12 @@ const OracleCharts = lazy(() =>
   import('@/components/features/oracle').then((mod) => ({ default: mod.OracleCharts })),
 );
 
+const ProtocolSidebar = lazy(() =>
+  import('@/components/features/oracle/ProtocolSidebar').then((mod) => ({
+    default: mod.ProtocolSidebar,
+  })),
+);
+
 // ============================================================================
 // Types
 // ============================================================================
@@ -71,10 +77,17 @@ interface DashboardStats {
 // ============================================================================
 
 export default function UnifiedDashboardPage() {
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [selectedProtocols, setSelectedProtocols] = useState<string[]>(['all']);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Use the new data refresh hook for stats
+  const { lastUpdated, isLoading, isError, error, refresh } = useDataRefresh({
+    maxRetries: 3,
+    retryDelay: 2000,
+    staleThreshold: 300,
+  });
 
   // WebSocket Connection using useWebSocket hook
   const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001';
@@ -93,397 +106,453 @@ export default function UnifiedDashboardPage() {
       const message = lastMessage as { type: string; data: DashboardStats };
       if (message.type === 'stats_update') {
         setStats(message.data);
-        setLastUpdated(new Date());
       }
-    } catch (error: unknown) {
-      logger.error('Failed to process WebSocket message', { error });
+    } catch (err: unknown) {
+      logger.error('Failed to process WebSocket message', { err });
     }
   }, [lastMessage]);
 
-  // Fetch initial stats
-  const fetchStats = useCallback(async () => {
-    const isActive = true;
-
-    try {
-      setLoading(true);
-      const controller = new AbortController();
-      const data = await fetchApiData<DashboardStats>('/api/oracle/stats', {
-        signal: controller.signal,
-      });
-
-      if (!isActive) return;
-      setStats(data);
-      setLastUpdated(new Date());
-    } catch {
-      if (!isActive) return;
-      // Use mock data as fallback
-      setStats({
-        totalProtocols: 9,
-        totalPriceFeeds: 156,
-        activeAlerts: 3,
-        avgLatency: 487,
-        totalValueSecured: '$2.4B',
-        priceUpdates24h: 1245678,
-      });
-    } finally {
-      if (isActive) {
-        setLoading(false);
-      }
-    }
+  // Fetch stats using the new refresh hook
+  const fetchStats = useCallback(async (signal: AbortSignal) => {
+    const data = await fetchApiData<DashboardStats>('/api/oracle/stats', {
+      signal,
+    });
+    return data;
   }, []);
 
+  // Initial fetch and interval
   useEffect(() => {
-    let isActive = true;
+    refresh(fetchStats);
 
-    const fetchWithAbort = async () => {
-      if (!isActive) return;
-      await fetchStats();
-    };
-
-    fetchWithAbort();
-    const interval = setInterval(fetchWithAbort, 60000);
+    const interval = setInterval(() => {
+      refresh(fetchStats);
+    }, 60000);
 
     return () => {
-      isActive = false;
       clearInterval(interval);
     };
-  }, [fetchStats]);
+  }, [refresh, fetchStats]);
 
   const handleRefresh = useCallback(() => {
-    setLoading(true);
-    fetchStats();
-  }, [fetchStats]);
+    refresh(fetchStats);
+  }, [refresh, fetchStats]);
 
   return (
-    <div className="container mx-auto p-6">
-      {/* Header */}
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold sm:text-3xl">Oracle Dashboard</h1>
-          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-            Real-time monitoring across multiple oracle protocols
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-          <div className="text-muted-foreground flex items-center gap-2 text-xs sm:text-sm">
-            <Clock className="h-4 w-4" />
-            <span className="hidden sm:inline">Last updated: </span>
-            {lastUpdated.toLocaleTimeString()}
-          </div>
-          <Badge variant={isConnected ? 'default' : 'destructive'} className="text-xs">
-            {isConnected ? 'Live' : 'Disconnected'}
-          </Badge>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={handleRefresh}
-            disabled={loading}
-            className="h-8 w-8 sm:h-9 sm:w-9"
-          >
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-          </Button>
-        </div>
-      </div>
+    <div className="flex h-screen overflow-hidden bg-gray-50/50">
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <button
+          type="button"
+          aria-label="Close sidebar"
+          className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
-      {/* Stats Cards */}
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6 lg:gap-4">
-        <StatCard
-          title="Protocols"
-          value={stats?.totalProtocols ?? 0}
-          icon={<Globe className="h-4 w-4" />}
-          loading={loading}
-          color="blue"
-        />
-        <StatCard
-          title="Price Feeds"
-          value={stats?.totalPriceFeeds ?? 0}
-          icon={<BarChart3 className="h-4 w-4" />}
-          loading={loading}
-          color="green"
-        />
-        <StatCard
-          title="Active Alerts"
-          value={stats?.activeAlerts ?? 0}
-          icon={<AlertTriangle className="h-4 w-4" />}
-          loading={loading}
-          color={stats && stats.activeAlerts > 0 ? 'red' : 'green'}
-          trend={
-            stats && stats.activeAlerts > 0
-              ? { value: stats.activeAlerts, isPositive: false }
-              : undefined
+      {/* Sidebar - Protocol Filter */}
+      <aside
+        className={cn(
+          'fixed inset-y-0 left-0 z-50 w-64 transform border-r border-gray-200 bg-white shadow-lg transition-transform duration-300 lg:static lg:translate-x-0',
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full',
+        )}
+      >
+        <Suspense
+          fallback={
+            <div className="flex h-full flex-col p-4">
+              <div className="mb-4 h-6 w-32 animate-pulse rounded bg-gray-200" />
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="mb-2 h-12 animate-pulse rounded bg-gray-100" />
+              ))}
+            </div>
           }
-        />
-        <StatCard
-          title="Avg Latency"
-          value={`${stats?.avgLatency ?? 0}ms`}
-          icon={<Activity className="h-4 w-4" />}
-          loading={loading}
-          color="purple"
-        />
-        <StatCard
-          title="TVS"
-          value={stats?.totalValueSecured ?? '$0'}
-          icon={<Shield className="h-4 w-4" />}
-          loading={loading}
-          color="orange"
-        />
-        <StatCard
-          title="Updates (24h)"
-          value={stats?.priceUpdates24h?.toLocaleString() ?? '0'}
-          icon={<Layers className="h-4 w-4" />}
-          loading={loading}
-          color="cyan"
-        />
-      </div>
+        >
+          <ProtocolSidebar
+            selectedProtocols={selectedProtocols}
+            onChange={setSelectedProtocols}
+            className="h-full"
+          />
+        </Suspense>
+      </aside>
 
-      {/* Main Content Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 lg:w-auto">
-          <TabsTrigger value="overview" className="px-2 text-xs sm:px-4 sm:text-sm">
-            <Zap className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">Overview</span>
-            <span className="sm:hidden">Overview</span>
-          </TabsTrigger>
-          <TabsTrigger value="feeds" className="px-2 text-xs sm:px-4 sm:text-sm">
-            <BarChart3 className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">Price Feeds</span>
-            <span className="sm:hidden">Feeds</span>
-          </TabsTrigger>
-          <TabsTrigger value="health" className="px-2 text-xs sm:px-4 sm:text-sm">
-            <Activity className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
-            Health
-          </TabsTrigger>
-          <TabsTrigger value="alerts" className="px-2 text-xs sm:px-4 sm:text-sm">
-            <AlertTriangle className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
-            Alerts
-          </TabsTrigger>
-        </TabsList>
+      {/* Main Content */}
+      <main className="flex flex-1 flex-col overflow-hidden">
+        {/* Header */}
+        <header className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 lg:px-6">
+          <div className="flex items-center gap-4">
+            {/* Mobile Menu Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
 
-        {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-4 sm:space-y-6">
-          {/* Top Row: Charts */}
-          <div className="grid gap-4 sm:gap-6 xl:grid-cols-3">
-            <div className="xl:col-span-2">
-              <Suspense fallback={<ChartSkeleton className="h-96" />}>
-                <OracleCharts />
-              </Suspense>
-            </div>
             <div>
-              <Suspense fallback={<ChartSkeleton className="h-96" />}>
-                <PriceFeedList limit={10} className="h-full" />
-              </Suspense>
+              <h1 className="text-xl font-bold text-gray-900 lg:text-2xl">Oracle Dashboard</h1>
+              <p className="text-muted-foreground hidden text-sm sm:block">
+                Real-time monitoring across multiple oracle protocols
+              </p>
             </div>
           </div>
 
-          {/* Middle Row: Protocol Health & Alerts Preview */}
-          <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
-            <Suspense fallback={<ChartSkeleton className="h-64" />}>
-              <ProtocolHealthGrid />
-            </Suspense>
-            <Suspense fallback={<ChartSkeleton className="h-64" />}>
-              <AlertPanel maxAlerts={5} />
-            </Suspense>
-          </div>
-        </TabsContent>
-
-        {/* Price Feeds Tab */}
-        <TabsContent value="feeds" className="space-y-6">
-          <div className="grid gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-2">
-              <Suspense fallback={<ChartSkeleton className="h-96" />}>
-                <PriceFeedList limit={50} />
-              </Suspense>
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="text-muted-foreground hidden items-center gap-2 text-sm sm:flex">
+              <Clock className="h-4 w-4" />
+              <span>{lastUpdated?.toLocaleTimeString() ?? '--:--:--'}</span>
             </div>
-            <div className="space-y-6">
+            <Badge variant={isConnected ? 'default' : 'destructive'} className="text-xs">
+              {isConnected ? 'Live' : 'Disconnected'}
+            </Badge>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleRefresh}
+              disabled={isLoading}
+              className="h-8 w-8"
+            >
+              <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            </Button>
+          </div>
+        </header>
+
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto p-4 lg:p-6">
+          {/* Stats Cards */}
+          <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6 lg:gap-4">
+            <StatCard
+              title="Protocols"
+              value={stats?.totalProtocols ?? 0}
+              icon={<Globe className="h-4 w-4" />}
+              loading={isLoading}
+              color="blue"
+              lastUpdated={lastUpdated}
+            />
+            <StatCard
+              title="Price Feeds"
+              value={stats?.totalPriceFeeds ?? 0}
+              icon={<BarChart3 className="h-4 w-4" />}
+              loading={isLoading}
+              color="green"
+              lastUpdated={lastUpdated}
+            />
+            <StatCard
+              title="Active Alerts"
+              value={stats?.activeAlerts ?? 0}
+              icon={<AlertTriangle className="h-4 w-4" />}
+              loading={isLoading}
+              color={stats && stats.activeAlerts > 0 ? 'red' : 'green'}
+              trend={
+                stats && stats.activeAlerts > 0
+                  ? { value: stats.activeAlerts, isPositive: false }
+                  : undefined
+              }
+              lastUpdated={lastUpdated}
+            />
+            <StatCard
+              title="Avg Latency"
+              value={`${stats?.avgLatency ?? 0}ms`}
+              icon={<Activity className="h-4 w-4" />}
+              loading={isLoading}
+              color="purple"
+              lastUpdated={lastUpdated}
+            />
+            <StatCard
+              title="TVS"
+              value={stats?.totalValueSecured ?? '$0'}
+              icon={<Shield className="h-4 w-4" />}
+              loading={isLoading}
+              color="orange"
+              lastUpdated={lastUpdated}
+            />
+            <StatCard
+              title="Updates (24h)"
+              value={stats?.priceUpdates24h?.toLocaleString() ?? '0'}
+              icon={<Layers className="h-4 w-4" />}
+              loading={isLoading}
+              color="cyan"
+              lastUpdated={lastUpdated}
+            />
+          </div>
+
+          {/* Error Message */}
+          {isError && error && (
+            <div className="mb-6 rounded-lg bg-red-50 p-4 text-sm text-red-600">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-4 w-4" />
+                <span>Failed to load dashboard data: {error.message}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <TabsList className="w-full justify-start lg:w-auto">
+              <TabsTrigger value="overview" className="gap-2">
+                <Zap className="h-4 w-4" />
+                <span className="hidden sm:inline">Overview</span>
+                <span className="sm:hidden">Overview</span>
+              </TabsTrigger>
+              <TabsTrigger value="health" className="gap-2">
+                <Activity className="h-4 w-4" />
+                Health
+              </TabsTrigger>
+              <TabsTrigger value="alerts" className="gap-2">
+                <AlertTriangle className="h-4 w-4" />
+                Alerts
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Overview Tab */}
+            <TabsContent value="overview" className="space-y-6">
+              {/* Charts Row */}
+              <div className="grid gap-6 xl:grid-cols-3">
+                <div className="xl:col-span-2">
+                  <Card className="h-full">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">Price Trends</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <Suspense fallback={<ChartSkeleton className="h-80" />}>
+                        <OracleCharts />
+                      </Suspense>
+                    </CardContent>
+                  </Card>
+                </div>
+                <div>
+                  <Card className="h-full">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">Latest Prices</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <Suspense fallback={<ChartSkeleton className="h-80" />}>
+                        <PriceFeedList limit={10} className="h-full" />
+                      </Suspense>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+
+              {/* Health & Alerts Row */}
+              <div className="grid gap-6 lg:grid-cols-2">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg">Protocol Health</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Suspense fallback={<ChartSkeleton className="h-64" />}>
+                      <ProtocolHealthGrid />
+                    </Suspense>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg">Recent Alerts</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Suspense fallback={<ChartSkeleton className="h-64" />}>
+                      <AlertPanel maxAlerts={5} />
+                    </Suspense>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            {/* Health Tab */}
+            <TabsContent value="health" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Feed Statistics</CardTitle>
+                  <CardTitle>Protocol Health Status</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Total Feeds</span>
-                    <span className="font-medium">{stats?.totalPriceFeeds ?? 0}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Active Protocols</span>
-                    <span className="font-medium">{stats?.totalProtocols ?? 0}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Stale Feeds</span>
-                    <Badge variant="secondary">3</Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Avg Update Time</span>
-                    <span className="font-medium">{stats?.avgLatency ?? 0}ms</span>
-                  </div>
+                <CardContent>
+                  <Suspense fallback={<ChartSkeleton className="h-96" />}>
+                    <ProtocolHealthGrid />
+                  </Suspense>
                 </CardContent>
               </Card>
-            </div>
-          </div>
-        </TabsContent>
 
-        {/* Health Tab */}
-        <TabsContent value="health" className="space-y-6">
-          <Suspense fallback={<ChartSkeleton className="h-96" />}>
-            <ProtocolHealthGrid />
-          </Suspense>
-
-          <div className="grid gap-6 lg:grid-cols-3">
-            <Card>
-              <CardHeader>
-                <CardTitle>Uptime (24h)</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {['Chainlink', 'Pyth Network', 'Band Protocol', 'API3', 'RedStone', 'Flux'].map(
-                    (protocol) => (
-                      <div key={protocol} className="flex items-center justify-between">
-                        <span className="text-sm">{protocol}</span>
-                        <div className="flex items-center gap-2">
-                          <div className="h-2 w-24 rounded-full bg-gray-100">
-                            <div
-                              className="h-2 rounded-full bg-green-500"
-                              style={{ width: `${99 + Math.random()}%` }}
-                            />
+              <div className="grid gap-6 lg:grid-cols-3">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Uptime (24h)</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {[
+                        'Chainlink',
+                        'Pyth Network',
+                        'Band Protocol',
+                        'API3',
+                        'RedStone',
+                        'Flux',
+                      ].map((protocol) => (
+                        <div key={protocol} className="flex items-center justify-between">
+                          <span className="text-sm">{protocol}</span>
+                          <div className="flex items-center gap-2">
+                            <div className="h-2 w-24 rounded-full bg-gray-100">
+                              <div
+                                className="h-2 rounded-full bg-green-500"
+                                style={{ width: `${99 + Math.random()}%` }}
+                              />
+                            </div>
+                            <span className="text-sm font-medium">
+                              {(99 + Math.random()).toFixed(2)}%
+                            </span>
                           </div>
-                          <span className="text-sm font-medium">
-                            {(99 + Math.random()).toFixed(2)}%
-                          </span>
                         </div>
-                      </div>
-                    ),
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Average Latency</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {['Chainlink', 'Pyth Network', 'Band Protocol', 'API3', 'RedStone', 'Flux'].map(
-                    (protocol) => (
-                      <div key={protocol} className="flex items-center justify-between">
-                        <span className="text-sm">{protocol}</span>
-                        <div className="flex items-center gap-2">
-                          <div className="h-2 w-24 rounded-full bg-gray-100">
-                            <div
-                              className={cn(
-                                'h-2 rounded-full',
-                                Math.random() > 0.5 ? 'bg-green-500' : 'bg-yellow-500',
-                              )}
-                              style={{ width: `${Math.random() * 100}%` }}
-                            />
-                          </div>
-                          <span className="text-sm font-medium">
-                            {Math.floor(Math.random() * 1000)}ms
-                          </span>
-                        </div>
-                      </div>
-                    ),
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Accuracy Score</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {['Chainlink', 'Pyth Network', 'Band Protocol', 'API3', 'RedStone', 'Flux'].map(
-                    (protocol) => (
-                      <div key={protocol} className="flex items-center justify-between">
-                        <span className="text-sm">{protocol}</span>
-                        <div className="flex items-center gap-2">
-                          <div className="h-2 w-24 rounded-full bg-gray-100">
-                            <div
-                              className="h-2 rounded-full bg-blue-500"
-                              style={{ width: `${95 + Math.random() * 5}%` }}
-                            />
-                          </div>
-                          <span className="text-sm font-medium">
-                            {(95 + Math.random() * 5).toFixed(1)}%
-                          </span>
-                        </div>
-                      </div>
-                    ),
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* Alerts Tab */}
-        <TabsContent value="alerts" className="space-y-6">
-          <div className="grid gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-2">
-              <Suspense fallback={<ChartSkeleton className="h-96" />}>
-                <AlertPanel maxAlerts={50} showAcknowledged />
-              </Suspense>
-            </div>
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Alert Summary</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Critical</span>
-                    <Badge variant="destructive">2</Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Warning</span>
-                    <Badge variant="secondary" className="bg-yellow-100 text-yellow-700">
-                      5
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Info</span>
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                      12
-                    </Badge>
-                  </div>
-                  <div className="border-t pt-4">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">Total Active</span>
-                      <span className="font-bold">{stats?.activeAlerts ?? 0}</span>
+                      ))}
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Alert Rules</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span>Price Deviation &gt; 2%</span>
-                    <Badge variant="outline">Active</Badge>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span>Stale Feed &gt; 10min</span>
-                    <Badge variant="outline">Active</Badge>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span>Latency &gt; 5s</span>
-                    <Badge variant="outline">Active</Badge>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span>Low Confidence &lt; 80%</span>
-                    <Badge variant="outline">Active</Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </TabsContent>
-      </Tabs>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Average Latency</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {[
+                        'Chainlink',
+                        'Pyth Network',
+                        'Band Protocol',
+                        'API3',
+                        'RedStone',
+                        'Flux',
+                      ].map((protocol) => (
+                        <div key={protocol} className="flex items-center justify-between">
+                          <span className="text-sm">{protocol}</span>
+                          <div className="flex items-center gap-2">
+                            <div className="h-2 w-24 rounded-full bg-gray-100">
+                              <div
+                                className={cn(
+                                  'h-2 rounded-full',
+                                  Math.random() > 0.5 ? 'bg-green-500' : 'bg-yellow-500',
+                                )}
+                                style={{ width: `${Math.random() * 100}%` }}
+                              />
+                            </div>
+                            <span className="text-sm font-medium">
+                              {Math.floor(Math.random() * 1000)}ms
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Accuracy Score</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {[
+                        'Chainlink',
+                        'Pyth Network',
+                        'Band Protocol',
+                        'API3',
+                        'RedStone',
+                        'Flux',
+                      ].map((protocol) => (
+                        <div key={protocol} className="flex items-center justify-between">
+                          <span className="text-sm">{protocol}</span>
+                          <div className="flex items-center gap-2">
+                            <div className="h-2 w-24 rounded-full bg-gray-100">
+                              <div
+                                className="h-2 rounded-full bg-blue-500"
+                                style={{ width: `${95 + Math.random() * 5}%` }}
+                              />
+                            </div>
+                            <span className="text-sm font-medium">
+                              {(95 + Math.random() * 5).toFixed(1)}%
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            {/* Alerts Tab */}
+            <TabsContent value="alerts" className="space-y-6">
+              <div className="grid gap-6 lg:grid-cols-3">
+                <div className="lg:col-span-2">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>All Alerts</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <Suspense fallback={<ChartSkeleton className="h-96" />}>
+                        <AlertPanel maxAlerts={50} showAcknowledged />
+                      </Suspense>
+                    </CardContent>
+                  </Card>
+                </div>
+                <div className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Alert Summary</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Critical</span>
+                        <Badge variant="destructive">2</Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Warning</span>
+                        <Badge variant="secondary" className="bg-yellow-100 text-yellow-700">
+                          5
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Info</span>
+                        <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                          12
+                        </Badge>
+                      </div>
+                      <div className="border-t pt-4">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium">Total Active</span>
+                          <span className="font-bold">{stats?.activeAlerts ?? 0}</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Alert Rules</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Price Deviation &gt; 2%</span>
+                        <Badge variant="outline">Active</Badge>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Stale Feed &gt; 10min</span>
+                        <Badge variant="outline">Active</Badge>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Latency &gt; 5s</span>
+                        <Badge variant="outline">Active</Badge>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Low Confidence &lt; 80%</span>
+                        <Badge variant="outline">Active</Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </main>
     </div>
   );
 }

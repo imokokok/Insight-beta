@@ -39,7 +39,11 @@ function getCachedClient(cacheKey: string, factory: () => PublicClient): PublicC
     RPC_CLIENT_CACHE.set(cacheKey, factory());
   }
 
-  return RPC_CLIENT_CACHE.get(cacheKey)!;
+  const cachedClient = RPC_CLIENT_CACHE.get(cacheKey);
+  if (!cachedClient) {
+    throw new Error(`Failed to get cached RPC client for ${cacheKey}`);
+  }
+  return cachedClient;
 }
 
 export interface RpcStats {

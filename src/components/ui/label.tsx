@@ -14,9 +14,14 @@ export interface LabelProps
   _ignored?: never;
 }
 
-const Label = React.forwardRef<HTMLLabelElement, LabelProps>(({ className, ...props }, ref) => (
-  <label ref={ref} className={cn(labelVariants(), className)} {...props} />
-));
+const Label = React.forwardRef<HTMLLabelElement, LabelProps>(
+  ({ className, htmlFor, children, ...props }, ref) => (
+    <label ref={ref} htmlFor={htmlFor} className={cn(labelVariants(), className)} {...props}>
+      {children}
+    </label>
+  ),
+);
+
 Label.displayName = 'Label';
 
 export { Label };

@@ -6,8 +6,6 @@
 
 'use client';
 
-/* eslint-disable no-restricted-syntax */
-
 import { useState, useEffect } from 'react';
 
 import {
@@ -26,9 +24,6 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
-// Progress component not available, using custom implementation
-
 import { logger } from '@/lib/logger';
 
 interface SLAStats {

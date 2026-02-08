@@ -1,7 +1,5 @@
 'use client';
 
-/* eslint-disable no-restricted-syntax */
-
 import type { Dispatch, SetStateAction } from 'react';
 
 import Link from 'next/link';

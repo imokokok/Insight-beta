@@ -1,7 +1,5 @@
 'use client';
 
-/* eslint-disable no-restricted-syntax */
-
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 

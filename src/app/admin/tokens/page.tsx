@@ -1,7 +1,5 @@
 'use client';
 
-/* eslint-disable no-restricted-syntax */
-
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { PageHeader } from '@/components/features/common/PageHeader';

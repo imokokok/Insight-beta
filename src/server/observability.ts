@@ -11,6 +11,19 @@
  */
 
 import { env } from '@/lib/config/env';
+import type {
+  AlertSeverity,
+  AlertStatus,
+  Alert,
+  AlertRuleEvent,
+  AlertRule,
+  AuditLogEntry,
+  IncidentStatus,
+  Incident,
+  OpsMetrics,
+  OpsMetricsSeriesPoint,
+  OpsSloStatus,
+} from '@/lib/types/oracleTypes';
 import { hasDatabase, query } from '@/server/db';
 import { readJsonFile, writeJsonFile } from '@/server/kvStore';
 import { getMemoryStore, memoryNowIso } from '@/server/memoryBackend';
@@ -41,20 +54,6 @@ export {
   VALID_RULE_EVENTS,
   VALID_SEVERITIES,
 } from './observability/constants';
-
-import type {
-  AlertSeverity,
-  AlertStatus,
-  Alert,
-  AlertRuleEvent,
-  AlertRule,
-  AuditLogEntry,
-  IncidentStatus,
-  Incident,
-  OpsMetrics,
-  OpsMetricsSeriesPoint,
-  OpsSloStatus,
-} from '@/lib/types/oracleTypes';
 
 export type {
   AlertSeverity,

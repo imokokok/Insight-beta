@@ -203,17 +203,10 @@ const nextConfig: NextConfig = {
 
   modularizeImports: {
     'lucide-react': {
-      skipDefaultConversion: true,
       transform: 'lucide-react/dist/esm/icons/{{ kebabCase member }}',
-    },
-    recharts: {
-      transform: 'recharts/es6/{{ camelCase member }}',
     },
     'date-fns': {
       transform: 'date-fns/{{ member }}',
-    },
-    viem: {
-      transform: 'viem/{{ member }}',
     },
   },
 

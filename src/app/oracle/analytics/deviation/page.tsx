@@ -356,10 +356,11 @@ function TrendList({
   return (
     <div className="space-y-3">
       {trends.map((trend) => (
-        <div
+        <button
+          type="button"
           key={trend.symbol}
           onClick={() => onSelect(trend)}
-          className="group cursor-pointer rounded-lg border p-4 transition-all hover:border-orange-500 hover:shadow-md"
+          className="group w-full cursor-pointer rounded-lg border p-4 text-left transition-all hover:border-orange-500 hover:shadow-md"
         >
           <div className="flex items-start justify-between">
             <div className="space-y-2">
@@ -382,7 +383,7 @@ function TrendList({
               <ChevronRight className="text-muted-foreground h-5 w-5 transition-transform group-hover:translate-x-1" />
             </div>
           </div>
-        </div>
+        </button>
       ))}
     </div>
   );
@@ -408,10 +409,11 @@ function AnomalyList({
   return (
     <div className="space-y-3">
       {anomalies.map((anomaly, index) => (
-        <div
+        <button
+          type="button"
           key={index}
           onClick={() => onSelect(anomaly)}
-          className="group cursor-pointer rounded-lg border p-4 transition-all hover:border-orange-500 hover:shadow-md"
+          className="group w-full cursor-pointer rounded-lg border p-4 text-left transition-all hover:border-orange-500 hover:shadow-md"
         >
           <div className="flex items-start justify-between">
             <div className="space-y-1">
@@ -438,7 +440,7 @@ function AnomalyList({
               <p className="text-muted-foreground text-xs">Max Deviation</p>
             </div>
           </div>
-        </div>
+        </button>
       ))}
     </div>
   );

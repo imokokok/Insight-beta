@@ -71,13 +71,22 @@ services:
       - REDIS_URL=redis://redis:6379
       - INSTANCE_ID=band-cosmos-mainnet
       - CHAIN=band
-      - RPC_URL=${BAND_RPC_URL}
-      - SYNC_INTERVAL_MS=60000
-      - SYMBOLS=BTC/USD,ETH/USD,BAND/USD
+      - RPC_URL=https://laozi1.bandchain.org
+      - SYNC_INTERVAL_MS=300000
+      - SYMBOLS=BTC/USD,ETH/USD,BNB/USD,XRP/USD,ADA/USD,SOL/USD,DOT/USD,DOGE/USD,AVAX/USD,MATIC/USD,LINK/USD,UNI/USD,LTC/USD,BCH/USD,ATOM/USD
     depends_on:
       redis:
         condition: service_healthy
     restart: unless-stopped
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
 
   # API3 Service
   api3-service:
@@ -88,13 +97,22 @@ services:
       - REDIS_URL=redis://redis:6379
       - INSTANCE_ID=api3-ethereum-mainnet
       - CHAIN=ethereum
-      - RPC_URL=${ETHEREUM_RPC_URL}
+      - RPC_URL=${ETHEREUM_RPC_URL:-https://eth.llamarpc.com}
       - SYNC_INTERVAL_MS=60000
-      - SYMBOLS=ETH/USD,BTC/USD,API3/USD
+      - SYMBOLS=ETH/USD,BTC/USD,USDC/USD,USDT/USD,DAI/USD,LINK/USD
     depends_on:
       redis:
         condition: service_healthy
     restart: unless-stopped
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
 
   # RedStone Service
   redstone-service:
@@ -103,32 +121,24 @@ services:
       dockerfile: Dockerfile
     environment:
       - REDIS_URL=redis://redis:6379
-      - INSTANCE_ID=redstone-arbitrum-mainnet
-      - CHAIN=arbitrum
-      - RPC_URL=${ARBITRUM_RPC_URL}
-      - SYNC_INTERVAL_MS=60000
-      - SYMBOLS=ETH/USD,BTC/USD,ARB/USD
+      - INSTANCE_ID=redstone-ethereum-mainnet
+      - CHAIN=ethereum
+      - RPC_URL=${ETHEREUM_RPC_URL:-https://eth.llamarpc.com}
+      - SYNC_INTERVAL_MS=30000
+      - SYMBOLS=ETH/USD,BTC/USD,USDC/USD,USDT/USD,DAI/USD,LINK/USD,UNI/USD,AAVE/USD
     depends_on:
       redis:
         condition: service_healthy
     restart: unless-stopped
-
-  # Switchboard Service
-  switchboard-service:
-    build:
-      context: ./switchboard-service
-      dockerfile: Dockerfile
-    environment:
-      - REDIS_URL=redis://redis:6379
-      - INSTANCE_ID=switchboard-solana-mainnet
-      - CHAIN=solana
-      - RPC_URL=${SOLANA_RPC_URL}
-      - SYNC_INTERVAL_MS=60000
-      - SYMBOLS=BTC/USD,ETH/USD,SOL/USD
-    depends_on:
-      redis:
-        condition: service_healthy
-    restart: unless-stopped
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
 
   # Flux Service
   flux-service:
@@ -137,15 +147,24 @@ services:
       dockerfile: Dockerfile
     environment:
       - REDIS_URL=redis://redis:6379
-      - INSTANCE_ID=flux-near-mainnet
-      - CHAIN=near
-      - RPC_URL=${NEAR_RPC_URL}
+      - INSTANCE_ID=flux-ethereum-mainnet
+      - CHAIN=ethereum
+      - RPC_URL=${ETHEREUM_RPC_URL:-https://eth.llamarpc.com}
       - SYNC_INTERVAL_MS=60000
-      - SYMBOLS=NEAR/USD,BTC/USD,ETH/USD
+      - SYMBOLS=ETH/USD,BTC/USD,USDC/USD,USDT/USD,DAI/USD,LINK/USD,UNI/USD,AAVE/USD
     depends_on:
       redis:
         condition: service_healthy
     restart: unless-stopped
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
 
   # DIA Service
   dia-service:
@@ -156,13 +175,22 @@ services:
       - REDIS_URL=redis://redis:6379
       - INSTANCE_ID=dia-ethereum-mainnet
       - CHAIN=ethereum
-      - RPC_URL=${ETHEREUM_RPC_URL}
-      - SYNC_INTERVAL_MS=60000
-      - SYMBOLS=ETH/USD,BTC/USD,DIADATA/USD
+      - RPC_URL=${ETHEREUM_RPC_URL:-https://eth.llamarpc.com}
+      - SYNC_INTERVAL_MS=600000
+      - SYMBOLS=ETH/USD,BTC/USD,USDC/USD,USDT/USD,DAI/USD,LINK/USD,UNI/USD,AAVE/USD,MKR/USD,SNX/USD
     depends_on:
       redis:
         condition: service_healthy
     restart: unless-stopped
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
 
   # Service Orchestrator
   orchestrator:
@@ -178,6 +206,11 @@ services:
       - redis
       - chainlink-service
       - pyth-service
+      - band-service
+      - api3-service
+      - redstone-service
+      - flux-service
+      - dia-service
     restart: unless-stopped
 
 volumes:

@@ -1,7 +1,5 @@
 'use client';
 
-/* eslint-disable no-restricted-syntax */
-
 import React, { useEffect, useState, useMemo, useDeferredValue } from 'react';
 
 import { TrendingUp, TrendingDown, Minus, AlertCircle, Clock } from 'lucide-react';

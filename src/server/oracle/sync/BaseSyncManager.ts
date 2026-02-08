@@ -6,6 +6,7 @@
  */
 
 import { logger } from '@/lib/logger';
+import { BatchInserter } from '@/lib/shared';
 import type {
   SupportedChain,
   UnifiedPriceFeed,
@@ -13,7 +14,6 @@ import type {
   OracleProtocol,
 } from '@/lib/types/unifiedOracleTypes';
 import { query } from '@/server/db';
-import { BatchInserter } from '@/lib/shared';
 
 // ============================================================================
 // 同步配置
@@ -300,9 +300,24 @@ export abstract class BaseSyncManager {
       this.priceFeedInserter = new BatchInserter({
         tableName: 'unified_price_feeds',
         columns: [
-          'id', 'instance_id', 'protocol', 'chain', 'symbol', 'base_asset', 'quote_asset',
-          'price', 'price_raw', 'decimals', 'timestamp', 'block_number', 'confidence',
-          'sources', 'is_stale', 'staleness_seconds', 'tx_hash', 'log_index'
+          'id',
+          'instance_id',
+          'protocol',
+          'chain',
+          'symbol',
+          'base_asset',
+          'quote_asset',
+          'price',
+          'price_raw',
+          'decimals',
+          'timestamp',
+          'block_number',
+          'confidence',
+          'sources',
+          'is_stale',
+          'staleness_seconds',
+          'tx_hash',
+          'log_index',
         ],
         batchSize: this.syncConfig.batchSize,
         onConflict: `ON CONFLICT (id) DO UPDATE SET
@@ -312,7 +327,7 @@ export abstract class BaseSyncManager {
           block_number = EXCLUDED.block_number,
           is_stale = EXCLUDED.is_stale,
           staleness_seconds = EXCLUDED.staleness_seconds,
-          updated_at = NOW()`
+          updated_at = NOW()`,
       });
     }
     return this.priceFeedInserter;

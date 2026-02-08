@@ -1,7 +1,5 @@
 'use client';
 
-/* eslint-disable no-restricted-syntax */
-
 import { useState, useMemo } from 'react';
 
 import { CheckCircle, BarChart3 } from 'lucide-react';

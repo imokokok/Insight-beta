@@ -58,7 +58,7 @@ export async function ensureUMASynced(
   const existing = umaInflightByInstance.get(normalizedInstanceId);
   if (existing) return existing;
 
-  let lockResolve: () => void;
+  let lockResolve: (() => void) | undefined;
   const lockPromise = new Promise<void>((resolve) => {
     lockResolve = resolve;
   });
@@ -72,7 +72,9 @@ export async function ensureUMASynced(
     return p;
   } finally {
     umaSyncLocks.delete(normalizedInstanceId);
-    lockResolve!();
+    if (lockResolve) {
+      lockResolve();
+    }
   }
 }
 

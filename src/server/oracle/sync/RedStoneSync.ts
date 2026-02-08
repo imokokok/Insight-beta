@@ -24,7 +24,7 @@ const redstoneSync = createSingletonSyncManager(
     },
   },
   (chain, rpcUrl, protocolConfig) => createRedStoneClient(chain, rpcUrl, protocolConfig),
-  (chain) => getAvailableRedStoneSymbols(chain)
+  (chain) => getAvailableRedStoneSymbols(chain),
 );
 
 // ============================================================================
@@ -39,10 +39,12 @@ export const stopAllRedStoneSync = redstoneSync.stopAllSync;
 export const cleanupRedStoneData = redstoneSync.cleanupData;
 
 // 保持向后兼容的默认导出
-export default {
+const redstoneSyncDefault = {
   startSync: startRedStoneSync,
   stopSync: stopRedStoneSync,
   stopAllSync: stopAllRedStoneSync,
   cleanupData: cleanupRedStoneData,
   manager: redstoneSyncManager,
 };
+
+export default redstoneSyncDefault;

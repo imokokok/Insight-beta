@@ -8,3 +8,7 @@ export { messageQueue, MessageQueue } from './utils/messageQueue';
 
 // Base classes
 export { BaseSyncService, SyncServiceOptions } from './base/BaseSyncService';
+export {
+  EnhancedSyncService,
+  SyncServiceOptions as EnhancedSyncServiceOptions,
+} from './base/EnhancedSyncService';

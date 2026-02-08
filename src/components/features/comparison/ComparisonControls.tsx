@@ -1,7 +1,5 @@
 'use client';
 
-/* eslint-disable no-restricted-syntax */
-
 import React, { useState, useCallback, memo } from 'react';
 
 import { Filter, Settings, RefreshCw, Download, Clock, Eye, EyeOff, X } from 'lucide-react';
@@ -228,10 +226,11 @@ export const ComparisonControls = memo(function ComparisonControls({
                       />
                       <div className="max-h-32 space-y-1 overflow-y-auto">
                         {filteredSymbols.slice(0, 10).map((symbol) => (
-                          <div
+                          <button
+                            type="button"
                             key={symbol}
                             className={cn(
-                              'flex cursor-pointer items-center justify-between rounded p-2 text-sm',
+                              'flex w-full cursor-pointer items-center justify-between rounded p-2 text-left text-sm',
                               filter.symbols?.includes(symbol) ? 'bg-primary/10' : 'hover:bg-muted',
                             )}
                             onClick={() => handleSymbolToggle(symbol)}
@@ -240,7 +239,7 @@ export const ComparisonControls = memo(function ComparisonControls({
                             {filter.symbols?.includes(symbol) && (
                               <Eye className="text-primary h-3 w-3" />
                             )}
-                          </div>
+                          </button>
                         ))}
                       </div>
                     </div>

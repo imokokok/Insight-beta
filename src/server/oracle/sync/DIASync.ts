@@ -24,7 +24,7 @@ const diaSync = createSingletonSyncManager(
     },
   },
   (chain, rpcUrl, protocolConfig) => createDIAClient(chain, rpcUrl, protocolConfig),
-  (chain) => getAvailableDIASymbols(chain)
+  (chain) => getAvailableDIASymbols(chain),
 );
 
 // ============================================================================
@@ -39,10 +39,12 @@ export const stopAllDIASync = diaSync.stopAllSync;
 export const cleanupDIAData = diaSync.cleanupData;
 
 // 保持向后兼容的默认导出
-export default {
+const diaSyncDefault = {
   startSync: startDIASync,
   stopSync: stopDIASync,
   stopAllSync: stopAllDIASync,
   cleanupData: cleanupDIAData,
   manager: diaSyncManager,
 };
+
+export default diaSyncDefault;

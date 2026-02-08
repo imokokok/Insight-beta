@@ -1,7 +1,5 @@
 'use client';
 
-/* eslint-disable no-restricted-syntax */
-
 import React, { useEffect, useState, useCallback } from 'react';
 
 import Link from 'next/link';
@@ -44,9 +42,8 @@ interface ProtocolHighlight {
   category: 'price_feed' | 'optimistic' | 'hybrid';
 }
 
-// 按类别组织的协议列表，不突出任何一个
+// 所有支持的协议列表 - 平等展示，不区分类别
 const PROTOCOLS: ProtocolHighlight[] = [
-  // 价格预言机
   {
     id: 'chainlink',
     name: 'Chainlink',
@@ -92,7 +89,15 @@ const PROTOCOLS: ProtocolHighlight[] = [
     features: ['Modular', 'L2 Optimized', 'Cost Efficient'],
     category: 'price_feed',
   },
-  // 乐观预言机
+  {
+    id: 'flux',
+    name: 'Flux',
+    description: 'Decentralized oracle aggregator with on-chain data verification',
+    icon: '⚡',
+    status: 'active',
+    features: ['Aggregator', 'On-chain Verification', 'Multi-source'],
+    category: 'price_feed',
+  },
   {
     id: 'uma',
     name: 'UMA',
@@ -101,6 +106,15 @@ const PROTOCOLS: ProtocolHighlight[] = [
     status: 'active',
     features: ['Optimistic Oracle', 'Assertions', 'Disputes'],
     category: 'optimistic',
+  },
+  {
+    id: 'switchboard',
+    name: 'Switchboard',
+    description: 'Permissionless oracle network for Solana and EVM chains',
+    icon: '🎛️',
+    status: 'beta',
+    features: ['Permissionless', 'Solana', 'EVM Compatible'],
+    category: 'price_feed',
   },
 ];
 
@@ -266,40 +280,21 @@ export default function OraclePlatformPage() {
         </div>
       </section>
 
-      {/* Protocols Section - 按类别展示 */}
+      {/* Protocols Section - 统一网格展示，不区分类别 */}
       <section className="bg-gray-50 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="mb-12 text-center">
             <h2 className="mb-4 text-3xl font-bold text-gray-900">Supported Protocols</h2>
             <p className="mx-auto max-w-2xl text-gray-600">
-              Monitor all major oracle networks including price feeds and optimistic oracles
+              Monitor all major oracle networks from a single unified interface
             </p>
           </div>
 
-          {/* 价格预言机 */}
-          <div className="mb-10">
-            <h3 className="mb-6 flex items-center gap-2 text-lg font-semibold text-gray-700">
-              <TrendingUp className="h-5 w-5" />
-              Price Feed Oracles
-            </h3>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {PROTOCOLS.filter((p) => p.category === 'price_feed').map((protocol) => (
-                <ProtocolCard key={protocol.id} protocol={protocol} />
-              ))}
-            </div>
-          </div>
-
-          {/* 乐观预言机 */}
-          <div>
-            <h3 className="mb-6 flex items-center gap-2 text-lg font-semibold text-gray-700">
-              <Shield className="h-5 w-5" />
-              Optimistic Oracles
-            </h3>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {PROTOCOLS.filter((p) => p.category === 'optimistic').map((protocol) => (
-                <ProtocolCard key={protocol.id} protocol={protocol} />
-              ))}
-            </div>
+          {/* 统一网格展示所有协议 */}
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {PROTOCOLS.map((protocol) => (
+              <ProtocolCard key={protocol.id} protocol={protocol} />
+            ))}
           </div>
 
           <div className="mt-12 text-center">

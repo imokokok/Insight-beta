@@ -1,7 +1,5 @@
 'use client';
 
-/* eslint-disable no-restricted-syntax */
-
 import { useMemo, useState } from 'react';
 
 import { ArrowUpRight, Minus, AlertTriangle, Info } from 'lucide-react';

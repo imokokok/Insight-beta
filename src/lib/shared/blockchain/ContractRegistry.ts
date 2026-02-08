@@ -8,6 +8,7 @@
  */
 
 import type { SupportedChain } from '@/lib/types/unifiedOracleTypes';
+
 import type { Address } from 'viem';
 
 export class ContractRegistry {
@@ -64,7 +65,7 @@ export class ContractRegistry {
  * 创建合约注册表的工厂函数
  */
 export function createContractRegistry(
-  entries?: Record<SupportedChain, Address | undefined>
+  entries?: Record<SupportedChain, Address | undefined>,
 ): ContractRegistry {
   const registry = new ContractRegistry();
   if (entries) {

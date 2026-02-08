@@ -24,7 +24,7 @@ const api3Sync = createSingletonSyncManager(
     },
   },
   (chain, rpcUrl, protocolConfig) => createAPI3Client(chain, rpcUrl, protocolConfig),
-  (chain) => getAvailableAPI3Dapis(chain)
+  (chain) => getAvailableAPI3Dapis(chain),
 );
 
 // ============================================================================
@@ -39,10 +39,12 @@ export const stopAllAPI3Sync = api3Sync.stopAllSync;
 export const cleanupAPI3Data = api3Sync.cleanupData;
 
 // 保持向后兼容的默认导出
-export default {
+const api3SyncDefault = {
   startSync: startAPI3Sync,
   stopSync: stopAPI3Sync,
   stopAllSync: stopAllAPI3Sync,
   cleanupData: cleanupAPI3Data,
   manager: api3SyncManager,
 };
+
+export default api3SyncDefault;

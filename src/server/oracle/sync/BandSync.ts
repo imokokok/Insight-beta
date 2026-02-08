@@ -7,8 +7,9 @@
 
 import type { BandClient } from '@/lib/blockchain/bandOracle';
 import { createBandClient } from '@/lib/blockchain/bandOracle';
-import type { SupportedChain, UnifiedPriceFeed } from '@/lib/types/unifiedOracleTypes';
 import { createSingletonSyncManager } from '@/lib/shared';
+import type { SupportedChain, UnifiedPriceFeed } from '@/lib/types/unifiedOracleTypes';
+
 import type { IOracleClient } from './BaseSyncManager';
 
 // ============================================================================
@@ -80,7 +81,7 @@ const bandSync = createSingletonSyncManager(
     },
   },
   (chain, rpcUrl, protocolConfig) => new BandClientWrapper(chain, rpcUrl, protocolConfig),
-  () => BAND_SUPPORTED_SYMBOLS
+  () => BAND_SUPPORTED_SYMBOLS,
 );
 
 // ============================================================================
@@ -95,10 +96,12 @@ export const stopAllBandSync = bandSync.stopAllSync;
 export const cleanupBandData = bandSync.cleanupData;
 
 // 保持向后兼容的默认导出
-export default {
+const bandSyncDefault = {
   startSync: startBandSync,
   stopSync: stopBandSync,
   stopAllSync: stopAllBandSync,
   cleanupData: cleanupBandData,
   manager: bandSyncManager,
 };
+
+export default bandSyncDefault;

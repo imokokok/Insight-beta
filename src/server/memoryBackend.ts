@@ -1,3 +1,4 @@
+import { env } from '@/lib/config/env';
 import type {
   Assertion,
   Dispute,
@@ -122,9 +123,6 @@ type MemoryStore = {
   metrics: Map<string, unknown>;
   configHistory?: Map<string, unknown[]>;
 };
-
-// Import at the top to avoid circular dependencies
-import { env } from '@/lib/config/env';
 
 function createDefaultConfig(): OracleConfig {
   const chainEnv = env.INSIGHT_CHAIN;

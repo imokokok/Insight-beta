@@ -293,9 +293,10 @@ function AnomalyList({
     <StaggerContainer className="space-y-3" staggerDelay={50}>
       {anomalies.map((anomaly) => (
         <HoverCard key={anomaly.id} hoverScale={false} hoverShadow={true} hoverBorder={true}>
-          <div
+          <button
+            type="button"
             onClick={() => onSelect(anomaly)}
-            className="group relative cursor-pointer overflow-hidden rounded-lg border bg-white p-4 transition-all"
+            className="group relative w-full cursor-pointer overflow-hidden rounded-lg border bg-white p-4 text-left transition-all"
           >
             {/* 左侧装饰条 */}
             <div
@@ -331,7 +332,7 @@ function AnomalyList({
                 <ChevronRight className="text-muted-foreground h-5 w-5 transition-transform group-hover:translate-x-1" />
               </div>
             </div>
-          </div>
+          </button>
         </HoverCard>
       ))}
     </StaggerContainer>

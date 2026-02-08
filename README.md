@@ -13,7 +13,7 @@
 
 ## ✨ Features
 
-### Multi-Protocol Support (8 Protocols Integrated)
+### Multi-Protocol Support (9 Protocols Integrated)
 
 #### Fully Integrated ✅
 
@@ -27,7 +27,15 @@
 - **Flux** - Decentralized oracle aggregator
 - **DIA** - Transparent and verifiable data feeds
 
-> **Note**: All 8 protocols are now fully integrated into the unified service with real-time price aggregation.
+> **Note**: All 9 protocols are now fully integrated into the unified service with real-time price aggregation.
+
+### 🏗️ Architecture Highlights
+
+- **Shared Module Library** - Reusable components for database, blockchain, sync, errors, and logging
+- **Factory Pattern** - `SyncManagerFactory` and `EvmOracleClient` for rapid protocol integration
+- **Code Reusability** - 54% code reduction through shared abstractions
+- **Type Safety** - Full TypeScript coverage with strict type checking
+- **Test Coverage** - 28 unit tests for shared modules
 
 ### Core Capabilities
 
@@ -88,14 +96,15 @@ docker run -p 3000:3000 --env-file .env oracle-monitor
 
 ### 快速导航
 
-| 文档                                    | 说明                   |
-| --------------------------------------- | ---------------------- |
-| [用户手册](./docs/USER_MANUAL.md)       | 终端用户指南           |
-| [开发指南](./docs/DEVELOPMENT_GUIDE.md) | 开发环境设置和编码规范 |
-| [架构文档](./docs/ARCHITECTURE.md)      | 系统架构设计           |
-| [API 文档](./docs/API.md)               | 完整的 API 参考        |
-| [部署指南](./docs/DEPLOYMENT.md)        | 生产环境部署           |
-| [故障排除](./TROUBLESHOOTING.md)        | 常见问题解决           |
+| 文档                                            | 说明                   |
+| ----------------------------------------------- | ---------------------- |
+| [用户手册](./docs/USER_MANUAL.md)               | 终端用户指南           |
+| [开发指南](./docs/DEVELOPMENT_GUIDE.md)         | 开发环境设置和编码规范 |
+| [架构文档](./docs/ARCHITECTURE.md)              | 系统架构设计           |
+| [架构改进](./docs/ARCHITECTURE_IMPROVEMENTS.md) | 代码重构和优化记录     |
+| [API 文档](./docs/API.md)                       | 完整的 API 参考        |
+| [部署指南](./docs/DEPLOYMENT.md)                | 生产环境部署           |
+| [故障排除](./TROUBLESHOOTING.md)                | 常见问题解决           |
 
 ### Supported Trading Pairs
 

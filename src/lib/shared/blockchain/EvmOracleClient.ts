@@ -10,16 +10,16 @@
 
 import { createPublicClient, http, type PublicClient, type Address, formatUnits } from 'viem';
 
+import { VIEM_CHAIN_MAP } from '@/lib/blockchain/chainConfig';
 import { BaseOracleClient } from '@/lib/blockchain/core/BaseOracleClient';
 import type {
   OracleClientConfig,
   OracleHealthStatus,
   HealthStatus,
 } from '@/lib/blockchain/core/types';
-import type { SupportedChain, UnifiedPriceFeed } from '@/lib/types/unifiedOracleTypes';
-import { VIEM_CHAIN_MAP } from '@/lib/blockchain/chainConfig';
-import { LoggerFactory } from '@/lib/shared/logger/LoggerFactory';
 import { ErrorHandler, normalizeError } from '@/lib/shared/errors/ErrorHandler';
+import { LoggerFactory } from '@/lib/shared/logger/LoggerFactory';
+import type { SupportedChain, UnifiedPriceFeed } from '@/lib/types/unifiedOracleTypes';
 
 export interface EvmOracleClientConfig extends OracleClientConfig {
   /** 合约 ABI */
@@ -79,7 +79,7 @@ export abstract class EvmOracleClient extends BaseOracleClient {
   protected abstract parsePriceFromContract(
     rawData: unknown,
     symbol: string,
-    feedId: string
+    feedId: string,
   ): UnifiedPriceFeed | null;
 
   /**

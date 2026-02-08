@@ -1,7 +1,5 @@
 'use client';
 
-/* eslint-disable no-restricted-syntax */
-
 import { useState, useEffect, useCallback, useMemo, Suspense, lazy } from 'react';
 
 import { useParams } from 'next/navigation';

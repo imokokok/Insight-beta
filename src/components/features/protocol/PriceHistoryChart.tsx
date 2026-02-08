@@ -1,7 +1,5 @@
 'use client';
 
-/* eslint-disable no-restricted-syntax */
-
 import { useState, useMemo } from 'react';
 
 import { TrendingUp, TrendingDown, Calendar } from 'lucide-react';

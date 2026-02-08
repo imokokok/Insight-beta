@@ -206,7 +206,7 @@ class SyncManager {
     }
 
     // 创建执行锁
-    let lockResolve: () => void;
+    let lockResolve: (() => void) | undefined;
     const lockPromise = new Promise<void>((resolve) => {
       lockResolve = resolve;
     });
@@ -286,7 +286,9 @@ class SyncManager {
         // 使用 setImmediate 避免递归调用栈溢出
         state.isRunning = false;
         this.syncExecutionLocks.delete(instanceId);
-        lockResolve!();
+        if (lockResolve) {
+          lockResolve();
+        }
         // 使用 setImmediate 将重试放入事件循环，避免递归栈溢出
         setImmediate(() => {
           void this.executeSync(instanceId, instance, syncFn, config);
@@ -296,7 +298,9 @@ class SyncManager {
     } finally {
       state.isRunning = false;
       this.syncExecutionLocks.delete(instanceId);
-      lockResolve!();
+      if (lockResolve) {
+        lockResolve();
+      }
     }
   }
 }

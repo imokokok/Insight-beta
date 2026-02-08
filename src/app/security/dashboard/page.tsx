@@ -320,9 +320,10 @@ function DetectionList({
     <StaggerContainer className="space-y-3" staggerDelay={50}>
       {detections.map((detection) => (
         <HoverCard key={detection.id} hoverScale={false} hoverShadow={true} hoverBorder={true}>
-          <div
+          <button
+            type="button"
             onClick={() => onSelect(detection)}
-            className="group relative cursor-pointer overflow-hidden rounded-lg border bg-white p-4 transition-all"
+            className="group relative w-full cursor-pointer overflow-hidden rounded-lg border bg-white p-4 text-left transition-all"
           >
             {/* 左侧装饰条 */}
             <div
@@ -373,7 +374,7 @@ function DetectionList({
               </div>
               <ChevronRight className="text-muted-foreground h-5 w-5 transition-transform group-hover:translate-x-1" />
             </div>
-          </div>
+          </button>
         </HoverCard>
       ))}
     </StaggerContainer>

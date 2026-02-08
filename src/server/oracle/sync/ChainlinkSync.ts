@@ -25,7 +25,7 @@ const chainlinkSync = createSingletonSyncManager(
     },
   },
   (chain, rpcUrl, protocolConfig) => createChainlinkClient(chain, rpcUrl, protocolConfig),
-  (chain) => getAvailableFeedsForChain(chain)
+  (chain) => getAvailableFeedsForChain(chain),
 );
 
 // ============================================================================
@@ -40,10 +40,12 @@ export const stopAllChainlinkSync = chainlinkSync.stopAllSync;
 export const cleanupChainlinkData = chainlinkSync.cleanupData;
 
 // 保持向后兼容的默认导出
-export default {
+const chainlinkSyncDefault = {
   startSync: startChainlinkSync,
   stopSync: stopChainlinkSync,
   stopAllSync: stopAllChainlinkSync,
   cleanupData: cleanupChainlinkData,
   manager: chainlinkSyncManager,
 };
+
+export default chainlinkSyncDefault;

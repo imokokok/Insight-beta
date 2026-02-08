@@ -68,10 +68,11 @@ export function useDashboardShortcuts({
       // 数字键切换标签页
       if (event.key >= '1' && event.key <= '9') {
         const tabIndex = parseInt(event.key, 10) - 1;
-        if (tabIndex < tabs.length && tabs[tabIndex]) {
+        const targetTab = tabs[tabIndex];
+        if (targetTab) {
           event.preventDefault();
-          onTabChange?.(tabs[tabIndex]!);
-          logger.debug('Dashboard shortcut: Tab change triggered', { tab: tabs[tabIndex] });
+          onTabChange?.(targetTab);
+          logger.debug('Dashboard shortcut: Tab change triggered', { tab: targetTab });
         }
       }
 

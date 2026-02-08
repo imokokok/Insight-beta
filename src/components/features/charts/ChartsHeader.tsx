@@ -1,7 +1,5 @@
 'use client';
 
-/* eslint-disable no-restricted-syntax */
-
 import { Activity, PieChart, Clock, BarChart3, Target } from 'lucide-react';
 
 import { cn } from '@/lib/utils';

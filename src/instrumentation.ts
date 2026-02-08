@@ -14,8 +14,8 @@ async function initOpenTelemetryCore() {
         ? './lib/monitoring/opentelemetry'
         : './lib/monitoring/opentelemetry.client'
     );
-    if (typeof otel.default === 'function') {
-      otel.default();
+    if (typeof otel.initOpenTelemetry === 'function') {
+      await otel.initOpenTelemetry();
     }
   } catch (error) {
     logger.error('Failed to initialize OpenTelemetry', { error });

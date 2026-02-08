@@ -1,7 +1,5 @@
 'use client';
 
-/* eslint-disable no-restricted-syntax */
-
 import { useEffect, useState } from 'react';
 
 import Link from 'next/link';
@@ -157,7 +155,7 @@ export default function UMAAssertionDetailPage() {
                 <InfoRow label="Identifier" value={assertion.identifier} />
                 <InfoRow label="Block" value={Number(assertion.blockNumber).toLocaleString()} />
                 <div className="md:col-span-2">
-                  <label className="mb-1 block text-sm text-gray-400">Ancillary Data / Claim</label>
+                  <span className="mb-1 block text-sm text-gray-400">Ancillary Data / Claim</span>
                   <code className="block break-all rounded-lg bg-white/5 px-3 py-2 font-mono text-sm">
                     {assertion.ancillaryData || 'N/A'}
                   </code>

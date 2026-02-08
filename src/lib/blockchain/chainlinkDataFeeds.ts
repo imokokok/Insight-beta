@@ -5,12 +5,11 @@
  * 代码量从 474 行减少到 ~200 行
  */
 
-import { type Address, parseAbi, formatUnits } from 'viem';
+import { type Address, parseAbi } from 'viem';
 
 import { DEFAULT_STALENESS_THRESHOLDS } from '@/lib/config/constants';
-import { EvmOracleClient, type EvmOracleClientConfig } from '@/lib/shared';
-import { ErrorHandler } from '@/lib/shared/errors/ErrorHandler';
-import { LoggerFactory } from '@/lib/shared/logger/LoggerFactory';
+import { EvmOracleClient } from '@/lib/shared';
+import { ErrorHandler, normalizeError } from '@/lib/shared/errors/ErrorHandler';
 import type {
   SupportedChain,
   UnifiedPriceFeed,
@@ -32,6 +31,37 @@ const AGGREGATOR_ABI = parseAbi([
 // ============================================================================
 // Chainlink 配置
 // ============================================================================
+
+/**
+ * Chainlink Feed Registry 地址（已弃用，保留以兼容旧代码）
+ * @deprecated Chainlink 每个 feed 有自己的地址
+ */
+export const CHAINLINK_FEED_REGISTRY: Record<SupportedChain, Address | undefined> = {
+  ethereum: '0x47Fb2585D2C56Fe188D0E6ec6a473f24e99F1A76',
+  polygon: undefined,
+  arbitrum: undefined,
+  optimism: undefined,
+  base: undefined,
+  avalanche: undefined,
+  bsc: undefined,
+  fantom: undefined,
+  celo: undefined,
+  gnosis: undefined,
+  linea: undefined,
+  scroll: undefined,
+  mantle: undefined,
+  mode: undefined,
+  blast: undefined,
+  solana: undefined,
+  near: undefined,
+  aptos: undefined,
+  sui: undefined,
+  polygonAmoy: undefined,
+  sepolia: undefined,
+  goerli: undefined,
+  mumbai: undefined,
+  local: undefined,
+};
 
 export const POPULAR_FEEDS: Record<SupportedChain, Record<string, Address>> = {
   ethereum: {
@@ -117,9 +147,9 @@ export const POPULAR_FEEDS: Record<SupportedChain, Record<string, Address>> = {
 export class ChainlinkClient extends EvmOracleClient {
   readonly protocol = 'chainlink' as const;
   readonly chain: SupportedChain;
-  
+
   private feedAddresses: Map<string, Address> = new Map();
-  private config: ChainlinkProtocolConfig;
+  private clientConfig: ChainlinkProtocolConfig;
 
   constructor(chain: SupportedChain, rpcUrl: string, config: ChainlinkProtocolConfig = {}) {
     super({
@@ -129,11 +159,10 @@ export class ChainlinkClient extends EvmOracleClient {
       timeoutMs: config.timeout ?? 30000,
       defaultDecimals: 8,
     });
-    
+
     this.chain = chain;
-    this.config = config;
-    this.logger = LoggerFactory.createOracleLogger('chainlink', chain);
-    
+    this.clientConfig = config;
+
     // 初始化 feed 地址映射
     const feeds = POPULAR_FEEDS[chain] || {};
     for (const [symbol, address] of Object.entries(feeds)) {
@@ -166,7 +195,7 @@ export class ChainlinkClient extends EvmOracleClient {
     description: string;
   }> {
     const address = feedId as Address;
-    
+
     try {
       const [roundData, decimals, description] = await Promise.all([
         this.publicClient.readContract({
@@ -215,16 +244,17 @@ export class ChainlinkClient extends EvmOracleClient {
       description: string;
     },
     symbol: string,
-    feedId: string
+    _feedId: string,
   ): UnifiedPriceFeed | null {
     const [baseAsset, quoteAsset] = symbol.split('/');
     const formattedPrice = this.formatPrice(rawData.answer, rawData.decimals);
-    
+
     const updatedAt = new Date(Number(rawData.updatedAt) * 1000);
     const stalenessSeconds = this.calculateStalenessSeconds(rawData.updatedAt);
-    
+
     const stalenessThreshold =
-      this.config.stalenessThreshold || DEFAULT_STALENESS_THRESHOLDS.CHAINLINK;
+      (this.clientConfig as { stalenessThreshold?: number }).stalenessThreshold ||
+      DEFAULT_STALENESS_THRESHOLDS.CHAINLINK;
     const isStale = stalenessSeconds > stalenessThreshold;
 
     return {
@@ -310,7 +340,7 @@ export class ChainlinkClient extends EvmOracleClient {
       const now = new Date();
       const stalenessSeconds = Math.floor((now.getTime() - lastUpdate.getTime()) / 1000);
 
-      const heartbeat = this.config.heartbeat || 3600;
+      const heartbeat = (this.clientConfig as { heartbeat?: number }).heartbeat || 3600;
       if (stalenessSeconds > heartbeat) {
         issues.push(`Data is stale: ${stalenessSeconds}s old`);
       }
@@ -334,7 +364,7 @@ export class ChainlinkClient extends EvmOracleClient {
         healthy: false,
         lastUpdate: new Date(0),
         stalenessSeconds: Infinity,
-        issues: [`Failed to read feed: ${ErrorHandler.normalizeError(error).message}`],
+        issues: [`Failed to read feed: ${normalizeError(error).message}`],
       };
     }
   }

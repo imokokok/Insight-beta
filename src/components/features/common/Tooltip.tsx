@@ -1,7 +1,5 @@
 'use client';
 
-/* eslint-disable no-restricted-syntax */
-
 import type { ReactNode } from 'react';
 import { useState, useRef, useEffect, useCallback } from 'react';
 

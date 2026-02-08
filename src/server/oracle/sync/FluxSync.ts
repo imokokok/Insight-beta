@@ -28,7 +28,7 @@ const fluxSync = createSingletonSyncManager(
       rpcUrl,
       ...protocolConfig,
     }) as unknown as ReturnType<Parameters<typeof createSingletonSyncManager>[1]>,
-  (chain) => getSupportedFluxSymbols(chain)
+  (chain) => getSupportedFluxSymbols(chain),
 );
 
 // ============================================================================
@@ -43,10 +43,12 @@ export const stopAllFluxSync = fluxSync.stopAllSync;
 export const cleanupFluxData = fluxSync.cleanupData;
 
 // 保持向后兼容的默认导出
-export default {
+const fluxSyncDefault = {
   startSync: startFluxSync,
   stopSync: stopFluxSync,
   stopAllSync: stopAllFluxSync,
   cleanupData: cleanupFluxData,
   manager: fluxSyncManager,
 };
+
+export default fluxSyncDefault;

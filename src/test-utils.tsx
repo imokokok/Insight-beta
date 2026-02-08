@@ -4,8 +4,6 @@
  * 提供统一的测试 mock 配置和工具函数
  */
 
-/* eslint-disable no-restricted-syntax */
-
 import type { ReactNode } from 'react';
 
 import { vi } from 'vitest';

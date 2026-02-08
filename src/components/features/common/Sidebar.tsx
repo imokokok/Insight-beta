@@ -1,7 +1,5 @@
 'use client';
 
-/* eslint-disable no-restricted-syntax */
-
 import { useState } from 'react';
 
 import Image from 'next/image';
@@ -10,43 +8,24 @@ import { usePathname, useSearchParams } from 'next/navigation';
 
 import {
   ShieldAlert,
-  Activity,
   Menu,
   X,
-  User,
   ScrollText,
-  KeyRound,
   Star,
   Globe,
-  ChevronDown,
   ChevronRight,
   LayoutDashboard,
   TrendingUp,
   Shield,
   Brain,
-  ArrowRightLeft,
 } from 'lucide-react';
 
 import { ConnectWallet } from '@/components/features/wallet/ConnectWallet';
 import { useOracleFilters } from '@/hooks/oracle/useOracleFilters';
 import { useI18n } from '@/i18n/LanguageProvider';
-import { PROTOCOL_DISPLAY_NAMES, PRICE_FEED_PROTOCOLS, OPTIMISTIC_PROTOCOLS } from '@/lib/types';
-import type { OracleProtocol } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 import type { Route } from 'next';
-
-const PROTOCOL_ICONS: Record<OracleProtocol, string> = {
-  chainlink: '🔗',
-  pyth: '🐍',
-  band: '🎸',
-  api3: '📡',
-  redstone: '💎',
-  switchboard: '🎛️',
-  flux: '⚡',
-  dia: '📊',
-  uma: '⚖️',
-};
 
 const mainNavItems = [
   {
@@ -74,22 +53,7 @@ const secondaryNavItems = [
   },
   { key: 'nav.alerts' as const, href: '/alerts' as const, icon: ShieldAlert },
   { key: 'nav.audit' as const, href: '/audit' as const, icon: ScrollText },
-  {
-    key: 'nav.adminTokens' as const,
-    href: '/admin/tokens' as const,
-    icon: KeyRound,
-  },
   { key: 'nav.watchlist' as const, href: '/watchlist' as const, icon: Star },
-  {
-    key: 'nav.myAssertions' as const,
-    href: '/my-assertions' as const,
-    icon: User,
-  },
-  {
-    key: 'nav.myDisputes' as const,
-    href: '/my-disputes' as const,
-    icon: ShieldAlert,
-  },
 ];
 
 export function Sidebar() {
@@ -97,11 +61,6 @@ export function Sidebar() {
   const searchParams = useSearchParams();
   const [isOpen, setIsOpen] = useState(false);
   const [logoSrc, setLogoSrc] = useState('/logo-owl.png');
-  const [expandedSections, setExpandedSections] = useState({
-    priceFeeds: true,
-    optimistic: true,
-    analytics: true,
-  });
   const { t } = useI18n();
   const { instanceId } = useOracleFilters();
   const instanceIdFromUrl = searchParams?.get('instanceId')?.trim() || null;
@@ -115,18 +74,7 @@ export function Sidebar() {
     return `${url.pathname}${url.search}${url.hash}`;
   };
 
-  const isProtocolActive = (protocol: OracleProtocol) => {
-    return pathname === `/oracle/protocols/${protocol}`;
-  };
-
   const isOptimisticActive = pathname?.startsWith('/oracle/optimistic');
-
-  const toggleSection = (section: 'priceFeeds' | 'optimistic' | 'analytics') => {
-    setExpandedSections((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
-  };
 
   return (
     <>
@@ -213,8 +161,8 @@ export function Sidebar() {
 
             {/* Price Feed Protocols Section */}
             <div className="pt-2">
-              <button
-                onClick={() => toggleSection('priceFeeds')}
+              <a
+                href="/oracle/unified"
                 className={cn(
                   'group flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
                   pathname?.startsWith('/oracle/protocols') && !isOptimisticActive
@@ -234,44 +182,14 @@ export function Sidebar() {
                   />
                   <span>Price Feeds</span>
                 </div>
-                {expandedSections.priceFeeds ? (
-                  <ChevronDown size={16} className="text-gray-400" />
-                ) : (
-                  <ChevronRight size={16} className="text-gray-400" />
-                )}
-              </button>
-
-              {/* Price Feed Protocol List */}
-              {expandedSections.priceFeeds && (
-                <div className="ml-4 mt-1 space-y-1 border-l-2 border-gray-200 pl-3">
-                  {PRICE_FEED_PROTOCOLS.map((protocol) => {
-                    const isActive = isProtocolActive(protocol);
-                    const href = `/oracle/protocols/${protocol}`;
-
-                    return (
-                      <Link
-                        key={protocol}
-                        href={href as Route}
-                        className={cn(
-                          'group flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-all duration-200',
-                          isActive
-                            ? 'bg-purple-50 text-purple-700'
-                            : 'text-gray-500 hover:bg-gray-50 hover:text-purple-600',
-                        )}
-                      >
-                        <span className="text-base">{PROTOCOL_ICONS[protocol]}</span>
-                        <span className="truncate">{PROTOCOL_DISPLAY_NAMES[protocol]}</span>
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
+                <ChevronRight size={16} className="text-gray-400" />
+              </a>
             </div>
 
             {/* Optimistic Oracle Section */}
             <div className="pt-2">
-              <button
-                onClick={() => toggleSection('optimistic')}
+              <a
+                href="/oracle/optimistic"
                 className={cn(
                   'group flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
                   isOptimisticActive
@@ -291,56 +209,14 @@ export function Sidebar() {
                   />
                   <span>Optimistic Oracle</span>
                 </div>
-                {expandedSections.optimistic ? (
-                  <ChevronDown size={16} className="text-gray-400" />
-                ) : (
-                  <ChevronRight size={16} className="text-gray-400" />
-                )}
-              </button>
-
-              {/* Optimistic Protocol List */}
-              {expandedSections.optimistic && (
-                <div className="ml-4 mt-1 space-y-1 border-l-2 border-gray-200 pl-3">
-                  <Link
-                    href="/oracle/optimistic"
-                    className={cn(
-                      'group flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-all duration-200',
-                      pathname === '/oracle/optimistic'
-                        ? 'bg-purple-50 text-purple-700'
-                        : 'text-gray-500 hover:bg-gray-50 hover:text-purple-600',
-                    )}
-                  >
-                    <Activity size={16} className="text-gray-400" />
-                    <span className="truncate">Overview</span>
-                  </Link>
-                  {OPTIMISTIC_PROTOCOLS.map((protocol) => {
-                    const isActive = isProtocolActive(protocol);
-                    const href = `/oracle/protocols/${protocol}`;
-
-                    return (
-                      <Link
-                        key={protocol}
-                        href={href as Route}
-                        className={cn(
-                          'group flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-all duration-200',
-                          isActive
-                            ? 'bg-purple-50 text-purple-700'
-                            : 'text-gray-500 hover:bg-gray-50 hover:text-purple-600',
-                        )}
-                      >
-                        <span className="text-base">{PROTOCOL_ICONS[protocol]}</span>
-                        <span className="truncate">{PROTOCOL_DISPLAY_NAMES[protocol]}</span>
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
+                <ChevronRight size={16} className="text-gray-400" />
+              </a>
             </div>
 
             {/* Analytics Section */}
             <div className="pt-2">
-              <button
-                onClick={() => toggleSection('analytics')}
+              <a
+                href="/oracle/analytics"
                 className={cn(
                   'group flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
                   pathname?.startsWith('/oracle/analytics')
@@ -360,42 +236,8 @@ export function Sidebar() {
                   />
                   <span>AI Analytics</span>
                 </div>
-                {expandedSections.analytics ? (
-                  <ChevronDown size={16} className="text-gray-400" />
-                ) : (
-                  <ChevronRight size={16} className="text-gray-400" />
-                )}
-              </button>
-
-              {/* Analytics Submenu */}
-              {expandedSections.analytics && (
-                <div className="ml-4 mt-1 space-y-1 border-l-2 border-gray-200 pl-3">
-                  <a
-                    href="/oracle/analytics/anomalies"
-                    className={cn(
-                      'group flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-all duration-200',
-                      pathname === '/oracle/analytics/anomalies'
-                        ? 'bg-purple-50 text-purple-700'
-                        : 'text-gray-500 hover:bg-gray-50 hover:text-purple-600',
-                    )}
-                  >
-                    <Brain size={16} className="text-gray-400" />
-                    <span className="truncate">ML Anomalies</span>
-                  </a>
-                  <a
-                    href="/oracle/analytics/deviation"
-                    className={cn(
-                      'group flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-all duration-200',
-                      pathname === '/oracle/analytics/deviation'
-                        ? 'bg-purple-50 text-purple-700'
-                        : 'text-gray-500 hover:bg-gray-50 hover:text-purple-600',
-                    )}
-                  >
-                    <ArrowRightLeft size={16} className="text-gray-400" />
-                    <span className="truncate">Price Deviation</span>
-                  </a>
-                </div>
-              )}
+                <ChevronRight size={16} className="text-gray-400" />
+              </a>
             </div>
 
             {/* Divider */}

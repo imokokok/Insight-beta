@@ -5,6 +5,8 @@
  * Flux 是一个去中心化的预言机网络，提供价格数据喂送
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import {
   createPublicClient,
   http,

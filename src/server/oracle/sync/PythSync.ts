@@ -26,7 +26,7 @@ const pythSync = createSingletonSyncManager(
   },
   (chain, rpcUrl, protocolConfig) => createPythClient(chain, rpcUrl, protocolConfig),
   // Pyth 的 symbols 是全局的，不依赖于特定链
-  () => getAvailablePythSymbols()
+  () => getAvailablePythSymbols(),
 );
 
 // ============================================================================
@@ -41,10 +41,12 @@ export const stopAllPythSync = pythSync.stopAllSync;
 export const cleanupPythData = pythSync.cleanupData;
 
 // 保持向后兼容的默认导出
-export default {
+const pythSyncDefault = {
   startSync: startPythSync,
   stopSync: stopPythSync,
   stopAllSync: stopAllPythSync,
   cleanupData: cleanupPythData,
   manager: pythSyncManager,
 };
+
+export default pythSyncDefault;

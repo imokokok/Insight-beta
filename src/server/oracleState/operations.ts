@@ -4,6 +4,8 @@
  * 提供断言、争议、投票等核心数据操作的 CRUD 功能
  */
 
+import crypto from 'node:crypto';
+
 import type { Assertion, Dispute, OracleChain } from '@/lib/types/oracleTypes';
 
 import { hasDatabase, query, getClient } from '../db';
@@ -1214,9 +1216,6 @@ export async function insertOracleEvent(
     return false;
   }
 }
-
-// 导入 crypto 模块
-import crypto from 'node:crypto';
 
 /**
  * 写入 Oracle 状态（兼容旧接口）

@@ -6,6 +6,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
+import { DataFreshnessIndicator } from './DataFreshnessIndicator';
+
 export type StatCardColor = 'blue' | 'green' | 'red' | 'purple' | 'orange' | 'cyan';
 
 export interface StatCardProps {
@@ -31,6 +33,8 @@ export interface StatCardProps {
   className?: string;
   /** 点击回调 */
   onClick?: () => void;
+  /** 数据最后更新时间 */
+  lastUpdated?: Date | null;
 }
 
 const colorClasses: Record<StatCardColor, string> = {
@@ -66,6 +70,7 @@ export const StatCard = memo(function StatCard({
   trend,
   className,
   onClick,
+  lastUpdated,
 }: StatCardProps) {
   if (loading) {
     return (
@@ -116,7 +121,14 @@ export const StatCard = memo(function StatCard({
             </span>
           )}
         </div>
-        {subtitle && <div className="mt-1 text-xs text-gray-500">{subtitle}</div>}
+        {(subtitle || lastUpdated) && (
+          <div className="mt-2 flex items-center justify-between">
+            {subtitle && <div className="text-xs text-gray-500">{subtitle}</div>}
+            {lastUpdated && (
+              <DataFreshnessIndicator lastUpdated={lastUpdated} className="ml-auto" />
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
