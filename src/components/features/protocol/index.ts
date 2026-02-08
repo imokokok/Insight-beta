@@ -1,40 +1,12 @@
-/**
- * Protocol Feature Components - Index
- *
- * This module exports all protocol-related components for the oracle monitoring platform.
- * These components provide data visualization, comparison, and alert functionality.
- */
-
-// Price History Chart Component
-export {
-  PriceHistoryChart,
-  generateMockPriceHistory,
-  type PriceDataPoint,
-  type PriceHistoryChartProps,
-} from './PriceHistoryChart';
-
-// Protocol Comparison Component
-export {
-  ProtocolComparison,
-  type ProtocolMetrics,
-  type ProtocolComparisonProps,
-} from './ProtocolComparison';
-
-// Price Alert Settings Component
-export {
-  PriceAlertSettings,
-  type PriceAlert,
-  type PriceAlertSettingsProps,
-} from './PriceAlertSettings';
-
-// Protocol Page Layout Component
-export { ProtocolPageLayout, type ProtocolPageLayoutProps } from './ProtocolPageLayout';
-
-// Feed Table Component
-export {
-  FeedTable,
-  feedColumnRenderers,
-  commonFeedColumns,
-  type FeedColumn,
-  type FeedTableProps,
-} from './FeedTable';
+export { AlertCenter, type Alert } from './AlertCenter';
+export { ArbitrageOpportunity, type ArbitrageOpportunityData } from './ArbitrageOpportunity';
+export { AssetPairList, type AssetPair } from './AssetPairList';
+export { DataFreshnessIndicator, DataFreshnessBadge } from './DataFreshnessIndicator';
+export { HealthScore, HealthScoreBadge } from './HealthScore';
+export { KeyMetrics } from './KeyMetrics';
+export { NodeDistributionMap, type NodeRegion } from './NodeDistributionMap';
+export { PerformanceChart, type PerformanceDataPoint } from './PerformanceChart';
+export { ProtocolComparison, type ProtocolComparisonData } from './ProtocolComparison';
+export { ProtocolDetailCard, type ProtocolDetail } from './ProtocolDetailCard';
+export { RealtimePriceStream, type PriceUpdate } from './RealtimePriceStream';
+export { RiskScore, type RiskScoreData, type RiskFactor } from './RiskScore';

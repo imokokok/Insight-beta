@@ -39,7 +39,7 @@ export const common = {
   search: '검색',
   notifications: '알림',
   userMenu: '사용자 메뉴',
-  brand: 'OracleMonitor',
+  brand: 'Insight',
   history: '히스토리',
   undo: '실행 취소',
   redo: '다시 실행',

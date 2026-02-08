@@ -39,7 +39,7 @@ export const common = {
   search: '搜索',
   notifications: '通知',
   userMenu: '用户菜单',
-  brand: 'OracleMonitor',
+  brand: 'Insight',
   history: '历史记录',
   undo: '撤销',
   redo: '重做',
@@ -135,11 +135,33 @@ export const common = {
     responseTime: '响应时间',
     priceDeviation: '价格偏差',
   },
-  // 评分
+  // Ratings
   ratings: {
     excellent: '优秀',
     good: '良好',
     needsImprovement: '需改进',
     normal: '正常',
   },
+  // Actions
+  actions: {
+    viewDetails: '查看详情',
+    ignore: '忽略',
+  },
+  // Labels
+  labels: {
+    target: '目标',
+    period: '周期',
+    totalRequests: '总请求',
+    failedRequests: '失败',
+    successRate: '成功率',
+    confidence: '置信度',
+    priceImpact: '价格影响',
+  },
+  // Actions & States
+  back: '返回',
+  reset: '重置',
+  saving: '保存中...',
+  saved: '已保存',
+  saveConfig: '保存配置',
+  submitting: '提交中...',
 };

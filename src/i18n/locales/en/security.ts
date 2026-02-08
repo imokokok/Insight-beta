@@ -5,6 +5,36 @@ export const security = {
     title: 'Security Dashboard',
     subtitle: 'Real-time monitoring of oracle security status',
   },
+  config: {
+    title: 'Price Manipulation Detection Config',
+    subtitle: 'Configure detection rules, thresholds and alert settings',
+    tabs: {
+      rules: 'Detection Rules',
+      thresholds: 'Thresholds',
+      alerts: 'Alert Config',
+      advanced: 'Advanced',
+    },
+    sections: {
+      enabledRules: 'Enabled Detection Rules',
+      enabledRulesDesc: 'Select price manipulation detection rules to enable',
+      statisticalThresholds: 'Statistical Anomaly Thresholds',
+      attackThresholds: 'Attack Detection Thresholds',
+      zScoreDesc: 'Standard deviation multiplier, values above this are considered anomalous (recommended: 3)',
+      minDataPointsDesc: 'Minimum number of historical data points required for statistical detection',
+      alertChannels: 'Alert Channels',
+      alertChannelsDesc: 'Configure notification methods for detection alerts',
+    },
+    labels: {
+      zScoreThreshold: 'Z-Score Threshold',
+      minConfidence: 'Minimum Confidence',
+      maxPriceDeviation: 'Max Price Deviation (%)',
+      minDataPoints: 'Minimum Data Points',
+      flashLoanMinAmount: 'Flash Loan Min Amount (USD)',
+      sandwichProfitThreshold: 'Sandwich Profit Threshold (USD)',
+      liquidityChangeThreshold: 'Liquidity Change Threshold',
+    },
+    enabled: 'Enabled',
+  },
   severity: {
     critical: 'Critical',
     high: 'High',
@@ -63,6 +93,10 @@ export const security = {
       name: 'Email Alert',
       description: 'Send email to configured admin address',
     },
+    webhook: {
+      name: 'Webhook',
+      description: 'Call configured Webhook URL',
+    },
     slack: {
       name: 'Slack',
       description: 'Send to Slack channel',
@@ -75,6 +109,8 @@ export const security = {
   placeholders: {
     reviewNote: 'Enter review notes...',
   },
+  reviewNotes: 'Review Notes',
+  submitReview: 'Submit Review',
   notifications: {
     title: 'Security Alert',
     newThreatDetected: 'New threat detected',
@@ -89,5 +125,7 @@ export const security = {
     status: 'Status',
     confidence: 'Confidence',
     description: 'Description',
+    financialImpact: 'Financial Impact',
+    suspiciousTx: 'Suspicious Transactions',
   },
 };

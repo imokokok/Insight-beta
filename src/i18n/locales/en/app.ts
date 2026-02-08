@@ -1,8 +1,8 @@
 export const app = {
-  brand: 'OracleMonitor',
+  brand: 'Insight',
   description:
     'Universal multi-protocol oracle monitoring platform supporting Chainlink, Pyth, API3, DIA, Band, RedStone, and more.',
-  logoAlt: 'OracleMonitor logo',
+  logoAlt: 'Insight logo',
   subtitle: 'Universal Oracle Monitor',
-  title: 'OracleMonitor · Multi-Protocol Oracle Aggregator',
+  title: 'Insight · Multi-Protocol Oracle Aggregator',
 };

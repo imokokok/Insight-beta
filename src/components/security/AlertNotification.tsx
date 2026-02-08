@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import type { ManipulationDetection } from '@/lib/types/security/detection';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/i18n';
 
 interface AlertNotificationProps {
   className?: string;
@@ -51,18 +52,10 @@ const severityConfig = {
   },
 };
 
-const typeLabels: Record<string, string> = {
-  flash_loan_attack: '闪电贷攻击',
-  price_manipulation: '价格操纵',
-  oracle_manipulation: '预言机操纵',
-  sandwich_attack: '三明治攻击',
-  front_running: '抢先交易',
-  back_running: '尾随交易',
-  liquidity_manipulation: '流动性操纵',
-  statistical_anomaly: '统计异常',
-};
+
 
 export function AlertNotification({ className }: AlertNotificationProps) {
+  const { t } = useI18n();
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
 
   const addAlert = useCallback((detection: ManipulationDetection) => {
@@ -157,27 +150,21 @@ export function AlertNotification({ className }: AlertNotificationProps) {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <h4 className="text-sm font-semibold">
-                        {typeLabels[detection.type] || detection.type}
+                        {t(`security:attackTypes.${detection.type}` as const) || detection.type}
                       </h4>
                       <Badge variant="outline" className={cn('text-xs', config.textColor)}>
-                        {detection.severity === 'critical'
-                          ? '严重'
-                          : detection.severity === 'high'
-                            ? '高危'
-                            : detection.severity === 'medium'
-                              ? '中危'
-                              : '低危'}
+                        {t(`security:severity.${detection.severity}` as const)}
                       </Badge>
                     </div>
                     <p className="text-muted-foreground mt-1 text-xs">
                       {detection.protocol}:{detection.chain}:{detection.symbol}
                     </p>
                     <p className="mt-1 text-xs">
-                      置信度: {(detection.confidenceScore * 100).toFixed(1)}%
+                      {t('common:labels.confidence')}: {(detection.confidenceScore * 100).toFixed(1)}%
                     </p>
                     {detection.priceImpact && (
                       <p className="mt-1 text-xs">
-                        价格影响: {detection.priceImpact > 0 ? '+' : ''}
+                        {t('common:labels.priceImpact')}: {detection.priceImpact > 0 ? '+' : ''}
                         {detection.priceImpact.toFixed(2)}%
                       </p>
                     )}
@@ -187,7 +174,7 @@ export function AlertNotification({ className }: AlertNotificationProps) {
                         className="ring-offset-background focus-visible:ring-ring border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex h-7 items-center justify-center rounded-md border px-3 text-sm text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
                       >
                         <ExternalLink className="mr-1 h-3 w-3" />
-                        查看详情
+                        {t('common:actions.viewDetails')}
                       </a>
                       <Button
                         variant="ghost"
@@ -196,7 +183,7 @@ export function AlertNotification({ className }: AlertNotificationProps) {
                         onClick={() => removeAlert(alert.id)}
                       >
                         <X className="mr-1 h-3 w-3" />
-                        忽略
+                        {t('common:actions.ignore')}
                       </Button>
                     </div>
                   </div>

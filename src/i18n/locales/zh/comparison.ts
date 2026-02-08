@@ -283,5 +283,11 @@ export const comparison = {
     band: {
       reason: '成本最低，适合个人项目和小型实验',
     },
+    defiReason: '综合性价比最高，适合需要高可靠性的 DeFi 协议',
+    tradingReason: '更新频率快，延迟低，适合高频交易场景',
+    enterpriseReason: '高可用性和企业级支持',
+    hobbyReason: '成本最低，适合个人项目和小型实验',
   },
+  price: '价格',
+  deviation: '偏离',
 };

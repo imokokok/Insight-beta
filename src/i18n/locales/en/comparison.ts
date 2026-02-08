@@ -314,5 +314,11 @@ export const comparison = {
     band: {
       reason: 'Lowest cost, suitable for personal projects and small experiments',
     },
+    defiReason: 'Best overall value, suitable for DeFi protocols requiring high reliability',
+    tradingReason: 'Fast update frequency, low latency, suitable for high-frequency trading',
+    enterpriseReason: 'High availability and enterprise-grade support',
+    hobbyReason: 'Lowest cost, suitable for personal projects and small experiments',
   },
+  price: 'Price',
+  deviation: 'Deviation',
 };

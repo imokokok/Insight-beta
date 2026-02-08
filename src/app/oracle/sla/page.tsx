@@ -25,6 +25,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { logger } from '@/lib/logger';
+import { useI18n } from '@/i18n';
 
 interface SLAStats {
   overallCompliance: number;
@@ -50,6 +51,7 @@ interface SLAReport {
 }
 
 export default function SLADashboardPage() {
+  const { t } = useI18n();
   const [stats, setStats] = useState<SLAStats | null>(null);
   const [reports, setReports] = useState<SLAReport[]>([]);
   const [loading, setLoading] = useState(true);
@@ -100,12 +102,12 @@ export default function SLADashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">SLA 监控面板</h1>
-          <p className="text-muted-foreground mt-1">Service Level Agreement Monitoring</p>
+          <h1 className="text-3xl font-bold">{t('sla:title')}</h1>
+          <p className="text-muted-foreground mt-1">{t('sla:subtitle')}</p>
         </div>
         <Button variant="outline" size="sm" onClick={refresh} disabled={refreshing}>
           <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-          刷新
+          {t('sla:refresh')}
         </Button>
       </div>
 
@@ -113,7 +115,7 @@ export default function SLADashboardPage() {
       {stats && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           <StatCard
-            title="整体合规率"
+            title={t('sla:stats.overallCompliance')}
             value={`${stats.overallCompliance.toFixed(1)}%`}
             subtitle="SLA Compliance"
             icon={<Shield className="h-5 w-5" />}
@@ -126,23 +128,23 @@ export default function SLADashboardPage() {
             }
           />
           <StatCard
-            title="合规协议"
+            title={t('sla:stats.compliantProtocols')}
             value={stats.compliantProtocols}
-            subtitle={`共 ${stats.totalProtocols} 个协议`}
+            subtitle={t('sla:stats.totalProtocols', { count: stats.totalProtocols })}
             icon={<CheckCircle className="h-5 w-5" />}
             status="healthy"
           />
           <StatCard
-            title="风险协议"
+            title={t('sla:stats.atRiskProtocols')}
             value={stats.atRiskProtocols}
-            subtitle="需要关注"
+            subtitle={t('sla:stats.needsAttention')}
             icon={<AlertTriangle className="h-5 w-5" />}
             status={stats.atRiskProtocols > 0 ? 'warning' : 'healthy'}
           />
           <StatCard
-            title="违约协议"
+            title={t('sla:stats.breachedProtocols')}
             value={stats.breachedProtocols}
-            subtitle="SLA 已违约"
+            subtitle={t('sla:stats.slaBreached')}
             icon={<XCircle className="h-5 w-5" />}
             status={stats.breachedProtocols > 0 ? 'critical' : 'healthy'}
           />
@@ -154,7 +156,7 @@ export default function SLADashboardPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BarChart3 className="h-5 w-5" />
-            协议 SLA 报告
+            {t('sla:reports.title')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -164,7 +166,7 @@ export default function SLADashboardPage() {
             ) : (
               <div className="py-8 text-center">
                 <Server className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
-                <p className="text-muted-foreground">暂无 SLA 数据</p>
+                <p className="text-muted-foreground">{t('sla:reports.noData')}</p>
               </div>
             )}
           </div>
@@ -210,10 +212,11 @@ function StatCard({
 }
 
 function SLAReportCard({ report }: { report: SLAReport }) {
+  const { t } = useI18n();
   const statusConfig = {
-    compliant: { label: '合规', color: 'bg-green-500', badge: 'default' },
-    at_risk: { label: '风险', color: 'bg-yellow-500', badge: 'secondary' },
-    breached: { label: '违约', color: 'bg-red-500', badge: 'destructive' },
+    compliant: { label: t('sla:status.compliant'), color: 'bg-green-500', badge: 'default' },
+    at_risk: { label: t('sla:status.at_risk'), color: 'bg-yellow-500', badge: 'secondary' },
+    breached: { label: t('sla:status.breached'), color: 'bg-red-500', badge: 'destructive' },
   };
 
   const config = statusConfig[report.status];
@@ -227,7 +230,7 @@ function SLAReportCard({ report }: { report: SLAReport }) {
             <p className="font-medium">
               {report.protocol.toUpperCase()} - {report.chain}
             </p>
-            <p className="text-muted-foreground text-sm">周期: {report.period}</p>
+            <p className="text-muted-foreground text-sm">{t('common:labels.period')}: {report.period}</p>
           </div>
         </div>
         <Badge variant={config.badge as 'default' | 'secondary' | 'destructive' | 'outline'}>
@@ -237,34 +240,34 @@ function SLAReportCard({ report }: { report: SLAReport }) {
 
       <div className="mb-4 grid grid-cols-2 gap-4 md:grid-cols-4">
         <MetricItem
-          label="正常运行时间"
+          label={t('sla:metrics.uptime')}
           value={`${report.uptime.toFixed(2)}%`}
-          target="99.9%"
+          target={t('sla:targets.uptime')}
           icon={<Activity className="h-4 w-4" />}
         />
         <MetricItem
-          label="平均延迟"
+          label={t('sla:metrics.avgLatency')}
           value={`${report.avgLatency.toFixed(0)}ms`}
-          target="<500ms"
+          target={t('sla:targets.latency')}
           icon={<Clock className="h-4 w-4" />}
         />
         <MetricItem
-          label="准确性"
+          label={t('sla:metrics.accuracy')}
           value={`${report.accuracy.toFixed(2)}%`}
-          target="99.5%"
+          target={t('sla:targets.accuracy')}
           icon={<TrendingUp className="h-4 w-4" />}
         />
         <MetricItem
-          label="可用性"
+          label={t('sla:metrics.availability')}
           value={`${report.availability.toFixed(2)}%`}
-          target="99.9%"
+          target={t('sla:targets.availability')}
           icon={<Server className="h-4 w-4" />}
         />
       </div>
 
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm">
-          <span>SLA 合规性</span>
+          <span>{t('sla:labels.slaCompliance')}</span>
           <span className="font-medium">{report.slaCompliance.toFixed(1)}%</span>
         </div>
         {/* Custom Progress Bar */}
@@ -277,10 +280,10 @@ function SLAReportCard({ report }: { report: SLAReport }) {
       </div>
 
       <div className="text-muted-foreground mt-4 flex items-center gap-4 text-sm">
-        <span>总请求: {report.totalRequests.toLocaleString()}</span>
-        <span>失败: {report.failedRequests.toLocaleString()}</span>
+        <span>{t('common:labels.totalRequests')}: {report.totalRequests.toLocaleString()}</span>
+        <span>{t('common:labels.failedRequests')}: {report.failedRequests.toLocaleString()}</span>
         <span>
-          成功率:{' '}
+          {t('common:labels.successRate')}:{' '}
           {report.totalRequests > 0
             ? ((1 - report.failedRequests / report.totalRequests) * 100).toFixed(2)
             : 100}
@@ -302,6 +305,7 @@ function MetricItem({
   target: string;
   icon: React.ReactNode;
 }) {
+  const { t } = useI18n();
   return (
     <div className="space-y-1">
       <div className="text-muted-foreground flex items-center gap-2">
@@ -309,7 +313,7 @@ function MetricItem({
         <span className="text-xs">{label}</span>
       </div>
       <p className="text-lg font-medium">{value}</p>
-      <p className="text-muted-foreground text-xs">目标: {target}</p>
+      <p className="text-muted-foreground text-xs">{t('common:labels.target')}: {target}</p>
     </div>
   );
 }

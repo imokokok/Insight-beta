@@ -39,7 +39,7 @@ export const common = {
   search: 'Search',
   notifications: 'Notifications',
   userMenu: 'User menu',
-  brand: 'OracleMonitor',
+  brand: 'Insight',
   history: 'History',
   undo: 'Undo',
   redo: 'Redo',
@@ -143,4 +143,26 @@ export const common = {
     needsImprovement: 'Needs Improvement',
     normal: 'Normal',
   },
+  // Actions
+  actions: {
+    viewDetails: 'View Details',
+    ignore: 'Ignore',
+  },
+  // Labels
+  labels: {
+    target: 'Target',
+    period: 'Period',
+    totalRequests: 'Total Requests',
+    failedRequests: 'Failed',
+    successRate: 'Success Rate',
+    confidence: 'Confidence',
+    priceImpact: 'Price Impact',
+  },
+  // Actions & States
+  back: 'Back',
+  reset: 'Reset',
+  saving: 'Saving...',
+  saved: 'Saved',
+  saveConfig: 'Save Configuration',
+  submitting: 'Submitting...',
 };

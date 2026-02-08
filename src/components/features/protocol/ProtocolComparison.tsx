@@ -1,30 +1,21 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
-import { CheckCircle, BarChart3 } from 'lucide-react';
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-} from 'recharts';
+  BarChart3,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Scale,
+  Trophy,
+} from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -33,336 +24,286 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { type OracleProtocol, PROTOCOL_DISPLAY_NAMES } from '@/lib/types';
+import { useI18n } from '@/i18n';
 import { cn } from '@/lib/utils';
 
-export interface ProtocolMetrics {
-  protocol: OracleProtocol;
-  price: number;
+export interface ProtocolComparisonData {
+  id: string;
+  name: string;
+  logo?: string;
+  healthScore: number;
   latency: number;
+  accuracy: number;
   uptime: number;
-  confidence: number;
-  updateFrequency: number;
-  deviation: number;
+  activeFeeds: number;
   supportedChains: number;
+  tvl?: number;
+  marketShare?: number;
+  features: string[];
 }
 
-export interface ProtocolComparisonProps {
-  protocols: OracleProtocol[];
-  symbol: string;
+interface ProtocolComparisonProps {
+  protocols: ProtocolComparisonData[];
+  loading?: boolean;
   className?: string;
 }
 
-const MOCK_METRICS: Record<OracleProtocol, ProtocolMetrics> = {
-  chainlink: {
-    protocol: 'chainlink',
-    price: 3254.78,
-    latency: 120,
-    uptime: 99.9,
-    confidence: 98.5,
-    updateFrequency: 0.5,
-    deviation: 0.25,
-    supportedChains: 15,
-  },
-  pyth: {
-    protocol: 'pyth',
-    price: 3254.82,
-    latency: 50,
-    uptime: 99.95,
-    confidence: 99.2,
-    updateFrequency: 0.1,
-    deviation: 0.15,
-    supportedChains: 50,
-  },
-  band: {
-    protocol: 'band',
-    price: 3254.75,
-    latency: 180,
-    uptime: 99.8,
-    confidence: 97.8,
-    updateFrequency: 1.0,
-    deviation: 0.35,
-    supportedChains: 10,
-  },
-  api3: {
-    protocol: 'api3',
-    price: 3254.8,
-    latency: 200,
-    uptime: 99.85,
-    confidence: 98.0,
-    updateFrequency: 1.0,
-    deviation: 0.5,
-    supportedChains: 12,
-  },
-  redstone: {
-    protocol: 'redstone',
-    price: 3254.85,
-    latency: 80,
-    uptime: 99.9,
-    confidence: 98.8,
-    updateFrequency: 0.2,
-    deviation: 0.2,
-    supportedChains: 25,
-  },
-  switchboard: {
-    protocol: 'switchboard',
-    price: 3254.77,
-    latency: 150,
-    uptime: 99.75,
-    confidence: 97.5,
-    updateFrequency: 0.5,
-    deviation: 0.3,
-    supportedChains: 8,
-  },
-  flux: {
-    protocol: 'flux',
-    price: 3254.73,
-    latency: 300,
-    uptime: 99.7,
-    confidence: 96.5,
-    updateFrequency: 5.0,
-    deviation: 0.8,
-    supportedChains: 3,
-  },
-  dia: {
-    protocol: 'dia',
-    price: 3254.79,
-    latency: 250,
-    uptime: 99.8,
-    confidence: 97.0,
-    updateFrequency: 2.0,
-    deviation: 0.6,
-    supportedChains: 20,
-  },
-  uma: {
-    protocol: 'uma',
-    price: 3254.81,
-    latency: 7200,
-    uptime: 99.9,
-    confidence: 95.0,
-    updateFrequency: 7200,
-    deviation: 1.0,
-    supportedChains: 5,
-  },
-};
+export function ProtocolComparison({ protocols, loading, className }: ProtocolComparisonProps) {
+  const { t } = useI18n();
+  const [sortBy, setSortBy] = useState<'health' | 'latency' | 'accuracy' | 'uptime'>('health');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
-export function ProtocolComparison({ protocols, symbol, className }: ProtocolComparisonProps) {
-  const [selectedProtocols, setSelectedProtocols] = useState<OracleProtocol[]>(
-    protocols.slice(0, 3),
-  );
-  const [comparisonMetric, setComparisonMetric] = useState<keyof ProtocolMetrics>('latency');
-
-  const metrics = useMemo(() => {
-    return selectedProtocols.map((p) => MOCK_METRICS[p]);
-  }, [selectedProtocols]);
+  const sortedProtocols = useMemo(() => {
+    const sorted = [...protocols].sort((a, b) => {
+      let comparison = 0;
+      switch (sortBy) {
+        case 'health':
+          comparison = a.healthScore - b.healthScore;
+          break;
+        case 'latency':
+          comparison = a.latency - b.latency;
+          break;
+        case 'accuracy':
+          comparison = a.accuracy - b.accuracy;
+          break;
+        case 'uptime':
+          comparison = a.uptime - b.uptime;
+          break;
+      }
+      return sortOrder === 'desc' ? -comparison : comparison;
+    });
+    return sorted;
+  }, [protocols, sortBy, sortOrder]);
 
   const bestProtocol = useMemo(() => {
-    if (metrics.length === 0) return null;
-    return metrics.reduce((best, current) => {
-      // Lower is better for latency, deviation
-      // Higher is better for uptime, confidence
-      const isLowerBetter = ['latency', 'deviation', 'updateFrequency'].includes(
-        comparisonMetric as string,
-      );
+    if (protocols.length === 0) return null;
+    return protocols.reduce((best, current) =>
+      current.healthScore > best.healthScore ? current : best
+    );
+  }, [protocols]);
 
-      if (isLowerBetter) {
-        return current[comparisonMetric] < best[comparisonMetric] ? current : best;
-      } else {
-        return current[comparisonMetric] > best[comparisonMetric] ? current : best;
-      }
-    });
-  }, [metrics, comparisonMetric]);
-
-  const formatValue = (metric: keyof ProtocolMetrics, value: number | string) => {
-    switch (metric) {
-      case 'price':
-        return `$${Number(value).toLocaleString()}`;
-      case 'latency':
-        return `${value}ms`;
-      case 'uptime':
-      case 'confidence':
-        return `${value}%`;
-      case 'updateFrequency':
-        return `${value}s`;
-      case 'deviation':
-        return `${value}%`;
-      case 'supportedChains':
-        return `${value} chains`;
-      default:
-        return String(value);
+  const toggleSort = (column: typeof sortBy) => {
+    if (sortBy === column) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(column);
+      setSortOrder('desc');
     }
   };
 
-  const chartData = metrics.map((m) => ({
-    name: PROTOCOL_DISPLAY_NAMES[m.protocol],
-    value:
-      comparisonMetric === 'latency'
-        ? m.latency
-        : comparisonMetric === 'uptime'
-          ? m.uptime
-          : comparisonMetric === 'confidence'
-            ? m.confidence
-            : comparisonMetric === 'deviation'
-              ? m.deviation
-              : m.updateFrequency,
-    protocol: m.protocol,
-  }));
+  const toggleExpand = (id: string) => {
+    const newExpanded = new Set(expandedRows);
+    if (newExpanded.has(id)) {
+      newExpanded.delete(id);
+    } else {
+      newExpanded.add(id);
+    }
+    setExpandedRows(newExpanded);
+  };
+
+  const getScoreColor = (score: number) => {
+    if (score >= 90) return 'text-emerald-600';
+    if (score >= 70) return 'text-blue-600';
+    if (score >= 50) return 'text-amber-600';
+    return 'text-rose-600';
+  };
+
+  if (loading) {
+    return (
+      <Card className={className}>
+        <CardHeader>
+          <Skeleton className="h-6 w-48" />
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className={className}>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <BarChart3 className="h-5 w-5" />
-          Protocol Comparison - {symbol}
-        </CardTitle>
+      <CardHeader className="pb-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Scale className="h-5 w-5" />
+            {t('protocol:comparison.title')}
+            {bestProtocol && (
+              <Badge variant="secondary" className="ml-2">
+                <Trophy className="mr-1 h-3 w-3" />
+                {t('protocol:comparison.best')}: {bestProtocol.name}
+              </Badge>
+            )}
+          </CardTitle>
+        </div>
       </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Protocol Selector */}
-        <div className="flex flex-wrap gap-2">
-          {protocols.map((protocol) => (
-            <Button
-              key={protocol}
-              variant={selectedProtocols.includes(protocol) ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => {
-                if (selectedProtocols.includes(protocol)) {
-                  setSelectedProtocols(selectedProtocols.filter((p) => p !== protocol));
-                } else if (selectedProtocols.length < 4) {
-                  setSelectedProtocols([...selectedProtocols, protocol]);
-                }
-              }}
-            >
-              {PROTOCOL_DISPLAY_NAMES[protocol]}
-            </Button>
-          ))}
-        </div>
 
-        {/* Metric Selector */}
-        <div className="flex items-center gap-4">
-          <span className="text-sm font-medium">Compare by:</span>
-          <Select
-            value={comparisonMetric}
-            onValueChange={(value) => setComparisonMetric(value as keyof ProtocolMetrics)}
-          >
-            <SelectTrigger className="w-[200px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="latency">Latency</SelectItem>
-              <SelectItem value="uptime">Uptime</SelectItem>
-              <SelectItem value="confidence">Confidence</SelectItem>
-              <SelectItem value="updateFrequency">Update Frequency</SelectItem>
-              <SelectItem value="deviation">Deviation</SelectItem>
-              <SelectItem value="supportedChains">Supported Chains</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Comparison Chart */}
-        {metrics.length > 0 && (
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip
-                  content={({ active, payload }) => {
-                    if (active && payload && payload.length) {
-                      const data = payload[0].payload;
-                      return (
-                        <div className="rounded-lg border bg-white p-3 shadow-lg">
-                          <p className="font-semibold">{data.name}</p>
-                          <p className="text-muted-foreground text-sm">
-                            {formatValue(comparisonMetric, data.value)}
-                          </p>
-                        </div>
-                      );
-                    }
-                    return null;
-                  }}
-                />
-                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                  {chartData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={bestProtocol?.protocol === entry.protocol ? '#22c55e' : '#3b82f6'}
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        )}
-
-        {/* Comparison Table */}
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Protocol</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Latency</TableHead>
-              <TableHead>Uptime</TableHead>
-              <TableHead>Confidence</TableHead>
-              <TableHead>Update Freq</TableHead>
-              <TableHead>Deviation</TableHead>
-              <TableHead>Chains</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {metrics.map((metric) => (
-              <TableRow
-                key={metric.protocol}
-                className={cn(bestProtocol?.protocol === metric.protocol && 'bg-green-50')}
-              >
-                <TableCell className="font-medium">
-                  <div className="flex items-center gap-2">
-                    {PROTOCOL_DISPLAY_NAMES[metric.protocol]}
-                    {bestProtocol?.protocol === metric.protocol && (
-                      <Badge className="bg-green-100 text-green-700">
-                        <CheckCircle className="mr-1 h-3 w-3" />
-                        Best
-                      </Badge>
-                    )}
+      <CardContent className="p-0">
+        <div className="overflow-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[200px]">{t('protocol:comparison.protocol')}</TableHead>
+                <TableHead className="cursor-pointer" onClick={() => toggleSort('health')}>
+                  <div className="flex items-center gap-1">
+                    {t('protocol:comparison.healthScore')}
+                    {sortBy === 'health' &&
+                      (sortOrder === 'desc' ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />)}
                   </div>
-                </TableCell>
-                <TableCell>{formatValue('price', metric.price)}</TableCell>
-                <TableCell>{formatValue('latency', metric.latency)}</TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Progress value={metric.uptime} className="w-16" />
-                    {formatValue('uptime', metric.uptime)}
+                </TableHead>
+                <TableHead className="cursor-pointer" onClick={() => toggleSort('latency')}>
+                  <div className="flex items-center gap-1">
+                    {t('protocol:comparison.latency')}
+                    {sortBy === 'latency' &&
+                      (sortOrder === 'desc' ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />)}
                   </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Progress value={metric.confidence} className="w-16" />
-                    {formatValue('confidence', metric.confidence)}
+                </TableHead>
+                <TableHead className="cursor-pointer" onClick={() => toggleSort('accuracy')}>
+                  <div className="flex items-center gap-1">
+                    {t('protocol:comparison.accuracy')}
+                    {sortBy === 'accuracy' &&
+                      (sortOrder === 'desc' ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />)}
                   </div>
-                </TableCell>
-                <TableCell>{formatValue('updateFrequency', metric.updateFrequency)}</TableCell>
-                <TableCell>{formatValue('deviation', metric.deviation)}</TableCell>
-                <TableCell>{formatValue('supportedChains', metric.supportedChains)}</TableCell>
+                </TableHead>
+                <TableHead className="cursor-pointer" onClick={() => toggleSort('uptime')}>
+                  <div className="flex items-center gap-1">
+                    {t('protocol:comparison.uptime')}
+                    {sortBy === 'uptime' &&
+                      (sortOrder === 'desc' ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />)}
+                  </div>
+                </TableHead>
+                <TableHead className="text-right">{t('protocol:comparison.actions')}</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {sortedProtocols.map((protocol) => {
+                const isBest = bestProtocol?.id === protocol.id;
+                const isExpanded = expandedRows.has(protocol.id);
 
-        {/* Summary */}
-        {bestProtocol && (
-          <div className="bg-muted rounded-lg p-4">
-            <h4 className="mb-2 font-semibold">Recommendation</h4>
-            <p className="text-muted-foreground text-sm">
-              Based on{' '}
-              {comparisonMetric === 'latency' ? 'lowest latency' : 'highest ' + comparisonMetric},{' '}
-              <span className="text-foreground font-medium">
-                {PROTOCOL_DISPLAY_NAMES[bestProtocol.protocol]}
-              </span>{' '}
-              is currently the best choice for {symbol} price feeds with{' '}
-              {formatValue(comparisonMetric, bestProtocol[comparisonMetric])}.
-            </p>
-          </div>
-        )}
+                return (
+                  <>
+                    <TableRow
+                      key={protocol.id}
+                      className={cn(
+                        'cursor-pointer transition-colors',
+                        isBest && 'bg-emerald-50/50',
+                        'hover:bg-muted/50'
+                      )}
+                      onClick={() => toggleExpand(protocol.id)}
+                    >
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          {protocol.logo ? (
+                            <img
+                              src={protocol.logo}
+                              alt={protocol.name}
+                              className="h-8 w-8 rounded-lg object-contain"
+                            />
+                          ) : (
+                            <div className="bg-primary/10 flex h-8 w-8 items-center justify-center rounded-lg">
+                              <BarChart3 className="text-primary h-4 w-4" />
+                            </div>
+                          )}
+                          <div>
+                            <div className="flex items-center gap-2 font-medium">
+                              {protocol.name}
+                              {isBest && (
+                                <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
+                                  <Trophy className="mr-1 h-3 w-3" />
+                                  {t('protocol:comparison.top')}
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="text-muted-foreground text-xs">
+                              {protocol.activeFeeds} {t('protocol:comparison.feeds')} · {protocol.supportedChains} {t('protocol:comparison.chains')}
+                            </div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <div className={cn('font-bold', getScoreColor(protocol.healthScore))}>
+                            {protocol.healthScore}
+                          </div>
+                          <Progress
+                            value={protocol.healthScore}
+                            className="h-1.5 w-20"
+                          />
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className={cn(
+                          'font-medium',
+                          protocol.latency < 500 ? 'text-emerald-600' : protocol.latency < 2000 ? 'text-blue-600' : 'text-amber-600'
+                        )}>
+                          {protocol.latency}ms
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span className={cn(
+                          'font-medium',
+                          protocol.accuracy >= 99 ? 'text-emerald-600' : protocol.accuracy >= 95 ? 'text-blue-600' : 'text-amber-600'
+                        )}>
+                          {protocol.accuracy.toFixed(2)}%
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span className={cn(
+                          'font-medium',
+                          protocol.uptime >= 99.9 ? 'text-emerald-600' : protocol.uptime >= 99 ? 'text-blue-600' : 'text-amber-600'
+                        )}>
+                          {protocol.uptime.toFixed(2)}%
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="sm">
+                          {isExpanded ? t('common:collapse') : t('common:expand')}
+                          {isExpanded ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                    {isExpanded && (
+                      <TableRow className="bg-muted/30">
+                        <TableCell colSpan={6} className="p-4">
+                          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                            {protocol.tvl && (
+                              <div className="space-y-1">
+                                <span className="text-muted-foreground text-xs">{t('protocol:comparison.tvl')}</span>
+                                <p className="text-lg font-semibold">${(protocol.tvl / 1e9).toFixed(2)}B</p>
+                              </div>
+                            )}
+                            {protocol.marketShare && (
+                              <div className="space-y-1">
+                                <span className="text-muted-foreground text-xs">{t('protocol:comparison.marketShare')}</span>
+                                <p className="text-lg font-semibold">{protocol.marketShare.toFixed(1)}%</p>
+                              </div>
+                            )}
+                            <div className="space-y-1 sm:col-span-2">
+                              <span className="text-muted-foreground text-xs">{t('protocol:comparison.features')}</span>
+                              <div className="flex flex-wrap gap-1">
+                                {protocol.features.map((feature) => (
+                                  <Badge key={feature} variant="secondary" className="text-xs">
+                                    <CheckCircle2 className="mr-1 h-3 w-3" />
+                                    {feature}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
     </Card>
   );

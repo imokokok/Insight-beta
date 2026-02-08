@@ -1,58 +1,70 @@
 export const dashboard = {
-  title: 'Unified Oracle Dashboard',
-  description: 'Real-time multi-protocol price monitoring and comparison',
-  stats: {
+  // Layout
+  layout: {
+    title: 'Dashboard',
+    subtitle: 'Real-time monitoring and analysis of oracle data',
+  },
+
+  // Heatmap
+  heatmap: {
+    title: 'Price Deviation Heatmap',
+    hot: 'Hot',
+    cold: 'Cold',
+    avg: 'Avg Deviation',
+    legend: 'Deviation',
+    stable: 'Stable',
+    slight: 'Slight',
+    moderate: 'Moderate',
+    high: 'High',
+    extreme: 'Extreme',
+    price: 'Price',
+    deviation: 'Deviation',
+  },
+
+  // Chart
+  chart: {
+    spread: 'Spread',
+    average: 'Average',
+  },
+
+  // Gauge
+  gauge: {
+    title: 'Deviation Gauge',
+    normal: 'Normal',
+    normalDesc: 'Price is fluctuating within normal range',
+    elevated: 'Elevated',
+    elevatedDesc: 'Price deviation is slightly high, attention needed',
+    critical: 'Critical',
+    criticalDesc: 'Severe price deviation, immediate inspection recommended',
+    threshold: 'Threshold',
+  },
+
+  // Network Topology
+  topology: {
+    title: 'Network Topology',
+    online: 'Online',
+    degraded: 'Degraded',
+    offline: 'Offline',
+    dataSources: 'Data Sources',
+    aggregators: 'Aggregators',
+    oracles: 'Oracles',
+    latency: 'Latency',
+  },
+
+  // Quick Actions
+  actions: {
+    title: 'Quick Actions',
+    refresh: 'Refresh',
+    export: 'Export',
+    filter: 'Filter',
+    settings: 'Settings',
+  },
+
+  // KPI
+  kpi: {
+    tvl: 'Total Value Locked',
     activeProtocols: 'Active Protocols',
-    totalFeeds: 'Total Price Feeds',
-    activeAlerts: 'Active Alerts',
-    avgDeviation: 'Avg Deviation',
+    dailyUpdates: 'Daily Updates',
+    activeUsers: 'Active Users',
   },
-  tabs: {
-    comparison: 'Price Comparison',
-    status: 'Protocol Status',
-    history: 'Price History',
-    alerts: 'Alerts',
-  },
-  tradingPair: 'Trading Pair',
-  chain: 'Chain',
-  allChains: 'All Chains',
-  protocolPrices: 'Protocol Prices',
-  aggregatedPrice: 'Aggregated Price',
-  recommendedPrice: 'Recommended Price',
-  average: 'Average',
-  median: 'Median',
-  min: 'Min',
-  max: 'Max',
-  priceDeviationDetected: 'Price Deviation Detected',
-  noProtocolsFound: 'No protocols found',
-  tryAdjustingFilter: 'Try adjusting your protocol filter.',
-  clearFilter: 'Clear filter',
-  priceHistory24h: '24h Price History',
-  noActiveAlerts: 'No active alerts',
-  invalidProtocol: 'Invalid Protocol',
-  currentPrice: 'Current Price',
-  updates24h: '24h Updates',
-  activeFeeds: 'Active Feeds',
-  protocolInfo: 'Protocol Information',
-  website: 'Website',
-  supportedChains: 'Supported Chains',
-  features: 'Features',
-  assertionsComingSoon: 'Assertions view coming soon',
-  disputesComingSoon: 'Disputes view coming soon',
-  configure: 'Configure',
-  viewDetails: 'View Details',
-  updates: 'Updates (24h)',
-  status: 'Status',
-  uptime: 'Uptime',
-  live: 'Live',
-  stale: 'Stale',
-  breadcrumb: 'Breadcrumb',
-  home: 'Home',
-  oracle: 'Oracle',
-  protocols: 'Protocols',
-  tryAdjustingSearch: 'Try adjusting your search terms or filters.',
-  clearSearch: 'Clear search',
-  refresh: 'Refresh',
-  errorLoadingData: 'Error loading data',
-  tryAgain: 'Try again',
 };

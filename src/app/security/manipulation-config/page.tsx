@@ -26,6 +26,7 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/i18n';
 
 interface DetectionConfig {
   // Statistical anomaly
@@ -87,42 +88,18 @@ const defaultConfig: DetectionConfig = {
   notificationCooldownMs: 300000,
 };
 
-const detectionRules = [
-  {
-    id: 'statistical_anomaly',
-    name: '统计异常检测',
-    description: '基于Z-score的统计异常检测',
-    icon: Activity,
-  },
-  {
-    id: 'flash_loan_attack',
-    name: '闪电贷攻击检测',
-    description: '检测闪电贷攻击模式',
-    icon: AlertTriangle,
-  },
-  {
-    id: 'sandwich_attack',
-    name: '三明治攻击检测',
-    description: '检测三明治攻击模式',
-    icon: Shield,
-  },
-  {
-    id: 'liquidity_manipulation',
-    name: '流动性操纵检测',
-    description: '检测流动性异常变化',
-    icon: Activity,
-  },
-  {
-    id: 'oracle_manipulation',
-    name: '预言机操纵检测',
-    description: '检测预言机价格操纵',
-    icon: AlertTriangle,
-  },
-  { id: 'front_running', name: '抢先交易检测', description: '检测MEV抢先交易', icon: Shield },
-  { id: 'back_running', name: '尾随交易检测', description: '检测MEV尾随交易', icon: Shield },
+const detectionRuleIds = [
+  { id: 'statistical_anomaly', icon: Activity },
+  { id: 'flash_loan_attack', icon: AlertTriangle },
+  { id: 'sandwich_attack', icon: Shield },
+  { id: 'liquidity_manipulation', icon: Activity },
+  { id: 'oracle_manipulation', icon: AlertTriangle },
+  { id: 'front_running', icon: Shield },
+  { id: 'back_running', icon: Shield },
 ];
 
 export default function ManipulationConfigPage() {
+  const { t } = useI18n();
   const [config, setConfig] = useState<DetectionConfig>(defaultConfig);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -206,30 +183,30 @@ export default function ManipulationConfigPage() {
         <div>
           <h1 className="flex items-center gap-2 text-3xl font-bold">
             <Settings className="h-8 w-8" />
-            价格操纵检测配置
+            {t('security:config.title')}
           </h1>
-          <p className="text-muted-foreground mt-1">配置检测规则、阈值和告警设置</p>
+          <p className="text-muted-foreground mt-1">{t('security:config.subtitle')}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={resetConfig} disabled={saving}>
             <RotateCcw className="mr-2 h-4 w-4" />
-            重置
+            {t('common:reset')}
           </Button>
           <Button onClick={saveConfig} disabled={saving}>
             {saving ? (
               <>
                 <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
-                保存中...
+                {t('common:saving')}
               </>
             ) : saved ? (
               <>
                 <CheckCircle className="mr-2 h-4 w-4" />
-                已保存
+                {t('common:saved')}
               </>
             ) : (
               <>
                 <Save className="mr-2 h-4 w-4" />
-                保存配置
+                {t('common:saveConfig')}
               </>
             )}
           </Button>
@@ -245,10 +222,10 @@ export default function ManipulationConfigPage() {
 
       <Tabs defaultValue="rules" className="space-y-6">
         <TabsList className="grid w-full grid-cols-4 lg:w-[400px]">
-          <TabsTrigger value="rules">检测规则</TabsTrigger>
-          <TabsTrigger value="thresholds">阈值设置</TabsTrigger>
-          <TabsTrigger value="alerts">告警配置</TabsTrigger>
-          <TabsTrigger value="advanced">高级选项</TabsTrigger>
+          <TabsTrigger value="rules">{t('security:config.tabs.rules')}</TabsTrigger>
+          <TabsTrigger value="thresholds">{t('security:config.tabs.thresholds')}</TabsTrigger>
+          <TabsTrigger value="alerts">{t('security:config.tabs.alerts')}</TabsTrigger>
+          <TabsTrigger value="advanced">{t('security:config.tabs.advanced')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="rules" className="space-y-4">
@@ -256,14 +233,16 @@ export default function ManipulationConfigPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Shield className="h-5 w-5" />
-                启用的检测规则
+                {t('security:config.sections.enabledRules')}
               </CardTitle>
-              <CardDescription>选择要启用的价格操纵检测规则</CardDescription>
+              <CardDescription>{t('security:config.sections.enabledRulesDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {detectionRules.map((rule) => {
+              {detectionRuleIds.map((rule) => {
                 const isEnabled = config.enabledRules.includes(rule.id);
                 const Icon = rule.icon;
+                const ruleName = t(`security:detectionRules.${rule.id.replace('_attack', '').replace('_manipulation', '')}.name` as const);
+                const ruleDesc = t(`security:detectionRules.${rule.id.replace('_attack', '').replace('_manipulation', '')}.description` as const);
 
                 return (
                   <div
@@ -286,14 +265,14 @@ export default function ManipulationConfigPage() {
                       </div>
                       <div>
                         <div className="flex items-center gap-2 font-medium">
-                          {rule.name}
+                          {ruleName}
                           {isEnabled && (
                             <Badge variant="secondary" className="text-xs">
-                              已启用
+                              {t('security:config.enabled')}
                             </Badge>
                           )}
                         </div>
-                        <div className="text-muted-foreground text-sm">{rule.description}</div>
+                        <div className="text-muted-foreground text-sm">{ruleDesc}</div>
                       </div>
                     </div>
                     <Switch checked={isEnabled} onCheckedChange={() => toggleRule(rule.id)} />
@@ -462,24 +441,24 @@ export default function ManipulationConfigPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Bell className="h-5 w-5" />
-                告警渠道
+                {t('security:config.sections.alertChannels')}
               </CardTitle>
-              <CardDescription>配置检测告警的通知方式</CardDescription>
+              <CardDescription>{t('security:config.sections.alertChannelsDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {[
-                { key: 'email', name: '邮件告警', description: '发送邮件到配置的管理员邮箱' },
-                { key: 'webhook', name: 'Webhook', description: '调用配置的Webhook URL' },
-                { key: 'slack', name: 'Slack', description: '发送到Slack频道' },
-                { key: 'telegram', name: 'Telegram', description: '发送Telegram消息' },
+                { key: 'email' },
+                { key: 'webhook' },
+                { key: 'slack' },
+                { key: 'telegram' },
               ].map((channel) => (
                 <div
                   key={channel.key}
                   className="flex items-center justify-between rounded-lg border p-3"
                 >
                   <div>
-                    <div className="font-medium">{channel.name}</div>
-                    <div className="text-muted-foreground text-sm">{channel.description}</div>
+                    <div className="font-medium">{t(`security:alertChannels.${channel.key}.name` as const)}</div>
+                    <div className="text-muted-foreground text-sm">{t(`security:alertChannels.${channel.key}.description` as const)}</div>
                   </div>
                   <Switch
                     checked={config.alertChannels[channel.key as keyof typeof config.alertChannels]}

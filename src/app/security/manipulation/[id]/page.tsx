@@ -39,6 +39,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import type { ManipulationDetection } from '@/lib/types/security/detection';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/i18n';
+
+
+
+
 
 const severityConfig = {
   critical: {
@@ -47,7 +52,6 @@ const severityConfig = {
     bgColor: 'bg-red-50',
     borderColor: 'border-red-200',
     icon: AlertTriangle,
-    label: '严重',
   },
   high: {
     color: 'bg-orange-500',
@@ -55,7 +59,6 @@ const severityConfig = {
     bgColor: 'bg-orange-50',
     borderColor: 'border-orange-200',
     icon: AlertCircle,
-    label: '高危',
   },
   medium: {
     color: 'bg-yellow-500',
@@ -63,7 +66,6 @@ const severityConfig = {
     bgColor: 'bg-yellow-50',
     borderColor: 'border-yellow-200',
     icon: AlertCircle,
-    label: '中危',
   },
   low: {
     color: 'bg-blue-500',
@@ -71,29 +73,18 @@ const severityConfig = {
     bgColor: 'bg-blue-50',
     borderColor: 'border-blue-200',
     icon: CheckCircle,
-    label: '低危',
   },
 };
 
-const typeLabels: Record<string, string> = {
-  flash_loan_attack: '闪电贷攻击',
-  price_manipulation: '价格操纵',
-  oracle_manipulation: '预言机操纵',
-  sandwich_attack: '三明治攻击',
-  front_running: '抢先交易',
-  back_running: '尾随交易',
-  liquidity_manipulation: '流动性操纵',
-  statistical_anomaly: '统计异常',
-};
-
-const statusLabels: Record<string, { label: string; color: string }> = {
-  pending: { label: '待审核', color: 'bg-yellow-100 text-yellow-800' },
-  confirmed: { label: '已确认', color: 'bg-red-100 text-red-800' },
-  false_positive: { label: '误报', color: 'bg-green-100 text-green-800' },
-  under_investigation: { label: '调查中', color: 'bg-blue-100 text-blue-800' },
+const statusColors: Record<string, string> = {
+  pending: 'bg-yellow-100 text-yellow-800',
+  confirmed: 'bg-red-100 text-red-800',
+  false_positive: 'bg-green-100 text-green-800',
+  under_investigation: 'bg-blue-100 text-blue-800',
 };
 
 export default function ManipulationDetailPage() {
+  const { t } = useI18n();
   const params = useParams();
   const router = useRouter();
   const [detection, setDetection] = useState<ManipulationDetection | null>(null);
@@ -172,7 +163,7 @@ export default function ManipulationDetailPage() {
         </Alert>
         <Button className="mt-4" onClick={() => router.back()}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          返回
+          {t('common:back')}
         </Button>
       </div>
     );
@@ -180,7 +171,7 @@ export default function ManipulationDetailPage() {
 
   const severity = severityConfig[detection.severity];
   const SeverityIcon = severity.icon;
-  const status = statusLabels[detection.status];
+  const statusColor = statusColors[detection.status];
 
   return (
     <div className="container mx-auto py-8">
@@ -192,13 +183,13 @@ export default function ManipulationDetailPage() {
           <div>
             <h1 className="flex items-center gap-2 text-2xl font-bold">
               <Shield className="h-6 w-6" />
-              检测详情
+              {t('security:dashboard.title')}
             </h1>
             <p className="text-muted-foreground text-sm">ID: {detection.id}</p>
           </div>
         </div>
-        <Badge className={status?.color ?? 'bg-gray-100 text-gray-800'}>
-          {status?.label ?? '未知'}
+        <Badge className={statusColor ?? 'bg-gray-100 text-gray-800'}>
+          {t(`security:status.${detection.status}` as const) ?? t('security:status.unknown')}
         </Badge>
       </div>
 
@@ -212,7 +203,7 @@ export default function ManipulationDetailPage() {
                     <SeverityIcon className={cn('h-6 w-6', severity.textColor)} />
                   </div>
                   <div>
-                    <CardTitle className="text-xl">{typeLabels[detection.type]}</CardTitle>
+                    <CardTitle className="text-xl">{t(`security:attackTypes.${detection.type}` as const)}</CardTitle>
                     <CardDescription className="mt-1">
                       {detection.protocol} · {detection.symbol} · {detection.chain}
                     </CardDescription>
@@ -220,7 +211,7 @@ export default function ManipulationDetailPage() {
                 </div>
                 <div className="text-right">
                   <Badge variant="outline" className={cn('px-3 py-1 text-lg', severity.textColor)}>
-                    {(detection.confidenceScore * 100).toFixed(0)}% 置信度
+                    {(detection.confidenceScore * 100).toFixed(0)}% {t('common:labels.confidence')}
                   </Badge>
                   <div className="text-muted-foreground mt-2 text-sm">
                     <Clock className="mr-1 inline h-3 w-3" />
@@ -232,11 +223,11 @@ export default function ManipulationDetailPage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                 <div className="bg-muted rounded-lg p-3">
-                  <div className="text-muted-foreground mb-1 text-xs">严重程度</div>
-                  <div className={cn('font-semibold', severity.textColor)}>{severity.label}</div>
+                  <div className="text-muted-foreground mb-1 text-xs">{t('security:export.severity')}</div>
+                  <div className={cn('font-semibold', severity.textColor)}>{t(`security:severity.${detection.severity}` as const)}</div>
                 </div>
                 <div className="bg-muted rounded-lg p-3">
-                  <div className="text-muted-foreground mb-1 text-xs">价格影响</div>
+                  <div className="text-muted-foreground mb-1 text-xs">{t('common:labels.priceImpact')}</div>
                   <div
                     className={cn(
                       'font-semibold',
@@ -251,7 +242,7 @@ export default function ManipulationDetailPage() {
                   </div>
                 </div>
                 <div className="bg-muted rounded-lg p-3">
-                  <div className="text-muted-foreground mb-1 text-xs">资金影响</div>
+                  <div className="text-muted-foreground mb-1 text-xs">{t('security:export.financialImpact')}</div>
                   <div className="font-semibold">
                     {detection.financialImpactUsd
                       ? `$${detection.financialImpactUsd.toLocaleString()}`
@@ -259,8 +250,8 @@ export default function ManipulationDetailPage() {
                   </div>
                 </div>
                 <div className="bg-muted rounded-lg p-3">
-                  <div className="text-muted-foreground mb-1 text-xs">可疑交易</div>
-                  <div className="font-semibold">{detection.suspiciousTransactions.length} 笔</div>
+                  <div className="text-muted-foreground mb-1 text-xs">{t('security:export.suspiciousTx')}</div>
+                  <div className="font-semibold">{detection.suspiciousTransactions.length}</div>
                 </div>
               </div>
             </CardContent>
@@ -343,7 +334,7 @@ export default function ManipulationDetailPage() {
                             </Button>
                           </div>
                           <div className="text-muted-foreground mt-1 text-xs">
-                            {typeLabels[tx.type] || tx.type}
+                            {t(`security:attackTypes.${tx.type}` as const) || tx.type}
                             {tx.valueUsd && ` · $${tx.valueUsd.toLocaleString()}`}
                           </div>
                         </div>
@@ -410,11 +401,11 @@ export default function ManipulationDetailPage() {
               </div>
 
               <div className="space-y-2">
-                <Label>审核备注</Label>
+                <Label>{t('security:reviewNotes')}</Label>
                 <Textarea
                   value={reviewNotes}
                   onChange={(e) => setReviewNotes(e.target.value)}
-                  placeholder="输入审核备注..."
+                  placeholder={t('security:placeholders.reviewNote')}
                   rows={4}
                 />
               </div>
@@ -427,12 +418,12 @@ export default function ManipulationDetailPage() {
                 {submitting ? (
                   <>
                     <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
-                    提交中...
+                    {t('common:submitting')}
                   </>
                 ) : (
                   <>
                     <CheckCircle className="mr-2 h-4 w-4" />
-                    提交审核
+                    {t('security:submitReview')}
                   </>
                 )}
               </Button>

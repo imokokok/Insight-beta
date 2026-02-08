@@ -12,6 +12,7 @@ import { errors } from './errors';
 import { nav } from './nav';
 import onboarding from './onboarding';
 import { oracle } from './oracle';
+import { protocol } from './protocol';
 import { security } from './security';
 import { sla } from './sla';
 import { status } from './status';
@@ -32,6 +33,7 @@ export const enTranslations = {
   nav,
   onboarding,
   oracle,
+  protocol,
   security,
   sla,
   status,

@@ -260,7 +260,7 @@ function generateMockCostData(protocols: string[]): CostComparison {
     {
       useCase: 'defi_protocol',
       recommendedProtocol: bestValue.protocol,
-      reason: '综合性价比最高，适合需要高可靠性的 DeFi 协议',
+      reason: 'comparison:recommendations.defiReason',
       estimatedMonthlyCost: 500 + Math.random() * 1000,
       alternatives: protocols.slice(0, 2) as OracleProtocol[],
     },
@@ -269,7 +269,7 @@ function generateMockCostData(protocols: string[]): CostComparison {
       recommendedProtocol: protocolMetrics.reduce((prev, curr) =>
         prev.avgUpdateFrequency < curr.avgUpdateFrequency ? prev : curr,
       ).protocol,
-      reason: '更新频率快，延迟低，适合高频交易场景',
+      reason: 'comparison:recommendations.tradingReason',
       estimatedMonthlyCost: 1000 + Math.random() * 2000,
       alternatives: protocols.slice(1, 3) as OracleProtocol[],
     },
@@ -278,14 +278,14 @@ function generateMockCostData(protocols: string[]): CostComparison {
       recommendedProtocol: protocolMetrics.reduce((prev, curr) =>
         prev.uptimeScore > curr.uptimeScore ? prev : curr,
       ).protocol,
-      reason: '高可用性和企业级支持',
+      reason: 'comparison:recommendations.enterpriseReason',
       estimatedMonthlyCost: 2000 + Math.random() * 3000,
       alternatives: protocols.slice(2, 4) as OracleProtocol[],
     },
     {
       useCase: 'hobby',
       recommendedProtocol: cheapest.protocol,
-      reason: '成本最低，适合个人项目和小型实验',
+      reason: 'comparison:recommendations.hobbyReason',
       estimatedMonthlyCost: Math.random() * 100,
       alternatives: protocols.slice(0, 2) as OracleProtocol[],
     },
@@ -516,11 +516,11 @@ export default function ComparisonPage() {
     (cell: PriceDeviationCell) => {
       toast({
         title: `${cell.symbol} - ${PROTOCOL_DISPLAY_NAMES[cell.protocol]}`,
-        message: `价格: $${cell.price.toFixed(4)} | 偏离: ${cell.deviationPercent.toFixed(2)}%`,
+        message: `${t('comparison:price')}: $${cell.price.toFixed(4)} | ${t('comparison:deviation')}: ${cell.deviationPercent.toFixed(2)}%`,
         type: 'info',
       });
     },
-    [toast],
+    [toast, t],
   );
 
   const handleExport = useCallback(

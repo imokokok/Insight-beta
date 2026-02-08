@@ -5,6 +5,7 @@ import React from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 import { logger } from '@/lib/logger';
+import { useI18n } from '@/i18n';
 
 interface Props {
   children: React.ReactNode;
@@ -60,22 +61,10 @@ export class ErrorBoundary extends React.Component<Props, State> {
 
       // 默认错误 UI
       return (
-        <div className="flex min-h-[200px] flex-col items-center justify-center rounded-xl border border-rose-100 bg-rose-50/50 p-6 text-center">
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-rose-100">
-            <AlertTriangle className="h-6 w-6 text-rose-600" />
-          </div>
-          <h3 className="mb-2 text-lg font-semibold text-rose-900">组件加载出错</h3>
-          <p className="mb-4 max-w-md text-sm text-rose-700">
-            {this.state.error?.message || '发生了意外错误，请稍后重试'}
-          </p>
-          <button
-            onClick={this.handleRetry}
-            className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-rose-700 shadow-sm ring-1 ring-rose-200 transition-colors hover:bg-rose-50"
-          >
-            <RefreshCw className="h-4 w-4" />
-            重试
-          </button>
-        </div>
+        <ErrorBoundaryFallback
+          error={this.state.error}
+          onRetry={this.handleRetry}
+        />
       );
     }
 
@@ -100,4 +89,37 @@ export function withErrorBoundary<P extends object>(
       </ErrorBoundary>
     );
   };
+}
+
+/**
+ * ErrorBoundaryFallback 组件 - 错误边界回退 UI
+ * 使用函数组件以便使用 useI18n hook
+ */
+function ErrorBoundaryFallback({
+  error,
+  onRetry,
+}: {
+  error?: Error;
+  onRetry: () => void;
+}) {
+  const { t } = useI18n();
+
+  return (
+    <div className="flex min-h-[200px] flex-col items-center justify-center rounded-xl border border-rose-100 bg-rose-50/50 p-6 text-center">
+      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-rose-100">
+        <AlertTriangle className="h-6 w-6 text-rose-600" />
+      </div>
+      <h3 className="mb-2 text-lg font-semibold text-rose-900">{t('common:errorBoundary.componentError')}</h3>
+      <p className="mb-4 max-w-md text-sm text-rose-700">
+        {error?.message || t('common:componentLoading.unexpectedError')}
+      </p>
+      <button
+        onClick={onRetry}
+        className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-rose-700 shadow-sm ring-1 ring-rose-200 transition-colors hover:bg-rose-50"
+      >
+        <RefreshCw className="h-4 w-4" />
+        {t('common:errorBoundary.retry')}
+      </button>
+    </div>
+  );
 }

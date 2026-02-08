@@ -1,8 +1,8 @@
 export const app = {
-  brand: 'OracleMonitor',
+  brand: 'Insight',
   description:
     'Plataforma universal de monitoreo de oráculos multi-protocolo compatible con Chainlink, Pyth, API3, DIA, Band, RedStone y más.',
-  logoAlt: 'Logo de OracleMonitor',
+  logoAlt: 'Logo de Insight',
   subtitle: 'Monitor Universal de Oráculos',
-  title: 'OracleMonitor · Agregador Multi-Protocolo',
+  title: 'Insight · Agregador Multi-Protocolo',
 };
