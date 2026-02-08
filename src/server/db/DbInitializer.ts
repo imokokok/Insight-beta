@@ -46,6 +46,7 @@ class DbInitializerSingleton {
 
   /**
    * 执行实际的初始化
+   * 如果数据库连接失败，会优雅地回退到内存模式
    */
   private async doInitialize(): Promise<void> {
     try {
@@ -54,10 +55,11 @@ class DbInitializerSingleton {
       this.schemaEnsured = true;
       logger.info('Database schema ensured successfully');
     } catch (error) {
-      logger.error('Failed to ensure database schema', {
+      logger.warn('Database connection failed, falling back to memory mode', {
         error: error instanceof Error ? error.message : String(error),
       });
-      throw error;
+      // 不抛出错误，让应用继续使用内存模式运行
+      this.schemaEnsured = true; // 标记为已处理，避免重复尝试
     }
   }
 

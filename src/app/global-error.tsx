@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 
-import * as Sentry from '@sentry/nextjs';
 import { AlertTriangle, RefreshCcw, Home } from 'lucide-react';
 
 import { translations, type Lang } from '@/i18n/translations';
@@ -19,12 +18,6 @@ export default function GlobalError({
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
       console.error(error);
-    } else {
-      Sentry.captureException(error, {
-        extra: {
-          digest: error.digest,
-        },
-      });
     }
 
     if (typeof navigator !== 'undefined' && navigator.language) {

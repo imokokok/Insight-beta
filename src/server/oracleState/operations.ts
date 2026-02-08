@@ -35,16 +35,28 @@ import type {
 
 // 模块级状态
 let schemaEnsured = false;
+let dbAvailable = true;
 
 /**
  * 确保数据库 schema 已初始化
  * 仅在首次访问数据库时执行
+ * 如果数据库连接失败，会优雅地回退到内存模式
  */
 async function ensureDb(): Promise<void> {
   if (!hasDatabase()) return;
   if (!schemaEnsured) {
-    await ensureSchema();
-    schemaEnsured = true;
+    try {
+      await ensureSchema();
+      schemaEnsured = true;
+      dbAvailable = true;
+    } catch (error) {
+      // 数据库连接失败，标记为不可用，使用内存模式
+      dbAvailable = false;
+      console.warn(
+        'Database connection failed, falling back to memory mode:',
+        error instanceof Error ? error.message : String(error),
+      );
+    }
   }
 }
 
@@ -62,8 +74,8 @@ export async function readOracleState(
   await ensureDb();
   const normalizedInstanceId = normalizeInstanceId(instanceId, DEFAULT_ORACLE_INSTANCE_ID);
 
-  // 内存模式：直接从内存实例读取
-  if (!hasDatabase()) {
+  // 内存模式：直接从内存实例读取（数据库未配置或连接失败时使用）
+  if (!hasDatabase() || !dbAvailable) {
     const mem = getMemoryInstance(normalizedInstanceId);
     const assertions: Record<string, Assertion> = {};
     for (const [id, a] of mem.assertions.entries()) {

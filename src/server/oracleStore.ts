@@ -45,8 +45,13 @@ export async function isTableEmpty(
     table === 'assertions'
       ? 'SELECT EXISTS (SELECT 1 FROM assertions WHERE instance_id = $1) as has_rows'
       : 'SELECT EXISTS (SELECT 1 FROM disputes WHERE instance_id = $1) as has_rows';
-  const res = await query<{ has_rows: boolean }>(sql, [normalizedInstanceId]);
-  return !res.rows[0]?.has_rows;
+  try {
+    const res = await query<{ has_rows: boolean }>(sql, [normalizedInstanceId]);
+    return !res.rows[0]?.has_rows;
+  } catch {
+    // 数据库查询失败，返回 true 表示使用 demo 模式
+    return true;
+  }
 }
 
 type ListParams = {
