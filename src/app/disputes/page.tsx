@@ -16,7 +16,7 @@ import {
   Search,
 } from 'lucide-react';
 
-import { PageHeader } from '@/components/features/common/PageHeader';
+import { PageHeader } from '@/components/common/PageHeader';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage, langToLocale, type TranslationKey } from '@/i18n/translations';

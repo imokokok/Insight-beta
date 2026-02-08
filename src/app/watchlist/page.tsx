@@ -7,11 +7,9 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { Star } from 'lucide-react';
 
+import { PageHeader } from '@/components/common/PageHeader';
 import { AssertionList } from '@/components/features/assertion/AssertionList';
-import { PageHeader } from '@/components/features/common/PageHeader';
-import type { BaseResponse } from '@/hooks/ui/useInfiniteList';
-import { useInfiniteList } from '@/hooks/ui/useInfiniteList';
-import { useWatchlist } from '@/hooks/user/useWatchlist';
+import { useInfiniteList, useWatchlist, type BaseResponse } from '@/hooks';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage } from '@/i18n/translations';
 import type { Assertion } from '@/lib/types/oracleTypes';

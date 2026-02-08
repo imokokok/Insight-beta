@@ -17,7 +17,7 @@ import {
   Hash,
 } from 'lucide-react';
 
-import { PageHeader } from '@/components/features/common/PageHeader';
+import { PageHeader } from '@/components/common/PageHeader';
 import { logger } from '@/lib/logger';
 import { cn, fetchApiData, formatTime } from '@/lib/utils';
 

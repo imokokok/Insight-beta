@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 
 import { Activity, Shield, TrendingUp, Globe, BarChart3, Bell, Clock } from 'lucide-react';
 
-import { StatCard } from '@/components/features/common/StatCard';
+import { StatCard } from '@/components/common/StatCard';
 import {
   FeedTable,
   commonFeedColumns,

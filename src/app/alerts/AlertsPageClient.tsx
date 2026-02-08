@@ -7,12 +7,16 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { RefreshCw, ShieldAlert } from 'lucide-react';
 
+import { PageHeader } from '@/components/common/PageHeader';
 import { AlertRulesManager } from '@/components/features/alert/AlertRulesManager';
-import { PageHeader } from '@/components/features/common/PageHeader';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { useOracleIncidents, useOracleRisks, useOracleOpsMetrics } from '@/hooks/alerts';
-import { useDebounce } from '@/hooks/useDebounce';
-import { useAdminSession } from '@/hooks/user/useAdminSession';
+import {
+  useOracleIncidents,
+  useOracleRisks,
+  useOracleOpsMetrics,
+  useDebounce,
+  useAdminSession,
+} from '@/hooks';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage, langToLocale } from '@/i18n/translations';
 import { DEBOUNCE_CONFIG } from '@/lib/config/constants';

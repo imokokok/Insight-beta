@@ -6,10 +6,10 @@ import Link from 'next/link';
 import { CheckCircle2, Clock, ArrowUpRight, RotateCw, FileQuestion, Star } from 'lucide-react';
 import { Virtuoso, VirtuosoGrid } from 'react-virtuoso';
 
-import { CopyButton } from '@/components/features/common/CopyButton';
-import { SkeletonList } from '@/components/features/common/SkeletonList';
+import { CopyButton } from '@/components/common/CopyButton';
+import { SkeletonList } from '@/components/common/SkeletonList';
 import { LivenessProgressBar } from '@/components/features/oracle/LivenessProgressBar';
-import { useWatchlist } from '@/hooks/user/useWatchlist';
+import { useWatchlist } from '@/hooks';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { langToLocale } from '@/i18n/translations';
 import type { Assertion, OracleStatus } from '@/lib/types/oracleTypes';

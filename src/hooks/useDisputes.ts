@@ -1,5 +1,5 @@
-import type { BaseResponse } from '@/hooks/ui/useInfiniteList';
-import { useInfiniteList } from '@/hooks/ui/useInfiniteList';
+import type { BaseResponse } from '@/hooks/useUI';
+import { useInfiniteList } from '@/hooks/useUI';
 import type { Dispute, OracleConfig, DisputeStatus } from '@/lib/types/oracleTypes';
 
 export function useDisputes(

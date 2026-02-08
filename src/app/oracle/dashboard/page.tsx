@@ -25,14 +25,13 @@ import {
   AlertCircle,
 } from 'lucide-react';
 
-import { StatCard } from '@/components/features/common/StatCard';
+import { StatCard } from '@/components/common/StatCard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartSkeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useDataRefresh } from '@/hooks/useDataRefresh';
-import { useWebSocket } from '@/hooks/useWebSocket';
+import { useDataRefresh, useWebSocket } from '@/hooks';
 import { logger } from '@/lib/logger';
 import { fetchApiData, cn } from '@/lib/utils';
 

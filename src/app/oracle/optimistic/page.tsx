@@ -18,7 +18,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 
-import { PageHeader } from '@/components/features/common/PageHeader';
+import { PageHeader } from '@/components/common/PageHeader';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { langToLocale } from '@/i18n/translations';
 import { logger } from '@/lib/logger';

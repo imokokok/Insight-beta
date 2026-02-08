@@ -22,12 +22,12 @@ import { cn } from '@/lib/utils';
 import type { Metadata } from 'next';
 
 const Sidebar = lazy(() =>
-  import('@/components/features/common/Sidebar').then((mod) => ({
+  import('@/components/common/Sidebar').then((mod) => ({
     default: mod.Sidebar,
   })),
 );
 const LanguageSwitcher = lazy(() =>
-  import('@/components/features/common/LanguageSwitcher').then((mod) => ({
+  import('@/components/common/LanguageSwitcher').then((mod) => ({
     default: mod.LanguageSwitcher,
   })),
 );
@@ -37,17 +37,17 @@ const SyncStatus = lazy(() =>
   })),
 );
 const ClientComponentsWrapper = lazy(() =>
-  import('@/components/features/common/ClientComponentsWrapper').then((mod) => ({
+  import('@/components/common/ClientComponentsWrapper').then((mod) => ({
     default: mod.ClientComponentsWrapper,
   })),
 );
 const WebVitalsMonitor = lazy(() =>
-  import('@/components/features/common/WebVitalsMonitor').then((mod) => ({
+  import('@/components/common/WebVitalsMonitor').then((mod) => ({
     default: mod.WebVitalsMonitor,
   })),
 );
 const ResourcePreloader = lazy(() =>
-  import('@/components/features/common/ResourcePreloader').then((mod) => ({
+  import('@/components/common/ResourcePreloader').then((mod) => ({
     default: mod.ResourcePreloader,
   })),
 );

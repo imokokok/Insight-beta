@@ -14,7 +14,7 @@ interface DataRefreshState {
 interface UseDataRefreshOptions {
   maxRetries?: number;
   retryDelay?: number;
-  staleThreshold?: number; // seconds
+  staleThreshold?: number;
 }
 
 export function useDataRefresh(options: UseDataRefreshOptions = {}) {
@@ -30,7 +30,6 @@ export function useDataRefresh(options: UseDataRefreshOptions = {}) {
   const abortControllerRef = useRef<AbortController | null>(null);
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (abortControllerRef.current) {
@@ -44,12 +43,10 @@ export function useDataRefresh(options: UseDataRefreshOptions = {}) {
 
   const refresh = useCallback(
     async <T>(fetchFn: (signal: AbortSignal) => Promise<T>): Promise<T | null> => {
-      // Cancel any pending request
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
 
-      // Clear any pending retry
       if (retryTimeoutRef.current) {
         clearTimeout(retryTimeoutRef.current);
       }
@@ -75,11 +72,9 @@ export function useDataRefresh(options: UseDataRefreshOptions = {}) {
         return data;
       } catch (error) {
         if (error instanceof Error && error.name === 'AbortError') {
-          // Request was cancelled, don't update state
           return null;
         }
 
-        // Use functional update to get latest state
         let currentRetryCount = 0;
         setState((prev) => {
           currentRetryCount = prev.retryCount + 1;
@@ -87,11 +82,10 @@ export function useDataRefresh(options: UseDataRefreshOptions = {}) {
         });
 
         if (currentRetryCount < maxRetries) {
-          // Schedule retry
           retryTimeoutRef.current = setTimeout(() => {
             setState((prev) => ({ ...prev, retryCount: currentRetryCount }));
             refresh(fetchFn);
-          }, retryDelay * currentRetryCount); // Exponential backoff
+          }, retryDelay * currentRetryCount);
         }
 
         setState((prev) => ({
@@ -151,7 +145,6 @@ export function useDataRefresh(options: UseDataRefreshOptions = {}) {
   };
 }
 
-// Hook for managing multiple data sources
 export function useMultipleDataRefresh(dataSources: string[]) {
   const [states, setStates] = useState<Record<string, DataRefreshState>>(
     Object.fromEntries(
@@ -171,7 +164,6 @@ export function useMultipleDataRefresh(dataSources: string[]) {
 
   const refreshOne = useCallback(
     async <T>(key: string, fetchFn: (signal: AbortSignal) => Promise<T>): Promise<T | null> => {
-      // Cancel previous request for this key
       if (abortControllersRef.current[key]) {
         abortControllersRef.current[key].abort();
       }

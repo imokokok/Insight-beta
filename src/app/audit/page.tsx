@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 
-import { AuditLogViewer } from '@/components/features/common/AuditLogViewer';
-import { PageHeader } from '@/components/features/common/PageHeader';
+import { AuditLogViewer } from '@/components/common/AuditLogViewer';
+import { PageHeader } from '@/components/common/PageHeader';
 import { useI18n } from '@/i18n/LanguageProvider';
 
 export default function AuditPage() {

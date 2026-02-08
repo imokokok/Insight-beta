@@ -19,7 +19,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 
-import { StatCard } from '@/components/features/common/StatCard';
+import { StatCard } from '@/components/common/StatCard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -380,7 +380,7 @@ const HeroActionCard = React.memo(function HeroActionCard({
   );
 });
 
-// Note: StatCard component has been extracted to @/components/features/common/StatCard
+// Note: StatCard component has been extracted to @/components/common/StatCard
 
 interface FeatureCardProps {
   icon: React.ReactNode;

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 import { Coins, Users, AlertTriangle, RefreshCw, Shield } from 'lucide-react';
 
-import { PageHeader } from '@/components/features/common/PageHeader';
+import { PageHeader } from '@/components/common/PageHeader';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { logger } from '@/lib/logger';
 import { cn, fetchApiData, formatTime } from '@/lib/utils';

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { useComponentPreload } from '@/hooks/usePreload';
+import { useComponentPreload } from '@/hooks';
 import { cn } from '@/lib/utils';
 
 import type { Route } from 'next';

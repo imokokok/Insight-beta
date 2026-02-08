@@ -30,24 +30,24 @@ import {
   AnimatedContainer,
   StaggerContainer,
   HoverCard,
-} from '@/components/features/common/AnimatedContainer';
-import { AutoRefreshControl } from '@/components/features/common/AutoRefreshControl';
-import { ChartCard, ChartCardSkeleton } from '@/components/features/common/ChartCard';
-import { ToastContainer, useToast } from '@/components/features/common/DashboardToast';
-import { EmptySecurityState, EmptySearchState } from '@/components/features/common/EmptyState';
+} from '@/components/common/AnimatedContainer';
+import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
+import { ChartCard, ChartCardSkeleton } from '@/components/common/ChartCard';
+import { ToastContainer, useToast } from '@/components/common/DashboardToast';
+import { EmptySecurityState, EmptySearchState } from '@/components/common/EmptyState';
 import {
   EnhancedStatCard,
   EnhancedStatCardSkeleton,
   EnhancedStatCardGroup,
-} from '@/components/features/common/EnhancedStatCard';
-import { PageHeader } from '@/components/features/common/PageHeader';
-import { SkeletonList, SkeletonCard } from '@/components/features/common/SkeletonCard';
+} from '@/components/common/EnhancedStatCard';
+import { PageHeader } from '@/components/common/PageHeader';
+import { SkeletonList, SkeletonCard } from '@/components/common/SkeletonCard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useDashboardShortcuts, useAutoRefresh, useDataCache } from '@/hooks/useDashboardShortcuts';
+import { useDashboardShortcuts, useAutoRefresh, useDataCache } from '@/hooks';
 import { logger } from '@/lib/logger';
 import type {
   ManipulationDetection,

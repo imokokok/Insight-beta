@@ -41,23 +41,23 @@ import {
   Cell,
 } from 'recharts';
 
-import { AutoRefreshControl } from '@/components/features/common/AutoRefreshControl';
-import { ToastContainer, useToast } from '@/components/features/common/DashboardToast';
-import { EmptyDeviationState, EmptySearchState } from '@/components/features/common/EmptyState';
-import { RefreshIndicator } from '@/components/features/common/RefreshIndicator';
+import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
+import { ToastContainer, useToast } from '@/components/common/DashboardToast';
+import { EmptyDeviationState, EmptySearchState } from '@/components/common/EmptyState';
+import { RefreshIndicator } from '@/components/common/RefreshIndicator';
 import {
   SkeletonStatCard,
   SkeletonList,
   SkeletonChart,
   SkeletonCard,
-} from '@/components/features/common/SkeletonCard';
-import { StatCard } from '@/components/features/common/StatCard';
+} from '@/components/common/SkeletonCard';
+import { StatCard } from '@/components/common/StatCard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useDashboardShortcuts, useAutoRefresh, useDataCache } from '@/hooks/useDashboardShortcuts';
+import { useDashboardShortcuts, useAutoRefresh, useDataCache } from '@/hooks';
 import { logger } from '@/lib/logger';
 import { fetchApiData, cn, formatTimestamp } from '@/lib/utils';
 

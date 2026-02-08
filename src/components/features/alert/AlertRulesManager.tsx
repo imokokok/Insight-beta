@@ -7,7 +7,7 @@ import useSWR from 'swr';
 
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/toast';
-import { useAdminSession } from '@/hooks/user/useAdminSession';
+import { useAdminSession } from '@/hooks';
 import { useI18n } from '@/i18n/LanguageProvider';
 import type { AlertRule } from '@/lib/types/oracleTypes';
 import { cn, fetchApiData, getErrorCode } from '@/lib/utils';

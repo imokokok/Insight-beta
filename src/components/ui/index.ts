@@ -6,5 +6,5 @@
 
 // Custom Components
 export { StatusBadge, type StatusType, getStatusConfig } from './StatusBadge';
-export { StatCard, type StatCardColor as StatColor } from '@/components/features/common/StatCard';
+export { StatCard, type StatCardColor as StatColor } from '@/components/common/StatCard';
 export { StatCardSkeleton } from './skeleton';

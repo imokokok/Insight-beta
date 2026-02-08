@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useWebSocket } from '@/hooks/useWebSocket';
+import { useWebSocket } from '@/hooks';
 import { logger } from '@/lib/logger';
 import type { PriceFeed, PriceUpdate } from '@/lib/types/oracle/price';
 import type { OracleProtocol } from '@/lib/types/oracle/protocol';

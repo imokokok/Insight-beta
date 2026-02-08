@@ -47,11 +47,11 @@ vi.mock('next/link', () => ({
   ),
 }));
 
-vi.mock('@/components/features/common/CopyButton', () => ({
+vi.mock('@/components/common/CopyButton', () => ({
   CopyButton: () => <button>Copy</button>,
 }));
 
-vi.mock('@/components/features/common/SkeletonList', () => ({
+vi.mock('@/components/common/SkeletonList', () => ({
   SkeletonList: ({ viewMode }: { viewMode: string }) => <div>Skeleton {viewMode}</div>,
 }));
 

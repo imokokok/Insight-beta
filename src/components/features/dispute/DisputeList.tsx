@@ -14,8 +14,8 @@ import {
 } from 'lucide-react';
 import { Virtuoso, VirtuosoGrid } from 'react-virtuoso';
 
-import { SkeletonList } from '@/components/features/common/SkeletonList';
-import { useWatchlist } from '@/hooks/user/useWatchlist';
+import { SkeletonList } from '@/components/common/SkeletonList';
+import { useWatchlist } from '@/hooks';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { langToLocale, type TranslationKey } from '@/i18n/translations';
 import type { Dispute, DisputeStatus } from '@/lib/types/oracleTypes';

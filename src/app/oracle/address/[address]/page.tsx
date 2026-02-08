@@ -6,14 +6,12 @@ import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigat
 
 import { ExternalLink, LayoutGrid, List as ListIcon } from 'lucide-react';
 
+import { CopyButton } from '@/components/common/CopyButton';
 import { AssertionList } from '@/components/features/assertion/AssertionList';
-import { CopyButton } from '@/components/features/common/CopyButton';
 import { DisputeList } from '@/components/features/dispute/DisputeList';
 import { AddressAvatar } from '@/components/features/wallet/AddressAvatar';
 import { UserStatsCard } from '@/components/features/wallet/UserStatsCard';
-import { useDisputes } from '@/hooks/dispute/useDisputes';
-import { useOracleData } from '@/hooks/oracle/useOracleData';
-import { useUserStats } from '@/hooks/user/useUserStats';
+import { useDisputes, useOracleData, useUserStats } from '@/hooks';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage } from '@/i18n/translations';
 import { cn, getExplorerUrl } from '@/lib/utils';

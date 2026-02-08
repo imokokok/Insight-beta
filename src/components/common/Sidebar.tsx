@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 
 import { ConnectWallet } from '@/components/features/wallet/ConnectWallet';
-import { useOracleFilters } from '@/hooks/oracle/useOracleFilters';
+import { useOracleFilters } from '@/hooks';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { cn } from '@/lib/utils';
 
