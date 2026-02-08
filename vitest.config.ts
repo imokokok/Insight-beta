@@ -63,6 +63,6 @@ export default defineConfig({
     hookTimeout: 10000,
     teardownTimeout: 5000,
     maxConcurrency: 5,
-    minExpections: 1,
+    minExpectations: 1,
   },
 });

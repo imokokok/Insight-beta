@@ -62,7 +62,7 @@ const config = [
       },
     },
     rules: {
-      "security/detect-object-injection": "off",
+      "security/detect-object-injection": "warn",
       "security/detect-non-literal-fs-filename": "error",
       "security/detect-no-csrf-before-method-override": "error",
       "security/detect-possible-timing-attacks": "error",
@@ -70,7 +70,7 @@ const config = [
       "security/detect-non-literal-regexp": "error",
       "security/detect-eval-with-expression": "error",
       "security/detect-unsafe-regex": "error",
-      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-explicit-any": "error",
       "no-loss-of-precision": "off",
       "@typescript-eslint/no-loss-of-precision": "off",
       "@typescript-eslint/no-unused-vars": [
