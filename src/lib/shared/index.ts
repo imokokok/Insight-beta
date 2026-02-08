@@ -7,6 +7,7 @@
  * - 同步管理
  * - 错误处理
  * - 日志工具
+ * - 服务网格
  */
 
 // 数据库工具
@@ -19,7 +20,11 @@ export type { EvmOracleClientConfig } from './blockchain/EvmOracleClient';
 export { ContractRegistry, createContractRegistry } from './blockchain/ContractRegistry';
 
 // 同步管理
-export { SyncManagerFactory, createSyncManager, createSingletonSyncManager } from './sync/SyncManagerFactory';
+export {
+  SyncManagerFactory,
+  createSyncManager,
+  createSingletonSyncManager,
+} from './sync/SyncManagerFactory';
 export type {
   SyncManagerFactoryConfig,
   ClientFactory,
@@ -28,8 +33,34 @@ export type {
 } from './sync/SyncManagerFactory';
 
 // 错误处理
-export { ErrorHandler, normalizeError, getErrorMessage, withRetry, withErrorHandling } from './errors/ErrorHandler';
+export {
+  ErrorHandler,
+  normalizeError,
+  getErrorMessage,
+  withRetry,
+  withErrorHandling,
+} from './errors/ErrorHandler';
 
 // 日志工具
 export { LoggerFactory, createLogger, createOracleLogger } from './logger/LoggerFactory';
 export type { Logger, PrefixedLogger } from './logger/LoggerFactory';
+
+// 服务网格
+export {
+  ServiceRegistry,
+  serviceRegistry,
+  registerService,
+  unregisterService,
+  discoverServices,
+  getServiceInstance,
+  serviceHeartbeat,
+  getServiceStats,
+} from './mesh/ServiceRegistry';
+export type {
+  ServiceInstance,
+  ServiceMetadata,
+  ServiceQuery,
+  HealthStatus,
+  LoadBalanceStrategy,
+  LoadBalancerConfig,
+} from './mesh/ServiceRegistry';
