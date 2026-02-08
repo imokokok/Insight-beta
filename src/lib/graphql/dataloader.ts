@@ -73,9 +73,9 @@ export class OracleDataLoader {
   /**
    * 获取或创建加载器
    */
-  private getLoader<T>(
+  protected getLoader<T>(
     name: string,
-    batchLoadFn: (keys: LoaderKey[]) => Promise<(T | Error)[]>,
+    batchLoadFn: (keys: readonly LoaderKey[]) => Promise<(T | Error)[]>,
   ): DataLoader<LoaderKey, T> {
     if (!this.loaders.has(name)) {
       const loader = new DataLoader<LoaderKey, T>(
@@ -187,7 +187,7 @@ export class OracleDataLoader {
   ): Promise<UnifiedPriceFeed | null> {
     this.metrics.totalRequests++;
 
-    const loader = this.getLoader<UnifiedPriceFeed>('price', async (keys) => {
+    const loader = this.getLoader<UnifiedPriceFeed | null>('price', async (keys) => {
       const results = await fetchFn(keys);
       return keys.map((key) => {
         const keyStr = this.normalizeKey(key);
@@ -213,7 +213,7 @@ export class OracleDataLoader {
   ): Promise<(UnifiedPriceFeed | null)[]> {
     this.metrics.totalRequests += keys.length;
 
-    const loader = this.getLoader<UnifiedPriceFeed>('price', async (batchKeys) => {
+    const loader = this.getLoader<UnifiedPriceFeed | null>('price', async (batchKeys) => {
       const results = await fetchFn(batchKeys);
       return batchKeys.map((key) => {
         const keyStr = this.normalizeKey(key);
@@ -303,14 +303,20 @@ export class PriceFeedLoader extends OracleDataLoader {
    * 加载价格
    */
   async load(symbol: string): Promise<UnifiedPriceFeed | null> {
-    return this.loadPrice(symbol, this.fetchFn);
+    return this.loadPrice(symbol, async (keys: LoaderKey[]) => {
+      const symbols = keys.map(k => typeof k === 'string' ? k : k.id);
+      return this.fetchFn(symbols);
+    });
   }
 
   /**
    * 加载多个价格
    */
   async loadMany(symbols: string[]): Promise<(UnifiedPriceFeed | null)[]> {
-    return this.loadManyPrices(symbols, this.fetchFn);
+    return this.loadManyPrices(symbols, async (keys: LoaderKey[]) => {
+      const syms = keys.map(k => typeof k === 'string' ? k : k.id);
+      return this.fetchFn(syms);
+    });
   }
 }
 

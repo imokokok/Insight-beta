@@ -77,7 +77,7 @@ class RedisClusterManager {
   /**
    * 默认重试策略
    */
-  private defaultRetryStrategy(retries: number): number {
+  private defaultRetryStrategy(retries: number): number | Error {
     if (retries > 10) {
       logger.error('Redis max reconnection attempts reached');
       return new Error('Max reconnection attempts reached');
@@ -89,18 +89,18 @@ class RedisClusterManager {
    * 从环境变量解析集群节点
    */
   private parseClusterNodes(): Array<{ host: string; port: number }> | null {
-    const clusterUrl = env.REDIS_CLUSTER_URL || env.INSIGHT_REDIS_CLUSTER_URL;
-    if (!clusterUrl) return null;
+    // 从 REDIS_URL 解析集群配置，格式: redis://host1:port1,host2:port2,host3:port3
+    const clusterUrl = env.REDIS_URL;
+    if (!clusterUrl || !clusterUrl.includes(',')) return null;
 
     try {
-      // 格式: redis://host1:port1,host2:port2,host3:port3
       const url = new URL(clusterUrl);
       const hosts = url.hostname.split(',');
 
       return hosts.map((host) => {
         const [hostname, portStr] = host.split(':');
         return {
-          host: hostname,
+          host: hostname ?? 'localhost',
           port: parseInt(portStr || '6379', 10),
         };
       });
@@ -110,7 +110,7 @@ class RedisClusterManager {
       return hosts.map((host) => {
         const [hostname, portStr] = host.split(':');
         return {
-          host: hostname,
+          host: hostname ?? 'localhost',
           port: parseInt(portStr || '6379', 10),
         };
       });
@@ -121,7 +121,13 @@ class RedisClusterManager {
    * 获取密码
    */
   private getPassword(): string | undefined {
-    return env.REDIS_PASSWORD || env.INSIGHT_REDIS_PASSWORD;
+    // 从 REDIS_URL 解析密码
+    try {
+      const url = new URL(env.REDIS_URL);
+      return url.password || undefined;
+    } catch {
+      return undefined;
+    }
   }
 
   /**
@@ -221,6 +227,9 @@ class RedisClusterManager {
    */
   private async connectStandalone(): Promise<void> {
     const node = this.config.nodes[0];
+    if (!node) {
+      throw new Error('No Redis node configured');
+    }
     const url = `redis://${node.host}:${node.port}`;
 
     this.standaloneClient = createClient({
@@ -282,7 +291,8 @@ class RedisClusterManager {
     }
 
     try {
-      const info = await this.cluster.clusterInfo();
+      // 使用 info 命令获取集群信息
+      const info = await this.cluster.info();
       return { clusterInfo: info };
     } catch (error) {
       logger.error('Failed to get cluster info', {
@@ -510,10 +520,11 @@ export class RedisClusterCache<T> {
       const pattern = this.buildKey('*');
 
       if (isRedisCluster()) {
-        // 集群模式下需要遍历所有节点
+        // 集群模式下使用 keys 命令（生产环境建议使用 scan）
         const cluster = client as RedisClusterType;
-        for await (const { key } of cluster.scanIterator({ MATCH: pattern, COUNT: 100 })) {
-          await cluster.del(key);
+        const keys = await cluster.keys(pattern);
+        if (keys.length > 0) {
+          await cluster.del(keys);
         }
       } else {
         // 单机模式
