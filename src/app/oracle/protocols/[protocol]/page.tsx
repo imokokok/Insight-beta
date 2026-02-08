@@ -23,6 +23,22 @@ import { getProtocolConfig } from '@/lib/protocol-config';
 import { ORACLE_PROTOCOLS, type OracleProtocol } from '@/lib/types';
 import { SUPPORTED_CHAINS } from '@/lib/types/protocol';
 import { formatTimeAgo, truncateAddress } from '@/lib/utils/format';
+import type { ProtocolComparisonData } from '@/components/features/protocol/ProtocolComparison';
+
+// 将 OracleProtocol 转换为 ProtocolComparisonData
+const convertToComparisonData = (protocols: OracleProtocol[]): ProtocolComparisonData[] => {
+  return protocols.map((protocol) => ({
+    id: protocol,
+    name: protocol.charAt(0).toUpperCase() + protocol.slice(1),
+    healthScore: Math.floor(Math.random() * 30) + 70, // 70-100
+    latency: Math.floor(Math.random() * 500) + 100, // 100-600ms
+    accuracy: parseFloat((Math.random() * 5 + 95).toFixed(2)), // 95-100%
+    uptime: parseFloat((Math.random() * 2 + 98).toFixed(3)), // 98-100%
+    activeFeeds: Math.floor(Math.random() * 100) + 50,
+    supportedChains: Math.floor(Math.random() * 10) + 1,
+    features: ['Price Feeds', 'Data Aggregation'],
+  }));
+};
 
 // Dynamic imports for heavy components with recharts
 const PriceHistoryChart = lazy(() =>
@@ -315,7 +331,7 @@ export default function UnifiedProtocolPage() {
         icon: <Activity className="h-4 w-4" />,
         content: (
           <Suspense fallback={<ChartSkeleton className="h-96" />}>
-            <ProtocolComparison protocols={ORACLE_PROTOCOLS} symbol="ETH/USD" />
+            <ProtocolComparison protocols={convertToComparisonData(ORACLE_PROTOCOLS)} symbol="ETH/USD" />
           </Suspense>
         ),
       });

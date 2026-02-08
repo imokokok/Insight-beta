@@ -50,7 +50,7 @@ class MockOracleClient implements IOracleClient {
       price: 3500,
       priceRaw: 350000000000n,
       decimals: 8,
-      timestamp: new Date().toISOString(),
+      timestamp: Date.now(),
       blockNumber: 12345678,
       isStale: false,
       stalenessSeconds: 0,

@@ -6,6 +6,8 @@ export { HealthScore, HealthScoreBadge } from './HealthScore';
 export { KeyMetrics } from './KeyMetrics';
 export { NodeDistributionMap, type NodeRegion } from './NodeDistributionMap';
 export { PerformanceChart, type PerformanceDataPoint } from './PerformanceChart';
+export { PriceAlertSettings } from './PriceAlertSettings';
+export { PriceHistoryChart } from './PriceHistoryChart';
 export { ProtocolComparison, type ProtocolComparisonData } from './ProtocolComparison';
 export { ProtocolDetailCard, type ProtocolDetail } from './ProtocolDetailCard';
 export { RealtimePriceStream, type PriceUpdate } from './RealtimePriceStream';

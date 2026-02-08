@@ -80,7 +80,7 @@ class TestEvmOracleClient extends EvmOracleClient {
       price: Number(data.answer) / 1e8,
       priceRaw: data.answer,
       decimals: 8,
-      timestamp: new Date().toISOString(),
+      timestamp: Date.now(),
       blockNumber: Number(data.roundId),
       isStale: false,
       stalenessSeconds: 0,

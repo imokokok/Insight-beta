@@ -103,7 +103,7 @@ export class DIASyncService extends EnhancedSyncService {
         throw new Error(`DIA API error: ${response.status} ${response.statusText}`);
       }
 
-      const data: DIAQuotationResponse = await response.json();
+      const data = (await response.json()) as DIAQuotationResponse;
 
       return {
         symbol: `${asset}/USD`,
@@ -129,5 +129,31 @@ export class DIASyncService extends EnhancedSyncService {
 
   isAssetSupported(asset: string): boolean {
     return this.getAvailableAssets().includes(asset);
+  }
+
+  async checkDIAHealth(): Promise<{ healthy: boolean; latency: number }> {
+    const startTime = Date.now();
+    const healthEndpoint = `${this.diaConfig.apiEndpoint}/quotation/ETH`;
+
+    try {
+      const response = await fetch(healthEndpoint, {
+        method: 'HEAD',
+        headers: {
+          Accept: 'application/json',
+        },
+      });
+
+      const latency = Date.now() - startTime;
+
+      return {
+        healthy: response.ok,
+        latency,
+      };
+    } catch (error) {
+      return {
+        healthy: false,
+        latency: Date.now() - startTime,
+      };
+    }
   }
 }

@@ -69,7 +69,7 @@ const {
 } = await import('./redis-cluster-advanced');
 
 describe('RedisDistributedLock', () => {
-  let lock: RedisDistributedLock;
+  let lock: InstanceType<typeof RedisDistributedLock>;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -151,7 +151,7 @@ describe('RedisDistributedLock', () => {
 });
 
 describe('RedisRateLimiter', () => {
-  let limiter: RedisRateLimiter;
+  let limiter: InstanceType<typeof RedisRateLimiter>;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -213,7 +213,7 @@ describe('RedisRateLimiter', () => {
 });
 
 describe('RedisPipeline', () => {
-  let pipeline: RedisPipeline;
+  let pipeline: InstanceType<typeof RedisPipeline>;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -251,7 +251,7 @@ describe('RedisPipeline', () => {
 });
 
 describe('RedisCacheWarmer', () => {
-  let warmer: RedisCacheWarmer;
+  let warmer: InstanceType<typeof RedisCacheWarmer>;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -281,7 +281,7 @@ describe('RedisCacheWarmer', () => {
 });
 
 describe('RedisMonitor', () => {
-  let monitor: RedisMonitor;
+  let monitor: InstanceType<typeof RedisMonitor>;
 
   beforeEach(() => {
     vi.clearAllMocks();
