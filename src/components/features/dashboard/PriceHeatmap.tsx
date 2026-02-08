@@ -1,9 +1,11 @@
 'use client';
 
 import { useMemo } from 'react';
+
 import { Activity, Flame, Snowflake } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useI18n } from '@/i18n';
@@ -32,11 +34,12 @@ export function PriceHeatmap({ data, loading, className, onCellClick }: PriceHea
 
   const stats = useMemo(() => {
     const totalCells = data.length;
-    const hotCells = data.filter(c => Math.abs(c.deviationPercent) > 2).length;
-    const coldCells = data.filter(c => Math.abs(c.deviationPercent) < 0.5).length;
-    const avgDeviation = data.length > 0
-      ? data.reduce((sum, c) => sum + Math.abs(c.deviationPercent), 0) / data.length
-      : 0;
+    const hotCells = data.filter((c) => Math.abs(c.deviationPercent) > 2).length;
+    const coldCells = data.filter((c) => Math.abs(c.deviationPercent) < 0.5).length;
+    const avgDeviation =
+      data.length > 0
+        ? data.reduce((sum, c) => sum + Math.abs(c.deviationPercent), 0) / data.length
+        : 0;
 
     return { totalCells, hotCells, coldCells, avgDeviation };
   }, [data]);
@@ -62,11 +65,13 @@ export function PriceHeatmap({ data, loading, className, onCellClick }: PriceHea
   // Group data by symbol
   const groupedData = useMemo(() => {
     const groups: Record<string, HeatmapCell[]> = {};
-    data.forEach(cell => {
-      if (!groups[cell.symbol]) {
-        groups[cell.symbol] = [];
+    data.forEach((cell) => {
+      const group = groups[cell.symbol];
+      if (!group) {
+        groups[cell.symbol] = [cell];
+      } else {
+        group.push(cell);
       }
-      groups[cell.symbol].push(cell);
     });
     return groups;
   }, [data]);
@@ -140,43 +145,56 @@ export function PriceHeatmap({ data, loading, className, onCellClick }: PriceHea
 
             {/* Heatmap Grid */}
             <div className="grid gap-1">
-              {symbols.map(symbol => (
-                <div key={symbol} className="flex items-center gap-2">
-                  <div className="w-20 text-sm font-medium truncate">{symbol}</div>
-                  <div className="flex-1 flex gap-1">
-                    {groupedData[symbol].map(cell => (
-                      <Tooltip key={cell.id}>
-                        <TooltipTrigger asChild>
-                          <button
-                            onClick={() => onCellClick?.(cell)}
-                            className={cn(
-                              'flex-1 h-10 rounded transition-all hover:scale-105',
-                              getDeviationColor(cell.deviationPercent)
-                            )}
-                          >
-                            <div className="flex h-full flex-col items-center justify-center">
-                              <span className="text-xs font-bold">
-                                {Math.abs(cell.deviationPercent).toFixed(1)}%
-                              </span>
-                              <span className="text-[10px] opacity-70">{cell.protocol.slice(0, 3)}</span>
+              {symbols.map((symbol) => {
+                const cells = groupedData[symbol];
+                if (!cells) return null;
+                return (
+                  <div key={symbol} className="flex items-center gap-2">
+                    <div className="w-20 truncate text-sm font-medium">{symbol}</div>
+                    <div className="flex flex-1 gap-1">
+                      {cells.map((cell) => (
+                        <Tooltip key={cell.id}>
+                          <TooltipTrigger asChild>
+                            <button
+                              onClick={() => onCellClick?.(cell)}
+                              className={cn(
+                                'h-10 flex-1 rounded transition-all hover:scale-105',
+                                getDeviationColor(cell.deviationPercent),
+                              )}
+                            >
+                              <div className="flex h-full flex-col items-center justify-center">
+                                <span className="text-xs font-bold">
+                                  {Math.abs(cell.deviationPercent).toFixed(1)}%
+                                </span>
+                                <span className="text-[10px] opacity-70">
+                                  {cell.protocol.slice(0, 3)}
+                                </span>
+                              </div>
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <div className="space-y-1">
+                              <p className="font-medium">
+                                {cell.symbol} - {cell.protocol}
+                              </p>
+                              <p className="text-sm">
+                                {t('dashboard:heatmap.price')}: ${cell.price.toFixed(4)}
+                              </p>
+                              <p className="text-sm">
+                                {t('dashboard:heatmap.deviation')}:{' '}
+                                {cell.deviationPercent.toFixed(2)}%
+                              </p>
+                              <p className="text-muted-foreground text-xs">
+                                {getDeviationLabel(cell.deviationPercent)}
+                              </p>
                             </div>
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <div className="space-y-1">
-                            <p className="font-medium">{cell.symbol} - {cell.protocol}</p>
-                            <p className="text-sm">{t('dashboard:heatmap.price')}: ${cell.price.toFixed(4)}</p>
-                            <p className="text-sm">{t('dashboard:heatmap.deviation')}: {cell.deviationPercent.toFixed(2)}%</p>
-                            <p className="text-xs text-muted-foreground">
-                              {getDeviationLabel(cell.deviationPercent)}
-                            </p>
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    ))}
+                          </TooltipContent>
+                        </Tooltip>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </TooltipProvider>

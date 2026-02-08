@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useCallback, useState, useRef, ReactNode } from 'react';
+import type { ReactNode } from 'react';
+import { useEffect, useCallback, useState, useRef } from 'react';
+
 import { cn } from '@/lib/utils';
 
 // Hook for keyboard navigation
@@ -66,7 +68,7 @@ export function useKeyboardNavigation({
           break;
       }
     },
-    [itemCount, focusedIndex, onSelect, onEscape, loop]
+    [itemCount, focusedIndex, onSelect, onEscape, loop],
   );
 
   return {
@@ -95,7 +97,12 @@ export function KeyboardNavigableList<T>({
   const listRef = useRef<HTMLDivElement>(null);
   const { focusedIndex, setFocusedIndex, handleKeyDown } = useKeyboardNavigation({
     itemCount: items.length,
-    onSelect: (index) => onSelect?.(items[index], index),
+    onSelect: (index) => {
+      const item = items[index];
+      if (item !== undefined) {
+        onSelect?.(item, index);
+      }
+    },
   });
 
   useEffect(() => {
@@ -133,8 +140,8 @@ export function KeyboardNavigableList<T>({
           tabIndex={-1}
           className={cn(
             'cursor-pointer outline-none transition-colors',
-            focusedIndex === index && 'bg-primary/10 ring-2 ring-primary/50',
-            itemClassName
+            focusedIndex === index && 'bg-primary/10 ring-primary/50 ring-2',
+            itemClassName,
           )}
           onClick={() => {
             setFocusedIndex(index);
@@ -208,7 +215,7 @@ export function FocusTrap({ children, isActive, className }: FocusTrapProps) {
     if (!container) return;
 
     const focusableElements = container.querySelectorAll<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
     );
     const firstElement = focusableElements[0];
     const lastElement = focusableElements[focusableElements.length - 1];
@@ -263,10 +270,10 @@ export function SkipLink({ mainContentId, className }: SkipLinkProps) {
       href={`#${mainContentId}`}
       onClick={handleClick}
       className={cn(
-        'sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4',
-        'z-50 rounded-lg bg-primary px-4 py-2 text-primary-foreground',
-        'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
-        className
+        'sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4',
+        'bg-primary text-primary-foreground z-50 rounded-lg px-4 py-2',
+        'focus:ring-primary focus:outline-none focus:ring-2 focus:ring-offset-2',
+        className,
       )}
     >
       Skip to main content
@@ -287,9 +294,7 @@ export function KeyboardShortcutDisplay({ shortcut, className }: KeyboardShortcu
     <span className={cn('inline-flex items-center gap-1', className)}>
       {keys.map((key, index) => (
         <span key={index} className="flex items-center gap-1">
-          <kbd className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
-            {key.trim()}
-          </kbd>
+          <kbd className="bg-muted rounded px-1.5 py-0.5 font-mono text-xs">{key.trim()}</kbd>
           {index < keys.length - 1 && <span className="text-muted-foreground">+</span>}
         </span>
       ))}
@@ -335,9 +340,9 @@ export function AccessibleButton({
       onKeyDown={handleKeyDown}
       disabled={disabled}
       className={cn(
-        'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
-        disabled && 'opacity-50 cursor-not-allowed',
-        className
+        'focus:ring-primary focus:outline-none focus:ring-2 focus:ring-offset-2',
+        disabled && 'cursor-not-allowed opacity-50',
+        className,
       )}
       aria-label={ariaLabel}
       aria-pressed={ariaPressed}

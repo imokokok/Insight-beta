@@ -6,10 +6,10 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import type { SupportedChain } from '@/lib/shared/blockchain/ContractRegistry';
 import { ContractRegistry } from '@/lib/shared/blockchain/ContractRegistry';
 import { BatchInserter } from '@/lib/shared/database/BatchInserter';
 import { ErrorHandler } from '@/lib/shared/errors/ErrorHandler';
+import type { SupportedChain } from '@/lib/types/unifiedOracleTypes';
 
 // Mock database
 vi.mock('@/server/db', () => ({
@@ -21,7 +21,13 @@ import { query } from '@/server/db';
 describe('BatchInserter Performance', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(query).mockResolvedValue({ rowCount: 100 });
+    vi.mocked(query).mockResolvedValue({
+      rows: [],
+      rowCount: 100,
+      command: 'INSERT',
+      oid: 0,
+      fields: [],
+    });
   });
 
   it('should handle large batch insertions efficiently', async () => {
@@ -58,7 +64,13 @@ describe('BatchInserter Performance', () => {
 
     for (const batchSize of batchSizes) {
       vi.clearAllMocks();
-      vi.mocked(query).mockResolvedValue({ rowCount: batchSize });
+      vi.mocked(query).mockResolvedValue({
+        rows: [],
+        rowCount: batchSize,
+        command: 'INSERT',
+        oid: 0,
+        fields: [],
+      });
 
       const inserter = new BatchInserter<{ id: string }>({
         tableName: 'test_table',
@@ -128,6 +140,7 @@ describe('ErrorHandler Performance', () => {
     const result = await ErrorHandler.withRetry(operation, {
       maxRetries: 3,
       baseDelay: 10, // 短延迟便于测试
+      maxDelay: 1000,
     });
 
     const endTime = performance.now();
@@ -186,15 +199,28 @@ describe('ContractRegistry Performance', () => {
     const registry = new ContractRegistry();
 
     // 预填充数据
+    const chains: SupportedChain[] = [
+      'ethereum',
+      'polygon',
+      'arbitrum',
+      'optimism',
+      'base',
+      'avalanche',
+      'fantom',
+      'bsc',
+      'celo',
+      'gnosis',
+    ];
+
     for (let i = 0; i < 1000; i++) {
-      registry.register(`contract-${i}`, 1, `0x${i.toString(16).padStart(40, '0')}`);
+      registry.register(chains[i % chains.length]!, `0x${i.toString(16).padStart(40, '0')}`);
     }
 
     const iterations = 10000;
     const startTime = performance.now();
 
     for (let i = 0; i < iterations; i++) {
-      registry.getAddress(`contract-${i % 1000}`, 1);
+      registry.getAddress(chains[i % chains.length]!);
     }
 
     const endTime = performance.now();
@@ -243,7 +269,13 @@ describe('Memory Usage Benchmarks', () => {
 
 describe('Concurrent Operations Performance', () => {
   it('should handle concurrent batch inserts', async () => {
-    vi.mocked(query).mockResolvedValue({ rowCount: 100 });
+    vi.mocked(query).mockResolvedValue({
+      rows: [],
+      rowCount: 100,
+      command: 'INSERT',
+      oid: 0,
+      fields: [],
+    });
 
     const inserter = new BatchInserter<{ id: string; value: number }>({
       tableName: 'test_table',

@@ -55,7 +55,7 @@ describe('Sync Workflow Integration', () => {
           price: 3500.5,
           priceRaw: 350050000000n,
           decimals: 8,
-          timestamp: new Date().toISOString(),
+          timestamp: Date.now(),
           blockNumber: 12345678,
           isStale: false,
           stalenessSeconds: 0,
@@ -72,7 +72,7 @@ describe('Sync Workflow Integration', () => {
           price: 65000,
           priceRaw: 6500000000000n,
           decimals: 8,
-          timestamp: new Date().toISOString(),
+          timestamp: Date.now(),
           blockNumber: 12345678,
           isStale: false,
           stalenessSeconds: 0,
@@ -258,7 +258,7 @@ describe('Sync Workflow Integration', () => {
         price: 3500,
         priceRaw: 350000000000n,
         decimals: 8,
-        timestamp: new Date().toISOString(),
+        timestamp: Date.now(),
         blockNumber: 12345678,
         isStale: false,
         stalenessSeconds: 0,
@@ -363,7 +363,7 @@ describe('Sync Workflow Integration', () => {
 
       // 验证所有同步都启动了（query 被调用多次）
       expect(query).toHaveBeenCalled();
-      expect(query.mock.calls.length).toBeGreaterThan(0);
+      expect(vi.mocked(query).mock.calls.length).toBeGreaterThan(0);
 
       // 停止所有同步
       syncManagers.forEach((manager, index) => {

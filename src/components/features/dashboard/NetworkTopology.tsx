@@ -1,9 +1,11 @@
 'use client';
 
 import { useMemo } from 'react';
+
 import { Network, Server, Wifi, WifiOff, AlertCircle } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useI18n } from '@/i18n';
@@ -30,41 +32,47 @@ export function NetworkTopology({ nodes, loading, className }: NetworkTopologyPr
 
   const stats = useMemo(() => {
     const total = nodes.length;
-    const online = nodes.filter(n => n.status === 'online').length;
-    const offline = nodes.filter(n => n.status === 'offline').length;
-    const degraded = nodes.filter(n => n.status === 'degraded').length;
-    const avgLatency = nodes.length > 0
-      ? nodes.reduce((sum, n) => sum + n.latency, 0) / nodes.length
-      : 0;
+    const online = nodes.filter((n) => n.status === 'online').length;
+    const offline = nodes.filter((n) => n.status === 'offline').length;
+    const degraded = nodes.filter((n) => n.status === 'degraded').length;
+    const avgLatency =
+      nodes.length > 0 ? nodes.reduce((sum, n) => sum + n.latency, 0) / nodes.length : 0;
     return { total, online, offline, degraded, avgLatency };
   }, [nodes]);
 
   const getStatusColor = (status: NetworkNode['status']) => {
     switch (status) {
-      case 'online': return 'bg-emerald-500';
-      case 'degraded': return 'bg-amber-500';
-      case 'offline': return 'bg-rose-500';
+      case 'online':
+        return 'bg-emerald-500';
+      case 'degraded':
+        return 'bg-amber-500';
+      case 'offline':
+        return 'bg-rose-500';
     }
   };
 
   const getStatusIcon = (status: NetworkNode['status']) => {
     switch (status) {
-      case 'online': return Wifi;
-      case 'degraded': return AlertCircle;
-      case 'offline': return WifiOff;
+      case 'online':
+        return Wifi;
+      case 'degraded':
+        return AlertCircle;
+      case 'offline':
+        return WifiOff;
     }
   };
 
   // Group nodes by type
   const groupedNodes = useMemo(() => {
-    const groups: Record<string, NetworkNode[]> = {
+    const groups: Record<NetworkNode['type'], NetworkNode[]> = {
       'data-source': [],
-      'aggregator': [],
-      'oracle': [],
+      aggregator: [],
+      oracle: [],
     };
-    nodes.forEach(node => {
-      if (groups[node.type]) {
-        groups[node.type].push(node);
+    nodes.forEach((node) => {
+      const group = groups[node.type];
+      if (group) {
+        group.push(node);
       }
     });
     return groups;
@@ -107,20 +115,20 @@ export function NetworkTopology({ nodes, loading, className }: NetworkTopologyPr
 
       <CardContent>
         <TooltipProvider>
-          <div className="relative h-[300px] overflow-hidden rounded-lg bg-slate-50 dark:bg-slate-900 p-4">
+          <div className="relative h-[300px] overflow-hidden rounded-lg bg-slate-50 p-4 dark:bg-slate-900">
             {/* Layer Labels */}
-            <div className="absolute left-4 top-4 text-xs font-medium text-muted-foreground">
+            <div className="text-muted-foreground absolute left-4 top-4 text-xs font-medium">
               {t('dashboard:topology.dataSources')}
             </div>
-            <div className="absolute left-1/2 top-4 -translate-x-1/2 text-xs font-medium text-muted-foreground">
+            <div className="text-muted-foreground absolute left-1/2 top-4 -translate-x-1/2 text-xs font-medium">
               {t('dashboard:topology.aggregators')}
             </div>
-            <div className="absolute right-4 top-4 text-xs font-medium text-muted-foreground">
+            <div className="text-muted-foreground absolute right-4 top-4 text-xs font-medium">
               {t('dashboard:topology.oracles')}
             </div>
 
             {/* Nodes Grid */}
-            <div className="mt-8 grid grid-cols-3 gap-8 h-[200px]">
+            <div className="mt-8 grid h-[200px] grid-cols-3 gap-8">
               {/* Data Sources Column */}
               <div className="flex flex-col items-center justify-center gap-3">
                 {groupedNodes['data-source'].map((node, index) => {
@@ -130,22 +138,31 @@ export function NetworkTopology({ nodes, loading, className }: NetworkTopologyPr
                       <TooltipTrigger asChild>
                         <div
                           className={cn(
-                            'relative flex items-center gap-2 rounded-lg border bg-white p-3 shadow-sm cursor-pointer transition-all hover:shadow-md',
-                            node.status === 'offline' && 'opacity-50'
+                            'relative flex cursor-pointer items-center gap-2 rounded-lg border bg-white p-3 shadow-sm transition-all hover:shadow-md',
+                            node.status === 'offline' && 'opacity-50',
                           )}
                           style={{ marginTop: index > 0 ? '-8px' : 0 }}
                         >
-                          <div className={cn('h-2 w-2 rounded-full', getStatusColor(node.status))} />
-                          <Server className="h-4 w-4 text-muted-foreground" />
+                          <div
+                            className={cn('h-2 w-2 rounded-full', getStatusColor(node.status))}
+                          />
+                          <Server className="text-muted-foreground h-4 w-4" />
                           <span className="text-sm font-medium">{node.name}</span>
-                          <StatusIcon className={cn('h-3 w-3', getStatusColor(node.status).replace('bg-', 'text-'))} />
+                          <StatusIcon
+                            className={cn(
+                              'h-3 w-3',
+                              getStatusColor(node.status).replace('bg-', 'text-'),
+                            )}
+                          />
                         </div>
                       </TooltipTrigger>
                       <TooltipContent>
                         <div className="space-y-1">
                           <p className="font-medium">{node.name}</p>
-                          <p className="text-xs text-muted-foreground">{node.region}</p>
-                          <p className="text-xs">{t('dashboard:topology.latency')}: {node.latency}ms</p>
+                          <p className="text-muted-foreground text-xs">{node.region}</p>
+                          <p className="text-xs">
+                            {t('dashboard:topology.latency')}: {node.latency}ms
+                          </p>
                         </div>
                       </TooltipContent>
                     </Tooltip>
@@ -162,22 +179,31 @@ export function NetworkTopology({ nodes, loading, className }: NetworkTopologyPr
                       <TooltipTrigger asChild>
                         <div
                           className={cn(
-                            'relative flex items-center gap-2 rounded-lg border bg-white p-3 shadow-sm cursor-pointer transition-all hover:shadow-md',
-                            node.status === 'offline' && 'opacity-50'
+                            'relative flex cursor-pointer items-center gap-2 rounded-lg border bg-white p-3 shadow-sm transition-all hover:shadow-md',
+                            node.status === 'offline' && 'opacity-50',
                           )}
                           style={{ marginTop: index > 0 ? '-8px' : 0 }}
                         >
-                          <div className={cn('h-2 w-2 rounded-full', getStatusColor(node.status))} />
-                          <Network className="h-4 w-4 text-muted-foreground" />
+                          <div
+                            className={cn('h-2 w-2 rounded-full', getStatusColor(node.status))}
+                          />
+                          <Network className="text-muted-foreground h-4 w-4" />
                           <span className="text-sm font-medium">{node.name}</span>
-                          <StatusIcon className={cn('h-3 w-3', getStatusColor(node.status).replace('bg-', 'text-'))} />
+                          <StatusIcon
+                            className={cn(
+                              'h-3 w-3',
+                              getStatusColor(node.status).replace('bg-', 'text-'),
+                            )}
+                          />
                         </div>
                       </TooltipTrigger>
                       <TooltipContent>
                         <div className="space-y-1">
                           <p className="font-medium">{node.name}</p>
-                          <p className="text-xs text-muted-foreground">{node.region}</p>
-                          <p className="text-xs">{t('dashboard:topology.latency')}: {node.latency}ms</p>
+                          <p className="text-muted-foreground text-xs">{node.region}</p>
+                          <p className="text-xs">
+                            {t('dashboard:topology.latency')}: {node.latency}ms
+                          </p>
                         </div>
                       </TooltipContent>
                     </Tooltip>
@@ -194,22 +220,31 @@ export function NetworkTopology({ nodes, loading, className }: NetworkTopologyPr
                       <TooltipTrigger asChild>
                         <div
                           className={cn(
-                            'relative flex items-center gap-2 rounded-lg border bg-white p-3 shadow-sm cursor-pointer transition-all hover:shadow-md',
-                            node.status === 'offline' && 'opacity-50'
+                            'relative flex cursor-pointer items-center gap-2 rounded-lg border bg-white p-3 shadow-sm transition-all hover:shadow-md',
+                            node.status === 'offline' && 'opacity-50',
                           )}
                           style={{ marginTop: index > 0 ? '-8px' : 0 }}
                         >
-                          <div className={cn('h-2 w-2 rounded-full', getStatusColor(node.status))} />
-                          <Wifi className="h-4 w-4 text-muted-foreground" />
+                          <div
+                            className={cn('h-2 w-2 rounded-full', getStatusColor(node.status))}
+                          />
+                          <Wifi className="text-muted-foreground h-4 w-4" />
                           <span className="text-sm font-medium">{node.name}</span>
-                          <StatusIcon className={cn('h-3 w-3', getStatusColor(node.status).replace('bg-', 'text-'))} />
+                          <StatusIcon
+                            className={cn(
+                              'h-3 w-3',
+                              getStatusColor(node.status).replace('bg-', 'text-'),
+                            )}
+                          />
                         </div>
                       </TooltipTrigger>
                       <TooltipContent>
                         <div className="space-y-1">
                           <p className="font-medium">{node.name}</p>
-                          <p className="text-xs text-muted-foreground">{node.region}</p>
-                          <p className="text-xs">{t('dashboard:topology.latency')}: {node.latency}ms</p>
+                          <p className="text-muted-foreground text-xs">{node.region}</p>
+                          <p className="text-xs">
+                            {t('dashboard:topology.latency')}: {node.latency}ms
+                          </p>
                         </div>
                       </TooltipContent>
                     </Tooltip>
@@ -219,10 +254,10 @@ export function NetworkTopology({ nodes, loading, className }: NetworkTopologyPr
             </div>
 
             {/* Connection Lines SVG */}
-            <svg className="absolute inset-0 pointer-events-none" style={{ zIndex: 0 }}>
-              {nodes.map(node => 
-                node.connectedTo.map(targetId => {
-                  const target = nodes.find(n => n.id === targetId);
+            <svg className="pointer-events-none absolute inset-0" style={{ zIndex: 0 }}>
+              {nodes.map((node) =>
+                node.connectedTo.map((targetId) => {
+                  const target = nodes.find((n) => n.id === targetId);
                   if (!target) return null;
                   return (
                     <line
@@ -236,7 +271,7 @@ export function NetworkTopology({ nodes, loading, className }: NetworkTopologyPr
                       strokeDasharray="4 4"
                     />
                   );
-                })
+                }),
               )}
             </svg>
           </div>

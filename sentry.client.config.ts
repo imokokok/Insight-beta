@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/nextjs';
+
 import { logger } from './src/lib/logger';
 
 const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
@@ -92,9 +93,6 @@ Sentry.init({
 
   // 调试配置（仅开发环境）
   debug: process.env.NODE_ENV === 'development',
-
-  // 启用自动会话追踪
-  autoSessionTracking: true,
 
   // 最大面包屑数量
   maxBreadcrumbs: 100,

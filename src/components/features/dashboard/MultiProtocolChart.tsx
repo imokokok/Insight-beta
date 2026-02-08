@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+
 import {
   LineChart,
   Line,
@@ -12,10 +13,11 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useI18n } from '@/i18n';
 
 export interface PriceDataPoint {
@@ -50,9 +52,7 @@ export function MultiProtocolChart({
   className,
 }: MultiProtocolChartProps) {
   const { t } = useI18n();
-  const [visibleProtocols, setVisibleProtocols] = useState<Set<string>>(
-    new Set(protocols)
-  );
+  const [visibleProtocols, setVisibleProtocols] = useState<Set<string>>(new Set(protocols));
   const [showAverage, setShowAverage] = useState(true);
 
   const formattedData = useMemo(() => {
@@ -67,19 +67,17 @@ export function MultiProtocolChart({
 
   const averagePrice = useMemo(() => {
     if (data.length === 0) return 0;
-    const lastPoint = data[data.length - 1];
+    const lastPoint = data[data.length - 1]!;
     const prices = protocols
       .filter((p) => visibleProtocols.has(p))
       .map((p) => lastPoint[p] || 0)
       .filter((p) => p > 0);
-    return prices.length > 0
-      ? prices.reduce((sum, p) => sum + p, 0) / prices.length
-      : 0;
+    return prices.length > 0 ? prices.reduce((sum, p) => sum + p, 0) / prices.length : 0;
   }, [data, protocols, visibleProtocols]);
 
   const maxDeviation = useMemo(() => {
     if (data.length === 0 || averagePrice === 0) return 0;
-    const lastPoint = data[data.length - 1];
+    const lastPoint = data[data.length - 1]!;
     const prices = protocols
       .filter((p) => visibleProtocols.has(p))
       .map((p) => lastPoint[p] || 0)
@@ -157,12 +155,7 @@ export function MultiProtocolChart({
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={formattedData}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis
-                dataKey="time"
-                tick={{ fontSize: 12 }}
-                tickLine={false}
-                axisLine={false}
-              />
+              <XAxis dataKey="time" tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
               <YAxis
                 tick={{ fontSize: 12 }}
                 tickLine={false}
@@ -176,10 +169,7 @@ export function MultiProtocolChart({
                   border: '1px solid hsl(var(--border))',
                   borderRadius: '8px',
                 }}
-                formatter={(value: number, name: string) => [
-                  `$${value.toFixed(4)}`,
-                  name,
-                ]}
+                formatter={(value, name) => [`$${Number(value).toFixed(4)}`, name]}
               />
               <Legend />
 
@@ -195,7 +185,7 @@ export function MultiProtocolChart({
                       dot={false}
                       activeDot={{ r: 4 }}
                     />
-                  )
+                  ),
               )}
 
               {showAverage && averagePrice > 0 && (
