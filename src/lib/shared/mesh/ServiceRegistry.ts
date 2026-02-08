@@ -310,9 +310,16 @@ export class ServiceRegistry {
    * 轮询策略
    */
   private roundRobin(instances: ServiceInstance[]): ServiceInstance {
-    const counter = this.roundRobinCounters.get(instances[0].name) || 0;
+    const firstInstance = instances[0];
+    if (!firstInstance) {
+      throw new Error('No instances available for round robin');
+    }
+    const counter = this.roundRobinCounters.get(firstInstance.name) || 0;
     const instance = instances[counter % instances.length];
-    this.roundRobinCounters.set(instances[0].name, counter + 1);
+    if (!instance) {
+      throw new Error('No instance available at index');
+    }
+    this.roundRobinCounters.set(firstInstance.name, counter + 1);
     return instance;
   }
 
@@ -321,7 +328,11 @@ export class ServiceRegistry {
    */
   private random(instances: ServiceInstance[]): ServiceInstance {
     const index = Math.floor(Math.random() * instances.length);
-    return instances[index];
+    const instance = instances[index];
+    if (!instance) {
+      throw new Error('No instance available at random index');
+    }
+    return instance;
   }
 
   /**
@@ -338,18 +349,26 @@ export class ServiceRegistry {
       }
     }
 
-    return instances[instances.length - 1];
+    const lastInstance = instances[instances.length - 1];
+    if (!lastInstance) {
+      throw new Error('No instances available for weighted selection');
+    }
+    return lastInstance;
   }
 
   /**
    * 最少连接策略
    */
   private leastConnections(instances: ServiceInstance[]): ServiceInstance {
+    const firstInstance = instances[0];
+    if (!firstInstance) {
+      throw new Error('No instances available for least connections');
+    }
     return instances.reduce((min, instance) => {
       const minCount = this.connectionCounts.get(min.id) || 0;
       const instanceCount = this.connectionCounts.get(instance.id) || 0;
       return instanceCount < minCount ? instance : min;
-    });
+    }, firstInstance);
   }
 
   /**
@@ -358,7 +377,11 @@ export class ServiceRegistry {
   private ipHash(instances: ServiceInstance[]): ServiceInstance {
     // 简化的哈希实现
     const hash = Date.now() % instances.length;
-    return instances[hash];
+    const instance = instances[hash];
+    if (!instance) {
+      throw new Error('No instance available at hash index');
+    }
+    return instance;
   }
 
   /**

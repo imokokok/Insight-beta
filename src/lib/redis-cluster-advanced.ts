@@ -12,11 +12,12 @@
 
 import { logger } from '@/lib/logger';
 
+import type { RedisClientType } from 'redis';
+
 import {
   redisClusterManager,
   getRedisClusterClient,
   RedisClusterCache,
-  type RedisClientType,
 } from './redis-cluster';
 
 // ============================================================================
@@ -33,10 +34,10 @@ export interface LockOptions {
 }
 
 export class RedisDistributedLock {
-  private prefix = 'lock:';
+  private prefix: string;
 
-  constructor(private prefix_key: string = 'oracle') {
-    this.prefix = `${prefix_key}:lock:`;
+  constructor(prefixKey: string = 'oracle') {
+    this.prefix = `${prefixKey}:lock:`;
   }
 
   /**
@@ -146,10 +147,10 @@ export interface RateLimiterOptions {
 }
 
 export class RedisRateLimiter {
-  private prefix = 'ratelimit:';
+  private prefix: string;
 
-  constructor(private prefix_key: string = 'oracle') {
-    this.prefix = `${prefix_key}:ratelimit:`;
+  constructor(prefixKey: string = 'oracle') {
+    this.prefix = `${prefixKey}:ratelimit:`;
   }
 
   /**
@@ -258,7 +259,6 @@ export class RedisPubSub {
   private subscriber: RedisClientType | null = null;
   private publisher: RedisClientType | null = null;
   private handlers: Map<string, Set<(message: string) => void>> = new Map();
-  private isSubscribed = false;
 
   /**
    * 初始化发布订阅
@@ -378,16 +378,20 @@ export class RedisPipeline {
     const client = await getRedisClusterClient();
 
     // 检查是否支持 pipeline
-    const multi = (client as RedisClientType).multi?.();
+    const redisClient = client as RedisClientType;
+    const multi = redisClient.multi?.();
     if (!multi) {
       // 集群模式，逐个执行
       const results: unknown[] = [];
       for (const { cmd, args } of this.commands) {
         try {
-          const result = await (client as Record<string, (...args: unknown[]) => Promise<unknown>>)[
-            cmd
-          ](...args);
-          results.push(result);
+          const method = (client as Record<string, (...args: unknown[]) => Promise<unknown>>)[cmd];
+          if (typeof method === 'function') {
+            const result = await method.apply(client, args);
+            results.push(result);
+          } else {
+            results.push(new Error(`Command ${cmd} not found`));
+          }
         } catch (error) {
           results.push(error);
         }
@@ -397,7 +401,10 @@ export class RedisPipeline {
 
     // 单机模式使用事务
     for (const { cmd, args } of this.commands) {
-      (multi as Record<string, (...args: unknown[]) => void>)[cmd](...args);
+      const method = (multi as Record<string, (...args: unknown[]) => void>)[cmd];
+      if (typeof method === 'function') {
+        method.apply(multi, args);
+      }
     }
 
     return await multi.exec();
