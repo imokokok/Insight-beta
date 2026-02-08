@@ -9,8 +9,7 @@ import { NextResponse } from 'next/server';
 
 import { ValidationError, createErrorResponse, toAppError } from '@/lib/errors/AppError';
 import { logger } from '@/lib/logger';
-import { anomalyDetectionService } from '@/server/ai/anomalyDetection';
-import { query } from '@/server/db';
+import { hasDatabase } from '@/server/db';
 
 interface AnomalyRow {
   id: string;
@@ -23,6 +22,41 @@ interface AnomalyRow {
   type: string;
   severity: string;
   details: Record<string, unknown>;
+}
+
+// Mock data for demo mode
+function generateMockAnomalies(hours: number, limit: number) {
+  const symbols = ['BTC/USD', 'ETH/USD', 'LINK/USD', 'MATIC/USD', 'AVAX/USD', 'SOL/USD'];
+  const types = ['statistical', 'seasonal', 'multi_protocol', 'trend_break'];
+  const severities = ['low', 'medium', 'high', 'critical'];
+  const anomalies = [];
+
+  for (let i = 0; i < Math.min(limit, 20); i++) {
+    const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+    const type = types[Math.floor(Math.random() * types.length)];
+    const severity = severities[Math.floor(Math.random() * severities.length)];
+    const timestamp = Date.now() - Math.random() * hours * 3600 * 1000;
+    const currentPrice = Math.random() * 50000 + 100;
+    const deviation = (Math.random() - 0.5) * 10;
+
+    anomalies.push({
+      id: `anomaly-${i}`,
+      symbol,
+      timestamp,
+      currentPrice,
+      expectedPrice: currentPrice * (1 - deviation / 100),
+      deviation,
+      confidence: Math.random() * 30 + 70,
+      type,
+      severity,
+      details: {
+        description: `${type} anomaly detected for ${symbol}`,
+        affectedProtocols: ['Chainlink', 'Pyth'],
+      },
+    });
+  }
+
+  return anomalies.sort((a, b) => b.timestamp - a.timestamp);
 }
 
 /**
@@ -54,6 +88,59 @@ export async function GET(request: NextRequest) {
     if (isNaN(limit) || limit < 1 || limit > 1000) {
       throw new ValidationError('limit must be a number between 1 and 1000');
     }
+
+    // Check if database is available
+    if (!hasDatabase()) {
+      // Return mock data in demo mode
+      const anomalies = generateMockAnomalies(hours, limit);
+
+      // Filter by symbol if specified
+      let filteredAnomalies = anomalies;
+      if (symbol) {
+        filteredAnomalies = filteredAnomalies.filter((a) => a.symbol === symbol);
+      }
+      if (type) {
+        filteredAnomalies = filteredAnomalies.filter((a) => a.type === type);
+      }
+      if (severity) {
+        filteredAnomalies = filteredAnomalies.filter((a) => a.severity === severity);
+      }
+
+      // Calculate stats
+      const stats = {
+        total: filteredAnomalies.length,
+        byType: {} as Record<string, number>,
+        bySeverity: {} as Record<string, number>,
+        averageConfidence: 0,
+      };
+
+      if (filteredAnomalies.length > 0) {
+        filteredAnomalies.forEach((a) => {
+          const typeKey = a.type as string;
+          const severityKey = a.severity as string;
+          stats.byType[typeKey] = (stats.byType[typeKey] || 0) + 1;
+          stats.bySeverity[severityKey] = (stats.bySeverity[severityKey] || 0) + 1;
+        });
+        stats.averageConfidence =
+          filteredAnomalies.reduce((sum, a) => sum + a.confidence, 0) / filteredAnomalies.length;
+      }
+
+      return NextResponse.json({
+        anomalies: filteredAnomalies,
+        stats,
+        meta: {
+          symbol,
+          type,
+          severity,
+          hours,
+          limit,
+          demo: true,
+        },
+      });
+    }
+
+    // Database mode - import query dynamically
+    const { query } = await import('@/server/db');
 
     // 查询历史异常数据
     let sql = `
@@ -170,6 +257,21 @@ export async function POST(request: NextRequest) {
       throw new ValidationError('Symbol is required and must be a string');
     }
 
+    // Check if database is available
+    if (!hasDatabase()) {
+      // Return mock detection result in demo mode
+      const mockAnomalies = generateMockAnomalies(24, 5).filter((a) => a.symbol === symbol);
+
+      return NextResponse.json({
+        symbol,
+        anomalies: mockAnomalies,
+        detectedAt: new Date().toISOString(),
+        demo: true,
+      });
+    }
+
+    // Database mode - import service dynamically
+    const { anomalyDetectionService } = await import('@/server/ai/anomalyDetection');
     const anomalies = await anomalyDetectionService.detectAnomalies(symbol);
 
     return NextResponse.json({

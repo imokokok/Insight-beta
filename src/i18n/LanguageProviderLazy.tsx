@@ -58,7 +58,7 @@ const fallbackTranslations: Record<Lang, TranslationNamespace> = {
 
 function getInitialLang(serverLang?: Lang): Lang {
   if (typeof window === 'undefined') {
-    return serverLang ?? 'zh';
+    return serverLang ?? 'en';
   }
 
   const stored = window.localStorage.getItem(LANG_STORAGE_KEY);
@@ -66,7 +66,7 @@ function getInitialLang(serverLang?: Lang): Lang {
     return stored;
   }
 
-  return serverLang ?? 'zh';
+  return serverLang ?? 'en';
 }
 
 export function LanguageProviderLazy({

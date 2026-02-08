@@ -102,7 +102,7 @@ export function AutoRefreshControl({
 
       {/* 间隔设置 */}
       <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-        <DropdownMenuTrigger>
+        <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Refresh interval">
             <Settings2 className="h-4 w-4" />
           </Button>

@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json({
-      success: true,
+      ok: true,
       data: overview,
       meta: {
         timestamp: new Date().toISOString(),

@@ -92,7 +92,7 @@ export function ProtocolHealthGrid({ className }: ProtocolHealthGridProps) {
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="grid grid-cols-1 gap-2 p-2 sm:grid-cols-2 sm:gap-4 sm:p-4 xl:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 p-3 sm:grid-cols-2 sm:gap-4 sm:p-4 lg:grid-cols-3">
           {healthData.map((protocol) => (
             <ProtocolHealthCard key={protocol.protocol} data={protocol} />
           ))}
@@ -155,12 +155,17 @@ function ProtocolHealthCard({ data }: { data: ProtocolHealth }) {
       )}
     >
       <div className="mb-2 flex items-start justify-between sm:mb-3">
-        <div className="flex items-center gap-2">
-          <div className={cn('rounded-lg p-1.5 sm:p-2', config.bgColor.replace('50', '100'))}>
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <div
+            className={cn(
+              'flex-shrink-0 rounded-lg p-1.5 sm:p-2',
+              config.bgColor.replace('50', '100'),
+            )}
+          >
             <Icon className={cn('h-4 w-4 sm:h-5 sm:w-5', config.color)} />
           </div>
-          <div>
-            <h4 className="text-sm font-semibold sm:text-base">
+          <div className="min-w-0 flex-1">
+            <h4 className="truncate text-sm font-semibold sm:text-base">
               {PROTOCOL_DISPLAY_NAMES[data.protocol]}
             </h4>
             <Badge variant="secondary" className="mt-0.5 text-xs">
@@ -168,9 +173,9 @@ function ProtocolHealthCard({ data }: { data: ProtocolHealth }) {
             </Badge>
           </div>
         </div>
-        <div className={cn('flex items-center gap-1 text-xs', trendColor)}>
-          <TrendIcon className="h-3 w-3" />
-          {Math.abs(data.trendPercent).toFixed(1)}%
+        <div className={cn('ml-2 flex flex-shrink-0 items-center gap-1 text-xs', trendColor)}>
+          <TrendIcon className="h-3 w-3 flex-shrink-0" />
+          <span className="whitespace-nowrap">{Math.abs(data.trendPercent).toFixed(1)}%</span>
         </div>
       </div>
 
@@ -182,47 +187,35 @@ function ProtocolHealthCard({ data }: { data: ProtocolHealth }) {
         <Progress value={data.score} className="h-1.5 sm:h-2" />
       </div>
 
-      <div className="grid grid-cols-2 gap-1.5 text-xs sm:gap-2">
-        <MetricItem
-          icon={<Activity className="h-3 w-3" />}
-          label="Accuracy"
-          value={`${data.accuracy.toFixed(1)}%`}
-        />
-        <MetricItem
-          icon={<Shield className="h-3 w-3" />}
-          label="Uptime"
-          value={`${data.uptime.toFixed(1)}%`}
-        />
-        <MetricItem
-          icon={<Zap className="h-3 w-3" />}
-          label="Latency"
-          value={`${data.latency.toFixed(0)}ms`}
-        />
-        <MetricItem
-          icon={<Clock className="h-3 w-3" />}
-          label="Feeds"
-          value={data.totalFeeds.toString()}
-        />
-      </div>
-    </div>
-  );
-}
-
-function MetricItem({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-center gap-1.5 rounded-lg bg-white/50 p-1.5 sm:gap-2 sm:p-2">
-      <span className="text-muted-foreground">{icon}</span>
-      <div>
-        <div className="text-muted-foreground text-[10px] uppercase">{label}</div>
-        <div className="text-xs font-medium sm:text-sm">{value}</div>
+      <div className="grid grid-cols-2 gap-3 text-xs">
+        <div className="flex items-center gap-2">
+          <Activity className="text-muted-foreground h-3.5 w-3.5 flex-shrink-0" />
+          <div>
+            <div className="text-muted-foreground text-[10px] uppercase">Accuracy</div>
+            <div className="font-medium">{data.accuracy.toFixed(1)}%</div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Shield className="text-muted-foreground h-3.5 w-3.5 flex-shrink-0" />
+          <div>
+            <div className="text-muted-foreground text-[10px] uppercase">Uptime</div>
+            <div className="font-medium">{data.uptime.toFixed(1)}%</div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Zap className="text-muted-foreground h-3.5 w-3.5 flex-shrink-0" />
+          <div>
+            <div className="text-muted-foreground text-[10px] uppercase">Latency</div>
+            <div className="font-medium">{data.latency.toFixed(0)}ms</div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Clock className="text-muted-foreground h-3.5 w-3.5 flex-shrink-0" />
+          <div>
+            <div className="text-muted-foreground text-[10px] uppercase">Feeds</div>
+            <div className="font-medium">{data.totalFeeds}</div>
+          </div>
+        </div>
       </div>
     </div>
   );

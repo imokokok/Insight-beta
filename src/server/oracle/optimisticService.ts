@@ -8,14 +8,27 @@
 import { logger } from '@/lib/logger';
 
 export interface OptimisticOracleOverview {
-  totalAssertions: number;
-  totalDisputes: number;
-  activeAssertions: number;
-  pendingDisputes: number;
-  protocols: ProtocolStats[];
-  chains: ChainStats[];
-  recentActivity: ActivityItem[];
-  lastUpdated: string;
+  instanceId: string;
+  timestamp: string;
+  protocol: string;
+  config: {
+    chain: string;
+    ooV2Address?: string;
+    ooV3Address?: string;
+    enabled: boolean;
+  };
+  sync: {
+    lastProcessedBlock: string;
+    latestBlock: string | null;
+    lastSuccessAt: string | null;
+    lastError: string | null;
+    syncing: boolean;
+  };
+  stats: {
+    totalAssertions: number;
+    totalDisputes: number;
+  };
+  availableInstances: Array<{ id: string; chain: string; protocol: string }>;
 }
 
 export interface ProtocolStats {
@@ -77,73 +90,40 @@ export async function getOptimisticOracleOverview(
       },
     ];
 
-    const chains: ChainStats[] = [
-      {
-        chain: 'ethereum',
-        totalAssertions: 12500,
-        totalDisputes: 280,
-        tvl: '45000000',
-      },
-      {
-        chain: 'polygon',
-        totalAssertions: 3200,
-        totalDisputes: 65,
-        tvl: '12000000',
-      },
-      {
-        chain: 'arbitrum',
-        totalAssertions: 2100,
-        totalDisputes: 32,
-        tvl: '8500000',
-      },
-    ];
-
-    const recentActivity: ActivityItem[] = [
-      {
-        id: 'assertion-1',
-        type: 'assertion',
-        protocol: 'uma',
-        chain: 'ethereum',
-        timestamp: new Date(Date.now() - 300000).toISOString(),
-        details: {
-          identifier: 'ETH/USD',
-          bond: '5000',
-          proposer: '0x1234...5678',
-        },
-      },
-      {
-        id: 'dispute-1',
-        type: 'dispute',
-        protocol: 'uma',
-        chain: 'ethereum',
-        timestamp: new Date(Date.now() - 600000).toISOString(),
-        details: {
-          assertionId: 'assertion-0',
-          disputer: '0xabcd...efgh',
-          bond: '5000',
-        },
-      },
-    ];
-
     // 应用过滤器
     const filteredProtocols = protocolFilter
       ? protocols.filter((p) => p.protocol === protocolFilter)
       : protocols;
 
-    const filteredChains = chainFilter ? chains.filter((c) => c.chain === chainFilter) : chains;
-
     const totalAssertions = filteredProtocols.reduce((sum, p) => sum + p.totalAssertions, 0);
     const totalDisputes = filteredProtocols.reduce((sum, p) => sum + p.totalDisputes, 0);
 
     return {
-      totalAssertions,
-      totalDisputes,
-      activeAssertions: Math.floor(totalAssertions * 0.15),
-      pendingDisputes: Math.floor(totalDisputes * 0.25),
-      protocols: filteredProtocols,
-      chains: filteredChains,
-      recentActivity: recentActivity.slice(0, 10),
-      lastUpdated: new Date().toISOString(),
+      instanceId: 'uma-ethereum-1',
+      timestamp: new Date().toISOString(),
+      protocol: protocolFilter || 'uma',
+      config: {
+        chain: chainFilter || 'ethereum',
+        ooV2Address: '0xA5B9d8a0B0a94B5A7fE4c5F5C4b5F5C4b5F5C4b5',
+        ooV3Address: '0xB6C0d9b1c1b5B6C0d9b1c1b5B6C0d9b1c1b5B6C',
+        enabled: true,
+      },
+      sync: {
+        lastProcessedBlock: '18452367',
+        latestBlock: '18452400',
+        lastSuccessAt: new Date().toISOString(),
+        lastError: null,
+        syncing: false,
+      },
+      stats: {
+        totalAssertions,
+        totalDisputes,
+      },
+      availableInstances: [
+        { id: 'uma-ethereum-1', chain: 'ethereum', protocol: 'uma' },
+        { id: 'uma-polygon-1', chain: 'polygon', protocol: 'uma' },
+        { id: 'uma-arbitrum-1', chain: 'arbitrum', protocol: 'uma' },
+      ],
     };
   } catch (error) {
     logger.error('Failed to fetch optimistic oracle overview', { error });

@@ -161,8 +161,8 @@ export function Sidebar() {
 
             {/* Price Feed Protocols Section */}
             <div className="pt-2">
-              <a
-                href="/oracle/unified"
+              <Link
+                href="/oracle/protocols"
                 className={cn(
                   'group flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
                   pathname?.startsWith('/oracle/protocols') && !isOptimisticActive
@@ -180,10 +180,10 @@ export function Sidebar() {
                         : 'text-gray-400 group-hover:text-purple-500',
                     )}
                   />
-                  <span>Price Feeds</span>
+                  <span>{t('nav.priceFeeds')}</span>
                 </div>
                 <ChevronRight size={16} className="text-gray-400" />
-              </a>
+              </Link>
             </div>
 
             {/* Optimistic Oracle Section */}
@@ -207,7 +207,7 @@ export function Sidebar() {
                         : 'text-gray-400 group-hover:text-purple-500',
                     )}
                   />
-                  <span>Optimistic Oracle</span>
+                  <span>{t('nav.optimisticOracle')}</span>
                 </div>
                 <ChevronRight size={16} className="text-gray-400" />
               </a>
@@ -234,7 +234,7 @@ export function Sidebar() {
                         : 'text-gray-400 group-hover:text-purple-500',
                     )}
                   />
-                  <span>AI Analytics</span>
+                  <span>{t('nav.aiAnalytics')}</span>
                 </div>
                 <ChevronRight size={16} className="text-gray-400" />
               </a>
