@@ -9,6 +9,7 @@ import { dashboard } from './dashboard';
 import { disputes } from './disputes';
 import { errorPage } from './errorPage';
 import { errors } from './errors';
+import { home } from './home';
 import { nav } from './nav';
 import onboarding from './onboarding';
 import { oracle } from './oracle';
@@ -30,6 +31,7 @@ export const enTranslations = {
   disputes,
   errorPage,
   errors,
+  home,
   nav,
   onboarding,
   oracle,

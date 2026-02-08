@@ -23,6 +23,7 @@ import { StatCard } from '@/components/features/common/StatCard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useI18n } from '@/i18n';
 import { cn, fetchApiData } from '@/lib/utils';
 
 interface PlatformStats {
@@ -120,6 +121,7 @@ const PROTOCOLS: ProtocolHighlight[] = [
 
 export default function OraclePlatformPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [stats, setStats] = useState<PlatformStats | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -152,41 +154,40 @@ export default function OraclePlatformPage() {
         <div className="relative mx-auto max-w-7xl text-center">
           <Badge variant="secondary" className="mb-6">
             <Zap className="mr-1 h-3 w-3" />
-            Universal Oracle Infrastructure Monitoring
+            {t('home.hero.badge')}
           </Badge>
 
           <h1 className="mb-6 text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
-            One Platform.
+            {t('home.hero.title')}
             <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
               {' '}
-              All Oracles.
+              {t('home.hero.titleHighlight')}
             </span>
           </h1>
 
           <p className="mx-auto mb-10 max-w-3xl text-lg text-gray-600 sm:text-xl">
-            Monitor, compare, and analyze data from every major oracle protocol. Ensure reliability
-            with cross-protocol verification and real-time alerts.
+            {t('home.hero.description')}
           </p>
 
           {/* 三个主要功能入口 - 平衡展示 */}
           <div className="mx-auto mb-12 grid max-w-3xl gap-4 sm:grid-cols-3">
             <HeroActionCard
               icon={<Activity className="h-6 w-6" />}
-              title="Dashboard"
-              description="Unified monitoring view"
+              title={t('home.actions.dashboard.title')}
+              description={t('home.actions.dashboard.description')}
               onClick={() => router.push('/oracle/dashboard')}
               primary
             />
             <HeroActionCard
               icon={<BarChart3 className="h-6 w-6" />}
-              title="Price Comparison"
-              description="Cross-protocol analysis"
+              title={t('home.actions.comparison.title')}
+              description={t('home.actions.comparison.description')}
               onClick={() => router.push('/oracle/comparison')}
             />
             <HeroActionCard
               icon={<Shield className="h-6 w-6" />}
-              title="Assert & Dispute"
-              description="Optimistic oracle tracking"
+              title={t('home.actions.optimistic.title')}
+              description={t('home.actions.optimistic.description')}
               onClick={() => router.push('/oracle/optimistic')}
             />
           </div>
@@ -195,15 +196,15 @@ export default function OraclePlatformPage() {
           <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500">
             <span className="flex items-center gap-2">
               <CheckCircle className="h-4 w-4 text-green-500" />
-              10+ Protocols
+              {t('home.trustIndicators.protocols')}
             </span>
             <span className="flex items-center gap-2">
               <CheckCircle className="h-4 w-4 text-green-500" />
-              15+ Chains
+              {t('home.trustIndicators.chains')}
             </span>
             <span className="flex items-center gap-2">
               <CheckCircle className="h-4 w-4 text-green-500" />
-              Real-time Data
+              {t('home.trustIndicators.realTime')}
             </span>
           </div>
         </div>
@@ -214,28 +215,28 @@ export default function OraclePlatformPage() {
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard
-              title="Supported Protocols"
+              title={t('home.stats.supportedProtocols')}
               value={stats?.totalProtocols || 10}
               icon={<Layers className="h-5 w-5" />}
               loading={loading}
               color="blue"
             />
             <StatCard
-              title="Price Feeds"
+              title={t('home.stats.priceFeeds')}
               value={stats?.totalPriceFeeds || 150}
               icon={<TrendingUp className="h-5 w-5" />}
               loading={loading}
               color="green"
             />
             <StatCard
-              title="Supported Chains"
+              title={t('home.stats.supportedChains')}
               value={stats?.supportedChains || 15}
               icon={<Globe className="h-5 w-5" />}
               loading={loading}
               color="purple"
             />
             <StatCard
-              title="Avg Latency"
+              title={t('home.stats.avgLatency')}
               value={`${stats?.avgUpdateLatency || 500}ms`}
               icon={<Zap className="h-5 w-5" />}
               loading={loading}
@@ -249,32 +250,32 @@ export default function OraclePlatformPage() {
       <section className="px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-gray-900">Platform Capabilities</h2>
-            <p className="mx-auto max-w-2xl text-gray-600">
-              Comprehensive tools for oracle infrastructure monitoring and management
-            </p>
+            <h2 className="mb-4 text-3xl font-bold text-gray-900">
+              {t('home.capabilities.title')}
+            </h2>
+            <p className="mx-auto max-w-2xl text-gray-600">{t('home.capabilities.subtitle')}</p>
           </div>
 
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
             <FeatureCard
               icon={<BarChart3 className="h-8 w-8" />}
-              title="Price Comparison"
-              description="Compare prices across all major oracle protocols to detect anomalies and ensure data accuracy."
+              title={t('home.capabilities.items.priceComparison.title')}
+              description={t('home.capabilities.items.priceComparison.description')}
             />
             <FeatureCard
               icon={<Globe className="h-8 w-8" />}
-              title="Multi-Chain Support"
-              description="Monitor oracle performance across 15+ blockchain networks from a single interface."
+              title={t('home.capabilities.items.multiChain.title')}
+              description={t('home.capabilities.items.multiChain.description')}
             />
             <FeatureCard
               icon={<Bell className="h-8 w-8" />}
-              title="Smart Alerts"
-              description="Get notified of price deviations, stale data, and protocol issues in real-time."
+              title={t('home.capabilities.items.smartAlerts.title')}
+              description={t('home.capabilities.items.smartAlerts.description')}
             />
             <FeatureCard
               icon={<Clock className="h-8 w-8" />}
-              title="Assert & Dispute"
-              description="Track assertions, disputes, and resolutions across optimistic oracle protocols."
+              title={t('home.capabilities.items.assertDispute.title')}
+              description={t('home.capabilities.items.assertDispute.description')}
             />
           </div>
         </div>
@@ -284,10 +285,8 @@ export default function OraclePlatformPage() {
       <section className="bg-gray-50 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-gray-900">Supported Protocols</h2>
-            <p className="mx-auto max-w-2xl text-gray-600">
-              Monitor all major oracle networks from a single unified interface
-            </p>
+            <h2 className="mb-4 text-3xl font-bold text-gray-900">{t('home.protocols.title')}</h2>
+            <p className="mx-auto max-w-2xl text-gray-600">{t('home.protocols.subtitle')}</p>
           </div>
 
           {/* 统一网格展示所有协议 */}
@@ -303,7 +302,7 @@ export default function OraclePlatformPage() {
               onClick={() => router.push('/oracle/dashboard')}
               className="gap-2"
             >
-              Explore All Protocols
+              {t('home.protocols.exploreAll')}
               <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
@@ -313,23 +312,18 @@ export default function OraclePlatformPage() {
       {/* CTA Section */}
       <section className="px-4 py-20 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl text-center">
-          <h2 className="mb-6 text-3xl font-bold text-gray-900">
-            Ready to Monitor Your Oracle Infrastructure?
-          </h2>
-          <p className="mb-8 text-lg text-gray-600">
-            Get started with comprehensive monitoring across all major oracle protocols. No single
-            protocol bias — just reliable data.
-          </p>
+          <h2 className="mb-6 text-3xl font-bold text-gray-900">{t('home.cta.title')}</h2>
+          <p className="mb-8 text-lg text-gray-600">{t('home.cta.subtitle')}</p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Button size="lg" onClick={() => router.push('/oracle/dashboard')} className="gap-2">
               <Activity className="h-4 w-4" />
-              Launch Dashboard
+              {t('home.cta.launchDashboard')}
             </Button>
             <Link
               href="/oracle/comparison"
               className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700"
             >
-              Compare Protocols
+              {t('home.cta.compareProtocols')}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -415,10 +409,24 @@ interface ProtocolCardProps {
 }
 
 const ProtocolCard = React.memo(function ProtocolCard({ protocol }: ProtocolCardProps) {
+  const { t } = useI18n();
   const statusColors = {
     active: 'bg-green-100 text-green-700',
     beta: 'bg-yellow-100 text-yellow-700',
     coming_soon: 'bg-gray-100 text-gray-500',
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'active':
+        return t('home.protocolStatus.active');
+      case 'beta':
+        return t('home.protocolStatus.beta');
+      case 'coming_soon':
+        return t('home.protocolStatus.comingSoon');
+      default:
+        return status;
+    }
   };
 
   return (
@@ -438,11 +446,11 @@ const ProtocolCard = React.memo(function ProtocolCard({ protocol }: ProtocolCard
                 {protocol.status === 'active' && (
                   <>
                     <CheckCircle className="mr-1 h-3 w-3" />
-                    Active
+                    {getStatusText(protocol.status)}
                   </>
                 )}
-                {protocol.status === 'beta' && 'Beta'}
-                {protocol.status === 'coming_soon' && 'Coming Soon'}
+                {protocol.status === 'beta' && getStatusText(protocol.status)}
+                {protocol.status === 'coming_soon' && getStatusText(protocol.status)}
               </Badge>
             </div>
           </div>
