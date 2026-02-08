@@ -160,7 +160,7 @@ export function PerformanceChart({ data, loading, className }: PerformanceChartP
                     border: '1px solid hsl(var(--border))',
                     borderRadius: '8px',
                   }}
-                  formatter={(value: number) => [`${value.toFixed(2)}%`, t('protocol:metrics.accuracy')]}
+                  formatter={(value) => [`${Number(value).toFixed(2)}%`, t('protocol:metrics.accuracy')]}
                 />
                 <Area
                   type="monotone"
@@ -196,7 +196,7 @@ export function PerformanceChart({ data, loading, className }: PerformanceChartP
                     border: '1px solid hsl(var(--border))',
                     borderRadius: '8px',
                   }}
-                  formatter={(value: number) => [`${value}ms`, t('protocol:metrics.latency')]}
+                  formatter={(value) => [`${Number(value)}ms`, t('protocol:metrics.latency')]}
                 />
                 <Line
                   type="monotone"
@@ -239,7 +239,7 @@ export function PerformanceChart({ data, loading, className }: PerformanceChartP
                     border: '1px solid hsl(var(--border))',
                     borderRadius: '8px',
                   }}
-                  formatter={(value: number) => [`${value.toFixed(3)}%`, t('protocol:metrics.uptime')]}
+                  formatter={(value) => [`${Number(value).toFixed(3)}%`, t('protocol:metrics.uptime')]}
                 />
                 <Area
                   type="monotone"

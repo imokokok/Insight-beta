@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode, UIEvent } from 'react';
-import { useState, useRef, useCallback, useMemo } from 'react';
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -370,8 +370,7 @@ export function VirtuosoList<T>({
   }, []);
 
   // 只在客户端加载
-
-  useMemo(() => {
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       loadVirtuoso();
     }

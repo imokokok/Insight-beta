@@ -107,10 +107,9 @@ export function KeyboardNavigableList<T>({
 
   useEffect(() => {
     const element = listRef.current;
-    if (element) {
-      element.addEventListener('keydown', handleKeyDown);
-      return () => element.removeEventListener('keydown', handleKeyDown);
-    }
+    if (!element) return;
+    element.addEventListener('keydown', handleKeyDown);
+    return () => element.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
   useEffect(() => {

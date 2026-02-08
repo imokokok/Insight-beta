@@ -23,16 +23,15 @@ export function PriceFlash({
   const [flashState, setFlashState] = useState<'up' | 'down' | null>(null);
 
   useEffect(() => {
-    if (previousPrice !== undefined && previousPrice !== price) {
-      const newState = price > previousPrice ? 'up' : 'down';
-      setFlashState(newState);
+    if (previousPrice === undefined || previousPrice === price) return;
+    const newState = price > previousPrice ? 'up' : 'down';
+    setFlashState(newState);
 
-      const timer = setTimeout(() => {
-        setFlashState(null);
-      }, 1000);
+    const timer = setTimeout(() => {
+      setFlashState(null);
+    }, 1000);
 
-      return () => clearTimeout(timer);
-    }
+    return () => clearTimeout(timer);
   }, [price, previousPrice]);
 
   const formatPrice = (value: number) => {
