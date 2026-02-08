@@ -7,7 +7,6 @@ import { Bell, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 
@@ -24,11 +23,7 @@ interface PriceAlertSettingsProps {
   className?: string;
 }
 
-export function PriceAlertSettings({
-  symbol,
-  currentPrice,
-  className,
-}: PriceAlertSettingsProps) {
+export function PriceAlertSettings({ symbol, currentPrice, className }: PriceAlertSettingsProps) {
   const [alerts, setAlerts] = useState<AlertRule[]>([]);
   const [newAlertPrice, setNewAlertPrice] = useState('');
   const [newAlertType, setNewAlertType] = useState<'above' | 'below'>('above');
@@ -53,9 +48,7 @@ export function PriceAlertSettings({
   };
 
   const toggleAlert = (id: string) => {
-    setAlerts(
-      alerts.map((a) => (a.id === id ? { ...a, enabled: !a.enabled } : a))
-    );
+    setAlerts(alerts.map((a) => (a.id === id ? { ...a, enabled: !a.enabled } : a)));
   };
 
   return (
@@ -67,18 +60,16 @@ export function PriceAlertSettings({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex items-center justify-between rounded-lg bg-muted p-3">
-          <span className="text-sm text-muted-foreground">Current Price</span>
-          <span className="text-lg font-semibold">
-            ${currentPrice.toLocaleString()}
-          </span>
+        <div className="bg-muted flex items-center justify-between rounded-lg p-3">
+          <span className="text-muted-foreground text-sm">Current Price</span>
+          <span className="text-lg font-semibold">${currentPrice.toLocaleString()}</span>
         </div>
 
         <div className="flex gap-2">
           <select
             value={newAlertType}
             onChange={(e) => setNewAlertType(e.target.value as 'above' | 'below')}
-            className="rounded-md border bg-background px-3 py-2 text-sm"
+            className="bg-background rounded-md border px-3 py-2 text-sm"
           >
             <option value="above">Above</option>
             <option value="below">Below</option>
@@ -97,7 +88,7 @@ export function PriceAlertSettings({
 
         <div className="space-y-2">
           {alerts.length === 0 ? (
-            <p className="text-center text-sm text-muted-foreground py-4">
+            <p className="text-muted-foreground py-4 text-center text-sm">
               No alerts set. Add one above.
             </p>
           ) : (
@@ -107,25 +98,19 @@ export function PriceAlertSettings({
                 className="flex items-center justify-between rounded-lg border p-3"
               >
                 <div className="flex items-center gap-3">
-                  <Switch
-                    checked={alert.enabled}
-                    onCheckedChange={() => toggleAlert(alert.id)}
-                  />
+                  <Switch checked={alert.enabled} onCheckedChange={() => toggleAlert(alert.id)} />
                   <div>
                     <p className="text-sm font-medium">
-                      {alert.type === 'above' ? '↑ Above' : '↓ Below'} ${alert.price.toLocaleString()}
+                      {alert.type === 'above' ? '↑ Above' : '↓ Below'} $
+                      {alert.price.toLocaleString()}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-muted-foreground text-xs">
                       {alert.enabled ? 'Active' : 'Paused'}
                     </p>
                   </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => removeAlert(alert.id)}
-                >
-                  <Trash2 className="h-4 w-4 text-destructive" />
+                <Button variant="ghost" size="icon" onClick={() => removeAlert(alert.id)}>
+                  <Trash2 className="text-destructive h-4 w-4" />
                 </Button>
               </div>
             ))

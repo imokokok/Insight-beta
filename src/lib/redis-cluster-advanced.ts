@@ -12,13 +12,9 @@
 
 import { logger } from '@/lib/logger';
 
-import type { RedisClientType } from 'redis';
+import { redisClusterManager, getRedisClusterClient, RedisClusterCache } from './redis-cluster';
 
-import {
-  redisClusterManager,
-  getRedisClusterClient,
-  RedisClusterCache,
-} from './redis-cluster';
+import type { RedisClientType, RedisClusterType } from 'redis';
 
 // ============================================================================
 // 分布式锁
@@ -256,8 +252,8 @@ export class RedisRateLimiter {
 // ============================================================================
 
 export class RedisPubSub {
-  private subscriber: RedisClientType | null = null;
-  private publisher: RedisClientType | null = null;
+  private subscriber: RedisClientType | RedisClusterType | null = null;
+  private publisher: RedisClientType | RedisClusterType | null = null;
   private handlers: Map<string, Set<(message: string) => void>> = new Map();
 
   /**
@@ -385,7 +381,9 @@ export class RedisPipeline {
       const results: unknown[] = [];
       for (const { cmd, args } of this.commands) {
         try {
-          const method = (client as Record<string, (...args: unknown[]) => Promise<unknown>>)[cmd];
+          const method = (
+            client as unknown as Record<string, (...args: unknown[]) => Promise<unknown>>
+          )[cmd];
           if (typeof method === 'function') {
             const result = await method.apply(client, args);
             results.push(result);
@@ -401,7 +399,7 @@ export class RedisPipeline {
 
     // 单机模式使用事务
     for (const { cmd, args } of this.commands) {
-      const method = (multi as Record<string, (...args: unknown[]) => void>)[cmd];
+      const method = (multi as unknown as Record<string, (...args: unknown[]) => void>)[cmd];
       if (typeof method === 'function') {
         method.apply(multi, args);
       }

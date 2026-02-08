@@ -292,7 +292,8 @@ class RedisClusterManager {
 
     try {
       // 使用 info 命令获取集群信息
-      const info = await this.cluster.info();
+      // 集群模式下需要通过类型断言访问 info 方法
+      const info = await (this.cluster as unknown as { info(): Promise<string> }).info();
       return { clusterInfo: info };
     } catch (error) {
       logger.error('Failed to get cluster info', {
@@ -522,9 +523,11 @@ export class RedisClusterCache<T> {
       if (isRedisCluster()) {
         // 集群模式下使用 keys 命令（生产环境建议使用 scan）
         const cluster = client as RedisClusterType;
-        const keys = await cluster.keys(pattern);
+        const keys = await (
+          cluster as unknown as { keys(pattern: string): Promise<string[]> }
+        ).keys(pattern);
         if (keys.length > 0) {
-          await cluster.del(keys);
+          await (cluster as unknown as { del(keys: string[]): Promise<number> }).del(keys);
         }
       } else {
         // 单机模式

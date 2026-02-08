@@ -12,6 +12,7 @@ import {
   commonFeedColumns,
   type FeedColumn,
 } from '@/components/features/protocol/FeedTable';
+import type { ProtocolComparisonData } from '@/components/features/protocol/ProtocolComparison';
 import { ProtocolPageLayout } from '@/components/features/protocol/ProtocolPageLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -23,7 +24,6 @@ import { getProtocolConfig } from '@/lib/protocol-config';
 import { ORACLE_PROTOCOLS, type OracleProtocol } from '@/lib/types';
 import { SUPPORTED_CHAINS } from '@/lib/types/protocol';
 import { formatTimeAgo, truncateAddress } from '@/lib/utils/format';
-import type { ProtocolComparisonData } from '@/components/features/protocol/ProtocolComparison';
 
 // 将 OracleProtocol 转换为 ProtocolComparisonData
 const convertToComparisonData = (protocols: OracleProtocol[]): ProtocolComparisonData[] => {
@@ -70,9 +70,8 @@ const generateMockPriceHistory = (basePrice: number, hours: number) => {
     const randomChange = (Math.random() - 0.5) * volatility;
     const price = basePrice * (1 + trend + randomChange);
     data.push({
-      timestamp: time.toISOString(),
+      timestamp: time.getTime(),
       price: Number(price.toFixed(2)),
-      volume: Math.floor(Math.random() * 1000000),
     });
   }
   return data;
@@ -331,7 +330,7 @@ export default function UnifiedProtocolPage() {
         icon: <Activity className="h-4 w-4" />,
         content: (
           <Suspense fallback={<ChartSkeleton className="h-96" />}>
-            <ProtocolComparison protocols={convertToComparisonData(ORACLE_PROTOCOLS)} symbol="ETH/USD" />
+            <ProtocolComparison protocols={convertToComparisonData(ORACLE_PROTOCOLS)} />
           </Suspense>
         ),
       });

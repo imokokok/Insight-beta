@@ -183,7 +183,7 @@ export class OracleDataLoader {
    */
   async loadPrice(
     key: LoaderKey,
-    fetchFn: (keys: LoaderKey[]) => Promise<UnifiedPriceFeed[]>,
+    fetchFn: (keys: readonly LoaderKey[]) => Promise<UnifiedPriceFeed[]>,
   ): Promise<UnifiedPriceFeed | null> {
     this.metrics.totalRequests++;
 
@@ -209,7 +209,7 @@ export class OracleDataLoader {
    */
   async loadManyPrices(
     keys: LoaderKey[],
-    fetchFn: (keys: LoaderKey[]) => Promise<UnifiedPriceFeed[]>,
+    fetchFn: (keys: readonly LoaderKey[]) => Promise<UnifiedPriceFeed[]>,
   ): Promise<(UnifiedPriceFeed | null)[]> {
     this.metrics.totalRequests += keys.length;
 
@@ -222,7 +222,8 @@ export class OracleDataLoader {
     });
 
     try {
-      return await loader.loadMany(keys);
+      const results = await loader.loadMany(keys);
+      return results.map((result) => (result instanceof Error ? null : result));
     } catch (error) {
       this.metrics.errors++;
       logger.error('Failed to load prices', { keys, error });
@@ -303,8 +304,8 @@ export class PriceFeedLoader extends OracleDataLoader {
    * 加载价格
    */
   async load(symbol: string): Promise<UnifiedPriceFeed | null> {
-    return this.loadPrice(symbol, async (keys: LoaderKey[]) => {
-      const symbols = keys.map(k => typeof k === 'string' ? k : k.id);
+    return this.loadPrice(symbol, async (keys: readonly LoaderKey[]) => {
+      const symbols = keys.map((k) => (typeof k === 'string' ? k : k.id));
       return this.fetchFn(symbols);
     });
   }
@@ -313,8 +314,8 @@ export class PriceFeedLoader extends OracleDataLoader {
    * 加载多个价格
    */
   async loadMany(symbols: string[]): Promise<(UnifiedPriceFeed | null)[]> {
-    return this.loadManyPrices(symbols, async (keys: LoaderKey[]) => {
-      const syms = keys.map(k => typeof k === 'string' ? k : k.id);
+    return this.loadManyPrices(symbols, async (keys: readonly LoaderKey[]) => {
+      const syms = keys.map((k) => (typeof k === 'string' ? k : k.id));
       return this.fetchFn(syms);
     });
   }
