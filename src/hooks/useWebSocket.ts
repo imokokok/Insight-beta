@@ -46,6 +46,18 @@ export function useWebSocket(url: string, options: WebSocketOptions = {}) {
   const heartbeatTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isManualCloseRef = useRef(false);
 
+  // Use refs for callbacks to avoid dependency changes
+  const onConnectRef = useRef(onConnect);
+  const onDisconnectRef = useRef(onDisconnect);
+  const onErrorRef = useRef(onError);
+  const onMessageRef = useRef(onMessage);
+
+  // Update refs when callbacks change
+  onConnectRef.current = onConnect;
+  onDisconnectRef.current = onDisconnect;
+  onErrorRef.current = onError;
+  onMessageRef.current = onMessage;
+
   const clearTimers = useCallback(() => {
     if (reconnectTimerRef.current) {
       clearTimeout(reconnectTimerRef.current);
@@ -89,7 +101,7 @@ export function useWebSocket(url: string, options: WebSocketOptions = {}) {
           error: null,
         }));
         reconnectCountRef.current = 0;
-        onConnect?.();
+        onConnectRef.current?.();
 
         if (heartbeatInterval > 0) {
           heartbeatTimerRef.current = setInterval(() => {
@@ -104,10 +116,10 @@ export function useWebSocket(url: string, options: WebSocketOptions = {}) {
         try {
           const data = JSON.parse(event.data);
           setState((prev) => ({ ...prev, lastMessage: data }));
-          onMessage?.(data);
+          onMessageRef.current?.(data);
         } catch {
           setState((prev) => ({ ...prev, lastMessage: event.data }));
-          onMessage?.(event.data);
+          onMessageRef.current?.(event.data);
         }
       };
 
@@ -119,7 +131,7 @@ export function useWebSocket(url: string, options: WebSocketOptions = {}) {
           isConnecting: false,
           error: new Error('WebSocket connection error'),
         }));
-        onError?.(error);
+        onErrorRef.current?.(error);
       };
 
       ws.onclose = (event) => {
@@ -130,7 +142,7 @@ export function useWebSocket(url: string, options: WebSocketOptions = {}) {
           isConnected: false,
           isConnecting: false,
         }));
-        onDisconnect?.();
+        onDisconnectRef.current?.();
 
         if (!isManualCloseRef.current && reconnectCountRef.current < reconnectAttempts) {
           const delay = Math.min(
@@ -157,17 +169,7 @@ export function useWebSocket(url: string, options: WebSocketOptions = {}) {
         error: error instanceof Error ? error : new Error('Unknown error'),
       }));
     }
-  }, [
-    url,
-    reconnectAttempts,
-    reconnectDelay,
-    heartbeatInterval,
-    onConnect,
-    onDisconnect,
-    onError,
-    onMessage,
-    clearTimers,
-  ]);
+  }, [url, reconnectAttempts, reconnectDelay, heartbeatInterval, clearTimers]);
 
   const disconnect = useCallback(() => {
     isManualCloseRef.current = true;

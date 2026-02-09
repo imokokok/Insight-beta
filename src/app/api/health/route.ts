@@ -4,7 +4,6 @@ import { hasDatabase, query } from '@/server/db';
 import { readJsonFile } from '@/server/kvStore';
 import { readAlertRules } from '@/server/observability';
 import { getOracleEnv, getSyncState, listOracleInstances } from '@/server/oracle';
-import { getRedisStatus, oracleConfigCache } from '@/server/redisCache';
 
 /**
  * @swagger
@@ -377,10 +376,6 @@ async function handleDefaultHealthCheck(request: Request) {
 
   const includeEnv = auth === null;
 
-  // Get Redis status
-  const redisStatus = includeEnv ? await getRedisStatus() : null;
-  const cacheStats = includeEnv && redisStatus?.connected ? await oracleConfigCache.stats() : null;
-
   return {
     status: 'ok',
     timestamp: new Date().toISOString(),
@@ -388,12 +383,6 @@ async function handleDefaultHealthCheck(request: Request) {
     environment: process.env.NODE_ENV,
     env: includeEnv ? envReport : { ok: false, issues: [] },
     worker: includeEnv ? await readJsonFile('worker/heartbeat/v1', null) : null,
-    redis: includeEnv
-      ? {
-          ...redisStatus,
-          cache: cacheStats,
-        }
-      : null,
   };
 }
 

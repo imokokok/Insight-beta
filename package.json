@@ -3,15 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "description": "Universal Oracle Monitoring Platform - Multi-protocol oracle data monitoring and aggregation",
-  "workspaces": [
-    "services/*"
-  ],
   "scripts": {
     "dev": "next dev",
-    "dev:ws": "tsx websocket-server.ts",
     "build": "next build --webpack",
     "start": "node .next/standalone/server.js",
-    "start:ws": "tsx websocket-server.ts",
     "check:prod": "node scripts/post-deploy-check.js",
     "lint": "eslint src --max-warnings=500",
     "lint:security": "eslint src --rule 'security/*:error'",

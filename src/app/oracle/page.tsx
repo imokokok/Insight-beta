@@ -318,10 +318,10 @@ export default function OraclePlatformPage() {
               size="lg"
               variant="gradient"
               onClick={() => router.push('/oracle/dashboard')}
-              className="gap-2"
+              className="inline-flex flex-nowrap items-center gap-3 whitespace-nowrap px-8"
             >
-              <Activity className="h-4 w-4" />
-              {t('home.cta.launchDashboard')}
+              <Activity className="h-5 w-5 flex-shrink-0" />
+              <span className="text-base font-semibold">{t('home.cta.launchDashboard')}</span>
             </ButtonEnhanced>
             <Link
               href="/oracle/comparison"

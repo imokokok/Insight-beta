@@ -7,23 +7,23 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'relative inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-95',
+  'relative inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-95 disabled:pointer-events-none disabled:opacity-50',
   {
     variants: {
       variant: {
         default:
-          'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/30 hover:from-blue-500 hover:to-blue-400',
+          'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md shadow-blue-500/25 hover:from-blue-500 hover:to-blue-400 hover:shadow-lg hover:shadow-blue-500/30',
         destructive:
           'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-md shadow-red-500/25 hover:shadow-lg hover:shadow-red-500/30',
         outline:
-          'border-2 border-purple-200 bg-white/50 backdrop-blur-sm hover:border-purple-400 hover:bg-purple-50/50 text-purple-700',
+          'border-2 border-purple-200 bg-white/50 text-purple-700 backdrop-blur-sm hover:border-purple-400 hover:bg-purple-50/50',
         secondary:
           'bg-gradient-to-r from-purple-100 to-purple-50 text-purple-700 hover:from-purple-200 hover:to-purple-100',
-        ghost: 'hover:bg-purple-100/50 text-purple-700 hover:text-purple-900',
-        link: 'text-blue-600 underline-offset-4 hover:underline hover:text-blue-700',
+        ghost: 'text-purple-700 hover:bg-purple-100/50 hover:text-purple-900',
+        link: 'text-blue-600 underline-offset-4 hover:text-blue-700 hover:underline',
         gradient:
-          'bg-gradient-to-r from-violet-600 via-purple-600 to-blue-600 text-white shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40 hover:scale-[1.02]',
-        glow: 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.5)] hover:shadow-[0_0_30px_rgba(37,99,235,0.7)] hover:scale-[1.02]',
+          'bg-gradient-to-r from-violet-600 via-purple-600 to-blue-600 text-white shadow-lg shadow-purple-500/30 hover:scale-[1.02] hover:shadow-xl hover:shadow-purple-500/40',
+        glow: 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.5)] hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(37,99,235,0.7)]',
       },
       size: {
         default: 'h-10 px-4 py-2',
@@ -38,7 +38,7 @@ const buttonVariants = cva(
       variant: 'default',
       size: 'default',
     },
-  }
+  },
 );
 
 export interface ButtonProps
@@ -81,7 +81,7 @@ const ButtonEnhanced = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {ripples.map((ripple) => (
           <span
             key={ripple.id}
-            className="pointer-events-none absolute animate-ripple rounded-full bg-white/40"
+            className="animate-ripple pointer-events-none absolute rounded-full bg-white/40"
             style={{
               left: ripple.x,
               top: ripple.y,
@@ -98,10 +98,14 @@ const ButtonEnhanced = React.forwardRef<HTMLButtonElement, ButtonProps>(
           <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
         )}
 
-        <span className={cn('relative z-10', loading && 'opacity-80')}>{children}</span>
+        <span
+          className={cn('relative z-10 inline-flex items-center gap-2', loading && 'opacity-80')}
+        >
+          {children}
+        </span>
       </button>
     );
-  }
+  },
 );
 ButtonEnhanced.displayName = 'ButtonEnhanced';
 
@@ -136,7 +140,9 @@ const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
               'absolute -bottom-8 left-1/2 z-50 -translate-x-1/2 whitespace-nowrap',
               'rounded-md bg-gray-900 px-2 py-1 text-xs text-white',
               'transition-all duration-200',
-              showTooltip ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1 pointer-events-none'
+              showTooltip
+                ? 'translate-y-0 opacity-100'
+                : 'pointer-events-none translate-y-1 opacity-0',
             )}
           >
             {tooltip}
@@ -144,7 +150,7 @@ const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
         )}
       </div>
     );
-  }
+  },
 );
 IconButton.displayName = 'IconButton';
 
@@ -156,7 +162,12 @@ interface ActionButtonGroupProps {
 
 function ActionButtonGroup({ children, className }: ActionButtonGroupProps) {
   return (
-    <div className={cn('inline-flex rounded-lg border border-purple-200 bg-white/50 p-1 backdrop-blur-sm', className)}>
+    <div
+      className={cn(
+        'inline-flex rounded-lg border border-purple-200 bg-white/50 p-1 backdrop-blur-sm',
+        className,
+      )}
+    >
       {React.Children.map(children, (child, index) => (
         <div
           key={index}
@@ -164,7 +175,7 @@ function ActionButtonGroup({ children, className }: ActionButtonGroupProps) {
             index !== 0 && 'border-l border-purple-200',
             '[&>button]:rounded-none [&>button]:border-0 [&>button]:bg-transparent [&>button]:shadow-none',
             '[&>button]:hover:bg-purple-100/50',
-            'first:[&>button]:rounded-l-md last:[&>button]:rounded-r-md'
+            'first:[&>button]:rounded-l-md last:[&>button]:rounded-r-md',
           )}
         >
           {child}

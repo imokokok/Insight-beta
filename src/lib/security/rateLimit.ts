@@ -1,14 +1,12 @@
 /**
  * Rate Limiting - 速率限制
  *
- * 支持内存存储和 Redis 存储，生产环境推荐使用 Redis
+ * 使用内存存储（适合 Vercel 无服务器环境）
  */
 
 import type { NextRequest } from 'next/server';
 
-import { env } from '@/lib/config/env';
 import { logger } from '@/lib/logger';
-import { getRedisClient } from '@/lib/redis';
 
 // ============================================================================
 // 类型定义
@@ -18,7 +16,6 @@ export interface RateLimitConfig {
   windowMs: number;
   maxRequests: number;
   keyGenerator?: (req: NextRequest) => string;
-  store?: 'memory' | 'redis';
 }
 
 interface RateLimitRecord {
@@ -100,105 +97,10 @@ class MemoryStore implements RateLimitStore {
 }
 
 // ============================================================================
-// Redis 存储实现
-// ============================================================================
-
-class RedisStore implements RateLimitStore {
-  private async getRedis() {
-    return getRedisClient();
-  }
-
-  async get(key: string): Promise<RateLimitRecord | null> {
-    try {
-      const redis = await this.getRedis();
-      const data = await redis.get(`ratelimit:${key}`);
-      if (!data) return null;
-
-      const record = JSON.parse(data) as RateLimitRecord;
-
-      // 检查是否过期
-      if (Date.now() > record.resetTime) {
-        await redis.del(`ratelimit:${key}`);
-        return null;
-      }
-
-      return record;
-    } catch (error) {
-      logger.error('Redis rate limit get failed', { error, key });
-      return null;
-    }
-  }
-
-  async set(key: string, record: RateLimitRecord, windowMs: number): Promise<void> {
-    try {
-      const redis = await this.getRedis();
-      const ttl = Math.ceil(windowMs / 1000);
-      await redis.setEx(`ratelimit:${key}`, ttl, JSON.stringify(record));
-    } catch (error) {
-      logger.error('Redis rate limit set failed', { error, key });
-    }
-  }
-
-  async increment(key: string, windowMs: number): Promise<RateLimitRecord> {
-    const now = Date.now();
-    try {
-      const redis = await this.getRedis();
-      const fullKey = `ratelimit:${key}`;
-
-      // 使用 Redis 事务确保原子性
-      const multi = redis.multi();
-      multi.get(fullKey);
-      multi.ttl(fullKey);
-
-      const results = await multi.exec();
-      const existingData = results?.[0] as string | null;
-      const ttl = results?.[1] as number;
-
-      if (!existingData || ttl <= 0) {
-        // 新记录
-        const record: RateLimitRecord = {
-          count: 1,
-          resetTime: now + windowMs,
-        };
-        await redis.setEx(fullKey, Math.ceil(windowMs / 1000), JSON.stringify(record));
-        return record;
-      }
-
-      // 增加计数
-      const existing = JSON.parse(existingData) as RateLimitRecord;
-      existing.count++;
-      await redis.setEx(fullKey, ttl, JSON.stringify(existing));
-      return existing;
-    } catch (error) {
-      logger.error('Redis rate limit increment failed', { error, key });
-      // 降级到内存存储
-      return { count: 1, resetTime: now + windowMs };
-    }
-  }
-}
-
-// ============================================================================
-// 存储工厂
+// 存储实例
 // ============================================================================
 
 const memoryStore = new MemoryStore();
-
-function getStore(config: RateLimitConfig): RateLimitStore {
-  // 优先使用配置指定的存储
-  if (config.store === 'redis') {
-    return new RedisStore();
-  }
-  if (config.store === 'memory') {
-    return memoryStore;
-  }
-
-  // 根据环境自动选择
-  if (env.INSIGHT_RATE_LIMIT_STORE === 'redis' && env.REDIS_URL) {
-    return new RedisStore();
-  }
-
-  return memoryStore;
-}
 
 // ============================================================================
 // 客户端 IP 获取
@@ -231,12 +133,11 @@ export async function rateLimit(
     ? config.keyGenerator(req)
     : `${clientIp}:${req.nextUrl.pathname}`;
 
-  const store = getStore(config);
   const now = Date.now();
 
   try {
     // 尝试获取现有记录
-    const record = await store.get(key);
+    const record = await memoryStore.get(key);
 
     if (!record || now > record.resetTime) {
       // 新窗口
@@ -244,7 +145,7 @@ export async function rateLimit(
         count: 1,
         resetTime: now + config.windowMs,
       };
-      await store.set(key, newRecord, config.windowMs);
+      await memoryStore.set(key, newRecord, config.windowMs);
 
       return {
         allowed: true,
@@ -272,7 +173,7 @@ export async function rateLimit(
 
     // 增加计数
     record.count++;
-    await store.set(key, record, config.windowMs);
+    await memoryStore.set(key, record, config.windowMs);
 
     return {
       allowed: true,
@@ -310,11 +211,11 @@ export function cleanupMemoryStore(): void {
 // ============================================================================
 
 export function getRateLimitStoreStatus(): {
-  type: 'memory' | 'redis';
+  type: 'memory';
   memorySize: number;
 } {
   return {
-    type: env.INSIGHT_RATE_LIMIT_STORE === 'redis' && env.REDIS_URL ? 'redis' : 'memory',
+    type: 'memory',
     memorySize: memoryStore.size,
   };
 }

@@ -71,11 +71,13 @@ export function useAutoRefresh(options: UseAutoRefreshOptions): UseAutoRefreshRe
   // 使用 ref 存储 interval，避免闭包问题
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const isMountedRef = useRef(true);
+  const isRefreshingRef = useRef(false);
 
   // 刷新函数
   const refresh = useCallback(async () => {
-    if (isRefreshing) return;
+    if (isRefreshingRef.current) return;
 
+    isRefreshingRef.current = true;
     setIsRefreshing(true);
     setIsError(false);
     setError(null);
@@ -91,11 +93,12 @@ export function useAutoRefresh(options: UseAutoRefreshOptions): UseAutoRefreshRe
         setError(err instanceof Error ? err : new Error(String(err)));
       }
     } finally {
+      isRefreshingRef.current = false;
       if (isMountedRef.current) {
         setIsRefreshing(false);
       }
     }
-  }, [fetchFn, isRefreshing]);
+  }, [fetchFn]);
 
   // 初始加载
   useEffect(() => {

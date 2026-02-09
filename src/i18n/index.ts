@@ -81,19 +81,16 @@ export {
   getLoadedTranslations,
 } from './loader';
 
-// ⚡ RECOMMENDED: Lazy-loaded Language Provider
+// Eager-loaded Language Provider (used by layout.tsx)
+export { LanguageProvider, useI18n } from './LanguageProvider';
+
+// ⚡ Lazy-loaded Language Provider (alternative for better performance)
 // Use this for better performance - translations are loaded on demand
 export {
   LanguageProviderLazy,
-  useI18n,
+  useI18n as useI18nLazy,
   preloadTranslations as preloadTranslationsLazy,
 } from './LanguageProviderLazy';
-
-// Legacy: Eager-loaded Language Provider (deprecated - use LanguageProviderLazy instead)
-// export {
-//   LanguageProvider as LanguageProviderEager,
-//   useI18n as useI18nEager,
-// } from './LanguageProvider';
 
 // Types
 export type { TranslationKey as TranslationKeyString } from './LanguageProvider';

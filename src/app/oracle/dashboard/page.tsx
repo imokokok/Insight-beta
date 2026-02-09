@@ -303,7 +303,7 @@ export default function UnifiedDashboardPage() {
       {/* Sidebar - Protocol Filter */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 w-64 transform border-r border-gray-200 bg-white shadow-lg transition-transform duration-300 lg:static lg:translate-x-0',
+          'fixed inset-y-0 left-0 z-50 w-64 transform border-r border-gray-200/50 bg-gray-50/80 backdrop-blur-sm transition-transform duration-300 lg:static lg:translate-x-0',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
@@ -328,7 +328,7 @@ export default function UnifiedDashboardPage() {
       {/* Main Content */}
       <main className="flex flex-1 flex-col overflow-hidden">
         {/* Header - 运维视角优先布局 */}
-        <header className="border-b border-gray-200 bg-white px-4 py-3 lg:px-6">
+        <header className="border-b border-gray-200/50 bg-gray-50/80 px-4 py-3 backdrop-blur-sm lg:px-6">
           <div className="flex items-center justify-between">
             {/* 左侧：标题区域 */}
             <div className="flex items-center gap-4">
@@ -396,7 +396,7 @@ export default function UnifiedDashboardPage() {
           {/* Stats Cards - 按任务分组（紧凑布局） */}
           <div className="mb-4 space-y-3">
             {/* 上行：健康相关指标（核心 4 个） */}
-            <div className="rounded-lg border border-amber-100 bg-gradient-to-r from-amber-50/50 to-orange-50/30 p-3">
+            <div className="rounded-lg border border-amber-200/50 bg-amber-50/20 p-3">
               <div className="mb-2 flex items-center gap-2">
                 <div className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-100">
                   <Activity className="h-3 w-3 text-amber-600" />
@@ -446,7 +446,7 @@ export default function UnifiedDashboardPage() {
             </div>
 
             {/* 下行：规模相关指标（精简为 4 个核心） */}
-            <div className="rounded-lg border border-blue-100 bg-gradient-to-r from-blue-50/50 to-cyan-50/30 p-3">
+            <div className="rounded-lg border border-blue-200/50 bg-blue-50/20 p-3">
               <div className="mb-2 flex items-center gap-2">
                 <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-100">
                   <Globe className="h-3 w-3 text-blue-600" />
@@ -526,7 +526,7 @@ export default function UnifiedDashboardPage() {
               {/* 第一行：Price Trends + AlertPanel（告警优先，高度优化） */}
               <div className="grid gap-4 xl:grid-cols-3">
                 <div className="xl:col-span-2">
-                  <CardEnhanced className="h-[280px]" hover glow>
+                  <CardEnhanced className="h-[280px] bg-transparent" hover glow>
                     <div className="mb-2 flex items-center justify-between">
                       <h3 className="text-base font-semibold text-purple-900">Price Trends</h3>
                     </div>
@@ -538,11 +538,7 @@ export default function UnifiedDashboardPage() {
                   </CardEnhanced>
                 </div>
                 <div>
-                  <CardEnhanced
-                    className="h-[280px] border-amber-200 bg-gradient-to-br from-amber-50/30 to-orange-50/10"
-                    hover
-                    glow
-                  >
+                  <CardEnhanced className="h-[280px] border-amber-200/50 bg-amber-50/20" hover glow>
                     <div className="mb-2 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-100">
@@ -570,7 +566,7 @@ export default function UnifiedDashboardPage() {
 
               {/* 第二行：Protocol Health + Latest Prices（紧凑布局） */}
               <div className="grid gap-4 lg:grid-cols-2">
-                <CardEnhanced className="h-[200px]" hover glow>
+                <CardEnhanced className="h-[200px] bg-transparent" hover glow>
                   <div className="mb-2 flex items-center justify-between">
                     <h3 className="text-base font-semibold text-purple-900">Protocol Health</h3>
                   </div>
@@ -581,7 +577,7 @@ export default function UnifiedDashboardPage() {
                   </Suspense>
                 </CardEnhanced>
 
-                <CardEnhanced className="h-[200px]" hover glow>
+                <CardEnhanced className="h-[200px] bg-transparent" hover glow>
                   <div className="mb-2 flex items-center justify-between">
                     <h3 className="text-base font-semibold text-purple-900">Latest Prices</h3>
                   </div>
@@ -596,7 +592,7 @@ export default function UnifiedDashboardPage() {
 
             {/* Health Tab - 使用固定 Mock 数据 */}
             <TabsContent value="health" className="space-y-4">
-              <CardEnhanced hover glow>
+              <CardEnhanced hover glow className="bg-transparent">
                 <div className="mb-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <h3 className="text-lg font-semibold text-purple-900">
@@ -612,7 +608,7 @@ export default function UnifiedDashboardPage() {
 
               <div className="grid gap-4 lg:grid-cols-3">
                 {/* Uptime Card */}
-                <CardEnhanced hover className="relative">
+                <CardEnhanced hover className="relative bg-transparent">
                   <div className="mb-4 flex items-center justify-between">
                     <h3 className="text-base font-semibold text-purple-900">Uptime (24h)</h3>
                     <SampleDataBadge />
@@ -624,7 +620,7 @@ export default function UnifiedDashboardPage() {
                         <div key={protocol} className="flex items-center justify-between">
                           <span className="text-sm text-gray-600">{protocol}</span>
                           <div className="flex items-center gap-2">
-                            <div className="h-2 w-24 rounded-full bg-gray-100">
+                            <div className="h-2 w-24 rounded-full bg-gray-200">
                               <div
                                 className="h-2 rounded-full bg-green-500"
                                 style={{ width: `${data.uptime}%` }}
@@ -639,7 +635,7 @@ export default function UnifiedDashboardPage() {
                 </CardEnhanced>
 
                 {/* Latency Card */}
-                <CardEnhanced hover className="relative">
+                <CardEnhanced hover className="relative bg-transparent">
                   <div className="mb-4 flex items-center justify-between">
                     <h3 className="text-base font-semibold text-purple-900">Average Latency</h3>
                     <SampleDataBadge />
@@ -653,7 +649,7 @@ export default function UnifiedDashboardPage() {
                         <div key={protocol} className="flex items-center justify-between">
                           <span className="text-sm text-gray-600">{protocol}</span>
                           <div className="flex items-center gap-2">
-                            <div className="h-2 w-24 rounded-full bg-gray-100">
+                            <div className="h-2 w-24 rounded-full bg-gray-200">
                               <div
                                 className={cn(
                                   'h-2 rounded-full',
@@ -675,7 +671,7 @@ export default function UnifiedDashboardPage() {
                 </CardEnhanced>
 
                 {/* Accuracy Card */}
-                <CardEnhanced hover className="relative">
+                <CardEnhanced hover className="relative bg-transparent">
                   <div className="mb-4 flex items-center justify-between">
                     <h3 className="text-base font-semibold text-purple-900">Accuracy Score</h3>
                     <SampleDataBadge />
@@ -687,7 +683,7 @@ export default function UnifiedDashboardPage() {
                         <div key={protocol} className="flex items-center justify-between">
                           <span className="text-sm text-gray-600">{protocol}</span>
                           <div className="flex items-center gap-2">
-                            <div className="h-2 w-24 rounded-full bg-gray-100">
+                            <div className="h-2 w-24 rounded-full bg-gray-200">
                               <div
                                 className="h-2 rounded-full bg-blue-500"
                                 style={{ width: `${data.accuracy}%` }}
@@ -708,7 +704,7 @@ export default function UnifiedDashboardPage() {
               {/* Mini KPIs 区域 */}
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">
                 <CardEnhanced
-                  className="cursor-pointer border-red-100 bg-gradient-to-br from-red-50/50 to-rose-50/30 transition-all hover:shadow-md"
+                  className="cursor-pointer border-red-200/50 bg-red-50/20 transition-all hover:shadow-md"
                   hover
                   onClick={() => {
                     // Drill-down: 跳转到 /alerts?severity=critical
@@ -728,7 +724,7 @@ export default function UnifiedDashboardPage() {
                 </CardEnhanced>
 
                 <CardEnhanced
-                  className="cursor-pointer border-amber-100 bg-gradient-to-br from-amber-50/50 to-yellow-50/30 transition-all hover:shadow-md"
+                  className="cursor-pointer border-amber-200/50 bg-amber-50/20 transition-all hover:shadow-md"
                   hover
                   onClick={() => {
                     window.location.href = '/alerts?severity=warning';
@@ -747,7 +743,7 @@ export default function UnifiedDashboardPage() {
                 </CardEnhanced>
 
                 <CardEnhanced
-                  className="cursor-pointer border-blue-100 bg-gradient-to-br from-blue-50/50 to-cyan-50/30 transition-all hover:shadow-md"
+                  className="cursor-pointer border-blue-200/50 bg-blue-50/20 transition-all hover:shadow-md"
                   hover
                   onClick={() => {
                     window.location.href = '/alerts?severity=info';
@@ -766,7 +762,7 @@ export default function UnifiedDashboardPage() {
                 </CardEnhanced>
 
                 <CardEnhanced
-                  className="cursor-pointer border-purple-100 bg-gradient-to-br from-purple-50/50 to-violet-50/30 transition-all hover:shadow-md"
+                  className="cursor-pointer border-purple-200/50 bg-purple-50/20 transition-all hover:shadow-md"
                   hover
                   onClick={() => {
                     window.location.href = '/alerts?status=acked';
@@ -784,7 +780,7 @@ export default function UnifiedDashboardPage() {
                   <p className="mt-1 text-[10px] text-gray-400">点击查看详情 →</p>
                 </CardEnhanced>
 
-                <CardEnhanced className="border-gray-100 bg-gradient-to-br from-gray-50/50 to-slate-50/30">
+                <CardEnhanced className="border-gray-200/50 bg-gray-50/20">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs text-gray-500">Total Active</p>
@@ -803,7 +799,7 @@ export default function UnifiedDashboardPage() {
               <div className="grid gap-4 lg:grid-cols-3">
                 {/* All Alerts 列表 - 带行为按钮 */}
                 <div className="lg:col-span-2">
-                  <CardEnhanced hover glow className="h-full">
+                  <CardEnhanced hover glow className="h-full bg-transparent">
                     <div className="mb-4 flex items-center justify-between">
                       <h3 className="text-base font-semibold text-purple-900">All Alerts</h3>
                       <div className="flex gap-2">
@@ -926,7 +922,7 @@ export default function UnifiedDashboardPage() {
 
                 {/* 右侧：Alert Rules */}
                 <div className="space-y-4">
-                  <CardEnhanced hover className="h-full">
+                  <CardEnhanced hover className="h-full bg-transparent">
                     <div className="mb-4 flex items-center justify-between">
                       <h3 className="text-base font-semibold text-purple-900">Alert Rules</h3>
                       <SampleDataBadge />
@@ -941,7 +937,7 @@ export default function UnifiedDashboardPage() {
                       ].map((item, idx) => (
                         <div
                           key={idx}
-                          className="flex items-center justify-between rounded-lg border border-gray-50 bg-gray-50/50 p-2"
+                          className="flex items-center justify-between rounded-lg border border-gray-200/50 bg-gray-100/50 p-2"
                         >
                           <div>
                             <span className="text-sm text-gray-700">{item.rule}</span>

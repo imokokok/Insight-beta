@@ -42,7 +42,7 @@ const navGroups = [
       },
       {
         key: 'nav.unifiedOracle' as const,
-        href: '/oracle/unified' as const,
+        href: '/oracle/comparison' as const,
         icon: Globe,
         tooltip: '统一视图，跨协议对比分析',
       },

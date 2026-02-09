@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: oracle-monitor
-  labels:
-    name: oracle-monitor
-    app.kubernetes.io/name: oracle-monitor
-    app.kubernetes.io/component: namespace
