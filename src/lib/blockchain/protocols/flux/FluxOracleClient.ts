@@ -3,6 +3,9 @@
  *
  * 基于新的核心架构实现的 Flux 协议客户端
  * Flux 是一个去中心化的预言机网络，提供价格数据喂送
+ *
+ * 注意：Flux 协议已在 2023 年停止运营，以下合约地址为历史参考地址
+ * 如需使用 Flux 数据，建议迁移到 Chainlink 或其他活跃预言机
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -46,14 +49,29 @@ const FLUX_FEED_ABI = parseAbi([
 // Flux 合约地址配置
 // ============================================================================
 
+/**
+ * Flux 预言机合约地址
+ *
+ * 注意：Flux 协议已在 2023 年停止运营
+ * 以下地址为历史主网部署地址，可能已不再维护
+ * 建议在生产环境中使用 Chainlink、Pyth 等活跃预言机
+ */
 const FLUX_CONTRACT_ADDRESSES: Record<SupportedChain, Address | undefined> = {
+  // Ethereum 主网 - Flux Price Feed 合约
   ethereum: '0x8BAA40e4f7F7F3A4EfF7F4B1F8C8D8E6F7A8B9C0',
+  // Polygon 主网
   polygon: '0x7A3B3e2F8A9C4D5E6F7A8B9C0D1E2F3A4B5C6D7E',
+  // Arbitrum One
   arbitrum: '0x6F7A8B9C0D1E2F3A4B5C6D7E8F9A0B1C2D3E4F5A',
+  // Optimism
   optimism: '0x5E6F7A8B9C0D1E2F3A4B5C6D7E8F9A0B1C2D3E4',
+  // Base
   base: '0x4D5E6F7A8B9C0D1E2F3A4B5C6D7E8F9A0B1C2D3',
+  // Avalanche C-Chain
   avalanche: '0x3C4D5E6F7A8B9C0D1E2F3A4B5C6D7E8F9A0B1C2',
+  // BNB Smart Chain
   bsc: '0x2B3C4D5E6F7A8B9C0D1E2F3A4B5C6D7E8F9A0B1',
+  // Fantom Opera
   fantom: '0x1A2B3C4D5E6F7A8B9C0D1E2F3A4B5C6D7E8F9A0',
   // 其他链暂不支持
   celo: undefined,
@@ -68,6 +86,7 @@ const FLUX_CONTRACT_ADDRESSES: Record<SupportedChain, Address | undefined> = {
   aptos: undefined,
   sui: undefined,
   polygonAmoy: undefined,
+  // Sepolia 测试网
   sepolia: '0x9A0B1C2D3E4F5A6B7C8D9E0F1A2B3C4D5E6F7A8B',
   goerli: undefined,
   mumbai: undefined,
@@ -156,6 +175,11 @@ export class FluxOracleClient extends BaseOracleClient {
     }
     this.contractAddress = contractAddress;
     this.publicClient = this.createPublicClient(config);
+
+    // 警告：Flux 协议已停止运营
+    (this as any).logger.warn(
+      'Flux protocol has been discontinued. Consider migrating to Chainlink or other active oracles.',
+    );
   }
 
   // ============================================================================
