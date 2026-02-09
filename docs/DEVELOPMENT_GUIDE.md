@@ -18,32 +18,87 @@ Visit http://localhost:3000
 
 ```
 src/
-├── app/              # Pages and API routes
-├── components/       # React components
-├── contexts/         # Context providers
-├── hooks/            # Custom hooks
-├── i18n/             # Internationalization
-├── lib/              # Utilities and type definitions
-├── server/           # Backend logic
-└── types/            # Global types
+├── app/                    # Next.js App Router
+│   ├── api/               # API routes
+│   ├── oracle/            # Oracle pages
+│   ├── alerts/            # Alerts pages
+│   ├── disputes/          # Disputes pages
+│   ├── monitoring/        # Monitoring pages
+│   ├── security/          # Security pages
+│   └── ...
+├── components/
+│   ├── ui/                # Base UI components (shadcn/ui)
+│   ├── common/            # Common components
+│   └── features/          # Feature components
+│       ├── alert/         # Alert components
+│       ├── assertion/     # Assertion components
+│       ├── charts/        # Chart components
+│       ├── dashboard/     # Dashboard components
+│       ├── dispute/       # Dispute components
+│       ├── monitoring/    # Monitoring components
+│       ├── onboarding/    # Onboarding components
+│       ├── oracle/        # Oracle components
+│       └── protocol/      # Protocol components
+├── contexts/              # React contexts
+├── hooks/                 # Custom hooks
+├── i18n/                  # Internationalization
+├── lib/                   # Utilities and types
+│   ├── shared/            # Shared modules
+│   ├── blockchain/        # Blockchain utilities
+│   └── types/             # Type definitions
+├── server/                # Backend logic
+│   ├── alerts/            # Alert services
+│   ├── oracle/            # Oracle services
+│   ├── oracleIndexer/     # Indexer services
+│   ├── auth/              # Authentication
+│   └── ...
+└── types/                 # Global types
 ```
 
 ## 3. Development Standards
 
-- **TypeScript**: Strict mode, all functions and components must have type definitions
-- **Naming Conventions**:
-  - Components: PascalCase (e.g., `AssertionList`)
-  - Functions: camelCase (e.g., `useOracleTransaction`)
-  - Files: kebab-case (e.g., `oracle-config.ts`)
+### TypeScript
+
+- Enable strict mode
+- Avoid `any`, use `unknown` instead
+- Prefer type inference, explicit types for public APIs
+- All functions and components must have type definitions
+
+### Naming Conventions
+
+| Type             | Convention           | Example                |
+| ---------------- | -------------------- | ---------------------- |
+| Components       | PascalCase           | `AssertionList`        |
+| Functions        | camelCase            | `useOracleTransaction` |
+| Files            | kebab-case           | `oracle-config.ts`     |
+| Constants        | SCREAMING_SNAKE_CASE | `MAX_RETRY_COUNT`      |
+| Interfaces/Types | PascalCase           | `UserRepository`       |
+
+### React / Next.js
+
+- Server components by default
+- Client components use `"use client"` directive
+- Component files use PascalCase naming
 
 ## 4. Commands
 
-| Command                  | Description              |
-| ------------------------ | ------------------------ |
-| `npm run dev`            | Start development server |
-| `npm test`               | Run tests                |
-| `npm run build`          | Build production version |
-| `npm run contracts:test` | Run contract tests       |
+| Command                 | Description                |
+| ----------------------- | -------------------------- |
+| `npm run dev`           | Start development server   |
+| `npm run build`         | Build production version   |
+| `npm run start`         | Start production server    |
+| `npm run lint`          | Run ESLint                 |
+| `npm run typecheck`     | Run TypeScript type check  |
+| `npm run format:check`  | Check code formatting      |
+| `npm run format:write`  | Format code                |
+| `npm test`              | Run tests                  |
+| `npm run test:coverage` | Run tests with coverage    |
+| `npm run test:e2e`      | Run E2E tests              |
+| `npm run db:migrate`    | Run database migrations    |
+| `npm run db:studio`     | Open Prisma Studio         |
+| `npm run db:seed`       | Seed database              |
+| `npm run docs:api`      | Generate API documentation |
+| `npm run i18n:validate` | Validate translations      |
 
 ## 5. Testing
 
@@ -51,35 +106,48 @@ src/
 npm test                    # All tests
 npm test src/app/api/       # API tests
 npm test src/components/    # Component tests
-npm run contracts:test      # Contract tests
-npm test -- --coverage      # Test coverage
+npm test src/server/        # Server tests
+npm run test:coverage       # Test coverage
+npm run test:e2e           # E2E tests with Playwright
 ```
 
 ## 6. Database & Cache
 
 ### Local Development Database
 
+**Option 1: Using Supabase (Recommended)**
+
+1. Create a free Supabase project at https://supabase.com
+2. Get the database connection string from Project Settings > Database
+3. Set `DATABASE_URL` in your `.env.local`
+
+**Option 2: Local PostgreSQL**
+
+If you prefer local development without Supabase:
+
 ```bash
-docker run --name oracle-monitor-db \
-  -e POSTGRES_PASSWORD=password \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_DB=oracle_monitor \
-  -p 5432:5432 -d postgres
+# Using Homebrew (macOS)
+brew install postgresql@16
+brew services start postgresql@16
+
+# Or use any PostgreSQL 16+ instance
 ```
 
-### Redis Cache (Optional for dev, Required for production)
+### Cache (Optional)
 
-```bash
-docker run --name oracle-monitor-redis \
-  -p 6379:6379 -d redis:7-alpine
-```
+By default, the application uses in-memory caching which is sufficient for most use cases.
+Redis is optional and can be configured via `REDIS_URL` environment variable.
 
 ### Database Tables
 
-- `assertions`: Assertion information
-- `disputes`: Dispute information
-- `rate_limits`: API rate limiting
-- `kv_store`: Configuration and state storage
+- `price_history_raw` - Raw price data from all protocols
+- `price_history_min1/5/hour1/day1` - Aggregated price data (OHLCV)
+- `solana_price_feeds` - Solana price feed metadata
+- `solana_price_history` - Solana price history
+- `assertions` - Assertion information
+- `disputes` - Dispute information
+- `rate_limits` - API rate limiting
+- `kv_store` - Configuration and state storage
 
 ### Rate Limiting Configuration
 
@@ -142,23 +210,88 @@ const data = await cachedJson('cache-key', 60000, async () => {
 });
 ```
 
-## 8. Smart Contracts
+## 8. Internationalization
 
-```bash
-npm run contracts:compile    # Compile
-npm run contracts:deploy     # Deploy to local network
-npm run contracts:deploy:polygon  # Deploy to Polygon
-npm run contracts:test       # Run tests
+Translation files are located in `src/i18n/locales/`, supporting 5 languages:
+
+- English (`en`)
+- Chinese (`zh`)
+- Spanish (`es`)
+- French (`fr`)
+- Korean (`ko`)
+
+### Usage
+
+```tsx
+import { useI18n } from '@/i18n';
+
+export function MyComponent() {
+  const { t, format, lang, setLang } = useI18n();
+
+  return (
+    <div>
+      <h1>{t('app.title')}</h1>
+      <time>{format.date(new Date())}</time>
+      <button onClick={() => setLang('zh')}>Switch to Chinese</button>
+    </div>
+  );
+}
 ```
 
-## 9. Internationalization
+See [src/i18n/README.md](../src/i18n/README.md) for detailed documentation.
 
-Translation files are located in `src/i18n/translations.ts`, supporting Chinese, English, and Spanish.
+## 9. Shared Modules
 
-## 10. FAQ
+The project includes a shared module library at `src/lib/shared/`:
+
+```
+src/lib/shared/
+├── index.ts               # Unified exports
+├── database/
+│   └── BatchInserter.ts   # Database batch insert
+├── blockchain/
+│   ├── EvmOracleClient.ts # EVM oracle client base
+│   └── ContractRegistry.ts
+├── sync/
+│   └── SyncManagerFactory.ts
+├── errors/
+│   └── ErrorHandler.ts    # Error handling
+└── logger/
+    └── LoggerFactory.ts   # Logger factory
+```
+
+### Usage
+
+```typescript
+import { BatchInserter, EvmOracleClient, createSingletonSyncManager } from '@/lib/shared';
+```
+
+## 10. Component Development
+
+### UI Components
+
+Base UI components are built with Radix UI and Tailwind CSS:
+
+```tsx
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
+```
+
+### Feature Components
+
+Feature components are organized by domain:
+
+```tsx
+import { AlertRulesManager } from '@/components/features/alert';
+import { AssertionList } from '@/components/features/assertion';
+import { Onboarding } from '@/components/features/onboarding';
+```
+
+## 11. FAQ
 
 1. **Database connection error**: Check `DATABASE_URL` in environment variables
 2. **API authentication error**: Ensure correct admin token is provided
 3. **Web3 connection issue**: Ensure wallet is connected, check RPC URL configuration
+4. **Translation not loading**: Check that translation files exist in `src/i18n/locales/`
 
-See [TROUBLESHOOTING.md](../TROUBLESHOOTING.md)
+See [TROUBLESHOOTING.md](../TROUBLESHOOTING.md) for more.

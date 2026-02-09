@@ -169,7 +169,7 @@ function sleep(ms: number): Promise<void> {
  * 初始化优雅关闭处理器
  */
 export function initGracefulShutdown(): void {
-  // 处理 SIGTERM (Docker stop, Kubernetes)
+  // 处理 SIGTERM (进程终止信号)
   process.on('SIGTERM', () => {
     void gracefulShutdown('SIGTERM');
   });

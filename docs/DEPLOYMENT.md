@@ -6,15 +6,21 @@
 
 Minimum required:
 
-- `DATABASE_URL` - PostgreSQL connection string
-- `REDIS_URL` - Redis connection string
+- `DATABASE_URL` - Supabase PostgreSQL connection string
 
 Optional but recommended:
 
 - `ADMIN_TOKEN` - Admin authentication token
 - `JWT_SECRET` - JWT signing secret
-- `SENTRY_DSN` - Sentry error tracking
+- `SENTRY_DSN` - Sentry error tracking (server-side)
+- `NEXT_PUBLIC_SENTRY_DSN` - Sentry error tracking (client-side)
 - `LOG_LEVEL` - Log level (debug, info, warn, error)
+
+### Supabase Configuration
+
+- `SUPABASE_URL` - Supabase project URL
+- `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key
+- `SUPABASE_DB_URL` - Alternative Supabase database URL
 
 ### RPC Configuration
 
@@ -35,37 +41,47 @@ Or use provider API keys:
 ### Notification Channels
 
 - `SLACK_WEBHOOK_URL` - Slack webhook for alerts
-- `TELEGRAM_BOT_TOKEN` - Telegram bot token
-- `TELEGRAM_CHAT_ID` - Telegram chat ID
+- `INSIGHT_TELEGRAM_BOT_TOKEN` - Telegram bot token
+- `INSIGHT_TELEGRAM_CHAT_ID` - Telegram chat ID
 - `PAGERDUTY_API_KEY` - PagerDuty API key
 
-## 2) Docker Deployment
+## 2) Vercel Deployment
 
-Build image:
+### Automatic Deployment
+
+1. Connect your GitHub repository to Vercel
+2. Configure environment variables in Vercel Dashboard
+3. Push to `main` branch for production deployment
+4. Push to `develop` branch for preview deployment
+
+### Manual Deployment
 
 ```bash
-docker build -t oracle-monitor:latest .
+# Install Vercel CLI
+npm i -g vercel
+
+# Login to Vercel
+vercel login
+
+# Deploy to preview
+vercel
+
+# Deploy to production
+vercel --prod
 ```
-
-Start (example):
-
-```bash
-docker run --rm -p 3000:3000 \
-  -e DATABASE_URL='postgresql://...' \
-  -e REDIS_URL='redis://...' \
-  -e ADMIN_TOKEN='your-admin-token' \
-  oracle-monitor:latest
-```
-
-Health check:
-
-- `GET /api/health` - Basic health check
-- `GET /api/health?probe=readiness` - Readiness probe
-- `GET /api/health?probe=liveness` - Liveness probe
 
 ## 3) Database Setup
 
+### Supabase Setup
+
+1. Create a new Supabase project
+2. Get the database connection string from Supabase Dashboard
+3. Run migrations:
+
 ```bash
+# Set DATABASE_URL environment variable
+export DATABASE_URL="postgresql://postgres:[password]@db.[project-ref].supabase.co:5432/postgres"
+
 # Run migrations
 npm run db:migrate:prod
 
@@ -73,16 +89,29 @@ npm run db:migrate:prod
 npm run db:seed
 ```
 
+### Using Supabase Provision Script
+
+```bash
+npm run supabase:provision
+```
+
 ## 4) Post-Deployment Verification
 
 ```bash
-# Run production check
-npm run check:prod
+# Check health endpoint
+curl https://your-app.vercel.app/api/health
+
+# Expected response:
+# {"status":"ok","timestamp":"...","version":"..."}
 ```
 
-This will verify:
+## 5) Monitoring Endpoints
 
-- Database connectivity
-- Redis connectivity
-- RPC endpoints
-- Health check endpoints
+- `/api/health` - Health check
+- `/api/monitoring/metrics` - System metrics
+- `/api/monitoring/dashboard` - Dashboard data
+- `/api/monitoring/statistics` - Statistics
+
+## 6) Production Checklist
+
+See [PRODUCTION_CHECKLIST.md](../PRODUCTION_CHECKLIST.md) for detailed deployment checklist.

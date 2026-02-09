@@ -35,7 +35,7 @@
 - **Factory Pattern** - `SyncManagerFactory` and `EvmOracleClient` for rapid protocol integration
 - **Code Reusability** - 54% code reduction through shared abstractions
 - **Type Safety** - Full TypeScript coverage with strict type checking
-- **Test Coverage** - 28 unit tests for shared modules
+- **Test Coverage** - 28+ unit tests for shared modules
 
 ### Core Capabilities
 
@@ -45,15 +45,15 @@
 - 🌐 **WebSocket Streaming** - Real-time price updates via WebSocket
 - 📈 **Unified Dashboard** - Single pane of glass for all oracle protocols
 - 🔒 **Enterprise Security** - RBAC, API key management, audit logging
-- 🐳 **Production Ready** - Docker, K8s, CI/CD ready
+- 🚀 **Serverless Ready** - Optimized for Vercel + Supabase
+- 🌍 **Multi-language Support** - 5 languages (English, Chinese, Spanish, French, Korean)
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
 - Node.js 20+
-- PostgreSQL 16+
-- Redis 7+
+- Supabase account (or PostgreSQL 16+)
 - RPC URLs (Alchemy, Infura, etc.)
 
 ### Installation
@@ -78,18 +78,6 @@ npm run db:seed
 npm run dev
 ```
 
-### Docker Deployment
-
-```bash
-# Using Docker Compose (Recommended)
-cp .env.example .env
-docker-compose up -d
-
-# Or build manually
-docker build -t oracle-monitor .
-docker run -p 3000:3000 --env-file .env oracle-monitor
-```
-
 ## 📖 Documentation
 
 完整文档请访问 [docs/README.md](./docs/README.md)
@@ -103,8 +91,11 @@ docker run -p 3000:3000 --env-file .env oracle-monitor
 | [架构文档](./docs/ARCHITECTURE.md)              | 系统架构设计           |
 | [架构改进](./docs/ARCHITECTURE_IMPROVEMENTS.md) | 代码重构和优化记录     |
 | [API 文档](./docs/API.md)                       | 完整的 API 参考        |
+| [数据库文档](./docs/DATABASE.md)                | 数据库设计和 Schema    |
 | [部署指南](./docs/DEPLOYMENT.md)                | 生产环境部署           |
 | [故障排除](./TROUBLESHOOTING.md)                | 常见问题解决           |
+| [错误代码](./docs/ERROR_CODES.md)               | 错误代码参考           |
+| [UI 规范](./docs/UI_GUIDELINES.md)              | 用户界面设计规范       |
 
 ### Supported Trading Pairs
 
@@ -118,6 +109,20 @@ docker run -p 3000:3000 --env-file .env oracle-monitor
 
 详见 [开发指南](./docs/DEVELOPMENT_GUIDE.md)
 
+### Available Scripts
+
+```bash
+npm run dev              # Start development server
+npm run build            # Build production version
+npm run lint             # Run ESLint
+npm run typecheck        # Run TypeScript type check
+npm run test             # Run unit tests
+npm run test:coverage    # Run tests with coverage
+npm run test:e2e         # Run E2E tests
+npm run db:migrate       # Run database migrations
+npm run db:studio        # Open Prisma Studio
+```
+
 ## 🔧 Configuration
 
 详见 [部署指南](./docs/DEPLOYMENT.md#环境变量)
@@ -125,7 +130,8 @@ docker run -p 3000:3000 --env-file .env oracle-monitor
 ## 📊 Monitoring
 
 - Health Check: `/api/health`
-- 详见 [监控文档](./monitoring/README.md)
+- Metrics: `/api/monitoring/metrics`
+- Dashboard: `/monitoring`
 
 ## 🤝 Contributing
 
@@ -134,6 +140,8 @@ docker run -p 3000:3000 --env-file .env oracle-monitor
 3. Commit changes (`git commit -m 'Add amazing feature'`)
 4. Push to branch (`git push origin feature/amazing-feature`)
 5. Open Pull Request
+
+详见 [贡献指南](./CONTRIBUTING.md) 和 [代码规范](./CODING_STANDARDS.md)
 
 ## 📄 License
 

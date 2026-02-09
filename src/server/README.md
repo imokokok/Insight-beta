@@ -28,8 +28,6 @@ server/
 │   ├── apiResponse.bench.ts
 │   ├── load.test.ts
 │   └── performance.bench.ts
-├── migration/                # 数据迁移
-│   └── unifiedMigration.ts  # 统一迁移服务
 ├── monitoring/               # 监控服务
 │   └── slaMonitor.ts        # SLA 监控
 ├── oracle/                   # 预言机核心服务
@@ -83,6 +81,8 @@ server/
 │   ├── operations.ts        # 操作
 │   ├── types.ts             # 类型定义
 │   └── utils.ts             # 工具函数
+├── timeline/                 # 时间线服务
+│   └── eventHooks.ts        # 事件钩子
 ├── websocket/                # WebSocket 服务
 │   ├── priceStream.ts       # 价格流
 │   └── redisAdapter.ts      # Redis 适配器
@@ -166,7 +166,7 @@ server/
 - `priceAggregationService.ts` - 价格聚合服务
 - `priceFetcher.ts` - 价格获取器
 - `priceHealthCheck.ts` - 价格健康检查
-- `{protocol}Sync.ts` - 各协议同步服务
+- `{protocol}Sync.ts` - 各协议同步服务（Chainlink、Pyth、Band、API3、RedStone、Flux、DIA）
 
 ### 6. oracleIndexer/ - 预言机索引器
 
@@ -188,7 +188,15 @@ server/
 - `eventReplay.ts` - 事件回放机制
 - `operations.ts` - 状态操作
 
-### 8. websocket/ - WebSocket
+### 8. timeline/ - 时间线服务
+
+时间线事件管理。
+
+**核心文件：**
+
+- `eventHooks.ts` - 事件钩子处理
+
+### 9. websocket/ - WebSocket
 
 实时数据推送服务。
 
@@ -204,30 +212,41 @@ server/
 - `db.ts` - PostgreSQL 连接池
 - `kvStore.ts` - Redis KV 存储
 - `schema.ts` - 数据库 Schema 定义
+- `unifiedSchema.ts` - 统一 Schema 定义
 
 ### 缓存层
 
 - `lruCache.ts` - 内存 LRU 缓存
 - `redisCache.ts` - Redis 缓存
 - `cacheWarmup.ts` - 缓存预热
+- `cacheOptimization.ts` - 缓存优化
 
 ### 配置层
 
 - `oracleConfig.ts` - 基础配置管理
 - `oracleConfigEnhanced.ts` - 增强配置功能
 - `oracleConfigHistory.ts` - 配置版本历史
+- `unifiedConfig.ts` - 统一配置
 
 ### 优化层
 
 - `apiOptimization.ts` - API 性能优化
-- `cacheOptimization.ts` - 缓存优化
 - `dbOptimization.ts` - 数据库优化
 - `oracleSyncOptimization.ts` - 同步优化
+- `requestDedupe.ts` - 请求去重
 
 ### 监控层
 
 - `observability.ts` - 可观测性（日志、指标、追踪）
 - `performance.ts` - 性能监控
+
+### 工具层
+
+- `adminAuth.ts` - 管理员认证
+- `apiResponse.ts` - API 响应工具
+- `notifications.ts` - 通知服务
+- `webhookDeadLetterQueue.ts` - Webhook 死信队列
+- `worker.ts` - 工作进程
 
 ## 代码规范
 
@@ -242,6 +261,7 @@ server/
 ```
                     ┌─────────────┐
                     │   API 层    │
+                    │  (app/api)  │
                     └──────┬──────┘
                            │
            ┌───────────────┼───────────────┐
@@ -249,6 +269,7 @@ server/
            ▼               ▼               ▼
     ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
     │  oracle/    │ │oracleIndexer│ │oracleState  │
+    │  (同步服务)  │ │  (索引器)    │ │  (状态管理) │
     └──────┬──────┘ └──────┬──────┘ └──────┬──────┘
            │               │               │
            └───────────────┼───────────────┘
@@ -259,3 +280,51 @@ server/
                     │ db/kvStore  │
                     └─────────────┘
 ```
+
+## 使用示例
+
+### 启动协议同步
+
+```typescript
+import { startChainlinkSync, startPythSync } from '@/server/oracle';
+
+// 启动 Chainlink 同步
+await startChainlinkSync('ethereum', 'https://eth-mainnet.g.alchemy.com/v2/...');
+
+// 启动 Pyth 同步
+await startPythSync('mainnet', 'https://api.mainnet.pyth.network');
+```
+
+### 使用 API 响应工具
+
+```typescript
+import { handleApi, cachedJson, requireAdmin } from '@/server/apiResponse';
+
+export async function GET(request: Request) {
+  return handleApi(request, async () => {
+    const data = await cachedJson('cache-key', 60000, async () => {
+      return await fetchData();
+    });
+    return { data };
+  });
+}
+```
+
+### 发送通知
+
+```typescript
+import { notificationService } from '@/server/alerts/notificationService';
+
+await notificationService.send({
+  type: 'price_alert',
+  severity: 'warning',
+  message: 'Price deviation detected',
+  channels: ['slack', 'telegram'],
+});
+```
+
+## 相关文档
+
+- [架构文档](../../docs/ARCHITECTURE.md)
+- [API 文档](../../docs/API.md)
+- [数据库文档](../../docs/DATABASE.md)

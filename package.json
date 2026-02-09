@@ -6,8 +6,6 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build --webpack",
-    "start": "node .next/standalone/server.js",
-    "check:prod": "node scripts/post-deploy-check.js",
     "lint": "eslint src --max-warnings=500",
     "lint:security": "eslint src --rule 'security/*:error'",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,md}\"",

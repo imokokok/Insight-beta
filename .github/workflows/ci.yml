@@ -8,8 +8,6 @@ on:
 
 env:
   NODE_VERSION: '20'
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   # ============================================================================
@@ -172,83 +170,40 @@ jobs:
           retention-days: 7
 
   # ============================================================================
-  # Docker 构建
+  # 部署到 Vercel (生产环境)
   # ============================================================================
-  docker:
-    name: Docker Build
+  deploy-production:
+    name: Deploy to Vercel Production
     runs-on: ubuntu-latest
     needs: [build]
-    if: github.event_name == 'push'
-    permissions:
-      contents: read
-      packages: write
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to Container Registry
-        uses: docker/login-action@v3
+      - name: Deploy to Vercel
+        uses: vercel/action-deploy@v1
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
 
   # ============================================================================
-  # 部署到开发环境
+  # 部署到 Vercel (预览环境)
   # ============================================================================
-  deploy-dev:
-    name: Deploy to Development
+  deploy-preview:
+    name: Deploy to Vercel Preview
     runs-on: ubuntu-latest
-    needs: [docker]
+    needs: [build]
     if: github.ref == 'refs/heads/develop'
-    environment:
-      name: development
-      url: https://dev.oracle-monitor.example.com
     steps:
-      - name: Deploy to dev environment
-        run: |
-          echo "Deploying to development environment..."
-          # Add your deployment commands here
-          # kubectl set image deployment/oracle-monitor-app app=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:develop -n oracle-monitor-dev
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  # ============================================================================
-  # 部署到生产环境
-  # ============================================================================
-  deploy-prod:
-    name: Deploy to Production
-    runs-on: ubuntu-latest
-    needs: [docker]
-    if: github.ref == 'refs/heads/main'
-    environment:
-      name: production
-      url: https://oracle-monitor.example.com
-    steps:
-      - name: Deploy to production environment
-        run: |
-          echo "Deploying to production environment..."
-          # Add your deployment commands here
-          # kubectl set image deployment/oracle-monitor-app app=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest -n oracle-monitor
+      - name: Deploy to Vercel
+        uses: vercel/action-deploy@v1
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}

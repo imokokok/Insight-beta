@@ -41,15 +41,17 @@ const envSchema = z.object({
   NEXT_RUNTIME: z.enum(['nodejs', 'edge']).optional(),
 
   // =============================================================================
-  // 数据库配置
+  // 数据库配置 (Supabase)
   // =============================================================================
-  DATABASE_URL: optionalString('postgresql://localhost:5432/insight'),
-  REDIS_URL: optionalString('redis://localhost:6379'),
+  DATABASE_URL: optionalString(),
 
-  // Supabase 配置（可选）
+  // Supabase 配置
   SUPABASE_URL: optionalString(),
   SUPABASE_SERVICE_ROLE_KEY: optionalString(),
   SUPABASE_DB_URL: optionalString(),
+
+  // Redis 配置（可选，默认使用内存缓存）
+  REDIS_URL: optionalString(),
 
   // =============================================================================
   // RPC 配置 - 主网
@@ -106,7 +108,9 @@ const envSchema = z.object({
   // =============================================================================
   // 监控和日志
   // =============================================================================
+  // Sentry DSN - 支持旧名 SENTRY_DSN 和新名 NEXT_PUBLIC_SENTRY_DSN
   SENTRY_DSN: urlString(),
+  NEXT_PUBLIC_SENTRY_DSN: urlString(),
   SENTRY_ORG: optionalString(),
   SENTRY_PROJECT: optionalString(),
   SENTRY_AUTH_TOKEN: optionalString(),
@@ -380,6 +384,14 @@ export function getAlertTimeoutMs(channel: 'slack' | 'telegram' | 'webhook'): nu
     default:
       return 10000;
   }
+}
+
+/**
+ * 获取 Sentry DSN
+ * 优先使用 NEXT_PUBLIC_SENTRY_DSN（客户端需要），如果不存在则回退到 SENTRY_DSN
+ */
+export function getSentryDsn(): string | undefined {
+  return env.NEXT_PUBLIC_SENTRY_DSN || env.SENTRY_DSN || undefined;
 }
 
 /**

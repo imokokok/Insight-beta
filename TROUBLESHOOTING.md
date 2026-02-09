@@ -21,7 +21,7 @@ This guide helps you resolve common issues when running OracleMonitor in product
 
 - Check RPC provider status and rate limits
 - Verify `ETHEREUM_RPC_URL` or other chain RPC URLs are set
-- Check logs: `docker logs <container> | grep -i error`
+- Check Vercel logs: `vercel logs --json` or view in Vercel Dashboard
 
 ### RPC rate limiting
 
@@ -78,7 +78,7 @@ This will verify:
 
 ## 7. Getting Help
 
-1. Check application logs: `docker logs <container>`
+1. Check Vercel logs in Dashboard or CLI: `vercel logs --json`
 2. Review error tracking in Sentry (if configured)
 3. Check health endpoint: `/api/health?probe=validation`
 4. Review documentation in `/docs`
