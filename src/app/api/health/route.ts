@@ -1,7 +1,6 @@
 import { env, getEnvReport } from '@/lib/config/env';
 import { error, handleApi, rateLimit, requireAdmin } from '@/server/apiResponse';
 import { hasDatabase, query } from '@/server/db';
-import { readAlertRules } from '@/server/observability';
 
 /**
  * @swagger
@@ -62,72 +61,6 @@ async function checkDatabaseStatus(): Promise<'connected' | 'disconnected' | 'no
 }
 
 // ============================================================================
-// 告警配置检查
-// ============================================================================
-
-async function checkAlertConfiguration(): Promise<{
-  webhookEnabled: boolean;
-  emailEnabled: boolean;
-  telegramEnabled: boolean;
-  hasEmailRecipient: boolean;
-}> {
-  const isProd = process.env.NODE_ENV === 'production';
-  if (!isProd) {
-    return {
-      webhookEnabled: false,
-      emailEnabled: false,
-      telegramEnabled: false,
-      hasEmailRecipient: false,
-    };
-  }
-
-  const alertRules = await readAlertRules();
-  const enabledAlertRules = alertRules.filter((rule) => rule.enabled);
-
-  return {
-    webhookEnabled: enabledAlertRules.some((rule) => rule.channels?.includes('webhook')),
-    emailEnabled: enabledAlertRules.some((rule) => rule.channels?.includes('email')),
-    telegramEnabled: enabledAlertRules.some((rule) => rule.channels?.includes('telegram')),
-    hasEmailRecipient: enabledAlertRules.some(
-      (rule) => rule.channels?.includes('email') && Boolean(rule.recipient),
-    ),
-  };
-}
-
-function validateAlertConfig(
-  alertConfig: Awaited<ReturnType<typeof checkAlertConfiguration>>,
-): string[] {
-  const issues: string[] = [];
-
-  if (alertConfig.webhookEnabled && !env.INSIGHT_WEBHOOK_URL) {
-    issues.push('INSIGHT_WEBHOOK_URL: required_for_webhook_alerts');
-  }
-
-  if (alertConfig.emailEnabled) {
-    const smtpOk =
-      Boolean(env.INSIGHT_SMTP_HOST) &&
-      Boolean(env.INSIGHT_SMTP_PORT) &&
-      Boolean(env.INSIGHT_SMTP_USER) &&
-      Boolean(env.INSIGHT_SMTP_PASS) &&
-      Boolean(env.INSIGHT_FROM_EMAIL);
-
-    if (!smtpOk) issues.push('INSIGHT_SMTP: required_for_email_alerts');
-    if (!alertConfig.hasEmailRecipient && !env.INSIGHT_DEFAULT_EMAIL) {
-      issues.push('INSIGHT_DEFAULT_EMAIL: required_for_email_alerts');
-    }
-  }
-
-  if (
-    alertConfig.telegramEnabled &&
-    (!env.INSIGHT_TELEGRAM_BOT_TOKEN || !env.INSIGHT_TELEGRAM_CHAT_ID)
-  ) {
-    issues.push('INSIGHT_TELEGRAM: required_for_telegram_alerts');
-  }
-
-  return issues;
-}
-
-// ============================================================================
 // 探针处理器
 // ============================================================================
 
@@ -166,9 +99,8 @@ async function handleValidationProbe(request: Request) {
   const isProd = process.env.NODE_ENV === 'production';
   const demoModeEnabled = env.INSIGHT_DEMO_MODE;
 
-  const [databaseStatus, alertConfig, envReport, auth] = await Promise.all([
+  const [databaseStatus, envReport, auth] = await Promise.all([
     checkDatabaseStatus(),
-    checkAlertConfiguration(),
     getEnvReport(),
     requireAdmin(request, { strict: false, scope: 'audit_read' }),
   ]);
@@ -181,9 +113,6 @@ async function handleValidationProbe(request: Request) {
   if (isProd && databaseStatus === 'not_configured') issues.push('database_not_configured');
   if (isProd && demoModeEnabled) issues.push('demo_mode_enabled');
   if (includeEnv && !envReport.ok) issues.push('env_invalid');
-
-  // 告警配置检查
-  issues.push(...validateAlertConfig(alertConfig));
 
   return {
     status: issues.length === 0 ? 'ok' : 'degraded',
@@ -218,7 +147,7 @@ async function handleDefaultHealthCheck(request: Request) {
 // ============================================================================
 
 export async function GET(request: Request) {
-  return handleApi(request, async () => {
+  return handleApi(request, async (): Promise<Response> => {
     const limited = await rateLimit(request, {
       key: 'health_get',
       limit: 240,
@@ -232,13 +161,22 @@ export async function GET(request: Request) {
 
     switch (probe) {
       case 'liveness':
-        return handleLivenessProbe();
-      case 'readiness':
-        return handleReadinessProbe();
-      case 'validation':
-        return handleValidationProbe(request);
-      default:
-        return handleDefaultHealthCheck(request);
+        return Response.json(await handleLivenessProbe());
+      case 'readiness': {
+        const result = await handleReadinessProbe();
+        if (result instanceof Response) return result;
+        return Response.json(result);
+      }
+      case 'validation': {
+        const result = await handleValidationProbe(request);
+        if (result instanceof Response) return result;
+        return Response.json(result);
+      }
+      default: {
+        const result = await handleDefaultHealthCheck(request);
+        if (result instanceof Response) return result;
+        return Response.json(result);
+      }
     }
   });
 }

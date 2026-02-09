@@ -16,6 +16,14 @@ const onboarding = {
   viewAgain: 'View Tour Again',
   resetConfirm: 'Are you sure you want to view the onboarding again? This will refresh the page.',
   targetNotFound: 'Target element not found',
+  guidedTour: {
+    title: 'Guided Tour',
+    description: 'Let\'s take a 1-2 minute tour to learn the main features',
+    startTour: 'Start Tour',
+    skipForNow: 'Skip for Now',
+    finish: 'Finish Tour',
+    progress: '{{current}}/{{total}}',
+  },
   steps: {
     developer: {
       api: {
@@ -76,24 +84,42 @@ const onboarding = {
   },
   tour: {
     dashboard: {
-      title: 'Dashboard Overview',
-      description: 'View all key metrics and real-time data here.',
-    },
-    protocols: {
-      title: 'Protocol Selection',
-      description: 'Click here to switch between different oracle protocols.',
-    },
-    search: {
-      title: 'Search Function',
-      description: 'Use search to quickly find the oracle or asset you need.',
+      title: 'Dashboard',
+      description: 'Your central command center showing all key metrics and system health in real-time.',
     },
     alerts: {
-      title: 'Alert Center',
-      description: 'View and manage all your alert notifications.',
+      title: 'Alerts',
+      description: 'View and manage all system alerts, including price deviations, node offline notifications, and more.',
+    },
+    protocols: {
+      title: 'Protocols',
+      description: 'Monitor multiple oracle protocols like Chainlink, Pyth, Band with real-time data and performance metrics.',
+    },
+    watchlist: {
+      title: 'Watchlist',
+      description: 'Add assets you care about to quickly track important price changes.',
+    },
+    sidebar: {
+      title: 'Navigation',
+      description: 'Use the sidebar to quickly access different functional modules.',
     },
     settings: {
       title: 'Settings',
       description: 'Customize your monitoring preferences and notification settings.',
+    },
+  },
+  emptyStates: {
+    alerts: {
+      title: 'System Healthy',
+      description: 'No active alerts at the moment. All oracle protocols are running normally.',
+      action: 'Set Alert Rules',
+      actionDesc: 'Configure custom alert thresholds to get notified of anomalies',
+    },
+    watchlist: {
+      title: 'Start Adding Monitors',
+      description: 'You haven\'t added any monitors yet. Start building your watchlist.',
+      action: 'Add First Monitor',
+      actionDesc: 'Browse oracle data and add assets you\'re interested in',
     },
   },
 };

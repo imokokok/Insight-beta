@@ -14,4 +14,6 @@ export const nav = {
   unifiedOracle: 'Oracle Unificado',
   watchlist: 'Lista de Seguimiento',
   security: 'Seguridad',
+  slo: 'SLO / Error Budget',
+  timeline: 'Línea de Tiempo',
 };

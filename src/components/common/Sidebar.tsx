@@ -18,6 +18,8 @@ import {
   TrendingUp,
   Shield,
   Brain,
+  Target,
+  Clock,
 } from 'lucide-react';
 
 import { ConnectWallet } from '@/components/features/wallet/ConnectWallet';
@@ -89,6 +91,25 @@ const navGroups = [
         href: '/watchlist' as const,
         icon: Star,
         tooltip: '关注列表：自定义监控项',
+      },
+    ],
+  },
+  {
+    id: 'slo' as const,
+    label: 'SLO',
+    labelEn: 'SLO',
+    items: [
+      {
+        key: 'nav.slo' as const,
+        href: '/oracle/slo-v2' as const,
+        icon: Target,
+        tooltip: 'SLO / Error Budget 监控视图',
+      },
+      {
+        key: 'nav.timeline' as const,
+        href: '/oracle/timeline' as const,
+        icon: Clock,
+        tooltip: '事件时间线：告警、争议、部署等',
       },
     ],
   },

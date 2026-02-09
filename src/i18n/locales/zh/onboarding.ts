@@ -16,6 +16,14 @@ const onboarding = {
   viewAgain: '重新查看引导',
   resetConfirm: '确定要重新查看新手引导吗？这将刷新页面。',
   targetNotFound: '目标元素未找到',
+  guidedTour: {
+    title: '新手指引',
+    description: '让我们用 1-2 分钟快速了解平台的主要功能',
+    startTour: '开始指引',
+    skipForNow: '暂时跳过',
+    finish: '完成指引',
+    progress: '{{current}}/{{total}}',
+  },
   steps: {
     developer: {
       api: {
@@ -76,24 +84,42 @@ const onboarding = {
   },
   tour: {
     dashboard: {
-      title: '仪表板概览',
-      description: '在这里您可以查看所有关键指标和实时数据。',
-    },
-    protocols: {
-      title: '协议选择',
-      description: '点击这里切换不同的预言机协议。',
-    },
-    search: {
-      title: '搜索功能',
-      description: '使用搜索快速找到您需要的预言机或资产。',
+      title: 'Dashboard - 仪表板',
+      description: '这是您的中央指挥中心，实时展示所有关键指标和系统健康状态。',
     },
     alerts: {
-      title: '警报中心',
-      description: '查看和管理您的所有警报通知。',
+      title: 'Alerts - 告警中心',
+      description: '在这里查看和管理所有系统告警，包括价格偏差、节点离线等重要通知。',
+    },
+    protocols: {
+      title: 'Protocols - 协议监控',
+      description: '查看 Chainlink、Pyth、Band 等多个预言机协议的实时数据和性能指标。',
+    },
+    watchlist: {
+      title: 'Watchlist - 关注列表',
+      description: '添加您关注的资产到列表，快速追踪重要价格变化。',
+    },
+    sidebar: {
+      title: '导航菜单',
+      description: '通过侧边栏快速访问各个功能模块。',
     },
     settings: {
       title: '设置',
       description: '自定义您的监控偏好和通知设置。',
+    },
+  },
+  emptyStates: {
+    alerts: {
+      title: '系统运行健康',
+      description: '当前没有活跃告警，所有预言机协议正常运行。',
+      action: '设置告警规则',
+      actionDesc: '配置自定义告警阈值，及时获取异常通知',
+    },
+    watchlist: {
+      title: '开始添加监控',
+      description: '您还没有添加任何监控项，开始构建您的关注列表吧。',
+      action: '添加第一个监控',
+      actionDesc: '浏览预言机数据并添加您感兴趣的资产',
     },
   },
 };

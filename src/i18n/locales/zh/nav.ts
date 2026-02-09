@@ -14,4 +14,6 @@ export const nav = {
   unifiedOracle: '统一视图',
   watchlist: '关注列表',
   security: '安全监控',
+  slo: 'SLO / Error Budget',
+  timeline: '事件时间线',
 };
