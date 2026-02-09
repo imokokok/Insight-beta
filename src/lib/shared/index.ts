@@ -17,6 +17,8 @@ export type { BatchInserterConfig } from './database/BatchInserter';
 // 区块链抽象
 export { EvmOracleClient } from './blockchain/EvmOracleClient';
 export type { EvmOracleClientConfig } from './blockchain/EvmOracleClient';
+export { SolanaOracleClient } from './blockchain/SolanaOracleClient';
+export type { SolanaOracleClientConfig } from './blockchain/SolanaOracleClient';
 export { ContractRegistry, createContractRegistry } from './blockchain/ContractRegistry';
 
 // 同步管理

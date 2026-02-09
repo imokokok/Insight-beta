@@ -217,6 +217,85 @@ export class BandClient {
       return { healthy: false, latency: Date.now() - start };
     }
   }
+
+  /**
+   * 检查价格喂价健康状态
+   */
+  async checkFeedHealth(symbol: string): Promise<{
+    healthy: boolean;
+    lastUpdate: Date;
+    stalenessSeconds: number;
+    issues: string[];
+  }> {
+    const issues: string[] = [];
+
+    try {
+      const response = await fetch(
+        `${this.config.bandEndpoint}/oracle/v1/request_prices?symbols=${encodeURIComponent(symbol)}&min_count=${this.config.minCount}&ask_count=${this.config.askCount}`,
+        {
+          headers: { Accept: 'application/json' },
+        },
+      );
+
+      if (!response.ok) {
+        return {
+          healthy: false,
+          lastUpdate: new Date(0),
+          stalenessSeconds: Infinity,
+          issues: [`Band API error: ${response.status} ${response.statusText}`],
+        };
+      }
+
+      const data = await response.json();
+
+      if (!data.price_results || data.price_results.length === 0) {
+        return {
+          healthy: false,
+          lastUpdate: new Date(0),
+          stalenessSeconds: Infinity,
+          issues: [`No price data available for ${symbol}`],
+        };
+      }
+
+      const result = data.price_results[0];
+      const lastUpdate = new Date(result.last_update);
+      const now = new Date();
+      const stalenessSeconds = Math.floor((now.getTime() - lastUpdate.getTime()) / 1000);
+
+      // 检查数据新鲜度 (Band 默认阈值 300 秒)
+      if (stalenessSeconds > 300) {
+        issues.push(`Data is stale: ${stalenessSeconds}s old`);
+      }
+
+      // 检查价格是否为0
+      const rate = parseFloat(result.rate);
+      const multiplier = parseFloat(result.multiplier);
+      const price = rate / multiplier;
+      if (price === 0 || isNaN(price)) {
+        issues.push('Price is zero or invalid');
+      }
+
+      // 检查数据源数量
+      const blockHeight = parseInt(result.block_height, 10);
+      if (blockHeight === 0) {
+        issues.push('Invalid block height');
+      }
+
+      return {
+        healthy: issues.length === 0,
+        lastUpdate,
+        stalenessSeconds,
+        issues,
+      };
+    } catch (error) {
+      return {
+        healthy: false,
+        lastUpdate: new Date(0),
+        stalenessSeconds: Infinity,
+        issues: [`Failed to check Band feed health: ${error instanceof Error ? error.message : String(error)}`],
+      };
+    }
+  }
 }
 
 // ============================================================================

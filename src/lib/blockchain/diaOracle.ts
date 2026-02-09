@@ -215,6 +215,78 @@ export class DIAClient {
       return { healthy: false, latency: Date.now() - start };
     }
   }
+
+  /**
+   * 检查价格喂价健康状态
+   */
+  async checkFeedHealth(symbol: string): Promise<{
+    healthy: boolean;
+    lastUpdate: Date;
+    stalenessSeconds: number;
+    issues: string[];
+  }> {
+    const issues: string[] = [];
+
+    try {
+      const asset = symbol.split('/')[0];
+      if (!asset) {
+        return {
+          healthy: false,
+          lastUpdate: new Date(0),
+          stalenessSeconds: Infinity,
+          issues: [`Invalid symbol format: ${symbol}`],
+        };
+      }
+
+      const response = await fetch(`${this.apiEndpoint}/quotation/${asset}`, {
+        headers: { Accept: 'application/json' },
+      });
+
+      if (!response.ok) {
+        return {
+          healthy: false,
+          lastUpdate: new Date(0),
+          stalenessSeconds: Infinity,
+          issues: [`DIA API error: ${response.status} ${response.statusText}`],
+        };
+      }
+
+      const data = await response.json();
+      const lastUpdate = new Date(data.Time);
+      const now = new Date();
+      const stalenessSeconds = Math.floor((now.getTime() - lastUpdate.getTime()) / 1000);
+
+      // 检查数据新鲜度 (DIA 默认阈值 300 秒)
+      if (stalenessSeconds > 300) {
+        issues.push(`Data is stale: ${stalenessSeconds}s old`);
+      }
+
+      // 检查价格是否为0
+      const price = parseFloat(data.Price);
+      if (price === 0 || isNaN(price)) {
+        issues.push('Price is zero or invalid');
+      }
+
+      // 检查数据源
+      if (!data.Source || data.Source === '') {
+        issues.push('No data source available');
+      }
+
+      return {
+        healthy: issues.length === 0,
+        lastUpdate,
+        stalenessSeconds,
+        issues,
+      };
+    } catch (error) {
+      return {
+        healthy: false,
+        lastUpdate: new Date(0),
+        stalenessSeconds: Infinity,
+        issues: [`Failed to check DIA feed health: ${error instanceof Error ? error.message : String(error)}`],
+      };
+    }
+  }
 }
 
 // ============================================================================

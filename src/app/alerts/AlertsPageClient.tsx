@@ -7,6 +7,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { RefreshCw, ShieldAlert } from 'lucide-react';
 
+import { EmptyAlertsState } from '@/components/common/EmptyStateEnhanced';
 import { PageHeader } from '@/components/common/PageHeader';
 import { AlertRulesManager } from '@/components/features/alert/AlertRulesManager';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -753,9 +754,15 @@ export default function AlertsPageClient() {
             )}
 
             {!loading && items.length === 0 && (
-              <div className="rounded-2xl border border-purple-100 bg-white/50 p-6 text-sm text-purple-700/70 shadow-sm">
-                {t('common.noData')}
-              </div>
+              <EmptyAlertsState
+                onSetAlertRules={() => {
+                  // Scroll to alert rules section
+                  const rulesSection = document.getElementById('alert-rules-panel');
+                  if (rulesSection) {
+                    rulesSection.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+              />
             )}
 
             {!loading &&
@@ -1012,11 +1019,13 @@ export default function AlertsPageClient() {
                 className="h-9 w-full rounded-lg border-none bg-white/50 px-3 text-sm text-purple-900 shadow-sm placeholder:text-purple-300 focus:ring-2 focus:ring-purple-500/20"
               />
             </div>
-            <AlertRulesManager
-              showTitle={false}
-              showAdminTokenInput={false}
-              showAdminActorInput={false}
-            />
+            <div id="alert-rules-panel">
+              <AlertRulesManager
+                showTitle={false}
+                showAdminTokenInput={false}
+                showAdminActorInput={false}
+              />
+            </div>
           </CardContent>
         </Card>
       </div>

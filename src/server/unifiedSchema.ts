@@ -573,6 +573,99 @@ export async function ensureUnifiedSchema() {
     ON CONFLICT (id) DO NOTHING;
   `);
 
+  // ============================================================================
+  // 核心表：健康检查
+  // ============================================================================
+  await query(`
+    -- 预言机健康检查表
+    CREATE TABLE IF NOT EXISTS oracle_health_checks (
+      id SERIAL PRIMARY KEY,
+      protocol TEXT NOT NULL,
+      chain TEXT NOT NULL,
+      feed_id TEXT NOT NULL,
+      healthy BOOLEAN NOT NULL DEFAULT false,
+      last_update TIMESTAMP WITH TIME ZONE,
+      staleness_seconds INTEGER DEFAULT 0,
+      issues JSONB DEFAULT '[]'::jsonb,
+      checked_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+      latency_ms INTEGER DEFAULT 0,
+      
+      -- UMA 特定字段
+      active_assertions INTEGER,
+      active_disputes INTEGER,
+      total_bonded TEXT,
+      
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+      
+      UNIQUE(protocol, chain, feed_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_health_checks_protocol ON oracle_health_checks(protocol);
+    CREATE INDEX IF NOT EXISTS idx_health_checks_chain ON oracle_health_checks(chain);
+    CREATE INDEX IF NOT EXISTS idx_health_checks_healthy ON oracle_health_checks(healthy);
+    CREATE INDEX IF NOT EXISTS idx_health_checks_checked_at ON oracle_health_checks(checked_at);
+    CREATE INDEX IF NOT EXISTS idx_health_checks_protocol_chain ON oracle_health_checks(protocol, chain);
+  `);
+
+  // ============================================================================
+  // 核心表：网络指标
+  // ============================================================================
+  await query(`
+    -- 网络指标表（Gas价格等）
+    CREATE TABLE IF NOT EXISTS oracle_network_metrics (
+      id SERIAL PRIMARY KEY,
+      chain TEXT NOT NULL,
+      
+      -- Gas 价格
+      gas_price_gwei NUMERIC(20, 4),
+      gas_price_fast_gwei NUMERIC(20, 4),
+      gas_price_standard_gwei NUMERIC(20, 4),
+      gas_price_slow_gwei NUMERIC(20, 4),
+      
+      -- 网络状态
+      block_number BIGINT,
+      block_timestamp TIMESTAMP WITH TIME ZONE,
+      network_congestion NUMERIC(5, 2),
+      
+      timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_network_metrics_chain ON oracle_network_metrics(chain);
+    CREATE INDEX IF NOT EXISTS idx_network_metrics_timestamp ON oracle_network_metrics(timestamp);
+    CREATE INDEX IF NOT EXISTS idx_network_metrics_chain_timestamp ON oracle_network_metrics(chain, timestamp);
+  `);
+
+  // ============================================================================
+  // 核心表：流动性数据
+  // ============================================================================
+  await query(`
+    -- 流动性数据表
+    CREATE TABLE IF NOT EXISTS oracle_liquidity (
+      id SERIAL PRIMARY KEY,
+      symbol TEXT NOT NULL,
+      chain TEXT NOT NULL,
+      
+      -- 流动性数据
+      liquidity_usd NUMERIC(30, 2),
+      liquidity_token NUMERIC(30, 8),
+      volume_24h_usd NUMERIC(30, 2),
+      
+      -- DEX 信息
+      dex_name TEXT,
+      pool_address TEXT,
+      
+      timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_liquidity_symbol ON oracle_liquidity(symbol);
+    CREATE INDEX IF NOT EXISTS idx_liquidity_chain ON oracle_liquidity(chain);
+    CREATE INDEX IF NOT EXISTS idx_liquidity_timestamp ON oracle_liquidity(timestamp);
+    CREATE INDEX IF NOT EXISTS idx_liquidity_symbol_chain ON oracle_liquidity(symbol, chain);
+  `);
+
   logger.info('Unified oracle schema ensured successfully');
 }
 

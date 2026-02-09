@@ -6,6 +6,7 @@ import Link from 'next/link';
 
 import { ArrowUpRight, RefreshCw } from 'lucide-react';
 
+import { EmptyEventsState } from '@/components/common/EmptyStateEnhanced';
 import { PageHeader } from '@/components/common/PageHeader';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { logger } from '@/lib/logger';
@@ -158,8 +159,12 @@ export default function UMADisputesPage() {
                   ))
               ) : disputes.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center text-gray-400">
-                    {t('common.noData')}
+                  <td colSpan={8} className="px-6 py-8">
+                    <EmptyEventsState
+                      onViewHistory={() => {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                    />
                   </td>
                 </tr>
               ) : (

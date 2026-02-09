@@ -6,6 +6,7 @@ import Link from 'next/link';
 
 import { ArrowUpRight, RefreshCw } from 'lucide-react';
 
+import { EmptyFirstItemState } from '@/components/common/EmptyStateEnhanced';
 import { PageHeader } from '@/components/common/PageHeader';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { logger } from '@/lib/logger';
@@ -174,8 +175,14 @@ export default function UMAAssertionsPage() {
                   ))
               ) : assertions.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center text-gray-400">
-                    {t('common.noData')}
+                  <td colSpan={8} className="px-6 py-8">
+                    <EmptyFirstItemState
+                      itemName="断言"
+                      description="当前没有断言数据。断言是乐观预言机中的关键机制，用于验证链下数据。"
+                      onAdd={() => {
+                        window.open('https://docs.umaproject.org/', '_blank');
+                      }}
+                    />
                   </td>
                 </tr>
               ) : (

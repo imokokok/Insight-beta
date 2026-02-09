@@ -45,6 +45,14 @@ export type AlertConditionType =
   | 'stale_data'
   | 'sync_failure'
   | 'protocol_down'
+  | 'assertion_created' // UMA: 新断言创建
+  | 'dispute_created' // UMA: 新争议创建
+  | 'assertion_disputed' // UMA: 断言被争议
+  | 'assertion_resolved' // UMA: 断言已解决
+  | 'high_gas_price' // 高 Gas 价格
+  | 'low_liquidity' // 低流动性
+  | 'price_volatility' // 价格波动率
+  | 'oracle_lag' // 预言机延迟
   | 'custom';
 
 export interface AlertCondition {
@@ -101,6 +109,70 @@ export interface CustomCondition extends AlertCondition {
     expression: string; // JavaScript 表达式或函数体
     variables?: Record<string, unknown>; // 额外变量
     description?: string; // 条件描述
+  };
+}
+
+// UMA 特定条件类型
+export interface AssertionCreatedCondition extends AlertCondition {
+  type: 'assertion_created';
+  params: {
+    assertionType?: string; // 断言类型过滤
+    minBond?: number; // 最小保证金
+  };
+}
+
+export interface DisputeCreatedCondition extends AlertCondition {
+  type: 'dispute_created';
+  params: {
+    minDisputeBond?: number; // 最小争议保证金
+  };
+}
+
+export interface AssertionDisputedCondition extends AlertCondition {
+  type: 'assertion_disputed';
+  params: {
+    assertionId?: string; // 特定断言ID
+  };
+}
+
+export interface AssertionResolvedCondition extends AlertCondition {
+  type: 'assertion_resolved';
+  params: {
+    assertionId?: string; // 特定断言ID
+    resolution?: boolean; // 期望的解决结果
+  };
+}
+
+export interface HighGasPriceCondition extends AlertCondition {
+  type: 'high_gas_price';
+  params: {
+    thresholdGwei: number; // Gas价格阈值 (Gwei)
+    chain?: SupportedChain; // 特定链
+  };
+}
+
+export interface LowLiquidityCondition extends AlertCondition {
+  type: 'low_liquidity';
+  params: {
+    minLiquidityUsd: number; // 最小流动性 (USD)
+    symbol?: string; // 特定交易对
+  };
+}
+
+export interface PriceVolatilityCondition extends AlertCondition {
+  type: 'price_volatility';
+  params: {
+    windowMinutes: number; // 时间窗口 (分钟)
+    volatilityThreshold: number; // 波动率阈值 (百分比)
+    symbol?: string; // 特定交易对
+  };
+}
+
+export interface OracleLagCondition extends AlertCondition {
+  type: 'oracle_lag';
+  params: {
+    maxLagBlocks: number; // 最大延迟区块数
+    protocol?: OracleProtocol; // 特定协议
   };
 }
 
@@ -290,6 +362,22 @@ export class AlertRuleEngine {
         return this.evaluateSyncFailure(condition as SyncFailureCondition, context);
       case 'protocol_down':
         return this.evaluateProtocolDown(condition as ProtocolDownCondition, context);
+      case 'assertion_created':
+        return this.evaluateAssertionCreated(condition as AssertionCreatedCondition, context);
+      case 'dispute_created':
+        return this.evaluateDisputeCreated(condition as DisputeCreatedCondition, context);
+      case 'assertion_disputed':
+        return this.evaluateAssertionDisputed(condition as AssertionDisputedCondition, context);
+      case 'assertion_resolved':
+        return this.evaluateAssertionResolved(condition as AssertionResolvedCondition, context);
+      case 'high_gas_price':
+        return this.evaluateHighGasPrice(condition as HighGasPriceCondition, context);
+      case 'low_liquidity':
+        return this.evaluateLowLiquidity(condition as LowLiquidityCondition, context);
+      case 'price_volatility':
+        return this.evaluatePriceVolatility(condition as PriceVolatilityCondition, context);
+      case 'oracle_lag':
+        return this.evaluateOracleLag(condition as OracleLagCondition, context);
       case 'custom':
         return this.evaluateCustomCondition(condition, context);
       default:
@@ -470,6 +558,251 @@ export class AlertRuleEngine {
       return total > 0 && healthy < condition.params.minHealthyInstances;
     } catch (error) {
       logger.error('Failed to evaluate protocol down', { error });
+      return false;
+    }
+  }
+
+  /**
+   * 评估断言创建条件 (UMA)
+   */
+  private async evaluateAssertionCreated(
+    condition: AssertionCreatedCondition,
+    context: AlertEvaluationContext,
+  ): Promise<boolean> {
+    if (context.protocol !== 'uma') {
+      return false;
+    }
+
+    try {
+      const { assertionType, minBond } = condition.params;
+      
+      // 查询最近创建的断言
+      const result = await query(
+        `SELECT COUNT(*) as count 
+         FROM uma_assertions 
+         WHERE created_at > NOW() - INTERVAL '1 hour'
+         AND ($1::text IS NULL OR assertion_type = $1)
+         AND ($2::numeric IS NULL OR bond >= $2)`,
+        [assertionType || null, minBond || null],
+      );
+
+      return parseInt(result.rows[0]?.count || 0) > 0;
+    } catch (error) {
+      logger.error('Failed to evaluate assertion created', { error });
+      return false;
+    }
+  }
+
+  /**
+   * 评估争议创建条件 (UMA)
+   */
+  private async evaluateDisputeCreated(
+    condition: DisputeCreatedCondition,
+    context: AlertEvaluationContext,
+  ): Promise<boolean> {
+    if (context.protocol !== 'uma') {
+      return false;
+    }
+
+    try {
+      const { minDisputeBond } = condition.params;
+      
+      // 查询最近创建的争议
+      const result = await query(
+        `SELECT COUNT(*) as count 
+         FROM uma_disputes 
+         WHERE created_at > NOW() - INTERVAL '1 hour'
+         AND ($1::numeric IS NULL OR bond >= $1)`,
+        [minDisputeBond || null],
+      );
+
+      return parseInt(result.rows[0]?.count || 0) > 0;
+    } catch (error) {
+      logger.error('Failed to evaluate dispute created', { error });
+      return false;
+    }
+  }
+
+  /**
+   * 评估断言被争议条件 (UMA)
+   */
+  private async evaluateAssertionDisputed(
+    condition: AssertionDisputedCondition,
+    context: AlertEvaluationContext,
+  ): Promise<boolean> {
+    if (context.protocol !== 'uma') {
+      return false;
+    }
+
+    try {
+      const { assertionId } = condition.params;
+      
+      // 查询特定断言是否被争议
+      const result = await query(
+        `SELECT COUNT(*) as count 
+         FROM uma_disputes 
+         WHERE created_at > NOW() - INTERVAL '1 hour'
+         AND ($1::text IS NULL OR assertion_id = $1)`,
+        [assertionId || null],
+      );
+
+      return parseInt(result.rows[0]?.count || 0) > 0;
+    } catch (error) {
+      logger.error('Failed to evaluate assertion disputed', { error });
+      return false;
+    }
+  }
+
+  /**
+   * 评估断言已解决条件 (UMA)
+   */
+  private async evaluateAssertionResolved(
+    condition: AssertionResolvedCondition,
+    context: AlertEvaluationContext,
+  ): Promise<boolean> {
+    if (context.protocol !== 'uma') {
+      return false;
+    }
+
+    try {
+      const { assertionId, resolution } = condition.params;
+      
+      // 查询特定断言是否已解决
+      const result = await query(
+        `SELECT COUNT(*) as count 
+         FROM uma_assertions 
+         WHERE resolved_at > NOW() - INTERVAL '1 hour'
+         AND resolved = true
+         AND ($1::text IS NULL OR assertion_id = $1)
+         AND ($2::boolean IS NULL OR settlement_resolution = $2)`,
+        [assertionId || null, resolution ?? null],
+      );
+
+      return parseInt(result.rows[0]?.count || 0) > 0;
+    } catch (error) {
+      logger.error('Failed to evaluate assertion resolved', { error });
+      return false;
+    }
+  }
+
+  /**
+   * 评估高 Gas 价格条件
+   */
+  private async evaluateHighGasPrice(
+    condition: HighGasPriceCondition,
+    context: AlertEvaluationContext,
+  ): Promise<boolean> {
+    try {
+      const { thresholdGwei, chain } = condition.params;
+      
+      // 查询最近记录的 Gas 价格
+      const result = await query(
+        `SELECT gas_price_gwei 
+         FROM oracle_network_metrics 
+         WHERE ($1::text IS NULL OR chain = $1)
+         ORDER BY timestamp DESC 
+         LIMIT 1`,
+        [chain || context.chain || null],
+      );
+
+      const gasPrice = parseFloat(result.rows[0]?.gas_price_gwei || 0);
+      return gasPrice > thresholdGwei;
+    } catch (error) {
+      logger.error('Failed to evaluate high gas price', { error });
+      return false;
+    }
+  }
+
+  /**
+   * 评估低流动性条件
+   */
+  private async evaluateLowLiquidity(
+    condition: LowLiquidityCondition,
+    context: AlertEvaluationContext,
+  ): Promise<boolean> {
+    try {
+      const { minLiquidityUsd, symbol } = condition.params;
+      const targetSymbol = symbol || context.symbol;
+      
+      // 查询流动性数据
+      const result = await query(
+        `SELECT liquidity_usd 
+         FROM oracle_liquidity 
+         WHERE ($1::text IS NULL OR symbol = $1)
+         ORDER BY timestamp DESC 
+         LIMIT 1`,
+        [targetSymbol || null],
+      );
+
+      const liquidity = parseFloat(result.rows[0]?.liquidity_usd || 0);
+      return liquidity < minLiquidityUsd;
+    } catch (error) {
+      logger.error('Failed to evaluate low liquidity', { error });
+      return false;
+    }
+  }
+
+  /**
+   * 评估价格波动率条件
+   */
+  private async evaluatePriceVolatility(
+    condition: PriceVolatilityCondition,
+    context: AlertEvaluationContext,
+  ): Promise<boolean> {
+    try {
+      const { windowMinutes, volatilityThreshold, symbol } = condition.params;
+      const targetSymbol = symbol || context.symbol;
+      
+      if (!targetSymbol) {
+        return false;
+      }
+
+      // 计算时间窗口内的价格波动率
+      const result = await query(
+        `SELECT 
+          STDDEV(price) / AVG(price) * 100 as volatility
+         FROM unified_price_feeds 
+         WHERE symbol = $1 
+         AND timestamp > NOW() - INTERVAL '${windowMinutes} minutes'`,
+        [targetSymbol],
+      );
+
+      const volatility = parseFloat(result.rows[0]?.volatility || 0);
+      return volatility > volatilityThreshold;
+    } catch (error) {
+      logger.error('Failed to evaluate price volatility', { error });
+      return false;
+    }
+  }
+
+  /**
+   * 评估预言机延迟条件
+   */
+  private async evaluateOracleLag(
+    condition: OracleLagCondition,
+    context: AlertEvaluationContext,
+  ): Promise<boolean> {
+    try {
+      const { maxLagBlocks, protocol } = condition.params;
+      const targetProtocol = protocol || context.protocol;
+      
+      if (!targetProtocol) {
+        return false;
+      }
+
+      // 查询预言机延迟
+      const result = await query(
+        `SELECT 
+          MAX(current_block - last_updated_block) as lag
+         FROM oracle_sync_state 
+         WHERE protocol = $1`,
+        [targetProtocol],
+      );
+
+      const lag = parseInt(result.rows[0]?.lag || 0);
+      return lag > maxLagBlocks;
+    } catch (error) {
+      logger.error('Failed to evaluate oracle lag', { error });
       return false;
     }
   }

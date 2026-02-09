@@ -17,9 +17,11 @@ import type { bandSyncManager as _bandSyncManager } from './BandSync';
 import type { BaseSyncManager } from './BaseSyncManager';
 import type { chainlinkSyncManager as _chainlinkSyncManager } from './ChainlinkSync';
 import type { diaSyncManager as _diaSyncManager } from './DIASync';
-// import type { fluxSyncManager as _fluxSyncManager } from './FluxSync';
+import type { fluxSyncManager as _fluxSyncManager } from './FluxSync';
 import type { pythSyncManager as _pythSyncManager } from './PythSync';
 import type { redstoneSyncManager as _redstoneSyncManager } from './RedStoneSync';
+import type { switchboardSyncManager as _switchboardSyncManager } from './SwitchboardSync';
+import type { umaSyncManager as _umaSyncManager } from './UMASync';
 
 // ============================================================================
 // 导出基类和类型
@@ -97,17 +99,39 @@ export {
 
 export type RedStoneSyncManager = typeof _redstoneSyncManager;
 
-// Flux Sync - temporarily disabled
-// export {
-//   fluxSyncManager,
-//   startFluxSync,
-//   stopFluxSync,
-//   stopAllFluxSync,
-//   cleanupFluxData,
-// } from './FluxSync';
+// Flux Sync
+export {
+  fluxSyncManager,
+  startFluxSync,
+  stopFluxSync,
+  stopAllFluxSync,
+  cleanupFluxData,
+} from './FluxSync';
 
-// export type FluxSyncManager = typeof _fluxSyncManager;
-export type FluxSyncManager = unknown;
+export type FluxSyncManager = typeof _fluxSyncManager;
+
+// Switchboard Sync
+export {
+  switchboardSyncManager,
+  startSwitchboardSync,
+  stopSwitchboardSync,
+  stopAllSwitchboardSync,
+  cleanupSwitchboardData,
+} from './SwitchboardSync';
+
+export type SwitchboardSyncManager = typeof _switchboardSyncManager;
+
+// UMA Sync
+export {
+  umaSyncManager,
+  startUMASync,
+  stopUMASync,
+  stopAllUMASync,
+  cleanupUMAData,
+  syncUMAEvents,
+} from './UMASync';
+
+export type UMASyncManager = typeof _umaSyncManager;
 
 // ============================================================================
 // Sync Manager 工厂
@@ -153,10 +177,19 @@ export async function getSyncManager(protocol: OracleProtocol): Promise<BaseSync
         break;
       }
       case 'flux': {
-        // Flux sync temporarily disabled
-        // const { fluxSyncManager } = await import('./FluxSync');
-        // syncManagers.set(protocol, fluxSyncManager);
-        throw new Error('Flux sync temporarily disabled');
+        const { fluxSyncManager } = await import('./FluxSync');
+        syncManagers.set(protocol, fluxSyncManager);
+        break;
+      }
+      case 'switchboard': {
+        const { switchboardSyncManager } = await import('./SwitchboardSync');
+        syncManagers.set(protocol, switchboardSyncManager);
+        break;
+      }
+      case 'uma': {
+        const { umaSyncManager } = await import('./UMASync');
+        syncManagers.set(protocol, umaSyncManager);
+        break;
       }
       default:
         throw new Error(`Unsupported protocol: ${protocol}`);
@@ -234,6 +267,8 @@ export async function getAllSyncManagerStatus(): Promise<SyncManagerStatus[]> {
     'api3',
     'redstone',
     'flux',
+    'switchboard',
+    'uma',
   ];
   const results: SyncManagerStatus[] = [];
 

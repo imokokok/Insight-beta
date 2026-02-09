@@ -5,7 +5,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import {
-  AlertTriangle,
   ExternalLink,
   MessageSquare,
   ThumbsUp,
@@ -17,6 +16,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 
+import { EmptyEventsState } from '@/components/common/EmptyStateEnhanced';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { ErrorBanner as ErrorBannerUI } from '@/components/ui/error-banner';
@@ -122,21 +122,7 @@ function LoadingBanner({ t }: LoadingBannerProps) {
   );
 }
 
-type EmptyStateProps = {
-  t: Translate;
-};
 
-function EmptyState({ t }: EmptyStateProps) {
-  return (
-    <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="mb-4 rounded-full bg-purple-50 p-4">
-        <AlertTriangle className="h-8 w-8 text-purple-300" />
-      </div>
-      <h3 className="text-lg font-medium text-purple-900">{t('disputes.emptyTitle')}</h3>
-      <p className="mt-1 max-w-sm text-sm text-purple-400">{t('disputes.emptyDesc')}</p>
-    </div>
-  );
-}
 
 type LoadMoreButtonProps = {
   loadingMore: boolean;
@@ -597,7 +583,14 @@ export default function DisputesPage() {
             />
           ))}
 
-        {!loading && !hasItems && <EmptyState t={t} />}
+        {!loading && !hasItems && (
+          <EmptyEventsState
+            onViewHistory={() => {
+              // Could navigate to history page if exists
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+          />
+        )}
 
         {!loading && nextCursor !== null && (
           <LoadMoreButton loadingMore={loadingMore} onLoadMore={loadMore} t={t} />

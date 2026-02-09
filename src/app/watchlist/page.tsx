@@ -2,11 +2,9 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-import { Star } from 'lucide-react';
-
+import { EmptyWatchlistState } from '@/components/common/EmptyStateEnhanced';
 import { PageHeader } from '@/components/common/PageHeader';
 import { AssertionList } from '@/components/features/assertion/AssertionList';
 import { useInfiniteList, useWatchlist, type BaseResponse } from '@/hooks';
@@ -102,19 +100,15 @@ export default function WatchlistPage() {
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-purple-200 border-t-purple-600"></div>
         </div>
       ) : watchlist.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gray-100">
-            <Star size={48} className="text-gray-300" />
-          </div>
-          <h2 className="mb-2 text-2xl font-bold text-gray-700">{t('common.noData')}</h2>
-          <p className="mb-8 max-w-md text-gray-500">{t('watchlist.emptyDesc')}</p>
-          <Link
-            href={instanceId ? `/oracle?instanceId=${encodeURIComponent(instanceId)}` : '/oracle'}
-            className="rounded-xl bg-purple-600 px-6 py-3 font-medium text-white shadow-lg shadow-purple-500/20 transition-colors hover:bg-purple-700"
-          >
-            {t('nav.oracle')}
-          </Link>
-        </div>
+        <EmptyWatchlistState
+          onBrowseAssets={() => {
+            const href = instanceId
+              ? `/oracle?instanceId=${encodeURIComponent(instanceId)}`
+              : '/oracle';
+            router.push(href as Route);
+          }}
+          className="mx-auto max-w-2xl"
+        />
       ) : (
         <div className="space-y-4">
           {error ? (

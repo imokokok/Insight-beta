@@ -207,6 +207,14 @@ export function Sidebar() {
                   const isActive = pathname === item.href;
                   const href = attachInstanceId(item.href) as Route;
 
+                  // Determine data-tour attribute based on item key
+                  const getTourAttribute = () => {
+                    if (item.key === 'nav.dashboard') return { 'data-tour': 'dashboard' };
+                    if (item.key === 'nav.alerts') return { 'data-tour': 'alerts' };
+                    if (item.key === 'nav.watchlist') return { 'data-tour': 'watchlist' };
+                    return {};
+                  };
+
                   return (
                     <Link
                       key={item.href}
@@ -218,6 +226,7 @@ export function Sidebar() {
                           ? 'bg-white text-purple-700 shadow-md shadow-purple-500/5 ring-1 ring-white/60'
                           : 'text-gray-600 hover:bg-white/40 hover:text-purple-700 hover:shadow-sm',
                       )}
+                      {...getTourAttribute()}
                     >
                       <Icon
                         size={20}

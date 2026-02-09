@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 
 import { TrendingUp, Globe, Activity } from 'lucide-react';
 
+import { EmptyProtocolsState } from '@/components/common/EmptyStateEnhanced';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -91,6 +92,12 @@ export default function PriceFeedsPage() {
                   <Skeleton key={i} className="h-32" />
                 ))}
               </div>
+            ) : feeds.length === 0 ? (
+              <EmptyProtocolsState
+                onExplore={() => {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+              />
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {feeds.map((feed) => (

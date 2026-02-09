@@ -314,6 +314,18 @@ export class API3Client extends EvmOracleClient {
       };
     }
   }
+
+  /**
+   * 检查价格喂价健康状态 (统一接口)
+   */
+  async checkFeedHealth(symbol: string): Promise<{
+    healthy: boolean;
+    lastUpdate: Date;
+    stalenessSeconds: number;
+    issues: string[];
+  }> {
+    return this.checkDapiHealth(symbol);
+  }
 }
 
 // ============================================================================

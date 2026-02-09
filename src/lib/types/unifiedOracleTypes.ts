@@ -142,6 +142,7 @@ export type ProtocolSpecificConfig =
   | BandProtocolConfig
   | API3ProtocolConfig
   | RedStoneProtocolConfig
+  | SwitchboardProtocolConfig
   | FluxProtocolConfig
   | DIAProtocolConfig;
 
@@ -183,6 +184,15 @@ export type RedStoneProtocolConfig = {
   feedIds?: string[];
   apiEndpoint?: string;
   stalenessThreshold?: number;
+};
+
+export type SwitchboardProtocolConfig = {
+  programId?: string;
+  queueAddress?: string;
+  feedAddresses?: string[];
+  stalenessThreshold?: number;
+  timeoutMs?: number;
+  commitment?: 'processed' | 'confirmed' | 'finalized';
 };
 
 export type FluxProtocolConfig = {
