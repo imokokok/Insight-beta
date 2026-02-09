@@ -18,6 +18,7 @@ import type {
   AggregatedPrice,
   AlertRule,
 } from './types';
+import type { ProtocolMessage } from '@oracle-monitor/shared';
 
 export class OrchestratorService {
   private readonly logger: ReturnType<typeof createLogger>;
@@ -426,7 +427,7 @@ export class OrchestratorService {
    */
   private async subscribeToMessages(): Promise<void> {
     // Subscribe to price updates
-    await messageQueue.subscribeToPrices((message) => {
+    await messageQueue.subscribeToPrices((message: ProtocolMessage) => {
       try {
         const data = message.payload as {
           symbol: string;
@@ -450,7 +451,7 @@ export class OrchestratorService {
     });
 
     // Subscribe to health checks
-    await messageQueue.subscribeToHealth((message) => {
+    await messageQueue.subscribeToHealth((message: ProtocolMessage) => {
       try {
         const data = message.payload as {
           instanceId: string;

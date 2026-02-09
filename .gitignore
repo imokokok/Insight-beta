@@ -9,6 +9,7 @@ cache/
 typechain-types/
 *.tsbuildinfo
 test-results/
+playwright-report/
 
 # 服务构建输出
 services/**/dist/

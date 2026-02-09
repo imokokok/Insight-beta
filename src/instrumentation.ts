@@ -63,3 +63,55 @@ export function onError(error: Error | unknown) {
 
   Sentry.captureException(error);
 }
+
+/**
+ * 处理请求错误
+ * @see https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation#onrequesterror
+ */
+export function onRequestError(
+  error: Error,
+  request: {
+    path: string;
+    method: string;
+    headers: Record<string, string | string[] | undefined>;
+  },
+  context: {
+    routerKind: 'Pages Router' | 'App Router';
+    routePath: string;
+    routeType: 'render' | 'route' | 'action' | 'middleware';
+  },
+): void {
+  const errorMessage = error instanceof Error ? error.message : String(error);
+
+  logger.error('Request error detected', {
+    message: errorMessage,
+    path: request.path,
+    method: request.method,
+    routePath: context.routePath,
+    routeType: context.routeType,
+    routerKind: context.routerKind,
+    service: 'oracle-monitor',
+  });
+
+  // 使用 Sentry 捕获请求错误
+  Sentry.captureException(error, {
+    tags: {
+      'request.path': request.path,
+      'request.method': request.method,
+      'route.path': context.routePath,
+      'route.type': context.routeType,
+      'router.kind': context.routerKind,
+    },
+    contexts: {
+      request: {
+        path: request.path,
+        method: request.method,
+      },
+      route: {
+        path: context.routePath,
+        type: context.routeType,
+        kind: context.routerKind,
+      },
+    },
+  });
+}
