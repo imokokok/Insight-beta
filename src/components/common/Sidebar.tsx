@@ -27,33 +27,71 @@ import { cn } from '@/lib/utils';
 
 import type { Route } from 'next';
 
-const mainNavItems = [
+// 导航分组 - 体现"预言机监控"的任务结构
+const navGroups = [
   {
-    key: 'nav.dashboard' as const,
-    href: '/oracle/dashboard' as const,
-    icon: LayoutDashboard,
+    id: 'monitor' as const,
+    label: '监控',
+    labelEn: 'Monitor',
+    items: [
+      {
+        key: 'nav.dashboard' as const,
+        href: '/oracle/dashboard' as const,
+        icon: LayoutDashboard,
+        tooltip: '实时监控仪表板，查看系统健康状态',
+      },
+      {
+        key: 'nav.unifiedOracle' as const,
+        href: '/oracle/unified' as const,
+        icon: Globe,
+        tooltip: '统一视图，跨协议对比分析',
+      },
+      {
+        key: 'nav.security' as const,
+        href: '/security/dashboard' as const,
+        icon: Shield,
+        tooltip: '安全检测与风险监控',
+      },
+    ],
   },
   {
-    key: 'nav.unifiedOracle' as const,
-    href: '/oracle/unified' as const,
-    icon: Globe,
+    id: 'handle' as const,
+    label: '处置',
+    labelEn: 'Handle',
+    items: [
+      {
+        key: 'nav.alerts' as const,
+        href: '/alerts' as const,
+        icon: ShieldAlert,
+        tooltip: '告警管理：查看、确认、处理系统告警',
+      },
+      {
+        key: 'nav.disputes' as const,
+        href: '/disputes' as const,
+        icon: ShieldAlert,
+        tooltip: '争议处理：查看和参与预言机争议',
+      },
+    ],
   },
   {
-    key: 'nav.security' as const,
-    href: '/security/dashboard' as const,
-    icon: Shield,
+    id: 'operate' as const,
+    label: '运营',
+    labelEn: 'Operate',
+    items: [
+      {
+        key: 'nav.audit' as const,
+        href: '/audit' as const,
+        icon: ScrollText,
+        tooltip: '审计日志与合规报告',
+      },
+      {
+        key: 'nav.watchlist' as const,
+        href: '/watchlist' as const,
+        icon: Star,
+        tooltip: '关注列表：自定义监控项',
+      },
+    ],
   },
-];
-
-const secondaryNavItems = [
-  {
-    key: 'nav.disputes' as const,
-    href: '/disputes' as const,
-    icon: ShieldAlert,
-  },
-  { key: 'nav.alerts' as const, href: '/alerts' as const, icon: ShieldAlert },
-  { key: 'nav.audit' as const, href: '/audit' as const, icon: ScrollText },
-  { key: 'nav.watchlist' as const, href: '/watchlist' as const, icon: Star },
 ];
 
 export function Sidebar() {
@@ -130,39 +168,66 @@ export function Sidebar() {
           </div>
 
           <nav className="flex-1 space-y-1 overflow-y-auto">
-            {/* Main Navigation */}
-            {mainNavItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href;
-              const href = attachInstanceId(item.href) as Route;
+            {/* 导航分组 - 体现"预言机监控"的任务结构 */}
+            {navGroups.map((group, groupIndex) => (
+              <div
+                key={group.id}
+                className={cn('space-y-1', groupIndex > 0 && 'mt-4 border-t border-gray-100 pt-4')}
+              >
+                {/* 分组标题 */}
+                <div className="px-3 py-1">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+                    {group.label}
+                  </span>
+                </div>
+                {/* 分组内导航项 */}
+                {group.items.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = pathname === item.href;
+                  const href = attachInstanceId(item.href) as Route;
 
-              return (
-                <Link
-                  key={item.href}
-                  href={href}
-                  className={cn(
-                    'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
-                    isActive
-                      ? 'bg-white text-purple-700 shadow-md shadow-purple-500/5 ring-1 ring-white/60'
-                      : 'text-gray-600 hover:bg-white/40 hover:text-purple-700 hover:shadow-sm',
-                  )}
-                >
-                  <Icon
-                    size={20}
-                    className={cn(
-                      'transition-colors duration-200',
-                      isActive ? 'text-purple-600' : 'text-gray-400 group-hover:text-purple-500',
-                    )}
-                  />
-                  {t(item.key)}
-                </Link>
-              );
-            })}
+                  return (
+                    <Link
+                      key={item.href}
+                      href={href}
+                      title={item.tooltip}
+                      className={cn(
+                        'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
+                        isActive
+                          ? 'bg-white text-purple-700 shadow-md shadow-purple-500/5 ring-1 ring-white/60'
+                          : 'text-gray-600 hover:bg-white/40 hover:text-purple-700 hover:shadow-sm',
+                      )}
+                    >
+                      <Icon
+                        size={20}
+                        className={cn(
+                          'transition-colors duration-200',
+                          isActive
+                            ? 'text-purple-600'
+                            : 'text-gray-400 group-hover:text-purple-500',
+                        )}
+                      />
+                      <span className="flex-1">{t(item.key)}</span>
+                      {/* Tooltip 指示器 */}
+                      <span className="hidden text-[10px] text-gray-300 group-hover:text-gray-400 lg:inline">
+                        ?
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            ))}
 
             {/* Price Feed Protocols Section */}
-            <div className="pt-2">
+            <div className="mt-4 space-y-1 border-t border-gray-100 pt-4">
+              <div className="px-3 py-1">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+                  协议
+                </span>
+              </div>
               <Link
                 href="/oracle/protocols"
+                title="查看各协议详细数据"
                 className={cn(
                   'group flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
                   pathname?.startsWith('/oracle/protocols') && !isOptimisticActive
@@ -187,9 +252,10 @@ export function Sidebar() {
             </div>
 
             {/* Optimistic Oracle Section */}
-            <div className="pt-2">
+            <div className="space-y-1">
               <Link
                 href="/oracle/optimistic"
+                title="乐观预言机争议与断言"
                 className={cn(
                   'group flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
                   isOptimisticActive
@@ -214,9 +280,10 @@ export function Sidebar() {
             </div>
 
             {/* Analytics Section */}
-            <div className="pt-2">
+            <div className="space-y-1">
               <Link
                 href="/oracle/analytics"
+                title="AI 驱动的深度分析"
                 className={cn(
                   'group flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
                   pathname?.startsWith('/oracle/analytics')
@@ -239,38 +306,6 @@ export function Sidebar() {
                 <ChevronRight size={16} className="text-gray-400" />
               </Link>
             </div>
-
-            {/* Divider */}
-            <div className="my-2 border-t border-gray-200" />
-
-            {/* Secondary Navigation */}
-            {secondaryNavItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href;
-              const href = attachInstanceId(item.href) as Route;
-
-              return (
-                <Link
-                  key={item.href}
-                  href={href}
-                  className={cn(
-                    'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
-                    isActive
-                      ? 'bg-white text-purple-700 shadow-md shadow-purple-500/5 ring-1 ring-white/60'
-                      : 'text-gray-600 hover:bg-white/40 hover:text-purple-700 hover:shadow-sm',
-                  )}
-                >
-                  <Icon
-                    size={20}
-                    className={cn(
-                      'transition-colors duration-200',
-                      isActive ? 'text-purple-600' : 'text-gray-400 group-hover:text-purple-500',
-                    )}
-                  />
-                  {t(item.key)}
-                </Link>
-              );
-            })}
           </nav>
 
           <div className="border-t border-white/20 pt-4">

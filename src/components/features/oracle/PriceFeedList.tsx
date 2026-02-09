@@ -1,6 +1,14 @@
 'use client';
 
-import React, { useEffect, useState, useMemo, useDeferredValue, memo } from 'react';
+import React, {
+  useEffect,
+  useState,
+  useMemo,
+  useDeferredValue,
+  memo,
+  useRef,
+  useCallback,
+} from 'react';
 
 import { TrendingUp, TrendingDown, Minus, AlertCircle, Clock } from 'lucide-react';
 
@@ -28,6 +36,10 @@ interface FeedWithUpdate extends PriceFeed {
   previousPrice?: number;
 }
 
+// P0 优化：批量处理配置
+const BATCH_UPDATE_INTERVAL = 100; // 100ms 批量处理一次
+const MAX_BATCH_SIZE = 50; // 最大批量大小
+
 export const PriceFeedList = memo(function PriceFeedList({
   protocols,
   symbols,
@@ -38,6 +50,10 @@ export const PriceFeedList = memo(function PriceFeedList({
   const [feeds, setFeeds] = useState<FeedWithUpdate[]>([]);
   const [loading, setLoading] = useState(true);
   const [, setError] = useState<string | null>(null);
+
+  // P0 优化：使用 ref 存储待处理的更新，避免频繁触发渲染
+  const pendingUpdatesRef = useRef<Map<string, PriceUpdate>>(new Map());
+  const batchTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // WebSocket 连接
   const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001';
@@ -92,7 +108,49 @@ export const PriceFeedList = memo(function PriceFeedList({
     };
   }, [protocols, symbols, limit, showStale]);
 
-  // 处理 WebSocket 消息
+  // P0 优化：批量处理 WebSocket 更新
+  const processBatchUpdates = useCallback(() => {
+    if (pendingUpdatesRef.current.size === 0) return;
+
+    const updates = Array.from(pendingUpdatesRef.current.values());
+    pendingUpdatesRef.current.clear();
+
+    setFeeds((prev) => {
+      // 使用 Map 进行 O(1) 查找，避免 O(n) 遍历
+      const feedMap = new Map(prev.map((f) => [f.id, f]));
+
+      for (const update of updates) {
+        const feed = feedMap.get(update.feedId);
+        if (feed) {
+          feedMap.set(update.feedId, {
+            ...feed,
+            price: update.currentPrice,
+            previousPrice: update.previousPrice,
+            priceChangePercent: update.priceChangePercent,
+            timestamp: update.timestamp,
+          });
+        }
+      }
+
+      return Array.from(feedMap.values());
+    });
+  }, []);
+
+  // P0 优化：启动批量处理定时器
+  useEffect(() => {
+    batchTimerRef.current = setInterval(processBatchUpdates, BATCH_UPDATE_INTERVAL);
+
+    return () => {
+      if (batchTimerRef.current) {
+        clearInterval(batchTimerRef.current);
+        batchTimerRef.current = null;
+      }
+      // 清理时处理剩余更新
+      processBatchUpdates();
+    };
+  }, [processBatchUpdates]);
+
+  // 处理 WebSocket 消息 - P0 优化：加入批量队列而非立即更新
   useEffect(() => {
     if (!lastMessage) return;
 
@@ -100,24 +158,19 @@ export const PriceFeedList = memo(function PriceFeedList({
       const message = lastMessage as { type: string; data: PriceUpdate };
       if (message.type === 'price_update') {
         const update: PriceUpdate = message.data;
-        setFeeds((prev) =>
-          prev.map((feed) =>
-            feed.id === update.feedId
-              ? {
-                  ...feed,
-                  price: update.currentPrice,
-                  previousPrice: update.previousPrice,
-                  priceChangePercent: update.priceChangePercent,
-                  timestamp: update.timestamp,
-                }
-              : feed,
-          ),
-        );
+
+        // 加入待处理队列
+        pendingUpdatesRef.current.set(update.feedId, update);
+
+        // 如果队列过大，立即处理
+        if (pendingUpdatesRef.current.size >= MAX_BATCH_SIZE) {
+          processBatchUpdates();
+        }
       }
     } catch (error: unknown) {
       logger.error('Failed to process WebSocket message', { error });
     }
-  }, [lastMessage]);
+  }, [lastMessage, processBatchUpdates]);
 
   // 使用 useDeferredValue 避免频繁更新阻塞 UI
   const deferredFeeds = useDeferredValue(feeds);

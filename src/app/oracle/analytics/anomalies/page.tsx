@@ -59,7 +59,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useDashboardShortcuts, useAutoRefresh, useDataCache } from '@/hooks';
+import { useDashboardShortcuts, useAutoRefreshLegacy, useDataCache } from '@/hooks';
 import { logger } from '@/lib/logger';
 import { fetchApiData, cn, formatTimestamp } from '@/lib/utils';
 
@@ -535,7 +535,7 @@ export default function AnomalyDetectionPage() {
     setRefreshInterval,
     timeUntilRefresh,
     refresh,
-  } = useAutoRefresh({
+  } = useAutoRefreshLegacy({
     onRefresh: () => fetchData(false),
     interval: 60000,
     enabled: true,

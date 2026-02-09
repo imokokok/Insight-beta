@@ -8,6 +8,7 @@
  * - 批量写入和缓存优化
  */
 
+import { generatePriceCacheKey } from '@/lib/cache/cache-key';
 import { logger } from '@/lib/logger';
 import type { OracleProtocol, SupportedChain } from '@/lib/types/unifiedOracleTypes';
 import { query as dbQuery } from '@/server/db';
@@ -73,7 +74,15 @@ class PriceCache {
   private readonly DEFAULT_TTL = 30000; // 30 seconds
 
   getKey(query: PriceHistoryQuery): string {
-    return `${query.symbol}:${query.protocol}:${query.chain}:${query.startTime.toISOString()}:${query.endTime.toISOString()}:${query.interval}`;
+    // P1 优化：使用优化的缓存键生成函数
+    return generatePriceCacheKey(
+      query.symbol ?? '',
+      query.protocol,
+      query.chain,
+      query.startTime,
+      query.endTime,
+      query.interval,
+    );
   }
 
   get(query: PriceHistoryQuery): PriceHistoryRecord[] | null {

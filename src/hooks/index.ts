@@ -31,7 +31,19 @@ export { usePreload, useComponentPreload } from './usePreload';
 export { useDisputes } from './useDisputes';
 export { useWebSocket } from './useWebSocket';
 export { useDataRefresh } from './useDataRefresh';
-export { useDashboardShortcuts, useAutoRefresh, useDataCache } from './useDashboard';
+
+// Dashboard hooks (包含旧版 useAutoRefresh，保持向后兼容)
+export {
+  useDashboardShortcuts,
+  useAutoRefresh as useAutoRefreshLegacy,
+  useDataCache,
+} from './useDashboard';
+
+// 自动刷新 Hook (新的实现 - 推荐用于新页面)
+export { useAutoRefresh, useSimpleAutoRefresh } from './use-auto-refresh';
+
+// 视图模式 Hook
+export { useViewMode, useSimpleViewMode } from './use-view-mode';
 
 // LocalStorage
 export { useLocalStorage } from './useLocalStorage';

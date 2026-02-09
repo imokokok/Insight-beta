@@ -41,14 +41,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'always' as const,
       priority: 0.8,
     },
+    // Oracle 功能页面 - 统一放在 /oracle/* 下
     {
-      url: `${baseUrl}/comparison`,
+      url: `${baseUrl}/oracle/comparison`,
       lastModified: new Date(),
       changeFrequency: 'hourly' as const,
       priority: 0.7,
     },
+    // 功能中心短路径 - /security 作为 /security/dashboard 的入口
     {
-      url: `${baseUrl}/security`,
+      url: `${baseUrl}/security/dashboard`,
       lastModified: new Date(),
       changeFrequency: 'daily' as const,
       priority: 0.7,

@@ -24,6 +24,10 @@ interface RpcNode {
   failureCount: number;
   successCount: number;
   lastUsed: number;
+  // P2 优化：添加更多指标用于智能选择
+  requestCount: number;
+  avgLatency: number;
+  lastFailureAt: number;
 }
 
 // Concurrency control
@@ -62,6 +66,8 @@ class RpcManager {
   private nodes: RpcNode[] = [];
   private clientCache = new Map<string, ReturnType<typeof createPublicClient>>();
   private readonly CACHE_TTL_MS = 60000;
+  // P2 优化：请求计数器，用于负载均衡
+  private requestCounter = new Map<string, number>();
 
   constructor(urls: string[]) {
     this.nodes = urls.map((url, index) => ({
@@ -72,6 +78,10 @@ class RpcManager {
       failureCount: 0,
       successCount: 0,
       lastUsed: 0,
+      // P2 优化：初始化新指标
+      requestCount: 0,
+      avgLatency: 0,
+      lastFailureAt: 0,
     }));
   }
 
@@ -101,20 +111,45 @@ class RpcManager {
     return Number.isFinite(raw) && raw > 0 ? raw : 30000;
   }
 
-  // Weighted random selection
+  // P2 优化：智能节点选择算法
   selectNode(): RpcNode | null {
     const healthyNodes = this.nodes.filter((n) => n.healthy);
     if (healthyNodes.length === 0) return null;
 
-    const totalWeight = healthyNodes.reduce((sum, n) => sum + n.weight, 0);
-    let random = Math.random() * totalWeight;
+    // P2 优化：计算每个节点的综合得分
+    // 得分 = 权重 * 延迟得分 * 负载得分
+    const scoredNodes = healthyNodes.map((node) => {
+      // 延迟得分：延迟越低，得分越高 (0.5 - 1.0)
+      const latencyScore = node.avgLatency > 0 ? Math.max(0.5, 1 - node.avgLatency / 2000) : 1;
 
-    for (const node of healthyNodes) {
-      random -= node.weight;
-      if (random <= 0) {
-        node.lastUsed = Date.now();
-        return node;
-      }
+      // 负载得分：请求数越少，得分越高 (0.5 - 1.0)
+      const currentLoad = this.requestCounter.get(node.url) || 0;
+      const loadScore = Math.max(0.5, 1 - currentLoad / 100);
+
+      // 成功率得分
+      const totalRequests = node.successCount + node.failureCount;
+      const successRate = totalRequests > 0 ? node.successCount / totalRequests : 1;
+      const reliabilityScore = 0.5 + successRate * 0.5;
+
+      // 综合得分
+      const score = node.weight * latencyScore * loadScore * reliabilityScore;
+
+      return { node, score };
+    });
+
+    // 按得分排序，选择得分最高的
+    scoredNodes.sort((a, b) => b.score - a.score);
+
+    // 前 3 个中随机选择，避免总是选择同一个节点
+    const topNodes = scoredNodes.slice(0, Math.min(3, scoredNodes.length));
+    const selected = topNodes[Math.floor(Math.random() * topNodes.length)];
+
+    if (selected) {
+      selected.node.lastUsed = Date.now();
+      // 增加请求计数
+      const currentCount = this.requestCounter.get(selected.node.url) || 0;
+      this.requestCounter.set(selected.node.url, currentCount + 1);
+      return selected.node;
     }
 
     return healthyNodes[0] ?? null;
@@ -127,8 +162,23 @@ class RpcManager {
       node.lastLatency = latency;
       node.failureCount = 0;
       node.healthy = true;
-      // Increase weight slightly on success
-      node.weight = Math.min(100, node.weight + 1);
+
+      // P2 优化：使用指数移动平均更新平均延迟
+      const alpha = 0.3; // 平滑因子
+      if (node.avgLatency === 0) {
+        node.avgLatency = latency;
+      } else {
+        node.avgLatency = alpha * latency + (1 - alpha) * node.avgLatency;
+      }
+
+      // 增加权重，但不超过 150
+      node.weight = Math.min(150, node.weight + 1);
+
+      // 减少请求计数
+      const currentCount = this.requestCounter.get(url) || 0;
+      if (currentCount > 0) {
+        this.requestCounter.set(url, currentCount - 1);
+      }
     }
   }
 
@@ -136,12 +186,23 @@ class RpcManager {
     const node = this.nodes.find((n) => n.url === url);
     if (node) {
       node.failureCount++;
-      // Decrease weight on failure
-      node.weight = Math.max(10, node.weight - 10);
+      node.lastFailureAt = Date.now();
+
+      // P2 优化：根据失败次数调整权重
+      const weightPenalty = Math.min(30, node.failureCount * 10);
+      node.weight = Math.max(10, node.weight - weightPenalty);
+
       if (node.failureCount >= 3) {
         node.healthy = false;
-        // Schedule health check
-        setTimeout(() => this.healthCheck(url), 30000);
+        // 记录失败时间，用于指数退避
+        const backoffMs = Math.min(300000, 30000 * Math.pow(2, node.failureCount - 3));
+        setTimeout(() => this.healthCheck(url), backoffMs);
+      }
+
+      // 减少请求计数
+      const currentCount = this.requestCounter.get(url) || 0;
+      if (currentCount > 0) {
+        this.requestCounter.set(url, currentCount - 1);
       }
     }
   }
@@ -158,11 +219,36 @@ class RpcManager {
         node.healthy = true;
         node.failureCount = 0;
         node.lastLatency = latency;
+        // 恢复权重
+        node.weight = Math.min(100, node.weight + 20);
       }
       return true;
     } catch {
       return false;
     }
+  }
+
+  // P2 优化：获取节点统计信息
+  getNodeStats(): Array<{
+    url: string;
+    healthy: boolean;
+    weight: number;
+    avgLatency: number;
+    successRate: number;
+    requestCount: number;
+  }> {
+    return this.nodes.map((node) => {
+      const totalRequests = node.successCount + node.failureCount;
+      return {
+        url: node.url,
+        healthy: node.healthy,
+        weight: node.weight,
+        avgLatency: Math.round(node.avgLatency),
+        successRate:
+          totalRequests > 0 ? Math.round((node.successCount / totalRequests) * 100) : 100,
+        requestCount: this.requestCounter.get(node.url) || 0,
+      };
+    });
   }
 
   getNodes(): RpcNode[] {
@@ -503,11 +589,14 @@ export class OracleSyncOptimizer {
     checkpoint: bigint;
     window: bigint;
     rpcNodes: RpcNode[];
+    // P2 优化：添加节点统计信息
+    nodeStats: ReturnType<RpcManager['getNodeStats']>;
   } {
     return {
       checkpoint: this.checkpointManager.getCheckpoint(this.instanceId),
       window: this.adaptiveWindow.getWindow(),
       rpcNodes: this.rpcManager?.getNodes() || [],
+      nodeStats: this.rpcManager?.getNodeStats() || [],
     };
   }
 }

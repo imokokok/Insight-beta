@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
@@ -14,10 +14,14 @@ import {
   ShieldAlert,
   Gavel,
   Search,
+  RefreshCw,
 } from 'lucide-react';
 
 import { PageHeader } from '@/components/common/PageHeader';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { ErrorBanner as ErrorBannerUI } from '@/components/ui/error-banner';
+import { RefreshIndicator } from '@/components/ui/refresh-indicator';
+import { getRefreshStrategy } from '@/config/refresh-strategy';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage, langToLocale, type TranslationKey } from '@/i18n/translations';
 import type { Dispute, DisputeStatus, OracleChain } from '@/lib/types/oracleTypes';
@@ -102,20 +106,6 @@ function FiltersBar({
           />
         </div>
       </div>
-    </div>
-  );
-}
-
-type ErrorBannerProps = {
-  error: string | null;
-  t: Translate;
-};
-
-function ErrorBanner({ error, t }: ErrorBannerProps) {
-  if (!error) return null;
-  return (
-    <div className="rounded-2xl border border-rose-100 bg-rose-50/50 p-4 text-sm text-rose-700 shadow-sm">
-      {getUiErrorMessage(error, t)}
     </div>
   );
 }
@@ -405,6 +395,45 @@ export default function DisputesPage() {
     return 'default';
   });
 
+  // 获取刷新策略配置
+  const disputesStrategy = getRefreshStrategy('disputes-list');
+
+  // 计算最后更新时间
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  useEffect(() => {
+    if (!loading) {
+      setLastUpdated(new Date());
+    }
+  }, [loading]);
+
+  // 刷新函数
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const params = new URLSearchParams();
+      if (instanceId) params.set('instanceId', instanceId);
+      if (filterStatus !== 'All') params.set('status', filterStatus);
+      if (filterChain !== 'All') params.set('chain', filterChain);
+      if (query.trim()) params.set('q', query.trim());
+      params.set('limit', '30');
+      const data = await fetchApiData<{
+        items: Dispute[];
+        total: number;
+        nextCursor: number | null;
+        voteTrackingEnabled?: boolean;
+      }>(`/api/oracle/disputes?${params.toString()}`);
+      setItems(data.items ?? []);
+      setNextCursor(data.nextCursor ?? null);
+      setVoteTrackingEnabled(data.voteTrackingEnabled ?? true);
+      setLastUpdated(new Date());
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'unknown_error');
+    } finally {
+      setLoading(false);
+    }
+  }, [filterStatus, filterChain, query, instanceId]);
+
   useEffect(() => {
     if (!instanceIdFromUrl) return;
     if (instanceIdFromUrl === instanceId) return;
@@ -510,14 +539,40 @@ export default function DisputesPage() {
   return (
     <div className="space-y-6">
       <PageHeader title={t('disputes.title')} description={t('disputes.description')}>
-        <div className="flex items-center gap-2 rounded-lg border border-purple-100 bg-purple-50 px-3 py-1.5 text-sm text-purple-700/60">
-          <Gavel size={16} />
-          <span>{t('disputes.umaDvmActive')}</span>
+        <div className="flex items-center gap-3">
+          {/* 刷新状态指示器 */}
+          <RefreshIndicator
+            lastUpdated={lastUpdated}
+            isRefreshing={loading}
+            strategy={disputesStrategy}
+            onRefresh={refresh}
+          />
+          <button
+            type="button"
+            onClick={refresh}
+            disabled={loading}
+            className="flex items-center gap-2 rounded-xl bg-white/60 px-4 py-2 text-sm font-semibold text-purple-800 shadow-sm ring-1 ring-purple-100 hover:bg-white disabled:opacity-50"
+          >
+            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+            {t('common.refresh')}
+          </button>
+          <div className="flex items-center gap-2 rounded-lg border border-purple-100 bg-purple-50 px-3 py-1.5 text-sm text-purple-700/60">
+            <Gavel size={16} />
+            <span>{t('disputes.umaDvmActive')}</span>
+          </div>
         </div>
       </PageHeader>
 
       <div className="grid gap-6">
-        <ErrorBanner error={error} t={t} />
+        {/* 错误提示 - 使用统一的 ErrorBanner */}
+        {error && (
+          <ErrorBannerUI
+            error={new Error(getUiErrorMessage(error, t))}
+            onRetry={refresh}
+            title={t('disputes.title')}
+            isRetrying={loading}
+          />
+        )}
 
         <FiltersBar
           filterStatus={filterStatus}

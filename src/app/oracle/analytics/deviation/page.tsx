@@ -51,9 +51,10 @@ import { SkeletonList } from '@/components/common/SkeletonList';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { ErrorBanner } from '@/components/ui/error-banner';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useDashboardShortcuts, useAutoRefresh, useDataCache } from '@/hooks';
+import { useDashboardShortcuts, useAutoRefreshLegacy, useDataCache } from '@/hooks';
 import { logger } from '@/lib/logger';
 import { fetchApiData, cn, formatTimestamp } from '@/lib/utils';
 
@@ -517,7 +518,7 @@ export default function DeviationAnalyticsPage() {
     setRefreshInterval,
     timeUntilRefresh,
     refresh,
-  } = useAutoRefresh({
+  } = useAutoRefreshLegacy({
     onRefresh: () => fetchReport(false),
     interval: 60000,
     enabled: true,
@@ -617,19 +618,16 @@ export default function DeviationAnalyticsPage() {
     URL.revokeObjectURL(url);
   };
 
-  // Error state
+  // Error state - 使用统一的 ErrorBanner
   if (error && !loading && !report) {
     return (
       <div className="container mx-auto p-6">
-        <div className="flex flex-col items-center justify-center py-20">
-          <AlertTriangle className="mb-4 h-16 w-16 text-red-500" />
-          <h2 className="text-xl font-semibold">Failed to Load Deviation Data</h2>
-          <p className="text-muted-foreground mt-2">{error}</p>
-          <Button onClick={() => fetchReport()} className="mt-4">
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Try Again
-          </Button>
-        </div>
+        <ErrorBanner
+          error={new Error(error)}
+          onRetry={() => fetchReport()}
+          title="加载偏差数据失败"
+          isRetrying={loading}
+        />
       </div>
     );
   }

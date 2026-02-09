@@ -48,7 +48,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useDashboardShortcuts, useAutoRefresh, useDataCache } from '@/hooks';
+import { useDashboardShortcuts, useAutoRefreshLegacy, useDataCache } from '@/hooks';
 import { logger } from '@/lib/logger';
 import type {
   ManipulationDetection,
@@ -559,7 +559,7 @@ export default function SecurityDashboardPage() {
     setRefreshInterval,
     timeUntilRefresh,
     refresh,
-  } = useAutoRefresh({
+  } = useAutoRefreshLegacy({
     onRefresh: () => fetchData(false),
     interval: 30000,
     enabled: true,

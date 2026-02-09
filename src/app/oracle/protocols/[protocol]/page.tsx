@@ -16,8 +16,12 @@ import type { ProtocolComparisonData } from '@/components/features/protocol/Prot
 import { ProtocolPageLayout } from '@/components/features/protocol/ProtocolPageLayout';
 import { ButtonEnhanced, StatusBadge } from '@/components/ui';
 import { Card, CardContent } from '@/components/ui/card';
+import { ErrorBanner } from '@/components/ui/error-banner';
 import { Progress } from '@/components/ui/progress';
+import { RefreshIndicator } from '@/components/ui/refresh-indicator';
 import { ChartSkeleton } from '@/components/ui/skeleton';
+import { getRefreshStrategy } from '@/config/refresh-strategy';
+import { useAutoRefresh } from '@/hooks/use-auto-refresh';
 import { logger } from '@/lib/logger';
 import { getProtocolConfig } from '@/lib/protocol-config';
 import { ORACLE_PROTOCOLS, type OracleProtocol } from '@/lib/types';
@@ -85,7 +89,6 @@ export default function UnifiedProtocolPage() {
   const [nodes, setNodes] = useState<unknown[]>([]);
   const [publishers, setPublishers] = useState<unknown[]>([]);
   const [stats, setStats] = useState<Record<string, unknown> | null>(null);
-  const [loading, setLoading] = useState(true);
   const [selectedChain, setSelectedChain] = useState<string>('all');
   const [isValid, setIsValid] = useState(true);
 
@@ -94,31 +97,28 @@ export default function UnifiedProtocolPage() {
     setIsValid(ORACLE_PROTOCOLS.includes(protocol));
   }, [protocol]);
 
-  const fetchData = useCallback(async () => {
-    try {
-      setLoading(true);
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      setFeeds(config.mockData.feeds);
-      setStats(config.mockData.stats);
-      if (config.mockData.nodes) {
-        setNodes(config.mockData.nodes);
+  // 使用新的自动刷新 hook，配置为 30 秒刷新策略
+  const protocolStrategy = getRefreshStrategy('protocol-detail');
+  const { lastUpdated, isRefreshing, isError, error, refresh } = useAutoRefresh({
+    pageId: 'protocol-detail',
+    fetchFn: useCallback(async () => {
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        setFeeds(config.mockData.feeds);
+        setStats(config.mockData.stats);
+        if (config.mockData.nodes) {
+          setNodes(config.mockData.nodes);
+        }
+        if (config.mockData.publishers) {
+          setPublishers(config.mockData.publishers);
+        }
+      } catch (err) {
+        logger.error(`Failed to fetch ${protocol} data`, { error: err });
+        throw err;
       }
-      if (config.mockData.publishers) {
-        setPublishers(config.mockData.publishers);
-      }
-    } catch (error) {
-      logger.error(`Failed to fetch ${protocol} data`, { error });
-    } finally {
-      setLoading(false);
-    }
-  }, [protocol, config]);
-
-  useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 30000);
-    return () => clearInterval(interval);
-  }, [fetchData]);
+    }, [protocol, config]),
+    enabled: true,
+  });
 
   // Filter feeds by chain
   const filteredFeeds = useMemo(() => {
@@ -484,18 +484,40 @@ export default function UnifiedProtocolPage() {
   }
 
   return (
-    <ProtocolPageLayout
-      protocol={protocol}
-      title={config.name}
-      description={config.description}
-      icon={config.icon}
-      officialUrl={config.officialUrl}
-      loading={loading}
-      onRefresh={fetchData}
-      stats={statsContent}
-      chainSelector={chainSelectorContent}
-      tabs={tabs}
-      defaultTab="feeds"
-    />
+    <div className="space-y-4">
+      {/* 错误提示 */}
+      {isError && error && (
+        <ErrorBanner
+          error={error}
+          onRetry={refresh}
+          title={`加载 ${config.name} 数据失败`}
+          isRetrying={isRefreshing}
+        />
+      )}
+
+      {/* 刷新指示器 */}
+      <div className="flex justify-end px-4">
+        <RefreshIndicator
+          lastUpdated={lastUpdated}
+          isRefreshing={isRefreshing}
+          strategy={protocolStrategy}
+          onRefresh={refresh}
+        />
+      </div>
+
+      <ProtocolPageLayout
+        protocol={protocol}
+        title={config.name}
+        description={config.description}
+        icon={config.icon}
+        officialUrl={config.officialUrl}
+        loading={isRefreshing && !stats}
+        onRefresh={refresh}
+        stats={statsContent}
+        chainSelector={chainSelectorContent}
+        tabs={tabs}
+        defaultTab="feeds"
+      />
+    </div>
   );
 }

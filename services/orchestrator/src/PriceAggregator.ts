@@ -10,6 +10,7 @@ import type { AggregatedPrice, PriceSource } from './types';
 export interface PriceAggregatorOptions {
   deviationThreshold: number;
   maxPriceAgeMs: number;
+  aggregationCacheTtlMs?: number; // 聚合结果缓存时间
 }
 
 interface PricePoint {
@@ -20,16 +21,27 @@ interface PricePoint {
   confidence: number;
 }
 
+// 聚合结果缓存条目
+interface AggregationCacheEntry {
+  aggregatedPrice: AggregatedPrice;
+  timestamp: number;
+  priceHash: string; // 用于检测价格是否变化
+}
+
 export class PriceAggregator {
   private readonly logger: ReturnType<typeof createLogger>;
   private readonly deviationThreshold: number;
   private readonly maxPriceAgeMs: number;
+  private readonly aggregationCacheTtlMs: number;
   private readonly priceStore: Map<string, Map<string, PricePoint>> = new Map();
+  // 聚合结果缓存 - P0 优化：避免重复计算
+  private readonly aggregationCache: Map<string, AggregationCacheEntry> = new Map();
 
   constructor(options: PriceAggregatorOptions) {
     this.logger = createLogger({ serviceName: 'orchestrator-aggregator' });
     this.deviationThreshold = options.deviationThreshold;
     this.maxPriceAgeMs = options.maxPriceAgeMs;
+    this.aggregationCacheTtlMs = options.aggregationCacheTtlMs ?? 1000; // 默认1秒缓存
   }
 
   /**
@@ -39,6 +51,7 @@ export class PriceAggregator {
     this.logger.info('Initializing price aggregator', {
       deviationThreshold: this.deviationThreshold,
       maxPriceAgeMs: this.maxPriceAgeMs,
+      aggregationCacheTtlMs: this.aggregationCacheTtlMs,
     });
   }
 
@@ -68,22 +81,36 @@ export class PriceAggregator {
       confidence,
     });
 
+    // 清除该 symbol 的聚合缓存，因为价格已更新
+    this.aggregationCache.delete(symbol);
+
     this.logger.debug('Price added', { symbol, protocol, chain, price });
   }
 
   /**
+   * 生成价格数据的哈希值，用于检测变化
+   */
+  private generatePriceHash(prices: PricePoint[]): string {
+    return prices
+      .map((p) => `${p.protocol}-${p.chain}-${p.price.toFixed(8)}-${p.timestamp}`)
+      .sort()
+      .join('|');
+  }
+
+  /**
    * Get aggregated price for a symbol
+   * P0 优化：添加聚合结果缓存
    */
   getAggregatedPrice(symbol: string): AggregatedPrice | null {
+    const now = Date.now();
+
+    // 1. 获取有效价格数据
     const symbolStore = this.priceStore.get(symbol);
     if (!symbolStore || symbolStore.size === 0) {
       return null;
     }
 
-    const now = Date.now();
     const validPrices: PricePoint[] = [];
-
-    // Filter out stale prices
     for (const point of symbolStore.values()) {
       if (now - point.timestamp <= this.maxPriceAgeMs) {
         validPrices.push(point);
@@ -95,16 +122,31 @@ export class PriceAggregator {
       return null;
     }
 
-    // Calculate aggregated price using median
+    // 2. 检查缓存是否有效
+    const currentPriceHash = this.generatePriceHash(validPrices);
+    const cached = this.aggregationCache.get(symbol);
+
+    if (cached) {
+      const isCacheValid =
+        now - cached.timestamp < this.aggregationCacheTtlMs &&
+        cached.priceHash === currentPriceHash;
+
+      if (isCacheValid) {
+        this.logger.debug('Aggregation cache hit', { symbol });
+        return cached.aggregatedPrice;
+      }
+    }
+
+    // 3. 计算聚合价格
     const sortedPrices = validPrices.map((p) => p.price).sort((a, b) => a - b);
     const medianPrice = this.calculateMedian(sortedPrices);
 
-    // Calculate deviation
+    // 4. 计算偏差
     const maxPrice = Math.max(...sortedPrices);
     const minPrice = Math.min(...sortedPrices);
     const deviation = maxPrice > 0 ? ((maxPrice - minPrice) / minPrice) * 100 : 0;
 
-    // Check for significant deviation
+    // 5. 检查显著偏差
     if (deviation > this.deviationThreshold * 100) {
       this.logger.warn('Significant price deviation detected', {
         symbol,
@@ -115,7 +157,7 @@ export class PriceAggregator {
       });
     }
 
-    // Build sources
+    // 6. 构建结果
     const sources: PriceSource[] = validPrices.map((p) => ({
       protocol: p.protocol,
       chain: p.chain,
@@ -124,10 +166,9 @@ export class PriceAggregator {
       confidence: p.confidence,
     }));
 
-    // Calculate confidence based on number of sources and deviation
     const confidence = this.calculateConfidence(validPrices.length, deviation);
 
-    return {
+    const aggregatedPrice: AggregatedPrice = {
       symbol,
       price: medianPrice,
       timestamp: now,
@@ -136,10 +177,20 @@ export class PriceAggregator {
       confidence,
       deviation,
     };
+
+    // 7. 更新缓存
+    this.aggregationCache.set(symbol, {
+      aggregatedPrice,
+      timestamp: now,
+      priceHash: currentPriceHash,
+    });
+
+    return aggregatedPrice;
   }
 
   /**
    * Get aggregated prices for all symbols
+   * P0 优化：批量获取时复用缓存
    */
   getAllAggregatedPrices(): AggregatedPrice[] {
     const results: AggregatedPrice[] = [];
@@ -214,6 +265,8 @@ export class PriceAggregator {
       // Remove empty symbol stores
       if (symbolStore.size === 0) {
         this.priceStore.delete(symbol);
+        // 同时清除聚合缓存
+        this.aggregationCache.delete(symbol);
       }
     }
 
@@ -229,6 +282,7 @@ export class PriceAggregator {
     totalSymbols: number;
     totalPricePoints: number;
     deviatedSymbols: number;
+    cacheHitRate: number;
   } {
     let totalPricePoints = 0;
     let deviatedSymbols = 0;
@@ -247,6 +301,7 @@ export class PriceAggregator {
       totalSymbols: this.priceStore.size,
       totalPricePoints,
       deviatedSymbols,
+      cacheHitRate: this.aggregationCache.size / Math.max(1, this.priceStore.size),
     };
   }
 

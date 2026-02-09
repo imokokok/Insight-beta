@@ -2,6 +2,7 @@ import crypto from 'crypto';
 
 import { createPublicClient, http, parseAbi } from 'viem';
 
+import { LRUCache } from '@/lib/cache/lru-cache';
 import { DEFAULT_FALLBACK_PRICES } from '@/lib/config/constants';
 import { env } from '@/lib/config/env';
 import { parseRpcUrls } from '@/lib/utils';
@@ -19,8 +20,6 @@ export interface PricePoint {
   deviation: number;
 }
 
-type CacheEntry<T> = { value: T; expiresAtMs: number };
-
 // Cache TTL configurations - can be overridden via environment variables
 const SPOT_CACHE_TTL_MS = Number(env.INSIGHT_PRICE_CACHE_TTL_MS) || 10_000;
 const DEX_TWAP_CACHE_TTL_MS = Number(env.INSIGHT_DEX_TWAP_CACHE_TTL_MS) || 30_000;
@@ -36,11 +35,18 @@ const MAX_INFLIGHT_SIZE = 100;
 const MAX_LAST_GOOD_SIZE = 500;
 const MAX_PROVIDER_STATE_SIZE = 100;
 
-const spotCache = new Map<string, CacheEntry<number>>();
+// P1 优化：使用真正的 LRU 缓存替换 FIFO 缓存
+const spotCache = new LRUCache<string, number>({
+  maxSize: MAX_CACHE_SIZE,
+  ttlMs: SPOT_CACHE_TTL_MS,
+});
 const spotInflight = new Map<string, Promise<number>>();
 const lastGoodSpot = new Map<string, { price: number; atMs: number }>();
 
-const dexCache = new Map<string, CacheEntry<number | null>>();
+const dexCache = new LRUCache<string, number | null>({
+  maxSize: MAX_CACHE_SIZE,
+  ttlMs: DEX_TWAP_CACHE_TTL_MS,
+});
 const dexInflight = new Map<string, Promise<number | null>>();
 const lastGoodDex = new Map<string, { price: number; atMs: number }>();
 
@@ -54,21 +60,11 @@ type PoolMeta = {
   dec1: number;
 };
 
-const poolMetaCache = new Map<string, CacheEntry<PoolMeta>>();
-
-/**
- * Enforce cache size limit using LRU eviction
- * Removes oldest entries when cache exceeds max size
- */
-function enforceCacheSizeLimit<T>(cache: Map<string, T>, maxSize: number): void {
-  if (cache.size <= maxSize) return;
-
-  const entriesToRemove = cache.size - maxSize;
-  const keys = Array.from(cache.keys()).slice(0, entriesToRemove);
-  for (const key of keys) {
-    cache.delete(key);
-  }
-}
+// P1 优化：Pool Meta 也使用 LRU 缓存
+const poolMetaCache = new LRUCache<string, PoolMeta>({
+  maxSize: 100,
+  ttlMs: POOL_META_CACHE_TTL_MS,
+});
 
 function getDependencyTimeoutMs() {
   const raw = Number(env.INSIGHT_DEPENDENCY_TIMEOUT_MS || 10_000);
@@ -151,38 +147,32 @@ async function fetchCoinbaseSpotUsdUncached(sym: string): Promise<number> {
   return price;
 }
 
-function getCachedNumber(cache: Map<string, CacheEntry<number>>, key: string): number | null {
-  const hit = cache.get(key);
-  if (!hit) return null;
-  if (Date.now() > hit.expiresAtMs) {
-    cache.delete(key);
-    return null;
-  }
-  return hit.value;
-}
-
 async function cachedNumber(
-  cache: Map<string, CacheEntry<number>>,
+  cache: LRUCache<string, number>,
   inflight: Map<string, Promise<number>>,
   key: string,
   ttlMs: number,
   fetcher: () => Promise<number>,
-  maxCacheSize: number = MAX_CACHE_SIZE,
   maxInflightSize: number = MAX_INFLIGHT_SIZE,
 ): Promise<number> {
-  const hit = getCachedNumber(cache, key);
+  // P1 优化：使用 LRU 缓存的 get 方法
+  const hit = cache.get(key);
   if (hit !== null) return hit;
 
   // Enforce inflight size limit before adding new request
-  enforceCacheSizeLimit(inflight, maxInflightSize);
+  if (inflight.size >= maxInflightSize) {
+    const oldestKey = inflight.keys().next().value;
+    if (oldestKey) {
+      inflight.delete(oldestKey);
+    }
+  }
 
   const existing = inflight.get(key);
   if (existing) return existing;
   const p = fetcher()
     .then((v) => {
-      // Enforce cache size limit before adding new entry
-      enforceCacheSizeLimit(cache, maxCacheSize);
-      cache.set(key, { value: v, expiresAtMs: Date.now() + ttlMs });
+      // P1 优化：使用 LRU 缓存的 set 方法
+      cache.set(key, v, ttlMs);
       return v;
     })
     .finally(() => {
@@ -217,12 +207,24 @@ function canAttemptProvider(key: string) {
 }
 
 function recordProviderOk(key: string) {
-  enforceCacheSizeLimit(providerState, MAX_PROVIDER_STATE_SIZE);
+  // P1 优化：限制 providerState 大小
+  if (providerState.size >= MAX_PROVIDER_STATE_SIZE) {
+    const oldestKey = providerState.keys().next().value;
+    if (oldestKey) {
+      providerState.delete(oldestKey);
+    }
+  }
   providerState.set(key, { failCount: 0, nextRetryAtMs: 0 });
 }
 
 function recordProviderFail(key: string) {
-  enforceCacheSizeLimit(providerState, MAX_PROVIDER_STATE_SIZE);
+  // P1 优化：限制 providerState 大小
+  if (providerState.size >= MAX_PROVIDER_STATE_SIZE) {
+    const oldestKey = providerState.keys().next().value;
+    if (oldestKey) {
+      providerState.delete(oldestKey);
+    }
+  }
   const prev = providerState.get(key) ?? { failCount: 0, nextRetryAtMs: 0 };
   const failCount = Math.min(20, prev.failCount + 1);
   const backoff = Math.min(PROVIDER_BACKOFF_MAX_MS, 1000 * 2 ** (failCount - 1));
@@ -246,7 +248,13 @@ async function fetchSpotUsdResilient(
     try {
       const v = await fetchSpotUsdWithCache(symbol, provider);
       recordProviderOk(key);
-      enforceCacheSizeLimit(lastGoodSpot, MAX_LAST_GOOD_SIZE);
+      // P1 优化：限制 lastGoodSpot 大小
+      if (lastGoodSpot.size >= MAX_LAST_GOOD_SIZE) {
+        const oldestKey = lastGoodSpot.keys().next().value;
+        if (oldestKey) {
+          lastGoodSpot.delete(oldestKey);
+        }
+      }
       lastGoodSpot.set(symbol, { price: v, atMs: Date.now() });
       return v;
     } catch (error: unknown) {
@@ -363,9 +371,8 @@ async function fetchDexTwapPriceUsdUncached(
     });
 
     const poolKey = `${pool.toLowerCase()}`;
-    const poolMetaHit = poolMetaCache.get(poolKey);
-    const cachedMeta =
-      poolMetaHit && Date.now() <= poolMetaHit.expiresAtMs ? poolMetaHit.value : null;
+    // P1 优化：使用 LRU 缓存的 get 方法
+    const cachedMeta = poolMetaCache.get(poolKey);
 
     const meta =
       cachedMeta ??
@@ -406,11 +413,8 @@ async function fetchDexTwapPriceUsdUncached(
           dec0: Number(dec0),
           dec1: Number(dec1),
         };
-        enforceCacheSizeLimit(poolMetaCache, MAX_CACHE_SIZE);
-        poolMetaCache.set(poolKey, {
-          value: m,
-          expiresAtMs: Date.now() + POOL_META_CACHE_TTL_MS,
-        });
+        // P1 优化：使用 LRU 缓存的 set 方法
+        poolMetaCache.set(poolKey, m, POOL_META_CACHE_TTL_MS);
         return m;
       })());
 
@@ -450,17 +454,17 @@ async function fetchDexTwapPriceUsdCached(
   const key = `dex:${pool.toLowerCase()}:${Math.floor(
     Number.isFinite(seconds) ? seconds : 1800,
   )}:${invert ? '1' : '0'}:${rpcUrl || ''}`;
+
+  // P1 优化：使用 LRU 缓存的 get 方法
   const hit = dexCache.get(key);
-  if (hit && Date.now() <= hit.expiresAtMs) return hit.value;
+  if (hit !== null) return hit;
+
   const existing = dexInflight.get(key);
   if (existing) return existing;
   const p = fetchDexTwapPriceUsdUncached(input)
     .then((v) => {
-      enforceCacheSizeLimit(dexCache, MAX_CACHE_SIZE);
-      dexCache.set(key, {
-        value: v,
-        expiresAtMs: Date.now() + DEX_TWAP_CACHE_TTL_MS,
-      });
+      // P1 优化：使用 LRU 缓存的 set 方法
+      dexCache.set(key, v, DEX_TWAP_CACHE_TTL_MS);
       return v;
     })
     .finally(() => {
@@ -605,7 +609,13 @@ export async function fetchCurrentPrice(
     });
     const nowMs = Date.now();
     if (dex !== null) {
-      enforceCacheSizeLimit(lastGoodDex, MAX_LAST_GOOD_SIZE);
+      // P1 优化：限制 lastGoodDex 大小
+      if (lastGoodDex.size >= MAX_LAST_GOOD_SIZE) {
+        const oldestKey = lastGoodDex.keys().next().value;
+        if (oldestKey) {
+          lastGoodDex.delete(oldestKey);
+        }
+      }
       lastGoodDex.set(normalizedSymbol, { price: dex, atMs: nowMs });
     }
 
@@ -637,6 +647,36 @@ export async function fetchCurrentPrice(
     referencePrice: refPrice,
     oraclePrice: Number(oraclePrice.toFixed(2)),
   };
+}
+
+// P2 优化：批量价格获取接口
+export async function fetchCurrentPricesBatch(
+  symbols: string[],
+  opts?: { rpcUrl?: string | null },
+): Promise<Map<string, { referencePrice: number; oraclePrice: number }>> {
+  const results = await Promise.allSettled(
+    symbols.map(async (symbol) => ({
+      symbol,
+      price: await fetchCurrentPrice(symbol, opts),
+    })),
+  );
+
+  const priceMap = new Map<string, { referencePrice: number; oraclePrice: number }>();
+  symbols.forEach((symbol, idx) => {
+    const result = results[idx];
+    if (result && result.status === 'fulfilled') {
+      priceMap.set(
+        symbol,
+        (
+          result as PromiseFulfilledResult<{
+            symbol: string;
+            price: { referencePrice: number; oraclePrice: number };
+          }>
+        ).value.price,
+      );
+    }
+  });
+  return priceMap;
 }
 
 export function calculateHealthScore(points: PricePoint[]): number {

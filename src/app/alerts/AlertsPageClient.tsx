@@ -10,6 +10,9 @@ import { RefreshCw, ShieldAlert } from 'lucide-react';
 import { PageHeader } from '@/components/common/PageHeader';
 import { AlertRulesManager } from '@/components/features/alert/AlertRulesManager';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { ErrorBanner } from '@/components/ui/error-banner';
+import { RefreshIndicator } from '@/components/ui/refresh-indicator';
+import { getRefreshStrategy } from '@/config/refresh-strategy';
 import {
   useOracleIncidents,
   useOracleRisks,
@@ -613,23 +616,48 @@ export default function AlertsPageClient() {
   }, [locale, opsMetricsSeries]);
   const hasOpsSeries = opsSeriesChartData.length >= 2;
 
+  // 获取刷新策略配置
+  const alertsStrategy = getRefreshStrategy('alerts-list');
+
+  // 计算最后更新时间（基于 loading 状态变化）
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  useEffect(() => {
+    if (!loading) {
+      setLastUpdated(new Date());
+    }
+  }, [loading]);
+
   return (
     <div className="space-y-6 pb-16">
       <PageHeader title={t('alerts.title')} description={t('alerts.description')}>
-        <button
-          type="button"
-          onClick={refresh}
-          className="flex items-center gap-2 rounded-xl bg-white/60 px-4 py-2 text-sm font-semibold text-purple-800 shadow-sm ring-1 ring-purple-100 hover:bg-white"
-        >
-          <RefreshCw size={16} />
-          {t('alerts.refresh')}
-        </button>
+        <div className="flex items-center gap-3">
+          {/* 刷新状态指示器 */}
+          <RefreshIndicator
+            lastUpdated={lastUpdated}
+            isRefreshing={loading}
+            strategy={alertsStrategy}
+            onRefresh={refresh}
+          />
+          <button
+            type="button"
+            onClick={refresh}
+            disabled={loading}
+            className="flex items-center gap-2 rounded-xl bg-white/60 px-4 py-2 text-sm font-semibold text-purple-800 shadow-sm ring-1 ring-purple-100 hover:bg-white disabled:opacity-50"
+          >
+            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+            {t('alerts.refresh')}
+          </button>
+        </div>
       </PageHeader>
 
+      {/* 错误提示 - 使用统一的 ErrorBanner */}
       {error && (
-        <div className="rounded-2xl border border-rose-100 bg-rose-50/50 p-4 text-sm text-rose-700 shadow-sm">
-          {getUiErrorMessage(error, t)}
-        </div>
+        <ErrorBanner
+          error={new Error(getUiErrorMessage(error, t))}
+          onRetry={refresh}
+          title={t('alerts.title')}
+          isRetrying={loading}
+        />
       )}
 
       <div className="grid gap-4 lg:grid-cols-3">
