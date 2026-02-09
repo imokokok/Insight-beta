@@ -1,5 +1,25 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+// Mock env module using vi.hoisted
+const { mockEnv } = vi.hoisted(() => ({
+  mockEnv: {
+    INSIGHT_RPC_URL: undefined as string | undefined,
+    INSIGHT_CHAIN: undefined as string | undefined,
+    INSIGHT_ORACLE_ADDRESS: undefined as string | undefined,
+    POLYGON_AMOY_RPC_URL: undefined as string | undefined,
+    POLYGON_RPC_URL: undefined as string | undefined,
+    ARBITRUM_RPC_URL: undefined as string | undefined,
+    OPTIMISM_RPC_URL: undefined as string | undefined,
+    INSIGHT_VOTING_DEGRADATION: undefined as string | undefined,
+    INSIGHT_ENABLE_VOTING: undefined as string | undefined,
+    INSIGHT_DISABLE_VOTE_TRACKING: undefined as string | undefined,
+  },
+}));
+
+vi.mock('@/lib/config/env', () => ({
+  env: mockEnv,
+}));
+
 type OracleConfigLike = {
   rpcUrl: string;
   contractAddress: string | null;
@@ -21,46 +41,22 @@ vi.mock('./oracleConfig', () => ({
 
 import { getOracleEnv } from './oracleIndexer';
 
-type EnvSnapshot = Record<string, string | undefined>;
-
-function snapshotEnv(keys: string[]): EnvSnapshot {
-  const out: EnvSnapshot = {};
-  for (const k of keys) out[k] = process.env[k];
-  return out;
-}
-
-function restoreEnv(snapshot: EnvSnapshot) {
-  for (const [k, v] of Object.entries(snapshot)) {
-    if (v === undefined) delete process.env[k];
-    else process.env[k] = v;
-  }
-}
-
 describe('getOracleEnv RPC fallback', () => {
-  const keys = [
-    'INSIGHT_RPC_URL',
-    'INSIGHT_CHAIN',
-    'INSIGHT_ORACLE_ADDRESS',
-    'POLYGON_AMOY_RPC_URL',
-    'POLYGON_RPC_URL',
-    'ARBITRUM_RPC_URL',
-    'OPTIMISM_RPC_URL',
-  ];
-  let envBefore: EnvSnapshot;
-
   beforeEach(() => {
-    envBefore = snapshotEnv(keys);
-    for (const k of keys) delete process.env[k];
+    // Reset mock env
+    Object.keys(mockEnv).forEach((key) => {
+      (mockEnv as Record<string, string | undefined>)[key] = undefined;
+    });
     vi.clearAllMocks();
   });
 
   afterEach(() => {
-    restoreEnv(envBefore);
+    vi.unstubAllEnvs();
   });
 
   it('uses chain-specific RPC when INSIGHT_RPC_URL and config.rpcUrl are empty', async () => {
-    process.env.POLYGON_AMOY_RPC_URL = 'https://amoy.rpc.example';
-    process.env.INSIGHT_ORACLE_ADDRESS = '0x1111111111111111111111111111111111111111';
+    mockEnv.POLYGON_AMOY_RPC_URL = 'https://amoy.rpc.example';
+    mockEnv.INSIGHT_ORACLE_ADDRESS = '0x1111111111111111111111111111111111111111';
 
     readOracleConfig.mockResolvedValueOnce({
       rpcUrl: '',
@@ -78,9 +74,9 @@ describe('getOracleEnv RPC fallback', () => {
   });
 
   it('prefers INSIGHT_RPC_URL over chain-specific RPC', async () => {
-    process.env.INSIGHT_RPC_URL = 'https://override.rpc.example';
-    process.env.POLYGON_AMOY_RPC_URL = 'https://amoy.rpc.example';
-    process.env.INSIGHT_ORACLE_ADDRESS = '0x1111111111111111111111111111111111111111';
+    mockEnv.INSIGHT_RPC_URL = 'https://override.rpc.example';
+    mockEnv.POLYGON_AMOY_RPC_URL = 'https://amoy.rpc.example';
+    mockEnv.INSIGHT_ORACLE_ADDRESS = '0x1111111111111111111111111111111111111111';
 
     readOracleConfig.mockResolvedValueOnce({
       rpcUrl: '',
@@ -97,8 +93,8 @@ describe('getOracleEnv RPC fallback', () => {
   });
 
   it('prefers config.rpcUrl over chain-specific RPC', async () => {
-    process.env.POLYGON_AMOY_RPC_URL = 'https://amoy.rpc.example';
-    process.env.INSIGHT_ORACLE_ADDRESS = '0x1111111111111111111111111111111111111111';
+    mockEnv.POLYGON_AMOY_RPC_URL = 'https://amoy.rpc.example';
+    mockEnv.INSIGHT_ORACLE_ADDRESS = '0x1111111111111111111111111111111111111111';
 
     readOracleConfig.mockResolvedValueOnce({
       rpcUrl: 'https://config.rpc.example',
@@ -115,9 +111,9 @@ describe('getOracleEnv RPC fallback', () => {
   });
 
   it('uses INSIGHT_CHAIN to select chain-specific RPC when config.chain is empty', async () => {
-    process.env.INSIGHT_CHAIN = 'Arbitrum';
-    process.env.ARBITRUM_RPC_URL = 'https://arbitrum.rpc.example';
-    process.env.INSIGHT_ORACLE_ADDRESS = '0x1111111111111111111111111111111111111111';
+    mockEnv.INSIGHT_CHAIN = 'Arbitrum';
+    mockEnv.ARBITRUM_RPC_URL = 'https://arbitrum.rpc.example';
+    mockEnv.INSIGHT_ORACLE_ADDRESS = '0x1111111111111111111111111111111111111111';
 
     readOracleConfig.mockResolvedValueOnce({
       rpcUrl: '',

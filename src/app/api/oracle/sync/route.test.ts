@@ -5,6 +5,14 @@ import { revalidateTag } from 'next/cache';
 import { ensureOracleSynced, getOracleEnv, isTableEmpty, readOracleState } from '@/server/oracle';
 import { appendAuditLog } from '@/server/observability';
 
+// Mock env module to control cron secret
+vi.mock('@/lib/config/env', () => ({
+  env: {
+    INSIGHT_CRON_SECRET: '',
+    CRON_SECRET: '',
+  },
+}));
+
 vi.mock('@/server/oracle', () => ({
   ensureOracleSynced: vi.fn(async () => ({ updated: true })),
   getOracleEnv: vi.fn(async () => ({
@@ -42,9 +50,15 @@ vi.mock('next/cache', () => ({
   revalidateTag: vi.fn(() => {}),
 }));
 
+// Import mocked env after vi.mock
+import { env } from '@/lib/config/env';
+
 describe('GET /api/oracle/sync', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Reset env to empty by default
+    (env as { INSIGHT_CRON_SECRET: string; CRON_SECRET: string }).INSIGHT_CRON_SECRET = '';
+    (env as { INSIGHT_CRON_SECRET: string; CRON_SECRET: string }).CRON_SECRET = '';
   });
 
   afterEach(() => {
@@ -82,6 +96,9 @@ describe('GET /api/oracle/sync', () => {
 describe('POST /api/oracle/sync', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Reset env to empty by default (no cron auth)
+    (env as { INSIGHT_CRON_SECRET: string; CRON_SECRET: string }).INSIGHT_CRON_SECRET = '';
+    (env as { INSIGHT_CRON_SECRET: string; CRON_SECRET: string }).CRON_SECRET = '';
   });
 
   afterEach(() => {
@@ -139,7 +156,10 @@ describe('POST /api/oracle/sync', () => {
   });
 
   it('triggers sync with cron secret and skips admin auth', async () => {
-    vi.stubEnv('INSIGHT_CRON_SECRET', 'test-cron-secret-123456');
+    // Set cron secret in env to enable cron auth
+    (env as { INSIGHT_CRON_SECRET: string; CRON_SECRET: string }).INSIGHT_CRON_SECRET =
+      'test-cron-secret-123456';
+
     const request = new Request('http://localhost:3000/api/oracle/sync', {
       method: 'POST',
       headers: { 'x-oracle-monitor-cron-secret': 'test-cron-secret-123456' },
@@ -154,7 +174,10 @@ describe('POST /api/oracle/sync', () => {
   });
 
   it('triggers sync with Authorization Bearer cron secret and skips admin auth', async () => {
-    vi.stubEnv('CRON_SECRET', 'test-cron-secret-123456');
+    // Set cron secret in env to enable cron auth
+    (env as { INSIGHT_CRON_SECRET: string; CRON_SECRET: string }).CRON_SECRET =
+      'test-cron-secret-123456';
+
     const request = new Request('http://localhost:3000/api/oracle/sync', {
       method: 'POST',
       headers: { Authorization: 'Bearer test-cron-secret-123456' },

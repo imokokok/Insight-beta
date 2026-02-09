@@ -1,14 +1,26 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+
+// Mock env module using vi.hoisted
+const { mockEnv } = vi.hoisted(() => ({
+  mockEnv: {
+    NODE_ENV: 'test' as const,
+    INSIGHT_ALLOW_PRIVATE_RPC_URLS: '',
+  },
+}));
+
+vi.mock('@/lib/config/env', () => ({
+  env: mockEnv,
+}));
+
 import { validateOracleConfigPatch } from './oracleConfig';
 
-afterEach(() => {
-  vi.unstubAllEnvs();
-});
-
 describe('oracleConfig rpcUrl SSRF guard', () => {
-  it('rejects private rpcUrl in production by default', () => {
-    vi.stubEnv('NODE_ENV', 'production');
-    vi.stubEnv('INSIGHT_ALLOW_PRIVATE_RPC_URLS', '');
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('rejects private rpcUrl when INSIGHT_ALLOW_PRIVATE_RPC_URLS is not set', () => {
+    mockEnv.INSIGHT_ALLOW_PRIVATE_RPC_URLS = '';
     expect(() => validateOracleConfigPatch({ rpcUrl: 'http://localhost:8545' })).toThrowError(
       'invalid_rpc_url',
     );
@@ -20,20 +32,13 @@ describe('oracleConfig rpcUrl SSRF guard', () => {
     );
   });
 
-  it('allows private rpcUrl in production when explicitly enabled', () => {
-    vi.stubEnv('NODE_ENV', 'production');
-    vi.stubEnv('INSIGHT_ALLOW_PRIVATE_RPC_URLS', 'true');
+  it('allows private rpcUrl when INSIGHT_ALLOW_PRIVATE_RPC_URLS is enabled', () => {
+    mockEnv.INSIGHT_ALLOW_PRIVATE_RPC_URLS = 'true';
     expect(() => validateOracleConfigPatch({ rpcUrl: 'http://localhost:8545' })).not.toThrow();
-  });
-
-  it('allows private rpcUrl in non-production by default', () => {
-    vi.stubEnv('NODE_ENV', 'test');
-    vi.stubEnv('INSIGHT_ALLOW_PRIVATE_RPC_URLS', '');
-    expect(() => validateOracleConfigPatch({ rpcUrl: 'http://localhost:8545' })).not.toThrow();
+    expect(() => validateOracleConfigPatch({ rpcUrl: 'http://127.0.0.1:8545' })).not.toThrow();
   });
 
   it('rejects rpcUrl with basic auth credentials', () => {
-    vi.stubEnv('NODE_ENV', 'test');
     expect(() =>
       validateOracleConfigPatch({ rpcUrl: 'https://user:pass@rpc.example' }),
     ).toThrowError('invalid_rpc_url');

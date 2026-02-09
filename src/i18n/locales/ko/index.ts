@@ -1,4 +1,5 @@
 import { alerts } from './alerts';
+import { analytics } from './analytics';
 import { app } from './app';
 import { audit } from './audit';
 import { chain } from './chain';
@@ -12,6 +13,7 @@ import { home } from './home';
 import { nav } from './nav';
 import onboarding from './onboarding';
 import { oracle } from './oracle';
+import { protocol } from './protocol';
 import { security } from './security';
 import { sla } from './sla';
 import { status } from './status';
@@ -19,6 +21,7 @@ import { wallet } from './wallet';
 
 export const koTranslations = {
   alerts,
+  analytics,
   app,
   audit,
   chain,
@@ -32,6 +35,7 @@ export const koTranslations = {
   nav,
   onboarding,
   oracle,
+  protocol,
   security,
   sla,
   status,

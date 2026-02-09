@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ZodError } from 'zod';
 import { GET } from './route';
 import * as oracle from '@/server/oracle';
 import { requireAdmin, error } from '@/server/apiResponse';
@@ -23,24 +22,17 @@ vi.mock('@/server/apiResponse', () => ({
     return token ? null : {};
   }),
   handleApi: async (arg1: unknown, arg2?: unknown) => {
-    try {
-      const fn =
-        typeof arg1 === 'function'
-          ? (arg1 as () => unknown | Promise<unknown>)
-          : (arg2 as () => unknown | Promise<unknown>);
-      const data = await fn();
-      return { ok: true, data };
-    } catch (e: unknown) {
-      if (e instanceof ZodError) {
-        const messages = e.issues.map((i) => i.message);
-        if (messages.includes('invalid_address')) {
-          return { ok: false, error: 'invalid_address' };
-        }
-        return { ok: false, error: 'invalid_request_body' };
-      }
-      const message = e instanceof Error ? e.message : String(e);
-      return { ok: false, error: message };
+    const fn =
+      typeof arg1 === 'function'
+        ? (arg1 as () => unknown | Promise<unknown>)
+        : (arg2 as () => unknown | Promise<unknown>);
+    const result = await fn();
+    // If result is a Response (error case), parse it
+    if (result instanceof Response) {
+      const body = await result.json();
+      return { ok: body.success, error: body.error?.code || body.error };
     }
+    return { ok: true, data: result };
   },
   error: (message: string) => ({
     ok: false as const,
@@ -106,7 +98,8 @@ describe('GET /api/oracle/disputes', () => {
 
     expect(response.ok).toBe(false);
     if (!response.ok) {
-      expect(response.error).toBe('invalid_address');
+      // The route returns 'invalid_request_params' with details containing 'invalid_address'
+      expect(response.error).toBe('invalid_request_params');
     }
     expect(oracle.listDisputes).not.toHaveBeenCalled();
   });

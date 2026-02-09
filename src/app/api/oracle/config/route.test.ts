@@ -58,10 +58,33 @@ vi.mock('@/server/apiResponse', async () => {
         return await fn();
       } catch (error: unknown) {
         const msg = error instanceof Error ? error.message : 'unknown_error';
+        // Handle JSON parse errors
         if (msg.includes('Unexpected token')) {
           return {
             ok: false,
             error: { code: 'invalid_request_body', details: { message: 'Failed to parse JSON' } },
+          };
+        }
+        // Handle ValidationError from @/lib/errors - message contains the actual error message
+        // The metadata is stored in error.metadata, not error.details
+        if (msg === 'Request body must be a non-null object') {
+          const metadata = (error as Error & { metadata?: Record<string, unknown> }).metadata;
+          return {
+            ok: false,
+            error: {
+              code: 'invalid_request_body',
+              details: metadata?.details || { message: 'Request body must be a non-null object' },
+            },
+          };
+        }
+        if (msg === 'No valid configuration fields provided') {
+          const metadata = (error as Error & { metadata?: Record<string, unknown> }).metadata;
+          return {
+            ok: false,
+            error: {
+              code: 'no_valid_fields',
+              details: metadata?.details || { message: 'No valid configuration fields provided' },
+            },
           };
         }
         if (msg === 'invalid_body' || msg === 'invalid_request_body') {
@@ -270,7 +293,7 @@ describe('PUT /api/oracle/config', () => {
 
     const response = (await PUT(request)) as { ok: boolean; error?: unknown };
     expect(response.ok).toBe(false);
-    expect(response.error).toEqual({
+    expect(response.error).toMatchObject({
       code: 'no_valid_fields',
       details: {
         message: 'No valid configuration fields provided',

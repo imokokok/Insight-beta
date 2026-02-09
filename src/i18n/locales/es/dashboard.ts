@@ -1,58 +1,70 @@
 export const dashboard = {
-  title: 'Panel Unificado de Oráculos',
-  description: 'Monitoreo y comparación de precios multi-protocolo en tiempo real',
-  stats: {
+  // Layout
+  layout: {
+    title: 'Panel de Control',
+    subtitle: 'Monitoreo y análisis en tiempo real de datos de oráculos',
+  },
+
+  // Heatmap
+  heatmap: {
+    title: 'Mapa de Calor de Desviación de Precios',
+    hot: 'Caliente',
+    cold: 'Frío',
+    avg: 'Desv. Promedio',
+    legend: 'Desviación',
+    stable: 'Estable',
+    slight: 'Leve',
+    moderate: 'Moderada',
+    high: 'Alta',
+    extreme: 'Extrema',
+    price: 'Precio',
+    deviation: 'Desviación',
+  },
+
+  // Chart
+  chart: {
+    spread: 'Spread',
+    average: 'Promedio',
+  },
+
+  // Gauge
+  gauge: {
+    title: 'Indicador de Desviación',
+    normal: 'Normal',
+    normalDesc: 'El precio fluctúa dentro del rango normal',
+    elevated: 'Elevado',
+    elevatedDesc: 'La desviación de precios es ligeramente alta, se necesita atención',
+    critical: 'Crítico',
+    criticalDesc: 'Desviación severa de precios, se recomienda inspección inmediata',
+    threshold: 'Umbral',
+  },
+
+  // Network Topology
+  topology: {
+    title: 'Topología de Red',
+    online: 'En línea',
+    degraded: 'Degradado',
+    offline: 'Fuera de línea',
+    dataSources: 'Fuentes de Datos',
+    aggregators: 'Agregadores',
+    oracles: 'Oráculos',
+    latency: 'Latencia',
+  },
+
+  // Quick Actions
+  actions: {
+    title: 'Acciones Rápidas',
+    refresh: 'Actualizar',
+    export: 'Exportar',
+    filter: 'Filtrar',
+    settings: 'Configuración',
+  },
+
+  // KPI
+  kpi: {
+    tvl: 'Valor Total Bloqueado',
     activeProtocols: 'Protocolos Activos',
-    totalFeeds: 'Total de Feeds',
-    activeAlerts: 'Alertas Activas',
-    avgDeviation: 'Desviación Promedio',
+    dailyUpdates: 'Actualizaciones Diarias',
+    activeUsers: 'Usuarios Activos',
   },
-  tabs: {
-    comparison: 'Comparación de Precios',
-    status: 'Estado del Protocolo',
-    history: 'Historial de Precios',
-    alerts: 'Alertas',
-  },
-  tradingPair: 'Par de Trading',
-  chain: 'Cadena',
-  allChains: 'Todas las Cadenas',
-  protocolPrices: 'Precios del Protocolo',
-  aggregatedPrice: 'Precio Agregado',
-  recommendedPrice: 'Precio Recomendado',
-  average: 'Promedio',
-  median: 'Mediana',
-  min: 'Mín',
-  max: 'Máx',
-  priceDeviationDetected: 'Desviación de Precio Detectada',
-  noProtocolsFound: 'No se encontraron protocolos',
-  tryAdjustingFilter: 'Intenta ajustar tu filtro de protocolo.',
-  clearFilter: 'Limpiar filtro',
-  priceHistory24h: 'Historial de Precios 24h',
-  noActiveAlerts: 'No hay alertas activas',
-  invalidProtocol: 'Protocolo Inválido',
-  currentPrice: 'Precio Actual',
-  updates24h: 'Actualizaciones 24h',
-  activeFeeds: 'Feeds Activos',
-  protocolInfo: 'Información del Protocolo',
-  website: 'Sitio Web',
-  supportedChains: 'Cadenas Soportadas',
-  features: 'Características',
-  assertionsComingSoon: 'Vista de aserciones próximamente',
-  disputesComingSoon: 'Vista de disputas próximamente',
-  configure: 'Configurar',
-  viewDetails: 'Ver Detalles',
-  updates: 'Actualizaciones (24h)',
-  status: 'Estado',
-  uptime: 'Tiempo de Actividad',
-  live: 'En Vivo',
-  stale: 'Obsoleto',
-  breadcrumb: 'Miga de Pan',
-  home: 'Inicio',
-  oracle: 'Oráculo',
-  protocols: 'Protocolos',
-  tryAdjustingSearch: 'Intenta ajustar tus términos de búsqueda o filtros.',
-  clearSearch: 'Limpiar búsqueda',
-  refresh: 'Actualizar',
-  errorLoadingData: 'Error al cargar datos',
-  tryAgain: 'Intentar de nuevo',
 };

@@ -30,6 +30,13 @@ vi.mock('lucide-react', async (importOriginal) => {
     Megaphone: () => null,
   };
 });
+vi.mock('@/i18n', () => ({
+  useI18n: () => ({
+    t: (key: string) => key,
+    lang: 'en',
+  }),
+  LanguageProviderLazy: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
 vi.mock('@/i18n/LanguageProvider', () => mockI18n());
 vi.mock('@/i18n/translations', () => mockTranslations());
 vi.mock('@/components/PageHeader', () => mockPageHeader());

@@ -1,58 +1,70 @@
 export const dashboard = {
-  title: '통합 오라클 대시보드',
-  description: '실시간 다중 프로토콜 가격 모니터링 및 비교',
-  stats: {
+  // Layout
+  layout: {
+    title: '대시보드',
+    subtitle: '오라클 데이터 실시간 모니터링 및 분석',
+  },
+
+  // Heatmap
+  heatmap: {
+    title: '가격 편차 히트맵',
+    hot: '뜨거움',
+    cold: '차가움',
+    avg: '평균 편차',
+    legend: '편차',
+    stable: '안정',
+    slight: '미미',
+    moderate: '보통',
+    high: '높음',
+    extreme: '극도',
+    price: '가격',
+    deviation: '편차',
+  },
+
+  // Chart
+  chart: {
+    spread: '스프레드',
+    average: '평균',
+  },
+
+  // Gauge
+  gauge: {
+    title: '편차 게이지',
+    normal: '정상',
+    normalDesc: '가격이 정상 범위 내에서 변동 중',
+    elevated: '상승',
+    elevatedDesc: '가격 편차가 약간 높음, 주의 필요',
+    critical: '심각',
+    criticalDesc: '심각한 가격 편차, 즉시 검사 권장',
+    threshold: '임계값',
+  },
+
+  // Network Topology
+  topology: {
+    title: '네트워크 토폴로지',
+    online: '온라인',
+    degraded: '저하됨',
+    offline: '오프라인',
+    dataSources: '데이터 소스',
+    aggregators: '집계기',
+    oracles: '오라클',
+    latency: '지연 시간',
+  },
+
+  // Quick Actions
+  actions: {
+    title: '빠른 작업',
+    refresh: '새로고침',
+    export: '낳�',
+    filter: '필터',
+    settings: '설정',
+  },
+
+  // KPI
+  kpi: {
+    tvl: '총 예치 금액',
     activeProtocols: '활성 프로토콜',
-    totalFeeds: '총 피드 수',
-    activeAlerts: '활성 알림',
-    avgDeviation: '평균 편차',
+    dailyUpdates: '일일 업데이트',
+    activeUsers: '활성 사용자',
   },
-  tabs: {
-    comparison: '가격 비교',
-    status: '프로토콜 상태',
-    history: '가격 이력',
-    alerts: '알림',
-  },
-  tradingPair: '거래 쌍',
-  chain: '체인',
-  allChains: '모든 체인',
-  protocolPrices: '프로토콜 가격',
-  aggregatedPrice: '집계 가격',
-  recommendedPrice: '권장 가격',
-  average: '평균',
-  median: '중앙값',
-  min: '최소',
-  max: '최대',
-  priceDeviationDetected: '가격 편차 감지됨',
-  noProtocolsFound: '프로토콜을 찾을 수 없음',
-  tryAdjustingFilter: '프로토콜 필터를 조정해 보세요.',
-  clearFilter: '필터 지우기',
-  priceHistory24h: '24시간 가격 이력',
-  noActiveAlerts: '활성 알림 없음',
-  invalidProtocol: '잘못된 프로토콜',
-  currentPrice: '현재 가격',
-  updates24h: '24시간 업데이트',
-  activeFeeds: '활성 피드',
-  protocolInfo: '프로토콜 정보',
-  website: '웹사이트',
-  supportedChains: '지원 체인',
-  features: '기능',
-  assertionsComingSoon: '어설션 보기 곧 출시',
-  disputesComingSoon: '분쟁 보기 곧 출시',
-  configure: '구성',
-  viewDetails: '상세 보기',
-  updates: '업데이트 (24h)',
-  status: '상태',
-  uptime: '가동 시간',
-  live: '실시간',
-  stale: '오래됨',
-  breadcrumb: '브레드크럼',
-  home: '홈',
-  oracle: '오라클',
-  protocols: '프로토콜',
-  tryAdjustingSearch: '검색어나 필터를 조정해 보세요.',
-  clearSearch: '검색 지우기',
-  refresh: '새로고침',
-  errorLoadingData: '데이터 로드 오류',
-  tryAgain: '다시 시도',
 };

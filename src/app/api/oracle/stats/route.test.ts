@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { GET } from './route';
 import { rateLimit, cachedJson, requireAdmin } from '@/server/apiResponse';
 import { ensureOracleSynced, getOracleStats } from '@/server/oracle';
+import { isCronAuthorized } from '@/server/cronAuth';
 
 vi.mock('@/server/oracle', () => ({
   ensureOracleSynced: vi.fn(async () => {}),
@@ -19,9 +20,16 @@ vi.mock('@/server/apiResponse', () => ({
   handleApi: async (_request: Request, fn: () => unknown | Promise<unknown>) => await fn(),
 }));
 
+// Mock cronAuth module
+vi.mock('@/server/cronAuth', () => ({
+  isCronAuthorized: vi.fn(() => false),
+}));
+
 describe('GET /api/oracle/stats', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Reset isCronAuthorized to return false by default
+    (isCronAuthorized as ReturnType<typeof vi.fn>).mockReturnValue(false);
   });
 
   afterEach(() => {
@@ -71,7 +79,9 @@ describe('GET /api/oracle/stats', () => {
   });
 
   it('syncs with cron secret and skips admin auth', async () => {
-    vi.stubEnv('INSIGHT_CRON_SECRET', 'test-cron-secret-123456');
+    // Mock isCronAuthorized to return true for this test
+    (isCronAuthorized as ReturnType<typeof vi.fn>).mockReturnValue(true);
+
     const request = new Request('http://localhost:3000/api/oracle/stats?sync=1', {
       headers: { 'x-oracle-monitor-cron-secret': 'test-cron-secret-123456' },
     });
@@ -79,6 +89,7 @@ describe('GET /api/oracle/stats', () => {
       totalAssertions: number;
     };
 
+    expect(isCronAuthorized).toHaveBeenCalledWith(request);
     expect(requireAdmin).not.toHaveBeenCalled();
     expect(ensureOracleSynced).toHaveBeenCalled();
     expect(cachedJson).not.toHaveBeenCalled();
@@ -86,7 +97,9 @@ describe('GET /api/oracle/stats', () => {
   });
 
   it('syncs with Authorization Bearer cron secret and skips admin auth', async () => {
-    vi.stubEnv('CRON_SECRET', 'test-cron-secret-123456');
+    // Mock isCronAuthorized to return true for this test
+    (isCronAuthorized as ReturnType<typeof vi.fn>).mockReturnValue(true);
+
     const request = new Request('http://localhost:3000/api/oracle/stats?sync=1', {
       headers: { Authorization: 'Bearer test-cron-secret-123456' },
     });
@@ -94,6 +107,7 @@ describe('GET /api/oracle/stats', () => {
       totalAssertions: number;
     };
 
+    expect(isCronAuthorized).toHaveBeenCalledWith(request);
     expect(requireAdmin).not.toHaveBeenCalled();
     expect(ensureOracleSynced).toHaveBeenCalled();
     expect(response.totalAssertions).toBe(1);

@@ -2,40 +2,53 @@
  * Oracle Indexer RPC Client 单元测试
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+
+// Mock env module before importing rpcClient
+vi.mock('@/lib/config/env', () => ({
+  env: {
+    INSIGHT_RPC_TIMEOUT_MS: '',
+    INSIGHT_DEPENDENCY_TIMEOUT_MS: '',
+  },
+}));
+
+import { env } from '@/lib/config/env';
 import { getRpcTimeoutMs, cleanupClientCache, redactRpcUrl, pickNextRpcUrl } from './rpcClient';
 
 describe('oracleIndexer/rpcClient', () => {
-  const originalEnv = process.env;
-
   beforeEach(() => {
-    process.env = { ...originalEnv };
+    vi.clearAllMocks();
     cleanupClientCache();
+    // Reset mock env
+    (env as { INSIGHT_RPC_TIMEOUT_MS: string | number }).INSIGHT_RPC_TIMEOUT_MS = '';
+    (env as { INSIGHT_DEPENDENCY_TIMEOUT_MS: string | number }).INSIGHT_DEPENDENCY_TIMEOUT_MS = '';
   });
 
   afterEach(() => {
-    process.env = originalEnv;
+    vi.unstubAllEnvs();
   });
 
   describe('getRpcTimeoutMs', () => {
     it('should return default timeout when no env var set', () => {
-      delete process.env.INSIGHT_RPC_TIMEOUT_MS;
-      delete process.env.INSIGHT_DEPENDENCY_TIMEOUT_MS;
+      (env as { INSIGHT_RPC_TIMEOUT_MS: string | number }).INSIGHT_RPC_TIMEOUT_MS = '';
+      (env as { INSIGHT_DEPENDENCY_TIMEOUT_MS: string | number }).INSIGHT_DEPENDENCY_TIMEOUT_MS =
+        '';
       expect(getRpcTimeoutMs()).toBe(30000);
     });
 
     it('should return INSIGHT_RPC_TIMEOUT_MS when set', () => {
-      process.env.INSIGHT_RPC_TIMEOUT_MS = '60000';
+      (env as { INSIGHT_RPC_TIMEOUT_MS: string | number }).INSIGHT_RPC_TIMEOUT_MS = '60000';
       expect(getRpcTimeoutMs()).toBe(60000);
     });
 
     it('should return INSIGHT_DEPENDENCY_TIMEOUT_MS as fallback', () => {
-      process.env.INSIGHT_DEPENDENCY_TIMEOUT_MS = '45000';
+      (env as { INSIGHT_DEPENDENCY_TIMEOUT_MS: string | number }).INSIGHT_DEPENDENCY_TIMEOUT_MS =
+        '45000';
       expect(getRpcTimeoutMs()).toBe(45000);
     });
 
     it('should handle invalid values gracefully', () => {
-      process.env.INSIGHT_RPC_TIMEOUT_MS = 'invalid';
+      (env as { INSIGHT_RPC_TIMEOUT_MS: string | number }).INSIGHT_RPC_TIMEOUT_MS = 'invalid';
       expect(getRpcTimeoutMs()).toBe(30000);
     });
   });

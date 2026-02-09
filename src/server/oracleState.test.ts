@@ -1,5 +1,21 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import crypto from 'node:crypto';
+
+// Mock env module using vi.hoisted
+const { mockEnv } = vi.hoisted(() => ({
+  mockEnv: {
+    INSIGHT_MEMORY_MAX_VOTE_KEYS: undefined as string | undefined,
+    INSIGHT_MEMORY_VOTE_BLOCK_WINDOW: undefined as string | undefined,
+    INSIGHT_MEMORY_MAX_ASSERTIONS: undefined as string | undefined,
+    INSIGHT_MEMORY_MAX_DISPUTES: undefined as string | undefined,
+    INSIGHT_DEMO_MODE: undefined as string | undefined,
+  },
+}));
+
+vi.mock('@/lib/config/env', () => ({
+  env: mockEnv,
+}));
+
 import {
   upsertAssertion,
   fetchAssertion,
@@ -33,6 +49,10 @@ describe('oracleState', () => {
     (globalThis as unknown as { __oracleMonitorMemoryStore?: unknown }).__oracleMonitorMemoryStore =
       undefined;
     vi.mocked(hasDatabase).mockReturnValue(true);
+    // Reset mock env
+    Object.keys(mockEnv).forEach((key) => {
+      (mockEnv as Record<string, string | undefined>)[key] = undefined;
+    });
   });
 
   describe('upsertAssertion', () => {
@@ -245,177 +265,155 @@ describe('oracleState', () => {
     });
 
     it('prunes votes by block window and keeps sums consistent', async () => {
-      const prevMax = process.env.INSIGHT_MEMORY_MAX_VOTE_KEYS;
-      const prevWindow = process.env.INSIGHT_MEMORY_VOTE_BLOCK_WINDOW;
-      process.env.INSIGHT_MEMORY_MAX_VOTE_KEYS = '1';
-      process.env.INSIGHT_MEMORY_VOTE_BLOCK_WINDOW = '0';
-      try {
-        const dispute: Dispute = {
-          id: 'D:0xaaa',
-          chain: 'Local',
-          assertionId: '0xaaa',
-          market: 'ETH/USD',
-          disputeReason: 'test',
-          disputer: '0xabc',
-          disputedAt: new Date().toISOString(),
-          votingEndsAt: new Date().toISOString(),
-          status: 'Voting',
-          currentVotesFor: 0,
-          currentVotesAgainst: 0,
-          totalVotes: 0,
-        };
-        await upsertDispute(dispute);
+      mockEnv.INSIGHT_MEMORY_MAX_VOTE_KEYS = '1';
+      mockEnv.INSIGHT_MEMORY_VOTE_BLOCK_WINDOW = '0';
 
-        await insertVoteEvent({
-          chain: 'Local',
-          assertionId: '0xaaa',
-          voter: '0x1',
-          support: true,
-          weight: 10n,
-          txHash: '0xhash',
-          blockNumber: 1n,
-          logIndex: 1,
-        });
-        await insertVoteEvent({
-          chain: 'Local',
-          assertionId: '0xaaa',
-          voter: '0x2',
-          support: true,
-          weight: 20n,
-          txHash: '0xhash',
-          blockNumber: 2n,
-          logIndex: 2,
-        });
-        await insertVoteEvent({
-          chain: 'Local',
-          assertionId: '0xaaa',
-          voter: '0x3',
-          support: true,
-          weight: 30n,
-          txHash: '0xhash',
-          blockNumber: 3n,
-          logIndex: 3,
-        });
+      const dispute: Dispute = {
+        id: 'D:0xaaa',
+        chain: 'Local',
+        assertionId: '0xaaa',
+        market: 'ETH/USD',
+        disputeReason: 'test',
+        disputer: '0xabc',
+        disputedAt: new Date().toISOString(),
+        votingEndsAt: new Date().toISOString(),
+        status: 'Voting',
+        currentVotesFor: 0,
+        currentVotesAgainst: 0,
+        totalVotes: 0,
+      };
+      await upsertDispute(dispute);
 
-        const mem = getMemoryInstance('default');
-        expect(mem.votes.size).toBe(1);
-        const updated = await fetchDispute('D:0xaaa');
-        expect(updated?.totalVotes).toBe(30);
-        expect(updated?.currentVotesFor).toBe(30);
-        expect(updated?.currentVotesAgainst).toBe(0);
-      } finally {
-        if (prevMax === undefined) delete process.env.INSIGHT_MEMORY_MAX_VOTE_KEYS;
-        else process.env.INSIGHT_MEMORY_MAX_VOTE_KEYS = prevMax;
-        if (prevWindow === undefined) delete process.env.INSIGHT_MEMORY_VOTE_BLOCK_WINDOW;
-        else process.env.INSIGHT_MEMORY_VOTE_BLOCK_WINDOW = prevWindow;
-      }
+      await insertVoteEvent({
+        chain: 'Local',
+        assertionId: '0xaaa',
+        voter: '0x1',
+        support: true,
+        weight: 10n,
+        txHash: '0xhash',
+        blockNumber: 1n,
+        logIndex: 1,
+      });
+      await insertVoteEvent({
+        chain: 'Local',
+        assertionId: '0xaaa',
+        voter: '0x2',
+        support: true,
+        weight: 20n,
+        txHash: '0xhash',
+        blockNumber: 2n,
+        logIndex: 2,
+      });
+      await insertVoteEvent({
+        chain: 'Local',
+        assertionId: '0xaaa',
+        voter: '0x3',
+        support: true,
+        weight: 30n,
+        txHash: '0xhash',
+        blockNumber: 3n,
+        logIndex: 3,
+      });
+
+      const mem = getMemoryInstance('default');
+      expect(mem.votes.size).toBe(1);
+      const updated = await fetchDispute('D:0xaaa');
+      expect(updated?.totalVotes).toBe(30);
+      expect(updated?.currentVotesFor).toBe(30);
+      expect(updated?.currentVotesAgainst).toBe(0);
     });
 
     it('prunes votes by FIFO and keeps sums consistent', async () => {
-      const prevMax = process.env.INSIGHT_MEMORY_MAX_VOTE_KEYS;
-      const prevWindow = process.env.INSIGHT_MEMORY_VOTE_BLOCK_WINDOW;
-      process.env.INSIGHT_MEMORY_MAX_VOTE_KEYS = '2';
-      process.env.INSIGHT_MEMORY_VOTE_BLOCK_WINDOW = '1000';
-      try {
-        const dispute: Dispute = {
-          id: 'D:0xbbb',
-          chain: 'Local',
-          assertionId: '0xbbb',
-          market: 'ETH/USD',
-          disputeReason: 'test',
-          disputer: '0xabc',
-          disputedAt: new Date().toISOString(),
-          votingEndsAt: new Date().toISOString(),
-          status: 'Voting',
-          currentVotesFor: 0,
-          currentVotesAgainst: 0,
-          totalVotes: 0,
-        };
-        await upsertDispute(dispute);
+      mockEnv.INSIGHT_MEMORY_MAX_VOTE_KEYS = '2';
+      mockEnv.INSIGHT_MEMORY_VOTE_BLOCK_WINDOW = '1000';
 
-        await insertVoteEvent({
-          chain: 'Local',
-          assertionId: '0xbbb',
-          voter: '0x1',
-          support: true,
-          weight: 10n,
-          txHash: '0xhash2',
-          blockNumber: 10n,
-          logIndex: 1,
-        });
-        await insertVoteEvent({
-          chain: 'Local',
-          assertionId: '0xbbb',
-          voter: '0x2',
-          support: true,
-          weight: 20n,
-          txHash: '0xhash2',
-          blockNumber: 11n,
-          logIndex: 2,
-        });
-        await insertVoteEvent({
-          chain: 'Local',
-          assertionId: '0xbbb',
-          voter: '0x3',
-          support: true,
-          weight: 30n,
-          txHash: '0xhash2',
-          blockNumber: 12n,
-          logIndex: 3,
-        });
+      const dispute: Dispute = {
+        id: 'D:0xbbb',
+        chain: 'Local',
+        assertionId: '0xbbb',
+        market: 'ETH/USD',
+        disputeReason: 'test',
+        disputer: '0xabc',
+        disputedAt: new Date().toISOString(),
+        votingEndsAt: new Date().toISOString(),
+        status: 'Voting',
+        currentVotesFor: 0,
+        currentVotesAgainst: 0,
+        totalVotes: 0,
+      };
+      await upsertDispute(dispute);
 
-        const mem = getMemoryInstance('default');
-        expect(mem.votes.size).toBe(2);
-        const updated = await fetchDispute('D:0xbbb');
-        expect(updated?.totalVotes).toBe(50);
-        expect(updated?.currentVotesFor).toBe(50);
-        expect(updated?.currentVotesAgainst).toBe(0);
-      } finally {
-        if (prevMax === undefined) delete process.env.INSIGHT_MEMORY_MAX_VOTE_KEYS;
-        else process.env.INSIGHT_MEMORY_MAX_VOTE_KEYS = prevMax;
-        if (prevWindow === undefined) delete process.env.INSIGHT_MEMORY_VOTE_BLOCK_WINDOW;
-        else process.env.INSIGHT_MEMORY_VOTE_BLOCK_WINDOW = prevWindow;
-      }
+      await insertVoteEvent({
+        chain: 'Local',
+        assertionId: '0xbbb',
+        voter: '0x1',
+        support: true,
+        weight: 10n,
+        txHash: '0xhash2',
+        blockNumber: 10n,
+        logIndex: 1,
+      });
+      await insertVoteEvent({
+        chain: 'Local',
+        assertionId: '0xbbb',
+        voter: '0x2',
+        support: true,
+        weight: 20n,
+        txHash: '0xhash2',
+        blockNumber: 11n,
+        logIndex: 2,
+      });
+      await insertVoteEvent({
+        chain: 'Local',
+        assertionId: '0xbbb',
+        voter: '0x3',
+        support: true,
+        weight: 30n,
+        txHash: '0xhash2',
+        blockNumber: 12n,
+        logIndex: 3,
+      });
+
+      const mem = getMemoryInstance('default');
+      expect(mem.votes.size).toBe(2);
+      const updated = await fetchDispute('D:0xbbb');
+      expect(updated?.totalVotes).toBe(50);
+      expect(updated?.currentVotesFor).toBe(50);
+      expect(updated?.currentVotesAgainst).toBe(0);
     });
 
     it('caps assertions and keeps pending over resolved', async () => {
-      const prevMax = process.env.INSIGHT_MEMORY_MAX_ASSERTIONS;
-      process.env.INSIGHT_MEMORY_MAX_ASSERTIONS = '10';
+      mockEnv.INSIGHT_MEMORY_MAX_ASSERTIONS = '10';
 
-      try {
-        const base: Omit<Assertion, 'id' | 'status'> = {
-          chain: 'Local',
-          asserter: '0xabc',
-          protocol: 'Aave',
-          market: 'ETH/USD',
-          assertion: 'x',
-          assertedAt: new Date().toISOString(),
-          livenessEndsAt: new Date().toISOString(),
-          bondUsd: 1,
-          txHash: '0xhash',
-        };
+      const base: Omit<Assertion, 'id' | 'status'> = {
+        chain: 'Local',
+        asserter: '0xabc',
+        protocol: 'Aave',
+        market: 'ETH/USD',
+        assertion: 'x',
+        assertedAt: new Date().toISOString(),
+        livenessEndsAt: new Date().toISOString(),
+        bondUsd: 1,
+        txHash: '0xhash',
+      };
 
+      await upsertAssertion({
+        ...base,
+        id: 'keep-pending',
+        status: 'Pending',
+      });
+      for (let i = 0; i < 20; i++) {
         await upsertAssertion({
           ...base,
-          id: 'keep-pending',
-          status: 'Pending',
+          id: `r/${i}`,
+          status: 'Resolved',
+          resolvedAt: new Date(Date.now() - i * 1000).toISOString(),
         });
-        for (let i = 0; i < 20; i++) {
-          await upsertAssertion({
-            ...base,
-            id: `r/${i}`,
-            status: 'Resolved',
-            resolvedAt: new Date(Date.now() - i * 1000).toISOString(),
-          });
-        }
-
-        const mem = getMemoryInstance('default');
-        expect(mem.assertions.size).toBeLessThanOrEqual(10);
-        expect(mem.assertions.has('keep-pending')).toBe(true);
-      } finally {
-        if (prevMax === undefined) delete process.env.INSIGHT_MEMORY_MAX_ASSERTIONS;
-        else process.env.INSIGHT_MEMORY_MAX_ASSERTIONS = prevMax;
       }
+
+      const mem = getMemoryInstance('default');
+      expect(mem.assertions.size).toBeLessThanOrEqual(10);
+      expect(mem.assertions.has('keep-pending')).toBe(true);
     });
   });
 
@@ -533,14 +531,15 @@ describe('oracleState', () => {
 describe('oracleStore', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-  afterEach(() => {
-    vi.unstubAllEnvs();
+    // Reset mock env
+    Object.keys(mockEnv).forEach((key) => {
+      (mockEnv as Record<string, string | undefined>)[key] = undefined;
+    });
   });
 
   it('uses mocks when assertions table is empty', async () => {
     vi.mocked(hasDatabase).mockReturnValue(true);
-    vi.stubEnv('INSIGHT_DEMO_MODE', 'true');
+    mockEnv.INSIGHT_DEMO_MODE = 'true';
     const result = await listAssertions({ limit: 30, cursor: 0 });
 
     expect(query).not.toHaveBeenCalled();
@@ -550,7 +549,7 @@ describe('oracleStore', () => {
 
   it('uses mocks when disputes table is empty', async () => {
     vi.mocked(hasDatabase).mockReturnValue(true);
-    vi.stubEnv('INSIGHT_DEMO_MODE', 'true');
+    mockEnv.INSIGHT_DEMO_MODE = 'true';
     const result = await listDisputes({ limit: 30, cursor: 0 });
 
     expect(query).not.toHaveBeenCalled();
