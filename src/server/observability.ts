@@ -28,7 +28,6 @@ import { hasDatabase, query } from '@/server/db';
 import { readJsonFile, writeJsonFile } from '@/server/kvStore';
 import { getMemoryStore, memoryNowIso } from '@/server/memoryBackend';
 import { notifyAlert, type NotificationOptions } from '@/server/notifications';
-import { getSyncState } from '@/server/oracleState';
 import { ensureSchema } from '@/server/schema';
 
 // Import from new modular structure

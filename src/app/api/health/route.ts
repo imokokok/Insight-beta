@@ -1,9 +1,7 @@
 import { env, getEnvReport } from '@/lib/config/env';
 import { error, handleApi, rateLimit, requireAdmin } from '@/server/apiResponse';
 import { hasDatabase, query } from '@/server/db';
-import { readJsonFile } from '@/server/kvStore';
 import { readAlertRules } from '@/server/observability';
-import { getOracleEnv, getSyncState, listOracleInstances } from '@/server/oracle';
 
 /**
  * @swagger
@@ -48,45 +46,6 @@ import { getOracleEnv, getSyncState, listOracleInstances } from '@/server/oracle
  *               $ref: '#/components/schemas/ErrorResponse'
  */
 
-type OracleHealthInstance = {
-  id: string;
-  chain: string;
-  rpcConfigured: boolean;
-  contractConfigured: boolean;
-  rpcActiveUrl?: string | null;
-  rpcStats?: unknown;
-  lastAttemptAt?: string | null;
-  lastSuccessAt?: string | null;
-  lastDurationMs?: number | null;
-  lastError?: string | null;
-  latestBlock?: string | null;
-  safeBlock?: string | null;
-  lastProcessedBlock?: string | null;
-  lastSuccessProcessedBlock?: string | null;
-  lagBlocks?: string | null;
-  consecutiveFailures?: number;
-};
-
-// ============================================================================
-// 工具函数
-// ============================================================================
-
-function readSloNumber(raw: string | number, fallback: number, opts?: { min?: number }) {
-  const n = typeof raw === 'string' ? Number(raw) : raw;
-  if (!Number.isFinite(n)) return fallback;
-  const min = opts?.min ?? 0;
-  return Math.max(min, n);
-}
-
-function minutesSince(iso: string | null) {
-  if (!iso) return null;
-  const ms = Date.parse(iso);
-  if (!Number.isFinite(ms)) return null;
-  const diff = Date.now() - ms;
-  if (!Number.isFinite(diff) || diff < 0) return null;
-  return Math.round(diff / 60_000);
-}
-
 // ============================================================================
 // 数据库健康检查
 // ============================================================================
@@ -100,119 +59,6 @@ async function checkDatabaseStatus(): Promise<'connected' | 'disconnected' | 'no
   } catch {
     return 'disconnected';
   }
-}
-
-// ============================================================================
-// Worker 健康检查
-// ============================================================================
-
-async function checkWorkerStatus(): Promise<boolean> {
-  const embeddedWorkerDisabled = env.INSIGHT_DISABLE_EMBEDDED_WORKER;
-
-  if (embeddedWorkerDisabled) return true;
-
-  const heartbeat = await readJsonFile('worker/heartbeat/v1', null);
-  const at = heartbeat && typeof heartbeat === 'object' ? (heartbeat as { at?: unknown }).at : null;
-  const atMs = typeof at === 'string' ? Date.parse(at) : NaN;
-
-  return Number.isFinite(atMs) && Date.now() - atMs <= 90_000;
-}
-
-// ============================================================================
-// Oracle 健康检查
-// ============================================================================
-
-async function getOracleHealth(includeSync: boolean): Promise<{
-  issues: string[];
-  instances: OracleHealthInstance[];
-}> {
-  const instances = await listOracleInstances();
-  const enabled = instances.filter((inst) => inst.enabled);
-
-  const resolved = await Promise.all(
-    enabled.map(async (inst) => {
-      const envConfig = await getOracleEnv(inst.id);
-      const rpcConfigured = Boolean(envConfig.rpcUrl);
-      const contractConfigured = Boolean(envConfig.contractAddress);
-
-      if (!includeSync) {
-        return {
-          id: inst.id,
-          chain: envConfig.chain || inst.chain,
-          rpcConfigured,
-          contractConfigured,
-        };
-      }
-
-      const syncState = await getSyncState(inst.id);
-      const latestBlock = syncState.latestBlock;
-      const lagBlocks =
-        latestBlock !== null && latestBlock !== undefined
-          ? latestBlock - syncState.lastProcessedBlock
-          : null;
-
-      return {
-        id: inst.id,
-        chain: envConfig.chain || inst.chain,
-        rpcConfigured,
-        contractConfigured,
-        rpcActiveUrl: syncState.rpcActiveUrl ?? null,
-        rpcStats: syncState.rpcStats ?? null,
-        lastAttemptAt: syncState.sync.lastAttemptAt ?? null,
-        lastSuccessAt: syncState.sync.lastSuccessAt ?? null,
-        lastDurationMs: syncState.sync.lastDurationMs ?? null,
-        lastError: syncState.sync.lastError ?? null,
-        latestBlock:
-          latestBlock !== null && latestBlock !== undefined ? latestBlock.toString(10) : null,
-        safeBlock:
-          syncState.safeBlock !== null && syncState.safeBlock !== undefined
-            ? syncState.safeBlock.toString(10)
-            : null,
-        lastProcessedBlock: syncState.lastProcessedBlock.toString(10),
-        lastSuccessProcessedBlock:
-          syncState.lastSuccessProcessedBlock !== null &&
-          syncState.lastSuccessProcessedBlock !== undefined
-            ? syncState.lastSuccessProcessedBlock.toString(10)
-            : null,
-        lagBlocks: lagBlocks !== null ? lagBlocks.toString(10) : null,
-        consecutiveFailures: syncState.consecutiveFailures ?? 0,
-      };
-    }),
-  );
-
-  const issues: string[] = [];
-  for (const inst of resolved) {
-    if (!inst.rpcConfigured) {
-      issues.push(`oracle:${inst.id}:missing_rpc_url`);
-    }
-    if (!inst.contractConfigured) {
-      issues.push(`oracle:${inst.id}:missing_contract_address`);
-    }
-  }
-
-  return { issues, instances: resolved };
-}
-
-function getOracleSloIssues(instances: OracleHealthInstance[]) {
-  const issues: string[] = [];
-  const maxLagBlocks = readSloNumber(env.INSIGHT_SLO_MAX_LAG_BLOCKS, 200, { min: 0 });
-  const maxSyncStalenessMinutes = readSloNumber(env.INSIGHT_SLO_MAX_SYNC_STALENESS_MINUTES, 30, {
-    min: 1,
-  });
-
-  for (const inst of instances) {
-    const lagNum = typeof inst.lagBlocks === 'string' ? Number(inst.lagBlocks) : null;
-    const staleMin = minutesSince(inst.lastSuccessAt ?? null);
-
-    if (lagNum !== null && Number.isFinite(lagNum) && lagNum > maxLagBlocks) {
-      issues.push(`oracle:${inst.id}:slo_lag_blocks_breached`);
-    }
-    if (staleMin !== null && Number.isFinite(staleMin) && staleMin > maxSyncStalenessMinutes) {
-      issues.push(`oracle:${inst.id}:slo_sync_staleness_breached`);
-    }
-  }
-
-  return issues;
 }
 
 // ============================================================================
@@ -297,24 +143,15 @@ async function handleReadinessProbe() {
   const isProd = process.env.NODE_ENV === 'production';
   const demoModeEnabled = env.INSIGHT_DEMO_MODE;
 
-  const [databaseStatus, workerOk, oracleHealth] = await Promise.all([
-    checkDatabaseStatus(),
-    checkWorkerStatus(),
-    getOracleHealth(true),
-  ]);
-
-  const sloIssues = isProd ? getOracleSloIssues(oracleHealth.instances) : [];
+  const databaseStatus = await checkDatabaseStatus();
 
   const databaseReady = !isProd || databaseStatus === 'connected';
   const demoReady = !isProd || !demoModeEnabled;
-  const oracleReady = !isProd || (oracleHealth.issues.length === 0 && sloIssues.length === 0);
 
   const ready =
     (databaseStatus === 'connected' || (!isProd && databaseStatus === 'not_configured')) &&
-    workerOk &&
     databaseReady &&
-    demoReady &&
-    oracleReady;
+    demoReady;
 
   if (!ready) return error({ code: 'not_ready' }, 503);
 
@@ -329,10 +166,8 @@ async function handleValidationProbe(request: Request) {
   const isProd = process.env.NODE_ENV === 'production';
   const demoModeEnabled = env.INSIGHT_DEMO_MODE;
 
-  const [databaseStatus, workerOk, oracleHealth, alertConfig, envReport, auth] = await Promise.all([
+  const [databaseStatus, alertConfig, envReport, auth] = await Promise.all([
     checkDatabaseStatus(),
-    checkWorkerStatus(),
-    getOracleHealth(true),
     checkAlertConfiguration(),
     getEnvReport(),
     requireAdmin(request, { strict: false, scope: 'audit_read' }),
@@ -345,15 +180,10 @@ async function handleValidationProbe(request: Request) {
   if (databaseStatus === 'disconnected') issues.push('database_disconnected');
   if (isProd && databaseStatus === 'not_configured') issues.push('database_not_configured');
   if (isProd && demoModeEnabled) issues.push('demo_mode_enabled');
-  if (!workerOk) issues.push('worker_stale');
   if (includeEnv && !envReport.ok) issues.push('env_invalid');
 
   // 告警配置检查
   issues.push(...validateAlertConfig(alertConfig));
-
-  // Oracle 检查
-  issues.push(...oracleHealth.issues);
-  issues.push(...getOracleSloIssues(oracleHealth.instances));
 
   return {
     status: issues.length === 0 ? 'ok' : 'degraded',
@@ -362,8 +192,6 @@ async function handleValidationProbe(request: Request) {
     issues,
     database: databaseStatus,
     env: includeEnv ? envReport : { ok: false, issues: [] },
-    worker: includeEnv ? { at: new Date().toISOString() } : null,
-    oracle: includeEnv ? { instances: oracleHealth.instances } : null,
   };
 }
 
@@ -382,7 +210,6 @@ async function handleDefaultHealthCheck(request: Request) {
     database: databaseStatus,
     environment: process.env.NODE_ENV,
     env: includeEnv ? envReport : { ok: false, issues: [] },
-    worker: includeEnv ? await readJsonFile('worker/heartbeat/v1', null) : null,
   };
 }
 

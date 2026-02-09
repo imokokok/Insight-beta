@@ -14,7 +14,6 @@ import { rateLimit } from '@/lib/security/rateLimit';
 const defaultConfig: RateLimitConfig = {
   windowMs: 60 * 1000, // 1 分钟
   maxRequests: 100, // 每分钟最多 100 请求
-  store: 'memory',
 };
 
 // 不同路径的特定配置
@@ -23,24 +22,20 @@ const pathConfigs: Record<string, RateLimitConfig> = {
   '/api/auth': {
     windowMs: 15 * 60 * 1000, // 15 分钟
     maxRequests: 5, // 5 次登录尝试
-    store: 'redis',
   },
   // 数据查询接口 - 较宽松的限制
   '/api/oracle': {
     windowMs: 60 * 1000, // 1 分钟
     maxRequests: 200, // 200 次查询
-    store: 'memory',
   },
   // 写操作接口 - 中等限制
   '/api/oracle/assertions': {
     windowMs: 60 * 1000,
     maxRequests: 10,
-    store: 'redis',
   },
   '/api/oracle/disputes': {
     windowMs: 60 * 1000,
     maxRequests: 10,
-    store: 'redis',
   },
 };
 
