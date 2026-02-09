@@ -1,6 +1,7 @@
 'use client';
 
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
+
 import {
   RefreshCw,
   Download,
@@ -10,8 +11,9 @@ import {
   Maximize2,
   HelpCircle,
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useI18n } from '@/i18n';
 import { cn } from '@/lib/utils';
 

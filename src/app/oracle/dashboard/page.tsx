@@ -25,11 +25,14 @@ import {
   AlertCircle,
 } from 'lucide-react';
 
-import { StatCard } from '@/components/common/StatCard';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChartSkeleton } from '@/components/ui/skeleton';
+import { StatCardEnhanced } from '@/components/common/StatCardEnhanced';
+import {
+  ButtonEnhanced,
+  StatusBadge,
+  CardEnhanced,
+  TooltipEnhanced,
+} from '@/components/ui';
+import { ChartSkeleton } from '@/components/ui/skeleton-enhanced';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useDataRefresh, useWebSocket } from '@/hooks';
 import { logger } from '@/lib/logger';
@@ -179,14 +182,14 @@ export default function UnifiedDashboardPage() {
         <header className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 lg:px-6">
           <div className="flex items-center gap-4">
             {/* Mobile Menu Button */}
-            <Button
+            <ButtonEnhanced
               variant="ghost"
               size="icon"
               className="lg:hidden"
               onClick={() => setSidebarOpen(true)}
             >
               <Menu className="h-5 w-5" />
-            </Button>
+            </ButtonEnhanced>
 
             <div>
               <h1 className="text-xl font-bold text-gray-900 lg:text-2xl">Oracle Dashboard</h1>
@@ -201,18 +204,21 @@ export default function UnifiedDashboardPage() {
               <Clock className="h-4 w-4" />
               <span>{lastUpdated?.toLocaleTimeString() ?? '--:--:--'}</span>
             </div>
-            <Badge variant={isConnected ? 'default' : 'destructive'} className="text-xs">
-              {isConnected ? 'Live' : 'Disconnected'}
-            </Badge>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleRefresh}
-              disabled={isLoading}
-              className="h-8 w-8"
-            >
-              <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-            </Button>
+            <StatusBadge
+              status={isConnected ? 'online' : 'offline'}
+              text={isConnected ? 'Live' : 'Disconnected'}
+            />
+            <TooltipEnhanced content="Refresh data">
+              <ButtonEnhanced
+                variant="outline"
+                size="icon"
+                onClick={handleRefresh}
+                loading={isLoading}
+                className="h-8 w-8"
+              >
+                <RefreshCw className="h-4 w-4" />
+              </ButtonEnhanced>
+            </TooltipEnhanced>
           </div>
         </header>
 
@@ -220,7 +226,7 @@ export default function UnifiedDashboardPage() {
         <div className="flex-1 overflow-y-auto p-4 lg:p-6">
           {/* Stats Cards */}
           <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6 lg:gap-4">
-            <StatCard
+            <StatCardEnhanced
               title="Protocols"
               value={stats?.totalProtocols ?? 0}
               icon={<Globe className="h-4 w-4" />}
@@ -228,7 +234,7 @@ export default function UnifiedDashboardPage() {
               color="blue"
               lastUpdated={lastUpdated}
             />
-            <StatCard
+            <StatCardEnhanced
               title="Price Feeds"
               value={stats?.totalPriceFeeds ?? 0}
               icon={<BarChart3 className="h-4 w-4" />}
@@ -236,7 +242,7 @@ export default function UnifiedDashboardPage() {
               color="green"
               lastUpdated={lastUpdated}
             />
-            <StatCard
+            <StatCardEnhanced
               title="Active Alerts"
               value={stats?.activeAlerts ?? 0}
               icon={<AlertTriangle className="h-4 w-4" />}
@@ -249,7 +255,7 @@ export default function UnifiedDashboardPage() {
               }
               lastUpdated={lastUpdated}
             />
-            <StatCard
+            <StatCardEnhanced
               title="Avg Latency"
               value={`${stats?.avgLatency ?? 0}ms`}
               icon={<Activity className="h-4 w-4" />}
@@ -257,7 +263,7 @@ export default function UnifiedDashboardPage() {
               color="purple"
               lastUpdated={lastUpdated}
             />
-            <StatCard
+            <StatCardEnhanced
               title="TVS"
               value={stats?.totalValueSecured ?? '$0'}
               icon={<Shield className="h-4 w-4" />}
@@ -265,7 +271,7 @@ export default function UnifiedDashboardPage() {
               color="orange"
               lastUpdated={lastUpdated}
             />
-            <StatCard
+            <StatCardEnhanced
               title="Updates (24h)"
               value={stats?.priceUpdates24h?.toLocaleString() ?? '0'}
               icon={<Layers className="h-4 w-4" />}
@@ -308,172 +314,156 @@ export default function UnifiedDashboardPage() {
               {/* Charts Row */}
               <div className="grid gap-6 xl:grid-cols-3">
                 <div className="xl:col-span-2">
-                  <Card className="h-full">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg">Price Trends</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <Suspense fallback={<ChartSkeleton className="h-80" />}>
-                        <OracleCharts />
-                      </Suspense>
-                    </CardContent>
-                  </Card>
+                  <CardEnhanced className="h-full" hover glow>
+                    <div className="mb-4 flex items-center justify-between">
+                      <h3 className="text-lg font-semibold text-purple-900">Price Trends</h3>
+                    </div>
+                    <Suspense fallback={<ChartSkeleton className="h-80" />}>
+                      <OracleCharts />
+                    </Suspense>
+                  </CardEnhanced>
                 </div>
                 <div>
-                  <Card className="h-full">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg">Latest Prices</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <Suspense fallback={<ChartSkeleton className="h-80" />}>
-                        <PriceFeedList limit={10} className="h-full" />
-                      </Suspense>
-                    </CardContent>
-                  </Card>
+                  <CardEnhanced className="h-full" hover glow>
+                    <div className="mb-4 flex items-center justify-between">
+                      <h3 className="text-lg font-semibold text-purple-900">Latest Prices</h3>
+                    </div>
+                    <Suspense fallback={<ChartSkeleton className="h-80" />}>
+                      <PriceFeedList limit={10} className="h-full" />
+                    </Suspense>
+                  </CardEnhanced>
                 </div>
               </div>
 
               {/* Health & Alerts Row */}
               <div className="grid gap-6 lg:grid-cols-2">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg">Protocol Health</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Suspense fallback={<ChartSkeleton className="h-64" />}>
-                      <ProtocolHealthGrid />
-                    </Suspense>
-                  </CardContent>
-                </Card>
+                <CardEnhanced hover glow>
+                  <div className="mb-4 flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-purple-900">Protocol Health</h3>
+                  </div>
+                  <Suspense fallback={<ChartSkeleton className="h-64" />}>
+                    <ProtocolHealthGrid />
+                  </Suspense>
+                </CardEnhanced>
 
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg">Recent Alerts</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Suspense fallback={<ChartSkeleton className="h-64" />}>
-                      <AlertPanel maxAlerts={5} />
-                    </Suspense>
-                  </CardContent>
-                </Card>
+                <CardEnhanced hover glow>
+                  <div className="mb-4 flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-purple-900">Recent Alerts</h3>
+                  </div>
+                  <Suspense fallback={<ChartSkeleton className="h-64" />}>
+                    <AlertPanel maxAlerts={5} />
+                  </Suspense>
+                </CardEnhanced>
               </div>
             </TabsContent>
 
             {/* Health Tab */}
             <TabsContent value="health" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Protocol Health Status</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Suspense fallback={<ChartSkeleton className="h-96" />}>
-                    <ProtocolHealthGrid />
-                  </Suspense>
-                </CardContent>
-              </Card>
+              <CardEnhanced hover glow>
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-purple-900">Protocol Health Status</h3>
+                </div>
+                <Suspense fallback={<ChartSkeleton className="h-96" />}>
+                  <ProtocolHealthGrid />
+                </Suspense>
+              </CardEnhanced>
 
               <div className="grid gap-6 lg:grid-cols-3">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Uptime (24h)</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {[
-                        'Chainlink',
-                        'Pyth Network',
-                        'Band Protocol',
-                        'API3',
-                        'RedStone',
-                        'Flux',
-                      ].map((protocol) => (
-                        <div key={protocol} className="flex items-center justify-between">
-                          <span className="text-sm">{protocol}</span>
-                          <div className="flex items-center gap-2">
-                            <div className="h-2 w-24 rounded-full bg-gray-100">
-                              <div
-                                className="h-2 rounded-full bg-green-500"
-                                style={{ width: `${99 + Math.random()}%` }}
-                              />
-                            </div>
-                            <span className="text-sm font-medium">
-                              {(99 + Math.random()).toFixed(2)}%
-                            </span>
+                <CardEnhanced hover>
+                  <div className="mb-4 flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-purple-900">Uptime (24h)</h3>
+                  </div>
+                  <div className="space-y-3">
+                    {[
+                      'Chainlink',
+                      'Pyth Network',
+                      'Band Protocol',
+                      'API3',
+                      'RedStone',
+                      'Flux',
+                    ].map((protocol) => (
+                      <div key={protocol} className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">{protocol}</span>
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-24 rounded-full bg-gray-100">
+                            <div
+                              className="h-2 rounded-full bg-green-500"
+                              style={{ width: `${99 + Math.random()}%` }}
+                            />
                           </div>
+                          <span className="text-sm font-medium">
+                            {(99 + Math.random()).toFixed(2)}%
+                          </span>
                         </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                      </div>
+                    ))}
+                  </div>
+                </CardEnhanced>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Average Latency</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {[
-                        'Chainlink',
-                        'Pyth Network',
-                        'Band Protocol',
-                        'API3',
-                        'RedStone',
-                        'Flux',
-                      ].map((protocol) => (
-                        <div key={protocol} className="flex items-center justify-between">
-                          <span className="text-sm">{protocol}</span>
-                          <div className="flex items-center gap-2">
-                            <div className="h-2 w-24 rounded-full bg-gray-100">
-                              <div
-                                className={cn(
-                                  'h-2 rounded-full',
-                                  Math.random() > 0.5 ? 'bg-green-500' : 'bg-yellow-500',
-                                )}
-                                style={{ width: `${Math.random() * 100}%` }}
-                              />
-                            </div>
-                            <span className="text-sm font-medium">
-                              {Math.floor(Math.random() * 1000)}ms
-                            </span>
+                <CardEnhanced hover>
+                  <div className="mb-4 flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-purple-900">Average Latency</h3>
+                  </div>
+                  <div className="space-y-3">
+                    {[
+                      'Chainlink',
+                      'Pyth Network',
+                      'Band Protocol',
+                      'API3',
+                      'RedStone',
+                      'Flux',
+                    ].map((protocol) => (
+                      <div key={protocol} className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">{protocol}</span>
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-24 rounded-full bg-gray-100">
+                            <div
+                              className={cn(
+                                'h-2 rounded-full',
+                                Math.random() > 0.5 ? 'bg-green-500' : 'bg-yellow-500',
+                              )}
+                              style={{ width: `${Math.random() * 100}%` }}
+                            />
                           </div>
+                          <span className="text-sm font-medium">
+                            {Math.floor(Math.random() * 1000)}ms
+                          </span>
                         </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                      </div>
+                    ))}
+                  </div>
+                </CardEnhanced>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Accuracy Score</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {[
-                        'Chainlink',
-                        'Pyth Network',
-                        'Band Protocol',
-                        'API3',
-                        'RedStone',
-                        'Flux',
-                      ].map((protocol) => (
-                        <div key={protocol} className="flex items-center justify-between">
-                          <span className="text-sm">{protocol}</span>
-                          <div className="flex items-center gap-2">
-                            <div className="h-2 w-24 rounded-full bg-gray-100">
-                              <div
-                                className="h-2 rounded-full bg-blue-500"
-                                style={{ width: `${95 + Math.random() * 5}%` }}
-                              />
-                            </div>
-                            <span className="text-sm font-medium">
-                              {(95 + Math.random() * 5).toFixed(1)}%
-                            </span>
+                <CardEnhanced hover>
+                  <div className="mb-4 flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-purple-900">Accuracy Score</h3>
+                  </div>
+                  <div className="space-y-3">
+                    {[
+                      'Chainlink',
+                      'Pyth Network',
+                      'Band Protocol',
+                      'API3',
+                      'RedStone',
+                      'Flux',
+                    ].map((protocol) => (
+                      <div key={protocol} className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">{protocol}</span>
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-24 rounded-full bg-gray-100">
+                            <div
+                              className="h-2 rounded-full bg-blue-500"
+                              style={{ width: `${95 + Math.random() * 5}%` }}
+                            />
                           </div>
+                          <span className="text-sm font-medium">
+                            {(95 + Math.random() * 5).toFixed(1)}%
+                          </span>
                         </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                      </div>
+                    ))}
+                  </div>
+                </CardEnhanced>
               </div>
             </TabsContent>
 
@@ -481,71 +471,65 @@ export default function UnifiedDashboardPage() {
             <TabsContent value="alerts" className="space-y-6">
               <div className="grid gap-6 lg:grid-cols-3">
                 <div className="lg:col-span-2">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>All Alerts</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <Suspense fallback={<ChartSkeleton className="h-96" />}>
-                        <AlertPanel maxAlerts={50} showAcknowledged />
-                      </Suspense>
-                    </CardContent>
-                  </Card>
+                  <CardEnhanced hover glow>
+                    <div className="mb-4 flex items-center justify-between">
+                      <h3 className="text-lg font-semibold text-purple-900">All Alerts</h3>
+                    </div>
+                    <Suspense fallback={<ChartSkeleton className="h-96" />}>
+                      <AlertPanel maxAlerts={50} showAcknowledged />
+                    </Suspense>
+                  </CardEnhanced>
                 </div>
                 <div className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Alert Summary</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
+                  <CardEnhanced hover>
+                    <div className="mb-4 flex items-center justify-between">
+                      <h3 className="text-lg font-semibold text-purple-900">Alert Summary</h3>
+                    </div>
+                    <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">Critical</span>
-                        <Badge variant="destructive">2</Badge>
+                        <StatusBadge status="error" text="2" />
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">Warning</span>
-                        <Badge variant="secondary" className="bg-yellow-100 text-yellow-700">
-                          5
-                        </Badge>
+                        <StatusBadge status="warning" text="5" />
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">Info</span>
-                        <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                          12
-                        </Badge>
+                        <StatusBadge status="pending" text="12" />
                       </div>
-                      <div className="border-t pt-4">
+                      <div className="border-t border-gray-200 pt-4">
                         <div className="flex items-center justify-between">
-                          <span className="font-medium">Total Active</span>
-                          <span className="font-bold">{stats?.activeAlerts ?? 0}</span>
+                          <span className="font-medium text-gray-700">Total Active</span>
+                          <span className="font-bold text-gray-900">{stats?.activeAlerts ?? 0}</span>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </CardEnhanced>
 
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Alert Rules</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
+                  <CardEnhanced hover>
+                    <div className="mb-4 flex items-center justify-between">
+                      <h3 className="text-lg font-semibold text-purple-900">Alert Rules</h3>
+                    </div>
+                    <div className="space-y-3">
                       <div className="flex items-center justify-between text-sm">
                         <span>Price Deviation &gt; 2%</span>
-                        <Badge variant="outline">Active</Badge>
+                        <StatusBadge status="online" text="Active" />
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <span>Stale Feed &gt; 10min</span>
-                        <Badge variant="outline">Active</Badge>
+                        <StatusBadge status="online" text="Active" />
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <span>Latency &gt; 5s</span>
-                        <Badge variant="outline">Active</Badge>
+                        <StatusBadge status="online" text="Active" />
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <span>Low Confidence &lt; 80%</span>
-                        <Badge variant="outline">Active</Badge>
+                        <StatusBadge status="online" text="Active" />
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </CardEnhanced>
                 </div>
               </div>
             </TabsContent>

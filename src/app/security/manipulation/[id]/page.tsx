@@ -37,9 +37,9 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { useI18n } from '@/i18n';
 import type { ManipulationDetection } from '@/lib/types/security/detection';
 import { cn } from '@/lib/utils';
-import { useI18n } from '@/i18n';
 
 
 

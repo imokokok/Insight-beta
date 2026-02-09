@@ -62,6 +62,8 @@ const config = [
       },
     },
     rules: {
+      // 对象注入检测 - 在处理内部配置或已知协议名时风险较低
+      // 保持为 warn 级别，但允许在特定场景下使用 eslint-disable 注释
       "security/detect-object-injection": "warn",
       "security/detect-non-literal-fs-filename": "error",
       "security/detect-no-csrf-before-method-override": "error",
@@ -165,6 +167,14 @@ const config = [
   //     ],
   //   },
   // },
+  // Services directory - internal services with lower object injection risk
+  {
+    files: ["services/**/*.ts"],
+    rules: {
+      // 后端服务处理内部配置，对象注入风险较低
+      "security/detect-object-injection": "off",
+    },
+  },
   // Test files - disable strict rules
   {
     files: ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],

@@ -51,7 +51,7 @@ import {
   SkeletonChart,
   SkeletonCard,
 } from '@/components/common/SkeletonCard';
-import { StatCard } from '@/components/common/StatCard';
+import { StatCardEnhanced } from '@/components/common/StatCardEnhanced';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -461,25 +461,25 @@ function SummaryStats({ report }: { report: DeviationReport | null }) {
 
   return (
     <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-      <StatCard
+      <StatCardEnhanced
         title="Total Symbols"
         value={summary.totalSymbols}
         icon={<BarChart3 className="h-5 w-5" />}
         color="blue"
       />
-      <StatCard
+      <StatCardEnhanced
         title="High Deviation"
         value={summary.symbolsWithHighDeviation}
         icon={<AlertTriangle className="h-5 w-5" />}
         color="red"
       />
-      <StatCard
+      <StatCardEnhanced
         title="Avg Deviation"
         value={`${(summary.avgDeviationAcrossAll * 100).toFixed(2)}%`}
         icon={<Activity className="h-5 w-5" />}
         color="orange"
       />
-      <StatCard
+      <StatCardEnhanced
         title="Most Volatile"
         value={summary.mostVolatileSymbol || 'N/A'}
         icon={<Zap className="h-5 w-5" />}

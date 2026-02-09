@@ -4,8 +4,8 @@ import React from 'react';
 
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
-import { logger } from '@/lib/logger';
 import { useI18n } from '@/i18n';
+import { logger } from '@/lib/logger';
 
 interface Props {
   children: React.ReactNode;

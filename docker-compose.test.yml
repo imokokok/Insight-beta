@@ -1,0 +1,260 @@
+# OracleMonitor - Docker Compose Test Configuration
+# 用于集成测试的 Docker Compose 配置
+# 包含 PostgreSQL 和 Redis Cluster
+
+version: '3.8'
+
+services:
+  # ============================================================================
+  # PostgreSQL for Testing
+  # ============================================================================
+  postgres-test:
+    image: postgres:16-alpine
+    container_name: oracle-monitor-postgres-test
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: oracle_test
+      POSTGRES_PASSWORD: oracle_test_123
+      POSTGRES_DB: oracle_monitor_test
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U oracle_test -d oracle_monitor_test"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - oracle-monitor-test-network
+
+  # ============================================================================
+  # Redis Single Node (for basic tests)
+  # ============================================================================
+  redis-test:
+    image: redis:7-alpine
+    container_name: oracle-monitor-redis-test
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_test_data:/data
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - oracle-monitor-test-network
+
+  # ============================================================================
+  # Redis Cluster (for cluster-specific tests)
+  # ============================================================================
+  redis-cluster-test-node-0:
+    image: redis:7-alpine
+    container_name: redis-cluster-test-node-0
+    restart: unless-stopped
+    command: >
+      sh -c "
+        echo 'port 7000' > /tmp/redis.conf &&
+        echo 'cluster-enabled yes' >> /tmp/redis.conf &&
+        echo 'cluster-config-file nodes.conf' >> /tmp/redis.conf &&
+        echo 'cluster-node-timeout 5000' >> /tmp/redis.conf &&
+        echo 'appendonly yes' >> /tmp/redis.conf &&
+        echo 'bind 0.0.0.0' >> /tmp/redis.conf &&
+        echo 'protected-mode no' >> /tmp/redis.conf &&
+        redis-server /tmp/redis.conf
+      "
+    ports:
+      - "7000:7000"
+      - "17000:17000"
+    networks:
+      - oracle-monitor-test-network
+
+  redis-cluster-test-node-1:
+    image: redis:7-alpine
+    container_name: redis-cluster-test-node-1
+    restart: unless-stopped
+    command: >
+      sh -c "
+        echo 'port 7001' > /tmp/redis.conf &&
+        echo 'cluster-enabled yes' >> /tmp/redis.conf &&
+        echo 'cluster-config-file nodes.conf' >> /tmp/redis.conf &&
+        echo 'cluster-node-timeout 5000' >> /tmp/redis.conf &&
+        echo 'appendonly yes' >> /tmp/redis.conf &&
+        echo 'bind 0.0.0.0' >> /tmp/redis.conf &&
+        echo 'protected-mode no' >> /tmp/redis.conf &&
+        redis-server /tmp/redis.conf
+      "
+    ports:
+      - "7001:7001"
+      - "17001:17001"
+    networks:
+      - oracle-monitor-test-network
+
+  redis-cluster-test-node-2:
+    image: redis:7-alpine
+    container_name: redis-cluster-test-node-2
+    restart: unless-stopped
+    command: >
+      sh -c "
+        echo 'port 7002' > /tmp/redis.conf &&
+        echo 'cluster-enabled yes' >> /tmp/redis.conf &&
+        echo 'cluster-config-file nodes.conf' >> /tmp/redis.conf &&
+        echo 'cluster-node-timeout 5000' >> /tmp/redis.conf &&
+        echo 'appendonly yes' >> /tmp/redis.conf &&
+        echo 'bind 0.0.0.0' >> /tmp/redis.conf &&
+        echo 'protected-mode no' >> /tmp/redis.conf &&
+        redis-server /tmp/redis.conf
+      "
+    ports:
+      - "7002:7002"
+      - "17002:17002"
+    networks:
+      - oracle-monitor-test-network
+
+  redis-cluster-test-node-3:
+    image: redis:7-alpine
+    container_name: redis-cluster-test-node-3
+    restart: unless-stopped
+    command: >
+      sh -c "
+        echo 'port 7003' > /tmp/redis.conf &&
+        echo 'cluster-enabled yes' >> /tmp/redis.conf &&
+        echo 'cluster-config-file nodes.conf' >> /tmp/redis.conf &&
+        echo 'cluster-node-timeout 5000' >> /tmp/redis.conf &&
+        echo 'appendonly yes' >> /tmp/redis.conf &&
+        echo 'bind 0.0.0.0' >> /tmp/redis.conf &&
+        echo 'protected-mode no' >> /tmp/redis.conf &&
+        redis-server /tmp/redis.conf
+      "
+    ports:
+      - "7003:7003"
+      - "17003:17003"
+    networks:
+      - oracle-monitor-test-network
+
+  redis-cluster-test-node-4:
+    image: redis:7-alpine
+    container_name: redis-cluster-test-node-4
+    restart: unless-stopped
+    command: >
+      sh -c "
+        echo 'port 7004' > /tmp/redis.conf &&
+        echo 'cluster-enabled yes' >> /tmp/redis.conf &&
+        echo 'cluster-config-file nodes.conf' >> /tmp/redis.conf &&
+        echo 'cluster-node-timeout 5000' >> /tmp/redis.conf &&
+        echo 'appendonly yes' >> /tmp/redis.conf &&
+        echo 'bind 0.0.0.0' >> /tmp/redis.conf &&
+        echo 'protected-mode no' >> /tmp/redis.conf &&
+        redis-server /tmp/redis.conf
+      "
+    ports:
+      - "7004:7004"
+      - "17004:17004"
+    networks:
+      - oracle-monitor-test-network
+
+  redis-cluster-test-node-5:
+    image: redis:7-alpine
+    container_name: redis-cluster-test-node-5
+    restart: unless-stopped
+    command: >
+      sh -c "
+        echo 'port 7005' > /tmp/redis.conf &&
+        echo 'cluster-enabled yes' >> /tmp/redis.conf &&
+        echo 'cluster-config-file nodes.conf' >> /tmp/redis.conf &&
+        echo 'cluster-node-timeout 5000' >> /tmp/redis.conf &&
+        echo 'appendonly yes' >> /tmp/redis.conf &&
+        echo 'bind 0.0.0.0' >> /tmp/redis.conf &&
+        echo 'protected-mode no' >> /tmp/redis.conf &&
+        redis-server /tmp/redis.conf
+      "
+    ports:
+      - "7005:7005"
+      - "17005:17005"
+    networks:
+      - oracle-monitor-test-network
+
+  # ============================================================================
+  # Redis Cluster Init
+  # ============================================================================
+  redis-cluster-init:
+    image: redis:7-alpine
+    container_name: redis-cluster-init
+    depends_on:
+      - redis-cluster-test-node-0
+      - redis-cluster-test-node-1
+      - redis-cluster-test-node-2
+      - redis-cluster-test-node-3
+      - redis-cluster-test-node-4
+      - redis-cluster-test-node-5
+    command: >
+      sh -c "
+        sleep 5 &&
+        redis-cli --cluster create 
+          redis-cluster-test-node-0:7000
+          redis-cluster-test-node-1:7001
+          redis-cluster-test-node-2:7002
+          redis-cluster-test-node-3:7003
+          redis-cluster-test-node-4:7004
+          redis-cluster-test-node-5:7005
+          --cluster-replicas 1
+          --cluster-yes
+      "
+    networks:
+      - oracle-monitor-test-network
+
+  # ============================================================================
+  # Test Runner Service
+  # ============================================================================
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    container_name: oracle-monitor-test-runner
+    environment:
+      NODE_ENV: test
+      DATABASE_URL: postgres://oracle_test:oracle_test_123@postgres-test:5432/oracle_monitor_test
+      REDIS_URL: redis://redis-test:6379
+      REDIS_CLUSTER_URLS: redis://redis-cluster-test-node-0:7000,redis://redis-cluster-test-node-1:7001,redis://redis-cluster-test-node-2:7002
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+      redis-test:
+        condition: service_healthy
+      redis-cluster-init:
+        condition: service_completed_successfully
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: >
+      sh -c "
+        echo 'Waiting for services to be ready...' &&
+        sleep 10 &&
+        echo 'Running database migrations...' &&
+        npx prisma migrate deploy &&
+        echo 'Running integration tests...' &&
+        npm run test:integration
+      "
+    networks:
+      - oracle-monitor-test-network
+
+# ============================================================================
+# Volumes
+# ============================================================================
+volumes:
+  postgres_test_data:
+    driver: local
+  redis_test_data:
+    driver: local
+
+# ============================================================================
+# Networks
+# ============================================================================
+networks:
+  oracle-monitor-test-network:
+    driver: bridge

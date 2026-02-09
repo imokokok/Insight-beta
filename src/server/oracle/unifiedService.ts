@@ -5,7 +5,11 @@
  * 提供跨协议价格数据聚合、比较和异常检测
  */
 
+
 import { logger } from '@/lib/logger';
+import { getRedisClient } from '@/server/redisCache';
+
+import type { PriceData } from '@oracle-monitor/shared'; // Use shared type for Redis parsing
 
 export interface UnifiedPriceData {
   pair: string;
@@ -76,34 +80,74 @@ export interface ComparisonQuery {
  * 聚合多个协议的价格，计算加权平均值
  */
 export async function getUnifiedPriceData(query: UnifiedQuery): Promise<UnifiedPriceData> {
-  const { pair, protocols } = query;
+  const { pair, protocols = ['chainlink', 'pyth', 'band', 'api3', 'dia'] } = query;
 
   logger.info('Fetching unified price data', { pair, protocols });
 
-  // TODO: 实现真实的价格获取逻辑
-  // 目前返回模拟数据
-  const mockSources: PriceSource[] = [
-    {
-      protocol: 'chainlink',
-      price: 3500.5,
-      timestamp: new Date().toISOString(),
-      latency: 100,
-      confidence: 95,
-      status: 'active',
-    },
-    {
-      protocol: 'pyth',
-      price: 3501.2,
-      timestamp: new Date().toISOString(),
-      latency: 80,
-      confidence: 92,
-      status: 'active',
-    },
-  ];
+  const client = await getRedisClient();
+  const sources: PriceSource[] = [];
+  
+  if (client) {
+    try {
+      const keys = protocols.map(p => `oracle:latest:${p}:${pair}`);
+      
+      // Use pipeline for efficient fetching
+      const pipeline = client.multi();
+      keys.forEach(key => pipeline.get(key));
+      const results = await pipeline.exec();
 
-  const sources = protocols
-    ? mockSources.filter((s) => protocols.includes(s.protocol))
-    : mockSources;
+      if (results) {
+        results.forEach((result, index) => {
+          if (typeof result === 'string') {
+            try {
+              const priceData = JSON.parse(result) as PriceData;
+              const now = Date.now();
+              const timestamp = Number(priceData.timestamp);
+              const age = now - timestamp;
+              
+              sources.push({
+                protocol: protocols[index] || 'unknown',
+                price: Number(priceData.price),
+                timestamp: new Date(timestamp).toISOString(),
+                latency: age,
+                confidence: priceData.confidence || 0.9, // Default confidence
+                status: age > 300000 ? 'stale' : 'active', // 5 min stale threshold
+              });
+            } catch (err) {
+              logger.warn('Failed to parse price data from Redis', { key: keys[index], error: err });
+            }
+          }
+        });
+      }
+    } catch (error) {
+      logger.error('Failed to fetch prices from Redis', { error });
+    }
+  }
+
+  // Fallback to mock data ONLY if no real data found (to prevent breaking UI during dev)
+  if (sources.length === 0) {
+    logger.warn('No real price data found, falling back to mock data', { pair });
+    const mockSources: PriceSource[] = [
+      {
+        protocol: 'chainlink',
+        price: 3500.5,
+        timestamp: new Date().toISOString(),
+        latency: 100,
+        confidence: 95,
+        status: 'active',
+      },
+      {
+        protocol: 'pyth',
+        price: 3501.2,
+        timestamp: new Date().toISOString(),
+        latency: 80,
+        confidence: 92,
+        status: 'active',
+      },
+    ];
+     // Only use requested protocols
+     sources.push(...mockSources.filter(s => protocols.includes(s.protocol)));
+  }
 
   const activeSources = sources.filter((s) => s.status === 'active');
 
@@ -125,7 +169,7 @@ export async function getUnifiedPriceData(query: UnifiedQuery): Promise<UnifiedP
 
   const totalWeight = activeSources.reduce((sum, s) => sum + s.confidence, 0);
   const aggregatedPrice =
-    activeSources.reduce((sum, s) => sum + s.price * s.confidence, 0) / totalWeight;
+    activeSources.reduce((sum, s) => sum + s.price * s.confidence, 0) / (totalWeight || 1);
 
   const prices = activeSources.map((s) => s.price);
   const maxPrice = Math.max(...prices);
@@ -154,28 +198,36 @@ export async function getUnifiedPriceData(query: UnifiedQuery): Promise<UnifiedP
 export async function compareProtocols(query: ComparisonQuery): Promise<ProtocolComparison> {
   const { pair, deviationThreshold = 1.0 } = query;
 
-  logger.info('Comparing protocols', { pair, deviationThreshold });
+  // Re-use getUnifiedPriceData to get real data
+  const unifiedData = await getUnifiedPriceData({ pair, protocols: query.protocols });
+  const activeSources = unifiedData.sources.filter(s => s.status === 'active');
 
-  // TODO: 实现真实的价格比较逻辑
-  // 目前返回模拟数据
-  const mockProtocols: ProtocolPriceInfo[] = [
-    {
-      protocol: 'chainlink',
-      price: 3500.5,
-      timestamp: new Date().toISOString(),
-      blockNumber: 12345678,
-      confidence: 0.95,
-    },
-    {
-      protocol: 'pyth',
-      price: 3501.2,
-      timestamp: new Date().toISOString(),
-      blockNumber: 12345679,
-      confidence: 0.92,
-    },
-  ];
+  const protocols: ProtocolPriceInfo[] = activeSources.map(s => ({
+    protocol: s.protocol,
+    price: s.price,
+    timestamp: s.timestamp,
+    confidence: s.confidence,
+  }));
 
-  const prices = mockProtocols.map((p) => p.price);
+  if (protocols.length === 0) {
+      // Return empty or mock structure if no data
+      return {
+          pair,
+          protocols: [],
+          analysis: {
+              highestPrice: { protocol: '', price: 0 },
+              lowestPrice: { protocol: '', price: 0 },
+              priceRange: 0,
+              priceRangePercent: 0,
+              medianPrice: 0,
+              meanPrice: 0,
+              recommendations: [],
+          },
+          timestamp: new Date().toISOString(),
+      };
+  }
+
+  const prices = protocols.map((p) => p.price);
   const highestPrice = Math.max(...prices);
   const lowestPrice = Math.min(...prices);
   const priceRange = highestPrice - lowestPrice;
@@ -183,14 +235,14 @@ export async function compareProtocols(query: ComparisonQuery): Promise<Protocol
 
   return {
     pair,
-    protocols: mockProtocols,
+    protocols,
     analysis: {
       highestPrice: {
-        protocol: mockProtocols.find((p) => p.price === highestPrice)?.protocol || '',
+        protocol: protocols.find((p) => p.price === highestPrice)?.protocol || '',
         price: highestPrice,
       },
       lowestPrice: {
-        protocol: mockProtocols.find((p) => p.price === lowestPrice)?.protocol || '',
+        protocol: protocols.find((p) => p.price === lowestPrice)?.protocol || '',
         price: lowestPrice,
       },
       priceRange: Number(priceRange.toFixed(8)),

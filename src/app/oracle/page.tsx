@@ -19,10 +19,13 @@ import {
   TrendingUp,
 } from 'lucide-react';
 
-import { StatCard } from '@/components/common/StatCard';
+import { StatCardEnhanced } from '@/components/common/StatCardEnhanced';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  ButtonEnhanced,
+  CardEnhanced,
+  StatusBadge,
+} from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn, fetchApiData } from '@/lib/utils';
 
@@ -214,28 +217,28 @@ export default function OraclePlatformPage() {
       <section className="border-y border-gray-100 px-4 py-12 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard
+            <StatCardEnhanced
               title={t('home.stats.supportedProtocols')}
               value={stats?.totalProtocols || 10}
               icon={<Layers className="h-5 w-5" />}
               loading={loading}
               color="blue"
             />
-            <StatCard
+            <StatCardEnhanced
               title={t('home.stats.priceFeeds')}
               value={stats?.totalPriceFeeds || 150}
               icon={<TrendingUp className="h-5 w-5" />}
               loading={loading}
               color="green"
             />
-            <StatCard
+            <StatCardEnhanced
               title={t('home.stats.supportedChains')}
               value={stats?.supportedChains || 15}
               icon={<Globe className="h-5 w-5" />}
               loading={loading}
               color="purple"
             />
-            <StatCard
+            <StatCardEnhanced
               title={t('home.stats.avgLatency')}
               value={`${stats?.avgUpdateLatency || 500}ms`}
               icon={<Zap className="h-5 w-5" />}
@@ -297,14 +300,14 @@ export default function OraclePlatformPage() {
           </div>
 
           <div className="mt-12 text-center">
-            <Button
+            <ButtonEnhanced
               variant="outline"
               onClick={() => router.push('/oracle/dashboard')}
               className="gap-2"
             >
               {t('home.protocols.exploreAll')}
               <ArrowRight className="h-4 w-4" />
-            </Button>
+            </ButtonEnhanced>
           </div>
         </div>
       </section>
@@ -315,10 +318,10 @@ export default function OraclePlatformPage() {
           <h2 className="mb-6 text-3xl font-bold text-gray-900">{t('home.cta.title')}</h2>
           <p className="mb-8 text-lg text-gray-600">{t('home.cta.subtitle')}</p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Button size="lg" onClick={() => router.push('/oracle/dashboard')} className="gap-2">
+            <ButtonEnhanced size="lg" variant="gradient" onClick={() => router.push('/oracle/dashboard')} className="gap-2">
               <Activity className="h-4 w-4" />
               {t('home.cta.launchDashboard')}
-            </Button>
+            </ButtonEnhanced>
             <Link
               href="/oracle/comparison"
               className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700"
@@ -394,13 +397,13 @@ const FeatureCard = React.memo(function FeatureCard({
   description,
 }: FeatureCardProps) {
   return (
-    <Card className="border-0 shadow-sm transition-shadow hover:shadow-md">
-      <CardContent className="p-6">
+    <CardEnhanced hover className="border-0 shadow-sm">
+      <div className="p-6">
         <div className="mb-4 text-purple-600">{icon}</div>
         <h3 className="mb-2 text-lg font-semibold text-gray-900">{title}</h3>
         <p className="text-gray-600">{description}</p>
-      </CardContent>
-    </Card>
+      </div>
+    </CardEnhanced>
   );
 });
 
@@ -410,65 +413,49 @@ interface ProtocolCardProps {
 
 const ProtocolCard = React.memo(function ProtocolCard({ protocol }: ProtocolCardProps) {
   const { t } = useI18n();
-  const statusColors = {
-    active: 'bg-green-100 text-green-700',
-    beta: 'bg-yellow-100 text-yellow-700',
-    coming_soon: 'bg-gray-100 text-gray-500',
-  };
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'active':
-        return t('home.protocolStatus.active');
-      case 'beta':
-        return t('home.protocolStatus.beta');
-      case 'coming_soon':
-        return t('home.protocolStatus.comingSoon');
-      default:
-        return status;
-    }
+  const statusConfig = {
+    active: { status: 'active' as const, color: 'emerald' },
+    beta: { status: 'pending' as const, color: 'amber' },
+    coming_soon: { status: 'offline' as const, color: 'gray' },
   };
 
   return (
-    <Card className="group cursor-pointer border-0 shadow-sm transition-all hover:shadow-md">
-      <CardHeader className="pb-4">
+    <CardEnhanced hover className="group cursor-pointer border-0 shadow-sm" clickable>
+      <div className="pb-4">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <span className="text-3xl">{protocol.icon}</span>
             <div>
-              <CardTitle className="text-lg transition-colors group-hover:text-purple-700">
+              <h3 className="text-lg font-semibold text-gray-900 transition-colors group-hover:text-purple-700">
                 {protocol.name}
-              </CardTitle>
-              <Badge
-                variant="secondary"
-                className={cn('mt-1 text-xs', statusColors[protocol.status])}
-              >
-                {protocol.status === 'active' && (
-                  <>
-                    <CheckCircle className="mr-1 h-3 w-3" />
-                    {getStatusText(protocol.status)}
-                  </>
-                )}
-                {protocol.status === 'beta' && getStatusText(protocol.status)}
-                {protocol.status === 'coming_soon' && getStatusText(protocol.status)}
-              </Badge>
+              </h3>
+              <StatusBadge
+                status={statusConfig[protocol.status].status}
+                text={protocol.status === 'active' 
+                  ? t('home.protocolStatus.active') 
+                  : protocol.status === 'beta' 
+                    ? t('home.protocolStatus.beta') 
+                    : t('home.protocolStatus.comingSoon')}
+                className="mt-1"
+              />
             </div>
           </div>
         </div>
-      </CardHeader>
-      <CardContent className="pt-0">
+      </div>
+      <div className="pt-0">
         <p className="mb-4 text-sm text-gray-600">{protocol.description}</p>
         <div className="flex flex-wrap gap-2">
           {protocol.features.map((feature) => (
             <span
               key={feature}
-              className="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-600"
+              className="rounded-full bg-purple-100 px-2 py-1 text-xs text-purple-700"
             >
               {feature}
             </span>
           ))}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </CardEnhanced>
   );
 });

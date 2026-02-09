@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 
 import { Activity, Shield, TrendingUp, Globe, BarChart3, Bell, Clock } from 'lucide-react';
 
-import { StatCard } from '@/components/common/StatCard';
+import { StatCardEnhanced } from '@/components/common/StatCardEnhanced';
 import {
   FeedTable,
   commonFeedColumns,
@@ -14,11 +14,13 @@ import {
 } from '@/components/features/protocol/FeedTable';
 import type { ProtocolComparisonData } from '@/components/features/protocol/ProtocolComparison';
 import { ProtocolPageLayout } from '@/components/features/protocol/ProtocolPageLayout';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+  ButtonEnhanced,
+  StatusBadge,
+} from '@/components/ui';
 import { Progress } from '@/components/ui/progress';
 import { ChartSkeleton } from '@/components/ui/skeleton';
-import { StatusBadge } from '@/components/ui/StatusBadge';
 import { logger } from '@/lib/logger';
 import { getProtocolConfig } from '@/lib/protocol-config';
 import { ORACLE_PROTOCOLS, type OracleProtocol } from '@/lib/types';
@@ -417,26 +419,26 @@ export default function UnifiedProtocolPage() {
   // Stats content
   const statsContent = stats && (
     <>
-      <StatCard
+      <StatCardEnhanced
         title="Total Feeds"
         value={stats.totalFeeds as number}
         icon={<TrendingUp className="h-5 w-5" />}
         color="blue"
       />
-      <StatCard
+      <StatCardEnhanced
         title="Active Feeds"
         value={stats.activeFeeds as number}
         icon={<Activity className="h-5 w-5" />}
         color="green"
         subtitle={`${stats.staleFeeds as number} stale`}
       />
-      <StatCard
+      <StatCardEnhanced
         title="Network Uptime"
         value={`${stats.networkUptime as number}%`}
         icon={<Shield className="h-5 w-5" />}
         color="purple"
       />
-      <StatCard
+      <StatCardEnhanced
         title="Avg Latency"
         value={`${((stats.avgUpdateLatency as number) / 1000).toFixed(1)}s`}
         icon={<Clock className="h-5 w-5" />}
@@ -448,15 +450,15 @@ export default function UnifiedProtocolPage() {
   // Chain selector
   const chainSelectorContent = (
     <>
-      <Button
+      <ButtonEnhanced
         variant={selectedChain === 'all' ? 'default' : 'outline'}
         size="sm"
         onClick={() => setSelectedChain('all')}
       >
         All Chains
-      </Button>
+      </ButtonEnhanced>
       {protocolChains.map((chain) => (
-        <Button
+        <ButtonEnhanced
           key={chain.id}
           variant={selectedChain === chain.id ? 'default' : 'outline'}
           size="sm"
@@ -465,7 +467,7 @@ export default function UnifiedProtocolPage() {
         >
           <span>{chain.icon}</span>
           {chain.name}
-        </Button>
+        </ButtonEnhanced>
       ))}
     </>
   );

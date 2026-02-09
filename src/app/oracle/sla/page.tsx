@@ -24,8 +24,8 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { logger } from '@/lib/logger';
 import { useI18n } from '@/i18n';
+import { logger } from '@/lib/logger';
 
 interface SLAStats {
   overallCompliance: number;

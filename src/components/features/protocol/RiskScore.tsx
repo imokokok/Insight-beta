@@ -1,9 +1,11 @@
 'use client';
 
 import { useMemo } from 'react';
+
 import { Shield, AlertTriangle, AlertOctagon, Info, TrendingDown, Activity } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useI18n } from '@/i18n';

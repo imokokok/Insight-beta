@@ -137,6 +137,12 @@ export abstract class BaseSyncService {
       // Publish prices to message queue
       for (const price of prices) {
         await messageQueue.publishPriceUpdate(this.serviceName, price);
+        
+        // Cache latest price in Redis for direct access
+        const key = `oracle:latest:${this.protocol}:${price.symbol}`;
+        await redisManager.getClient().set(key, JSON.stringify(price), {
+          EX: 300, // Expire after 5 minutes
+        });
       }
 
       // Update health status

@@ -715,7 +715,387 @@ body::before {
 }
 
 /* ============================================================================
-   响应式工具
+   新增动画效果 - UI 现代化
+   ============================================================================ */
+
+/* 价格闪烁动画 - 上涨 */
+@keyframes priceFlashUp {
+  0% {
+    background-color: rgba(16, 185, 129, 0.4);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+/* 价格闪烁动画 - 下跌 */
+@keyframes priceFlashDown {
+  0% {
+    background-color: rgba(239, 68, 68, 0.4);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+/* 缩放进入动画 */
+@keyframes scaleIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 轻微弹跳动画 */
+@keyframes bounceSubtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* 卡片悬停效果 */
+.transition-card {
+  transition: all 300ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  will-change: transform, box-shadow;
+}
+
+.transition-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 40px -10px rgba(139, 92, 246, 0.2);
+}
+
+.transition-card:active {
+  transform: scale(0.98) translateY(-2px);
+  transition-duration: 150ms;
+}
+
+/* 骨架屏 Shimmer 效果 */
+.animate-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.animate-shimmer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite linear;
+}
+
+/* 价格闪烁工具类 */
+.animate-price-flash-up {
+  animation: priceFlashUp 500ms ease-out;
+}
+
+.animate-price-flash-down {
+  animation: priceFlashDown 500ms ease-out;
+}
+
+.animate-scale-in {
+  animation: scaleIn 300ms ease-out;
+}
+
+.animate-bounce-subtle {
+  animation: bounceSubtle 2s ease-in-out infinite;
+}
+
+/* ============================================================================
+   微交互动画
+   ============================================================================ */
+
+/* 按钮点击波纹 */
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+.animate-ripple {
+  animation: ripple 600ms ease-out;
+}
+
+/* 悬停上浮效果 */
+.hover-lift {
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -8px rgba(139, 92, 246, 0.2);
+}
+
+/* 按压效果 */
+.press-effect {
+  transition: transform var(--transition-fast);
+}
+
+.press-effect:active {
+  transform: scale(0.96);
+}
+
+/* 闪烁效果 */
+@keyframes flash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-flash {
+  animation: flash 1.5s ease-in-out infinite;
+}
+
+/* 弹跳进入 */
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-bounce-in {
+  animation: bounceIn 0.5s ease-out;
+}
+
+/* 摇晃效果 */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+/* 脉冲发光 */
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(139, 92, 246, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.8);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+/* 旋转进入 */
+@keyframes rotateIn {
+  0% {
+    opacity: 0;
+    transform: rotate(-180deg) scale(0);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(0) scale(1);
+  }
+}
+
+.animate-rotate-in {
+  animation: rotateIn 0.5s ease-out;
+}
+
+/* 滑入效果 */
+@keyframes slideInLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  0% {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.3s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.3s ease-out;
+}
+
+.animate-slide-in-up {
+  animation: slideInUp 0.3s ease-out;
+}
+
+.animate-slide-in-down {
+  animation: slideInDown 0.3s ease-out;
+}
+
+/* 弹性效果 */
+@keyframes elastic {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  70% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-elastic {
+  animation: elastic 0.5s ease-out;
+}
+
+/* 呼吸效果 */
+@keyframes breathe {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+}
+
+.animate-breathe {
+  animation: breathe 3s ease-in-out infinite;
+}
+
+/* 摇摆效果 */
+@keyframes wobble {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  15% { transform: translateX(-5px) rotate(-5deg); }
+  30% { transform: translateX(4px) rotate(3deg); }
+  45% { transform: translateX(-3px) rotate(-3deg); }
+  60% { transform: translateX(2px) rotate(2deg); }
+  75% { transform: translateX(-1px) rotate(-1deg); }
+}
+
+.animate-wobble {
+  animation: wobble 1s ease-in-out;
+}
+
+/* 心跳效果 */
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  14% { transform: scale(1.1); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.1); }
+  70% { transform: scale(1); }
+}
+
+.animate-heartbeat {
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+/* 翻转效果 */
+@keyframes flip {
+  0% {
+    transform: perspective(400px) rotateY(0);
+  }
+  100% {
+    transform: perspective(400px) rotateY(360deg);
+  }
+}
+
+.animate-flip {
+  animation: flip 0.6s ease-out;
+}
+
+/* 渐显效果 */
+@keyframes fadeInScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in-scale {
+  animation: fadeInScale 0.3s ease-out;
+}
+
+/* 模糊进入 */
+@keyframes blurIn {
+  0% {
+    opacity: 0;
+    filter: blur(10px);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+.animate-blur-in {
+  animation: blurIn 0.4s ease-out;
+}
+
+/* 响应式工具
    ============================================================================ */
 
 @media (max-width: 768px) {

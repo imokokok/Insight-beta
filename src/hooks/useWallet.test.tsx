@@ -4,7 +4,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useWallet } from '@/contexts/WalletContext';
+import { useWallet, WalletProvider } from '@/contexts/WalletContext';
 
 // Mock window.ethereum
 const mockEthereum = {
@@ -19,10 +19,21 @@ Object.defineProperty(window, 'ethereum', {
   value: mockEthereum,
 });
 
+// Wrapper component for tests
+const wrapper = ({ children }: { children: React.ReactNode }) => (
+  <WalletProvider>{children}</WalletProvider>
+);
+
 describe('useWallet', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
+    // Default implementation for request to prevent "Cannot read properties of undefined (reading 'then')"
+    mockEthereum.request.mockImplementation(async ({ method }: { method: string }) => {
+      if (method === 'eth_accounts') return [];
+      if (method === 'eth_chainId') return '0x1';
+      return null;
+    });
   });
 
   afterEach(() => {
@@ -30,7 +41,7 @@ describe('useWallet', () => {
   });
 
   it('should initialize with disconnected state', () => {
-    const { result } = renderHook(() => useWallet());
+    const { result } = renderHook(() => useWallet(), { wrapper });
 
     expect(result.current.isConnected).toBe(false);
     expect(result.current.address).toBeNull();
@@ -46,7 +57,7 @@ describe('useWallet', () => {
       .mockResolvedValueOnce([mockAddress]) // eth_requestAccounts
       .mockResolvedValueOnce(mockChainId); // eth_chainId
 
-    const { result } = renderHook(() => useWallet());
+    const { result } = renderHook(() => useWallet(), { wrapper });
 
     await act(async () => {
       await result.current.connect();
@@ -62,7 +73,7 @@ describe('useWallet', () => {
   it('should handle connection rejection', async () => {
     mockEthereum.request.mockRejectedValue(new Error('User rejected'));
 
-    const { result } = renderHook(() => useWallet());
+    const { result } = renderHook(() => useWallet(), { wrapper });
 
     await act(async () => {
       await result.current.connect();
@@ -76,7 +87,7 @@ describe('useWallet', () => {
     const mockAddress = '0x1234567890123456789012345678901234567890';
     mockEthereum.request.mockResolvedValueOnce([mockAddress]).mockResolvedValueOnce('0x1');
 
-    const { result } = renderHook(() => useWallet());
+    const { result } = renderHook(() => useWallet(), { wrapper });
 
     await act(async () => {
       await result.current.connect();
@@ -97,7 +108,7 @@ describe('useWallet', () => {
       .mockResolvedValueOnce('0x1')
       .mockResolvedValueOnce(null); // wallet_switchEthereumChain
 
-    const { result } = renderHook(() => useWallet());
+    const { result } = renderHook(() => useWallet(), { wrapper });
 
     await act(async () => {
       await result.current.connect();
@@ -125,7 +136,7 @@ describe('useWallet', () => {
 
     mockEthereum.request.mockResolvedValueOnce([mockAddress]).mockResolvedValueOnce('0x1');
 
-    const { result } = renderHook(() => useWallet());
+    const { result } = renderHook(() => useWallet(), { wrapper });
 
     await act(async () => {
       await result.current.connect();
@@ -151,7 +162,7 @@ describe('useWallet', () => {
 
     mockEthereum.request.mockResolvedValueOnce([mockAddress]).mockResolvedValueOnce('0x1');
 
-    const { result } = renderHook(() => useWallet());
+    const { result } = renderHook(() => useWallet(), { wrapper });
 
     await act(async () => {
       await result.current.connect();
@@ -170,7 +181,7 @@ describe('useWallet', () => {
 
     mockEthereum.request.mockResolvedValueOnce([mockAddress]).mockResolvedValueOnce('0x1');
 
-    const { result } = renderHook(() => useWallet());
+    const { result } = renderHook(() => useWallet(), { wrapper });
 
     await waitFor(() => {
       expect(result.current.isConnected).toBe(true);

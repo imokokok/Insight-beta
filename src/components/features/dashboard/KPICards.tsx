@@ -1,7 +1,9 @@
 'use client';
 
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
+
 import { TrendingUp, TrendingDown, Minus, Activity, DollarSign, Users, Shield, Zap } from 'lucide-react';
+
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';

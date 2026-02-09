@@ -13,7 +13,7 @@
 import { useEffect, useState, useCallback, useRef, Suspense, lazy } from 'react';
 
 import { ComparisonControls } from '@/components/features/comparison/ComparisonControls';
-import { ChartSkeleton } from '@/components/ui/skeleton';
+import { ChartSkeleton } from '@/components/ui/skeleton-enhanced';
 import { useToast } from '@/components/ui/toast';
 import { useI18n } from '@/i18n';
 import { logger } from '@/lib/logger';
