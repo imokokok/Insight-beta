@@ -56,7 +56,9 @@ function LoadingPlaceholder({ className }: { className?: string }) {
   return <div className={className} aria-hidden="true" />;
 }
 
-export const dynamic = 'force-dynamic';
+// 使用 ISR 缓存布局，但允许在请求时重新验证
+export const dynamic = 'force-static';
+export const revalidate = 60; // 60秒重新验证
 
 export async function generateMetadata(): Promise<Metadata> {
   const c = await cookies();

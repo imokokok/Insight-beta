@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 
 import { ArrowUpRight, Minus, AlertTriangle, Info } from 'lucide-react';
 
@@ -61,7 +61,7 @@ function formatHeatmapPrice(value: number): string {
   return `$${value.toFixed(4)}`;
 }
 
-export function PriceHeatmap({
+export const PriceHeatmap = memo(function PriceHeatmap({
   data,
   isLoading,
   onCellClick,
@@ -359,4 +359,4 @@ export function PriceHeatmap({
       </Card>
     </TooltipProvider>
   );
-}
+});

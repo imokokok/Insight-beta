@@ -103,6 +103,7 @@ export function useKeyboardNavigation(
   const focusedElementRef = useRef<HTMLElement | null>(null);
   const fallbackRef = useRef<HTMLElement | null>(null);
   const containerRef = opts.containerRef || fallbackRef;
+  const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 获取所有可导航的元素
   const getFocusableElements = useCallback((): HTMLElement[] => {
@@ -259,7 +260,7 @@ export function useKeyboardNavigation(
   const handleBlur = useCallback(
     (_e: React.FocusEvent) => {
       // 延迟检查，确保不是移动到容器内的其他元素
-      setTimeout(() => {
+      blurTimeoutRef.current = setTimeout(() => {
         if (!containerRef.current?.contains(document.activeElement)) {
           setFocusedIndex(-1);
         }
@@ -267,6 +268,15 @@ export function useKeyboardNavigation(
     },
     [containerRef],
   );
+
+  // 清理定时器
+  useEffect(() => {
+    return () => {
+      if (blurTimeoutRef.current) {
+        clearTimeout(blurTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return {
     focusedIndex,

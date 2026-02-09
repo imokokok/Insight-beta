@@ -1,7 +1,7 @@
 'use client';
 
+import { StatusBadge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { StatusBadge } from '@/components/ui/StatusBadge';
 import { formatTimeAgo, formatPrice, truncateAddress } from '@/lib/utils/format';
 
 export interface FeedColumn {

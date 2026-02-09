@@ -19,13 +19,9 @@ import {
   TrendingUp,
 } from 'lucide-react';
 
-import { StatCardEnhanced } from '@/components/common/StatCardEnhanced';
+import { StatCardEnhanced } from '@/components/common';
+import { ButtonEnhanced, CardEnhanced, StatusBadge } from '@/components/ui';
 import { Badge } from '@/components/ui/badge';
-import {
-  ButtonEnhanced,
-  CardEnhanced,
-  StatusBadge,
-} from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { cn, fetchApiData } from '@/lib/utils';
 
@@ -318,7 +314,12 @@ export default function OraclePlatformPage() {
           <h2 className="mb-6 text-3xl font-bold text-gray-900">{t('home.cta.title')}</h2>
           <p className="mb-8 text-lg text-gray-600">{t('home.cta.subtitle')}</p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <ButtonEnhanced size="lg" variant="gradient" onClick={() => router.push('/oracle/dashboard')} className="gap-2">
+            <ButtonEnhanced
+              size="lg"
+              variant="gradient"
+              onClick={() => router.push('/oracle/dashboard')}
+              className="gap-2"
+            >
               <Activity className="h-4 w-4" />
               {t('home.cta.launchDashboard')}
             </ButtonEnhanced>
@@ -432,11 +433,13 @@ const ProtocolCard = React.memo(function ProtocolCard({ protocol }: ProtocolCard
               </h3>
               <StatusBadge
                 status={statusConfig[protocol.status].status}
-                text={protocol.status === 'active' 
-                  ? t('home.protocolStatus.active') 
-                  : protocol.status === 'beta' 
-                    ? t('home.protocolStatus.beta') 
-                    : t('home.protocolStatus.comingSoon')}
+                text={
+                  protocol.status === 'active'
+                    ? t('home.protocolStatus.active')
+                    : protocol.status === 'beta'
+                      ? t('home.protocolStatus.beta')
+                      : t('home.protocolStatus.comingSoon')
+                }
                 className="mt-1"
               />
             </div>

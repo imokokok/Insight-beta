@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 
 import { Activity, Shield, TrendingUp, Globe, BarChart3, Bell, Clock } from 'lucide-react';
 
-import { StatCardEnhanced } from '@/components/common/StatCardEnhanced';
+import { StatCardEnhanced } from '@/components/common';
 import {
   FeedTable,
   commonFeedColumns,
@@ -14,11 +14,8 @@ import {
 } from '@/components/features/protocol/FeedTable';
 import type { ProtocolComparisonData } from '@/components/features/protocol/ProtocolComparison';
 import { ProtocolPageLayout } from '@/components/features/protocol/ProtocolPageLayout';
+import { ButtonEnhanced, StatusBadge } from '@/components/ui';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  ButtonEnhanced,
-  StatusBadge,
-} from '@/components/ui';
 import { Progress } from '@/components/ui/progress';
 import { ChartSkeleton } from '@/components/ui/skeleton';
 import { logger } from '@/lib/logger';

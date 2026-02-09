@@ -5,11 +5,16 @@
  * 提供跨协议价格数据聚合、比较和异常检测
  */
 
-
 import { logger } from '@/lib/logger';
 import { getRedisClient } from '@/server/redisCache';
 
-import type { PriceData } from '@oracle-monitor/shared'; // Use shared type for Redis parsing
+// Local PriceData type for Redis parsing
+interface PriceData {
+  price: string | number;
+  timestamp: string | number;
+  confidence?: number;
+  blockNumber?: number;
+}
 
 export interface UnifiedPriceData {
   pair: string;
@@ -86,14 +91,14 @@ export async function getUnifiedPriceData(query: UnifiedQuery): Promise<UnifiedP
 
   const client = await getRedisClient();
   const sources: PriceSource[] = [];
-  
+
   if (client) {
     try {
-      const keys = protocols.map(p => `oracle:latest:${p}:${pair}`);
-      
+      const keys = protocols.map((p) => `oracle:latest:${p}:${pair}`);
+
       // Use pipeline for efficient fetching
       const pipeline = client.multi();
-      keys.forEach(key => pipeline.get(key));
+      keys.forEach((key) => pipeline.get(key));
       const results = await pipeline.exec();
 
       if (results) {
@@ -104,7 +109,7 @@ export async function getUnifiedPriceData(query: UnifiedQuery): Promise<UnifiedP
               const now = Date.now();
               const timestamp = Number(priceData.timestamp);
               const age = now - timestamp;
-              
+
               sources.push({
                 protocol: protocols[index] || 'unknown',
                 price: Number(priceData.price),
@@ -114,7 +119,10 @@ export async function getUnifiedPriceData(query: UnifiedQuery): Promise<UnifiedP
                 status: age > 300000 ? 'stale' : 'active', // 5 min stale threshold
               });
             } catch (err) {
-              logger.warn('Failed to parse price data from Redis', { key: keys[index], error: err });
+              logger.warn('Failed to parse price data from Redis', {
+                key: keys[index],
+                error: err,
+              });
             }
           }
         });
@@ -145,8 +153,8 @@ export async function getUnifiedPriceData(query: UnifiedQuery): Promise<UnifiedP
         status: 'active',
       },
     ];
-     // Only use requested protocols
-     sources.push(...mockSources.filter(s => protocols.includes(s.protocol)));
+    // Only use requested protocols
+    sources.push(...mockSources.filter((s) => protocols.includes(s.protocol)));
   }
 
   const activeSources = sources.filter((s) => s.status === 'active');
@@ -200,9 +208,9 @@ export async function compareProtocols(query: ComparisonQuery): Promise<Protocol
 
   // Re-use getUnifiedPriceData to get real data
   const unifiedData = await getUnifiedPriceData({ pair, protocols: query.protocols });
-  const activeSources = unifiedData.sources.filter(s => s.status === 'active');
+  const activeSources = unifiedData.sources.filter((s) => s.status === 'active');
 
-  const protocols: ProtocolPriceInfo[] = activeSources.map(s => ({
+  const protocols: ProtocolPriceInfo[] = activeSources.map((s) => ({
     protocol: s.protocol,
     price: s.price,
     timestamp: s.timestamp,
@@ -210,21 +218,21 @@ export async function compareProtocols(query: ComparisonQuery): Promise<Protocol
   }));
 
   if (protocols.length === 0) {
-      // Return empty or mock structure if no data
-      return {
-          pair,
-          protocols: [],
-          analysis: {
-              highestPrice: { protocol: '', price: 0 },
-              lowestPrice: { protocol: '', price: 0 },
-              priceRange: 0,
-              priceRangePercent: 0,
-              medianPrice: 0,
-              meanPrice: 0,
-              recommendations: [],
-          },
-          timestamp: new Date().toISOString(),
-      };
+    // Return empty or mock structure if no data
+    return {
+      pair,
+      protocols: [],
+      analysis: {
+        highestPrice: { protocol: '', price: 0 },
+        lowestPrice: { protocol: '', price: 0 },
+        priceRange: 0,
+        priceRangePercent: 0,
+        medianPrice: 0,
+        meanPrice: 0,
+        recommendations: [],
+      },
+      timestamp: new Date().toISOString(),
+    };
   }
 
   const prices = protocols.map((p) => p.price);

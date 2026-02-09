@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useMemo, useDeferredValue } from 'react';
+import React, { useEffect, useState, useMemo, useDeferredValue, memo } from 'react';
 
 import { TrendingUp, TrendingDown, Minus, AlertCircle, Clock } from 'lucide-react';
 
@@ -28,7 +28,7 @@ interface FeedWithUpdate extends PriceFeed {
   previousPrice?: number;
 }
 
-export function PriceFeedList({
+export const PriceFeedList = memo(function PriceFeedList({
   protocols,
   symbols,
   limit = 20,
@@ -170,7 +170,7 @@ export function PriceFeedList({
       </CardContent>
     </Card>
   );
-}
+});
 
 const PriceFeedItem = React.memo(function PriceFeedItem({ feed }: { feed: FeedWithUpdate }) {
   const priceChange = feed.priceChangePercent ?? 0;

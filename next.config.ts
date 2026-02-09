@@ -51,6 +51,10 @@ const nextConfig: NextConfig = {
     optimizeCss: true,
     serverMinification: true,
     webpackBuildWorker: true,
+    scrollRestoration: true,
+    serverActions: {
+      bodySizeLimit: '2mb',
+    },
     optimizePackageImports: [
       'lucide-react',
       'recharts',

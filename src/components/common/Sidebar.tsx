@@ -188,7 +188,7 @@ export function Sidebar() {
 
             {/* Optimistic Oracle Section */}
             <div className="pt-2">
-              <a
+              <Link
                 href="/oracle/optimistic"
                 className={cn(
                   'group flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
@@ -210,12 +210,12 @@ export function Sidebar() {
                   <span>{t('nav.optimisticOracle')}</span>
                 </div>
                 <ChevronRight size={16} className="text-gray-400" />
-              </a>
+              </Link>
             </div>
 
             {/* Analytics Section */}
             <div className="pt-2">
-              <a
+              <Link
                 href="/oracle/analytics"
                 className={cn(
                   'group flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
@@ -237,7 +237,7 @@ export function Sidebar() {
                   <span>{t('nav.aiAnalytics')}</span>
                 </div>
                 <ChevronRight size={16} className="text-gray-400" />
-              </a>
+              </Link>
             </div>
 
             {/* Divider */}

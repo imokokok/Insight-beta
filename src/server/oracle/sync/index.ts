@@ -17,7 +17,7 @@ import type { bandSyncManager as _bandSyncManager } from './BandSync';
 import type { BaseSyncManager } from './BaseSyncManager';
 import type { chainlinkSyncManager as _chainlinkSyncManager } from './ChainlinkSync';
 import type { diaSyncManager as _diaSyncManager } from './DIASync';
-import type { fluxSyncManager as _fluxSyncManager } from './FluxSync';
+// import type { fluxSyncManager as _fluxSyncManager } from './FluxSync';
 import type { pythSyncManager as _pythSyncManager } from './PythSync';
 import type { redstoneSyncManager as _redstoneSyncManager } from './RedStoneSync';
 
@@ -97,15 +97,17 @@ export {
 
 export type RedStoneSyncManager = typeof _redstoneSyncManager;
 
-export {
-  fluxSyncManager,
-  startFluxSync,
-  stopFluxSync,
-  stopAllFluxSync,
-  cleanupFluxData,
-} from './FluxSync';
+// Flux Sync - temporarily disabled
+// export {
+//   fluxSyncManager,
+//   startFluxSync,
+//   stopFluxSync,
+//   stopAllFluxSync,
+//   cleanupFluxData,
+// } from './FluxSync';
 
-export type FluxSyncManager = typeof _fluxSyncManager;
+// export type FluxSyncManager = typeof _fluxSyncManager;
+export type FluxSyncManager = unknown;
 
 // ============================================================================
 // Sync Manager 工厂
@@ -151,9 +153,10 @@ export async function getSyncManager(protocol: OracleProtocol): Promise<BaseSync
         break;
       }
       case 'flux': {
-        const { fluxSyncManager } = await import('./FluxSync');
-        syncManagers.set(protocol, fluxSyncManager);
-        break;
+        // Flux sync temporarily disabled
+        // const { fluxSyncManager } = await import('./FluxSync');
+        // syncManagers.set(protocol, fluxSyncManager);
+        throw new Error('Flux sync temporarily disabled');
       }
       default:
         throw new Error(`Unsupported protocol: ${protocol}`);

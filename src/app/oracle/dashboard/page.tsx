@@ -25,13 +25,8 @@ import {
   AlertCircle,
 } from 'lucide-react';
 
-import { StatCardEnhanced } from '@/components/common/StatCardEnhanced';
-import {
-  ButtonEnhanced,
-  StatusBadge,
-  CardEnhanced,
-  TooltipEnhanced,
-} from '@/components/ui';
+import { StatCardEnhanced } from '@/components/common';
+import { ButtonEnhanced, StatusBadge, CardEnhanced, TooltipEnhanced } from '@/components/ui';
 import { ChartSkeleton } from '@/components/ui/skeleton-enhanced';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useDataRefresh, useWebSocket } from '@/hooks';
@@ -374,29 +369,24 @@ export default function UnifiedDashboardPage() {
                     <h3 className="text-lg font-semibold text-purple-900">Uptime (24h)</h3>
                   </div>
                   <div className="space-y-3">
-                    {[
-                      'Chainlink',
-                      'Pyth Network',
-                      'Band Protocol',
-                      'API3',
-                      'RedStone',
-                      'Flux',
-                    ].map((protocol) => (
-                      <div key={protocol} className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">{protocol}</span>
-                        <div className="flex items-center gap-2">
-                          <div className="h-2 w-24 rounded-full bg-gray-100">
-                            <div
-                              className="h-2 rounded-full bg-green-500"
-                              style={{ width: `${99 + Math.random()}%` }}
-                            />
+                    {['Chainlink', 'Pyth Network', 'Band Protocol', 'API3', 'RedStone', 'Flux'].map(
+                      (protocol) => (
+                        <div key={protocol} className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">{protocol}</span>
+                          <div className="flex items-center gap-2">
+                            <div className="h-2 w-24 rounded-full bg-gray-100">
+                              <div
+                                className="h-2 rounded-full bg-green-500"
+                                style={{ width: `${99 + Math.random()}%` }}
+                              />
+                            </div>
+                            <span className="text-sm font-medium">
+                              {(99 + Math.random()).toFixed(2)}%
+                            </span>
                           </div>
-                          <span className="text-sm font-medium">
-                            {(99 + Math.random()).toFixed(2)}%
-                          </span>
                         </div>
-                      </div>
-                    ))}
+                      ),
+                    )}
                   </div>
                 </CardEnhanced>
 
@@ -405,32 +395,27 @@ export default function UnifiedDashboardPage() {
                     <h3 className="text-lg font-semibold text-purple-900">Average Latency</h3>
                   </div>
                   <div className="space-y-3">
-                    {[
-                      'Chainlink',
-                      'Pyth Network',
-                      'Band Protocol',
-                      'API3',
-                      'RedStone',
-                      'Flux',
-                    ].map((protocol) => (
-                      <div key={protocol} className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">{protocol}</span>
-                        <div className="flex items-center gap-2">
-                          <div className="h-2 w-24 rounded-full bg-gray-100">
-                            <div
-                              className={cn(
-                                'h-2 rounded-full',
-                                Math.random() > 0.5 ? 'bg-green-500' : 'bg-yellow-500',
-                              )}
-                              style={{ width: `${Math.random() * 100}%` }}
-                            />
+                    {['Chainlink', 'Pyth Network', 'Band Protocol', 'API3', 'RedStone', 'Flux'].map(
+                      (protocol) => (
+                        <div key={protocol} className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">{protocol}</span>
+                          <div className="flex items-center gap-2">
+                            <div className="h-2 w-24 rounded-full bg-gray-100">
+                              <div
+                                className={cn(
+                                  'h-2 rounded-full',
+                                  Math.random() > 0.5 ? 'bg-green-500' : 'bg-yellow-500',
+                                )}
+                                style={{ width: `${Math.random() * 100}%` }}
+                              />
+                            </div>
+                            <span className="text-sm font-medium">
+                              {Math.floor(Math.random() * 1000)}ms
+                            </span>
                           </div>
-                          <span className="text-sm font-medium">
-                            {Math.floor(Math.random() * 1000)}ms
-                          </span>
                         </div>
-                      </div>
-                    ))}
+                      ),
+                    )}
                   </div>
                 </CardEnhanced>
 
@@ -439,29 +424,24 @@ export default function UnifiedDashboardPage() {
                     <h3 className="text-lg font-semibold text-purple-900">Accuracy Score</h3>
                   </div>
                   <div className="space-y-3">
-                    {[
-                      'Chainlink',
-                      'Pyth Network',
-                      'Band Protocol',
-                      'API3',
-                      'RedStone',
-                      'Flux',
-                    ].map((protocol) => (
-                      <div key={protocol} className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">{protocol}</span>
-                        <div className="flex items-center gap-2">
-                          <div className="h-2 w-24 rounded-full bg-gray-100">
-                            <div
-                              className="h-2 rounded-full bg-blue-500"
-                              style={{ width: `${95 + Math.random() * 5}%` }}
-                            />
+                    {['Chainlink', 'Pyth Network', 'Band Protocol', 'API3', 'RedStone', 'Flux'].map(
+                      (protocol) => (
+                        <div key={protocol} className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">{protocol}</span>
+                          <div className="flex items-center gap-2">
+                            <div className="h-2 w-24 rounded-full bg-gray-100">
+                              <div
+                                className="h-2 rounded-full bg-blue-500"
+                                style={{ width: `${95 + Math.random() * 5}%` }}
+                              />
+                            </div>
+                            <span className="text-sm font-medium">
+                              {(95 + Math.random() * 5).toFixed(1)}%
+                            </span>
                           </div>
-                          <span className="text-sm font-medium">
-                            {(95 + Math.random() * 5).toFixed(1)}%
-                          </span>
                         </div>
-                      </div>
-                    ))}
+                      ),
+                    )}
                   </div>
                 </CardEnhanced>
               </div>
@@ -501,7 +481,9 @@ export default function UnifiedDashboardPage() {
                       <div className="border-t border-gray-200 pt-4">
                         <div className="flex items-center justify-between">
                           <span className="font-medium text-gray-700">Total Active</span>
-                          <span className="font-bold text-gray-900">{stats?.activeAlerts ?? 0}</span>
+                          <span className="font-bold text-gray-900">
+                            {stats?.activeAlerts ?? 0}
+                          </span>
                         </div>
                       </div>
                     </div>

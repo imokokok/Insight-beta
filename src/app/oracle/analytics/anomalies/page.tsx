@@ -37,6 +37,11 @@ import {
 } from 'recharts';
 
 import {
+  EnhancedStatCard,
+  EnhancedStatCardSkeleton,
+  StatCardGroup as EnhancedStatCardGroup,
+} from '@/components/common';
+import {
   AnimatedContainer,
   StaggerContainer,
   HoverCard,
@@ -45,13 +50,9 @@ import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { ChartCard } from '@/components/common/ChartCard';
 import { ToastContainer, useToast } from '@/components/common/DashboardToast';
 import { EmptyAnomalyState, EmptySearchState } from '@/components/common/EmptyState';
-import {
-  EnhancedStatCard,
-  EnhancedStatCardSkeleton,
-  EnhancedStatCardGroup,
-} from '@/components/common/EnhancedStatCard';
 import { PageHeader } from '@/components/common/PageHeader';
-import { SkeletonList, SkeletonChart } from '@/components/common/SkeletonCard';
+import { SkeletonChart } from '@/components/common/SkeletonCard';
+import { SkeletonList } from '@/components/common/SkeletonList';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';

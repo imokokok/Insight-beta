@@ -53,26 +53,6 @@ export function SkeletonStatCard({ className }: { className?: string }) {
   );
 }
 
-export function SkeletonList({ count = 5, className }: { count?: number; className?: string }) {
-  return (
-    <div className={cn('space-y-3', className)}>
-      {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="flex items-center gap-4 rounded-lg border p-4">
-          <div className="h-10 w-10 animate-pulse rounded-full bg-gray-200" />
-          <div className="flex-1 space-y-2">
-            <div className="flex items-center gap-2">
-              <div className="h-4 w-24 animate-pulse rounded bg-gray-200" />
-              <div className="h-5 w-16 animate-pulse rounded-full bg-gray-100" />
-            </div>
-            <div className="h-3 w-48 animate-pulse rounded bg-gray-100" />
-          </div>
-          <div className="h-8 w-20 animate-pulse rounded bg-gray-100" />
-        </div>
-      ))}
-    </div>
-  );
-}
-
 export function SkeletonChart({ className }: { className?: string }) {
   return (
     <Card className={cn('overflow-hidden', className)}>

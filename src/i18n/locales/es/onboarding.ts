@@ -1,90 +1,103 @@
 const onboarding = {
   title: 'Bienvenido a OracleMonitor',
-  description: 'Tu solución integral de monitoreo de oráculos para múltiples protocolos.',
+  description: 'Solución integral de monitoreo de oracle para múltiples protocolos.',
   getStarted: 'Comenzar',
-  skipTour: 'Saltar Tour',
+  skipTour: 'Omitir recorrido',
   next: 'Siguiente',
   back: 'Atrás',
-  complete: 'Terminar',
-  stepOf: 'Paso {current} de {total}',
+  complete: 'Completar',
+  cancel: 'Cancelar',
+  confirm: 'Confirmar',
+  stepOf: 'Paso {{current}} de {{total}}',
   welcome: 'Bienvenido a OracleMonitor',
-  welcomeDesc: 'Tu plataforma universal de monitoreo de oráculos',
+  welcomeDesc: 'Tu plataforma universal de monitoreo de oracle',
   selectRole: 'Selecciona tu rol para comenzar',
-  continueAsGeneral: 'Continuar como Usuario General',
+  continueAsGeneral: 'Continuar como usuario general',
+  viewAgain: 'Ver recorrido de nuevo',
+  resetConfirm:
+    '¿Estás seguro de que quieres ver la integración de nuevo? Esto actualizará la página.',
+  targetNotFound: 'Elemento objetivo no encontrado',
   steps: {
     developer: {
       api: {
-        title: 'Integración API',
-        description: 'Aprende a integrar con nuestra API de oráculos',
+        title: 'Integración de API',
+        description:
+          'Aprende a integrar nuestra API de oracle para obtener datos de precios en tiempo real',
       },
       integration: {
-        title: 'Integración Rápida',
-        description: 'Comienza en minutos',
+        title: 'Integración rápida',
+        description: 'Usa nuestro SDK para integrar datos de oracle en minutos',
       },
       monitoring: {
-        title: 'Monitoreo en Tiempo Real',
-        description: 'Rastrea el rendimiento de oráculos en tiempo real',
+        title: 'Monitoreo en tiempo real',
+        description: 'Rastrea el rendimiento del oracle y la calidad de los datos en tiempo real',
       },
     },
-    protocol_team: {
+    protocol: {
       monitoring: {
-        title: 'Monitoreo de Oráculos',
-        description: 'Monitorea la salud y rendimiento de oráculos',
+        title: 'Monitoreo de oracle',
+        description:
+          'Monitorea la salud del oracle, el estado de los nodos y las métricas de rendimiento',
       },
       disputes: {
-        title: 'Gestión de Disputas',
-        description: 'Maneja disputas de oráculos eficientemente',
-      },
-      analytics: {
-        title: 'Panel de Analíticas',
-        description: 'Ver analíticas completas',
-      },
-    },
-    oracle_operator: {
-      nodeMonitoring: {
-        title: 'Monitoreo de Nodos',
-        description: 'Monitorea tus nodos de oráculos',
-      },
-      syncStatus: {
-        title: 'Estado de Sincronización',
-        description: 'Rastrea el estado de sincronización',
+        title: 'Gestión de disputas',
+        description: 'Maneja eficientemente las disputas de oracle y la validación de aserciones',
       },
       alerts: {
-        title: 'Configuración de Alertas',
-        description: 'Configura alertas personalizadas',
+        title: 'Alertas inteligentes',
+        description: 'Configura alertas personalizadas para recibir notificaciones de anomalías',
       },
     },
-    general_user: {
+    general: {
       exploration: {
-        title: 'Exploración de Datos',
-        description: 'Explora datos de oráculos entre protocolos',
+        title: 'Exploración de datos',
+        description: 'Explora datos de oracle entre protocolos y tendencias de precios',
       },
-      assertions: {
-        title: 'Seguimiento de Aserciones',
-        description: 'Rastrea aserciones de oráculos',
+      comparison: {
+        title: 'Comparación de protocolos',
+        description: 'Compara precios y rendimiento entre diferentes protocolos de oracle',
       },
-      disputes: {
-        title: 'Monitoreo de Disputas',
-        description: 'Monitorea disputas en tiempo real',
+      alerts: {
+        title: 'Alertas de precios',
+        description:
+          'Configura alertas de desviación de precios para mantenerte al tanto de los movimientos del mercado',
       },
     },
   },
   roles: {
     developer: {
       title: 'Desarrollador',
-      description: 'Construye aplicaciones con datos de oráculos',
+      description: 'Construir aplicaciones usando datos de oracle',
     },
-    protocol_team: {
-      title: 'Equipo de Protocolo',
-      description: 'Gestiona integraciones de oráculos',
+    protocol: {
+      title: 'Equipo de protocolo',
+      description: 'Gestionar la integración de oracle y las operaciones de nodos',
     },
-    oracle_operator: {
-      title: 'Operador de Oráculo',
-      description: 'Ejecuta nodos de oráculos',
+    general: {
+      title: 'Usuario general',
+      description: 'Monitorear y analizar datos de oracle',
     },
-    general_user: {
-      title: 'Usuario General',
-      description: 'Monitorea y analiza datos de oráculos',
+  },
+  tour: {
+    dashboard: {
+      title: 'Descripción general del panel',
+      description: 'Ver todas las métricas clave y datos en tiempo real aquí.',
+    },
+    protocols: {
+      title: 'Selección de protocolo',
+      description: 'Haz clic aquí para cambiar entre diferentes protocolos de oracle.',
+    },
+    search: {
+      title: 'Función de búsqueda',
+      description: 'Usa la búsqueda para encontrar rápidamente el oracle o activo que necesitas.',
+    },
+    alerts: {
+      title: 'Centro de alertas',
+      description: 'Ver y gestionar todas tus notificaciones de alerta.',
+    },
+    settings: {
+      title: 'Configuración',
+      description: 'Personaliza tus preferencias de monitoreo y configuraciones de notificación.',
     },
   },
 };

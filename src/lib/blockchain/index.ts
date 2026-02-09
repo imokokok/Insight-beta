@@ -46,5 +46,5 @@ export { createAPI3Client, getAvailableAPI3Dapis } from './api3Oracle';
 // RedStone
 export { createRedStoneClient, getAvailableRedStoneSymbols } from './redstoneOracle';
 
-// Flux
-export { createFluxClient, getSupportedFluxSymbols } from './protocols/flux';
+// Flux - temporarily disabled
+// export { createFluxClient, getSupportedFluxSymbols } from './protocols/flux';

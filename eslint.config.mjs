@@ -5,6 +5,7 @@ import tseslint from "@typescript-eslint/eslint-plugin";
 import tsParser from "@typescript-eslint/parser";
 import importPlugin from "eslint-plugin-import";
 import jsxA11y from "eslint-plugin-jsx-a11y";
+import unusedImports from "eslint-plugin-unused-imports";
 
 const compat = new FlatCompat({ baseDirectory: import.meta.dirname });
 
@@ -40,6 +41,7 @@ const config = [
       "@typescript-eslint": tseslint,
       import: importPlugin,
       "jsx-a11y": jsxA11y,
+      "unused-imports": unusedImports,
     },
     languageOptions: {
       parser: tsParser,
@@ -75,9 +77,16 @@ const config = [
       "@typescript-eslint/no-explicit-any": "error",
       "no-loss-of-precision": "off",
       "@typescript-eslint/no-loss-of-precision": "off",
-      "@typescript-eslint/no-unused-vars": [
-        "error",
-        { argsIgnorePattern: "^_" },
+      "@typescript-eslint/no-unused-vars": "off",
+      "unused-imports/no-unused-imports": "error",
+      "unused-imports/no-unused-vars": [
+        "warn",
+        { 
+          vars: "all", 
+          varsIgnorePattern: "^_", 
+          args: "after-used", 
+          argsIgnorePattern: "^_" 
+        },
       ],
       "@typescript-eslint/consistent-type-imports": "warn",
       "@typescript-eslint/no-non-null-assertion": "warn",

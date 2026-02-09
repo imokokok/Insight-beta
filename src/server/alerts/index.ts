@@ -18,9 +18,9 @@ export type {
   AlertStats,
 } from './types';
 
-// 管理器
-export {
-  AlertSuppressionManager,
-  AlertEscalationManager,
-  AlertDeduplicationManager,
-} from './managers';
+// 管理器 - temporarily disabled
+// export {
+//   AlertSuppressionManager,
+//   AlertEscalationManager,
+//   AlertDeduplicationManager,
+// } from './managers';

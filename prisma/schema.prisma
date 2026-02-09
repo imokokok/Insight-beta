@@ -34,6 +34,9 @@ model PriceHistoryRaw {
   @@index([chain, timestamp(sort: Desc)])
   @@index([timestamp(sort: Desc)])
   @@index([symbol, protocol, chain, timestamp(sort: Desc)])
+  // 复合索引优化常用查询
+  @@index([protocol, chain, timestamp(sort: Desc)])
+  @@index([symbol, protocol, timestamp(sort: Desc)])
   @@map("price_history_raw")
 }
 

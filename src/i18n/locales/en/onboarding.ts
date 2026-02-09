@@ -1,90 +1,99 @@
 const onboarding = {
   title: 'Welcome to OracleMonitor',
-  description: 'Your comprehensive oracle monitoring solution across multiple protocols.',
+  description: 'Comprehensive oracle monitoring solution for multiple protocols.',
   getStarted: 'Get Started',
   skipTour: 'Skip Tour',
   next: 'Next',
   back: 'Back',
   complete: 'Complete',
-  stepOf: 'Step {current} of {total}',
+  cancel: 'Cancel',
+  confirm: 'Confirm',
+  stepOf: 'Step {{current}} of {{total}}',
   welcome: 'Welcome to OracleMonitor',
   welcomeDesc: 'Your universal oracle monitoring platform',
   selectRole: 'Select your role to get started',
   continueAsGeneral: 'Continue as General User',
+  viewAgain: 'View Tour Again',
+  resetConfirm: 'Are you sure you want to view the onboarding again? This will refresh the page.',
+  targetNotFound: 'Target element not found',
   steps: {
     developer: {
       api: {
         title: 'API Integration',
-        description: 'Learn how to integrate with our oracle API',
+        description: 'Learn how to integrate our oracle API to get real-time price data',
       },
       integration: {
         title: 'Quick Integration',
-        description: 'Get up and running in minutes',
+        description: 'Use our SDK to integrate oracle data in minutes',
       },
       monitoring: {
         title: 'Real-time Monitoring',
-        description: 'Track oracle performance in real-time',
+        description: 'Track oracle performance and data quality in real-time',
       },
     },
-    protocol_team: {
+    protocol: {
       monitoring: {
         title: 'Oracle Monitoring',
-        description: 'Monitor oracle health and performance',
+        description: 'Monitor oracle health, node status, and performance metrics',
       },
       disputes: {
         title: 'Dispute Management',
-        description: 'Handle oracle disputes efficiently',
-      },
-      analytics: {
-        title: 'Analytics Dashboard',
-        description: 'View comprehensive analytics',
-      },
-    },
-    oracle_operator: {
-      nodeMonitoring: {
-        title: 'Node Monitoring',
-        description: 'Monitor your oracle nodes',
-      },
-      syncStatus: {
-        title: 'Sync Status',
-        description: 'Track synchronization status',
+        description: 'Efficiently handle oracle disputes and assertion validation',
       },
       alerts: {
-        title: 'Alert Configuration',
-        description: 'Set up custom alerts',
+        title: 'Smart Alerts',
+        description: 'Set up custom alerts to get notified of anomalies',
       },
     },
-    general_user: {
+    general: {
       exploration: {
         title: 'Data Exploration',
-        description: 'Explore oracle data across protocols',
+        description: 'Explore cross-protocol oracle data and price trends',
       },
-      assertions: {
-        title: 'Assertion Tracking',
-        description: 'Track oracle assertions',
+      comparison: {
+        title: 'Protocol Comparison',
+        description: 'Compare prices and performance across different oracle protocols',
       },
-      disputes: {
-        title: 'Dispute Monitoring',
-        description: 'Monitor disputes in real-time',
+      alerts: {
+        title: 'Price Alerts',
+        description: 'Set price deviation alerts to stay on top of market movements',
       },
     },
   },
   roles: {
     developer: {
       title: 'Developer',
-      description: 'Build applications with our oracle data',
+      description: 'Build applications using oracle data',
     },
-    protocol_team: {
+    protocol: {
       title: 'Protocol Team',
-      description: 'Manage oracle integrations',
+      description: 'Manage oracle integration and node operations',
     },
-    oracle_operator: {
-      title: 'Oracle Operator',
-      description: 'Run oracle nodes',
-    },
-    general_user: {
+    general: {
       title: 'General User',
       description: 'Monitor and analyze oracle data',
+    },
+  },
+  tour: {
+    dashboard: {
+      title: 'Dashboard Overview',
+      description: 'View all key metrics and real-time data here.',
+    },
+    protocols: {
+      title: 'Protocol Selection',
+      description: 'Click here to switch between different oracle protocols.',
+    },
+    search: {
+      title: 'Search Function',
+      description: 'Use search to quickly find the oracle or asset you need.',
+    },
+    alerts: {
+      title: 'Alert Center',
+      description: 'View and manage all your alert notifications.',
+    },
+    settings: {
+      title: 'Settings',
+      description: 'Customize your monitoring preferences and notification settings.',
     },
   },
 };

@@ -11,11 +11,7 @@ export {
 } from './button-enhanced';
 
 // Cards
-export {
-  CardEnhanced,
-  InteractiveStatCard,
-  ExpandableCard,
-} from './card-enhanced';
+export { CardEnhanced, InteractiveStatCard, ExpandableCard } from './card-enhanced';
 
 // Tables
 export {
@@ -26,21 +22,19 @@ export {
 } from './table-enhanced';
 
 // Tooltips
-export {
-  TooltipEnhanced,
-  InfoTooltip,
-  CopyTooltip,
-} from './tooltip-enhanced';
+export { TooltipEnhanced, InfoTooltip, CopyTooltip } from './tooltip-enhanced';
 
-// Badges
+// Badges - 统一版
 export {
+  Badge,
   BadgeEnhanced,
   StatusBadge,
   CountBadge,
   ProgressBadge,
   badgeVariants,
   type BadgeProps,
-} from './badge-enhanced';
+  type StatusType,
+} from './badge';
 
 // Skeletons
 export {

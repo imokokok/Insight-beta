@@ -41,17 +41,13 @@ import {
   Cell,
 } from 'recharts';
 
+import { StatCardEnhanced } from '@/components/common';
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { ToastContainer, useToast } from '@/components/common/DashboardToast';
 import { EmptyDeviationState, EmptySearchState } from '@/components/common/EmptyState';
 import { RefreshIndicator } from '@/components/common/RefreshIndicator';
-import {
-  SkeletonStatCard,
-  SkeletonList,
-  SkeletonChart,
-  SkeletonCard,
-} from '@/components/common/SkeletonCard';
-import { StatCardEnhanced } from '@/components/common/StatCardEnhanced';
+import { SkeletonStatCard, SkeletonChart, SkeletonCard } from '@/components/common/SkeletonCard';
+import { SkeletonList } from '@/components/common/SkeletonList';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
