@@ -467,7 +467,7 @@ export type CacheStats = {
   distributed: {
     keys: number;
     connected: boolean;
-    type: 'redis';
+    type: 'memory';
     ttlSeconds: number;
   };
 };

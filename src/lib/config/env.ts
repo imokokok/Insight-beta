@@ -50,9 +50,6 @@ const envSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: optionalString(),
   SUPABASE_DB_URL: optionalString(),
 
-  // Redis 配置（可选，默认使用内存缓存）
-  REDIS_URL: optionalString(),
-
   // =============================================================================
   // RPC 配置 - 主网
   // =============================================================================
@@ -237,7 +234,6 @@ const envSchema = z.object({
   // 其他配置
   // =============================================================================
   INSIGHT_CONFIG_ENCRYPTION_KEY: optionalString(),
-  INSIGHT_REDIS_URL: optionalString(),
   INSIGHT_PRICE_SYMBOL: optionalString('ETH/USD'),
 });
 
@@ -401,7 +397,6 @@ export function getEnvReport(): Record<string, string> {
   return {
     NODE_ENV: env.NODE_ENV,
     DATABASE_URL: env.DATABASE_URL ? 'configured' : 'not configured',
-    REDIS_URL: env.REDIS_URL ? 'configured' : 'not configured',
     INSIGHT_CHAIN: env.INSIGHT_CHAIN,
     INSIGHT_DEMO_MODE: String(env.INSIGHT_DEMO_MODE),
   };

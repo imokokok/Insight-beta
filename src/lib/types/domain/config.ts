@@ -48,8 +48,7 @@ export interface DatabaseConfig {
 }
 
 export interface CacheConfig {
-  type: 'redis' | 'memory';
-  url?: string;
+  type: 'memory';
   ttl: number;
   maxSize: number;
 }

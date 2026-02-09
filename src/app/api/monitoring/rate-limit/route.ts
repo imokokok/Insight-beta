@@ -34,7 +34,7 @@ import { requireAdmin } from '@/server/apiResponse';
  *                   properties:
  *                     storeType:
  *                       type: string
- *                       enum: [memory, redis]
+ *                       enum: [memory]
  *                     memorySize:
  *                       type: number
  *                     timestamp:

@@ -8,7 +8,7 @@ import { logger } from '@/lib/logger';
  * Web Vitals 指标上报接口
  *
  * 接收客户端性能指标数据，用于监控和分析应用性能
- * 数据存储在缓存中（Redis 或内存），支持持久化和统计分析
+ * 数据存储在内存缓存中，支持持久化和统计分析
  */
 
 interface WebVitalsRecord {
