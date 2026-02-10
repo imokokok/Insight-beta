@@ -46,7 +46,7 @@ export async function GET(request: Request) {
       FROM event_timeline
       WHERE 1=1
     `;
-    const params: any[] = [];
+    const params: (string | string[])[] = [];
 
     if (eventTypes.length > 0) {
       params.push(eventTypes);
@@ -94,8 +94,9 @@ export async function GET(request: Request) {
     }
 
     // 获取总数
-    const countResult = await query(`SELECT COUNT(*) FROM (${sql}) as sub`, params);
-    const total = parseInt(countResult.rows[0].count);
+    const countResult = await query(`SELECT COUNT(*) as count FROM (${sql}) as sub`, params);
+    const countRow = countResult.rows[0] as { count: string } | undefined;
+    const total = countRow ? parseInt(countRow.count) : 0;
 
     // 添加排序和分页
     sql += ` ORDER BY occurred_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
@@ -108,7 +109,7 @@ export async function GET(request: Request) {
       data: {
         events: result.rows.map((row) => ({
           ...row,
-          metadata: row.metadata ? JSON.parse(row.metadata) : null,
+          metadata: row.metadata ? JSON.parse(row.metadata as string) : null,
         })),
         pagination: {
           total,
@@ -197,11 +198,19 @@ export async function POST(request: Request) {
       ]
     );
 
+    const row = result.rows[0];
+    if (!row) {
+      return NextResponse.json(
+        { success: false, error: 'Failed to create timeline event' },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json({
       success: true,
       data: {
-        ...result.rows[0],
-        metadata: result.rows[0].metadata ? JSON.parse(result.rows[0].metadata) : null,
+        ...row,
+        metadata: row.metadata ? JSON.parse(row.metadata as string) : null,
       },
     });
   } catch (error) {

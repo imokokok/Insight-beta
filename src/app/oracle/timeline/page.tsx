@@ -9,7 +9,6 @@
 import { useState, useEffect } from 'react';
 import {
   Calendar,
-  Filter,
   AlertTriangle,
   CheckCircle,
   XCircle,
@@ -19,8 +18,6 @@ import {
   TrendingUp,
   TrendingDown,
   Activity,
-  ChevronDown,
-  ChevronUp,
   RefreshCw,
 } from 'lucide-react';
 

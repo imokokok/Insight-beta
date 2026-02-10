@@ -29,6 +29,7 @@ import type { RealtimeComparisonItem } from '@/lib/types/oracle';
 import { PROTOCOL_DISPLAY_NAMES } from '@/lib/types/oracle';
 import { cn } from '@/lib/utils';
 import { exportRealtimeToCSV } from '@/lib/utils/export';
+import { statusColors } from '@/lib/constants/colors';
 
 // ============================================================================
 // Types
@@ -171,19 +172,34 @@ const StatusBadge = React.memo(function StatusBadge({ status }: StatusBadgeProps
   switch (status) {
     case 'active':
       return (
-        <Badge variant="default" className="bg-emerald-500 text-xs">
+        <Badge
+          variant="default"
+          className={cn(statusColors.active.dot, 'text-xs')}
+          role="status"
+          aria-label={t('status.active')}
+        >
           {t('comparison.status.active')}
         </Badge>
       );
     case 'stale':
       return (
-        <Badge variant="secondary" className="text-xs">
+        <Badge
+          variant="secondary"
+          className={cn(statusColors.stale.bg, statusColors.stale.text, 'text-xs')}
+          role="status"
+          aria-label={t('status.stale')}
+        >
           {t('comparison.status.stale')}
         </Badge>
       );
     case 'error':
       return (
-        <Badge variant="destructive" className="text-xs">
+        <Badge
+          variant="destructive"
+          className="text-xs"
+          role="status"
+          aria-label={t('status.error')}
+        >
           {t('comparison.status.error')}
         </Badge>
       );

@@ -310,7 +310,7 @@ const PriceFeedItem = React.memo(function PriceFeedItem({ feed }: { feed: FeedWi
           {isPositive && <TrendingUp className="h-3 w-3" />}
           {isNegative && <TrendingDown className="h-3 w-3" />}
           {!isPositive && !isNegative && <Minus className="h-3 w-3" />}
-          {Math.abs(priceChange).toFixed(2)}%
+          {(Math.abs(priceChange) * 100).toFixed(2)}%
         </div>
       </div>
     </div>
@@ -366,7 +366,8 @@ function generateMockFeeds(): FeedWithUpdate[] {
       const variation = (Math.random() - 0.5) * 0.02;
       const price = basePrice * (1 + variation);
       const previousPrice = price * (1 + (Math.random() - 0.5) * 0.01);
-      const priceChangePercent = ((price - previousPrice) / previousPrice) * 100;
+      // 价格变化百分比，小数形式 (0.01 = 1%)
+      const priceChangePercent = (price - previousPrice) / previousPrice;
 
       feeds.push({
         id: `${protocol}-${symbol}`,

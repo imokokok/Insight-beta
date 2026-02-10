@@ -31,6 +31,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useI18n } from '@/i18n';
 import type { RealtimeComparisonItem, ComparisonFilter } from '@/lib/types/oracle';
 import { cn, formatPrice } from '@/lib/utils';
+import { statusColors } from '@/lib/constants/colors';
 
 interface RealtimeComparisonProps {
   data?: RealtimeComparisonItem[];
@@ -301,11 +302,13 @@ export function RealtimeComparisonView({
                         className={cn(
                           'h-2 w-2 rounded-full',
                           maxDeviation > 1
-                            ? 'bg-red-500'
+                            ? statusColors.critical.dot
                             : maxDeviation > 0.5
-                              ? 'bg-yellow-500'
-                              : 'bg-emerald-500',
+                              ? statusColors.warning.dot
+                              : statusColors.healthy.dot,
                         )}
+                        role="status"
+                        aria-label={maxDeviation > 1 ? t('status.critical') : maxDeviation > 0.5 ? t('status.warning') : t('status.healthy')}
                       />
                       <div>
                         <p className="text-sm font-medium">{item.symbol}</p>

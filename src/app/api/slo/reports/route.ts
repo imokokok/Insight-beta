@@ -8,6 +8,37 @@ import { NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
 import { query } from '@/server/db';
 
+interface SloDefinition {
+  id: string;
+  name: string;
+  protocol: string;
+  chain: string;
+  metricType: string;
+  targetValue: string;
+  thresholdValue: string;
+  evaluationWindow: string;
+}
+
+interface SloMetric {
+  actualValue: string;
+  targetValue: string;
+  isCompliant: boolean;
+  complianceRate: string;
+  totalEvents: string;
+  goodEvents: string;
+  badEvents: string;
+  windowStart: string;
+  windowEnd: string;
+}
+
+interface ErrorBudgetRow {
+  totalBudget: string;
+  usedBudget: string;
+  remainingBudget: string;
+  burnRate: string;
+  status: string;
+}
+
 // GET /api/slo/reports - 获取 SLO 报告列表
 export async function GET(request: Request) {
   try {
@@ -25,7 +56,7 @@ export async function GET(request: Request) {
       FROM slo_definitions
       WHERE is_active = true
     `;
-    const sloParams: any[] = [];
+    const sloParams: string[] = [];
 
     if (sloId) {
       sloParams.push(sloId);
@@ -43,7 +74,7 @@ export async function GET(request: Request) {
     }
 
     const sloResult = await query(sloSql, sloParams);
-    const slos = sloResult.rows;
+    const slos = sloResult.rows as SloDefinition[];
 
     // 为每个 SLO 生成报告
     const reports = await Promise.all(
@@ -69,7 +100,7 @@ export async function GET(request: Request) {
           [slo.id]
         );
 
-        const metrics = metricsResult.rows;
+        const metrics = metricsResult.rows as SloMetric[];
         const latestMetric = metrics[0];
 
         // 计算当前合规率
@@ -93,7 +124,6 @@ export async function GET(request: Request) {
             used_budget as "usedBudget",
             remaining_budget as "remainingBudget",
             burn_rate as "burnRate",
-            projected_depletion as "projectedDepletion",
             status as "status"
           FROM error_budgets
           WHERE slo_id = $1
@@ -104,11 +134,12 @@ export async function GET(request: Request) {
           [slo.id]
         );
 
-        const errorBudget = ebResult.rows[0] || {
-          totalBudget: (100 - parseFloat(slo.targetValue)) * 432, // 30天分钟数 * error budget比例
-          usedBudget: 0,
-          remainingBudget: (100 - parseFloat(slo.targetValue)) * 432,
-          burnRate: 0,
+        const errorBudgetRow = ebResult.rows[0] as ErrorBudgetRow | undefined;
+        const errorBudget = errorBudgetRow || {
+          totalBudget: String((100 - parseFloat(slo.targetValue)) * 432),
+          usedBudget: '0',
+          remainingBudget: String((100 - parseFloat(slo.targetValue)) * 432),
+          burnRate: '0',
           status: 'healthy',
         };
 
@@ -116,9 +147,11 @@ export async function GET(request: Request) {
         const trend = calculateTrend(metrics);
 
         // 计算预计耗尽时间
+        const burnRate = parseFloat(errorBudget.burnRate);
+        const remainingBudget = parseFloat(errorBudget.remainingBudget);
         const daysUntilExhaustion =
-          errorBudget.burnRate > 0
-            ? Math.round(errorBudget.remainingBudget / errorBudget.burnRate)
+          burnRate > 0
+            ? Math.round(remainingBudget / burnRate)
             : undefined;
 
         return {
@@ -134,8 +167,8 @@ export async function GET(request: Request) {
           errorBudget: {
             total: parseFloat(errorBudget.totalBudget),
             used: parseFloat(errorBudget.usedBudget),
-            remaining: parseFloat(errorBudget.remainingBudget),
-            burnRate: parseFloat(errorBudget.burnRate),
+            remaining: remainingBudget,
+            burnRate: burnRate,
             daysUntilExhaustion,
             status: errorBudget.status,
           },
@@ -174,7 +207,7 @@ export async function GET(request: Request) {
 }
 
 // POST /api/slo/evaluate - 手动触发 SLO 评估
-export async function POST(request: Request) {
+export async function POST(_request: Request) {
   try {
     // 获取所有活跃的 SLO 定义
     const sloResult = await query(
@@ -185,7 +218,7 @@ export async function POST(request: Request) {
     `
     );
 
-    const slos = sloResult.rows;
+    const slos = sloResult.rows as Array<{ id: string; targetValue: string; evaluationWindow: string }>;
     const results = [];
 
     for (const slo of slos) {
@@ -229,12 +262,15 @@ export async function POST(request: Request) {
         ]
       );
 
-      results.push({
-        sloId: slo.id,
-        metricId: metricResult.rows[0].id,
-        complianceRate,
-        isCompliant,
-      });
+      const row = metricResult.rows[0] as { id: string } | undefined;
+      if (row) {
+        results.push({
+          sloId: slo.id,
+          metricId: row.id,
+          complianceRate,
+          isCompliant,
+        });
+      }
     }
 
     return NextResponse.json({
@@ -286,5 +322,5 @@ function parseWindow(window: string): number {
   if (!match) return 30 * 24 * 60 * 60 * 1000; // 默认 30 天
 
   const [, num, unit] = match;
-  return parseInt(num) * (units[unit] || units.d);
+  return parseInt(num as string) * (units[unit as string] || units.d);
 }

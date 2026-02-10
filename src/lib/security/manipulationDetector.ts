@@ -311,8 +311,8 @@ export class ManipulationDetector {
     // 计算Z-score
     const zScore = Math.abs((currentPrice - mean) / stdDev);
 
-    // 计算价格变化百分比
-    const priceChangePercent = ((currentPrice - mean) / mean) * 100;
+    // 计算价格变化百分比，小数形式 (0.01 = 1%)
+    const priceChangePercent = (currentPrice - mean) / mean;
 
     // 判断是否异常
     if (zScore < this.config.zScoreThreshold) {
@@ -331,7 +331,7 @@ export class ManipulationDetector {
     const evidence: DetectionEvidence[] = [
       {
         type: 'statistical_deviation',
-        description: `价格偏离均值 ${priceChangePercent.toFixed(2)}%，Z-score: ${zScore.toFixed(2)}`,
+        description: `价格偏离均值 ${(priceChangePercent * 100).toFixed(2)}%，Z-score: ${zScore.toFixed(2)}`,
         confidence,
         data: {
           mean,
