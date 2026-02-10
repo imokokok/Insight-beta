@@ -8,7 +8,6 @@
 import { logger } from '@/lib/logger';
 import {
   createUMAClient,
-  getSupportedUMAChains,
   isChainSupportedByUMA,
 } from '@/lib/blockchain/umaOracle';
 import { BaseSyncManager, type IOracleClient } from './BaseSyncManager';

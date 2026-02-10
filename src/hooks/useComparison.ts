@@ -19,15 +19,6 @@ import type {
   RealtimeComparisonItem,
 } from '@/lib/types/oracle/comparison';
 
-// fetcher 函数
-const fetcher = async <T>(url: string): Promise<T> => {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-  }
-  return response.json();
-};
-
 // ============================================================================
 // 基础配置
 // ============================================================================

@@ -675,7 +675,8 @@ export class ManipulationDetector {
     const previousItem = history[history.length - 2];
     if (!previousItem) return undefined;
     const previousPrice = previousItem.price;
-    return ((currentPrice - previousPrice) / previousPrice) * 100;
+    // 价格影响百分比，小数形式 (0.01 = 1%)
+    return (currentPrice - previousPrice) / previousPrice;
   }
 
   private estimateFinancialImpact(detection: {

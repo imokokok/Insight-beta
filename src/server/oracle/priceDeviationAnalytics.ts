@@ -456,6 +456,7 @@ export class PriceDeviationAnalytics {
     return values.reduce((a, b) => a + b, 0) / values.length;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-private-class-members
   private _calculateStandardDeviation(values: number[]): number {
     if (values.length < 2) return 0;
     const mean = this.calculateAverage(values);
@@ -464,6 +465,7 @@ export class PriceDeviationAnalytics {
     return Math.sqrt(avgSquaredDiff);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-private-class-members
   private _calculateTrendDirection(values: number[]): 'increasing' | 'decreasing' | 'stable' {
     if (values.length < 2) return 'stable';
 
@@ -480,6 +482,7 @@ export class PriceDeviationAnalytics {
     return 'stable';
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-private-class-members
   private _calculateTrendStrength(values: number[]): number {
     if (values.length < 2) return 0;
 
