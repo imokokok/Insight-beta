@@ -5,16 +5,11 @@
  * 支持断言、争议、投票等事件的同步
  */
 
+import { createUMAClient, isChainSupportedByUMA } from '@/lib/blockchain/umaOracle';
 import { logger } from '@/lib/logger';
-import {
-  createUMAClient,
-  isChainSupportedByUMA,
-} from '@/lib/blockchain/umaOracle';
+import type { SupportedChain, UnifiedPriceFeed } from '@/lib/types/unifiedOracleTypes';
+
 import { BaseSyncManager, type IOracleClient } from './BaseSyncManager';
-import type {
-  SupportedChain,
-  UnifiedPriceFeed,
-} from '@/lib/types/unifiedOracleTypes';
 
 // ============================================================================
 // UMA Client Wrapper - 适配 IOracleClient 接口
@@ -38,7 +33,7 @@ class UMAClientWrapper implements IOracleClient {
   async getPriceForSymbol(assertionId: string): Promise<UnifiedPriceFeed | null> {
     try {
       const health = await this.client.checkFeedHealth(assertionId);
-      
+
       if (!health.healthy) {
         return null;
       }
@@ -134,7 +129,7 @@ class UMASyncManager extends BaseSyncManager {
     try {
       // 检测活跃争议
       const disputes = await client.detectDisputes();
-      
+
       logger.info(`UMA events synced for instance ${instanceId}`, {
         chain: instance.chain,
         totalDisputes: disputes.totalDisputes,

@@ -1,21 +1,76 @@
 /**
  * Unified Price Service
- * 统一价格数据服务
  *
- * 提供统一的价格数据访问接口，替代原有的多个服务
- * - 替代 priceHistoryService
- * - 替代 unified_price_feeds 查询
- * - 支持分区表和物化视图查询
+ * Provides a unified price data access interface, replacing multiple legacy services:
+ * - Replaces priceHistoryService
+ * - Replaces unified_price_feeds queries
+ * - Supports partitioned tables and materialized view queries
  */
 
+import { translations } from '@/i18n/translations';
 import { logger } from '@/lib/logger';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import type { OracleProtocol, SupportedChain } from '@/lib/types/unifiedOracleTypes';
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 
+// Default language for server-side messages
+const DEFAULT_LANG: keyof typeof translations = 'en';
+
+// Helper function to get translated message
+function t(key: string, values?: Record<string, string>): string {
+  // Only allow specific translation keys to prevent object injection
+  const allowedKeys = [
+    'errors.failedToFetchPriceHistory',
+    'errors.failedToFetchOhlcvData',
+    'errors.failedToFetchCurrentPrices',
+    'errors.failedToFetchCurrentPrice',
+    'errors.failedToFetchPriceUpdateEvents',
+    'errors.failedToFetchPriceStats',
+    'errors.failedToInsertPriceHistory',
+    'errors.failedToRefreshMaterializedView',
+    'errors.noPriceDataFound',
+    'oracle.priceService.refreshedMaterializedView',
+    'oracle.priceService.refreshingMaterializedView',
+    'oracle.priceService.priceUpdateReceived',
+    'oracle.priceService.priceDeviationDetected',
+    'oracle.priceService.historicalDataPurge',
+  ];
+
+  if (!allowedKeys.includes(key)) {
+    return key;
+  }
+
+  const keys = key.split('.');
+  let result: unknown = translations[DEFAULT_LANG];
+
+  for (const k of keys) {
+    if (result && typeof result === 'object' && Object.prototype.hasOwnProperty.call(result, k)) {
+      result = (result as Record<string, unknown>)[k];
+    } else {
+      return key; // Return key if translation not found
+    }
+  }
+
+  if (typeof result !== 'string') {
+    return key;
+  }
+
+  // Simple interpolation with safe replacement
+  if (values) {
+    return result.replace(/\{\{(\w+)\}\}/g, (substring: string, match: string) => {
+      // eslint-disable-next-line security/detect-object-injection
+      return Object.prototype.hasOwnProperty.call(values, match)
+        ? (values[match] ?? substring)
+        : substring;
+    });
+  }
+
+  return result;
+}
+
 // ============================================================================
-// 类型定义
+// Type Definitions
 // ============================================================================
 
 export interface PriceHistoryRecord {
@@ -75,7 +130,7 @@ export interface PriceStats {
   first: number;
   last: number;
   change: number;
-  /** 价格变化百分比，小数形式 (如 0.01 = 1%) */
+  /** Price change percentage in decimal form (e.g., 0.01 = 1%) */
   changePercent: number;
   volatility: number;
   count: number;
@@ -112,7 +167,7 @@ export interface PriceUpdateEvent {
   previousPrice?: number;
   currentPrice: number;
   priceChange?: number;
-  /** 价格变化百分比，小数形式 (如 0.01 = 1%) */
+  /** Price change percentage in decimal form (e.g., 0.01 = 1%) */
   priceChangePercent?: number;
   timestamp: Date;
   blockNumber?: number;
@@ -121,7 +176,7 @@ export interface PriceUpdateEvent {
 }
 
 // ============================================================================
-// 统一价格服务
+// Unified Price Service
 // ============================================================================
 
 export class UnifiedPriceService {
@@ -132,11 +187,11 @@ export class UnifiedPriceService {
   }
 
   // ============================================================================
-  // 价格历史查询
+  // Price History Queries
   // ============================================================================
 
   /**
-   * 查询价格历史数据
+   * Query price history data
    */
   async getPriceHistory(query: PriceHistoryQuery): Promise<PriceHistoryRecord[]> {
     try {
@@ -147,7 +202,7 @@ export class UnifiedPriceService {
         .gte('timestamp', query.startTime.toISOString())
         .lte('timestamp', query.endTime.toISOString());
 
-      // 应用过滤条件
+      // Apply filters
       if (query.symbol) {
         dbQuery = dbQuery.eq('symbol', query.symbol);
       }
@@ -161,12 +216,12 @@ export class UnifiedPriceService {
         dbQuery = dbQuery.eq('feed_id', query.feedId);
       }
 
-      // 应用排序
+      // Apply sorting
       const orderBy = query.orderBy || 'timestamp';
       const orderDirection = query.orderDirection || 'desc';
       dbQuery = dbQuery.order(orderBy, { ascending: orderDirection === 'asc' });
 
-      // 应用分页
+      // Apply pagination
       if (query.limit) {
         dbQuery = dbQuery.limit(query.limit);
       }
@@ -177,12 +232,12 @@ export class UnifiedPriceService {
       const { data, error } = await dbQuery;
 
       if (error) {
-        throw new Error(`Failed to fetch price history: ${error.message}`);
+        throw new Error(`${t('errors.failedToFetchPriceHistory')}: ${error.message}`);
       }
 
       return (data || []).map(this.mapToPriceHistoryRecord);
     } catch (error) {
-      logger.error('Failed to get price history', {
+      logger.error(t('errors.failedToFetchPriceHistory'), {
         error: error instanceof Error ? error.message : String(error),
         query,
       });
@@ -191,11 +246,11 @@ export class UnifiedPriceService {
   }
 
   /**
-   * 查询 OHLCV 数据（K线数据）
+   * Query OHLCV data (candlestick data)
    */
   async getOHLCVData(query: PriceHistoryQuery): Promise<OHLCVData[]> {
     try {
-      // OHLCV 数据只能从物化视图获取
+      // OHLCV data can only be retrieved from materialized views
       const tableName = this.getTableNameForInterval(query.interval || '1min');
 
       let dbQuery = this.supabase
@@ -226,12 +281,12 @@ export class UnifiedPriceService {
       const { data, error } = await dbQuery;
 
       if (error) {
-        throw new Error(`Failed to fetch OHLCV data: ${error.message}`);
+        throw new Error(`${t('errors.failedToFetchOhlcvData')}: ${error.message}`);
       }
 
       return (data || []).map(this.mapToOHLCVData);
     } catch (error) {
-      logger.error('Failed to get OHLCV data', {
+      logger.error(t('errors.failedToFetchOhlcvData'), {
         error: error instanceof Error ? error.message : String(error),
         query,
       });
@@ -240,23 +295,23 @@ export class UnifiedPriceService {
   }
 
   // ============================================================================
-  // 当前价格查询
+  // Current Price Queries
   // ============================================================================
 
   /**
-   * 获取所有当前价格
+   * Get all current prices
    */
   async getCurrentPrices(): Promise<CurrentPriceFeed[]> {
     try {
       const { data, error } = await this.supabase.from('current_price_feeds').select('*');
 
       if (error) {
-        throw new Error(`Failed to fetch current prices: ${error.message}`);
+        throw new Error(`${t('errors.failedToFetchCurrentPrices')}: ${error.message}`);
       }
 
       return (data || []).map(this.mapToCurrentPriceFeed);
     } catch (error) {
-      logger.error('Failed to get current prices', {
+      logger.error(t('errors.failedToFetchCurrentPrices'), {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -264,7 +319,7 @@ export class UnifiedPriceService {
   }
 
   /**
-   * 获取指定 feed 的当前价格
+   * Get current price for a specific feed
    */
   async getCurrentPrice(feedId: string): Promise<CurrentPriceFeed | null> {
     try {
@@ -278,12 +333,12 @@ export class UnifiedPriceService {
         if (error.code === 'PGRST116') {
           return null; // Not found
         }
-        throw new Error(`Failed to fetch current price: ${error.message}`);
+        throw new Error(`${t('errors.failedToFetchCurrentPrice')}: ${error.message}`);
       }
 
       return data ? this.mapToCurrentPriceFeed(data) : null;
     } catch (error) {
-      logger.error('Failed to get current price', {
+      logger.error(t('errors.failedToFetchCurrentPrice'), {
         error: error instanceof Error ? error.message : String(error),
         feedId,
       });
@@ -292,7 +347,7 @@ export class UnifiedPriceService {
   }
 
   /**
-   * 批量获取当前价格
+   * Get current prices for multiple feeds in batch
    */
   async getCurrentPricesByFeeds(feedIds: string[]): Promise<Map<string, CurrentPriceFeed>> {
     const results = new Map<string, CurrentPriceFeed>();
@@ -304,7 +359,7 @@ export class UnifiedPriceService {
         .in('feed_id', feedIds);
 
       if (error) {
-        throw new Error(`Failed to fetch current prices: ${error.message}`);
+        throw new Error(`${t('errors.failedToFetchCurrentPrices')}: ${error.message}`);
       }
 
       (data || []).forEach((item: Record<string, unknown>) => {
@@ -314,7 +369,7 @@ export class UnifiedPriceService {
 
       return results;
     } catch (error) {
-      logger.error('Failed to get current prices by feeds', {
+      logger.error(t('errors.failedToFetchCurrentPrices'), {
         error: error instanceof Error ? error.message : String(error),
         feedIds,
       });
@@ -323,11 +378,11 @@ export class UnifiedPriceService {
   }
 
   // ============================================================================
-  // 价格更新事件
+  // Price Update Events
   // ============================================================================
 
   /**
-   * 获取价格更新事件
+   * Get price update events
    */
   async getPriceUpdateEvents(options: {
     feedId?: string;
@@ -373,12 +428,12 @@ export class UnifiedPriceService {
       const { data, error } = await query;
 
       if (error) {
-        throw new Error(`Failed to fetch price update events: ${error.message}`);
+        throw new Error(`${t('errors.failedToFetchPriceUpdateEvents')}: ${error.message}`);
       }
 
       return (data || []).map(this.mapToPriceUpdateEvent);
     } catch (error) {
-      logger.error('Failed to get price update events', {
+      logger.error(t('errors.failedToFetchPriceUpdateEvents'), {
         error: error instanceof Error ? error.message : String(error),
         options,
       });
@@ -387,11 +442,11 @@ export class UnifiedPriceService {
   }
 
   // ============================================================================
-  // 统计数据
+  // Statistics
   // ============================================================================
 
   /**
-   * 获取价格统计
+   * Get price statistics
    */
   async getPriceStats(options: {
     symbol: string;
@@ -409,13 +464,13 @@ export class UnifiedPriceService {
         .lte('timestamp', options.endTime.toISOString());
 
       if (error) {
-        throw new Error(`Failed to fetch price stats: ${error.message}`);
+        throw new Error(`${t('errors.failedToFetchPriceStats')}: ${error.message}`);
       }
 
       const prices = (data || []).map((d: { price: number }) => d.price);
 
       if (prices.length === 0) {
-        throw new Error('No price data found for the given criteria');
+        throw new Error(t('errors.noPriceDataFound'));
       }
 
       const min = Math.min(...prices);
@@ -424,10 +479,10 @@ export class UnifiedPriceService {
       const first = prices[0] ?? 0;
       const last = prices[prices.length - 1] ?? 0;
       const change = last - first;
-      // 价格变化百分比，小数形式 (0.01 = 1%)
+      // Price change percentage in decimal form (0.01 = 1%)
       const changePercent = first > 0 ? change / first : 0;
 
-      // 计算波动率（标准差）
+      // Calculate volatility (standard deviation)
       const variance =
         prices.reduce((sum: number, price: number) => sum + Math.pow(price - avg, 2), 0) /
         prices.length;
@@ -446,7 +501,7 @@ export class UnifiedPriceService {
         count: prices.length,
       };
     } catch (error) {
-      logger.error('Failed to get price stats', {
+      logger.error(t('errors.failedToFetchPriceStats'), {
         error: error instanceof Error ? error.message : String(error),
         options,
       });
@@ -455,11 +510,11 @@ export class UnifiedPriceService {
   }
 
   // ============================================================================
-  // 数据写入
+  // Data Write Operations
   // ============================================================================
 
   /**
-   * 插入价格历史记录
+   * Insert price history records
    */
   async insertPriceHistory(records: Omit<PriceHistoryRecord, 'id' | 'createdAt'>[]): Promise<void> {
     try {
@@ -488,10 +543,10 @@ export class UnifiedPriceService {
       const { error } = await this.supabase.from('price_history').insert(dbRecords);
 
       if (error) {
-        throw new Error(`Failed to insert price history: ${error.message}`);
+        throw new Error(`${t('errors.failedToInsertPriceHistory')}: ${error.message}`);
       }
     } catch (error) {
-      logger.error('Failed to insert price history', {
+      logger.error(t('errors.failedToInsertPriceHistory'), {
         error: error instanceof Error ? error.message : String(error),
         recordCount: records.length,
       });
@@ -500,11 +555,11 @@ export class UnifiedPriceService {
   }
 
   // ============================================================================
-  // 物化视图管理
+  // Materialized View Management
   // ============================================================================
 
   /**
-   * 刷新物化视图
+   * Refresh materialized view
    */
   async refreshMaterializedView(viewName: '1min' | '5min' | '1hour' | '1day'): Promise<void> {
     try {
@@ -512,12 +567,12 @@ export class UnifiedPriceService {
       const { error } = await this.supabase.rpc(functionName);
 
       if (error) {
-        throw new Error(`Failed to refresh materialized view: ${error.message}`);
+        throw new Error(`${t('errors.failedToRefreshMaterializedView')}: ${error.message}`);
       }
 
-      logger.info(`Refreshed materialized view: ${viewName}`);
+      logger.info(t('oracle.priceService.refreshedMaterializedView', { viewName }));
     } catch (error) {
-      logger.error('Failed to refresh materialized view', {
+      logger.error(t('errors.failedToRefreshMaterializedView'), {
         error: error instanceof Error ? error.message : String(error),
         viewName,
       });
@@ -526,7 +581,7 @@ export class UnifiedPriceService {
   }
 
   /**
-   * 刷新所有物化视图
+   * Refresh all materialized views
    */
   async refreshAllMaterializedViews(): Promise<void> {
     const views: Array<'1min' | '5min' | '1hour' | '1day'> = ['1min', '5min', '1hour', '1day'];
@@ -537,7 +592,7 @@ export class UnifiedPriceService {
   }
 
   // ============================================================================
-  // 辅助方法
+  // Helper Methods
   // ============================================================================
 
   private getTableNameForInterval(interval?: string): string {
@@ -557,7 +612,7 @@ export class UnifiedPriceService {
   }
 
   // ============================================================================
-  // 数据映射
+  // Data Mapping
   // ============================================================================
 
   private mapToPriceHistoryRecord(data: Record<string, unknown>): PriceHistoryRecord {
@@ -643,7 +698,7 @@ export class UnifiedPriceService {
 }
 
 // ============================================================================
-// 单例导出
+// Singleton Export
 // ============================================================================
 
 let unifiedPriceService: UnifiedPriceService | null = null;

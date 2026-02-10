@@ -37,7 +37,9 @@ export interface AnomalyMetrics {
   deviationPercent?: number;
   expectedValue?: number;
   actualValue?: number;
+  /** 波动率变化百分比，小数形式 (如 0.01 = 1%) */
   volatilityChange?: number;
+  /** 交易量变化百分比，小数形式 (如 0.01 = 1%) */
   volumeChange?: number;
   trendSlope?: number;
   correlationCoefficient?: number;

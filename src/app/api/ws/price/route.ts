@@ -7,7 +7,7 @@
  * - 自动心跳保活
  */
 
-import { NextRequest } from 'next/server';
+import type { NextRequest } from 'next/server';
 
 import { logger } from '@/lib/logger';
 import { realtimePriceService } from '@/server/oracle/realtime';

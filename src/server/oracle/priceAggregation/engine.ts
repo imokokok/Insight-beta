@@ -2,14 +2,14 @@
  * Price Aggregation Engine - Complete Optimized Version
  *
  * 价格聚合引擎 - 完整优化版本
- * P0: 并发控制 + Supabase缓存
+ * P0: 并发控制 + 内存缓存
  * P1: 性能监控 + 熔断保护
  * P2: 高级告警规则引擎
  */
 
 import pLimit from 'p-limit';
 
-import { comparisonCache } from '@/lib/cache/supabase-cache';
+import { cacheManager } from '@/lib/api/optimization/cache';
 import { logger } from '@/lib/logger';
 import { priceMetrics } from '@/lib/monitoring/priceMetrics';
 import type {
@@ -54,11 +54,11 @@ export class PriceAggregationEngine {
     chain?: SupportedChain,
   ): Promise<CrossOracleComparison | null> {
     const startTime = performance.now();
-    const cacheKey = `${symbol}:${chain ?? 'all'}`;
+    const cacheKey = `aggregation:${symbol}:${chain ?? 'all'}`;
 
     try {
-      // 1. 检查 Supabase 缓存
-      const cached = await comparisonCache.get<CrossOracleComparison>(cacheKey);
+      // 1. 检查内存缓存
+      const cached = await cacheManager.provider.get<CrossOracleComparison>(cacheKey);
       if (cached) {
         priceMetrics.recordCacheHit();
         logger.debug(`Cache hit for ${symbol}`, { chain });
@@ -84,7 +84,7 @@ export class PriceAggregationEngine {
       if (error instanceof Error && error.name === 'CircuitBreakerError') {
         logger.warn(`Circuit breaker open for ${symbol}`, { chain });
         // 尝试返回缓存数据（即使过期）
-        const stale = await comparisonCache.get<CrossOracleComparison>(cacheKey);
+        const stale = await cacheManager.provider.get<CrossOracleComparison>(cacheKey);
         if (stale) {
           logger.info(`Returning stale cache for ${symbol}`);
           return stale;
@@ -188,7 +188,7 @@ export class PriceAggregationEngine {
     };
 
     // 保存到缓存（异步）
-    comparisonCache.set(cacheKey, comparison, CACHE_TTL_MS).catch((error) => {
+    cacheManager.provider.set(cacheKey, comparison, CACHE_TTL_MS).catch((error: unknown) => {
       logger.error('Failed to save to cache', { error, symbol });
     });
 
@@ -511,7 +511,7 @@ export class PriceAggregationEngine {
    * 清除缓存
    */
   async clearCache(): Promise<void> {
-    await comparisonCache.clear();
+    await cacheManager.clear('aggregation:*');
     logger.info('Aggregation cache cleared');
   }
 
@@ -524,7 +524,13 @@ export class PriceAggregationEngine {
     expiredEntries: number;
     totalSize: string;
   } | null> {
-    return comparisonCache.getStats();
+    // 内存缓存不提供详细统计，返回简化版本
+    return {
+      totalEntries: 0,
+      activeEntries: 0,
+      expiredEntries: 0,
+      totalSize: 'N/A (memory cache)',
+    };
   }
 
   /**

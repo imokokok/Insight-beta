@@ -5,12 +5,10 @@
  * GET /api/comparison/:symbol/history
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
-import { PriceAggregationEngine } from '@/server/oracle/priceAggregation';
-
-const priceEngine = new PriceAggregationEngine();
 
 interface RouteParams {
   params: Promise<{
@@ -27,6 +25,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const hours = parseInt(searchParams.get('hours') || '24', 10);
     const page = parseInt(searchParams.get('page') || '1', 10);
     const limit = parseInt(searchParams.get('limit') || '50', 10);
+
+    // 动态导入 PriceAggregationEngine 以避免构建时执行
+    const { PriceAggregationEngine } = await import('@/server/oracle/priceAggregation');
+    const priceEngine = new PriceAggregationEngine();
 
     // 获取历史对比数据
     const comparisons = await priceEngine.getHistoricalComparisons(symbol, hours);

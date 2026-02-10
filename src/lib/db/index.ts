@@ -128,10 +128,11 @@ export class QueryBuilder<T extends TableName> {
    * 批量插入
    */
   async insertMany(data: TableInsert<T>[]): Promise<TableRow<T>[]> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: result, error } = await (
-      this.client.from(this.table).insert(data as any) as any
-    ).select();
+    const { data: result, error } = await this.client
+      .from(this.table)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .insert(data as any[])
+      .select();
 
     if (error) {
       logger.error(`Failed to insertMany into ${String(this.table)}`, { error });
@@ -166,12 +167,10 @@ export class QueryBuilder<T extends TableName> {
    * Upsert 记录
    */
   async upsert(data: TableInsert<T>, conflictColumns: (keyof TableRow<T>)[]): Promise<TableRow<T>> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: result, error } = await (
-      this.client
-        .from(this.table)
-        .upsert(data as any, { onConflict: conflictColumns.join(',') }) as any
-    )
+    const { data: result, error } = await this.client
+      .from(this.table)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .upsert(data as any, { onConflict: conflictColumns.join(',') })
       .select()
       .single();
 

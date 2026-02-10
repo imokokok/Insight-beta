@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-import { RefreshCw, ShieldAlert } from 'lucide-react';
+import { Filter, RefreshCw, ShieldAlert } from 'lucide-react';
 
 import { EmptyAlertsState } from '@/components/common/EmptyState';
 import { PageHeader } from '@/components/common/PageHeader';
@@ -15,6 +15,7 @@ import { ErrorBanner } from '@/components/ui/error-banner';
 import { RefreshIndicator } from '@/components/ui/refresh-indicator';
 import { getRefreshStrategy } from '@/config/refresh-strategy';
 import {
+  useIsMobile,
   useOracleIncidents,
   useOracleRisks,
   useOracleOpsMetrics,
@@ -64,6 +65,7 @@ export default function AlertsPageClient() {
   const searchParams = useSearchParams();
   const currentSearch = searchParams?.toString() ?? '';
   const instanceIdFromUrl = searchParams?.get('instanceId')?.trim() || '';
+  const isMobile = useIsMobile();
 
   const {
     adminToken,
@@ -629,9 +631,12 @@ export default function AlertsPageClient() {
   }, [loading]);
 
   return (
-    <div className="space-y-6 pb-16">
-      <PageHeader title={t('alerts.title')} description={t('alerts.description')}>
-        <div className="flex items-center gap-3">
+    <div className="space-y-4 pb-16 sm:space-y-6">
+      <PageHeader
+        title={t('alerts.title')}
+        description={isMobile ? undefined : t('alerts.description')}
+      >
+        <div className="flex items-center gap-2 sm:gap-3">
           {/* 刷新状态指示器 */}
           <RefreshIndicator
             lastUpdated={lastUpdated}
@@ -643,10 +648,10 @@ export default function AlertsPageClient() {
             type="button"
             onClick={refresh}
             disabled={loading}
-            className="flex items-center gap-2 rounded-xl bg-white/60 px-4 py-2 text-sm font-semibold text-purple-800 shadow-sm ring-1 ring-purple-100 hover:bg-white disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-xl bg-white/60 px-3 py-2 text-sm font-semibold text-purple-800 shadow-sm ring-1 ring-purple-100 hover:bg-white disabled:opacity-50 sm:gap-2 sm:px-4"
           >
-            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-            {t('alerts.refresh')}
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+            <span className="hidden sm:inline">{t('alerts.refresh')}</span>
           </button>
         </div>
       </PageHeader>
@@ -661,15 +666,36 @@ export default function AlertsPageClient() {
         />
       )}
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-3 sm:gap-4 lg:grid-cols-3">
         <Card className="border-purple-100/60 bg-white/60 shadow-sm lg:col-span-2">
-          <CardHeader className="pb-4">
-            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <div className="flex items-center gap-2 text-sm text-purple-700/70">
-                <ShieldAlert size={16} />
-                <span>{t('alerts.title')}</span>
+          <CardHeader className="pb-3 sm:pb-4">
+            <div className="flex flex-col gap-2 sm:gap-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm text-purple-700/70">
+                  <ShieldAlert size={16} />
+                  <span>{t('alerts.title')}</span>
+                </div>
+                {/* 移动端筛选按钮 */}
+                {isMobile && (
+                  <button
+                    type="button"
+                    className="flex h-8 items-center gap-1 rounded-lg bg-white/50 px-2 text-xs font-medium text-purple-700 shadow-sm ring-1 ring-purple-100"
+                    onClick={() => {
+                      const filters = document.getElementById('mobile-alert-filters');
+                      if (filters) {
+                        filters.classList.toggle('hidden');
+                      }
+                    }}
+                  >
+                    <Filter size={14} />
+                    筛选
+                  </button>
+                )}
               </div>
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <div
+                id="mobile-alert-filters"
+                className={`flex flex-col gap-2 sm:flex-row sm:items-center ${isMobile ? 'hidden' : ''}`}
+              >
                 <select
                   value={instanceId}
                   onChange={(e) => setInstanceId(e.target.value)}
@@ -709,27 +735,29 @@ export default function AlertsPageClient() {
                   <option value="info">info</option>
                 </select>
 
-                <select
-                  value={filterType}
-                  onChange={(e) => setFilterType(e.target.value)}
-                  className="h-9 rounded-lg border-none bg-white/50 px-3 text-sm text-purple-900 shadow-sm focus:ring-2 focus:ring-purple-500/20"
-                >
-                  <option value="All">{t('common.all')}</option>
-                  {filterType !== 'All' && !alertTypeOptions.includes(filterType) ? (
-                    <option value={filterType}>{filterType}</option>
-                  ) : null}
-                  {alertTypeOptions.map((event) => (
-                    <option key={event} value={event}>
-                      {event}
-                    </option>
-                  ))}
-                </select>
+                {!isMobile && (
+                  <select
+                    value={filterType}
+                    onChange={(e) => setFilterType(e.target.value)}
+                    className="h-9 rounded-lg border-none bg-white/50 px-3 text-sm text-purple-900 shadow-sm focus:ring-2 focus:ring-purple-500/20"
+                  >
+                    <option value="All">{t('common.all')}</option>
+                    {filterType !== 'All' && !alertTypeOptions.includes(filterType) ? (
+                      <option value={filterType}>{filterType}</option>
+                    ) : null}
+                    {alertTypeOptions.map((event) => (
+                      <option key={event} value={event}>
+                        {event}
+                      </option>
+                    ))}
+                  </select>
+                )}
 
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder={t('alerts.searchPlaceholder')}
-                  className="h-9 w-full rounded-lg border-none bg-white/50 px-3 text-sm text-purple-900 shadow-sm placeholder:text-purple-300 focus:ring-2 focus:ring-purple-500/20 sm:w-64"
+                  className="h-9 w-full rounded-lg border-none bg-white/50 px-3 text-sm text-purple-900 shadow-sm placeholder:text-purple-300 focus:ring-2 focus:ring-purple-500/20 sm:w-48 lg:w-64"
                 />
                 {filterStatus !== 'All' ||
                 filterSeverity !== 'All' ||

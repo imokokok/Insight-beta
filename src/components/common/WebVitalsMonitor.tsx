@@ -6,20 +6,25 @@ import * as Sentry from '@sentry/nextjs';
 
 import { logger } from '@/lib/logger';
 
+// Web Vitals metric type
+type Metric = {
+  id: string;
+  name: string;
+  value: number;
+  rating: 'good' | 'needs-improvement' | 'poor';
+  delta: number;
+  entries: PerformanceEntry[];
+  navigationType: string;
+};
+
 export function WebVitalsMonitor() {
   useEffect(() => {
     // Dynamically import web-vitals to avoid SSR issues
-    import('web-vitals').then(({ onLCP, onFID, onCLS, onFCP, onTTFB, onINP }) => {
+    import('web-vitals').then((webVitals) => {
+      const { onLCP, onCLS, onFCP, onTTFB, onINP } = webVitals;
+
       // Register all Web Vitals metrics and send to Sentry
-      const reportMetric = (metric: {
-        id: string;
-        name: string;
-        value: number;
-        rating: 'good' | 'needs-improvement' | 'poor';
-        delta: number;
-        entries: PerformanceEntry[];
-        navigationType: string;
-      }) => {
+      const reportMetric = (metric: Metric) => {
         // Report to Sentry
         Sentry.addBreadcrumb({
           category: 'web-vitals',
@@ -45,7 +50,7 @@ export function WebVitalsMonitor() {
         }
       };
 
-      onLCP((metric) =>
+      onLCP((metric: Metric) =>
         reportMetric({
           id: metric.id,
           name: 'LCP',
@@ -57,19 +62,23 @@ export function WebVitalsMonitor() {
         }),
       );
 
-      onFID((metric) =>
-        reportMetric({
-          id: metric.id,
-          name: 'FID',
-          value: metric.value,
-          rating: metric.rating,
-          delta: metric.delta,
-          entries: metric.entries,
-          navigationType: metric.navigationType,
-        }),
-      );
+      // FID is deprecated in newer versions of web-vitals, using optional chaining
+      if ('onFID' in webVitals) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (webVitals as any).onFID((metric: Metric) =>
+          reportMetric({
+            id: metric.id,
+            name: 'FID',
+            value: metric.value,
+            rating: metric.rating,
+            delta: metric.delta,
+            entries: metric.entries,
+            navigationType: metric.navigationType,
+          }),
+        );
+      }
 
-      onCLS((metric) =>
+      onCLS((metric: Metric) =>
         reportMetric({
           id: metric.id,
           name: 'CLS',
@@ -81,7 +90,7 @@ export function WebVitalsMonitor() {
         }),
       );
 
-      onFCP((metric) =>
+      onFCP((metric: Metric) =>
         reportMetric({
           id: metric.id,
           name: 'FCP',
@@ -93,7 +102,7 @@ export function WebVitalsMonitor() {
         }),
       );
 
-      onTTFB((metric) =>
+      onTTFB((metric: Metric) =>
         reportMetric({
           id: metric.id,
           name: 'TTFB',
@@ -105,7 +114,7 @@ export function WebVitalsMonitor() {
         }),
       );
 
-      onINP((metric) =>
+      onINP((metric: Metric) =>
         reportMetric({
           id: metric.id,
           name: 'INP',

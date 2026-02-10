@@ -25,14 +25,16 @@ const OPTIMISTIC_ORACLE_V3_ABI = parseAbi([
 // UMA 合约地址配置
 // ============================================================================
 
-export const UMA_CONTRACT_ADDRESSES: Record<
-  SupportedChain,
-  {
-    optimisticOracleV3?: Address;
-    optimisticOracleV2?: Address;
-    dvm?: Address;
-    votingToken?: Address;
-  }
+export const UMA_CONTRACT_ADDRESSES: Partial<
+  Record<
+    SupportedChain,
+    {
+      optimisticOracleV3?: Address;
+      optimisticOracleV2?: Address;
+      dvm?: Address;
+      votingToken?: Address;
+    }
+  >
 > = {
   ethereum: {
     optimisticOracleV3: '0xA5B9d8a0B0Fa04B710D7ee40D90d2551E58d0F65',
@@ -115,12 +117,16 @@ export class UMAClient {
   readonly chain: SupportedChain;
 
   private publicClient: ReturnType<typeof createPublicClient>;
-  private contractAddresses: (typeof UMA_CONTRACT_ADDRESSES)[SupportedChain];
+  private contractAddresses: NonNullable<(typeof UMA_CONTRACT_ADDRESSES)[SupportedChain]>;
   private clientConfig: UMAProtocolConfig;
 
   constructor(chain: SupportedChain, rpcUrl: string, config: UMAProtocolConfig = {}) {
     this.chain = chain;
-    this.contractAddresses = UMA_CONTRACT_ADDRESSES[chain];
+    const addresses = UMA_CONTRACT_ADDRESSES[chain];
+    if (!addresses) {
+      throw new Error(`UMA not supported on chain: ${chain}`);
+    }
+    this.contractAddresses = addresses;
     this.clientConfig = config;
 
     // 初始化 viem 客户端

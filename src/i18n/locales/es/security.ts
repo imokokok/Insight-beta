@@ -5,6 +5,39 @@ export const security = {
     title: 'Panel de Seguridad',
     subtitle: 'Monitoreo en tiempo real del estado de seguridad del oráculo',
   },
+  config: {
+    title: 'Configuración de Detección de Manipulación de Precios',
+    subtitle: 'Configurar reglas de detección, umbrales y ajustes de alerta',
+    tabs: {
+      rules: 'Reglas de Detección',
+      thresholds: 'Umbrales',
+      alerts: 'Configuración de Alertas',
+      advanced: 'Avanzado',
+    },
+    sections: {
+      enabledRules: 'Reglas de Detección Habilitadas',
+      enabledRulesDesc:
+        'Selecciona las reglas de detección de manipulación de precios para habilitar',
+      statisticalThresholds: 'Umbrales de Anomalías Estadísticas',
+      attackThresholds: 'Umbrales de Detección de Ataques',
+      zScoreDesc:
+        'Multiplicador de desviación estándar, valores por encima se consideran anómalos (recomendado: 3)',
+      minDataPointsDesc:
+        'Número mínimo de puntos de datos históricos requeridos para detección estadística',
+      alertChannels: 'Canales de Alerta',
+      alertChannelsDesc: 'Configurar métodos de notificación para alertas de detección',
+    },
+    labels: {
+      zScoreThreshold: 'Umbral de Z-Score',
+      minConfidence: 'Confianza Mínima',
+      maxPriceDeviation: 'Desviación Máxima de Precio (%)',
+      minDataPoints: 'Puntos de Datos Mínimos',
+      flashLoanMinAmount: 'Monto Mínimo de Préstamo Flash (USD)',
+      sandwichProfitThreshold: 'Umbral de Ganancia Sándwich (USD)',
+      liquidityChangeThreshold: 'Umbral de Cambio de Liquidez',
+    },
+    enabled: 'Habilitado',
+  },
   severity: {
     critical: 'Crítico',
     high: 'Alto',
@@ -63,6 +96,10 @@ export const security = {
       name: 'Alerta por Correo',
       description: 'Enviar correo a la dirección de administrador configurada',
     },
+    webhook: {
+      name: 'Webhook',
+      description: 'Llamar URL de Webhook configurada',
+    },
     slack: {
       name: 'Slack',
       description: 'Enviar al canal de Slack',
@@ -75,6 +112,8 @@ export const security = {
   placeholders: {
     reviewNote: 'Ingrese notas de revisión...',
   },
+  reviewNotes: 'Notas de Revisión',
+  submitReview: 'Enviar Revisión',
   notifications: {
     title: 'Alerta de Seguridad',
     newThreatDetected: 'Nueva amenaza detectada',
@@ -89,5 +128,7 @@ export const security = {
     status: 'Estado',
     confidence: 'Confianza',
     description: 'Descripción',
+    financialImpact: 'Impacto Financiero',
+    suspiciousTx: 'Transacciones Sospechosas',
   },
 };

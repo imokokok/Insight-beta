@@ -6,8 +6,11 @@ import { cookies, headers } from 'next/headers';
 
 import { Toaster } from 'sonner';
 
+import { OfflineIndicator } from '@/components/common/OfflineIndicator';
+import { PageProgress } from '@/components/common/PageProgress';
 import { ResourceHints } from '@/components/common/ResourceHints';
 import { ServiceWorkerRegister } from '@/components/common/ServiceWorkerRegister';
+import { SmartPreloader } from '@/components/common/SmartPreloader';
 import { WalletProvider } from '@/contexts/WalletContext';
 import { LanguageProvider } from '@/i18n/LanguageProvider';
 import {
@@ -116,6 +119,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       <body
         className={cn('min-h-screen bg-[var(--background)] font-sans text-purple-950 antialiased')}
       >
+        <PageProgress />
         <Suspense fallback={null}>
           <WebVitalsMonitor />
         </Suspense>
@@ -124,6 +128,12 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         </Suspense>
         <Suspense fallback={null}>
           <ServiceWorkerRegister />
+        </Suspense>
+        <Suspense fallback={null}>
+          <SmartPreloader />
+        </Suspense>
+        <Suspense fallback={null}>
+          <OfflineIndicator />
         </Suspense>
         <LanguageProvider initialLang={lang}>
           <WalletProvider>

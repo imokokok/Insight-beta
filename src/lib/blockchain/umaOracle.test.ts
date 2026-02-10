@@ -38,49 +38,55 @@ vi.mock('viem', () => ({
 describe('UMA Contract Addresses - 合约地址解析测试', () => {
   it('should have valid Ethereum mainnet contract addresses', () => {
     const addresses = UMA_CONTRACT_ADDRESSES.ethereum;
-    expect(addresses.optimisticOracleV3).toBeDefined();
-    expect(addresses.optimisticOracleV3).toMatch(/^0x[a-fA-F0-9]{40}$/i);
-    expect(addresses.optimisticOracleV2).toBeDefined();
-    expect(addresses.dvm).toBeDefined();
-    expect(addresses.votingToken).toBeDefined();
+    expect(addresses).toBeDefined();
+    expect(addresses?.optimisticOracleV3).toBeDefined();
+    expect(addresses?.optimisticOracleV3).toMatch(/^0x[a-fA-F0-9]{40}$/i);
+    expect(addresses?.optimisticOracleV2).toBeDefined();
+    expect(addresses?.dvm).toBeDefined();
+    expect(addresses?.votingToken).toBeDefined();
   });
 
   it('should have valid Polygon contract addresses', () => {
     const addresses = UMA_CONTRACT_ADDRESSES.polygon;
-    expect(addresses.optimisticOracleV3).toBeDefined();
-    expect(addresses.dvm).toBeDefined();
-    expect(addresses.votingToken).toBeDefined();
+    expect(addresses).toBeDefined();
+    expect(addresses?.optimisticOracleV3).toBeDefined();
+    expect(addresses?.dvm).toBeDefined();
+    expect(addresses?.votingToken).toBeDefined();
   });
 
   it('should have valid Arbitrum contract addresses', () => {
     const addresses = UMA_CONTRACT_ADDRESSES.arbitrum;
-    expect(addresses.optimisticOracleV3).toBeDefined();
-    expect(addresses.dvm).toBeDefined();
-    expect(addresses.votingToken).toBeDefined();
+    expect(addresses).toBeDefined();
+    expect(addresses?.optimisticOracleV3).toBeDefined();
+    expect(addresses?.dvm).toBeDefined();
+    expect(addresses?.votingToken).toBeDefined();
   });
 
   it('should have valid Optimism contract addresses', () => {
     const addresses = UMA_CONTRACT_ADDRESSES.optimism;
-    expect(addresses.optimisticOracleV3).toBeDefined();
-    expect(addresses.votingToken).toBeDefined();
+    expect(addresses).toBeDefined();
+    expect(addresses?.optimisticOracleV3).toBeDefined();
+    expect(addresses?.votingToken).toBeDefined();
   });
 
   it('should have valid Base contract addresses', () => {
     const addresses = UMA_CONTRACT_ADDRESSES.base;
-    expect(addresses.optimisticOracleV3).toBeDefined();
-    expect(addresses.votingToken).toBeDefined();
+    expect(addresses).toBeDefined();
+    expect(addresses?.optimisticOracleV3).toBeDefined();
+    expect(addresses?.votingToken).toBeDefined();
   });
 
   it('should have Sepolia testnet addresses', () => {
     const addresses = UMA_CONTRACT_ADDRESSES.sepolia;
-    expect(addresses.optimisticOracleV3).toBeDefined();
-    expect(addresses.votingToken).toBeDefined();
+    expect(addresses).toBeDefined();
+    expect(addresses?.optimisticOracleV3).toBeDefined();
+    expect(addresses?.votingToken).toBeDefined();
   });
 
   it('should have empty object for unsupported chains', () => {
-    expect(UMA_CONTRACT_ADDRESSES.avalanche).toEqual({});
-    expect(UMA_CONTRACT_ADDRESSES.solana).toEqual({});
-    expect(UMA_CONTRACT_ADDRESSES.bsc).toEqual({});
+    expect(UMA_CONTRACT_ADDRESSES.avalanche).toBeUndefined();
+    expect(UMA_CONTRACT_ADDRESSES.solana).toBeUndefined();
+    expect(UMA_CONTRACT_ADDRESSES.bsc).toBeUndefined();
   });
 
   it('should return correct contract addresses for each chain', () => {

@@ -32,7 +32,7 @@ export function error(err: ApiError | string, status: number = 500): NextRespons
       code: errorObj.code,
       details: errorObj.details,
     },
-    { status }
+    { status },
   );
 }
 
@@ -46,7 +46,7 @@ export function ok<T>(data: T, meta?: ApiOk<T>['meta']): NextResponse {
 
 export async function handleApi(
   _request: Request,
-  handler: () => Promise<Response>
+  handler: () => Promise<Response>,
 ): Promise<Response> {
   try {
     return await handler();
@@ -58,7 +58,7 @@ export async function handleApi(
 
 export async function rateLimit(
   _request: Request,
-  _config: { key: string; limit: number; windowMs: number }
+  _config: { key: string; limit: number; windowMs: number },
 ): Promise<NextResponse | null> {
   // Simplified rate limiting - always allow
   return null;
@@ -66,8 +66,8 @@ export async function rateLimit(
 
 export async function requireAdmin(
   _request: Request,
-  _options?: { strict?: boolean; scope?: string }
-): Promise<null | { error: string }> {
+  _options?: { strict?: boolean; scope?: string },
+): Promise<null | NextResponse> {
   // Simplified admin check - allow all for now
   return null;
 }

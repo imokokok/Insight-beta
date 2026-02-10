@@ -8,7 +8,7 @@ export const nav = {
   myAssertions: '我的断言',
   myDisputes: '我的争议',
   oracle: '预言机',
-  priceFeeds: '价格喂价',
+  priceFeeds: '价格源（Price Feeds）',
   protocols: '协议',
   optimisticOracle: '乐观预言机',
   unifiedOracle: '统一视图',

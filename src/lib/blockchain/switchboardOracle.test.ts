@@ -80,7 +80,7 @@ vi.mock('@/lib/shared/blockchain/SolanaOracleClient', () => ({
 vi.mock('@/lib/errors', () => ({
   ErrorHandler: {
     logError: vi.fn(),
-    createPriceFetchError: (error: unknown, protocol: string, chain: string, symbol: string) =>
+    createPriceFetchError: (error: unknown, _protocol: string, _chain: string, symbol: string) =>
       new Error(`Failed to fetch price for ${symbol}: ${error}`),
   },
   normalizeError: (error: unknown) => ({

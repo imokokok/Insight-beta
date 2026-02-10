@@ -44,7 +44,7 @@ vi.mock('@/lib/shared', () => ({
       return now - Number(publishTime);
     }
 
-    protected async fetchPrice(symbol: string) {
+    protected async fetchPrice(_symbol: string) {
       return null;
     }
   },

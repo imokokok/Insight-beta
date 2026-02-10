@@ -18,8 +18,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useWebSocket } from '@/hooks';
 import { logger } from '@/lib/logger';
-import type { OracleProtocol } from '@/lib/types/unifiedOracleTypes';
 import { PROTOCOL_DISPLAY_NAMES } from '@/lib/types/oracle';
+import type { OracleProtocol } from '@/lib/types/unifiedOracleTypes';
 import { cn, fetchApiData, formatTimeAgo } from '@/lib/utils';
 
 // 本地类型定义（兼容组件需求）
@@ -66,6 +66,7 @@ interface PriceFeedListProps {
 interface FeedWithUpdate extends PriceFeed {
   priceChangePercent?: number;
   previousPrice?: number;
+  chain?: string;
 }
 
 // P0 优化：批量处理配置

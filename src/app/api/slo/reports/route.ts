@@ -5,6 +5,7 @@
  */
 
 import { NextResponse } from 'next/server';
+
 import { logger } from '@/lib/logger';
 import { query } from '@/server/db';
 
@@ -97,16 +98,14 @@ export async function GET(request: Request) {
           ORDER BY window_end DESC
           LIMIT 30
         `,
-          [slo.id]
+          [slo.id],
         );
 
         const metrics = metricsResult.rows as SloMetric[];
         const latestMetric = metrics[0];
 
         // 计算当前合规率
-        const currentCompliance = latestMetric
-          ? parseFloat(latestMetric.complianceRate)
-          : 100;
+        const currentCompliance = latestMetric ? parseFloat(latestMetric.complianceRate) : 100;
 
         // 确定状态
         let status: 'compliant' | 'at_risk' | 'breached' = 'compliant';
@@ -131,7 +130,7 @@ export async function GET(request: Request) {
           ORDER BY period_start DESC
           LIMIT 1
         `,
-          [slo.id]
+          [slo.id],
         );
 
         const errorBudgetRow = ebResult.rows[0] as ErrorBudgetRow | undefined;
@@ -150,9 +149,7 @@ export async function GET(request: Request) {
         const burnRate = parseFloat(errorBudget.burnRate);
         const remainingBudget = parseFloat(errorBudget.remainingBudget);
         const daysUntilExhaustion =
-          burnRate > 0
-            ? Math.round(remainingBudget / burnRate)
-            : undefined;
+          burnRate > 0 ? Math.round(remainingBudget / burnRate) : undefined;
 
         return {
           sloId: slo.id,
@@ -182,7 +179,7 @@ export async function GET(request: Request) {
           })),
           trend,
         };
-      })
+      }),
     );
 
     return NextResponse.json({
@@ -201,7 +198,7 @@ export async function GET(request: Request) {
     logger.error('Failed to fetch SLO reports', { error });
     return NextResponse.json(
       { success: false, error: 'Failed to fetch SLO reports' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -215,18 +212,20 @@ export async function POST(_request: Request) {
       SELECT id, target_value as "targetValue", evaluation_window as "evaluationWindow"
       FROM slo_definitions
       WHERE is_active = true
-    `
+    `,
     );
 
-    const slos = sloResult.rows as Array<{ id: string; targetValue: string; evaluationWindow: string }>;
+    const slos = sloResult.rows as Array<{
+      id: string;
+      targetValue: string;
+      evaluationWindow: string;
+    }>;
     const results = [];
 
     for (const slo of slos) {
       // 模拟评估逻辑（实际应该查询真实数据）
       const windowEnd = new Date();
-      const windowStart = new Date(
-        windowEnd.getTime() - parseWindow(slo.evaluationWindow)
-      );
+      const windowStart = new Date(windowEnd.getTime() - parseWindow(slo.evaluationWindow));
 
       // 这里应该查询实际的指标数据
       // 现在使用模拟数据
@@ -259,7 +258,7 @@ export async function POST(_request: Request) {
           badEvents,
           windowStart,
           windowEnd,
-        ]
+        ],
       );
 
       const row = metricResult.rows[0] as { id: string } | undefined;
@@ -282,16 +281,13 @@ export async function POST(_request: Request) {
     });
   } catch (error) {
     logger.error('Failed to evaluate SLOs', { error });
-    return NextResponse.json(
-      { success: false, error: 'Failed to evaluate SLOs' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: 'Failed to evaluate SLOs' }, { status: 500 });
   }
 }
 
 // 辅助函数：计算趋势
 function calculateTrend(
-  metrics: Array<{ complianceRate: string }>
+  metrics: Array<{ complianceRate: string }>,
 ): 'improving' | 'stable' | 'degrading' {
   if (metrics.length < 2) return 'stable';
 
@@ -299,10 +295,8 @@ function calculateTrend(
   const old = metrics.slice(-7);
 
   const recentAvg =
-    recent.reduce((sum, m) => sum + parseFloat(m.complianceRate), 0) /
-    recent.length;
-  const oldAvg =
-    old.reduce((sum, m) => sum + parseFloat(m.complianceRate), 0) / old.length;
+    recent.reduce((sum, m) => sum + parseFloat(m.complianceRate), 0) / recent.length;
+  const oldAvg = old.reduce((sum, m) => sum + parseFloat(m.complianceRate), 0) / old.length;
 
   const diff = recentAvg - oldAvg;
 
@@ -321,6 +315,10 @@ function parseWindow(window: string): number {
   const match = window.match(/(\d+)([hd])/);
   if (!match) return 30 * 24 * 60 * 60 * 1000; // 默认 30 天
 
-  const [, num, unit] = match;
-  return parseInt(num as string) * (units[unit as string] || units.d);
+  const num = match[1];
+  const unit = match[2];
+  if (!num || !unit) return 30 * 24 * 60 * 60 * 1000;
+  const unitValue = units[unit];
+  if (!unitValue) return 30 * 24 * 60 * 60 * 1000;
+  return parseInt(num) * unitValue;
 }

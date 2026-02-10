@@ -492,7 +492,8 @@ export class AnomalyDetectionService {
             this.calculateSeverity(confidence, this.config),
             confidence,
             {
-              volumeChange: ((volume - mean) / mean) * 100,
+              // 交易量变化百分比，小数形式 (0.01 = 1%)
+              volumeChange: (volume - mean) / mean,
               expectedValue: mean,
               actualValue: volume,
             },

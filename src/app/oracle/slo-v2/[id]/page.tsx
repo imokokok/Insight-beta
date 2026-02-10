@@ -7,7 +7,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+
 import { useRouter } from 'next/navigation';
+
 import {
   ArrowLeft,
   RefreshCw,
@@ -27,8 +29,8 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { logger } from '@/lib/logger';
 
 interface SloReport {
@@ -65,12 +67,12 @@ export default function SloDetailPage({ params }: { params: Promise<{ id: string
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    params.then(p => setSloId(p.id));
+    params.then((p) => setSloId(p.id));
   }, [params]);
 
   const fetchReport = async () => {
     if (!sloId) return;
-    
+
     try {
       const response = await fetch(`/api/slo/reports/${sloId}`);
       if (response.ok) {
@@ -115,10 +117,11 @@ export default function SloDetailPage({ params }: { params: Promise<{ id: string
   };
 
   const goBack = () => {
-    router.push('/oracle/slo-v2' as any);
+    router.push('/oracle/slo-v2');
   };
 
   const goToEdit = () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     router.push(`/oracle/slo-v2/${sloId}/edit` as any);
   };
 
@@ -155,7 +158,8 @@ export default function SloDetailPage({ params }: { params: Promise<{ id: string
           <div>
             <h1 className="text-2xl font-bold">{report.name}</h1>
             <p className="text-muted-foreground text-sm">
-              {report.protocol.toUpperCase()} · {report.chain} · {getMetricTypeLabel(report.metricType)}
+              {report.protocol.toUpperCase()} · {report.chain} ·{' '}
+              {getMetricTypeLabel(report.metricType)}
             </p>
           </div>
         </div>
@@ -176,7 +180,11 @@ export default function SloDetailPage({ params }: { params: Promise<{ id: string
       </div>
 
       {/* Status Banner */}
-      <StatusBanner status={report.status} compliance={report.currentCompliance} target={report.targetValue} />
+      <StatusBanner
+        status={report.status}
+        compliance={report.currentCompliance}
+        target={report.targetValue}
+      />
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -185,12 +193,22 @@ export default function SloDetailPage({ params }: { params: Promise<{ id: string
           value={`${report.currentCompliance.toFixed(2)}%`}
           subtitle={`目标: ${report.targetValue}%`}
           icon={<Target className="h-5 w-5" />}
-          status={report.status === 'compliant' ? 'healthy' : report.status === 'at_risk' ? 'warning' : 'critical'}
+          status={
+            report.status === 'compliant'
+              ? 'healthy'
+              : report.status === 'at_risk'
+                ? 'warning'
+                : 'critical'
+          }
         />
         <StatCard
           title="Error Budget 剩余"
-          value={`${(report.errorBudget.remaining / report.errorBudget.total * 100).toFixed(1)}%`}
-          subtitle={report.errorBudget.daysUntilExhaustion ? `预计 ${report.errorBudget.daysUntilExhaustion} 天后耗尽` : '充足'}
+          value={`${((report.errorBudget.remaining / report.errorBudget.total) * 100).toFixed(1)}%`}
+          subtitle={
+            report.errorBudget.daysUntilExhaustion
+              ? `预计 ${report.errorBudget.daysUntilExhaustion} 天后耗尽`
+              : '充足'
+          }
           icon={<Clock className="h-5 w-5" />}
           status={report.errorBudget.status as 'healthy' | 'warning' | 'critical'}
         />
@@ -205,8 +223,22 @@ export default function SloDetailPage({ params }: { params: Promise<{ id: string
           title="趋势"
           value={getTrendLabel(report.trend)}
           subtitle="最近 7 天变化"
-          icon={report.trend === 'improving' ? <TrendingUp className="h-5 w-5" /> : report.trend === 'degrading' ? <TrendingDown className="h-5 w-5" /> : <Activity className="h-5 w-5" />}
-          status={report.trend === 'improving' ? 'healthy' : report.trend === 'degrading' ? 'warning' : 'healthy'}
+          icon={
+            report.trend === 'improving' ? (
+              <TrendingUp className="h-5 w-5" />
+            ) : report.trend === 'degrading' ? (
+              <TrendingDown className="h-5 w-5" />
+            ) : (
+              <Activity className="h-5 w-5" />
+            )
+          }
+          status={
+            report.trend === 'improving'
+              ? 'healthy'
+              : report.trend === 'degrading'
+                ? 'warning'
+                : 'healthy'
+          }
         />
       </div>
 
@@ -234,20 +266,20 @@ export default function SloDetailPage({ params }: { params: Promise<{ id: string
                   <div className="space-y-2">
                     {report.recentMetrics.slice(0, 10).map((metric, idx) => (
                       <div key={idx} className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-muted-foreground text-sm">
                           {new Date(metric.timestamp).toLocaleDateString('zh-CN')}
                         </span>
-                        <div className="flex items-center gap-2 flex-1 mx-4">
+                        <div className="mx-4 flex flex-1 items-center gap-2">
                           <Progress value={metric.complianceRate} className="flex-1" />
-                          <span className="text-sm w-16 text-right">{metric.complianceRate.toFixed(1)}%</span>
+                          <span className="w-16 text-right text-sm">
+                            {metric.complianceRate.toFixed(1)}%
+                          </span>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="py-8 text-center text-muted-foreground">
-                    暂无历史数据
-                  </div>
+                  <div className="text-muted-foreground py-8 text-center">暂无历史数据</div>
                 )}
               </CardContent>
             </Card>
@@ -265,9 +297,14 @@ export default function SloDetailPage({ params }: { params: Promise<{ id: string
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>剩余</span>
-                    <span>{(report.errorBudget.remaining / report.errorBudget.total * 100).toFixed(1)}%</span>
+                    <span>
+                      {((report.errorBudget.remaining / report.errorBudget.total) * 100).toFixed(1)}
+                      %
+                    </span>
                   </div>
-                  <Progress value={(report.errorBudget.remaining / report.errorBudget.total) * 100} />
+                  <Progress
+                    value={(report.errorBudget.remaining / report.errorBudget.total) * 100}
+                  />
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
@@ -308,7 +345,7 @@ export default function SloDetailPage({ params }: { params: Promise<{ id: string
                 </thead>
                 <tbody>
                   {report.recentMetrics.slice(0, 10).map((metric, idx) => (
-                    <tr key={idx} className="border-b hover:bg-muted/50">
+                    <tr key={idx} className="hover:bg-muted/50 border-b">
                       <td className="px-4 py-3 text-sm">
                         {new Date(metric.timestamp).toLocaleString('zh-CN')}
                       </td>
@@ -320,7 +357,9 @@ export default function SloDetailPage({ params }: { params: Promise<{ id: string
                       </td>
                       <td className="px-4 py-3">
                         {metric.isCompliant ? (
-                          <Badge variant="default" className="bg-green-500">合规</Badge>
+                          <Badge variant="default" className="bg-green-500">
+                            合规
+                          </Badge>
                         ) : (
                           <Badge variant="destructive">不合规</Badge>
                         )}
@@ -343,7 +382,7 @@ export default function SloDetailPage({ params }: { params: Promise<{ id: string
               <CardDescription>与该 SLO 相关的告警、争议等事件</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground text-center py-8">事件时间线功能即将推出</p>
+              <p className="text-muted-foreground py-8 text-center">事件时间线功能即将推出</p>
             </CardContent>
           </Card>
         </TabsContent>
@@ -352,7 +391,15 @@ export default function SloDetailPage({ params }: { params: Promise<{ id: string
   );
 }
 
-function StatusBanner({ status, compliance, target }: { status: string; compliance: number; target: number }) {
+function StatusBanner({
+  status,
+  compliance,
+  target,
+}: {
+  status: string;
+  compliance: number;
+  target: number;
+}) {
   const config = {
     compliant: {
       bg: 'bg-green-50 dark:bg-green-900/20',
@@ -385,7 +432,7 @@ function StatusBanner({ status, compliance, target }: { status: string; complian
         {icon}
         <div>
           <h3 className="font-semibold">{title}</h3>
-          <p className="text-sm text-muted-foreground">{message}</p>
+          <p className="text-muted-foreground text-sm">{message}</p>
         </div>
       </div>
     </div>

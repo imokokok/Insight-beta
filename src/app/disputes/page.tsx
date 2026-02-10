@@ -22,6 +22,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { ErrorBanner as ErrorBannerUI } from '@/components/ui/error-banner';
 import { RefreshIndicator } from '@/components/ui/refresh-indicator';
 import { getRefreshStrategy } from '@/config/refresh-strategy';
+import { useIsMobile } from '@/hooks';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage, langToLocale, type TranslationKey } from '@/i18n/translations';
 import type { Dispute, DisputeStatus, OracleChain } from '@/lib/types/oracleTypes';
@@ -76,12 +77,13 @@ function FiltersBar({
   query,
   setQuery,
   t,
-}: FiltersBarProps) {
+  isMobile,
+}: FiltersBarProps & { isMobile: boolean }) {
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <StatusTabs filterStatus={filterStatus} setFilterStatus={setFilterStatus} t={t} />
 
-      <div className="flex items-center gap-2">
+      <div className={`flex items-center gap-2 ${isMobile ? 'flex-wrap' : ''}`}>
         <select
           value={filterChain}
           onChange={(e) => setFilterChain(e.target.value as OracleChain | 'All')}
@@ -95,14 +97,14 @@ function FiltersBar({
           <option value="Optimism">{t('chain.optimism')}</option>
         </select>
 
-        <div className="relative">
+        <div className="relative flex-1 sm:flex-none">
           <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-purple-400" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={t('oracle.searchPlaceholder')}
-            className="h-9 w-full rounded-lg border-none bg-white/50 pl-9 pr-4 text-sm text-purple-900 shadow-sm placeholder:text-purple-300 focus:ring-2 focus:ring-purple-500/20 md:w-64"
+            placeholder={isMobile ? '搜索...' : t('oracle.searchPlaceholder')}
+            className="h-9 w-full rounded-lg border-none bg-white/50 pl-9 pr-4 text-sm text-purple-900 shadow-sm placeholder:text-purple-300 focus:ring-2 focus:ring-purple-500/20 sm:w-48 md:w-64"
           />
         </div>
       </div>
@@ -166,19 +168,21 @@ type DisputeHeaderProps = {
   t: Translate;
 };
 
-function DisputeHeader({ dispute, t }: DisputeHeaderProps) {
+function DisputeHeader({ dispute, t, isMobile }: DisputeHeaderProps & { isMobile: boolean }) {
   return (
-    <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-      <div className="flex gap-4">
-        <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-100 text-rose-600 shadow-sm">
-          <ShieldAlert size={20} />
+    <div className="flex flex-col gap-3 sm:gap-4">
+      <div className="flex gap-3 sm:gap-4">
+        <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-rose-100 text-rose-600 shadow-sm sm:h-10 sm:w-10">
+          <ShieldAlert size={isMobile ? 16 : 20} />
         </div>
-        <div>
-          <div className="flex items-center gap-2">
-            <h3 className="text-lg font-semibold text-purple-950">{dispute.id}</h3>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+            <h3 className="truncate text-sm font-semibold text-purple-950 sm:text-lg">
+              {dispute.id}
+            </h3>
             <span
               className={cn(
-                'rounded-full border px-2.5 py-0.5 text-xs font-medium',
+                'rounded-full border px-2 py-0.5 text-[10px] font-medium sm:px-2.5 sm:text-xs',
                 dispute.status === 'Voting'
                   ? 'border-amber-200 bg-amber-100 text-amber-700'
                   : dispute.status === 'Pending Execution'
@@ -188,11 +192,11 @@ function DisputeHeader({ dispute, t }: DisputeHeaderProps) {
             >
               {statusLabel(dispute.status, t)}
             </span>
-            <span className="rounded-md border border-gray-100 bg-gray-50 px-2 py-0.5 text-xs font-medium text-gray-400">
+            <span className="rounded-md border border-gray-100 bg-gray-50 px-1.5 py-0.5 text-[10px] font-medium text-gray-400 sm:px-2 sm:text-xs">
               {dispute.chain}
             </span>
           </div>
-          <p className="mt-1 text-base font-medium text-purple-900">{dispute.market}</p>
+          <p className="mt-1 text-sm font-medium text-purple-900 sm:text-base">{dispute.market}</p>
         </div>
       </div>
 
@@ -200,7 +204,7 @@ function DisputeHeader({ dispute, t }: DisputeHeaderProps) {
         href={umaAssertionUrl(dispute)}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-xs font-medium text-purple-600 shadow-sm ring-1 ring-purple-100 transition-colors hover:bg-purple-50 hover:text-purple-700"
+        className="flex items-center justify-center gap-2 rounded-lg bg-white px-3 py-2 text-xs font-medium text-purple-600 shadow-sm ring-1 ring-purple-100 transition-colors hover:bg-purple-50 hover:text-purple-700 sm:w-fit"
       >
         {t('disputes.viewOnUma')}
         <ExternalLink size={14} />
@@ -326,15 +330,21 @@ type DisputeCardProps = {
   locale: string;
 };
 
-function DisputeCard({ dispute, voteTrackingEnabled, t, locale }: DisputeCardProps) {
+function DisputeCard({
+  dispute,
+  voteTrackingEnabled,
+  t,
+  locale,
+  isMobile,
+}: DisputeCardProps & { isMobile: boolean }) {
   return (
     <Card className="border-purple-100/60 bg-white/60 shadow-sm transition-all hover:shadow-md">
-      <CardHeader className="pb-4">
-        <DisputeHeader dispute={dispute} t={t} />
+      <CardHeader className="pb-3 sm:pb-4">
+        <DisputeHeader dispute={dispute} t={t} isMobile={isMobile} />
       </CardHeader>
 
       <CardContent>
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
           <DisputeReason dispute={dispute} t={t} locale={locale} />
           <VotingProgress
             dispute={dispute}
@@ -356,6 +366,7 @@ export default function DisputesPage() {
   const searchParams = useSearchParams();
   const currentSearch = searchParams?.toString() ?? '';
   const instanceIdFromUrl = searchParams?.get('instanceId')?.trim() || '';
+  const isMobile = useIsMobile();
   const [items, setItems] = useState<Dispute[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -521,9 +532,12 @@ export default function DisputesPage() {
   const hasItems = useMemo(() => items.length > 0, [items.length]);
 
   return (
-    <div className="space-y-6">
-      <PageHeader title={t('disputes.title')} description={t('disputes.description')}>
-        <div className="flex items-center gap-3">
+    <div className="space-y-4 sm:space-y-6">
+      <PageHeader
+        title={t('disputes.title')}
+        description={isMobile ? undefined : t('disputes.description')}
+      >
+        <div className="flex items-center gap-2 sm:gap-3">
           {/* 刷新状态指示器 */}
           <RefreshIndicator
             lastUpdated={lastUpdated}
@@ -535,19 +549,19 @@ export default function DisputesPage() {
             type="button"
             onClick={refresh}
             disabled={loading}
-            className="flex items-center gap-2 rounded-xl bg-white/60 px-4 py-2 text-sm font-semibold text-purple-800 shadow-sm ring-1 ring-purple-100 hover:bg-white disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-xl bg-white/60 px-3 py-2 text-sm font-semibold text-purple-800 shadow-sm ring-1 ring-purple-100 hover:bg-white disabled:opacity-50 sm:gap-2 sm:px-4"
           >
-            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-            {t('common.refresh')}
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+            <span className="hidden sm:inline">{t('common.refresh')}</span>
           </button>
-          <div className="flex items-center gap-2 rounded-lg border border-purple-100 bg-purple-50 px-3 py-1.5 text-sm text-purple-700/60">
+          <div className="hidden items-center gap-2 rounded-lg border border-purple-100 bg-purple-50 px-3 py-1.5 text-sm text-purple-700/60 sm:flex">
             <Gavel size={16} />
             <span>{t('disputes.umaDvmActive')}</span>
           </div>
         </div>
       </PageHeader>
 
-      <div className="grid gap-6">
+      <div className="grid gap-4 sm:gap-6">
         {/* 错误提示 - 使用统一的 ErrorBanner */}
         {error && (
           <ErrorBannerUI
@@ -566,6 +580,7 @@ export default function DisputesPage() {
           query={query}
           setQuery={setQuery}
           t={t}
+          isMobile={isMobile}
         />
 
         {loading && <LoadingBanner t={t} />}
@@ -578,6 +593,7 @@ export default function DisputesPage() {
               voteTrackingEnabled={voteTrackingEnabled}
               t={t}
               locale={locale}
+              isMobile={isMobile}
             />
           ))}
 

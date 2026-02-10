@@ -10,9 +10,9 @@ import type {
   SyncState,
   ConfigTemplate,
 } from '../domain/oracle';
-import type { PriceFeed, PriceHistory, CrossOracleComparison } from '../domain/price';
 import type { SecurityDetection, Alert, AlertRule, AuditLog } from '../domain/security';
 import type { Assertion, Dispute, UMAUserStats, UMALeaderboardEntry } from '../domain/uma';
+import type { UnifiedPriceFeed, CrossOracleComparison } from '../unifiedOracleTypes';
 
 // ============================================================================
 // Oracle 响应
@@ -34,11 +34,9 @@ export type ListConfigTemplatesResponse = ApiResponse<ConfigTemplate[]>;
 // 价格响应
 // ============================================================================
 
-export type GetPriceResponse = ApiResponse<PriceFeed>;
+export type GetPriceResponse = ApiResponse<UnifiedPriceFeed>;
 
-export type GetPricesResponse = ApiResponse<PriceFeed[]>;
-
-export type GetPriceHistoryResponse = ApiResponse<PriceHistory[]>;
+export type GetPricesResponse = ApiResponse<UnifiedPriceFeed[]>;
 
 export type ComparePricesResponse = ApiResponse<CrossOracleComparison>;
 

@@ -503,25 +503,6 @@ export async function ensureSchema() {
       true
     ON CONFLICT (id) DO NOTHING;
 
-    -- Web Vitals Metrics Table
-    CREATE TABLE IF NOT EXISTS web_vitals_metrics (
-      id BIGSERIAL PRIMARY KEY,
-      lcp NUMERIC,
-      fid NUMERIC,
-      cls NUMERIC,
-      fcp NUMERIC,
-      ttfb NUMERIC,
-      inp NUMERIC,
-      page_path TEXT NOT NULL DEFAULT '/',
-      user_agent TEXT,
-      timestamp TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-      created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
-    );
-
-    CREATE INDEX IF NOT EXISTS idx_web_vitals_page_path ON web_vitals_metrics(page_path);
-    CREATE INDEX IF NOT EXISTS idx_web_vitals_created_at ON web_vitals_metrics(created_at);
-    CREATE INDEX IF NOT EXISTS idx_web_vitals_page_created ON web_vitals_metrics(page_path, created_at);
-
     -- Config Version History Table
     CREATE TABLE IF NOT EXISTS oracle_config_history (
       id BIGSERIAL PRIMARY KEY,

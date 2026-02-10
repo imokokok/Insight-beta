@@ -32,7 +32,7 @@ import { RefreshIndicator } from '@/components/ui/refresh-indicator';
 import { ChartSkeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getRefreshStrategy } from '@/config/refresh-strategy';
-import { useWebSocket } from '@/hooks';
+import { useWebSocket, useIsMobile } from '@/hooks';
 import { useAutoRefresh } from '@/hooks/use-auto-refresh';
 import { logger } from '@/lib/logger';
 import { fetchApiData, cn } from '@/lib/utils';
@@ -253,6 +253,7 @@ export default function UnifiedDashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [selectedProtocols, setSelectedProtocols] = useState<string[]>(['all']);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   // 使用新的自动刷新 hook，配置为 1 分钟刷新策略
   const dashboardStrategy = getRefreshStrategy('dashboard-overview');
@@ -392,21 +393,23 @@ export default function UnifiedDashboardPage() {
         </header>
 
         {/* Scrollable Content - 优化信息密度 */}
-        <div className="flex-1 overflow-y-auto p-3 lg:p-4">
+        <div className="flex-1 overflow-y-auto p-2 sm:p-3 lg:p-4">
           {/* Stats Cards - 按任务分组（紧凑布局） */}
           <div className="mb-4 space-y-3">
             {/* 上行：健康相关指标（核心 4 个） */}
-            <div className="rounded-lg border border-amber-200/50 bg-amber-50/20 p-3">
+            <div className="rounded-lg border border-amber-200/50 bg-amber-50/20 p-2 sm:p-3">
               <div className="mb-2 flex items-center gap-2">
                 <div className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-100">
                   <Activity className="h-3 w-3 text-amber-600" />
                 </div>
                 <h3 className="text-xs font-semibold text-gray-700">System Health</h3>
-                <span className="text-muted-foreground text-[10px]">实时健康与风险指标</span>
+                <span className="text-muted-foreground hidden text-[10px] sm:inline">
+                  实时健康与风险指标
+                </span>
               </div>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 <StatCard
-                  title="Active Alerts"
+                  title={isMobile ? 'Alerts' : 'Active Alerts'}
                   value={stats?.activeAlerts ?? 0}
                   icon={<AlertTriangle className="h-3.5 w-3.5" />}
                   loading={isRefreshing && !stats}
@@ -419,7 +422,7 @@ export default function UnifiedDashboardPage() {
                   lastUpdated={lastUpdated}
                 />
                 <StatCard
-                  title="Avg Latency"
+                  title={isMobile ? 'Latency' : 'Avg Latency'}
                   value={`${stats?.avgLatency ?? 0}ms`}
                   icon={<Activity className="h-3.5 w-3.5" />}
                   loading={isRefreshing && !stats}
@@ -427,7 +430,7 @@ export default function UnifiedDashboardPage() {
                   lastUpdated={lastUpdated}
                 />
                 <StatCard
-                  title="Network Uptime"
+                  title={isMobile ? 'Uptime' : 'Network Uptime'}
                   value={stats?.networkUptime ? `${stats.networkUptime}%` : '99.9%'}
                   icon={<Shield className="h-3.5 w-3.5" />}
                   loading={isRefreshing && !stats}
@@ -435,7 +438,7 @@ export default function UnifiedDashboardPage() {
                   lastUpdated={lastUpdated}
                 />
                 <StatCard
-                  title="Stale Feeds"
+                  title={isMobile ? 'Stale' : 'Stale Feeds'}
                   value={stats?.staleFeeds ?? 0}
                   icon={<Clock className="h-3.5 w-3.5" />}
                   loading={isRefreshing && !stats}
@@ -446,13 +449,15 @@ export default function UnifiedDashboardPage() {
             </div>
 
             {/* 下行：规模相关指标（精简为 4 个核心） */}
-            <div className="rounded-lg border border-blue-200/50 bg-blue-50/20 p-3">
+            <div className="rounded-lg border border-blue-200/50 bg-blue-50/20 p-2 sm:p-3">
               <div className="mb-2 flex items-center gap-2">
                 <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-100">
                   <Globe className="h-3 w-3 text-blue-600" />
                 </div>
                 <h3 className="text-xs font-semibold text-gray-700">Network Scale</h3>
-                <span className="text-muted-foreground text-[10px]">协议规模与数据量</span>
+                <span className="text-muted-foreground hidden text-[10px] sm:inline">
+                  协议规模与数据量
+                </span>
               </div>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 <StatCard
@@ -464,7 +469,7 @@ export default function UnifiedDashboardPage() {
                   lastUpdated={lastUpdated}
                 />
                 <StatCard
-                  title="Price Feeds"
+                  title={isMobile ? 'Feeds' : 'Price Feeds'}
                   value={stats?.totalPriceFeeds ?? 0}
                   icon={<BarChart3 className="h-3.5 w-3.5" />}
                   loading={isRefreshing && !stats}
@@ -480,7 +485,7 @@ export default function UnifiedDashboardPage() {
                   lastUpdated={lastUpdated}
                 />
                 <StatCard
-                  title="Updates (24h)"
+                  title={isMobile ? '24h' : 'Updates (24h)'}
                   value={stats?.priceUpdates24h?.toLocaleString() ?? '0'}
                   icon={<Layers className="h-3.5 w-3.5" />}
                   loading={isRefreshing && !stats}
@@ -504,60 +509,71 @@ export default function UnifiedDashboardPage() {
           )}
 
           {/* Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="w-full justify-start lg:w-auto">
-              <TabsTrigger value="overview" className="gap-2">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
+            <TabsList className="w-full justify-start overflow-x-auto lg:w-auto">
+              <TabsTrigger value="overview" className="gap-1 sm:gap-2">
                 <Zap className="h-4 w-4" />
                 <span className="hidden sm:inline">Overview</span>
-                <span className="sm:hidden">Overview</span>
+                <span className="sm:hidden">概览</span>
               </TabsTrigger>
-              <TabsTrigger value="health" className="gap-2">
+              <TabsTrigger value="health" className="gap-1 sm:gap-2">
                 <Activity className="h-4 w-4" />
-                Health
+                <span className="hidden sm:inline">Health</span>
+                <span className="sm:hidden">健康</span>
               </TabsTrigger>
-              <TabsTrigger value="alerts" className="gap-2">
+              <TabsTrigger value="alerts" className="gap-1 sm:gap-2">
                 <AlertTriangle className="h-4 w-4" />
-                Alerts
+                <span className="hidden sm:inline">Alerts</span>
+                <span className="sm:hidden">告警</span>
               </TabsTrigger>
             </TabsList>
 
             {/* Overview Tab - 运维视角重排（紧凑布局） */}
-            <TabsContent value="overview" className="space-y-4">
+            <TabsContent value="overview" className="space-y-3 sm:space-y-4">
               {/* 第一行：Price Trends + AlertPanel（告警优先，高度优化） */}
-              <div className="grid gap-4 xl:grid-cols-3">
-                <div className="xl:col-span-2">
-                  <CardEnhanced className="h-[280px] bg-transparent" hover glow>
+              <div className="grid gap-3 sm:gap-4 xl:grid-cols-3">
+                <div className="order-2 xl:order-1 xl:col-span-2">
+                  <CardEnhanced className="h-[240px] bg-transparent sm:h-[280px]" hover glow>
                     <div className="mb-2 flex items-center justify-between">
-                      <h3 className="text-base font-semibold text-purple-900">Price Trends</h3>
+                      <h3 className="text-sm font-semibold text-purple-900 sm:text-base">
+                        Price Trends
+                      </h3>
                     </div>
-                    <Suspense fallback={<ChartSkeleton className="h-[240px]" />}>
-                      <div className="h-[240px]">
+                    <Suspense fallback={<ChartSkeleton className="h-[200px] sm:h-[240px]" />}>
+                      <div className="h-[200px] sm:h-[240px]">
                         <OracleCharts />
                       </div>
                     </Suspense>
                   </CardEnhanced>
                 </div>
-                <div>
-                  <CardEnhanced className="h-[280px] border-amber-200/50 bg-amber-50/20" hover glow>
+                <div className="order-1 xl:order-2">
+                  <CardEnhanced
+                    className="h-[200px] border-amber-200/50 bg-amber-50/20 sm:h-[280px]"
+                    hover
+                    glow
+                  >
                     <div className="mb-2 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-100">
                           <AlertTriangle className="h-3 w-3 text-amber-600" />
                         </div>
-                        <h3 className="text-base font-semibold text-purple-900">Recent Alerts</h3>
+                        <h3 className="text-sm font-semibold text-purple-900 sm:text-base">
+                          Recent Alerts
+                        </h3>
                       </div>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-6 text-xs text-amber-600 hover:bg-amber-100 hover:text-amber-700"
+                        className="h-6 px-2 text-xs text-amber-600 hover:bg-amber-100 hover:text-amber-700 sm:px-3"
                         onClick={() => setActiveTab('alerts')}
                       >
-                        View All →
+                        <span className="hidden sm:inline">View All →</span>
+                        <span className="sm:hidden">全部</span>
                       </Button>
                     </div>
-                    <Suspense fallback={<ChartSkeleton className="h-[240px]" />}>
-                      <div className="h-[240px] overflow-auto">
-                        <AlertPanel maxAlerts={8} />
+                    <Suspense fallback={<ChartSkeleton className="h-[160px] sm:h-[240px]" />}>
+                      <div className="h-[160px] overflow-auto sm:h-[240px]">
+                        <AlertPanel maxAlerts={isMobile ? 5 : 8} />
                       </div>
                     </Suspense>
                   </CardEnhanced>
@@ -565,25 +581,29 @@ export default function UnifiedDashboardPage() {
               </div>
 
               {/* 第二行：Protocol Health + Latest Prices（紧凑布局） */}
-              <div className="grid gap-4 lg:grid-cols-2">
-                <CardEnhanced className="h-[200px] bg-transparent" hover glow>
+              <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
+                <CardEnhanced className="h-[180px] bg-transparent sm:h-[200px]" hover glow>
                   <div className="mb-2 flex items-center justify-between">
-                    <h3 className="text-base font-semibold text-purple-900">Protocol Health</h3>
+                    <h3 className="text-sm font-semibold text-purple-900 sm:text-base">
+                      Protocol Health
+                    </h3>
                   </div>
-                  <Suspense fallback={<ChartSkeleton className="h-[160px]" />}>
-                    <div className="h-[160px] overflow-auto">
+                  <Suspense fallback={<ChartSkeleton className="h-[140px] sm:h-[160px]" />}>
+                    <div className="h-[140px] overflow-auto sm:h-[160px]">
                       <ProtocolHealthGrid />
                     </div>
                   </Suspense>
                 </CardEnhanced>
 
-                <CardEnhanced className="h-[200px] bg-transparent" hover glow>
+                <CardEnhanced className="h-[180px] bg-transparent sm:h-[200px]" hover glow>
                   <div className="mb-2 flex items-center justify-between">
-                    <h3 className="text-base font-semibold text-purple-900">Latest Prices</h3>
+                    <h3 className="text-sm font-semibold text-purple-900 sm:text-base">
+                      Latest Prices
+                    </h3>
                   </div>
-                  <Suspense fallback={<ChartSkeleton className="h-[160px]" />}>
-                    <div className="h-[160px] overflow-auto">
-                      <PriceFeedList limit={6} />
+                  <Suspense fallback={<ChartSkeleton className="h-[140px] sm:h-[160px]" />}>
+                    <div className="h-[140px] overflow-auto sm:h-[160px]">
+                      <PriceFeedList limit={isMobile ? 4 : 6} />
                     </div>
                   </Suspense>
                 </CardEnhanced>
@@ -700,11 +720,11 @@ export default function UnifiedDashboardPage() {
             </TabsContent>
 
             {/* Alerts Tab - 运维视角：从总览到 drill-down 的闭环 */}
-            <TabsContent value="alerts" className="space-y-4">
+            <TabsContent value="alerts" className="space-y-3 sm:space-y-4">
               {/* Mini KPIs 区域 */}
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3 lg:grid-cols-5">
                 <CardEnhanced
-                  className="cursor-pointer border-red-200/50 bg-red-50/20 transition-all hover:shadow-md"
+                  className="cursor-pointer border-red-200/50 bg-red-50/20 p-3 transition-all hover:shadow-md sm:p-4"
                   hover
                   onClick={() => {
                     // Drill-down: 跳转到 /alerts?severity=critical
@@ -713,18 +733,20 @@ export default function UnifiedDashboardPage() {
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-gray-500">Critical Open</p>
-                      <p className="text-2xl font-bold text-red-600">2</p>
+                      <p className="text-[10px] text-gray-500 sm:text-xs">
+                        {isMobile ? 'Critical' : 'Critical Open'}
+                      </p>
+                      <p className="text-xl font-bold text-red-600 sm:text-2xl">2</p>
                     </div>
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100">
-                      <AlertTriangle className="h-4 w-4 text-red-600" />
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-red-100 sm:h-8 sm:w-8">
+                      <AlertTriangle className="h-3.5 w-3.5 text-red-600 sm:h-4 sm:w-4" />
                     </div>
                   </div>
-                  <p className="mt-1 text-[10px] text-gray-400">点击查看详情 →</p>
+                  <p className="mt-1 hidden text-[10px] text-gray-400 sm:block">点击查看详情 →</p>
                 </CardEnhanced>
 
                 <CardEnhanced
-                  className="cursor-pointer border-amber-200/50 bg-amber-50/20 transition-all hover:shadow-md"
+                  className="cursor-pointer border-amber-200/50 bg-amber-50/20 p-3 transition-all hover:shadow-md sm:p-4"
                   hover
                   onClick={() => {
                     window.location.href = '/alerts?severity=warning';
@@ -732,18 +754,20 @@ export default function UnifiedDashboardPage() {
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-gray-500">Warning Open</p>
-                      <p className="text-2xl font-bold text-amber-600">5</p>
+                      <p className="text-[10px] text-gray-500 sm:text-xs">
+                        {isMobile ? 'Warning' : 'Warning Open'}
+                      </p>
+                      <p className="text-xl font-bold text-amber-600 sm:text-2xl">5</p>
                     </div>
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-100">
-                      <AlertTriangle className="h-4 w-4 text-amber-600" />
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-amber-100 sm:h-8 sm:w-8">
+                      <AlertTriangle className="h-3.5 w-3.5 text-amber-600 sm:h-4 sm:w-4" />
                     </div>
                   </div>
-                  <p className="mt-1 text-[10px] text-gray-400">点击查看详情 →</p>
+                  <p className="mt-1 hidden text-[10px] text-gray-400 sm:block">点击查看详情 →</p>
                 </CardEnhanced>
 
                 <CardEnhanced
-                  className="cursor-pointer border-blue-200/50 bg-blue-50/20 transition-all hover:shadow-md"
+                  className="cursor-pointer border-blue-200/50 bg-blue-50/20 p-3 transition-all hover:shadow-md sm:p-4"
                   hover
                   onClick={() => {
                     window.location.href = '/alerts?severity=info';
@@ -751,18 +775,20 @@ export default function UnifiedDashboardPage() {
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-gray-500">Info Open</p>
-                      <p className="text-2xl font-bold text-blue-600">12</p>
+                      <p className="text-[10px] text-gray-500 sm:text-xs">
+                        {isMobile ? 'Info' : 'Info Open'}
+                      </p>
+                      <p className="text-xl font-bold text-blue-600 sm:text-2xl">12</p>
                     </div>
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
-                      <Info className="h-4 w-4 text-blue-600" />
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 sm:h-8 sm:w-8">
+                      <Info className="h-3.5 w-3.5 text-blue-600 sm:h-4 sm:w-4" />
                     </div>
                   </div>
-                  <p className="mt-1 text-[10px] text-gray-400">点击查看详情 →</p>
+                  <p className="mt-1 hidden text-[10px] text-gray-400 sm:block">点击查看详情 →</p>
                 </CardEnhanced>
 
                 <CardEnhanced
-                  className="cursor-pointer border-purple-200/50 bg-purple-50/20 transition-all hover:shadow-md"
+                  className="cursor-pointer border-purple-200/50 bg-purple-50/20 p-3 transition-all hover:shadow-md sm:p-4"
                   hover
                   onClick={() => {
                     window.location.href = '/alerts?status=acked';
@@ -770,29 +796,33 @@ export default function UnifiedDashboardPage() {
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-gray-500">Acked, Not Resolved</p>
-                      <p className="text-2xl font-bold text-purple-600">3</p>
+                      <p className="text-[10px] text-gray-500 sm:text-xs">
+                        {isMobile ? 'Acked' : 'Acked, Not Resolved'}
+                      </p>
+                      <p className="text-xl font-bold text-purple-600 sm:text-2xl">3</p>
                     </div>
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100">
-                      <Clock className="h-4 w-4 text-purple-600" />
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-purple-100 sm:h-8 sm:w-8">
+                      <Clock className="h-3.5 w-3.5 text-purple-600 sm:h-4 sm:w-4" />
                     </div>
                   </div>
-                  <p className="mt-1 text-[10px] text-gray-400">点击查看详情 →</p>
+                  <p className="mt-1 hidden text-[10px] text-gray-400 sm:block">点击查看详情 →</p>
                 </CardEnhanced>
 
-                <CardEnhanced className="border-gray-200/50 bg-gray-50/20">
+                <CardEnhanced className="border-gray-200/50 bg-gray-50/20 p-3 sm:p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-gray-500">Total Active</p>
-                      <p className="text-2xl font-bold text-gray-700">
+                      <p className="text-[10px] text-gray-500 sm:text-xs">
+                        {isMobile ? 'Total' : 'Total Active'}
+                      </p>
+                      <p className="text-xl font-bold text-gray-700 sm:text-2xl">
                         {stats?.activeAlerts ?? 19}
                       </p>
                     </div>
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100">
-                      <Activity className="h-4 w-4 text-gray-600" />
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 sm:h-8 sm:w-8">
+                      <Activity className="h-3.5 w-3.5 text-gray-600 sm:h-4 sm:w-4" />
                     </div>
                   </div>
-                  <p className="mt-1 text-[10px] text-gray-400">所有活跃告警</p>
+                  <p className="mt-1 hidden text-[10px] text-gray-400 sm:block">所有活跃告警</p>
                 </CardEnhanced>
               </div>
 

@@ -46,6 +46,9 @@ const MODULE_PRELOADS = [
   '/_next/static/chunks/framework.js',
 ];
 
+// 关键图片预加载
+const CRITICAL_IMAGES = ['/logo-owl.png', '/icon-192x192.png'];
+
 export const ResourceHints: React.FC<ResourceHintsProps> = ({
   enablePreconnect = true,
   enableDnsPrefetch = true,
@@ -92,6 +95,12 @@ export const ResourceHints: React.FC<ResourceHintsProps> = ({
       {enablePreload &&
         MODULE_PRELOADS.map((module) => (
           <link key={`module-${module}`} rel="modulepreload" href={module} />
+        ))}
+
+      {/* Preload Critical Images - 预加载关键图片 */}
+      {enablePreload &&
+        CRITICAL_IMAGES.map((image) => (
+          <link key={`img-${image}`} rel="preload" as="image" href={image} fetchPriority="high" />
         ))}
     </>
   );

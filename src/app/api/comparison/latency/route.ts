@@ -5,7 +5,8 @@
  * GET /api/comparison/latency
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
 import { query } from '@/server/db';
@@ -57,7 +58,7 @@ export async function GET(request: NextRequest) {
 
     // 按协议和交易对分组计算统计信息
     const metricsMap = new Map<string, LatencyRow[]>();
-    
+
     for (const row of result.rows) {
       const key = `${row.protocol}:${row.symbol}`;
       if (!metricsMap.has(key)) {
@@ -110,7 +111,10 @@ export async function GET(request: NextRequest) {
     const response = {
       metrics,
       summary: {
-        avgLatency: allLatencies.length > 0 ? allLatencies.reduce((a, b) => a + b, 0) / allLatencies.length : 0,
+        avgLatency:
+          allLatencies.length > 0
+            ? allLatencies.reduce((a, b) => a + b, 0) / allLatencies.length
+            : 0,
         maxLatency: allLatencies.length > 0 ? Math.max(...allLatencies) : 0,
         minLatency: allLatencies.length > 0 ? Math.min(...allLatencies) : 0,
         totalFeeds: metrics.length,

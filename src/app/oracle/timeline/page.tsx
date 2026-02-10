@@ -7,6 +7,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+
 import {
   Calendar,
   AlertTriangle,
@@ -24,7 +25,6 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { logger } from '@/lib/logger';
@@ -83,8 +83,8 @@ export default function TimelinePage() {
             acc[e.eventType] = (acc[e.eventType] || 0) + 1;
             return acc;
           }, {}),
-          today: events.filter((e: TimelineEvent) =>
-            new Date(e.occurredAt).toDateString() === today
+          today: events.filter(
+            (e: TimelineEvent) => new Date(e.occurredAt).toDateString() === today,
           ).length,
         });
       }
@@ -119,14 +119,17 @@ export default function TimelinePage() {
   });
 
   // Group events by date
-  const groupedEvents = filteredEvents.reduce((groups, event) => {
-    const date = new Date(event.occurredAt).toLocaleDateString('zh-CN');
-    if (!groups[date]) {
-      groups[date] = [];
-    }
-    groups[date].push(event);
-    return groups;
-  }, {} as Record<string, TimelineEvent[]>);
+  const groupedEvents = filteredEvents.reduce(
+    (groups, event) => {
+      const date = new Date(event.occurredAt).toLocaleDateString('zh-CN');
+      if (!groups[date]) {
+        groups[date] = [];
+      }
+      groups[date].push(event);
+      return groups;
+    },
+    {} as Record<string, TimelineEvent[]>,
+  );
 
   if (loading) {
     return (
@@ -142,9 +145,7 @@ export default function TimelinePage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold">事件时间线</h1>
-          <p className="text-muted-foreground text-sm">
-            追踪系统事件、告警和关键操作
-          </p>
+          <p className="text-muted-foreground text-sm">追踪系统事件、告警和关键操作</p>
         </div>
         <Button variant="outline" onClick={refresh} disabled={refreshing}>
           <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
@@ -155,16 +156,8 @@ export default function TimelinePage() {
       {/* Stats */}
       {stats && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-          <StatCard
-            title="今日事件"
-            value={stats.today}
-            icon={<Calendar className="h-5 w-5" />}
-          />
-          <StatCard
-            title="总计"
-            value={stats.total}
-            icon={<Activity className="h-5 w-5" />}
-          />
+          <StatCard title="今日事件" value={stats.today} icon={<Calendar className="h-5 w-5" />} />
+          <StatCard title="总计" value={stats.total} icon={<Activity className="h-5 w-5" />} />
           <StatCard
             title="严重事件"
             value={stats.bySeverity.critical || 0}
@@ -194,7 +187,11 @@ export default function TimelinePage() {
         <FilterButton active={filter === 'deployment'} onClick={() => setFilter('deployment')}>
           部署
         </FilterButton>
-        <FilterButton active={filter === 'critical'} onClick={() => setFilter('critical')} variant="danger">
+        <FilterButton
+          active={filter === 'critical'}
+          onClick={() => setFilter('critical')}
+          variant="danger"
+        >
           严重
         </FilterButton>
       </div>
@@ -207,19 +204,15 @@ export default function TimelinePage() {
               <Clock className="h-5 w-5" />
               时间线
             </CardTitle>
-            <CardDescription>
-              共 {filteredEvents.length} 个事件
-            </CardDescription>
+            <CardDescription>共 {filteredEvents.length} 个事件</CardDescription>
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-[600px]">
               <div className="space-y-6">
                 {Object.entries(groupedEvents).map(([date, dateEvents]) => (
                   <div key={date}>
-                    <div className="sticky top-0 mb-4 flex items-center gap-2 bg-background py-2">
-                      <span className="text-sm font-medium text-muted-foreground">
-                        {date}
-                      </span>
+                    <div className="bg-background sticky top-0 mb-4 flex items-center gap-2 py-2">
+                      <span className="text-muted-foreground text-sm font-medium">{date}</span>
                       <Separator className="flex-1" />
                     </div>
                     <div className="space-y-4">
@@ -235,9 +228,7 @@ export default function TimelinePage() {
                   </div>
                 ))}
                 {filteredEvents.length === 0 && (
-                  <div className="py-12 text-center text-muted-foreground">
-                    暂无事件
-                  </div>
+                  <div className="text-muted-foreground py-12 text-center">暂无事件</div>
                 )}
               </div>
             </ScrollArea>
@@ -253,10 +244,7 @@ export default function TimelinePage() {
             {selectedEvent ? (
               <div className="space-y-4">
                 <div>
-                  <Badge
-                    variant={getSeverityVariant(selectedEvent.severity)}
-                    className="mb-2"
-                  >
+                  <Badge variant={getSeverityVariant(selectedEvent.severity)} className="mb-2">
                     {selectedEvent.severity}
                   </Badge>
                   <h3 className="font-semibold">{selectedEvent.title}</h3>
@@ -276,9 +264,7 @@ export default function TimelinePage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">时间</span>
-                    <span>
-                      {new Date(selectedEvent.occurredAt).toLocaleString('zh-CN')}
-                    </span>
+                    <span>{new Date(selectedEvent.occurredAt).toLocaleString('zh-CN')}</span>
                   </div>
                   {selectedEvent.protocol && (
                     <div className="flex justify-between">
@@ -319,9 +305,7 @@ export default function TimelinePage() {
                 )}
               </div>
             ) : (
-              <div className="py-12 text-center text-muted-foreground">
-                选择一个事件查看详情
-              </div>
+              <div className="text-muted-foreground py-12 text-center">选择一个事件查看详情</div>
             )}
           </CardContent>
         </Card>
@@ -350,7 +334,7 @@ function StatCard({
   return (
     <Card className={variantStyles[variant]}>
       <CardContent className="flex items-center gap-4 p-6">
-        <div className="rounded-lg bg-background p-2">{icon}</div>
+        <div className="bg-background rounded-lg p-2">{icon}</div>
         <div>
           <p className="text-muted-foreground text-sm">{title}</p>
           <p className="text-2xl font-bold">{value}</p>
@@ -412,7 +396,7 @@ function EventCard({
 
   return (
     <div
-      className={`cursor-pointer rounded-lg border border-l-4 p-4 transition-colors hover:bg-muted ${
+      className={`hover:bg-muted cursor-pointer rounded-lg border border-l-4 p-4 transition-colors ${
         severityColors[event.severity]
       } ${selected ? 'bg-muted' : ''}`}
       onClick={onClick}
@@ -429,9 +413,7 @@ function EventCard({
             </Badge>
           </div>
           {event.description && (
-            <p className="text-muted-foreground mt-1 line-clamp-2 text-sm">
-              {event.description}
-            </p>
+            <p className="text-muted-foreground mt-1 line-clamp-2 text-sm">{event.description}</p>
           )}
           <div className="text-muted-foreground mt-2 flex items-center gap-3 text-xs">
             <span>{new Date(event.occurredAt).toLocaleTimeString('zh-CN')}</span>

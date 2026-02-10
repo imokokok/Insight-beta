@@ -33,4 +33,14 @@ export const errors = {
   severityHigh: 'High',
   severityMedium: 'Medium',
   severityLow: 'Low',
+  // Price Service Errors
+  failedToFetchPriceHistory: 'Unable to retrieve price history data',
+  failedToFetchOhlcvData: 'Unable to retrieve OHLCV market data',
+  failedToFetchCurrentPrices: 'Unable to retrieve current market prices',
+  failedToFetchCurrentPrice: 'Unable to retrieve current price for the specified feed',
+  failedToFetchPriceUpdateEvents: 'Unable to retrieve price update event history',
+  failedToFetchPriceStats: 'Unable to calculate price statistics',
+  failedToInsertPriceHistory: 'Unable to save price history records',
+  failedToRefreshMaterializedView: 'Unable to refresh materialized view',
+  noPriceDataFound: 'No price data available for the specified criteria',
 };

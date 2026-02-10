@@ -33,4 +33,14 @@ export const errors = {
   severityHigh: '高',
   severityMedium: '中',
   severityLow: '低',
+  // 价格服务错误
+  failedToFetchPriceHistory: '无法获取价格历史数据',
+  failedToFetchOhlcvData: '无法获取 OHLCV 市场数据',
+  failedToFetchCurrentPrices: '无法获取当前市场价格',
+  failedToFetchCurrentPrice: '无法获取指定喂价的当前价格',
+  failedToFetchPriceUpdateEvents: '无法获取价格更新事件记录',
+  failedToFetchPriceStats: '无法计算价格统计数据',
+  failedToInsertPriceHistory: '无法保存价格历史记录',
+  failedToRefreshMaterializedView: '无法刷新物化视图',
+  noPriceDataFound: '指定条件下暂无价格数据',
 };

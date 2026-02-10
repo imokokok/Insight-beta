@@ -17,6 +17,14 @@ const onboarding = {
   resetConfirm:
     '¿Estás seguro de que quieres ver la integración de nuevo? Esto actualizará la página.',
   targetNotFound: 'Elemento objetivo no encontrado',
+  guidedTour: {
+    title: 'Recorrido Guiado',
+    description: 'Tomemos un recorrido de 1-2 minutos para conocer las funciones principales',
+    startTour: 'Iniciar Recorrido',
+    skipForNow: 'Omitir por Ahora',
+    finish: 'Finalizar Recorrido',
+    progress: '{{current}}/{{total}}',
+  },
   steps: {
     developer: {
       api: {
@@ -80,24 +88,50 @@ const onboarding = {
   },
   tour: {
     dashboard: {
-      title: 'Descripción general del panel',
-      description: 'Ver todas las métricas clave y datos en tiempo real aquí.',
-    },
-    protocols: {
-      title: 'Selección de protocolo',
-      description: 'Haz clic aquí para cambiar entre diferentes protocolos de oracle.',
-    },
-    search: {
-      title: 'Función de búsqueda',
-      description: 'Usa la búsqueda para encontrar rápidamente el oracle o activo que necesitas.',
+      title: 'Panel de Control',
+      description:
+        'Tu centro de comando central que muestra todas las métricas clave y el estado del sistema en tiempo real.',
     },
     alerts: {
-      title: 'Centro de alertas',
-      description: 'Ver y gestionar todas tus notificaciones de alerta.',
+      title: 'Alertas',
+      description:
+        'Ver y gestionar todas las alertas del sistema, incluyendo desviaciones de precios, notificaciones de nodos fuera de línea y más.',
+    },
+    protocols: {
+      title: 'Protocolos',
+      description:
+        'Monitorea múltiples protocolos de oracle como Chainlink, Pyth, Band con datos en tiempo real y métricas de rendimiento.',
+    },
+    watchlist: {
+      title: 'Lista de Seguimiento',
+      description:
+        'Agrega activos que te interesan para rastrear rápidamente cambios importantes de precios.',
+    },
+    sidebar: {
+      title: 'Navegación',
+      description:
+        'Usa la barra lateral para acceder rápidamente a diferentes módulos funcionales.',
     },
     settings: {
       title: 'Configuración',
       description: 'Personaliza tus preferencias de monitoreo y configuraciones de notificación.',
+    },
+  },
+  emptyStates: {
+    alerts: {
+      title: 'Sistema Saludable',
+      description:
+        'No hay alertas activas en este momento. Todos los protocolos de oracle están funcionando normalmente.',
+      action: 'Configurar Reglas de Alerta',
+      actionDesc:
+        'Configura umbrales de alerta personalizados para recibir notificaciones de anomalías',
+    },
+    watchlist: {
+      title: 'Comienza a Agregar Monitores',
+      description:
+        'Aún no has agregado ningún monitor. Comienza a construir tu lista de seguimiento.',
+      action: 'Agregar Primer Monitor',
+      actionDesc: 'Explora datos de oracle y agrega activos que te interesen',
     },
   },
 };

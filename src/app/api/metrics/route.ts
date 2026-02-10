@@ -12,13 +12,15 @@ import { NextResponse } from 'next/server';
 
 import { priceMetrics } from '@/lib/monitoring/priceMetrics';
 import { circuitBreakerManager } from '@/lib/utils/resilience';
-import { alertRuleEngine } from '@/server/oracle/realtime';
-import { priceAggregationEngine } from '@/server/oracle/priceAggregation';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
+    // 动态导入以避免构建时执行
+    const { alertRuleEngine } = await import('@/server/oracle/realtime');
+    const { priceAggregationEngine } = await import('@/server/oracle/priceAggregation');
+
     const metrics = {
       // 价格聚合指标
       price: priceMetrics.getSystemMetrics(),

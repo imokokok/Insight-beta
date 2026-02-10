@@ -22,9 +22,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useI18n } from '@/i18n';
+import { statusColors } from '@/lib/constants/colors';
 import type { LatencyAnalysis, LatencyTrend } from '@/lib/types/oracle';
 import { cn } from '@/lib/utils';
-import { statusColors } from '@/lib/constants/colors';
 
 interface LatencyAnalysisProps {
   data?: LatencyAnalysis;

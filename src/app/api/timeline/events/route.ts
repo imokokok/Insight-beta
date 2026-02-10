@@ -5,6 +5,7 @@
  */
 
 import { NextResponse } from 'next/server';
+
 import { logger } from '@/lib/logger';
 import { query } from '@/server/db';
 
@@ -100,7 +101,7 @@ export async function GET(request: Request) {
 
     // 添加排序和分页
     sql += ` ORDER BY occurred_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
-    params.push(limit, offset);
+    params.push(String(limit), String(offset));
 
     const result = await query(sql, params);
 
@@ -123,7 +124,7 @@ export async function GET(request: Request) {
     logger.error('Failed to fetch timeline events', { error });
     return NextResponse.json(
       { success: false, error: 'Failed to fetch timeline events' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -195,14 +196,14 @@ export async function POST(request: Request) {
         relatedEventIds,
         source,
         sourceUser,
-      ]
+      ],
     );
 
     const row = result.rows[0];
     if (!row) {
       return NextResponse.json(
         { success: false, error: 'Failed to create timeline event' },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -217,7 +218,7 @@ export async function POST(request: Request) {
     logger.error('Failed to create timeline event', { error });
     return NextResponse.json(
       { success: false, error: 'Failed to create timeline event' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -34,4 +34,15 @@ export const errors = {
   severityHigh: 'Alto',
   severityMedium: 'Medio',
   severityLow: 'Bajo',
+  // Errores del Servicio de Precios
+  failedToFetchPriceHistory: 'No se pudo obtener el historial de precios',
+  failedToFetchOhlcvData: 'No se pudieron obtener los datos de mercado OHLCV',
+  failedToFetchCurrentPrices: 'No se pudieron obtener los precios de mercado actuales',
+  failedToFetchCurrentPrice: 'No se pudo obtener el precio actual del feed especificado',
+  failedToFetchPriceUpdateEvents:
+    'No se pudo obtener el historial de eventos de actualización de precios',
+  failedToFetchPriceStats: 'No se pudieron calcular las estadísticas de precios',
+  failedToInsertPriceHistory: 'No se pudieron guardar los registros de historial de precios',
+  failedToRefreshMaterializedView: 'No se pudo actualizar la vista materializada',
+  noPriceDataFound: 'No hay datos de precios disponibles para los criterios especificados',
 };

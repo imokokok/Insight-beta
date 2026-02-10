@@ -70,6 +70,9 @@ const nextConfig: NextConfig = {
       dynamic: 30,
       static: 180,
     },
+    // 优化客户端路由
+    clientRouterFilter: true,
+    clientRouterFilterRedirects: true,
   },
 
   productionBrowserSourceMaps: false,

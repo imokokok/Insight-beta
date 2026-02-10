@@ -143,4 +143,26 @@ export const common = {
     needsImprovement: 'Necesita Mejora',
     normal: 'Normal',
   },
+  // Actions
+  actions: {
+    viewDetails: 'Ver Detalles',
+    ignore: 'Ignorar',
+  },
+  // Labels
+  labels: {
+    target: 'Objetivo',
+    period: 'Período',
+    totalRequests: 'Solicitudes Totales',
+    failedRequests: 'Fallidas',
+    successRate: 'Tasa de Éxito',
+    confidence: 'Confianza',
+    priceImpact: 'Impacto de Precio',
+  },
+  // Actions & States
+  back: 'Atrás',
+  reset: 'Restablecer',
+  saving: 'Guardando...',
+  saved: 'Guardado',
+  saveConfig: 'Guardar Configuración',
+  submitting: 'Enviando...',
 };

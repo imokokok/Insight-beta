@@ -94,4 +94,11 @@ export const oracle = {
   createAssertionModal: {
     protocolNotSupported: '该协议不支持断言功能。请选择以下之一：{{supportedProtocols}}。',
   },
+  priceService: {
+    refreshedMaterializedView: '成功刷新物化视图：{{viewName}}',
+    refreshingMaterializedView: '正在刷新物化视图：{{viewName}}',
+    priceUpdateReceived: '收到 {{symbol}} 价格更新：${{price}}',
+    priceDeviationDetected: '检测到 {{symbol}} 价格偏离：变动 {{percent}}%',
+    historicalDataPurge: '已清理 {{count}} 条过期历史价格记录',
+  },
 };

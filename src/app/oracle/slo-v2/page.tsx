@@ -7,7 +7,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+
 import { useRouter } from 'next/navigation';
+
 import {
   Plus,
   Target,
@@ -98,11 +100,11 @@ export default function SloDashboardPage() {
   });
 
   const navigateToDetail = (sloId: string) => {
-    router.push(`/oracle/slo-v2/${sloId}` as any);
+    router.push(`/oracle/slo-v2/${sloId}`);
   };
 
   const navigateToCreate = () => {
-    router.push('/oracle/slo-v2/new' as any);
+    router.push('/oracle/slo-v2/new');
   };
 
   if (loading) {
@@ -119,9 +121,7 @@ export default function SloDashboardPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold">SLO / Error Budget</h1>
-          <p className="text-muted-foreground text-sm">
-            监控和管理服务等级目标
-          </p>
+          <p className="text-muted-foreground text-sm">监控和管理服务等级目标</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={refresh} disabled={refreshing}>
@@ -138,11 +138,7 @@ export default function SloDashboardPage() {
       {/* Summary Stats */}
       {summary && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-          <StatCard
-            title="总 SLO"
-            value={summary.total}
-            icon={<Target className="h-5 w-5" />}
-          />
+          <StatCard title="总 SLO" value={summary.total} icon={<Target className="h-5 w-5" />} />
           <StatCard
             title="合规"
             value={summary.compliant}
@@ -165,7 +161,10 @@ export default function SloDashboardPage() {
       )}
 
       {/* Filters */}
-      <Tabs value={filter} onValueChange={(v) => setFilter(v as any)}>
+      <Tabs
+        value={filter}
+        onValueChange={(v) => setFilter(v as 'all' | 'compliant' | 'at_risk' | 'breached')}
+      >
         <TabsList>
           <TabsTrigger value="all">全部</TabsTrigger>
           <TabsTrigger value="compliant">合规</TabsTrigger>
@@ -179,11 +178,9 @@ export default function SloDashboardPage() {
         {filteredReports.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
-              <Target className="mx-auto h-12 w-12 text-muted-foreground" />
+              <Target className="text-muted-foreground mx-auto h-12 w-12" />
               <h3 className="mt-4 text-lg font-medium">暂无 SLO</h3>
-              <p className="text-muted-foreground mt-2">
-                创建第一个 SLO 开始监控服务质量
-              </p>
+              <p className="text-muted-foreground mt-2">创建第一个 SLO 开始监控服务质量</p>
               <Button className="mt-4" onClick={navigateToCreate}>
                 <Plus className="mr-2 h-4 w-4" />
                 创建 SLO
@@ -225,7 +222,7 @@ function StatCard({
   return (
     <Card className={variantStyles[variant]}>
       <CardContent className="flex items-center gap-4 p-6">
-        <div className="rounded-lg bg-background p-2">{icon}</div>
+        <div className="bg-background rounded-lg p-2">{icon}</div>
         <div>
           <p className="text-muted-foreground text-sm">{title}</p>
           <p className="text-2xl font-bold">{value}</p>
@@ -235,13 +232,7 @@ function StatCard({
   );
 }
 
-function SloCard({
-  report,
-  onClick,
-}: {
-  report: SloReport;
-  onClick: () => void;
-}) {
+function SloCard({ report, onClick }: { report: SloReport; onClick: () => void }) {
   const statusConfig = {
     compliant: {
       badge: <Badge className="bg-green-500">合规</Badge>,
@@ -267,7 +258,7 @@ function SloCard({
 
   return (
     <Card
-      className={`cursor-pointer border-l-4 transition-colors hover:bg-muted ${border}`}
+      className={`hover:bg-muted cursor-pointer border-l-4 transition-colors ${border}`}
       onClick={onClick}
     >
       <CardContent className="p-6">
@@ -278,7 +269,8 @@ function SloCard({
               {badge}
             </div>
             <p className="text-muted-foreground mt-1 text-sm">
-              {report.protocol.toUpperCase()} · {report.chain} · {getMetricTypeLabel(report.metricType)}
+              {report.protocol.toUpperCase()} · {report.chain} ·{' '}
+              {getMetricTypeLabel(report.metricType)}
             </p>
 
             <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -288,13 +280,8 @@ function SloCard({
                   <span className="text-muted-foreground">合规率</span>
                   <span className="font-medium">{report.currentCompliance.toFixed(2)}%</span>
                 </div>
-                <Progress
-                  value={report.currentCompliance}
-                  className="mt-1"
-                />
-                <p className="text-muted-foreground mt-1 text-xs">
-                  目标: {report.targetValue}%
-                </p>
+                <Progress value={report.currentCompliance} className="mt-1" />
+                <p className="text-muted-foreground mt-1 text-xs">目标: {report.targetValue}%</p>
               </div>
 
               {/* Error Budget */}
@@ -302,7 +289,7 @@ function SloCard({
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Error Budget</span>
                   <span className="font-medium">
-                    {(report.errorBudget.remaining / report.errorBudget.total * 100).toFixed(1)}%
+                    {((report.errorBudget.remaining / report.errorBudget.total) * 100).toFixed(1)}%
                   </span>
                 </div>
                 <Progress

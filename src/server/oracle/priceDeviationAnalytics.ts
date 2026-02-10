@@ -451,68 +451,6 @@ export class PriceDeviationAnalytics {
   // 统计计算
   // ============================================================================
 
-  private calculateAverage(values: number[]): number {
-    if (values.length === 0) return 0;
-    return values.reduce((a, b) => a + b, 0) / values.length;
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-private-class-members
-  private _calculateStandardDeviation(values: number[]): number {
-    if (values.length < 2) return 0;
-    const mean = this.calculateAverage(values);
-    const squaredDiffs = values.map((v) => Math.pow(v - mean, 2));
-    const avgSquaredDiff = this.calculateAverage(squaredDiffs);
-    return Math.sqrt(avgSquaredDiff);
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-private-class-members
-  private _calculateTrendDirection(values: number[]): 'increasing' | 'decreasing' | 'stable' {
-    if (values.length < 2) return 'stable';
-
-    const firstHalf = values.slice(0, Math.floor(values.length / 2));
-    const secondHalf = values.slice(Math.floor(values.length / 2));
-
-    const firstAvg = this.calculateAverage(firstHalf);
-    const secondAvg = this.calculateAverage(secondHalf);
-
-    const change = (secondAvg - firstAvg) / firstAvg;
-
-    if (change > 0.1) return 'increasing';
-    if (change < -0.1) return 'decreasing';
-    return 'stable';
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-private-class-members
-  private _calculateTrendStrength(values: number[]): number {
-    if (values.length < 2) return 0;
-
-    // 使用线性回归计算趋势强度
-    const n = values.length;
-    const indices = Array.from({ length: n }, (_, i) => i);
-
-    const avgX = this.calculateAverage(indices);
-    const avgY = this.calculateAverage(values);
-
-    let numerator = 0;
-    let denominator = 0;
-
-    for (let i = 0; i < n; i++) {
-      const index = indices[i];
-      const value = values[i];
-      if (index !== undefined && value !== undefined) {
-        numerator += (index - avgX) * (value - avgY);
-        denominator += Math.pow(index - avgX, 2);
-      }
-    }
-
-    if (denominator === 0) return 0;
-
-    const slope = numerator / denominator;
-    const normalizedSlope = Math.min(Math.abs(slope) / (avgY * 0.1), 1);
-
-    return normalizedSlope;
-  }
-
   private calculateAnomalyScore(dataPoints: PriceDeviationPoint[]): number {
     if (dataPoints.length === 0) return 0;
 

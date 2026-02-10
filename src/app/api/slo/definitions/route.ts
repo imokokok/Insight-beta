@@ -5,6 +5,7 @@
  */
 
 import { NextResponse } from 'next/server';
+
 import { logger } from '@/lib/logger';
 import { query } from '@/server/db';
 
@@ -26,7 +27,7 @@ export async function GET(request: Request) {
       FROM slo_definitions
       WHERE 1=1
     `;
-    const params: any[] = [];
+    const params: string[] = [];
 
     if (protocol) {
       params.push(protocol);
@@ -39,7 +40,7 @@ export async function GET(request: Request) {
     }
 
     if (isActive !== null) {
-      params.push(isActive === 'true');
+      params.push(String(isActive === 'true'));
       sql += ` AND is_active = $${params.length}`;
     }
 
@@ -55,7 +56,7 @@ export async function GET(request: Request) {
     logger.error('Failed to fetch SLO definitions', { error });
     return NextResponse.json(
       { success: false, error: 'Failed to fetch SLO definitions' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -104,7 +105,7 @@ export async function POST(request: Request) {
         evaluationWindow,
         errorBudgetPolicy,
         conditionConfig ? JSON.stringify(conditionConfig) : null,
-      ]
+      ],
     );
 
     return NextResponse.json({
@@ -115,7 +116,7 @@ export async function POST(request: Request) {
     logger.error('Failed to create SLO definition', { error });
     return NextResponse.json(
       { success: false, error: 'Failed to create SLO definition' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

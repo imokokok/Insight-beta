@@ -79,15 +79,17 @@ export function detectOutliers(
   values: number[],
   referenceValue: number,
   config: {
-    method: 'threshold' | 'iqr' | 'both';
+    method: 'threshold' | 'iqr' | 'zscore' | 'both';
     threshold: number;
     iqrMultiplier: number;
     minDataPoints: number;
+    zscoreThreshold?: number;
   } = {
     method: 'both',
     threshold: 0.01,
     iqrMultiplier: 1.5,
     minDataPoints: 4,
+    zscoreThreshold: 3,
   },
 ): number[] {
   const outlierIndices = new Set<number>();
@@ -96,6 +98,12 @@ export function detectOutliers(
   if (['threshold', 'both'].includes(config.method)) {
     const thresholdOutliers = detectOutliersThreshold(values, referenceValue, config.threshold);
     thresholdOutliers.forEach((idx) => outlierIndices.add(idx));
+  }
+
+  // 2. Z-Score 方法检测
+  if (config.method === 'zscore' || (config.method === 'both' && values.length >= 3)) {
+    const zscoreOutliers = detectOutliersZScore(values, config.zscoreThreshold ?? 3);
+    zscoreOutliers.forEach((idx) => outlierIndices.add(idx));
   }
 
   // 2. IQR 方法检测

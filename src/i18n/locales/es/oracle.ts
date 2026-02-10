@@ -96,4 +96,11 @@ export const oracle = {
     protocolNotSupported:
       'Este protocolo no admite aserciones. Por favor selecciona uno de: {{supportedProtocols}}.',
   },
+  priceService: {
+    refreshedMaterializedView: 'Vista materializada actualizada exitosamente: {{viewName}}',
+    refreshingMaterializedView: 'Actualizando vista materializada: {{viewName}}',
+    priceUpdateReceived: 'Actualización de precio recibida para {{symbol}} en ${{price}}',
+    priceDeviationDetected: 'Desviación de precio detectada: {{symbol}} cambió un {{percent}}%',
+    historicalDataPurge: 'Se purgaron {{count}} registros históricos de precios obsoletos',
+  },
 };

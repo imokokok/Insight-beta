@@ -29,9 +29,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useI18n } from '@/i18n';
+import { statusColors } from '@/lib/constants/colors';
 import type { RealtimeComparisonItem, ComparisonFilter } from '@/lib/types/oracle';
 import { cn, formatPrice } from '@/lib/utils';
-import { statusColors } from '@/lib/constants/colors';
 
 interface RealtimeComparisonProps {
   data?: RealtimeComparisonItem[];
@@ -308,7 +308,13 @@ export function RealtimeComparisonView({
                               : statusColors.healthy.dot,
                         )}
                         role="status"
-                        aria-label={maxDeviation > 1 ? t('status.critical') : maxDeviation > 0.5 ? t('status.warning') : t('status.healthy')}
+                        aria-label={
+                          maxDeviation > 1
+                            ? t('status.critical')
+                            : maxDeviation > 0.5
+                              ? t('status.warning')
+                              : t('status.healthy')
+                        }
                       />
                       <div>
                         <p className="text-sm font-medium">{item.symbol}</p>

@@ -5,12 +5,10 @@
  * GET /api/comparison/realtime
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
-import { PriceAggregationEngine } from '@/server/oracle/priceAggregation';
-
-const priceEngine = new PriceAggregationEngine();
 
 export async function GET(request: NextRequest) {
   const requestStartTime = performance.now();
@@ -24,6 +22,10 @@ export async function GET(request: NextRequest) {
       ? symbolsParam.split(',')
       : ['ETH/USD', 'BTC/USD', 'LINK/USD', 'MATIC/USD', 'AVAX/USD', 'SOL/USD'];
     const protocols = protocolsParam ? protocolsParam.split(',') : undefined;
+
+    // 动态导入 PriceAggregationEngine 以避免构建时执行
+    const { PriceAggregationEngine } = await import('@/server/oracle/priceAggregation');
+    const priceEngine = new PriceAggregationEngine();
 
     // 并行获取所有交易对的聚合数据
     const comparisons = await priceEngine.aggregateMultipleSymbols(symbols);

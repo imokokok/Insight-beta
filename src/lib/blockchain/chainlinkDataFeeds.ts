@@ -7,6 +7,7 @@
 
 import { type Address, parseAbi } from 'viem';
 
+import { normalizeSymbol } from '@/lib/blockchain/core/types';
 import { DEFAULT_STALENESS_THRESHOLDS } from '@/lib/config/constants';
 import { ErrorHandler, normalizeError } from '@/lib/errors';
 import { EvmOracleClient } from '@/lib/shared';
@@ -149,8 +150,8 @@ export class ChainlinkClient extends EvmOracleClient {
   }
 
   protected getFeedId(symbol: string): string | undefined {
-    const normalizedSymbol = this.normalizeSymbol(symbol);
-    const address = this.feedAddresses.get(normalizedSymbol);
+    const normalized = normalizeSymbol(symbol);
+    const address = this.feedAddresses.get(normalized);
     return address || undefined;
   }
 

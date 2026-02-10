@@ -5,8 +5,10 @@
  * 包含 Solana 主网和 EVM 链的 Aggregator 账户地址
  */
 
-import type { SupportedChain } from '@/lib/types/unifiedOracleTypes';
 import { PublicKey } from '@solana/web3.js';
+
+import type { SupportedChain } from '@/lib/types/unifiedOracleTypes';
+
 import type { Address } from 'viem';
 
 // ============================================================================

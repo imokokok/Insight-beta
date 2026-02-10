@@ -51,6 +51,7 @@ export interface ManipulationDetection {
   evidence: DetectionEvidence[];
   suspiciousTransactions: SuspiciousTransaction[];
   relatedBlocks?: number[];
+  /** 价格影响百分比，小数形式 (如 0.01 = 1%) */
   priceImpact?: number;
   financialImpactUsd?: number;
   affectedAddresses?: string[];

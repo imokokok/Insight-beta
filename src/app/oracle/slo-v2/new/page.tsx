@@ -7,18 +7,26 @@
 'use client';
 
 import { useState } from 'react';
+
 import { useRouter } from 'next/navigation';
+
 import { ArrowLeft, Save, Target, Clock, Shield, AlertCircle } from 'lucide-react';
 
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Textarea } from '@/components/ui/textarea';
 import { logger } from '@/lib/logger';
 
 interface SloFormData {
@@ -50,7 +58,7 @@ export default function CreateSloPage() {
   });
 
   const updateField = <K extends keyof SloFormData>(field: K, value: SloFormData[K]) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const validateForm = (): boolean => {
@@ -92,7 +100,7 @@ export default function CreateSloPage() {
       const result = await response.json();
       logger.info('SLO created', { sloId: result.data.id });
 
-      router.push('/oracle/slo-v2' as any);
+      router.push('/oracle/slo-v2');
     } catch (err) {
       setError(err instanceof Error ? err.message : '创建失败');
       logger.error('Failed to create SLO', { error: err });
@@ -196,10 +204,7 @@ export default function CreateSloPage() {
               <Label>
                 链 <span className="text-red-500">*</span>
               </Label>
-              <Select
-                value={formData.chain}
-                onValueChange={(value) => updateField('chain', value)}
-              >
+              <Select value={formData.chain} onValueChange={(value) => updateField('chain', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="选择链" />
                 </SelectTrigger>
@@ -232,7 +237,9 @@ export default function CreateSloPage() {
               <Label>指标类型</Label>
               <Select
                 value={formData.metricType}
-                onValueChange={(value: SloFormData['metricType']) => updateField('metricType', value)}
+                onValueChange={(value: SloFormData['metricType']) =>
+                  updateField('metricType', value)
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -275,9 +282,7 @@ export default function CreateSloPage() {
                 max={99}
                 step={0.1}
               />
-              <p className="text-muted-foreground text-xs">
-                低于此值视为违约，触发告警
-              </p>
+              <p className="text-muted-foreground text-xs">低于此值视为违约，触发告警</p>
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -285,7 +290,9 @@ export default function CreateSloPage() {
                 <Label>评估窗口</Label>
                 <Select
                   value={formData.evaluationWindow}
-                  onValueChange={(value: SloFormData['evaluationWindow']) => updateField('evaluationWindow', value)}
+                  onValueChange={(value: SloFormData['evaluationWindow']) =>
+                    updateField('evaluationWindow', value)
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -303,7 +310,9 @@ export default function CreateSloPage() {
                 <Label>Error Budget 周期</Label>
                 <Select
                   value={formData.errorBudgetPolicy}
-                  onValueChange={(value: SloFormData['errorBudgetPolicy']) => updateField('errorBudgetPolicy', value)}
+                  onValueChange={(value: SloFormData['errorBudgetPolicy']) =>
+                    updateField('errorBudgetPolicy', value)
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />

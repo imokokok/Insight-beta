@@ -7,7 +7,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { EmptyWatchlistState } from '@/components/common/EmptyState';
 import { PageHeader } from '@/components/common/PageHeader';
 import { AssertionList } from '@/components/features/assertion/AssertionList';
-import { useInfiniteList, useWatchlist, type BaseResponse } from '@/hooks';
+import { useInfiniteList, useWatchlist, type BaseResponse, useIsMobile } from '@/hooks';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage } from '@/i18n/translations';
 import type { Assertion } from '@/lib/types/oracleTypes';
@@ -16,6 +16,7 @@ import type { Route } from 'next';
 
 export default function WatchlistPage() {
   const { t } = useI18n();
+  const isMobile = useIsMobile();
   const { watchlist, mounted } = useWatchlist();
   const router = useRouter();
   const pathname = usePathname();
@@ -92,12 +93,15 @@ export default function WatchlistPage() {
   );
 
   return (
-    <main className="container mx-auto px-4 py-8 pb-24">
-      <PageHeader title={t('nav.watchlist')} />
+    <main className="container mx-auto px-3 py-4 pb-20 sm:px-4 sm:py-8 sm:pb-24">
+      <PageHeader
+        title={t('nav.watchlist')}
+        description={isMobile ? undefined : t('watchlist.description')}
+      />
 
       {!mounted ? (
-        <div className="flex flex-col items-center justify-center py-20">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-purple-200 border-t-purple-600"></div>
+        <div className="flex flex-col items-center justify-center py-12 sm:py-20">
+          <div className="h-6 w-6 animate-spin rounded-full border-4 border-purple-200 border-t-purple-600 sm:h-8 sm:w-8"></div>
         </div>
       ) : watchlist.length === 0 ? (
         <EmptyWatchlistState
@@ -110,9 +114,9 @@ export default function WatchlistPage() {
           className="mx-auto max-w-2xl"
         />
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {error ? (
-            <div className="rounded-2xl border border-rose-100 bg-rose-50/50 p-4 text-sm text-rose-700 shadow-sm">
+            <div className="rounded-xl border border-rose-100 bg-rose-50/50 p-3 text-sm text-rose-700 shadow-sm sm:rounded-2xl sm:p-4">
               {getUiErrorMessage(error, t)}
             </div>
           ) : null}
@@ -123,7 +127,7 @@ export default function WatchlistPage() {
             loadMore={loadMore}
             loadingMore={loadingMore}
             emptyStateMessage={t('common.noData')}
-            viewMode="grid"
+            viewMode={isMobile ? 'list' : 'grid'}
             instanceId={instanceId}
           />
         </div>

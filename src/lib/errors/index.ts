@@ -83,6 +83,23 @@ export function getErrorMessage(error: unknown): string {
  */
 export class ErrorHandler {
   /**
+   * 记录错误日志
+   */
+  static logError(
+    logger: { error: (message: string, meta?: Record<string, unknown>) => void },
+    message: string,
+    error: unknown,
+    context?: Record<string, unknown>,
+  ): void {
+    const normalizedError = normalizeError(error);
+    logger.error(message, {
+      error: normalizedError.message,
+      stack: normalizedError.stack,
+      ...context,
+    });
+  }
+
+  /**
    * 创建价格获取错误
    */
   static createPriceFetchError(
