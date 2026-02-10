@@ -47,7 +47,7 @@ import { ChartCard } from '@/components/common/ChartCard';
 import { ToastContainer, useToast } from '@/components/common/DashboardToast';
 import { EmptyAnomalyState, EmptySearchState } from '@/components/common/EmptyState';
 import { PageHeader } from '@/components/common/PageHeader';
-import { SkeletonChart } from '@/components/common/SkeletonCard';
+import { ChartSkeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -782,8 +782,8 @@ export default function AnomalyDetectionPage() {
           <div className="grid gap-6 lg:grid-cols-2">
             {loading && !stats ? (
               <>
-                <SkeletonChart />
-                <SkeletonChart />
+                <ChartSkeleton />
+                <ChartSkeleton />
               </>
             ) : (
               <>

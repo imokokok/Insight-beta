@@ -24,6 +24,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useI18n } from '@/i18n';
 import type { LatencyAnalysis, LatencyTrend } from '@/lib/types/oracle';
 import { cn } from '@/lib/utils';
+import { statusColors } from '@/lib/constants/colors';
 
 interface LatencyAnalysisProps {
   data?: LatencyAnalysis;
@@ -32,10 +33,26 @@ interface LatencyAnalysisProps {
   selectedSymbol?: string;
 }
 
+/** 状态配置 - 使用统一的状态色板 */
 const statusConfig = {
-  healthy: { color: 'bg-emerald-500', labelKey: 'comparison.status.healthy', icon: Zap },
-  degraded: { color: 'bg-yellow-500', labelKey: 'comparison.status.degraded', icon: AlertCircle },
-  stale: { color: 'bg-red-500', labelKey: 'comparison.status.stale', icon: Clock },
+  healthy: {
+    color: statusColors.healthy.dot,
+    labelKey: 'comparison.status.healthy',
+    icon: Zap,
+    ariaLabelKey: statusColors.healthy.ariaLabelKey,
+  },
+  degraded: {
+    color: statusColors.degraded.dot,
+    labelKey: 'comparison.status.degraded',
+    icon: AlertCircle,
+    ariaLabelKey: statusColors.degraded.ariaLabelKey,
+  },
+  stale: {
+    color: statusColors.stale.dot,
+    labelKey: 'comparison.status.stale',
+    icon: Clock,
+    ariaLabelKey: statusColors.stale.ariaLabelKey,
+  },
 };
 
 function formatLatency(ms: number): string {
@@ -281,19 +298,29 @@ export function LatencyAnalysisView({
                     strokeDasharray="3 3"
                     label={t('comparison.latency.threshold')}
                   />
-                  <Bar dataKey="latency" radius={[4, 4, 0, 0]}>
-                    {chartData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={
-                          entry.status === 'healthy'
-                            ? '#10b981'
-                            : entry.status === 'degraded'
-                              ? '#f59e0b'
-                              : '#ef4444'
-                        }
-                      />
-                    ))}
+                  <Bar
+                    dataKey="latency"
+                    radius={[4, 4, 0, 0]}
+                    role="img"
+                    aria-label={t('comparison.latency.chartAriaLabel')}
+                  >
+                    {chartData.map((entry, index) => {
+                      const statusColor =
+                        entry.status === 'healthy'
+                          ? '#10b981'
+                          : entry.status === 'degraded'
+                            ? '#f59e0b'
+                            : '#ef4444';
+                      return (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={statusColor}
+                          role="graphics-symbol"
+                          aria-label={`${entry.protocol}: ${t(statusConfig[entry.status].ariaLabelKey)}`}
+                          tabIndex={0}
+                        />
+                      );
+                    })}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
@@ -346,8 +373,10 @@ export function LatencyAnalysisView({
                                   : 'destructive'
                             }
                             className="gap-1 text-xs"
+                            role="status"
+                            aria-label={t(statusConfig[metric.status].ariaLabelKey)}
                           >
-                            <StatusIcon className="h-3 w-3" />
+                            <StatusIcon className="h-3 w-3" aria-hidden="true" />
                             {t(statusConfig[metric.status].labelKey)}
                           </Badge>
                         </td>

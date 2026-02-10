@@ -721,7 +721,7 @@ export default function DeviationAnalyticsPage() {
             {loading && !report ? (
               <>
                 <ChartSkeleton />
-                <CardSkeleton rows={4} />
+                <CardSkeleton />
               </>
             ) : (
               <>

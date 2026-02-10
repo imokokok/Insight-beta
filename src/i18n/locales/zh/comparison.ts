@@ -149,6 +149,7 @@ export const comparison = {
       p50: 'P50',
       p90: 'P90',
     },
+    chartAriaLabel: '延迟分布图表，显示各协议的延迟状态',
   },
   cost: {
     title: '成本效益分析',

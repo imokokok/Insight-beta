@@ -37,7 +37,7 @@ import { ChartCard, ChartCardSkeleton } from '@/components/common/ChartCard';
 import { ToastContainer, useToast } from '@/components/common/DashboardToast';
 import { EmptySecurityState, EmptySearchState } from '@/components/common/EmptyState';
 import { PageHeader } from '@/components/common/PageHeader';
-import { SkeletonCard } from '@/components/common/SkeletonCard';
+import { CardSkeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -772,14 +772,14 @@ export default function SecurityDashboardPage() {
 
       {/* Status Card */}
       {loading && !status ? (
-        <SkeletonCard rows={3} />
+        <CardSkeleton />
       ) : status ? (
         <DetectionStatusCard status={status} />
       ) : null}
 
       {/* Status Card */}
       {loading && !status ? (
-        <SkeletonCard rows={3} />
+        <CardSkeleton />
       ) : status ? (
         <DetectionStatusCard status={status} />
       ) : null}
