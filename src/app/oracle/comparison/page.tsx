@@ -15,11 +15,11 @@
 import { useEffect, useState, useCallback, useRef, Suspense, lazy } from 'react';
 
 import { ComparisonControls } from '@/components/features/comparison/ComparisonControls';
-import { ChartSkeleton } from '@/components/ui/skeleton-enhanced';
+import { ChartSkeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
-import { useI18n } from '@/i18n';
-import { useDebounce } from '@/hooks/useDebounce';
 import { useComparisonData } from '@/hooks/useComparison';
+import { useDebounce } from '@/hooks/useDebounce';
+import { useI18n } from '@/i18n';
 import { logger } from '@/lib/logger';
 import { ORACLE_PROTOCOLS, PROTOCOL_DISPLAY_NAMES } from '@/lib/types/oracle';
 import type {

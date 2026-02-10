@@ -1,7 +1,5 @@
 import { enTranslations } from './locales/en';
 import { esTranslations } from './locales/es';
-import { frTranslations } from './locales/fr';
-import { koTranslations } from './locales/ko';
 import { zhTranslations } from './locales/zh';
 
 import type { Lang } from './types';
@@ -22,8 +20,6 @@ export const translations = {
   en: enTranslations,
   zh: zhTranslations,
   es: esTranslations,
-  fr: frTranslations,
-  ko: koTranslations,
 } as const;
 
 // Type for translation keys - using string for flexibility

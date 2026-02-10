@@ -31,7 +31,7 @@ vi.mock('@/lib/blockchain/core/BaseOracleClient', () => ({
   },
 }));
 
-vi.mock('@/lib/shared/errors/ErrorHandler', () => ({
+vi.mock('@/lib/errors', () => ({
   ErrorHandler: {
     createPriceFetchError: (error: unknown, _protocol: string, _chain: string, symbol: string) =>
       new Error(`Failed to fetch price for ${symbol}: ${error}`),

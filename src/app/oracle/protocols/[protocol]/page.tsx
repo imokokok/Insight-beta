@@ -14,7 +14,7 @@ import {
 } from '@/components/features/protocol/FeedTable';
 import type { ProtocolComparisonData } from '@/components/features/protocol/ProtocolComparison';
 import { ProtocolPageLayout } from '@/components/features/protocol/ProtocolPageLayout';
-import { ButtonEnhanced, StatusBadge } from '@/components/ui';
+import { Button, StatusBadge } from '@/components/ui';
 import { Card, CardContent } from '@/components/ui/card';
 import { ErrorBanner } from '@/components/ui/error-banner';
 import { Progress } from '@/components/ui/progress';
@@ -447,15 +447,15 @@ export default function UnifiedProtocolPage() {
   // Chain selector
   const chainSelectorContent = (
     <>
-      <ButtonEnhanced
+      <Button
         variant={selectedChain === 'all' ? 'default' : 'outline'}
         size="sm"
         onClick={() => setSelectedChain('all')}
       >
         All Chains
-      </ButtonEnhanced>
+      </Button>
       {protocolChains.map((chain) => (
-        <ButtonEnhanced
+        <Button
           key={chain.id}
           variant={selectedChain === chain.id ? 'default' : 'outline'}
           size="sm"
@@ -464,7 +464,7 @@ export default function UnifiedProtocolPage() {
         >
           <span>{chain.icon}</span>
           {chain.name}
-        </ButtonEnhanced>
+        </Button>
       ))}
     </>
   );

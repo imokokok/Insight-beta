@@ -322,4 +322,45 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION cleanup_old_price_events()
 RETURNS INTEGER AS $$
 DECLARE
-    deleted_count
+    deleted_count INTEGER := 0;
+BEGIN
+    DELETE FROM price_update_events
+    WHERE timestamp < NOW() - INTERVAL '30 days';
+    
+    GET DIAGNOSTICS deleted_count = ROW_COUNT;
+    RETURN deleted_count;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ============================================================================
+-- 步骤8: RLS 策略
+-- ============================================================================
+
+-- 启用 RLS
+ALTER TABLE price_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE price_update_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE price_feed_latest ENABLE ROW LEVEL SECURITY;
+
+-- 读取策略
+CREATE POLICY "Enable read access for all users" ON price_history FOR SELECT USING (true);
+CREATE POLICY "Enable read access for all users" ON price_update_events FOR SELECT USING (true);
+CREATE POLICY "Enable read access for all users" ON price_feed_latest FOR SELECT USING (true);
+
+-- 写入策略
+CREATE POLICY "Enable insert for authenticated users" ON price_history 
+    FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Enable insert for authenticated users" ON price_update_events 
+    FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+
+-- ============================================================================
+-- 步骤9: 注释
+-- ============================================================================
+
+COMMENT ON TABLE price_history IS '统一价格历史表（分区表，替代所有 price_history_* 表）';
+COMMENT ON TABLE price_update_events IS '价格更新事件表（替代 unified_price_updates）';
+COMMENT ON TABLE price_feed_latest IS '价格feed最新价格缓存表';
+COMMENT ON MATERIALIZED VIEW price_history_1min IS '1分钟聚合价格（物化视图）';
+COMMENT ON MATERIALIZED VIEW price_history_5min IS '5分钟聚合价格（物化视图）';
+COMMENT ON MATERIALIZED VIEW price_history_1hour IS '1小时聚合价格（物化视图）';
+COMMENT ON MATERIALIZED VIEW price_history_1day IS '1天聚合价格（物化视图）';
+COMMENT ON VIEW current_price_feeds IS '当前价格快照视图（替代 unified_price_feeds）';

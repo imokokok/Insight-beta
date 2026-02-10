@@ -8,8 +8,8 @@
 import { type Address, parseAbi } from 'viem';
 
 import { DEFAULT_STALENESS_THRESHOLDS } from '@/lib/config/constants';
+import { ErrorHandler, normalizeError } from '@/lib/errors';
 import { EvmOracleClient } from '@/lib/shared';
-import { ErrorHandler, normalizeError } from '@/lib/shared/errors/ErrorHandler';
 import type {
   SupportedChain,
   UnifiedPriceFeed,

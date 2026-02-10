@@ -19,8 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { ProtocolPerformanceRanking } from '@/lib/types/oracle/price';
-import { PROTOCOL_DISPLAY_NAMES, ORACLE_PROTOCOLS } from '@/lib/types/oracle/protocol';
+import type { OracleProtocol } from '@/lib/types/unifiedOracleTypes';
 import { cn, fetchApiData } from '@/lib/utils';
 
 interface ProtocolHealthGridProps {
@@ -28,6 +27,23 @@ interface ProtocolHealthGridProps {
 }
 
 type HealthStatus = 'excellent' | 'good' | 'degraded' | 'critical';
+
+// 本地类型定义（兼容组件需求）
+interface ProtocolPerformanceRanking {
+  protocol: OracleProtocol;
+  rank: number;
+  score: number;
+  accuracy: number;
+  uptime: number;
+  latency: number;
+  coverage: number;
+  costEfficiency: number;
+  totalFeeds: number;
+  supportedChains: number;
+  avgUpdateFrequency: number;
+  trend: 'up' | 'stable' | 'down';
+  trendPercent: number;
+}
 
 interface ProtocolHealth extends ProtocolPerformanceRanking {
   status: HealthStatus;

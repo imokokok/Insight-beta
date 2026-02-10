@@ -4,7 +4,7 @@
  * API 相关工具函数
  */
 
-import { getErrorMessage } from '@/lib/shared/errors/ErrorHandler';
+import { getErrorMessage } from '@/lib/errors';
 import { logger } from '@/lib/logger';
 
 export { getErrorMessage };

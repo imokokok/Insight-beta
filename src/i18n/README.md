@@ -4,7 +4,7 @@
 
 ## 特性
 
-- 🌍 **5 种语言支持**：中文、英语、西班牙语、法语、韩语
+- 🌍 **3 种语言支持**：中文、英语、西班牙语
 - 📝 **TypeScript 完整类型支持**：翻译键类型安全
 - 🚀 **懒加载支持**：翻译文件按需加载（推荐）
 - 🧪 **自动化测试**：翻译覆盖率测试
@@ -95,8 +95,7 @@ src/i18n/
     ├── en/                    # 英语（源语言）
     ├── zh/                    # 中文
     ├── es/                    # 西班牙语
-    ├── fr/                    # 法语
-    └── ko/                    # 韩语
+
 ```
 
 ## API 参考
@@ -168,7 +167,7 @@ npm test -- src/i18n/__tests__/translations-coverage.test.ts
 1. 在 `src/i18n/types.ts` 中添加语言代码：
 
 ```ts
-export type Lang = 'zh' | 'en' | 'es' | 'fr' | 'ko' | 'ja'; // 添加 'ja'
+export type Lang = 'zh' | 'en' | 'es' | 'ja'; // 添加 'ja'
 ```
 
 2. 在 `languages` 数组中添加语言信息：

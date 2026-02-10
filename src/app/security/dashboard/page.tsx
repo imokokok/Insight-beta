@@ -38,11 +38,11 @@ import { ToastContainer, useToast } from '@/components/common/DashboardToast';
 import { EmptySecurityState, EmptySearchState } from '@/components/common/EmptyState';
 import { PageHeader } from '@/components/common/PageHeader';
 import { SkeletonCard } from '@/components/common/SkeletonCard';
-import { SkeletonList } from '@/components/common/SkeletonList';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { SkeletonList } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useDashboardShortcuts, useAutoRefreshLegacy, useDataCache } from '@/hooks';
 import { logger } from '@/lib/logger';
@@ -52,7 +52,7 @@ import type {
   ManipulationType,
   DetectionSeverity,
 } from '@/lib/types/security/detection';
-import { fetchApiData, cn, formatTimestamp } from '@/lib/utils';
+import { fetchApiData, cn, formatTime } from '@/lib/utils';
 
 // ============================================================================
 // Types
@@ -149,7 +149,7 @@ function DetectionStatusCard({ status }: { status: MonitorStatus }) {
           </div>
           <div>
             <p className="text-muted-foreground text-xs">Last Check</p>
-            <p className="text-sm font-medium">{formatTimestamp(status.lastCheckTime)}</p>
+            <p className="text-sm font-medium">{formatTime(status.lastCheckTime)}</p>
           </div>
         </div>
       </CardContent>
@@ -358,7 +358,7 @@ function DetectionList({
                   <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
                     <span className="flex items-center gap-1">
                       <Clock className="h-3 w-3" />
-                      {formatTimestamp(detection.detectedAt)}
+                      {formatTime(detection.detectedAt)}
                     </span>
                     <span>Confidence: {(detection.confidenceScore * 100).toFixed(1)}%</span>
                     {detection.financialImpactUsd && (
@@ -428,7 +428,7 @@ function DetectionDetail({
             </div>
             <div className="rounded-lg bg-gray-50 p-4">
               <p className="text-muted-foreground text-xs">Detected At</p>
-              <p className="text-sm font-medium">{formatTimestamp(detection.detectedAt)}</p>
+              <p className="text-sm font-medium">{formatTime(detection.detectedAt)}</p>
             </div>
             <div className="rounded-lg bg-gray-50 p-4">
               <p className="text-muted-foreground text-xs">Status</p>
@@ -473,7 +473,7 @@ function DetectionDetail({
                     <div>
                       <p className="font-mono text-sm">{tx.hash.slice(0, 20)}...</p>
                       <p className="text-muted-foreground text-xs">
-                        {tx.type} • {formatTimestamp(tx.timestamp)}
+                        {tx.type} • {formatTime(tx.timestamp)}
                       </p>
                     </div>
                     <a

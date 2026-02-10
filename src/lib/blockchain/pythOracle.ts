@@ -13,8 +13,8 @@ import {
   getPriceFeedId as getPythPriceFeedId,
   getAvailablePythSymbols as getPythAvailableSymbols,
 } from '@/lib/config/pythPriceFeeds';
+import { ErrorHandler, normalizeError } from '@/lib/errors';
 import { EvmOracleClient } from '@/lib/shared';
-import { ErrorHandler, normalizeError } from '@/lib/shared/errors/ErrorHandler';
 import type {
   SupportedChain,
   UnifiedPriceFeed,

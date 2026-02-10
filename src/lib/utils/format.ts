@@ -97,28 +97,46 @@ export function formatUsdCompact(amount: number, locale: string): string {
 }
 
 /**
- * 将 ISO 日期字符串格式化为本地化的日期时间格式
+ * 将日期格式化为本地化的日期时间格式
  *
- * @param iso - ISO 8601 格式的日期字符串
- * @param locale - 区域设置
+ * @param input - ISO 日期字符串、Date 对象或 Unix 时间戳（毫秒）
+ * @param locale - 区域设置，默认为 'en-US'
+ * @param options - 格式化选项
  * @returns 格式化后的日期时间字符串，如果输入无效返回 '—'
  *
  * @example
  * ```typescript
  * formatTime('2021-01-01T12:30:00Z', 'en-US');
  * // Returns: 'Jan 1, 12:30 PM'
+ * formatTime(1704110400000); // Returns: 'Jan 1, 12:00:00 PM'
  * ```
  */
-export function formatTime(iso: string | null | undefined, locale: string): string {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  if (!Number.isFinite(d.getTime())) return '—';
-  return new Intl.DateTimeFormat(locale, {
+export function formatTime(
+  input: string | number | Date | null | undefined,
+  locale: string = 'en-US',
+  options?: Intl.DateTimeFormatOptions,
+): string {
+  if (!input) return '—';
+
+  let date: Date;
+  if (typeof input === 'number') {
+    date = new Date(input);
+  } else if (typeof input === 'string') {
+    date = new Date(input);
+  } else {
+    date = input;
+  }
+
+  if (!Number.isFinite(date.getTime())) return '—';
+
+  const defaultOptions: Intl.DateTimeFormatOptions = {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-  }).format(d);
+  };
+
+  return new Intl.DateTimeFormat(locale, options ?? defaultOptions).format(date);
 }
 
 /**
@@ -161,41 +179,6 @@ export function formatDurationMinutes(totalMinutes: number): string {
   if (hours <= 0) return `${minutes}m`;
   if (minutes === 0) return `${hours}h`;
   return `${hours}h ${minutes}m`;
-}
-
-/**
- * 将时间戳格式化为本地时间字符串
- *
- * @param timestamp - ISO 日期字符串、Date 对象或 Unix 时间戳（毫秒）
- * @returns 格式化后的本地时间字符串
- *
- * @example
- * ```typescript
- * formatTimestamp('2024-01-01T12:00:00Z'); // Returns: 'Jan 1, 12:00:00 PM'
- * formatTimestamp(1704110400000); // Returns: 'Jan 1, 12:00:00 PM'
- * ```
- */
-export function formatTimestamp(timestamp: string | number | Date): string {
-  if (!timestamp) return '—';
-
-  let date: Date;
-  if (typeof timestamp === 'number') {
-    date = new Date(timestamp);
-  } else if (typeof timestamp === 'string') {
-    date = new Date(timestamp);
-  } else {
-    date = timestamp;
-  }
-
-  if (!Number.isFinite(date.getTime())) return '—';
-
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  }).format(date);
 }
 
 /**

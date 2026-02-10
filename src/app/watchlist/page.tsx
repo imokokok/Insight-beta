@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-import { EmptyWatchlistState } from '@/components/common/EmptyStateEnhanced';
+import { EmptyWatchlistState } from '@/components/common/EmptyState';
 import { PageHeader } from '@/components/common/PageHeader';
 import { AssertionList } from '@/components/features/assertion/AssertionList';
 import { useInfiniteList, useWatchlist, type BaseResponse } from '@/hooks';

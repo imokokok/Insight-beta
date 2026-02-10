@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
-
 import type { IncidentWithAlerts } from '@/app/alerts/alertsComponents';
 import type { OpsMetrics, OpsMetricsSeriesPoint, RiskItem } from '@/lib/types/oracleTypes';
-import { fetchApiData, getErrorCode } from '@/lib/utils';
+
+import { useApiQueryArray, useApiQuery } from './useApiQuery';
 
 // ============================================================================
 // useOracleIncidents - Oracle 事件 Hook
@@ -16,38 +15,20 @@ export interface UseOracleIncidentsReturn {
 }
 
 export function useOracleIncidents(instanceId: string): UseOracleIncidentsReturn {
-  const [incidents, setIncidents] = useState<IncidentWithAlerts[]>([]);
-  const [incidentsError, setIncidentsError] = useState<string | null>(null);
-  const [incidentsLoading, setIncidentsLoading] = useState(false);
-
-  const reloadIncidents = useCallback(async () => {
-    setIncidentsError(null);
-    setIncidentsLoading(true);
-    try {
-      const params = new URLSearchParams();
-      params.set('limit', '20');
-      params.set('includeAlerts', '1');
-      if (instanceId) params.set('instanceId', instanceId);
-      const data = await fetchApiData<{ items: IncidentWithAlerts[] }>(
-        `/api/oracle/incidents?${params.toString()}`,
-      );
-      setIncidents(data.items ?? []);
-    } catch (error: unknown) {
-      setIncidentsError(getErrorCode(error));
-    } finally {
-      setIncidentsLoading(false);
-    }
-  }, [instanceId]);
-
-  useEffect(() => {
-    void reloadIncidents();
-  }, [reloadIncidents]);
+  const { items, error, loading, reload } = useApiQueryArray<IncidentWithAlerts>({
+    url: '/api/oracle/incidents',
+    params: {
+      limit: '20',
+      includeAlerts: '1',
+      instanceId: instanceId || undefined,
+    },
+  });
 
   return {
-    incidents,
-    incidentsError,
-    incidentsLoading,
-    reloadIncidents,
+    incidents: items,
+    incidentsError: error,
+    incidentsLoading: loading,
+    reloadIncidents: reload,
   };
 }
 
@@ -63,43 +44,30 @@ export interface UseOracleRisksReturn {
 }
 
 export function useOracleRisks(instanceId: string): UseOracleRisksReturn {
-  const [risks, setRisks] = useState<RiskItem[]>([]);
-  const [risksError, setRisksError] = useState<string | null>(null);
-  const [risksLoading, setRisksLoading] = useState(false);
-
-  const reloadRisks = useCallback(async () => {
-    setRisksError(null);
-    setRisksLoading(true);
-    try {
-      const params = new URLSearchParams();
-      params.set('limit', '20');
-      if (instanceId) params.set('instanceId', instanceId);
-      const data = await fetchApiData<{ items: RiskItem[] }>(
-        `/api/oracle/risks?${params.toString()}`,
-      );
-      setRisks(data.items ?? []);
-    } catch (error: unknown) {
-      setRisksError(getErrorCode(error));
-    } finally {
-      setRisksLoading(false);
-    }
-  }, [instanceId]);
-
-  useEffect(() => {
-    void reloadRisks();
-  }, [reloadRisks]);
+  const { items, error, loading, reload } = useApiQueryArray<RiskItem>({
+    url: '/api/oracle/risks',
+    params: {
+      limit: '20',
+      instanceId: instanceId || undefined,
+    },
+  });
 
   return {
-    risks,
-    risksError,
-    risksLoading,
-    reloadRisks,
+    risks: items,
+    risksError: error,
+    risksLoading: loading,
+    reloadRisks: reload,
   };
 }
 
 // ============================================================================
 // useOracleOpsMetrics - Oracle 运维指标 Hook
 // ============================================================================
+
+interface OpsMetricsResponse {
+  metrics: OpsMetrics;
+  series: OpsMetricsSeriesPoint[] | null;
+}
 
 export interface UseOracleOpsMetricsReturn {
   opsMetrics: OpsMetrics | null;
@@ -110,42 +78,21 @@ export interface UseOracleOpsMetricsReturn {
 }
 
 export function useOracleOpsMetrics(instanceId: string): UseOracleOpsMetricsReturn {
-  const [opsMetrics, setOpsMetrics] = useState<OpsMetrics | null>(null);
-  const [opsMetricsSeries, setOpsMetricsSeries] = useState<OpsMetricsSeriesPoint[] | null>(null);
-  const [opsMetricsError, setOpsMetricsError] = useState<string | null>(null);
-  const [opsMetricsLoading, setOpsMetricsLoading] = useState(false);
-
-  const reloadOpsMetrics = useCallback(async () => {
-    setOpsMetricsError(null);
-    setOpsMetricsLoading(true);
-    try {
-      const params = new URLSearchParams();
-      params.set('windowDays', '7');
-      params.set('seriesDays', '7');
-      if (instanceId) params.set('instanceId', instanceId);
-      const data = await fetchApiData<{
-        metrics: OpsMetrics;
-        series: OpsMetricsSeriesPoint[] | null;
-      }>(`/api/oracle/ops-metrics?${params.toString()}`);
-      setOpsMetrics(data.metrics ?? null);
-      setOpsMetricsSeries(data.series ?? null);
-    } catch (error: unknown) {
-      setOpsMetricsError(getErrorCode(error));
-      setOpsMetricsSeries(null);
-    } finally {
-      setOpsMetricsLoading(false);
-    }
-  }, [instanceId]);
-
-  useEffect(() => {
-    void reloadOpsMetrics();
-  }, [reloadOpsMetrics]);
+  const { data, error, loading, reload } = useApiQuery<OpsMetricsResponse>({
+    url: '/api/oracle/ops-metrics',
+    params: {
+      windowDays: '7',
+      seriesDays: '7',
+      instanceId: instanceId || undefined,
+    },
+    transform: (response) => response as OpsMetricsResponse,
+  });
 
   return {
-    opsMetrics,
-    opsMetricsSeries,
-    opsMetricsError,
-    opsMetricsLoading,
-    reloadOpsMetrics,
+    opsMetrics: data?.metrics ?? null,
+    opsMetricsSeries: data?.series ?? null,
+    opsMetricsError: error,
+    opsMetricsLoading: loading,
+    reloadOpsMetrics: reload,
   };
 }

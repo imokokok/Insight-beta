@@ -7,8 +7,8 @@ import { CheckCircle2, Clock, ArrowUpRight, RotateCw, FileQuestion, Star } from 
 import { Virtuoso, VirtuosoGrid } from 'react-virtuoso';
 
 import { CopyButton } from '@/components/common/CopyButton';
-import { SkeletonList } from '@/components/common/SkeletonList';
 import { LivenessProgressBar } from '@/components/features/oracle/LivenessProgressBar';
+import { SkeletonList } from '@/components/ui/skeleton';
 import { useWatchlist } from '@/hooks';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { langToLocale } from '@/i18n/translations';
@@ -308,7 +308,9 @@ export const AssertionList = memo(function AssertionList({
               className={cn(viewMode === 'grid' ? 'rounded-xl bg-gray-50/50 p-3' : 'text-right')}
             >
               <div className="mb-1 text-xs text-gray-500">{t('oracle.card.bond')}</div>
-              <div className="font-medium text-gray-900">{formatUsdCompact(item.bondUsd, locale)}</div>
+              <div className="font-medium text-gray-900">
+                {formatUsdCompact(item.bondUsd, locale)}
+              </div>
             </div>
           </div>
 

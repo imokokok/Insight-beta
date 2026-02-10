@@ -77,7 +77,7 @@ vi.mock('@/lib/shared/blockchain/SolanaOracleClient', () => ({
   },
 }));
 
-vi.mock('@/lib/shared/errors/ErrorHandler', () => ({
+vi.mock('@/lib/errors', () => ({
   ErrorHandler: {
     logError: vi.fn(),
     createPriceFetchError: (error: unknown, protocol: string, chain: string, symbol: string) =>
@@ -236,7 +236,15 @@ describe('Switchboard Price Parsing - 价格解析测试', () => {
     };
 
     const feedId = new PublicKey('GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR');
-    const price = (client as unknown as { parsePriceFromContract: (data: typeof mockData, symbol: string, feedId: PublicKey) => { price: number } }).parsePriceFromContract(mockData, 'SOL/USD', feedId);
+    const price = (
+      client as unknown as {
+        parsePriceFromContract: (
+          data: typeof mockData,
+          symbol: string,
+          feedId: PublicKey,
+        ) => { price: number };
+      }
+    ).parsePriceFromContract(mockData, 'SOL/USD', feedId);
 
     expect(price).toBeDefined();
     expect(price.price).toBe(1500);

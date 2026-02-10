@@ -18,7 +18,7 @@ import type {
   HealthStatus,
 } from '@/lib/blockchain/core/types';
 import { normalizeSymbol } from '@/lib/blockchain/core/types';
-import { ErrorHandler, normalizeError } from '@/lib/shared/errors/ErrorHandler';
+import { ErrorHandler, normalizeError } from '@/lib/errors';
 import { LoggerFactory } from '@/lib/shared/logger/LoggerFactory';
 import type { SupportedChain, UnifiedPriceFeed } from '@/lib/types/unifiedOracleTypes';
 

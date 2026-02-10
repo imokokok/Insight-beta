@@ -1,6 +1,7 @@
 export { KPICard, type KPIData } from './KPICards';
 
-export { PriceHeatmap, type HeatmapCell } from './PriceHeatmap';
+// PriceHeatmap 已删除 - 请使用 @/components/features/comparison/PriceHeatmap
+// export { PriceHeatmap, type HeatmapCell } from './PriceHeatmap';
 
 export {
   QuickActionsPanel,

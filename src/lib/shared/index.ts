@@ -5,7 +5,7 @@
  * - 数据库工具
  * - 区块链抽象
  * - 同步管理
- * - 错误处理
+ * - 错误处理（已迁移到 lib/errors）
  * - 日志工具
  */
 
@@ -32,14 +32,15 @@ export type {
   SyncManagerExports,
 } from './sync/SyncManagerFactory';
 
-// 错误处理
+// 错误处理 - 已从 shared/errors 迁移到 lib/errors
+// 请从 @/lib/errors 导入 ErrorHandler 和相关函数
 export {
   ErrorHandler,
   normalizeError,
   getErrorMessage,
   withRetry,
   withErrorHandling,
-} from './errors/ErrorHandler';
+} from '@/lib/errors';
 
 // 日志工具
 export { LoggerFactory, createLogger, createOracleLogger } from './logger/LoggerFactory';

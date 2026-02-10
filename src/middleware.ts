@@ -7,8 +7,8 @@ function createRequestId() {
     const bytes = new Uint8Array(16);
     c.getRandomValues(bytes);
     let out = '';
-    for (let i = 0; i < bytes.length; i += 1) {
-      out += bytes[i]?.toString(16).padStart(2, '0') ?? '00';
+    for (const byte of bytes) {
+      out += byte.toString(16).padStart(2, '0');
     }
     return out;
   }

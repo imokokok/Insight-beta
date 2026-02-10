@@ -18,10 +18,41 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useWebSocket } from '@/hooks';
 import { logger } from '@/lib/logger';
-import type { PriceFeed, PriceUpdate } from '@/lib/types/oracle/price';
-import type { OracleProtocol } from '@/lib/types/oracle/protocol';
-import { PROTOCOL_DISPLAY_NAMES } from '@/lib/types/oracle/protocol';
+import type { OracleProtocol } from '@/lib/types/unifiedOracleTypes';
 import { cn, fetchApiData, formatTimeAgo } from '@/lib/utils';
+
+// 本地类型定义（兼容组件需求）
+interface PriceFeed {
+  id: string;
+  instanceId: string;
+  protocol: OracleProtocol;
+  symbol: string;
+  baseAsset: string;
+  quoteAsset: string;
+  price: number;
+  priceRaw: string;
+  decimals: number;
+  timestamp: string;
+  blockNumber?: number;
+  confidence?: number;
+  isStale: boolean;
+  stalenessSeconds?: number;
+  txHash?: string;
+  logIndex?: number;
+}
+
+interface PriceUpdate {
+  id: string;
+  feedId: string;
+  protocol: OracleProtocol;
+  previousPrice: number;
+  currentPrice: number;
+  priceChange: number;
+  priceChangePercent: number;
+  timestamp: string;
+  blockNumber?: number;
+  txHash?: string;
+}
 
 interface PriceFeedListProps {
   protocols?: OracleProtocol[];

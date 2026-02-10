@@ -718,26 +718,6 @@ body::before {
    新增动画效果 - UI 现代化
    ============================================================================ */
 
-/* 价格闪烁动画 - 上涨 */
-@keyframes priceFlashUp {
-  0% {
-    background-color: rgba(16, 185, 129, 0.4);
-  }
-  100% {
-    background-color: transparent;
-  }
-}
-
-/* 价格闪烁动画 - 下跌 */
-@keyframes priceFlashDown {
-  0% {
-    background-color: rgba(239, 68, 68, 0.4);
-  }
-  100% {
-    background-color: transparent;
-  }
-}
-
 /* 缩放进入动画 */
 @keyframes scaleIn {
   0% {
@@ -796,13 +776,13 @@ body::before {
   animation: shimmer 2s infinite linear;
 }
 
-/* 价格闪烁工具类 */
+/* 价格闪烁工具类 - 使用统一的动画 */
 .animate-price-flash-up {
-  animation: priceFlashUp 500ms ease-out;
+  animation: flash-green 500ms ease-out;
 }
 
 .animate-price-flash-down {
-  animation: priceFlashDown 500ms ease-out;
+  animation: flash-red 500ms ease-out;
 }
 
 .animate-scale-in {

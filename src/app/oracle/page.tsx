@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 
 import { StatCard } from '@/components/common';
-import { ButtonEnhanced, CardEnhanced, StatusBadge } from '@/components/ui';
+import { Button, CardEnhanced, StatusBadge } from '@/components/ui';
 import { Badge } from '@/components/ui/badge';
 import { useI18n } from '@/i18n';
 import { cn, fetchApiData } from '@/lib/utils';
@@ -296,14 +296,14 @@ export default function OraclePlatformPage() {
           </div>
 
           <div className="mt-12 text-center">
-            <ButtonEnhanced
+            <Button
               variant="outline"
               onClick={() => router.push('/oracle/dashboard')}
               className="gap-2"
             >
               {t('home.protocols.exploreAll')}
               <ArrowRight className="h-4 w-4" />
-            </ButtonEnhanced>
+            </Button>
           </div>
         </div>
       </section>
@@ -314,7 +314,7 @@ export default function OraclePlatformPage() {
           <h2 className="mb-6 text-3xl font-bold text-gray-900">{t('home.cta.title')}</h2>
           <p className="mb-8 text-lg text-gray-600">{t('home.cta.subtitle')}</p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <ButtonEnhanced
+            <Button
               size="lg"
               variant="gradient"
               onClick={() => router.push('/oracle/dashboard')}
@@ -322,7 +322,7 @@ export default function OraclePlatformPage() {
             >
               <Activity className="h-5 w-5 flex-shrink-0" />
               <span className="text-base font-semibold">{t('home.cta.launchDashboard')}</span>
-            </ButtonEnhanced>
+            </Button>
             <Link
               href="/oracle/comparison"
               className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700"

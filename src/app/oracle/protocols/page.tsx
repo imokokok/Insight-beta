@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 import { TrendingUp, Globe, Activity } from 'lucide-react';
 
-import { EmptyProtocolsState } from '@/components/common/EmptyStateEnhanced';
+import { EmptyProtocolsState } from '@/components/common/EmptyState';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';

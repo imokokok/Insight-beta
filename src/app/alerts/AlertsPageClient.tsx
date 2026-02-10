@@ -7,7 +7,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { RefreshCw, ShieldAlert } from 'lucide-react';
 
-import { EmptyAlertsState } from '@/components/common/EmptyStateEnhanced';
+import { EmptyAlertsState } from '@/components/common/EmptyState';
 import { PageHeader } from '@/components/common/PageHeader';
 import { AlertRulesManager } from '@/components/features/alert/AlertRulesManager';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';

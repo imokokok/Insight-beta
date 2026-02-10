@@ -26,10 +26,10 @@ import {
 } from 'lucide-react';
 
 import { StatCard } from '@/components/common';
-import { ButtonEnhanced, StatusBadge, CardEnhanced, TooltipEnhanced } from '@/components/ui';
+import { Button, StatusBadge, CardEnhanced, TooltipEnhanced } from '@/components/ui';
 import { ErrorBanner } from '@/components/ui/error-banner';
 import { RefreshIndicator } from '@/components/ui/refresh-indicator';
-import { ChartSkeleton } from '@/components/ui/skeleton-enhanced';
+import { ChartSkeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getRefreshStrategy } from '@/config/refresh-strategy';
 import { useWebSocket } from '@/hooks';
@@ -333,14 +333,14 @@ export default function UnifiedDashboardPage() {
             {/* 左侧：标题区域 */}
             <div className="flex items-center gap-4">
               {/* Mobile Menu Button */}
-              <ButtonEnhanced
+              <Button
                 variant="ghost"
                 size="icon"
                 className="lg:hidden"
                 onClick={() => setSidebarOpen(true)}
               >
                 <Menu className="h-5 w-5" />
-              </ButtonEnhanced>
+              </Button>
 
               <div>
                 <h1 className="text-xl font-bold text-gray-900 lg:text-2xl">
@@ -546,14 +546,14 @@ export default function UnifiedDashboardPage() {
                         </div>
                         <h3 className="text-base font-semibold text-purple-900">Recent Alerts</h3>
                       </div>
-                      <ButtonEnhanced
+                      <Button
                         variant="ghost"
                         size="sm"
                         className="h-6 text-xs text-amber-600 hover:bg-amber-100 hover:text-amber-700"
                         onClick={() => setActiveTab('alerts')}
                       >
                         View All →
-                      </ButtonEnhanced>
+                      </Button>
                     </div>
                     <Suspense fallback={<ChartSkeleton className="h-[240px]" />}>
                       <div className="h-[240px] overflow-auto">
@@ -803,7 +803,7 @@ export default function UnifiedDashboardPage() {
                     <div className="mb-4 flex items-center justify-between">
                       <h3 className="text-base font-semibold text-purple-900">All Alerts</h3>
                       <div className="flex gap-2">
-                        <ButtonEnhanced
+                        <Button
                           variant="outline"
                           size="sm"
                           className="h-7 text-xs"
@@ -812,7 +812,7 @@ export default function UnifiedDashboardPage() {
                           }}
                         >
                           View All Alerts
-                        </ButtonEnhanced>
+                        </Button>
                       </div>
                     </div>
                     <Suspense fallback={<ChartSkeleton className="h-96" />}>
@@ -878,7 +878,7 @@ export default function UnifiedDashboardPage() {
                               </div>
                             </div>
                             <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                              <ButtonEnhanced
+                              <Button
                                 variant="ghost"
                                 size="sm"
                                 className="h-7 text-xs text-purple-600 hover:bg-purple-50"
@@ -888,8 +888,8 @@ export default function UnifiedDashboardPage() {
                                 }}
                               >
                                 View in Protocol
-                              </ButtonEnhanced>
-                              <ButtonEnhanced
+                              </Button>
+                              <Button
                                 variant="ghost"
                                 size="sm"
                                 className="h-7 text-xs text-gray-600 hover:bg-gray-50"
@@ -899,13 +899,13 @@ export default function UnifiedDashboardPage() {
                                 }}
                               >
                                 Timeline →
-                              </ButtonEnhanced>
+                              </Button>
                             </div>
                           </div>
                         ))}
                       </div>
                       <div className="mt-4 text-center">
-                        <ButtonEnhanced
+                        <Button
                           variant="outline"
                           size="sm"
                           className="w-full text-xs"
@@ -914,7 +914,7 @@ export default function UnifiedDashboardPage() {
                           }}
                         >
                           View All 19 Alerts
-                        </ButtonEnhanced>
+                        </Button>
                       </div>
                     </Suspense>
                   </CardEnhanced>
@@ -956,7 +956,7 @@ export default function UnifiedDashboardPage() {
                       ))}
                     </div>
                     <div className="mt-4 border-t border-gray-100 pt-3">
-                      <ButtonEnhanced
+                      <Button
                         variant="ghost"
                         size="sm"
                         className="w-full text-xs text-gray-500 hover:text-purple-600"
@@ -965,7 +965,7 @@ export default function UnifiedDashboardPage() {
                         }}
                       >
                         Manage Alert Rules →
-                      </ButtonEnhanced>
+                      </Button>
                     </div>
                   </CardEnhanced>
                 </div>

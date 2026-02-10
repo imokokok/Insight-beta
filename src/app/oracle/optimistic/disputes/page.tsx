@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 import { ArrowUpRight, RefreshCw } from 'lucide-react';
 
-import { EmptyEventsState } from '@/components/common/EmptyStateEnhanced';
+import { EmptyEventsState } from '@/components/common/EmptyState';
 import { PageHeader } from '@/components/common/PageHeader';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { logger } from '@/lib/logger';

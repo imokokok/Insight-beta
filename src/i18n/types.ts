@@ -1,32 +1,26 @@
-export type Lang = 'zh' | 'en' | 'es' | 'fr' | 'ko';
+export type Lang = 'zh' | 'en' | 'es';
 
 export const languages: Array<{ code: Lang; label: string }> = [
   { code: 'zh', label: '中文' },
   { code: 'en', label: 'English' },
   { code: 'es', label: 'Español' },
-  { code: 'fr', label: 'Français' },
-  { code: 'ko', label: '한국어' },
 ];
 
 export const LANG_STORAGE_KEY = 'oracle-monitor_lang';
 
 export function isLang(value: unknown): value is Lang {
-  return value === 'zh' || value === 'en' || value === 'es' || value === 'fr' || value === 'ko';
+  return value === 'zh' || value === 'en' || value === 'es';
 }
 
 export const langToHtmlLang: Record<Lang, string> = {
   en: 'en',
   es: 'es',
-  fr: 'fr',
-  ko: 'ko',
   zh: 'zh-CN',
 };
 
 export const langToLocale: Record<Lang, string> = {
   en: 'en-US',
   es: 'es-ES',
-  fr: 'fr-FR',
-  ko: 'ko-KR',
   zh: 'zh-CN',
 };
 
@@ -76,8 +70,6 @@ export function detectLangFromAcceptLanguage(value: string | null | undefined): 
   for (const { lang } of parsed) {
     if (lang.startsWith('zh')) return 'zh';
     if (lang.startsWith('en')) return 'en';
-    if (lang.startsWith('fr')) return 'fr';
-    if (lang.startsWith('ko')) return 'ko';
     if (lang.startsWith('es')) return 'es';
   }
 

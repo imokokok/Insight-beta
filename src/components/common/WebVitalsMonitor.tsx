@@ -2,16 +2,51 @@
 
 import { useEffect } from 'react';
 
+import * as Sentry from '@sentry/nextjs';
+
 import { logger } from '@/lib/logger';
-import { reportWebVitals } from '@/lib/monitoring/webVitals';
 
 export function WebVitalsMonitor() {
   useEffect(() => {
     // Dynamically import web-vitals to avoid SSR issues
     import('web-vitals').then(({ onLCP, onFID, onCLS, onFCP, onTTFB, onINP }) => {
-      // Register all Web Vitals metrics
-      onLCP((metric) => {
-        reportWebVitals({
+      // Register all Web Vitals metrics and send to Sentry
+      const reportMetric = (metric: {
+        id: string;
+        name: string;
+        value: number;
+        rating: 'good' | 'needs-improvement' | 'poor';
+        delta: number;
+        entries: PerformanceEntry[];
+        navigationType: string;
+      }) => {
+        // Report to Sentry
+        Sentry.addBreadcrumb({
+          category: 'web-vitals',
+          message: `${metric.name}: ${metric.value}`,
+          level: metric.rating === 'poor' ? 'warning' : 'info',
+          data: {
+            id: metric.id,
+            name: metric.name,
+            value: metric.value,
+            rating: metric.rating,
+            delta: metric.delta,
+            navigationType: metric.navigationType,
+          },
+        });
+
+        // Log poor metrics
+        if (metric.rating === 'poor') {
+          logger.warn(`Poor Web Vital: ${metric.name}`, {
+            metric: metric.name,
+            value: metric.value,
+            rating: metric.rating,
+          });
+        }
+      };
+
+      onLCP((metric) =>
+        reportMetric({
           id: metric.id,
           name: 'LCP',
           value: metric.value,
@@ -19,11 +54,11 @@ export function WebVitalsMonitor() {
           delta: metric.delta,
           entries: metric.entries,
           navigationType: metric.navigationType,
-        });
-      });
+        }),
+      );
 
-      onFID((metric) => {
-        reportWebVitals({
+      onFID((metric) =>
+        reportMetric({
           id: metric.id,
           name: 'FID',
           value: metric.value,
@@ -31,11 +66,11 @@ export function WebVitalsMonitor() {
           delta: metric.delta,
           entries: metric.entries,
           navigationType: metric.navigationType,
-        });
-      });
+        }),
+      );
 
-      onCLS((metric) => {
-        reportWebVitals({
+      onCLS((metric) =>
+        reportMetric({
           id: metric.id,
           name: 'CLS',
           value: metric.value,
@@ -43,11 +78,11 @@ export function WebVitalsMonitor() {
           delta: metric.delta,
           entries: metric.entries,
           navigationType: metric.navigationType,
-        });
-      });
+        }),
+      );
 
-      onFCP((metric) => {
-        reportWebVitals({
+      onFCP((metric) =>
+        reportMetric({
           id: metric.id,
           name: 'FCP',
           value: metric.value,
@@ -55,11 +90,11 @@ export function WebVitalsMonitor() {
           delta: metric.delta,
           entries: metric.entries,
           navigationType: metric.navigationType,
-        });
-      });
+        }),
+      );
 
-      onTTFB((metric) => {
-        reportWebVitals({
+      onTTFB((metric) =>
+        reportMetric({
           id: metric.id,
           name: 'TTFB',
           value: metric.value,
@@ -67,12 +102,11 @@ export function WebVitalsMonitor() {
           delta: metric.delta,
           entries: metric.entries,
           navigationType: metric.navigationType,
-        });
-      });
+        }),
+      );
 
-      // INP is the new metric replacing FID
-      onINP((metric) => {
-        reportWebVitals({
+      onINP((metric) =>
+        reportMetric({
           id: metric.id,
           name: 'INP',
           value: metric.value,
@@ -80,16 +114,15 @@ export function WebVitalsMonitor() {
           delta: metric.delta,
           entries: metric.entries,
           navigationType: metric.navigationType,
-        });
-      });
+        }),
+      );
     });
 
-    // Long Tasks 监控 - 检测主线程阻塞
+    // Long Tasks monitoring
     if ('PerformanceObserver' in window) {
       try {
         const longTaskObserver = new PerformanceObserver((list) => {
           for (const entry of list.getEntries()) {
-            // 超过 50ms 的任务被认为是长任务
             if (entry.duration > 50) {
               logger.warn('Long task detected', {
                 duration: entry.duration,
@@ -97,15 +130,14 @@ export function WebVitalsMonitor() {
                 name: entry.name,
               });
 
-              // 上报长任务数据
-              reportWebVitals({
-                id: `longtask-${Date.now()}`,
-                name: 'LongTask',
-                value: entry.duration,
-                rating: entry.duration > 100 ? 'poor' : 'needs-improvement',
-                delta: entry.duration,
-                entries: [entry],
-                navigationType: 'navigate',
+              Sentry.addBreadcrumb({
+                category: 'performance',
+                message: 'Long task detected',
+                level: 'warning',
+                data: {
+                  duration: entry.duration,
+                  startTime: entry.startTime,
+                },
               });
             }
           }
@@ -121,45 +153,8 @@ export function WebVitalsMonitor() {
       }
     }
 
-    // Resource Timing 监控 - 检测慢资源加载
-    if ('PerformanceObserver' in window) {
-      try {
-        const resourceObserver = new PerformanceObserver((list) => {
-          for (const entry of list.getEntries()) {
-            const resourceEntry = entry as PerformanceResourceTiming;
-
-            // 检测慢资源（超过 1 秒）
-            if (resourceEntry.duration > 1000) {
-              logger.warn('Slow resource detected', {
-                name: resourceEntry.name,
-                duration: resourceEntry.duration,
-                initiatorType: resourceEntry.initiatorType,
-              });
-            }
-
-            // 检测大型资源（超过 500KB）
-            if (resourceEntry.transferSize > 500 * 1024) {
-              logger.warn('Large resource detected', {
-                name: resourceEntry.name,
-                transferSize: `${(resourceEntry.transferSize / 1024).toFixed(2)}KB`,
-                initiatorType: resourceEntry.initiatorType,
-              });
-            }
-          }
-        });
-
-        resourceObserver.observe({ entryTypes: ['resource'] });
-
-        return () => {
-          resourceObserver.disconnect();
-        };
-      } catch (error) {
-        logger.debug('Resource timing monitoring not supported', { error });
-      }
-    }
-
     return () => {
-      // 清理函数（如果需要）
+      // Cleanup function
     };
   }, []);
 

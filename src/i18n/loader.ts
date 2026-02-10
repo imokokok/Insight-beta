@@ -13,10 +13,6 @@ const translationLoaders: Record<Lang, TranslationModule> = {
     import('./locales/zh').then((m) => ({ default: m.zhTranslations as TranslationNamespace })),
   es: () =>
     import('./locales/es').then((m) => ({ default: m.esTranslations as TranslationNamespace })),
-  fr: () =>
-    import('./locales/fr').then((m) => ({ default: m.frTranslations as TranslationNamespace })),
-  ko: () =>
-    import('./locales/ko').then((m) => ({ default: m.koTranslations as TranslationNamespace })),
 };
 
 const loadedTranslations: Partial<Record<Lang, TranslationNamespace>> = {};

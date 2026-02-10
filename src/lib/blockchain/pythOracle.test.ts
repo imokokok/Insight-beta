@@ -13,7 +13,6 @@ import {
   PythClient,
   createPythClient,
   getSupportedPythChains,
-  getAvailablePythSymbols,
   isChainSupportedByPyth,
   getPriceFeedId,
   getPythContractAddress,
@@ -51,7 +50,7 @@ vi.mock('@/lib/shared', () => ({
   },
 }));
 
-vi.mock('@/lib/shared/errors/ErrorHandler', () => ({
+vi.mock('@/lib/errors', () => ({
   ErrorHandler: {
     logError: vi.fn(),
   },
@@ -259,7 +258,7 @@ describe('PythClient - 喂价解析与陈旧度判定测试', () => {
     it('should calculate staleness correctly for fresh data', () => {
       const now = Math.floor(Date.now() / 1000);
       const freshTimestamp = now - 30; // 30 seconds ago
-      
+
       // Using 60 second threshold (PYTH default)
       const isStale = now - freshTimestamp > 60;
       expect(isStale).toBe(false);
@@ -268,7 +267,7 @@ describe('PythClient - 喂价解析与陈旧度判定测试', () => {
     it('should calculate staleness correctly for stale data', () => {
       const now = Math.floor(Date.now() / 1000);
       const staleTimestamp = now - 120; // 2 minutes ago
-      
+
       // Using 60 second threshold (PYTH default)
       const isStale = now - staleTimestamp > 60;
       expect(isStale).toBe(true);
@@ -277,7 +276,7 @@ describe('PythClient - 喂价解析与陈旧度判定测试', () => {
     it('should handle edge case at threshold boundary', () => {
       const now = Math.floor(Date.now() / 1000);
       const thresholdTimestamp = now - 60; // Exactly at threshold
-      
+
       // At exactly 60 seconds, should not be stale (using > not >=)
       const isStale = now - thresholdTimestamp > 60;
       expect(isStale).toBe(false);

@@ -52,8 +52,6 @@ const fallbackTranslations: Record<Lang, TranslationNamespace> = {
   en: {},
   zh: {},
   es: {},
-  fr: {},
-  ko: {},
 };
 
 function getInitialLang(serverLang?: Lang): Lang {

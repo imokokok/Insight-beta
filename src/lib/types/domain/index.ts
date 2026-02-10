@@ -1,23 +1,9 @@
 /**
  * Domain Types - 领域类型统一导出
  *
- * 所有领域类型从这里统一导出，避免循环依赖
+ * 注意：此模块正在逐步迁移到 unifiedOracleTypes.ts
+ * 请优先使用 @/lib/types/unifiedOracleTypes
  */
 
-// 基础类型
-export * from './base';
-
-// 预言机领域
-export * from './oracle';
-
-// UMA 领域
-export * from './uma';
-
-// 安全领域
-export * from './security';
-
-// 价格领域
-export * from './price';
-
-// 配置领域
-export * from './config';
+// 重新导出 unifiedOracleTypes 中的所有类型
+export * from '@/lib/types/unifiedOracleTypes';

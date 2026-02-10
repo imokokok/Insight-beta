@@ -48,16 +48,16 @@ import { ToastContainer, useToast } from '@/components/common/DashboardToast';
 import { EmptyAnomalyState, EmptySearchState } from '@/components/common/EmptyState';
 import { PageHeader } from '@/components/common/PageHeader';
 import { SkeletonChart } from '@/components/common/SkeletonCard';
-import { SkeletonList } from '@/components/common/SkeletonList';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
+import { SkeletonList } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useDashboardShortcuts, useAutoRefreshLegacy, useDataCache } from '@/hooks';
 import { logger } from '@/lib/logger';
-import { fetchApiData, cn, formatTimestamp } from '@/lib/utils';
+import { fetchApiData, cn, formatTime } from '@/lib/utils';
 
 // ============================================================================
 // Types
@@ -319,7 +319,7 @@ function AnomalyList({
                 <div className="flex items-center gap-4 text-xs text-gray-500">
                   <span className="flex items-center gap-1">
                     <Clock className="h-3 w-3" />
-                    {formatTimestamp(anomaly.timestamp)}
+                    {formatTime(anomaly.timestamp)}
                   </span>
                   <span>Deviation: {(anomaly.deviation * 100).toFixed(2)}%</span>
                 </div>
@@ -402,7 +402,7 @@ function AnomalyDetail({ anomaly, onClose }: { anomaly: Anomaly | null; onClose:
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Detected At</span>
-                <span>{formatTimestamp(anomaly.timestamp)}</span>
+                <span>{formatTime(anomaly.timestamp)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Deviation</span>

@@ -43,7 +43,7 @@ vi.mock('@/lib/shared', () => ({
   },
 }));
 
-vi.mock('@/lib/shared/errors/ErrorHandler', () => ({
+vi.mock('@/lib/errors', () => ({
   ErrorHandler: {
     logError: vi.fn(),
   },

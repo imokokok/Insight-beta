@@ -51,7 +51,7 @@ vi.mock('@/components/common/CopyButton', () => ({
   CopyButton: () => <button>Copy</button>,
 }));
 
-vi.mock('@/components/common/SkeletonList', () => ({
+vi.mock('@/components/ui/skeleton', () => ({
   SkeletonList: ({ viewMode }: { viewMode: string }) => <div>Skeleton {viewMode}</div>,
 }));
 

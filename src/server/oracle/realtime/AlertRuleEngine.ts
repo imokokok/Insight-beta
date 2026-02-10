@@ -16,15 +16,19 @@ import type { CrossOracleComparison, OracleProtocol } from '@/lib/types/unifiedO
 // ============================================================================
 
 export type AlertSeverity = 'info' | 'warning' | 'critical' | 'emergency';
-export type AlertConditionType = 'price_deviation' | 'data_staleness' | 'protocol_down' | 'volume_anomaly';
+export type AlertConditionType =
+  | 'price_deviation'
+  | 'data_staleness'
+  | 'protocol_down'
+  | 'volume_anomaly';
 
 export interface AlertCondition {
   type: AlertConditionType;
   symbol?: string;
   protocols?: OracleProtocol[];
   threshold: number;
-  durationMs?: number;           // 持续时间阈值
-  consecutiveCount?: number;     // 连续触发次数
+  durationMs?: number; // 持续时间阈值
+  consecutiveCount?: number; // 连续触发次数
 }
 
 export interface AlertRule {
@@ -34,9 +38,9 @@ export interface AlertRule {
   enabled: boolean;
   severity: AlertSeverity;
   conditions: AlertCondition[];
-  logic: 'AND' | 'OR';           // 条件组合逻辑
-  cooldownMs: number;            // 冷却时间
-  maxOccurrences?: number;       // 最大触发次数
+  logic: 'AND' | 'OR'; // 条件组合逻辑
+  cooldownMs: number; // 冷却时间
+  maxOccurrences?: number; // 最大触发次数
   channels: NotificationChannel[];
   createdAt: number;
   updatedAt: number;
@@ -69,8 +73,8 @@ export interface Alert {
 export class AlertRuleEngine {
   private rules: Map<string, AlertRule> = new Map();
   private alerts: Map<string, Alert> = new Map();
-  private ruleHistory: Map<string, number[]> = new Map();  // 规则触发历史时间戳
-  private alertHistory: Map<string, Alert[]> = new Map();  // 告警历史
+  private ruleHistory: Map<string, number[]> = new Map(); // 规则触发历史时间戳
+  private alertHistory: Map<string, Alert[]> = new Map(); // 告警历史
 
   // 默认规则
   private readonly defaultRules: AlertRule[] = [
@@ -80,11 +84,9 @@ export class AlertRuleEngine {
       description: '当价格偏差超过1%时触发警告',
       enabled: true,
       severity: 'warning',
-      conditions: [
-        { type: 'price_deviation', threshold: 0.01 },
-      ],
+      conditions: [{ type: 'price_deviation', threshold: 0.01 }],
       logic: 'OR',
-      cooldownMs: 300000,  // 5分钟冷却
+      cooldownMs: 300000, // 5分钟冷却
       channels: [{ type: 'webhook', config: { url: '/api/alerts/webhook' } }],
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -95,11 +97,9 @@ export class AlertRuleEngine {
       description: '当价格偏差超过5%时触发严重告警',
       enabled: true,
       severity: 'critical',
-      conditions: [
-        { type: 'price_deviation', threshold: 0.05 },
-      ],
+      conditions: [{ type: 'price_deviation', threshold: 0.05 }],
       logic: 'OR',
-      cooldownMs: 600000,  // 10分钟冷却
+      cooldownMs: 600000, // 10分钟冷却
       channels: [
         { type: 'webhook', config: { url: '/api/alerts/webhook' } },
         { type: 'email', config: { to: 'admin@example.com' } },
@@ -114,7 +114,7 @@ export class AlertRuleEngine {
       enabled: true,
       severity: 'warning',
       conditions: [
-        { type: 'data_staleness', threshold: 300000 },  // 5分钟
+        { type: 'data_staleness', threshold: 300000 }, // 5分钟
       ],
       logic: 'OR',
       cooldownMs: 600000,
@@ -128,11 +128,9 @@ export class AlertRuleEngine {
       description: '当协议连续3次获取失败时触发',
       enabled: true,
       severity: 'critical',
-      conditions: [
-        { type: 'protocol_down', threshold: 3, consecutiveCount: 3 },
-      ],
+      conditions: [{ type: 'protocol_down', threshold: 3, consecutiveCount: 3 }],
       logic: 'OR',
-      cooldownMs: 900000,  // 15分钟冷却
+      cooldownMs: 900000, // 15分钟冷却
       channels: [
         { type: 'webhook', config: { url: '/api/alerts/webhook' } },
         { type: 'slack', config: { channel: '#alerts' } },
@@ -268,9 +266,7 @@ export class AlertRuleEngine {
     );
 
     // 根据逻辑组合结果
-    const triggered = rule.logic === 'AND'
-      ? results.every((r) => r)
-      : results.some((r) => r);
+    const triggered = rule.logic === 'AND' ? results.every((r) => r) : results.some((r) => r);
 
     if (triggered) {
       this.recordTrigger(rule.id);
@@ -282,10 +278,7 @@ export class AlertRuleEngine {
   /**
    * 评估单个条件
    */
-  private evaluateCondition(
-    condition: AlertCondition,
-    comparison: CrossOracleComparison,
-  ): boolean {
+  private evaluateCondition(condition: AlertCondition, comparison: CrossOracleComparison): boolean {
     switch (condition.type) {
       case 'price_deviation':
         return comparison.maxDeviationPercent >= condition.threshold * 100;
@@ -316,6 +309,8 @@ export class AlertRuleEngine {
     if (history.length === 0) return true;
 
     const lastTrigger = history[history.length - 1];
+    if (lastTrigger === undefined) return true;
+
     return Date.now() - lastTrigger >= rule.cooldownMs;
   }
 
@@ -353,7 +348,7 @@ export class AlertRuleEngine {
         ...existingAlert.context,
         latestComparison: comparison,
       };
-      return null;  // 不创建新告警，而是更新现有
+      return null; // 不创建新告警，而是更新现有
     }
 
     const alert: Alert = {
@@ -454,14 +449,17 @@ export class AlertRuleEngine {
   /**
    * 发送单个通知
    */
-  private async sendNotification(
-    channel: NotificationChannel,
-    alert: Alert,
-  ): Promise<void> {
+  private async sendNotification(channel: NotificationChannel, alert: Alert): Promise<void> {
     switch (channel.type) {
-      case 'webhook':
-        await this.sendWebhook(channel.config.url, alert);
+      case 'webhook': {
+        const url = channel.config.url;
+        if (url) {
+          await this.sendWebhook(url, alert);
+        } else {
+          logger.warn('Webhook URL is missing', { alertId: alert.id });
+        }
         break;
+      }
       case 'email':
         // 实际项目中集成邮件服务
         logger.debug('Email notification', { to: channel.config.to, alert });

@@ -15,8 +15,8 @@ import {
   SWITCHBOARD_DEFAULT_CONFIG,
   type SwitchboardAggregatorData,
 } from '@/lib/config/switchboardPriceFeeds';
+import { ErrorHandler, normalizeError } from '@/lib/errors';
 import { SolanaOracleClient } from '@/lib/shared/blockchain/SolanaOracleClient';
-import { ErrorHandler, normalizeError } from '@/lib/shared/errors/ErrorHandler';
 import type {
   SupportedChain,
   UnifiedPriceFeed,
@@ -105,10 +105,7 @@ export class SwitchboardClient extends SolanaOracleClient {
     const [baseAsset, quoteAsset] = symbol.split('/');
 
     // 格式化价格 (考虑精度)
-    const formattedPrice = this.formatPrice(
-      rawData.result.mantissa,
-      rawData.result.scale,
-    );
+    const formattedPrice = this.formatPrice(rawData.result.mantissa, rawData.result.scale);
 
     const publishTime = new Date(Number(rawData.lastUpdateTimestamp) * 1000);
     const stalenessSeconds = this.calculateStalenessSeconds(rawData.lastUpdateTimestamp);

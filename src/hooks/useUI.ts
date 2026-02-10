@@ -1,8 +1,11 @@
-import { useCallback, useMemo, useState, useEffect, useRef } from 'react';
+import { useCallback, useMemo, useEffect, useRef } from 'react';
 
 import useSWRInfinite from 'swr/infinite';
 
 import { fetchApiData } from '@/lib/utils';
+
+// Re-export useDebounce from the dedicated hook file
+export { useDebounce, useDebounceImmediate } from './useDebounce';
 
 // ============================================================================
 // useInfiniteList - 无限列表 Hook
@@ -77,38 +80,8 @@ export function useInfiniteList<T>(
 }
 
 // ============================================================================
-// useDebounce - 防抖 Hook
+// useDebouncedCallback - 防抖回调函数 Hook
 // ============================================================================
-
-/**
- * useDebounce Hook - 防抖处理
- *
- * 用于延迟更新值，常用于搜索输入等场景
- *
- * @example
- * const [searchTerm, setSearchTerm] = useState('');
- * const debouncedSearchTerm = useDebounce(searchTerm, 300);
- *
- * useEffect(() => {
- *   // 只在 debouncedSearchTerm 变化 300ms 后执行
- *   fetchSearchResults(debouncedSearchTerm);
- * }, [debouncedSearchTerm]);
- */
-export function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [value, delay]);
-
-  return debouncedValue;
-}
 
 /**
  * useDebouncedCallback Hook - 防抖回调函数

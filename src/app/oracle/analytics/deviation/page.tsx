@@ -46,17 +46,21 @@ import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { ToastContainer, useToast } from '@/components/common/DashboardToast';
 import { EmptyDeviationState, EmptySearchState } from '@/components/common/EmptyState';
 import { RefreshIndicator } from '@/components/common/RefreshIndicator';
-import { SkeletonStatCard, SkeletonChart, SkeletonCard } from '@/components/common/SkeletonCard';
-import { SkeletonList } from '@/components/common/SkeletonList';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ErrorBanner } from '@/components/ui/error-banner';
 import { Input } from '@/components/ui/input';
+import {
+  SkeletonList,
+  StatCardSkeleton,
+  ChartSkeleton,
+  CardSkeleton,
+} from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useDashboardShortcuts, useAutoRefreshLegacy, useDataCache } from '@/hooks';
 import { logger } from '@/lib/logger';
-import { fetchApiData, cn, formatTimestamp } from '@/lib/utils';
+import { fetchApiData, cn, formatTime } from '@/lib/utils';
 
 // ============================================================================
 // Types
@@ -255,7 +259,7 @@ function ProtocolPriceComparison({ dataPoint }: { dataPoint: PriceDeviationPoint
           Protocol Price Comparison
         </CardTitle>
         <CardDescription>
-          {dataPoint.symbol} at {formatTimestamp(dataPoint.timestamp)}
+          {dataPoint.symbol} at {formatTime(dataPoint.timestamp)}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -267,9 +271,7 @@ function ProtocolPriceComparison({ dataPoint }: { dataPoint: PriceDeviationPoint
             </div>
             <div className="rounded-lg bg-orange-50 p-3">
               <p className="text-muted-foreground text-xs">Max Deviation</p>
-              <p className="text-lg font-bold">
-                {(dataPoint.maxDeviationPercent).toFixed(2)}%
-              </p>
+              <p className="text-lg font-bold">{dataPoint.maxDeviationPercent.toFixed(2)}%</p>
             </div>
           </div>
 
@@ -301,7 +303,7 @@ function ProtocolPriceComparison({ dataPoint }: { dataPoint: PriceDeviationPoint
                       )}
                     >
                       {deviation > 0 ? '+' : ''}
-                      {(deviation).toFixed(2)}%
+                      {deviation.toFixed(2)}%
                     </p>
                   </div>
                 </div>
@@ -370,9 +372,9 @@ function TrendList({
               </div>
               <p className="text-muted-foreground text-sm">{trend.recommendation}</p>
               <div className="flex items-center gap-4 text-xs text-gray-500">
-                <span>Avg Deviation: {(trend.avgDeviation).toFixed(2)}%</span>
-                <span>Max: {(trend.maxDeviation).toFixed(2)}%</span>
-                <span>Volatility: {(trend.volatility).toFixed(2)}%</span>
+                <span>Avg Deviation: {trend.avgDeviation.toFixed(2)}%</span>
+                <span>Max: {trend.maxDeviation.toFixed(2)}%</span>
+                <span>Volatility: {trend.volatility.toFixed(2)}%</span>
               </div>
             </div>
             <div className="flex flex-col items-end gap-2">
@@ -421,7 +423,7 @@ function AnomalyList({
                   {anomaly.outlierProtocols.length} Outliers
                 </Badge>
               </div>
-              <p className="text-muted-foreground text-xs">{formatTimestamp(anomaly.timestamp)}</p>
+              <p className="text-muted-foreground text-xs">{formatTime(anomaly.timestamp)}</p>
               <div className="flex flex-wrap gap-1">
                 {anomaly.outlierProtocols.map((protocol) => (
                   <Badge key={protocol} variant="secondary" className="text-xs">
@@ -432,7 +434,7 @@ function AnomalyList({
             </div>
             <div className="text-right">
               <p className="text-lg font-bold text-red-500">
-                {(anomaly.maxDeviationPercent).toFixed(2)}%
+                {anomaly.maxDeviationPercent.toFixed(2)}%
               </p>
               <p className="text-muted-foreground text-xs">Max Deviation</p>
             </div>
@@ -472,7 +474,7 @@ function SummaryStats({ report }: { report: DeviationReport | null }) {
       />
       <StatCard
         title="Avg Deviation"
-        value={`${(summary.avgDeviationAcrossAll).toFixed(2)}%`}
+        value={`${summary.avgDeviationAcrossAll.toFixed(2)}%`}
         icon={<Activity className="h-5 w-5" />}
         color="orange"
       />
@@ -683,10 +685,10 @@ export default function DeviationAnalyticsPage() {
       {/* Summary Stats */}
       {loading && !report ? (
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          <SkeletonStatCard />
-          <SkeletonStatCard />
-          <SkeletonStatCard />
-          <SkeletonStatCard />
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+          <StatCardSkeleton />
         </div>
       ) : (
         <SummaryStats report={report} />
@@ -714,8 +716,8 @@ export default function DeviationAnalyticsPage() {
           <div className="grid gap-6 lg:grid-cols-2">
             {loading && !report ? (
               <>
-                <SkeletonChart />
-                <SkeletonCard rows={4} />
+                <ChartSkeleton />
+                <CardSkeleton rows={4} />
               </>
             ) : (
               <>
@@ -783,17 +785,15 @@ export default function DeviationAnalyticsPage() {
                       <>
                         <div className="flex justify-between rounded-lg bg-gray-50 p-3">
                           <span className="text-muted-foreground">Generated At</span>
-                          <span className="font-medium">{formatTimestamp(report.generatedAt)}</span>
+                          <span className="font-medium">{formatTime(report.generatedAt)}</span>
                         </div>
                         <div className="flex justify-between rounded-lg bg-gray-50 p-3">
                           <span className="text-muted-foreground">Period Start</span>
-                          <span className="font-medium">
-                            {formatTimestamp(report.period.start)}
-                          </span>
+                          <span className="font-medium">{formatTime(report.period.start)}</span>
                         </div>
                         <div className="flex justify-between rounded-lg bg-gray-50 p-3">
                           <span className="text-muted-foreground">Period End</span>
-                          <span className="font-medium">{formatTimestamp(report.period.end)}</span>
+                          <span className="font-medium">{formatTime(report.period.end)}</span>
                         </div>
                         <div className="rounded-lg bg-orange-50 p-4">
                           <p className="text-sm font-medium text-orange-800">Analysis Window</p>
@@ -909,19 +909,19 @@ export default function DeviationAnalyticsPage() {
                                   : 'text-green-500',
                             )}
                           >
-                            {(selectedTrend.anomalyScore).toFixed(1)}%
+                            {selectedTrend.anomalyScore.toFixed(1)}%
                           </p>
                         </div>
                         <div className="rounded-lg bg-gray-50 p-3">
                           <p className="text-muted-foreground text-xs">Avg Deviation</p>
                           <p className="text-lg font-bold">
-                            {(selectedTrend.avgDeviation).toFixed(2)}%
+                            {selectedTrend.avgDeviation.toFixed(2)}%
                           </p>
                         </div>
                         <div className="rounded-lg bg-gray-50 p-3">
                           <p className="text-muted-foreground text-xs">Max Deviation</p>
                           <p className="text-lg font-bold">
-                            {(selectedTrend.maxDeviation).toFixed(2)}%
+                            {selectedTrend.maxDeviation.toFixed(2)}%
                           </p>
                         </div>
                       </div>

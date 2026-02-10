@@ -2,8 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { enTranslations } from '../locales/en';
 import { zhTranslations } from '../locales/zh';
 import { esTranslations } from '../locales/es';
-import { frTranslations } from '../locales/fr';
-import { koTranslations } from '../locales/ko';
 
 // Helper to get all keys from an object recursively
 function getAllKeys(obj: Record<string, unknown>, prefix = ''): string[] {
@@ -47,8 +45,6 @@ describe('Translation Coverage', () => {
   const allTranslations = {
     zh: { translations: zhTranslations, name: 'Chinese' },
     es: { translations: esTranslations, name: 'Spanish' },
-    fr: { translations: frTranslations, name: 'French' },
-    ko: { translations: koTranslations, name: 'Korean' },
   };
 
   describe('English (source)', () => {

@@ -1,4 +1,4 @@
-type NormalizedWalletErrorKind =
+export type NormalizedWalletErrorKind =
   | 'WALLET_NOT_FOUND'
   | 'USER_REJECTED'
   | 'REQUEST_PENDING'

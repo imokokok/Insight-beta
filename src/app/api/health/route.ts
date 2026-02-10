@@ -1,6 +1,7 @@
 import { env, getEnvReport } from '@/lib/config/env';
 import { error, handleApi, rateLimit, requireAdmin } from '@/server/apiResponse';
 import { hasDatabase, query } from '@/server/db';
+import { performanceMonitor } from '@/server/monitoring/performanceMonitor';
 
 /**
  * @swagger
@@ -12,6 +13,7 @@ import { hasDatabase, query } from '@/server/db';
  *       - liveness: 应用是否存活
  *       - readiness: 应用是否就绪
  *       - validation: 完整配置验证
+ *       - performance: 性能监控状态
  *     tags:
  *       - Health
  *     parameters:
@@ -19,7 +21,7 @@ import { hasDatabase, query } from '@/server/db';
  *         name: probe
  *         schema:
  *           type: string
- *           enum: [liveness, readiness, validation]
+ *           enum: [liveness, readiness, validation, performance]
  *         description: 探针类型
  *     responses:
  *       200:
@@ -124,6 +126,27 @@ async function handleValidationProbe(request: Request) {
   };
 }
 
+async function handlePerformanceProbe() {
+  const health = performanceMonitor.getHealthStatus();
+  const latest = performanceMonitor.getLatestMetrics();
+  const stats = performanceMonitor.getStatistics(3600000); // 1 hour
+
+  return {
+    status: health.status,
+    probe: 'performance',
+    timestamp: new Date().toISOString(),
+    checks: health.checks,
+    metrics: latest
+      ? {
+          responseTime: latest.responseTime,
+          errors: latest.errors,
+          resources: latest.resources,
+        }
+      : null,
+    statistics: stats,
+  };
+}
+
 async function handleDefaultHealthCheck(request: Request) {
   const [envReport, auth, databaseStatus] = await Promise.all([
     getEnvReport(),
@@ -170,6 +193,10 @@ export async function GET(request: Request) {
       case 'validation': {
         const result = await handleValidationProbe(request);
         if (result instanceof Response) return result;
+        return Response.json(result);
+      }
+      case 'performance': {
+        const result = await handlePerformanceProbe();
         return Response.json(result);
       }
       default: {

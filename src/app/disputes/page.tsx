@@ -16,7 +16,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 
-import { EmptyEventsState } from '@/components/common/EmptyStateEnhanced';
+import { EmptyEventsState } from '@/components/common/EmptyState';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { ErrorBanner as ErrorBannerUI } from '@/components/ui/error-banner';
@@ -121,8 +121,6 @@ function LoadingBanner({ t }: LoadingBannerProps) {
     </div>
   );
 }
-
-
 
 type LoadMoreButtonProps = {
   loadingMore: boolean;
