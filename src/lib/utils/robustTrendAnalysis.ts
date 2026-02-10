@@ -165,47 +165,6 @@ function linearRegression(x: number[], y: number[]): { slope: number; intercept:
 }
 
 /**
- * 加权线性回归
- * 辅助函数
- */
-// eslint-disable-next-line unused-imports/no-unused-vars
-function _weightedLinearRegression(
-  x: number[],
-  y: number[],
-  weights: number[],
-): { slope: number; intercept: number } {
-  let sumW = 0;
-  let sumWX = 0;
-  let sumWY = 0;
-  let sumWXY = 0;
-  let sumWXX = 0;
-
-  for (let i = 0; i < x.length; i++) {
-    const xi = x[i];
-    const yi = y[i];
-    const wi = weights[i];
-
-    if (xi !== undefined && yi !== undefined && wi !== undefined) {
-      sumW += wi;
-      sumWX += wi * xi;
-      sumWY += wi * yi;
-      sumWXY += wi * xi * yi;
-      sumWXX += wi * xi * xi;
-    }
-  }
-
-  const denominator = sumW * sumWXX - sumWX * sumWX;
-  if (denominator === 0) {
-    return { slope: 0, intercept: sumWY / sumW };
-  }
-
-  const slope = (sumW * sumWXY - sumWX * sumWY) / denominator;
-  const intercept = (sumWXX * sumWY - sumWX * sumWXY) / denominator;
-
-  return { slope, intercept };
-}
-
-/**
  * 鲁棒化的趋势方向判断
  * 使用 Theil-Sen 回归的斜率来判断趋势
  *

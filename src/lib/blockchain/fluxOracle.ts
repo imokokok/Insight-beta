@@ -16,7 +16,7 @@ import type {
   OracleProtocol,
 } from '@/lib/types/unifiedOracleTypes';
 
-import { calculateDataFreshness } from './oracleClientBase';
+import { calculateDataFreshness, normalizeSymbol } from './core/types';
 
 // ============================================================================
 // Flux 聚合器合约 ABI
@@ -176,7 +176,7 @@ export class FluxClient extends EvmOracleClient {
   }
 
   protected getFeedId(symbol: string): string | undefined {
-    const normalizedSymbol = this.normalizeSymbol(symbol);
+    const normalizedSymbol = normalizeSymbol(symbol);
     const availableFeeds = FLUX_SUPPORTED_FEEDS[this.chain] || [];
     return availableFeeds.includes(normalizedSymbol) ? normalizedSymbol : undefined;
   }

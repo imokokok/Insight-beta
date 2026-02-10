@@ -217,3 +217,44 @@ export interface IOracleClient {
    */
   destroy?(): Promise<void>;
 }
+
+// ============================================================================
+// 工具函数
+// ============================================================================
+
+/**
+ * 标准化交易对符号
+ * @param symbol - 原始符号
+ * @returns 标准化后的符号
+ */
+export function normalizeSymbol(symbol: string): string {
+  return symbol.toUpperCase().replace(/-/g, '/');
+}
+
+/**
+ * 计算数据新鲜度状态
+ * @param timestamp - 数据时间戳 (Date 或毫秒时间戳)
+ * @param thresholdSeconds - 陈旧阈值 (秒)，默认 300 (5分钟)
+ * @returns 包含 isStale 和 stalenessSeconds 的对象
+ */
+export function calculateDataFreshness(
+  timestamp: Date | number,
+  thresholdSeconds: number = 300,
+): { isStale: boolean; stalenessSeconds: number } {
+  const timestampMs = timestamp instanceof Date ? timestamp.getTime() : timestamp;
+  const now = Date.now();
+  const stalenessSeconds = Math.floor((now - timestampMs) / 1000);
+  const isStale = stalenessSeconds > thresholdSeconds;
+  return { isStale, stalenessSeconds: isStale ? stalenessSeconds : 0 };
+}
+
+/**
+ * 检查价格是否过期
+ * @param timestamp - 价格时间戳 (秒)
+ * @param threshold - 陈旧阈值 (秒)
+ * @returns 是否过期
+ */
+export function isPriceStale(timestamp: number, threshold: number): boolean {
+  const now = Math.floor(Date.now() / 1000);
+  return now - timestamp > threshold;
+}

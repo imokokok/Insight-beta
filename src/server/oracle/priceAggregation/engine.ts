@@ -106,6 +106,8 @@ export class PriceAggregationEngine {
     symbol: string,
     chain?: SupportedChain,
   ): Promise<CrossOracleComparison | null> {
+    const cacheKey = `aggregation:${symbol}:${chain ?? 'all'}`;
+
     // 使用智能重试获取价格数据
     const prices = await withRetry(
       () => this.fetchLatestPrices(symbol, chain),
@@ -271,7 +273,7 @@ export class PriceAggregationEngine {
   private detectOutliers(
     prices: Array<UnifiedPriceFeed & { instanceId: string }>,
     medianPrice: number,
-    avgPrice: number,
+    _avgPrice: number,
   ): {
     outliers: Array<UnifiedPriceFeed & { instanceId: string }>;
     maxDeviation: number;

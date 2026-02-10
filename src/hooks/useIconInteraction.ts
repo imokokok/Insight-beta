@@ -303,5 +303,3 @@ export function useIconInteraction(options: IconInteractionOptions = {}): IconIn
     reset,
   };
 }
-
-export default useIconInteraction;

@@ -158,5 +158,3 @@ export function useAppShortcuts(config: Partial<AppShortcutsConfig> = {}) {
     shortcutsByScope,
   };
 }
-
-export default useAppShortcuts;

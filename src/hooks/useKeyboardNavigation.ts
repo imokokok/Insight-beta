@@ -441,5 +441,3 @@ export function useFocusTrap(options: UseFocusTrapOptions) {
     };
   }, [isActive, containerRef, initialFocusSelector, returnFocusElement]);
 }
-
-export default useKeyboardNavigation;

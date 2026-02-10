@@ -1,6 +1,6 @@
 /**
  * Resilience Utilities
- * 
+ *
  * P1 优化：熔断和智能重试机制
  * - 熔断器模式 (Circuit Breaker)
  * - 自适应重试策略
@@ -9,6 +9,8 @@
 
 import { logger } from '@/lib/logger';
 
+import { sleep } from './common';
+
 // ============================================================================
 // 熔断器 (Circuit Breaker)
 // ============================================================================
@@ -16,10 +18,10 @@ import { logger } from '@/lib/logger';
 export type CircuitState = 'closed' | 'open' | 'half-open';
 
 interface CircuitBreakerOptions {
-  failureThreshold: number;      // 失败阈值，超过则熔断
-  successThreshold: number;      // 半开状态下成功阈值，达到则关闭
-  timeoutMs: number;             // 熔断持续时间
-  monitorIntervalMs?: number;    // 监控间隔
+  failureThreshold: number; // 失败阈值，超过则熔断
+  successThreshold: number; // 半开状态下成功阈值，达到则关闭
+  timeoutMs: number; // 熔断持续时间
+  monitorIntervalMs?: number; // 监控间隔
 }
 
 interface CircuitBreakerStats {
@@ -153,12 +155,12 @@ export class CircuitBreakerError extends Error {
 // ============================================================================
 
 export interface RetryOptions {
-  maxRetries: number;            // 最大重试次数
-  baseDelayMs: number;           // 基础延迟
-  maxDelayMs: number;            // 最大延迟
-  backoffMultiplier: number;     // 退避乘数
-  jitter?: boolean;              // 是否添加抖动
-  retryableErrors?: string[];    // 可重试的错误类型
+  maxRetries: number; // 最大重试次数
+  baseDelayMs: number; // 基础延迟
+  maxDelayMs: number; // 最大延迟
+  backoffMultiplier: number; // 退避乘数
+  jitter?: boolean; // 是否添加抖动
+  retryableErrors?: string[]; // 可重试的错误类型
   onRetry?: (attempt: number, error: Error, delay: number) => void;
 }
 
@@ -220,24 +222,17 @@ export async function withRetry<T>(
 function calculateDelay(attempt: number, options: Required<RetryOptions>): number {
   // 指数退避
   const exponentialDelay = options.baseDelayMs * Math.pow(options.backoffMultiplier, attempt);
-  
+
   // 限制最大延迟
   const cappedDelay = Math.min(exponentialDelay, options.maxDelayMs);
-  
+
   // 添加抖动（0-25%随机值）
   if (options.jitter) {
     const jitter = Math.random() * 0.25 * cappedDelay;
     return Math.floor(cappedDelay + jitter);
   }
-  
-  return cappedDelay;
-}
 
-/**
- * 睡眠函数
- */
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return cappedDelay;
 }
 
 // ============================================================================
@@ -287,47 +282,3 @@ export class CircuitBreakerManager {
 
 // 导出单例
 export const circuitBreakerManager = new CircuitBreakerManager();
-
-// ============================================================================
-// 装饰器（用于类方法）
-// ============================================================================
-
-export function WithRetry(options: Partial<RetryOptions> = {}) {
-  return function (
-    target: unknown,
-    propertyKey: string,
-    descriptor: PropertyDescriptor,
-  ) {
-    const originalMethod = descriptor.value;
-
-    descriptor.value = async function (...args: unknown[]) {
-      return withRetry(() => originalMethod.apply(this, args), options);
-    };
-
-    return descriptor;
-  };
-}
-
-export function WithCircuitBreaker(
-  breakerName: string,
-  options: CircuitBreakerOptions = {
-    failureThreshold: 5,
-    successThreshold: 3,
-    timeoutMs: 60000,
-  },
-) {
-  return function (
-    target: unknown,
-    propertyKey: string,
-    descriptor: PropertyDescriptor,
-  ) {
-    const originalMethod = descriptor.value;
-    const breaker = circuitBreakerManager.getBreaker(breakerName, options);
-
-    descriptor.value = async function (...args: unknown[]) {
-      return breaker.execute(() => originalMethod.apply(this, args));
-    };
-
-    return descriptor;
-  };
-}

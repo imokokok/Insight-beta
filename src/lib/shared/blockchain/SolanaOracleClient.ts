@@ -16,6 +16,7 @@ import type {
   OracleHealthStatus,
   HealthStatus,
 } from '@/lib/blockchain/core/types';
+import { normalizeSymbol } from '@/lib/blockchain/core/types';
 import { ErrorHandler, normalizeError } from '@/lib/shared/errors/ErrorHandler';
 import { LoggerFactory } from '@/lib/shared/logger/LoggerFactory';
 import type { SupportedChain, UnifiedPriceFeed } from '@/lib/types/unifiedOracleTypes';
@@ -120,7 +121,7 @@ export abstract class SolanaOracleClient extends BaseOracleClient {
    * 获取单个价格
    */
   async fetchPrice(symbol: string): Promise<UnifiedPriceFeed | null> {
-    const normalizedSymbol = this.normalizeSymbol(symbol);
+    const normalizedSymbol = normalizeSymbol(symbol);
     const feedId = this.getFeedId(normalizedSymbol);
 
     if (!feedId) {

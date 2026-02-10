@@ -12,7 +12,7 @@ import type {
   UnifiedPriceFeed,
 } from '@/lib/types/unifiedOracleTypes';
 
-import { calculateDataFreshness } from './oracleClientBase';
+import { calculateDataFreshness } from './core/types';
 
 // ============================================================================
 // 类型定义
@@ -292,7 +292,9 @@ export class BandClient {
         healthy: false,
         lastUpdate: new Date(0),
         stalenessSeconds: Infinity,
-        issues: [`Failed to check Band feed health: ${error instanceof Error ? error.message : String(error)}`],
+        issues: [
+          `Failed to check Band feed health: ${error instanceof Error ? error.message : String(error)}`,
+        ],
       };
     }
   }

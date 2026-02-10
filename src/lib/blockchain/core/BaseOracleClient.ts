@@ -10,15 +10,14 @@
  */
 
 import { logger as defaultLogger } from '@/lib/logger';
-import { normalizeSymbol } from '@/lib/blockchain/oracleClientBase';
-import { sleep } from '@/lib/utils/common';
 import type {
   OracleProtocol,
   SupportedChain,
   UnifiedPriceFeed,
 } from '@/lib/types/unifiedOracleTypes';
+import { sleep } from '@/lib/utils/common';
 
-import { PriceFetchError } from './types';
+import { PriceFetchError, normalizeSymbol } from './types';
 
 import type {
   IOracleClient,

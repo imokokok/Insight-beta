@@ -13,7 +13,7 @@ import type {
   DIAProtocolConfig,
 } from '@/lib/types/unifiedOracleTypes';
 
-import { calculateDataFreshness } from './oracleClientBase';
+import { calculateDataFreshness } from './core/types';
 
 // ============================================================================
 // DIA API 配置

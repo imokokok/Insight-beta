@@ -16,7 +16,7 @@ import type {
   OracleProtocol,
 } from '@/lib/types/unifiedOracleTypes';
 
-import { calculateDataFreshness } from './oracleClientBase';
+import { calculateDataFreshness } from './core/types';
 
 // ============================================================================
 // RedStone ABI

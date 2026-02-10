@@ -271,7 +271,7 @@ describe('Sync Framework', () => {
     it('should return result on first success', async () => {
       const fn = vi.fn().mockResolvedValue('success');
 
-      const result = await withRetry(fn);
+      const result = await withRetry(fn, { maxRetries: 3, retryDelayMs: 100 });
 
       expect(result).toBe('success');
       expect(fn).toHaveBeenCalledTimes(1);
