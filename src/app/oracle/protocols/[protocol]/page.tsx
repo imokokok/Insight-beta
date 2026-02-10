@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 
 import { Activity, Shield, TrendingUp, Globe, BarChart3, Bell, Clock } from 'lucide-react';
 
-import { StatCardEnhanced } from '@/components/common';
+import { StatCard } from '@/components/common';
 import {
   FeedTable,
   commonFeedColumns,
@@ -416,26 +416,26 @@ export default function UnifiedProtocolPage() {
   // Stats content
   const statsContent = stats && (
     <>
-      <StatCardEnhanced
+      <StatCard
         title="Total Feeds"
         value={stats.totalFeeds as number}
         icon={<TrendingUp className="h-5 w-5" />}
         color="blue"
       />
-      <StatCardEnhanced
+      <StatCard
         title="Active Feeds"
         value={stats.activeFeeds as number}
         icon={<Activity className="h-5 w-5" />}
         color="green"
         subtitle={`${stats.staleFeeds as number} stale`}
       />
-      <StatCardEnhanced
+      <StatCard
         title="Network Uptime"
         value={`${stats.networkUptime as number}%`}
         icon={<Shield className="h-5 w-5" />}
         color="purple"
       />
-      <StatCardEnhanced
+      <StatCard
         title="Avg Latency"
         value={`${((stats.avgUpdateLatency as number) / 1000).toFixed(1)}s`}
         icon={<Clock className="h-5 w-5" />}

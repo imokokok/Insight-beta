@@ -7,7 +7,6 @@
  * - 同步管理
  * - 错误处理
  * - 日志工具
- * - 服务网格
  */
 
 // 数据库工具
@@ -19,7 +18,6 @@ export { EvmOracleClient } from './blockchain/EvmOracleClient';
 export type { EvmOracleClientConfig } from './blockchain/EvmOracleClient';
 export { SolanaOracleClient } from './blockchain/SolanaOracleClient';
 export type { SolanaOracleClientConfig } from './blockchain/SolanaOracleClient';
-export { ContractRegistry, createContractRegistry } from './blockchain/ContractRegistry';
 
 // 同步管理
 export {
@@ -46,23 +44,3 @@ export {
 // 日志工具
 export { LoggerFactory, createLogger, createOracleLogger } from './logger/LoggerFactory';
 export type { Logger, PrefixedLogger } from './logger/LoggerFactory';
-
-// 服务网格
-export {
-  ServiceRegistry,
-  serviceRegistry,
-  registerService,
-  unregisterService,
-  discoverServices,
-  getServiceInstance,
-  serviceHeartbeat,
-  getServiceStats,
-} from './mesh/ServiceRegistry';
-export type {
-  ServiceInstance,
-  ServiceMetadata,
-  ServiceQuery,
-  HealthStatus,
-  LoadBalanceStrategy,
-  LoadBalancerConfig,
-} from './mesh/ServiceRegistry';

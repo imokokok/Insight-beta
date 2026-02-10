@@ -19,7 +19,6 @@ export type {
 
 // 类导出
 export { BaseOracleClient } from './BaseOracleClient';
-export { OracleClientFactory, oracleClientFactory } from './OracleClientFactory';
 
 // 错误类导出
 export { OracleClientError, PriceFetchError, HealthCheckError } from './types';

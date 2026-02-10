@@ -23,13 +23,7 @@ export {
 } from './format';
 
 // API 工具
-export {
-  ApiClientError,
-  getErrorCode,
-  getErrorDetails,
-  fetchApiData,
-  getErrorMessage,
-} from './api';
+export { ApiClientError, getErrorCode, fetchApiData, getErrorMessage } from './api';
 
 // 区块链工具
 export { isZeroBytes32, getExplorerUrl, parseRpcUrls } from './blockchain';
@@ -39,4 +33,3 @@ export { calculateMedian, calculateMean, calculateStdDev, calculateDeviation } f
 
 // 通用工具
 export { sleep } from './common';
-export { isServer, isClient } from './environment';

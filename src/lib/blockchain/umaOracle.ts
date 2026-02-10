@@ -21,10 +21,6 @@ const OPTIMISTIC_ORACLE_V3_ABI = parseAbi([
   'function getCurrentTime() external view returns (uint256)',
 ]);
 
-// Note: V2 ABI and DVM ABI reserved for future use
-// const OPTIMISTIC_ORACLE_V2_ABI = parseAbi([...]);
-// const DVM_ABI = parseAbi([...]);
-
 // ============================================================================
 // UMA 合约地址配置
 // ============================================================================
@@ -298,7 +294,9 @@ export class UMAClient {
         healthy: false,
         lastUpdate: new Date(0),
         stalenessSeconds: Infinity,
-        issues: [`Failed to check UMA assertion health: ${error instanceof Error ? error.message : String(error)}`],
+        issues: [
+          `Failed to check UMA assertion health: ${error instanceof Error ? error.message : String(error)}`,
+        ],
         activeAssertions: 0,
         activeDisputes: 0,
         totalBonded: 0n,
@@ -361,7 +359,10 @@ export class UMAClient {
    * 检测活跃争议
    * 注意：这需要从事件日志中获取数据，这里提供简化实现
    */
-  async detectActiveDisputes(fromBlock?: bigint, toBlock?: bigint): Promise<{
+  async detectActiveDisputes(
+    fromBlock?: bigint,
+    toBlock?: bigint,
+  ): Promise<{
     disputes: UMADispute[];
     totalDisputes: number;
     pendingDisputes: number;

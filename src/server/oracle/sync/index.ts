@@ -12,17 +12,6 @@
 import { logger } from '@/lib/logger';
 import type { OracleProtocol } from '@/lib/types/unifiedOracleTypes';
 
-import type { api3SyncManager as _api3SyncManager } from './API3Sync';
-import type { bandSyncManager as _bandSyncManager } from './BandSync';
-import type { BaseSyncManager } from './BaseSyncManager';
-import type { chainlinkSyncManager as _chainlinkSyncManager } from './ChainlinkSync';
-import type { diaSyncManager as _diaSyncManager } from './DIASync';
-import type { fluxSyncManager as _fluxSyncManager } from './FluxSync';
-import type { pythSyncManager as _pythSyncManager } from './PythSync';
-import type { redstoneSyncManager as _redstoneSyncManager } from './RedStoneSync';
-import type { switchboardSyncManager as _switchboardSyncManager } from './SwitchboardSync';
-import type { umaSyncManager as _umaSyncManager } from './UMASync';
-
 // ============================================================================
 // 导出基类和类型
 // ============================================================================
@@ -47,8 +36,6 @@ export {
   cleanupChainlinkData,
 } from './ChainlinkSync';
 
-export type ChainlinkSyncManager = typeof _chainlinkSyncManager;
-
 export {
   pythSyncManager,
   startPythSync,
@@ -56,8 +43,6 @@ export {
   stopAllPythSync,
   cleanupPythData,
 } from './PythSync';
-
-export type PythSyncManager = typeof _pythSyncManager;
 
 export {
   bandSyncManager,
@@ -67,8 +52,6 @@ export {
   cleanupBandData,
 } from './BandSync';
 
-export type BandSyncManager = typeof _bandSyncManager;
-
 export {
   diaSyncManager,
   startDIASync,
@@ -76,8 +59,6 @@ export {
   stopAllDIASync,
   cleanupDIAData,
 } from './DIASync';
-
-export type DIASyncManager = typeof _diaSyncManager;
 
 export {
   api3SyncManager,
@@ -87,8 +68,6 @@ export {
   cleanupAPI3Data,
 } from './API3Sync';
 
-export type API3SyncManager = typeof _api3SyncManager;
-
 export {
   redstoneSyncManager,
   startRedStoneSync,
@@ -96,8 +75,6 @@ export {
   stopAllRedStoneSync,
   cleanupRedStoneData,
 } from './RedStoneSync';
-
-export type RedStoneSyncManager = typeof _redstoneSyncManager;
 
 // Flux Sync
 export {
@@ -108,8 +85,6 @@ export {
   cleanupFluxData,
 } from './FluxSync';
 
-export type FluxSyncManager = typeof _fluxSyncManager;
-
 // Switchboard Sync
 export {
   switchboardSyncManager,
@@ -118,8 +93,6 @@ export {
   stopAllSwitchboardSync,
   cleanupSwitchboardData,
 } from './SwitchboardSync';
-
-export type SwitchboardSyncManager = typeof _switchboardSyncManager;
 
 // UMA Sync
 export {
@@ -130,8 +103,6 @@ export {
   cleanupUMAData,
   syncUMAEvents,
 } from './UMASync';
-
-export type UMASyncManager = typeof _umaSyncManager;
 
 // ============================================================================
 // Sync Manager 工厂

@@ -4,7 +4,7 @@
  * 告警管理类型定义
  */
 
-import type { AnomalySeverity } from '@/server/security/anomalyDetectionService';
+import type { AnomalySeverity } from '@/server/security/anomaly';
 
 export type AlertStatus = 'active' | 'acknowledged' | 'resolved' | 'suppressed' | 'escalated';
 export type AlertChannel = 'email' | 'sms' | 'webhook' | 'slack' | 'telegram' | 'push';

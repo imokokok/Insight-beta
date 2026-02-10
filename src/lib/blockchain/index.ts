@@ -8,7 +8,7 @@
 // 核心模块 (被 FluxOracleClient 使用)
 // ============================================================================
 
-export { BaseOracleClient, OracleClientFactory, oracleClientFactory } from './core';
+export { BaseOracleClient } from './core';
 
 export { OracleClientError, PriceFetchError, HealthCheckError } from './core/types';
 
@@ -47,4 +47,4 @@ export { createAPI3Client, getAvailableAPI3Dapis } from './api3Oracle';
 export { createRedStoneClient, getAvailableRedStoneSymbols } from './redstoneOracle';
 
 // Flux
-export { createFluxClient, getSupportedFluxSymbols } from './fluxOracle';
+export { createFluxClient } from './fluxOracle';

@@ -327,11 +327,3 @@ export function WalletProvider({ children }: WalletProviderProps) {
 
   return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>;
 }
-
-export function useWalletState() {
-  const context = useContext(WalletContext);
-  if (!context) {
-    throw new Error('useWalletState must be used within a WalletProvider');
-  }
-  return context;
-}

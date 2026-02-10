@@ -293,6 +293,4 @@ const ProgressBadge = React.memo(function ProgressBadge({
 export { Badge, StatusBadge, CountBadge, ProgressBadge, badgeVariants };
 export type { BaseBadgeProps as BadgeProps, StatusBadgeProps, CountBadgeProps, ProgressBadgeProps };
 
-// 向后兼容导出
-export { Badge as BadgeEnhanced };
 export { StatusBadge as default };

@@ -67,27 +67,6 @@ export function getErrorCode(error: unknown): string {
 }
 
 /**
- * 从错误对象中提取错误详情
- *
- * @param error - 错误对象
- * @returns 错误详情，如果不存在返回 undefined
- *
- * @example
- * ```typescript
- * try {
- *   await fetchData();
- * } catch (e) {
- *   const details = getErrorDetails(e);
- *   console.log(details);
- * }
- * ```
- */
-export function getErrorDetails(error: unknown): unknown | undefined {
-  if (error instanceof ApiClientError) return error.details;
-  return undefined;
-}
-
-/**
  * 获取服务器基础 URL
  *
  * 优先级：window.location > INSIGHT_BASE_URL 环境变量 > 默认值

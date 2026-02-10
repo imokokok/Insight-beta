@@ -9,6 +9,7 @@
  */
 
 import { OracleClientError, PriceFetchError, HealthCheckError } from '@/lib/blockchain/core/types';
+import { sleep } from '@/lib/utils/common';
 import type { Logger } from '@/lib/shared/logger/LoggerFactory';
 import type { OracleProtocol, SupportedChain } from '@/lib/types/unifiedOracleTypes';
 
@@ -148,13 +149,6 @@ export class ErrorHandler {
 
     throw lastError;
   }
-}
-
-/**
- * 睡眠函数
- */
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**

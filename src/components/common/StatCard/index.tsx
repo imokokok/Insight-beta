@@ -505,8 +505,3 @@ export const StatCardGroup = memo(function StatCardGroup({
 
   return <div className={cn('grid gap-4', gridCols[columns], className)}>{children}</div>;
 });
-
-// 向后兼容的导出
-export { StatCard as EnhancedStatCard };
-export { StatCard as StatCardEnhanced };
-export { StatCardSkeleton as EnhancedStatCardSkeleton };

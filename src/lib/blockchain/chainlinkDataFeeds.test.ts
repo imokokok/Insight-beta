@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { POPULAR_FEEDS, CHAINLINK_FEED_REGISTRY } from './chainlinkDataFeeds';
+import { POPULAR_FEEDS } from './chainlinkDataFeeds';
 
 describe('Chainlink Data Feeds Configuration', () => {
   describe('POPULAR_FEEDS', () => {
@@ -81,24 +81,6 @@ describe('Chainlink Data Feeds Configuration', () => {
         expect(uniqueAddresses.size, `Chain ${chain} should have unique addresses`).toBe(
           addresses.length,
         );
-      });
-    });
-  });
-
-  describe('CHAINLINK_FEED_REGISTRY', () => {
-    it('should have Ethereum mainnet feed registry', () => {
-      expect(CHAINLINK_FEED_REGISTRY.ethereum).toBeDefined();
-      expect(CHAINLINK_FEED_REGISTRY.ethereum).toMatch(/^0x[a-f0-9]{40}$/i);
-    });
-
-    it('should have feed registry for supported chains', () => {
-      // Only check chains that have feed registry defined
-      const chainsWithRegistry = ['ethereum'];
-
-      chainsWithRegistry.forEach((chain) => {
-        expect(
-          CHAINLINK_FEED_REGISTRY[chain as keyof typeof CHAINLINK_FEED_REGISTRY],
-        ).toBeDefined();
       });
     });
   });

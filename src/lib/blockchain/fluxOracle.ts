@@ -33,7 +33,10 @@ const FLUX_AGGREGATOR_ABI = parseAbi([
 // Flux 合约地址配置
 // ============================================================================
 
-export const FLUX_AGGREGATOR_ADDRESSES: Record<SupportedChain, Record<string, Address> | undefined> = {
+export const FLUX_AGGREGATOR_ADDRESSES: Record<
+  SupportedChain,
+  Record<string, Address> | undefined
+> = {
   ethereum: {
     'ETH/USD': '0x0d3d5A9B6e5C4b3E5d3e5C4b3E5d3e5C4b3E5d3',
     'BTC/USD': '0x0d3d5A9B6e5C4b3E5d3e5C4b3E5d3e5C4b3E5d4',
@@ -326,7 +329,10 @@ export class FluxClient extends EvmOracleClient {
   /**
    * 获取指定轮次的数据
    */
-  async getRoundData(symbol: string, roundId: bigint): Promise<{
+  async getRoundData(
+    symbol: string,
+    roundId: bigint,
+  ): Promise<{
     roundId: bigint;
     answer: bigint;
     startedAt: number;
@@ -466,11 +472,4 @@ export function getFluxAggregatorAddress(
   symbol: string,
 ): Address | undefined {
   return FLUX_AGGREGATOR_ADDRESSES[chain]?.[symbol];
-}
-
-/**
- * 获取支持的 Flux 交易对符号
- */
-export function getSupportedFluxSymbols(chain: SupportedChain): string[] {
-  return getAvailableFluxFeeds(chain);
 }

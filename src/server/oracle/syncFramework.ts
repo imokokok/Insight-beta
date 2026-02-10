@@ -10,7 +10,6 @@ import crypto from 'crypto';
 import { logger } from '@/lib/logger';
 import type { SupportedChain } from '@/lib/types/oracle/chain';
 import type { OracleProtocol } from '@/lib/types/oracle/protocol';
-import { sleep } from '@/lib/utils';
 import { query } from '@/server/db';
 import {
   getUnifiedInstance,
@@ -374,76 +373,3 @@ export async function writePriceFeeds(records: PriceFeedRecord[]): Promise<void>
 
 // Register default price writer
 syncManager.registerPriceWriter(writePriceFeeds);
-
-// ============================================================================
-// Helper Functions
-// ============================================================================
-
-export function createPriceFeedRecord(
-  context: SyncContext,
-  symbol: string,
-  baseAsset: string,
-  quoteAsset: string,
-  price: number,
-  blockNumber: number | null,
-  confidence: number,
-  metadata?: Record<string, unknown>,
-): PriceFeedRecord {
-  return {
-    protocol: context.protocol,
-    chain: context.chain,
-    instanceId: context.instanceId,
-    symbol,
-    baseAsset,
-    quoteAsset,
-    price,
-    timestamp: new Date(),
-    blockNumber,
-    confidence,
-    source: context.protocol,
-    metadata,
-  };
-}
-
-export function withTimeout<T>(
-  promise: Promise<T>,
-  timeoutMs: number,
-  errorMessage: string,
-): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<T>((_, reject) => setTimeout(() => reject(new Error(errorMessage)), timeoutMs)),
-  ]);
-}
-
-// ============================================================================
-// Retry Utility
-// ============================================================================
-
-export async function withRetry<T>(
-  fn: () => Promise<T>,
-  options: {
-    maxRetries?: number;
-    retryDelayMs?: number;
-    onRetry?: (attempt: number, error: Error) => void;
-  } = {},
-): Promise<T> {
-  const { maxRetries = 3, retryDelayMs = 1000, onRetry } = options;
-
-  let lastError: Error | undefined;
-
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      return await fn();
-    } catch (error) {
-      lastError = error instanceof Error ? error : new Error(String(error));
-
-      if (attempt < maxRetries) {
-        onRetry?.(attempt, lastError);
-        await sleep(retryDelayMs * attempt); // Exponential backoff
-      }
-    }
-  }
-
-  throw lastError;
-}

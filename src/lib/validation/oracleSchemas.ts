@@ -104,28 +104,3 @@ export const unifiedOraclePostSchema = z.object({
 });
 
 export type UnifiedOraclePostInput = z.infer<typeof unifiedOraclePostSchema>;
-
-// ============================================================================
-// 辅助函数
-// ============================================================================
-
-/**
- * 验证并转换查询参数
- */
-export function validateQueryParams<T>(
-  schema: z.ZodSchema<T>,
-  params: unknown,
-): { success: true; data: T } | { success: false; error: z.ZodError } {
-  const result = schema.safeParse(params);
-  if (result.success) {
-    return { success: true, data: result.data };
-  }
-  return { success: false, error: result.error };
-}
-
-/**
- * 格式化 Zod 错误为可读字符串
- */
-export function formatZodError(error: z.ZodError): string {
-  return error.errors.map((err) => `${err.path.join('.')}: ${err.message}`).join('; ');
-}

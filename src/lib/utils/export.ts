@@ -86,12 +86,6 @@ export function exportRealtimeToCSV(data: RealtimeComparisonItem[]) {
   downloadFile(csv, filename, 'text/csv;charset=utf-8;');
 }
 
-export function exportRealtimeToJSON(data: RealtimeComparisonItem[]) {
-  const json = JSON.stringify(data, null, 2);
-  const filename = `oracle-comparison-${new Date().toISOString().split('T')[0]}.json`;
-  downloadFile(json, filename, 'application/json');
-}
-
 // ============================================================================
 // 热力图数据导出
 // ============================================================================

@@ -25,7 +25,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 
-import { StatCardEnhanced } from '@/components/common';
+import { StatCard } from '@/components/common';
 import { ButtonEnhanced, StatusBadge, CardEnhanced, TooltipEnhanced } from '@/components/ui';
 import { ErrorBanner } from '@/components/ui/error-banner';
 import { RefreshIndicator } from '@/components/ui/refresh-indicator';
@@ -405,7 +405,7 @@ export default function UnifiedDashboardPage() {
                 <span className="text-muted-foreground text-[10px]">实时健康与风险指标</span>
               </div>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                <StatCardEnhanced
+                <StatCard
                   title="Active Alerts"
                   value={stats?.activeAlerts ?? 0}
                   icon={<AlertTriangle className="h-3.5 w-3.5" />}
@@ -418,7 +418,7 @@ export default function UnifiedDashboardPage() {
                   }
                   lastUpdated={lastUpdated}
                 />
-                <StatCardEnhanced
+                <StatCard
                   title="Avg Latency"
                   value={`${stats?.avgLatency ?? 0}ms`}
                   icon={<Activity className="h-3.5 w-3.5" />}
@@ -426,7 +426,7 @@ export default function UnifiedDashboardPage() {
                   color="purple"
                   lastUpdated={lastUpdated}
                 />
-                <StatCardEnhanced
+                <StatCard
                   title="Network Uptime"
                   value={stats?.networkUptime ? `${stats.networkUptime}%` : '99.9%'}
                   icon={<Shield className="h-3.5 w-3.5" />}
@@ -434,7 +434,7 @@ export default function UnifiedDashboardPage() {
                   color="green"
                   lastUpdated={lastUpdated}
                 />
-                <StatCardEnhanced
+                <StatCard
                   title="Stale Feeds"
                   value={stats?.staleFeeds ?? 0}
                   icon={<Clock className="h-3.5 w-3.5" />}
@@ -455,7 +455,7 @@ export default function UnifiedDashboardPage() {
                 <span className="text-muted-foreground text-[10px]">协议规模与数据量</span>
               </div>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                <StatCardEnhanced
+                <StatCard
                   title="Protocols"
                   value={stats?.totalProtocols ?? 0}
                   icon={<Globe className="h-3.5 w-3.5" />}
@@ -463,7 +463,7 @@ export default function UnifiedDashboardPage() {
                   color="blue"
                   lastUpdated={lastUpdated}
                 />
-                <StatCardEnhanced
+                <StatCard
                   title="Price Feeds"
                   value={stats?.totalPriceFeeds ?? 0}
                   icon={<BarChart3 className="h-3.5 w-3.5" />}
@@ -471,7 +471,7 @@ export default function UnifiedDashboardPage() {
                   color="cyan"
                   lastUpdated={lastUpdated}
                 />
-                <StatCardEnhanced
+                <StatCard
                   title="TVS"
                   value={stats?.totalValueSecured ?? '$0'}
                   icon={<Shield className="h-3.5 w-3.5" />}
@@ -479,7 +479,7 @@ export default function UnifiedDashboardPage() {
                   color="purple"
                   lastUpdated={lastUpdated}
                 />
-                <StatCardEnhanced
+                <StatCard
                   title="Updates (24h)"
                   value={stats?.priceUpdates24h?.toLocaleString() ?? '0'}
                   icon={<Layers className="h-3.5 w-3.5" />}

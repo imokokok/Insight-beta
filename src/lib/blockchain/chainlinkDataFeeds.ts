@@ -32,37 +32,6 @@ const AGGREGATOR_ABI = parseAbi([
 // Chainlink 配置
 // ============================================================================
 
-/**
- * Chainlink Feed Registry 地址（已弃用，保留以兼容旧代码）
- * @deprecated Chainlink 每个 feed 有自己的地址
- */
-export const CHAINLINK_FEED_REGISTRY: Record<SupportedChain, Address | undefined> = {
-  ethereum: '0x47Fb2585D2C56Fe188D0E6ec6a473f24e99F1A76',
-  polygon: undefined,
-  arbitrum: undefined,
-  optimism: undefined,
-  base: undefined,
-  avalanche: undefined,
-  bsc: undefined,
-  fantom: undefined,
-  celo: undefined,
-  gnosis: undefined,
-  linea: undefined,
-  scroll: undefined,
-  mantle: undefined,
-  mode: undefined,
-  blast: undefined,
-  solana: undefined,
-  near: undefined,
-  aptos: undefined,
-  sui: undefined,
-  polygonAmoy: undefined,
-  sepolia: undefined,
-  goerli: undefined,
-  mumbai: undefined,
-  local: undefined,
-};
-
 export const POPULAR_FEEDS: Record<SupportedChain, Record<string, Address>> = {
   ethereum: {
     'ETH/USD': '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',

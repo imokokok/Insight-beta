@@ -167,37 +167,6 @@ export async function processBatch<T, R>(
   return results;
 }
 
-/**
- * 带重试的异步操作
- * @param operation - 异步操作
- * @param retries - 重试次数
- * @param delayMs - 延迟时间 (毫秒)
- * @returns 操作结果
- */
-export async function withRetry<T>(
-  operation: () => Promise<T>,
-  retries: number = 3,
-  delayMs: number = 1000,
-): Promise<T> {
-  let lastError: Error | undefined;
-
-  for (let i = 0; i < retries; i++) {
-    try {
-      return await operation();
-    } catch (error) {
-      lastError = error instanceof Error ? error : new Error(String(error));
-
-      if (i < retries - 1) {
-        const delay = delayMs * Math.pow(2, i); // 指数退避
-        logger.warn(`Retry ${i + 1}/${retries} after ${delay}ms`, { error: lastError.message });
-        await new Promise((resolve) => setTimeout(resolve, delay));
-      }
-    }
-  }
-
-  throw lastError;
-}
-
 // ============================================================================
 // 导出常量
 // ============================================================================

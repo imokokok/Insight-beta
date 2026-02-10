@@ -41,7 +41,7 @@ import {
   Cell,
 } from 'recharts';
 
-import { StatCardEnhanced } from '@/components/common';
+import { StatCard } from '@/components/common';
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { ToastContainer, useToast } from '@/components/common/DashboardToast';
 import { EmptyDeviationState, EmptySearchState } from '@/components/common/EmptyState';
@@ -458,25 +458,25 @@ function SummaryStats({ report }: { report: DeviationReport | null }) {
 
   return (
     <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-      <StatCardEnhanced
+      <StatCard
         title="Total Symbols"
         value={summary.totalSymbols}
         icon={<BarChart3 className="h-5 w-5" />}
         color="blue"
       />
-      <StatCardEnhanced
+      <StatCard
         title="High Deviation"
         value={summary.symbolsWithHighDeviation}
         icon={<AlertTriangle className="h-5 w-5" />}
         color="red"
       />
-      <StatCardEnhanced
+      <StatCard
         title="Avg Deviation"
         value={`${(summary.avgDeviationAcrossAll * 100).toFixed(2)}%`}
         icon={<Activity className="h-5 w-5" />}
         color="orange"
       />
-      <StatCardEnhanced
+      <StatCard
         title="Most Volatile"
         value={summary.mostVolatileSymbol || 'N/A'}
         icon={<Zap className="h-5 w-5" />}

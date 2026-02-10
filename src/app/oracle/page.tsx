@@ -19,7 +19,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 
-import { StatCardEnhanced } from '@/components/common';
+import { StatCard } from '@/components/common';
 import { ButtonEnhanced, CardEnhanced, StatusBadge } from '@/components/ui';
 import { Badge } from '@/components/ui/badge';
 import { useI18n } from '@/i18n';
@@ -213,28 +213,28 @@ export default function OraclePlatformPage() {
       <section className="border-y border-gray-100 px-4 py-12 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCardEnhanced
+            <StatCard
               title={t('home.stats.supportedProtocols')}
               value={stats?.totalProtocols || 10}
               icon={<Layers className="h-5 w-5" />}
               loading={loading}
               color="blue"
             />
-            <StatCardEnhanced
+            <StatCard
               title={t('home.stats.priceFeeds')}
               value={stats?.totalPriceFeeds || 150}
               icon={<TrendingUp className="h-5 w-5" />}
               loading={loading}
               color="green"
             />
-            <StatCardEnhanced
+            <StatCard
               title={t('home.stats.supportedChains')}
               value={stats?.supportedChains || 15}
               icon={<Globe className="h-5 w-5" />}
               loading={loading}
               color="purple"
             />
-            <StatCardEnhanced
+            <StatCard
               title={t('home.stats.avgLatency')}
               value={`${stats?.avgUpdateLatency || 500}ms`}
               icon={<Zap className="h-5 w-5" />}

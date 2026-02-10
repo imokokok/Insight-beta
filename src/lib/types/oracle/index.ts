@@ -178,16 +178,6 @@ export type { OracleStatus, OracleStatusSnapshot } from './legacy';
 // ============================================================================
 
 export type {
-  PriceFeedCore,
-  PriceFeedCoreArray,
-  AssertionCore,
-  DisputeCore,
-  AlertCore,
-  AlertRuleCore,
-  SyncStateCore,
-  ConfigTemplateCore,
-  OracleStatsCore,
-  CrossProtocolComparisonCore,
   PaginationParams,
   PaginationMeta,
   TimeRangeParams,

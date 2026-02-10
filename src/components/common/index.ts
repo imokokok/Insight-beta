@@ -16,8 +16,8 @@ export { SkeletonList } from './SkeletonList';
 
 // ==================== 性能优化组件 ====================
 export { PreloadLink } from './PreloadLink';
-export { ResourceHints, PreloadImage, PreloadCriticalCSS } from './ResourceHints';
-export { ResourcePreloader, prefetchRoute, prefetchComponent } from './ResourcePreloader';
+export { ResourceHints } from './ResourceHints';
+export { ResourcePreloader } from './ResourcePreloader';
 
 // ==================== 动画组件 ====================
 export {
@@ -37,10 +37,6 @@ export {
   type StatCardProps,
   type StatCardColor,
   type StatCardVariant,
-  // 向后兼容的导出
-  StatCard as EnhancedStatCard,
-  StatCard as StatCardEnhanced,
-  StatCardSkeleton as EnhancedStatCardSkeleton,
 } from './StatCard';
 
 export { ChartCard, ChartCardSkeleton } from './ChartCard';
@@ -77,14 +73,6 @@ export {
   EmptyEventsState,
   EmptyFirstItemState,
 } from './EmptyStateEnhanced';
-
-// ==================== 上下文帮助组件 ====================
-export {
-  FloatingHelpButton,
-  PageTipBanner,
-  FeatureHighlight,
-  QuickActionTip,
-} from './ContextualHelp';
 
 // ==================== 刷新/数据新鲜度组件 ====================
 export { RefreshIndicator, LastUpdated } from './RefreshIndicator';

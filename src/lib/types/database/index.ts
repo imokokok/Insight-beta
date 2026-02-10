@@ -1,12 +1,10 @@
 /**
  * Database Types - 数据库模型类型扩展
  *
- * 扩展 Prisma 生成的类型，添加业务相关字段
+ * 使用 Supabase 类型，替代 Prisma
  */
 
-import type { Prisma } from '@prisma/client';
-
-// 重新导出 Prisma 类型 - 只导出实际存在的模型
+// 重新导出 Supabase 类型
 export type {
   PriceHistoryRaw,
   PriceHistoryMin1,
@@ -18,55 +16,4 @@ export type {
   SolanaOracleInstance,
   SolanaSyncStatus,
   SolanaAlert,
-  Prisma,
-} from '@prisma/client';
-
-// 为了保持向后兼容，定义类型别名
-export type OracleConfigDB = never;
-export type AssertionDB = never;
-export type DisputeDB = never;
-export type AlertDB = never;
-export type AuditLogDB = never;
-
-// ============================================================================
-// 数据库查询选项
-// ============================================================================
-
-export interface QueryOptions {
-  include?: Record<string, boolean>;
-  select?: Record<string, boolean>;
-  where?: Record<string, unknown>;
-  orderBy?: Record<string, 'asc' | 'desc'>;
-  skip?: number;
-  take?: number;
-}
-
-export interface TransactionOptions {
-  isolationLevel?: Prisma.TransactionIsolationLevel;
-  maxWait?: number;
-  timeout?: number;
-}
-
-// ============================================================================
-// 批量操作结果
-// ============================================================================
-
-export interface BatchOperationResult {
-  count: number;
-  success: boolean;
-  errors?: Array<{ id: string; error: string }>;
-}
-
-// ============================================================================
-// 数据库连接状态
-// ============================================================================
-
-export interface DatabaseHealth {
-  connected: boolean;
-  latency: number;
-  activeConnections: number;
-  idleConnections: number;
-  waitingConnections: number;
-  lastError?: string;
-  lastCheck: Date;
-}
+} from '@/types/supabase';

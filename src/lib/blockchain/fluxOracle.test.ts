@@ -14,7 +14,6 @@ import {
   getAvailableFluxFeeds,
   isChainSupportedByFlux,
   getFluxAggregatorAddress,
-  getSupportedFluxSymbols,
 } from './fluxOracle';
 
 // Mock EvmOracleClient and dependencies
@@ -264,14 +263,6 @@ describe('Utility Functions', () => {
 
     it('should return empty array for unsupported chain', () => {
       expect(getAvailableFluxFeeds('solana')).toEqual([]);
-    });
-  });
-
-  describe('getSupportedFluxSymbols', () => {
-    it('should return same as getAvailableFluxFeeds', () => {
-      const symbols = getSupportedFluxSymbols('ethereum');
-      const feeds = getAvailableFluxFeeds('ethereum');
-      expect(symbols).toEqual(feeds);
     });
   });
 

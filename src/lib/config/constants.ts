@@ -114,15 +114,6 @@ export const PROTOCOL_COLORS = Object.freeze({
   default: '#888888',
 } as const);
 
-export const PROTOCOL_NAMES = Object.freeze({
-  chainlink: 'Chainlink',
-  pyth: 'Pyth Network',
-  band: 'Band Protocol',
-  api3: 'API3',
-  redstone: 'RedStone',
-  uma: 'UMA',
-} as const);
-
 // ============================================================================
 // 状态配置
 // ============================================================================

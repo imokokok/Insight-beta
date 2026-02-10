@@ -26,11 +26,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 
-import {
-  EnhancedStatCard,
-  EnhancedStatCardSkeleton,
-  StatCardGroup as EnhancedStatCardGroup,
-} from '@/components/common';
+import { StatCard, StatCardSkeleton, StatCardGroup } from '@/components/common';
 import {
   AnimatedContainer,
   StaggerContainer,
@@ -671,19 +667,19 @@ export default function SecurityDashboardPage() {
   const renderStats = () => {
     if (loading && !metrics) {
       return (
-        <EnhancedStatCardGroup>
-          <EnhancedStatCardSkeleton />
-          <EnhancedStatCardSkeleton />
-          <EnhancedStatCardSkeleton />
-          <EnhancedStatCardSkeleton />
-        </EnhancedStatCardGroup>
+        <StatCardGroup>
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+        </StatCardGroup>
       );
     }
 
     return (
-      <EnhancedStatCardGroup>
+      <StatCardGroup>
         <AnimatedContainer delay={0}>
-          <EnhancedStatCard
+          <StatCard
             title="Total Detections"
             value={metrics?.totalDetections || 0}
             icon={<ShieldAlert className="h-5 w-5 text-red-600" />}
@@ -694,7 +690,7 @@ export default function SecurityDashboardPage() {
           />
         </AnimatedContainer>
         <AnimatedContainer delay={100}>
-          <EnhancedStatCard
+          <StatCard
             title="Critical Alerts"
             value={metrics?.detectionsBySeverity?.critical || 0}
             icon={<AlertTriangle className="h-5 w-5 text-orange-600" />}
@@ -705,7 +701,7 @@ export default function SecurityDashboardPage() {
           />
         </AnimatedContainer>
         <AnimatedContainer delay={200}>
-          <EnhancedStatCard
+          <StatCard
             title="Avg Confidence"
             value={`${((metrics?.averageConfidence || 0) * 100).toFixed(1)}%`}
             icon={<Activity className="h-5 w-5 text-blue-600" />}
@@ -716,7 +712,7 @@ export default function SecurityDashboardPage() {
           />
         </AnimatedContainer>
         <AnimatedContainer delay={300}>
-          <EnhancedStatCard
+          <StatCard
             title="False Positives"
             value={metrics?.falsePositives || 0}
             icon={<ShieldCheck className="h-5 w-5 text-green-600" />}
@@ -726,7 +722,7 @@ export default function SecurityDashboardPage() {
             sparklineData={[5, 4, 6, 3, 4, 2, 3]}
           />
         </AnimatedContainer>
-      </EnhancedStatCardGroup>
+      </StatCardGroup>
     );
   };
 

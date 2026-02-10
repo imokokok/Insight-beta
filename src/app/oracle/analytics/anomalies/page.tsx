@@ -36,11 +36,7 @@ import {
   Area,
 } from 'recharts';
 
-import {
-  EnhancedStatCard,
-  EnhancedStatCardSkeleton,
-  StatCardGroup as EnhancedStatCardGroup,
-} from '@/components/common';
+import { StatCard, StatCardSkeleton, StatCardGroup } from '@/components/common';
 import {
   AnimatedContainer,
   StaggerContainer,
@@ -654,19 +650,19 @@ export default function AnomalyDetectionPage() {
   const renderStats = () => {
     if (loading && !stats) {
       return (
-        <EnhancedStatCardGroup>
-          <EnhancedStatCardSkeleton />
-          <EnhancedStatCardSkeleton />
-          <EnhancedStatCardSkeleton />
-          <EnhancedStatCardSkeleton />
-        </EnhancedStatCardGroup>
+        <StatCardGroup>
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+        </StatCardGroup>
       );
     }
 
     return (
-      <EnhancedStatCardGroup>
+      <StatCardGroup>
         <AnimatedContainer delay={0}>
-          <EnhancedStatCard
+          <StatCard
             title="Total Anomalies"
             value={stats?.total || 0}
             icon={<Brain className="h-5 w-5 text-purple-600" />}
@@ -677,7 +673,7 @@ export default function AnomalyDetectionPage() {
           />
         </AnimatedContainer>
         <AnimatedContainer delay={100}>
-          <EnhancedStatCard
+          <StatCard
             title="Critical Alerts"
             value={stats?.bySeverity?.critical || 0}
             icon={<AlertTriangle className="h-5 w-5 text-red-600" />}
@@ -688,7 +684,7 @@ export default function AnomalyDetectionPage() {
           />
         </AnimatedContainer>
         <AnimatedContainer delay={200}>
-          <EnhancedStatCard
+          <StatCard
             title="Avg Confidence"
             value={`${((stats?.averageConfidence || 0) * 100).toFixed(1)}%`}
             icon={<Activity className="h-5 w-5 text-blue-600" />}
@@ -699,7 +695,7 @@ export default function AnomalyDetectionPage() {
           />
         </AnimatedContainer>
         <AnimatedContainer delay={300}>
-          <EnhancedStatCard
+          <StatCard
             title="Detection Types"
             value={Object.keys(stats?.byType || {}).length}
             icon={<BarChart3 className="h-5 w-5 text-green-600" />}
@@ -709,7 +705,7 @@ export default function AnomalyDetectionPage() {
             sparklineData={[4, 4, 4, 4, 4, 4, 4]}
           />
         </AnimatedContainer>
-      </EnhancedStatCardGroup>
+      </StatCardGroup>
     );
   };
 
