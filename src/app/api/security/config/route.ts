@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
 import { supabaseAdmin, SUPABASE_ERROR_CODES } from '@/lib/supabase/server';
+import { requireAdminWithToken } from '@/server/apiResponse';
 
 interface ConfigRow {
   config: Record<string, unknown>;
@@ -34,8 +35,11 @@ const DEFAULT_CONFIG = {
   notificationCooldownMs: 300000,
 };
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const auth = await requireAdminWithToken(request, { strict: false });
+    if (auth) return auth;
+
     const supabase = supabaseAdmin;
 
     const { data, error } = await supabase
@@ -60,6 +64,9 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await requireAdminWithToken(request);
+    if (auth) return auth;
+
     const body = await request.json();
     const { config } = body;
 

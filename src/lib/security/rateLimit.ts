@@ -167,10 +167,9 @@ export async function rateLimit(
       key,
     });
 
-    // 失败时允许请求通过（fail-open 策略）
     return {
-      allowed: true,
-      remaining: 1,
+      allowed: false,
+      remaining: 0,
       resetTime: now + config.windowMs,
       totalLimit: config.maxRequests,
     };

@@ -38,8 +38,8 @@ export async function requireAuth(request: NextRequest): Promise<AuthResult> {
   }
 
   // 生产环境禁止从 URL 获取令牌
-  if (process.env.NODE_ENV !== 'production') {
-    // Check for admin token in query params (for development only)
+  // 使用编译时检查确保代码不会包含在生产构建中
+  if (process.env.NODE_ENV === 'development') {
     const url = new URL(request.url);
     const token = url.searchParams.get('token');
 

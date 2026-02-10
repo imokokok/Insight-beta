@@ -1,10 +1,15 @@
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
 import { supabaseAdmin } from '@/lib/supabase/server';
+import { requireAdminWithToken } from '@/server/apiResponse';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const auth = await requireAdminWithToken(request, { strict: false });
+    if (auth) return auth;
+
     const supabase = supabaseAdmin;
 
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();

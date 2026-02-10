@@ -155,9 +155,16 @@ export class AlertRuleEngine {
    * 添加规则
    */
   addRule(rule: Omit<AlertRule, 'id' | 'createdAt' | 'updatedAt'>): AlertRule {
+    const timestamp = Date.now().toString(36);
+    const randomPart =
+      typeof crypto !== 'undefined' && crypto.getRandomValues
+        ? Array.from(crypto.getRandomValues(new Uint8Array(5)))
+            .map((b) => b.toString(36).padStart(2, '0'))
+            .join('')
+        : Math.random().toString(36).slice(2, 12);
     const newRule: AlertRule = {
       ...rule,
-      id: `rule-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id: `rule-${timestamp}-${randomPart}`,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
@@ -353,8 +360,15 @@ export class AlertRuleEngine {
       return null; // 不创建新告警，而是更新现有
     }
 
+    const timestamp = Date.now().toString(36);
+    const randomPart =
+      typeof crypto !== 'undefined' && crypto.getRandomValues
+        ? Array.from(crypto.getRandomValues(new Uint8Array(5)))
+            .map((b) => b.toString(36).padStart(2, '0'))
+            .join('')
+        : Math.random().toString(36).slice(2, 12);
     const alert: Alert = {
-      id: `alert-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id: `alert-${timestamp}-${randomPart}`,
       ruleId: rule.id,
       severity: rule.severity,
       title: this.generateAlertTitle(rule, comparison),

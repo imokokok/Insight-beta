@@ -354,9 +354,11 @@ export class UMAClient {
     totalDisputes: number;
     pendingDisputes: number;
   }> {
-    // 简化实现：返回基础数据
-    // 实际实现需要从事件日志中解析 DisputeAssertion 事件
-    logger.info('Detecting UMA disputes', { fromBlock, toBlock, chain: this.chain });
+    logger.warn('UMA dispute detection not fully implemented', {
+      fromBlock,
+      toBlock,
+      chain: this.chain,
+    });
 
     return {
       disputes: [],
@@ -373,8 +375,10 @@ export class UMAClient {
     resolution?: bigint;
     resolvedAt?: number;
   }> {
-    // 简化实现
-    logger.info('Checking UMA dispute status', { disputeId, chain: this.chain });
+    logger.warn('UMA dispute status check not fully implemented', {
+      disputeId,
+      chain: this.chain,
+    });
 
     return {
       status: 'unknown',

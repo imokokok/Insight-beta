@@ -7,6 +7,19 @@
 
 import { logger } from '@/lib/logger';
 
+function generateSecureRandomString(length: number): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+    const values = crypto.getRandomValues(new Uint8Array(length));
+    return Array.from(values, (v) => chars[v % chars.length]).join('');
+  }
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
 // ============================================================================
 // Types
 // ============================================================================
@@ -58,29 +71,26 @@ export class ApiAuthService {
   // ============================================================================
 
   private initializeDefaultKeys(): void {
-    // In production, these would be loaded from a secure database
-    const defaultKeys: ApiKey[] = [
+    for (const apiKey of [
       {
         id: 'key-1',
-        key: 'om_dev_key_' + Math.random().toString(36).substring(2, 15),
+        key: 'om_dev_' + generateSecureRandomString(22),
         name: 'Development Key',
         permissions: ['oracle:read', 'monitoring:read', 'export:read'],
         createdAt: new Date(),
         isActive: true,
-        rateLimitTier: 'relaxed',
+        rateLimitTier: 'relaxed' as const,
       },
       {
         id: 'key-2',
-        key: 'om_admin_key_' + Math.random().toString(36).substring(2, 15),
+        key: 'om_admin_' + generateSecureRandomString(22),
         name: 'Admin Key',
         permissions: ['*'],
         createdAt: new Date(),
         isActive: true,
-        rateLimitTier: 'standard',
+        rateLimitTier: 'standard' as const,
       },
-    ];
-
-    for (const apiKey of defaultKeys) {
+    ]) {
       this.apiKeys.set(apiKey.key, apiKey);
     }
   }
@@ -179,7 +189,7 @@ export class ApiAuthService {
   ): ApiKey {
     const key: ApiKey = {
       id: `key-${Date.now()}`,
-      key: `om_${Math.random().toString(36).substring(2, 15)}_${Math.random().toString(36).substring(2, 15)}`,
+      key: `om_${generateSecureRandomString(24)}_${generateSecureRandomString(16)}`,
       name,
       permissions,
       createdAt: new Date(),

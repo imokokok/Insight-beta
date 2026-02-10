@@ -1,11 +1,16 @@
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
 import { manipulationDetectionService } from '@/lib/services/manipulationDetectionService';
 import { supabaseAdmin } from '@/lib/supabase/server';
+import { requireAdminWithToken } from '@/server/apiResponse';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const auth = await requireAdminWithToken(request, { strict: false });
+    if (auth) return auth;
+
     const isRunning = manipulationDetectionService.isMonitoring();
     const activeMonitors: string[] = manipulationDetectionService.getActiveMonitors();
 

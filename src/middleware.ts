@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-function createRequestId() {
+function createRequestId(): string {
   const c = (globalThis as unknown as { crypto?: Crypto }).crypto;
   if (c?.randomUUID) return c.randomUUID();
   if (c?.getRandomValues) {
@@ -12,7 +12,18 @@ function createRequestId() {
     }
     return out;
   }
-  return `${Date.now().toString(16)}${Math.random().toString(16).slice(2)}`;
+  const bytes = new Uint8Array(8);
+  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+    crypto.getRandomValues(bytes);
+  } else {
+    for (let i = 0; i < 8; i++) {
+      bytes[i] = Math.floor(Math.random() * 256);
+    }
+  }
+  const hex = Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+  return `${Date.now().toString(16)}${hex}`;
 }
 
 function getResponseTime(startTime: number): string {

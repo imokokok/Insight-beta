@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { fetchApiData, getErrorCode } from '@/lib/utils';
 
@@ -27,7 +27,15 @@ export function useApiQuery<T>(options: UseApiQueryOptions<T>): UseApiQueryRetur
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const paramsString = JSON.stringify(params);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
   const reload = useCallback(async () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+
     setError(null);
     setLoading(true);
 
@@ -41,21 +49,32 @@ export function useApiQuery<T>(options: UseApiQueryOptions<T>): UseApiQueryRetur
 
       const finalUrl =
         typeof url === 'function' ? url(searchParams) : `${url}?${searchParams.toString()}`;
-      const response = await fetchApiData<unknown>(finalUrl);
+      const response = await fetchApiData<unknown>(finalUrl, {
+        signal: abortControllerRef.current.signal,
+      });
       const transformedData = transform ? transform(response) : (response as T);
       setData(transformedData);
     } catch (err: unknown) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        return;
+      }
       setError(getErrorCode(err));
       setData(null);
     } finally {
       setLoading(false);
     }
-  }, [url, params, transform]);
+  }, [url, paramsString, transform]);
 
   useEffect(() => {
     if (enabled) {
       void reload();
     }
+
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [reload, enabled]);
 
   return {

@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
 import { manipulationDetectionService } from '@/lib/services/manipulationDetectionService';
 import type { OracleProtocol, SupportedChain } from '@/lib/types';
+import { requireAdminWithToken } from '@/server/apiResponse';
 
 interface StopMonitorBody {
   protocol?: string;
@@ -14,6 +15,9 @@ interface StopMonitorBody {
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await requireAdminWithToken(request);
+    if (auth) return auth;
+
     const body: StopMonitorBody = await request.json().catch(() => ({}));
     const { protocol, symbol, chain, allFeeds } = body;
 

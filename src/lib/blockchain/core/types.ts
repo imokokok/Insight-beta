@@ -113,6 +113,8 @@ export interface PriceFetchOptions {
   forceRefresh?: boolean;
   /** 超时时间 */
   timeoutMs?: number;
+  /** 最大并发请求数 */
+  maxConcurrent?: number;
 }
 
 export interface BatchPriceResult {

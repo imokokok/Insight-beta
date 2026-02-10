@@ -23,20 +23,25 @@ interface PostgresChangePayload {
   };
 }
 
+interface StreamController {
+  enqueue(chunk: Uint8Array): void;
+  close(): void;
+  error(error: Error): void;
+  _cleanup?: () => void;
+}
+
 export async function GET() {
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({
-    async start(controller) {
+    async start(controller: StreamController) {
       const sendEvent = (data: unknown) => {
         const message = `data: ${JSON.stringify(data)}\n\n`;
         controller.enqueue(encoder.encode(message));
       };
 
-      // Send initial connection message
       sendEvent({ type: 'connected', timestamp: Date.now() });
 
-      // Set up Supabase realtime subscription
       const supabase = supabaseAdmin;
 
       const subscription = supabase
@@ -73,20 +78,22 @@ export async function GET() {
         )
         .subscribe();
 
-      // Keep connection alive with heartbeat
       const heartbeat = setInterval(() => {
         sendEvent({ type: 'heartbeat', timestamp: Date.now() });
       }, 30000);
 
-      // Clean up on close
       const cleanup = () => {
         clearInterval(heartbeat);
         subscription.unsubscribe();
         controller.close();
       };
 
-      // Handle client disconnect
-      return cleanup;
+      controller._cleanup = cleanup;
+    },
+    cancel(controller: StreamController) {
+      if (controller._cleanup) {
+        controller._cleanup();
+      }
     },
   });
 

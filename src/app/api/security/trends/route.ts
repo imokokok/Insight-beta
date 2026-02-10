@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
 import { supabaseAdmin } from '@/lib/supabase/server';
+import { requireAdminWithToken } from '@/server/apiResponse';
 
 interface TrendData {
   date: string;
@@ -21,6 +22,9 @@ interface DetectionTrendRow {
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await requireAdminWithToken(request, { strict: false });
+    if (auth) return auth;
+
     const { searchParams } = new URL(request.url);
     const range = searchParams.get('range') || '7d';
 

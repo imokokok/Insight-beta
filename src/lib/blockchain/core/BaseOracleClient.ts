@@ -179,6 +179,8 @@ export abstract class BaseOracleClient implements IOracleClient {
       symbols: symbols.slice(0, 5),
     });
 
+    const maxConcurrent = options.maxConcurrent ?? this.config.concurrencyLimit;
+
     const results = await this.withConcurrencyLimit(
       symbols,
       async (symbol) => {
@@ -193,7 +195,7 @@ export abstract class BaseOracleClient implements IOracleClient {
           };
         }
       },
-      options.timeoutMs ?? this.config.concurrencyLimit,
+      maxConcurrent,
     );
 
     const prices: UnifiedPriceFeed[] = [];

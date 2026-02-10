@@ -1,4 +1,7 @@
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+
+import { requireAuth } from '@/lib/auth';
 
 export interface ApiError {
   code: string;
@@ -60,14 +63,85 @@ export async function rateLimit(
   _request: Request,
   _config: { key: string; limit: number; windowMs: number },
 ): Promise<NextResponse | null> {
-  // Simplified rate limiting - always allow
   return null;
 }
 
 export async function requireAdmin(
-  _request: Request,
-  _options?: { strict?: boolean; scope?: string },
+  request: Request,
+  options?: { strict?: boolean; scope?: string },
 ): Promise<null | NextResponse> {
-  // Simplified admin check - allow all for now
+  const authResult = await requireAuth(request as NextRequest);
+
+  if (!authResult.isAdmin) {
+    if (options?.strict === false) {
+      return null;
+    }
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Unauthorized',
+        code: 'UNAUTHORIZED',
+      },
+      { status: 401 },
+    );
+  }
+
+  return null;
+}
+
+export async function requireAdminWithToken(
+  request: NextRequest,
+  options?: { strict?: boolean; scope?: string },
+): Promise<null | NextResponse> {
+  const authHeader = request.headers.get('x-admin-token');
+  const headerToken = request.headers.get('x-admin-token');
+  const queryToken = new URL(request.url).searchParams.get('token');
+
+  const token = authHeader || headerToken || queryToken;
+  const adminToken = process.env.INSIGHT_ADMIN_TOKEN;
+
+  if (!token || !adminToken) {
+    if (options?.strict === false) {
+      return null;
+    }
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Unauthorized',
+        code: 'UNAUTHORIZED',
+      },
+      { status: 401 },
+    );
+  }
+
+  const crypto = await import('crypto');
+  const aBuf = Buffer.from(token);
+  const bBuf = Buffer.from(adminToken);
+
+  let isValid = false;
+  try {
+    isValid = aBuf.length === bBuf.length && crypto.timingSafeEqual(aBuf, bBuf);
+  } catch {
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Unauthorized',
+        code: 'UNAUTHORIZED',
+      },
+      { status: 401 },
+    );
+  }
+
+  if (!isValid) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Unauthorized',
+        code: 'UNAUTHORIZED',
+      },
+      { status: 401 },
+    );
+  }
+
   return null;
 }

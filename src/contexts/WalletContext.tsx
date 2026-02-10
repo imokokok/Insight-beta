@@ -205,17 +205,22 @@ export function WalletProvider({ children }: WalletProviderProps) {
         method: 'eth_requestAccounts',
       })) as string[];
 
-      if (accounts && Array.isArray(accounts) && accounts.length > 0) {
-        setAddress(accounts[0] as Address);
-        const id = (await window.ethereum.request({
-          method: 'eth_chainId',
-        })) as string;
-        setChainId(parseInt(id, 16));
-        logger.info('Wallet connected successfully', {
-          address: accounts[0],
-          chainId: parseInt(id, 16),
-        });
+      if (!accounts || !Array.isArray(accounts) || accounts.length === 0) {
+        const error = new Error('User rejected connection request');
+        handleError(error, 'connect');
+        setIsConnecting(false);
+        return;
       }
+
+      setAddress(accounts[0] as Address);
+      const id = (await window.ethereum.request({
+        method: 'eth_chainId',
+      })) as string;
+      setChainId(parseInt(id, 16));
+      logger.info('Wallet connected successfully', {
+        address: accounts[0],
+        chainId: parseInt(id, 16),
+      });
     } catch (error: unknown) {
       handleError(error, 'connect');
     } finally {

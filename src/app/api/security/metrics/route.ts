@@ -1,8 +1,10 @@
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
 import { manipulationDetectionService } from '@/lib/services/manipulationDetectionService';
 import { supabaseAdmin, SUPABASE_ERROR_CODES } from '@/lib/supabase/server';
+import { requireAdminWithToken } from '@/server/apiResponse';
 
 interface MetricsRow {
   total_detections: number;
@@ -13,8 +15,11 @@ interface MetricsRow {
   last_detection_time: string | null;
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const auth = await requireAdminWithToken(request, { strict: false });
+    if (auth) return auth;
+
     const serviceMetrics = manipulationDetectionService.getMetrics();
 
     const supabase = supabaseAdmin;

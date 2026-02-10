@@ -5,6 +5,7 @@ import { logger } from '@/lib/logger';
 import { manipulationDetectionService } from '@/lib/services/manipulationDetectionService';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import type { OracleProtocol, SupportedChain } from '@/lib/types';
+import { requireAdminWithToken } from '@/server/apiResponse';
 
 interface StartMonitorBody {
   protocol?: string;
@@ -21,6 +22,9 @@ interface FeedRow {
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await requireAdminWithToken(request);
+    if (auth) return auth;
+
     const body: StartMonitorBody = await request.json().catch(() => ({}));
     const { protocol, symbol, chain, allFeeds } = body;
 

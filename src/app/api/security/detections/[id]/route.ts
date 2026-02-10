@@ -1,7 +1,9 @@
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
 import { supabaseAdmin } from '@/lib/supabase/server';
+import { requireAdminWithToken } from '@/server/apiResponse';
 
 interface DetectionRow {
   id: string;
@@ -25,8 +27,11 @@ interface DetectionRow {
   notes: string | null;
 }
 
-export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const auth = await requireAdminWithToken(request as NextRequest, { strict: false });
+    if (auth) return auth;
+
     const { id } = await params;
     const supabase = supabaseAdmin;
 

@@ -13,6 +13,7 @@ import { z } from 'zod';
 import { env } from '@/lib/config/env';
 import { logger } from '@/lib/logger';
 import { NotificationService, type NotificationChannel } from '@/server/alerts/notifications';
+import { requireAdminWithToken } from '@/server/apiResponse';
 
 const testNotificationSchema = z.object({
   channel: z.enum(['email', 'webhook', 'slack', 'telegram']),
@@ -21,6 +22,9 @@ const testNotificationSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await requireAdminWithToken(request);
+    if (auth) return auth;
+
     const body = await request.json();
     const result = testNotificationSchema.safeParse(body);
 

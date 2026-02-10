@@ -106,12 +106,16 @@ export class MemoryCache implements CacheProvider {
   }
 
   async set<T>(key: string, value: T, ttlMs: number = 60000): Promise<void> {
-    // LRU: 如果超过最大大小，删除最旧的条目
     if (this.store.size >= this.maxSize) {
-      const oldestKey = this.store.keys().next().value;
-      if (oldestKey) {
-        this.store.delete(oldestKey);
-        this.removeFromPrefixIndex(oldestKey);
+      const removeCount = Math.max(1, Math.ceil(this.maxSize * 0.1));
+      for (let i = 0; i < removeCount; i++) {
+        const oldestKey = this.store.keys().next().value;
+        if (oldestKey) {
+          this.store.delete(oldestKey);
+          this.removeFromPrefixIndex(oldestKey);
+        } else {
+          break;
+        }
       }
     }
 

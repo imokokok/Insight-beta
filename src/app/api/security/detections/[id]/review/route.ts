@@ -3,9 +3,13 @@ import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
 import { supabaseAdmin } from '@/lib/supabase/server';
+import { requireAdminWithToken } from '@/server/apiResponse';
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const auth = await requireAdminWithToken(request);
+    if (auth) return auth;
+
     const { id } = await params;
     const body = await request.json();
     const { status, notes } = body;

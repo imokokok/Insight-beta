@@ -11,6 +11,7 @@ import { z } from 'zod';
 
 import { logger } from '@/lib/logger';
 import { alertService } from '@/lib/services/detection/alertService';
+import { requireAdminWithToken } from '@/server/apiResponse';
 
 const configSchema = z.object({
   channels: z
@@ -24,8 +25,11 @@ const configSchema = z.object({
   cooldownMs: z.number().min(0).optional(),
 });
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const auth = await requireAdminWithToken(request, { strict: false });
+    if (auth) return auth;
+
     const stats = alertService.getStats();
 
     return NextResponse.json({
@@ -40,6 +44,9 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await requireAdminWithToken(request);
+    if (auth) return auth;
+
     const body = await request.json();
     const result = configSchema.safeParse(body);
 
@@ -74,8 +81,11 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function DELETE() {
+export async function DELETE(request: NextRequest) {
   try {
+    const auth = await requireAdminWithToken(request);
+    if (auth) return auth;
+
     // 重置告警历史
     alertService.resetHistory();
 

@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { AppError, ValidationError, createErrorResponse, toAppError } from '@/lib/errors/AppError';
 import { logger } from '@/lib/logger';
 import { supabaseAdmin } from '@/lib/supabase/server';
+import { requireAdminWithToken } from '@/server/apiResponse';
 
 interface DetectionRow {
   id: string;
@@ -146,6 +147,9 @@ function validateParams(searchParams: URLSearchParams): {
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await requireAdminWithToken(request, { strict: false });
+    if (auth) return auth;
+
     const { searchParams } = new URL(request.url);
 
     // 验证参数
