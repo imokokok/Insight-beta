@@ -1,10 +1,10 @@
 /**
  * Price Aggregation Utilities
  *
- * 价格聚合工具函数
+ * 价格聚合工具函数 - P2 优化：添加 Z-Score 异常检测
  */
 
-import { calculateMean, calculateMedian } from '@/lib/utils/math';
+import { calculateMean, calculateMedian, calculateStdDev } from '@/lib/utils/math';
 
 import { AGGREGATION_CONFIG } from './config';
 
@@ -178,4 +178,28 @@ export function determineRecommendationSource(validCount: number): string {
     default:
       return `median_of_${validCount}_sources`;
   }
+}
+
+/**
+ * 检测异常值（使用 Z-Score 方法）- P2 优化
+ *
+ * Z-Score = (x - μ) / σ
+ * 异常值定义：|Z-Score| > threshold
+ *
+ * @param values - 数值数组
+ * @param threshold - Z-Score 阈值，默认 3（表示 99.7% 的数据在正常范围内）
+ * @returns 异常值的索引数组
+ */
+export function detectOutliersZScore(values: number[], threshold: number = 3): number[] {
+  if (values.length < 3) return [];
+
+  const mean = calculateMean(values);
+  const std = calculateStdDev(values, mean);
+
+  if (std === 0) return []; // 所有值相同，无异常
+
+  return values
+    .map((value, index) => ({ value, index, zscore: Math.abs((value - mean) / std) }))
+    .filter(({ zscore }) => zscore > threshold)
+    .map(({ index }) => index);
 }

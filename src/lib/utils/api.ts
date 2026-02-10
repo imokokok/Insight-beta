@@ -4,7 +4,10 @@
  * API 相关工具函数
  */
 
+import { getErrorMessage } from '@/lib/shared/errors/ErrorHandler';
 import { logger } from '@/lib/logger';
+
+export { getErrorMessage };
 
 /**
  * API 响应的标准格式接口
@@ -238,25 +241,4 @@ export async function fetchApiData<T>(
     }
     throw error;
   }
-}
-
-/**
- * 获取错误信息字符串
- * 统一处理 Error 对象和其他类型的错误
- *
- * @param error - 错误对象
- * @returns 错误信息字符串
- *
- * @example
- * ```typescript
- * try {
- *   await someOperation();
- * } catch (error) {
- *   const message = getErrorMessage(error);
- *   logger.error('Operation failed', { message });
- * }
- * ```
- */
-export function getErrorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
 }

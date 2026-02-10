@@ -34,7 +34,6 @@ This guide helps you resolve common issues when running OracleMonitor in product
 ### High response times
 
 - Check database query performance
-- Verify Redis cache is working: `npm run check:prod`
 - Monitor memory and CPU usage
 
 ### Database connection errors
@@ -62,7 +61,6 @@ npm run check:prod
 This will verify:
 
 - Database connectivity
-- Redis connectivity
 - RPC endpoints
 - Health check endpoints
 
@@ -71,7 +69,6 @@ This will verify:
 | Error                        | Cause                        | Solution                     |
 | ---------------------------- | ---------------------------- | ---------------------------- |
 | `database_connection_failed` | Cannot connect to PostgreSQL | Check DATABASE_URL           |
-| `redis_connection_failed`    | Cannot connect to Redis      | Check REDIS_URL              |
 | `rpc_unavailable`            | RPC endpoint not responding  | Check RPC URLs               |
 | `rate_limited`               | Too many requests            | Wait or increase rate limits |
 | `unauthorized`               | Invalid or missing token     | Check ADMIN_TOKEN            |

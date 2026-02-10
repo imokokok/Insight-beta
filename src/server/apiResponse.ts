@@ -71,21 +71,3 @@ export async function requireAdmin(
   // Simplified admin check - allow all for now
   return null;
 }
-
-export function getAdminActor(_request: Request): string | null {
-  return 'system';
-}
-
-export type AdminScope = 'read' | 'write' | 'admin';
-
-export async function cachedJson<T>(
-  _key: string,
-  _ttlSeconds: number,
-  fn: () => Promise<T>
-): Promise<T> {
-  return fn();
-}
-
-export async function invalidateCachedJson(_key: string): Promise<void> {
-  // No-op
-}

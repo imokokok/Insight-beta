@@ -221,12 +221,6 @@ const nextConfig: NextConfig = {
   turbopack: {},
 
   webpack: (config, { isServer }) => {
-    config.ignoreWarnings = config.ignoreWarnings || [];
-    config.ignoreWarnings.push({
-      message: /the request of a dependency is an expression/,
-      module: /@opentelemetry\/instrumentation\/build\/esm\/platform\/node\/instrumentation\.js/,
-    });
-
     config.resolve = config.resolve || {};
     config.resolve.fallback = {
       ...config.resolve.fallback,

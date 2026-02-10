@@ -318,12 +318,6 @@ Report web vitals metrics.
 
 Get Solana price data.
 
-## GraphQL
-
-#### POST `/api/graphql`
-
-GraphQL endpoint for complex queries.
-
 ## Documentation
 
 #### GET `/api/docs`

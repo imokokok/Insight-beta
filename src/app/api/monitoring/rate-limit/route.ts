@@ -51,12 +51,13 @@ export async function GET(request: Request) {
     const auth = await requireAdmin(request, { strict: true, scope: 'monitoring_read' });
     if (auth) return auth;
 
-    const status = getRateLimitStoreStatus();
+    const status = await getRateLimitStoreStatus();
 
     return NextResponse.json({
       success: true,
       data: {
-        ...status,
+        storeType: status.type,
+        memorySize: status.memorySize,
         timestamp: new Date().toISOString(),
         environment: env.NODE_ENV,
       },
@@ -120,9 +121,9 @@ export async function POST(request: Request) {
     const auth = await requireAdmin(request, { strict: true, scope: 'monitoring_write' });
     if (auth) return auth;
 
-    const beforeStatus = getRateLimitStoreStatus();
+    const beforeStatus = await getRateLimitStoreStatus();
     cleanupMemoryStore();
-    const afterStatus = getRateLimitStoreStatus();
+    const afterStatus = await getRateLimitStoreStatus();
 
     logger.info('Rate limit memory store cleaned', {
       previousSize: beforeStatus.memorySize,
@@ -133,8 +134,8 @@ export async function POST(request: Request) {
       success: true,
       data: {
         cleaned: true,
-        previousSize: beforeStatus.memorySize,
-        currentSize: afterStatus.memorySize,
+        previousSize: beforeStatus.memorySize ?? 0,
+        currentSize: afterStatus.memorySize ?? 0,
         timestamp: new Date().toISOString(),
       },
     });

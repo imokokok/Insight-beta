@@ -144,16 +144,6 @@ export const preloadManager = new PreloadManager();
 // ============================================================================
 
 /**
- * 动态图表组件（recharts）
- */
-export const DynamicChart = createDynamicComponent({
-  loader: () => import('recharts').then((mod) => ({ default: mod.LineChart })),
-  loadingType: 'chart',
-  ssr: false,
-  height: 256,
-});
-
-/**
  * 动态 Swagger UI 组件
  */
 export const DynamicSwaggerUI = createDynamicComponent<{
@@ -168,98 +158,11 @@ export const DynamicSwaggerUI = createDynamicComponent<{
   height: '100vh',
 });
 
-// ============================================================================
-// 预加载辅助函数
-// ============================================================================
-
-/**
- * 预加载图表库
- */
-export function preloadCharts(): void {
-  preloadManager.preload('recharts', () => import('recharts'), { delay: 1000 });
-}
-
 /**
  * 预加载 Swagger UI
  */
 export function preloadSwaggerUI(): void {
   preloadManager.preload('swagger-ui-react', () => import('swagger-ui-react'), { idle: true });
-}
-
-/**
- * 预加载虚拟列表库
- */
-export function preloadVirtualList(): void {
-  preloadManager.preload('react-virtuoso', () => import('react-virtuoso'), { delay: 500 });
-}
-
-/**
- * 预加载所有常用库（在首页加载完成后调用）
- */
-export function preloadCommonLibraries(): void {
-  // 延迟预加载，避免影响首屏
-  setTimeout(() => {
-    preloadCharts();
-    preloadVirtualList();
-  }, 2000);
-}
-
-// ============================================================================
-// React Hook for dynamic imports
-// ============================================================================
-
-/**
- * 使用动态导入的 Hook
- *
- * @example
- * const MyComponent = useDynamicImport(() => import('./MyComponent'), {
- *   loadingType: 'spinner',
- * });
- */
-export function useDynamicImport<T = unknown>(
-  loader: Loader<T>,
-  options?: Omit<DynamicImportOptions<T>, 'loader'>,
-): ComponentType<T> {
-  return createDynamicComponent({ loader, ...options });
-}
-
-// ============================================================================
-// 工具函数
-// ============================================================================
-
-/**
- * 创建带预加载功能的动态组件
- *
- * @example
- * const { Component, preload } = createPreloadableComponent({
- *   key: 'my-component',
- *   loader: () => import('./MyComponent'),
- *   loadingType: 'card',
- * });
- *
- * // 在需要时预加载
- * preload();
- */
-export function createPreloadableComponent<T = unknown>({
-  key,
-  loader,
-  ...options
-}: DynamicImportOptions<T> & { key: string }): {
-  Component: ComponentType<T>;
-  preload: (config?: PreloadConfig) => void;
-  isPreloaded: () => boolean;
-} {
-  const Component = createDynamicComponent({ loader, ...options });
-
-  return {
-    Component,
-    preload: (config?: PreloadConfig) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const loadFn = () => (loader as any)().then(() => undefined);
-      preloadManager.preload(key, loadFn, config);
-    },
-    isPreloaded: () => preloadManager.isPreloaded(key),
-  };
 }
 
 // ============================================================================

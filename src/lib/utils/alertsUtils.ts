@@ -238,17 +238,3 @@ export function getSloEntries(slo: OpsSloStatus): SloEntry[] {
     },
   ];
 }
-
-export function getInitialInstanceId() {
-  try {
-    if (typeof window === 'undefined') return 'default';
-    const saved = window.localStorage.getItem('oracleFilters');
-    if (!saved) return 'default';
-    const parsed = JSON.parse(saved) as { instanceId?: unknown } | null;
-    const value = parsed && typeof parsed === 'object' ? parsed.instanceId : null;
-    if (typeof value === 'string' && value.trim()) return value.trim();
-  } catch {
-    return 'default';
-  }
-  return 'default';
-}

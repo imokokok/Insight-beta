@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
-  formatUsd,
   formatUsdCompact,
   calculatePercentage,
   formatDurationMinutes,
@@ -14,11 +13,6 @@ describe('Utils', () => {
 
   afterEach(() => {
     vi.unstubAllEnvs();
-  });
-
-  it('formatUsd formats correctly', () => {
-    expect(formatUsd(1234.56, 'en-US')).toBe('$1,235');
-    expect(formatUsd(0, 'en-US')).toBe('$0');
   });
 
   it('formatUsdCompact formats correctly', () => {

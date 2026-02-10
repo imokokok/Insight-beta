@@ -3,9 +3,7 @@
 
 process.env.LOG_LEVEL = 'error'; // 使用有效的日志级别
 process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test?schema=public';
-process.env.REDIS_URL = 'redis://localhost:6379';
 (process.env as Record<string, string>).NODE_ENV = 'test';
 process.env.INSIGHT_ADMIN_TOKEN = 'test-token';
 process.env.INSIGHT_ADMIN_TOKEN_SALT = 'test-salt';
-process.env.INSIGHT_RATE_LIMIT_STORE = 'memory';
 process.env.LOG_SAMPLE_RATE = '1';

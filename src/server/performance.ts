@@ -146,26 +146,6 @@ export function performanceMonitor(
   };
 }
 
-export function withPerformanceMonitoring(
-  request: NextRequest,
-  requestId: string,
-  startTime: number,
-): void {
-  const durationMs = performance.now() - startTime;
-  const pathname = new URL(request.url).pathname;
-
-  recordPerformanceMetric({
-    requestId,
-    method: request.method,
-    pathname,
-    durationMs,
-    statusCode: 200,
-    cacheHit: false,
-    memoryUsageMb: process.memoryUsage().heapUsed / (1024 * 1024),
-    timestamp: new Date().toISOString(),
-  });
-}
-
 export const __TEST__ = {
   clearMetrics,
   getPerformanceMetrics,

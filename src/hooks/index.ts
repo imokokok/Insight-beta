@@ -28,12 +28,8 @@ export { useInfiniteList, useDebounce, useDebouncedCallback, type BaseResponse }
 export { useDisputes } from './useDisputes';
 export { useWebSocket } from './useWebSocket';
 
-// Dashboard hooks (包含旧版 useAutoRefresh，保持向后兼容)
-export {
-  useDashboardShortcuts,
-  useAutoRefresh as useAutoRefreshLegacy,
-  useDataCache,
-} from './useDashboard';
+// Dashboard hooks
+export { useDashboardShortcuts } from './useDashboard';
 
 // 自动刷新 Hook (新的实现 - 推荐用于新页面)
 export { useAutoRefresh } from './use-auto-refresh';

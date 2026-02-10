@@ -1,114 +1,207 @@
 /**
- * Price Aggregation Engine
+ * Price Aggregation Engine - Complete Optimized Version
  *
- * 价格聚合引擎
+ * 价格聚合引擎 - 完整优化版本
+ * P0: 并发控制 + Supabase缓存
+ * P1: 性能监控 + 熔断保护
+ * P2: 高级告警规则引擎
  */
 
+import { comparisonCache } from '@/lib/cache/supabase-cache';
 import { logger } from '@/lib/logger';
+import { priceMetrics } from '@/lib/monitoring/priceMetrics';
 import type {
   CrossOracleComparison,
   OracleProtocol,
   SupportedChain,
   UnifiedPriceFeed,
 } from '@/lib/types/unifiedOracleTypes';
+import { withRetry, circuitBreakerManager } from '@/lib/utils/resilience';
 import { calculateMean, calculateMedian } from '@/lib/utils/math';
 import { query } from '@/server/db';
+import { alertRuleEngine } from '@/server/oracle/realtime';
+import pLimit from 'p-limit';
 
 import { AGGREGATION_CONFIG } from './config';
-import { calculateProtocolWeightedAverage, determineRecommendationSource, detectOutliersIQR } from './utils';
+import {
+  calculateProtocolWeightedAverage,
+  determineRecommendationSource,
+  detectOutliersIQR,
+  detectOutliersZScore,
+} from './utils';
+
+// 并发限制器
+const aggregateLimit = pLimit(5);
+
+// 缓存 TTL
+const CACHE_TTL_MS = 30000;
+
+// 熔断器
+const priceBreaker = circuitBreakerManager.getBreaker('price-aggregation', {
+  failureThreshold: 5,
+  successThreshold: 3,
+  timeoutMs: 60000,
+});
 
 export class PriceAggregationEngine {
   /**
    * 聚合指定交易对的价格数据
+   * 完整优化版本：缓存 + 熔断 + 监控 + 告警
    */
   async aggregatePrices(
     symbol: string,
     chain?: SupportedChain,
   ): Promise<CrossOracleComparison | null> {
+    const startTime = performance.now();
+    const cacheKey = `${symbol}:${chain ?? 'all'}`;
+
     try {
-      // 获取所有协议的实时价格
-      const prices = await this.fetchLatestPrices(symbol, chain);
-
-      if (prices.length < AGGREGATION_CONFIG.minDataSources) {
-        logger.warn(`Insufficient price data for ${symbol}`, {
-          count: prices.length,
-          minRequired: AGGREGATION_CONFIG.minDataSources,
-        });
-        return null;
+      // 1. 检查 Supabase 缓存
+      const cached = await comparisonCache.get<CrossOracleComparison>(cacheKey);
+      if (cached) {
+        priceMetrics.recordCacheHit();
+        logger.debug(`Cache hit for ${symbol}`, { chain });
+        return cached;
       }
+      priceMetrics.recordCacheMiss();
 
-      // 解析交易对
-      const [baseAsset, quoteAsset] = symbol.split('/');
-
-      // 计算统计数据
-      const priceValues = prices.map((p) => p.price);
-      const avgPrice = calculateMean(priceValues);
-      const medianPrice = calculateMedian(priceValues);
-      const minPrice = Math.min(...priceValues);
-      const maxPrice = Math.max(...priceValues);
-      const priceRange = maxPrice - minPrice;
-      const priceRangePercent = (priceRange / avgPrice) * 100;
-
-      // 检测异常值
-      const { outliers, maxDeviation, maxDeviationPercent } = this.detectOutliers(
-        prices,
-        medianPrice,
+      // 2. 使用熔断器保护聚合操作
+      const comparison = await priceBreaker.execute(() =>
+        this.performAggregation(symbol, chain),
       );
 
-      // 计算推荐价格
-      const recommendedPrice = this.calculateRecommendedPrice(prices, outliers);
+      // 3. 记录性能指标
+      const duration = performance.now() - startTime;
+      priceMetrics.recordAggregation(duration, comparison !== null);
 
-      // 构建对比数据
-      const comparison: CrossOracleComparison = {
-        id: `comparison-${symbol}-${Date.now()}`,
-        symbol,
-        baseAsset: baseAsset || symbol,
-        quoteAsset: quoteAsset || 'USD',
-        prices: prices
-          .filter(
-            (p): p is UnifiedPriceFeed & { protocol: OracleProtocol; instanceId: string } =>
-              p.protocol !== undefined && p.instanceId !== undefined,
-          )
-          .map((p) => ({
-            protocol: p.protocol,
-            instanceId: p.instanceId,
-            price: p.price,
-            timestamp: p.timestamp,
-            confidence: p.confidence ?? 1,
-            isStale: p.isStale,
-          })),
-        avgPrice,
-        medianPrice,
-        minPrice,
-        maxPrice,
-        priceRange,
-        priceRangePercent,
-        maxDeviation,
-        maxDeviationPercent,
-        outlierProtocols: outliers
-          .filter(
-            (o): o is UnifiedPriceFeed & { protocol: OracleProtocol; instanceId: string } =>
-              o.protocol !== undefined && o.instanceId !== undefined,
-          )
-          .map((o) => o.protocol),
-        recommendedPrice,
-        recommendationSource: this.determineRecommendationSource(prices, outliers),
-        timestamp: new Date().toISOString(),
-      };
-
-      // 保存到数据库
-      await this.saveComparison(comparison);
-
-      // 检查是否需要触发告警
-      await this.checkDeviationAlerts(comparison);
+      // 4. 记录偏差指标
+      if (comparison) {
+        priceMetrics.recordDeviation(comparison.maxDeviationPercent);
+      }
 
       return comparison;
     } catch (error) {
-      logger.error(`Failed to aggregate prices for ${symbol}`, {
-        error: error instanceof Error ? error.message : String(error),
+      // 熔断器打开时的处理
+      if (error instanceof Error && error.name === 'CircuitBreakerError') {
+        logger.warn(`Circuit breaker open for ${symbol}`, { chain });
+        // 尝试返回缓存数据（即使过期）
+        const stale = await comparisonCache.get<CrossOracleComparison>(cacheKey);
+        if (stale) {
+          logger.info(`Returning stale cache for ${symbol}`);
+          return stale;
+        }
+      }
+
+      const duration = performance.now() - startTime;
+      priceMetrics.recordAggregation(duration, false);
+      logger.error(`Aggregation failed for ${symbol}`, { error, chain });
+      return null;
+    }
+  }
+
+  /**
+   * 执行实际聚合逻辑
+   */
+  private async performAggregation(
+    symbol: string,
+    chain?: SupportedChain,
+  ): Promise<CrossOracleComparison | null> {
+    // 使用智能重试获取价格数据
+    const prices = await withRetry(
+      () => this.fetchLatestPrices(symbol, chain),
+      {
+        maxRetries: 3,
+        baseDelayMs: 500,
+        backoffMultiplier: 2,
+        jitter: true,
+        onRetry: (attempt, error, delay) => {
+          logger.warn(`Retry ${attempt} for ${symbol}`, { error: error.message, delay });
+        },
+      },
+    );
+
+    if (prices.length < AGGREGATION_CONFIG.minDataSources) {
+      logger.warn(`Insufficient price data for ${symbol}`, {
+        count: prices.length,
+        minRequired: AGGREGATION_CONFIG.minDataSources,
       });
       return null;
     }
+
+    // 解析交易对
+    const [baseAsset, quoteAsset] = symbol.split('/');
+
+    // 计算统计数据
+    const priceValues = prices.map((p) => p.price);
+    const avgPrice = calculateMean(priceValues);
+    const medianPrice = calculateMedian(priceValues);
+    const minPrice = Math.min(...priceValues);
+    const maxPrice = Math.max(...priceValues);
+    const priceRange = maxPrice - minPrice;
+    const priceRangePercent = avgPrice > 0 ? (priceRange / avgPrice) * 100 : 0;
+
+    // 检测异常值
+    const { outliers, maxDeviation, maxDeviationPercent } = this.detectOutliers(
+      prices,
+      medianPrice,
+      avgPrice,
+    );
+
+    // 计算推荐价格
+    const recommendedPrice = this.calculateRecommendedPrice(prices, outliers);
+
+    // 构建对比数据
+    const comparison: CrossOracleComparison = {
+      id: `comparison-${symbol}-${Date.now()}`,
+      symbol,
+      baseAsset: baseAsset || symbol,
+      quoteAsset: quoteAsset || 'USD',
+      prices: prices
+        .filter(
+          (p): p is UnifiedPriceFeed & { protocol: OracleProtocol; instanceId: string } =>
+            p.protocol !== undefined && p.instanceId !== undefined,
+        )
+        .map((p) => ({
+          protocol: p.protocol,
+          instanceId: p.instanceId,
+          price: p.price,
+          timestamp: p.timestamp,
+          confidence: p.confidence ?? 1,
+          isStale: p.isStale,
+        })),
+      avgPrice,
+      medianPrice,
+      minPrice,
+      maxPrice,
+      priceRange,
+      priceRangePercent,
+      maxDeviation,
+      maxDeviationPercent,
+      outlierProtocols: outliers
+        .filter(
+          (o): o is UnifiedPriceFeed & { protocol: OracleProtocol; instanceId: string } =>
+            o.protocol !== undefined && o.instanceId !== undefined,
+        )
+        .map((o) => o.protocol),
+      recommendedPrice,
+      recommendationSource: this.determineRecommendationSource(prices, outliers),
+      timestamp: new Date().toISOString(),
+    };
+
+    // 保存到缓存（异步）
+    comparisonCache.set(cacheKey, comparison, CACHE_TTL_MS).catch((error) => {
+      logger.error('Failed to save to cache', { error, symbol });
+    });
+
+    // 保存到数据库（异步）
+    this.saveComparison(comparison).catch((error) => {
+      logger.error('Failed to save comparison', { error });
+    });
+
+    // 使用新的告警规则引擎评估告警
+    alertRuleEngine.evaluate(comparison);
+
+    return comparison;
   }
 
   /**
@@ -117,15 +210,7 @@ export class PriceAggregationEngine {
   private async fetchLatestPrices(
     symbol: string,
     chain?: SupportedChain,
-  ): Promise<
-    Array<
-      UnifiedPriceFeed & {
-        instanceId: string;
-      }
-    >
-  > {
-    // 优化查询：使用窗口函数代替 DISTINCT ON，性能更好
-    // 同时添加 LIMIT 防止大数据集问题
+  ): Promise<Array<UnifiedPriceFeed & { instanceId: string }>> {
     const sql = `
       WITH latest_prices AS (
         SELECT
@@ -164,23 +249,29 @@ export class PriceAggregationEngine {
       params.push(chain);
     }
 
+    const startTime = performance.now();
     const result = await query(sql, params);
+    const duration = performance.now() - startTime;
+
+    // 记录协议指标
+    for (const row of result.rows) {
+      priceMetrics.recordProtocolRequest(
+        row.protocol,
+        duration / result.rows.length,
+        true,
+      );
+    }
 
     return result.rows as Array<UnifiedPriceFeed & { instanceId: string }>;
   }
 
   /**
    * 检测异常值
-   * 
-   * 统一异常检测方法：
-   * - 主方法：阈值法（偏差百分比 > 阈值）
-   * - 辅助方法：IQR（四分位距）统计方法
-   * 
-   * 配置来源：AGGREGATION_CONFIG.outlierDetection
    */
   private detectOutliers(
     prices: Array<UnifiedPriceFeed & { instanceId: string }>,
     medianPrice: number,
+    avgPrice: number,
   ): {
     outliers: Array<UnifiedPriceFeed & { instanceId: string }>;
     maxDeviation: number;
@@ -193,26 +284,26 @@ export class PriceAggregationEngine {
     const priceValues = prices.map((p) => p.price);
     const outlierIndices = new Set<number>();
 
-    // 1. 阈值法检测
+    // 阈值法检测
     if (['threshold', 'both'].includes(AGGREGATION_CONFIG.outlierDetection.method)) {
       for (let i = 0; i < prices.length; i++) {
         const price = prices[i];
+        if (!price) continue;
         const deviation = Math.abs(price.price - medianPrice);
-        const deviationPercent = deviation / medianPrice; // 使用小数形式
+        const deviationPercent = medianPrice > 0 ? deviation / medianPrice : 0;
 
         if (deviationPercent > maxDeviationPercent) {
           maxDeviation = deviation;
           maxDeviationPercent = deviationPercent;
         }
 
-        // 如果偏差超过阈值，标记为异常值
         if (deviationPercent > AGGREGATION_CONFIG.outlierDetection.threshold) {
           outlierIndices.add(i);
         }
       }
     }
 
-    // 2. IQR 方法检测（作为辅助）
+    // IQR 方法检测
     if (['iqr', 'both'].includes(AGGREGATION_CONFIG.outlierDetection.method)) {
       if (priceValues.length >= AGGREGATION_CONFIG.outlierDetection.minDataPoints) {
         const iqrOutlierIndices = detectOutliersIQR(
@@ -223,7 +314,18 @@ export class PriceAggregationEngine {
       }
     }
 
-    // 收集异常值
+    // Z-Score 方法检测
+    if (
+      AGGREGATION_CONFIG.outlierDetection.method === 'zscore' ||
+      (AGGREGATION_CONFIG.outlierDetection.method === 'both' && priceValues.length >= 3)
+    ) {
+      const zscoreOutlierIndices = detectOutliersZScore(
+        priceValues,
+        AGGREGATION_CONFIG.outlierDetection.zscoreThreshold ?? 3,
+      );
+      zscoreOutlierIndices.forEach((idx) => outlierIndices.add(idx));
+    }
+
     outlierIndices.forEach((idx) => {
       const price = prices[idx];
       if (price) {
@@ -241,26 +343,22 @@ export class PriceAggregationEngine {
     prices: Array<UnifiedPriceFeed & { instanceId: string }>,
     outliers: Array<UnifiedPriceFeed & { instanceId: string }>,
   ): number {
-    // 过滤掉异常值和 protocol 为 undefined 的价格
     const validPrices = prices.filter(
       (p): p is UnifiedPriceFeed & { protocol: OracleProtocol; instanceId: string } =>
         p.protocol !== undefined && !outliers.some((o) => o.protocol === p.protocol),
     );
 
     if (validPrices.length === 0) {
-      // 如果所有价格都是异常值，使用中位数
       return calculateMedian(prices.map((p) => p.price));
     }
 
     switch (AGGREGATION_CONFIG.aggregationMethod) {
       case 'mean':
         return calculateMean(validPrices.map((p) => p.price));
-
       case 'weighted':
         return calculateProtocolWeightedAverage(
           validPrices.map((p) => ({ protocol: p.protocol, price: p.price })),
         );
-
       case 'median':
       default:
         return calculateMedian(validPrices.map((p) => p.price));
@@ -346,88 +444,12 @@ export class PriceAggregationEngine {
   }
 
   /**
-   * 检查偏差告警
-   */
-  private async checkDeviationAlerts(comparison: CrossOracleComparison): Promise<void> {
-    // 严重偏差告警
-    if (comparison.maxDeviationPercent > AGGREGATION_CONFIG.severeDeviationThreshold * 100) {
-      await this.createAlert({
-        event: 'price_deviation_severe',
-        severity: 'critical',
-        title: `Severe Price Deviation: ${comparison.symbol}`,
-        message: `Price deviation of ${comparison.maxDeviationPercent.toFixed(2)}% detected across protocols for ${comparison.symbol}`,
-        symbol: comparison.symbol,
-        context: {
-          maxDeviationPercent: comparison.maxDeviationPercent,
-          outlierProtocols: comparison.outlierProtocols,
-          prices: comparison.prices,
-        },
-      });
-    }
-    // 一般偏差告警
-    else if (comparison.maxDeviationPercent > AGGREGATION_CONFIG.deviationThreshold * 100) {
-      await this.createAlert({
-        event: 'price_deviation',
-        severity: 'warning',
-        title: `Price Deviation: ${comparison.symbol}`,
-        message: `Price deviation of ${comparison.maxDeviationPercent.toFixed(2)}% detected across protocols for ${comparison.symbol}`,
-        symbol: comparison.symbol,
-        context: {
-          maxDeviationPercent: comparison.maxDeviationPercent,
-          outlierProtocols: comparison.outlierProtocols,
-          prices: comparison.prices,
-        },
-      });
-    }
-  }
-
-  /**
-   * 创建告警
-   */
-  private async createAlert({
-    event,
-    severity,
-    title,
-    message,
-    symbol,
-    context,
-  }: {
-    event: string;
-    severity: 'info' | 'warning' | 'critical';
-    title: string;
-    message: string;
-    symbol: string;
-    context: Record<string, unknown>;
-  }): Promise<void> {
-    try {
-      await query(
-        `INSERT INTO unified_alerts (
-          id, event, severity, title, message, symbol, context, status
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'open')
-        ON CONFLICT (id) DO NOTHING`,
-        [
-          `alert-${event}-${symbol}-${Date.now()}`,
-          event,
-          severity,
-          title,
-          message,
-          symbol,
-          JSON.stringify(context),
-        ],
-      );
-    } catch (error) {
-      logger.error('Failed to create alert', {
-        error: error instanceof Error ? error.message : String(error),
-      });
-    }
-  }
-
-  /**
    * 批量聚合多个交易对
-   * 使用 Promise.all 并行处理以提高性能
    */
   async aggregateMultipleSymbols(symbols: string[]): Promise<CrossOracleComparison[]> {
-    const results = await Promise.all(symbols.map((symbol) => this.aggregatePrices(symbol)));
+    const results = await Promise.all(
+      symbols.map((symbol) => aggregateLimit(() => this.aggregatePrices(symbol))),
+    );
     return results.filter((r): r is CrossOracleComparison => r !== null);
   }
 
@@ -451,7 +473,7 @@ export class PriceAggregationEngine {
       symbol: row.symbol,
       baseAsset: row.base_asset,
       quoteAsset: row.quote_asset,
-      prices: [], // 历史数据不保存详细价格
+      prices: [],
       avgPrice: parseFloat(row.avg_price),
       medianPrice: parseFloat(row.median_price),
       minPrice: parseFloat(row.min_price),
@@ -473,12 +495,7 @@ export class PriceAggregationEngine {
   async getAggregatedPrice(
     symbol: string,
     chain?: SupportedChain,
-  ): Promise<{
-    price: number;
-    timestamp: number;
-    primarySource: string;
-    confidence?: number;
-  } | null> {
+  ): Promise<{ price: number; timestamp: number; primarySource: string; confidence?: number } | null> {
     const comparison = await this.aggregatePrices(symbol, chain);
     if (!comparison) return null;
 
@@ -486,17 +503,32 @@ export class PriceAggregationEngine {
       price: comparison.recommendedPrice,
       timestamp: new Date(comparison.timestamp).getTime(),
       primarySource: comparison.recommendationSource,
-      confidence: 0.95, // Default confidence
+      confidence: 0.95,
     };
   }
 
   /**
-   * 获取跨预言机对比（别名方法）
+   * 清除缓存
    */
-  async getCrossOracleComparison(
-    symbol: string,
-    chain?: SupportedChain,
-  ): Promise<CrossOracleComparison | null> {
-    return this.aggregatePrices(symbol, chain);
+  async clearCache(): Promise<void> {
+    await comparisonCache.clear();
+    logger.info('Aggregation cache cleared');
+  }
+
+  /**
+   * 获取缓存统计
+   */
+  async getCacheStats(): Promise<{ totalEntries: number; activeEntries: number; expiredEntries: number; totalSize: string } | null> {
+    return comparisonCache.getStats();
+  }
+
+  /**
+   * 获取熔断器统计
+   */
+  getCircuitBreakerStats() {
+    return circuitBreakerManager.getAllStats();
   }
 }
+
+// 导出单例
+export const priceAggregationEngine = new PriceAggregationEngine();

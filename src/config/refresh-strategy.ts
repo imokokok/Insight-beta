@@ -182,19 +182,3 @@ export function formatLastUpdated(lastUpdated: Date | null): string {
     });
   }
 }
-
-/**
- * 获取刷新间隔的友好显示
- */
-export function getIntervalDisplay(interval: number): string {
-  if (interval === 0) {
-    return '手动刷新';
-  }
-  if (interval < 60 * 1000) {
-    return `${interval / 1000}秒`;
-  }
-  if (interval < 60 * 60 * 1000) {
-    return `${interval / (60 * 1000)}分钟`;
-  }
-  return `${interval / (60 * 60 * 1000)}小时`;
-}

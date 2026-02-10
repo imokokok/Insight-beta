@@ -31,76 +31,57 @@ export interface RateLimitResult {
 }
 
 // ============================================================================
-// 存储适配器接口
-// ============================================================================
-
-interface RateLimitStore {
-  get(key: string): Promise<RateLimitRecord | null>;
-  set(key: string, record: RateLimitRecord, windowMs: number): Promise<void>;
-  increment(key: string, windowMs: number): Promise<RateLimitRecord>;
-}
-
-// ============================================================================
 // 内存存储实现
 // ============================================================================
 
-class MemoryStore implements RateLimitStore {
-  private store = new Map<string, RateLimitRecord>();
+const store = new Map<string, RateLimitRecord>();
 
-  async get(key: string): Promise<RateLimitRecord | null> {
-    const record = this.store.get(key);
-    if (!record) return null;
+async function getRecord(key: string): Promise<RateLimitRecord | null> {
+  const record = store.get(key);
+  if (!record) return null;
 
-    // 清理过期记录
-    if (Date.now() > record.resetTime) {
-      this.store.delete(key);
-      return null;
-    }
+  // 清理过期记录
+  if (Date.now() > record.resetTime) {
+    store.delete(key);
+    return null;
+  }
 
+  return record;
+}
+
+async function setRecord(key: string, record: RateLimitRecord): Promise<void> {
+  store.set(key, record);
+}
+
+async function incrementRecord(key: string, windowMs: number): Promise<RateLimitRecord> {
+  const now = Date.now();
+  const existing = await getRecord(key);
+
+  if (!existing) {
+    const record: RateLimitRecord = {
+      count: 1,
+      resetTime: now + windowMs,
+    };
+    await setRecord(key, record);
     return record;
   }
 
-  async set(key: string, record: RateLimitRecord, _windowMs: number): Promise<void> {
-    this.store.set(key, record);
-  }
-
-  async increment(key: string, windowMs: number): Promise<RateLimitRecord> {
-    const now = Date.now();
-    const existing = await this.get(key);
-
-    if (!existing) {
-      const record: RateLimitRecord = {
-        count: 1,
-        resetTime: now + windowMs,
-      };
-      await this.set(key, record, windowMs);
-      return record;
-    }
-
-    existing.count++;
-    return existing;
-  }
-
-  // 清理过期记录（可用于定时任务）
-  cleanup(): void {
-    const now = Date.now();
-    for (const [key, record] of this.store.entries()) {
-      if (now > record.resetTime) {
-        this.store.delete(key);
-      }
-    }
-  }
-
-  get size(): number {
-    return this.store.size;
-  }
+  existing.count++;
+  return existing;
 }
 
 // ============================================================================
-// 存储实例
+// 清理过期记录（可用于定时任务）
 // ============================================================================
 
-const memoryStore = new MemoryStore();
+function cleanupStore(): void {
+  const now = Date.now();
+  for (const [key, record] of store.entries()) {
+    if (now > record.resetTime) {
+      store.delete(key);
+    }
+  }
+}
 
 // ============================================================================
 // 客户端 IP 获取
@@ -137,7 +118,7 @@ export async function rateLimit(
 
   try {
     // 尝试获取现有记录
-    const record = await memoryStore.get(key);
+    const record = await getRecord(key);
 
     if (!record || now > record.resetTime) {
       // 新窗口
@@ -145,7 +126,7 @@ export async function rateLimit(
         count: 1,
         resetTime: now + config.windowMs,
       };
-      await memoryStore.set(key, newRecord, config.windowMs);
+      await setRecord(key, newRecord);
 
       return {
         allowed: true,
@@ -172,13 +153,12 @@ export async function rateLimit(
     }
 
     // 增加计数
-    record.count++;
-    await memoryStore.set(key, record, config.windowMs);
+    const updated = await incrementRecord(key, config.windowMs);
 
     return {
       allowed: true,
-      remaining: config.maxRequests - record.count,
-      resetTime: record.resetTime,
+      remaining: config.maxRequests - updated.count,
+      resetTime: updated.resetTime,
       totalLimit: config.maxRequests,
     };
   } catch (error) {
@@ -202,20 +182,17 @@ export async function rateLimit(
 // ============================================================================
 
 export function cleanupMemoryStore(): void {
-  memoryStore.cleanup();
-  logger.debug('Memory rate limit store cleaned up', { size: memoryStore.size });
+  cleanupStore();
+  logger.debug('Memory rate limit store cleaned up', { size: store.size });
 }
 
 // ============================================================================
 // 获取存储状态（用于监控）
 // ============================================================================
 
-export function getRateLimitStoreStatus(): {
+export async function getRateLimitStoreStatus(): Promise<{
   type: 'memory';
   memorySize: number;
-} {
-  return {
-    type: 'memory',
-    memorySize: memoryStore.size,
-  };
+}> {
+  return { type: 'memory', memorySize: store.size };
 }

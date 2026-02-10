@@ -1,7 +1,9 @@
 /**
  * Oracle Comparison Analytics Page
  *
- * 预言机比较分析主页面
+ * 预言机比较分析主页面 - P1 优化版本
+ * - 使用 SWR 优化数据获取（缓存、去重、自动刷新）
+ * - 使用防抖优化筛选条件
  * - 价格偏离热力图
  * - 延迟分析
  * - 成本效益分析
@@ -16,20 +18,16 @@ import { ComparisonControls } from '@/components/features/comparison/ComparisonC
 import { ChartSkeleton } from '@/components/ui/skeleton-enhanced';
 import { useToast } from '@/components/ui/toast';
 import { useI18n } from '@/i18n';
+import { useDebounce } from '@/hooks/useDebounce';
+import { useComparisonData } from '@/hooks/useComparison';
 import { logger } from '@/lib/logger';
 import { ORACLE_PROTOCOLS, PROTOCOL_DISPLAY_NAMES } from '@/lib/types/oracle';
-import type { SupportedChain } from '@/lib/types/oracle/chain';
 import type {
   ComparisonFilter,
   ComparisonConfig,
   ComparisonView,
-  PriceHeatmapData,
-  LatencyAnalysis,
-  CostComparison,
-  RealtimeComparisonItem,
   PriceDeviationCell,
 } from '@/lib/types/oracle/comparison';
-import type { OracleProtocol } from '@/lib/types/oracle/protocol';
 import {
   exportRealtimeToCSV,
   exportHeatmapToCSV,
@@ -101,255 +99,6 @@ const defaultFilter: ComparisonFilter = {
 const MAX_RECONNECT_ATTEMPTS = 5;
 
 // ============================================================================
-// 模拟数据生成器（开发用）
-// ============================================================================
-
-function generateMockHeatmapData(protocols: string[]): PriceHeatmapData {
-  const symbols = [
-    'ETH/USD',
-    'BTC/USD',
-    'LINK/USD',
-    'MATIC/USD',
-    'AVAX/USD',
-    'SOL/USD',
-    'ARB/USD',
-    'OP/USD',
-  ];
-
-  const rows = symbols.map((symbol) => {
-    const basePrice = symbol.includes('BTC') ? 45000 : symbol.includes('ETH') ? 3000 : 20;
-    const consensusPrice = basePrice * (1 + (Math.random() - 0.5) * 0.02);
-
-    const cells = protocols.map((protocol) => {
-      const deviationPercent = (Math.random() - 0.5) * 3;
-      const price = consensusPrice * (1 + deviationPercent / 100);
-
-      let deviationLevel: 'low' | 'medium' | 'high' | 'critical' = 'low';
-      const absDeviation = Math.abs(deviationPercent);
-      if (absDeviation > 2) deviationLevel = 'critical';
-      else if (absDeviation > 1) deviationLevel = 'high';
-      else if (absDeviation > 0.5) deviationLevel = 'medium';
-
-      return {
-        protocol: protocol as OracleProtocol,
-        symbol,
-        price,
-        referencePrice: consensusPrice,
-        deviation: price - consensusPrice,
-        deviationPercent,
-        deviationLevel,
-        timestamp: new Date().toISOString(),
-        isStale: Math.random() < 0.1,
-      };
-    });
-
-    const deviations = cells.map((c) => Math.abs(c.deviationPercent));
-    const parts = symbol.split('/');
-
-    return {
-      symbol,
-      baseAsset: parts[0] || '',
-      quoteAsset: parts[1] || '',
-      cells,
-      maxDeviation: Math.max(...deviations),
-      avgDeviation: deviations.reduce((a, b) => a + b, 0) / deviations.length,
-      consensusPrice,
-      consensusMethod: 'median' as const,
-    };
-  });
-
-  const criticalDeviations = rows.reduce(
-    (sum, row) => sum + row.cells.filter((c) => c.deviationLevel === 'critical').length,
-    0,
-  );
-
-  return {
-    rows,
-    protocols: protocols as OracleProtocol[],
-    lastUpdated: new Date().toISOString(),
-    totalPairs: symbols.length,
-    criticalDeviations,
-  };
-}
-
-function generateMockLatencyData(protocols: string[]): LatencyAnalysis {
-  const symbols = ['ETH/USD', 'BTC/USD', 'LINK/USD', 'MATIC/USD'];
-  const chains = ['ethereum', 'arbitrum', 'optimism', 'base'];
-
-  const metrics: LatencyAnalysis['metrics'] = [];
-
-  protocols.forEach((protocol) => {
-    symbols.forEach((symbol) => {
-      const chain = chains[Math.floor(Math.random() * chains.length)];
-      const latencyMs = Math.random() * 10000 + 1000;
-
-      let status: 'healthy' | 'degraded' | 'stale' = 'healthy';
-      if (latencyMs > 60000) status = 'stale';
-      else if (latencyMs > 30000) status = 'degraded';
-
-      metrics.push({
-        protocol: protocol as OracleProtocol,
-        symbol,
-        chain: chain as SupportedChain,
-        lastUpdateTimestamp: new Date(Date.now() - latencyMs).toISOString(),
-        latencyMs,
-        latencySeconds: latencyMs / 1000,
-        blockLag: Math.floor(Math.random() * 10),
-        updateFrequency: 300 + Math.random() * 300,
-        expectedFrequency: 300,
-        frequencyDeviation: (Math.random() - 0.5) * 20,
-        percentile50: latencyMs * 0.8,
-        percentile90: latencyMs * 1.2,
-        percentile99: latencyMs * 1.5,
-        status,
-      });
-    });
-  });
-
-  const latencies = metrics.map((m) => m.latencyMs);
-  const staleCount = metrics.filter((m) => m.status === 'stale').length;
-  const degradedCount = metrics.filter((m) => m.status === 'degraded').length;
-
-  return {
-    metrics,
-    summary: {
-      avgLatency: latencies.reduce((a, b) => a + b, 0) / latencies.length,
-      maxLatency: Math.max(...latencies),
-      minLatency: Math.min(...latencies),
-      totalFeeds: metrics.length,
-      staleFeeds: staleCount,
-      degradedFeeds: degradedCount,
-      healthyFeeds: metrics.length - staleCount - degradedCount,
-    },
-    lastUpdated: new Date().toISOString(),
-  };
-}
-
-function generateMockCostData(protocols: string[]): CostComparison {
-  const protocolMetrics = protocols.map((protocol) => {
-    const costScore = Math.random() * 100;
-    const valueScore = Math.random() * 100;
-
-    return {
-      protocol: protocol as OracleProtocol,
-      costScore,
-      valueScore,
-      feedsCount: Math.floor(Math.random() * 200) + 50,
-      chainsCount: Math.floor(Math.random() * 10) + 1,
-      avgUpdateFrequency: 300 + Math.random() * 300,
-      accuracyScore: 95 + Math.random() * 5,
-      uptimeScore: 99 + Math.random(),
-      costPerFeed: Math.random() * 100,
-      costPerChain: Math.random() * 500,
-      costPerUpdate: Math.random() * 0.01,
-      roi: 0.5 + Math.random() * 2,
-    };
-  });
-
-  const cheapest = protocolMetrics.reduce((prev, curr) =>
-    prev.costScore > curr.costScore ? prev : curr,
-  );
-  const bestValue = protocolMetrics.reduce((prev, curr) =>
-    prev.valueScore > curr.valueScore ? prev : curr,
-  );
-  const mostExpensive = protocolMetrics.reduce((prev, curr) =>
-    prev.costScore < curr.costScore ? prev : curr,
-  );
-
-  const recommendations: CostComparison['recommendations'] = [
-    {
-      useCase: 'defi_protocol',
-      recommendedProtocol: bestValue.protocol,
-      reason: 'comparison:recommendations.defiReason',
-      estimatedMonthlyCost: 500 + Math.random() * 1000,
-      alternatives: protocols.slice(0, 2) as OracleProtocol[],
-    },
-    {
-      useCase: 'trading',
-      recommendedProtocol: protocolMetrics.reduce((prev, curr) =>
-        prev.avgUpdateFrequency < curr.avgUpdateFrequency ? prev : curr,
-      ).protocol,
-      reason: 'comparison:recommendations.tradingReason',
-      estimatedMonthlyCost: 1000 + Math.random() * 2000,
-      alternatives: protocols.slice(1, 3) as OracleProtocol[],
-    },
-    {
-      useCase: 'enterprise',
-      recommendedProtocol: protocolMetrics.reduce((prev, curr) =>
-        prev.uptimeScore > curr.uptimeScore ? prev : curr,
-      ).protocol,
-      reason: 'comparison:recommendations.enterpriseReason',
-      estimatedMonthlyCost: 2000 + Math.random() * 3000,
-      alternatives: protocols.slice(2, 4) as OracleProtocol[],
-    },
-    {
-      useCase: 'hobby',
-      recommendedProtocol: cheapest.protocol,
-      reason: 'comparison:recommendations.hobbyReason',
-      estimatedMonthlyCost: Math.random() * 100,
-      alternatives: protocols.slice(0, 2) as OracleProtocol[],
-    },
-  ];
-
-  return {
-    protocols: protocolMetrics,
-    recommendations,
-    summary: {
-      cheapestProtocol: cheapest.protocol,
-      bestValueProtocol: bestValue.protocol,
-      mostExpensiveProtocol: mostExpensive.protocol,
-    },
-  };
-}
-
-function generateMockRealtimeData(protocols: string[]): RealtimeComparisonItem[] {
-  const symbols = ['ETH/USD', 'BTC/USD', 'LINK/USD', 'MATIC/USD', 'AVAX/USD', 'SOL/USD'];
-
-  return symbols.map((symbol) => {
-    const basePrice = symbol.includes('BTC') ? 45000 : symbol.includes('ETH') ? 3000 : 20;
-
-    const protocolData: RealtimeComparisonItem['protocols'] = protocols.map((protocol) => {
-      const deviation = (Math.random() - 0.5) * 2;
-      const price = basePrice * (1 + deviation / 100);
-
-      return {
-        protocol: protocol as OracleProtocol,
-        price,
-        timestamp: new Date().toISOString(),
-        confidence: 0.8 + Math.random() * 0.2,
-        latency: Math.random() * 5000,
-        deviationFromConsensus: deviation,
-        status: Math.random() < 0.9 ? 'active' : 'stale',
-      };
-    });
-
-    const prices = protocolData.map((p) => p.price);
-    const min = Math.min(...prices);
-    const max = Math.max(...prices);
-    const mean = prices.reduce((a, b) => a + b, 0) / prices.length;
-    const sortedPrices = [...prices].sort((a, b) => a - b);
-    const median = sortedPrices[Math.floor(sortedPrices.length / 2)] ?? mean;
-
-    return {
-      symbol,
-      protocols: protocolData,
-      consensus: {
-        median: median ?? mean,
-        mean,
-        weighted: mean,
-      },
-      spread: {
-        min,
-        max,
-        absolute: max - min,
-        percent: ((max - min) / (median ?? mean)) * 100,
-      },
-      lastUpdated: new Date().toISOString(),
-    };
-  });
-}
-
-// ============================================================================
 // 主页面组件
 // ============================================================================
 
@@ -362,51 +111,27 @@ export default function ComparisonPage() {
   const [filter, setFilter] = useState<ComparisonFilter>(defaultFilter);
   const [config, setConfig] = useState<ComparisonConfig>(defaultConfig);
 
-  // Data State
-  const [heatmapData, setHeatmapData] = useState<PriceHeatmapData | undefined>();
-  const [latencyData, setLatencyData] = useState<LatencyAnalysis | undefined>();
-  const [costData, setCostData] = useState<CostComparison | undefined>();
-  const [realtimeData, setRealtimeData] = useState<RealtimeComparisonItem[] | undefined>();
+  // P1 优化：使用防抖优化筛选条件
+  const debouncedFilter = useDebounce(filter, 500);
 
-  // Loading State
-  const [isLoading, setIsLoading] = useState(false);
+  // P1 优化：使用 SWR 获取数据
+  const {
+    heatmap,
+    latency,
+    cost,
+    realtime,
+    current: currentData,
+  } = useComparisonData({
+    view: currentView,
+    filter: debouncedFilter,
+    enabled: true,
+  });
+
+  // WebSocket 状态
   const [isLive, setIsLive] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState<Date | undefined>();
-
-  // Refs
-  const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectAttempts = useRef(0);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // ============================================================================
-  // 数据获取
-  // ============================================================================
-
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
-
-    try {
-      const protocols = filter.protocols || ORACLE_PROTOCOLS;
-
-      // 模拟 API 调用
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      setHeatmapData(generateMockHeatmapData(protocols));
-      setLatencyData(generateMockLatencyData(protocols));
-      setCostData(generateMockCostData(protocols));
-      setRealtimeData(generateMockRealtimeData(protocols));
-      setLastUpdated(new Date());
-    } catch {
-      toast({
-        title: t('comparison.toast.loadError'),
-        message: t('comparison.toast.retryLater'),
-        type: 'error',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [filter, toast, t]);
 
   // ============================================================================
   // WebSocket 连接
@@ -423,7 +148,7 @@ export default function ComparisonPage() {
       ws.send(
         JSON.stringify({
           type: 'subscribe_comparison',
-          symbols: filter.symbols || ['ETH/USD', 'BTC/USD', 'LINK/USD'],
+          symbols: debouncedFilter.symbols || ['ETH/USD', 'BTC/USD', 'LINK/USD'],
         }),
       );
     };
@@ -450,8 +175,8 @@ export default function ComparisonPage() {
       try {
         const message = JSON.parse(event.data);
         if (message.type === 'comparison_update') {
-          setRealtimeData(message.data);
-          setLastUpdated(new Date());
+          // SWR 会自动处理数据更新
+          realtime.refresh();
         }
       } catch (error) {
         logger.error('Failed to parse WebSocket message', { error });
@@ -459,7 +184,7 @@ export default function ComparisonPage() {
     };
 
     wsRef.current = ws;
-  }, [filter.symbols]);
+  }, [debouncedFilter.symbols, realtime]);
 
   const disconnectWebSocket = useCallback(() => {
     wsRef.current?.close();
@@ -470,30 +195,6 @@ export default function ComparisonPage() {
   // ============================================================================
   // Effects
   // ============================================================================
-
-  // 初始加载
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  // 定时刷新
-  useEffect(() => {
-    if (refreshIntervalRef.current) {
-      clearInterval(refreshIntervalRef.current);
-    }
-
-    refreshIntervalRef.current = setInterval(() => {
-      if (!isLive) {
-        fetchData();
-      }
-    }, config.refreshInterval);
-
-    return () => {
-      if (refreshIntervalRef.current) {
-        clearInterval(refreshIntervalRef.current);
-      }
-    };
-  }, [config.refreshInterval, fetchData, isLive]);
 
   // WebSocket 连接管理
   useEffect(() => {
@@ -529,8 +230,8 @@ export default function ComparisonPage() {
         // 根据当前视图导出对应的 CSV
         switch (currentView) {
           case 'heatmap':
-            if (heatmapData) {
-              exportHeatmapToCSV(heatmapData);
+            if (heatmap.data) {
+              exportHeatmapToCSV(heatmap.data);
               toast({
                 title: t('comparison.toast.exportSuccess'),
                 message: t('comparison.toast.heatmapExported'),
@@ -539,8 +240,8 @@ export default function ComparisonPage() {
             }
             break;
           case 'latency':
-            if (latencyData) {
-              exportLatencyToCSV(latencyData);
+            if (latency.data) {
+              exportLatencyToCSV(latency.data);
               toast({
                 title: t('comparison.toast.exportSuccess'),
                 message: t('comparison.toast.latencyExported'),
@@ -549,8 +250,8 @@ export default function ComparisonPage() {
             }
             break;
           case 'cost':
-            if (costData) {
-              exportCostToCSV(costData);
+            if (cost.data) {
+              exportCostToCSV(cost.data);
               toast({
                 title: t('comparison.toast.exportSuccess'),
                 message: t('comparison.toast.costExported'),
@@ -560,8 +261,8 @@ export default function ComparisonPage() {
             break;
           case 'realtime':
           case 'table':
-            if (realtimeData) {
-              exportRealtimeToCSV(realtimeData);
+            if (realtime.data) {
+              exportRealtimeToCSV(realtime.data);
               toast({
                 title: t('comparison.toast.exportSuccess'),
                 message: t('comparison.toast.realtimeExported'),
@@ -573,10 +274,10 @@ export default function ComparisonPage() {
       } else {
         // 导出 JSON
         exportAllToJSON({
-          heatmap: heatmapData,
-          latency: latencyData,
-          cost: costData,
-          realtime: realtimeData,
+          heatmap: heatmap.data,
+          latency: latency.data,
+          cost: cost.data,
+          realtime: realtime.data,
         });
         toast({
           title: t('comparison.toast.exportSuccess'),
@@ -585,8 +286,26 @@ export default function ComparisonPage() {
         });
       }
     },
-    [currentView, heatmapData, latencyData, costData, realtimeData, toast, t],
+    [currentView, heatmap.data, latency.data, cost.data, realtime.data, toast, t],
   );
+
+  // P1 优化：统一刷新函数
+  const handleRefresh = useCallback(() => {
+    switch (currentView) {
+      case 'heatmap':
+        heatmap.refresh();
+        break;
+      case 'latency':
+        latency.refresh();
+        break;
+      case 'cost':
+        cost.refresh();
+        break;
+      case 'realtime':
+        realtime.refresh();
+        break;
+    }
+  }, [currentView, heatmap, latency, cost, realtime]);
 
   // ============================================================================
   // 渲染
@@ -623,9 +342,9 @@ export default function ComparisonPage() {
         onFilterChange={setFilter}
         onConfigChange={setConfig}
         onViewChange={setCurrentView}
-        onRefresh={fetchData}
+        onRefresh={handleRefresh}
         onExport={handleExport}
-        isLoading={isLoading}
+        isLoading={currentData.isLoading}
         availableSymbols={[
           'ETH/USD',
           'BTC/USD',
@@ -643,35 +362,34 @@ export default function ComparisonPage() {
         {currentView === 'heatmap' && (
           <Suspense fallback={<ChartSkeleton className="h-96" />}>
             <PriceHeatmap
-              data={heatmapData}
-              isLoading={isLoading}
+              data={heatmap.data}
+              isLoading={heatmap.isLoading}
               onCellClick={handleCellClick}
-              selectedProtocols={filter.protocols}
+              selectedProtocols={debouncedFilter.protocols}
             />
           </Suspense>
         )}
 
         {currentView === 'latency' && (
           <Suspense fallback={<ChartSkeleton className="h-96" />}>
-            <LatencyAnalysisView data={latencyData} isLoading={isLoading} />
+            <LatencyAnalysisView data={latency.data} isLoading={latency.isLoading} />
           </Suspense>
         )}
 
         {currentView === 'cost' && (
           <Suspense fallback={<ChartSkeleton className="h-96" />}>
-            <CostEfficiencyView data={costData} isLoading={isLoading} />
+            <CostEfficiencyView data={cost.data} isLoading={cost.isLoading} />
           </Suspense>
         )}
 
         {currentView === 'realtime' && (
           <Suspense fallback={<ChartSkeleton className="h-96" />}>
             <RealtimeComparisonView
-              data={realtimeData}
-              isLoading={isLoading}
+              data={realtime.data}
+              isLoading={realtime.isLoading}
               isLive={isLive}
-              onRefresh={fetchData}
-              lastUpdated={lastUpdated}
-              filter={filter}
+              onRefresh={handleRefresh}
+              filter={debouncedFilter}
               onFilterChange={setFilter}
             />
           </Suspense>
@@ -689,33 +407,14 @@ export default function ComparisonPage() {
             }
           >
             <VirtualTable
-              data={realtimeData}
-              isLoading={isLoading}
+              data={realtime.data}
+              isLoading={realtime.isLoading}
               onExport={handleExport}
               rowHeight={52}
               containerHeight={600}
             />
           </Suspense>
         )}
-      </div>
-
-      {/* 使用说明 */}
-      <div className="bg-muted/30 rounded-lg border p-3 sm:p-4">
-        <h3 className="mb-2 text-sm font-medium sm:text-base">{t('comparison.usage.title')}</h3>
-        <ul className="text-muted-foreground list-inside list-disc space-y-1 text-xs sm:text-sm">
-          <li>
-            <strong>{t('comparison.views.heatmap')}</strong>：{t('comparison.usage.heatmap')}
-          </li>
-          <li>
-            <strong>{t('comparison.views.latency')}</strong>：{t('comparison.usage.latency')}
-          </li>
-          <li>
-            <strong>{t('comparison.views.cost')}</strong>：{t('comparison.usage.cost')}
-          </li>
-          <li>
-            <strong>{t('comparison.views.realtime')}</strong>：{t('comparison.usage.realtime')}
-          </li>
-        </ul>
       </div>
     </div>
   );

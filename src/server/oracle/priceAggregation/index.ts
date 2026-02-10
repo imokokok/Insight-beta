@@ -1,7 +1,8 @@
 /**
- * Price Aggregation Module
+ * Price Aggregation Module - Complete Optimized Version
  *
- * 价格聚合模块统一导出
+ * 价格聚合模块 - 完整优化版本统一导出
+ * P0/P1/P2 优化全部集成
  */
 
 // 类型导入
@@ -16,17 +17,15 @@ export {
   calculateProtocolWeightedAverage,
   calculateRecommendedPrice,
   determineRecommendationSource,
+  detectOutliersZScore,
+  detectOutliersIQR,
 } from './utils';
 
-// 引擎
-export { PriceAggregationEngine } from './engine';
+// 引擎 - 导出类和单例
+export { PriceAggregationEngine, priceAggregationEngine } from './engine';
 
-// 单例实例
-import { PriceAggregationEngine } from './engine';
-
-export const priceAggregationEngine = new PriceAggregationEngine();
-
-// 便捷函数
+// 便捷函数（使用新的单例）
+import { priceAggregationEngine } from './engine';
 
 export async function aggregatePrices(
   symbol: string,
@@ -46,4 +45,19 @@ export async function getHistoricalComparisons(
   hours?: number,
 ): Promise<CrossOracleComparison[]> {
   return priceAggregationEngine.getHistoricalComparisons(symbol, hours);
+}
+
+export async function getAggregatedPrice(
+  symbol: string,
+  chain?: SupportedChain,
+): Promise<{ price: number; timestamp: number; primarySource: string; confidence?: number } | null> {
+  return priceAggregationEngine.getAggregatedPrice(symbol, chain);
+}
+
+// 获取统计信息
+export function getEngineStats() {
+  return {
+    cache: priceAggregationEngine.getCacheStats(),
+    circuitBreaker: priceAggregationEngine.getCircuitBreakerStats(),
+  };
 }

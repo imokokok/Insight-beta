@@ -4,11 +4,8 @@
  * 提供共享的类型定义和工具函数
  */
 
-import { type Address, formatUnits } from 'viem';
-
 import { DEFAULT_STALENESS_THRESHOLDS } from '@/lib/config/constants';
 import { logger } from '@/lib/logger';
-import type { SupportedChain } from '@/lib/types/unifiedOracleTypes';
 
 // ============================================================================
 // 类型定义
@@ -27,8 +24,6 @@ export interface OracleClientConfig {
   stalenessThreshold?: number;
   /** 置信度阈值 */
   confidenceThreshold?: number;
-  /** 自定义合约地址 */
-  contractAddress?: Address;
 }
 
 // ============================================================================
@@ -64,107 +59,12 @@ export function calculateDataFreshness(
 }
 
 /**
- * 格式化价格
- * @param price - 原始价格
- * @param decimals - 小数位数
- * @returns 格式化后的价格
- */
-export function formatPriceValue(price: bigint, decimals: number = 8): number {
-  return parseFloat(formatUnits(price, decimals));
-}
-
-/**
- * 解析交易对符号
- * @param symbol - 交易对符号 (如 "ETH/USD")
- * @returns 解析结果
- */
-export function parseSymbolPair(symbol: string): { base: string; quote: string } | null {
-  const parts = symbol.split('/');
-  if (parts.length !== 2 || !parts[0] || !parts[1]) {
-    return null;
-  }
-  return { base: parts[0], quote: parts[1] };
-}
-
-/**
  * 标准化交易对符号
  * @param symbol - 原始符号
  * @returns 标准化后的符号
  */
 export function normalizeSymbol(symbol: string): string {
   return symbol.toUpperCase().replace(/-/g, '/');
-}
-
-/**
- * 验证地址格式
- * @param address - 地址字符串
- * @returns 是否有效
- */
-export function isValidAddressFormat(address: string): address is Address {
-  return /^0x[a-fA-F0-9]{40}$/.test(address);
-}
-
-// ============================================================================
-// 日志工具
-// ============================================================================
-
-/**
- * 创建带前缀的日志记录器
- * @param clientName - 客户端名称
- * @param chain - 链名称
- * @returns 日志记录函数
- */
-export function createLogger(clientName: string, chain: SupportedChain) {
-  const prefix = `${clientName}[${chain}]`;
-
-  return {
-    info: (message: string, meta?: Record<string, unknown>) => {
-      logger.info(`${prefix}: ${message}`, meta);
-    },
-    warn: (message: string, meta?: Record<string, unknown>) => {
-      logger.warn(`${prefix}: ${message}`, meta);
-    },
-    error: (message: string, meta?: Record<string, unknown>) => {
-      logger.error(`${prefix}: ${message}`, meta);
-    },
-    debug: (message: string, meta?: Record<string, unknown>) => {
-      logger.debug(`${prefix}: ${message}`, meta);
-    },
-  };
-}
-
-// ============================================================================
-// 批量处理工具
-// ============================================================================
-
-/**
- * 批量处理请求
- * @param items - 待处理项
- * @param processor - 处理函数
- * @param batchSize - 批次大小
- * @returns 处理结果
- */
-export async function processBatch<T, R>(
-  items: T[],
-  processor: (item: T) => Promise<R>,
-  batchSize: number = 10,
-): Promise<R[]> {
-  const results: R[] = [];
-
-  for (let i = 0; i < items.length; i += batchSize) {
-    const batch = items.slice(i, i + batchSize);
-    const batchResults = await Promise.allSettled(batch.map((item) => processor(item)));
-
-    for (const result of batchResults) {
-      if (result.status === 'fulfilled') {
-        results.push(result.value);
-      } else {
-        logger.warn('Batch processing error', { error: String(result.reason) });
-      }
-    }
-  }
-
-  return results;
 }
 
 // ============================================================================

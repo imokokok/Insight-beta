@@ -46,14 +46,6 @@ test.describe('Smoke Tests - Page Loading', () => {
     
     expect(page.url()).toContain('/alerts');
   });
-
-  test('GraphQL Playground 应该加载', async ({ page }) => {
-    await page.goto(`${BASE_URL}/api/graphql`);
-    await page.waitForLoadState('domcontentloaded');
-    
-    const body = page.locator('body');
-    await expect(body).toBeVisible();
-  });
 });
 
 // ============================================================================
@@ -61,26 +53,6 @@ test.describe('Smoke Tests - Page Loading', () => {
 // ============================================================================
 
 test.describe('Smoke Tests - API Health', () => {
-  test('GraphQL API should respond', async ({ request }) => {
-    const response = await request.post(`${BASE_URL}/api/graphql`, {
-      data: {
-        query: `
-          query {
-            globalStats {
-              totalInstances
-              systemHealth
-            }
-          }
-        `,
-      },
-    });
-
-    expect(response.status()).toBe(200);
-    
-    const data = await response.json();
-    expect(data).toBeDefined();
-  });
-
   test('REST API - unified stats should respond', async ({ request }) => {
     const response = await request.get(`${BASE_URL}/api/oracle/unified?type=stats`);
     

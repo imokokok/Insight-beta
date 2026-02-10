@@ -10,6 +10,8 @@
  */
 
 import { logger as defaultLogger } from '@/lib/logger';
+import { normalizeSymbol } from '@/lib/blockchain/oracleClientBase';
+import { sleep } from '@/lib/utils/common';
 import type {
   OracleProtocol,
   SupportedChain,
@@ -132,7 +134,7 @@ export abstract class BaseOracleClient implements IOracleClient {
     this.updateActivity();
 
     try {
-      const normalizedSymbol = this.normalizeSymbol(symbol);
+      const normalizedSymbol = normalizeSymbol(symbol);
       this.logger.debug('Fetching price', { symbol: normalizedSymbol, options });
 
       const price = await this.withRetry(
@@ -309,7 +311,7 @@ export abstract class BaseOracleClient implements IOracleClient {
             delayMs: delay,
             error: lastError.message,
           });
-          await this.delay(delay);
+          await sleep(delay);
         }
       }
     }
@@ -364,13 +366,6 @@ export abstract class BaseOracleClient implements IOracleClient {
   }
 
   /**
-   * 标准化交易对符号
-   */
-  protected normalizeSymbol(symbol: string): string {
-    return symbol.toUpperCase().replace(/-/g, '/');
-  }
-
-  /**
    * 构建反向映射（priceId -> symbol）
    */
   protected buildMappings(priceFeedIds: Record<string, string>): void {
@@ -391,7 +386,7 @@ export abstract class BaseOracleClient implements IOracleClient {
    * 根据 symbol 查找 priceId
    */
   protected getPriceIdBySymbol(symbol: string): string | undefined {
-    return this.symbolToId.get(this.normalizeSymbol(symbol));
+    return this.symbolToId.get(normalizeSymbol(symbol));
   }
 
   // ============================================================================
@@ -419,9 +414,5 @@ export abstract class BaseOracleClient implements IOracleClient {
 
   private updateActivity(): void {
     this.lastActivityAt = Date.now();
-  }
-
-  private delay(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

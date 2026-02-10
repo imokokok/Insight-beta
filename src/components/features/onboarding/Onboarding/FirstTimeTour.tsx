@@ -128,12 +128,13 @@ export function FirstTimeTour({ isOpen, onComplete, onSkip, className }: FirstTi
 
           {showWelcome ? (
             // Welcome Modal
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="absolute left-1/2 top-1/2 w-full max-w-md -translate-x-1/2 -translate-y-1/2 p-4"
-            >
+            <div className="flex h-full w-full items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="w-full max-w-md"
+              >
               <div className="overflow-hidden rounded-2xl bg-white shadow-2xl">
                 {/* Header with gradient */}
                 <div className="bg-gradient-to-r from-purple-600 to-purple-800 p-6 text-white">
@@ -191,7 +192,8 @@ export function FirstTimeTour({ isOpen, onComplete, onSkip, className }: FirstTi
                   </div>
                 </div>
               </div>
-            </motion.div>
+              </motion.div>
+            </div>
           ) : (
             // Tour Step Tooltip
             <TourStepTooltip

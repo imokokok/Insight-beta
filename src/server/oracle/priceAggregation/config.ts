@@ -1,7 +1,7 @@
 /**
  * Price Aggregation Configuration
  *
- * 价格聚合配置
+ * 价格聚合配置 - P2 优化：添加 Z-Score 支持
  */
 
 import type { OracleProtocol } from '@/lib/types/unifiedOracleTypes';
@@ -35,15 +35,17 @@ export const AGGREGATION_CONFIG = {
     dia: 0.1,
   } as Record<OracleProtocol, number>,
 
-  // 异常检测配置
+  // 异常检测配置 - P2 优化：添加 zscore 方法
   outlierDetection: {
-    // 主方法: 'threshold' | 'iqr' | 'both'
-    method: 'both' as 'threshold' | 'iqr' | 'both',
+    // 主方法: 'threshold' | 'iqr' | 'zscore' | 'both'
+    method: 'both' as 'threshold' | 'iqr' | 'zscore' | 'both',
     // 阈值法: 偏差百分比阈值 (0.01 = 1%)
     threshold: 0.01,
     // IQR 方法: IQR 倍数阈值
     iqrMultiplier: 1.5,
-    // 最小数据点数量（用于 IQR）
+    // Z-Score 方法: 标准差倍数阈值 (3 表示 99.7% 数据正常)
+    zscoreThreshold: 3,
+    // 最小数据点数量（用于 IQR 和 Z-Score）
     minDataPoints: 4,
   },
 };

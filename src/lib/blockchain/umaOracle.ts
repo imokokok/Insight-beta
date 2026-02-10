@@ -58,29 +58,10 @@ export const UMA_CONTRACT_ADDRESSES: Record<
     optimisticOracleV3: '0x2d0D2cB02b5eBA6e82b8277BDeF58612f650B401',
     votingToken: '0x08e60A4f1eE4E31C861C2C7fEfB5Bf7E8C6D4A7E',
   },
-  // 其他链暂不支持
-  avalanche: {},
-  bsc: {},
-  fantom: {},
-  celo: {},
-  gnosis: {},
-  linea: {},
-  scroll: {},
-  mantle: {},
-  mode: {},
-  blast: {},
-  solana: {},
-  near: {},
-  aptos: {},
-  sui: {},
-  polygonAmoy: {},
   sepolia: {
     optimisticOracleV3: '0xFd9e2642a170aDD10F53Ee91a63d1D7a7e3A9F28',
     votingToken: '0x04Fa0d235C4abf4BcF4787aF4CF447DE572eF828',
   },
-  goerli: {},
-  mumbai: {},
-  local: {},
 };
 
 // ============================================================================

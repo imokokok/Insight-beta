@@ -117,6 +117,10 @@ export class QueryBuilder<T extends TableName> {
       throw error;
     }
 
+    if (!result) {
+      throw new Error(`Insert returned no data for table ${String(this.table)}`);
+    }
+
     return result as unknown as TableRow<T>;
   }
 

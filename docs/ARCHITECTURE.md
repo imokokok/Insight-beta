@@ -50,14 +50,14 @@
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                          数据层 (Data Layer)                                  │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐              │
-│  │   PostgreSQL    │  │     Redis       │  │   Blockchain    │              │
-│  │                 │  │                 │  │                 │              │
-│  │ - Assertions    │  │ - Cache         │  │ - Smart Contracts│             │
-│  │ - Disputes      │  │ - Sessions      │  │ - Events        │              │
-│  │ - Alerts        │  │ - Rate Limiting │  │ - Transactions  │              │
-│  │ - Users         │  │ - Pub/Sub       │  │                 │              │
-│  └─────────────────┘  └─────────────────┘  └─────────────────┘              │
+│  ┌─────────────────┐  ┌─────────────────┐                                  │
+│  │   PostgreSQL    │  │   Blockchain    │                                  │
+│  │                 │  │                 │                                  │
+│  │ - Assertions    │  │ - Smart Contracts│                                 │
+│  │ - Disputes      │  │ - Events        │                                  │
+│  │ - Alerts        │  │ - Transactions  │                                  │
+│  │ - Users         │  │                 │                                  │
+│  └─────────────────┘  └─────────────────┘                                  │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -361,10 +361,8 @@
 │  │                                                                     │   │
 │  │  ┌─────────────┐  ┌─────────────┐                                  │   │
 │  │  │ Memory Cache│  │   RPC Pool  │                                  │   │
-│  │  │ (Default)   │  │             │                                  │   │
+│  │  │ (Rate Limit)│  │             │                                  │   │
 │  │  └─────────────┘  └─────────────┘                                  │   │
-│  │                                                                     │   │
-│  │  Optional: Redis (via REDIS_URL)                                   │   │
 │  └─────────────────────────────────────────────────────────────────────┘   │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
@@ -458,7 +456,7 @@
 | 后端     | Next.js API Routes  | API 端点                 |
 | 数据库   | PostgreSQL 16       | 主数据库                 |
 | ORM      | Prisma 6            | 数据库操作               |
-| 缓存     | Memory / Redis      | 内存缓存（默认）或 Redis |
+| 缓存     | Memory / PostgreSQL | 内存缓存 + 数据库缓存    |
 | 测试     | Vitest + Playwright | 单元测试和 E2E           |
 | 监控     | Sentry + Web Vitals | 错误追踪和性能监控       |
 | 部署     | Vercel              | Serverless 部署          |
@@ -467,6 +465,6 @@
 
 1. **Serverless 架构**: 无状态设计，天然支持自动扩展
 2. **数据库**: Supabase 托管 PostgreSQL，自动扩展
-3. **缓存**: 多级缓存策略（客户端 + 内存/Redis）
+3. **缓存**: 多级缓存策略（客户端 SWR + 内存 + PostgreSQL）
 4. **CDN**: Vercel Edge Network 全球缓存
 5. **边缘计算**: 支持 Vercel Edge Functions

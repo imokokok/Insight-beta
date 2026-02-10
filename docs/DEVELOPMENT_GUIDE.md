@@ -133,10 +133,12 @@ brew services start postgresql@16
 # Or use any PostgreSQL 16+ instance
 ```
 
-### Cache (Optional)
+### Cache
 
-By default, the application uses in-memory caching which is sufficient for most use cases.
-Redis is optional and can be configured via `REDIS_URL` environment variable.
+The application uses a multi-level caching strategy:
+- **SWR**: Client-side data fetching and caching
+- **Memory**: Server-side rate limiting storage
+- **PostgreSQL**: Persistent cache via Supabase
 
 ### Database Tables
 
@@ -151,20 +153,11 @@ Redis is optional and can be configured via `REDIS_URL` environment variable.
 
 ### Rate Limiting Configuration
 
-Rate limiting supports two storage backends:
-
-| Storage | Environment Variable              | Use Case                     |
-| ------- | --------------------------------- | ---------------------------- |
-| Memory  | `INSIGHT_RATE_LIMIT_STORE=memory` | Development, single instance |
-| Redis   | `INSIGHT_RATE_LIMIT_STORE=redis`  | Production, multi-instance   |
+Rate limiting uses in-memory storage by default, which is suitable for serverless environments like Vercel.
 
 ```bash
-# Development (default)
-INSIGHT_RATE_LIMIT_STORE=memory
-
-# Production
-INSIGHT_RATE_LIMIT_STORE=redis
-REDIS_URL=redis://localhost:6379
+# Memory storage (default, recommended for Vercel)
+# No additional configuration needed
 ```
 
 ### Logging Configuration

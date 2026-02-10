@@ -311,6 +311,76 @@ class SyncManager {
 export const syncManager = new SyncManager();
 
 // ============================================================================
+// Utility Functions
+// ============================================================================
+
+export function createPriceFeedRecord(
+  context: SyncContext,
+  symbol: string,
+  baseAsset: string,
+  quoteAsset: string,
+  price: number,
+  blockNumber: number | null,
+  confidence: number,
+  metadata?: Record<string, unknown>,
+): PriceFeedRecord {
+  return {
+    protocol: context.protocol,
+    chain: context.chain,
+    instanceId: context.instanceId,
+    symbol,
+    baseAsset,
+    quoteAsset,
+    price,
+    timestamp: new Date(),
+    blockNumber,
+    confidence,
+    source: context.protocol,
+    metadata,
+  };
+}
+
+export function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(message)), timeoutMs);
+    promise
+      .then(resolve)
+      .catch(reject)
+      .finally(() => clearTimeout(timer));
+  });
+}
+
+export async function withRetry<T>(
+  fn: () => Promise<T>,
+  options: {
+    maxRetries: number;
+    retryDelayMs: number;
+    onRetry?: (attempt: number, error: Error) => void;
+  },
+): Promise<T> {
+  const { maxRetries, retryDelayMs, onRetry } = options;
+  let lastError: Error | undefined;
+
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+
+      if (attempt < maxRetries - 1) {
+        const delay = retryDelayMs * Math.pow(2, attempt);
+        if (onRetry) {
+          onRetry(attempt + 1, lastError);
+        }
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
+  }
+
+  throw lastError;
+}
+
+// ============================================================================
 // Default Price Writer
 // ============================================================================
 

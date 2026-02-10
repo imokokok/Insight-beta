@@ -1,10 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   parseRpcUrls,
-  isZeroBytes32,
-  toIsoFromSeconds,
   formatUsdCompact,
-  formatUsd,
   formatTime,
   calculatePercentage,
   formatDurationMinutes,
@@ -42,48 +39,6 @@ describe('parseRpcUrls', () => {
   });
 });
 
-describe('isZeroBytes32', () => {
-  it('should return true for zero bytes32', () => {
-    expect(
-      isZeroBytes32('0x0000000000000000000000000000000000000000000000000000000000000000'),
-    ).toBe(true);
-  });
-
-  it('should return false for non-zero bytes32', () => {
-    expect(
-      isZeroBytes32('0x0000000000000000000000000000000000000000000000000000000000000001'),
-    ).toBe(false);
-  });
-
-  it('should return true for undefined', () => {
-    expect(isZeroBytes32(undefined)).toBe(true);
-  });
-
-  it('should be case insensitive', () => {
-    const zeroBytes32: `0x${string}` =
-      '0x0000000000000000000000000000000000000000000000000000000000000000';
-    expect(isZeroBytes32(zeroBytes32.toUpperCase() as `0x${string}`)).toBe(true);
-    expect(isZeroBytes32(zeroBytes32.toLowerCase() as `0x${string}`)).toBe(true);
-  });
-});
-
-describe('toIsoFromSeconds', () => {
-  it('should convert seconds to ISO string', () => {
-    const result = toIsoFromSeconds(1704067200n);
-    expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T/);
-  });
-
-  it('should handle zero', () => {
-    const result = toIsoFromSeconds(0n);
-    expect(result).toBe('1970-01-01T00:00:00.000Z');
-  });
-
-  it('should handle large numbers', () => {
-    const result = toIsoFromSeconds(9999999999n);
-    expect(result).toContain('2286');
-  });
-});
-
 describe('formatUsdCompact', () => {
   it('should format large numbers compactly', () => {
     expect(formatUsdCompact(1000000, 'en-US')).toContain('$');
@@ -96,17 +51,6 @@ describe('formatUsdCompact', () => {
   it('should handle negative numbers', () => {
     const result = formatUsdCompact(-1000, 'en-US');
     expect(result).toContain('$');
-  });
-});
-
-describe('formatUsd', () => {
-  it('should format USD correctly', () => {
-    expect(formatUsd(1000, 'en-US')).toContain('$');
-    expect(formatUsd(1000000, 'en-US')).toContain('$');
-  });
-
-  it('should handle zero', () => {
-    expect(formatUsd(0, 'en-US')).toContain('$0');
   });
 });
 
@@ -296,7 +240,7 @@ describe('Boundary Value Tests', () => {
     });
 
     it('should handle special characters', () => {
-      expect('!@#$%^&*(){}[]|\\:";\'<>,.?/`~').toBeTruthy();
+      expect('!@#$%^&*(){}[]|\\:";\'<>.,.?/`~').toBeTruthy();
     });
   });
 

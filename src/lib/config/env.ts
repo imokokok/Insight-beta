@@ -178,7 +178,6 @@ const envSchema = z.object({
   INSIGHT_DISABLE_VOTE_TRACKING: optionalBoolean(false),
 
   // 限流配置
-  INSIGHT_RATE_LIMIT_STORE: optionalString('memory'),
   INSIGHT_API_LOG_SAMPLE_RATE: optionalNumber(1),
 
   // 超时配置
