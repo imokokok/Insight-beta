@@ -39,16 +39,19 @@ export class QueryBuilder<T extends TableName> {
    * 查询单条记录
    */
   async findOne(filters: Partial<TableRow<T>>): Promise<TableRow<T> | null> {
-    let query = this.client.from(this.table).select('*');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let query = this.client.from(this.table).select('*') as any;
 
     Object.entries(filters).forEach(([key, value]) => {
-      query = query.eq(key, value);
+      query = query.eq(key as keyof TableRow<T>, value);
     });
 
     const { data, error } = await query.single();
 
     if (error) {
-      if (error.code === 'PGRST116') return null; // No data found
+      if (error.code === 'PGRST116') {
+        return null; // No data found
+      }
       logger.error(`Failed to findOne in ${String(this.table)}`, { error });
       throw error;
     }
@@ -67,11 +70,12 @@ export class QueryBuilder<T extends TableName> {
       offset?: number;
     } = {},
   ): Promise<TableRow<T>[]> {
-    let query = this.client.from(this.table).select('*');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let query = this.client.from(this.table).select('*') as any;
 
     if (options.filters) {
       Object.entries(options.filters).forEach(([key, value]) => {
-        query = query.eq(key, value);
+        query = query.eq(key as keyof TableRow<T>, value);
       });
     }
 
@@ -103,9 +107,8 @@ export class QueryBuilder<T extends TableName> {
    * 插入记录
    */
   async insert(data: TableInsert<T>): Promise<TableRow<T>> {
-    const { data: result, error } = await this.client
-      .from(this.table)
-      .insert(data)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: result, error } = await (this.client.from(this.table).insert(data as any) as any)
       .select()
       .single();
 
@@ -121,7 +124,10 @@ export class QueryBuilder<T extends TableName> {
    * 批量插入
    */
   async insertMany(data: TableInsert<T>[]): Promise<TableRow<T>[]> {
-    const { data: result, error } = await this.client.from(this.table).insert(data).select();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: result, error } = await (
+      this.client.from(this.table).insert(data as any) as any
+    ).select();
 
     if (error) {
       logger.error(`Failed to insertMany into ${String(this.table)}`, { error });
@@ -135,10 +141,11 @@ export class QueryBuilder<T extends TableName> {
    * 更新记录
    */
   async update(filters: Partial<TableRow<T>>, data: Partial<TableRow<T>>): Promise<TableRow<T>[]> {
-    let query = this.client.from(this.table).update(data);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let query = this.client.from(this.table).update(data as any) as any;
 
     Object.entries(filters).forEach(([key, value]) => {
-      query = query.eq(key, value);
+      query = query.eq(key as keyof TableRow<T>, value);
     });
 
     const { data: result, error } = await query.select();
@@ -155,15 +162,22 @@ export class QueryBuilder<T extends TableName> {
    * Upsert 记录
    */
   async upsert(data: TableInsert<T>, conflictColumns: (keyof TableRow<T>)[]): Promise<TableRow<T>> {
-    const { data: result, error } = await this.client
-      .from(this.table)
-      .upsert(data, { onConflict: conflictColumns.join(',') })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: result, error } = await (
+      this.client
+        .from(this.table)
+        .upsert(data as any, { onConflict: conflictColumns.join(',') }) as any
+    )
       .select()
       .single();
 
     if (error) {
       logger.error(`Failed to upsert into ${String(this.table)}`, { error });
       throw error;
+    }
+
+    if (!result) {
+      throw new Error(`Upsert returned no data for table ${String(this.table)}`);
     }
 
     return result as unknown as TableRow<T>;
@@ -173,10 +187,11 @@ export class QueryBuilder<T extends TableName> {
    * 删除记录
    */
   async delete(filters: Partial<TableRow<T>>): Promise<void> {
-    let query = this.client.from(this.table).delete();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let query = this.client.from(this.table).delete() as any;
 
     Object.entries(filters).forEach(([key, value]) => {
-      query = query.eq(key, value);
+      query = query.eq(key as keyof TableRow<T>, value);
     });
 
     const { error } = await query;
@@ -191,11 +206,12 @@ export class QueryBuilder<T extends TableName> {
    * 计数
    */
   async count(filters?: Partial<TableRow<T>>): Promise<number> {
-    let query = this.client.from(this.table).select('*', { count: 'exact', head: true });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let query = this.client.from(this.table).select('*', { count: 'exact', head: true }) as any;
 
     if (filters) {
       Object.entries(filters).forEach(([key, value]) => {
-        query = query.eq(key, value);
+        query = query.eq(key as keyof TableRow<T>, value);
       });
     }
 
@@ -294,7 +310,14 @@ export { supabaseAdmin } from '@/lib/supabase/server';
  * 执行原始 SQL 查询（谨慎使用）
  */
 export async function executeRawQuery<T = unknown>(sql: string, params?: unknown[]): Promise<T[]> {
-  const { data, error } = await supabaseAdmin.rpc('execute_sql', {
+  const { data, error } = await (
+    supabaseAdmin as unknown as {
+      rpc: (
+        name: string,
+        args: Record<string, unknown>,
+      ) => Promise<{ data: unknown; error: Error | null }>;
+    }
+  ).rpc('execute_sql', {
     query: sql,
     params: params || [],
   });

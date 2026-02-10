@@ -168,6 +168,44 @@ export async function processBatch<T, R>(
 }
 
 // ============================================================================
+// 重试工具
+// ============================================================================
+
+/**
+ * 带重试机制的操作执行
+ * @param operation - 要执行的操作
+ * @param maxRetries - 最大重试次数，默认 3
+ * @param baseDelayMs - 基础延迟时间（毫秒），默认 1000
+ * @returns 操作结果
+ */
+export async function withRetry<T>(
+  operation: () => Promise<T>,
+  maxRetries: number = 3,
+  baseDelayMs: number = 1000,
+): Promise<T> {
+  let lastError: Error | undefined;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+
+      if (attempt < maxRetries) {
+        const delay = baseDelayMs * Math.pow(2, attempt - 1);
+        logger.warn(`Operation failed, retrying (${attempt}/${maxRetries})`, {
+          error: lastError.message,
+          delay,
+        });
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
+  }
+
+  throw lastError;
+}
+
+// ============================================================================
 // 导出常量
 // ============================================================================
 

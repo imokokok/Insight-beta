@@ -283,7 +283,9 @@ export class DIAClient {
         healthy: false,
         lastUpdate: new Date(0),
         stalenessSeconds: Infinity,
-        issues: [`Failed to check DIA feed health: ${error instanceof Error ? error.message : String(error)}`],
+        issues: [
+          `Failed to check DIA feed health: ${error instanceof Error ? error.message : String(error)}`,
+        ],
       };
     }
   }
@@ -313,21 +315,21 @@ export function getSupportedDIAChains(): SupportedChain[] {
 /**
  * 获取指定链的可用资产列表
  */
-export function getAvailableDIAAssets(chain: SupportedChain): string[] {
-  return DIA_SUPPORTED_ASSETS[chain] || [];
+export function getAvailableDIAAssets(chain: string): string[] {
+  return DIA_SUPPORTED_ASSETS[chain as SupportedChain] || [];
 }
 
 /**
  * 获取所有可用价格符号
  */
-export function getAvailableDIASymbols(chain: SupportedChain): string[] {
-  const assets = DIA_SUPPORTED_ASSETS[chain] || [];
+export function getAvailableDIASymbols(chain: string): string[] {
+  const assets = DIA_SUPPORTED_ASSETS[chain as SupportedChain] || [];
   return assets.map((asset) => `${asset}/USD`);
 }
 
 /**
  * 检查链是否支持 DIA
  */
-export function isChainSupportedByDIA(chain: SupportedChain): boolean {
-  return (DIA_SUPPORTED_ASSETS[chain] || []).length > 0;
+export function isChainSupportedByDIA(chain: string): boolean {
+  return (DIA_SUPPORTED_ASSETS[chain as SupportedChain] || []).length > 0;
 }

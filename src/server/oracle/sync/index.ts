@@ -108,12 +108,14 @@ export {
 // Sync Manager 工厂
 // ============================================================================
 
-const syncManagers: Map<OracleProtocol, BaseSyncManager> = new Map();
+const syncManagers: Map<OracleProtocol, import('./BaseSyncManager').BaseSyncManager> = new Map();
 
 /**
  * 获取指定协议的同步管理器
  */
-export async function getSyncManager(protocol: OracleProtocol): Promise<BaseSyncManager> {
+export async function getSyncManager(
+  protocol: OracleProtocol,
+): Promise<import('./BaseSyncManager').BaseSyncManager> {
   if (!syncManagers.has(protocol)) {
     // 动态导入避免循环依赖
     switch (protocol) {

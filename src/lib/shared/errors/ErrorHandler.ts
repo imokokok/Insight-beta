@@ -9,9 +9,9 @@
  */
 
 import { OracleClientError, PriceFetchError, HealthCheckError } from '@/lib/blockchain/core/types';
-import { sleep } from '@/lib/utils/common';
 import type { Logger } from '@/lib/shared/logger/LoggerFactory';
 import type { OracleProtocol, SupportedChain } from '@/lib/types/unifiedOracleTypes';
+import { sleep } from '@/lib/utils/common';
 
 /**
  * 标准化错误对象
@@ -177,6 +177,29 @@ export function withRetry(options: {
             }
           : undefined,
       });
+    };
+
+    return descriptor;
+  };
+}
+
+/**
+ * 错误处理装饰器 - 包装函数并捕获错误
+ */
+export function withErrorHandling<T extends (...args: unknown[]) => Promise<unknown>>(
+  handler: (error: Error) => void,
+) {
+  return function (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) {
+    const originalMethod = descriptor.value as T;
+
+    descriptor.value = async function (...args: Parameters<T>) {
+      try {
+        return await originalMethod.apply(this, args);
+      } catch (error) {
+        const normalizedError = normalizeError(error);
+        handler(normalizedError);
+        throw normalizedError;
+      }
     };
 
     return descriptor;

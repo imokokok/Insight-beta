@@ -95,7 +95,7 @@ export const API3_SUPPORTED_DAPIS: Record<SupportedChain, string[]> = {
 // dAPI 名称到哈希的映射
 // ============================================================================
 
-function encodeDapiName(dapiName: string): string {
+export function encodeDapiName(dapiName: string): string {
   // 简化的编码，实际应该使用 ethers.utils.formatBytes32String
   return `0x${Buffer.from(dapiName.padEnd(32, '\0')).toString('hex')}`;
 }

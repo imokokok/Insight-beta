@@ -8,6 +8,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { PublicKey } from '@solana/web3.js';
 
 import { SolanaOracleClient } from './SolanaOracleClient';
+import type { UnifiedPriceFeed } from '@/lib/types/unifiedOracleTypes';
 
 // Mock dependencies
 vi.mock('@/lib/blockchain/core/BaseOracleClient', () => ({
@@ -53,7 +54,7 @@ vi.mock('@/lib/shared/logger/LoggerFactory', () => ({
 
 // Create a concrete implementation for testing
 class TestSolanaClient extends SolanaOracleClient {
-  readonly protocol = 'test' as const;
+  readonly protocol = 'pyth' as const;
   readonly chain = 'solana' as const;
 
   protected resolveProgramId(): PublicKey | undefined {
@@ -83,8 +84,30 @@ class TestSolanaClient extends SolanaOracleClient {
     _rawData: unknown,
     symbol: string,
     _feedId: PublicKey,
-  ): { price: number; symbol: string } | null {
-    return { price: 100, symbol };
+  ): UnifiedPriceFeed | null {
+    return {
+      id: `pyth-solana-${symbol.toLowerCase().replace('/', '-')}`,
+      symbol,
+      price: 100,
+      timestamp: Date.now(),
+    };
+  }
+
+  async fetchAllFeeds(): Promise<UnifiedPriceFeed[]> {
+    return [
+      {
+        id: 'pyth-solana-sol-usd',
+        symbol: 'SOL/USD',
+        price: 100,
+        timestamp: Date.now(),
+      },
+      {
+        id: 'pyth-solana-btc-usd',
+        symbol: 'BTC/USD',
+        price: 50000,
+        timestamp: Date.now(),
+      },
+    ];
   }
 
   getCapabilities() {
@@ -103,11 +126,11 @@ describe('SolanaOracleClient - 基础功能测试', () => {
   it('should create client with valid RPC URL', () => {
     const client = new TestSolanaClient({
       chain: 'solana',
-      protocol: 'test',
+      protocol: 'pyth',
       rpcUrl: 'https://api.mainnet-beta.solana.com',
     });
     expect(client).toBeDefined();
-    expect(client.protocol).toBe('test');
+    expect(client.protocol).toBe('pyth');
     expect(client.chain).toBe('solana');
   });
 
@@ -115,7 +138,7 @@ describe('SolanaOracleClient - 基础功能测试', () => {
     expect(() => {
       new TestSolanaClient({
         chain: 'solana',
-        protocol: 'test',
+        protocol: 'pyth',
         rpcUrl: '',
       });
     }).toThrow('RPC URL is required for SolanaOracleClient');
@@ -124,7 +147,7 @@ describe('SolanaOracleClient - 基础功能测试', () => {
   it('should use default commitment level', () => {
     const client = new TestSolanaClient({
       chain: 'solana',
-      protocol: 'test',
+      protocol: 'pyth',
       rpcUrl: 'https://api.mainnet-beta.solana.com',
     });
     expect(client).toBeDefined();
@@ -133,7 +156,7 @@ describe('SolanaOracleClient - 基础功能测试', () => {
   it('should use custom commitment level', () => {
     const client = new TestSolanaClient({
       chain: 'solana',
-      protocol: 'test',
+      protocol: 'pyth',
       rpcUrl: 'https://api.mainnet-beta.solana.com',
       commitment: 'finalized',
     });
@@ -143,7 +166,7 @@ describe('SolanaOracleClient - 基础功能测试', () => {
   it('should use default decimals', () => {
     const client = new TestSolanaClient({
       chain: 'solana',
-      protocol: 'test',
+      protocol: 'pyth',
       rpcUrl: 'https://api.mainnet-beta.solana.com',
     });
     expect(client).toBeDefined();
@@ -152,7 +175,7 @@ describe('SolanaOracleClient - 基础功能测试', () => {
   it('should use custom decimals', () => {
     const client = new TestSolanaClient({
       chain: 'solana',
-      protocol: 'test',
+      protocol: 'pyth',
       rpcUrl: 'https://api.mainnet-beta.solana.com',
       defaultDecimals: 9,
     });
@@ -164,12 +187,14 @@ describe('SolanaOracleClient - 价格格式化测试', () => {
   it('should format price correctly', () => {
     const client = new TestSolanaClient({
       chain: 'solana',
-      protocol: 'test',
+      protocol: 'pyth',
       rpcUrl: 'https://api.mainnet-beta.solana.com',
     });
 
     // Access protected method through type casting
-    const formatPrice = (client as unknown as { formatPrice: (rawPrice: bigint, decimals: number) => number }).formatPrice;
+    const formatPrice = (
+      client as unknown as { formatPrice: (rawPrice: bigint, decimals: number) => number }
+    ).formatPrice;
 
     expect(formatPrice(BigInt(100000000), 8)).toBe(1);
     expect(formatPrice(BigInt(150000000000), 8)).toBe(1500);
@@ -181,12 +206,14 @@ describe('SolanaOracleClient - 陈旧度计算测试', () => {
   it('should calculate staleness correctly', () => {
     const client = new TestSolanaClient({
       chain: 'solana',
-      protocol: 'test',
+      protocol: 'pyth',
       rpcUrl: 'https://api.mainnet-beta.solana.com',
     });
 
     // Access protected method through type casting
-    const calculateStalenessSeconds = (client as unknown as { calculateStalenessSeconds: (updatedAt: bigint | number) => number }).calculateStalenessSeconds;
+    const calculateStalenessSeconds = (
+      client as unknown as { calculateStalenessSeconds: (updatedAt: bigint | number) => number }
+    ).calculateStalenessSeconds;
 
     const now = Math.floor(Date.now() / 1000);
     const oneMinuteAgo = now - 60;
@@ -199,11 +226,13 @@ describe('SolanaOracleClient - 陈旧度计算测试', () => {
   it('should return 0 for future timestamps', () => {
     const client = new TestSolanaClient({
       chain: 'solana',
-      protocol: 'test',
+      protocol: 'pyth',
       rpcUrl: 'https://api.mainnet-beta.solana.com',
     });
 
-    const calculateStalenessSeconds = (client as unknown as { calculateStalenessSeconds: (updatedAt: bigint | number) => number }).calculateStalenessSeconds;
+    const calculateStalenessSeconds = (
+      client as unknown as { calculateStalenessSeconds: (updatedAt: bigint | number) => number }
+    ).calculateStalenessSeconds;
 
     const future = Math.floor(Date.now() / 1000) + 1000;
     expect(calculateStalenessSeconds(future)).toBe(0);
@@ -214,24 +243,20 @@ describe('SolanaOracleClient - Feed ID 生成测试', () => {
   it('should generate correct feed ID', () => {
     const client = new TestSolanaClient({
       chain: 'solana',
-      protocol: 'test',
+      protocol: 'pyth',
       rpcUrl: 'https://api.mainnet-beta.solana.com',
     });
 
     // Test via the client's method directly
-    const result1 = (client as unknown as { generateFeedId: (symbol: string, chain: string) => string }).generateFeedId.call(
-      { protocol: 'test' },
-      'SOL/USD',
-      'solana'
-    );
-    expect(result1).toBe('test-solana-sol-usd');
+    const result1 = (
+      client as unknown as { generateFeedId: (symbol: string, chain: string) => string }
+    ).generateFeedId.call({ protocol: 'pyth' }, 'SOL/USD', 'solana');
+    expect(result1).toBe('pyth-solana-sol-usd');
 
-    const result2 = (client as unknown as { generateFeedId: (symbol: string, chain: string) => string }).generateFeedId.call(
-      { protocol: 'test' },
-      'BTC-USD',
-      'solana'
-    );
-    expect(result2).toBe('test-solana-btc-usd');
+    const result2 = (
+      client as unknown as { generateFeedId: (symbol: string, chain: string) => string }
+    ).generateFeedId.call({ protocol: 'pyth' }, 'BTC-USD', 'solana');
+    expect(result2).toBe('pyth-solana-btc-usd');
   });
 });
 
@@ -239,11 +264,12 @@ describe('SolanaOracleClient - 标准化符号测试', () => {
   it('should normalize symbols correctly', () => {
     const client = new TestSolanaClient({
       chain: 'solana',
-      protocol: 'test',
+      protocol: 'pyth',
       rpcUrl: 'https://api.mainnet-beta.solana.com',
     });
 
-    const normalizeSymbol = (client as unknown as { normalizeSymbol: (symbol: string) => string }).normalizeSymbol;
+    const normalizeSymbol = (client as unknown as { normalizeSymbol: (symbol: string) => string })
+      .normalizeSymbol;
 
     expect(normalizeSymbol('sol/usd')).toBe('SOL/USD');
     expect(normalizeSymbol('BTC-USD')).toBe('BTC/USD');

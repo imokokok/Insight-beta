@@ -14,8 +14,8 @@ import {
   getAvailableAPI3Dapis,
   isChainSupportedByAPI3,
   getDapiServerAddress,
-  encodeDapiName,
 } from './api3Oracle';
+import type { SupportedChain } from '@/lib/types/unifiedOracleTypes';
 
 // Mock EvmOracleClient and dependencies
 vi.mock('@/lib/shared', () => ({
@@ -192,7 +192,7 @@ describe('Error Handling - 错误处理测试', () => {
   });
 
   it('should return empty array for unsupported chain dAPIs', () => {
-    const dapis = getAvailableAPI3Dapis('unsupported');
+    const dapis = getAvailableAPI3Dapis('unsupported' as SupportedChain);
     expect(dapis).toEqual([]);
   });
 
@@ -240,7 +240,7 @@ describe('Utility Functions', () => {
     });
 
     it('should pass config to client', () => {
-      const config = { stalenessThreshold: 600 };
+      const config = { airnodeAddress: '0x9EB9798Dc1b602067DFe5C6A463dBae0D60c67fE' };
       const client = createAPI3Client('ethereum', 'https://ethereum.rpc', config);
       expect(client).toBeDefined();
     });

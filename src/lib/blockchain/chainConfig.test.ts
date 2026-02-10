@@ -4,7 +4,7 @@
  * 测试区块链链配置、viem chain 映射、RPC URL 配置和链元数据
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   VIEM_CHAIN_MAP,
   DEFAULT_RPC_URLS,
