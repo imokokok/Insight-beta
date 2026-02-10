@@ -39,11 +39,11 @@ async function createTimelineEvent(input: EventTimelineInput): Promise<{ id: str
         occurredAt: input.occurredAt?.toISOString(),
       }),
     });
-    
+
     if (!response.ok) {
       throw new Error('Failed to create timeline event');
     }
-    
+
     const data = await response.json();
     return { id: data.data.id };
   } catch (error) {
@@ -102,7 +102,7 @@ export async function hookAlertResolved(
   alertId: string,
   protocol?: string,
   chain?: string,
-  symbol?: string
+  symbol?: string,
 ): Promise<void> {
   try {
     await createTimelineEvent({
@@ -174,7 +174,7 @@ export async function hookDisputeResolved(
   chain: string,
   symbol: string,
   resolution: 'valid' | 'invalid',
-  metadata?: Record<string, unknown>
+  metadata?: Record<string, unknown>,
 ): Promise<void> {
   try {
     await createTimelineEvent({
@@ -209,6 +209,7 @@ interface PriceEventParams {
   chain: string;
   oldPrice: number;
   newPrice: number;
+  /** 价格变化百分比，小数形式 (如 0.01 = 1%) */
   changePercent: number;
   metadata?: Record<string, unknown>;
 }
@@ -217,14 +218,16 @@ interface PriceEventParams {
  * 记录价格飙升事件
  */
 export async function hookPriceSpike(params: PriceEventParams): Promise<void> {
+  // changePercent 是小数形式 (如 0.01 = 1%)
+  const changePercentDisplay = params.changePercent * 100;
   const severity: EventSeverity =
-    params.changePercent > 10 ? 'critical' : params.changePercent > 5 ? 'error' : 'warning';
+    changePercentDisplay > 10 ? 'critical' : changePercentDisplay > 5 ? 'error' : 'warning';
 
   try {
     await createTimelineEvent({
       eventType: 'price_spike',
       severity,
-      title: `${params.symbol} 价格飙升 ${params.changePercent.toFixed(2)}%`,
+      title: `${params.symbol} 价格飙升 ${changePercentDisplay.toFixed(2)}%`,
       description: `价格从 ${params.oldPrice} 上涨至 ${params.newPrice}`,
       protocol: params.protocol,
       chain: params.chain,
@@ -246,18 +249,16 @@ export async function hookPriceSpike(params: PriceEventParams): Promise<void> {
  * 记录价格下降事件
  */
 export async function hookPriceDrop(params: PriceEventParams): Promise<void> {
+  // changePercent 是小数形式 (如 0.01 = 1%)
+  const changePercentDisplay = Math.abs(params.changePercent) * 100;
   const severity: EventSeverity =
-    Math.abs(params.changePercent) > 10
-      ? 'critical'
-      : Math.abs(params.changePercent) > 5
-        ? 'error'
-        : 'warning';
+    changePercentDisplay > 10 ? 'critical' : changePercentDisplay > 5 ? 'error' : 'warning';
 
   try {
     await createTimelineEvent({
       eventType: 'price_drop',
       severity,
-      title: `${params.symbol} 价格下降 ${Math.abs(params.changePercent).toFixed(2)}%`,
+      title: `${params.symbol} 价格下降 ${changePercentDisplay.toFixed(2)}%`,
       description: `价格从 ${params.oldPrice} 下跌至 ${params.newPrice}`,
       protocol: params.protocol,
       chain: params.chain,
@@ -326,7 +327,7 @@ export async function hookDeploymentStarted(params: DeploymentEventParams): Prom
 export async function hookDeploymentCompleted(
   deploymentEventId: string,
   status: 'completed' | 'failed' | 'rolled_back',
-  errorMessage?: string
+  errorMessage?: string,
 ): Promise<void> {
   try {
     await createTimelineEvent({
@@ -343,7 +344,10 @@ export async function hookDeploymentCompleted(
       source: 'system',
     });
   } catch (error) {
-    logger.error('Failed to create deployment completed timeline event', { error, deploymentEventId });
+    logger.error('Failed to create deployment completed timeline event', {
+      error,
+      deploymentEventId,
+    });
   }
 }
 
@@ -523,7 +527,7 @@ export async function hookSloBreached(params: SloEventParams): Promise<void> {
  * 记录 Error Budget 告警事件
  */
 export async function hookErrorBudgetAlert(
-  params: SloEventParams & { daysUntilExhaustion: number }
+  params: SloEventParams & { daysUntilExhaustion: number },
 ): Promise<void> {
   try {
     await createTimelineEvent({
@@ -559,9 +563,7 @@ export async function hookErrorBudgetAlert(
  * 批量创建事件
  */
 export async function hookBatchEvents(events: EventTimelineInput[]): Promise<void> {
-  const results = await Promise.allSettled(
-    events.map((event) => createTimelineEvent(event))
-  );
+  const results = await Promise.allSettled(events.map((event) => createTimelineEvent(event)));
 
   const failures = results.filter((r) => r.status === 'rejected');
   if (failures.length > 0) {

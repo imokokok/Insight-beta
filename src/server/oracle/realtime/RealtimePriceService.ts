@@ -1,6 +1,6 @@
 /**
  * Realtime Price Aggregation Service
- * 
+ *
  * P0 优化：实时价格聚合服务
  * - WebSocket 连接池管理
  * - 多协议价格订阅
@@ -10,13 +10,14 @@
 
 import { EventEmitter } from 'events';
 
+import pLimit from 'p-limit';
+
 import { logger } from '@/lib/logger';
 import type {
   CrossOracleComparison,
   OracleProtocol,
   SupportedChain,
 } from '@/lib/types/unifiedOracleTypes';
-import pLimit from 'p-limit';
 
 import { PriceAggregationEngine } from '../priceAggregation';
 
@@ -26,19 +27,19 @@ import { PriceAggregationEngine } from '../priceAggregation';
 
 const CONFIG = {
   // 聚合配置
-  AGGREGATION_INTERVAL_MS: 5000,      // 5秒聚合间隔
-  MAX_CONCURRENT_AGGREGATION: 5,      // 最大并发聚合数
-  
+  AGGREGATION_INTERVAL_MS: 5000, // 5秒聚合间隔
+  MAX_CONCURRENT_AGGREGATION: 5, // 最大并发聚合数
+
   // WebSocket 配置
-  WS_HEARTBEAT_INTERVAL_MS: 30000,    // 30秒心跳
-  WS_MAX_CONNECTIONS: 100,            // 最大连接数
-  
+  WS_HEARTBEAT_INTERVAL_MS: 30000, // 30秒心跳
+  WS_MAX_CONNECTIONS: 100, // 最大连接数
+
   // 缓存配置
-  CACHE_TTL_MS: 30000,                // 30秒缓存
-  
+  CACHE_TTL_MS: 30000, // 30秒缓存
+
   // 批处理配置
-  BATCH_SIZE: 50,                     // 每批处理数量
-  BATCH_INTERVAL_MS: 1000,            // 批处理间隔
+  BATCH_SIZE: 50, // 每批处理数量
+  BATCH_INTERVAL_MS: 1000, // 批处理间隔
 };
 
 // ============================================================================
@@ -64,6 +65,7 @@ interface ServiceStats {
   totalConnections: number;
   lastAggregationAt: number;
   avgAggregationTimeMs: number;
+  /** 缓存命中率，小数形式 (如 0.5 = 50%) */
   cacheHitRate: number;
 }
 
@@ -84,10 +86,10 @@ export class RealtimePriceService extends EventEmitter {
     avgAggregationTimeMs: 0,
     cacheHitRate: 0,
   };
-  
+
   // 并发限制器
   private aggregateLimit = pLimit(CONFIG.MAX_CONCURRENT_AGGREGATION);
-  
+
   // 批处理队列
   private pendingSymbols: Set<string> = new Set();
   private batchTimer: NodeJS.Timeout | null = null;
@@ -106,13 +108,13 @@ export class RealtimePriceService extends EventEmitter {
    */
   start(): void {
     if (this.isRunning) return;
-    
+
     this.isRunning = true;
     logger.info('RealtimePriceService started');
-    
+
     // 启动定时聚合
     this.startAggregationLoop();
-    
+
     this.emit('started');
   }
 
@@ -121,22 +123,22 @@ export class RealtimePriceService extends EventEmitter {
    */
   stop(): void {
     if (!this.isRunning) return;
-    
+
     this.isRunning = false;
-    
+
     if (this.aggregationTimer) {
       clearInterval(this.aggregationTimer);
       this.aggregationTimer = null;
     }
-    
+
     if (this.batchTimer) {
       clearTimeout(this.batchTimer);
       this.batchTimer = null;
     }
-    
+
     this.subscriptions.clear();
     this.priceCache.clear();
-    
+
     logger.info('RealtimePriceService stopped');
     this.emit('stopped');
   }
@@ -163,14 +165,14 @@ export class RealtimePriceService extends EventEmitter {
       clientId,
       lastUpdateAt: Date.now(),
     };
-    
+
     this.subscriptions.set(clientId, subscription);
     this.stats.activeSubscriptions = this.subscriptions.size;
-    
+
     // 立即触发一次聚合
     symbols.forEach((symbol) => this.pendingSymbols.add(symbol));
     this.scheduleBatchAggregation();
-    
+
     logger.debug('Client subscribed', { clientId, symbols: symbols.length });
     this.emit('subscribed', { clientId, symbols });
   }
@@ -203,16 +205,16 @@ export class RealtimePriceService extends EventEmitter {
       this.subscribe(clientId, symbols, options);
       return;
     }
-    
+
     existing.symbols = [...symbols];
     if (options.protocols) existing.protocols = options.protocols;
     if (options.chains) existing.chains = options.chains;
     existing.lastUpdateAt = Date.now();
-    
+
     // 触发新符号的聚合
     symbols.forEach((symbol) => this.pendingSymbols.add(symbol));
     this.scheduleBatchAggregation();
-    
+
     logger.debug('Subscription updated', { clientId, symbols: symbols.length });
   }
 
@@ -234,15 +236,15 @@ export class RealtimePriceService extends EventEmitter {
    */
   private async performAggregation(): Promise<void> {
     const startTime = Date.now();
-    
+
     // 收集所有需要聚合的符号
     const allSymbols = new Set<string>();
     for (const sub of this.subscriptions.values()) {
       sub.symbols.forEach((s) => allSymbols.add(s));
     }
-    
+
     if (allSymbols.size === 0) return;
-    
+
     // 检查缓存，过滤掉未过期的
     const symbolsToAggregate: string[] = [];
     for (const symbol of allSymbols) {
@@ -251,16 +253,16 @@ export class RealtimePriceService extends EventEmitter {
         symbolsToAggregate.push(symbol);
       }
     }
-    
+
     if (symbolsToAggregate.length === 0) {
-      this.stats.cacheHitRate = 100;
+      this.stats.cacheHitRate = 1; // 100% 缓存命中率
       return;
     }
-    
+
     try {
       // 批量聚合（带并发控制）
       const results = await this.batchAggregate(symbolsToAggregate);
-      
+
       // 更新缓存
       const updates: PriceUpdate[] = [];
       for (const result of results) {
@@ -276,26 +278,24 @@ export class RealtimePriceService extends EventEmitter {
           });
         }
       }
-      
+
       // 推送更新
       if (updates.length > 0) {
         this.pushUpdates(updates);
       }
-      
+
       // 更新统计
       const duration = Date.now() - startTime;
       this.stats.lastAggregationAt = Date.now();
-      this.stats.avgAggregationTimeMs = 
-        (this.stats.avgAggregationTimeMs * 0.9) + (duration * 0.1);
-      this.stats.cacheHitRate = 
-        ((allSymbols.size - symbolsToAggregate.length) / allSymbols.size) * 100;
-      
+      this.stats.avgAggregationTimeMs = this.stats.avgAggregationTimeMs * 0.9 + duration * 0.1;
+      // 缓存命中率，小数形式 (0.5 = 50%)
+      this.stats.cacheHitRate = (allSymbols.size - symbolsToAggregate.length) / allSymbols.size;
+
       logger.debug('Aggregation completed', {
         symbols: symbolsToAggregate.length,
         duration,
-        cacheHitRate: this.stats.cacheHitRate.toFixed(1),
+        cacheHitRate: `${(this.stats.cacheHitRate * 100).toFixed(1)}%`,
       });
-      
     } catch (error) {
       logger.error('Aggregation failed', { error });
     }
@@ -309,18 +309,16 @@ export class RealtimePriceService extends EventEmitter {
     for (let i = 0; i < symbols.length; i += CONFIG.BATCH_SIZE) {
       batches.push(symbols.slice(i, i + CONFIG.BATCH_SIZE));
     }
-    
+
     const results: (CrossOracleComparison | null)[] = [];
-    
+
     for (const batch of batches) {
       const batchResults = await Promise.all(
-        batch.map((symbol) =>
-          this.aggregateLimit(() => this.engine.aggregatePrices(symbol)),
-        ),
+        batch.map((symbol) => this.aggregateLimit(() => this.engine.aggregatePrices(symbol))),
       );
       results.push(...batchResults);
     }
-    
+
     return results;
   }
 
@@ -329,7 +327,7 @@ export class RealtimePriceService extends EventEmitter {
    */
   private scheduleBatchAggregation(): void {
     if (this.batchTimer) return;
-    
+
     this.batchTimer = setTimeout(() => {
       this.batchTimer = null;
       if (this.pendingSymbols.size > 0) {
@@ -346,7 +344,7 @@ export class RealtimePriceService extends EventEmitter {
   private async aggregateSymbols(symbols: string[]): Promise<void> {
     try {
       const results = await this.batchAggregate(symbols);
-      
+
       const updates: PriceUpdate[] = [];
       for (const result of results) {
         if (result) {
@@ -361,7 +359,7 @@ export class RealtimePriceService extends EventEmitter {
           });
         }
       }
-      
+
       if (updates.length > 0) {
         this.pushUpdates(updates);
       }
@@ -379,27 +377,27 @@ export class RealtimePriceService extends EventEmitter {
    */
   private pushUpdates(updates: PriceUpdate[]): void {
     const updateMap = new Map(updates.map((u) => [u.symbol, u]));
-    
+
     for (const [clientId, subscription] of this.subscriptions) {
       const relevantUpdates: PriceUpdate[] = [];
-      
+
       for (const symbol of subscription.symbols) {
         const update = updateMap.get(symbol);
         if (update) {
           relevantUpdates.push(update);
         }
       }
-      
+
       if (relevantUpdates.length > 0) {
         this.emit('priceUpdate', {
           clientId,
           updates: relevantUpdates,
         });
-        
+
         subscription.lastUpdateAt = Date.now();
       }
     }
-    
+
     logger.debug('Updates pushed', {
       updates: updates.length,
       clients: this.subscriptions.size,
@@ -427,14 +425,14 @@ export class RealtimePriceService extends EventEmitter {
   getLatestPrices(symbols: string[]): Map<string, CrossOracleComparison> {
     const result = new Map<string, CrossOracleComparison>();
     const now = Date.now();
-    
+
     for (const symbol of symbols) {
       const cached = this.priceCache.get(symbol);
       if (cached && now - cached.timestamp < CONFIG.CACHE_TTL_MS) {
         result.set(symbol, cached.data);
       }
     }
-    
+
     return result;
   }
 

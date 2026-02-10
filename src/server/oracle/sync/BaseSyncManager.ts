@@ -391,7 +391,8 @@ export abstract class BaseSyncManager {
               lastPrice,
               feed.price,
               feed.price - lastPrice,
-              priceChange * 100,
+              // 价格变化百分比，小数形式 (0.01 = 1%)
+              priceChange,
               feed.timestamp,
               feed.blockNumber || 0,
             ],

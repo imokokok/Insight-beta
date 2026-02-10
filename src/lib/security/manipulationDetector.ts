@@ -581,7 +581,8 @@ export class ManipulationDetector {
         data: {
           previousLiquidity,
           currentLiquidity,
-          changePercent: liquidityChange * 100,
+          // 使用小数形式存储 (0.01 = 1%)
+          changePercent: liquidityChange,
         },
       },
     ];

@@ -112,6 +112,7 @@ export interface PriceUpdateEvent {
   previousPrice?: number;
   currentPrice: number;
   priceChange?: number;
+  /** 价格变化百分比，小数形式 (如 0.01 = 1%) */
   priceChangePercent?: number;
   timestamp: Date;
   blockNumber?: number;

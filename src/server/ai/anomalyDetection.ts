@@ -304,7 +304,8 @@ export class AnomalyDetectionService {
           previousMean: firstMean,
           currentMean: secondMean,
           zScore,
-          changePercent: meanChange * 100,
+          // 使用小数形式存储 (0.01 = 1%)
+          changePercent: meanChange,
         },
       });
     }
