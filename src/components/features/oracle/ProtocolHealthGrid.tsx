@@ -20,6 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { OracleProtocol } from '@/lib/types/unifiedOracleTypes';
+import { PROTOCOL_DISPLAY_NAMES, ORACLE_PROTOCOLS } from '@/lib/types/oracle';
 import { cn, fetchApiData } from '@/lib/utils';
 
 interface ProtocolHealthGridProps {

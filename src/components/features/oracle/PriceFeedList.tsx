@@ -19,6 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useWebSocket } from '@/hooks';
 import { logger } from '@/lib/logger';
 import type { OracleProtocol } from '@/lib/types/unifiedOracleTypes';
+import { PROTOCOL_DISPLAY_NAMES } from '@/lib/types/oracle';
 import { cn, fetchApiData, formatTimeAgo } from '@/lib/utils';
 
 // 本地类型定义（兼容组件需求）

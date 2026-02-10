@@ -17,6 +17,17 @@ import { arbitrum, hardhat, mainnet, optimism, polygon, polygonAmoy } from 'viem
 import { normalizeWalletError } from '@/lib/errors/walletErrors';
 import { logger } from '@/lib/logger';
 
+// 扩展 Window 类型以支持以太坊
+declare global {
+  interface Window {
+    ethereum?: {
+      request: (args: { method: string; params?: unknown }) => Promise<unknown>;
+      on?: (event: string, handler: (payload: unknown) => void) => void;
+      removeListener?: (event: string, handler: (payload: unknown) => void) => void;
+    };
+  }
+}
+
 interface WalletState {
   address: Address | null;
   chainId: number | null;

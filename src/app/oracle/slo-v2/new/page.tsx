@@ -253,7 +253,7 @@ export default function CreateSloPage() {
               </div>
               <Slider
                 value={[formData.targetValue]}
-                onValueChange={([value]) => updateField('targetValue', value)}
+                onValueChange={([value]) => updateField('targetValue', value ?? 99.9)}
                 min={90}
                 max={99.99}
                 step={0.01}
@@ -270,7 +270,7 @@ export default function CreateSloPage() {
               </div>
               <Slider
                 value={[formData.thresholdValue]}
-                onValueChange={([value]) => updateField('thresholdValue', value)}
+                onValueChange={([value]) => updateField('thresholdValue', value ?? 95)}
                 min={80}
                 max={99}
                 step={0.1}

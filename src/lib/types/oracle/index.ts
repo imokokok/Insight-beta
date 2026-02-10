@@ -27,5 +27,6 @@ export type {
   LatencyTrend,
   PriceHeatmapData,
   PriceDeviationCell,
+  PriceDeviationLevel,
   RealtimeComparisonItem,
 } from '@/lib/types/oracle/comparison';

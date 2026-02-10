@@ -241,68 +241,113 @@ export const statCardColors: Record<
 // 状态颜色配置
 // ============================================================================
 
-export const statusColors: Record<
-  string,
-  {
-    dot: string;
-    bg: string;
-    text: string;
-    border: string;
-  }
-> = {
+export type StatusType = 'healthy' | 'active' | 'success' | 'online' | 'degraded' | 'warning' | 'stale' | 'error' | 'offline' | 'inactive' | 'down' | 'critical';
+
+export interface StatusColorConfig {
+  dot: string;
+  bg: string;
+  text: string;
+  border: string;
+  /** ARIA label 国际化 key */
+  ariaLabelKey: string;
+}
+
+/**
+ * 统一的状态颜色配置
+ * 用于所有组件、图表、状态指示等
+ *
+ * 语义映射：
+ * - healthy/active/success/online: 健康/正常状态 (emerald-绿色)
+ * - degraded/warning: 降级/警告状态 (amber-琥珀色)
+ * - stale: 陈旧状态 (orange-橙色)
+ * - error/offline/down: 错误/离线状态 (rose-玫瑰红)
+ * - inactive: 非活跃状态 (gray-灰色)
+ * - critical: 严重状态 (red-红色)
+ */
+export const statusColors: Record<StatusType, StatusColorConfig> = {
+  healthy: {
+    dot: themeColors.emerald[500],
+    bg: themeColors.emerald[100],
+    text: themeColors.emerald[700],
+    border: themeColors.emerald.border,
+    ariaLabelKey: 'status.healthy',
+  },
   active: {
     dot: themeColors.emerald[500],
     bg: themeColors.emerald[100],
     text: themeColors.emerald[700],
     border: themeColors.emerald.border,
+    ariaLabelKey: 'status.active',
   },
   success: {
     dot: themeColors.emerald[500],
     bg: themeColors.emerald[100],
     text: themeColors.emerald[700],
     border: themeColors.emerald.border,
+    ariaLabelKey: 'status.success',
   },
   online: {
     dot: themeColors.emerald[500],
     bg: themeColors.emerald[100],
     text: themeColors.emerald[700],
     border: themeColors.emerald.border,
+    ariaLabelKey: 'status.online',
   },
-  pending: {
-    dot: themeColors.blue[500],
-    bg: themeColors.blue[100],
-    text: themeColors.blue[700],
-    border: themeColors.blue.border,
+  degraded: {
+    dot: themeColors.amber[500],
+    bg: themeColors.amber[100],
+    text: themeColors.amber[700],
+    border: themeColors.amber.border,
+    ariaLabelKey: 'status.degraded',
   },
   warning: {
     dot: themeColors.amber[500],
     bg: themeColors.amber[100],
     text: themeColors.amber[700],
     border: themeColors.amber.border,
+    ariaLabelKey: 'status.warning',
   },
   stale: {
-    dot: themeColors.amber[500],
-    bg: themeColors.amber[100],
-    text: themeColors.amber[700],
-    border: themeColors.amber.border,
+    dot: themeColors.orange[500],
+    bg: themeColors.orange[100],
+    text: themeColors.orange[700],
+    border: themeColors.orange.border,
+    ariaLabelKey: 'status.stale',
   },
   error: {
     dot: themeColors.rose[500],
     bg: themeColors.rose[100],
     text: themeColors.rose[700],
     border: themeColors.rose.border,
+    ariaLabelKey: 'status.error',
   },
   offline: {
     dot: themeColors.gray[400],
     bg: themeColors.gray[100],
     text: themeColors.gray[700],
     border: themeColors.gray.border,
+    ariaLabelKey: 'status.offline',
   },
   inactive: {
     dot: themeColors.gray[400],
     bg: themeColors.gray[100],
     text: themeColors.gray[700],
     border: themeColors.gray.border,
+    ariaLabelKey: 'status.inactive',
+  },
+  down: {
+    dot: themeColors.rose[500],
+    bg: themeColors.rose[100],
+    text: themeColors.rose[700],
+    border: themeColors.rose.border,
+    ariaLabelKey: 'status.down',
+  },
+  critical: {
+    dot: themeColors.red[500],
+    bg: themeColors.red[100],
+    text: themeColors.red[700],
+    border: themeColors.red.border,
+    ariaLabelKey: 'status.critical',
   },
 };
 
