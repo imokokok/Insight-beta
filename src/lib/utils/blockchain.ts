@@ -5,26 +5,6 @@
  */
 
 /**
- * 检查值是否为 32 字节的零值（0x0000...0000）
- *
- * @param value - 要检查的十六进制字符串
- * @returns 如果是零值或 undefined 返回 true，否则返回 false
- *
- * @example
- * ```typescript
- * isZeroBytes32('0x0000000000000000000000000000000000000000000000000000000000000000');
- * // Returns: true
- *
- * isZeroBytes32('0x1234...'); // Returns: false
- * isZeroBytes32(undefined);    // Returns: true
- * ```
- */
-export function isZeroBytes32(value: `0x${string}` | undefined): boolean {
-  if (!value) return true;
-  return /^0x0{64}$/i.test(value);
-}
-
-/**
  * 获取区块链浏览器的 URL
  *
  * 支持多链：Ethereum、Polygon、Arbitrum、Optimism、Base 及其测试网

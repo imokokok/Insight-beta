@@ -34,6 +34,18 @@ export const AGGREGATION_CONFIG = {
     redstone: 0.1,
     dia: 0.1,
   } as Record<OracleProtocol, number>,
+
+  // 异常检测配置
+  outlierDetection: {
+    // 主方法: 'threshold' | 'iqr' | 'both'
+    method: 'both' as 'threshold' | 'iqr' | 'both',
+    // 阈值法: 偏差百分比阈值 (0.01 = 1%)
+    threshold: 0.01,
+    // IQR 方法: IQR 倍数阈值
+    iqrMultiplier: 1.5,
+    // 最小数据点数量（用于 IQR）
+    minDataPoints: 4,
+  },
 };
 
 /**

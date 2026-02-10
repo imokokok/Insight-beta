@@ -37,20 +37,6 @@ export class LoggerFactory {
   static createOracleLogger(protocol: string, chain: string): PrefixedLogger {
     return this.createPrefixedLogger(`${protocol}[${chain}]`);
   }
-
-  /**
-   * 创建同步管理器专用日志记录器
-   */
-  static createSyncLogger(protocol: string): PrefixedLogger {
-    return this.createPrefixedLogger(`Sync[${protocol}]`);
-  }
-
-  /**
-   * 创建服务专用日志记录器
-   */
-  static createServiceLogger(serviceName: string): PrefixedLogger {
-    return this.createPrefixedLogger(`Service[${serviceName}]`);
-  }
 }
 
 /**

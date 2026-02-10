@@ -9,36 +9,16 @@ import { calculateMean, calculateMedian } from '@/lib/utils/math';
 import { AGGREGATION_CONFIG } from './config';
 
 /**
- * 计算加权平均
- *
- * @param values - 数值数组
- * @param weights - 权重数组
- * @returns 加权平均值
- */
-export function calculateWeightedAverage(values: number[], weights: number[]): number {
-  if (values.length !== weights.length) {
-    throw new Error('Values and weights must have the same length');
-  }
-  if (values.length === 0) return 0;
-
-  const totalWeight = weights.reduce((a, b) => a + b, 0);
-  if (totalWeight === 0) return 0;
-
-  const weightedSum = values.reduce((sum, value, i) => {
-    const weight = weights[i];
-    return weight === undefined ? sum : sum + value * weight;
-  }, 0);
-  return weightedSum / totalWeight;
-}
-
-/**
  * 检测异常值（使用 IQR 方法）
+ *
+ * IQR (Interquartile Range) = Q3 - Q1
+ * 异常值定义：值 < Q1 - threshold * IQR 或 值 > Q3 + threshold * IQR
  *
  * @param values - 数值数组
  * @param threshold - IQR 倍数阈值，默认 1.5
  * @returns 异常值的索引数组
  */
-export function detectOutliers(values: number[], threshold: number = 1.5): number[] {
+export function detectOutliersIQR(values: number[], threshold: number = 1.5): number[] {
   if (values.length < 4) return [];
 
   const sorted = [...values].sort((a, b) => a - b);
@@ -56,6 +36,77 @@ export function detectOutliers(values: number[], threshold: number = 1.5): numbe
     .map((value, index) => ({ value, index }))
     .filter(({ value }) => value < lowerBound || value > upperBound)
     .map(({ index }) => index);
+}
+
+/**
+ * 检测异常值（使用阈值法）
+ *
+ * 阈值法：偏差百分比超过阈值即视为异常
+ *
+ * @param values - 数值数组
+ * @param referenceValue - 参考值（通常是中位数或平均值）
+ * @param threshold - 偏差阈值（小数形式，如 0.01 表示 1%）
+ * @returns 异常值的索引数组
+ */
+export function detectOutliersThreshold(
+  values: number[],
+  referenceValue: number,
+  threshold: number,
+): number[] {
+  if (values.length === 0 || referenceValue === 0) return [];
+
+  return values
+    .map((value, index) => ({ value, index }))
+    .filter(({ value }) => {
+      const deviation = Math.abs(value - referenceValue);
+      const deviationPercent = deviation / referenceValue;
+      return deviationPercent > threshold;
+    })
+    .map(({ index }) => index);
+}
+
+/**
+ * 统一的异常检测方法
+ *
+ * 结合阈值法和 IQR 方法，根据配置决定使用哪种方法
+ *
+ * @param values - 数值数组
+ * @param referenceValue - 参考值（用于阈值法）
+ * @param config - 异常检测配置
+ * @returns 异常值的索引数组
+ */
+export function detectOutliers(
+  values: number[],
+  referenceValue: number,
+  config: {
+    method: 'threshold' | 'iqr' | 'both';
+    threshold: number;
+    iqrMultiplier: number;
+    minDataPoints: number;
+  } = {
+    method: 'both',
+    threshold: 0.01,
+    iqrMultiplier: 1.5,
+    minDataPoints: 4,
+  },
+): number[] {
+  const outlierIndices = new Set<number>();
+
+  // 1. 阈值法检测
+  if (['threshold', 'both'].includes(config.method)) {
+    const thresholdOutliers = detectOutliersThreshold(values, referenceValue, config.threshold);
+    thresholdOutliers.forEach((idx) => outlierIndices.add(idx));
+  }
+
+  // 2. IQR 方法检测
+  if (['iqr', 'both'].includes(config.method)) {
+    if (values.length >= config.minDataPoints) {
+      const iqrOutliers = detectOutliersIQR(values, config.iqrMultiplier);
+      iqrOutliers.forEach((idx) => outlierIndices.add(idx));
+    }
+  }
+
+  return Array.from(outlierIndices).sort((a, b) => a - b);
 }
 
 /**

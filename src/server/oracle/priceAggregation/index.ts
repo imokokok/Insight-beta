@@ -12,7 +12,6 @@ export { AGGREGATION_CONFIG, AggregationMethod } from './config';
 
 // 工具函数
 export {
-  calculateWeightedAverage,
   detectOutliers,
   calculateProtocolWeightedAverage,
   calculateRecommendedPrice,

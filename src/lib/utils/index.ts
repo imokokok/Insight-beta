@@ -13,11 +13,9 @@ export {
   formatTimeAgo,
   truncateAddress,
   formatUsdCompact,
-  formatUsd,
   formatTime,
   calculatePercentage,
   formatDurationMinutes,
-  toIsoFromSeconds,
   copyToClipboard,
   formatTimestamp,
 } from './format';
@@ -26,7 +24,7 @@ export {
 export { ApiClientError, getErrorCode, fetchApiData, getErrorMessage } from './api';
 
 // 区块链工具
-export { isZeroBytes32, getExplorerUrl, parseRpcUrls } from './blockchain';
+export { getExplorerUrl, parseRpcUrls } from './blockchain';
 
 // 数学工具
 export { calculateMedian, calculateMean, calculateStdDev, calculateDeviation } from './math';

@@ -46,20 +46,6 @@ export class BatchInserter<T extends Record<string, unknown>> {
   }
 
   /**
-   * 批量插入并返回执行的 SQL（用于调试）
-   */
-  async insertWithDebug(items: T[]): Promise<{ count: number; sql: string }> {
-    if (items.length === 0) return { count: 0, sql: '' };
-
-    const batch = items.slice(0, this.config.batchSize);
-    const { sql, values } = this.buildInsertQuery(batch);
-    
-    await query(sql, values as (string | number | boolean | Date | string[] | number[] | null | undefined)[]);
-    
-    return { count: batch.length, sql };
-  }
-
-  /**
    * 单批插入
    */
   private async insertBatch(batch: T[]): Promise<number> {

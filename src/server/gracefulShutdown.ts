@@ -6,6 +6,7 @@
  */
 
 import { logger } from '@/lib/logger';
+import { sleep } from '@/lib/utils/common';
 import { syncManager } from '@/server/oracle/syncFramework';
 
 // ============================================================================
@@ -25,33 +26,6 @@ const state: ShutdownState = {
 };
 
 // ============================================================================
-// 请求追踪
-// ============================================================================
-
-/**
- * 增加活跃请求计数
- */
-export function incrementActiveRequests(): void {
-  if (!state.isShuttingDown) {
-    state.activeRequests++;
-  }
-}
-
-/**
- * 减少活跃请求计数
- */
-export function decrementActiveRequests(): void {
-  state.activeRequests = Math.max(0, state.activeRequests - 1);
-}
-
-/**
- * 获取活跃请求数
- */
-export function getActiveRequests(): number {
-  return state.activeRequests;
-}
-
-// ============================================================================
 // 关闭回调注册
 // ============================================================================
 
@@ -60,16 +34,6 @@ export function getActiveRequests(): number {
  */
 export function onShutdown(callback: () => Promise<void>): void {
   state.shutdownCallbacks.push(callback);
-}
-
-/**
- * 注销关闭回调函数
- */
-export function offShutdown(callback: () => Promise<void>): void {
-  const index = state.shutdownCallbacks.indexOf(callback);
-  if (index > -1) {
-    state.shutdownCallbacks.splice(index, 1);
-  }
 }
 
 // ============================================================================
@@ -154,13 +118,6 @@ async function waitForActiveRequests(): Promise<void> {
   }
 }
 
-/**
- * 睡眠函数
- */
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 // ============================================================================
 // 信号处理
 // ============================================================================
@@ -191,30 +148,4 @@ export function initGracefulShutdown(): void {
   });
 
   logger.info('Graceful shutdown handlers initialized');
-}
-
-// ============================================================================
-// 健康检查
-// ============================================================================
-
-/**
- * 检查是否正在关闭
- */
-export function isShuttingDown(): boolean {
-  return state.isShuttingDown;
-}
-
-/**
- * 获取关闭状态
- */
-export function getShutdownStatus(): {
-  isShuttingDown: boolean;
-  activeRequests: number;
-  registeredCallbacks: number;
-} {
-  return {
-    isShuttingDown: state.isShuttingDown,
-    activeRequests: state.activeRequests,
-    registeredCallbacks: state.shutdownCallbacks.length,
-  };
 }

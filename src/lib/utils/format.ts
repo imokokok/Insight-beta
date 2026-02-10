@@ -97,26 +97,6 @@ export function formatUsdCompact(amount: number, locale: string): string {
 }
 
 /**
- * 将数字格式化为美元货币格式（完整显示）
- *
- * @param amount - 要格式化的金额
- * @param locale - 区域设置
- * @returns 格式化后的货币字符串，不带小数
- *
- * @example
- * ```typescript
- * formatUsd(1234567, 'en-US'); // Returns: '$1,234,567'
- * ```
- */
-export function formatUsd(amount: number, locale: string): string {
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
-/**
  * 将 ISO 日期字符串格式化为本地化的日期时间格式
  *
  * @param iso - ISO 8601 格式的日期字符串
@@ -181,23 +161,6 @@ export function formatDurationMinutes(totalMinutes: number): string {
   if (hours <= 0) return `${minutes}m`;
   if (minutes === 0) return `${hours}h`;
   return `${hours}h ${minutes}m`;
-}
-
-/**
- * 将 Unix 时间戳（秒）转换为 ISO 8601 格式字符串
- *
- * @param seconds - Unix 时间戳，单位为秒
- * @returns ISO 8601 格式的日期字符串
- *
- * @example
- * ```typescript
- * toIsoFromSeconds(1609459200n);
- * // Returns: '2021-01-01T00:00:00.000Z'
- * ```
- */
-export function toIsoFromSeconds(seconds: bigint): string {
-  const ms = Number(seconds) * 1000;
-  return new Date(ms).toISOString();
 }
 
 /**

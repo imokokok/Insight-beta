@@ -55,29 +55,6 @@ export function createSupabaseClient(): TypedSupabaseClient {
  */
 export const supabaseAdmin = createSupabaseClient();
 
-/**
- * 检查 Supabase 连接是否健康
- */
-export async function checkSupabaseHealth(): Promise<{
-  healthy: boolean;
-  error?: string;
-}> {
-  try {
-    const { error } = await supabaseAdmin.from('oracle_protocols_info').select('id').limit(1);
-
-    if (error) {
-      return { healthy: false, error: error.message };
-    }
-
-    return { healthy: true };
-  } catch (error) {
-    return {
-      healthy: false,
-      error: error instanceof Error ? error.message : String(error),
-    };
-  }
-}
-
 // Mock client types
 type MockQueryBuilder = {
   eq: () => { single: () => Promise<{ data: null; error: { code: string; message: string } }> };

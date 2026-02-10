@@ -182,30 +182,3 @@ export function withRetry(options: {
     return descriptor;
   };
 }
-
-/**
- * 错误处理装饰器
- */
-export function withErrorHandling(options: {
-  errorFactory: (error: unknown) => Error;
-  logger?: Logger;
-  logMessage?: string;
-}) {
-  return function (_target: unknown, propertyKey: string, descriptor: PropertyDescriptor) {
-    const originalMethod = descriptor.value;
-
-    descriptor.value = async function (...args: unknown[]) {
-      try {
-        return await originalMethod.apply(this, args);
-      } catch (error) {
-        if (options.logger) {
-          const message = options.logMessage || `${propertyKey} failed`;
-          ErrorHandler.logError(options.logger, message, error);
-        }
-        throw options.errorFactory(error);
-      }
-    };
-
-    return descriptor;
-  };
-}

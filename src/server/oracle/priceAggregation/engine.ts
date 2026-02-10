@@ -15,7 +15,7 @@ import { calculateMean, calculateMedian } from '@/lib/utils/math';
 import { query } from '@/server/db';
 
 import { AGGREGATION_CONFIG } from './config';
-import { calculateProtocolWeightedAverage, determineRecommendationSource } from './utils';
+import { calculateProtocolWeightedAverage, determineRecommendationSource, detectOutliersIQR } from './utils';
 
 export class PriceAggregationEngine {
   /**
@@ -171,6 +171,12 @@ export class PriceAggregationEngine {
 
   /**
    * 检测异常值
+   * 
+   * 统一异常检测方法：
+   * - 主方法：阈值法（偏差百分比 > 阈值）
+   * - 辅助方法：IQR（四分位距）统计方法
+   * 
+   * 配置来源：AGGREGATION_CONFIG.outlierDetection
    */
   private detectOutliers(
     prices: Array<UnifiedPriceFeed & { instanceId: string }>,
@@ -184,20 +190,46 @@ export class PriceAggregationEngine {
     let maxDeviation = 0;
     let maxDeviationPercent = 0;
 
-    for (const price of prices) {
-      const deviation = Math.abs(price.price - medianPrice);
-      const deviationPercent = (deviation / medianPrice) * 100;
+    const priceValues = prices.map((p) => p.price);
+    const outlierIndices = new Set<number>();
 
-      if (deviationPercent > maxDeviationPercent) {
-        maxDeviation = deviation;
-        maxDeviationPercent = deviationPercent;
-      }
+    // 1. 阈值法检测
+    if (['threshold', 'both'].includes(AGGREGATION_CONFIG.outlierDetection.method)) {
+      for (let i = 0; i < prices.length; i++) {
+        const price = prices[i];
+        const deviation = Math.abs(price.price - medianPrice);
+        const deviationPercent = deviation / medianPrice; // 使用小数形式
 
-      // 如果偏差超过阈值，标记为异常值
-      if (deviationPercent > AGGREGATION_CONFIG.deviationThreshold * 100) {
-        outliers.push(price);
+        if (deviationPercent > maxDeviationPercent) {
+          maxDeviation = deviation;
+          maxDeviationPercent = deviationPercent;
+        }
+
+        // 如果偏差超过阈值，标记为异常值
+        if (deviationPercent > AGGREGATION_CONFIG.outlierDetection.threshold) {
+          outlierIndices.add(i);
+        }
       }
     }
+
+    // 2. IQR 方法检测（作为辅助）
+    if (['iqr', 'both'].includes(AGGREGATION_CONFIG.outlierDetection.method)) {
+      if (priceValues.length >= AGGREGATION_CONFIG.outlierDetection.minDataPoints) {
+        const iqrOutlierIndices = detectOutliersIQR(
+          priceValues,
+          AGGREGATION_CONFIG.outlierDetection.iqrMultiplier,
+        );
+        iqrOutlierIndices.forEach((idx) => outlierIndices.add(idx));
+      }
+    }
+
+    // 收集异常值
+    outlierIndices.forEach((idx) => {
+      const price = prices[idx];
+      if (price) {
+        outliers.push(price);
+      }
+    });
 
     return { outliers, maxDeviation, maxDeviationPercent };
   }

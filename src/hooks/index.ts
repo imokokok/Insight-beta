@@ -36,4 +36,4 @@ export {
 } from './useDashboard';
 
 // 自动刷新 Hook (新的实现 - 推荐用于新页面)
-export { useAutoRefresh, useSimpleAutoRefresh } from './use-auto-refresh';
+export { useAutoRefresh } from './use-auto-refresh';

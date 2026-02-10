@@ -158,20 +158,3 @@ export function useAutoRefresh(options: UseAutoRefreshOptions): UseAutoRefreshRe
     formattedLastUpdated,
   };
 }
-
-/**
- * 简化的自动刷新 Hook
- * 只返回核心状态
- */
-export function useSimpleAutoRefresh(
-  pageId: string,
-  fetchFn: () => Promise<void>,
-  enabled = true,
-): [Date | null, boolean, () => Promise<void>] {
-  const { lastUpdated, isRefreshing, refresh } = useAutoRefresh({
-    pageId,
-    fetchFn,
-    enabled,
-  });
-  return [lastUpdated, isRefreshing, refresh];
-}
