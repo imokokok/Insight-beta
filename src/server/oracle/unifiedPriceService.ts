@@ -59,7 +59,6 @@ function t(key: string, values?: Record<string, string>): string {
   // Simple interpolation with safe replacement
   if (values) {
     return result.replace(/\{\{(\w+)\}\}/g, (substring: string, match: string) => {
-      // eslint-disable-next-line security/detect-object-injection
       return Object.prototype.hasOwnProperty.call(values, match)
         ? (values[match] ?? substring)
         : substring;
@@ -695,17 +694,4 @@ export class UnifiedPriceService {
       createdAt: new Date(data.created_at as string),
     };
   }
-}
-
-// ============================================================================
-// Singleton Export
-// ============================================================================
-
-let unifiedPriceService: UnifiedPriceService | null = null;
-
-export function getUnifiedPriceService(): UnifiedPriceService {
-  if (!unifiedPriceService) {
-    unifiedPriceService = new UnifiedPriceService();
-  }
-  return unifiedPriceService;
 }

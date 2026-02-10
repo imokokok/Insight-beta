@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 import {
   ShieldAlert,
@@ -20,14 +20,17 @@ import {
   Brain,
   Target,
   Clock,
+  Link2,
 } from 'lucide-react';
 
 import { ConnectWallet } from '@/components/features/wallet/ConnectWallet';
-import { useOracleFilters } from '@/hooks';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { cn } from '@/lib/utils';
 
 import type { Route } from 'next';
+
+// Type assertion helper for Link href
+const asRoute = (href: string): Route => href as Route;
 
 // 导航分组 - 体现"预言机监控"的任务结构
 const navGroups = [
@@ -117,21 +120,9 @@ const navGroups = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [isOpen, setIsOpen] = useState(false);
   const [logoSrc, setLogoSrc] = useState('/logo-owl.png');
   const { t } = useI18n();
-  const { instanceId } = useOracleFilters();
-  const instanceIdFromUrl = searchParams?.get('instanceId')?.trim() || null;
-  const effectiveInstanceId = instanceIdFromUrl ?? instanceId;
-
-  const attachInstanceId = (href: string) => {
-    const normalized = (effectiveInstanceId ?? '').trim();
-    if (!normalized) return href;
-    const url = new URL(href, 'http://oracle-monitor.local');
-    url.searchParams.set('instanceId', normalized);
-    return `${url.pathname}${url.search}${url.hash}`;
-  };
 
   const isOptimisticActive = pathname?.startsWith('/oracle/optimistic');
 
@@ -205,7 +196,6 @@ export function Sidebar() {
                 {group.items.map((item) => {
                   const Icon = item.icon;
                   const isActive = pathname === item.href;
-                  const href = attachInstanceId(item.href) as Route;
 
                   // Determine data-tour attribute based on item key
                   const getTourAttribute = () => {
@@ -218,7 +208,7 @@ export function Sidebar() {
                   return (
                     <Link
                       key={item.href}
-                      href={href}
+                      href={item.href as Route}
                       title={item.tooltip}
                       className={cn(
                         'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
@@ -304,6 +294,34 @@ export function Sidebar() {
                     )}
                   />
                   <span>{t('nav.optimisticOracle')}</span>
+                </div>
+                <ChevronRight size={16} className="text-gray-400" />
+              </Link>
+            </div>
+
+            {/* Cross-Chain Analytics Section */}
+            <div className="space-y-1">
+              <Link
+                href={asRoute('/cross-chain')}
+                title="跨链价格对比与套利分析"
+                className={cn(
+                  'group flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
+                  pathname?.startsWith('/cross-chain')
+                    ? 'bg-white text-purple-700 shadow-md shadow-purple-500/5 ring-1 ring-white/60'
+                    : 'text-gray-600 hover:bg-white/40 hover:text-purple-700 hover:shadow-sm',
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <Link2
+                    size={20}
+                    className={cn(
+                      'transition-colors duration-200',
+                      pathname?.startsWith('/cross-chain')
+                        ? 'text-purple-600'
+                        : 'text-gray-400 group-hover:text-purple-500',
+                    )}
+                  />
+                  <span>{t('nav.crossChain')}</span>
                 </div>
                 <ChevronRight size={16} className="text-gray-400" />
               </Link>

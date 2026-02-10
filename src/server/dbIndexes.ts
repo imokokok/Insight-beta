@@ -654,12 +654,4 @@ export async function getIndexUsageStats(): Promise<
   }
 }
 
-export async function getUnusedIndexes(thresholdScans: number = 10): Promise<string[]> {
-  const usageStats = await getIndexUsageStats();
-
-  return usageStats
-    .filter((stat) => stat.indexScans < thresholdScans && stat.indexName.startsWith('idx_'))
-    .map((stat) => stat.indexName);
-}
-
 export { RECOMMENDED_INDEXES };

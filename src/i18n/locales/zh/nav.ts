@@ -3,6 +3,7 @@ export const nav = {
   alerts: '告警处置',
   audit: '审计日志',
   aiAnalytics: 'AI 分析',
+  crossChain: '跨链对比',
   dashboard: '监控仪表板',
   disputes: '争议处理',
   myAssertions: '我的断言',

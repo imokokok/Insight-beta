@@ -240,8 +240,3 @@ export function exportAllToJSON(data: {
 }
 
 // ============================================================================
-// Excel 导出 (使用简单的 HTML table 格式)
-// ============================================================================
-
-// Note: exportToExcel function removed - not used in the application
-// If needed in the future, it can be re-implemented here

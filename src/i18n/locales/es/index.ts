@@ -5,6 +5,7 @@ import { audit } from './audit';
 import { chain } from './chain';
 import { common } from './common';
 import { comparison } from './comparison';
+import { crossChain } from './cross-chain';
 import { dashboard } from './dashboard';
 import { disputes } from './disputes';
 import { errorPage } from './errorPage';
@@ -27,6 +28,7 @@ export const esTranslations = {
   chain,
   common,
   comparison,
+  crossChain,
   dashboard,
   disputes,
   errorPage,

@@ -3,6 +3,7 @@ export const nav = {
   alerts: 'Alertas',
   audit: 'Auditoría',
   aiAnalytics: 'Análisis de IA',
+  crossChain: 'Cadena Cruzada',
   dashboard: 'Panel de Control',
   disputes: 'Disputas',
   myAssertions: 'Mis Aserciones',
