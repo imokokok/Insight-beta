@@ -345,15 +345,16 @@ export async function generateRealHeatmapData(
       if (protocols.includes('chainlink')) {
         const chainlinkPrice = chainlinkData.find((p) => p.symbol === symbol);
         if (chainlinkPrice) {
-          const deviationPercent = ((chainlinkPrice.price - refPrice) / refPrice) * 100;
+          // 使用小数形式存储偏差 (0.01 = 1%)
+          const deviationPercent = (chainlinkPrice.price - refPrice) / refPrice;
           const absDeviation = Math.abs(deviationPercent);
 
           let deviationLevel: 'low' | 'medium' | 'high' | 'critical' = 'low';
-          if (absDeviation > 2) {
+          if (absDeviation > 0.02) {
             deviationLevel = 'critical';
             criticalDeviations++;
-          } else if (absDeviation > 1) deviationLevel = 'high';
-          else if (absDeviation > 0.5) deviationLevel = 'medium';
+          } else if (absDeviation > 0.01) deviationLevel = 'high';
+          else if (absDeviation > 0.005) deviationLevel = 'medium';
 
           cells.push({
             protocol: 'chainlink',
@@ -373,15 +374,16 @@ export async function generateRealHeatmapData(
       if (protocols.includes('pyth')) {
         const pythPrice = pythData.find((p) => p.symbol === symbol);
         if (pythPrice) {
-          const deviationPercent = ((pythPrice.price - refPrice) / refPrice) * 100;
+          // 使用小数形式存储偏差 (0.01 = 1%)
+          const deviationPercent = (pythPrice.price - refPrice) / refPrice;
           const absDeviation = Math.abs(deviationPercent);
 
           let deviationLevel: 'low' | 'medium' | 'high' | 'critical' = 'low';
-          if (absDeviation > 2) {
+          if (absDeviation > 0.02) {
             deviationLevel = 'critical';
             criticalDeviations++;
-          } else if (absDeviation > 1) deviationLevel = 'high';
-          else if (absDeviation > 0.5) deviationLevel = 'medium';
+          } else if (absDeviation > 0.01) deviationLevel = 'high';
+          else if (absDeviation > 0.005) deviationLevel = 'medium';
 
           cells.push({
             protocol: 'pyth',
@@ -469,7 +471,8 @@ export async function generateRealLatencyData(
         blockLag: Math.floor(latencyMs / 12000), // 假设12秒一个区块
         updateFrequency: latencyMs,
         expectedFrequency: 60000,
-        frequencyDeviation: ((latencyMs - 60000) / 60000) * 100,
+        // 频率偏差，小数形式 (0.01 = 1%)
+        frequencyDeviation: (latencyMs - 60000) / 60000,
         percentile50: latencyMs * 0.8,
         percentile90: latencyMs * 1.2,
         percentile99: latencyMs * 1.5,
@@ -494,7 +497,8 @@ export async function generateRealLatencyData(
         blockLag: Math.floor(latencyMs / 400), // Solana 约400ms一个区块
         updateFrequency: latencyMs,
         expectedFrequency: 30000,
-        frequencyDeviation: ((latencyMs - 30000) / 30000) * 100,
+        // 频率偏差，小数形式 (0.01 = 1%)
+        frequencyDeviation: (latencyMs - 30000) / 30000,
         percentile50: latencyMs * 0.8,
         percentile90: latencyMs * 1.2,
         percentile99: latencyMs * 1.5,
@@ -579,7 +583,8 @@ export async function generateRealRealtimeData(
           timestamp: chainlinkPrice.timestamp,
           confidence: 0.95,
           latency: chainlinkPrice.latency,
-          deviationFromConsensus: ((chainlinkPrice.price - refPrice) / refPrice) * 100,
+          // 偏差百分比，小数形式 (0.01 = 1%)
+          deviationFromConsensus: (chainlinkPrice.price - refPrice) / refPrice,
           status: chainlinkPrice.latency > 60000 ? 'stale' : 'active',
         });
       }
@@ -593,7 +598,8 @@ export async function generateRealRealtimeData(
           timestamp: pythPrice.timestamp,
           confidence: pythPrice.confidence,
           latency: pythPrice.latency,
-          deviationFromConsensus: ((pythPrice.price - refPrice) / refPrice) * 100,
+          // 偏差百分比，小数形式 (0.01 = 1%)
+          deviationFromConsensus: (pythPrice.price - refPrice) / refPrice,
           status: pythPrice.latency > 60000 ? 'stale' : 'active',
         });
       }
@@ -618,7 +624,8 @@ export async function generateRealRealtimeData(
             min,
             max,
             absolute: max - min,
-            percent: ((max - min) / (median ?? mean)) * 100,
+            // 价差百分比，小数形式 (0.01 = 1%)
+            percent: (max - min) / (median ?? mean),
           },
           lastUpdated: new Date().toISOString(),
         });

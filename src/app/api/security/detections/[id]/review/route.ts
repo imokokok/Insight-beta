@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
-import { createSupabaseClient } from '@/lib/supabase/server';
+import { supabaseAdmin } from '@/lib/supabase/server';
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       );
     }
 
-    const supabase = createSupabaseClient();
+    const supabase = supabaseAdmin;
 
     const { error } = await supabase
       .from('manipulation_detections')

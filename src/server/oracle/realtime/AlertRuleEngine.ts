@@ -281,7 +281,9 @@ export class AlertRuleEngine {
   private evaluateCondition(condition: AlertCondition, comparison: CrossOracleComparison): boolean {
     switch (condition.type) {
       case 'price_deviation':
-        return comparison.maxDeviationPercent >= condition.threshold * 100;
+        // comparison.maxDeviationPercent 是小数形式 (如 0.01 = 1%)
+        // condition.threshold 也是小数形式 (如 0.01 = 1%)
+        return comparison.maxDeviationPercent >= condition.threshold;
 
       case 'data_staleness': {
         const age = Date.now() - new Date(comparison.timestamp).getTime();
@@ -421,7 +423,7 @@ export class AlertRuleEngine {
     const lines: string[] = [
       `交易对: ${comparison.symbol}`,
       `规则: ${rule.name}`,
-      `偏差: ${comparison.maxDeviationPercent.toFixed(2)}%`,
+      `偏差: ${(comparison.maxDeviationPercent * 100).toFixed(2)}%`,
       `推荐价格: $${comparison.recommendedPrice.toFixed(4)}`,
       `异常协议: ${comparison.outlierProtocols.join(', ') || '无'}`,
       `时间: ${new Date().toLocaleString()}`,

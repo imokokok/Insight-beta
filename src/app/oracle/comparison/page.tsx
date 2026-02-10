@@ -217,7 +217,7 @@ export default function ComparisonPage() {
     (cell: PriceDeviationCell) => {
       toast({
         title: `${cell.symbol} - ${PROTOCOL_DISPLAY_NAMES[cell.protocol]}`,
-        message: `${t('comparison:price')}: $${cell.price.toFixed(4)} | ${t('comparison:deviation')}: ${cell.deviationPercent.toFixed(2)}%`,
+        message: `${t('comparison:price')}: $${cell.price.toFixed(4)} | ${t('comparison:deviation')}: ${(cell.deviationPercent * 100).toFixed(2)}%`,
         type: 'info',
       });
     },

@@ -149,6 +149,7 @@ function DeviationSeverityBadge({ deviation }: { deviation: number }) {
   let color = 'bg-green-500';
   let label = 'Low';
 
+  // deviation 是小数形式 (如 0.05 = 5%)
   if (deviation > 0.05) {
     color = 'bg-red-500';
     label = 'Critical';
@@ -169,7 +170,8 @@ function DeviationTrendChart({ dataPoints }: { dataPoints: PriceDeviationPoint[]
     .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
     .map((d) => ({
       time: new Date(d.timestamp).toLocaleTimeString(),
-      deviation: d.maxDeviationPercent,
+      // 将小数转换为百分比显示 (0.01 -> 1%)
+      deviation: d.maxDeviationPercent * 100,
       avgPrice: d.avgPrice,
       outlierCount: d.outlierProtocols.length,
     }));
@@ -271,7 +273,9 @@ function ProtocolPriceComparison({ dataPoint }: { dataPoint: PriceDeviationPoint
             </div>
             <div className="rounded-lg bg-orange-50 p-3">
               <p className="text-muted-foreground text-xs">Max Deviation</p>
-              <p className="text-lg font-bold">{dataPoint.maxDeviationPercent.toFixed(2)}%</p>
+              <p className="text-lg font-bold">
+                {(dataPoint.maxDeviationPercent * 100).toFixed(2)}%
+              </p>
             </div>
           </div>
 
@@ -303,7 +307,7 @@ function ProtocolPriceComparison({ dataPoint }: { dataPoint: PriceDeviationPoint
                       )}
                     >
                       {deviation > 0 ? '+' : ''}
-                      {deviation.toFixed(2)}%
+                      {(deviation * 100).toFixed(2)}%
                     </p>
                   </div>
                 </div>
@@ -372,9 +376,9 @@ function TrendList({
               </div>
               <p className="text-muted-foreground text-sm">{trend.recommendation}</p>
               <div className="flex items-center gap-4 text-xs text-gray-500">
-                <span>Avg Deviation: {trend.avgDeviation.toFixed(2)}%</span>
-                <span>Max: {trend.maxDeviation.toFixed(2)}%</span>
-                <span>Volatility: {trend.volatility.toFixed(2)}%</span>
+                <span>Avg Deviation: {(trend.avgDeviation * 100).toFixed(2)}%</span>
+                <span>Max: {(trend.maxDeviation * 100).toFixed(2)}%</span>
+                <span>Volatility: {(trend.volatility * 100).toFixed(2)}%</span>
               </div>
             </div>
             <div className="flex flex-col items-end gap-2">
@@ -434,7 +438,7 @@ function AnomalyList({
             </div>
             <div className="text-right">
               <p className="text-lg font-bold text-red-500">
-                {anomaly.maxDeviationPercent.toFixed(2)}%
+                {(anomaly.maxDeviationPercent * 100).toFixed(2)}%
               </p>
               <p className="text-muted-foreground text-xs">Max Deviation</p>
             </div>
@@ -474,7 +478,7 @@ function SummaryStats({ report }: { report: DeviationReport | null }) {
       />
       <StatCard
         title="Avg Deviation"
-        value={`${summary.avgDeviationAcrossAll.toFixed(2)}%`}
+        value={`${(summary.avgDeviationAcrossAll * 100).toFixed(2)}%`}
         icon={<Activity className="h-5 w-5" />}
         color="orange"
       />
@@ -738,7 +742,8 @@ export default function DeviationAnalyticsPage() {
                             .sort((a, b) => b.avgDeviation - a.avgDeviation)
                             .map((t) => ({
                               symbol: t.symbol,
-                              deviation: t.avgDeviation,
+                              // 将小数转换为百分比显示
+                              deviation: t.avgDeviation * 100,
                             }))}
                         >
                           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
@@ -909,19 +914,19 @@ export default function DeviationAnalyticsPage() {
                                   : 'text-green-500',
                             )}
                           >
-                            {selectedTrend.anomalyScore.toFixed(1)}%
+                            {(selectedTrend.anomalyScore * 100).toFixed(1)}%
                           </p>
                         </div>
                         <div className="rounded-lg bg-gray-50 p-3">
                           <p className="text-muted-foreground text-xs">Avg Deviation</p>
                           <p className="text-lg font-bold">
-                            {selectedTrend.avgDeviation.toFixed(2)}%
+                            {(selectedTrend.avgDeviation * 100).toFixed(2)}%
                           </p>
                         </div>
                         <div className="rounded-lg bg-gray-50 p-3">
                           <p className="text-muted-foreground text-xs">Max Deviation</p>
                           <p className="text-lg font-bold">
-                            {selectedTrend.maxDeviation.toFixed(2)}%
+                            {(selectedTrend.maxDeviation * 100).toFixed(2)}%
                           </p>
                         </div>
                       </div>

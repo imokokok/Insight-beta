@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
-import { createSupabaseClient } from '@/lib/supabase/server';
+import { supabaseAdmin } from '@/lib/supabase/server';
 
 interface TrendData {
   date: string;
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     const days = range === '7d' ? 7 : range === '30d' ? 30 : 90;
     const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
-    const supabase = createSupabaseClient();
+    const supabase = supabaseAdmin;
 
     const { data: detections, error } = await supabase
       .from('manipulation_detections')

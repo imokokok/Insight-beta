@@ -2,14 +2,14 @@ import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
 import { manipulationDetectionService } from '@/lib/services/manipulationDetectionService';
-import { createSupabaseClient } from '@/lib/supabase/server';
+import { supabaseAdmin } from '@/lib/supabase/server';
 
 export async function GET() {
   try {
     const isRunning = manipulationDetectionService.isMonitoring();
     const activeMonitors: string[] = manipulationDetectionService.getActiveMonitors();
 
-    const supabase = createSupabaseClient();
+    const supabase = supabaseAdmin;
 
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
     const { data: recentDetections, error } = await supabase

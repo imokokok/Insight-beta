@@ -48,3 +48,12 @@ export { createRedStoneClient, getAvailableRedStoneSymbols } from './redstoneOra
 
 // Flux
 export { createFluxClient } from './fluxOracle';
+
+// Switchboard
+export {
+  createSwitchboardClient,
+  getAvailableSymbols as getAvailableSwitchboardSymbols,
+} from './switchboardOracle';
+
+// UMA
+export { createUMAClient, getSupportedUMAChains } from './umaOracle';

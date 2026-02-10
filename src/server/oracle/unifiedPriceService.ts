@@ -8,10 +8,11 @@
  * - 支持分区表和物化视图查询
  */
 
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-
 import { logger } from '@/lib/logger';
+import { supabaseAdmin } from '@/lib/supabase/server';
 import type { OracleProtocol, SupportedChain } from '@/lib/types/unifiedOracleTypes';
+
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 // ============================================================================
 // 类型定义
@@ -74,6 +75,7 @@ export interface PriceStats {
   first: number;
   last: number;
   change: number;
+  /** 价格变化百分比，小数形式 (如 0.01 = 1%) */
   changePercent: number;
   volatility: number;
   count: number;
@@ -125,16 +127,7 @@ export class UnifiedPriceService {
   private supabase: SupabaseClient;
 
   constructor() {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Missing Supabase environment variables');
-    }
-
-    this.supabase = createClient(supabaseUrl, supabaseKey, {
-      auth: { persistSession: false },
-    });
+    this.supabase = supabaseAdmin;
   }
 
   // ============================================================================
@@ -313,7 +306,7 @@ export class UnifiedPriceService {
         throw new Error(`Failed to fetch current prices: ${error.message}`);
       }
 
-      (data || []).forEach((item) => {
+      (data || []).forEach((item: Record<string, unknown>) => {
         const record = this.mapToCurrentPriceFeed(item);
         results.set(record.feedId, record);
       });
@@ -426,15 +419,17 @@ export class UnifiedPriceService {
 
       const min = Math.min(...prices);
       const max = Math.max(...prices);
-      const avg = prices.reduce((a, b) => a + b, 0) / prices.length;
+      const avg = prices.reduce((a: number, b: number) => a + b, 0) / prices.length;
       const first = prices[0] ?? 0;
       const last = prices[prices.length - 1] ?? 0;
       const change = last - first;
-      const changePercent = (change / first) * 100;
+      // 价格变化百分比，小数形式 (0.01 = 1%)
+      const changePercent = first > 0 ? change / first : 0;
 
       // 计算波动率（标准差）
       const variance =
-        prices.reduce((sum, price) => sum + Math.pow(price - avg, 2), 0) / prices.length;
+        prices.reduce((sum: number, price: number) => sum + Math.pow(price - avg, 2), 0) /
+        prices.length;
       const volatility = Math.sqrt(variance);
 
       return {

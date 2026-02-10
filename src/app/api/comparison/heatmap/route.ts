@@ -5,7 +5,8 @@
  * GET /api/comparison/heatmap
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
 import { PriceAggregationEngine } from '@/server/oracle/priceAggregation';
@@ -29,14 +30,14 @@ export async function GET(request: NextRequest) {
     // 构建热力图数据
     const rows = comparisons.map((comparison) => {
       const cells = comparison.prices.map((price) => {
-        const deviationPercent =
-          ((price.price - comparison.medianPrice) / comparison.medianPrice) * 100;
+        // 使用小数形式存储偏差 (0.01 = 1%)
+        const deviationPercent = (price.price - comparison.medianPrice) / comparison.medianPrice;
 
         let deviationLevel: 'low' | 'medium' | 'high' | 'critical' = 'low';
         const absDeviation = Math.abs(deviationPercent);
-        if (absDeviation > 2) deviationLevel = 'critical';
-        else if (absDeviation > 1) deviationLevel = 'high';
-        else if (absDeviation > 0.5) deviationLevel = 'medium';
+        if (absDeviation > 0.02) deviationLevel = 'critical';
+        else if (absDeviation > 0.01) deviationLevel = 'high';
+        else if (absDeviation > 0.005) deviationLevel = 'medium';
 
         return {
           protocol: price.protocol,
@@ -52,9 +53,7 @@ export async function GET(request: NextRequest) {
       });
 
       // 过滤协议
-      const filteredCells = protocols
-        ? cells.filter((c) => protocols.includes(c.protocol))
-        : cells;
+      const filteredCells = protocols ? cells.filter((c) => protocols.includes(c.protocol)) : cells;
 
       const deviations = filteredCells.map((c) => Math.abs(c.deviationPercent));
 
@@ -64,7 +63,8 @@ export async function GET(request: NextRequest) {
         quoteAsset: comparison.quoteAsset,
         cells: filteredCells,
         maxDeviation: Math.max(...deviations, 0),
-        avgDeviation: deviations.length > 0 ? deviations.reduce((a, b) => a + b, 0) / deviations.length : 0,
+        avgDeviation:
+          deviations.length > 0 ? deviations.reduce((a, b) => a + b, 0) / deviations.length : 0,
         consensusPrice: comparison.medianPrice,
         consensusMethod: 'median' as const,
       };

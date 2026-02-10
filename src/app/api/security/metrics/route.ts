@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
 import { manipulationDetectionService } from '@/lib/services/manipulationDetectionService';
-import { createSupabaseClient, SUPABASE_ERROR_CODES } from '@/lib/supabase/server';
+import { supabaseAdmin, SUPABASE_ERROR_CODES } from '@/lib/supabase/server';
 
 interface MetricsRow {
   total_detections: number;
@@ -17,7 +17,7 @@ export async function GET() {
   try {
     const serviceMetrics = manipulationDetectionService.getMetrics();
 
-    const supabase = createSupabaseClient();
+    const supabase = supabaseAdmin;
 
     const { data: dbMetrics, error } = await supabase
       .from('detection_metrics')

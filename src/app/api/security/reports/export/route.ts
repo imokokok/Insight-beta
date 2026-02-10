@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
-import { createSupabaseClient } from '@/lib/supabase/server';
+import { supabaseAdmin } from '@/lib/supabase/server';
 
 interface DetectionRow {
   id: string;
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     const severity = searchParams.get('severity');
     const type = searchParams.get('type');
 
-    const supabase = createSupabaseClient();
+    const supabase = supabaseAdmin;
 
     let query = supabase
       .from('manipulation_detections')

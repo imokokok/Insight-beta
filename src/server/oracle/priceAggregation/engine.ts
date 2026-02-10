@@ -7,6 +7,8 @@
  * P2: 高级告警规则引擎
  */
 
+import pLimit from 'p-limit';
+
 import { comparisonCache } from '@/lib/cache/supabase-cache';
 import { logger } from '@/lib/logger';
 import { priceMetrics } from '@/lib/monitoring/priceMetrics';
@@ -16,11 +18,10 @@ import type {
   SupportedChain,
   UnifiedPriceFeed,
 } from '@/lib/types/unifiedOracleTypes';
-import { withRetry, circuitBreakerManager } from '@/lib/utils/resilience';
 import { calculateMean, calculateMedian } from '@/lib/utils/math';
+import { withRetry, circuitBreakerManager } from '@/lib/utils/resilience';
 import { query } from '@/server/db';
 import { alertRuleEngine } from '@/server/oracle/realtime';
-import pLimit from 'p-limit';
 
 import { AGGREGATION_CONFIG } from './config';
 import {
@@ -66,9 +67,7 @@ export class PriceAggregationEngine {
       priceMetrics.recordCacheMiss();
 
       // 2. 使用熔断器保护聚合操作
-      const comparison = await priceBreaker.execute(() =>
-        this.performAggregation(symbol, chain),
-      );
+      const comparison = await priceBreaker.execute(() => this.performAggregation(symbol, chain));
 
       // 3. 记录性能指标
       const duration = performance.now() - startTime;
@@ -109,18 +108,15 @@ export class PriceAggregationEngine {
     const cacheKey = `aggregation:${symbol}:${chain ?? 'all'}`;
 
     // 使用智能重试获取价格数据
-    const prices = await withRetry(
-      () => this.fetchLatestPrices(symbol, chain),
-      {
-        maxRetries: 3,
-        baseDelayMs: 500,
-        backoffMultiplier: 2,
-        jitter: true,
-        onRetry: (attempt, error, delay) => {
-          logger.warn(`Retry ${attempt} for ${symbol}`, { error: error.message, delay });
-        },
+    const prices = await withRetry(() => this.fetchLatestPrices(symbol, chain), {
+      maxRetries: 3,
+      baseDelayMs: 500,
+      backoffMultiplier: 2,
+      jitter: true,
+      onRetry: (attempt, error, delay) => {
+        logger.warn(`Retry ${attempt} for ${symbol}`, { error: error.message, delay });
       },
-    );
+    });
 
     if (prices.length < AGGREGATION_CONFIG.minDataSources) {
       logger.warn(`Insufficient price data for ${symbol}`, {
@@ -140,7 +136,8 @@ export class PriceAggregationEngine {
     const minPrice = Math.min(...priceValues);
     const maxPrice = Math.max(...priceValues);
     const priceRange = maxPrice - minPrice;
-    const priceRangePercent = avgPrice > 0 ? (priceRange / avgPrice) * 100 : 0;
+    // 价格区间百分比，小数形式 (0.01 = 1%)
+    const priceRangePercent = avgPrice > 0 ? priceRange / avgPrice : 0;
 
     // 检测异常值
     const { outliers, maxDeviation, maxDeviationPercent } = this.detectOutliers(
@@ -257,11 +254,7 @@ export class PriceAggregationEngine {
 
     // 记录协议指标
     for (const row of result.rows) {
-      priceMetrics.recordProtocolRequest(
-        row.protocol,
-        duration / result.rows.length,
-        true,
-      );
+      priceMetrics.recordProtocolRequest(row.protocol, duration / result.rows.length, true);
     }
 
     return result.rows as Array<UnifiedPriceFeed & { instanceId: string }>;
@@ -497,7 +490,12 @@ export class PriceAggregationEngine {
   async getAggregatedPrice(
     symbol: string,
     chain?: SupportedChain,
-  ): Promise<{ price: number; timestamp: number; primarySource: string; confidence?: number } | null> {
+  ): Promise<{
+    price: number;
+    timestamp: number;
+    primarySource: string;
+    confidence?: number;
+  } | null> {
     const comparison = await this.aggregatePrices(symbol, chain);
     if (!comparison) return null;
 
@@ -520,7 +518,12 @@ export class PriceAggregationEngine {
   /**
    * 获取缓存统计
    */
-  async getCacheStats(): Promise<{ totalEntries: number; activeEntries: number; expiredEntries: number; totalSize: string } | null> {
+  async getCacheStats(): Promise<{
+    totalEntries: number;
+    activeEntries: number;
+    expiredEntries: number;
+    totalSize: string;
+  } | null> {
     return comparisonCache.getStats();
   }
 

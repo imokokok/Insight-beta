@@ -302,6 +302,51 @@ npm test -- src/lib/shared
 
 监控 API 延迟、缓存命中率、预言机响应等指标。
 
+### P3 改进（已完成 - 2025年2月）
+
+#### 1. 服务架构统一
+
+统一了多个重复的服务实现，减少代码冗余。
+
+**已删除的重复服务：**
+
+| 服务                        | 替代方案              | 删除文件数 | 减少代码行数 |
+| --------------------------- | --------------------- | ---------- | ------------ |
+| `priceHistoryService`       | `unifiedPriceService` | 3          | ~300 行      |
+| `notifications.ts` (兼容层) | `NotificationService` | 2          | ~200 行      |
+| **总计**                    |                       | **5**      | **~500 行**  |
+
+**优化内容：**
+
+- **Supabase 客户端统一**: 所有服务端代码使用 `supabaseAdmin` 单例
+- **通知服务统一**: 统一使用 `NotificationService` 类
+- **价格历史类型统一**: 统一使用 `unifiedPriceService` 中的类型定义
+
+**API 路由优化：**
+
+11 个 API 路由从 `createSupabaseClient()` 迁移到 `supabaseAdmin` 单例：
+
+- `security/reports/export`
+- `security/monitor-status`
+- `security/detections/*`
+- `security/trends`
+- `security/alerts/*`
+- `security/config`
+- `security/monitor/start`
+- `security/metrics`
+
+**代码示例：**
+
+```typescript
+// 修改前
+import { createSupabaseClient } from '@/lib/supabase/server';
+const supabase = createSupabaseClient();
+
+// 修改后
+import { supabaseAdmin } from '@/lib/supabase/server';
+const supabase = supabaseAdmin;
+```
+
 ## 性能提升
 
 ### 代码量减少

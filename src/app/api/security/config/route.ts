@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
-import { createSupabaseClient, SUPABASE_ERROR_CODES } from '@/lib/supabase/server';
+import { supabaseAdmin, SUPABASE_ERROR_CODES } from '@/lib/supabase/server';
 
 interface ConfigRow {
   config: Record<string, unknown>;
@@ -36,7 +36,7 @@ const DEFAULT_CONFIG = {
 
 export async function GET() {
   try {
-    const supabase = createSupabaseClient();
+    const supabase = supabaseAdmin;
 
     const { data, error } = await supabase
       .from('detection_config')
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing config in request body' }, { status: 400 });
     }
 
-    const supabase = createSupabaseClient();
+    const supabase = supabaseAdmin;
 
     const { error } = await supabase.from('detection_config').upsert({
       id: 'default',

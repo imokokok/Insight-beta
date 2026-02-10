@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
 import { manipulationDetectionService } from '@/lib/services/manipulationDetectionService';
-import { createSupabaseClient } from '@/lib/supabase/server';
+import { supabaseAdmin } from '@/lib/supabase/server';
 import type { OracleProtocol, SupportedChain } from '@/lib/types';
 
 interface StartMonitorBody {
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     await manipulationDetectionService.initialize();
 
     if (allFeeds) {
-      const supabase = createSupabaseClient();
+      const supabase = supabaseAdmin;
       const { data: feeds, error } = await supabase
         .from('price_feeds')
         .select('protocol, symbol, chain')

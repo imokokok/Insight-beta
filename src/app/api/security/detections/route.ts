@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 import { AppError, ValidationError, createErrorResponse, toAppError } from '@/lib/errors/AppError';
 import { logger } from '@/lib/logger';
-import { createSupabaseClient } from '@/lib/supabase/server';
+import { supabaseAdmin } from '@/lib/supabase/server';
 
 interface DetectionRow {
   id: string;
@@ -151,7 +151,7 @@ export async function GET(request: NextRequest) {
     // 验证参数
     const params = validateParams(searchParams);
 
-    const supabase = createSupabaseClient();
+    const supabase = supabaseAdmin;
 
     let query = supabase
       .from('manipulation_detections')

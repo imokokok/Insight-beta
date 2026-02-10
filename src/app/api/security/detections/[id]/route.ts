@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
-import { createSupabaseClient } from '@/lib/supabase/server';
+import { supabaseAdmin } from '@/lib/supabase/server';
 
 interface DetectionRow {
   id: string;
@@ -28,7 +28,7 @@ interface DetectionRow {
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const supabase = createSupabaseClient();
+    const supabase = supabaseAdmin;
 
     const { data, error } = await supabase
       .from('manipulation_detections')

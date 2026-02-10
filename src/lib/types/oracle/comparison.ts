@@ -18,7 +18,9 @@ export type PriceDeviationCell = {
   symbol: string;
   price: number;
   referencePrice: number;
+  /** 价格偏差绝对值 */
   deviation: number;
+  /** 价格偏差百分比，小数形式 (如 0.01 = 1%) */
   deviationPercent: number;
   deviationLevel: PriceDeviationLevel;
   timestamp: string;
@@ -30,7 +32,9 @@ export type PriceHeatmapRow = {
   baseAsset: string;
   quoteAsset: string;
   cells: PriceDeviationCell[];
+  /** 最大偏差百分比，小数形式 (如 0.01 = 1%) */
   maxDeviation: number;
+  /** 平均偏差百分比，小数形式 (如 0.01 = 1%) */
   avgDeviation: number;
   consensusPrice: number;
   consensusMethod: 'median' | 'weighted' | 'mean';
@@ -58,7 +62,8 @@ export type LatencyMetric = {
   blockLag: number;
   updateFrequency: number; // 平均更新频率（秒）
   expectedFrequency: number; // 预期频率（秒）
-  frequencyDeviation: number; // 频率偏差百分比
+  /** 频率偏差百分比，小数形式 (如 0.01 = 1%) */
+  frequencyDeviation: number;
   percentile50: number; // P50 延迟
   percentile90: number; // P90 延迟
   percentile99: number; // P99 延迟
@@ -172,6 +177,7 @@ export type RealtimeComparisonItem = {
     min: number;
     max: number;
     absolute: number;
+    /** 价差百分比，小数形式 (如 0.01 = 1%) */
     percent: number;
   };
   lastUpdated: string;
@@ -183,6 +189,7 @@ export type RealtimeProtocolData = {
   timestamp: string;
   confidence: number;
   latency: number;
+  /** 与共识价格的偏差百分比，小数形式 (如 0.01 = 1%) */
   deviationFromConsensus: number;
   status: 'active' | 'stale' | 'error';
 };

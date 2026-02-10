@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { createSupabaseClient } from '@/lib/supabase/server';
+import { supabaseAdmin } from '@/lib/supabase/server';
 
 interface PostgresChangePayload {
   new: {
@@ -37,7 +37,7 @@ export async function GET() {
       sendEvent({ type: 'connected', timestamp: Date.now() });
 
       // Set up Supabase realtime subscription
-      const supabase = createSupabaseClient();
+      const supabase = supabaseAdmin;
 
       const subscription = supabase
         .channel('manipulation_detections')

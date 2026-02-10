@@ -70,12 +70,12 @@ export function exportRealtimeToCSV(data: RealtimeComparisonItem[]) {
         资产对: item.symbol,
         协议: protocol.protocol,
         价格: protocol.price.toFixed(4),
-        '偏离度(%)': protocol.deviationFromConsensus.toFixed(2),
+        '偏离度(%)': (protocol.deviationFromConsensus * 100).toFixed(2),
         '延迟(ms)': protocol.latency.toFixed(0),
         '置信度(%)': (protocol.confidence * 100).toFixed(0),
         状态: protocol.status === 'active' ? '活跃' : protocol.status === 'stale' ? '陈旧' : '错误',
         共识价格: item.consensus.median.toFixed(4),
-        '价差(%)': item.spread.percent.toFixed(2),
+        '价差(%)': (item.spread.percent * 100).toFixed(2),
         更新时间: new Date(protocol.timestamp).toLocaleString('zh-CN'),
       });
     });
@@ -103,7 +103,7 @@ export function exportHeatmapToCSV(data: PriceHeatmapData) {
         价格: cell.price.toFixed(4),
         参考价格: cell.referencePrice.toFixed(4),
         偏离值: cell.deviation.toFixed(4),
-        '偏离度(%)': cell.deviationPercent.toFixed(2),
+        '偏离度(%)': (cell.deviationPercent * 100).toFixed(2),
         偏离等级:
           cell.deviationLevel === 'low'
             ? '正常'
@@ -137,7 +137,7 @@ export function exportLatencyToCSV(data: LatencyAnalysis) {
     区块滞后: metric.blockLag,
     '更新频率(秒)': metric.updateFrequency.toFixed(0),
     '预期频率(秒)': metric.expectedFrequency,
-    '频率偏差(%)': metric.frequencyDeviation.toFixed(2),
+    '频率偏差(%)': (metric.frequencyDeviation * 100).toFixed(2),
     'P50延迟(ms)': metric.percentile50.toFixed(0),
     'P90延迟(ms)': metric.percentile90.toFixed(0),
     'P99延迟(ms)': metric.percentile99.toFixed(0),

@@ -2,11 +2,18 @@
  * 告警服务 - 负责发送各种渠道的告警通知
  *
  * 单一职责：处理告警通知的发送
+ * 使用新的 NotificationService 架构
  */
 
+import { env } from '@/lib/config/env';
 import { logger } from '@/lib/logger';
 import type { ManipulationAlert } from '@/lib/types/security/detection';
-import { notifyAlert, type NotificationChannel } from '@/server/notifications';
+import {
+  NotificationService,
+  type NotificationChannel,
+  type AlertNotification,
+  type NotificationResult,
+} from '@/server/alerts/notifications';
 
 export interface AlertChannelConfig {
   email?: boolean;
@@ -23,9 +30,65 @@ export interface AlertServiceConfig {
 export class AlertService {
   private config: AlertServiceConfig;
   private lastAlertTime: Map<string, number> = new Map();
+  private notificationService: NotificationService;
 
   constructor(config: AlertServiceConfig) {
     this.config = config;
+    this.notificationService = new NotificationService();
+    this.initializeChannels();
+  }
+
+  /**
+   * 初始化通知渠道配置
+   */
+  private initializeChannels(): void {
+    // Webhook
+    if (this.config.channels.webhook && env.INSIGHT_WEBHOOK_URL) {
+      this.notificationService.registerChannel('webhook', {
+        type: 'webhook',
+        url: env.INSIGHT_WEBHOOK_URL,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        timeoutMs: Number(env.INSIGHT_WEBHOOK_TIMEOUT_MS) || 10000,
+        retryCount: 3,
+      });
+    }
+
+    // Slack
+    if (this.config.channels.slack && env.INSIGHT_SLACK_WEBHOOK_URL) {
+      this.notificationService.registerChannel('slack', {
+        type: 'slack',
+        webhookUrl: env.INSIGHT_SLACK_WEBHOOK_URL,
+      });
+    }
+
+    // Email
+    if (this.config.channels.email && env.INSIGHT_SMTP_HOST && env.INSIGHT_SMTP_USER) {
+      this.notificationService.registerChannel('email', {
+        type: 'email',
+        smtpHost: env.INSIGHT_SMTP_HOST,
+        smtpPort: Number(env.INSIGHT_SMTP_PORT) || 587,
+        username: env.INSIGHT_SMTP_USER,
+        password: env.INSIGHT_SMTP_PASS || '',
+        fromAddress: env.INSIGHT_FROM_EMAIL || env.INSIGHT_SMTP_USER,
+        toAddresses: env.INSIGHT_DEFAULT_EMAIL ? [env.INSIGHT_DEFAULT_EMAIL] : [],
+        useTLS: (Number(env.INSIGHT_SMTP_PORT) || 587) === 465,
+      });
+    }
+
+    // Telegram
+    if (
+      this.config.channels.telegram &&
+      env.INSIGHT_TELEGRAM_BOT_TOKEN &&
+      env.INSIGHT_TELEGRAM_CHAT_ID
+    ) {
+      this.notificationService.registerChannel('telegram', {
+        type: 'telegram',
+        botToken: env.INSIGHT_TELEGRAM_BOT_TOKEN,
+        chatIds: [env.INSIGHT_TELEGRAM_CHAT_ID],
+        parseMode: 'HTML',
+      });
+    }
   }
 
   async sendAlert(alert: ManipulationAlert): Promise<void> {
@@ -52,19 +115,45 @@ export class AlertService {
       return;
     }
 
-    // 发送通知
-    const result = await notifyAlert(
-      {
-        title: `${alert.protocol} - ${alert.symbol}`,
-        message: this.formatAlertMessage(alert),
-        severity: this.mapSeverity(alert.severity),
-        fingerprint: alertKey,
+    // 构建通知对象
+    const notification: AlertNotification = {
+      id: alertKey,
+      alertId: alertKey,
+      severity: this.mapSeverity(alert.severity),
+      title: `${alert.protocol} - ${alert.symbol}`,
+      message: this.formatAlertMessage(alert),
+      details: {
+        protocol: alert.protocol,
+        symbol: alert.symbol,
+        type: alert.type,
+        ...alert.details,
       },
-      { channels },
-    );
+      timestamp: new Date(),
+      protocol: alert.protocol,
+      symbol: alert.symbol,
+    };
+
+    // 发送通知到所有配置的渠道
+    const results: NotificationResult[] = [];
+    for (const channel of channels) {
+      try {
+        const result = await this.notificationService.sendNotification(channel, notification);
+        results.push(result);
+      } catch (error) {
+        logger.error(`Failed to send notification via ${channel}`, { error, alertKey });
+        results.push({
+          success: false,
+          channel,
+          error: error instanceof Error ? error.message : String(error),
+          timestamp: new Date(),
+          durationMs: 0,
+        });
+      }
+    }
 
     // 记录结果
-    if (result.success) {
+    const allSuccessful = results.every((r) => r.success);
+    if (allSuccessful) {
       logger.info('Alert sent successfully', {
         alertKey,
         type: alert.type,
@@ -74,8 +163,8 @@ export class AlertService {
     } else {
       logger.error('Some alert channels failed', {
         alertKey,
-        failedChannels: result.channelResults.filter((r) => !r.success).map((r) => r.channel),
-        errors: result.channelResults.filter((r) => !r.success).map((r) => r.error),
+        failedChannels: results.filter((r) => !r.success).map((r) => r.channel),
+        errors: results.filter((r) => !r.success).map((r) => r.error),
       });
     }
   }
@@ -121,6 +210,9 @@ export class AlertService {
 
   updateConfig(config: Partial<AlertServiceConfig>): void {
     this.config = { ...this.config, ...config };
+    // 重新初始化渠道
+    this.notificationService = new NotificationService();
+    this.initializeChannels();
   }
 
   /**

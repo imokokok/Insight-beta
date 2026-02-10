@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
-import { createSupabaseClient } from '@/lib/supabase/server';
+import { supabaseAdmin } from '@/lib/supabase/server';
 
 export async function GET() {
   try {
-    const supabase = createSupabaseClient();
+    const supabase = supabaseAdmin;
 
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 

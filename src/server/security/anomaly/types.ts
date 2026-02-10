@@ -3,7 +3,7 @@
  * 异常检测类型定义
  */
 
-import type { PriceHistoryRecord } from '@/server/priceHistory/priceHistoryService';
+import type { PriceHistoryRecord } from '@/server/oracle/unifiedPriceService';
 
 export type AnomalyType =
   | 'statistical_outlier'

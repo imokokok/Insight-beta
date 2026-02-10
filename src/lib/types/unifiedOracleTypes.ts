@@ -433,8 +433,10 @@ export type CrossOracleComparison = {
   minPrice: number;
   maxPrice: number;
   priceRange: number;
+  /** 价格区间百分比，小数形式 (如 0.01 = 1%) */
   priceRangePercent: number;
   maxDeviation: number;
+  /** 最大偏差百分比，小数形式 (如 0.01 = 1%) */
   maxDeviationPercent: number;
   outlierProtocols: OracleProtocol[];
   recommendedPrice: number;

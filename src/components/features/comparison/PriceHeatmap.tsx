@@ -46,9 +46,10 @@ const deviationConfig: Record<
 };
 
 function formatDeviation(value: number): string {
-  const absValue = Math.abs(value);
-  if (absValue < 0.01) return '<0.01%';
-  return `${absValue.toFixed(2)}%`;
+  // value 是小数形式 (如 0.01 = 1%)，转换为百分比显示
+  const percentValue = Math.abs(value) * 100;
+  if (percentValue < 0.01) return '<0.01%';
+  return `${percentValue.toFixed(2)}%`;
 }
 
 function formatHeatmapPrice(value: number): string {
@@ -328,15 +329,15 @@ export const PriceHeatmap = memo(function PriceHeatmap({
                   <div className="flex w-16 flex-shrink-0 items-center justify-center border-b p-1.5 sm:w-24 sm:p-2">
                     <Badge
                       variant={
-                        row.maxDeviation > 1
+                        row.maxDeviation > 0.01
                           ? 'destructive'
-                          : row.maxDeviation > 0.5
+                          : row.maxDeviation > 0.005
                             ? 'default'
                             : 'secondary'
                       }
                       className="text-xs"
                     >
-                      ±{row.maxDeviation.toFixed(2)}%
+                      ±{(row.maxDeviation * 100).toFixed(2)}%
                     </Badge>
                   </div>
                 </div>

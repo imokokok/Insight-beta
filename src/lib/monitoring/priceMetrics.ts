@@ -188,9 +188,12 @@ export class PriceMetricsCollector {
     let criticalCount = 0;
 
     for (const deviation of data) {
-      if (deviation < 0.5) normalCount++;
-      else if (deviation < 2) warningCount++;
-      else criticalCount++;
+      // deviation 是小数形式 (如 0.01 = 1%)
+      if (deviation < 0.005)
+        normalCount++; // < 0.5%
+      else if (deviation < 0.02)
+        warningCount++; // 0.5% - 2%
+      else criticalCount++; // > 2%
     }
 
     return {
@@ -207,11 +210,7 @@ export class PriceMetricsCollector {
   // 协议指标
   // ============================================================================
 
-  recordProtocolRequest(
-    protocol: string,
-    latencyMs: number,
-    success: boolean,
-  ): void {
+  recordProtocolRequest(protocol: string, latencyMs: number, success: boolean): void {
     let stats = this.protocolStats.get(protocol);
     if (!stats) {
       stats = {

@@ -56,9 +56,10 @@ const protocolColors: Record<string, string> = {
 };
 
 function formatDeviation(value: number): string {
-  const absValue = Math.abs(value);
-  if (absValue < 0.01) return '<0.01%';
-  return `${absValue.toFixed(2)}%`;
+  // value 是小数形式 (如 0.01 = 1%)，转换为百分比显示
+  const percentValue = Math.abs(value) * 100;
+  if (percentValue < 0.01) return '<0.01%';
+  return `${percentValue.toFixed(2)}%`;
 }
 
 function formatLatency(ms: number): string {
@@ -317,15 +318,15 @@ export function RealtimeComparisonView({
                       <p className="font-mono text-sm">{formatPrice(item.consensus.median)}</p>
                       <Badge
                         variant={
-                          item.spread.percent > 1
+                          item.spread.percent > 0.01
                             ? 'destructive'
-                            : item.spread.percent > 0.5
+                            : item.spread.percent > 0.005
                               ? 'secondary'
                               : 'default'
                         }
                         className="mt-1 text-xs"
                       >
-                        ±{item.spread.percent.toFixed(2)}%
+                        ±{(item.spread.percent * 100).toFixed(2)}%
                       </Badge>
                     </div>
                   </button>

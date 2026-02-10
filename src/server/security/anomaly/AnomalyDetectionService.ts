@@ -4,7 +4,7 @@
  */
 
 import { logger } from '@/lib/logger';
-import type { PriceHistoryRecord } from '@/server/priceHistory/priceHistoryService';
+import type { PriceHistoryRecord } from '@/server/oracle/unifiedPriceService';
 
 import { BehaviorPatternDetector } from './BehaviorPatternDetector';
 import { MLDetector } from './MLDetector';
@@ -437,15 +437,19 @@ export class AnomalyDetectionService {
 
     // 转换数据格式为 PriceHistoryRecord
     const convertedHistory = priceHistory.map((p) => ({
-      id: `${symbol}-${p.timestamp.getTime()}`,
+      id: 0, // 临时ID，数据库会自动生成
+      feedId: `${symbol}-${p.timestamp.getTime()}`,
       symbol,
       protocol: 'chainlink' as const,
       chain: 'ethereum' as const,
+      baseAsset: symbol.split('/')[0] || symbol,
+      quoteAsset: symbol.split('/')[1] || 'USD',
       price: p.value,
       priceRaw: String(Math.floor(p.value * 1e8)),
       decimals: 8,
       timestamp: p.timestamp,
       blockNumber: 0,
+      createdAt: new Date(),
     }));
 
     const anomalies: AnomalyDetection[] = [];

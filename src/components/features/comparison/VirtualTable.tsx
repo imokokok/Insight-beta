@@ -125,9 +125,10 @@ export function createFormatters(): TableFormatters {
       return `$${price.toFixed(4)}`;
     },
     deviation: (value: number) => {
-      const absValue = Math.abs(value);
-      if (absValue < 0.01) return '<0.01%';
-      return `${absValue.toFixed(2)}%`;
+      // value 是小数形式 (如 0.01 = 1%)，转换为百分比显示
+      const percentValue = Math.abs(value) * 100;
+      if (percentValue < 0.01) return '<0.01%';
+      return `${percentValue.toFixed(2)}%`;
     },
     latency: (ms: number) => {
       if (ms < 1000) return `${ms.toFixed(0)}ms`;
@@ -137,10 +138,11 @@ export function createFormatters(): TableFormatters {
 }
 
 export function getDeviationColor(deviation: number): string {
+  // deviation 是小数形式 (如 0.01 = 1%)
   const abs = Math.abs(deviation);
-  if (abs > 2) return 'text-red-600 bg-red-50';
-  if (abs > 1) return 'text-orange-600 bg-orange-50';
-  if (abs > 0.5) return 'text-yellow-600 bg-yellow-50';
+  if (abs > 0.02) return 'text-red-600 bg-red-50';
+  if (abs > 0.01) return 'text-orange-600 bg-orange-50';
+  if (abs > 0.005) return 'text-yellow-600 bg-yellow-50';
   return 'text-emerald-600 bg-emerald-50';
 }
 
@@ -151,8 +153,9 @@ export function getLatencyColor(latency: number): string {
 }
 
 export function getSpreadVariant(spreadPercent: number): 'default' | 'secondary' | 'destructive' {
-  if (spreadPercent > 1) return 'destructive';
-  if (spreadPercent > 0.5) return 'secondary';
+  // spreadPercent 是小数形式 (如 0.01 = 1%)
+  if (spreadPercent > 0.01) return 'destructive';
+  if (spreadPercent > 0.005) return 'secondary';
   return 'default';
 }
 
@@ -322,7 +325,7 @@ const VirtualTableRow = React.memo(function VirtualTableRow({ row, style }: Virt
       </div>
       <div className="w-[100px] text-right">
         <Badge variant={getSpreadVariant(row.spreadPercent)} className="text-xs">
-          ±{row.spreadPercent.toFixed(2)}%
+          ±{(row.spreadPercent * 100).toFixed(2)}%
         </Badge>
       </div>
       <div className="w-[100px] text-right">

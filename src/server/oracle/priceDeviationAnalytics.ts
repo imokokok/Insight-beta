@@ -176,7 +176,7 @@ export class PriceDeviationAnalytics {
 
         totalDeviation += trend.avgDeviation;
 
-        if (trend.avgDeviation > this.config.deviationThreshold * 100) {
+        if (trend.avgDeviation > this.config.deviationThreshold) {
           highDeviationCount++;
         }
 
@@ -419,10 +419,7 @@ export class PriceDeviationAnalytics {
         medianPrice: avgPrice * (1 + (Math.random() - 0.5) * 0.001),
         maxDeviation: avgPrice * maxDeviationPercent,
         maxDeviationPercent,
-        outlierProtocols:
-          maxDeviationPercent > 0.005 && randomProtocol
-            ? [randomProtocol]
-            : [],
+        outlierProtocols: maxDeviationPercent > 0.005 && randomProtocol ? [randomProtocol] : [],
       });
     }
 
@@ -459,7 +456,6 @@ export class PriceDeviationAnalytics {
     return values.reduce((a, b) => a + b, 0) / values.length;
   }
 
-  // eslint-disable-next-line unused-imports/no-unused-vars
   private _calculateStandardDeviation(values: number[]): number {
     if (values.length < 2) return 0;
     const mean = this.calculateAverage(values);
@@ -468,7 +464,6 @@ export class PriceDeviationAnalytics {
     return Math.sqrt(avgSquaredDiff);
   }
 
-  // eslint-disable-next-line unused-imports/no-unused-vars
   private _calculateTrendDirection(values: number[]): 'increasing' | 'decreasing' | 'stable' {
     if (values.length < 2) return 'stable';
 
@@ -485,7 +480,6 @@ export class PriceDeviationAnalytics {
     return 'stable';
   }
 
-  // eslint-disable-next-line unused-imports/no-unused-vars
   private _calculateTrendStrength(values: number[]): number {
     if (values.length < 2) return 0;
 
@@ -523,8 +517,8 @@ export class PriceDeviationAnalytics {
       dataPoints.filter((d) => d.outlierProtocols.length > 0).length / dataPoints.length;
 
     const highDeviationRatio =
-      dataPoints.filter((d) => d.maxDeviationPercent > this.config.deviationThreshold * 100)
-        .length / dataPoints.length;
+      dataPoints.filter((d) => d.maxDeviationPercent > this.config.deviationThreshold).length /
+      dataPoints.length;
 
     return Math.min((outlierRatio + highDeviationRatio) / 2, 1);
   }
@@ -547,9 +541,9 @@ export class PriceDeviationAnalytics {
       parts.push('Deviation trend is increasing significantly.');
     }
 
-    if (avgDeviation > 5) {
+    if (avgDeviation > 0.05) {
       parts.push('Average deviation is very high (>5%).');
-    } else if (avgDeviation > 1) {
+    } else if (avgDeviation > 0.01) {
       parts.push('Average deviation is elevated (>1%).');
     }
 
