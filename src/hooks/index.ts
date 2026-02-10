@@ -29,7 +29,11 @@ export { useDisputes } from './useDisputes';
 export { useWebSocket } from './useWebSocket';
 
 // Dashboard hooks
-export { useDashboardShortcuts } from './useDashboard';
+export {
+  useDashboardShortcuts,
+  useAutoRefresh as useAutoRefreshLegacy,
+  useDataCache,
+} from './useDashboard';
 
 // 自动刷新 Hook (新的实现 - 推荐用于新页面)
 export { useAutoRefresh } from './use-auto-refresh';

@@ -29,9 +29,8 @@ export async function POST(request: NextRequest) {
     if (allFeeds) {
       const supabase = supabaseAdmin;
       const { data: feeds, error } = await supabase
-        .from('price_feeds')
-        .select('protocol, symbol, chain')
-        .eq('is_active', true);
+        .from('unified_price_feeds')
+        .select('protocol, symbol, chain');
 
       if (error) {
         logger.error('Failed to fetch feeds', { error: error.message });

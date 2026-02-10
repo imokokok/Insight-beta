@@ -238,3 +238,7 @@ export function getSloEntries(slo: OpsSloStatus): SloEntry[] {
     },
   ];
 }
+
+export function getInitialInstanceId(): string {
+  return 'all';
+}

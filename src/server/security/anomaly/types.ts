@@ -33,6 +33,7 @@ export interface AnomalyDetection {
 
 export interface AnomalyMetrics {
   zScore?: number;
+  /** 偏差百分比，小数形式 (如 0.01 = 1%) */
   deviationPercent?: number;
   expectedValue?: number;
   actualValue?: number;

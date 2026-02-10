@@ -7,3 +7,25 @@
 
 // 重新导出 unifiedOracleTypes 中的所有类型
 export * from '@/lib/types/unifiedOracleTypes';
+
+// 导出协议相关常量
+export {
+  PROTOCOL_DISPLAY_NAMES,
+  PRICE_FEED_PROTOCOLS,
+  OPTIMISTIC_PROTOCOLS,
+  ORACLE_PROTOCOLS,
+  PROTOCOL_INFO,
+} from '@/lib/types/oracle/protocol';
+
+// 导出比较相关类型
+export type {
+  ComparisonFilter,
+  ComparisonConfig,
+  ComparisonView,
+  CostComparison,
+  LatencyAnalysis,
+  LatencyTrend,
+  PriceHeatmapData,
+  PriceDeviationCell,
+  RealtimeComparisonItem,
+} from '@/lib/types/oracle/comparison';

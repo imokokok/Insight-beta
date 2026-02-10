@@ -375,6 +375,7 @@ function SkeletonList({
 export {
   Skeleton,
   CardSkeleton,
+  CardSkeleton as SkeletonCard,
   ListItemSkeleton,
   TableRowSkeleton,
   StatCardSkeleton,

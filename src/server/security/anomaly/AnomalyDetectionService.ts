@@ -135,7 +135,7 @@ export class AnomalyDetectionService {
           'statistical_outlier',
           this.calculateSeverity(confidence, this.config),
           confidence,
-          { deviationPercent: outlier.score * 100 },
+          { deviationPercent: outlier.score },
           [
             {
               type: 'iqr',
@@ -270,7 +270,7 @@ export class AnomalyDetectionService {
           {
             expectedValue: anomaly.expected,
             actualValue: anomaly.actual,
-            deviationPercent: anomaly.deviation * 100,
+            deviationPercent: anomaly.deviation,
           },
           [
             {

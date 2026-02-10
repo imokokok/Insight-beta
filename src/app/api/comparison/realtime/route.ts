@@ -31,8 +31,9 @@ export async function GET(request: NextRequest) {
     // 构建实时对比数据
     const response = comparisons.map((comparison) => {
       const protocolData = comparison.prices.map((price) => {
+        // 使用小数形式存储偏差 (0.01 = 1%)
         const deviationFromConsensus =
-          ((price.price - comparison.medianPrice) / comparison.medianPrice) * 100;
+          (price.price - comparison.medianPrice) / comparison.medianPrice;
 
         return {
           protocol: price.protocol,
@@ -69,7 +70,8 @@ export async function GET(request: NextRequest) {
           min,
           max,
           absolute: max - min,
-          percent: ((max - min) / median) * 100,
+          // 价差百分比，小数形式 (0.01 = 1%)
+          percent: (max - min) / median,
         },
         lastUpdated: comparison.timestamp,
       };
