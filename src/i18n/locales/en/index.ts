@@ -15,6 +15,7 @@ import { nav } from './nav';
 import onboarding from './onboarding';
 import { oracle } from './oracle';
 import { protocol } from './protocol';
+import { pwa } from './pwa';
 import { security } from './security';
 import { sla } from './sla';
 import { status } from './status';
@@ -38,6 +39,7 @@ export const enTranslations = {
   onboarding,
   oracle,
   protocol,
+  pwa,
   security,
   sla,
   status,

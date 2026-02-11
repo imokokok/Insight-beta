@@ -16,4 +16,18 @@ export const wallet = {
   notFound: '未找到钱包',
   switchingNetwork: '切换中…',
   unknownNetwork: '未知网络',
+  // 钱包选择弹窗
+  selectWallet: '选择钱包',
+  browserWallet: '浏览器钱包',
+  useCurrentWallet: '使用当前钱包浏览器',
+  useMetaMask: '使用 MetaMask、Rabby 等',
+  useWalletConnect: '使用移动钱包应用连接',
+  recommended: '推荐',
+  noBrowserWallet: '未检测到浏览器钱包',
+  walletConnectNotConfigured: 'WalletConnect 未配置',
+  mobileHint: '在手机上？使用 WalletConnect 连接您的钱包应用',
+  setupRequired: '需要配置',
+  walletConnectSetupGuide: '在 .env.local 文件中添加 NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID',
+  newToWallets: '不了解钱包？',
+  learnMore: '了解更多',
 };

@@ -5,7 +5,6 @@
  */
 
 import { getErrorMessage } from '@/lib/errors';
-import { logger } from '@/lib/logger';
 import { getOracleInstanceId } from './storage';
 
 export { getErrorMessage };
@@ -132,42 +131,74 @@ function getServerBaseUrl(): string {
  * );
  * ```
  */
-/**
- * 创建 SWR fetcher 函数
- *
- * 用于 SWR 库的通用 fetcher，自动处理错误和响应解析
- *
- * @template T - 期望的响应数据类型
- * @param url - 请求 URL
- * @returns 解析后的响应数据
- * @throws {Error} 当请求失败时抛出，包含 code 和 status 属性
- *
- * @example
- * ```typescript
- * const { data } = useSWR('/api/user', createSWRFetcher<User>());
- * ```
- */
-export function createSWRFetcher<T>() {
-  return async (url: string): Promise<T> => {
-    const res = await fetch(url);
-    if (!res.ok) {
-      const errorData: Record<string, unknown> = await res.json().catch(() => ({}));
-      const error = new Error(
-        (errorData.error as string) || `HTTP ${res.status}: Failed to fetch data`
+export async function fetchApiData<T>(
+  input: Parameters<typeof fetch>[0],
+  init?: Parameters<typeof fetch>[1],
+  timeout: number = 30000,
+): Promise<T> {
+  try {
+    const normalizedInput = (() => {
+      if (typeof input === 'string' && input.startsWith('/')) {
+        const base = getServerBaseUrl();
+        const url = new URL(input, base);
+        if (
+          typeof window !== 'undefined' &&
+          url.pathname.startsWith('/api/oracle/') &&
+          !url.searchParams.has('instanceId')
+        ) {
+          const instanceId = getOracleInstanceId();
+          if (instanceId && instanceId !== 'default') {
+            url.searchParams.set('instanceId', instanceId);
+          }
+        }
+        return url;
+      }
+      return input;
+    })();
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    const response = await fetch(normalizedInput, {
+      ...init,
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new ApiClientError(
+        `http_${response.status}`,
+        errorData.error || response.statusText,
       );
-      (error as { code?: string; status?: number }).code =
-        (errorData.code as string) || 'FETCH_ERROR';
-      (error as { code?: string; status?: number }).status = res.status;
+    }
+
+    const data = (await response.json()) as ApiResponse<T>;
+
+    if (!data.ok) {
+      throw new ApiClientError(
+        'api_error',
+        data.error || 'Unknown API error',
+      );
+    }
+
+    return data.data as T;
+  } catch (error) {
+    if (error instanceof ApiClientError) {
       throw error;
     }
-    return res.json();
-  };
-}
 
-/**
- * 通用 SWR fetcher（用于不需要类型约束的场景）
- */
-export const swrFetcher = createSWRFetcher<unknown>();
+    if (error instanceof Error) {
+      if (error.name === 'AbortError') {
+        throw new ApiClientError('timeout', 'Request timeout');
+      }
+      throw new ApiClientError('network_error', error.message);
+    }
+
+    throw new ApiClientError('unknown_error', error);
+  }
+}
 
 /**
  * 标准化 API 列表响应
@@ -223,110 +254,4 @@ export function normalizePaginatedResponse<T>(
     };
   }
   return { items: [], total: 0 };
-}
-
-export async function fetchApiData<T>(
-  input: Parameters<typeof fetch>[0],
-  init?: Parameters<typeof fetch>[1],
-  timeout: number = 30000,
-): Promise<T> {
-  try {
-    const normalizedInput = (() => {
-      if (typeof input === 'string' && input.startsWith('/')) {
-        const base = getServerBaseUrl();
-        const url = new URL(input, base);
-        if (
-          typeof window !== 'undefined' &&
-          url.pathname.startsWith('/api/oracle/') &&
-          !url.searchParams.has('instanceId')
-        ) {
-          const instanceId = getOracleInstanceId();
-          if (instanceId && instanceId !== 'default') {
-            url.searchParams.set('instanceId', instanceId);
-          }
-        }
-        return url;
-      }
-      return input;
-    })();
-
-    // 添加超时机制
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
-
-    let res: Response;
-    try {
-      res = await fetch(normalizedInput, {
-        ...init,
-        signal: controller.signal,
-      });
-    } finally {
-      clearTimeout(timeoutId);
-    }
-
-    let json: unknown;
-    try {
-      json = await res.json();
-    } catch {
-      // If parsing fails, throw http status or generic error
-      if (!res.ok) throw new ApiClientError(`http_${res.status}`);
-      throw new ApiClientError('invalid_json');
-    }
-
-    if (!res.ok) {
-      if (json && typeof json === 'object') {
-        const record = json as Record<string, unknown>;
-        if (record.ok === false) {
-          const err = record.error;
-          if (typeof err === 'string') throw new ApiClientError(err);
-          if (err && typeof err === 'object') {
-            const obj = err as Record<string, unknown>;
-            const code = typeof obj.code === 'string' ? obj.code : 'api_error';
-            throw new ApiClientError(code, obj.details);
-          }
-          throw new ApiClientError('api_error');
-        }
-      }
-      throw new ApiClientError(`http_${res.status}`);
-    }
-
-    if (!json || typeof json !== 'object') {
-      throw new ApiClientError('invalid_api_response');
-    }
-
-    const record = json as ApiResponse<T>;
-    if (record.ok && record.data !== undefined) {
-      return record.data;
-    }
-
-    if (record.error) {
-      if (typeof record.error === 'string') {
-        throw new ApiClientError(record.error);
-      }
-      if (record.error && typeof record.error === 'object') {
-        const err = record.error as { code?: unknown; details?: unknown };
-        const code = typeof err.code === 'string' ? err.code : 'api_error';
-        throw new ApiClientError(code, err.details);
-      }
-      throw new ApiClientError('api_error');
-    }
-
-    throw new ApiClientError('unknown_error');
-  } catch (error) {
-    const name =
-      error && typeof error === 'object' && 'name' in error
-        ? String((error as { name?: unknown }).name)
-        : '';
-    if (name !== 'AbortError' && !(error instanceof ApiClientError)) {
-      logger.error('Fetch error:', { error });
-      // 如果是网络错误，包装成更友好的错误
-      if (
-        error instanceof Error &&
-        (error.name === 'TypeError' || error.message.includes('Network'))
-      ) {
-        throw new ApiClientError('network_error', error.message);
-      }
-    }
-    throw error;
-  }
 }

@@ -16,6 +16,17 @@ import { arbitrum, hardhat, mainnet, optimism, polygon, polygonAmoy } from 'viem
 
 import { normalizeWalletError } from '@/lib/errors/walletErrors';
 import { logger } from '@/lib/logger';
+import {
+  WalletConnectProvider,
+  isMobile,
+  isWalletBrowser,
+  getRecommendedConnectionType,
+  getWalletName,
+  WALLET_CONNECT_PROJECT_ID,
+} from '@/lib/blockchain/walletConnect';
+
+// 钱包连接类型
+export type WalletConnectionType = 'browser' | 'walletconnect';
 
 // 扩展 Window 类型以支持以太坊
 declare global {
@@ -24,6 +35,10 @@ declare global {
       request: (args: { method: string; params?: unknown }) => Promise<unknown>;
       on?: (event: string, handler: (payload: unknown) => void) => void;
       removeListener?: (event: string, handler: (payload: unknown) => void) => void;
+      isMetaMask?: boolean;
+      isPhantom?: boolean;
+      isBraveWallet?: boolean;
+      isCoinbaseWallet?: boolean;
     };
   }
 }
@@ -35,15 +50,22 @@ interface WalletState {
   isConnected: boolean;
   error: string | null;
   errorKind: string | null;
+  connectionType: WalletConnectionType | null;
+  walletName: string | null;
 }
 
 interface WalletContextType extends WalletState {
-  connect: () => Promise<void>;
+  connect: (type?: WalletConnectionType) => Promise<void>;
   disconnect: () => void;
   switchChain: (targetChainId: number) => Promise<void>;
   getWalletClient: (chainIdOverride?: number) => Promise<WalletClient | null>;
   clearError: () => void;
   addNetwork: (targetChainId: number) => Promise<void>;
+  isMobile: boolean;
+  isWalletBrowser: boolean;
+  recommendedConnectionType: WalletConnectionType;
+  hasBrowserWallet: boolean;
+  hasWalletConnect: boolean;
 }
 
 const WalletContext = createContext<WalletContextType | null>(null);
@@ -97,10 +119,27 @@ export function WalletProvider({ children }: WalletProviderProps) {
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errorKind, setErrorKind] = useState<string | null>(null);
+  const [connectionType, setConnectionType] = useState<WalletConnectionType | null>(null);
+  const [walletName, setWalletName] = useState<string | null>(null);
+
+  // WalletConnect 提供者实例
+  const wcProviderRef = useRef<WalletConnectProvider | null>(null);
 
   const isConnected = useMemo(() => {
     return address !== null && chainId !== null;
   }, [address, chainId]);
+
+  const hasBrowserWallet = useMemo(() => {
+    return typeof window !== 'undefined' && !!window.ethereum;
+  }, []);
+
+  const hasWalletConnect = useMemo(() => {
+    return !!WALLET_CONNECT_PROJECT_ID;
+  }, []);
+
+  const recommendedConnectionType = useMemo(() => {
+    return getRecommendedConnectionType();
+  }, []);
 
   const clearError = useCallback(() => {
     setError(null);
@@ -123,6 +162,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
   const handleErrorRef = useRef(handleError);
   handleErrorRef.current = handleError;
 
+  // 浏览器钱包事件监听
   useEffect(() => {
     if (typeof window === 'undefined' || !window.ethereum) return;
 
@@ -143,6 +183,8 @@ export function WalletProvider({ children }: WalletProviderProps) {
       });
       if (accs.length === 0) {
         setChainId(null);
+        setConnectionType(null);
+        setWalletName(null);
       }
     };
 
@@ -162,6 +204,8 @@ export function WalletProvider({ children }: WalletProviderProps) {
       }
       setAddress(null);
       setChainId(null);
+      setConnectionType(null);
+      setWalletName(null);
     };
 
     provider
@@ -189,7 +233,36 @@ export function WalletProvider({ children }: WalletProviderProps) {
     };
   }, []);
 
-  const connect = useCallback(async () => {
+  // WalletConnect 自动恢复会话
+  useEffect(() => {
+    const restoreWCSession = async () => {
+      if (!WALLET_CONNECT_PROJECT_ID) return;
+      if (connectionType === 'browser') return; // 优先浏览器钱包
+
+      try {
+        const provider = new WalletConnectProvider();
+        await provider.initialize();
+
+        if (provider.address) {
+          wcProviderRef.current = provider;
+          setAddress(provider.address);
+          setChainId(provider.chainId);
+          setConnectionType('walletconnect');
+          setWalletName('WalletConnect');
+          logger.info('WalletConnect session restored', {
+            address: provider.address,
+            chainId: provider.chainId,
+          });
+        }
+      } catch (e) {
+        logger.debug('WalletConnect session restore failed:', { error: e });
+      }
+    };
+
+    restoreWCSession();
+  }, [connectionType]);
+
+  const connectBrowserWallet = useCallback(async () => {
     if (typeof window === 'undefined' || !window.ethereum) {
       const errorDetail = normalizeWalletError(new Error('Wallet not found'));
       setError(errorDetail.userMessage);
@@ -197,59 +270,144 @@ export function WalletProvider({ children }: WalletProviderProps) {
       return;
     }
 
-    setIsConnecting(true);
-    clearError();
+    const accounts = (await window.ethereum.request({
+      method: 'eth_requestAccounts',
+    })) as string[];
 
-    try {
-      const accounts = (await window.ethereum.request({
-        method: 'eth_requestAccounts',
-      })) as string[];
-
-      if (!accounts || !Array.isArray(accounts) || accounts.length === 0) {
-        const error = new Error('User rejected connection request');
-        handleError(error, 'connect');
-        setIsConnecting(false);
-        return;
-      }
-
-      setAddress(accounts[0] as Address);
-      const id = (await window.ethereum.request({
-        method: 'eth_chainId',
-      })) as string;
-      setChainId(parseInt(id, 16));
-      logger.info('Wallet connected successfully', {
-        address: accounts[0],
-        chainId: parseInt(id, 16),
-      });
-    } catch (error: unknown) {
-      handleError(error, 'connect');
-    } finally {
-      setIsConnecting(false);
+    if (!accounts || !Array.isArray(accounts) || accounts.length === 0) {
+      throw new Error('User rejected connection request');
     }
-  }, [clearError, handleError]);
 
-  const disconnect = useCallback(() => {
+    const newAddress = accounts[0] as Address;
+    const id = (await window.ethereum.request({
+      method: 'eth_chainId',
+    })) as string;
+    const newChainId = parseInt(id, 16);
+
+    setAddress(newAddress);
+    setChainId(newChainId);
+    setConnectionType('browser');
+    setWalletName(getWalletName());
+
+    logger.info('Browser wallet connected', {
+      address: newAddress,
+      chainId: newChainId,
+      walletName: getWalletName(),
+    });
+  }, []);
+
+  const connectWalletConnect = useCallback(async () => {
+    if (!WALLET_CONNECT_PROJECT_ID) {
+      throw new Error('WalletConnect Project ID is not configured');
+    }
+
+    const provider = new WalletConnectProvider();
+    await provider.initialize();
+    await provider.connect();
+
+    wcProviderRef.current = provider;
+    setAddress(provider.address);
+    setChainId(provider.chainId);
+    setConnectionType('walletconnect');
+    setWalletName('WalletConnect');
+
+    // 监听 WalletConnect 事件
+    provider.on('accountsChanged', (accounts: unknown) => {
+      const accs = Array.isArray(accounts) ? accounts : [];
+      setAddress(accs[0] as Address || null);
+      if (accs.length === 0) {
+        setChainId(null);
+        setConnectionType(null);
+        setWalletName(null);
+      }
+    });
+
+    provider.on('chainChanged', (chainId: unknown) => {
+      if (typeof chainId === 'string') {
+        setChainId(parseInt(chainId, 16));
+      }
+    });
+
+    provider.on('disconnect', () => {
+      setAddress(null);
+      setChainId(null);
+      setConnectionType(null);
+      setWalletName(null);
+      wcProviderRef.current = null;
+    });
+
+    logger.info('WalletConnect connected', {
+      address: provider.address,
+      chainId: provider.chainId,
+    });
+  }, []);
+
+  const connect = useCallback(
+    async (type?: WalletConnectionType) => {
+      setIsConnecting(true);
+      clearError();
+
+      const connectionMethod = type || recommendedConnectionType;
+
+      try {
+        if (connectionMethod === 'browser' && hasBrowserWallet) {
+          await connectBrowserWallet();
+        } else if (hasWalletConnect) {
+          await connectWalletConnect();
+        } else if (hasBrowserWallet) {
+          await connectBrowserWallet();
+        } else {
+          throw new Error('No wallet connection method available');
+        }
+      } catch (error: unknown) {
+        handleError(error, 'connect');
+      } finally {
+        setIsConnecting(false);
+      }
+    },
+    [
+      clearError,
+      recommendedConnectionType,
+      hasBrowserWallet,
+      hasWalletConnect,
+      connectBrowserWallet,
+      connectWalletConnect,
+      handleError,
+    ],
+  );
+
+  const disconnect = useCallback(async () => {
+    if (connectionType === 'walletconnect' && wcProviderRef.current) {
+      await wcProviderRef.current.disconnect();
+      wcProviderRef.current = null;
+    }
+
     setAddress(null);
     setChainId(null);
+    setConnectionType(null);
+    setWalletName(null);
     clearError();
     logger.info('Wallet disconnected by user');
-  }, [clearError]);
+  }, [connectionType, clearError]);
 
   const switchChain = useCallback(
     async (targetChainId: number) => {
-      if (typeof window === 'undefined' || !window.ethereum) {
-        handleError(new Error('Wallet not found'), 'switchChain');
-        return;
-      }
-
       clearError();
 
       try {
-        await window.ethereum.request({
-          method: 'wallet_switchEthereumChain',
-          params: [{ chainId: `0x${targetChainId.toString(16)}` }],
-        });
-        setChainId(targetChainId);
+        if (connectionType === 'walletconnect' && wcProviderRef.current) {
+          await wcProviderRef.current.switchChain(targetChainId);
+          setChainId(targetChainId);
+        } else if (typeof window !== 'undefined' && window.ethereum) {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: `0x${targetChainId.toString(16)}` }],
+          });
+          setChainId(targetChainId);
+        } else {
+          throw new Error('No wallet provider available');
+        }
+
         logger.info('Chain switched successfully', { targetChainId });
       } catch (err: unknown) {
         const errorDetail = normalizeWalletError(err);
@@ -259,16 +417,11 @@ export function WalletProvider({ children }: WalletProviderProps) {
         handleError(err, 'switchChain');
       }
     },
-    [clearError, handleError],
+    [connectionType, clearError, handleError],
   );
 
   const addNetwork = useCallback(
     async (targetChainId: number) => {
-      if (typeof window === 'undefined' || !window.ethereum) {
-        handleError(new Error('Wallet not found'), 'addNetwork');
-        return;
-      }
-
       clearError();
 
       const chainParams = getAddChainParams(targetChainId);
@@ -278,36 +431,60 @@ export function WalletProvider({ children }: WalletProviderProps) {
       }
 
       try {
-        await window.ethereum.request({
-          method: 'wallet_addEthereumChain',
-          params: [chainParams],
-        });
+        if (connectionType === 'walletconnect' && wcProviderRef.current) {
+          await wcProviderRef.current.request({
+            method: 'wallet_addEthereumChain',
+            params: [chainParams],
+          });
+        } else if (typeof window !== 'undefined' && window.ethereum) {
+          await window.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [chainParams],
+          });
+        } else {
+          throw new Error('No wallet provider available');
+        }
+
         setChainId(targetChainId);
         logger.info('Network added successfully', { targetChainId });
       } catch (error: unknown) {
         handleError(error, 'addNetwork');
       }
     },
-    [clearError, handleError],
+    [connectionType, clearError, handleError],
   );
 
   const getWalletClient = useCallback(
     async (chainIdOverride?: number) => {
-      if (typeof window === 'undefined' || !window.ethereum || !address) {
+      if (!address) {
         return null;
       }
 
       const targetChainId = chainIdOverride ?? chainId;
       const chainConfig = targetChainId ? getChainConfig(targetChainId) : null;
-      const chain = chainConfig?.chain || polygon;
+      const selectedChain = chainConfig?.chain || polygon;
 
-      return createWalletClient({
-        account: address,
-        chain,
-        transport: custom(window.ethereum),
-      });
+      // WalletConnect 使用自己的 provider
+      if (connectionType === 'walletconnect' && wcProviderRef.current) {
+        return createWalletClient({
+          account: address,
+          chain: selectedChain,
+          transport: custom(wcProviderRef.current.provider!),
+        });
+      }
+
+      // 浏览器钱包
+      if (typeof window !== 'undefined' && window.ethereum) {
+        return createWalletClient({
+          account: address,
+          chain: selectedChain,
+          transport: custom(window.ethereum),
+        });
+      }
+
+      return null;
     },
-    [address, chainId],
+    [address, chainId, connectionType],
   );
 
   const value: WalletContextType = useMemo(
@@ -318,12 +495,19 @@ export function WalletProvider({ children }: WalletProviderProps) {
       isConnected,
       error,
       errorKind,
+      connectionType,
+      walletName,
       connect,
       disconnect,
       switchChain,
       getWalletClient,
       clearError,
       addNetwork,
+      isMobile: isMobile(),
+      isWalletBrowser: isWalletBrowser(),
+      recommendedConnectionType,
+      hasBrowserWallet,
+      hasWalletConnect,
     }),
     [
       address,
@@ -332,12 +516,17 @@ export function WalletProvider({ children }: WalletProviderProps) {
       isConnected,
       error,
       errorKind,
+      connectionType,
+      walletName,
       connect,
       disconnect,
       switchChain,
       getWalletClient,
       clearError,
       addNetwork,
+      recommendedConnectionType,
+      hasBrowserWallet,
+      hasWalletConnect,
     ],
   );
 

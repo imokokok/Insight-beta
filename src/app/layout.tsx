@@ -13,6 +13,7 @@ import { PerformanceMonitor } from '@/components/common/PerformanceMonitor';
 import { ResourceHints } from '@/components/common/ResourceHints';
 import { ServiceWorkerRegister } from '@/components/common/ServiceWorkerRegister';
 import { SmartPreloader } from '@/components/common/SmartPreloader';
+import { PWAInstallPrompt } from '@/components/features/pwa';
 import { WalletProvider } from '@/contexts/WalletContext';
 import { LanguageProvider } from '@/i18n/LanguageProvider';
 import {
@@ -177,6 +178,10 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             {/* 移动端底部导航 */}
             <Suspense fallback={null}>
               <MobileBottomNav />
+            </Suspense>
+            {/* PWA 安装提示 */}
+            <Suspense fallback={null}>
+              <PWAInstallPrompt />
             </Suspense>
           </WalletProvider>
         </LanguageProvider>

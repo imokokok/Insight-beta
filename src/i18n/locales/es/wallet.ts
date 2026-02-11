@@ -16,4 +16,18 @@ export const wallet = {
   notFound: 'Billetera No Encontrada',
   switchingNetwork: 'Cambiando…',
   unknownNetwork: 'Red desconocida',
+  // Modal de selección de billetera
+  selectWallet: 'Seleccionar Billetera',
+  browserWallet: 'Billetera de Navegador',
+  useCurrentWallet: 'Usar navegador de billetera actual',
+  useMetaMask: 'Usar MetaMask, Rabby, etc.',
+  useWalletConnect: 'Conectar con app de billetera móvil',
+  recommended: 'Recomendado',
+  noBrowserWallet: 'No se detectó billetera de navegador',
+  walletConnectNotConfigured: 'WalletConnect no configurado',
+  mobileHint: '¿En móvil? Usa WalletConnect para conectar tu app de billetera',
+  setupRequired: 'Configuración Requerida',
+  walletConnectSetupGuide: 'Agrega NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID a tu archivo .env.local',
+  newToWallets: '¿Nuevo en billeteras?',
+  learnMore: 'Aprender más',
 };

@@ -778,13 +778,6 @@ export default function SecurityDashboardPage() {
         <DetectionStatusCard status={status} />
       ) : null}
 
-      {/* Status Card */}
-      {loading && !status ? (
-        <CardSkeleton />
-      ) : status ? (
-        <DetectionStatusCard status={status} />
-      ) : null}
-
       {/* Main Content */}
       <AnimatedContainer delay={100}>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">

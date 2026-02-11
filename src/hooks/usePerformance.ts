@@ -17,51 +17,6 @@ export function useWebVitals() {
 }
 
 /**
- * Intersection Observer Hook - 用于懒加载
- */
-interface UseIntersectionObserverOptions {
-  threshold?: number;
-  rootMargin?: string;
-  triggerOnce?: boolean;
-}
-
-export function useIntersectionObserver(
-  options: UseIntersectionObserverOptions = {}
-) {
-  const { threshold = 0, rootMargin = '0px', triggerOnce = false } = options;
-  const [isIntersecting, setIsIntersecting] = useState(false);
-  const [hasTriggered, setHasTriggered] = useState(false);
-  const elementRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    const element = elementRef.current;
-    if (!element) return;
-
-    if (triggerOnce && hasTriggered) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry) return;
-        const intersecting = entry.isIntersecting;
-        setIsIntersecting(intersecting);
-
-        if (intersecting && triggerOnce) {
-          setHasTriggered(true);
-          observer.unobserve(element);
-        }
-      },
-      { threshold, rootMargin }
-    );
-
-    observer.observe(element);
-
-    return () => observer.disconnect();
-  }, [threshold, rootMargin, triggerOnce, hasTriggered]);
-
-  return { ref: elementRef, isIntersecting, hasTriggered };
-}
-
-/**
  * 节流 Hook
  */
 export function useThrottle<T extends (...args: unknown[]) => unknown>(
@@ -152,43 +107,6 @@ export function useNetworkStatus() {
     effectiveType,
     isSlowConnection: effectiveType === '2g' || effectiveType === 'slow-2g',
   };
-}
-
-/**
- * 内存使用监控 Hook
- */
-export function useMemoryStatus() {
-  const [memory, setMemory] = useState<{
-    usedJSHeapSize: number | null;
-    totalJSHeapSize: number | null;
-    jsHeapSizeLimit: number | null;
-  }>({
-    usedJSHeapSize: null,
-    totalJSHeapSize: null,
-    jsHeapSizeLimit: null,
-  });
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const memory = (performance as unknown as { memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }).memory;
-    if (!memory) return;
-
-    const updateMemory = () => {
-      setMemory({
-        usedJSHeapSize: memory.usedJSHeapSize,
-        totalJSHeapSize: memory.totalJSHeapSize,
-        jsHeapSizeLimit: memory.jsHeapSizeLimit,
-      });
-    };
-
-    updateMemory();
-    const interval = setInterval(updateMemory, 5000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  return memory;
 }
 
 /**

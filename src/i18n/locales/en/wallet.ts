@@ -16,4 +16,18 @@ export const wallet = {
   notFound: 'Wallet Not Found',
   switchingNetwork: 'Switching…',
   unknownNetwork: 'Unknown network',
+  // Wallet selection modal
+  selectWallet: 'Select Wallet',
+  browserWallet: 'Browser Wallet',
+  useCurrentWallet: 'Use current wallet browser',
+  useMetaMask: 'Use MetaMask, Rabby, etc.',
+  useWalletConnect: 'Connect with mobile wallet app',
+  recommended: 'Recommended',
+  noBrowserWallet: 'No browser wallet detected',
+  walletConnectNotConfigured: 'WalletConnect not configured',
+  mobileHint: 'On mobile? Use WalletConnect to connect with your wallet app',
+  setupRequired: 'Setup Required',
+  walletConnectSetupGuide: 'Add NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to your .env.local file',
+  newToWallets: 'New to wallets?',
+  learnMore: 'Learn more',
 };

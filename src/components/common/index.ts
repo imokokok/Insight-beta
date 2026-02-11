@@ -13,7 +13,6 @@ export { DynamicLoading, createLoadingComponent, type LoadingType } from './Dyna
 // 请从 @/components/ui/skeleton 导入 Skeleton 相关组件
 
 // ==================== 性能优化组件 ====================
-export { PreloadLink } from './PreloadLink';
 export { ResourceHints } from './ResourceHints';
 export { ResourcePreloader } from './ResourcePreloader';
 
@@ -22,8 +21,6 @@ export {
   AnimatedContainer,
   StaggerContainer,
   HoverCard,
-  SlideIn,
-  FadeIn,
 } from './AnimatedContainer';
 
 // ==================== 数据展示组件 ====================

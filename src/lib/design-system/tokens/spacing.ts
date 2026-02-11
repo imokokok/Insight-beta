@@ -153,20 +153,3 @@ export const RESPONSIVE_SPACING = {
     gap: '24px',
   },
 } as const;
-
-// ============================================================================
-// 工具函数
-// ============================================================================
-
-export function getSpacing(token: SpacingToken): string {
-  return SPACING_TOKENS[token];
-}
-
-export function getSemanticSpacing(spacing: SemanticSpacing): string {
-  return SEMANTIC_SPACING[spacing];
-}
-
-export function getComponentSpacing(component: keyof typeof COMPONENT_SPACING, prop: string): string {
-  const spacing = COMPONENT_SPACING[component];
-  return (spacing as Record<string, string>)[prop] || '0px';
-}

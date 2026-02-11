@@ -167,22 +167,3 @@ export function mergeOracleFilters(updates: Record<string, unknown>): boolean {
   const next = { ...current, ...updates };
   return setStorageItem(STORAGE_KEYS.ORACLE_FILTERS, next);
 }
-
-/**
- * 获取 Oracle Filter 中的特定值
- *
- * @param key - 要获取的键
- * @param defaultValue - 默认值
- * @returns 存储的值或默认值
- *
- * @example
- * ```typescript
- * const viewMode = getOracleFilterValue('viewMode', 'grid');
- * const status = getOracleFilterValue('disputeStatus', 'All');
- * ```
- */
-export function getOracleFilterValue<T>(key: string, defaultValue: T): T {
-  const filters = getStorageItem<Record<string, unknown>>(STORAGE_KEYS.ORACLE_FILTERS, {});
-  const value = filters[key];
-  return value !== undefined ? (value as T) : defaultValue;
-}
