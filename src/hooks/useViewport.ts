@@ -32,7 +32,7 @@ export function useViewport(options: ViewportOptions = {}) {
 
   const prevVisualHeightRef = useRef(0);
   const stableHeightRef = useRef(0);
-  const checkTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const checkTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const updateViewport = useCallback(() => {
     if (typeof window === 'undefined') return;

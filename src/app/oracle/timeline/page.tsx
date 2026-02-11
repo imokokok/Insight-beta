@@ -27,6 +27,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { PageSkeleton, EmptyEventsState } from '@/components/ui';
 import { logger } from '@/lib/logger';
 
 interface TimelineEvent {
@@ -133,8 +134,8 @@ export default function TimelinePage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="border-primary h-12 w-12 animate-spin rounded-full border-b-2"></div>
+      <div className="container mx-auto p-6">
+        <PageSkeleton />
       </div>
     );
   }

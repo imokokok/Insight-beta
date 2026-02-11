@@ -79,7 +79,7 @@ const EnhancedInput = React.forwardRef<HTMLInputElement, EnhancedInputProps>(
     const [validationMessage, setValidationMessage] = useState('');
     const [isFocused, setIsFocused] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+    const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const isControlled = value !== undefined;
     const currentValue = isControlled ? (value as string) : internalValue;

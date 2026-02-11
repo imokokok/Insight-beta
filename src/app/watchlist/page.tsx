@@ -4,9 +4,10 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-import { EmptyWatchlistState } from '@/components/common/EmptyState';
+import { EmptyWatchlistState } from '@/components/ui';
 import { PageHeader } from '@/components/common/PageHeader';
 import { AssertionList } from '@/components/features/assertion/AssertionList';
+import { FadeIn, StaggerContainer, StaggerItem } from '@/components/common/AnimatedContainer';
 import { useInfiniteList, useWatchlist, type BaseResponse, useIsMobile } from '@/hooks';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n/LanguageProvider';
@@ -92,37 +93,46 @@ export default function WatchlistPage() {
       />
 
       {!mounted ? (
-        <div className="flex flex-col items-center justify-center py-12 sm:py-20">
-          <div className="h-6 w-6 animate-spin rounded-full border-4 border-purple-200 border-t-purple-600 sm:h-8 sm:w-8"></div>
-        </div>
+        <FadeIn>
+          <div className="flex flex-col items-center justify-center py-12 sm:py-20">
+            <div className="h-6 w-6 animate-spin rounded-full border-4 border-purple-200 border-t-purple-600 sm:h-8 sm:w-8"></div>
+            <p className="mt-4 text-sm text-gray-500">Loading...</p>
+          </div>
+        </FadeIn>
       ) : watchlist.length === 0 ? (
-        <EmptyWatchlistState
-          onBrowseAssets={() => {
-            const href = instanceId
-              ? `/oracle?instanceId=${encodeURIComponent(instanceId)}`
-              : '/oracle';
-            router.push(href as Route);
-          }}
-          className="mx-auto max-w-2xl"
-        />
-      ) : (
-        <div className="space-y-3 sm:space-y-4">
-          {error ? (
-            <div className="rounded-xl border border-rose-100 bg-rose-50/50 p-3 text-sm text-rose-700 shadow-sm sm:rounded-2xl sm:p-4">
-              {getUiErrorMessage(error, t)}
-            </div>
-          ) : null}
-          <AssertionList
-            items={items}
-            loading={loading}
-            hasMore={hasMore}
-            loadMore={loadMore}
-            loadingMore={loadingMore}
-            emptyStateMessage={t('common.noData')}
-            viewMode={isMobile ? 'list' : 'grid'}
-            instanceId={instanceId}
+        <FadeIn>
+          <EmptyWatchlistState
+            onBrowseAssets={() => {
+              const href = instanceId
+                ? `/oracle?instanceId=${encodeURIComponent(instanceId)}`
+                : '/oracle';
+              router.push(href as Route);
+            }}
+            className="mx-auto max-w-2xl"
           />
-        </div>
+        </FadeIn>
+      ) : (
+        <StaggerContainer className="space-y-3 sm:space-y-4" staggerChildren={0.05}>
+          <StaggerItem>
+            {error ? (
+              <div className="rounded-xl border border-rose-100 bg-rose-50/50 p-3 text-sm text-rose-700 shadow-sm sm:rounded-2xl sm:p-4">
+                {getUiErrorMessage(error, t)}
+              </div>
+            ) : null}
+          </StaggerItem>
+          <StaggerItem>
+            <AssertionList
+              items={items}
+              loading={loading}
+              hasMore={hasMore}
+              loadMore={loadMore}
+              loadingMore={loadingMore}
+              emptyStateMessage={t('common.noData')}
+              viewMode={isMobile ? 'list' : 'grid'}
+              instanceId={instanceId}
+            />
+          </StaggerItem>
+        </StaggerContainer>
       )}
     </main>
   );

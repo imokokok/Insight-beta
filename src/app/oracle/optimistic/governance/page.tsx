@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 
 import { PageHeader } from '@/components/common/PageHeader';
+import { LoadingSpinner, EmptyEventsState } from '@/components/ui';
 import { logger } from '@/lib/logger';
 import { cn, fetchApiData } from '@/lib/utils';
 
@@ -168,10 +169,8 @@ export default function GovernancePage() {
     return (
       <div className="min-h-screen bg-[#0A0A0F] text-white">
         <div className="container mx-auto px-4 py-8">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 w-48 rounded bg-white/10" />
-            <div className="h-32 rounded-xl bg-white/5" />
-            <div className="h-64 rounded-xl bg-white/5" />
+          <div className="flex h-64 items-center justify-center">
+            <LoadingSpinner size="lg" className="text-blue-500" />
           </div>
         </div>
       </div>

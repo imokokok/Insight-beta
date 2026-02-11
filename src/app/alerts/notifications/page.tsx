@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { PageHeader } from '@/components/common/PageHeader';
 import { AlertHistory, NotificationChannelConfig } from '@/components/features/alerts';
 import { ErrorBanner } from '@/components/ui/error-banner';
+import { LoadingOverlay, EmptyAlertsState } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { logger } from '@/lib/logger';
 import type { AlertHistoryRecord, ChannelHealthStatus } from '@/server/alerts/notificationManager';
@@ -151,7 +152,12 @@ export default function NotificationsConfigPage() {
   }, [loadConfig, loadAlerts]);
 
   return (
-    <div className="space-y-6 pb-16">
+    <div className="space-y-6 pb-16 relative">
+      {/* Loading Overlay */}
+      {loading && !error && (
+        <LoadingOverlay message="Loading configuration..." />
+      )}
+
       <PageHeader
         title={t('alerts.config.title')}
         description={t('alerts.config.description')}
@@ -163,6 +169,16 @@ export default function NotificationsConfigPage() {
           onRetry={loadConfig}
           title="Failed to load configuration"
           isRetrying={loading}
+        />
+      )}
+
+      {/* Empty State - No Alerts */}
+      {!loading && !error && alerts.length === 0 && (
+        <EmptyAlertsState
+          onSetAlertRules={() => {
+            // Scroll to notification config section
+            document.getElementById('notification-config')?.scrollIntoView({ behavior: 'smooth' });
+          }}
         />
       )}
 

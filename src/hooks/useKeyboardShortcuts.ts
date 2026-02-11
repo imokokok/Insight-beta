@@ -6,6 +6,7 @@
 
 'use client';
 
+import type { RefObject } from 'react';
 import { useEffect, useCallback, useRef, useState } from 'react';
 
 // ==================== 快捷键类型定义 ====================
@@ -89,7 +90,7 @@ export function useKeyboardShortcuts(
 
 export function useLocalShortcuts(
   shortcuts: KeyboardShortcut[],
-  ref: React.RefObject<HTMLElement>
+  ref: RefObject<HTMLElement | null>
 ) {
   const shortcutsRef = useRef(shortcuts);
   shortcutsRef.current = shortcuts;
@@ -172,7 +173,7 @@ export function useShortcutHelp() {
 
 export function useSearchShortcut(
   onSearch: () => void,
-  inputRef?: React.RefObject<HTMLInputElement>
+  inputRef?: RefObject<HTMLInputElement | null>
 ) {
   useKeyboardShortcuts([
     {

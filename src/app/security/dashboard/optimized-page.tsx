@@ -49,19 +49,6 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useAutoRefresh } from '@/hooks/use-auto-refresh';
 import { useIsMobile } from '@/hooks';
-import {
-  EmptySecurityState,
-  EmptyChartState,
-  EmptyDataState,
-  DashboardSkeleton,
-  LoadingOverlay,
-} from '@/components/ui';
-import {
-  StaggerContainer,
-  StaggerItem,
-  ScrollReveal,
-  FadeIn,
-} from '@/components/common/AnimatedContainer';
 import { fetchApiData, cn, formatNumber, formatPercent } from '@/lib/utils';
 
 // ============================================================================
@@ -342,19 +329,7 @@ export default function OptimizedSecurityDashboard() {
         </header>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-2 sm:p-3 lg:p-4 relative">
-          {/* Loading Overlay */}
-          {isRefreshing && (
-            <LoadingOverlay message="Loading security data..." />
-          )}
-
-          {/* Empty State - No Detections */}
-          {!isRefreshing && stats.totalDetections === 0 && (
-            <div className="py-12">
-              <EmptySecurityState onRefresh={refresh} />
-            </div>
-          )}
-
+        <div className="flex-1 overflow-y-auto p-2 sm:p-3 lg:p-4">
           {/* Risk Level Summary */}
           <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:gap-3">
             <ThreatLevelBadge level="high" count={stats.highRiskCount} />

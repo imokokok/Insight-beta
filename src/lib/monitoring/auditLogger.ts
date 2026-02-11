@@ -162,7 +162,7 @@ class SecurityAuditLogger {
   private logs: CircularBuffer<AuditLogEntry>;
   private persistenceQueue: AuditLogEntry[] = [];
   private isPersisting = false;
-  private persistenceTimer: NodeJS.Timeout | null = null;
+  private persistenceTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor(maxLogs: number = MAX_LOGS) {
     this.logs = new CircularBuffer<AuditLogEntry>(maxLogs);

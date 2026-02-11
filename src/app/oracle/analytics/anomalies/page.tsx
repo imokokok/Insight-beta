@@ -40,7 +40,7 @@ import { AnimatedContainer, StaggerContainer, HoverCard } from '@/components/com
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { ChartCard } from '@/components/common/ChartCard';
 import { ToastContainer, useToast } from '@/components/common/DashboardToast';
-import { EmptyAnomalyState, EmptySearchState } from '@/components/common/EmptyState';
+import { EmptyAnomalyState, EmptySearchState, LoadingOverlay } from '@/components/ui';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

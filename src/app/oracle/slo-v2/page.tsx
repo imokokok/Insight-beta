@@ -28,6 +28,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { PageSkeleton, EmptyDataState, EmptyFirstItemState } from '@/components/ui';
 import { logger } from '@/lib/logger';
 
 interface SloReport {
@@ -109,8 +110,8 @@ export default function SloDashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="border-primary h-12 w-12 animate-spin rounded-full border-b-2"></div>
+      <div className="container mx-auto p-6">
+        <PageSkeleton />
       </div>
     );
   }

@@ -1,47 +1,51 @@
-'use client';
+/**
+ * Charts Components Export
+ * 
+ * 图表组件统一导出
+ */
 
-import dynamic from 'next/dynamic';
+// 原有导出
+export * from './ProfessionalChart';
+export * from './MobileChartWrapper';
 
-// Dynamic imports for all recharts components
-export const LineChart = dynamic(
-  () => import('recharts').then((mod) => ({ default: mod.LineChart })),
-  { ssr: false },
-);
-
-export const Line = dynamic(() => import('recharts').then((mod) => ({ default: mod.Line })), {
-  ssr: false,
-});
-
-export const XAxis = dynamic(() => import('recharts').then((mod) => ({ default: mod.XAxis })), {
-  ssr: false,
-});
-
-export const YAxis = dynamic(() => import('recharts').then((mod) => ({ default: mod.YAxis })), {
-  ssr: false,
-});
-
-export const CartesianGrid = dynamic(
-  () => import('recharts').then((mod) => ({ default: mod.CartesianGrid })),
-  { ssr: false },
-);
-
-export const Tooltip = dynamic(() => import('recharts').then((mod) => ({ default: mod.Tooltip })), {
-  ssr: false,
-});
-
-export const Legend = dynamic(() => import('recharts').then((mod) => ({ default: mod.Legend })), {
-  ssr: false,
-});
-
-export const ResponsiveContainer = dynamic(
-  () => import('recharts').then((mod) => ({ default: mod.ResponsiveContainer })),
-  { ssr: false },
-);
-
-// 移动端图表组件
+// 新增增强组件
 export {
-  MobileChartWrapper,
-  MobileChartToolbar,
-  MobileChartCard,
-  MobileLegend,
-} from './MobileChartWrapper';
+  // 图表组件
+  EnhancedAreaChart,
+  EnhancedLineChart,
+  EnhancedBarChart,
+  EnhancedPieChart,
+  EnhancedRadarChart,
+  EnhancedGaugeChart,
+  
+  // 辅助组件
+  Sparkline,
+  StatComparison,
+  CustomTooltip,
+  
+  // 设计令牌
+  CHART_COLORS,
+  CHART_DIMENSIONS,
+  CHART_ANIMATIONS,
+  CHART_TYPOGRAPHY,
+  CHART_THRESHOLDS,
+  getStatusColor,
+  getHealthColor,
+  getSeriesColor,
+  generateGradientId,
+} from './EnhancedChartComponents';
+
+// 类型导出
+export type {
+  ChartDataPoint,
+  ThresholdConfig,
+  BaseChartProps,
+  EnhancedAreaChartProps,
+  EnhancedLineChartProps,
+  EnhancedBarChartProps,
+  EnhancedPieChartProps,
+  EnhancedRadarChartProps,
+  EnhancedGaugeChartProps,
+  SparklineProps,
+  StatComparisonProps,
+} from './EnhancedChartComponents';

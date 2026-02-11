@@ -78,7 +78,7 @@ export const DEFAULT_SYNC_CONFIG: SyncConfig = {
 
 class SyncManager {
   private syncStates = new Map<string, SyncState>();
-  private syncIntervals = new Map<string, NodeJS.Timeout>();
+  private syncIntervals = new Map<string, ReturnType<typeof setInterval>>();
   private syncFunctions = new Map<OracleProtocol, SyncFunction>();
   private priceWriter: PriceWriter | null = null;
   private syncExecutionLocks = new Map<string, Promise<void>>();

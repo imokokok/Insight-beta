@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { useEffect } from 'react';
 
 import { useViewport } from '@/hooks/useViewport';
@@ -7,7 +8,7 @@ import { getWalletBrowserInfo } from '@/lib/mobile/walletBrowser';
 import { cn } from '@/lib/utils';
 
 interface MobileLayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
   preventWalletScroll?: boolean;
 }

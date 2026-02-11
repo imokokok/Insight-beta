@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DashboardSkeleton, EmptyDataState, LoadingOverlay } from '@/components/ui';
 import { logger } from '@/lib/logger';
 import { cn, fetchApiData } from '@/lib/utils';
 
@@ -375,15 +376,24 @@ export default function MonitoringDashboard() {
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="flex h-64 items-center justify-center">
-          <RefreshCw className="text-muted-foreground h-8 w-8 animate-spin" />
-        </div>
+        <DashboardSkeleton />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto space-y-6 px-4 py-8">
+    <div className="container mx-auto space-y-6 px-4 py-8 relative">
+      {/* Empty State - No Data */}
+      {metrics.length === 0 && !isLoading && (
+        <div className="py-12">
+          <EmptyDataState
+            title="No Performance Data"
+            description="Performance metrics will appear here once data collection begins."
+            onRefresh={fetchMetrics}
+          />
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

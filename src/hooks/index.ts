@@ -21,5 +21,16 @@ export {
 
 // ==================== 其他 Hooks ====================
 export { useViewport } from './useViewport';
-export { useMediaQuery } from './useMediaQuery';
-export { usePerformance } from './usePerformance';
+export { 
+  useMediaQuery,
+  useIsMobile,
+  useIsTablet,
+  useIsDesktop,
+  useIsLargeScreen,
+  useDeviceType,
+  useViewportSize,
+} from './useMediaQuery';
+export { useWebVitals, useLongTaskMonitor } from './usePerformance';
+
+// ==================== 无障碍 Hooks ====================
+export { useReducedMotion } from './useReducedMotion';

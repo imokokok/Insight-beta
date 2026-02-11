@@ -44,19 +44,6 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ErrorBanner } from '@/components/ui/error-banner';
 import { RefreshIndicator } from '@/components/ui/refresh-indicator';
-import {
-  EmptyDashboardState,
-  EmptyChartState,
-  EmptyDataState,
-  DashboardSkeleton,
-  LoadingOverlay,
-} from '@/components/ui';
-import {
-  StaggerContainer,
-  StaggerItem,
-  ScrollReveal,
-  FadeIn,
-} from '@/components/common/AnimatedContainer';
 import { useWebSocket, useIsMobile } from '@/hooks';
 import { useAutoRefresh } from '@/hooks/use-auto-refresh';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
@@ -394,12 +381,7 @@ export default function OptimizedOracleDashboard() {
         </header>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-2 sm:p-3 lg:p-4 relative">
-          {/* Loading Overlay */}
-          {isRefreshing && !stats && (
-            <LoadingOverlay message="Loading dashboard data..." />
-          )}
-
+        <div className="flex-1 overflow-y-auto p-2 sm:p-3 lg:p-4">
           {/* Error Message */}
           {isError && error && (
             <div className="mb-6">
@@ -407,67 +389,56 @@ export default function OptimizedOracleDashboard() {
             </div>
           )}
 
-          {/* Empty State - No Data */}
-          {!isRefreshing && !isError && !stats && (
-            <div className="py-12">
-              <EmptyDashboardState onRefresh={refresh} />
-            </div>
-          )}
-
           {/* Stats Sections */}
-          <StaggerContainer className="mb-4 space-y-3" staggerChildren={0.05}>
+          <div className="mb-4 space-y-3">
             {/* System Health Section */}
-            <StaggerItem>
-              <DashboardStatsSection
-                title="System Health"
-                description="Real-time health and risk metrics"
-                icon={<Activity className="h-4 w-4" />}
-                color="amber"
-              >
-                <StatCardGroup columns={4} gap="sm">
-                  {statCardsData.map((card, index) => (
-                    <EnhancedStatCard
-                      key={card.title}
-                      title={card.title}
-                      value={card.value}
-                      icon={card.icon}
-                      status={card.status}
-                      trend={card.trend}
-                      sparkline={card.sparkline}
-                      variant="compact"
-                      loading={isRefreshing && !stats}
-                      onClick={() => router.push('/alerts')}
-                    />
-                  ))}
-                </StatCardGroup>
-              </DashboardStatsSection>
-            </StaggerItem>
+            <DashboardStatsSection
+              title="System Health"
+              description="Real-time health and risk metrics"
+              icon={<Activity className="h-4 w-4" />}
+              color="amber"
+            >
+              <StatCardGroup columns={4} gap="sm">
+                {statCardsData.map((card, index) => (
+                  <EnhancedStatCard
+                    key={card.title}
+                    title={card.title}
+                    value={card.value}
+                    icon={card.icon}
+                    status={card.status}
+                    trend={card.trend}
+                    sparkline={card.sparkline}
+                    variant="compact"
+                    loading={isRefreshing && !stats}
+                    onClick={() => router.push('/alerts')}
+                  />
+                ))}
+              </StatCardGroup>
+            </DashboardStatsSection>
 
             {/* Network Scale Section */}
-            <StaggerItem>
-              <DashboardStatsSection
-                title="Network Scale"
-                description="Protocol scale and data volume"
-                icon={<Globe className="h-4 w-4" />}
-                color="blue"
-              >
-                <StatCardGroup columns={4} gap="sm">
-                  {scaleCardsData.map((card, index) => (
-                    <EnhancedStatCard
-                      key={card.title}
-                      title={card.title}
-                      value={card.value}
-                      icon={card.icon}
-                      status={card.status}
-                      trend={card.trend}
-                      variant="compact"
-                      loading={isRefreshing && !stats}
-                    />
-                  ))}
-                </StatCardGroup>
-              </DashboardStatsSection>
-            </StaggerItem>
-          </StaggerContainer>
+            <DashboardStatsSection
+              title="Network Scale"
+              description="Protocol scale and data volume"
+              icon={<Globe className="h-4 w-4" />}
+              color="blue"
+            >
+              <StatCardGroup columns={4} gap="sm">
+                {scaleCardsData.map((card, index) => (
+                  <EnhancedStatCard
+                    key={card.title}
+                    title={card.title}
+                    value={card.value}
+                    icon={card.icon}
+                    status={card.status}
+                    trend={card.trend}
+                    variant="compact"
+                    loading={isRefreshing && !stats}
+                  />
+                ))}
+              </StatCardGroup>
+            </DashboardStatsSection>
+          </div>
 
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
