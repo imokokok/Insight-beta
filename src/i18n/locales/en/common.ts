@@ -165,4 +165,31 @@ export const common = {
   saved: 'Saved',
   saveConfig: 'Save Configuration',
   submitting: 'Submitting...',
+  // Circuit Breaker Fallback
+  circuitBreaker: {
+    fallback: {
+      title: 'Service Temporarily Unavailable',
+      staleData: 'Data may be outdated',
+      staleDataDesc: 'Currently showing cached data, which may not reflect the latest prices. Service is recovering, please try again later.',
+      stale: 'Cached Data',
+      staleDesc: 'Currently showing cached data, which may not reflect the latest prices.',
+      fresh: 'Data Normal',
+      freshDesc: 'Data is up to date.',
+      error: 'Data Fetch Failed',
+      errorDesc: 'Unable to fetch latest data, please try again later.',
+      cachedAt: 'Cached At',
+      circuitOpenedAt: 'Circuit Opened At',
+      estimatedRecovery: 'Estimated Recovery',
+      retry: 'Retry Now',
+      ago: 'ago',
+      originalTime: 'Original Data Time',
+    },
+  },
+  // Data Freshness
+  freshness: {
+    fresh: 'Fresh',
+    warning: 'Stale',
+    stale: 'Expired',
+    expired: 'Invalid',
+  },
 };

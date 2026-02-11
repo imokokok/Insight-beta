@@ -17,4 +17,6 @@ export const nav = {
   security: 'Seguridad',
   slo: 'SLO / Error Budget',
   timeline: 'Línea de Tiempo',
+  wallet: 'Billetera',
+  more: 'Más',
 };

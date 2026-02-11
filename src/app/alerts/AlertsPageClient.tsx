@@ -26,6 +26,7 @@ import {
   useDebounce,
   useAdminSession,
 } from '@/hooks';
+import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage, langToLocale } from '@/i18n/translations';
 import { DEBOUNCE_CONFIG } from '@/lib/config/constants';
@@ -252,6 +253,17 @@ export default function AlertsPageClient() {
       setLoading(false);
     }
   }, [fetchAlerts, reloadIncidents, reloadOpsMetrics, reloadRisks]);
+
+  // 页面优化：键盘快捷键
+  usePageOptimizations({
+    pageName: '告警管理',
+    onRefresh: async () => {
+      await refresh();
+    },
+    enableSearch: true,
+    searchSelector: 'input[type="text"][placeholder*="搜索"]',
+    showRefreshToast: true,
+  });
 
   const createIncidentFromAlert = useCallback(async (a: Alert, rule?: AlertRule) => {
     if (!canAdmin) return;
@@ -602,7 +614,7 @@ export default function AlertsPageClient() {
   }, [canAdmin, rules, adminHeaders]);
 
   const slo = opsMetrics?.slo ?? null;
-  const sloEntries = slo ? getSloEntries(slo) : [];
+  const sloEntries = getSloEntries();
   const opsSeriesChartData = useMemo<OpsSeriesPoint[]>(() => {
     if (!opsMetricsSeries || opsMetricsSeries.length === 0) return [];
     return opsMetricsSeries.map((point) => ({
@@ -837,7 +849,7 @@ export default function AlertsPageClient() {
                 const silencedUntilRaw = (rule?.silencedUntil ?? '').trim();
                 const silencedUntilMs = silencedUntilRaw ? Date.parse(silencedUntilRaw) : NaN;
                 const isSilenced = Number.isFinite(silencedUntilMs) && silencedUntilMs > Date.now();
-                const isSloRelated = sloAlertTypes.has(alert.type);
+                const isSloRelated = sloAlertTypes.some(t => t.value === alert.type);
                 return (
                   <AlertCard
                     key={alert.id}
@@ -921,7 +933,7 @@ export default function AlertsPageClient() {
                       '';
                     const isSloIncident =
                       incident.entityType === 'slo' ||
-                      (incident.alerts ?? []).some((alert: Alert) => sloAlertTypes.has(alert.type));
+                      (incident.alerts ?? []).some((alert: Alert) => sloAlertTypes.some(t => t.value === alert.type));
                     return (
                       <IncidentCard
                         key={incident.id}

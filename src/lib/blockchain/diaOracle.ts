@@ -317,3 +317,19 @@ export function getAvailableDIASymbols(chain: string): string[] {
 export function isChainSupportedByDIA(chain: string): boolean {
   return (DIA_SUPPORTED_ASSETS[chain as SupportedChain] || []).length > 0;
 }
+
+/**
+ * 获取支持的 DIA 链列表
+ */
+export function getSupportedDIAChains(): SupportedChain[] {
+  return Object.entries(DIA_SUPPORTED_ASSETS)
+    .filter(([, assets]) => assets.length > 0)
+    .map(([chain]) => chain as SupportedChain);
+}
+
+/**
+ * 获取指定链的可用资产列表
+ */
+export function getAvailableDIAAssets(chain: SupportedChain): string[] {
+  return DIA_SUPPORTED_ASSETS[chain] || [];
+}

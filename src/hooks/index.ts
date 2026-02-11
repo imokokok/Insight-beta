@@ -1,56 +1,25 @@
-// ============================================================================
-// Hooks 统一导出
-// ============================================================================
+// Hooks - 自定义 React Hooks
+// 所有自定义 hooks 从这里统一导出
 
-// Oracle 相关
-export { useOracleData, useOracleFilters } from './useOracle';
-
-// Alerts 相关
-export {
-  useOracleIncidents,
-  useOracleRisks,
-  useOracleOpsMetrics,
-  type UseOracleIncidentsReturn,
-  type UseOracleRisksReturn,
-  type UseOracleOpsMetricsReturn,
-} from './useAlerts';
-
-// User 相关
-export { useUserStats, useWatchlist, useAdminSession } from './useUser';
-
-// Wallet 相关
-export { useBalance, useSwitchChainWithFeedback } from './useWallet';
-
-// UI 相关
-export { useInfiniteList, useDebounce, type BaseResponse } from './useUI';
-
-// 其他 Hooks (保持独立)
-export { useDisputes } from './useDisputes';
+// ==================== 核心 Hooks ====================
 export { useWebSocket } from './useWebSocket';
-export { useEventSource, type EventSourceOptions, type EventSourceState } from './useEventSource';
-
-// Dashboard hooks
-export {
-  useDashboardShortcuts,
-  useAutoRefresh as useAutoRefreshLegacy,
-  useDataCache,
-} from './useDashboard';
-
-// 自动刷新 Hook (新的实现 - 推荐用于新页面)
+export { useDebounce } from './useDebounce';
 export { useAutoRefresh } from './use-auto-refresh';
 
-// 响应式 Hooks
+// ==================== 交互优化 Hooks ====================
 export {
-  useMediaQuery,
-  useIsMobile,
-  useIsTablet,
-  useIsDesktop,
-  useIsLargeScreen,
-  useDeviceType,
-} from './useMediaQuery';
+  useKeyboardShortcuts,
+  useCommonShortcuts,
+  ShortcutHelpPanel,
+  type ShortcutGroup,
+} from './useKeyboardShortcuts';
 
-// Re-export types separately
-export type { DeviceType } from './useMediaQuery';
+export {
+  usePageOptimizations,
+  useDataFetching,
+} from './usePageOptimizations';
 
-// Admin Token Hook
-export { useAdminToken, type UseAdminTokenOptions, type UseAdminTokenReturn } from './useAdminToken';
+// ==================== 其他 Hooks ====================
+export { useViewport } from './useViewport';
+export { useMediaQuery } from './useMediaQuery';
+export { usePerformance } from './usePerformance';

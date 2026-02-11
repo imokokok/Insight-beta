@@ -18,7 +18,6 @@ import {
   AlertTriangle,
   TrendingUp,
   RefreshCw,
-  Search,
   Play,
   Settings,
   ChevronRight,
@@ -47,10 +46,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { SearchInput } from '@/components/ui/enhanced-input';
 import { Progress } from '@/components/ui/progress';
 import { ChartSkeleton, SkeletonList } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useDashboardShortcuts, useAutoRefreshLegacy, useDataCache } from '@/hooks';
+import { useAutoRefreshLegacy, useDataCache } from '@/hooks';
+import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { logger } from '@/lib/logger';
 import { fetchApiData, cn, formatTime } from '@/lib/utils';
 
@@ -584,17 +585,15 @@ export default function AnomalyDetectionPage() {
     [getCachedData, setCachedData, lastUpdated, success, showError],
   );
 
-  // Keyboard shortcuts
-  useDashboardShortcuts({
-    onRefresh: () => refresh(),
-    onExport: () => {
-      handleExport();
-      success('Export complete', 'Anomaly report has been downloaded');
+  // 页面优化：键盘快捷键
+  usePageOptimizations({
+    pageName: '异常检测分析',
+    onRefresh: async () => {
+      await refresh();
     },
-    onSearchFocus: () => searchInputRef.current?.focus(),
-    onTabChange: (tab) => setActiveTab(tab),
-    tabs: ['overview', 'anomalies', 'configuration'],
-    enabled: true,
+    enableSearch: true,
+    searchSelector: 'input[type="text"][placeholder*="搜索"]',
+    showRefreshToast: true,
   });
 
   useEffect(() => {
@@ -815,14 +814,13 @@ export default function AnomalyDetectionPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex flex-col gap-4 md:flex-row md:items-center">
-                <div className="relative flex-1">
-                  <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
-                  <Input
-                    ref={searchInputRef}
+                <div className="flex-1">
+                  <SearchInput
                     placeholder="Search by symbol, type, or severity... (⌘F)"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9"
+                    onChange={(value) => setSearchQuery(value)}
+                    clearable={true}
+                    className="w-full"
                   />
                 </div>
                 <div className="flex gap-2">

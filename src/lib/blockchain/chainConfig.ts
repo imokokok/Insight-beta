@@ -278,3 +278,62 @@ export function getChainSymbol(chainId: number): string {
   const chain = Object.entries(CHAIN_METADATA).find(([, metadata]) => metadata.chainId === chainId);
   return chain?.[1].nativeCurrency.symbol ?? 'ETH';
 }
+
+/**
+ * 获取 viem chain 对象
+ * @param chain - 支持的链
+ * @returns viem chain 对象
+ */
+export function getViemChain(chain: SupportedChain): unknown {
+  return VIEM_CHAIN_MAP[chain] ?? mainnet;
+}
+
+/**
+ * 获取默认 RPC URL
+ * @param chain - 支持的链
+ * @returns RPC URL
+ */
+export function getDefaultRpcUrl(chain: SupportedChain): string {
+  return DEFAULT_RPC_URLS[chain] ?? DEFAULT_RPC_URLS.ethereum;
+}
+
+/**
+ * 获取链元数据
+ * @param chain - 支持的链
+ * @returns 链元数据
+ */
+export function getChainMetadata(chain: SupportedChain): ChainMetadata {
+  return CHAIN_METADATA[chain] ?? CHAIN_METADATA.ethereum;
+}
+
+/**
+ * 检查链是否为 EVM 链
+ * @param chain - 支持的链
+ * @returns 是否为 EVM 链
+ */
+export function isEvmChain(chain: SupportedChain): boolean {
+  const nonEvmChains: SupportedChain[] = ['solana', 'near', 'aptos', 'sui'];
+  return !nonEvmChains.includes(chain);
+}
+
+/**
+ * 获取交易浏览器 URL
+ * @param chain - 支持的链
+ * @param txHash - 交易哈希
+ * @returns 交易浏览器 URL
+ */
+export function getExplorerTxUrl(chain: SupportedChain, txHash: string): string {
+  const metadata = CHAIN_METADATA[chain];
+  return `${metadata?.blockExplorerUrl ?? 'https://etherscan.io'}/tx/${txHash}`;
+}
+
+/**
+ * 获取地址浏览器 URL
+ * @param chain - 支持的链
+ * @param address - 地址
+ * @returns 地址浏览器 URL
+ */
+export function getExplorerAddressUrl(chain: SupportedChain, address: string): string {
+  const metadata = CHAIN_METADATA[chain];
+  return `${metadata?.blockExplorerUrl ?? 'https://etherscan.io'}/address/${address}`;
+}

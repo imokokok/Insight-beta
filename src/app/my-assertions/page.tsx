@@ -11,6 +11,7 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { CardSkeleton } from '@/components/ui/skeleton';
 import { useWallet } from '@/contexts/WalletContext';
 import { useOracleData, useUserStats } from '@/hooks';
+import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage, type TranslationKey } from '@/i18n/translations';
 import type { OracleConfig, OracleStatus, OracleInstance } from '@/lib/types/oracleTypes';
@@ -549,14 +550,26 @@ export default function MyAssertionsPage() {
     };
   }, []);
 
-  const { items, loading, loadingMore, hasMore, loadMore, error } = useOracleData(
+  const { items, loading, loadingMore, hasMore, loadMore, error, mutate } = useOracleData(
     filterStatus,
     filterChain,
     debouncedQuery,
     address,
     instanceId,
   );
-  const { stats, loading: statsLoading } = useUserStats(address, instanceId);
+  const { stats, loading: statsLoading, mutate: mutateStats } = useUserStats(address, instanceId);
+
+  // 页面优化：键盘快捷键
+  usePageOptimizations({
+    pageName: '我的断言',
+    onRefresh: async () => {
+      await mutate();
+      await mutateStats();
+    },
+    enableSearch: true,
+    searchSelector: 'input[type="text"][placeholder*="搜索"]',
+    showRefreshToast: true,
+  });
 
   if (!address) return <NoWalletState t={t} />;
 

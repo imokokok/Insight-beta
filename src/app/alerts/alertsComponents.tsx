@@ -351,7 +351,7 @@ export function AlertCard({
                 {t('alerts.recommendedActions')}
               </div>
               <div className="mt-2 flex flex-wrap gap-2">
-                {insight.actions.map((actionKey) => (
+                {insight.actions.map((actionKey: string) => (
                   <span
                     key={actionKey}
                     className="rounded-md border border-gray-100 bg-white px-2 py-1 text-[11px] font-semibold text-gray-600"

@@ -424,3 +424,57 @@ export async function writePriceFeeds(records: PriceFeedRecord[]): Promise<void>
 
 // Register default price writer
 syncManager.registerPriceWriter(writePriceFeeds);
+
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
+/**
+ * 创建价格喂价记录
+ */
+export function createPriceFeedRecord(
+  context: SyncContext,
+  symbol: string,
+  baseAsset: string,
+  quoteAsset: string,
+  price: number,
+  blockNumber: number | null,
+  confidence: number,
+  metadata?: Record<string, unknown>
+): PriceFeedRecord {
+  return {
+    protocol: context.protocol,
+    chain: context.chain,
+    instanceId: context.instanceId,
+    symbol,
+    baseAsset,
+    quoteAsset,
+    price,
+    timestamp: new Date(),
+    blockNumber,
+    confidence,
+    source: context.protocol,
+    metadata,
+  };
+}
+
+/**
+ * 带超时的 Promise
+ */
+export function withTimeout<T>(promise: Promise<T>, timeoutMs: number, errorMessage?: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      reject(new Error(errorMessage || `Operation timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+
+    promise
+      .then((result) => {
+        clearTimeout(timeoutId);
+        resolve(result);
+      })
+      .catch((error) => {
+        clearTimeout(timeoutId);
+        reject(error);
+      });
+  });
+}

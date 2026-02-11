@@ -19,6 +19,7 @@ import { ChartSkeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import { useComparisonData } from '@/hooks/useComparison';
 import { useDebounce } from '@/hooks/useDebounce';
+import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n';
 import { logger } from '@/lib/logger';
 import { ORACLE_PROTOCOLS, PROTOCOL_DISPLAY_NAMES } from '@/lib/types/oracle';
@@ -291,6 +292,34 @@ export default function ComparisonPage() {
 
   // P1 优化：统一刷新函数
   const handleRefresh = useCallback(() => {
+    switch (currentView) {
+      case 'heatmap':
+        heatmap.refresh();
+        break;
+      case 'latency':
+        latency.refresh();
+        break;
+      case 'cost':
+        cost.refresh();
+        break;
+      case 'realtime':
+      case 'table':
+        realtime.refresh();
+        break;
+    }
+  }, [currentView, heatmap, latency, cost, realtime]);
+
+  // 页面优化：键盘快捷键
+  usePageOptimizations({
+    pageName: '预言机对比分析',
+    onRefresh: async () => {
+      handleRefresh();
+    },
+    enableSearch: false,
+    showRefreshToast: true,
+  });
+
+  const handleRefreshOld = useCallback(() => {
     switch (currentView) {
       case 'heatmap':
         heatmap.refresh();

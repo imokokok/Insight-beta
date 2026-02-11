@@ -165,4 +165,31 @@ export const common = {
   saved: 'Guardado',
   saveConfig: 'Guardar Configuración',
   submitting: 'Enviando...',
+  // Circuit Breaker Fallback
+  circuitBreaker: {
+    fallback: {
+      title: 'Servicio Temporalmente No Disponible',
+      staleData: 'Los datos pueden estar desactualizados',
+      staleDataDesc: 'Actualmente se muestran datos en caché, que pueden no reflejar los precios más recientes. El servicio se está recuperando, por favor inténtelo más tarde.',
+      stale: 'Datos en Caché',
+      staleDesc: 'Actualmente se muestran datos en caché, que pueden no reflejar los precios más recientes.',
+      fresh: 'Datos Normales',
+      freshDesc: 'Los datos están actualizados.',
+      error: 'Error al Obtener Datos',
+      errorDesc: 'No se pueden obtener los datos más recientes, por favor inténtelo más tarde.',
+      cachedAt: 'En Caché Desde',
+      circuitOpenedAt: 'Circuito Abierto Desde',
+      estimatedRecovery: 'Recuperación Estimada',
+      retry: 'Reintentar Ahora',
+      ago: 'hace',
+      originalTime: 'Tiempo de Datos Originales',
+    },
+  },
+  // Data Freshness
+  freshness: {
+    fresh: 'Actual',
+    warning: 'Desactualizado',
+    stale: 'Expirado',
+    expired: 'Inválido',
+  },
 };

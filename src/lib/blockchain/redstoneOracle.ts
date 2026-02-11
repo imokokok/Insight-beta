@@ -358,3 +358,33 @@ export function createRedStoneClient(
 export function getAvailableRedStoneSymbols(chain: SupportedChain): string[] {
   return REDSTONE_SUPPORTED_SYMBOLS[chain] || [];
 }
+
+/**
+ * 获取支持的 RedStone 链列表
+ */
+export function getSupportedRedStoneChains(): SupportedChain[] {
+  return Object.entries(REDSTONE_CONTRACT_ADDRESSES)
+    .filter(([, address]) => address !== undefined)
+    .map(([chain]) => chain as SupportedChain);
+}
+
+/**
+ * 检查链是否被 RedStone 支持
+ */
+export function isChainSupportedByRedStone(chain: SupportedChain): boolean {
+  return REDSTONE_CONTRACT_ADDRESSES[chain] !== undefined;
+}
+
+/**
+ * 获取 RedStone 合约地址
+ */
+export function getRedStoneContractAddress(chain: SupportedChain): Address | undefined {
+  return REDSTONE_CONTRACT_ADDRESSES[chain];
+}
+
+/**
+ * 获取 RedStone Feed ID
+ */
+export function getRedStoneFeedId(symbol: string): string | undefined {
+  return REDSTONE_FEED_IDS[symbol];
+}

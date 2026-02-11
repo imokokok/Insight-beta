@@ -58,7 +58,8 @@ import {
   CardSkeleton,
 } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useDashboardShortcuts, useAutoRefreshLegacy, useDataCache } from '@/hooks';
+import { useAutoRefreshLegacy, useDataCache } from '@/hooks';
+import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { logger } from '@/lib/logger';
 import { fetchApiData, cn, formatTime } from '@/lib/utils';
 
@@ -582,17 +583,15 @@ export default function DeviationAnalyticsPage() {
     }
   }, []);
 
-  // Keyboard shortcuts
-  useDashboardShortcuts({
-    onRefresh: () => refresh(),
-    onExport: () => {
-      handleExport();
-      success('Export complete', 'Deviation report has been downloaded');
+  // 页面优化：键盘快捷键
+  usePageOptimizations({
+    pageName: '价格偏差分析',
+    onRefresh: async () => {
+      await refresh();
     },
-    onSearchFocus: () => searchInputRef.current?.focus(),
-    onTabChange: (tab) => setActiveTab(tab),
-    tabs: ['overview', 'trends', 'anomalies'],
-    enabled: true,
+    enableSearch: true,
+    searchSelector: 'input[type="text"][placeholder*="搜索"]',
+    showRefreshToast: true,
   });
 
   useEffect(() => {

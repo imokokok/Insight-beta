@@ -220,8 +220,11 @@ export interface CrossChainHistoricalResponse {
  * 跨链价格比较 Hook
  */
 export function useCrossChainComparison(symbol: string, chains?: string[]) {
-  const chainsParam = chains && chains.length > 0 ? `&chains=${chains.join(',')}` : '';
-  const url = buildApiUrl(`/api/cross-chain/comparison/${symbol}?${chainsParam}`);
+  const params: Record<string, string> = { symbol };
+  if (chains && chains.length > 0) {
+    params.chains = chains.join(',');
+  }
+  const url = buildApiUrl('/api/cross-chain/comparison', params);
   return useSWR<CrossChainComparisonResult>(url, (url: string) => fetcher<CrossChainComparisonResult>(url));
 }
 
@@ -229,7 +232,11 @@ export function useCrossChainComparison(symbol: string, chains?: string[]) {
  * 跨链套利机会 Hook
  */
 export function useCrossChainArbitrage(symbol: string, threshold?: number) {
-  const url = buildApiUrl(`/api/cross-chain/arbitrage?symbol=${symbol}${threshold ? `&threshold=${threshold}` : ''}`);
+  const params: Record<string, string> = { symbol };
+  if (threshold !== undefined) {
+    params.threshold = String(threshold);
+  }
+  const url = buildApiUrl('/api/cross-chain/arbitrage', params);
   return useSWR<CrossChainArbitrageResponse>(url, (url: string) => fetcher<CrossChainArbitrageResponse>(url));
 }
 
@@ -258,11 +265,11 @@ export function useCrossChainHistory(
   endTime?: string,
   interval?: string
 ) {
-  const params = new URLSearchParams({ symbol });
-  if (startTime) params.set('startTime', startTime);
-  if (endTime) params.set('endTime', endTime);
-  if (interval) params.set('interval', interval);
-  const url = buildApiUrl(`/api/cross-chain/history?${params.toString()}`);
+  const params: Record<string, string> = { symbol };
+  if (startTime) params.startTime = startTime;
+  if (endTime) params.endTime = endTime;
+  if (interval) params.interval = interval;
+  const url = buildApiUrl('/api/cross-chain/history', params);
   return useSWR<CrossChainHistoricalResponse>(url, (url: string) => fetcher<CrossChainHistoricalResponse>(url));
 }
 

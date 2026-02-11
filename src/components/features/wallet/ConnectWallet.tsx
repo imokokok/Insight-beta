@@ -4,17 +4,19 @@ import { useState } from 'react';
 import { Wallet, Smartphone, X, ChevronRight, AlertCircle } from 'lucide-react';
 
 import { UserMenu } from '@/components/features/wallet/UserMenu';
+import { MobileWalletConnect } from '@/components/features/wallet/MobileWalletConnect';
 import { useToast } from '@/components/ui/toast';
 import { useWallet, type WalletConnectionType } from '@/contexts/WalletContext';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { normalizeWalletError } from '@/lib/errors/walletErrors';
 import { logger } from '@/lib/logger';
 import {
-  isMobile,
+  isMobile as isMobileDevice,
   isWalletBrowser,
   getWalletName,
   WALLET_CONNECT_PROJECT_ID,
 } from '@/lib/blockchain/walletConnect';
+import { isMobile as isMobileEnhanced, isInWalletBrowser } from '@/lib/mobile';
 
 interface WalletOption {
   id: WalletConnectionType;
@@ -41,7 +43,7 @@ function WalletSelectModal({
   recommendedType: WalletConnectionType;
 }) {
   const { t } = useI18n();
-  const mobile = isMobile();
+  const mobile = isMobileDevice();
   const walletBrowser = isWalletBrowser();
   const walletName = getWalletName();
 
@@ -249,6 +251,15 @@ export function ConnectWallet() {
 
   if (address) {
     return <UserMenu />;
+  }
+
+  // 在移动端使用优化的钱包连接组件
+  if (isMobileEnhanced()) {
+    return (
+      <div className="wallet-connect-btn">
+        <MobileWalletConnect />
+      </div>
+    );
   }
 
   return (

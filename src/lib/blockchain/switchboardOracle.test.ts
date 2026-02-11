@@ -20,10 +20,12 @@ import {
 import {
   createSwitchboardClient,
   getSupportedSwitchboardChains as getClientSupportedChains,
-  getAvailableSymbols,
   isChainSupported,
   isSymbolSupported,
 } from './switchboardOracle';
+
+// Import getAvailableSymbols from config instead
+import { getAvailableSwitchboardSymbols as getAvailableSymbols } from '@/lib/config/switchboardPriceFeeds';
 
 // Mock SolanaOracleClient
 vi.mock('@/lib/shared/blockchain/SolanaOracleClient', () => ({

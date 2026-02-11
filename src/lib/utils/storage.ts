@@ -36,7 +36,7 @@ export interface StorageItem<T> {
 // 常量定义
 // ============================================================================
 
-export const STORAGE_KEYS = {
+const STORAGE_KEYS = {
   ORACLE_FILTERS: 'oracleFilters',
   USER_PREFERENCES: 'userPreferences',
   THEME: 'theme',
@@ -422,8 +422,10 @@ export async function setAdminToken(token: string): Promise<boolean> {
   );
 }
 
-export function clearAdminToken(): boolean {
+export async function clearAdminToken(): Promise<boolean> {
   return removeStorageItem(STORAGE_KEYS.ADMIN_TOKEN, 'session');
 }
+
+
 
 

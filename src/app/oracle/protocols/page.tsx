@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 import { TrendingUp, Globe, Activity } from 'lucide-react';
 
@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { fetchApiData } from '@/lib/utils';
+import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 
 interface PriceFeed {
   id: string;
@@ -25,23 +26,33 @@ export default function PriceFeedsPage() {
   const [feeds, setFeeds] = useState<PriceFeed[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchFeeds = async () => {
-      try {
-        setLoading(true);
-        // Try to fetch from API, fallback to mock data
-        const data = await fetchApiData<PriceFeed[]>('/api/oracle/price-feeds');
-        setFeeds(data);
-      } catch {
-        // Use mock data if API fails
-        setFeeds(generateMockFeeds());
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFeeds();
+  const fetchFeeds = useCallback(async () => {
+    try {
+      setLoading(true);
+      // Try to fetch from API, fallback to mock data
+      const data = await fetchApiData<PriceFeed[]>('/api/oracle/price-feeds');
+      setFeeds(data);
+    } catch {
+      // Use mock data if API fails
+      setFeeds(generateMockFeeds());
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchFeeds();
+  }, [fetchFeeds]);
+
+  // 页面优化：键盘快捷键
+  usePageOptimizations({
+    pageName: '价格源',
+    onRefresh: async () => {
+      await fetchFeeds();
+    },
+    enableSearch: false,
+    showRefreshToast: true,
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">

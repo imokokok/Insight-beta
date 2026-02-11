@@ -5,6 +5,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { SupportedChain } from '@/lib/types/unifiedOracleTypes';
 import {
   DIA_SUPPORTED_ASSETS,
   DIAClient,
@@ -105,7 +106,7 @@ describe('DIAClient', () => {
 
 describe('Error Handling - 错误处理测试', () => {
   it('should return empty array for unsupported chain assets', () => {
-    const assets = getAvailableDIAAssets('unsupported');
+    const assets = getAvailableDIAAssets('unsupported' as SupportedChain);
     expect(assets).toEqual([]);
   });
 

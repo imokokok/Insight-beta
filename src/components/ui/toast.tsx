@@ -4,7 +4,7 @@ import { useCallback } from 'react';
 
 import { toast as sonnerToast, type ExternalToast } from 'sonner';
 
-export type ToastType = 'success' | 'error' | 'info';
+export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
 export interface Toast {
   id: string;
@@ -53,6 +53,8 @@ export function useToast() {
         return sonnerToast.error(title, options);
       } else if (type === 'info') {
         return sonnerToast.info(title, options);
+      } else if (type === 'warning') {
+        return sonnerToast.warning(title, options);
       } else {
         return sonnerToast(title, options);
       }

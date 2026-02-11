@@ -39,7 +39,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { CardSkeleton, SkeletonList } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useDashboardShortcuts, useAutoRefreshLegacy, useDataCache } from '@/hooks';
+import { useAutoRefreshLegacy, useDataCache } from '@/hooks';
+import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { logger } from '@/lib/logger';
 import type {
   ManipulationDetection,
@@ -559,6 +560,17 @@ export default function SecurityDashboardPage() {
     pauseWhenHidden: true,
   });
 
+  // 页面优化：键盘快捷键
+  usePageOptimizations({
+    pageName: '安全检测仪表板',
+    onRefresh: async () => {
+      await fetchData(true);
+    },
+    enableSearch: true,
+    searchSelector: 'input[placeholder*="Search"]',
+    showRefreshToast: true,
+  });
+
   const fetchData = useCallback(
     async (showToast = true) => {
       try {
@@ -610,22 +622,7 @@ export default function SecurityDashboardPage() {
     [getCachedData, setCachedData, lastUpdated, success, showError],
   );
 
-  // Keyboard shortcuts
-  useDashboardShortcuts({
-    onRefresh: () => {
-      refresh();
-    },
-    onExport: () => {
-      handleExport();
-      success('Export complete', 'Security report has been downloaded');
-    },
-    onSearchFocus: () => {
-      searchInputRef.current?.focus();
-    },
-    onTabChange: (tab) => setActiveTab(tab),
-    tabs: ['overview', 'detections', 'analytics'],
-    enabled: true,
-  });
+  // 页面优化：键盘快捷键（已集成在 usePageOptimizations 中）
 
   useEffect(() => {
     fetchData(false);

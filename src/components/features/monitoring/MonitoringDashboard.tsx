@@ -31,6 +31,7 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { logger } from '@/lib/logger';
+import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 
 interface MonitoringStats {
   alerts: {
@@ -108,6 +109,16 @@ export function MonitoringDashboard() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // 页面优化：键盘快捷键
+  usePageOptimizations({
+    pageName: '监控面板',
+    onRefresh: async () => {
+      await fetchData();
+    },
+    enableSearch: false,
+    showRefreshToast: true,
+  });
 
   // 测试通知渠道
   const testChannel = async (channel: string) => {

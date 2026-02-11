@@ -15,8 +15,10 @@ import {
   X,
   Bell,
   Settings,
+  Wallet,
 } from 'lucide-react';
 
+import { useWallet } from '@/contexts/WalletContext';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { cn } from '@/lib/utils';
 
@@ -85,15 +87,29 @@ const moreNavItems: NavItem[] = [
   },
 ];
 
+// 钱包相关导航项
+const walletNavItem: NavItem = {
+  key: 'nav.wallet',
+  href: '/profile',
+  icon: Wallet,
+  label: 'Wallet',
+};
+
 export function MobileBottomNav() {
   const pathname = usePathname();
   const { t } = useI18n();
   const [showMore, setShowMore] = useState(false);
+  const { isConnected } = useWallet();
 
   const isActive = (href: string) => {
     if (href === '#') return false;
     return pathname === href || pathname?.startsWith(href);
   };
+
+  // 根据钱包连接状态动态添加钱包入口
+  const dynamicMoreNavItems = isConnected
+    ? [walletNavItem, ...moreNavItems]
+    : moreNavItems;
 
   return (
     <>
@@ -124,7 +140,7 @@ export function MobileBottomNav() {
           </button>
         </div>
         <div className="grid grid-cols-2 gap-2">
-          {moreNavItems.map((item) => {
+          {dynamicMoreNavItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href);
 

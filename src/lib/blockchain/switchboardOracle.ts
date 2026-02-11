@@ -428,7 +428,7 @@ export function createSwitchboardClient(
  * 获取支持的链列表
  */
 export function getSupportedSwitchboardChains(): SupportedChain[] {
-  return ['solana', 'solana-devnet'];
+  return ['solana', 'solana-devnet'] as SupportedChain[];
 }
 
 /**

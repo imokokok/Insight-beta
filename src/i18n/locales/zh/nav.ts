@@ -17,4 +17,6 @@ export const nav = {
   security: '安全监控',
   slo: 'SLO / Error Budget',
   timeline: '事件时间线',
+  wallet: '钱包',
+  more: '更多',
 };

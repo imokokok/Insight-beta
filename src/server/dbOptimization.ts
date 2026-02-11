@@ -11,6 +11,10 @@ export interface QueryResult<T extends QueryResultRow = QueryResultRow> {
   rowCount: number;
 }
 
+// Simple in-memory storage for query stats
+const queryStatsMap = new Map<string, QueryStats>();
+const slowQueries: SlowQuery[] = [];
+
 interface SlowQuery {
   query: string;
   durationMs: number;
@@ -25,6 +29,48 @@ interface QueryStats {
   avgTime: number;
   maxTime: number;
   minTime: number;
+}
+
+/**
+ * Record query statistics
+ */
+function recordQueryStats(queryText: string, duration: number): void {
+  const existing = queryStatsMap.get(queryText);
+  if (existing) {
+    existing.count++;
+    existing.totalTime += duration;
+    existing.avgTime = existing.totalTime / existing.count;
+    existing.maxTime = Math.max(existing.maxTime, duration);
+    existing.minTime = Math.min(existing.minTime, duration);
+  } else {
+    queryStatsMap.set(queryText, {
+      query: queryText,
+      count: 1,
+      totalTime: duration,
+      avgTime: duration,
+      maxTime: duration,
+      minTime: duration,
+    });
+  }
+}
+
+/**
+ * Log slow queries (queries taking longer than 1000ms)
+ */
+function logSlowQuery(queryText: string, duration: number, params?: unknown[]): void {
+  if (duration > 1000) {
+    slowQueries.push({
+      query: queryText,
+      durationMs: duration,
+      timestamp: Date.now(),
+      params,
+    });
+    // Keep only last 100 slow queries
+    if (slowQueries.length > 100) {
+      slowQueries.shift();
+    }
+    logger.warn('Slow query detected', { query: queryText, durationMs: duration });
+  }
 }
 
 export async function withQueryOptimization<T>(

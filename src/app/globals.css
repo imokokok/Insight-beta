@@ -1149,6 +1149,115 @@ body::before {
 }
 
 /* ============================================================================
+   移动端 Web3 优化
+   ============================================================================ */
+
+/* 动态视口高度 - 解决 100vh 问题 */
+.h-screen-dynamic {
+  height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
+}
+
+.min-h-screen-dynamic {
+  min-height: 100vh;
+  min-height: calc(var(--vh, 1vh) * 100);
+}
+
+/* 钱包弹窗时的页面锁定 */
+body.wallet-popup-open {
+  position: fixed;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* 键盘打开时的底部间距 */
+.keyboard-open .pb-keyboard {
+  padding-bottom: var(--keyboard-offset, 300px);
+}
+
+/* 移动端钱包连接按钮优化 */
+@media (hover: none) and (pointer: coarse) {
+  .wallet-connect-btn {
+    min-height: 48px;
+    padding: 12px 24px;
+  }
+  
+  .wallet-connect-btn:active {
+    transform: scale(0.98);
+  }
+}
+
+/* 移动端 Sheet 组件优化 */
+@media (max-width: 768px) {
+  [data-radix-sheet-content] {
+    max-height: 90vh;
+    border-radius: 24px 24px 0 0;
+  }
+  
+  /* 确保 Sheet 在钱包浏览器中正常显示 */
+  .wallet-browser [data-radix-sheet-content] {
+    max-height: 85vh;
+  }
+}
+
+/* 移动端链切换优化 */
+.chain-switcher-mobile {
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 防止钱包浏览器中的横向滚动 */
+.wallet-browser {
+  overflow-x: hidden;
+}
+
+/* 移动端 Toast 位置调整 */
+@media (max-width: 768px) {
+  [data-radix-toast-viewport] {
+    bottom: calc(80px + env(safe-area-inset-bottom));
+  }
+}
+
+/* 钱包浏览器检测标记 */
+.wallet-metamask .wallet-detect-metamask,
+.wallet-trust .wallet-detect-trust,
+.wallet-tokenpocket .wallet-detect-tokenpocket {
+  display: block !important;
+}
+
+/* 移动端输入框优化 */
+@media (hover: none) and (pointer: coarse) {
+  input, textarea, select {
+    font-size: 16px; /* 防止 iOS 缩放 */
+  }
+  
+  input:focus, textarea:focus, select:focus {
+    font-size: 16px;
+  }
+}
+
+/* 移动端按钮点击反馈 */
+@media (hover: none) and (pointer: coarse) {
+  .btn-mobile-feedback {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .btn-mobile-feedback::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(255,255,255,0.3) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  
+  .btn-mobile-feedback:active::after {
+    opacity: 1;
+  }
+}
+
+/* ============================================================================
    焦点样式（无障碍）
    ============================================================================ */
 

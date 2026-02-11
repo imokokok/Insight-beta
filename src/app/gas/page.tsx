@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useGasPrices, useGasPriceTrend, useGasPriceHealth, useWarmupGasCache } from '@/hooks/useGasPrice';
+import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { cn } from '@/lib/utils';
 
 
@@ -34,6 +35,16 @@ export default function GasPriceMonitorPage() {
     refreshPrices();
     refreshHealth();
   };
+
+  // 页面优化：键盘快捷键
+  usePageOptimizations({
+    pageName: 'Gas价格监控',
+    onRefresh: async () => {
+      handleRefresh();
+    },
+    enableSearch: false,
+    showRefreshToast: true,
+  });
 
   const handleToggleChain = (chain: string) => {
     if (selectedChains.includes(chain)) {

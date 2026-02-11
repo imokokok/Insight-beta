@@ -10,7 +10,6 @@ import { type Address, parseAbi, formatUnits } from 'viem';
 import { DEFAULT_STALENESS_THRESHOLDS } from '@/lib/config/constants';
 import {
   PYTH_PRICE_FEED_IDS,
-  getPriceFeedId as getPythPriceFeedId,
   getAvailablePythSymbols as getPythAvailableSymbols,
 } from '@/lib/config/pythPriceFeeds';
 import { ErrorHandler, normalizeError } from '@/lib/errors';
@@ -371,4 +370,34 @@ export function createPythClient(
  */
 export function getAvailablePythSymbols(): string[] {
   return getPythAvailableSymbols();
+}
+
+/**
+ * 获取支持的 Pyth 链列表
+ */
+export function getSupportedPythChains(): SupportedChain[] {
+  return Object.entries(PYTH_CONTRACT_ADDRESSES)
+    .filter(([, address]) => address !== undefined)
+    .map(([chain]) => chain as SupportedChain);
+}
+
+/**
+ * 检查链是否被 Pyth 支持
+ */
+export function isChainSupportedByPyth(chain: SupportedChain): boolean {
+  return PYTH_CONTRACT_ADDRESSES[chain] !== undefined;
+}
+
+/**
+ * 获取价格喂价 ID
+ */
+export function getPriceFeedId(symbol: string): string | undefined {
+  return PYTH_PRICE_FEED_IDS[symbol];
+}
+
+/**
+ * 获取 Pyth 合约地址
+ */
+export function getPythContractAddress(chain: SupportedChain): Address | undefined {
+  return PYTH_CONTRACT_ADDRESSES[chain];
 }

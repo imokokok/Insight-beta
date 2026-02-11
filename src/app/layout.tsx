@@ -14,8 +14,11 @@ import { ResourceHints } from '@/components/common/ResourceHints';
 import { ServiceWorkerRegister } from '@/components/common/ServiceWorkerRegister';
 import { SmartPreloader } from '@/components/common/SmartPreloader';
 import { PWAInstallPrompt } from '@/components/features/pwa';
+import { MobileChainSwitcher } from '@/components/features/wallet/MobileChainSwitcher';
 import { WalletProvider } from '@/contexts/WalletContext';
 import { LanguageProvider } from '@/i18n/LanguageProvider';
+import { AccessibilityProvider, SkipLink } from '@/components/common/AccessibilityProvider';
+import { PageTransition } from '@/components/common/PageTransitions';
 import {
   detectLangFromAcceptLanguage,
   isLang,
@@ -24,6 +27,7 @@ import {
   translations,
 } from '@/i18n/translations';
 import { cn } from '@/lib/utils';
+import { MobileLayout } from '@/components/layout/MobileLayout';
 
 import type { Metadata } from 'next';
 
@@ -117,74 +121,87 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       <body
         className={cn('min-h-screen bg-[var(--background)] font-sans text-purple-950 antialiased')}
       >
-        <PageProgress />
-        <Suspense fallback={null}>
-          <ResourcePreloader />
-        </Suspense>
-        <Suspense fallback={null}>
-          <ServiceWorkerRegister />
-        </Suspense>
-        <Suspense fallback={null}>
-          <SmartPreloader />
-        </Suspense>
-        <Suspense fallback={null}>
-          <OfflineIndicator />
-        </Suspense>
-        <Suspense fallback={null}>
-          <PerformanceMonitor />
-        </Suspense>
-        <LanguageProvider initialLang={lang}>
-          <WalletProvider>
-            <Toaster />
-            {/* 背景层 */}
-            <div className="mesh-gradient" />
-            <div className="animated-blobs">
-              <div className="blob-1" />
-              <div className="blob-2" />
-              <div className="blob-3" />
-              <div className="blob-4" />
-            </div>
-            <div className="flex min-h-screen">
-              <Suspense fallback={<LoadingPlaceholder className="hidden w-64 md:block" />}>
-                <Sidebar />
-              </Suspense>
-              <main className="flex-1 transition-all duration-300 md:ml-64">
-                <div className="container mx-auto max-w-7xl p-3 pb-24 md:p-4 md:pb-4 lg:p-8">
-                  <div className="sticky top-0 z-20 mb-4 flex flex-wrap items-center justify-between gap-3 md:mb-6">
-                    <h2 className="text-xl font-bold text-purple-950 md:text-2xl">
-                      {translations[lang].app.title}
-                    </h2>
-                    <div className="flex items-center gap-2 md:gap-3">
-                      <Suspense
-                        fallback={
-                          <LoadingPlaceholder className="hidden h-6 w-24 animate-pulse rounded bg-gray-200 sm:flex" />
-                        }
-                      >
-                        <SyncStatus className="hidden sm:flex" />
-                      </Suspense>
-                      <Suspense
-                        fallback={
-                          <LoadingPlaceholder className="h-8 w-8 animate-pulse rounded bg-gray-200" />
-                        }
-                      >
-                        <LanguageSwitcher />
-                      </Suspense>
-                    </div>
-                  </div>
-                  <ClientComponentsWrapper>{children}</ClientComponentsWrapper>
+        <AccessibilityProvider>
+          <SkipLink />
+          <PageProgress />
+          <Suspense fallback={null}>
+            <ResourcePreloader />
+          </Suspense>
+          <Suspense fallback={null}>
+            <ServiceWorkerRegister />
+          </Suspense>
+          <Suspense fallback={null}>
+            <SmartPreloader />
+          </Suspense>
+          <Suspense fallback={null}>
+            <OfflineIndicator />
+          </Suspense>
+          <Suspense fallback={null}>
+            <PerformanceMonitor />
+          </Suspense>
+          <LanguageProvider initialLang={lang}>
+            <WalletProvider>
+              <Toaster />
+              <MobileLayout>
+                {/* 背景层 */}
+                <div className="mesh-gradient" />
+                <div className="animated-blobs">
+                  <div className="blob-1" />
+                  <div className="blob-2" />
+                  <div className="blob-3" />
+                  <div className="blob-4" />
                 </div>
-              </main>
-            </div>
-            {/* 移动端底部导航 */}
-            <Suspense fallback={null}>
-              <MobileBottomNav />
-            </Suspense>
-            {/* PWA 安装提示 */}
-            <Suspense fallback={null}>
-              <PWAInstallPrompt />
-            </Suspense>
-          </WalletProvider>
-        </LanguageProvider>
+                <div className="flex min-h-screen-dynamic">
+                  <Suspense fallback={<LoadingPlaceholder className="hidden w-64 md:block" />}>
+                    <Sidebar />
+                  </Suspense>
+                  <main id="main-content" className="flex-1 transition-all duration-300 md:ml-64">
+                    <div className="container mx-auto max-w-7xl p-3 pb-24 md:p-4 md:pb-4 lg:p-8">
+                      <div className="sticky top-0 z-20 mb-4 flex flex-wrap items-center justify-between gap-3 md:mb-6">
+                        <h2 className="text-xl font-bold text-purple-950 md:text-2xl">
+                          {translations[lang].app.title}
+                        </h2>
+                        <div className="flex items-center gap-2 md:gap-3">
+                          <Suspense
+                            fallback={
+                              <LoadingPlaceholder className="hidden h-6 w-24 animate-pulse rounded bg-gray-200 sm:flex" />
+                            }
+                          >
+                            <SyncStatus className="hidden sm:flex" />
+                          </Suspense>
+                          {/* 移动端链切换 */}
+                          <Suspense fallback={null}>
+                            <div className="md:hidden">
+                              <MobileChainSwitcher />
+                            </div>
+                          </Suspense>
+                          <Suspense
+                            fallback={
+                              <LoadingPlaceholder className="h-8 w-8 animate-pulse rounded bg-gray-200" />
+                            }
+                          >
+                            <LanguageSwitcher />
+                          </Suspense>
+                        </div>
+                      </div>
+                      <PageTransition variant="fade">
+                        <ClientComponentsWrapper>{children}</ClientComponentsWrapper>
+                      </PageTransition>
+                    </div>
+                  </main>
+                </div>
+                {/* 移动端底部导航 */}
+                <Suspense fallback={null}>
+                  <MobileBottomNav />
+                </Suspense>
+                {/* PWA 安装提示 */}
+                <Suspense fallback={null}>
+                  <PWAInstallPrompt />
+                </Suspense>
+              </MobileLayout>
+            </WalletProvider>
+          </LanguageProvider>
+        </AccessibilityProvider>
       </body>
     </html>
   );

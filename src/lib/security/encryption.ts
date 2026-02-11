@@ -152,6 +152,61 @@ export function decryptString(jsonString: string | null | undefined): string | n
   return jsonString;
 }
 
+/**
+ * 脱敏敏感数据
+ */
+export function redactSensitiveData<T extends Record<string, unknown>>(
+  data: T,
+  sensitiveFields: string[]
+): T {
+  const result = { ...data } as Record<string, unknown>;
+
+  for (const field of sensitiveFields) {
+    const value = result[field];
+    if (typeof value === 'string') {
+      result[field] = maskInLog(value);
+    }
+  }
+
+  return result as T;
+}
+
+/**
+ * 在日志中掩码字符串
+ */
+export function maskInLog(value: string | null | undefined): string {
+  if (!value) return '';
+  if (typeof value !== 'string') return '';
+
+  const length = value.length;
+  if (length <= 8) {
+    return '***';
+  }
+
+  // Show first 4 and last 4 characters
+  return `${value.slice(0, 4)}***${value.slice(-4)}`;
+}
+
+/**
+ * 获取加密状态
+ */
+export function getEncryptionStatus(): {
+  enabled: boolean;
+  keyByteLength: number;
+  algorithm?: string;
+  version?: number;
+} {
+  const key = getEncryptionKey();
+  const keyByteLength = Buffer.byteLength(key, 'utf8');
+
+  return {
+    enabled: isEncryptionEnabled(),
+    keyByteLength,
+    algorithm: isEncryptionEnabled() ? ALGORITHM : undefined,
+    version: 2,
+  };
+}
+
 
 
 

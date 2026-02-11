@@ -36,7 +36,6 @@ export {
   fetchApiData,
   getErrorMessage,
   normalizeListResponse,
-  normalizePaginatedResponse,
 } from './api';
 
 // API Handler 工具
@@ -54,7 +53,7 @@ export {
 export { getExplorerUrl, parseRpcUrls } from './blockchain';
 
 // 数学工具
-export { calculateMedian, calculateMean, calculateStdDev, calculateDeviation } from './math';
+export { calculateMedian, calculateMean, calculateStdDev } from './math';
 
 // 通用工具
 export { sleep } from './common';
@@ -82,19 +81,9 @@ export {
 
 // 类型守卫
 export {
-  isNonEmptyString,
-  isPositiveNumber,
-  isNonNegativeNumber,
-  isValidDateString,
-  isValidDate,
-  isPlainObject,
-  isArray,
-  isBoolean,
-  isOracleProtocol,
-  isSupportedChain,
-  isPriceData,
-  isPriceDataArray,
-  isPriceUpdateMessage,
+  safeJsonParse,
+  safeToNumber,
+  safeToDate,
 } from './typeGuards';
 
 // Result 类型和函数式错误处理

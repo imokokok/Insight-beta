@@ -30,4 +30,90 @@ export const alerts = {
   title: 'Alerts',
   type: 'Type',
   unsilence: 'Unsilence',
+
+  // Notification Channel Config
+  config: {
+    title: 'Notification Channel Config',
+    description: 'Configure Webhook, PagerDuty, Slack, Email and other alert notification channels',
+    save: 'Save Config',
+    saveSuccess: 'Config Saved',
+    saveSuccessDesc: 'Notification channel config has been updated successfully',
+    saveError: 'Save Failed',
+    test: 'Test',
+    testSuccess: 'Test Success',
+    testError: 'Test Failed',
+    // Email
+    smtpHost: 'SMTP Host',
+    smtpPort: 'SMTP Port',
+    username: 'Username',
+    password: 'Password',
+    fromAddress: 'From Address',
+    toAddresses: 'To Addresses (comma separated)',
+    useTLS: 'Use TLS Encryption',
+    // Webhook
+    webhookUrl: 'Webhook URL',
+    method: 'Method',
+    headers: 'Headers (JSON format)',
+    timeoutMs: 'Timeout (ms)',
+    retryCount: 'Retry Count',
+    // Slack
+    slackWebhookUrl: 'Slack Webhook URL',
+    channel: 'Channel',
+    // Telegram
+    botToken: 'Bot Token',
+    chatIds: 'Chat IDs (comma separated)',
+    parseMode: 'Parse Mode',
+    // PagerDuty
+    integrationKey: 'Integration Key',
+  },
+
+  // Alert History
+  history: {
+    title: 'Alert History',
+    description: 'View and manage alert history records',
+    noAlerts: 'No alert records',
+    acknowledge: 'Acknowledge',
+    acknowledged: 'Acknowledged',
+    acknowledgeSuccess: 'Alert Acknowledged',
+    acknowledgeSuccessDesc: 'Alert has been acknowledged successfully',
+    acknowledgeError: 'Acknowledge Failed',
+    acknowledgedBy: 'Acknowledged By',
+    acknowledgedAt: 'Acknowledged At',
+    channelResults: 'Channel Delivery Results',
+    success: 'Success',
+    failed: 'Failed',
+    protocol: 'Protocol',
+    chain: 'Chain',
+    symbol: 'Symbol',
+  },
+
+  // Stats
+  stats: {
+    total: 'Total',
+    pending: 'Pending',
+    acknowledged: 'Acknowledged',
+    critical: 'Critical',
+  },
+
+  // Channel Health
+  channelHealth: {
+    title: 'Channel Health Status',
+  },
+
+  // Filters
+  filters: {
+    severity: 'Severity',
+    all: 'All',
+    protocol: 'Protocol',
+    protocolPlaceholder: 'Enter protocol name',
+    symbol: 'Symbol',
+    symbolPlaceholder: 'Enter symbol',
+  },
+
+  // Severity Labels
+  severityLabels: {
+    critical: 'Critical',
+    warning: 'Warning',
+    info: 'Info',
+  },
 };

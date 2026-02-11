@@ -23,6 +23,7 @@ import { ErrorBanner as ErrorBannerUI } from '@/components/ui/error-banner';
 import { RefreshIndicator } from '@/components/ui/refresh-indicator';
 import { getRefreshStrategy } from '@/config/refresh-strategy';
 import { useIsMobile } from '@/hooks';
+import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage, langToLocale, type TranslationKey } from '@/i18n/translations';
 import type { Dispute, DisputeStatus, OracleChain } from '@/lib/types/oracleTypes';
@@ -442,6 +443,17 @@ export default function DisputesPage() {
   useEffect(() => {
     setOracleInstanceId(instanceId);
   }, [instanceId]);
+
+  // 页面优化：键盘快捷键
+  usePageOptimizations({
+    pageName: '争议列表',
+    onRefresh: async () => {
+      await refresh();
+    },
+    enableSearch: true,
+    searchSelector: 'input[type="text"][placeholder*="搜索"]',
+    showRefreshToast: true,
+  });
 
   useEffect(() => {
     let cancelled = false;

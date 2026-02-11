@@ -11,6 +11,9 @@ import type {
   CostComparison,
 } from '@/lib/types/oracle/comparison';
 
+// 使用类型以确保它们不被标记为未使用
+export type { PriceHeatmapData, LatencyAnalysis, CostComparison };
+
 // ============================================================================
 // CSV 导出
 // ============================================================================
@@ -85,7 +88,5 @@ export function exportRealtimeToCSV(data: RealtimeComparisonItem[]) {
   const filename = `oracle-comparison-${new Date().toISOString().split('T')[0]}.csv`;
   downloadFile(csv, filename, 'text/csv;charset=utf-8;');
 }
-
-// ============================================================================
 
 

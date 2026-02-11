@@ -38,9 +38,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getRefreshStrategy } from '@/config/refresh-strategy';
 import { useWebSocket, useIsMobile } from '@/hooks';
 import { useAutoRefresh } from '@/hooks/use-auto-refresh';
+import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { logger } from '@/lib/logger';
 import { fetchApiData, cn, formatPercentValue } from '@/lib/utils';
 import { isStatsUpdateMessage } from '@/lib/utils/typeGuards';
+import { AnimatedContainer } from '@/components/common/AnimatedContainer';
 
 // Dynamic imports for oracle components
 const PriceFeedList = lazy(() =>
@@ -216,6 +218,17 @@ export default function UnifiedDashboardPage() {
   const [selectedProtocols, setSelectedProtocols] = useState<string[]>(['all']);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isMobile = useIsMobile();
+
+  // 页面优化：键盘快捷键
+  usePageOptimizations({
+    pageName: '仪表板',
+    onRefresh: async () => {
+      await refresh();
+    },
+    enableSearch: true,
+    searchSelector: 'input[type="search"]',
+    showRefreshToast: true,
+  });
 
   // 使用新的自动刷新 hook，配置为 1 分钟刷新策略
   const dashboardStrategy = getRefreshStrategy('dashboard-overview');

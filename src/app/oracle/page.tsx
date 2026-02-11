@@ -24,6 +24,7 @@ import { Button, CardEnhanced, StatusBadge } from '@/components/ui';
 import { Badge } from '@/components/ui/badge';
 import { useI18n } from '@/i18n';
 import { cn, fetchApiData } from '@/lib/utils';
+import { useCommonShortcuts } from '@/hooks/useKeyboardShortcuts';
 
 interface PlatformStats {
   totalProtocols: number;
@@ -123,6 +124,16 @@ export default function OraclePlatformPage() {
   const { t } = useI18n();
   const [stats, setStats] = useState<PlatformStats | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // 键盘快捷键支持
+  useCommonShortcuts({
+    onRefresh: () => fetchPlatformStats(),
+    onSearch: () => {
+      // 聚焦到搜索框（如果有的话）
+      const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
+      searchInput?.focus();
+    },
+  });
 
   const fetchPlatformStats = useCallback(async () => {
     try {

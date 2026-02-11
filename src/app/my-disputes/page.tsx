@@ -13,6 +13,7 @@ import { ConnectWallet } from '@/components/features/wallet/ConnectWallet';
 import { UserStatsCard } from '@/components/features/wallet/UserStatsCard';
 import { useWallet } from '@/contexts/WalletContext';
 import { useDisputes, useUserStats } from '@/hooks';
+import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage } from '@/i18n/translations';
 import type { OracleConfig, OracleInstance, DisputeStatus } from '@/lib/types/oracleTypes';
@@ -167,14 +168,26 @@ export default function MyDisputesPage() {
     };
   }, []);
 
-  const { items, loading, loadingMore, hasMore, loadMore, error } = useDisputes(
+  const { items, loading, loadingMore, hasMore, loadMore, error, mutate } = useDisputes(
     filterStatus,
     filterChain,
     debouncedQuery,
     address,
     instanceId,
   );
-  const { stats, loading: statsLoading } = useUserStats(address, instanceId);
+  const { stats, loading: statsLoading, mutate: mutateStats } = useUserStats(address, instanceId);
+
+  // 页面优化：键盘快捷键
+  usePageOptimizations({
+    pageName: '我的争议',
+    onRefresh: async () => {
+      await mutate();
+      await mutateStats();
+    },
+    enableSearch: true,
+    searchSelector: 'input[type="text"][placeholder*="搜索"]',
+    showRefreshToast: true,
+  });
 
   if (!address) return <NoWalletState t={t} />;
 

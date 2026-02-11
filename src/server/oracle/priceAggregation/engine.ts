@@ -9,7 +9,7 @@
 
 import pLimit from 'p-limit';
 
-import { cacheManager } from '@/lib/api/optimization/cache';
+import { defaultCache } from '@/lib/api/optimization/cache';
 import { logger } from '@/lib/logger';
 import { priceMetrics } from '@/lib/monitoring/priceMetrics';
 import type {
@@ -58,7 +58,7 @@ export class PriceAggregationEngine {
 
     try {
       // 1. 检查内存缓存
-      const cached = await cacheManager.provider.get<CrossOracleComparison>(cacheKey);
+      const cached = await defaultCache.get<CrossOracleComparison>(cacheKey);
       if (cached) {
         priceMetrics.recordCacheHit();
         logger.debug(`Cache hit for ${symbol}`, { chain });
@@ -84,7 +84,7 @@ export class PriceAggregationEngine {
       if (error instanceof Error && error.name === 'CircuitBreakerError') {
         logger.warn(`Circuit breaker open for ${symbol}`, { chain });
         // 尝试返回缓存数据（即使过期）
-        const stale = await cacheManager.provider.get<CrossOracleComparison>(cacheKey);
+        const stale = await defaultCache.get<CrossOracleComparison>(cacheKey);
         if (stale) {
           logger.info(`Returning stale cache for ${symbol}`);
           // 添加熔断回退状态标识
@@ -199,7 +199,7 @@ export class PriceAggregationEngine {
     };
 
     // 保存到缓存（异步）
-    cacheManager.provider.set(cacheKey, comparison, CACHE_TTL_MS).catch((error: unknown) => {
+    defaultCache.set(cacheKey, comparison, CACHE_TTL_MS).catch((error: unknown) => {
       logger.error('Failed to save to cache', { error, symbol });
     });
 
@@ -561,7 +561,7 @@ export class PriceAggregationEngine {
    * 清除缓存
    */
   async clearCache(): Promise<void> {
-    await cacheManager.clear('aggregation:*');
+    await defaultCache.clear('aggregation:*');
     logger.info('Aggregation cache cleared');
   }
 

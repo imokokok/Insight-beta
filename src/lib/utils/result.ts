@@ -50,15 +50,4 @@ export async function tryCatchAsync<T>(
   }
 }
 
-/**
- * 映射成功的值
- */
-export function map<T, U>(
-  result: Result<T>,
-  fn: (data: T) => U
-): Result<U> {
-  if (!result.success) {
-    return err(result.error);
-  }
-  return ok(fn(result.data));
-}
+

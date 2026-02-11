@@ -42,10 +42,4 @@ export function calculateStdDev(values: number[], mean?: number): number {
   return Math.sqrt(variance);
 }
 
-/**
- * 计算价格偏差百分比
- */
-export function calculateDeviation(actual: number, expected: number): number {
-  if (expected === 0) return 0;
-  return ((actual - expected) / expected) * 100;
-}
+

@@ -630,10 +630,107 @@ class SecurityAuditLogger {
 
 let auditLogger: SecurityAuditLogger | null = null;
 
-function getAuditLogger(): SecurityAuditLogger {
+export function getAuditLogger(): SecurityAuditLogger {
   if (!auditLogger) {
     auditLogger = new SecurityAuditLogger();
   }
   return auditLogger;
+}
+
+/**
+ * 记录安全事件
+ */
+export function logSecurityEvent(
+  action: AuditAction,
+  actor: string,
+  details: Record<string, unknown>,
+  severity: AuditSeverity = 'info',
+  success: boolean = true
+): void {
+  const logger = getAuditLogger();
+  logger.log({
+    action,
+    actor,
+    actorType: 'user',
+    severity,
+    details,
+    success,
+  });
+}
+
+/**
+ * 记录管理员操作
+ */
+export function logAdminAction(
+  action: AuditAction,
+  actor: string,
+  details: Record<string, unknown>,
+  success: boolean = true
+): void {
+  const logger = getAuditLogger();
+  logger.log({
+    action,
+    actor,
+    actorType: 'admin',
+    severity: 'warning',
+    details,
+    success,
+  });
+}
+
+/**
+ * 记录安全警报
+ */
+export function logSecurityAlert(
+  action: AuditAction,
+  details: Record<string, unknown>,
+  errorMessage: string
+): void {
+  const logger = getAuditLogger();
+  logger.log({
+    action,
+    actor: 'system',
+    actorType: 'system',
+    severity: 'critical',
+    details,
+    success: false,
+    errorMessage,
+  });
+}
+
+/**
+ * 获取审计统计
+ */
+export function getAuditStatistics(filter: Omit<AuditFilter, 'limit' | 'offset' | 'search'> = {}): AuditStatistics {
+  const logger = getAuditLogger();
+  return logger.getStatistics(filter);
+}
+
+/**
+ * 导出审计日志
+ */
+export async function exportAuditLogs(options: AuditExportOptions = { format: 'json' }): Promise<string> {
+  const logger = getAuditLogger();
+  return logger.exportLogs(options);
+}
+
+/**
+ * 清除所有审计日志（仅用于测试）
+ */
+export function clearAllAuditLogsForTest(): void {
+  const logger = getAuditLogger();
+  logger.clearAllLogsForTest();
+}
+
+/**
+ * 获取审计内存使用情况
+ */
+export function getAuditMemoryUsage(): {
+  totalLogs: number;
+  queueSize: number;
+  memoryEstimate: string;
+} {
+  const logger = getAuditLogger();
+  return logger.getMemoryUsage();
 }
 

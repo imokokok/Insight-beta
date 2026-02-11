@@ -1,257 +1,206 @@
-import type { TranslationKey } from '@/i18n/translations';
-import type { OpsSloStatus } from '@/lib/types/oracleTypes';
-import { formatDurationMinutes } from '@/lib/utils';
+/**
+ * Alerts Utilities
+ *
+ * 告警相关的工具函数
+ */
 
-export type SloEntry = {
+import type { AlertSeverity, AlertStatus, OpsSloStatus } from '@/lib/types/oracleTypes';
+
+// ============================================================================
+// 类型定义
+// ============================================================================
+
+export interface SloEntry {
   key: string;
-  label: string | undefined;
-  current: number | null;
+  label: string;
   target: number;
-};
+  unit: string;
+  current?: number;
+}
 
-// RootCauseOption type definition
-export type RootCauseOption = {
+export interface RootCauseOption {
   value: string;
   label: string;
-};
+}
 
-// Format SLO target value
-export function formatSloTarget(key: string, value: number): string {
-  if (key.includes('Minutes')) {
-    return formatDurationMinutes(value);
+// ============================================================================
+// 严重级别徽章
+// ============================================================================
+
+export function severityBadge(severity: AlertSeverity): {
+  variant: 'default' | 'destructive' | 'outline' | 'secondary';
+  className: string;
+  label: string;
+} {
+  switch (severity) {
+    case 'critical':
+      return { variant: 'destructive', className: 'bg-red-600', label: '严重' };
+    case 'warning':
+      return { variant: 'default', className: 'bg-yellow-500', label: '警告' };
+    case 'info':
+    default:
+      return { variant: 'secondary', className: 'bg-blue-500', label: '信息' };
   }
-  return value.toString();
 }
 
-// Format SLO current value
-export function formatSloValue(key: string, value: number | null): string {
-  if (value === null) return '-';
-  if (key.includes('Minutes')) {
-    return formatDurationMinutes(value);
+// ============================================================================
+// 状态徽章
+// ============================================================================
+
+export function statusBadge(status: AlertStatus): {
+  variant: 'default' | 'destructive' | 'outline' | 'secondary';
+  className: string;
+  label: string;
+} {
+  switch (status) {
+    case 'Open':
+      return { variant: 'destructive', className: 'bg-red-500', label: '活跃' };
+    case 'Acknowledged':
+      return { variant: 'default', className: 'bg-yellow-500', label: '已确认' };
+    case 'Resolved':
+      return { variant: 'secondary', className: 'bg-green-500', label: '已解决' };
+    default:
+      return { variant: 'outline', className: '', label: '已抑制' };
   }
-  return value.toString();
 }
 
-// Get entity href
-export function getEntityHref(entityType: string, entityId: string): string {
-  return `/${entityType}/${entityId}`;
-}
-
-// Get safe external URL
-export function getSafeExternalUrl(url: string): string {
-  if (!url.startsWith('http')) {
-    return `https://${url}`;
-  }
-  return url;
-}
-
-// Get safe internal path
-export function getSafeInternalPath(path: string): string {
-  return path.startsWith('/') ? path : `/${path}`;
-}
-
-// Severity badge component
-export function severityBadge(severity: string): { label: string; color: string } {
-  const map: Record<string, { label: string; color: string }> = {
-    critical: { label: 'Critical', color: 'red' },
-    high: { label: 'High', color: 'orange' },
-    medium: { label: 'Medium', color: 'yellow' },
-    low: { label: 'Low', color: 'blue' },
-  };
-  return map[severity] || { label: severity, color: 'gray' };
-}
-
-// SLO status badge
-export function sloStatusBadge(status: string): { label: string; color: string } {
-  const map: Record<string, { label: string; color: string }> = {
-    healthy: { label: 'Healthy', color: 'green' },
-    warning: { label: 'Warning', color: 'yellow' },
-    critical: { label: 'Critical', color: 'red' },
-  };
-  return map[status] || { label: status, color: 'gray' };
-}
-
-// SLO status label
-export function sloStatusLabel(status: string): string {
-  const map: Record<string, string> = {
-    healthy: 'Healthy',
-    warning: 'Warning',
-    critical: 'Critical',
-  };
-  return map[status] || status;
-}
-
-// Status badge
-export function statusBadge(status: string): { label: string; color: string } {
-  const map: Record<string, { label: string; color: string }> = {
-    open: { label: 'Open', color: 'red' },
-    acknowledged: { label: 'Acknowledged', color: 'yellow' },
-    resolved: { label: 'Resolved', color: 'green' },
-  };
-  return map[status] || { label: status, color: 'gray' };
-}
+// ============================================================================
+// SLO 相关
+// ============================================================================
 
 export const sloLabels: Record<string, string> = {
-  lagBlocks: 'Sync lag blocks',
-  syncStalenessMinutes: 'Sync staleness',
-  alertMttaMinutes: 'Alert MTTA',
-  alertMttrMinutes: 'Alert MTTR',
-  incidentMttrMinutes: 'Incident MTTR',
-  openAlerts: 'Open alerts',
-  openCriticalAlerts: 'Open critical',
+  availability: '可用性',
+  latency: '延迟',
+  accuracy: '准确性',
+  freshness: '新鲜度',
 };
 
-export const rootCauseOptions: RootCauseOption[] = [
-  { value: '', label: 'Unspecified' },
-  { value: 'sync', label: 'Sync' },
-  { value: 'rpc', label: 'RPC provider' },
-  { value: 'chain', label: 'Chain issue' },
-  { value: 'contract', label: 'Contract' },
-  { value: 'infra', label: 'Infrastructure' },
-  { value: 'config', label: 'Configuration' },
-  { value: 'data', label: 'Data quality' },
-  { value: 'external', label: 'External dependency' },
-  { value: 'unknown', label: 'Unknown' },
-];
-
-export const sloAlertTypes = new Set([
-  'sync_backlog',
-  'sync_error',
-  'backlog_assertions',
-  'backlog_disputes',
-  'stale_sync',
-  'contract_paused',
-  'market_stale',
-  'slow_api_request',
-  'high_error_rate',
-  'database_slow_query',
-]);
-
-export const alertInsightMap: Record<
-  string,
-  { explanation: TranslationKey; actions: TranslationKey[] }
-> = {
-  dispute_created: {
-    explanation: 'alerts.explanations.dispute_created',
-    actions: ['alerts.actions.dispute_created.1', 'alerts.actions.dispute_created.2'],
-  },
-  liveness_expiring: {
-    explanation: 'alerts.explanations.liveness_expiring',
-    actions: ['alerts.actions.liveness_expiring.1', 'alerts.actions.liveness_expiring.2'],
-  },
-  sync_error: {
-    explanation: 'alerts.explanations.sync_error',
-    actions: ['alerts.actions.sync_error.1', 'alerts.actions.sync_error.2'],
-  },
-  stale_sync: {
-    explanation: 'alerts.explanations.stale_sync',
-    actions: ['alerts.actions.stale_sync.1', 'alerts.actions.stale_sync.2'],
-  },
-  contract_paused: {
-    explanation: 'alerts.explanations.contract_paused',
-    actions: ['alerts.actions.contract_paused.1', 'alerts.actions.contract_paused.2'],
-  },
-  sync_backlog: {
-    explanation: 'alerts.explanations.sync_backlog',
-    actions: ['alerts.actions.sync_backlog.1', 'alerts.actions.sync_backlog.2'],
-  },
-  backlog_assertions: {
-    explanation: 'alerts.explanations.backlog_assertions',
-    actions: ['alerts.actions.backlog_assertions.1', 'alerts.actions.backlog_assertions.2'],
-  },
-  backlog_disputes: {
-    explanation: 'alerts.explanations.backlog_disputes',
-    actions: ['alerts.actions.backlog_disputes.1', 'alerts.actions.backlog_disputes.2'],
-  },
-  market_stale: {
-    explanation: 'alerts.explanations.market_stale',
-    actions: ['alerts.actions.market_stale.1', 'alerts.actions.market_stale.2'],
-  },
-  execution_delayed: {
-    explanation: 'alerts.explanations.execution_delayed',
-    actions: ['alerts.actions.execution_delayed.1', 'alerts.actions.execution_delayed.2'],
-  },
-  low_participation: {
-    explanation: 'alerts.explanations.low_participation',
-    actions: ['alerts.actions.low_participation.1', 'alerts.actions.low_participation.2'],
-  },
-  high_vote_divergence: {
-    explanation: 'alerts.explanations.high_vote_divergence',
-    actions: ['alerts.actions.high_vote_divergence.1', 'alerts.actions.high_vote_divergence.2'],
-  },
-  high_dispute_rate: {
-    explanation: 'alerts.explanations.high_dispute_rate',
-    actions: ['alerts.actions.high_dispute_rate.1', 'alerts.actions.high_dispute_rate.2'],
-  },
-  slow_api_request: {
-    explanation: 'alerts.explanations.slow_api_request',
-    actions: ['alerts.actions.slow_api_request.1', 'alerts.actions.slow_api_request.2'],
-  },
-  high_error_rate: {
-    explanation: 'alerts.explanations.high_error_rate',
-    actions: ['alerts.actions.high_error_rate.1', 'alerts.actions.high_error_rate.2'],
-  },
-  database_slow_query: {
-    explanation: 'alerts.explanations.database_slow_query',
-    actions: ['alerts.actions.database_slow_query.1', 'alerts.actions.database_slow_query.2'],
-  },
-  price_deviation: {
-    explanation: 'alerts.explanations.price_deviation',
-    actions: ['alerts.actions.price_deviation.1', 'alerts.actions.price_deviation.2'],
-  },
-  low_gas: {
-    explanation: 'alerts.explanations.low_gas',
-    actions: ['alerts.actions.low_gas.1', 'alerts.actions.low_gas.2'],
-  },
-};
-
-export function getSloEntries(slo: OpsSloStatus): SloEntry[] {
-  return [
-    {
-      key: 'lagBlocks',
-      label: sloLabels.lagBlocks,
-      current: slo.current.lagBlocks,
-      target: slo.targets.maxLagBlocks,
-    },
-    {
-      key: 'syncStalenessMinutes',
-      label: sloLabels.syncStalenessMinutes,
-      current: slo.current.syncStalenessMinutes,
-      target: slo.targets.maxSyncStalenessMinutes,
-    },
-    {
-      key: 'alertMttaMinutes',
-      label: sloLabels.alertMttaMinutes,
-      current: slo.current.alertMttaMinutes,
-      target: slo.targets.maxAlertMttaMinutes,
-    },
-    {
-      key: 'alertMttrMinutes',
-      label: sloLabels.alertMttrMinutes,
-      current: slo.current.alertMttrMinutes,
-      target: slo.targets.maxAlertMttrMinutes,
-    },
-    {
-      key: 'incidentMttrMinutes',
-      label: sloLabels.incidentMttrMinutes,
-      current: slo.current.incidentMttrMinutes,
-      target: slo.targets.maxIncidentMttrMinutes,
-    },
-    {
-      key: 'openAlerts',
-      label: sloLabels.openAlerts,
-      current: slo.current.openAlerts,
-      target: slo.targets.maxOpenAlerts,
-    },
-    {
-      key: 'openCriticalAlerts',
-      label: sloLabels.openCriticalAlerts,
-      current: slo.current.openCriticalAlerts,
-      target: slo.targets.maxOpenCriticalAlerts,
-    },
-  ];
+export function sloStatusBadge(status: OpsSloStatus['status']): {
+  variant: 'default' | 'destructive' | 'outline' | 'secondary';
+  className: string;
+  label: string;
+} {
+  switch (status) {
+    case 'met':
+      return { variant: 'secondary', className: 'bg-green-500', label: '健康' };
+    case 'degraded':
+      return { variant: 'default', className: 'bg-yellow-500', label: '警告' };
+    case 'breached':
+      return { variant: 'destructive', className: 'bg-red-500', label: '已违反' };
+    default:
+      return { variant: 'secondary', className: 'bg-green-500', label: '健康' };
+  }
 }
 
+export function sloStatusLabel(status: OpsSloStatus['status']): string {
+  const labels = {
+    met: '健康',
+    degraded: '警告',
+    breached: '已违反',
+  };
+  return labels[status] ?? status;
+}
+
+export function formatSloTarget(_key: string, target: number): string {
+  return `${(target * 100).toFixed(2)}%`;
+}
+
+export function formatSloValue(_key: string, value: number | undefined): string {
+  if (value === undefined) return '-';
+  return value.toFixed(2);
+}
+
+// ============================================================================
+// 告警洞察映射
+// ============================================================================
+
+export const alertInsightMap: Record<string, { explanation: string; actions: string[] }> = {
+  price_deviation: {
+    explanation: '价格偏离 detected',
+    actions: ['检查数据源', '验证价格计算'],
+  },
+  latency_spike: {
+    explanation: '延迟 spike detected',
+    actions: ['检查网络连接', '优化查询'],
+  },
+  stale_data: {
+    explanation: '数据陈旧 detected',
+    actions: ['重启同步服务', '检查数据源'],
+  },
+  low_confidence: {
+    explanation: '低置信度 detected',
+    actions: ['增加数据源', '检查数据质量'],
+  },
+  high_error_rate: {
+    explanation: '高错误率 detected',
+    actions: ['检查日志', '联系支持团队'],
+  },
+  service_down: {
+    explanation: '服务宕机 detected',
+    actions: ['立即重启服务', '通知运维团队'],
+  },
+};
+
+// ============================================================================
+// 安全 URL 处理
+// ============================================================================
+
+export function getSafeExternalUrl(url: string): string {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  return `https://${url}`;
+}
+
+export function getSafeInternalPath(path: string): string {
+  if (!path) return '/';
+  if (path.startsWith('/')) {
+    return path;
+  }
+  return `/${path}`;
+}
+
+export function getEntityHref(entityType: string, entityId: string): string {
+  const paths: Record<string, string> = {
+    oracle: `/oracle/${entityId}`,
+    chain: `/chain/${entityId}`,
+    protocol: `/protocol/${entityId}`,
+    alert: `/alerts/${entityId}`,
+  };
+  return paths[entityType] ?? '/';
+}
+
+// ============================================================================
+// 其他导出
+// ============================================================================
+
+export const rootCauseOptions: RootCauseOption[] = [
+  { value: 'network_issue', label: '网络问题' },
+  { value: 'data_source_error', label: '数据源错误' },
+  { value: 'configuration_error', label: '配置错误' },
+  { value: 'code_bug', label: '代码缺陷' },
+  { value: 'infrastructure_failure', label: '基础设施故障' },
+  { value: 'third_party_issue', label: '第三方服务问题' },
+  { value: 'unknown', label: '未知原因' },
+];
+
+export const sloAlertTypes = [
+  { value: 'latency', label: '延迟告警' },
+  { value: 'availability', label: '可用性告警' },
+  { value: 'accuracy', label: '准确性告警' },
+  { value: 'freshness', label: '新鲜度告警' },
+];
+
 export function getInitialInstanceId(): string {
-  return 'all';
+  return 'default';
+}
+
+export function getSloEntries(): SloEntry[] {
+  return [
+    { key: 'availability', label: '可用性', target: 0.999, unit: '%' },
+    { key: 'latency', label: '延迟', target: 100, unit: 'ms' },
+    { key: 'accuracy', label: '准确性', target: 0.99, unit: '%' },
+    { key: 'freshness', label: '新鲜度', target: 60, unit: 's' },
+  ];
 }

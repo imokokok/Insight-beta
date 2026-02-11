@@ -8,6 +8,7 @@ import { EmptyWatchlistState } from '@/components/common/EmptyState';
 import { PageHeader } from '@/components/common/PageHeader';
 import { AssertionList } from '@/components/features/assertion/AssertionList';
 import { useInfiniteList, useWatchlist, type BaseResponse, useIsMobile } from '@/hooks';
+import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage } from '@/i18n/translations';
 import type { Assertion } from '@/lib/types/oracleTypes';
@@ -68,10 +69,20 @@ export default function WatchlistPage() {
     [watchlist, mounted, instanceId],
   );
 
-  const { items, loading, loadingMore, hasMore, loadMore, error } = useInfiniteList<Assertion>(
+  const { items, loading, loadingMore, hasMore, loadMore, error, mutate } = useInfiniteList<Assertion>(
     getUrl,
     { revalidateOnFocus: true },
   );
+
+  // 页面优化：键盘快捷键
+  usePageOptimizations({
+    pageName: '关注列表',
+    onRefresh: async () => {
+      await mutate();
+    },
+    enableSearch: false,
+    showRefreshToast: true,
+  });
 
   return (
     <main className="container mx-auto px-3 py-4 pb-20 sm:px-4 sm:py-8 sm:pb-24">
