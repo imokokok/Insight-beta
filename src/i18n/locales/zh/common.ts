@@ -164,4 +164,31 @@ export const common = {
   saved: '已保存',
   saveConfig: '保存配置',
   submitting: '提交中...',
+  // 熔断回退数据
+  circuitBreaker: {
+    fallback: {
+      title: '服务暂时不可用',
+      staleData: '数据可能过期',
+      staleDataDesc: '当前显示的是缓存数据，可能不是最新价格。服务正在恢复中，请稍后再试。',
+      stale: '缓存数据',
+      staleDesc: '当前显示的是缓存数据，可能不是最新价格。',
+      fresh: '数据正常',
+      freshDesc: '数据是最新的。',
+      error: '数据获取失败',
+      errorDesc: '无法获取最新数据，请稍后重试。',
+      cachedAt: '缓存时间',
+      circuitOpenedAt: '熔断时间',
+      estimatedRecovery: '预计恢复',
+      retry: '立即重试',
+      ago: '前',
+      originalTime: '原始数据时间',
+    },
+  },
+  // 数据新鲜度
+  freshness: {
+    fresh: '最新',
+    warning: '稍旧',
+    stale: '过期',
+    expired: '已失效',
+  },
 };

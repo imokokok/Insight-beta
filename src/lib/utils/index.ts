@@ -19,6 +19,21 @@ export {
   copyToClipboard,
 } from './format';
 
+// 百分比格式化工具
+export {
+  formatPercent,
+  formatPercentValue,
+  formatChangePercent,
+  parsePercent,
+  parsePercentValue,
+  calculateAndFormatPercent,
+  calculateChangePercent,
+  formatConfidence,
+  formatSuccessRate,
+  formatDeviation,
+  type FormatPercentOptions,
+} from './percentage';
+
 // API 工具
 export {
   ApiClientError,
@@ -70,3 +85,57 @@ export {
   buildQueryParams,
   buildApiUrl,
 } from './url';
+
+// 类型守卫
+export {
+  isDashboardStats,
+  isStatsUpdateMessage,
+  isNonEmptyString,
+  isPositiveNumber,
+  isNonNegativeNumber,
+  isValidDateString,
+  isValidDate,
+  isPlainObject,
+  isArray,
+  isBoolean,
+  isApiErrorResponse,
+  isOracleProtocol,
+  isSupportedChain,
+  isPriceData,
+  isPriceDataArray,
+  isPriceUpdateMessage,
+  isEthereumAddress,
+  isTransactionHash,
+  isValidSymbol,
+  isValidPrice,
+  isValidPercentage,
+  isValidBlockNumber,
+  safeJsonParse,
+  safeToNumber,
+  safeToDate,
+  assertDefined,
+  assertType,
+} from './typeGuards';
+
+// Result 类型和函数式错误处理
+export {
+  type Result,
+  type Option,
+  ok,
+  err,
+  tryCatch,
+  tryCatchAsync,
+  unwrapOr,
+  unwrap,
+  map,
+  mapErr,
+  andThen,
+  isSome,
+  isNone,
+  getOrElse,
+  getProperty,
+  getNestedProperty,
+  validateAll,
+  combine,
+  combineAll,
+} from './result';

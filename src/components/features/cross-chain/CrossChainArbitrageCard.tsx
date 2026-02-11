@@ -23,7 +23,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { CrossChainArbitrageOpportunity, CrossChainArbitrageSummary } from '@/hooks/useCrossChain';
 import { useI18n } from '@/i18n';
 import { RISK_COLORS } from '@/lib/types/common';
-import { cn, formatPrice } from '@/lib/utils';
+import { cn, formatPrice, formatChangePercent, formatPercentValue } from '@/lib/utils';
 
 interface CrossChainArbitrageCardProps {
   opportunities?: CrossChainArbitrageOpportunity[];
@@ -167,7 +167,7 @@ export const CrossChainArbitrageCard = memo(function CrossChainArbitrageCard({
                 'font-mono text-xl font-bold',
                 avgProfitPercent > 0 ? 'text-emerald-600' : 'text-red-600'
               )}>
-                {avgProfitPercent > 0 ? '+' : ''}{avgProfitPercent.toFixed(2)}%
+                {formatChangePercent(avgProfitPercent / 100, 2, false)}
               </p>
             </div>
             <div className="bg-muted/30 rounded-lg border p-3">
@@ -244,7 +244,7 @@ export const CrossChainArbitrageCard = memo(function CrossChainArbitrageCard({
                       {formatProfit(opportunity.netProfitEstimate)}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      ({opportunity.potentialProfitPercent.toFixed(2)}%)
+                      ({formatPercentValue(opportunity.potentialProfitPercent, 2)})
                     </p>
                   </div>
                 </div>

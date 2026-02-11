@@ -39,7 +39,8 @@ import { getRefreshStrategy } from '@/config/refresh-strategy';
 import { useWebSocket, useIsMobile } from '@/hooks';
 import { useAutoRefresh } from '@/hooks/use-auto-refresh';
 import { logger } from '@/lib/logger';
-import { fetchApiData, cn } from '@/lib/utils';
+import { fetchApiData, cn, formatPercentValue } from '@/lib/utils';
+import { isStatsUpdateMessage } from '@/lib/utils/typeGuards';
 
 // Dynamic imports for oracle components
 const PriceFeedList = lazy(() =>
@@ -47,57 +48,13 @@ const PriceFeedList = lazy(() =>
 );
 
 // ============================================================================
-// Mock Data Configuration - 固定示例数据（避免随机数据感）
+// Mock Data - 从 __mocks__ 导入
 // ============================================================================
 
-interface ProtocolHealthData {
-  uptime: number;
-  latency: number;
-  accuracy: number;
-  latencyColor: 'green' | 'yellow' | 'red';
-}
-
-// 固定协议健康数据 - 基于真实场景合理设定
-const PROTOCOL_HEALTH_MOCK: Record<string, ProtocolHealthData> = {
-  Chainlink: {
-    uptime: 99.98,
-    latency: 450,
-    accuracy: 99.7,
-    latencyColor: 'green',
-  },
-  'Pyth Network': {
-    uptime: 99.95,
-    latency: 280,
-    accuracy: 99.5,
-    latencyColor: 'green',
-  },
-  'Band Protocol': {
-    uptime: 99.87,
-    latency: 620,
-    accuracy: 98.9,
-    latencyColor: 'yellow',
-  },
-  API3: {
-    uptime: 99.92,
-    latency: 380,
-    accuracy: 99.3,
-    latencyColor: 'green',
-  },
-  RedStone: {
-    uptime: 99.85,
-    latency: 520,
-    accuracy: 99.1,
-    latencyColor: 'green',
-  },
-  Flux: {
-    uptime: 99.72,
-    latency: 780,
-    accuracy: 98.5,
-    latencyColor: 'yellow',
-  },
-};
-
-const PROTOCOL_LIST = ['Chainlink', 'Pyth Network', 'Band Protocol', 'API3', 'RedStone', 'Flux'];
+import {
+  PROTOCOL_HEALTH_MOCK,
+  PROTOCOL_LIST,
+} from '@/__mocks__/protocolHealth';
 
 // ============================================================================
 // Sample Data Badge Component - 示例数据标记
@@ -236,7 +193,7 @@ const ProtocolSidebar = lazy(() =>
 // Types
 // ============================================================================
 
-interface DashboardStats {
+export interface DashboardStats {
   totalProtocols: number;
   totalPriceFeeds: number;
   activeAlerts: number;
@@ -285,9 +242,8 @@ export default function UnifiedDashboardPage() {
     if (!lastMessage) return;
 
     try {
-      const message = lastMessage as { type: string; data: DashboardStats };
-      if (message.type === 'stats_update') {
-        setStats(message.data);
+      if (isStatsUpdateMessage(lastMessage)) {
+        setStats(lastMessage.data);
       }
     } catch (err: unknown) {
       logger.error('Failed to process WebSocket message', { err });
@@ -651,7 +607,7 @@ export default function UnifiedDashboardPage() {
                                 style={{ width: `${data.uptime}%` }}
                               />
                             </div>
-                            <span className="text-sm font-medium">{data.uptime.toFixed(2)}%</span>
+                            <span className="text-sm font-medium">{formatPercentValue(data.uptime, 2)}</span>
                           </div>
                         </div>
                       );
@@ -714,7 +670,7 @@ export default function UnifiedDashboardPage() {
                                 style={{ width: `${data.accuracy}%` }}
                               />
                             </div>
-                            <span className="text-sm font-medium">{data.accuracy.toFixed(1)}%</span>
+                            <span className="text-sm font-medium">{formatPercentValue(data.accuracy, 1)}</span>
                           </div>
                         </div>
                       );

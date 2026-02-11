@@ -207,7 +207,7 @@ const envSchema = z.object({
   INSIGHT_DEFAULT_EMAIL: optionalString(),
 
   // PagerDuty
-  PAGERDUTY_API_KEY: optionalString(),
+  INSIGHT_PAGERDUTY_KEY: optionalString(),
 
   // =============================================================================
   // UMA 配置

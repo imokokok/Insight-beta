@@ -15,12 +15,16 @@ export const dynamic = 'force-dynamic';
 interface MonitoringStats {
   alerts: {
     total: number;
-    cooldownActive: number;
+    acknowledged: number;
+    pending: number;
+    recent: number;
     channels: {
       email: boolean;
       webhook: boolean;
       slack: boolean;
       telegram: boolean;
+      pagerduty: boolean;
+      discord: boolean;
     };
   };
   notifications: {
@@ -30,7 +34,14 @@ interface MonitoringStats {
       webhook: boolean;
       slack: boolean;
       telegram: boolean;
+      pagerduty: boolean;
+      discord: boolean;
     };
+    channelHealth: {
+      channel: string;
+      isHealthy: boolean;
+      successRate: number;
+    }[];
   };
   system: {
     nodeEnv: string;
@@ -41,6 +52,7 @@ interface MonitoringStats {
 export const GET = withErrorHandler(async (_request: NextRequest) => {
   // 获取告警服务统计
   const alertStats = alertService.getStats();
+  const channelHealth = alertService.getChannelHealth();
 
   // 检查通知渠道配置状态
   const notificationConfig = {
@@ -48,6 +60,8 @@ export const GET = withErrorHandler(async (_request: NextRequest) => {
     webhook: !!env.INSIGHT_WEBHOOK_URL,
     slack: !!env.INSIGHT_SLACK_WEBHOOK_URL,
     telegram: !!(env.INSIGHT_TELEGRAM_BOT_TOKEN && env.INSIGHT_TELEGRAM_CHAT_ID),
+    pagerduty: !!env.INSIGHT_PAGERDUTY_KEY,
+    discord: false, // Discord 配置暂未添加
   };
 
   const configuredChannels = Object.entries(notificationConfig)
@@ -57,17 +71,19 @@ export const GET = withErrorHandler(async (_request: NextRequest) => {
   const stats: MonitoringStats = {
     alerts: {
       total: alertStats.totalAlerts,
-      cooldownActive: alertStats.cooldownActive,
-      channels: {
-        email: alertStats.channels.email ?? false,
-        webhook: alertStats.channels.webhook ?? false,
-        slack: alertStats.channels.slack ?? false,
-        telegram: alertStats.channels.telegram ?? false,
-      },
+      acknowledged: alertStats.acknowledgedAlerts,
+      pending: alertStats.pendingAlerts,
+      recent: alertStats.recentAlertsCount,
+      channels: notificationConfig,
     },
     notifications: {
       channels: configuredChannels,
       configured: notificationConfig,
+      channelHealth: channelHealth.map(h => ({
+        channel: h.channel,
+        isHealthy: h.isHealthy,
+        successRate: h.successRate,
+      })),
     },
     system: {
       nodeEnv: process.env.NODE_ENV || 'development',

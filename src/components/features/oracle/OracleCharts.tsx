@@ -19,7 +19,7 @@ import type {
 import { Skeleton } from '@/components/ui/skeleton';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage, langToLocale } from '@/i18n/translations';
-import { cn, fetchApiData } from '@/lib/utils';
+import { cn, fetchApiData, formatPercent as formatPercentUtil } from '@/lib/utils';
 import type { PricePoint } from '@/server/oracle/priceFetcher';
 import { calculateHealthScore } from '@/server/oracle/priceFetcher';
 
@@ -240,7 +240,7 @@ export function OracleCharts({ instanceId }: { instanceId?: string | null }) {
         month: 'short',
         day: 'numeric',
       }),
-      deviationPct: (item.deviation * 100).toFixed(2),
+      deviationPct: formatPercentUtil(item.deviation, 2),
     }));
   }, [locale, accuracyData]);
 
@@ -279,9 +279,8 @@ export function OracleCharts({ instanceId }: { instanceId?: string | null }) {
       .slice(0, MAX_ANOMALIES);
   }, [accuracyData]);
 
-  const formatPercent = useCallback((value: number | null) => {
-    if (value === null || !Number.isFinite(value)) return '—';
-    return `${(value * 100).toFixed(2)}%`;
+  const formatPercentLocal = useCallback((value: number | null) => {
+    return formatPercentUtil(value, 2);
   }, []);
 
   const hasAssertionsData = chartData.length >= 2;
@@ -317,7 +316,7 @@ export function OracleCharts({ instanceId }: { instanceId?: string | null }) {
   return (
     <div
       className={cn(
-        'glass-card relative overflow-hidden rounded-2xl p-6 transition-all duration-500',
+        'glass-card relative overflow-hidden rounded-2xl p-6 transition-all duration-500 will-change-transform',
         tabBorder,
       )}
     >
@@ -349,7 +348,7 @@ export function OracleCharts({ instanceId }: { instanceId?: string | null }) {
         accuracyStats={accuracyStats}
         healthScore={healthScore}
         accuracyAnomalies={accuracyAnomalies}
-        formatPercent={formatPercent}
+        formatPercent={formatPercentLocal}
         t={t as Translator}
         locale={locale}
       />

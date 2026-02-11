@@ -370,10 +370,77 @@ export const CHART_COLORS = {
 } as const;
 
 // ============================================================================
-// 工具函数
+// 链品牌色
 // ============================================================================
 
+export type ChainColor = keyof typeof CHAIN_COLORS;
 
+export const CHAIN_COLORS = {
+  ethereum: '#627eea',
+  bsc: '#f0b90b',
+  polygon: '#8247e5',
+  avalanche: '#e84142',
+  arbitrum: '#28a0f0',
+  optimism: '#ff0420',
+  base: '#0052ff',
+  solana: '#9945ff',
+  fantom: '#1969ff',
+  cronos: '#002d72',
+  default: '#888888',
+} as const;
+
+// ============================================================================
+// 监控状态颜色 - 用于监控平台
+// ============================================================================
+
+export type MonitorStatus = 'operational' | 'degraded' | 'down' | 'maintenance' | 'investigating';
+
+export const MONITOR_STATUS_COLORS = {
+  operational: {
+    bg: 'bg-emerald-50',
+    border: 'border-emerald-200',
+    text: 'text-emerald-700',
+    dot: 'bg-emerald-500',
+    label: 'Operational',
+    description: 'All systems operational',
+  },
+  degraded: {
+    bg: 'bg-amber-50',
+    border: 'border-amber-200',
+    text: 'text-amber-700',
+    dot: 'bg-amber-500',
+    label: 'Degraded',
+    description: 'Some services experiencing issues',
+  },
+  down: {
+    bg: 'bg-rose-50',
+    border: 'border-rose-200',
+    text: 'text-rose-700',
+    dot: 'bg-rose-500',
+    label: 'Down',
+    description: 'Service disruption detected',
+  },
+  maintenance: {
+    bg: 'bg-blue-50',
+    border: 'border-blue-200',
+    text: 'text-blue-700',
+    dot: 'bg-blue-500',
+    label: 'Maintenance',
+    description: 'Scheduled maintenance in progress',
+  },
+  investigating: {
+    bg: 'bg-purple-50',
+    border: 'border-purple-200',
+    text: 'text-purple-700',
+    dot: 'bg-purple-500',
+    label: 'Investigating',
+    description: 'Investigating potential issues',
+  },
+} as const;
+
+// ============================================================================
+// 工具函数
+// ============================================================================
 
 export function getStatusColor(status: string): typeof STATUS_COLORS[StatusColor] {
   const key = status.toLowerCase() as StatusColor;
@@ -383,6 +450,16 @@ export function getStatusColor(status: string): typeof STATUS_COLORS[StatusColor
 export function getProtocolColor(protocol: string): string {
   const key = protocol.toLowerCase() as ProtocolColor;
   return PROTOCOL_COLORS[key] || PROTOCOL_COLORS.default;
+}
+
+export function getChainColor(chain: string): string {
+  const key = chain.toLowerCase() as ChainColor;
+  return CHAIN_COLORS[key] || CHAIN_COLORS.default;
+}
+
+export function getMonitorStatusColor(status: string): typeof MONITOR_STATUS_COLORS[MonitorStatus] {
+  const key = status.toLowerCase() as MonitorStatus;
+  return MONITOR_STATUS_COLORS[key] || MONITOR_STATUS_COLORS.investigating;
 }
 
 

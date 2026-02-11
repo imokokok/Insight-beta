@@ -20,7 +20,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { CrossChainComparisonResult } from '@/hooks/useCrossChain';
 import { useI18n } from '@/i18n';
-import { cn, formatPrice } from '@/lib/utils';
+import { cn, formatPrice, formatChangePercent, formatConfidence } from '@/lib/utils';
 
 interface CrossChainComparisonCardProps {
   data?: CrossChainComparisonResult;
@@ -41,11 +41,7 @@ const chainColors: Record<string, { bg: string; border: string; text: string }> 
   solana: { bg: 'bg-gradient-to-r from-purple-500/10 to-amber-500/10', border: 'border-purple-500/30', text: 'text-purple-400' },
 };
 
-function formatDeviation(value: number): string {
-  const absValue = Math.abs(value);
-  if (absValue < 0.001) return '<0.1%';
-  return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
-}
+
 
 function formatChainName(chain: string): string {
   return chain.charAt(0).toUpperCase() + chain.slice(1);
@@ -169,7 +165,7 @@ export const CrossChainComparisonCard = memo(function CrossChainComparisonCard({
                 status === 'critical' ? 'text-red-600' : 
                 status === 'warning' ? 'text-yellow-600' : 'text-emerald-600'
               )}>
-                {formatDeviation(data.statistics.priceRangePercent)}
+                {formatChangePercent(data.statistics.priceRangePercent / 100, 2, false)}
               </p>
             </div>
             <div className="bg-muted/30 rounded-lg border p-3">
@@ -241,7 +237,7 @@ export const CrossChainComparisonCard = memo(function CrossChainComparisonCard({
                               'font-mono text-sm font-medium',
                               deviationPercent > 0 ? 'text-emerald-600' : 'text-red-600'
                             )}>
-                              {formatDeviation(deviationPercent)}
+                              {formatChangePercent(deviationPercent / 100, 2, false)}
                             </span>
                           </div>
 
@@ -280,12 +276,12 @@ export const CrossChainComparisonCard = memo(function CrossChainComparisonCard({
                             'font-medium',
                             deviationPercent > 0 ? 'text-emerald-600' : 'text-red-600'
                           )}>
-                            {formatDeviation(deviationPercent)}
+                            {formatChangePercent(deviationPercent / 100, 2, false)}
                           </span>
 
                           <span className="text-muted-foreground">{t('crossChain.tooltip.confidence')}:</span>
                           <span className="font-medium">
-                            {priceData.confidence ? `${(priceData.confidence * 100).toFixed(0)}%` : 'N/A'}
+                            {formatConfidence(priceData.confidence, 0)}
                           </span>
 
                           <span className="text-muted-foreground">{t('crossChain.tooltip.updated')}:</span>

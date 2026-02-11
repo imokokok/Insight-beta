@@ -51,7 +51,9 @@ import type {
   ManipulationType,
   DetectionSeverity,
 } from '@/lib/types/security/detection';
-import { fetchApiData, cn, formatTime } from '@/lib/utils';
+import { fetchApiData, cn, formatTime, formatPercentValue, formatConfidence, formatChangePercent } from '@/lib/utils';
+import { TimeRangeSelector, DashboardSection, DashboardGrid } from '@/components/dashboard/ProfessionalDashboard';
+import { MetricCard } from '@/components/charts/ProfessionalChart';
 
 // ============================================================================
 // Types
@@ -188,7 +190,7 @@ function DetectionTypeChart({ metrics }: { metrics: DetectionMetrics | null }) {
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-medium">{config.label}</span>
                   <span className="text-muted-foreground">
-                    {count} ({percentage.toFixed(1)}%)
+                    {count} ({formatPercentValue(percentage, 1)})
                   </span>
                 </div>
                 <div className="h-2 rounded-full bg-gray-100">
@@ -359,7 +361,7 @@ function DetectionList({
                       <Clock className="h-3 w-3" />
                       {formatTime(detection.detectedAt)}
                     </span>
-                    <span>Confidence: {(detection.confidenceScore * 100).toFixed(1)}%</span>
+                    <span>Confidence: {formatConfidence(detection.confidenceScore, 1)}</span>
                     {detection.financialImpactUsd && (
                       <span className="text-red-500">
                         Impact: ${detection.financialImpactUsd.toLocaleString()}
@@ -423,7 +425,7 @@ function DetectionDetail({
             </div>
             <div className="rounded-lg bg-gray-50 p-4">
               <p className="text-muted-foreground text-xs">Confidence Score</p>
-              <p className="text-lg font-bold">{(detection.confidenceScore * 100).toFixed(1)}%</p>
+              <p className="text-lg font-bold">{formatConfidence(detection.confidenceScore, 1)}</p>
             </div>
             <div className="rounded-lg bg-gray-50 p-4">
               <p className="text-muted-foreground text-xs">Detected At</p>
@@ -449,7 +451,7 @@ function DetectionDetail({
                         {evidence.type.replace(/_/g, ' ')}
                       </span>
                       <span className="text-muted-foreground text-sm">
-                        Confidence: {(evidence.confidence * 100).toFixed(1)}%
+                        Confidence: {formatConfidence(evidence.confidence, 1)}
                       </span>
                     </div>
                     <p className="text-muted-foreground mt-1 text-sm">{evidence.description}</p>
@@ -498,8 +500,7 @@ function DetectionDetail({
                   <div className="rounded-lg bg-red-50 p-4">
                     <p className="text-muted-foreground text-xs">Price Impact</p>
                     <p className="text-lg font-bold text-red-600">
-                      {detection.priceImpact > 0 ? '+' : ''}
-                      {detection.priceImpact.toFixed(2)}%
+                      {formatChangePercent(detection.priceImpact / 100, 2, false)}
                     </p>
                   </div>
                 )}
@@ -534,6 +535,7 @@ export default function SecurityDashboardPage() {
   const [activeTab, setActiveTab] = useState('overview');
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [timeRange, setTimeRange] = useState('24h');
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Toast notifications
@@ -704,7 +706,7 @@ export default function SecurityDashboardPage() {
         <AnimatedContainer delay={200}>
           <StatCard
             title="Avg Confidence"
-            value={`${((metrics?.averageConfidence || 0) * 100).toFixed(1)}%`}
+            value={formatConfidence(metrics?.averageConfidence, 1)}
             icon={<Activity className="h-5 w-5 text-blue-600" />}
             loading={loading}
             color="blue"
@@ -744,6 +746,14 @@ export default function SecurityDashboardPage() {
     );
   }
 
+  // 计算检测统计
+  const detectionStats = useMemo(() => {
+    const critical = detections.filter(d => d.severity === 'critical').length;
+    const high = detections.filter(d => d.severity === 'high').length;
+    const confirmed = detections.filter(d => d.status === 'confirmed').length;
+    return { critical, high, confirmed, total: detections.length };
+  }, [detections]);
+
   return (
     <div className="container mx-auto space-y-6 p-4 sm:p-6">
       {/* Toast Notifications */}
@@ -761,15 +771,48 @@ export default function SecurityDashboardPage() {
         exportDisabled={!metrics}
         loading={loading}
         extraActions={
-          <AutoRefreshControl
-            isEnabled={autoRefreshEnabled}
-            onToggle={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
-            interval={refreshInterval}
-            onIntervalChange={setRefreshInterval}
-            timeUntilRefresh={timeUntilRefresh}
-          />
+          <div className="flex items-center gap-3">
+            <TimeRangeSelector value={timeRange} onChange={setTimeRange} />
+            <AutoRefreshControl
+              isEnabled={autoRefreshEnabled}
+              onToggle={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
+              interval={refreshInterval}
+              onIntervalChange={setRefreshInterval}
+              timeUntilRefresh={timeUntilRefresh}
+            />
+          </div>
         }
       />
+
+      {/* 关键指标卡片 */}
+      <DashboardSection title="Detection Overview" description="Security detection statistics">
+        <DashboardGrid columns={4}>
+          <MetricCard
+            title="Critical"
+            value={detectionStats.critical}
+            status={detectionStats.critical > 0 ? 'critical' : 'healthy'}
+            icon={<ShieldAlert className="h-5 w-5" />}
+          />
+          <MetricCard
+            title="High Risk"
+            value={detectionStats.high}
+            status={detectionStats.high > 0 ? 'warning' : 'healthy'}
+            icon={<AlertTriangle className="h-5 w-5" />}
+          />
+          <MetricCard
+            title="Confirmed"
+            value={detectionStats.confirmed}
+            status="healthy"
+            icon={<ShieldCheck className="h-5 w-5" />}
+          />
+          <MetricCard
+            title="Total"
+            value={detectionStats.total}
+            status={detectionStats.total > 10 ? 'warning' : 'healthy'}
+            icon={<Activity className="h-5 w-5" />}
+          />
+        </DashboardGrid>
+      </DashboardSection>
 
       {/* Status Card */}
       {loading && !status ? (

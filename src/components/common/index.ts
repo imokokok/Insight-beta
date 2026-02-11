@@ -83,6 +83,15 @@ export {
   useDataFreshness,
 } from './DataFreshnessIndicator';
 
+// ==================== 熔断/回退数据指示器 ====================
+export {
+  CircuitBreakerFallbackIndicator,
+  DataFreshnessWithCircuitBreaker,
+  type FallbackDataStatus,
+  type CircuitBreakerFallbackIndicatorProps,
+  type DataFreshnessWithCircuitBreakerProps,
+} from './CircuitBreakerFallbackIndicator';
+
 // ==================== 输入组件 ====================
 export { RecipientInput } from './RecipientInput';
 

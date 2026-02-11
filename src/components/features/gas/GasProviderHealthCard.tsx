@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { GasPriceHealthResponse } from '@/hooks/useGasPrice';
-import { cn } from '@/lib/utils';
+import { cn, formatPercentValue } from '@/lib/utils';
 
 interface GasProviderHealthCardProps {
   data?: GasPriceHealthResponse;
@@ -171,7 +171,7 @@ export const GasProviderHealthCard: React.FC<GasProviderHealthCardProps> = ({
                       provider.successRate >= 90 ? 'text-emerald-600' :
                       provider.successRate >= 70 ? 'text-yellow-600' : 'text-red-600'
                     )}>
-                      {provider.successRate.toFixed(1)}%
+                      {formatPercentValue(provider.successRate, 1)}
                     </p>
                   </div>
                   <div>

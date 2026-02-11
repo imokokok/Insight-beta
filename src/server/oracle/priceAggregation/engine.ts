@@ -87,7 +87,22 @@ export class PriceAggregationEngine {
         const stale = await cacheManager.provider.get<CrossOracleComparison>(cacheKey);
         if (stale) {
           logger.info(`Returning stale cache for ${symbol}`);
-          return stale;
+          // 添加熔断回退状态标识
+          const breakerStats = priceBreaker.getStats();
+          const estimatedRecovery = new Date(breakerStats.nextAttemptTime).toISOString();
+          
+          return {
+            ...stale,
+            dataStatus: {
+              freshness: 'stale',
+              source: 'circuit-breaker',
+              generatedAt: stale.timestamp,
+              cachedAt: stale.timestamp,
+              circuitBreakerOpenedAt: new Date(breakerStats.lastFailureTime).toISOString(),
+              estimatedRecoveryTime: estimatedRecovery,
+              errorMessage: 'Circuit breaker is open, using cached data',
+            },
+          };
         }
       }
 

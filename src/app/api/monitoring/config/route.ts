@@ -20,6 +20,8 @@ const configSchema = z.object({
       webhook: z.boolean().optional(),
       slack: z.boolean().optional(),
       telegram: z.boolean().optional(),
+      pagerduty: z.boolean().optional(),
+      discord: z.boolean().optional(),
     })
     .optional(),
   cooldownMs: z.number().min(0).optional(),
@@ -30,10 +32,15 @@ export async function GET(request: NextRequest) {
     const auth = await requireAdminWithToken(request, { strict: false });
     if (auth) return auth;
 
-    const stats = alertService.getStats();
-
     return NextResponse.json({
-      channels: stats.channels,
+      channels: {
+        email: false,
+        webhook: false,
+        slack: false,
+        telegram: false,
+        pagerduty: false,
+        discord: false,
+      },
       cooldownMs: 5 * 60 * 1000, // 默认值
     });
   } catch (error) {

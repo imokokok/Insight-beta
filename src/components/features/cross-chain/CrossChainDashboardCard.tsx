@@ -21,7 +21,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { CrossChainDashboardData } from '@/hooks/useCrossChain';
 import { useI18n } from '@/i18n';
 import { STATUS_COLORS } from '@/lib/types/common';
-import { cn } from '@/lib/utils';
+import { cn, formatPercentValue, formatPercent } from '@/lib/utils';
 
 interface CrossChainDashboardCardProps {
   data?: CrossChainDashboardData;
@@ -177,8 +177,7 @@ export const CrossChainDashboardCard = memo(function CrossChainDashboardCard({
               'mt-1 font-mono text-2xl font-bold',
               data.opportunities.avgProfitPercent > 0 ? 'text-emerald-600' : 'text-muted-foreground'
             )}>
-              {data.opportunities.avgProfitPercent > 0 ? '+' : ''}
-              {data.opportunities.avgProfitPercent.toFixed(2)}%
+              {formatPercentValue(data.opportunities.avgProfitPercent, 2)}
             </p>
           </div>
 
@@ -212,7 +211,7 @@ export const CrossChainDashboardCard = memo(function CrossChainDashboardCard({
         <div className="space-y-1">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>{t('crossChain.dashboard.overallHealth')}</span>
-            <span>{healthPercent.toFixed(0)}%</span>
+            <span>{formatPercent(healthPercent / 100, 0)}</span>
           </div>
           <Progress value={healthPercent} className="h-2" />
           <div className="flex items-center gap-4 text-xs">
@@ -282,7 +281,7 @@ export const CrossChainDashboardCard = memo(function CrossChainDashboardCard({
                 >
                   <span className="font-medium">{comparison.symbol}</span>
                   <span className="text-xs text-muted-foreground">
-                    ±{comparison.priceRangePercent.toFixed(2)}%
+                    ±{formatPercentValue(comparison.priceRangePercent, 2)}
                   </span>
                   {comparison.chainsCount < 2 && (
                     <Badge variant="outline" className="text-xs">

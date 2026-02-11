@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGasPriceHistory } from '@/hooks/useGasPrice';
-import { cn } from '@/lib/utils';
+import { cn, formatChangePercent } from '@/lib/utils';
 
 interface GasPriceHistoryViewerProps {
   chain: string;
@@ -253,7 +253,7 @@ export const GasPriceHistoryViewer: React.FC<GasPriceHistoryViewerProps> = ({
                   stats.changePercent > 0.1 ? 'text-emerald-600' :
                   stats.changePercent < -0.1 ? 'text-red-600' : 'text-gray-600'
                 )}>
-                  {stats.changePercent >= 0 ? '+' : ''}{stats.changePercent.toFixed(2)}%
+                  {formatChangePercent(stats.changePercent / 100, 2, false)}
                 </p>
               </div>
             </div>

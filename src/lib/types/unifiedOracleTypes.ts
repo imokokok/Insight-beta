@@ -422,6 +422,10 @@ export type CrossProtocolComparison = {
   recommendedProtocol?: OracleProtocol;
 };
 
+// 数据状态类型
+export type DataFreshnessStatus = 'fresh' | 'warning' | 'stale' | 'expired';
+export type DataSourceStatus = 'live' | 'circuit-breaker' | 'cache' | 'error';
+
 // 跨预言机价格比较（用于价格聚合引擎）
 export type CrossOracleComparison = {
   id: string;
@@ -450,6 +454,23 @@ export type CrossOracleComparison = {
   recommendedPrice: number;
   recommendationSource: string;
   timestamp: string;
+  // 数据状态字段（用于熔断回退标识）
+  dataStatus?: {
+    /** 数据新鲜度状态 */
+    freshness: DataFreshnessStatus;
+    /** 数据来源状态 */
+    source: DataSourceStatus;
+    /** 数据实际生成时间 */
+    generatedAt: string;
+    /** 如果是缓存数据，缓存时间 */
+    cachedAt?: string;
+    /** 熔断器打开时间 */
+    circuitBreakerOpenedAt?: string;
+    /** 预计恢复时间 */
+    estimatedRecoveryTime?: string;
+    /** 错误信息 */
+    errorMessage?: string;
+  };
 };
 
 export type ProtocolPerformanceRanking = {

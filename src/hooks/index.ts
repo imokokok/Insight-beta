@@ -27,6 +27,8 @@ export { useInfiniteList, useDebounce, type BaseResponse } from './useUI';
 // 其他 Hooks (保持独立)
 export { useDisputes } from './useDisputes';
 export { useWebSocket } from './useWebSocket';
+export { useEventSource, type EventSourceOptions, type EventSourceState } from './useEventSource';
+export { usePriceFeed, type UsePriceFeedOptions, type UsePriceFeedReturn } from './usePriceFeed';
 
 // Dashboard hooks
 export {

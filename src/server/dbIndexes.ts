@@ -335,6 +335,268 @@ const RECOMMENDED_INDEXES: IndexDefinition[] = [
     columns: ['event_type', 'created_at DESC'],
     comment: 'Event type with time filtering',
   },
+
+  // Unified Price Feeds - 统一喂价表索引
+  {
+    name: 'idx_unified_price_feeds_instance',
+    table: 'unified_price_feeds',
+    columns: ['instance_id'],
+    comment: 'Filter price feeds by instance',
+  },
+  {
+    name: 'idx_unified_price_feeds_protocol',
+    table: 'unified_price_feeds',
+    columns: ['protocol'],
+    comment: 'Filter price feeds by protocol',
+  },
+  {
+    name: 'idx_unified_price_feeds_chain',
+    table: 'unified_price_feeds',
+    columns: ['chain'],
+    comment: 'Filter price feeds by chain',
+  },
+  {
+    name: 'idx_unified_price_feeds_symbol',
+    table: 'unified_price_feeds',
+    columns: ['symbol'],
+    comment: 'Filter price feeds by symbol',
+  },
+  {
+    name: 'idx_unified_price_feeds_timestamp',
+    table: 'unified_price_feeds',
+    columns: ['timestamp DESC'],
+    comment: 'Time-based price feed queries',
+  },
+  {
+    name: 'idx_unified_price_feeds_instance_symbol',
+    table: 'unified_price_feeds',
+    columns: ['instance_id', 'symbol'],
+    comment: 'Composite index for instance and symbol queries',
+  },
+  {
+    name: 'idx_unified_price_feeds_symbol_timestamp',
+    table: 'unified_price_feeds',
+    columns: ['symbol', 'timestamp DESC'],
+    comment: 'Composite index for symbol time-series queries',
+  },
+  {
+    name: 'idx_unified_price_feeds_protocol_chain_symbol',
+    table: 'unified_price_feeds',
+    columns: ['protocol', 'chain', 'symbol'],
+    comment: 'Composite index for protocol, chain, and symbol combination queries',
+  },
+  {
+    name: 'idx_unified_price_feeds_is_stale',
+    table: 'unified_price_feeds',
+    columns: ['is_stale'],
+    comment: 'Filter stale price feeds',
+  },
+
+  // Cross Oracle Comparisons - 跨预言机比较表索引
+  {
+    name: 'idx_cross_oracle_comparisons_symbol',
+    table: 'cross_oracle_comparisons',
+    columns: ['symbol'],
+    comment: 'Filter comparisons by symbol',
+  },
+  {
+    name: 'idx_cross_oracle_comparisons_timestamp',
+    table: 'cross_oracle_comparisons',
+    columns: ['timestamp DESC'],
+    comment: 'Time-based comparison queries',
+  },
+  {
+    name: 'idx_cross_oracle_comparisons_symbol_timestamp',
+    table: 'cross_oracle_comparisons',
+    columns: ['symbol', 'timestamp DESC'],
+    comment: 'Composite index for symbol time-series comparison queries',
+  },
+  {
+    name: 'idx_cross_oracle_comparisons_base_quote',
+    table: 'cross_oracle_comparisons',
+    columns: ['base_asset', 'quote_asset'],
+    comment: 'Filter comparisons by asset pair',
+  },
+
+  // Unified Price Updates - 统一价格更新历史表索引
+  {
+    name: 'idx_unified_price_updates_feed',
+    table: 'unified_price_updates',
+    columns: ['feed_id'],
+    comment: 'Filter price updates by feed',
+  },
+  {
+    name: 'idx_unified_price_updates_instance',
+    table: 'unified_price_updates',
+    columns: ['instance_id'],
+    comment: 'Filter price updates by instance',
+  },
+  {
+    name: 'idx_unified_price_updates_timestamp',
+    table: 'unified_price_updates',
+    columns: ['timestamp DESC'],
+    comment: 'Time-based price update queries',
+  },
+  {
+    name: 'idx_unified_price_updates_feed_timestamp',
+    table: 'unified_price_updates',
+    columns: ['feed_id', 'timestamp DESC'],
+    comment: 'Composite index for feed time-series queries',
+  },
+
+  // Unified Assertions - 统一断言表索引
+  {
+    name: 'idx_unified_assertions_instance',
+    table: 'unified_assertions',
+    columns: ['instance_id'],
+    comment: 'Filter assertions by instance',
+  },
+  {
+    name: 'idx_unified_assertions_protocol',
+    table: 'unified_assertions',
+    columns: ['protocol'],
+    comment: 'Filter assertions by protocol',
+  },
+  {
+    name: 'idx_unified_assertions_chain',
+    table: 'unified_assertions',
+    columns: ['chain'],
+    comment: 'Filter assertions by chain',
+  },
+  {
+    name: 'idx_unified_assertions_status',
+    table: 'unified_assertions',
+    columns: ['status'],
+    comment: 'Filter assertions by status',
+  },
+  {
+    name: 'idx_unified_assertions_proposer',
+    table: 'unified_assertions',
+    columns: ['proposer'],
+    comment: 'Filter assertions by proposer',
+  },
+  {
+    name: 'idx_unified_assertions_proposed_at',
+    table: 'unified_assertions',
+    columns: ['proposed_at DESC'],
+    comment: 'Time-based assertion queries',
+  },
+  {
+    name: 'idx_unified_assertions_status_proposed',
+    table: 'unified_assertions',
+    columns: ['status', 'proposed_at DESC'],
+    comment: 'Composite index for status and time queries',
+  },
+
+  // Unified Disputes - 统一争议表索引
+  {
+    name: 'idx_unified_disputes_instance',
+    table: 'unified_disputes',
+    columns: ['instance_id'],
+    comment: 'Filter disputes by instance',
+  },
+  {
+    name: 'idx_unified_disputes_assertion',
+    table: 'unified_disputes',
+    columns: ['assertion_id'],
+    comment: 'Filter disputes by assertion',
+  },
+  {
+    name: 'idx_unified_disputes_status',
+    table: 'unified_disputes',
+    columns: ['status'],
+    comment: 'Filter disputes by status',
+  },
+  {
+    name: 'idx_unified_disputes_disputer',
+    table: 'unified_disputes',
+    columns: ['disputer'],
+    comment: 'Filter disputes by disputer',
+  },
+  {
+    name: 'idx_unified_disputes_disputed_at',
+    table: 'unified_disputes',
+    columns: ['disputed_at DESC'],
+    comment: 'Time-based dispute queries',
+  },
+
+  // Unified Oracle Instances - 统一预言机实例表索引
+  {
+    name: 'idx_unified_oracle_instances_protocol',
+    table: 'unified_oracle_instances',
+    columns: ['protocol'],
+    comment: 'Filter instances by protocol',
+  },
+  {
+    name: 'idx_unified_oracle_instances_chain',
+    table: 'unified_oracle_instances',
+    columns: ['chain'],
+    comment: 'Filter instances by chain',
+  },
+  {
+    name: 'idx_unified_oracle_instances_enabled',
+    table: 'unified_oracle_instances',
+    columns: ['enabled'],
+    comment: 'Filter enabled instances',
+  },
+  {
+    name: 'idx_unified_oracle_instances_protocol_chain',
+    table: 'unified_oracle_instances',
+    columns: ['protocol', 'chain'],
+    comment: 'Composite index for protocol and chain queries',
+  },
+  {
+    name: 'idx_unified_oracle_instances_created_at',
+    table: 'unified_oracle_instances',
+    columns: ['created_at DESC'],
+    comment: 'Time-based instance queries',
+  },
+
+  // Unified Statistics - 统一统计表索引
+  {
+    name: 'idx_unified_statistics_instance',
+    table: 'unified_statistics',
+    columns: ['instance_id'],
+    comment: 'Filter statistics by instance',
+  },
+  {
+    name: 'idx_unified_statistics_protocol',
+    table: 'unified_statistics',
+    columns: ['protocol'],
+    comment: 'Filter statistics by protocol',
+  },
+  {
+    name: 'idx_unified_statistics_hour',
+    table: 'unified_statistics',
+    columns: ['hour DESC'],
+    comment: 'Time-based statistics queries',
+  },
+  {
+    name: 'idx_unified_statistics_instance_hour',
+    table: 'unified_statistics',
+    columns: ['instance_id', 'hour DESC'],
+    comment: 'Composite index for instance time-series queries',
+  },
+
+  // Unified Sync State - 统一同步状态表索引
+  {
+    name: 'idx_unified_sync_state_protocol',
+    table: 'unified_sync_state',
+    columns: ['protocol'],
+    comment: 'Filter sync state by protocol',
+  },
+  {
+    name: 'idx_unified_sync_state_status',
+    table: 'unified_sync_state',
+    columns: ['status'],
+    comment: 'Filter sync state by status',
+  },
+  {
+    name: 'idx_unified_sync_state_updated_at',
+    table: 'unified_sync_state',
+    columns: ['updated_at DESC'],
+    comment: 'Time-based sync state queries',
+  },
 ];
 
 export async function getExistingIndexes(tableName?: string): Promise<Set<string>> {

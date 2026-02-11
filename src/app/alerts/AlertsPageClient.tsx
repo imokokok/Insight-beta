@@ -1,19 +1,23 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useDeferredValue } from 'react';
 
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-import { Filter, RefreshCw, ShieldAlert } from 'lucide-react';
+import { Filter, RefreshCw, ShieldAlert, Clock, AlertTriangle, Info } from 'lucide-react';
 
 import { EmptyAlertsState } from '@/components/common/EmptyState';
 import { PageHeader } from '@/components/common/PageHeader';
 import { AlertRulesManager } from '@/components/features/alert/AlertRulesManager';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { ErrorBanner } from '@/components/ui/error-banner';
+
 import { RefreshIndicator } from '@/components/ui/refresh-indicator';
 import { getRefreshStrategy } from '@/config/refresh-strategy';
+import { TimeRangeSelector, DashboardSection, DashboardGrid } from '@/components/dashboard/ProfessionalDashboard';
+import { ErrorBanner } from '@/components/ui/error-banner';
+import { MetricCard } from '@/components/charts/ProfessionalChart';
+
 import {
   useIsMobile,
   useOracleIncidents,
@@ -83,8 +87,11 @@ export default function AlertsPageClient() {
   const [filterSeverity, setFilterSeverity] = useState<AlertSeverity | 'All'>('All');
   const [filterType, setFilterType] = useState<string | 'All'>('All');
   const [query, setQuery] = useState('');
+  const [timeRange, setTimeRange] = useState('24h');
+  // 使用 useDeferredValue 优化输入响应性，保持 UI 流畅
+  const deferredQuery = useDeferredValue(query);
   // 使用防抖处理搜索输入，减少不必要的 API 请求
-  const debouncedQuery = useDebounce(query, DEBOUNCE_CONFIG.SEARCH_DELAY);
+  const debouncedQuery = useDebounce(deferredQuery, DEBOUNCE_CONFIG.SEARCH_DELAY);
   const [nextCursor, setNextCursor] = useState<number | null>(null);
   const [instanceId, setInstanceId] = useState<string>(getInitialInstanceId);
   const [instances, setInstances] = useState<OracleInstance[] | null>(null);
@@ -619,6 +626,15 @@ export default function AlertsPageClient() {
     }
   }, [loading]);
 
+  // 计算告警统计
+  const alertStats = useMemo(() => {
+    const critical = items.filter(a => a.severity === 'critical').length;
+    const warning = items.filter(a => a.severity === 'warning').length;
+    const info = items.filter(a => a.severity === 'info').length;
+    const open = items.filter(a => a.status === 'Open').length;
+    return { critical, warning, info, open, total: items.length };
+  }, [items]);
+
   return (
     <div className="space-y-4 pb-16 sm:space-y-6">
       <PageHeader
@@ -626,6 +642,8 @@ export default function AlertsPageClient() {
         description={isMobile ? undefined : t('alerts.description')}
       >
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* 时间范围选择器 */}
+          <TimeRangeSelector value={timeRange} onChange={setTimeRange} />
           {/* 刷新状态指示器 */}
           <RefreshIndicator
             lastUpdated={lastUpdated}
@@ -645,12 +663,42 @@ export default function AlertsPageClient() {
         </div>
       </PageHeader>
 
+      {/* 关键指标卡片 */}
+      <DashboardSection title="Alert Overview" description="Real-time alert statistics">
+        <DashboardGrid columns={4}>
+          <MetricCard
+            title="Critical"
+            value={alertStats.critical}
+            status={alertStats.critical > 0 ? 'critical' : 'healthy'}
+            icon={<AlertTriangle className="h-5 w-5" />}
+          />
+          <MetricCard
+            title="Warning"
+            value={alertStats.warning}
+            status={alertStats.warning > 0 ? 'warning' : 'healthy'}
+            icon={<ShieldAlert className="h-5 w-5" />}
+          />
+          <MetricCard
+            title="Info"
+            value={alertStats.info}
+            status="healthy"
+            icon={<Info className="h-5 w-5" />}
+          />
+          <MetricCard
+            title="Open"
+            value={alertStats.open}
+            status={alertStats.open > 5 ? 'warning' : 'healthy'}
+            icon={<Clock className="h-5 w-5" />}
+          />
+        </DashboardGrid>
+      </DashboardSection>
+
       {/* 错误提示 - 使用统一的 ErrorBanner */}
       {error && (
         <ErrorBanner
           error={new Error(getUiErrorMessage(error, t))}
           onRetry={refresh}
-          title={t('alerts.title')}
+          title="Failed to load alerts"
           isRetrying={loading}
         />
       )}

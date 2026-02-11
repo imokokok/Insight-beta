@@ -21,7 +21,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useI18n } from '@/i18n';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, formatDeviation as formatDeviationUtil, formatPercent } from '@/lib/utils';
 
 interface CrossChainPriceChartProps {
   data?: {
@@ -67,7 +67,7 @@ function formatChartDate(timestamp: string): string {
 }
 
 function formatDeviation(value: number): string {
-  return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
+  return formatDeviationUtil(value / 100, 2);
 }
 
 function formatChartPrice(value: number): string {
@@ -273,7 +273,7 @@ export const CrossChainDeviationChart: React.FC<CrossChainDeviationChartProps> =
 
   const deviationTooltipFormatter = (value: string | number | undefined) => {
     const safeValue = typeof value === 'string' ? parseFloat(value) || 0 : value || 0;
-    return [`${(safeValue * 100).toFixed(2)}%`, t('crossChain.chart.maxDeviation')] as [string, string];
+    return [formatPercent(safeValue, 2), t('crossChain.chart.maxDeviation')] as [string, string];
   };
 
   return (
@@ -307,7 +307,7 @@ export const CrossChainDeviationChart: React.FC<CrossChainDeviationChartProps> =
               axisLine={false}
               tickLine={false}
               dx={-10}
-              tickFormatter={(value) => `${(value * 100).toFixed(1)}%`}
+              tickFormatter={(value) => formatPercent(value, 1)}
             />
             <Tooltip
               contentStyle={{
@@ -504,7 +504,7 @@ export const CrossChainHealthChart: React.FC<CrossChainHealthChartProps> = ({
       <CardHeader className="pb-2">
         <CardTitle>{t('crossChain.chart.chainHealth.title')}</CardTitle>
         <CardDescription>
-          {t('crossChain.chart.chainHealth.description', { healthyPercent: `${(healthyPercent * 100).toFixed(0)}%` })}
+          {t('crossChain.chart.chainHealth.description', { healthyPercent: formatPercent(healthyPercent, 0) })}
         </CardDescription>
       </CardHeader>
       <CardContent>

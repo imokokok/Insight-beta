@@ -20,7 +20,7 @@ import {
   useThrottle, 
   useNetworkStatus 
 } from '@/hooks/usePerformance';
-import { fetchApiData , cn } from '@/lib/utils';
+import { fetchApiData, cn, formatChangePercent } from '@/lib/utils';
 
 interface PriceFeed {
   id: string;
@@ -73,7 +73,7 @@ function PriceFeedCard({ feed, index }: { feed: PriceFeed; index: number }) {
             </div>
           </div>
           <Badge variant={isPositive ? 'success' : 'destructive'}>
-            {isPositive ? '+' : ''}{feed.change24h.toFixed(2)}%
+            {formatChangePercent(feed.change24h / 100, 2, false)}
           </Badge>
         </div>
         

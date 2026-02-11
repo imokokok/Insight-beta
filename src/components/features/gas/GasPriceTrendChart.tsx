@@ -18,7 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import type { GasPriceTrend } from '@/hooks/useGasPrice';
 import { useI18n } from '@/i18n';
-import { cn } from '@/lib/utils';
+import { cn, formatChangePercent, formatPercentValue } from '@/lib/utils';
 
 interface GasPriceTrendChartProps {
   data?: GasPriceTrend;
@@ -47,9 +47,7 @@ const CHAIN_COLORS: Record<string, string> = {
   aptos: '#627eea',
 };
 
-function formatChangePercent(value: number): string {
-  return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
-}
+
 
 
 
@@ -130,13 +128,13 @@ export const GasPriceTrendChart: React.FC<GasPriceTrendChartProps> = ({
             <div className="text-right">
               <p className="text-xs text-muted-foreground">{t('crossChain.chart.deviation')}</p>
               <p className={cn('text-sm font-semibold', directionColor)}>
-                {formatChangePercent(data.changePercent)}
+                {formatChangePercent(data.changePercent / 100, 2, false)}
               </p>
             </div>
             <div className="text-right">
               <p className="text-xs text-muted-foreground">Volatility</p>
               <p className="text-sm font-semibold text-blue-600">
-                {data.volatility.toFixed(2)}%
+                {formatPercentValue(data.volatility, 2)}
               </p>
             </div>
           </div>

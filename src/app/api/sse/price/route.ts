@@ -1,7 +1,7 @@
 /**
- * WebSocket Price API Route
+ * SSE Price API Route
  *
- * P0 优化：WebSocket 实时价格推送服务
+ * Server-Sent Events 实时价格推送服务
  * - 集成 RealtimePriceService
  * - 支持多客户端订阅
  * - 自动心跳保活
@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
         // 订阅实时服务
         realtimePriceService.subscribe(clientId, symbols);
 
-        logger.info('WebSocket client connected', { clientId, symbols });
+        logger.info('SSE client connected', { clientId, symbols });
 
         // 心跳定时器
         const heartbeat = setInterval(() => {
@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
           clearInterval(heartbeat);
           realtimePriceService.off('priceUpdate', handlePriceUpdate);
           realtimePriceService.unsubscribe(clientId);
-          logger.info('WebSocket client disconnected', { clientId });
+          logger.info('SSE client disconnected', { clientId });
         };
         request.signal.addEventListener('abort', abortHandler);
 
