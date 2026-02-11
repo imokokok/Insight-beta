@@ -4,10 +4,11 @@
  * 集中管理 SWR 的默认配置，避免重复
  */
 
-import useSWR from 'swr';
-import useSWRInfinite from 'swr/infinite';
-
 import { CACHE_CONFIG } from '@/lib/config/constants';
+
+import type useSWR from 'swr';
+import type useSWRInfinite from 'swr/infinite';
+
 
 // ============================================================================
 // SWR 默认配置

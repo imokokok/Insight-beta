@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 
+import { Calendar, Download, Filter, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import {
   Area,
   AreaChart,
@@ -14,14 +15,12 @@ import {
   Brush,
 } from 'recharts';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useI18n } from '@/i18n';
 import { useGasPriceHistory } from '@/hooks/useGasPrice';
 import { cn } from '@/lib/utils';
-import { Calendar, Download, Filter, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 interface GasPriceHistoryViewerProps {
   chain: string;
@@ -59,7 +58,7 @@ export const GasPriceHistoryViewer: React.FC<GasPriceHistoryViewerProps> = ({
   provider,
   limit = 100,
 }) => {
-  const { t } = useI18n();
+
   const [selectedPriceLevel, setSelectedPriceLevel] = useState<'slow' | 'average' | 'fast' | 'fastest'>('average');
   const [showChart, setShowChart] = useState(true);
 
@@ -70,11 +69,11 @@ export const GasPriceHistoryViewer: React.FC<GasPriceHistoryViewerProps> = ({
   );
 
   const chartData = React.useMemo(() => {
-    if (!history) return [];
+    if (!history || !history.data) return [];
 
     const groupedByTime = new Map<string, Record<string, number>>();
 
-    history.forEach((entry) => {
+    history.data.forEach((entry) => {
       const timeKey = new Date(entry.timestamp).toISOString().slice(0, 16);
       if (!groupedByTime.has(timeKey)) {
         groupedByTime.set(timeKey, {});
@@ -98,8 +97,8 @@ export const GasPriceHistoryViewer: React.FC<GasPriceHistoryViewerProps> = ({
   }, [history]);
 
   const filteredHistory = React.useMemo(() => {
-    if (!history) return [];
-    return history.filter(h => h.priceLevel === selectedPriceLevel);
+    if (!history || !history.data) return [];
+    return history.data.filter(h => h.priceLevel === selectedPriceLevel);
   }, [history, selectedPriceLevel]);
 
   const stats = React.useMemo(() => {
@@ -118,11 +117,11 @@ export const GasPriceHistoryViewer: React.FC<GasPriceHistoryViewerProps> = ({
   }, [filteredHistory]);
 
   const handleExport = () => {
-    if (!history) return;
+    if (!history || !history.data) return;
 
     const csv = [
       'Time,Chain,Provider,Price Level,Price (USD)',
-      ...history.map(h => 
+      ...history.data.map(h => 
         `${h.timestamp},${h.chain},${h.provider},${h.priceLevel},${(h.price / 1e9).toFixed(4)}`
       ),
     ].join('\n');
@@ -152,7 +151,7 @@ export const GasPriceHistoryViewer: React.FC<GasPriceHistoryViewerProps> = ({
     );
   }
 
-  if (!history || history.length === 0) {
+  if (!history || !history.data || history.data.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -176,7 +175,7 @@ export const GasPriceHistoryViewer: React.FC<GasPriceHistoryViewerProps> = ({
               Gas Price History - {chain.toUpperCase()}
             </CardTitle>
             <CardDescription className="text-sm">
-              {history.length} records from {provider || 'all providers'}
+              {history.data.length} records from {provider || 'all providers'}
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
@@ -283,9 +282,9 @@ export const GasPriceHistoryViewer: React.FC<GasPriceHistoryViewerProps> = ({
                     borderRadius: '8px',
                   }}
                   labelFormatter={(value) => `Time: ${value}`}
-                  formatter={(value: number, name: string) => [
-                    formatPrice(value),
-                    name.charAt(0).toUpperCase() + name.slice(1),
+                  formatter={(value: number | undefined, name: string | undefined) => [
+                    formatPrice(value || 0),
+                    (name || '').charAt(0).toUpperCase() + (name || '').slice(1),
                   ]}
                 />
                 <Legend />

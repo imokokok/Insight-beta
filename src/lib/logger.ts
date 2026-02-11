@@ -1,8 +1,10 @@
 import { env } from './config/env';
 
+import type * as SentryModule from '@sentry/nextjs';
+
 const isProd = env.NODE_ENV === 'production';
 
-let sentry: typeof import('@sentry/nextjs') | null = null;
+let sentry: typeof SentryModule | null = null;
 
 async function loadSentry() {
   if (sentry !== null) return sentry;
@@ -129,7 +131,7 @@ const SENSITIVE_PATTERNS = [
   // Solana 私钥 (Base58, 88-96 字符)
   { pattern: /\b[1-9A-HJ-NP-Za-km-z]{88,96}\b/g, name: 'solana_private_key' },
   // BIP39 助记词 (12/24个单词)
-  { pattern: /\b(?:[a-z]+\s+){11,23}[a-z]+\b/gi, name: 'mnemonic' },
+  { pattern: /\b(?:[a-z]+[ \t]+){11,23}[a-z]+\b/gi, name: 'mnemonic' },
   // RPC URL 中的认证信息
   { pattern: /(https?:\/\/)[^@\s]+@/gi, name: 'url_auth', replace: '$1<REDACTED>@' },
   // API Keys - Stripe 格式
@@ -410,7 +412,7 @@ function sanitizeLogMessage(message: string): string {
   return (
     message
       // 移除控制字符
-      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+      .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
       // 转义换行符
       .replace(/\n/g, '\\n')
       .replace(/\r/g, '\\r')

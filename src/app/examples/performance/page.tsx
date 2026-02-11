@@ -1,7 +1,7 @@
 'use client';
 
-import { PerformanceHooksExample } from '@/components/examples/PerformanceHooksExample';
 import { PageHeader } from '@/components/common/PageHeader';
+import { PerformanceHooksExample } from '@/components/examples/PerformanceHooksExample';
 
 export default function PerformanceExamplesPage() {
   return (

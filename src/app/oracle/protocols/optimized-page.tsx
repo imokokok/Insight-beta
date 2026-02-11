@@ -1,28 +1,27 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { TrendingUp, Globe, Activity, RefreshCw } from 'lucide-react';
+
 import { motion } from 'framer-motion';
+import { TrendingUp, Globe, Activity, RefreshCw } from 'lucide-react';
 
 // 使用优化的组件
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
-import { VirtualList } from '@/components/common/VirtualList';
 import { LazyImage } from '@/components/common/LazyImage';
+import { VirtualList } from '@/components/common/VirtualList';
 
 // 使用性能 Hooks
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { 
   useDebounce, 
   useThrottle, 
-  useIntersectionObserver,
   useNetworkStatus 
 } from '@/hooks/usePerformance';
-
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
-import { fetchApiData } from '@/lib/utils';
-import { cn } from '@/lib/utils';
+import { fetchApiData , cn } from '@/lib/utils';
 
 interface PriceFeed {
   id: string;
@@ -354,7 +353,7 @@ function generateMockFeeds(): PriceFeed[] {
   return symbols.map((symbol, index) => ({
     id: symbol.toLowerCase(),
     symbol,
-    name: names[index],
+    name: names[index] || symbol,
     price: Math.random() * 50000 + 100,
     change24h: (Math.random() - 0.5) * 20,
     volume24h: Math.random() * 1e9,

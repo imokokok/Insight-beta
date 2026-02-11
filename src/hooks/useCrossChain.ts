@@ -1,9 +1,8 @@
 'use client';
 
 import useSWR from 'swr';
-import type { SWRConfiguration } from 'swr';
 
-import { createSWRConfig, createSWRInfiniteConfig, REALTIME_CONFIG } from '@/hooks/common/useSWRConfig';
+import { createSWRConfig, type UseSWRConfigOptions } from '@/hooks/common/useSWRConfig';
 
 const fetcher = async (url: string) => {
   const res = await fetch(url);
@@ -81,6 +80,9 @@ export interface CrossChainArbitrageOpportunity {
   priceDiffPercent: number;
   potentialProfitPercent: number;
   gasCostEstimate: number;
+  fromGasCost: number;
+  toGasCost: number;
+  bridgeCost: number;
   netProfitEstimate: number;
   riskLevel: 'low' | 'medium' | 'high';
   isActionable: boolean;
@@ -209,7 +211,7 @@ export interface CrossChainHistoricalResponse {
 export function useCrossChainComparison(
   symbol: string | null,
   chains?: string[],
-  options?: SWRConfiguration<{ success: boolean; data: CrossChainComparisonResult }>
+  options?: UseSWRConfigOptions
 ) {
   const queryParams = new URLSearchParams();
   if (symbol) queryParams.set('symbol', symbol.toUpperCase());
@@ -229,7 +231,7 @@ export function useCrossChainComparison(
 export function useCrossChainArbitrage(
   symbol: string | null,
   threshold?: number,
-  options?: SWRConfiguration<CrossChainArbitrageResponse>
+  options?: UseSWRConfigOptions
 ) {
   const queryParams = new URLSearchParams();
   if (symbol) queryParams.set('symbol', symbol.toUpperCase());
@@ -249,7 +251,7 @@ export function useCrossChainArbitrage(
 export function useCrossChainAlerts(
   symbol: string | null,
   severity?: string,
-  options?: SWRConfiguration<CrossChainDeviationAlertsResponse>
+  options?: UseSWRConfigOptions
 ) {
   const queryParams = new URLSearchParams();
   if (symbol) queryParams.set('symbol', symbol.toUpperCase());
@@ -265,7 +267,7 @@ export function useCrossChainAlerts(
 }
 
 export function useCrossChainDashboard(
-  options?: SWRConfiguration<CrossChainDashboardResponse>
+  options?: UseSWRConfigOptions
 ) {
   return useSWR<CrossChainDashboardResponse>(
     '/api/cross-chain/dashboard',
@@ -281,7 +283,7 @@ export function useCrossChainHistory(
   interval: '1hour' | '1day' = '1day',
   page: number = 1,
   pageSize: number = 100,
-  options?: SWRConfiguration<CrossChainHistoricalResponse>
+  options?: UseSWRConfigOptions
 ) {
   const queryParams = new URLSearchParams();
   if (symbol) queryParams.set('symbol', symbol.toUpperCase());

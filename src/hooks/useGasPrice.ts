@@ -1,6 +1,7 @@
 'use client';
 
 import useSWR from 'swr';
+
 import type { SWRConfiguration } from 'swr';
 
 const fetcher = async (url: string) => {

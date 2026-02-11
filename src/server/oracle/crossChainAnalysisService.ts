@@ -4,13 +4,10 @@
  * 提供跨链价格对比、套利机会检测、价格偏差分析等功能
  */
 
-import { logger } from '@/lib/logger';
-import { supabaseAdmin } from '@/lib/supabase/server';
-
-import type { SupabaseClient } from '@supabase/supabase-js';
 import { v4 as uuidv4 } from 'uuid';
 
-import { gasPriceService } from '../gas/gasPriceService';
+import { logger } from '@/lib/logger';
+import { supabaseAdmin } from '@/lib/supabase/server';
 import type {
   CrossChainAnalysisConfig,
   CrossChainArbitrageOpportunity,
@@ -21,6 +18,10 @@ import type {
   CrossChainPriceData,
 } from '@/lib/types/crossChainAnalysisTypes';
 import type { OracleProtocol, SupportedChain } from '@/lib/types/unifiedOracleTypes';
+
+import { gasPriceService } from '../gas/gasPriceService';
+
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 const DEFAULT_TRADE_AMOUNT = 10000;
 
@@ -528,11 +529,11 @@ export class CrossChainAnalysisService {
             symbol,
             chainsCount: comparison.pricesByChain.length,
             priceRangePercent: comparison.statistics.priceRangePercent,
-            status: comparison.statistics.priceRangePercent > this.config.criticalDeviationThreshold
+            status: (comparison.statistics.priceRangePercent > this.config.criticalDeviationThreshold
               ? 'critical'
               : comparison.statistics.priceRangePercent > this.config.deviationThreshold
               ? 'warning'
-              : 'normal',
+              : 'normal') as 'critical' | 'warning' | 'normal',
           };
 
           // 并行获取 alerts 和 opportunities

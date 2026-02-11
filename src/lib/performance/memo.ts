@@ -3,7 +3,7 @@
  * 用于优化组件渲染和计算
  */
 
-import { useMemo, useRef, useCallback, memo as reactMemo } from 'react';
+import { useRef, useCallback, memo as reactMemo } from 'react';
 import type { DependencyList } from 'react';
 
 /**
@@ -132,7 +132,9 @@ export class MemoizedCache<K, V> {
   set(key: K, value: V): void {
     if (this.cache.size >= this.maxSize) {
       const firstKey = this.cache.keys().next().value;
-      this.cache.delete(firstKey);
+      if (firstKey !== undefined) {
+        this.cache.delete(firstKey);
+      }
     }
     this.cache.set(key, value);
   }
@@ -224,7 +226,9 @@ export class LRUCache<K, V> {
       this.cache.delete(key);
     } else if (this.cache.size >= this.maxSize) {
       const firstKey = this.cache.keys().next().value;
-      this.cache.delete(firstKey);
+      if (firstKey !== undefined) {
+        this.cache.delete(firstKey);
+      }
     }
     this.cache.set(key, value);
   }

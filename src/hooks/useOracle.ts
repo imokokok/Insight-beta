@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 
 import useSWR from 'swr';
 
+import { createSWRConfig, createSWRInfiniteConfig } from '@/hooks/common/useSWRConfig';
 import type { BaseResponse } from '@/hooks/useUI';
 import { useInfiniteList } from '@/hooks/useUI';
-import { createSWRConfig, createSWRInfiniteConfig } from '@/hooks/common/useSWRConfig';
 import { logger } from '@/lib/logger';
 import type { Assertion, OracleConfig, OracleStats, OracleStatus } from '@/lib/types/oracleTypes';
 import { fetchApiData } from '@/lib/utils';
@@ -67,7 +67,7 @@ export function useOracleData(
     loadMore,
     hasMore,
     refresh,
-  } = useInfiniteList<Assertion>(getUrl, createSWRInfiniteConfig());
+  } = useInfiniteList<Assertion>(getUrl, createSWRInfiniteConfig() as Parameters<typeof useInfiniteList>[1]);
 
   return {
     items,

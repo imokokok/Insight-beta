@@ -13,11 +13,6 @@ export interface WebVitalsMetric {
   navigationType?: string;
 }
 
-// 性能观察器配置
-interface PerformanceObserverConfig {
-  type: string;
-  buffered?: boolean;
-}
 
 // 指标阈值配置
 const THRESHOLDS: Record<string, { good: number; poor: number }> = {
@@ -59,7 +54,7 @@ export function reportWebVitals(metric: WebVitalsMetric): void {
 
   // 发送到分析服务
   if (typeof window !== 'undefined' && 'gtag' in window) {
-    // @ts-ignore
+    // @ts-expect-error - gtag is defined by Google Analytics
     window.gtag('event', metric.name, {
       event_category: 'Web Vitals',
       value: Math.round(metric.name === 'CLS' ? metric.value * 1000 : metric.value),
@@ -146,9 +141,10 @@ export function observeCLS(callback: (metric: WebVitalsMetric) => void): void {
       
       entries.forEach((entry) => {
         // 只计算没有最近用户输入的 CLS
-        if (!(entry as any).hadRecentInput) {
+        const layoutShiftEntry = entry as PerformanceEntry & { hadRecentInput?: boolean; value?: number };
+        if (!layoutShiftEntry.hadRecentInput) {
           clsEntries.push(entry);
-          clsValue += (entry as any).value;
+          clsValue += layoutShiftEntry.value ?? 0;
         }
       });
 

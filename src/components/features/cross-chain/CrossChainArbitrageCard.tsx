@@ -15,14 +15,15 @@ import {
   EyeOff,
   Fuel,
 } from 'lucide-react';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useI18n } from '@/i18n';
 import type { CrossChainArbitrageOpportunity, CrossChainArbitrageSummary } from '@/hooks/useCrossChain';
-import { cn, formatPrice } from '@/lib/utils';
+import { useI18n } from '@/i18n';
 import { RISK_COLORS } from '@/lib/types/common';
+import { cn, formatPrice } from '@/lib/utils';
 
 interface CrossChainArbitrageCardProps {
   opportunities?: CrossChainArbitrageOpportunity[];

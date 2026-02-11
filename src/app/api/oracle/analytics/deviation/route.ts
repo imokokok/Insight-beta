@@ -8,6 +8,7 @@
 
 import type { NextRequest } from 'next/server';
 
+import { createSuccessResponse, createErrorResponse, handleApiError } from '@/lib/api/response';
 import { logger } from '@/lib/logger';
 import { query } from '@/server/db';
 import {
@@ -16,58 +17,6 @@ import {
   type PriceDeviationPoint,
 } from '@/server/oracle/priceDeviationAnalytics';
 
-// ============================================================================
-// 响应类型
-// ============================================================================
-
-interface ApiResponse<T> {
-  ok: boolean;
-  data?: T;
-  error?: string;
-  meta?: {
-    timestamp: string;
-    page?: number;
-    limit?: number;
-    total?: number;
-    hasMore?: boolean;
-  };
-}
-
-// ============================================================================
-// 辅助函数
-// ============================================================================
-
-function createResponse<T>(data: T, page?: number, limit?: number, total?: number): ApiResponse<T> {
-  const response: ApiResponse<T> = {
-    ok: true,
-    data,
-    meta: {
-      timestamp: new Date().toISOString(),
-    },
-  };
-
-  if (page !== undefined) {
-    response.meta!.page = page;
-    response.meta!.limit = limit;
-    response.meta!.total = total;
-    response.meta!.hasMore = total !== undefined ? page * limit! < total : false;
-  }
-
-  return response;
-}
-
-function createErrorResponse(error: string, status: number = 400): Response {
-  return Response.json(
-    {
-      ok: false,
-      error,
-      meta: {
-        timestamp: new Date().toISOString(),
-      },
-    },
-    { status }
-  );
-}
 
 // ============================================================================
 // Report 处理
@@ -155,7 +104,7 @@ async function handleReportRequest(
       },
     });
 
-    return Response.json(createResponse(paginatedReport, page, limit, total));
+    return createSuccessResponse(paginatedReport, page, limit, total);
   } catch (error) {
     const requestTime = performance.now() - requestStartTime;
     logger.error('Failed to generate deviation report', {
@@ -170,10 +119,7 @@ async function handleReportRequest(
         windowHours: windowHoursParam,
       },
     });
-    return Response.json(
-      createErrorResponse(error instanceof Error ? error.message : 'Failed to generate report'),
-      { status: 500 },
-    );
+    return handleApiError(error instanceof Error ? error.message : 'Failed to generate report', 500);
   }
 }
 
@@ -238,7 +184,7 @@ async function handleTrendRequest(
       },
     });
 
-    return Response.json(createResponse(result, page, limit, dataPoints.total));
+    return createSuccessResponse(result, page, limit, dataPoints.total);
   } catch (error) {
     const requestTime = performance.now() - requestStartTime;
     logger.error('Failed to fetch trend data', {
@@ -254,10 +200,7 @@ async function handleTrendRequest(
         windowHours: windowHoursParam,
       },
     });
-    return Response.json(
-      createErrorResponse(error instanceof Error ? error.message : 'Failed to fetch trend'),
-      { status: 500 },
-    );
+    return handleApiError(error instanceof Error ? error.message : 'Failed to fetch trend', 500);
   }
 }
 
@@ -471,10 +414,7 @@ export async function GET(request: NextRequest): Promise<Response> {
     const type = searchParams.get('type');
 
     if (!type || (type !== 'report' && type !== 'trend')) {
-      return Response.json(
-        createErrorResponse('Invalid or missing type parameter. Use "report" or "trend"'),
-        { status: 400 },
-      );
+      return createErrorResponse('Invalid or missing type parameter. Use "report" or "trend"', 400);
     }
 
     if (type === 'report') {
@@ -490,9 +430,7 @@ export async function GET(request: NextRequest): Promise<Response> {
       const symbol = searchParams.get('symbol');
 
       if (!symbol) {
-        return Response.json(createErrorResponse('Missing required parameter: symbol'), {
-          status: 400,
-        });
+        return createErrorResponse('Missing required parameter: symbol', 400);
       }
 
       const windowHours = searchParams.get('windowHours') || undefined;
@@ -502,12 +440,9 @@ export async function GET(request: NextRequest): Promise<Response> {
       return handleTrendRequest(symbol, windowHours, page, limit);
     }
 
-    return Response.json(createErrorResponse('Invalid request'), { status: 400 });
+    return createErrorResponse('Invalid request', 400);
   } catch (error) {
     logger.error('Deviation API error', { error });
-    return Response.json(
-      createErrorResponse(error instanceof Error ? error.message : 'Internal server error'),
-      { status: 500 },
-    );
+    return handleApiError(error instanceof Error ? error.message : 'Internal server error', 500);
   }
 }

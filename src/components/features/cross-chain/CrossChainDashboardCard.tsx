@@ -18,10 +18,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useI18n } from '@/i18n';
 import type { CrossChainDashboardData } from '@/hooks/useCrossChain';
-import { cn } from '@/lib/utils';
+import { useI18n } from '@/i18n';
 import { STATUS_COLORS } from '@/lib/types/common';
+import { cn } from '@/lib/utils';
 
 interface CrossChainDashboardCardProps {
   data?: CrossChainDashboardData;
@@ -35,7 +35,7 @@ const statusConfig: Record<string, { icon: typeof CheckCircle; primary: string; 
   offline: { icon: XCircle, ...STATUS_COLORS.unhealthy, label: 'Offline', color: 'text-red-600' },
 };
 
-const defaultStatusConfig = statusConfig.offline;
+const defaultStatusConfig = statusConfig.offline || { icon: XCircle, ...STATUS_COLORS.unhealthy, label: 'Offline', color: 'text-red-600' };
 
 function formatStaleness(minutes: number): string {
   if (minutes < 1) return '<1m ago';
@@ -234,23 +234,23 @@ export const CrossChainDashboardCard = memo(function CrossChainDashboardCard({
         {/* Chain Health Grid */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {data.chainHealth.map((chain) => {
-            const config = statusConfig[chain.status] ?? defaultStatusConfig;
-            const StatusIcon = config.icon;
+            const config = statusConfig[chain.status];
+            const StatusIcon = config ? config.icon : defaultStatusConfig.icon;
 
             return (
               <div
                 key={chain.chain}
                 className={cn(
                   'rounded-lg border p-3',
-                  config.bg,
-                  config.border
+                  config?.bg || defaultStatusConfig.bg,
+                  config?.border || defaultStatusConfig.border
                 )}
               >
                 <div className="flex items-center justify-between">
-                  <span className={cn('font-medium capitalize', config.color)}>
+                  <span className={cn('font-medium capitalize', config?.color || defaultStatusConfig.color)}>
                     {chain.chain}
                   </span>
-                  <StatusIcon className={cn('h-4 w-4', config.color)} />
+                  <StatusIcon className={cn('h-4 w-4', config?.color || defaultStatusConfig.color)} />
                 </div>
                 <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
                   <Clock className="h-3 w-3" />

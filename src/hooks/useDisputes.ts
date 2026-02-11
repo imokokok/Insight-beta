@@ -1,6 +1,6 @@
+import { createSWRInfiniteConfig } from '@/hooks/common/useSWRConfig';
 import type { BaseResponse } from '@/hooks/useUI';
 import { useInfiniteList } from '@/hooks/useUI';
-import { createSWRInfiniteConfig } from '@/hooks/common/useSWRConfig';
 import type { Dispute, OracleConfig, DisputeStatus } from '@/lib/types/oracleTypes';
 
 export function useDisputes(
@@ -33,7 +33,7 @@ export function useDisputes(
   };
 
   const { items, loading, loadingMore, error, loadMore, hasMore, refresh } =
-    useInfiniteList<Dispute>(getUrl, createSWRInfiniteConfig());
+    useInfiniteList<Dispute>(getUrl, createSWRInfiniteConfig() as Parameters<typeof useInfiniteList>[1]);
 
   return {
     items,

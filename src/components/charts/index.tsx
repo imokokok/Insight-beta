@@ -37,3 +37,11 @@ export const ResponsiveContainer = dynamic(
   () => import('recharts').then((mod) => ({ default: mod.ResponsiveContainer })),
   { ssr: false },
 );
+
+// 移动端图表组件
+export {
+  MobileChartWrapper,
+  MobileChartToolbar,
+  MobileChartCard,
+  MobileLegend,
+} from './MobileChartWrapper';

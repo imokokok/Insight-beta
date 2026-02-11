@@ -11,7 +11,6 @@
 import useSWR from 'swr';
 
 import { createSWRConfig, REALTIME_CONFIG } from '@/hooks/common/useSWRConfig';
-
 import type {
   ComparisonFilter,
   ComparisonView,

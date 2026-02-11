@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+
 import { useWebVitals, useLongTaskMonitor } from '@/hooks/usePerformance';
 
 /**

@@ -11,12 +11,12 @@ import { TrendingDown, TrendingUp } from 'lucide-react';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { COMPONENT_COLORS } from '@/lib/design-system/tokens/colors';
 import { cn } from '@/lib/utils';
-import { CARD_COLORS } from '@/lib/theme/colors';
 
 import { DataFreshnessIndicator } from '../DataFreshnessIndicator';
 
-export type StatCardColor = keyof typeof CARD_COLORS;
+export type StatCardColor = keyof typeof COMPONENT_COLORS;
 export type StatCardVariant = 'simple' | 'enhanced' | 'animated';
 
 export interface StatCardProps {
@@ -61,7 +61,7 @@ export interface StatCardProps {
 const colorConfig: Record<
   StatCardColor,
   { bg: string; text: string; border: string; gradient: string; iconBg: string }
-> = CARD_COLORS;
+> = COMPONENT_COLORS;
 
 /**
  * 迷你趋势图组件

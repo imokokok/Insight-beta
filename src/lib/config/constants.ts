@@ -55,7 +55,7 @@ export const CACHE_CONFIG = {
 // 协议颜色（已移至 lib/theme/colors.ts）
 // ============================================================================
 
-export { PROTOCOL_COLORS } from '@/lib/theme/colors';
+export { PROTOCOL_COLORS } from '@/lib/design-system/tokens/colors';
 
 // ============================================================================
 // 数据新鲜度阈值配置（秒）

@@ -124,12 +124,13 @@ export const CrossChainPriceChart: React.FC<CrossChainPriceChartProps> = ({
   const priceMax = Math.max(...chartData.map((d) => d.avgPrice));
   const priceDomain = [priceMin * 0.99, priceMax * 1.01];
 
-  const tooltipFormatter = (value: number, name: string | number | Array<{ name: string; color: string }>) => {
+  const tooltipFormatter = (value: string | number | undefined, name: string | number | Array<{ name: string; color: string }>) => {
     const nameStr = Array.isArray(name) ? name[0]?.name ?? '' : String(name);
+    const safeValue = typeof value === 'string' ? parseFloat(value) || 0 : value || 0;
     if (nameStr === 'deviation') {
-      return [formatDeviation(value), t('crossChain.chart.deviation')] as [string, string];
+      return [formatDeviation(safeValue), t('crossChain.chart.deviation')] as [string, string];
     }
-    return [formatChartPrice(value), nameStr === 'avgPrice' ? t('crossChain.chart.avgPrice') : t('crossChain.chart.medianPrice')] as [string, string];
+    return [formatChartPrice(safeValue), nameStr === 'avgPrice' ? t('crossChain.chart.avgPrice') : t('crossChain.chart.medianPrice')] as [string, string];
   };
 
   const legendFormatter = (value: string | number) => {
@@ -183,7 +184,7 @@ export const CrossChainPriceChart: React.FC<CrossChainPriceChartProps> = ({
                   backdropFilter: 'blur(8px)',
                   boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                 }}
-                formatter={(value: string | number) => tooltipFormatter(value, 'tooltip')}
+                formatter={(value: string | number | undefined) => tooltipFormatter(value as number, 'tooltip')}
                 labelStyle={{ color: '#111827', fontWeight: 'bold', marginBottom: '4px' }}
               />
             <Legend
@@ -268,8 +269,9 @@ export const CrossChainDeviationChart: React.FC<CrossChainDeviationChartProps> =
   const maxDeviation = Math.max(...chartData.map((d) => d.deviation));
   const threshold = 0.5;
 
-  const deviationTooltipFormatter = (value: number) => {
-    return [`${(value * 100).toFixed(2)}%`, t('crossChain.chart.maxDeviation')] as [string, string];
+  const deviationTooltipFormatter = (value: string | number | undefined) => {
+    const safeValue = typeof value === 'string' ? parseFloat(value) || 0 : value || 0;
+    return [`${(safeValue * 100).toFixed(2)}%`, t('crossChain.chart.maxDeviation')] as [string, string];
   };
 
   return (
@@ -312,7 +314,7 @@ export const CrossChainDeviationChart: React.FC<CrossChainDeviationChartProps> =
                 border: '1px solid rgba(255, 255, 255, 0.5)',
                 boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
               }}
-              formatter={(value: string | number) => deviationTooltipFormatter(value)}
+              formatter={(value: string | number | undefined) => deviationTooltipFormatter(value)}
             />
             <ReferenceLine
               y={threshold}
@@ -391,12 +393,13 @@ export const CrossChainComparisonBar: React.FC<CrossChainComparisonBarProps> = (
   const priceMax = Math.max(...chartData.map((d) => d.price));
   const domain = [priceMin * 0.999, priceMax * 1.001];
 
-  const barTooltipFormatter = (value: number, name: string | number | Array<{ name: string; color: string }>) => {
+  const barTooltipFormatter = (value: string | number | undefined, name: string | number | Array<{ name: string; color: string }>) => {
     const nameStr = Array.isArray(name) ? name[0]?.name ?? '' : String(name);
+    const safeValue = typeof value === 'string' ? parseFloat(value) || 0 : value || 0;
     if (nameStr === 'deviation') {
-      return [formatDeviation(value), t('crossChain.chart.deviation')] as [string, string];
+      return [formatDeviation(safeValue), t('crossChain.chart.deviation')] as [string, string];
     }
-    return [formatChartPrice(value), t('crossChain.chart.price')] as [string, string];
+    return [formatChartPrice(safeValue), t('crossChain.chart.price')] as [string, string];
   };
 
   return (
@@ -434,7 +437,7 @@ export const CrossChainComparisonBar: React.FC<CrossChainComparisonBarProps> = (
                 border: '1px solid rgba(255, 255, 255, 0.5)',
                 boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
               }}
-              formatter={(value: string | number) => barTooltipFormatter(value)}
+              formatter={(value: string | number | undefined, name: any) => barTooltipFormatter(value, name)}
             />
             <Bar dataKey="price" radius={[0, 4, 4, 0]} />
           </BarChart>
@@ -489,8 +492,9 @@ export const CrossChainHealthChart: React.FC<CrossChainHealthChartProps> = ({
   const total = chartData.reduce((sum, d) => sum + d.value, 0);
   const healthyPercent = total > 0 ? (chartData[0]?.value ?? 0) / total : 0;
 
-  const healthTooltipFormatter = (value: number) => {
-    return [value, t('crossChain.chart.count')] as [number, string];
+  const healthTooltipFormatter = (value: string | number | undefined) => {
+    const safeValue = typeof value === 'string' ? parseInt(value) || 0 : value || 0;
+    return [safeValue, t('crossChain.chart.count')] as [number, string];
   };
 
   return (
@@ -513,7 +517,7 @@ export const CrossChainHealthChart: React.FC<CrossChainHealthChartProps> = ({
                   borderRadius: '8px',
                   border: '1px solid rgba(255, 255, 255, 0.5)',
                 }}
-                formatter={(value: string | number) => healthTooltipFormatter(value)}
+                formatter={(value: string | number | undefined) => healthTooltipFormatter(value as number)}
               />
               <Bar dataKey="value" radius={[0, 4, 4, 0]}>
                 {chartData.map((entry, index) => (

@@ -2,8 +2,8 @@ import * as React from 'react';
 
 import { cva, type VariantProps } from 'class-variance-authority';
 
-import { cn } from '@/lib/utils';
 import { STATUS_THEME_COLORS, type StatusType } from '@/lib/types/common';
+import { cn } from '@/lib/utils';
 
 export type { StatusType };
 
@@ -76,7 +76,7 @@ const statusConfig: Record<
   }
 > = STATUS_THEME_COLORS;
 
-const defaultStatusConfig = statusConfig.unknown;
+
 
 const StatusBadge = React.memo(function StatusBadge({
   status,
@@ -85,7 +85,7 @@ const StatusBadge = React.memo(function StatusBadge({
   className,
   size = 'md',
 }: StatusBadgeProps) {
-  const config = statusConfig[status] || defaultStatusConfig;
+  const config = statusConfig[status] ?? statusConfig.unknown!;
   const shouldPulse = pulse && (status === 'online' || status === 'active');
 
   const sizeClasses = {

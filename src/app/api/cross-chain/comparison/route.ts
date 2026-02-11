@@ -1,7 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { crossChainAnalysisService } from '@/server/oracle/crossChainAnalysisService';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
+
 import { logger } from '@/lib/logger';
 import type { SupportedChain } from '@/lib/types/unifiedOracleTypes';
+import { crossChainAnalysisService } from '@/server/oracle/crossChainAnalysisService';
 
 const VALID_SYMBOLS = ['BTC', 'ETH', 'SOL', 'LINK', 'AVAX', 'MATIC', 'UNI', 'AAVE'];
 const VALID_CHAINS: SupportedChain[] = [

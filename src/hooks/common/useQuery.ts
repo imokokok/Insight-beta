@@ -9,8 +9,8 @@ import { useCallback, useMemo, useState } from 'react';
 import useSWR from 'swr';
 import useSWRInfinite from 'swr/infinite';
 
-import { fetchApiData } from '@/lib/utils';
 import type { PaginationParams, PaginatedResult } from '@/lib/types/common';
+import { fetchApiData } from '@/lib/utils';
 
 // ============================================================================
 // 类型定义

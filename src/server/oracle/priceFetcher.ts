@@ -502,7 +502,7 @@ async function fetchDexTwapPriceUsdCached(
 
 function syntheticSpotUsd(sym: string) {
   const symbol = normalizeSymbol(sym);
-  const basePrice = SYNTHETIC_PRICES[symbol] ?? SYNTHETIC_PRICES.DEFAULT;
+  const basePrice = (SYNTHETIC_PRICES[symbol] ?? SYNTHETIC_PRICES.DEFAULT) as number;
   const time = Date.now();
   const trend = Math.sin(time / SYNTHETIC_TREND_PERIOD_MS) * (basePrice * SYNTHETIC_TREND_AMPLITUDE);
   const noise = (secureRandom() - 0.5) * (basePrice * SYNTHETIC_NOISE_AMPLITUDE);
@@ -516,7 +516,7 @@ function generateMockHistory(symbol: string, safeDays: number): PricePoint[] {
   const msPerDay = 24 * 60 * 60 * 1000;
 
   const sym = normalizeSymbol(symbol);
-  const basePrice = SYNTHETIC_PRICES[sym] ?? SYNTHETIC_PRICES.DEFAULT;
+  const basePrice = (SYNTHETIC_PRICES[sym] ?? SYNTHETIC_PRICES.DEFAULT) as number;
 
   // 预计算常量，避免在循环中重复计算
   const trendAmplitude = basePrice * SYNTHETIC_TREND_AMPLITUDE;

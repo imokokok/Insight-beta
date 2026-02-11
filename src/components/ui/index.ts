@@ -45,3 +45,21 @@ export { ResponsiveContainer, Show, Hide } from './ResponsiveContainer';
 
 // 响应式表格
 export { ResponsiveTable, type Column as ResponsiveTableColumn } from './ResponsiveTable';
+
+// 移动端优化组件
+export {
+  MobileTable,
+  DataCard,
+  ListItem,
+} from './MobileTable';
+
+export {
+  MobileInput,
+  MobileSearchInput,
+  MobileSelect,
+  MobileTagInput,
+  MobileSlider,
+  MobileSwitch,
+  FormSection,
+  FormActions,
+} from './MobileForm';

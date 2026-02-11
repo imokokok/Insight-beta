@@ -130,8 +130,8 @@ function getServerBaseUrl(): string {
  * ```
  */
 export async function fetchApiData<T>(
-  input: RequestInfo | URL,
-  init?: RequestInit,
+  input: Parameters<typeof fetch>[0],
+  init?: Parameters<typeof fetch>[1],
   timeout: number = 30000,
 ): Promise<T> {
   try {

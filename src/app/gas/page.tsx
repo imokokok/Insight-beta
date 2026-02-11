@@ -1,22 +1,22 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
-import { cn } from '@/lib/utils';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { useI18n } from '@/i18n';
-import { useGasPrices, useGasPriceTrend, useGasPriceHealth, useWarmupGasCache } from '@/hooks/useGasPrice';
+import { RefreshCw, Zap, TrendingUp, Activity, AlertTriangle, History } from 'lucide-react';
+
+import { GasPriceHistoryViewer } from '@/components/features/gas/GasPriceHistoryViewer';
 import { GasPriceTrendChart } from '@/components/features/gas/GasPriceTrendChart';
 import { GasProviderHealthCard } from '@/components/features/gas/GasProviderHealthCard';
-import { GasPriceHistoryViewer } from '@/components/features/gas/GasPriceHistoryViewer';
-import { RefreshCw, Zap, TrendingUp, Activity, AlertTriangle, History } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { useGasPrices, useGasPriceTrend, useGasPriceHealth, useWarmupGasCache } from '@/hooks/useGasPrice';
+import { cn } from '@/lib/utils';
+
 
 const DEFAULT_CHAINS = ['ethereum', 'polygon', 'bsc', 'arbitrum', 'optimism', 'base'];
 
 export default function GasPriceMonitorPage() {
-  const { t } = useI18n();
   const [selectedChains, setSelectedChains] = useState<string[]>(DEFAULT_CHAINS);
   const [showTrend, setShowTrend] = useState(false);
   const [selectedChainForTrend, setSelectedChainForTrend] = useState<string>('ethereum');
@@ -48,9 +48,10 @@ export default function GasPriceMonitorPage() {
     setShowTrend(true);
   };
 
-  const avgGasPrice = gasPrices?.reduce((sum, p) => sum + p.average, 0) / (gasPrices?.length || 1);
-  const slowGasPrice = gasPrices?.reduce((sum, p) => sum + p.slow, 0) / (gasPrices?.length || 1);
-  const fastGasPrice = gasPrices?.reduce((sum, p) => sum + p.fast, 0) / (gasPrices?.length || 1);
+  const gasData = gasPrices?.data || [];
+  const avgGasPrice = gasData.reduce((sum, p) => sum + p.average, 0) / (gasData.length || 1);
+  const slowGasPrice = gasData.reduce((sum, p) => sum + p.slow, 0) / (gasData.length || 1);
+  const fastGasPrice = gasData.reduce((sum, p) => sum + p.fast, 0) / (gasData.length || 1);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -137,7 +138,7 @@ export default function GasPriceMonitorPage() {
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-red-600">
-              {gasPrices && gasPrices.length > 0 
+              {gasPrices?.data && gasPrices.data.length > 0 
                 ? `$${((fastGasPrice - slowGasPrice) / 1e9).toFixed(2)}`
                 : 'Loading...'}
             </p>
@@ -188,7 +189,7 @@ export default function GasPriceMonitorPage() {
 
       {showTrend && (
         <div className="mb-8">
-          <GasPriceTrendChart data={trendData} isLoading={trendLoading} height={400} />
+          <GasPriceTrendChart data={trendData?.data} isLoading={trendLoading} height={400} />
         </div>
       )}
 
@@ -209,9 +210,9 @@ export default function GasPriceMonitorPage() {
                   <div key={i} className="h-16 bg-muted/30 rounded animate-pulse" />
                 ))}
               </div>
-            ) : gasPrices && gasPrices.length > 0 ? (
+            ) : gasPrices?.data && gasPrices.data.length > 0 ? (
               <div className="space-y-3">
-                {gasPrices.map((price) => (
+                {gasPrices.data.map((price) => (
                   <div
                     key={price.chain}
                     className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors cursor-pointer"

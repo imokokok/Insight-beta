@@ -396,7 +396,8 @@ export function getProtocolColor(protocol: string): string {
 }
 
 export function getChartColor(index: number): string {
-  return CHART_COLORS.categorical[index % CHART_COLORS.categorical.length];
+  const color = CHART_COLORS.categorical[index % CHART_COLORS.categorical.length];
+  return color || CHART_COLORS.categorical[0];
 }
 
 export function getGradientColors(name: keyof typeof CHART_COLORS.gradient): [string, string] {

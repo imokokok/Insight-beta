@@ -245,14 +245,4 @@ export interface ProtocolTabConfig {
 
 // ==================== 支持的链 ====================
 
-export const SUPPORTED_CHAINS = [
-  { id: 'ethereum', name: 'Ethereum', icon: '⬡' },
-  { id: 'polygon', name: 'Polygon', icon: '💜' },
-  { id: 'arbitrum', name: 'Arbitrum', icon: '🔷' },
-  { id: 'optimism', name: 'Optimism', icon: '🔴' },
-  { id: 'base', name: 'Base', icon: '🔵' },
-  { id: 'avalanche', name: 'Avalanche', icon: '❄️' },
-  { id: 'bsc', name: 'BSC', icon: '🟡' },
-  { id: 'solana', name: 'Solana', icon: '◎' },
-  { id: 'near', name: 'NEAR', icon: '🌐' },
-] as const;
+export { SUPPORTED_CHAINS } from '@/lib/types/chains';

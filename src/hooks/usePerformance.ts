@@ -4,6 +4,7 @@
  */
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+
 import { initWebVitalsMonitoring, useComponentPerformance } from '@/lib/performance/monitor';
 
 /**
@@ -211,7 +212,7 @@ export function useNetworkStatus() {
     window.addEventListener('offline', handleOffline);
 
     // 获取网络连接信息
-    const connection = (navigator as any).connection;
+    const connection = (navigator as unknown as { connection?: { type?: string; effectiveType?: string; addEventListener: (event: string, handler: () => void) => void; removeEventListener: (event: string, handler: () => void) => void } }).connection;
     if (connection) {
       setConnectionType(connection.type || 'unknown');
       setEffectiveType(connection.effectiveType || '4g');
@@ -261,7 +262,7 @@ export function useMemoryStatus() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const memory = (performance as any).memory;
+    const memory = (performance as unknown as { memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }).memory;
     if (!memory) return;
 
     const updateMemory = () => {
@@ -294,8 +295,8 @@ export function useLongTaskMonitor(callback?: (duration: number) => void) {
       const observer = new PerformanceObserver((list) => {
         const entries = list.getEntries();
         entries.forEach((entry) => {
-          const duration = (entry as any).duration;
-          if (duration > 50) {
+          const duration = (entry as PerformanceEntry & { duration?: number }).duration;
+          if (duration && duration > 50) {
             // 超过 50ms 认为是长任务
             console.warn(`[Performance] Long task detected: ${duration.toFixed(2)}ms`);
             callback?.(duration);
@@ -308,6 +309,7 @@ export function useLongTaskMonitor(callback?: (duration: number) => void) {
       return () => observer.disconnect();
     } catch (e) {
       // 浏览器不支持 longtask
+      return;
     }
   }, [callback]);
 }

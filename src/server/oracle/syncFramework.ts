@@ -215,7 +215,6 @@ class SyncManager {
     config: SyncConfig,
   ): Promise<void> {
     // 使用原子锁机制防止竞态条件
-    const lockKey = `sync:${instanceId}`;
     
     // 尝试获取锁
     if (!this.acquireSyncLock(instanceId)) {

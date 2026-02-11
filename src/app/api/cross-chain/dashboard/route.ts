@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+
 import { crossChainAnalysisService } from '@/server/oracle/crossChainAnalysisService';
 
 export async function GET() {

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 import { Clock, Info } from 'lucide-react';
 
-import { Tooltip } from '@/components/common/Tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 interface LivenessProgressBarProps {
@@ -71,9 +71,16 @@ export function LivenessProgressBar({
         <span className="flex items-center gap-1">
           {label}
           {tooltip && (
-            <Tooltip content={tooltip} position="right" theme="info">
-              <Info size={14} className="cursor-help text-gray-400 hover:text-purple-600" />
-            </Tooltip>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info size={14} className="cursor-help text-gray-400 hover:text-purple-600" />
+                </TooltipTrigger>
+                <TooltipContent side="right" className="bg-blue-600 text-white border-blue-500">
+                  {tooltip}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
         </span>
         <span

@@ -8,14 +8,12 @@ import {
   AlertTriangle,
   XCircle,
   Clock,
-  Zap,
 } from 'lucide-react';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useI18n } from '@/i18n';
-import type { ProviderHealth, GasPriceHealthResponse } from '@/hooks/useGasPrice';
+import type { GasPriceHealthResponse } from '@/hooks/useGasPrice';
 import { cn } from '@/lib/utils';
 
 interface GasProviderHealthCardProps {
@@ -57,7 +55,7 @@ export const GasProviderHealthCard: React.FC<GasProviderHealthCardProps> = ({
   data,
   isLoading,
 }) => {
-  const { t } = useI18n();
+
 
   if (isLoading) {
     return (

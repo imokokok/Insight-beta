@@ -96,3 +96,12 @@ export { AuditLogViewer } from './AuditLogViewer';
 
 // ==================== 国际化组件 ====================
 export { LanguageSwitcher } from './LanguageSwitcher';
+
+// ==================== 移动端优化组件 ====================
+export { MobileBottomNav } from './MobileBottomNav';
+export {
+  MobileImage,
+  ResponsiveImage,
+  Avatar,
+  ImageGallery,
+} from './MobileImage';

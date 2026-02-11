@@ -6,6 +6,7 @@ import { cookies, headers } from 'next/headers';
 
 import { Toaster } from 'sonner';
 
+import { MobileBottomNav } from '@/components/common/MobileBottomNav';
 import { OfflineIndicator } from '@/components/common/OfflineIndicator';
 import { PageProgress } from '@/components/common/PageProgress';
 import { PerformanceMonitor } from '@/components/common/PerformanceMonitor';
@@ -147,7 +148,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                 <Sidebar />
               </Suspense>
               <main className="flex-1 transition-all duration-300 md:ml-64">
-                <div className="container mx-auto max-w-7xl p-3 md:p-4 lg:p-8">
+                <div className="container mx-auto max-w-7xl p-3 pb-24 md:p-4 md:pb-4 lg:p-8">
                   <div className="sticky top-0 z-20 mb-4 flex flex-wrap items-center justify-between gap-3 md:mb-6">
                     <h2 className="text-xl font-bold text-purple-950 md:text-2xl">
                       {translations[lang].app.title}
@@ -173,6 +174,10 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                 </div>
               </main>
             </div>
+            {/* 移动端底部导航 */}
+            <Suspense fallback={null}>
+              <MobileBottomNav />
+            </Suspense>
           </WalletProvider>
         </LanguageProvider>
       </body>

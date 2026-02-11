@@ -45,12 +45,12 @@ import { StatCard } from '@/components/common';
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { ToastContainer, useToast } from '@/components/common/DashboardToast';
 import { EmptyDeviationState, EmptySearchState } from '@/components/common/EmptyState';
-import { RefreshIndicator } from '@/components/common/RefreshIndicator';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ErrorBanner } from '@/components/ui/error-banner';
 import { Input } from '@/components/ui/input';
+import { RefreshIndicator } from '@/components/ui/refresh-indicator';
 import {
   SkeletonList,
   StatCardSkeleton,
@@ -680,8 +680,7 @@ export default function DeviationAnalyticsPage() {
           </div>
           <RefreshIndicator
             lastUpdated={lastUpdated}
-            nextRefreshIn={Math.ceil(timeUntilRefresh / 1000)}
-            isLoading={loading}
+            isRefreshing={loading}
           />
         </div>
       </div>

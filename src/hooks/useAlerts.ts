@@ -1,7 +1,7 @@
 import type { IncidentWithAlerts } from '@/app/alerts/alertsComponents';
 import type { OpsMetrics, OpsMetricsSeriesPoint, RiskItem } from '@/lib/types/oracleTypes';
 
-import { useApiQueryArray, useApiQuery } from './useApiQuery';
+import { useQuery } from './common/useQuery';
 
 // ============================================================================
 // useOracleIncidents - Oracle 事件 Hook
@@ -15,20 +15,33 @@ export interface UseOracleIncidentsReturn {
 }
 
 export function useOracleIncidents(instanceId: string): UseOracleIncidentsReturn {
-  const { items, error, loading, reload } = useApiQueryArray<IncidentWithAlerts>({
-    url: '/api/oracle/incidents',
-    params: {
-      limit: '20',
-      includeAlerts: '1',
-      instanceId: instanceId || undefined,
+  const params = new URLSearchParams();
+  params.set('limit', '20');
+  params.set('includeAlerts', '1');
+  if (instanceId) {
+    params.set('instanceId', instanceId);
+  }
+  const url = `/api/oracle/incidents?${params.toString()}`;
+
+  const { data, error, isLoading, mutate } = useQuery<IncidentWithAlerts[]>({
+    url: url,
+    transform: (response: any) => {
+      if (Array.isArray(response)) {
+        return response;
+      }
+      // Handle case where response might have an items property
+      if (response && typeof response === 'object' && 'items' in response) {
+        return response.items as IncidentWithAlerts[];
+      }
+      return [];
     },
   });
 
   return {
-    incidents: items,
-    incidentsError: error,
-    incidentsLoading: loading,
-    reloadIncidents: reload,
+    incidents: data || [],
+    incidentsError: error?.message || null,
+    incidentsLoading: isLoading,
+    reloadIncidents: mutate,
   };
 }
 
@@ -44,19 +57,32 @@ export interface UseOracleRisksReturn {
 }
 
 export function useOracleRisks(instanceId: string): UseOracleRisksReturn {
-  const { items, error, loading, reload } = useApiQueryArray<RiskItem>({
-    url: '/api/oracle/risks',
-    params: {
-      limit: '20',
-      instanceId: instanceId || undefined,
+  const params = new URLSearchParams();
+  params.set('limit', '20');
+  if (instanceId) {
+    params.set('instanceId', instanceId);
+  }
+  const url = `/api/oracle/risks?${params.toString()}`;
+
+  const { data, error, isLoading, mutate } = useQuery<RiskItem[]>({
+    url: url,
+    transform: (response: any) => {
+      if (Array.isArray(response)) {
+        return response;
+      }
+      // Handle case where response might have an items property
+      if (response && typeof response === 'object' && 'items' in response) {
+        return response.items as RiskItem[];
+      }
+      return [];
     },
   });
 
   return {
-    risks: items,
-    risksError: error,
-    risksLoading: loading,
-    reloadRisks: reload,
+    risks: data || [],
+    risksError: error?.message || null,
+    risksLoading: isLoading,
+    reloadRisks: mutate,
   };
 }
 
@@ -78,21 +104,24 @@ export interface UseOracleOpsMetricsReturn {
 }
 
 export function useOracleOpsMetrics(instanceId: string): UseOracleOpsMetricsReturn {
-  const { data, error, loading, reload } = useApiQuery<OpsMetricsResponse>({
-    url: '/api/oracle/ops-metrics',
-    params: {
-      windowDays: '7',
-      seriesDays: '7',
-      instanceId: instanceId || undefined,
-    },
-    transform: (response) => response as OpsMetricsResponse,
+  const params = new URLSearchParams();
+  params.set('windowDays', '7');
+  params.set('seriesDays', '7');
+  if (instanceId) {
+    params.set('instanceId', instanceId);
+  }
+  const url = `/api/oracle/ops-metrics?${params.toString()}`;
+
+  const { data, error, isLoading, mutate } = useQuery<OpsMetricsResponse>({
+    url: url,
+    transform: (response: any) => response as OpsMetricsResponse,
   });
 
   return {
     opsMetrics: data?.metrics ?? null,
     opsMetricsSeries: data?.series ?? null,
-    opsMetricsError: error,
-    opsMetricsLoading: loading,
-    reloadOpsMetrics: reload,
+    opsMetricsError: error?.message || null,
+    opsMetricsLoading: isLoading,
+    reloadOpsMetrics: mutate,
   };
 }

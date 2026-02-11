@@ -1,9 +1,14 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+
 import { motion } from 'framer-motion';
 
 // 导入性能 Hooks
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   useDebounce,
   useThrottle,
@@ -12,10 +17,6 @@ import {
   useMemoryStatus,
   useLongTaskMonitor,
 } from '@/hooks/usePerformance';
-
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 
 /**
  * 性能 Hooks 使用示例组件

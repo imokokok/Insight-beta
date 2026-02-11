@@ -4,10 +4,6 @@ import { useState, useCallback, useMemo } from 'react';
 
 import { RefreshCw, Filter, Activity, Calendar } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useI18n } from '@/i18n';
 import {
   CrossChainComparisonCard,
   CrossChainArbitrageCard,
@@ -16,6 +12,9 @@ import {
   CrossChainDeviationChart,
   CrossChainComparisonBar,
 } from '@/components/features/cross-chain';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   useCrossChainComparison,
   useCrossChainArbitrage,
@@ -23,6 +22,7 @@ import {
   useCrossChainDashboard,
   useCrossChainHistory,
 } from '@/hooks/useCrossChain';
+import { useI18n } from '@/i18n';
 
 const AVAILABLE_SYMBOLS = ['BTC', 'ETH', 'SOL', 'LINK', 'AVAX', 'MATIC', 'UNI', 'AAVE'];
 const AVAILABLE_CHAINS = ['ethereum', 'bsc', 'polygon', 'avalanche', 'arbitrum', 'optimism', 'base'];

@@ -16,8 +16,8 @@ import {
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useI18n } from '@/i18n';
 import type { GasPriceTrend } from '@/hooks/useGasPrice';
+import { useI18n } from '@/i18n';
 import { cn } from '@/lib/utils';
 
 interface GasPriceTrendChartProps {
@@ -51,9 +51,7 @@ function formatChangePercent(value: number): string {
   return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
 }
 
-function formatPrice(value: number): string {
-  return `$${value.toFixed(2)}`;
-}
+
 
 export const GasPriceTrendChart: React.FC<GasPriceTrendChartProps> = ({
   data,

@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect } from 'react';
+
+import Link from 'next/link';
+
 import { motion } from 'framer-motion';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
-import Link from 'next/link';
 
 interface ErrorProps {
   error: Error & { digest?: string };
