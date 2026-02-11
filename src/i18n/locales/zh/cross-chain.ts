@@ -30,6 +30,12 @@ export const crossChain = {
     profit: '利润',
     execute: '执行',
     moreOpportunities: '还有 {{count}} 个机会...',
+    buyGas: '买入 Gas',
+    sellGas: '卖出 Gas',
+    bridgeGas: '跨链桥 Gas',
+    totalGas: '总 Gas 成本',
+    showGasDetails: '显示 Gas 详情',
+    hideGasDetails: '隐藏 Gas 详情',
   },
   dashboard: {
     title: '跨链概览',

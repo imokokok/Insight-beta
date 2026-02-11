@@ -2,10 +2,9 @@
 // 这些组件在多个功能模块中被复用
 
 // ==================== 基础/核心组件 ====================
-export { ErrorBoundary, withErrorBoundary } from './ErrorBoundary';
+export { ErrorBoundary } from './ErrorBoundary';
 export { ClientComponentsWrapper } from './ClientComponentsWrapper';
 export { ServiceWorkerRegister } from './ServiceWorkerRegister';
-export { WebVitalsMonitor } from './WebVitalsMonitor';
 
 // ==================== 加载/骨架屏组件 ====================
 export { DynamicLoading, createLoadingComponent, type LoadingType } from './DynamicLoading';

@@ -239,7 +239,7 @@ export default function OraclePlatformPage() {
               value={`${stats?.avgUpdateLatency || 500}ms`}
               icon={<Zap className="h-5 w-5" />}
               loading={loading}
-              color="orange"
+              color="amber"
             />
           </div>
         </div>

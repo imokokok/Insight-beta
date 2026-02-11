@@ -42,8 +42,8 @@ export function useWebSocket(url: string, options: WebSocketOptions = {}) {
 
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectCountRef = useRef(0);
-  const reconnectTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const heartbeatTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const heartbeatTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isManualCloseRef = useRef(false);
 
   // Use refs for callbacks to avoid dependency changes
@@ -71,7 +71,17 @@ export function useWebSocket(url: string, options: WebSocketOptions = {}) {
 
   const sendMessage = useCallback((data: unknown) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
-      const message = typeof data === 'string' ? data : JSON.stringify(data);
+      let message: string;
+      if (typeof data === 'string') {
+        message = data;
+      } else {
+        try {
+          message = JSON.stringify(data);
+        } catch (error) {
+          logger.error('Failed to stringify WebSocket message', { error });
+          return false;
+        }
+      }
       wsRef.current.send(message);
       return true;
     }
@@ -171,16 +181,30 @@ export function useWebSocket(url: string, options: WebSocketOptions = {}) {
     }
   }, [url, reconnectAttempts, reconnectDelay, heartbeatInterval, clearTimers]);
 
-  const disconnect = useCallback(() => {
+  const disconnect = useCallback(async () => {
     isManualCloseRef.current = true;
     clearTimers();
 
     if (wsRef.current) {
-      wsRef.current.onopen = null;
-      wsRef.current.onclose = null;
-      wsRef.current.onerror = null;
-      wsRef.current.onmessage = null;
-      wsRef.current.close();
+      const ws = wsRef.current;
+      
+      // 等待 close 事件或超时（最多1秒）
+      await Promise.race([
+        new Promise<void>((resolve) => {
+          const originalOnClose = ws.onclose;
+          ws.onclose = (event) => {
+            if (originalOnClose) originalOnClose.call(ws, event);
+            resolve();
+          };
+          ws.close();
+        }),
+        new Promise<void>((resolve) => setTimeout(resolve, 1000)),
+      ]);
+      
+      ws.onopen = null;
+      ws.onclose = null;
+      ws.onerror = null;
+      ws.onmessage = null;
       wsRef.current = null;
     }
 

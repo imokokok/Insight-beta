@@ -444,7 +444,7 @@ export default function OptimisticOraclePage() {
               className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-colors hover:bg-gray-50"
             >
               <div className="mb-4 flex items-center gap-3">
-                <Gavel className="h-6 w-6 text-orange-500" />
+                <Gavel className="h-6 w-6 text-amber-500" />
                 <h3 className="text-lg font-semibold text-gray-900">Disputes</h3>
               </div>
               <p className="text-gray-600">

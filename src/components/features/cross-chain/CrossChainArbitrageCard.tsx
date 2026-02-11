@@ -11,8 +11,10 @@ import {
   AlertCircle,
   CheckCircle,
   XCircle,
+  Eye,
+  EyeOff,
+  Fuel,
 } from 'lucide-react';
-
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -20,6 +22,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useI18n } from '@/i18n';
 import type { CrossChainArbitrageOpportunity, CrossChainArbitrageSummary } from '@/hooks/useCrossChain';
 import { cn, formatPrice } from '@/lib/utils';
+import { RISK_COLORS } from '@/lib/types/common';
 
 interface CrossChainArbitrageCardProps {
   opportunities?: CrossChainArbitrageOpportunity[];
@@ -27,13 +30,8 @@ interface CrossChainArbitrageCardProps {
   isLoading?: boolean;
   onExecute?: (opportunity: CrossChainArbitrageOpportunity) => void;
   threshold?: number;
+  showGasDetails?: boolean;
 }
-
-const riskColors = {
-  low: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', text: 'text-emerald-600' },
-  medium: { bg: 'bg-yellow-500/10', border: 'border-yellow-500/30', text: 'text-yellow-600' },
-  high: { bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-600' },
-};
 
 const riskLabels = {
   low: 'Low Risk',
@@ -46,12 +44,17 @@ function formatProfit(value: number): string {
   return `+${formatPrice(value)}`;
 }
 
+function formatGasCost(value: number): string {
+  return `$${value.toFixed(2)}`;
+}
+
 export const CrossChainArbitrageCard = memo(function CrossChainArbitrageCard({
   opportunities,
   summary,
   isLoading,
   onExecute,
   threshold = 0,
+  showGasDetails = false,
 }: CrossChainArbitrageCardProps) {
   const { t } = useI18n();
 
@@ -121,6 +124,28 @@ export const CrossChainArbitrageCard = memo(function CrossChainArbitrageCard({
               {t('crossChain.arbitrage.description')}
             </CardDescription>
           </div>
+          {onExecute && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const newState = !showGasDetails;
+                onExecute({ ...opportunities?.[0], showGasDetails: newState } as any);
+              }}
+            >
+              {showGasDetails ? (
+                <>
+                  <EyeOff className="mr-1 h-4 w-4" />
+                  {t('crossChain.arbitrage.hideGasDetails')}
+                </>
+              ) : (
+                <>
+                  <Eye className="mr-1 h-4 w-4" />
+                  {t('crossChain.arbitrage.showGasDetails')}
+                </>
+              )}
+            </Button>
+          )}
         </div>
       </CardHeader>
 
@@ -153,7 +178,7 @@ export const CrossChainArbitrageCard = memo(function CrossChainArbitrageCard({
 
         <div className="space-y-3">
           {filteredOpportunities?.slice(0, 5).map((opportunity) => {
-            const risk = riskColors[opportunity.riskLevel] ?? riskColors.medium;
+            const risk = RISK_COLORS[opportunity.riskLevel] ?? RISK_COLORS.medium;
             const riskLabel = riskLabels[opportunity.riskLevel] ?? 'Medium Risk';
 
             return (
@@ -209,7 +234,6 @@ export const CrossChainArbitrageCard = memo(function CrossChainArbitrageCard({
                       <p className="font-mono text-sm">{formatPrice(opportunity.sell.price)}</p>
                     </div>
                   </div>
-
                   <div className="text-right">
                     <p className="text-xs text-muted-foreground">{t('crossChain.arbitrage.profit')}</p>
                     <p className={cn(
@@ -223,6 +247,30 @@ export const CrossChainArbitrageCard = memo(function CrossChainArbitrageCard({
                     </p>
                   </div>
                 </div>
+
+                {showGasDetails && (
+                  <div className="mt-2 flex items-center gap-2 rounded-lg bg-muted/30 p-3 text-xs">
+                    <Fuel className="h-4 w-4 text-muted-foreground" />
+                    <div className="flex-1 grid grid-cols-3 gap-4">
+                      <div>
+                        <p className="text-muted-foreground">{t('crossChain.arbitrage.buyGas')}</p>
+                        <p className="font-mono font-semibold">${formatGasCost(opportunity.fromGasCost)}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">{t('crossChain.arbitrage.sellGas')}</p>
+                        <p className="font-mono font-semibold">${formatGasCost(opportunity.toGasCost)}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">{t('crossChain.arbitrage.bridgeGas')}</p>
+                        <p className="font-mono font-semibold">${formatGasCost(opportunity.bridgeCost)}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-muted-foreground">{t('crossChain.arbitrage.totalGas')}</p>
+                      <p className="font-mono font-semibold text-blue-600">${formatGasCost(opportunity.gasCostEstimate)}</p>
+                    </div>
+                  </div>
+                )}
 
                 {opportunity.warnings.length > 0 && (
                   <div className="mt-2 flex items-start gap-1 rounded bg-yellow-500/10 p-2 text-xs text-yellow-700">

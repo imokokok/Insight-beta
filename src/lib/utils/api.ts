@@ -170,11 +170,15 @@ export async function fetchApiData<T>(
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-    const res = await fetch(normalizedInput, {
-      ...init,
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
+    let res: Response;
+    try {
+      res = await fetch(normalizedInput, {
+        ...init,
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     let json: unknown;
     try {

@@ -1,6 +1,8 @@
 /**
  * API Types - API 相关类型
+ *
+ * 注意：API 请求和响应类型已迁移到各自的 API 路由文件中
+ * 此文件保留为占位符，避免破坏性更改
  */
 
-export * from './requests';
-export * from './responses';
+export {};

@@ -82,6 +82,26 @@ class SyncManager {
   private syncFunctions = new Map<OracleProtocol, SyncFunction>();
   private priceWriter: PriceWriter | null = null;
   private syncExecutionLocks = new Map<string, Promise<void>>();
+  private syncLockSet = new Set<string>(); // 原子锁集合
+
+  /**
+   * 获取同步锁（原子操作）
+   * @returns 是否成功获取锁
+   */
+  private acquireSyncLock(instanceId: string): boolean {
+    if (this.syncLockSet.has(instanceId)) {
+      return false;
+    }
+    this.syncLockSet.add(instanceId);
+    return true;
+  }
+
+  /**
+   * 释放同步锁
+   */
+  private releaseSyncLock(instanceId: string): void {
+    this.syncLockSet.delete(instanceId);
+  }
 
   /**
    * 注册协议特定的同步函数
@@ -194,24 +214,20 @@ class SyncManager {
     syncFn: SyncFunction,
     config: SyncConfig,
   ): Promise<void> {
-    // 等待之前的同步完成（防止竞态条件）
-    while (this.syncExecutionLocks.has(instanceId)) {
-      await this.syncExecutionLocks.get(instanceId);
-    }
-
-    const state = this.syncStates.get(instanceId);
-    if (!state || state.isRunning) {
+    // 使用原子锁机制防止竞态条件
+    const lockKey = `sync:${instanceId}`;
+    
+    // 尝试获取锁
+    if (!this.acquireSyncLock(instanceId)) {
+      logger.debug('Sync already in progress, skipping', { instanceId });
       return;
     }
 
-    // 创建执行锁
-    let lockResolve: (() => void) | undefined;
-    const lockPromise = new Promise<void>((resolve) => {
-      lockResolve = resolve;
-    });
-    this.syncExecutionLocks.set(instanceId, lockPromise);
-
-    state.isRunning = true;
+    const state = this.syncStates.get(instanceId);
+    if (!state) {
+      this.releaseSyncLock(instanceId);
+      return;
+    }
 
     if (!instance) {
       throw new Error(`Instance ${instanceId} not found`);
@@ -285,21 +301,23 @@ class SyncManager {
         // 使用 setImmediate 避免递归调用栈溢出
         state.isRunning = false;
         this.syncExecutionLocks.delete(instanceId);
-        if (lockResolve) {
-          lockResolve();
-        }
+        this.releaseSyncLock(instanceId); // 释放原子锁
         // 使用 setImmediate 将重试放入事件循环，避免递归栈溢出
-        setImmediate(() => {
-          void this.executeSync(instanceId, instance, syncFn, config);
-        });
+        // 检查实例是否仍在运行，防止服务停止后仍执行重试
+        if (this.syncIntervals.has(instanceId)) {
+          setImmediate(() => {
+            // 再次检查，确保在 setImmediate 回调执行时实例仍然存在
+            if (this.syncIntervals.has(instanceId)) {
+              void this.executeSync(instanceId, instance, syncFn, config);
+            }
+          });
+        }
         return;
       }
     } finally {
       state.isRunning = false;
       this.syncExecutionLocks.delete(instanceId);
-      if (lockResolve) {
-        lockResolve();
-      }
+      this.releaseSyncLock(instanceId); // 释放原子锁
     }
   }
 }

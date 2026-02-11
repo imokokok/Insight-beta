@@ -12,10 +12,11 @@ import { TrendingDown, TrendingUp } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { CARD_COLORS } from '@/lib/theme/colors';
 
 import { DataFreshnessIndicator } from '../DataFreshnessIndicator';
 
-export type StatCardColor = 'blue' | 'green' | 'red' | 'purple' | 'orange' | 'cyan' | 'pink';
+export type StatCardColor = keyof typeof CARD_COLORS;
 export type StatCardVariant = 'simple' | 'enhanced' | 'animated';
 
 export interface StatCardProps {
@@ -60,57 +61,7 @@ export interface StatCardProps {
 const colorConfig: Record<
   StatCardColor,
   { bg: string; text: string; border: string; gradient: string; iconBg: string }
-> = {
-  blue: {
-    bg: 'bg-blue-50',
-    text: 'text-blue-600',
-    border: 'border-blue-100',
-    gradient: 'from-blue-500/10 to-transparent',
-    iconBg: 'bg-blue-100',
-  },
-  green: {
-    bg: 'bg-green-50',
-    text: 'text-green-600',
-    border: 'border-green-100',
-    gradient: 'from-green-500/10 to-transparent',
-    iconBg: 'bg-green-100',
-  },
-  red: {
-    bg: 'bg-red-50',
-    text: 'text-red-600',
-    border: 'border-red-100',
-    gradient: 'from-red-500/10 to-transparent',
-    iconBg: 'bg-red-100',
-  },
-  purple: {
-    bg: 'bg-purple-50',
-    text: 'text-purple-600',
-    border: 'border-purple-100',
-    gradient: 'from-purple-500/10 to-transparent',
-    iconBg: 'bg-purple-100',
-  },
-  orange: {
-    bg: 'bg-orange-50',
-    text: 'text-orange-600',
-    border: 'border-orange-100',
-    gradient: 'from-orange-500/10 to-transparent',
-    iconBg: 'bg-orange-100',
-  },
-  cyan: {
-    bg: 'bg-cyan-50',
-    text: 'text-cyan-600',
-    border: 'border-cyan-100',
-    gradient: 'from-cyan-500/10 to-transparent',
-    iconBg: 'bg-cyan-100',
-  },
-  pink: {
-    bg: 'bg-pink-50',
-    text: 'text-pink-600',
-    border: 'border-pink-100',
-    gradient: 'from-pink-500/10 to-transparent',
-    iconBg: 'bg-pink-100',
-  },
-};
+> = CARD_COLORS;
 
 /**
  * 迷你趋势图组件
@@ -129,9 +80,10 @@ function Sparkline({ data, color }: { data: number[]; color: StatCardColor }) {
   });
 
   const pathD = `M ${points.join(' L ')}`;
-  const colorClasses: Record<StatCardColor, string> = {
+  const colorClasses: Record<string, string> = {
     blue: 'stroke-blue-500',
     green: 'stroke-green-500',
+    amber: 'stroke-amber-500',
     red: 'stroke-red-500',
     purple: 'stroke-purple-500',
     orange: 'stroke-orange-500',

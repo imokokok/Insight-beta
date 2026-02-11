@@ -10,6 +10,8 @@
 
 import useSWR from 'swr';
 
+import { createSWRConfig, REALTIME_CONFIG } from '@/hooks/common/useSWRConfig';
+
 import type {
   ComparisonFilter,
   ComparisonView,
@@ -18,17 +20,6 @@ import type {
   PriceHeatmapData,
   RealtimeComparisonItem,
 } from '@/lib/types/oracle/comparison';
-
-// ============================================================================
-// 基础配置
-// ============================================================================
-
-const SWR_CONFIG = {
-  refreshInterval: 30000, // 30 秒自动刷新
-  dedupingInterval: 2000, // 2 秒去重
-  errorRetryCount: 3,     // 错误重试 3 次
-  revalidateOnFocus: false, // 切换窗口时不自动刷新
-};
 
 // ============================================================================
 // 热力图数据 Hook
@@ -45,7 +36,7 @@ export function useHeatmapData({ filter, enabled = true }: UseHeatmapOptions) {
   const { data, error, isLoading, mutate } = useSWR<PriceHeatmapData>(
     cacheKey,
     () => fetchHeatmapData(filter),
-    SWR_CONFIG,
+    createSWRConfig(),
   );
 
   return {
@@ -87,7 +78,7 @@ export function useLatencyData({ filter, enabled = true }: UseLatencyOptions) {
   const { data, error, isLoading, mutate } = useSWR<LatencyAnalysis>(
     cacheKey,
     () => fetchLatencyData(filter),
-    SWR_CONFIG,
+    createSWRConfig(),
   );
 
   return {
@@ -129,7 +120,7 @@ export function useCostData({ filter, enabled = true }: UseCostOptions) {
   const { data, error, isLoading, mutate } = useSWR<CostComparison>(
     cacheKey,
     () => fetchCostData(filter),
-    SWR_CONFIG,
+    createSWRConfig(),
   );
 
   return {
@@ -169,17 +160,14 @@ interface UseRealtimeOptions {
 export function useRealtimeData({
   filter,
   enabled = true,
-  refreshInterval = 5000, // 实时数据 5 秒刷新
+  refreshInterval = REALTIME_CONFIG.refreshInterval,
 }: UseRealtimeOptions) {
   const cacheKey = enabled ? ['realtime', filter] : null;
 
   const { data, error, isLoading, mutate } = useSWR<RealtimeComparisonItem[]>(
     cacheKey,
     () => fetchRealtimeData(filter),
-    {
-      ...SWR_CONFIG,
-      refreshInterval, // 实时数据更频繁刷新
-    },
+    createSWRConfig({ refreshInterval }),
   );
 
   return {

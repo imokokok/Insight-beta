@@ -480,7 +480,7 @@ function SummaryStats({ report }: { report: DeviationReport | null }) {
         title="Avg Deviation"
         value={`${(summary.avgDeviationAcrossAll * 100).toFixed(2)}%`}
         icon={<Activity className="h-5 w-5" />}
-        color="orange"
+        color="amber"
       />
       <StatCard
         title="Most Volatile"

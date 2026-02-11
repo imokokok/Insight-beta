@@ -40,7 +40,7 @@ function ChartBackground({ activeTab }: { activeTab: TabKey }) {
           activeTab === 'markets' ? 'opacity-20' : 'opacity-0',
         )}
       >
-        <div className="absolute -top-[10%] right-[20%] h-[120%] w-[60%] rounded-full bg-gradient-to-b from-orange-200/30 via-amber-100/10 to-transparent blur-3xl" />
+        <div className="absolute -top-[10%] right-[20%] h-[120%] w-[60%] rounded-full bg-gradient-to-b from-amber-200/30 via-amber-100/10 to-transparent blur-3xl" />
         <div className="absolute bottom-0 left-0 h-[50%] w-[40%] rounded-full bg-gradient-to-tr from-red-100/20 via-transparent to-transparent blur-2xl" />
       </div>
       <div

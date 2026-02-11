@@ -2,6 +2,18 @@ import { env } from './config/env';
 
 const isProd = env.NODE_ENV === 'production';
 
+let sentry: typeof import('@sentry/nextjs') | null = null;
+
+async function loadSentry() {
+  if (sentry !== null) return sentry;
+  try {
+    sentry = await import('@sentry/nextjs');
+    return sentry;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Supported log levels with severity ordering
  */
@@ -114,12 +126,22 @@ const REDACTION_RULES: RedactionRule[] = [
 const SENSITIVE_PATTERNS = [
   // 以太坊私钥 (64位 hex)
   { pattern: /\b0x[a-f0-9]{64}\b/gi, name: 'eth_private_key' },
+  // Solana 私钥 (Base58, 88-96 字符)
+  { pattern: /\b[1-9A-HJ-NP-Za-km-z]{88,96}\b/g, name: 'solana_private_key' },
+  // BIP39 助记词 (12/24个单词)
+  { pattern: /\b(?:[a-z]+\s+){11,23}[a-z]+\b/gi, name: 'mnemonic' },
+  // RPC URL 中的认证信息
+  { pattern: /(https?:\/\/)[^@\s]+@/gi, name: 'url_auth', replace: '$1<REDACTED>@' },
   // API Keys - Stripe 格式
   { pattern: /\b(sk|pk)_(live|test)_[a-zA-Z0-9]{24,}\b/gi, name: 'stripe_key' },
   // JWT Token
   { pattern: /\beyJ[a-zA-Z0-9_-]*\.eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*\b/g, name: 'jwt_token' },
   // 基础认证头
   { pattern: /\bBasic\s+[a-zA-Z0-9+/=]{20,}\b/gi, name: 'basic_auth' },
+  // AWS Access Key ID
+  { pattern: /\bAKIA[0-9A-Z]{16}\b/g, name: 'aws_access_key' },
+  // GitHub Token
+  { pattern: /\bghp_[a-zA-Z0-9]{36}\b/g, name: 'github_token' },
 ] as const;
 
 // 字段名模式（用于检测敏感字段）
@@ -380,6 +402,23 @@ function shouldLog(level: LogLevel): boolean {
  * @param metadata - Additional metadata for the log
  * @returns Structured log object
  */
+/**
+ * 清理日志消息，防止日志注入攻击
+ * 移除控制字符和格式化字符
+ */
+function sanitizeLogMessage(message: string): string {
+  return (
+    message
+      // 移除控制字符
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+      // 转义换行符
+      .replace(/\n/g, '\\n')
+      .replace(/\r/g, '\\r')
+      // 转义制表符
+      .replace(/\t/g, '\\t')
+  );
+}
+
 function createLogEntry(level: LogLevel, message: string, metadata?: Record<string, unknown>) {
   const timestamp = new Date().toISOString();
   const context = normalizeMetadata(getLogContext());
@@ -387,7 +426,7 @@ function createLogEntry(level: LogLevel, message: string, metadata?: Record<stri
   const logEntry = {
     level: level.toUpperCase(),
     timestamp,
-    message: redactUrlsInText(message),
+    message: sanitizeLogMessage(redactUrlsInText(message)),
     ...(context || {}),
     ...(normalizedMetadata || {}),
   };
@@ -468,10 +507,19 @@ export const logger = {
    * @param message - Log message
    * @param metadata - Additional context metadata, should include error object if available
    */
-  error: (message: string, metadata?: Record<string, unknown>) => {
+  error: async (message: string, metadata?: Record<string, unknown>) => {
     if (shouldLog('error')) {
       const logEntry = createLogEntry('error', message, metadata);
       console.error(formatLogEntry(logEntry));
+
+      const sentryModule = await loadSentry();
+      if (sentryModule) {
+        const errorObj = metadata?.error instanceof Error ? metadata.error : new Error(message);
+        sentryModule.captureException(errorObj, {
+          level: 'error',
+          extra: { ...metadata, message },
+        });
+      }
     }
   },
 
@@ -480,10 +528,19 @@ export const logger = {
    * @param message - Log message
    * @param metadata - Additional context metadata, should include error object if available
    */
-  fatal: (message: string, metadata?: Record<string, unknown>) => {
+  fatal: async (message: string, metadata?: Record<string, unknown>) => {
     if (shouldLog('fatal')) {
       const logEntry = createLogEntry('fatal', message, metadata);
       console.error(formatLogEntry(logEntry));
+
+      const sentryModule = await loadSentry();
+      if (sentryModule) {
+        const errorObj = metadata?.error instanceof Error ? metadata.error : new Error(message);
+        sentryModule.captureException(errorObj, {
+          level: 'fatal',
+          extra: { ...metadata, message },
+        });
+      }
     }
   },
 };

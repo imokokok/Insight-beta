@@ -129,13 +129,9 @@ export class PriceAggregationEngine {
     // 解析交易对
     const [baseAsset, quoteAsset] = symbol.split('/');
 
-    // 计算统计数据
-    const priceValues = prices.map((p) => p.price);
-    const avgPrice = calculateMean(priceValues);
-    const medianPrice = calculateMedian(priceValues);
-    const minPrice = Math.min(...priceValues);
-    const maxPrice = Math.max(...priceValues);
-    const priceRange = maxPrice - minPrice;
+    // 计算统计数据 - 单次遍历优化性能
+    const stats = this.calculatePriceStats(prices.map((p) => p.price));
+    const { avg: avgPrice, median: medianPrice, min: minPrice, max: maxPrice, range: priceRange } = stats;
     // 价格区间百分比，小数形式 (0.01 = 1%)
     const priceRangePercent = avgPrice > 0 ? priceRange / avgPrice : 0;
 
@@ -258,6 +254,45 @@ export class PriceAggregationEngine {
     }
 
     return result.rows as Array<UnifiedPriceFeed & { instanceId: string }>;
+  }
+
+  /**
+   * 计算价格统计信息 - 单次遍历优化
+   * 同时计算平均值、中位数、最小值、最大值和范围
+   */
+  private calculatePriceStats(values: number[]): {
+    avg: number;
+    median: number;
+    min: number;
+    max: number;
+    range: number;
+  } {
+    if (values.length === 0) {
+      return { avg: 0, median: 0, min: 0, max: 0, range: 0 };
+    }
+
+    let sum = 0;
+    let min = values[0]!;
+    let max = values[0]!;
+
+    for (const v of values) {
+      sum += v;
+      if (v < min) min = v;
+      if (v > max) max = v;
+    }
+
+    const sorted = [...values].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    const median =
+      sorted.length % 2 !== 0 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2;
+
+    return {
+      avg: sum / values.length,
+      median,
+      min,
+      max,
+      range: max - min,
+    };
   }
 
   /**

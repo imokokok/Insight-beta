@@ -3,6 +3,8 @@
 import useSWR from 'swr';
 import type { SWRConfiguration } from 'swr';
 
+import { createSWRConfig, createSWRInfiniteConfig, REALTIME_CONFIG } from '@/hooks/common/useSWRConfig';
+
 const fetcher = async (url: string) => {
   const res = await fetch(url);
   if (!res.ok) {
@@ -204,14 +206,6 @@ export interface CrossChainHistoricalResponse {
   timestamp: string;
 }
 
-const DEFAULT_REFRESH_INTERVAL = 60000;
-const SWR_CONFIG: SWRConfiguration = {
-  revalidateOnFocus: false,
-  dedupingInterval: 10000,
-  errorRetryCount: 3,
-  errorRetryInterval: 5000,
-};
-
 export function useCrossChainComparison(
   symbol: string | null,
   chains?: string[],
@@ -228,11 +222,7 @@ export function useCrossChainComparison(
   return useSWR<{ success: boolean; data: CrossChainComparisonResult }>(
     url,
     fetcher,
-    {
-      refreshInterval: DEFAULT_REFRESH_INTERVAL,
-      ...SWR_CONFIG,
-      ...options,
-    }
+    createSWRConfig(options),
   );
 }
 
@@ -252,11 +242,7 @@ export function useCrossChainArbitrage(
   return useSWR<CrossChainArbitrageResponse>(
     url,
     fetcher,
-    {
-      refreshInterval: DEFAULT_REFRESH_INTERVAL,
-      ...SWR_CONFIG,
-      ...options,
-    }
+    createSWRConfig(options),
   );
 }
 
@@ -274,11 +260,7 @@ export function useCrossChainAlerts(
   return useSWR<CrossChainDeviationAlertsResponse>(
     url,
     fetcher,
-    {
-      refreshInterval: DEFAULT_REFRESH_INTERVAL,
-      ...SWR_CONFIG,
-      ...options,
-    }
+    createSWRConfig(options),
   );
 }
 
@@ -288,11 +270,7 @@ export function useCrossChainDashboard(
   return useSWR<CrossChainDashboardResponse>(
     '/api/cross-chain/dashboard',
     fetcher,
-    {
-      refreshInterval: DEFAULT_REFRESH_INTERVAL,
-      ...SWR_CONFIG,
-      ...options,
-    }
+    createSWRConfig(options),
   );
 }
 
@@ -318,10 +296,6 @@ export function useCrossChainHistory(
   return useSWR<CrossChainHistoricalResponse>(
     url,
     fetcher,
-    {
-      refreshInterval: 300000,
-      ...SWR_CONFIG,
-      ...options,
-    }
+    createSWRConfig({ ...options, refreshInterval: 300000 }),
   );
 }

@@ -317,6 +317,16 @@ export function useGlobalShortcuts(options: UseGlobalShortcutsOptions) {
     if (!enabled) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      // 忽略在输入框中的键盘事件
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+
       const { key, ctrlKey, altKey, shiftKey, metaKey } = e;
 
       // 检查是否有匹配的绑定

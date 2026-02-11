@@ -10,6 +10,12 @@
 import type { SupportedChain, OracleProtocol } from '@/lib/types/unifiedOracleTypes';
 import { BaseSyncManager, type IOracleClient, type SyncConfig } from '@/server/oracle/sync/BaseSyncManager';
 
+// ============================================================================
+// 单例存储 - 使用模块级变量确保全局唯一
+// ============================================================================
+
+const singletonInstances = new Map<string, BaseSyncManager>();
+
 /**
  * 同步管理器配置
  */
@@ -111,31 +117,43 @@ export class SyncManagerFactory {
 
   /**
    * 创建带单例的同步管理器
+   * 使用全局 Map 存储实例，确保同一配置只创建一个实例
    */
   static createSingleton(
     config: SyncManagerFactoryConfig,
     clientFactory: ClientFactory,
     symbolProvider: SymbolProvider
   ): SyncManagerExports {
-    const ManagerClass = this.createManagerClass(config, clientFactory, symbolProvider);
+    // 使用协议作为单例键
+    const singletonKey = config.protocol;
     
-    // 单例模式
-    let instance: BaseSyncManager | null = null;
+    // 检查是否已存在实例
+    let instance = singletonInstances.get(singletonKey);
     
-    const getInstance = (): BaseSyncManager => {
-      if (!instance) {
-        instance = new ManagerClass();
-      }
-      return instance;
-    };
+    if (!instance) {
+      const ManagerClass = this.createManagerClass(config, clientFactory, symbolProvider);
+      instance = new ManagerClass();
+      singletonInstances.set(singletonKey, instance);
+    }
 
     return {
-      startSync: (instanceId: string) => getInstance().startSync(instanceId),
-      stopSync: (instanceId: string) => getInstance().stopSync(instanceId),
-      stopAllSync: () => getInstance().stopAllSync(),
-      cleanupData: () => getInstance().cleanupOldData(),
-      manager: getInstance(),
+      startSync: (instanceId: string) => instance!.startSync(instanceId),
+      stopSync: (instanceId: string) => instance!.stopSync(instanceId),
+      stopAllSync: () => instance!.stopAllSync(),
+      cleanupData: () => instance!.cleanupOldData(),
+      manager: instance!,
     };
+  }
+
+  /**
+   * 清理单例实例（用于测试或重置）
+   */
+  static clearSingleton(protocol?: OracleProtocol): void {
+    if (protocol) {
+      singletonInstances.delete(protocol);
+    } else {
+      singletonInstances.clear();
+    }
   }
 }
 

@@ -162,7 +162,7 @@ function DetectionTypeChart({ metrics }: { metrics: DetectionMetrics | null }) {
 
   const typeConfig: Record<string, { label: string; color: string }> = {
     flash_loan_attack: { label: 'Flash Loan Attack', color: 'bg-red-500' },
-    sandwich_attack: { label: 'Sandwich Attack', color: 'bg-orange-500' },
+    sandwich_attack: { label: 'Sandwich Attack', color: 'bg-amber-500' },
     liquidity_manipulation: { label: 'Liquidity Manipulation', color: 'bg-yellow-500' },
     statistical_anomaly: { label: 'Statistical Anomaly', color: 'bg-blue-500' },
     price_manipulation: { label: 'Price Manipulation', color: 'bg-purple-500' },
@@ -218,7 +218,7 @@ function SeverityDistribution({ metrics }: { metrics: DetectionMetrics | null })
 
   const severityConfig: Record<string, { label: string; color: string; bg: string }> = {
     critical: { label: 'Critical', color: 'text-red-500', bg: 'bg-red-500' },
-    high: { label: 'High', color: 'text-orange-500', bg: 'bg-orange-500' },
+    high: { label: 'High', color: 'text-amber-500', bg: 'bg-amber-500' },
     medium: { label: 'Medium', color: 'text-yellow-500', bg: 'bg-yellow-500' },
     low: { label: 'Low', color: 'text-blue-500', bg: 'bg-blue-500' },
   };
@@ -279,7 +279,7 @@ function DetectionList({
       case 'critical':
         return 'bg-red-500 text-white';
       case 'high':
-        return 'bg-orange-500 text-white';
+        return 'bg-amber-500 text-white';
       case 'medium':
         return 'bg-yellow-500 text-black';
       case 'low':
@@ -328,7 +328,7 @@ function DetectionList({
                 detection.severity === 'critical'
                   ? 'bg-red-500'
                   : detection.severity === 'high'
-                    ? 'bg-orange-500'
+                    ? 'bg-amber-500'
                     : detection.severity === 'medium'
                       ? 'bg-yellow-500'
                       : 'bg-blue-500',
@@ -412,7 +412,7 @@ function DetectionDetail({
                   detection.severity === 'critical'
                     ? 'bg-red-500'
                     : detection.severity === 'high'
-                      ? 'bg-orange-500'
+                      ? 'bg-amber-500'
                       : detection.severity === 'medium'
                         ? 'bg-yellow-500 text-black'
                         : 'bg-blue-500'
@@ -692,9 +692,9 @@ export default function SecurityDashboardPage() {
           <StatCard
             title="Critical Alerts"
             value={metrics?.detectionsBySeverity?.critical || 0}
-            icon={<AlertTriangle className="h-5 w-5 text-orange-600" />}
+            icon={<AlertTriangle className="h-5 w-5 text-amber-600" />}
             loading={loading}
-            color="orange"
+            color="amber"
             trend={{ value: 5.2, isPositive: false }}
             sparklineData={[2, 3, 5, 4, 6, 8, 7]}
           />

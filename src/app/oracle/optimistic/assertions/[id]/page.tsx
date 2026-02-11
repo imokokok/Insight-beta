@@ -188,9 +188,9 @@ export default function UMAAssertionDetailPage() {
 
             {/* Dispute Info */}
             {assertion.dispute && (
-              <div className="rounded-xl border border-orange-500/20 bg-orange-500/10 p-6">
+              <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-6">
                 <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-                  <Gavel className="h-5 w-5 text-orange-400" />
+                  <Gavel className="h-5 w-5 text-amber-400" />
                   Dispute Details
                 </h3>
                 <div className="space-y-4">
@@ -215,7 +215,7 @@ export default function UMAAssertionDetailPage() {
                   <div className="mt-4">
                     <div className="mb-2 flex justify-between text-sm">
                       <span className="text-green-400">For</span>
-                      <span className="text-orange-400">Against</span>
+                      <span className="text-amber-400">Against</span>
                     </div>
                     <div className="flex h-3 overflow-hidden rounded-full bg-white/10">
                       <div
@@ -229,7 +229,7 @@ export default function UMAAssertionDetailPage() {
                         }}
                       />
                       <div
-                        className="bg-orange-500"
+                        className="bg-amber-500"
                         style={{
                           width: `${
                             (Number(assertion.dispute.votingRound.votesAgainst) /

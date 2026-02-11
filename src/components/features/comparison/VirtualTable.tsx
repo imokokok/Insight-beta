@@ -142,7 +142,7 @@ export function getDeviationColor(deviation: number): string {
   // deviation 是小数形式 (如 0.01 = 1%)
   const abs = Math.abs(deviation);
   if (abs > 0.02) return 'text-red-600 bg-red-50';
-  if (abs > 0.01) return 'text-orange-600 bg-orange-50';
+  if (abs > 0.01) return 'text-amber-600 bg-amber-50';
   if (abs > 0.005) return 'text-yellow-600 bg-yellow-50';
   return 'text-emerald-600 bg-emerald-50';
 }

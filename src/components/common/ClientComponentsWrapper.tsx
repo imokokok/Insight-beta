@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 
 import { Onboarding, FirstTimeTour, useFirstTimeTour } from '@/components/features/onboarding';
+import { GasCacheWarmer } from '@/components/features/gas/GasCacheWarmer';
 
 interface ClientComponentsWrapperProps {
   children: ReactNode;
@@ -28,6 +29,7 @@ export function ClientComponentsWrapper({ children }: ClientComponentsWrapperPro
       {children}
       <Onboarding />
       <TourWrapper />
+      <GasCacheWarmer />
     </>
   );
 }

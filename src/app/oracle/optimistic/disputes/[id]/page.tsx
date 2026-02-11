@@ -162,13 +162,13 @@ export default function UMADisputeDetailPage() {
                 <div className="flex h-4 overflow-hidden rounded-full bg-white/10">
                   <div className="h-full bg-green-500" style={{ width: `${forPercentage}%` }} />
                   <div
-                    className="h-full bg-orange-500"
+                    className="h-full bg-amber-500"
                     style={{ width: `${againstPercentage}%` }}
                   />
                 </div>
                 <div className="mt-1 flex justify-between text-sm">
                   <span />
-                  <span className="text-orange-400">
+                  <span className="text-amber-400">
                     {t('uma.assertionDetail.against')} ({againstPercentage.toFixed(1)}%) -{' '}
                     {Number(dispute.votingRound.votesAgainstAssertion).toLocaleString()}{' '}
                     {t('disputes.card.votes')}
@@ -191,7 +191,7 @@ export default function UMADisputeDetailPage() {
                     <span
                       className={cn(
                         dispute.resolution?.winner === 'Asserter' && 'text-green-400',
-                        dispute.resolution?.winner === 'Disputer' && 'text-orange-400',
+                        dispute.resolution?.winner === 'Disputer' && 'text-amber-400',
                         dispute.resolution?.winner === 'Tie' && 'text-gray-400',
                       )}
                     >
@@ -254,7 +254,7 @@ export default function UMADisputeDetailPage() {
                   dispute.resolution.winner === 'Asserter'
                     ? 'border border-green-500/20 bg-green-500/10'
                     : dispute.resolution.winner === 'Disputer'
-                      ? 'border border-orange-500/20 bg-orange-500/10'
+                      ? 'border border-amber-500/20 bg-amber-500/10'
                       : 'border border-gray-500/20 bg-gray-500/10',
                 )}
               >
@@ -322,14 +322,14 @@ export default function UMADisputeDetailPage() {
             {/* Disputer */}
             <div className="rounded-xl bg-white/5 p-6">
               <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-                <User className="h-5 w-5 text-orange-400" />
+                <User className="h-5 w-5 text-amber-400" />
                 {t('disputes.disputer')}
               </h3>
               <a
                 href={`https://etherscan.io/address/${dispute.disputer}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 font-mono transition-colors hover:text-orange-400"
+                className="flex items-center gap-2 font-mono transition-colors hover:text-amber-400"
               >
                 {dispute.disputer.slice(0, 6)}...{dispute.disputer.slice(-4)}
                 <ExternalLink className="h-3 w-3" />

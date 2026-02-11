@@ -89,9 +89,9 @@ export function DataFreshnessIndicator({
       return {
         level: 'stale' as FreshnessLevel,
         icon: AlertTriangle,
-        color: 'text-orange-600',
-        bgColor: 'bg-orange-50',
-        borderColor: 'border-orange-200',
+        color: 'text-amber-600',
+        bgColor: 'bg-amber-50',
+        borderColor: 'border-amber-200',
         label: t('protocol:freshness.stale'),
         description: t('protocol:freshness.staleDesc'),
         seconds,
@@ -157,7 +157,7 @@ export function DataFreshnessBadge({ lastUpdate, className }: DataFreshnessBadge
   if (seconds >= 600) {
     config = { color: 'bg-rose-100 text-rose-800', label: t('protocol:freshness.expired') };
   } else if (seconds >= 300) {
-    config = { color: 'bg-orange-100 text-orange-800', label: t('protocol:freshness.stale') };
+    config = { color: 'bg-amber-100 text-amber-800', label: t('protocol:freshness.stale') };
   } else if (seconds >= 60) {
     config = { color: 'bg-amber-100 text-amber-800', label: t('protocol:freshness.warning') };
   }

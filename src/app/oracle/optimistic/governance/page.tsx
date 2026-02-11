@@ -135,7 +135,7 @@ export default function GovernancePage() {
       case 'Queued':
         return 'bg-yellow-500/20 text-yellow-400';
       case 'Expired':
-        return 'bg-orange-500/20 text-orange-400';
+        return 'bg-amber-500/20 text-amber-400';
       default:
         return 'bg-gray-500/20 text-gray-400';
     }

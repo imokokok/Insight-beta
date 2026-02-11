@@ -54,6 +54,26 @@ export async function GET(request: NextRequest) {
         : protocolData;
 
       const prices = filteredData.map((p) => p.price);
+      // 检查 prices 数组是否为空
+      if (prices.length === 0) {
+        return {
+          symbol: comparison.symbol,
+          protocols: [],
+          consensus: {
+            median: comparison.recommendedPrice,
+            mean: comparison.recommendedPrice,
+            weighted: comparison.recommendedPrice,
+          },
+          spread: {
+            min: comparison.recommendedPrice,
+            max: comparison.recommendedPrice,
+            absolute: 0,
+            percent: 0,
+          },
+          lastUpdated: comparison.timestamp,
+        };
+      }
+
       const min = Math.min(...prices);
       const max = Math.max(...prices);
       const mean = prices.reduce((a, b) => a + b, 0) / prices.length;

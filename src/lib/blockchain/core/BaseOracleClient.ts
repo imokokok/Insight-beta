@@ -202,6 +202,8 @@ export abstract class BaseOracleClient implements IOracleClient {
     const failed: Array<{ symbol: string; error: string }> = [];
 
     for (const result of results) {
+      // 跳过 null 结果（并发执行中出现错误）
+      if (result === null) continue;
       if (result.success && result.price) {
         prices.push(result.price);
       } else if (!result.success) {
@@ -322,47 +324,51 @@ export abstract class BaseOracleClient implements IOracleClient {
 
   /**
    * 并发控制执行
+   * 使用 p-limit 模式正确实现并发限制
    */
   protected async withConcurrencyLimit<T, R>(
     items: T[],
     fn: (item: T) => Promise<R>,
     limit: number,
-  ): Promise<R[]> {
-    const results: R[] = new Array(items.length);
-    const executing: Promise<void>[] = [];
-
-    for (const [index, item] of items.entries()) {
-      const promise = fn(item)
-        .then((result) => {
-          results[index] = result;
-        })
-        .catch((error) => {
-          this.logger.error('Concurrency operation failed', {
-            error: error instanceof Error ? error.message : String(error),
-            index,
-          });
-          results[index] = null as unknown as R;
+  ): Promise<(R | null)[]> {
+    const results: (R | null)[] = new Array(items.length).fill(null);
+    
+    // 使用队列模式实现并发控制
+    const queue = items.map((item, index) => ({ item, index }));
+    const executing = new Set<Promise<void>>();
+    
+    const processItem = async ({ item, index }: { item: T; index: number }) => {
+      try {
+        const result = await fn(item);
+        results[index] = result;
+      } catch (error) {
+        this.logger.error('Concurrency operation failed', {
+          error: error instanceof Error ? error.message : String(error),
+          index,
         });
-
-      executing.push(promise);
-
-      if (executing.length >= limit) {
-        await Promise.race(executing);
-        // 清理已完成的 promise
-        const completedIndex = executing.findIndex(
-          (p) =>
-            p === promise ||
-            Promise.resolve(p)
-              .then(() => true)
-              .catch(() => true),
-        );
-        if (completedIndex > -1) {
-          executing.splice(completedIndex, 1);
+        // 错误时保持 null（已初始化）
+      }
+    };
+    
+    // 分批处理，确保并发数不超过限制
+    while (queue.length > 0 || executing.size > 0) {
+      // 启动新的任务直到达到并发限制
+      while (executing.size < limit && queue.length > 0) {
+        const next = queue.shift();
+        if (next) {
+          const promise = processItem(next).finally(() => {
+            executing.delete(promise);
+          });
+          executing.add(promise);
         }
+      }
+      
+      // 等待至少一个任务完成
+      if (executing.size > 0) {
+        await Promise.race(executing);
       }
     }
 
-    await Promise.all(executing);
     return results;
   }
 

@@ -94,6 +94,10 @@ export class RealtimePriceService extends EventEmitter {
   private pendingSymbols: Set<string> = new Set();
   private batchTimer: NodeJS.Timeout | null = null;
 
+  // 缓存上限配置
+  private readonly MAX_CACHE_SIZE = 1000;
+  private readonly MAX_SUBSCRIPTIONS = 500;
+
   constructor() {
     super();
     this.engine = new PriceAggregationEngine();
@@ -138,6 +142,10 @@ export class RealtimePriceService extends EventEmitter {
 
     this.subscriptions.clear();
     this.priceCache.clear();
+    this.pendingSymbols.clear();
+
+    // 移除所有事件监听器，防止内存泄漏
+    this.removeAllListeners();
 
     logger.info('RealtimePriceService stopped');
     this.emit('stopped');
@@ -158,6 +166,13 @@ export class RealtimePriceService extends EventEmitter {
       chains?: SupportedChain[];
     } = {},
   ): void {
+    // 检查订阅数量上限
+    if (this.subscriptions.size >= this.MAX_SUBSCRIPTIONS) {
+      logger.warn('Max subscriptions reached, rejecting new subscription', { clientId });
+      this.emit('subscriptionRejected', { clientId, reason: 'max_subscriptions_reached' });
+      return;
+    }
+
     const subscription: Subscription = {
       symbols: [...symbols],
       protocols: options.protocols || [],
@@ -227,7 +242,10 @@ export class RealtimePriceService extends EventEmitter {
    */
   private startAggregationLoop(): void {
     this.aggregationTimer = setInterval(() => {
-      this.performAggregation();
+      // 添加错误处理，防止定时器回调中的未处理 Promise 拒绝
+      this.performAggregation().catch((error) => {
+        logger.error('Scheduled aggregation failed', { error });
+      });
     }, CONFIG.AGGREGATION_INTERVAL_MS);
   }
 
@@ -263,10 +281,17 @@ export class RealtimePriceService extends EventEmitter {
       // 批量聚合（带并发控制）
       const results = await this.batchAggregate(symbolsToAggregate);
 
-      // 更新缓存
+      // 更新缓存（带上限检查）
       const updates: PriceUpdate[] = [];
       for (const result of results) {
         if (result) {
+          // 检查缓存大小，如果超过上限则清理最旧的条目
+          if (this.priceCache.size >= this.MAX_CACHE_SIZE) {
+            const oldestKey = this.priceCache.keys().next().value;
+            if (oldestKey) {
+              this.priceCache.delete(oldestKey);
+            }
+          }
           this.priceCache.set(result.symbol, {
             data: result,
             timestamp: Date.now(),

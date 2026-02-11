@@ -38,7 +38,7 @@ const chainColors: Record<string, { bg: string; border: string; text: string }> 
   arbitrum: { bg: 'bg-blue-600/10', border: 'border-blue-600/30', text: 'text-blue-600' },
   optimism: { bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-500' },
   base: { bg: 'bg-blue-400/10', border: 'border-blue-400/30', text: 'text-blue-400' },
-  solana: { bg: 'bg-gradient-to-r from-purple-500/10 to-orange-500/10', border: 'border-purple-500/30', text: 'text-purple-400' },
+  solana: { bg: 'bg-gradient-to-r from-purple-500/10 to-amber-500/10', border: 'border-purple-500/30', text: 'text-purple-400' },
 };
 
 function formatDeviation(value: number): string {

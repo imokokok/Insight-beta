@@ -222,7 +222,7 @@ export default function UMAAssertionsPage() {
                         className={cn(
                           'rounded-full px-2 py-1 text-xs font-medium',
                           assertion.status === 'Proposed' && 'bg-yellow-500/20 text-yellow-400',
-                          assertion.status === 'Disputed' && 'bg-orange-500/20 text-orange-400',
+                          assertion.status === 'Disputed' && 'bg-amber-500/20 text-amber-400',
                           assertion.status === 'Settled' && 'bg-green-500/20 text-green-400',
                         )}
                       >

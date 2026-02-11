@@ -13,6 +13,13 @@ export interface EvaluatorContext {
   [key: string]: unknown;
 }
 
+export interface EvaluationResult {
+  success: boolean;
+  result: boolean;
+  error?: string;
+  errorType?: 'length' | 'dangerous_pattern' | 'too_complex' | 'parse_error' | 'runtime';
+}
+
 export class SafeExpressionEvaluator {
   private static readonly MAX_EXPRESSION_LENGTH = 500;
   private static readonly MAX_TOKENS = 100;
@@ -95,45 +102,90 @@ export class SafeExpressionEvaluator {
    * 评估表达式
    */
   static evaluate(expression: string, context: EvaluatorContext = {}): boolean {
+    const result = this.evaluateDetailed(expression, context);
+    return result.result;
+  }
+
+  /**
+   * 详细评估表达式，返回完整结果信息
+   */
+  static evaluateDetailed(expression: string, context: EvaluatorContext = {}): EvaluationResult {
+    // 1. 长度检查
+    if (expression.length > this.MAX_EXPRESSION_LENGTH) {
+      logger.warn('Expression too long', {
+        length: expression.length,
+        max: this.MAX_EXPRESSION_LENGTH,
+      });
+      return {
+        success: false,
+        result: false,
+        error: `Expression too long: ${expression.length} > ${this.MAX_EXPRESSION_LENGTH}`,
+        errorType: 'length',
+      };
+    }
+
+    // 2. 危险模式检查
+    for (const pattern of this.DANGEROUS_PATTERNS) {
+      if (pattern.test(expression)) {
+        logger.warn('Expression contains dangerous pattern', {
+          expression,
+          pattern: pattern.source,
+        });
+        return {
+          success: false,
+          result: false,
+          error: `Expression contains dangerous pattern: ${pattern.source}`,
+          errorType: 'dangerous_pattern',
+        };
+      }
+    }
+
+    // 3. 解析并评估表达式
+    let tokens: string[];
     try {
-      // 1. 长度检查
-      if (expression.length > this.MAX_EXPRESSION_LENGTH) {
-        logger.warn('Expression too long', {
-          length: expression.length,
-          max: this.MAX_EXPRESSION_LENGTH,
-        });
-        return false;
-      }
-
-      // 2. 危险模式检查
-      for (const pattern of this.DANGEROUS_PATTERNS) {
-        if (pattern.test(expression)) {
-          logger.warn('Expression contains dangerous pattern', {
-            expression,
-            pattern: pattern.source,
-          });
-          return false;
-        }
-      }
-
-      // 3. 解析并评估表达式
-      const tokens = this.tokenize(expression);
-      if (tokens.length > this.MAX_TOKENS) {
-        logger.warn('Expression too complex', {
-          tokens: tokens.length,
-          max: this.MAX_TOKENS,
-        });
-        return false;
-      }
-
-      const result = this.parseExpression(tokens, context);
-      return Boolean(result);
+      tokens = this.tokenize(expression);
     } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      logger.warn('Expression tokenization failed', { error: errorMsg, expression });
+      return {
+        success: false,
+        result: false,
+        error: `Tokenization failed: ${errorMsg}`,
+        errorType: 'parse_error',
+      };
+    }
+
+    if (tokens.length > this.MAX_TOKENS) {
+      logger.warn('Expression too complex', {
+        tokens: tokens.length,
+        max: this.MAX_TOKENS,
+      });
+      return {
+        success: false,
+        result: false,
+        error: `Expression too complex: ${tokens.length} > ${this.MAX_TOKENS} tokens`,
+        errorType: 'too_complex',
+      };
+    }
+
+    try {
+      const result = this.parseExpression(tokens, context);
+      return {
+        success: true,
+        result: Boolean(result),
+      };
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
       logger.error('Expression evaluation failed', {
-        error: error instanceof Error ? error.message : String(error),
+        error: errorMsg,
         expression: expression.substring(0, 100),
       });
-      return false;
+      return {
+        success: false,
+        result: false,
+        error: `Evaluation failed: ${errorMsg}`,
+        errorType: 'runtime',
+      };
     }
   }
 

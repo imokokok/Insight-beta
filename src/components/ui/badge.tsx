@@ -3,6 +3,9 @@ import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
+import { STATUS_THEME_COLORS, type StatusType } from '@/lib/types/common';
+
+export type { StatusType };
 
 // ============================================================================
 // 基础 Badge 变体
@@ -54,22 +57,6 @@ const Badge = React.memo(function Badge({ className, variant, size, ...props }: 
 // StatusBadge - 状态徽章
 // ============================================================================
 
-export type StatusType =
-  | 'active'
-  | 'stale'
-  | 'error'
-  | 'pending'
-  | 'settled'
-  | 'disputed'
-  | 'expired'
-  | 'inactive'
-  | 'resolved'
-  | 'unknown'
-  | 'online'
-  | 'offline'
-  | 'warning'
-  | 'success';
-
 interface StatusBadgeProps {
   status: StatusType;
   text?: string;
@@ -80,99 +67,16 @@ interface StatusBadgeProps {
 }
 
 const statusConfig: Record<
-  StatusType,
+  string,
   {
     label: string;
     dotColor: string;
     bgColor: string;
     textColor: string;
   }
-> = {
-  active: {
-    label: 'Active',
-    dotColor: 'bg-emerald-500',
-    bgColor: 'bg-emerald-100',
-    textColor: 'text-emerald-700',
-  },
-  stale: {
-    label: 'Stale',
-    dotColor: 'bg-amber-500',
-    bgColor: 'bg-amber-100',
-    textColor: 'text-amber-700',
-  },
-  error: {
-    label: 'Error',
-    dotColor: 'bg-rose-500',
-    bgColor: 'bg-rose-100',
-    textColor: 'text-rose-700',
-  },
-  pending: {
-    label: 'Pending',
-    dotColor: 'bg-blue-500',
-    bgColor: 'bg-blue-100',
-    textColor: 'text-blue-700',
-  },
-  settled: {
-    label: 'Settled',
-    dotColor: 'bg-emerald-500',
-    bgColor: 'bg-emerald-100',
-    textColor: 'text-emerald-700',
-  },
-  disputed: {
-    label: 'Disputed',
-    dotColor: 'bg-orange-500',
-    bgColor: 'bg-orange-100',
-    textColor: 'text-orange-700',
-  },
-  expired: {
-    label: 'Expired',
-    dotColor: 'bg-gray-400',
-    bgColor: 'bg-gray-100',
-    textColor: 'text-gray-700',
-  },
-  inactive: {
-    label: 'Inactive',
-    dotColor: 'bg-gray-400',
-    bgColor: 'bg-gray-100',
-    textColor: 'text-gray-700',
-  },
-  resolved: {
-    label: 'Resolved',
-    dotColor: 'bg-emerald-500',
-    bgColor: 'bg-emerald-100',
-    textColor: 'text-emerald-700',
-  },
-  unknown: {
-    label: 'Unknown',
-    dotColor: 'bg-gray-400',
-    bgColor: 'bg-gray-100',
-    textColor: 'text-gray-700',
-  },
-  online: {
-    label: 'Online',
-    dotColor: 'bg-emerald-500',
-    bgColor: 'bg-emerald-100',
-    textColor: 'text-emerald-700',
-  },
-  offline: {
-    label: 'Offline',
-    dotColor: 'bg-gray-400',
-    bgColor: 'bg-gray-100',
-    textColor: 'text-gray-700',
-  },
-  warning: {
-    label: 'Warning',
-    dotColor: 'bg-amber-500',
-    bgColor: 'bg-amber-100',
-    textColor: 'text-amber-700',
-  },
-  success: {
-    label: 'Success',
-    dotColor: 'bg-emerald-500',
-    bgColor: 'bg-emerald-100',
-    textColor: 'text-emerald-700',
-  },
-};
+> = STATUS_THEME_COLORS;
+
+const defaultStatusConfig = statusConfig.unknown;
 
 const StatusBadge = React.memo(function StatusBadge({
   status,
@@ -181,7 +85,7 @@ const StatusBadge = React.memo(function StatusBadge({
   className,
   size = 'md',
 }: StatusBadgeProps) {
-  const config = statusConfig[status] || statusConfig.unknown;
+  const config = statusConfig[status] || defaultStatusConfig;
   const shouldPulse = pulse && (status === 'online' || status === 'active');
 
   const sizeClasses = {

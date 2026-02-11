@@ -29,6 +29,16 @@ const LAST_GOOD_SPOT_MAX_AGE_MS = 5 * 60_000;
 const LAST_GOOD_DEX_MAX_AGE_MS = 2 * 60_000;
 const PROVIDER_BACKOFF_MAX_MS = 60_000;
 
+// Synthetic price configuration for mock data
+const SYNTHETIC_PRICES: Record<string, number> = {
+  BTC: 65000,
+  ETH: 3500,
+  DEFAULT: 100,
+};
+const SYNTHETIC_TREND_PERIOD_MS = 24 * 60 * 60 * 1000 * 7; // 7 days
+const SYNTHETIC_TREND_AMPLITUDE = 0.1; // 10%
+const SYNTHETIC_NOISE_AMPLITUDE = 0.02; // 2%
+
 // Cache size limits to prevent unbounded memory growth
 const MAX_CACHE_SIZE = 1000;
 const MAX_INFLIGHT_SIZE = 100;
@@ -92,7 +102,14 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
       } catch {
         text = 'Failed to read response body';
       }
-      throw new Error(`http_${res.status}:${text.slice(0, 200)}`);
+      // 提供更结构化的错误信息
+      const errorInfo = {
+        status: res.status,
+        statusText: res.statusText,
+        url: res.url,
+        body: text.slice(0, 200),
+      };
+      throw new Error(`HTTP_ERROR: ${JSON.stringify(errorInfo)}`);
     }
     return (await res.json()) as T;
   } finally {
@@ -159,6 +176,10 @@ async function cachedNumber(
   const hit = cache.get(key);
   if (hit !== null) return hit;
 
+  // 检查是否已有进行中的请求，避免竞态条件
+  const existing = inflight.get(key);
+  if (existing) return existing;
+
   // Enforce inflight size limit before adding new request
   if (inflight.size >= maxInflightSize) {
     const oldestKey = inflight.keys().next().value;
@@ -167,8 +188,7 @@ async function cachedNumber(
     }
   }
 
-  const existing = inflight.get(key);
-  if (existing) return existing;
+  // 创建新请求
   const p = fetcher()
     .then((v) => {
       // P1 优化：使用 LRU 缓存的 set 方法
@@ -425,6 +445,12 @@ async function fetchDexTwapPriceUsdUncached(
       args: [[seconds, 0]],
     })) as [bigint[], bigint[]];
 
+    // 检查数组长度和元素存在性
+    if (!Array.isArray(tickCumulatives) || tickCumulatives.length < 2) {
+      console.error('Invalid tickCumulatives response', { tickCumulatives });
+      return null;
+    }
+
     const c0 = tickCumulatives[0];
     const c1 = tickCumulatives[1];
     if (c0 === undefined || c1 === undefined) return null;
@@ -476,10 +502,10 @@ async function fetchDexTwapPriceUsdCached(
 
 function syntheticSpotUsd(sym: string) {
   const symbol = normalizeSymbol(sym);
-  const basePrice = symbol === 'BTC' ? 65000 : symbol === 'ETH' ? 3500 : symbol ? 100 : 3500;
+  const basePrice = SYNTHETIC_PRICES[symbol] ?? SYNTHETIC_PRICES.DEFAULT;
   const time = Date.now();
-  const trend = Math.sin(time / (24 * 60 * 60 * 1000 * 7)) * (basePrice * 0.1);
-  const noise = (secureRandom() - 0.5) * (basePrice * 0.02);
+  const trend = Math.sin(time / SYNTHETIC_TREND_PERIOD_MS) * (basePrice * SYNTHETIC_TREND_AMPLITUDE);
+  const noise = (secureRandom() - 0.5) * (basePrice * SYNTHETIC_NOISE_AMPLITUDE);
   const refPrice = basePrice + trend + noise;
   return Number(refPrice.toFixed(2));
 }
@@ -490,16 +516,23 @@ function generateMockHistory(symbol: string, safeDays: number): PricePoint[] {
   const msPerDay = 24 * 60 * 60 * 1000;
 
   const sym = normalizeSymbol(symbol);
-  const basePrice = sym === 'BTC' ? 65000 : sym === 'ETH' ? 3500 : sym ? 100 : 3500;
+  const basePrice = SYNTHETIC_PRICES[sym] ?? SYNTHETIC_PRICES.DEFAULT;
+
+  // 预计算常量，避免在循环中重复计算
+  const trendAmplitude = basePrice * SYNTHETIC_TREND_AMPLITUDE;
+  const noiseAmplitude = basePrice * SYNTHETIC_NOISE_AMPLITUDE;
+  const oracleNoiseAmplitude = basePrice * 0.01;
+  const deviationThreshold = 0.9;
+  const deviationEventAmplitude = basePrice * 0.03;
 
   for (let i = safeDays; i >= 0; i--) {
     const time = now - i * msPerDay;
     const date = new Date(time).toISOString();
-    const trend = Math.sin(time / (msPerDay * 7)) * (basePrice * 0.1);
-    const noise = (secureRandom() - 0.5) * (basePrice * 0.02);
+    const trend = Math.sin(time / (msPerDay * 7)) * trendAmplitude;
+    const noise = (secureRandom() - 0.5) * noiseAmplitude;
     const refPrice = basePrice + trend + noise;
-    const deviationEvent = secureRandom() > 0.9 ? basePrice * 0.03 : 0;
-    const oraclePrice = refPrice + (secureRandom() - 0.5) * (basePrice * 0.01) + deviationEvent;
+    const deviationEvent = secureRandom() > deviationThreshold ? deviationEventAmplitude : 0;
+    const oraclePrice = refPrice + (secureRandom() - 0.5) * oracleNoiseAmplitude + deviationEvent;
     const deviation = Math.abs(oraclePrice - refPrice) / refPrice;
 
     points.push({

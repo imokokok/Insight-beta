@@ -31,7 +31,7 @@ const getTabBorder = (activeTab: TabKey) =>
       : activeTab === 'sync'
         ? 'border-blue-100/20'
         : activeTab === 'markets'
-          ? 'border-orange-100/20'
+          ? 'border-amber-100/20'
           : 'border-green-100/20';
 
 const ACCURACY_THRESHOLD_WARNING = 0.02;

@@ -56,14 +56,17 @@ function createResponse<T>(data: T, page?: number, limit?: number, total?: numbe
   return response;
 }
 
-function createErrorResponse(error: string): ApiResponse<never> {
-  return {
-    ok: false,
-    error,
-    meta: {
-      timestamp: new Date().toISOString(),
+function createErrorResponse(error: string, status: number = 400): Response {
+  return Response.json(
+    {
+      ok: false,
+      error,
+      meta: {
+        timestamp: new Date().toISOString(),
+      },
     },
-  };
+    { status }
+  );
 }
 
 // ============================================================================
@@ -82,6 +85,17 @@ async function handleReportRequest(
     const windowHours = parseInt(windowHoursParam || '24', 10);
     const page = parseInt(pageParam || '1', 10);
     const limit = parseInt(limitParam || '50', 10);
+
+    // 验证输入参数
+    if (!Number.isFinite(windowHours) || windowHours <= 0 || windowHours > 8760) {
+      return createErrorResponse('Invalid windowHours parameter');
+    }
+    if (!Number.isFinite(page) || page < 1) {
+      return createErrorResponse('Invalid page parameter');
+    }
+    if (!Number.isFinite(limit) || limit < 1 || limit > 1000) {
+      return createErrorResponse('Invalid limit parameter');
+    }
 
     // 解析交易对列表
     let symbols: string[] | undefined;
@@ -257,17 +271,24 @@ async function fetchDeviationHistoryPaginated(
   limit: number,
 ): Promise<{ data: PriceDeviationPoint[]; total: number }> {
   try {
-    // 先获取总数
+    // 验证 windowHours 范围
+    if (!Number.isFinite(windowHours) || windowHours <= 0 || windowHours > 8760) {
+      throw new Error('Invalid windowHours parameter');
+    }
+
+    // 先获取总数 - 使用参数化查询防止 SQL 注入
+    // 使用 INTERVAL '1 hours' * $2 的方式避免字符串拼接
     const countResult = await query(
       `
       SELECT COUNT(*) as total
       FROM cross_oracle_comparisons
       WHERE symbol = $1
-        AND timestamp > NOW() - INTERVAL '${windowHours} hours'
+        AND timestamp > NOW() - INTERVAL '1 hours' * $2
       `,
-      [symbol],
+      [symbol, windowHours],
     );
-    const total = parseInt(countResult.rows[0]?.total || '0', 10);
+
+    const total = parseInt(countResult.rows[0]?.total ?? '0', 10);
 
     if (total === 0) {
       // 返回模拟数据
@@ -275,7 +296,7 @@ async function fetchDeviationHistoryPaginated(
       return { data: mockData, total: mockData.length };
     }
 
-    // 分页查询数据
+    // 分页查询数据 - 使用参数化查询防止 SQL 注入
     const offset = (page - 1) * limit;
     const result = await query(
       `
@@ -292,11 +313,11 @@ async function fetchDeviationHistoryPaginated(
         max_price
       FROM cross_oracle_comparisons
       WHERE symbol = $1
-        AND timestamp > NOW() - INTERVAL '${windowHours} hours'
+        AND timestamp > NOW() - INTERVAL '1 hours' * $4
       ORDER BY timestamp DESC
       LIMIT $2 OFFSET $3
       `,
-      [symbol, limit, offset],
+      [symbol, limit, offset, windowHours],
     );
 
     const data: PriceDeviationPoint[] = result.rows.map((row) => ({

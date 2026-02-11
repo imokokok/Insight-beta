@@ -134,7 +134,7 @@ function RecipientInputComponent({ rule, onPatchRule, t }: RecipientInputProps) 
   const characterCountColor = useMemo(() => {
     const percentage = (localValue.length / MAX_LENGTH) * 100;
     if (percentage >= 90) return 'text-red-500';
-    if (percentage >= 75) return 'text-orange-500';
+    if (percentage >= 75) return 'text-amber-500';
     return 'text-gray-400';
   }, [localValue.length]);
 
@@ -146,7 +146,7 @@ function RecipientInputComponent({ rule, onPatchRule, t }: RecipientInputProps) 
             {t('oracle.alerts.recipient')}
           </div>
           {retryCount > 0 && (
-            <div className="animate-pulse text-xs text-orange-500">
+            <div className="animate-pulse text-xs text-amber-500">
               {t('oracle.alerts.retryAttempt')}
             </div>
           )}

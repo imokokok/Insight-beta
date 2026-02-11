@@ -30,6 +30,12 @@ export const crossChain = {
     profit: 'Net Profit',
     execute: 'Execute',
     moreOpportunities: 'and {{count}} more opportunities...',
+    buyGas: 'Buy Gas',
+    sellGas: 'Sell Gas',
+    bridgeGas: 'Bridge Gas',
+    totalGas: 'Total Gas Cost',
+    showGasDetails: 'Show Gas Details',
+    hideGasDetails: 'Hide Gas Details',
   },
   dashboard: {
     title: 'Cross-Chain Overview',

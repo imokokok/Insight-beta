@@ -26,6 +26,35 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const page = parseInt(searchParams.get('page') || '1', 10);
     const limit = parseInt(searchParams.get('limit') || '50', 10);
 
+    // 验证 symbol 格式 (例如: ETH/USD)
+    // 先检查长度防止 ReDoS 攻击，再使用正则验证
+    if (symbol.length > 20 || !/^[A-Z]{2,10}\/[A-Z]{3}$/.test(symbol)) {
+      return NextResponse.json(
+        { error: 'Invalid symbol format. Expected format: XXX/YYY' },
+        { status: 400 },
+      );
+    }
+
+    // 验证并限制参数范围
+    if (!Number.isFinite(hours) || hours < 1 || hours > 168) {
+      return NextResponse.json(
+        { error: 'Invalid hours parameter. Must be between 1 and 168' },
+        { status: 400 },
+      );
+    }
+    if (!Number.isFinite(page) || page < 1) {
+      return NextResponse.json(
+        { error: 'Invalid page parameter' },
+        { status: 400 },
+      );
+    }
+    if (!Number.isFinite(limit) || limit < 1 || limit > 100) {
+      return NextResponse.json(
+        { error: 'Invalid limit parameter. Must be between 1 and 100' },
+        { status: 400 },
+      );
+    }
+
     // 动态导入 PriceAggregationEngine 以避免构建时执行
     const { PriceAggregationEngine } = await import('@/server/oracle/priceAggregation');
     const priceEngine = new PriceAggregationEngine();

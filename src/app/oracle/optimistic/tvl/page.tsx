@@ -169,7 +169,7 @@ export default function UMATvlPage() {
               <StatCard
                 title="Active Disputes"
                 value={current.activeDisputes.toLocaleString()}
-                icon={<BarChart3 className="h-5 w-5 text-orange-400" />}
+                icon={<BarChart3 className="h-5 w-5 text-amber-400" />}
               />
             </div>
 

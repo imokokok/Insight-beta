@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useEffect, useRef } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import useSWRInfinite from 'swr/infinite';
 
@@ -46,14 +46,11 @@ export function useInfiniteList<T>(
     ...options,
   });
 
-  // Flatten items from all pages
   const items = useMemo(() => (pages ? pages.flatMap((page) => page.items) : []), [pages]);
 
-  // Check if we can load more
   const lastPage = pages ? pages[pages.length - 1] : null;
   const hasMore = Boolean(lastPage?.nextCursor);
 
-  // Loading states
   const loading = isLoading || (!pages && !error);
   const loadingMore = !!(size > 0 && pages && typeof pages[size - 1] === 'undefined');
 
@@ -77,46 +74,4 @@ export function useInfiniteList<T>(
     refresh,
     mutate,
   };
-}
-
-// ============================================================================
-// useDebouncedCallback - 防抖回调函数 Hook
-// ============================================================================
-
-/**
- * useDebouncedCallback Hook - 防抖回调函数
- *
- * 用于防抖处理回调函数，常用于搜索按钮点击等场景
- *
- * @example
- * const debouncedSearch = useDebouncedCallback(
- *   (query: string) => fetchSearchResults(query),
- *   300
- * );
- */
-export function useDebouncedCallback<T extends (...args: unknown[]) => unknown>(
-  callback: T,
-  delay: number,
-): (...args: Parameters<T>) => void {
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
-
-  return useCallback(
-    (...args: Parameters<T>) => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      timeoutRef.current = setTimeout(() => {
-        callback(...args);
-      }, delay);
-    },
-    [callback, delay],
-  );
 }

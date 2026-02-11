@@ -205,7 +205,8 @@ export class APIKeyManager {
   async validateAPIKey(keyPlaintext: string): Promise<AuthResult> {
     try {
       const keyHash = this.hashKey(keyPlaintext);
-      const keyPrefix = keyPlaintext.substring(0, 8);
+      // 使用 Array.from 确保正确处理多字节 UTF-8 字符（如 emoji）
+      const keyPrefix = Array.from(keyPlaintext).slice(0, 8).join('');
 
       // 查找 API Key
       const result = await query(

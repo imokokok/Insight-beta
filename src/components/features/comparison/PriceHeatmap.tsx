@@ -34,7 +34,7 @@ const deviationConfig: Record<
     icon: <ArrowUpRight className="h-3 w-3" />,
   },
   high: {
-    color: 'bg-orange-500/20 hover:bg-orange-500/30 border-orange-500/30',
+    color: 'bg-amber-500/20 hover:bg-amber-500/30 border-amber-500/30',
     labelKey: 'comparison.status.significantDeviation',
     icon: <ArrowUpRight className="h-3 w-3" />,
   },

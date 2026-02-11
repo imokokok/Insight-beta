@@ -21,6 +21,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useI18n } from '@/i18n';
 import type { CrossChainDashboardData } from '@/hooks/useCrossChain';
 import { cn } from '@/lib/utils';
+import { STATUS_COLORS } from '@/lib/types/common';
 
 interface CrossChainDashboardCardProps {
   data?: CrossChainDashboardData;
@@ -28,32 +29,13 @@ interface CrossChainDashboardCardProps {
   onRefresh?: () => void;
 }
 
-const statusConfig = {
-  healthy: {
-    icon: CheckCircle,
-    color: 'text-emerald-600',
-    bg: 'bg-emerald-500/10',
-    border: 'border-emerald-500/30',
-    badge: 'bg-emerald-500',
-    label: 'Healthy',
-  },
-  degraded: {
-    icon: AlertTriangle,
-    color: 'text-yellow-600',
-    bg: 'bg-yellow-500/10',
-    border: 'border-yellow-500/30',
-    badge: 'bg-yellow-500',
-    label: 'Degraded',
-  },
-  offline: {
-    icon: XCircle,
-    color: 'text-red-600',
-    bg: 'bg-red-500/10',
-    border: 'border-red-500/30',
-    badge: 'bg-red-500',
-    label: 'Offline',
-  },
+const statusConfig: Record<string, { icon: typeof CheckCircle; primary: string; bg: string; text: string; border: string; dot: string; label: string; color: string }> = {
+  healthy: { icon: CheckCircle, ...STATUS_COLORS.healthy, label: 'Healthy', color: 'text-emerald-600' },
+  degraded: { icon: AlertTriangle, ...STATUS_COLORS.degraded, label: 'Degraded', color: 'text-amber-600' },
+  offline: { icon: XCircle, ...STATUS_COLORS.unhealthy, label: 'Offline', color: 'text-red-600' },
 };
+
+const defaultStatusConfig = statusConfig.offline;
 
 function formatStaleness(minutes: number): string {
   if (minutes < 1) return '<1m ago';
@@ -252,7 +234,7 @@ export const CrossChainDashboardCard = memo(function CrossChainDashboardCard({
         {/* Chain Health Grid */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {data.chainHealth.map((chain) => {
-            const config = statusConfig[chain.status] ?? statusConfig.offline;
+            const config = statusConfig[chain.status] ?? defaultStatusConfig;
             const StatusIcon = config.icon;
 
             return (

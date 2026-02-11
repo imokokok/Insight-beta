@@ -194,6 +194,16 @@ export function determineRecommendationSource(validCount: number): string {
  * Z-Score = (x - μ) / σ
  * 异常值定义：|Z-Score| > threshold
  *
+ * 为什么选择 Z-Score:
+ * 1. 基于统计学原理，假设数据服从正态分布
+ * 2. threshold=3 时，约 99.7% 的数据被视为正常（3-sigma 原则）
+ * 3. 对价格数据中的极端偏离敏感，适合检测异常报价
+ *
+ * 限制:
+ * - 需要至少 3 个数据点
+ * - 假设数据近似正态分布
+ * - 对异常值本身敏感（可使用修正 Z-Score 改进）
+ *
  * @param values - 数值数组
  * @param threshold - Z-Score 阈值，默认 3（表示 99.7% 的数据在正常范围内）
  * @returns 异常值的索引数组

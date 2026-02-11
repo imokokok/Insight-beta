@@ -168,6 +168,7 @@ export class ManipulationDetector {
   private detectionHistory: ManipulationDetection[] = [];
   private lastAlertTime: Map<string, number> = new Map();
   private readonly maxPriceHistoryPerFeed: number;
+  private readonly maxDetectionHistorySize: number = 10000; // 最大检测历史记录数
 
   constructor(config: Partial<ManipulationDetectionConfig> = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };
@@ -268,8 +269,11 @@ export class ManipulationDetector {
       status: 'pending',
     };
 
-    // 记录检测历史
+    // 记录检测历史，限制大小防止内存泄漏
     this.detectionHistory.push(detection);
+    if (this.detectionHistory.length > this.maxDetectionHistorySize) {
+      this.detectionHistory = this.detectionHistory.slice(-this.maxDetectionHistorySize);
+    }
     this.lastAlertTime.set(feedKey, Date.now());
 
     logger.warn(`Manipulation detected: ${detection.type} (${detection.severity})`, {
@@ -304,9 +308,13 @@ export class ManipulationDetector {
     // 计算统计指标
     const prices = history.map((p) => p.price);
     const mean = prices.reduce((a, b) => a + b, 0) / prices.length;
-    const stdDev = Math.sqrt(
-      prices.reduce((sum, p) => sum + Math.pow(p - mean, 2), 0) / prices.length,
-    );
+    const variance = prices.reduce((sum, p) => sum + Math.pow(p - mean, 2), 0) / prices.length;
+    const stdDev = Math.sqrt(variance);
+
+    // 防止除零：如果标准差为0，说明所有价格相同，无异常
+    if (stdDev === 0) {
+      return null;
+    }
 
     // 计算Z-score
     const zScore = Math.abs((currentPrice - mean) / stdDev);
@@ -558,8 +566,12 @@ export class ManipulationDetector {
 
     const currentItem = history[history.length - 1];
     const previousItem = history[history.length - 2];
+    // 确保 previousItem 存在，否则返回 null
+    if (!previousItem) {
+      return null;
+    }
     const currentLiquidity = currentItem?.liquidity ?? 0;
-    const previousLiquidity = previousItem?.liquidity ?? currentLiquidity;
+    const previousLiquidity = previousItem.liquidity ?? currentLiquidity;
 
     if (previousLiquidity === 0) {
       return null;

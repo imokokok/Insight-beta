@@ -136,8 +136,8 @@ export function LatencyAnalysisView({
         icon: Activity,
         trend: null,
         trendValue: t('comparison.latency.currentPeak'),
-        color: 'text-orange-600',
-        bgColor: 'bg-orange-50',
+        color: 'text-amber-600',
+        bgColor: 'bg-amber-50',
       },
       {
         title: t('comparison.latency.summary.healthyNodes'),

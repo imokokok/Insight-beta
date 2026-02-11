@@ -52,18 +52,10 @@ export const CACHE_CONFIG = {
 } as const;
 
 // ============================================================================
-// 协议配置
+// 协议颜色（已移至 lib/theme/colors.ts）
 // ============================================================================
 
-export const PROTOCOL_COLORS = Object.freeze({
-  chainlink: '#375bd2',
-  pyth: '#e6c35c',
-  band: '#00b2a9',
-  api3: '#7ce3cb',
-  redstone: '#ff6b6b',
-  uma: '#ff4d4d',
-  default: '#888888',
-} as const);
+export { PROTOCOL_COLORS } from '@/lib/theme/colors';
 
 // ============================================================================
 // 数据新鲜度阈值配置（秒）

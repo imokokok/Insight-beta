@@ -49,7 +49,7 @@ export class AlertService {
         url: env.INSIGHT_WEBHOOK_URL,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        timeoutMs: Number(env.INSIGHT_WEBHOOK_TIMEOUT_MS) || 10000,
+        timeoutMs: env.INSIGHT_WEBHOOK_TIMEOUT_MS,
         retryCount: 3,
       });
     }
@@ -67,12 +67,12 @@ export class AlertService {
       this.notificationService.registerChannel('email', {
         type: 'email',
         smtpHost: env.INSIGHT_SMTP_HOST,
-        smtpPort: Number(env.INSIGHT_SMTP_PORT) || 587,
+        smtpPort: env.INSIGHT_SMTP_PORT,
         username: env.INSIGHT_SMTP_USER,
         password: env.INSIGHT_SMTP_PASS || '',
         fromAddress: env.INSIGHT_FROM_EMAIL || env.INSIGHT_SMTP_USER,
         toAddresses: env.INSIGHT_DEFAULT_EMAIL ? [env.INSIGHT_DEFAULT_EMAIL] : [],
-        useTLS: (Number(env.INSIGHT_SMTP_PORT) || 587) === 465,
+        useTLS: env.INSIGHT_SMTP_PORT === 465,
       });
     }
 

@@ -35,9 +35,9 @@ export function OracleHealthScore({ score, isLoading }: OracleHealthScoreProps) 
     statusText = t('oracle.healthScore.good');
   }
   if (score < 80) {
-    color = 'text-orange-500';
-    bgColor = 'bg-orange-50';
-    ringColor = 'ring-orange-100';
+    color = 'text-amber-500';
+    bgColor = 'bg-amber-50';
+    ringColor = 'ring-amber-100';
     Icon = Activity;
     statusText = t('oracle.healthScore.degraded');
   }

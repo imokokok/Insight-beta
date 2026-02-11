@@ -145,7 +145,7 @@ export function Onboarding({ onComplete, onSkip, className, forceOpen }: Onboard
           id: 'proto_disputes',
           title: t('onboarding.steps.protocol.disputes.title'),
           description: t('onboarding.steps.protocol.disputes.description'),
-          icon: <Users className="h-10 w-10 text-orange-600" />,
+          icon: <Users className="h-10 w-10 text-amber-600" />,
         },
         {
           id: 'proto_alerts',

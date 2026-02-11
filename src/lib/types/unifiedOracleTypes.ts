@@ -231,15 +231,20 @@ export type OracleHealthStatus = {
 // 价格数据类型
 // ============================================================================
 
-export type UnifiedPriceFeed = {
+// 必填字段类型
+export type UnifiedPriceFeedRequired = {
   id: string;
   symbol: string;
+  price: number;
+  timestamp: number;
+};
+
+// 可选字段类型
+export type UnifiedPriceFeedOptional = {
   protocol?: OracleProtocol;
   chain?: SupportedChain;
   instanceId?: string;
-  price: number;
   priceRaw?: bigint;
-  timestamp: number;
   confidence?: number;
   source?: string;
   sources?: string[];
@@ -252,6 +257,9 @@ export type UnifiedPriceFeed = {
   txHash?: string;
   logIndex?: number;
 };
+
+// 完整类型
+export type UnifiedPriceFeed = UnifiedPriceFeedRequired & UnifiedPriceFeedOptional;
 
 export type UnifiedPriceUpdate = {
   feedId: string;

@@ -91,45 +91,87 @@ function validateParams(searchParams: URLSearchParams): {
     });
   }
 
-  // 验证字符串参数长度（防止 DoS）
+  // 验证字符串参数（防止 DoS 和注入攻击）
+  const VALID_PARAM_REGEX = /^[a-zA-Z0-9_\-\/]+$/;
+
   const protocol = searchParams.get('protocol') || undefined;
-  if (protocol && protocol.length > 50) {
-    throw new ValidationError('Protocol parameter too long', {
-      code: 'INVALID_PROTOCOL',
-      details: { protocolLength: protocol.length },
-    });
+  if (protocol) {
+    if (protocol.length > 50) {
+      throw new ValidationError('Protocol parameter too long', {
+        code: 'INVALID_PROTOCOL',
+        details: { protocolLength: protocol.length },
+      });
+    }
+    if (!VALID_PARAM_REGEX.test(protocol)) {
+      throw new ValidationError('Invalid protocol format', {
+        code: 'INVALID_PROTOCOL_FORMAT',
+        details: { protocol },
+      });
+    }
   }
 
   const symbol = searchParams.get('symbol') || undefined;
-  if (symbol && symbol.length > 50) {
-    throw new ValidationError('Symbol parameter too long', {
-      code: 'INVALID_SYMBOL',
-      details: { symbolLength: symbol.length },
-    });
+  if (symbol) {
+    if (symbol.length > 50) {
+      throw new ValidationError('Symbol parameter too long', {
+        code: 'INVALID_SYMBOL',
+        details: { symbolLength: symbol.length },
+      });
+    }
+    if (!VALID_PARAM_REGEX.test(symbol)) {
+      throw new ValidationError('Invalid symbol format', {
+        code: 'INVALID_SYMBOL_FORMAT',
+        details: { symbol },
+      });
+    }
   }
 
   const chain = searchParams.get('chain') || undefined;
-  if (chain && chain.length > 50) {
-    throw new ValidationError('Chain parameter too long', {
-      code: 'INVALID_CHAIN',
-      details: { chainLength: chain.length },
-    });
+  if (chain) {
+    if (chain.length > 50) {
+      throw new ValidationError('Chain parameter too long', {
+        code: 'INVALID_CHAIN',
+        details: { chainLength: chain.length },
+      });
+    }
+    if (!VALID_PARAM_REGEX.test(chain)) {
+      throw new ValidationError('Invalid chain format', {
+        code: 'INVALID_CHAIN_FORMAT',
+        details: { chain },
+      });
+    }
   }
 
   const type = searchParams.get('type') || undefined;
-  if (type && type.length > 50) {
-    throw new ValidationError('Type parameter too long', {
-      code: 'INVALID_TYPE',
-      details: { typeLength: type.length },
-    });
+  if (type) {
+    if (type.length > 50) {
+      throw new ValidationError('Type parameter too long', {
+        code: 'INVALID_TYPE',
+        details: { typeLength: type.length },
+      });
+    }
+    if (!VALID_PARAM_REGEX.test(type)) {
+      throw new ValidationError('Invalid type format', {
+        code: 'INVALID_TYPE_FORMAT',
+        details: { type },
+      });
+    }
   }
 
   const severity = searchParams.get('severity') || undefined;
-  if (severity && severity.length > 20) {
-    throw new ValidationError('Severity parameter too long', {
-      code: 'INVALID_SEVERITY',
-      details: { severityLength: severity.length },
-    });
+  if (severity) {
+    if (severity.length > 20) {
+      throw new ValidationError('Severity parameter too long', {
+        code: 'INVALID_SEVERITY',
+        details: { severityLength: severity.length },
+      });
+    }
+    if (!VALID_PARAM_REGEX.test(severity)) {
+      throw new ValidationError('Invalid severity format', {
+        code: 'INVALID_SEVERITY_FORMAT',
+        details: { severity },
+      });
+    }
   }
 
   return {

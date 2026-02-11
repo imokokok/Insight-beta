@@ -28,6 +28,7 @@ interface CacheEntry<T> {
 
 export class MemoryCache implements CacheProvider {
   private store = new Map<string, CacheEntry<unknown>>();
+  private accessOrder: string[] = []; // 访问顺序列表，用于 LRU
   private maxSize: number;
   private regexCache = new Map<string, RegExp>(); // 缓存编译后的正则表达式
   private prefixIndex = new Map<string, Set<string>>(); // 前缀索引，用于快速清除
@@ -99,17 +100,25 @@ export class MemoryCache implements CacheProvider {
 
     if (Date.now() > entry.expiresAt) {
       this.store.delete(key);
+      this.removeFromAccessOrder(key);
       return null;
     }
+
+    // 更新访问顺序（LRU）
+    this.updateAccessOrder(key);
 
     return entry.value as T;
   }
 
   async set<T>(key: string, value: T, ttlMs: number = 60000): Promise<void> {
-    if (this.store.size >= this.maxSize) {
+    // 如果 key 已存在，先更新访问顺序
+    if (this.store.has(key)) {
+      this.updateAccessOrder(key);
+    } else if (this.store.size >= this.maxSize) {
+      // 使用 LRU 策略清理最久未使用的条目
       const removeCount = Math.max(1, Math.ceil(this.maxSize * 0.1));
       for (let i = 0; i < removeCount; i++) {
-        const oldestKey = this.store.keys().next().value;
+        const oldestKey = this.accessOrder.shift(); // 从队列头部移除最旧的
         if (oldestKey) {
           this.store.delete(oldestKey);
           this.removeFromPrefixIndex(oldestKey);
@@ -124,8 +133,34 @@ export class MemoryCache implements CacheProvider {
       expiresAt: Date.now() + ttlMs,
     });
 
+    // 添加到访问顺序列表（新条目放在末尾）
+    if (!this.accessOrder.includes(key)) {
+      this.accessOrder.push(key);
+    }
+
     // 更新前缀索引
     this.addToPrefixIndex(key);
+  }
+
+  /**
+   * 更新访问顺序（将 key 移到列表末尾）
+   */
+  private updateAccessOrder(key: string): void {
+    const index = this.accessOrder.indexOf(key);
+    if (index > -1) {
+      this.accessOrder.splice(index, 1);
+    }
+    this.accessOrder.push(key);
+  }
+
+  /**
+   * 从访问顺序列表中移除 key
+   */
+  private removeFromAccessOrder(key: string): void {
+    const index = this.accessOrder.indexOf(key);
+    if (index > -1) {
+      this.accessOrder.splice(index, 1);
+    }
   }
 
   async delete(key: string): Promise<void> {

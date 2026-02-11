@@ -390,7 +390,7 @@ function EventCard({
   const severityColors: Record<string, string> = {
     info: 'border-l-blue-500',
     warning: 'border-l-yellow-500',
-    error: 'border-l-orange-500',
+    error: 'border-l-amber-500',
     critical: 'border-l-red-500',
   };
 

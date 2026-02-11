@@ -67,6 +67,17 @@ export interface Alert {
 }
 
 // ============================================================================
+// 告警阈值常量
+const ALERT_THRESHOLDS = {
+  PRICE_DEVIATION_WARNING: 0.01, // 1%
+  PRICE_DEVIATION_CRITICAL: 0.05, // 5%
+  DATA_STALENESS_MS: 5 * 60 * 1000, // 5分钟
+  PROTOCOL_DOWN_CONSECUTIVE: 3, // 连续3次失败
+  COOLDOWN_WARNING_MS: 5 * 60 * 1000, // 5分钟
+  COOLDOWN_CRITICAL_MS: 10 * 60 * 1000, // 10分钟
+  COOLDOWN_PROTOCOL_DOWN_MS: 15 * 60 * 1000, // 15分钟
+} as const;
+
 // 告警规则引擎
 // ============================================================================
 
@@ -81,12 +92,12 @@ export class AlertRuleEngine {
     {
       id: 'rule-price-deviation-warning',
       name: '价格偏差警告',
-      description: '当价格偏差超过1%时触发警告',
+      description: `当价格偏差超过${ALERT_THRESHOLDS.PRICE_DEVIATION_WARNING * 100}%时触发警告`,
       enabled: true,
       severity: 'warning',
-      conditions: [{ type: 'price_deviation', threshold: 0.01 }],
+      conditions: [{ type: 'price_deviation', threshold: ALERT_THRESHOLDS.PRICE_DEVIATION_WARNING }],
       logic: 'OR',
-      cooldownMs: 300000, // 5分钟冷却
+      cooldownMs: ALERT_THRESHOLDS.COOLDOWN_WARNING_MS,
       channels: [{ type: 'webhook', config: { url: '/api/alerts/webhook' } }],
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -94,12 +105,12 @@ export class AlertRuleEngine {
     {
       id: 'rule-price-deviation-critical',
       name: '价格偏差严重',
-      description: '当价格偏差超过5%时触发严重告警',
+      description: `当价格偏差超过${ALERT_THRESHOLDS.PRICE_DEVIATION_CRITICAL * 100}%时触发严重告警`,
       enabled: true,
       severity: 'critical',
-      conditions: [{ type: 'price_deviation', threshold: 0.05 }],
+      conditions: [{ type: 'price_deviation', threshold: ALERT_THRESHOLDS.PRICE_DEVIATION_CRITICAL }],
       logic: 'OR',
-      cooldownMs: 600000, // 10分钟冷却
+      cooldownMs: ALERT_THRESHOLDS.COOLDOWN_CRITICAL_MS,
       channels: [
         { type: 'webhook', config: { url: '/api/alerts/webhook' } },
         { type: 'email', config: { to: 'admin@example.com' } },
@@ -114,10 +125,10 @@ export class AlertRuleEngine {
       enabled: true,
       severity: 'warning',
       conditions: [
-        { type: 'data_staleness', threshold: 300000 }, // 5分钟
+        { type: 'data_staleness', threshold: ALERT_THRESHOLDS.DATA_STALENESS_MS },
       ],
       logic: 'OR',
-      cooldownMs: 600000,
+      cooldownMs: ALERT_THRESHOLDS.COOLDOWN_CRITICAL_MS,
       channels: [{ type: 'webhook', config: { url: '/api/alerts/webhook' } }],
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -125,12 +136,12 @@ export class AlertRuleEngine {
     {
       id: 'rule-protocol-down',
       name: '协议宕机告警',
-      description: '当协议连续3次获取失败时触发',
+      description: `当协议连续${ALERT_THRESHOLDS.PROTOCOL_DOWN_CONSECUTIVE}次获取失败时触发`,
       enabled: true,
       severity: 'critical',
-      conditions: [{ type: 'protocol_down', threshold: 3, consecutiveCount: 3 }],
+      conditions: [{ type: 'protocol_down', threshold: ALERT_THRESHOLDS.PROTOCOL_DOWN_CONSECUTIVE, consecutiveCount: ALERT_THRESHOLDS.PROTOCOL_DOWN_CONSECUTIVE }],
       logic: 'OR',
-      cooldownMs: 900000, // 15分钟冷却
+      cooldownMs: ALERT_THRESHOLDS.COOLDOWN_PROTOCOL_DOWN_MS,
       channels: [
         { type: 'webhook', config: { url: '/api/alerts/webhook' } },
         { type: 'slack', config: { channel: '#alerts' } },
@@ -431,15 +442,27 @@ export class AlertRuleEngine {
   }
 
   /**
+   * HTML 转义函数，防止 XSS 攻击
+   */
+  private escapeHtml(unsafe: string): string {
+    return unsafe
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  /**
    * 生成告警消息
    */
   private generateAlertMessage(rule: AlertRule, comparison: CrossOracleComparison): string {
     const lines: string[] = [
-      `交易对: ${comparison.symbol}`,
-      `规则: ${rule.name}`,
+      `交易对: ${this.escapeHtml(comparison.symbol)}`,
+      `规则: ${this.escapeHtml(rule.name)}`,
       `偏差: ${(comparison.maxDeviationPercent * 100).toFixed(2)}%`,
       `推荐价格: $${comparison.recommendedPrice.toFixed(4)}`,
-      `异常协议: ${comparison.outlierProtocols.join(', ') || '无'}`,
+      `异常协议: ${comparison.outlierProtocols.map(p => this.escapeHtml(p)).join(', ') || '无'}`,
       `时间: ${new Date().toLocaleString()}`,
     ];
     return lines.join('\n');

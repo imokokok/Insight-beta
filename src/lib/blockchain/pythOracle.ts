@@ -161,11 +161,19 @@ export class PythClient extends EvmOracleClient {
     symbol: string,
     _feedId: string,
   ): UnifiedPriceFeed | null {
-    const [baseAsset, quoteAsset] = symbol.split('/');
+    const parts = symbol.split('/');
+    const baseAsset = parts[0] || 'UNKNOWN';
+    const quoteAsset = parts[1] || 'USD';
 
     // 格式化价格 (考虑指数)
     const formattedPrice = parseFloat(formatUnits(rawData.price, Math.abs(Number(rawData.expo))));
     const confidence = parseFloat(formatUnits(rawData.conf, Math.abs(Number(rawData.expo))));
+
+    // 检查价格有效性，防止除零
+    if (!Number.isFinite(formattedPrice) || formattedPrice <= 0) {
+      console.error('Invalid price from Pyth', { symbol, price: rawData.price, formattedPrice });
+      return null;
+    }
 
     const publishTime = new Date(Number(rawData.publishTime) * 1000);
     const stalenessSeconds = this.calculateStalenessSeconds(rawData.publishTime);
@@ -176,8 +184,8 @@ export class PythClient extends EvmOracleClient {
       DEFAULT_STALENESS_THRESHOLDS.PYTH;
     const isStale = stalenessSeconds > stalenessThreshold;
 
-    // 计算置信度百分比
-    const confidencePercent = (confidence / formattedPrice) * 100;
+    // 计算置信度百分比，确保除数不为零
+    const confidencePercent = formattedPrice > 0 ? (confidence / formattedPrice) * 100 : 0;
 
     return {
       id: `pyth-${this.chain}-${symbol}-${rawData.publishTime.toString()}`,

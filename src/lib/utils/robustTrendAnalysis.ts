@@ -125,7 +125,10 @@ export function logScaleRegression(
   const { slope, intercept } = linearRegression(x, logY);
 
   // 增长率 = exp(斜率) - 1
-  const growthRate = Math.exp(slope) - 1;
+  // 限制 slope 范围防止 Math.exp 溢出 (Math.exp(709) ≈ Infinity)
+  const MAX_SLOPE = 700;
+  const safeSlope = Math.max(-MAX_SLOPE, Math.min(MAX_SLOPE, slope));
+  const growthRate = Math.exp(safeSlope) - 1;
 
   return { slope, intercept, growthRate };
 }
@@ -154,11 +157,18 @@ function linearRegression(x: number[], y: number[]): { slope: number; intercept:
   }
 
   const denominator = n * sumXX - sumX * sumX;
-  if (denominator === 0) {
+  // 检查 denominator 是否为有限数且不为零
+  if (!Number.isFinite(denominator) || denominator === 0) {
     return { slope: 0, intercept: sumY / n };
   }
 
-  const slope = (n * sumXY - sumX * sumY) / denominator;
+  const numerator = n * sumXY - sumX * sumY;
+  // 检查 numerator 是否为有限数
+  if (!Number.isFinite(numerator)) {
+    return { slope: 0, intercept: sumY / n };
+  }
+
+  const slope = numerator / denominator;
   const intercept = (sumY - slope * sumX) / n;
 
   return { slope, intercept };

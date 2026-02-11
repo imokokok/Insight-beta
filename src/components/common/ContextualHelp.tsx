@@ -71,11 +71,11 @@ export function ContextualHelp({
     },
     warning: {
       icon: AlertTriangle,
-      bgColor: 'bg-orange-50/50',
-      borderColor: 'border-orange-200',
-      iconColor: 'text-orange-600',
-      titleColor: 'text-orange-900',
-      textColor: 'text-orange-700',
+      bgColor: 'bg-amber-50/50',
+      borderColor: 'border-amber-200',
+      iconColor: 'text-amber-600',
+      titleColor: 'text-amber-900',
+      textColor: 'text-amber-700',
     },
     success: {
       icon: CheckCircle,

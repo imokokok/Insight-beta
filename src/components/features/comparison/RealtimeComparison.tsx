@@ -238,7 +238,7 @@ export function RealtimeComparisonView({
           </div>
           <div className="bg-muted/20 rounded-lg border p-3">
             <p className="text-muted-foreground text-xs">{t('comparison.realtime.maxSpread')}</p>
-            <p className="text-xl font-bold text-orange-600">
+            <p className="text-xl font-bold text-amber-600">
               {(Math.max(...data.map((d) => d.spread.percent)) * 100).toFixed(2)}%
             </p>
           </div>

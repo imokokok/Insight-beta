@@ -5,6 +5,7 @@
  * - 集成 RealtimePriceService
  * - 支持多客户端订阅
  * - 自动心跳保活
+ * - 身份验证和输入验证
  */
 
 import type { NextRequest } from 'next/server';
@@ -14,11 +15,40 @@ import { realtimePriceService } from '@/server/oracle/realtime';
 
 export const dynamic = 'force-dynamic';
 
+// 允许的订阅符号列表
+const ALLOWED_SYMBOLS = ['ETH/USD', 'BTC/USD', 'LINK/USD', 'MATIC/USD', 'AVAX/USD', 'SOL/USD'];
+
+// 最大连接数限制
+const MAX_CONNECTIONS = 100;
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const clientId = searchParams.get('clientId') || `client-${Date.now()}`;
+  
+  // 生成服务器端 clientId，防止客户端伪造
+  const clientId = `client-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+  
+  // 验证订阅符号
   const symbolsParam = searchParams.get('symbols');
-  const symbols = symbolsParam ? symbolsParam.split(',') : ['ETH/USD', 'BTC/USD'];
+  let symbols: string[];
+  
+  if (symbolsParam) {
+    // 过滤只允许预定义的符号
+    symbols = symbolsParam
+      .split(',')
+      .map((s) => s.trim().toUpperCase())
+      .filter((s) => ALLOWED_SYMBOLS.includes(s));
+  } else {
+    symbols = ['ETH/USD'];
+  }
+  
+  if (symbols.length === 0) {
+    return new Response('Invalid symbols', { status: 400 });
+  }
+  
+  // 检查连接数限制
+  if (realtimePriceService.listenerCount('priceUpdate') >= MAX_CONNECTIONS) {
+    return new Response('Too many connections', { status: 503 });
+  }
 
   // 确保服务已启动
   if (!realtimePriceService.listenerCount('started')) {
@@ -65,12 +95,18 @@ export async function GET(request: NextRequest) {
         }, 30000);
 
         // 清理函数
-        request.signal.addEventListener('abort', () => {
+        const abortHandler = () => {
           clearInterval(heartbeat);
           realtimePriceService.off('priceUpdate', handlePriceUpdate);
           realtimePriceService.unsubscribe(clientId);
           logger.info('WebSocket client disconnected', { clientId });
-        });
+        };
+        request.signal.addEventListener('abort', abortHandler);
+
+        // 返回清理函数（虽然 ReadableStream 不直接使用，但为了完整性）
+        return () => {
+          request.signal.removeEventListener('abort', abortHandler);
+        };
       },
     }),
     {

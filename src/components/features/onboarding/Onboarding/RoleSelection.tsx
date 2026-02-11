@@ -29,7 +29,7 @@ export function RoleSelection({ onRoleSelect, onSkip }: RoleSelectionProps) {
       role: 'general' as UserRole,
       title: t('onboarding.roles.general.title'),
       description: t('onboarding.roles.general.description'),
-      icon: <Users className="h-6 w-6 text-orange-600" />,
+      icon: <Users className="h-6 w-6 text-amber-600" />,
     },
   ];
 

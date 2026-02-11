@@ -52,6 +52,9 @@ export function CopyButton({ text, label, className, iconSize = 14 }: CopyButton
         className,
       )}
       title={label || 'Copy'}
+      aria-label={label || 'Copy to clipboard'}
+      aria-live="polite"
+      type="button"
     >
       <div className="relative">
         <Copy

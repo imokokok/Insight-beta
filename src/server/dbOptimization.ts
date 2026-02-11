@@ -1,8 +1,15 @@
 import { logger } from '@/lib/logger';
 
-import { hasDatabase, query, getClient } from './db';
+import { getClient, hasDatabase, query } from './db';
 
 import type { PoolClient } from 'pg';
+
+export type QueryResultRow = Record<string, unknown>;
+
+export interface QueryResult<T extends QueryResultRow = QueryResultRow> {
+  rows: T[];
+  rowCount: number;
+}
 
 interface SlowQuery {
   query: string;

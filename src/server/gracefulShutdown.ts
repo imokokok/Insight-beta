@@ -78,14 +78,26 @@ export async function gracefulShutdown(
     logger.info('Stopping sync tasks');
     syncManager.stopAllSyncs();
 
-    // 4. 执行注册的关闭回调
+    // 4. 执行注册的关闭回调（带超时控制）
     logger.info(`Executing ${state.shutdownCallbacks.length} shutdown callbacks`);
-    for (const callback of state.shutdownCallbacks) {
-      try {
-        await callback();
-      } catch (error) {
-        logger.error('Error in shutdown callback', { error });
-      }
+    const callbackTimeoutMs = Math.max(5000, Math.floor(timeoutMs * 0.3 / state.shutdownCallbacks.length)); // 每个回调至少5秒
+    
+    const callbackResults = await Promise.allSettled(
+      state.shutdownCallbacks.map(async (callback, index) => {
+        const callbackName = callback.name || `callback-${index}`;
+        try {
+          await executeWithTimeout(callback(), callbackTimeoutMs, `Shutdown callback ${callbackName} timeout`);
+          logger.debug(`Shutdown callback ${callbackName} completed`);
+        } catch (error) {
+          logger.error(`Error in shutdown callback ${callbackName}`, { error });
+          throw error;
+        }
+      })
+    );
+    
+    const failedCallbacks = callbackResults.filter(r => r.status === 'rejected');
+    if (failedCallbacks.length > 0) {
+      logger.warn(`${failedCallbacks.length} shutdown callbacks failed`);
     }
 
     // 5. 关闭数据库连接
@@ -116,6 +128,24 @@ async function waitForActiveRequests(): Promise<void> {
   while (state.activeRequests > 0) {
     await sleep(100);
   }
+}
+
+/**
+ * 执行带超时的 Promise
+ * @param promise - 要执行的 Promise
+ * @param timeoutMs - 超时时间（毫秒）
+ * @param message - 超时错误消息
+ * @returns Promise 的结果
+ * @throws 当超时时抛出错误
+ */
+function executeWithTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(message)), timeoutMs);
+    promise
+      .then(resolve)
+      .catch(reject)
+      .finally(() => clearTimeout(timer));
+  });
 }
 
 // ============================================================================

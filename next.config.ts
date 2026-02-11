@@ -223,7 +223,7 @@ const nextConfig: NextConfig = {
   // Disable Turbopack and use webpack
   turbopack: {},
 
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, dev }) => {
     config.resolve = config.resolve || {};
     config.resolve.fallback = {
       ...config.resolve.fallback,
@@ -246,36 +246,102 @@ const nextConfig: NextConfig = {
       process: false,
     };
 
-    // Tree-shaking 优化
-    if (!isServer) {
+    // Tree-shaking 和代码分割优化
+    if (!isServer && !dev) {
       config.optimization = config.optimization || {};
+      
+      // Tree Shaking: 启用 usedExports 和 sideEffects
       config.optimization.usedExports = true;
       config.optimization.sideEffects = false;
+      
+      // 启用模块合并优化
+      config.optimization.mergeDuplicateChunks = true;
+      config.optimization.removeAvailableModules = true;
+      config.optimization.removeEmptyChunks = true;
 
-      // 分割 vendor chunk
+      // 代码分割配置
       config.optimization.splitChunks = {
         chunks: 'all',
+        minSize: 20000, // 20KB
+        maxSize: 244000, // 244KB (接近 Gzip 压缩后的 250KB 限制)
+        minChunks: 1,
+        maxAsyncRequests: 30,
+        maxInitialRequests: 30,
+        automaticNameDelimiter: '~',
         cacheGroups: {
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
+          // 框架核心库
+          framework: {
+            test: /[\\/]node_modules[\\/](react|react-dom|next)[\\/]/,
+            name: 'framework',
             chunks: 'all',
-            priority: 10,
+            priority: 40,
+            enforce: true,
           },
+          // UI 组件库
+          radix: {
+            test: /[\\/]node_modules[\\/]@radix-ui[\\/]/,
+            name: 'radix-ui',
+            chunks: 'all',
+            priority: 35,
+          },
+          // 大型第三方库单独打包
           recharts: {
             test: /[\\/]node_modules[\\/]recharts[\\/]/,
             name: 'recharts',
             chunks: 'async',
-            priority: 20,
+            priority: 30,
+            reuseExistingChunk: true,
           },
           viem: {
             test: /[\\/]node_modules[\\/]viem[\\/]/,
             name: 'viem',
             chunks: 'async',
+            priority: 30,
+            reuseExistingChunk: true,
+          },
+          // 工具库
+          utils: {
+            test: /[\\/]node_modules[\\/](date-fns|lodash|ramda)[\\/]/,
+            name: 'utils',
+            chunks: 'all',
+            priority: 25,
+            reuseExistingChunk: true,
+          },
+          // 图标库
+          icons: {
+            test: /[\\/]node_modules[\\/]lucide-react[\\/]/,
+            name: 'icons',
+            chunks: 'all',
+            priority: 25,
+            reuseExistingChunk: true,
+          },
+          // 其他 node_modules
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            chunks: 'all',
             priority: 20,
+            reuseExistingChunk: true,
+          },
+          // 公共代码提取
+          commons: {
+            name: 'commons',
+            minChunks: 2,
+            chunks: 'all',
+            priority: 10,
+            reuseExistingChunk: true,
           },
         },
       };
+
+      // 运行时优化
+      config.optimization.runtimeChunk = {
+        name: 'runtime',
+      };
+      
+      // 模块顺序优化
+      config.optimization.moduleIds = 'deterministic';
+      config.optimization.chunkIds = 'deterministic';
     }
 
     return config;

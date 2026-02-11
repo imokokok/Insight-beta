@@ -439,7 +439,7 @@ export default function UnifiedProtocolPage() {
         title="Avg Latency"
         value={`${((stats.avgUpdateLatency as number) / 1000).toFixed(1)}s`}
         icon={<Clock className="h-5 w-5" />}
-        color="orange"
+        color="amber"
       />
     </>
   );

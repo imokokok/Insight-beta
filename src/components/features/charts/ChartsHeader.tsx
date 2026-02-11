@@ -26,7 +26,7 @@ function ChartsHeader({ activeTab, onTabChange, t }: ChartsHeaderProps) {
                 : activeTab === 'sync'
                   ? 'bg-gradient-to-br from-blue-500/10 to-cyan-500/10 text-blue-600 ring-blue-500/20'
                   : activeTab === 'markets'
-                    ? 'bg-gradient-to-br from-orange-500/10 to-amber-500/10 text-orange-600 ring-orange-500/20'
+                    ? 'bg-gradient-to-br from-amber-500/10 to-amber-500/10 text-amber-600 ring-amber-500/20'
                     : 'bg-gradient-to-br from-green-500/10 to-emerald-500/10 text-green-600 ring-green-500/20',
           )}
         >
@@ -113,7 +113,7 @@ function ChartsHeader({ activeTab, onTabChange, t }: ChartsHeaderProps) {
           className={cn(
             'flex items-center gap-1 whitespace-nowrap rounded-md px-2 py-1.5 text-xs font-medium transition-all duration-300 sm:gap-2 sm:rounded-lg sm:px-4 sm:py-2 sm:text-sm',
             activeTab === 'markets'
-              ? 'bg-white text-orange-700 shadow-sm ring-1 ring-black/5'
+              ? 'bg-white text-amber-700 shadow-sm ring-1 ring-black/5'
               : 'text-gray-500 hover:bg-white/50 hover:text-gray-700',
           )}
         >

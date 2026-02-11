@@ -98,7 +98,7 @@ function AnomalyTypeBadge({ type }: { type: Anomaly['type'] }) {
   const config = {
     statistical: { label: 'Statistical', color: 'bg-blue-500', icon: BarChart3 },
     seasonal: { label: 'Seasonal', color: 'bg-purple-500', icon: TrendingUp },
-    multi_protocol: { label: 'Multi-Protocol', color: 'bg-orange-500', icon: Activity },
+    multi_protocol: { label: 'Multi-Protocol', color: 'bg-amber-500', icon: Activity },
     trend_break: { label: 'Trend Break', color: 'bg-red-500', icon: Zap },
   };
 
@@ -115,7 +115,7 @@ function AnomalyTypeBadge({ type }: { type: Anomaly['type'] }) {
 function SeverityBadge({ severity }: { severity: Anomaly['severity'] }) {
   const config = {
     critical: { color: 'bg-red-500', label: 'Critical' },
-    high: { color: 'bg-orange-500', label: 'High' },
+    high: { color: 'bg-amber-500', label: 'High' },
     medium: { color: 'bg-yellow-500 text-black', label: 'Medium' },
     low: { color: 'bg-blue-500', label: 'Low' },
   };
@@ -213,7 +213,7 @@ function AnomalyTypeDistribution({ stats }: { stats: AnomalyStats | null }) {
     },
     multi_protocol: {
       label: 'Multi-Protocol',
-      color: 'bg-orange-500',
+      color: 'bg-amber-500',
       description: 'Cross-protocol deviations',
     },
     trend_break: {
@@ -301,7 +301,7 @@ function AnomalyList({
                 anomaly.severity === 'critical'
                   ? 'bg-red-500'
                   : anomaly.severity === 'high'
-                    ? 'bg-orange-500'
+                    ? 'bg-amber-500'
                     : anomaly.severity === 'medium'
                       ? 'bg-yellow-500'
                       : 'bg-blue-500',
@@ -908,7 +908,7 @@ export default function AnomalyDetectionPage() {
 
                 <div className="rounded-lg border p-4">
                   <div className="flex items-center gap-2">
-                    <Activity className="h-5 w-5 text-orange-500" />
+                    <Activity className="h-5 w-5 text-amber-500" />
                     <span className="font-semibold">Multi-Protocol Analysis</span>
                   </div>
                   <p className="text-muted-foreground mt-1 text-sm">

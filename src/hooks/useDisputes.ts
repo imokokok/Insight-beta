@@ -1,5 +1,6 @@
 import type { BaseResponse } from '@/hooks/useUI';
 import { useInfiniteList } from '@/hooks/useUI';
+import { createSWRInfiniteConfig } from '@/hooks/common/useSWRConfig';
 import type { Dispute, OracleConfig, DisputeStatus } from '@/lib/types/oracleTypes';
 
 export function useDisputes(
@@ -32,11 +33,7 @@ export function useDisputes(
   };
 
   const { items, loading, loadingMore, error, loadMore, hasMore, refresh } =
-    useInfiniteList<Dispute>(getUrl, {
-      refreshInterval: 30_000, // 延长刷新间隔到30秒
-      dedupingInterval: 15_000, // 延长去重间隔到15秒
-      revalidateOnFocus: false, // 关闭焦点重验证
-    });
+    useInfiniteList<Dispute>(getUrl, createSWRInfiniteConfig());
 
   return {
     items,

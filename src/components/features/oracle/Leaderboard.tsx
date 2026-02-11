@@ -49,7 +49,7 @@ const RankItem = memo(function RankItem({
               rank === 2 &&
                 'bg-gradient-to-br from-slate-300 to-slate-500 text-white shadow-slate-500/30',
               rank === 3 &&
-                'bg-gradient-to-br from-orange-300 to-orange-500 text-white shadow-orange-500/30',
+                'bg-gradient-to-br from-amber-300 to-amber-500 text-white shadow-amber-500/30',
               rank > 3 && 'bg-white/80 text-gray-500 ring-1 ring-gray-200',
             )}
           >
@@ -134,7 +134,7 @@ export function Leaderboard({ instanceId }: { instanceId?: string | null }) {
             activeTab === 'disputers' ? 'opacity-20' : 'opacity-0',
           )}
         >
-          <div className="absolute -left-[10%] -top-[10%] h-[150%] w-[50%] rounded-full bg-gradient-to-br from-rose-200/30 via-orange-100/10 to-transparent blur-3xl" />
+          <div className="absolute -left-[10%] -top-[10%] h-[150%] w-[50%] rounded-full bg-gradient-to-br from-rose-200/30 via-amber-100/10 to-transparent blur-3xl" />
           <div className="absolute bottom-0 right-0 h-[60%] w-[40%] rounded-full bg-gradient-to-tl from-amber-100/20 via-transparent to-transparent blur-2xl" />
         </div>
 
@@ -146,7 +146,7 @@ export function Leaderboard({ instanceId }: { instanceId?: string | null }) {
                 'rounded-xl p-3 shadow-inner ring-1 backdrop-blur-md transition-colors duration-500',
                 activeTab === 'asserters'
                   ? 'bg-gradient-to-br from-purple-500/10 to-indigo-500/10 text-purple-600 ring-purple-500/20'
-                  : 'bg-gradient-to-br from-rose-500/10 to-orange-500/10 text-rose-600 ring-rose-500/20',
+                  : 'bg-gradient-to-br from-rose-500/10 to-amber-500/10 text-rose-600 ring-rose-500/20',
               )}
             >
               {activeTab === 'asserters' ? (

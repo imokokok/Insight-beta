@@ -12,11 +12,7 @@ const globalForDb = globalThis as unknown as {
 
 function getDbUrl() {
   if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
-  // Fallback to Supabase connection string if available, as it is a postgres URL
   if (env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
-    // Note: This is a best-effort guess. Usually Supabase provides a separate DB URL.
-    // If users only have REST URL, this won't work.
-    // But provision-supabase.mjs used SUPABASE_DB_URL.
     if (process.env.SUPABASE_DB_URL) return process.env.SUPABASE_DB_URL;
   }
   return null;
@@ -45,7 +41,6 @@ const poolConfig = {
     DATABASE_CONFIG.DEFAULT_CONNECTION_TIMEOUT,
     Number(process.env.INSIGHT_DB_CONNECTION_TIMEOUT) || 10000,
   ),
-  // Add acquire timeout to prevent indefinite waiting for connections
   acquireTimeoutMillis: Math.max(5000, Number(process.env.INSIGHT_DB_ACQUIRE_TIMEOUT) || 10000),
   maxUses: Math.max(
     1000,
@@ -53,13 +48,10 @@ const poolConfig = {
   ),
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : false,
   statement_timeout: Math.max(5000, Number(process.env.INSIGHT_DB_STATEMENT_TIMEOUT) || 30000),
-  // Performance optimizations
   query_timeout: Math.max(5000, Number(process.env.INSIGHT_DB_QUERY_TIMEOUT) || 30000),
   keepAlive: true,
   keepAliveInitialDelayMillis: 10000,
-  // Application name for monitoring
   application_name: `oracle-monitor-${process.env.NODE_ENV || 'development'}`,
-  // Enable prepared statements caching
   preparedStatements: true,
 };
 
@@ -90,7 +82,6 @@ if (typeof (db as unknown as { on?: unknown }).on === 'function') {
   });
 }
 
-// Re-export QueryResultRow for convenience
 export type QueryResultRow = pg.QueryResultRow;
 
 export async function query<T extends pg.QueryResultRow>(
@@ -100,7 +91,6 @@ export async function query<T extends pg.QueryResultRow>(
   if (!getDbUrl()) {
     throw new Error('missing_database_url');
   }
-  // 使用 AbortController 实现可取消的超时
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 5000);
 
@@ -114,7 +104,6 @@ export async function query<T extends pg.QueryResultRow>(
       }),
     ]);
 
-    // 连接成功后清除超时
     clearTimeout(timeoutId);
 
     try {

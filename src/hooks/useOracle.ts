@@ -4,7 +4,7 @@ import useSWR from 'swr';
 
 import type { BaseResponse } from '@/hooks/useUI';
 import { useInfiniteList } from '@/hooks/useUI';
-import { CACHE_CONFIG } from '@/lib/config/constants';
+import { createSWRConfig, createSWRInfiniteConfig } from '@/hooks/common/useSWRConfig';
 import { logger } from '@/lib/logger';
 import type { Assertion, OracleConfig, OracleStats, OracleStatus } from '@/lib/types/oracleTypes';
 import { fetchApiData } from '@/lib/utils';
@@ -35,18 +35,7 @@ export function useOracleData(
       ? `/api/oracle/stats?instanceId=${encodeURIComponent(normalizedInstanceId)}`
       : '/api/oracle/stats',
     fetchApiData,
-    {
-      refreshInterval: CACHE_CONFIG.DEFAULT_REFRESH_INTERVAL,
-      dedupingInterval: CACHE_CONFIG.DEFAULT_DEDUPING_INTERVAL,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: true,
-      revalidateIfStale: false,
-      errorRetryCount: 3,
-      errorRetryInterval: 1000,
-      shouldRetryOnError: true,
-      keepPreviousData: true,
-      suspense: false,
-    },
+    createSWRConfig<OracleStats>(),
   );
 
   // 2. Assertions Fetching (Infinite SWR for pagination)
@@ -78,12 +67,7 @@ export function useOracleData(
     loadMore,
     hasMore,
     refresh,
-  } = useInfiniteList<Assertion>(getUrl, {
-    refreshInterval: CACHE_CONFIG.DEFAULT_REFRESH_INTERVAL,
-    revalidateOnFocus: false,
-    dedupingInterval: CACHE_CONFIG.DEFAULT_DEDUPING_INTERVAL,
-    revalidateFirstPage: false,
-  });
+  } = useInfiniteList<Assertion>(getUrl, createSWRInfiniteConfig());
 
   return {
     items,

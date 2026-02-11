@@ -442,7 +442,7 @@ export default function UnifiedDashboardPage() {
                   value={stats?.staleFeeds ?? 0}
                   icon={<Clock className="h-3.5 w-3.5" />}
                   loading={isRefreshing && !stats}
-                  color={stats && (stats.staleFeeds ?? 0) > 0 ? 'orange' : 'green'}
+                  color={stats && (stats.staleFeeds ?? 0) > 0 ? 'amber' : 'green'}
                   lastUpdated={lastUpdated}
                 />
               </div>

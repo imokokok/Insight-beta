@@ -49,6 +49,34 @@ export class CircuitBreaker {
 
   /**
    * 执行带熔断保护的操作
+   *
+   * @template T - 操作返回值的类型
+   * @param operation - 要执行的异步操作
+   * @returns 操作的返回值
+   * @throws {CircuitBreakerError} 当熔断器打开时抛出，或当操作失败时抛出原始错误
+   *
+   * @example
+   * ```typescript
+   * const breaker = new CircuitBreaker({
+   *   failureThreshold: 5,
+   *   resetTimeoutMs: 30000
+   * });
+   *
+   * try {
+   *   const result = await breaker.execute(async () => {
+   *     return await fetchData();
+   *   });
+   * } catch (error) {
+   *   if (error instanceof CircuitBreakerError) {
+   *     console.log('Circuit breaker is open');
+   *   }
+   * }
+   * ```
+   *
+   * 熔断器状态转换:
+   * - closed: 正常状态，允许请求通过
+   * - open: 熔断状态，拒绝所有请求
+   * - half-open: 试探状态，允许有限请求测试服务恢复
    */
   async execute<T>(operation: () => Promise<T>): Promise<T> {
     if (this.state === 'open') {

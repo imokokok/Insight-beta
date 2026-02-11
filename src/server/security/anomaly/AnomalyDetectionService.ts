@@ -47,6 +47,11 @@ export class AnomalyDetectionService {
   private recentDetections: Map<string, Date> = new Map();
   private anomalyHistory: Map<string, AnomalyDetection[]> = new Map();
 
+  // 最大历史记录数，防止内存无限增长
+  private readonly MAX_HISTORY_PER_SYMBOL = 1000;
+  private readonly MAX_SYMBOLS = 100;
+  private readonly MAX_RECENT_DETECTIONS = 500;
+
   constructor(private config: DetectionConfig = DEFAULT_DETECTION_CONFIG) {
     this.statisticalDetector = new StatisticalDetector();
     this.timeSeriesDetector = new TimeSeriesDetector();
@@ -88,6 +93,13 @@ export class AnomalyDetectionService {
 
     // 更新检测时间
     if (anomalies.length > 0) {
+      // 限制 recentDetections 大小，防止内存无限增长
+      if (this.recentDetections.size >= this.MAX_RECENT_DETECTIONS && !this.recentDetections.has(symbol)) {
+        const firstKey = this.recentDetections.keys().next().value;
+        if (firstKey) {
+          this.recentDetections.delete(firstKey);
+        }
+      }
       this.recentDetections.set(symbol, new Date());
       this.addToHistory(symbol, anomalies);
     }
@@ -351,11 +363,20 @@ export class AnomalyDetectionService {
    * 添加到历史记录
    */
   private addToHistory(symbol: string, anomalies: AnomalyDetection[]): void {
+    // 限制 symbol 数量，防止内存无限增长
+    if (this.anomalyHistory.size >= this.MAX_SYMBOLS && !this.anomalyHistory.has(symbol)) {
+      // 删除最早的 symbol
+      const firstKey = this.anomalyHistory.keys().next().value;
+      if (firstKey) {
+        this.anomalyHistory.delete(firstKey);
+      }
+    }
+
     const existing = this.anomalyHistory.get(symbol) ?? [];
     existing.push(...anomalies);
-    // 只保留最近100条
-    if (existing.length > 100) {
-      existing.splice(0, existing.length - 100);
+    // 只保留最近 MAX_HISTORY_PER_SYMBOL 条
+    if (existing.length > this.MAX_HISTORY_PER_SYMBOL) {
+      existing.splice(0, existing.length - this.MAX_HISTORY_PER_SYMBOL);
     }
     this.anomalyHistory.set(symbol, existing);
   }

@@ -6,6 +6,11 @@
 
 import { logger } from '@/lib/logger';
 import { supabaseAdmin } from '@/lib/supabase/server';
+
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { v4 as uuidv4 } from 'uuid';
+
+import { gasPriceService } from '../gas/gasPriceService';
 import type {
   CrossChainAnalysisConfig,
   CrossChainArbitrageOpportunity,
@@ -16,9 +21,6 @@ import type {
   CrossChainPriceData,
 } from '@/lib/types/crossChainAnalysisTypes';
 import type { OracleProtocol, SupportedChain } from '@/lib/types/unifiedOracleTypes';
-
-import type { SupabaseClient } from '@supabase/supabase-js';
-import { v4 as uuidv4 } from 'uuid';
 
 const DEFAULT_TRADE_AMOUNT = 10000;
 
@@ -291,7 +293,7 @@ export class CrossChainAnalysisService {
           const priceDiffPercent = lowerPrice > 0 ? (priceDiff / lowerPrice) * 100 : 0;
 
           if (priceDiffPercent >= this.config.arbitrageThreshold) {
-            const gasCostEstimate = this.estimateGasCost(buy.chain, sell.chain);
+            const gasCostEstimate = await this.estimateGasCost(buy.chain, sell.chain);
             
             const buyCostUsd = tradeAmount * buy.price;
             const sellRevenueUsd = tradeAmount * sell.price;
@@ -353,39 +355,50 @@ export class CrossChainAnalysisService {
     }
   }
 
-  private estimateGasCost(chainA: SupportedChain, chainB: SupportedChain): number {
-    const gasCosts: Partial<Record<SupportedChain, number>> = {
-      ethereum: 15.0,
-      polygon: 0.02,
-      bsc: 0.2,
-      avalanche: 0.3,
-      arbitrum: 0.2,
-      optimism: 0.5,
-      base: 0.1,
-      solana: 0.0005,
-      near: 0.1,
-      fantom: 0.05,
-      celo: 0.01,
-      gnosis: 0.01,
-      linea: 0.1,
-      scroll: 0.15,
-      mantle: 0.05,
-      mode: 0.1,
-      blast: 0.1,
-      aptos: 0.02,
-      polygonAmoy: 0.001,
-      sepolia: 0.001,
-      goerli: 0.001,
-      mumbai: 0.001,
-    };
+  private async estimateGasCost(chainA: SupportedChain, chainB: SupportedChain): Promise<number> {
+    try {
+      const gasEstimation = await gasPriceService.estimateCrossChainGasCost(chainA, chainB);
+      return gasEstimation.totalCost;
+    } catch (error) {
+      logger.warn('Failed to fetch real-time gas prices, using fallback estimation', {
+        chainA,
+        chainB,
+        error: error instanceof Error ? error.message : String(error),
+      });
 
-    const costA = gasCosts[chainA] ?? 0.5;
-    const costB = gasCosts[chainB] ?? 0.5;
-    
-    const isBridgeRequired = chainA !== chainB;
-    const bridgeOverhead = isBridgeRequired ? 5.0 : 0;
+      const gasCosts: Partial<Record<SupportedChain, number>> = {
+        ethereum: 15.0,
+        polygon: 0.02,
+        bsc: 0.2,
+        avalanche: 0.3,
+        arbitrum: 0.2,
+        optimism: 0.5,
+        base: 0.1,
+        solana: 0.0005,
+        near: 0.1,
+        fantom: 0.05,
+        celo: 0.01,
+        gnosis: 0.01,
+        linea: 0.1,
+        scroll: 0.15,
+        mantle: 0.05,
+        mode: 0.1,
+        blast: 0.1,
+        aptos: 0.02,
+        polygonAmoy: 0.001,
+        sepolia: 0.001,
+        goerli: 0.001,
+        mumbai: 0.001,
+      };
 
-    return costA + costB + bridgeOverhead;
+      const costA = gasCosts[chainA] ?? 0.5;
+      const costB = gasCosts[chainB] ?? 0.5;
+      
+      const isBridgeRequired = chainA !== chainB;
+      const bridgeOverhead = isBridgeRequired ? 5.0 : 0;
+
+      return costA + costB + bridgeOverhead;
+    }
   }
 
   private generateArbitrageWarnings(
@@ -505,38 +518,68 @@ export class CrossChainAnalysisService {
 
       const comparisonResults = new Map<string, CrossChainComparisonResult>();
 
-      for (const symbol of symbols) {
+      // P0 优化：使用 Promise.all 并行处理所有 symbol，避免 N+1 查询问题
+      const symbolPromises = symbols.map(async (symbol) => {
         try {
           const comparison = await this.comparePrices(symbol);
           comparisonResults.set(symbol, comparison);
 
-          dashboardData.priceComparisons.push({
+          const priceComparison = {
             symbol,
             chainsCount: comparison.pricesByChain.length,
             priceRangePercent: comparison.statistics.priceRangePercent,
-            status: comparison.statistics.priceRangePercent > this.config.criticalDeviationThreshold 
-              ? 'critical' 
-              : comparison.statistics.priceRangePercent > this.config.deviationThreshold 
-              ? 'warning' 
+            status: comparison.statistics.priceRangePercent > this.config.criticalDeviationThreshold
+              ? 'critical'
+              : comparison.statistics.priceRangePercent > this.config.deviationThreshold
+              ? 'warning'
               : 'normal',
-          });
+          };
 
-          const alerts = await this.detectDeviationAlerts(symbol);
-          dashboardData.activeAlerts += alerts.filter(a => a.status === 'active').length;
+          // 并行获取 alerts 和 opportunities
+          const [alerts, opportunities] = await Promise.all([
+            this.detectDeviationAlerts(symbol),
+            this.detectArbitrageOpportunities(symbol),
+          ]);
 
-          const opportunities = await this.detectArbitrageOpportunities(symbol);
-          totalOpportunities += opportunities.length;
-          actionableCount += opportunities.filter(o => o.isActionable).length;
-          totalProfitPercent += opportunities.reduce((sum, o) => sum + o.potentialProfitPercent, 0);
+          const activeAlerts = alerts.filter(a => a.status === 'active').length;
+          const symbolOpportunities = opportunities.length;
+          const symbolActionable = opportunities.filter(o => o.isActionable).length;
+          const symbolProfitPercent = opportunities.reduce((sum, o) => sum + o.potentialProfitPercent, 0);
+
+          return {
+            priceComparison,
+            activeAlerts,
+            opportunities: symbolOpportunities,
+            actionable: symbolActionable,
+            profitPercent: symbolProfitPercent,
+          };
         } catch (error) {
           logger.warn('Failed to process symbol for dashboard', { symbol, error });
-          dashboardData.priceComparisons.push({
-            symbol,
-            chainsCount: 0,
-            priceRangePercent: 0,
-            status: 'critical',
-          });
+          return {
+            priceComparison: {
+              symbol,
+              chainsCount: 0,
+              priceRangePercent: 0,
+              status: 'critical' as const,
+            },
+            activeAlerts: 0,
+            opportunities: 0,
+            actionable: 0,
+            profitPercent: 0,
+          };
         }
+      });
+
+      // 等待所有 symbol 处理完成
+      const results = await Promise.all(symbolPromises);
+
+      // 聚合结果
+      for (const result of results) {
+        dashboardData.priceComparisons.push(result.priceComparison);
+        dashboardData.activeAlerts += result.activeAlerts;
+        totalOpportunities += result.opportunities;
+        actionableCount += result.actionable;
+        totalProfitPercent += result.profitPercent;
       }
 
       dashboardData.opportunities.total = totalOpportunities;

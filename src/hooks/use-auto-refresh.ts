@@ -102,7 +102,10 @@ export function useAutoRefresh(options: UseAutoRefreshOptions): UseAutoRefreshRe
 
   // 初始加载
   useEffect(() => {
-    refresh();
+    // 添加错误处理，防止未处理的 Promise 拒绝
+    refresh().catch((err) => {
+      console.error('Initial refresh failed:', err);
+    });
   }, [refresh]);
 
   // 自动轮询

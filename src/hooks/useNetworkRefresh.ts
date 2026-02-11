@@ -55,6 +55,7 @@ export function useNetworkRefresh(options: UseNetworkRefreshOptions) {
   const offlineTimeRef = useRef<number | null>(null);
   const isRefreshingRef = useRef(false);
   const lastRefreshTimeRef = useRef<number | null>(null);
+  const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const performRefresh = useCallback(async () => {
     if (isRefreshingRef.current) return;
@@ -89,7 +90,7 @@ export function useNetworkRefresh(options: UseNetworkRefreshOptions) {
 
         if (offlineDuration >= minOfflineDuration) {
           // 延迟执行刷新，避免网络不稳定时频繁刷新
-          setTimeout(() => {
+          refreshTimeoutRef.current = setTimeout(() => {
             performRefresh();
           }, delay);
         }
@@ -117,6 +118,11 @@ export function useNetworkRefresh(options: UseNetworkRefreshOptions) {
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      // 清理定时器防止内存泄漏
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+        refreshTimeoutRef.current = null;
+      }
     };
   }, [enabled, delay, minOfflineDuration, performRefresh]);
 

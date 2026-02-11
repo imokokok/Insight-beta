@@ -196,7 +196,7 @@ export default function UMADisputesPage() {
                       <div className="flex items-center gap-2">
                         <span className="text-green-400">{Number(dispute.votesFor)}</span>
                         <span className="text-gray-500">/</span>
-                        <span className="text-orange-400">{Number(dispute.votesAgainst)}</span>
+                        <span className="text-amber-400">{Number(dispute.votesAgainst)}</span>
                         <span className="text-xs text-gray-500">
                           ({dispute.totalVoters} {t('disputes.totalVotesCast')})
                         </span>

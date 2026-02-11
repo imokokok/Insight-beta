@@ -8,6 +8,7 @@ import { Toaster } from 'sonner';
 
 import { OfflineIndicator } from '@/components/common/OfflineIndicator';
 import { PageProgress } from '@/components/common/PageProgress';
+import { PerformanceMonitor } from '@/components/common/PerformanceMonitor';
 import { ResourceHints } from '@/components/common/ResourceHints';
 import { ServiceWorkerRegister } from '@/components/common/ServiceWorkerRegister';
 import { SmartPreloader } from '@/components/common/SmartPreloader';
@@ -42,11 +43,6 @@ const SyncStatus = lazy(() =>
 const ClientComponentsWrapper = lazy(() =>
   import('@/components/common/ClientComponentsWrapper').then((mod) => ({
     default: mod.ClientComponentsWrapper,
-  })),
-);
-const WebVitalsMonitor = lazy(() =>
-  import('@/components/common/WebVitalsMonitor').then((mod) => ({
-    default: mod.WebVitalsMonitor,
   })),
 );
 const ResourcePreloader = lazy(() =>
@@ -121,9 +117,6 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       >
         <PageProgress />
         <Suspense fallback={null}>
-          <WebVitalsMonitor />
-        </Suspense>
-        <Suspense fallback={null}>
           <ResourcePreloader />
         </Suspense>
         <Suspense fallback={null}>
@@ -134,6 +127,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         </Suspense>
         <Suspense fallback={null}>
           <OfflineIndicator />
+        </Suspense>
+        <Suspense fallback={null}>
+          <PerformanceMonitor />
         </Suspense>
         <LanguageProvider initialLang={lang}>
           <WalletProvider>
