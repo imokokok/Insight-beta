@@ -342,7 +342,7 @@ function normalizeMetadata(
 
 let asyncLocalStorage: AsyncLocalStorageLike<LogContext> | null | undefined;
 
-function getAsyncLocalStorage(): AsyncLocalStorageLike<LogContext> | null {
+async function initAsyncLocalStorage(): Promise<AsyncLocalStorageLike<LogContext> | null> {
   if (asyncLocalStorage !== undefined) return asyncLocalStorage;
   if (typeof window !== 'undefined') {
     asyncLocalStorage = null;
@@ -356,14 +356,8 @@ function getAsyncLocalStorage(): AsyncLocalStorageLike<LogContext> | null {
   }
 
   try {
-    const req = (0, eval)('require') as ((id: string) => unknown) | undefined;
-    if (!req) {
-      asyncLocalStorage = null;
-      return null;
-    }
-    const mod = req('node:async_hooks') as {
-      AsyncLocalStorage?: new () => AsyncLocalStorageLike<LogContext>;
-    };
+    // 使用动态导入替代 eval，更安全
+    const mod = await import('node:async_hooks');
     if (!mod.AsyncLocalStorage) {
       asyncLocalStorage = null;
       return null;
@@ -376,16 +370,15 @@ function getAsyncLocalStorage(): AsyncLocalStorageLike<LogContext> | null {
   }
 }
 
+function getAsyncLocalStorage(): AsyncLocalStorageLike<LogContext> | null {
+  // 同步获取，如果未初始化则返回 null
+  // 异步初始化在模块加载时执行
+  return asyncLocalStorage ?? null;
+}
+
 function getLogContext(): LogContext | undefined {
   const storage = getAsyncLocalStorage();
   return storage?.getStore();
-}
-
-export function withLogContext<R>(context: LogContext, fn: () => R): R {
-  const storage = getAsyncLocalStorage();
-  if (!storage) return fn();
-  const parent = storage.getStore() || {};
-  return storage.run({ ...parent, ...context }, fn);
 }
 
 /**
@@ -546,3 +539,8 @@ export const logger = {
     }
   },
 };
+
+// 初始化 AsyncLocalStorage（在服务端环境）
+if (typeof window === 'undefined') {
+  void initAsyncLocalStorage();
+}

@@ -18,6 +18,7 @@ import {
   getChainSymbol,
   type ChainMetadata,
 } from './chainConfig';
+import type { SupportedChain } from '@/lib/types/unifiedOracleTypes';
 
 // Mock viem/chains
 vi.mock('viem/chains', () => ({
@@ -141,7 +142,7 @@ describe('Utility Functions', () => {
     });
 
     it('should return mainnet for unknown chain', () => {
-      const chain = getViemChain('unknown' as any);
+      const chain = getViemChain('unknown' as SupportedChain);
       expect(chain).toBeDefined();
     });
   });
@@ -153,7 +154,7 @@ describe('Utility Functions', () => {
     });
 
     it('should return Ethereum RPC for unknown chain', () => {
-      const url = getDefaultRpcUrl('unknown' as any);
+      const url = getDefaultRpcUrl('unknown' as SupportedChain);
       expect(url).toBe(DEFAULT_RPC_URLS.ethereum);
     });
   });
@@ -165,7 +166,7 @@ describe('Utility Functions', () => {
     });
 
     it('should return Ethereum metadata for unknown chain', () => {
-      const metadata = getChainMetadata('unknown' as any);
+      const metadata = getChainMetadata('unknown' as SupportedChain);
       expect(metadata.name).toBe('Ethereum');
     });
   });

@@ -131,7 +131,9 @@ export const CrossChainArbitrageCard = memo(function CrossChainArbitrageCard({
               size="sm"
               onClick={() => {
                 const newState = !showGasDetails;
-                onExecute({ ...opportunities?.[0], showGasDetails: newState } as any);
+                if (opportunities?.[0]) {
+                  onExecute({ ...opportunities[0], showGasDetails: newState } as CrossChainArbitrageOpportunity & { showGasDetails: boolean });
+                }
               }}
             >
               {showGasDetails ? (

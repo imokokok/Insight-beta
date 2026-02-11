@@ -52,27 +52,32 @@ export function Onboarding({ onComplete, onSkip, className, forceOpen }: Onboard
       setIsOpen(true);
       return;
     }
-    const hasCompleted = getStorageItem<string | null>(STORAGE_KEY, null);
-    const savedProgress = getStorageItem<OnboardingProgress | null>(PROGRESS_STORAGE_KEY, null);
 
-    if (!hasCompleted) {
-      setIsOpen(true);
+    const loadProgress = async () => {
+      const hasCompleted = await getStorageItem<string | null>(STORAGE_KEY, null);
+      const savedProgress = await getStorageItem<OnboardingProgress | null>(PROGRESS_STORAGE_KEY, null);
 
-      // Restore progress if exists
-      if (savedProgress) {
-        // Check if progress is not too old (7 days)
-        const isRecent = Date.now() - savedProgress.timestamp < 7 * 24 * 60 * 60 * 1000;
+      if (!hasCompleted) {
+        setIsOpen(true);
 
-        if (isRecent) {
-          setSelectedRole(savedProgress.selectedRole);
-          setShowRoleSelection(savedProgress.showRoleSelection);
-          setCurrentStep(savedProgress.currentStep);
-        } else {
-          // Clear old progress
-          removeStorageItem(PROGRESS_STORAGE_KEY);
+        // Restore progress if exists
+        if (savedProgress) {
+          // Check if progress is not too old (7 days)
+          const isRecent = Date.now() - savedProgress.timestamp < 7 * 24 * 60 * 60 * 1000;
+
+          if (isRecent) {
+            setSelectedRole(savedProgress.selectedRole);
+            setShowRoleSelection(savedProgress.showRoleSelection);
+            setCurrentStep(savedProgress.currentStep);
+          } else {
+            // Clear old progress
+            removeStorageItem(PROGRESS_STORAGE_KEY);
+          }
         }
       }
-    }
+    };
+
+    loadProgress();
   }, [forceOpen]);
 
   // Save progress whenever it changes

@@ -155,7 +155,9 @@ class OfflineSyncManager {
 
     // 如果在线，立即尝试同步
     if (this.isOnline && !this.isSyncing) {
-      this.sync();
+      this.sync().catch((error) => {
+        logger.warn('Immediate sync failed after queue', { error });
+      });
     }
 
     return id;

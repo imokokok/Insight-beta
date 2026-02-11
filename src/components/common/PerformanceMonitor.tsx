@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 
 import { useWebVitals, useLongTaskMonitor } from '@/hooks/usePerformance';
+import { logger } from '@/lib/logger';
 
 /**
  * 性能监控组件
@@ -16,7 +17,7 @@ export function PerformanceMonitor() {
   useLongTaskMonitor((duration) => {
     // 可以在这里发送长任务警告到分析服务
     if (process.env.NODE_ENV === 'development') {
-      console.warn(`[Performance] Long task: ${duration.toFixed(2)}ms`);
+      logger.warn('[Performance] Long task', { duration: duration.toFixed(2) });
     }
   });
 

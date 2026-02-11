@@ -14,6 +14,7 @@ import {
   getAvailablePythSymbols as getPythAvailableSymbols,
 } from '@/lib/config/pythPriceFeeds';
 import { ErrorHandler, normalizeError } from '@/lib/errors';
+import { logger } from '@/lib/logger';
 import { EvmOracleClient } from '@/lib/shared';
 import type {
   SupportedChain,
@@ -171,7 +172,7 @@ export class PythClient extends EvmOracleClient {
 
     // 检查价格有效性，防止除零
     if (!Number.isFinite(formattedPrice) || formattedPrice <= 0) {
-      console.error('Invalid price from Pyth', { symbol, price: rawData.price, formattedPrice });
+      logger.error('Invalid price from Pyth', { symbol, price: rawData.price, formattedPrice });
       return null;
     }
 
@@ -366,38 +367,8 @@ export function createPythClient(
 // ============================================================================
 
 /**
- * 获取支持的 Pyth 链列表
- */
-export function getSupportedPythChains(): SupportedChain[] {
-  return Object.entries(PYTH_CONTRACT_ADDRESSES)
-    .filter(([_, address]) => address !== undefined)
-    .map(([chain]) => chain as SupportedChain);
-}
-
-/**
  * 获取所有可用的价格喂价符号
  */
 export function getAvailablePythSymbols(): string[] {
   return getPythAvailableSymbols();
-}
-
-/**
- * 检查链是否支持 Pyth
- */
-export function isChainSupportedByPyth(chain: SupportedChain): boolean {
-  return PYTH_CONTRACT_ADDRESSES[chain] !== undefined;
-}
-
-/**
- * 获取价格喂价 ID
- */
-export function getPriceFeedId(symbol: string): string | undefined {
-  return getPythPriceFeedId(symbol);
-}
-
-/**
- * 获取合约地址
- */
-export function getPythContractAddress(chain: SupportedChain): Address | undefined {
-  return PYTH_CONTRACT_ADDRESSES[chain];
 }

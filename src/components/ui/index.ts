@@ -12,8 +12,6 @@ export {
   CardDescription,
   CardContent,
   CardEnhanced,
-  InteractiveStatCard,
-  ExpandableCard,
 } from './card';
 
 // Tooltips

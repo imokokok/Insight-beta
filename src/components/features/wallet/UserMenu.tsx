@@ -23,7 +23,11 @@ export function UserMenu() {
   const instanceIdFromUrl = searchParams?.get('instanceId')?.trim() || null;
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [storedInstanceId] = useState<string>(() => getOracleInstanceId());
+  const [storedInstanceId, setStoredInstanceId] = useState<string>('default');
+
+  useEffect(() => {
+    getOracleInstanceId().then(id => setStoredInstanceId(id));
+  }, []);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

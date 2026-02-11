@@ -57,7 +57,9 @@ CardContent.displayName = 'CardContent';
 
 // ==================== 增强版 Card 组件 ====================
 
-interface CardEnhancedProps extends React.HTMLAttributes<HTMLDivElement> {
+import type { HTMLMotionProps } from 'framer-motion';
+
+interface CardEnhancedProps extends HTMLMotionProps<'div'> {
   hover?: boolean;
   clickable?: boolean;
   gradient?: boolean;
@@ -81,8 +83,7 @@ const CardEnhanced = React.forwardRef<HTMLDivElement, CardEnhancedProps>(
         )}
         whileHover={hover ? { y: -4, transition: { duration: 0.2 } } : undefined}
         whileTap={clickable ? { scale: 0.98 } : undefined}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        {...(props as any)}
+        {...props}
       >
         {/* Shimmer effect on hover */}
         {hover && (
@@ -94,7 +95,7 @@ const CardEnhanced = React.forwardRef<HTMLDivElement, CardEnhancedProps>(
           <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-500/10 via-transparent to-blue-500/10 opacity-0 transition-opacity duration-300 hover:opacity-100" />
         )}
 
-        <div className="relative z-10">{children}</div>
+        <div className="relative z-10">{children as React.ReactNode}</div>
       </motion.div>
     );
   },

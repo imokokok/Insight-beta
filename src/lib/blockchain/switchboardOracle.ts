@@ -410,9 +410,12 @@ export class SwitchboardClient extends SolanaOracleClient {
 }
 
 // ============================================================================
-// 工厂函数
+// 工厂函数和工具函数
 // ============================================================================
 
+/**
+ * 创建 Switchboard 客户端
+ */
 export function createSwitchboardClient(
   chain: SupportedChain,
   rpcUrl: string,
@@ -421,34 +424,25 @@ export function createSwitchboardClient(
   return new SwitchboardClient(chain, rpcUrl, config);
 }
 
-// ============================================================================
-// 工具函数
-// ============================================================================
-
 /**
- * 获取支持的 Switchboard 链列表
+ * 获取支持的链列表
  */
 export function getSupportedSwitchboardChains(): SupportedChain[] {
-  return ['solana'];
-}
-
-/**
- * 获取所有可用的价格喂价符号
- */
-export function getAvailableSymbols(): string[] {
-  return getAvailableSwitchboardSymbols();
+  return ['solana', 'solana-devnet'];
 }
 
 /**
  * 检查链是否支持 Switchboard
  */
 export function isChainSupported(chain: SupportedChain): boolean {
-  return chain === 'solana';
+  return getSupportedSwitchboardChains().includes(chain);
 }
 
 /**
- * 检查符号是否支持
+ * 检查交易对是否支持
  */
 export function isSymbolSupported(symbol: string): boolean {
-  return getAvailableSwitchboardSymbols().includes(symbol.toUpperCase());
+  const symbols = getAvailableSwitchboardSymbols();
+  return symbols.includes(symbol);
 }
+

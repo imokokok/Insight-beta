@@ -31,33 +31,6 @@ export interface ApiResponse<T> {
 // ============================================================================
 
 /**
- * 创建成功响应
- * @param data 响应数据
- * @param page 页码（用于分页）
- * @param limit 每页数量（用于分页）
- * @param total 总数量（用于分页）
- * @returns 标准API响应对象
- */
-export function createResponse<T>(data: T, page?: number, limit?: number, total?: number): ApiResponse<T> {
-  const response: ApiResponse<T> = {
-    ok: true,
-    data,
-    meta: {
-      timestamp: new Date().toISOString(),
-    },
-  };
-
-  if (page !== undefined) {
-    response.meta!.page = page;
-    response.meta!.limit = limit;
-    response.meta!.total = total;
-    response.meta!.hasMore = total !== undefined ? page * limit! < total : false;
-  }
-
-  return response;
-}
-
-/**
  * 创建错误响应
  * @param error 错误信息
  * @param status HTTP状态码
@@ -85,7 +58,21 @@ export function createErrorResponse(error: string, status: number = 400): NextRe
  * @returns NextResponse对象
  */
 export function createSuccessResponse<T>(data: T, page?: number, limit?: number, total?: number): NextResponse {
-  const response = createResponse(data, page, limit, total);
+  const response: ApiResponse<T> = {
+    ok: true,
+    data,
+    meta: {
+      timestamp: new Date().toISOString(),
+    },
+  };
+
+  if (page !== undefined) {
+    response.meta!.page = page;
+    response.meta!.limit = limit;
+    response.meta!.total = total;
+    response.meta!.hasMore = total !== undefined ? page * limit! < total : false;
+  }
+
   return NextResponse.json(response);
 }
 

@@ -37,11 +37,7 @@ import {
 } from 'recharts';
 
 import { StatCard, StatCardSkeleton, StatCardGroup } from '@/components/common';
-import {
-  AnimatedContainer,
-  StaggerContainer,
-  HoverCard,
-} from '@/components/common/AnimatedContainer';
+import { AnimatedContainer, StaggerContainer, HoverCard } from '@/components/common/AnimatedContainer';
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { ChartCard } from '@/components/common/ChartCard';
 import { ToastContainer, useToast } from '@/components/common/DashboardToast';

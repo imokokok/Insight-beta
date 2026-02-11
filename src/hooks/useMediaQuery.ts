@@ -38,16 +38,6 @@ export function useMediaQuery(query: string): boolean {
  * 预设的断点 Hook - 与 Tailwind 配置保持一致
  */
 
-// xs: 475px
-export function useIsXs(): boolean {
-  return useMediaQuery('(max-width: 474px)');
-}
-
-// sm: 640px
-export function useIsSm(): boolean {
-  return useMediaQuery('(max-width: 639px)');
-}
-
 // md: 768px
 export function useIsMobile(): boolean {
   return useMediaQuery('(max-width: 767px)');
@@ -61,41 +51,6 @@ export function useIsTablet(): boolean {
 // xl: 1280px
 export function useIsDesktop(): boolean {
   return useMediaQuery('(min-width: 1024px)');
-}
-
-// 2xl: 1536px
-export function useIsLargeScreen(): boolean {
-  return useMediaQuery('(min-width: 1280px)');
-}
-
-export function useIsXl(): boolean {
-  return useMediaQuery('(min-width: 1280px)');
-}
-
-export function useIs2xl(): boolean {
-  return useMediaQuery('(min-width: 1536px)');
-}
-
-/**
- * 获取当前设备类型
- */
-export type DeviceType = 'xs' | 'sm' | 'mobile' | 'tablet' | 'desktop' | 'xl' | '2xl';
-
-export function useDeviceType(): DeviceType {
-  const isXs = useIsXs();
-  const isSm = useIsSm();
-  const isMobile = useIsMobile();
-  const isTablet = useIsTablet();
-  const isXl = useIsXl();
-  const is2xl = useIs2xl();
-
-  if (isXs) return 'xs';
-  if (isSm) return 'sm';
-  if (isMobile) return 'mobile';
-  if (isTablet) return 'tablet';
-  if (is2xl) return '2xl';
-  if (isXl) return 'xl';
-  return 'desktop';
 }
 
 /**
@@ -119,6 +74,30 @@ export function useViewportSize(): { width: number; height: number } {
   }, []);
 
   return size;
+}
+
+// 设备类型
+export type DeviceType = 'mobile' | 'tablet' | 'desktop' | 'large';
+
+/**
+ * 大屏幕检测 Hook (xl: 1280px+)
+ */
+export function useIsLargeScreen(): boolean {
+  return useMediaQuery('(min-width: 1280px)');
+}
+
+/**
+ * 获取设备类型
+ */
+export function useDeviceType(): DeviceType {
+  const isMobile = useIsMobile();
+  const isTablet = useIsTablet();
+  const isLarge = useIsLargeScreen();
+
+  if (isMobile) return 'mobile';
+  if (isTablet) return 'tablet';
+  if (isLarge) return 'large';
+  return 'desktop';
 }
 
 /**

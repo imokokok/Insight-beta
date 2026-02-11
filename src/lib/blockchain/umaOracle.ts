@@ -418,29 +418,8 @@ export function createUMAClient(
 // ============================================================================
 
 /**
- * 获取支持的 UMA 链列表
- */
-export function getSupportedUMAChains(): SupportedChain[] {
-  return Object.entries(UMA_CONTRACT_ADDRESSES)
-    .filter(([_, addresses]) => addresses.optimisticOracleV3 !== undefined)
-    .map(([chain]) => chain as SupportedChain);
-}
-
-/**
  * 检查链是否支持 UMA
  */
 export function isChainSupportedByUMA(chain: SupportedChain): boolean {
   return UMA_CONTRACT_ADDRESSES[chain]?.optimisticOracleV3 !== undefined;
-}
-
-/**
- * 获取合约地址
- */
-export function getUMAContractAddresses(chain: SupportedChain): {
-  optimisticOracleV3?: Address;
-  optimisticOracleV2?: Address;
-  dvm?: Address;
-  votingToken?: Address;
-} {
-  return UMA_CONTRACT_ADDRESSES[chain] || {};
 }

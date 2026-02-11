@@ -82,8 +82,8 @@ export default function CrossChainPage() {
     mutate: refreshHistory,
   } = useCrossChainHistory(
     selectedSymbol,
-    timeRangeDates.startTime,
-    timeRangeDates.endTime,
+    timeRangeDates.startTime.toISOString(),
+    timeRangeDates.endTime.toISOString(),
     timeRange === '24h' ? '1hour' : '1day'
   );
 

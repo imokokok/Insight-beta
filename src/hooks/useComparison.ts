@@ -10,7 +10,7 @@
 
 import useSWR from 'swr';
 
-import { createSWRConfig, REALTIME_CONFIG } from '@/hooks/common/useSWRConfig';
+import { createSWRConfig, REALTIME_CONFIG } from './useSWRConfig';
 import { buildApiUrl } from '@/lib/utils';
 import type {
   ComparisonFilter,

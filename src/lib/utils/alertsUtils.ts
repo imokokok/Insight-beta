@@ -1,8 +1,6 @@
 import type { TranslationKey } from '@/i18n/translations';
-import type { AlertSeverity, AlertStatus, OpsSloStatus } from '@/lib/types/oracleTypes';
+import type { OpsSloStatus } from '@/lib/types/oracleTypes';
 import { formatDurationMinutes } from '@/lib/utils';
-
-export type RootCauseOption = { value: string; label: string };
 
 export type SloEntry = {
   key: string;
@@ -11,47 +9,86 @@ export type SloEntry = {
   target: number;
 };
 
-export function getEntityHref(entityType: string, entityId: string) {
-  const id = entityId.trim();
-  if (!id) return null;
-  if (entityType === 'api' && id.startsWith('/')) return id;
-  if (entityType === 'oracle' && /^0x[a-fA-F0-9]{40}$/.test(id)) return `/oracle/address/${id}`;
-  if (/^0x[a-fA-F0-9]{40}$/.test(id)) return `/oracle/address/${id}`;
-  if (/^0x[a-fA-F0-9]{64}$/.test(id)) return `/oracle/${id}`;
-  return null;
-}
+// RootCauseOption type definition
+export type RootCauseOption = {
+  value: string;
+  label: string;
+};
 
-export function getSafeExternalUrl(raw: string) {
-  const trimmed = raw.trim();
-  if (!trimmed) return null;
-  if (/\s/.test(trimmed)) return null;
-  try {
-    const url = new URL(trimmed);
-    if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
-    return url.toString();
-  } catch {
-    return null;
+// Format SLO target value
+export function formatSloTarget(key: string, value: number): string {
+  if (key.includes('Minutes')) {
+    return formatDurationMinutes(value);
   }
+  return value.toString();
 }
 
-export function getSafeInternalPath(raw: string) {
-  const trimmed = raw.trim();
-  if (!trimmed.startsWith('/')) return null;
-  if (trimmed.startsWith('//')) return null;
-  if (/\s/.test(trimmed)) return null;
-  return trimmed;
+// Format SLO current value
+export function formatSloValue(key: string, value: number | null): string {
+  if (value === null) return '-';
+  if (key.includes('Minutes')) {
+    return formatDurationMinutes(value);
+  }
+  return value.toString();
 }
 
-export function severityBadge(severity: AlertSeverity) {
-  if (severity === 'critical') return 'bg-rose-100 text-rose-700 border-rose-200';
-  if (severity === 'warning') return 'bg-amber-100 text-amber-700 border-amber-200';
-  return 'bg-slate-100 text-slate-700 border-slate-200';
+// Get entity href
+export function getEntityHref(entityType: string, entityId: string): string {
+  return `/${entityType}/${entityId}`;
 }
 
-export function statusBadge(status: AlertStatus) {
-  if (status === 'Open') return 'bg-rose-50 text-rose-700 ring-rose-200';
-  if (status === 'Acknowledged') return 'bg-amber-50 text-amber-700 ring-amber-200';
-  return 'bg-emerald-50 text-emerald-700 ring-emerald-200';
+// Get safe external URL
+export function getSafeExternalUrl(url: string): string {
+  if (!url.startsWith('http')) {
+    return `https://${url}`;
+  }
+  return url;
+}
+
+// Get safe internal path
+export function getSafeInternalPath(path: string): string {
+  return path.startsWith('/') ? path : `/${path}`;
+}
+
+// Severity badge component
+export function severityBadge(severity: string): { label: string; color: string } {
+  const map: Record<string, { label: string; color: string }> = {
+    critical: { label: 'Critical', color: 'red' },
+    high: { label: 'High', color: 'orange' },
+    medium: { label: 'Medium', color: 'yellow' },
+    low: { label: 'Low', color: 'blue' },
+  };
+  return map[severity] || { label: severity, color: 'gray' };
+}
+
+// SLO status badge
+export function sloStatusBadge(status: string): { label: string; color: string } {
+  const map: Record<string, { label: string; color: string }> = {
+    healthy: { label: 'Healthy', color: 'green' },
+    warning: { label: 'Warning', color: 'yellow' },
+    critical: { label: 'Critical', color: 'red' },
+  };
+  return map[status] || { label: status, color: 'gray' };
+}
+
+// SLO status label
+export function sloStatusLabel(status: string): string {
+  const map: Record<string, string> = {
+    healthy: 'Healthy',
+    warning: 'Warning',
+    critical: 'Critical',
+  };
+  return map[status] || status;
+}
+
+// Status badge
+export function statusBadge(status: string): { label: string; color: string } {
+  const map: Record<string, { label: string; color: string }> = {
+    open: { label: 'Open', color: 'red' },
+    acknowledged: { label: 'Acknowledged', color: 'yellow' },
+    resolved: { label: 'Resolved', color: 'green' },
+  };
+  return map[status] || { label: status, color: 'gray' };
 }
 
 export const sloLabels: Record<string, string> = {
@@ -167,30 +204,6 @@ export const alertInsightMap: Record<
     actions: ['alerts.actions.low_gas.1', 'alerts.actions.low_gas.2'],
   },
 };
-
-export function sloStatusBadge(status: OpsSloStatus['status']) {
-  if (status === 'met') return 'bg-emerald-50 text-emerald-700 ring-emerald-200';
-  if (status === 'degraded') return 'bg-amber-50 text-amber-700 ring-amber-200';
-  return 'bg-rose-50 text-rose-700 ring-rose-200';
-}
-
-export function sloStatusLabel(status: OpsSloStatus['status']) {
-  if (status === 'met') return 'Met';
-  if (status === 'degraded') return 'Degraded';
-  return 'Breached';
-}
-
-export function formatSloValue(key: string, value: number | null) {
-  if (value === null || !Number.isFinite(value)) return '—';
-  if (key.includes('Minutes')) return formatDurationMinutes(value);
-  return value.toLocaleString();
-}
-
-export function formatSloTarget(key: string, value: number) {
-  if (!Number.isFinite(value)) return '—';
-  if (key.includes('Minutes')) return formatDurationMinutes(value);
-  return value.toLocaleString();
-}
 
 export function getSloEntries(slo: OpsSloStatus): SloEntry[] {
   return [

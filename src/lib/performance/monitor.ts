@@ -3,6 +3,8 @@
  * 用于监控 Web Vitals 和自定义性能指标
  */
 
+import { logger } from '@/lib/logger';
+
 // Web Vitals 指标类型
 export interface WebVitalsMetric {
   name: 'CLS' | 'FCP' | 'FID' | 'INP' | 'LCP' | 'TTFB';
@@ -30,7 +32,7 @@ const THRESHOLDS: Record<string, { good: number; poor: number }> = {
 function getRating(name: string, value: number): WebVitalsMetric['rating'] {
   const threshold = THRESHOLDS[name];
   if (!threshold) return 'good';
-  
+
   if (value <= threshold.good) return 'good';
   if (value <= threshold.poor) return 'needs-improvement';
   return 'poor';
@@ -47,11 +49,6 @@ function generateId(): string {
  * 报告 Web Vitals 指标
  */
 export function reportWebVitals(metric: WebVitalsMetric): void {
-  // 发送到控制台（开发环境）
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`[Web Vitals] ${metric.name}:`, metric);
-  }
-
   // 发送到分析服务
   if (typeof window !== 'undefined' && 'gtag' in window) {
     // @ts-expect-error - gtag is defined by Google Analytics
@@ -63,10 +60,9 @@ export function reportWebVitals(metric: WebVitalsMetric): void {
     });
   }
 
-  // 发送到 Sentry
+  // 记录性能问题到日志
   if (typeof window !== 'undefined' && metric.rating === 'poor') {
-    // 可以在这里集成 Sentry 性能监控
-    console.warn(`[Performance] Poor ${metric.name}: ${metric.value}`);
+    logger.warn(`Poor Web Vital: ${metric.name}`, { value: metric.value });
   }
 }
 
@@ -80,9 +76,9 @@ export function observeLCP(callback: (metric: WebVitalsMetric) => void): void {
     const observer = new PerformanceObserver((list) => {
       const entries = list.getEntries();
       const lastEntry = entries[entries.length - 1] as PerformanceEntry & { renderTime?: number; loadTime?: number };
-      
+
       const value = lastEntry.renderTime || lastEntry.loadTime || lastEntry.startTime;
-      
+
       callback({
         name: 'LCP',
         value,
@@ -93,7 +89,7 @@ export function observeLCP(callback: (metric: WebVitalsMetric) => void): void {
 
     observer.observe({ entryTypes: ['largest-contentful-paint'] });
   } catch (e) {
-    console.warn('LCP observation not supported');
+    logger.warn('LCP observation not supported');
   }
 }
 
@@ -106,11 +102,11 @@ export function observeFID(callback: (metric: WebVitalsMetric) => void): void {
   try {
     const observer = new PerformanceObserver((list) => {
       const entries = list.getEntries();
-      
+
       entries.forEach((entry) => {
         const firstEntry = entry as PerformanceEntry & { processingStart: number; startTime: number };
         const value = firstEntry.processingStart - firstEntry.startTime;
-        
+
         callback({
           name: 'FID',
           value,
@@ -122,7 +118,7 @@ export function observeFID(callback: (metric: WebVitalsMetric) => void): void {
 
     observer.observe({ entryTypes: ['first-input'] });
   } catch (e) {
-    console.warn('FID observation not supported');
+    logger.warn('FID observation not supported');
   }
 }
 
@@ -138,7 +134,7 @@ export function observeCLS(callback: (metric: WebVitalsMetric) => void): void {
   try {
     const observer = new PerformanceObserver((list) => {
       const entries = list.getEntries() as PerformanceEntry[];
-      
+
       entries.forEach((entry) => {
         // 只计算没有最近用户输入的 CLS
         const layoutShiftEntry = entry as PerformanceEntry & { hadRecentInput?: boolean; value?: number };
@@ -158,7 +154,7 @@ export function observeCLS(callback: (metric: WebVitalsMetric) => void): void {
 
     observer.observe({ entryTypes: ['layout-shift'] });
   } catch (e) {
-    console.warn('CLS observation not supported');
+    logger.warn('CLS observation not supported');
   }
 }
 
@@ -172,10 +168,10 @@ export function observeFCP(callback: (metric: WebVitalsMetric) => void): void {
     const observer = new PerformanceObserver((list) => {
       const entries = list.getEntries();
       const firstEntry = entries[0];
-      
+
       if (firstEntry) {
         const value = firstEntry.startTime;
-        
+
         callback({
           name: 'FCP',
           value,
@@ -187,7 +183,7 @@ export function observeFCP(callback: (metric: WebVitalsMetric) => void): void {
 
     observer.observe({ entryTypes: ['paint'] });
   } catch (e) {
-    console.warn('FCP observation not supported');
+    logger.warn('FCP observation not supported');
   }
 }
 
@@ -199,10 +195,10 @@ export function observeTTFB(callback: (metric: WebVitalsMetric) => void): void {
 
   try {
     const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-    
+
     if (navigation) {
       const value = navigation.responseStart - navigation.startTime;
-      
+
       callback({
         name: 'TTFB',
         value,
@@ -211,9 +207,10 @@ export function observeTTFB(callback: (metric: WebVitalsMetric) => void): void {
       });
     }
   } catch (e) {
-    console.warn('TTFB observation not supported');
+    logger.warn('TTFB observation not supported');
   }
 }
+
 
 
 
@@ -229,7 +226,5 @@ export function initWebVitalsMonitoring(): void {
   observeFCP(reportWebVitals);
   observeTTFB(reportWebVitals);
 
-  console.log('[Performance] Web Vitals monitoring initialized');
+  logger.info('Web Vitals monitoring initialized');
 }
-
-

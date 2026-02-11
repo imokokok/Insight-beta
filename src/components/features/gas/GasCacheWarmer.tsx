@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 
 import { useWarmupGasCache } from '@/hooks/useGasPrice';
+import { logger } from '@/lib/logger';
 
 const DEFAULT_CHAINS = ['ethereum', 'polygon', 'bsc', 'arbitrum', 'optimism', 'base'];
 
@@ -12,7 +13,7 @@ export function GasCacheWarmer() {
   useEffect(() => {
     const timer = setTimeout(() => {
       warmup().catch((error) => {
-        console.error('Failed to warm up gas cache:', error);
+        logger.error('Failed to warm up gas cache', { error });
       });
     }, 2000);
 

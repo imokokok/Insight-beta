@@ -1,4 +1,4 @@
-import { createSWRInfiniteConfig } from '@/hooks/common/useSWRConfig';
+import { createSWRInfiniteConfig } from './useSWRConfig';
 import type { BaseResponse } from '@/hooks/useUI';
 import { useInfiniteList } from '@/hooks/useUI';
 import type { Dispute, OracleConfig, DisputeStatus } from '@/lib/types/oracleTypes';

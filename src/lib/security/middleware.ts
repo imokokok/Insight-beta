@@ -6,7 +6,7 @@
 
 import {
   rateLimit,
-  cleanupMemoryStore,
+  cleanupRateLimitStore,
   getRateLimitStoreStatus,
   getClientIp,
   type RateLimitConfig,
@@ -19,7 +19,7 @@ import {
 
 export {
   rateLimit,
-  cleanupMemoryStore,
+  cleanupRateLimitStore,
   getRateLimitStoreStatus,
   getClientIp,
   type RateLimitConfig,

@@ -1,4 +1,3 @@
-export { OptimisticOracleClient } from './client';
 export { createUMAOracleConfig } from './config';
 export { decodeIdentifier, formatIdentifier, formatAncillaryData } from './utils';
 export {

@@ -44,63 +44,66 @@ export const AnimatedContainer = memo(function AnimatedContainer({
   );
 });
 
+// Note: StaggerContainerProps interface reserved for future use
+// interface StaggerContainerProps {
+//   children: React.ReactNode;
+//   className?: string;
+//   staggerDelay?: number;
+// }
+
+// ============================================================================
+// Stagger Container - 列表项依次进入动画容器
+// ============================================================================
+
 interface StaggerContainerProps {
   children: React.ReactNode;
   className?: string;
   staggerDelay?: number;
 }
 
-/**
- * 交错动画容器 - 子元素依次进入
- */
 export const StaggerContainer = memo(function StaggerContainer({
   children,
   className,
-  staggerDelay = 50,
 }: StaggerContainerProps) {
   return (
-    <div className={className}>
-      {React.Children.map(children, (child, index) => (
-        <div
-          className="animate-in fade-in slide-in-from-left-2 fill-mode-forwards duration-300"
-          style={{ animationDelay: `${index * staggerDelay}ms` }}
-        >
-          {child}
-        </div>
-      ))}
+    <div className={cn('space-y-3', className)}>
+      {children}
     </div>
   );
 });
 
+// ============================================================================
+// Hover Card - 悬停效果卡片
+// ============================================================================
+
 interface HoverCardProps {
   children: React.ReactNode;
-  className?: string;
   hoverScale?: boolean;
   hoverShadow?: boolean;
   hoverBorder?: boolean;
+  className?: string;
 }
 
-/**
- * 悬停效果卡片
- */
 export const HoverCard = memo(function HoverCard({
   children,
-  className,
-  hoverScale = true,
+  hoverScale = false,
   hoverShadow = true,
-  hoverBorder = true,
+  hoverBorder = false,
+  className,
 }: HoverCardProps) {
   return (
     <div
       className={cn(
-        'transition-all duration-300',
+        'transition-all duration-200',
         hoverScale && 'hover:scale-[1.02]',
-        hoverShadow && 'hover:shadow-lg',
-        hoverBorder && 'hover:border-primary/50',
-        className,
+        hoverShadow && 'hover:shadow-md',
+        hoverBorder && 'hover:border-gray-300',
+        className
       )}
     >
       {children}
     </div>
   );
 });
+
+

@@ -252,11 +252,17 @@ export function calculateDataFreshness(
 
 /**
  * 检查价格是否过期
- * @param timestamp - 价格时间戳 (秒)
- * @param threshold - 陈旧阈值 (秒)
+ * @param timestamp - 时间戳
+ * @param thresholdSeconds - 过期阈值（秒）
  * @returns 是否过期
  */
-export function isPriceStale(timestamp: number, threshold: number): boolean {
-  const now = Math.floor(Date.now() / 1000);
-  return now - timestamp > threshold;
+export function isPriceStale(
+  timestamp: Date | number,
+  thresholdSeconds: number = 300,
+): boolean {
+  const timestampMs = timestamp instanceof Date ? timestamp.getTime() : timestamp;
+  const now = Date.now();
+  const stalenessSeconds = Math.floor((now - timestampMs) / 1000);
+  return stalenessSeconds > thresholdSeconds;
 }
+

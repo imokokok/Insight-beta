@@ -121,8 +121,7 @@ export default function SloDetailPage({ params }: { params: Promise<{ id: string
   };
 
   const goToEdit = () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    router.push(`/oracle/slo-v2/${sloId}/edit` as any);
+    router.push(`/oracle/slo-v2/${sloId}/edit`);
   };
 
   if (loading) {

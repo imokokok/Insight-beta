@@ -44,9 +44,13 @@ export function isTranslationLoaded(lang: Lang): boolean {
   return lang in loadedTranslations;
 }
 
-export function preloadTranslations(lang: Lang): void {
+export async function preloadTranslations(lang: Lang): Promise<void> {
   if (!isTranslationLoaded(lang)) {
-    loadTranslations(lang).catch(console.error);
+    try {
+      await loadTranslations(lang);
+    } catch (error) {
+      logger.warn(`Failed to preload translations for ${lang}`, { error });
+    }
   }
 }
 

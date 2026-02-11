@@ -341,9 +341,12 @@ export class ChainlinkClient extends EvmOracleClient {
 }
 
 // ============================================================================
-// 工厂函数
+// 工厂函数和工具函数
 // ============================================================================
 
+/**
+ * 创建 Chainlink 客户端
+ */
 export function createChainlinkClient(
   chain: SupportedChain,
   rpcUrl: string,
@@ -352,20 +355,12 @@ export function createChainlinkClient(
   return new ChainlinkClient(chain, rpcUrl, config);
 }
 
-// ============================================================================
-// 工具函数
-// ============================================================================
-
 /**
- * 获取指定链的可用价格喂价列表
+ * 获取链上可用的价格喂价列表
  */
 export function getAvailableFeedsForChain(chain: SupportedChain): string[] {
-  return Object.keys(POPULAR_FEEDS[chain] || {});
+  const feeds = POPULAR_FEEDS[chain];
+  if (!feeds) return [];
+  return Object.keys(feeds);
 }
 
-/**
- * 获取喂价地址
- */
-export function getFeedAddress(chain: SupportedChain, symbol: string): Address | undefined {
-  return POPULAR_FEEDS[chain]?.[symbol];
-}

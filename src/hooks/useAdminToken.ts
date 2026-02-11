@@ -1,10 +1,25 @@
+/**
+ * Admin Token Hook
+ *
+ * 管理后台管理令牌的安全存储和访问
+ * 使用加密存储，支持自动过期
+ */
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 
+import {
+  getAdminToken,
+  setAdminToken,
+  clearAdminToken,
+} from '@/lib/utils/storage';
+
 export interface UseAdminTokenOptions {
-  storageKey?: string;
+  /** 是否持久化到 sessionStorage */
   persist?: boolean;
+  /** 存储键名 */
+  storageKey?: string;
 }
 
 export interface UseAdminTokenReturn {
@@ -15,57 +30,60 @@ export interface UseAdminTokenReturn {
 }
 
 /**
- * 管理后台令牌的自定义 Hook
- * 自动从 sessionStorage 读取和保存令牌
- * 
+ * 管理员令牌 Hook
+ *
  * @example
- * const { token, setToken, clearToken } = useAdminToken({ storageKey: 'admin_token' });
+ * ```typescript
+ * const { token, setToken, clearToken, isLoaded } = useAdminToken();
+ *
+ * // 设置令牌
+ * setToken('your-admin-token');
+ *
+ * // 清除令牌
+ * clearToken();
+ * ```
  */
 export function useAdminToken(options: UseAdminTokenOptions = {}): UseAdminTokenReturn {
-  const { storageKey = 'admin_token', persist = true } = options;
+  const { persist = true } = options;
+
   const [token, setTokenState] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // 从 storage 读取初始值
+  // 初始加载
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
-    try {
-      const saved = window.sessionStorage.getItem(storageKey);
+    if (!persist) {
+      setIsLoaded(true);
+      return;
+    }
+
+    getAdminToken().then(saved => {
       if (saved) {
         setTokenState(saved);
       }
-    } catch (e) {
-      console.warn('Failed to read from sessionStorage:', e);
-    } finally {
       setIsLoaded(true);
-    }
-  }, [storageKey]);
+    });
+  }, [persist]);
 
-  // 保存到 storage
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (!isLoaded) return;
+  // 设置令牌
+  const setToken = useCallback(
+    (newToken: string) => {
+      const trimmed = newToken.trim();
+      setTokenState(trimmed);
 
-    try {
-      const trimmed = token.trim();
-      if (trimmed && persist) {
-        window.sessionStorage.setItem(storageKey, trimmed);
-      } else {
-        window.sessionStorage.removeItem(storageKey);
+      if (persist && trimmed) {
+        setAdminToken(trimmed);
       }
-    } catch (e) {
-      console.warn('Failed to write to sessionStorage:', e);
-    }
-  }, [token, storageKey, persist, isLoaded]);
+    },
+    [persist]
+  );
 
-  const setToken = useCallback((newToken: string) => {
-    setTokenState(newToken);
-  }, []);
-
+  // 清除令牌
   const clearToken = useCallback(() => {
     setTokenState('');
-  }, []);
+    if (persist) {
+      clearAdminToken();
+    }
+  }, [persist]);
 
   return {
     token,

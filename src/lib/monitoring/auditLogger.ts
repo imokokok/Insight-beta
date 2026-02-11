@@ -630,101 +630,10 @@ class SecurityAuditLogger {
 
 let auditLogger: SecurityAuditLogger | null = null;
 
-export function getAuditLogger(): SecurityAuditLogger {
+function getAuditLogger(): SecurityAuditLogger {
   if (!auditLogger) {
     auditLogger = new SecurityAuditLogger();
   }
   return auditLogger;
 }
 
-export function logSecurityEvent(
-  action: AuditAction,
-  actor: string,
-  details: Record<string, unknown>,
-  severity: AuditSeverity = 'info',
-  success: boolean = true,
-  errorMessage?: string,
-): void {
-  const logger = getAuditLogger();
-  logger.log({
-    action,
-    actor,
-    actorType: 'user',
-    severity,
-    details,
-    success,
-    errorMessage,
-  });
-}
-
-export function logAdminAction(
-  action: AuditAction,
-  actor: string,
-  details: Record<string, unknown>,
-  success: boolean = true,
-): void {
-  const logger = getAuditLogger();
-  logger.log({
-    action,
-    actor,
-    actorType: 'admin',
-    severity: success ? 'info' : 'warning',
-    details,
-    success,
-  });
-}
-
-export function logSecurityAlert(
-  action: AuditAction,
-  details: Record<string, unknown>,
-  errorMessage?: string,
-): void {
-  const logger = getAuditLogger();
-  logger.log({
-    action,
-    actor: 'system',
-    actorType: 'system',
-    severity: 'critical',
-    details,
-    success: false,
-    errorMessage,
-  });
-}
-
-export function getAuditStatistics(
-  filter?: Omit<AuditFilter, 'limit' | 'offset' | 'search'>,
-): AuditStatistics {
-  const logger = getAuditLogger();
-  return logger.getStatistics(filter || {});
-}
-
-export function exportAuditLogs(options?: AuditExportOptions): Promise<string> {
-  const logger = getAuditLogger();
-  return logger.exportLogs(options || { format: 'json' });
-}
-
-export function archiveAuditLogs(
-  options: AuditArchiveOptions,
-): Promise<{ success: boolean; archivedCount: number; archiveSize: number }> {
-  const logger = getAuditLogger();
-  return logger.archiveLogs(options);
-}
-
-export function clearOldAuditLogs(daysToKeep: number = 30): void {
-  const logger = getAuditLogger();
-  logger.clearOldLogs(daysToKeep);
-}
-
-export function clearAllAuditLogsForTest(): void {
-  const logger = getAuditLogger();
-  logger.clearAllLogsForTest();
-}
-
-export function getAuditMemoryUsage(): {
-  totalLogs: number;
-  queueSize: number;
-  memoryEstimate: string;
-} {
-  const logger = getAuditLogger();
-  return logger.getMemoryUsage();
-}

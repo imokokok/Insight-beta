@@ -28,15 +28,6 @@ const state: ShutdownState = {
 // ============================================================================
 // 关闭回调注册
 // ============================================================================
-
-/**
- * 注册关闭回调函数
- */
-export function onShutdown(callback: () => Promise<void>): void {
-  state.shutdownCallbacks.push(callback);
-}
-
-// ============================================================================
 // 优雅关闭实现
 // ============================================================================
 
@@ -146,36 +137,4 @@ function executeWithTimeout<T>(promise: Promise<T>, timeoutMs: number, message: 
       .catch(reject)
       .finally(() => clearTimeout(timer));
   });
-}
-
-// ============================================================================
-// 信号处理
-// ============================================================================
-
-/**
- * 初始化优雅关闭处理器
- */
-export function initGracefulShutdown(): void {
-  // 处理 SIGTERM (进程终止信号)
-  process.on('SIGTERM', () => {
-    void gracefulShutdown('SIGTERM');
-  });
-
-  // 处理 SIGINT (Ctrl+C)
-  process.on('SIGINT', () => {
-    void gracefulShutdown('SIGINT');
-  });
-
-  // 处理未捕获的异常
-  process.on('uncaughtException', (error) => {
-    logger.error('Uncaught exception', { error });
-    void gracefulShutdown('uncaughtException', 10000);
-  });
-
-  // 处理未处理的 Promise 拒绝
-  process.on('unhandledRejection', (reason, promise) => {
-    logger.error('Unhandled rejection', { reason, promise });
-  });
-
-  logger.info('Graceful shutdown handlers initialized');
 }

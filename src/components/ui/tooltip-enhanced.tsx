@@ -4,6 +4,7 @@ import * as React from 'react';
 
 import { motion, AnimatePresence } from 'framer-motion';
 
+import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 
 type TooltipPosition = 'top' | 'bottom' | 'left' | 'right';
@@ -139,7 +140,7 @@ function CopyTooltip({ text, children, className }: CopyTooltipProps) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy:', err);
+      logger.error('Failed to copy text', { error: err });
     }
   };
 

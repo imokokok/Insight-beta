@@ -24,13 +24,17 @@ export default function WatchlistPage() {
   const searchParams = useSearchParams();
   const currentSearch = searchParams?.toString() ?? '';
   const instanceIdFromUrl = searchParams?.get('instanceId')?.trim() || '';
-  const [instanceId, setInstanceIdState] = useState<string>(getOracleInstanceId);
+  const [instanceId, setInstanceIdState] = useState<string>('default');
 
   useEffect(() => {
-    if (!instanceIdFromUrl) return;
-    if (instanceIdFromUrl === instanceId) return;
-    setInstanceIdState(instanceIdFromUrl);
-  }, [instanceIdFromUrl, instanceId]);
+    getOracleInstanceId().then(id => {
+      if (!instanceIdFromUrl) {
+        setInstanceIdState(id);
+      } else if (instanceIdFromUrl !== id) {
+        setInstanceIdState(instanceIdFromUrl);
+      }
+    });
+  }, [instanceIdFromUrl]);
 
   useEffect(() => {
     const normalized = instanceId.trim();

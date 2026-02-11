@@ -1,5 +1,6 @@
 export const errors = {
   apiError: 'Error del servidor',
+  errorMessage: 'Mensaje de Error',
   chainNotAdded: 'Esta red no está añadida en tu billetera. Por favor, agrégala primero.',
   contractNotFound: 'Contrato no encontrado',
   forbidden: 'Prohibido (se requiere token de administrador)',

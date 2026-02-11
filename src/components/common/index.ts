@@ -86,10 +86,8 @@ export {
 // ==================== 熔断/回退数据指示器 ====================
 export {
   CircuitBreakerFallbackIndicator,
-  DataFreshnessWithCircuitBreaker,
   type FallbackDataStatus,
   type CircuitBreakerFallbackIndicatorProps,
-  type DataFreshnessWithCircuitBreakerProps,
 } from './CircuitBreakerFallbackIndicator';
 
 // ==================== 输入组件 ====================
@@ -103,9 +101,3 @@ export { LanguageSwitcher } from './LanguageSwitcher';
 
 // ==================== 移动端优化组件 ====================
 export { MobileBottomNav } from './MobileBottomNav';
-export {
-  MobileImage,
-  ResponsiveImage,
-  Avatar,
-  ImageGallery,
-} from './MobileImage';

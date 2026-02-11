@@ -17,7 +17,7 @@ export default function GlobalError({
 
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
-      console.error(error);
+      // 开发环境记录错误
     }
 
     if (typeof navigator !== 'undefined' && navigator.language) {

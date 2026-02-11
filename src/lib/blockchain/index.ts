@@ -29,7 +29,7 @@ export type {
 // ============================================================================
 
 // Chainlink
-export { createChainlinkClient, getAvailableFeedsForChain } from './chainlinkDataFeeds';
+export { ChainlinkClient } from './chainlinkDataFeeds';
 
 // Pyth
 export { createPythClient, getAvailablePythSymbols } from './pythOracle';
@@ -50,10 +50,7 @@ export { createRedStoneClient, getAvailableRedStoneSymbols } from './redstoneOra
 export { createFluxClient } from './fluxOracle';
 
 // Switchboard
-export {
-  createSwitchboardClient,
-  getAvailableSymbols as getAvailableSwitchboardSymbols,
-} from './switchboardOracle';
+export { SwitchboardClient } from './switchboardOracle';
 
 // UMA
-export { createUMAClient, getSupportedUMAChains } from './umaOracle';
+export { createUMAClient, isChainSupportedByUMA } from './umaOracle';

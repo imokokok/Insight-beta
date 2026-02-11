@@ -622,27 +622,6 @@ export const API_SCOPES = {
 
 export type APIScope = keyof typeof API_SCOPES;
 
-/**
- * 检查 scope 是否满足要求
- */
-export function checkScopes(
-  userScopes: string[],
-  requiredScopes: string[],
-): { granted: boolean; missing: string[] } {
-  const missing = requiredScopes.filter((scope) => !userScopes.includes(scope));
-  return {
-    granted: missing.length === 0,
-    missing,
-  };
-}
-
-/**
- * 验证 scope 是否有效
- */
-export function isValidScope(scope: string): boolean {
-  return scope in API_SCOPES || scope === 'admin' || scope === 'read' || scope === 'write';
-}
-
 // ============================================================================
 // Export singleton instances
 // ============================================================================

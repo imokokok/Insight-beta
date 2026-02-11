@@ -27,69 +27,6 @@ interface QueryStats {
   minTime: number;
 }
 
-const slowQueryLog: SlowQuery[] = [];
-const queryStats = new Map<string, QueryStats>();
-const MAX_SLOW_QUERIES = 100;
-const SLOW_QUERY_THRESHOLD = 50; // ms
-
-export function logSlowQuery(queryText: string, durationMs: number, params?: unknown[]) {
-  if (durationMs < SLOW_QUERY_THRESHOLD) return;
-
-  const entry: SlowQuery = {
-    query: queryText.slice(0, 500),
-    durationMs,
-    timestamp: Date.now(),
-    params: params?.slice(0, 10),
-  };
-
-  slowQueryLog.unshift(entry);
-  if (slowQueryLog.length > MAX_SLOW_QUERIES) {
-    slowQueryLog.pop();
-  }
-
-  logger.warn('Slow query detected', {
-    query: entry.query,
-    durationMs,
-    params: entry.params,
-  });
-}
-
-export function recordQueryStats(queryText: string, durationMs: number) {
-  const normalized = queryText.replace(/\$\d+/g, '?').replace(/\s+/g, ' ').trim().slice(0, 200);
-
-  const existing = queryStats.get(normalized);
-  if (existing) {
-    existing.count++;
-    existing.totalTime += durationMs;
-    existing.avgTime = existing.totalTime / existing.count;
-    existing.maxTime = Math.max(existing.maxTime, durationMs);
-    existing.minTime = Math.min(existing.minTime, durationMs);
-  } else {
-    queryStats.set(normalized, {
-      query: normalized,
-      count: 1,
-      totalTime: durationMs,
-      avgTime: durationMs,
-      maxTime: durationMs,
-      minTime: durationMs,
-    });
-  }
-}
-
-export function getSlowQueries(limit: number = 20): SlowQuery[] {
-  return slowQueryLog.slice(0, limit);
-}
-
-export function getQueryStats(): QueryStats[] {
-  return Array.from(queryStats.values())
-    .sort((a, b) => b.avgTime - a.avgTime)
-    .slice(0, 50);
-}
-
-export function clearQueryStats() {
-  queryStats.clear();
-}
-
 export async function withQueryOptimization<T>(
   queryText: string,
   params: unknown[],

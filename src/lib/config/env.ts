@@ -178,6 +178,15 @@ const envSchema = z.object({
   // 限流配置
   INSIGHT_API_LOG_SAMPLE_RATE: optionalNumber(1),
 
+  // =============================================================================
+  // Redis 配置（用于多实例部署时的共享状态）
+  // =============================================================================
+  REDIS_URL: optionalString(),
+  REDIS_HOST: optionalString(),
+  REDIS_PORT: optionalNumber(6379),
+  REDIS_PASSWORD: optionalString(),
+  REDIS_TLS: optionalBoolean(false),
+
   // 超时配置
   INSIGHT_DEPENDENCY_TIMEOUT_MS: optionalNumber(5000),
   INSIGHT_RPC_TIMEOUT_MS: optionalNumber(30000),
@@ -359,30 +368,6 @@ export function hasAlertConfig(): boolean {
     env.INSIGHT_WEBHOOK_URL ||
     env.INSIGHT_SMTP_HOST
   );
-}
-
-/**
- * 获取告警超时时间
- */
-export function getAlertTimeoutMs(channel: 'slack' | 'telegram' | 'webhook'): number {
-  switch (channel) {
-    case 'slack':
-      return env.INSIGHT_SLACK_TIMEOUT_MS;
-    case 'telegram':
-      return env.INSIGHT_TELEGRAM_TIMEOUT_MS;
-    case 'webhook':
-      return env.INSIGHT_WEBHOOK_TIMEOUT_MS;
-    default:
-      return 10000;
-  }
-}
-
-/**
- * 获取 Sentry DSN
- * 优先使用 NEXT_PUBLIC_SENTRY_DSN（客户端需要），如果不存在则回退到 SENTRY_DSN
- */
-export function getSentryDsn(): string | undefined {
-  return env.NEXT_PUBLIC_SENTRY_DSN || env.SENTRY_DSN || undefined;
 }
 
 /**

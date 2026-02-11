@@ -127,12 +127,12 @@ export function QuickActionButton({
       variant={variant}
       size={size}
       onClick={onClick}
-      className={cn('relative', className)}
+      className={cn('flex items-center gap-2', className)}
     >
       {icon}
-      <span className="ml-2">{label}</span>
+      {label}
       {badge !== undefined && badge > 0 && (
-        <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] text-white">
+        <span className="ml-1 rounded-full bg-primary px-1.5 py-0.5 text-xs text-primary-foreground">
           {badge}
         </span>
       )}

@@ -270,65 +270,6 @@ export const CHAIN_METADATA: Record<SupportedChain, ChainMetadata> = {
 // ============================================================================
 
 /**
- * 获取 viem chain 对象
- * @param chain - 支持的链名称
- * @returns viem chain 对象
- */
-export function getViemChain(chain: SupportedChain): typeof mainnet {
-  return VIEM_CHAIN_MAP[chain] ?? mainnet;
-}
-
-/**
- * 获取默认 RPC URL
- * @param chain - 支持的链名称
- * @returns RPC URL
- */
-export function getDefaultRpcUrl(chain: SupportedChain): string {
-  return DEFAULT_RPC_URLS[chain] ?? DEFAULT_RPC_URLS.ethereum;
-}
-
-/**
- * 获取链元数据
- * @param chain - 支持的链名称
- * @returns 链元数据
- */
-export function getChainMetadata(chain: SupportedChain): ChainMetadata {
-  return CHAIN_METADATA[chain] ?? CHAIN_METADATA.ethereum;
-}
-
-/**
- * 检查链是否支持 EVM
- * @param chain - 支持的链名称
- * @returns 是否支持 EVM
- */
-export function isEvmChain(chain: SupportedChain): boolean {
-  const nonEvmChains: SupportedChain[] = ['solana', 'near', 'aptos', 'sui'];
-  return !nonEvmChains.includes(chain);
-}
-
-/**
- * 获取区块浏览器交易 URL
- * @param chain - 支持的链名称
- * @param txHash - 交易哈希
- * @returns 区块浏览器 URL
- */
-export function getExplorerTxUrl(chain: SupportedChain, txHash: string): string {
-  const metadata = getChainMetadata(chain);
-  return `${metadata.blockExplorerUrl}/tx/${txHash}`;
-}
-
-/**
- * 获取区块浏览器地址 URL
- * @param chain - 支持的链名称
- * @param address - 地址
- * @returns 区块浏览器 URL
- */
-export function getExplorerAddressUrl(chain: SupportedChain, address: string): string {
-  const metadata = getChainMetadata(chain);
-  return `${metadata.blockExplorerUrl}/address/${address}`;
-}
-
-/**
  * 根据 chainId 获取链符号
  * @param chainId - 链 ID
  * @returns 链符号

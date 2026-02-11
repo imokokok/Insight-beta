@@ -1,5 +1,6 @@
 export const errors = {
   apiError: 'Server error',
+  errorMessage: 'Error Message',
   chainNotAdded: 'This network is not added in your wallet. Please add it first.',
   contractNotFound: 'Contract not found',
   forbidden: 'Forbidden (admin token required)',

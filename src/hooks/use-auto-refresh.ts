@@ -9,6 +9,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { logger } from '@/lib/logger';
 import {
   getRefreshStrategy,
   formatLastUpdated,
@@ -87,7 +88,7 @@ export function useAutoRefresh(options: UseAutoRefreshOptions): UseAutoRefreshRe
         setLastUpdated(new Date());
       }
     } catch (err) {
-      console.error('Refresh failed:', err);
+      logger.error('Refresh failed', { error: err });
       if (isMountedRef.current) {
         setIsError(true);
         setError(err instanceof Error ? err : new Error(String(err)));
@@ -103,8 +104,8 @@ export function useAutoRefresh(options: UseAutoRefreshOptions): UseAutoRefreshRe
   // 初始加载
   useEffect(() => {
     // 添加错误处理，防止未处理的 Promise 拒绝
-    refresh().catch((err) => {
-      console.error('Initial refresh failed:', err);
+    refresh().catch(() => {
+      // 错误已在 refresh 函数内部处理
     });
   }, [refresh]);
 

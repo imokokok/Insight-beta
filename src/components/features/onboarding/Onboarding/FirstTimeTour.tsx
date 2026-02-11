@@ -497,14 +497,18 @@ export function useFirstTimeTour() {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    const hasCompleted = getStorageItem<string | null>(TOUR_STORAGE_KEY, null);
-    const hasCompletedOnboarding = getStorageItem<string | null>('oracle-monitor-onboarding-completed', null);
+    const checkTourStatus = async () => {
+      const hasCompleted = await getStorageItem<string | null>(TOUR_STORAGE_KEY, null);
+      const hasCompletedOnboarding = await getStorageItem<string | null>('oracle-monitor-onboarding-completed', null);
 
-    // Only show tour if user has completed onboarding but hasn't seen the tour
-    if (hasCompletedOnboarding && !hasCompleted) {
-      setShowTour(true);
-    }
-    setIsReady(true);
+      // Only show tour if user has completed onboarding but hasn't seen the tour
+      if (hasCompletedOnboarding && !hasCompleted) {
+        setShowTour(true);
+      }
+      setIsReady(true);
+    };
+
+    checkTourStatus();
   }, []);
 
   const dismissTour = useCallback(() => {

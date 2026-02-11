@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 
 import useSWR from 'swr';
 
-import { createSWRConfig, createSWRInfiniteConfig } from '@/hooks/common/useSWRConfig';
+import { createSWRConfig, createSWRInfiniteConfig } from './useSWRConfig';
 import type { BaseResponse } from '@/hooks/useUI';
 import { useInfiniteList } from '@/hooks/useUI';
 import type { Assertion, OracleConfig, OracleStats, OracleStatus } from '@/lib/types/oracleTypes';
@@ -82,11 +82,11 @@ export function useOracleData(
 // ============================================================================
 
 export function useOracleFilters() {
-  const [instanceId, setInstanceIdState] = useState<string>(getOracleInstanceId());
+  const [instanceId, setInstanceIdState] = useState<string>('default');
 
   useEffect(() => {
     // 组件挂载时从 storage 读取最新值
-    setInstanceIdState(getOracleInstanceId());
+    getOracleInstanceId().then(id => setInstanceIdState(id));
   }, []);
 
   const updateInstanceId = (newInstanceId: string) => {

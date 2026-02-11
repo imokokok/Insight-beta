@@ -345,31 +345,8 @@ export function createAPI3Client(
 // ============================================================================
 
 /**
- * 获取支持的 API3 链列表
- */
-export function getSupportedAPI3Chains(): SupportedChain[] {
-  return Object.entries(API3_DAPI_SERVER_ADDRESSES)
-    .filter(([_, address]) => address !== undefined)
-    .map(([chain]) => chain as SupportedChain);
-}
-
-/**
  * 获取指定链的可用 dAPI 列表
  */
 export function getAvailableAPI3Dapis(chain: SupportedChain): string[] {
   return API3_SUPPORTED_DAPIS[chain] || [];
-}
-
-/**
- * 检查链是否支持 API3
- */
-export function isChainSupportedByAPI3(chain: SupportedChain): boolean {
-  return API3_DAPI_SERVER_ADDRESSES[chain] !== undefined;
-}
-
-/**
- * 获取 dAPI 服务器地址
- */
-export function getDapiServerAddress(chain: SupportedChain): Address | undefined {
-  return API3_DAPI_SERVER_ADDRESSES[chain];
 }

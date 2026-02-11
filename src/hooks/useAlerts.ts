@@ -2,7 +2,7 @@ import type { IncidentWithAlerts } from '@/app/alerts/alertsComponents';
 import type { OpsMetrics, OpsMetricsSeriesPoint, RiskItem } from '@/lib/types/oracleTypes';
 import { buildApiUrl, normalizeListResponse } from '@/lib/utils';
 
-import { useQuery } from './common/useQuery';
+import { useQuery } from './useQuery';
 
 // ============================================================================
 // useOracleIncidents - Oracle 事件 Hook

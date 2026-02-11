@@ -8,7 +8,7 @@ const SALT_LENGTH = 32;
 const KEY_LENGTH = 32;
 const ITERATIONS = 100000;
 
-export interface EncryptedData {
+interface EncryptedData {
   iv: string;
   authTag: string;
   encrypted: string;
@@ -152,47 +152,6 @@ export function decryptString(jsonString: string | null | undefined): string | n
   return jsonString;
 }
 
-export function redactSensitiveData(
-  data: Record<string, unknown>,
-  fields: string[],
-): Record<string, unknown> {
-  const result = { ...data };
-  for (const field of fields) {
-    if (field in result && typeof result[field] === 'string') {
-      const value = result[field] as string;
-      if (value) {
-        // Show first 8 chars and last 4 chars, mask the rest
-        if (value.length > 12) {
-          result[field] = `${value.slice(0, 8)}...${value.slice(-4)}`;
-        } else {
-          result[field] = '***';
-        }
-      }
-    }
-  }
-  return result;
-}
 
-export function maskInLog(value: string | undefined | null): string {
-  if (!value) return '';
-  if (value.length <= 8) return '***';
-  return `${value.slice(0, 4)}***${value.slice(-4)}`;
-}
 
-/**
- * 获取加密系统状态
- */
-export function getEncryptionStatus(): {
-  enabled: boolean;
-  keyByteLength: number;
-  algorithm: string;
-  version: number;
-} {
-  const key = getEncryptionKey();
-  return {
-    enabled: isEncryptionEnabled(),
-    keyByteLength: Buffer.byteLength(key, 'utf8'),
-    algorithm: ALGORITHM,
-    version: 2,
-  };
-}
+

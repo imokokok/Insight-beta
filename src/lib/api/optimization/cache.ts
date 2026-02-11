@@ -232,10 +232,10 @@ export class MemoryCache implements CacheProvider {
 }
 
 // ============================================================================
-// 带标签的缓存包装器
+// 缓存管理器
 // ============================================================================
 
-export class TaggedCache {
+export class CacheManager {
   private cache: CacheProvider;
 
   constructor(cache: CacheProvider) {
@@ -256,88 +256,6 @@ export class TaggedCache {
 
   async clear(pattern?: string): Promise<void> {
     return this.cache.clear(pattern);
-  }
-
-  /**
-   * 设置带标签的缓存
-   */
-  async setWithTags<T>(key: string, value: T, tags: string[], ttlMs?: number): Promise<void> {
-    // 内存缓存：使用特殊键存储标签映射
-    await this.cache.set(key, value, ttlMs);
-
-    for (const tag of tags) {
-      const tagKey = `__tag__:${tag}`;
-      const existing = (await this.cache.get<string[]>(tagKey)) || [];
-      if (!existing.includes(key)) {
-        existing.push(key);
-        await this.cache.set(tagKey, existing, ttlMs);
-      }
-    }
-  }
-
-  /**
-   * 根据标签使缓存失效
-   */
-  async invalidateTag(tag: string): Promise<void> {
-    // 内存缓存实现
-    const tagKey = `__tag__:${tag}`;
-    const keys = (await this.cache.get<string[]>(tagKey)) || [];
-
-    for (const key of keys) {
-      await this.cache.delete(key);
-    }
-
-    await this.cache.delete(tagKey);
-  }
-
-  /**
-   * 根据多个标签使缓存失效
-   */
-  async invalidateTags(tags: string[]): Promise<void> {
-    await Promise.all(tags.map((tag) => this.invalidateTag(tag)));
-  }
-}
-
-// ============================================================================
-// 缓存管理器
-// ============================================================================
-
-export class CacheManager {
-  private cache: CacheProvider;
-  private taggedCache: TaggedCache;
-
-  constructor(cache: CacheProvider) {
-    this.cache = cache;
-    this.taggedCache = new TaggedCache(cache);
-  }
-
-  get provider(): CacheProvider {
-    return this.cache;
-  }
-
-  get tagged(): TaggedCache {
-    return this.taggedCache;
-  }
-
-  /**
-   * 使缓存失效
-   */
-  async invalidate(key: string): Promise<void> {
-    await this.cache.delete(key);
-  }
-
-  /**
-   * 根据标签使缓存失效
-   */
-  async invalidateTag(tag: string): Promise<void> {
-    await this.taggedCache.invalidateTag(tag);
-  }
-
-  /**
-   * 根据模式清除缓存
-   */
-  async clear(pattern?: string): Promise<void> {
-    await this.cache.clear(pattern);
   }
 }
 

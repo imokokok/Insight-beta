@@ -2,6 +2,7 @@
 
 import useSWR from 'swr';
 
+import { logger } from '@/lib/logger';
 import { buildApiUrl } from '@/lib/utils';
 
 import type { SWRConfiguration } from 'swr';
@@ -243,7 +244,7 @@ export function useWarmupGasCache(
 
       return data;
     } catch (error) {
-      console.error('Error warming up gas cache:', error);
+      logger.error('Error warming up gas cache', { error });
       throw error;
     }
   };

@@ -107,19 +107,3 @@ export async function withRateLimit(
  * }
  * ```
  */
-export function withRateLimitHandler(
-  handler: (req: NextRequest) => Promise<NextResponse>,
-): (req: NextRequest) => Promise<NextResponse> {
-  return async (req: NextRequest) => {
-    return withRateLimit(req, handler);
-  };
-}
-
-/**
- * 检查是否在白名单中（如健康检查端点）
- */
-const whitelistPaths = ['/api/health', '/api/status'];
-
-export function isWhitelisted(pathname: string): boolean {
-  return whitelistPaths.some((path) => pathname.startsWith(path));
-}

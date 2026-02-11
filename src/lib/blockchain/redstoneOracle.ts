@@ -353,38 +353,8 @@ export function createRedStoneClient(
 // ============================================================================
 
 /**
- * 获取支持的 RedStone 链列表
- */
-export function getSupportedRedStoneChains(): SupportedChain[] {
-  return Object.entries(REDSTONE_CONTRACT_ADDRESSES)
-    .filter(([_, address]) => address !== undefined)
-    .map(([chain]) => chain as SupportedChain);
-}
-
-/**
  * 获取所有可用的价格喂价符号
  */
 export function getAvailableRedStoneSymbols(chain: SupportedChain): string[] {
   return REDSTONE_SUPPORTED_SYMBOLS[chain] || [];
-}
-
-/**
- * 检查链是否支持 RedStone
- */
-export function isChainSupportedByRedStone(chain: SupportedChain): boolean {
-  return REDSTONE_CONTRACT_ADDRESSES[chain] !== undefined;
-}
-
-/**
- * 获取合约地址
- */
-export function getRedStoneContractAddress(chain: SupportedChain): Address | undefined {
-  return REDSTONE_CONTRACT_ADDRESSES[chain];
-}
-
-/**
- * 获取 Feed ID
- */
-export function getRedStoneFeedId(symbol: string): string | undefined {
-  return REDSTONE_FEED_IDS[symbol];
 }

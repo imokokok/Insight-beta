@@ -196,68 +196,56 @@ export function PWAInstallPrompt() {
   );
 }
 
-// PWA 安装按钮（用于设置页面等）
-export function PWAInstallButton() {
+// PWA Install Button component
+export function PWAInstallButton({
+  className,
+  onClick,
+}: {
+  className?: string;
+  onClick?: () => void;
+}) {
   const { t } = useI18n();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [isInstallable, setIsInstallable] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // 检查是否作为 PWA 运行
-    const isStandalone =
-      window.matchMedia('(display-mode: standalone)').matches ||
-      (window.navigator as { standalone?: boolean }).standalone === true;
-
-    if (isStandalone) return;
-
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      setIsInstallable(true);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-    // iOS 始终显示手动安装提示
-    if (isIOS() && isSafari()) {
-      setIsInstallable(true);
-    }
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     };
   }, []);
 
-  const handleInstall = async () => {
-    if (isIOS() && isSafari()) {
-      // iOS 显示提示
-      alert(t('pwa.iosInstallAlert'));
-      return;
+  const handleClick = useCallback(async () => {
+    if (deferredPrompt) {
+      await deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setDeferredPrompt(null);
+      }
     }
+    onClick?.();
+  }, [deferredPrompt, onClick]);
 
-    if (!deferredPrompt) return;
-
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-
-    if (outcome === 'accepted') {
-      setIsInstallable(false);
-    }
-
-    setDeferredPrompt(null);
-  };
-
-  if (!isInstallable) return null;
+  // Hide if already installed or no install prompt available
+  if (!deferredPrompt) return null;
 
   return (
     <button
-      onClick={handleInstall}
-      className="flex items-center gap-2 rounded-lg border border-purple-200 bg-purple-50 px-4 py-2 text-sm font-medium text-purple-700 transition-colors hover:bg-purple-100 dark:border-purple-800 dark:bg-purple-900/20 dark:text-purple-300 dark:hover:bg-purple-900/30"
+      onClick={handleClick}
+      className={className}
+      aria-label={t('pwa.installButton')}
     >
-      <Download size={16} />
-      {t('pwa.installApp')}
+      <Download size={20} />
+      <span>{t('pwa.installButton')}</span>
     </button>
   );
 }
+
+

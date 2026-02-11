@@ -5,6 +5,7 @@ import { createPublicClient, http, parseAbi } from 'viem';
 import { LRUCache } from '@/lib/cache/lru-cache';
 import { DEFAULT_FALLBACK_PRICES } from '@/lib/config/constants';
 import { env } from '@/lib/config/env';
+import { logger } from '@/lib/logger';
 import { parseRpcUrls } from '@/lib/utils';
 
 function secureRandom(): number {
@@ -447,7 +448,7 @@ async function fetchDexTwapPriceUsdUncached(
 
     // 检查数组长度和元素存在性
     if (!Array.isArray(tickCumulatives) || tickCumulatives.length < 2) {
-      console.error('Invalid tickCumulatives response', { tickCumulatives });
+      logger.error('Invalid tickCumulatives response', { tickCumulatives });
       return null;
     }
 

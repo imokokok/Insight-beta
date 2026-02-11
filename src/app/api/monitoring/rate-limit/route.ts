@@ -8,7 +8,7 @@ import { NextResponse } from 'next/server';
 
 import { env } from '@/lib/config/env';
 import { logger } from '@/lib/logger';
-import { getRateLimitStoreStatus, cleanupMemoryStore } from '@/lib/security/rateLimit';
+import { getRateLimitStoreStatus, cleanupRateLimitStore } from '@/lib/security/rateLimit';
 import { requireAdmin } from '@/server/apiResponse';
 
 /**
@@ -122,7 +122,7 @@ export async function POST(request: Request) {
     if (auth) return auth;
 
     const beforeStatus = await getRateLimitStoreStatus();
-    cleanupMemoryStore();
+    await cleanupRateLimitStore();
     const afterStatus = await getRateLimitStoreStatus();
 
     logger.info('Rate limit memory store cleaned', {

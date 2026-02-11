@@ -5,6 +5,8 @@ import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
+import { logger } from '@/lib/logger';
+
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
@@ -27,7 +29,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('ErrorBoundary 捕获到错误:', error, errorInfo);
+    logger.error('ErrorBoundary 捕获到错误', { error, errorInfo });
     this.props.onError?.(error, errorInfo);
   }
 

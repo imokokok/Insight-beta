@@ -7,15 +7,20 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 
+import { logger } from '@/lib/logger';
+import { useI18n } from '@/i18n';
+
 interface ErrorProps {
   error: Error & { digest?: string };
   reset: () => void;
 }
 
 export default function Error({ error, reset }: ErrorProps) {
+  const { t } = useI18n();
+
   useEffect(() => {
     // 上报错误到监控服务
-    console.error('页面错误:', error);
+    logger.error('页面错误', { error });
   }, [error]);
 
   return (
@@ -38,24 +43,24 @@ export default function Error({ error, reset }: ErrorProps) {
 
         {/* 标题 */}
         <h1 className="mb-2 text-2xl font-bold text-gray-900">
-          出错了
+          {t('errorPage.title')}
         </h1>
 
         {/* 描述 */}
         <p className="mb-6 max-w-md text-gray-600">
-          抱歉，页面加载时出现了问题。请尝试刷新页面或返回首页。
+          {t('errorPage.description')}
         </p>
 
         {/* 错误详情（仅在开发环境显示） */}
         {process.env.NODE_ENV === 'development' && (
           <div className="mb-6 rounded-lg bg-gray-100 p-4 text-left">
-            <p className="mb-2 text-sm font-medium text-gray-700">错误信息:</p>
+            <p className="mb-2 text-sm font-medium text-gray-700">{t('errors.errorMessage')}</p>
             <pre className="overflow-x-auto text-xs text-red-600">
               {error.message}
             </pre>
             {error.digest && (
               <p className="mt-2 text-xs text-gray-500">
-                错误 ID: {error.digest}
+                {t('errorPage.digest')}: {error.digest}
               </p>
             )}
           </div>
@@ -70,7 +75,7 @@ export default function Error({ error, reset }: ErrorProps) {
             whileTap={{ scale: 0.98 }}
           >
             <RefreshCw className="h-4 w-4" />
-            重试
+            {t('errorPage.retry')}
           </motion.button>
 
           <Link
@@ -78,7 +83,7 @@ export default function Error({ error, reset }: ErrorProps) {
             className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
           >
             <Home className="h-4 w-4" />
-            返回首页
+            {t('errorPage.home')}
           </Link>
         </div>
       </motion.div>

@@ -442,34 +442,9 @@ export function createFluxClient(
 // ============================================================================
 
 /**
- * 获取支持的 Flux 链列表
- */
-export function getSupportedFluxChains(): SupportedChain[] {
-  return Object.entries(FLUX_AGGREGATOR_ADDRESSES)
-    .filter(([_, addresses]) => addresses !== undefined)
-    .map(([chain]) => chain as SupportedChain);
-}
-
 /**
  * 获取指定链的可用 Feed 列表
  */
 export function getAvailableFluxFeeds(chain: SupportedChain): string[] {
   return FLUX_SUPPORTED_FEEDS[chain] || [];
-}
-
-/**
- * 检查链是否支持 Flux
- */
-export function isChainSupportedByFlux(chain: SupportedChain): boolean {
-  return FLUX_AGGREGATOR_ADDRESSES[chain] !== undefined;
-}
-
-/**
- * 获取 Feed 的聚合器合约地址
- */
-export function getFluxAggregatorAddress(
-  chain: SupportedChain,
-  symbol: string,
-): Address | undefined {
-  return FLUX_AGGREGATOR_ADDRESSES[chain]?.[symbol];
 }

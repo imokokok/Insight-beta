@@ -292,35 +292,4 @@ export class PriceMetricsCollector {
 // 导出单例
 export const priceMetrics = PriceMetricsCollector.getInstance();
 
-// ============================================================================
-// 性能计时器工具
-// ============================================================================
 
-export class PerformanceTimer {
-  private startTime: number;
-  private name: string;
-
-  constructor(name: string) {
-    this.name = name;
-    this.startTime = performance.now();
-  }
-
-  end(): number {
-    const duration = performance.now() - this.startTime;
-    logger.debug(`[${this.name}] took ${duration.toFixed(2)}ms`);
-    return duration;
-  }
-}
-
-/**
- * 测量函数执行时间
- */
-export async function measurePerformance<T>(
-  name: string,
-  fn: () => Promise<T>,
-): Promise<{ result: T; durationMs: number }> {
-  const timer = new PerformanceTimer(name);
-  const result = await fn();
-  const durationMs = timer.end();
-  return { result, durationMs };
-}

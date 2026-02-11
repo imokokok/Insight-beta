@@ -376,7 +376,11 @@ export default function DisputesPage() {
   const [filterStatus, setFilterStatus] = useState<DisputeStatus | 'All'>('All');
   const [filterChain, setFilterChain] = useState<OracleChain | 'All'>('All');
   const [query, setQuery] = useState('');
-  const [instanceId, setInstanceIdState] = useState<string>(getOracleInstanceId);
+  const [instanceId, setInstanceIdState] = useState<string>('default');
+
+  useEffect(() => {
+    getOracleInstanceId().then(id => setInstanceIdState(id));
+  }, []);
 
   // 获取刷新策略配置
   const disputesStrategy = getRefreshStrategy('disputes-list');

@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { AlertHistory, NotificationChannelConfig } from '@/components/features/alerts';
 import { ErrorBanner } from '@/components/ui/error-banner';
 import { useI18n } from '@/i18n';
+import { logger } from '@/lib/logger';
 import type { AlertHistoryRecord, ChannelHealthStatus } from '@/server/alerts/notificationManager';
 import type { ChannelConfig } from '@/components/features/alerts';
 
@@ -67,7 +68,7 @@ export default function NotificationsConfigPage() {
       setAlerts(data.alerts || []);
       setChannelHealth(data.channelHealth || []);
     } catch (err) {
-      console.error('Failed to load alerts:', err);
+      logger.error('Failed to load alerts', { error: err });
     }
   }, []);
 

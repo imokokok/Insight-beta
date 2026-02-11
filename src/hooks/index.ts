@@ -28,7 +28,6 @@ export { useInfiniteList, useDebounce, type BaseResponse } from './useUI';
 export { useDisputes } from './useDisputes';
 export { useWebSocket } from './useWebSocket';
 export { useEventSource, type EventSourceOptions, type EventSourceState } from './useEventSource';
-export { usePriceFeed, type UsePriceFeedOptions, type UsePriceFeedReturn } from './usePriceFeed';
 
 // Dashboard hooks
 export {
@@ -48,8 +47,10 @@ export {
   useIsDesktop,
   useIsLargeScreen,
   useDeviceType,
-  type DeviceType,
 } from './useMediaQuery';
+
+// Re-export types separately
+export type { DeviceType } from './useMediaQuery';
 
 // Admin Token Hook
 export { useAdminToken, type UseAdminTokenOptions, type UseAdminTokenReturn } from './useAdminToken';

@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight, Check, AlertTriangle } from 'lucide-react';
 
 import { useI18n } from '@/i18n/LanguageProvider';
+import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 
 export interface TourStep {
@@ -112,7 +113,7 @@ export function TourGuide({
           top: window.innerHeight / 2 - 100,
           left: window.innerWidth / 2 - 160,
         });
-        console.warn(`[TourGuide] Target element not found: ${step.target}`);
+        logger.warn(`[TourGuide] Target element not found: ${step.target}`);
       }
     };
 

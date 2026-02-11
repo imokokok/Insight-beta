@@ -17,11 +17,6 @@ export const SUPPORTED_CHAINS: Chain[] = [
   hardhat,
 ];
 
-// 获取链的 CAIP-2 ID
-export function getCaipChainId(chainId: number): string {
-  return `eip155:${chainId}`;
-}
-
 // 钱包连接类型
 export type WalletConnectionType = 'browser' | 'walletconnect';
 
@@ -219,60 +214,31 @@ export function isMobile(): boolean {
   );
 }
 
-// 检测是否在 MetaMask 浏览器内
-export function isMetaMaskBrowser(): boolean {
-  if (typeof window === 'undefined') return false;
-  return /MetaMask/i.test(navigator.userAgent);
-}
-
-// 检测是否在钱包浏览器内（如 TrustWallet、TokenPocket 等）
+// 检测是否在钱包浏览器中
 export function isWalletBrowser(): boolean {
   if (typeof window === 'undefined') return false;
-  const ua = navigator.userAgent;
-  return (
-    /MetaMask/i.test(ua) ||
-    /TrustWallet/i.test(ua) ||
-    /TokenPocket/i.test(ua) ||
-    /imToken/i.test(ua) ||
-    /CoinbaseWallet/i.test(ua) ||
-    /MathWallet/i.test(ua)
-  );
+  const ethereum = window.ethereum;
+  if (!ethereum) return false;
+  return !!(ethereum.isMetaMask || ethereum.isPhantom || ethereum.isBraveWallet);
 }
 
-// 获取推荐的钱包连接方式
+// 获取推荐的钱包连接类型
 export function getRecommendedConnectionType(): WalletConnectionType {
-  // 如果在钱包浏览器内，优先使用浏览器钱包
-  if (isWalletBrowser() && typeof window !== 'undefined' && window.ethereum) {
+  if (isWalletBrowser()) {
     return 'browser';
   }
-
-  // 移动端优先使用 WalletConnect
-  if (isMobile()) {
-    return 'walletconnect';
-  }
-
-  // 桌面端有浏览器钱包则使用，否则使用 WalletConnect
-  if (typeof window !== 'undefined' && window.ethereum) {
-    return 'browser';
-  }
-
   return 'walletconnect';
 }
 
 // 获取钱包名称
 export function getWalletName(): string {
   if (typeof window === 'undefined') return 'Unknown';
-  const ua = navigator.userAgent;
-
-  if (/MetaMask/i.test(ua)) return 'MetaMask';
-  if (/TrustWallet/i.test(ua)) return 'Trust Wallet';
-  if (/TokenPocket/i.test(ua)) return 'TokenPocket';
-  if (/imToken/i.test(ua)) return 'imToken';
-  if (/CoinbaseWallet/i.test(ua)) return 'Coinbase Wallet';
-  if (/MathWallet/i.test(ua)) return 'MathWallet';
-  if (window.ethereum?.isPhantom) return 'Phantom';
-  if (window.ethereum?.isBraveWallet) return 'Brave Wallet';
-  if (window.ethereum?.isCoinbaseWallet) return 'Coinbase Wallet';
-
+  const ethereum = window.ethereum;
+  if (!ethereum) return 'Unknown';
+  if (ethereum.isPhantom) return 'Phantom';
+  if (ethereum.isBraveWallet) return 'Brave Wallet';
+  if (ethereum.isMetaMask) return 'MetaMask';
   return 'Browser Wallet';
 }
+
+

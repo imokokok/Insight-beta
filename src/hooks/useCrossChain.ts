@@ -3,23 +3,8 @@
 import useSWR from 'swr';
 
 import { buildApiUrl } from '@/lib/utils';
-import { createSWRConfig } from '@/hooks/common/useSWRConfig';
 
-// SWR 配置选项类型
-interface SWRConfigOptions {
-  refreshInterval?: number | ((latestData: unknown) => number);
-  dedupingInterval?: number;
-  revalidateOnFocus?: boolean;
-  revalidateOnReconnect?: boolean;
-  revalidateIfStale?: boolean;
-  errorRetryCount?: number;
-  errorRetryInterval?: number;
-  shouldRetryOnError?: boolean;
-  keepPreviousData?: boolean;
-  suspense?: boolean;
-}
-
-const fetcher = async (url: string) => {
+const fetcher = async <T>(url: string): Promise<T> => {
   const res = await fetch(url);
   if (!res.ok) {
     const errorData: Record<string, unknown> = await res.json().catch(() => ({}));
@@ -28,10 +13,10 @@ const fetcher = async (url: string) => {
     (error as { code?: string; status?: number }).status = res.status;
     throw error;
   }
-  return res.json();
+  return res.json() as Promise<T>;
 };
 
-export interface CrossChainComparisonResult {
+export interface CrossChainComparisonData {
   symbol: string;
   baseAsset: string;
   quoteAsset: string;
@@ -70,6 +55,10 @@ export interface CrossChainComparisonResult {
     reason: string;
     alternativeChains: string[];
   };
+}
+
+export interface CrossChainComparisonResult {
+  data: CrossChainComparisonData;
 }
 
 export interface CrossChainArbitrageOpportunity {
@@ -223,96 +212,58 @@ export interface CrossChainHistoricalResponse {
   timestamp: string;
 }
 
-export function useCrossChainComparison(
-  symbol: string | null,
-  chains?: string[],
-  options?: SWRConfigOptions
-) {
-  const url = symbol
-    ? buildApiUrl('/api/cross-chain/comparison', {
-        symbol: symbol.toUpperCase(),
-        chains: chains?.length ? chains.join(',') : undefined,
-      })
-    : null;
+// ============================================================================
+// Hooks
+// ============================================================================
 
-  return useSWR<{ success: boolean; data: CrossChainComparisonResult }>(
-    url,
-    fetcher,
-    createSWRConfig(options),
-  );
+/**
+ * 跨链价格比较 Hook
+ */
+export function useCrossChainComparison(symbol: string, chains?: string[]) {
+  const chainsParam = chains && chains.length > 0 ? `&chains=${chains.join(',')}` : '';
+  const url = buildApiUrl(`/api/cross-chain/comparison/${symbol}?${chainsParam}`);
+  return useSWR<CrossChainComparisonResult>(url, (url: string) => fetcher<CrossChainComparisonResult>(url));
 }
 
-export function useCrossChainArbitrage(
-  symbol: string | null,
-  threshold?: number,
-  options?: SWRConfigOptions
-) {
-  const url = symbol
-    ? buildApiUrl('/api/cross-chain/arbitrage', {
-        symbol: symbol.toUpperCase(),
-        threshold,
-      })
-    : null;
-
-  return useSWR<CrossChainArbitrageResponse>(
-    url,
-    fetcher,
-    createSWRConfig(options),
-  );
+/**
+ * 跨链套利机会 Hook
+ */
+export function useCrossChainArbitrage(symbol: string, threshold?: number) {
+  const url = buildApiUrl(`/api/cross-chain/arbitrage?symbol=${symbol}${threshold ? `&threshold=${threshold}` : ''}`);
+  return useSWR<CrossChainArbitrageResponse>(url, (url: string) => fetcher<CrossChainArbitrageResponse>(url));
 }
 
-export function useCrossChainAlerts(
-  symbol: string | null,
-  severity?: string,
-  options?: SWRConfigOptions
-) {
-  const url = symbol
-    ? buildApiUrl('/api/cross-chain/alerts', {
-        symbol: symbol.toUpperCase(),
-        severity,
-      })
-    : null;
-
-  return useSWR<CrossChainDeviationAlertsResponse>(
-    url,
-    fetcher,
-    createSWRConfig(options),
-  );
+/**
+ * 跨链偏离度告警 Hook
+ */
+export function useCrossChainAlerts(_symbol?: string) {
+  const url = buildApiUrl('/api/cross-chain/alerts');
+  return useSWR<CrossChainDeviationAlertsResponse>(url, (url: string) => fetcher<CrossChainDeviationAlertsResponse>(url));
 }
 
-export function useCrossChainDashboard(
-  options?: SWRConfigOptions
-) {
-  return useSWR<CrossChainDashboardResponse>(
-    '/api/cross-chain/dashboard',
-    fetcher,
-    createSWRConfig(options),
-  );
+/**
+ * 跨链仪表盘数据 Hook
+ */
+export function useCrossChainDashboard() {
+  const url = buildApiUrl('/api/cross-chain/dashboard');
+  return useSWR<CrossChainDashboardResponse>(url, (url: string) => fetcher<CrossChainDashboardResponse>(url));
 }
 
+/**
+ * 跨链历史数据 Hook
+ */
 export function useCrossChainHistory(
-  symbol: string | null,
-  startTime: Date,
-  endTime: Date,
-  interval: '1hour' | '1day' = '1day',
-  page: number = 1,
-  pageSize: number = 100,
-  options?: SWRConfigOptions
+  symbol: string,
+  startTime?: string,
+  endTime?: string,
+  interval?: string
 ) {
-  const url = symbol
-    ? buildApiUrl('/api/cross-chain/history', {
-        symbol: symbol.toUpperCase(),
-        startTime: startTime.toISOString(),
-        endTime: endTime.toISOString(),
-        interval,
-        page,
-        pageSize: Math.min(pageSize, 1000),
-      })
-    : null;
-
-  return useSWR<CrossChainHistoricalResponse>(
-    url,
-    fetcher,
-    createSWRConfig({ ...options, refreshInterval: 300000 }),
-  );
+  const params = new URLSearchParams({ symbol });
+  if (startTime) params.set('startTime', startTime);
+  if (endTime) params.set('endTime', endTime);
+  if (interval) params.set('interval', interval);
+  const url = buildApiUrl(`/api/cross-chain/history?${params.toString()}`);
+  return useSWR<CrossChainHistoricalResponse>(url, (url: string) => fetcher<CrossChainHistoricalResponse>(url));
 }
+
+

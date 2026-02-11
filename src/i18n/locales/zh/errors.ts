@@ -1,5 +1,6 @@
 export const errors = {
   apiError: '服务器错误',
+  errorMessage: '错误信息',
   chainNotAdded: '此网络未添加到您的钱包中。请先添加。',
   contractNotFound: '合约未找到',
   forbidden: '禁止访问（需要管理员令牌）',

@@ -6,6 +6,7 @@
 
 import { NextResponse } from 'next/server';
 
+import { logger } from '@/lib/logger';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -97,36 +98,13 @@ export function withErrorHandler(handler: ApiRouteHandler): ApiRouteHandler {
     try {
       return await handler(request);
     } catch (error) {
-      console.error('API Error:', error);
+      logger.error('API Error', { error });
       return apiError(
         error instanceof Error ? error.message : 'Internal server error',
         500
       );
     }
   };
-}
-
-/**
- * 验证必需参数
- *
- * @param param - 参数值
- * @param paramName - 参数名称（用于错误信息）
- * @returns 验证通过返回 null，否则返回错误响应
- *
- * @example
- * ```typescript
- * const error = validateRequiredParam(chain, 'Chain');
- * if (error) return error;
- * ```
- */
-export function validateRequiredParam(
-  param: string | null | undefined,
-  paramName: string
-): NextResponse | null {
-  if (!param || param.trim() === '') {
-    return apiError(`${paramName} parameter is required`, 400);
-  }
-  return null;
 }
 
 /**
@@ -140,18 +118,4 @@ export function getQueryParam(request: NextRequest, key: string): string | null 
   return request.nextUrl.searchParams.get(key);
 }
 
-/**
- * 从请求中获取必需查询参数
- *
- * @param request - NextRequest
- * @param key - 参数名
- * @returns 参数值，如果不存在则抛出错误
- * @throws Error 当参数不存在时
- */
-export function getRequiredQueryParam(request: NextRequest, key: string): string {
-  const value = getQueryParam(request, key);
-  if (!value || value.trim() === '') {
-    throw new Error(`${key} parameter is required`);
-  }
-  return value;
-}
+

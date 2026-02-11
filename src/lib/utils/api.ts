@@ -137,24 +137,22 @@ export async function fetchApiData<T>(
   timeout: number = 30000,
 ): Promise<T> {
   try {
-    const normalizedInput = (() => {
-      if (typeof input === 'string' && input.startsWith('/')) {
-        const base = getServerBaseUrl();
-        const url = new URL(input, base);
-        if (
-          typeof window !== 'undefined' &&
-          url.pathname.startsWith('/api/oracle/') &&
-          !url.searchParams.has('instanceId')
-        ) {
-          const instanceId = getOracleInstanceId();
-          if (instanceId && instanceId !== 'default') {
-            url.searchParams.set('instanceId', instanceId);
-          }
+    let normalizedInput: Parameters<typeof fetch>[0] = input;
+    if (typeof input === 'string' && input.startsWith('/')) {
+      const base = getServerBaseUrl();
+      const url = new URL(input, base);
+      if (
+        typeof window !== 'undefined' &&
+        url.pathname.startsWith('/api/oracle/') &&
+        !url.searchParams.has('instanceId')
+      ) {
+        const instanceId = await getOracleInstanceId();
+        if (instanceId && instanceId !== 'default') {
+          url.searchParams.set('instanceId', instanceId);
         }
-        return url;
       }
-      return input;
-    })();
+      normalizedInput = url;
+    }
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -233,25 +231,4 @@ export function normalizeListResponse<T>(
   return [];
 }
 
-/**
- * 标准化 API 分页响应
- *
- * @template T - 列表项类型
- * @param response - API 响应数据
- * @returns 包含 items 和 total 的标准化对象
- */
-export function normalizePaginatedResponse<T>(
-  response: T[] | { items?: T[]; total?: number } | unknown
-): { items: T[]; total: number } {
-  if (Array.isArray(response)) {
-    return { items: response, total: response.length };
-  }
-  if (response && typeof response === 'object') {
-    const obj = response as { items?: T[]; total?: number };
-    return {
-      items: Array.isArray(obj.items) ? obj.items : [],
-      total: typeof obj.total === 'number' ? obj.total : 0,
-    };
-  }
-  return { items: [], total: 0 };
-}
+
