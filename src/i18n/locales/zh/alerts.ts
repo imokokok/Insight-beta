@@ -7,6 +7,7 @@ export const alerts = {
   adminTokenWarning: '没有令牌，您只能查看告警，无法确认/解决或保存规则。',
   description: '聚合告警，确认并跟踪健康状况。',
   explanation: '说明',
+  filter: '筛选',
   lastSeen: '最后',
   loadRules: '加载规则',
   occurrences: '发生次数',

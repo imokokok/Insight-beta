@@ -215,58 +215,7 @@ export function observeTTFB(callback: (metric: WebVitalsMetric) => void): void {
   }
 }
 
-/**
- * 测量自定义性能指标
- */
-export function measurePerformance(
-  markName: string,
-  startMark?: string,
-  endMark?: string
-): number | null {
-  if (typeof window === 'undefined') return null;
 
-  try {
-    if (startMark && endMark) {
-      performance.mark(startMark);
-      performance.mark(endMark);
-      performance.measure(markName, startMark, endMark);
-    }
-
-    const entries = performance.getEntriesByName(markName, 'measure');
-    return entries[entries.length - 1]?.duration || null;
-  } catch (e) {
-    console.warn('Performance measurement failed:', e);
-    return null;
-  }
-}
-
-/**
- * 标记性能时间点
- */
-export function markPerformance(markName: string): void {
-  if (typeof window === 'undefined') return;
-
-  try {
-    performance.mark(markName);
-  } catch (e) {
-    console.warn('Performance mark failed:', e);
-  }
-}
-
-/**
- * 获取资源加载性能
- */
-export function getResourcePerformance(url: string): PerformanceResourceTiming | null {
-  if (typeof window === 'undefined') return null;
-
-  try {
-    const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
-    return resources.find(r => r.name.includes(url)) || null;
-  } catch (e) {
-    console.warn('Resource performance retrieval failed:', e);
-    return null;
-  }
-}
 
 /**
  * 初始化所有 Web Vitals 监控
@@ -283,22 +232,4 @@ export function initWebVitalsMonitoring(): void {
   console.log('[Performance] Web Vitals monitoring initialized');
 }
 
-/**
- * 测量组件渲染时间
- */
-export function useComponentPerformance(componentName: string) {
-  const startTime = typeof performance !== 'undefined' ? performance.now() : 0;
 
-  return {
-    end: () => {
-      const endTime = typeof performance !== 'undefined' ? performance.now() : 0;
-      const duration = endTime - startTime;
-
-      if (process.env.NODE_ENV === 'development' && duration > 16) {
-        console.warn(`[Performance] ${componentName} render took ${duration.toFixed(2)}ms`);
-      }
-
-      return duration;
-    },
-  };
-}

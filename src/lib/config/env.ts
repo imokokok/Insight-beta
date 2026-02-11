@@ -45,10 +45,8 @@ const envSchema = z.object({
   // =============================================================================
   DATABASE_URL: optionalString(),
 
-  // Supabase 配置
-  SUPABASE_URL: optionalString(),
+  // Supabase 配置 (服务端使用 Service Role Key，客户端使用 NEXT_PUBLIC_ 变量)
   SUPABASE_SERVICE_ROLE_KEY: optionalString(),
-  SUPABASE_DB_URL: optionalString(),
 
   // =============================================================================
   // RPC 配置 - 主网
@@ -197,7 +195,6 @@ const envSchema = z.object({
   INSIGHT_TELEGRAM_TIMEOUT_MS: optionalNumber(10000),
 
   // Slack
-  SLACK_WEBHOOK_URL: urlString(),
   INSIGHT_SLACK_WEBHOOK_URL: urlString(),
   INSIGHT_SLACK_TIMEOUT_MS: optionalNumber(10000),
 
@@ -358,7 +355,6 @@ export function getLogLevel(): typeof env.LOG_LEVEL {
 export function hasAlertConfig(): boolean {
   return !!(
     env.INSIGHT_SLACK_WEBHOOK_URL ||
-    env.SLACK_WEBHOOK_URL ||
     env.INSIGHT_TELEGRAM_BOT_TOKEN ||
     env.INSIGHT_WEBHOOK_URL ||
     env.INSIGHT_SMTP_HOST

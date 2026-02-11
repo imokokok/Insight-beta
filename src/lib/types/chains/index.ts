@@ -295,8 +295,4 @@ export function isEvmChain(chain: SupportedChain): boolean {
   return !nonEvmChains.includes(chain);
 }
 
-export function getExplorerUrl(chain: SupportedChain, type: 'tx' | 'address', hash: string): string {
-  const metadata = getChainMetadata(chain);
-  const path = type === 'tx' ? 'tx' : 'address';
-  return `${metadata.blockExplorerUrl}/${path}/${hash}`;
-}
+

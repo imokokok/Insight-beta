@@ -1,7 +1,6 @@
 import pg from 'pg';
 
 import { DATABASE_CONFIG } from '@/lib/config/constants';
-import { env } from '@/lib/config/env';
 import { logger } from '@/lib/logger';
 
 const { Pool } = pg;
@@ -12,9 +11,6 @@ const globalForDb = globalThis as unknown as {
 
 function getDbUrl() {
   if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
-  if (env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
-    if (process.env.SUPABASE_DB_URL) return process.env.SUPABASE_DB_URL;
-  }
   return null;
 }
 

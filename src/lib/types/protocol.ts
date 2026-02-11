@@ -32,7 +32,7 @@ export interface BaseProtocolNode {
   address: string;
   status: 'active' | 'inactive';
   lastUpdate: string;
-  totalRequests: number;
+  totalSubmissions: number;
   accuracy: number;
 }
 
@@ -46,37 +46,12 @@ export interface ChainlinkFeed extends BaseProtocolFeed {
   deviationThreshold: number;
 }
 
-export interface ChainlinkNode extends BaseProtocolNode {
-  lastSubmission: string;
-  totalSubmissions: number;
-  successRate: number;
-}
-
-export interface ChainlinkStats extends BaseProtocolStats {
-  /** Total number of price submissions across all feeds */
-  totalSubmissions?: number;
-}
-
 // ==================== Pyth 特定类型 ====================
 
 export interface PythFeed extends BaseProtocolFeed {
   confidence: number;
   sources: number;
   publishTime: string;
-}
-
-export interface PythPublisher {
-  id: string;
-  name: string;
-  status: 'active' | 'inactive';
-  accuracy: number;
-  totalPublishes: number;
-  lastPublish: string;
-}
-
-export interface PythStats extends BaseProtocolStats {
-  totalPublishers: number;
-  avgConfidence: number;
 }
 
 // ==================== UMA 特定类型 ====================
@@ -112,106 +87,12 @@ export interface BandFeed extends BaseProtocolFeed {
   validatorCount: number;
 }
 
-export interface BandValidator extends BaseProtocolNode {
-  votingPower: number;
-  commission: number;
-  delegators: number;
-}
-
 // ==================== API3 特定类型 ====================
 
 export interface API3Feed extends BaseProtocolFeed {
   dapiName: string;
   beaconCount: number;
   updateThreshold: number;
-}
-
-export interface API3Airnode extends BaseProtocolNode {
-  endpointId: string;
-  xpub: string;
-  sponsoredRequests: number;
-}
-
-// ==================== RedStone 特定类型 ====================
-
-export interface RedStonePackage {
-  id: string;
-  name: string;
-  symbol: string;
-  price: number;
-  decimals: number;
-  updatedAt: string;
-  chain: string;
-  status: 'active' | 'stale' | 'error';
-  dataFeedId: string;
-  timestamp: string;
-  value: number;
-  liteSignature: string;
-}
-
-export interface RedStoneService {
-  id: string;
-  name: string;
-  status: 'active' | 'inactive';
-  lastUpdate: string;
-  dataPackages: number;
-  avgLatency: number;
-  reliability: number;
-}
-
-// ==================== Switchboard 特定类型 ====================
-
-export interface SwitchboardAggregator {
-  id: string;
-  name: string;
-  symbol: string;
-  price: number;
-  decimals: number;
-  updatedAt: string;
-  chain: string;
-  status: 'active' | 'stale' | 'error';
-  queueId: string;
-  batchSize: number;
-  minOracleResults: number;
-  varianceThreshold: number;
-}
-
-export interface SwitchboardOracle extends BaseProtocolNode {
-  queueId: string;
-  stake: number;
-  jobCount: number;
-  lastHeartbeat: string;
-}
-
-// ==================== DIA 特定类型 ====================
-
-export interface DIAScraper {
-  id: string;
-  name: string;
-  type: 'cex' | 'dex' | 'defi';
-  status: 'active' | 'inactive';
-  reliability: number;
-  lastUpdate: string;
-  totalAssets: number;
-}
-
-export interface DIAAsset extends BaseProtocolFeed {
-  source: string;
-  confidence: number;
-  method: string;
-}
-
-// ==================== Flux 特定类型 ====================
-
-export interface FluxDataRequest extends BaseProtocolFeed {
-  finality: number;
-  providers: number;
-  reward: string;
-}
-
-export interface FluxProvider extends BaseProtocolNode {
-  stake: string;
-  accuracy: number;
 }
 
 // ==================== 通用协议数据类型 ====================
@@ -222,25 +103,6 @@ export interface ProtocolData {
   nodes?: BaseProtocolNode[];
   stats?: BaseProtocolStats;
   lastUpdated: string;
-}
-
-// ==================== 页面配置类型 ====================
-
-export interface ProtocolPageConfig {
-  protocol: OracleProtocol;
-  title: string;
-  description: string;
-  icon: string;
-  officialUrl: string;
-  supportedChains: { id: string; name: string; icon: string }[];
-  tabs: ProtocolTabConfig[];
-}
-
-export interface ProtocolTabConfig {
-  id: string;
-  label: string;
-  icon: string;
-  component: string;
 }
 
 // ==================== 支持的链 ====================

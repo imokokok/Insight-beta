@@ -5,7 +5,8 @@ Ready to launch? Follow this checklist to ensure your OracleMonitor is secure, s
 ## 1. Security & Environment
 
 - [ ] **Admin Token**:
-  - Set a strong `ADMIN_TOKEN` (at least 32 random characters)
+  - Set a strong `INSIGHT_ADMIN_TOKEN` (at least 32 random characters)
+  - Set `INSIGHT_ADMIN_TOKEN_SALT` for enhanced security
   - Set a secure `JWT_SECRET` for token signing
   - Do not commit these to version control
 
@@ -57,8 +58,8 @@ Ready to launch? Follow this checklist to ensure your OracleMonitor is secure, s
   - Configure alert rules in Sentry
 
 - [ ] **Notification Channels**:
-  - Configure `SLACK_WEBHOOK_URL` for alerts
-  - Or set up `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID`
+  - Configure `INSIGHT_SLACK_WEBHOOK_URL` for alerts
+  - Or set up `INSIGHT_TELEGRAM_BOT_TOKEN` and `INSIGHT_TELEGRAM_CHAT_ID`
   - Test notification delivery
 
 - [ ] **Health Check**:

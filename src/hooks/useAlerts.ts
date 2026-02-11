@@ -1,5 +1,6 @@
 import type { IncidentWithAlerts } from '@/app/alerts/alertsComponents';
 import type { OpsMetrics, OpsMetricsSeriesPoint, RiskItem } from '@/lib/types/oracleTypes';
+import { buildApiUrl, normalizeListResponse } from '@/lib/utils';
 
 import { useQuery } from './common/useQuery';
 
@@ -15,26 +16,15 @@ export interface UseOracleIncidentsReturn {
 }
 
 export function useOracleIncidents(instanceId: string): UseOracleIncidentsReturn {
-  const params = new URLSearchParams();
-  params.set('limit', '20');
-  params.set('includeAlerts', '1');
-  if (instanceId) {
-    params.set('instanceId', instanceId);
-  }
-  const url = `/api/oracle/incidents?${params.toString()}`;
+  const url = buildApiUrl('/api/oracle/incidents', {
+    limit: 20,
+    includeAlerts: 1,
+    instanceId: instanceId || undefined,
+  });
 
   const { data, error, isLoading, mutate } = useQuery<IncidentWithAlerts[]>({
     url: url,
-    transform: (response: any) => {
-      if (Array.isArray(response)) {
-        return response;
-      }
-      // Handle case where response might have an items property
-      if (response && typeof response === 'object' && 'items' in response) {
-        return response.items as IncidentWithAlerts[];
-      }
-      return [];
-    },
+    transform: normalizeListResponse<IncidentWithAlerts>,
   });
 
   return {
@@ -57,25 +47,14 @@ export interface UseOracleRisksReturn {
 }
 
 export function useOracleRisks(instanceId: string): UseOracleRisksReturn {
-  const params = new URLSearchParams();
-  params.set('limit', '20');
-  if (instanceId) {
-    params.set('instanceId', instanceId);
-  }
-  const url = `/api/oracle/risks?${params.toString()}`;
+  const url = buildApiUrl('/api/oracle/risks', {
+    limit: 20,
+    instanceId: instanceId || undefined,
+  });
 
   const { data, error, isLoading, mutate } = useQuery<RiskItem[]>({
     url: url,
-    transform: (response: any) => {
-      if (Array.isArray(response)) {
-        return response;
-      }
-      // Handle case where response might have an items property
-      if (response && typeof response === 'object' && 'items' in response) {
-        return response.items as RiskItem[];
-      }
-      return [];
-    },
+    transform: normalizeListResponse<RiskItem>,
   });
 
   return {
@@ -104,17 +83,31 @@ export interface UseOracleOpsMetricsReturn {
 }
 
 export function useOracleOpsMetrics(instanceId: string): UseOracleOpsMetricsReturn {
-  const params = new URLSearchParams();
-  params.set('windowDays', '7');
-  params.set('seriesDays', '7');
-  if (instanceId) {
-    params.set('instanceId', instanceId);
-  }
-  const url = `/api/oracle/ops-metrics?${params.toString()}`;
+  const url = buildApiUrl('/api/oracle/ops-metrics', {
+    windowDays: 7,
+    seriesDays: 7,
+    instanceId: instanceId || undefined,
+  });
 
   const { data, error, isLoading, mutate } = useQuery<OpsMetricsResponse>({
     url: url,
-    transform: (response: any) => response as OpsMetricsResponse,
+    transform: (response: unknown) => {
+      // Type guard to validate response structure
+      if (
+        response &&
+        typeof response === 'object' &&
+        'metrics' in response &&
+        response.metrics &&
+        typeof response.metrics === 'object'
+      ) {
+        return response as OpsMetricsResponse;
+      }
+      // Return default structure if response is invalid
+      return {
+        metrics: {} as OpsMetrics,
+        series: null,
+      };
+    },
   });
 
   return {

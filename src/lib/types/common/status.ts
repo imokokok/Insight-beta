@@ -29,22 +29,10 @@ export type SeverityLevel = 'info' | 'warning' | 'critical' | 'emergency';
 export type AlertStatus = 'firing' | 'pending' | 'resolved' | 'silenced';
 
 // ============================================================================
-// 数据新鲜度状态
-// ============================================================================
-
-export type DataFreshnessStatus = 'fresh' | 'stale' | 'expired' | 'unknown';
-
-// ============================================================================
 // 同步状态
 // ============================================================================
 
 export type SyncStatus = 'synced' | 'syncing' | 'stale' | 'offline';
-
-// ============================================================================
-// 连接状态
-// ============================================================================
-
-export type ConnectionStatus = 'connected' | 'connecting' | 'disconnected' | 'reconnecting';
 
 // ============================================================================
 // 风险等级
@@ -53,39 +41,27 @@ export type ConnectionStatus = 'connected' | 'connecting' | 'disconnected' | 're
 export type RiskLevel = 'low' | 'medium' | 'high' | 'critical';
 
 // ============================================================================
-// 操作结果状态
-// ============================================================================
-
-export type OperationStatus = 'idle' | 'loading' | 'success' | 'error';
-
-// ============================================================================
-// 验证状态
-// ============================================================================
-
-export type ValidationStatus = 'valid' | 'invalid' | 'pending' | 'warning';
-
-// ============================================================================
 // Dispute 状态
 // ============================================================================
 
-export type DisputeStatus = 
-  | 'active' 
-  | 'disputed' 
-  | 'settled' 
-  | 'expired' 
-  | 'resolved' 
-  | 'accepted' 
+export type DisputeStatus =
+  | 'active'
+  | 'disputed'
+  | 'settled'
+  | 'expired'
+  | 'resolved'
+  | 'accepted'
   | 'rejected';
 
 // ============================================================================
 // 断言状态
 // ============================================================================
 
-export type AssertionStatus = 
-  | 'proposed' 
-  | 'disputed' 
-  | 'settled' 
-  | 'expired' 
+export type AssertionStatus =
+  | 'proposed'
+  | 'disputed'
+  | 'settled'
+  | 'expired'
   | 'resolved';
 
 // ============================================================================
@@ -93,48 +69,6 @@ export type AssertionStatus =
 // ============================================================================
 
 export type VotingStatus = 'active' | 'passed' | 'failed' | 'expired';
-
-// ============================================================================
-// 奖励状态
-// ============================================================================
-
-export type RewardStatus = 'pending' | 'claimable' | 'claimed' | 'expired';
-
-// ============================================================================
-// 通用状态映射
-// ============================================================================
-
-export const STATUS_MAPPINGS: {
-  [key: string]: HealthStatus;
-} = {
-  active: 'healthy',
-  synced: 'healthy',
-  connected: 'healthy',
-  valid: 'healthy',
-  resolved: 'healthy',
-  fresh: 'healthy',
-  claimable: 'healthy',
-  
-  pending: 'degraded',
-  disputed: 'degraded',
-  syncing: 'degraded',
-  connecting: 'degraded',
-  warning: 'degraded',
-  stale: 'degraded',
-  
-  inactive: 'unhealthy',
-  expired: 'unhealthy',
-  offline: 'unhealthy',
-  disconnected: 'unhealthy',
-  invalid: 'unhealthy',
-  error: 'unhealthy',
-  failed: 'unhealthy',
-  rejected: 'unhealthy',
-  
-  unknown: 'unknown',
-  silenced: 'unknown',
-  reconnecting: 'unknown',
-} as const;
 
 // ============================================================================
 // Badge 状态类型（向后兼容）
@@ -372,28 +306,3 @@ export const SEVERITY_COLORS: {
     border: 'border-rose-500/30',
   },
 } as const;
-
-// ============================================================================
-// 类型guards
-// ============================================================================
-
-export function getHealthStatus(status: string): HealthStatus {
-  return STATUS_MAPPINGS[status] || 'unknown';
-}
-
-export function isHealthy(status: HealthStatus): boolean {
-  return status === 'healthy';
-}
-
-export function isDegraded(status: HealthStatus): boolean {
-  return status === 'degraded';
-}
-
-export function isUnhealthy(status: HealthStatus): boolean {
-  return status === 'unhealthy';
-}
-
-export function isRiskAcceptable(level: RiskLevel, threshold: RiskLevel): boolean {
-  const levels: RiskLevel[] = ['low', 'medium', 'high', 'critical'];
-  return levels.indexOf(level) <= levels.indexOf(threshold);
-}

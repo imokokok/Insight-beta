@@ -158,8 +158,9 @@ export default function AdminTokensPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <div className="text-xs font-semibold text-gray-500">{t('alerts.adminToken')}</div>
+              <label htmlFor="admin-token" className="text-xs font-semibold text-gray-500">{t('alerts.adminToken')}</label>
               <input
+                id="admin-token"
                 value={adminToken}
                 onChange={(e) => setAdminToken(e.target.value)}
                 placeholder="Bearer …"
@@ -170,8 +171,9 @@ export default function AdminTokensPage() {
             </div>
 
             <div className="space-y-2">
-              <div className="text-xs font-semibold text-gray-500">{t('alerts.adminActor')}</div>
+              <label htmlFor="admin-actor" className="text-xs font-semibold text-gray-500">{t('alerts.adminActor')}</label>
               <input
+                id="admin-actor"
                 value={adminActor}
                 onChange={(e) => setAdminActor(e.target.value)}
                 placeholder={t('alerts.adminActorPlaceholder')}
@@ -180,8 +182,9 @@ export default function AdminTokensPage() {
             </div>
 
             <div className="space-y-2">
-              <div className="text-xs font-semibold text-gray-500">{t('adminTokens.label')}</div>
+              <label htmlFor="token-label" className="text-xs font-semibold text-gray-500">{t('adminTokens.label')}</label>
               <input
+                id="token-label"
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
                 className="h-9 w-full rounded-lg border-none bg-white/50 px-3 text-sm text-purple-900 shadow-sm placeholder:text-purple-300 focus:ring-2 focus:ring-purple-500/20"
@@ -189,8 +192,9 @@ export default function AdminTokensPage() {
             </div>
 
             <div className="space-y-2">
-              <div className="text-xs font-semibold text-gray-500">{t('adminTokens.role')}</div>
+              <label htmlFor="token-role" className="text-xs font-semibold text-gray-500">{t('adminTokens.role')}</label>
               <select
+                id="token-role"
                 value={role}
                 onChange={(e) => setRole(e.target.value as AdminRole)}
                 className="h-9 w-full rounded-lg border-none bg-white/50 px-3 text-sm text-purple-900 shadow-sm focus:ring-2 focus:ring-purple-500/20"

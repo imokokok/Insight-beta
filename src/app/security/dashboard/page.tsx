@@ -10,7 +10,7 @@
 
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 
 import {
   Shield,
@@ -633,19 +633,21 @@ export default function SecurityDashboardPage() {
     fetchData(false);
   }, [fetchData]);
 
-  const filteredDetections = detections.filter((d) => {
-    if (filters.type && d.type !== filters.type) return false;
-    if (filters.severity && d.severity !== filters.severity) return false;
-    if (filters.search) {
-      const search = filters.search.toLowerCase();
-      return (
-        d.type.toLowerCase().includes(search) ||
-        d.protocol.toLowerCase().includes(search) ||
-        d.symbol.toLowerCase().includes(search)
-      );
-    }
-    return true;
-  });
+  const filteredDetections = useMemo(() => {
+    return detections.filter((d) => {
+      if (filters.type && d.type !== filters.type) return false;
+      if (filters.severity && d.severity !== filters.severity) return false;
+      if (filters.search) {
+        const search = filters.search.toLowerCase();
+        return (
+          d.type.toLowerCase().includes(search) ||
+          d.protocol.toLowerCase().includes(search) ||
+          d.symbol.toLowerCase().includes(search)
+        );
+      }
+      return true;
+    });
+  }, [detections, filters]);
 
   const handleExport = () => {
     const data = {

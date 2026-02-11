@@ -5,7 +5,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 
-import { initWebVitalsMonitoring, useComponentPerformance } from '@/lib/performance/monitor';
+import { initWebVitalsMonitoring } from '@/lib/performance/monitor';
 
 /**
  * 初始化 Web Vitals 监控
@@ -13,19 +13,6 @@ import { initWebVitalsMonitoring, useComponentPerformance } from '@/lib/performa
 export function useWebVitals() {
   useEffect(() => {
     initWebVitalsMonitoring();
-  }, []);
-}
-
-/**
- * 组件渲染性能监控
- */
-export function useRenderPerformance(componentName: string) {
-  const perf = useRef(useComponentPerformance(componentName));
-
-  useEffect(() => {
-    return () => {
-      perf.current.end();
-    };
   }, []);
 }
 
@@ -75,25 +62,6 @@ export function useIntersectionObserver(
 }
 
 /**
- * 防抖 Hook
- */
-export function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [value, delay]);
-
-  return debouncedValue;
-}
-
-/**
  * 节流 Hook
  */
 export function useThrottle<T extends (...args: unknown[]) => unknown>(
@@ -101,7 +69,17 @@ export function useThrottle<T extends (...args: unknown[]) => unknown>(
   delay: number
 ): T {
   const lastCall = useRef<number>(0);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // 清理函数
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    };
+  }, []);
 
   return useCallback(
     (...args: Parameters<T>) => {
@@ -121,75 +99,6 @@ export function useThrottle<T extends (...args: unknown[]) => unknown>(
     },
     [callback, delay]
   ) as T;
-}
-
-/**
- * RAF (Request Animation Frame) Hook - 用于平滑动画
- */
-export function useRAF(callback: (deltaTime: number) => void) {
-  const requestRef = useRef<number | null>(null);
-  const previousTimeRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    const animate = (time: number) => {
-      if (previousTimeRef.current !== null) {
-        const deltaTime = time - previousTimeRef.current;
-        callback(deltaTime);
-      }
-      previousTimeRef.current = time;
-      requestRef.current = requestAnimationFrame(animate);
-    };
-
-    requestRef.current = requestAnimationFrame(animate);
-
-    return () => {
-      if (requestRef.current) {
-        cancelAnimationFrame(requestRef.current);
-      }
-    };
-  }, [callback]);
-}
-
-/**
- * 测量资源加载时间
- */
-export function useResourceTiming(url: string) {
-  const [timing, setTiming] = useState<{
-    duration: number | null;
-    loadTime: number | null;
-    size: number | null;
-  }>({
-    duration: null,
-    loadTime: null,
-    size: null,
-  });
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const checkResource = () => {
-      const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
-      const resource = resources.find(r => r.name.includes(url));
-
-      if (resource) {
-        setTiming({
-          duration: resource.duration,
-          loadTime: resource.responseEnd - resource.startTime,
-          size: resource.transferSize || null,
-        });
-      }
-    };
-
-    // 立即检查
-    checkResource();
-
-    // 延迟再次检查（确保资源已加载）
-    const timeout = setTimeout(checkResource, 1000);
-
-    return () => clearTimeout(timeout);
-  }, [url]);
-
-  return timing;
 }
 
 /**
@@ -285,6 +194,8 @@ export function useMemoryStatus() {
 /**
  * 长任务监控 Hook
  */
+const LONG_TASK_THRESHOLD_MS = 50;
+
 export function useLongTaskMonitor(callback?: (duration: number) => void) {
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -296,8 +207,8 @@ export function useLongTaskMonitor(callback?: (duration: number) => void) {
         const entries = list.getEntries();
         entries.forEach((entry) => {
           const duration = (entry as PerformanceEntry & { duration?: number }).duration;
-          if (duration && duration > 50) {
-            // 超过 50ms 认为是长任务
+          if (duration && duration > LONG_TASK_THRESHOLD_MS) {
+            // 超过阈值认为是长任务
             console.warn(`[Performance] Long task detected: ${duration.toFixed(2)}ms`);
             callback?.(duration);
           }

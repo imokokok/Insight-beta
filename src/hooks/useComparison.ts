@@ -11,6 +11,7 @@
 import useSWR from 'swr';
 
 import { createSWRConfig, REALTIME_CONFIG } from '@/hooks/common/useSWRConfig';
+import { buildApiUrl } from '@/lib/utils';
 import type {
   ComparisonFilter,
   ComparisonView,
@@ -47,15 +48,12 @@ export function useHeatmapData({ filter, enabled = true }: UseHeatmapOptions) {
 }
 
 async function fetchHeatmapData(filter: ComparisonFilter): Promise<PriceHeatmapData> {
-  const params = new URLSearchParams();
-  if (filter.symbols?.length) {
-    params.set('symbols', filter.symbols.join(','));
-  }
-  if (filter.protocols?.length) {
-    params.set('protocols', filter.protocols.join(','));
-  }
+  const url = buildApiUrl('/api/comparison/heatmap', {
+    symbols: filter.symbols?.length ? filter.symbols.join(',') : undefined,
+    protocols: filter.protocols?.length ? filter.protocols.join(',') : undefined,
+  });
 
-  const response = await fetch(`/api/comparison/heatmap?${params}`);
+  const response = await fetch(url);
   if (!response.ok) {
     throw new Error('Failed to fetch heatmap data');
   }
@@ -89,15 +87,12 @@ export function useLatencyData({ filter, enabled = true }: UseLatencyOptions) {
 }
 
 async function fetchLatencyData(filter: ComparisonFilter): Promise<LatencyAnalysis> {
-  const params = new URLSearchParams();
-  if (filter.symbols?.length) {
-    params.set('symbols', filter.symbols.join(','));
-  }
-  if (filter.protocols?.length) {
-    params.set('protocols', filter.protocols.join(','));
-  }
+  const url = buildApiUrl('/api/comparison/latency', {
+    symbols: filter.symbols?.length ? filter.symbols.join(',') : undefined,
+    protocols: filter.protocols?.length ? filter.protocols.join(',') : undefined,
+  });
 
-  const response = await fetch(`/api/comparison/latency?${params}`);
+  const response = await fetch(url);
   if (!response.ok) {
     throw new Error('Failed to fetch latency data');
   }
@@ -131,15 +126,12 @@ export function useCostData({ filter, enabled = true }: UseCostOptions) {
 }
 
 async function fetchCostData(filter: ComparisonFilter): Promise<CostComparison> {
-  const params = new URLSearchParams();
-  if (filter.symbols?.length) {
-    params.set('symbols', filter.symbols.join(','));
-  }
-  if (filter.protocols?.length) {
-    params.set('protocols', filter.protocols.join(','));
-  }
+  const url = buildApiUrl('/api/comparison/cost', {
+    symbols: filter.symbols?.length ? filter.symbols.join(',') : undefined,
+    protocols: filter.protocols?.length ? filter.protocols.join(',') : undefined,
+  });
 
-  const response = await fetch(`/api/comparison/cost?${params}`);
+  const response = await fetch(url);
   if (!response.ok) {
     throw new Error('Failed to fetch cost data');
   }
@@ -178,15 +170,12 @@ export function useRealtimeData({
 }
 
 async function fetchRealtimeData(filter: ComparisonFilter): Promise<RealtimeComparisonItem[]> {
-  const params = new URLSearchParams();
-  if (filter.symbols?.length) {
-    params.set('symbols', filter.symbols.join(','));
-  }
-  if (filter.protocols?.length) {
-    params.set('protocols', filter.protocols.join(','));
-  }
+  const url = buildApiUrl('/api/comparison/realtime', {
+    symbols: filter.symbols?.length ? filter.symbols.join(',') : undefined,
+    protocols: filter.protocols?.length ? filter.protocols.join(',') : undefined,
+  });
 
-  const response = await fetch(`/api/comparison/realtime?${params}`);
+  const response = await fetch(url);
   if (!response.ok) {
     throw new Error('Failed to fetch realtime data');
   }

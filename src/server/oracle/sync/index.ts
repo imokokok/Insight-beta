@@ -9,7 +9,6 @@
 // 类型导入
 // ============================================================================
 
-import { logger } from '@/lib/logger';
 import type { OracleProtocol } from '@/lib/types/unifiedOracleTypes';
 
 // ============================================================================
@@ -171,97 +170,8 @@ export async function getSyncManager(
 
   const manager = syncManagers.get(protocol);
   if (!manager) {
-    throw new Error(`Failed to create sync manager for protocol: ${protocol}`);
+    throw new Error(`Failed to create sync manager for: ${protocol}`);
   }
 
   return manager;
-}
-
-/**
- * 启动指定协议的同步
- */
-export async function startProtocolSync(
-  protocol: OracleProtocol,
-  instanceId: string,
-): Promise<void> {
-  const manager = await getSyncManager(protocol);
-  await manager.startSync(instanceId);
-  logger.info(`Started ${protocol} sync for instance: ${instanceId}`);
-}
-
-/**
- * 停止指定协议的同步
- */
-export async function stopProtocolSync(
-  protocol: OracleProtocol,
-  instanceId: string,
-): Promise<void> {
-  const manager = await getSyncManager(protocol);
-  manager.stopSync(instanceId);
-  logger.info(`Stopped ${protocol} sync for instance: ${instanceId}`);
-}
-
-/**
- * 停止所有协议的同步
- */
-export async function stopAllProtocolSync(): Promise<void> {
-  for (const [protocol, manager] of syncManagers.entries()) {
-    manager.stopAllSync();
-    logger.info(`Stopped all ${protocol} sync instances`);
-  }
-}
-
-/**
- * 清理指定协议的数据
- */
-export async function cleanupProtocolData(protocol: OracleProtocol): Promise<void> {
-  const manager = await getSyncManager(protocol);
-  await manager.cleanupOldData();
-  logger.info(`Cleaned up ${protocol} old data`);
-}
-
-type SyncStatus = 'running' | 'stopped' | 'error';
-
-interface SyncManagerStatus {
-  protocol: OracleProtocol;
-  status: SyncStatus;
-  instances: string[];
-}
-
-/**
- * 获取所有同步管理器状态
- */
-export async function getAllSyncManagerStatus(): Promise<SyncManagerStatus[]> {
-  const protocols: OracleProtocol[] = [
-    'chainlink',
-    'pyth',
-    'band',
-    'dia',
-    'api3',
-    'redstone',
-    'flux',
-    'switchboard',
-    'uma',
-  ];
-  const results: SyncManagerStatus[] = [];
-
-  for (const protocol of protocols) {
-    try {
-      const manager = await getSyncManager(protocol);
-      // 从 syncIntervals 获取实例列表
-      const instances = Array.from(
-        (manager as unknown as { syncIntervals: Map<string, unknown> }).syncIntervals.keys(),
-      );
-      const isRunning = instances.length > 0;
-      results.push({
-        protocol,
-        status: isRunning ? 'running' : 'stopped',
-        instances,
-      });
-    } catch {
-      // 协议未初始化，跳过
-    }
-  }
-
-  return results;
 }

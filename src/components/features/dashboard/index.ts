@@ -6,6 +6,5 @@ export { KPICard, type KPIData } from './KPICards';
 export {
   QuickActionsPanel,
   QuickActionButton,
-  DashboardToolbar,
   type QuickAction,
 } from './QuickActionsPanel';

@@ -10,7 +10,8 @@ Minimum required:
 
 Optional but recommended:
 
-- `ADMIN_TOKEN` - Admin authentication token
+- `INSIGHT_ADMIN_TOKEN` - Admin authentication token
+- `INSIGHT_ADMIN_TOKEN_SALT` - Admin token salt for enhanced security
 - `JWT_SECRET` - JWT signing secret
 - `SENTRY_DSN` - Sentry error tracking (server-side)
 - `NEXT_PUBLIC_SENTRY_DSN` - Sentry error tracking (client-side)
@@ -18,9 +19,8 @@ Optional but recommended:
 
 ### Supabase Configuration
 
-- `SUPABASE_URL` - Supabase project URL
-- `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key
-- `SUPABASE_DB_URL` - Alternative Supabase database URL
+- `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL (client-side)
+- `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key (server-side)
 
 ### RPC Configuration
 
@@ -40,7 +40,7 @@ Or use provider API keys:
 
 ### Notification Channels
 
-- `SLACK_WEBHOOK_URL` - Slack webhook for alerts
+- `INSIGHT_SLACK_WEBHOOK_URL` - Slack webhook for alerts
 - `INSIGHT_TELEGRAM_BOT_TOKEN` - Telegram bot token
 - `INSIGHT_TELEGRAM_CHAT_ID` - Telegram chat ID
 - `PAGERDUTY_API_KEY` - PagerDuty API key

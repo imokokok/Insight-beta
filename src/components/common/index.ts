@@ -46,8 +46,6 @@ export { Sidebar } from './Sidebar';
 // ==================== 交互组件 ====================
 export { CopyButton } from './CopyButton';
 export { Tooltip, ContextualHelp, ContextualHelpPanel, HelpIcon } from './Tooltip';
-export { InteractiveIcon } from './InteractiveIcon';
-export { ShortcutsHelp } from './ShortcutsHelp';
 
 // ==================== 反馈/通知组件 ====================
 export { ToastContainer, useToast, type ToastType } from './DashboardToast';

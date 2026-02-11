@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 
 import { motion } from 'framer-motion';
 import { TrendingUp, Globe, Activity, RefreshCw } from 'lucide-react';
@@ -11,13 +11,12 @@ import { LazyImage } from '@/components/common/LazyImage';
 import { VirtualList } from '@/components/common/VirtualList';
 
 // 使用性能 Hooks
-
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useDebounce } from '@/hooks/useDebounce';
 import { 
-  useDebounce, 
   useThrottle, 
   useNetworkStatus 
 } from '@/hooks/usePerformance';

@@ -8,6 +8,7 @@ export const alerts = {
     'Without a token you can only view alerts, not acknowledge/resolve or save rules.',
   description: 'Aggregate alerts, acknowledge and track health.',
   explanation: 'Explanation',
+  filter: 'Filter',
   lastSeen: 'Last',
   loadRules: 'Load Rules',
   occurrences: 'Occurrences',

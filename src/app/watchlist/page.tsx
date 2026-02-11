@@ -11,6 +11,7 @@ import { useInfiniteList, useWatchlist, type BaseResponse, useIsMobile } from '@
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage } from '@/i18n/translations';
 import type { Assertion } from '@/lib/types/oracleTypes';
+import { getOracleInstanceId, setOracleInstanceId, buildApiUrl } from '@/lib/utils';
 
 import type { Route } from 'next';
 
@@ -23,24 +24,12 @@ export default function WatchlistPage() {
   const searchParams = useSearchParams();
   const currentSearch = searchParams?.toString() ?? '';
   const instanceIdFromUrl = searchParams?.get('instanceId')?.trim() || '';
-  const [instanceId, setInstanceId] = useState<string>(() => {
-    try {
-      if (typeof window === 'undefined') return 'default';
-      const saved = window.localStorage.getItem('oracleFilters');
-      if (!saved) return 'default';
-      const parsed = JSON.parse(saved) as { instanceId?: unknown } | null;
-      const value = parsed && typeof parsed === 'object' ? parsed.instanceId : null;
-      if (typeof value === 'string' && value.trim()) return value.trim();
-    } catch {
-      return 'default';
-    }
-    return 'default';
-  });
+  const [instanceId, setInstanceIdState] = useState<string>(getOracleInstanceId);
 
   useEffect(() => {
     if (!instanceIdFromUrl) return;
     if (instanceIdFromUrl === instanceId) return;
-    setInstanceId(instanceIdFromUrl);
+    setInstanceIdState(instanceIdFromUrl);
   }, [instanceIdFromUrl, instanceId]);
 
   useEffect(() => {
@@ -55,17 +44,7 @@ export default function WatchlistPage() {
   }, [instanceId, pathname, router, currentSearch]);
 
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem('oracleFilters');
-      const parsed = raw && raw.trim() ? (JSON.parse(raw) as Record<string, unknown> | null) : null;
-      const next = {
-        ...(parsed && typeof parsed === 'object' ? parsed : {}),
-        instanceId,
-      };
-      window.localStorage.setItem('oracleFilters', JSON.stringify(next));
-    } catch {
-      void 0;
-    }
+    setOracleInstanceId(instanceId);
   }, [instanceId]);
 
   const getUrl = useCallback(
@@ -73,16 +52,14 @@ export default function WatchlistPage() {
       if (!mounted || watchlist.length === 0) return null;
       if (previousPageData && previousPageData.nextCursor === null) return null;
 
-      const params = new URLSearchParams();
-      if (instanceId) params.set('instanceId', instanceId);
-      params.set('ids', watchlist.join(','));
-      params.set('limit', '30');
+      const url = buildApiUrl('/api/oracle/assertions', {
+        instanceId: instanceId || undefined,
+        ids: watchlist.join(','),
+        limit: 30,
+        cursor: pageIndex > 0 && previousPageData?.nextCursor ? String(previousPageData.nextCursor) : undefined,
+      });
 
-      if (pageIndex > 0 && previousPageData?.nextCursor) {
-        params.set('cursor', String(previousPageData.nextCursor));
-      }
-
-      return `/api/oracle/assertions?${params.toString()}`;
+      return url;
     },
     [watchlist, mounted, instanceId],
   );

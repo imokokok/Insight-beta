@@ -5,16 +5,15 @@ import useSWR from 'swr';
 import { createSWRConfig, createSWRInfiniteConfig } from '@/hooks/common/useSWRConfig';
 import type { BaseResponse } from '@/hooks/useUI';
 import { useInfiniteList } from '@/hooks/useUI';
-import { logger } from '@/lib/logger';
 import type { Assertion, OracleConfig, OracleStats, OracleStatus } from '@/lib/types/oracleTypes';
-import { fetchApiData } from '@/lib/utils';
-
-const STORAGE_KEY = 'oracleFilters';
-const DEFAULT_INSTANCE_ID = 'default';
-
-interface OracleFilters {
-  instanceId?: string;
-}
+import {
+  fetchApiData,
+  getOracleInstanceId,
+  setOracleInstanceId,
+  clearOracleFilters,
+  isDefaultOracleInstance,
+  buildApiUrl,
+} from '@/lib/utils';
 
 // ============================================================================
 // useOracleData - Oracle 数据获取 Hook
@@ -43,20 +42,17 @@ export function useOracleData(
     // If reached the end, return null
     if (previousPageData && previousPageData.nextCursor === null) return null;
 
-    const params = new URLSearchParams();
-    if (normalizedInstanceId) params.set('instanceId', normalizedInstanceId);
-    if (filterStatus !== 'All') params.set('status', filterStatus);
-    if (filterChain !== 'All') params.set('chain', filterChain);
-    if (query.trim()) params.set('q', query.trim());
-    if (asserter != null) params.set('asserter', asserter);
-    params.set('limit', '30');
+    const url = buildApiUrl('/api/oracle/assertions', {
+      instanceId: normalizedInstanceId || undefined,
+      status: filterStatus !== 'All' ? filterStatus : undefined,
+      chain: filterChain !== 'All' ? filterChain : undefined,
+      q: query.trim() || undefined,
+      asserter: asserter ?? undefined,
+      limit: 30,
+      cursor: pageIndex > 0 && previousPageData?.nextCursor ? String(previousPageData.nextCursor) : undefined,
+    });
 
-    // For first page, no cursor. For next pages, use prev cursor
-    if (pageIndex > 0 && previousPageData?.nextCursor) {
-      params.set('cursor', String(previousPageData.nextCursor));
-    }
-
-    return `/api/oracle/assertions?${params.toString()}`;
+    return url;
   };
 
   const {
@@ -86,65 +82,28 @@ export function useOracleData(
 // ============================================================================
 
 export function useOracleFilters() {
-  const [instanceId, setInstanceId] = useState<string>(DEFAULT_INSTANCE_ID);
+  const [instanceId, setInstanceIdState] = useState<string>(getOracleInstanceId());
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    try {
-      const saved = window.localStorage.getItem(STORAGE_KEY);
-      if (!saved) {
-        setInstanceId(DEFAULT_INSTANCE_ID);
-        return;
-      }
-
-      const parsed = JSON.parse(saved) as OracleFilters | null;
-      const value = parsed?.instanceId;
-
-      if (typeof value === 'string' && value.trim()) {
-        setInstanceId(value.trim());
-      } else {
-        setInstanceId(DEFAULT_INSTANCE_ID);
-      }
-    } catch {
-      setInstanceId(DEFAULT_INSTANCE_ID);
-    }
+    // 组件挂载时从 storage 读取最新值
+    setInstanceIdState(getOracleInstanceId());
   }, []);
 
   const updateInstanceId = (newInstanceId: string) => {
-    const normalized = newInstanceId.trim() || DEFAULT_INSTANCE_ID;
-    setInstanceId(normalized);
-
-    if (typeof window !== 'undefined') {
-      try {
-        const filters: OracleFilters = { instanceId: normalized };
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
-      } catch (error) {
-        logger.error('Failed to save instanceId', {
-          error: error instanceof Error ? error.message : 'Unknown error',
-        });
-      }
-    }
+    const normalized = newInstanceId.trim();
+    setInstanceIdState(normalized);
+    setOracleInstanceId(normalized);
   };
 
   const clearInstanceId = () => {
-    setInstanceId(DEFAULT_INSTANCE_ID);
-
-    if (typeof window !== 'undefined') {
-      try {
-        window.localStorage.removeItem(STORAGE_KEY);
-      } catch (error) {
-        logger.error('Failed to clear instanceId', {
-          error: error instanceof Error ? error.message : 'Unknown error',
-        });
-      }
-    }
+    setInstanceIdState('default');
+    clearOracleFilters();
   };
 
   return {
     instanceId,
     setInstanceId: updateInstanceId,
     clearInstanceId,
-    isDefault: instanceId === DEFAULT_INSTANCE_ID,
+    isDefault: isDefaultOracleInstance(instanceId),
   };
 }

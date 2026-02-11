@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, AlertCircle, BarChart2, FileText, Users, ArrowLeft } from 'lucide-react';
 
 import { useI18n } from '@/i18n/LanguageProvider';
-import { cn } from '@/lib/utils';
+import { cn, getStorageItem, setStorageItem, removeStorageItem } from '@/lib/utils';
 
 import { OnboardingSteps } from './Onboarding/OnboardingSteps';
 import { RoleSelection } from './Onboarding/RoleSelection';
@@ -52,30 +52,24 @@ export function Onboarding({ onComplete, onSkip, className, forceOpen }: Onboard
       setIsOpen(true);
       return;
     }
-    const hasCompleted = localStorage.getItem(STORAGE_KEY);
-    const savedProgress = localStorage.getItem(PROGRESS_STORAGE_KEY);
+    const hasCompleted = getStorageItem<string | null>(STORAGE_KEY, null);
+    const savedProgress = getStorageItem<OnboardingProgress | null>(PROGRESS_STORAGE_KEY, null);
 
     if (!hasCompleted) {
       setIsOpen(true);
 
       // Restore progress if exists
       if (savedProgress) {
-        try {
-          const progress: OnboardingProgress = JSON.parse(savedProgress);
-          // Check if progress is not too old (7 days)
-          const isRecent = Date.now() - progress.timestamp < 7 * 24 * 60 * 60 * 1000;
+        // Check if progress is not too old (7 days)
+        const isRecent = Date.now() - savedProgress.timestamp < 7 * 24 * 60 * 60 * 1000;
 
-          if (isRecent) {
-            setSelectedRole(progress.selectedRole);
-            setShowRoleSelection(progress.showRoleSelection);
-            setCurrentStep(progress.currentStep);
-          } else {
-            // Clear old progress
-            localStorage.removeItem(PROGRESS_STORAGE_KEY);
-          }
-        } catch {
-          // Invalid progress data, clear it
-          localStorage.removeItem(PROGRESS_STORAGE_KEY);
+        if (isRecent) {
+          setSelectedRole(savedProgress.selectedRole);
+          setShowRoleSelection(savedProgress.showRoleSelection);
+          setCurrentStep(savedProgress.currentStep);
+        } else {
+          // Clear old progress
+          removeStorageItem(PROGRESS_STORAGE_KEY);
         }
       }
     }
@@ -92,7 +86,7 @@ export function Onboarding({ onComplete, onSkip, className, forceOpen }: Onboard
       timestamp: Date.now(),
     };
 
-    localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(progress));
+    setStorageItem(PROGRESS_STORAGE_KEY, progress);
   }, [isOpen, currentStep, selectedRole, showRoleSelection]);
 
   // Current steps based on role selection
@@ -185,7 +179,7 @@ export function Onboarding({ onComplete, onSkip, className, forceOpen }: Onboard
     setSelectedRole(role);
     setShowRoleSelection(false);
     setCurrentStep(0);
-    localStorage.setItem(ROLE_STORAGE_KEY, role);
+    setStorageItem(ROLE_STORAGE_KEY, role);
     // Progress will be saved by the useEffect
   };
 
@@ -214,8 +208,8 @@ export function Onboarding({ onComplete, onSkip, className, forceOpen }: Onboard
   }, [onSkip]);
 
   const handleComplete = useCallback(() => {
-    localStorage.setItem(STORAGE_KEY, 'true');
-    localStorage.removeItem(PROGRESS_STORAGE_KEY);
+    setStorageItem(STORAGE_KEY, 'true');
+    removeStorageItem(PROGRESS_STORAGE_KEY);
     setIsOpen(false);
     onComplete?.();
   }, [onComplete]);

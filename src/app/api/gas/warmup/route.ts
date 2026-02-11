@@ -1,25 +1,13 @@
-import { NextResponse } from 'next/server';
-
 import type { SupportedChain } from '@/lib/types/unifiedOracleTypes';
+import { apiSuccess, withErrorHandler } from '@/lib/utils';
 import { gasPriceService } from '@/server/gas';
 
-export async function POST(request: Request) {
-  try {
-    const body = await request.json() as { chains?: SupportedChain[] };
-    
-    await gasPriceService.warmCache(body.chains);
+export const POST = withErrorHandler(async (request: Request) => {
+  const body = await request.json() as { chains?: SupportedChain[] };
 
-    return NextResponse.json({
-      ok: true,
-      message: 'Gas price cache warmed up successfully',
-    });
-  } catch (error) {
-    return NextResponse.json(
-      {
-        ok: false,
-        error: error instanceof Error ? error.message : 'Failed to warm up gas price cache',
-      },
-      { status: 500 }
-    );
-  }
-}
+  await gasPriceService.warmCache(body.chains);
+
+  return apiSuccess({
+    message: 'Gas price cache warmed up successfully',
+  });
+});

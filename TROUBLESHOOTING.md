@@ -46,7 +46,7 @@ This guide helps you resolve common issues when running OracleMonitor in product
 
 ### Alerts not sending
 
-- Verify `SLACK_WEBHOOK_URL` or Telegram settings
+- Verify `INSIGHT_SLACK_WEBHOOK_URL` or Telegram settings
 - Check alert rules are configured correctly
 - Review alert logs in application logs
 
@@ -71,7 +71,7 @@ This will verify:
 | `database_connection_failed` | Cannot connect to PostgreSQL | Check DATABASE_URL           |
 | `rpc_unavailable`            | RPC endpoint not responding  | Check RPC URLs               |
 | `rate_limited`               | Too many requests            | Wait or increase rate limits |
-| `unauthorized`               | Invalid or missing token     | Check ADMIN_TOKEN            |
+| `unauthorized`               | Invalid or missing token     | Check INSIGHT_ADMIN_TOKEN    |
 
 ## 7. Getting Help
 

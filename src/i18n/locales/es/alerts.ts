@@ -8,6 +8,7 @@ export const alerts = {
     'Sin un token solo puedes ver alertas, no acusar recibo/resolver o guardar reglas.',
   description: 'Agrega alertas, acusa recibo y rastrea la salud.',
   explanation: 'Explicación',
+  filter: 'Filtrar',
   lastSeen: 'Último',
   loadRules: 'Cargar Reglas',
   occurrences: 'Ocurrencias',

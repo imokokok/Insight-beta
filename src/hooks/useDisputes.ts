@@ -2,6 +2,7 @@ import { createSWRInfiniteConfig } from '@/hooks/common/useSWRConfig';
 import type { BaseResponse } from '@/hooks/useUI';
 import { useInfiniteList } from '@/hooks/useUI';
 import type { Dispute, OracleConfig, DisputeStatus } from '@/lib/types/oracleTypes';
+import { buildApiUrl } from '@/lib/utils';
 
 export function useDisputes(
   filterStatus: DisputeStatus | 'All' | null,
@@ -16,20 +17,17 @@ export function useDisputes(
     // If reached the end, return null
     if (previousPageData && previousPageData.nextCursor === null) return null;
 
-    const params = new URLSearchParams();
-    if (normalizedInstanceId) params.set('instanceId', normalizedInstanceId);
-    if (filterStatus && filterStatus !== 'All') params.set('status', filterStatus);
-    if (filterChain && filterChain !== 'All') params.set('chain', filterChain);
-    if (query && query.trim()) params.set('q', query.trim());
-    if (disputer) params.set('disputer', disputer);
-    params.set('limit', '30');
+    const url = buildApiUrl('/api/oracle/disputes', {
+      instanceId: normalizedInstanceId || undefined,
+      status: filterStatus && filterStatus !== 'All' ? filterStatus : undefined,
+      chain: filterChain && filterChain !== 'All' ? filterChain : undefined,
+      q: query?.trim() || undefined,
+      disputer: disputer || undefined,
+      limit: 30,
+      cursor: pageIndex > 0 && previousPageData?.nextCursor ? String(previousPageData.nextCursor) : undefined,
+    });
 
-    // For first page, no cursor. For next pages, use prev cursor
-    if (pageIndex > 0 && previousPageData?.nextCursor) {
-      params.set('cursor', String(previousPageData.nextCursor));
-    }
-
-    return `/api/oracle/disputes?${params.toString()}`;
+    return url;
   };
 
   const { items, loading, loadingMore, error, loadMore, hasMore, refresh } =

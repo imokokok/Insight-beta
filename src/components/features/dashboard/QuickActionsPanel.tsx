@@ -7,9 +7,6 @@ import {
   Download,
   Settings,
   Filter,
-  Share2,
-  Maximize2,
-  HelpCircle,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -140,56 +137,5 @@ export function QuickActionButton({
         </span>
       )}
     </Button>
-  );
-}
-
-// Toolbar component for dashboard header
-interface DashboardToolbarProps {
-  onSearch?: (query: string) => void;
-  onRefresh?: () => void;
-  onExport?: () => void;
-  onShare?: () => void;
-  onFullscreen?: () => void;
-  onHelp?: () => void;
-  className?: string;
-}
-
-export function DashboardToolbar({
-  onRefresh,
-  onExport,
-  onShare,
-  onFullscreen,
-  onHelp,
-  className,
-}: DashboardToolbarProps) {
-
-  return (
-    <div className={cn('flex items-center gap-2', className)}>
-      {onRefresh && (
-        <Button variant="outline" size="icon" onClick={onRefresh}>
-          <RefreshCw className="h-4 w-4" />
-        </Button>
-      )}
-      {onExport && (
-        <Button variant="outline" size="icon" onClick={onExport}>
-          <Download className="h-4 w-4" />
-        </Button>
-      )}
-      {onShare && (
-        <Button variant="outline" size="icon" onClick={onShare}>
-          <Share2 className="h-4 w-4" />
-        </Button>
-      )}
-      {onFullscreen && (
-        <Button variant="outline" size="icon" onClick={onFullscreen}>
-          <Maximize2 className="h-4 w-4" />
-        </Button>
-      )}
-      {onHelp && (
-        <Button variant="outline" size="icon" onClick={onHelp}>
-          <HelpCircle className="h-4 w-4" />
-        </Button>
-      )}
-    </div>
   );
 }

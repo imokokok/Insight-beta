@@ -26,7 +26,7 @@ import { useIsMobile } from '@/hooks';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage, langToLocale, type TranslationKey } from '@/i18n/translations';
 import type { Dispute, DisputeStatus, OracleChain } from '@/lib/types/oracleTypes';
-import { calculatePercentage, cn, fetchApiData, formatTime, truncateAddress } from '@/lib/utils';
+import { calculatePercentage, cn, fetchApiData, formatTime, truncateAddress, getOracleInstanceId, setOracleInstanceId, buildApiUrl } from '@/lib/utils';
 
 import type { Route } from 'next';
 
@@ -376,19 +376,7 @@ export default function DisputesPage() {
   const [filterStatus, setFilterStatus] = useState<DisputeStatus | 'All'>('All');
   const [filterChain, setFilterChain] = useState<OracleChain | 'All'>('All');
   const [query, setQuery] = useState('');
-  const [instanceId, setInstanceId] = useState<string>(() => {
-    try {
-      if (typeof window === 'undefined') return 'default';
-      const saved = window.localStorage.getItem('oracleFilters');
-      if (!saved) return 'default';
-      const parsed = JSON.parse(saved) as { instanceId?: unknown } | null;
-      const value = parsed && typeof parsed === 'object' ? parsed.instanceId : null;
-      if (typeof value === 'string' && value.trim()) return value.trim();
-    } catch {
-      return 'default';
-    }
-    return 'default';
-  });
+  const [instanceId, setInstanceIdState] = useState<string>(getOracleInstanceId);
 
   // 获取刷新策略配置
   const disputesStrategy = getRefreshStrategy('disputes-list');
@@ -406,18 +394,19 @@ export default function DisputesPage() {
     setLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams();
-      if (instanceId) params.set('instanceId', instanceId);
-      if (filterStatus !== 'All') params.set('status', filterStatus);
-      if (filterChain !== 'All') params.set('chain', filterChain);
-      if (query.trim()) params.set('q', query.trim());
-      params.set('limit', '30');
+      const url = buildApiUrl('/api/oracle/disputes', {
+        instanceId: instanceId || undefined,
+        status: filterStatus !== 'All' ? filterStatus : undefined,
+        chain: filterChain !== 'All' ? filterChain : undefined,
+        q: query.trim() || undefined,
+        limit: 30,
+      });
       const data = await fetchApiData<{
         items: Dispute[];
         total: number;
         nextCursor: number | null;
         voteTrackingEnabled?: boolean;
-      }>(`/api/oracle/disputes?${params.toString()}`);
+      }>(url);
       setItems(data.items ?? []);
       setNextCursor(data.nextCursor ?? null);
       setVoteTrackingEnabled(data.voteTrackingEnabled ?? true);
@@ -432,7 +421,7 @@ export default function DisputesPage() {
   useEffect(() => {
     if (!instanceIdFromUrl) return;
     if (instanceIdFromUrl === instanceId) return;
-    setInstanceId(instanceIdFromUrl);
+    setInstanceIdState(instanceIdFromUrl);
   }, [instanceIdFromUrl, instanceId]);
 
   useEffect(() => {
@@ -447,17 +436,7 @@ export default function DisputesPage() {
   }, [instanceId, pathname, router, currentSearch]);
 
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem('oracleFilters');
-      const parsed = raw && raw.trim() ? (JSON.parse(raw) as Record<string, unknown> | null) : null;
-      const next = {
-        ...(parsed && typeof parsed === 'object' ? parsed : {}),
-        instanceId,
-      };
-      window.localStorage.setItem('oracleFilters', JSON.stringify(next));
-    } catch {
-      void 0;
-    }
+    setOracleInstanceId(instanceId);
   }, [instanceId]);
 
   useEffect(() => {
@@ -468,18 +447,19 @@ export default function DisputesPage() {
       setLoading(true);
       setError(null);
       try {
-        const params = new URLSearchParams();
-        if (instanceId) params.set('instanceId', instanceId);
-        if (filterStatus !== 'All') params.set('status', filterStatus);
-        if (filterChain !== 'All') params.set('chain', filterChain);
-        if (query.trim()) params.set('q', query.trim());
-        params.set('limit', '30');
+        const url = buildApiUrl('/api/oracle/disputes', {
+          instanceId: instanceId || undefined,
+          status: filterStatus !== 'All' ? filterStatus : undefined,
+          chain: filterChain !== 'All' ? filterChain : undefined,
+          q: query.trim() || undefined,
+          limit: 30,
+        });
         const data = await fetchApiData<{
           items: Dispute[];
           total: number;
           nextCursor: number | null;
           voteTrackingEnabled?: boolean;
-        }>(`/api/oracle/disputes?${params.toString()}`, {
+        }>(url, {
           signal: controller.signal,
         });
         if (cancelled) return;
@@ -506,19 +486,20 @@ export default function DisputesPage() {
     setLoadingMore(true);
     setError(null);
     try {
-      const params = new URLSearchParams();
-      if (instanceId) params.set('instanceId', instanceId);
-      if (filterStatus !== 'All') params.set('status', filterStatus);
-      if (filterChain !== 'All') params.set('chain', filterChain);
-      if (query.trim()) params.set('q', query.trim());
-      params.set('limit', '30');
-      params.set('cursor', String(nextCursor));
+      const url = buildApiUrl('/api/oracle/disputes', {
+        instanceId: instanceId || undefined,
+        status: filterStatus !== 'All' ? filterStatus : undefined,
+        chain: filterChain !== 'All' ? filterChain : undefined,
+        q: query.trim() || undefined,
+        limit: 30,
+        cursor: String(nextCursor),
+      });
       const data = await fetchApiData<{
         items: Dispute[];
         total: number;
         nextCursor: number | null;
         voteTrackingEnabled?: boolean;
-      }>(`/api/oracle/disputes?${params.toString()}`);
+      }>(url);
       setItems((prev) => prev.concat(data.items ?? []));
       setNextCursor(data.nextCursor ?? null);
       setVoteTrackingEnabled(data.voteTrackingEnabled ?? voteTrackingEnabled);

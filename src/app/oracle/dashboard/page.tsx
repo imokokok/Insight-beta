@@ -11,6 +11,10 @@
 
 import { useEffect, useState, useCallback, Suspense, lazy } from 'react';
 
+import { useRouter } from 'next/navigation';
+
+import type { Route } from 'next';
+
 import {
   Activity,
   AlertTriangle,
@@ -249,6 +253,7 @@ interface DashboardStats {
 // ============================================================================
 
 export default function UnifiedDashboardPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('overview');
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [selectedProtocols, setSelectedProtocols] = useState<string[]>(['all']);
@@ -728,7 +733,7 @@ export default function UnifiedDashboardPage() {
                   hover
                   onClick={() => {
                     // Drill-down: 跳转到 /alerts?severity=critical
-                    window.location.href = '/alerts?severity=critical';
+                    router.push('/alerts?severity=critical');
                   }}
                 >
                   <div className="flex items-center justify-between">
@@ -749,7 +754,7 @@ export default function UnifiedDashboardPage() {
                   className="cursor-pointer border-amber-200/50 bg-amber-50/20 p-3 transition-all hover:shadow-md sm:p-4"
                   hover
                   onClick={() => {
-                    window.location.href = '/alerts?severity=warning';
+                    router.push('/alerts?severity=warning');
                   }}
                 >
                   <div className="flex items-center justify-between">
@@ -770,7 +775,7 @@ export default function UnifiedDashboardPage() {
                   className="cursor-pointer border-blue-200/50 bg-blue-50/20 p-3 transition-all hover:shadow-md sm:p-4"
                   hover
                   onClick={() => {
-                    window.location.href = '/alerts?severity=info';
+                    router.push('/alerts?severity=info');
                   }}
                 >
                   <div className="flex items-center justify-between">
@@ -791,7 +796,7 @@ export default function UnifiedDashboardPage() {
                   className="cursor-pointer border-purple-200/50 bg-purple-50/20 p-3 transition-all hover:shadow-md sm:p-4"
                   hover
                   onClick={() => {
-                    window.location.href = '/alerts?status=acked';
+                    router.push('/alerts?status=acked');
                   }}
                 >
                   <div className="flex items-center justify-between">
@@ -838,7 +843,7 @@ export default function UnifiedDashboardPage() {
                           size="sm"
                           className="h-7 text-xs"
                           onClick={() => {
-                            window.location.href = '/alerts';
+                            router.push('/alerts');
                           }}
                         >
                           View All Alerts
@@ -914,7 +919,7 @@ export default function UnifiedDashboardPage() {
                                 className="h-7 text-xs text-purple-600 hover:bg-purple-50"
                                 onClick={() => {
                                   // Drill-down: 跳转到协议详情页
-                                  window.location.href = `/oracle/protocols/${alert.protocol.toLowerCase()}`;
+                                  router.push(`/oracle/protocols/${alert.protocol.toLowerCase()}`);
                                 }}
                               >
                                 View in Protocol
@@ -925,7 +930,7 @@ export default function UnifiedDashboardPage() {
                                 className="h-7 text-xs text-gray-600 hover:bg-gray-50"
                                 onClick={() => {
                                   // Drill-down: 跳转到 incident timeline
-                                  window.location.href = `/alerts/${alert.id}`;
+                                  router.push(`/alerts/${alert.id}` as Route);
                                 }}
                               >
                                 Timeline →
@@ -940,7 +945,7 @@ export default function UnifiedDashboardPage() {
                           size="sm"
                           className="w-full text-xs"
                           onClick={() => {
-                            window.location.href = '/alerts';
+                            router.push('/alerts');
                           }}
                         >
                           View All 19 Alerts
@@ -991,7 +996,7 @@ export default function UnifiedDashboardPage() {
                         size="sm"
                         className="w-full text-xs text-gray-500 hover:text-purple-600"
                         onClick={() => {
-                          window.location.href = '/admin/alerts/rules';
+                          router.push('/admin/alerts/rules' as Route);
                         }}
                       >
                         Manage Alert Rules →

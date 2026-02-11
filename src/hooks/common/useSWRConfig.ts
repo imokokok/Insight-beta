@@ -9,12 +9,11 @@ import { CACHE_CONFIG } from '@/lib/config/constants';
 import type useSWR from 'swr';
 import type useSWRInfinite from 'swr/infinite';
 
-
 // ============================================================================
 // SWR 默认配置
 // ============================================================================
 
-export const SWR_DEFAULT_CONFIG = {
+const SWR_DEFAULT_CONFIG = {
   refreshInterval: CACHE_CONFIG.DEFAULT_REFRESH_INTERVAL,
   dedupingInterval: CACHE_CONFIG.DEFAULT_DEDUPING_INTERVAL,
   revalidateOnFocus: false,
@@ -28,11 +27,11 @@ export const SWR_DEFAULT_CONFIG = {
 } as const;
 
 // ============================================================================
-// SWR 配置 Hook
+// SWR 配置选项类型
 // ============================================================================
 
-export interface UseSWRConfigOptions {
-  refreshInterval?: number;
+interface UseSWRConfigOptions {
+  refreshInterval?: number | ((latestData: unknown) => number);
   dedupingInterval?: number;
   revalidateOnFocus?: boolean;
   revalidateOnReconnect?: boolean;
@@ -44,18 +43,7 @@ export interface UseSWRConfigOptions {
   suspense?: boolean;
 }
 
-export function useSWRConfig(options: UseSWRConfigOptions = {}) {
-  return {
-    ...SWR_DEFAULT_CONFIG,
-    ...options,
-  };
-}
-
-// ============================================================================
-// SWR Infinite 配置
-// ============================================================================
-
-export interface UseSWRInfiniteConfigOptions {
+interface UseSWRInfiniteConfigOptions {
   refreshInterval?: number;
   dedupingInterval?: number;
   revalidateOnFocus?: boolean;
@@ -64,21 +52,6 @@ export interface UseSWRInfiniteConfigOptions {
   errorRetryCount?: number;
   errorRetryInterval?: number;
   shouldRetryOnError?: boolean;
-}
-
-export function useSWRInfiniteConfig(options: UseSWRInfiniteConfigOptions = {}) {
-  return {
-    revalidateFirstPage: false,
-    revalidateOnFocus: false,
-    revalidateAll: false,
-    refreshInterval: 0,
-    dedupingInterval: CACHE_CONFIG.DEFAULT_DEDUPING_INTERVAL,
-    revalidateOnReconnect: true,
-    errorRetryCount: 3,
-    errorRetryInterval: 5000,
-    shouldRetryOnError: true,
-    ...options,
-  };
 }
 
 // ============================================================================
@@ -123,32 +96,4 @@ export const REALTIME_CONFIG = {
   revalidateIfStale: true,
   errorRetryCount: 5,
   errorRetryInterval: 2000,
-} as const;
-
-// ============================================================================
-// 慢速数据配置
-// ============================================================================
-
-export const SLOW_DATA_CONFIG = {
-  refreshInterval: CACHE_CONFIG.DEFAULT_CACHE_TIME, // 5分钟
-  dedupingInterval: CACHE_CONFIG.DEFAULT_CACHE_TIME,
-  revalidateOnFocus: false,
-  revalidateOnReconnect: false,
-  revalidateIfStale: false,
-  errorRetryCount: 1,
-  errorRetryInterval: 5000,
-} as const;
-
-// ============================================================================
-// 一次性数据配置
-// ============================================================================
-
-export const ONCE_CONFIG = {
-  refreshInterval: 0,
-  dedupingInterval: Infinity,
-  revalidateOnFocus: false,
-  revalidateOnReconnect: false,
-  revalidateIfStale: false,
-  errorRetryCount: 0,
-  shouldRetryOnError: false,
 } as const;

@@ -34,7 +34,7 @@ import type {
   OpsMetrics,
   OracleInstance,
 } from '@/lib/types/oracleTypes';
-import { fetchApiData, getErrorCode } from '@/lib/utils';
+import { fetchApiData, getErrorCode, mergeOracleFilters, buildApiUrl } from '@/lib/utils';
 import {
   formatSloTarget,
   formatSloValue,
@@ -143,17 +143,7 @@ export default function AlertsPageClient() {
   }, []);
 
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem('oracleFilters');
-      const parsed = raw && raw.trim() ? (JSON.parse(raw) as Record<string, unknown> | null) : null;
-      const next = {
-        ...(parsed && typeof parsed === 'object' ? parsed : {}),
-        instanceId,
-      };
-      window.localStorage.setItem('oracleFilters', JSON.stringify(next));
-    } catch {
-      void 0;
-    }
+    mergeOracleFilters({ instanceId });
   }, [instanceId]);
 
   const loadRules = useCallback(async () => {
@@ -193,20 +183,20 @@ export default function AlertsPageClient() {
   const fetchAlerts = useCallback(
     async (cursor: number | null, signal?: AbortSignal) => {
       setError(null);
-      const params = new URLSearchParams();
-      if (instanceId) params.set('instanceId', instanceId);
-      if (filterStatus !== 'All') params.set('status', filterStatus);
-      if (filterSeverity !== 'All') params.set('severity', filterSeverity);
-      if (filterType !== 'All') params.set('type', filterType);
-      // 使用防抖后的查询值
-      if (debouncedQuery.trim()) params.set('q', debouncedQuery.trim());
-      params.set('limit', '30');
-      if (cursor !== null) params.set('cursor', String(cursor));
+      const url = buildApiUrl('/api/oracle/alerts', {
+        instanceId: instanceId || undefined,
+        status: filterStatus !== 'All' ? filterStatus : undefined,
+        severity: filterSeverity !== 'All' ? filterSeverity : undefined,
+        type: filterType !== 'All' ? filterType : undefined,
+        q: debouncedQuery.trim() || undefined,
+        limit: 30,
+        cursor: cursor !== null ? String(cursor) : undefined,
+      });
       return await fetchApiData<{
         items: Alert[];
         total: number;
         nextCursor: number | null;
-      }>(`/api/oracle/alerts?${params.toString()}`, { signal });
+      }>(url, { signal });
     },
     [filterSeverity, filterStatus, filterType, instanceId, debouncedQuery],
   );
@@ -256,7 +246,7 @@ export default function AlertsPageClient() {
     }
   }, [fetchAlerts, reloadIncidents, reloadOpsMetrics, reloadRisks]);
 
-  const createIncidentFromAlert = async (a: Alert, rule?: AlertRule) => {
+  const createIncidentFromAlert = useCallback(async (a: Alert, rule?: AlertRule) => {
     if (!canAdmin) return;
     await fetchApiData<{ ok: true; incident: Incident }>('/api/oracle/incidents', {
       method: 'POST',
@@ -273,7 +263,7 @@ export default function AlertsPageClient() {
       }),
     });
     await reloadIncidents();
-  };
+  }, [canAdmin, adminHeaders, reloadIncidents]);
 
   const collectSloAlertIds = useCallback(
     async (slo: NonNullable<OpsMetrics['slo']>) => {
@@ -288,15 +278,14 @@ export default function AlertsPageClient() {
         severity?: AlertSeverity | 'All';
         type?: string | 'All';
       }) => {
-        const search = new URLSearchParams();
-        if (instanceId) search.set('instanceId', instanceId);
-        if (params.status && params.status !== 'All') search.set('status', params.status);
-        if (params.severity && params.severity !== 'All') search.set('severity', params.severity);
-        if (params.type && params.type !== 'All') search.set('type', params.type);
-        search.set('limit', '50');
-        const data = await fetchApiData<{ items: Alert[] }>(
-          `/api/oracle/alerts?${search.toString()}`,
-        );
+        const url = buildApiUrl('/api/oracle/alerts', {
+          instanceId: instanceId || undefined,
+          status: params.status && params.status !== 'All' ? params.status : undefined,
+          severity: params.severity && params.severity !== 'All' ? params.severity : undefined,
+          type: params.type && params.type !== 'All' ? params.type : undefined,
+          limit: 50,
+        });
+        const data = await fetchApiData<{ items: Alert[] }>(url);
         for (const item of data.items ?? []) {
           if (Number.isFinite(item.id)) ids.add(item.id);
         }
@@ -397,7 +386,7 @@ export default function AlertsPageClient() {
     scrollToIncidents,
   ]);
 
-  const patchIncidentStatus = async (id: number, status: Incident['status']) => {
+  const patchIncidentStatus = useCallback(async (id: number, status: Incident['status']) => {
     if (!canAdmin) return;
     await fetchApiData<{ ok: true; incident: Incident }>(`/api/oracle/incidents/${id}`, {
       method: 'PATCH',
@@ -405,9 +394,9 @@ export default function AlertsPageClient() {
       body: JSON.stringify({ status }),
     });
     await reloadIncidents();
-  };
+  }, [canAdmin, adminHeaders, reloadIncidents]);
 
-  const incidentAction = async (id: number, action: 'ack_alerts' | 'resolve_alerts') => {
+  const incidentAction = useCallback(async (id: number, action: 'ack_alerts' | 'resolve_alerts') => {
     if (!canAdmin) return;
     await fetchApiData<{ ok: true; incident: Incident }>(`/api/oracle/incidents/${id}`, {
       method: 'PATCH',
@@ -415,9 +404,9 @@ export default function AlertsPageClient() {
       body: JSON.stringify({ action }),
     });
     await refresh();
-  };
+  }, [canAdmin, adminHeaders, refresh]);
 
-  const startEditIncident = (i: IncidentWithAlerts) => {
+  const startEditIncident = useCallback((i: IncidentWithAlerts) => {
     if (!canAdmin) return;
     setEditingIncidentId(i.id);
     setIncidentDraft({
@@ -430,14 +419,14 @@ export default function AlertsPageClient() {
       entityId: i.entityId ?? '',
       summary: i.summary ?? '',
     });
-  };
+  }, [canAdmin]);
 
-  const cancelEditIncident = () => {
+  const cancelEditIncident = useCallback(() => {
     setEditingIncidentId(null);
     setIncidentDraft(null);
-  };
+  }, []);
 
-  const saveIncidentEdit = async () => {
+  const saveIncidentEdit = useCallback(async () => {
     if (!canAdmin) return;
     if (!incidentDraft) return;
     if (editingIncidentId === null) return;
@@ -463,7 +452,7 @@ export default function AlertsPageClient() {
     );
     cancelEditIncident();
     await reloadIncidents();
-  };
+  }, [canAdmin, incidentDraft, editingIncidentId, adminHeaders, cancelEditIncident, reloadIncidents]);
 
   const applyQuery = useCallback((value: string) => {
     const next = value.trim();
@@ -556,7 +545,7 @@ export default function AlertsPageClient() {
     };
   }, [fetchAlerts]);
 
-  const loadMore = async () => {
+  const loadMore = useCallback(async () => {
     if (nextCursor === null) return;
     try {
       const data = await fetchAlerts(nextCursor);
@@ -565,18 +554,18 @@ export default function AlertsPageClient() {
     } catch (error: unknown) {
       setError(getErrorCode(error));
     }
-  };
+  }, [nextCursor, fetchAlerts]);
 
-  const updateAlert = async (alertId: number, status: AlertStatus) => {
+  const updateAlert = useCallback(async (alertId: number, status: AlertStatus) => {
     await fetchApiData<Alert>(`/api/oracle/alerts/${alertId}`, {
       method: 'PATCH',
       headers: { 'content-type': 'application/json', ...adminHeaders },
       body: JSON.stringify({ status }),
     });
     await refresh();
-  };
+  }, [adminHeaders, refresh]);
 
-  const setRuleSilenceMinutes = async (ruleId: string, minutes: number | null) => {
+  const setRuleSilenceMinutes = useCallback(async (ruleId: string, minutes: number | null) => {
     if (!canAdmin) return;
     if (!rules) return;
     if (
@@ -603,7 +592,7 @@ export default function AlertsPageClient() {
     } finally {
       setRulesSaving(false);
     }
-  };
+  }, [canAdmin, rules, adminHeaders]);
 
   const slo = opsMetrics?.slo ?? null;
   const sloEntries = slo ? getSloEntries(slo) : [];
@@ -688,7 +677,7 @@ export default function AlertsPageClient() {
                     }}
                   >
                     <Filter size={14} />
-                    筛选
+                    {t('alerts.filter')}
                   </button>
                 )}
               </div>
@@ -1024,11 +1013,14 @@ export default function AlertsPageClient() {
             ) : null}
 
             <div className="space-y-2">
-              <div className="text-xs font-semibold text-gray-500">{t('alerts.adminToken')}</div>
+              <label htmlFor="alerts-admin-token" className="text-xs font-semibold text-gray-500">{t('alerts.adminToken')}</label>
               <input
+                id="alerts-admin-token"
                 value={adminToken}
                 onChange={(e) => setAdminToken(e.target.value)}
                 placeholder={t('alerts.adminTokenHint')}
+                type="password"
+                autoComplete="off"
                 className="h-9 w-full rounded-lg border-none bg-white/50 px-3 text-sm text-purple-900 shadow-sm placeholder:text-purple-300 focus:ring-2 focus:ring-purple-500/20"
               />
               {!canAdmin && (
@@ -1039,8 +1031,9 @@ export default function AlertsPageClient() {
             </div>
 
             <div className="space-y-2">
-              <div className="text-xs font-semibold text-gray-500">{t('alerts.adminActor')}</div>
+              <label htmlFor="alerts-admin-actor" className="text-xs font-semibold text-gray-500">{t('alerts.adminActor')}</label>
               <input
+                id="alerts-admin-actor"
                 value={adminActor}
                 onChange={(e) => setAdminActor(e.target.value)}
                 placeholder={t('alerts.adminActorPlaceholder')}

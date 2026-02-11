@@ -1,24 +1,13 @@
-import { NextResponse } from 'next/server';
-
+import { apiSuccess, withErrorHandler } from '@/lib/utils';
 import { crossChainAnalysisService } from '@/server/oracle/crossChainAnalysisService';
 
-export async function GET() {
-  try {
-    const dashboard = await crossChainAnalysisService.getDashboardData();
+export const GET = withErrorHandler(async () => {
+  const dashboard = await crossChainAnalysisService.getDashboardData();
 
-    return NextResponse.json({
-      success: true,
-      data: dashboard,
+  return apiSuccess({
+    dashboard,
+    meta: {
       timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error('Cross-chain dashboard error:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to get dashboard data',
-      },
-      { status: 500 }
-    );
-  }
-}
+    },
+  });
+});

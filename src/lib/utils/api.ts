@@ -6,6 +6,7 @@
 
 import { getErrorMessage } from '@/lib/errors';
 import { logger } from '@/lib/logger';
+import { getOracleInstanceId } from './storage';
 
 export { getErrorMessage };
 
@@ -46,6 +47,8 @@ export class ApiClientError extends Error {
     this.details = details;
   }
 }
+
+
 
 /**
  * 从错误对象中提取错误代码
@@ -129,6 +132,99 @@ function getServerBaseUrl(): string {
  * );
  * ```
  */
+/**
+ * 创建 SWR fetcher 函数
+ *
+ * 用于 SWR 库的通用 fetcher，自动处理错误和响应解析
+ *
+ * @template T - 期望的响应数据类型
+ * @param url - 请求 URL
+ * @returns 解析后的响应数据
+ * @throws {Error} 当请求失败时抛出，包含 code 和 status 属性
+ *
+ * @example
+ * ```typescript
+ * const { data } = useSWR('/api/user', createSWRFetcher<User>());
+ * ```
+ */
+export function createSWRFetcher<T>() {
+  return async (url: string): Promise<T> => {
+    const res = await fetch(url);
+    if (!res.ok) {
+      const errorData: Record<string, unknown> = await res.json().catch(() => ({}));
+      const error = new Error(
+        (errorData.error as string) || `HTTP ${res.status}: Failed to fetch data`
+      );
+      (error as { code?: string; status?: number }).code =
+        (errorData.code as string) || 'FETCH_ERROR';
+      (error as { code?: string; status?: number }).status = res.status;
+      throw error;
+    }
+    return res.json();
+  };
+}
+
+/**
+ * 通用 SWR fetcher（用于不需要类型约束的场景）
+ */
+export const swrFetcher = createSWRFetcher<unknown>();
+
+/**
+ * 标准化 API 列表响应
+ *
+ * 处理 API 可能返回的两种格式：直接数组或包含 items 属性的对象
+ *
+ * @template T - 列表项类型
+ * @param response - API 响应数据
+ * @returns 标准化的数组
+ *
+ * @example
+ * ```typescript
+ * // 处理直接返回数组的情况
+ * normalizeListResponse([{ id: 1 }, { id: 2 }])
+ * // => [{ id: 1 }, { id: 2 }]
+ *
+ * // 处理返回对象的情况
+ * normalizeListResponse({ items: [{ id: 1 }], total: 1 })
+ * // => [{ id: 1 }]
+ * ```
+ */
+export function normalizeListResponse<T>(
+  response: T[] | { items?: T[] } | unknown
+): T[] {
+  if (Array.isArray(response)) {
+    return response;
+  }
+  if (response && typeof response === 'object' && 'items' in response) {
+    const items = (response as { items?: T[] }).items;
+    return Array.isArray(items) ? items : [];
+  }
+  return [];
+}
+
+/**
+ * 标准化 API 分页响应
+ *
+ * @template T - 列表项类型
+ * @param response - API 响应数据
+ * @returns 包含 items 和 total 的标准化对象
+ */
+export function normalizePaginatedResponse<T>(
+  response: T[] | { items?: T[]; total?: number } | unknown
+): { items: T[]; total: number } {
+  if (Array.isArray(response)) {
+    return { items: response, total: response.length };
+  }
+  if (response && typeof response === 'object') {
+    const obj = response as { items?: T[]; total?: number };
+    return {
+      items: Array.isArray(obj.items) ? obj.items : [],
+      total: typeof obj.total === 'number' ? obj.total : 0,
+    };
+  }
+  return { items: [], total: 0 };
+}
+
 export async function fetchApiData<T>(
   input: Parameters<typeof fetch>[0],
   init?: Parameters<typeof fetch>[1],
@@ -144,21 +240,9 @@ export async function fetchApiData<T>(
           url.pathname.startsWith('/api/oracle/') &&
           !url.searchParams.has('instanceId')
         ) {
-          try {
-            const saved = window.localStorage.getItem('oracleFilters');
-            if (saved) {
-              const parsed = JSON.parse(saved) as {
-                instanceId?: unknown;
-              } | null;
-              const instanceId = parsed && typeof parsed === 'object' ? parsed.instanceId : null;
-              if (typeof instanceId === 'string' && instanceId.trim()) {
-                url.searchParams.set('instanceId', instanceId.trim());
-              }
-            }
-          } catch (error) {
-            logger.warn('Failed to parse saved oracle filters from localStorage', {
-              error: error instanceof Error ? error.message : String(error),
-            });
+          const instanceId = getOracleInstanceId();
+          if (instanceId && instanceId !== 'default') {
+            url.searchParams.set('instanceId', instanceId);
           }
         }
         return url;

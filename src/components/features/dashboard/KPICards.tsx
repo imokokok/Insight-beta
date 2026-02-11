@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 
-import { TrendingUp, TrendingDown, Minus, Activity, DollarSign, Users, Shield, Zap } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Activity } from 'lucide-react';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -80,60 +80,3 @@ export function KPICard({ data, loading, className }: KPICardProps) {
     </Card>
   );
 }
-
-interface KPICardsRowProps {
-  kpis: KPIData[];
-  loading?: boolean;
-  className?: string;
-}
-
-export function KPICardsRow({ kpis, loading, className }: KPICardsRowProps) {
-  return (
-    <div className={cn('grid gap-4 grid-cols-2 lg:grid-cols-4', className)}>
-      {kpis.map((kpi) => (
-        <KPICard key={kpi.id} data={kpi} loading={loading} />
-      ))}
-    </div>
-  );
-}
-
-// Pre-defined KPI configurations for common use cases
-export const defaultKPIs = {
-  tvl: (value: number, change?: number): KPIData => ({
-    id: 'tvl',
-    title: 'Total Value Locked',
-    value: `$${(value / 1e9).toFixed(2)}B`,
-    change,
-    icon: <DollarSign className="h-6 w-6" />,
-    color: 'green',
-    trend: change && change > 0 ? 'up' : change && change < 0 ? 'down' : 'neutral',
-  }),
-  activeProtocols: (value: number, change?: number): KPIData => ({
-    id: 'activeProtocols',
-    title: 'Active Protocols',
-    value: value.toString(),
-    change,
-    icon: <Shield className="h-6 w-6" />,
-    color: 'blue',
-    trend: change && change > 0 ? 'up' : change && change < 0 ? 'down' : 'neutral',
-  }),
-  dailyUpdates: (value: number, change?: number): KPIData => ({
-    id: 'dailyUpdates',
-    title: 'Daily Updates',
-    value: value.toLocaleString(),
-    unit: 'txns',
-    change,
-    icon: <Zap className="h-6 w-6" />,
-    color: 'purple',
-    trend: change && change > 0 ? 'up' : change && change < 0 ? 'down' : 'neutral',
-  }),
-  activeUsers: (value: number, change?: number): KPIData => ({
-    id: 'activeUsers',
-    title: 'Active Users',
-    value: value.toLocaleString(),
-    change,
-    icon: <Users className="h-6 w-6" />,
-    color: 'amber',
-    trend: change && change > 0 ? 'up' : change && change < 0 ? 'down' : 'neutral',
-  }),
-};

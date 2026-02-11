@@ -373,17 +373,7 @@ export const CHART_COLORS = {
 // 工具函数
 // ============================================================================
 
-export function getSemanticColor(color: SemanticColor, shade: 50 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900): string {
-  return SEMANTIC_COLORS[color][shade];
-}
 
-export function getBrandColor(color: BrandColor, shade: 50 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900): string {
-  return BRAND_COLORS[color][shade];
-}
-
-export function getComponentColor(color: ComponentColor): typeof COMPONENT_COLORS[ComponentColor] {
-  return COMPONENT_COLORS[color];
-}
 
 export function getStatusColor(status: string): typeof STATUS_COLORS[StatusColor] {
   const key = status.toLowerCase() as StatusColor;
@@ -395,11 +385,4 @@ export function getProtocolColor(protocol: string): string {
   return PROTOCOL_COLORS[key] || PROTOCOL_COLORS.default;
 }
 
-export function getChartColor(index: number): string {
-  const color = CHART_COLORS.categorical[index % CHART_COLORS.categorical.length];
-  return color || CHART_COLORS.categorical[0];
-}
 
-export function getGradientColors(name: keyof typeof CHART_COLORS.gradient): [string, string] {
-  return CHART_COLORS.gradient[name];
-}

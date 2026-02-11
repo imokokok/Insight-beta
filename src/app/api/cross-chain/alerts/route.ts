@@ -1,50 +1,34 @@
-import type { NextRequest} from 'next/server';
-import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
+import { apiSuccess, apiError, withErrorHandler, getQueryParam } from '@/lib/utils';
 import { crossChainAnalysisService } from '@/server/oracle/crossChainAnalysisService';
 
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const symbol = searchParams.get('symbol');
-  const severity = searchParams.get('severity');
+export const GET = withErrorHandler(async (request: NextRequest) => {
+  const symbol = getQueryParam(request, 'symbol');
+  const severity = getQueryParam(request, 'severity');
 
-  try {
-    if (!symbol) {
-      return NextResponse.json(
-        { error: 'Symbol is required' },
-        { status: 400 }
-      );
-    }
-
-    const alerts = await crossChainAnalysisService.detectDeviationAlerts(symbol);
-
-    const filteredAlerts = severity
-      ? alerts.filter(a => a.severity === severity)
-      : alerts;
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        symbol,
-        alerts: filteredAlerts,
-        summary: {
-          total: filteredAlerts.length,
-          critical: filteredAlerts.filter(a => a.severity === 'critical').length,
-          warning: filteredAlerts.filter(a => a.severity === 'warning').length,
-          info: filteredAlerts.filter(a => a.severity === 'info').length,
-          active: filteredAlerts.filter(a => a.status === 'active').length,
-        },
-      },
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error('Deviation alerts error:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to detect deviation alerts',
-      },
-      { status: 500 }
-    );
+  if (!symbol) {
+    return apiError('Symbol is required', 400);
   }
-}
+
+  const alerts = await crossChainAnalysisService.detectDeviationAlerts(symbol);
+
+  const filteredAlerts = severity
+    ? alerts.filter(a => a.severity === severity)
+    : alerts;
+
+  return apiSuccess({
+    symbol,
+    alerts: filteredAlerts,
+    summary: {
+      total: filteredAlerts.length,
+      critical: filteredAlerts.filter(a => a.severity === 'critical').length,
+      warning: filteredAlerts.filter(a => a.severity === 'warning').length,
+      info: filteredAlerts.filter(a => a.severity === 'info').length,
+      active: filteredAlerts.filter(a => a.status === 'active').length,
+    },
+    meta: {
+      timestamp: new Date().toISOString(),
+    },
+  });
+});

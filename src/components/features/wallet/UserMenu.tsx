@@ -11,7 +11,7 @@ import { arbitrum, hardhat, mainnet, optimism, polygon, polygonAmoy } from 'viem
 import { useWallet } from '@/contexts/WalletContext';
 import { useBalance, useSwitchChainWithFeedback } from '@/hooks';
 import { useI18n } from '@/i18n/LanguageProvider';
-import { cn } from '@/lib/utils';
+import { cn, getOracleInstanceId } from '@/lib/utils';
 
 import type { Route } from 'next';
 
@@ -23,19 +23,7 @@ export function UserMenu() {
   const instanceIdFromUrl = searchParams?.get('instanceId')?.trim() || null;
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [storedInstanceId] = useState<string>(() => {
-    try {
-      if (typeof window === 'undefined') return 'default';
-      const saved = window.localStorage.getItem('oracleFilters');
-      if (!saved) return 'default';
-      const parsed = JSON.parse(saved) as { instanceId?: unknown } | null;
-      const value = parsed && typeof parsed === 'object' ? parsed.instanceId : null;
-      if (typeof value === 'string' && value.trim()) return value.trim();
-    } catch {
-      return 'default';
-    }
-    return 'default';
-  });
+  const [storedInstanceId] = useState<string>(() => getOracleInstanceId());
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

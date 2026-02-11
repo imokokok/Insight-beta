@@ -28,7 +28,8 @@ export const SUPABASE_ERROR_CODES = {
  * 用于：API Routes、Server Actions、Background Jobs
  */
 export function createSupabaseClient(): TypedSupabaseClient {
-  const supabaseUrl = env.SUPABASE_URL;
+  // 使用 NEXT_PUBLIC_SUPABASE_URL，因为它在服务端也可用
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !supabaseKey) {

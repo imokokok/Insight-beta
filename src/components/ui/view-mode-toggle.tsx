@@ -82,29 +82,3 @@ export function ViewModeToggle({
     </div>
   );
 }
-
-/**
- * 带标签的视图模式切换
- * 显示当前模式说明
- */
-interface ViewModeToggleWithLabelProps extends ViewModeToggleProps {
-  /** 普通模式标签 */
-  normalLabel?: string;
-  /** 专业模式标签 */
-  denseLabel?: string;
-}
-
-export function ViewModeToggleWithLabel({
-  mode,
-  onChange,
-  className,
-  normalLabel = '普通模式',
-  denseLabel = '专业模式',
-}: ViewModeToggleWithLabelProps) {
-  return (
-    <div className={cn('flex items-center gap-3', className)}>
-      <ViewModeToggle mode={mode} onChange={onChange} showLabel={false} />
-      <span className="text-xs text-gray-500">{mode === 'normal' ? normalLabel : denseLabel}</span>
-    </div>
-  );
-}

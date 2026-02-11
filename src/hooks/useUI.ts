@@ -5,7 +5,7 @@ import useSWRInfinite from 'swr/infinite';
 import { fetchApiData } from '@/lib/utils';
 
 // Re-export useDebounce from the dedicated hook file
-export { useDebounce, useDebounceImmediate } from './useDebounce';
+export { useDebounce } from './useDebounce';
 
 // ============================================================================
 // useInfiniteList - 无限列表 Hook

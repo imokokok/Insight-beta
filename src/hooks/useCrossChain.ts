@@ -2,7 +2,22 @@
 
 import useSWR from 'swr';
 
-import { createSWRConfig, type UseSWRConfigOptions } from '@/hooks/common/useSWRConfig';
+import { buildApiUrl } from '@/lib/utils';
+import { createSWRConfig } from '@/hooks/common/useSWRConfig';
+
+// SWR 配置选项类型
+interface SWRConfigOptions {
+  refreshInterval?: number | ((latestData: unknown) => number);
+  dedupingInterval?: number;
+  revalidateOnFocus?: boolean;
+  revalidateOnReconnect?: boolean;
+  revalidateIfStale?: boolean;
+  errorRetryCount?: number;
+  errorRetryInterval?: number;
+  shouldRetryOnError?: boolean;
+  keepPreviousData?: boolean;
+  suspense?: boolean;
+}
 
 const fetcher = async (url: string) => {
   const res = await fetch(url);
@@ -211,15 +226,14 @@ export interface CrossChainHistoricalResponse {
 export function useCrossChainComparison(
   symbol: string | null,
   chains?: string[],
-  options?: UseSWRConfigOptions
+  options?: SWRConfigOptions
 ) {
-  const queryParams = new URLSearchParams();
-  if (symbol) queryParams.set('symbol', symbol.toUpperCase());
-  if (chains && chains.length > 0) {
-    queryParams.set('chains', chains.join(','));
-  }
-
-  const url = symbol ? `/api/cross-chain/comparison?${queryParams.toString()}` : null;
+  const url = symbol
+    ? buildApiUrl('/api/cross-chain/comparison', {
+        symbol: symbol.toUpperCase(),
+        chains: chains?.length ? chains.join(',') : undefined,
+      })
+    : null;
 
   return useSWR<{ success: boolean; data: CrossChainComparisonResult }>(
     url,
@@ -231,15 +245,14 @@ export function useCrossChainComparison(
 export function useCrossChainArbitrage(
   symbol: string | null,
   threshold?: number,
-  options?: UseSWRConfigOptions
+  options?: SWRConfigOptions
 ) {
-  const queryParams = new URLSearchParams();
-  if (symbol) queryParams.set('symbol', symbol.toUpperCase());
-  if (threshold !== undefined && threshold !== null) {
-    queryParams.set('threshold', threshold.toString());
-  }
-
-  const url = symbol ? `/api/cross-chain/arbitrage?${queryParams.toString()}` : null;
+  const url = symbol
+    ? buildApiUrl('/api/cross-chain/arbitrage', {
+        symbol: symbol.toUpperCase(),
+        threshold,
+      })
+    : null;
 
   return useSWR<CrossChainArbitrageResponse>(
     url,
@@ -251,13 +264,14 @@ export function useCrossChainArbitrage(
 export function useCrossChainAlerts(
   symbol: string | null,
   severity?: string,
-  options?: UseSWRConfigOptions
+  options?: SWRConfigOptions
 ) {
-  const queryParams = new URLSearchParams();
-  if (symbol) queryParams.set('symbol', symbol.toUpperCase());
-  if (severity) queryParams.set('severity', severity);
-
-  const url = symbol ? `/api/cross-chain/alerts?${queryParams.toString()}` : null;
+  const url = symbol
+    ? buildApiUrl('/api/cross-chain/alerts', {
+        symbol: symbol.toUpperCase(),
+        severity,
+      })
+    : null;
 
   return useSWR<CrossChainDeviationAlertsResponse>(
     url,
@@ -267,7 +281,7 @@ export function useCrossChainAlerts(
 }
 
 export function useCrossChainDashboard(
-  options?: UseSWRConfigOptions
+  options?: SWRConfigOptions
 ) {
   return useSWR<CrossChainDashboardResponse>(
     '/api/cross-chain/dashboard',
@@ -283,17 +297,18 @@ export function useCrossChainHistory(
   interval: '1hour' | '1day' = '1day',
   page: number = 1,
   pageSize: number = 100,
-  options?: UseSWRConfigOptions
+  options?: SWRConfigOptions
 ) {
-  const queryParams = new URLSearchParams();
-  if (symbol) queryParams.set('symbol', symbol.toUpperCase());
-  queryParams.set('startTime', startTime.toISOString());
-  queryParams.set('endTime', endTime.toISOString());
-  queryParams.set('interval', interval);
-  queryParams.set('page', page.toString());
-  queryParams.set('pageSize', Math.min(pageSize, 1000).toString());
-
-  const url = symbol ? `/api/cross-chain/history?${queryParams.toString()}` : null;
+  const url = symbol
+    ? buildApiUrl('/api/cross-chain/history', {
+        symbol: symbol.toUpperCase(),
+        startTime: startTime.toISOString(),
+        endTime: endTime.toISOString(),
+        interval,
+        page,
+        pageSize: Math.min(pageSize, 1000),
+      })
+    : null;
 
   return useSWR<CrossChainHistoricalResponse>(
     url,

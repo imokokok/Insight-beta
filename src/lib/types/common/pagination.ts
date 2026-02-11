@@ -14,8 +14,6 @@ export interface PaginationParams {
   cursor?: string;
 }
 
-export type PaginationParamsInput = PaginationParams | { page?: number; limit?: number; cursor?: string };
-
 // ============================================================================
 // 分页元数据
 // ============================================================================
@@ -40,11 +38,6 @@ export interface PaginatedResult<T> {
   meta: PaginationMeta;
 }
 
-export interface PaginatedData<T> {
-  data: T[];
-  pagination: PaginationMeta;
-}
-
 // ============================================================================
 // 游标分页
 // ============================================================================
@@ -61,43 +54,6 @@ export interface CursorPaginatedResult<T> {
 }
 
 // ============================================================================
-// 偏移分页
-// ============================================================================
-
-export interface OffsetPaginationParams {
-  offset?: number;
-  limit?: number;
-}
-
-export interface OffsetPaginatedResult<T> {
-  items: T[];
-  total: number;
-  hasMore: boolean;
-}
-
-// ============================================================================
-// 分页状态
-// ============================================================================
-
-export interface PaginationState {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-  isLoading: boolean;
-  error: string | null;
-}
-
-export interface InfiniteScrollState<T> {
-  items: T[];
-  isLoading: boolean;
-  isLoadingMore: boolean;
-  hasMore: boolean;
-  error: string | null;
-  cursor: string | null;
-}
-
-// ============================================================================
 // 分页工具函数
 // ============================================================================
 
@@ -107,7 +63,7 @@ export function createPaginationMeta(
   total: number,
 ): PaginationMeta {
   const totalPages = Math.ceil(total / limit);
-  
+
   return {
     page,
     limit,
@@ -117,36 +73,4 @@ export function createPaginationMeta(
     hasPrev: page > 1,
     nextCursor: page < totalPages ? String(page + 1) : undefined,
   };
-}
-
-export function calculateOffset(page: number, limit: number): number {
-  return (page - 1) * limit;
-}
-
-export function getNextPage(meta: PaginationMeta): number | null {
-  return meta.hasNext ? meta.page + 1 : null;
-}
-
-export function getPreviousPage(meta: PaginationMeta): number | null {
-  return meta.hasPrev ? meta.page - 1 : null;
-}
-
-export function isValidPage(page: number, totalPages: number): boolean {
-  return page >= 1 && page <= totalPages;
-}
-
-// ============================================================================
-// 类型guards
-// ============================================================================
-
-export function isCursorPagination(
-  params: PaginationParamsInput,
-): params is CursorPaginationParams {
-  return 'cursor' in params && params.cursor !== undefined;
-}
-
-export function isOffsetPagination(
-  params: PaginationParamsInput,
-): params is OffsetPaginationParams {
-  return 'offset' in params && params.offset !== undefined;
 }

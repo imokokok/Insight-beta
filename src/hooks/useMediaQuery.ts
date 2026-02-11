@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 /**
  * 媒体查询 Hook - 用于响应式设计
@@ -99,50 +99,6 @@ export function useDeviceType(): DeviceType {
 }
 
 /**
- * 屏幕方向 Hook
- */
-export function useOrientation(): 'portrait' | 'landscape' {
-  const [orientation, setOrientation] = useState<'portrait' | 'landscape'>('portrait');
-
-  useEffect(() => {
-    const updateOrientation = () => {
-      setOrientation(
-        window.matchMedia('(orientation: portrait)').matches ? 'portrait' : 'landscape'
-      );
-    };
-
-    updateOrientation();
-
-    const mediaQuery = window.matchMedia('(orientation: portrait)');
-    mediaQuery.addEventListener('change', updateOrientation);
-
-    return () => {
-      mediaQuery.removeEventListener('change', updateOrientation);
-    };
-  }, []);
-
-  return orientation;
-}
-
-/**
- * 触摸设备检测
- */
-export function useIsTouchDevice(): boolean {
-  const [isTouch, setIsTouch] = useState(false);
-
-  useEffect(() => {
-    setIsTouch(
-      'ontouchstart' in window || 
-      navigator.maxTouchPoints > 0 ||
-      // @ts-expect-error - msMaxTouchPoints is for IE
-      navigator.msMaxTouchPoints > 0
-    );
-  }, []);
-
-  return isTouch;
-}
-
-/**
  * 视口尺寸 Hook
  */
 export function useViewportSize(): { width: number; height: number } {
@@ -163,35 +119,6 @@ export function useViewportSize(): { width: number; height: number } {
   }, []);
 
   return size;
-}
-
-/**
- * 安全区域 Hook (用于刘海屏手机)
- */
-export function useSafeAreaInsets(): {
-  top: number;
-  right: number;
-  bottom: number;
-  left: number;
-} {
-  const [insets, setInsets] = useState({ top: 0, right: 0, bottom: 0, left: 0 });
-
-  useEffect(() => {
-    // 检查是否支持 CSS env() 变量
-    const checkSafeArea = () => {
-      const styles = getComputedStyle(document.documentElement);
-      const top = parseInt(styles.getPropertyValue('--sat') || '0', 10);
-      const right = parseInt(styles.getPropertyValue('--sar') || '0', 10);
-      const bottom = parseInt(styles.getPropertyValue('--sab') || '0', 10);
-      const left = parseInt(styles.getPropertyValue('--sal') || '0', 10);
-      
-      setInsets({ top, right, bottom, left });
-    };
-
-    checkSafeArea();
-  }, []);
-
-  return insets;
 }
 
 /**

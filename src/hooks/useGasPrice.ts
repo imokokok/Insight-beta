@@ -2,6 +2,8 @@
 
 import useSWR from 'swr';
 
+import { buildApiUrl } from '@/lib/utils';
+
 import type { SWRConfiguration } from 'swr';
 
 const fetcher = async (url: string) => {
@@ -94,23 +96,21 @@ export interface GasPriceHealthResponse {
 }
 
 const DEFAULT_REFRESH_INTERVAL = 30000;
-const SWR_CONFIG: SWRConfiguration = {
+const SWR_CONFIG = {
   revalidateOnFocus: false,
   dedupingInterval: 5000,
   errorRetryCount: 3,
   errorRetryInterval: 3000,
-};
+} as const;
 
 export function useGasPrice(
   chain: string | null,
   provider?: string,
   options?: SWRConfiguration<{ ok: boolean; data: GasPriceData }>
 ) {
-  const queryParams = new URLSearchParams();
-  if (chain) queryParams.set('chain', chain);
-  if (provider) queryParams.set('provider', provider);
-
-  const url = chain ? `/api/gas/price?${queryParams.toString()}` : null;
+  const url = chain
+    ? buildApiUrl('/api/gas/price', { chain, provider })
+    : null;
 
   return useSWR<{ ok: boolean; data: GasPriceData }>(
     url,
@@ -127,12 +127,9 @@ export function useGasPrices(
   chains: string[],
   options?: SWRConfiguration<{ ok: boolean; data: GasPriceData[] }>
 ) {
-  const queryParams = new URLSearchParams();
-  if (chains.length > 0) {
-    queryParams.set('chains', chains.join(','));
-  }
-
-  const url = chains.length > 0 ? `/api/gas/prices?${queryParams.toString()}` : null;
+  const url = chains.length > 0
+    ? buildApiUrl('/api/gas/prices', { chains: chains.join(',') })
+    : null;
 
   return useSWR<{ ok: boolean; data: GasPriceData[] }>(
     url,
@@ -151,12 +148,9 @@ export function useGasPriceHistory(
   limit: number = 100,
   options?: SWRConfiguration<{ ok: boolean; data: GasPriceHistoryEntry[]; meta: { count: number; chain: string; provider?: string } }>
 ) {
-  const queryParams = new URLSearchParams();
-  if (chain) queryParams.set('chain', chain);
-  if (provider) queryParams.set('provider', provider);
-  queryParams.set('limit', limit.toString());
-
-  const url = chain ? `/api/gas/history?${queryParams.toString()}` : null;
+  const url = chain
+    ? buildApiUrl('/api/gas/history', { chain, provider, limit })
+    : null;
 
   return useSWR<{ ok: boolean; data: GasPriceHistoryEntry[]; meta: { count: number; chain: string; provider?: string } }>(
     url,
@@ -175,12 +169,9 @@ export function useGasPriceStatistics(
   priceLevel: 'slow' | 'average' | 'fast' | 'fastest' | null,
   options?: SWRConfiguration<{ ok: boolean; data: GasPriceStatistics }>
 ) {
-  const queryParams = new URLSearchParams();
-  if (chain) queryParams.set('chain', chain);
-  if (provider) queryParams.set('provider', provider);
-  if (priceLevel) queryParams.set('priceLevel', priceLevel);
-
-  const url = chain && provider && priceLevel ? `/api/gas/statistics?${queryParams.toString()}` : null;
+  const url = chain && provider && priceLevel
+    ? buildApiUrl('/api/gas/statistics', { chain, provider, priceLevel })
+    : null;
 
   return useSWR<{ ok: boolean; data: GasPriceStatistics }>(
     url,
@@ -198,11 +189,9 @@ export function useGasPriceTrend(
   priceLevel: 'slow' | 'average' | 'fast' | 'fastest' | null,
   options?: SWRConfiguration<{ ok: boolean; data: GasPriceTrend }>
 ) {
-  const queryParams = new URLSearchParams();
-  if (chain) queryParams.set('chain', chain);
-  if (priceLevel) queryParams.set('priceLevel', priceLevel);
-
-  const url = chain && priceLevel ? `/api/gas/trend?${queryParams.toString()}` : null;
+  const url = chain && priceLevel
+    ? buildApiUrl('/api/gas/trend', { chain, priceLevel })
+    : null;
 
   return useSWR<{ ok: boolean; data: GasPriceTrend }>(
     url,

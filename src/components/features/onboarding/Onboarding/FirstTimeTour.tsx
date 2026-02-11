@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight, Check, MapPin, Bell, Layers, Star } from 'lucide-react';
 
 import { useI18n } from '@/i18n/LanguageProvider';
-import { cn } from '@/lib/utils';
+import { cn, getStorageItem, setStorageItem } from '@/lib/utils';
 
 export interface TourStep {
   id: string;
@@ -76,7 +76,7 @@ export function FirstTimeTour({ isOpen, onComplete, onSkip, className }: FirstTi
     if (currentStep < tourSteps.length - 1) {
       setCurrentStep((prev) => prev + 1);
     } else {
-      localStorage.setItem(TOUR_STORAGE_KEY, 'true');
+      setStorageItem(TOUR_STORAGE_KEY, 'true');
       onComplete();
     }
   }, [currentStep, tourSteps.length, onComplete]);
@@ -90,7 +90,7 @@ export function FirstTimeTour({ isOpen, onComplete, onSkip, className }: FirstTi
 
 
   const handleSkip = useCallback(() => {
-    localStorage.setItem(TOUR_STORAGE_KEY, 'true');
+    setStorageItem(TOUR_STORAGE_KEY, 'true');
     onSkip();
   }, [onSkip]);
 
@@ -497,9 +497,9 @@ export function useFirstTimeTour() {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    const hasCompleted = localStorage.getItem(TOUR_STORAGE_KEY);
-    const hasCompletedOnboarding = localStorage.getItem('oracle-monitor-onboarding-completed');
-    
+    const hasCompleted = getStorageItem<string | null>(TOUR_STORAGE_KEY, null);
+    const hasCompletedOnboarding = getStorageItem<string | null>('oracle-monitor-onboarding-completed', null);
+
     // Only show tour if user has completed onboarding but hasn't seen the tour
     if (hasCompletedOnboarding && !hasCompleted) {
       setShowTour(true);
@@ -508,7 +508,7 @@ export function useFirstTimeTour() {
   }, []);
 
   const dismissTour = useCallback(() => {
-    localStorage.setItem(TOUR_STORAGE_KEY, 'true');
+    setStorageItem(TOUR_STORAGE_KEY, 'true');
     setShowTour(false);
   }, []);
 

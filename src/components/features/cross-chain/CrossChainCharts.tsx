@@ -266,8 +266,10 @@ export const CrossChainDeviationChart: React.FC<CrossChainDeviationChartProps> =
     );
   }
 
-  const maxDeviation = Math.max(...chartData.map((d) => d.deviation));
-  const threshold = 0.5;
+  const { maxDeviation, threshold } = useMemo(() => {
+    const max = Math.max(...chartData.map((d) => d.deviation));
+    return { maxDeviation: max, threshold: 0.5 };
+  }, [chartData]);
 
   const deviationTooltipFormatter = (value: string | number | undefined) => {
     const safeValue = typeof value === 'string' ? parseFloat(value) || 0 : value || 0;

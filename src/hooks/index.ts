@@ -48,3 +48,6 @@ export {
   useDeviceType,
   type DeviceType,
 } from './useMediaQuery';
+
+// Admin Token Hook
+export { useAdminToken, type UseAdminTokenOptions, type UseAdminTokenReturn } from './useAdminToken';
