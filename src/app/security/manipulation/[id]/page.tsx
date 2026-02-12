@@ -40,6 +40,21 @@ import { Textarea } from '@/components/ui/textarea';
 import { useI18n } from '@/i18n';
 import type { ManipulationDetection } from '@/lib/types/security/detection';
 import { cn } from '@/lib/utils';
+import {
+  StaggerContainer,
+  StaggerItem,
+  FadeIn,
+} from '@/components/common/AnimatedContainer';
+import {
+  Container,
+  Stack,
+  Row,
+} from '@/components/common/Layout';
+import {
+  ResponsivePadding,
+  MobileOnly,
+  DesktopOnly,
+} from '@/components/common/Responsive';
 
 
 

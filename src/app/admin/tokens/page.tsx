@@ -7,6 +7,21 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage } from '@/i18n/translations';
 import { fetchApiData, getErrorCode, copyToClipboard, formatTime, cn } from '@/lib/utils';
+import {
+  StaggerContainer,
+  StaggerItem,
+  FadeIn,
+} from '@/components/common/AnimatedContainer';
+import {
+  Container,
+  Stack,
+  Row,
+} from '@/components/common/Layout';
+import {
+  ResponsivePadding,
+  MobileOnly,
+  DesktopOnly,
+} from '@/components/common/Responsive';
 
 type AdminRole = 'root' | 'ops' | 'alerts' | 'viewer';
 

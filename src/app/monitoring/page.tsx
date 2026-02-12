@@ -7,6 +7,21 @@
 import { MonitoringDashboard } from '@/components/features/monitoring/MonitoringDashboard';
 
 import type { Metadata } from 'next';
+import {
+  StaggerContainer,
+  StaggerItem,
+  FadeIn,
+} from '@/components/common/AnimatedContainer';
+import {
+  Container,
+  Stack,
+  Row,
+} from '@/components/common/Layout';
+import {
+  ResponsivePadding,
+  MobileOnly,
+  DesktopOnly,
+} from '@/components/common/Responsive';
 
 export const metadata: Metadata = {
   title: 'Monitoring Dashboard | OracleMonitor',
