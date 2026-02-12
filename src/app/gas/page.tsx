@@ -13,6 +13,23 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useGasPrices, useGasPriceTrend, useGasPriceHealth, useWarmupGasCache } from '@/hooks/useGasPrice';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { cn } from '@/lib/utils';
+import {
+  StaggerContainer,
+  StaggerItem,
+  FadeIn,
+} from '@/components/common/AnimatedContainer';
+import {
+  Container,
+  DashboardGrid,
+  Stack,
+  Row,
+} from '@/components/common/Layout';
+import {
+  ResponsiveGrid,
+  ResponsivePadding,
+  MobileOnly,
+  DesktopOnly,
+} from '@/components/common/Responsive';
 
 
 const DEFAULT_CHAINS = ['ethereum', 'polygon', 'bsc', 'arbitrum', 'optimism', 'base'];
