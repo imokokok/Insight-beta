@@ -50,7 +50,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ErrorBanner } from '@/components/ui/error-banner';
 import { Input } from '@/components/ui/input';
-import { RefreshIndicator } from '@/components/ui/refresh-indicator';
+import { RefreshStrategyVisualizer } from '@/components/ui/refresh-strategy-visualizer';
 import {
   SkeletonList,
   StatCardSkeleton,
@@ -59,6 +59,7 @@ import {
 } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAutoRefreshLegacy, useDataCache } from '@/hooks';
+import { useAutoRefreshWithStats } from '@/hooks/use-auto-refresh-with-stats';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { logger } from '@/lib/logger';
 import { fetchApiData, cn, formatTime } from '@/lib/utils';
@@ -517,6 +518,19 @@ export default function DeviationAnalyticsPage() {
     report: DeviationReport;
   }>({ key: 'deviation_dashboard', ttl: 5 * 60 * 1000 });
 
+  // 刷新策略可视化
+  const {
+    strategy: refreshStrategy,
+    refreshHistory,
+    refreshStats,
+  } = useAutoRefreshWithStats({
+    pageId: 'analytics-deviation',
+    fetchFn: async () => {
+      // 这里只用于统计，实际刷新由 useAutoRefreshLegacy 控制
+    },
+    enabled: false,
+  });
+
   // Auto refresh
   const {
     isEnabled: autoRefreshEnabled,
@@ -677,9 +691,16 @@ export default function DeviationAnalyticsPage() {
               timeUntilRefresh={timeUntilRefresh}
             />
           </div>
-          <RefreshIndicator
+          <RefreshStrategyVisualizer
+            strategy={refreshStrategy}
             lastUpdated={lastUpdated}
             isRefreshing={loading}
+            onRefresh={refresh}
+            refreshHistory={refreshHistory}
+            refreshStats={refreshStats}
+            showHistory={true}
+            showStats={true}
+            compact={true}
           />
         </div>
       </div>

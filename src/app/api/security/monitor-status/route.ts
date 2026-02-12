@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server';
 
 import { logger } from '@/lib/logger';
 import { manipulationDetectionService } from '@/lib/services/manipulationDetectionService';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { query } from '@/server/db';
 import { apiSuccess, withErrorHandler } from '@/lib/utils';
 import { requireAdminWithToken } from '@/server/apiResponse';
 
@@ -13,19 +13,22 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
   const isRunning = manipulationDetectionService.isMonitoring();
   const activeMonitors: string[] = manipulationDetectionService.getActiveMonitors();
 
-  const supabase = supabaseAdmin;
-
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-  const { data: recentDetections, error } = await supabase
-    .from('manipulation_detections')
-    .select('id')
-    .gte('detected_at', oneHourAgo);
 
-  if (error) {
-    logger.error('Failed to fetch recent detections', { error: error.message });
+  let recentDetectionCount = 0;
+
+  try {
+    const result = await query(
+      `SELECT COUNT(*) as count FROM manipulation_detections WHERE detected_at >= $1`,
+      [oneHourAgo],
+    );
+
+    recentDetectionCount = parseInt(result.rows[0]?.count as string) || 0;
+  } catch (error) {
+    logger.error('Failed to fetch recent detections', {
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
-
-  const recentDetectionCount = recentDetections?.length || 0;
 
   let systemHealth: 'healthy' | 'degraded' | 'unhealthy' = 'healthy';
   if (recentDetectionCount > 10) {

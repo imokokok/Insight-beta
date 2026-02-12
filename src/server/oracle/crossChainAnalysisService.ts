@@ -1,13 +1,7 @@
-/**
- * Cross-Chain Analysis Service - 跨链价格分析服务
- *
- * 提供跨链价格对比、套利机会检测、价格偏差分析等功能
- */
-
 import { v4 as uuidv4 } from 'uuid';
 
 import { logger } from '@/lib/logger';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { query } from '@/server/db';
 import type {
   CrossChainAnalysisConfig,
   CrossChainArbitrageOpportunity,
@@ -21,16 +15,35 @@ import type { OracleProtocol, SupportedChain } from '@/lib/types/unifiedOracleTy
 
 import { gasPriceService } from '../gas/gasPriceService';
 
-import type { SupabaseClient } from '@supabase/supabase-js';
-
 const DEFAULT_TRADE_AMOUNT = 10000;
 
+interface PriceFeedRow {
+  chain: string;
+  protocol: string;
+  symbol: string;
+  price: string | number;
+  price_raw: string;
+  decimals: number;
+  timestamp: string;
+  confidence: number | null;
+  block_number: number | null;
+  tx_hash: string | null;
+  staleness_seconds: number | null;
+}
+
+interface CrossOracleComparisonRow {
+  timestamp: string;
+  avg_price: string | number;
+  median_price: string | number;
+  max_deviation: string | number;
+  max_deviation_chains: string | null;
+  price_range_percent: string | number;
+}
+
 export class CrossChainAnalysisService {
-  private supabase: SupabaseClient;
   private config: CrossChainAnalysisConfig;
 
   constructor(config?: Partial<CrossChainAnalysisConfig>) {
-    this.supabase = supabaseAdmin;
     this.config = {
       enabled: config?.enabled ?? true,
       symbols: config?.symbols ?? ['BTC', 'ETH', 'SOL'],
@@ -60,58 +73,67 @@ export class CrossChainAnalysisService {
       const targetChains = chains ?? this.config.chains;
       const targetProtocols = protocols ?? this.config.protocols;
 
-      const { data, error } = await this.supabase
-        .from('unified_price_feeds')
-        .select('*')
-        .eq('symbol', symbol.toUpperCase())
-        .in('chain', targetChains)
-        .in('protocol', targetProtocols)
-        .order('timestamp', { ascending: false });
+      const placeholders = targetChains.map((_, i) => `$${i + 3}`).join(', ');
+      const protocolPlaceholders = targetProtocols.map((_, i) => `$${targetChains.length + 3 + i}`).join(', ');
 
-      if (error) {
-        logger.error('Failed to fetch cross-chain prices', { error: error.message, symbol });
-        throw error;
-      }
+      const sql = `
+        SELECT DISTINCT ON (chain, protocol) 
+          chain, protocol, symbol, price, price_raw, decimals, timestamp, 
+          confidence, block_number, tx_hash, staleness_seconds
+        FROM unified_price_feeds
+        WHERE symbol = $1 
+          AND chain IN (${placeholders})
+          AND protocol IN (${protocolPlaceholders})
+        ORDER BY chain, protocol, timestamp DESC
+      `;
+
+      const params = [
+        symbol.toUpperCase(),
+        ...targetChains,
+        ...targetProtocols,
+      ];
+
+      const result = await query<PriceFeedRow>(sql, params);
 
       const chainProtocolMap = new Map<string, CrossChainPriceData>();
-      
-      for (const row of data ?? []) {
+
+      for (const row of result.rows) {
         const chain = row.chain as SupportedChain;
         const protocol = row.protocol as OracleProtocol;
         const key = `${chain}-${protocol}`;
         const timestamp = new Date(row.timestamp);
         const isStale = this.isStaleData(timestamp);
-        
+
         const existing = chainProtocolMap.get(key);
-        
+
         if (!existing || timestamp > new Date(existing.timestamp)) {
           chainProtocolMap.set(key, {
             chain,
             protocol,
             symbol: row.symbol,
-            price: parseFloat(row.price),
+            price: parseFloat(String(row.price)),
             priceRaw: row.price_raw,
             decimals: row.decimals,
             timestamp,
-            confidence: row.confidence,
-            blockNumber: row.block_number,
-            txHash: row.tx_hash,
+            confidence: row.confidence ?? undefined,
+            blockNumber: row.block_number ?? undefined,
+            txHash: row.tx_hash ?? undefined,
             isStale,
-            stalenessSeconds: row.staleness_seconds,
+            stalenessSeconds: row.staleness_seconds ?? undefined,
           });
         }
       }
 
-      const result = Array.from(chainProtocolMap.values());
-      
+      const priceData = Array.from(chainProtocolMap.values());
+
       logger.info('Fetched cross-chain prices', {
         symbol,
         chains: targetChains,
-        pricesCount: result.length,
-        staleCount: result.filter(p => p.isStale).length,
+        pricesCount: priceData.length,
+        staleCount: priceData.filter(p => p.isStale).length,
       });
 
-      return result;
+      return priceData;
     } catch (error) {
       logger.error('Error fetching cross-chain prices', {
         error: error instanceof Error ? error.message : String(error),
@@ -141,7 +163,7 @@ export class CrossChainAnalysisService {
   async comparePrices(symbol: string, chains?: SupportedChain[]): Promise<CrossChainComparisonResult> {
     try {
       const prices = await this.getCurrentPricesByChain(symbol, chains);
-      
+
       if (prices.length < 2) {
         throw new Error(`Need at least 2 chains for comparison, got ${prices.length}`);
       }
@@ -154,15 +176,15 @@ export class CrossChainAnalysisService {
       const priceValues = validPrices.map(p => p.price);
       const avgPrice = priceValues.reduce((a, b) => a + b, 0) / priceValues.length;
       const sortedPrices = [...priceValues].sort((a, b) => a - b);
-      
+
       if (sortedPrices.length === 0) {
         throw new Error('No price data available');
       }
-      
+
       const medianIndex = Math.floor(sortedPrices.length / 2);
       const medianPriceVal = sortedPrices[medianIndex];
-      const medianPrice: number = medianPriceVal !== undefined 
-        ? medianPriceVal 
+      const medianPrice: number = medianPriceVal !== undefined
+        ? medianPriceVal
         : (sortedPrices[medianIndex - 1] ?? avgPrice);
       const minPrice = sortedPrices[0]!;
       const maxPrice = sortedPrices[sortedPrices.length - 1]!;
@@ -179,7 +201,7 @@ export class CrossChainAnalysisService {
         const deviationFromAvgPercent = avgPrice > 0 ? (deviationFromAvg / avgPrice) * 100 : 0;
         const deviationFromMedian = p.price - medianPrice;
         const deviationFromMedianPercent = medianPrice > 0 ? (deviationFromMedian / medianPrice) * 100 : 0;
-        
+
         const isOutlier = Math.abs(deviationFromAvgPercent) > this.config.criticalDeviationThreshold;
 
         return {
@@ -198,7 +220,7 @@ export class CrossChainAnalysisService {
       const nonOutlierIndices = deviations
         .map((d, i) => (!d.isOutlier ? i : -1))
         .filter((i): i is number => i !== -1);
-      
+
       let mostReliableChain = validPrices[0]?.chain ?? 'ethereum';
       let highestConfidence = 0;
 
@@ -240,8 +262,8 @@ export class CrossChainAnalysisService {
         deviations,
         recommendations: {
           mostReliableChain,
-          reason: outliers.length === 0 
-            ? 'All prices within normal range' 
+          reason: outliers.length === 0
+            ? 'All prices within normal range'
             : `${outliers.length} chain(s) showing significant deviation: ${outliers.join(', ')}`,
           alternativeChains: validPrices
             .filter(p => p.chain !== mostReliableChain)
@@ -277,12 +299,12 @@ export class CrossChainAnalysisService {
       const opportunities: CrossChainArbitrageOpportunity[] = [];
 
       const prices = comparison.pricesByChain.filter(p => !p.isStale);
-      
+
       for (let i = 0; i < prices.length; i++) {
         for (let j = i + 1; j < prices.length; j++) {
           const buyData = prices[i];
           const sellData = prices[j];
-          
+
           if (!buyData || !sellData) continue;
 
           const lowerPrice = Math.min(buyData.price, sellData.price);
@@ -295,15 +317,15 @@ export class CrossChainAnalysisService {
 
           if (priceDiffPercent >= this.config.arbitrageThreshold) {
             const gasCostEstimate = await this.estimateGasCost(buy.chain, sell.chain);
-            
+
             const buyCostUsd = tradeAmount * buy.price;
             const sellRevenueUsd = tradeAmount * sell.price;
             const grossProfitUsd = sellRevenueUsd - buyCostUsd;
             const netProfitUsd = grossProfitUsd - gasCostEstimate;
             const netProfitPercent = buyCostUsd > 0 ? (netProfitUsd / buyCostUsd) * 100 : 0;
-            
-            const riskLevel = priceDiffPercent > 2.0 ? 'high' : 
-                             priceDiffPercent > 1.0 ? 'medium' : 'low';
+
+            const riskLevel = priceDiffPercent > 2.0 ? 'high' :
+              priceDiffPercent > 1.0 ? 'medium' : 'low';
 
             opportunities.push({
               id: uuidv4(),
@@ -394,7 +416,7 @@ export class CrossChainAnalysisService {
 
       const costA = gasCosts[chainA] ?? 0.5;
       const costB = gasCosts[chainB] ?? 0.5;
-      
+
       const isBridgeRequired = chainA !== chainB;
       const bridgeOverhead = isBridgeRequired ? 5.0 : 0;
 
@@ -517,13 +539,9 @@ export class CrossChainAnalysisService {
       let actionableCount = 0;
       let totalOpportunities = 0;
 
-      const comparisonResults = new Map<string, CrossChainComparisonResult>();
-
-      // P0 优化：使用 Promise.all 并行处理所有 symbol，避免 N+1 查询问题
       const symbolPromises = symbols.map(async (symbol) => {
         try {
           const comparison = await this.comparePrices(symbol);
-          comparisonResults.set(symbol, comparison);
 
           const priceComparison = {
             symbol,
@@ -532,11 +550,10 @@ export class CrossChainAnalysisService {
             status: (comparison.statistics.priceRangePercent > this.config.criticalDeviationThreshold
               ? 'critical'
               : comparison.statistics.priceRangePercent > this.config.deviationThreshold
-              ? 'warning'
-              : 'normal') as 'critical' | 'warning' | 'normal',
+                ? 'warning'
+                : 'normal') as 'critical' | 'warning' | 'normal',
           };
 
-          // 并行获取 alerts 和 opportunities
           const [alerts, opportunities] = await Promise.all([
             this.detectDeviationAlerts(symbol),
             this.detectArbitrageOpportunities(symbol),
@@ -571,10 +588,8 @@ export class CrossChainAnalysisService {
         }
       });
 
-      // 等待所有 symbol 处理完成
       const results = await Promise.all(symbolPromises);
 
-      // 聚合结果
       for (const result of results) {
         dashboardData.priceComparisons.push(result.priceComparison);
         dashboardData.activeAlerts += result.activeAlerts;
@@ -592,18 +607,18 @@ export class CrossChainAnalysisService {
       for (const chain of this.config.chains) {
         const firstSymbol = symbols[0];
         if (!firstSymbol) continue;
-        
+
         const latestPrice = await this.getLatestPriceByChain(firstSymbol, chain);
-        
+
         if (latestPrice) {
-          const stalenessMinutes = latestPrice.stalenessSeconds 
-            ? latestPrice.stalenessSeconds / 60 
+          const stalenessMinutes = latestPrice.stalenessSeconds
+            ? latestPrice.stalenessSeconds / 60
             : 0;
-          
+
           dashboardData.chainHealth.push({
             chain,
-            status: stalenessMinutes > 30 ? 'offline' : 
-                   stalenessMinutes > 5 ? 'degraded' : 'healthy',
+            status: stalenessMinutes > 30 ? 'offline' :
+              stalenessMinutes > 5 ? 'degraded' : 'healthy',
             lastPriceTimestamp: latestPrice.timestamp,
             staleMinutes: stalenessMinutes,
           });
@@ -640,37 +655,39 @@ export class CrossChainAnalysisService {
     interval: '1hour' | '1day' = '1day'
   ): Promise<CrossChainHistoricalAnalysis> {
     try {
-      const { data, error } = await this.supabase
-        .from('cross_oracle_comparisons')
-        .select('*')
-        .eq('symbol', symbol.toUpperCase())
-        .gte('timestamp', startTime.toISOString())
-        .lte('timestamp', endTime.toISOString())
-        .order('timestamp', { ascending: true })
-        .limit(1000);
+      const sql = `
+        SELECT * FROM cross_oracle_comparisons
+        WHERE symbol = $1
+          AND timestamp >= $2
+          AND timestamp <= $3
+        ORDER BY timestamp ASC
+        LIMIT 1000
+      `;
 
-      if (error && error.code !== 'PGRST116') {
-        throw error;
-      }
+      const result = await query<CrossOracleComparisonRow>(sql, [
+        symbol.toUpperCase(),
+        startTime.toISOString(),
+        endTime.toISOString(),
+      ]);
 
-      const dataPoints = (data ?? []).map(row => ({
+      const dataPoints = result.rows.map(row => ({
         timestamp: new Date(row.timestamp),
         pricesByChain: {} as Record<SupportedChain, number | null>,
-        avgPrice: parseFloat(row.avg_price) || 0,
-        medianPrice: parseFloat(row.median_price) || 0,
-        maxDeviation: Math.abs(parseFloat(row.max_deviation) || 0),
+        avgPrice: parseFloat(String(row.avg_price)) || 0,
+        medianPrice: parseFloat(String(row.median_price)) || 0,
+        maxDeviation: Math.abs(parseFloat(String(row.max_deviation)) || 0),
         maxDeviationChains: this.parseChainPair(row.max_deviation_chains),
       }));
 
       const deviations = dataPoints.map(d => d.maxDeviation);
-      const avgPriceRanges = (data ?? []).map(d => parseFloat(d.price_range_percent) || 0);
+      const avgPriceRanges = result.rows.map(d => parseFloat(String(d.price_range_percent)) || 0);
 
-      const avgPriceRangePercent = avgPriceRanges.length > 0 
-        ? avgPriceRanges.reduce((a, b) => a + b, 0) / avgPriceRanges.length 
+      const avgPriceRangePercent = avgPriceRanges.length > 0
+        ? avgPriceRanges.reduce((a, b) => a + b, 0) / avgPriceRanges.length
         : 0;
 
       const maxObservedDeviation = deviations.length > 0 ? Math.max(...deviations) : 0;
-      
+
       const volatilityByChain = new Map<SupportedChain, number[]>();
       dataPoints.forEach(dp => {
         Object.entries(dp.pricesByChain).forEach(([chain, price]) => {
@@ -708,7 +725,7 @@ export class CrossChainAnalysisService {
         mostStableChain = mostVolatileChain;
       }
 
-      const result: CrossChainHistoricalAnalysis = {
+      const analysisResult: CrossChainHistoricalAnalysis = {
         symbol,
         analysisType,
         startTime,
@@ -733,7 +750,7 @@ export class CrossChainAnalysisService {
         avgPriceRangePercent,
       });
 
-      return result;
+      return analysisResult;
     } catch (error) {
       logger.error('Error getting historical analysis', {
         error: error instanceof Error ? error.message : String(error),

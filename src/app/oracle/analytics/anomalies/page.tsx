@@ -41,7 +41,7 @@ import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { ChartCard } from '@/components/common/ChartCard';
 import { ToastContainer, useToast } from '@/components/common/DashboardToast';
 import { PageHeader } from '@/components/common/PageHeader';
-import { EmptyAnomalyState, EmptySearchState } from '@/components/ui';
+import { EmptyAnomalyState, EmptySearchState, RefreshStrategyVisualizer } from '@/components/ui';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -51,6 +51,7 @@ import { Progress } from '@/components/ui/progress';
 import { ChartSkeleton, SkeletonList } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAutoRefreshLegacy, useDataCache } from '@/hooks';
+import { useAutoRefreshWithStats } from '@/hooks/use-auto-refresh-with-stats';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { logger } from '@/lib/logger';
 import { fetchApiData, cn, formatTime } from '@/lib/utils';
@@ -518,6 +519,19 @@ export default function AnomalyDetectionPage() {
     stats: AnomalyStats;
   }>({ key: 'anomaly_dashboard', ttl: 5 * 60 * 1000 });
 
+  // 刷新策略可视化
+  const {
+    strategy: refreshStrategy,
+    refreshHistory,
+    refreshStats,
+  } = useAutoRefreshWithStats({
+    pageId: 'analytics-overview',
+    fetchFn: async () => {
+      // 这里只用于统计，实际刷新由 useAutoRefreshLegacy 控制
+    },
+    enabled: false,
+  });
+
   // Auto refresh
   const {
     isEnabled: autoRefreshEnabled,
@@ -740,13 +754,26 @@ export default function AnomalyDetectionPage() {
         exportDisabled={!stats}
         loading={loading}
         extraActions={
-          <AutoRefreshControl
-            isEnabled={autoRefreshEnabled}
-            onToggle={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
-            interval={refreshInterval}
-            onIntervalChange={setRefreshInterval}
-            timeUntilRefresh={timeUntilRefresh}
-          />
+          <div className="flex items-center gap-3">
+            <RefreshStrategyVisualizer
+              strategy={refreshStrategy}
+              lastUpdated={lastUpdated}
+              isRefreshing={loading}
+              onRefresh={refresh}
+              refreshHistory={refreshHistory}
+              refreshStats={refreshStats}
+              showHistory={true}
+              showStats={true}
+              compact={true}
+            />
+            <AutoRefreshControl
+              isEnabled={autoRefreshEnabled}
+              onToggle={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
+              interval={refreshInterval}
+              onIntervalChange={setRefreshInterval}
+              timeUntilRefresh={timeUntilRefresh}
+            />
+          </div>
         }
       />
 

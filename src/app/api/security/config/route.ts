@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
-import { supabaseAdmin, SUPABASE_ERROR_CODES } from '@/lib/supabase/server';
+import { query } from '@/server/db';
 import { requireAdminWithToken } from '@/server/apiResponse';
 
 interface ConfigRow {
@@ -40,19 +40,22 @@ export async function GET(request: NextRequest) {
     const auth = await requireAdminWithToken(request, { strict: false });
     if (auth) return auth;
 
-    const supabase = supabaseAdmin;
+    let config = DEFAULT_CONFIG;
 
-    const { data, error } = await supabase
-      .from('detection_config')
-      .select('config')
-      .eq('id', 'default')
-      .single();
+    try {
+      const result = await query<ConfigRow>(
+        `SELECT config FROM detection_config WHERE id = $1 LIMIT 1`,
+        ['default'],
+      );
 
-    if (error && error.code !== SUPABASE_ERROR_CODES.NO_DATA) {
-      logger.error('Failed to fetch detection config', { error: error.message });
+      if (result.rows.length > 0 && result.rows[0]?.config) {
+        config = result.rows[0].config as typeof DEFAULT_CONFIG;
+      }
+    } catch (error) {
+      logger.error('Failed to fetch detection config', {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
-
-    const config = (data as ConfigRow | null)?.config || DEFAULT_CONFIG;
 
     return NextResponse.json({ config });
   } catch (error) {
@@ -74,18 +77,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing config in request body' }, { status: 400 });
     }
 
-    const supabase = supabaseAdmin;
-
-    const { error } = await supabase.from('detection_config').upsert({
-      id: 'default',
-      config,
-      updated_at: new Date().toISOString(),
-    });
-
-    if (error) {
-      logger.error('Failed to save detection config', { error: error.message });
-      return NextResponse.json({ error: 'Failed to save configuration' }, { status: 500 });
-    }
+    await query(
+      `INSERT INTO detection_config (id, config, updated_at)
+       VALUES ($1, $2, NOW())
+       ON CONFLICT (id) 
+       DO UPDATE SET config = $2, updated_at = NOW()`,
+      ['default', JSON.stringify(config)],
+    );
 
     logger.info('Detection configuration updated');
 

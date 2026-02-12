@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server';
 
 import { logger } from '@/lib/logger';
 import { manipulationDetectionService } from '@/lib/services/manipulationDetectionService';
-import { supabaseAdmin, SUPABASE_ERROR_CODES } from '@/lib/supabase/server';
+import { query } from '@/server/db';
 import { apiSuccess, withErrorHandler } from '@/lib/utils';
 import { requireAdminWithToken } from '@/server/apiResponse';
 
@@ -21,38 +21,47 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
 
   const serviceMetrics = manipulationDetectionService.getMetrics();
 
-  const supabase = supabaseAdmin;
+  let dbData: MetricsRow | null = null;
+  let dbError = false;
 
-  const { data: dbMetrics, error } = await supabase
-    .from('detection_metrics')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single();
+  try {
+    const result = await query<MetricsRow>(`
+      SELECT * FROM detection_metrics
+      ORDER BY created_at DESC
+      LIMIT 1
+    `);
 
-  if (error && error.code !== SUPABASE_ERROR_CODES.NO_DATA) {
-    logger.error('Failed to fetch metrics from database', { error: error.message });
+    if (result.rows.length > 0) {
+      dbData = result.rows[0] ?? null;
+    }
+  } catch (error) {
+    dbError = true;
+    logger.error('Failed to fetch metrics from database', {
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
 
-  const dbData = dbMetrics as MetricsRow | null;
-  const useDbMetrics = dbData && !error;
+  if (dbData && !dbError) {
+    return apiSuccess({
+      metrics: {
+        totalDetections: dbData.total_detections,
+        detectionsByType: dbData.detections_by_type,
+        detectionsBySeverity: dbData.detections_by_severity,
+        falsePositives: dbData.false_positives,
+        averageConfidence: dbData.average_confidence,
+        lastDetectionTime: dbData.last_detection_time,
+      },
+    });
+  }
 
   return apiSuccess({
     metrics: {
-      totalDetections: useDbMetrics ? dbData.total_detections : serviceMetrics.totalDetections,
-      detectionsByType: useDbMetrics
-        ? dbData.detections_by_type
-        : serviceMetrics.detectionsByType,
-      detectionsBySeverity: useDbMetrics
-        ? dbData.detections_by_severity
-        : serviceMetrics.detectionsBySeverity,
-      falsePositives: useDbMetrics ? dbData.false_positives : serviceMetrics.falsePositives,
-      averageConfidence: useDbMetrics
-        ? dbData.average_confidence
-        : serviceMetrics.averageConfidence,
-      lastDetectionTime: useDbMetrics
-        ? dbData.last_detection_time
-        : serviceMetrics.lastDetectionTime,
+      totalDetections: serviceMetrics.totalDetections,
+      detectionsByType: serviceMetrics.detectionsByType,
+      detectionsBySeverity: serviceMetrics.detectionsBySeverity,
+      falsePositives: serviceMetrics.falsePositives,
+      averageConfidence: serviceMetrics.averageConfidence,
+      lastDetectionTime: serviceMetrics.lastDetectionTime,
     },
   });
 });

@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
 import { manipulationDetectionService } from '@/lib/services/manipulationDetectionService';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { query } from '@/server/db';
 import type { OracleProtocol, SupportedChain } from '@/lib/types';
 import { requireAdminWithToken } from '@/server/apiResponse';
 
@@ -31,17 +31,21 @@ export async function POST(request: NextRequest) {
     await manipulationDetectionService.initialize();
 
     if (allFeeds) {
-      const supabase = supabaseAdmin;
-      const { data: feeds, error } = await supabase
-        .from('unified_price_feeds')
-        .select('protocol, symbol, chain');
+      let feeds: FeedRow[] = [];
 
-      if (error) {
-        logger.error('Failed to fetch feeds', { error: error.message });
+      try {
+        const result = await query<FeedRow>(
+          `SELECT protocol, symbol, chain FROM unified_price_feeds`,
+        );
+        feeds = result.rows;
+      } catch (error) {
+        logger.error('Failed to fetch feeds', {
+          error: error instanceof Error ? error.message : String(error),
+        });
         return NextResponse.json({ error: 'Failed to fetch feeds' }, { status: 500 });
       }
 
-      for (const feed of (feeds as FeedRow[]) || []) {
+      for (const feed of feeds) {
         await manipulationDetectionService.startMonitoring(
           feed.protocol as OracleProtocol,
           feed.symbol,
@@ -52,7 +56,7 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        message: `Started monitoring ${feeds?.length || 0} feeds`,
+        message: `Started monitoring ${feeds.length} feeds`,
       });
     }
 

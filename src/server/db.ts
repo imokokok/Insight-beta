@@ -1,7 +1,9 @@
 import pg from 'pg';
 
-import { DATABASE_CONFIG } from '@/lib/config/constants';
 import { logger } from '@/lib/logger';
+import { env } from '@/lib/config/env';
+
+import type { Database } from '@/types/supabase';
 
 const { Pool } = pg;
 
@@ -9,90 +11,69 @@ const globalForDb = globalThis as unknown as {
   conn: pg.Pool | undefined;
 };
 
-function getDbUrl() {
-  if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
+function getDbUrl(): string | null {
+  if (process.env.DATABASE_URL) {
+    return process.env.DATABASE_URL;
+  }
+  
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = env.SUPABASE_SERVICE_ROLE_KEY;
+  
+  if (supabaseUrl && supabaseKey) {
+    try {
+      const url = new URL(supabaseUrl);
+      const projectRef = url.hostname.split('.')[0];
+      return `postgresql://postgres:${supabaseKey}@db.${projectRef}.supabase.co:5432/postgres`;
+    } catch {
+      return null;
+    }
+  }
+  
   return null;
 }
 
-export function getDatabaseUrl() {
+export function getDatabaseUrl(): string | null {
   return getDbUrl();
 }
 
-export function hasDatabase() {
+export function hasDatabase(): boolean {
   return Boolean(getDbUrl());
 }
 
-const poolConfig = {
+const poolConfig: pg.PoolConfig = {
   connectionString: getDbUrl() || undefined,
-  max: Math.max(
-    10,
-    Math.min(100, Number(process.env.INSIGHT_DB_POOL_SIZE) || DATABASE_CONFIG.DEFAULT_POOL_SIZE),
-  ),
-  min: Math.max(2, Math.min(10, Number(process.env.INSIGHT_DB_MIN_POOL) || 5)),
-  idleTimeoutMillis: Math.max(
-    10000,
-    Number(process.env.INSIGHT_DB_IDLE_TIMEOUT) || DATABASE_CONFIG.DEFAULT_IDLE_TIMEOUT,
-  ),
-  connectionTimeoutMillis: Math.max(
-    DATABASE_CONFIG.DEFAULT_CONNECTION_TIMEOUT,
-    Number(process.env.INSIGHT_DB_CONNECTION_TIMEOUT) || 10000,
-  ),
-  acquireTimeoutMillis: Math.max(5000, Number(process.env.INSIGHT_DB_ACQUIRE_TIMEOUT) || 10000),
-  maxUses: Math.max(
-    1000,
-    Number(process.env.INSIGHT_DB_MAX_USES) || DATABASE_CONFIG.DEFAULT_MAX_USES,
-  ),
+  max: 20,
+  min: 2,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 10000,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : false,
-  statement_timeout: Math.max(5000, Number(process.env.INSIGHT_DB_STATEMENT_TIMEOUT) || 30000),
-  query_timeout: Math.max(5000, Number(process.env.INSIGHT_DB_QUERY_TIMEOUT) || 30000),
-  keepAlive: true,
-  keepAliveInitialDelayMillis: 10000,
+  statement_timeout: 30000,
+  query_timeout: 30000,
   application_name: `oracle-monitor-${process.env.NODE_ENV || 'development'}`,
-  preparedStatements: true,
 };
 
 export const db = globalForDb.conn ?? new Pool(poolConfig);
 
 if (process.env.NODE_ENV !== 'production') globalForDb.conn = db;
 
-interface DatabaseError extends Error {
-  message: string;
-  code?: string;
-  stack?: string;
-}
-
-interface PoolClient {
-  on(event: string, listener: (...args: unknown[]) => void): void;
-}
-
-if (typeof (db as unknown as { on?: unknown }).on === 'function') {
-  (db as unknown as PoolClient).on('error', (err: unknown) => {
-    const errorObj = err instanceof Error ? (err as DatabaseError) : { message: String(err) };
-    logger.error('Unexpected database pool error', {
-      error: errorObj.message,
-      code: (errorObj as DatabaseError).code,
-    });
-  });
-  (db as unknown as PoolClient).on('connect', () => {
-    logger.debug('New database connection established');
-  });
-  (db as unknown as PoolClient).on('acquire', () => {
-    logger.trace('Connection acquired from pool');
-  });
-  (db as unknown as PoolClient).on('release', () => {
-    logger.trace('Connection released back to pool');
-  });
-}
-
 export type QueryResultRow = pg.QueryResultRow;
 
-export async function query<T extends pg.QueryResultRow>(
+export interface QueryResult<T extends QueryResultRow = QueryResultRow> {
+  rows: T[];
+  rowCount: number | null;
+  command: string;
+  oid: number;
+  fields: pg.FieldDef[];
+}
+
+export async function query<T extends QueryResultRow = QueryResultRow>(
   text: string,
   params?: (string | number | boolean | Date | null | undefined | string[] | number[])[],
-) {
+): Promise<QueryResult<T>> {
   if (!getDbUrl()) {
     throw new Error('missing_database_url');
   }
+  
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 5000);
 
@@ -123,16 +104,12 @@ export async function query<T extends pg.QueryResultRow>(
   }
 }
 
-export async function getClient() {
+export async function getClient(): Promise<pg.PoolClient> {
   if (!getDbUrl()) {
     throw new Error('missing_database_url');
   }
   return db.connect();
 }
-
-// ============================================================================
-// 连接池健康检查
-// ============================================================================
 
 export interface PoolHealthStatus {
   status: 'healthy' | 'degraded' | 'unhealthy';
@@ -173,7 +150,6 @@ export async function checkPoolHealth(): Promise<PoolHealthStatus> {
 
   let status: 'healthy' | 'degraded' | 'unhealthy' = 'healthy';
 
-  // 检查等待客户端数量
   if (stats.waitingCount > 5) {
     issues.push(`High waiting clients: ${stats.waitingCount}`);
     status = 'degraded';
@@ -184,24 +160,21 @@ export async function checkPoolHealth(): Promise<PoolHealthStatus> {
     status = 'unhealthy';
   }
 
-  // 检查连接池利用率
   const utilizationRate = stats.totalCount > 0 ? (stats.totalCount - stats.idleCount) / stats.totalCount : 0;
   if (utilizationRate > 0.9) {
     issues.push(`High pool utilization: ${(utilizationRate * 100).toFixed(1)}%`);
     if (status === 'healthy') status = 'degraded';
   }
 
-  // 检查是否所有连接都在使用
   if (stats.totalCount > 0 && stats.idleCount === 0) {
     issues.push('No idle connections available');
     if (status === 'healthy') status = 'degraded';
   }
 
-  // 尝试执行简单查询验证连接
   if (getDbUrl()) {
     try {
       await query('SELECT 1');
-    } catch (error) {
+    } catch {
       issues.push('Database ping failed');
       status = 'unhealthy';
     }
@@ -250,10 +223,6 @@ export function stopHealthCheck(): void {
   }
 }
 
-// ============================================================================
-// 优雅关闭
-// ============================================================================
-
 let isShuttingDown = false;
 
 export async function gracefulShutdown(timeoutMs: number = 10000): Promise<void> {
@@ -291,10 +260,6 @@ export function isPoolShuttingDown(): boolean {
   return isShuttingDown;
 }
 
-// ============================================================================
-// 进程信号处理（自动优雅关闭）
-// ============================================================================
-
 if (typeof process !== 'undefined' && process.on) {
   const handleShutdown = async (signal: string) => {
     logger.info(`Received ${signal}, initiating graceful shutdown...`);
@@ -312,3 +277,5 @@ if (typeof process !== 'undefined' && process.on) {
   process.on('SIGTERM', () => handleShutdown('SIGTERM'));
   process.on('SIGINT', () => handleShutdown('SIGINT'));
 }
+
+export type { Database };

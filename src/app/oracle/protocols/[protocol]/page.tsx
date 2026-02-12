@@ -14,14 +14,12 @@ import {
 } from '@/components/features/protocol/FeedTable';
 import type { ProtocolComparisonData } from '@/components/features/protocol/ProtocolComparison';
 import { ProtocolPageLayout } from '@/components/features/protocol/ProtocolPageLayout';
-import { Button, StatusBadge } from '@/components/ui';
+import { Button, StatusBadge, RefreshStrategyVisualizer } from '@/components/ui';
 import { Card, CardContent } from '@/components/ui/card';
 import { ErrorBanner } from '@/components/ui/error-banner';
 import { Progress } from '@/components/ui/progress';
-import { RefreshIndicator } from '@/components/ui/refresh-indicator';
 import { ChartSkeleton } from '@/components/ui/skeleton';
-import { getRefreshStrategy } from '@/config/refresh-strategy';
-import { useAutoRefresh } from '@/hooks/use-auto-refresh';
+import { useAutoRefreshWithStats } from '@/hooks/use-auto-refresh-with-stats';
 import { logger } from '@/lib/logger';
 import { getProtocolConfig } from '@/lib/protocol-config';
 import { ORACLE_PROTOCOLS, type OracleProtocol } from '@/lib/types';
@@ -98,8 +96,16 @@ export default function UnifiedProtocolPage() {
   }, [protocol]);
 
   // 使用新的自动刷新 hook，配置为 30 秒刷新策略
-  const protocolStrategy = getRefreshStrategy('protocol-detail');
-  const { lastUpdated, isRefreshing, isError, error, refresh } = useAutoRefresh({
+  const {
+    lastUpdated,
+    isRefreshing,
+    isError,
+    error,
+    refresh,
+    strategy,
+    refreshHistory,
+    refreshStats,
+  } = useAutoRefreshWithStats({
     pageId: 'protocol-detail',
     fetchFn: useCallback(async () => {
       try {
@@ -495,13 +501,18 @@ export default function UnifiedProtocolPage() {
         />
       )}
 
-      {/* 刷新指示器 */}
+      {/* 刷新策略可视化 */}
       <div className="flex justify-end px-4">
-        <RefreshIndicator
+        <RefreshStrategyVisualizer
+          strategy={strategy}
           lastUpdated={lastUpdated}
           isRefreshing={isRefreshing}
-          strategy={protocolStrategy}
           onRefresh={refresh}
+          refreshHistory={refreshHistory}
+          refreshStats={refreshStats}
+          showHistory={true}
+          showStats={true}
+          compact={true}
         />
       </div>
 

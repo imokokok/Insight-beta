@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { query } from '@/server/db';
 import { requireAdminWithToken } from '@/server/apiResponse';
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -21,21 +21,15 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       );
     }
 
-    const supabase = supabaseAdmin;
+    const result = await query(
+      `UPDATE manipulation_detections 
+       SET status = $1, notes = $2, reviewed_at = NOW(), reviewed_by = $3
+       WHERE id = $4`,
+      [status, notes, 'system', id],
+    );
 
-    const { error } = await supabase
-      .from('manipulation_detections')
-      .update({
-        status,
-        notes,
-        reviewed_at: new Date().toISOString(),
-        reviewed_by: 'system',
-      })
-      .eq('id', id);
-
-    if (error) {
-      logger.error('Failed to update detection review', { error: error.message });
-      return NextResponse.json({ error: 'Failed to update detection' }, { status: 500 });
+    if (result.rowCount === 0) {
+      return NextResponse.json({ error: 'Detection not found' }, { status: 404 });
     }
 
     return NextResponse.json({

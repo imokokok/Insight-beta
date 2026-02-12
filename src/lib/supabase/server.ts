@@ -1,8 +1,10 @@
 /**
  * Supabase Server Client
  *
- * Server-side Supabase client for API routes and server functions
- * 使用 Service Role Key 进行服务端操作
+ * 仅用于 Supabase 特有功能：
+ * - Realtime 订阅 (alerts/stream)
+ *
+ * 常规数据库操作请使用 @/server/db 中的 query 函数
  */
 
 import { createClient } from '@supabase/supabase-js';
@@ -21,9 +23,6 @@ export const SUPABASE_ERROR_CODES = {
   FOREIGN_KEY_VIOLATION: '23503',
 } as const;
 
-/**
- * 创建 Mock Supabase 客户端（使用 Proxy 实现）
- */
 function createMockClient(): TypedSupabaseClient {
   const createMockChain = () => {
     const chain: Record<string, unknown> = {};
@@ -87,8 +86,10 @@ function createMockClient(): TypedSupabaseClient {
 }
 
 /**
- * 创建服务端 Supabase 客户端（使用 Service Role Key）
- * 用于：API Routes、Server Actions、Background Jobs
+ * 创建服务端 Supabase 客户端
+ * 
+ * 注意：此客户端仅用于 Realtime 订阅等 Supabase 特有功能
+ * 常规数据库操作请使用 @/server/db 中的 query 函数
  */
 export function createSupabaseClient(): TypedSupabaseClient {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -114,6 +115,8 @@ export function createSupabaseClient(): TypedSupabaseClient {
 
 /**
  * 服务端 Supabase 客户端单例
- * 在服务端代码中直接使用此实例
+ * 
+ * 用途：Realtime 订阅 (alerts/stream)
+ * 常规数据库操作请使用 @/server/db 中的 query 函数
  */
 export const supabaseAdmin = createSupabaseClient();

@@ -35,6 +35,7 @@ import {
 } from '@/components/charts';
 import { ChartCard } from '@/components/common/ChartCard';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
+import { DashboardPageHeader } from '@/components/common/PageHeader';
 import {
   EnhancedStatCard,
   StatCardGroup,
@@ -45,12 +46,12 @@ import { ThreatLevelBadge } from '@/components/security';
 import {
   EmptySecurityState,
   LoadingOverlay,
+  RefreshStrategyVisualizer,
 } from '@/components/ui';
-import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useIsMobile } from '@/hooks';
-import { useAutoRefresh } from '@/hooks/use-auto-refresh';
+import { useAutoRefreshWithStats } from '@/hooks/use-auto-refresh-with-stats';
 import { cn, formatNumber } from '@/lib/utils';
 
 const EnhancedAreaChart = dynamic(
@@ -231,7 +232,14 @@ export default function OptimizedSecurityDashboard() {
     // setStats(data);
   }, []);
 
-  const { isRefreshing, refresh } = useAutoRefresh({
+  const {
+    isRefreshing,
+    refresh,
+    lastUpdated,
+    strategy,
+    refreshHistory,
+    refreshStats,
+  } = useAutoRefreshWithStats({
     pageId: 'security-dashboard',
     fetchFn: fetchSecurityData,
     enabled: true,
@@ -307,28 +315,26 @@ export default function OptimizedSecurityDashboard() {
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50/50">
       <main className="flex flex-1 flex-col overflow-hidden">
-        <header className="border-b border-gray-200/50 bg-white/80 px-4 py-3 backdrop-blur-sm lg:px-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-bold text-gray-900 lg:text-2xl">Security Operations Center</h1>
-              <p className="text-muted-foreground hidden text-sm sm:block">
-                Threat detection and security monitoring
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <ThreatLevelBadge level="high" count={stats.highRiskCount} />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={refresh}
-                disabled={isRefreshing}
-                aria-busy={isRefreshing}
-              >
-                {isRefreshing ? 'Refreshing...' : 'Refresh'}
-              </Button>
-            </div>
-          </div>
-        </header>
+        <DashboardPageHeader
+          title="Security Operations Center"
+          description="Threat detection and security monitoring"
+          icon={<Shield className="h-5 w-5 text-purple-600" />}
+          statusBadge={<ThreatLevelBadge level="high" count={stats.highRiskCount} />}
+          refreshControl={
+            <RefreshStrategyVisualizer
+              strategy={strategy}
+              lastUpdated={lastUpdated}
+              isRefreshing={isRefreshing}
+              onRefresh={refresh}
+              refreshHistory={refreshHistory}
+              refreshStats={refreshStats}
+              showHistory={true}
+              showStats={true}
+              compact={isMobile}
+            />
+          }
+          showMobileMenu={false}
+        />
 
         <div className="flex-1 overflow-y-auto p-2 sm:p-3 lg:p-4 relative">
           {isRefreshing && (

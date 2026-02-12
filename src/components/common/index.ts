@@ -29,7 +29,15 @@ export {
 export { ChartCard, ChartCardSkeleton } from './ChartCard';
 
 // ==================== 页面布局组件 ====================
-export { PageHeader, PageHeaderSkeleton } from './PageHeader';
+export {
+  PageHeader,
+  PageHeaderSkeleton,
+  DashboardPageHeader,
+  DashboardPageHeaderSkeleton,
+  type BreadcrumbItem,
+  type PageHeaderProps,
+  type DashboardPageHeaderProps,
+} from './PageHeader';
 export { EnhancedSidebar, defaultNavConfig } from './EnhancedSidebar';
 
 // ==================== 交互组件 ====================

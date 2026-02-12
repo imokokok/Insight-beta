@@ -1,25 +1,11 @@
-/**
- * Unified Price Service
- *
- * Provides a unified price data access interface, replacing multiple legacy services:
- * - Replaces priceHistoryService
- * - Replaces unified_price_feeds queries
- * - Supports partitioned tables and materialized view queries
- */
-
 import { translations } from '@/i18n/translations';
 import { logger } from '@/lib/logger';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { query } from '@/server/db';
 import type { OracleProtocol, SupportedChain } from '@/lib/types/unifiedOracleTypes';
 
-import type { SupabaseClient } from '@supabase/supabase-js';
-
-// Default language for server-side messages
 const DEFAULT_LANG: keyof typeof translations = 'en';
 
-// Helper function to get translated message
 function t(key: string, values?: Record<string, string>): string {
-  // Only allow specific translation keys to prevent object injection
   const allowedKeys = [
     'errors.failedToFetchPriceHistory',
     'errors.failedToFetchOhlcvData',
@@ -48,7 +34,7 @@ function t(key: string, values?: Record<string, string>): string {
     if (result && typeof result === 'object' && Object.prototype.hasOwnProperty.call(result, k)) {
       result = (result as Record<string, unknown>)[k];
     } else {
-      return key; // Return key if translation not found
+      return key;
     }
   }
 
@@ -56,7 +42,6 @@ function t(key: string, values?: Record<string, string>): string {
     return key;
   }
 
-  // Simple interpolation with safe replacement
   if (values) {
     return result.replace(/\{\{(\w+)\}\}/g, (substring: string, match: string) => {
       return Object.prototype.hasOwnProperty.call(values, match)
@@ -67,10 +52,6 @@ function t(key: string, values?: Record<string, string>): string {
 
   return result;
 }
-
-// ============================================================================
-// Type Definitions
-// ============================================================================
 
 export interface PriceHistoryRecord {
   id: number;
@@ -129,7 +110,6 @@ export interface PriceStats {
   first: number;
   last: number;
   change: number;
-  /** Price change percentage in decimal form (e.g., 0.01 = 1%) */
   changePercent: number;
   volatility: number;
   count: number;
@@ -166,7 +146,6 @@ export interface PriceUpdateEvent {
   previousPrice?: number;
   currentPrice: number;
   priceChange?: number;
-  /** Price change percentage in decimal form (e.g., 0.01 = 1%) */
   priceChangePercent?: number;
   timestamp: Date;
   blockNumber?: number;
@@ -174,141 +153,190 @@ export interface PriceUpdateEvent {
   createdAt: Date;
 }
 
-// ============================================================================
-// Unified Price Service
-// ============================================================================
+interface PriceHistoryRow {
+  id: number;
+  feed_id: string;
+  protocol: string;
+  chain: string;
+  symbol: string;
+  base_asset: string;
+  quote_asset: string;
+  price: number;
+  price_raw: string;
+  decimals: number;
+  timestamp: string;
+  block_number: number | null;
+  confidence: number | null;
+  sources: number | null;
+  is_stale: boolean | null;
+  staleness_seconds: number | null;
+  tx_hash: string | null;
+  log_index: number | null;
+  volume_24h: number | null;
+  change_24h: number | null;
+  created_at: string;
+}
+
+interface OHLCVRow {
+  timestamp: string;
+  price_open: number;
+  price_high: number;
+  price_low: number;
+  price_close: number;
+  volume: number | null;
+  sample_count: number;
+  avg_confidence: number | null;
+}
+
+interface CurrentPriceFeedRow {
+  id: number;
+  feed_id: string;
+  protocol: string;
+  chain: string;
+  symbol: string;
+  base_asset: string;
+  quote_asset: string;
+  price: number;
+  price_raw: string;
+  decimals: number;
+  timestamp: string;
+  block_number: number | null;
+  confidence: number | null;
+  sources: number | null;
+  is_stale: boolean | null;
+  staleness_seconds: number | null;
+  tx_hash: string | null;
+  log_index: number | null;
+  created_at: string;
+}
+
+interface PriceUpdateEventRow {
+  id: number;
+  feed_id: string;
+  protocol: string;
+  chain: string;
+  symbol: string;
+  previous_price: number | null;
+  current_price: number;
+  price_change: number | null;
+  price_change_percent: number | null;
+  timestamp: string;
+  block_number: number | null;
+  tx_hash: string | null;
+  created_at: string;
+}
 
 export class UnifiedPriceService {
-  private supabase: SupabaseClient;
-
-  constructor() {
-    this.supabase = supabaseAdmin;
-  }
-
-  // ============================================================================
-  // Price History Queries
-  // ============================================================================
-
-  /**
-   * Query price history data
-   */
-  async getPriceHistory(query: PriceHistoryQuery): Promise<PriceHistoryRecord[]> {
+  async getPriceHistory(queryParams: PriceHistoryQuery): Promise<PriceHistoryRecord[]> {
     try {
-      const tableName = this.getTableNameForInterval(query.interval);
-      let dbQuery = this.supabase
-        .from(tableName)
-        .select('*')
-        .gte('timestamp', query.startTime.toISOString())
-        .lte('timestamp', query.endTime.toISOString());
+      const tableName = this.getTableNameForInterval(queryParams.interval);
+      const conditions: string[] = [];
+      const values: (string | Date | number)[] = [];
+      let paramIndex = 1;
 
-      // Apply filters
-      if (query.symbol) {
-        dbQuery = dbQuery.eq('symbol', query.symbol);
-      }
-      if (query.protocol) {
-        dbQuery = dbQuery.eq('protocol', query.protocol);
-      }
-      if (query.chain) {
-        dbQuery = dbQuery.eq('chain', query.chain);
-      }
-      if (query.feedId) {
-        dbQuery = dbQuery.eq('feed_id', query.feedId);
-      }
+      conditions.push(`timestamp >= $${paramIndex++}`);
+      values.push(queryParams.startTime);
+      conditions.push(`timestamp <= $${paramIndex++}`);
+      values.push(queryParams.endTime);
 
-      // Apply sorting
-      const orderBy = query.orderBy || 'timestamp';
-      const orderDirection = query.orderDirection || 'desc';
-      dbQuery = dbQuery.order(orderBy, { ascending: orderDirection === 'asc' });
-
-      // Apply pagination
-      if (query.limit) {
-        dbQuery = dbQuery.limit(query.limit);
+      if (queryParams.symbol) {
+        conditions.push(`symbol = $${paramIndex++}`);
+        values.push(queryParams.symbol);
       }
-      if (query.offset) {
-        dbQuery = dbQuery.range(query.offset, query.offset + (query.limit || 1000) - 1);
+      if (queryParams.protocol) {
+        conditions.push(`protocol = $${paramIndex++}`);
+        values.push(queryParams.protocol);
+      }
+      if (queryParams.chain) {
+        conditions.push(`chain = $${paramIndex++}`);
+        values.push(queryParams.chain);
+      }
+      if (queryParams.feedId) {
+        conditions.push(`feed_id = $${paramIndex++}`);
+        values.push(queryParams.feedId);
       }
 
-      const { data, error } = await dbQuery;
+      const orderBy = queryParams.orderBy || 'timestamp';
+      const orderDirection = queryParams.orderDirection || 'desc';
 
-      if (error) {
-        throw new Error(`${t('errors.failedToFetchPriceHistory')}: ${error.message}`);
+      let sql = `SELECT * FROM ${tableName} WHERE ${conditions.join(' AND ')} ORDER BY ${orderBy} ${orderDirection}`;
+
+      if (queryParams.limit) {
+        sql += ` LIMIT $${paramIndex++}`;
+        values.push(queryParams.limit);
+      }
+      if (queryParams.offset) {
+        sql += ` OFFSET $${paramIndex++}`;
+        values.push(queryParams.offset);
       }
 
-      return (data || []).map(this.mapToPriceHistoryRecord);
+      const result = await query<PriceHistoryRow>(sql, values);
+
+      return result.rows.map(this.mapToPriceHistoryRecord);
     } catch (error) {
       logger.error(t('errors.failedToFetchPriceHistory'), {
         error: error instanceof Error ? error.message : String(error),
-        query,
+        query: queryParams,
       });
       throw error;
     }
   }
 
-  /**
-   * Query OHLCV data (candlestick data)
-   */
-  async getOHLCVData(query: PriceHistoryQuery): Promise<OHLCVData[]> {
+  async getOHLCVData(queryParams: PriceHistoryQuery): Promise<OHLCVData[]> {
     try {
-      // OHLCV data can only be retrieved from materialized views
-      const tableName = this.getTableNameForInterval(query.interval || '1min');
+      const tableName = this.getTableNameForInterval(queryParams.interval || '1min');
+      const conditions: string[] = [];
+      const values: (string | Date | number)[] = [];
+      let paramIndex = 1;
 
-      let dbQuery = this.supabase
-        .from(tableName)
-        .select('*')
-        .gte('timestamp', query.startTime.toISOString())
-        .lte('timestamp', query.endTime.toISOString());
+      conditions.push(`timestamp >= $${paramIndex++}`);
+      values.push(queryParams.startTime);
+      conditions.push(`timestamp <= $${paramIndex++}`);
+      values.push(queryParams.endTime);
 
-      if (query.symbol) {
-        dbQuery = dbQuery.eq('symbol', query.symbol);
+      if (queryParams.symbol) {
+        conditions.push(`symbol = $${paramIndex++}`);
+        values.push(queryParams.symbol);
       }
-      if (query.protocol) {
-        dbQuery = dbQuery.eq('protocol', query.protocol);
+      if (queryParams.protocol) {
+        conditions.push(`protocol = $${paramIndex++}`);
+        values.push(queryParams.protocol);
       }
-      if (query.chain) {
-        dbQuery = dbQuery.eq('chain', query.chain);
+      if (queryParams.chain) {
+        conditions.push(`chain = $${paramIndex++}`);
+        values.push(queryParams.chain);
       }
-      if (query.feedId) {
-        dbQuery = dbQuery.eq('feed_id', query.feedId);
-      }
-
-      dbQuery = dbQuery.order('timestamp', { ascending: true });
-
-      if (query.limit) {
-        dbQuery = dbQuery.limit(query.limit);
-      }
-
-      const { data, error } = await dbQuery;
-
-      if (error) {
-        throw new Error(`${t('errors.failedToFetchOhlcvData')}: ${error.message}`);
+      if (queryParams.feedId) {
+        conditions.push(`feed_id = $${paramIndex++}`);
+        values.push(queryParams.feedId);
       }
 
-      return (data || []).map(this.mapToOHLCVData);
+      let sql = `SELECT * FROM ${tableName} WHERE ${conditions.join(' AND ')} ORDER BY timestamp ASC`;
+
+      if (queryParams.limit) {
+        sql += ` LIMIT $${paramIndex++}`;
+        values.push(queryParams.limit);
+      }
+
+      const result = await query<OHLCVRow>(sql, values);
+
+      return result.rows.map(this.mapToOHLCVData);
     } catch (error) {
       logger.error(t('errors.failedToFetchOhlcvData'), {
         error: error instanceof Error ? error.message : String(error),
-        query,
+        query: queryParams,
       });
       throw error;
     }
   }
 
-  // ============================================================================
-  // Current Price Queries
-  // ============================================================================
-
-  /**
-   * Get all current prices
-   */
   async getCurrentPrices(): Promise<CurrentPriceFeed[]> {
     try {
-      const { data, error } = await this.supabase.from('current_price_feeds').select('*');
+      const result = await query<CurrentPriceFeedRow>(
+        `SELECT * FROM current_price_feeds`,
+      );
 
-      if (error) {
-        throw new Error(`${t('errors.failedToFetchCurrentPrices')}: ${error.message}`);
-      }
-
-      return (data || []).map(this.mapToCurrentPriceFeed);
+      return result.rows.map(this.mapToCurrentPriceFeed);
     } catch (error) {
       logger.error(t('errors.failedToFetchCurrentPrices'), {
         error: error instanceof Error ? error.message : String(error),
@@ -317,25 +345,18 @@ export class UnifiedPriceService {
     }
   }
 
-  /**
-   * Get current price for a specific feed
-   */
   async getCurrentPrice(feedId: string): Promise<CurrentPriceFeed | null> {
     try {
-      const { data, error } = await this.supabase
-        .from('current_price_feeds')
-        .select('*')
-        .eq('feed_id', feedId)
-        .single();
+      const result = await query<CurrentPriceFeedRow>(
+        `SELECT * FROM current_price_feeds WHERE feed_id = $1 LIMIT 1`,
+        [feedId],
+      );
 
-      if (error) {
-        if (error.code === 'PGRST116') {
-          return null; // Not found
-        }
-        throw new Error(`${t('errors.failedToFetchCurrentPrice')}: ${error.message}`);
+      if (result.rows.length === 0) {
+        return null;
       }
 
-      return data ? this.mapToCurrentPriceFeed(data) : null;
+      return this.mapToCurrentPriceFeed(result.rows[0]!);
     } catch (error) {
       logger.error(t('errors.failedToFetchCurrentPrice'), {
         error: error instanceof Error ? error.message : String(error),
@@ -345,24 +366,18 @@ export class UnifiedPriceService {
     }
   }
 
-  /**
-   * Get current prices for multiple feeds in batch
-   */
   async getCurrentPricesByFeeds(feedIds: string[]): Promise<Map<string, CurrentPriceFeed>> {
     const results = new Map<string, CurrentPriceFeed>();
 
     try {
-      const { data, error } = await this.supabase
-        .from('current_price_feeds')
-        .select('*')
-        .in('feed_id', feedIds);
+      const placeholders = feedIds.map((_, i) => `$${i + 1}`).join(', ');
+      const result = await query<CurrentPriceFeedRow>(
+        `SELECT * FROM current_price_feeds WHERE feed_id IN (${placeholders})`,
+        feedIds,
+      );
 
-      if (error) {
-        throw new Error(`${t('errors.failedToFetchCurrentPrices')}: ${error.message}`);
-      }
-
-      (data || []).forEach((item: Record<string, unknown>) => {
-        const record = this.mapToCurrentPriceFeed(item);
+      result.rows.forEach((row) => {
+        const record = this.mapToCurrentPriceFeed(row);
         results.set(record.feedId, record);
       });
 
@@ -376,13 +391,6 @@ export class UnifiedPriceService {
     }
   }
 
-  // ============================================================================
-  // Price Update Events
-  // ============================================================================
-
-  /**
-   * Get price update events
-   */
   async getPriceUpdateEvents(options: {
     feedId?: string;
     protocol?: OracleProtocol;
@@ -394,43 +402,51 @@ export class UnifiedPriceService {
     offset?: number;
   }): Promise<PriceUpdateEvent[]> {
     try {
-      let query = this.supabase.from('price_update_events').select('*');
+      const conditions: string[] = [];
+      const values: (string | Date | number)[] = [];
+      let paramIndex = 1;
 
       if (options.feedId) {
-        query = query.eq('feed_id', options.feedId);
+        conditions.push(`feed_id = $${paramIndex++}`);
+        values.push(options.feedId);
       }
       if (options.protocol) {
-        query = query.eq('protocol', options.protocol);
+        conditions.push(`protocol = $${paramIndex++}`);
+        values.push(options.protocol);
       }
       if (options.chain) {
-        query = query.eq('chain', options.chain);
+        conditions.push(`chain = $${paramIndex++}`);
+        values.push(options.chain);
       }
       if (options.symbol) {
-        query = query.eq('symbol', options.symbol);
+        conditions.push(`symbol = $${paramIndex++}`);
+        values.push(options.symbol);
       }
       if (options.startTime) {
-        query = query.gte('timestamp', options.startTime.toISOString());
+        conditions.push(`timestamp >= $${paramIndex++}`);
+        values.push(options.startTime);
       }
       if (options.endTime) {
-        query = query.lte('timestamp', options.endTime.toISOString());
+        conditions.push(`timestamp <= $${paramIndex++}`);
+        values.push(options.endTime);
       }
 
-      query = query.order('timestamp', { ascending: false });
+      const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+      let sql = `SELECT * FROM price_update_events ${whereClause} ORDER BY timestamp DESC`;
 
       if (options.limit) {
-        query = query.limit(options.limit);
+        sql += ` LIMIT $${paramIndex++}`;
+        values.push(options.limit);
       }
       if (options.offset) {
-        query = query.range(options.offset, options.offset + (options.limit || 100) - 1);
+        sql += ` OFFSET $${paramIndex++}`;
+        values.push(options.offset);
       }
 
-      const { data, error } = await query;
+      const result = await query<PriceUpdateEventRow>(sql, values);
 
-      if (error) {
-        throw new Error(`${t('errors.failedToFetchPriceUpdateEvents')}: ${error.message}`);
-      }
-
-      return (data || []).map(this.mapToPriceUpdateEvent);
+      return result.rows.map(this.mapToPriceUpdateEvent);
     } catch (error) {
       logger.error(t('errors.failedToFetchPriceUpdateEvents'), {
         error: error instanceof Error ? error.message : String(error),
@@ -440,13 +456,6 @@ export class UnifiedPriceService {
     }
   }
 
-  // ============================================================================
-  // Statistics
-  // ============================================================================
-
-  /**
-   * Get price statistics
-   */
   async getPriceStats(options: {
     symbol: string;
     protocol?: OracleProtocol;
@@ -455,18 +464,25 @@ export class UnifiedPriceService {
     endTime: Date;
   }): Promise<PriceStats> {
     try {
-      const { data, error } = await this.supabase
-        .from('price_history')
-        .select('price')
-        .eq('symbol', options.symbol)
-        .gte('timestamp', options.startTime.toISOString())
-        .lte('timestamp', options.endTime.toISOString());
+      const conditions: string[] = ['symbol = $1', 'timestamp >= $2', 'timestamp <= $3'];
+      const values: (string | Date)[] = [options.symbol, options.startTime, options.endTime];
 
-      if (error) {
-        throw new Error(`${t('errors.failedToFetchPriceStats')}: ${error.message}`);
+      let paramIndex = 4;
+      if (options.protocol) {
+        conditions.push(`protocol = $${paramIndex++}`);
+        values.push(options.protocol);
+      }
+      if (options.chain) {
+        conditions.push(`chain = $${paramIndex++}`);
+        values.push(options.chain);
       }
 
-      const prices = (data || []).map((d: { price: number }) => d.price);
+      const result = await query<{ price: number }>(
+        `SELECT price FROM price_history WHERE ${conditions.join(' AND ')}`,
+        values,
+      );
+
+      const prices = result.rows.map((d) => d.price);
 
       if (prices.length === 0) {
         throw new Error(t('errors.noPriceDataFound'));
@@ -474,17 +490,14 @@ export class UnifiedPriceService {
 
       const min = Math.min(...prices);
       const max = Math.max(...prices);
-      const avg = prices.reduce((a: number, b: number) => a + b, 0) / prices.length;
+      const avg = prices.reduce((a, b) => a + b, 0) / prices.length;
       const first = prices[0] ?? 0;
       const last = prices[prices.length - 1] ?? 0;
       const change = last - first;
-      // Price change percentage in decimal form (0.01 = 1%)
       const changePercent = first > 0 ? change / first : 0;
 
-      // Calculate volatility (standard deviation)
       const variance =
-        prices.reduce((sum: number, price: number) => sum + Math.pow(price - avg, 2), 0) /
-        prices.length;
+        prices.reduce((sum, price) => sum + Math.pow(price - avg, 2), 0) / prices.length;
       const volatility = Math.sqrt(variance);
 
       return {
@@ -508,41 +521,37 @@ export class UnifiedPriceService {
     }
   }
 
-  // ============================================================================
-  // Data Write Operations
-  // ============================================================================
-
-  /**
-   * Insert price history records
-   */
   async insertPriceHistory(records: Omit<PriceHistoryRecord, 'id' | 'createdAt'>[]): Promise<void> {
     try {
-      const dbRecords = records.map((record) => ({
-        feed_id: record.feedId,
-        protocol: record.protocol,
-        chain: record.chain,
-        symbol: record.symbol,
-        base_asset: record.baseAsset,
-        quote_asset: record.quoteAsset,
-        price: record.price,
-        price_raw: record.priceRaw,
-        decimals: record.decimals,
-        timestamp: record.timestamp.toISOString(),
-        block_number: record.blockNumber,
-        confidence: record.confidence,
-        sources: record.sources,
-        is_stale: record.isStale,
-        staleness_seconds: record.stalenessSeconds,
-        tx_hash: record.txHash,
-        log_index: record.logIndex,
-        volume_24h: record.volume24h,
-        change_24h: record.change24h,
-      }));
-
-      const { error } = await this.supabase.from('price_history').insert(dbRecords);
-
-      if (error) {
-        throw new Error(`${t('errors.failedToInsertPriceHistory')}: ${error.message}`);
+      for (const record of records) {
+        await query(
+          `INSERT INTO price_history (
+            feed_id, protocol, chain, symbol, base_asset, quote_asset,
+            price, price_raw, decimals, timestamp, block_number, confidence,
+            sources, is_stale, staleness_seconds, tx_hash, log_index, volume_24h, change_24h
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)`,
+          [
+            record.feedId,
+            record.protocol,
+            record.chain,
+            record.symbol,
+            record.baseAsset,
+            record.quoteAsset,
+            record.price,
+            record.priceRaw,
+            record.decimals,
+            record.timestamp,
+            record.blockNumber,
+            record.confidence,
+            record.sources,
+            record.isStale,
+            record.stalenessSeconds,
+            record.txHash,
+            record.logIndex,
+            record.volume24h,
+            record.change24h,
+          ],
+        );
       }
     } catch (error) {
       logger.error(t('errors.failedToInsertPriceHistory'), {
@@ -553,22 +562,9 @@ export class UnifiedPriceService {
     }
   }
 
-  // ============================================================================
-  // Materialized View Management
-  // ============================================================================
-
-  /**
-   * Refresh materialized view
-   */
   async refreshMaterializedView(viewName: '1min' | '5min' | '1hour' | '1day'): Promise<void> {
     try {
-      const functionName = `refresh_price_history_${viewName}`;
-      const { error } = await this.supabase.rpc(functionName);
-
-      if (error) {
-        throw new Error(`${t('errors.failedToRefreshMaterializedView')}: ${error.message}`);
-      }
-
+      await query(`REFRESH MATERIALIZED VIEW price_history_${viewName}`);
       logger.info(t('oracle.priceService.refreshedMaterializedView', { viewName }));
     } catch (error) {
       logger.error(t('errors.failedToRefreshMaterializedView'), {
@@ -579,9 +575,6 @@ export class UnifiedPriceService {
     }
   }
 
-  /**
-   * Refresh all materialized views
-   */
   async refreshAllMaterializedViews(): Promise<void> {
     const views: Array<'1min' | '5min' | '1hour' | '1day'> = ['1min', '5min', '1hour', '1day'];
 
@@ -589,10 +582,6 @@ export class UnifiedPriceService {
       await this.refreshMaterializedView(view);
     }
   }
-
-  // ============================================================================
-  // Helper Methods
-  // ============================================================================
 
   private getTableNameForInterval(interval?: string): string {
     switch (interval) {
@@ -610,88 +599,86 @@ export class UnifiedPriceService {
     }
   }
 
-  // ============================================================================
-  // Data Mapping
-  // ============================================================================
-
-  private mapToPriceHistoryRecord(data: Record<string, unknown>): PriceHistoryRecord {
+  private mapToPriceHistoryRecord(data: PriceHistoryRow): PriceHistoryRecord {
     return {
-      id: data.id as number,
-      feedId: data.feed_id as string,
+      id: data.id,
+      feedId: data.feed_id,
       protocol: data.protocol as OracleProtocol,
       chain: data.chain as SupportedChain,
-      symbol: data.symbol as string,
-      baseAsset: data.base_asset as string,
-      quoteAsset: data.quote_asset as string,
-      price: data.price as number,
-      priceRaw: data.price_raw as string,
-      decimals: data.decimals as number,
-      timestamp: new Date(data.timestamp as string),
-      blockNumber: data.block_number as number | undefined,
-      confidence: data.confidence as number | undefined,
-      sources: data.sources as number | undefined,
-      isStale: data.is_stale as boolean | undefined,
-      stalenessSeconds: data.staleness_seconds as number | undefined,
-      txHash: data.tx_hash as string | undefined,
-      logIndex: data.log_index as number | undefined,
-      volume24h: data.volume_24h as number | undefined,
-      change24h: data.change_24h as number | undefined,
-      createdAt: new Date(data.created_at as string),
+      symbol: data.symbol,
+      baseAsset: data.base_asset,
+      quoteAsset: data.quote_asset,
+      price: data.price,
+      priceRaw: data.price_raw,
+      decimals: data.decimals,
+      timestamp: new Date(data.timestamp),
+      blockNumber: data.block_number ?? undefined,
+      confidence: data.confidence ?? undefined,
+      sources: data.sources ?? undefined,
+      isStale: data.is_stale ?? undefined,
+      stalenessSeconds: data.staleness_seconds ?? undefined,
+      txHash: data.tx_hash ?? undefined,
+      logIndex: data.log_index ?? undefined,
+      volume24h: data.volume_24h ?? undefined,
+      change24h: data.change_24h ?? undefined,
+      createdAt: new Date(data.created_at),
     };
   }
 
-  private mapToCurrentPriceFeed(data: Record<string, unknown>): CurrentPriceFeed {
+  private mapToCurrentPriceFeed(data: CurrentPriceFeedRow): CurrentPriceFeed {
     return {
-      id: data.id as number,
-      feedId: data.feed_id as string,
+      id: data.id,
+      feedId: data.feed_id,
       protocol: data.protocol as OracleProtocol,
       chain: data.chain as SupportedChain,
-      symbol: data.symbol as string,
-      baseAsset: data.base_asset as string,
-      quoteAsset: data.quote_asset as string,
-      price: data.price as number,
-      priceRaw: data.price_raw as string,
-      decimals: data.decimals as number,
-      timestamp: new Date(data.timestamp as string),
-      blockNumber: data.block_number as number | undefined,
-      confidence: data.confidence as number | undefined,
-      sources: data.sources as number | undefined,
-      isStale: data.is_stale as boolean | undefined,
-      stalenessSeconds: data.staleness_seconds as number | undefined,
-      txHash: data.tx_hash as string | undefined,
-      logIndex: data.log_index as number | undefined,
-      createdAt: new Date(data.created_at as string),
+      symbol: data.symbol,
+      baseAsset: data.base_asset,
+      quoteAsset: data.quote_asset,
+      price: data.price,
+      priceRaw: data.price_raw,
+      decimals: data.decimals,
+      timestamp: new Date(data.timestamp),
+      blockNumber: data.block_number ?? undefined,
+      confidence: data.confidence ?? undefined,
+      sources: data.sources ?? undefined,
+      isStale: data.is_stale ?? undefined,
+      stalenessSeconds: data.staleness_seconds ?? undefined,
+      txHash: data.tx_hash ?? undefined,
+      logIndex: data.log_index ?? undefined,
+      createdAt: new Date(data.created_at),
     };
   }
 
-  private mapToOHLCVData(data: Record<string, unknown>): OHLCVData {
+  private mapToOHLCVData(data: OHLCVRow): OHLCVData {
     return {
-      timestamp: new Date(data.timestamp as string),
-      open: data.price_open as number,
-      high: data.price_high as number,
-      low: data.price_low as number,
-      close: data.price_close as number,
-      volume: data.volume as number | undefined,
-      sampleCount: data.sample_count as number,
-      avgConfidence: data.avg_confidence as number | undefined,
+      timestamp: new Date(data.timestamp),
+      open: data.price_open,
+      high: data.price_high,
+      low: data.price_low,
+      close: data.price_close,
+      volume: data.volume ?? undefined,
+      sampleCount: data.sample_count,
+      avgConfidence: data.avg_confidence ?? undefined,
     };
   }
 
-  private mapToPriceUpdateEvent(data: Record<string, unknown>): PriceUpdateEvent {
+  private mapToPriceUpdateEvent(data: PriceUpdateEventRow): PriceUpdateEvent {
     return {
-      id: data.id as number,
-      feedId: data.feed_id as string,
+      id: data.id,
+      feedId: data.feed_id,
       protocol: data.protocol as OracleProtocol,
       chain: data.chain as SupportedChain,
-      symbol: data.symbol as string,
-      previousPrice: data.previous_price as number | undefined,
-      currentPrice: data.current_price as number,
-      priceChange: data.price_change as number | undefined,
-      priceChangePercent: data.price_change_percent as number | undefined,
-      timestamp: new Date(data.timestamp as string),
-      blockNumber: data.block_number as number | undefined,
-      txHash: data.tx_hash as string | undefined,
-      createdAt: new Date(data.created_at as string),
+      symbol: data.symbol,
+      previousPrice: data.previous_price ?? undefined,
+      currentPrice: data.current_price,
+      priceChange: data.price_change ?? undefined,
+      priceChangePercent: data.price_change_percent ?? undefined,
+      timestamp: new Date(data.timestamp),
+      blockNumber: data.block_number ?? undefined,
+      txHash: data.tx_hash ?? undefined,
+      createdAt: new Date(data.created_at),
     };
   }
 }
+
+export const unifiedPriceService = new UnifiedPriceService();

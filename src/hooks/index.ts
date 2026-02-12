@@ -2,6 +2,7 @@
 export { useWebSocket } from './useWebSocket';
 export { useDebounce } from './useDebounce';
 export { useAutoRefresh } from './use-auto-refresh';
+export { useAutoRefreshWithStats } from './use-auto-refresh-with-stats';
 
 // ==================== 交互优化 Hooks ====================
 export {

@@ -5,6 +5,7 @@
  * - 面包屑导航
  * - 标题和描述
  * - 操作按钮组
+ * - Dashboard 模式支持
  * - 响应式设计
  */
 
@@ -12,7 +13,7 @@ import React, { memo } from 'react';
 
 import Link from 'next/link';
 
-import { ChevronRight, Home, RefreshCw, Download, MoreHorizontal, Settings } from 'lucide-react';
+import { ChevronRight, Home, RefreshCw, Download, MoreHorizontal, Settings, Menu } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -31,35 +32,33 @@ export interface BreadcrumbItem {
 }
 
 export interface PageHeaderProps {
-  /** 面包屑导航 */
   breadcrumbs?: BreadcrumbItem[];
-  /** 页面标题 */
   title: string;
-  /** 页面描述 */
   description?: string;
-  /** 标题图标 */
   icon?: React.ReactNode;
-  /** 刷新回调 */
   onRefresh?: () => void;
-  /** 导出回调 */
   onExport?: () => void;
-  /** 导出按钮禁用状态 */
   exportDisabled?: boolean;
-  /** 刷新按钮禁用状态 */
   refreshDisabled?: boolean;
-  /** 加载状态 */
   loading?: boolean;
-  /** 额外操作按钮 */
   extraActions?: React.ReactNode;
-  /** 自定义类名 */
   className?: string;
-  /** 子元素 */
   children?: React.ReactNode;
 }
 
-/**
- * PageHeader 组件 - 专业页面头部
- */
+export interface DashboardPageHeaderProps {
+  title: string;
+  description?: string;
+  icon?: React.ReactNode;
+  statusBadge?: React.ReactNode;
+  refreshControl?: React.ReactNode;
+  onMobileMenuClick?: () => void;
+  showMobileMenu?: boolean;
+  extraActions?: React.ReactNode;
+  className?: string;
+  sticky?: boolean;
+}
+
 export const PageHeader = memo(function PageHeader({
   breadcrumbs,
   title,
@@ -76,7 +75,6 @@ export const PageHeader = memo(function PageHeader({
 }: PageHeaderProps) {
   return (
     <div className={cn('space-y-4', className)}>
-      {/* 面包屑导航 */}
       {breadcrumbs && breadcrumbs.length > 0 && (
         <nav className="text-muted-foreground flex items-center gap-2 text-sm">
           <Link
@@ -107,9 +105,7 @@ export const PageHeader = memo(function PageHeader({
         </nav>
       )}
 
-      {/* 主标题区域 */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        {/* 左侧：标题和描述 */}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-3">
             {icon && <div className="bg-primary/10 flex-shrink-0 rounded-lg p-2">{icon}</div>}
@@ -124,9 +120,7 @@ export const PageHeader = memo(function PageHeader({
           </div>
         </div>
 
-        {/* 右侧：操作按钮 */}
         <div className="flex flex-shrink-0 items-center gap-2">
-          {/* 刷新按钮 */}
           {onRefresh && (
             <Button
               variant="outline"
@@ -143,7 +137,6 @@ export const PageHeader = memo(function PageHeader({
             </Button>
           )}
 
-          {/* 导出按钮 */}
           {onExport && (
             <Button
               variant="outline"
@@ -160,13 +153,10 @@ export const PageHeader = memo(function PageHeader({
             </Button>
           )}
 
-          {/* 额外操作 */}
           {extraActions}
 
-          {/* 子元素 */}
           {children}
 
-          {/* 更多操作下拉菜单 */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="h-9 w-9 p-0">
@@ -174,7 +164,6 @@ export const PageHeader = memo(function PageHeader({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              {/* 移动端显示的刷新和导出 */}
               <div className="sm:hidden">
                 {onRefresh && (
                   <DropdownMenuItem onClick={onRefresh} disabled={refreshDisabled || loading}>
@@ -205,20 +194,76 @@ export const PageHeader = memo(function PageHeader({
   );
 });
 
-/**
- * PageHeaderSkeleton 组件 - 页面头部骨架屏
- */
+export const DashboardPageHeader = memo(function DashboardPageHeader({
+  title,
+  description,
+  icon,
+  statusBadge,
+  refreshControl,
+  onMobileMenuClick,
+  showMobileMenu = true,
+  extraActions,
+  className,
+  sticky = true,
+}: DashboardPageHeaderProps) {
+  return (
+    <header
+      className={cn(
+        'border-b border-gray-200/50 bg-white/80 px-4 py-3 backdrop-blur-sm lg:px-6',
+        sticky && 'sticky top-0 z-10',
+        className,
+      )}
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          {showMobileMenu && onMobileMenuClick && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden"
+              onClick={onMobileMenuClick}
+              aria-label="Open menu"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+          )}
+          <div className="flex items-center gap-3">
+            {icon && (
+              <div className="hidden rounded-lg bg-purple-100 p-2 sm:block">
+                {icon}
+              </div>
+            )}
+            <div>
+              <h1 className="text-xl font-bold text-gray-900 lg:text-2xl">{title}</h1>
+              {description && (
+                <p className="text-muted-foreground hidden text-sm sm:block">{description}</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 sm:gap-4">
+          {statusBadge}
+          {statusBadge && refreshControl && (
+            <div className="hidden h-6 w-px bg-gray-200 sm:block" />
+          )}
+          {refreshControl}
+          {extraActions}
+        </div>
+      </div>
+    </header>
+  );
+});
+
 export function PageHeaderSkeleton({ className }: { className?: string }) {
   return (
     <div className={cn('space-y-4', className)}>
-      {/* 面包屑骨架 */}
       <div className="flex items-center gap-2">
         <div className="h-4 w-4 animate-pulse rounded bg-gray-200" />
         <div className="h-4 w-4 animate-pulse rounded bg-gray-200" />
         <div className="h-4 w-24 animate-pulse rounded bg-gray-200" />
       </div>
 
-      {/* 标题骨架 */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="h-12 w-12 animate-pulse rounded-lg bg-gray-200" />
@@ -234,5 +279,30 @@ export function PageHeaderSkeleton({ className }: { className?: string }) {
         </div>
       </div>
     </div>
+  );
+}
+
+export function DashboardPageHeaderSkeleton({ className }: { className?: string }) {
+  return (
+    <header
+      className={cn(
+        'border-b border-gray-200/50 bg-white/80 px-4 py-3 backdrop-blur-sm lg:px-6',
+        className,
+      )}
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="h-10 w-10 animate-pulse rounded-lg bg-gray-200 lg:hidden" />
+          <div>
+            <div className="h-7 w-48 animate-pulse rounded bg-gray-200" />
+            <div className="mt-1 h-4 w-32 animate-pulse rounded bg-gray-200" />
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="h-8 w-24 animate-pulse rounded-lg bg-gray-200" />
+          <div className="h-8 w-32 animate-pulse rounded-lg bg-gray-200" />
+        </div>
+      </div>
+    </header>
   );
 }

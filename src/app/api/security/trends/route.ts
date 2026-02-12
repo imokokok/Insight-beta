@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { query } from '@/server/db';
 import { requireAdminWithToken } from '@/server/apiResponse';
 
 interface TrendData {
@@ -31,20 +31,24 @@ export async function GET(request: NextRequest) {
     const days = range === '7d' ? 7 : range === '30d' ? 30 : 90;
     const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
-    const supabase = supabaseAdmin;
+    let detections: DetectionTrendRow[] = [];
 
-    const { data: detections, error } = await supabase
-      .from('manipulation_detections')
-      .select('detected_at, severity, type')
-      .gte('detected_at', startDate.toISOString())
-      .order('detected_at', { ascending: true });
+    try {
+      const result = await query<DetectionTrendRow>(
+        `SELECT detected_at, severity, type FROM manipulation_detections 
+         WHERE detected_at >= $1 
+         ORDER BY detected_at ASC`,
+        [startDate.toISOString()],
+      );
 
-    if (error) {
-      logger.error('Failed to fetch trends', { error: error.message });
+      detections = result.rows;
+    } catch (error) {
+      logger.error('Failed to fetch trends', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return NextResponse.json({ error: 'Failed to fetch trends' }, { status: 500 });
     }
 
-    // Generate date range
     const trends = new Map<string, TrendData>();
 
     for (let i = 0; i < days; i++) {
@@ -61,8 +65,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Aggregate detections
-    ((detections as DetectionTrendRow[]) || []).forEach((detection) => {
+    detections.forEach((detection) => {
       const dateStr = new Date(detection.detected_at).toISOString().split('T')[0] ?? '';
       const trend = trends.get(dateStr);
       if (trend) {
@@ -75,9 +78,8 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    // Calculate type distribution
     const typeCounts: Record<string, number> = {};
-    ((detections as DetectionTrendRow[]) || []).forEach((detection) => {
+    detections.forEach((detection) => {
       typeCounts[detection.type] = (typeCounts[detection.type] || 0) + 1;
     });
 
@@ -85,9 +87,8 @@ export async function GET(request: NextRequest) {
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value);
 
-    // Calculate severity distribution
     const severityCounts: Record<string, number> = {};
-    ((detections as DetectionTrendRow[]) || []).forEach((detection) => {
+    detections.forEach((detection) => {
       severityCounts[detection.severity] = (severityCounts[detection.severity] || 0) + 1;
     });
 

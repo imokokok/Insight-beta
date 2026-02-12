@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { query } from '@/server/db';
 import { requireAdminWithToken } from '@/server/apiResponse';
 
 interface DetectionRow {
@@ -33,20 +33,17 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     if (auth) return auth;
 
     const { id } = await params;
-    const supabase = supabaseAdmin;
 
-    const { data, error } = await supabase
-      .from('manipulation_detections')
-      .select('*')
-      .eq('id', id)
-      .single();
+    const result = await query<DetectionRow>(
+      `SELECT * FROM manipulation_detections WHERE id = $1 LIMIT 1`,
+      [id],
+    );
 
-    if (error) {
-      logger.error('Failed to fetch detection', { error: error.message });
+    if (result.rows.length === 0) {
       return NextResponse.json({ error: 'Detection not found' }, { status: 404 });
     }
 
-    const row = data as DetectionRow;
+    const row = result.rows[0]!;
 
     const detection = {
       id: row.id,
@@ -61,13 +58,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       evidence: row.evidence,
       suspiciousTransactions: row.suspicious_transactions,
       relatedBlocks: row.related_blocks,
-      priceImpact: row.price_impact,
-      financialImpactUsd: row.financial_impact_usd,
+      priceImpact: row.price_impact ?? undefined,
+      financialImpactUsd: row.financial_impact_usd ?? undefined,
       affectedAddresses: row.affected_addresses,
       status: row.status,
-      reviewedBy: row.reviewed_by,
+      reviewedBy: row.reviewed_by ?? undefined,
       reviewedAt: row.reviewed_at ? new Date(row.reviewed_at).getTime() : undefined,
-      notes: row.notes,
+      notes: row.notes ?? undefined,
     };
 
     return NextResponse.json({ detection });

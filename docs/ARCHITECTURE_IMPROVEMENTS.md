@@ -318,19 +318,20 @@ npm test -- src/lib/shared
 
 **优化内容：**
 
-- **Supabase 客户端统一**: 所有服务端代码使用 `supabaseAdmin` 单例
+- **数据库连接统一**: 所有服务端代码使用 `pg` 连接池（通过 `@/server/db` 的 `query` 函数）
+- **Supabase SDK 精简**: 仅用于 Realtime 订阅（`alerts/stream`）
 - **通知服务统一**: 统一使用 `NotificationService` 类
 - **价格历史类型统一**: 统一使用 `unifiedPriceService` 中的类型定义
 
 **API 路由优化：**
 
-11 个 API 路由从 `createSupabaseClient()` 迁移到 `supabaseAdmin` 单例：
+11 个 API 路由从 `supabaseAdmin` 迁移到统一的 `pg` 连接池：
 
 - `security/reports/export`
 - `security/monitor-status`
 - `security/detections/*`
 - `security/trends`
-- `security/alerts/*`
+- `security/alerts/*`（`stream` 除外，保留 Realtime）
 - `security/config`
 - `security/monitor/start`
 - `security/metrics`
@@ -339,12 +340,12 @@ npm test -- src/lib/shared
 
 ```typescript
 // 修改前
-import { createSupabaseClient } from '@/lib/supabase/server';
-const supabase = createSupabaseClient();
+import { supabaseAdmin } from '@/lib/supabase/server';
+const { data, error } = await supabaseAdmin.from('table').select('*');
 
 // 修改后
-import { supabaseAdmin } from '@/lib/supabase/server';
-const supabase = supabaseAdmin;
+import { query } from '@/server/db';
+const result = await query('SELECT * FROM table');
 ```
 
 ## 性能提升

@@ -3,11 +3,13 @@ import { env } from './config/env';
 import type * as SentryModule from '@sentry/nextjs';
 
 const isProd = env.NODE_ENV === 'production';
+const isServer = typeof window === 'undefined';
 
 let sentry: typeof SentryModule | null = null;
 
 async function loadSentry() {
   if (sentry !== null) return sentry;
+  if (!isServer) return null;
   try {
     sentry = await import('@sentry/nextjs');
     return sentry;
@@ -16,9 +18,6 @@ async function loadSentry() {
   }
 }
 
-/**
- * Supported log levels with severity ordering
- */
 const LOG_LEVELS = {
   trace: 0,
   debug: 1,
@@ -28,36 +27,18 @@ const LOG_LEVELS = {
   fatal: 5,
 } as const;
 
-/**
- * Log level type
- */
 export type LogLevel = keyof typeof LOG_LEVELS;
 
-/**
- * 采样配置 - 用于生产环境日志采样
- */
-const LOG_SAMPLE_RATE = isProd
-  ? env.LOG_SAMPLE_RATE // 生产环境默认 10% 采样（通过 env 配置）
-  : 1; // 开发环境 100%
+const LOG_SAMPLE_RATE = isProd ? env.LOG_SAMPLE_RATE : 1;
 
-/**
- * 采样计数器
- */
 let logSampleCounter = 0;
 
-/**
- * 检查是否应该采样当前日志
- */
 function shouldSample(): boolean {
   if (LOG_SAMPLE_RATE >= 1) return true;
   logSampleCounter++;
   return logSampleCounter % Math.ceil(1 / LOG_SAMPLE_RATE) === 0;
 }
 
-/**
- * Extracts log level from environment or defaults based on environment
- * @returns Log level to use for logging
- */
 function getLogLevel(): LogLevel {
   const envLevel =
     typeof process !== 'undefined' && process.env
@@ -80,10 +61,6 @@ type AsyncLocalStorageLike<T> = {
 
 const urlSubstringRe = /\b(?:https?|wss?|postgres(?:ql)?):\/\/[^\s"'<>]+/gi;
 
-// ============================================================================
-// 敏感字段配置
-// ============================================================================
-
 interface RedactionRule {
   field: string;
   pattern?: RegExp;
@@ -91,9 +68,7 @@ interface RedactionRule {
   exactMatch?: boolean;
 }
 
-// 结构化脱敏规则 - 更精确的匹配
 const REDACTION_RULES: RedactionRule[] = [
-  // 精确字段匹配
   { field: 'password', exactMatch: true },
   { field: 'token', exactMatch: true },
   { field: 'secret', exactMatch: true },
@@ -107,16 +82,12 @@ const REDACTION_RULES: RedactionRule[] = [
   { field: 'accessToken', exactMatch: true },
   { field: 'refreshToken', exactMatch: true },
   { field: 'idToken', exactMatch: true },
-
-  // 包含匹配的字段
   { field: 'authorization', exactMatch: false },
   { field: 'cookie', exactMatch: false },
   { field: 'csrf', exactMatch: false },
   { field: 'xsrf', exactMatch: false },
   { field: 'credential', exactMatch: false },
   { field: 'wallet', exactMatch: false },
-
-  // 特定模式匹配
   {
     field: 'authorization',
     pattern: /^Bearer\s+(.+)$/i,
@@ -124,12 +95,10 @@ const REDACTION_RULES: RedactionRule[] = [
   },
 ];
 
-// 敏感数据正则模式 - 更精确的匹配
 const SENSITIVE_PATTERNS = [
-  // 以太坊私钥 (64位 hex)
   { pattern: /\b0x[a-f0-9]{64}\b/gi, name: 'eth_private_key' },
   { pattern: /\b[1-9A-HJ-NP-Za-km-z]{88,96}\b/g, name: 'solana_private_key' },
-  { pattern: /\b(?:[a-z]+(?:[ \t]+[a-z]+){11,23})\b/gi, name: 'mnemonic' },
+  { pattern: /\b[a-z]+(?:\s+[a-z]+){11,23}\b/gi, name: 'mnemonic' },
   { pattern: /(https?:\/\/)[^@\s]+@/gi, name: 'url_auth', replace: '$1<REDACTED>@' },
   { pattern: /\b(sk|pk)_(live|test)_[a-zA-Z0-9]{24,}\b/gi, name: 'stripe_key' },
   { pattern: /\beyJ[a-zA-Z0-9_-]*\.eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*\b/g, name: 'jwt_token' },
@@ -138,7 +107,6 @@ const SENSITIVE_PATTERNS = [
   { pattern: /\bghp_[a-zA-Z0-9]{36}\b/g, name: 'github_token' },
 ] as const;
 
-// 字段名模式（用于检测敏感字段）
 const SENSITIVE_FIELD_PATTERNS = [
   /^password$/i,
   /^token$/i,
@@ -181,26 +149,17 @@ function redactUrlString(raw: string) {
 
 function redactSensitiveData(value: string): string {
   let redacted = value;
-
-  // 使用新的结构化模式
   for (const { pattern } of SENSITIVE_PATTERNS) {
     redacted = redacted.replace(pattern, '<REDACTED>');
   }
-
   return redacted;
 }
 
-/**
- * 检查字段名是否敏感
- */
 function isSensitiveField(fieldName: string): boolean {
   const lowerName = fieldName.toLowerCase();
   return SENSITIVE_FIELD_PATTERNS.some((pattern) => pattern.test(lowerName));
 }
 
-/**
- * 应用结构化脱敏规则
- */
 function applyRedactionRules(fieldName: string, value: string): string | null {
   const lowerName = fieldName.toLowerCase();
 
@@ -210,25 +169,22 @@ function applyRedactionRules(fieldName: string, value: string): string | null {
       : lowerName.includes(rule.field.toLowerCase());
 
     if (fieldMatch) {
-      // 如果有特定模式，尝试匹配
       if (rule.pattern && rule.replace) {
         if (rule.pattern.test(value)) {
           return value.replace(rule.pattern, rule.replace);
         }
       }
-      // 完全脱敏
       return '<REDACTED>';
     }
   }
 
-  return null; // 没有匹配的规则
+  return null;
 }
 
 function redactSensitiveFields(obj: Record<string, unknown>): Record<string, unknown> {
   const result: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(obj)) {
-    // 首先检查结构化规则
     if (typeof value === 'string') {
       const redacted = applyRedactionRules(key, value);
       if (redacted !== null) {
@@ -237,7 +193,6 @@ function redactSensitiveFields(obj: Record<string, unknown>): Record<string, unk
       }
     }
 
-    // 使用字段名模式匹配
     const isSensitive = isSensitiveField(key);
 
     if (isSensitive) {
@@ -332,40 +287,36 @@ function normalizeMetadata(
   return normalized as Record<string, unknown>;
 }
 
-let asyncLocalStorage: AsyncLocalStorageLike<LogContext> | null | undefined;
+let asyncLocalStorage: AsyncLocalStorageLike<LogContext> | null = null;
+let asyncStorageInitialized = false;
 
-async function initAsyncLocalStorage(): Promise<AsyncLocalStorageLike<LogContext> | null> {
-  if (asyncLocalStorage !== undefined) return asyncLocalStorage;
-  if (typeof window !== 'undefined') {
-    asyncLocalStorage = null;
-    return null;
-  }
+function initAsyncLocalStorage(): void {
+  if (!isServer || asyncStorageInitialized) return;
 
   const runtime = typeof process !== 'undefined' && process.env ? process.env.NEXT_RUNTIME : '';
   if (runtime && runtime !== 'nodejs') {
-    asyncLocalStorage = null;
-    return null;
+    asyncStorageInitialized = true;
+    return;
   }
 
   try {
-    // 使用动态导入替代 eval，更安全
-    const mod = await import('node:async_hooks');
-    if (!mod.AsyncLocalStorage) {
-      asyncLocalStorage = null;
-      return null;
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval
+    const asyncHooks = eval('require')('node:async_hooks');
+    if (asyncHooks.AsyncLocalStorage) {
+      asyncLocalStorage = new asyncHooks.AsyncLocalStorage();
     }
-    asyncLocalStorage = new mod.AsyncLocalStorage();
-    return asyncLocalStorage;
   } catch {
-    asyncLocalStorage = null;
-    return null;
+    // async_hooks not available
   }
+  asyncStorageInitialized = true;
 }
 
 function getAsyncLocalStorage(): AsyncLocalStorageLike<LogContext> | null {
-  // 同步获取，如果未初始化则返回 null
-  // 异步初始化在模块加载时执行
-  return asyncLocalStorage ?? null;
+  if (!isServer) return null;
+  if (!asyncStorageInitialized) {
+    initAsyncLocalStorage();
+  }
+  return asyncLocalStorage;
 }
 
 function getLogContext(): LogContext | undefined {
@@ -373,27 +324,12 @@ function getLogContext(): LogContext | undefined {
   return storage?.getStore();
 }
 
-/**
- * Checks if a log level should be logged based on current configuration
- * @param level - Log level to check
- * @returns True if the level should be logged, false otherwise
- */
 function shouldLog(level: LogLevel): boolean {
   return LOG_LEVELS[level] >= LOG_LEVELS[currentLevel];
 }
 
-/**
- * Creates a structured log message with timestamp and metadata
- * @param level - Log level
- * @param message - Log message
- * @param metadata - Additional metadata for the log
- * @returns Structured log object
- */
-/**
- * 清理日志消息，防止日志注入攻击
- * 移除控制字符和格式化字符
- */
 function sanitizeLogMessage(message: string): string {
+  // eslint-disable-next-line no-control-regex
   const controlCharsRegex = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g;
   return (
     message
@@ -418,26 +354,16 @@ function createLogEntry(level: LogLevel, message: string, metadata?: Record<stri
   return logEntry;
 }
 
-/**
- * Formats log entry for console output
- * @param logEntry - Structured log entry
- * @returns Formatted string for console
- */
 function formatLogEntry(logEntry: ReturnType<typeof createLogEntry>): string {
   if (isProd) {
-    // JSON format for production
     return JSON.stringify(logEntry);
   }
-  // Human-readable format for development
   const { level, timestamp, message, ...metadata } = logEntry;
   const metadataStr =
     Object.keys(metadata).length > 0 ? ` ${JSON.stringify(metadata, null, 2)}` : '';
   return `${level} [${timestamp}] ${message}${metadataStr}`;
 }
 
-/**
- * Sentry 上报队列（后台异步处理，不阻塞主流程）
- */
 const sentryQueue: Array<{
   message: string;
   metadata?: Record<string, unknown>;
@@ -447,6 +373,7 @@ const sentryQueue: Array<{
 let isProcessingQueue = false;
 
 async function processSentryQueue(): Promise<void> {
+  if (!isServer) return;
   if (isProcessingQueue) return;
   isProcessingQueue = true;
 
@@ -473,8 +400,8 @@ async function processSentryQueue(): Promise<void> {
 }
 
 function queueSentryReport(message: string, metadata: Record<string, unknown> | undefined, level: 'error' | 'fatal'): void {
+  if (!isServer) return;
   sentryQueue.push({ message, metadata, level });
-  // 使用 setImmediate 或 setTimeout 在下一个事件循环中处理
   if (typeof setImmediate !== 'undefined') {
     setImmediate(processSentryQueue);
   } else {
@@ -482,15 +409,7 @@ function queueSentryReport(message: string, metadata: Record<string, unknown> | 
   }
 }
 
-/**
- * Enhanced logger with structured logging, timestamps, and context support
- */
 export const logger = {
-  /**
-   * Trace level logging - for very detailed debugging
-   * @param message - Log message
-   * @param metadata - Additional context metadata
-   */
   trace: (message: string, metadata?: Record<string, unknown>) => {
     if (shouldLog('trace')) {
       const logEntry = createLogEntry('trace', message, metadata);
@@ -498,11 +417,6 @@ export const logger = {
     }
   },
 
-  /**
-   * Debug level logging - for development debugging
-   * @param message - Log message
-   * @param metadata - Additional context metadata
-   */
   debug: (message: string, metadata?: Record<string, unknown>) => {
     if (shouldLog('debug') && shouldSample()) {
       const logEntry = createLogEntry('debug', message, metadata);
@@ -510,11 +424,6 @@ export const logger = {
     }
   },
 
-  /**
-   * Info level logging - for general information
-   * @param message - Log message
-   * @param metadata - Additional context metadata
-   */
   info: (message: string, metadata?: Record<string, unknown>) => {
     if (shouldLog('info') && shouldSample()) {
       const logEntry = createLogEntry('info', message, metadata);
@@ -522,11 +431,6 @@ export const logger = {
     }
   },
 
-  /**
-   * Warn level logging - for warnings
-   * @param message - Log message
-   * @param metadata - Additional context metadata
-   */
   warn: (message: string, metadata?: Record<string, unknown>) => {
     if (shouldLog('warn')) {
       const logEntry = createLogEntry('warn', message, metadata);
@@ -534,40 +438,23 @@ export const logger = {
     }
   },
 
-  /**
-   * Error level logging - for errors
-   * 同步记录日志，异步后台上报 Sentry
-   * @param message - Log message
-   * @param metadata - Additional context metadata, should include error object if available
-   */
   error: (message: string, metadata?: Record<string, unknown>) => {
     if (shouldLog('error')) {
       const logEntry = createLogEntry('error', message, metadata);
       console.error(formatLogEntry(logEntry));
-
-      // 后台异步上报 Sentry，不阻塞主流程
       queueSentryReport(message, metadata, 'error');
     }
   },
 
-  /**
-   * Fatal level logging - for critical errors that cause application failure
-   * 同步记录日志，异步后台上报 Sentry
-   * @param message - Log message
-   * @param metadata - Additional context metadata, should include error object if available
-   */
   fatal: (message: string, metadata?: Record<string, unknown>) => {
     if (shouldLog('fatal')) {
       const logEntry = createLogEntry('fatal', message, metadata);
       console.error(formatLogEntry(logEntry));
-
-      // 后台异步上报 Sentry，不阻塞主流程
       queueSentryReport(message, metadata, 'fatal');
     }
   },
 };
 
-// 初始化 AsyncLocalStorage（在服务端环境）
-if (typeof window === 'undefined') {
-  void initAsyncLocalStorage();
+if (isServer && !asyncStorageInitialized) {
+  initAsyncLocalStorage();
 }

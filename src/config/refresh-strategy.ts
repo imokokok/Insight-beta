@@ -168,3 +168,72 @@ export function formatLastUpdated(lastUpdated: Date | null): string {
     });
   }
 }
+
+/**
+ * 刷新历史记录项
+ */
+export interface RefreshHistoryItem {
+  timestamp: Date;
+  duration: number;
+  success: boolean;
+  error?: string;
+}
+
+/**
+ * 刷新统计信息
+ */
+export interface RefreshStats {
+  totalRefreshes: number;
+  successfulRefreshes: number;
+  failedRefreshes: number;
+  averageDuration: number;
+  lastRefresh: Date | null;
+  lastError: Date | null;
+  lastErrorMessage: string | null;
+}
+
+/**
+ * 创建空的刷新统计
+ */
+export function createEmptyRefreshStats(): RefreshStats {
+  return {
+    totalRefreshes: 0,
+    successfulRefreshes: 0,
+    failedRefreshes: 0,
+    averageDuration: 0,
+    lastRefresh: null,
+    lastError: null,
+    lastErrorMessage: null,
+  };
+}
+
+/**
+ * 格式化刷新持续时间
+ */
+export function formatDuration(ms: number): string {
+  if (ms < 1000) {
+    return `${ms}ms`;
+  } else if (ms < 60000) {
+    return `${(ms / 1000).toFixed(1)}s`;
+  } else {
+    return `${(ms / 60000).toFixed(1)}min`;
+  }
+}
+
+/**
+ * 格式化倒计时
+ */
+export function formatCountdown(seconds: number): string {
+  if (seconds <= 0) {
+    return '即将刷新';
+  }
+
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+
+  if (mins > 0) {
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  return `${secs}s`;
+}

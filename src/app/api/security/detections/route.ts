@@ -1,9 +1,9 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { AppError, ValidationError, createErrorResponse, toAppError } from '@/lib/errors/AppError';
+import { ValidationError, createErrorResponse, toAppError } from '@/lib/errors/AppError';
 import { logger } from '@/lib/logger';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { query } from '@/server/db';
 import { requireAdminWithToken } from '@/server/apiResponse';
 
 interface DetectionRow {
@@ -39,7 +39,6 @@ function validateParams(searchParams: URLSearchParams): {
   limit: number;
   offset: number;
 } {
-  // 验证 limit 和 offset
   const limitParam = searchParams.get('limit');
   const limit = limitParam ? parseInt(limitParam, 10) : 100;
   if (isNaN(limit) || limit < 1 || limit > 1000) {
@@ -58,7 +57,6 @@ function validateParams(searchParams: URLSearchParams): {
     });
   }
 
-  // 验证时间戳
   const startTimeParam = searchParams.get('startTime');
   let startTime: number | undefined;
   if (startTimeParam) {
@@ -83,7 +81,6 @@ function validateParams(searchParams: URLSearchParams): {
     }
   }
 
-  // 验证时间范围
   if (startTime && endTime && startTime > endTime) {
     throw new ValidationError('Start time must be before end time', {
       code: 'INVALID_TIME_RANGE',
@@ -91,8 +88,7 @@ function validateParams(searchParams: URLSearchParams): {
     });
   }
 
-  // 验证字符串参数（防止 DoS 和注入攻击）
-  const VALID_PARAM_REGEX = /^[a-zA-Z0-9_\-\/]+$/;
+  const VALID_PARAM_REGEX = /^[a-zA-Z0-9_/-]+$/;
 
   const protocol = searchParams.get('protocol') || undefined;
   if (protocol) {
@@ -187,52 +183,67 @@ function validateParams(searchParams: URLSearchParams): {
   };
 }
 
+function buildWhereClause(params: ReturnType<typeof validateParams>): {
+  whereClause: string;
+  values: (string | number | Date)[];
+} {
+  const conditions: string[] = [];
+  const values: (string | number | Date)[] = [];
+  let paramIndex = 1;
+
+  if (params.protocol) {
+    conditions.push(`protocol = $${paramIndex++}`);
+    values.push(params.protocol);
+  }
+  if (params.symbol) {
+    conditions.push(`symbol = $${paramIndex++}`);
+    values.push(params.symbol);
+  }
+  if (params.chain) {
+    conditions.push(`chain = $${paramIndex++}`);
+    values.push(params.chain);
+  }
+  if (params.type) {
+    conditions.push(`type = $${paramIndex++}`);
+    values.push(params.type);
+  }
+  if (params.severity) {
+    conditions.push(`severity = $${paramIndex++}`);
+    values.push(params.severity);
+  }
+  if (params.startTime) {
+    conditions.push(`detected_at >= $${paramIndex++}`);
+    values.push(new Date(params.startTime));
+  }
+  if (params.endTime) {
+    conditions.push(`detected_at <= $${paramIndex++}`);
+    values.push(new Date(params.endTime));
+  }
+
+  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+  return { whereClause, values };
+}
+
 export async function GET(request: NextRequest) {
   try {
     const auth = await requireAdminWithToken(request, { strict: false });
     if (auth) return auth;
 
     const { searchParams } = new URL(request.url);
-
-    // 验证参数
     const params = validateParams(searchParams);
+    const { whereClause, values } = buildWhereClause(params);
 
-    const supabase = supabaseAdmin;
+    const sql = `
+      SELECT * FROM manipulation_detections
+      ${whereClause}
+      ORDER BY detected_at DESC
+      LIMIT $${values.length + 1} OFFSET $${values.length + 2}
+    `;
 
-    let query = supabase
-      .from('manipulation_detections')
-      .select('*')
-      .order('detected_at', { ascending: false })
-      .limit(params.limit)
-      .range(params.offset, params.offset + params.limit - 1);
+    const result = await query<DetectionRow>(sql, [...values, params.limit, params.offset]);
 
-    if (params.protocol) query = query.eq('protocol', params.protocol);
-    if (params.symbol) query = query.eq('symbol', params.symbol);
-    if (params.chain) query = query.eq('chain', params.chain);
-    if (params.type) query = query.eq('type', params.type);
-    if (params.severity) query = query.eq('severity', params.severity);
-    if (params.startTime)
-      query = query.gte('detected_at', new Date(params.startTime).toISOString());
-    if (params.endTime) query = query.lte('detected_at', new Date(params.endTime).toISOString());
-
-    const { data, error } = await query;
-
-    if (error) {
-      logger.error('Failed to fetch detections', { error: error.message });
-      return NextResponse.json(
-        createErrorResponse(
-          new AppError('Failed to fetch detections', {
-            category: 'INTERNAL',
-            statusCode: 500,
-            code: 'DATABASE_ERROR',
-            cause: error,
-          }),
-        ),
-        { status: 500 },
-      );
-    }
-
-    const detections = ((data as DetectionRow[]) || []).map((row) => ({
+    const detections = result.rows.map((row) => ({
       id: row.id,
       protocol: row.protocol,
       symbol: row.symbol,

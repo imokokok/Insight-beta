@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { query } from '@/server/db';
 import { requireAdminWithToken } from '@/server/apiResponse';
 
 interface DetectionRow {
@@ -24,6 +24,43 @@ interface DetectionRow {
   suspicious_transactions: unknown;
 }
 
+function buildWhereClause(params: {
+  startDate?: string | null;
+  endDate?: string | null;
+  protocol?: string | null;
+  severity?: string | null;
+  type?: string | null;
+}): { whereClause: string; values: string[] } {
+  const conditions: string[] = [];
+  const values: string[] = [];
+  let paramIndex = 1;
+
+  if (params.startDate) {
+    conditions.push(`detected_at >= $${paramIndex++}`);
+    values.push(params.startDate);
+  }
+  if (params.endDate) {
+    conditions.push(`detected_at <= $${paramIndex++}`);
+    values.push(params.endDate);
+  }
+  if (params.protocol) {
+    conditions.push(`protocol = $${paramIndex++}`);
+    values.push(params.protocol);
+  }
+  if (params.severity) {
+    conditions.push(`severity = $${paramIndex++}`);
+    values.push(params.severity);
+  }
+  if (params.type) {
+    conditions.push(`type = $${paramIndex++}`);
+    values.push(params.type);
+  }
+
+  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+  return { whereClause, values };
+}
+
 export async function GET(request: NextRequest) {
   try {
     const auth = await requireAdminWithToken(request, { strict: false });
@@ -38,23 +75,26 @@ export async function GET(request: NextRequest) {
     const severity = searchParams.get('severity');
     const type = searchParams.get('type');
 
-    const supabase = supabaseAdmin;
+    const { whereClause, values } = buildWhereClause({
+      startDate,
+      endDate,
+      protocol,
+      severity,
+      type,
+    });
 
-    let query = supabase
-      .from('manipulation_detections')
-      .select('*')
-      .order('detected_at', { ascending: false });
+    let detections: DetectionRow[] = [];
 
-    if (startDate) query = query.gte('detected_at', startDate);
-    if (endDate) query = query.lte('detected_at', endDate);
-    if (protocol) query = query.eq('protocol', protocol);
-    if (severity) query = query.eq('severity', severity);
-    if (type) query = query.eq('type', type);
-
-    const { data: detections, error } = await query;
-
-    if (error) {
-      logger.error('Failed to fetch detections for export', { error: error.message });
+    try {
+      const result = await query<DetectionRow>(
+        `SELECT * FROM manipulation_detections ${whereClause} ORDER BY detected_at DESC`,
+        values,
+      );
+      detections = result.rows;
+    } catch (error) {
+      logger.error('Failed to fetch detections for export', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return NextResponse.json({ error: 'Failed to fetch detections' }, { status: 500 });
     }
 
@@ -101,7 +141,7 @@ export async function GET(request: NextRequest) {
         '备注',
       ];
 
-      const rows = ((detections as DetectionRow[]) || []).map((d) => [
+      const rows = detections.map((d) => [
         d.id,
         new Date(d.detected_at).toLocaleString('zh-CN'),
         d.protocol,
@@ -139,12 +179,12 @@ export async function GET(request: NextRequest) {
           type,
         },
         summary: {
-          totalDetections: detections?.length || 0,
+          totalDetections: detections.length,
           bySeverity: {} as Record<string, number>,
           byType: {} as Record<string, number>,
           byProtocol: {} as Record<string, number>,
         },
-        detections: ((detections as DetectionRow[]) || []).map((d) => ({
+        detections: detections.map((d) => ({
           id: d.id,
           detectedAt: d.detected_at,
           protocol: d.protocol,
@@ -167,8 +207,7 @@ export async function GET(request: NextRequest) {
         })),
       };
 
-      // Calculate summary statistics
-      ((detections as DetectionRow[]) || []).forEach((d) => {
+      detections.forEach((d) => {
         report.summary.bySeverity[d.severity] = (report.summary.bySeverity[d.severity] || 0) + 1;
         report.summary.byType[d.type] = (report.summary.byType[d.type] || 0) + 1;
         report.summary.byProtocol[d.protocol] = (report.summary.byProtocol[d.protocol] || 0) + 1;

@@ -22,7 +22,6 @@ import {
   Shield,
   Clock,
   Layers,
-  Menu,
   AlertCircle,
   TrendingUp,
 } from 'lucide-react';
@@ -38,6 +37,7 @@ import {
   StaggerItem,
 } from '@/components/common/AnimatedContainer';
 import { ChartCard } from '@/components/common/ChartCard';
+import { DashboardPageHeader } from '@/components/common/PageHeader';
 import {
   EnhancedStatCard,
   StatCardGroup,
@@ -47,14 +47,12 @@ import {
 import {
   EmptyDashboardState,
   LoadingOverlay,
+  RefreshStrategyVisualizer,
 } from '@/components/ui';
-import { Button } from '@/components/ui/button';
 import { ErrorBanner } from '@/components/ui/error-banner';
-import { RefreshIndicator } from '@/components/ui/refresh-indicator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getRefreshStrategy } from '@/config/refresh-strategy';
 import { useWebSocket, useIsMobile } from '@/hooks';
-import { useAutoRefresh } from '@/hooks/use-auto-refresh';
+import { useAutoRefreshWithStats } from '@/hooks/use-auto-refresh-with-stats';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { logger } from '@/lib/logger';
 import { fetchApiData, cn, formatNumber } from '@/lib/utils';
@@ -207,8 +205,16 @@ export default function OptimizedOracleDashboard() {
   });
 
   // Auto refresh
-  const dashboardStrategy = getRefreshStrategy('dashboard-overview');
-  const { lastUpdated, isRefreshing, isError, error, refresh } = useAutoRefresh({
+  const {
+    lastUpdated,
+    isRefreshing,
+    isError,
+    error,
+    refresh,
+    strategy,
+    refreshHistory,
+    refreshStats,
+  } = useAutoRefreshWithStats({
     pageId: 'dashboard-overview',
     fetchFn: useCallback(async () => {
       const data = await fetchApiData<DashboardStats>('/api/oracle/stats');
@@ -376,31 +382,27 @@ export default function OptimizedOracleDashboard() {
 
       {/* Main Content */}
       <main className="flex flex-1 flex-col overflow-hidden">
-        {/* Header */}
-        <header className="border-b border-gray-200/50 bg-white/80 px-4 py-3 backdrop-blur-sm lg:px-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSidebarOpen(true)}>
-                <Menu className="h-5 w-5" />
-              </Button>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900 lg:text-2xl">Oracle Operations Overview</h1>
-                <p className="text-muted-foreground hidden text-sm sm:block">Real-time health and risk monitoring</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 sm:gap-4">
-              <HealthStatusBadge activeAlerts={stats?.activeAlerts ?? 0} isConnected={isConnected} />
-              <div className="hidden h-6 w-px bg-gray-200 sm:block" />
-              <RefreshIndicator
-                lastUpdated={lastUpdated}
-                isRefreshing={isRefreshing}
-                strategy={dashboardStrategy}
-                isWebSocketConnected={isConnected}
-                onRefresh={refresh}
-              />
-            </div>
-          </div>
-        </header>
+        <DashboardPageHeader
+          title="Oracle Operations Overview"
+          description="Real-time health and risk monitoring"
+          icon={<Activity className="h-5 w-5 text-purple-600" />}
+          statusBadge={<HealthStatusBadge activeAlerts={stats?.activeAlerts ?? 0} isConnected={isConnected} />}
+          refreshControl={
+            <RefreshStrategyVisualizer
+              strategy={strategy}
+              lastUpdated={lastUpdated}
+              isRefreshing={isRefreshing}
+              isWebSocketConnected={isConnected}
+              onRefresh={refresh}
+              refreshHistory={refreshHistory}
+              refreshStats={refreshStats}
+              showHistory={true}
+              showStats={true}
+              compact={isMobile}
+            />
+          }
+          onMobileMenuClick={() => setSidebarOpen(true)}
+        />
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto p-2 sm:p-3 lg:p-4 relative">
