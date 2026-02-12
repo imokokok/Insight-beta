@@ -25,6 +25,23 @@ import { Badge } from '@/components/ui/badge';
 import { useI18n } from '@/i18n';
 import { cn, fetchApiData } from '@/lib/utils';
 import { useCommonShortcuts } from '@/hooks/useKeyboardShortcuts';
+import {
+  StaggerContainer,
+  StaggerItem,
+  FadeIn,
+} from '@/components/common/AnimatedContainer';
+import {
+  Container,
+  DashboardGrid,
+  Stack,
+  Row,
+} from '@/components/common/Layout';
+import {
+  ResponsiveGrid,
+  ResponsivePadding,
+  MobileOnly,
+  DesktopOnly,
+} from '@/components/common/Responsive';
 
 interface PlatformStats {
   totalProtocols: number;
