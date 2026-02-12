@@ -3,7 +3,7 @@
  * 将各协议特有的配置集中管理，避免重复代码
  */
 
-import type { OracleProtocol } from './types';
+import type { OracleProtocol } from '@/types';
 
 export interface ProtocolConfig {
   id: OracleProtocol;

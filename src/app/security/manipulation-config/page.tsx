@@ -31,8 +31,8 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useI18n } from '@/i18n';
-import { logger } from '@/lib/logger';
-import { cn } from '@/lib/utils';
+import { logger } from '@/shared/logger';
+import { cn } from '@/shared/utils';
 
 interface DetectionConfig {
   // Statistical anomaly

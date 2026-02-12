@@ -7,9 +7,9 @@
 
 import type { NextRequest } from 'next/server';
 
-import { logger } from '@/lib/logger';
-import { apiSuccess, withErrorHandler, getQueryParam } from '@/lib/utils';
-import { query } from '@/server/db';
+import { logger } from '@/shared/logger';
+import { apiSuccess, withErrorHandler, getQueryParam } from '@/shared/utils';
+import { query } from '@/infrastructure/database/db';
 
 interface LatencyRow {
   protocol: string;

@@ -7,8 +7,8 @@
 
 import type { NextRequest } from 'next/server';
 
-import { logger } from '@/lib/logger';
-import { apiSuccess, withErrorHandler, getQueryParam } from '@/lib/utils';
+import { logger } from '@/shared/logger';
+import { apiSuccess, withErrorHandler, getQueryParam } from '@/shared/utils';
 
 export const GET = withErrorHandler(async (request: NextRequest) => {
   const requestStartTime = performance.now();

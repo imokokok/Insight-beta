@@ -14,9 +14,9 @@ import {
   isWalletBrowser,
   getWalletName,
   WALLET_CONNECT_PROJECT_ID,
-} from '@/lib/blockchain/walletConnect';
-import { normalizeWalletError } from '@/lib/errors/walletErrors';
-import { logger } from '@/lib/logger';
+} from '@/infrastructure/blockchain/walletConnect';
+import { normalizeWalletError } from '@/shared/errors/walletErrors';
+import { logger } from '@/shared/logger';
 import { isMobile as isMobileEnhanced } from '@/lib/mobile';
 
 interface WalletOption {

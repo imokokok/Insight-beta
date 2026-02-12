@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { DisputeList } from './DisputeList';
-import type { Dispute } from '@/lib/types/oracleTypes';
+import type { Dispute } from '@/types/oracleTypes';
 
 vi.mock('@/i18n/LanguageProvider', () => ({
   useI18n: () => ({

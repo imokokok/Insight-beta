@@ -25,7 +25,7 @@ import {
   getResponsiveFontSize,
   RESPONSIVE_PATTERNS,
 } from '@/lib/design-system/tokens/responsive';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 // ============================================================================
 // Types

@@ -25,8 +25,8 @@ import {
 import { PageHeader } from '@/components/common/PageHeader';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { langToLocale } from '@/i18n/translations';
-import { logger } from '@/lib/logger';
-import { cn, fetchApiData } from '@/lib/utils';
+import { logger } from '@/shared/logger';
+import { cn, fetchApiData } from '@/shared/utils';
 
 // 支持多协议乐观预言机
 interface OptimisticProtocol {

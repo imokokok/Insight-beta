@@ -19,9 +19,9 @@ import type {
 import { Skeleton } from '@/components/ui/skeleton';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage, langToLocale } from '@/i18n/translations';
-import { cn, fetchApiData, formatPercent as formatPercentUtil } from '@/lib/utils';
-import type { PricePoint } from '@/server/oracle/priceFetcher';
-import { calculateHealthScore } from '@/server/oracle/priceFetcher';
+import { cn, fetchApiData, formatPercent as formatPercentUtil } from '@/shared/utils';
+import type { PricePoint } from '@/services/oracle/priceFetcher';
+import { calculateHealthScore } from '@/services/oracle/priceFetcher';
 
 const getTabBorder = (activeTab: TabKey) =>
   activeTab === 'activity'

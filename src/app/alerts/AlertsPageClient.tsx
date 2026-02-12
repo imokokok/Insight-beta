@@ -27,7 +27,7 @@ import {
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage, langToLocale } from '@/i18n/translations';
-import { DEBOUNCE_CONFIG } from '@/lib/config/constants';
+import { DEBOUNCE_CONFIG } from '@/config/constants';
 import type {
   Alert,
   AlertRule,
@@ -36,8 +36,8 @@ import type {
   Incident,
   OpsMetrics,
   OracleInstance,
-} from '@/lib/types/oracleTypes';
-import { fetchApiData, getErrorCode, mergeOracleFilters, buildApiUrl } from '@/lib/utils';
+} from '@/types/oracleTypes';
+import { fetchApiData, getErrorCode, mergeOracleFilters, buildApiUrl } from '@/shared/utils';
 import {
   formatSloTarget,
   formatSloValue,
@@ -47,7 +47,7 @@ import {
   sloAlertTypes,
   sloLabels,
   sloStatusLabel,
-} from '@/lib/utils/alertsUtils';
+} from '@/shared/utils/alertsUtils';
 
 import {
   AlertCard,

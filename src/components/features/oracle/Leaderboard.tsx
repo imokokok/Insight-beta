@@ -7,9 +7,9 @@ import Link from 'next/link';
 import { Award, TrendingUp, User, Trophy, ShieldCheck, Loader2 } from 'lucide-react';
 
 import { useI18n } from '@/i18n/LanguageProvider';
-import { logger } from '@/lib/logger';
-import type { LeaderboardStats } from '@/lib/types/oracleTypes';
-import { cn, fetchApiData } from '@/lib/utils';
+import { logger } from '@/shared/logger';
+import type { LeaderboardStats } from '@/types/oracleTypes';
+import { cn, fetchApiData } from '@/shared/utils';
 
 interface RankItemProps {
   rank: number;

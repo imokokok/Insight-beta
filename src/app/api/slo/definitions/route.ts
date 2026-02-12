@@ -6,8 +6,8 @@
 
 import { NextResponse } from 'next/server';
 
-import { logger } from '@/lib/logger';
-import { query } from '@/server/db';
+import { logger } from '@/shared/logger';
+import { query } from '@/infrastructure/database/db';
 
 // GET /api/slo/definitions - 获取 SLO 定义列表
 export async function GET(request: Request) {

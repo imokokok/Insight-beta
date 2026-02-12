@@ -6,7 +6,7 @@ import { Clock, CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { useI18n } from '@/i18n';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 type FreshnessLevel = 'fresh' | 'warning' | 'stale' | 'expired' | 'updating';
 

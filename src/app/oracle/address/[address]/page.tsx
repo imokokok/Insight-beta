@@ -16,7 +16,7 @@ import { UserStatsCard } from '@/components/features/wallet/UserStatsCard';
 import { useDisputes, useOracleData, useUserStats } from '@/hooks';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage } from '@/i18n/translations';
-import { cn, getExplorerUrl } from '@/lib/utils';
+import { cn, getExplorerUrl } from '@/shared/utils';
 
 
 

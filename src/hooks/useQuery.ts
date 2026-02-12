@@ -8,7 +8,7 @@ import { useCallback, useMemo } from 'react';
 
 import useSWR from 'swr';
 
-import { fetchApiData } from '@/lib/utils';
+import { fetchApiData } from '@/shared/utils';
 
 // ============================================================================
 // 类型定义

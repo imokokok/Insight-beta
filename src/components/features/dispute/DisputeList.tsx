@@ -18,8 +18,8 @@ import { SkeletonList } from '@/components/ui/skeleton';
 import { useWatchlist } from '@/hooks';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { langToLocale, type TranslationKey } from '@/i18n/translations';
-import type { Dispute, DisputeStatus } from '@/lib/types/oracleTypes';
-import { cn, formatTime, getExplorerUrl, truncateAddress } from '@/lib/utils';
+import type { Dispute, DisputeStatus } from '@/types/oracleTypes';
+import { cn, formatTime, getExplorerUrl, truncateAddress } from '@/shared/utils';
 
 import type { Route } from 'next';
 

@@ -6,8 +6,8 @@
 
 import type { NextRequest } from 'next/server';
 
-import { apiSuccess, withErrorHandler, getQueryParam } from '@/lib/utils';
-import { performanceMonitor } from '@/server/monitoring/performanceMonitor';
+import { apiSuccess, withErrorHandler, getQueryParam } from '@/shared/utils';
+import { performanceMonitor } from '@/services/monitoring/performanceMonitor';
 
 /**
  * GET /api/monitoring/metrics

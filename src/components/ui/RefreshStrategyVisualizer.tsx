@@ -48,7 +48,7 @@ import {
   formatCountdown,
   REFRESH_STRATEGIES,
 } from '@/config/refreshStrategy';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 interface RefreshStrategyVisualizerProps {
   strategy: RefreshStrategyConfig;

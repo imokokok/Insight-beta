@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { fetchApiData, ApiClientError } from '@/lib/utils';
+import { fetchApiData, ApiClientError } from '@/shared/utils';
 
 describe('Network Exception Simulation Tests', () => {
   beforeEach(() => {

@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 import { useState, useRef, useEffect, useCallback } from 'react';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 type TooltipPosition = 'top' | 'bottom' | 'left' | 'right';
 type TooltipTheme = 'default' | 'info' | 'warning' | 'error' | 'success';

@@ -29,7 +29,7 @@ import type {
   SlackConfig,
   TelegramConfig,
   PagerDutyConfig
-} from '@/server/alerts/notifications/types';
+} from '@/services/alert/notifications/types';
 
 export interface ChannelConfig {
   name: string;

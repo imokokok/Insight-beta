@@ -7,7 +7,7 @@ import { AlertTriangle, Clock, Database, RefreshCw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useI18n } from '@/i18n';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 export type FallbackDataStatus = 'fresh' | 'stale' | 'circuit-breaker' | 'error';
 

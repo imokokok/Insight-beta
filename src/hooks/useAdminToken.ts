@@ -13,7 +13,7 @@ import {
   getAdminToken,
   setAdminToken,
   clearAdminToken,
-} from '@/lib/utils/storage';
+} from '@/shared/utils/storage';
 
 export interface UseAdminTokenOptions {
   /** 是否持久化到 sessionStorage */

@@ -20,8 +20,8 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { CrossChainDashboardData } from '@/hooks/useCrossChain';
 import { useI18n } from '@/i18n';
-import { STATUS_COLORS } from '@/lib/types/common';
-import { cn, formatPercentValue, formatPercent } from '@/lib/utils';
+import { STATUS_COLORS } from '@/types/common';
+import { cn, formatPercentValue, formatPercent } from '@/shared/utils';
 
 interface CrossChainDashboardCardProps {
   data?: CrossChainDashboardData;

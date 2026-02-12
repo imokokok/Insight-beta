@@ -52,7 +52,7 @@ vi.mock('@/lib/utils/api', () => ({
   },
 }));
 
-import { fetchApiData } from '@/lib/utils/api';
+import { fetchApiData } from '@/shared/utils/api';
 
 const mockedFetchApiData = vi.mocked(fetchApiData);
 const mockedUseRouter = vi.mocked(useRouter);

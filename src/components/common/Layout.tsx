@@ -22,7 +22,7 @@ import {
   RESPONSIVE_PADDING,
   getDensityConfig,
 } from '@/lib/design-system/tokens/layout';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 // ============================================================================
 // Density Context

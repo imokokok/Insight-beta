@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight, Check, MapPin, Bell, Layers, Star } from 'lucide-react';
 
 import { useI18n } from '@/i18n/LanguageProvider';
-import { cn, getStorageItem, setStorageItem } from '@/lib/utils';
+import { cn, getStorageItem, setStorageItem } from '@/shared/utils';
 
 export interface TourStep {
   id: string;

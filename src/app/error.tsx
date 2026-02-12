@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 
 import { ErrorFallback } from '@/components/common/ErrorHandler';
 import { useI18n } from '@/i18n';
-import { logger } from '@/lib/logger';
+import { logger } from '@/shared/logger';
 
 interface ErrorProps {
   error: Error & { digest?: string };

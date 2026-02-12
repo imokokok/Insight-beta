@@ -1,11 +1,11 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { logger } from '@/lib/logger';
-import { manipulationDetectionService } from '@/lib/services/manipulationDetectionService';
-import { query } from '@/server/db';
-import type { OracleProtocol, SupportedChain } from '@/lib/types';
-import { requireAdminWithToken } from '@/server/apiResponse';
+import { logger } from '@/shared/logger';
+import { manipulationDetectionService } from '@/services/security/manipulationDetectionService';
+import { query } from '@/infrastructure/database/db';
+import type { OracleProtocol, SupportedChain } from '@/types';
+import { requireAdminWithToken } from '@/infrastructure/api/apiResponse';
 
 interface StartMonitorBody {
   protocol?: string;

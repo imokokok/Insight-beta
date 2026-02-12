@@ -3,7 +3,7 @@ import type { ComponentType } from 'react';
 import dynamic, { type DynamicOptions, type Loader } from 'next/dynamic';
 
 import { createLoadingComponent, type LoadingType } from '@/components/common/DynamicLoading';
-import { logger } from '@/lib/logger';
+import { logger } from '@/shared/logger';
 
 // ============================================================================
 // 动态导入配置类型定义

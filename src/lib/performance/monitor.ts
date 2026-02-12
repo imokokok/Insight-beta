@@ -3,7 +3,7 @@
  * 用于监控 Web Vitals 和自定义性能指标
  */
 
-import { logger } from '@/lib/logger';
+import { logger } from '@/shared/logger';
 
 // Web Vitals 指标类型
 export interface WebVitalsMetric {

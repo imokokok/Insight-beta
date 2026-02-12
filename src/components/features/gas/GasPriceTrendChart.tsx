@@ -18,7 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import type { GasPriceTrend } from '@/hooks/useGasPrice';
 import { useI18n } from '@/i18n';
-import { cn, formatChangePercent, formatPercentValue } from '@/lib/utils';
+import { cn, formatChangePercent, formatPercentValue } from '@/shared/utils';
 
 interface GasPriceTrendChartProps {
   data?: GasPriceTrend;

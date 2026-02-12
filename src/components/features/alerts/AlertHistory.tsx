@@ -25,8 +25,8 @@ import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useI18n } from '@/i18n';
-import type { AlertHistoryRecord, ChannelHealthStatus } from '@/server/alerts/notificationManager';
-import type { AlertSeverity, NotificationChannel } from '@/server/alerts/notifications/types';
+import type { AlertHistoryRecord, ChannelHealthStatus } from '@/services/alert/notificationManager';
+import type { AlertSeverity, NotificationChannel } from '@/services/alert/notifications/types';
 
 function cn(...classes: (string | boolean | undefined)[]) {
   return classes.filter(Boolean).join(' ');

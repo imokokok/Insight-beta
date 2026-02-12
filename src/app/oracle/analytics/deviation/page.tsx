@@ -61,8 +61,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAutoRefreshLegacy, useDataCache } from '@/hooks';
 import { useAutoRefreshWithStats } from '@/hooks/useAutoRefreshWithStats';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
-import { logger } from '@/lib/logger';
-import { fetchApiData, cn, formatTime } from '@/lib/utils';
+import { logger } from '@/shared/logger';
+import { fetchApiData, cn, formatTime } from '@/shared/utils';
 
 // ============================================================================
 // Types

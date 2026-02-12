@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { GasPriceHealthResponse } from '@/hooks/useGasPrice';
-import { cn, formatPercentValue } from '@/lib/utils';
+import { cn, formatPercentValue } from '@/shared/utils';
 
 interface GasProviderHealthCardProps {
   data?: GasPriceHealthResponse;

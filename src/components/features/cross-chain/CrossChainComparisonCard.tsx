@@ -20,7 +20,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { CrossChainComparisonData } from '@/hooks/useCrossChain';
 import { useI18n } from '@/i18n';
-import { cn, formatPrice, formatChangePercent, formatConfidence } from '@/lib/utils';
+import { cn, formatPrice, formatChangePercent, formatConfidence } from '@/shared/utils';
 
 interface CrossChainComparisonCardProps {
   data?: CrossChainComparisonData;

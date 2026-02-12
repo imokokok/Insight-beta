@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
 
-import { apiSuccess, apiError, withErrorHandler, getQueryParam } from '@/lib/utils';
-import { crossChainAnalysisService } from '@/server/oracle/crossChainAnalysisService';
+import { apiSuccess, apiError, withErrorHandler, getQueryParam } from '@/shared/utils';
+import { crossChainAnalysisService } from '@/services/oracle/crossChainAnalysisService';
 
 export const GET = withErrorHandler(async (request: NextRequest) => {
   const symbol = getQueryParam(request, 'symbol');

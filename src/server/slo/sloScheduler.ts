@@ -4,8 +4,8 @@
  * SLO 定时任务服务 - 定期执行 SLO 评估和告警检查
  */
 
-import { logger } from '@/lib/logger';
-import { NotificationService } from '@/server/alerts/notifications';
+import { logger } from '@/shared/logger';
+import { NotificationService } from '@/services/alert/notifications';
 
 // ============================================================================
 // 配置

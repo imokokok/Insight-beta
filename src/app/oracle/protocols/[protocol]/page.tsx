@@ -20,11 +20,11 @@ import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { Progress } from '@/components/ui/progress';
 import { ChartSkeleton } from '@/components/ui/skeleton';
 import { useAutoRefreshWithStats } from '@/hooks/useAutoRefreshWithStats';
-import { logger } from '@/lib/logger';
+import { logger } from '@/shared/logger';
 import { getProtocolConfig } from '@/lib/protocol-config';
-import { ORACLE_PROTOCOLS, type OracleProtocol } from '@/lib/types';
-import { SUPPORTED_CHAINS } from '@/lib/types/protocol';
-import { formatTimeAgo, truncateAddress } from '@/lib/utils/format';
+import { ORACLE_PROTOCOLS, type OracleProtocol } from '@/types';
+import { SUPPORTED_CHAINS } from '@/types/protocol';
+import { formatTimeAgo, truncateAddress } from '@/shared/utils/format';
 
 // 将 OracleProtocol 转换为 ProtocolComparisonData
 const convertToComparisonData = (protocols: OracleProtocol[]): ProtocolComparisonData[] => {

@@ -20,8 +20,8 @@ import { useDisputes, useUserStats } from '@/hooks';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage } from '@/i18n/translations';
-import type { OracleConfig, OracleInstance, DisputeStatus } from '@/lib/types/oracleTypes';
-import { fetchApiData } from '@/lib/utils';
+import type { OracleConfig, OracleInstance, DisputeStatus } from '@/types/oracleTypes';
+import { fetchApiData } from '@/shared/utils';
 
 import type { Route } from 'next';
 

@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react';
 
 import useSWRInfinite from 'swr/infinite';
 
-import { fetchApiData } from '@/lib/utils';
+import { fetchApiData } from '@/shared/utils';
 
 // Re-export useDebounce from the dedicated hook file
 export { useDebounce } from './useDebounce';

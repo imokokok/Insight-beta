@@ -5,8 +5,8 @@
  * 确保错误被正确记录和上报
  */
 
-import { logger } from '@/lib/logger';
-import { gracefulShutdown } from '@/server/db';
+import { logger } from '@/shared/logger';
+import { gracefulShutdown } from '@/infrastructure/database/db';
 
 let isInitialized = false;
 

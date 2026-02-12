@@ -13,8 +13,8 @@ import type {
   SupportedChain,
   OracleProtocol,
   UnifiedPriceFeed,
-} from '@/lib/types/unifiedOracleTypes';
-import type { IOracleClient } from '@/server/oracle/sync/BaseSyncManager';
+} from '@/types/unifiedOracleTypes';
+import type { IOracleClient } from '@/services/oracle/sync/BaseSyncManager';
 
 // Mock logger
 vi.mock('@/lib/logger', () => ({
@@ -31,7 +31,7 @@ vi.mock('@/server/db', () => ({
   query: vi.fn(),
 }));
 
-import { query } from '@/server/db';
+import { query } from '@/infrastructure/database/db';
 
 // 创建 Mock Oracle Client
 class MockOracleClient implements IOracleClient {

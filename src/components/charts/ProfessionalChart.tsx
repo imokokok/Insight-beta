@@ -24,7 +24,7 @@ import {
   AreaChart,
 } from 'recharts';
 
-import { cn, formatChangePercent } from '@/lib/utils';
+import { cn, formatChangePercent } from '@/shared/utils';
 
 // ============================================================================
 // Types

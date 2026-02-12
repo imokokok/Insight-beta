@@ -5,7 +5,7 @@ import useSWR from 'swr';
 
 import { useI18n } from '@/i18n/LanguageProvider';
 import { langToLocale } from '@/i18n/translations';
-import { fetchApiData, cn, formatTime } from '@/lib/utils';
+import { fetchApiData, cn, formatTime } from '@/shared/utils';
 
 interface SyncResponse {
   chain: string;

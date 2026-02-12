@@ -25,7 +25,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useI18n } from '@/i18n';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 export interface ProtocolComparisonData {
   id: string;

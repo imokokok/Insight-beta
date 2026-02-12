@@ -17,10 +17,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useWebSocket } from '@/hooks';
-import { logger } from '@/lib/logger';
-import { PROTOCOL_DISPLAY_NAMES } from '@/lib/types/oracle';
-import type { OracleProtocol } from '@/lib/types/unifiedOracleTypes';
-import { cn, fetchApiData, formatTimeAgo } from '@/lib/utils';
+import { logger } from '@/shared/logger';
+import { PROTOCOL_DISPLAY_NAMES } from '@/types/oracle';
+import type { OracleProtocol } from '@/types/unifiedOracleTypes';
+import { cn, fetchApiData, formatTimeAgo } from '@/shared/utils';
 
 // 本地类型定义（兼容组件需求）
 interface PriceFeed {

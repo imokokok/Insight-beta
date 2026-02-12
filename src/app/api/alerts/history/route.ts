@@ -7,9 +7,9 @@
 import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { logger } from '@/lib/logger';
-import { notificationManager } from '@/server/alerts/notificationManager';
-import type { AlertSeverity } from '@/server/alerts/notifications/types';
+import { logger } from '@/shared/logger';
+import { notificationManager } from '@/services/alert/notificationManager';
+import type { AlertSeverity } from '@/services/alert/notifications/types';
 
 /**
  * GET /api/alerts/history

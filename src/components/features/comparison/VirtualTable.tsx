@@ -26,10 +26,10 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useI18n } from '@/i18n';
 import { statusColors } from '@/lib/constants/colors';
-import type { RealtimeComparisonItem } from '@/lib/types/oracle';
-import { PROTOCOL_DISPLAY_NAMES } from '@/lib/types/oracle';
-import { cn } from '@/lib/utils';
-import { exportRealtimeToCSV } from '@/lib/utils/export';
+import type { RealtimeComparisonItem } from '@/types/oracle';
+import { PROTOCOL_DISPLAY_NAMES } from '@/types/oracle';
+import { cn } from '@/shared/utils';
+import { exportRealtimeToCSV } from '@/shared/utils/export';
 
 // ============================================================================
 // Types

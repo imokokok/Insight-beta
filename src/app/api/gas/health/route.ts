@@ -1,5 +1,5 @@
-import { apiSuccess, withErrorHandler } from '@/lib/utils';
-import { gasPriceService } from '@/server/gas';
+import { apiSuccess, withErrorHandler } from '@/shared/utils';
+import { gasPriceService } from '@/services/gas';
 
 export const GET = withErrorHandler(async () => {
   const health = gasPriceService.getProviderHealth();

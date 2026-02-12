@@ -27,21 +27,21 @@ import { useComparisonData } from '@/hooks/useComparison';
 import { useDebounce } from '@/hooks/useDebounce';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n';
-import { logger } from '@/lib/logger';
-import { ORACLE_PROTOCOLS, PROTOCOL_DISPLAY_NAMES } from '@/lib/types/oracle';
+import { logger } from '@/shared/logger';
+import { ORACLE_PROTOCOLS, PROTOCOL_DISPLAY_NAMES } from '@/types/oracle';
 import type {
   ComparisonFilter,
   ComparisonConfig,
   ComparisonView,
   PriceDeviationCell,
-} from '@/lib/types/oracle/comparison';
+} from '@/types/oracle/comparison';
 import {
   exportRealtimeToCSV,
   exportHeatmapToCSV,
   exportLatencyToCSV,
   exportCostToCSV,
   exportAllToJSON,
-} from '@/lib/utils/export';
+} from '@/shared/utils/export';
 
 // ============================================================================
 // 动态导入大型组件

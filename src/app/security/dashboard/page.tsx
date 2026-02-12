@@ -52,7 +52,7 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useIsMobile } from '@/hooks';
 import { useAutoRefreshWithStats } from '@/hooks/useAutoRefreshWithStats';
-import { cn, formatNumber } from '@/lib/utils';
+import { cn, formatNumber } from '@/shared/utils';
 
 const EnhancedAreaChart = dynamic(
   () => import('@/components/charts').then((mod) => mod.EnhancedAreaChart),

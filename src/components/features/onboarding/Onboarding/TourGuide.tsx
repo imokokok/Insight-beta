@@ -6,8 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight, Check, AlertTriangle } from 'lucide-react';
 
 import { useI18n } from '@/i18n/LanguageProvider';
-import { logger } from '@/lib/logger';
-import { cn } from '@/lib/utils';
+import { logger } from '@/shared/logger';
+import { cn } from '@/shared/utils';
 
 export interface TourStep {
   id: string;

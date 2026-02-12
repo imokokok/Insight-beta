@@ -28,8 +28,8 @@ import { useIsMobile } from '@/hooks';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage, langToLocale, type TranslationKey } from '@/i18n/translations';
-import type { Dispute, DisputeStatus, OracleChain } from '@/lib/types/oracleTypes';
-import { calculatePercentage, cn, fetchApiData, formatTime, truncateAddress, getOracleInstanceId, setOracleInstanceId, buildApiUrl } from '@/lib/utils';
+import type { Dispute, DisputeStatus, OracleChain } from '@/types/oracleTypes';
+import { calculatePercentage, cn, fetchApiData, formatTime, truncateAddress, getOracleInstanceId, setOracleInstanceId, buildApiUrl } from '@/shared/utils';
 
 import type { Route } from 'next';
 

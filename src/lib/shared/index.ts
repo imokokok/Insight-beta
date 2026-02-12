@@ -39,7 +39,7 @@ export {
   normalizeError,
   getErrorMessage,
   withRetry,
-} from '@/lib/errors';
+} from '@/shared/errors';
 
 // 日志工具
 export { LoggerFactory, createLogger, createOracleLogger } from './logger/LoggerFactory';

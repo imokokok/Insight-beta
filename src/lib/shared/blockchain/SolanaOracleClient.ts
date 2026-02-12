@@ -10,16 +10,16 @@
 
 import { Connection, type PublicKey, type Commitment } from '@solana/web3.js';
 
-import { BaseOracleClient } from '@/lib/blockchain/core/BaseOracleClient';
+import { BaseOracleClient } from '@/infrastructure/blockchain/core/BaseOracleClient';
 import type {
   OracleClientConfig,
   OracleHealthStatus,
   HealthStatus,
-} from '@/lib/blockchain/core/types';
-import { normalizeSymbol } from '@/lib/blockchain/core/types';
-import { ErrorHandler, normalizeError } from '@/lib/errors';
+} from '@/infrastructure/blockchain/core/types';
+import { normalizeSymbol } from '@/infrastructure/blockchain/core/types';
+import { ErrorHandler, normalizeError } from '@/shared/errors';
 import { LoggerFactory } from '@/lib/shared/logger/LoggerFactory';
-import type { SupportedChain, UnifiedPriceFeed } from '@/lib/types/unifiedOracleTypes';
+import type { SupportedChain, UnifiedPriceFeed } from '@/types/unifiedOracleTypes';
 
 export interface SolanaOracleClientConfig extends OracleClientConfig {
   /** 程序 ID (合约地址) */

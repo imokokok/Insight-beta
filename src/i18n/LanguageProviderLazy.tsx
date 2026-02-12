@@ -22,7 +22,7 @@ import {
   formatRelativeTime,
   getNestedValue,
 } from '@/i18n/utils';
-import { logger } from '@/lib/logger';
+import { logger } from '@/shared/logger';
 
 import { loadTranslations, isTranslationLoaded, preloadTranslations } from './loader';
 

@@ -5,8 +5,8 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
 
 import { Input } from '@/components/ui/input';
-import { logger } from '@/lib/logger';
-import type { AlertRule } from '@/lib/types/oracleTypes';
+import { logger } from '@/shared/logger';
+import type { AlertRule } from '@/types/oracleTypes';
 
 interface RecipientInputProps {
   rule: AlertRule;

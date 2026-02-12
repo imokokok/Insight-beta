@@ -18,8 +18,8 @@ import { useOracleData, useUserStats } from '@/hooks';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage, type TranslationKey } from '@/i18n/translations';
-import type { OracleConfig, OracleStatus, OracleInstance } from '@/lib/types/oracleTypes';
-import { cn, fetchApiData } from '@/lib/utils';
+import type { OracleConfig, OracleStatus, OracleInstance } from '@/types/oracleTypes';
+import { cn, fetchApiData } from '@/shared/utils';
 
 import type { Route } from 'next';
 

@@ -11,7 +11,7 @@ import { TrendingDown, TrendingUp } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { COMPONENT_COLORS } from '@/lib/design-system/tokens/colors';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 import { DataFreshnessIndicator } from '../DataFreshnessIndicator';
 

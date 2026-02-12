@@ -11,7 +11,7 @@
 
 import { useEffect } from 'react';
 
-import { logger } from '@/lib/logger';
+import { logger } from '@/shared/logger';
 
 interface PreloadResource {
   href: string;

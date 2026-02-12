@@ -5,9 +5,9 @@
  * 确保应用在关闭前完成所有进行中的请求和资源清理
  */
 
-import { logger } from '@/lib/logger';
-import { sleep } from '@/lib/utils/common';
-import { syncManager } from '@/server/oracle/syncFramework';
+import { logger } from '@/shared/logger';
+import { sleep } from '@/shared/utils/common';
+import { syncManager } from '@/services/oracle/syncFramework';
 
 // ============================================================================
 // 关闭状态管理

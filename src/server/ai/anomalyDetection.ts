@@ -3,9 +3,9 @@
  * Uses machine learning algorithms to detect price anomalies
  */
 
-import { logger } from '@/lib/logger';
-import { calculateMean, calculateStdDev } from '@/lib/utils/math';
-import { query } from '@/server/db';
+import { logger } from '@/shared/logger';
+import { calculateMean, calculateStdDev } from '@/shared/utils/math';
+import { query } from '@/infrastructure/database/db';
 
 export interface AnomalyConfig {
   // Z-score threshold for statistical anomalies

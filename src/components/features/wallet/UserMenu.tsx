@@ -11,7 +11,7 @@ import { arbitrum, hardhat, mainnet, optimism, polygon, polygonAmoy } from 'viem
 import { useWallet } from '@/contexts/WalletContext';
 import { useBalance, useSwitchChainWithFeedback } from '@/hooks';
 import { useI18n } from '@/i18n/LanguageProvider';
-import { cn, getOracleInstanceId } from '@/lib/utils';
+import { cn, getOracleInstanceId } from '@/shared/utils';
 
 import type { Route } from 'next';
 

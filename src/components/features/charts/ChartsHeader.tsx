@@ -2,7 +2,7 @@
 
 import { Activity, PieChart, Clock, BarChart3, Target } from 'lucide-react';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 import type { TabKey, Translator } from './types';
 

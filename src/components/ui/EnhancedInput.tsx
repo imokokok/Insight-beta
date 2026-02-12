@@ -20,7 +20,7 @@ import {
   Loader2,
 } from 'lucide-react';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 // ==================== 验证状态类型 ====================
 

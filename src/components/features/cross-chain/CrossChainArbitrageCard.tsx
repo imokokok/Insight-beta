@@ -22,8 +22,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import type { CrossChainArbitrageOpportunity, CrossChainArbitrageSummary } from '@/hooks/useCrossChain';
 import { useI18n } from '@/i18n';
-import { RISK_COLORS } from '@/lib/types/common';
-import { cn, formatPrice, formatChangePercent, formatPercentValue } from '@/lib/utils';
+import { RISK_COLORS } from '@/types/common';
+import { cn, formatPrice, formatChangePercent, formatPercentValue } from '@/shared/utils';
 
 interface CrossChainArbitrageCardProps {
   opportunities?: CrossChainArbitrageOpportunity[];

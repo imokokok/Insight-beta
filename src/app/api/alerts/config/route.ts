@@ -7,10 +7,10 @@
 import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { env } from '@/lib/config/env';
-import { logger } from '@/lib/logger';
-import { notificationManager, type NotificationManagerConfig } from '@/server/alerts/notificationManager';
-import type { NotificationConfig } from '@/server/alerts/notifications/types';
+import { env } from '@/config/env';
+import { logger } from '@/shared/logger';
+import { notificationManager, type NotificationManagerConfig } from '@/services/alert/notificationManager';
+import type { NotificationConfig } from '@/services/alert/notifications/types';
 
 // 从环境变量加载配置
 function loadConfigFromEnv(): NotificationManagerConfig {

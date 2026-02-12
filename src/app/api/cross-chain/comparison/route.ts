@@ -1,9 +1,9 @@
 import type { NextRequest } from 'next/server';
 
-import { logger } from '@/lib/logger';
-import type { SupportedChain } from '@/lib/types/unifiedOracleTypes';
-import { apiSuccess, apiError, withErrorHandler, getQueryParam } from '@/lib/utils';
-import { crossChainAnalysisService } from '@/server/oracle/crossChainAnalysisService';
+import { logger } from '@/shared/logger';
+import type { SupportedChain } from '@/types/unifiedOracleTypes';
+import { apiSuccess, apiError, withErrorHandler, getQueryParam } from '@/shared/utils';
+import { crossChainAnalysisService } from '@/services/oracle/crossChainAnalysisService';
 
 const VALID_SYMBOLS = ['BTC', 'ETH', 'SOL', 'LINK', 'AVAX', 'MATIC', 'UNI', 'AAVE'];
 const VALID_CHAINS: SupportedChain[] = [

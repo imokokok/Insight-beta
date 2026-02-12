@@ -7,8 +7,8 @@
  * - 单例模式支持
  */
 
-import type { SupportedChain, OracleProtocol } from '@/lib/types/unifiedOracleTypes';
-import { BaseSyncManager, type IOracleClient, type SyncConfig } from '@/server/oracle/sync/BaseSyncManager';
+import type { SupportedChain, OracleProtocol } from '@/types/unifiedOracleTypes';
+import { BaseSyncManager, type IOracleClient, type SyncConfig } from '@/services/oracle/sync/BaseSyncManager';
 
 // ============================================================================
 // 单例存储 - 使用模块级变量确保全局唯一

@@ -8,7 +8,7 @@ import { AnimatedNumber, PriceChangeIndicator } from '@/components/common/Animat
 import { HoverCard } from '@/components/common/PageTransitions';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 export interface KPIData {
   id: string;

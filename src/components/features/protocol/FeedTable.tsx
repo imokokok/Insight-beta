@@ -2,7 +2,7 @@
 
 import { StatusBadge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatTimeAgo, formatPrice, truncateAddress } from '@/lib/utils/format';
+import { formatTimeAgo, formatPrice, truncateAddress } from '@/shared/utils/format';
 
 export interface FeedColumn {
   key: string;

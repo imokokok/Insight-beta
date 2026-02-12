@@ -2,8 +2,8 @@ import * as React from 'react';
 
 import { cva, type VariantProps } from 'class-variance-authority';
 
-import { STATUS_THEME_COLORS, type StatusType } from '@/lib/types/common';
-import { cn } from '@/lib/utils';
+import { STATUS_THEME_COLORS, type StatusType } from '@/types/common';
+import { cn } from '@/shared/utils';
 
 export type { StatusType };
 

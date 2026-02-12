@@ -6,9 +6,9 @@
 
 import type { NextRequest } from 'next/server';
 
-import { env } from '@/lib/config/env';
-import { alertService } from '@/lib/services/detection/alertService';
-import { apiSuccess, withErrorHandler } from '@/lib/utils';
+import { env } from '@/config/env';
+import { alertService } from '@/services/alert/alertService';
+import { apiSuccess, withErrorHandler } from '@/shared/utils';
 
 export const dynamic = 'force-dynamic';
 

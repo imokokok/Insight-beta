@@ -10,10 +10,10 @@ import { NextResponse } from 'next/server';
 
 import { z } from 'zod';
 
-import { env } from '@/lib/config/env';
-import { logger } from '@/lib/logger';
-import { NotificationService, type NotificationChannel } from '@/server/alerts/notifications';
-import { requireAdminWithToken } from '@/server/apiResponse';
+import { env } from '@/config/env';
+import { logger } from '@/shared/logger';
+import { NotificationService, type NotificationChannel } from '@/services/alert/notifications';
+import { requireAdminWithToken } from '@/infrastructure/api/apiResponse';
 
 const testNotificationSchema = z.object({
   channel: z.enum(['email', 'webhook', 'slack', 'telegram']),

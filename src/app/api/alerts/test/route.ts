@@ -7,8 +7,8 @@
 import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { logger } from '@/lib/logger';
-import { notificationManager } from '@/server/alerts/notificationManager';
+import { logger } from '@/shared/logger';
+import { notificationManager } from '@/services/alert/notificationManager';
 
 /**
  * POST /api/alerts/test

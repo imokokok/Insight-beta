@@ -11,7 +11,7 @@
 
 import { useEffect, useState } from 'react';
 
-import { logger } from '@/lib/logger';
+import { logger } from '@/shared/logger';
 
 interface ServiceWorkerRegisterProps {
   /** Service Worker 文件路径 */

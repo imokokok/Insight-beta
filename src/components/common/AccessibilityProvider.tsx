@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 // ==================== 无障碍设置类型 ====================
 

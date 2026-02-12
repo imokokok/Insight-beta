@@ -6,7 +6,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { fetchApiData, ApiClientError } from '@/lib/utils/api';
+import { fetchApiData, ApiClientError } from '@/shared/utils/api';
 
 // Mock global fetch
 const mockFetch = vi.fn();

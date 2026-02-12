@@ -9,7 +9,7 @@ import {
 
 import { Card } from '@/components/ui/card';
 import { useI18n } from '@/i18n';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 interface MetricCardProps {
   icon: React.ReactNode;

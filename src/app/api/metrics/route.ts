@@ -11,7 +11,7 @@
 import { NextResponse } from 'next/server';
 
 import { priceMetrics } from '@/lib/monitoring/priceMetrics';
-import { circuitBreakerManager } from '@/lib/utils/resilience';
+import { circuitBreakerManager } from '@/shared/utils/resilience';
 
 export const dynamic = 'force-dynamic';
 

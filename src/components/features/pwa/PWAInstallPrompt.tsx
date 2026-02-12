@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Download, X, Smartphone, Share2 } from 'lucide-react';
 
 import { useI18n } from '@/i18n/LanguageProvider';
-import { isMobile, isIOS, isSafari } from '@/lib/utils/pwa';
+import { isMobile, isIOS, isSafari } from '@/shared/utils/pwa';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;

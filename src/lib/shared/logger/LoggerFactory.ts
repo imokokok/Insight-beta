@@ -7,7 +7,7 @@
  * - 结构化日志元数据
  */
 
-import { logger as defaultLogger } from '@/lib/logger';
+import { logger as defaultLogger } from '@/shared/logger';
 
 export interface Logger {
   debug: (message: string, meta?: Record<string, unknown>) => void;

@@ -14,7 +14,7 @@ import {
   formatLastUpdated,
   type RefreshStrategyConfig,
 } from '@/config/refreshStrategy';
-import { logger } from '@/lib/logger';
+import { logger } from '@/shared/logger';
 
 interface UseAutoRefreshOptions {
   /** 页面/视图 ID */

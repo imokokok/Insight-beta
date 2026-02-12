@@ -12,7 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, WifiOff, AlertCircle } from 'lucide-react';
 
 import { useToast } from '@/components/ui/toast';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 interface SmartRefreshOptions {
   interval?: number; // 刷新间隔（毫秒）

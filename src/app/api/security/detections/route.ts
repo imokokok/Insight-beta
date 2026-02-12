@@ -1,10 +1,10 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { ValidationError, createErrorResponse, toAppError } from '@/lib/errors/AppError';
-import { logger } from '@/lib/logger';
-import { query } from '@/server/db';
-import { requireAdminWithToken } from '@/server/apiResponse';
+import { ValidationError, createErrorResponse, toAppError } from '@/shared/errors/AppError';
+import { logger } from '@/shared/logger';
+import { query } from '@/infrastructure/database/db';
+import { requireAdminWithToken } from '@/infrastructure/api/apiResponse';
 
 interface DetectionRow {
   id: string;

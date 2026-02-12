@@ -8,7 +8,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { logger } from '@/lib/logger';
+import { logger } from '@/shared/logger';
 
 interface RouteParams {
   params: Promise<{

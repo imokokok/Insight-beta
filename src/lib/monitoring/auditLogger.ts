@@ -1,4 +1,4 @@
-import { logger } from '@/lib/logger';
+import { logger } from '@/shared/logger';
 
 export type AuditAction =
   | 'user_login'

@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 
 import { useViewport } from '@/hooks/useViewport';
 import { getWalletBrowserInfo } from '@/lib/mobile/walletBrowser';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 interface MobileLayoutProps {
   children: ReactNode;

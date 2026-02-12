@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { AssertionList } from './AssertionList';
-import type { Assertion, OracleChain, OracleStatus } from '@/lib/types/oracleTypes';
+import type { Assertion, OracleChain, OracleStatus } from '@/types/oracleTypes';
 
 // Mock dependencies
 vi.mock('@/i18n/LanguageProvider', () => ({

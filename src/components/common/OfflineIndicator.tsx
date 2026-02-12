@@ -5,7 +5,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Wifi, WifiOff, RefreshCw, CloudOff } from 'lucide-react';
 
 import { getSyncManager, type SyncStatus } from '@/lib/offline/syncManager';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 /**
  * 离线状态指示器组件

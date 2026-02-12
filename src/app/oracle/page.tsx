@@ -24,7 +24,7 @@ import { Button, CardEnhanced, StatusBadge } from '@/components/ui';
 import { Badge } from '@/components/ui/badge';
 import { useCommonShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useI18n } from '@/i18n';
-import { cn, fetchApiData } from '@/lib/utils';
+import { cn, fetchApiData } from '@/shared/utils';
 
 interface PlatformStats {
   totalProtocols: number;

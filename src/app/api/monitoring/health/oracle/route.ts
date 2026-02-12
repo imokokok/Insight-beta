@@ -7,13 +7,13 @@
 
 import { NextResponse } from 'next/server';
 
-import { logger } from '@/lib/logger';
-import type { OracleProtocol, SupportedChain } from '@/lib/types/unifiedOracleTypes';
+import { logger } from '@/shared/logger';
+import type { OracleProtocol, SupportedChain } from '@/types/unifiedOracleTypes';
 import {
   checkFeedHealth,
   checkProtocolFeeds,
   getProtocolHealthSummary,
-} from '@/server/monitoring/oracleHealthMonitor';
+} from '@/services/monitoring/oracleHealthMonitor';
 
 // ============================================================================
 // 类型定义

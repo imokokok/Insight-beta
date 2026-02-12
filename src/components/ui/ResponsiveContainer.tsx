@@ -3,7 +3,7 @@
 import React from 'react';
 
 import { useIsMobile, useIsTablet } from '@/hooks/useMediaQuery';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 /**
  * 响应式容器组件

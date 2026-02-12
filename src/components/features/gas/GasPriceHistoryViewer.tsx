@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGasPriceHistory } from '@/hooks/useGasPrice';
-import { cn, formatChangePercent } from '@/lib/utils';
+import { cn, formatChangePercent } from '@/shared/utils';
 
 interface GasPriceHistoryViewerProps {
   chain: string;

@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, AlertCircle, BarChart2, FileText, Users, ArrowLeft } from 'lucide-react';
 
 import { useI18n } from '@/i18n/LanguageProvider';
-import { cn, getStorageItem, setStorageItem, removeStorageItem } from '@/lib/utils';
+import { cn, getStorageItem, setStorageItem, removeStorageItem } from '@/shared/utils';
 
 import { OnboardingSteps } from './Onboarding/OnboardingSteps';
 import { RoleSelection } from './Onboarding/RoleSelection';

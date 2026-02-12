@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-import { WS_CONFIG } from '@/lib/config/constants';
-import { logger } from '@/lib/logger';
+import { WS_CONFIG } from '@/config/constants';
+import { logger } from '@/shared/logger';
 
 export interface WebSocketOptions {
   reconnectAttempts?: number;

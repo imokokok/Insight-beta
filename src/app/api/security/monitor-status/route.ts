@@ -1,10 +1,10 @@
 import type { NextRequest } from 'next/server';
 
-import { logger } from '@/lib/logger';
-import { manipulationDetectionService } from '@/lib/services/manipulationDetectionService';
-import { query } from '@/server/db';
-import { apiSuccess, withErrorHandler } from '@/lib/utils';
-import { requireAdminWithToken } from '@/server/apiResponse';
+import { logger } from '@/shared/logger';
+import { manipulationDetectionService } from '@/services/security/manipulationDetectionService';
+import { query } from '@/infrastructure/database/db';
+import { apiSuccess, withErrorHandler } from '@/shared/utils';
+import { requireAdminWithToken } from '@/infrastructure/api/apiResponse';
 
 export const GET = withErrorHandler(async (request: NextRequest) => {
   const auth = await requireAdminWithToken(request, { strict: false });

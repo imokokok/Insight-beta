@@ -2,7 +2,7 @@
 
 import useSWR from 'swr';
 
-import { buildApiUrl } from '@/lib/utils';
+import { buildApiUrl } from '@/shared/utils';
 
 const fetcher = async <T>(url: string): Promise<T> => {
   const res = await fetch(url);

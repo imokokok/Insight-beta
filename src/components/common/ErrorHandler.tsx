@@ -27,7 +27,7 @@ import {
 
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/toast';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 // ==================== 错误类型定义 ====================
 

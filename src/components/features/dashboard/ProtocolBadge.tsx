@@ -1,8 +1,8 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
-import type { OracleProtocol } from '@/lib/types';
-import { cn } from '@/lib/utils';
+import type { OracleProtocol } from '@/types';
+import { cn } from '@/shared/utils';
 
 interface ProtocolBadgeProps {
   protocol: OracleProtocol;

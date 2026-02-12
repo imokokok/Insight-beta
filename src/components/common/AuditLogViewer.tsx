@@ -7,8 +7,8 @@ import { Download, ScrollText, RotateCw } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage, langToLocale } from '@/i18n/translations';
-import type { AuditLogEntry } from '@/lib/types/oracleTypes';
-import { cn, fetchApiData, formatTime, getErrorCode } from '@/lib/utils';
+import type { AuditLogEntry } from '@/types/oracleTypes';
+import { cn, fetchApiData, formatTime, getErrorCode } from '@/shared/utils';
 
 type AuditListResponse = {
   items: AuditLogEntry[];

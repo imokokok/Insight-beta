@@ -1,8 +1,8 @@
 'use client';
 
-import { useRef, useCallback, useState, useEffect, useMemo } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 interface VirtualListProps<T> {
   items: T[];
@@ -29,7 +29,6 @@ export function VirtualList<T>({
   const [scrollTop, setScrollTop] = useState(0);
   const totalHeight = items.length * itemHeight;
 
-  // 计算可见范围
   const visibleRange = useMemo(() => {
     const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
     const visibleCount = Math.ceil(containerHeight / itemHeight) + overscan * 2;
@@ -38,21 +37,6 @@ export function VirtualList<T>({
     return { startIndex, endIndex };
   }, [scrollTop, itemHeight, containerHeight, overscan, items.length]);
 
-  // 处理滚动
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    const newScrollTop = e.currentTarget.scrollTop;
-    setScrollTop(newScrollTop);
-
-    // 检测是否接近底部
-    if (onEndReached) {
-      const remainingScroll = totalHeight - newScrollTop - containerHeight;
-      if (remainingScroll < endReachedThreshold) {
-        onEndReached();
-      }
-    }
-  }, [totalHeight, containerHeight, endReachedThreshold, onEndReached]);
-
-  // 使用 requestAnimationFrame 优化滚动性能
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -60,7 +44,7 @@ export function VirtualList<T>({
     let rafId: number;
     let lastScrollTop = 0;
 
-    const handleScrollOptimized = () => {
+    const handleScroll = () => {
       if (rafId) return;
       
       rafId = requestAnimationFrame(() => {
@@ -80,15 +64,14 @@ export function VirtualList<T>({
       });
     };
 
-    container.addEventListener('scroll', handleScrollOptimized, { passive: true });
+    container.addEventListener('scroll', handleScroll, { passive: true });
     
     return () => {
-      container.removeEventListener('scroll', handleScrollOptimized);
+      container.removeEventListener('scroll', handleScroll);
       if (rafId) cancelAnimationFrame(rafId);
     };
   }, [totalHeight, containerHeight, endReachedThreshold, onEndReached]);
 
-  // 渲染可见项
   const visibleItems = useMemo(() => {
     const { startIndex, endIndex } = visibleRange;
     return items.slice(startIndex, endIndex).map((item, index) => ({
@@ -104,7 +87,6 @@ export function VirtualList<T>({
       ref={containerRef}
       className={cn('overflow-auto', className)}
       style={{ height: containerHeight }}
-      onScroll={handleScroll}
     >
       <div style={{ height: totalHeight, position: 'relative' }}>
         <div

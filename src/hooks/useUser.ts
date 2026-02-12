@@ -6,8 +6,8 @@ import useSWR from 'swr';
 
 import { useToast } from '@/components/ui/toast';
 import { useI18n } from '@/i18n/LanguageProvider';
-import type { UserStats } from '@/lib/types/oracleTypes';
-import { fetchApiData } from '@/lib/utils';
+import type { UserStats } from '@/types/oracleTypes';
+import { fetchApiData } from '@/shared/utils';
 
 const STORAGE_KEY = 'oracle-monitor_watchlist';
 const TOKEN_KEY = 'oracle-monitor_admin_token';

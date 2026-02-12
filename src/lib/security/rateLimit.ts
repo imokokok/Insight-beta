@@ -6,8 +6,8 @@
 
 import type { NextRequest } from 'next/server';
 
-import { env } from '@/lib/config/env';
-import { logger } from '@/lib/logger';
+import { env } from '@/config/env';
+import { logger } from '@/shared/logger';
 
 // ============================================================================
 // 类型定义

@@ -33,7 +33,7 @@ import {
 } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
-import { logger } from '@/lib/logger';
+import { logger } from '@/shared/logger';
 
 interface SloFormData {
   name: string;

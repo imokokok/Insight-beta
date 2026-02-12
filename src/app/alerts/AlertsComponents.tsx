@@ -27,8 +27,8 @@ import type {
   OpsMetrics,
   OpsMetricsSeriesPoint,
   OpsSloStatus,
-} from '@/lib/types/oracleTypes';
-import { cn, formatDurationMinutes, formatTime } from '@/lib/utils';
+} from '@/types/oracleTypes';
+import { cn, formatDurationMinutes, formatTime } from '@/shared/utils';
 import {
   alertInsightMap,
   formatSloTarget,
@@ -43,7 +43,7 @@ import {
   statusBadge,
   type RootCauseOption,
   type SloEntry,
-} from '@/lib/utils/alertsUtils';
+} from '@/shared/utils/alertsUtils';
 
 import type { Route } from 'next';
 

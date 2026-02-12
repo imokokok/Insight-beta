@@ -20,7 +20,7 @@ import {
   createEmptyRefreshStats,
   REFRESH_STRATEGIES,
 } from '@/config/refreshStrategy';
-import { logger } from '@/lib/logger';
+import { logger } from '@/shared/logger';
 
 interface UseAutoRefreshWithStatsOptions {
   pageId: string;

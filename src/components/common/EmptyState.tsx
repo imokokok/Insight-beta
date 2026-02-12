@@ -1,11 +1,15 @@
 /**
- * Empty State Component
+ * Unified Empty State Component
  *
- * 空状态组件 - 用于无数据时展示，支持基础和增强两种模式
+ * 统一的空状态组件 - 支持基础和动画两种模式
+ * - 基础模式：简单的静态展示
+ * - 动画模式：丰富的动画效果和视觉表现
  */
 
-import type { ReactNode } from 'react';
+'use client';
 
+import type { ReactNode } from 'react';
+import { motion, type Variants } from 'framer-motion';
 import {
   Search,
   ShieldCheck,
@@ -20,57 +24,22 @@ import {
   Activity,
   Zap,
   Plus,
+  AlertCircle,
+  FileX,
+  Database,
+  WifiOff,
+  Box,
+  type LucideIcon,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
-import type { LucideIcon } from 'lucide-react';
+// ============================================================================
+// Types
+// ============================================================================
 
-// ==================== 基础 EmptyState 组件 ====================
-
-interface EmptyStateProps {
-  icon?: LucideIcon;
-  title: string;
-  description?: string;
-  action?: {
-    label: string;
-    onClick: () => void;
-  };
-  className?: string;
-  children?: ReactNode;
-}
-
-export function EmptyState({
-  icon: Icon,
-  title,
-  description,
-  action,
-  className,
-  children,
-}: EmptyStateProps) {
-  return (
-    <div className={cn('flex flex-col items-center justify-center py-12 text-center', className)}>
-      {Icon && (
-        <div className="mb-4 rounded-full bg-gray-100 p-4">
-          <Icon className="h-12 w-12 text-gray-400" />
-        </div>
-      )}
-      <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-      {description && <p className="mt-2 max-w-sm text-sm text-gray-500">{description}</p>}
-      {children && <div className="mt-4">{children}</div>}
-      {action && (
-        <Button onClick={action.onClick} className="mt-4" variant="outline">
-          {action.label}
-        </Button>
-      )}
-    </div>
-  );
-}
-
-// ==================== 增强版 EmptyState 组件 ====================
-
-interface EmptyStateEnhancedProps {
+interface UnifiedEmptyStateProps {
   icon?: LucideIcon;
   title: string;
   description?: string;
@@ -78,79 +47,217 @@ interface EmptyStateEnhancedProps {
     label: string;
     onClick: () => void;
     href?: string;
+    variant?: 'default' | 'outline' | 'ghost';
   };
   secondaryAction?: {
     label: string;
     onClick: () => void;
   };
   className?: string;
+  variant?: 'default' | 'healthy' | 'action' | 'info' | 'warning' | 'error';
+  size?: 'sm' | 'md' | 'lg';
+  animated?: boolean;
   children?: ReactNode;
-  variant?: 'default' | 'healthy' | 'action' | 'info';
 }
 
-export function EmptyStateEnhanced({
+// ============================================================================
+// Animation Variants
+// ============================================================================
+
+const containerVariants: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: [0.4, 0, 0.2, 1],
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] },
+  },
+};
+
+const iconVariants: Variants = {
+  hidden: { scale: 0.8, opacity: 0 },
+  visible: {
+    scale: 1,
+    opacity: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 200,
+      damping: 15,
+    },
+  },
+};
+
+// ============================================================================
+// Variant Configurations
+// ============================================================================
+
+const variantStyles = {
+  default: {
+    iconBg: 'bg-gray-100',
+    iconColor: 'text-gray-400',
+    borderColor: 'border-gray-200',
+    bgColor: 'bg-white/50',
+    gradient: 'from-gray-50 to-white',
+    buttonColor: 'bg-gray-900 hover:bg-gray-800',
+  },
+  healthy: {
+    iconBg: 'bg-emerald-100',
+    iconColor: 'text-emerald-600',
+    borderColor: 'border-emerald-200',
+    bgColor: 'bg-emerald-50/30',
+    gradient: 'from-emerald-50/50 to-white',
+    buttonColor: 'bg-emerald-600 hover:bg-emerald-700',
+  },
+  action: {
+    iconBg: 'bg-purple-100',
+    iconColor: 'text-purple-600',
+    borderColor: 'border-purple-200',
+    bgColor: 'bg-purple-50/30',
+    gradient: 'from-purple-50/50 to-white',
+    buttonColor: 'bg-purple-600 hover:bg-purple-700',
+  },
+  info: {
+    iconBg: 'bg-blue-100',
+    iconColor: 'text-blue-600',
+    borderColor: 'border-blue-200',
+    bgColor: 'bg-blue-50/30',
+    gradient: 'from-blue-50/50 to-white',
+    buttonColor: 'bg-blue-600 hover:bg-blue-700',
+  },
+  warning: {
+    iconBg: 'bg-amber-100',
+    iconColor: 'text-amber-600',
+    borderColor: 'border-amber-200',
+    bgColor: 'bg-amber-50/30',
+    gradient: 'from-amber-50/50 to-white',
+    buttonColor: 'bg-amber-600 hover:bg-amber-700',
+  },
+  error: {
+    iconBg: 'bg-rose-100',
+    iconColor: 'text-rose-600',
+    borderColor: 'border-rose-200',
+    bgColor: 'bg-rose-50/30',
+    gradient: 'from-rose-50/50 to-white',
+    buttonColor: 'bg-rose-600 hover:bg-rose-700',
+  },
+};
+
+const sizeStyles = {
+  sm: {
+    container: 'p-6',
+    icon: 'h-12 w-12',
+    iconWrapper: 'h-16 w-16',
+    title: 'text-base',
+    description: 'text-sm',
+  },
+  md: {
+    container: 'p-8',
+    icon: 'h-8 w-8',
+    iconWrapper: 'h-16 w-16',
+    title: 'text-lg',
+    description: 'text-sm',
+  },
+  lg: {
+    container: 'p-12',
+    icon: 'h-10 w-10',
+    iconWrapper: 'h-20 w-20',
+    title: 'text-xl',
+    description: 'text-base',
+  },
+};
+
+// ============================================================================
+// Main Component
+// ============================================================================
+
+export function UnifiedEmptyState({
   icon: Icon,
   title,
   description,
   action,
   secondaryAction,
   className,
-  children,
   variant = 'default',
-}: EmptyStateEnhancedProps) {
-  const variantStyles = {
-    default: {
-      iconBg: 'bg-gray-100',
-      iconColor: 'text-gray-400',
-      borderColor: 'border-gray-200',
-      bgColor: 'bg-white/50',
-    },
-    healthy: {
-      iconBg: 'bg-emerald-100',
-      iconColor: 'text-emerald-600',
-      borderColor: 'border-emerald-200',
-      bgColor: 'bg-emerald-50/30',
-    },
-    action: {
-      iconBg: 'bg-purple-100',
-      iconColor: 'text-purple-600',
-      borderColor: 'border-purple-200',
-      bgColor: 'bg-purple-50/30',
-    },
-    info: {
-      iconBg: 'bg-blue-100',
-      iconColor: 'text-blue-600',
-      borderColor: 'border-blue-200',
-      bgColor: 'bg-blue-50/30',
-    },
-  };
-
+  size = 'md',
+  animated = true,
+  children,
+}: UnifiedEmptyStateProps) {
   const styles = variantStyles[variant];
+  const sizes = sizeStyles[size];
+
+  const Wrapper = animated ? motion.div : 'div';
+  const wrapperProps = animated
+    ? {
+        initial: 'hidden',
+        animate: 'visible',
+        variants: containerVariants,
+      }
+    : {};
 
   return (
-    <div
+    <Wrapper
       className={cn(
-        'flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-8 text-center',
+        'flex flex-col items-center justify-center rounded-2xl border-2 border-dashed text-center',
+        'bg-gradient-to-br',
         styles.borderColor,
-        styles.bgColor,
+        styles.gradient,
+        sizes.container,
         className,
       )}
+      {...wrapperProps}
     >
       {Icon && (
-        <div
+        <motion.div
+          variants={animated ? iconVariants : undefined}
           className={cn(
-            'mb-4 flex h-16 w-16 items-center justify-center rounded-full',
+            'mb-4 flex items-center justify-center rounded-full',
             styles.iconBg,
+            sizes.iconWrapper,
           )}
         >
-          <Icon className={cn('h-8 w-8', styles.iconColor)} />
-        </div>
+          <Icon className={cn(styles.iconColor, sizes.icon)} />
+        </motion.div>
       )}
-      <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-      {description && <p className="mt-2 max-w-sm text-sm text-gray-500">{description}</p>}
-      {children && <div className="mt-4">{children}</div>}
+
+      <motion.h3
+        variants={animated ? itemVariants : undefined}
+        className={cn('font-semibold text-gray-900', sizes.title)}
+      >
+        {title}
+      </motion.h3>
+
+      {description && (
+        <motion.p
+          variants={animated ? itemVariants : undefined}
+          className={cn('mt-2 max-w-sm text-gray-500', sizes.description)}
+        >
+          {description}
+        </motion.p>
+      )}
+
+      {children && (
+        <motion.div variants={animated ? itemVariants : undefined} className="mt-4">
+          {children}
+        </motion.div>
+      )}
+
       {(action || secondaryAction) && (
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+        <motion.div
+          variants={animated ? itemVariants : undefined}
+          className="mt-6 flex flex-wrap items-center justify-center gap-3"
+        >
           {secondaryAction && (
             <Button onClick={secondaryAction.onClick} variant="outline" size="sm">
               {secondaryAction.label}
@@ -159,43 +266,57 @@ export function EmptyStateEnhanced({
           {action && (
             <Button
               onClick={action.onClick}
-              className={cn(
-                'gap-2',
-                variant === 'healthy' && 'bg-emerald-600 hover:bg-emerald-700',
-                variant === 'action' && 'bg-purple-600 hover:bg-purple-700',
-                variant === 'info' && 'bg-blue-600 hover:bg-blue-700',
-              )}
+              className={cn('gap-2', styles.buttonColor)}
+              variant={action.variant || 'default'}
               size="sm"
             >
               {action.label}
               <ArrowRight className="h-4 w-4" />
             </Button>
           )}
-        </div>
+        </motion.div>
       )}
-    </div>
+    </Wrapper>
   );
 }
 
-// ==================== 预定义的空状态场景 ====================
+// ============================================================================
+// Legacy Components (Backward Compatibility)
+// ============================================================================
 
-// ----- 基础版本 -----
+export function EmptyState(props: Omit<UnifiedEmptyStateProps, 'animated'>) {
+  return <UnifiedEmptyState {...props} animated={false} />;
+}
+
+export function EmptyStateEnhanced(props: UnifiedEmptyStateProps) {
+  return <UnifiedEmptyState {...props} animated={true} />;
+}
+
+export const EnhancedEmptyState = UnifiedEmptyState;
+
+// ============================================================================
+// Predefined Empty States
+// ============================================================================
 
 export function EmptySearchState({
   searchTerm,
   onClear,
   className,
+  animated = true,
 }: {
   searchTerm?: string;
   onClear?: () => void;
   className?: string;
+  animated?: boolean;
 }) {
   return (
-    <EmptyState
+    <UnifiedEmptyState
       icon={Search}
       title={searchTerm ? `No results for "${searchTerm}"` : 'No results found'}
       description="Try adjusting your search or filters to find what you're looking for."
+      variant="info"
       className={className}
+      animated={animated}
       action={
         onClear
           ? {
@@ -211,16 +332,20 @@ export function EmptySearchState({
 export function EmptySecurityState({
   onRefresh,
   className,
+  animated = true,
 }: {
   onRefresh?: () => void;
   className?: string;
+  animated?: boolean;
 }) {
   return (
-    <EmptyState
+    <UnifiedEmptyState
       icon={ShieldCheck}
-      title="No Detections Found"
-      description="Great news! No suspicious activities have been detected. The system is actively monitoring and will alert you immediately when threats are identified."
+      title="System Secure"
+      description="No suspicious activities detected. The system is actively monitoring and will alert you immediately when threats are identified."
+      variant="healthy"
       className={className}
+      animated={animated}
       action={
         onRefresh
           ? {
@@ -229,23 +354,32 @@ export function EmptySecurityState({
             }
           : undefined
       }
-    />
+    >
+      <div className="flex items-center gap-2 rounded-lg bg-emerald-100/50 px-4 py-2 text-sm text-emerald-700">
+        <Sparkles className="h-4 w-4" />
+        <span>All systems operational</span>
+      </div>
+    </UnifiedEmptyState>
   );
 }
 
 export function EmptyAnomalyState({
   onRefresh,
   className,
+  animated = true,
 }: {
   onRefresh?: () => void;
   className?: string;
+  animated?: boolean;
 }) {
   return (
-    <EmptyState
+    <UnifiedEmptyState
       icon={Brain}
       title="No Anomalies Detected"
       description="ML models are actively monitoring price feeds. When anomalies are detected, they will appear here with detailed analysis and confidence scores."
+      variant="healthy"
       className={className}
+      animated={animated}
       action={
         onRefresh
           ? {
@@ -261,16 +395,20 @@ export function EmptyAnomalyState({
 export function EmptyDeviationState({
   onRefresh,
   className,
+  animated = true,
 }: {
   onRefresh?: () => void;
   className?: string;
+  animated?: boolean;
 }) {
   return (
-    <EmptyState
+    <UnifiedEmptyState
       icon={BarChart3}
       title="No Deviation Data"
       description="Price deviation analysis will appear here once data is collected. This helps identify when different oracle protocols report significantly different prices."
+      variant="info"
       className={className}
+      animated={animated}
       action={
         onRefresh
           ? {
@@ -283,84 +421,61 @@ export function EmptyDeviationState({
   );
 }
 
-export function EmptyErrorState({
-  error,
-  onRetry,
-  className,
-}: {
-  error?: string;
-  onRetry?: () => void;
-  className?: string;
-}) {
-  return (
-    <EmptyState
-      icon={Search}
-      title="Failed to load data"
-      description={error || 'Something went wrong while loading the data. Please try again.'}
-      className={className}
-      action={
-        onRetry
-          ? {
-              label: 'Try again',
-              onClick: onRetry,
-            }
-          : undefined
-      }
-    />
-  );
-}
-
-// ----- 增强版本 -----
-
 export function EmptyAlertsState({
   onSetAlertRules,
   className,
+  animated = true,
 }: {
   onSetAlertRules?: () => void;
   className?: string;
+  animated?: boolean;
 }) {
   return (
-    <EmptyStateEnhanced
+    <UnifiedEmptyState
       icon={ShieldCheck}
-      title="系统运行健康"
-      description="当前没有活跃告警，所有预言机协议正常运行。配置告警规则以及时获取异常通知。"
+      title="All Systems Healthy"
+      description="No active alerts at the moment. All oracle protocols are running normally. Configure alert rules to get notified of anomalies."
       variant="healthy"
       className={className}
+      animated={animated}
       action={
         onSetAlertRules
           ? {
-              label: '设置告警规则',
+              label: 'Configure Alerts',
               onClick: onSetAlertRules,
             }
           : undefined
       }
     >
-      <div className="mt-4 flex items-center gap-2 rounded-lg bg-emerald-100/50 px-4 py-2 text-sm text-emerald-700">
+      <div className="flex items-center gap-2 rounded-lg bg-emerald-100/50 px-4 py-2 text-sm text-emerald-700">
         <Sparkles className="h-4 w-4" />
-        <span>所有系统正常运行</span>
+        <span>Everything is running smoothly</span>
       </div>
-    </EmptyStateEnhanced>
+    </UnifiedEmptyState>
   );
 }
 
 export function EmptyWatchlistState({
   onBrowseAssets,
   className,
+  animated = true,
 }: {
   onBrowseAssets?: () => void;
   className?: string;
+  animated?: boolean;
 }) {
   return (
-    <EmptyStateEnhanced
+    <UnifiedEmptyState
       icon={Star}
-      title="开始添加监控"
-      description="您还没有添加任何监控项。浏览预言机数据并添加您感兴趣的资产到关注列表。"
+      title="Start Building Your Watchlist"
+      description="You haven't added any items to your watchlist yet. Browse oracle data and add assets you're interested in monitoring."
       variant="action"
       className={className}
+      animated={animated}
       action={
         onBrowseAssets
           ? {
-              label: '添加第一个监控',
+              label: 'Browse Assets',
               onClick: onBrowseAssets,
             }
           : undefined
@@ -369,42 +484,45 @@ export function EmptyWatchlistState({
       <div className="mt-4 grid grid-cols-3 gap-3 text-center">
         <div className="rounded-lg bg-purple-100/50 p-3">
           <div className="text-lg font-semibold text-purple-700">100+</div>
-          <div className="text-xs text-purple-600">资产</div>
+          <div className="text-xs text-purple-600">Assets</div>
         </div>
         <div className="rounded-lg bg-purple-100/50 p-3">
           <div className="text-lg font-semibold text-purple-700">6</div>
-          <div className="text-xs text-purple-600">协议</div>
+          <div className="text-xs text-purple-600">Protocols</div>
         </div>
         <div className="rounded-lg bg-purple-100/50 p-3">
-          <div className="text-lg font-semibold text-purple-700">实时</div>
-          <div className="text-xs text-purple-600">更新</div>
+          <div className="text-lg font-semibold text-purple-700">Real-time</div>
+          <div className="text-xs text-purple-600">Updates</div>
         </div>
       </div>
-    </EmptyStateEnhanced>
+    </UnifiedEmptyState>
   );
 }
 
-export function EmptySearchStateEnhanced({
-  searchTerm,
-  onClear,
+export function EmptyErrorState({
+  error,
+  onRetry,
   className,
+  animated = true,
 }: {
-  searchTerm?: string;
-  onClear?: () => void;
+  error?: string;
+  onRetry?: () => void;
   className?: string;
+  animated?: boolean;
 }) {
   return (
-    <EmptyStateEnhanced
-      icon={Search}
-      title={searchTerm ? `未找到 "${searchTerm}" 的结果` : '未找到结果'}
-      description="尝试调整搜索词或筛选条件，或者浏览所有可用数据。"
-      variant="info"
+    <UnifiedEmptyState
+      icon={AlertCircle}
+      title="Failed to Load Data"
+      description={error || 'Something went wrong while loading the data. Please try again.'}
+      variant="error"
       className={className}
+      animated={animated}
       action={
-        onClear
+        onRetry
           ? {
-              label: '清除筛选',
-              onClick: onClear,
+              label: 'Try Again',
+              onClick: onRetry,
             }
           : undefined
       }
@@ -412,77 +530,28 @@ export function EmptySearchStateEnhanced({
   );
 }
 
-export function EmptySecurityStateEnhanced({
-  onRefresh,
+export function EmptyConnectionState({
+  onRetry,
   className,
+  animated = true,
 }: {
-  onRefresh?: () => void;
+  onRetry?: () => void;
   className?: string;
+  animated?: boolean;
 }) {
   return (
-    <EmptyStateEnhanced
-      icon={ShieldCheck}
-      title="未发现异常"
-      description="好消息！系统未检测到可疑活动。我们会持续监控并在发现威胁时立即通知您。"
-      variant="healthy"
+    <UnifiedEmptyState
+      icon={WifiOff}
+      title="Connection Lost"
+      description="Unable to connect to the server. Please check your internet connection and try again."
+      variant="warning"
       className={className}
+      animated={animated}
       action={
-        onRefresh
+        onRetry
           ? {
-              label: '刷新',
-              onClick: onRefresh,
-            }
-          : undefined
-      }
-    />
-  );
-}
-
-export function EmptyAnomalyStateEnhanced({
-  onRefresh,
-  className,
-}: {
-  onRefresh?: () => void;
-  className?: string;
-}) {
-  return (
-    <EmptyStateEnhanced
-      icon={Brain}
-      title="未检测到异常"
-      description="ML 模型正在持续监控价格数据。当检测到异常时，将显示详细的分析和置信度评分。"
-      variant="healthy"
-      className={className}
-      action={
-        onRefresh
-          ? {
-              label: '刷新',
-              onClick: onRefresh,
-            }
-          : undefined
-      }
-    />
-  );
-}
-
-export function EmptyDeviationStateEnhanced({
-  onRefresh,
-  className,
-}: {
-  onRefresh?: () => void;
-  className?: string;
-}) {
-  return (
-    <EmptyStateEnhanced
-      icon={BarChart3}
-      title="暂无偏差数据"
-      description="价格偏差分析将在数据收集后显示。这有助于识别不同预言机协议报告显著不同价格的情况。"
-      variant="info"
-      className={className}
-      action={
-        onRefresh
-          ? {
-              label: '刷新',
-              onClick: onRefresh,
+              label: 'Reconnect',
+              onClick: onRetry,
             }
           : undefined
       }
@@ -493,52 +562,58 @@ export function EmptyDeviationStateEnhanced({
 export function EmptyDashboardState({
   onRefresh,
   className,
+  animated = true,
 }: {
   onRefresh?: () => void;
   className?: string;
+  animated?: boolean;
 }) {
   return (
-    <EmptyStateEnhanced
+    <UnifiedEmptyState
       icon={LayoutDashboard}
-      title="仪表板准备就绪"
-      description="数据正在同步中，请稍候。仪表板将显示所有关键指标和实时数据。"
+      title="Dashboard Ready"
+      description="Data is being synchronized. The dashboard will display all key metrics and real-time data shortly."
       variant="info"
       className={className}
+      animated={animated}
       action={
         onRefresh
           ? {
-              label: '刷新数据',
+              label: 'Refresh Data',
               onClick: onRefresh,
             }
           : undefined
       }
     >
-      <div className="mt-4 flex items-center gap-2">
+      <div className="flex items-center gap-2">
         <div className="h-2 w-2 animate-pulse rounded-full bg-blue-500" />
-        <span className="text-sm text-blue-600">正在同步数据...</span>
+        <span className="text-sm text-blue-600">Syncing data...</span>
       </div>
-    </EmptyStateEnhanced>
+    </UnifiedEmptyState>
   );
 }
 
 export function EmptyProtocolsState({
   onExplore,
   className,
+  animated = true,
 }: {
   onExplore?: () => void;
   className?: string;
+  animated?: boolean;
 }) {
   return (
-    <EmptyStateEnhanced
+    <UnifiedEmptyState
       icon={Globe}
-      title="探索预言机协议"
-      description="查看 Chainlink、Pyth、Band 等主流预言机协议的实时数据和性能指标。"
+      title="Explore Oracle Protocols"
+      description="View real-time data and performance metrics from Chainlink, Pyth, Band, and other major oracle protocols."
       variant="action"
       className={className}
+      animated={animated}
       action={
         onExplore
           ? {
-              label: '浏览协议',
+              label: 'Explore Protocols',
               onClick: onExplore,
             }
           : undefined
@@ -551,7 +626,7 @@ export function EmptyProtocolsState({
           </div>
         ))}
       </div>
-    </EmptyStateEnhanced>
+    </UnifiedEmptyState>
   );
 }
 
@@ -559,31 +634,36 @@ export function EmptyPriceDataState({
   pair,
   onSelectPair,
   className,
+  animated = true,
 }: {
   pair?: string;
   onSelectPair?: () => void;
   className?: string;
+  animated?: boolean;
 }) {
   return (
-    <EmptyStateEnhanced
+    <UnifiedEmptyState
       icon={TrendingUp}
-      title={pair ? `${pair} 暂无数据` : '选择交易对'}
+      title={pair ? `${pair} Data Unavailable` : 'Select a Trading Pair'}
       description={
-        pair ? '该交易对的数据正在同步中，请稍后再试。' : '选择交易对以查看实时价格数据和分析图表。'
+        pair
+          ? 'Data for this pair is being synchronized. Please try again later.'
+          : 'Select a trading pair to view real-time price data and analysis charts.'
       }
       variant="info"
       className={className}
+      animated={animated}
       action={
         onSelectPair
           ? {
-              label: '选择交易对',
+              label: 'Select Pair',
               onClick: onSelectPair,
             }
           : undefined
       }
     >
       {!pair && (
-        <div className="mt-4 flex flex-wrap justify-center gap-2">
+        <div className="flex flex-wrap justify-center gap-2">
           {['ETH/USD', 'BTC/USD', 'LINK/USD'].map((p) => (
             <span key={p} className="rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-700">
               {p}
@@ -591,38 +671,41 @@ export function EmptyPriceDataState({
           ))}
         </div>
       )}
-    </EmptyStateEnhanced>
+    </UnifiedEmptyState>
   );
 }
 
 export function EmptyEventsState({
   onViewHistory,
   className,
+  animated = true,
 }: {
   onViewHistory?: () => void;
   className?: string;
+  animated?: boolean;
 }) {
   return (
-    <EmptyStateEnhanced
+    <UnifiedEmptyState
       icon={Activity}
-      title="暂无活跃事件"
-      description="当前没有正在进行的争议或断言事件。您可以查看历史记录了解过往事件。"
+      title="No Active Events"
+      description="There are no ongoing disputes or assertions at the moment. View history to see past events."
       variant="healthy"
       className={className}
+      animated={animated}
       action={
         onViewHistory
           ? {
-              label: '查看历史',
+              label: 'View History',
               onClick: onViewHistory,
             }
           : undefined
       }
     >
-      <div className="mt-4 flex items-center gap-2 rounded-lg bg-emerald-100/50 px-4 py-2 text-sm text-emerald-700">
+      <div className="flex items-center gap-2 rounded-lg bg-emerald-100/50 px-4 py-2 text-sm text-emerald-700">
         <Zap className="h-4 w-4" />
-        <span>系统运行平稳</span>
+        <span>System running smoothly</span>
       </div>
-    </EmptyStateEnhanced>
+    </UnifiedEmptyState>
   );
 }
 
@@ -631,23 +714,26 @@ export function EmptyFirstItemState({
   description,
   onAdd,
   className,
+  animated = true,
 }: {
   itemName: string;
   description?: string;
   onAdd?: () => void;
   className?: string;
+  animated?: boolean;
 }) {
   return (
-    <EmptyStateEnhanced
+    <UnifiedEmptyState
       icon={Plus}
-      title={`添加第一个${itemName}`}
-      description={description || `开始添加${itemName}以使用此功能。`}
+      title={`Add Your First ${itemName}`}
+      description={description || `Start by adding a ${itemName.toLowerCase()} to use this feature.`}
       variant="action"
       className={className}
+      animated={animated}
       action={
         onAdd
           ? {
-              label: `添加${itemName}`,
+              label: `Add ${itemName}`,
               onClick: onAdd,
             }
           : undefined
@@ -656,30 +742,101 @@ export function EmptyFirstItemState({
   );
 }
 
-export function EmptyErrorStateEnhanced({
-  error,
-  onRetry,
+export function EmptyDataState({
+  title = 'No Data Available',
+  description = 'There is no data to display at the moment.',
+  onRefresh,
   className,
+  animated = true,
 }: {
-  error?: string;
-  onRetry?: () => void;
+  title?: string;
+  description?: string;
+  onRefresh?: () => void;
   className?: string;
+  animated?: boolean;
 }) {
   return (
-    <EmptyStateEnhanced
-      icon={Search}
-      title="加载数据失败"
-      description={error || '加载数据时出现问题，请稍后重试。'}
+    <UnifiedEmptyState
+      icon={Database}
+      title={title}
+      description={description}
       variant="default"
       className={className}
+      animated={animated}
       action={
-        onRetry
+        onRefresh
           ? {
-              label: '重试',
-              onClick: onRetry,
+              label: 'Refresh',
+              onClick: onRefresh,
             }
           : undefined
       }
     />
   );
 }
+
+export function EmptyFileState({
+  onUpload,
+  className,
+  animated = true,
+}: {
+  onUpload?: () => void;
+  className?: string;
+  animated?: boolean;
+}) {
+  return (
+    <UnifiedEmptyState
+      icon={FileX}
+      title="No Files Found"
+      description="Upload files to get started. Supported formats include CSV, JSON, and Excel."
+      variant="default"
+      className={className}
+      animated={animated}
+      action={
+        onUpload
+          ? {
+              label: 'Upload File',
+              onClick: onUpload,
+            }
+          : undefined
+      }
+    />
+  );
+}
+
+export function EmptyBoxState({
+  title = 'Nothing Here Yet',
+  description = 'This area is empty. Check back later or create something new.',
+  onAction,
+  actionLabel = 'Create New',
+  className,
+  animated = true,
+}: {
+  title?: string;
+  description?: string;
+  onAction?: () => void;
+  actionLabel?: string;
+  className?: string;
+  animated?: boolean;
+}) {
+  return (
+    <UnifiedEmptyState
+      icon={Box}
+      title={title}
+      description={description}
+      variant="default"
+      className={className}
+      animated={animated}
+      action={
+        onAction
+          ? {
+              label: actionLabel,
+              onClick: onAction,
+            }
+          : undefined
+      }
+    />
+  );
+}
+
+export default UnifiedEmptyState;

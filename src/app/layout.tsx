@@ -27,7 +27,7 @@ import {
   LANG_STORAGE_KEY,
   translations,
 } from '@/i18n/translations';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 import type { Metadata } from 'next';
 

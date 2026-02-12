@@ -1,5 +1,5 @@
-import { apiSuccess, withErrorHandler } from '@/lib/utils';
-import { crossChainAnalysisService } from '@/server/oracle/crossChainAnalysisService';
+import { apiSuccess, withErrorHandler } from '@/shared/utils';
+import { crossChainAnalysisService } from '@/services/oracle/crossChainAnalysisService';
 
 export const GET = withErrorHandler(async () => {
   const dashboard = await crossChainAnalysisService.getDashboardData();

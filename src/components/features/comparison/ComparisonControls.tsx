@@ -29,9 +29,9 @@ import type {
   ComparisonConfig,
   ComparisonView,
   OracleProtocol,
-} from '@/lib/types/oracle';
-import { PROTOCOL_DISPLAY_NAMES, ORACLE_PROTOCOLS } from '@/lib/types/oracle';
-import { cn } from '@/lib/utils';
+} from '@/types/oracle';
+import { PROTOCOL_DISPLAY_NAMES, ORACLE_PROTOCOLS } from '@/types/oracle';
+import { cn } from '@/shared/utils';
 
 interface ComparisonControlsProps {
   filter: ComparisonFilter;

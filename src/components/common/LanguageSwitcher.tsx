@@ -6,7 +6,7 @@ import { Globe } from 'lucide-react';
 
 import { useI18n } from '@/i18n/LanguageProvider';
 import { languages, type Lang } from '@/i18n/translations';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 export function LanguageSwitcher({ className }: { className?: string }) {
   const { lang, setLang, t } = useI18n();

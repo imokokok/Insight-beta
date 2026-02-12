@@ -10,17 +10,17 @@
 
 import { createPublicClient, http, type PublicClient, type Address, formatUnits } from 'viem';
 
-import { VIEM_CHAIN_MAP } from '@/lib/blockchain/chainConfig';
-import { BaseOracleClient } from '@/lib/blockchain/core/BaseOracleClient';
+import { VIEM_CHAIN_MAP } from '@/infrastructure/blockchain/chainConfig';
+import { BaseOracleClient } from '@/infrastructure/blockchain/core/BaseOracleClient';
 import type {
   OracleClientConfig,
   OracleHealthStatus,
   HealthStatus,
-} from '@/lib/blockchain/core/types';
-import { normalizeSymbol } from '@/lib/blockchain/core/types';
-import { ErrorHandler, normalizeError } from '@/lib/errors';
+} from '@/infrastructure/blockchain/core/types';
+import { normalizeSymbol } from '@/infrastructure/blockchain/core/types';
+import { ErrorHandler, normalizeError } from '@/shared/errors';
 import { LoggerFactory } from '@/lib/shared/logger/LoggerFactory';
-import type { SupportedChain, UnifiedPriceFeed } from '@/lib/types/unifiedOracleTypes';
+import type { SupportedChain, UnifiedPriceFeed } from '@/types/unifiedOracleTypes';
 
 export interface EvmOracleClientConfig extends OracleClientConfig {
   /** 合约 ABI */

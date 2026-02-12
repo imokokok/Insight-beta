@@ -8,7 +8,7 @@ import {
   getExplorerUrl,
   fetchApiData,
   ApiClientError,
-} from '@/lib/utils';
+} from '@/shared/utils';
 
 describe('parseRpcUrls', () => {
   it('should parse valid RPC URLs', () => {

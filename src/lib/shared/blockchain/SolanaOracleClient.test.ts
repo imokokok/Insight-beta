@@ -8,7 +8,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { PublicKey } from '@solana/web3.js';
 
 import { SolanaOracleClient } from './SolanaOracleClient';
-import type { UnifiedPriceFeed } from '@/lib/types/unifiedOracleTypes';
+import type { UnifiedPriceFeed } from '@/types/unifiedOracleTypes';
 
 // Mock dependencies
 vi.mock('@/lib/blockchain/core/BaseOracleClient', () => ({

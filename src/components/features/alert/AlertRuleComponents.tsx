@@ -9,8 +9,8 @@ import { CommonParamsInputs } from '@/components/features/assertion/CommonParams
 import { EventParamsInputs } from '@/components/features/assertion/EventParamsInputs';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import type { AlertRule, AlertSeverity } from '@/lib/types/oracleTypes';
-import { cn } from '@/lib/utils';
+import type { AlertRule, AlertSeverity } from '@/types/oracleTypes';
+import { cn } from '@/shared/utils';
 
 import type { Channel } from './AlertRulesManager';
 

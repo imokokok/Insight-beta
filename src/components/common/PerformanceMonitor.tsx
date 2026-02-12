@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 
 import { useWebVitals, useLongTaskMonitor } from '@/hooks/usePerformance';
-import { logger } from '@/lib/logger';
+import { logger } from '@/shared/logger';
 
 /**
  * 性能监控组件

@@ -12,7 +12,7 @@ import { SkeletonList } from '@/components/ui/skeleton';
 import { useWatchlist } from '@/hooks';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { langToLocale } from '@/i18n/translations';
-import type { Assertion, OracleStatus } from '@/lib/types/oracleTypes';
+import type { Assertion, OracleStatus } from '@/types/oracleTypes';
 import {
   cn,
   formatTime,
@@ -20,7 +20,7 @@ import {
   getExplorerUrl,
   truncateAddress,
   getAssertionStatusColor,
-} from '@/lib/utils';
+} from '@/shared/utils';
 
 import type { Route } from 'next';
 

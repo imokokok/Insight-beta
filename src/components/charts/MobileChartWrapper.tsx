@@ -3,7 +3,7 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 
 import { useSwipe, useIsMobile } from '@/hooks/useMediaQuery';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 interface MobileChartWrapperProps {
   children: React.ReactNode;

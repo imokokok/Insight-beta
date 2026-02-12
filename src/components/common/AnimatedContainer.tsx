@@ -21,7 +21,7 @@ import {
   transitionPresets,
   STAGGER_CONFIG,
 } from '@/lib/design-system/tokens/animation';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 import type { Variants } from 'framer-motion';
 

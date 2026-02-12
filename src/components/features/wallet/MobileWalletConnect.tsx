@@ -15,7 +15,7 @@ import {
 import { useToast } from '@/components/ui/toast';
 import { useWallet } from '@/contexts/WalletContext';
 import { useI18n } from '@/i18n/LanguageProvider';
-import { logger } from '@/lib/logger';
+import { logger } from '@/shared/logger';
 import {
   getWalletBrowserInfo,
   isMobile,

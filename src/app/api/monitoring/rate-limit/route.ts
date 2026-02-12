@@ -6,10 +6,10 @@
 
 import { NextResponse } from 'next/server';
 
-import { env } from '@/lib/config/env';
-import { logger } from '@/lib/logger';
+import { env } from '@/config/env';
+import { logger } from '@/shared/logger';
 import { getRateLimitStoreStatus, cleanupRateLimitStore } from '@/lib/security/rateLimit';
-import { requireAdmin } from '@/server/apiResponse';
+import { requireAdmin } from '@/infrastructure/api/apiResponse';
 
 /**
  * @swagger

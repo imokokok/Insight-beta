@@ -27,8 +27,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { logger } from '@/lib/logger';
-import { cn, fetchApiData } from '@/lib/utils';
+import { logger } from '@/shared/logger';
+import { cn, fetchApiData } from '@/shared/utils';
 
 
 

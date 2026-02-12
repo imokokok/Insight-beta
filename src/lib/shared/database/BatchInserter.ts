@@ -8,7 +8,7 @@
  * - SQL 占位符自动生成
  */
 
-import { query } from '@/server/db';
+import { query } from '@/infrastructure/database/db';
 
 export interface BatchInserterConfig {
   /** 每批大小 */

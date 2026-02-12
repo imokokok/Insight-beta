@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 import { usePathname, useSearchParams } from 'next/navigation';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 /**
  * 页面加载进度条组件

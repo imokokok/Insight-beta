@@ -32,8 +32,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useI18n } from '@/i18n';
-import type { CostComparison } from '@/lib/types/oracle';
-import { cn } from '@/lib/utils';
+import type { CostComparison } from '@/types/oracle';
+import { cn } from '@/shared/utils';
 
 interface CostEfficiencyProps {
   data?: CostComparison;

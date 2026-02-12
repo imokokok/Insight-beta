@@ -8,7 +8,7 @@
 import { AlertCircle, RefreshCw } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 interface ErrorBannerProps {
   /** 错误对象 */

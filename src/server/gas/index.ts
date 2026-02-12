@@ -12,4 +12,4 @@ export type {
   GasPriceTrend,
   ProviderHealth,
   GasPriceHistoryRequest,
-} from '@/lib/types/gasPriceTypes';
+} from '@/types/gasPriceTypes';

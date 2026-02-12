@@ -55,7 +55,7 @@ vi.mock('@/server/observability', () => ({
   createOrTouchAlert,
 }));
 
-import { query } from '@/server/db';
+import { query } from '@/infrastructure/database/db';
 
 describe('db query slow query alerts', () => {
   beforeEach(() => {

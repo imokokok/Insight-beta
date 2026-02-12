@@ -1,7 +1,7 @@
 import { Loader2 } from 'lucide-react';
 
 import { CardSkeleton, ChartSkeleton, PageSkeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 /**
  * 动态导入加载状态类型

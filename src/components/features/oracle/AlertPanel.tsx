@@ -18,11 +18,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-import { logger } from '@/lib/logger';
-import type { Alert, AlertSeverity, AlertStatus } from '@/lib/types/oracle/alert';
-import type { OracleProtocol } from '@/lib/types/oracle/protocol';
-import { PROTOCOL_DISPLAY_NAMES } from '@/lib/types/oracle/protocol';
-import { cn, fetchApiData, formatTimeAgo } from '@/lib/utils';
+import { logger } from '@/shared/logger';
+import type { Alert, AlertSeverity, AlertStatus } from '@/types/oracle/alert';
+import type { OracleProtocol } from '@/types/oracle/protocol';
+import { PROTOCOL_DISPLAY_NAMES } from '@/types/oracle/protocol';
+import { cn, fetchApiData, formatTimeAgo } from '@/shared/utils';
 
 interface AlertPanelProps {
   protocols?: OracleProtocol[];

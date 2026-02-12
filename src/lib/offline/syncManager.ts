@@ -4,7 +4,7 @@
  * 管理离线状态下的数据操作队列，网络恢复后自动同步
  */
 
-import { logger } from '@/lib/logger';
+import { logger } from '@/shared/logger';
 
 /**
  * 同步操作类型

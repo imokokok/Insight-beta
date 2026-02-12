@@ -4,7 +4,7 @@ import useSWR from 'swr';
 
 import type { BaseResponse } from '@/hooks/useUI';
 import { useInfiniteList } from '@/hooks/useUI';
-import type { Assertion, OracleConfig, OracleStats, OracleStatus } from '@/lib/types/oracleTypes';
+import type { Assertion, OracleConfig, OracleStats, OracleStatus } from '@/types/oracleTypes';
 import {
   fetchApiData,
   getOracleInstanceId,
@@ -12,7 +12,7 @@ import {
   clearOracleFilters,
   isDefaultOracleInstance,
   buildApiUrl,
-} from '@/lib/utils';
+} from '@/shared/utils';
 
 import { createSWRConfig, createSWRInfiniteConfig } from './useSWRConfig';
 

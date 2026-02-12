@@ -23,8 +23,8 @@ import {
 
 import { PageHeader } from '@/components/common/PageHeader';
 import { useI18n } from '@/i18n/LanguageProvider';
-import { logger } from '@/lib/logger';
-import { cn, fetchApiData, formatTime } from '@/lib/utils';
+import { logger } from '@/shared/logger';
+import { cn, fetchApiData, formatTime } from '@/shared/utils';
 
 interface UMADisputeDetail {
   id: string;

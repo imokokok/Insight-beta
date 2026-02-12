@@ -10,7 +10,7 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage } from '@/i18n/translations';
-import { fetchApiData, getErrorCode, copyToClipboard, formatTime, cn } from '@/lib/utils';
+import { fetchApiData, getErrorCode, copyToClipboard, formatTime, cn } from '@/shared/utils';
 
 type AdminRole = 'root' | 'ops' | 'alerts' | 'viewer';
 

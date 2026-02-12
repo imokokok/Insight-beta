@@ -49,7 +49,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 
 // ============================================================================

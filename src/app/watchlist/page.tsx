@@ -12,8 +12,8 @@ import { useInfiniteList, useWatchlist, type BaseResponse, useIsMobile } from '@
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage } from '@/i18n/translations';
-import type { Assertion } from '@/lib/types/oracleTypes';
-import { getOracleInstanceId, setOracleInstanceId, buildApiUrl } from '@/lib/utils';
+import type { Assertion } from '@/types/oracleTypes';
+import { getOracleInstanceId, setOracleInstanceId, buildApiUrl } from '@/shared/utils';
 
 import type { Route } from 'next';
 

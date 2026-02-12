@@ -8,14 +8,14 @@
 
 import type { NextRequest } from 'next/server';
 
-import { createSuccessResponse, createErrorResponse, handleApiError } from '@/lib/api/response';
-import { logger } from '@/lib/logger';
-import { query } from '@/server/db';
+import { createSuccessResponse, createErrorResponse, handleApiError } from '@/infrastructure/api/response';
+import { logger } from '@/shared/logger';
+import { query } from '@/infrastructure/database/db';
 import {
   priceDeviationAnalytics,
   type DeviationReport,
   type PriceDeviationPoint,
-} from '@/server/oracle/priceDeviationAnalytics';
+} from '@/services/oracle/priceDeviationAnalytics';
 
 
 // ============================================================================

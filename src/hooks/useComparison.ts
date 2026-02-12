@@ -17,8 +17,8 @@ import type {
   LatencyAnalysis,
   PriceHeatmapData,
   RealtimeComparisonItem,
-} from '@/lib/types/oracle/comparison';
-import { buildApiUrl } from '@/lib/utils';
+} from '@/types/oracle/comparison';
+import { buildApiUrl } from '@/shared/utils';
 
 import { createSWRConfig, REALTIME_CONFIG } from './useSWRConfig';
 

@@ -6,8 +6,8 @@ import { Copy, Check } from 'lucide-react';
 
 import { useToast } from '@/components/ui/toast';
 import { useI18n } from '@/i18n/LanguageProvider';
-import { logger } from '@/lib/logger';
-import { cn } from '@/lib/utils';
+import { logger } from '@/shared/logger';
+import { cn } from '@/shared/utils';
 
 interface CopyButtonProps {
   text: string;

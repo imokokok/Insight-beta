@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 import { AlertTriangle, CheckCircle, Shield, TrendingUp } from 'lucide-react';
 
 import { useI18n } from '@/i18n';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 interface HealthScoreProps {
   score: number;

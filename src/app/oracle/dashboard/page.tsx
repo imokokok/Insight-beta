@@ -54,9 +54,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useWebSocket, useIsMobile } from '@/hooks';
 import { useAutoRefreshWithStats } from '@/hooks/useAutoRefreshWithStats';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
-import { logger } from '@/lib/logger';
-import { fetchApiData, cn, formatNumber } from '@/lib/utils';
-import { isStatsUpdateMessage } from '@/lib/utils/typeGuards';
+import { logger } from '@/shared/logger';
+import { fetchApiData, cn, formatNumber } from '@/shared/utils';
+import { isStatsUpdateMessage } from '@/shared/utils/typeGuards';
 
 // ============================================================================
 // Types

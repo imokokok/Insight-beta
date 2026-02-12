@@ -13,7 +13,7 @@ import type {
   SupportedChain,
   UnifiedPriceFeed,
   OracleProtocol,
-} from '@/lib/types/unifiedOracleTypes';
+} from '@/types/unifiedOracleTypes';
 
 // Mock logger
 vi.mock('@/lib/logger', () => ({
@@ -30,7 +30,7 @@ vi.mock('@/server/db', () => ({
   query: vi.fn(),
 }));
 
-import { query } from '@/server/db';
+import { query } from '@/infrastructure/database/db';
 
 describe('Sync Workflow Integration', () => {
   beforeEach(() => {

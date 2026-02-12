@@ -39,7 +39,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { cn, formatChangePercent, formatTimeAgo } from '@/lib/utils';
+import { cn, formatChangePercent, formatTimeAgo } from '@/shared/utils';
 
 // ============================================================================
 // Types

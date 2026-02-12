@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 
-import { logger } from '@/lib/logger';
+import { logger } from '@/shared/logger';
 
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 16;

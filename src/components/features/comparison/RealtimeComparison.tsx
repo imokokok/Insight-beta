@@ -30,8 +30,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { useI18n } from '@/i18n';
 import { statusColors } from '@/lib/constants/colors';
-import type { RealtimeComparisonItem, ComparisonFilter } from '@/lib/types/oracle';
-import { cn, formatPrice } from '@/lib/utils';
+import type { RealtimeComparisonItem, ComparisonFilter } from '@/types/oracle';
+import { cn, formatPrice } from '@/shared/utils';
 
 interface RealtimeComparisonProps {
   data?: RealtimeComparisonItem[];

@@ -54,7 +54,7 @@ import {
   getSeriesColor,
   generateGradientId,
 } from '@/lib/design-system/tokens/visualization';
-import { cn, formatChangePercent, formatNumber } from '@/lib/utils';
+import { cn, formatChangePercent, formatNumber } from '@/shared/utils';
 
 // ============================================================================
 // Types

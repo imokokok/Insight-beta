@@ -2,7 +2,7 @@ import React from 'react';
 
 import { motion } from 'framer-motion';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 // ==================== 基础 Card 组件 ====================
 

@@ -31,7 +31,7 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
-import { logger } from '@/lib/logger';
+import { logger } from '@/shared/logger';
 
 interface MonitoringStats {
   alerts: {

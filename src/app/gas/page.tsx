@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useGasPrices, useGasPriceTrend, useGasPriceHealth, useWarmupGasCache } from '@/hooks/useGasPrice';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 
 const DEFAULT_CHAINS = ['ethereum', 'polygon', 'bsc', 'arbitrum', 'optimism', 'base'];

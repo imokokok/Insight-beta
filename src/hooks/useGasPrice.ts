@@ -2,8 +2,8 @@
 
 import useSWR from 'swr';
 
-import { logger } from '@/lib/logger';
-import { buildApiUrl } from '@/lib/utils';
+import { logger } from '@/shared/logger';
+import { buildApiUrl } from '@/shared/utils';
 
 import type { SWRConfiguration } from 'swr';
 

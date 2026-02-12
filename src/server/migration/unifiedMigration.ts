@@ -5,9 +5,9 @@
  * 支持 OracleMonitor 和 UMA Oracle 的数据迁移
  */
 
-import { logger } from '@/lib/logger';
-import type { OracleProtocol, SupportedChain } from '@/lib/types/unifiedOracleTypes';
-import { query } from '@/server/db';
+import { logger } from '@/shared/logger';
+import type { OracleProtocol, SupportedChain } from '@/types/unifiedOracleTypes';
+import { query } from '@/infrastructure/database/db';
 
 // ============================================================================
 // 迁移配置

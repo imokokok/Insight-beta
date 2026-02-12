@@ -9,9 +9,9 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-import { env } from '@/lib/config/env';
-import { logger } from '@/lib/logger';
-import type { Database } from '@/types/supabase';
+import { env } from '@/config/env';
+import { logger } from '@/shared/logger';
+import type { Database } from '@/types/database/supabase';
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 

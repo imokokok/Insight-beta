@@ -2,7 +2,7 @@
 
 import { useEffect, useCallback, useState, useRef } from 'react';
 
-import { logger } from '@/lib/logger';
+import { logger } from '@/shared/logger';
 
 // ============================================================================
 // useDashboardShortcuts - 仪表板键盘快捷键 Hook

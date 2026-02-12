@@ -6,8 +6,8 @@
 
 import { NextResponse } from 'next/server';
 
-import { logger } from '@/lib/logger';
-import { query } from '@/server/db';
+import { logger } from '@/shared/logger';
+import { query } from '@/infrastructure/database/db';
 
 interface SloDefinition {
   id: string;

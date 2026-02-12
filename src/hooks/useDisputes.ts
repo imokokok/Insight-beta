@@ -1,7 +1,7 @@
 import type { BaseResponse } from '@/hooks/useUI';
 import { useInfiniteList } from '@/hooks/useUI';
-import type { Dispute, OracleConfig, DisputeStatus } from '@/lib/types/oracleTypes';
-import { buildApiUrl } from '@/lib/utils';
+import type { Dispute, OracleConfig, DisputeStatus } from '@/types/oracleTypes';
+import { buildApiUrl } from '@/shared/utils';
 
 import { createSWRInfiniteConfig } from './useSWRConfig';
 

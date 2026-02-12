@@ -4,7 +4,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { EvmOracleClient, type EvmOracleClientConfig } from './EvmOracleClient';
-import type { SupportedChain, UnifiedPriceFeed } from '@/lib/types/unifiedOracleTypes';
+import type { SupportedChain, UnifiedPriceFeed } from '@/types/unifiedOracleTypes';
 
 // Mock viem
 vi.mock('viem', async () => {

@@ -4,7 +4,7 @@ import { useEffect, useRef, useCallback } from 'react';
 
 import { usePathname } from 'next/navigation';
 
-import { logger } from '@/lib/logger';
+import { logger } from '@/shared/logger';
 
 /**
  * 智能预加载配置

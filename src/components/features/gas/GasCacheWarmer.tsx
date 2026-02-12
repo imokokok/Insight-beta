@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 
 import { useWarmupGasCache } from '@/hooks/useGasPrice';
-import { logger } from '@/lib/logger';
+import { logger } from '@/shared/logger';
 
 const DEFAULT_CHAINS = ['ethereum', 'polygon', 'bsc', 'arbitrum', 'optimism', 'base'];
 

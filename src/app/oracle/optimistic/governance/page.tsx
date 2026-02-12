@@ -19,8 +19,8 @@ import {
 
 import { PageHeader } from '@/components/common/PageHeader';
 import { LoadingSpinner } from '@/components/ui';
-import { logger } from '@/lib/logger';
-import { cn, fetchApiData } from '@/lib/utils';
+import { logger } from '@/shared/logger';
+import { cn, fetchApiData } from '@/shared/utils';
 
 type ProposalState =
   | 'Pending'

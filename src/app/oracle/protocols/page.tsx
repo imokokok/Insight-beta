@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
-import { fetchApiData } from '@/lib/utils';
+import { fetchApiData } from '@/shared/utils';
 
 interface PriceFeed {
   id: string;
