@@ -2,8 +2,8 @@ import * as React from 'react';
 
 import { cva, type VariantProps } from 'class-variance-authority';
 
-import { STATUS_THEME_COLORS, type StatusType } from '@/types/common';
 import { cn } from '@/shared/utils';
+import { STATUS_THEME_COLORS, type StatusType } from '@/types/common';
 
 export type { StatusType };
 
@@ -12,11 +12,11 @@ export type { StatusType };
 // ============================================================================
 
 const badgeVariants = cva(
-  'focus:ring-ring inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2',
+  'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground hover:bg-primary/80 border-transparent',
+        default: 'text-primary-foreground border-transparent bg-primary hover:bg-primary/80',
         secondary:
           'bg-secondary text-secondary-foreground hover:bg-secondary/80 border-transparent',
         destructive:
@@ -28,9 +28,9 @@ const badgeVariants = cva(
         danger: 'border-transparent bg-rose-100 text-rose-700 hover:bg-rose-200',
         info: 'border-transparent bg-blue-100 text-blue-700 hover:bg-blue-200',
         // 特殊效果
-        ghost: 'border-transparent text-purple-700 hover:bg-purple-100',
-        pulse: 'animate-pulse border-transparent bg-purple-100 text-purple-700',
-        glow: 'border-transparent bg-purple-500 text-white shadow-[0_0_10px_rgba(147,51,234,0.5)]',
+        ghost: 'text-primary-dark border-transparent hover:bg-primary/10',
+        pulse: 'text-primary-dark animate-pulse border-transparent bg-primary/10',
+        glow: 'border-transparent bg-primary text-white shadow-[0_0_10px_rgba(147,51,234,0.5)]',
       },
       size: {
         default: 'text-xs',
@@ -75,8 +75,6 @@ const statusConfig: Record<
     textColor: string;
   }
 > = STATUS_THEME_COLORS;
-
-
 
 const StatusBadge = React.memo(function StatusBadge({
   status,

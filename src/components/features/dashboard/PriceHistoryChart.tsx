@@ -12,8 +12,8 @@ import {
 } from 'recharts';
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import type { CrossProtocolComparison } from '@/types';
 import { formatPrice } from '@/shared/utils';
+import type { CrossProtocolComparison } from '@/types';
 
 interface PriceHistoryChartProps {
   data: CrossProtocolComparison[];

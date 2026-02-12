@@ -17,10 +17,6 @@ import {
   TrendingUp,
 } from 'lucide-react';
 
-
-
-
-
 import { PageHeader } from '@/components/common/PageHeader';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { logger } from '@/shared/logger';
@@ -71,7 +67,6 @@ export default function UMADisputeDetailPage() {
     if (disputeId) {
       fetchDispute();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disputeId]);
 
   async function fetchDispute() {
@@ -165,10 +160,7 @@ export default function UMADisputeDetailPage() {
                 </div>
                 <div className="flex h-4 overflow-hidden rounded-full bg-white/10">
                   <div className="h-full bg-green-500" style={{ width: `${forPercentage}%` }} />
-                  <div
-                    className="h-full bg-amber-500"
-                    style={{ width: `${againstPercentage}%` }}
-                  />
+                  <div className="h-full bg-amber-500" style={{ width: `${againstPercentage}%` }} />
                 </div>
                 <div className="mt-1 flex justify-between text-sm">
                   <span />
@@ -209,7 +201,7 @@ export default function UMADisputeDetailPage() {
             {/* Related Assertion */}
             <div className="rounded-xl bg-white/5 p-6">
               <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-                <Gavel className="h-5 w-5 text-purple-400" />
+                <Gavel className="h-5 w-5 text-primary/40" />
                 {t('oracle.detail.relatedAssertion')}
               </h3>
               <div className="grid gap-4 md:grid-cols-2">
@@ -295,7 +287,7 @@ export default function UMADisputeDetailPage() {
             {/* Timeline */}
             <div className="rounded-xl bg-white/5 p-6">
               <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-                <Clock className="h-5 w-5 text-purple-400" />
+                <Clock className="h-5 w-5 text-primary/40" />
                 {t('oracle.detail.timeline')}
               </h3>
               <div className="space-y-4">

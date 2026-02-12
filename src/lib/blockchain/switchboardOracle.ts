@@ -15,7 +15,7 @@ import {
   SWITCHBOARD_DEFAULT_CONFIG,
   type SwitchboardAggregatorData,
 } from '@/config/switchboardPriceFeeds';
-import { ErrorHandler, normalizeError } from '@/shared/errors';
+import { ErrorHandler, normalizeError } from '@/lib/errors';
 import { SolanaOracleClient } from '@/lib/shared/blockchain/SolanaOracleClient';
 import type {
   SupportedChain,
@@ -445,4 +445,3 @@ export function isSymbolSupported(symbol: string): boolean {
   const symbols = getAvailableSwitchboardSymbols();
   return symbols.includes(symbol);
 }
-

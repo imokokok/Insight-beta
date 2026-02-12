@@ -71,11 +71,7 @@ const errorConfig: Record<
     bgColor: 'bg-amber-50',
     borderColor: 'border-amber-200',
     defaultMessage: '无法连接到服务器，请检查您的网络连接',
-    suggestions: [
-      '检查您的网络连接是否正常',
-      '尝试刷新页面',
-      '检查防火墙或代理设置',
-    ],
+    suggestions: ['检查您的网络连接是否正常', '尝试刷新页面', '检查防火墙或代理设置'],
   },
   server: {
     icon: ServerOff,
@@ -84,11 +80,7 @@ const errorConfig: Record<
     bgColor: 'bg-rose-50',
     borderColor: 'border-rose-200',
     defaultMessage: '服务器暂时不可用，请稍后重试',
-    suggestions: [
-      '等待几分钟后重试',
-      '检查系统状态页面',
-      '联系技术支持',
-    ],
+    suggestions: ['等待几分钟后重试', '检查系统状态页面', '联系技术支持'],
   },
   timeout: {
     icon: Clock,
@@ -97,11 +89,7 @@ const errorConfig: Record<
     bgColor: 'bg-orange-50',
     borderColor: 'border-orange-200',
     defaultMessage: '请求处理时间过长，请稍后重试',
-    suggestions: [
-      '检查网络连接速度',
-      '减少请求的数据量',
-      '稍后重试',
-    ],
+    suggestions: ['检查网络连接速度', '减少请求的数据量', '稍后重试'],
   },
   not_found: {
     icon: AlertCircle,
@@ -110,11 +98,7 @@ const errorConfig: Record<
     bgColor: 'bg-gray-50',
     borderColor: 'border-gray-200',
     defaultMessage: '您访问的页面不存在或已被移除',
-    suggestions: [
-      '检查URL是否正确',
-      '返回上一页',
-      '前往首页',
-    ],
+    suggestions: ['检查URL是否正确', '返回上一页', '前往首页'],
   },
   forbidden: {
     icon: AlertCircle,
@@ -123,11 +107,7 @@ const errorConfig: Record<
     bgColor: 'bg-red-50',
     borderColor: 'border-red-200',
     defaultMessage: '您没有权限访问此页面',
-    suggestions: [
-      '检查是否已登录',
-      '确认您有访问权限',
-      '联系管理员',
-    ],
+    suggestions: ['检查是否已登录', '确认您有访问权限', '联系管理员'],
   },
   validation: {
     icon: AlertCircle,
@@ -136,24 +116,16 @@ const errorConfig: Record<
     bgColor: 'bg-yellow-50',
     borderColor: 'border-yellow-200',
     defaultMessage: '提交的数据有误，请检查并重试',
-    suggestions: [
-      '检查输入的数据格式',
-      '确保所有必填项已填写',
-      '查看具体的错误提示',
-    ],
+    suggestions: ['检查输入的数据格式', '确保所有必填项已填写', '查看具体的错误提示'],
   },
   unknown: {
     icon: Bug,
     title: '发生错误',
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-50',
-    borderColor: 'border-purple-200',
+    color: 'text-primary',
+    bgColor: 'bg-primary/5',
+    borderColor: 'border-primary/20',
     defaultMessage: '发生未知错误，请稍后重试',
-    suggestions: [
-      '刷新页面重试',
-      '清除浏览器缓存',
-      '联系技术支持',
-    ],
+    suggestions: ['刷新页面重试', '清除浏览器缓存', '联系技术支持'],
   },
 };
 
@@ -172,10 +144,7 @@ interface ErrorBoundaryState {
   errorInfo: React.ErrorInfo | null;
 }
 
-export class EnhancedErrorBoundary extends React.Component<
-  ErrorBoundaryProps,
-  ErrorBoundaryState
-> {
+export class EnhancedErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, error: null, errorInfo: null };
@@ -193,7 +162,7 @@ export class EnhancedErrorBoundary extends React.Component<
   componentDidUpdate(prevProps: ErrorBoundaryProps) {
     if (this.state.hasError && prevProps.resetKeys !== this.props.resetKeys) {
       const hasKeyChanged = prevProps.resetKeys?.some(
-        (key, index) => key !== this.props.resetKeys?.[index]
+        (key, index) => key !== this.props.resetKeys?.[index],
       );
       if (hasKeyChanged) {
         this.reset();
@@ -315,16 +284,13 @@ ${error.stack ? `\n堆栈:\n${error.stack}` : ''}
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={cn(
-        'flex min-h-[400px] flex-col items-center justify-center p-8',
-        className
-      )}
+      className={cn('flex min-h-[400px] flex-col items-center justify-center p-8', className)}
     >
       <div
         className={cn(
           'w-full max-w-lg rounded-2xl border-2 p-8',
           config.bgColor,
-          config.borderColor
+          config.borderColor,
         )}
       >
         {/* Icon */}
@@ -334,33 +300,22 @@ ${error.stack ? `\n堆栈:\n${error.stack}` : ''}
           transition={{ type: 'spring', stiffness: 200, damping: 15 }}
           className={cn(
             'mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full',
-            'bg-white shadow-lg'
+            'bg-white shadow-lg',
           )}
         >
           <Icon className={cn('h-10 w-10', config.color)} />
         </motion.div>
 
         {/* Title */}
-        <h2
-          className={cn(
-            'mb-2 text-center text-2xl font-bold',
-            config.color
-          )}
-        >
-          {config.title}
-        </h2>
+        <h2 className={cn('mb-2 text-center text-2xl font-bold', config.color)}>{config.title}</h2>
 
         {/* Message */}
-        <p className="mb-6 text-center text-gray-600">
-          {error.message || config.defaultMessage}
-        </p>
+        <p className="mb-6 text-center text-gray-600">{error.message || config.defaultMessage}</p>
 
         {/* Suggestions */}
         {suggestions.length > 0 && (
           <div className="mb-6 rounded-xl bg-white/60 p-4">
-            <h3 className="mb-2 text-sm font-semibold text-gray-700">
-              建议操作：
-            </h3>
+            <h3 className="mb-2 text-sm font-semibold text-gray-700">建议操作：</h3>
             <ul className="space-y-2">
               {suggestions.map((suggestion, index) => (
                 <motion.li
@@ -386,15 +341,10 @@ ${error.stack ? `\n堆栈:\n${error.stack}` : ''}
               disabled={isRetrying}
               className={cn(
                 'gap-2',
-                error.type === 'network' &&
-                  retryCount > 0 &&
-                  retryCount < 3 &&
-                  'animate-pulse'
+                error.type === 'network' && retryCount > 0 && retryCount < 3 && 'animate-pulse',
               )}
             >
-              <RefreshCw
-                className={cn('h-4 w-4', isRetrying && 'animate-spin')}
-              />
+              <RefreshCw className={cn('h-4 w-4', isRetrying && 'animate-spin')} />
               {isRetrying ? '重试中...' : '重试'}
               {retryCount > 0 && ` (${retryCount})`}
             </Button>
@@ -449,11 +399,7 @@ ${error.stack ? `\n堆栈:\n${error.stack}` : ''}
                       onClick={handleCopyError}
                       className="flex items-center gap-1 text-xs text-gray-400 hover:text-white"
                     >
-                      {copied ? (
-                        <Check className="h-3 w-3" />
-                      ) : (
-                        <Copy className="h-3 w-3" />
-                      )}
+                      {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
                       {copied ? '已复制' : '复制'}
                     </button>
                   </div>
@@ -486,12 +432,7 @@ interface ErrorToastProps {
   className?: string;
 }
 
-export function ErrorToast({
-  error,
-  onRetry,
-  onDismiss,
-  className,
-}: ErrorToastProps) {
+export function ErrorToast({ error, onRetry, onDismiss, className }: ErrorToastProps) {
   const config = errorConfig[error.type] || errorConfig.unknown;
   const Icon = config.icon;
 
@@ -504,12 +445,12 @@ export function ErrorToast({
         'flex items-start gap-3 rounded-lg border p-4 shadow-lg',
         config.bgColor,
         config.borderColor,
-        className
+        className,
       )}
     >
       <Icon className={cn('mt-0.5 h-5 w-5 flex-shrink-0', config.color)} />
 
-      <div className="flex-1 min-w-0">
+      <div className="min-w-0 flex-1">
         <h4 className={cn('font-semibold', config.color)}>{config.title}</h4>
         <p className="mt-1 text-sm text-gray-600">{error.message}</p>
 
@@ -524,10 +465,7 @@ export function ErrorToast({
               </button>
             )}
             {onDismiss && (
-              <button
-                onClick={onDismiss}
-                className="text-sm text-gray-500 hover:text-gray-700"
-              >
+              <button onClick={onDismiss} className="text-sm text-gray-500 hover:text-gray-700">
                 忽略
               </button>
             )}
@@ -553,7 +491,7 @@ export function useErrorRecovery(options: UseErrorRecoveryOptions = {}) {
 
   const executeWithRecovery = async <T,>(
     fn: () => Promise<T>,
-    errorHandler?: (error: unknown) => ErrorDetails
+    errorHandler?: (error: unknown) => ErrorDetails,
   ): Promise<T | null> => {
     try {
       const result = await fn();
@@ -565,8 +503,7 @@ export function useErrorRecovery(options: UseErrorRecoveryOptions = {}) {
         ? errorHandler(error)
         : {
             type: 'unknown' as ErrorType,
-            message:
-              error instanceof Error ? error.message : '发生未知错误',
+            message: error instanceof Error ? error.message : '发生未知错误',
             timestamp: new Date(),
           };
 
@@ -574,9 +511,7 @@ export function useErrorRecovery(options: UseErrorRecoveryOptions = {}) {
 
       if (retryCount < maxRetries) {
         setRetryCount((prev) => prev + 1);
-        await new Promise((resolve) =>
-          setTimeout(resolve, retryDelay * (retryCount + 1))
-        );
+        await new Promise((resolve) => setTimeout(resolve, retryDelay * (retryCount + 1)));
         return executeWithRecovery(fn, errorHandler);
       } else {
         onMaxRetriesReached?.();

@@ -57,7 +57,7 @@ export function RoleSelection({ onRoleSelect, onSkip }: RoleSelectionProps) {
           transition={{ duration: 0.3 }}
           className="mb-4"
         >
-          <AlertCircle className="h-10 w-10 text-purple-600" />
+          <AlertCircle className="h-10 w-10 text-primary" />
         </motion.div>
         <motion.h3
           initial={{ opacity: 0, y: 10 }}
@@ -99,7 +99,7 @@ export function RoleSelection({ onRoleSelect, onSkip }: RoleSelectionProps) {
             whileHover={{ scale: 1.02, x: 4 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => onRoleSelect(roleOption.role)}
-            className="flex items-start rounded-lg border border-gray-200 p-3 text-left transition-colors hover:border-purple-300 hover:bg-purple-50 sm:p-4"
+            className="hover:border-primary300 flex items-start rounded-lg border border-gray-200 p-3 text-left transition-colors hover:bg-primary/5 sm:p-4"
           >
             <div className="mr-3 flex-shrink-0">{roleOption.icon}</div>
             <div className="min-w-0 flex-1">
@@ -129,7 +129,7 @@ export function RoleSelection({ onRoleSelect, onSkip }: RoleSelectionProps) {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={() => onRoleSelect('general')}
-          className="flex flex-1 items-center justify-center gap-2 rounded-md bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-700"
+          className="flex flex-1 items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-white transition-colors hover:bg-primary-700"
         >
           {t('onboarding.continueAsGeneral')}
         </motion.button>

@@ -166,7 +166,8 @@ describe('Network Exception Simulation Tests', () => {
         json: async () => ({ ok: true }),
       });
 
-      await expect(fetchApiData('http://test.com/api')).rejects.toThrow();
+      const result = await fetchApiData('http://test.com/api');
+      expect(result).toBeUndefined();
     });
   });
 

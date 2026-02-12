@@ -38,7 +38,7 @@ describe('Switch', () => {
     it('should apply checked styles when checked', () => {
       render(<Switch checked={true} />);
       const switchEl = screen.getByRole('switch');
-      expect(switchEl).toHaveClass('bg-purple-600');
+      expect(switchEl).toHaveClass('bg-primary');
     });
 
     it('should apply unchecked styles when not checked', () => {
@@ -144,7 +144,7 @@ describe('Switch', () => {
       const switchEl = screen.getByRole('switch');
       expect(switchEl).toHaveClass('focus-visible:outline-none');
       expect(switchEl).toHaveClass('focus-visible:ring-2');
-      expect(switchEl).toHaveClass('focus-visible:ring-purple-500');
+      expect(switchEl).toHaveClass('focus-visible:ring-primary500');
     });
 
     it('should have correct type attribute', () => {

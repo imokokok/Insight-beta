@@ -84,7 +84,7 @@ export function OnboardingSteps({
         </div>
         <div className="h-1 overflow-hidden rounded-full bg-gray-200">
           <motion.div
-            className="h-full bg-purple-600 will-change-transform"
+            className="h-full bg-primary will-change-transform"
             initial={false}
             animate={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
             transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
@@ -121,7 +121,7 @@ export function OnboardingSteps({
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={onNext}
-          className="flex flex-1 items-center justify-center gap-2 rounded-md bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+          className="focus:ring-primary500 flex flex-1 items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-white transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2"
           aria-label={isLastStep ? t('onboarding.getStarted') : t('onboarding.next')}
         >
           {isLastStep ? (

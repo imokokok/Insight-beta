@@ -6,27 +6,11 @@
 
 'use client';
 
-import type {
-  ReactNode} from 'react';
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-} from 'react';
+import type { ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Eye,
-  Type,
-  Contrast,
-  Volume2,
-  MousePointer2,
-  X,
-  Check,
-  Accessibility,
-} from 'lucide-react';
+import { Eye, Type, Contrast, Volume2, MousePointer2, X, Check, Accessibility } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/shared/utils';
@@ -44,7 +28,7 @@ interface AccessibilitySettings {
 interface AccessibilityContextType extends AccessibilitySettings {
   updateSetting: <K extends keyof AccessibilitySettings>(
     key: K,
-    value: AccessibilitySettings[K]
+    value: AccessibilitySettings[K],
   ) => void;
   toggleSetting: (key: keyof AccessibilitySettings) => void;
   resetSettings: () => void;
@@ -88,12 +72,8 @@ export function AccessibilityProvider({ children }: AccessibilityProviderProps) 
     }
 
     // 检测系统偏好
-    const prefersReducedMotion = window.matchMedia(
-      '(prefers-reduced-motion: reduce)'
-    ).matches;
-    const prefersHighContrast = window.matchMedia(
-      '(prefers-contrast: high)'
-    ).matches;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const prefersHighContrast = window.matchMedia('(prefers-contrast: high)').matches;
 
     if (prefersReducedMotion || prefersHighContrast) {
       setSettings((prev) => ({
@@ -153,7 +133,7 @@ export function AccessibilityProvider({ children }: AccessibilityProviderProps) 
     <K extends keyof AccessibilitySettings>(key: K, value: AccessibilitySettings[K]) => {
       setSettings((prev) => ({ ...prev, [key]: value }));
     },
-    []
+    [],
   );
 
   const toggleSetting = useCallback((key: keyof AccessibilitySettings) => {
@@ -187,9 +167,7 @@ export function AccessibilityProvider({ children }: AccessibilityProviderProps) 
 export function useAccessibility() {
   const context = useContext(AccessibilityContext);
   if (!context) {
-    throw new Error(
-      'useAccessibility must be used within an AccessibilityProvider'
-    );
+    throw new Error('useAccessibility must be used within an AccessibilityProvider');
   }
   return context;
 }
@@ -256,7 +234,7 @@ function AccessibilityPanel() {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsPanelOpen(true)}
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-purple-600 text-white shadow-lg hover:bg-purple-700 focus:outline-none focus:ring-4 focus:ring-purple-300"
+        className="focus:ring-primary300 fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-lg hover:bg-primary-700 focus:outline-none focus:ring-4"
         aria-label="打开无障碍设置"
       >
         <Accessibility className="h-6 w-6" />
@@ -288,13 +266,11 @@ function AccessibilityPanel() {
               {/* Header */}
               <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-white px-6 py-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100">
-                    <Accessibility className="h-5 w-5 text-purple-600" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                    <Accessibility className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-gray-900">
-                      无障碍设置
-                    </h2>
+                    <h2 className="text-lg font-bold text-gray-900">无障碍设置</h2>
                     <p className="text-xs text-gray-500">自定义您的浏览体验</p>
                   </div>
                 </div>
@@ -317,8 +293,8 @@ function AccessibilityPanel() {
                       className={cn(
                         'flex w-full items-start gap-4 rounded-xl border-2 p-4 text-left transition-all',
                         setting.value
-                          ? 'border-purple-500 bg-purple-50'
-                          : 'border-gray-200 hover:border-gray-300'
+                          ? 'border-primary bg-primary/5'
+                          : 'border-gray-200 hover:border-gray-300',
                       )}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
@@ -326,25 +302,17 @@ function AccessibilityPanel() {
                       <div
                         className={cn(
                           'flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg',
-                          setting.value
-                            ? 'bg-purple-500 text-white'
-                            : 'bg-gray-100 text-gray-500'
+                          setting.value ? 'bg-primary/50 text-white' : 'bg-gray-100 text-gray-500',
                         )}
                       >
                         <setting.icon className="h-5 w-5" />
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center justify-between">
-                          <h3 className="font-semibold text-gray-900">
-                            {setting.label}
-                          </h3>
-                          {setting.value && (
-                            <Check className="h-5 w-5 text-purple-500" />
-                          )}
+                          <h3 className="font-semibold text-gray-900">{setting.label}</h3>
+                          {setting.value && <Check className="h-5 w-5 text-primary" />}
                         </div>
-                        <p className="mt-1 text-sm text-gray-500">
-                          {setting.description}
-                        </p>
+                        <p className="mt-1 text-sm text-gray-500">{setting.description}</p>
                       </div>
                     </motion.button>
                   ))}
@@ -352,20 +320,14 @@ function AccessibilityPanel() {
 
                 {/* Reset */}
                 <div className="mt-8 border-t pt-6">
-                  <Button
-                    variant="outline"
-                    onClick={resetSettings}
-                    className="w-full"
-                  >
+                  <Button variant="outline" onClick={resetSettings} className="w-full">
                     重置所有设置
                   </Button>
                 </div>
 
                 {/* Tips */}
                 <div className="mt-6 rounded-lg bg-blue-50 p-4">
-                  <h4 className="mb-2 text-sm font-semibold text-blue-900">
-                    快捷键提示
-                  </h4>
+                  <h4 className="mb-2 text-sm font-semibold text-blue-900">快捷键提示</h4>
                   <ul className="space-y-1 text-sm text-blue-700">
                     <li>• Tab: 在可聚焦元素间移动</li>
                     <li>• Enter/Space: 激活按钮或链接</li>
@@ -529,12 +491,10 @@ export function FocusTrap({ children, isActive, onEscape }: FocusTrapProps) {
 
       if (e.key === 'Tab') {
         const focusableElements = document.querySelectorAll(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
         );
         const firstElement = focusableElements[0] as HTMLElement;
-        const lastElement = focusableElements[
-          focusableElements.length - 1
-        ] as HTMLElement;
+        const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
 
         if (e.shiftKey && document.activeElement === firstElement) {
           e.preventDefault();
@@ -569,11 +529,7 @@ export function LiveRegion({
   className,
 }: LiveRegionProps) {
   return (
-    <div
-      aria-live={politeness}
-      aria-atomic={atomic}
-      className={cn('sr-only', className)}
-    >
+    <div aria-live={politeness} aria-atomic={atomic} className={cn('sr-only', className)}>
       {children}
     </div>
   );
@@ -581,8 +537,7 @@ export function LiveRegion({
 
 // ==================== 无障碍按钮 ====================
 
-interface AccessibleButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface AccessibleButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   label: string;
   description?: string;
   isLoading?: boolean;
@@ -625,22 +580,13 @@ export function AccessibleButton({
 
 // ==================== 图片无障碍组件 ====================
 
-interface AccessibleImageProps
-  extends React.ImgHTMLAttributes<HTMLImageElement> {
+interface AccessibleImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   alt: string;
   decorative?: boolean;
 }
 
-export function AccessibleImage({
-  alt,
-  decorative,
-  ...props
-}: AccessibleImageProps) {
+export function AccessibleImage({ alt, decorative, ...props }: AccessibleImageProps) {
   return (
-    <img
-      {...props}
-      alt={decorative ? '' : alt}
-      role={decorative ? 'presentation' : undefined}
-    />
+    <img {...props} alt={decorative ? '' : alt} role={decorative ? 'presentation' : undefined} />
   );
 }

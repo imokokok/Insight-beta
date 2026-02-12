@@ -18,8 +18,8 @@ import { SkeletonList } from '@/components/ui/skeleton';
 import { useWatchlist } from '@/hooks';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { langToLocale, type TranslationKey } from '@/i18n/translations';
-import type { Dispute, DisputeStatus } from '@/types/oracleTypes';
 import { cn, formatTime, getExplorerUrl, truncateAddress } from '@/shared/utils';
+import type { Dispute, DisputeStatus } from '@/types/oracleTypes';
 
 import type { Route } from 'next';
 
@@ -38,7 +38,7 @@ interface DisputeListProps {
 const STATUS_COLORS: Record<string, string> = {
   Voting: 'bg-amber-50 text-amber-700 ring-amber-500/30 ring-1',
   'Pending Execution': 'bg-blue-50 text-blue-700 ring-blue-500/30 ring-1',
-  Executed: 'bg-purple-50 text-purple-700 ring-purple-500/30 ring-1',
+  Executed: 'bg-primary/5 text-primary-dark ring-primary500/30 ring-1',
   default: 'bg-gray-50 text-gray-700 ring-gray-500/30 ring-1',
 };
 
@@ -87,7 +87,7 @@ function ListFooter({ loadingMore, hasMore, itemsLength, t }: ListFooterProps) {
   if (loadingMore) {
     return (
       <div className="flex justify-center py-8">
-        <div className="flex items-center gap-2 rounded-full bg-white px-8 py-3 text-sm font-bold text-purple-600 shadow-lg shadow-purple-500/10 ring-1 ring-purple-100">
+        <div className="ring-primary100 flex items-center gap-2 rounded-full bg-white px-8 py-3 text-sm font-bold text-primary shadow-lg shadow-primary-500/10 ring-1">
           <RotateCw size={18} className="animate-spin" />
           <span>{t('common.loading')}</span>
         </div>
@@ -143,7 +143,7 @@ function DisputeCard({
     <Link href={href as Route} className="block h-full">
       <div
         className={cn(
-          'glass-card group relative rounded-xl border border-white/60 p-3 transition-all duration-300 hover:-translate-y-1 hover:border-purple-200/50 hover:shadow-xl hover:shadow-purple-500/10 sm:p-5',
+          'glass-card hover:border-primary/20/50 group relative rounded-xl border border-white/60 p-3 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-500/10 sm:p-5',
           viewMode === 'grid'
             ? 'h-full'
             : 'flex flex-col gap-4 sm:gap-6 md:flex-row md:items-center',
@@ -160,7 +160,7 @@ function DisputeCard({
               className={cn(
                 'flex h-10 w-10 items-center justify-center rounded-xl text-sm font-bold shadow-sm ring-1 ring-black/5 transition-transform duration-300 group-hover:scale-110',
                 item.chain === 'Polygon' &&
-                  'bg-gradient-to-br from-violet-50 to-violet-100 text-violet-600',
+                  'bg-gradient-to-br from-violet-50 to-violet-100 text-primary-600',
                 item.chain === 'Arbitrum' &&
                   'bg-gradient-to-br from-blue-50 to-blue-100 text-blue-600',
                 item.chain === 'Optimism' &&
@@ -228,7 +228,7 @@ function DisputeCard({
           )}
           <p
             className={cn(
-              'font-medium leading-relaxed text-gray-800 transition-colors group-hover:text-purple-900',
+              'font-medium leading-relaxed text-gray-800 transition-colors group-hover:text-[var(--foreground)]',
               viewMode === 'grid' ? 'line-clamp-3 text-base' : 'line-clamp-2 text-sm md:text-base',
             )}
           >
@@ -275,7 +275,7 @@ function DisputeCard({
                       e.stopPropagation();
                       window.open(explorerUrl, '_blank', 'noopener noreferrer');
                     }}
-                    className="rounded p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-purple-600"
+                    className="rounded p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-primary"
                     title={t('common.viewOnExplorer')}
                     aria-label={t('common.viewOnExplorer')}
                   >
@@ -297,7 +297,7 @@ function DisputeCard({
               <Clock size={14} />
               <span>{formatTime(item.disputedAt, locale)}</span>
             </div>
-            <span className="flex translate-x-0 transform items-center gap-1 text-xs font-bold text-purple-600 opacity-100 transition-all md:translate-x-[-10px] md:opacity-0 md:group-hover:translate-x-0 md:group-hover:opacity-100">
+            <span className="flex translate-x-0 transform items-center gap-1 text-xs font-bold text-primary opacity-100 transition-all md:translate-x-[-10px] md:opacity-0 md:group-hover:translate-x-0 md:group-hover:opacity-100">
               {t('common.viewDetails')}
               <ArrowUpRight size={12} />
             </span>
@@ -305,7 +305,7 @@ function DisputeCard({
         )}
 
         {viewMode === 'list' && (
-          <div className="flex w-full translate-x-0 transform items-center justify-end border-t border-gray-100 pl-0 pt-4 text-purple-600 opacity-100 transition-all md:w-auto md:translate-x-[-10px] md:justify-start md:border-l md:border-t-0 md:pl-4 md:pt-0 md:opacity-0 md:group-hover:translate-x-0 md:group-hover:opacity-100">
+          <div className="flex w-full translate-x-0 transform items-center justify-end border-t border-gray-100 pl-0 pt-4 text-primary opacity-100 transition-all md:w-auto md:translate-x-[-10px] md:justify-start md:border-l md:border-t-0 md:pl-4 md:pt-0 md:opacity-0 md:group-hover:translate-x-0 md:group-hover:opacity-100">
             <span className="mr-2 text-xs font-bold md:hidden">{t('common.viewDetails')}</span>
             <ArrowUpRight size={20} />
           </div>

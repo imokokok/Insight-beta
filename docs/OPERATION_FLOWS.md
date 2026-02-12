@@ -1,375 +1,375 @@
-# 页面间操作流文档
+# Page-to-Page Operation Flow Documentation
 
-> 从"看到问题"到"处理问题"的完整路径设计
+> Complete path design from "seeing the problem" to "solving the problem"
 
-## 设计原则
+## Design Principles
 
-1. **2-3 步原则**：从任何异常出发，最多 2-3 步能到达解决路径
-2. **上下文保持**：跳转时携带必要的上下文参数（symbol, protocol, severity 等）
-3. **双向导航**：支持从问题回到总览，从总览深入到问题
+1. **2-3 Step Rule**: From any anomaly, reach the resolution path in max 2-3 steps
+2. **Context Preservation**: Carry necessary context parameters when navigating (symbol, protocol, severity, etc.)
+3. **Bidirectional Navigation**: Support returning to overview from problem, and diving into problem from overview
 
 ---
 
-## 1. 价格异常流 (Price Deviation Flow)
+## 1. Price Deviation Flow
 
-### 触发场景
+### Trigger Scenarios
 
-- Dashboard 上 Alerts 面板显示价格偏差告警
-- OracleCharts 上某个价格点异常标记
-- `/oracle/analytics/deviation` 页面显示异常列表
+- Alerts panel on Dashboard shows price deviation alerts
+- Abnormal price points marked on OracleCharts
+- `/oracle/analytics/deviation` page shows anomaly list
 
-### 操作路径
+### Operation Path
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  Step 1: 发现问题                                                │
+│  Step 1: Discover Problem                                       │
 ├─────────────────────────────────────────────────────────────────┤
-│  入口选项：                                                       │
-│  • Dashboard → Alerts 面板 → 点击 "Chainlink ETH/USD 偏差 > 2%"   │
-│  • Dashboard → Price Trends → 点击异常标记点                      │
-│  • /oracle/analytics/deviation → 点击某行异常数据                 │
+│  Entry Options:                                                  │
+│  • Dashboard → Alerts Panel → Click "Chainlink ETH/USD Deviation > 2%" │
+│  • Dashboard → Price Trends → Click abnormal data point          │
+│  • /oracle/analytics/deviation → Click a row of abnormal data   │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│  Step 2: 查看详情                                                │
+│  Step 2: View Details                                           │
 ├─────────────────────────────────────────────────────────────────┤
-│  跳转目标：/oracle/feeds?symbol=ETH-USD&protocol=chainlink        │
+│  Target: /oracle/feeds?symbol=ETH-USD&protocol=chainlink       │
 │                                                                  │
-│  页面内容：                                                       │
-│  • 价格走势图（高亮异常时间段）                                    │
-│  • 相关 Alerts 列表                                              │
-│  • 其他协议同价格源对比                                          │
-│  • [查看协议详情] 按钮 → /oracle/protocols/chainlink              │
+│  Page Content:                                                  │
+│  • Price chart (highlighted abnormal time period)               │
+│  • Related alerts list                                          │
+│  • Same price source comparison with other protocols             │
+│  • [View Protocol Details] button → /oracle/protocols/chainlink │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│  Step 3: 处理问题（可选分支）                                     │
+│  Step 3: Handle Problem (Optional Branches)                     │
 ├─────────────────────────────────────────────────────────────────┤
-│  分支 A - 查看协议健康：                                          │
-│  • 点击 [协议健康] → /oracle/protocols/chainlink#health          │
+│  Branch A - View Protocol Health:                               │
+│  • Click [Protocol Health] → /oracle/protocols/chainlink#health│
 │                                                                  │
-│  分支 B - 查看相关争议：                                          │
-│  • 点击 [相关争议] → /disputes?symbol=ETH-USD&protocol=chainlink │
+│  Branch B - View Related Disputes:                              │
+│  • Click [Related Disputes] → /disputes?symbol=ETH-USD&protocol=chainlink│
 │                                                                  │
-│  分支 C - 确认告警：                                              │
-│  • 点击 [确认告警] → /alerts?symbol=ETH-USD&action=ack           │
+│  Branch C - Acknowledge Alert:                                  │
+│  • Click [Acknowledge Alert] → /alerts?symbol=ETH-USD&action=ack│
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### 路由参数约定
+### Route Parameter Conventions
 
 ```typescript
-// Price Feed 详情页参数
+// Price Feed Detail Page Parameters
 interface PriceFeedQueryParams {
-  symbol: string; // 价格源标识，如 "ETH-USD"
-  protocol?: string; // 协议筛选，如 "chainlink"
-  timeframe?: string; // 时间范围，如 "1h", "24h"
-  highlight?: string; // 高亮时间段，如 "2024-01-15T10:00:00Z"
+  symbol: string; // Price source identifier, e.g., "ETH-USD"
+  protocol?: string; // Protocol filter, e.g., "chainlink"
+  timeframe?: string; // Time range, e.g., "1h", "24h"
+  highlight?: string; // Highlight time period, e.g., "2024-01-15T10:00:00Z"
 }
 
-// Alerts 页面参数
+// Alerts Page Parameters
 interface AlertsQueryParams {
-  symbol?: string; // 价格源筛选
-  protocol?: string; // 协议筛选
+  symbol?: string; // Price source filter
+  protocol?: string; // Protocol filter
   severity?: 'critical' | 'warning' | 'info';
   status?: 'open' | 'acked' | 'resolved';
-  action?: 'ack' | 'resolve'; // 快速操作
+  action?: 'ack' | 'resolve'; // Quick action
 }
 ```
 
 ---
 
-## 2. 协议健康异常流 (Protocol Health Flow)
+## 2. Protocol Health Anomaly Flow
 
-### 触发场景
+### Trigger Scenarios
 
-- Dashboard Health Status 显示 "Degraded" 或 "Incident"
-- Protocol Health Grid 显示某个协议健康度下降
-- 收到协议离线告警
+- Dashboard Health Status shows "Degraded" or "Incident"
+- Protocol Health Grid shows a protocol with degraded health
+- Received protocol offline alert
 
-### 操作路径
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  Step 1: 发现问题                                                │
-├─────────────────────────────────────────────────────────────────┤
-│  入口选项：                                                       │
-│  • Dashboard → Health Status Badge → 点击 "Degraded"             │
-│  • Dashboard → Protocol Health Grid → 点击异常协议卡片            │
-│  • Alerts Tab → 点击协议相关告警                                  │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│  Step 2: 查看协议详情                                            │
-├─────────────────────────────────────────────────────────────────┤
-│  跳转目标：/oracle/protocols/{protocol}                           │
-│                                                                  │
-│  页面内容：                                                       │
-│  • 协议概览（TVS、节点数、健康评分）                               │
-│  • 实时价格 feeds 列表                                           │
-│  • 健康指标（Uptime、Latency、Accuracy）                         │
-│  • 活跃 Alerts                                                   │
-│  • [查看争议] 按钮 → /disputes?protocol={protocol}               │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│  Step 3: 深入排查（可选分支）                                     │
-├─────────────────────────────────────────────────────────────────┤
-│  分支 A - 查看具体 Feed：                                         │
-│  • 点击某个价格源 → /oracle/feeds?protocol={protocol}            │
-│                                                                  │
-│  分支 B - 对比其他协议：                                          │
-│  • 点击 [对比分析] → /oracle/comparison?protocols={protocol}     │
-│                                                                  │
-│  分支 C - 查看历史事件：                                          │
-│  • 点击 [事件时间线] → /oracle/protocols/{protocol}/timeline     │
-└─────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 3. 告警处置流 (Alert Handling Flow)
-
-### 触发场景
-
-- Dashboard 收到新的 Critical Alert
-- Alerts Tab 显示未处理告警列表
-- 邮件/通知收到告警通知
-
-### 操作路径
+### Operation Path
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  Step 1: 查看告警列表                                            │
+│  Step 1: Discover Problem                                       │
 ├─────────────────────────────────────────────────────────────────┤
-│  入口：/alerts 或 Dashboard Alerts Tab                           │
-│                                                                  │
-│  操作：                                                           │
-│  • 筛选：severity=critical, status=open                          │
-│  • 排序：时间倒序，优先级最高                                     │
+│  Entry Options:                                                  │
+│  • Dashboard → Health Status Badge → Click "Degraded"           │
+│  • Dashboard → Protocol Health Grid → Click abnormal protocol  │
+│  • Alerts Tab → Click protocol-related alert                    │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│  Step 2: 选择处置方式                                            │
+│  Step 2: View Protocol Details                                 │
 ├─────────────────────────────────────────────────────────────────┤
-│  选项 A - 快速确认：                                              │
-│  • 点击 [Ack] 按钮 → 标记为已确认，状态变为 acked                │
+│  Target: /oracle/protocols/{protocol}                          │
 │                                                                  │
-│  选项 B - 查看详情：                                              │
-│  • 点击告警行 → /alerts/{id}                                     │
-│                                                                  │
-│  选项 C - 跳转到相关页面：                                        │
-│  • [View in Protocol] → /oracle/protocols/{protocol}             │
-│  • [View Feed] → /oracle/feeds?symbol={symbol}                   │
-│  • [Timeline] → /alerts/{id}/timeline                            │
+│  Page Content:                                                  │
+│  • Protocol overview (TVS, node count, health score)            │
+│  • Real-time price feeds list                                   │
+│  • Health metrics (Uptime, Latency, Accuracy)                  │
+│  • Active Alerts                                                │
+│  • [View Disputes] button → /disputes?protocol={protocol}      │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│  Step 3: 解决问题                                                │
+│  Step 3: Deep Investigation (Optional Branches)                 │
 ├─────────────────────────────────────────────────────────────────┤
-│  • 根据详情页信息排查问题                                         │
-│  • 点击 [Resolve] 标记为已解决                                   │
-│  • 或创建 Dispute → /disputes/create?alertId={id}                │
+│  Branch A - View Specific Feed:                                 │
+│  • Click a price source → /oracle/feeds?protocol={protocol}    │
+│                                                                  │
+│  Branch B - Compare Protocols:                                   │
+│  • Click [Comparison Analysis] → /oracle/comparison?protocols={protocol}│
+│                                                                  │
+│  Branch C - View Historical Events:                             │
+│  • Click [Event Timeline] → /oracle/protocols/{protocol}/timeline│
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 4. Optimistic Oracle 流 (Assertion/Dispute Flow)
+## 3. Alert Handling Flow
 
-### 触发场景
+### Trigger Scenarios
 
-- 查看 UMA 等 Optimistic Oracle 的断言状态
-- 发现可疑断言需要发起争议
-- 需要审计历史断言和争议记录
+- Dashboard receives new Critical Alert
+- Alerts Tab shows unhandled alert list
+- Received alert notification via email/notification
 
-### 操作路径
+### Operation Path
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  Step 1: 进入 Optimistic Oracle 中心                             │
+│  Step 1: View Alert List                                       │
 ├─────────────────────────────────────────────────────────────────┤
-│  入口选项：                                                       │
-│  • /oracle/optimistic              - 总览页                      │
-│  • /oracle/optimistic/assertions   - 断言列表                    │
-│  • /oracle/optimistic/disputes     - 争议列表                    │
+│  Entry: /alerts or Dashboard Alerts Tab                        │
 │                                                                  │
-│  视图：                                                           │
-│  • Active Assertions（活跃断言）                                 │
-│  • Expired Assertions（已过期待结算）                            │
-│  • Active Disputes（进行中的争议）                               │
-│  • Settled Disputes（已解决的争议）                              │
+│  Actions:                                                       │
+│  • Filter: severity=critical, status=open                      │
+│  • Sort: time descending, highest priority first               │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│  Step 2: 查看断言详情                                            │
+│  Step 2: Choose Handling Method                                │
 ├─────────────────────────────────────────────────────────────────┤
-│  入口：点击 Assertion 列表中的某行 → /oracle/optimistic/assertions/{id} │
+│  Option A - Quick Acknowledge:                                  │
+│  • Click [Ack] button → Mark as acknowledged, status changes to acked│
 │                                                                  │
-│  详情页内容：                                                     │
-│  • 断言基本信息（价格、时间、提议者）                             │
-│  • 当前状态（活跃/已争议/已结算）                                 │
-│  • 剩余争议时间（倒计时）                                         │
-│  • 相关争议列表（如果有）                                         │
+│  Option B - View Details:                                       │
+│  • Click alert row → /alerts/{id}                              │
 │                                                                  │
-│  操作按钮：                                                       │
-│  • [发起争议] - 如果还在争议窗口期内                              │
-│  • [查看相关 Dispute] - 如果已被争议                              │
-│  • [创建 Alert] - 为此断言创建监控告警                            │
-│  • [查看 Audit 记录] - 跳转到审计日志                             │
+│  Option C - Navigate to Related Pages:                          │
+│  • [View in Protocol] → /oracle/protocols/{protocol}           │
+│  • [View Feed] → /oracle/feeds?symbol={symbol}                │
+│  • [Timeline] → /alerts/{id}/timeline                          │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│  Step 3: 分支操作                                                │
+│  Step 3: Resolve Problem                                        │
 ├─────────────────────────────────────────────────────────────────┤
-│  分支 A - 发起争议：                                              │
-│  • 点击 [发起争议] → /oracle/optimistic/disputes/create?assertionId={id} │
-│  • 填写争议理由和担保金额                                         │
-│  • 提交争议 → 进入争议详情页                                      │
-│                                                                  │
-│  分支 B - 查看相关 Dispute：                                      │
-│  • 点击 [查看相关 Dispute] → /oracle/optimistic/disputes/{disputeId} │
-│  • 查看争议双方证据                                               │
-│  • 参与投票（如果还在投票期）                                     │
-│                                                                  │
-│  分支 C - 创建/查看 Alert：                                       │
-│  • 点击 [创建 Alert] → /alerts/create?type=assertion&target={id} │
-│  • 或点击 [查看 Alert] → /alerts?target={id}                     │
-│                                                                  │
-│  分支 D - 审计追踪：                                              │
-│  • 点击 [查看 Audit 记录] → /audit?category=optimistic&target={id} │
-│  • 查看该断言的所有操作历史                                       │
+│  • Investigate problem based on detail page info               │
+│  • Click [Resolve] to mark as resolved                         │
+│  • Or create Dispute → /disputes/create?alertId={id}           │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### 路由参数约定
+---
+
+## 4. Optimistic Oracle Flow (Assertion/Dispute Flow)
+
+### Trigger Scenarios
+
+- Viewing assertion status of Optimistic Oracle like UMA
+- Found suspicious assertion that needs dispute
+- Need to audit historical assertion and dispute records
+
+### Operation Path
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Step 1: Enter Optimistic Oracle Center                         │
+├─────────────────────────────────────────────────────────────────┤
+│  Entry Options:                                                 │
+│  • /oracle/optimistic              - Overview page             │
+│  • /oracle/optimistic/assertions   - Assertion list            │
+│  • /oracle/optimistic/disputes     - Dispute list              │
+│                                                                  │
+│  Views:                                                         │
+│  • Active Assertions                                            │
+│  • Expired Assertions (pending settlement)                      │
+│  • Active Disputes                                             │
+│  • Settled Disputes                                            │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│  Step 2: View Assertion Details                                 │
+├─────────────────────────────────────────────────────────────────┤
+│  Entry: Click a row in Assertion list → /oracle/optimistic/assertions/{id}│
+│                                                                  │
+│  Detail Page Content:                                           │
+│  • Assertion basic info (price, time, asserter)                 │
+│  • Current status (active/disputed/settled)                    │
+│  • Remaining dispute time (countdown)                          │
+│  • Related disputes list (if any)                               │
+│                                                                  │
+│  Action Buttons:                                                │
+│  • [Initiate Dispute] - If still in dispute window              │
+│  • [View Related Dispute] - If already disputed                  │
+│  • [Create Alert] - Create monitoring alert for this assertion │
+│  • [View Audit Record] - Jump to audit log                     │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│  Step 3: Branch Operations                                     │
+├─────────────────────────────────────────────────────────────────┤
+│  Branch A - Initiate Dispute:                                   │
+│  • Click [Initiate Dispute] → /oracle/optimistic/disputes/create?assertionId={id}│
+│  • Fill in dispute reason and bond amount                       │
+│  • Submit → Enter dispute detail page                           │
+│                                                                  │
+│  Branch B - View Related Dispute:                               │
+│  • Click [View Related Dispute] → /oracle/optimistic/disputes/{disputeId}│
+│  • View evidence from both parties                              │
+│  • Participate in voting (if still in voting period)            │
+│                                                                  │
+│  Branch C - Create/View Alert:                                 │
+│  • Click [Create Alert] → /alerts/create?type=assertion&target={id}│
+│  • Or click [View Alert] → /alerts?target={id}                 │
+│                                                                  │
+│  Branch D - Audit Trail:                                        │
+│  • Click [View Audit Record] → /audit?category=optimistic&target={id}│
+│  • View all operation history of this assertion                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Route Parameter Conventions
 
 ```typescript
-// Optimistic Oracle 断言详情页参数
+// Optimistic Oracle Assertion Detail Page Parameters
 interface AssertionQueryParams {
-  id: string; // 断言 ID
-  view?: 'overview' | 'disputes' | 'timeline'; // 默认视图
+  id: string; // Assertion ID
+  view?: 'overview' | 'disputes' | 'timeline'; // Default view
 }
 
-// Optimistic Oracle 争议相关参数
+// Optimistic Oracle Dispute Related Parameters
 interface OptimisticDisputeParams {
-  assertionId?: string; // 关联的断言 ID
+  assertionId?: string; // Associated assertion ID
   status?: 'active' | 'resolved' | 'all';
 }
 
-// 审计日志筛选参数
+// Audit Log Filter Parameters
 interface AuditQueryParams {
   category?: 'optimistic' | 'assertion' | 'dispute' | 'alert';
-  target?: string; // 目标对象 ID
-  action?: string; // 操作类型
-  startTime?: string; // 开始时间
-  endTime?: string; // 结束时间
+  target?: string; // Target object ID
+  action?: string; // Action type
+  startTime?: string; // Start time
+  endTime?: string; // End time
 }
 ```
 
 ---
 
-## 5. 安全事件流 (Security Incident Flow)
+## 5. Security Incident Flow
 
-### 触发场景
+### Trigger Scenarios
 
-- Security Dashboard 显示安全风险卡片
-- 检测到价格操纵、异常交易等安全事件
-- 需要审计安全相关的告警和争议
+- Security Dashboard shows security risk cards
+- Detected security events like price manipulation, abnormal transactions
+- Need to audit security-related alerts and disputes
 
-### 操作路径
+### Operation Path
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  Step 1: 发现安全风险                                            │
+│  Step 1: Discover Security Risk                                 │
 ├─────────────────────────────────────────────────────────────────┤
-│  入口：/security/dashboard                                        │
+│  Entry: /security/dashboard                                    │
 │                                                                  │
-│  风险卡片类型：                                                   │
-│  • 🔴 价格操纵检测 (Price Manipulation)                          │
-│  • 🟠 异常交易模式 (Anomalous Trading)                           │
-│  • 🟡 流动性异常 (Liquidity Anomaly)                             │
-│  • 🔵 预言机延迟 (Oracle Latency)                                │
+│  Risk Card Types:                                               │
+│  • 🔴 Price Manipulation Detection                              │
+│  • 🟠 Anomalous Trading Pattern                                │
+│  • 🟡 Liquidity Anomaly                                        │
+│  • 🔵 Oracle Latency                                           │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│  Step 2: 查看风险详情                                            │
+│  Step 2: View Risk Details                                      │
 ├─────────────────────────────────────────────────────────────────┤
-│  点击风险卡片 → 展开/跳转到详情                                   │
+│  Click risk card → Expand/jump to detail                       │
 │                                                                  │
-│  详情内容：                                                       │
-│  • 风险描述和严重程度                                             │
-│  • 受影响的协议/资产列表                                          │
-│  • 检测时间范围                                                   │
-│  • 相关证据（交易记录、价格曲线）                                 │
+│  Detail Content:                                                │
+│  • Risk description and severity                                │
+│  • Affected protocols/assets list                               │
+│  • Detection time range                                         │
+│  • Related evidence (transaction records, price charts)         │
 │                                                                  │
-│  操作按钮：                                                       │
-│  • [查看相关 Alerts] → 筛选后的告警列表                          │
-│  • [查看相关 Disputes] → 筛选后的争议列表                        │
-│  • [创建 Alert] → 为此安全事件创建告警                           │
-│  • [导出报告] → 生成安全审计报告                                 │
+│  Action Buttons:                                                │
+│  • [View Related Alerts] → Filtered alert list                  │
+│  • [View Related Disputes] → Filtered dispute list             │
+│  • [Create Alert] → Create alert for this security event       │
+│  • [Export Report] → Generate security audit report            │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│  Step 3: 处置安全事件（分支）                                     │
+│  Step 3: Handle Security Event (Branches)                       │
 ├─────────────────────────────────────────────────────────────────┤
-│  分支 A - 查看相关 Alerts：                                       │
-│  • 点击 [查看相关 Alerts]                                         │
-│  • 跳转：/alerts?category=security&riskType={type}&asset={asset} │
-│  • 自动筛选：只显示与该安全事件相关的告警                         │
+│  Branch A - View Related Alerts:                                 │
+│  • Click [View Related Alerts]                                  │
+│  • Jump: /alerts?category=security&riskType={type}&asset={asset}│
+│  • Auto-filter: Only show alerts related to this security event│
 │                                                                  │
-│  分支 B - 查看相关 Disputes：                                     │
-│  • 点击 [查看相关 Disputes]                                       │
-│  • 跳转：/disputes?category=security&riskType={type}&asset={asset}│
-│  • 自动筛选：只显示与该安全事件相关的争议                         │
+│  Branch B - View Related Disputes:                             │
+│  • Click [View Related Disputes]                                │
+│  • Jump: /disputes?category=security&riskType={type}&asset={asset}│
+│  • Auto-filter: Only show disputes related to this security event│
 │                                                                  │
-│  分支 C - 发起争议：                                              │
-│  • 如果发现需要争议的安全问题                                     │
-│  • 点击 [发起争议] → /disputes/create?source=security&riskId={id}│
+│  Branch C - Initiate Dispute:                                  │
+│  • If discovered security issue that needs dispute              │
+│  • Click [Initiate Dispute] → /disputes/create?source=security&riskId={id}│
 │                                                                  │
-│  分支 D - 审计追踪：                                              │
-│  • 点击 [查看审计日志] → /audit?category=security&target={id}    │
-│  • 查看该安全事件的完整操作历史                                   │
+│  Branch D - Audit Trail:                                        │
+│  • Click [View Audit Log] → /audit?category=security&target={id}│
+│  • View complete operation history of this security event       │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### 路由参数约定
+### Route Parameter Conventions
 
 ```typescript
-// Security Dashboard 风险筛选参数
+// Security Dashboard Risk Filter Parameters
 interface SecurityRiskQueryParams {
   riskType?: 'manipulation' | 'anomaly' | 'liquidity' | 'latency';
-  asset?: string; // 资产标识，如 "ETH"
-  protocol?: string; // 协议筛选，如 "chainlink"
+  asset?: string; // Asset identifier, e.g., "ETH"
+  protocol?: string; // Protocol filter, e.g., "chainlink"
   severity?: 'critical' | 'high' | 'medium' | 'low';
   timeRange?: '1h' | '24h' | '7d' | '30d';
 }
 
-// Alerts 页面安全相关筛选
+// Alerts Page Security-related Filters
 interface SecurityAlertsQueryParams {
-  category?: 'security'; // 固定值，表示安全类告警
-  riskType?: string; // 风险类型
-  asset?: string; // 资产筛选
-  protocol?: string; // 协议筛选
-  source?: 'security'; // 来源：安全检测系统
-  riskId?: string; // 关联的风险事件 ID
+  category?: 'security'; // Fixed value, indicates security category alerts
+  riskType?: string; // Risk type
+  asset?: string; // Asset filter
+  protocol?: string; // Protocol filter
+  source?: 'security'; // Source: security detection system
+  riskId?: string; // Associated risk event ID
 }
 
-// Disputes 页面安全相关筛选
+// Disputes Page Security-related Filters
 interface SecurityDisputesQueryParams {
-  category?: 'security'; // 固定值，表示安全类争议
-  riskType?: string; // 风险类型
-  asset?: string; // 资产筛选
-  protocol?: string; // 协议筛选
-  source?: 'security'; // 来源：安全检测系统
-  riskId?: string; // 关联的风险事件 ID
+  category?: 'security'; // Fixed value, indicates security category disputes
+  riskType?: string; // Risk type
+  asset?: string; // Asset filter
+  protocol?: string; // Protocol filter
+  source?: 'security'; // Source: security detection system
+  riskId?: string; // Associated risk event ID
 }
 ```
 
-### 跳转示例
+### Navigation Examples
 
 ```typescript
-// 从 Security Dashboard 跳转到相关 Alerts
+// Navigate from Security Dashboard to Related Alerts
 const navigateToRelatedAlerts = (riskCard: SecurityRiskCard) => {
   const params = new URLSearchParams({
     category: 'security',
@@ -382,7 +382,7 @@ const navigateToRelatedAlerts = (riskCard: SecurityRiskCard) => {
   window.location.href = `/alerts?${params.toString()}`;
 };
 
-// 从 Security Dashboard 跳转到相关 Disputes
+// Navigate from Security Dashboard to Related Disputes
 const navigateToRelatedDisputes = (riskCard: SecurityRiskCard) => {
   const params = new URLSearchParams({
     category: 'security',
@@ -398,114 +398,114 @@ const navigateToRelatedDisputes = (riskCard: SecurityRiskCard) => {
 
 ---
 
-## 6. 争议处理流 (Dispute Flow)
+## 6. Dispute Handling Flow
 
-### 触发场景
+### Trigger Scenarios
 
-- 发现价格异常需要发起争议
-- 收到争议通知需要投票
-- 查看历史争议记录
+- Found price anomaly that needs dispute
+- Received dispute notification that needs voting
+- View historical dispute records
 
-### 操作路径
+### Operation Path
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  Step 1: 进入争议中心                                            │
+│  Step 1: Enter Dispute Center                                   │
 ├─────────────────────────────────────────────────────────────────┤
-│  入口：/disputes                                                  │
+│  Entry: /disputes                                              │
 │                                                                  │
-│  视图：                                                           │
-│  • Active Disputes（待投票）                                     │
-│  • My Disputes（我发起的）                                        │
-│  • History（已结束）                                              │
+│  Views:                                                         │
+│  • Active Disputes (pending vote)                               │
+│  • My Disputes (initiated by me)                               │
+│  • History (ended)                                             │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│  Step 2: 发起或参与                                              │
+│  Step 2: Initiate or Participate                                │
 ├─────────────────────────────────────────────────────────────────┤
-│  选项 A - 发起争议：                                              │
-│  • [发起争议] → /disputes/create                                  │
-│  • 选择价格源 → 填写争议理由 → 提交                              │
+│  Option A - Initiate Dispute:                                   │
+│  • [Initiate Dispute] → /disputes/create                        │
+│  • Select price source → Fill reason → Submit                   │
 │                                                                  │
-│  选项 B - 参与投票：                                              │
-│  • 点击 Active Dispute → /disputes/{id}                          │
-│  • 查看证据 → 选择立场 → 提交投票                                │
+│  Option B - Participate in Voting:                              │
+│  • Click Active Dispute → /disputes/{id}                       │
+│  • View evidence → Choose stance → Submit vote                  │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│  Step 3: 跟踪结果                                                │
+│  Step 3: Track Results                                          │
 ├─────────────────────────────────────────────────────────────────┤
-│  • 在详情页查看投票进度                                          │
-│  • 争议结束后查看结果                                            │
-│  • 点击 [相关 Alert] 回到告警上下文                              │
+│  • View voting progress on detail page                          │
+│  • View result after dispute ends                               │
+│  • Click [Related Alert] to return to alert context            │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 快速跳转参考表
+## Quick Navigation Reference Table
 
-| 从                    | 到             | 路由                                 | 参数                                     |
-| --------------------- | -------------- | ------------------------------------ | ---------------------------------------- |
-| Dashboard Alert       | Feed 详情      | `/oracle/feeds`                      | `symbol`, `protocol`                     |
-| Dashboard Alert       | 协议详情       | `/oracle/protocols/{protocol}`       | -                                        |
-| Protocol 详情         | Feed 列表      | `/oracle/feeds`                      | `protocol`                               |
-| Protocol 详情         | 争议列表       | `/disputes`                          | `protocol`                               |
-| Feed 详情             | 协议详情       | `/oracle/protocols/{protocol}`       | -                                        |
-| Feed 详情             | Alerts         | `/alerts`                            | `symbol`, `protocol`                     |
-| Alert 列表            | Alert 详情     | `/alerts/{id}`                       | -                                        |
-| Alert 详情            | Feed 详情      | `/oracle/feeds`                      | `symbol`                                 |
-| Alert 详情            | 发起争议       | `/disputes/create`                   | `alertId`                                |
-| Dispute 列表          | Dispute 详情   | `/disputes/{id}`                     | -                                        |
-| Dispute 详情          | 相关 Alert     | `/alerts/{id}`                       | -                                        |
-| **Optimistic Oracle** |                |                                      |                                          |
-| Assertion 列表        | Assertion 详情 | `/oracle/optimistic/assertions/{id}` | -                                        |
-| Assertion 详情        | 发起争议       | `/oracle/optimistic/disputes/create` | `assertionId`                            |
-| Assertion 详情        | 查看 Dispute   | `/oracle/optimistic/disputes/{id}`   | -                                        |
-| Assertion 详情        | 创建 Alert     | `/alerts/create`                     | `type=assertion`, `target`               |
-| Assertion 详情        | Audit 记录     | `/audit`                             | `category=optimistic`, `target`          |
-| **Security**          |                |                                      |                                          |
-| Security Dashboard    | 相关 Alerts    | `/alerts`                            | `category=security`, `riskType`, `asset` |
-| Security Dashboard    | 相关 Disputes  | `/disputes`                          | `category=security`, `riskType`, `asset` |
-| Security Dashboard    | 发起争议       | `/disputes/create`                   | `source=security`, `riskId`              |
-| Security Dashboard    | Audit 记录     | `/audit`                             | `category=security`, `target`            |
+| From                  | To                | Route                                | Parameters                               |
+| --------------------- | ----------------- | ------------------------------------ | ---------------------------------------- |
+| Dashboard Alert       | Feed Details      | `/oracle/feeds`                      | `symbol`, `protocol`                     |
+| Dashboard Alert       | Protocol Details  | `/oracle/protocols/{protocol}`       | -                                        |
+| Protocol Details      | Feed List         | `/oracle/feeds`                      | `protocol`                               |
+| Protocol Details      | Dispute List      | `/disputes`                          | `protocol`                               |
+| Feed Details          | Protocol Details  | `/oracle/protocols/{protocol}`       | -                                        |
+| Feed Details          | Alerts            | `/alerts`                            | `symbol`, `protocol`                     |
+| Alert List            | Alert Details     | `/alerts/{id}`                       | -                                        |
+| Alert Details         | Feed Details      | `/oracle/feeds`                      | `symbol`                                 |
+| Alert Details         | Initiate Dispute  | `/disputes/create`                   | `alertId`                                |
+| Dispute List          | Dispute Details   | `/disputes/{id}`                     | -                                        |
+| Dispute Details       | Related Alert     | `/alerts/{id}`                       | -                                        |
+| **Optimistic Oracle** |                   |                                      |                                          |
+| Assertion List        | Assertion Details | `/oracle/optimistic/assertions/{id}` | -                                        |
+| Assertion Details     | Initiate Dispute  | `/oracle/optimistic/disputes/create` | `assertionId`                            |
+| Assertion Details     | View Dispute      | `/oracle/optimistic/disputes/{id}`   | -                                        |
+| Assertion Details     | Create Alert      | `/alerts/create`                     | `type=assertion`, `target`               |
+| Assertion Details     | Audit Record      | `/audit`                             | `category=optimistic`, `target`          |
+| **Security**          |                   |                                      |                                          |
+| Security Dashboard    | Related Alerts    | `/alerts`                            | `category=security`, `riskType`, `asset` |
+| Security Dashboard    | Related Disputes  | `/disputes`                          | `category=security`, `riskType`, `asset` |
+| Security Dashboard    | Initiate Dispute  | `/disputes/create`                   | `source=security`, `riskId`              |
+| Security Dashboard    | Audit Record      | `/audit`                             | `category=security`, `target`            |
 
 ---
 
-## 待实现功能清单
+## Feature Checklist (To Be Implemented)
 
-### 核心页面
+### Core Pages
 
-- [ ] `/oracle/feeds` - 价格源详情页
-- [ ] `/oracle/feeds?symbol=XXX` - 特定价格源筛选
-- [ ] `/oracle/analytics/deviation` - 价格偏差分析页
-- [ ] `/alerts/{id}` - 告警详情页
-- [ ] `/alerts/{id}/timeline` - 告警时间线
-- [ ] `/oracle/protocols/{protocol}/timeline` - 协议事件时间线
-- [ ] `/disputes/create` - 发起争议页
+- [ ] `/oracle/feeds` - Price feed detail page
+- [ ] `/oracle/feeds?symbol=XXX` - Specific price feed filter
+- [ ] `/oracle/analytics/deviation` - Price deviation analysis page
+- [ ] `/alerts/{id}` - Alert detail page
+- [ ] `/alerts/{id}/timeline` - Alert timeline
+- [ ] `/oracle/protocols/{protocol}/timeline` - Protocol event timeline
+- [ ] `/disputes/create` - Initiate dispute page
 
-### Optimistic Oracle 页面
+### Optimistic Oracle Pages
 
-- [ ] `/oracle/optimistic` - Optimistic Oracle 总览页
-- [ ] `/oracle/optimistic/assertions` - 断言列表页
-- [ ] `/oracle/optimistic/assertions/{id}` - 断言详情页
-- [ ] `/oracle/optimistic/disputes` - 争议列表页
-- [ ] `/oracle/optimistic/disputes/{id}` - 争议详情页
-- [ ] `/oracle/optimistic/disputes/create` - 发起争议页
+- [ ] `/oracle/optimistic` - Optimistic Oracle overview page
+- [ ] `/oracle/optimistic/assertions` - Assertion list page
+- [ ] `/oracle/optimistic/assertions/{id}` - Assertion detail page
+- [ ] `/oracle/optimistic/disputes` - Dispute list page
+- [ ] `/oracle/optimistic/disputes/{id}` - Dispute detail page
+- [ ] `/oracle/optimistic/disputes/create` - Initiate dispute page
 
-### 审计与追踪
+### Audit & Tracking
 
-- [ ] `/audit` - 审计日志总览
-- [ ] `/audit?category=optimistic` - Optimistic Oracle 审计记录
+- [ ] `/audit` - Audit log overview
+- [ ] `/audit?category=optimistic` - Optimistic Oracle audit records
 
-### Security 安全监控页面
+### Security Monitoring Pages
 
-- [ ] `/security/dashboard` - 安全监控仪表板
-- [ ] `/security/manipulation` - 价格操纵检测
-- [ ] `/security/anomaly` - 异常交易检测
-- [ ] `/security/reports` - 安全报告中心
+- [ ] `/security/dashboard` - Security monitoring dashboard
+- [ ] `/security/manipulation` - Price manipulation detection
+- [ ] `/security/anomaly` - Anomalous transaction detection
+- [ ] `/security/reports` - Security report center
 
-### 全局功能
+### Global Features
 
-- [ ] 全局搜索：支持 symbol/protocol/alert 快速跳转
-- [ ] 统一筛选组件：支持跨页面的筛选参数传递
+- [ ] Global search: Support quick navigation for symbol/protocol/alert
+- [ ] Unified filter component: Support filter parameter passing across pages

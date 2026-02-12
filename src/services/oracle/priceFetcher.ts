@@ -2,9 +2,9 @@ import crypto from 'crypto';
 
 import { createPublicClient, http, parseAbi } from 'viem';
 
-import { LRUCache } from '@/lib/cache/lru-cache';
 import { DEFAULT_FALLBACK_PRICES } from '@/config/constants';
 import { env } from '@/config/env';
+import { LRUCache } from '@/lib/cache/lru-cache';
 import { logger } from '@/shared/logger';
 import { parseRpcUrls } from '@/shared/utils';
 
@@ -505,7 +505,8 @@ function syntheticSpotUsd(sym: string) {
   const symbol = normalizeSymbol(sym);
   const basePrice = (SYNTHETIC_PRICES[symbol] ?? SYNTHETIC_PRICES.DEFAULT) as number;
   const time = Date.now();
-  const trend = Math.sin(time / SYNTHETIC_TREND_PERIOD_MS) * (basePrice * SYNTHETIC_TREND_AMPLITUDE);
+  const trend =
+    Math.sin(time / SYNTHETIC_TREND_PERIOD_MS) * (basePrice * SYNTHETIC_TREND_AMPLITUDE);
   const noise = (secureRandom() - 0.5) * (basePrice * SYNTHETIC_NOISE_AMPLITUDE);
   const refPrice = basePrice + trend + noise;
   return Number(refPrice.toFixed(2));

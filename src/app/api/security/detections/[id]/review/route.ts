@@ -1,9 +1,9 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { requireAdminWithToken } from '@/lib/api/apiResponse';
+import { query } from '@/lib/database/db';
 import { logger } from '@/shared/logger';
-import { query } from '@/infrastructure/database/db';
-import { requireAdminWithToken } from '@/infrastructure/api/apiResponse';
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {

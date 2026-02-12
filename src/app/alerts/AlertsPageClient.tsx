@@ -10,11 +10,16 @@ import { Filter, RefreshCw, ShieldAlert, Clock, AlertTriangle, Info } from 'luci
 import { MetricCard } from '@/components/charts/ProfessionalChart';
 import { EmptyAlertsState } from '@/components/common/EmptyState';
 import { PageHeader } from '@/components/common/PageHeader';
-import { TimeRangeSelector, DashboardSection, DashboardGrid } from '@/components/dashboard/ProfessionalDashboard';
+import {
+  TimeRangeSelector,
+  DashboardSection,
+  DashboardGrid,
+} from '@/components/dashboard/ProfessionalDashboard';
 import { AlertRulesManager } from '@/components/features/alert/AlertRulesManager';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { RefreshIndicator } from '@/components/ui/RefreshIndicator';
+import { DEBOUNCE_CONFIG } from '@/config/constants';
 import { getRefreshStrategy } from '@/config/refreshStrategy';
 import {
   useIsMobile,
@@ -27,16 +32,6 @@ import {
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage, langToLocale } from '@/i18n/translations';
-import { DEBOUNCE_CONFIG } from '@/config/constants';
-import type {
-  Alert,
-  AlertRule,
-  AlertSeverity,
-  AlertStatus,
-  Incident,
-  OpsMetrics,
-  OracleInstance,
-} from '@/types/oracleTypes';
 import { fetchApiData, getErrorCode, mergeOracleFilters, buildApiUrl } from '@/shared/utils';
 import {
   formatSloTarget,
@@ -48,6 +43,15 @@ import {
   sloLabels,
   sloStatusLabel,
 } from '@/shared/utils/alertsUtils';
+import type {
+  Alert,
+  AlertRule,
+  AlertSeverity,
+  AlertStatus,
+  Incident,
+  OpsMetrics,
+  OracleInstance,
+} from '@/types/oracleTypes';
 
 import {
   AlertCard,
@@ -263,24 +267,27 @@ export default function AlertsPageClient() {
     showRefreshToast: true,
   });
 
-  const createIncidentFromAlert = useCallback(async (a: Alert, rule?: AlertRule) => {
-    if (!canAdmin) return;
-    await fetchApiData<{ ok: true; incident: Incident }>('/api/oracle/incidents', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', ...adminHeaders },
-      body: JSON.stringify({
-        title: a.title,
-        severity: a.severity,
-        summary: a.message,
-        runbook: rule?.runbook ?? null,
-        owner: rule?.owner ?? null,
-        alertIds: [a.id],
-        entityType: a.entityType,
-        entityId: a.entityId,
-      }),
-    });
-    await reloadIncidents();
-  }, [canAdmin, adminHeaders, reloadIncidents]);
+  const createIncidentFromAlert = useCallback(
+    async (a: Alert, rule?: AlertRule) => {
+      if (!canAdmin) return;
+      await fetchApiData<{ ok: true; incident: Incident }>('/api/oracle/incidents', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', ...adminHeaders },
+        body: JSON.stringify({
+          title: a.title,
+          severity: a.severity,
+          summary: a.message,
+          runbook: rule?.runbook ?? null,
+          owner: rule?.owner ?? null,
+          alertIds: [a.id],
+          entityType: a.entityType,
+          entityId: a.entityId,
+        }),
+      });
+      await reloadIncidents();
+    },
+    [canAdmin, adminHeaders, reloadIncidents],
+  );
 
   const collectSloAlertIds = useCallback(
     async (slo: NonNullable<OpsMetrics['slo']>) => {
@@ -403,40 +410,49 @@ export default function AlertsPageClient() {
     scrollToIncidents,
   ]);
 
-  const patchIncidentStatus = useCallback(async (id: number, status: Incident['status']) => {
-    if (!canAdmin) return;
-    await fetchApiData<{ ok: true; incident: Incident }>(`/api/oracle/incidents/${id}`, {
-      method: 'PATCH',
-      headers: { 'content-type': 'application/json', ...adminHeaders },
-      body: JSON.stringify({ status }),
-    });
-    await reloadIncidents();
-  }, [canAdmin, adminHeaders, reloadIncidents]);
+  const patchIncidentStatus = useCallback(
+    async (id: number, status: Incident['status']) => {
+      if (!canAdmin) return;
+      await fetchApiData<{ ok: true; incident: Incident }>(`/api/oracle/incidents/${id}`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json', ...adminHeaders },
+        body: JSON.stringify({ status }),
+      });
+      await reloadIncidents();
+    },
+    [canAdmin, adminHeaders, reloadIncidents],
+  );
 
-  const incidentAction = useCallback(async (id: number, action: 'ack_alerts' | 'resolve_alerts') => {
-    if (!canAdmin) return;
-    await fetchApiData<{ ok: true; incident: Incident }>(`/api/oracle/incidents/${id}`, {
-      method: 'PATCH',
-      headers: { 'content-type': 'application/json', ...adminHeaders },
-      body: JSON.stringify({ action }),
-    });
-    await refresh();
-  }, [canAdmin, adminHeaders, refresh]);
+  const incidentAction = useCallback(
+    async (id: number, action: 'ack_alerts' | 'resolve_alerts') => {
+      if (!canAdmin) return;
+      await fetchApiData<{ ok: true; incident: Incident }>(`/api/oracle/incidents/${id}`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json', ...adminHeaders },
+        body: JSON.stringify({ action }),
+      });
+      await refresh();
+    },
+    [canAdmin, adminHeaders, refresh],
+  );
 
-  const startEditIncident = useCallback((i: IncidentWithAlerts) => {
-    if (!canAdmin) return;
-    setEditingIncidentId(i.id);
-    setIncidentDraft({
-      title: i.title ?? '',
-      severity: i.severity,
-      owner: i.owner ?? '',
-      rootCause: i.rootCause ?? '',
-      runbook: i.runbook ?? '',
-      entityType: i.entityType ?? '',
-      entityId: i.entityId ?? '',
-      summary: i.summary ?? '',
-    });
-  }, [canAdmin]);
+  const startEditIncident = useCallback(
+    (i: IncidentWithAlerts) => {
+      if (!canAdmin) return;
+      setEditingIncidentId(i.id);
+      setIncidentDraft({
+        title: i.title ?? '',
+        severity: i.severity,
+        owner: i.owner ?? '',
+        rootCause: i.rootCause ?? '',
+        runbook: i.runbook ?? '',
+        entityType: i.entityType ?? '',
+        entityId: i.entityId ?? '',
+        summary: i.summary ?? '',
+      });
+    },
+    [canAdmin],
+  );
 
   const cancelEditIncident = useCallback(() => {
     setEditingIncidentId(null);
@@ -469,7 +485,14 @@ export default function AlertsPageClient() {
     );
     cancelEditIncident();
     await reloadIncidents();
-  }, [canAdmin, incidentDraft, editingIncidentId, adminHeaders, cancelEditIncident, reloadIncidents]);
+  }, [
+    canAdmin,
+    incidentDraft,
+    editingIncidentId,
+    adminHeaders,
+    cancelEditIncident,
+    reloadIncidents,
+  ]);
 
   const applyQuery = useCallback((value: string) => {
     const next = value.trim();
@@ -573,43 +596,51 @@ export default function AlertsPageClient() {
     }
   }, [nextCursor, fetchAlerts]);
 
-  const updateAlert = useCallback(async (alertId: number, status: AlertStatus) => {
-    await fetchApiData<Alert>(`/api/oracle/alerts/${alertId}`, {
-      method: 'PATCH',
-      headers: { 'content-type': 'application/json', ...adminHeaders },
-      body: JSON.stringify({ status }),
-    });
-    await refresh();
-  }, [adminHeaders, refresh]);
-
-  const setRuleSilenceMinutes = useCallback(async (ruleId: string, minutes: number | null) => {
-    if (!canAdmin) return;
-    if (!rules) return;
-    if (
-      minutes !== null &&
-      (!Number.isFinite(minutes) ||
-        !Number.isInteger(minutes) ||
-        minutes <= 0 ||
-        minutes > 60 * 24 * 30)
-    ) {
-      return;
-    }
-    setRulesSaving(true);
-    try {
-      const silencedUntil = minutes ? new Date(Date.now() + minutes * 60_000).toISOString() : null;
-      const nextRules = rules.map((r) => (r.id === ruleId ? { ...r, silencedUntil } : r));
-      const data = await fetchApiData<{ rules: AlertRule[] }>('/api/oracle/alert-rules', {
-        method: 'PUT',
+  const updateAlert = useCallback(
+    async (alertId: number, status: AlertStatus) => {
+      await fetchApiData<Alert>(`/api/oracle/alerts/${alertId}`, {
+        method: 'PATCH',
         headers: { 'content-type': 'application/json', ...adminHeaders },
-        body: JSON.stringify({ rules: nextRules }),
+        body: JSON.stringify({ status }),
       });
-      setRules(data.rules ?? nextRules);
-    } catch (error: unknown) {
-      setError(getErrorCode(error));
-    } finally {
-      setRulesSaving(false);
-    }
-  }, [canAdmin, rules, adminHeaders]);
+      await refresh();
+    },
+    [adminHeaders, refresh],
+  );
+
+  const setRuleSilenceMinutes = useCallback(
+    async (ruleId: string, minutes: number | null) => {
+      if (!canAdmin) return;
+      if (!rules) return;
+      if (
+        minutes !== null &&
+        (!Number.isFinite(minutes) ||
+          !Number.isInteger(minutes) ||
+          minutes <= 0 ||
+          minutes > 60 * 24 * 30)
+      ) {
+        return;
+      }
+      setRulesSaving(true);
+      try {
+        const silencedUntil = minutes
+          ? new Date(Date.now() + minutes * 60_000).toISOString()
+          : null;
+        const nextRules = rules.map((r) => (r.id === ruleId ? { ...r, silencedUntil } : r));
+        const data = await fetchApiData<{ rules: AlertRule[] }>('/api/oracle/alert-rules', {
+          method: 'PUT',
+          headers: { 'content-type': 'application/json', ...adminHeaders },
+          body: JSON.stringify({ rules: nextRules }),
+        });
+        setRules(data.rules ?? nextRules);
+      } catch (error: unknown) {
+        setError(getErrorCode(error));
+      } finally {
+        setRulesSaving(false);
+      }
+    },
+    [canAdmin, rules, adminHeaders],
+  );
 
   const slo = opsMetrics?.slo ?? null;
   const sloEntries = getSloEntries();
@@ -638,10 +669,10 @@ export default function AlertsPageClient() {
 
   // 计算告警统计
   const alertStats = useMemo(() => {
-    const critical = items.filter(a => a.severity === 'critical').length;
-    const warning = items.filter(a => a.severity === 'warning').length;
-    const info = items.filter(a => a.severity === 'info').length;
-    const open = items.filter(a => a.status === 'Open').length;
+    const critical = items.filter((a) => a.severity === 'critical').length;
+    const warning = items.filter((a) => a.severity === 'warning').length;
+    const info = items.filter((a) => a.severity === 'info').length;
+    const open = items.filter((a) => a.status === 'Open').length;
     return { critical, warning, info, open, total: items.length };
   }, [items]);
 
@@ -665,7 +696,7 @@ export default function AlertsPageClient() {
             type="button"
             onClick={refresh}
             disabled={loading}
-            className="flex items-center gap-1.5 rounded-xl bg-white/60 px-3 py-2 text-sm font-semibold text-purple-800 shadow-sm ring-1 ring-purple-100 hover:bg-white disabled:opacity-50 sm:gap-2 sm:px-4"
+            className="text-primary-darker ring-primary100 flex items-center gap-1.5 rounded-xl bg-white/60 px-3 py-2 text-sm font-semibold shadow-sm ring-1 hover:bg-white disabled:opacity-50 sm:gap-2 sm:px-4"
           >
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
             <span className="hidden sm:inline">{t('alerts.refresh')}</span>
@@ -714,11 +745,11 @@ export default function AlertsPageClient() {
       )}
 
       <div className="grid gap-3 sm:gap-4 lg:grid-cols-3">
-        <Card className="border-purple-100/60 bg-white/60 shadow-sm lg:col-span-2">
+        <Card className="border-primary/10/60 bg-white/60 shadow-sm lg:col-span-2">
           <CardHeader className="pb-3 sm:pb-4">
             <div className="flex flex-col gap-2 sm:gap-3">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm text-purple-700/70">
+                <div className="text-primary-dark/70 flex items-center gap-2 text-sm">
                   <ShieldAlert size={16} />
                   <span>{t('alerts.title')}</span>
                 </div>
@@ -726,7 +757,7 @@ export default function AlertsPageClient() {
                 {isMobile && (
                   <button
                     type="button"
-                    className="flex h-8 items-center gap-1 rounded-lg bg-white/50 px-2 text-xs font-medium text-purple-700 shadow-sm ring-1 ring-purple-100"
+                    className="text-primary-dark ring-primary100 flex h-8 items-center gap-1 rounded-lg bg-white/50 px-2 text-xs font-medium shadow-sm ring-1"
                     onClick={() => {
                       const filters = document.getElementById('mobile-alert-filters');
                       if (filters) {
@@ -746,7 +777,7 @@ export default function AlertsPageClient() {
                 <select
                   value={instanceId}
                   onChange={(e) => setInstanceId(e.target.value)}
-                  className="h-9 rounded-lg border-none bg-white/50 px-3 text-sm text-purple-900 shadow-sm focus:ring-2 focus:ring-purple-500/20"
+                  className="focus:ring-primary500/20 h-9 rounded-lg border-none bg-white/50 px-3 text-sm text-[var(--foreground)] shadow-sm focus:ring-2"
                 >
                   {(() => {
                     const list = (instances ?? []).filter((i) => i.enabled || i.id === instanceId);
@@ -763,7 +794,7 @@ export default function AlertsPageClient() {
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value as AlertStatus | 'All')}
-                  className="h-9 rounded-lg border-none bg-white/50 px-3 text-sm text-purple-900 shadow-sm focus:ring-2 focus:ring-purple-500/20"
+                  className="focus:ring-primary500/20 h-9 rounded-lg border-none bg-white/50 px-3 text-sm text-[var(--foreground)] shadow-sm focus:ring-2"
                 >
                   <option value="All">{t('common.all')}</option>
                   <option value="Open">Open</option>
@@ -774,7 +805,7 @@ export default function AlertsPageClient() {
                 <select
                   value={filterSeverity}
                   onChange={(e) => setFilterSeverity(e.target.value as AlertSeverity | 'All')}
-                  className="h-9 rounded-lg border-none bg-white/50 px-3 text-sm text-purple-900 shadow-sm focus:ring-2 focus:ring-purple-500/20"
+                  className="focus:ring-primary500/20 h-9 rounded-lg border-none bg-white/50 px-3 text-sm text-[var(--foreground)] shadow-sm focus:ring-2"
                 >
                   <option value="All">{t('common.all')}</option>
                   <option value="critical">critical</option>
@@ -786,7 +817,7 @@ export default function AlertsPageClient() {
                   <select
                     value={filterType}
                     onChange={(e) => setFilterType(e.target.value)}
-                    className="h-9 rounded-lg border-none bg-white/50 px-3 text-sm text-purple-900 shadow-sm focus:ring-2 focus:ring-purple-500/20"
+                    className="focus:ring-primary500/20 h-9 rounded-lg border-none bg-white/50 px-3 text-sm text-[var(--foreground)] shadow-sm focus:ring-2"
                   >
                     <option value="All">{t('common.all')}</option>
                     {filterType !== 'All' && !alertTypeOptions.includes(filterType) ? (
@@ -804,7 +835,7 @@ export default function AlertsPageClient() {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder={t('alerts.searchPlaceholder')}
-                  className="h-9 w-full rounded-lg border-none bg-white/50 px-3 text-sm text-purple-900 shadow-sm placeholder:text-purple-300 focus:ring-2 focus:ring-purple-500/20 sm:w-48 lg:w-64"
+                  className="focus:ring-primary500/20 h-9 w-full rounded-lg border-none bg-white/50 px-3 text-sm text-[var(--foreground)] shadow-sm placeholder:text-primary/30 focus:ring-2 sm:w-48 lg:w-64"
                 />
                 {filterStatus !== 'All' ||
                 filterSeverity !== 'All' ||
@@ -813,7 +844,7 @@ export default function AlertsPageClient() {
                   <button
                     type="button"
                     onClick={resetFilters}
-                    className="h-9 rounded-lg bg-white/50 px-3 text-sm font-semibold text-purple-700 shadow-sm ring-1 ring-purple-100 hover:bg-white"
+                    className="text-primary-dark ring-primary100 h-9 rounded-lg bg-white/50 px-3 text-sm font-semibold shadow-sm ring-1 hover:bg-white"
                   >
                     {t('audit.clear')}
                   </button>
@@ -823,7 +854,7 @@ export default function AlertsPageClient() {
           </CardHeader>
           <CardContent className="space-y-3">
             {loading && (
-              <div className="rounded-2xl border border-purple-100 bg-white/50 p-6 text-sm text-purple-700/70 shadow-sm">
+              <div className="text-primary-dark/70 rounded-2xl border border-primary/10 bg-white/50 p-6 text-sm shadow-sm">
                 {t('common.loading')}
               </div>
             )}
@@ -847,7 +878,7 @@ export default function AlertsPageClient() {
                 const silencedUntilRaw = (rule?.silencedUntil ?? '').trim();
                 const silencedUntilMs = silencedUntilRaw ? Date.parse(silencedUntilRaw) : NaN;
                 const isSilenced = Number.isFinite(silencedUntilMs) && silencedUntilMs > Date.now();
-                const isSloRelated = sloAlertTypes.some(t => t.value === alert.type);
+                const isSloRelated = sloAlertTypes.some((t) => t.value === alert.type);
                 return (
                   <AlertCard
                     key={alert.id}
@@ -873,7 +904,7 @@ export default function AlertsPageClient() {
               <button
                 type="button"
                 onClick={loadMore}
-                className="w-full rounded-xl bg-white/60 px-4 py-2 text-sm font-semibold text-purple-800 shadow-sm ring-1 ring-purple-100 hover:bg-white"
+                className="text-primary-darker ring-primary100 w-full rounded-xl bg-white/60 px-4 py-2 text-sm font-semibold shadow-sm ring-1 hover:bg-white"
               >
                 {t('common.loadMore')}
               </button>
@@ -881,9 +912,11 @@ export default function AlertsPageClient() {
           </CardContent>
         </Card>
 
-        <Card className="border-purple-100/60 bg-white/60 shadow-sm">
+        <Card className="border-primary/10/60 bg-white/60 shadow-sm">
           <CardHeader className="pb-4">
-            <div className="text-sm font-semibold text-purple-950">{t('alerts.rules')}</div>
+            <div className="text-sm font-semibold text-[var(--foreground)]">
+              {t('alerts.rules')}
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <OpsMetricsCard
@@ -908,18 +941,18 @@ export default function AlertsPageClient() {
 
             <div
               id="incidents-panel"
-              className="rounded-xl border border-purple-100/60 bg-white/50 p-3"
+              className="border-primary/10/60 rounded-xl border bg-white/50 p-3"
             >
-              <div className="text-sm font-semibold text-purple-950">Incidents</div>
+              <div className="text-sm font-semibold text-[var(--foreground)]">Incidents</div>
               {incidentsError ? (
                 <div className="mt-2 rounded-lg border border-rose-100 bg-rose-50/50 p-2 text-xs text-rose-700">
                   {getUiErrorMessage(incidentsError, t)}
                 </div>
               ) : null}
               {incidentsLoading ? (
-                <div className="mt-2 text-xs text-purple-700/70">{t('common.loading')}</div>
+                <div className="text-primary-dark/70 mt-2 text-xs">{t('common.loading')}</div>
               ) : incidents.length === 0 ? (
-                <div className="mt-2 text-xs text-purple-700/70">{t('common.noData')}</div>
+                <div className="text-primary-dark/70 mt-2 text-xs">{t('common.noData')}</div>
               ) : (
                 <div className="mt-3 space-y-2">
                   {incidents.map((incident) => {
@@ -931,7 +964,9 @@ export default function AlertsPageClient() {
                       '';
                     const isSloIncident =
                       incident.entityType === 'slo' ||
-                      (incident.alerts ?? []).some((alert: Alert) => sloAlertTypes.some(t => t.value === alert.type));
+                      (incident.alerts ?? []).some((alert: Alert) =>
+                        sloAlertTypes.some((t) => t.value === alert.type),
+                      );
                     return (
                       <IncidentCard
                         key={incident.id}
@@ -959,8 +994,8 @@ export default function AlertsPageClient() {
               )}
             </div>
 
-            <div className="rounded-xl border border-purple-100/60 bg-white/50 p-3">
-              <div className="text-sm font-semibold text-purple-950">
+            <div className="border-primary/10/60 rounded-xl border bg-white/50 p-3">
+              <div className="text-sm font-semibold text-[var(--foreground)]">
                 {t('oracle.alerts.topRisks')}
               </div>
               {risksError ? (
@@ -969,9 +1004,9 @@ export default function AlertsPageClient() {
                 </div>
               ) : null}
               {risksLoading ? (
-                <div className="mt-2 text-xs text-purple-700/70">{t('common.loading')}</div>
+                <div className="text-primary-dark/70 mt-2 text-xs">{t('common.loading')}</div>
               ) : risks.length === 0 ? (
-                <div className="mt-2 text-xs text-purple-700/70">{t('common.noData')}</div>
+                <div className="text-primary-dark/70 mt-2 text-xs">{t('common.noData')}</div>
               ) : (
                 <div className="mt-3 space-y-2">
                   {risks.map((r, idx) => {
@@ -994,7 +1029,7 @@ export default function AlertsPageClient() {
                     return (
                       <div
                         key={`${r.entityType}:${r.entityId}:${idx}`}
-                        className="rounded-xl border border-purple-100/60 bg-white/60 p-3"
+                        className="border-primary/10/60 rounded-xl border bg-white/60 p-3"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0">
@@ -1008,12 +1043,12 @@ export default function AlertsPageClient() {
                               <span className="rounded-full border bg-gray-50 px-2 py-0.5 text-[11px] font-semibold text-gray-600">
                                 {r.chain}
                               </span>
-                              <span className="truncate text-sm font-semibold text-purple-950">
+                              <span className="truncate text-sm font-semibold text-[var(--foreground)]">
                                 {r.market}
                               </span>
                             </div>
                             {reasons.length ? (
-                              <div className="mt-2 space-y-1 text-xs text-purple-800/80">
+                              <div className="text-primary-darker/80 mt-2 space-y-1 text-xs">
                                 {reasons.map((reason, i) => (
                                   <div key={`${idx}:${i}`} className="leading-snug">
                                     {reason}
@@ -1027,7 +1062,7 @@ export default function AlertsPageClient() {
                               <button
                                 type="button"
                                 onClick={() => applyQuery(alertsQuery)}
-                                className="rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-semibold text-purple-700 shadow-sm ring-1 ring-purple-100 hover:bg-purple-50"
+                                className="text-primary-dark ring-primary100 rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-semibold shadow-sm ring-1 hover:bg-primary/5"
                               >
                                 Alerts
                               </button>
@@ -1035,7 +1070,7 @@ export default function AlertsPageClient() {
                             {assertionHref ? (
                               <Link
                                 href={assertionHref}
-                                className="rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-semibold text-purple-700 shadow-sm ring-1 ring-purple-100 hover:bg-purple-50"
+                                className="text-primary-dark ring-primary100 rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-semibold shadow-sm ring-1 hover:bg-primary/5"
                               >
                                 Assertion
                               </Link>
@@ -1050,7 +1085,7 @@ export default function AlertsPageClient() {
                             ) : (
                               <Link
                                 href={attachInstanceId('/disputes') as Route}
-                                className="rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-semibold text-purple-700 shadow-sm ring-1 ring-purple-100 hover:bg-purple-50"
+                                className="text-primary-dark ring-primary100 rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-semibold shadow-sm ring-1 hover:bg-primary/5"
                               >
                                 Disputes
                               </Link>
@@ -1071,7 +1106,9 @@ export default function AlertsPageClient() {
             ) : null}
 
             <div className="space-y-2">
-              <label htmlFor="alerts-admin-token" className="text-xs font-semibold text-gray-500">{t('alerts.adminToken')}</label>
+              <label htmlFor="alerts-admin-token" className="text-xs font-semibold text-gray-500">
+                {t('alerts.adminToken')}
+              </label>
               <input
                 id="alerts-admin-token"
                 value={adminToken}
@@ -1079,7 +1116,7 @@ export default function AlertsPageClient() {
                 placeholder={t('alerts.adminTokenHint')}
                 type="password"
                 autoComplete="off"
-                className="h-9 w-full rounded-lg border-none bg-white/50 px-3 text-sm text-purple-900 shadow-sm placeholder:text-purple-300 focus:ring-2 focus:ring-purple-500/20"
+                className="focus:ring-primary500/20 h-9 w-full rounded-lg border-none bg-white/50 px-3 text-sm text-[var(--foreground)] shadow-sm placeholder:text-primary/30 focus:ring-2"
               />
               {!canAdmin && (
                 <div className="rounded-lg border border-amber-100 bg-amber-50 p-2 text-xs text-amber-700">
@@ -1089,13 +1126,15 @@ export default function AlertsPageClient() {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="alerts-admin-actor" className="text-xs font-semibold text-gray-500">{t('alerts.adminActor')}</label>
+              <label htmlFor="alerts-admin-actor" className="text-xs font-semibold text-gray-500">
+                {t('alerts.adminActor')}
+              </label>
               <input
                 id="alerts-admin-actor"
                 value={adminActor}
                 onChange={(e) => setAdminActor(e.target.value)}
                 placeholder={t('alerts.adminActorPlaceholder')}
-                className="h-9 w-full rounded-lg border-none bg-white/50 px-3 text-sm text-purple-900 shadow-sm placeholder:text-purple-300 focus:ring-2 focus:ring-purple-500/20"
+                className="focus:ring-primary500/20 h-9 w-full rounded-lg border-none bg-white/50 px-3 text-sm text-[var(--foreground)] shadow-sm placeholder:text-primary/30 focus:ring-2"
               />
             </div>
             <div id="alert-rules-panel">

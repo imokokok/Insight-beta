@@ -99,7 +99,6 @@ export class MemoryCache implements CacheProvider {
       }
     }
 
-    // eslint-disable-next-line security/detect-non-literal-regexp
     const regex = new RegExp(pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
     this.regexCache.set(pattern, regex);
     return regex;

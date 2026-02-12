@@ -87,7 +87,7 @@ export function SyncStatus({ className }: { className?: string }) {
       <div className="absolute right-0 top-full z-50 mt-2 hidden w-64 flex-col gap-2 rounded-xl bg-white p-4 shadow-xl ring-1 ring-gray-100 group-hover:flex">
         <div className="flex items-center justify-between border-b border-gray-100 pb-2">
           <span className="text-sm font-semibold text-gray-900">{t('oracle.sync.status')}</span>
-          <Activity size={14} className="text-purple-500" />
+          <Activity size={14} className="text-primary" />
         </div>
 
         <div className="space-y-2 text-xs text-gray-600">

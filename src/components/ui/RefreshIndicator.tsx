@@ -98,7 +98,7 @@ export function RefreshIndicator({
     <div
       className={cn(
         'inline-flex items-center gap-1.5 rounded-full border bg-white px-2 py-1 text-xs text-gray-500 shadow-sm transition-all',
-        isRefreshing && 'border-purple-200 bg-purple-50 text-purple-600',
+        isRefreshing && 'border-primary/20 bg-primary/5 text-primary',
         className,
       )}
       role="status"
@@ -131,7 +131,7 @@ export function RefreshIndicator({
       {onRefresh && !isRefreshing && (
         <button
           onClick={onRefresh}
-          className="ml-1 rounded p-0.5 hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-purple-500"
+          className="focus:ring-primary500 ml-1 rounded p-0.5 hover:bg-gray-100 focus:outline-none focus:ring-1"
           aria-label="立即刷新"
           title="立即刷新"
         >

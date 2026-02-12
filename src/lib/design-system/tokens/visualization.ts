@@ -1,6 +1,6 @@
 /**
  * Data Visualization Design Tokens
- * 
+ *
  * 数据可视化设计令牌
  * - 统一图表配色方案
  * - 图表尺寸规范
@@ -14,7 +14,7 @@
 export const CHART_COLORS = {
   // 主色调
   primary: {
-    DEFAULT: '#8b5cf6',
+    DEFAULT: 'rgb(var(--color-primary))',
     light: '#a78bfa',
     dark: '#7c3aed',
     50: '#f5f3ff',
@@ -22,13 +22,13 @@ export const CHART_COLORS = {
     200: '#ddd6fe',
     300: '#c4b5fd',
     400: '#a78bfa',
-    500: '#8b5cf6',
+    500: 'rgb(var(--color-primary))',
     600: '#7c3aed',
     700: '#6d28d9',
     800: '#5b21b6',
     900: '#4c1d95',
   },
-  
+
   // 语义化颜色
   semantic: {
     success: {
@@ -56,10 +56,10 @@ export const CHART_COLORS = {
       bg: 'rgba(59, 130, 246, 0.1)',
     },
   },
-  
+
   // 多数据系列配色（用于对比图表）
   series: [
-    '#8b5cf6', // 紫色
+    'rgb(var(--color-primary))', // 紫色
     '#3b82f6', // 蓝色
     '#10b981', // 绿色
     '#f59e0b', // 橙色
@@ -70,16 +70,16 @@ export const CHART_COLORS = {
     '#6366f1', // 靛蓝
     '#14b8a6', //  teal
   ],
-  
+
   // 渐变配色
   gradients: {
-    purple: ['#8b5cf6', '#a78bfa'],
+    purple: ['rgb(var(--color-primary))', '#a78bfa'],
     blue: ['#3b82f6', '#60a5fa'],
     green: ['#22c55e', '#4ade80'],
     orange: ['#f59e0b', '#fbbf24'],
     red: ['#ef4444', '#f87171'],
   },
-  
+
   // 热力图配色
   heatmap: {
     low: '#dcfce7',
@@ -88,7 +88,7 @@ export const CHART_COLORS = {
     critical: '#fb923c',
     severe: '#ef4444',
   },
-  
+
   // 网格和轴线
   grid: {
     line: '#e5e7eb',
@@ -109,7 +109,7 @@ export const CHART_DIMENSIONS = {
     lg: 400,
     xl: 500,
   },
-  
+
   // 响应式高度配置
   responsive: {
     mobile: {
@@ -128,14 +128,14 @@ export const CHART_DIMENSIONS = {
       max: 600,
     },
   },
-  
+
   // 边距
   margin: {
     sm: { top: 10, right: 10, bottom: 10, left: 10 },
     md: { top: 20, right: 20, bottom: 20, left: 20 },
     lg: { top: 30, right: 30, bottom: 30, left: 30 },
   },
-  
+
   // 坐标轴
   axis: {
     tickSize: 5,
@@ -155,21 +155,21 @@ export const CHART_ANIMATIONS = {
     normal: 500,
     slow: 800,
   },
-  
+
   // 缓动函数
   easing: {
     default: 'ease-out',
     smooth: 'cubic-bezier(0.4, 0, 0.2, 1)',
     bounce: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
   },
-  
+
   // 图表动画配置
   chart: {
     isAnimationActive: true,
     animationDuration: 500,
     animationEasing: 'ease-out',
   },
-  
+
   // 数据更新动画
   dataUpdate: {
     duration: 300,
@@ -188,21 +188,21 @@ export const CHART_TYPOGRAPHY = {
     fontWeight: 600,
     fill: '#111827',
   },
-  
+
   // 副标题
   subtitle: {
     fontSize: 12,
     fontWeight: 400,
     fill: '#6b7280',
   },
-  
+
   // 坐标轴标签
   axis: {
     fontSize: 11,
     fontWeight: 400,
     fill: '#6b7280',
   },
-  
+
   // 提示框
   tooltip: {
     title: {
@@ -221,7 +221,7 @@ export const CHART_TYPOGRAPHY = {
       fill: '#6b7280',
     },
   },
-  
+
   // 图例
   legend: {
     fontSize: 12,
@@ -242,14 +242,14 @@ export const CHART_THRESHOLDS = {
     fair: 70,
     poor: 50,
   },
-  
+
   // 偏差阈值
   deviation: {
     normal: 0.01,
     warning: 0.02,
     critical: 0.05,
   },
-  
+
   // 延迟阈值 (ms)
   latency: {
     excellent: 500,
@@ -257,7 +257,7 @@ export const CHART_THRESHOLDS = {
     fair: 2000,
     poor: 5000,
   },
-  
+
   // 准确率阈值
   accuracy: {
     excellent: 99.9,
@@ -277,14 +277,14 @@ export const CHART_THRESHOLDS = {
 export function getStatusColor(
   value: number,
   thresholds: { warning: number; critical: number },
-  reverse = false
+  reverse = false,
 ): string {
   if (reverse) {
     if (value <= thresholds.critical) return CHART_COLORS.semantic.error.DEFAULT;
     if (value <= thresholds.warning) return CHART_COLORS.semantic.warning.DEFAULT;
     return CHART_COLORS.semantic.success.DEFAULT;
   }
-  
+
   if (value >= thresholds.critical) return CHART_COLORS.semantic.error.DEFAULT;
   if (value >= thresholds.warning) return CHART_COLORS.semantic.warning.DEFAULT;
   return CHART_COLORS.semantic.success.DEFAULT;

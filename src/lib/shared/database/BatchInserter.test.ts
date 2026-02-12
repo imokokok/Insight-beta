@@ -6,11 +6,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BatchInserter } from './BatchInserter';
 
 // Mock query function
-vi.mock('@/server/db', () => ({
+vi.mock('@/lib/database/db', () => ({
   query: vi.fn(),
 }));
 
-import { query } from '@//server/db';
+import { query } from '@/lib/database/db';
 
 describe('BatchInserter', () => {
   beforeEach(() => {

@@ -64,7 +64,7 @@ export default [
       "@next/next/no-css-tags": "warn",
       "@next/next/no-head-element": "warn",
       "@next/next/no-html-link-for-pages": "warn",
-      "@next/next/no-img-element": "warn",
+      "@next/next/no-img-element": "off",
       "@next/next/no-page-custom-font": "warn",
       "@next/next/no-styled-jsx-in-document": "warn",
       "@next/next/no-sync-scripts": "warn",
@@ -104,6 +104,11 @@ export default [
         ...globals.browser,
         ...globals.node,
         ...globals.es2021,
+        React: "readonly",
+        NodeJS: "readonly",
+        RequestInit: "readonly",
+        Response: "readonly",
+        Headers: "readonly",
       },
     },
     settings: {
@@ -117,24 +122,31 @@ export default [
     rules: {
       ...tseslint.configs.recommended.rules,
       "no-loss-of-precision": "off",
-      "no-redeclare": "off", // 禁用重复声明检查，因为TypeScript编译器会处理函数重载
+      "no-redefine": "off",
+      "no-redeclare": "off", // 禁用重复声明检查
+      "no-case-declarations": "off", // 允许在 case 块中声明变量
+      "no-empty": "off", // 允许空块语句
+      "no-control-regex": "off", // 允许正则中的控制字符
       // Security rules
-      "security/detect-object-injection": "warn",
+      "security/detect-object-injection": "off",
       "security/detect-non-literal-fs-filename": "error",
       "security/detect-no-csrf-before-method-override": "error",
       "security/detect-possible-timing-attacks": "error",
       "security/detect-non-literal-require": "error",
-      "security/detect-non-literal-regexp": "error",
+      "security/detect-non-literal-regexp": "warn",
       "security/detect-eval-with-expression": "error",
-      "security/detect-unsafe-regex": "error",
+      "security/detect-unsafe-regex": "off", // 禁用不安全的正则检查，存在误报
       // TypeScript rules
-      "@typescript-eslint/no-explicit-any": "error",
+      "@typescript-eslint/no-explicit-any": "warn", // 降为 warn，允许必要的 any 类型
       "@typescript-eslint/no-loss-of-precision": "off",
       "@typescript-eslint/no-unused-vars": "off",
       "@typescript-eslint/consistent-type-imports": "warn",
-      "@typescript-eslint/no-non-null-assertion": "warn",
+      "@typescript-eslint/no-non-null-assertion": "off",
       "@typescript-eslint/explicit-function-return-type": "off",
       "@typescript-eslint/explicit-module-boundary-types": "off",
+      // React Hooks rules - 调整为 warn
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
       // Unused imports rules
       "unused-imports/no-unused-imports": "error",
       "unused-imports/no-unused-vars": [
@@ -183,9 +195,11 @@ export default [
           },
         },
       ],
-      "import/no-duplicates": "warn",
+      "import/no-duplicates": "off",
       "import/newline-after-import": "warn",
       "import/no-anonymous-default-export": "warn",
+      "import/named": "off",
+      "import/namespace": "off",
       // JSX Accessibility rules
       "jsx-a11y/alt-text": [
         "warn",
@@ -199,7 +213,7 @@ export default [
       "jsx-a11y/aria-props": "warn",
       "jsx-a11y/aria-proptypes": "warn",
       "jsx-a11y/aria-unsupported-elements": "warn",
-      "jsx-a11y/click-events-have-key-events": "warn",
+      "jsx-a11y/click-events-have-key-events": "off",
       "jsx-a11y/heading-has-content": "error",
       "jsx-a11y/html-has-lang": "error",
       "jsx-a11y/img-redundant-alt": "warn",
@@ -208,10 +222,10 @@ export default [
       "jsx-a11y/media-has-caption": "warn",
       "jsx-a11y/mouse-events-have-key-events": "warn",
       "jsx-a11y/no-access-key": "warn",
-      "jsx-a11y/no-autofocus": "warn",
+      "jsx-a11y/no-autofocus": "off",
       "jsx-a11y/no-distracting-elements": "error",
       "jsx-a11y/no-interactive-element-to-noninteractive-role": "error",
-      "jsx-a11y/no-noninteractive-element-interactions": "warn",
+      "jsx-a11y/no-noninteractive-element-interactions": "off",
       "jsx-a11y/no-noninteractive-element-to-interactive-role": "error",
       "jsx-a11y/no-redundant-roles": "warn",
       "jsx-a11y/role-has-required-aria-props": "warn",

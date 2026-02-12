@@ -19,13 +19,13 @@ import type {
 import { Skeleton } from '@/components/ui/skeleton';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage, langToLocale } from '@/i18n/translations';
-import { cn, fetchApiData, formatPercent as formatPercentUtil } from '@/shared/utils';
 import type { PricePoint } from '@/services/oracle/priceFetcher';
 import { calculateHealthScore } from '@/services/oracle/priceFetcher';
+import { cn, fetchApiData, formatPercent as formatPercentUtil } from '@/shared/utils';
 
 const getTabBorder = (activeTab: TabKey) =>
   activeTab === 'activity'
-    ? 'border-purple-100/20'
+    ? 'border-primary/10/20'
     : activeTab === 'tvs'
       ? 'border-pink-100/20'
       : activeTab === 'sync'

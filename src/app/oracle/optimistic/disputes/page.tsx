@@ -6,8 +6,6 @@ import Link from 'next/link';
 
 import { ArrowUpRight, RefreshCw } from 'lucide-react';
 
-
-
 import { EmptyEventsState } from '@/components/common/EmptyState';
 import { PageHeader } from '@/components/common/PageHeader';
 import { useI18n } from '@/i18n/LanguageProvider';
@@ -47,7 +45,6 @@ export default function UMADisputesPage() {
 
   useEffect(() => {
     fetchDisputes();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, statusFilter]);
 
   async function fetchDisputes() {

@@ -8,15 +8,14 @@
 
 import type { NextRequest } from 'next/server';
 
-import { createSuccessResponse, createErrorResponse, handleApiError } from '@/infrastructure/api/response';
-import { logger } from '@/shared/logger';
-import { query } from '@/infrastructure/database/db';
+import { createSuccessResponse, createErrorResponse, handleApiError } from '@/lib/api/response';
+import { query } from '@/lib/database/db';
 import {
   priceDeviationAnalytics,
   type DeviationReport,
   type PriceDeviationPoint,
 } from '@/services/oracle/priceDeviationAnalytics';
-
+import { logger } from '@/shared/logger';
 
 // ============================================================================
 // Report 处理
@@ -119,7 +118,10 @@ async function handleReportRequest(
         windowHours: windowHoursParam,
       },
     });
-    return handleApiError(error instanceof Error ? error.message : 'Failed to generate report', 500);
+    return handleApiError(
+      error instanceof Error ? error.message : 'Failed to generate report',
+      500,
+    );
   }
 }
 

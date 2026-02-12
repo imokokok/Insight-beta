@@ -1,5 +1,3 @@
-[中文](./DEPLOYMENT.zh-CN.md)
-
 # Deployment (Production)
 
 ## 1) Environment Variables

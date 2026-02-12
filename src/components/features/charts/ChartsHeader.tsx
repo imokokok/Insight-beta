@@ -20,7 +20,7 @@ function ChartsHeader({ activeTab, onTabChange, t }: ChartsHeaderProps) {
           className={cn(
             'rounded-lg p-2 shadow-inner ring-1 backdrop-blur-md transition-colors duration-500 sm:rounded-xl sm:p-3',
             activeTab === 'activity'
-              ? 'bg-gradient-to-br from-purple-500/10 to-indigo-500/10 text-purple-600 ring-purple-500/20'
+              ? 'ring-primary500/20 bg-gradient-to-br from-primary-500/10 to-indigo-500/10 text-primary'
               : activeTab === 'tvs'
                 ? 'bg-gradient-to-br from-pink-500/10 to-rose-500/10 text-pink-600 ring-pink-500/20'
                 : activeTab === 'sync'
@@ -74,7 +74,7 @@ function ChartsHeader({ activeTab, onTabChange, t }: ChartsHeaderProps) {
           className={cn(
             'flex items-center gap-1 whitespace-nowrap rounded-md px-2 py-1.5 text-xs font-medium transition-all duration-300 sm:gap-2 sm:rounded-lg sm:px-4 sm:py-2 sm:text-sm',
             activeTab === 'activity'
-              ? 'bg-white text-purple-700 shadow-sm ring-1 ring-black/5'
+              ? 'text-primary-dark bg-white shadow-sm ring-1 ring-black/5'
               : 'text-gray-500 hover:bg-white/50 hover:text-gray-700',
           )}
         >

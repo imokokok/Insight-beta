@@ -18,24 +18,17 @@ import {
 import { logger } from '@/shared/logger';
 import type { SupportedChain } from '@/types/unifiedOracleTypes';
 
-import { UMA_OPTIMISTIC_ORACLE_V3_ABI } from './uma/abi';
+import { createQueryCache, createSmartRetry, GAS_CONSTANTS } from './security/gasOptimizer';
 import {
   validateAddress,
   validateBytes32,
   type ValidationResult,
 } from './security/inputValidation';
-import {
-  QueryCache,
-  SmartRetry,
-  createQueryCache,
-  createSmartRetry,
-  GAS_CONSTANTS,
-} from './security/gasOptimizer';
-import {
-  SlidingWindowRateLimiter,
-  createRateLimiter,
-  RATE_LIMIT_DEFAULTS,
-} from './security/rateLimiter';
+import { createRateLimiter, RATE_LIMIT_DEFAULTS } from './security/rateLimiter';
+import { UMA_OPTIMISTIC_ORACLE_V3_ABI } from './uma/abi';
+
+import type { QueryCache, SmartRetry } from './security/gasOptimizer';
+import type { SlidingWindowRateLimiter } from './security/rateLimiter';
 
 // ============================================================================
 // UMA 合约地址配置
@@ -219,7 +212,8 @@ export class UMAClient {
     if (config.enableRateLimit !== false) {
       this.rateLimiter = createRateLimiter({
         maxRequestsPerSecond: RATE_LIMIT_DEFAULTS.CONTRACT_MAX_CALLS_PER_SECOND,
-        maxRequestsPerMinute: config.maxRequestsPerMinute ?? RATE_LIMIT_DEFAULTS.CONTRACT_MAX_CALLS_PER_MINUTE,
+        maxRequestsPerMinute:
+          config.maxRequestsPerMinute ?? RATE_LIMIT_DEFAULTS.CONTRACT_MAX_CALLS_PER_MINUTE,
       });
     }
   }
@@ -537,7 +531,9 @@ export class UMAClient {
     if (!dispute) return null;
 
     const currentTime = Math.floor(Date.now() / 1000);
-    const canSettle = assertion ? assertion.expirationTime < currentTime && !assertion.resolved : false;
+    const canSettle = assertion
+      ? assertion.expirationTime < currentTime && !assertion.resolved
+      : false;
     const timeUntilSettlement = assertion ? Math.max(0, assertion.expirationTime - currentTime) : 0;
 
     return {
@@ -618,7 +614,12 @@ export class UMAClient {
 
       return { disputes, totalDisputes: disputes.length, pendingDisputes };
     } catch (error) {
-      logger.error('Failed to detect active disputes', { error, chain: this.chain, fromBlock, toBlock });
+      logger.error('Failed to detect active disputes', {
+        error,
+        chain: this.chain,
+        fromBlock,
+        toBlock,
+      });
       return { disputes: [], totalDisputes: 0, pendingDisputes: 0 };
     }
   }
@@ -901,7 +902,9 @@ export class UMAClient {
         healthy: false,
         lastUpdate: new Date(0),
         stalenessSeconds: Infinity,
-        issues: [`Failed to check UMA assertion health: ${error instanceof Error ? error.message : String(error)}`],
+        issues: [
+          `Failed to check UMA assertion health: ${error instanceof Error ? error.message : String(error)}`,
+        ],
         activeAssertions: 0,
         activeDisputes: 0,
         totalBonded: BigInt(0),
@@ -976,7 +979,11 @@ export class UMAClient {
 // 工厂函数
 // ============================================================================
 
-export function createUMAClient(chain: SupportedChain, rpcUrl: string, config?: UMAProtocolConfig): UMAClient {
+export function createUMAClient(
+  chain: SupportedChain,
+  rpcUrl: string,
+  config?: UMAProtocolConfig,
+): UMAClient {
   return new UMAClient(chain, rpcUrl, config);
 }
 

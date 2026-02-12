@@ -7,9 +7,9 @@
 import { NextResponse } from 'next/server';
 
 import { env } from '@/config/env';
-import { logger } from '@/shared/logger';
+import { requireAdmin } from '@/lib/api/apiResponse';
 import { getRateLimitStoreStatus, cleanupRateLimitStore } from '@/lib/security/rateLimit';
-import { requireAdmin } from '@/infrastructure/api/apiResponse';
+import { logger } from '@/shared/logger';
 
 /**
  * @swagger

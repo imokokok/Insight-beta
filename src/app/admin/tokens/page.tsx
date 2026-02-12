@@ -2,10 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-
-
-
-
 import { PageHeader } from '@/components/common/PageHeader';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useI18n } from '@/i18n/LanguageProvider';
@@ -156,13 +152,17 @@ export default function AdminTokensPage() {
       )}
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="border-purple-100/60 bg-white/60 shadow-sm lg:col-span-1">
+        <Card className="border-primary/10/60 bg-white/60 shadow-sm lg:col-span-1">
           <CardHeader className="pb-4">
-            <div className="text-sm font-semibold text-purple-950">{t('adminTokens.create')}</div>
+            <div className="text-sm font-semibold text-[var(--foreground)]">
+              {t('adminTokens.create')}
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <label htmlFor="admin-token" className="text-xs font-semibold text-gray-500">{t('alerts.adminToken')}</label>
+              <label htmlFor="admin-token" className="text-xs font-semibold text-gray-500">
+                {t('alerts.adminToken')}
+              </label>
               <input
                 id="admin-token"
                 value={adminToken}
@@ -170,38 +170,44 @@ export default function AdminTokensPage() {
                 placeholder="Bearer …"
                 type="password"
                 autoComplete="off"
-                className="h-9 w-full rounded-lg border-none bg-white/50 px-3 text-sm text-purple-900 shadow-sm placeholder:text-purple-300 focus:ring-2 focus:ring-purple-500/20"
+                className="focus:ring-primary500/20 h-9 w-full rounded-lg border-none bg-white/50 px-3 text-sm text-[var(--foreground)] shadow-sm placeholder:text-primary/30 focus:ring-2"
               />
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="admin-actor" className="text-xs font-semibold text-gray-500">{t('alerts.adminActor')}</label>
+              <label htmlFor="admin-actor" className="text-xs font-semibold text-gray-500">
+                {t('alerts.adminActor')}
+              </label>
               <input
                 id="admin-actor"
                 value={adminActor}
                 onChange={(e) => setAdminActor(e.target.value)}
                 placeholder={t('alerts.adminActorPlaceholder')}
-                className="h-9 w-full rounded-lg border-none bg-white/50 px-3 text-sm text-purple-900 shadow-sm placeholder:text-purple-300 focus:ring-2 focus:ring-purple-500/20"
+                className="focus:ring-primary500/20 h-9 w-full rounded-lg border-none bg-white/50 px-3 text-sm text-[var(--foreground)] shadow-sm placeholder:text-primary/30 focus:ring-2"
               />
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="token-label" className="text-xs font-semibold text-gray-500">{t('adminTokens.label')}</label>
+              <label htmlFor="token-label" className="text-xs font-semibold text-gray-500">
+                {t('adminTokens.label')}
+              </label>
               <input
                 id="token-label"
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
-                className="h-9 w-full rounded-lg border-none bg-white/50 px-3 text-sm text-purple-900 shadow-sm placeholder:text-purple-300 focus:ring-2 focus:ring-purple-500/20"
+                className="focus:ring-primary500/20 h-9 w-full rounded-lg border-none bg-white/50 px-3 text-sm text-[var(--foreground)] shadow-sm placeholder:text-primary/30 focus:ring-2"
               />
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="token-role" className="text-xs font-semibold text-gray-500">{t('adminTokens.role')}</label>
+              <label htmlFor="token-role" className="text-xs font-semibold text-gray-500">
+                {t('adminTokens.role')}
+              </label>
               <select
                 id="token-role"
                 value={role}
                 onChange={(e) => setRole(e.target.value as AdminRole)}
-                className="h-9 w-full rounded-lg border-none bg-white/50 px-3 text-sm text-purple-900 shadow-sm focus:ring-2 focus:ring-purple-500/20"
+                className="focus:ring-primary500/20 h-9 w-full rounded-lg border-none bg-white/50 px-3 text-sm text-[var(--foreground)] shadow-sm focus:ring-2"
               >
                 <option value="viewer">viewer</option>
                 <option value="alerts">alerts</option>
@@ -214,13 +220,13 @@ export default function AdminTokensPage() {
               type="button"
               onClick={createToken}
               disabled={!canManage || creating || label.trim().length === 0}
-              className="w-full rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-purple-500/20 disabled:opacity-60"
+              className="w-full rounded-xl bg-gradient-to-r from-primary-600 to-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-primary-500/20 disabled:opacity-60"
             >
               {creating ? t('common.loading') : t('adminTokens.create')}
             </button>
 
             {newTokenValue && (
-              <div className="space-y-2 rounded-xl border border-purple-100 bg-white/50 p-3">
+              <div className="space-y-2 rounded-xl border border-primary/10 bg-white/50 p-3">
                 <div className="text-xs font-semibold text-gray-500">
                   {t('adminTokens.tokenValue')}
                 </div>
@@ -228,7 +234,7 @@ export default function AdminTokensPage() {
                   <input
                     value={newTokenValue}
                     readOnly
-                    className="h-9 flex-1 rounded-lg border-none bg-white/70 px-3 font-mono text-xs text-purple-900 shadow-sm"
+                    className="h-9 flex-1 rounded-lg border-none bg-white/70 px-3 font-mono text-xs text-[var(--foreground)] shadow-sm"
                   />
                   <button
                     type="button"
@@ -241,7 +247,7 @@ export default function AdminTokensPage() {
                       'h-9 rounded-lg px-3 text-xs font-semibold shadow-sm ring-1',
                       copied
                         ? 'bg-emerald-50 text-emerald-700 ring-emerald-100'
-                        : 'bg-white text-purple-700 ring-purple-100 hover:bg-purple-50',
+                        : 'text-primary-dark ring-primary100 bg-white hover:bg-primary/5',
                     )}
                   >
                     {copied ? t('common.copied') : t('common.copyHash')}
@@ -252,15 +258,17 @@ export default function AdminTokensPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-purple-100/60 bg-white/60 shadow-sm lg:col-span-2">
+        <Card className="border-primary/10/60 bg-white/60 shadow-sm lg:col-span-2">
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between gap-3">
-              <div className="text-sm font-semibold text-purple-950">{t('nav.adminTokens')}</div>
+              <div className="text-sm font-semibold text-[var(--foreground)]">
+                {t('nav.adminTokens')}
+              </div>
               <button
                 type="button"
                 onClick={load}
                 disabled={loading}
-                className="rounded-xl bg-white/60 px-4 py-2 text-sm font-semibold text-purple-800 shadow-sm ring-1 ring-purple-100 hover:bg-white disabled:opacity-60"
+                className="text-primary-darker ring-primary100 rounded-xl bg-white/60 px-4 py-2 text-sm font-semibold shadow-sm ring-1 hover:bg-white disabled:opacity-60"
               >
                 {loading ? t('common.loading') : t('audit.refresh')}
               </button>
@@ -268,18 +276,18 @@ export default function AdminTokensPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             {items.length === 0 && !loading && (
-              <div className="rounded-2xl border border-purple-100 bg-white/50 p-6 text-sm text-purple-700/70 shadow-sm">
+              <div className="text-primary-dark/70 rounded-2xl border border-primary/10 bg-white/50 p-6 text-sm shadow-sm">
                 {t('common.noData')}
               </div>
             )}
 
             {items.map((it) => (
-              <div key={it.id} className="rounded-xl border border-purple-100 bg-white/50 p-3">
+              <div key={it.id} className="rounded-xl border border-primary/10 bg-white/50 p-3">
                 <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                   <div className="space-y-1">
-                    <div className="text-sm font-semibold text-purple-950">
+                    <div className="text-sm font-semibold text-[var(--foreground)]">
                       {it.label}{' '}
-                      <span className="text-xs font-medium text-purple-700/70">({it.role})</span>
+                      <span className="text-primary-dark/70 text-xs font-medium">({it.role})</span>
                     </div>
                     <div className="text-xs text-gray-500">
                       {t('adminTokens.createdAt')}: {formatTime(it.createdAt, locale)} · actor:{' '}

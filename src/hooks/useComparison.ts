@@ -10,6 +10,7 @@
 
 import useSWR from 'swr';
 
+import { buildApiUrl } from '@/shared/utils';
 import type {
   ComparisonFilter,
   ComparisonView,
@@ -18,7 +19,6 @@ import type {
   PriceHeatmapData,
   RealtimeComparisonItem,
 } from '@/types/oracle/comparison';
-import { buildApiUrl } from '@/shared/utils';
 
 import { createSWRConfig, REALTIME_CONFIG } from './useSWRConfig';
 
@@ -206,20 +206,36 @@ export function useComparisonData({ view, filter, enabled = true }: UseCompariso
     realtime,
     // 当前视图的数据
     current: {
-      data: view === 'heatmap' ? heatmap.data :
-            view === 'latency' ? latency.data :
-            view === 'cost' ? cost.data :
-            view === 'realtime' ? realtime.data : null,
-      isLoading: view === 'heatmap' ? heatmap.isLoading :
-                 view === 'latency' ? latency.isLoading :
-                 view === 'cost' ? cost.isLoading :
-                 view === 'realtime' ? realtime.isLoading : false,
-      error: view === 'heatmap' ? heatmap.error :
-             view === 'latency' ? latency.error :
-             view === 'cost' ? cost.error :
-             view === 'realtime' ? realtime.error : null,
+      data:
+        view === 'heatmap'
+          ? heatmap.data
+          : view === 'latency'
+            ? latency.data
+            : view === 'cost'
+              ? cost.data
+              : view === 'realtime'
+                ? realtime.data
+                : null,
+      isLoading:
+        view === 'heatmap'
+          ? heatmap.isLoading
+          : view === 'latency'
+            ? latency.isLoading
+            : view === 'cost'
+              ? cost.isLoading
+              : view === 'realtime'
+                ? realtime.isLoading
+                : false,
+      error:
+        view === 'heatmap'
+          ? heatmap.error
+          : view === 'latency'
+            ? latency.error
+            : view === 'cost'
+              ? cost.error
+              : view === 'realtime'
+                ? realtime.error
+                : null,
     },
   };
 }
-
-

@@ -7,15 +7,15 @@
 
 import crypto from 'crypto';
 
-import { logger } from '@/shared/logger';
-import type { SupportedChain } from '@/types/oracle/chain';
-import type { OracleProtocol } from '@/types/oracle/protocol';
-import { query } from '@/infrastructure/database/db';
+import { query } from '@/lib/database/db';
 import {
   getUnifiedInstance,
   updateSyncState,
   recordSyncError,
 } from '@/services/oracle/unifiedConfig';
+import { logger } from '@/shared/logger';
+import type { SupportedChain } from '@/types/oracle/chain';
+import type { OracleProtocol } from '@/types/oracle/protocol';
 
 // ============================================================================
 // Types
@@ -215,7 +215,7 @@ class SyncManager {
     config: SyncConfig,
   ): Promise<void> {
     // 使用原子锁机制防止竞态条件
-    
+
     // 尝试获取锁
     if (!this.acquireSyncLock(instanceId)) {
       logger.debug('Sync already in progress, skipping', { instanceId });
@@ -440,7 +440,7 @@ export function createPriceFeedRecord(
   price: number,
   blockNumber: number | null,
   confidence: number,
-  metadata?: Record<string, unknown>
+  metadata?: Record<string, unknown>,
 ): PriceFeedRecord {
   return {
     protocol: context.protocol,
@@ -461,7 +461,11 @@ export function createPriceFeedRecord(
 /**
  * 带超时的 Promise
  */
-export function withTimeout<T>(promise: Promise<T>, timeoutMs: number, errorMessage?: string): Promise<T> {
+export function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  errorMessage?: string,
+): Promise<T> {
   return new Promise((resolve, reject) => {
     const timeoutId = setTimeout(() => {
       reject(new Error(errorMessage || `Operation timed out after ${timeoutMs}ms`));

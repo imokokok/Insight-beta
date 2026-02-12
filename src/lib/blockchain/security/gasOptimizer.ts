@@ -5,8 +5,9 @@
  * 提供批量查询、缓存策略、多调用聚合等 Gas 优化功能
  */
 
-import type { Address, PublicClient, EstimateGasParameters } from 'viem';
 import { logger } from '@/shared/logger';
+
+import type { Address, PublicClient, EstimateGasParameters } from 'viem';
 
 // ============================================================================
 // 常量定义
@@ -82,7 +83,10 @@ export class QueryCache<T = unknown> {
   private maxSize: number;
   private ttl: number;
 
-  constructor(maxSize: number = GAS_CONSTANTS.MAX_CACHE_SIZE, ttl: number = GAS_CONSTANTS.DEFAULT_CACHE_TTL) {
+  constructor(
+    maxSize: number = GAS_CONSTANTS.MAX_CACHE_SIZE,
+    ttl: number = GAS_CONSTANTS.DEFAULT_CACHE_TTL,
+  ) {
     this.maxSize = maxSize;
     this.ttl = ttl;
   }
@@ -201,7 +205,11 @@ export class GasEstimator {
     }
   }
 
-  async getFullEstimate(params: { to: Address; data?: `0x${string}`; value?: bigint }): Promise<GasEstimate> {
+  async getFullEstimate(params: {
+    to: Address;
+    data?: `0x${string}`;
+    value?: bigint;
+  }): Promise<GasEstimate> {
     const [gasLimit, gasPriceInfo] = await Promise.all([
       this.estimateGas(params),
       this.getGasPrice(),
@@ -228,10 +236,7 @@ export class BatchCallOptimizer {
   private cache: QueryCache;
   private config: GasOptimizerConfig;
 
-  constructor(
-    publicClient: PublicClient,
-    config: Partial<GasOptimizerConfig> = {},
-  ) {
+  constructor(publicClient: PublicClient, config: Partial<GasOptimizerConfig> = {}) {
     this.publicClient = publicClient;
     this.config = {
       enableCache: config.enableCache ?? true,
@@ -277,7 +282,9 @@ export class BatchCallOptimizer {
   /**
    * 创建批次
    */
-  private createBatches(calls: BatchCallItem[]): Array<Array<BatchCallItem & { originalIndex: number }>> {
+  private createBatches(
+    calls: BatchCallItem[],
+  ): Array<Array<BatchCallItem & { originalIndex: number }>> {
     const batches: Array<Array<BatchCallItem & { originalIndex: number }>> = [];
     const batchSize = this.config.maxBatchSize;
 
@@ -450,10 +457,7 @@ export class SmartRetry {
 // 工厂函数
 // ============================================================================
 
-export function createQueryCache<T = unknown>(
-  maxSize?: number,
-  ttl?: number,
-): QueryCache<T> {
+export function createQueryCache<T = unknown>(maxSize?: number, ttl?: number): QueryCache<T> {
   return new QueryCache<T>(maxSize, ttl);
 }
 
@@ -468,9 +472,6 @@ export function createBatchCallOptimizer(
   return new BatchCallOptimizer(publicClient, config);
 }
 
-export function createSmartRetry(
-  maxRetries?: number,
-  baseDelayMs?: number,
-): SmartRetry {
+export function createSmartRetry(maxRetries?: number, baseDelayMs?: number): SmartRetry {
   return new SmartRetry(maxRetries, baseDelayMs);
 }

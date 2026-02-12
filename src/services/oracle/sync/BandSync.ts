@@ -5,8 +5,8 @@
  * 代码量从 120 行减少到 ~35 行
  */
 
-import type { BandClient } from '@/infrastructure/blockchain/bandOracle';
-import { createBandClient } from '@/infrastructure/blockchain/bandOracle';
+import type { BandClient } from '@/lib/blockchain/bandOracle';
+import { createBandClient } from '@/lib/blockchain/bandOracle';
 import { createSingletonSyncManager } from '@/lib/shared';
 import type { SupportedChain, UnifiedPriceFeed } from '@/types/unifiedOracleTypes';
 

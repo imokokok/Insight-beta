@@ -7,13 +7,13 @@
 
 import { NextResponse } from 'next/server';
 
-import { logger } from '@/shared/logger';
-import type { OracleProtocol, SupportedChain } from '@/types/unifiedOracleTypes';
 import {
   checkFeedHealth,
   checkProtocolFeeds,
   getProtocolHealthSummary,
 } from '@/services/monitoring/oracleHealthMonitor';
+import { logger } from '@/shared/logger';
+import type { OracleProtocol, SupportedChain } from '@/types/unifiedOracleTypes';
 
 // ============================================================================
 // 类型定义
@@ -146,21 +146,21 @@ export async function GET(request: Request): Promise<NextResponse> {
       'uma',
     ];
 
-    const summaries = await Promise.all(
-      protocols.map((p) => getProtocolHealthSummary(p)),
-    );
+    const summaries = await Promise.all(protocols.map((p) => getProtocolHealthSummary(p)));
 
     const response: AllProtocolsHealthResponse = {
       success: true,
-      data: summaries.map((summary): HealthSummaryData => ({
-        protocol: summary.protocol,
-        totalFeeds: summary.totalFeeds,
-        healthyFeeds: summary.healthyFeeds,
-        unhealthyFeeds: summary.unhealthyFeeds,
-        staleFeeds: summary.staleFeeds,
-        averageStalenessSeconds: summary.averageStalenessSeconds,
-        lastCheckedAt: summary.lastCheckedAt.toISOString(),
-      })),
+      data: summaries.map(
+        (summary): HealthSummaryData => ({
+          protocol: summary.protocol,
+          totalFeeds: summary.totalFeeds,
+          healthyFeeds: summary.healthyFeeds,
+          unhealthyFeeds: summary.unhealthyFeeds,
+          staleFeeds: summary.staleFeeds,
+          averageStalenessSeconds: summary.averageStalenessSeconds,
+          lastCheckedAt: summary.lastCheckedAt.toISOString(),
+        }),
+      ),
     };
 
     return NextResponse.json(response);

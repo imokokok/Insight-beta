@@ -8,7 +8,7 @@
 import {
   createSwitchboardClient,
   getAvailableSwitchboardSymbols,
-} from '@/infrastructure/blockchain/switchboardOracle';
+} from '@/lib/blockchain/switchboardOracle';
 import { createSingletonSyncManager } from '@/lib/shared';
 
 // ============================================================================

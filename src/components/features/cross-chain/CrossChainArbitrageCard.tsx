@@ -20,10 +20,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { CrossChainArbitrageOpportunity, CrossChainArbitrageSummary } from '@/hooks/useCrossChain';
+import type {
+  CrossChainArbitrageOpportunity,
+  CrossChainArbitrageSummary,
+} from '@/hooks/useCrossChain';
 import { useI18n } from '@/i18n';
-import { RISK_COLORS } from '@/types/common';
 import { cn, formatPrice, formatChangePercent, formatPercentValue } from '@/shared/utils';
+import { RISK_COLORS } from '@/types/common';
 
 interface CrossChainArbitrageCardProps {
   opportunities?: CrossChainArbitrageOpportunity[];
@@ -60,10 +63,11 @@ export const CrossChainArbitrageCard = memo(function CrossChainArbitrageCard({
   const { t } = useI18n();
 
   const filteredOpportunities = opportunities?.filter(
-    (o) => o.priceDiffPercent >= threshold && o.isActionable
+    (o) => o.priceDiffPercent >= threshold && o.isActionable,
   );
 
-  const avgProfitPercent = summary?.avgProfitPercent ?? 
+  const avgProfitPercent =
+    summary?.avgProfitPercent ??
     (filteredOpportunities && filteredOpportunities.length > 0
       ? filteredOpportunities.reduce((sum, o) => sum + o.potentialProfitPercent, 0) /
         filteredOpportunities.length
@@ -101,7 +105,7 @@ export const CrossChainArbitrageCard = memo(function CrossChainArbitrageCard({
           </CardTitle>
           <CardDescription>{t('crossChain.arbitrage.description')}</CardDescription>
         </CardHeader>
-        <CardContent className="text-muted-foreground flex h-64 items-center justify-center">
+        <CardContent className="flex h-64 items-center justify-center text-muted-foreground">
           <Info className="mr-2 h-5 w-5" />
           {t('crossChain.arbitrage.noOpportunities')}
         </CardContent>
@@ -121,7 +125,7 @@ export const CrossChainArbitrageCard = memo(function CrossChainArbitrageCard({
                 {filteredOpportunities?.length ?? 0}
               </Badge>
             </CardTitle>
-            <CardDescription className="text-muted-foreground mt-1 text-sm">
+            <CardDescription className="mt-1 text-sm text-muted-foreground">
               {t('crossChain.arbitrage.description')}
             </CardDescription>
           </div>
@@ -132,7 +136,10 @@ export const CrossChainArbitrageCard = memo(function CrossChainArbitrageCard({
               onClick={() => {
                 const newState = !showGasDetails;
                 if (opportunities?.[0]) {
-                  onExecute({ ...opportunities[0], showGasDetails: newState } as CrossChainArbitrageOpportunity & { showGasDetails: boolean });
+                  onExecute({
+                    ...opportunities[0],
+                    showGasDetails: newState,
+                  } as CrossChainArbitrageOpportunity & { showGasDetails: boolean });
                 }
               }}
             >
@@ -155,25 +162,29 @@ export const CrossChainArbitrageCard = memo(function CrossChainArbitrageCard({
       <CardContent className="space-y-4">
         {summary && (
           <div className="grid grid-cols-4 gap-3">
-            <div className="bg-muted/30 rounded-lg border p-3">
-              <p className="text-muted-foreground text-xs">{t('crossChain.arbitrage.totalOpportunities')}</p>
+            <div className="rounded-lg border bg-muted/30 p-3">
+              <p className="text-xs text-muted-foreground">
+                {t('crossChain.arbitrage.totalOpportunities')}
+              </p>
               <p className="font-mono text-xl font-bold">{summary.total}</p>
             </div>
-            <div className="bg-muted/30 rounded-lg border p-3">
-              <p className="text-muted-foreground text-xs">Actionable</p>
+            <div className="rounded-lg border bg-muted/30 p-3">
+              <p className="text-xs text-muted-foreground">Actionable</p>
               <p className="font-mono text-xl font-bold text-emerald-600">{summary.actionable}</p>
             </div>
-            <div className="bg-muted/30 rounded-lg border p-3">
-              <p className="text-muted-foreground text-xs">{t('crossChain.arbitrage.avgProfit')}</p>
-              <p className={cn(
-                'font-mono text-xl font-bold',
-                avgProfitPercent > 0 ? 'text-emerald-600' : 'text-red-600'
-              )}>
+            <div className="rounded-lg border bg-muted/30 p-3">
+              <p className="text-xs text-muted-foreground">{t('crossChain.arbitrage.avgProfit')}</p>
+              <p
+                className={cn(
+                  'font-mono text-xl font-bold',
+                  avgProfitPercent > 0 ? 'text-emerald-600' : 'text-red-600',
+                )}
+              >
                 {formatChangePercent(avgProfitPercent / 100, 2, false)}
               </p>
             </div>
-            <div className="bg-muted/30 rounded-lg border p-3">
-              <p className="text-muted-foreground text-xs">High Risk</p>
+            <div className="rounded-lg border bg-muted/30 p-3">
+              <p className="text-xs text-muted-foreground">High Risk</p>
               <p className="font-mono text-xl font-bold text-red-600">{summary.highRisk}</p>
             </div>
           </div>
@@ -187,11 +198,7 @@ export const CrossChainArbitrageCard = memo(function CrossChainArbitrageCard({
             return (
               <div
                 key={opportunity.id}
-                className={cn(
-                  'rounded-lg border p-4',
-                  risk.bg,
-                  risk.border
-                )}
+                className={cn('rounded-lg border p-4', risk.bg, risk.border)}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2">
@@ -224,7 +231,9 @@ export const CrossChainArbitrageCard = memo(function CrossChainArbitrageCard({
                 <div className="mt-3 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="text-center">
-                      <p className="text-xs text-muted-foreground">{t('crossChain.arbitrage.buyOn')}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {t('crossChain.arbitrage.buyOn')}
+                      </p>
                       <p className="font-semibold capitalize">{opportunity.buy.chain}</p>
                       <p className="font-mono text-sm">{formatPrice(opportunity.buy.price)}</p>
                     </div>
@@ -232,17 +241,23 @@ export const CrossChainArbitrageCard = memo(function CrossChainArbitrageCard({
                     <ArrowRight className="h-4 w-4 text-muted-foreground" />
 
                     <div className="text-center">
-                      <p className="text-xs text-muted-foreground">{t('crossChain.arbitrage.sellOn')}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {t('crossChain.arbitrage.sellOn')}
+                      </p>
                       <p className="font-semibold capitalize">{opportunity.sell.chain}</p>
                       <p className="font-mono text-sm">{formatPrice(opportunity.sell.price)}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs text-muted-foreground">{t('crossChain.arbitrage.profit')}</p>
-                    <p className={cn(
-                      'font-mono text-lg font-bold',
-                      opportunity.netProfitEstimate > 0 ? 'text-emerald-600' : 'text-red-600'
-                    )}>
+                    <p className="text-xs text-muted-foreground">
+                      {t('crossChain.arbitrage.profit')}
+                    </p>
+                    <p
+                      className={cn(
+                        'font-mono text-lg font-bold',
+                        opportunity.netProfitEstimate > 0 ? 'text-emerald-600' : 'text-red-600',
+                      )}
+                    >
                       {formatProfit(opportunity.netProfitEstimate)}
                     </p>
                     <p className="text-xs text-muted-foreground">
@@ -254,23 +269,33 @@ export const CrossChainArbitrageCard = memo(function CrossChainArbitrageCard({
                 {showGasDetails && (
                   <div className="mt-2 flex items-center gap-2 rounded-lg bg-muted/30 p-3 text-xs">
                     <Fuel className="h-4 w-4 text-muted-foreground" />
-                    <div className="flex-1 grid grid-cols-3 gap-4">
+                    <div className="grid flex-1 grid-cols-3 gap-4">
                       <div>
                         <p className="text-muted-foreground">{t('crossChain.arbitrage.buyGas')}</p>
-                        <p className="font-mono font-semibold">${formatGasCost(opportunity.fromGasCost)}</p>
+                        <p className="font-mono font-semibold">
+                          ${formatGasCost(opportunity.fromGasCost)}
+                        </p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">{t('crossChain.arbitrage.sellGas')}</p>
-                        <p className="font-mono font-semibold">${formatGasCost(opportunity.toGasCost)}</p>
+                        <p className="font-mono font-semibold">
+                          ${formatGasCost(opportunity.toGasCost)}
+                        </p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">{t('crossChain.arbitrage.bridgeGas')}</p>
-                        <p className="font-mono font-semibold">${formatGasCost(opportunity.bridgeCost)}</p>
+                        <p className="text-muted-foreground">
+                          {t('crossChain.arbitrage.bridgeGas')}
+                        </p>
+                        <p className="font-mono font-semibold">
+                          ${formatGasCost(opportunity.bridgeCost)}
+                        </p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="text-muted-foreground">{t('crossChain.arbitrage.totalGas')}</p>
-                      <p className="font-mono font-semibold text-blue-600">${formatGasCost(opportunity.gasCostEstimate)}</p>
+                      <p className="font-mono font-semibold text-blue-600">
+                        ${formatGasCost(opportunity.gasCostEstimate)}
+                      </p>
                     </div>
                   </div>
                 )}
@@ -302,8 +327,8 @@ export const CrossChainArbitrageCard = memo(function CrossChainArbitrageCard({
 
         {filteredOpportunities && filteredOpportunities.length > 5 && (
           <div className="text-center text-sm text-muted-foreground">
-            {t('crossChain.arbitrage.moreOpportunities', { 
-              count: filteredOpportunities.length - 5 
+            {t('crossChain.arbitrage.moreOpportunities', {
+              count: filteredOpportunities.length - 5,
             })}
           </div>
         )}

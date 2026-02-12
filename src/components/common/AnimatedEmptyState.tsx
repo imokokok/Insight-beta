@@ -138,9 +138,8 @@ export function AnimatedEmptyState({
       className={cn(
         'flex flex-col items-center justify-center text-center',
         isCompact ? 'py-6' : 'py-12',
-        isCard &&
-          'rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50/50 p-8',
-        className
+        isCard && 'rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50/50 p-8',
+        className,
       )}
       {...wrapperProps}
     >
@@ -149,18 +148,15 @@ export function AnimatedEmptyState({
         <motion.div
           variants={animated ? iconVariants : undefined}
           animate={animated ? 'animate' : undefined}
-          className={cn(
-            'relative mb-4',
-            isCompact ? 'h-12 w-12' : 'h-20 w-20'
-          )}
+          className={cn('relative mb-4', isCompact ? 'h-12 w-12' : 'h-20 w-20')}
         >
           {/* Background glow */}
           <motion.div
             variants={animated ? pulseVariants : undefined}
             animate="animate"
             className={cn(
-              'absolute inset-0 rounded-full bg-gradient-to-br from-purple-200 to-blue-200 opacity-50 blur-xl',
-              isCompact ? 'scale-75' : 'scale-100'
+              'absolute inset-0 rounded-full bg-gradient-to-br from-primary-200 to-blue-200 opacity-50 blur-xl',
+              isCompact ? 'scale-75' : 'scale-100',
             )}
           />
 
@@ -169,16 +165,11 @@ export function AnimatedEmptyState({
             variants={animated ? floatVariants : undefined}
             animate="animate"
             className={cn(
-              'relative flex items-center justify-center rounded-full bg-gradient-to-br from-purple-100 to-blue-100',
-              isCompact ? 'h-12 w-12' : 'h-20 w-20'
+              'relative flex items-center justify-center rounded-full bg-gradient-to-br from-primary-100 to-blue-100',
+              isCompact ? 'h-12 w-12' : 'h-20 w-20',
             )}
           >
-            <Icon
-              className={cn(
-                'text-purple-600',
-                isCompact ? 'h-6 w-6' : 'h-10 w-10'
-              )}
-            />
+            <Icon className={cn('text-primary', isCompact ? 'h-6 w-6' : 'h-10 w-10')} />
           </motion.div>
 
           {/* Decorative elements */}
@@ -208,10 +199,7 @@ export function AnimatedEmptyState({
       {/* Title */}
       <motion.h3
         variants={animated ? itemVariants : undefined}
-        className={cn(
-          'font-semibold text-gray-900',
-          isCompact ? 'text-base' : 'text-lg'
-        )}
+        className={cn('font-semibold text-gray-900', isCompact ? 'text-base' : 'text-lg')}
       >
         {title}
       </motion.h3>
@@ -220,10 +208,7 @@ export function AnimatedEmptyState({
       {description && (
         <motion.p
           variants={animated ? itemVariants : undefined}
-          className={cn(
-            'mt-2 text-gray-500',
-            isCompact ? 'max-w-xs text-xs' : 'max-w-sm text-sm'
-          )}
+          className={cn('mt-2 text-gray-500', isCompact ? 'max-w-xs text-xs' : 'max-w-sm text-sm')}
         >
           {description}
         </motion.p>
@@ -240,10 +225,7 @@ export function AnimatedEmptyState({
       {(action || secondaryAction) && (
         <motion.div
           variants={animated ? itemVariants : undefined}
-          className={cn(
-            'mt-6 flex items-center gap-3',
-            isCompact && 'mt-4'
-          )}
+          className={cn('mt-6 flex items-center gap-3', isCompact && 'mt-4')}
         >
           {secondaryAction && (
             <Button
@@ -300,17 +282,17 @@ export function GuidedEmptyState({
       initial="hidden"
       animate="visible"
       className={cn(
-        'flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-purple-200 bg-gradient-to-br from-purple-50/50 to-blue-50/50 p-8 text-center',
-        className
+        'flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-primary/20 bg-gradient-to-br from-primary-50/50 to-blue-50/50 p-8 text-center',
+        className,
       )}
     >
       {/* Header */}
       <motion.div variants={itemVariants} className="mb-6">
         <motion.div
           variants={iconVariants}
-          className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-purple-100 to-blue-100"
+          className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-primary-100 to-blue-100"
         >
-          <Icon className="h-10 w-10 text-purple-600" />
+          <Icon className="h-10 w-10 text-primary" />
         </motion.div>
         <h3 className="text-xl font-bold text-gray-900">{title}</h3>
         <p className="mt-2 max-w-md text-gray-500">{description}</p>
@@ -330,7 +312,7 @@ export function GuidedEmptyState({
                 initial={{ scaleY: 0 }}
                 animate={{ scaleY: 1 }}
                 transition={{ delay: 0.5 + index * 0.2, duration: 0.3 }}
-                className="absolute left-5 top-12 h-full w-0.5 origin-top bg-gradient-to-b from-purple-300 to-transparent"
+                className="absolute left-5 top-12 h-full w-0.5 origin-top bg-gradient-to-b from-primary-300 to-transparent"
               />
             )}
 
@@ -339,7 +321,7 @@ export function GuidedEmptyState({
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.3 + index * 0.15, type: 'spring' }}
-              className="relative z-10 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-blue-500 text-sm font-bold text-white shadow-lg"
+              className="relative z-10 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-blue-500 text-sm font-bold text-white shadow-lg"
             >
               {index + 1}
             </motion.div>
@@ -347,7 +329,7 @@ export function GuidedEmptyState({
             {/* Step content */}
             <div className="flex-1 pt-1 text-left">
               <div className="flex items-center gap-2">
-                <step.icon className="h-4 w-4 text-purple-500" />
+                <step.icon className="h-4 w-4 text-primary" />
                 <h4 className="font-semibold text-gray-900">{step.title}</h4>
               </div>
               <p className="mt-1 text-sm text-gray-500">{step.description}</p>
@@ -540,9 +522,7 @@ export function EmptySecurityState({
             transition={{ delay: 0.5 }}
             className="rounded-lg bg-emerald-100/50 p-3 text-center"
           >
-            <div className="text-lg font-bold text-emerald-700">
-              {stat.value}
-            </div>
+            <div className="text-lg font-bold text-emerald-700">{stat.value}</div>
             <div className="text-xs text-emerald-600">{stat.label}</div>
           </motion.div>
         ))}
@@ -613,8 +593,8 @@ export function OnboardingEmptyState({
       initial="hidden"
       animate="visible"
       className={cn(
-        'flex flex-col items-center justify-center rounded-2xl bg-gradient-to-br from-purple-50 via-white to-blue-50 p-8 text-center',
-        className
+        'flex flex-col items-center justify-center rounded-2xl bg-gradient-to-br from-primary-50 via-white to-blue-50 p-8 text-center',
+        className,
       )}
     >
       {/* Illustration */}

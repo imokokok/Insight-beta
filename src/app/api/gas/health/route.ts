@@ -1,5 +1,5 @@
-import { apiSuccess, withErrorHandler } from '@/shared/utils';
 import { gasPriceService } from '@/services/gas';
+import { apiSuccess, withErrorHandler } from '@/shared/utils';
 
 export const GET = withErrorHandler(async () => {
   const health = gasPriceService.getProviderHealth();
@@ -8,9 +8,9 @@ export const GET = withErrorHandler(async () => {
     providers: health,
     meta: {
       totalProviders: health.length,
-      healthyCount: health.filter(h => h.status === 'healthy').length,
-      degradedCount: health.filter(h => h.status === 'degraded').length,
-      unhealthyCount: health.filter(h => h.status === 'unhealthy').length,
+      healthyCount: health.filter((h) => h.status === 'healthy').length,
+      degradedCount: health.filter((h) => h.status === 'degraded').length,
+      unhealthyCount: health.filter((h) => h.status === 'unhealthy').length,
     },
   });
 });

@@ -8,7 +8,7 @@
 import {
   createChainlinkClient,
   getAvailableFeedsForChain,
-} from '@/infrastructure/blockchain/chainlinkDataFeeds';
+} from '@/lib/blockchain/chainlinkDataFeeds';
 import { createSingletonSyncManager } from '@/lib/shared';
 
 // ============================================================================

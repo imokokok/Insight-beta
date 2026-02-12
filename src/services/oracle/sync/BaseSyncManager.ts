@@ -5,15 +5,15 @@
  * 消除 Chainlink/Pyth/Band 等同步服务的重复代码
  */
 
-import { logger } from '@/shared/logger';
+import { query } from '@/lib/database/db';
 import { BatchInserter } from '@/lib/shared';
+import { logger } from '@/shared/logger';
 import type {
   SupportedChain,
   UnifiedPriceFeed,
   UnifiedSyncState,
   OracleProtocol,
 } from '@/types/unifiedOracleTypes';
-import { query } from '@/infrastructure/database/db';
 
 // ============================================================================
 // 同步配置
@@ -81,7 +81,7 @@ export abstract class BaseSyncManager {
   protected syncConfig: SyncConfig = { ...DEFAULT_SYNC_CONFIG };
 
   // 运行状态
-  protected syncIntervals: Map<string, NodeJS.Timeout> = new Map();
+  protected syncIntervals: Map<string, ReturnType<typeof setInterval>> = new Map();
   protected isRunning: Map<string, boolean> = new Map();
   protected lastPrices: Map<string, number> = new Map();
 

@@ -11,12 +11,9 @@
  * - UMA (含争议事件检测)
  */
 
+import { query } from '@/lib/database/db';
 import { logger } from '@/shared/logger';
-import type {
-  OracleProtocol,
-  SupportedChain,
-} from '@/types/unifiedOracleTypes';
-import { query } from '@/infrastructure/database/db';
+import type { OracleProtocol, SupportedChain } from '@/types/unifiedOracleTypes';
 
 // ============================================================================
 // 类型定义
@@ -79,7 +76,7 @@ interface IHealthCheckClient {
 
 export class OracleHealthMonitor {
   private config: HealthMonitorConfig;
-  private checkIntervals: Map<string, NodeJS.Timeout> = new Map();
+  private checkIntervals: Map<string, ReturnType<typeof setInterval>> = new Map();
   private isRunning: Map<string, boolean> = new Map();
   private lastResults: Map<string, HealthCheckResult> = new Map();
 
@@ -98,15 +95,7 @@ export class OracleHealthMonitor {
         flux: 300,
       },
       maxConcurrentChecks: 5,
-      enabledProtocols: [
-        'chainlink',
-        'pyth',
-        'api3',
-        'band',
-        'redstone',
-        'dia',
-        'uma',
-      ],
+      enabledProtocols: ['chainlink', 'pyth', 'api3', 'band', 'redstone', 'dia', 'uma'],
       ...config,
     };
   }
@@ -316,9 +305,7 @@ export class OracleHealthMonitor {
    * 获取协议健康摘要
    */
   async getProtocolHealthSummary(protocol: OracleProtocol): Promise<ProtocolHealthSummary> {
-    const results = Array.from(this.lastResults.values()).filter(
-      (r) => r.protocol === protocol,
-    );
+    const results = Array.from(this.lastResults.values()).filter((r) => r.protocol === protocol);
 
     if (results.length === 0) {
       return {

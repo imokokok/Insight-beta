@@ -4,10 +4,6 @@ import { useEffect, useState } from 'react';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-
-
-
-
 import { PageHeader } from '@/components/common/PageHeader';
 import { DisputeList } from '@/components/features/dispute/DisputeList';
 import { DisputesEmptyState } from '@/components/features/dispute/my-disputes/DisputesEmptyState';
@@ -20,8 +16,8 @@ import { useDisputes, useUserStats } from '@/hooks';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage } from '@/i18n/translations';
-import type { OracleConfig, OracleInstance, DisputeStatus } from '@/types/oracleTypes';
 import { fetchApiData } from '@/shared/utils';
+import type { OracleConfig, OracleInstance, DisputeStatus } from '@/types/oracleTypes';
 
 import type { Route } from 'next';
 

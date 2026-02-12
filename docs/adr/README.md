@@ -1,20 +1,97 @@
-# 架构决策摘要
+# Architecture Decision Records (ADR)
 
-本文档记录 OracleMonitor 项目的关键架构决策。
+This document records key architecture decisions for the OracleMonitor project.
 
-## 核心决策
+## Core Decisions
 
-| 决策                  | 说明                                   | 状态   |
-| --------------------- | -------------------------------------- | ------ |
-| Next.js App Router    | 使用 Next.js 14+ App Router 架构       | 已实施 |
-| API 扁平化结构        | API 路由采用扁平化目录结构             | 已实施 |
-| React 19 + Next.js 15 | 前端框架升级至最新版本                 | 已实施 |
-| 多链支持              | 支持 Ethereum、BSC、Polygon、Avalanche | 已实施 |
+| Decision                  | Description                                    | Status      |
+| ------------------------- | ---------------------------------------------- | ----------- |
+| Next.js App Router        | Use Next.js 14+ App Router architecture        | Implemented |
+| API Flat Structure        | API routes use flat directory structure        | Implemented |
+| React 19 + Next.js 15     | Frontend framework upgraded to latest versions | Implemented |
+| Multi-chain Support       | Support Ethereum, BSC, Polygon, Avalanche      | Implemented |
+| Supabase as Single Source | Use Supabase as only database source           | Implemented |
+| Shared Module Library     | Centralized reusable components                | Implemented |
+| Event-driven Architecture | Timeline-based event management                | Implemented |
+| SLO/Error Budget          | Service level objectives monitoring            | Implemented |
 
-## 技术栈
+## Technical Stack
 
-- **框架**: Next.js 15 + React 19
-- **语言**: TypeScript
-- **样式**: Tailwind CSS
-- **数据库**: PostgreSQL + Prisma
-- **区块链**: viem + wagmi
+- **Framework**: Next.js 15 + React 19
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Database**: PostgreSQL + Supabase
+- **Blockchain**: viem
+
+## Recent Decisions
+
+### ADR-001: Supabase as Single Source
+
+**Status**: Implemented
+
+**Context**: We previously used both Prisma ORM and direct SQL migrations, which caused confusion and potential inconsistencies.
+
+**Decision**: Use Supabase as the single source of truth for database schema. All database changes are made through SQL migrations in `supabase/migrations/`.
+
+**Consequences**:
+
+- Simplified database management
+- Clear migration path
+- Better team collaboration
+
+### ADR-002: Shared Module Library
+
+**Status**: Implemented
+
+**Context**: Multiple protocol sync modules had duplicate code (505 lines total, 68% redundancy).
+
+**Decision**: Created `src/lib/shared/` with reusable components:
+
+- `BatchInserter` - Database batch operations
+- `EvmOracleClient` - EVM oracle client base class
+- `SyncManagerFactory` - Protocol sync factory
+- `ErrorHandler` - Unified error handling
+- `LoggerFactory` - Structured logging
+
+**Consequences**:
+
+- 54% code reduction
+- Faster protocol integration
+- Easier maintenance
+
+### ADR-003: Event Timeline System
+
+**Status**: Implemented
+
+**Context**: Need to track system events for debugging and auditing.
+
+**Decision**: Implement event timeline with:
+
+- Unified event model
+- Event correlation analysis
+- Timeline view in UI
+
+**Consequences**:
+
+- Better incident debugging
+- Complete audit trail
+- Improved operational visibility
+
+### ADR-004: SLO/Error Budget Monitoring
+
+**Status**: Implemented
+
+**Context**: Need to track service level commitments.
+
+**Decision**: Implement SLO system with:
+
+- SLO definitions per protocol/chain
+- Error budget calculation
+- Compliance tracking
+- Budget burn rate analysis
+
+**Consequences**:
+
+- Proactive monitoring
+- Better SLA management
+- Clear reliability metrics

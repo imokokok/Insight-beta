@@ -9,9 +9,9 @@ import { NextResponse } from 'next/server';
 
 import { z } from 'zod';
 
-import { logger } from '@/shared/logger';
+import { requireAdminWithToken } from '@/lib/api/apiResponse';
 import { alertService } from '@/services/alert/alertService';
-import { requireAdminWithToken } from '@/infrastructure/api/apiResponse';
+import { logger } from '@/shared/logger';
 
 const configSchema = z.object({
   channels: z

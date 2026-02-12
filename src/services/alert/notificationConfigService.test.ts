@@ -6,10 +6,10 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NotificationConfigService } from './notificationConfigService';
-import { query } from '@/infrastructure/database/db';
+import { query } from '@/lib/database/db';
 
 // Mock database
-vi.mock('@/server/db', () => ({
+vi.mock('@/lib/database/db', () => ({
   query: vi.fn(),
 }));
 

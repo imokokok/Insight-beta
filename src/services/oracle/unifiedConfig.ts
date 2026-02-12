@@ -5,6 +5,7 @@
  * 支持多预言机协议的统一配置管理
  */
 
+import { query } from '@/lib/database/db';
 import { logger } from '@/shared/logger';
 import type {
   UnifiedOracleInstance,
@@ -13,7 +14,6 @@ import type {
   SupportedChain,
   ProtocolSpecificConfig,
 } from '@/types/unifiedOracleTypes';
-import { query } from '@/infrastructure/database/db';
 
 // ============================================================================
 // 配置验证

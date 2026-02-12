@@ -1,6 +1,6 @@
 /**
  * Professional Dashboard Layout
- * 
+ *
  * 企业级监控平台仪表板布局
  * - 响应式网格系统
  * - 专业数据展示
@@ -50,12 +50,10 @@ export function DashboardSection({
 }: DashboardSectionProps) {
   return (
     <section className={cn('mb-8', className)}>
-      <div className="flex items-start justify-between mb-4">
+      <div className="mb-4 flex items-start justify-between">
         <div>
           <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
-          {description && (
-            <p className="text-sm text-gray-500 mt-1">{description}</p>
-          )}
+          {description && <p className="mt-1 text-sm text-gray-500">{description}</p>}
         </div>
         {action && <div>{action}</div>}
       </div>
@@ -89,9 +87,7 @@ export function DashboardGrid({
   };
 
   return (
-    <div className={cn('grid', columnClasses[columns], gapClasses[gap], className)}>
-      {children}
-    </div>
+    <div className={cn('grid', columnClasses[columns], gapClasses[gap], className)}>{children}</div>
   );
 }
 
@@ -112,16 +108,16 @@ export function TimeRangeSelector({
   className,
 }: TimeRangeSelectorProps) {
   return (
-    <div className={cn('inline-flex rounded-lg border border-purple-100 bg-white p-1', className)}>
+    <div className={cn('inline-flex rounded-lg border border-primary/10 bg-white p-1', className)}>
       {options.map((option) => (
         <button
           key={option.value}
           onClick={() => onChange(option.value)}
           className={cn(
-            'px-3 py-1.5 text-sm font-medium rounded-md transition-all',
+            'rounded-md px-3 py-1.5 text-sm font-medium transition-all',
             value === option.value
-              ? 'bg-purple-100 text-purple-700'
-              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              ? 'text-primary-dark bg-primary/10'
+              : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
           )}
         >
           {option.label}

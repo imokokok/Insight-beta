@@ -12,17 +12,17 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md shadow-blue-500/25 hover:from-blue-500 hover:to-blue-400 hover:shadow-lg hover:shadow-blue-500/30',
+          'bg-gradient-to-r from-primary-600 to-primary-500 text-white shadow-md shadow-primary-500/25 hover:from-primary-500 hover:to-primary-400 hover:shadow-lg hover:shadow-primary-500/30',
         destructive:
           'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-md shadow-red-500/25 hover:shadow-lg hover:shadow-red-500/30',
         outline:
-          'border-2 border-purple-200 bg-white/50 text-purple-700 backdrop-blur-sm hover:border-purple-400 hover:bg-purple-50/50',
+          'text-primary-dark border-2 border-primary/20 bg-white/50 backdrop-blur-sm hover:border-primary/40 hover:bg-primary/10',
         secondary:
-          'bg-gradient-to-r from-purple-100 to-purple-50 text-purple-700 hover:from-purple-200 hover:to-purple-100',
-        ghost: 'text-purple-700 hover:bg-purple-100/50 hover:text-purple-900',
+          'text-primary-dark bg-gradient-to-r from-primary-100 to-primary-50 hover:from-primary-200 hover:to-primary-100',
+        ghost: 'text-primary-dark hover:text-primary-darker hover:bg-primary/10',
         link: 'text-blue-600 underline-offset-4 hover:text-blue-700 hover:underline',
         gradient:
-          'bg-gradient-to-r from-violet-600 via-purple-600 to-blue-600 text-white shadow-lg shadow-purple-500/30 hover:scale-[1.02] hover:shadow-xl hover:shadow-purple-500/40',
+          'bg-gradient-to-r from-violet-600 via-primary-600 to-blue-600 text-white shadow-lg shadow-primary-500/30 hover:scale-[1.02] hover:shadow-xl hover:shadow-primary-500/40',
         glow: 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.5)] hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(37,99,235,0.7)]',
       },
       size: {

@@ -1,8 +1,8 @@
-import { logger } from '@/shared/logger';
+import { hasDatabase, query } from '@/lib/database/db';
+import { withTransaction } from '@/lib/database/dbOptimization';
+import { ensureSchema } from '@/lib/schema';
 import { encryptString, decryptString, isEncryptionEnabled } from '@/lib/security/encryption';
-import { hasDatabase, query } from '@/infrastructure/database/db';
-import { withTransaction } from '@/infrastructure/database/dbOptimization';
-import { ensureSchema } from '@/server/schema';
+import { logger } from '@/shared/logger';
 
 import type { OracleConfig } from './types';
 

@@ -1,39 +1,39 @@
-# 架构改进文档
+# Architecture Improvements Documentation
 
-本文档记录了项目的架构改进，包括已完成的代码重构和优化。
+This document records the project's architecture improvements, including completed code refactoring and optimizations.
 
-## 最新改进（2025年2月）
+## Latest Improvements (February 2025)
 
-### 1. 共享模块库 (src/lib/shared)
+### 1. Shared Module Library (src/lib/shared)
 
-#### 概述
+#### Overview
 
-创建了统一的共享模块库，为整个项目提供可复用的基础组件。
+Created a unified shared module library to provide reusable base components for the entire project.
 
 ```
 src/lib/shared/
-├── index.ts                          # 统一导出
+├── index.ts                          # Unified exports
 ├── database/
-│   ├── BatchInserter.ts              # 数据库批量插入
-│   └── BatchInserter.test.ts         # 单元测试
+│   ├── BatchInserter.ts              # Database batch insert
+│   └── BatchInserter.test.ts         # Unit tests
 ├── blockchain/
-│   ├── EvmOracleClient.ts            # EVM 预言机客户端基类
-│   ├── ContractRegistry.ts           # 合约地址注册表
-│   └── ContractRegistry.test.ts      # 单元测试
+│   ├── EvmOracleClient.ts            # EVM oracle client base class
+│   ├── ContractRegistry.ts            # Contract address registry
+│   └── ContractRegistry.test.ts      # Unit tests
 ├── sync/
-│   └── SyncManagerFactory.ts         # 同步管理器工厂
+│   └── SyncManagerFactory.ts         # Sync manager factory
 ├── errors/
-│   ├── ErrorHandler.ts               # 统一错误处理
-│   └── ErrorHandler.test.ts          # 单元测试
+│   ├── ErrorHandler.ts               # Unified error handling
+│   └── ErrorHandler.test.ts          # Unit tests
 └── logger/
-    └── LoggerFactory.ts              # 日志工厂
+    └── LoggerFactory.ts              # Logger factory
 ```
 
-#### 核心组件
+#### Core Components
 
 ##### BatchInserter
 
-高性能的数据库批量插入工具，支持自动分批和冲突处理。
+High-performance database batch insert tool with automatic batching and conflict handling.
 
 ```typescript
 import { BatchInserter } from '@/lib/shared';
@@ -45,28 +45,28 @@ const inserter = new BatchInserter<PriceFeed>({
   onConflict: 'ON CONFLICT (id) DO UPDATE SET price = EXCLUDED.price',
 });
 
-// 批量插入
+// Batch insert
 const count = await inserter.insert(priceFeeds);
 ```
 
 ##### EvmOracleClient
 
-EVM 预言机客户端抽象基类，统一所有 EVM 协议的客户端实现。
+Abstract base class for EVM oracle clients, unifying all EVM protocol client implementations.
 
 ```typescript
 import { EvmOracleClient } from '@/lib/shared';
 
 export class NewProtocolClient extends EvmOracleClient {
   protected resolveContractAddress(): Address | undefined {
-    // 返回合约地址
+    // Return contract address
   }
 
   protected getFeedId(symbol: string): string | undefined {
-    // 返回 feed ID
+    // Return feed ID
   }
 
   protected async fetchRawPriceData(feedId: string): Promise<unknown> {
-    // 从合约获取原始数据
+    // Fetch raw data from contract
   }
 
   protected parsePriceFromContract(
@@ -74,7 +74,7 @@ export class NewProtocolClient extends EvmOracleClient {
     symbol: string,
     feedId: string,
   ): UnifiedPriceFeed | null {
-    // 解析为统一格式
+    // Parse to unified format
   }
 
   getCapabilities() {
@@ -92,7 +92,7 @@ export class NewProtocolClient extends EvmOracleClient {
 
 ##### SyncManagerFactory
 
-同步管理器工厂，简化同步模块的创建。
+Sync manager factory to simplify sync module creation.
 
 ```typescript
 import { createSingletonSyncManager } from '@/lib/shared';
@@ -110,7 +110,7 @@ const protocolSync = createSingletonSyncManager(
   (chain) => getAvailableSymbols(chain),
 );
 
-// 导出便捷函数
+// Export convenience functions
 export const {
   manager: protocolSyncManager,
   startSync: startProtocolSync,
@@ -122,18 +122,18 @@ export const {
 
 ##### ErrorHandler
 
-统一的错误处理工具，提供标准化的错误创建和日志记录。
+Unified error handling tool providing standardized error creation and logging.
 
 ```typescript
 import { ErrorHandler, normalizeError } from '@/lib/shared/errors/ErrorHandler';
 
-// 创建特定错误
+// Create specific error
 const error = ErrorHandler.createPriceFetchError(originalError, 'chainlink', 'ethereum', 'ETH/USD');
 
-// 记录错误
+// Log error
 ErrorHandler.logError(logger, 'Operation failed', error, { extra: 'data' });
 
-// 重试机制
+// Retry mechanism
 const result = await ErrorHandler.withRetry(async () => fetchData(), {
   maxRetries: 3,
   baseDelay: 1000,
@@ -142,38 +142,38 @@ const result = await ErrorHandler.withRetry(async () => fetchData(), {
 
 ##### LoggerFactory
 
-创建带前缀的结构化日志记录器。
+Create prefixed structured loggers.
 
 ```typescript
 import { LoggerFactory } from '@/lib/shared/logger/LoggerFactory';
 
 const logger = LoggerFactory.createOracleLogger('chainlink', 'ethereum');
-// 输出: [Chainlink:ethereum] 日志消息
+// Output: [Chainlink:ethereum] log message
 
 const syncLogger = LoggerFactory.createSyncLogger('pyth', 'main-instance');
-// 输出: [Sync:pyth:main-instance] 日志消息
+// Output: [Sync:pyth:main-instance] log message
 ```
 
-### 2. 同步模块重构
+### 2. Sync Module Refactoring
 
-#### 重构成果
+#### Refactoring Results
 
-所有 7 个同步模块已使用 `SyncManagerFactory` 重构：
+All 7 sync modules have been refactored using `SyncManagerFactory`:
 
-| 模块             | 重构前     | 重构后     | 减少         |
-| ---------------- | ---------- | ---------- | ------------ |
-| ChainlinkSync.ts | 60 行      | 20 行      | **67%**      |
-| PythSync.ts      | 70 行      | 25 行      | **64%**      |
-| BandSync.ts      | 120 行     | 35 行      | **71%**      |
-| DIASync.ts       | 65 行      | 20 行      | **69%**      |
-| API3Sync.ts      | 65 行      | 20 行      | **69%**      |
-| RedStoneSync.ts  | 65 行      | 20 行      | **69%**      |
-| FluxSync.ts      | 60 行      | 20 行      | **67%**      |
-| **总计**         | **505 行** | **160 行** | **平均 68%** |
+| Module           | Before        | After         | Reduction   |
+| ---------------- | ------------- | ------------- | ----------- |
+| ChainlinkSync.ts | 60 lines      | 20 lines      | **67%**     |
+| PythSync.ts      | 70 lines      | 25 lines      | **64%**     |
+| BandSync.ts      | 120 lines     | 35 lines      | **71%**     |
+| DIASync.ts       | 65 lines      | 20 lines      | **69%**     |
+| API3Sync.ts      | 65 lines      | 20 lines      | **69%**     |
+| RedStoneSync.ts  | 65 lines      | 20 lines      | **69%**     |
+| FluxSync.ts      | 60 lines      | 20 lines      | **67%**     |
+| **Total**        | **505 lines** | **160 lines** | **68% avg** |
 
-#### 重构示例
+#### Refactoring Example
 
-**重构前：**
+**Before:**
 
 ```typescript
 export class ChainlinkSyncManager extends BaseSyncManager {
@@ -186,15 +186,15 @@ export class ChainlinkSyncManager extends BaseSyncManager {
     return ChainlinkSyncManager.instance;
   }
 
-  // 重复的实现...
+  // Repeated implementation...
 }
 
 export const chainlinkSyncManager = ChainlinkSyncManager.getInstance();
 export const startChainlinkSync = chainlinkSyncManager.startSync.bind(chainlinkSyncManager);
-// ... 更多重复代码
+// ... more repeated code
 ```
 
-**重构后：**
+**After:**
 
 ```typescript
 const chainlinkSync = createSingletonSyncManager(
@@ -215,182 +215,182 @@ export const {
 } = chainlinkSync;
 ```
 
-### 3. EVM 客户端重构
+### 3. EVM Client Refactoring
 
-#### 重构成果
+#### Refactoring Results
 
-4 个 EVM 客户端已使用 `EvmOracleClient` 基类重构：
+4 EVM clients have been refactored using `EvmOracleClient` base class:
 
-| 客户端                | 重构前      | 重构后     | 减少         |
-| --------------------- | ----------- | ---------- | ------------ |
-| ChainlinkDataFeeds.ts | 474 行      | 200 行     | **58%**      |
-| pythOracle.ts         | 468 行      | 240 行     | **49%**      |
-| api3Oracle.ts         | 349 行      | 200 行     | **43%**      |
-| redstoneOracle.ts     | ~400 行     | 220 行     | **45%**      |
-| **总计**              | **1691 行** | **860 行** | **平均 49%** |
+| Client                | Before         | After         | Reduction   |
+| --------------------- | -------------- | ------------- | ----------- |
+| ChainlinkDataFeeds.ts | 474 lines      | 200 lines     | **58%**     |
+| pythOracle.ts         | 468 lines      | 240 lines     | **49%**     |
+| api3Oracle.ts         | 349 lines      | 200 lines     | **43%**     |
+| redstoneOracle.ts     | ~400 lines     | 220 lines     | **45%**     |
+| **Total**             | **1691 lines** | **860 lines** | **49% avg** |
 
-#### 代码复用收益
+#### Code Reuse Benefits
 
-**基类提供的通用功能：**
+**Common functionality provided by base class:**
 
-- viem 客户端初始化
-- 区块号获取
-- 健康检查
-- 价格格式化
-- 陈旧度计算
-- 结构化日志
-- 错误处理
+- viem client initialization
+- Block number acquisition
+- Health check
+- Price formatting
+- Staleness calculation
+- Structured logging
+- Error handling
 
-**子类只需实现：**
+**Subclasses only need to implement:**
 
-1. `resolveContractAddress()` - 解析合约地址
-2. `getFeedId(symbol)` - 获取 feed ID
-3. `fetchRawPriceData(feedId)` - 获取原始数据
-4. `parsePriceFromContract(rawData, symbol, feedId)` - 解析价格
-5. `getCapabilities()` - 返回能力配置
+1. `resolveContractAddress()` - Resolve contract address
+2. `getFeedId(symbol)` - Get feed ID
+3. `fetchRawPriceData(feedId)` - Fetch raw data
+4. `parsePriceFromContract(rawData, symbol, feedId)` - Parse price
+5. `getCapabilities()` - Return capability configuration
 
-### 4. 单元测试
+### 4. Unit Tests
 
-为共享模块添加了完整的单元测试：
+Added complete unit tests for shared modules:
 
-| 测试文件                 | 测试用例  | 状态            |
-| ------------------------ | --------- | --------------- |
-| BatchInserter.test.ts    | 5 个      | ✅ 通过         |
-| ErrorHandler.test.ts     | 14 个     | ✅ 通过         |
-| ContractRegistry.test.ts | 9 个      | ✅ 通过         |
-| **总计**                 | **28 个** | **✅ 全部通过** |
+| Test File                | Test Cases | Status            |
+| ------------------------ | ---------- | ----------------- |
+| BatchInserter.test.ts    | 5          | ✅ Passed         |
+| ErrorHandler.test.ts     | 14         | ✅ Passed         |
+| ContractRegistry.test.ts | 9          | ✅ Passed         |
+| **Total**                | **28**     | **✅ All Passed** |
 
-运行测试：
+Run tests:
 
 ```bash
 npm test -- src/lib/shared
 ```
 
-## 历史改进
+## Historical Improvements
 
-### P0 改进（已完成）
+### P0 Improvements (Completed)
 
-#### 1. 统一区块链客户端架构
+#### 1. Unified Blockchain Client Architecture
 
-创建了核心抽象层，包括：
+Created core abstraction layer including:
 
-- `BaseOracleClient` - 抽象基类
-- `OracleClientFactory` - 工厂模式
-- 结构化错误类型
+- `BaseOracleClient` - Abstract base class
+- `OracleClientFactory` - Factory pattern
+- Structured error types
 
-#### 2. 环境变量验证系统
+#### 2. Environment Variable Validation System
 
-使用 Zod 进行类型安全的环境变量验证。
+Used Zod for type-safe environment variable validation.
 
-### P1 改进（已完成）
+### P1 Improvements (Completed)
 
-#### 1. 统一错误处理
+#### 1. Unified Error Handling
 
-定义了标准化的错误类型和 HTTP 状态码映射。
+Defined standardized error types and HTTP status code mappings.
 
-#### 2. 智能缓存策略
+#### 2. Smart Caching Strategy
 
-实现了多级缓存策略，包括内存和 Redis 层。
+Implemented multi-level caching strategy including memory and Redis layers.
 
-### P2 改进（已完成）
+### P2 Improvements (Completed)
 
-#### 1. WebSocket 连接池
+#### 1. WebSocket Connection Pool
 
-实现了连接复用、自动重连和订阅管理。
+Implemented connection reuse, auto-reconnection, and subscription management.
 
-#### 2. 性能监控系统
+#### 2. Performance Monitoring System
 
-监控 API 延迟、缓存命中率、预言机响应等指标。
+Monitored API latency, cache hit rate, oracle response, and other metrics.
 
-### P3 改进（已完成 - 2025年2月）
+### P3 Improvements (Completed)
 
-#### 1. 服务架构统一
+#### 1. Service Architecture Unification
 
-统一了多个重复的服务实现，减少代码冗余。
+Unified multiple duplicate service implementations to reduce code redundancy.
 
-**已删除的重复服务：**
+**Deleted duplicate services:**
 
-| 服务                        | 替代方案              | 删除文件数 | 减少代码行数 |
-| --------------------------- | --------------------- | ---------- | ------------ |
-| `priceHistoryService`       | `unifiedPriceService` | 3          | ~300 行      |
-| `notifications.ts` (兼容层) | `NotificationService` | 2          | ~200 行      |
-| **总计**                    |                       | **5**      | **~500 行**  |
+| Service                           | Replacement           | Files Deleted | Code Reduced   |
+| --------------------------------- | --------------------- | ------------- | -------------- |
+| `priceHistoryService`             | `unifiedPriceService` | 3             | ~300 lines     |
+| `notifications.ts` (compat layer) | `NotificationService` | 2             | ~200 lines     |
+| **Total**                         |                       | **5**         | **~500 lines** |
 
-**优化内容：**
+**Optimizations:**
 
-- **数据库连接统一**: 所有服务端代码使用 `pg` 连接池（通过 `@/server/db` 的 `query` 函数）
-- **Supabase SDK 精简**: 仅用于 Realtime 订阅（`alerts/stream`）
-- **通知服务统一**: 统一使用 `NotificationService` 类
-- **价格历史类型统一**: 统一使用 `unifiedPriceService` 中的类型定义
+- **Database connection unified**: All server-side code uses `pg` connection pool (via `@/server/db` query function)
+- **Supabase SDK streamlined**: Only used for Realtime subscriptions (`alerts/stream`)
+- **Notification service unified**: Unified use of `NotificationService` class
+- **Price history type unified**: Unified use of type definitions in `unifiedPriceService`
 
-**API 路由优化：**
+**API route optimizations:**
 
-11 个 API 路由从 `supabaseAdmin` 迁移到统一的 `pg` 连接池：
+11 API routes migrated from `supabaseAdmin` to unified `pg` connection pool:
 
 - `security/reports/export`
 - `security/monitor-status`
 - `security/detections/*`
 - `security/trends`
-- `security/alerts/*`（`stream` 除外，保留 Realtime）
+- `security/alerts/*` (except `stream`, kept Realtime)
 - `security/config`
 - `security/monitor/start`
 - `security/metrics`
 
-**代码示例：**
+**Code example:**
 
 ```typescript
-// 修改前
+// Before
 import { supabaseAdmin } from '@/lib/supabase/server';
 const { data, error } = await supabaseAdmin.from('table').select('*');
 
-// 修改后
+// After
 import { query } from '@/server/db';
 const result = await query('SELECT * FROM table');
 ```
 
-## 性能提升
+## Performance Improvements
 
-### 代码量减少
+### Code Reduction
 
-| 类别       | 改进前      | 改进后      | 减少    |
-| ---------- | ----------- | ----------- | ------- |
-| 同步模块   | 505 行      | 160 行      | **68%** |
-| EVM 客户端 | 1691 行     | 860 行      | **49%** |
-| **总计**   | **2196 行** | **1020 行** | **54%** |
+| Category     | Before         | After          | Reduction |
+| ------------ | -------------- | -------------- | --------- |
+| Sync modules | 505 lines      | 160 lines      | **68%**   |
+| EVM clients  | 1691 lines     | 860 lines      | **49%**   |
+| **Total**    | **2196 lines** | **1020 lines** | **54%**   |
 
-### 开发效率提升
+### Development Efficiency Improvement
 
-| 指标                | 改进前     | 改进后       | 提升         |
-| ------------------- | ---------- | ------------ | ------------ |
-| 新增同步模块时间    | ~30 分钟   | ~5 分钟      | **83%**      |
-| 新增 EVM 客户端时间 | ~45 分钟   | ~15 分钟     | **67%**      |
-| Bug 修复传播        | 多文件修改 | 基类一处修改 | **大幅提升** |
+| Metric               | Before                | After                    | Improvement           |
+| -------------------- | --------------------- | ------------------------ | --------------------- |
+| New sync module time | ~30 minutes           | ~5 minutes               | **83%**               |
+| New EVM client time  | ~45 minutes           | ~15 minutes              | **67%**               |
+| Bug fix propagation  | Multiple file changes | Single base class change | **Major improvement** |
 
-## 下一步计划
+## Next Steps
 
-### P3 优先级
+### P3 Priority
 
-1. **更多单元测试**
-   - EvmOracleClient 测试
-   - SyncManagerFactory 测试
-   - 集成测试
+1. **More Unit Tests**
+   - EvmOracleClient tests
+   - SyncManagerFactory tests
+   - Integration tests
 
-2. **性能优化**
-   - 批量查询优化
-   - 缓存策略调优
-   - 连接池优化
+2. **Performance Optimization**
+   - Batch query optimization
+   - Cache strategy tuning
+   - Connection pool optimization
 
-3. **文档完善**
-   - API 文档自动生成
-   - 架构图更新
-   - 开发指南完善
+3. **Documentation Improvement**
+   - API documentation auto-generation
+   - Architecture diagram updates
+   - Development guide enhancement
 
-## 迁移指南
+## Migration Guide
 
-### 添加新的同步模块
+### Adding New Sync Module
 
 ```typescript
-// 1. 创建文件 src/server/oracle/sync/NewProtocolSync.ts
+// 1. Create file src/server/oracle/sync/NewProtocolSync.ts
 import { createSingletonSyncManager } from '@/lib/shared';
 
 const newProtocolSync = createSingletonSyncManager(
@@ -415,10 +415,10 @@ export const {
 } = newProtocolSync;
 ```
 
-### 添加新的 EVM 客户端
+### Adding New EVM Client
 
 ```typescript
-// 1. 创建文件 src/lib/blockchain/newProtocolOracle.ts
+// 1. Create file src/lib/blockchain/newProtocolOracle.ts
 import { EvmOracleClient } from '@/lib/shared';
 
 export class NewProtocolClient extends EvmOracleClient {
@@ -445,11 +445,11 @@ export class NewProtocolClient extends EvmOracleClient {
   }
 
   protected async fetchRawPriceData(feedId: string): Promise<RawData> {
-    // 实现数据获取
+    // Implement data fetching
   }
 
   protected parsePriceFromContract(rawData: RawData, symbol: string): UnifiedPriceFeed | null {
-    // 实现数据解析
+    // Implement data parsing
   }
 
   getCapabilities() {
@@ -465,14 +465,14 @@ export class NewProtocolClient extends EvmOracleClient {
 }
 ```
 
-## 总结
+## Summary
 
-通过本次架构改进，我们实现了：
+Through this architecture improvement, we achieved:
 
-1. **代码复用** - 共享模块库提供通用功能
-2. **代码精简** - 总代码量减少 54%
-3. **开发效率** - 新增协议时间减少 83%
-4. **质量保证** - 28 个单元测试全部通过
-5. **可维护性** - Bug 修复一处生效，所有模块受益
+1. **Code Reuse** - Shared module library provides common functionality
+2. **Code Reduction** - Total code reduced by 54%
+3. **Development Efficiency** - New protocol time reduced by 83%
+4. **Quality Assurance** - 28 unit tests all passed
+5. **Maintainability** - Bug fixes in one place, all modules benefit
 
-项目现在拥有更加清晰、可维护和可扩展的架构。
+The project now has a clearer, more maintainable, and more scalable architecture.

@@ -606,24 +606,3 @@ export function Inset({ children, className, size = 'md' }: InsetProps) {
 
   return <div className={cn(sizeClasses[size], className)}>{children}</div>;
 }
-
-// ============================================================================
-// Export
-// ============================================================================
-
-export default {
-  Container,
-  ResponsiveGrid,
-  DensityLayout,
-  Stack,
-  Row,
-  SidebarLayout,
-  SplitLayout,
-  PageLayout,
-  DashboardGrid,
-  ContentSection,
-  Spacer,
-  Inset,
-  DensityProvider,
-  useDensity,
-};

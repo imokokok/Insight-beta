@@ -28,7 +28,7 @@ export function EventParamsInputs({ rule, onPatchRuleParams, t }: EventParamsInp
               const minutes = Math.max(1, Math.floor(Number(e.target.value)));
               onPatchRuleParams(rule.id, { maxAgeMs: minutes * 60_000 });
             }}
-            className="h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2 focus-visible:ring-purple-500/20"
+            className="focus-visible:ring-primary500/20 h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2"
           />
         </div>
       );
@@ -48,7 +48,7 @@ export function EventParamsInputs({ rule, onPatchRuleParams, t }: EventParamsInp
               const v = Math.max(1, Math.floor(Number(e.target.value)));
               onPatchRuleParams(rule.id, { maxLagBlocks: v });
             }}
-            className="h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2 focus-visible:ring-purple-500/20"
+            className="focus-visible:ring-primary500/20 h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2"
           />
         </div>
       );
@@ -70,7 +70,7 @@ export function EventParamsInputs({ rule, onPatchRuleParams, t }: EventParamsInp
               const v = Math.max(1, Math.floor(Number(e.target.value)));
               onPatchRuleParams(rule.id, { maxOpenAssertions: v });
             }}
-            className="h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2 focus-visible:ring-purple-500/20"
+            className="focus-visible:ring-primary500/20 h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2"
           />
         </div>
       );
@@ -90,7 +90,7 @@ export function EventParamsInputs({ rule, onPatchRuleParams, t }: EventParamsInp
               const v = Math.max(1, Math.floor(Number(e.target.value)));
               onPatchRuleParams(rule.id, { maxOpenDisputes: v });
             }}
-            className="h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2 focus-visible:ring-purple-500/20"
+            className="focus-visible:ring-primary500/20 h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2"
           />
         </div>
       );
@@ -112,7 +112,7 @@ export function EventParamsInputs({ rule, onPatchRuleParams, t }: EventParamsInp
               const minutes = Math.max(1, Math.floor(Number(e.target.value)));
               onPatchRuleParams(rule.id, { maxAgeMs: minutes * 60_000 });
             }}
-            className="h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2 focus-visible:ring-purple-500/20"
+            className="focus-visible:ring-primary500/20 h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2"
           />
         </div>
       );
@@ -132,7 +132,7 @@ export function EventParamsInputs({ rule, onPatchRuleParams, t }: EventParamsInp
               const minutes = Math.max(1, Math.floor(Number(e.target.value)));
               onPatchRuleParams(rule.id, { withinMinutes: minutes });
             }}
-            className="h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2 focus-visible:ring-purple-500/20"
+            className="focus-visible:ring-primary500/20 h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2"
           />
         </div>
       );
@@ -152,7 +152,7 @@ export function EventParamsInputs({ rule, onPatchRuleParams, t }: EventParamsInp
               const minutes = Math.max(1, Math.floor(Number(e.target.value)));
               onPatchRuleParams(rule.id, { maxDelayMinutes: minutes });
             }}
-            className="h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2 focus-visible:ring-purple-500/20"
+            className="focus-visible:ring-primary500/20 h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2"
           />
         </div>
       );
@@ -173,7 +173,7 @@ export function EventParamsInputs({ rule, onPatchRuleParams, t }: EventParamsInp
                 const minutes = Math.max(1, Math.floor(Number(e.target.value)));
                 onPatchRuleParams(rule.id, { withinMinutes: minutes });
               }}
-              className="h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2 focus-visible:ring-purple-500/20"
+              className="focus-visible:ring-primary500/20 h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2"
             />
           </div>
           <div className="md:col-span-6">
@@ -189,7 +189,7 @@ export function EventParamsInputs({ rule, onPatchRuleParams, t }: EventParamsInp
                 const v = Math.max(0, Math.floor(Number(e.target.value)));
                 onPatchRuleParams(rule.id, { minTotalVotes: v });
               }}
-              className="h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2 focus-visible:ring-purple-500/20"
+              className="focus-visible:ring-primary500/20 h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2"
             />
           </div>
         </>
@@ -211,7 +211,7 @@ export function EventParamsInputs({ rule, onPatchRuleParams, t }: EventParamsInp
                 const minutes = Math.max(1, Math.floor(Number(e.target.value)));
                 onPatchRuleParams(rule.id, { withinMinutes: minutes });
               }}
-              className="h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2 focus-visible:ring-purple-500/20"
+              className="focus-visible:ring-primary500/20 h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2"
             />
           </div>
           <div className="md:col-span-4">
@@ -227,7 +227,7 @@ export function EventParamsInputs({ rule, onPatchRuleParams, t }: EventParamsInp
                 const v = Math.max(1, Math.floor(Number(e.target.value)));
                 onPatchRuleParams(rule.id, { minTotalVotes: v });
               }}
-              className="h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2 focus-visible:ring-purple-500/20"
+              className="focus-visible:ring-primary500/20 h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2"
             />
           </div>
           <div className="md:col-span-4">
@@ -244,7 +244,7 @@ export function EventParamsInputs({ rule, onPatchRuleParams, t }: EventParamsInp
                 const v = Math.max(1, Math.min(100, Math.floor(Number(e.target.value))));
                 onPatchRuleParams(rule.id, { maxMarginPercent: v });
               }}
-              className="h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2 focus-visible:ring-purple-500/20"
+              className="focus-visible:ring-primary500/20 h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2"
             />
           </div>
         </>
@@ -266,7 +266,7 @@ export function EventParamsInputs({ rule, onPatchRuleParams, t }: EventParamsInp
                 const v = Math.max(1, Math.floor(Number(e.target.value)));
                 onPatchRuleParams(rule.id, { windowDays: v });
               }}
-              className="h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2 focus-visible:ring-purple-500/20"
+              className="focus-visible:ring-primary500/20 h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2"
             />
           </div>
           <div className="md:col-span-4">
@@ -282,7 +282,7 @@ export function EventParamsInputs({ rule, onPatchRuleParams, t }: EventParamsInp
                 const v = Math.max(1, Math.floor(Number(e.target.value)));
                 onPatchRuleParams(rule.id, { minAssertions: v });
               }}
-              className="h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2 focus-visible:ring-purple-500/20"
+              className="focus-visible:ring-primary500/20 h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2"
             />
           </div>
           <div className="md:col-span-4">
@@ -301,7 +301,7 @@ export function EventParamsInputs({ rule, onPatchRuleParams, t }: EventParamsInp
                 const v = Math.max(1, Math.min(100, Math.floor(Number(e.target.value))));
                 onPatchRuleParams(rule.id, { thresholdPercent: v });
               }}
-              className="h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2 focus-visible:ring-purple-500/20"
+              className="focus-visible:ring-primary500/20 h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2"
             />
           </div>
         </>
@@ -322,7 +322,7 @@ export function EventParamsInputs({ rule, onPatchRuleParams, t }: EventParamsInp
               const ms = Math.max(50, Math.floor(Number(e.target.value)));
               onPatchRuleParams(rule.id, { thresholdMs: ms });
             }}
-            className="h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2 focus-visible:ring-purple-500/20"
+            className="focus-visible:ring-primary500/20 h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2"
           />
         </div>
       );
@@ -344,7 +344,7 @@ export function EventParamsInputs({ rule, onPatchRuleParams, t }: EventParamsInp
                 const v = Math.max(1, Math.min(100, Math.floor(Number(e.target.value))));
                 onPatchRuleParams(rule.id, { thresholdPercent: v });
               }}
-              className="h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2 focus-visible:ring-purple-500/20"
+              className="focus-visible:ring-primary500/20 h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2"
             />
           </div>
           <div className="md:col-span-6">
@@ -360,7 +360,7 @@ export function EventParamsInputs({ rule, onPatchRuleParams, t }: EventParamsInp
                 const v = Math.max(1, Math.floor(Number(e.target.value)));
                 onPatchRuleParams(rule.id, { windowMinutes: v });
               }}
-              className="h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2 focus-visible:ring-purple-500/20"
+              className="focus-visible:ring-primary500/20 h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2"
             />
           </div>
         </>
@@ -381,7 +381,7 @@ export function EventParamsInputs({ rule, onPatchRuleParams, t }: EventParamsInp
               const ms = Math.max(10, Math.floor(Number(e.target.value)));
               onPatchRuleParams(rule.id, { thresholdMs: ms });
             }}
-            className="h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2 focus-visible:ring-purple-500/20"
+            className="focus-visible:ring-primary500/20 h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2"
           />
         </div>
       );
@@ -401,7 +401,7 @@ export function EventParamsInputs({ rule, onPatchRuleParams, t }: EventParamsInp
               const v = Math.max(0.1, Number(e.target.value));
               onPatchRuleParams(rule.id, { thresholdPercent: v });
             }}
-            className="h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2 focus-visible:ring-purple-500/20"
+            className="focus-visible:ring-primary500/20 h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2"
           />
         </div>
       );
@@ -421,7 +421,7 @@ export function EventParamsInputs({ rule, onPatchRuleParams, t }: EventParamsInp
               const v = Math.max(0.001, Number(e.target.value));
               onPatchRuleParams(rule.id, { minBalanceEth: v });
             }}
-            className="h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2 focus-visible:ring-purple-500/20"
+            className="focus-visible:ring-primary500/20 h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2"
           />
         </div>
       );

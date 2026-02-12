@@ -14,10 +14,10 @@ import {
   isWalletBrowser,
   getWalletName,
   WALLET_CONNECT_PROJECT_ID,
-} from '@/infrastructure/blockchain/walletConnect';
-import { normalizeWalletError } from '@/shared/errors/walletErrors';
-import { logger } from '@/shared/logger';
+} from '@/lib/blockchain/walletConnect';
+import { normalizeWalletError } from '@/lib/errors';
 import { isMobile as isMobileEnhanced } from '@/lib/mobile';
+import { logger } from '@/shared/logger';
 
 interface WalletOption {
   id: WalletConnectionType;
@@ -52,10 +52,8 @@ function WalletSelectModal({
     {
       id: 'browser',
       name: walletBrowser ? walletName : t('wallet.browserWallet'),
-      description: walletBrowser
-        ? t('wallet.useCurrentWallet')
-        : t('wallet.useMetaMask'),
-      icon: <Wallet size={24} className="text-purple-600" />,
+      description: walletBrowser ? t('wallet.useCurrentWallet') : t('wallet.useMetaMask'),
+      icon: <Wallet size={24} className="text-primary" />,
       recommended: recommendedType === 'browser' && hasBrowserWallet,
       disabled: !hasBrowserWallet,
     },
@@ -109,14 +107,14 @@ function WalletSelectModal({
                   option.disabled
                     ? 'cursor-not-allowed border-slate-100 bg-slate-50 opacity-50 dark:border-slate-800 dark:bg-slate-800/50'
                     : option.recommended
-                      ? 'border-purple-500 bg-purple-50 hover:bg-purple-100 dark:border-purple-500/50 dark:bg-purple-900/20 dark:hover:bg-purple-900/30'
-                      : 'border-slate-200 hover:border-purple-300 hover:bg-slate-50 dark:border-slate-700 dark:hover:border-purple-500/30 dark:hover:bg-slate-800'
+                      ? 'dark:bg-primary-darker/20 border-primary bg-primary/5 hover:bg-primary/10 dark:border-primary/50 dark:hover:bg-primary-900/30'
+                      : 'hover:border-primary300 dark:hover:border-primary500/30 border-slate-200 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800'
                 }`}
               >
                 <div
                   className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${
                     option.recommended
-                      ? 'bg-purple-100 dark:bg-purple-900/30'
+                      ? 'dark:bg-primary-darker/30 bg-primary/10'
                       : 'bg-slate-100 dark:bg-slate-800'
                   }`}
                 >
@@ -128,7 +126,7 @@ function WalletSelectModal({
                       {option.name}
                     </span>
                     {option.recommended && (
-                      <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+                      <span className="text-primary-dark dark:bg-primary-darker/30 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium dark:text-primary/30">
                         {t('wallet.recommended')}
                       </span>
                     )}
@@ -159,9 +157,7 @@ function WalletSelectModal({
               <AlertCircle size={16} className="mt-0.5 shrink-0" />
               <div>
                 <p className="font-medium">{t('wallet.setupRequired')}</p>
-                <p className="mt-1 text-xs opacity-80">
-                  {t('wallet.walletConnectSetupGuide')}
-                </p>
+                <p className="mt-1 text-xs opacity-80">{t('wallet.walletConnectSetupGuide')}</p>
               </div>
             </div>
           )}
@@ -175,7 +171,7 @@ function WalletSelectModal({
               href="https://ethereum.org/en/wallets/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-purple-600 hover:underline dark:text-purple-400"
+              className="text-primary hover:underline dark:text-primary/40"
             >
               {t('wallet.learnMore')}
             </a>
@@ -187,13 +183,8 @@ function WalletSelectModal({
 }
 
 export function ConnectWallet() {
-  const {
-    address,
-    connect,
-    isConnecting,
-    hasBrowserWallet,
-    recommendedConnectionType,
-  } = useWallet();
+  const { address, connect, isConnecting, hasBrowserWallet, recommendedConnectionType } =
+    useWallet();
   const { toast } = useToast();
   const { t } = useI18n();
   const [showModal, setShowModal] = useState(false);
@@ -268,7 +259,7 @@ export function ConnectWallet() {
       <button
         onClick={handleButtonClick}
         disabled={isConnecting}
-        className="flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
       >
         <Wallet size={16} />
         {isConnecting ? t('wallet.connecting') : t('wallet.connect')}

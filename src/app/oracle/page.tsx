@@ -159,7 +159,7 @@ export default function OraclePlatformPage() {
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Hero Section - 完全通用化 */}
       <section className="relative overflow-hidden px-4 py-20 sm:px-6 lg:px-8">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-100 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary-100 via-transparent to-transparent" />
 
         <div className="relative mx-auto max-w-7xl text-center">
           <Badge variant="secondary" className="mb-6">
@@ -169,7 +169,7 @@ export default function OraclePlatformPage() {
 
           <h1 className="mb-6 text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
             {t('home.hero.title')}
-            <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-primary-600 to-blue-600 bg-clip-text text-transparent">
               {' '}
               {t('home.hero.titleHighlight')}
             </span>
@@ -336,7 +336,7 @@ export default function OraclePlatformPage() {
             </Button>
             <Link
               href="/oracle/comparison"
-              className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700"
+              className="hover:text-primary-dark inline-flex items-center gap-2 text-primary"
             >
               {t('home.cta.compareProtocols')}
               <ArrowRight className="h-4 w-4" />
@@ -373,21 +373,21 @@ const HeroActionCard = React.memo(function HeroActionCard({
       className={cn(
         'group flex flex-col items-center gap-3 rounded-2xl p-6 transition-all duration-200',
         primary
-          ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/25 hover:bg-purple-700 hover:shadow-xl hover:shadow-purple-500/30'
-          : 'bg-white text-gray-700 shadow-md hover:text-purple-700 hover:shadow-lg',
+          ? 'bg-primary text-white shadow-lg shadow-primary-500/25 hover:bg-primary-700 hover:shadow-xl hover:shadow-primary-500/30'
+          : 'hover:text-primary-dark bg-white text-gray-700 shadow-md hover:shadow-lg',
       )}
     >
       <div
         className={cn(
           'rounded-xl p-3',
-          primary ? 'bg-white/20' : 'bg-purple-50 group-hover:bg-purple-100',
+          primary ? 'bg-white/20' : 'bg-primary/5 group-hover:bg-primary/10',
         )}
       >
         {icon}
       </div>
       <div className="text-center">
         <h3 className="font-semibold">{title}</h3>
-        <p className={cn('text-sm', primary ? 'text-purple-100' : 'text-gray-500')}>
+        <p className={cn('text-sm', primary ? 'text-primary/10' : 'text-gray-500')}>
           {description}
         </p>
       </div>
@@ -411,7 +411,7 @@ const FeatureCard = React.memo(function FeatureCard({
   return (
     <CardEnhanced hover className="border-0 shadow-sm">
       <div className="p-6">
-        <div className="mb-4 text-purple-600">{icon}</div>
+        <div className="mb-4 text-primary">{icon}</div>
         <h3 className="mb-2 text-lg font-semibold text-gray-900">{title}</h3>
         <p className="text-gray-600">{description}</p>
       </div>
@@ -439,7 +439,7 @@ const ProtocolCard = React.memo(function ProtocolCard({ protocol }: ProtocolCard
           <div className="flex items-center gap-3">
             <span className="text-3xl">{protocol.icon}</span>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 transition-colors group-hover:text-purple-700">
+              <h3 className="group-hover:text-primary-dark text-lg font-semibold text-gray-900 transition-colors">
                 {protocol.name}
               </h3>
               <StatusBadge
@@ -463,7 +463,7 @@ const ProtocolCard = React.memo(function ProtocolCard({ protocol }: ProtocolCard
           {protocol.features.map((feature) => (
             <span
               key={feature}
-              className="rounded-full bg-purple-100 px-2 py-1 text-xs text-purple-700"
+              className="text-primary-dark rounded-full bg-primary/10 px-2 py-1 text-xs"
             >
               {feature}
             </span>

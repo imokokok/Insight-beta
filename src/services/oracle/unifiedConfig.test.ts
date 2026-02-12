@@ -7,11 +7,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // Mock dependencies
-vi.mock('@/server/db', () => ({
+vi.mock('@/lib/database/db', () => ({
   query: vi.fn(),
 }));
 
-vi.mock('@/lib/logger', () => ({
+vi.mock('@/shared/logger', () => ({
   logger: {
     debug: vi.fn(),
     info: vi.fn(),
@@ -20,7 +20,7 @@ vi.mock('@/lib/logger', () => ({
   },
 }));
 
-import { query } from '@/infrastructure/database/db';
+import { query } from '@/lib/database/db';
 import { logger } from '@/shared/logger';
 
 // Import the module under test

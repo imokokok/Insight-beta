@@ -13,7 +13,15 @@ import React, { memo } from 'react';
 
 import Link from 'next/link';
 
-import { ChevronRight, Home, RefreshCw, Download, MoreHorizontal, Settings, Menu } from 'lucide-react';
+import {
+  ChevronRight,
+  Home,
+  RefreshCw,
+  Download,
+  MoreHorizontal,
+  Settings,
+  Menu,
+} from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -76,10 +84,10 @@ export const PageHeader = memo(function PageHeader({
   return (
     <div className={cn('space-y-4', className)}>
       {breadcrumbs && breadcrumbs.length > 0 && (
-        <nav className="text-muted-foreground flex items-center gap-2 text-sm">
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <Link
             href="/"
-            className="hover:text-foreground flex items-center gap-1 transition-colors"
+            className="flex items-center gap-1 transition-colors hover:text-foreground"
           >
             <Home className="h-4 w-4" />
           </Link>
@@ -89,13 +97,13 @@ export const PageHeader = memo(function PageHeader({
               {item.href ? (
                 <a
                   href={item.href}
-                  className="hover:text-foreground flex items-center gap-1 transition-colors"
+                  className="flex items-center gap-1 transition-colors hover:text-foreground"
                 >
                   {item.icon}
                   {item.label}
                 </a>
               ) : (
-                <span className="text-foreground flex items-center gap-1">
+                <span className="flex items-center gap-1 text-foreground">
                   {item.icon}
                   {item.label}
                 </span>
@@ -108,11 +116,11 @@ export const PageHeader = memo(function PageHeader({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-3">
-            {icon && <div className="bg-primary/10 flex-shrink-0 rounded-lg p-2">{icon}</div>}
+            {icon && <div className="flex-shrink-0 rounded-lg bg-primary/10 p-2">{icon}</div>}
             <div>
               <h1 className="text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">{title}</h1>
               {description && (
-                <p className="text-muted-foreground mt-1 max-w-2xl text-sm sm:text-base">
+                <p className="mt-1 max-w-2xl text-sm text-muted-foreground sm:text-base">
                   {description}
                 </p>
               )}
@@ -131,7 +139,7 @@ export const PageHeader = memo(function PageHeader({
             >
               <RefreshCw className={cn('mr-2 h-4 w-4', loading && 'animate-spin')} />
               Refresh
-              <kbd className="bg-muted ml-2 hidden h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium lg:inline-flex">
+              <kbd className="ml-2 hidden h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium lg:inline-flex">
                 ⌘R
               </kbd>
             </Button>
@@ -147,7 +155,7 @@ export const PageHeader = memo(function PageHeader({
             >
               <Download className="mr-2 h-4 w-4" />
               Export
-              <kbd className="bg-muted ml-2 hidden h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium lg:inline-flex">
+              <kbd className="ml-2 hidden h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium lg:inline-flex">
                 ⌘E
               </kbd>
             </Button>
@@ -169,14 +177,14 @@ export const PageHeader = memo(function PageHeader({
                   <DropdownMenuItem onClick={onRefresh} disabled={refreshDisabled || loading}>
                     <RefreshCw className={cn('mr-2 h-4 w-4', loading && 'animate-spin')} />
                     Refresh
-                    <span className="text-muted-foreground ml-auto text-xs">⌘R</span>
+                    <span className="ml-auto text-xs text-muted-foreground">⌘R</span>
                   </DropdownMenuItem>
                 )}
                 {onExport && (
                   <DropdownMenuItem onClick={onExport} disabled={exportDisabled}>
                     <Download className="mr-2 h-4 w-4" />
                     Export
-                    <span className="text-muted-foreground ml-auto text-xs">⌘E</span>
+                    <span className="ml-auto text-xs text-muted-foreground">⌘E</span>
                   </DropdownMenuItem>
                 )}
                 {(onRefresh || onExport) && <DropdownMenuSeparator />}
@@ -228,15 +236,11 @@ export const DashboardPageHeader = memo(function DashboardPageHeader({
             </Button>
           )}
           <div className="flex items-center gap-3">
-            {icon && (
-              <div className="hidden rounded-lg bg-purple-100 p-2 sm:block">
-                {icon}
-              </div>
-            )}
+            {icon && <div className="hidden rounded-lg bg-primary/10 p-2 sm:block">{icon}</div>}
             <div>
               <h1 className="text-xl font-bold text-gray-900 lg:text-2xl">{title}</h1>
               {description && (
-                <p className="text-muted-foreground hidden text-sm sm:block">{description}</p>
+                <p className="hidden text-sm text-muted-foreground sm:block">{description}</p>
               )}
             </div>
           </div>

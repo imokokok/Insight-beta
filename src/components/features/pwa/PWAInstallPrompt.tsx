@@ -109,7 +109,7 @@ export function PWAInstallPrompt() {
   if (isIOS() && isSafari()) {
     return (
       <div className="fixed bottom-4 left-4 right-4 z-50 md:bottom-8 md:left-auto md:right-8 md:w-96">
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600 p-4 shadow-2xl">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-600 to-blue-600 p-4 shadow-2xl">
           {/* 关闭按钮 */}
           <button
             onClick={handleDismiss}
@@ -123,20 +123,12 @@ export function PWAInstallPrompt() {
               <Share2 size={20} className="text-white" />
             </div>
             <div className="flex-1 pr-6">
-              <h3 className="font-semibold text-white">
-                {t('pwa.iosInstallTitle')}
-              </h3>
-              <p className="mt-1 text-sm text-white/80">
-                {t('pwa.iosInstallDescription')}
-              </p>
+              <h3 className="font-semibold text-white">{t('pwa.iosInstallTitle')}</h3>
+              <p className="mt-1 text-sm text-white/80">{t('pwa.iosInstallDescription')}</p>
               <div className="mt-3 flex items-center gap-2 text-xs text-white/70">
-                <span className="rounded bg-white/20 px-2 py-1">
-                  {t('pwa.tapShare')}
-                </span>
+                <span className="rounded bg-white/20 px-2 py-1">{t('pwa.tapShare')}</span>
                 <span>→</span>
-                <span className="rounded bg-white/20 px-2 py-1">
-                  {t('pwa.tapAddToHome')}
-                </span>
+                <span className="rounded bg-white/20 px-2 py-1">{t('pwa.tapAddToHome')}</span>
               </div>
             </div>
           </div>
@@ -148,7 +140,7 @@ export function PWAInstallPrompt() {
   // 标准 PWA 安装提示
   return (
     <div className="fixed bottom-4 left-4 right-4 z-50 md:bottom-8 md:left-auto md:right-8 md:w-96">
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600 p-4 shadow-2xl">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-600 to-blue-600 p-4 shadow-2xl">
         {/* 背景装饰 */}
         <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10" />
         <div className="absolute -bottom-8 -left-8 h-24 w-24 rounded-full bg-white/10" />
@@ -170,16 +162,12 @@ export function PWAInstallPrompt() {
             )}
           </div>
           <div className="flex-1 pr-6">
-            <h3 className="font-semibold text-white">
-              {t('pwa.installTitle')}
-            </h3>
-            <p className="mt-1 text-sm text-white/80">
-              {t('pwa.installDescription')}
-            </p>
+            <h3 className="font-semibold text-white">{t('pwa.installTitle')}</h3>
+            <p className="mt-1 text-sm text-white/80">{t('pwa.installDescription')}</p>
             <div className="mt-3 flex gap-2">
               <button
                 onClick={handleInstall}
-                className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-purple-600 shadow-sm transition-colors hover:bg-white/90"
+                className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-primary shadow-sm transition-colors hover:bg-white/90"
               >
                 {t('pwa.installButton')}
               </button>
@@ -238,15 +226,9 @@ export function PWAInstallButton({
   if (!deferredPrompt) return null;
 
   return (
-    <button
-      onClick={handleClick}
-      className={className}
-      aria-label={t('pwa.installButton')}
-    >
+    <button onClick={handleClick} className={className} aria-label={t('pwa.installButton')}>
       <Download size={20} />
       <span>{t('pwa.installButton')}</span>
     </button>
   );
 }
-
-

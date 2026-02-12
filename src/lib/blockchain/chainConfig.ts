@@ -34,7 +34,6 @@ import type { SupportedChain } from '@/types/unifiedOracleTypes';
  * 支持的链到 viem chain 对象的映射
  * 不支持的链默认映射到 mainnet
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const VIEM_CHAIN_MAP: Record<SupportedChain, any> = {
   ethereum: mainnet,
   polygon: polygon,
@@ -337,5 +336,3 @@ export function getExplorerAddressUrl(chain: SupportedChain, address: string): s
   const metadata = getChainMetadata(chain);
   return `${metadata.blockExplorerUrl}/address/${address}`;
 }
-
-

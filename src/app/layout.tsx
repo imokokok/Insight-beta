@@ -119,7 +119,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <meta name="apple-mobile-web-app-title" content="OracleMonitor" />
       </head>
       <body
-        className={cn('min-h-screen bg-[var(--background)] font-sans text-purple-950 antialiased')}
+        className={cn(
+          'min-h-screen bg-[var(--background)] font-sans text-[var(--foreground)] antialiased',
+        )}
       >
         <AccessibilityProvider>
           <SkipLink />
@@ -151,14 +153,17 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                   <div className="blob-3" />
                   <div className="blob-4" />
                 </div>
-                <div className="flex min-h-screen-dynamic">
-                  <Suspense fallback={<LoadingPlaceholder className="hidden md:block w-[280px]" />}>
+                <div className="min-h-screen-dynamic flex">
+                  <Suspense fallback={<LoadingPlaceholder className="hidden w-[280px] md:block" />}>
                     <EnhancedSidebar />
                   </Suspense>
-                  <main id="main-content" className="flex-1 transition-all duration-300 md:ml-[280px]">
+                  <main
+                    id="main-content"
+                    className="flex-1 transition-all duration-300 md:ml-[280px]"
+                  >
                     <div className="container mx-auto max-w-7xl p-3 pb-24 md:p-4 md:pb-4 lg:p-8">
                       <div className="sticky top-0 z-20 mb-4 flex flex-wrap items-center justify-between gap-3 md:mb-6">
-                        <h2 className="text-xl font-bold text-purple-950 md:text-2xl">
+                        <h2 className="text-xl font-bold text-[var(--foreground)] md:text-2xl">
                           {translations[lang].app.title}
                         </h2>
                         <div className="flex items-center gap-2 md:gap-3">

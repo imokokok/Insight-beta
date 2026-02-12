@@ -1,9 +1,9 @@
 import type { NextRequest } from 'next/server';
 
+import { requireAdminWithToken } from '@/lib/api/apiResponse';
+import { query } from '@/lib/database/db';
 import { logger } from '@/shared/logger';
-import { query } from '@/infrastructure/database/db';
 import { apiSuccess, apiError, withErrorHandler } from '@/shared/utils';
-import { requireAdminWithToken } from '@/infrastructure/api/apiResponse';
 
 export const GET = withErrorHandler(async (request: NextRequest) => {
   const auth = await requireAdminWithToken(request, { strict: false });

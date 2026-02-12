@@ -5,8 +5,8 @@
 
 import { useEffect } from 'react';
 
-import { logger } from '@/shared/logger';
 import { initWebVitalsMonitoring } from '@/lib/performance/monitor';
+import { logger } from '@/shared/logger';
 
 /**
  * 初始化 Web Vitals 监控

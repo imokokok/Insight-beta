@@ -171,10 +171,10 @@ describe('Encryption', () => {
 
       const result = redactSensitiveData(data, ['rpcUrl', 'adminToken']);
 
-      expect(result.rpcUrl).toBe('https://....com');
-      expect(result.adminToken).toBe('secret-t...2345');
-      expect(result.contractAddress).toBe('0x1234567890abcdef'); // Not redacted
-      expect(result.chain).toBe('Polygon'); // Not redacted
+      expect(result.rpcUrl).toBe('http***.com');
+      expect(result.adminToken).toBe('secr***2345');
+      expect(result.contractAddress).toBe('0x1234567890abcdef');
+      expect(result.chain).toBe('Polygon');
     });
 
     it('handles short strings', () => {

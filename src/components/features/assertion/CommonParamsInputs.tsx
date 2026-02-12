@@ -28,7 +28,7 @@ export function CommonParamsInputs({ rule, onPatchRuleParams, t }: CommonParamsI
             const minutes = Math.max(1, Math.min(1440, Math.floor(Number(e.target.value))));
             onPatchRuleParams(rule.id, { cooldownMs: minutes * 60_000 });
           }}
-          className="h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2 focus-visible:ring-purple-500/20"
+          className="focus-visible:ring-primary500/20 h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2"
         />
       </div>
 
@@ -48,7 +48,7 @@ export function CommonParamsInputs({ rule, onPatchRuleParams, t }: CommonParamsI
             const minutes = Math.max(0, Math.min(43200, Math.floor(Number(e.target.value))));
             onPatchRuleParams(rule.id, { escalateAfterMs: minutes * 60_000 });
           }}
-          className="h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2 focus-visible:ring-purple-500/20"
+          className="focus-visible:ring-primary500/20 h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2"
         />
       </div>
     </>

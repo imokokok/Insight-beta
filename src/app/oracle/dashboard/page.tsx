@@ -32,23 +32,16 @@ import {
   EnhancedBarChart,
   CHART_COLORS,
 } from '@/components/charts';
-import {
-  StaggerContainer,
-  StaggerItem,
-} from '@/components/common/AnimatedContainer';
+import { StaggerContainer, StaggerItem } from '@/components/common/AnimatedContainer';
 import { ChartCard } from '@/components/common/ChartCard';
 import { DashboardPageHeader } from '@/components/common/PageHeader';
+import type { StatCardStatus } from '@/components/common/StatCard';
 import {
   EnhancedStatCard,
   StatCardGroup,
   DashboardStatsSection,
-  StatCardStatus,
 } from '@/components/common/StatCard';
-import {
-  EmptyDashboardState,
-  LoadingOverlay,
-  RefreshStrategyVisualizer,
-} from '@/components/ui';
+import { EmptyDashboardState, LoadingOverlay, RefreshStrategyVisualizer } from '@/components/ui';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useWebSocket, useIsMobile } from '@/hooks';
@@ -121,7 +114,13 @@ const generateMockComparisonData = () => {
 // Components
 // ============================================================================
 
-function HealthStatusBadge({ activeAlerts, isConnected }: { activeAlerts: number; isConnected: boolean }) {
+function HealthStatusBadge({
+  activeAlerts,
+  isConnected,
+}: {
+  activeAlerts: number;
+  isConnected: boolean;
+}) {
   const getHealthStatus = () => {
     if (!isConnected) return 'incident';
     if (activeAlerts === 0) return 'online';
@@ -178,7 +177,12 @@ function HealthStatusBadge({ activeAlerts, isConnected }: { activeAlerts: number
         <span className={cn('text-[10px] opacity-80', config.textColor)}>{config.description}</span>
       </div>
       <div className="relative ml-1 flex h-2.5 w-2.5">
-        <span className={cn('absolute inline-flex h-full w-full animate-ping rounded-full opacity-75', config.dotColor)} />
+        <span
+          className={cn(
+            'absolute inline-flex h-full w-full animate-ping rounded-full opacity-75',
+            config.dotColor,
+          )}
+        />
         <span className={cn('relative inline-flex h-2.5 w-2.5 rounded-full', config.dotColor)} />
       </div>
     </div>
@@ -262,7 +266,8 @@ export default function OptimizedOracleDashboard() {
       dataKey: 'value',
       color: CHART_COLORS.primary.DEFAULT,
       valueFormatter: (v: number) => `$${formatNumber(v, 2)}`,
-      labelFormatter: (l: string | number) => new Date(l).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      labelFormatter: (l: string | number) =>
+        new Date(l).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
     }),
     [priceTrendData],
   );
@@ -282,9 +287,7 @@ export default function OptimizedOracleDashboard() {
   const latencyChartConfig = useMemo(
     () => ({
       data: latencyData,
-      lines: [
-        { dataKey: 'value', name: 'Latency', color: CHART_COLORS.semantic.warning.DEFAULT },
-      ],
+      lines: [{ dataKey: 'value', name: 'Latency', color: CHART_COLORS.semantic.warning.DEFAULT }],
       valueFormatter: (v: number) => `${formatNumber(v, 0)}ms`,
     }),
     [latencyData],
@@ -304,17 +307,23 @@ export default function OptimizedOracleDashboard() {
         title: 'Active Alerts',
         value: stats?.activeAlerts ?? 0,
         icon: <AlertTriangle className="h-5 w-5" />,
-        status: ((stats?.activeAlerts ?? 0) > 0 ? 'warning' : 'healthy'),
+        status: (stats?.activeAlerts ?? 0) > 0 ? 'warning' : 'healthy',
         trend: { value: 12, isPositive: false, label: 'vs last hour' },
-        sparkline: { data: [10, 12, 8, 15, 12, 18, 12], color: CHART_COLORS.semantic.warning.DEFAULT },
+        sparkline: {
+          data: [10, 12, 8, 15, 12, 18, 12],
+          color: CHART_COLORS.semantic.warning.DEFAULT,
+        },
       },
       {
         title: 'Avg Latency',
         value: `${stats?.avgLatency ?? 0}ms`,
         icon: <Activity className="h-5 w-5" />,
-        status: ((stats?.avgLatency ?? 0) > 1000 ? 'warning' : 'healthy'),
+        status: (stats?.avgLatency ?? 0) > 1000 ? 'warning' : 'healthy',
         trend: { value: 5, isPositive: false, label: 'vs last hour' },
-        sparkline: { data: [500, 520, 480, 550, 530, 580, 520], color: CHART_COLORS.primary.DEFAULT },
+        sparkline: {
+          data: [500, 520, 480, 550, 530, 580, 520],
+          color: CHART_COLORS.primary.DEFAULT,
+        },
       },
       {
         title: 'Network Uptime',
@@ -322,13 +331,16 @@ export default function OptimizedOracleDashboard() {
         icon: <Shield className="h-5 w-5" />,
         status: 'healthy',
         trend: { value: 0.1, isPositive: true, label: 'vs last hour' },
-        sparkline: { data: [99.8, 99.9, 99.9, 99.8, 99.9, 99.9, 99.9], color: CHART_COLORS.semantic.success.DEFAULT },
+        sparkline: {
+          data: [99.8, 99.9, 99.9, 99.8, 99.9, 99.9, 99.9],
+          color: CHART_COLORS.semantic.success.DEFAULT,
+        },
       },
       {
         title: 'Stale Feeds',
         value: stats?.staleFeeds ?? 0,
         icon: <Clock className="h-5 w-5" />,
-        status: ((stats?.staleFeeds ?? 0) > 0 ? 'warning' : 'healthy'),
+        status: (stats?.staleFeeds ?? 0) > 0 ? 'warning' : 'healthy',
         trend: { value: 2, isPositive: false, label: 'vs last hour' },
         sparkline: { data: [2, 3, 2, 4, 3, 2, 3], color: CHART_COLORS.semantic.error.DEFAULT },
       },
@@ -393,8 +405,10 @@ export default function OptimizedOracleDashboard() {
         <DashboardPageHeader
           title="Oracle Operations Overview"
           description="Real-time health and risk monitoring"
-          icon={<Activity className="h-5 w-5 text-purple-600" />}
-          statusBadge={<HealthStatusBadge activeAlerts={stats?.activeAlerts ?? 0} isConnected={isConnected} />}
+          icon={<Activity className="h-5 w-5 text-primary" />}
+          statusBadge={
+            <HealthStatusBadge activeAlerts={stats?.activeAlerts ?? 0} isConnected={isConnected} />
+          }
           refreshControl={
             <RefreshStrategyVisualizer
               strategy={strategy}
@@ -413,16 +427,19 @@ export default function OptimizedOracleDashboard() {
         />
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-2 sm:p-3 lg:p-4 relative">
+        <div className="relative flex-1 overflow-y-auto p-2 sm:p-3 lg:p-4">
           {/* Loading Overlay */}
-          {isRefreshing && !stats && (
-            <LoadingOverlay message="Loading dashboard data..." />
-          )}
+          {isRefreshing && !stats && <LoadingOverlay message="Loading dashboard data..." />}
 
           {/* Error Message */}
           {isError && error && (
             <div className="mb-6">
-              <ErrorBanner error={error} onRetry={refresh} title="Failed to load dashboard data" isRetrying={isRefreshing} />
+              <ErrorBanner
+                error={error}
+                onRetry={refresh}
+                title="Failed to load dashboard data"
+                isRetrying={isRefreshing}
+              />
             </div>
           )}
 
@@ -539,19 +556,25 @@ export default function OptimizedOracleDashboard() {
                     icon={<Activity className="h-5 w-5" />}
                   >
                     <div className="space-y-4">
-                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
                         <span className="text-sm text-gray-600">Active Protocols</span>
-                        <span className="text-lg font-bold text-gray-900">{stats?.totalProtocols ?? 8}</span>
+                        <span className="text-lg font-bold text-gray-900">
+                          {stats?.totalProtocols ?? 8}
+                        </span>
                       </div>
-                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
                         <span className="text-sm text-gray-600">Total Feeds</span>
-                        <span className="text-lg font-bold text-gray-900">{stats?.totalPriceFeeds ?? 156}</span>
+                        <span className="text-lg font-bold text-gray-900">
+                          {stats?.totalPriceFeeds ?? 156}
+                        </span>
                       </div>
-                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
                         <span className="text-sm text-gray-600">Avg Update Time</span>
-                        <span className="text-lg font-bold text-gray-900">{stats?.avgLatency ?? 450}ms</span>
+                        <span className="text-lg font-bold text-gray-900">
+                          {stats?.avgLatency ?? 450}ms
+                        </span>
                       </div>
-                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
                         <span className="text-sm text-gray-600">Health Score</span>
                         <span className="text-lg font-bold text-emerald-600">98.5%</span>
                       </div>
@@ -619,7 +642,11 @@ export default function OptimizedOracleDashboard() {
                   <EnhancedLineChart
                     data={latencyData}
                     lines={[
-                      { dataKey: 'value', name: 'Latency', color: CHART_COLORS.semantic.warning.DEFAULT },
+                      {
+                        dataKey: 'value',
+                        name: 'Latency',
+                        color: CHART_COLORS.semantic.warning.DEFAULT,
+                      },
                     ]}
                     height={300}
                     valueFormatter={(v) => `${formatNumber(v, 0)}ms`}

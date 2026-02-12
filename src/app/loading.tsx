@@ -17,11 +17,11 @@ export default function Loading() {
       >
         {/* 外圈 - 品牌紫色 */}
         <motion.div
-          className="absolute inset-0 rounded-full border-4 border-purple-200"
+          className="absolute inset-0 rounded-full border-4 border-primary/20"
           animate={reduceMotion ? {} : { rotate: 360 }}
           transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
         >
-          <div className="absolute -top-1 left-1/2 h-4 w-4 -translate-x-1/2 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg shadow-purple-500/30" />
+          <div className="absolute -top-1 left-1/2 h-4 w-4 -translate-x-1/2 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 shadow-lg shadow-primary-500/30" />
         </motion.div>
 
         {/* 中圈 - 青色 */}
@@ -35,12 +35,12 @@ export default function Loading() {
 
         {/* 内圈 - 中心 Logo */}
         <motion.div
-          className="absolute inset-5 flex items-center justify-center rounded-full bg-gradient-to-br from-purple-100 to-cyan-100"
+          className="absolute inset-5 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-100 to-cyan-100"
           animate={reduceMotion ? {} : { scale: [1, 1.1, 1] }}
           transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
         >
           <svg
-            className="h-6 w-6 text-purple-600"
+            className="h-6 w-6 text-primary"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -81,7 +81,7 @@ export default function Loading() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <p className="text-base font-medium text-purple-900">加载中</p>
+        <p className="text-base font-medium text-[var(--foreground)]">加载中</p>
         <motion.p
           className="mt-1 text-sm text-muted-foreground"
           animate={reduceMotion ? {} : { opacity: [0.5, 1, 0.5] }}
@@ -99,13 +99,11 @@ export default function Loading() {
         transition={{ delay: 0.3 }}
       >
         <motion.div
-          className="h-full rounded-full bg-gradient-to-r from-purple-500 to-cyan-500"
+          className="h-full rounded-full bg-gradient-to-r from-primary-500 to-cyan-500"
           initial={{ width: '0%' }}
           animate={reduceMotion ? { width: '100%' } : { width: ['0%', '100%', '0%'] }}
           transition={
-            reduceMotion
-              ? { duration: 0.5 }
-              : { duration: 2, repeat: Infinity, ease: 'easeInOut' }
+            reduceMotion ? { duration: 0.5 } : { duration: 2, repeat: Infinity, ease: 'easeInOut' }
           }
         />
       </motion.div>

@@ -7,9 +7,9 @@
 
 import { type Address, parseAbi } from 'viem';
 
-import { normalizeSymbol } from '@/infrastructure/blockchain/core/types';
 import { DEFAULT_STALENESS_THRESHOLDS } from '@/config/constants';
-import { ErrorHandler, normalizeError } from '@/shared/errors';
+import { normalizeSymbol } from '@/lib/blockchain/core/types';
+import { ErrorHandler, normalizeError } from '@/lib/errors';
 import { EvmOracleClient } from '@/lib/shared';
 import type {
   SupportedChain,
@@ -363,4 +363,3 @@ export function getAvailableFeedsForChain(chain: SupportedChain): string[] {
   if (!feeds) return [];
   return Object.keys(feeds);
 }
-

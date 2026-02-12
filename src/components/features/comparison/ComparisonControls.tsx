@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useI18n } from '@/i18n';
+import { cn } from '@/shared/utils';
 import type {
   ComparisonFilter,
   ComparisonConfig,
@@ -31,7 +32,6 @@ import type {
   OracleProtocol,
 } from '@/types/oracle';
 import { PROTOCOL_DISPLAY_NAMES, ORACLE_PROTOCOLS } from '@/types/oracle';
-import { cn } from '@/shared/utils';
 
 interface ComparisonControlsProps {
   filter: ComparisonFilter;
@@ -237,7 +237,7 @@ export const ComparisonControls = memo(function ComparisonControls({
                           >
                             <span>{symbol}</span>
                             {filter.symbols?.includes(symbol) && (
-                              <Eye className="text-primary h-3 w-3" />
+                              <Eye className="h-3 w-3 text-primary" />
                             )}
                           </button>
                         ))}
@@ -377,7 +377,7 @@ export const ComparisonControls = memo(function ComparisonControls({
                     <Label className="text-xs">{t('comparison.controls.deviationThreshold')}</Label>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <span className="text-muted-foreground text-xs">
+                        <span className="text-xs text-muted-foreground">
                           {t('comparison.controls.slight')}
                         </span>
                         <Input
@@ -396,7 +396,7 @@ export const ComparisonControls = memo(function ComparisonControls({
                         />
                       </div>
                       <div>
-                        <span className="text-muted-foreground text-xs">
+                        <span className="text-xs text-muted-foreground">
                           {t('comparison.controls.severe')}
                         </span>
                         <Input
@@ -457,7 +457,7 @@ export const ComparisonControls = memo(function ComparisonControls({
         {/* Active Filters Display */}
         {activeFilterCount > 0 && (
           <div className="mt-3 flex flex-wrap items-center gap-2 border-t pt-3">
-            <span className="text-muted-foreground text-xs">
+            <span className="text-xs text-muted-foreground">
               {t('comparison.controls.filterActive')}
             </span>
             {filter.protocols?.map((protocol) => (

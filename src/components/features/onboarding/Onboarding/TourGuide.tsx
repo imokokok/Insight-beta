@@ -286,7 +286,7 @@ export function TourGuide({
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="pointer-events-none absolute rounded-lg border-2 border-purple-500"
+          className="pointer-events-none absolute rounded-lg border-2 border-primary"
           style={{
             top: targetRect.top - 4,
             left: targetRect.left - 4,
@@ -353,7 +353,7 @@ export function TourGuide({
             </div>
             <div className="mt-2 h-1 overflow-hidden rounded-full bg-gray-200">
               <div
-                className="h-full bg-purple-600 transition-all duration-300 will-change-transform"
+                className="h-full bg-primary transition-all duration-300 will-change-transform"
                 style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
               />
             </div>
@@ -377,7 +377,7 @@ export function TourGuide({
             </button>
             <button
               onClick={handleNext}
-              className="flex flex-1 items-center justify-center gap-2 rounded-md bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+              className="focus:ring-primary500 flex flex-1 items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-white transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2"
             >
               {currentStep === steps.length - 1 ? (
                 <>

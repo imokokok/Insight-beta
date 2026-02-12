@@ -7,7 +7,7 @@
 
 import { type Address, parseAbi, formatUnits } from 'viem';
 
-import { ErrorHandler, normalizeError } from '@/shared/errors';
+import { ErrorHandler, normalizeError } from '@/lib/errors';
 import { EvmOracleClient } from '@/lib/shared';
 import type {
   SupportedChain,

@@ -1,89 +1,89 @@
-# 用户手册
+# User Manual
 
-## 快速开始
+## Quick Start
 
-1. **连接钱包** - 点击右上角 "Connect Wallet" 按钮
-2. **浏览数据** - 在 Dashboard 查看聚合价格数据
-3. **查看协议** - 访问不同协议的详细信息
-4. **完成新手引导** - 首次访问时会自动显示新手引导
+1. **Connect Wallet** - Click the "Connect Wallet" button in the top right
+2. **Browse Data** - View aggregated price data on the Dashboard
+3. **View Protocols** - Visit different protocols for detailed information
+4. **Complete Onboarding** - First-time visitors will automatically see the onboarding guide
 
-## 核心功能
+## Core Features
 
-- **多协议价格监控** - 实时聚合 9+ 协议的价格数据
-- **价格对比** - 跨协议价格比较和偏差分析
-- **UMA 断言** - 创建、争议和结算断言
-- **告警通知** - 价格偏差告警和通知
-- **安全监控** - 价格操纵检测和安全告警
-- **SLO 监控** - 服务级别目标监控
+- **Multi-Protocol Price Monitoring** - Real-time aggregation of 9+ protocol price data
+- **Price Comparison** - Cross-protocol price comparison and deviation analysis
+- **UMA Assertions** - Create, dispute, and settle assertions
+- **Alert Notifications** - Price deviation alerts and notifications
+- **Security Monitoring** - Price manipulation detection and security alerts
+- **SLO Monitoring** - Service Level Objective monitoring
 
-## 页面导航
+## Page Navigation
 
-| 页面       | 功能                         |
-| ---------- | ---------------------------- |
-| Dashboard  | 系统概览、价格聚合、KPI 卡片 |
-| Oracle     | 预言机详情、价格图表         |
-| Protocols  | 各协议详情和对比             |
-| UMA        | UMA 断言和争议管理           |
-| Alerts     | 告警配置和管理               |
-| Monitoring | 系统监控和指标               |
-| Security   | 安全监控和检测               |
-| Audit      | 操作日志和审计               |
-| Watchlist  | 关注的资产列表               |
+| Page       | Function                                      |
+| ---------- | --------------------------------------------- |
+| Dashboard  | System overview, price aggregation, KPI cards |
+| Oracle     | Oracle details, price charts                  |
+| Protocols  | Protocol details and comparison               |
+| UMA        | UMA assertions and dispute management         |
+| Alerts     | Alert configuration and management            |
+| Monitoring | System monitoring and metrics                 |
+| Security   | Security monitoring and detection             |
+| Audit      | Operation logs and auditing                   |
+| Watchlist  | Favorited asset list                          |
 
-## 支持协议
+## Supported Protocols
 
 - **UMA** - Optimistic Oracle
-- **Chainlink** - 行业标准价格喂送
-- **Pyth** - 低延迟金融数据
-- **Band** - 跨链数据预言机
-- **API3** - 第一方预言机
-- **RedStone** - 模块化预言机
-- **Switchboard** - Solana 和 EVM 兼容
-- **Flux** - 去中心化聚合器
-- **DIA** - 透明可验证数据
+- **Chainlink** - Industry-standard price feeds
+- **Pyth** - Low-latency financial data
+- **Band** - Cross-chain data oracle
+- **API3** - First-party oracle
+- **RedStone** - Modular oracle
+- **Switchboard** - Solana and EVM compatible
+- **Flux** - Decentralized aggregator
+- **DIA** - Transparent verifiable data
 
-## 常见问题
+## FAQ
 
-**如何查看价格对比？**
+**How to view price comparison?**
 
-- 进入 Dashboard 或 Comparison 页面
-- 选择交易对（如 ETH/USD）
-- 查看不同协议的价格对比
+- Go to Dashboard or Comparison page
+- Select trading pair (e.g., ETH/USD)
+- View price comparison across different protocols
 
-**什么是价格偏差？**
+**What is price deviation?**
 
-- 不同协议间的价格差异
-- 高偏差可能表示市场波动或预言机问题
-- 系统会自动检测并告警
+- Price difference between different protocols
+- High deviation may indicate market volatility or oracle issues
+- System automatically detects and alerts
 
-**如何设置告警？**
+**How to set up alerts?**
 
-- 进入 Alerts 页面
-- 创建新的告警规则
-- 设置价格偏差阈值
-- 选择通知渠道（Slack、Telegram、邮件）
+- Go to Alerts page
+- Create new alert rule
+- Set price deviation threshold
+- Select notification channels (Slack, Telegram, Email)
 
-**如何重新查看新手引导？**
+**How to replay onboarding?**
 
-- 在设置页面找到 "重新查看引导" 按钮
-- 或使用 `OnboardingReset` 组件
+- Find "Replay Onboarding" button in settings page
+- Or use the `OnboardingReset` component
 
-**支持哪些语言？**
+**What languages are supported?**
 
-- 中文、英语、西班牙语、法语、韩语
-- 在页面右上角切换语言
+- Chinese, English, Spanish, French, Korean
+- Switch language in the top right of the page
 
-## 快捷键
+## Keyboard Shortcuts
 
-| 按键  | 功能             |
-| ----- | ---------------- |
-| `?`   | 显示快捷键帮助   |
-| `Esc` | 关闭弹窗/引导    |
-| `→`   | 下一步（引导中） |
-| `←`   | 上一步（引导中） |
+| Key   | Function                      |
+| ----- | ----------------------------- |
+| `?`   | Show keyboard shortcuts help  |
+| `Esc` | Close modal/onboarding        |
+| `→`   | Next step (in onboarding)     |
+| `←`   | Previous step (in onboarding) |
 
-## 获取帮助
+## Getting Help
 
-- 查看 [故障排除指南](../TROUBLESHOOTING.md)
-- 查阅 [API 文档](./API.md)
-- 参考 [错误代码](./ERROR_CODES.md)
+- Check [Troubleshooting Guide](../TROUBLESHOOTING.md)
+- See [API Documentation](./API.md)
+- Reference [Error Codes](./ERROR_CODES.md)

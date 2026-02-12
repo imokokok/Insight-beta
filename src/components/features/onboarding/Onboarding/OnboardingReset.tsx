@@ -30,7 +30,7 @@ export function OnboardingReset({ onReset, variant = 'button', className }: Onbo
 
   if (showConfirm) {
     return (
-      <div className={`rounded-lg border border-purple-200 bg-purple-50 p-4 ${className}`}>
+      <div className={`rounded-lg border border-primary/20 bg-primary/5 p-4 ${className}`}>
         <p className="mb-3 text-sm text-gray-700">{t('onboarding.resetConfirm')}</p>
         <div className="flex gap-2">
           <button
@@ -41,7 +41,7 @@ export function OnboardingReset({ onReset, variant = 'button', className }: Onbo
           </button>
           <button
             onClick={handleReset}
-            className="flex-1 rounded-md bg-purple-600 px-3 py-1.5 text-sm text-white transition-colors hover:bg-purple-700"
+            className="flex-1 rounded-md bg-primary px-3 py-1.5 text-sm text-white transition-colors hover:bg-primary-700"
           >
             {t('onboarding.confirm')}
           </button>

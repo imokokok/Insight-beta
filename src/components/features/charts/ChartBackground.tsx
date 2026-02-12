@@ -13,7 +13,7 @@ function ChartBackground({ activeTab }: { activeTab: TabKey }) {
           activeTab === 'activity' ? 'opacity-20' : 'opacity-0',
         )}
       >
-        <div className="absolute -left-[10%] -top-[10%] h-[150%] w-[50%] rounded-full bg-gradient-to-br from-purple-200/30 via-indigo-100/10 to-transparent blur-3xl" />
+        <div className="absolute -left-[10%] -top-[10%] h-[150%] w-[50%] rounded-full bg-gradient-to-br from-primary-200/30 via-indigo-100/10 to-transparent blur-3xl" />
         <div className="absolute bottom-0 right-0 h-[60%] w-[40%] rounded-full bg-gradient-to-tl from-blue-100/20 via-transparent to-transparent blur-2xl" />
       </div>
       <div
@@ -23,7 +23,7 @@ function ChartBackground({ activeTab }: { activeTab: TabKey }) {
         )}
       >
         <div className="absolute -right-[10%] -top-[10%] h-[150%] w-[50%] rounded-full bg-gradient-to-bl from-pink-200/30 via-rose-100/10 to-transparent blur-3xl" />
-        <div className="absolute bottom-0 left-0 h-[60%] w-[40%] rounded-full bg-gradient-to-tr from-purple-100/20 via-transparent to-transparent blur-2xl" />
+        <div className="absolute bottom-0 left-0 h-[60%] w-[40%] rounded-full bg-gradient-to-tr from-primary-100/20 via-transparent to-transparent blur-2xl" />
       </div>
       <div
         className={cn(

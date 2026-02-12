@@ -21,7 +21,6 @@ export const SUPPORTED_CHAINS: Chain[] = [
 export type WalletConnectionType = 'browser' | 'walletconnect';
 
 // Ethereum Provider 类型
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type EthereumProviderType = any;
 
 // 钱包提供者接口
@@ -69,16 +68,14 @@ export class WalletConnectProvider implements WalletProvider {
         description: 'Universal Oracle Monitoring Platform',
         url: typeof window !== 'undefined' ? window.location.origin : '',
         icons: [
-          typeof window !== 'undefined'
-            ? `${window.location.origin}/icons/icon-192x192.png`
-            : '',
+          typeof window !== 'undefined' ? `${window.location.origin}/icons/icon-192x192.png` : '',
         ],
       },
     });
 
     // 监听事件
     this.ethereumProvider.on('accountsChanged', (accounts: string[]) => {
-      this.address = accounts[0] as Address || null;
+      this.address = (accounts[0] as Address) || null;
       this.emit('accountsChanged', accounts);
     });
 
@@ -97,7 +94,7 @@ export class WalletConnectProvider implements WalletProvider {
     if (this.ethereumProvider.session) {
       const accounts = this.ethereumProvider.accounts;
       const chainId = this.ethereumProvider.chainId;
-      this.address = accounts[0] as Address || null;
+      this.address = (accounts[0] as Address) || null;
       this.chainId = chainId;
     }
   }
@@ -116,7 +113,7 @@ export class WalletConnectProvider implements WalletProvider {
     const accounts = this.ethereumProvider.accounts;
     const chainId = this.ethereumProvider.chainId;
 
-    this.address = accounts[0] as Address || null;
+    this.address = (accounts[0] as Address) || null;
     this.chainId = chainId;
   }
 
@@ -209,9 +206,7 @@ export class WalletConnectProvider implements WalletProvider {
 // 检测是否在移动端
 export function isMobile(): boolean {
   if (typeof window === 'undefined') return false;
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-    navigator.userAgent,
-  );
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 
 // 检测是否在钱包浏览器中
@@ -240,5 +235,3 @@ export function getWalletName(): string {
   if (ethereum.isMetaMask) return 'MetaMask';
   return 'Browser Wallet';
 }
-
-

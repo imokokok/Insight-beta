@@ -1,17 +1,17 @@
-# UI 交互与可用性规范
+# UI Interaction and Usability Guidelines
 
-> 统一 Loading、Error 状态以及表格列表的样式规范
+> Unified Loading, Error states, and table/list styling guidelines
 
 ---
 
-## 1. Loading & Error 状态一致性
+## 1. Loading & Error State Consistency
 
-### 1.1 卡片级数据加载
+### 1.1 Card-Level Data Loading
 
-**规范**：使用 Skeleton 占位，保持卡片尺寸不变
+**Standard**: Use Skeleton placeholders, keep card size unchanged
 
 ```tsx
-// ✅ 正确示例
+// ✅ Correct example
 <CardEnhanced>
   {isLoading ? (
     <CardSkeleton />
@@ -22,30 +22,30 @@
   )}
 </CardEnhanced>;
 
-// CardSkeleton 实现
+// CardSkeleton implementation
 function CardSkeleton() {
   return (
     <div className="space-y-3 p-4">
-      <Skeleton className="h-4 w-20" /> {/* 标题占位 */}
-      <Skeleton className="h-8 w-24" /> {/* 数值占位 */}
-      <Skeleton className="h-3 w-16" /> {/* 副标题占位 */}
+      <Skeleton className="h-4 w-20" /> {/* Title placeholder */}
+      <Skeleton className="h-8 w-24" /> {/* Value placeholder */}
+      <Skeleton className="h-3 w-16" /> {/* Subtitle placeholder */}
     </div>
   );
 }
 ```
 
-**原则**：
+**Principles**:
 
-- Skeleton 高度与实际内容一致，避免布局跳动
-- 使用 `animate-pulse` 提供视觉反馈
-- 多个卡片同时加载时，保持统一节奏
+- Skeleton height should match actual content to avoid layout shift
+- Use `animate-pulse` for visual feedback
+- When multiple cards load simultaneously, maintain consistent timing
 
-### 1.2 全页级错误
+### 1.2 Full Page Errors
 
-**规范**：顶部统一使用固定样式的 Error Banner
+**Standard**: Use Error Banner with unified styling at the top
 
 ```tsx
-// ✅ 正确示例
+// ✅ Correct example
 export default function Page() {
   const { data, isError, error, refetch } = useQuery({...});
 
@@ -55,9 +55,9 @@ export default function Page() {
         <ErrorBanner
           error={error}
           onRetry={refetch}
-          title="加载失败"
+          title="Load Failed"
         />
-        {/* 页面其他部分可以保持占位或空状态 */}
+        {/* Page other content can remain placeholder or empty state */}
       </div>
     );
   }
@@ -65,7 +65,7 @@ export default function Page() {
   return <PageContent data={data} />;
 }
 
-// ErrorBanner 组件
+// ErrorBanner component
 interface ErrorBannerProps {
   error: Error | null;
   onRetry?: () => void;
@@ -73,7 +73,7 @@ interface ErrorBannerProps {
   className?: string;
 }
 
-function ErrorBanner({ error, onRetry, title = "加载失败", className }: ErrorBannerProps) {
+function ErrorBanner({ error, onRetry, title = "Load Failed", className }: ErrorBannerProps) {
   return (
     <div className={cn(
       "rounded-lg border border-red-200 bg-red-50 p-4",
@@ -84,7 +84,7 @@ function ErrorBanner({ error, onRetry, title = "加载失败", className }: Erro
         <div className="flex-1">
           <h3 className="font-medium text-red-900">{title}</h3>
           <p className="mt-1 text-sm text-red-700">
-            {error?.message || "请检查网络连接后重试"}
+            {error?.message || "Please check your network connection and try again"}
           </p>
           {onRetry && (
             <Button
@@ -94,7 +94,7 @@ function ErrorBanner({ error, onRetry, title = "加载失败", className }: Erro
               className="mt-3 bg-white hover:bg-red-100"
             >
               <RefreshCw className="mr-2 h-4 w-4" />
-              重试
+              Retry
             </Button>
           )}
         </div>
@@ -104,18 +104,18 @@ function ErrorBanner({ error, onRetry, title = "加载失败", className }: Erro
 }
 ```
 
-**原则**：
+**Principles**:
 
-- 统一使用红色主题（red-50 背景，red-600 图标）
-- 必须包含错误描述和重试按钮
-- 固定在页面顶部，不遮挡主要内容区域
+- Use red theme consistently (red-50 background, red-600 icon)
+- Must include error description and retry button
+- Fixed at page top, should not block main content area
 
-### 1.3 局部加载失败
+### 1.3 Partial Load Failure
 
-**规范**：在组件内部使用"重试"按钮，而不是只显示报错文案
+**Standard**: Use "Retry" button within the component, not just error text
 
 ```tsx
-// ✅ 正确示例
+// ✅ Correct example
 function DataTable({ queryKey }: { queryKey: string }) {
   const { data, isError, error, refetch, isFetching } = useQuery({
     queryKey: [queryKey],
@@ -126,7 +126,7 @@ function DataTable({ queryKey }: { queryKey: string }) {
     return (
       <div className="rounded-lg border border-gray-200 bg-gray-50 p-8 text-center">
         <AlertTriangle className="mx-auto h-8 w-8 text-gray-400" />
-        <p className="mt-2 text-sm text-gray-600">加载数据失败</p>
+        <p className="mt-2 text-sm text-gray-600">Failed to load data</p>
         <Button
           variant="outline"
           size="sm"
@@ -139,7 +139,7 @@ function DataTable({ queryKey }: { queryKey: string }) {
           ) : (
             <RefreshCw className="mr-2 h-4 w-4" />
           )}
-          重试
+          Retry
         </Button>
       </div>
     );
@@ -148,64 +148,64 @@ function DataTable({ queryKey }: { queryKey: string }) {
   return <Table data={data} />;
 }
 
-// ❌ 错误示例 - 只显示文案，没有重试按钮
+// ❌ Wrong example - only shows text, no retry button
 if (isError) {
-  return <p className="text-red-500">加载失败</p>;
+  return <p className="text-red-500">Load failed</p>;
 }
 ```
 
-**原则**：
+**Principles**:
 
-- 局部错误使用灰色主题（gray-50 背景），区别于全页错误的红色
-- 必须提供重试按钮
-- 重试时显示 loading 状态
+- Partial errors use gray theme (gray-50 background), distinguish from full page errors (red)
+- Must provide retry button
+- Show loading state when retrying
 
 ---
 
-## 2. 密集模式下的表格 & 列表样式
+## 2. Dense Mode Table & List Styling
 
-### 2.1 设计目标
+### 2.1 Design Goals
 
-针对 `/alerts`, `/disputes`, `/audit`, `/watchlist` 等列表型页面，提供两种显示模式：
+For list-type pages like `/alerts`, `/disputes`, `/audit`, `/watchlist`, provide two display modes:
 
-- **普通模式**：偏产品化，信息密度适中，适合新手
-- **专业模式**：信息密度高，适合运维人员快速扫描
+- **Normal Mode**: Product-oriented, moderate information density, suitable for beginners
+- **Professional Mode**: High information density, suitable for operators to quickly scan
 
-### 2.2 专业模式规范
+### 2.2 Professional Mode Standards
 
 ```tsx
-// 专业模式表格样式
+// Professional mode table styles
 const denseTableStyles = {
-  // 行高降低 10-20%
-  row: 'h-8 py-1', // 普通模式是 h-12 py-3
+  // Reduce row height by 10-20%
+  row: 'h-8 py-1', // Normal mode is h-12 py-3
 
-  // 字体缩小
+  // Smaller font
   cell: 'text-xs',
 
-  // 减少内边距
+  // Reduce padding
   padding: 'px-2',
 
-  // 隐藏装饰性元素
+  // Hide decorative elements
   hideDecorations: true,
 };
 
-// 专业模式列表样式
+// Professional mode list styles
 const denseListStyles = {
-  // 行高降低
-  item: 'py-2', // 普通模式是 py-4
+  // Reduce row height
+  item: 'py-2', // Normal mode is py-4
 
-  // 字体
+  // Font
   text: 'text-xs',
 
-  // 隐藏次要信息
+  // Hide secondary info
   showSecondary: false,
 };
 ```
 
-### 2.3 颜色与强调规范
+### 2.3 Color and Emphasis Standards
 
 ```tsx
-// 重要列的颜色强调
+// Column highlight colors
 const columnHighlight = {
   severity: {
     critical: 'bg-red-100 text-red-800 font-bold',
@@ -222,10 +222,10 @@ const columnHighlight = {
 };
 ```
 
-### 2.4 模式切换组件
+### 2.4 Mode Toggle Component
 
 ```tsx
-// ViewModeToggle 组件
+// ViewModeToggle component
 interface ViewModeToggleProps {
   mode: 'normal' | 'dense';
   onChange: (mode: 'normal' | 'dense') => void;
@@ -240,10 +240,10 @@ function ViewModeToggle({ mode, onChange }: ViewModeToggleProps) {
           'flex items-center gap-1.5 rounded px-2 py-1 text-xs font-medium transition-colors',
           mode === 'normal' ? 'bg-purple-100 text-purple-700' : 'text-gray-600 hover:bg-gray-100',
         )}
-        title="普通模式 - 适合查看详细信息"
+        title="Normal Mode - Suitable for viewing details"
       >
         <LayoutList className="h-3.5 w-3.5" />
-        普通
+        Normal
       </button>
       <button
         onClick={() => onChange('dense')}
@@ -251,17 +251,17 @@ function ViewModeToggle({ mode, onChange }: ViewModeToggleProps) {
           'flex items-center gap-1.5 rounded px-2 py-1 text-xs font-medium transition-colors',
           mode === 'dense' ? 'bg-purple-100 text-purple-700' : 'text-gray-600 hover:bg-gray-100',
         )}
-        title="专业模式 - 高密度信息展示"
+        title="Professional Mode - High density information"
       >
         <Rows3 className="h-3.5 w-3.5" />
-        专业
+        Dense
       </button>
     </div>
   );
 }
 ```
 
-### 2.5 完整示例：Alerts 表格
+### 2.5 Complete Example: Alerts Table
 
 ```tsx
 function AlertsTable({ alerts }: { alerts: Alert[] }) {
@@ -270,21 +270,21 @@ function AlertsTable({ alerts }: { alerts: Alert[] }) {
 
   return (
     <div className="space-y-4">
-      {/* 工具栏 */}
+      {/* Toolbar */}
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">告警列表</h2>
+        <h2 className="text-lg font-semibold">Alerts List</h2>
         <ViewModeToggle mode={viewMode} onChange={setViewMode} />
       </div>
 
-      {/* 表格 */}
+      {/* Table */}
       <Table>
         <TableHeader>
           <TableRow className={isDense ? 'h-8' : 'h-12'}>
-            <TableHead className={isDense ? 'px-2 text-xs' : ''}>级别</TableHead>
-            <TableHead className={isDense ? 'px-2 text-xs' : ''}>协议</TableHead>
-            <TableHead className={isDense ? 'px-2 text-xs' : ''}>描述</TableHead>
-            {!isDense && <TableHead>状态</TableHead>}
-            <TableHead className={isDense ? 'px-2 text-xs' : ''}>时间</TableHead>
+            <TableHead className={isDense ? 'px-2 text-xs' : ''}>Severity</TableHead>
+            <TableHead className={isDense ? 'px-2 text-xs' : ''}>Protocol</TableHead>
+            <TableHead className={isDense ? 'px-2 text-xs' : ''}>Description</TableHead>
+            {!isDense && <TableHead>Status</TableHead>}
+            <TableHead className={isDense ? 'px-2 text-xs' : ''}>Time</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -293,7 +293,7 @@ function AlertsTable({ alerts }: { alerts: Alert[] }) {
               key={alert.id}
               className={cn(isDense ? 'h-8 py-1' : 'h-12 py-3', 'cursor-pointer hover:bg-gray-50')}
             >
-              {/* Severity - 始终高亮 */}
+              {/* Severity - Always highlighted */}
               <TableCell
                 className={cn(
                   isDense ? 'px-2 py-1' : '',
@@ -308,7 +308,7 @@ function AlertsTable({ alerts }: { alerts: Alert[] }) {
                 )}
               </TableCell>
 
-              {/* Protocol - 专业模式加粗 */}
+              {/* Protocol - Bold in dense mode */}
               <TableCell className={cn(isDense ? 'px-2 text-xs font-medium text-purple-700' : '')}>
                 {alert.protocol}
               </TableCell>
@@ -318,14 +318,14 @@ function AlertsTable({ alerts }: { alerts: Alert[] }) {
                 {alert.message}
               </TableCell>
 
-              {/* Status - 普通模式显示 */}
+              {/* Status - Show in normal mode */}
               {!isDense && (
                 <TableCell>
                   <StatusBadge status={alert.status} />
                 </TableCell>
               )}
 
-              {/* Time - 专业模式使用等宽字体 */}
+              {/* Time - Monospace in dense mode */}
               <TableCell className={cn(isDense ? 'px-2 font-mono text-[11px] text-gray-500' : '')}>
                 {formatTime(alert.timestamp, isDense)}
               </TableCell>
@@ -337,48 +337,48 @@ function AlertsTable({ alerts }: { alerts: Alert[] }) {
   );
 }
 
-// 时间格式化
+// Time formatting
 function formatTime(timestamp: string, isDense: boolean): string {
   if (isDense) {
-    // 专业模式：简洁格式
+    // Dense mode: compact format
     return dayjs(timestamp).format('HH:mm');
   }
-  // 普通模式：完整格式
+  // Normal mode: full format
   return dayjs(timestamp).format('YYYY-MM-DD HH:mm:ss');
 }
 ```
 
-### 2.6 应用到各页面
+### 2.6 Apply to Pages
 
-| 页面         | 普通模式特点           | 专业模式特点                             |
-| ------------ | ---------------------- | ---------------------------------------- |
-| `/alerts`    | 显示完整描述、状态标签 | 行高压缩，仅显示关键列，时间简化为 HH:mm |
-| `/disputes`  | 显示证据摘要、投票进度 | 紧凑布局，隐藏装饰图标，强调金额和状态   |
-| `/audit`     | 显示完整操作描述       | 单行显示，使用图标代替文字标签           |
-| `/watchlist` | 显示价格走势图         | 纯列表形式，突出涨跌幅                   |
+| Page         | Normal Mode Features              | Professional Mode Features                                         |
+| ------------ | --------------------------------- | ------------------------------------------------------------------ |
+| `/alerts`    | Full description, status badge    | Compressed rows, only key columns, time simplified to HH:mm        |
+| `/disputes`  | Evidence summary, voting progress | Compact layout, hide decorative icons, emphasize amount and status |
+| `/audit`     | Full operation description        | Single line, use icons instead of text labels                      |
+| `/watchlist` | Price trend chart                 | Pure list form, emphasize price change                             |
 
 ---
 
-## 3. 实现建议
+## 3. Implementation Suggestions
 
-### 3.1 创建通用组件
+### 3.1 Create Common Components
 
-建议创建以下通用组件放在 `src/components/ui/` 下：
+Recommended to create the following common components in `src/components/ui/`:
 
 ```
 src/components/ui/
-├── error-banner.tsx      # 统一错误横幅
-├── loading-states.tsx    # 各种 skeleton 组件
-├── view-mode-toggle.tsx  # 普通/专业模式切换
-└── dense-table.tsx       # 密集模式表格封装
+├── error-banner.tsx      # Unified error banner
+├── loading-states.tsx   # Various skeleton components
+├── view-mode-toggle.tsx # Normal/Professional mode toggle
+└── dense-table.tsx      # Dense mode table wrapper
 ```
 
-### 3.2 状态管理
+### 3.2 State Management
 
-视图模式状态建议：
+View mode state suggestions:
 
-- 使用 localStorage 保存用户偏好
-- 支持全局设置或按页面设置
+- Use localStorage to save user preferences
+- Support global settings or per-page settings
 
 ```tsx
 // hooks/useViewMode.ts
@@ -395,11 +395,11 @@ export function useViewMode(pageId: string) {
 }
 ```
 
-### 3.3 渐进式实现
+### 3.3 Progressive Implementation
 
-建议按以下顺序实现：
+Recommended implementation order:
 
-1. **Phase 1**：统一 Error Banner 和 Skeleton 组件
-2. **Phase 2**：在 Dashboard 页面应用 Loading/Error 规范
-3. **Phase 3**：在 Alerts 页面实现普通/专业模式切换
-4. **Phase 4**：推广到 Disputes、Audit、Watchlist 页面
+1. **Phase 1**: Unify Error Banner and Skeleton components
+2. **Phase 2**: Apply Loading/Error standards on Dashboard page
+3. **Phase 3**: Implement Normal/Professional mode toggle on Alerts page
+4. **Phase 4**: Expand to Disputes, Audit, Watchlist pages

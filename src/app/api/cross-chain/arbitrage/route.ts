@@ -1,8 +1,8 @@
 import type { NextRequest } from 'next/server';
 
+import { crossChainAnalysisService } from '@/services/oracle/crossChainAnalysisService';
 import { logger } from '@/shared/logger';
 import { apiSuccess, apiError, withErrorHandler, getQueryParam } from '@/shared/utils';
-import { crossChainAnalysisService } from '@/services/oracle/crossChainAnalysisService';
 
 const VALID_SYMBOLS = ['BTC', 'ETH', 'SOL', 'LINK', 'AVAX', 'MATIC', 'UNI', 'AAVE'];
 
@@ -32,29 +32,30 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
 
   const validatedSymbol = validateSymbol(symbol);
   if (validatedSymbol === null) {
-    return apiError(
-      `Invalid symbol. Valid symbols: ${VALID_SYMBOLS.join(', ')}`,
-      400
-    );
+    return apiError(`Invalid symbol. Valid symbols: ${VALID_SYMBOLS.join(', ')}`, 400);
   }
 
   const threshold = validateThreshold(thresholdParam);
 
-  const opportunities = await crossChainAnalysisService.detectArbitrageOpportunities(validatedSymbol);
+  const opportunities =
+    await crossChainAnalysisService.detectArbitrageOpportunities(validatedSymbol);
 
-  const filteredOpportunities = threshold !== null
-    ? opportunities.filter(o => o.priceDiffPercent >= threshold)
-    : opportunities;
+  const filteredOpportunities =
+    threshold !== null
+      ? opportunities.filter((o) => o.priceDiffPercent >= threshold)
+      : opportunities;
 
   const summary = {
     total: filteredOpportunities.length,
-    actionable: filteredOpportunities.filter(o => o.isActionable).length,
-    avgProfitPercent: filteredOpportunities.length > 0
-      ? filteredOpportunities.reduce((sum, o) => sum + o.potentialProfitPercent, 0) / filteredOpportunities.length
-      : 0,
-    highRisk: filteredOpportunities.filter(o => o.riskLevel === 'high').length,
-    mediumRisk: filteredOpportunities.filter(o => o.riskLevel === 'medium').length,
-    lowRisk: filteredOpportunities.filter(o => o.riskLevel === 'low').length,
+    actionable: filteredOpportunities.filter((o) => o.isActionable).length,
+    avgProfitPercent:
+      filteredOpportunities.length > 0
+        ? filteredOpportunities.reduce((sum, o) => sum + o.potentialProfitPercent, 0) /
+          filteredOpportunities.length
+        : 0,
+    highRisk: filteredOpportunities.filter((o) => o.riskLevel === 'high').length,
+    mediumRisk: filteredOpportunities.filter((o) => o.riskLevel === 'medium').length,
+    lowRisk: filteredOpportunities.filter((o) => o.riskLevel === 'low').length,
     thresholdApplied: threshold,
   };
 

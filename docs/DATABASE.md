@@ -1,5 +1,3 @@
-[中文](./DATABASE.zh-CN.md)
-
 # Database Design
 
 This document describes the database schema for OracleMonitor.

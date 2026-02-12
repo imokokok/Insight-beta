@@ -4,12 +4,12 @@
  * 获取告警历史、确认告警
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { logger } from '@/shared/logger';
 import { notificationManager } from '@/services/alert/notificationManager';
 import type { AlertSeverity } from '@/services/alert/notifications/types';
+import { logger } from '@/shared/logger';
 
 /**
  * GET /api/alerts/history
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     logger.error('Failed to get alert history', { error });
     return NextResponse.json(
       { success: false, error: 'Failed to get alert history' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -65,22 +65,13 @@ export async function POST(request: NextRequest) {
     const { alertId, acknowledgedBy } = body;
 
     if (!alertId) {
-      return NextResponse.json(
-        { success: false, error: 'Alert ID is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: 'Alert ID is required' }, { status: 400 });
     }
 
-    const success = notificationManager.acknowledgeAlert(
-      alertId,
-      acknowledgedBy || 'system'
-    );
+    const success = notificationManager.acknowledgeAlert(alertId, acknowledgedBy || 'system');
 
     if (!success) {
-      return NextResponse.json(
-        { success: false, error: 'Alert not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, error: 'Alert not found' }, { status: 404 });
     }
 
     logger.info('Alert acknowledged via API', { alertId, acknowledgedBy });
@@ -93,7 +84,7 @@ export async function POST(request: NextRequest) {
     logger.error('Failed to acknowledge alert', { error });
     return NextResponse.json(
       { success: false, error: 'Failed to acknowledge alert' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -1,114 +1,116 @@
-# SLO / Error Budget 和事件时间线功能
+# SLO / Error Budget and Event Timeline Features
 
-本文档介绍新实现的两个高级运维功能：
+This document introduces two newly implemented advanced operations features:
 
-1. **SLO / Error Budget 视图**
-2. **基于事件时间线的视图**
+1. **SLO / Error Budget View**
+2. **Timeline-based Event View**
 
 ---
 
-## 1. SLO / Error Budget 视图
+## 1. SLO / Error Budget View
 
-### 功能概述
+### Feature Overview
 
-SLO (Service Level Objective) 是定义服务承诺的核心机制。不同于传统的 Uptime/Latency 监控，SLO 视图提供了：
+SLO (Service Level Objective) is the core mechanism for defining service commitments. Unlike traditional Uptime/Latency monitoring, SLO views provide:
 
-- **承诺视角**：从"看数据"升级为"看承诺是否被打破"
-- **Error Budget**：量化本周/本月还能"容忍"多少异常
-- **趋势分析**：合规率的历史趋势和预测
+- **Commitment Perspective**: Upgrade from "viewing data" to "viewing commitments"
+- **Error Budget**: Quantify how much "tolerable" exceptions remain this week/month
+- **Trend Analysis**: Historical compliance trends and predictions
 
-### 核心概念
+### Core Concepts
 
-#### SLO 定义
+#### SLO Definition
+
 ```typescript
 {
-  name: "Chainlink ETH/USD 延迟 SLO",
+  name: "Chainlink ETH/USD Latency SLO",
   protocol: "chainlink",
   chain: "ethereum",
   metricType: "latency",
-  targetValue: 99.9,        // 目标：99.9% 的请求延迟 < 2s
-  thresholdValue: 95.0,     // 阈值：低于 95% 视为违约
-  evaluationWindow: "30d",  // 评估窗口：30天
+  targetValue: 99.9,        // Target: 99.9% requests with latency < 2s
+  thresholdValue: 95.0,     // Threshold: below 95% considered breach
+  evaluationWindow: "30d",  // Evaluation window: 30 days
   errorBudgetPolicy: "monthly"
 }
 ```
 
-#### Error Budget 计算
-- **总预算**：基于 SLO 目标计算（如 99.9% → 0.1% 的 Error Budget）
-- **已使用**：不合规时间窗口的累积
-- **剩余预算**：当前周期内还能容忍的异常时间
-- **消耗速率**：每天消耗的 Error Budget
-- **预计耗尽时间**：基于当前消耗速率的预测
+#### Error Budget Calculation
 
-### 页面功能
+- **Total Budget**: Based on SLO target (e.g., 99.9% → 0.1% Error Budget)
+- **Used**: Accumulation of non-compliant time windows
+- **Remaining Budget**: Tolerable exceptions remaining in current cycle
+- **Burn Rate**: Daily Error Budget consumption
+- **Projected Depletion**: Prediction based on current consumption rate
 
-访问 `/oracle/slo-v2` 查看 SLO 仪表板：
+### Page Features
 
-1. **概览卡片**：显示平均合规率、合规/风险/违约 SLO 数量
-2. **SLO 卡片视图**：每个 SLO 的详细状态、Error Budget 仪表盘、趋势图
-3. **列表视图**：表格形式展示所有 SLO 的关键指标
-4. **事件时间线**：关联的告警、争议等事件
+Visit `/oracle/slo-v2` to view the SLO dashboard:
 
-### API 接口
+1. **Overview Cards**: Shows average compliance rate, compliant/at-risk/breached SLO counts
+2. **SLO Card View**: Each SLO's detailed status, Error Budget gauge, trend chart
+3. **List View**: Table format showing all SLOs' key metrics
+4. **Event Timeline**: Associated alerts, disputes, and other events
 
-- `GET /api/slo/definitions` - 获取 SLO 定义列表
-- `POST /api/slo/definitions` - 创建新的 SLO 定义
-- `GET /api/slo/reports` - 获取 SLO 报告（包含 Error Budget）
-- `POST /api/slo/evaluate` - 手动触发 SLO 评估
+### API Endpoints
 
----
-
-## 2. 事件时间线视图
-
-### 功能概述
-
-事件时间线将分散的系统事件整合为统一的时间轴，帮助用户快速回答：
-
-- "这次异常是发生在升级前还是升级后？"
-- "这个价格 spike 当时有没有触发 dispute/alert？"
-- "争议创建前发生了什么？"
-
-### 支持的事件类型
-
-- `alert_triggered` / `alert_resolved` - 告警触发/恢复
-- `dispute_created` / `dispute_resolved` - 争议创建/解决
-- `deployment` - 部署事件
-- `config_changed` - 配置变更
-- `price_spike` / `price_drop` - 价格异常波动
-- `system_maintenance` - 系统维护
-- `incident_created` / `incident_resolved` - 事件创建/解决
-- `fix_completed` - 修复完成
-
-### 核心功能
-
-1. **时间线展示**：按日期分组，垂直时间线布局
-2. **事件筛选**：按类型、严重程度、协议、链、交易对筛选
-3. **事件详情**：点击事件查看完整信息和元数据
-4. **关联分析**：自动识别相关事件（原因/结果/相关）
-5. **时间窗口查询**：查看特定时间点前后的事件
-
-### 页面功能
-
-访问 `/oracle/timeline` 查看完整事件时间线：
-
-1. **统计卡片**：今日事件、告警、争议、部署数量
-2. **时间线组件**：可滚动的事件列表，支持筛选
-3. **事件详情面板**：选中事件的详细信息和关联事件
-
-### API 接口
-
-- `GET /api/timeline/events` - 查询事件列表
-- `POST /api/timeline/events` - 创建新事件
-- `GET /api/timeline/events/:id` - 获取单个事件详情
-- `GET /api/timeline/events/:id/correlations` - 获取事件关联
-- `GET /api/timeline/around` - 获取特定时间点附近的事件
-- `GET /api/timeline/summary` - 获取事件统计摘要
+- `GET /api/slo/definitions` - Get SLO definition list
+- `POST /api/slo/definitions` - Create new SLO definition
+- `GET /api/slo/reports` - Get SLO reports (includes Error Budget)
+- `POST /api/slo/evaluate` - Manually trigger SLO evaluation
 
 ---
 
-## 3. 数据库模型
+## 2. Event Timeline View
 
-### SLO 相关表
+### Feature Overview
+
+Event timeline integrates scattered system events into a unified timeline, helping users quickly answer:
+
+- "Did this exception occur before or after the upgrade?"
+- "Was there a dispute/alert triggered when this price spike happened?"
+- "What happened before this dispute was created?"
+
+### Supported Event Types
+
+- `alert_triggered` / `alert_resolved` - Alert triggered/resolved
+- `dispute_created` / `dispute_resolved` - Dispute created/resolved
+- `deployment` - Deployment event
+- `config_changed` - Configuration change
+- `price_spike` / `price_drop` - Price anomaly
+- `system_maintenance` - System maintenance
+- `incident_created` / `incident_resolved` - Incident created/resolved
+- `fix_completed` - Fix completed
+
+### Core Features
+
+1. **Timeline Display**: Grouped by date, vertical timeline layout
+2. **Event Filtering**: Filter by type, severity, protocol, chain, trading pair
+3. **Event Details**: Click event to view complete information and metadata
+4. **Correlation Analysis**: Automatically identify related events (cause/effect/relevant)
+5. **Time Window Query**: View events around specific time points
+
+### Page Features
+
+Visit `/oracle/timeline` to view the complete event timeline:
+
+1. **Statistics Cards**: Today's events, alerts, disputes, deployment counts
+2. **Timeline Component**: Scrollable event list with filtering
+3. **Event Detail Panel**: Selected event details and related events
+
+### API Endpoints
+
+- `GET /api/timeline/events` - Query event list
+- `POST /api/timeline/events` - Create new event
+- `GET /api/timeline/events/:id` - Get single event details
+- `GET /api/timeline/events/:id/correlations` - Get event correlations
+- `GET /api/timeline/around` - Get events near specific time point
+- `GET /api/timeline/summary` - Get event statistics summary
+
+---
+
+## 3. Database Models
+
+### SLO Related Tables
 
 ```prisma
 model SloDefinition {
@@ -155,7 +157,7 @@ model ErrorBudget {
 }
 ```
 
-### 事件时间线表
+### Event Timeline Table
 
 ```prisma
 model EventTimeline {
@@ -180,33 +182,33 @@ model EventTimeline {
 
 ---
 
-## 4. 使用指南
+## 4. Usage Guide
 
-### 创建 SLO
+### Creating SLO
 
-1. 访问 `/oracle/slo-v2`
-2. 点击"新建 SLO"按钮
-3. 填写 SLO 参数：
-   - 名称和描述
-   - 协议和链
-   - 指标类型（延迟/可用性/准确性）
-   - 目标值和阈值
-   - 评估窗口和 Error Budget 策略
-4. 保存后系统会自动开始评估
+1. Visit `/oracle/slo-v2`
+2. Click "New SLO" button
+3. Fill in SLO parameters:
+   - Name and description
+   - Protocol and chain
+   - Metric type (latency/availability/accuracy)
+   - Target value and threshold
+   - Evaluation window and Error Budget policy
+4. Save, system will automatically start evaluation
 
-### 查看事件时间线
+### Viewing Event Timeline
 
-1. 访问 `/oracle/timeline`
-2. 使用筛选按钮过滤事件类型
-3. 点击事件查看详情
-4. 查看关联事件了解事件链
+1. Visit `/oracle/timeline`
+2. Use filter buttons to filter event types
+3. Click event to view details
+4. View related events to understand event chain
 
-### 在代码中创建事件
+### Creating Events in Code
 
 ```typescript
 import { createTimelineEvent } from '@/server/timeline/eventTimelineService';
 
-// 创建告警事件
+// Create alert event
 await createTimelineEvent({
   eventType: 'alert_triggered',
   severity: 'warning',
@@ -216,31 +218,31 @@ await createTimelineEvent({
   symbol: 'ETH/USD',
   entityType: 'alert',
   entityId: 'alert-123',
-  metadata: { deviation: 0.05, threshold: 0.01 }
+  metadata: { deviation: 0.05, threshold: 0.01 },
 });
 ```
 
 ---
 
-## 5. 后续优化建议
+## 5. Future Optimization Suggestions
 
-1. **SLO 告警**：当 Error Budget 即将耗尽时发送告警
-2. **自动修复建议**：基于事件关联分析提供修复建议
-3. **SLO 模板**：提供常见 SLO 配置的模板
-4. **事件工作流**：支持事件的确认、分配、关闭流程
-5. **与现有告警系统集成**：自动将告警转换为时间线事件
+1. **SLO Alerts**: Send alerts when Error Budget is about to deplete
+2. **Auto-fix Suggestions**: Provide fix suggestions based on event correlation analysis
+3. **SLO Templates**: Provide templates for common SLO configurations
+4. **Event Workflow**: Support event acknowledgement, assignment, closing flow
+5. **Integration with Existing Alert System**: Automatically convert alerts to timeline events
 
 ---
 
-## 6. 迁移说明
+## 6. Migration Instructions
 
-运行以下命令创建数据库表：
+Run the following command to create database tables:
 
 ```bash
 npx prisma migrate dev --name add_slo_and_event_timeline
 ```
 
-或者生成迁移文件后手动执行：
+Or create migration file manually then execute:
 
 ```bash
 npx prisma migrate dev --create-only --name add_slo_and_event_timeline

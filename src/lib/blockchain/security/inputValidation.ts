@@ -5,8 +5,9 @@
  * 防止恶意输入、注入攻击、参数篡改
  */
 
-import type { Address, Hash } from 'viem';
 import { isAddress, isHex, checksumAddress } from 'viem';
+
+import type { Address, Hash } from 'viem';
 
 // ============================================================================
 // 常量定义
@@ -225,13 +226,7 @@ export function validateBondAmount(
 // Claim 验证
 // ============================================================================
 
-const SUSPICIOUS_CLAIM_PATTERNS = [
-  /<script/i,
-  /javascript:/i,
-  /on\w+=/i,
-  /data:/i,
-  /vbscript:/i,
-];
+const SUSPICIOUS_CLAIM_PATTERNS = [/<script/i, /javascript:/i, /on\w+=/i, /data:/i, /vbscript:/i];
 
 export function validateClaim(claim: string): ValidationResult {
   const errors: string[] = [];

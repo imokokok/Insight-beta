@@ -4,7 +4,7 @@
  * API 相关工具函数
  */
 
-import { getErrorMessage } from '@/shared/errors';
+import { getErrorMessage } from '@/lib/errors';
 
 import { getOracleInstanceId } from './storage';
 
@@ -47,8 +47,6 @@ export class ApiClientError extends Error {
     this.details = details;
   }
 }
-
-
 
 /**
  * 从错误对象中提取错误代码
@@ -167,19 +165,13 @@ export async function fetchApiData<T>(
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new ApiClientError(
-        `http_${response.status}`,
-        errorData.error || response.statusText,
-      );
+      throw new ApiClientError(`http_${response.status}`, errorData.error || response.statusText);
     }
 
     const data = (await response.json()) as ApiResponse<T>;
 
     if (!data.ok) {
-      throw new ApiClientError(
-        'api_error',
-        data.error || 'Unknown API error',
-      );
+      throw new ApiClientError('api_error', data.error || 'Unknown API error');
     }
 
     return data.data as T;
@@ -219,9 +211,7 @@ export async function fetchApiData<T>(
  * // => [{ id: 1 }]
  * ```
  */
-export function normalizeListResponse<T>(
-  response: T[] | { items?: T[] } | unknown
-): T[] {
+export function normalizeListResponse<T>(response: T[] | { items?: T[] } | unknown): T[] {
   if (Array.isArray(response)) {
     return response;
   }
@@ -231,5 +221,3 @@ export function normalizeListResponse<T>(
   }
   return [];
 }
-
-

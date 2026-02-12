@@ -37,7 +37,7 @@ export function DynamicLoading({
     case 'spinner':
       return (
         <div className={cn('flex items-center justify-center p-8', className)} style={style}>
-          <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
           {text && <span className="ml-2 text-gray-600">{text}</span>}
         </div>
       );
@@ -45,7 +45,7 @@ export function DynamicLoading({
     case 'inline':
       return (
         <div className={cn('flex items-center gap-2', className)} style={style}>
-          <Loader2 className="h-4 w-4 animate-spin text-purple-600" />
+          <Loader2 className="h-4 w-4 animate-spin text-primary" />
           <span className="text-sm text-gray-600">{text}</span>
         </div>
       );
@@ -69,7 +69,7 @@ export function DynamicLoading({
           )}
           style={style}
         >
-          <Loader2 className="mb-2 h-8 w-8 animate-spin text-purple-600" />
+          <Loader2 className="mb-2 h-8 w-8 animate-spin text-primary" />
           <p className="text-sm text-gray-600">{text}</p>
         </div>
       );

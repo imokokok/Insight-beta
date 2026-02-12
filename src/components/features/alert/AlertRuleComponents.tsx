@@ -9,8 +9,8 @@ import { CommonParamsInputs } from '@/components/features/assertion/CommonParams
 import { EventParamsInputs } from '@/components/features/assertion/EventParamsInputs';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import type { AlertRule, AlertSeverity } from '@/types/oracleTypes';
 import { cn } from '@/shared/utils';
+import type { AlertRule, AlertSeverity } from '@/types/oracleTypes';
 
 import type { Channel } from './AlertRulesManager';
 
@@ -163,7 +163,7 @@ export function AlertRuleHeader({
           className={cn(
             'hidden items-center justify-center rounded-xl px-4 py-2 text-sm font-bold ring-1 ring-inset transition-all sm:inline-flex',
             canAdmin && !ruleError && !isTesting
-              ? 'bg-white/70 text-purple-700 ring-purple-200 hover:bg-white'
+              ? 'text-primary-dark ring-primary200 bg-white/70 hover:bg-white'
               : 'cursor-not-allowed bg-gray-50 text-gray-400 ring-gray-200',
           )}
         >
@@ -173,7 +173,7 @@ export function AlertRuleHeader({
         <Switch
           checked={rule.enabled}
           onCheckedChange={(checked) => onToggle(rule.id, checked)}
-          className={cn('data-[state=checked]:bg-purple-600', 'h-7 w-12')}
+          className={cn('data-[state=checked]:bg-primary', 'h-7 w-12')}
         />
       </div>
     </div>
@@ -207,7 +207,7 @@ export function AlertRuleBasicFields({ rule, onPatchRule, t }: AlertRuleBasicFie
         <select
           value={rule.severity}
           onChange={(e) => onPatchRule(rule.id, { severity: e.target.value as AlertSeverity })}
-          className="h-10 w-full rounded-xl bg-white/70 px-3 text-sm ring-1 ring-black/5 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+          className="focus:ring-primary500/20 h-10 w-full rounded-xl bg-white/70 px-3 text-sm ring-1 ring-black/5 focus:outline-none focus:ring-2"
         >
           <option value="info">{t('oracle.alerts.severities.info')}</option>
           <option value="warning">{t('oracle.alerts.severities.warning')}</option>
@@ -229,7 +229,7 @@ export function AlertRuleBasicFields({ rule, onPatchRule, t }: AlertRuleBasicFie
           onBlur={(e) => validateOwner(e.target.value)}
           placeholder={t('oracle.alerts.ownerPlaceholder')}
           maxLength={80}
-          className={`h-10 rounded-xl border-transparent bg-white/70 ring-1 focus-visible:ring-2 focus-visible:ring-purple-500/20 ${
+          className={`focus-visible:ring-primary500/20 h-10 rounded-xl border-transparent bg-white/70 ring-1 focus-visible:ring-2 ${
             ownerError ? 'ring-red-500' : 'ring-black/5'
           }`}
         />
@@ -245,7 +245,7 @@ export function AlertRuleBasicFields({ rule, onPatchRule, t }: AlertRuleBasicFie
           onChange={(e) => onPatchRule(rule.id, { runbook: e.target.value.slice(0, 500) })}
           placeholder={t('oracle.alerts.runbookPlaceholder')}
           maxLength={500}
-          className="h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2 focus-visible:ring-purple-500/20"
+          className="focus-visible:ring-primary500/20 h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2"
         />
       </div>
     </>
@@ -271,7 +271,7 @@ function ChannelSwitch({
       <Switch
         checked={checked}
         onCheckedChange={(enabled) => onToggle(ruleId, channel, enabled)}
-        className={cn('data-[state=checked]:bg-purple-600', 'h-6 w-11')}
+        className={cn('data-[state=checked]:bg-primary', 'h-6 w-11')}
       />
     </div>
   );
@@ -344,7 +344,7 @@ export function AlertRuleCard({
       className={cn(
         'group rounded-xl border p-5 transition-all duration-300',
         rule.enabled
-          ? 'border-purple-100 bg-white shadow-sm hover:border-purple-200 hover:shadow-md hover:shadow-purple-500/5'
+          ? 'border-primary/10 bg-white shadow-sm hover:border-primary/20 hover:shadow-md hover:shadow-primary-500/5'
           : 'border-transparent bg-gray-50/50 opacity-75 grayscale-[0.5] hover:opacity-100',
       )}
     >

@@ -241,7 +241,19 @@ export const statCardColors: Record<
 // 状态颜色配置
 // ============================================================================
 
-export type StatusType = 'healthy' | 'active' | 'success' | 'online' | 'degraded' | 'warning' | 'stale' | 'error' | 'offline' | 'inactive' | 'down' | 'critical';
+export type StatusType =
+  | 'healthy'
+  | 'active'
+  | 'success'
+  | 'online'
+  | 'degraded'
+  | 'warning'
+  | 'stale'
+  | 'error'
+  | 'offline'
+  | 'inactive'
+  | 'down'
+  | 'critical';
 
 export interface StatusColorConfig {
   dot: string;
@@ -356,11 +368,11 @@ export const statusColors: Record<StatusType, StatusColorConfig> = {
 // ============================================================================
 
 export const chartColors = {
-  primary: ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#06b6d4'],
+  primary: ['#3b82f6', 'rgb(var(--color-primary))', '#10b981', '#f59e0b', '#ef4444', '#06b6d4'],
   secondary: ['#60a5fa', '#a78bfa', '#34d399', '#fbbf24', '#f87171', '#22d3ee'],
   gradients: [
     ['#3b82f6', '#60a5fa'],
-    ['#8b5cf6', '#a78bfa'],
+    ['rgb(var(--color-primary))', '#a78bfa'],
     ['#10b981', '#34d399'],
     ['#f59e0b', '#fbbf24'],
     ['#ef4444', '#f87171'],

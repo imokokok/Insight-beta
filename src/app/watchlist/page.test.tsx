@@ -42,9 +42,6 @@ describe('WatchlistPage', () => {
 
   it('renders watchlist page', () => {
     render(<WatchlistPage />);
-    // The page should render - checking for nav.watchlist key or noData if watchlist is empty
-    expect(
-      screen.getByText('nav.watchlist') || screen.getByText('common.noData'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('nav.watchlist')).toBeInTheDocument();
   });
 });

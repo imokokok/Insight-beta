@@ -5,17 +5,10 @@ import { useState, useCallback } from 'react';
 import { Wallet, Smartphone, ExternalLink, ChevronRight } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useToast } from '@/components/ui/toast';
 import { useWallet } from '@/contexts/WalletContext';
 import { useI18n } from '@/i18n/LanguageProvider';
-import { logger } from '@/shared/logger';
 import {
   getWalletBrowserInfo,
   isMobile,
@@ -26,6 +19,7 @@ import {
   getTokenPocketDeepLink,
   type WalletBrowserType,
 } from '@/lib/mobile/walletBrowser';
+import { logger } from '@/shared/logger';
 
 interface WalletOption {
   id: WalletBrowserType;
@@ -106,20 +100,23 @@ export function MobileWalletConnect() {
         });
       }
     },
-    [connect, toast, t]
+    [connect, toast, t],
   );
 
-  const handleDeepLink = useCallback((wallet: WalletOption) => {
-    if (wallet.deepLink) {
-      window.location.href = wallet.deepLink;
-    } else {
-      toast({
-        type: 'info',
-        title: t('wallet.openInWallet'),
-        message: t('wallet.pleaseOpenInWallet', { wallet: wallet.name }),
-      });
-    }
-  }, [toast, t]);
+  const handleDeepLink = useCallback(
+    (wallet: WalletOption) => {
+      if (wallet.deepLink) {
+        window.location.href = wallet.deepLink;
+      } else {
+        toast({
+          type: 'info',
+          title: t('wallet.openInWallet'),
+          message: t('wallet.pleaseOpenInWallet', { wallet: wallet.name }),
+        });
+      }
+    },
+    [toast, t],
+  );
 
   const handleWalletSelect = useCallback(
     async (wallet: WalletOption) => {
@@ -140,7 +137,7 @@ export function MobileWalletConnect() {
       // 否则使用 WalletConnect
       await handleConnect('walletconnect');
     },
-    [handleConnect, handleDeepLink, isMobileDevice, inWalletBrowser]
+    [handleConnect, handleDeepLink, isMobileDevice, inWalletBrowser],
   );
 
   // 如果在钱包浏览器中，显示简化版连接按钮
@@ -172,12 +169,10 @@ export function MobileWalletConnect() {
           {t('wallet.connectWallet')}
         </Button>
       </SheetTrigger>
-      
+
       <SheetContent side="bottom" className="h-[80vh] rounded-t-3xl">
         <SheetHeader className="pb-4">
-          <SheetTitle className="text-center text-lg">
-            {t('wallet.selectWallet')}
-          </SheetTitle>
+          <SheetTitle className="text-center text-lg">{t('wallet.selectWallet')}</SheetTitle>
         </SheetHeader>
 
         <div className="space-y-4 py-4">
@@ -197,7 +192,7 @@ export function MobileWalletConnect() {
                 key={wallet.id}
                 onClick={() => handleWalletSelect(wallet)}
                 disabled={isConnecting && selectedWallet === wallet.id}
-                className="flex items-center justify-between rounded-xl border border-gray-200 p-4 transition-all hover:border-purple-300 hover:bg-purple-50 dark:border-gray-700 dark:hover:border-purple-700 dark:hover:bg-purple-900/20"
+                className="hover:border-primary300 dark:hover:border-primary700 flex items-center justify-between rounded-xl border border-gray-200 p-4 transition-all hover:bg-primary/5 dark:border-gray-700 dark:hover:bg-primary-900/20"
               >
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
@@ -217,15 +212,13 @@ export function MobileWalletConnect() {
                   <div className="text-left">
                     <p className="font-medium">{wallet.name}</p>
                     {wallet.isInstalled && (
-                      <p className="text-xs text-green-600">
-                        {t('wallet.detected')}
-                      </p>
+                      <p className="text-xs text-green-600">{t('wallet.detected')}</p>
                     )}
                   </div>
                 </div>
-                
+
                 {isConnecting && selectedWallet === wallet.id ? (
-                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-purple-600 border-t-transparent" />
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                 ) : wallet.isInstalled ? (
                   <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
                     {t('common.connect')}
@@ -244,7 +237,7 @@ export function MobileWalletConnect() {
             <button
               onClick={() => handleConnect('walletconnect')}
               disabled={isConnecting}
-              className="flex w-full items-center justify-between rounded-xl border border-gray-200 p-4 transition-all hover:border-purple-300 hover:bg-purple-50 dark:border-gray-700 dark:hover:border-purple-700 dark:hover:bg-purple-900/20"
+              className="hover:border-primary300 dark:hover:border-primary700 flex w-full items-center justify-between rounded-xl border border-gray-200 p-4 transition-all hover:bg-primary/5 dark:border-gray-700 dark:hover:bg-primary-900/20"
             >
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
@@ -252,13 +245,11 @@ export function MobileWalletConnect() {
                 </div>
                 <div className="text-left">
                   <p className="font-medium">WalletConnect</p>
-                  <p className="text-xs text-gray-500">
-                    {t('wallet.connectOtherWallets')}
-                  </p>
+                  <p className="text-xs text-gray-500">{t('wallet.connectOtherWallets')}</p>
                 </div>
               </div>
               {isConnecting && selectedWallet === null ? (
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-purple-600 border-t-transparent" />
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
               ) : (
                 <ChevronRight className="h-5 w-5 text-gray-400" />
               )}
@@ -296,12 +287,7 @@ export function MobileWalletButton() {
   };
 
   return (
-    <Button
-      onClick={handleClick}
-      disabled={isConnecting}
-      className="w-full"
-      size="lg"
-    >
+    <Button onClick={handleClick} disabled={isConnecting} className="w-full" size="lg">
       {isConnecting ? (
         <span className="animate-pulse">{t('wallet.connecting')}</span>
       ) : (

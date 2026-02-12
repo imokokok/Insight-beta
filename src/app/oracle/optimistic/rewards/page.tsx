@@ -4,10 +4,6 @@ import { useEffect, useState } from 'react';
 
 import { Coins, Users, AlertTriangle, RefreshCw, Shield } from 'lucide-react';
 
-
-
-
-
 import { PageHeader } from '@/components/common/PageHeader';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { logger } from '@/shared/logger';
@@ -73,7 +69,6 @@ export default function UMARewardsPage() {
     }, 60000); // Poll every minute
 
     return () => clearInterval(pollInterval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function fetchAllData() {
@@ -205,7 +200,7 @@ export default function UMARewardsPage() {
               <StatCard
                 title="Active Stakers"
                 value={stats.activeStakers.toLocaleString()}
-                icon={<Users className="h-5 w-5 text-purple-400" />}
+                icon={<Users className="h-5 w-5 text-primary/40" />}
               />
               <StatCard
                 title="Total Slashed"

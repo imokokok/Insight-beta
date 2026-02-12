@@ -7,7 +7,7 @@
 
 import { type Address, parseAbi, formatUnits } from 'viem';
 
-import { ErrorHandler, normalizeError } from '@/shared/errors';
+import { ErrorHandler, normalizeError } from '@/lib/errors';
 import { EvmOracleClient } from '@/lib/shared';
 import type {
   SupportedChain,
@@ -469,7 +469,7 @@ export function isChainSupportedByFlux(chain: SupportedChain): boolean {
  */
 export function getFluxAggregatorAddress(
   chain: SupportedChain,
-  symbol: string
+  symbol: string,
 ): Address | undefined {
   return FLUX_AGGREGATOR_ADDRESSES[chain]?.[symbol];
 }

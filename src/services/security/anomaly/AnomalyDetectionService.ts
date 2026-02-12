@@ -3,8 +3,8 @@
  * 异常检测服务主类
  */
 
-import { logger } from '@/shared/logger';
 import type { PriceHistoryRecord } from '@/services/oracle/unifiedPriceService';
+import { logger } from '@/shared/logger';
 
 import { BehaviorPatternDetector } from './BehaviorPatternDetector';
 import { MLDetector } from './MLDetector';
@@ -94,7 +94,10 @@ export class AnomalyDetectionService {
     // 更新检测时间
     if (anomalies.length > 0) {
       // 限制 recentDetections 大小，防止内存无限增长
-      if (this.recentDetections.size >= this.MAX_RECENT_DETECTIONS && !this.recentDetections.has(symbol)) {
+      if (
+        this.recentDetections.size >= this.MAX_RECENT_DETECTIONS &&
+        !this.recentDetections.has(symbol)
+      ) {
         const firstKey = this.recentDetections.keys().next().value;
         if (firstKey) {
           this.recentDetections.delete(firstKey);

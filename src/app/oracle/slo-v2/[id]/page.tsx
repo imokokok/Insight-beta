@@ -9,7 +9,6 @@
 import { useState, useEffect } from 'react';
 
 import { useRouter } from 'next/navigation';
-import type { Route } from 'next';
 
 import {
   ArrowLeft,
@@ -27,18 +26,14 @@ import {
   Calendar,
 } from 'lucide-react';
 
-
-
-
-
-
-
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { logger } from '@/shared/logger';
+
+import type { Route } from 'next';
 
 interface SloReport {
   sloId: string;
@@ -134,7 +129,7 @@ export default function SloDetailPage({ params }: { params: Promise<{ id: string
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="border-primary h-12 w-12 animate-spin rounded-full border-b-2"></div>
+        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -163,7 +158,7 @@ export default function SloDetailPage({ params }: { params: Promise<{ id: string
           </Button>
           <div>
             <h1 className="text-2xl font-bold">{report.name}</h1>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-sm text-muted-foreground">
               {report.protocol.toUpperCase()} · {report.chain} ·{' '}
               {getMetricTypeLabel(report.metricType)}
             </p>
@@ -272,7 +267,7 @@ export default function SloDetailPage({ params }: { params: Promise<{ id: string
                   <div className="space-y-2">
                     {report.recentMetrics.slice(0, 10).map((metric, idx) => (
                       <div key={idx} className="flex items-center justify-between">
-                        <span className="text-muted-foreground text-sm">
+                        <span className="text-sm text-muted-foreground">
                           {new Date(metric.timestamp).toLocaleDateString('zh-CN')}
                         </span>
                         <div className="mx-4 flex flex-1 items-center gap-2">
@@ -285,7 +280,7 @@ export default function SloDetailPage({ params }: { params: Promise<{ id: string
                     ))}
                   </div>
                 ) : (
-                  <div className="text-muted-foreground py-8 text-center">暂无历史数据</div>
+                  <div className="py-8 text-center text-muted-foreground">暂无历史数据</div>
                 )}
               </CardContent>
             </Card>
@@ -342,7 +337,7 @@ export default function SloDetailPage({ params }: { params: Promise<{ id: string
             </CardHeader>
             <CardContent>
               <table className="w-full">
-                <thead className="bg-muted border-b">
+                <thead className="border-b bg-muted">
                   <tr>
                     <th className="px-4 py-3 text-left text-sm font-medium">时间</th>
                     <th className="px-4 py-3 text-left text-sm font-medium">合规率</th>
@@ -351,7 +346,7 @@ export default function SloDetailPage({ params }: { params: Promise<{ id: string
                 </thead>
                 <tbody>
                   {report.recentMetrics.slice(0, 10).map((metric, idx) => (
-                    <tr key={idx} className="hover:bg-muted/50 border-b">
+                    <tr key={idx} className="border-b hover:bg-muted/50">
                       <td className="px-4 py-3 text-sm">
                         {new Date(metric.timestamp).toLocaleString('zh-CN')}
                       </td>
@@ -388,7 +383,7 @@ export default function SloDetailPage({ params }: { params: Promise<{ id: string
               <CardDescription>与该 SLO 相关的告警、争议等事件</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground py-8 text-center">事件时间线功能即将推出</p>
+              <p className="py-8 text-center text-muted-foreground">事件时间线功能即将推出</p>
             </CardContent>
           </Card>
         </TabsContent>
@@ -438,7 +433,7 @@ function StatusBanner({
         {icon}
         <div>
           <h3 className="font-semibold">{title}</h3>
-          <p className="text-muted-foreground text-sm">{message}</p>
+          <p className="text-sm text-muted-foreground">{message}</p>
         </div>
       </div>
     </div>
@@ -471,9 +466,9 @@ function StatCard({
           <div className={`rounded-lg p-2 ${statusColors[status]}`}>{icon}</div>
         </div>
         <div className="mt-4">
-          <p className="text-muted-foreground text-sm">{title}</p>
+          <p className="text-sm text-muted-foreground">{title}</p>
           <p className="text-2xl font-bold">{value}</p>
-          <p className="text-muted-foreground text-xs">{subtitle}</p>
+          <p className="text-xs text-muted-foreground">{subtitle}</p>
         </div>
       </CardContent>
     </Card>

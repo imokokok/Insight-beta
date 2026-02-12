@@ -1,6 +1,6 @@
 import { translations } from '@/i18n/translations';
+import { query } from '@/lib/database/db';
 import { logger } from '@/shared/logger';
-import { query } from '@/infrastructure/database/db';
 import type { OracleProtocol, SupportedChain } from '@/types/unifiedOracleTypes';
 
 const DEFAULT_LANG: keyof typeof translations = 'en';
@@ -332,9 +332,7 @@ export class UnifiedPriceService {
 
   async getCurrentPrices(): Promise<CurrentPriceFeed[]> {
     try {
-      const result = await query<CurrentPriceFeedRow>(
-        `SELECT * FROM current_price_feeds`,
-      );
+      const result = await query<CurrentPriceFeedRow>(`SELECT * FROM current_price_feeds`);
 
       return result.rows.map(this.mapToCurrentPriceFeed);
     } catch (error) {

@@ -55,7 +55,10 @@ export function Onboarding({ onComplete, onSkip, className, forceOpen }: Onboard
 
     const loadProgress = async () => {
       const hasCompleted = await getStorageItem<string | null>(STORAGE_KEY, null);
-      const savedProgress = await getStorageItem<OnboardingProgress | null>(PROGRESS_STORAGE_KEY, null);
+      const savedProgress = await getStorageItem<OnboardingProgress | null>(
+        PROGRESS_STORAGE_KEY,
+        null,
+      );
 
       if (!hasCompleted) {
         setIsOpen(true);
@@ -101,7 +104,7 @@ export function Onboarding({ onComplete, onSkip, className, forceOpen }: Onboard
       id: 'welcome',
       title: t('onboarding.welcome'),
       description: t('onboarding.welcomeDesc'),
-      icon: <AlertCircle className="h-10 w-10 text-purple-600" />,
+      icon: <AlertCircle className="h-10 w-10 text-primary" />,
     };
 
     if (showRoleSelection) {
@@ -130,7 +133,7 @@ export function Onboarding({ onComplete, onSkip, className, forceOpen }: Onboard
           id: 'dev_monitoring',
           title: t('onboarding.steps.developer.monitoring.title'),
           description: t('onboarding.steps.developer.monitoring.description'),
-          icon: <AlertCircle className="h-10 w-10 text-purple-600" />,
+          icon: <AlertCircle className="h-10 w-10 text-primary" />,
         },
       ],
       protocol: [
@@ -150,7 +153,7 @@ export function Onboarding({ onComplete, onSkip, className, forceOpen }: Onboard
           id: 'proto_alerts',
           title: t('onboarding.steps.protocol.alerts.title'),
           description: t('onboarding.steps.protocol.alerts.description'),
-          icon: <AlertCircle className="h-10 w-10 text-purple-600" />,
+          icon: <AlertCircle className="h-10 w-10 text-primary" />,
         },
       ],
       general: [
@@ -170,7 +173,7 @@ export function Onboarding({ onComplete, onSkip, className, forceOpen }: Onboard
           id: 'general_alerts',
           title: t('onboarding.steps.general.alerts.title'),
           description: t('onboarding.steps.general.alerts.description'),
-          icon: <AlertCircle className="h-10 w-10 text-purple-600" />,
+          icon: <AlertCircle className="h-10 w-10 text-primary" />,
         },
       ],
     };

@@ -16,8 +16,6 @@ import {
   RefreshCw,
 } from 'lucide-react';
 
-
-
 import { EmptyEventsState } from '@/components/common/EmptyState';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -28,8 +26,17 @@ import { useIsMobile } from '@/hooks';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage, langToLocale, type TranslationKey } from '@/i18n/translations';
+import {
+  calculatePercentage,
+  cn,
+  fetchApiData,
+  formatTime,
+  truncateAddress,
+  getOracleInstanceId,
+  setOracleInstanceId,
+  buildApiUrl,
+} from '@/shared/utils';
 import type { Dispute, DisputeStatus, OracleChain } from '@/types/oracleTypes';
-import { calculatePercentage, cn, fetchApiData, formatTime, truncateAddress, getOracleInstanceId, setOracleInstanceId, buildApiUrl } from '@/shared/utils';
 
 import type { Route } from 'next';
 
@@ -51,8 +58,8 @@ function StatusTabs({ filterStatus, setFilterStatus, t }: StatusTabsProps) {
           className={cn(
             'whitespace-nowrap rounded-lg px-4 py-1.5 text-sm font-medium transition-colors',
             filterStatus === status
-              ? 'bg-purple-100 text-purple-900 ring-1 ring-purple-200'
-              : 'text-purple-600/70 hover:bg-white/50 hover:text-purple-900',
+              ? 'ring-primary200 bg-primary/10 text-[var(--foreground)] ring-1'
+              : 'text-primary/70 hover:bg-white/50 hover:text-[var(--foreground)]',
           )}
         >
           {status === 'All' ? t('common.all') : statusLabel(status, t)}
@@ -90,7 +97,7 @@ function FiltersBar({
         <select
           value={filterChain}
           onChange={(e) => setFilterChain(e.target.value as OracleChain | 'All')}
-          className="h-9 rounded-lg border-none bg-white/50 px-3 text-sm text-purple-900 shadow-sm focus:ring-2 focus:ring-purple-500/20"
+          className="focus:ring-primary500/20 h-9 rounded-lg border-none bg-white/50 px-3 text-sm text-[var(--foreground)] shadow-sm focus:ring-2"
         >
           <option value="All">{t('common.all')}</option>
           <option value="Local">{t('chain.local')}</option>
@@ -101,13 +108,13 @@ function FiltersBar({
         </select>
 
         <div className="relative flex-1 sm:flex-none">
-          <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-purple-400" />
+          <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-primary/40" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={isMobile ? '搜索...' : t('oracle.searchPlaceholder')}
-            className="h-9 w-full rounded-lg border-none bg-white/50 pl-9 pr-4 text-sm text-purple-900 shadow-sm placeholder:text-purple-300 focus:ring-2 focus:ring-purple-500/20 sm:w-48 md:w-64"
+            className="focus:ring-primary500/20 h-9 w-full rounded-lg border-none bg-white/50 pl-9 pr-4 text-sm text-[var(--foreground)] shadow-sm placeholder:text-primary/30 focus:ring-2 sm:w-48 md:w-64"
           />
         </div>
       </div>
@@ -121,7 +128,7 @@ type LoadingBannerProps = {
 
 function LoadingBanner({ t }: LoadingBannerProps) {
   return (
-    <div className="rounded-2xl border border-purple-100 bg-white/50 p-6 text-sm text-purple-700/70 shadow-sm">
+    <div className="text-primary-dark/70 rounded-2xl border border-primary/10 bg-white/50 p-6 text-sm shadow-sm">
       {t('common.loading')}
     </div>
   );
@@ -141,10 +148,10 @@ function LoadMoreButton({ loadingMore, onLoadMore, t }: LoadMoreButtonProps) {
         onClick={onLoadMore}
         disabled={loadingMore}
         className={cn(
-          'rounded-lg px-4 py-2 text-sm font-medium shadow-sm ring-1 ring-purple-100 transition-colors',
+          'ring-primary100 rounded-lg px-4 py-2 text-sm font-medium shadow-sm ring-1 transition-colors',
           loadingMore
-            ? 'bg-white/50 text-purple-400'
-            : 'bg-white text-purple-600 hover:bg-purple-50 hover:text-purple-700',
+            ? 'bg-white/50 text-primary/40'
+            : 'hover:text-primary-dark bg-white text-primary hover:bg-primary/5',
         )}
       >
         {loadingMore ? t('common.loading') : t('common.loadMore')}
@@ -180,7 +187,7 @@ function DisputeHeader({ dispute, t, isMobile }: DisputeHeaderProps & { isMobile
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-            <h3 className="truncate text-sm font-semibold text-purple-950 sm:text-lg">
+            <h3 className="truncate text-sm font-semibold text-[var(--foreground)] sm:text-lg">
               {dispute.id}
             </h3>
             <span
@@ -189,7 +196,7 @@ function DisputeHeader({ dispute, t, isMobile }: DisputeHeaderProps & { isMobile
                 dispute.status === 'Voting'
                   ? 'border-amber-200 bg-amber-100 text-amber-700'
                   : dispute.status === 'Pending Execution'
-                    ? 'border-purple-200 bg-purple-100 text-purple-700'
+                    ? 'text-primary-dark border-primary/20 bg-primary/10'
                     : 'border-gray-200 bg-gray-100 text-gray-700',
               )}
             >
@@ -199,7 +206,9 @@ function DisputeHeader({ dispute, t, isMobile }: DisputeHeaderProps & { isMobile
               {dispute.chain}
             </span>
           </div>
-          <p className="mt-1 text-sm font-medium text-purple-900 sm:text-base">{dispute.market}</p>
+          <p className="mt-1 text-sm font-medium text-[var(--foreground)] sm:text-base">
+            {dispute.market}
+          </p>
         </div>
       </div>
 
@@ -207,7 +216,7 @@ function DisputeHeader({ dispute, t, isMobile }: DisputeHeaderProps & { isMobile
         href={umaAssertionUrl(dispute)}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center justify-center gap-2 rounded-lg bg-white px-3 py-2 text-xs font-medium text-purple-600 shadow-sm ring-1 ring-purple-100 transition-colors hover:bg-purple-50 hover:text-purple-700 sm:w-fit"
+        className="ring-primary100 hover:text-primary-dark flex items-center justify-center gap-2 rounded-lg bg-white px-3 py-2 text-xs font-medium text-primary shadow-sm ring-1 transition-colors hover:bg-primary/5 sm:w-fit"
       >
         {t('disputes.viewOnUma')}
         <ExternalLink size={14} />
@@ -224,23 +233,23 @@ type DisputeReasonProps = {
 
 function DisputeReason({ dispute, t, locale }: DisputeReasonProps) {
   return (
-    <div className="space-y-4 rounded-xl border border-purple-100/50 bg-purple-50/30 p-4">
+    <div className="border-primary/10/50 bg-primary/5/30 space-y-4 rounded-xl border p-4">
       <div>
-        <h4 className="mb-2 flex items-center gap-2 text-sm font-semibold text-purple-900/80">
-          <MessageSquare size={16} className="text-purple-400" />
+        <h4 className="text-[var(--foreground)]/80 mb-2 flex items-center gap-2 text-sm font-semibold">
+          <MessageSquare size={16} className="text-primary/40" />
           {t('disputes.reason')}
         </h4>
-        <p className="text-sm leading-relaxed text-purple-800/80">{dispute.disputeReason}</p>
+        <p className="text-primary-darker/80 text-sm leading-relaxed">{dispute.disputeReason}</p>
       </div>
 
-      <div className="flex items-center justify-between border-t border-purple-100/50 pt-3 text-sm">
+      <div className="border-primary/10/50 flex items-center justify-between border-t pt-3 text-sm">
         <div className="flex flex-col">
-          <span className="text-xs text-purple-400">{t('disputes.disputer')}</span>
-          <span className="font-mono text-purple-600">{truncateAddress(dispute.disputer)}</span>
+          <span className="text-xs text-primary/40">{t('disputes.disputer')}</span>
+          <span className="font-mono text-primary">{truncateAddress(dispute.disputer)}</span>
         </div>
         <div className="flex flex-col items-end">
-          <span className="text-xs text-purple-400">{t('disputes.disputedAt')}</span>
-          <span className="text-purple-700">{formatTime(dispute.disputedAt, locale)}</span>
+          <span className="text-xs text-primary/40">{t('disputes.disputedAt')}</span>
+          <span className="text-primary-dark">{formatTime(dispute.disputedAt, locale)}</span>
         </div>
       </div>
     </div>
@@ -258,11 +267,11 @@ function VotingProgress({ dispute, voteTrackingEnabled, t, locale }: VotingProgr
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h4 className="flex items-center gap-2 text-sm font-semibold text-purple-900/80">
-          <Gavel size={16} className="text-purple-400" />
+        <h4 className="text-[var(--foreground)]/80 flex items-center gap-2 text-sm font-semibold">
+          <Gavel size={16} className="text-primary/40" />
           {t('disputes.votingProgress')}
         </h4>
-        <div className="flex items-center gap-1.5 rounded-md bg-purple-50 px-2 py-1 text-xs text-purple-500">
+        <div className="flex items-center gap-1.5 rounded-md bg-primary/5 px-2 py-1 text-xs text-primary">
           <Clock size={12} />
           {t('disputes.endsAt')}: {formatTime(dispute.votingEndsAt, locale)}
         </div>
@@ -310,7 +319,7 @@ function VotingProgress({ dispute, voteTrackingEnabled, t, locale }: VotingProgr
             </div>
           </div>
 
-          <div className="pt-2 text-center text-xs text-purple-400">
+          <div className="pt-2 text-center text-xs text-primary/40">
             {t('disputes.totalVotesCast')}:{' '}
             {new Intl.NumberFormat(locale).format(
               dispute.currentVotesFor + dispute.currentVotesAgainst,
@@ -318,7 +327,7 @@ function VotingProgress({ dispute, voteTrackingEnabled, t, locale }: VotingProgr
           </div>
         </>
       ) : (
-        <div className="pt-2 text-center text-xs text-purple-400">
+        <div className="pt-2 text-center text-xs text-primary/40">
           {t('disputes.totalVotesCast')}: —
         </div>
       )}
@@ -341,7 +350,7 @@ function DisputeCard({
   isMobile,
 }: DisputeCardProps & { isMobile: boolean }) {
   return (
-    <Card className="border-purple-100/60 bg-white/60 shadow-sm transition-all hover:shadow-md">
+    <Card className="border-primary/10/60 bg-white/60 shadow-sm transition-all hover:shadow-md">
       <CardHeader className="pb-3 sm:pb-4">
         <DisputeHeader dispute={dispute} t={t} isMobile={isMobile} />
       </CardHeader>
@@ -382,7 +391,7 @@ export default function DisputesPage() {
   const [instanceId, setInstanceIdState] = useState<string>('default');
 
   useEffect(() => {
-    getOracleInstanceId().then(id => setInstanceIdState(id));
+    getOracleInstanceId().then((id) => setInstanceIdState(id));
   }, []);
 
   // 获取刷新策略配置
@@ -548,12 +557,12 @@ export default function DisputesPage() {
             type="button"
             onClick={refresh}
             disabled={loading}
-            className="flex items-center gap-1.5 rounded-xl bg-white/60 px-3 py-2 text-sm font-semibold text-purple-800 shadow-sm ring-1 ring-purple-100 hover:bg-white disabled:opacity-50 sm:gap-2 sm:px-4"
+            className="text-primary-darker ring-primary100 flex items-center gap-1.5 rounded-xl bg-white/60 px-3 py-2 text-sm font-semibold shadow-sm ring-1 hover:bg-white disabled:opacity-50 sm:gap-2 sm:px-4"
           >
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
             <span className="hidden sm:inline">{t('common.refresh')}</span>
           </button>
-          <div className="hidden items-center gap-2 rounded-lg border border-purple-100 bg-purple-50 px-3 py-1.5 text-sm text-purple-700/60 sm:flex">
+          <div className="text-primary-dark/60 hidden items-center gap-2 rounded-lg border border-primary/10 bg-primary/5 px-3 py-1.5 text-sm sm:flex">
             <Gavel size={16} />
             <span>{t('disputes.umaDvmActive')}</span>
           </div>

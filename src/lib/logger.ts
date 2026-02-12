@@ -300,7 +300,6 @@ function initAsyncLocalStorage(): void {
   }
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-implied-eval
     const asyncHooks = eval('require')('node:async_hooks');
     if (asyncHooks.AsyncLocalStorage) {
       asyncLocalStorage = new asyncHooks.AsyncLocalStorage();
@@ -329,15 +328,12 @@ function shouldLog(level: LogLevel): boolean {
 }
 
 function sanitizeLogMessage(message: string): string {
-  // eslint-disable-next-line no-control-regex
   const controlCharsRegex = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g;
-  return (
-    message
-      .replace(controlCharsRegex, '')
-      .replace(/\n/g, '\\n')
-      .replace(/\r/g, '\\r')
-      .replace(/\t/g, '\\t')
-  );
+  return message
+    .replace(controlCharsRegex, '')
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '\\r')
+    .replace(/\t/g, '\\t');
 }
 
 function createLogEntry(level: LogLevel, message: string, metadata?: Record<string, unknown>) {
@@ -399,7 +395,11 @@ async function processSentryQueue(): Promise<void> {
   isProcessingQueue = false;
 }
 
-function queueSentryReport(message: string, metadata: Record<string, unknown> | undefined, level: 'error' | 'fatal'): void {
+function queueSentryReport(
+  message: string,
+  metadata: Record<string, unknown> | undefined,
+  level: 'error' | 'fatal',
+): void {
   if (!isServer) return;
   sentryQueue.push({ message, metadata, level });
   if (typeof setImmediate !== 'undefined') {

@@ -25,12 +25,9 @@ export {
 // 从 apiErrors 导出
 // ============================================================================
 
-export {
-  ApiError,
-  ApiErrorCode,
-} from './apiErrors';
+export { ApiError, ApiErrorCode, ErrorCodeToHttpStatus, ErrorCodeToMessage } from './apiErrors';
 
-export type { ApiErrorResponse } from './apiErrors';
+export type { ApiErrorResponse, ApiResponse } from './apiErrors';
 
 // ============================================================================
 // 从 walletErrors 导出
@@ -44,7 +41,7 @@ export type { WalletErrorDetail, NormalizedWalletErrorKind } from './walletError
 // 错误处理器（从 shared/errors/ErrorHandler 迁移）
 // ============================================================================
 
-import { PriceFetchError } from '@/infrastructure/blockchain/core/types';
+import { PriceFetchError } from '@/lib/blockchain/core/types';
 import type { OracleProtocol, SupportedChain } from '@/types/unifiedOracleTypes';
 
 /**
@@ -165,5 +162,3 @@ export function withRetry(options: {
     return descriptor;
   };
 }
-
-

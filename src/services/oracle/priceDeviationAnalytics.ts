@@ -7,11 +7,11 @@
  * - 生成偏差报告
  */
 
-import { logger } from '@/shared/logger';
-import { robustTrendAnalysis } from '@/shared/utils/robustTrendAnalysis';
-import { query } from '@/infrastructure/database/db';
+import { query } from '@/lib/database/db';
 import { AGGREGATION_CONFIG } from '@/services/oracle/priceAggregation/config';
 import { detectOutliers } from '@/services/oracle/priceAggregation/utils';
+import { logger } from '@/shared/logger';
+import { robustTrendAnalysis } from '@/shared/utils/robustTrendAnalysis';
 
 // ============================================================================
 // 类型定义

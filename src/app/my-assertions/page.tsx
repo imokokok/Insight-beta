@@ -7,10 +7,6 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { LayoutGrid, List, Search, Wallet, FileText, ChevronDown } from 'lucide-react';
 
-
-
-
-
 import { PageHeader } from '@/components/common/PageHeader';
 import { CardSkeleton } from '@/components/ui/skeleton';
 import { useWallet } from '@/contexts/WalletContext';
@@ -18,8 +14,8 @@ import { useOracleData, useUserStats } from '@/hooks';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage, type TranslationKey } from '@/i18n/translations';
-import type { OracleConfig, OracleStatus, OracleInstance } from '@/types/oracleTypes';
 import { cn, fetchApiData } from '@/shared/utils';
+import type { OracleConfig, OracleStatus, OracleInstance } from '@/types/oracleTypes';
 
 import type { Route } from 'next';
 
@@ -59,7 +55,7 @@ function NoWalletState({ t }: NoWalletStateProps) {
       </PageHeader>
 
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <div className="mb-6 rounded-full bg-purple-50 p-6 text-purple-600">
+        <div className="mb-6 rounded-full bg-primary/5 p-6 text-primary">
           <Wallet size={48} />
         </div>
         <h2 className="mb-2 text-xl font-bold text-gray-900">
@@ -92,12 +88,12 @@ function StatusFilters({ filterStatus, setFilterStatus, t }: StatusFiltersProps)
           className={cn(
             'flex items-center gap-2 whitespace-nowrap rounded-xl px-4 py-2 text-sm font-bold transition-all',
             filterStatus === status
-              ? 'scale-105 bg-white shadow-md shadow-purple-500/10 ring-1 ring-black/5'
+              ? 'scale-105 bg-white shadow-md shadow-primary-500/10 ring-1 ring-black/5'
               : 'text-gray-500 hover:bg-white/40 hover:text-gray-900',
             filterStatus === status && status === 'Pending' && 'text-blue-600 ring-blue-100',
             filterStatus === status && status === 'Disputed' && 'text-rose-600 ring-rose-100',
             filterStatus === status && status === 'Resolved' && 'text-emerald-600 ring-emerald-100',
-            filterStatus === status && status === 'All' && 'text-purple-700 ring-purple-100',
+            filterStatus === status && status === 'All' && 'text-primary-dark ring-primary100',
           )}
         >
           {status === 'Pending' && (
@@ -127,7 +123,7 @@ function StatusFilters({ filterStatus, setFilterStatus, t }: StatusFiltersProps)
           {status === 'All' && (
             <div
               className={cn(
-                'h-2 w-2 rounded-full bg-purple-500',
+                'h-2 w-2 rounded-full bg-primary/50',
                 filterStatus !== status && 'opacity-50',
               )}
             />
@@ -156,7 +152,7 @@ function ViewModeToggle({ viewMode, setViewMode, t }: ViewModeToggleProps) {
         className={cn(
           'rounded-md p-1.5 transition-all',
           viewMode === 'grid'
-            ? 'bg-white text-purple-600 shadow'
+            ? 'bg-white text-primary shadow'
             : 'text-gray-400 hover:text-gray-600',
         )}
         title={t('oracle.card.gridView')}
@@ -168,7 +164,7 @@ function ViewModeToggle({ viewMode, setViewMode, t }: ViewModeToggleProps) {
         className={cn(
           'rounded-md p-1.5 transition-all',
           viewMode === 'list'
-            ? 'bg-white text-purple-600 shadow'
+            ? 'bg-white text-primary shadow'
             : 'text-gray-400 hover:text-gray-600',
         )}
         title={t('oracle.card.listView')}
@@ -193,8 +189,8 @@ function InstanceSelector({
   isMobile,
 }: InstanceSelectorProps) {
   const className = isMobile
-    ? 'glass-input h-9 w-full rounded-xl border-none pl-3 pr-8 text-sm font-medium text-gray-600 hover:bg-white/80 focus:ring-2 focus:ring-purple-500/20 cursor-pointer appearance-none'
-    : 'glass-input h-9 rounded-xl border-none pl-3 pr-8 text-sm font-medium text-gray-600 hover:bg-white/80 focus:ring-2 focus:ring-purple-500/20 cursor-pointer appearance-none';
+    ? 'glass-input h-9 w-full rounded-xl border-none pl-3 pr-8 text-sm font-medium text-gray-600 hover:bg-white/80 focus:ring-2 focus:ring-primary500/20 cursor-pointer appearance-none'
+    : 'glass-input h-9 rounded-xl border-none pl-3 pr-8 text-sm font-medium text-gray-600 hover:bg-white/80 focus:ring-2 focus:ring-primary500/20 cursor-pointer appearance-none';
   return (
     <div className={cn('relative', isMobile ? 'w-full md:hidden' : 'hidden md:block')}>
       <select
@@ -225,8 +221,8 @@ type ChainSelectorProps = {
 
 function ChainSelector({ filterChain, setFilterChain, t, isMobile }: ChainSelectorProps) {
   const className = isMobile
-    ? 'glass-input h-9 w-full rounded-xl border-none pl-3 pr-8 text-sm font-medium text-gray-600 hover:bg-white/80 focus:ring-2 focus:ring-purple-500/20 cursor-pointer appearance-none'
-    : 'glass-input h-9 rounded-xl border-none pl-3 pr-8 text-sm font-medium text-gray-600 hover:bg-white/80 focus:ring-2 focus:ring-purple-500/20 cursor-pointer appearance-none';
+    ? 'glass-input h-9 w-full rounded-xl border-none pl-3 pr-8 text-sm font-medium text-gray-600 hover:bg-white/80 focus:ring-2 focus:ring-primary500/20 cursor-pointer appearance-none'
+    : 'glass-input h-9 rounded-xl border-none pl-3 pr-8 text-sm font-medium text-gray-600 hover:bg-white/80 focus:ring-2 focus:ring-primary500/20 cursor-pointer appearance-none';
   return (
     <div className={cn('relative', isMobile ? 'w-full md:hidden' : 'hidden md:block')}>
       <select
@@ -264,7 +260,7 @@ function SearchInput({ query, setQuery, t }: SearchInputProps) {
         placeholder={t('oracle.myAssertions.searchPlaceholder')}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        className="glass-input h-9 w-full rounded-xl pl-9 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500/20 md:w-64"
+        className="glass-input focus:ring-primary500/20 h-9 w-full rounded-xl pl-9 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 md:w-64"
       />
     </div>
   );
@@ -282,7 +278,7 @@ function ClearFiltersButton({ hasFilters, onClear, t }: ClearFiltersButtonProps)
     <button
       type="button"
       onClick={onClear}
-      className="h-9 rounded-xl bg-white px-3 text-sm font-semibold text-purple-700 shadow-sm ring-1 ring-purple-100 hover:bg-purple-50"
+      className="text-primary-dark ring-primary100 h-9 rounded-xl bg-white px-3 text-sm font-semibold shadow-sm ring-1 hover:bg-primary/5"
     >
       {t('audit.clear')}
     </button>
@@ -320,7 +316,7 @@ function MyAssertionsToolbar({
 }: MyAssertionsToolbarProps) {
   const hasFilters = filterStatus !== 'All' || filterChain !== 'All' || !!query.trim();
   return (
-    <div className="glass-panel animate-in fade-in slide-in-from-bottom-4 sticky top-4 z-20 flex flex-col gap-4 rounded-2xl border-white/60 p-3 shadow-xl shadow-purple-900/5 backdrop-blur-xl delay-200 duration-700 sm:flex-row sm:items-center sm:justify-between">
+    <div className="glass-panel animate-in fade-in slide-in-from-bottom-4 sticky top-4 z-20 flex flex-col gap-4 rounded-2xl border-white/60 p-3 shadow-xl shadow-primary-900/5 backdrop-blur-xl delay-200 duration-700 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <StatusFilters filterStatus={filterStatus} setFilterStatus={setFilterStatus} t={t} />
         <div className="flex flex-wrap items-center gap-2 md:gap-3">
@@ -384,7 +380,7 @@ type AssertionsEmptyStateProps = {
 function AssertionsEmptyState({ instanceId, t }: AssertionsEmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="mb-6 rounded-full bg-purple-50 p-6 text-purple-600">
+      <div className="mb-6 rounded-full bg-primary/5 p-6 text-primary">
         <FileText size={48} />
       </div>
       <h2 className="mb-2 text-xl font-bold text-gray-900">
@@ -394,13 +390,13 @@ function AssertionsEmptyState({ instanceId, t }: AssertionsEmptyStateProps) {
       <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
         <Link
           href={instanceId ? `/oracle?instanceId=${encodeURIComponent(instanceId)}` : '/oracle'}
-          className="rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-2.5 text-sm font-medium text-white shadow-lg shadow-purple-500/20 transition-all hover:from-purple-700 hover:to-indigo-700 hover:shadow-xl hover:shadow-purple-500/30"
+          className="rounded-lg bg-gradient-to-r from-primary-600 to-indigo-600 px-6 py-2.5 text-sm font-medium text-white shadow-lg shadow-primary-500/20 transition-all hover:from-primary-700 hover:to-indigo-700 hover:shadow-xl hover:shadow-primary-500/30"
         >
           {t('oracle.newAssertion')}
         </Link>
         <Link
           href={instanceId ? `/disputes?instanceId=${encodeURIComponent(instanceId)}` : '/disputes'}
-          className="rounded-xl border border-purple-200 bg-white px-6 py-3 font-medium text-purple-700 transition-colors hover:bg-purple-50"
+          className="text-primary-dark rounded-xl border border-primary/20 bg-white px-6 py-3 font-medium transition-colors hover:bg-primary/5"
         >
           {t('nav.disputes')}
         </Link>

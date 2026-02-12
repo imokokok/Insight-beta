@@ -10,8 +10,8 @@
 
 import type { NextRequest } from 'next/server';
 
-import { logger } from '@/shared/logger';
 import { realtimePriceService } from '@/services/oracle/realtime';
+import { logger } from '@/shared/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,14 +23,14 @@ const MAX_CONNECTIONS = 100;
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  
+
   // 生成服务器端 clientId，防止客户端伪造
   const clientId = `client-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-  
+
   // 验证订阅符号
   const symbolsParam = searchParams.get('symbols');
   let symbols: string[];
-  
+
   if (symbolsParam) {
     // 过滤只允许预定义的符号
     symbols = symbolsParam
@@ -40,11 +40,11 @@ export async function GET(request: NextRequest) {
   } else {
     symbols = ['ETH/USD'];
   }
-  
+
   if (symbols.length === 0) {
     return new Response('Invalid symbols', { status: 400 });
   }
-  
+
   // 检查连接数限制
   if (realtimePriceService.listenerCount('priceUpdate') >= MAX_CONNECTIONS) {
     return new Response('Too many connections', { status: 503 });

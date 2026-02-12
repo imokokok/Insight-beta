@@ -8,8 +8,8 @@ import { Award, TrendingUp, User, Trophy, ShieldCheck, Loader2 } from 'lucide-re
 
 import { useI18n } from '@/i18n/LanguageProvider';
 import { logger } from '@/shared/logger';
-import type { LeaderboardStats } from '@/types/oracleTypes';
 import { cn, fetchApiData } from '@/shared/utils';
+import type { LeaderboardStats } from '@/types/oracleTypes';
 
 interface RankItemProps {
   rank: number;
@@ -56,7 +56,7 @@ const RankItem = memo(function RankItem({
             {rank <= 3 ? <Trophy size={14} /> : rank}
           </div>
           <div className="flex flex-col">
-            <span className="font-mono text-sm font-bold text-gray-700 transition-colors group-hover:text-purple-700">
+            <span className="group-hover:text-primary-dark font-mono text-sm font-bold text-gray-700 transition-colors">
               {address.slice(0, 6)}...{address.slice(-4)}
             </span>
             <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
@@ -105,7 +105,7 @@ export function Leaderboard({ instanceId }: { instanceId?: string | null }) {
   if (loading) {
     return (
       <div className="flex justify-center py-20">
-        <Loader2 className="animate-spin text-purple-500" size={32} />
+        <Loader2 className="animate-spin text-primary" size={32} />
       </div>
     );
   }
@@ -115,7 +115,7 @@ export function Leaderboard({ instanceId }: { instanceId?: string | null }) {
       <div
         className={cn(
           'glass-card relative overflow-hidden rounded-2xl p-6 transition-all duration-500',
-          activeTab === 'asserters' ? 'border-purple-100/20' : 'border-rose-100/20',
+          activeTab === 'asserters' ? 'border-primary/10/20' : 'border-rose-100/20',
         )}
       >
         {/* Artistic Background Mesh - Dynamic based on tab */}
@@ -125,7 +125,7 @@ export function Leaderboard({ instanceId }: { instanceId?: string | null }) {
             activeTab === 'asserters' ? 'opacity-20' : 'opacity-0',
           )}
         >
-          <div className="absolute -right-[10%] -top-[10%] h-[150%] w-[50%] rounded-full bg-gradient-to-bl from-purple-200/30 via-indigo-100/10 to-transparent blur-3xl" />
+          <div className="absolute -right-[10%] -top-[10%] h-[150%] w-[50%] rounded-full bg-gradient-to-bl from-primary-200/30 via-indigo-100/10 to-transparent blur-3xl" />
           <div className="absolute bottom-0 left-0 h-[60%] w-[40%] rounded-full bg-gradient-to-tr from-blue-100/20 via-transparent to-transparent blur-2xl" />
         </div>
         <div
@@ -145,7 +145,7 @@ export function Leaderboard({ instanceId }: { instanceId?: string | null }) {
               className={cn(
                 'rounded-xl p-3 shadow-inner ring-1 backdrop-blur-md transition-colors duration-500',
                 activeTab === 'asserters'
-                  ? 'bg-gradient-to-br from-purple-500/10 to-indigo-500/10 text-purple-600 ring-purple-500/20'
+                  ? 'ring-primary500/20 bg-gradient-to-br from-primary-500/10 to-indigo-500/10 text-primary'
                   : 'bg-gradient-to-br from-rose-500/10 to-amber-500/10 text-rose-600 ring-rose-500/20',
               )}
             >
@@ -175,7 +175,7 @@ export function Leaderboard({ instanceId }: { instanceId?: string | null }) {
               className={cn(
                 'flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-300',
                 activeTab === 'asserters'
-                  ? 'bg-white text-purple-700 shadow-sm ring-1 ring-black/5'
+                  ? 'text-primary-dark bg-white shadow-sm ring-1 ring-black/5'
                   : 'text-gray-500 hover:bg-white/50 hover:text-gray-700',
               )}
             >

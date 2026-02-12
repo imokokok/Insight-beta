@@ -1,11 +1,10 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { logger } from '@/shared/logger';
+import { requireAdminWithToken } from '@/lib/api/apiResponse';
+import { query } from '@/lib/database/db';
 import { manipulationDetectionService } from '@/services/security/manipulationDetectionService';
-import { query } from '@/infrastructure/database/db';
-import type { OracleProtocol, SupportedChain } from '@/types';
-import { requireAdminWithToken } from '@/infrastructure/api/apiResponse';
+import { logger } from '@/shared/logger';
 
 interface StartMonitorBody {
   protocol?: string;
@@ -46,12 +45,7 @@ export async function POST(request: NextRequest) {
       }
 
       for (const feed of feeds) {
-        await manipulationDetectionService.startMonitoring(
-          feed.protocol as OracleProtocol,
-          feed.symbol,
-          feed.chain as SupportedChain,
-          10000,
-        );
+        await manipulationDetectionService.startMonitoring(feed.protocol, feed.symbol);
       }
 
       return NextResponse.json({
@@ -61,12 +55,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (protocol && symbol && chain) {
-      await manipulationDetectionService.startMonitoring(
-        protocol as OracleProtocol,
-        symbol,
-        chain as SupportedChain,
-        10000,
-      );
+      await manipulationDetectionService.startMonitoring(protocol, symbol);
 
       return NextResponse.json({
         success: true,

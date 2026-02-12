@@ -107,9 +107,7 @@ export function MobileBottomNav() {
   };
 
   // 根据钱包连接状态动态添加钱包入口
-  const dynamicMoreNavItems = isConnected
-    ? [walletNavItem, ...moreNavItems]
-    : moreNavItems;
+  const dynamicMoreNavItems = isConnected ? [walletNavItem, ...moreNavItems] : moreNavItems;
 
   return (
     <>
@@ -125,17 +123,12 @@ export function MobileBottomNav() {
       <div
         className={cn(
           'fixed bottom-20 left-4 right-4 z-50 rounded-2xl bg-white/95 p-4 shadow-2xl backdrop-blur-xl transition-all duration-300 md:hidden',
-          showMore
-            ? 'translate-y-0 opacity-100'
-            : 'pointer-events-none translate-y-4 opacity-0'
+          showMore ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-4 opacity-0',
         )}
       >
         <div className="mb-3 flex items-center justify-between border-b border-gray-100 pb-3">
           <span className="text-sm font-semibold text-gray-700">更多功能</span>
-          <button
-            onClick={() => setShowMore(false)}
-            className="rounded-full p-1 hover:bg-gray-100"
-          >
+          <button onClick={() => setShowMore(false)} className="rounded-full p-1 hover:bg-gray-100">
             <X size={18} className="text-gray-500" />
           </button>
         </div>
@@ -151,15 +144,10 @@ export function MobileBottomNav() {
                 onClick={() => setShowMore(false)}
                 className={cn(
                   'flex items-center gap-3 rounded-xl p-3 transition-all',
-                  active
-                    ? 'bg-purple-50 text-purple-700'
-                    : 'text-gray-600 hover:bg-gray-50'
+                  active ? 'text-primary-dark bg-primary/5' : 'text-gray-600 hover:bg-gray-50',
                 )}
               >
-                <Icon
-                  size={20}
-                  className={cn(active ? 'text-purple-600' : 'text-gray-400')}
-                />
+                <Icon size={20} className={cn(active ? 'text-primary' : 'text-gray-400')} />
                 <span className="text-sm font-medium">{t(item.key)}</span>
               </Link>
             );
@@ -168,7 +156,7 @@ export function MobileBottomNav() {
       </div>
 
       {/* 底部导航栏 */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/40 bg-white/90 px-2 pb-safe pt-2 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] backdrop-blur-xl md:hidden">
+      <nav className="pb-safe fixed bottom-0 left-0 right-0 z-50 border-t border-white/40 bg-white/90 px-2 pt-2 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] backdrop-blur-xl md:hidden">
         <div className="flex items-center justify-around">
           {mainNavItems.map((item) => {
             const Icon = item.icon;
@@ -182,22 +170,15 @@ export function MobileBottomNav() {
                   onClick={() => setShowMore(!showMore)}
                   className={cn(
                     'relative flex flex-col items-center gap-1 rounded-xl px-4 py-2 transition-all',
-                    showMore
-                      ? 'text-purple-700'
-                      : 'text-gray-500 hover:text-gray-700'
+                    showMore ? 'text-primary-dark' : 'text-gray-500 hover:text-gray-700',
                   )}
                 >
                   <div
-                    className={cn(
-                      'rounded-full p-1.5 transition-all',
-                      showMore && 'bg-purple-100'
-                    )}
+                    className={cn('rounded-full p-1.5 transition-all', showMore && 'bg-primary/10')}
                   >
                     <Icon size={22} />
                   </div>
-                  <span className="text-[10px] font-medium">
-                    {t(item.key)}
-                  </span>
+                  <span className="text-[10px] font-medium">{t(item.key)}</span>
                 </button>
               );
             }
@@ -208,17 +189,10 @@ export function MobileBottomNav() {
                 href={item.href as Route}
                 className={cn(
                   'relative flex flex-col items-center gap-1 rounded-xl px-4 py-2 transition-all',
-                  active
-                    ? 'text-purple-700'
-                    : 'text-gray-500 hover:text-gray-700'
+                  active ? 'text-primary-dark' : 'text-gray-500 hover:text-gray-700',
                 )}
               >
-                <div
-                  className={cn(
-                    'rounded-full p-1.5 transition-all',
-                    active && 'bg-purple-100'
-                  )}
-                >
+                <div className={cn('rounded-full p-1.5 transition-all', active && 'bg-primary/10')}>
                   <Icon size={22} />
                   {item.badge ? (
                     <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
@@ -227,9 +201,7 @@ export function MobileBottomNav() {
                   ) : null}
                 </div>
                 <span className="text-[10px] font-medium">{t(item.key)}</span>
-                {active && (
-                  <span className="absolute -bottom-2 h-1 w-6 rounded-full bg-purple-600" />
-                )}
+                {active && <span className="absolute -bottom-2 h-1 w-6 rounded-full bg-primary" />}
               </Link>
             );
           })}

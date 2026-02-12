@@ -25,11 +25,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useI18n } from '@/i18n';
-import { statusColors } from '@/lib/constants/colors';
-import type { RealtimeComparisonItem } from '@/types/oracle';
-import { PROTOCOL_DISPLAY_NAMES } from '@/types/oracle';
+import { statusColors } from '@/lib/design-system';
 import { cn } from '@/shared/utils';
 import { exportRealtimeToCSV } from '@/shared/utils/export';
+import type { RealtimeComparisonItem } from '@/types/oracle';
+import { PROTOCOL_DISPLAY_NAMES } from '@/types/oracle';
 
 // ============================================================================
 // Types
@@ -280,7 +280,7 @@ const VirtualTableHeader = React.memo(function VirtualTableHeader({
 
   return (
     <div
-      className="bg-muted/95 supports-[backdrop-filter]:bg-muted/60 sticky top-0 z-10 border-b backdrop-blur"
+      className="sticky top-0 z-10 border-b bg-muted/95 backdrop-blur supports-[backdrop-filter]:bg-muted/60"
       style={{ height }}
     >
       <div className="flex h-full items-center px-4 text-sm font-medium">
@@ -314,7 +314,7 @@ const VirtualTableRow = React.memo(function VirtualTableRow({ row, style }: Virt
 
   return (
     <div
-      className="hover:bg-muted/30 flex items-center border-b px-4 transition-colors"
+      className="flex items-center border-b px-4 transition-colors hover:bg-muted/30"
       style={style}
     >
       <div className="w-[100px] truncate font-medium">{row.symbol}</div>
@@ -354,7 +354,7 @@ const VirtualTableRow = React.memo(function VirtualTableRow({ row, style }: Virt
         <StatusBadge status={row.status} />
       </div>
       <div className="w-[80px] text-right">
-        <span className="text-muted-foreground text-xs">{(row.confidence * 100).toFixed(0)}%</span>
+        <span className="text-xs text-muted-foreground">{(row.confidence * 100).toFixed(0)}%</span>
       </div>
       <div className="w-[50px]">
         <DropdownMenu>
@@ -390,13 +390,13 @@ const VirtualTableToolbar = React.memo(function VirtualTableToolbar({
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <CardTitle className="text-lg font-semibold">{t('comparison.table.title')}</CardTitle>
-          <CardDescription className="text-muted-foreground mt-1 text-sm">
+          <CardDescription className="mt-1 text-sm text-muted-foreground">
             {t('comparison.table.description')}
           </CardDescription>
         </div>
         <div className="flex items-center gap-2">
           <div className="relative">
-            <Search className="text-muted-foreground absolute left-2.5 top-2.5 h-4 w-4" />
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder={t('comparison.table.searchPlaceholder')}
               value={searchTerm}
@@ -423,7 +423,7 @@ const VirtualTableToolbar = React.memo(function VirtualTableToolbar({
         </div>
       </div>
 
-      <div className="text-muted-foreground mt-4 flex items-center gap-4 text-sm">
+      <div className="mt-4 flex items-center gap-4 text-sm text-muted-foreground">
         <span>
           {t('comparison.table.total')}: <strong className="text-foreground">{totalRecords}</strong>{' '}
           {t('comparison.table.records')}

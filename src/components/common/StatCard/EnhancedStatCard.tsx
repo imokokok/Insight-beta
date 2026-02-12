@@ -1,6 +1,6 @@
 /**
  * Enhanced Stat Card Components
- * 
+ *
  * 增强版统计卡片组件
  * - 丰富的数据展示
  * - 趋势可视化
@@ -33,12 +33,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn, formatChangePercent, formatTimeAgo } from '@/shared/utils';
 
 // ============================================================================
@@ -114,14 +109,17 @@ export interface EnhancedStatCardProps {
 // Status Configurations
 // ============================================================================
 
-const statusConfig: Record<StatCardStatus, {
-  bg: string;
-  border: string;
-  text: string;
-  icon: React.ReactNode;
-  dot: string;
-  gradient: string;
-}> = {
+const statusConfig: Record<
+  StatCardStatus,
+  {
+    bg: string;
+    border: string;
+    text: string;
+    icon: React.ReactNode;
+    dot: string;
+    gradient: string;
+  }
+> = {
   healthy: {
     bg: 'bg-emerald-50',
     border: 'border-emerald-200',
@@ -160,9 +158,7 @@ const statusConfig: Record<StatCardStatus, {
 // Loading State
 // ============================================================================
 
-const StatCardSkeleton = memo(function StatCardSkeleton({ 
-  size = 'md' 
-}: { size?: StatCardSize }) {
+const StatCardSkeleton = memo(function StatCardSkeleton({ size = 'md' }: { size?: StatCardSize }) {
   const heightClass = {
     sm: 'h-24',
     md: 'h-32',
@@ -216,7 +212,7 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
     const { value: trendValue, isPositive, label } = trend;
     const color = isPositive ? 'text-emerald-600' : 'text-rose-600';
     const Icon = isPositive ? TrendingUp : TrendingDown;
-    
+
     return (
       <div className="flex items-center gap-1.5">
         <Icon className={cn('h-3.5 w-3.5', color)} />
@@ -239,21 +235,19 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
         whileHover={{ y: -2 }}
         whileTap={{ scale: 0.98 }}
         className={cn(
-          'rounded-xl border p-3 cursor-pointer transition-shadow hover:shadow-md',
+          'cursor-pointer rounded-xl border p-3 transition-shadow hover:shadow-md',
           config.bg,
           config.border,
-          className
+          className,
         )}
         onClick={onClick}
       >
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs font-medium text-gray-500">{title}</p>
-            <p className={cn('text-lg font-bold mt-0.5', config.text)}>{value}</p>
+            <p className={cn('mt-0.5 text-lg font-bold', config.text)}>{value}</p>
           </div>
-          <div className={cn('p-2 rounded-lg bg-white/50', config.text)}>
-            {icon || config.icon}
-          </div>
+          <div className={cn('rounded-lg bg-white/50 p-2', config.text)}>{icon || config.icon}</div>
         </div>
         {trendDisplay && <div className="mt-1.5">{trendDisplay}</div>}
       </motion.div>
@@ -268,7 +262,7 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
           'overflow-hidden transition-all duration-300',
           onClick && 'cursor-pointer',
           isHovered && 'shadow-lg',
-          className
+          className,
         )}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -282,7 +276,7 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Info className="h-3.5 w-3.5 text-gray-400 cursor-help" />
+                      <Info className="h-3.5 w-3.5 cursor-help text-gray-400" />
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="max-w-xs text-xs">{tooltip}</p>
@@ -326,7 +320,7 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
                 <span className="text-3xl font-bold text-gray-900">{value}</span>
                 {subtitle && <span className="text-sm text-gray-500">{subtitle}</span>}
               </div>
-              
+
               {comparison && (
                 <div className="mt-3">
                   <StatComparison
@@ -336,25 +330,19 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
                   />
                 </div>
               )}
-              
-              {!comparison && trendDisplay && (
-                <div className="mt-2">{trendDisplay}</div>
-              )}
+
+              {!comparison && trendDisplay && <div className="mt-2">{trendDisplay}</div>}
             </div>
-            
+
             <div className="flex flex-col items-end gap-2">
               <motion.div
                 animate={{ scale: isHovered ? 1.1 : 1, rotate: isHovered ? 5 : 0 }}
                 transition={{ duration: 0.2 }}
-                className={cn(
-                  'p-3 rounded-xl',
-                  config.bg,
-                  config.text
-                )}
+                className={cn('rounded-xl p-3', config.bg, config.text)}
               >
                 {icon || config.icon}
               </motion.div>
-              
+
               {sparkline && (
                 <Sparkline
                   data={sparkline.data}
@@ -366,13 +354,11 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
               )}
             </div>
           </div>
-          
-          {extra && <div className="mt-4 pt-4 border-t border-gray-100">{extra}</div>}
-          
+
+          {extra && <div className="mt-4 border-t border-gray-100 pt-4">{extra}</div>}
+
           {lastUpdated && (
-            <p className="mt-3 text-xs text-gray-400">
-              Updated {formatTimeAgo(lastUpdated)}
-            </p>
+            <p className="mt-3 text-xs text-gray-400">Updated {formatTimeAgo(lastUpdated)}</p>
           )}
         </CardContent>
       </Card>
@@ -386,45 +372,49 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
         whileHover={{ y: -4, scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         className={cn(
-          'relative overflow-hidden rounded-2xl border p-6 cursor-pointer',
+          'relative cursor-pointer overflow-hidden rounded-2xl border p-6',
           'bg-gradient-to-br',
           config.gradient,
           config.border,
           'transition-shadow hover:shadow-xl',
-          className
+          className,
         )}
         onClick={onClick}
       >
         {/* Background decoration */}
-        <div className={cn(
-          'absolute -right-6 -top-6 h-24 w-24 rounded-full opacity-20',
-          config.dot
-        )} />
-        
+        <div
+          className={cn('absolute -right-6 -top-6 h-24 w-24 rounded-full opacity-20', config.dot)}
+        />
+
         <div className="relative">
-          <div className="flex items-start justify-between mb-4">
-            <div className={cn(
-              'p-3 rounded-xl bg-white/60 backdrop-blur-sm',
-              config.text
-            )}>
+          <div className="mb-4 flex items-start justify-between">
+            <div className={cn('rounded-xl bg-white/60 p-3 backdrop-blur-sm', config.text)}>
               {icon || config.icon}
             </div>
             {trend && (
-              <div className={cn(
-                'flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium',
-                trend.isPositive ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
-              )}>
-                {trend.isPositive ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+              <div
+                className={cn(
+                  'flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium',
+                  trend.isPositive
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : 'bg-rose-100 text-rose-700',
+                )}
+              >
+                {trend.isPositive ? (
+                  <ArrowUpRight className="h-3 w-3" />
+                ) : (
+                  <ArrowDownRight className="h-3 w-3" />
+                )}
                 {formatChangePercent(trend.value / 100, 1, false)}
               </div>
             )}
           </div>
-          
-          <h3 className="text-sm font-medium text-gray-600 mb-1">{title}</h3>
-          <p className="text-3xl font-bold text-gray-900 mb-2">{value}</p>
-          
+
+          <h3 className="mb-1 text-sm font-medium text-gray-600">{title}</h3>
+          <p className="mb-2 text-3xl font-bold text-gray-900">{value}</p>
+
           {subtitle && <p className="text-sm text-gray-500">{subtitle}</p>}
-          
+
           {sparkline && (
             <div className="mt-4">
               <Sparkline
@@ -447,25 +437,23 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
       className={cn(
         'overflow-hidden transition-all duration-200',
         onClick && 'cursor-pointer hover:shadow-md',
-        className
+        className,
       )}
       onClick={onClick}
     >
       <CardContent className="p-4">
-        <div className="flex items-center justify-between mb-3">
+        <div className="mb-3 flex items-center justify-between">
           <span className="text-sm font-medium text-gray-600">{title}</span>
-          <div className={cn('p-2 rounded-lg', config.bg, config.text)}>
-            {icon || config.icon}
-          </div>
+          <div className={cn('rounded-lg p-2', config.bg, config.text)}>{icon || config.icon}</div>
         </div>
-        
-        <div className="flex items-baseline gap-2 mb-2">
+
+        <div className="mb-2 flex items-baseline gap-2">
           <span className="text-2xl font-bold text-gray-900">{value}</span>
           {subtitle && <span className="text-sm text-gray-500">{subtitle}</span>}
         </div>
-        
+
         {trendDisplay && <div>{trendDisplay}</div>}
-        
+
         {sparkline && (
           <div className="mt-3">
             <Sparkline
@@ -477,12 +465,8 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
             />
           </div>
         )}
-        
-        {lastUpdated && (
-          <p className="mt-2 text-xs text-gray-400">
-            {formatTimeAgo(lastUpdated)}
-          </p>
-        )}
+
+        {lastUpdated && <p className="mt-2 text-xs text-gray-400">{formatTimeAgo(lastUpdated)}</p>}
       </CardContent>
     </Card>
   );
@@ -518,11 +502,7 @@ export const StatCardGroup = memo(function StatCardGroup({
     lg: 'gap-6',
   }[gap];
 
-  return (
-    <div className={cn('grid', gridCols[columns], gapClass, className)}>
-      {children}
-    </div>
-  );
+  return <div className={cn('grid', gridCols[columns], gapClass, className)}>{children}</div>;
 });
 
 // ============================================================================
@@ -550,19 +530,14 @@ export const DashboardStatsSection = memo(function DashboardStatsSection({
     blue: { bg: 'bg-blue-50/50', border: 'border-blue-200/50', icon: 'text-blue-600' },
     green: { bg: 'bg-emerald-50/50', border: 'border-emerald-200/50', icon: 'text-emerald-600' },
     amber: { bg: 'bg-amber-50/50', border: 'border-amber-200/50', icon: 'text-amber-600' },
-    purple: { bg: 'bg-purple-50/50', border: 'border-purple-200/50', icon: 'text-purple-600' },
+    purple: { bg: 'bg-primary/5/50', border: 'border-primary/20/50', icon: 'text-primary' },
     red: { bg: 'bg-rose-50/50', border: 'border-rose-200/50', icon: 'text-rose-600' },
   }[color];
 
   return (
-    <div className={cn(
-      'rounded-xl border p-4',
-      colorConfig.bg,
-      colorConfig.border,
-      className
-    )}>
-      <div className="flex items-center gap-2 mb-4">
-        {icon && <div className={cn('p-1.5 rounded-lg bg-white/50', colorConfig.icon)}>{icon}</div>}
+    <div className={cn('rounded-xl border p-4', colorConfig.bg, colorConfig.border, className)}>
+      <div className="mb-4 flex items-center gap-2">
+        {icon && <div className={cn('rounded-lg bg-white/50 p-1.5', colorConfig.icon)}>{icon}</div>}
         <div>
           <h3 className="text-sm font-semibold text-gray-800">{title}</h3>
           {description && <p className="text-xs text-gray-500">{description}</p>}

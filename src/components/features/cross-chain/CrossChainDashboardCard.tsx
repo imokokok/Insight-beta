@@ -20,8 +20,8 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { CrossChainDashboardData } from '@/hooks/useCrossChain';
 import { useI18n } from '@/i18n';
-import { STATUS_COLORS } from '@/types/common';
 import { cn, formatPercentValue, formatPercent } from '@/shared/utils';
+import { STATUS_COLORS } from '@/types/common';
 
 interface CrossChainDashboardCardProps {
   data?: CrossChainDashboardData;
@@ -29,13 +29,40 @@ interface CrossChainDashboardCardProps {
   onRefresh?: () => void;
 }
 
-const statusConfig: Record<string, { icon: typeof CheckCircle; primary: string; bg: string; text: string; border: string; dot: string; label: string; color: string }> = {
-  healthy: { icon: CheckCircle, ...STATUS_COLORS.healthy, label: 'Healthy', color: 'text-emerald-600' },
-  degraded: { icon: AlertTriangle, ...STATUS_COLORS.degraded, label: 'Degraded', color: 'text-amber-600' },
+const statusConfig: Record<
+  string,
+  {
+    icon: typeof CheckCircle;
+    primary: string;
+    bg: string;
+    text: string;
+    border: string;
+    dot: string;
+    label: string;
+    color: string;
+  }
+> = {
+  healthy: {
+    icon: CheckCircle,
+    ...STATUS_COLORS.healthy,
+    label: 'Healthy',
+    color: 'text-emerald-600',
+  },
+  degraded: {
+    icon: AlertTriangle,
+    ...STATUS_COLORS.degraded,
+    label: 'Degraded',
+    color: 'text-amber-600',
+  },
   offline: { icon: XCircle, ...STATUS_COLORS.unhealthy, label: 'Offline', color: 'text-red-600' },
 };
 
-const defaultStatusConfig = statusConfig.offline || { icon: XCircle, ...STATUS_COLORS.unhealthy, label: 'Offline', color: 'text-red-600' };
+const defaultStatusConfig = statusConfig.offline || {
+  icon: XCircle,
+  ...STATUS_COLORS.unhealthy,
+  label: 'Offline',
+  color: 'text-red-600',
+};
 
 function formatStaleness(minutes: number): string {
   if (minutes < 1) return '<1m ago';
@@ -99,7 +126,7 @@ export const CrossChainDashboardCard = memo(function CrossChainDashboardCard({
           </CardTitle>
           <CardDescription>{t('crossChain.dashboard.description')}</CardDescription>
         </CardHeader>
-        <CardContent className="text-muted-foreground flex h-64 items-center justify-center">
+        <CardContent className="flex h-64 items-center justify-center text-muted-foreground">
           <RefreshCw className="mr-2 h-5 w-5" />
           {t('crossChain.dashboard.loading')}
         </CardContent>
@@ -116,7 +143,7 @@ export const CrossChainDashboardCard = memo(function CrossChainDashboardCard({
               <Activity className="h-5 w-5 text-blue-500" />
               {t('crossChain.dashboard.title')}
             </CardTitle>
-            <CardDescription className="text-muted-foreground mt-1 text-sm">
+            <CardDescription className="mt-1 text-sm text-muted-foreground">
               {t('crossChain.dashboard.description', { count: data.monitoredSymbols.length })}
             </CardDescription>
           </div>
@@ -135,31 +162,37 @@ export const CrossChainDashboardCard = memo(function CrossChainDashboardCard({
         {/* KPI Summary */}
         <div className="grid grid-cols-4 gap-3">
           {/* Alerts */}
-          <div className="bg-muted/30 rounded-lg border p-3">
+          <div className="rounded-lg border bg-muted/30 p-3">
             <div className="flex items-center justify-between">
-              <p className="text-muted-foreground text-xs">{t('crossChain.dashboard.activeAlerts')}</p>
-              <AlertTriangle className={cn(
-                'h-4 w-4',
-                data.activeAlerts > 0 ? 'text-yellow-500' : 'text-muted-foreground'
-              )} />
+              <p className="text-xs text-muted-foreground">
+                {t('crossChain.dashboard.activeAlerts')}
+              </p>
+              <AlertTriangle
+                className={cn(
+                  'h-4 w-4',
+                  data.activeAlerts > 0 ? 'text-yellow-500' : 'text-muted-foreground',
+                )}
+              />
             </div>
-            <p className={cn(
-              'mt-1 font-mono text-2xl font-bold',
-              data.activeAlerts > 0 ? 'text-yellow-600' : 'text-emerald-600'
-            )}>
+            <p
+              className={cn(
+                'mt-1 font-mono text-2xl font-bold',
+                data.activeAlerts > 0 ? 'text-yellow-600' : 'text-emerald-600',
+              )}
+            >
               {data.activeAlerts}
             </p>
           </div>
 
           {/* Opportunities */}
-          <div className="bg-muted/30 rounded-lg border p-3">
+          <div className="rounded-lg border bg-muted/30 p-3">
             <div className="flex items-center justify-between">
-              <p className="text-muted-foreground text-xs">{t('crossChain.dashboard.opportunities')}</p>
+              <p className="text-xs text-muted-foreground">
+                {t('crossChain.dashboard.opportunities')}
+              </p>
               <Activity className="h-4 w-4 text-blue-500" />
             </div>
-            <p className="mt-1 font-mono text-2xl font-bold">
-              {data.opportunities.total}
-            </p>
+            <p className="mt-1 font-mono text-2xl font-bold">{data.opportunities.total}</p>
             {data.opportunities.actionable > 0 && (
               <p className="text-xs text-emerald-600">
                 {data.opportunities.actionable} {t('crossChain.dashboard.actionable')}
@@ -168,23 +201,29 @@ export const CrossChainDashboardCard = memo(function CrossChainDashboardCard({
           </div>
 
           {/* Profit */}
-          <div className="bg-muted/30 rounded-lg border p-3">
+          <div className="rounded-lg border bg-muted/30 p-3">
             <div className="flex items-center justify-between">
-              <p className="text-muted-foreground text-xs">{t('crossChain.dashboard.avgProfit')}</p>
+              <p className="text-xs text-muted-foreground">{t('crossChain.dashboard.avgProfit')}</p>
               <span className="text-lg">📈</span>
             </div>
-            <p className={cn(
-              'mt-1 font-mono text-2xl font-bold',
-              data.opportunities.avgProfitPercent > 0 ? 'text-emerald-600' : 'text-muted-foreground'
-            )}>
+            <p
+              className={cn(
+                'mt-1 font-mono text-2xl font-bold',
+                data.opportunities.avgProfitPercent > 0
+                  ? 'text-emerald-600'
+                  : 'text-muted-foreground',
+              )}
+            >
               {formatPercentValue(data.opportunities.avgProfitPercent, 2)}
             </p>
           </div>
 
           {/* Health */}
-          <div className="bg-muted/30 rounded-lg border p-3">
+          <div className="rounded-lg border bg-muted/30 p-3">
             <div className="flex items-center justify-between">
-              <p className="text-muted-foreground text-xs">{t('crossChain.dashboard.chainHealth')}</p>
+              <p className="text-xs text-muted-foreground">
+                {t('crossChain.dashboard.chainHealth')}
+              </p>
               <Server className="h-4 w-4 text-muted-foreground" />
             </div>
             <div className="mt-1 flex items-center gap-2">
@@ -195,13 +234,14 @@ export const CrossChainDashboardCard = memo(function CrossChainDashboardCard({
                 variant="outline"
                 className={cn(
                   'text-xs',
-                  healthPercent === 100 ? 'bg-emerald-500/20 text-emerald-600' :
-                  healthPercent >= 50 ? 'bg-yellow-500/20 text-yellow-600' :
-                  'bg-red-500/20 text-red-600'
+                  healthPercent === 100
+                    ? 'bg-emerald-500/20 text-emerald-600'
+                    : healthPercent >= 50
+                      ? 'bg-yellow-500/20 text-yellow-600'
+                      : 'bg-red-500/20 text-red-600',
                 )}
               >
-                {healthPercent === 100 ? 'Perfect' : 
-                 healthPercent >= 50 ? 'Good' : 'Poor'}
+                {healthPercent === 100 ? 'Perfect' : healthPercent >= 50 ? 'Good' : 'Poor'}
               </Badge>
             </div>
           </div>
@@ -242,14 +282,21 @@ export const CrossChainDashboardCard = memo(function CrossChainDashboardCard({
                 className={cn(
                   'rounded-lg border p-3',
                   config?.bg || defaultStatusConfig.bg,
-                  config?.border || defaultStatusConfig.border
+                  config?.border || defaultStatusConfig.border,
                 )}
               >
                 <div className="flex items-center justify-between">
-                  <span className={cn('font-medium capitalize', config?.color || defaultStatusConfig.color)}>
+                  <span
+                    className={cn(
+                      'font-medium capitalize',
+                      config?.color || defaultStatusConfig.color,
+                    )}
+                  >
                     {chain.chain}
                   </span>
-                  <StatusIcon className={cn('h-4 w-4', config?.color || defaultStatusConfig.color)} />
+                  <StatusIcon
+                    className={cn('h-4 w-4', config?.color || defaultStatusConfig.color)}
+                  />
                 </div>
                 <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
                   <Clock className="h-3 w-3" />
@@ -273,10 +320,10 @@ export const CrossChainDashboardCard = memo(function CrossChainDashboardCard({
                   className={cn(
                     'flex items-center gap-2 rounded-full border px-3 py-1 text-sm',
                     comparison.status === 'critical'
-                      ? 'bg-red-500/10 border-red-500/30 text-red-600'
+                      ? 'border-red-500/30 bg-red-500/10 text-red-600'
                       : comparison.status === 'warning'
-                      ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-600'
-                      : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600'
+                        ? 'border-yellow-500/30 bg-yellow-500/10 text-yellow-600'
+                        : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600',
                   )}
                 >
                   <span className="font-medium">{comparison.symbol}</span>

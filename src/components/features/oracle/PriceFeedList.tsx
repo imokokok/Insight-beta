@@ -18,9 +18,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useWebSocket } from '@/hooks';
 import { logger } from '@/shared/logger';
+import { cn, fetchApiData, formatTimeAgo } from '@/shared/utils';
 import { PROTOCOL_DISPLAY_NAMES } from '@/types/oracle';
 import type { OracleProtocol } from '@/types/unifiedOracleTypes';
-import { cn, fetchApiData, formatTimeAgo } from '@/shared/utils';
 
 // 本地类型定义（兼容组件需求）
 interface PriceFeed {
@@ -234,14 +234,14 @@ export const PriceFeedList = memo(function PriceFeedList({
             {isConnected ? 'Live' : 'Static'}
           </Badge>
         </div>
-        <span className="text-muted-foreground text-xs">{feeds.length} feeds</span>
+        <span className="text-xs text-muted-foreground">{feeds.length} feeds</span>
       </CardHeader>
       <CardContent className="p-0">
         <ScrollArea className="h-[300px] sm:h-[400px]">
           <div className="divide-y">
             {Object.entries(groupedFeeds).map(([protocol, protocolFeeds]) => (
               <div key={protocol} className="p-2 sm:p-4">
-                <h4 className="text-muted-foreground mb-2 text-xs font-semibold uppercase tracking-wide sm:mb-3">
+                <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground sm:mb-3">
                   {PROTOCOL_DISPLAY_NAMES[protocol as OracleProtocol]}
                 </h4>
                 <div className="space-y-1 sm:space-y-2">
@@ -281,7 +281,7 @@ const PriceFeedItem = React.memo(function PriceFeedItem({ feed }: { feed: FeedWi
       )}
     >
       <div className="flex items-center gap-2 sm:gap-3">
-        <div className="bg-primary/10 flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold sm:h-8 sm:w-8">
+        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-xs font-bold sm:h-8 sm:w-8">
           {feed.symbol.split('/')[0]?.slice(0, 2)}
         </div>
         <div>
@@ -289,7 +289,7 @@ const PriceFeedItem = React.memo(function PriceFeedItem({ feed }: { feed: FeedWi
             <span className="text-sm font-medium sm:text-base">{feed.symbol}</span>
             {feed.isStale && <AlertCircle className="h-3 w-3 text-yellow-500 sm:h-3.5 sm:w-3.5" />}
           </div>
-          <div className="text-muted-foreground flex items-center gap-1 text-xs sm:gap-2">
+          <div className="flex items-center gap-1 text-xs text-muted-foreground sm:gap-2">
             <Clock className="h-3 w-3" />
             {formatTimeAgo(feed.timestamp)}
           </div>

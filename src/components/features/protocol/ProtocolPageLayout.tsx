@@ -7,8 +7,8 @@ import { ArrowLeft, RefreshCw, ExternalLink } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { type OracleProtocol } from '@/types';
 import { cn } from '@/shared/utils';
+import { type OracleProtocol } from '@/types';
 
 export interface ProtocolPageLayoutProps {
   protocol: OracleProtocol;

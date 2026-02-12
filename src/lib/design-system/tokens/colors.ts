@@ -2,7 +2,7 @@
  * Design System - Color Tokens
  *
  * 统一的颜色令牌定义，确保整个应用的视觉一致性
- * 
+ *
  * 核心原则：
  * - 统一使用 amber 替代 orange（避免颜色不一致）
  * - 使用语义化颜色名称
@@ -345,19 +345,19 @@ export const PROTOCOL_COLORS = {
 
 export const CHART_COLORS = {
   primary: ['#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe', '#dbeafe'] as const,
-  secondary: ['#8b5cf6', '#a78bfa', '#c4b5fd', '#ddd6fe', '#ede9fe'] as const,
+  secondary: ['rgb(var(--color-primary))', '#a78bfa', '#c4b5fd', '#ddd6fe', '#ede9fe'] as const,
   success: ['#22c55e', '#4ade80', '#86efac', '#bbf7d0', '#dcfce7'] as const,
   warning: ['#f59e0b', '#fbbf24', '#fcd34d', '#fde68a', '#fef3c7'] as const,
   error: ['#ef4444', '#f87171', '#fca5a5', '#fecaca', '#fee2e2'] as const,
   gradient: {
     blue: ['#3b82f6', '#06b6d4'] as [string, string],
-    purple: ['#8b5cf6', '#d946ef'] as [string, string],
+    purple: ['rgb(var(--color-primary))', '#d946ef'] as [string, string],
     green: ['#22c55e', '#14b8a6'] as [string, string],
     amber: ['#f59e0b', '#f97316'] as [string, string],
   },
   categorical: [
     '#3b82f6',
-    '#8b5cf6',
+    'rgb(var(--color-primary))',
     '#22c55e',
     '#f59e0b',
     '#ef4444',
@@ -442,7 +442,7 @@ export const MONITOR_STATUS_COLORS = {
 // 工具函数
 // ============================================================================
 
-export function getStatusColor(status: string): typeof STATUS_COLORS[StatusColor] {
+export function getStatusColor(status: string): (typeof STATUS_COLORS)[StatusColor] {
   const key = status.toLowerCase() as StatusColor;
   return STATUS_COLORS[key] || STATUS_COLORS.unknown;
 }
@@ -457,9 +457,9 @@ export function getChainColor(chain: string): string {
   return CHAIN_COLORS[key] || CHAIN_COLORS.default;
 }
 
-export function getMonitorStatusColor(status: string): typeof MONITOR_STATUS_COLORS[MonitorStatus] {
+export function getMonitorStatusColor(
+  status: string,
+): (typeof MONITOR_STATUS_COLORS)[MonitorStatus] {
   const key = status.toLowerCase() as MonitorStatus;
   return MONITOR_STATUS_COLORS[key] || MONITOR_STATUS_COLORS.investigating;
 }
-
-

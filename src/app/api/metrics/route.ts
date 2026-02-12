@@ -18,8 +18,8 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     // 动态导入以避免构建时执行
-    const { alertRuleEngine } = await import('@/server/oracle/realtime');
-    const { priceAggregationEngine } = await import('@/server/oracle/priceAggregation');
+    const { alertRuleEngine } = await import('@/services/oracle/realtime');
+    const { priceAggregationEngine } = await import('@/services/oracle/priceAggregation');
 
     const metrics = {
       // 价格聚合指标

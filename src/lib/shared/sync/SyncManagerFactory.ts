@@ -7,8 +7,12 @@
  * - 单例模式支持
  */
 
+import {
+  BaseSyncManager,
+  type IOracleClient,
+  type SyncConfig,
+} from '@/services/oracle/sync/BaseSyncManager';
 import type { SupportedChain, OracleProtocol } from '@/types/unifiedOracleTypes';
-import { BaseSyncManager, type IOracleClient, type SyncConfig } from '@/services/oracle/sync/BaseSyncManager';
 
 // ============================================================================
 // 单例存储 - 使用模块级变量确保全局唯一
@@ -32,7 +36,7 @@ export interface SyncManagerFactoryConfig {
 export type ClientFactory = (
   chain: SupportedChain,
   rpcUrl: string,
-  protocolConfig?: Record<string, unknown>
+  protocolConfig?: Record<string, unknown>,
 ) => IOracleClient;
 
 /**
@@ -66,7 +70,7 @@ export class SyncManagerFactory {
   static createManagerClass(
     config: SyncManagerFactoryConfig,
     clientFactory: ClientFactory,
-    symbolProvider: SymbolProvider
+    symbolProvider: SymbolProvider,
   ): new () => BaseSyncManager {
     const { protocol, syncConfig } = config;
 
@@ -84,7 +88,7 @@ export class SyncManagerFactory {
       protected createClient(
         chain: SupportedChain,
         rpcUrl: string,
-        protocolConfig?: Record<string, unknown>
+        protocolConfig?: Record<string, unknown>,
       ): IOracleClient {
         return clientFactory(chain, rpcUrl, protocolConfig);
       }
@@ -101,7 +105,7 @@ export class SyncManagerFactory {
   static create(
     config: SyncManagerFactoryConfig,
     clientFactory: ClientFactory,
-    symbolProvider: SymbolProvider
+    symbolProvider: SymbolProvider,
   ): SyncManagerExports {
     const ManagerClass = this.createManagerClass(config, clientFactory, symbolProvider);
     const manager = new ManagerClass();
@@ -122,14 +126,14 @@ export class SyncManagerFactory {
   static createSingleton(
     config: SyncManagerFactoryConfig,
     clientFactory: ClientFactory,
-    symbolProvider: SymbolProvider
+    symbolProvider: SymbolProvider,
   ): SyncManagerExports {
     // 使用协议作为单例键
     const singletonKey = config.protocol;
-    
+
     // 检查是否已存在实例
     let instance = singletonInstances.get(singletonKey);
-    
+
     if (!instance) {
       const ManagerClass = this.createManagerClass(config, clientFactory, symbolProvider);
       instance = new ManagerClass();
@@ -163,7 +167,7 @@ export class SyncManagerFactory {
 export function createSyncManager(
   config: SyncManagerFactoryConfig,
   clientFactory: ClientFactory,
-  symbolProvider: SymbolProvider
+  symbolProvider: SymbolProvider,
 ): SyncManagerExports {
   return SyncManagerFactory.create(config, clientFactory, symbolProvider);
 }
@@ -174,7 +178,7 @@ export function createSyncManager(
 export function createSingletonSyncManager(
   config: SyncManagerFactoryConfig,
   clientFactory: ClientFactory,
-  symbolProvider: SymbolProvider
+  symbolProvider: SymbolProvider,
 ): SyncManagerExports {
   return SyncManagerFactory.createSingleton(config, clientFactory, symbolProvider);
 }

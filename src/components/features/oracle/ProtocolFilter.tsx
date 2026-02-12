@@ -65,14 +65,14 @@ export function ProtocolFilter({ selectedProtocols, onChange, className }: Proto
           variant="outline"
           className={cn(
             'gap-2 border-dashed',
-            selectedCount > 0 && selectedCount < PROTOCOLS.length - 1 && 'border-purple-500',
+            selectedCount > 0 && selectedCount < PROTOCOLS.length - 1 && 'border-primary',
             className,
           )}
         >
           <Filter className="h-4 w-4" />
           <span>Protocols</span>
           {selectedCount > 0 && selectedCount < PROTOCOLS.length - 1 && (
-            <span className="ml-1 rounded-full bg-purple-100 px-2 py-0.5 text-xs text-purple-700">
+            <span className="text-primary-dark ml-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs">
               {selectedCount}
             </span>
           )}
@@ -90,9 +90,7 @@ export function ProtocolFilter({ selectedProtocols, onChange, className }: Proto
               <span>{protocol.icon}</span>
               <span>{protocol.name}</span>
             </div>
-            {selectedProtocols.includes(protocol.id) && (
-              <Check className="h-4 w-4 text-purple-600" />
-            )}
+            {selectedProtocols.includes(protocol.id) && <Check className="h-4 w-4 text-primary" />}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

@@ -5,7 +5,7 @@
  * 代码量从 65 行减少到 ~20 行
  */
 
-import { createDIAClient, getAvailableDIASymbols } from '@/infrastructure/blockchain/diaOracle';
+import { createDIAClient, getAvailableDIASymbols } from '@/lib/blockchain/diaOracle';
 import { createSingletonSyncManager } from '@/lib/shared';
 
 // ============================================================================

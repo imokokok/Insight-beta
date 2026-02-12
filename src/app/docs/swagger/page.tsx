@@ -9,12 +9,6 @@
 
 import { useEffect, useState } from 'react';
 
-
-
-
-
-
-
 import { DynamicSwaggerUI } from '@/lib/dynamic-imports';
 
 export default function SwaggerPage() {
@@ -51,7 +45,7 @@ export default function SwaggerPage() {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-purple-600 border-t-transparent"></div>
+          <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
           <p className="text-gray-600">Loading API Documentation...</p>
         </div>
       </div>

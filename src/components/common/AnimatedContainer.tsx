@@ -602,24 +602,4 @@ export function NumberCounter({
   );
 }
 
-// ============================================================================
-// Export
-// ============================================================================
 
-export default {
-  AnimatedContainer,
-  AnimatedItem,
-  ScrollReveal,
-  PageTransition,
-  StaggerContainer,
-  StaggerItem,
-  HoverScale,
-  FadeIn,
-  SlideIn,
-  ScaleIn,
-  AnimatedList,
-  AnimatedGrid,
-  AnimatedGridItem,
-  PresenceAnimation,
-  NumberCounter,
-};

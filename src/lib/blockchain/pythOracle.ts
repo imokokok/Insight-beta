@@ -12,9 +12,9 @@ import {
   PYTH_PRICE_FEED_IDS,
   getAvailablePythSymbols as getPythAvailableSymbols,
 } from '@/config/pythPriceFeeds';
-import { ErrorHandler, normalizeError } from '@/shared/errors';
-import { logger } from '@/shared/logger';
+import { ErrorHandler, normalizeError } from '@/lib/errors';
 import { EvmOracleClient } from '@/lib/shared';
+import { logger } from '@/shared/logger';
 import type {
   SupportedChain,
   UnifiedPriceFeed,

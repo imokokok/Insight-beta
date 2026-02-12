@@ -74,9 +74,9 @@ export function LivenessProgressBar({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Info size={14} className="cursor-help text-gray-400 hover:text-purple-600" />
+                  <Info size={14} className="cursor-help text-gray-400 hover:text-primary" />
                 </TooltipTrigger>
-                <TooltipContent side="right" className="bg-blue-600 text-white border-blue-500">
+                <TooltipContent side="right" className="border-blue-500 bg-blue-600 text-white">
                   {tooltip}
                 </TooltipContent>
               </Tooltip>
@@ -86,7 +86,7 @@ export function LivenessProgressBar({
         <span
           className={cn(
             'flex items-center gap-1',
-            isExpired ? 'text-gray-400' : 'font-bold text-purple-600',
+            isExpired ? 'text-gray-400' : 'font-bold text-primary',
           )}
         >
           <Clock size={12} />
@@ -97,7 +97,7 @@ export function LivenessProgressBar({
         <div
           className={cn(
             'h-full shadow-sm transition-all duration-1000 ease-out',
-            isExpired ? 'bg-gray-300' : 'bg-gradient-to-r from-purple-500 to-indigo-500',
+            isExpired ? 'bg-gray-300' : 'bg-gradient-to-r from-primary-500 to-indigo-500',
           )}
           style={{ width: `${progress}%` }}
         />

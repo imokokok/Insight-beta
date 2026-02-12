@@ -19,9 +19,9 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn, fetchApiData } from '@/shared/utils';
 import { PROTOCOL_DISPLAY_NAMES, ORACLE_PROTOCOLS } from '@/types/oracle';
 import type { OracleProtocol } from '@/types/unifiedOracleTypes';
-import { cn, fetchApiData } from '@/shared/utils';
 
 interface ProtocolHealthGridProps {
   className?: string;
@@ -206,30 +206,30 @@ function ProtocolHealthCard({ data }: { data: ProtocolHealth }) {
 
       <div className="grid grid-cols-2 gap-3 text-xs">
         <div className="flex items-center gap-2">
-          <Activity className="text-muted-foreground h-3.5 w-3.5 flex-shrink-0" />
+          <Activity className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
           <div>
-            <div className="text-muted-foreground text-[10px] uppercase">Accuracy</div>
+            <div className="text-[10px] uppercase text-muted-foreground">Accuracy</div>
             <div className="font-medium">{data.accuracy.toFixed(1)}%</div>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Shield className="text-muted-foreground h-3.5 w-3.5 flex-shrink-0" />
+          <Shield className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
           <div>
-            <div className="text-muted-foreground text-[10px] uppercase">Uptime</div>
+            <div className="text-[10px] uppercase text-muted-foreground">Uptime</div>
             <div className="font-medium">{data.uptime.toFixed(1)}%</div>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Zap className="text-muted-foreground h-3.5 w-3.5 flex-shrink-0" />
+          <Zap className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
           <div>
-            <div className="text-muted-foreground text-[10px] uppercase">Latency</div>
+            <div className="text-[10px] uppercase text-muted-foreground">Latency</div>
             <div className="font-medium">{data.latency.toFixed(0)}ms</div>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Clock className="text-muted-foreground h-3.5 w-3.5 flex-shrink-0" />
+          <Clock className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
           <div>
-            <div className="text-muted-foreground text-[10px] uppercase">Feeds</div>
+            <div className="text-[10px] uppercase text-muted-foreground">Feeds</div>
             <div className="font-medium">{data.totalFeeds}</div>
           </div>
         </div>

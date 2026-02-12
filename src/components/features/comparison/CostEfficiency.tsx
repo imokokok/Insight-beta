@@ -32,8 +32,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useI18n } from '@/i18n';
-import type { CostComparison } from '@/types/oracle';
 import { cn } from '@/shared/utils';
+import type { CostComparison } from '@/types/oracle';
 
 interface CostEfficiencyProps {
   data?: CostComparison;
@@ -107,7 +107,7 @@ export function CostEfficiencyView({ data, isLoading }: CostEfficiencyProps) {
           <CardTitle>{t('comparison.cost.title')}</CardTitle>
           <CardDescription>{t('comparison.status.noData')}</CardDescription>
         </CardHeader>
-        <CardContent className="text-muted-foreground flex h-64 items-center justify-center">
+        <CardContent className="flex h-64 items-center justify-center text-muted-foreground">
           <DollarSign className="mr-2 h-5 w-5" />
           {t('comparison.cost.loading')}
         </CardContent>
@@ -129,7 +129,7 @@ export function CostEfficiencyView({ data, isLoading }: CostEfficiencyProps) {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-lg font-semibold">{t('comparison.cost.title')}</CardTitle>
-            <CardDescription className="text-muted-foreground mt-1 text-sm">
+            <CardDescription className="mt-1 text-sm text-muted-foreground">
               {t('comparison.cost.description')}
             </CardDescription>
           </div>
@@ -143,19 +143,19 @@ export function CostEfficiencyView({ data, isLoading }: CostEfficiencyProps) {
         {/* Top Recommendations */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {/* Best Value */}
-          <div className="rounded-lg border border-violet-200 bg-gradient-to-br from-violet-50 to-purple-50 p-4">
+          <div className="rounded-lg border border-violet-200 bg-gradient-to-br from-violet-50 to-primary-50 p-4">
             <div className="flex items-start justify-between">
               <div>
-                <p className="flex items-center gap-1 text-sm font-medium text-violet-600">
+                <p className="flex items-center gap-1 text-sm font-medium text-primary-600">
                   <Award className="h-4 w-4" />
                   {t('comparison.cost.bestValue')}
                 </p>
                 <p className="mt-1 text-xl font-bold capitalize">{bestValue.protocol}</p>
-                <p className="text-muted-foreground mt-1 text-sm">
+                <p className="mt-1 text-sm text-muted-foreground">
                   {t('comparison.cost.valueScore')}: {bestValue.valueScore.toFixed(0)}/100
                 </p>
               </div>
-              <div className="rounded-full bg-violet-100 p-2 text-violet-600">
+              <div className="rounded-full bg-primary-100 p-2 text-primary-600">
                 <TrendingUp className="h-5 w-5" />
               </div>
             </div>
@@ -170,7 +170,7 @@ export function CostEfficiencyView({ data, isLoading }: CostEfficiencyProps) {
                   {t('comparison.cost.lowestCost')}
                 </p>
                 <p className="mt-1 text-xl font-bold capitalize">{cheapest.protocol}</p>
-                <p className="text-muted-foreground mt-1 text-sm">
+                <p className="mt-1 text-sm text-muted-foreground">
                   {t('comparison.cost.costScore')}: {cheapest.costScore.toFixed(0)}/100
                 </p>
               </div>
@@ -195,7 +195,7 @@ export function CostEfficiencyView({ data, isLoading }: CostEfficiencyProps) {
                     ).protocol
                   }
                 </p>
-                <p className="text-muted-foreground mt-1 text-sm">
+                <p className="mt-1 text-sm text-muted-foreground">
                   {Math.max(...protocols.map((p) => p.feedsCount))} {t('comparison.cost.feedPairs')}
                 </p>
               </div>
@@ -267,7 +267,7 @@ export function CostEfficiencyView({ data, isLoading }: CostEfficiencyProps) {
                   {protocols
                     .sort((a, b) => b.valueScore - a.valueScore)
                     .map((protocol) => (
-                      <tr key={protocol.protocol} className="hover:bg-muted/30 border-t">
+                      <tr key={protocol.protocol} className="border-t hover:bg-muted/30">
                         <td className="px-4 py-2 font-medium capitalize">{protocol.protocol}</td>
                         <td className="px-4 py-2 text-right">
                           <span
@@ -282,10 +282,10 @@ export function CostEfficiencyView({ data, isLoading }: CostEfficiencyProps) {
                         <td className="px-4 py-2 text-right font-medium">
                           {protocol.valueScore.toFixed(0)}
                         </td>
-                        <td className="text-muted-foreground px-4 py-2 text-right">
+                        <td className="px-4 py-2 text-right text-muted-foreground">
                           {protocol.accuracyScore.toFixed(0)}%
                         </td>
-                        <td className="text-muted-foreground px-4 py-2 text-right">
+                        <td className="px-4 py-2 text-right text-muted-foreground">
                           {protocol.uptimeScore.toFixed(1)}%
                         </td>
                         <td className="px-4 py-2 text-center">
@@ -339,7 +339,7 @@ export function CostEfficiencyView({ data, isLoading }: CostEfficiencyProps) {
 
             <div className="grid grid-cols-2 gap-4">
               {protocols.slice(0, 4).map((protocol) => (
-                <div key={protocol.protocol} className="bg-muted/20 rounded-lg border p-3">
+                <div key={protocol.protocol} className="rounded-lg border bg-muted/20 p-3">
                   <div className="mb-2 flex items-center justify-between">
                     <span className="font-medium capitalize">{protocol.protocol}</span>
                     <Badge variant="outline" className="text-xs">
@@ -374,10 +374,10 @@ export function CostEfficiencyView({ data, isLoading }: CostEfficiencyProps) {
               {recommendations.map((rec, idx) => (
                 <div
                   key={idx}
-                  className="bg-card rounded-lg border p-4 transition-shadow hover:shadow-md"
+                  className="rounded-lg border bg-card p-4 transition-shadow hover:shadow-md"
                 >
                   <div className="flex items-start gap-4">
-                    <div className="bg-primary/10 text-primary rounded-full p-2">
+                    <div className="rounded-full bg-primary/10 p-2 text-primary">
                       {rec.useCase === 'defi_protocol' && <BarChart3 className="h-5 w-5" />}
                       {rec.useCase === 'trading' && <TrendingUp className="h-5 w-5" />}
                       {rec.useCase === 'enterprise' && <Award className="h-5 w-5" />}
@@ -392,11 +392,11 @@ export function CostEfficiencyView({ data, isLoading }: CostEfficiencyProps) {
                           {t('comparison.cost.recommended')}: {rec.recommendedProtocol}
                         </Badge>
                       </div>
-                      <p className="text-muted-foreground mt-1 text-sm">{rec.reason}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">{rec.reason}</p>
                       <div className="mt-3 flex items-center gap-4 text-sm">
                         <span className="text-muted-foreground">
                           {t('comparison.cost.estimatedMonthlyCost')}:{' '}
-                          <span className="text-foreground font-medium">
+                          <span className="font-medium text-foreground">
                             {formatCost(rec.estimatedMonthlyCost, t)}
                           </span>
                         </span>
@@ -411,10 +411,10 @@ export function CostEfficiencyView({ data, isLoading }: CostEfficiencyProps) {
               ))}
             </div>
 
-            <div className="bg-muted/30 flex items-start gap-3 rounded-lg border p-4">
-              <Info className="text-muted-foreground mt-0.5 h-5 w-5 flex-shrink-0" />
-              <div className="text-muted-foreground text-sm">
-                <p className="text-foreground mb-1 font-medium">
+            <div className="flex items-start gap-3 rounded-lg border bg-muted/30 p-4">
+              <Info className="mt-0.5 h-5 w-5 flex-shrink-0 text-muted-foreground" />
+              <div className="text-sm text-muted-foreground">
+                <p className="mb-1 font-medium text-foreground">
                   {t('comparison.cost.calculationNote')}
                 </p>
                 <p>{t('comparison.cost.calculationDescription')}</p>

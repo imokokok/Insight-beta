@@ -1,147 +1,147 @@
-# 数据库表结构统一迁移指南
+# Database Schema Unified Migration Guide
 
-## 概述
+This document describes how to unify the existing two sets of price data table structures into one optimized time-series storage solution.
 
-本文档描述了如何将现有的两套价格数据表结构统一为一套优化的时序存储方案。
+## Overview
 
-## 迁移前后的对比
+## Comparison Before and After Migration
 
-### 迁移前（多套表）
-
-```
-┌─────────────────────────────────────────────────────────┐
-│  unified_price_feeds    - 当前价格快照（~10万条）         │
-├─────────────────────────────────────────────────────────┤
-│  unified_price_updates  - 价格更新历史（~100万条）        │
-├─────────────────────────────────────────────────────────┤
-│  price_history_raw      - 原始历史（~1000万条）           │
-├─────────────────────────────────────────────────────────┤
-│  price_history_min1     - 1分钟K线（~500万条）            │
-├─────────────────────────────────────────────────────────┤
-│  price_history_min5     - 5分钟K线（~100万条）            │
-├─────────────────────────────────────────────────────────┤
-│  price_history_hour1    - 1小时K线（~50万条）             │
-├─────────────────────────────────────────────────────────┤
-│  price_history_day1     - 1天K线（~10万条）               │
-└─────────────────────────────────────────────────────────┘
-总计：~6760万条记录，存储空间约 50-100GB
-```
-
-### 迁移后（统一表）
+### Before Migration (Multiple Tables)
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  price_history          - 统一时序表（分区）              │
-│  （替代所有历史表，~1000万条原始数据）                    │
+│  unified_price_feeds    - Current price snapshots (~100k records)  │
 ├─────────────────────────────────────────────────────────┤
-│  price_history_1min     - 1分钟物化视图                  │
+│  unified_price_updates  - Price update history (~1M records)       │
 ├─────────────────────────────────────────────────────────┤
-│  price_history_5min     - 5分钟物化视图                  │
+│  price_history_raw      - Raw history (~10M records)              │
 ├─────────────────────────────────────────────────────────┤
-│  price_history_1hour    - 1小时物化视图                  │
+│  price_history_min1     - 1-minute K-lines (~5M records)        │
 ├─────────────────────────────────────────────────────────┤
-│  price_history_1day     - 1天物化视图                    │
+│  price_history_min5     - 5-minute K-lines (~1M records)        │
 ├─────────────────────────────────────────────────────────┤
-│  current_price_feeds    - 当前价格视图                   │
+│  price_history_hour1    - 1-hour K-lines (~500k records)        │
 ├─────────────────────────────────────────────────────────┤
-│  price_update_events    - 更新事件表                     │
+│  price_history_day1     - 1-day K-lines (~100k records)         │
 └─────────────────────────────────────────────────────────┘
-总计：~1000万条记录 + 物化视图，存储空间约 15-25GB
-节省：约 60-70% 存储空间
+Total: ~67.6M records, storage space ~50-100GB
 ```
 
-## 迁移步骤
+### After Migration (Unified Table)
 
-### 阶段1：准备工作（约30分钟）
+```
+┌─────────────────────────────────────────────────────────┐
+│  price_history          - Unified time-series table (partitioned)│
+│  (~10M records replacing all history tables)            │
+├─────────────────────────────────────────────────────────┤
+│  price_history_1min     - 1-minute materialized view   │
+├─────────────────────────────────────────────────────────┤
+│  price_history_5min     - 5-minute materialized view   │
+├─────────────────────────────────────────────────────────┤
+│  price_history_1hour    - 1-hour materialized view    │
+├─────────────────────────────────────────────────────────┤
+│  price_history_1day     - 1-day materialized view    │
+├─────────────────────────────────────────────────────────┤
+│  current_price_feeds    - Current price view          │
+├─────────────────────────────────────────────────────────┤
+│  price_update_events    - Update events table         │
+└─────────────────────────────────────────────────────────┘
+Total: ~10M records + materialized views, storage ~15-25GB
+Savings: ~60-70% storage space
+```
 
-#### 1.1 备份数据
+## Migration Steps
+
+### Phase 1: Preparation (~30 minutes)
+
+#### 1.1 Backup Data
 
 ```bash
-# 使用 supabase CLI 导出数据
+# Export data using supabase CLI
 supabase db dump -f backup_pre_migration.sql
 
-# 或者使用 pg_dump
+# Or use pg_dump
 pg_dump $DATABASE_URL > backup_pre_migration.sql
 ```
 
-#### 1.2 检查磁盘空间
+#### 1.2 Check Disk Space
 
-确保数据库磁盘空间充足（至少剩余50%空间用于迁移过程中的临时数据）。
+Ensure sufficient disk space (at least 50% free space for temporary data during migration).
 
-#### 1.3 停止写入操作
+#### 1.3 Stop Write Operations
 
-在迁移期间，建议暂停价格同步服务，或切换到只读模式。
+During migration, it's recommended to pause the price sync service or switch to read-only mode.
 
 ```bash
-# 暂停同步服务
+# Pause sync service
 npm run sync:pause
 
-# 或者设置维护模式
-# 在 .env 中添加 MAINTENANCE_MODE=true
+# Or set maintenance mode
+# Add MAINTENANCE_MODE=true in .env
 ```
 
-### 阶段2：执行迁移（约2-4小时，取决于数据量）
+### Phase 2: Execute Migration (~2-4 hours depending on data volume)
 
-#### 2.1 应用新的数据库结构
+#### 2.1 Apply New Database Structure
 
 ```bash
-# 使用 supabase CLI
+# Using supabase CLI
 supabase db push
 
-# 或者手动执行迁移脚本
+# Or manually execute migration script
 psql $DATABASE_URL -f supabase/migrations/20250210000002_unified_schema_refactor.sql
 ```
 
-#### 2.2 执行数据迁移
+#### 2.2 Execute Data Migration
 
 ```bash
-# 先进行干运行（dry-run）检查
+# First perform dry-run to check
 DRY_RUN=true npx tsx scripts/migrate-price-data.ts --dry-run
 
-# 执行实际迁移
+# Execute actual migration
 npx tsx scripts/migrate-price-data.ts
 
-# 或者只迁移特定表
+# Or only migrate specific tables
 npx tsx scripts/migrate-price-data.ts --skip-history
 npx tsx scripts/migrate-price-data.ts --skip-feeds
 npx tsx scripts/migrate-price-data.ts --skip-updates
 ```
 
-#### 2.3 验证数据一致性
+#### 2.3 Verify Data Consistency
 
 ```bash
-# 验证迁移结果
+# Verify migration results
 npx tsx scripts/migrate-price-data.ts --verify-only
 ```
 
-### 阶段3：切换应用（约15分钟）
+### Phase 3: Switch Application (~15 minutes)
 
-#### 3.1 更新代码
+#### 3.1 Update Code
 
-将应用代码从旧表切换到新表：
+Switch application code from old tables to new tables:
 
-**旧代码：**
+**Old Code:**
 
 ```typescript
-// 使用 unified_price_feeds
+// Using unified_price_feeds
 const { data } = await supabase.from('unified_price_feeds').select('*');
 
-// 使用 price_history_raw
+// Using price_history_raw
 const { data } = await supabase.from('price_history_raw').select('*').eq('symbol', 'ETH/USD');
 ```
 
-**新代码：**
+**New Code:**
 
 ```typescript
-// 使用统一的服务
+// Using unified service
 import { getUnifiedPriceService } from '@/server/oracle/unifiedPriceService';
 
 const priceService = getUnifiedPriceService();
 
-// 获取当前价格
+// Get current prices
 const currentPrices = await priceService.getCurrentPrices();
 
-// 获取历史数据
+// Get historical data
 const history = await priceService.getPriceHistory({
   symbol: 'ETH/USD',
   startTime: new Date(Date.now() - 24 * 60 * 60 * 1000),
@@ -150,34 +150,31 @@ const history = await priceService.getPriceHistory({
 });
 ```
 
-#### 3.2 部署新版本
+#### 3.2 Deploy New Version
 
 ```bash
-# 构建并部署
+# Build and deploy
 npm run build
 npm run deploy
 
-# 或者使用 Vercel
+# Or use Vercel
 vercel --prod
 ```
 
-#### 3.3 验证应用功能
+#### 3.3 Verify Application Functionality
 
-- [ ] 价格查询正常
-- [ ] 历史数据查询正常
-- [ ] K线数据查询正常
-- [ ] 价格更新事件记录正常
-- [ ] 性能符合预期
+- [ ] Price query works
+- [ ] Historical data query works
+- [ ] K-line data query works
+- [ ] Price update event recording works
+- [ ] Performance meets expectations
 
-### 阶段4：清理旧数据（可选，约1-2小时）
+### Phase 4: Clean Up Old Data (Optional, ~1-2 hours)
 
-确认新系统运行稳定后（建议等待1-7天），可以清理旧表：
+After confirming the new system runs stably (recommend waiting 1-7 days), you can clean up old tables:
 
 ```sql
--- 清理旧表（请确保已备份！）
--- 注意：此操作不可逆！
-
--- 重命名旧表（先保留一段时间）
+-- Rename old tables (keep for a while first)
 ALTER TABLE unified_price_feeds RENAME TO unified_price_feeds_backup;
 ALTER TABLE unified_price_updates RENAME TO unified_price_updates_backup;
 ALTER TABLE price_history_raw RENAME TO price_history_raw_backup;
@@ -186,7 +183,7 @@ ALTER TABLE price_history_min5 RENAME TO price_history_min5_backup;
 ALTER TABLE price_history_hour1 RENAME TO price_history_hour1_backup;
 ALTER TABLE price_history_day1 RENAME TO price_history_day1_backup;
 
--- 删除旧表（确认无误后执行）
+-- Delete old tables (confirm first)
 -- DROP TABLE unified_price_feeds_backup;
 -- DROP TABLE unified_price_updates_backup;
 -- DROP TABLE price_history_raw_backup;
@@ -196,29 +193,29 @@ ALTER TABLE price_history_day1 RENAME TO price_history_day1_backup;
 -- DROP TABLE price_history_day1_backup;
 ```
 
-## 回滚方案
+## Rollback Plan
 
-如果在迁移过程中遇到问题，可以按以下步骤回滚：
+If problems are encountered during migration, you can roll back as follows:
 
-### 步骤1：切换回旧代码
+### Step 1: Switch Back to Old Code
 
 ```bash
-# 回滚到上一个版本
+# Revert to previous version
 git revert HEAD
 npm run deploy
 ```
 
-### 步骤2：恢复数据（如果需要）
+### Step 2: Restore Data (if needed)
 
 ```bash
-# 从备份恢复
+# Restore from backup
 psql $DATABASE_URL < backup_pre_migration.sql
 ```
 
-### 步骤3：清理新表（可选）
+### Step 3: Clean Up New Tables (Optional)
 
 ```sql
--- 删除新表
+-- Delete new tables
 DROP TABLE IF EXISTS price_history CASCADE;
 DROP TABLE IF EXISTS price_update_events CASCADE;
 DROP TABLE IF EXISTS price_feed_latest CASCADE;
@@ -228,34 +225,34 @@ DROP MATERIALIZED VIEW IF EXISTS price_history_1hour;
 DROP MATERIALIZED VIEW IF EXISTS price_history_1day;
 ```
 
-## 性能优化建议
+## Performance Optimization Suggestions
 
-### 1. 分区管理
+### 1. Partition Management
 
-定期创建新的分区：
+Regularly create new partitions:
 
 ```sql
--- 创建下个月的分区
+-- Create partition for next month
 CREATE TABLE IF NOT EXISTS price_history_2025_04 PARTITION OF price_history
     FOR VALUES FROM ('2025-04-01') TO ('2025-05-01');
 ```
 
-### 2. 物化视图刷新
+### 2. Materialized View Refresh
 
-设置定时任务刷新物化视图：
+Set up scheduled tasks to refresh materialized views:
 
 ```sql
--- 使用 pg_cron 扩展（如果可用）
+-- Use pg_cron extension (if available)
 SELECT cron.schedule('refresh-1min', '*/1 * * * *', 'SELECT refresh_price_history_1min()');
 SELECT cron.schedule('refresh-5min', '*/5 * * * *', 'SELECT refresh_price_history_5min()');
 SELECT cron.schedule('refresh-1hour', '0 * * * *', 'SELECT refresh_price_history_1hour()');
 SELECT cron.schedule('refresh-1day', '0 0 * * *', 'SELECT refresh_price_history_1day()');
 ```
 
-或者在应用层定时刷新：
+Or refresh at application layer:
 
 ```typescript
-// 每小时刷新物化视图
+// Refresh materialized views every hour
 setInterval(
   async () => {
     await priceService.refreshAllMaterializedViews();
@@ -264,68 +261,68 @@ setInterval(
 );
 ```
 
-### 3. 数据清理
+### 3. Data Cleanup
 
-定期清理过期数据：
+Regularly clean up expired data:
 
 ```sql
--- 清理90天前的原始数据
+-- Clean raw data older than 90 days
 SELECT cleanup_old_price_history();
 
--- 清理30天前的更新事件
+-- Clean update events older than 30 days
 SELECT cleanup_old_price_events();
 ```
 
-## 监控指标
+## Monitoring Metrics
 
-迁移后需要监控以下指标：
+After migration, monitor the following metrics:
 
-| 指标             | 正常范围 | 告警阈值 |
-| ---------------- | -------- | -------- |
-| 查询响应时间     | < 100ms  | > 500ms  |
-| 物化视图刷新时间 | < 30s    | > 60s    |
-| 表存储空间增长   | < 1GB/天 | > 5GB/天 |
-| 价格数据延迟     | < 1分钟  | > 5分钟  |
+| Metric                         | Normal Range | Alert Threshold |
+| ------------------------------ | ------------ | --------------- |
+| Query response time            | < 100ms      | > 500ms         |
+| Materialized view refresh time | < 30s        | > 60s           |
+| Table storage growth           | < 1GB/day    | > 5GB/day       |
+| Price data latency             | < 1 minute   | > 5 minutes     |
 
-## 常见问题
+## FAQ
 
-### Q1: 迁移过程中数据是否会丢失？
+### Q1: Will data be lost during migration?
 
-不会。迁移脚本使用 INSERT 操作，不会删除或修改源数据。建议在迁移前进行完整备份。
+No. Migration scripts use INSERT operations and do not delete or modify source data. It's recommended to perform a full backup before migration.
 
-### Q2: 迁移期间服务是否可用？
+### Q2: Is service available during migration?
 
-建议在维护窗口期间进行迁移，或切换到只读模式。新表创建后可以逐步切换流量。
+It's recommended to perform migration during a maintenance window or switch to read-only mode. After new tables are created, traffic can be gradually switched.
 
-### Q3: 物化视图的数据有多实时？
+### Q3: How real-time is materialized view data?
 
-物化视图需要手动刷新，默认建议：
+Materialized views need to be manually refreshed. Default recommendations:
 
-- 1分钟视图：每分钟刷新
-- 5分钟视图：每5分钟刷新
-- 1小时视图：每小时刷新
-- 1天视图：每天刷新
+- 1-minute view: Refresh every minute
+- 5-minute view: Refresh every 5 minutes
+- 1-hour view: Refresh every hour
+- 1-day view: Refresh daily
 
-如果需要实时数据，请直接查询 `price_history` 表。
+If real-time data is needed, query `price_history` table directly.
 
-### Q4: 如何验证数据一致性？
+### Q4: How to verify data consistency?
 
-使用迁移脚本提供的验证功能：
+Use the verification function provided by the migration script:
 
 ```bash
 npx tsx scripts/migrate-price-data.ts --verify-only
 ```
 
-这会检查：
+This checks:
 
-- 记录数量是否匹配
-- 视图是否有数据
-- 数据时间范围是否正确
+- Record counts match
+- Views have data
+- Data time range is correct
 
-## 联系支持
+## Contact Support
 
-如果在迁移过程中遇到问题，请联系：
+If problems are encountered during migration, please contact:
 
-- 技术负责人：[姓名]
-- DBA 团队：[联系方式]
-- 紧急热线：[电话]
+- Technical Lead: [Name]
+- DBA Team: [Contact]
+- Emergency Hotline: [Phone]

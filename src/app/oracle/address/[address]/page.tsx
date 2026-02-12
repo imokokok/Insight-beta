@@ -6,8 +6,6 @@ import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigat
 
 import { ExternalLink, LayoutGrid, List as ListIcon } from 'lucide-react';
 
-
-
 import { CopyButton } from '@/components/common/CopyButton';
 import { AssertionList } from '@/components/features/assertion/AssertionList';
 import { DisputeList } from '@/components/features/dispute/DisputeList';
@@ -17,8 +15,6 @@ import { useDisputes, useOracleData, useUserStats } from '@/hooks';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage } from '@/i18n/translations';
 import { cn, getExplorerUrl } from '@/shared/utils';
-
-
 
 import type { Route } from 'next';
 
@@ -121,7 +117,7 @@ export default function AddressProfilePage() {
       <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
         <div>
           <div className="mb-3 flex items-center gap-4">
-            <div className="rounded-full bg-white p-1 shadow-sm ring-4 ring-purple-50">
+            <div className="ring-primary50 rounded-full bg-white p-1 shadow-sm ring-4">
               <AddressAvatar address={address} size={48} />
             </div>
             <h1 className="text-3xl font-black tracking-tight text-gray-900">
@@ -146,7 +142,7 @@ export default function AddressProfilePage() {
                   href={explorerUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded-lg border border-transparent p-2 text-gray-400 transition-colors hover:border-purple-100 hover:bg-purple-50 hover:text-purple-600"
+                  className="rounded-lg border border-transparent p-2 text-gray-400 transition-colors hover:border-primary/10 hover:bg-primary/5 hover:text-primary"
                   title={t('common.viewOnExplorer')}
                 >
                   <ExternalLink size={18} />
@@ -168,26 +164,24 @@ export default function AddressProfilePage() {
               onClick={() => setActiveTab('assertions')}
               className={cn(
                 'relative pb-3 text-sm font-bold transition-all',
-                activeTab === 'assertions'
-                  ? 'text-purple-600'
-                  : 'text-gray-500 hover:text-gray-700',
+                activeTab === 'assertions' ? 'text-primary' : 'text-gray-500 hover:text-gray-700',
               )}
             >
               {t('oracle.profile.assertionsHistory')}
               {activeTab === 'assertions' && (
-                <span className="absolute bottom-0 left-0 h-0.5 w-full rounded-full bg-purple-600" />
+                <span className="absolute bottom-0 left-0 h-0.5 w-full rounded-full bg-primary" />
               )}
             </button>
             <button
               onClick={() => setActiveTab('disputes')}
               className={cn(
                 'relative pb-3 text-sm font-bold transition-all',
-                activeTab === 'disputes' ? 'text-purple-600' : 'text-gray-500 hover:text-gray-700',
+                activeTab === 'disputes' ? 'text-primary' : 'text-gray-500 hover:text-gray-700',
               )}
             >
               {t('oracle.profile.disputesHistory')}
               {activeTab === 'disputes' && (
-                <span className="absolute bottom-0 left-0 h-0.5 w-full rounded-full bg-purple-600" />
+                <span className="absolute bottom-0 left-0 h-0.5 w-full rounded-full bg-primary" />
               )}
             </button>
           </div>
@@ -198,7 +192,7 @@ export default function AddressProfilePage() {
               className={cn(
                 'rounded-md p-1.5 transition-all',
                 viewMode === 'grid'
-                  ? 'bg-white text-purple-600 shadow-sm'
+                  ? 'bg-white text-primary shadow-sm'
                   : 'text-gray-400 hover:text-gray-600',
               )}
             >
@@ -209,7 +203,7 @@ export default function AddressProfilePage() {
               className={cn(
                 'rounded-md p-1.5 transition-all',
                 viewMode === 'list'
-                  ? 'bg-white text-purple-600 shadow-sm'
+                  ? 'bg-white text-primary shadow-sm'
                   : 'text-gray-400 hover:text-gray-600',
               )}
             >

@@ -18,10 +18,6 @@ import {
   ChevronDown,
 } from 'lucide-react';
 
-
-
-
-
 import { PageHeader } from '@/components/common/PageHeader';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { langToLocale } from '@/i18n/translations';
@@ -112,7 +108,6 @@ export default function OptimisticOraclePage() {
     }, 30000);
 
     return () => clearInterval(pollInterval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedProtocol]);
 
   async function fetchOverview() {
@@ -206,7 +201,7 @@ export default function OptimisticOraclePage() {
                         }}
                         className={cn(
                           'flex w-full items-start gap-3 p-3 text-left transition-colors hover:bg-gray-50',
-                          selectedProtocol === protocol.id && 'bg-purple-50',
+                          selectedProtocol === protocol.id && 'bg-primary/5',
                         )}
                       >
                         <span className="text-2xl">{protocol.icon}</span>
@@ -222,7 +217,7 @@ export default function OptimisticOraclePage() {
               <button
                 onClick={triggerSync}
                 disabled={isRefreshing}
-                className="flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-700 disabled:opacity-50"
+                className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-white transition-colors hover:bg-primary-700 disabled:opacity-50"
               >
                 <RefreshCw className={cn('h-4 w-4', isRefreshing && 'animate-spin')} />
                 {isRefreshing ? 'Syncing...' : 'Sync Now'}
@@ -265,7 +260,7 @@ export default function OptimisticOraclePage() {
               className={cn(
                 'rounded-lg px-4 py-2 capitalize transition-colors',
                 activeTab === tab
-                  ? 'bg-purple-600 text-white'
+                  ? 'bg-primary text-white'
                   : 'border border-gray-200 bg-white text-gray-700 hover:bg-gray-50',
               )}
             >
@@ -348,7 +343,7 @@ export default function OptimisticOraclePage() {
                         href={`https://etherscan.io/address/${overview.config.ooV2Address}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2 font-mono text-sm text-purple-600 transition-colors hover:text-purple-700"
+                        className="hover:text-primary-dark flex items-center gap-2 font-mono text-sm text-primary transition-colors"
                       >
                         {overview.config.ooV2Address?.slice(0, 6)}...
                         {overview.config.ooV2Address?.slice(-4)}
@@ -363,7 +358,7 @@ export default function OptimisticOraclePage() {
                         href={`https://etherscan.io/address/${overview.config.ooV3Address}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2 font-mono text-sm text-purple-600 transition-colors hover:text-purple-700"
+                        className="hover:text-primary-dark flex items-center gap-2 font-mono text-sm text-primary transition-colors"
                       >
                         {overview.config.ooV3Address?.slice(0, 6)}...
                         {overview.config.ooV3Address?.slice(-4)}
@@ -402,7 +397,7 @@ export default function OptimisticOraclePage() {
                           href={`/api/oracle/optimistic/users/${item.address}/stats?protocol=${selectedProtocol}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="font-mono text-purple-600 transition-colors hover:text-purple-700"
+                          className="hover:text-primary-dark font-mono text-primary transition-colors"
                         >
                           {item.address.slice(0, 6)}...{item.address.slice(-4)}
                         </a>
@@ -463,7 +458,7 @@ export default function OptimisticOraclePage() {
               className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-colors hover:bg-gray-50"
             >
               <div className="mb-4 flex items-center gap-3">
-                <Users className="h-6 w-6 text-purple-500" />
+                <Users className="h-6 w-6 text-primary" />
                 <h3 className="text-lg font-semibold text-gray-900">Votes</h3>
               </div>
               <p className="text-gray-600">Query voting records for optimistic oracle proposals.</p>
@@ -554,7 +549,7 @@ function StatCard({
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
       <div className="mb-2 flex items-center gap-3">
-        <div className="text-purple-500">{icon}</div>
+        <div className="text-primary">{icon}</div>
         <span className="text-sm text-gray-500">{title}</span>
       </div>
       <div className="text-2xl font-semibold text-gray-900">{value}</div>

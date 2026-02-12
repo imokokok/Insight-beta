@@ -56,7 +56,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 
     // 动态导入 PriceAggregationEngine 以避免构建时执行
-    const { PriceAggregationEngine } = await import('@/server/oracle/priceAggregation');
+    const { PriceAggregationEngine } = await import('@/services/oracle/priceAggregation');
     const priceEngine = new PriceAggregationEngine();
 
     // 获取历史对比数据

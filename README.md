@@ -5,9 +5,6 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue)
 ![Tailwind](https://img.shields.io/badge/Tailwind-3.4-cyan)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue)
-![Redis](https://img.shields.io/badge/Redis-7-red)
-
-[English](README.md) | [中文](README.zh-CN.md)
 
 **OracleMonitor** is a universal multi-protocol oracle monitoring platform, supporting real-time aggregation and monitoring of oracle data from 10+ protocols.
 
@@ -71,8 +68,7 @@ cp .env.example .env.local
 # Edit .env.local with your RPC URLs and database credentials
 
 # Setup database
-npm run db:migrate
-npm run db:seed
+npm run supabase:push
 
 # Start development server
 npm run dev
@@ -80,22 +76,22 @@ npm run dev
 
 ## 📖 Documentation
 
-完整文档请访问 [docs/README.md](./docs/README.md)
+Full documentation available at [docs/README.md](./docs/README.md).
 
-### 快速导航
+### Quick Navigation
 
-| 文档                                            | 说明                   |
-| ----------------------------------------------- | ---------------------- |
-| [用户手册](./docs/USER_MANUAL.md)               | 终端用户指南           |
-| [开发指南](./docs/DEVELOPMENT_GUIDE.md)         | 开发环境设置和编码规范 |
-| [架构文档](./docs/ARCHITECTURE.md)              | 系统架构设计           |
-| [架构改进](./docs/ARCHITECTURE_IMPROVEMENTS.md) | 代码重构和优化记录     |
-| [API 文档](./docs/API.md)                       | 完整的 API 参考        |
-| [数据库文档](./docs/DATABASE.md)                | 数据库设计和 Schema    |
-| [部署指南](./docs/DEPLOYMENT.md)                | 生产环境部署           |
-| [故障排除](./TROUBLESHOOTING.md)                | 常见问题解决           |
-| [错误代码](./docs/ERROR_CODES.md)               | 错误代码参考           |
-| [UI 规范](./docs/UI_GUIDELINES.md)              | 用户界面设计规范       |
+| Document                                                         | Description                                        |
+| ---------------------------------------------------------------- | -------------------------------------------------- |
+| [User Manual](./docs/USER_MANUAL.md)                             | End user guide                                     |
+| [Development Guide](./docs/DEVELOPMENT_GUIDE.md)                 | Development environment setup and coding standards |
+| [Architecture](./docs/ARCHITECTURE.md)                           | System architecture design                         |
+| [Architecture Improvements](./docs/ARCHITECTURE_IMPROVEMENTS.md) | Code refactoring and optimization records          |
+| [API Documentation](./docs/API.md)                               | Complete API reference                             |
+| [Database Documentation](./docs/DATABASE.md)                     | Database design and schema                         |
+| [Deployment Guide](./docs/DEPLOYMENT.md)                         | Production deployment                              |
+| [Troubleshooting](./TROUBLESHOOTING.md)                          | Common issues and solutions                        |
+| [Error Codes](./docs/ERROR_CODES.md)                             | Error code reference                               |
+| [UI Guidelines](./docs/UI_GUIDELINES.md)                         | User interface design standards                    |
 
 ### Supported Trading Pairs
 
@@ -107,7 +103,7 @@ npm run dev
 
 ## 🛠️ Development
 
-详见 [开发指南](./docs/DEVELOPMENT_GUIDE.md)
+See [Development Guide](./docs/DEVELOPMENT_GUIDE.md) for details.
 
 ### Available Scripts
 
@@ -118,14 +114,14 @@ npm run lint             # Run ESLint
 npm run typecheck        # Run TypeScript type check
 npm run test             # Run unit tests
 npm run test:coverage    # Run tests with coverage
-npm run test:e2e         # Run E2E tests
-npm run db:migrate       # Run database migrations
-npm run db:studio        # Open Prisma Studio
+npm run test:e2e        # Run E2E tests
+npm run supabase:push   # Push database changes
+npm run supabase:studio # Open Supabase Studio (if available)
 ```
 
 ## 🔧 Configuration
 
-详见 [部署指南](./docs/DEPLOYMENT.md#环境变量)
+See [Deployment Guide](./docs/DEPLOYMENT.md#environment-variables) for details.
 
 ## 📊 Monitoring
 
@@ -141,7 +137,7 @@ npm run db:studio        # Open Prisma Studio
 4. Push to branch (`git push origin feature/amazing-feature`)
 5. Open Pull Request
 
-详见 [贡献指南](./CONTRIBUTING.md) 和 [代码规范](./CODING_STANDARDS.md)
+See [Contributing Guide](./CONTRIBUTING.md) and [Coding Standards](./CODING_STANDARDS.md) for details.
 
 ## 📄 License
 

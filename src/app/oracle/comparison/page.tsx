@@ -14,12 +14,6 @@
 
 import { useEffect, useState, useCallback, useRef, Suspense, lazy } from 'react';
 
-
-
-
-
-
-
 import { ComparisonControls } from '@/components/features/comparison/ComparisonControls';
 import { ChartSkeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
@@ -28,13 +22,6 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n';
 import { logger } from '@/shared/logger';
-import { ORACLE_PROTOCOLS, PROTOCOL_DISPLAY_NAMES } from '@/types/oracle';
-import type {
-  ComparisonFilter,
-  ComparisonConfig,
-  ComparisonView,
-  PriceDeviationCell,
-} from '@/types/oracle/comparison';
 import {
   exportRealtimeToCSV,
   exportHeatmapToCSV,
@@ -42,6 +29,13 @@ import {
   exportCostToCSV,
   exportAllToJSON,
 } from '@/shared/utils/export';
+import { ORACLE_PROTOCOLS, PROTOCOL_DISPLAY_NAMES } from '@/types/oracle';
+import type {
+  ComparisonFilter,
+  ComparisonConfig,
+  ComparisonView,
+  PriceDeviationCell,
+} from '@/types/oracle/comparison';
 
 // ============================================================================
 // 动态导入大型组件
@@ -335,7 +329,7 @@ export default function ComparisonPage() {
       <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t('comparison.title')}</h1>
-          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
+          <p className="mt-1 text-sm text-muted-foreground sm:text-base">
             {t('comparison.description')}
           </p>
         </div>

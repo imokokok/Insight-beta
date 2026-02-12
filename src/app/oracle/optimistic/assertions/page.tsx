@@ -6,8 +6,6 @@ import Link from 'next/link';
 
 import { ArrowUpRight, RefreshCw } from 'lucide-react';
 
-
-
 import { EmptyFirstItemState } from '@/components/common/EmptyState';
 import { PageHeader } from '@/components/common/PageHeader';
 import { useI18n } from '@/i18n/LanguageProvider';
@@ -46,7 +44,6 @@ export default function UMAAssertionsPage() {
 
   useEffect(() => {
     fetchAssertions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, statusFilter, versionFilter]);
 
   async function fetchAssertions() {
@@ -204,7 +201,7 @@ export default function UMAAssertionsPage() {
                         className={cn(
                           'rounded px-2 py-1 text-xs',
                           assertion.version === 'v3'
-                            ? 'bg-purple-500/20 text-purple-400'
+                            ? 'bg-primary/50/20 text-primary/40'
                             : 'bg-blue-500/20 text-blue-400',
                         )}
                       >

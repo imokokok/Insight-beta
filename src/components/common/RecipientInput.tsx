@@ -125,7 +125,7 @@ function RecipientInputComponent({ rule, onPatchRule, t }: RecipientInputProps) 
 
   const inputClassName = useMemo(() => {
     const baseClass =
-      'h-10 rounded-xl bg-white/70 ring-1 border-transparent focus-visible:ring-2 focus-visible:ring-purple-500/20 transition-all duration-200';
+      'h-10 rounded-xl bg-white/70 ring-1 border-transparent focus-visible:ring-2 focus-visible:ring-primary500/20 transition-all duration-200';
     if (error) return `${baseClass} ring-red-500 focus-visible:ring-red-500/20`;
     if (isSuccess) return `${baseClass} ring-green-500 focus-visible:ring-green-500/20`;
     return `${baseClass} ring-black/5`;

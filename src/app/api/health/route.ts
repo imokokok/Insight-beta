@@ -1,6 +1,6 @@
 import { env, getEnvReport } from '@/config/env';
-import { error, handleApi, rateLimit, requireAdmin } from '@/infrastructure/api/apiResponse';
-import { hasDatabase, query } from '@/infrastructure/database/db';
+import { error, handleApi, rateLimit, requireAdmin } from '@/lib/api/apiResponse';
+import { hasDatabase, query } from '@/lib/database/db';
 import { performanceMonitor } from '@/services/monitoring/performanceMonitor';
 
 /**

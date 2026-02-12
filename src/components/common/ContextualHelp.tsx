@@ -95,20 +95,13 @@ export function ContextualHelp({
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
-      className={cn(
-        'rounded-xl border p-4',
-        config.bgColor,
-        config.borderColor,
-        className,
-      )}
+      className={cn('rounded-xl border p-4', config.bgColor, config.borderColor, className)}
     >
       <div className="flex items-start gap-3">
-        <Icon className={cn('h-5 w-5 flex-shrink-0 mt-0.5', config.iconColor)} />
-        <div className="flex-1 min-w-0">
+        <Icon className={cn('mt-0.5 h-5 w-5 flex-shrink-0', config.iconColor)} />
+        <div className="min-w-0 flex-1">
           {title && (
-            <h4 className={cn('font-semibold text-sm mb-1', config.titleColor)}>
-              {title}
-            </h4>
+            <h4 className={cn('mb-1 text-sm font-semibold', config.titleColor)}>{title}</h4>
           )}
           <p className={cn('text-sm', config.textColor)}>{description}</p>
           {action && (
@@ -148,23 +141,19 @@ interface FloatingHelpButtonProps {
   pulse?: boolean;
 }
 
-export function FloatingHelpButton({
-  onClick,
-  className,
-  pulse = false,
-}: FloatingHelpButtonProps) {
+export function FloatingHelpButton({ onClick, className, pulse = false }: FloatingHelpButtonProps) {
   return (
     <motion.button
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
       onClick={onClick}
       className={cn(
-        'fixed bottom-6 right-6 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-purple-600 text-white shadow-lg shadow-purple-500/30 transition-colors hover:bg-purple-700',
+        'fixed bottom-6 right-6 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary-500/30 transition-colors hover:bg-primary-700',
         className,
       )}
     >
       {pulse && (
-        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-purple-400 opacity-75" />
+        <span className="bg-primary-light absolute inline-flex h-full w-full animate-ping rounded-full opacity-75" />
       )}
       <HelpCircle className="h-6 w-6" />
     </motion.button>
@@ -205,21 +194,21 @@ export function PageTipBanner({
   return (
     <div
       className={cn(
-        'rounded-lg bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-100 p-3',
+        'rounded-lg border border-primary/10 bg-gradient-to-r from-primary-50 to-blue-50 p-3',
         className,
       )}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
       <div className="flex items-center gap-3">
-        <Lightbulb className="h-5 w-5 text-purple-600 flex-shrink-0" />
+        <Lightbulb className="h-5 w-5 flex-shrink-0 text-primary" />
         <AnimatePresence mode="wait">
           <motion.p
             key={currentIndex}
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="text-sm text-purple-800 flex-1"
+            className="text-primary-darker flex-1 text-sm"
           >
             {tips[currentIndex]}
           </motion.p>
@@ -232,7 +221,7 @@ export function PageTipBanner({
                 onClick={() => setCurrentIndex(idx)}
                 className={cn(
                   'h-1.5 w-1.5 rounded-full transition-colors',
-                  idx === currentIndex ? 'bg-purple-600' : 'bg-purple-200',
+                  idx === currentIndex ? 'bg-primary' : 'bg-primary/20',
                 )}
               />
             ))}
@@ -271,11 +260,11 @@ export function FeatureHighlight({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             className={cn(
-              'absolute z-50 w-64 rounded-lg bg-purple-900 p-4 text-white shadow-xl',
-              placement === 'bottom' && 'top-full mt-2 left-1/2 -translate-x-1/2',
-              placement === 'top' && 'bottom-full mb-2 left-1/2 -translate-x-1/2',
-              placement === 'left' && 'right-full mr-2 top-1/2 -translate-y-1/2',
-              placement === 'right' && 'left-full ml-2 top-1/2 -translate-y-1/2',
+              'bg-primary-darker absolute z-50 w-64 rounded-lg p-4 text-white shadow-xl',
+              placement === 'bottom' && 'left-1/2 top-full mt-2 -translate-x-1/2',
+              placement === 'top' && 'bottom-full left-1/2 mb-2 -translate-x-1/2',
+              placement === 'left' && 'right-full top-1/2 mr-2 -translate-y-1/2',
+              placement === 'right' && 'left-full top-1/2 ml-2 -translate-y-1/2',
             )}
           >
             <button
@@ -284,12 +273,12 @@ export function FeatureHighlight({
             >
               <X className="h-3 w-3" />
             </button>
-            <h4 className="font-semibold text-sm mb-1 pr-4">{title}</h4>
+            <h4 className="mb-1 pr-4 text-sm font-semibold">{title}</h4>
             <p className="text-xs text-white/80">{description}</p>
             {/* Arrow */}
             <div
               className={cn(
-                'absolute h-2 w-2 rotate-45 bg-purple-900',
+                'bg-primary-darker absolute h-2 w-2 rotate-45',
                 placement === 'bottom' && '-top-1 left-1/2 -translate-x-1/2',
                 placement === 'top' && '-bottom-1 left-1/2 -translate-x-1/2',
                 placement === 'left' && '-right-1 top-1/2 -translate-y-1/2',
@@ -323,7 +312,7 @@ export function QuickActionTip({ actions, className }: QuickActionTipProps) {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center gap-2 rounded-full bg-purple-100 px-3 py-1.5 text-sm font-medium text-purple-700 hover:bg-purple-200"
+        className="text-primary-dark flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-sm font-medium hover:bg-primary-200"
       >
         <Lightbulb className="h-4 w-4" />
         <span>快捷操作</span>
@@ -344,7 +333,7 @@ export function QuickActionTip({ actions, className }: QuickActionTipProps) {
                   action.onClick();
                   setIsExpanded(false);
                 }}
-                className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-purple-50"
+                className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-primary/5"
               >
                 <span className="flex items-center gap-2">
                   {action.icon}

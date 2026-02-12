@@ -26,7 +26,7 @@ export function UserMenu() {
   const [storedInstanceId, setStoredInstanceId] = useState<string>('default');
 
   useEffect(() => {
-    getOracleInstanceId().then(id => setStoredInstanceId(id));
+    getOracleInstanceId().then((id) => setStoredInstanceId(id));
   }, []);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -88,8 +88,8 @@ export function UserMenu() {
         className={cn(
           'flex items-center gap-2 rounded-full border p-1 pr-3 transition-all',
           isOpen
-            ? 'border-purple-200 bg-purple-50 ring-2 ring-purple-100'
-            : 'border-gray-200 bg-white hover:border-purple-200 hover:shadow-sm',
+            ? 'ring-primary100 border-primary/20 bg-primary/5 ring-2'
+            : 'border-gray-200 bg-white hover:border-primary/20 hover:shadow-sm',
         )}
       >
         <div
@@ -121,7 +121,7 @@ export function UserMenu() {
               <span className="truncate font-mono text-xs text-gray-500">{address}</span>
               <button
                 onClick={handleCopy}
-                className="text-gray-400 transition-colors hover:text-purple-600"
+                className="text-gray-400 transition-colors hover:text-primary"
                 title={t('wallet.copyAddress')}
               >
                 {copied ? <Check size={14} /> : <Copy size={14} />}
@@ -146,8 +146,8 @@ export function UserMenu() {
                   className={cn(
                     'rounded-lg border px-2 py-1.5 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60',
                     chainId === c.id
-                      ? 'border-purple-200 bg-purple-50 text-purple-700'
-                      : 'border-gray-200 bg-white text-gray-700 hover:border-purple-200 hover:bg-purple-50 hover:text-purple-700',
+                      ? 'text-primary-dark border-primary/20 bg-primary/5'
+                      : 'hover:text-primary-dark border-gray-200 bg-white text-gray-700 hover:border-primary/20 hover:bg-primary/5',
                   )}
                 >
                   {switchingChainId === c.id ? t('wallet.switchingNetwork') : c.name}
@@ -160,7 +160,7 @@ export function UserMenu() {
           <div className="space-y-1">
             <Link
               href={attachInstanceId('/my-assertions') as Route}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-purple-50 hover:text-purple-700"
+              className="hover:text-primary-dark flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-primary/5"
               onClick={() => setIsOpen(false)}
             >
               <FileText size={16} />
@@ -168,7 +168,7 @@ export function UserMenu() {
             </Link>
             <Link
               href={attachInstanceId('/my-disputes') as Route}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-purple-50 hover:text-purple-700"
+              className="hover:text-primary-dark flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-primary/5"
               onClick={() => setIsOpen(false)}
             >
               <AlertTriangle size={16} />

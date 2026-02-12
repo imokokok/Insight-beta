@@ -86,21 +86,13 @@ const itemVariants = {
 // Base Skeleton
 // ============================================================================
 
-export function Skeleton({
-  className,
-  style,
-  shimmer = true,
-  animated = true,
-}: SkeletonProps) {
+export function Skeleton({ className, style, shimmer = true, animated = true }: SkeletonProps) {
   const Wrapper = animated ? motion.div : 'div';
 
   if (shimmer) {
     return (
       <Wrapper
-        className={cn(
-          'relative overflow-hidden rounded-md bg-gray-200',
-          className,
-        )}
+        className={cn('relative overflow-hidden rounded-md bg-gray-200', className)}
         style={style}
         {...(animated
           ? {
@@ -120,10 +112,7 @@ export function Skeleton({
 
   return (
     <div
-      className={cn(
-        'animate-pulse rounded-md bg-gray-200 dark:bg-gray-800',
-        className,
-      )}
+      className={cn('animate-pulse rounded-md bg-gray-200 dark:bg-gray-800', className)}
       style={style}
     />
   );
@@ -133,11 +122,7 @@ export function Skeleton({
 // Skeleton Container
 // ============================================================================
 
-function SkeletonContainer({
-  children,
-  className,
-  animated = true,
-}: SkeletonContainerProps) {
+function SkeletonContainer({ children, className, animated = true }: SkeletonContainerProps) {
   const Wrapper = animated ? motion.div : 'div';
 
   return (
@@ -172,10 +157,7 @@ export function CardSkeleton({
 }) {
   return (
     <motion.div
-      className={cn(
-        'rounded-xl border border-gray-200 bg-white p-4',
-        className,
-      )}
+      className={cn('rounded-xl border border-gray-200 bg-white p-4', className)}
       variants={itemVariants}
     >
       {header && (
@@ -211,10 +193,7 @@ export function StatCardSkeleton({
 }: SkeletonProps & { showTrend?: boolean }) {
   return (
     <motion.div
-      className={cn(
-        'rounded-xl border border-gray-200 bg-white p-4',
-        className,
-      )}
+      className={cn('rounded-xl border border-gray-200 bg-white p-4', className)}
       variants={itemVariants}
     >
       <div className="flex items-start justify-between">
@@ -240,10 +219,7 @@ export function ChartSkeleton({
 }: SkeletonProps & { height?: number; showHeader?: boolean }) {
   return (
     <motion.div
-      className={cn(
-        'rounded-xl border border-gray-200 bg-white p-4',
-        className,
-      )}
+      className={cn('rounded-xl border border-gray-200 bg-white p-4', className)}
       variants={itemVariants}
     >
       {showHeader && (
@@ -252,10 +228,7 @@ export function ChartSkeleton({
           <Skeleton className="h-8 w-8 rounded-lg" />
         </div>
       )}
-      <div
-        className="flex items-end gap-2"
-        style={{ height }}
-      >
+      <div className="flex items-end gap-2" style={{ height }}>
         {Array.from({ length: 12 }).map((_, i) => (
           <Skeleton
             key={i}
@@ -286,20 +259,11 @@ export function ListItemSkeleton({
   lines?: number;
 }) {
   return (
-    <motion.div
-      className={cn('flex items-center gap-4 py-3', className)}
-      variants={itemVariants}
-    >
-      {showAvatar && (
-        <Skeleton className="h-10 w-10 rounded-full" />
-      )}
+    <motion.div className={cn('flex items-center gap-4 py-3', className)} variants={itemVariants}>
+      {showAvatar && <Skeleton className="h-10 w-10 rounded-full" />}
       <div className="flex-1 space-y-2">
         {Array.from({ length: lines }).map((_, i) => (
-          <Skeleton
-            key={i}
-            className="h-4"
-            style={{ width: i === 0 ? '40%' : '60%' }}
-          />
+          <Skeleton key={i} className="h-4" style={{ width: i === 0 ? '40%' : '60%' }} />
         ))}
       </div>
       {showAction && <Skeleton className="h-8 w-20" />}
@@ -416,16 +380,10 @@ export function AvatarSkeleton({
 // Button Skeleton
 // ============================================================================
 
-export function ButtonSkeleton({
-  className,
-  width = 96,
-}: SkeletonProps & { width?: number }) {
+export function ButtonSkeleton({ className, width = 96 }: SkeletonProps & { width?: number }) {
   return (
     <motion.div variants={itemVariants}>
-      <Skeleton
-        className={cn('h-10 rounded-md', className)}
-        style={{ width }}
-      />
+      <Skeleton className={cn('h-10 rounded-md', className)} style={{ width }} />
     </motion.div>
   );
 }
@@ -522,10 +480,7 @@ export function DashboardSkeleton({ className }: SkeletonProps) {
 export function PriceCardSkeleton({ className }: SkeletonProps) {
   return (
     <motion.div
-      className={cn(
-        'rounded-xl border border-gray-200 bg-white p-4',
-        className,
-      )}
+      className={cn('rounded-xl border border-gray-200 bg-white p-4', className)}
       variants={itemVariants}
     >
       <div className="flex items-center justify-between">
@@ -553,10 +508,7 @@ export function PriceCardSkeleton({ className }: SkeletonProps) {
 export function ProtocolCardSkeleton({ className }: SkeletonProps) {
   return (
     <motion.div
-      className={cn(
-        'rounded-xl border border-gray-200 bg-white p-4',
-        className,
-      )}
+      className={cn('rounded-xl border border-gray-200 bg-white p-4', className)}
       variants={itemVariants}
     >
       <div className="flex items-center gap-3">
@@ -592,10 +544,7 @@ export function ProtocolCardSkeleton({ className }: SkeletonProps) {
 export function AlertCardSkeleton({ className }: SkeletonProps) {
   return (
     <motion.div
-      className={cn(
-        'rounded-xl border border-gray-200 bg-white p-4',
-        className,
-      )}
+      className={cn('rounded-xl border border-gray-200 bg-white p-4', className)}
       variants={itemVariants}
     >
       <div className="flex items-start gap-3">
@@ -617,10 +566,7 @@ export function AlertCardSkeleton({ className }: SkeletonProps) {
 // Stats Grid Skeleton
 // ============================================================================
 
-export function StatsGridSkeleton({
-  className,
-  count = 4,
-}: SkeletonProps & { count?: number }) {
+export function StatsGridSkeleton({ className, count = 4 }: SkeletonProps & { count?: number }) {
   return (
     <div
       className={cn(
@@ -656,10 +602,7 @@ export function LoadingSpinner({
   return (
     <div className={cn('flex items-center justify-center', className)}>
       <motion.div
-        className={cn(
-          'rounded-full border-2 border-gray-200 border-t-purple-600',
-          sizeClasses[size],
-        )}
+        className={cn('rounded-full border-2 border-gray-200 border-t-primary', sizeClasses[size])}
         animate={{ rotate: 360 }}
         transition={{
           duration: 1,
@@ -691,9 +634,7 @@ export function LoadingOverlay({
       )}
     >
       <LoadingSpinner size="lg" />
-      {message && (
-        <p className="mt-4 text-sm text-gray-600">{message}</p>
-      )}
+      {message && <p className="mt-4 text-sm text-gray-600">{message}</p>}
     </motion.div>
   );
 }
@@ -711,12 +652,7 @@ export function ProgressiveLoading({
   currentStep?: number;
 }) {
   return (
-    <div
-      className={cn(
-        'flex flex-col items-center justify-center space-y-4',
-        className,
-      )}
-    >
+    <div className={cn('flex flex-col items-center justify-center space-y-4', className)}>
       <LoadingSpinner size="md" />
       <div className="space-y-2 text-center">
         {steps.map((step, index) => (
@@ -727,12 +663,7 @@ export function ProgressiveLoading({
               opacity: index <= currentStep ? 1 : 0.3,
               y: 0,
             }}
-            className={cn(
-              'text-sm',
-              index === currentStep
-                ? 'text-purple-600'
-                : 'text-gray-400',
-            )}
+            className={cn('text-sm', index === currentStep ? 'text-primary' : 'text-gray-400')}
           >
             {index < currentStep && '✓ '}
             {step}

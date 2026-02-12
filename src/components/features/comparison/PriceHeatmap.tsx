@@ -9,8 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useI18n } from '@/i18n';
-import type { PriceHeatmapData, PriceDeviationCell, PriceDeviationLevel } from '@/types/oracle';
 import { cn } from '@/shared/utils';
+import type { PriceHeatmapData, PriceDeviationCell, PriceDeviationLevel } from '@/types/oracle';
 
 interface PriceHeatmapProps {
   data?: PriceHeatmapData;
@@ -115,7 +115,7 @@ export const PriceHeatmap = memo(function PriceHeatmap({
           <CardTitle>{t('comparison.heatmap.title')}</CardTitle>
           <CardDescription>{t('comparison.status.noData')}</CardDescription>
         </CardHeader>
-        <CardContent className="text-muted-foreground flex h-64 items-center justify-center">
+        <CardContent className="flex h-64 items-center justify-center text-muted-foreground">
           <Info className="mr-2 h-5 w-5" />
           {t('comparison.heatmap.selectAssetPair')}
         </CardContent>
@@ -134,7 +134,7 @@ export const PriceHeatmap = memo(function PriceHeatmap({
               <CardTitle className="text-base font-semibold sm:text-lg">
                 {t('comparison.heatmap.title')}
               </CardTitle>
-              <CardDescription className="text-muted-foreground mt-1 text-xs sm:text-sm">
+              <CardDescription className="mt-1 text-xs text-muted-foreground sm:text-sm">
                 {t('comparison.heatmap.description')}
               </CardDescription>
             </div>
@@ -145,7 +145,7 @@ export const PriceHeatmap = memo(function PriceHeatmap({
                   {criticalDeviations}
                 </Badge>
               )}
-              <span className="text-muted-foreground text-xs">
+              <span className="text-xs text-muted-foreground">
                 {new Date(lastUpdated).toLocaleTimeString()}
               </span>
             </div>
@@ -154,7 +154,7 @@ export const PriceHeatmap = memo(function PriceHeatmap({
         <CardContent className="px-3 sm:px-6">
           {/* Legend */}
           <div className="mb-3 flex flex-wrap items-center gap-2 text-xs sm:mb-4 sm:gap-4">
-            <span className="text-muted-foreground hidden sm:inline">
+            <span className="hidden text-muted-foreground sm:inline">
               {t('comparison.heatmap.deviationLevel')}
             </span>
             {(Object.keys(deviationConfig) as PriceDeviationLevel[]).map((level) => (
@@ -165,7 +165,7 @@ export const PriceHeatmap = memo(function PriceHeatmap({
                     deviationConfig[level].color,
                   )}
                 />
-                <span className="text-muted-foreground text-xs">
+                <span className="text-xs text-muted-foreground">
                   {t(deviationConfig[level].labelKey)}
                 </span>
               </div>
@@ -177,7 +177,7 @@ export const PriceHeatmap = memo(function PriceHeatmap({
             <div className="inline-block min-w-full">
               {/* Header Row */}
               <div className="flex">
-                <div className="text-muted-foreground w-20 flex-shrink-0 border-b p-1.5 text-xs font-medium sm:w-28 sm:p-2">
+                <div className="w-20 flex-shrink-0 border-b p-1.5 text-xs font-medium text-muted-foreground sm:w-28 sm:p-2">
                   {t('comparison.heatmap.assetPair')}
                 </div>
                 {protocols.map((protocol) => (
@@ -189,7 +189,7 @@ export const PriceHeatmap = memo(function PriceHeatmap({
                     <span className="sm:hidden">{protocol.slice(0, 4)}</span>
                   </div>
                 ))}
-                <div className="text-muted-foreground w-16 flex-shrink-0 border-b p-1.5 text-center text-xs font-medium sm:w-24 sm:p-2">
+                <div className="w-16 flex-shrink-0 border-b p-1.5 text-center text-xs font-medium text-muted-foreground sm:w-24 sm:p-2">
                   <span className="hidden sm:inline">{t('comparison.heatmap.maxDeviation')}</span>
                   <span className="sm:hidden">Max</span>
                 </div>
@@ -199,9 +199,9 @@ export const PriceHeatmap = memo(function PriceHeatmap({
               {rows.map((row) => (
                 <div key={row.symbol} className="group flex">
                   {/* Symbol Cell */}
-                  <div className="bg-muted/30 w-20 flex-shrink-0 border-b border-r p-1.5 sm:w-28 sm:p-2">
+                  <div className="w-20 flex-shrink-0 border-b border-r bg-muted/30 p-1.5 sm:w-28 sm:p-2">
                     <div className="text-xs font-medium sm:text-sm">{row.symbol}</div>
-                    <div className="text-muted-foreground hidden text-xs sm:block">
+                    <div className="hidden text-xs text-muted-foreground sm:block">
                       {formatHeatmapPrice(row.consensusPrice)}
                     </div>
                   </div>
@@ -216,7 +216,7 @@ export const PriceHeatmap = memo(function PriceHeatmap({
                       return (
                         <div
                           key={protocol}
-                          className="bg-muted/10 w-16 flex-shrink-0 border-b border-r p-1 sm:w-24"
+                          className="w-16 flex-shrink-0 border-b border-r bg-muted/10 p-1 sm:w-24"
                         />
                       );
                     }
@@ -231,8 +231,8 @@ export const PriceHeatmap = memo(function PriceHeatmap({
                             className={cn(
                               'w-16 flex-shrink-0 border-b border-r p-0.5 transition-all duration-200 sm:w-24 sm:p-1',
                               config.color,
-                              isHovered && 'ring-primary ring-2 ring-inset',
-                              'focus:ring-primary focus:outline-none focus:ring-2 focus:ring-inset',
+                              isHovered && 'ring-2 ring-inset ring-primary',
+                              'focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary',
                             )}
                             onMouseEnter={() => setHoveredCell(cellKey)}
                             onMouseLeave={() => setHoveredCell(null)}
@@ -251,7 +251,7 @@ export const PriceHeatmap = memo(function PriceHeatmap({
                                 </span>
                                 <span className="hidden sm:inline">{config.icon}</span>
                               </div>
-                              <span className="text-muted-foreground hidden text-xs sm:block">
+                              <span className="hidden text-xs text-muted-foreground sm:block">
                                 {formatHeatmapPrice(cell.price)}
                               </span>
                             </div>
@@ -346,7 +346,7 @@ export const PriceHeatmap = memo(function PriceHeatmap({
           </div>
 
           {/* Summary Footer */}
-          <div className="text-muted-foreground mt-3 flex flex-col gap-2 border-t pt-3 text-xs sm:mt-4 sm:flex-row sm:items-center sm:justify-between sm:pt-4 sm:text-sm">
+          <div className="mt-3 flex flex-col gap-2 border-t pt-3 text-xs text-muted-foreground sm:mt-4 sm:flex-row sm:items-center sm:justify-between sm:pt-4 sm:text-sm">
             <div className="flex items-center gap-2 sm:gap-4">
               <span>{filteredData.totalPairs} pairs</span>
               <span>{protocols.length} protocols</span>

@@ -9,8 +9,8 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/toast';
 import { useAdminSession } from '@/hooks';
 import { useI18n } from '@/i18n/LanguageProvider';
-import type { AlertRule } from '@/types/oracleTypes';
 import { cn, fetchApiData, getErrorCode } from '@/shared/utils';
+import type { AlertRule } from '@/types/oracleTypes';
 
 import { AlertRuleCard } from './AlertRuleComponents';
 import { validateAlertRule, normalizeChannels } from './AlertRules/alertValidation';
@@ -218,7 +218,7 @@ export function AlertRulesManager({
       <main className={cn(showTitle ? 'container mx-auto px-4 py-8' : '')}>
         <div
           className={cn(
-            'glass-card rounded-2xl border border-white/60 p-6 shadow-xl shadow-purple-500/5 md:p-8',
+            'glass-card rounded-2xl border border-white/60 p-6 shadow-xl shadow-primary-500/5 md:p-8',
             !showTitle && 'bg-white/60',
           )}
         >
@@ -249,7 +249,7 @@ export function AlertRulesManager({
               className={cn(
                 'flex items-center gap-2 rounded-xl px-6 py-2.5 font-bold shadow-lg transition-all',
                 canAdmin && hasChanges && !saving && !firstBlockingRuleError
-                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:-translate-y-0.5 hover:shadow-purple-500/25'
+                  ? 'bg-gradient-to-r from-primary-600 to-indigo-600 text-white hover:-translate-y-0.5 hover:shadow-primary-500/25'
                   : 'cursor-not-allowed bg-gray-100 text-gray-400 shadow-none',
               )}
             >
@@ -272,7 +272,7 @@ export function AlertRulesManager({
                 value={adminToken}
                 onChange={(e) => setAdminToken(e.target.value)}
                 placeholder={t('audit.adminTokenPlaceholder')}
-                className="h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2 focus-visible:ring-purple-500/20"
+                className="focus-visible:ring-primary500/20 h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2"
               />
             </div>
           ) : null}
@@ -284,7 +284,7 @@ export function AlertRulesManager({
                 value={adminActor}
                 onChange={(e) => setAdminActor(e.target.value)}
                 placeholder={t('alerts.adminActorPlaceholder')}
-                className="h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2 focus-visible:ring-purple-500/20"
+                className="focus-visible:ring-primary500/20 h-10 rounded-xl border-transparent bg-white/70 ring-1 ring-black/5 focus-visible:ring-2"
               />
             </div>
           ) : null}

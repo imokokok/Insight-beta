@@ -5,7 +5,7 @@
  * 代码量从 65 行减少到 ~20 行
  */
 
-import { createRedStoneClient, getAvailableRedStoneSymbols } from '@/infrastructure/blockchain/redstoneOracle';
+import { createRedStoneClient, getAvailableRedStoneSymbols } from '@/lib/blockchain/redstoneOracle';
 import { createSingletonSyncManager } from '@/lib/shared';
 
 // ============================================================================

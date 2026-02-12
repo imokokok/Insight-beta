@@ -38,7 +38,7 @@ export function FirstTimeTour({ isOpen, onComplete, onSkip, className }: FirstTi
       target: '[data-tour="dashboard"]',
       title: t('onboarding.tour.dashboard.title'),
       description: t('onboarding.tour.dashboard.description'),
-      icon: <MapPin className="h-5 w-5 text-purple-600" />,
+      icon: <MapPin className="h-5 w-5 text-primary" />,
       placement: 'bottom',
     },
     {
@@ -87,8 +87,6 @@ export function FirstTimeTour({ isOpen, onComplete, onSkip, className }: FirstTi
     }
   }, [currentStep]);
 
-
-
   const handleSkip = useCallback(() => {
     setStorageItem(TOUR_STORAGE_KEY, 'true');
     onSkip();
@@ -135,63 +133,59 @@ export function FirstTimeTour({ isOpen, onComplete, onSkip, className }: FirstTi
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
                 className="w-full max-w-md"
               >
-              <div className="overflow-hidden rounded-2xl bg-white shadow-2xl">
-                {/* Header with gradient */}
-                <div className="bg-gradient-to-r from-purple-600 to-purple-800 p-6 text-white">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-bold">
-                      {t('onboarding.guidedTour.title')}
-                    </h2>
-                    <button
-                      onClick={handleSkip}
-                      className="rounded-full p-1 text-white/70 transition-colors hover:bg-white/20 hover:text-white"
-                    >
-                      <X className="h-5 w-5" />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="p-6">
-                  <p className="mb-6 text-gray-600">
-                    {t('onboarding.guidedTour.description')}
-                  </p>
-
-                  {/* Quick preview of tour steps */}
-                  <div className="mb-6 space-y-2">
-                    {tourSteps.map((step, index) => (
-                      <div
-                        key={step.id}
-                        className="flex items-center gap-3 rounded-lg bg-gray-50 p-3"
+                <div className="overflow-hidden rounded-2xl bg-white shadow-2xl">
+                  {/* Header with gradient */}
+                  <div className="bg-gradient-to-r from-primary-600 to-primary-800 p-6 text-white">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-xl font-bold">{t('onboarding.guidedTour.title')}</h2>
+                      <button
+                        onClick={handleSkip}
+                        className="rounded-full p-1 text-white/70 transition-colors hover:bg-white/20 hover:text-white"
                       >
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-sm">
-                          {step.icon}
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-900">{step.title}</p>
-                        </div>
-                        <span className="text-xs text-gray-400">
-                          {index + 1}/{tourSteps.length}
-                        </span>
-                      </div>
-                    ))}
+                        <X className="h-5 w-5" />
+                      </button>
+                    </div>
                   </div>
 
-                  <div className="flex gap-3">
-                    <button
-                      onClick={handleSkip}
-                      className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
-                    >
-                      {t('onboarding.guidedTour.skipForNow')}
-                    </button>
-                    <button
-                      onClick={handleStartTour}
-                      className="flex-1 rounded-lg bg-purple-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-purple-700"
-                    >
-                      {t('onboarding.guidedTour.startTour')}
-                    </button>
+                  <div className="p-6">
+                    <p className="mb-6 text-gray-600">{t('onboarding.guidedTour.description')}</p>
+
+                    {/* Quick preview of tour steps */}
+                    <div className="mb-6 space-y-2">
+                      {tourSteps.map((step, index) => (
+                        <div
+                          key={step.id}
+                          className="flex items-center gap-3 rounded-lg bg-gray-50 p-3"
+                        >
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-sm">
+                            {step.icon}
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-gray-900">{step.title}</p>
+                          </div>
+                          <span className="text-xs text-gray-400">
+                            {index + 1}/{tourSteps.length}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="flex gap-3">
+                      <button
+                        onClick={handleSkip}
+                        className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                      >
+                        {t('onboarding.guidedTour.skipForNow')}
+                      </button>
+                      <button
+                        onClick={handleStartTour}
+                        className="flex-1 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-700"
+                      >
+                        {t('onboarding.guidedTour.startTour')}
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
               </motion.div>
             </div>
           ) : (
@@ -309,7 +303,7 @@ function TourStepTooltip({
     <>
       {/* Spotlight effect */}
       {targetFound && (
-        <svg className="absolute inset-0 h-full w-full pointer-events-none">
+        <svg className="pointer-events-none absolute inset-0 h-full w-full">
           <defs>
             <mask id="tour-spotlight-mask">
               <rect width="100%" height="100%" fill="white" />
@@ -324,7 +318,12 @@ function TourStepTooltip({
               />
             </mask>
           </defs>
-          <rect width="100%" height="100%" fill="rgba(0, 0, 0, 0.7)" mask="url(#tour-spotlight-mask)" />
+          <rect
+            width="100%"
+            height="100%"
+            fill="rgba(0, 0, 0, 0.7)"
+            mask="url(#tour-spotlight-mask)"
+          />
         </svg>
       )}
 
@@ -342,7 +341,7 @@ function TourStepTooltip({
         {/* Progress bar */}
         <div className="absolute left-0 top-0 h-1 w-full bg-gray-100">
           <div
-            className="h-full bg-purple-600 transition-all duration-300"
+            className="h-full bg-primary transition-all duration-300"
             style={{ width: `${((currentStep + 1) / totalSteps) * 100}%` }}
           />
         </div>
@@ -350,12 +349,15 @@ function TourStepTooltip({
         {/* Header */}
         <div className="mb-4 flex items-start justify-between pt-2">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
               {step?.icon}
             </div>
             <div>
-              <span className="text-xs font-medium text-purple-600">
-                {t('onboarding.guidedTour.progress', { current: currentStep + 1, total: totalSteps })}
+              <span className="text-xs font-medium text-primary">
+                {t('onboarding.guidedTour.progress', {
+                  current: currentStep + 1,
+                  total: totalSteps,
+                })}
               </span>
               <h3 className="text-lg font-semibold text-gray-900">{step?.title}</h3>
             </div>
@@ -376,7 +378,7 @@ function TourStepTooltip({
           <button
             onClick={onBack}
             disabled={currentStep === 0}
-            className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <ChevronLeft className="h-4 w-4" />
             {t('onboarding.back')}
@@ -391,7 +393,7 @@ function TourStepTooltip({
             </button>
             <button
               onClick={onNext}
-              className="flex items-center gap-1 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-700"
+              className="flex items-center gap-1 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700"
             >
               {currentStep === totalSteps - 1 ? (
                 <>
@@ -441,14 +443,14 @@ function TargetHighlight({ target }: { target: string }) {
       {/* Outer pulse ring */}
       <motion.div
         initial={{ opacity: 0, scale: 1 }}
-        animate={{ 
+        animate={{
           opacity: [0, 0.5, 0],
           scale: [1, 1.2, 1.4],
         }}
         transition={{
           duration: 2,
           repeat: Infinity,
-          ease: "easeOut",
+          ease: 'easeOut',
         }}
         className="pointer-events-none absolute rounded-lg border-2 border-purple-400"
         style={{
@@ -462,7 +464,7 @@ function TargetHighlight({ target }: { target: string }) {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="pointer-events-none absolute rounded-lg border-2 border-purple-500 shadow-[0_0_20px_rgba(147,51,234,0.5)]"
+        className="pointer-events-none absolute rounded-lg border-2 border-primary shadow-[0_0_20px_rgba(147,51,234,0.5)]"
         style={{
           top: rect.top - 4,
           left: rect.left - 4,
@@ -477,9 +479,9 @@ function TargetHighlight({ target }: { target: string }) {
         transition={{
           duration: 2,
           repeat: Infinity,
-          ease: "easeInOut",
+          ease: 'easeInOut',
         }}
-        className="pointer-events-none absolute rounded-lg bg-purple-500/10"
+        className="bg-primary/50/10 pointer-events-none absolute rounded-lg"
         style={{
           top: rect.top - 4,
           left: rect.left - 4,
@@ -499,7 +501,10 @@ export function useFirstTimeTour() {
   useEffect(() => {
     const checkTourStatus = async () => {
       const hasCompleted = await getStorageItem<string | null>(TOUR_STORAGE_KEY, null);
-      const hasCompletedOnboarding = await getStorageItem<string | null>('oracle-monitor-onboarding-completed', null);
+      const hasCompletedOnboarding = await getStorageItem<string | null>(
+        'oracle-monitor-onboarding-completed',
+        null,
+      );
 
       // Only show tour if user has completed onboarding but hasn't seen the tour
       if (hasCompletedOnboarding && !hasCompleted) {

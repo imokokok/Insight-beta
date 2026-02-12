@@ -4,8 +4,6 @@ import { useEffect, useState, useCallback } from 'react';
 
 import { TrendingUp, Globe, Activity } from 'lucide-react';
 
-
-
 import { EmptyProtocolsState } from '@/components/common/EmptyState';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -188,7 +186,7 @@ function StatCard({
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-gray-600">{title}</span>
-          <div className="rounded-lg bg-purple-50 p-2 text-purple-600">{icon}</div>
+          <div className="rounded-lg bg-primary/5 p-2 text-primary">{icon}</div>
         </div>
         <div className="mt-2 text-2xl font-bold text-gray-900">{value}</div>
       </CardContent>

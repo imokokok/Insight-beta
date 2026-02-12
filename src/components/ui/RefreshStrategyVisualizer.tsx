@@ -33,12 +33,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   type RefreshStrategyConfig,
   type RefreshHistoryItem,
@@ -109,7 +104,10 @@ export function RefreshStrategyVisualizer({
 
   const progress = useMemo(() => {
     if (strategy.interval === 0) return 100;
-    return Math.max(0, Math.min(100, ((strategy.interval / 1000 - countdown) / (strategy.interval / 1000)) * 100));
+    return Math.max(
+      0,
+      Math.min(100, ((strategy.interval / 1000 - countdown) / (strategy.interval / 1000)) * 100),
+    );
   }, [strategy.interval, countdown]);
 
   const getConnectionStatus = () => {
@@ -135,7 +133,7 @@ export function RefreshStrategyVisualizer({
       case 'frequent':
         return <Timer className="h-4 w-4 text-blue-500" />;
       case 'standard':
-        return <Clock className="h-4 w-4 text-purple-500" />;
+        return <Clock className="h-4 w-4 text-primary" />;
       case 'lazy':
         return <TrendingDown className="h-4 w-4 text-amber-500" />;
       default:
@@ -151,7 +149,7 @@ export function RefreshStrategyVisualizer({
             <TooltipTrigger asChild>
               <div className="flex items-center gap-1.5 rounded-full border bg-white px-2.5 py-1 text-xs shadow-sm">
                 {isRefreshing ? (
-                  <RefreshCw className="h-3 w-3 animate-spin text-purple-500" />
+                  <RefreshCw className="h-3 w-3 animate-spin text-primary" />
                 ) : (
                   getStrategyIcon()
                 )}
@@ -205,11 +203,7 @@ export function RefreshStrategyVisualizer({
               onClick={() => setIsExpanded(!isExpanded)}
               className="h-7 w-7 p-0"
             >
-              {isExpanded ? (
-                <ChevronUp className="h-4 w-4" />
-              ) : (
-                <ChevronDown className="h-4 w-4" />
-              )}
+              {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </Button>
           </div>
         </div>
@@ -226,7 +220,8 @@ export function RefreshStrategyVisualizer({
                     'font-medium',
                     strategy.id === 'realtime' && 'border-green-200 bg-green-50 text-green-700',
                     strategy.id === 'frequent' && 'border-blue-200 bg-blue-50 text-blue-700',
-                    strategy.id === 'standard' && 'border-purple-200 bg-purple-50 text-purple-700',
+                    strategy.id === 'standard' &&
+                      'text-primary-dark border-primary/20 bg-primary/5',
                     strategy.id === 'lazy' && 'border-amber-200 bg-amber-50 text-amber-700',
                   )}
                 >
@@ -242,9 +237,7 @@ export function RefreshStrategyVisualizer({
                   disabled={isRefreshing}
                   className="h-7"
                 >
-                  <RefreshCw
-                    className={cn('mr-1.5 h-3.5 w-3.5', isRefreshing && 'animate-spin')}
-                  />
+                  <RefreshCw className={cn('mr-1.5 h-3.5 w-3.5', isRefreshing && 'animate-spin')} />
                   {isRefreshing ? '刷新中...' : '立即刷新'}
                 </Button>
               )}
@@ -254,7 +247,7 @@ export function RefreshStrategyVisualizer({
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-gray-500">下次刷新倒计时</span>
-                  <span className="font-mono font-medium text-purple-600">
+                  <span className="font-mono font-medium text-primary">
                     {formatCountdown(countdown)}
                   </span>
                 </div>
@@ -319,17 +312,13 @@ function RefreshStrategyTooltip({
         <Badge variant="outline" className="text-xs">
           {strategy.label}
         </Badge>
-        {isRefreshing && (
-          <span className="text-xs text-purple-600">刷新中...</span>
-        )}
+        {isRefreshing && <span className="text-xs text-primary">刷新中...</span>}
       </div>
 
       <div className="space-y-1 text-xs text-gray-400">
         <p>{strategy.description}</p>
         <p>最后更新: {formatLastUpdated(lastUpdated)}</p>
-        {strategy.interval > 0 && !isRefreshing && (
-          <p>下次刷新: {formatCountdown(countdown)}</p>
-        )}
+        {strategy.interval > 0 && !isRefreshing && <p>下次刷新: {formatCountdown(countdown)}</p>}
         {isWebSocketConnected !== undefined && (
           <p>WebSocket: {isWebSocketConnected ? '已连接' : '未连接'}</p>
         )}
@@ -374,9 +363,7 @@ function RefreshStatsView({ stats }: RefreshStatsViewProps) {
             <CheckCircle className="h-3 w-3 text-green-500" />
             <span>成功</span>
           </div>
-          <div className="mt-0.5 text-lg font-bold text-green-600">
-            {stats.successfulRefreshes}
-          </div>
+          <div className="mt-0.5 text-lg font-bold text-green-600">{stats.successfulRefreshes}</div>
         </div>
 
         <div className="rounded-lg border bg-gray-50 p-2">
@@ -384,14 +371,12 @@ function RefreshStatsView({ stats }: RefreshStatsViewProps) {
             <XCircle className="h-3 w-3 text-red-500" />
             <span>失败</span>
           </div>
-          <div className="mt-0.5 text-lg font-bold text-red-600">
-            {stats.failedRefreshes}
-          </div>
+          <div className="mt-0.5 text-lg font-bold text-red-600">{stats.failedRefreshes}</div>
         </div>
 
         <div className="rounded-lg border bg-gray-50 p-2">
           <div className="text-xs text-gray-500">成功率</div>
-          <div className="mt-0.5 text-lg font-bold text-purple-600">{successRate}%</div>
+          <div className="mt-0.5 text-lg font-bold text-primary">{successRate}%</div>
         </div>
 
         <div className="rounded-lg border bg-gray-50 p-2">
@@ -405,12 +390,8 @@ function RefreshStatsView({ stats }: RefreshStatsViewProps) {
       {stats.lastError && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-2">
           <div className="text-xs font-medium text-red-700">最近错误</div>
-          <div className="mt-1 text-xs text-red-600">
-            {stats.lastErrorMessage || '未知错误'}
-          </div>
-          <div className="mt-1 text-xs text-red-400">
-            {formatLastUpdated(stats.lastError)}
-          </div>
+          <div className="mt-1 text-xs text-red-600">{stats.lastErrorMessage || '未知错误'}</div>
+          <div className="mt-1 text-xs text-red-400">{formatLastUpdated(stats.lastError)}</div>
         </div>
       )}
     </div>
@@ -450,9 +431,7 @@ function RefreshHistoryView({ history }: RefreshHistoryViewProps) {
                 ) : (
                   <XCircle className="h-3 w-3 text-red-500" />
                 )}
-                <span className="text-gray-600">
-                  {item.timestamp.toLocaleTimeString('zh-CN')}
-                </span>
+                <span className="text-gray-600">{item.timestamp.toLocaleTimeString('zh-CN')}</span>
               </div>
               <div className="flex items-center gap-2 text-gray-500">
                 <span>{formatDuration(item.duration)}</span>
@@ -460,9 +439,7 @@ function RefreshHistoryView({ history }: RefreshHistoryViewProps) {
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger>
-                        <span className="truncate max-w-[100px] text-red-500">
-                          {item.error}
-                        </span>
+                        <span className="max-w-[100px] truncate text-red-500">{item.error}</span>
                       </TooltipTrigger>
                       <TooltipContent>
                         <p className="max-w-xs text-xs">{item.error}</p>
@@ -503,8 +480,8 @@ function RefreshStrategySelector({
             className={cn(
               'rounded-lg border p-2 text-left text-xs transition-all',
               currentStrategy === s.id
-                ? 'border-purple-300 bg-purple-50 text-purple-700'
-                : 'border-gray-200 bg-white text-gray-600 hover:border-purple-200 hover:bg-purple-50',
+                ? 'text-primary-dark border-purple-300 bg-primary/5'
+                : 'border-gray-200 bg-white text-gray-600 hover:border-primary/20 hover:bg-primary/5',
             )}
           >
             <div className="font-medium">{s.label}</div>

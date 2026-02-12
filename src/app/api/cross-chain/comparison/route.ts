@@ -1,17 +1,32 @@
 import type { NextRequest } from 'next/server';
 
-import { logger } from '@/shared/logger';
-import type { SupportedChain } from '@/types/unifiedOracleTypes';
-import { apiSuccess, apiError, withErrorHandler, getQueryParam } from '@/shared/utils';
 import { crossChainAnalysisService } from '@/services/oracle/crossChainAnalysisService';
+import { logger } from '@/shared/logger';
+import { apiSuccess, apiError, withErrorHandler, getQueryParam } from '@/shared/utils';
+import type { SupportedChain } from '@/types/unifiedOracleTypes';
 
 const VALID_SYMBOLS = ['BTC', 'ETH', 'SOL', 'LINK', 'AVAX', 'MATIC', 'UNI', 'AAVE'];
 const VALID_CHAINS: SupportedChain[] = [
-  'ethereum', 'bsc', 'polygon', 'avalanche',
-  'arbitrum', 'optimism', 'base', 'solana',
-  'near', 'fantom', 'celo', 'gnosis',
-  'linea', 'scroll', 'mantle', 'mode',
-  'blast', 'aptos', 'polygonAmoy', 'sepolia',
+  'ethereum',
+  'bsc',
+  'polygon',
+  'avalanche',
+  'arbitrum',
+  'optimism',
+  'base',
+  'solana',
+  'near',
+  'fantom',
+  'celo',
+  'gnosis',
+  'linea',
+  'scroll',
+  'mantle',
+  'mode',
+  'blast',
+  'aptos',
+  'polygonAmoy',
+  'sepolia',
 ];
 
 function validateSymbol(symbol: string | null): string | null {
@@ -28,8 +43,8 @@ function validateSymbol(symbol: string | null): string | null {
 function validateChains(chainsParam: string | null): SupportedChain[] | null {
   if (!chainsParam) return null;
 
-  const chains = chainsParam.split(',').map(c => c.trim().toLowerCase());
-  const invalidChains = chains.filter(c => !VALID_CHAINS.includes(c as SupportedChain));
+  const chains = chainsParam.split(',').map((c) => c.trim().toLowerCase());
+  const invalidChains = chains.filter((c) => !VALID_CHAINS.includes(c as SupportedChain));
 
   if (invalidChains.length > 0) {
     return null;
@@ -44,23 +59,17 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
 
   const validatedSymbol = validateSymbol(symbol);
   if (validatedSymbol === null) {
-    return apiError(
-      `Invalid symbol. Valid symbols: ${VALID_SYMBOLS.join(', ')}`,
-      400
-    );
+    return apiError(`Invalid symbol. Valid symbols: ${VALID_SYMBOLS.join(', ')}`, 400);
   }
 
   const chains = chainsParam !== null ? validateChains(chainsParam) : null;
   if (chainsParam !== null && chains === null) {
-    return apiError(
-      'Invalid chains parameter',
-      400
-    );
+    return apiError('Invalid chains parameter', 400);
   }
 
   const comparison = await crossChainAnalysisService.comparePrices(
     validatedSymbol,
-    chains ?? undefined
+    chains ?? undefined,
   );
 
   logger.info('Cross-chain comparison completed', {

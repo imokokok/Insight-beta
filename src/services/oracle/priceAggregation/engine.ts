@@ -9,19 +9,19 @@
 
 import pLimit from 'p-limit';
 
-import { defaultCache } from '@/infrastructure/api/optimization/cache';
-import { logger } from '@/shared/logger';
+import { defaultCache } from '@/lib/api/optimization/cache';
+import { query } from '@/lib/database/db';
 import { priceMetrics } from '@/lib/monitoring/priceMetrics';
+import { alertRuleEngine } from '@/services/oracle/realtime';
+import { logger } from '@/shared/logger';
+import { calculateMean, calculateMedian } from '@/shared/utils/math';
+import { withRetry, circuitBreakerManager } from '@/shared/utils/resilience';
 import type {
   CrossOracleComparison,
   OracleProtocol,
   SupportedChain,
   UnifiedPriceFeed,
 } from '@/types/unifiedOracleTypes';
-import { calculateMean, calculateMedian } from '@/shared/utils/math';
-import { withRetry, circuitBreakerManager } from '@/shared/utils/resilience';
-import { query } from '@/infrastructure/database/db';
-import { alertRuleEngine } from '@/services/oracle/realtime';
 
 import { AGGREGATION_CONFIG } from './config';
 import {
@@ -90,7 +90,7 @@ export class PriceAggregationEngine {
           // 添加熔断回退状态标识
           const breakerStats = priceBreaker.getStats();
           const estimatedRecovery = new Date(breakerStats.nextAttemptTime).toISOString();
-          
+
           return {
             ...stale,
             dataStatus: {
@@ -146,7 +146,13 @@ export class PriceAggregationEngine {
 
     // 计算统计数据 - 单次遍历优化性能
     const stats = this.calculatePriceStats(prices.map((p) => p.price));
-    const { avg: avgPrice, median: medianPrice, min: minPrice, max: maxPrice, range: priceRange } = stats;
+    const {
+      avg: avgPrice,
+      median: medianPrice,
+      min: minPrice,
+      max: maxPrice,
+      range: priceRange,
+    } = stats;
     // 价格区间百分比，小数形式 (0.01 = 1%)
     const priceRangePercent = avgPrice > 0 ? priceRange / avgPrice : 0;
 
@@ -298,8 +304,7 @@ export class PriceAggregationEngine {
 
     const sorted = [...values].sort((a, b) => a - b);
     const mid = Math.floor(sorted.length / 2);
-    const median =
-      sorted.length % 2 !== 0 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2;
+    const median = sorted.length % 2 !== 0 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2;
 
     return {
       avg: sum / values.length,

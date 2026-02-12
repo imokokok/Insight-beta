@@ -1,8 +1,8 @@
 import { LayoutGrid, List, Search, ChevronDown } from 'lucide-react';
 
 import type { TranslationKey } from '@/i18n/translations';
-import type { OracleConfig, OracleInstance, DisputeStatus } from '@/types/oracleTypes';
 import { cn } from '@/shared/utils';
+import type { OracleConfig, OracleInstance, DisputeStatus } from '@/types/oracleTypes';
 
 type Translate = (key: TranslationKey) => string;
 type ViewMode = 'grid' | 'list';
@@ -23,14 +23,14 @@ function StatusFilters({ filterStatus, setFilterStatus, t }: StatusFiltersProps)
           className={cn(
             'flex items-center gap-2 whitespace-nowrap rounded-xl px-4 py-2 text-sm font-bold transition-all',
             filterStatus === status
-              ? 'scale-105 bg-white shadow-md shadow-purple-500/10 ring-1 ring-black/5'
+              ? 'scale-105 bg-white shadow-md shadow-primary-500/10 ring-1 ring-black/5'
               : 'text-gray-500 hover:bg-white/40 hover:text-gray-900',
             filterStatus === status && status === 'Voting' && 'text-blue-600 ring-blue-100',
             filterStatus === status &&
               status === 'Pending Execution' &&
               'text-amber-600 ring-amber-100',
             filterStatus === status && status === 'Executed' && 'text-emerald-600 ring-emerald-100',
-            filterStatus === status && status === 'All' && 'text-purple-700 ring-purple-100',
+            filterStatus === status && status === 'All' && 'text-primary-dark ring-primary100',
           )}
         >
           {status === 'Voting' && (
@@ -60,7 +60,7 @@ function StatusFilters({ filterStatus, setFilterStatus, t }: StatusFiltersProps)
           {status === 'All' && (
             <div
               className={cn(
-                'h-2 w-2 rounded-full bg-purple-500',
+                'h-2 w-2 rounded-full bg-primary/50',
                 filterStatus !== status && 'opacity-50',
               )}
             />
@@ -89,7 +89,7 @@ function ViewModeToggle({ viewMode, setViewMode, t }: ViewModeToggleProps) {
         className={cn(
           'rounded-md p-1.5 transition-all',
           viewMode === 'grid'
-            ? 'bg-white text-purple-600 shadow'
+            ? 'bg-white text-primary shadow'
             : 'text-gray-400 hover:text-gray-600',
         )}
         title={t('oracle.card.gridView')}
@@ -101,7 +101,7 @@ function ViewModeToggle({ viewMode, setViewMode, t }: ViewModeToggleProps) {
         className={cn(
           'rounded-md p-1.5 transition-all',
           viewMode === 'list'
-            ? 'bg-white text-purple-600 shadow'
+            ? 'bg-white text-primary shadow'
             : 'text-gray-400 hover:text-gray-600',
         )}
         title={t('oracle.card.listView')}
@@ -126,8 +126,8 @@ function InstanceSelector({
   isMobile,
 }: InstanceSelectorProps) {
   const className = isMobile
-    ? 'glass-input h-9 w-full rounded-xl border-none pl-3 pr-8 text-sm font-medium text-gray-600 hover:bg-white/80 focus:ring-2 focus:ring-purple-500/20 cursor-pointer appearance-none'
-    : 'glass-input h-9 rounded-xl border-none pl-3 pr-8 text-sm font-medium text-gray-600 hover:bg-white/80 focus:ring-2 focus:ring-purple-500/20 cursor-pointer appearance-none';
+    ? 'glass-input h-9 w-full rounded-xl border-none pl-3 pr-8 text-sm font-medium text-gray-600 hover:bg-white/80 focus:ring-2 focus:ring-primary500/20 cursor-pointer appearance-none'
+    : 'glass-input h-9 rounded-xl border-none pl-3 pr-8 text-sm font-medium text-gray-600 hover:bg-white/80 focus:ring-2 focus:ring-primary500/20 cursor-pointer appearance-none';
   return (
     <div className={cn('relative', isMobile ? 'w-full md:hidden' : 'hidden md:block')}>
       <select
@@ -158,8 +158,8 @@ type ChainSelectorProps = {
 
 function ChainSelector({ filterChain, setFilterChain, t, isMobile }: ChainSelectorProps) {
   const className = isMobile
-    ? 'glass-input h-9 w-full rounded-xl border-none pl-3 pr-8 text-sm font-medium text-gray-600 hover:bg-white/80 focus:ring-2 focus:ring-purple-500/20 cursor-pointer appearance-none'
-    : 'glass-input h-9 rounded-xl border-none pl-3 pr-8 text-sm font-medium text-gray-600 hover:bg-white/80 focus:ring-2 focus:ring-purple-500/20 cursor-pointer appearance-none';
+    ? 'glass-input h-9 w-full rounded-xl border-none pl-3 pr-8 text-sm font-medium text-gray-600 hover:bg-white/80 focus:ring-2 focus:ring-primary500/20 cursor-pointer appearance-none'
+    : 'glass-input h-9 rounded-xl border-none pl-3 pr-8 text-sm font-medium text-gray-600 hover:bg-white/80 focus:ring-2 focus:ring-primary500/20 cursor-pointer appearance-none';
   return (
     <div className={cn('relative', isMobile ? 'w-full md:hidden' : 'hidden md:block')}>
       <select
@@ -197,7 +197,7 @@ function SearchInput({ query, setQuery, t }: SearchInputProps) {
         placeholder={t('oracle.myDisputes.searchPlaceholder')}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        className="glass-input h-9 w-full rounded-xl pl-9 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500/20 md:w-64"
+        className="glass-input focus:ring-primary500/20 h-9 w-full rounded-xl pl-9 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 md:w-64"
       />
     </div>
   );
@@ -215,7 +215,7 @@ function ClearFiltersButton({ hasFilters, onClear, t }: ClearFiltersButtonProps)
     <button
       type="button"
       onClick={onClear}
-      className="h-9 rounded-xl bg-white px-3 text-sm font-semibold text-purple-700 shadow-sm ring-1 ring-purple-100 hover:bg-purple-50"
+      className="text-primary-dark ring-primary100 h-9 rounded-xl bg-white px-3 text-sm font-semibold shadow-sm ring-1 hover:bg-primary/5"
     >
       {t('audit.clear')}
     </button>
@@ -253,7 +253,7 @@ export function MyDisputesToolbar({
 }: MyDisputesToolbarProps) {
   const hasFilters = filterStatus !== 'All' || filterChain !== 'All' || !!query.trim();
   return (
-    <div className="glass-panel animate-in fade-in slide-in-from-bottom-4 sticky top-4 z-20 flex flex-col gap-4 rounded-2xl border-white/60 p-3 shadow-xl shadow-purple-900/5 backdrop-blur-xl delay-200 duration-700 sm:flex-row sm:items-center sm:justify-between">
+    <div className="glass-panel animate-in fade-in slide-in-from-bottom-4 sticky top-4 z-20 flex flex-col gap-4 rounded-2xl border-white/60 p-3 shadow-xl shadow-primary-900/5 backdrop-blur-xl delay-200 duration-700 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <StatusFilters filterStatus={filterStatus} setFilterStatus={setFilterStatus} t={t} />
         <div className="flex flex-wrap items-center gap-2 md:gap-3">

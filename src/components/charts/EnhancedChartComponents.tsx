@@ -1,6 +1,6 @@
 /**
  * Enhanced Chart Components
- * 
+ *
  * 增强版图表组件库
  * - 基于 Recharts 的封装
  * - 统一视觉风格
@@ -12,10 +12,7 @@
 import { useMemo, memo } from 'react';
 
 import { motion } from 'framer-motion';
-import {
-  TrendingUp,
-  TrendingDown,
-} from 'lucide-react';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 import {
   Area,
   AreaChart,
@@ -116,25 +113,18 @@ export const CustomTooltip = memo(function CustomTooltip({
     <motion.div
       initial={{ opacity: 0, y: 5 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-xl border border-purple-100 bg-white p-4 shadow-xl"
+      className="rounded-xl border border-primary/10 bg-white p-4 shadow-xl"
     >
       {title && (
-        <p className="mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-          {title}
-        </p>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">{title}</p>
       )}
       <p className="mb-2 text-xs text-gray-500">{labelFormatter(label!)}</p>
       <div className="space-y-1.5">
         {payload.map((entry, index) => (
           <div key={index} className="flex items-center gap-2">
-            <div
-              className="h-2.5 w-2.5 rounded-full"
-              style={{ backgroundColor: entry.color }}
-            />
-            <span className="text-sm text-gray-600 flex-1">{entry.name}</span>
-            <span className="text-sm font-bold text-gray-900">
-              {valueFormatter(entry.value)}
-            </span>
+            <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: entry.color }} />
+            <span className="flex-1 text-sm text-gray-600">{entry.name}</span>
+            <span className="text-sm font-bold text-gray-900">{valueFormatter(entry.value)}</span>
           </div>
         ))}
       </div>
@@ -172,11 +162,8 @@ export const EnhancedAreaChart = memo(function EnhancedAreaChart({
   labelFormatter = (l) => String(l),
 }: EnhancedAreaChartProps) {
   const gradientId = useMemo(() => generateGradientId(color, 'area'), [color]);
-  
-  const hasCritical = useMemo(
-    () => thresholds.some((t) => t.type === 'critical'),
-    [thresholds]
-  );
+
+  const hasCritical = useMemo(() => thresholds.some((t) => t.type === 'critical'), [thresholds]);
 
   return (
     <div className={cn('w-full', className)}>
@@ -192,11 +179,7 @@ export const EnhancedAreaChart = memo(function EnhancedAreaChart({
           )}
 
           {showGrid && (
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke={CHART_COLORS.grid.line}
-              vertical={false}
-            />
+            <CartesianGrid strokeDasharray="3 3" stroke={CHART_COLORS.grid.line} vertical={false} />
           )}
 
           <XAxis
@@ -233,24 +216,22 @@ export const EnhancedAreaChart = memo(function EnhancedAreaChart({
             />
           ))}
 
-          {hasCritical && thresholds.map((t, i) =>
-            t.type === 'critical' ? (
-              <ReferenceArea
-                key={i}
-                y1={t.value}
-                y2={Math.max(...data.map((d) => (d[dataKey] as number) || 0)) * 1.1}
-                fill={t.color}
-                fillOpacity={0.05}
-              />
-            ) : null
-          )}
+          {hasCritical &&
+            thresholds.map((t, i) =>
+              t.type === 'critical' ? (
+                <ReferenceArea
+                  key={i}
+                  y1={t.value}
+                  y2={Math.max(...data.map((d) => (d[dataKey] as number) || 0)) * 1.1}
+                  fill={t.color}
+                  fillOpacity={0.05}
+                />
+              ) : null,
+            )}
 
           <Tooltip
             content={
-              <CustomTooltip
-                valueFormatter={valueFormatter}
-                labelFormatter={labelFormatter}
-              />
+              <CustomTooltip valueFormatter={valueFormatter} labelFormatter={labelFormatter} />
             }
           />
 
@@ -303,11 +284,7 @@ export const EnhancedLineChart = memo(function EnhancedLineChart({
       <ResponsiveContainer width="100%" height={height}>
         <LineChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
           {showGrid && (
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke={CHART_COLORS.grid.line}
-              vertical={false}
-            />
+            <CartesianGrid strokeDasharray="3 3" stroke={CHART_COLORS.grid.line} vertical={false} />
           )}
 
           <XAxis
@@ -332,10 +309,7 @@ export const EnhancedLineChart = memo(function EnhancedLineChart({
 
           <Tooltip
             content={
-              <CustomTooltip
-                valueFormatter={valueFormatter}
-                labelFormatter={labelFormatter}
-              />
+              <CustomTooltip valueFormatter={valueFormatter} labelFormatter={labelFormatter} />
             }
           />
 
@@ -390,11 +364,7 @@ export const EnhancedBarChart = memo(function EnhancedBarChart({
   return (
     <div className={cn('w-full', className)}>
       <ResponsiveContainer width="100%" height={height}>
-        <BarChart
-          data={data}
-          layout={layout}
-          margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-        >
+        <BarChart data={data} layout={layout} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
           {showGrid && (
             <CartesianGrid
               strokeDasharray="3 3"
@@ -429,10 +399,7 @@ export const EnhancedBarChart = memo(function EnhancedBarChart({
 
           <Tooltip
             content={
-              <CustomTooltip
-                valueFormatter={valueFormatter}
-                labelFormatter={labelFormatter}
-              />
+              <CustomTooltip valueFormatter={valueFormatter} labelFormatter={labelFormatter} />
             }
           />
 
@@ -483,24 +450,21 @@ export const EnhancedPieChart = memo(function EnhancedPieChart({
   showLabels = true,
   valueFormatter = (v) => formatNumber(v, 0),
 }: EnhancedPieChartProps) {
-  const total = useMemo(
-    () => data.reduce((sum, item) => sum + item.value, 0),
-    [data]
-  );
+  const total = useMemo(() => data.reduce((sum, item) => sum + item.value, 0), [data]);
 
   return (
     <div className={cn('w-full', className)}>
       <ResponsiveContainer width="100%" height={height}>
         <PieChart>
           {showLegend && <Legend layout="vertical" align="right" verticalAlign="middle" />}
-          
+
           <Tooltip
             content={({ active, payload }) => {
               if (!active || !payload?.length) return null;
               const item = payload[0];
               const percentage = ((item.value as number) / total) * 100;
               return (
-                <div className="rounded-xl border border-purple-100 bg-white p-3 shadow-xl">
+                <div className="rounded-xl border border-primary/10 bg-white p-3 shadow-xl">
                   <p className="text-sm font-semibold text-gray-900">{item.name}</p>
                   <p className="text-lg font-bold" style={{ color: item.payload.color }}>
                     {valueFormatter(item.value as number)}
@@ -520,13 +484,14 @@ export const EnhancedPieChart = memo(function EnhancedPieChart({
             paddingAngle={2}
             dataKey="value"
             animationDuration={CHART_ANIMATIONS.chart.animationDuration}
-            label={showLabels ? ({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%` : false}
+            label={
+              showLabels
+                ? ({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`
+                : false
+            }
           >
             {data.map((entry, index) => (
-              <Cell
-                key={`cell-${index}`}
-                fill={entry.color || getSeriesColor(index)}
-              />
+              <Cell key={`cell-${index}`} fill={entry.color || getSeriesColor(index)} />
             ))}
           </Pie>
         </PieChart>
@@ -563,10 +528,7 @@ export const EnhancedRadarChart = memo(function EnhancedRadarChart({
       <ResponsiveContainer width="100%" height={height}>
         <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
           {showGrid && <PolarGrid stroke={CHART_COLORS.grid.line} />}
-          <PolarAngleAxis
-            dataKey="metric"
-            tick={{ fill: CHART_COLORS.grid.text, fontSize: 12 }}
-          />
+          <PolarAngleAxis dataKey="metric" tick={{ fill: CHART_COLORS.grid.text, fontSize: 12 }} />
           <PolarRadiusAxis
             angle={30}
             domain={[0, 'auto']}
@@ -585,7 +547,7 @@ export const EnhancedRadarChart = memo(function EnhancedRadarChart({
               if (!active || !payload?.length) return null;
               const item = payload[0];
               return (
-                <div className="rounded-xl border border-purple-100 bg-white p-3 shadow-xl">
+                <div className="rounded-xl border border-primary/10 bg-white p-3 shadow-xl">
                   <p className="text-sm font-semibold text-gray-900">{item.payload.metric}</p>
                   <p className="text-lg font-bold" style={{ color }}>
                     {formatNumber(item.value as number, 1)}
@@ -628,17 +590,15 @@ export const EnhancedGaugeChart = memo(function EnhancedGaugeChart({
 }: EnhancedGaugeChartProps) {
   const percentage = Math.min((value / max) * 100, 100);
   const color = getStatusColor(percentage, thresholds);
-  
+
   const data = useMemo(
     () => [{ name: 'Value', value: percentage, fill: color }],
-    [percentage, color]
+    [percentage, color],
   );
 
   return (
-    <div className={cn('w-full flex flex-col items-center', className)}>
-      {title && (
-        <p className="text-sm font-medium text-gray-600 mb-2">{title}</p>
-      )}
+    <div className={cn('flex w-full flex-col items-center', className)}>
+      {title && <p className="mb-2 text-sm font-medium text-gray-600">{title}</p>}
       <ResponsiveContainer width="100%" height={height}>
         <RadialBarChart
           cx="50%"
@@ -657,11 +617,11 @@ export const EnhancedGaugeChart = memo(function EnhancedGaugeChart({
           />
         </RadialBarChart>
       </ResponsiveContainer>
-      <div className="text-center -mt-8">
+      <div className="-mt-8 text-center">
         <span className="text-3xl font-bold" style={{ color }}>
           {formatNumber(value, 1)}
         </span>
-        <span className="text-sm text-gray-500 ml-1">{unit}</span>
+        <span className="ml-1 text-sm text-gray-500">{unit}</span>
       </div>
     </div>
   );
@@ -701,15 +661,14 @@ export const Sparkline = memo(function Sparkline({
   });
 
   const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
-  
-  const areaPathD = showArea
-    ? `${pathD} L ${width} ${height} L 0 ${height} Z`
-    : '';
+
+  const areaPathD = showArea ? `${pathD} L ${width} ${height} L 0 ${height} Z` : '';
 
   const firstValue = data[0] ?? 0;
   const lastValue = data[data.length - 1] ?? 0;
   const trend = lastValue - firstValue;
-  const trendColor = trend >= 0 ? CHART_COLORS.semantic.success.DEFAULT : CHART_COLORS.semantic.error.DEFAULT;
+  const trendColor =
+    trend >= 0 ? CHART_COLORS.semantic.success.DEFAULT : CHART_COLORS.semantic.error.DEFAULT;
 
   const lastPoint = points[points.length - 1];
 
@@ -722,9 +681,7 @@ export const Sparkline = memo(function Sparkline({
             <stop offset="100%" stopColor={color} stopOpacity="0" />
           </linearGradient>
         </defs>
-        {showArea && (
-          <path d={areaPathD} fill="url(#sparklineGradient)" />
-        )}
+        {showArea && <path d={areaPathD} fill="url(#sparklineGradient)" />}
         <path
           d={pathD}
           fill="none"
@@ -733,14 +690,7 @@ export const Sparkline = memo(function Sparkline({
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-        {lastPoint && (
-          <circle
-            cx={lastPoint.x}
-            cy={lastPoint.y}
-            r="3"
-            fill={color}
-          />
-        )}
+        {lastPoint && <circle cx={lastPoint.x} cy={lastPoint.y} r="3" fill={color} />}
       </svg>
       <div className="flex items-center gap-1">
         {trend >= 0 ? (
@@ -786,15 +736,13 @@ export const StatComparison = memo(function StatComparison({
   return (
     <div className={cn('flex items-center gap-3', className)}>
       <div className="flex-1">
-        {label && <p className="text-xs text-gray-500 mb-1">{label}</p>}
+        {label && <p className="mb-1 text-xs text-gray-500">{label}</p>}
         <div className="flex items-baseline gap-1">
-          <span className="text-2xl font-bold text-gray-900">
-            {formatNumber(current, 2)}
-          </span>
+          <span className="text-2xl font-bold text-gray-900">{formatNumber(current, 2)}</span>
           {unit && <span className="text-sm text-gray-500">{unit}</span>}
         </div>
       </div>
-      <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-gray-50">
+      <div className="flex items-center gap-1 rounded-full bg-gray-50 px-2 py-1">
         {isPositive ? (
           <TrendingUp className="h-3.5 w-3.5" style={{ color: trendColor }} />
         ) : (

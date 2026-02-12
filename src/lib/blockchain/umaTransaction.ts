@@ -20,8 +20,6 @@ import {
 import { logger } from '@/shared/logger';
 import type { SupportedChain } from '@/types/unifiedOracleTypes';
 
-import { UMA_CONTRACT_ADDRESSES } from './umaOracle';
-import { UMA_OPTIMISTIC_ORACLE_V3_ABI } from './uma/abi';
 import {
   validateUMAAssertionParams,
   validateAddress,
@@ -29,21 +27,18 @@ import {
   validateBondAmount,
   VALIDATION_LIMITS,
 } from './security/inputValidation';
+import { createRateLimiter, RATE_LIMIT_DEFAULTS } from './security/rateLimiter';
+import { createReentrancyGuard } from './security/reentrancyGuard';
 import {
-  UMATransactionValidator,
   createUMATransactionValidator,
-  TransactionMonitor,
   createTransactionMonitor,
 } from './security/transactionValidator';
-import {
-  ReentrancyGuard,
-  createReentrancyGuard,
-} from './security/reentrancyGuard';
-import {
-  SlidingWindowRateLimiter,
-  createRateLimiter,
-  RATE_LIMIT_DEFAULTS,
-} from './security/rateLimiter';
+import { UMA_OPTIMISTIC_ORACLE_V3_ABI } from './uma/abi';
+import { UMA_CONTRACT_ADDRESSES } from './umaOracle';
+
+import type { SlidingWindowRateLimiter } from './security/rateLimiter';
+import type { ReentrancyGuard } from './security/reentrancyGuard';
+import type { UMATransactionValidator, TransactionMonitor } from './security/transactionValidator';
 
 // ============================================================================
 // 类型定义
@@ -122,7 +117,8 @@ export class UMATransactionClient {
     if (config.enableRateLimit !== false) {
       this.rateLimiter = createRateLimiter({
         maxRequestsPerSecond: 5,
-        maxRequestsPerMinute: config.maxRequestsPerMinute ?? RATE_LIMIT_DEFAULTS.WRITE_MAX_REQUESTS_PER_MINUTE,
+        maxRequestsPerMinute:
+          config.maxRequestsPerMinute ?? RATE_LIMIT_DEFAULTS.WRITE_MAX_REQUESTS_PER_MINUTE,
       });
     }
   }
@@ -193,107 +189,103 @@ export class UMATransactionClient {
     this.checkRateLimit();
 
     // 4. 重入防护
-    return this.reentrancyGuard.withLock(
-      `assertTruth-${this.chain}`,
-      'assertTruth',
-      async () => {
-        const walletClient = this.ensureWalletClient();
-        const contractAddress = this.ensureContractAddress();
+    return this.reentrancyGuard.withLock(`assertTruth-${this.chain}`, 'assertTruth', async () => {
+      const walletClient = this.ensureWalletClient();
+      const contractAddress = this.ensureContractAddress();
 
-        try {
-          const account = walletClient.account;
-          if (!account) {
-            throw new Error('Wallet account not available');
-          }
-
-          const defaultIdentifier =
-            '0x554d49502d313238000000000000000000000000000000000000000000000000' as Hash;
-          const identifier = params.identifier ?? defaultIdentifier;
-          const escalateManually = params.escalateManually ?? false;
-          const extraData = params.extraData ?? '0x';
-
-          const { request } = await this.publicClient.simulateContract({
-            address: contractAddress,
-            abi: UMA_OPTIMISTIC_ORACLE_V3_ABI,
-            functionName: 'assertTruth',
-            args: [
-              params.claim,
-              params.currency,
-              params.bond,
-              identifier,
-              escalateManually,
-              extraData,
-            ],
-            account,
-          });
-
-          const hash = await walletClient.writeContract(request);
-
-          // 记录交易
-          this.monitor.recordSubmission(hash, {
-            to: contractAddress,
-            from: account.address,
-            value: params.bond,
-          });
-
-          const receipt = await this.publicClient.waitForTransactionReceipt({ hash });
-
-          // 更新状态
-          this.monitor.updateStatus(hash, {
-            status: receipt.status === 'success' ? 'confirmed' : 'failed',
-            confirmations: 1,
-            blockNumber: receipt.blockNumber,
-            gasUsed: receipt.gasUsed,
-            effectiveGasPrice: receipt.effectiveGasPrice,
-          });
-
-          let assertionId: Hash | undefined;
-          for (const log of receipt.logs) {
-            try {
-              const decodedLog = decodeEventLog({
-                abi: UMA_OPTIMISTIC_ORACLE_V3_ABI,
-                data: log.data,
-                topics: log.topics,
-              });
-              if (decodedLog.eventName === 'AssertionMade') {
-                const args = decodedLog.args as { assertionId: Hash };
-                assertionId = args.assertionId;
-              }
-            } catch {
-              // Skip non-matching logs
-            }
-          }
-
-          logger.info('UMA assertion created', {
-            chain: this.chain,
-            transactionHash: hash,
-            assertionId,
-            claim: params.claim.substring(0, 100),
-            gasUsed: receipt.gasUsed.toString(),
-          });
-
-          return {
-            success: true,
-            transactionHash: hash,
-            assertionId,
-            warnings,
-            gasUsed: receipt.gasUsed,
-          };
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : String(error);
-          logger.error('Failed to create UMA assertion', {
-            error: errorMessage,
-            chain: this.chain,
-            params: { ...params, claim: params.claim.substring(0, 100) },
-          });
-          return {
-            success: false,
-            error: errorMessage,
-            warnings,
-          };
+      try {
+        const account = walletClient.account;
+        if (!account) {
+          throw new Error('Wallet account not available');
         }
-      },
-    );
+
+        const defaultIdentifier =
+          '0x554d49502d313238000000000000000000000000000000000000000000000000' as Hash;
+        const identifier = params.identifier ?? defaultIdentifier;
+        const escalateManually = params.escalateManually ?? false;
+        const extraData = params.extraData ?? '0x';
+
+        const { request } = await this.publicClient.simulateContract({
+          address: contractAddress,
+          abi: UMA_OPTIMISTIC_ORACLE_V3_ABI,
+          functionName: 'assertTruth',
+          args: [
+            params.claim,
+            params.currency,
+            params.bond,
+            identifier,
+            escalateManually,
+            extraData,
+          ],
+          account,
+        });
+
+        const hash = await walletClient.writeContract(request);
+
+        // 记录交易
+        this.monitor.recordSubmission(hash, {
+          to: contractAddress,
+          from: account.address,
+          value: params.bond,
+        });
+
+        const receipt = await this.publicClient.waitForTransactionReceipt({ hash });
+
+        // 更新状态
+        this.monitor.updateStatus(hash, {
+          status: receipt.status === 'success' ? 'confirmed' : 'failed',
+          confirmations: 1,
+          blockNumber: receipt.blockNumber,
+          gasUsed: receipt.gasUsed,
+          effectiveGasPrice: receipt.effectiveGasPrice,
+        });
+
+        let assertionId: Hash | undefined;
+        for (const log of receipt.logs) {
+          try {
+            const decodedLog = decodeEventLog({
+              abi: UMA_OPTIMISTIC_ORACLE_V3_ABI,
+              data: log.data,
+              topics: log.topics,
+            });
+            if (decodedLog.eventName === 'AssertionMade') {
+              const args = decodedLog.args as { assertionId: Hash };
+              assertionId = args.assertionId;
+            }
+          } catch {
+            // Skip non-matching logs
+          }
+        }
+
+        logger.info('UMA assertion created', {
+          chain: this.chain,
+          transactionHash: hash,
+          assertionId,
+          claim: params.claim.substring(0, 100),
+          gasUsed: receipt.gasUsed.toString(),
+        });
+
+        return {
+          success: true,
+          transactionHash: hash,
+          assertionId,
+          warnings,
+          gasUsed: receipt.gasUsed,
+        };
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        logger.error('Failed to create UMA assertion', {
+          error: errorMessage,
+          chain: this.chain,
+          params: { ...params, claim: params.claim.substring(0, 100) },
+        });
+        return {
+          success: false,
+          error: errorMessage,
+          warnings,
+        };
+      }
+    });
   }
 
   // ============================================================================
@@ -599,14 +591,7 @@ export function encodeAssertTruthCall(params: AssertTruthParams): `0x${string}` 
   return encodeFunctionData({
     abi: UMA_OPTIMISTIC_ORACLE_V3_ABI,
     functionName: 'assertTruth',
-    args: [
-      params.claim,
-      params.currency,
-      params.bond,
-      identifier,
-      escalateManually,
-      extraData,
-    ],
+    args: [params.claim, params.currency, params.bond, identifier, escalateManually, extraData],
   });
 }
 

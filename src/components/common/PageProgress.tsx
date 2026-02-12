@@ -65,7 +65,7 @@ export function PageProgress() {
     <div
       className={cn(
         'fixed left-0 right-0 top-0 z-[9999] h-0.5',
-        'from-primary to-primary bg-gradient-to-r via-purple-400',
+        'bg-gradient-to-r from-primary via-primary-400 to-primary',
         'transition-all duration-300 ease-out',
       )}
       style={{

@@ -1,9 +1,9 @@
-import type { SupportedChain } from '@/types/unifiedOracleTypes';
-import { apiSuccess, withErrorHandler } from '@/shared/utils';
 import { gasPriceService } from '@/services/gas';
+import { apiSuccess, withErrorHandler } from '@/shared/utils';
+import type { SupportedChain } from '@/types/unifiedOracleTypes';
 
 export const POST = withErrorHandler(async (request: Request) => {
-  const body = await request.json() as { chains?: SupportedChain[] };
+  const body = (await request.json()) as { chains?: SupportedChain[] };
 
   await gasPriceService.warmCache(body.chains);
 

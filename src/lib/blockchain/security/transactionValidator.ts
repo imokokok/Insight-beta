@@ -5,8 +5,10 @@
  * 验证交易参数、防止恶意交易、检查交易状态
  */
 
+import { validateAddress, validateBytes32, validateBondAmount } from './inputValidation';
+
+import type { ValidationResult } from './inputValidation';
 import type { Address, Hash } from 'viem';
-import { validateAddress, validateBytes32, validateBondAmount, ValidationResult } from './inputValidation';
 
 // ============================================================================
 // 常量定义
@@ -83,7 +85,8 @@ export class TransactionValidator {
       maxGasLimit: config.maxGasLimit ?? TX_VALIDATION_DEFAULTS.MAX_GAS_LIMIT,
       maxGasPrice: config.maxGasPrice ?? TX_VALIDATION_DEFAULTS.MAX_GAS_PRICE,
       maxValueTransfer: config.maxValueTransfer ?? TX_VALIDATION_DEFAULTS.MAX_VALUE_TRANSFER,
-      requiredConfirmations: config.requiredConfirmations ?? TX_VALIDATION_DEFAULTS.REQUIRED_CONFIRMATIONS,
+      requiredConfirmations:
+        config.requiredConfirmations ?? TX_VALIDATION_DEFAULTS.REQUIRED_CONFIRMATIONS,
     };
   }
 
@@ -499,10 +502,7 @@ export class TransactionMonitor {
     let cleaned = 0;
 
     for (const [hash, tx] of this.pendingTransactions) {
-      if (
-        tx.status.status !== 'pending' &&
-        now - tx.submittedAt > maxAge
-      ) {
+      if (tx.status.status !== 'pending' && now - tx.submittedAt > maxAge) {
         this.pendingTransactions.delete(hash);
         cleaned++;
       }

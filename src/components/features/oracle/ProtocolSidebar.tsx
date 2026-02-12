@@ -63,7 +63,7 @@ export function ProtocolSidebar({ selectedProtocols, onChange, className }: Prot
               onClick={() => handleToggle(protocol.id)}
               className={cn(
                 'group flex w-full items-center justify-between px-4 py-2.5 text-left transition-colors',
-                isSelected ? 'bg-purple-50 text-purple-700' : 'text-gray-600 hover:bg-gray-50',
+                isSelected ? 'text-primary-dark bg-primary/5' : 'text-gray-600 hover:bg-gray-50',
               )}
             >
               <div className="flex items-center gap-3">
@@ -74,7 +74,7 @@ export function ProtocolSidebar({ selectedProtocols, onChange, className }: Prot
                 </div>
               </div>
 
-              {isSelected && <Check className="h-4 w-4 text-purple-600" />}
+              {isSelected && <Check className="h-4 w-4 text-primary" />}
             </button>
           );
         })}

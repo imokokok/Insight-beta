@@ -10,14 +10,14 @@
 
 import { Connection, type PublicKey, type Commitment } from '@solana/web3.js';
 
-import { BaseOracleClient } from '@/infrastructure/blockchain/core/BaseOracleClient';
+import { BaseOracleClient } from '@/lib/blockchain/core/BaseOracleClient';
 import type {
   OracleClientConfig,
   OracleHealthStatus,
   HealthStatus,
-} from '@/infrastructure/blockchain/core/types';
-import { normalizeSymbol } from '@/infrastructure/blockchain/core/types';
-import { ErrorHandler, normalizeError } from '@/shared/errors';
+} from '@/lib/blockchain/core/types';
+import { normalizeSymbol } from '@/lib/blockchain/core/types';
+import { ErrorHandler, normalizeError } from '@/lib/errors';
 import { LoggerFactory } from '@/lib/shared/logger/LoggerFactory';
 import type { SupportedChain, UnifiedPriceFeed } from '@/types/unifiedOracleTypes';
 

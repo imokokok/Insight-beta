@@ -4,11 +4,11 @@
  * 测试通知渠道是否正常工作
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { logger } from '@/shared/logger';
 import { notificationManager } from '@/services/alert/notificationManager';
+import { logger } from '@/shared/logger';
 
 /**
  * POST /api/alerts/test
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     if (!channel) {
       return NextResponse.json(
         { success: false, error: 'Channel name is required' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     logger.error('Failed to test alert channel', { error });
     return NextResponse.json(
       { success: false, error: 'Failed to test alert channel' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -66,7 +66,7 @@ export async function GET() {
     logger.error('Failed to get test status', { error });
     return NextResponse.json(
       { success: false, error: 'Failed to get test status' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

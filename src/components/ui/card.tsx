@@ -11,7 +11,7 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
     <div
       ref={ref}
       className={cn(
-        'rounded-2xl border border-purple-100 bg-white/60 text-purple-950 shadow-sm backdrop-blur-xl transition-all hover:bg-white/70 hover:shadow-md',
+        'rounded-2xl border border-primary/10 bg-white/60 text-[var(--foreground)] shadow-sm backdrop-blur-xl transition-all hover:bg-white/70 hover:shadow-md',
         className,
       )}
       {...props}
@@ -31,7 +31,10 @@ const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HT
   ({ className, children, ...props }, ref) => (
     <h3
       ref={ref}
-      className={cn('text-lg font-semibold leading-none tracking-tight text-purple-900', className)}
+      className={cn(
+        'text-lg font-semibold leading-none tracking-tight text-[var(--foreground)]',
+        className,
+      )}
       {...props}
     >
       {children}
@@ -44,7 +47,7 @@ const CardDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => (
-  <p ref={ref} className={cn('text-sm text-purple-600/80', className)} {...props} />
+  <p ref={ref} className={cn('text-sm text-muted-foreground', className)} {...props} />
 ));
 CardDescription.displayName = 'CardDescription';
 
@@ -72,13 +75,13 @@ const CardEnhanced = React.forwardRef<HTMLDivElement, CardEnhancedProps>(
       <motion.div
         ref={ref}
         className={cn(
-          'relative overflow-hidden rounded-2xl border border-purple-100/50 bg-white/70 p-6 backdrop-blur-xl',
+          'border-primary/10/50 relative overflow-hidden rounded-2xl border bg-white/70 p-6 backdrop-blur-xl',
           'transition-all duration-300',
           hover &&
-            'hover:border-purple-300 hover:bg-white/90 hover:shadow-xl hover:shadow-purple-500/10',
+            'hover:border-primary300 hover:bg-white/90 hover:shadow-xl hover:shadow-primary-500/10',
           clickable && 'cursor-pointer active:scale-[0.98]',
-          gradient && 'bg-gradient-to-br from-white/80 via-purple-50/30 to-blue-50/30',
-          glow && 'shadow-lg shadow-purple-500/20 hover:shadow-xl hover:shadow-purple-500/30',
+          gradient && 'bg-gradient-to-br from-white/80 via-primary-50/30 to-blue-50/30',
+          glow && 'shadow-lg shadow-primary-500/20 hover:shadow-xl hover:shadow-primary-500/30',
           className,
         )}
         whileHover={hover ? { y: -4, transition: { duration: 0.2 } } : undefined}
@@ -92,7 +95,7 @@ const CardEnhanced = React.forwardRef<HTMLDivElement, CardEnhancedProps>(
 
         {/* Gradient border effect */}
         {gradient && (
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-500/10 via-transparent to-blue-500/10 opacity-0 transition-opacity duration-300 hover:opacity-100" />
+          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary-500/10 via-transparent to-blue-500/10 opacity-0 transition-opacity duration-300 hover:opacity-100" />
         )}
 
         <div className="relative z-10">{children as React.ReactNode}</div>
@@ -142,9 +145,9 @@ function InteractiveStatCard({
   return (
     <motion.div
       className={cn(
-        'relative cursor-pointer overflow-hidden rounded-2xl border border-purple-100/50 bg-white/70 p-6 backdrop-blur-xl',
+        'border-primary/10/50 relative cursor-pointer overflow-hidden rounded-2xl border bg-white/70 p-6 backdrop-blur-xl',
         'transition-all duration-300',
-        'hover:border-purple-300 hover:bg-white/90 hover:shadow-lg hover:shadow-purple-500/10',
+        'hover:border-primary300 hover:bg-white/90 hover:shadow-lg hover:shadow-primary-500/10',
         className,
       )}
       onHoverStart={() => setIsHovered(true)}
@@ -155,7 +158,7 @@ function InteractiveStatCard({
     >
       {/* Background glow on hover */}
       <motion.div
-        className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-blue-500/5"
+        className="absolute inset-0 bg-gradient-to-br from-primary-500/5 to-blue-500/5"
         initial={{ opacity: 0 }}
         animate={{ opacity: isHovered ? 1 : 0 }}
         transition={{ duration: 0.3 }}
@@ -164,10 +167,10 @@ function InteractiveStatCard({
       <div className="relative z-10">
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
-          <span className="text-sm font-medium text-purple-600/70">{title}</span>
+          <span className="text-sm font-medium text-primary/70">{title}</span>
           {icon && (
             <motion.div
-              className="rounded-xl bg-purple-100/50 p-2 text-purple-600"
+              className="bg-primary/10/50 rounded-xl p-2 text-primary"
               animate={{ scale: isHovered ? 1.1 : 1, rotate: isHovered ? 5 : 0 }}
               transition={{ duration: 0.2 }}
             >
@@ -179,7 +182,7 @@ function InteractiveStatCard({
         {/* Value */}
         <div className="mb-2">
           {loading ? (
-            <div className="h-8 w-24 animate-pulse rounded bg-purple-200/50" />
+            <div className="bg-primary/20/50 h-8 w-24 animate-pulse rounded" />
           ) : (
             <motion.span
               className="text-3xl font-bold text-gray-900"
@@ -234,11 +237,11 @@ function ExpandableCard({
         className="flex w-full items-center justify-between"
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <h3 className="text-lg font-semibold text-purple-900">{title}</h3>
+        <h3 className="text-lg font-semibold text-[var(--foreground)]">{title}</h3>
         <motion.div
           animate={{ rotate: isExpanded ? 180 : 0 }}
           transition={{ duration: 0.2 }}
-          className="text-purple-600"
+          className="text-primary"
         >
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />

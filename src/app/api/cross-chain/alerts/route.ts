@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
 
-import { apiSuccess, apiError, withErrorHandler, getQueryParam } from '@/shared/utils';
 import { crossChainAnalysisService } from '@/services/oracle/crossChainAnalysisService';
+import { apiSuccess, apiError, withErrorHandler, getQueryParam } from '@/shared/utils';
 
 export const GET = withErrorHandler(async (request: NextRequest) => {
   const symbol = getQueryParam(request, 'symbol');
@@ -13,19 +13,17 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
 
   const alerts = await crossChainAnalysisService.detectDeviationAlerts(symbol);
 
-  const filteredAlerts = severity
-    ? alerts.filter(a => a.severity === severity)
-    : alerts;
+  const filteredAlerts = severity ? alerts.filter((a) => a.severity === severity) : alerts;
 
   return apiSuccess({
     symbol,
     alerts: filteredAlerts,
     summary: {
       total: filteredAlerts.length,
-      critical: filteredAlerts.filter(a => a.severity === 'critical').length,
-      warning: filteredAlerts.filter(a => a.severity === 'warning').length,
-      info: filteredAlerts.filter(a => a.severity === 'info').length,
-      active: filteredAlerts.filter(a => a.status === 'active').length,
+      critical: filteredAlerts.filter((a) => a.severity === 'critical').length,
+      warning: filteredAlerts.filter((a) => a.severity === 'warning').length,
+      info: filteredAlerts.filter((a) => a.severity === 'info').length,
+      active: filteredAlerts.filter((a) => a.status === 'active').length,
     },
     meta: {
       timestamp: new Date().toISOString(),

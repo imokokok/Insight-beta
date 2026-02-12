@@ -1,8 +1,8 @@
 import type { NextRequest } from 'next/server';
 
+import { crossChainAnalysisService } from '@/services/oracle/crossChainAnalysisService';
 import { logger } from '@/shared/logger';
 import { apiSuccess, apiError, withErrorHandler, getQueryParam } from '@/shared/utils';
-import { crossChainAnalysisService } from '@/services/oracle/crossChainAnalysisService';
 
 const VALID_SYMBOLS = ['BTC', 'ETH', 'SOL', 'LINK', 'AVAX', 'MATIC', 'UNI', 'AAVE'];
 const VALID_INTERVALS = ['1hour', '1day'] as const;
@@ -34,8 +34,11 @@ function validatePage(page: string | null): number {
 
 function validatePageSize(size: string | null): number {
   const sizeNum = parseInt(size || String(DEFAULT_PAGE_SIZE), 10);
-  return isNaN(sizeNum) || sizeNum < 1 ? DEFAULT_PAGE_SIZE :
-         sizeNum > MAX_PAGE_SIZE ? MAX_PAGE_SIZE : sizeNum;
+  return isNaN(sizeNum) || sizeNum < 1
+    ? DEFAULT_PAGE_SIZE
+    : sizeNum > MAX_PAGE_SIZE
+      ? MAX_PAGE_SIZE
+      : sizeNum;
 }
 
 interface PaginationParams {
@@ -66,10 +69,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
 
   const validatedSymbol = validateSymbol(symbol);
   if (validatedSymbol === null) {
-    return apiError(
-      `Invalid symbol. Valid symbols: ${VALID_SYMBOLS.join(', ')}`,
-      400
-    );
+    return apiError(`Invalid symbol. Valid symbols: ${VALID_SYMBOLS.join(', ')}`, 400);
   }
 
   const interval = validateInterval(intervalParam);
@@ -93,7 +93,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     'price_comparison',
     startTime,
     endTime,
-    interval
+    interval,
   );
 
   const dataPoints = fullAnalysis.dataPoints;

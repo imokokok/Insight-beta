@@ -5,8 +5,8 @@
  * 确保错误被正确记录和上报
  */
 
+import { gracefulShutdown } from '@/lib/database/db';
 import { logger } from '@/shared/logger';
-import { gracefulShutdown } from '@/infrastructure/database/db';
 
 let isInitialized = false;
 
@@ -61,16 +61,17 @@ export function initializeGlobalErrorHandler(options: GlobalErrorHandlerOptions 
 
   // 处理未处理的 Promise 拒绝
   process.on('unhandledRejection', (reason: unknown, promise: Promise<unknown>) => {
-    const errorInfo = reason instanceof Error
-      ? {
-          message: reason.message,
-          stack: reason.stack,
-          name: reason.name,
-        }
-      : {
-          message: String(reason),
-          type: typeof reason,
-        };
+    const errorInfo =
+      reason instanceof Error
+        ? {
+            message: reason.message,
+            stack: reason.stack,
+            name: reason.name,
+          }
+        : {
+            message: String(reason),
+            type: typeof reason,
+          };
 
     logger.fatal('Unhandled promise rejection', {
       reason: errorInfo,
@@ -160,7 +161,11 @@ export function reportError(error: Error, context?: Record<string, unknown>): vo
 }
 
 // 自动初始化（仅在服务端环境）
-if (typeof window === 'undefined' && typeof process !== 'undefined' && typeof process.on === 'function') {
+if (
+  typeof window === 'undefined' &&
+  typeof process !== 'undefined' &&
+  typeof process.on === 'function'
+) {
   // 延迟初始化，确保其他模块已加载
   const initDelay = Number(process.env.GLOBAL_ERROR_HANDLER_DELAY) || 100;
   setTimeout(() => {

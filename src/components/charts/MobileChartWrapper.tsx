@@ -81,7 +81,7 @@ export function MobileChartWrapper({
         'relative touch-pan-y overflow-hidden rounded-xl',
         isDragging && 'cursor-grabbing',
         isMobile && 'select-none',
-        className
+        className,
       )}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
@@ -89,7 +89,7 @@ export function MobileChartWrapper({
       {children}
 
       {isMobile && enableSwipe && (onSwipeLeft || onSwipeRight) && showSwipeHint && (
-        <div className="pointer-events-none absolute inset-y-0 right-0 flex w-16 items-center justify-center bg-gradient-to-l from-white/80 to-transparent animate-pulse">
+        <div className="pointer-events-none absolute inset-y-0 right-0 flex w-16 animate-pulse items-center justify-center bg-gradient-to-l from-white/80 to-transparent">
           <div className="flex flex-col items-center gap-1">
             <svg
               className="h-6 w-6 animate-bounce text-gray-400"
@@ -97,12 +97,7 @@ export function MobileChartWrapper({
               viewBox="0 0 24 24"
               stroke="currentColor"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
             <span className="text-[10px] text-gray-400">滑动查看</span>
           </div>
@@ -117,12 +112,7 @@ export function MobileChartWrapper({
             viewBox="0 0 24 24"
             stroke="currentColor"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 5l7 7-7 7"
-            />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </div>
       )}
@@ -165,12 +155,10 @@ export function MobileChartToolbar({
     <div
       className={cn(
         'flex flex-col gap-3 border-b border-gray-100 pb-3 sm:flex-row sm:items-center sm:justify-between',
-        className
+        className,
       )}
     >
-      {title && (
-        <h3 className="text-sm font-semibold text-gray-800">{title}</h3>
-      )}
+      {title && <h3 className="text-sm font-semibold text-gray-800">{title}</h3>}
 
       <div className="flex items-center gap-2">
         {/* 时间周期选择 */}
@@ -183,8 +171,8 @@ export function MobileChartToolbar({
                 className={cn(
                   'rounded-md px-2.5 py-1 text-xs font-medium transition-all',
                   activePeriod === period.value
-                    ? 'bg-white text-purple-700 shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700'
+                    ? 'text-primary-dark bg-white shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700',
                 )}
               >
                 {period.label}
@@ -203,7 +191,12 @@ export function MobileChartToolbar({
                 title="放大"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  />
                 </svg>
               </button>
             )}
@@ -225,7 +218,12 @@ export function MobileChartToolbar({
                 title="重置"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
                 </svg>
               </button>
             )}
@@ -265,25 +263,19 @@ export function MobileChartCard({
       className={cn(
         'overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm',
         fullWidth && 'mx-[-12px] rounded-none border-x-0 sm:mx-0 sm:rounded-xl sm:border-x',
-        className
+        className,
       )}
     >
       {(title || subtitle || action) && (
         <div
           className={cn(
             'flex items-start justify-between border-b border-gray-100 p-4',
-            headerClassName
+            headerClassName,
           )}
         >
           <div className="min-w-0 flex-1">
-            {title && (
-              <h3 className="truncate text-base font-semibold text-gray-800">
-                {title}
-              </h3>
-            )}
-            {subtitle && (
-              <p className="mt-0.5 text-xs text-gray-500">{subtitle}</p>
-            )}
+            {title && <h3 className="truncate text-base font-semibold text-gray-800">{title}</h3>}
+            {subtitle && <p className="mt-0.5 text-xs text-gray-500">{subtitle}</p>}
           </div>
           {action && <div className="ml-2 flex-shrink-0">{action}</div>}
         </div>
@@ -307,44 +299,28 @@ interface MobileLegendProps {
   onItemClick?: (index: number) => void;
 }
 
-export function MobileLegend({
-  items,
-  className,
-  onItemClick,
-}: MobileLegendProps) {
+export function MobileLegend({ items, className, onItemClick }: MobileLegendProps) {
   return (
-    <div
-      className={cn(
-        'flex flex-wrap gap-3 sm:gap-4',
-        className
-      )}
-    >
+    <div className={cn('flex flex-wrap gap-3 sm:gap-4', className)}>
       {items.map((item, index) => (
         <button
           key={index}
           onClick={() => onItemClick?.(index)}
           className={cn(
             'flex items-center gap-2 rounded-lg px-2 py-1 transition-colors',
-            onItemClick && 'hover:bg-gray-50'
+            onItemClick && 'hover:bg-gray-50',
           )}
         >
-          <span
-            className="h-2.5 w-2.5 rounded-full"
-            style={{ backgroundColor: item.color }}
-          />
+          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
           <span className="text-xs text-gray-600">{item.label}</span>
-          {item.value && (
-            <span className="text-xs font-medium text-gray-800">
-              {item.value}
-            </span>
-          )}
+          {item.value && <span className="text-xs font-medium text-gray-800">{item.value}</span>}
           {item.trend && (
             <span
               className={cn(
                 'text-xs',
                 item.trend === 'up' && 'text-green-500',
                 item.trend === 'down' && 'text-red-500',
-                item.trend === 'neutral' && 'text-gray-400'
+                item.trend === 'neutral' && 'text-gray-400',
               )}
             >
               {item.trend === 'up' && '↑'}

@@ -17,10 +17,6 @@ import {
   Hash,
 } from 'lucide-react';
 
-
-
-
-
 import { PageHeader } from '@/components/common/PageHeader';
 import { logger } from '@/shared/logger';
 import { cn, fetchApiData, formatTime } from '@/shared/utils';
@@ -254,7 +250,7 @@ export default function UMAAssertionDetailPage() {
             {/* Timeline */}
             <div className="rounded-xl bg-white/5 p-6">
               <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-                <Clock className="h-5 w-5 text-purple-400" />
+                <Clock className="h-5 w-5 text-primary/40" />
                 Timeline
               </h3>
               <div className="space-y-4">

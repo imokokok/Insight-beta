@@ -1,7 +1,7 @@
 import type { BaseResponse } from '@/hooks/useUI';
 import { useInfiniteList } from '@/hooks/useUI';
-import type { Dispute, OracleConfig, DisputeStatus } from '@/types/oracleTypes';
 import { buildApiUrl } from '@/shared/utils';
+import type { Dispute, OracleConfig, DisputeStatus } from '@/types/oracleTypes';
 
 import { createSWRInfiniteConfig } from './useSWRConfig';
 
@@ -25,14 +25,20 @@ export function useDisputes(
       q: query?.trim() || undefined,
       disputer: disputer || undefined,
       limit: 30,
-      cursor: pageIndex > 0 && previousPageData?.nextCursor ? String(previousPageData.nextCursor) : undefined,
+      cursor:
+        pageIndex > 0 && previousPageData?.nextCursor
+          ? String(previousPageData.nextCursor)
+          : undefined,
     });
 
     return url;
   };
 
   const { items, loading, loadingMore, error, loadMore, hasMore, refresh, mutate } =
-    useInfiniteList<Dispute>(getUrl, createSWRInfiniteConfig() as Parameters<typeof useInfiniteList>[1]);
+    useInfiniteList<Dispute>(
+      getUrl,
+      createSWRInfiniteConfig() as Parameters<typeof useInfiniteList>[1],
+    );
 
   return {
     items,

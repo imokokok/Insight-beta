@@ -6,8 +6,6 @@
  */
 
 import { env } from '@/config/env';
-import { logger } from '@/shared/logger';
-import type { ManipulationAlert } from '@/types/security/detection';
 import {
   notificationManager,
   type NotificationManagerConfig,
@@ -20,6 +18,8 @@ import type {
   TelegramConfig,
   PagerDutyConfig,
 } from '@/services/alert/notifications/types';
+import { logger } from '@/shared/logger';
+import type { ManipulationAlert } from '@/types/security/detection';
 
 export interface AlertChannelConfig {
   email?: boolean;
@@ -39,7 +39,7 @@ export interface AlertServiceConfig {
 
 /**
  * 告警服务
- * 
+ *
  * 封装 NotificationManager，提供更简单的告警发送接口
  * 同时保持与现有代码的兼容性
  */

@@ -1,5 +1,3 @@
-[中文](./DEVELOPMENT_GUIDE.zh-CN.md)
-
 # Development Guide
 
 ## 1. Environment Setup
@@ -82,23 +80,22 @@ src/
 
 ## 4. Commands
 
-| Command                 | Description                |
-| ----------------------- | -------------------------- |
-| `npm run dev`           | Start development server   |
-| `npm run build`         | Build production version   |
-| `npm run start`         | Start production server    |
-| `npm run lint`          | Run ESLint                 |
-| `npm run typecheck`     | Run TypeScript type check  |
-| `npm run format:check`  | Check code formatting      |
-| `npm run format:write`  | Format code                |
-| `npm test`              | Run tests                  |
-| `npm run test:coverage` | Run tests with coverage    |
-| `npm run test:e2e`      | Run E2E tests              |
-| `npm run db:migrate`    | Run database migrations    |
-| `npm run db:studio`     | Open Prisma Studio         |
-| `npm run db:seed`       | Seed database              |
-| `npm run docs:api`      | Generate API documentation |
-| `npm run i18n:validate` | Validate translations      |
+| Command                   | Description                |
+| ------------------------- | -------------------------- |
+| `npm run dev`             | Start development server   |
+| `npm run build`           | Build production version   |
+| `npm run start`           | Start production server    |
+| `npm run lint`            | Run ESLint                 |
+| `npm run typecheck`       | Run TypeScript type check  |
+| `npm run format:check`    | Check code formatting      |
+| `npm run format:write`    | Format code                |
+| `npm run test`            | Run tests                  |
+| `npm run test:coverage`   | Run tests with coverage    |
+| `npm run test:e2e`        | Run E2E tests              |
+| `npm run supabase:push`   | Push database changes      |
+| `npm run supabase:studio` | Open Supabase Studio       |
+| `npm run docs:api`        | Generate API documentation |
+| `npm run i18n:validate`   | Validate translations      |
 
 ## 5. Testing
 
@@ -136,6 +133,7 @@ brew services start postgresql@16
 ### Cache
 
 The application uses a multi-level caching strategy:
+
 - **SWR**: Client-side data fetching and caching
 - **Memory**: Server-side rate limiting storage
 - **PostgreSQL**: Persistent cache via Supabase

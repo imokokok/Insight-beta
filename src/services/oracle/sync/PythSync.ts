@@ -6,7 +6,7 @@
  * 支持更频繁的同步间隔（30秒）
  */
 
-import { createPythClient, getAvailablePythSymbols } from '@/infrastructure/blockchain/pythOracle';
+import { createPythClient, getAvailablePythSymbols } from '@/lib/blockchain/pythOracle';
 import { createSingletonSyncManager } from '@/lib/shared';
 
 // ============================================================================

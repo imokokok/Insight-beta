@@ -21,12 +21,6 @@ import {
   Check,
 } from 'lucide-react';
 
-
-
-
-
-
-
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -44,12 +38,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { useI18n } from '@/i18n';
-import type { ManipulationDetection } from '@/types/security/detection';
 import { cn } from '@/shared/utils';
-
-
-
-
+import type { ManipulationDetection } from '@/types/security/detection';
 
 const severityConfig = {
   critical: {
@@ -191,7 +181,7 @@ export default function ManipulationDetailPage() {
               <Shield className="h-6 w-6" />
               {t('security:dashboard.title')}
             </h1>
-            <p className="text-muted-foreground text-sm">ID: {detection.id}</p>
+            <p className="text-sm text-muted-foreground">ID: {detection.id}</p>
           </div>
         </div>
         <Badge className={statusColor ?? 'bg-gray-100 text-gray-800'}>
@@ -209,7 +199,9 @@ export default function ManipulationDetailPage() {
                     <SeverityIcon className={cn('h-6 w-6', severity.textColor)} />
                   </div>
                   <div>
-                    <CardTitle className="text-xl">{t(`security:attackTypes.${detection.type}` as const)}</CardTitle>
+                    <CardTitle className="text-xl">
+                      {t(`security:attackTypes.${detection.type}` as const)}
+                    </CardTitle>
                     <CardDescription className="mt-1">
                       {detection.protocol} · {detection.symbol} · {detection.chain}
                     </CardDescription>
@@ -219,7 +211,7 @@ export default function ManipulationDetailPage() {
                   <Badge variant="outline" className={cn('px-3 py-1 text-lg', severity.textColor)}>
                     {(detection.confidenceScore * 100).toFixed(0)}% {t('common:labels.confidence')}
                   </Badge>
-                  <div className="text-muted-foreground mt-2 text-sm">
+                  <div className="mt-2 text-sm text-muted-foreground">
                     <Clock className="mr-1 inline h-3 w-3" />
                     {new Date(detection.detectedAt).toLocaleString()}
                   </div>
@@ -228,12 +220,18 @@ export default function ManipulationDetailPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-                <div className="bg-muted rounded-lg p-3">
-                  <div className="text-muted-foreground mb-1 text-xs">{t('security:export.severity')}</div>
-                  <div className={cn('font-semibold', severity.textColor)}>{t(`security:severity.${detection.severity}` as const)}</div>
+                <div className="rounded-lg bg-muted p-3">
+                  <div className="mb-1 text-xs text-muted-foreground">
+                    {t('security:export.severity')}
+                  </div>
+                  <div className={cn('font-semibold', severity.textColor)}>
+                    {t(`security:severity.${detection.severity}` as const)}
+                  </div>
                 </div>
-                <div className="bg-muted rounded-lg p-3">
-                  <div className="text-muted-foreground mb-1 text-xs">{t('common:labels.priceImpact')}</div>
+                <div className="rounded-lg bg-muted p-3">
+                  <div className="mb-1 text-xs text-muted-foreground">
+                    {t('common:labels.priceImpact')}
+                  </div>
                   <div
                     className={cn(
                       'font-semibold',
@@ -247,16 +245,20 @@ export default function ManipulationDetailPage() {
                       : 'N/A'}
                   </div>
                 </div>
-                <div className="bg-muted rounded-lg p-3">
-                  <div className="text-muted-foreground mb-1 text-xs">{t('security:export.financialImpact')}</div>
+                <div className="rounded-lg bg-muted p-3">
+                  <div className="mb-1 text-xs text-muted-foreground">
+                    {t('security:export.financialImpact')}
+                  </div>
                   <div className="font-semibold">
                     {detection.financialImpactUsd
                       ? `$${detection.financialImpactUsd.toLocaleString()}`
                       : 'N/A'}
                   </div>
                 </div>
-                <div className="bg-muted rounded-lg p-3">
-                  <div className="text-muted-foreground mb-1 text-xs">{t('security:export.suspiciousTx')}</div>
+                <div className="rounded-lg bg-muted p-3">
+                  <div className="mb-1 text-xs text-muted-foreground">
+                    {t('security:export.suspiciousTx')}
+                  </div>
                   <div className="font-semibold">{detection.suspiciousTransactions.length}</div>
                 </div>
               </div>
@@ -280,11 +282,11 @@ export default function ManipulationDetailPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {detection.evidence.map((item, index) => (
-                    <div key={index} className="bg-muted/50 rounded-lg border p-4">
+                    <div key={index} className="rounded-lg border bg-muted/50 p-4">
                       <div className="flex items-start justify-between">
                         <div>
                           <div className="font-medium">{item.type}</div>
-                          <div className="text-muted-foreground mt-1 text-sm">
+                          <div className="mt-1 text-sm text-muted-foreground">
                             {item.description}
                           </div>
                         </div>
@@ -294,7 +296,7 @@ export default function ManipulationDetailPage() {
                       </div>
                       {item.data && (
                         <div className="mt-2 text-xs">
-                          <pre className="bg-muted overflow-x-auto rounded p-2">
+                          <pre className="overflow-x-auto rounded bg-muted p-2">
                             {JSON.stringify(item.data, null, 2)}
                           </pre>
                         </div>
@@ -320,8 +322,8 @@ export default function ManipulationDetailPage() {
                       className="flex items-center justify-between rounded-lg border p-4"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="bg-muted rounded p-2">
-                          <Hash className="text-muted-foreground h-4 w-4" />
+                        <div className="rounded bg-muted p-2">
+                          <Hash className="h-4 w-4 text-muted-foreground" />
                         </div>
                         <div>
                           <div className="flex items-center gap-2 font-mono text-sm">
@@ -339,7 +341,7 @@ export default function ManipulationDetailPage() {
                               )}
                             </Button>
                           </div>
-                          <div className="text-muted-foreground mt-1 text-xs">
+                          <div className="mt-1 text-xs text-muted-foreground">
                             {t(`security:attackTypes.${tx.type}` as const) || tx.type}
                             {tx.valueUsd && ` · $${tx.valueUsd.toLocaleString()}`}
                           </div>
@@ -349,7 +351,7 @@ export default function ManipulationDetailPage() {
                         href={`https://etherscan.io/tx/${tx.hash}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="ring-offset-background focus-visible:ring-ring border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex h-9 items-center justify-center rounded-md border px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+                        className="ring-offset-background bg-background hover:bg-accent hover:text-accent-foreground inline-flex h-9 items-center justify-center rounded-md border border-input px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
                       >
                         <ExternalLink className="mr-1 h-3 w-3" />
                         查看
@@ -435,14 +437,14 @@ export default function ManipulationDetailPage() {
               </Button>
 
               {detection.reviewedBy && (
-                <div className="text-muted-foreground border-t pt-4 text-sm">
+                <div className="border-t pt-4 text-sm text-muted-foreground">
                   <div>审核人: {detection.reviewedBy}</div>
                   <div>
                     审核时间:{' '}
                     {detection.reviewedAt ? new Date(detection.reviewedAt).toLocaleString() : 'N/A'}
                   </div>
                   {detection.notes && (
-                    <div className="bg-muted mt-2 rounded p-2">备注: {detection.notes}</div>
+                    <div className="mt-2 rounded bg-muted p-2">备注: {detection.notes}</div>
                   )}
                 </div>
               )}

@@ -4,10 +4,6 @@ import { useEffect, useState } from 'react';
 
 import { TrendingUp, Layers, Activity, DollarSign, RefreshCw, BarChart3 } from 'lucide-react';
 
-
-
-
-
 import { PageHeader } from '@/components/common/PageHeader';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { logger } from '@/shared/logger';
@@ -48,7 +44,6 @@ export default function UMATvlPage() {
     }, 60000);
 
     return () => clearInterval(pollInterval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedChain]);
 
   async function fetchTvlData() {
@@ -90,7 +85,7 @@ export default function UMATvlPage() {
 
   const chains = [
     { id: 1, name: 'Ethereum', color: 'bg-blue-500' },
-    { id: 137, name: 'Polygon', color: 'bg-purple-500' },
+    { id: 137, name: 'Polygon', color: 'bg-primary/50' },
     { id: 42161, name: 'Arbitrum', color: 'bg-indigo-500' },
     { id: 10, name: 'Optimism', color: 'bg-red-500' },
   ];
@@ -199,8 +194,8 @@ export default function UMATvlPage() {
 
                   <div className="flex items-center justify-between rounded-lg bg-white/5 p-4">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-500/20">
-                        <DollarSign className="h-5 w-5 text-purple-400" />
+                      <div className="bg-primary/50/20 flex h-10 w-10 items-center justify-center rounded-full">
+                        <DollarSign className="h-5 w-5 text-primary/40" />
                       </div>
                       <div>
                         <p className="font-medium">DVM Staking</p>

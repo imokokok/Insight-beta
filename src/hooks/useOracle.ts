@@ -4,7 +4,6 @@ import useSWR from 'swr';
 
 import type { BaseResponse } from '@/hooks/useUI';
 import { useInfiniteList } from '@/hooks/useUI';
-import type { Assertion, OracleConfig, OracleStats, OracleStatus } from '@/types/oracleTypes';
 import {
   fetchApiData,
   getOracleInstanceId,
@@ -13,6 +12,7 @@ import {
   isDefaultOracleInstance,
   buildApiUrl,
 } from '@/shared/utils';
+import type { Assertion, OracleConfig, OracleStats, OracleStatus } from '@/types/oracleTypes';
 
 import { createSWRConfig, createSWRInfiniteConfig } from './useSWRConfig';
 
@@ -54,7 +54,10 @@ export function useOracleData(
       q: query.trim() || undefined,
       asserter: asserter ?? undefined,
       limit: 30,
-      cursor: pageIndex > 0 && previousPageData?.nextCursor ? String(previousPageData.nextCursor) : undefined,
+      cursor:
+        pageIndex > 0 && previousPageData?.nextCursor
+          ? String(previousPageData.nextCursor)
+          : undefined,
     });
 
     return url;
@@ -69,7 +72,10 @@ export function useOracleData(
     hasMore,
     refresh,
     mutate: mutateAssertions,
-  } = useInfiniteList<Assertion>(getUrl, createSWRInfiniteConfig() as Parameters<typeof useInfiniteList>[1]);
+  } = useInfiniteList<Assertion>(
+    getUrl,
+    createSWRInfiniteConfig() as Parameters<typeof useInfiniteList>[1],
+  );
 
   const mutate = async () => {
     await Promise.all([mutateAssertions(), mutateStats()]);
@@ -97,7 +103,7 @@ export function useOracleFilters() {
 
   useEffect(() => {
     // 组件挂载时从 storage 读取最新值
-    getOracleInstanceId().then(id => setInstanceIdState(id));
+    getOracleInstanceId().then((id) => setInstanceIdState(id));
   }, []);
 
   const updateInstanceId = (newInstanceId: string) => {

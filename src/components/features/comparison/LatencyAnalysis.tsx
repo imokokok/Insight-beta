@@ -22,9 +22,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useI18n } from '@/i18n';
-import { statusColors } from '@/lib/constants/colors';
-import type { LatencyAnalysis, LatencyTrend } from '@/types/oracle';
+import { statusColors } from '@/lib/design-system';
 import { cn } from '@/shared/utils';
+import type { LatencyAnalysis, LatencyTrend } from '@/types/oracle';
 
 interface LatencyAnalysisProps {
   data?: LatencyAnalysis;
@@ -186,7 +186,7 @@ export function LatencyAnalysisView({
           <CardTitle>{t('comparison.latency.title')}</CardTitle>
           <CardDescription>{t('comparison.status.noData')}</CardDescription>
         </CardHeader>
-        <CardContent className="text-muted-foreground flex h-64 items-center justify-center">
+        <CardContent className="flex h-64 items-center justify-center text-muted-foreground">
           <Server className="mr-2 h-5 w-5" />
           {t('comparison.latency.selectAssetPair')}
         </CardContent>
@@ -200,7 +200,7 @@ export function LatencyAnalysisView({
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-lg font-semibold">{t('comparison.latency.title')}</CardTitle>
-            <CardDescription className="text-muted-foreground mt-1 text-sm">
+            <CardDescription className="mt-1 text-sm text-muted-foreground">
               {t('comparison.latency.description')}
             </CardDescription>
           </div>
@@ -222,7 +222,7 @@ export function LatencyAnalysisView({
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-muted-foreground text-sm">{card.title}</p>
+                  <p className="text-sm text-muted-foreground">{card.title}</p>
                   <p className={cn('mt-1 text-2xl font-bold', card.color)}>{card.value}</p>
                 </div>
                 <div className={cn('rounded-full bg-white/50 p-2', card.color)}>
@@ -351,16 +351,16 @@ export function LatencyAnalysisView({
                   {data.metrics.slice(0, 5).map((metric, idx) => {
                     const StatusIcon = statusConfig[metric.status].icon;
                     return (
-                      <tr key={idx} className="hover:bg-muted/30 border-t">
+                      <tr key={idx} className="border-t hover:bg-muted/30">
                         <td className="px-4 py-2 font-medium capitalize">{metric.protocol}</td>
                         <td className="px-4 py-2">{metric.symbol}</td>
                         <td className="px-4 py-2 text-right font-mono">
                           {formatLatency(metric.latencyMs)}
                         </td>
-                        <td className="text-muted-foreground px-4 py-2 text-right font-mono">
+                        <td className="px-4 py-2 text-right font-mono text-muted-foreground">
                           {formatLatency(metric.percentile50)}
                         </td>
-                        <td className="text-muted-foreground px-4 py-2 text-right font-mono">
+                        <td className="px-4 py-2 text-right font-mono text-muted-foreground">
                           {formatLatency(metric.percentile90)}
                         </td>
                         <td className="px-4 py-2 text-center">
@@ -455,7 +455,7 @@ export function LatencyAnalysisView({
                 </ResponsiveContainer>
               </div>
             ) : (
-              <div className="text-muted-foreground flex h-64 items-center justify-center">
+              <div className="flex h-64 items-center justify-center text-muted-foreground">
                 <Activity className="mr-2 h-5 w-5" />
                 {t('comparison.latency.selectAssetPairTrends')}
               </div>

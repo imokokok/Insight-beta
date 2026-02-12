@@ -13,10 +13,6 @@ import {
   AlertCircle,
 } from 'lucide-react';
 
-
-
-
-
 import { PageHeader } from '@/components/common/PageHeader';
 import { LoadingSpinner } from '@/components/ui';
 import { logger } from '@/shared/logger';
@@ -77,7 +73,6 @@ export default function GovernancePage() {
     }, 60000);
 
     return () => clearInterval(pollInterval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
   async function fetchGovernanceData() {
@@ -132,7 +127,7 @@ export default function GovernancePage() {
       case 'Succeeded':
         return 'bg-green-500/20 text-green-400';
       case 'Executed':
-        return 'bg-purple-500/20 text-purple-400';
+        return 'bg-primary/50/20 text-primary/40';
       case 'Defeated':
         return 'bg-red-500/20 text-red-400';
       case 'Canceled':
@@ -218,7 +213,7 @@ export default function GovernancePage() {
             <StatCard
               title="Executed Proposals"
               value={stats.executedProposals.toLocaleString()}
-              icon={<CheckCircle className="h-5 w-5 text-purple-400" />}
+              icon={<CheckCircle className="h-5 w-5 text-primary/40" />}
             />
             <StatCard
               title="Unique Voters"

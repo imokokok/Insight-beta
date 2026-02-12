@@ -7,9 +7,9 @@
 
 import type { NextRequest } from 'next/server';
 
+import { query } from '@/lib/database/db';
 import { logger } from '@/shared/logger';
 import { apiSuccess, withErrorHandler, getQueryParam } from '@/shared/utils';
-import { query } from '@/infrastructure/database/db';
 
 interface LatencyRow {
   protocol: string;
@@ -110,9 +110,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     metrics,
     summary: {
       avgLatency:
-        allLatencies.length > 0
-          ? allLatencies.reduce((a, b) => a + b, 0) / allLatencies.length
-          : 0,
+        allLatencies.length > 0 ? allLatencies.reduce((a, b) => a + b, 0) / allLatencies.length : 0,
       maxLatency: allLatencies.length > 0 ? Math.max(...allLatencies) : 0,
       minLatency: allLatencies.length > 0 ? Math.min(...allLatencies) : 0,
       totalFeeds: metrics.length,

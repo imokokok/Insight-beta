@@ -5,8 +5,8 @@
  * 支持从数据库加载和管理通知渠道配置
  */
 
+import { query } from '@/lib/database/db';
 import { logger } from '@/shared/logger';
-import { query } from '@/infrastructure/database/db';
 
 import type {
   NotificationChannel,

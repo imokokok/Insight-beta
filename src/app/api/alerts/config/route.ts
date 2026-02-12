@@ -4,13 +4,16 @@
  * 管理告警通知渠道配置
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { env } from '@/config/env';
-import { logger } from '@/shared/logger';
-import { notificationManager, type NotificationManagerConfig } from '@/services/alert/notificationManager';
+import {
+  notificationManager,
+  type NotificationManagerConfig,
+} from '@/services/alert/notificationManager';
 import type { NotificationConfig } from '@/services/alert/notifications/types';
+import { logger } from '@/shared/logger';
 
 // 从环境变量加载配置
 function loadConfigFromEnv(): NotificationManagerConfig {
@@ -64,7 +67,7 @@ function loadConfigFromEnv(): NotificationManagerConfig {
     channels,
     severityChannels: {
       critical: Object.keys(channels),
-      warning: Object.keys(channels).filter(k => k !== 'pagerduty'),
+      warning: Object.keys(channels).filter((k) => k !== 'pagerduty'),
       info: ['email', 'slack'],
     },
     cooldownMs: 5 * 60 * 1000,
@@ -102,7 +105,7 @@ export async function GET() {
     logger.error('Failed to get alert config', { error });
     return NextResponse.json(
       { success: false, error: 'Failed to get alert config' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -135,7 +138,7 @@ export async function POST(request: NextRequest) {
     logger.error('Failed to update alert config', { error });
     return NextResponse.json(
       { success: false, error: 'Failed to update alert config' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -158,7 +161,7 @@ export async function DELETE() {
     logger.error('Failed to reset alert config', { error });
     return NextResponse.json(
       { success: false, error: 'Failed to reset alert config' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

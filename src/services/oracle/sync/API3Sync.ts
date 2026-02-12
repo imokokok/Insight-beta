@@ -5,7 +5,7 @@
  * 代码量从 65 行减少到 ~20 行
  */
 
-import { createAPI3Client, getAvailableAPI3Dapis } from '@/infrastructure/blockchain/api3Oracle';
+import { createAPI3Client, getAvailableAPI3Dapis } from '@/lib/blockchain/api3Oracle';
 import { createSingletonSyncManager } from '@/lib/shared';
 
 // ============================================================================

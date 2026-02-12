@@ -6,8 +6,8 @@
 
 import { NextResponse } from 'next/server';
 
+import { query } from '@/lib/database/db';
 import { logger } from '@/shared/logger';
-import { query } from '@/infrastructure/database/db';
 
 // GET /api/timeline/events - 获取事件列表
 export async function GET(request: Request) {

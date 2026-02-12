@@ -14,15 +14,15 @@ import {
   DEFAULT_SYNC_CONFIG,
   type SyncContext,
 } from './syncFramework';
-import { query } from '@/infrastructure/database/db';
+import { query } from '@/lib/database/db';
 import { getUnifiedInstance } from '@/services/oracle/unifiedConfig';
 
 // Mock dependencies
-vi.mock('@/server/db', () => ({
+vi.mock('@/lib/database/db', () => ({
   query: vi.fn(),
 }));
 
-vi.mock('@/server/oracle/unifiedConfig', () => ({
+vi.mock('@/services/oracle/unifiedConfig', () => ({
   getUnifiedInstance: vi.fn(),
   updateSyncState: vi.fn(),
   recordSyncError: vi.fn(),

@@ -5,18 +5,12 @@ import { useState, useCallback } from 'react';
 import { Check, ChevronDown, AlertCircle, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useToast } from '@/components/ui/toast';
 import { useWallet } from '@/contexts/WalletContext';
 import { useI18n } from '@/i18n/LanguageProvider';
-import { logger } from '@/shared/logger';
 import { isMobile, supportsFeature } from '@/lib/mobile/walletBrowser';
+import { logger } from '@/shared/logger';
 import { cn } from '@/shared/utils';
 
 interface Chain {
@@ -105,20 +99,20 @@ export function MobileChainSwitcher() {
 
       try {
         await switchChain(targetChain.id);
-        
+
         toast({
           type: 'success',
           title: t('wallet.networkSwitched'),
           message: targetChain.name,
         });
-        
+
         setIsOpen(false);
       } catch (error: unknown) {
         logger.error('Failed to switch chain', { error, targetChain });
-        
+
         // 处理特定错误
         const err = error as { code?: number; message?: string };
-        
+
         if (err.code === 4902) {
           // 链未添加，尝试添加
           try {
@@ -153,7 +147,7 @@ export function MobileChainSwitcher() {
         setSwitchingChainId(null);
       }
     },
-    [chainId, isConnected, switchChain, addNetwork, toast, t, supportsChainSwitch]
+    [chainId, isConnected, switchChain, addNetwork, toast, t, supportsChainSwitch],
   );
 
   // 如果在不支持链切换的钱包中，显示提示
@@ -172,8 +166,8 @@ export function MobileChainSwitcher() {
         <Button
           variant="outline"
           className={cn(
-            'flex items-center gap-2 rounded-full border-purple-200 bg-white/80 px-3 py-1.5 text-sm font-medium backdrop-blur-sm transition-all hover:bg-purple-50 dark:border-purple-800 dark:bg-gray-800/80 dark:hover:bg-purple-900/30',
-            !isConnected && 'opacity-50 cursor-not-allowed'
+            'flex items-center gap-2 rounded-full border-primary/20 bg-white/80 px-3 py-1.5 text-sm font-medium backdrop-blur-sm transition-all hover:bg-primary/5 dark:border-purple-800 dark:bg-gray-800/80 dark:hover:bg-primary-900/30',
+            !isConnected && 'cursor-not-allowed opacity-50',
           )}
           disabled={!isConnected}
         >
@@ -199,16 +193,14 @@ export function MobileChainSwitcher() {
 
       <SheetContent side="bottom" className="h-[70vh] rounded-t-3xl">
         <SheetHeader className="pb-4">
-          <SheetTitle className="text-center text-lg">
-            {t('wallet.selectNetwork')}
-          </SheetTitle>
+          <SheetTitle className="text-center text-lg">{t('wallet.selectNetwork')}</SheetTitle>
         </SheetHeader>
 
         <div className="space-y-3 py-4">
           {/* 当前网络提示 */}
           {currentChain && (
-            <div className="rounded-xl bg-purple-50 p-4 dark:bg-purple-900/20">
-              <p className="text-sm text-purple-800 dark:text-purple-200">
+            <div className="dark:bg-primary-darker/20 rounded-xl bg-primary/5 p-4">
+              <p className="text-primary-darker text-sm dark:text-primary/20">
                 {t('wallet.currentNetwork')}: <strong>{currentChain.name}</strong>
               </p>
             </div>
@@ -228,8 +220,8 @@ export function MobileChainSwitcher() {
                   className={cn(
                     'flex w-full items-center justify-between rounded-xl border p-4 transition-all',
                     isCurrent
-                      ? 'border-purple-300 bg-purple-50 dark:border-purple-700 dark:bg-purple-900/30'
-                      : 'border-gray-200 hover:border-purple-300 hover:bg-purple-50 dark:border-gray-700 dark:hover:border-purple-700 dark:hover:bg-purple-900/20'
+                      ? 'dark:bg-primary-darker/30 border-purple-300 bg-primary/5 dark:border-purple-700'
+                      : 'hover:border-primary300 dark:hover:border-primary700 border-gray-200 hover:bg-primary/5 dark:border-gray-700 dark:hover:bg-primary-900/20',
                   )}
                 >
                   <div className="flex items-center gap-3">
@@ -257,7 +249,7 @@ export function MobileChainSwitcher() {
                   </div>
 
                   {isSwitching ? (
-                    <Loader2 className="h-5 w-5 animate-spin text-purple-600" />
+                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
                   ) : isCurrent ? (
                     <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-100">
                       <Check className="h-4 w-4 text-green-600" />
@@ -301,13 +293,9 @@ export function MobileChainBadge() {
   }
 
   return (
-    <span className="flex items-center gap-1 rounded-full bg-purple-100 px-2 py-1 text-xs font-medium text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+    <span className="text-primary-dark dark:bg-primary-darker/30 flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-xs font-medium dark:text-primary/30">
       {currentChain?.icon && (
-        <img
-          src={currentChain.icon}
-          alt=""
-          className="h-3 w-3 rounded-full"
-        />
+        <img src={currentChain.icon} alt="" className="h-3 w-3 rounded-full" />
       )}
       {currentChain?.nativeCurrency.symbol || t('wallet.unknown')}
     </span>

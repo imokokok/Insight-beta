@@ -1,13 +1,8 @@
 import type { NextRequest } from 'next/server';
 
-import type { SupportedChain } from '@/types/unifiedOracleTypes';
-import {
-  apiSuccess,
-  apiError,
-  withErrorHandler,
-  getQueryParam,
-} from '@/shared/utils';
 import { gasPriceService } from '@/services/gas';
+import { apiSuccess, apiError, withErrorHandler, getQueryParam } from '@/shared/utils';
+import type { SupportedChain } from '@/types/unifiedOracleTypes';
 
 export const GET = withErrorHandler(async (request: NextRequest) => {
   const chain = getQueryParam(request, 'chain') as SupportedChain | null;

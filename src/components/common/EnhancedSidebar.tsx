@@ -16,7 +16,6 @@ import React, { useState, useCallback, useMemo, createContext, useContext } from
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import type { Route } from 'next';
 
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -51,6 +50,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { cn } from '@/shared/utils';
 
+import type { Route } from 'next';
 
 // ============================================================================
 // Types
@@ -350,36 +350,39 @@ function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
 
   const content = (
     <>
-      <item.icon className={cn(
-        'h-5 w-5 flex-shrink-0 transition-colors',
-        isActive ? 'text-purple-600' : 'text-gray-500 group-hover:text-gray-700'
-      )} />
-      
+      <item.icon
+        className={cn(
+          'h-5 w-5 flex-shrink-0 transition-colors',
+          isActive ? 'text-primary' : 'text-gray-500 group-hover:text-gray-700',
+        )}
+      />
+
       {!sidebarCollapsed && (
         <>
-          <span className={cn(
-            'flex-1 ml-3 text-sm font-medium transition-colors truncate',
-            isActive ? 'text-purple-700' : 'text-gray-700 group-hover:text-gray-900'
-          )}>
+          <span
+            className={cn(
+              'ml-3 flex-1 truncate text-sm font-medium transition-colors',
+              isActive ? 'text-primary-dark' : 'text-gray-700 group-hover:text-gray-900',
+            )}
+          >
             {item.label}
           </span>
-          
+
           {item.badge !== undefined && item.badge !== 0 && (
-            <Badge 
-              variant={item.badgeVariant || 'default'} 
-              className="ml-2 text-xs px-1.5 py-0"
-            >
+            <Badge variant={item.badgeVariant || 'default'} className="ml-2 px-1.5 py-0 text-xs">
               {item.badge}
             </Badge>
           )}
-          
+
           {hasChildren && (
-            <ChevronRight className={cn(
-              'h-4 w-4 ml-2 transition-transform duration-200',
-              isExpanded && 'rotate-90'
-            )} />
+            <ChevronRight
+              className={cn(
+                'ml-2 h-4 w-4 transition-transform duration-200',
+                isExpanded && 'rotate-90',
+              )}
+            />
           )}
-          
+
           <button
             onClick={(e) => {
               e.preventDefault();
@@ -387,14 +390,16 @@ function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
               toggleFavorite(item.id);
             }}
             className={cn(
-              'ml-2 opacity-0 group-hover:opacity-100 transition-opacity',
-              isFavorite && 'opacity-100'
+              'ml-2 opacity-0 transition-opacity group-hover:opacity-100',
+              isFavorite && 'opacity-100',
             )}
           >
-            <Star className={cn(
-              'h-4 w-4',
-              isFavorite ? 'text-yellow-500 fill-yellow-500' : 'text-gray-400'
-            )} />
+            <Star
+              className={cn(
+                'h-4 w-4',
+                isFavorite ? 'fill-yellow-500 text-yellow-500' : 'text-gray-400',
+              )}
+            />
           </button>
         </>
       )}
@@ -404,45 +409,43 @@ function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
   if (collapsed) {
     return (
       <Tooltip delayDuration={0}>
-          { }
-          <TooltipTrigger asChild>
-            <Link
-              href={item.href as Route}
-              onClick={handleClick}
-              className={cn(
-                'flex items-center justify-center w-10 h-10 rounded-lg transition-all',
-                isActive 
-                  ? 'bg-purple-100 text-purple-700' 
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-              )}
-            >
-              <item.icon className="h-5 w-5" />
-            </Link>
-          </TooltipTrigger>
-        <TooltipContent side="right">
-          {item.label}
-        </TooltipContent>
+        {}
+        <TooltipTrigger asChild>
+          <Link
+            href={item.href as Route}
+            onClick={handleClick}
+            className={cn(
+              'flex h-10 w-10 items-center justify-center rounded-lg transition-all',
+              isActive
+                ? 'text-primary-dark bg-primary/10'
+                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
+            )}
+          >
+            <item.icon className="h-5 w-5" />
+          </Link>
+        </TooltipTrigger>
+        <TooltipContent side="right">{item.label}</TooltipContent>
       </Tooltip>
     );
   }
 
   return (
     <div className="group">
-      { }
+      {}
       <Link
         href={item.href as Route}
         onClick={handleClick}
         className={cn(
-          'flex items-center px-3 py-2 rounded-lg transition-all duration-200',
+          'flex items-center rounded-lg px-3 py-2 transition-all duration-200',
           'hover:bg-gray-50',
-          isActive && 'bg-purple-50 hover:bg-purple-100',
+          isActive && 'bg-primary/5 hover:bg-primary/10',
           level > 0 && 'ml-4',
-          item.disabled && 'opacity-50 cursor-not-allowed'
+          item.disabled && 'cursor-not-allowed opacity-50',
         )}
       >
         {content}
       </Link>
-      
+
       {/* Submenu */}
       <AnimatePresence>
         {hasChildren && isExpanded && !sidebarCollapsed && (
@@ -455,11 +458,7 @@ function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
           >
             <div className="mt-1 space-y-1">
               {item.children!.map((child) => (
-                <NavItemComponent 
-                  key={child.id} 
-                  item={child} 
-                  level={level + 1}
-                />
+                <NavItemComponent key={child.id} item={child} level={level + 1} />
               ))}
             </div>
           </motion.div>
@@ -487,11 +486,12 @@ function NavGroupComponent({ group }: NavGroupProps) {
   const filteredItems = useMemo(() => {
     if (!searchQuery) return group.items;
     const query = searchQuery.toLowerCase();
-    return group.items.filter(item => 
-      item.label.toLowerCase().includes(query) ||
-      item.labelEn?.toLowerCase().includes(query) ||
-      item.description?.toLowerCase().includes(query) ||
-      item.keywords?.some(k => k.toLowerCase().includes(query))
+    return group.items.filter(
+      (item) =>
+        item.label.toLowerCase().includes(query) ||
+        item.labelEn?.toLowerCase().includes(query) ||
+        item.description?.toLowerCase().includes(query) ||
+        item.keywords?.some((k) => k.toLowerCase().includes(query)),
     );
   }, [group.items, searchQuery]);
 
@@ -514,24 +514,23 @@ function NavGroupComponent({ group }: NavGroupProps) {
       {group.label && canCollapse && (
         <button
           onClick={() => toggleGroup(group.id)}
-          className="flex items-center w-full px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:text-gray-700 transition-colors"
+          className="flex w-full items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-500 transition-colors hover:text-gray-700"
         >
-          {group.icon && <group.icon className="h-3.5 w-3.5 mr-2" />}
+          {group.icon && <group.icon className="mr-2 h-3.5 w-3.5" />}
           <span className="flex-1 text-left">{group.label}</span>
-          <ChevronDown className={cn(
-            'h-4 w-4 transition-transform duration-200',
-            !isExpanded && '-rotate-90'
-          )} />
+          <ChevronDown
+            className={cn('h-4 w-4 transition-transform duration-200', !isExpanded && '-rotate-90')}
+          />
         </button>
       )}
-      
+
       {group.label && !canCollapse && (
-        <div className="flex items-center px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-          {group.icon && <group.icon className="h-3.5 w-3.5 mr-2" />}
+        <div className="flex items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+          {group.icon && <group.icon className="mr-2 h-3.5 w-3.5" />}
           <span>{group.label}</span>
         </div>
       )}
-      
+
       <AnimatePresence>
         {(!canCollapse || isExpanded) && (
           <motion.div
@@ -539,7 +538,7 @@ function NavGroupComponent({ group }: NavGroupProps) {
             animate={{ height: 'auto', opacity: 1 }}
             exit={prefersReducedMotion ? {} : { height: 0, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="space-y-1 mt-1"
+            className="mt-1 space-y-1"
           >
             {filteredItems.map((item) => (
               <NavItemComponent key={item.id} item={item} />
@@ -561,13 +560,13 @@ function SidebarSearch() {
   return (
     <div className="px-3 py-2">
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
         <Input
           type="text"
           placeholder="搜索导航..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-9 h-9 text-sm bg-gray-50 border-gray-200 focus:bg-white"
+          className="h-9 border-gray-200 bg-gray-50 pl-9 text-sm focus:bg-white"
         />
         {searchQuery && (
           <button
@@ -591,13 +590,13 @@ function SidebarFavorites({ config }: { config: SidebarConfig }) {
 
   const favoriteItems = useMemo(() => {
     const items: NavItem[] = [];
-    config.groups.forEach(group => {
-      group.items.forEach(item => {
+    config.groups.forEach((group) => {
+      group.items.forEach((item) => {
         if (favorites.has(item.id)) {
           items.push(item);
         }
         if (item.children) {
-          item.children.forEach(child => {
+          item.children.forEach((child) => {
             if (favorites.has(child.id)) {
               items.push(child);
             }
@@ -611,20 +610,16 @@ function SidebarFavorites({ config }: { config: SidebarConfig }) {
   if (favoriteItems.length === 0) return null;
 
   return (
-    <div className="py-2 border-b border-gray-100">
+    <div className="border-b border-gray-100 py-2">
       {!collapsed && (
-        <div className="flex items-center px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-          <Star className="h-3.5 w-3.5 mr-2" />
+        <div className="flex items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+          <Star className="mr-2 h-3.5 w-3.5" />
           <span>收藏</span>
         </div>
       )}
       <div className={cn('space-y-1', collapsed && 'px-1')}>
         {favoriteItems.map((item) => (
-          <NavItemComponent 
-            key={item.id} 
-            item={item} 
-            collapsed={collapsed}
-          />
+          <NavItemComponent key={item.id} item={item} collapsed={collapsed} />
         ))}
       </div>
     </div>
@@ -640,11 +635,11 @@ function SidebarRecents({ config }: { config: SidebarConfig }) {
 
   const recentNavItems = useMemo(() => {
     const itemMap = new Map<string, NavItem>();
-    config.groups.forEach(group => {
-      group.items.forEach(item => {
+    config.groups.forEach((group) => {
+      group.items.forEach((item) => {
         itemMap.set(item.id, item);
         if (item.children) {
-          item.children.forEach(child => {
+          item.children.forEach((child) => {
             itemMap.set(child.id, child);
           });
         }
@@ -652,27 +647,23 @@ function SidebarRecents({ config }: { config: SidebarConfig }) {
     });
     return recentItems
       .slice(0, 5)
-      .map(id => itemMap.get(id))
+      .map((id) => itemMap.get(id))
       .filter((item): item is NavItem => item !== undefined);
   }, [recentItems, config.groups]);
 
   if (recentNavItems.length === 0) return null;
 
   return (
-    <div className="py-2 border-b border-gray-100">
+    <div className="border-b border-gray-100 py-2">
       {!collapsed && (
-        <div className="flex items-center px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-          <Clock className="h-3.5 w-3.5 mr-2" />
+        <div className="flex items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+          <Clock className="mr-2 h-3.5 w-3.5" />
           <span>最近访问</span>
         </div>
       )}
       <div className={cn('space-y-1', collapsed && 'px-1')}>
         {recentNavItems.map((item) => (
-          <NavItemComponent 
-            key={item.id} 
-            item={item} 
-            collapsed={collapsed}
-          />
+          <NavItemComponent key={item.id} item={item} collapsed={collapsed} />
         ))}
       </div>
     </div>
@@ -688,15 +679,12 @@ interface EnhancedSidebarProps {
   className?: string;
 }
 
-export function EnhancedSidebar({ 
-  config = defaultNavConfig, 
-  className 
-}: EnhancedSidebarProps) {
+export function EnhancedSidebar({ config = defaultNavConfig, className }: EnhancedSidebarProps) {
   const [collapsed, setCollapsed] = useState(config.defaultCollapsed ?? false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => {
     const initial = new Set<string>();
-    config.groups.forEach(group => {
+    config.groups.forEach((group) => {
       if (group.defaultExpanded !== false) {
         initial.add(group.id);
       }
@@ -709,7 +697,7 @@ export function EnhancedSidebar({
   const prefersReducedMotion = useReducedMotion();
 
   const toggleGroup = useCallback((groupId: string) => {
-    setExpandedGroups(prev => {
+    setExpandedGroups((prev) => {
       const next = new Set(prev);
       if (next.has(groupId)) {
         next.delete(groupId);
@@ -721,7 +709,7 @@ export function EnhancedSidebar({
   }, []);
 
   const toggleFavorite = useCallback((itemId: string) => {
-    setFavorites(prev => {
+    setFavorites((prev) => {
       const next = new Set(prev);
       if (next.has(itemId)) {
         next.delete(itemId);
@@ -733,24 +721,36 @@ export function EnhancedSidebar({
   }, []);
 
   const addRecentItem = useCallback((itemId: string) => {
-    setRecentItems(prev => {
-      const filtered = prev.filter(id => id !== itemId);
+    setRecentItems((prev) => {
+      const filtered = prev.filter((id) => id !== itemId);
       return [itemId, ...filtered].slice(0, 10);
     });
   }, []);
 
-  const contextValue = useMemo(() => ({
-    collapsed,
-    setCollapsed,
-    expandedGroups,
-    toggleGroup,
-    favorites,
-    toggleFavorite,
-    searchQuery,
-    setSearchQuery,
-    recentItems,
-    addRecentItem,
-  }), [collapsed, expandedGroups, favorites, searchQuery, recentItems, toggleGroup, toggleFavorite, addRecentItem]);
+  const contextValue = useMemo(
+    () => ({
+      collapsed,
+      setCollapsed,
+      expandedGroups,
+      toggleGroup,
+      favorites,
+      toggleFavorite,
+      searchQuery,
+      setSearchQuery,
+      recentItems,
+      addRecentItem,
+    }),
+    [
+      collapsed,
+      expandedGroups,
+      favorites,
+      searchQuery,
+      recentItems,
+      toggleGroup,
+      toggleFavorite,
+      addRecentItem,
+    ],
+  );
 
   return (
     <SidebarContext.Provider value={contextValue}>
@@ -762,7 +762,7 @@ export function EnhancedSidebar({
               initial={prefersReducedMotion ? {} : { opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={prefersReducedMotion ? {} : { opacity: 0 }}
-              className="fixed inset-0 bg-black/50 z-40 md:hidden"
+              className="fixed inset-0 z-40 bg-black/50 md:hidden"
               onClick={() => setMobileOpen(false)}
             />
           )}
@@ -771,7 +771,7 @@ export function EnhancedSidebar({
         {/* Mobile Menu Button */}
         <button
           onClick={() => setMobileOpen(true)}
-          className="fixed top-4 left-4 z-30 p-2 rounded-lg bg-white shadow-md md:hidden"
+          className="fixed left-4 top-4 z-30 rounded-lg bg-white p-2 shadow-md md:hidden"
         >
           <Menu className="h-5 w-5" />
         </button>
@@ -779,41 +779,41 @@ export function EnhancedSidebar({
         {/* Sidebar */}
         <motion.aside
           initial={prefersReducedMotion ? {} : { x: -300 }}
-          animate={{ 
+          animate={{
             x: mobileOpen ? 0 : undefined,
-            width: collapsed ? 72 : 280 
+            width: collapsed ? 72 : 280,
           }}
           className={cn(
-            'fixed left-0 top-0 bottom-0 z-50 bg-white border-r border-gray-200',
+            'fixed bottom-0 left-0 top-0 z-50 border-r border-gray-200 bg-white',
             'flex flex-col shadow-xl md:shadow-none',
             'transition-all duration-300 ease-in-out',
             mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
-            className
+            className,
           )}
           style={{ width: collapsed ? 72 : 280 }}
         >
           {/* Header */}
-          <div className="flex items-center justify-between h-16 px-4 border-b border-gray-100 flex-shrink-0">
+          <div className="flex h-16 flex-shrink-0 items-center justify-between border-b border-gray-100 px-4">
             {!collapsed && (
               <Link href="/" className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
                   <LayoutDashboard className="h-5 w-5 text-white" />
                 </div>
-                <span className="font-bold text-lg text-gray-900">Insight</span>
+                <span className="text-lg font-bold text-gray-900">Insight</span>
               </Link>
             )}
             {collapsed && (
-              <div className="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center mx-auto">
+              <div className="mx-auto flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
                 <LayoutDashboard className="h-5 w-5 text-white" />
               </div>
             )}
-            
+
             {config.collapsible && (
               <button
                 onClick={() => setCollapsed(!collapsed)}
                 className={cn(
-                  'p-1.5 rounded-lg hover:bg-gray-100 transition-colors',
-                  collapsed && 'absolute -right-3 top-20 bg-white border border-gray-200 shadow-sm'
+                  'rounded-lg p-1.5 transition-colors hover:bg-gray-100',
+                  collapsed && 'absolute -right-3 top-20 border border-gray-200 bg-white shadow-sm',
                 )}
               >
                 {collapsed ? (
@@ -832,10 +832,10 @@ export function EnhancedSidebar({
           <ScrollArea className="flex-1">
             {/* Favorites */}
             {config.showFavorites && <SidebarFavorites config={config} />}
-            
+
             {/* Recents */}
             {config.showRecents && !searchQuery && <SidebarRecents config={config} />}
-            
+
             {/* Navigation Groups */}
             <div className={cn('py-2', collapsed && 'px-1')}>
               {config.groups.map((group) => (
@@ -845,27 +845,27 @@ export function EnhancedSidebar({
           </ScrollArea>
 
           {/* Footer */}
-          <div className="p-3 border-t border-gray-100 flex-shrink-0">
+          <div className="flex-shrink-0 border-t border-gray-100 p-3">
             {!collapsed ? (
-              <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-gray-50">
-                <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
-                  <Users className="h-4 w-4 text-purple-600" />
+              <div className="flex items-center gap-3 rounded-lg bg-gray-50 px-3 py-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+                  <Users className="h-4 w-4 text-primary" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">Admin User</p>
-                  <p className="text-xs text-gray-500 truncate">admin@example.com</p>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-gray-900">Admin User</p>
+                  <p className="truncate text-xs text-gray-500">admin@example.com</p>
                 </div>
-                <Link href={"/settings" as Route}>
+                <Link href={'/settings' as Route}>
                   <Settings className="h-4 w-4 text-gray-400 hover:text-gray-600" />
                 </Link>
               </div>
             ) : (
               <Tooltip>
-                { }
+                {}
                 <TooltipTrigger asChild>
-                  <Link 
-                    href={"/settings" as Route}
-                    className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 mx-auto"
+                  <Link
+                    href={'/settings' as Route}
+                    className="mx-auto flex h-10 w-10 items-center justify-center rounded-lg hover:bg-gray-100"
                   >
                     <Settings className="h-5 w-5 text-gray-500" />
                   </Link>

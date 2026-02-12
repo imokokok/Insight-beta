@@ -9,6 +9,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+
 import { motion, type Variants } from 'framer-motion';
 import {
   Search,
@@ -121,12 +122,12 @@ const variantStyles = {
     buttonColor: 'bg-emerald-600 hover:bg-emerald-700',
   },
   action: {
-    iconBg: 'bg-purple-100',
-    iconColor: 'text-purple-600',
-    borderColor: 'border-purple-200',
-    bgColor: 'bg-purple-50/30',
-    gradient: 'from-purple-50/50 to-white',
-    buttonColor: 'bg-purple-600 hover:bg-purple-700',
+    iconBg: 'bg-primary/10',
+    iconColor: 'text-primary',
+    borderColor: 'border-primary/20',
+    bgColor: 'bg-primary/5/30',
+    gradient: 'from-primary-50/50 to-white',
+    buttonColor: 'bg-primary hover:bg-primary-700',
   },
   info: {
     iconBg: 'bg-blue-100',
@@ -482,17 +483,17 @@ export function EmptyWatchlistState({
       }
     >
       <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-        <div className="rounded-lg bg-purple-100/50 p-3">
-          <div className="text-lg font-semibold text-purple-700">100+</div>
-          <div className="text-xs text-purple-600">Assets</div>
+        <div className="bg-primary/10/50 rounded-lg p-3">
+          <div className="text-primary-dark text-lg font-semibold">100+</div>
+          <div className="text-xs text-primary">Assets</div>
         </div>
-        <div className="rounded-lg bg-purple-100/50 p-3">
-          <div className="text-lg font-semibold text-purple-700">6</div>
-          <div className="text-xs text-purple-600">Protocols</div>
+        <div className="bg-primary/10/50 rounded-lg p-3">
+          <div className="text-primary-dark text-lg font-semibold">6</div>
+          <div className="text-xs text-primary">Protocols</div>
         </div>
-        <div className="rounded-lg bg-purple-100/50 p-3">
-          <div className="text-lg font-semibold text-purple-700">Real-time</div>
-          <div className="text-xs text-purple-600">Updates</div>
+        <div className="bg-primary/10/50 rounded-lg p-3">
+          <div className="text-primary-dark text-lg font-semibold">Real-time</div>
+          <div className="text-xs text-primary">Updates</div>
         </div>
       </div>
     </UnifiedEmptyState>
@@ -621,8 +622,8 @@ export function EmptyProtocolsState({
     >
       <div className="mt-4 grid grid-cols-2 gap-3 text-center sm:grid-cols-4">
         {['Chainlink', 'Pyth', 'Band', 'API3'].map((protocol) => (
-          <div key={protocol} className="rounded-lg bg-purple-100/50 px-3 py-2">
-            <span className="text-sm font-medium text-purple-700">{protocol}</span>
+          <div key={protocol} className="bg-primary/10/50 rounded-lg px-3 py-2">
+            <span className="text-primary-dark text-sm font-medium">{protocol}</span>
           </div>
         ))}
       </div>
@@ -726,7 +727,9 @@ export function EmptyFirstItemState({
     <UnifiedEmptyState
       icon={Plus}
       title={`Add Your First ${itemName}`}
-      description={description || `Start by adding a ${itemName.toLowerCase()} to use this feature.`}
+      description={
+        description || `Start by adding a ${itemName.toLowerCase()} to use this feature.`
+      }
       variant="action"
       className={className}
       animated={animated}

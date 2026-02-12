@@ -1,6 +1,6 @@
 import type { IncidentWithAlerts } from '@/app/alerts/AlertsComponents';
-import type { OpsMetrics, OpsMetricsSeriesPoint, RiskItem } from '@/types/oracleTypes';
 import { buildApiUrl, normalizeListResponse } from '@/shared/utils';
+import type { OpsMetrics, OpsMetricsSeriesPoint, RiskItem } from '@/types/oracleTypes';
 
 import { useQuery } from './useQuery';
 

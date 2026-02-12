@@ -4,10 +4,6 @@ import { useEffect, useState } from 'react';
 
 import { BarChart3, TrendingUp, CheckCircle, RefreshCw, Activity } from 'lucide-react';
 
-
-
-
-
 import { PageHeader } from '@/components/common/PageHeader';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { logger } from '@/shared/logger';
@@ -56,7 +52,6 @@ export default function PolymarketPage() {
     }, 60000);
 
     return () => clearInterval(pollInterval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
   async function fetchMarkets() {
@@ -141,7 +136,7 @@ export default function PolymarketPage() {
             <StatCard
               title="Total Volume"
               value={formatUSDC(stats.totalVolume)}
-              icon={<TrendingUp className="h-5 w-5 text-purple-400" />}
+              icon={<TrendingUp className="h-5 w-5 text-primary/40" />}
             />
             <StatCard
               title="Total Liquidity"

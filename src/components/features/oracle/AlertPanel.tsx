@@ -19,10 +19,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { logger } from '@/shared/logger';
+import { cn, fetchApiData, formatTimeAgo } from '@/shared/utils';
 import type { Alert, AlertSeverity, AlertStatus } from '@/types/oracle/alert';
 import type { OracleProtocol } from '@/types/oracle/protocol';
 import { PROTOCOL_DISPLAY_NAMES } from '@/types/oracle/protocol';
-import { cn, fetchApiData, formatTimeAgo } from '@/shared/utils';
 
 interface AlertPanelProps {
   protocols?: OracleProtocol[];
@@ -109,7 +109,7 @@ export function AlertPanel({
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <CardTitle className="text-base font-semibold sm:text-lg">Active Alerts</CardTitle>
-            <Bell className="text-muted-foreground h-4 w-4" />
+            <Bell className="h-4 w-4 text-muted-foreground" />
           </div>
           <div className="flex flex-wrap gap-1 sm:gap-2">
             <FilterBadge
@@ -140,7 +140,7 @@ export function AlertPanel({
               <CheckCircle2 className="h-6 w-6 text-green-500 sm:h-8 sm:w-8" />
             </div>
             <h3 className="text-base font-medium text-gray-900 sm:text-lg">All Clear</h3>
-            <p className="text-muted-foreground text-xs sm:text-sm">
+            <p className="text-xs text-muted-foreground sm:text-sm">
               No active alerts matching your filters
             </p>
           </div>
@@ -250,7 +250,7 @@ function AlertItem({
             </div>
           </div>
 
-          <div className="text-muted-foreground mt-1.5 flex flex-wrap items-center gap-1.5 text-xs sm:mt-2 sm:gap-2">
+          <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground sm:mt-2 sm:gap-2">
             {alert.protocol && (
               <Badge variant="secondary" className="text-xs">
                 {PROTOCOL_DISPLAY_NAMES[alert.protocol]}

@@ -27,11 +27,11 @@ vi.mock('@/lib/logger', () => ({
 }));
 
 // Mock database
-vi.mock('@/server/db', () => ({
+vi.mock('@/lib/database/db', () => ({
   query: vi.fn(),
 }));
 
-import { query } from '@/infrastructure/database/db';
+import { query } from '@/lib/database/db';
 
 // 创建 Mock Oracle Client
 class MockOracleClient implements IOracleClient {

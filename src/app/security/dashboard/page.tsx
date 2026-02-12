@@ -43,11 +43,7 @@ import {
   type StatCardStatus,
 } from '@/components/common/StatCard';
 import { ThreatLevelBadge } from '@/components/security';
-import {
-  EmptySecurityState,
-  LoadingOverlay,
-  RefreshStrategyVisualizer,
-} from '@/components/ui';
+import { EmptySecurityState, LoadingOverlay, RefreshStrategyVisualizer } from '@/components/ui';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useIsMobile } from '@/hooks';
@@ -56,12 +52,12 @@ import { cn, formatNumber } from '@/shared/utils';
 
 const EnhancedAreaChart = dynamic(
   () => import('@/components/charts').then((mod) => mod.EnhancedAreaChart),
-  { ssr: false }
+  { ssr: false },
 );
 
 const EnhancedBarChart = dynamic(
   () => import('@/components/charts').then((mod) => mod.EnhancedBarChart),
-  { ssr: false }
+  { ssr: false },
 );
 
 // ============================================================================
@@ -148,7 +144,11 @@ const generateMockThreatData = (points: number = 24): ThreatDataPoint[] => {
 
 const generateMockRiskDistribution = (stats: SecurityStats): RiskDistributionItem[] => [
   { name: 'High Risk', value: stats.highRiskCount, color: CHART_COLORS.semantic.error.DEFAULT },
-  { name: 'Medium Risk', value: stats.mediumRiskCount, color: CHART_COLORS.semantic.warning.DEFAULT },
+  {
+    name: 'Medium Risk',
+    value: stats.mediumRiskCount,
+    color: CHART_COLORS.semantic.warning.DEFAULT,
+  },
   { name: 'Low Risk', value: stats.lowRiskCount, color: CHART_COLORS.semantic.info.DEFAULT },
   { name: 'Safe', value: stats.safeCount, color: CHART_COLORS.semantic.success.DEFAULT },
 ];
@@ -170,14 +170,18 @@ function SecurityScoreGauge({ score }: { score: number }) {
   const status = getSecurityStatus(score);
 
   return (
-    <div className="flex flex-col items-center" role="figure" aria-label={`Security score: ${score}, Status: ${status}`}>
+    <div
+      className="flex flex-col items-center"
+      role="figure"
+      aria-label={`Security score: ${score}, Status: ${status}`}
+    >
       <EnhancedGaugeChart
         value={score}
         max={100}
         height={150}
         thresholds={{ warning: 70, critical: 50 }}
       />
-      <div className="text-center -mt-4">
+      <div className="-mt-4 text-center">
         <p className="text-sm font-medium text-gray-600">Security Score</p>
         <p className={cn('text-lg font-bold', score >= 70 ? 'text-emerald-600' : 'text-amber-600')}>
           {status}
@@ -222,28 +226,25 @@ export default function OptimizedSecurityDashboard() {
   const isMobile = useIsMobile();
 
   const [threatData] = useState<ThreatDataPoint[]>(() => generateMockThreatData());
-  const [riskDistribution] = useState<RiskDistributionItem[]>(() => generateMockRiskDistribution(stats));
+  const [riskDistribution] = useState<RiskDistributionItem[]>(() =>
+    generateMockRiskDistribution(stats),
+  );
   const [radarData] = useState<RadarDataItem[]>(() => generateMockRadarData());
 
   const fetchSecurityData = useCallback(async () => {
-    // TODO: Implement actual API call
+    // Note: Security stats API not yet implemented - using mock data
+    // TODO: Uncomment when API is ready
     // const response = await fetch('/api/security/stats');
     // const data = await response.json();
     // setStats(data);
   }, []);
 
-  const {
-    isRefreshing,
-    refresh,
-    lastUpdated,
-    strategy,
-    refreshHistory,
-    refreshStats,
-  } = useAutoRefreshWithStats({
-    pageId: 'security-dashboard',
-    fetchFn: fetchSecurityData,
-    enabled: true,
-  });
+  const { isRefreshing, refresh, lastUpdated, strategy, refreshHistory, refreshStats } =
+    useAutoRefreshWithStats({
+      pageId: 'security-dashboard',
+      fetchFn: fetchSecurityData,
+      enabled: true,
+    });
 
   const threatCardsData = useMemo(
     () => [
@@ -276,7 +277,12 @@ export default function OptimizedSecurityDashboard() {
         trend: { value: 5, isPositive: false, label: 'vs yesterday' },
       },
     ],
-    [stats.totalDetections, stats.blockedTransactions, stats.avgDetectionTime, stats.totalValueAtRisk],
+    [
+      stats.totalDetections,
+      stats.blockedTransactions,
+      stats.avgDetectionTime,
+      stats.totalValueAtRisk,
+    ],
   );
 
   const monitoringCardsData = useMemo(
@@ -318,7 +324,7 @@ export default function OptimizedSecurityDashboard() {
         <DashboardPageHeader
           title="Security Operations Center"
           description="Threat detection and security monitoring"
-          icon={<Shield className="h-5 w-5 text-purple-600" />}
+          icon={<Shield className="h-5 w-5 text-primary" />}
           statusBadge={<ThreatLevelBadge level="high" count={stats.highRiskCount} />}
           refreshControl={
             <RefreshStrategyVisualizer
@@ -336,10 +342,8 @@ export default function OptimizedSecurityDashboard() {
           showMobileMenu={false}
         />
 
-        <div className="flex-1 overflow-y-auto p-2 sm:p-3 lg:p-4 relative">
-          {isRefreshing && (
-            <LoadingOverlay message="Loading security data..." />
-          )}
+        <div className="relative flex-1 overflow-y-auto p-2 sm:p-3 lg:p-4">
+          {isRefreshing && <LoadingOverlay message="Loading security data..." />}
 
           {!isRefreshing && stats.totalDetections === 0 && (
             <div className="py-12">
@@ -347,7 +351,10 @@ export default function OptimizedSecurityDashboard() {
             </div>
           )}
 
-          <section aria-label="Risk Level Summary" className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:gap-3">
+          <section
+            aria-label="Risk Level Summary"
+            className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:gap-3"
+          >
             <ThreatLevelBadge level="high" count={stats.highRiskCount} />
             <ThreatLevelBadge level="medium" count={stats.mediumRiskCount} />
             <ThreatLevelBadge level="low" count={stats.lowRiskCount} />
@@ -468,11 +475,21 @@ export default function OptimizedSecurityDashboard() {
                     color={CHART_COLORS.semantic.error.DEFAULT}
                     height={isMobile ? 200 : 280}
                     valueFormatter={(v) => formatNumber(v, 0)}
-                    labelFormatter={(l) => new Date(l).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                    labelFormatter={(l) =>
+                      new Date(l).toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })
+                    }
                     showGrid
                     gradient
                     thresholds={[
-                      { value: 40, label: 'High Threshold', color: CHART_COLORS.semantic.error.DEFAULT, type: 'warning' },
+                      {
+                        value: 40,
+                        label: 'High Threshold',
+                        color: CHART_COLORS.semantic.error.DEFAULT,
+                        type: 'warning',
+                      },
                     ]}
                   />
                 </ChartCard>
@@ -490,8 +507,16 @@ export default function OptimizedSecurityDashboard() {
                     <EnhancedBarChart
                       data={threatData}
                       bars={[
-                        { dataKey: 'threats', name: 'Detected', color: CHART_COLORS.semantic.error.DEFAULT },
-                        { dataKey: 'blocked', name: 'Blocked', color: CHART_COLORS.semantic.success.DEFAULT },
+                        {
+                          dataKey: 'threats',
+                          name: 'Detected',
+                          color: CHART_COLORS.semantic.error.DEFAULT,
+                        },
+                        {
+                          dataKey: 'blocked',
+                          name: 'Blocked',
+                          color: CHART_COLORS.semantic.success.DEFAULT,
+                        },
                       ]}
                       height={300}
                       valueFormatter={(v) => formatNumber(v, 0)}
@@ -540,10 +565,16 @@ export default function OptimizedSecurityDashboard() {
                       <div key={item.metric} className="space-y-2" role="listitem">
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-medium text-gray-700">{item.metric}</span>
-                          <span className={cn(
-                            'text-sm font-bold',
-                            item.value >= 80 ? 'text-emerald-600' : item.value >= 60 ? 'text-amber-600' : 'text-rose-600'
-                          )}>
+                          <span
+                            className={cn(
+                              'text-sm font-bold',
+                              item.value >= 80
+                                ? 'text-emerald-600'
+                                : item.value >= 60
+                                  ? 'text-amber-600'
+                                  : 'text-rose-600',
+                            )}
+                          >
                             {item.value}%
                           </span>
                         </div>

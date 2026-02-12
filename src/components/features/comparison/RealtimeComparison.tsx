@@ -29,9 +29,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useI18n } from '@/i18n';
-import { statusColors } from '@/lib/constants/colors';
-import type { RealtimeComparisonItem, ComparisonFilter } from '@/types/oracle';
+import { statusColors } from '@/lib/design-system';
 import { cn, formatPrice } from '@/shared/utils';
+import type { RealtimeComparisonItem, ComparisonFilter } from '@/types/oracle';
 
 interface RealtimeComparisonProps {
   data?: RealtimeComparisonItem[];
@@ -176,7 +176,7 @@ export function RealtimeComparisonView({
           <CardTitle>{t('comparison.realtime.title')}</CardTitle>
           <CardDescription>{t('comparison.status.noData')}</CardDescription>
         </CardHeader>
-        <CardContent className="text-muted-foreground flex h-64 items-center justify-center">
+        <CardContent className="flex h-64 items-center justify-center text-muted-foreground">
           <Activity className="mr-2 h-5 w-5" />
           {t('comparison.realtime.waitingForData')}
         </CardContent>
@@ -198,13 +198,13 @@ export function RealtimeComparisonView({
                 </Badge>
               )}
             </CardTitle>
-            <CardDescription className="text-muted-foreground mt-1 text-sm">
+            <CardDescription className="mt-1 text-sm text-muted-foreground">
               {t('comparison.realtime.description')}
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
             {lastUpdated && (
-              <span className="text-muted-foreground text-xs">
+              <span className="text-xs text-muted-foreground">
                 {t('comparison.realtime.updatedAt')} {lastUpdated.toLocaleTimeString()}
               </span>
             )}
@@ -222,28 +222,28 @@ export function RealtimeComparisonView({
       <CardContent className="space-y-4">
         {/* Summary Stats */}
         <div className="grid grid-cols-4 gap-4">
-          <div className="bg-muted/20 rounded-lg border p-3">
-            <p className="text-muted-foreground text-xs">
+          <div className="rounded-lg border bg-muted/20 p-3">
+            <p className="text-xs text-muted-foreground">
               {t('comparison.realtime.monitoredAssets')}
             </p>
             <p className="text-xl font-bold">{data.length}</p>
           </div>
-          <div className="bg-muted/20 rounded-lg border p-3">
-            <p className="text-muted-foreground text-xs">
+          <div className="rounded-lg border bg-muted/20 p-3">
+            <p className="text-xs text-muted-foreground">
               {t('comparison.realtime.activeProtocols')}
             </p>
             <p className="text-xl font-bold">
               {new Set(data.flatMap((d) => d.protocols.map((p) => p.protocol))).size}
             </p>
           </div>
-          <div className="bg-muted/20 rounded-lg border p-3">
-            <p className="text-muted-foreground text-xs">{t('comparison.realtime.maxSpread')}</p>
+          <div className="rounded-lg border bg-muted/20 p-3">
+            <p className="text-xs text-muted-foreground">{t('comparison.realtime.maxSpread')}</p>
             <p className="text-xl font-bold text-amber-600">
               {(Math.max(...data.map((d) => d.spread.percent)) * 100).toFixed(2)}%
             </p>
           </div>
-          <div className="bg-muted/20 rounded-lg border p-3">
-            <p className="text-muted-foreground text-xs">{t('comparison.realtime.avgLatency')}</p>
+          <div className="rounded-lg border bg-muted/20 p-3">
+            <p className="text-xs text-muted-foreground">{t('comparison.realtime.avgLatency')}</p>
             <p className="text-xl font-bold">
               {formatLatency(
                 data.flatMap((d) => d.protocols).reduce((sum, p) => sum + p.latency, 0) /
@@ -256,14 +256,14 @@ export function RealtimeComparisonView({
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {/* Price List */}
           <div className="overflow-hidden rounded-lg border">
-            <div className="bg-muted/30 flex items-center justify-between border-b p-3">
+            <div className="flex items-center justify-between border-b bg-muted/30 p-3">
               <span className="text-sm font-medium">{t('comparison.table.assetPair')}</span>
               <div className="flex items-center gap-4 text-xs">
                 <button
                   onClick={() => handleSort('symbol')}
                   className={cn(
-                    'hover:text-primary transition-colors',
-                    sortField === 'symbol' && 'text-primary font-medium',
+                    'transition-colors hover:text-primary',
+                    sortField === 'symbol' && 'font-medium text-primary',
                   )}
                 >
                   {t('comparison.realtime.name')}{' '}
@@ -272,8 +272,8 @@ export function RealtimeComparisonView({
                 <button
                   onClick={() => handleSort('spread')}
                   className={cn(
-                    'hover:text-primary transition-colors',
-                    sortField === 'spread' && 'text-primary font-medium',
+                    'transition-colors hover:text-primary',
+                    sortField === 'spread' && 'font-medium text-primary',
                   )}
                 >
                   {t('comparison.realtime.spread')}{' '}
@@ -293,8 +293,8 @@ export function RealtimeComparisonView({
                     key={item.symbol}
                     onClick={() => setSelectedSymbol(item.symbol)}
                     className={cn(
-                      'hover:bg-muted/30 flex w-full items-center justify-between border-b p-3 text-left transition-colors',
-                      isSelected && 'bg-primary/5 border-primary/20',
+                      'flex w-full items-center justify-between border-b p-3 text-left transition-colors hover:bg-muted/30',
+                      isSelected && 'border-primary/20 bg-primary/5',
                     )}
                   >
                     <div className="flex items-center gap-3">
@@ -318,7 +318,7 @@ export function RealtimeComparisonView({
                       />
                       <div>
                         <p className="text-sm font-medium">{item.symbol}</p>
-                        <p className="text-muted-foreground text-xs">
+                        <p className="text-xs text-muted-foreground">
                           {item.protocols.length} {t('comparison.realtime.protocols')}
                         </p>
                       </div>
@@ -395,11 +395,11 @@ export function RealtimeComparisonView({
 
                 {/* Protocol Details */}
                 <div className="overflow-hidden rounded-lg border">
-                  <div className="bg-muted/30 flex items-center justify-between border-b p-3">
+                  <div className="flex items-center justify-between border-b bg-muted/30 p-3">
                     <span className="text-sm font-medium">
                       {t('comparison.realtime.protocolDetails')}
                     </span>
-                    <span className="text-muted-foreground text-xs">
+                    <span className="text-xs text-muted-foreground">
                       {t('comparison.realtime.deviationFromConsensus')}
                     </span>
                   </div>
@@ -416,7 +416,7 @@ export function RealtimeComparisonView({
                         return (
                           <div
                             key={protocol.protocol}
-                            className="hover:bg-muted/20 flex items-center justify-between border-b p-3"
+                            className="flex items-center justify-between border-b p-3 hover:bg-muted/20"
                           >
                             <div className="flex items-center gap-3">
                               <div
@@ -429,7 +429,7 @@ export function RealtimeComparisonView({
                                 <p className="text-sm font-medium capitalize">
                                   {protocol.protocol}
                                 </p>
-                                <p className="text-muted-foreground flex items-center gap-1 text-xs">
+                                <p className="flex items-center gap-1 text-xs text-muted-foreground">
                                   <Clock className="h-3 w-3" />
                                   {formatLatency(protocol.latency)}
                                 </p>
@@ -467,10 +467,10 @@ export function RealtimeComparisonView({
                 </div>
 
                 {/* Consensus Info */}
-                <div className="bg-muted/20 rounded-lg border p-3">
+                <div className="rounded-lg border bg-muted/20 p-3">
                   <div className="grid grid-cols-3 gap-4 text-center">
                     <div>
-                      <p className="text-muted-foreground text-xs">
+                      <p className="text-xs text-muted-foreground">
                         {t('comparison.realtime.median')}
                       </p>
                       <p className="font-mono font-medium">
@@ -478,7 +478,7 @@ export function RealtimeComparisonView({
                       </p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground text-xs">
+                      <p className="text-xs text-muted-foreground">
                         {t('comparison.realtime.mean')}
                       </p>
                       <p className="font-mono font-medium">
@@ -486,7 +486,7 @@ export function RealtimeComparisonView({
                       </p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground text-xs">
+                      <p className="text-xs text-muted-foreground">
                         {t('comparison.realtime.spreadRange')}
                       </p>
                       <p className="font-mono font-medium">
@@ -497,7 +497,7 @@ export function RealtimeComparisonView({
                 </div>
               </>
             ) : (
-              <div className="text-muted-foreground flex h-64 items-center justify-center rounded-lg border">
+              <div className="flex h-64 items-center justify-center rounded-lg border text-muted-foreground">
                 <Filter className="mr-2 h-5 w-5" />
                 {t('comparison.realtime.selectAssetPair')}
               </div>

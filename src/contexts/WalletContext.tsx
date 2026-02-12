@@ -21,8 +21,8 @@ import {
   getRecommendedConnectionType,
   getWalletName,
   WALLET_CONNECT_PROJECT_ID,
-} from '@/infrastructure/blockchain/walletConnect';
-import { normalizeWalletError } from '@/shared/errors/walletErrors';
+} from '@/lib/blockchain/walletConnect';
+import { normalizeWalletError } from '@/lib/errors';
 import { logger } from '@/shared/logger';
 
 // 钱包连接类型
@@ -314,7 +314,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
     // 监听 WalletConnect 事件
     provider.on('accountsChanged', (accounts: unknown) => {
       const accs = Array.isArray(accounts) ? accounts : [];
-      setAddress(accs[0] as Address || null);
+      setAddress((accs[0] as Address) || null);
       if (accs.length === 0) {
         setChainId(null);
         setConnectionType(null);

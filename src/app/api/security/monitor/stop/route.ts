@@ -1,10 +1,9 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { logger } from '@/shared/logger';
+import { requireAdminWithToken } from '@/lib/api/apiResponse';
 import { manipulationDetectionService } from '@/services/security/manipulationDetectionService';
-import type { OracleProtocol, SupportedChain } from '@/types';
-import { requireAdminWithToken } from '@/infrastructure/api/apiResponse';
+import { logger } from '@/shared/logger';
 
 interface StopMonitorBody {
   protocol?: string;
@@ -30,11 +29,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (protocol && symbol && chain) {
-      manipulationDetectionService.stopMonitoring(
-        protocol as OracleProtocol,
-        symbol,
-        chain as SupportedChain,
-      );
+      manipulationDetectionService.stopMonitoring(protocol, symbol);
 
       return NextResponse.json({
         success: true,

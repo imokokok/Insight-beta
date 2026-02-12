@@ -1,5 +1,3 @@
-[中文](./API.zh-CN.md)
-
 # API Documentation
 
 All endpoints return:

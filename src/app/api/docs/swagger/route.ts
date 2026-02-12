@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { generateSwaggerUI } from '@/infrastructure/api/openapi';
+import { generateSwaggerUI } from '@/lib/api/openapi';
 
 export async function GET() {
   const html = generateSwaggerUI('/api/docs/openapi.json');

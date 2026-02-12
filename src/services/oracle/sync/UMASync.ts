@@ -5,7 +5,7 @@
  * 支持断言、争议、投票等事件的同步
  */
 
-import { createUMAClient, isChainSupportedByUMA } from '@/infrastructure/blockchain/umaOracle';
+import { createUMAClient, isChainSupportedByUMA } from '@/lib/blockchain/umaOracle';
 import { logger } from '@/shared/logger';
 import type { SupportedChain, UnifiedPriceFeed } from '@/types/unifiedOracleTypes';
 

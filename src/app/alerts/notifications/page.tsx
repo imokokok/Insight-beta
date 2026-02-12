@@ -8,9 +8,8 @@ import type { ChannelConfig } from '@/components/features/alerts';
 import { LoadingOverlay, EmptyAlertsState } from '@/components/ui';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { useI18n } from '@/i18n';
-import { logger } from '@/shared/logger';
 import type { AlertHistoryRecord, ChannelHealthStatus } from '@/services/alert/notificationManager';
-
+import { logger } from '@/shared/logger';
 
 /**
  * 通知渠道配置页面
@@ -33,7 +32,7 @@ export default function NotificationsConfigPage() {
     try {
       const response = await fetch('/api/alerts/config');
       const data = await response.json();
-      
+
       if (!data.success) {
         throw new Error(data.error || 'Failed to load config');
       }
@@ -45,7 +44,7 @@ export default function NotificationsConfigPage() {
           channel: (config as { type: string }).type as ChannelConfig['channel'],
           enabled: true,
           config: config as ChannelConfig['config'],
-        })
+        }),
       );
 
       setChannels(channelConfigs);
@@ -62,7 +61,7 @@ export default function NotificationsConfigPage() {
     try {
       const response = await fetch('/api/alerts/history?limit=100');
       const data = await response.json();
-      
+
       if (!data.success) {
         throw new Error(data.error || 'Failed to load alerts');
       }
@@ -106,7 +105,7 @@ export default function NotificationsConfigPage() {
     });
 
     const data = await response.json();
-    
+
     if (!data.success) {
       throw new Error(data.error || 'Failed to save config');
     }
@@ -123,7 +122,7 @@ export default function NotificationsConfigPage() {
     });
 
     const data = await response.json();
-    
+
     return {
       success: data.success,
       message: data.message || (data.success ? 'Test successful' : 'Test failed'),
@@ -139,7 +138,7 @@ export default function NotificationsConfigPage() {
     });
 
     const data = await response.json();
-    
+
     if (!data.success) {
       throw new Error(data.error || 'Failed to acknowledge alert');
     }
@@ -153,16 +152,11 @@ export default function NotificationsConfigPage() {
   }, [loadConfig, loadAlerts]);
 
   return (
-    <div className="space-y-6 pb-16 relative">
+    <div className="relative space-y-6 pb-16">
       {/* Loading Overlay */}
-      {loading && !error && (
-        <LoadingOverlay message="Loading configuration..." />
-      )}
+      {loading && !error && <LoadingOverlay message="Loading configuration..." />}
 
-      <PageHeader
-        title={t('alerts.config.title')}
-        description={t('alerts.config.description')}
-      />
+      <PageHeader title={t('alerts.config.title')} description={t('alerts.config.description')} />
 
       {error && (
         <ErrorBanner

@@ -12,12 +12,8 @@
 import pLimit from 'p-limit';
 
 import { logger as defaultLogger } from '@/shared/logger';
-import type {
-  OracleProtocol,
-  SupportedChain,
-  UnifiedPriceFeed,
-} from '@/types/unifiedOracleTypes';
 import { sleep } from '@/shared/utils/common';
+import type { OracleProtocol, SupportedChain, UnifiedPriceFeed } from '@/types/unifiedOracleTypes';
 
 import { PriceFetchError, normalizeSymbol } from './types';
 

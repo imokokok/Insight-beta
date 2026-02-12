@@ -199,8 +199,8 @@ const NavItem = memo(function NavItem({ item, isActive, onNavigate }: NavItemPro
       className={cn(
         'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
         isActive
-          ? 'bg-white text-purple-700 shadow-md shadow-purple-500/5 ring-1 ring-white/60'
-          : 'text-gray-600 hover:bg-white/40 hover:text-purple-700 hover:shadow-sm'
+          ? 'text-primary-dark bg-white shadow-md shadow-primary-500/5 ring-1 ring-white/60'
+          : 'hover:text-primary-dark text-gray-600 hover:bg-white/40 hover:shadow-sm',
       )}
       {...linkProps}
     >
@@ -208,7 +208,7 @@ const NavItem = memo(function NavItem({ item, isActive, onNavigate }: NavItemPro
         size={20}
         className={cn(
           'transition-colors duration-200',
-          isActive ? 'text-purple-600' : 'text-gray-400 group-hover:text-purple-500'
+          isActive ? 'text-primary' : 'text-gray-400 group-hover:text-primary',
         )}
         aria-hidden="true"
       />
@@ -264,7 +264,12 @@ interface NavGroupProps {
   onNavigate?: () => void;
 }
 
-const NavGroup = memo(function NavGroup({ group, groupIndex, pathname, onNavigate }: NavGroupProps) {
+const NavGroup = memo(function NavGroup({
+  group,
+  groupIndex,
+  pathname,
+  onNavigate,
+}: NavGroupProps) {
   const isItemActive = useCallback(
     (item: NavItemConfig): boolean => {
       if (!pathname) return false;
@@ -277,7 +282,7 @@ const NavGroup = memo(function NavGroup({ group, groupIndex, pathname, onNavigat
       }
       return pathname === item.href || pathname.startsWith(item.href + '/');
     },
-    [pathname]
+    [pathname],
   );
 
   return (
@@ -305,13 +310,16 @@ interface MobileMenuButtonProps {
   onToggle: () => void;
 }
 
-const MobileMenuButton = memo(function MobileMenuButton({ isOpen, onToggle }: MobileMenuButtonProps) {
+const MobileMenuButton = memo(function MobileMenuButton({
+  isOpen,
+  onToggle,
+}: MobileMenuButtonProps) {
   const { t } = useI18n();
 
   return (
     <button
       onClick={onToggle}
-      className="fixed left-4 top-4 z-50 rounded-xl bg-white/50 p-2 text-purple-900 shadow-sm backdrop-blur-md md:hidden"
+      className="fixed left-4 top-4 z-50 rounded-xl bg-white/50 p-2 text-[var(--foreground)] shadow-sm backdrop-blur-md md:hidden"
       aria-label={isOpen ? t('common.closeMenu') : t('common.openMenu')}
       aria-expanded={isOpen}
       aria-controls="sidebar-navigation"
@@ -355,8 +363,8 @@ export function Sidebar() {
       <aside
         id="sidebar-navigation"
         className={cn(
-          'fixed inset-y-0 left-0 z-40 w-64 transform border-r border-white/40 bg-white/70 shadow-2xl shadow-purple-500/10 backdrop-blur-xl transition-transform duration-300 ease-in-out md:translate-x-0',
-          isOpen ? 'translate-x-0' : '-translate-x-full'
+          'fixed inset-y-0 left-0 z-40 w-64 transform border-r border-white/40 bg-white/70 shadow-2xl shadow-primary-500/10 backdrop-blur-xl transition-transform duration-300 ease-in-out md:translate-x-0',
+          isOpen ? 'translate-x-0' : '-translate-x-full',
         )}
         aria-label={t('common.sidebar')}
       >

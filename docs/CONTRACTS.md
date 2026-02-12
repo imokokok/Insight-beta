@@ -1,5 +1,3 @@
-[中文](./CONTRACTS.zh-CN.md)
-
 # Smart Contract Documentation
 
 ## Overview

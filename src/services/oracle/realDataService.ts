@@ -8,8 +8,8 @@
 import {
   createChainlinkClient,
   getAvailableFeedsForChain,
-} from '@/infrastructure/blockchain/chainlinkDataFeeds';
-import { createPythClient, getAvailablePythSymbols } from '@/infrastructure/blockchain/pythOracle';
+} from '@/lib/blockchain/chainlinkDataFeeds';
+import { createPythClient, getAvailablePythSymbols } from '@/lib/blockchain/pythOracle';
 import { logger } from '@/shared/logger';
 import type {
   SupportedChain,

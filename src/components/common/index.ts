@@ -1,22 +1,13 @@
-// Common Components - 通用组件
-// 这些组件在多个功能模块中被复用
-
-// ==================== 基础/核心组件 ====================
+// Common Components - 通用组件导出
+// ==================== 核心组件 ====================
 export { ClientComponentsWrapper } from './ClientComponentsWrapper';
 export { ServiceWorkerRegister } from './ServiceWorkerRegister';
 
-// ==================== 加载/骨架屏组件 ====================
+// ==================== 加载状态 ====================
 export { DynamicLoading, createLoadingComponent, type LoadingType } from './DynamicLoading';
+export { ChartCard, ChartCardSkeleton } from './ChartCard';
 
-// 骨架屏组件已统一迁移到 @/components/ui/skeleton
-// 请从 @/components/ui/skeleton 导入 Skeleton 相关组件
-
-// ==================== 性能优化组件 ====================
-export { ResourceHints } from './ResourceHints';
-export { ResourcePreloader } from './ResourcePreloader';
-
-// ==================== 数据展示组件 ====================
-// 统一版 StatCard - 合并了原 StatCard、EnhancedStatCard、StatCardEnhanced
+// ==================== 数据展示 ====================
 export {
   StatCard,
   StatCardSkeleton,
@@ -26,9 +17,7 @@ export {
   type StatCardVariant,
 } from './StatCard';
 
-export { ChartCard, ChartCardSkeleton } from './ChartCard';
-
-// ==================== 页面布局组件 ====================
+// ==================== 页面布局 ====================
 export {
   PageHeader,
   PageHeaderSkeleton,
@@ -40,23 +29,18 @@ export {
 } from './PageHeader';
 export { EnhancedSidebar, defaultNavConfig } from './EnhancedSidebar';
 
-// ==================== 交互组件 ====================
+// ==================== 交互反馈 ====================
 export { CopyButton } from './CopyButton';
-
-// ==================== 反馈/通知组件 ====================
 export { ToastContainer, useToast } from './DashboardToast';
 
-// ==================== 统一版空状态组件 ====================
-// 合并了 EmptyState 和 EmptyStateEnhanced
+// ==================== 空状态 ====================
 export {
-  // 基础版本
   EmptyState,
   EmptySearchState,
   EmptySecurityState,
   EmptyAnomalyState,
   EmptyDeviationState,
   EmptyErrorState,
-  // 增强版本
   EmptyAlertsState,
   EmptyWatchlistState,
   EmptyDashboardState,
@@ -66,7 +50,7 @@ export {
   EmptyFirstItemState,
 } from './EmptyState';
 
-// ==================== 刷新/数据新鲜度组件 ====================
+// ==================== 数据刷新 ====================
 export { AutoRefreshControl } from './AutoRefreshControl';
 export {
   DataFreshnessIndicator,
@@ -74,19 +58,23 @@ export {
   useDataFreshness,
 } from './DataFreshnessIndicator';
 
-// ==================== 输入组件 ====================
+// ==================== 表单输入 ====================
 export { RecipientInput } from './RecipientInput';
 
-// ==================== 审计/日志组件 ====================
+// ==================== 审计日志 ====================
 export { AuditLogViewer } from './AuditLogViewer';
 
-// ==================== 国际化组件 ====================
+// ==================== 国际化 ====================
 export { LanguageSwitcher } from './LanguageSwitcher';
 
-// ==================== 移动端优化组件 ====================
+// ==================== 移动端 ====================
 export { MobileBottomNav } from './MobileBottomNav';
 
-// ==================== 响应式组件 ====================
+// ==================== 性能优化 ====================
+export { ResourceHints } from './ResourceHints';
+export { ResourcePreloader } from './ResourcePreloader';
+
+// ==================== 响应式 ====================
 export {
   Show,
   ResponsiveContainer,
@@ -95,13 +83,10 @@ export {
   ResponsiveStack,
 } from './Responsive';
 
-// ==================== 布局组件 ====================
-export {
-  ResponsiveGrid as LayoutGrid,
-  DashboardGrid,
-} from './Layout';
+// ==================== 布局 ====================
+export { ResponsiveGrid as LayoutGrid, DashboardGrid } from './Layout';
 
-// ==================== 动画容器组件 ====================
+// ==================== 动画 ====================
 export {
   ScrollReveal,
   PageTransition,
@@ -113,12 +98,5 @@ export {
   AnimatedGridItem,
 } from './AnimatedContainer';
 
-// ==================== 页面转场动画组件 ====================
-export {
-  HoverCard,
-  StaggerContainer as StaggerContainerWithDelay,
-  StaggerItem as StaggerItemWithDirection,
-  AnimatedList as AnimatedListWithKey,
-  AnimatedGrid as AnimatedGridWithKey,
-  ScrollReveal as ScrollRevealWithDirection,
-} from './PageTransitions';
+// ==================== 其他 ====================
+export { HoverCard } from './PageTransitions';

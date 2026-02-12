@@ -12,7 +12,6 @@ import { SkeletonList } from '@/components/ui/skeleton';
 import { useWatchlist } from '@/hooks';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { langToLocale } from '@/i18n/translations';
-import type { Assertion, OracleStatus } from '@/types/oracleTypes';
 import {
   cn,
   formatTime,
@@ -21,6 +20,7 @@ import {
   truncateAddress,
   getAssertionStatusColor,
 } from '@/shared/utils';
+import type { Assertion, OracleStatus } from '@/types/oracleTypes';
 
 import type { Route } from 'next';
 
@@ -111,7 +111,7 @@ export const AssertionList = memo(function AssertionList({
         {onCreateAssertion && (
           <button
             onClick={onCreateAssertion}
-            className="mt-6 rounded-lg bg-purple-600 px-6 py-2.5 text-sm font-medium text-white shadow-lg shadow-purple-500/20 transition-all hover:-translate-y-0.5 hover:bg-purple-700 hover:shadow-purple-500/30 active:translate-y-0"
+            className="mt-6 rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-white shadow-lg shadow-primary-500/20 transition-all hover:-translate-y-0.5 hover:bg-primary-700 hover:shadow-primary-500/30 active:translate-y-0"
           >
             {t('oracle.newAssertion')}
           </button>
@@ -130,7 +130,7 @@ export const AssertionList = memo(function AssertionList({
     if (loadingMore) {
       return (
         <div className="flex justify-center py-8">
-          <div className="flex items-center gap-2 rounded-full bg-white px-8 py-3 text-sm font-bold text-purple-600 shadow-lg shadow-purple-500/10 ring-1 ring-purple-100">
+          <div className="ring-primary100 flex items-center gap-2 rounded-full bg-white px-8 py-3 text-sm font-bold text-primary shadow-lg shadow-primary-500/10 ring-1">
             <RotateCw size={18} className="animate-spin" />
             <span>{t('common.loading')}</span>
           </div>
@@ -165,7 +165,7 @@ export const AssertionList = memo(function AssertionList({
       <Link href={href as Route} className="block h-full">
         <div
           className={cn(
-            'glass-card group relative rounded-2xl border border-white/60 p-5 transition-all duration-300 hover:-translate-y-1 hover:border-purple-200/50 hover:shadow-xl hover:shadow-purple-500/10',
+            'glass-card hover:border-primary/20/50 group relative rounded-2xl border border-white/60 p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-500/10',
             viewMode === 'grid' ? 'h-full' : 'flex flex-col gap-6 md:flex-row md:items-center',
           )}
         >
@@ -181,7 +181,7 @@ export const AssertionList = memo(function AssertionList({
                 className={cn(
                   'flex h-10 w-10 items-center justify-center rounded-xl text-sm font-bold shadow-sm ring-1 ring-black/5 transition-transform duration-300 group-hover:scale-110',
                   item.chain === 'Polygon' &&
-                    'bg-gradient-to-br from-violet-50 to-violet-100 text-violet-600',
+                    'bg-gradient-to-br from-violet-50 to-violet-100 text-primary-600',
                   item.chain === 'Arbitrum' &&
                     'bg-gradient-to-br from-blue-50 to-blue-100 text-blue-600',
                   item.chain === 'Optimism' &&
@@ -244,7 +244,7 @@ export const AssertionList = memo(function AssertionList({
             )}
             <p
               className={cn(
-                'font-medium leading-relaxed text-gray-800 transition-colors group-hover:text-purple-900',
+                'font-medium leading-relaxed text-gray-800 transition-colors group-hover:text-[var(--foreground)]',
                 viewMode === 'grid'
                   ? 'line-clamp-3 text-base'
                   : 'line-clamp-2 text-sm md:text-base',
@@ -296,7 +296,7 @@ export const AssertionList = memo(function AssertionList({
                         e.stopPropagation();
                         window.open(explorerUrl, '_blank', 'noopener,noreferrer');
                       }}
-                      className="transition-colors hover:text-purple-600 hover:underline"
+                      className="transition-colors hover:text-primary hover:underline"
                     >
                       {truncateAddress(item.asserter)}
                     </button>
@@ -338,7 +338,7 @@ export const AssertionList = memo(function AssertionList({
                 <Clock size={14} />
                 <span>{formatTime(item.assertedAt, locale)}</span>
               </div>
-              <span className="flex translate-x-0 transform items-center gap-1 text-xs font-bold text-purple-600 opacity-100 transition-all md:translate-x-[-10px] md:opacity-0 md:group-hover:translate-x-0 md:group-hover:opacity-100">
+              <span className="flex translate-x-0 transform items-center gap-1 text-xs font-bold text-primary opacity-100 transition-all md:translate-x-[-10px] md:opacity-0 md:group-hover:translate-x-0 md:group-hover:opacity-100">
                 {t('common.viewDetails')}
                 <ArrowUpRight size={12} />
               </span>
@@ -347,7 +347,7 @@ export const AssertionList = memo(function AssertionList({
 
           {/* View Details arrow for List View */}
           {viewMode === 'list' && (
-            <div className="flex w-full translate-x-0 transform items-center justify-end border-t border-gray-100 pl-0 pt-4 text-purple-600 opacity-100 transition-all md:w-auto md:translate-x-[-10px] md:justify-start md:border-l md:border-t-0 md:pl-4 md:pt-0 md:opacity-0 md:group-hover:translate-x-0 md:group-hover:opacity-100">
+            <div className="flex w-full translate-x-0 transform items-center justify-end border-t border-gray-100 pl-0 pt-4 text-primary opacity-100 transition-all md:w-auto md:translate-x-[-10px] md:justify-start md:border-l md:border-t-0 md:pl-4 md:pt-0 md:opacity-0 md:group-hover:translate-x-0 md:group-hover:opacity-100">
               <span className="mr-2 text-xs font-bold md:hidden">{t('common.viewDetails')}</span>
               <ArrowUpRight size={20} />
             </div>

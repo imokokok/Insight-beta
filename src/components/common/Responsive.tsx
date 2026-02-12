@@ -467,27 +467,4 @@ function getBreakpointWidth(breakpoint: Breakpoint): number {
   return widths[breakpoint];
 }
 
-// ============================================================================
-// Export
-// ============================================================================
 
-export default {
-  Show,
-  Hide,
-  ResponsiveContainer,
-  ResponsiveGrid,
-  ResponsiveText,
-  ResponsivePadding,
-  MobileOnly,
-  TabletOnly,
-  DesktopOnly,
-  NotMobile,
-  NotDesktop,
-  ResponsiveStack,
-  ResponsiveImage,
-  ResponsiveTable,
-  TouchOnly,
-  MouseOnly,
-  ReducedMotion,
-  NoReducedMotion,
-};

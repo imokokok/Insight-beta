@@ -5,7 +5,7 @@
  * 代码量从 65 行减少到 ~20 行
  */
 
-import { createFluxClient, getAvailableFluxFeeds } from '@/infrastructure/blockchain/fluxOracle';
+import { createFluxClient, getAvailableFluxFeeds } from '@/lib/blockchain/fluxOracle';
 import { createSingletonSyncManager } from '@/lib/shared';
 
 // ============================================================================

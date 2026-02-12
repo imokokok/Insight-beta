@@ -32,14 +32,15 @@ export type {
   SyncManagerExports,
 } from './sync/SyncManagerFactory';
 
-// 错误处理 - 已从 shared/errors 迁移到 lib/errors
-// 请从 @/lib/errors 导入 ErrorHandler 和相关函数
+// 错误处理 - 从 lib/errors 导入
 export {
   ErrorHandler,
   normalizeError,
   getErrorMessage,
   withRetry,
-} from '@/shared/errors';
+  normalizeWalletError,
+} from '@/lib/errors';
+export type { WalletErrorDetail, NormalizedWalletErrorKind } from '@/lib/errors';
 
 // 日志工具
 export { LoggerFactory, createLogger, createOracleLogger } from './logger/LoggerFactory';

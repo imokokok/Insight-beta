@@ -12,8 +12,8 @@ import { useInfiniteList, useWatchlist, type BaseResponse, useIsMobile } from '@
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage } from '@/i18n/translations';
-import type { Assertion } from '@/types/oracleTypes';
 import { getOracleInstanceId, setOracleInstanceId, buildApiUrl } from '@/shared/utils';
+import type { Assertion } from '@/types/oracleTypes';
 
 import type { Route } from 'next';
 
@@ -29,7 +29,7 @@ export default function WatchlistPage() {
   const [instanceId, setInstanceIdState] = useState<string>('default');
 
   useEffect(() => {
-    getOracleInstanceId().then(id => {
+    getOracleInstanceId().then((id) => {
       if (!instanceIdFromUrl) {
         setInstanceIdState(id);
       } else if (instanceIdFromUrl !== id) {
@@ -62,7 +62,10 @@ export default function WatchlistPage() {
         instanceId: instanceId || undefined,
         ids: watchlist.join(','),
         limit: 30,
-        cursor: pageIndex > 0 && previousPageData?.nextCursor ? String(previousPageData.nextCursor) : undefined,
+        cursor:
+          pageIndex > 0 && previousPageData?.nextCursor
+            ? String(previousPageData.nextCursor)
+            : undefined,
       });
 
       return url;
@@ -70,10 +73,8 @@ export default function WatchlistPage() {
     [watchlist, mounted, instanceId],
   );
 
-  const { items, loading, loadingMore, hasMore, loadMore, error, mutate } = useInfiniteList<Assertion>(
-    getUrl,
-    { revalidateOnFocus: true },
-  );
+  const { items, loading, loadingMore, hasMore, loadMore, error, mutate } =
+    useInfiniteList<Assertion>(getUrl, { revalidateOnFocus: true });
 
   // 页面优化：键盘快捷键
   usePageOptimizations({
@@ -95,7 +96,7 @@ export default function WatchlistPage() {
       {!mounted ? (
         <FadeIn>
           <div className="flex flex-col items-center justify-center py-12 sm:py-20">
-            <div className="h-6 w-6 animate-spin rounded-full border-4 border-purple-200 border-t-purple-600 sm:h-8 sm:w-8"></div>
+            <div className="h-6 w-6 animate-spin rounded-full border-4 border-primary/20 border-t-primary sm:h-8 sm:w-8"></div>
             <p className="mt-4 text-sm text-gray-500">Loading...</p>
           </div>
         </FadeIn>

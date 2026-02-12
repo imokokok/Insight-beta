@@ -1,12 +1,13 @@
-# 移动端 Web3 优化指南
+# Mobile Web3 Optimization Guide
 
-本文档介绍项目中移动端适配和 Web3 钱包相关的优化方案。
+This document introduces mobile adaptation and Web3 wallet-related optimization solutions in the project.
 
-## 新增功能概览
+## New Features Overview
 
-### 1. 钱包浏览器检测 (`src/lib/mobile/walletBrowser.ts`)
+### 1. Wallet Browser Detection (`src/lib/mobile/walletBrowser.ts`)
 
-检测用户当前使用的浏览器环境，支持检测以下钱包：
+Detect the browser environment users are currently using, supporting detection of the following wallets:
+
 - MetaMask
 - Trust Wallet
 - TokenPocket
@@ -19,76 +20,79 @@
 - OKX Wallet
 - Bitget Wallet
 
-**使用示例：**
+**Usage Example:**
 
 ```typescript
-import { 
-  getWalletBrowserInfo, 
-  isMobile, 
+import {
+  getWalletBrowserInfo,
+  isMobile,
   isInWalletBrowser,
-  getRecommendedWalletMethod 
+  getRecommendedWalletMethod,
 } from '@/lib/mobile';
 
-// 获取浏览器信息
+// Get browser info
 const browserInfo = getWalletBrowserInfo();
 console.log(browserInfo.type); // 'metamask' | 'trust' | etc.
 console.log(browserInfo.name); // 'MetaMask'
 console.log(browserInfo.isWalletBrowser); // true
 
-// 检测是否在移动端
+// Detect if on mobile
 if (isMobile()) {
-  // 移动端特定逻辑
+  // Mobile-specific logic
 }
 
-// 获取推荐的连接方式
-const method = getRecommendedWalletMethod(); 
+// Get recommended connection method
+const method = getRecommendedWalletMethod();
 // 'browser' | 'walletconnect' | 'deeplink'
 ```
 
-### 2. Viewport 管理 (`src/hooks/useViewport.ts`)
+### 2. Viewport Management (`src/hooks/useViewport.ts`)
 
-处理移动端键盘弹出、钱包弹窗等场景下的视口变化。
+Handle viewport changes in scenarios like mobile keyboard popping up, wallet popups, etc.
 
-**使用示例：**
+**Usage Example:**
 
 ```typescript
 import { useViewport, useKeyboardState, useSafeArea } from '@/hooks/useViewport';
 
 function MyComponent() {
-  // 基础视口管理
-  const { 
-    width, 
-    height, 
-    visualHeight, 
+  // Basic viewport management
+  const {
+    width,
+    height,
+    visualHeight,
     isKeyboardOpen,
-    isWalletPopupOpen 
+    isWalletPopupOpen
   } = useViewport({
-    onKeyboardOpen: () => console.log('键盘打开'),
-    onKeyboardClose: () => console.log('键盘关闭'),
-    onWalletPopupOpen: () => console.log('钱包弹窗打开'),
-    onWalletPopupClose: () => console.log('钱包弹窗关闭'),
+    onKeyboardOpen: () => console.log('Keyboard opened'),
+    onKeyboardClose: () => console.log('Keyboard closed'),
+    onWalletPopupOpen: () => console.log('Wallet popup opened'),
+    onWalletPopupClose: () => console.log('Wallet popup closed'),
   });
 
-  // 仅键盘状态
+  // Keyboard state only
   const { isOpen: isKeyboardOpen, height: keyboardHeight } = useKeyboardState();
 
-  // 安全区域
+  // Safe area
   const { top, bottom, left, right } = useSafeArea();
 
   return <div>...</div>;
 }
 ```
 
-### 3. 移动端钱包连接 (`src/components/features/wallet/MobileWalletConnect.tsx`)
+### 3. Mobile Wallet Connection (`src/components/features/wallet/MobileWalletConnect.tsx`)
 
-专为移动端优化的钱包连接组件。
+Wallet connection component optimized for mobile.
 
-**使用示例：**
+**Usage Example:**
 
 ```tsx
-import { MobileWalletConnect, MobileWalletButton } from '@/components/features/wallet/MobileWalletConnect';
+import {
+  MobileWalletConnect,
+  MobileWalletButton,
+} from '@/components/features/wallet/MobileWalletConnect';
 
-// 完整版钱包选择器（推荐）
+// Full version wallet selector (recommended)
 function ConnectPage() {
   return (
     <div>
@@ -97,7 +101,7 @@ function ConnectPage() {
   );
 }
 
-// 简化版按钮
+// Simplified version button
 function Header() {
   return (
     <header>
@@ -107,62 +111,62 @@ function Header() {
 }
 ```
 
-### 4. 移动端链切换 (`src/components/features/wallet/MobileChainSwitcher.tsx`)
+### 4. Mobile Chain Switching (`src/components/features/wallet/MobileChainSwitcher.tsx`)
 
-专为移动端优化的链切换组件。
+Chain switching component optimized for mobile.
 
-**使用示例：**
+**Usage Example:**
 
 ```tsx
-import { MobileChainSwitcher, MobileChainBadge } from '@/components/features/wallet/MobileChainSwitcher';
+import {
+  MobileChainSwitcher,
+  MobileChainBadge,
+} from '@/components/features/wallet/MobileChainSwitcher';
 
 function Header() {
   return (
     <header className="flex items-center gap-4">
-      {/* 完整链切换器 */}
+      {/* Full chain switcher */}
       <MobileChainSwitcher />
-      
-      {/* 简化版徽章 */}
+
+      {/* Simplified version badge */}
       <MobileChainBadge />
     </header>
   );
 }
 ```
 
-### 5. 移动端布局 (`src/components/layout/MobileLayout.tsx`)
+### 5. Mobile Layout (`src/components/layout/MobileLayout.tsx`)
 
-处理移动端布局、安全区域、钱包浏览器检测等。
+Handle mobile layout, safe areas, wallet browser detection, etc.
 
-**使用示例：**
+**Usage Example:**
 
 ```tsx
-import { 
-  MobileLayout, 
-  SafeAreaContainer, 
+import {
+  MobileLayout,
+  SafeAreaContainer,
   MobileFixedBottom,
-  MobileContent 
+  MobileContent,
 } from '@/components/layout/MobileLayout';
 
 function App() {
   return (
     <MobileLayout>
       <SafeAreaContainer>
-        <MobileContent hasBottomNav={true}>
-          {/* 页面内容 */}
-        </MobileContent>
+        <MobileContent hasBottomNav={true}>{/* Page content */}</MobileContent>
       </SafeAreaContainer>
-      
-      <MobileFixedBottom>
-        {/* 底部固定内容 */}
-      </MobileFixedBottom>
+
+      <MobileFixedBottom>{/* Bottom fixed content */}</MobileFixedBottom>
     </MobileLayout>
   );
 }
 ```
 
-## CSS 工具类
+## CSS Utilities
 
-### 动态视口高度
+### Dynamic Viewport Height
+
 ```css
 .h-screen-dynamic {
   height: calc(var(--vh, 1vh) * 100);
@@ -173,29 +177,41 @@ function App() {
 }
 ```
 
-### 安全区域
+### Safe Areas
+
 ```css
-.pt-safe { padding-top: max(env(safe-area-inset-top), 8px); }
-.pb-safe { padding-bottom: max(env(safe-area-inset-bottom), 8px); }
-.pl-safe { padding-left: max(env(safe-area-inset-left), 8px); }
-.pr-safe { padding-right: max(env(safe-area-inset-right), 8px); }
+.pt-safe {
+  padding-top: max(env(safe-area-inset-top), 8px);
+}
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom), 8px);
+}
+.pl-safe {
+  padding-left: max(env(safe-area-inset-left), 8px);
+}
+.pr-safe {
+  padding-right: max(env(safe-area-inset-right), 8px);
+}
 ```
 
-### 底部导航栏补偿
+### Bottom Navigation Bar Compensation
+
 ```css
-.pb-nav { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+.pb-nav {
+  padding-bottom: calc(64px + env(safe-area-inset-bottom));
+}
 ```
 
-## 深度链接
+## Deep Links
 
-支持生成各大钱包的深度链接：
+Support generating deep links for major wallets:
 
 ```typescript
-import { 
-  getMetaMaskDeepLink, 
+import {
+  getMetaMaskDeepLink,
   getTrustWalletDeepLink,
   getTokenPocketDeepLink,
-  getCurrentDeepLink 
+  getCurrentDeepLink,
 } from '@/lib/mobile';
 
 // MetaMask
@@ -207,89 +223,94 @@ const trustLink = getTrustWalletDeepLink('https://your-app.com');
 // TokenPocket
 const tpLink = getTokenPocketDeepLink('https://your-app.com');
 
-// 自动根据当前环境选择
+// Auto-select based on current environment
 const deepLink = getCurrentDeepLink('metamask');
 ```
 
-## 钱包浏览器检测
+## Wallet Browser Detection
 
-系统会自动在 `<body>` 标签上添加以下类名：
+The system automatically adds the following class names to the `<body>` tag:
 
-- `wallet-metamask` - MetaMask 浏览器
-- `wallet-trust` - Trust Wallet 浏览器
-- `wallet-tokenpocket` - TokenPocket 浏览器
-- `wallet-imtoken` - imToken 浏览器
-- `wallet-phantom` - Phantom 浏览器
-- `wallet-brave` - Brave 浏览器
-- `wallet-coinbase` - Coinbase Wallet 浏览器
-- `wallet-rainbow` - Rainbow 浏览器
-- `wallet-zerion` - Zerion 浏览器
-- `wallet-okx` - OKX Wallet 浏览器
-- `wallet-bitget` - Bitget Wallet 浏览器
-- `wallet-browser` - 通用钱包浏览器标记
-- `in-app-browser` - 任何应用内置浏览器
+- `wallet-metamask` - MetaMask browser
+- `wallet-trust` - Trust Wallet browser
+- `wallet-tokenpocket` - TokenPocket browser
+- `wallet-imtoken` - imToken browser
+- `wallet-phantom` - Phantom browser
+- `wallet-brave` - Brave browser
+- `wallet-coinbase` - Coinbase Wallet browser
+- `wallet-rainbow` - Rainbow browser
+- `wallet-zerion` - Zerion browser
+- `wallet-okx` - OKX Wallet browser
+- `wallet-bitget` - Bitget Wallet browser
+- `wallet-browser` - Generic wallet browser marker
+- `in-app-browser` - Any in-app browser
 
-可以使用这些类名针对特定钱包浏览器写 CSS：
+You can use these class names to write CSS for specific wallet browsers:
 
 ```css
-/* 在 MetaMask 浏览器中隐藏某些元素 */
+/* Hide certain elements in MetaMask browser */
 .wallet-metamask .hide-in-metamask {
   display: none;
 }
 
-/* 在钱包浏览器中调整布局 */
+/* Adjust layout in wallet browser */
 .wallet-browser .adjust-for-wallet {
   padding-bottom: 80px;
 }
 ```
 
-## 最佳实践
+## Best Practices
 
-1. **始终使用动态视口高度**
+1. **Always Use Dynamic Viewport Height**
+
    ```tsx
    <div className="min-h-screen-dynamic">
    ```
 
-2. **处理键盘弹出**
+2. **Handle Keyboard Pop-up**
+
    ```tsx
    const { isKeyboardOpen } = useViewport();
-   
+
    <div className={isKeyboardOpen ? 'pb-keyboard' : ''}>
    ```
 
-3. **适配安全区域**
+3. **Adapt to Safe Areas**
+
    ```tsx
    <SafeAreaContainer top bottom>
      <Content />
    </SafeAreaContainer>
    ```
 
-4. **检测钱包浏览器并调整 UI**
+4. **Detect Wallet Browser and Adjust UI**
+
    ```tsx
    const browserInfo = getWalletBrowserInfo();
-   
+
    if (browserInfo.isWalletBrowser) {
-     // 显示简化版连接按钮
+     // Show simplified connection button
    } else if (isMobile()) {
-     // 显示深度链接选项
+     // Show deep link options
    }
    ```
 
-5. **处理链切换失败**
+5. **Handle Chain Switching Failure**
+
    ```tsx
    const supportsChainSwitch = supportsFeature('wallet_switchEthereumChain');
-   
+
    if (!supportsChainSwitch) {
-     // 提示用户手动切换
+     // Prompt user to switch manually
    }
    ```
 
-## 注意事项
+## Notes
 
-1. **iOS 输入框缩放**：在 iOS 上，输入框字体大小小于 16px 时会自动缩放。确保所有输入框字体大小至少为 16px。
+1. **iOS Input Zoom**: On iOS, input fields auto-zoom when font size is less than 16px. Ensure all input fields have at least 16px font size.
 
-2. **钱包弹窗检测**：钱包弹窗检测基于启发式算法，可能不是 100% 准确。建议结合业务场景调整。
+2. **Wallet Popup Detection**: Wallet popup detection is based on heuristic algorithms and may not be 100% accurate. Adjust based on actual business scenarios.
 
-3. **深度链接兼容性**：不同钱包的深度链接实现可能有所不同，建议在实际设备上测试。
+3. **Deep Link Compatibility**: Deep link implementations vary across different wallets. Test on actual devices.
 
-4. **安全区域**：iPhone X 及以上机型有刘海屏和底部横条，使用 `env(safe-area-inset-*)` 确保安全区域。
+4. **Safe Areas**: iPhone X and above have notch screens and bottom bars. Use `env(safe-area-inset-*)` to ensure safe areas.
