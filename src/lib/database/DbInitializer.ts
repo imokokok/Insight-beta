@@ -4,8 +4,8 @@
  * 消除多个模块中重复的 ensureDb() 函数模式
  */
 
+import { ensureSchema } from '@/lib/database';
 import { hasDatabase } from '@/lib/database/db';
-import { ensureSchema } from '@/lib/schema';
 import { logger } from '@/shared/logger';
 
 // ============================================================================

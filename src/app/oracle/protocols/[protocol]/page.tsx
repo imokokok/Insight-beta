@@ -6,6 +6,10 @@ import { useParams } from 'next/navigation';
 
 import { Activity, Shield, TrendingUp, Globe, BarChart3, Bell, Clock } from 'lucide-react';
 
+export const dynamic = 'force-static';
+export const revalidate = 3600; // 1 hour
+export const fetchCache = 'force-cache';
+
 import { StatCard } from '@/components/common';
 import {
   FeedTable,

@@ -43,6 +43,7 @@ import { cn, formatChangePercent, formatTimeAgo } from '@/shared/utils';
 export type StatCardVariant = 'default' | 'compact' | 'detailed' | 'interactive';
 export type StatCardSize = 'sm' | 'md' | 'lg';
 export type StatCardStatus = 'healthy' | 'warning' | 'critical' | 'neutral';
+export type StatCardColor = 'blue' | 'green' | 'amber' | 'purple' | 'red' | 'cyan' | 'pink';
 
 export interface TrendData {
   value: number;
@@ -73,10 +74,14 @@ export interface EnhancedStatCardProps {
   subtitle?: string;
   /** 图标 */
   icon?: React.ReactNode;
+  /** 颜色 */
+  color?: StatCardColor;
   /** 趋势数据 */
   trend?: TrendData;
   /** 迷你图数据 */
   sparkline?: SparklineData;
+  /** 迷你图数据 (数组格式，简写) */
+  sparklineData?: number[];
   /** 状态 */
   status?: StatCardStatus;
   /** 变体 */
@@ -106,7 +111,7 @@ export interface EnhancedStatCardProps {
 }
 
 // ============================================================================
-// Status Configurations
+// Status & Color Configurations
 // ============================================================================
 
 const statusConfig: Record<
@@ -154,6 +159,75 @@ const statusConfig: Record<
   },
 };
 
+const colorConfig: Record<
+  StatCardColor,
+  {
+    bg: string;
+    border: string;
+    text: string;
+    icon: React.ReactNode;
+    dot: string;
+    gradient: string;
+  }
+> = {
+  blue: {
+    bg: 'bg-blue-50',
+    border: 'border-blue-200',
+    text: 'text-blue-700',
+    icon: <Activity className="h-5 w-5" />,
+    dot: 'bg-blue-500',
+    gradient: 'from-blue-500/10 to-blue-500/5',
+  },
+  green: {
+    bg: 'bg-emerald-50',
+    border: 'border-emerald-200',
+    text: 'text-emerald-700',
+    icon: <CheckCircle className="h-5 w-5" />,
+    dot: 'bg-emerald-500',
+    gradient: 'from-emerald-500/10 to-emerald-500/5',
+  },
+  amber: {
+    bg: 'bg-amber-50',
+    border: 'border-amber-200',
+    text: 'text-amber-700',
+    icon: <AlertCircle className="h-5 w-5" />,
+    dot: 'bg-amber-500',
+    gradient: 'from-amber-500/10 to-amber-500/5',
+  },
+  purple: {
+    bg: 'bg-purple-50',
+    border: 'border-purple-200',
+    text: 'text-purple-700',
+    icon: <Activity className="h-5 w-5" />,
+    dot: 'bg-purple-500',
+    gradient: 'from-purple-500/10 to-purple-500/5',
+  },
+  red: {
+    bg: 'bg-red-50',
+    border: 'border-red-200',
+    text: 'text-red-700',
+    icon: <AlertCircle className="h-5 w-5" />,
+    dot: 'bg-red-500',
+    gradient: 'from-red-500/10 to-red-500/5',
+  },
+  cyan: {
+    bg: 'bg-cyan-50',
+    border: 'border-cyan-200',
+    text: 'text-cyan-700',
+    icon: <Activity className="h-5 w-5" />,
+    dot: 'bg-cyan-500',
+    gradient: 'from-cyan-500/10 to-cyan-500/5',
+  },
+  pink: {
+    bg: 'bg-pink-50',
+    border: 'border-pink-200',
+    text: 'text-pink-700',
+    icon: <Activity className="h-5 w-5" />,
+    dot: 'bg-pink-500',
+    gradient: 'from-pink-500/10 to-pink-500/5',
+  },
+};
+
 // ============================================================================
 // Loading State
 // ============================================================================
@@ -189,8 +263,10 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
   value,
   subtitle,
   icon,
+  color,
   trend,
   sparkline,
+  sparklineData,
   status = 'neutral',
   variant = 'default',
   size = 'md',
@@ -204,7 +280,9 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
   extra,
 }: EnhancedStatCardProps) {
   const [isHovered, setIsHovered] = useState(false);
-  const config = statusConfig[status];
+  const config = color ? colorConfig[color] : statusConfig[status];
+
+  const sparklineWithData = sparkline || (sparklineData ? { data: sparklineData } : undefined);
 
   // 计算趋势显示
   const trendDisplay = useMemo(() => {
@@ -343,11 +421,11 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
                 {icon || config.icon}
               </motion.div>
 
-              {sparkline && (
+              {sparklineWithData && (
                 <Sparkline
-                  data={sparkline.data}
-                  color={sparkline.color || CHART_COLORS.primary.DEFAULT}
-                  showArea={sparkline.showArea}
+                  data={sparklineWithData.data}
+                  color={sparklineWithData.color || CHART_COLORS.primary.DEFAULT}
+                  showArea={sparklineWithData.showArea}
                   width={100}
                   height={30}
                 />
@@ -415,12 +493,12 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
 
           {subtitle && <p className="text-sm text-gray-500">{subtitle}</p>}
 
-          {sparkline && (
+          {sparklineWithData && (
             <div className="mt-4">
               <Sparkline
-                data={sparkline.data}
-                color={sparkline.color || CHART_COLORS.primary.DEFAULT}
-                showArea={sparkline.showArea}
+                data={sparklineWithData.data}
+                color={sparklineWithData.color || CHART_COLORS.primary.DEFAULT}
+                showArea={sparklineWithData.showArea}
                 width={200}
                 height={40}
               />
@@ -454,12 +532,12 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
 
         {trendDisplay && <div>{trendDisplay}</div>}
 
-        {sparkline && (
+        {sparklineWithData && (
           <div className="mt-3">
             <Sparkline
-              data={sparkline.data}
-              color={sparkline.color || CHART_COLORS.primary.DEFAULT}
-              showArea={sparkline.showArea}
+              data={sparklineWithData.data}
+              color={sparklineWithData.color || CHART_COLORS.primary.DEFAULT}
+              showArea={sparklineWithData.showArea}
               width={120}
               height={30}
             />

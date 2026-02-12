@@ -6,9 +6,8 @@ export * from './apiHandler';
 export * from './blockchain';
 export * from './common';
 export * from './export';
-export * from './format';
+export * from './format/index';
 export * from './math';
-export * from './percentage';
 export * from './pwa';
 export * from './result';
 export * from './robustTrendAnalysis';
@@ -32,3 +31,6 @@ export {
 
 // 从 api.ts 导出特定函数，避免重复
 export { ApiClientError, fetchApiData, getErrorCode, normalizeListResponse } from './api';
+
+// 从 format.ts 导出（向后兼容）
+export { copyToClipboard } from './format';

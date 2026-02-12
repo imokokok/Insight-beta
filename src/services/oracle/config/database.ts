@@ -1,6 +1,6 @@
+import { ensureSchema } from '@/lib/database';
 import { hasDatabase, query } from '@/lib/database/db';
 import { withTransaction } from '@/lib/database/dbOptimization';
-import { ensureSchema } from '@/lib/schema';
 import { encryptString, decryptString, isEncryptionEnabled } from '@/lib/security/encryption';
 import { logger } from '@/shared/logger';
 

@@ -246,14 +246,26 @@ const nextConfig: NextConfig = {
       process: false,
     };
 
+    // 添加 alias 避免重复模块
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      // 确保只使用一个 React 实例
+      react: require.resolve('react'),
+      'react-dom': require.resolve('react-dom'),
+      // 确保 lodash 按需加载
+      lodash: require.resolve('lodash/es'),
+      // 避免 multiple instances of React
+      'react/jsx-runtime': require.resolve('react/jsx-runtime'),
+    };
+
     // Tree-shaking 和代码分割优化
     if (!isServer && !dev) {
       config.optimization = config.optimization || {};
-      
+
       // Tree Shaking: 启用 usedExports 和 sideEffects
       config.optimization.usedExports = true;
       config.optimization.sideEffects = false;
-      
+
       // 启用模块合并优化
       config.optimization.mergeDuplicateChunks = true;
       config.optimization.removeAvailableModules = true;
@@ -338,7 +350,7 @@ const nextConfig: NextConfig = {
       config.optimization.runtimeChunk = {
         name: 'runtime',
       };
-      
+
       // 模块顺序优化
       config.optimization.moduleIds = 'deterministic';
       config.optimization.chunkIds = 'deterministic';

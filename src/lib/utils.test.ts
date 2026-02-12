@@ -75,7 +75,7 @@ describe('Utils', () => {
 
     const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => void 0);
 
-    const { logger } = await import('./logger');
+    const { logger } = await import('@/shared/logger');
 
     const token = 'test_token_32_chars_0000000000000';
     const url = `https://rpc.ankr.com/polygon_amoy/${token}?apiKey=secret#hash`;

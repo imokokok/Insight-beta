@@ -31,9 +31,9 @@ import { cn } from '@/shared/utils';
 
 import type { Metadata } from 'next';
 
-const EnhancedSidebar = lazy(() =>
+const Sidebar = lazy(() =>
   import('@/components/common/EnhancedSidebar').then((mod) => ({
-    default: mod.EnhancedSidebar,
+    default: mod.Sidebar,
   })),
 );
 const LanguageSwitcher = lazy(() =>
@@ -155,7 +155,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                 </div>
                 <div className="min-h-screen-dynamic flex">
                   <Suspense fallback={<LoadingPlaceholder className="hidden w-[280px] md:block" />}>
-                    <EnhancedSidebar />
+                    <Sidebar />
                   </Suspense>
                   <main
                     id="main-content"

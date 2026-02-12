@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/nextjs';
 
-import { logger } from './src/lib/logger';
+import { logger } from './src/shared/logger';
 
 const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
 

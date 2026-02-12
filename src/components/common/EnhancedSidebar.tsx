@@ -884,4 +884,5 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
 // Export
 // ============================================================================
 
+export { EnhancedSidebar as Sidebar };
 export default EnhancedSidebar;

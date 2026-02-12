@@ -10,11 +10,24 @@ export { ChartCard, ChartCardSkeleton } from './ChartCard';
 // ==================== 数据展示 ====================
 export {
   StatCard,
+  StatCardSimple,
   StatCardSkeleton,
   StatCardGroup,
-  type StatCardProps,
-  type StatCardColor,
-  type StatCardVariant,
+  StatCardGroupSimple,
+  DashboardStatsSection,
+} from './StatCard';
+
+export type {
+  StatCardProps,
+  StatCardColor,
+  StatCardVariant,
+  StatCardVariantSimple,
+  StatCardSize,
+  StatCardStatus,
+  TrendData,
+  SparklineData,
+  StatCardAction,
+  EnhancedStatCardProps,
 } from './StatCard';
 
 // ==================== 页面布局 ====================
@@ -27,7 +40,7 @@ export {
   type PageHeaderProps,
   type DashboardPageHeaderProps,
 } from './PageHeader';
-export { EnhancedSidebar, defaultNavConfig } from './EnhancedSidebar';
+export { EnhancedSidebar as Sidebar, defaultNavConfig } from './EnhancedSidebar';
 
 // ==================== 交互反馈 ====================
 export { CopyButton } from './CopyButton';

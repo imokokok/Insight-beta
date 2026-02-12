@@ -382,7 +382,7 @@ export async function runCoreMigrations(
   queryFn: QueryFn,
   safeRollback: () => Promise<void>,
 ): Promise<void> {
-  const { logger } = await import('@/lib/logger');
+  const { logger } = await import('@/shared/logger');
 
   await queryFn(`
     ALTER TABLE assertions ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMP WITH TIME ZONE;

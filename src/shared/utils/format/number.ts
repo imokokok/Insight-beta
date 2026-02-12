@@ -34,3 +34,8 @@ export function calculatePercentage(part: number, total: number): number {
   if (total === 0) return 0;
   return Math.round((part / total) * 100);
 }
+
+export function truncateAddress(address: string): string {
+  if (!address || address.length < 12) return address || '';
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}
