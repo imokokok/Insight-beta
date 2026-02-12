@@ -29,7 +29,6 @@ import {
   Bookmark,
   X,
   Menu,
-  Home,
   Activity,
   BarChart3,
   Layers,
@@ -37,17 +36,13 @@ import {
   AlertTriangle,
   FileText,
   Users,
-  Wallet,
   ChevronLeft,
-  Pin,
-  MoreHorizontal,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -406,20 +401,21 @@ function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
   if (collapsed) {
     return (
       <Tooltip delayDuration={0}>
-        <TooltipTrigger asChild>
-          <Link
-            href={item.href}
-            onClick={handleClick}
-            className={cn(
-              'flex items-center justify-center w-10 h-10 rounded-lg transition-all',
-              isActive 
-                ? 'bg-purple-100 text-purple-700' 
-                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-            )}
-          >
-            <item.icon className="h-5 w-5" />
-          </Link>
-        </TooltipTrigger>
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+          <TooltipTrigger asChild>
+            <Link
+              href={item.href as any}
+              onClick={handleClick}
+              className={cn(
+                'flex items-center justify-center w-10 h-10 rounded-lg transition-all',
+                isActive 
+                  ? 'bg-purple-100 text-purple-700' 
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+              )}
+            >
+              <item.icon className="h-5 w-5" />
+            </Link>
+          </TooltipTrigger>
         <TooltipContent side="right">
           {item.label}
         </TooltipContent>
@@ -429,8 +425,9 @@ function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
 
   return (
     <div className="group">
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
       <Link
-        href={item.href}
+        href={item.href as any}
         onClick={handleClick}
         className={cn(
           'flex items-center px-3 py-2 rounded-lg transition-all duration-200',
@@ -858,15 +855,17 @@ export function EnhancedSidebar({
                   <p className="text-sm font-medium text-gray-900 truncate">Admin User</p>
                   <p className="text-xs text-gray-500 truncate">admin@example.com</p>
                 </div>
-                <Link href="/settings">
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                <Link href={"/settings" as any}>
                   <Settings className="h-4 w-4 text-gray-400 hover:text-gray-600" />
                 </Link>
               </div>
             ) : (
               <Tooltip>
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 <TooltipTrigger asChild>
                   <Link 
-                    href="/settings"
+                    href={"/settings" as any}
                     className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 mx-auto"
                   >
                     <Settings className="h-5 w-5 text-gray-500" />

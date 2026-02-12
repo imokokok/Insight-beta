@@ -546,8 +546,15 @@ export function createPageTransition(
   duration: number = ANIMATION_DURATION.normal
 ): Variants {
   const baseVariant = pageTransitionVariants[variant];
+  if (!baseVariant) {
+    return {
+      initial: {},
+      animate: {},
+      exit: {},
+    };
+  }
   return {
-    initial: baseVariant.initial,
+    initial: baseVariant.initial ?? {},
     animate: {
       ...baseVariant.animate,
       transition: { duration, ease: ANIMATION_EASING.standard },

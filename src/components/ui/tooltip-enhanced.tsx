@@ -4,7 +4,6 @@ import * as React from 'react';
 
 import { motion, AnimatePresence } from 'framer-motion';
 
-import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 
 type TooltipPosition = 'top' | 'bottom' | 'left' | 'right';
@@ -101,63 +100,4 @@ function TooltipEnhanced({
   );
 }
 
-// Info Tooltip with icon
-interface InfoTooltipProps {
-  content: string;
-  className?: string;
-}
-
-function InfoTooltip({ content, className }: InfoTooltipProps) {
-  return (
-    <TooltipEnhanced content={content} position="top" className={className}>
-      <span className="inline-flex h-4 w-4 cursor-help items-center justify-center rounded-full bg-purple-100 text-purple-600 transition-colors hover:bg-purple-200">
-        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-      </span>
-    </TooltipEnhanced>
-  );
-}
-
-// Copy to clipboard with tooltip feedback
-interface CopyTooltipProps {
-  text: string;
-  children: React.ReactNode;
-  className?: string;
-}
-
-function CopyTooltip({ text, children, className }: CopyTooltipProps) {
-  const [copied, setCopied] = React.useState(false);
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      logger.error('Failed to copy text', { error: err });
-    }
-  };
-
-  return (
-    <TooltipEnhanced
-      content={copied ? 'Copied!' : 'Click to copy'}
-      position="top"
-      className={className}
-    >
-      <span
-        className="cursor-pointer"
-        onClick={handleCopy}
-      >
-        {children}
-      </span>
-    </TooltipEnhanced>
-  );
-}
-
-export { TooltipEnhanced, InfoTooltip, CopyTooltip };
+export { TooltipEnhanced };

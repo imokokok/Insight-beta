@@ -21,22 +21,20 @@ import {
   Clock,
   Layers,
   Menu,
-  Info,
   AlertCircle,
   TrendingUp,
-  TrendingDown,
 } from 'lucide-react';
 
 import {
   EnhancedStatCard,
   StatCardGroup,
   DashboardStatsSection,
+  type StatCardStatus,
 } from '@/components/common/StatCard';
 import {
   EnhancedAreaChart,
   EnhancedLineChart,
   EnhancedBarChart,
-  Sparkline,
   CHART_COLORS,
 } from '@/components/charts';
 import { ChartCard } from '@/components/common/ChartCard';
@@ -47,7 +45,7 @@ import { RefreshIndicator } from '@/components/ui/refresh-indicator';
 import { useWebSocket, useIsMobile } from '@/hooks';
 import { useAutoRefresh } from '@/hooks/use-auto-refresh';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
-import { fetchApiData, cn, formatNumber, formatPercent } from '@/lib/utils';
+import { fetchApiData, cn, formatNumber } from '@/lib/utils';
 import { isStatsUpdateMessage } from '@/lib/utils/typeGuards';
 import { logger } from '@/lib/logger';
 import { getRefreshStrategy } from '@/config/refresh-strategy';
@@ -55,6 +53,8 @@ import { getRefreshStrategy } from '@/config/refresh-strategy';
 // ============================================================================
 // Types
 // ============================================================================
+
+import type { ChartDataPoint } from '@/components/charts';
 
 interface DashboardStats {
   totalProtocols: number;
@@ -66,12 +66,6 @@ interface DashboardStats {
   networkUptime?: number;
   staleFeeds?: number;
   activeNodes?: number;
-}
-
-interface ChartDataPoint {
-  timestamp: string;
-  value: number;
-  label: string;
 }
 
 // ============================================================================
@@ -183,7 +177,7 @@ export default function OptimizedOracleDashboard() {
 
   // Chart data states
   const [priceTrendData, setPriceTrendData] = useState<ChartDataPoint[]>([]);
-  const [comparisonData, setComparisonData] = useState<any[]>([]);
+  const [comparisonData, setComparisonData] = useState<ChartDataPoint[]>([]);
   const [latencyData, setLatencyData] = useState<ChartDataPoint[]>([]);
 
   // Page optimizations
@@ -239,7 +233,7 @@ export default function OptimizedOracleDashboard() {
       dataKey: 'value',
       color: CHART_COLORS.primary.DEFAULT,
       valueFormatter: (v: number) => `$${formatNumber(v, 2)}`,
-      labelFormatter: (l: string) => new Date(l).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      labelFormatter: (l: string | number) => new Date(l).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
     }),
     [priceTrendData],
   );
@@ -274,7 +268,7 @@ export default function OptimizedOracleDashboard() {
         title: 'Active Alerts',
         value: stats?.activeAlerts ?? 0,
         icon: <AlertTriangle className="h-5 w-5" />,
-        status: (stats?.activeAlerts ?? 0) > 0 ? 'warning' : 'healthy',
+        status: ((stats?.activeAlerts ?? 0) > 0 ? 'warning' : 'healthy') as StatCardStatus,
         trend: { value: 12, isPositive: false, label: 'vs last hour' },
         sparkline: { data: [10, 12, 8, 15, 12, 18, 12], color: CHART_COLORS.semantic.warning.DEFAULT },
       },
@@ -282,7 +276,7 @@ export default function OptimizedOracleDashboard() {
         title: 'Avg Latency',
         value: `${stats?.avgLatency ?? 0}ms`,
         icon: <Activity className="h-5 w-5" />,
-        status: (stats?.avgLatency ?? 0) > 1000 ? 'warning' : 'healthy',
+        status: ((stats?.avgLatency ?? 0) > 1000 ? 'warning' : 'healthy') as StatCardStatus,
         trend: { value: 5, isPositive: false, label: 'vs last hour' },
         sparkline: { data: [500, 520, 480, 550, 530, 580, 520], color: CHART_COLORS.primary.DEFAULT },
       },
@@ -290,7 +284,7 @@ export default function OptimizedOracleDashboard() {
         title: 'Network Uptime',
         value: `${stats?.networkUptime ?? 99.9}%`,
         icon: <Shield className="h-5 w-5" />,
-        status: 'healthy',
+        status: 'healthy' as StatCardStatus,
         trend: { value: 0.1, isPositive: true, label: 'vs last hour' },
         sparkline: { data: [99.8, 99.9, 99.9, 99.8, 99.9, 99.9, 99.9], color: CHART_COLORS.semantic.success.DEFAULT },
       },
@@ -298,7 +292,7 @@ export default function OptimizedOracleDashboard() {
         title: 'Stale Feeds',
         value: stats?.staleFeeds ?? 0,
         icon: <Clock className="h-5 w-5" />,
-        status: (stats?.staleFeeds ?? 0) > 0 ? 'warning' : 'healthy',
+        status: ((stats?.staleFeeds ?? 0) > 0 ? 'warning' : 'healthy') as StatCardStatus,
         trend: { value: 2, isPositive: false, label: 'vs last hour' },
         sparkline: { data: [2, 3, 2, 4, 3, 2, 3], color: CHART_COLORS.semantic.error.DEFAULT },
       },
@@ -398,7 +392,7 @@ export default function OptimizedOracleDashboard() {
               icon={<Activity className="h-4 w-4" />}
               color="amber"
             >
-              <StatCardGroup columns={4} gap="sm">
+              <StatCardGroup columns={4}>
                 {statCardsData.map((card, index) => (
                   <EnhancedStatCard
                     key={card.title}
@@ -423,7 +417,7 @@ export default function OptimizedOracleDashboard() {
               icon={<Globe className="h-4 w-4" />}
               color="blue"
             >
-              <StatCardGroup columns={4} gap="sm">
+              <StatCardGroup columns={4}>
                 {scaleCardsData.map((card, index) => (
                   <EnhancedStatCard
                     key={card.title}

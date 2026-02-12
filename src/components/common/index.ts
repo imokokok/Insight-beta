@@ -16,12 +16,7 @@ export { DynamicLoading, createLoadingComponent, type LoadingType } from './Dyna
 export { ResourceHints } from './ResourceHints';
 export { ResourcePreloader } from './ResourcePreloader';
 
-// ==================== 动画组件 ====================
-export {
-  AnimatedContainer,
-  StaggerContainer,
-  HoverCard,
-} from './AnimatedContainer';
+
 
 // ==================== 数据展示组件 ====================
 // 统一版 StatCard - 合并了原 StatCard、EnhancedStatCard、StatCardEnhanced

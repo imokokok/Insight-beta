@@ -9,14 +9,13 @@
 
 'use client';
 
-import { useMemo, useCallback, memo } from 'react';
+import { useMemo, memo } from 'react';
 import {
   Area,
   AreaChart,
   Bar,
   BarChart,
   CartesianGrid,
-  ComposedChart,
   Legend,
   Line,
   LineChart,
@@ -41,13 +40,9 @@ import { motion } from 'framer-motion';
 import {
   TrendingUp,
   TrendingDown,
-  Minus,
-  Activity,
-  AlertCircle,
-  CheckCircle,
 } from 'lucide-react';
 
-import { cn, formatChangePercent, formatNumber, formatPercent } from '@/lib/utils';
+import { cn, formatChangePercent, formatNumber } from '@/lib/utils';
 import {
   CHART_COLORS,
   CHART_DIMENSIONS,
@@ -106,7 +101,7 @@ interface CustomTooltipProps {
   title?: string;
 }
 
-const CustomTooltip = memo(function CustomTooltip({
+export const CustomTooltip = memo(function CustomTooltip({
   active,
   payload,
   label,
@@ -524,7 +519,7 @@ export const EnhancedPieChart = memo(function EnhancedPieChart({
             paddingAngle={2}
             dataKey="value"
             animationDuration={CHART_ANIMATIONS.chart.animationDuration}
-            label={showLabels ? ({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%` : false}
+            label={showLabels ? ({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%` : false}
           >
             {data.map((entry, index) => (
               <Cell
@@ -710,8 +705,12 @@ export const Sparkline = memo(function Sparkline({
     ? `${pathD} L ${width} ${height} L 0 ${height} Z`
     : '';
 
-  const trend = data[data.length - 1] - data[0];
+  const firstValue = data[0] ?? 0;
+  const lastValue = data[data.length - 1] ?? 0;
+  const trend = lastValue - firstValue;
   const trendColor = trend >= 0 ? CHART_COLORS.semantic.success.DEFAULT : CHART_COLORS.semantic.error.DEFAULT;
+
+  const lastPoint = points[points.length - 1];
 
   return (
     <div className={cn('flex items-center gap-2', className)}>
@@ -733,12 +732,14 @@ export const Sparkline = memo(function Sparkline({
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-        <circle
-          cx={points[points.length - 1].x}
-          cy={points[points.length - 1].y}
-          r="3"
-          fill={color}
-        />
+        {lastPoint && (
+          <circle
+            cx={lastPoint.x}
+            cy={lastPoint.y}
+            r="3"
+            fill={color}
+          />
+        )}
       </svg>
       <div className="flex items-center gap-1">
         {trend >= 0 ? (
@@ -747,7 +748,7 @@ export const Sparkline = memo(function Sparkline({
           <TrendingDown className="h-3 w-3" style={{ color: trendColor }} />
         )}
         <span className="text-xs font-medium" style={{ color: trendColor }}>
-          {formatChangePercent(trend / data[0], 1, false)}
+          {formatChangePercent(trend / firstValue, 1, false)}
         </span>
       </div>
     </div>
@@ -820,4 +821,18 @@ export {
   getHealthColor,
   getSeriesColor,
   generateGradientId,
+};
+
+export type {
+  ChartDataPoint,
+  ThresholdConfig,
+  BaseChartProps,
+  EnhancedAreaChartProps,
+  EnhancedLineChartProps,
+  EnhancedBarChartProps,
+  EnhancedPieChartProps,
+  EnhancedRadarChartProps,
+  EnhancedGaugeChartProps,
+  SparklineProps,
+  StatComparisonProps,
 };

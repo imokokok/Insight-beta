@@ -9,6 +9,7 @@
 
 'use client';
 
+import type { CSSProperties, ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -18,13 +19,13 @@ import { cn } from '@/lib/utils';
 
 interface SkeletonProps {
   className?: string;
-  style?: React.CSSProperties;
+  style?: CSSProperties;
   shimmer?: boolean;
   animated?: boolean;
 }
 
 interface SkeletonContainerProps {
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
   animated?: boolean;
 }
@@ -33,7 +34,9 @@ interface SkeletonContainerProps {
 // Animation Variants
 // ============================================================================
 
-const shimmerAnimation = {
+import type { Variants } from 'framer-motion';
+
+const shimmerAnimation: Variants = {
   initial: { x: '-100%' },
   animate: {
     x: '100%',
@@ -45,7 +48,7 @@ const shimmerAnimation = {
   },
 };
 
-const pulseAnimation = {
+const pulseAnimation: Variants = {
   initial: { opacity: 0.4 },
   animate: {
     opacity: [0.4, 0.8, 0.4],

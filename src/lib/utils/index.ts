@@ -5,10 +5,11 @@
  */
 
 // UI 工具
-export { cn, getAssertionStatusColor } from './ui';
+export { cn } from './ui';
 
 // 格式化工具
 export {
+  formatNumber,
   formatPrice,
   formatTimeAgo,
   truncateAddress,
@@ -44,7 +45,6 @@ export {
   apiError,
   withErrorHandler,
   getQueryParam,
-  getRequiredQueryParam,
   type ApiResponse,
   type ApiRouteHandler,
 } from './api-handler';
@@ -60,7 +60,6 @@ export { sleep } from './common';
 
 // Storage 工具
 export {
-  STORAGE_KEYS,
   getStorageItem,
   setStorageItem,
   removeStorageItem,
@@ -75,16 +74,10 @@ export {
 
 // URL 工具
 export {
-  buildQueryParams,
   buildApiUrl,
 } from './url';
 
-// 类型守卫
-export {
-  safeJsonParse,
-  safeToNumber,
-  safeToDate,
-} from './typeGuards';
+
 
 // Result 类型和函数式错误处理
 export {

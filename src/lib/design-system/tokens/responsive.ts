@@ -294,7 +294,7 @@ export function resolveResponsiveValue<T>(
   // 从当前断点开始向下查找
   for (let i = index; i >= 0; i--) {
     const bp = breakpoints[i];
-    if (bp in value) {
+    if (bp && bp in value) {
       return (value as Record<Breakpoint, T>)[bp];
     }
   }

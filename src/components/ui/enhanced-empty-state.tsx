@@ -9,6 +9,7 @@
 
 'use client';
 
+import type { ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import {
   Search,
@@ -28,7 +29,6 @@ import {
   FileX,
   Database,
   WifiOff,
-  RefreshCw,
   Box,
   type LucideIcon,
 } from 'lucide-react';
@@ -57,14 +57,16 @@ interface EnhancedEmptyStateProps {
   variant?: 'default' | 'healthy' | 'action' | 'info' | 'warning' | 'error';
   size?: 'sm' | 'md' | 'lg';
   animated?: boolean;
-  children?: React.ReactNode;
+  children?: ReactNode;
 }
 
 // ============================================================================
 // Animation Variants
 // ============================================================================
 
-const containerVariants = {
+import type { Variants } from 'framer-motion';
+
+const containerVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
@@ -77,7 +79,7 @@ const containerVariants = {
   },
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 10 },
   visible: {
     opacity: 1,
@@ -86,7 +88,7 @@ const itemVariants = {
   },
 };
 
-const iconVariants = {
+const iconVariants: Variants = {
   hidden: { scale: 0.8, opacity: 0 },
   visible: {
     scale: 1,

@@ -11,8 +11,7 @@
 'use client';
 
 import React from 'react';
-import { motion, AnimatePresence, Variants, Transition } from 'framer-motion';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 import {
   containerVariants,
   componentVariants,
@@ -97,13 +96,13 @@ export function AnimatedContainer({
 }: AnimatedContainerProps) {
   const prefersReducedMotion = useReducedMotion();
 
-  const variants = containerVariants[variant];
+  const variants = containerVariants[variant] ?? { hidden: {}, visible: {} };
   const customVariants: Variants = {
-    hidden: variants.hidden,
+    hidden: variants.hidden ?? {},
     visible: {
       ...variants.visible,
       transition: {
-        ...(variants.visible as { transition: object }).transition,
+        ...((variants.visible as { transition?: object } | undefined)?.transition ?? {}),
         delayChildren: delay,
         ...(stagger ? staggerConfig : {}),
       },
@@ -159,13 +158,13 @@ export function ScrollReveal({
   once = true,
 }: ScrollRevealProps) {
   const prefersReducedMotion = useReducedMotion();
-  const variants = scrollVariants[variant];
+  const variants = scrollVariants[variant] ?? { hidden: {}, visible: {} };
 
   return (
     <motion.div
       className={className}
-      initial={prefersReducedMotion ? undefined : variants.hidden}
-      whileInView={prefersReducedMotion ? undefined : variants.visible}
+      initial={prefersReducedMotion ? undefined : (variants.hidden ?? {})}
+      whileInView={prefersReducedMotion ? undefined : (variants.visible ?? {})}
       viewport={{ once, amount: threshold }}
       transition={{
         ...transitionPresets.normal,

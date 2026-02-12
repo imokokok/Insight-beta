@@ -16,7 +16,6 @@ import {
   AlertTriangle,
   Activity,
   TrendingUp,
-  TrendingDown,
   Clock,
   Target,
   Lock,
@@ -26,13 +25,13 @@ import {
   PieChart,
   AlertCircle,
   CheckCircle,
-  XCircle,
 } from 'lucide-react';
 
 import {
   EnhancedStatCard,
   StatCardGroup,
   DashboardStatsSection,
+  type StatCardStatus,
 } from '@/components/common/StatCard';
 import {
   EnhancedAreaChart,
@@ -45,11 +44,10 @@ import {
 import { ChartCard } from '@/components/common/ChartCard';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useAutoRefresh } from '@/hooks/use-auto-refresh';
 import { useIsMobile } from '@/hooks';
-import { fetchApiData, cn, formatNumber, formatPercent } from '@/lib/utils';
+import { cn, formatNumber } from '@/lib/utils';
 
 // ============================================================================
 // Types
@@ -68,11 +66,11 @@ interface SecurityStats {
   lastIncident: string | null;
 }
 
-interface ThreatData {
-  timestamp: string;
+import type { ChartDataPoint } from '@/components/charts';
+
+interface ThreatData extends ChartDataPoint {
   threats: number;
   blocked: number;
-  label: string;
 }
 
 interface RiskDistribution {
@@ -170,12 +168,6 @@ function ThreatLevelBadge({ level, count }: { level: 'high' | 'medium' | 'low' |
 }
 
 function SecurityScoreGauge({ score }: { score: number }) {
-  const getColor = () => {
-    if (score >= 90) return CHART_COLORS.semantic.success.DEFAULT;
-    if (score >= 70) return CHART_COLORS.semantic.warning.DEFAULT;
-    return CHART_COLORS.semantic.error.DEFAULT;
-  };
-
   const getStatus = () => {
     if (score >= 90) return 'Excellent';
     if (score >= 70) return 'Good';
@@ -189,7 +181,7 @@ function SecurityScoreGauge({ score }: { score: number }) {
         value={score}
         max={100}
         height={150}
-        color={getColor()}
+        thresholds={{ warning: 70, critical: 50 }}
       />
       <div className="text-center -mt-4">
         <p className="text-sm font-medium text-gray-600">Security Score</p>
@@ -245,28 +237,28 @@ export default function OptimizedSecurityDashboard() {
         title: 'Total Detections',
         value: stats.totalDetections,
         icon: <AlertTriangle className="h-5 w-5" />,
-        status: stats.totalDetections > 100 ? 'warning' : 'healthy',
+        status: (stats.totalDetections > 100 ? 'warning' : 'healthy') as StatCardStatus,
         trend: { value: 15, isPositive: false, label: 'vs yesterday' },
       },
       {
         title: 'Blocked Transactions',
         value: stats.blockedTransactions,
         icon: <Lock className="h-5 w-5" />,
-        status: 'healthy',
+        status: 'healthy' as StatCardStatus,
         trend: { value: 8, isPositive: true, label: 'vs yesterday' },
       },
       {
         title: 'Avg Detection Time',
         value: `${stats.avgDetectionTime}s`,
         icon: <Clock className="h-5 w-5" />,
-        status: stats.avgDetectionTime < 5 ? 'healthy' : 'warning',
+        status: (stats.avgDetectionTime < 5 ? 'healthy' : 'warning') as StatCardStatus,
         trend: { value: 12, isPositive: true, label: 'faster' },
       },
       {
         title: 'Value at Risk',
         value: stats.totalValueAtRisk,
         icon: <Target className="h-5 w-5" />,
-        status: 'warning',
+        status: 'warning' as StatCardStatus,
         trend: { value: 5, isPositive: false, label: 'vs yesterday' },
       },
     ],
@@ -279,27 +271,27 @@ export default function OptimizedSecurityDashboard() {
         title: 'Active Monitors',
         value: stats.activeMonitors,
         icon: <Eye className="h-5 w-5" />,
-        status: 'neutral' as const,
+        status: 'neutral' as StatCardStatus,
         trend: { value: 4, isPositive: true, label: 'new today' },
       },
       {
         title: 'Security Score',
         value: `${stats.threatScore}/100`,
         icon: <Shield className="h-5 w-5" />,
-        status: stats.threatScore >= 80 ? 'healthy' : 'warning',
+        status: (stats.threatScore >= 80 ? 'healthy' : 'warning') as StatCardStatus,
         trend: { value: 3, isPositive: true, label: 'vs last week' },
       },
       {
         title: 'Last Incident',
         value: stats.lastIncident || 'None',
         icon: <Activity className="h-5 w-5" />,
-        status: 'neutral' as const,
+        status: 'neutral' as StatCardStatus,
       },
       {
         title: 'Response Time',
         value: '< 30s',
         icon: <Zap className="h-5 w-5" />,
-        status: 'healthy',
+        status: 'healthy' as StatCardStatus,
         trend: { value: 10, isPositive: true, label: 'faster' },
       },
     ],
@@ -347,7 +339,7 @@ export default function OptimizedSecurityDashboard() {
               icon={<AlertTriangle className="h-4 w-4" />}
               color="red"
             >
-              <StatCardGroup columns={4} gap="sm">
+              <StatCardGroup columns={4}>
                 {threatCardsData.map((card) => (
                   <EnhancedStatCard
                     key={card.title}
@@ -369,7 +361,7 @@ export default function OptimizedSecurityDashboard() {
               icon={<Eye className="h-4 w-4" />}
               color="blue"
             >
-              <StatCardGroup columns={4} gap="sm">
+              <StatCardGroup columns={4}>
                 {monitoringCardsData.map((card) => (
                   <EnhancedStatCard
                     key={card.title}

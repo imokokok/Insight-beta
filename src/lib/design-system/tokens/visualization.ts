@@ -304,7 +304,7 @@ export function getHealthColor(score: number): string {
  * 获取数据系列颜色
  */
 export function getSeriesColor(index: number): string {
-  return CHART_COLORS.series[index % CHART_COLORS.series.length];
+  return CHART_COLORS.series[index % CHART_COLORS.series.length] ?? CHART_COLORS.primary.DEFAULT;
 }
 
 /**

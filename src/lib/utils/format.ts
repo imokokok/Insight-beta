@@ -7,6 +7,28 @@
 import { logger } from '@/lib/logger';
 
 /**
+ * 格式化数字为本地化字符串
+ *
+ * @param value - 要格式化的数字
+ * @param decimals - 小数位数，默认为 2
+ * @returns 格式化后的数字字符串
+ *
+ * @example
+ * ```typescript
+ * formatNumber(1234.5678);     // Returns: '1,234.57'
+ * formatNumber(1234.5678, 3);  // Returns: '1,234.568'
+ * formatNumber(0.001);         // Returns: '0.00'
+ * ```
+ */
+export function formatNumber(value: number, decimals: number = 2): string {
+  if (!Number.isFinite(value)) return '—';
+  return value.toLocaleString('en-US', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+}
+
+/**
  * 格式化价格为美元字符串
  *
  * @param price - 价格数值
