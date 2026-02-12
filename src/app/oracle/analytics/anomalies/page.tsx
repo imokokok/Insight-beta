@@ -43,6 +43,18 @@ import { ToastContainer, useToast } from '@/components/common/DashboardToast';
 import { EmptyAnomalyState, EmptySearchState, LoadingOverlay } from '@/components/ui';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Badge } from '@/components/ui/badge';
+import {
+  Container,
+  DashboardGrid,
+  Stack,
+  Row,
+} from '@/components/common/Layout';
+import {
+  ResponsiveGrid,
+  ResponsivePadding,
+  MobileOnly,
+  DesktopOnly,
+} from '@/components/common/Responsive';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
