@@ -19,7 +19,7 @@ import {
   type RefreshStats,
   createEmptyRefreshStats,
   REFRESH_STRATEGIES,
-} from '@/config/refresh-strategy';
+} from '@/config/refreshStrategy';
 import { logger } from '@/lib/logger';
 
 interface UseAutoRefreshWithStatsOptions {

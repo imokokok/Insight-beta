@@ -10,18 +10,14 @@
 
 'use client';
 
-import type { ReactNode} from 'react';
-import { useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
+import { useMemo } from 'react';
 
 import {
-  useIsMobile,
-  useIsTablet,
-  useIsDesktop,
-  useIsLargeScreen,
   useDeviceType,
+  useViewportSize,
 } from '@/hooks/useMediaQuery';
-import type {
-  Breakpoint} from '@/lib/design-system/tokens/responsive';
+import type { Breakpoint } from '@/lib/design-system/tokens/responsive';
 import {
   getResponsiveGridCols,
   getResponsiveGap,
@@ -88,48 +84,28 @@ interface ResponsivePaddingProps {
 
 export function Show({ children, className, on, from, to }: ShowProps) {
   const deviceType = useDeviceType();
-  const isMobile = useIsMobile();
-  const isTablet = useIsTablet();
-  const isDesktop = useIsDesktop();
-  const isLarge = useIsLargeScreen();
+  const { width } = useViewportSize();
 
-  const [shouldShow, setShouldShow] = useState(false);
-
-  useEffect(() => {
-    let show = false;
+  const shouldShow = useMemo(() => {
+    if (!on && !from && !to) return true;
 
     if (on) {
       const devices = Array.isArray(on) ? on : [on];
-      show = devices.some((device) => {
-        switch (device) {
-          case 'mobile':
-            return isMobile;
-          case 'tablet':
-            return isTablet;
-          case 'desktop':
-            return isDesktop && !isLarge;
-          case 'large':
-            return isLarge;
-          default:
-            return false;
-        }
-      });
-    } else if (from || to) {
-      // 基于断点的显示逻辑
-      const width = window.innerWidth;
-      const fromWidth = from ? getBreakpointWidth(from) : 0;
-      const toWidth = to ? getBreakpointWidth(to) : Infinity;
-      show = width >= fromWidth && width < toWidth;
-    } else {
-      show = true;
+      return devices.includes(deviceType);
     }
 
-    setShouldShow(show);
-  }, [on, from, to, deviceType, isMobile, isTablet, isDesktop, isLarge]);
+    if (from || to) {
+      const fromWidth = from ? getBreakpointWidth(from) : 0;
+      const toWidth = to ? getBreakpointWidth(to) : Infinity;
+      return width >= fromWidth && width < toWidth;
+    }
+
+    return true;
+  }, [on, from, to, deviceType, width]);
 
   if (!shouldShow) return null;
 
-  return <div className={className}>{children}</div>;
+  return className ? <div className={className}>{children}</div> : <>{children}</>;
 }
 
 // ============================================================================
@@ -138,45 +114,28 @@ export function Show({ children, className, on, from, to }: ShowProps) {
 
 export function Hide({ children, className, on, from, to }: HideProps) {
   const deviceType = useDeviceType();
-  const isMobile = useIsMobile();
-  const isTablet = useIsTablet();
-  const isDesktop = useIsDesktop();
-  const isLarge = useIsLargeScreen();
+  const { width } = useViewportSize();
 
-  const [shouldHide, setShouldHide] = useState(false);
-
-  useEffect(() => {
-    let hide = false;
+  const shouldHide = useMemo(() => {
+    if (!on && !from && !to) return false;
 
     if (on) {
       const devices = Array.isArray(on) ? on : [on];
-      hide = devices.some((device) => {
-        switch (device) {
-          case 'mobile':
-            return isMobile;
-          case 'tablet':
-            return isTablet;
-          case 'desktop':
-            return isDesktop && !isLarge;
-          case 'large':
-            return isLarge;
-          default:
-            return false;
-        }
-      });
-    } else if (from || to) {
-      const width = window.innerWidth;
-      const fromWidth = from ? getBreakpointWidth(from) : 0;
-      const toWidth = to ? getBreakpointWidth(to) : Infinity;
-      hide = width >= fromWidth && width < toWidth;
+      return devices.includes(deviceType);
     }
 
-    setShouldHide(hide);
-  }, [on, from, to, deviceType, isMobile, isTablet, isDesktop, isLarge]);
+    if (from || to) {
+      const fromWidth = from ? getBreakpointWidth(from) : 0;
+      const toWidth = to ? getBreakpointWidth(to) : Infinity;
+      return width >= fromWidth && width < toWidth;
+    }
+
+    return false;
+  }, [on, from, to, deviceType, width]);
 
   if (shouldHide) return null;
 
-  return <div className={className}>{children}</div>;
+  return className ? <div className={className}>{children}</div> : <>{children}</>;
 }
 
 // ============================================================================

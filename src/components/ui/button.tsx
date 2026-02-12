@@ -6,8 +6,6 @@ import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
 
-// ==================== Button 变体定义 ====================
-
 const buttonVariants = cva(
   'relative inline-flex items-center justify-center overflow-hidden whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-95 disabled:pointer-events-none disabled:opacity-50',
   {
@@ -42,8 +40,6 @@ const buttonVariants = cva(
     },
   },
 );
-
-// ==================== 基础 Button 组件 ====================
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -81,7 +77,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={loading || props.disabled}
         {...props}
       >
-        {/* Ripple Effects */}
         {ripples.map((ripple) => (
           <span
             key={ripple.id}
@@ -97,7 +92,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           />
         ))}
 
-        {/* Loading Spinner */}
         {loading && (
           <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
         )}
@@ -113,82 +107,4 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 );
 Button.displayName = 'Button';
 
-// ==================== 图标按钮（带 Tooltip） ====================
-
-interface IconButtonProps extends ButtonProps {
-  icon: React.ReactNode;
-  tooltip?: string;
-}
-
-const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
-  ({ icon, tooltip, className, variant = 'ghost', size = 'icon', ...props }, ref) => {
-    const [showTooltip, setShowTooltip] = React.useState(false);
-
-    return (
-      <div className="relative inline-block">
-        <Button
-          ref={ref}
-          variant={variant}
-          size={size}
-          className={cn('rounded-full', className)}
-          onMouseEnter={() => setShowTooltip(true)}
-          onMouseLeave={() => setShowTooltip(false)}
-          {...props}
-        >
-          {icon}
-        </Button>
-
-        {/* Tooltip */}
-        {tooltip && (
-          <span
-            className={cn(
-              'absolute -bottom-8 left-1/2 z-50 -translate-x-1/2 whitespace-nowrap',
-              'rounded-md bg-gray-900 px-2 py-1 text-xs text-white',
-              'transition-all duration-200',
-              showTooltip
-                ? 'translate-y-0 opacity-100'
-                : 'pointer-events-none translate-y-1 opacity-0',
-            )}
-          >
-            {tooltip}
-          </span>
-        )}
-      </div>
-    );
-  },
-);
-IconButton.displayName = 'IconButton';
-
-// ==================== 操作按钮组 ====================
-
-interface ActionButtonGroupProps {
-  children: React.ReactNode;
-  className?: string;
-}
-
-function ActionButtonGroup({ children, className }: ActionButtonGroupProps) {
-  return (
-    <div
-      className={cn(
-        'inline-flex rounded-lg border border-purple-200 bg-white/50 p-1 backdrop-blur-sm',
-        className,
-      )}
-    >
-      {React.Children.map(children, (child, index) => (
-        <div
-          key={index}
-          className={cn(
-            index !== 0 && 'border-l border-purple-200',
-            '[&>button]:rounded-none [&>button]:border-0 [&>button]:bg-transparent [&>button]:shadow-none',
-            '[&>button]:hover:bg-purple-100/50',
-            'first:[&>button]:rounded-l-md last:[&>button]:rounded-r-md',
-          )}
-        >
-          {child}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-export { Button, IconButton, ActionButtonGroup, buttonVariants };
+export { Button, buttonVariants };

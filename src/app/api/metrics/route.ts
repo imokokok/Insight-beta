@@ -43,7 +43,7 @@ export async function GET() {
       ok: true,
       data: metrics,
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       {
         ok: false,

@@ -16,6 +16,7 @@ import React, { useState, useCallback, useMemo, createContext, useContext } from
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import type { Route } from 'next';
 
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -406,7 +407,7 @@ function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
           { }
           <TooltipTrigger asChild>
             <Link
-              href={item.href as any}
+              href={item.href as Route}
               onClick={handleClick}
               className={cn(
                 'flex items-center justify-center w-10 h-10 rounded-lg transition-all',
@@ -429,7 +430,7 @@ function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
     <div className="group">
       { }
       <Link
-        href={item.href as any}
+        href={item.href as Route}
         onClick={handleClick}
         className={cn(
           'flex items-center px-3 py-2 rounded-lg transition-all duration-200',
@@ -854,8 +855,7 @@ export function EnhancedSidebar({
                   <p className="text-sm font-medium text-gray-900 truncate">Admin User</p>
                   <p className="text-xs text-gray-500 truncate">admin@example.com</p>
                 </div>
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                <Link href={"/settings" as any}>
+                <Link href={"/settings" as Route}>
                   <Settings className="h-4 w-4 text-gray-400 hover:text-gray-600" />
                 </Link>
               </div>
@@ -864,7 +864,7 @@ export function EnhancedSidebar({
                 { }
                 <TooltipTrigger asChild>
                   <Link 
-                    href={"/settings" as any}
+                    href={"/settings" as Route}
                     className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 mx-auto"
                   >
                     <Settings className="h-5 w-5 text-gray-500" />

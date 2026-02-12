@@ -45,13 +45,13 @@ import { EmptyAnomalyState, EmptySearchState, RefreshStrategyVisualizer } from '
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { SearchInput } from '@/components/ui/enhanced-input';
+import { SearchInput } from '@/components/ui/EnhancedInput';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { ChartSkeleton, SkeletonList } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAutoRefreshLegacy, useDataCache } from '@/hooks';
-import { useAutoRefreshWithStats } from '@/hooks/use-auto-refresh-with-stats';
+import { useAutoRefreshWithStats } from '@/hooks/useAutoRefreshWithStats';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { logger } from '@/lib/logger';
 import { fetchApiData, cn, formatTime } from '@/lib/utils';
@@ -68,7 +68,7 @@ interface Anomaly {
   expectedPrice: number;
   deviation: number;
   confidence: number;
-  type: 'statistical' | 'seasonal' | 'multi_protocol' | 'trend_break';
+  type: 'statistical' | 'seasonal' | 'multiProtocol' | 'trendBreak';
   severity: 'low' | 'medium' | 'high' | 'critical';
   details: Record<string, unknown>;
 }
@@ -96,8 +96,8 @@ function AnomalyTypeBadge({ type }: { type: Anomaly['type'] }) {
   const config = {
     statistical: { label: 'Statistical', color: 'bg-blue-500', icon: BarChart3 },
     seasonal: { label: 'Seasonal', color: 'bg-purple-500', icon: TrendingUp },
-    multi_protocol: { label: 'Multi-Protocol', color: 'bg-amber-500', icon: Activity },
-    trend_break: { label: 'Trend Break', color: 'bg-red-500', icon: Zap },
+    multiProtocol: { label: 'Multi-Protocol', color: 'bg-amber-500', icon: Activity },
+    trendBreak: { label: 'Trend Break', color: 'bg-red-500', icon: Zap },
   };
 
   const { label, color, icon: Icon } = config[type] || config.statistical;
@@ -209,12 +209,12 @@ function AnomalyTypeDistribution({ stats }: { stats: AnomalyStats | null }) {
       color: 'bg-purple-500',
       description: 'Seasonal decomposition',
     },
-    multi_protocol: {
+    multiProtocol: {
       label: 'Multi-Protocol',
       color: 'bg-amber-500',
       description: 'Cross-protocol deviations',
     },
-    trend_break: {
+    trendBreak: {
       label: 'Trend Break',
       color: 'bg-red-500',
       description: 'Sudden trend changes',

@@ -48,9 +48,9 @@ import { EmptyDeviationState, EmptySearchState } from '@/components/common/Empty
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ErrorBanner } from '@/components/ui/error-banner';
+import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { Input } from '@/components/ui/input';
-import { RefreshStrategyVisualizer } from '@/components/ui/refresh-strategy-visualizer';
+import { RefreshStrategyVisualizer } from '@/components/ui/RefreshStrategyVisualizer';
 import {
   SkeletonList,
   StatCardSkeleton,
@@ -59,7 +59,7 @@ import {
 } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAutoRefreshLegacy, useDataCache } from '@/hooks';
-import { useAutoRefreshWithStats } from '@/hooks/use-auto-refresh-with-stats';
+import { useAutoRefreshWithStats } from '@/hooks/useAutoRefreshWithStats';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { logger } from '@/lib/logger';
 import { fetchApiData, cn, formatTime } from '@/lib/utils';

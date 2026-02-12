@@ -16,10 +16,10 @@ import type { ProtocolComparisonData } from '@/components/features/protocol/Prot
 import { ProtocolPageLayout } from '@/components/features/protocol/ProtocolPageLayout';
 import { Button, StatusBadge, RefreshStrategyVisualizer } from '@/components/ui';
 import { Card, CardContent } from '@/components/ui/card';
-import { ErrorBanner } from '@/components/ui/error-banner';
+import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { Progress } from '@/components/ui/progress';
 import { ChartSkeleton } from '@/components/ui/skeleton';
-import { useAutoRefreshWithStats } from '@/hooks/use-auto-refresh-with-stats';
+import { useAutoRefreshWithStats } from '@/hooks/useAutoRefreshWithStats';
 import { logger } from '@/lib/logger';
 import { getProtocolConfig } from '@/lib/protocol-config';
 import { ORACLE_PROTOCOLS, type OracleProtocol } from '@/lib/types';

@@ -21,9 +21,9 @@ import {
 import { EmptyEventsState } from '@/components/common/EmptyState';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { ErrorBanner as ErrorBannerUI } from '@/components/ui/error-banner';
-import { RefreshIndicator } from '@/components/ui/refresh-indicator';
-import { getRefreshStrategy } from '@/config/refresh-strategy';
+import { ErrorBanner as ErrorBannerUI } from '@/components/ui/ErrorBanner';
+import { RefreshIndicator } from '@/components/ui/RefreshIndicator';
+import { getRefreshStrategy } from '@/config/refreshStrategy';
 import { useIsMobile } from '@/hooks';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n/LanguageProvider';

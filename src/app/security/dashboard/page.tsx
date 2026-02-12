@@ -51,7 +51,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useIsMobile } from '@/hooks';
-import { useAutoRefreshWithStats } from '@/hooks/use-auto-refresh-with-stats';
+import { useAutoRefreshWithStats } from '@/hooks/useAutoRefreshWithStats';
 import { cn, formatNumber } from '@/lib/utils';
 
 const EnhancedAreaChart = dynamic(

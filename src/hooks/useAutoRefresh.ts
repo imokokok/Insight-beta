@@ -13,7 +13,7 @@ import {
   getRefreshStrategy,
   formatLastUpdated,
   type RefreshStrategyConfig,
-} from '@/config/refresh-strategy';
+} from '@/config/refreshStrategy';
 import { logger } from '@/lib/logger';
 
 interface UseAutoRefreshOptions {

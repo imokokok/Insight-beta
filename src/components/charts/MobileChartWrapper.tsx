@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 
 import { useSwipe, useIsMobile } from '@/hooks/useMediaQuery';
 import { cn } from '@/lib/utils';
@@ -12,6 +12,8 @@ interface MobileChartWrapperProps {
   onSwipeRight?: () => void;
   enableSwipe?: boolean;
 }
+
+const SWIPE_HINT_STORAGE_KEY = 'oracle-swipe-hint-dismissed';
 
 /**
  * 移动端图表包装组件
@@ -27,15 +29,43 @@ export function MobileChartWrapper({
   const containerRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   const [isDragging, setIsDragging] = useState(false);
+  const [showSwipeHint, setShowSwipeHint] = useState(false);
+  const [hasSwiped, setHasSwiped] = useState(false);
 
-  // 启用滑动手势
+  useEffect(() => {
+    if (isMobile && enableSwipe && (onSwipeLeft || onSwipeRight)) {
+      const dismissed = localStorage.getItem(SWIPE_HINT_STORAGE_KEY);
+      if (!dismissed) {
+        setShowSwipeHint(true);
+        const timer = setTimeout(() => {
+          setShowSwipeHint(false);
+        }, 4000);
+        return () => clearTimeout(timer);
+      }
+    }
+    return undefined;
+  }, [isMobile, enableSwipe, onSwipeLeft, onSwipeRight]);
+
+  const handleSwipeLeft = useCallback(() => {
+    setHasSwiped(true);
+    setShowSwipeHint(false);
+    localStorage.setItem(SWIPE_HINT_STORAGE_KEY, 'true');
+    onSwipeLeft?.();
+  }, [onSwipeLeft]);
+
+  const handleSwipeRight = useCallback(() => {
+    setHasSwiped(true);
+    setShowSwipeHint(false);
+    localStorage.setItem(SWIPE_HINT_STORAGE_KEY, 'true');
+    onSwipeRight?.();
+  }, [onSwipeRight]);
+
   useSwipe(containerRef, {
-    onSwipeLeft: enableSwipe ? onSwipeLeft : undefined,
-    onSwipeRight: enableSwipe ? onSwipeRight : undefined,
+    onSwipeLeft: enableSwipe ? handleSwipeLeft : undefined,
+    onSwipeRight: enableSwipe ? handleSwipeRight : undefined,
     threshold: 50,
   });
 
-  // 处理触摸事件以支持图表缩放
   const handleTouchStart = () => {
     setIsDragging(true);
   };
@@ -57,12 +87,32 @@ export function MobileChartWrapper({
       onTouchEnd={handleTouchEnd}
     >
       {children}
-      
-      {/* 移动端滑动提示 */}
-      {isMobile && enableSwipe && (onSwipeLeft || onSwipeRight) && (
-        <div className="pointer-events-none absolute inset-y-0 right-0 flex w-12 items-center justify-center bg-gradient-to-l from-white/50 to-transparent opacity-0 transition-opacity hover:opacity-100">
+
+      {isMobile && enableSwipe && (onSwipeLeft || onSwipeRight) && showSwipeHint && (
+        <div className="pointer-events-none absolute inset-y-0 right-0 flex w-16 items-center justify-center bg-gradient-to-l from-white/80 to-transparent animate-pulse">
+          <div className="flex flex-col items-center gap-1">
+            <svg
+              className="h-6 w-6 animate-bounce text-gray-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+            <span className="text-[10px] text-gray-400">滑动查看</span>
+          </div>
+        </div>
+      )}
+
+      {isMobile && enableSwipe && !hasSwiped && !showSwipeHint && (onSwipeLeft || onSwipeRight) && (
+        <div className="pointer-events-none absolute inset-y-0 right-0 flex w-8 items-center justify-center bg-gradient-to-l from-white/30 to-transparent opacity-60">
           <svg
-            className="h-6 w-6 text-gray-400"
+            className="h-4 w-4 text-gray-300"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"

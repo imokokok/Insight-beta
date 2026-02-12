@@ -13,9 +13,9 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { TimeRangeSelector, DashboardSection, DashboardGrid } from '@/components/dashboard/ProfessionalDashboard';
 import { AlertRulesManager } from '@/components/features/alert/AlertRulesManager';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { ErrorBanner } from '@/components/ui/error-banner';
-import { RefreshIndicator } from '@/components/ui/refresh-indicator';
-import { getRefreshStrategy } from '@/config/refresh-strategy';
+import { ErrorBanner } from '@/components/ui/ErrorBanner';
+import { RefreshIndicator } from '@/components/ui/RefreshIndicator';
+import { getRefreshStrategy } from '@/config/refreshStrategy';
 import {
   useIsMobile,
   useOracleIncidents,
@@ -56,7 +56,7 @@ import {
   type IncidentDraft,
   type IncidentWithAlerts,
   type OpsSeriesPoint,
-} from './alertsComponents';
+} from './AlertsComponents';
 
 import type { Route } from 'next';
 

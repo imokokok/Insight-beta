@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
 
 import { RefreshCw, Wifi, WifiOff, Clock } from 'lucide-react';
 
-import { formatLastUpdated, type RefreshStrategyConfig } from '@/config/refresh-strategy';
+import { formatLastUpdated, type RefreshStrategyConfig } from '@/config/refreshStrategy';
 import { cn } from '@/lib/utils';
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';

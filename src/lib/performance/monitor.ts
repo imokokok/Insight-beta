@@ -88,7 +88,7 @@ export function observeLCP(callback: (metric: WebVitalsMetric) => void): void {
     });
 
     observer.observe({ entryTypes: ['largest-contentful-paint'] });
-  } catch (e) {
+  } catch {
     logger.warn('LCP observation not supported');
   }
 }
@@ -117,7 +117,7 @@ export function observeFID(callback: (metric: WebVitalsMetric) => void): void {
     });
 
     observer.observe({ entryTypes: ['first-input'] });
-  } catch (e) {
+  } catch {
     logger.warn('FID observation not supported');
   }
 }
@@ -153,7 +153,7 @@ export function observeCLS(callback: (metric: WebVitalsMetric) => void): void {
     });
 
     observer.observe({ entryTypes: ['layout-shift'] });
-  } catch (e) {
+  } catch {
     logger.warn('CLS observation not supported');
   }
 }
@@ -182,7 +182,7 @@ export function observeFCP(callback: (metric: WebVitalsMetric) => void): void {
     });
 
     observer.observe({ entryTypes: ['paint'] });
-  } catch (e) {
+  } catch {
     logger.warn('FCP observation not supported');
   }
 }
@@ -206,7 +206,7 @@ export function observeTTFB(callback: (metric: WebVitalsMetric) => void): void {
         id: generateId(),
       });
     }
-  } catch (e) {
+  } catch {
     logger.warn('TTFB observation not supported');
   }
 }

@@ -129,7 +129,7 @@ export function MobileChainSwitcher() {
               message: targetChain.name,
             });
             setIsOpen(false);
-          } catch (addError) {
+          } catch {
             toast({
               type: 'error',
               title: t('wallet.networkAddFailed'),

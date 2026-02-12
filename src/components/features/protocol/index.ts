@@ -7,7 +7,6 @@
 export { PriceHistoryChart } from './PriceHistoryChart';
 export { ProtocolComparison } from './ProtocolComparison';
 export { PriceAlertSettings } from './PriceAlertSettings';
-export { ProtocolDetailCard } from './ProtocolDetailCard';
 export { ProtocolPageLayout } from './ProtocolPageLayout';
 export { FeedTable } from './FeedTable';
 export { HealthScore } from './HealthScore';

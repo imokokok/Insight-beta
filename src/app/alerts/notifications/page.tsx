@@ -6,7 +6,7 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { AlertHistory, NotificationChannelConfig } from '@/components/features/alerts';
 import type { ChannelConfig } from '@/components/features/alerts';
 import { LoadingOverlay, EmptyAlertsState } from '@/components/ui';
-import { ErrorBanner } from '@/components/ui/error-banner';
+import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { useI18n } from '@/i18n';
 import { logger } from '@/lib/logger';
 import type { AlertHistoryRecord, ChannelHealthStatus } from '@/server/alerts/notificationManager';

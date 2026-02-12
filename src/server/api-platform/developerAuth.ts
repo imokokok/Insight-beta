@@ -570,13 +570,13 @@ export class DeveloperManager {
       const total = parseInt(countResult.rows[0]?.total || '0');
 
       // 获取分页数据
-      let query_sql = `SELECT * FROM developers ${whereClause} ORDER BY created_at DESC`;
+      let querySql = `SELECT * FROM developers ${whereClause} ORDER BY created_at DESC`;
       if (pagination) {
-        query_sql += ` LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
+        querySql += ` LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
         values.push(pagination.limit, pagination.offset);
       }
 
-      const result = await query(query_sql, values);
+      const result = await query(querySql, values);
 
       const developers = result.rows.map((row) => ({
         id: row.id,

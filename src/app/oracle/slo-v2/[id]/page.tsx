@@ -9,6 +9,7 @@
 import { useState, useEffect } from 'react';
 
 import { useRouter } from 'next/navigation';
+import type { Route } from 'next';
 
 import {
   ArrowLeft,
@@ -47,7 +48,7 @@ interface SloReport {
   metricType: string;
   targetValue: number;
   currentCompliance: number;
-  status: 'compliant' | 'at_risk' | 'breached';
+  status: 'compliant' | 'atRisk' | 'breached';
   evaluationWindow: string;
   errorBudget: {
     total: number;
@@ -127,7 +128,7 @@ export default function SloDetailPage({ params }: { params: Promise<{ id: string
   };
 
   const goToEdit = () => {
-    router.push(`/oracle/slo-v2/${sloId}/edit` as any);
+    router.push(`/oracle/slo-v2/${sloId}/edit` as Route);
   };
 
   if (loading) {
@@ -201,7 +202,7 @@ export default function SloDetailPage({ params }: { params: Promise<{ id: string
           status={
             report.status === 'compliant'
               ? 'healthy'
-              : report.status === 'at_risk'
+              : report.status === 'atRisk'
                 ? 'warning'
                 : 'critical'
           }
@@ -413,7 +414,7 @@ function StatusBanner({
       title: 'SLO 合规',
       message: `当前合规率为 ${compliance.toFixed(2)}%，达到目标值 ${target}%`,
     },
-    at_risk: {
+    atRisk: {
       bg: 'bg-yellow-50 dark:bg-yellow-900/20',
       border: 'border-yellow-200 dark:border-yellow-800',
       icon: <AlertTriangle className="h-5 w-5 text-yellow-600" />,

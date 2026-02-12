@@ -44,7 +44,7 @@ export function useLongTaskMonitor(callback?: (duration: number) => void) {
       observer.observe({ entryTypes: ['longtask'] });
 
       return () => observer.disconnect();
-    } catch (e) {
+    } catch {
       // 浏览器不支持 longtask
       return;
     }

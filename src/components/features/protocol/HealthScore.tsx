@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 
-import { Activity, AlertTriangle, CheckCircle, Shield, TrendingUp } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Shield, TrendingUp } from 'lucide-react';
 
 import { useI18n } from '@/i18n';
 import { cn } from '@/lib/utils';
@@ -86,17 +86,14 @@ export function HealthScore({ score, size = 'md', showLabel = true, className }:
   const { container, stroke, text, icon } = sizeConfig[size];
   const Icon = config.icon;
 
-  // Calculate SVG circle properties
   const radius = 45;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (score / 100) * circumference;
 
   return (
     <div className={cn('flex items-center gap-4', className)}>
-      {/* Circular Progress */}
       <div className={cn('relative', container)}>
         <svg className="h-full w-full -rotate-90 transform" viewBox="0 0 100 100">
-          {/* Background circle */}
           <circle
             cx="50"
             cy="50"
@@ -106,7 +103,6 @@ export function HealthScore({ score, size = 'md', showLabel = true, className }:
             strokeWidth={stroke}
             className="text-muted/20"
           />
-          {/* Progress circle */}
           <circle
             cx="50"
             cy="50"
@@ -120,14 +116,12 @@ export function HealthScore({ score, size = 'md', showLabel = true, className }:
             className={cn('transition-all duration-1000 ease-out', config.color)}
           />
         </svg>
-        {/* Score text */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className={cn('font-bold', text)}>{score}</span>
           <span className="text-muted-foreground text-xs">/100</span>
         </div>
       </div>
 
-      {/* Label and description */}
       {showLabel && (
         <div className="space-y-1">
           <div className={cn('flex items-center gap-1.5 font-medium', config.color)}>
@@ -137,63 +131,6 @@ export function HealthScore({ score, size = 'md', showLabel = true, className }:
           <p className="text-muted-foreground text-sm">{config.description}</p>
         </div>
       )}
-    </div>
-  );
-}
-
-interface HealthScoreBadgeProps {
-  score: number;
-  className?: string;
-}
-
-export function HealthScoreBadge({ score, className }: HealthScoreBadgeProps) {
-  const { t } = useI18n();
-
-  const config = useMemo(() => {
-    if (score >= 90) {
-      return {
-        bgColor: 'bg-emerald-50',
-        textColor: 'text-emerald-700',
-        borderColor: 'border-emerald-200',
-        label: t('protocol:health.excellent'),
-      };
-    }
-    if (score >= 70) {
-      return {
-        bgColor: 'bg-blue-50',
-        textColor: 'text-blue-700',
-        borderColor: 'border-blue-200',
-        label: t('protocol:health.good'),
-      };
-    }
-    if (score >= 50) {
-      return {
-        bgColor: 'bg-amber-50',
-        textColor: 'text-amber-700',
-        borderColor: 'border-amber-200',
-        label: t('protocol:health.fair'),
-      };
-    }
-    return {
-      bgColor: 'bg-rose-50',
-      textColor: 'text-rose-700',
-      borderColor: 'border-rose-200',
-      label: t('protocol:health.poor'),
-    };
-  }, [score, t]);
-
-  return (
-    <div
-      className={cn(
-        'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium',
-        config.bgColor,
-        config.textColor,
-        config.borderColor,
-        className
-      )}
-    >
-      <Activity className="h-3 w-3" />
-      {score} - {config.label}
     </div>
   );
 }

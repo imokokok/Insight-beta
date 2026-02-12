@@ -1,4 +1,4 @@
-import type { IncidentWithAlerts } from '@/app/alerts/alertsComponents';
+import type { IncidentWithAlerts } from '@/app/alerts/AlertsComponents';
 import type { OpsMetrics, OpsMetricsSeriesPoint, RiskItem } from '@/lib/types/oracleTypes';
 import { buildApiUrl, normalizeListResponse } from '@/lib/utils';
 

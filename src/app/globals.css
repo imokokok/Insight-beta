@@ -1127,10 +1127,68 @@ body::before {
   .touch-pan-y {
     touch-action: pan-y;
   }
+
+  .touch-pan-x {
+    touch-action: pan-x;
+  }
+
+  .touch-pan-xy {
+    touch-action: pan-x pan-y;
+  }
+
+  .touch-gestures {
+    touch-action: pan-x pan-y pinch-zoom;
+  }
+
+  .touch-auto {
+    touch-action: auto;
+  }
   
-  /* 禁用双击缩放 */
-  * {
+  button,
+  [role="button"],
+  a,
+  input,
+  select,
+  textarea {
     touch-action: manipulation;
+  }
+}
+
+/* 横屏适配 */
+@media (orientation: landscape) and (max-height: 500px) {
+  .landscape-compact {
+    padding-top: max(env(safe-area-inset-top), 4px);
+    padding-bottom: max(env(safe-area-inset-bottom), 4px);
+  }
+  
+  .landscape-hide {
+    display: none !important;
+  }
+
+  .landscape-reduce-padding {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .landscape-reduce-gap {
+    gap: 0.5rem;
+  }
+
+  .landscape-scroll-x {
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+  }
+
+  .landscape-flex-row {
+    flex-direction: row !important;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 400px) {
+  .landscape-extra-compact {
+    padding-top: 2px;
+    padding-bottom: 2px;
   }
 }
 

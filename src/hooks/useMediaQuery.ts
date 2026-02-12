@@ -1,10 +1,48 @@
 'use client';
 
 import type React from 'react';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useSyncExternalStore } from 'react';
+
+const getSnapshot = (query: string): boolean => {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia(query).matches;
+};
+
+function createMediaQueryStore(query: string) {
+  const listeners = new Set<() => void>();
+  let snapshot = getSnapshot(query);
+
+  return {
+    getSnapshot: () => snapshot,
+    getServerSnapshot: () => false,
+    subscribe: (listener: () => void) => {
+      listeners.add(listener);
+      const media = typeof window !== 'undefined' ? window.matchMedia(query) : null;
+      const handleChange = () => {
+        snapshot = getSnapshot(query);
+        listeners.forEach(l => l());
+      };
+      media?.addEventListener('change', handleChange);
+      return () => {
+        listeners.delete(listener);
+        media?.removeEventListener('change', handleChange);
+      };
+    },
+  };
+}
+
+const mediaQueryStores = new Map<string, ReturnType<typeof createMediaQueryStore>>();
+
+function getMediaQueryStore(query: string) {
+  if (!mediaQueryStores.has(query)) {
+    mediaQueryStores.set(query, createMediaQueryStore(query));
+  }
+  return mediaQueryStores.get(query)!;
+}
 
 /**
  * 媒体查询 Hook - 用于响应式设计
+ * 使用 useSyncExternalStore 避免 SSR hydration mismatch
  *
  * @example
  * const isMobile = useMediaQuery('(max-width: 768px)');
@@ -12,27 +50,12 @@ import { useState, useEffect, useCallback } from 'react';
  * const isDesktop = useMediaQuery('(min-width: 1025px)');
  */
 export function useMediaQuery(query: string): boolean {
-  const [matches, setMatches] = useState(false);
-
-  useEffect(() => {
-    const media = window.matchMedia(query);
-
-    // 初始检查
-    setMatches(media.matches);
-
-    // 监听变化
-    const listener = (e: MediaQueryListEvent) => {
-      setMatches(e.matches);
-    };
-
-    media.addEventListener('change', listener);
-
-    return () => {
-      media.removeEventListener('change', listener);
-    };
-  }, [query]);
-
-  return matches;
+  const store = getMediaQueryStore(query);
+  return useSyncExternalStore(
+    store.subscribe,
+    store.getSnapshot,
+    store.getServerSnapshot
+  );
 }
 
 /**
@@ -55,26 +78,46 @@ export function useIsDesktop(): boolean {
 }
 
 /**
- * 视口尺寸 Hook
+ * 视口尺寸 Hook - 优化版本，避免 SSR 闪烁
  */
-export function useViewportSize(): { width: number; height: number } {
-  const [size, setSize] = useState({ width: 0, height: 0 });
+export function useWindowSize(): { width: number; height: number } {
+  const [size, setSize] = useState<{ width: number; height: number }>(() => {
+    if (typeof window === 'undefined') {
+      return { width: 1024, height: 768 };
+    }
+    return { width: window.innerWidth, height: window.innerHeight };
+  });
 
   useEffect(() => {
+    let rafId: number;
     const updateSize = () => {
-      setSize({
-        width: window.innerWidth,
-        height: window.innerHeight,
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        setSize({
+          width: window.innerWidth,
+          height: window.innerHeight,
+        });
       });
     };
 
     updateSize();
-    window.addEventListener('resize', updateSize);
+    window.addEventListener('resize', updateSize, { passive: true });
 
-    return () => window.removeEventListener('resize', updateSize);
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener('resize', updateSize);
+    };
   }, []);
 
   return size;
+}
+
+/**
+ * 视口尺寸 Hook (旧版本，保持向后兼容)
+ * @deprecated 使用 useWindowSize 替代
+ */
+export function useViewportSize(): { width: number; height: number } {
+  return useWindowSize();
 }
 
 // 设备类型

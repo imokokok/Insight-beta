@@ -48,7 +48,7 @@ export {
   getRequiredQueryParam,
   type ApiResponse,
   type ApiRouteHandler,
-} from './api-handler';
+} from './apiHandler';
 
 // 区块链工具
 export { getExplorerUrl, parseRpcUrls } from './blockchain';

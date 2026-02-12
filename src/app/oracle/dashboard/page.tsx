@@ -49,10 +49,10 @@ import {
   LoadingOverlay,
   RefreshStrategyVisualizer,
 } from '@/components/ui';
-import { ErrorBanner } from '@/components/ui/error-banner';
+import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useWebSocket, useIsMobile } from '@/hooks';
-import { useAutoRefreshWithStats } from '@/hooks/use-auto-refresh-with-stats';
+import { useAutoRefreshWithStats } from '@/hooks/useAutoRefreshWithStats';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { logger } from '@/lib/logger';
 import { fetchApiData, cn, formatNumber } from '@/lib/utils';
@@ -78,6 +78,14 @@ interface ChartDataPoint {
   timestamp: string;
   value: number;
   label: string;
+  [key: string]: unknown;
+}
+
+interface ComparisonDataPoint {
+  label: string;
+  latency: number;
+  accuracy: number;
+  uptime: number;
   [key: string]: unknown;
 }
 
@@ -190,7 +198,7 @@ export default function OptimizedOracleDashboard() {
 
   // Chart data states
   const [priceTrendData, setPriceTrendData] = useState<ChartDataPoint[]>([]);
-  const [comparisonData, setComparisonData] = useState<any[]>([]);
+  const [comparisonData, setComparisonData] = useState<ComparisonDataPoint[]>([]);
   const [latencyData, setLatencyData] = useState<ChartDataPoint[]>([]);
 
   // Page optimizations
