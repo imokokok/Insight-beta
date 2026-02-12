@@ -233,7 +233,7 @@ type DisputeReasonProps = {
 
 function DisputeReason({ dispute, t, locale }: DisputeReasonProps) {
   return (
-    <div className="border-primary/10/50 bg-primary/5/30 space-y-4 rounded-xl border p-4">
+    <div className="space-y-4 rounded-xl border border-primary/10 bg-primary/5 p-4">
       <div>
         <h4 className="text-[var(--foreground)]/80 mb-2 flex items-center gap-2 text-sm font-semibold">
           <MessageSquare size={16} className="text-primary/40" />
@@ -242,7 +242,7 @@ function DisputeReason({ dispute, t, locale }: DisputeReasonProps) {
         <p className="text-primary-darker/80 text-sm leading-relaxed">{dispute.disputeReason}</p>
       </div>
 
-      <div className="border-primary/10/50 flex items-center justify-between border-t pt-3 text-sm">
+      <div className="flex items-center justify-between border-t border-primary/10 pt-3 text-sm">
         <div className="flex flex-col">
           <span className="text-xs text-primary/40">{t('disputes.disputer')}</span>
           <span className="font-mono text-primary">{truncateAddress(dispute.disputer)}</span>
@@ -350,7 +350,7 @@ function DisputeCard({
   isMobile,
 }: DisputeCardProps & { isMobile: boolean }) {
   return (
-    <Card className="border-primary/10/60 bg-white/60 shadow-sm transition-all hover:shadow-md">
+    <Card className="border-primary/10 bg-white/60 shadow-sm transition-all hover:shadow-md">
       <CardHeader className="pb-3 sm:pb-4">
         <DisputeHeader dispute={dispute} t={t} isMobile={isMobile} />
       </CardHeader>

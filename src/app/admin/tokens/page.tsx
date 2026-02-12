@@ -152,7 +152,7 @@ export default function AdminTokensPage() {
       )}
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="border-primary/10/60 bg-white/60 shadow-sm lg:col-span-1">
+        <Card className="border-primary/10 bg-white/60 shadow-sm lg:col-span-1">
           <CardHeader className="pb-4">
             <div className="text-sm font-semibold text-[var(--foreground)]">
               {t('adminTokens.create')}
@@ -258,7 +258,7 @@ export default function AdminTokensPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-primary/10/60 bg-white/60 shadow-sm lg:col-span-2">
+        <Card className="border-primary/10 bg-white/60 shadow-sm lg:col-span-2">
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between gap-3">
               <div className="text-sm font-semibold text-[var(--foreground)]">

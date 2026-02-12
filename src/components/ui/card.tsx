@@ -75,7 +75,7 @@ const CardEnhanced = React.forwardRef<HTMLDivElement, CardEnhancedProps>(
       <motion.div
         ref={ref}
         className={cn(
-          'border-primary/10/50 relative overflow-hidden rounded-2xl border bg-white/70 p-6 backdrop-blur-xl',
+          'relative overflow-hidden rounded-2xl border border-primary/10 bg-white/70 p-6 backdrop-blur-xl',
           'transition-all duration-300',
           hover &&
             'hover:border-primary300 hover:bg-white/90 hover:shadow-xl hover:shadow-primary-500/10',
@@ -145,7 +145,7 @@ function InteractiveStatCard({
   return (
     <motion.div
       className={cn(
-        'border-primary/10/50 relative cursor-pointer overflow-hidden rounded-2xl border bg-white/70 p-6 backdrop-blur-xl',
+        'relative cursor-pointer overflow-hidden rounded-2xl border border-primary/10 bg-white/70 p-6 backdrop-blur-xl',
         'transition-all duration-300',
         'hover:border-primary300 hover:bg-white/90 hover:shadow-lg hover:shadow-primary-500/10',
         className,
@@ -170,7 +170,7 @@ function InteractiveStatCard({
           <span className="text-sm font-medium text-primary/70">{title}</span>
           {icon && (
             <motion.div
-              className="bg-primary/10/50 rounded-xl p-2 text-primary"
+              className="rounded-xl bg-primary/10 p-2 text-primary"
               animate={{ scale: isHovered ? 1.1 : 1, rotate: isHovered ? 5 : 0 }}
               transition={{ duration: 0.2 }}
             >
@@ -182,7 +182,7 @@ function InteractiveStatCard({
         {/* Value */}
         <div className="mb-2">
           {loading ? (
-            <div className="bg-primary/20/50 h-8 w-24 animate-pulse rounded" />
+            <div className="h-8 w-24 animate-pulse rounded bg-primary/20" />
           ) : (
             <motion.span
               className="text-3xl font-bold text-gray-900"

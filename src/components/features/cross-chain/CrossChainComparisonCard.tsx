@@ -32,7 +32,7 @@ interface CrossChainComparisonCardProps {
 
 const chainColors: Record<string, { bg: string; border: string; text: string }> = {
   ethereum: { bg: 'bg-blue-500/10', border: 'border-blue-500/30', text: 'text-blue-500' },
-  polygon: { bg: 'bg-primary/50/10', border: 'border-primary/30', text: 'text-primary' },
+  polygon: { bg: 'bg-primary/10', border: 'border-primary/30', text: 'text-primary' },
   bsc: { bg: 'bg-yellow-500/10', border: 'border-yellow-500/30', text: 'text-yellow-500' },
   avalanche: { bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-500' },
   arbitrum: { bg: 'bg-blue-600/10', border: 'border-blue-600/30', text: 'text-blue-600' },

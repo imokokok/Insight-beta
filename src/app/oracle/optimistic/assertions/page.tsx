@@ -201,7 +201,7 @@ export default function UMAAssertionsPage() {
                         className={cn(
                           'rounded px-2 py-1 text-xs',
                           assertion.version === 'v3'
-                            ? 'bg-primary/50/20 text-primary/40'
+                            ? 'bg-primary/20 text-primary/40'
                             : 'bg-blue-500/20 text-blue-400',
                         )}
                       >

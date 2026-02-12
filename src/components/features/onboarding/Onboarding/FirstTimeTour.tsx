@@ -481,7 +481,7 @@ function TargetHighlight({ target }: { target: string }) {
           repeat: Infinity,
           ease: 'easeInOut',
         }}
-        className="bg-primary/50/10 pointer-events-none absolute rounded-lg"
+        className="pointer-events-none absolute rounded-lg bg-primary/10"
         style={{
           top: rect.top - 4,
           left: rect.left - 4,

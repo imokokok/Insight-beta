@@ -143,7 +143,7 @@ function DisputeCard({
     <Link href={href as Route} className="block h-full">
       <div
         className={cn(
-          'glass-card hover:border-primary/20/50 group relative rounded-xl border border-white/60 p-3 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-500/10 sm:p-5',
+          'glass-card group relative rounded-xl border border-white/60 p-3 transition-all duration-300 hover:-translate-y-1 hover:border-primary/20 hover:shadow-xl hover:shadow-primary-500/10 sm:p-5',
           viewMode === 'grid'
             ? 'h-full'
             : 'flex flex-col gap-4 sm:gap-6 md:flex-row md:items-center',

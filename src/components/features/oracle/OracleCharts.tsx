@@ -25,7 +25,7 @@ import { cn, fetchApiData, formatPercent as formatPercentUtil } from '@/shared/u
 
 const getTabBorder = (activeTab: TabKey) =>
   activeTab === 'activity'
-    ? 'border-primary/10/20'
+    ? 'border-primary/20'
     : activeTab === 'tvs'
       ? 'border-pink-100/20'
       : activeTab === 'sync'

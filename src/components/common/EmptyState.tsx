@@ -125,7 +125,7 @@ const variantStyles = {
     iconBg: 'bg-primary/10',
     iconColor: 'text-primary',
     borderColor: 'border-primary/20',
-    bgColor: 'bg-primary/5/30',
+    bgColor: 'bg-primary/5',
     gradient: 'from-primary-50/50 to-white',
     buttonColor: 'bg-primary hover:bg-primary-700',
   },
@@ -483,15 +483,15 @@ export function EmptyWatchlistState({
       }
     >
       <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-        <div className="bg-primary/10/50 rounded-lg p-3">
+        <div className="rounded-lg bg-primary/10 p-3">
           <div className="text-primary-dark text-lg font-semibold">100+</div>
           <div className="text-xs text-primary">Assets</div>
         </div>
-        <div className="bg-primary/10/50 rounded-lg p-3">
+        <div className="rounded-lg bg-primary/10 p-3">
           <div className="text-primary-dark text-lg font-semibold">6</div>
           <div className="text-xs text-primary">Protocols</div>
         </div>
-        <div className="bg-primary/10/50 rounded-lg p-3">
+        <div className="rounded-lg bg-primary/10 p-3">
           <div className="text-primary-dark text-lg font-semibold">Real-time</div>
           <div className="text-xs text-primary">Updates</div>
         </div>
@@ -622,7 +622,7 @@ export function EmptyProtocolsState({
     >
       <div className="mt-4 grid grid-cols-2 gap-3 text-center sm:grid-cols-4">
         {['Chainlink', 'Pyth', 'Band', 'API3'].map((protocol) => (
-          <div key={protocol} className="bg-primary/10/50 rounded-lg px-3 py-2">
+          <div key={protocol} className="rounded-lg bg-primary/10 px-3 py-2">
             <span className="text-primary-dark text-sm font-medium">{protocol}</span>
           </div>
         ))}

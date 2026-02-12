@@ -115,7 +115,7 @@ export function Leaderboard({ instanceId }: { instanceId?: string | null }) {
       <div
         className={cn(
           'glass-card relative overflow-hidden rounded-2xl p-6 transition-all duration-500',
-          activeTab === 'asserters' ? 'border-primary/10/20' : 'border-rose-100/20',
+          activeTab === 'asserters' ? 'border-primary/20' : 'border-rose-100/20',
         )}
       >
         {/* Artistic Background Mesh - Dynamic based on tab */}

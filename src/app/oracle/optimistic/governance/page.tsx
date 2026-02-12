@@ -127,7 +127,7 @@ export default function GovernancePage() {
       case 'Succeeded':
         return 'bg-green-500/20 text-green-400';
       case 'Executed':
-        return 'bg-primary/50/20 text-primary/40';
+        return 'bg-primary/20 text-primary/40';
       case 'Defeated':
         return 'bg-red-500/20 text-red-400';
       case 'Canceled':

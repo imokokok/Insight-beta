@@ -194,7 +194,7 @@ export default function UMATvlPage() {
 
                   <div className="flex items-center justify-between rounded-lg bg-white/5 p-4">
                     <div className="flex items-center gap-3">
-                      <div className="bg-primary/50/20 flex h-10 w-10 items-center justify-center rounded-full">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20">
                         <DollarSign className="h-5 w-5 text-primary/40" />
                       </div>
                       <div>

@@ -745,7 +745,7 @@ export default function AlertsPageClient() {
       )}
 
       <div className="grid gap-3 sm:gap-4 lg:grid-cols-3">
-        <Card className="border-primary/10/60 bg-white/60 shadow-sm lg:col-span-2">
+        <Card className="border-primary/10 bg-white/60 shadow-sm lg:col-span-2">
           <CardHeader className="pb-3 sm:pb-4">
             <div className="flex flex-col gap-2 sm:gap-3">
               <div className="flex items-center justify-between">
@@ -912,7 +912,7 @@ export default function AlertsPageClient() {
           </CardContent>
         </Card>
 
-        <Card className="border-primary/10/60 bg-white/60 shadow-sm">
+        <Card className="border-primary/10 bg-white/60 shadow-sm">
           <CardHeader className="pb-4">
             <div className="text-sm font-semibold text-[var(--foreground)]">
               {t('alerts.rules')}
@@ -941,7 +941,7 @@ export default function AlertsPageClient() {
 
             <div
               id="incidents-panel"
-              className="border-primary/10/60 rounded-xl border bg-white/50 p-3"
+              className="rounded-xl border border-primary/10 bg-white/50 p-3"
             >
               <div className="text-sm font-semibold text-[var(--foreground)]">Incidents</div>
               {incidentsError ? (
@@ -994,7 +994,7 @@ export default function AlertsPageClient() {
               )}
             </div>
 
-            <div className="border-primary/10/60 rounded-xl border bg-white/50 p-3">
+            <div className="rounded-xl border border-primary/10 bg-white/50 p-3">
               <div className="text-sm font-semibold text-[var(--foreground)]">
                 {t('oracle.alerts.topRisks')}
               </div>
@@ -1029,7 +1029,7 @@ export default function AlertsPageClient() {
                     return (
                       <div
                         key={`${r.entityType}:${r.entityId}:${idx}`}
-                        className="border-primary/10/60 rounded-xl border bg-white/60 p-3"
+                        className="rounded-xl border border-primary/10 bg-white/60 p-3"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0">

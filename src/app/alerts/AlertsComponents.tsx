@@ -245,7 +245,7 @@ export function AlertCard({
   attachInstanceId,
 }: AlertCardProps) {
   return (
-    <Card className="border-primary/10/60 bg-white/60 shadow-sm">
+    <Card className="border-primary/10 bg-white/60 shadow-sm">
       <CardHeader className="pb-3">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="flex gap-3">
@@ -447,7 +447,7 @@ export function SloStatusCard({
   canAdmin,
 }: SloStatusCardProps) {
   return (
-    <div id="slo-panel" className="border-primary/10/60 mt-3 rounded-lg border bg-white/60 p-2">
+    <div id="slo-panel" className="mt-3 rounded-lg border border-primary/10 bg-white/60 p-2">
       <div className="flex items-start justify-between gap-2">
         <div className="text-primary-dark/70 text-[11px]">SLO status</div>
         <span
@@ -462,7 +462,7 @@ export function SloStatusCard({
       </div>
       <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
         {sloEntries.map((entry) => (
-          <div key={entry.key} className="border-primary/10/60 rounded-lg border bg-white/60 p-2">
+          <div key={entry.key} className="rounded-lg border border-primary/10 bg-white/60 p-2">
             <div className="text-primary-dark/70 text-[11px]">{entry.label}</div>
             <div className="text-sm font-semibold text-[var(--foreground)]">
               {formatSloValue(entry.key, entry.current)} /{' '}
@@ -531,7 +531,7 @@ export function OpsMetricsCard({
   onScrollToIncidents,
 }: OpsMetricsCardProps) {
   return (
-    <div className="border-primary/10/60 rounded-xl border bg-white/50 p-3">
+    <div className="rounded-xl border border-primary/10 bg-white/50 p-3">
       <div className="flex items-start justify-between gap-2">
         <div className="text-sm font-semibold text-[var(--foreground)]">
           {t('oracle.alerts.opsTitle')} (7d)
@@ -554,7 +554,7 @@ export function OpsMetricsCard({
       ) : (
         <>
           <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-            <div className="border-primary/10/60 rounded-lg border bg-white/60 p-2">
+            <div className="rounded-lg border border-primary/10 bg-white/60 p-2">
               <div className="text-primary-dark/70 text-[11px]">
                 {t('oracle.alerts.opsAlertsOpen')}
               </div>
@@ -562,7 +562,7 @@ export function OpsMetricsCard({
                 {opsMetrics.alerts.open}
               </div>
             </div>
-            <div className="border-primary/10/60 rounded-lg border bg-white/60 p-2">
+            <div className="rounded-lg border border-primary/10 bg-white/60 p-2">
               <div className="text-primary-dark/70 text-[11px]">
                 {t('oracle.alerts.opsAlertsAcknowledged')}
               </div>
@@ -570,13 +570,13 @@ export function OpsMetricsCard({
                 {opsMetrics.alerts.acknowledged}
               </div>
             </div>
-            <div className="border-primary/10/60 rounded-lg border bg-white/60 p-2">
+            <div className="rounded-lg border border-primary/10 bg-white/60 p-2">
               <div className="text-primary-dark/70 text-[11px]">{t('oracle.alerts.opsMtta')}</div>
               <div className="text-sm font-semibold text-[var(--foreground)]">
                 {formatDurationMinutes((opsMetrics.alerts.mttaMs ?? 0) / 60_000)}
               </div>
             </div>
-            <div className="border-primary/10/60 rounded-lg border bg-white/60 p-2">
+            <div className="rounded-lg border border-primary/10 bg-white/60 p-2">
               <div className="text-primary-dark/70 text-[11px]">
                 {t('oracle.alerts.opsAlertMttr')}
               </div>
@@ -584,7 +584,7 @@ export function OpsMetricsCard({
                 {formatDurationMinutes((opsMetrics.alerts.mttrMs ?? 0) / 60_000)}
               </div>
             </div>
-            <div className="border-primary/10/60 rounded-lg border bg-white/60 p-2">
+            <div className="rounded-lg border border-primary/10 bg-white/60 p-2">
               <div className="text-primary-dark/70 text-[11px]">
                 {t('oracle.alerts.opsIncidentsOpen')}
               </div>
@@ -592,7 +592,7 @@ export function OpsMetricsCard({
                 {opsMetrics.incidents.open}
               </div>
             </div>
-            <div className="border-primary/10/60 rounded-lg border bg-white/60 p-2">
+            <div className="rounded-lg border border-primary/10 bg-white/60 p-2">
               <div className="text-primary-dark/70 text-[11px]">
                 {t('oracle.alerts.opsIncidentMttr')}
               </div>
@@ -602,7 +602,7 @@ export function OpsMetricsCard({
             </div>
           </div>
 
-          <div className="border-primary/10/60 mt-3 rounded-lg border bg-white/60 p-2">
+          <div className="mt-3 rounded-lg border border-primary/10 bg-white/60 p-2">
             <div className="flex items-start justify-between gap-2">
               <div className="text-primary-dark/70 text-[11px]">{t('oracle.alerts.opsTrend')}</div>
               <div className="text-primary-dark/70 text-[11px]">7d</div>
@@ -740,7 +740,7 @@ export function IncidentCard({
   attachInstanceId,
 }: IncidentCardProps) {
   return (
-    <div className="border-primary/10/60 rounded-xl border bg-white/60 p-3">
+    <div className="rounded-xl border border-primary/10 bg-white/60 p-3">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="truncate text-sm font-semibold text-[var(--foreground)]">
@@ -861,7 +861,7 @@ export function IncidentCard({
       ) : null}
 
       {editingIncidentId === incident.id && incidentDraft ? (
-        <div className="border-primary/10/60 mt-3 space-y-2 rounded-xl border bg-white/60 p-3">
+        <div className="mt-3 space-y-2 rounded-xl border border-primary/10 bg-white/60 p-3">
           <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
             <label className="space-y-1">
               <div className="text-[var(--foreground)]/80 text-[11px] font-semibold">Title</div>
@@ -988,7 +988,7 @@ export function IncidentCard({
             {incident.alerts.map((alert) => (
               <div
                 key={alert.id}
-                className="border-primary/10/60 flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-white/60 px-2 py-1.5 text-[11px]"
+                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-primary/10 bg-white/60 px-2 py-1.5 text-[11px]"
               >
                 <div className="min-w-0">
                   <span className="font-mono text-gray-500">#{alert.id}</span>{' '}

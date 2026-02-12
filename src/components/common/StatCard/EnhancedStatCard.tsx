@@ -608,7 +608,7 @@ export const DashboardStatsSection = memo(function DashboardStatsSection({
     blue: { bg: 'bg-blue-50/50', border: 'border-blue-200/50', icon: 'text-blue-600' },
     green: { bg: 'bg-emerald-50/50', border: 'border-emerald-200/50', icon: 'text-emerald-600' },
     amber: { bg: 'bg-amber-50/50', border: 'border-amber-200/50', icon: 'text-amber-600' },
-    purple: { bg: 'bg-primary/5/50', border: 'border-primary/20/50', icon: 'text-primary' },
+    purple: { bg: 'bg-primary/5', border: 'border-primary/20', icon: 'text-primary' },
     red: { bg: 'bg-rose-50/50', border: 'border-rose-200/50', icon: 'text-rose-600' },
   }[color];
 
