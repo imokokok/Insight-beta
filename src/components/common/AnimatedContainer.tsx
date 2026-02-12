@@ -10,6 +10,7 @@
 
 'use client';
 
+import React from 'react';
 import { motion, AnimatePresence, Variants, Transition } from 'framer-motion';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import {

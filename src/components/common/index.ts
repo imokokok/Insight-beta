@@ -39,6 +39,7 @@ export { ChartCard, ChartCardSkeleton } from './ChartCard';
 // ==================== 页面布局组件 ====================
 export { PageHeader, PageHeaderSkeleton } from './PageHeader';
 export { Sidebar } from './Sidebar';
+export { EnhancedSidebar, defaultNavConfig } from './EnhancedSidebar';
 
 // ==================== 交互组件 ====================
 export { CopyButton } from './CopyButton';
@@ -114,3 +115,62 @@ export { LanguageSwitcher } from './LanguageSwitcher';
 
 // ==================== 移动端优化组件 ====================
 export { MobileBottomNav } from './MobileBottomNav';
+
+// ==================== 响应式组件 ====================
+export {
+  Show,
+  Hide,
+  ResponsiveContainer,
+  ResponsiveGrid,
+  ResponsiveText,
+  ResponsivePadding,
+  MobileOnly,
+  TabletOnly,
+  DesktopOnly,
+  NotMobile,
+  NotDesktop,
+  ResponsiveStack,
+  ResponsiveImage,
+  ResponsiveTable,
+  TouchOnly,
+  MouseOnly,
+  ReducedMotion,
+  NoReducedMotion,
+} from './Responsive';
+
+// ==================== 布局组件 ====================
+export {
+  Container,
+  ResponsiveGrid as LayoutGrid,
+  DensityLayout,
+  Stack,
+  Row,
+  SidebarLayout,
+  SplitLayout,
+  PageLayout,
+  DashboardGrid,
+  ContentSection,
+  Spacer,
+  Inset,
+  DensityProvider,
+  useDensity,
+} from './Layout';
+
+// ==================== 动画容器组件 ====================
+export {
+  AnimatedContainer,
+  AnimatedItem,
+  ScrollReveal,
+  PageTransition,
+  StaggerContainer,
+  StaggerItem,
+  HoverScale,
+  FadeIn,
+  SlideIn,
+  ScaleIn,
+  AnimatedList,
+  AnimatedGrid,
+  AnimatedGridItem,
+  PresenceAnimation,
+  NumberCounter,
+} from './AnimatedContainer';

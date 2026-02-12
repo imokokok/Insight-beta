@@ -31,9 +31,9 @@ import { MobileLayout } from '@/components/layout/MobileLayout';
 
 import type { Metadata } from 'next';
 
-const Sidebar = lazy(() =>
-  import('@/components/common/Sidebar').then((mod) => ({
-    default: mod.Sidebar,
+const EnhancedSidebar = lazy(() =>
+  import('@/components/common/EnhancedSidebar').then((mod) => ({
+    default: mod.EnhancedSidebar,
   })),
 );
 const LanguageSwitcher = lazy(() =>
@@ -152,10 +152,10 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                   <div className="blob-4" />
                 </div>
                 <div className="flex min-h-screen-dynamic">
-                  <Suspense fallback={<LoadingPlaceholder className="hidden w-64 md:block" />}>
-                    <Sidebar />
+                  <Suspense fallback={<LoadingPlaceholder className="hidden md:block" style={{ width: 280 }} />}>
+                    <EnhancedSidebar />
                   </Suspense>
-                  <main id="main-content" className="flex-1 transition-all duration-300 md:ml-64">
+                  <main id="main-content" className="flex-1 transition-all duration-300 md:ml-[280px]">
                     <div className="container mx-auto max-w-7xl p-3 pb-24 md:p-4 md:pb-4 lg:p-8">
                       <div className="sticky top-0 z-20 mb-4 flex flex-wrap items-center justify-between gap-3 md:mb-6">
                         <h2 className="text-xl font-bold text-purple-950 md:text-2xl">

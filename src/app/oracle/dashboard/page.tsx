@@ -57,6 +57,20 @@ import {
   ScrollReveal,
   FadeIn,
 } from '@/components/common/AnimatedContainer';
+import {
+  Container,
+  DashboardGrid,
+  ContentSection,
+  Stack,
+  Row,
+} from '@/components/common/Layout';
+import {
+  ResponsiveGrid,
+  ResponsiveText,
+  ResponsivePadding,
+  MobileOnly,
+  DesktopOnly,
+} from '@/components/common/Responsive';
 import { useWebSocket, useIsMobile } from '@/hooks';
 import { useAutoRefresh } from '@/hooks/use-auto-refresh';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
