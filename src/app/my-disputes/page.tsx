@@ -18,6 +18,22 @@ import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage } from '@/i18n/translations';
 import type { OracleConfig, OracleInstance, DisputeStatus } from '@/lib/types/oracleTypes';
 import { fetchApiData } from '@/lib/utils';
+import {
+  StaggerContainer,
+  StaggerItem,
+  FadeIn,
+} from '@/components/common/AnimatedContainer';
+import {
+  Container,
+  Stack,
+  Row,
+} from '@/components/common/Layout';
+import {
+  ResponsiveGrid,
+  ResponsivePadding,
+  MobileOnly,
+  DesktopOnly,
+} from '@/components/common/Responsive';
 
 import type { Route } from 'next';
 

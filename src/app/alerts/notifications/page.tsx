@@ -10,6 +10,22 @@ import { useI18n } from '@/i18n';
 import { logger } from '@/lib/logger';
 import type { AlertHistoryRecord, ChannelHealthStatus } from '@/server/alerts/notificationManager';
 import type { ChannelConfig } from '@/components/features/alerts';
+import {
+  StaggerContainer,
+  StaggerItem,
+  FadeIn,
+} from '@/components/common/AnimatedContainer';
+import {
+  Container,
+  Stack,
+  Row,
+} from '@/components/common/Layout';
+import {
+  ResponsiveGrid,
+  ResponsivePadding,
+  MobileOnly,
+  DesktopOnly,
+} from '@/components/common/Responsive';
 
 /**
  * 通知渠道配置页面
