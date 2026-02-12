@@ -112,8 +112,13 @@ export class GasPriceService {
   }
 
   private addToHistory(data: GasPriceData): void {
-    const levels: ('slow' | 'average' | 'fast' | 'fastest')[] = ['slow', 'average', 'fast', 'fastest'];
-    
+    const levels: ('slow' | 'average' | 'fast' | 'fastest')[] = [
+      'slow',
+      'average',
+      'fast',
+      'fastest',
+    ];
+
     for (const level of levels) {
       const price = this.getGasPriceByLevel(data, level);
       this.history.push({
@@ -132,7 +137,7 @@ export class GasPriceService {
 
   private updateProviderStats(provider: GasProvider, success: boolean, latencyMs: number): void {
     let stats = this.providerStats.get(provider);
-    
+
     if (!stats) {
       stats = {
         totalRequests: 0,
@@ -146,7 +151,7 @@ export class GasPriceService {
     }
 
     stats.totalRequests++;
-    
+
     if (success) {
       stats.totalSuccesses++;
       stats.consecutiveFailures = 0;
@@ -165,7 +170,7 @@ export class GasPriceService {
 
   private async fetchWithRetry<T>(
     fn: () => Promise<T>,
-    provider: GasProvider
+    provider: GasProvider,
   ): Promise<{ data: T; retryCount: number }> {
     const { maxRetries, initialDelayMs, maxDelayMs, backoffMultiplier } = this.config.retryConfig;
     let lastError: Error | undefined;
@@ -184,7 +189,7 @@ export class GasPriceService {
         return { data, retryCount: attempt };
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
-        
+
         if (attempt < maxRetries) {
           logger.warn('Gas price fetch failed, retrying...', {
             provider,
@@ -193,7 +198,7 @@ export class GasPriceService {
             error: lastError.message,
             nextRetryInMs: delay,
           });
-          
+
           await this.sleep(delay);
           delay = Math.min(delay * backoffMultiplier, maxDelayMs);
         }
@@ -204,7 +209,7 @@ export class GasPriceService {
   }
 
   private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   async getGasPrice(chain: SupportedChain, provider?: GasProvider): Promise<GasPriceData> {
@@ -217,29 +222,29 @@ export class GasPriceService {
     }
 
     const providers = this.config.providers;
-    
+
     for (const p of providers) {
       try {
         const { data: response, retryCount } = await this.fetchWithRetry(
           () => this.fetchFromProvider(chain, p),
-          p
+          p,
         );
 
         if (response.success && response.data) {
           this.setCache(response.data);
           this.addToHistory(response.data);
           this.updateProviderStats(p, true, response.latencyMs);
-          
+
           logger.info('Gas price fetched successfully', {
             chain,
             provider: p,
             latencyMs: response.latencyMs,
             retryCount,
           });
-          
+
           return response.data;
         }
-        
+
         this.updateProviderStats(p, false, response.latencyMs);
       } catch (error) {
         logger.error('Failed to fetch gas price from provider', {
@@ -261,7 +266,9 @@ export class GasPriceService {
     throw new Error(`Failed to fetch gas price for ${chain} from all providers`);
   }
 
-  async getGasPricesForChains(chains: SupportedChain[]): Promise<Map<SupportedChain, GasPriceData>> {
+  async getGasPricesForChains(
+    chains: SupportedChain[],
+  ): Promise<Map<SupportedChain, GasPriceData>> {
     const results = new Map<SupportedChain, GasPriceData>();
 
     const promises = chains.map(async (chain) => {
@@ -311,15 +318,15 @@ export class GasPriceService {
 
   async estimateCrossChainGasCost(
     fromChain: SupportedChain,
-    toChain: SupportedChain
+    toChain: SupportedChain,
   ): Promise<CrossChainGasEstimation> {
     const [fromGasPrice, toGasPrice] = await Promise.all([
       this.getGasPrice(fromChain),
       this.getGasPrice(toChain),
     ]);
 
-    const fromGasCost = this.convertToUsd(fromGasPrice.average * 21000 / 1e9, fromChain);
-    const toGasCost = this.convertToUsd(toGasPrice.average * 21000 / 1e9, toChain);
+    const fromGasCost = this.convertToUsd((fromGasPrice.average * 21000) / 1e9, fromChain);
+    const toGasCost = this.convertToUsd((toGasPrice.average * 21000) / 1e9, toChain);
     const bridgeCost = this.getBridgeCost(fromChain, toChain);
 
     return {
@@ -334,34 +341,36 @@ export class GasPriceService {
     };
   }
 
-  getHistory(chain?: SupportedChain, provider?: GasProvider, limit: number = 100): GasPriceHistoryEntry[] {
+  getHistory(
+    chain?: SupportedChain,
+    provider?: GasProvider,
+    limit: number = 100,
+  ): GasPriceHistoryEntry[] {
     let filtered = this.history;
 
     if (chain) {
-      filtered = filtered.filter(h => h.chain === chain);
+      filtered = filtered.filter((h) => h.chain === chain);
     }
     if (provider) {
-      filtered = filtered.filter(h => h.provider === provider);
+      filtered = filtered.filter((h) => h.provider === provider);
     }
 
-    return filtered
-      .slice(-limit)
-      .map(h => ({
-        chain: h.chain,
-        provider: h.provider,
-        priceLevel: h.priceLevel,
-        price: h.price,
-        timestamp: new Date(h.timestamp),
-      }));
+    return filtered.slice(-limit).map((h) => ({
+      chain: h.chain,
+      provider: h.provider,
+      priceLevel: h.priceLevel,
+      price: h.price,
+      timestamp: new Date(h.timestamp),
+    }));
   }
 
   getStatistics(
     chain: SupportedChain,
     provider: GasProvider,
-    priceLevel: 'slow' | 'average' | 'fast' | 'fastest'
+    priceLevel: 'slow' | 'average' | 'fast' | 'fastest',
   ): GasPriceStatistics {
     const entries = this.history.filter(
-      h => h.chain === chain && h.provider === provider && h.priceLevel === priceLevel
+      (h) => h.chain === chain && h.provider === provider && h.priceLevel === priceLevel,
     );
 
     if (entries.length === 0) {
@@ -385,11 +394,11 @@ export class GasPriceService {
       };
     }
 
-    const prices = entries.map(e => e.price).sort((a, b) => a - b);
+    const prices = entries.map((e) => e.price).sort((a, b) => a - b);
     const sum = prices.reduce((a, b) => a + b, 0);
     const avg = sum / prices.length;
     const median = prices[Math.floor(prices.length / 2)] ?? avg;
-    
+
     const variance = prices.reduce((acc, p) => acc + Math.pow(p - avg, 2), 0) / prices.length;
     const stdDev = Math.sqrt(variance);
 
@@ -420,11 +429,11 @@ export class GasPriceService {
 
   getTrend(
     chain: SupportedChain,
-    priceLevel: 'slow' | 'average' | 'fast' | 'fastest'
+    priceLevel: 'slow' | 'average' | 'fast' | 'fastest',
   ): GasPriceTrend {
-    const entries = this.history.filter(
-      h => h.chain === chain && h.priceLevel === priceLevel
-    ).slice(-168);
+    const entries = this.history
+      .filter((h) => h.chain === chain && h.priceLevel === priceLevel)
+      .slice(-168);
 
     if (entries.length < 2) {
       return {
@@ -441,7 +450,7 @@ export class GasPriceService {
       };
     }
 
-    const prices = entries.map(e => e.price);
+    const prices = entries.map((e) => e.price);
     const currentPrice = prices[prices.length - 1]!;
     const previousPrice = prices[0]!;
 
@@ -485,13 +494,13 @@ export class GasPriceService {
     const results: ProviderHealth[] = [];
 
     for (const [provider, stats] of this.providerStats.entries()) {
-      const successRate = stats.totalRequests > 0 
-        ? (stats.totalSuccesses / stats.totalRequests) * 100 
-        : 100;
-      
-      const avgLatency = stats.latencies.length > 0
-        ? stats.latencies.reduce((a, b) => a + b, 0) / stats.latencies.length
-        : 0;
+      const successRate =
+        stats.totalRequests > 0 ? (stats.totalSuccesses / stats.totalRequests) * 100 : 100;
+
+      const avgLatency =
+        stats.latencies.length > 0
+          ? stats.latencies.reduce((a, b) => a + b, 0) / stats.latencies.length
+          : 0;
 
       let status: 'healthy' | 'degraded' | 'unhealthy' = 'healthy';
       if (successRate < 50 || stats.consecutiveFailures >= 5) {
@@ -536,7 +545,10 @@ export class GasPriceService {
     logger.info('Gas price cache warmed up', { chains: targetChains });
   }
 
-  private async fetchFromProvider(chain: SupportedChain, provider: GasProvider): Promise<GasProviderResponse> {
+  private async fetchFromProvider(
+    chain: SupportedChain,
+    provider: GasProvider,
+  ): Promise<GasProviderResponse> {
     const startTime = Date.now();
 
     try {
@@ -772,7 +784,10 @@ export class GasPriceService {
     return chainIds[chain] ?? null;
   }
 
-  private getGasPriceByLevel(gasPriceData: GasPriceData, level: 'slow' | 'average' | 'fast' | 'fastest'): number {
+  private getGasPriceByLevel(
+    gasPriceData: GasPriceData,
+    level: 'slow' | 'average' | 'fast' | 'fastest',
+  ): number {
     switch (level) {
       case 'slow':
         return gasPriceData.slow;
@@ -842,7 +857,9 @@ export class GasPriceService {
   }
 
   private getFallbackEstimation(chain: SupportedChain): GasPriceData {
-    const fallbackPrices: Partial<Record<SupportedChain, { slow: number; average: number; fast: number }>> = {
+    const fallbackPrices: Partial<
+      Record<SupportedChain, { slow: number; average: number; fast: number }>
+    > = {
       ethereum: { slow: 15e9, average: 20e9, fast: 30e9 },
       bsc: { slow: 3e9, average: 5e9, fast: 10e9 },
       polygon: { slow: 30e9, average: 50e9, fast: 100e9 },

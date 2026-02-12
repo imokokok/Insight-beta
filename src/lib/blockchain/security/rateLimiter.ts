@@ -67,9 +67,12 @@ export class SlidingWindowRateLimiter {
 
   constructor(config: Partial<RateLimitConfig> = {}) {
     this.config = {
-      maxRequestsPerSecond: config.maxRequestsPerSecond ?? RATE_LIMIT_DEFAULTS.USER_MAX_REQUESTS_PER_SECOND,
-      maxRequestsPerMinute: config.maxRequestsPerMinute ?? RATE_LIMIT_DEFAULTS.USER_MAX_REQUESTS_PER_MINUTE,
-      maxRequestsPerHour: config.maxRequestsPerHour ?? RATE_LIMIT_DEFAULTS.USER_MAX_REQUESTS_PER_HOUR,
+      maxRequestsPerSecond:
+        config.maxRequestsPerSecond ?? RATE_LIMIT_DEFAULTS.USER_MAX_REQUESTS_PER_SECOND,
+      maxRequestsPerMinute:
+        config.maxRequestsPerMinute ?? RATE_LIMIT_DEFAULTS.USER_MAX_REQUESTS_PER_MINUTE,
+      maxRequestsPerHour:
+        config.maxRequestsPerHour ?? RATE_LIMIT_DEFAULTS.USER_MAX_REQUESTS_PER_HOUR,
       burstSize: config.burstSize ?? 20,
     };
 
@@ -198,11 +201,7 @@ export class SlidingWindowRateLimiter {
     record.timestamps = record.timestamps.filter((t) => t > hourAgo);
   }
 
-  private createDenyResult(
-    now: number,
-    windowMs: number,
-    _windowName: string,
-  ): RateLimitResult {
+  private createDenyResult(now: number, windowMs: number, _windowName: string): RateLimitResult {
     return {
       allowed: false,
       remaining: 0,
@@ -324,10 +323,7 @@ export class TokenBucketRateLimiter {
     return bucket;
   }
 
-  private refillTokens(
-    bucket: { tokens: number; lastRefill: number },
-    now: number,
-  ): void {
+  private refillTokens(bucket: { tokens: number; lastRefill: number }, now: number): void {
     const elapsed = now - bucket.lastRefill;
     const tokensToAdd = (elapsed / 1000) * this.refillRate;
 
@@ -449,9 +445,7 @@ export class MultiTierRateLimiter {
 // 工厂函数
 // ============================================================================
 
-export function createRateLimiter(
-  config?: Partial<RateLimitConfig>,
-): SlidingWindowRateLimiter {
+export function createRateLimiter(config?: Partial<RateLimitConfig>): SlidingWindowRateLimiter {
   return new SlidingWindowRateLimiter(config);
 }
 

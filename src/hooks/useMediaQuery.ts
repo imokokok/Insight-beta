@@ -20,7 +20,7 @@ function createMediaQueryStore(query: string) {
       const media = typeof window !== 'undefined' ? window.matchMedia(query) : null;
       const handleChange = () => {
         snapshot = getSnapshot(query);
-        listeners.forEach(l => l());
+        listeners.forEach((l) => l());
       };
       media?.addEventListener('change', handleChange);
       return () => {
@@ -51,11 +51,7 @@ function getMediaQueryStore(query: string) {
  */
 export function useMediaQuery(query: string): boolean {
   const store = getMediaQueryStore(query);
-  return useSyncExternalStore(
-    store.subscribe,
-    store.getSnapshot,
-    store.getServerSnapshot
-  );
+  return useSyncExternalStore(store.subscribe, store.getSnapshot, store.getServerSnapshot);
 }
 
 /**
@@ -162,7 +158,10 @@ interface SwipeCallbacks {
   threshold?: number;
 }
 
-export function useSwipe(elementRef: React.RefObject<HTMLElement | null>, callbacks: SwipeCallbacks) {
+export function useSwipe(
+  elementRef: React.RefObject<HTMLElement | null>,
+  callbacks: SwipeCallbacks,
+) {
   const [swipeState, setSwipeState] = useState<SwipeState>({
     startX: 0,
     startY: 0,
@@ -175,48 +174,51 @@ export function useSwipe(elementRef: React.RefObject<HTMLElement | null>, callba
   const handleTouchStart = useCallback((e: TouchEvent) => {
     const touch = e.touches[0];
     if (!touch) return;
-    
-    setSwipeState(prev => ({
+
+    setSwipeState((prev) => ({
       ...prev,
       startX: touch.clientX,
       startY: touch.clientY,
     }));
   }, []);
 
-  const handleTouchEnd = useCallback((e: TouchEvent) => {
-    setSwipeState(prev => {
-      const touch = e.changedTouches[0];
-      if (!touch) return prev;
-      
-      const endX = touch.clientX;
-      const endY = touch.clientY;
-      
-      const diffX = endX - prev.startX;
-      const diffY = endY - prev.startY;
+  const handleTouchEnd = useCallback(
+    (e: TouchEvent) => {
+      setSwipeState((prev) => {
+        const touch = e.changedTouches[0];
+        if (!touch) return prev;
 
-      // 水平滑动
-      if (Math.abs(diffX) > Math.abs(diffY)) {
-        if (Math.abs(diffX) > threshold) {
-          if (diffX > 0) {
-            onSwipeRight?.();
-          } else {
-            onSwipeLeft?.();
+        const endX = touch.clientX;
+        const endY = touch.clientY;
+
+        const diffX = endX - prev.startX;
+        const diffY = endY - prev.startY;
+
+        // 水平滑动
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+          if (Math.abs(diffX) > threshold) {
+            if (diffX > 0) {
+              onSwipeRight?.();
+            } else {
+              onSwipeLeft?.();
+            }
+          }
+        } else {
+          // 垂直滑动
+          if (Math.abs(diffY) > threshold) {
+            if (diffY > 0) {
+              onSwipeDown?.();
+            } else {
+              onSwipeUp?.();
+            }
           }
         }
-      } else {
-        // 垂直滑动
-        if (Math.abs(diffY) > threshold) {
-          if (diffY > 0) {
-            onSwipeDown?.();
-          } else {
-            onSwipeUp?.();
-          }
-        }
-      }
 
-      return { ...prev, endX, endY };
-    });
-  }, [threshold, onSwipeLeft, onSwipeRight, onSwipeUp, onSwipeDown]);
+        return { ...prev, endX, endY };
+      });
+    },
+    [threshold, onSwipeLeft, onSwipeRight, onSwipeUp, onSwipeDown],
+  );
 
   useEffect(() => {
     const element = elementRef.current;

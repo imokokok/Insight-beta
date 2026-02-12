@@ -11,9 +11,7 @@ import { logger } from '@/shared/logger';
  */
 export function isMobile(): boolean {
   if (typeof window === 'undefined') return false;
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-    navigator.userAgent,
-  );
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 
 /**
@@ -21,7 +19,9 @@ export function isMobile(): boolean {
  */
 export function isIOS(): boolean {
   if (typeof window === 'undefined') return false;
-  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as { MSStream?: unknown }).MSStream;
+  return (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as { MSStream?: unknown }).MSStream
+  );
 }
 
 /**
@@ -86,5 +86,3 @@ export async function checkForUpdates(): Promise<boolean> {
     return false;
   }
 }
-
-

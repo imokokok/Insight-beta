@@ -1,6 +1,6 @@
 /**
  * Manipulation Detection Service
- * 
+ *
  * 价格操纵检测服务
  */
 

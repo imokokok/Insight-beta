@@ -645,7 +645,7 @@ export function logSecurityEvent(
   actor: string,
   details: Record<string, unknown>,
   severity: AuditSeverity = 'info',
-  success: boolean = true
+  success: boolean = true,
 ): void {
   const logger = getAuditLogger();
   logger.log({
@@ -665,7 +665,7 @@ export function logAdminAction(
   action: AuditAction,
   actor: string,
   details: Record<string, unknown>,
-  success: boolean = true
+  success: boolean = true,
 ): void {
   const logger = getAuditLogger();
   logger.log({
@@ -684,7 +684,7 @@ export function logAdminAction(
 export function logSecurityAlert(
   action: AuditAction,
   details: Record<string, unknown>,
-  errorMessage: string
+  errorMessage: string,
 ): void {
   const logger = getAuditLogger();
   logger.log({
@@ -701,7 +701,9 @@ export function logSecurityAlert(
 /**
  * 获取审计统计
  */
-export function getAuditStatistics(filter: Omit<AuditFilter, 'limit' | 'offset' | 'search'> = {}): AuditStatistics {
+export function getAuditStatistics(
+  filter: Omit<AuditFilter, 'limit' | 'offset' | 'search'> = {},
+): AuditStatistics {
   const logger = getAuditLogger();
   return logger.getStatistics(filter);
 }
@@ -709,7 +711,9 @@ export function getAuditStatistics(filter: Omit<AuditFilter, 'limit' | 'offset' 
 /**
  * 导出审计日志
  */
-export async function exportAuditLogs(options: AuditExportOptions = { format: 'json' }): Promise<string> {
+export async function exportAuditLogs(
+  options: AuditExportOptions = { format: 'json' },
+): Promise<string> {
   const logger = getAuditLogger();
   return logger.exportLogs(options);
 }
@@ -733,4 +737,3 @@ export function getAuditMemoryUsage(): {
   const logger = getAuditLogger();
   return logger.getMemoryUsage();
 }
-

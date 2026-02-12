@@ -157,7 +157,7 @@ export function decryptString(jsonString: string | null | undefined): string | n
  */
 export function redactSensitiveData<T extends Record<string, unknown>>(
   data: T,
-  sensitiveFields: string[]
+  sensitiveFields: string[],
 ): T {
   const result = { ...data } as Record<string, unknown>;
 
@@ -206,7 +206,3 @@ export function getEncryptionStatus(): {
     version: 2,
   };
 }
-
-
-
-

@@ -364,7 +364,10 @@ export class CallbackAttackProtector {
   /**
    * 验证回调
    */
-  validateCallback(operationId: string, callback: string): {
+  validateCallback(
+    operationId: string,
+    callback: string,
+  ): {
     valid: boolean;
     reason?: string;
   } {
@@ -427,19 +430,13 @@ export function getGlobalReentrancyGuard(): ReentrancyGuard {
 // ============================================================================
 
 export function protectedOperation(key?: string) {
-  return function (
-    _target: unknown,
-    propertyKey: string,
-    descriptor: PropertyDescriptor,
-  ) {
+  return function (_target: unknown, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
     const guard = getGlobalReentrancyGuard();
     const lockKey = key || `${String(propertyKey)}`;
 
     descriptor.value = async function (...args: unknown[]) {
-      return guard.withLock(lockKey, String(propertyKey), () =>
-        originalMethod.apply(this, args),
-      );
+      return guard.withLock(lockKey, String(propertyKey), () => originalMethod.apply(this, args));
     };
 
     return descriptor;
@@ -450,9 +447,7 @@ export function protectedOperation(key?: string) {
 // 工厂函数
 // ============================================================================
 
-export function createReentrancyGuard(
-  config?: Partial<ReentrancyConfig>,
-): ReentrancyGuard {
+export function createReentrancyGuard(config?: Partial<ReentrancyConfig>): ReentrancyGuard {
   return new ReentrancyGuard(config);
 }
 

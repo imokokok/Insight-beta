@@ -41,5 +41,3 @@ export function calculateStdDev(values: number[], mean?: number): number {
     values.reduce((sum, val) => sum + Math.pow(val - calculatedMean, 2), 0) / values.length;
   return Math.sqrt(variance);
 }
-
-

@@ -103,7 +103,7 @@ function DropdownMenuItem({ className, inset, ...props }: DropdownMenuItemProps)
 }
 
 function DropdownMenuSeparator({ className }: { className?: string }) {
-  return <div className={cn('bg-border -mx-1 my-1 h-px', className)} />;
+  return <div className={cn('-mx-1 my-1 h-px bg-border', className)} />;
 }
 
 export {

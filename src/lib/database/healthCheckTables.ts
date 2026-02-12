@@ -235,7 +235,9 @@ export const ALL_HEALTH_CHECK_TABLES = [
 // Migration Functions
 // ============================================================================
 
-export async function createHealthCheckTables(query: (sql: string) => Promise<unknown>): Promise<void> {
+export async function createHealthCheckTables(
+  query: (sql: string) => Promise<unknown>,
+): Promise<void> {
   const tables = [
     { name: 'oracle_health_checks', sql: ORACLE_HEALTH_CHECKS_TABLE },
     { name: 'alert_rules', sql: ALERT_RULES_TABLE },

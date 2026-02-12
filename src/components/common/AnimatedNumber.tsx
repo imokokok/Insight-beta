@@ -48,13 +48,13 @@ export function AnimatedNumber({
   useEffect(() => {
     if (value !== displayValue) {
       setPreviousValue(displayValue);
-      
+
       // Calculate difference
       const difference = value - displayValue;
       if (showDiff && Math.abs(difference) > 0.000001) {
         setDiff(difference);
         setIsHighlighted(true);
-        
+
         // Clear highlight after duration
         setTimeout(() => {
           setIsHighlighted(false);
@@ -71,10 +71,10 @@ export function AnimatedNumber({
       const animate = (currentTime: number) => {
         const elapsed = currentTime - startTime;
         const progress = Math.min(elapsed / (duration * 1000), 1);
-        
+
         // Easing function (ease-out-cubic)
         const easeOut = 1 - Math.pow(1 - progress, 3);
-        
+
         const currentValue = startValue + diffValue * easeOut;
         setDisplayValue(currentValue);
 
@@ -141,7 +141,7 @@ export function AnimatedNumber({
         className={cn(
           'inline-block transition-colors duration-300',
           isHighlighted && highlightClassName,
-          className
+          className,
         )}
         animate={{
           scale: isHighlighted ? [1, 1.05, 1] : 1,
@@ -161,9 +161,9 @@ export function AnimatedNumber({
             exit={{ opacity: 0, y: -10, scale: 0.8 }}
             transition={{ duration: 0.3 }}
             className={cn(
-              'inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full',
+              'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
               getDiffColor(diff),
-              diff > 0 ? 'bg-emerald-50' : diff < 0 ? 'bg-rose-50' : 'bg-gray-50'
+              diff > 0 ? 'bg-emerald-50' : diff < 0 ? 'bg-rose-50' : 'bg-gray-50',
             )}
           >
             <span>{getDiffIcon(diff)}</span>
@@ -198,17 +198,14 @@ export function PriceChangeIndicator({
     <motion.div
       initial={false}
       animate={{
-        backgroundColor: isPositive 
+        backgroundColor: isPositive
           ? ['rgba(16, 185, 129, 0)', 'rgba(16, 185, 129, 0.1)', 'rgba(16, 185, 129, 0)']
           : isNeutral
-          ? ['rgba(107, 114, 128, 0)', 'rgba(107, 114, 128, 0.1)', 'rgba(107, 114, 128, 0)']
-          : ['rgba(244, 63, 94, 0)', 'rgba(244, 63, 94, 0.1)', 'rgba(244, 63, 94, 0)'],
+            ? ['rgba(107, 114, 128, 0)', 'rgba(107, 114, 128, 0.1)', 'rgba(107, 114, 128, 0)']
+            : ['rgba(244, 63, 94, 0)', 'rgba(244, 63, 94, 0.1)', 'rgba(244, 63, 94, 0)'],
       }}
       transition={{ duration: 1 }}
-      className={cn(
-        'inline-flex items-center gap-1.5 px-2 py-1 rounded-lg',
-        className
-      )}
+      className={cn('inline-flex items-center gap-1.5 rounded-lg px-2 py-1', className)}
     >
       <motion.span
         key={isPositive ? 'up' : isNeutral ? 'neutral' : 'down'}
@@ -217,16 +214,16 @@ export function PriceChangeIndicator({
         transition={{ type: 'spring', stiffness: 500, damping: 30 }}
         className={cn(
           'text-lg',
-          isPositive ? 'text-emerald-500' : isNeutral ? 'text-gray-400' : 'text-rose-500'
+          isPositive ? 'text-emerald-500' : isNeutral ? 'text-gray-400' : 'text-rose-500',
         )}
       >
         {isPositive ? '↗' : isNeutral ? '→' : '↘'}
       </motion.span>
-      
+
       <span
         className={cn(
           'font-medium',
-          isPositive ? 'text-emerald-600' : isNeutral ? 'text-gray-500' : 'text-rose-600'
+          isPositive ? 'text-emerald-600' : isNeutral ? 'text-gray-500' : 'text-rose-600',
         )}
       >
         {isPositive ? '+' : ''}
@@ -270,7 +267,7 @@ export function FlashHighlight({
       className={cn(
         'inline-block rounded px-1 transition-colors duration-300',
         isFlashing && flashClassName,
-        className
+        className,
       )}
       animate={{
         scale: isFlashing ? [1, 1.02, 1] : 1,

@@ -57,11 +57,7 @@ export interface CursorPaginatedResult<T> {
 // 分页工具函数
 // ============================================================================
 
-export function createPaginationMeta(
-  page: number,
-  limit: number,
-  total: number,
-): PaginationMeta {
+export function createPaginationMeta(page: number, limit: number, total: number): PaginationMeta {
   const totalPages = Math.ceil(total / limit);
 
   return {

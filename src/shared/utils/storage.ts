@@ -84,7 +84,7 @@ async function getEncryptionKey(): Promise<CryptoKey> {
     keyData,
     { name: KEY_DERIVATION_ALGORITHM },
     false,
-    ['deriveKey']
+    ['deriveKey'],
   );
 
   // 使用固定的盐值（实际应用中应该为每个用户生成唯一的盐值）
@@ -101,7 +101,7 @@ async function getEncryptionKey(): Promise<CryptoKey> {
     baseKey,
     { name: ENCRYPTION_ALGORITHM, length: 256 },
     false,
-    ['encrypt', 'decrypt']
+    ['encrypt', 'decrypt'],
   );
 }
 
@@ -118,11 +118,7 @@ async function encryptData(text: string): Promise<string> {
     const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
 
     // 加密数据
-    const encrypted = await crypto.subtle.encrypt(
-      { name: ENCRYPTION_ALGORITHM, iv },
-      key,
-      data
-    );
+    const encrypted = await crypto.subtle.encrypt({ name: ENCRYPTION_ALGORITHM, iv }, key, data);
 
     // 组合 IV 和加密数据
     const combined = new Uint8Array(iv.length + encrypted.byteLength);
@@ -148,7 +144,7 @@ async function decryptData(encryptedBase64: string): Promise<string> {
     const combined = new Uint8Array(
       atob(encryptedBase64)
         .split('')
-        .map((c) => c.charCodeAt(0))
+        .map((c) => c.charCodeAt(0)),
     );
 
     // 提取 IV 和加密数据
@@ -159,7 +155,7 @@ async function decryptData(encryptedBase64: string): Promise<string> {
     const decrypted = await crypto.subtle.decrypt(
       { name: ENCRYPTION_ALGORITHM, iv },
       key,
-      encrypted
+      encrypted,
     );
 
     const decoder = new TextDecoder();
@@ -202,7 +198,7 @@ function validateKey(key: string): boolean {
 export async function getStorageItem<T>(
   key: string,
   defaultValue: T,
-  options: StorageOptions = {}
+  options: StorageOptions = {},
 ): Promise<T> {
   const { encrypt = false, storage = 'local' } = options;
 
@@ -270,7 +266,7 @@ export async function getStorageItem<T>(
 export async function setStorageItem<T>(
   key: string,
   value: T,
-  options: StorageOptions = {}
+  options: StorageOptions = {},
 ): Promise<boolean> {
   const { encrypt = false, expires, storage = 'local' } = options;
 
@@ -308,10 +304,7 @@ export async function setStorageItem<T>(
 /**
  * 从存储安全地移除数据
  */
-export function removeStorageItem(
-  key: string,
-  storage: 'local' | 'session' = 'local'
-): boolean {
+export function removeStorageItem(key: string, storage: 'local' | 'session' = 'local'): boolean {
   if (!validateKey(key)) {
     logger.warn(`Invalid storage key: ${key}`);
     return false;
@@ -340,7 +333,7 @@ export function removeStorageItem(
 export async function setSensitiveItem<T>(
   key: string,
   value: T,
-  options: Omit<StorageOptions, 'encrypt'> = {}
+  options: Omit<StorageOptions, 'encrypt'> = {},
 ): Promise<boolean> {
   return setStorageItem(key, value, { ...options, encrypt: true });
 }
@@ -348,7 +341,7 @@ export async function setSensitiveItem<T>(
 export async function getSensitiveItem<T>(
   key: string,
   defaultValue: T,
-  options: Omit<StorageOptions, 'encrypt'> = {}
+  options: Omit<StorageOptions, 'encrypt'> = {},
 ): Promise<T> {
   return getStorageItem(key, defaultValue, { ...options, encrypt: true });
 }
@@ -396,7 +389,7 @@ export async function clearOracleFilters(): Promise<boolean> {
  * 检查是否为默认 Oracle 实例
  */
 export async function isDefaultOracleInstance(instanceId?: string): Promise<boolean> {
-  const id = instanceId ?? await getOracleInstanceId();
+  const id = instanceId ?? (await getOracleInstanceId());
   return id === DEFAULT_INSTANCE_ID;
 }
 
@@ -407,25 +400,16 @@ export async function isDefaultOracleInstance(instanceId?: string): Promise<bool
 const ADMIN_TOKEN_EXPIRY = 24 * 60 * 60 * 1000; // 24小时
 
 export async function getAdminToken(): Promise<string | null> {
-  return getSensitiveItem<string | null>(
-    STORAGE_KEYS.ADMIN_TOKEN,
-    null,
-    { storage: 'session' }
-  );
+  return getSensitiveItem<string | null>(STORAGE_KEYS.ADMIN_TOKEN, null, { storage: 'session' });
 }
 
 export async function setAdminToken(token: string): Promise<boolean> {
-  return setSensitiveItem(
-    STORAGE_KEYS.ADMIN_TOKEN,
-    token,
-    { storage: 'session', expires: ADMIN_TOKEN_EXPIRY }
-  );
+  return setSensitiveItem(STORAGE_KEYS.ADMIN_TOKEN, token, {
+    storage: 'session',
+    expires: ADMIN_TOKEN_EXPIRY,
+  });
 }
 
 export async function clearAdminToken(): Promise<boolean> {
   return removeStorageItem(STORAGE_KEYS.ADMIN_TOKEN, 'session');
 }
-
-
-
-

@@ -4,11 +4,7 @@
  * 提供统一的类型系统，支持所有预言机协议
  */
 
-import type {
-  OracleProtocol,
-  SupportedChain,
-  UnifiedPriceFeed,
-} from '@/types/unifiedOracleTypes';
+import type { OracleProtocol, SupportedChain, UnifiedPriceFeed } from '@/types/unifiedOracleTypes';
 
 import type { Address } from 'viem';
 
@@ -256,13 +252,9 @@ export function calculateDataFreshness(
  * @param thresholdSeconds - 过期阈值（秒）
  * @returns 是否过期
  */
-export function isPriceStale(
-  timestamp: Date | number,
-  thresholdSeconds: number = 300,
-): boolean {
+export function isPriceStale(timestamp: Date | number, thresholdSeconds: number = 300): boolean {
   const timestampMs = timestamp instanceof Date ? timestamp.getTime() : timestamp;
   const now = Date.now();
   const stalenessSeconds = Math.floor((now - timestampMs) / 1000);
   return stalenessSeconds > thresholdSeconds;
 }
-

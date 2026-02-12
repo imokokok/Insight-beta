@@ -9,11 +9,7 @@ import {
   createSingletonSyncManager,
   type SyncManagerFactoryConfig,
 } from './SyncManagerFactory';
-import type {
-  SupportedChain,
-  OracleProtocol,
-  UnifiedPriceFeed,
-} from '@/types/unifiedOracleTypes';
+import type { SupportedChain, OracleProtocol, UnifiedPriceFeed } from '@/types/unifiedOracleTypes';
 import type { IOracleClient } from '@/services/oracle/sync/BaseSyncManager';
 
 // Mock logger
@@ -161,7 +157,7 @@ describe('SyncManagerFactory', () => {
   describe('createSingleton', () => {
     it('应该创建单例同步管理器', () => {
       const config: SyncManagerFactoryConfig = {
-        protocol: 'band',
+        protocol: 'redstone',
       };
 
       const exports1 = SyncManagerFactory.createSingleton(
@@ -178,7 +174,7 @@ describe('SyncManagerFactory', () => {
 
     it('单例的函数应该调用同一个实例', async () => {
       const config: SyncManagerFactoryConfig = {
-        protocol: 'api3',
+        protocol: 'pyth',
       };
 
       const exports = SyncManagerFactory.createSingleton(
@@ -215,7 +211,7 @@ describe('SyncManagerFactory', () => {
 
     it('createSingletonSyncManager 应该工作', () => {
       const config: SyncManagerFactoryConfig = {
-        protocol: 'flux',
+        protocol: 'uma',
       };
 
       const exports = createSingletonSyncManager(config, mockClientFactory, mockSymbolProvider);
@@ -371,12 +367,7 @@ describe('SyncManagerFactory', () => {
     const protocols: OracleProtocol[] = [
       'chainlink',
       'pyth',
-      'band',
-      'api3',
       'redstone',
-      'flux',
-      'dia',
-      'switchboard',
       'uma',
     ];
 

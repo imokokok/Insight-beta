@@ -170,7 +170,8 @@ export const common = {
     fallback: {
       title: 'Service Temporarily Unavailable',
       staleData: 'Data may be outdated',
-      staleDataDesc: 'Currently showing cached data, which may not reflect the latest prices. Service is recovering, please try again later.',
+      staleDataDesc:
+        'Currently showing cached data, which may not reflect the latest prices. Service is recovering, please try again later.',
       stale: 'Cached Data',
       staleDesc: 'Currently showing cached data, which may not reflect the latest prices.',
       fresh: 'Data Normal',

@@ -11,8 +11,11 @@ const fetcher = async (url: string) => {
   const res = await fetch(url);
   if (!res.ok) {
     const errorData: Record<string, unknown> = await res.json().catch(() => ({}));
-    const error = new Error((errorData.error as string) || `HTTP ${res.status}: Failed to fetch data`);
-    (error as { code?: string; status?: number }).code = (errorData.code as string) || 'FETCH_ERROR';
+    const error = new Error(
+      (errorData.error as string) || `HTTP ${res.status}: Failed to fetch data`,
+    );
+    (error as { code?: string; status?: number }).code =
+      (errorData.code as string) || 'FETCH_ERROR';
     (error as { code?: string; status?: number }).status = res.status;
     throw error;
   }
@@ -107,122 +110,95 @@ const SWR_CONFIG = {
 export function useGasPrice(
   chain: string | null,
   provider?: string,
-  options?: SWRConfiguration<{ ok: boolean; data: GasPriceData }>
+  options?: SWRConfiguration<{ ok: boolean; data: GasPriceData }>,
 ) {
-  const url = chain
-    ? buildApiUrl('/api/gas/price', { chain, provider })
-    : null;
+  const url = chain ? buildApiUrl('/api/gas/price', { chain, provider }) : null;
 
-  return useSWR<{ ok: boolean; data: GasPriceData }>(
-    url,
-    fetcher,
-    {
-      refreshInterval: DEFAULT_REFRESH_INTERVAL,
-      ...SWR_CONFIG,
-      ...options,
-    }
-  );
+  return useSWR<{ ok: boolean; data: GasPriceData }>(url, fetcher, {
+    refreshInterval: DEFAULT_REFRESH_INTERVAL,
+    ...SWR_CONFIG,
+    ...options,
+  });
 }
 
 export function useGasPrices(
   chains: string[],
-  options?: SWRConfiguration<{ ok: boolean; data: GasPriceData[] }>
+  options?: SWRConfiguration<{ ok: boolean; data: GasPriceData[] }>,
 ) {
-  const url = chains.length > 0
-    ? buildApiUrl('/api/gas/prices', { chains: chains.join(',') })
-    : null;
+  const url =
+    chains.length > 0 ? buildApiUrl('/api/gas/prices', { chains: chains.join(',') }) : null;
 
-  return useSWR<{ ok: boolean; data: GasPriceData[] }>(
-    url,
-    fetcher,
-    {
-      refreshInterval: DEFAULT_REFRESH_INTERVAL,
-      ...SWR_CONFIG,
-      ...options,
-    }
-  );
+  return useSWR<{ ok: boolean; data: GasPriceData[] }>(url, fetcher, {
+    refreshInterval: DEFAULT_REFRESH_INTERVAL,
+    ...SWR_CONFIG,
+    ...options,
+  });
 }
 
 export function useGasPriceHistory(
   chain: string | null,
   provider?: string,
   limit: number = 100,
-  options?: SWRConfiguration<{ ok: boolean; data: GasPriceHistoryEntry[]; meta: { count: number; chain: string; provider?: string } }>
+  options?: SWRConfiguration<{
+    ok: boolean;
+    data: GasPriceHistoryEntry[];
+    meta: { count: number; chain: string; provider?: string };
+  }>,
 ) {
-  const url = chain
-    ? buildApiUrl('/api/gas/history', { chain, provider, limit })
-    : null;
+  const url = chain ? buildApiUrl('/api/gas/history', { chain, provider, limit }) : null;
 
-  return useSWR<{ ok: boolean; data: GasPriceHistoryEntry[]; meta: { count: number; chain: string; provider?: string } }>(
-    url,
-    fetcher,
-    {
-      refreshInterval: 60000,
-      ...SWR_CONFIG,
-      ...options,
-    }
-  );
+  return useSWR<{
+    ok: boolean;
+    data: GasPriceHistoryEntry[];
+    meta: { count: number; chain: string; provider?: string };
+  }>(url, fetcher, {
+    refreshInterval: 60000,
+    ...SWR_CONFIG,
+    ...options,
+  });
 }
 
 export function useGasPriceStatistics(
   chain: string | null,
   provider: string | null,
   priceLevel: 'slow' | 'average' | 'fast' | 'fastest' | null,
-  options?: SWRConfiguration<{ ok: boolean; data: GasPriceStatistics }>
+  options?: SWRConfiguration<{ ok: boolean; data: GasPriceStatistics }>,
 ) {
-  const url = chain && provider && priceLevel
-    ? buildApiUrl('/api/gas/statistics', { chain, provider, priceLevel })
-    : null;
+  const url =
+    chain && provider && priceLevel
+      ? buildApiUrl('/api/gas/statistics', { chain, provider, priceLevel })
+      : null;
 
-  return useSWR<{ ok: boolean; data: GasPriceStatistics }>(
-    url,
-    fetcher,
-    {
-      refreshInterval: 60000,
-      ...SWR_CONFIG,
-      ...options,
-    }
-  );
+  return useSWR<{ ok: boolean; data: GasPriceStatistics }>(url, fetcher, {
+    refreshInterval: 60000,
+    ...SWR_CONFIG,
+    ...options,
+  });
 }
 
 export function useGasPriceTrend(
   chain: string | null,
   priceLevel: 'slow' | 'average' | 'fast' | 'fastest' | null,
-  options?: SWRConfiguration<{ ok: boolean; data: GasPriceTrend }>
+  options?: SWRConfiguration<{ ok: boolean; data: GasPriceTrend }>,
 ) {
-  const url = chain && priceLevel
-    ? buildApiUrl('/api/gas/trend', { chain, priceLevel })
-    : null;
+  const url = chain && priceLevel ? buildApiUrl('/api/gas/trend', { chain, priceLevel }) : null;
 
-  return useSWR<{ ok: boolean; data: GasPriceTrend }>(
-    url,
-    fetcher,
-    {
-      refreshInterval: 60000,
-      ...SWR_CONFIG,
-      ...options,
-    }
-  );
+  return useSWR<{ ok: boolean; data: GasPriceTrend }>(url, fetcher, {
+    refreshInterval: 60000,
+    ...SWR_CONFIG,
+    ...options,
+  });
 }
 
-export function useGasPriceHealth(
-  options?: SWRConfiguration<GasPriceHealthResponse>
-) {
-  return useSWR<GasPriceHealthResponse>(
-    '/api/gas/health',
-    fetcher,
-    {
-      refreshInterval: 60000,
-      ...SWR_CONFIG,
-      ...options,
-    }
-  );
+export function useGasPriceHealth(options?: SWRConfiguration<GasPriceHealthResponse>) {
+  return useSWR<GasPriceHealthResponse>('/api/gas/health', fetcher, {
+    refreshInterval: 60000,
+    ...SWR_CONFIG,
+    ...options,
+  });
 }
 
-export function useWarmupGasCache(
-  chains: string[],
-  mutate?: () => void
-) {
+export function useWarmupGasCache(chains: string[], mutate?: () => void) {
   return async () => {
     try {
       const res = await fetch('/api/gas/warmup', {

@@ -2,7 +2,7 @@
  * Design System - Spacing Tokens
  *
  * 统一的间距令牌定义，基于 4px 基准网格
- * 
+ *
  * 核心原则：
  * - 使用 4px 基准单位
  * - 提供语义化间距名称
@@ -14,7 +14,28 @@
 // 基础间距令牌
 // ============================================================================
 
-export type SpacingToken = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 8 | 10 | 12 | 16 | 20 | 24 | 32 | 40 | 48 | 56 | 64 | 72 | 96 | 128;
+export type SpacingToken =
+  | 0
+  | 1
+  | 2
+  | 3
+  | 4
+  | 5
+  | 6
+  | 8
+  | 10
+  | 12
+  | 16
+  | 20
+  | 24
+  | 32
+  | 40
+  | 48
+  | 56
+  | 64
+  | 72
+  | 96
+  | 128;
 
 export const SPACING_TOKENS = {
   0: '0px',
@@ -44,7 +65,17 @@ export const SPACING_TOKENS = {
 // 语义化间距
 // ============================================================================
 
-export type SemanticSpacing = 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | 'full';
+export type SemanticSpacing =
+  | 'none'
+  | 'xs'
+  | 'sm'
+  | 'md'
+  | 'lg'
+  | 'xl'
+  | '2xl'
+  | '3xl'
+  | '4xl'
+  | 'full';
 
 export const SEMANTIC_SPACING = {
   none: '0px',

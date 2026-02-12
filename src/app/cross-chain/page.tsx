@@ -4,12 +4,6 @@ import { useState, useCallback, useMemo } from 'react';
 
 import { RefreshCw, Filter, Activity, Calendar } from 'lucide-react';
 
-
-
-
-
-
-
 import {
   CrossChainComparisonCard,
   CrossChainArbitrageCard,
@@ -20,7 +14,13 @@ import {
 } from '@/components/features/cross-chain';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   useCrossChainComparison,
   useCrossChainArbitrage,
@@ -31,7 +31,15 @@ import {
 import { useI18n } from '@/i18n';
 
 const AVAILABLE_SYMBOLS = ['BTC', 'ETH', 'SOL', 'LINK', 'AVAX', 'MATIC', 'UNI', 'AAVE'];
-const AVAILABLE_CHAINS = ['ethereum', 'bsc', 'polygon', 'avalanche', 'arbitrum', 'optimism', 'base'];
+const AVAILABLE_CHAINS = [
+  'ethereum',
+  'bsc',
+  'polygon',
+  'avalanche',
+  'arbitrum',
+  'optimism',
+  'base',
+];
 const TIME_RANGES = [
   { value: '24h', label: '24 Hours' },
   { value: '7d', label: '7 Days' },
@@ -55,7 +63,9 @@ export default function CrossChainPage() {
       '30d': 24 * 30,
       '90d': 24 * 90,
     };
-    const startTime = new Date(now.getTime() - (hours[timeRange as keyof typeof hours] || 24) * 60 * 60 * 1000);
+    const startTime = new Date(
+      now.getTime() - (hours[timeRange as keyof typeof hours] || 24) * 60 * 60 * 1000,
+    );
     return { startTime, endTime: now };
   }, [timeRange]);
 
@@ -71,10 +81,7 @@ export default function CrossChainPage() {
     mutate: refreshArbitrage,
   } = useCrossChainArbitrage(selectedSymbol, arbitrageThreshold);
 
-  const {
-    data: alertsData,
-    mutate: refreshAlerts,
-  } = useCrossChainAlerts(selectedSymbol);
+  const { data: alertsData, mutate: refreshAlerts } = useCrossChainAlerts(selectedSymbol);
 
   const {
     data: dashboardData,
@@ -90,7 +97,7 @@ export default function CrossChainPage() {
     selectedSymbol,
     timeRangeDates.startTime.toISOString(),
     timeRangeDates.endTime.toISOString(),
-    timeRange === '24h' ? '1hour' : '1day'
+    timeRange === '24h' ? '1hour' : '1day',
   );
 
   const handleRefresh = useCallback(() => {
@@ -103,9 +110,7 @@ export default function CrossChainPage() {
 
   const handleChainToggle = useCallback((chain: string) => {
     setSelectedChains((prev) =>
-      prev.includes(chain)
-        ? prev.filter((c) => c !== chain)
-        : [...prev, chain]
+      prev.includes(chain) ? prev.filter((c) => c !== chain) : [...prev, chain],
     );
   }, []);
 
@@ -131,12 +136,8 @@ export default function CrossChainPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            {t('crossChain.page.title')}
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            {t('crossChain.page.description')}
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight">{t('crossChain.page.title')}</h1>
+          <p className="mt-1 text-muted-foreground">{t('crossChain.page.description')}</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={handleRefresh}>
@@ -237,26 +238,14 @@ export default function CrossChainPage() {
       {/* Charts Section */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Price Trend Chart */}
-        <CrossChainPriceChart
-          data={historyData?.data}
-          isLoading={historyLoading}
-          height={350}
-        />
+        <CrossChainPriceChart data={historyData?.data} isLoading={historyLoading} height={350} />
 
         {/* Chain Comparison Bar */}
-        <CrossChainComparisonBar
-          prices={chartPrices}
-          isLoading={comparisonLoading}
-          height={350}
-        />
+        <CrossChainComparisonBar prices={chartPrices} isLoading={comparisonLoading} height={350} />
       </div>
 
       {/* Deviation Chart */}
-      <CrossChainDeviationChart
-        data={historyData?.data}
-        isLoading={historyLoading}
-        height={250}
-      />
+      <CrossChainDeviationChart data={historyData?.data} isLoading={historyLoading} height={250} />
 
       {/* Main Content Grid */}
       <div className="grid gap-6 lg:grid-cols-2">
@@ -299,13 +288,15 @@ export default function CrossChainPage() {
                     alert.severity === 'critical'
                       ? 'border-red-500/30 bg-red-500/10'
                       : alert.severity === 'warning'
-                      ? 'border-yellow-500/30 bg-yellow-500/10'
-                      : 'border-blue-500/30 bg-blue-500/10'
+                        ? 'border-yellow-500/30 bg-yellow-500/10'
+                        : 'border-blue-500/30 bg-blue-500/10'
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium">{alert.chainA} → {alert.chainB}</span>
+                      <span className="font-medium">
+                        {alert.chainA} → {alert.chainB}
+                      </span>
                       <span className="text-muted-foreground">{alert.symbol}</span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -314,8 +305,8 @@ export default function CrossChainPage() {
                           alert.severity === 'critical'
                             ? 'text-red-600'
                             : alert.severity === 'warning'
-                            ? 'text-yellow-600'
-                            : 'text-blue-600'
+                              ? 'text-yellow-600'
+                              : 'text-blue-600'
                         }`}
                       >
                         {alert.deviationPercent.toFixed(2)}%

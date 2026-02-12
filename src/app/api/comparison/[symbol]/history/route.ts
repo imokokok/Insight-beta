@@ -43,10 +43,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
     if (!Number.isFinite(page) || page < 1) {
-      return NextResponse.json(
-        { error: 'Invalid page parameter' },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'Invalid page parameter' }, { status: 400 });
     }
     if (!Number.isFinite(limit) || limit < 1 || limit > 100) {
       return NextResponse.json(

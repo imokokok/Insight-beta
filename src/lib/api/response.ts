@@ -45,7 +45,7 @@ export function createErrorResponse(error: string, status: number = 400): NextRe
         timestamp: new Date().toISOString(),
       },
     },
-    { status }
+    { status },
   );
 }
 
@@ -57,7 +57,12 @@ export function createErrorResponse(error: string, status: number = 400): NextRe
  * @param total 总数量（用于分页）
  * @returns NextResponse对象
  */
-export function createSuccessResponse<T>(data: T, page?: number, limit?: number, total?: number): NextResponse {
+export function createSuccessResponse<T>(
+  data: T,
+  page?: number,
+  limit?: number,
+  total?: number,
+): NextResponse {
   const response: ApiResponse<T> = {
     ok: true,
     data,

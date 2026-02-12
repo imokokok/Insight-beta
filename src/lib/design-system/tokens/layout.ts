@@ -37,10 +37,10 @@ export const CONTAINER_WIDTHS = {
 } as const;
 
 export const MAX_WIDTHS = {
-  content: '768px',      // 文章内容
-  layout: '1280px',      // 页面布局
-  wide: '1536px',        // 宽屏布局
-  full: '100%',          // 全宽
+  content: '768px', // 文章内容
+  layout: '1280px', // 页面布局
+  wide: '1536px', // 宽屏布局
+  full: '100%', // 全宽
 } as const;
 
 // ============================================================================
@@ -74,37 +74,40 @@ export const GRID_GAPS = {
 
 export type Density = 'compact' | 'normal' | 'comfortable';
 
-export const DENSITY_CONFIG: Record<Density, {
-  spacing: {
-    xs: string;
-    sm: string;
-    md: string;
-    lg: string;
-    xl: string;
-  };
-  padding: {
-    card: string;
-    section: string;
-    page: string;
-  };
-  gap: {
-    card: string;
-    section: string;
-    grid: string;
-  };
-  fontSize: {
-    xs: string;
-    sm: string;
-    base: string;
-    lg: string;
-    xl: string;
-  };
-  lineHeight: {
-    tight: string;
-    normal: string;
-    relaxed: string;
-  };
-}> = {
+export const DENSITY_CONFIG: Record<
+  Density,
+  {
+    spacing: {
+      xs: string;
+      sm: string;
+      md: string;
+      lg: string;
+      xl: string;
+    };
+    padding: {
+      card: string;
+      section: string;
+      page: string;
+    };
+    gap: {
+      card: string;
+      section: string;
+      grid: string;
+    };
+    fontSize: {
+      xs: string;
+      sm: string;
+      base: string;
+      lg: string;
+      xl: string;
+    };
+    lineHeight: {
+      tight: string;
+      normal: string;
+      relaxed: string;
+    };
+  }
+> = {
   compact: {
     spacing: {
       xs: '2px',

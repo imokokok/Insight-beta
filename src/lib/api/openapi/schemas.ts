@@ -43,7 +43,11 @@ export const commonSchemas: Record<string, Schema> = {
       market: { type: 'string', description: 'Market identifier' },
       assertionData: { type: 'string', description: 'Assertion content' },
       assertedAt: { type: 'string', format: 'date-time', description: 'Creation timestamp' },
-      livenessEndsAt: { type: 'string', format: 'date-time', description: 'Liveness end timestamp' },
+      livenessEndsAt: {
+        type: 'string',
+        format: 'date-time',
+        description: 'Liveness end timestamp',
+      },
       status: {
         type: 'string',
         enum: ['Active', 'Disputed', 'Resolved'],

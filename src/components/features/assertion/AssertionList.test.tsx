@@ -22,10 +22,10 @@ vi.mock('@/hooks/user/useWatchlist', () => ({
   }),
 }));
 
-vi.mock('@/lib/utils', () => ({
+vi.mock('@/shared/utils', () => ({
   cn: (...classes: (string | undefined)[]) => classes.filter(Boolean).join(' '),
   formatTime: () => '2024-01-01',
-  formatUsd: (value: string) => `$${value}`,
+  formatUsdCompact: (value: number) => `$${value.toLocaleString()}`,
   getExplorerUrl: () => null,
   getAssertionStatusColor: (status: string) => {
     const colors: Record<string, string> = {
@@ -170,10 +170,10 @@ describe('AssertionList', () => {
   it('displays formatted bond amounts', () => {
     render(<AssertionList {...defaultProps} />);
 
-    // Bond amounts should be formatted (the actual format depends on formatUsd implementation)
-    // Mock returns $value directly
-    expect(screen.getByText('$1000')).toBeInTheDocument();
-    expect(screen.getByText('$2000')).toBeInTheDocument();
+    // Bond amounts should be formatted (the actual format depends on formatUsdCompact implementation)
+    // Mock returns $1,000 format
+    expect(screen.getByText('$1,000')).toBeInTheDocument();
+    expect(screen.getByText('$2,000')).toBeInTheDocument();
   });
 
   it('displays chain indicators', () => {

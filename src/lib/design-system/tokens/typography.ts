@@ -2,7 +2,7 @@
  * Design System - Typography Tokens
  *
  * 统一的排版令牌定义，确保文字样式的一致性
- * 
+ *
  * 核心原则：
  * - 使用语义化字体大小名称
  * - 提供一致的行高和字重
@@ -100,7 +100,18 @@ export const FONT_WEIGHT = {
 // 文本样式
 // ============================================================================
 
-export type TextStyle = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'body' | 'body-sm' | 'caption' | 'label' | 'code';
+export type TextStyle =
+  | 'h1'
+  | 'h2'
+  | 'h3'
+  | 'h4'
+  | 'h5'
+  | 'h6'
+  | 'body'
+  | 'body-sm'
+  | 'caption'
+  | 'label'
+  | 'code';
 
 export const TEXT_STYLES = {
   h1: {
@@ -265,7 +276,7 @@ export const RESPONSIVE_TYPOGRAPHY = {
 // 工具函数
 // ============================================================================
 
-export function getFontSize(size: FontSize): typeof FONT_SIZE[FontSize] {
+export function getFontSize(size: FontSize): (typeof FONT_SIZE)[FontSize] {
   return FONT_SIZE[size];
 }
 
@@ -273,7 +284,7 @@ export function getFontWeight(weight: FontWeight): string {
   return FONT_WEIGHT[weight];
 }
 
-export function getTextStyle(style: TextStyle): typeof TEXT_STYLES[TextStyle] {
+export function getTextStyle(style: TextStyle): (typeof TEXT_STYLES)[TextStyle] {
   return TEXT_STYLES[style];
 }
 

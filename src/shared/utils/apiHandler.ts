@@ -45,7 +45,7 @@ export function apiSuccess<T>(data: T, status: number = 200): NextResponse {
       ok: true,
       data,
     } satisfies ApiResponse<T>,
-    { status }
+    { status },
   );
 }
 
@@ -68,7 +68,7 @@ export function apiError(message: string, status: number = 500): NextResponse {
       ok: false,
       error: message,
     } satisfies ApiResponse,
-    { status }
+    { status },
   );
 }
 
@@ -99,10 +99,7 @@ export function withErrorHandler(handler: ApiRouteHandler): ApiRouteHandler {
       return await handler(request);
     } catch (error) {
       logger.error('API Error', { error });
-      return apiError(
-        error instanceof Error ? error.message : 'Internal server error',
-        500
-      );
+      return apiError(error instanceof Error ? error.message : 'Internal server error', 500);
     }
   };
 }
@@ -133,5 +130,3 @@ export function getRequiredQueryParam(request: NextRequest, key: string): string
   }
   return value;
 }
-
-

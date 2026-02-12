@@ -258,19 +258,16 @@ function parseEnv() {
   if (!result.success) {
     const errors = result.error.errors.map((e) => `  - ${e.path.join('.')}: ${e.message}`);
 
-    // 在构建时抛出错误
+    const timestamp = new Date().toISOString();
+    const errorMessage = `Environment validation failed:\n${errors.join('\n')}`;
+
     if (isServer && process.env.NODE_ENV === 'production') {
-      throw new Error(`Environment validation failed:\n${errors.join('\n')}`);
+      throw new Error(errorMessage);
     }
 
-    // 开发环境打印格式化的警告
-    const timestamp = new Date().toISOString();
-    const level = 'WARN';
-    const message = 'Environment validation warnings';
-    console.warn(`\n${level} [${timestamp}] ${message}\n${errors.join('\n')}\n`);
+    console.warn(`\nWARN [${timestamp}] Environment validation warnings\n${errors.join('\n')}\n`);
 
-    // 返回默认值
-    return envSchema.parse({});
+    return envSchema.parse(undefined);
   }
 
   return result.data;

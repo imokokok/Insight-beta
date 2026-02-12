@@ -4,22 +4,20 @@ import { useState, useEffect } from 'react';
 
 import { RefreshCw, Zap, TrendingUp, Activity, AlertTriangle, History } from 'lucide-react';
 
-
-
-
-
-
-
 import { GasPriceHistoryViewer } from '@/components/features/gas/GasPriceHistoryViewer';
 import { GasPriceTrendChart } from '@/components/features/gas/GasPriceTrendChart';
 import { GasProviderHealthCard } from '@/components/features/gas/GasProviderHealthCard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { useGasPrices, useGasPriceTrend, useGasPriceHealth, useWarmupGasCache } from '@/hooks/useGasPrice';
+import {
+  useGasPrices,
+  useGasPriceTrend,
+  useGasPriceHealth,
+  useWarmupGasCache,
+} from '@/hooks/useGasPrice';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { cn } from '@/shared/utils';
-
 
 const DEFAULT_CHAINS = ['ethereum', 'polygon', 'bsc', 'arbitrum', 'optimism', 'base'];
 
@@ -28,8 +26,15 @@ export default function GasPriceMonitorPage() {
   const [showTrend, setShowTrend] = useState(false);
   const [selectedChainForTrend, setSelectedChainForTrend] = useState<string>('ethereum');
 
-  const { data: gasPrices, isLoading: pricesLoading, mutate: refreshPrices } = useGasPrices(selectedChains);
-  const { data: trendData, isLoading: trendLoading } = useGasPriceTrend(selectedChainForTrend, 'average');
+  const {
+    data: gasPrices,
+    isLoading: pricesLoading,
+    mutate: refreshPrices,
+  } = useGasPrices(selectedChains);
+  const { data: trendData, isLoading: trendLoading } = useGasPriceTrend(
+    selectedChainForTrend,
+    'average',
+  );
   const { data: healthData, isLoading: healthLoading, mutate: refreshHealth } = useGasPriceHealth();
   const warmup = useWarmupGasCache(selectedChains, refreshPrices);
 
@@ -54,7 +59,7 @@ export default function GasPriceMonitorPage() {
 
   const handleToggleChain = (chain: string) => {
     if (selectedChains.includes(chain)) {
-      setSelectedChains(selectedChains.filter(c => c !== chain));
+      setSelectedChains(selectedChains.filter((c) => c !== chain));
     } else {
       setSelectedChains([...selectedChains, chain]);
     }
@@ -76,7 +81,9 @@ export default function GasPriceMonitorPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">Gas Price Monitor</h1>
-            <p className="text-muted-foreground mt-1">Real-time gas price tracking across multiple chains</p>
+            <p className="mt-1 text-muted-foreground">
+              Real-time gas price tracking across multiple chains
+            </p>
           </div>
           <div className="flex items-center gap-3">
             <Button
@@ -85,14 +92,12 @@ export default function GasPriceMonitorPage() {
               onClick={handleRefresh}
               disabled={pricesLoading || healthLoading}
             >
-              <RefreshCw className={cn('mr-2 h-4 w-4', pricesLoading || healthLoading && 'animate-spin')} />
+              <RefreshCw
+                className={cn('mr-2 h-4 w-4', pricesLoading || (healthLoading && 'animate-spin'))}
+              />
               Refresh
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => warmup()}
-            >
+            <Button variant="outline" size="sm" onClick={() => warmup()}>
               <Zap className="mr-2 h-4 w-4" />
               Warm Cache
             </Button>
@@ -100,7 +105,7 @@ export default function GasPriceMonitorPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
@@ -112,7 +117,9 @@ export default function GasPriceMonitorPage() {
             <p className="text-3xl font-bold text-blue-600">
               {avgGasPrice ? `$${(avgGasPrice / 1e9).toFixed(2)}` : 'Loading...'}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">Across {selectedChains.length} chains</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Across {selectedChains.length} chains
+            </p>
           </CardContent>
         </Card>
 
@@ -127,7 +134,9 @@ export default function GasPriceMonitorPage() {
             <p className="text-3xl font-bold text-emerald-600">
               {slowGasPrice ? `$${(slowGasPrice / 1e9).toFixed(2)}` : 'Loading...'}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">Best for cost-sensitive transactions</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Best for cost-sensitive transactions
+            </p>
           </CardContent>
         </Card>
 
@@ -142,7 +151,9 @@ export default function GasPriceMonitorPage() {
             <p className="text-3xl font-bold text-yellow-600">
               {fastGasPrice ? `$${(fastGasPrice / 1e9).toFixed(2)}` : 'Loading...'}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">Best for time-sensitive transactions</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Best for time-sensitive transactions
+            </p>
           </CardContent>
         </Card>
 
@@ -155,18 +166,18 @@ export default function GasPriceMonitorPage() {
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-red-600">
-              {gasPrices?.data && gasPrices.data.length > 0 
+              {gasPrices?.data && gasPrices.data.length > 0
                 ? `$${((fastGasPrice - slowGasPrice) / 1e9).toFixed(2)}`
                 : 'Loading...'}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">Difference between slow and fast</p>
+            <p className="mt-1 text-xs text-muted-foreground">Difference between slow and fast</p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div>
-          <h2 className="text-xl font-semibold mb-4">Chain Selection</h2>
+          <h2 className="mb-4 text-xl font-semibold">Chain Selection</h2>
           <div className="flex flex-wrap gap-2">
             {DEFAULT_CHAINS.map((chain) => (
               <Button
@@ -182,7 +193,7 @@ export default function GasPriceMonitorPage() {
         </div>
 
         <div>
-          <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
+          <h2 className="mb-4 text-xl font-semibold">Quick Actions</h2>
           <div className="space-y-2">
             <Button
               variant="outline"
@@ -224,7 +235,7 @@ export default function GasPriceMonitorPage() {
             {pricesLoading ? (
               <div className="space-y-3">
                 {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="h-16 bg-muted/30 rounded animate-pulse" />
+                  <div key={i} className="h-16 animate-pulse rounded bg-muted/30" />
                 ))}
               </div>
             ) : gasPrices?.data && gasPrices.data.length > 0 ? (
@@ -232,7 +243,7 @@ export default function GasPriceMonitorPage() {
                 {gasPrices.data.map((price) => (
                   <div
                     key={price.chain}
-                    className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors cursor-pointer"
+                    className="flex cursor-pointer items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
                     onClick={() => handleShowTrend(price.chain)}
                   >
                     <div className="flex items-center gap-3">
@@ -246,7 +257,9 @@ export default function GasPriceMonitorPage() {
                       </div>
                       <div className="text-right">
                         <p className="text-xs text-muted-foreground">Average</p>
-                        <p className="font-mono font-semibold">${(price.average / 1e9).toFixed(2)}</p>
+                        <p className="font-mono font-semibold">
+                          ${(price.average / 1e9).toFixed(2)}
+                        </p>
                       </div>
                       <div className="text-right">
                         <p className="text-xs text-muted-foreground">Fast</p>
@@ -254,14 +267,16 @@ export default function GasPriceMonitorPage() {
                       </div>
                       <div className="text-right">
                         <p className="text-xs text-muted-foreground">Fastest</p>
-                        <p className="font-mono font-semibold">${(price.fastest / 1e9).toFixed(2)}</p>
+                        <p className="font-mono font-semibold">
+                          ${(price.fastest / 1e9).toFixed(2)}
+                        </p>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12 text-muted-foreground">
+              <div className="py-12 text-center text-muted-foreground">
                 No gas price data available
               </div>
             )}
@@ -270,23 +285,15 @@ export default function GasPriceMonitorPage() {
       </div>
 
       <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-semibold">Gas Price History</h2>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowTrend(false)}
-          >
+          <Button variant="outline" size="sm" onClick={() => setShowTrend(false)}>
             <History className="mr-1 h-4 w-4" />
             View History
           </Button>
         </div>
         {selectedChains.length > 0 && (
-          <GasPriceHistoryViewer
-            chain={selectedChains[0]!}
-            provider="etherscan"
-            limit={200}
-          />
+          <GasPriceHistoryViewer chain={selectedChains[0]!} provider="etherscan" limit={200} />
         )}
       </div>
     </div>

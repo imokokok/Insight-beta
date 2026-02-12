@@ -39,8 +39,8 @@ vi.mock('@/i18n', () => ({
   LanguageProviderLazy: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-// Mock fetchApiData
-vi.mock('@/lib/utils/api', () => ({
+// Mock fetchApiData - use the correct import path
+vi.mock('@/shared/utils/api', () => ({
   fetchApiData: vi.fn(),
   ApiClientError: class ApiClientError extends Error {
     code: string;

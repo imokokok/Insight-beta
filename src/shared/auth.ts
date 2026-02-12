@@ -10,7 +10,7 @@ export interface AuthResult {
 /**
  * 使用 timingSafeEqual 进行安全的字符串比较
  * 防止时序攻击
- * 
+ *
  * 注意：此实现确保无论字符串长度如何，比较时间都是恒定的
  */
 function secureCompare(a: string, b: string): boolean {

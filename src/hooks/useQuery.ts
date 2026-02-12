@@ -49,22 +49,24 @@ export function useQuery<T>(options: UseQueryOptions<T>): UseQueryReturn<T> {
 
   const shouldFetch = enabled && url !== null;
 
-  const { data, error, isLoading, isValidating, mutate: swrMutate } = useSWR<T>(
-    shouldFetch ? url : null,
-    fetchApiData,
-    {
-      refreshInterval: config.refreshInterval ?? 0,
-      dedupingInterval: config.dedupingInterval ?? 2000,
-      revalidateOnFocus: config.revalidateOnFocus ?? false,
-      revalidateOnReconnect: config.revalidateOnReconnect ?? true,
-      revalidateIfStale: config.revalidateIfStale ?? false,
-      errorRetryCount: config.errorRetryCount ?? 3,
-      errorRetryInterval: config.errorRetryInterval ?? 1000,
-      shouldRetryOnError: config.shouldRetryOnError ?? true,
-      keepPreviousData: config.keepPreviousData ?? true,
-      suspense: config.suspense ?? false,
-    },
-  );
+  const {
+    data,
+    error,
+    isLoading,
+    isValidating,
+    mutate: swrMutate,
+  } = useSWR<T>(shouldFetch ? url : null, fetchApiData, {
+    refreshInterval: config.refreshInterval ?? 0,
+    dedupingInterval: config.dedupingInterval ?? 2000,
+    revalidateOnFocus: config.revalidateOnFocus ?? false,
+    revalidateOnReconnect: config.revalidateOnReconnect ?? true,
+    revalidateIfStale: config.revalidateIfStale ?? false,
+    errorRetryCount: config.errorRetryCount ?? 3,
+    errorRetryInterval: config.errorRetryInterval ?? 1000,
+    shouldRetryOnError: config.shouldRetryOnError ?? true,
+    keepPreviousData: config.keepPreviousData ?? true,
+    suspense: config.suspense ?? false,
+  });
 
   const mutate = useCallback(async () => {
     await swrMutate();

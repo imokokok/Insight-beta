@@ -103,7 +103,6 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
       } catch {
         text = 'Failed to read response body';
       }
-      // 提供更结构化的错误信息
       const errorInfo = {
         status: res.status,
         statusText: res.statusText,
@@ -478,9 +477,10 @@ async function fetchDexTwapPriceUsdCached(
   const seconds = env.INSIGHT_DEX_TWAP_SECONDS;
   const invert = env.INSIGHT_DEX_PRICE_INVERT;
   const rpcUrl = getDexRpcUrl(input.rpcUrl);
+  const rpcUrlKey = rpcUrl ? rpcUrl.slice(0, 20) : 'none';
   const key = `dex:${pool.toLowerCase()}:${Math.floor(
     Number.isFinite(seconds) ? seconds : 1800,
-  )}:${invert ? '1' : '0'}:${rpcUrl || ''}`;
+  )}:${invert ? '1' : '0'}:${rpcUrlKey}`;
 
   // P1 优化：使用 LRU 缓存的 get 方法
   const hit = dexCache.get(key);

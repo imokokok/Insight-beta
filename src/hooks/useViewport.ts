@@ -96,14 +96,14 @@ export function useViewport(options: ViewportOptions = {}) {
   function detectWalletPopup(
     windowHeight: number,
     visualHeight: number,
-    isKeyboardOpen: boolean
+    isKeyboardOpen: boolean,
   ): boolean {
     if (isKeyboardOpen) return false;
 
     const fixedElements = document.querySelectorAll('[data-wallet-detect]');
     if (fixedElements.length > 0) {
       const visibleFixed = Array.from(fixedElements).filter(
-        (el) => (el as HTMLElement).offsetParent !== null
+        (el) => (el as HTMLElement).offsetParent !== null,
       );
       if (visibleFixed.length < fixedElements.length) {
         return true;
@@ -188,5 +188,3 @@ export function useViewport(options: ViewportOptions = {}) {
 
   return state;
 }
-
-

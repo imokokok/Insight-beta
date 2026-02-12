@@ -15,7 +15,6 @@ export interface WebVitalsMetric {
   navigationType?: string;
 }
 
-
 // 指标阈值配置
 const THRESHOLDS: Record<string, { good: number; poor: number }> = {
   CLS: { good: 0.1, poor: 0.25 },
@@ -75,7 +74,10 @@ export function observeLCP(callback: (metric: WebVitalsMetric) => void): void {
   try {
     const observer = new PerformanceObserver((list) => {
       const entries = list.getEntries();
-      const lastEntry = entries[entries.length - 1] as PerformanceEntry & { renderTime?: number; loadTime?: number };
+      const lastEntry = entries[entries.length - 1] as PerformanceEntry & {
+        renderTime?: number;
+        loadTime?: number;
+      };
 
       const value = lastEntry.renderTime || lastEntry.loadTime || lastEntry.startTime;
 
@@ -104,7 +106,10 @@ export function observeFID(callback: (metric: WebVitalsMetric) => void): void {
       const entries = list.getEntries();
 
       entries.forEach((entry) => {
-        const firstEntry = entry as PerformanceEntry & { processingStart: number; startTime: number };
+        const firstEntry = entry as PerformanceEntry & {
+          processingStart: number;
+          startTime: number;
+        };
         const value = firstEntry.processingStart - firstEntry.startTime;
 
         callback({
@@ -137,7 +142,10 @@ export function observeCLS(callback: (metric: WebVitalsMetric) => void): void {
 
       entries.forEach((entry) => {
         // 只计算没有最近用户输入的 CLS
-        const layoutShiftEntry = entry as PerformanceEntry & { hadRecentInput?: boolean; value?: number };
+        const layoutShiftEntry = entry as PerformanceEntry & {
+          hadRecentInput?: boolean;
+          value?: number;
+        };
         if (!layoutShiftEntry.hadRecentInput) {
           clsEntries.push(entry);
           clsValue += layoutShiftEntry.value ?? 0;
@@ -210,9 +218,6 @@ export function observeTTFB(callback: (metric: WebVitalsMetric) => void): void {
     logger.warn('TTFB observation not supported');
   }
 }
-
-
-
 
 /**
  * 初始化所有 Web Vitals 监控

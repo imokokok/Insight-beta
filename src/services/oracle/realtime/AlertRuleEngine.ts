@@ -95,7 +95,9 @@ export class AlertRuleEngine {
       description: `当价格偏差超过${ALERT_THRESHOLDS.PRICE_DEVIATION_WARNING * 100}%时触发警告`,
       enabled: true,
       severity: 'warning',
-      conditions: [{ type: 'price_deviation', threshold: ALERT_THRESHOLDS.PRICE_DEVIATION_WARNING }],
+      conditions: [
+        { type: 'price_deviation', threshold: ALERT_THRESHOLDS.PRICE_DEVIATION_WARNING },
+      ],
       logic: 'OR',
       cooldownMs: ALERT_THRESHOLDS.COOLDOWN_WARNING_MS,
       channels: [{ type: 'webhook', config: { url: '/api/alerts/webhook' } }],
@@ -108,7 +110,9 @@ export class AlertRuleEngine {
       description: `当价格偏差超过${ALERT_THRESHOLDS.PRICE_DEVIATION_CRITICAL * 100}%时触发严重告警`,
       enabled: true,
       severity: 'critical',
-      conditions: [{ type: 'price_deviation', threshold: ALERT_THRESHOLDS.PRICE_DEVIATION_CRITICAL }],
+      conditions: [
+        { type: 'price_deviation', threshold: ALERT_THRESHOLDS.PRICE_DEVIATION_CRITICAL },
+      ],
       logic: 'OR',
       cooldownMs: ALERT_THRESHOLDS.COOLDOWN_CRITICAL_MS,
       channels: [
@@ -124,9 +128,7 @@ export class AlertRuleEngine {
       description: '当数据超过5分钟未更新时触发',
       enabled: true,
       severity: 'warning',
-      conditions: [
-        { type: 'data_staleness', threshold: ALERT_THRESHOLDS.DATA_STALENESS_MS },
-      ],
+      conditions: [{ type: 'data_staleness', threshold: ALERT_THRESHOLDS.DATA_STALENESS_MS }],
       logic: 'OR',
       cooldownMs: ALERT_THRESHOLDS.COOLDOWN_CRITICAL_MS,
       channels: [{ type: 'webhook', config: { url: '/api/alerts/webhook' } }],
@@ -139,7 +141,13 @@ export class AlertRuleEngine {
       description: `当协议连续${ALERT_THRESHOLDS.PROTOCOL_DOWN_CONSECUTIVE}次获取失败时触发`,
       enabled: true,
       severity: 'critical',
-      conditions: [{ type: 'protocol_down', threshold: ALERT_THRESHOLDS.PROTOCOL_DOWN_CONSECUTIVE, consecutiveCount: ALERT_THRESHOLDS.PROTOCOL_DOWN_CONSECUTIVE }],
+      conditions: [
+        {
+          type: 'protocol_down',
+          threshold: ALERT_THRESHOLDS.PROTOCOL_DOWN_CONSECUTIVE,
+          consecutiveCount: ALERT_THRESHOLDS.PROTOCOL_DOWN_CONSECUTIVE,
+        },
+      ],
       logic: 'OR',
       cooldownMs: ALERT_THRESHOLDS.COOLDOWN_PROTOCOL_DOWN_MS,
       channels: [
@@ -462,7 +470,7 @@ export class AlertRuleEngine {
       `规则: ${this.escapeHtml(rule.name)}`,
       `偏差: ${(comparison.maxDeviationPercent * 100).toFixed(2)}%`,
       `推荐价格: $${comparison.recommendedPrice.toFixed(4)}`,
-      `异常协议: ${comparison.outlierProtocols.map(p => this.escapeHtml(p)).join(', ') || '无'}`,
+      `异常协议: ${comparison.outlierProtocols.map((p) => this.escapeHtml(p)).join(', ') || '无'}`,
       `时间: ${new Date().toLocaleString()}`,
     ];
     return lines.join('\n');

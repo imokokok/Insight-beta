@@ -294,5 +294,3 @@ export function isEvmChain(chain: SupportedChain): boolean {
   const nonEvmChains: SupportedChain[] = ['solana', 'near', 'aptos', 'sui'];
   return !nonEvmChains.includes(chain);
 }
-
-

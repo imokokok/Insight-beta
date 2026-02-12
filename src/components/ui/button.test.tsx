@@ -33,7 +33,7 @@ describe('Button', () => {
       render(<Button>Default</Button>);
       const button = screen.getByRole('button');
       expect(button).toHaveClass('bg-gradient-to-r');
-      expect(button).toHaveClass('from-blue-600');
+      expect(button).toHaveClass('from-primary-600');
     });
 
     it('should apply destructive variant classes', () => {
@@ -61,7 +61,7 @@ describe('Button', () => {
       render(<Button variant="ghost">Ghost</Button>);
       const button = screen.getByRole('button');
       expect(button).toHaveClass('text-primary-dark');
-      expect(button).toHaveClass('hover:bg-primary/10/50');
+      expect(button).toHaveClass('hover:bg-primary/10');
     });
 
     it('should apply link variant classes', () => {

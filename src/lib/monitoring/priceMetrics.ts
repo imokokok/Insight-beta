@@ -291,5 +291,3 @@ export class PriceMetricsCollector {
 
 // 导出单例
 export const priceMetrics = PriceMetricsCollector.getInstance();
-
-

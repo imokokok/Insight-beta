@@ -39,9 +39,7 @@ export function tryCatch<T>(fn: () => T): Result<T, Error> {
 /**
  * 尝试执行异步函数，捕获异常并返回 Result
  */
-export async function tryCatchAsync<T>(
-  fn: () => Promise<T>
-): Promise<Result<T, Error>> {
+export async function tryCatchAsync<T>(fn: () => Promise<T>): Promise<Result<T, Error>> {
   try {
     const data = await fn();
     return ok(data);
@@ -49,5 +47,3 @@ export async function tryCatchAsync<T>(
     return err(error instanceof Error ? error : new Error(String(error)));
   }
 }
-
-

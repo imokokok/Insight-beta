@@ -32,12 +32,7 @@ export interface ProtocolConfig {
 export const PROTOCOL_ICONS: Record<OracleProtocol, string> = {
   chainlink: '🔗',
   pyth: '🐍',
-  band: '🎸',
-  api3: '📡',
   redstone: '💎',
-  switchboard: '🎛️',
-  flux: '⚡',
-  dia: '📊',
   uma: '⚖️',
 };
 
@@ -244,20 +239,14 @@ const pythConfig: ProtocolConfig = {
   },
 };
 
-// 其他协议的简化配置
-const createBasicConfig = (
-  id: OracleProtocol,
-  name: string,
-  description: string,
-  officialUrl: string,
-  supportedChains: string[],
-): ProtocolConfig => ({
-  id,
-  name: `${name} Monitor`,
-  description,
-  icon: PROTOCOL_ICONS[id],
-  officialUrl,
-  supportedChains,
+// RedStone 配置
+const redstoneConfig: ProtocolConfig = {
+  id: 'redstone',
+  name: 'RedStone Monitor',
+  description: 'Modular Oracle with On-Demand Data',
+  icon: '💎',
+  officialUrl: 'https://redstone.finance',
+  supportedChains: ['ethereum', 'polygon', 'arbitrum', 'optimism', 'base'],
   features: {
     hasNodes: false,
     hasPublishers: false,
@@ -274,8 +263,8 @@ const createBasicConfig = (
         symbol: 'ETH/USD',
         price: 3254.78,
         decimals: 8,
-        updatedAt: new Date(Date.now() - 120000).toISOString(),
-        chain: supportedChains[0],
+        updatedAt: new Date(Date.now() - 30000).toISOString(),
+        chain: 'ethereum',
         status: 'active',
       },
       {
@@ -284,8 +273,8 @@ const createBasicConfig = (
         symbol: 'BTC/USD',
         price: 67432.15,
         decimals: 8,
-        updatedAt: new Date(Date.now() - 180000).toISOString(),
-        chain: supportedChains[0],
+        updatedAt: new Date(Date.now() - 45000).toISOString(),
+        chain: 'ethereum',
         status: 'active',
       },
     ],
@@ -298,60 +287,41 @@ const createBasicConfig = (
       networkUptime: 99.5,
     },
   },
-});
+};
+
+// UMA 配置
+const umaConfig: ProtocolConfig = {
+  id: 'uma',
+  name: 'UMA Monitor',
+  description: 'Optimistic Oracle for Custom Data',
+  icon: '⚖️',
+  officialUrl: 'https://umaproject.org',
+  supportedChains: ['ethereum', 'polygon', 'arbitrum', 'optimism', 'base'],
+  features: {
+    hasNodes: false,
+    hasPublishers: false,
+    hasPriceHistory: true,
+    hasComparison: true,
+    hasAlerts: true,
+    hasAnalytics: false,
+  },
+  mockData: {
+    feeds: [],
+    stats: {
+      totalAssertions: 150,
+      activeAssertions: 12,
+      disputedAssertions: 3,
+      resolvedAssertions: 135,
+    },
+  },
+};
 
 // 所有协议配置
 export const PROTOCOL_CONFIGS: Record<OracleProtocol, ProtocolConfig> = {
   chainlink: chainlinkConfig,
   pyth: pythConfig,
-  band: createBasicConfig(
-    'band',
-    'Band Protocol',
-    'Cross-chain Data Oracle Platform',
-    'https://bandprotocol.com',
-    ['ethereum', 'polygon', 'arbitrum', 'optimism'],
-  ),
-  api3: createBasicConfig('api3', 'API3', 'First-Party Oracle with Airnode', 'https://api3.org', [
-    'ethereum',
-    'polygon',
-    'arbitrum',
-    'optimism',
-  ]),
-  redstone: createBasicConfig(
-    'redstone',
-    'RedStone',
-    'Modular Oracle with On-Demand Data',
-    'https://redstone.finance',
-    ['ethereum', 'polygon', 'arbitrum', 'optimism', 'base'],
-  ),
-  switchboard: createBasicConfig(
-    'switchboard',
-    'Switchboard',
-    'Solana and EVM Compatible Oracle',
-    'https://switchboard.xyz',
-    ['ethereum', 'polygon', 'arbitrum', 'optimism', 'solana'],
-  ),
-  flux: createBasicConfig(
-    'flux',
-    'Flux',
-    'Decentralized Oracle Aggregator',
-    'https://fluxprotocol.org',
-    ['ethereum', 'polygon', 'arbitrum', 'optimism', 'base', 'avalanche', 'bsc', 'fantom'],
-  ),
-  dia: createBasicConfig(
-    'dia',
-    'DIA',
-    'Transparent and Verifiable Data Feeds',
-    'https://diadata.org',
-    ['ethereum', 'polygon', 'arbitrum', 'optimism', 'base'],
-  ),
-  uma: createBasicConfig(
-    'uma',
-    'UMA',
-    'Optimistic Oracle for Custom Data',
-    'https://umaproject.org',
-    ['ethereum', 'polygon', 'arbitrum', 'optimism', 'base'],
-  ),
+  redstone: redstoneConfig,
+  uma: umaConfig,
 };
 
 // 获取协议配置

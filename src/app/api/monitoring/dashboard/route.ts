@@ -79,7 +79,7 @@ export const GET = withErrorHandler(async (_request: NextRequest) => {
     notifications: {
       channels: configuredChannels,
       configured: notificationConfig,
-      channelHealth: channelHealth.map(h => ({
+      channelHealth: channelHealth.map((h) => ({
         channel: h.channel,
         isHealthy: h.isHealthy,
         successRate: h.successRate,

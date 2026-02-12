@@ -184,11 +184,7 @@ export function ScrollReveal({
 // Page Transition
 // ============================================================================
 
-export function PageTransition({
-  children,
-  className,
-  mode = 'wait',
-}: PageTransitionProps) {
+export function PageTransition({ children, className, mode = 'wait' }: PageTransitionProps) {
   const prefersReducedMotion = useReducedMotion();
 
   return (
@@ -265,10 +261,7 @@ export function StaggerItem({
   };
 
   return (
-    <motion.div
-      className={className}
-      variants={prefersReducedMotion ? undefined : item}
-    >
+    <motion.div className={className} variants={prefersReducedMotion ? undefined : item}>
       {children}
     </motion.div>
   );
@@ -278,21 +271,14 @@ export function StaggerItem({
 // Hover Scale
 // ============================================================================
 
-export function HoverScale({
-  children,
-  className,
-  scale = 1.02,
-  y = -2,
-}: HoverScaleProps) {
+export function HoverScale({ children, className, scale = 1.02, y = -2 }: HoverScaleProps) {
   const prefersReducedMotion = useReducedMotion();
 
   return (
     <motion.div
       className={className}
       whileHover={
-        prefersReducedMotion
-          ? undefined
-          : { scale, y, transition: transitionPresets.fast }
+        prefersReducedMotion ? undefined : { scale, y, transition: transitionPresets.fast }
       }
       whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
     >
@@ -489,7 +475,7 @@ export function AnimatedGrid({
         columns === 2 && 'grid-cols-2',
         columns === 3 && 'grid-cols-3',
         columns === 4 && 'grid-cols-4',
-        className
+        className,
       )}
       initial="hidden"
       animate="visible"
@@ -523,10 +509,7 @@ export function AnimatedGridItem({
   };
 
   return (
-    <motion.div
-      className={className}
-      variants={prefersReducedMotion ? undefined : item}
-    >
+    <motion.div className={className} variants={prefersReducedMotion ? undefined : item}>
       {children}
     </motion.div>
   );
@@ -601,5 +584,3 @@ export function NumberCounter({
     </motion.span>
   );
 }
-
-

@@ -27,7 +27,21 @@ function createMockClient(): TypedSupabaseClient {
   const createMockChain = () => {
     const chain: Record<string, unknown> = {};
 
-    const methods = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'in', 'like', 'ilike', 'is', 'not', 'or', 'and'];
+    const methods = [
+      'eq',
+      'neq',
+      'gt',
+      'gte',
+      'lt',
+      'lte',
+      'in',
+      'like',
+      'ilike',
+      'is',
+      'not',
+      'or',
+      'and',
+    ];
     const terminators = ['single', 'maybeSingle', 'limit', 'order', 'range', 'abortSignal'];
 
     methods.forEach((method) => {
@@ -87,7 +101,7 @@ function createMockClient(): TypedSupabaseClient {
 
 /**
  * 创建服务端 Supabase 客户端
- * 
+ *
  * 注意：此客户端仅用于 Realtime 订阅等 Supabase 特有功能
  * 常规数据库操作请使用 @/server/db 中的 query 函数
  */
@@ -115,7 +129,7 @@ export function createSupabaseClient(): TypedSupabaseClient {
 
 /**
  * 服务端 Supabase 客户端单例
- * 
+ *
  * 用途：Realtime 订阅 (alerts/stream)
  * 常规数据库操作请使用 @/server/db 中的 query 函数
  */

@@ -21,12 +21,6 @@ import {
   Server,
 } from 'lucide-react';
 
-
-
-
-
-
-
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -98,7 +92,7 @@ export default function SLADashboardPage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="border-primary h-12 w-12 animate-spin rounded-full border-b-2"></div>
+        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -109,7 +103,7 @@ export default function SLADashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">{t('sla:title')}</h1>
-          <p className="text-muted-foreground mt-1">{t('sla:subtitle')}</p>
+          <p className="mt-1 text-muted-foreground">{t('sla:subtitle')}</p>
         </div>
         <Button variant="outline" size="sm" onClick={refresh} disabled={refreshing}>
           <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
@@ -171,7 +165,7 @@ export default function SLADashboardPage() {
               reports.map((report, index) => <SLAReportCard key={index} report={report} />)
             ) : (
               <div className="py-8 text-center">
-                <Server className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
+                <Server className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
                 <p className="text-muted-foreground">{t('sla:reports.noData')}</p>
               </div>
             )}
@@ -208,9 +202,9 @@ function StatCard({
           <div className={`rounded-lg p-2 ${statusColors[status]}`}>{icon}</div>
         </div>
         <div className="mt-4">
-          <p className="text-muted-foreground text-sm">{title}</p>
+          <p className="text-sm text-muted-foreground">{title}</p>
           <p className="text-3xl font-bold">{value}</p>
-          <p className="text-muted-foreground text-sm">{subtitle}</p>
+          <p className="text-sm text-muted-foreground">{subtitle}</p>
         </div>
       </CardContent>
     </Card>
@@ -236,7 +230,9 @@ function SLAReportCard({ report }: { report: SLAReport }) {
             <p className="font-medium">
               {report.protocol.toUpperCase()} - {report.chain}
             </p>
-            <p className="text-muted-foreground text-sm">{t('common:labels.period')}: {report.period}</p>
+            <p className="text-sm text-muted-foreground">
+              {t('common:labels.period')}: {report.period}
+            </p>
           </div>
         </div>
         <Badge variant={config.badge as 'default' | 'secondary' | 'destructive' | 'outline'}>
@@ -285,9 +281,13 @@ function SLAReportCard({ report }: { report: SLAReport }) {
         </div>
       </div>
 
-      <div className="text-muted-foreground mt-4 flex items-center gap-4 text-sm">
-        <span>{t('common:labels.totalRequests')}: {report.totalRequests.toLocaleString()}</span>
-        <span>{t('common:labels.failedRequests')}: {report.failedRequests.toLocaleString()}</span>
+      <div className="mt-4 flex items-center gap-4 text-sm text-muted-foreground">
+        <span>
+          {t('common:labels.totalRequests')}: {report.totalRequests.toLocaleString()}
+        </span>
+        <span>
+          {t('common:labels.failedRequests')}: {report.failedRequests.toLocaleString()}
+        </span>
         <span>
           {t('common:labels.successRate')}:{' '}
           {report.totalRequests > 0
@@ -314,12 +314,14 @@ function MetricItem({
   const { t } = useI18n();
   return (
     <div className="space-y-1">
-      <div className="text-muted-foreground flex items-center gap-2">
+      <div className="flex items-center gap-2 text-muted-foreground">
         {icon}
         <span className="text-xs">{label}</span>
       </div>
       <p className="text-lg font-medium">{value}</p>
-      <p className="text-muted-foreground text-xs">{t('common:labels.target')}: {target}</p>
+      <p className="text-xs text-muted-foreground">
+        {t('common:labels.target')}: {target}
+      </p>
     </div>
   );
 }

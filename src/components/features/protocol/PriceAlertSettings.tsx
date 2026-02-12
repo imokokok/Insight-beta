@@ -60,8 +60,8 @@ export function PriceAlertSettings({ symbol, currentPrice, className }: PriceAle
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="bg-muted flex items-center justify-between rounded-lg p-3">
-          <span className="text-muted-foreground text-sm">Current Price</span>
+        <div className="flex items-center justify-between rounded-lg bg-muted p-3">
+          <span className="text-sm text-muted-foreground">Current Price</span>
           <span className="text-lg font-semibold">${currentPrice.toLocaleString()}</span>
         </div>
 
@@ -88,7 +88,7 @@ export function PriceAlertSettings({ symbol, currentPrice, className }: PriceAle
 
         <div className="space-y-2">
           {alerts.length === 0 ? (
-            <p className="text-muted-foreground py-4 text-center text-sm">
+            <p className="py-4 text-center text-sm text-muted-foreground">
               No alerts set. Add one above.
             </p>
           ) : (
@@ -104,7 +104,7 @@ export function PriceAlertSettings({ symbol, currentPrice, className }: PriceAle
                       {alert.type === 'above' ? '↑ Above' : '↓ Below'} $
                       {alert.price.toLocaleString()}
                     </p>
-                    <p className="text-muted-foreground text-xs">
+                    <p className="text-xs text-muted-foreground">
                       {alert.enabled ? 'Active' : 'Paused'}
                     </p>
                   </div>

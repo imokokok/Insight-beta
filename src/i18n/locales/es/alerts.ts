@@ -34,7 +34,8 @@ export const alerts = {
   // Configuración de Canales de Notificación
   config: {
     title: 'Configuración de Canales de Notificación',
-    description: 'Configura Webhook, PagerDuty, Slack, Email y otros canales de notificación de alertas',
+    description:
+      'Configura Webhook, PagerDuty, Slack, Email y otros canales de notificación de alertas',
     save: 'Guardar Configuración',
     saveSuccess: 'Configuración Guardada',
     saveSuccessDesc: 'La configuración de canales de notificación se ha actualizado correctamente',

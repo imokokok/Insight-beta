@@ -5,7 +5,7 @@
  * 用于检测各种 Web3 钱包内置浏览器环境
  */
 
-export type WalletBrowserType = 
+export type WalletBrowserType =
   | 'metamask'
   | 'trust'
   | 'tokenpocket'
@@ -42,14 +42,15 @@ export interface WalletBrowserInfo {
 
 export function isMobile(): boolean {
   if (typeof window === 'undefined') return false;
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-    navigator.userAgent,
-  );
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 
 export function isIOS(): boolean {
   if (typeof window === 'undefined') return false;
-  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as unknown as { MSStream: unknown }).MSStream;
+  return (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) &&
+    !(window as unknown as { MSStream: unknown }).MSStream
+  );
 }
 
 export function isAndroid(): boolean {
@@ -347,15 +348,15 @@ export function needsDeepLink(): boolean {
 
 export function getRecommendedWalletMethod(): 'browser' | 'walletconnect' | 'deeplink' {
   const info = getWalletBrowserInfo();
-  
+
   if (info.isWalletBrowser) {
     return 'browser';
   }
-  
+
   if (info.isMobile) {
     return 'deeplink';
   }
-  
+
   return 'walletconnect';
 }
 
@@ -396,7 +397,7 @@ export function getBitgetDeepLink(url?: string): string {
 
 export function getCurrentDeepLink(walletType?: WalletBrowserType): string {
   const url = typeof window !== 'undefined' ? window.location.href : '';
-  
+
   switch (walletType) {
     case 'metamask':
       return getMetaMaskDeepLink(url);
@@ -417,9 +418,11 @@ export function getCurrentDeepLink(walletType?: WalletBrowserType): string {
   }
 }
 
-export function supportsFeature(feature: 'eip1559' | 'wallet_switchEthereumChain' | 'wallet_addEthereumChain'): boolean {
+export function supportsFeature(
+  feature: 'eip1559' | 'wallet_switchEthereumChain' | 'wallet_addEthereumChain',
+): boolean {
   const info = getWalletBrowserInfo();
-  
+
   switch (feature) {
     case 'eip1559':
       return info.isWalletBrowser || !info.isMobile;

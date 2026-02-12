@@ -37,7 +37,8 @@ export const wallet = {
   mobileHelp: 'Si tiene una app de billetera instalada, haga clic en el nombre para abrirla',
   openInWallet: 'Abrir en Billetera',
   pleaseOpenInWallet: 'Por favor abra esta página en {{wallet}} para conectar',
-  recommendedInApp: 'Para la mejor experiencia, recomendamos usar el navegador integrado de su billetera',
+  recommendedInApp:
+    'Para la mejor experiencia, recomendamos usar el navegador integrado de su billetera',
   connectWithWalletConnect: 'Conectar con WalletConnect',
   // Cambio de cadena
   walletNotConnected: 'Billetera no conectada',

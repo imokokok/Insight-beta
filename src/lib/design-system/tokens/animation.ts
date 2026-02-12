@@ -517,7 +517,7 @@ export const cssAnimationClasses = {
  */
 export function getReducedMotionConfig(
   prefersReducedMotion: boolean,
-  config: Transition
+  config: Transition,
 ): Transition {
   if (prefersReducedMotion) {
     return {
@@ -533,7 +533,7 @@ export function getReducedMotionConfig(
  */
 export function createStaggerConfig(
   staggerChildren: number,
-  delayChildren: number = 0
+  delayChildren: number = 0,
 ): { staggerChildren: number; delayChildren: number } {
   return { staggerChildren, delayChildren };
 }
@@ -543,7 +543,7 @@ export function createStaggerConfig(
  */
 export function createPageTransition(
   variant: keyof typeof pageTransitionVariants,
-  duration: number = ANIMATION_DURATION.normal
+  duration: number = ANIMATION_DURATION.normal,
 ): Variants {
   const baseVariant = pageTransitionVariants[variant];
   if (!baseVariant) {

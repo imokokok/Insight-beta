@@ -44,54 +44,12 @@ export {
 } from './PythSync';
 
 export {
-  bandSyncManager,
-  startBandSync,
-  stopBandSync,
-  stopAllBandSync,
-  cleanupBandData,
-} from './BandSync';
-
-export {
-  diaSyncManager,
-  startDIASync,
-  stopDIASync,
-  stopAllDIASync,
-  cleanupDIAData,
-} from './DIASync';
-
-export {
-  api3SyncManager,
-  startAPI3Sync,
-  stopAPI3Sync,
-  stopAllAPI3Sync,
-  cleanupAPI3Data,
-} from './API3Sync';
-
-export {
   redstoneSyncManager,
   startRedStoneSync,
   stopRedStoneSync,
   stopAllRedStoneSync,
   cleanupRedStoneData,
 } from './RedStoneSync';
-
-// Flux Sync
-export {
-  fluxSyncManager,
-  startFluxSync,
-  stopFluxSync,
-  stopAllFluxSync,
-  cleanupFluxData,
-} from './FluxSync';
-
-// Switchboard Sync
-export {
-  switchboardSyncManager,
-  startSwitchboardSync,
-  stopSwitchboardSync,
-  stopAllSwitchboardSync,
-  cleanupSwitchboardData,
-} from './SwitchboardSync';
 
 // UMA Sync
 export {
@@ -116,7 +74,6 @@ export async function getSyncManager(
   protocol: OracleProtocol,
 ): Promise<import('./BaseSyncManager').BaseSyncManager> {
   if (!syncManagers.has(protocol)) {
-    // 动态导入避免循环依赖
     switch (protocol) {
       case 'chainlink': {
         const { chainlinkSyncManager } = await import('./ChainlinkSync');
@@ -128,34 +85,9 @@ export async function getSyncManager(
         syncManagers.set(protocol, pythSyncManager);
         break;
       }
-      case 'band': {
-        const { bandSyncManager } = await import('./BandSync');
-        syncManagers.set(protocol, bandSyncManager);
-        break;
-      }
-      case 'dia': {
-        const { diaSyncManager } = await import('./DIASync');
-        syncManagers.set(protocol, diaSyncManager);
-        break;
-      }
-      case 'api3': {
-        const { api3SyncManager } = await import('./API3Sync');
-        syncManagers.set(protocol, api3SyncManager);
-        break;
-      }
       case 'redstone': {
         const { redstoneSyncManager } = await import('./RedStoneSync');
         syncManagers.set(protocol, redstoneSyncManager);
-        break;
-      }
-      case 'flux': {
-        const { fluxSyncManager } = await import('./FluxSync');
-        syncManagers.set(protocol, fluxSyncManager);
-        break;
-      }
-      case 'switchboard': {
-        const { switchboardSyncManager } = await import('./SwitchboardSync');
-        syncManagers.set(protocol, switchboardSyncManager);
         break;
       }
       case 'uma': {

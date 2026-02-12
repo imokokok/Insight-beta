@@ -25,7 +25,7 @@
  */
 export function buildApiUrl(
   basePath: string,
-  params?: Record<string, string | number | boolean | undefined | null>
+  params?: Record<string, string | number | boolean | undefined | null>,
 ): string {
   if (!params || Object.keys(params).length === 0) {
     return basePath;

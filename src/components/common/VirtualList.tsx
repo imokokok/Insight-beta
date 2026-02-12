@@ -33,7 +33,7 @@ export function VirtualList<T>({
     const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
     const visibleCount = Math.ceil(containerHeight / itemHeight) + overscan * 2;
     const endIndex = Math.min(items.length, startIndex + visibleCount);
-    
+
     return { startIndex, endIndex };
   }, [scrollTop, itemHeight, containerHeight, overscan, items.length]);
 
@@ -46,13 +46,13 @@ export function VirtualList<T>({
 
     const handleScroll = () => {
       if (rafId) return;
-      
+
       rafId = requestAnimationFrame(() => {
         const newScrollTop = container.scrollTop;
         if (newScrollTop !== lastScrollTop) {
           lastScrollTop = newScrollTop;
           setScrollTop(newScrollTop);
-          
+
           if (onEndReached) {
             const remainingScroll = totalHeight - newScrollTop - containerHeight;
             if (remainingScroll < endReachedThreshold) {
@@ -65,7 +65,7 @@ export function VirtualList<T>({
     };
 
     container.addEventListener('scroll', handleScroll, { passive: true });
-    
+
     return () => {
       container.removeEventListener('scroll', handleScroll);
       if (rafId) cancelAnimationFrame(rafId);

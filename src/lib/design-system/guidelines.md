@@ -97,14 +97,14 @@ const cardColor = getComponentColor('blue');
 
 ### 颜色选择指南
 
-| 场景 | 推荐颜色 | 说明 |
-|------|----------|------|
-| 成功/健康 | `emerald` | 表示积极状态 |
-| 警告/注意 | `amber` | 表示需要注意的状态（不要用 orange） |
-| 错误/失败 | `red` | 表示负面状态 |
-| 信息/提示 | `blue` | 表示中性信息 |
-| 主要操作 | `blue` | 主要按钮、链接 |
-| 次要操作 | `purple` | 次要按钮、链接 |
+| 场景      | 推荐颜色  | 说明                                |
+| --------- | --------- | ----------------------------------- |
+| 成功/健康 | `emerald` | 表示积极状态                        |
+| 警告/注意 | `amber`   | 表示需要注意的状态（不要用 orange） |
+| 错误/失败 | `red`     | 表示负面状态                        |
+| 信息/提示 | `blue`    | 表示中性信息                        |
+| 主要操作  | `blue`    | 主要按钮、链接                      |
+| 次要操作  | `purple`  | 次要按钮、链接                      |
 
 ---
 
@@ -133,9 +133,9 @@ import { SPACING_TOKENS } from '@/lib/design-system/tokens';
 
 // 使用基础间距
 const style = {
-  padding: SPACING_TOKENS[4],    // 16px
-  margin: SPACING_TOKENS[6],      // 24px
-  gap: SPACING_TOKENS[2],         // 8px
+  padding: SPACING_TOKENS[4], // 16px
+  margin: SPACING_TOKENS[6], // 24px
+  gap: SPACING_TOKENS[2], // 8px
 };
 ```
 
@@ -146,9 +146,9 @@ import { SEMANTIC_SPACING } from '@/lib/design-system/tokens';
 
 // 使用语义化间距
 const style = {
-  padding: SEMANTIC_SPACING.md,     // 16px
-  margin: SEMANTIC_SPACING.lg,      // 24px
-  gap: SEMANTIC_SPACING.sm,         // 8px
+  padding: SEMANTIC_SPACING.md, // 16px
+  margin: SEMANTIC_SPACING.lg, // 24px
+  gap: SEMANTIC_SPACING.sm, // 8px
 };
 ```
 
@@ -159,13 +159,13 @@ import { COMPONENT_SPACING } from '@/lib/design-system/tokens';
 
 // 使用组件间距配置
 const buttonStyle = {
-  padding: COMPONENT_SPACING.button.padding.md,  // '12px 24px'
-  gap: COMPONENT_SPACING.button.gap,            // '8px'
+  padding: COMPONENT_SPACING.button.padding.md, // '12px 24px'
+  gap: COMPONENT_SPACING.button.gap, // '8px'
 };
 
 const cardStyle = {
-  padding: COMPONENT_SPACING.card.padding.md,    // '24px'
-  gap: COMPONENT_SPACING.card.gap,              // '16px'
+  padding: COMPONENT_SPACING.card.padding.md, // '24px'
+  gap: COMPONENT_SPACING.card.gap, // '16px'
 };
 ```
 
@@ -188,14 +188,14 @@ const style = {
 
 ### 间距选择指南
 
-| 场景 | 推荐间距 | 说明 |
-|------|----------|------|
-| 按钮内边距 | `sm: 8px 16px`, `md: 12px 24px` | 根据按钮大小选择 |
-| 卡片内边距 | `sm: 16px`, `md: 24px`, `lg: 32px` | 根据卡片大小选择 |
-| 表单元素间距 | `16px` | 表单字段之间的间距 |
-| 列表项间距 | `sm: 8px`, `md: 16px`, `lg: 24px` | 根据列表密度选择 |
-| 网格间距 | `sm: 16px`, `md: 24px`, `lg: 32px` | 根据网格大小选择 |
-| 章节间距 | `32px - 64px` | 主要内容块之间的间距 |
+| 场景         | 推荐间距                           | 说明                 |
+| ------------ | ---------------------------------- | -------------------- |
+| 按钮内边距   | `sm: 8px 16px`, `md: 12px 24px`    | 根据按钮大小选择     |
+| 卡片内边距   | `sm: 16px`, `md: 24px`, `lg: 32px` | 根据卡片大小选择     |
+| 表单元素间距 | `16px`                             | 表单字段之间的间距   |
+| 列表项间距   | `sm: 8px`, `md: 16px`, `lg: 24px`  | 根据列表密度选择     |
+| 网格间距     | `sm: 16px`, `md: 24px`, `lg: 32px` | 根据网格大小选择     |
+| 章节间距     | `32px - 64px`                      | 主要内容块之间的间距 |
 
 ---
 
@@ -223,7 +223,7 @@ import { FONT_SIZE } from '@/lib/design-system/tokens';
 
 // 使用字体大小
 const style = {
-  fontSize: FONT_SIZE.base.value,      // '1rem'
+  fontSize: FONT_SIZE.base.value, // '1rem'
   lineHeight: FONT_SIZE.base.lineHeight, // '1.5rem'
   letterSpacing: FONT_SIZE.base.letterSpacing, // '0em'
 };
@@ -272,16 +272,16 @@ const h1SizeDesktop = RESPONSIVE_TYPOGRAPHY.desktop.h1;  // '6xl'
 
 ### 排版选择指南
 
-| 场景 | 推荐排版 | 说明 |
-|------|----------|------|
-| 页面标题 | `h1` (mobile: 3xl, desktop: 6xl) | 页面主标题 |
-| 章节标题 | `h2` (mobile: 2xl, desktop: 4xl) | 主要章节标题 |
-| 子标题 | `h3` (mobile: xl, desktop: 3xl) | 次要章节标题 |
-| 正文 | `body` (base) | 主要文本内容 |
-| 辅助文本 | `body-sm` (sm) | 次要文本、说明 |
-| 标签 | `label` (sm, medium) | 表单标签、按钮文本 |
-| 说明文字 | `caption` (xs) | 辅助说明、时间戳 |
-| 代码 | `code` (sm, mono) | 代码片段、技术文本 |
+| 场景     | 推荐排版                         | 说明               |
+| -------- | -------------------------------- | ------------------ |
+| 页面标题 | `h1` (mobile: 3xl, desktop: 6xl) | 页面主标题         |
+| 章节标题 | `h2` (mobile: 2xl, desktop: 4xl) | 主要章节标题       |
+| 子标题   | `h3` (mobile: xl, desktop: 3xl)  | 次要章节标题       |
+| 正文     | `body` (base)                    | 主要文本内容       |
+| 辅助文本 | `body-sm` (sm)                   | 次要文本、说明     |
+| 标签     | `label` (sm, medium)             | 表单标签、按钮文本 |
+| 说明文字 | `caption` (xs)                   | 辅助说明、时间戳   |
+| 代码     | `code` (sm, mono)                | 代码片段、技术文本 |
 
 ---
 
@@ -290,13 +290,14 @@ const h1SizeDesktop = RESPONSIVE_TYPOGRAPHY.desktop.h1;  // '6xl'
 ### 开发新组件时
 
 1. **使用设计令牌**
+
    ```typescript
    import { COMPONENT_SPACING, COMPONENT_TYPOGRAPHY } from '@/lib/design-system/tokens';
-   
+
    export function MyCard({ children }: { children: React.ReactNode }) {
      return (
-       <div 
-         style={{ 
+       <div
+         style={{
            padding: COMPONENT_SPACING.card.padding.md,
            gap: COMPONENT_SPACING.card.gap,
          }}
@@ -308,17 +309,18 @@ const h1SizeDesktop = RESPONSIVE_TYPOGRAPHY.desktop.h1;  // '6xl'
    ```
 
 2. **支持颜色变体**
+
    ```typescript
    import { ComponentColor, getComponentColor } from '@/lib/design-system/tokens';
-   
+
    interface CardProps {
      color?: ComponentColor;
      children: React.ReactNode;
    }
-   
+
    export function Card({ color = 'blue', children }: CardProps) {
      const colorConfig = getComponentColor(color);
-     
+
      return (
        <div className={colorConfig.bg}>
          {children}
@@ -341,10 +343,11 @@ const h1SizeDesktop = RESPONSIVE_TYPOGRAPHY.desktop.h1;  // '6xl'
 ### 更新现有组件时
 
 1. **替换硬编码的颜色值**
+
    ```typescript
    // ❌ 之前
    <div className="bg-orange-500 text-white">
-   
+
    // ✅ 之后
    import { getStatusColor } from '@/lib/design-system/tokens';
    const color = getStatusColor('warning');
@@ -352,20 +355,22 @@ const h1SizeDesktop = RESPONSIVE_TYPOGRAPHY.desktop.h1;  // '6xl'
    ```
 
 2. **替换硬编码的间距值**
+
    ```typescript
    // ❌ 之前
    <div style={{ padding: '16px', gap: '8px' }}>
-   
+
    // ✅ 之后
    import { COMPONENT_SPACING } from '@/lib/design-system/tokens';
    <div style={{ padding: COMPONENT_SPACING.card.padding.md, gap: COMPONENT_SPACING.card.gap }}>
    ```
 
 3. **替换硬编码的排版值**
+
    ```typescript
    // ❌ 之前
    <h1 style={{ fontSize: '2.25rem', fontWeight: '700' }}>
-   
+
    // ✅ 之后
    import { TEXT_STYLES } from '@/lib/design-system/tokens';
    <h1 style={TEXT_STYLES.h3}>
@@ -378,6 +383,7 @@ const h1SizeDesktop = RESPONSIVE_TYPOGRAPHY.desktop.h1;  // '6xl'
 ### Q: 为什么要用 amber 替代 orange？
 
 A: `amber` 是 Tailwind CSS 的标准颜色名称，而 `orange` 不是。使用 `amber` 可以：
+
 - 与 Tailwind 的颜色系统保持一致
 - 避免类型错误
 - 确保颜色的一致性

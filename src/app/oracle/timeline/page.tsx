@@ -22,10 +22,6 @@ import {
   RefreshCw,
 } from 'lucide-react';
 
-
-
-
-
 import { PageSkeleton } from '@/components/ui';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -33,8 +29,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { logger } from '@/shared/logger';
-
-
 
 interface TimelineEvent {
   id: string;
@@ -152,7 +146,7 @@ export default function TimelinePage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold">事件时间线</h1>
-          <p className="text-muted-foreground text-sm">追踪系统事件、告警和关键操作</p>
+          <p className="text-sm text-muted-foreground">追踪系统事件、告警和关键操作</p>
         </div>
         <Button variant="outline" onClick={refresh} disabled={refreshing}>
           <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
@@ -219,7 +213,7 @@ export default function TimelinePage() {
                 {Object.entries(groupedEvents).map(([date, dateEvents]) => (
                   <div key={date}>
                     <div className="bg-background sticky top-0 mb-4 flex items-center gap-2 py-2">
-                      <span className="text-muted-foreground text-sm font-medium">{date}</span>
+                      <span className="text-sm font-medium text-muted-foreground">{date}</span>
                       <Separator className="flex-1" />
                     </div>
                     <div className="space-y-4">
@@ -235,7 +229,7 @@ export default function TimelinePage() {
                   </div>
                 ))}
                 {filteredEvents.length === 0 && (
-                  <div className="text-muted-foreground py-12 text-center">暂无事件</div>
+                  <div className="py-12 text-center text-muted-foreground">暂无事件</div>
                 )}
               </div>
             </ScrollArea>
@@ -256,7 +250,7 @@ export default function TimelinePage() {
                   </Badge>
                   <h3 className="font-semibold">{selectedEvent.title}</h3>
                   {selectedEvent.description && (
-                    <p className="text-muted-foreground mt-1 text-sm">
+                    <p className="mt-1 text-sm text-muted-foreground">
                       {selectedEvent.description}
                     </p>
                   )}
@@ -304,7 +298,7 @@ export default function TimelinePage() {
                     <Separator />
                     <div>
                       <h4 className="mb-2 text-sm font-medium">元数据</h4>
-                      <pre className="bg-muted max-h-40 overflow-auto rounded p-2 text-xs">
+                      <pre className="max-h-40 overflow-auto rounded bg-muted p-2 text-xs">
                         {JSON.stringify(selectedEvent.metadata, null, 2)}
                       </pre>
                     </div>
@@ -312,7 +306,7 @@ export default function TimelinePage() {
                 )}
               </div>
             ) : (
-              <div className="text-muted-foreground py-12 text-center">选择一个事件查看详情</div>
+              <div className="py-12 text-center text-muted-foreground">选择一个事件查看详情</div>
             )}
           </CardContent>
         </Card>
@@ -343,7 +337,7 @@ function StatCard({
       <CardContent className="flex items-center gap-4 p-6">
         <div className="bg-background rounded-lg p-2">{icon}</div>
         <div>
-          <p className="text-muted-foreground text-sm">{title}</p>
+          <p className="text-sm text-muted-foreground">{title}</p>
           <p className="text-2xl font-bold">{value}</p>
         </div>
       </CardContent>
@@ -403,13 +397,13 @@ function EventCard({
 
   return (
     <div
-      className={`hover:bg-muted cursor-pointer rounded-lg border border-l-4 p-4 transition-colors ${
+      className={`cursor-pointer rounded-lg border border-l-4 p-4 transition-colors hover:bg-muted ${
         severityColors[event.severity]
       } ${selected ? 'bg-muted' : ''}`}
       onClick={onClick}
     >
       <div className="flex items-start gap-3">
-        <div className="text-muted-foreground mt-0.5">
+        <div className="mt-0.5 text-muted-foreground">
           {icons[event.eventType] || <Activity className="h-4 w-4" />}
         </div>
         <div className="min-w-0 flex-1">
@@ -420,9 +414,9 @@ function EventCard({
             </Badge>
           </div>
           {event.description && (
-            <p className="text-muted-foreground mt-1 line-clamp-2 text-sm">{event.description}</p>
+            <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{event.description}</p>
           )}
-          <div className="text-muted-foreground mt-2 flex items-center gap-3 text-xs">
+          <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
             <span>{new Date(event.occurredAt).toLocaleTimeString('zh-CN')}</span>
             {event.protocol && <span>{event.protocol}</span>}
             {event.chain && <span>{event.chain}</span>}

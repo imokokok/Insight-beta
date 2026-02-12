@@ -170,9 +170,11 @@ export const common = {
     fallback: {
       title: 'Servicio Temporalmente No Disponible',
       staleData: 'Los datos pueden estar desactualizados',
-      staleDataDesc: 'Actualmente se muestran datos en caché, que pueden no reflejar los precios más recientes. El servicio se está recuperando, por favor inténtelo más tarde.',
+      staleDataDesc:
+        'Actualmente se muestran datos en caché, que pueden no reflejar los precios más recientes. El servicio se está recuperando, por favor inténtelo más tarde.',
       stale: 'Datos en Caché',
-      staleDesc: 'Actualmente se muestran datos en caché, que pueden no reflejar los precios más recientes.',
+      staleDesc:
+        'Actualmente se muestran datos en caché, que pueden no reflejar los precios más recientes.',
       fresh: 'Datos Normales',
       freshDesc: 'Los datos están actualizados.',
       error: 'Error al Obtener Datos',

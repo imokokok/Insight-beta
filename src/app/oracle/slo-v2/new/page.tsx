@@ -12,12 +12,6 @@ import { useRouter } from 'next/navigation';
 
 import { ArrowLeft, Save, Target, Clock, Shield, AlertCircle } from 'lucide-react';
 
-
-
-
-
-
-
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -124,7 +118,7 @@ export default function CreateSloPage() {
         </Button>
         <div>
           <h1 className="text-2xl font-bold">创建 SLO</h1>
-          <p className="text-muted-foreground text-sm">定义新的服务等级目标</p>
+          <p className="text-sm text-muted-foreground">定义新的服务等级目标</p>
         </div>
       </div>
 
@@ -271,7 +265,7 @@ export default function CreateSloPage() {
                 max={99.99}
                 step={0.01}
               />
-              <p className="text-muted-foreground text-xs">
+              <p className="text-xs text-muted-foreground">
                 目标服务水平，例如 99.9% 表示允许 0.1% 的误差
               </p>
             </div>
@@ -288,7 +282,7 @@ export default function CreateSloPage() {
                 max={99}
                 step={0.1}
               />
-              <p className="text-muted-foreground text-xs">低于此值视为违约，触发告警</p>
+              <p className="text-xs text-muted-foreground">低于此值视为违约，触发告警</p>
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

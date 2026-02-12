@@ -97,7 +97,7 @@ export function AutoRefreshControl({
 
       {/* 倒计时显示 */}
       {isEnabled && (
-        <span className="text-muted-foreground w-8 text-xs">{formatTime(timeUntilRefresh)}</span>
+        <span className="w-8 text-xs text-muted-foreground">{formatTime(timeUntilRefresh)}</span>
       )}
 
       {/* 间隔设置 */}
@@ -108,7 +108,7 @@ export function AutoRefreshControl({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <div className="text-muted-foreground px-2 py-1.5 text-xs font-medium">
+          <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
             Refresh Interval
           </div>
           {intervals.map((item) => (
@@ -124,7 +124,7 @@ export function AutoRefreshControl({
                 <Clock className="h-3 w-3" />
                 {item.label}
               </span>
-              {interval === item.value && <div className="bg-primary h-2 w-2 rounded-full" />}
+              {interval === item.value && <div className="h-2 w-2 rounded-full bg-primary" />}
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>

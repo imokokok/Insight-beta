@@ -6,7 +6,3 @@ export * from './constants';
 export * from './env';
 export * from './rpcConfig';
 export * from './pythPriceFeeds';
-export * from './switchboardPriceFeeds';
-export * from './rpcConfig';
-export * from './pythPriceFeeds';
-export * from './switchboardPriceFeeds';

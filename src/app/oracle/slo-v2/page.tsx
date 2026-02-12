@@ -23,10 +23,6 @@ import {
   ChevronRight,
 } from 'lucide-react';
 
-
-
-
-
 import { PageSkeleton } from '@/components/ui';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -34,8 +30,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { logger } from '@/shared/logger';
-
-
 
 interface SloReport {
   sloId: string;
@@ -128,7 +122,7 @@ export default function SloDashboardPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold">SLO / Error Budget</h1>
-          <p className="text-muted-foreground text-sm">监控和管理服务等级目标</p>
+          <p className="text-sm text-muted-foreground">监控和管理服务等级目标</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={refresh} disabled={refreshing}>
@@ -185,9 +179,9 @@ export default function SloDashboardPage() {
         {filteredReports.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
-              <Target className="text-muted-foreground mx-auto h-12 w-12" />
+              <Target className="mx-auto h-12 w-12 text-muted-foreground" />
               <h3 className="mt-4 text-lg font-medium">暂无 SLO</h3>
-              <p className="text-muted-foreground mt-2">创建第一个 SLO 开始监控服务质量</p>
+              <p className="mt-2 text-muted-foreground">创建第一个 SLO 开始监控服务质量</p>
               <Button className="mt-4" onClick={navigateToCreate}>
                 <Plus className="mr-2 h-4 w-4" />
                 创建 SLO
@@ -231,7 +225,7 @@ function StatCard({
       <CardContent className="flex items-center gap-4 p-6">
         <div className="bg-background rounded-lg p-2">{icon}</div>
         <div>
-          <p className="text-muted-foreground text-sm">{title}</p>
+          <p className="text-sm text-muted-foreground">{title}</p>
           <p className="text-2xl font-bold">{value}</p>
         </div>
       </CardContent>
@@ -265,7 +259,7 @@ function SloCard({ report, onClick }: { report: SloReport; onClick: () => void }
 
   return (
     <Card
-      className={`hover:bg-muted cursor-pointer border-l-4 transition-colors ${border}`}
+      className={`cursor-pointer border-l-4 transition-colors hover:bg-muted ${border}`}
       onClick={onClick}
     >
       <CardContent className="p-6">
@@ -275,7 +269,7 @@ function SloCard({ report, onClick }: { report: SloReport; onClick: () => void }
               <h3 className="font-semibold">{report.name}</h3>
               {badge}
             </div>
-            <p className="text-muted-foreground mt-1 text-sm">
+            <p className="mt-1 text-sm text-muted-foreground">
               {report.protocol.toUpperCase()} · {report.chain} ·{' '}
               {getMetricTypeLabel(report.metricType)}
             </p>
@@ -288,7 +282,7 @@ function SloCard({ report, onClick }: { report: SloReport; onClick: () => void }
                   <span className="font-medium">{report.currentCompliance.toFixed(2)}%</span>
                 </div>
                 <Progress value={report.currentCompliance} className="mt-1" />
-                <p className="text-muted-foreground mt-1 text-xs">目标: {report.targetValue}%</p>
+                <p className="mt-1 text-xs text-muted-foreground">目标: {report.targetValue}%</p>
               </div>
 
               {/* Error Budget */}
@@ -304,7 +298,7 @@ function SloCard({ report, onClick }: { report: SloReport; onClick: () => void }
                   className="mt-1"
                 />
                 {report.errorBudget.daysUntilExhaustion && (
-                  <p className="text-muted-foreground mt-1 text-xs">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     预计 {report.errorBudget.daysUntilExhaustion} 天后耗尽
                   </p>
                 )}
@@ -313,12 +307,12 @@ function SloCard({ report, onClick }: { report: SloReport; onClick: () => void }
               {/* Burn Rate */}
               <div className="flex items-center gap-4">
                 <div>
-                  <p className="text-muted-foreground text-sm">消耗速率</p>
+                  <p className="text-sm text-muted-foreground">消耗速率</p>
                   <p className="font-medium">{report.errorBudget.burnRate.toFixed(1)} 分钟/天</p>
                 </div>
                 <div className="flex items-center gap-1">
                   {trendIcon[report.trend]}
-                  <span className="text-muted-foreground text-xs">
+                  <span className="text-xs text-muted-foreground">
                     {getTrendLabel(report.trend)}
                   </span>
                 </div>
@@ -326,7 +320,7 @@ function SloCard({ report, onClick }: { report: SloReport; onClick: () => void }
             </div>
           </div>
 
-          <ChevronRight className="text-muted-foreground h-5 w-5" />
+          <ChevronRight className="h-5 w-5 text-muted-foreground" />
         </div>
       </CardContent>
     </Card>

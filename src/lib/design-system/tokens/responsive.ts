@@ -233,10 +233,7 @@ export function getResponsiveRange(width: number): ResponsiveRange {
 /**
  * 创建媒体查询字符串
  */
-export function createMediaQuery(
-  min?: Breakpoint,
-  max?: Breakpoint
-): string {
+export function createMediaQuery(min?: Breakpoint, max?: Breakpoint): string {
   const conditions: string[] = [];
   if (min) conditions.push(`(min-width: ${BREAKPOINTS[min]}px)`);
   if (max) conditions.push(`(max-width: ${BREAKPOINTS[max] - 1}px)`);
@@ -247,7 +244,10 @@ export function createMediaQuery(
  * 获取响应式网格类名
  */
 export function getResponsiveGridCols(cols: number): string {
-  return RESPONSIVE_PATTERNS.columns[cols as keyof typeof RESPONSIVE_PATTERNS.columns] || `grid-cols-${cols}`;
+  return (
+    RESPONSIVE_PATTERNS.columns[cols as keyof typeof RESPONSIVE_PATTERNS.columns] ||
+    `grid-cols-${cols}`
+  );
 }
 
 /**
@@ -280,10 +280,7 @@ export type ResponsiveValue<T> = T | { [K in Breakpoint]?: T };
 /**
  * 解析响应式值
  */
-export function resolveResponsiveValue<T>(
-  value: ResponsiveValue<T>,
-  breakpoint: Breakpoint
-): T {
+export function resolveResponsiveValue<T>(value: ResponsiveValue<T>, breakpoint: Breakpoint): T {
   if (typeof value !== 'object' || value === null) {
     return value as T;
   }
@@ -313,7 +310,7 @@ export function resolveResponsiveValue<T>(
  */
 export function createContainerQuery(
   min?: keyof typeof CONTAINER_SIZES,
-  max?: keyof typeof CONTAINER_SIZES
+  max?: keyof typeof CONTAINER_SIZES,
 ): string {
   const conditions: string[] = [];
   if (min) conditions.push(`(min-width: ${CONTAINER_SIZES[min]})`);

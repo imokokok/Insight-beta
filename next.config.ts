@@ -249,13 +249,6 @@ const nextConfig: NextConfig = {
     // 添加 alias 避免重复模块
     config.resolve.alias = {
       ...config.resolve.alias,
-      // 确保只使用一个 React 实例
-      react: require.resolve('react'),
-      'react-dom': require.resolve('react-dom'),
-      // 确保 lodash 按需加载
-      lodash: require.resolve('lodash/es'),
-      // 避免 multiple instances of React
-      'react/jsx-runtime': require.resolve('react/jsx-runtime'),
     };
 
     // Tree-shaking 和代码分割优化
@@ -313,7 +306,7 @@ const nextConfig: NextConfig = {
           },
           // 工具库
           utils: {
-            test: /[\\/]node_modules[\\/](date-fns|lodash|ramda)[\\/]/,
+            test: /[\\/]node_modules[\\/](date-fns|ramda)[\\/]/,
             name: 'utils',
             chunks: 'all',
             priority: 25,
@@ -361,9 +354,6 @@ const nextConfig: NextConfig = {
 };
 
 const sentryWebpackPluginOptions = {
-  authToken: process.env.SENTRY_AUTH_TOKEN,
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
   silent: true,
 };
 

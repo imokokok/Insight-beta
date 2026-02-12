@@ -58,15 +58,16 @@ export const GasPriceHistoryViewer: React.FC<GasPriceHistoryViewerProps> = ({
   provider,
   limit = 100,
 }) => {
-
-  const [selectedPriceLevel, setSelectedPriceLevel] = useState<'slow' | 'average' | 'fast' | 'fastest'>('average');
+  const [selectedPriceLevel, setSelectedPriceLevel] = useState<
+    'slow' | 'average' | 'fast' | 'fastest'
+  >('average');
   const [showChart, setShowChart] = useState(true);
 
-  const { data: history, isLoading, mutate: refreshHistory } = useGasPriceHistory(
-    chain,
-    provider,
-    limit
-  );
+  const {
+    data: history,
+    isLoading,
+    mutate: refreshHistory,
+  } = useGasPriceHistory(chain, provider, limit);
 
   const chartData = React.useMemo(() => {
     if (!history || !history.data) return [];
@@ -98,13 +99,13 @@ export const GasPriceHistoryViewer: React.FC<GasPriceHistoryViewerProps> = ({
 
   const filteredHistory = React.useMemo(() => {
     if (!history || !history.data) return [];
-    return history.data.filter(h => h.priceLevel === selectedPriceLevel);
+    return history.data.filter((h) => h.priceLevel === selectedPriceLevel);
   }, [history, selectedPriceLevel]);
 
   const stats = React.useMemo(() => {
     if (filteredHistory.length === 0) return null;
 
-    const prices = filteredHistory.map(h => h.price);
+    const prices = filteredHistory.map((h) => h.price);
     const min = Math.min(...prices);
     const max = Math.max(...prices);
     const avg = prices.reduce((sum, p) => sum + p, 0) / prices.length;
@@ -121,8 +122,9 @@ export const GasPriceHistoryViewer: React.FC<GasPriceHistoryViewerProps> = ({
 
     const csv = [
       'Time,Chain,Provider,Price Level,Price (USD)',
-      ...history.data.map(h => 
-        `${h.timestamp},${h.chain},${h.provider},${h.priceLevel},${(h.price / 1e9).toFixed(4)}`
+      ...history.data.map(
+        (h) =>
+          `${h.timestamp},${h.chain},${h.provider},${h.priceLevel},${(h.price / 1e9).toFixed(4)}`,
       ),
     ].join('\n');
 
@@ -145,7 +147,7 @@ export const GasPriceHistoryViewer: React.FC<GasPriceHistoryViewerProps> = ({
           <Skeleton className="h-4 w-72" />
         </CardHeader>
         <CardContent>
-          <Skeleton className="w-full h-64" />
+          <Skeleton className="h-64 w-full" />
         </CardContent>
       </Card>
     );
@@ -179,11 +181,7 @@ export const GasPriceHistoryViewer: React.FC<GasPriceHistoryViewerProps> = ({
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowChart(!showChart)}
-            >
+            <Button variant="outline" size="sm" onClick={() => setShowChart(!showChart)}>
               {showChart ? (
                 <>
                   <Filter className="mr-1 h-4 w-4" />
@@ -196,19 +194,11 @@ export const GasPriceHistoryViewer: React.FC<GasPriceHistoryViewerProps> = ({
                 </>
               )}
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExport}
-            >
+            <Button variant="outline" size="sm" onClick={handleExport}>
               <Download className="mr-1 h-4 w-4" />
               Export
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => refreshHistory()}
-            >
+            <Button variant="outline" size="sm" onClick={() => refreshHistory()}>
               <Calendar className="mr-1 h-4 w-4" />
               Refresh
             </Button>
@@ -217,7 +207,7 @@ export const GasPriceHistoryViewer: React.FC<GasPriceHistoryViewerProps> = ({
       </CardHeader>
       <CardContent>
         {stats && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
             <div className="rounded-lg border p-3">
               <p className="text-xs text-muted-foreground">Current</p>
               <p className="text-lg font-semibold text-blue-600">
@@ -226,9 +216,7 @@ export const GasPriceHistoryViewer: React.FC<GasPriceHistoryViewerProps> = ({
             </div>
             <div className="rounded-lg border p-3">
               <p className="text-xs text-muted-foreground">Average</p>
-              <p className="text-lg font-semibold text-gray-600">
-                {formatPrice(stats.avg)}
-              </p>
+              <p className="text-lg font-semibold text-gray-600">{formatPrice(stats.avg)}</p>
             </div>
             <div className="rounded-lg border p-3">
               <p className="text-xs text-muted-foreground">Min / Max</p>
@@ -248,11 +236,16 @@ export const GasPriceHistoryViewer: React.FC<GasPriceHistoryViewerProps> = ({
                 ) : (
                   <Minus className="h-4 w-4 text-gray-600" />
                 )}
-                <p className={cn(
-                  'text-sm font-semibold',
-                  stats.changePercent > 0.1 ? 'text-emerald-600' :
-                  stats.changePercent < -0.1 ? 'text-red-600' : 'text-gray-600'
-                )}>
+                <p
+                  className={cn(
+                    'text-sm font-semibold',
+                    stats.changePercent > 0.1
+                      ? 'text-emerald-600'
+                      : stats.changePercent < -0.1
+                        ? 'text-red-600'
+                        : 'text-gray-600',
+                  )}
+                >
                   {formatChangePercent(stats.changePercent / 100, 2, false)}
                 </p>
               </div>
@@ -265,12 +258,8 @@ export const GasPriceHistoryViewer: React.FC<GasPriceHistoryViewerProps> = ({
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis 
-                  dataKey="time" 
-                  tick={{ fontSize: 12 }}
-                  stroke="#9ca3af"
-                />
-                <YAxis 
+                <XAxis dataKey="time" tick={{ fontSize: 12 }} stroke="#9ca3af" />
+                <YAxis
                   tick={{ fontSize: 12 }}
                   tickFormatter={(value) => (value / 1e9).toFixed(1)}
                   stroke="#9ca3af"
@@ -330,7 +319,7 @@ export const GasPriceHistoryViewer: React.FC<GasPriceHistoryViewerProps> = ({
           </div>
         ) : (
           <div className="space-y-3">
-            <div className="flex items-center gap-2 mb-4">
+            <div className="mb-4 flex items-center gap-2">
               <p className="text-sm font-medium">Price Level:</p>
               {(['slow', 'average', 'fast', 'fastest'] as const).map((level) => (
                 <Badge
@@ -345,7 +334,7 @@ export const GasPriceHistoryViewer: React.FC<GasPriceHistoryViewerProps> = ({
             </div>
             <div className="max-h-96 overflow-y-auto">
               <table className="w-full text-sm">
-                <thead className="sticky top-0 bg-background">
+                <thead className="bg-background sticky top-0">
                   <tr className="border-b">
                     <th className="p-2 text-left font-medium">Time</th>
                     <th className="p-2 text-left font-medium">Provider</th>
@@ -361,9 +350,7 @@ export const GasPriceHistoryViewer: React.FC<GasPriceHistoryViewerProps> = ({
                           {entry.provider}
                         </Badge>
                       </td>
-                      <td className="p-2 text-right font-mono">
-                        {formatPrice(entry.price)}
-                      </td>
+                      <td className="p-2 text-right font-mono">{formatPrice(entry.price)}</td>
                     </tr>
                   ))}
                 </tbody>

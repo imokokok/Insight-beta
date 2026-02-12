@@ -21,7 +21,7 @@ export class HttpError extends Error {
   constructor(
     public statusCode: number,
     message: string,
-    public response?: Response
+    public response?: Response,
   ) {
     super(message);
     this.name = 'HttpError';
@@ -35,10 +35,7 @@ export class TimeoutError extends Error {
   }
 }
 
-export async function safeFetch<T>(
-  url: string,
-  options: SafeFetchOptions = {}
-): Promise<T> {
+export async function safeFetch<T>(url: string, options: SafeFetchOptions = {}): Promise<T> {
   const {
     timeoutMs = DEFAULT_TIMEOUT_MS,
     retries = 0,
@@ -69,7 +66,7 @@ export async function safeFetch<T>(
         throw new HttpError(
           response.status,
           `HTTP ${response.status}: ${response.statusText}`,
-          response
+          response,
         );
       }
 
@@ -83,7 +80,7 @@ export async function safeFetch<T>(
       }
 
       if (attempt < retries) {
-        await new Promise(resolve => setTimeout(resolve, retryDelayMs));
+        await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
         continue;
       }
 
@@ -97,7 +94,7 @@ export async function safeFetch<T>(
 export async function safeFetchWithAuth<T>(
   url: string,
   token: string,
-  options: SafeFetchOptions = {}
+  options: SafeFetchOptions = {},
 ): Promise<T> {
   return safeFetch<T>(url, {
     ...options,

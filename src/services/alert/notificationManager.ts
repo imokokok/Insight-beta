@@ -101,7 +101,15 @@ export class NotificationManager {
    * 初始化渠道健康追踪
    */
   private initializeHealthTracking(): void {
-    const channels: NotificationChannel[] = ['email', 'sms', 'webhook', 'slack', 'discord', 'telegram', 'pagerduty'];
+    const channels: NotificationChannel[] = [
+      'email',
+      'sms',
+      'webhook',
+      'slack',
+      'discord',
+      'telegram',
+      'pagerduty',
+    ];
     for (const channel of channels) {
       this.channelHealth.set(channel, {
         channel,
@@ -133,11 +141,11 @@ export class NotificationManager {
 
     // 获取该严重性级别对应的渠道
     const channelNames = this.config.severityChannels[notification.severity] || [];
-    
+
     if (channelNames.length === 0) {
-      logger.warn('No channels configured for severity', { 
+      logger.warn('No channels configured for severity', {
         severity: notification.severity,
-        alertId: notification.alertId 
+        alertId: notification.alertId,
       });
       throw new Error('No notification channels configured');
     }
@@ -157,13 +165,13 @@ export class NotificationManager {
         const result = await this.notificationService.sendNotification(channelName, notification);
         results.push(result);
         channels.push(config.type);
-        
+
         // 更新渠道健康状态
         this.updateChannelHealth(config.type, result);
       } catch (error) {
-        logger.error(`Failed to send notification via ${channelName}`, { 
-          error, 
-          alertId: notification.alertId 
+        logger.error(`Failed to send notification via ${channelName}`, {
+          error,
+          alertId: notification.alertId,
         });
         results.push({
           success: false,
@@ -172,8 +180,8 @@ export class NotificationManager {
           timestamp: new Date(),
           durationMs: 0,
         });
-        this.updateChannelHealth(config.type, { 
-          success: false, 
+        this.updateChannelHealth(config.type, {
+          success: false,
           channel: config.type,
           timestamp: new Date(),
           durationMs: 0,
@@ -204,7 +212,7 @@ export class NotificationManager {
     this.addToHistory(historyRecord);
 
     // 记录结果
-    const successCount = results.filter(r => r.success).length;
+    const successCount = results.filter((r) => r.success).length;
     logger.info(`Alert sent`, {
       alertId: notification.alertId,
       severity: notification.severity,
@@ -221,15 +229,15 @@ export class NotificationManager {
    */
   async sendBatchAlerts(notifications: AlertNotification[]): Promise<AlertHistoryRecord[]> {
     const results: AlertHistoryRecord[] = [];
-    
+
     for (const notification of notifications) {
       try {
         const record = await this.sendAlert(notification);
         results.push(record);
       } catch (error) {
-        logger.error('Failed to send batch alert', { 
-          alertId: notification.alertId, 
-          error 
+        logger.error('Failed to send batch alert', {
+          alertId: notification.alertId,
+          error,
         });
       }
     }
@@ -258,7 +266,7 @@ export class NotificationManager {
    * 确认告警
    */
   acknowledgeAlert(alertId: string, acknowledgedBy: string): boolean {
-    const record = this.alertHistory.find(r => r.alertId === alertId);
+    const record = this.alertHistory.find((r) => r.alertId === alertId);
     if (!record) return false;
 
     record.acknowledged = true;
@@ -286,25 +294,25 @@ export class NotificationManager {
     let filtered = [...this.alertHistory];
 
     if (options?.severity) {
-      filtered = filtered.filter(r => r.severity === options.severity);
+      filtered = filtered.filter((r) => r.severity === options.severity);
     }
     if (options?.protocol) {
-      filtered = filtered.filter(r => r.protocol === options.protocol);
+      filtered = filtered.filter((r) => r.protocol === options.protocol);
     }
     if (options?.chain) {
-      filtered = filtered.filter(r => r.chain === options.chain);
+      filtered = filtered.filter((r) => r.chain === options.chain);
     }
     if (options?.symbol) {
-      filtered = filtered.filter(r => r.symbol === options.symbol);
+      filtered = filtered.filter((r) => r.symbol === options.symbol);
     }
     if (options?.startTime) {
-      filtered = filtered.filter(r => r.timestamp >= options.startTime!);
+      filtered = filtered.filter((r) => r.timestamp >= options.startTime!);
     }
     if (options?.endTime) {
-      filtered = filtered.filter(r => r.timestamp <= options.endTime!);
+      filtered = filtered.filter((r) => r.timestamp <= options.endTime!);
     }
     if (options?.acknowledged !== undefined) {
-      filtered = filtered.filter(r => r.acknowledged === options.acknowledged);
+      filtered = filtered.filter((r) => r.acknowledged === options.acknowledged);
     }
 
     // 排序（最新的在前）
@@ -338,12 +346,11 @@ export class NotificationManager {
 
     return {
       totalAlerts: this.alertHistory.length,
-      acknowledgedAlerts: this.alertHistory.filter(r => r.acknowledged).length,
-      pendingAlerts: this.alertHistory.filter(r => !r.acknowledged).length,
+      acknowledgedAlerts: this.alertHistory.filter((r) => r.acknowledged).length,
+      pendingAlerts: this.alertHistory.filter((r) => !r.acknowledged).length,
       channelHealth: this.getChannelHealth(),
-      recentAlertsCount: this.alertHistory.filter(
-        r => now - r.timestamp.getTime() < recentWindow
-      ).length,
+      recentAlertsCount: this.alertHistory.filter((r) => now - r.timestamp.getTime() < recentWindow)
+        .length,
     };
   }
 
@@ -362,7 +369,7 @@ export class NotificationManager {
    */
   cleanup(): void {
     const now = Date.now();
-    
+
     // 清理历史记录
     if (this.alertHistory.length > this.config.maxHistorySize) {
       this.alertHistory = this.alertHistory.slice(-this.config.maxHistorySize);
@@ -416,7 +423,7 @@ export class NotificationManager {
 
   private addToHistory(record: AlertHistoryRecord): void {
     this.alertHistory.push(record);
-    
+
     // 限制历史记录大小
     if (this.alertHistory.length > this.config.maxHistorySize) {
       this.alertHistory = this.alertHistory.slice(-this.config.maxHistorySize);
@@ -445,8 +452,8 @@ export class NotificationManager {
 
     // 更新成功率
     const totalAttempts = this.alertHistory.length;
-    const successCount = this.alertHistory.filter(
-      r => r.results.some(res => res.channel === channel && res.success)
+    const successCount = this.alertHistory.filter((r) =>
+      r.results.some((res) => res.channel === channel && res.success),
     ).length;
     health.successRate = totalAttempts > 0 ? successCount / totalAttempts : 1;
 

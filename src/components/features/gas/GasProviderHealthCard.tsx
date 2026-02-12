@@ -2,13 +2,7 @@
 
 import React from 'react';
 
-import {
-  Activity,
-  CheckCircle,
-  AlertTriangle,
-  XCircle,
-  Clock,
-} from 'lucide-react';
+import { Activity, CheckCircle, AlertTriangle, XCircle, Clock } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -55,8 +49,6 @@ export const GasProviderHealthCard: React.FC<GasProviderHealthCardProps> = ({
   data,
   isLoading,
 }) => {
-
-
   if (isLoading) {
     return (
       <Card className="w-full">
@@ -96,9 +88,7 @@ export const GasProviderHealthCard: React.FC<GasProviderHealthCardProps> = ({
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-lg font-semibold">Gas Provider Health</CardTitle>
-            <CardDescription className="text-sm">
-              Monitor gas price provider status
-            </CardDescription>
+            <CardDescription className="text-sm">Monitor gas price provider status</CardDescription>
           </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
@@ -130,11 +120,7 @@ export const GasProviderHealthCard: React.FC<GasProviderHealthCardProps> = ({
             return (
               <div
                 key={provider.provider}
-                className={cn(
-                  'rounded-lg border p-4',
-                  config.bgColor,
-                  config.borderColor
-                )}
+                className={cn('rounded-lg border p-4', config.bgColor, config.borderColor)}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
@@ -143,7 +129,7 @@ export const GasProviderHealthCard: React.FC<GasProviderHealthCardProps> = ({
                     </div>
                     <div>
                       <p className="font-semibold capitalize">{provider.provider}</p>
-                      <div className="flex items-center gap-2 mt-1">
+                      <div className="mt-1 flex items-center gap-2">
                         <Badge variant="outline" className={cn(config.borderColor, config.color)}>
                           {config.label}
                         </Badge>
@@ -166,11 +152,16 @@ export const GasProviderHealthCard: React.FC<GasProviderHealthCardProps> = ({
                 <div className="mt-4 grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-xs text-muted-foreground">Success Rate</p>
-                    <p className={cn(
-                      'text-sm font-semibold',
-                      provider.successRate >= 90 ? 'text-emerald-600' :
-                      provider.successRate >= 70 ? 'text-yellow-600' : 'text-red-600'
-                    )}>
+                    <p
+                      className={cn(
+                        'text-sm font-semibold',
+                        provider.successRate >= 90
+                          ? 'text-emerald-600'
+                          : provider.successRate >= 70
+                            ? 'text-yellow-600'
+                            : 'text-red-600',
+                      )}
+                    >
                       {formatPercentValue(provider.successRate, 1)}
                     </p>
                   </div>
@@ -180,7 +171,9 @@ export const GasProviderHealthCard: React.FC<GasProviderHealthCardProps> = ({
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Successes</p>
-                    <p className="text-sm font-semibold text-emerald-600">{provider.totalSuccesses}</p>
+                    <p className="text-sm font-semibold text-emerald-600">
+                      {provider.totalSuccesses}
+                    </p>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Failures</p>
@@ -188,7 +181,7 @@ export const GasProviderHealthCard: React.FC<GasProviderHealthCardProps> = ({
                   </div>
                 </div>
 
-                <div className="mt-3 pt-3 border-t">
+                <div className="mt-3 border-t pt-3">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">
                       Last Success: {new Date(provider.lastSuccessTime).toLocaleString()}

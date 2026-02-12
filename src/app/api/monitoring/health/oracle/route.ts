@@ -139,10 +139,7 @@ export async function GET(request: Request): Promise<NextResponse> {
     const protocols: OracleProtocol[] = [
       'chainlink',
       'pyth',
-      'api3',
-      'band',
       'redstone',
-      'dia',
       'uma',
     ];
 

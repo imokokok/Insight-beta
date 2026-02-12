@@ -70,7 +70,7 @@ export function MobileLayout({
         'min-h-screen-dynamic flex flex-col',
         isKeyboardOpen && 'keyboard-active',
         isWalletPopupOpen && 'wallet-popup-active',
-        className
+        className,
       )}
     >
       {children}
@@ -106,7 +106,7 @@ export function SafeAreaContainer({
         bottom && 'pb-safe',
         left && 'pl-safe',
         right && 'pr-safe',
-        className
+        className,
       )}
     >
       {children}
@@ -131,7 +131,7 @@ export function MobileFixedBottom({ children, className }: MobileFixedBottomProp
         'pb-safe pt-2',
         'bg-white/90 backdrop-blur-xl dark:bg-gray-900/90',
         'border-t border-gray-200 dark:border-gray-800',
-        className
+        className,
       )}
     >
       {children}
@@ -149,19 +149,9 @@ interface MobileContentProps {
   hasBottomNav?: boolean;
 }
 
-export function MobileContent({
-  children,
-  className,
-  hasBottomNav = true,
-}: MobileContentProps) {
+export function MobileContent({ children, className, hasBottomNav = true }: MobileContentProps) {
   return (
-    <main
-      className={cn(
-        'flex-1 overflow-y-auto',
-        hasBottomNav && 'pb-nav',
-        className
-      )}
-    >
+    <main className={cn('flex-1 overflow-y-auto', hasBottomNav && 'pb-nav', className)}>
       {children}
     </main>
   );

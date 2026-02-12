@@ -13,8 +13,7 @@
 import type { ReactNode } from 'react';
 import React, { createContext, useContext } from 'react';
 
-import type {
-  Density} from '@/lib/design-system/tokens/layout';
+import type { Density } from '@/lib/design-system/tokens/layout';
 import {
   DENSITY_CONFIG,
   GRID_COLUMNS,
@@ -50,11 +49,7 @@ interface DensityProviderProps {
 export function DensityProvider({ children, density = 'normal' }: DensityProviderProps) {
   const config = getDensityConfig(density);
 
-  return (
-    <DensityContext.Provider value={{ density, config }}>
-      {children}
-    </DensityContext.Provider>
-  );
+  return <DensityContext.Provider value={{ density, config }}>{children}</DensityContext.Provider>;
 }
 
 // ============================================================================
@@ -68,12 +63,7 @@ interface ContainerProps {
   padding?: boolean;
 }
 
-export function Container({
-  children,
-  className,
-  size = 'xl',
-  padding = true,
-}: ContainerProps) {
+export function Container({ children, className, size = 'xl', padding = true }: ContainerProps) {
   const sizeClasses = {
     sm: 'max-w-[640px]',
     md: 'max-w-[768px]',
@@ -89,7 +79,7 @@ export function Container({
         'mx-auto w-full',
         sizeClasses[size],
         padding && RESPONSIVE_PADDING.page,
-        className
+        className,
       )}
     >
       {children}
@@ -122,7 +112,7 @@ export function ResponsiveGrid({
         'grid',
         responsive ? GRID_COLUMNS[columns] : `grid-cols-${columns}`,
         GRID_GAPS[gap],
-        className
+        className,
       )}
     >
       {children}
@@ -140,38 +130,36 @@ interface DensityLayoutProps {
   density?: Density;
 }
 
-export function DensityLayout({
-  children,
-  className,
-  density = 'normal',
-}: DensityLayoutProps) {
+export function DensityLayout({ children, className, density = 'normal' }: DensityLayoutProps) {
   const config = getDensityConfig(density);
 
   return (
     <DensityProvider density={density}>
       <div
         className={cn('density-layout', className)}
-        style={{
-          '--density-spacing-xs': config.spacing.xs,
-          '--density-spacing-sm': config.spacing.sm,
-          '--density-spacing-md': config.spacing.md,
-          '--density-spacing-lg': config.spacing.lg,
-          '--density-spacing-xl': config.spacing.xl,
-          '--density-padding-card': config.padding.card,
-          '--density-padding-section': config.padding.section,
-          '--density-padding-page': config.padding.page,
-          '--density-gap-card': config.gap.card,
-          '--density-gap-section': config.gap.section,
-          '--density-gap-grid': config.gap.grid,
-          '--density-font-xs': config.fontSize.xs,
-          '--density-font-sm': config.fontSize.sm,
-          '--density-font-base': config.fontSize.base,
-          '--density-font-lg': config.fontSize.lg,
-          '--density-font-xl': config.fontSize.xl,
-          '--density-line-tight': config.lineHeight.tight,
-          '--density-line-normal': config.lineHeight.normal,
-          '--density-line-relaxed': config.lineHeight.relaxed,
-        } as React.CSSProperties}
+        style={
+          {
+            '--density-spacing-xs': config.spacing.xs,
+            '--density-spacing-sm': config.spacing.sm,
+            '--density-spacing-md': config.spacing.md,
+            '--density-spacing-lg': config.spacing.lg,
+            '--density-spacing-xl': config.spacing.xl,
+            '--density-padding-card': config.padding.card,
+            '--density-padding-section': config.padding.section,
+            '--density-padding-page': config.padding.page,
+            '--density-gap-card': config.gap.card,
+            '--density-gap-section': config.gap.section,
+            '--density-gap-grid': config.gap.grid,
+            '--density-font-xs': config.fontSize.xs,
+            '--density-font-sm': config.fontSize.sm,
+            '--density-font-base': config.fontSize.base,
+            '--density-font-lg': config.fontSize.lg,
+            '--density-font-xl': config.fontSize.xl,
+            '--density-line-tight': config.lineHeight.tight,
+            '--density-line-normal': config.lineHeight.normal,
+            '--density-line-relaxed': config.lineHeight.relaxed,
+          } as React.CSSProperties
+        }
       >
         {children}
       </div>
@@ -231,7 +219,7 @@ export function Stack({
         gapClasses[gap],
         alignClasses[align],
         justifyClasses[justify],
-        className
+        className,
       )}
     >
       {children}
@@ -295,7 +283,7 @@ export function Row({
         alignClasses[align],
         justifyClasses[justify],
         wrap && 'flex-wrap',
-        className
+        className,
       )}
     >
       {children}
@@ -346,12 +334,12 @@ export function SidebarLayout({
         'grid grid-cols-1',
         gapClasses[gap],
         collapseClasses[collapseBreakpoint],
-        className
+        className,
       )}
       style={{ '--sidebar-width': sidebarWidth } as React.CSSProperties}
     >
       <aside className="order-2 lg:order-1">{sidebar}</aside>
-      <main className="order-1 lg:order-2 min-w-0">{children}</main>
+      <main className="order-1 min-w-0 lg:order-2">{children}</main>
     </div>
   );
 }
@@ -402,7 +390,7 @@ export function SplitLayout({
         'grid',
         direction === 'horizontal' ? ratioClasses[ratio] : 'grid-rows-2',
         gapClasses[gap],
-        className
+        className,
       )}
     >
       <div className="min-w-0">{children}</div>
@@ -433,21 +421,13 @@ export function PageLayout({
   fullWidth = false,
 }: PageLayoutProps) {
   return (
-    <div className={cn('min-h-screen flex flex-col', className)}>
+    <div className={cn('flex min-h-screen flex-col', className)}>
       {header && <header className="flex-shrink-0">{header}</header>}
 
-      <div className="flex-1 flex">
-        {sidebar && (
-          <aside className="hidden lg:block w-64 flex-shrink-0">{sidebar}</aside>
-        )}
+      <div className="flex flex-1">
+        {sidebar && <aside className="hidden w-64 flex-shrink-0 lg:block">{sidebar}</aside>}
 
-        <main
-          className={cn(
-            'flex-1',
-            !fullWidth && 'container mx-auto',
-            RESPONSIVE_PADDING.page
-          )}
-        >
+        <main className={cn('flex-1', !fullWidth && 'container mx-auto', RESPONSIVE_PADDING.page)}>
           {children}
         </main>
       </div>
@@ -487,9 +467,7 @@ export function DashboardGrid({
   };
 
   return (
-    <div className={cn('grid', columnClasses[columns], gapClasses[gap], className)}>
-      {children}
-    </div>
+    <div className={cn('grid', columnClasses[columns], gapClasses[gap], className)}>{children}</div>
   );
 }
 
@@ -526,7 +504,7 @@ export function ContentSection({
     >
       {(title || description || actions) && (
         <div
-          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4"
+          className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
           style={{ marginBottom: config.spacing.md }}
         >
           <div>
@@ -543,7 +521,7 @@ export function ContentSection({
             )}
             {description && (
               <p
-                className="text-gray-500 mt-1"
+                className="mt-1 text-gray-500"
                 style={{
                   fontSize: config.fontSize.sm,
                   lineHeight: config.lineHeight.normal,

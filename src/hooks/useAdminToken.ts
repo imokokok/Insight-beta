@@ -9,11 +9,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-import {
-  getAdminToken,
-  setAdminToken,
-  clearAdminToken,
-} from '@/shared/utils/storage';
+import { getAdminToken, setAdminToken, clearAdminToken } from '@/shared/utils/storage';
 
 export interface UseAdminTokenOptions {
   /** 是否持久化到 sessionStorage */
@@ -56,7 +52,7 @@ export function useAdminToken(options: UseAdminTokenOptions = {}): UseAdminToken
       return;
     }
 
-    getAdminToken().then(saved => {
+    getAdminToken().then((saved) => {
       if (saved) {
         setTokenState(saved);
       }
@@ -74,7 +70,7 @@ export function useAdminToken(options: UseAdminTokenOptions = {}): UseAdminToken
         setAdminToken(trimmed);
       }
     },
-    [persist]
+    [persist],
   );
 
   // 清除令牌

@@ -14,13 +14,7 @@ function TourWrapper() {
 
   if (!isReady) return null;
 
-  return (
-    <FirstTimeTour
-      isOpen={showTour}
-      onComplete={dismissTour}
-      onSkip={dismissTour}
-    />
-  );
+  return <FirstTimeTour isOpen={showTour} onComplete={dismissTour} onSkip={dismissTour} />;
 }
 
 export function ClientComponentsWrapper({ children }: ClientComponentsWrapperProps) {

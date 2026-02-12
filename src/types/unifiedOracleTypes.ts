@@ -12,23 +12,13 @@ export type OracleProtocol =
   | 'uma' // UMA Optimistic Oracle
   | 'chainlink' // Chainlink Data Feeds
   | 'pyth' // Pyth Network
-  | 'band' // Band Protocol
-  | 'api3' // API3
-  | 'redstone' // RedStone
-  | 'switchboard' // Switchboard
-  | 'flux' // Flux
-  | 'dia'; // DIA
+  | 'redstone'; // RedStone
 
 export const ORACLE_PROTOCOLS: OracleProtocol[] = [
   'uma',
   'chainlink',
   'pyth',
-  'band',
-  'api3',
   'redstone',
-  'switchboard',
-  'flux',
-  'dia',
 ];
 
 export type OracleProtocolInfo = {

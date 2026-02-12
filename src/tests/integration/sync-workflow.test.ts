@@ -9,11 +9,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import type {
-  SupportedChain,
-  UnifiedPriceFeed,
-  OracleProtocol,
-} from '@/types/unifiedOracleTypes';
+import type { SupportedChain, UnifiedPriceFeed, OracleProtocol } from '@/types/unifiedOracleTypes';
 
 // Mock logger
 vi.mock('@/lib/logger', () => ({
@@ -302,7 +298,7 @@ describe('Sync Workflow Integration', () => {
 
   describe('多协议同步', () => {
     it('应该支持多个协议同时同步', async () => {
-      const protocols: OracleProtocol[] = ['chainlink', 'pyth', 'band'];
+      const protocols: OracleProtocol[] = ['chainlink', 'pyth', 'redstone'];
       const syncManagers: Array<{
         startSync: (id: string) => Promise<void>;
         stopSync: (id: string) => void;

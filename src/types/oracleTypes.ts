@@ -408,5 +408,3 @@ export type UMAStats = {
   activeDisputes: number;
   totalVolume: number;
 };
-
-

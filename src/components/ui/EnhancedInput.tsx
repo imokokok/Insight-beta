@@ -10,15 +10,7 @@ import * as React from 'react';
 import { useState, useRef, useEffect, useCallback } from 'react';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  X,
-  Eye,
-  EyeOff,
-  Search,
-  CheckCircle,
-  AlertCircle,
-  Loader2,
-} from 'lucide-react';
+import { X, Eye, EyeOff, Search, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
 import { cn } from '@/shared/utils';
 
@@ -71,13 +63,10 @@ const EnhancedInput = React.forwardRef<HTMLInputElement, EnhancedInputProps>(
       type = 'text',
       ...props
     },
-    ref
+    ref,
   ) => {
-    const [internalValue, setInternalValue] = useState(
-      (defaultValue as string) || ''
-    );
-    const [validationState, setValidationState] =
-      useState<ValidationState>('idle');
+    const [internalValue, setInternalValue] = useState((defaultValue as string) || '');
+    const [validationState, setValidationState] = useState<ValidationState>('idle');
     const [validationMessage, setValidationMessage] = useState('');
     const [isFocused, setIsFocused] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -104,7 +93,7 @@ const EnhancedInput = React.forwardRef<HTMLInputElement, EnhancedInputProps>(
           onValidationChange?.({ state: 'invalid', message: '验证失败' });
         }
       },
-      [validation, onValidationChange]
+      [validation, onValidationChange],
     );
 
     // Debounced validation
@@ -117,7 +106,7 @@ const EnhancedInput = React.forwardRef<HTMLInputElement, EnhancedInputProps>(
           validate(val);
         }, debounceMs);
       },
-      [validate, debounceMs]
+      [validate, debounceMs],
     );
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -155,11 +144,7 @@ const EnhancedInput = React.forwardRef<HTMLInputElement, EnhancedInputProps>(
       }
     };
 
-    const inputType = isPassword
-      ? showPassword
-        ? 'text'
-        : 'password'
-      : type;
+    const inputType = isPassword ? (showPassword ? 'text' : 'password') : type;
 
     return (
       <div className={cn('w-full', containerClassName)}>
@@ -171,9 +156,9 @@ const EnhancedInput = React.forwardRef<HTMLInputElement, EnhancedInputProps>(
               validationState === 'invalid'
                 ? 'text-rose-600'
                 : isFocused
-                ? 'text-blue-600'
-                : 'text-gray-700',
-              labelClassName
+                  ? 'text-blue-600'
+                  : 'text-gray-700',
+              labelClassName,
             )}
           >
             {label}
@@ -188,11 +173,11 @@ const EnhancedInput = React.forwardRef<HTMLInputElement, EnhancedInputProps>(
               validationState === 'invalid'
                 ? 'border-rose-300 shadow-sm shadow-rose-100'
                 : validationState === 'valid'
-                ? 'border-emerald-300 shadow-sm shadow-emerald-100'
-                : isFocused
-                ? 'border-blue-400 shadow-md shadow-blue-100'
-                : 'border-gray-200 hover:border-gray-300',
-              disabled && 'cursor-not-allowed bg-gray-50 opacity-60'
+                  ? 'border-emerald-300 shadow-sm shadow-emerald-100'
+                  : isFocused
+                    ? 'border-blue-400 shadow-md shadow-blue-100'
+                    : 'border-gray-200 hover:border-gray-300',
+              disabled && 'cursor-not-allowed bg-gray-50 opacity-60',
             )}
             animate={{
               scale: isFocused ? 1.005 : 1,
@@ -214,7 +199,7 @@ const EnhancedInput = React.forwardRef<HTMLInputElement, EnhancedInputProps>(
                 type === 'search' && 'pl-10',
                 (clearable || showValidationIcon || isPassword) && 'pr-10',
                 inputClassName,
-                className
+                className,
               )}
               ref={ref}
               value={currentValue}
@@ -280,23 +265,19 @@ const EnhancedInput = React.forwardRef<HTMLInputElement, EnhancedInputProps>(
                 validationState === 'invalid' || errorMessage
                   ? 'text-rose-600'
                   : validationState === 'valid'
-                  ? 'text-emerald-600'
-                  : 'text-gray-500'
+                    ? 'text-emerald-600'
+                    : 'text-gray-500',
               )}
             >
-              {validationState === 'invalid' && (
-                <AlertCircle className="h-3 w-3" />
-              )}
-              {validationState === 'valid' && (
-                <CheckCircle className="h-3 w-3" />
-              )}
+              {validationState === 'invalid' && <AlertCircle className="h-3 w-3" />}
+              {validationState === 'valid' && <CheckCircle className="h-3 w-3" />}
               <span>{errorMessage || validationMessage || helperText}</span>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
     );
-  }
+  },
 );
 EnhancedInput.displayName = 'EnhancedInput';
 
@@ -332,7 +313,7 @@ const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
       maxSuggestions = 5,
       ...props
     },
-    ref
+    ref,
   ) => {
     const [isOpen, setIsOpen] = useState(false);
     const [highlightedIndex, setHighlightedIndex] = useState(-1);
@@ -343,16 +324,13 @@ const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
       .filter(
         (s) =>
           s.label.toLowerCase().includes(searchValue.toLowerCase()) ||
-          s.value.toLowerCase().includes(searchValue.toLowerCase())
+          s.value.toLowerCase().includes(searchValue.toLowerCase()),
       )
       .slice(0, maxSuggestions);
 
     useEffect(() => {
       const handleClickOutside = (e: MouseEvent) => {
-        if (
-          containerRef.current &&
-          !containerRef.current.contains(e.target as Node)
-        ) {
+        if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
           setIsOpen(false);
         }
       };
@@ -374,9 +352,7 @@ const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
       switch (e.key) {
         case 'ArrowDown':
           e.preventDefault();
-          setHighlightedIndex((prev) =>
-            prev < filteredSuggestions.length - 1 ? prev + 1 : prev
-          );
+          setHighlightedIndex((prev) => (prev < filteredSuggestions.length - 1 ? prev + 1 : prev));
           break;
         case 'ArrowUp':
           e.preventDefault();
@@ -437,25 +413,19 @@ const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
                       onMouseEnter={() => setHighlightedIndex(index)}
                       className={cn(
                         'cursor-pointer px-4 py-2.5 transition-colors',
-                        highlightedIndex === index
-                          ? 'bg-blue-50'
-                          : 'hover:bg-gray-50'
+                        highlightedIndex === index ? 'bg-blue-50' : 'hover:bg-gray-50',
                       )}
                     >
                       <div className="flex items-center gap-3">
                         {suggestion.icon && (
-                          <span className="text-gray-400">
-                            {suggestion.icon}
-                          </span>
+                          <span className="text-gray-400">{suggestion.icon}</span>
                         )}
                         <div className="flex-1">
                           <div className="text-sm font-medium text-gray-900">
                             {suggestion.label}
                           </div>
                           {suggestion.description && (
-                            <div className="text-xs text-gray-500">
-                              {suggestion.description}
-                            </div>
+                            <div className="text-xs text-gray-500">{suggestion.description}</div>
                           )}
                         </div>
                       </div>
@@ -463,23 +433,20 @@ const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
                   ))}
                 </ul>
               ) : searchValue ? (
-                <div className="px-4 py-3 text-sm text-gray-500">
-                  {emptyMessage}
-                </div>
+                <div className="px-4 py-3 text-sm text-gray-500">{emptyMessage}</div>
               ) : null}
             </motion.div>
           )}
         </AnimatePresence>
       </div>
     );
-  }
+  },
 );
 SearchInput.displayName = 'SearchInput';
 
 // ==================== 文本域组件 ====================
 
-interface TextareaProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
   helperText?: string;
   errorMessage?: string;
@@ -507,12 +474,10 @@ const EnhancedTextarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       onChange,
       ...props
     },
-    ref
+    ref,
   ) => {
     const [isFocused, setIsFocused] = useState(false);
-    const [charCount, setCharCount] = useState(
-      String(value || '').length
-    );
+    const [charCount, setCharCount] = useState(String(value || '').length);
 
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       setCharCount(e.target.value.length);
@@ -531,9 +496,9 @@ const EnhancedTextarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
               errorMessage || isOverLimit
                 ? 'text-rose-600'
                 : isFocused
-                ? 'text-blue-600'
-                : 'text-gray-700',
-              labelClassName
+                  ? 'text-blue-600'
+                  : 'text-gray-700',
+              labelClassName,
             )}
           >
             {label}
@@ -547,9 +512,9 @@ const EnhancedTextarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
             errorMessage || isOverLimit
               ? 'border-rose-300 shadow-sm shadow-rose-100'
               : isFocused
-              ? 'border-blue-400 shadow-md shadow-blue-100'
-              : 'border-gray-200 hover:border-gray-300',
-            disabled && 'cursor-not-allowed bg-gray-50 opacity-60'
+                ? 'border-blue-400 shadow-md shadow-blue-100'
+                : 'border-gray-200 hover:border-gray-300',
+            disabled && 'cursor-not-allowed bg-gray-50 opacity-60',
           )}
           animate={{
             scale: isFocused ? 1.002 : 1,
@@ -560,7 +525,7 @@ const EnhancedTextarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
             className={cn(
               'w-full resize-none bg-transparent px-3 py-2.5 text-sm outline-none placeholder:text-gray-400',
               textareaClassName,
-              className
+              className,
             )}
             ref={ref}
             onFocus={() => setIsFocused(true)}
@@ -579,9 +544,7 @@ const EnhancedTextarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
             <span
               className={cn(
                 'text-xs',
-                errorMessage || isOverLimit
-                  ? 'text-rose-600'
-                  : 'text-gray-500'
+                errorMessage || isOverLimit ? 'text-rose-600' : 'text-gray-500',
               )}
             >
               {errorMessage || helperText}
@@ -590,10 +553,7 @@ const EnhancedTextarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
 
           {showCharacterCount && maxLength && (
             <span
-              className={cn(
-                'ml-auto text-xs',
-                isOverLimit ? 'text-rose-600' : 'text-gray-400'
-              )}
+              className={cn('ml-auto text-xs', isOverLimit ? 'text-rose-600' : 'text-gray-400')}
             >
               {charCount}/{maxLength}
             </span>
@@ -601,7 +561,7 @@ const EnhancedTextarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         </div>
       </div>
     );
-  }
+  },
 );
 EnhancedTextarea.displayName = 'EnhancedTextarea';
 
@@ -648,7 +608,7 @@ const EnhancedSelect = React.forwardRef<HTMLDivElement, EnhancedSelectProps>(
       containerClassName,
       className,
     },
-    ref
+    ref,
   ) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
@@ -665,16 +625,13 @@ const EnhancedSelect = React.forwardRef<HTMLDivElement, EnhancedSelectProps>(
       ? options.filter(
           (o) =>
             o.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            o.description?.toLowerCase().includes(searchQuery.toLowerCase())
+            o.description?.toLowerCase().includes(searchQuery.toLowerCase()),
         )
       : options;
 
     useEffect(() => {
       const handleClickOutside = (e: MouseEvent) => {
-        if (
-          containerRef.current &&
-          !containerRef.current.contains(e.target as Node)
-        ) {
+        if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
           setIsOpen(false);
         }
       };
@@ -709,11 +666,7 @@ const EnhancedSelect = React.forwardRef<HTMLDivElement, EnhancedSelectProps>(
           <label
             className={cn(
               'mb-1.5 block text-sm font-medium transition-colors',
-              errorMessage
-                ? 'text-rose-600'
-                : isFocused
-                ? 'text-blue-600'
-                : 'text-gray-700'
+              errorMessage ? 'text-rose-600' : isFocused ? 'text-blue-600' : 'text-gray-700',
             )}
           >
             {label}
@@ -729,10 +682,10 @@ const EnhancedSelect = React.forwardRef<HTMLDivElement, EnhancedSelectProps>(
             errorMessage
               ? 'border-rose-300 shadow-sm shadow-rose-100'
               : isFocused || isOpen
-              ? 'border-blue-400 shadow-md shadow-blue-100'
-              : 'border-gray-200 hover:border-gray-300',
+                ? 'border-blue-400 shadow-md shadow-blue-100'
+                : 'border-gray-200 hover:border-gray-300',
             disabled && 'cursor-not-allowed bg-gray-50 opacity-60',
-            className
+            className,
           )}
           animate={{
             scale: isOpen ? 1.002 : 1,
@@ -740,15 +693,8 @@ const EnhancedSelect = React.forwardRef<HTMLDivElement, EnhancedSelectProps>(
           transition={{ duration: 0.2 }}
         >
           <div className="flex items-center gap-2">
-            {selectedOption?.icon && (
-              <span className="text-gray-500">{selectedOption.icon}</span>
-            )}
-            <span
-              className={cn(
-                'text-sm',
-                selectedOption ? 'text-gray-900' : 'text-gray-400'
-              )}
-            >
+            {selectedOption?.icon && <span className="text-gray-500">{selectedOption.icon}</span>}
+            <span className={cn('text-sm', selectedOption ? 'text-gray-900' : 'text-gray-400')}>
               {selectedOption?.label || placeholder}
             </span>
           </div>
@@ -822,7 +768,7 @@ const EnhancedSelect = React.forwardRef<HTMLDivElement, EnhancedSelectProps>(
                         option.value === currentValue
                           ? 'bg-blue-50 text-blue-700'
                           : 'hover:bg-gray-50',
-                        option.disabled && 'hover:bg-transparent'
+                        option.disabled && 'hover:bg-transparent',
                       )}
                     >
                       <div className="flex items-center gap-2">
@@ -830,20 +776,16 @@ const EnhancedSelect = React.forwardRef<HTMLDivElement, EnhancedSelectProps>(
                           <span
                             className={cn(
                               'text-gray-400',
-                              option.value === currentValue && 'text-blue-500'
+                              option.value === currentValue && 'text-blue-500',
                             )}
                           >
                             {option.icon}
                           </span>
                         )}
                         <div className="flex-1">
-                          <div className="text-sm font-medium">
-                            {option.label}
-                          </div>
+                          <div className="text-sm font-medium">{option.label}</div>
                           {option.description && (
-                            <div className="text-xs text-gray-500">
-                              {option.description}
-                            </div>
+                            <div className="text-xs text-gray-500">{option.description}</div>
                           )}
                         </div>
                         {option.value === currentValue && (
@@ -853,9 +795,7 @@ const EnhancedSelect = React.forwardRef<HTMLDivElement, EnhancedSelectProps>(
                     </li>
                   ))
                 ) : (
-                  <li className="px-3 py-4 text-center text-sm text-gray-500">
-                    无匹配选项
-                  </li>
+                  <li className="px-3 py-4 text-center text-sm text-gray-500">无匹配选项</li>
                 )}
               </ul>
             </motion.div>
@@ -864,18 +804,13 @@ const EnhancedSelect = React.forwardRef<HTMLDivElement, EnhancedSelectProps>(
 
         {/* Helper/Error Text */}
         {(errorMessage || helperText) && (
-          <div
-            className={cn(
-              'mt-1.5 text-xs',
-              errorMessage ? 'text-rose-600' : 'text-gray-500'
-            )}
-          >
+          <div className={cn('mt-1.5 text-xs', errorMessage ? 'text-rose-600' : 'text-gray-500')}>
             {errorMessage || helperText}
           </div>
         )}
       </div>
     );
-  }
+  },
 );
 EnhancedSelect.displayName = 'EnhancedSelect';
 

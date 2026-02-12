@@ -17,10 +17,6 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 
-
-
-
-
 import { DashboardSkeleton, EmptyDataState } from '@/components/ui';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -29,8 +25,6 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { logger } from '@/shared/logger';
 import { cn, fetchApiData } from '@/shared/utils';
-
-
 
 // ============================================================================
 // Types
@@ -142,10 +136,10 @@ function MetricCard({
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className={cn('bg-muted rounded-lg p-2', status && statusColors[status])}>
+            <div className={cn('rounded-lg bg-muted p-2', status && statusColors[status])}>
               <Icon className="h-4 w-4" />
             </div>
-            <p className="text-muted-foreground text-sm font-medium">{title}</p>
+            <p className="text-sm font-medium text-muted-foreground">{title}</p>
           </div>
           {trend && (
             <Badge
@@ -160,7 +154,7 @@ function MetricCard({
             <span className={cn('text-2xl font-bold', status && statusColors[status])}>
               {value}
             </span>
-            {unit && <span className="text-muted-foreground text-sm">{unit}</span>}
+            {unit && <span className="text-sm text-muted-foreground">{unit}</span>}
           </div>
         </div>
       </CardContent>
@@ -192,7 +186,7 @@ function HealthIndicator({ status }: { status: 'healthy' | 'degraded' | 'unhealt
       <Icon className={cn('h-6 w-6', color)} />
       <div>
         <p className={cn('font-semibold', color)}>{label}</p>
-        <p className="text-muted-foreground text-sm">System Status</p>
+        <p className="text-sm text-muted-foreground">System Status</p>
       </div>
     </div>
   );
@@ -388,7 +382,7 @@ export default function MonitoringDashboard() {
   }
 
   return (
-    <div className="container mx-auto space-y-6 px-4 py-8 relative">
+    <div className="container relative mx-auto space-y-6 px-4 py-8">
       {/* Empty State - No Data */}
       {metrics.length === 0 && !isLoading && (
         <div className="py-12">
@@ -404,15 +398,15 @@ export default function MonitoringDashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="flex items-center gap-3 text-3xl font-bold">
-            <Activity className="text-primary h-8 w-8" />
+            <Activity className="h-8 w-8 text-primary" />
             Performance Monitoring
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="mt-1 text-muted-foreground">
             Real-time system performance metrics and health monitoring
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <p className="text-muted-foreground text-sm">
+          <p className="text-sm text-muted-foreground">
             Last updated: {lastUpdated.toLocaleTimeString()}
           </p>
           <Button variant="outline" size="sm" onClick={() => setAutoRefresh(!autoRefresh)}>
@@ -448,7 +442,7 @@ export default function MonitoringDashboard() {
                 )}
                 <span className="font-medium capitalize">{name}</span>
               </div>
-              <p className="text-muted-foreground mt-1 text-xs">{check.message}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{check.message}</p>
             </Card>
           ))}
         </div>
@@ -632,25 +626,25 @@ export default function MonitoringDashboard() {
               {latestMetrics && (
                 <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
                   <div>
-                    <p className="text-muted-foreground text-sm">Min Response Time</p>
+                    <p className="text-sm text-muted-foreground">Min Response Time</p>
                     <p className="text-2xl font-bold">
                       {latestMetrics.responseTime.min.toFixed(0)} ms
                     </p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground text-sm">Max Response Time</p>
+                    <p className="text-sm text-muted-foreground">Max Response Time</p>
                     <p className="text-2xl font-bold">
                       {latestMetrics.responseTime.max.toFixed(0)} ms
                     </p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground text-sm">Request Count</p>
+                    <p className="text-sm text-muted-foreground">Request Count</p>
                     <p className="text-2xl font-bold">
                       {latestMetrics.responseTime.count.toLocaleString()}
                     </p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground text-sm">Bytes/sec</p>
+                    <p className="text-sm text-muted-foreground">Bytes/sec</p>
                     <p className="text-2xl font-bold">
                       {((latestMetrics.throughput.bytesPerSecond ?? 0) / 1024).toFixed(1)} KB
                     </p>
@@ -765,7 +759,7 @@ export default function MonitoringDashboard() {
                     <div className="space-y-2">
                       {Object.entries(latestMetrics.errors.byEndpoint).map(([endpoint, count]) => (
                         <div key={endpoint} className="flex items-center justify-between">
-                          <span className="text-muted-foreground max-w-[200px] truncate text-sm">
+                          <span className="max-w-[200px] truncate text-sm text-muted-foreground">
                             {endpoint}
                           </span>
                           <Badge variant="destructive">{count}</Badge>

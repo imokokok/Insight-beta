@@ -34,10 +34,7 @@ export const CrossChainPriceChart = memo(function CrossChainPriceChart({
         <CardTitle>Price Trend</CardTitle>
       </CardHeader>
       <CardContent>
-        <div
-          style={{ height }}
-          className="flex items-center justify-center text-muted-foreground"
-        >
+        <div style={{ height }} className="flex items-center justify-center text-muted-foreground">
           Price chart coming soon
         </div>
       </CardContent>

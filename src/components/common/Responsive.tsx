@@ -13,10 +13,7 @@
 import type { ReactNode } from 'react';
 import { useMemo } from 'react';
 
-import {
-  useDeviceType,
-  useViewportSize,
-} from '@/hooks/useMediaQuery';
+import { useDeviceType, useViewportSize } from '@/hooks/useMediaQuery';
 import type { Breakpoint } from '@/lib/design-system/tokens/responsive';
 import {
   getResponsiveGridCols,
@@ -199,11 +196,7 @@ export function ResponsiveText({
 // Responsive Padding - 响应式内边距
 // ============================================================================
 
-export function ResponsivePadding({
-  children,
-  className,
-  size = 'md',
-}: ResponsivePaddingProps) {
+export function ResponsivePadding({ children, className, size = 'md' }: ResponsivePaddingProps) {
   const paddingClass = getResponsivePadding(size);
 
   return <div className={cn(paddingClass, className)}>{children}</div>;
@@ -214,9 +207,7 @@ export function ResponsivePadding({
 // ============================================================================
 
 export function MobileOnly({ children, className }: ResponsiveProps) {
-  return (
-    <div className={cn(RESPONSIVE_PATTERNS.visibility.mobileOnly, className)}>{children}</div>
-  );
+  return <div className={cn(RESPONSIVE_PATTERNS.visibility.mobileOnly, className)}>{children}</div>;
 }
 
 // ============================================================================
@@ -224,9 +215,7 @@ export function MobileOnly({ children, className }: ResponsiveProps) {
 // ============================================================================
 
 export function TabletOnly({ children, className }: ResponsiveProps) {
-  return (
-    <div className={cn(RESPONSIVE_PATTERNS.visibility.tabletOnly, className)}>{children}</div>
-  );
+  return <div className={cn(RESPONSIVE_PATTERNS.visibility.tabletOnly, className)}>{children}</div>;
 }
 
 // ============================================================================
@@ -244,9 +233,7 @@ export function DesktopOnly({ children, className }: ResponsiveProps) {
 // ============================================================================
 
 export function NotMobile({ children, className }: ResponsiveProps) {
-  return (
-    <div className={cn(RESPONSIVE_PATTERNS.visibility.notMobile, className)}>{children}</div>
-  );
+  return <div className={cn(RESPONSIVE_PATTERNS.visibility.notMobile, className)}>{children}</div>;
 }
 
 // ============================================================================
@@ -254,9 +241,7 @@ export function NotMobile({ children, className }: ResponsiveProps) {
 // ============================================================================
 
 export function NotDesktop({ children, className }: ResponsiveProps) {
-  return (
-    <div className={cn(RESPONSIVE_PATTERNS.visibility.notDesktop, className)}>{children}</div>
-  );
+  return <div className={cn(RESPONSIVE_PATTERNS.visibility.notDesktop, className)}>{children}</div>;
 }
 
 // ============================================================================
@@ -318,7 +303,7 @@ export function ResponsiveStack({
         gapClasses[gap],
         alignClasses[align],
         justifyClasses[justify],
-        className
+        className,
       )}
     >
       {children}
@@ -380,7 +365,7 @@ export function ResponsiveImage({
       <img
         src={imageSrc}
         alt={alt}
-        className={cn('w-full h-full', objectFitClasses[objectFit])}
+        className={cn('h-full w-full', objectFitClasses[objectFit])}
         loading="lazy"
       />
     </div>
@@ -466,5 +451,3 @@ function getBreakpointWidth(breakpoint: Breakpoint): number {
   };
   return widths[breakpoint];
 }
-
-

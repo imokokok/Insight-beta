@@ -190,7 +190,7 @@ export function MonitoringDashboard() {
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <RefreshCw className="text-muted-foreground h-8 w-8 animate-spin" />
+        <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -259,33 +259,33 @@ export function MonitoringDashboard() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Alerts</CardTitle>
-                <Bell className="text-muted-foreground h-4 w-4" />
+                <Bell className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.alerts.total}</div>
-                <p className="text-muted-foreground text-xs">All time alerts sent</p>
+                <p className="text-xs text-muted-foreground">All time alerts sent</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Active Cooldowns</CardTitle>
-                <AlertTriangle className="text-muted-foreground h-4 w-4" />
+                <AlertTriangle className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.alerts.cooldownActive}</div>
-                <p className="text-muted-foreground text-xs">Alerts in cooldown period</p>
+                <p className="text-xs text-muted-foreground">Alerts in cooldown period</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Configured Channels</CardTitle>
-                <CheckCircle className="text-muted-foreground h-4 w-4" />
+                <CheckCircle className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.notifications.channels.length}</div>
-                <p className="text-muted-foreground text-xs">
+                <p className="text-xs text-muted-foreground">
                   {stats.notifications.channels.join(', ') || 'None'}
                 </p>
               </CardContent>
@@ -294,11 +294,11 @@ export function MonitoringDashboard() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Environment</CardTitle>
-                <Settings className="text-muted-foreground h-4 w-4" />
+                <Settings className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold capitalize">{stats.system.nodeEnv}</div>
-                <p className="text-muted-foreground text-xs">Current deployment</p>
+                <p className="text-xs text-muted-foreground">Current deployment</p>
               </CardContent>
             </Card>
           </div>
@@ -311,7 +311,7 @@ export function MonitoringDashboard() {
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Last Updated</span>
-                <span className="text-muted-foreground text-sm">
+                <span className="text-sm text-muted-foreground">
                   {new Date(stats.system.timestamp).toLocaleString()}
                 </span>
               </div>
@@ -327,7 +327,7 @@ export function MonitoringDashboard() {
                       </Badge>
                     ))}
                   {!Object.values(config.channels).some(Boolean) && (
-                    <span className="text-muted-foreground text-sm">None</span>
+                    <span className="text-sm text-muted-foreground">None</span>
                   )}
                 </div>
               </div>
@@ -353,7 +353,7 @@ export function MonitoringDashboard() {
                     className="flex items-center justify-between rounded-lg border p-4"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="bg-muted rounded-md p-2">{channelIcons[channel]}</div>
+                      <div className="rounded-md bg-muted p-2">{channelIcons[channel]}</div>
                       <div>
                         <h4 className="font-medium capitalize">{channel}</h4>
                         <div className="mt-1 flex items-center gap-2">
@@ -411,7 +411,7 @@ export function MonitoringDashboard() {
             <CardHeader>
               <CardTitle>Configuration Guide</CardTitle>
             </CardHeader>
-            <CardContent className="text-muted-foreground space-y-4 text-sm">
+            <CardContent className="space-y-4 text-sm text-muted-foreground">
               <p>
                 <strong>Email:</strong> Configure SMTP settings (INSIGHT_SMTP_HOST,
                 INSIGHT_SMTP_USER, etc.)
@@ -441,7 +441,7 @@ export function MonitoringDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="font-medium">Cooldown Period</h4>
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-sm text-muted-foreground">
                     Time between duplicate alerts (default: 5 minutes)
                   </p>
                 </div>
@@ -453,7 +453,7 @@ export function MonitoringDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="font-medium">Reset Alert History</h4>
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-sm text-muted-foreground">
                     Clear all alert history and cooldown timers
                   </p>
                 </div>

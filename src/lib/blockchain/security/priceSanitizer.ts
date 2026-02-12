@@ -83,10 +83,13 @@ export class PriceSanitizer {
 
   constructor(config: Partial<PriceSanitizerConfig> = {}) {
     this.config = {
-      maxDeviationPercent: config.maxDeviationPercent ?? PRICE_SANITIZER_DEFAULTS.MAX_DEVIATION_PERCENT,
+      maxDeviationPercent:
+        config.maxDeviationPercent ?? PRICE_SANITIZER_DEFAULTS.MAX_DEVIATION_PERCENT,
       outlierThreshold: config.outlierThreshold ?? PRICE_SANITIZER_DEFAULTS.OUTLIER_THRESHOLD,
-      minSourcesForConsensus: config.minSourcesForConsensus ?? PRICE_SANITIZER_DEFAULTS.MIN_SOURCES_FOR_CONSENSUS,
-      stalenessThresholdSeconds: config.stalenessThresholdSeconds ?? PRICE_SANITIZER_DEFAULTS.STALENESS_THRESHOLD_SECONDS,
+      minSourcesForConsensus:
+        config.minSourcesForConsensus ?? PRICE_SANITIZER_DEFAULTS.MIN_SOURCES_FOR_CONSENSUS,
+      stalenessThresholdSeconds:
+        config.stalenessThresholdSeconds ?? PRICE_SANITIZER_DEFAULTS.STALENESS_THRESHOLD_SECONDS,
       priceHistorySize: config.priceHistorySize ?? PRICE_SANITIZER_DEFAULTS.PRICE_HISTORY_SIZE,
     };
   }
@@ -147,9 +150,7 @@ export class PriceSanitizer {
   /**
    * 批量清洗
    */
-  sanitizeBatch(
-    priceData: Map<string, PriceData[]>,
-  ): Map<string, SanitizedPrice> {
+  sanitizeBatch(priceData: Map<string, PriceData[]>): Map<string, SanitizedPrice> {
     const results = new Map<string, SanitizedPrice>();
 
     for (const [symbol, prices] of priceData) {
@@ -561,7 +562,8 @@ export class PriceDeviationDetector {
     const results = new Map();
 
     for (const [symbol, price] of prices) {
-      const threshold = thresholds?.get(symbol) ?? PRICE_SANITIZER_DEFAULTS.MAX_DEVIATION_PERCENT / 100;
+      const threshold =
+        thresholds?.get(symbol) ?? PRICE_SANITIZER_DEFAULTS.MAX_DEVIATION_PERCENT / 100;
       const result = this.checkDeviation(symbol, price, threshold);
       results.set(symbol, {
         isDeviation: result.isDeviation,
@@ -588,9 +590,7 @@ export class PriceDeviationDetector {
 // 工厂函数
 // ============================================================================
 
-export function createPriceSanitizer(
-  config?: Partial<PriceSanitizerConfig>,
-): PriceSanitizer {
+export function createPriceSanitizer(config?: Partial<PriceSanitizerConfig>): PriceSanitizer {
   return new PriceSanitizer(config);
 }
 

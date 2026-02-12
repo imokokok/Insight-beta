@@ -270,11 +270,11 @@ function ProtocolPriceComparison({ dataPoint }: { dataPoint: PriceDeviationPoint
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="rounded-lg bg-green-50 p-3">
-              <p className="text-muted-foreground text-xs">Average Price</p>
+              <p className="text-xs text-muted-foreground">Average Price</p>
               <p className="text-lg font-bold">${dataPoint.avgPrice.toFixed(4)}</p>
             </div>
             <div className="rounded-lg bg-orange-50 p-3">
-              <p className="text-muted-foreground text-xs">Max Deviation</p>
+              <p className="text-xs text-muted-foreground">Max Deviation</p>
               <p className="text-lg font-bold">
                 {(dataPoint.maxDeviationPercent * 100).toFixed(2)}%
               </p>
@@ -317,7 +317,7 @@ function ProtocolPriceComparison({ dataPoint }: { dataPoint: PriceDeviationPoint
           </div>
 
           <div className="rounded-lg bg-gray-50 p-3">
-            <p className="text-muted-foreground text-xs">Price Spread</p>
+            <p className="text-xs text-muted-foreground">Price Spread</p>
             <p className="text-lg font-bold">
               ${(maxPrice - minPrice).toFixed(4)} (
               {(((maxPrice - minPrice) / minPrice) * 100).toFixed(2)}%)
@@ -353,7 +353,7 @@ function TrendList({
       <div className="py-12 text-center">
         <BarChart3 className="mx-auto mb-4 h-16 w-16 text-orange-500" />
         <h3 className="text-lg font-semibold">No Trend Data</h3>
-        <p className="text-muted-foreground mt-1">Deviation analysis data will appear here</p>
+        <p className="mt-1 text-muted-foreground">Deviation analysis data will appear here</p>
       </div>
     );
   }
@@ -376,7 +376,7 @@ function TrendList({
                   strength={trend.trendStrength}
                 />
               </div>
-              <p className="text-muted-foreground text-sm">{trend.recommendation}</p>
+              <p className="text-sm text-muted-foreground">{trend.recommendation}</p>
               <div className="flex items-center gap-4 text-xs text-gray-500">
                 <span>Avg Deviation: {(trend.avgDeviation * 100).toFixed(2)}%</span>
                 <span>Max: {(trend.maxDeviation * 100).toFixed(2)}%</span>
@@ -385,7 +385,7 @@ function TrendList({
             </div>
             <div className="flex flex-col items-end gap-2">
               <DeviationSeverityBadge deviation={trend.avgDeviation} />
-              <ChevronRight className="text-muted-foreground h-5 w-5 transition-transform group-hover:translate-x-1" />
+              <ChevronRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1" />
             </div>
           </div>
         </button>
@@ -429,7 +429,7 @@ function AnomalyList({
                   {anomaly.outlierProtocols.length} Outliers
                 </Badge>
               </div>
-              <p className="text-muted-foreground text-xs">{formatTime(anomaly.timestamp)}</p>
+              <p className="text-xs text-muted-foreground">{formatTime(anomaly.timestamp)}</p>
               <div className="flex flex-wrap gap-1">
                 {anomaly.outlierProtocols.map((protocol) => (
                   <Badge key={protocol} variant="secondary" className="text-xs">
@@ -442,7 +442,7 @@ function AnomalyList({
               <p className="text-lg font-bold text-red-500">
                 {(anomaly.maxDeviationPercent * 100).toFixed(2)}%
               </p>
-              <p className="text-muted-foreground text-xs">Max Deviation</p>
+              <p className="text-xs text-muted-foreground">Max Deviation</p>
             </div>
           </div>
         </button>
@@ -660,10 +660,10 @@ export default function DeviationAnalyticsPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="flex items-center gap-3 text-xl font-bold sm:text-2xl lg:text-3xl">
-            <ArrowRightLeft className="text-primary h-6 w-6 text-orange-600 sm:h-8 sm:w-8" />
+            <ArrowRightLeft className="h-6 w-6 text-orange-600 text-primary sm:h-8 sm:w-8" />
             Price Deviation Analytics
           </h1>
-          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
+          <p className="mt-1 text-sm text-muted-foreground sm:text-base">
             Cross-protocol price deviation analysis and trend monitoring
           </p>
         </div>
@@ -672,14 +672,14 @@ export default function DeviationAnalyticsPage() {
             <Button variant="outline" size="sm" onClick={() => refresh()} disabled={loading}>
               <RefreshCw className={cn('mr-2 h-4 w-4', loading && 'animate-spin')} />
               Refresh
-              <kbd className="bg-muted ml-2 hidden h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium sm:inline-flex">
+              <kbd className="ml-2 hidden h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium sm:inline-flex">
                 ⌘R
               </kbd>
             </Button>
             <Button variant="outline" size="sm" onClick={handleExport} disabled={!report}>
               <Download className="mr-2 h-4 w-4" />
               Export
-              <kbd className="bg-muted ml-2 hidden h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium sm:inline-flex">
+              <kbd className="ml-2 hidden h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium sm:inline-flex">
                 ⌘E
               </kbd>
             </Button>
@@ -869,7 +869,7 @@ export default function DeviationAnalyticsPage() {
           <Card>
             <CardContent className="p-4">
               <div className="relative">
-                <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   ref={searchInputRef}
                   placeholder="Search by symbol or recommendation... (⌘F)"
@@ -915,14 +915,14 @@ export default function DeviationAnalyticsPage() {
                     <CardContent className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
                         <div className="rounded-lg bg-gray-50 p-3">
-                          <p className="text-muted-foreground text-xs">Trend Direction</p>
+                          <p className="text-xs text-muted-foreground">Trend Direction</p>
                           <TrendDirectionBadge
                             direction={selectedTrend.trendDirection}
                             strength={selectedTrend.trendStrength}
                           />
                         </div>
                         <div className="rounded-lg bg-gray-50 p-3">
-                          <p className="text-muted-foreground text-xs">Anomaly Score</p>
+                          <p className="text-xs text-muted-foreground">Anomaly Score</p>
                           <p
                             className={cn(
                               'text-lg font-bold',
@@ -937,13 +937,13 @@ export default function DeviationAnalyticsPage() {
                           </p>
                         </div>
                         <div className="rounded-lg bg-gray-50 p-3">
-                          <p className="text-muted-foreground text-xs">Avg Deviation</p>
+                          <p className="text-xs text-muted-foreground">Avg Deviation</p>
                           <p className="text-lg font-bold">
                             {(selectedTrend.avgDeviation * 100).toFixed(2)}%
                           </p>
                         </div>
                         <div className="rounded-lg bg-gray-50 p-3">
-                          <p className="text-muted-foreground text-xs">Max Deviation</p>
+                          <p className="text-xs text-muted-foreground">Max Deviation</p>
                           <p className="text-lg font-bold">
                             {(selectedTrend.maxDeviation * 100).toFixed(2)}%
                           </p>

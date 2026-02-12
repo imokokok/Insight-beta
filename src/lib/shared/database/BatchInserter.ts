@@ -50,7 +50,10 @@ export class BatchInserter<T extends Record<string, unknown>> {
    */
   private async insertBatch(batch: T[]): Promise<number> {
     const { sql, values } = this.buildInsertQuery(batch);
-    const result = await query(sql, values as (string | number | boolean | Date | string[] | number[] | null | undefined)[]);
+    const result = await query(
+      sql,
+      values as (string | number | boolean | Date | string[] | number[] | null | undefined)[],
+    );
     return result.rowCount || 0;
   }
 
@@ -109,7 +112,7 @@ export class BatchInserter<T extends Record<string, unknown>> {
  * 创建批量插入器的工厂函数
  */
 export function createBatchInserter<T extends Record<string, unknown>>(
-  config: BatchInserterConfig
+  config: BatchInserterConfig,
 ): BatchInserter<T> {
   return new BatchInserter<T>(config);
 }

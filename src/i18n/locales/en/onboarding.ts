@@ -18,7 +18,7 @@ const onboarding = {
   targetNotFound: 'Target element not found',
   guidedTour: {
     title: 'Guided Tour',
-    description: 'Let\'s take a 1-2 minute tour to learn the main features',
+    description: "Let's take a 1-2 minute tour to learn the main features",
     startTour: 'Start Tour',
     skipForNow: 'Skip for Now',
     finish: 'Finish Tour',
@@ -85,15 +85,18 @@ const onboarding = {
   tour: {
     dashboard: {
       title: 'Dashboard',
-      description: 'Your central command center showing all key metrics and system health in real-time.',
+      description:
+        'Your central command center showing all key metrics and system health in real-time.',
     },
     alerts: {
       title: 'Alerts',
-      description: 'View and manage all system alerts, including price deviations, node offline notifications, and more.',
+      description:
+        'View and manage all system alerts, including price deviations, node offline notifications, and more.',
     },
     protocols: {
       title: 'Protocols',
-      description: 'Monitor multiple oracle protocols like Chainlink, Pyth, Band with real-time data and performance metrics.',
+      description:
+        'Monitor multiple oracle protocols like Chainlink, Pyth, Band with real-time data and performance metrics.',
     },
     watchlist: {
       title: 'Watchlist',
@@ -117,9 +120,9 @@ const onboarding = {
     },
     watchlist: {
       title: 'Start Adding Monitors',
-      description: 'You haven\'t added any monitors yet. Start building your watchlist.',
+      description: "You haven't added any monitors yet. Start building your watchlist.",
       action: 'Add First Monitor',
-      actionDesc: 'Browse oracle data and add assets you\'re interested in',
+      actionDesc: "Browse oracle data and add assets you're interested in",
     },
   },
 };

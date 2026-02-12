@@ -356,7 +356,7 @@ function PriceFeedListSkeleton({ className }: { className?: string }) {
 
 // 模拟数据生成器
 function generateMockFeeds(): FeedWithUpdate[] {
-  const protocols: OracleProtocol[] = ['chainlink', 'pyth', 'band', 'api3', 'redstone'];
+  const protocols: OracleProtocol[] = ['chainlink', 'pyth', 'redstone'];
   const symbols = ['ETH/USD', 'BTC/USD', 'LINK/USD', 'MATIC/USD', 'AVAX/USD', 'SOL/USD'];
 
   const feeds: FeedWithUpdate[] = [];

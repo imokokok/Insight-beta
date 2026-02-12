@@ -35,7 +35,7 @@ interface UseSmartRefreshReturn<T> {
 
 export function useSmartRefresh<T>(
   fetchFn: () => Promise<T>,
-  options: SmartRefreshOptions = {}
+  options: SmartRefreshOptions = {},
 ): UseSmartRefreshReturn<T> {
   const {
     interval = 60000,
@@ -93,62 +93,62 @@ export function useSmartRefresh<T>(
     };
   }, [showToast, toast]);
 
-  const fetchWithRetry = useCallback(async (
-    attempt: number = 0,
-    isBackground: boolean = false
-  ): Promise<T | null> => {
-    try {
-      if (!isBackground) {
-        setIsLoading(true);
-      } else {
-        setIsBackgroundRefreshing(true);
+  const fetchWithRetry = useCallback(
+    async (attempt: number = 0, isBackground: boolean = false): Promise<T | null> => {
+      try {
+        if (!isBackground) {
+          setIsLoading(true);
+        } else {
+          setIsBackgroundRefreshing(true);
+        }
+        setError(null);
+
+        const result = await fetchFn();
+
+        setData(result);
+        setLastUpdated(new Date());
+        setRetryCount(0);
+
+        if (isBackground && showToast) {
+          toast({
+            title: '数据已更新',
+            message: '最新数据已同步',
+            type: 'success',
+            duration: 2000,
+          });
+        }
+
+        return result;
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error('Unknown error');
+        setError(error);
+
+        if (attempt < retryAttempts && !isBackground) {
+          setRetryCount(attempt + 1);
+          await new Promise((resolve) => setTimeout(resolve, retryDelay * (attempt + 1)));
+          return fetchWithRetry(attempt + 1, isBackground);
+        }
+
+        if (showToast && !isBackground) {
+          toast({
+            title: '刷新失败',
+            message: error.message || '请稍后重试',
+            type: 'error',
+            duration: 5000,
+          });
+        }
+
+        return null;
+      } finally {
+        if (!isBackground) {
+          setIsLoading(false);
+        } else {
+          setIsBackgroundRefreshing(false);
+        }
       }
-      setError(null);
-
-      const result = await fetchFn();
-      
-      setData(result);
-      setLastUpdated(new Date());
-      setRetryCount(0);
-
-      if (isBackground && showToast) {
-        toast({
-          title: '数据已更新',
-          message: '最新数据已同步',
-          type: 'success',
-          duration: 2000,
-        });
-      }
-
-      return result;
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error('Unknown error');
-      setError(error);
-
-      if (attempt < retryAttempts && !isBackground) {
-        setRetryCount(attempt + 1);
-        await new Promise(resolve => setTimeout(resolve, retryDelay * (attempt + 1)));
-        return fetchWithRetry(attempt + 1, isBackground);
-      }
-
-      if (showToast && !isBackground) {
-        toast({
-          title: '刷新失败',
-          message: error.message || '请稍后重试',
-          type: 'error',
-          duration: 5000,
-        });
-      }
-
-      return null;
-    } finally {
-      if (!isBackground) {
-        setIsLoading(false);
-      } else {
-        setIsBackgroundRefreshing(false);
-      }
-    }
-  }, [fetchFn, retryAttempts, retryDelay, showToast, toast]);
+    },
+    [fetchFn, retryAttempts, retryDelay, showToast, toast],
+  );
 
   const refresh = useCallback(async () => {
     await fetchWithRetry(0, false);
@@ -244,7 +244,7 @@ export function SmartRefreshIndicator({
     }
 
     const interval = setInterval(() => {
-      setCountdown(prev => (prev <= 1 ? 60 : prev - 1));
+      setCountdown((prev) => (prev <= 1 ? 60 : prev - 1));
     }, 1000);
 
     return () => clearInterval(interval);
@@ -285,10 +285,7 @@ export function SmartRefreshIndicator({
               className="flex items-center gap-1.5 text-gray-500"
             >
               <RefreshCw
-                className={cn(
-                  'h-4 w-4',
-                  (isLoading || isBackgroundRefreshing) && 'animate-spin'
-                )}
+                className={cn('h-4 w-4', (isLoading || isBackgroundRefreshing) && 'animate-spin')}
               />
               <span className="text-xs">{timeAgo}</span>
             </motion.div>
@@ -305,9 +302,9 @@ export function SmartRefreshIndicator({
         isOffline
           ? 'border-amber-200 bg-amber-50'
           : error
-          ? 'border-rose-200 bg-rose-50'
-          : 'border-gray-200 bg-white',
-        className
+            ? 'border-rose-200 bg-rose-50'
+            : 'border-gray-200 bg-white',
+        className,
       )}
     >
       <AnimatePresence mode="wait">
@@ -342,10 +339,7 @@ export function SmartRefreshIndicator({
             className="flex items-center gap-2 text-gray-600"
           >
             <RefreshCw
-              className={cn(
-                'h-4 w-4',
-                (isLoading || isBackgroundRefreshing) && 'animate-spin'
-              )}
+              className={cn('h-4 w-4', (isLoading || isBackgroundRefreshing) && 'animate-spin')}
             />
             <span>更新于 {timeAgo}</span>
           </motion.div>
@@ -370,14 +364,7 @@ export function SmartRefreshIndicator({
             <span className="text-xs">下次刷新</span>
             <div className="relative h-5 w-5">
               <svg className="h-5 w-5 -rotate-90" viewBox="0 0 24 24">
-                <circle
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  fill="none"
-                  stroke="#e5e7eb"
-                  strokeWidth="3"
-                />
+                <circle cx="12" cy="12" r="10" fill="none" stroke="#e5e7eb" strokeWidth="3" />
                 <circle
                   cx="12"
                   cy="12"
@@ -441,7 +428,7 @@ export function usePullToRefresh(options: UsePullToRefreshOptions) {
         setPullDistance(dampedDistance);
       }
     },
-    [maxPullDistance]
+    [maxPullDistance],
   );
 
   const handleTouchEnd = useCallback(async () => {
@@ -494,7 +481,7 @@ export function PullToRefreshIndicator({
     <motion.div
       className={cn(
         'fixed left-0 right-0 z-50 flex items-center justify-center overflow-hidden',
-        className
+        className,
       )}
       style={{
         top: 0,
@@ -517,17 +504,13 @@ export function PullToRefreshIndicator({
           }}
           className={cn(
             'flex h-10 w-10 items-center justify-center rounded-full',
-            shouldTrigger ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-500'
+            shouldTrigger ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-500',
           )}
         >
           <RefreshCw className="h-5 w-5" />
         </motion.div>
         <span className="text-xs text-gray-500">
-          {isRefreshing
-            ? '刷新中...'
-            : shouldTrigger
-            ? '松开刷新'
-            : '下拉刷新'}
+          {isRefreshing ? '刷新中...' : shouldTrigger ? '松开刷新' : '下拉刷新'}
         </span>
       </div>
     </motion.div>

@@ -14,12 +14,6 @@ import {
   Info,
 } from 'lucide-react';
 
-
-
-
-
-
-
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -177,7 +171,7 @@ export default function ManipulationConfigPage() {
     return (
       <div className="container mx-auto py-8">
         <div className="flex h-64 items-center justify-center">
-          <div className="border-primary h-8 w-8 animate-spin rounded-full border-b-2"></div>
+          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
         </div>
       </div>
     );
@@ -191,7 +185,7 @@ export default function ManipulationConfigPage() {
             <Settings className="h-8 w-8" />
             {t('security:config.title')}
           </h1>
-          <p className="text-muted-foreground mt-1">{t('security:config.subtitle')}</p>
+          <p className="mt-1 text-muted-foreground">{t('security:config.subtitle')}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={resetConfig} disabled={saving}>
@@ -247,15 +241,19 @@ export default function ManipulationConfigPage() {
               {detectionRuleIds.map((rule) => {
                 const isEnabled = config.enabledRules.includes(rule.id);
                 const Icon = rule.icon;
-                const ruleName = t(`security:detectionRules.${rule.id.replace('_attack', '').replace('_manipulation', '')}.name` as const);
-                const ruleDesc = t(`security:detectionRules.${rule.id.replace('_attack', '').replace('_manipulation', '')}.description` as const);
+                const ruleName = t(
+                  `security:detectionRules.${rule.id.replace('_attack', '').replace('_manipulation', '')}.name` as const,
+                );
+                const ruleDesc = t(
+                  `security:detectionRules.${rule.id.replace('_attack', '').replace('_manipulation', '')}.description` as const,
+                );
 
                 return (
                   <div
                     key={rule.id}
                     className={cn(
                       'flex items-center justify-between rounded-lg border p-4 transition-all',
-                      isEnabled ? 'bg-primary/5 border-primary/20' : 'bg-muted/50 border-muted',
+                      isEnabled ? 'border-primary/20 bg-primary/5' : 'border-muted bg-muted/50',
                     )}
                   >
                     <div className="flex items-start gap-3">
@@ -278,7 +276,7 @@ export default function ManipulationConfigPage() {
                             </Badge>
                           )}
                         </div>
-                        <div className="text-muted-foreground text-sm">{ruleDesc}</div>
+                        <div className="text-sm text-muted-foreground">{ruleDesc}</div>
                       </div>
                     </div>
                     <Switch checked={isEnabled} onCheckedChange={() => toggleRule(rule.id)} />
@@ -312,7 +310,7 @@ export default function ManipulationConfigPage() {
                   max={5}
                   step={0.1}
                 />
-                <p className="text-muted-foreground text-xs">
+                <p className="text-xs text-muted-foreground">
                   标准差倍数，超过此值视为异常（推荐: 3）
                 </p>
               </div>
@@ -371,7 +369,7 @@ export default function ManipulationConfigPage() {
                   min={5}
                   max={50}
                 />
-                <p className="text-muted-foreground text-xs">
+                <p className="text-xs text-muted-foreground">
                   进行统计检测所需的最小历史数据点数量
                 </p>
               </div>
@@ -452,28 +450,34 @@ export default function ManipulationConfigPage() {
               <CardDescription>{t('security:config.sections.alertChannelsDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {[
-                { key: 'email' },
-                { key: 'webhook' },
-                { key: 'slack' },
-                { key: 'telegram' },
-              ].map((channel) => (
-                <div
-                  key={channel.key}
-                  className="flex items-center justify-between rounded-lg border p-3"
-                >
-                  <div>
-                    <div className="font-medium">{t(`security:alertChannels.${channel.key}.name` as const)}</div>
-                    <div className="text-muted-foreground text-sm">{t(`security:alertChannels.${channel.key}.description` as const)}</div>
+              {[{ key: 'email' }, { key: 'webhook' }, { key: 'slack' }, { key: 'telegram' }].map(
+                (channel) => (
+                  <div
+                    key={channel.key}
+                    className="flex items-center justify-between rounded-lg border p-3"
+                  >
+                    <div>
+                      <div className="font-medium">
+                        {t(`security:alertChannels.${channel.key}.name` as const)}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {t(`security:alertChannels.${channel.key}.description` as const)}
+                      </div>
+                    </div>
+                    <Switch
+                      checked={
+                        config.alertChannels[channel.key as keyof typeof config.alertChannels]
+                      }
+                      onCheckedChange={(checked) =>
+                        updateAlertChannel(
+                          channel.key as keyof typeof config.alertChannels,
+                          checked,
+                        )
+                      }
+                    />
                   </div>
-                  <Switch
-                    checked={config.alertChannels[channel.key as keyof typeof config.alertChannels]}
-                    onCheckedChange={(checked) =>
-                      updateAlertChannel(channel.key as keyof typeof config.alertChannels, checked)
-                    }
-                  />
-                </div>
-              ))}
+                ),
+              )}
             </CardContent>
           </Card>
 
@@ -501,7 +505,7 @@ export default function ManipulationConfigPage() {
                   max={60}
                   step={1}
                 />
-                <p className="text-muted-foreground text-xs">
+                <p className="text-xs text-muted-foreground">
                   同一数据源的告警间隔时间，避免重复通知
                 </p>
               </div>
@@ -511,7 +515,7 @@ export default function ManipulationConfigPage() {
                   <Info className="mt-0.5 h-5 w-5 text-yellow-600" />
                   <div>
                     <div className="font-medium">自动阻断可疑数据源</div>
-                    <div className="text-muted-foreground text-sm">
+                    <div className="text-sm text-muted-foreground">
                       检测到严重操纵时自动阻断该数据源
                     </div>
                   </div>
@@ -553,7 +557,7 @@ export default function ManipulationConfigPage() {
                   max={30}
                   step={1}
                 />
-                <p className="text-muted-foreground text-xs">检测分析的时间窗口范围</p>
+                <p className="text-xs text-muted-foreground">检测分析的时间窗口范围</p>
               </div>
 
               <Separator />
@@ -577,7 +581,7 @@ export default function ManipulationConfigPage() {
                   max={95}
                   step={5}
                 />
-                <p className="text-muted-foreground text-xs">多源价格相关性验证阈值</p>
+                <p className="text-xs text-muted-foreground">多源价格相关性验证阈值</p>
               </div>
             </CardContent>
           </Card>

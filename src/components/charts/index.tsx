@@ -1,6 +1,6 @@
 /**
  * Charts Components Export
- * 
+ *
  * 图表组件统一导出
  */
 
@@ -17,12 +17,12 @@ export {
   EnhancedPieChart,
   EnhancedRadarChart,
   EnhancedGaugeChart,
-  
+
   // 辅助组件
   Sparkline,
   StatComparison,
   CustomTooltip,
-  
+
   // 设计令牌
   CHART_COLORS,
   CHART_DIMENSIONS,

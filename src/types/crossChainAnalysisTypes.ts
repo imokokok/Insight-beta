@@ -6,11 +6,11 @@
 
 import type { OracleProtocol, SupportedChain } from './unifiedOracleTypes';
 
-export type CrossChainAnalysisType = 
-  | 'price_comparison'      // 价格对比
-  | 'deviation_analysis'    // 偏差分析
+export type CrossChainAnalysisType =
+  | 'price_comparison' // 价格对比
+  | 'deviation_analysis' // 偏差分析
   | 'arbitrage_opportunity' // 套利机会
-  | 'convergence_trend'    // 收敛趋势
+  | 'convergence_trend' // 收敛趋势
   | 'historical_comparison'; // 历史对比
 
 export interface CrossChainPriceData {
@@ -143,10 +143,10 @@ export interface CrossChainAnalysisConfig {
   symbols: string[];
   chains: SupportedChain[];
   protocols: OracleProtocol[];
-  deviationThreshold: number;      // 偏差告警阈值（百分比）
+  deviationThreshold: number; // 偏差告警阈值（百分比）
   criticalDeviationThreshold: number; // 严重偏差阈值
-  arbitrageThreshold: number;     // 套利机会阈值
-  analysisIntervalMs: number;     // 分析间隔（毫秒）
+  arbitrageThreshold: number; // 套利机会阈值
+  analysisIntervalMs: number; // 分析间隔（毫秒）
   alertEnabled: boolean;
   alertChannels: string[];
 }

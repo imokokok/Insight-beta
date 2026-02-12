@@ -22,12 +22,14 @@ src/lib/design-system/
 统一的颜色定义，包括语义色、品牌色、组件色等。
 
 **核心原则：**
+
 - 统一使用 `amber` 替代 `orange`（避免颜色不一致）
 - 使用语义化颜色名称
 - 提供完整的颜色阶梯（50-900）
 - 类型安全的颜色定义
 
 **主要颜色类别：**
+
 - **语义色**：success, warning, error, info
 - **品牌色**：primary, secondary
 - **组件色**：blue, green, amber, purple, red, cyan, pink
@@ -51,12 +53,14 @@ const color = getSemanticColor('success', 500); // '#22c55e'
 基于 4px 基准网格的统一间距系统。
 
 **核心原则：**
+
 - 使用 4px 基准单位
 - 提供语义化间距名称
 - 与 Tailwind CSS 的间距系统保持一致
 - 类型安全的间距定义
 
 **主要间距类别：**
+
 - **基础间距**：0-128（对应 0px-512px）
 - **语义间距**：none, xs, sm, md, lg, xl, 2xl, 3xl, 4xl, full
 - **组件间距**：button, card, input, badge, table, modal, dropdown, form, list, grid, section
@@ -82,12 +86,14 @@ const buttonPadding = COMPONENT_SPACING.button.padding.md; // '12px 24px'
 统一的排版系统，确保文字样式的一致性。
 
 **核心原则：**
+
 - 使用语义化字体大小名称
 - 提供一致的行高和字重
 - 支持响应式排版
 - 类型安全的排版定义
 
 **主要排版类别：**
+
 - **字体家族**：sans, mono, serif
 - **字体大小**：xs, sm, base, lg, xl, 2xl, 3xl, 4xl, 5xl, 6xl
 - **字重**：light, normal, medium, semibold, bold, extrabold
@@ -115,14 +121,14 @@ const buttonTypography = COMPONENT_TYPOGRAPHY.button; // { fontSize: 'sm', fontW
 ### 颜色工具
 
 ```typescript
-import { 
-  getSemanticColor, 
-  getBrandColor, 
-  getComponentColor, 
-  getStatusColor, 
+import {
+  getSemanticColor,
+  getBrandColor,
+  getComponentColor,
+  getStatusColor,
   getProtocolColor,
   getChartColor,
-  getGradientColors 
+  getGradientColors,
 } from '@/lib/design-system/tokens';
 
 // 获取语义色
@@ -165,7 +171,12 @@ const padding = getComponentSpacing('button', 'padding.md'); // '12px 24px'
 ### 排版工具
 
 ```typescript
-import { getFontSize, getFontWeight, getTextStyle, getFontFamily } from '@/lib/design-system/tokens';
+import {
+  getFontSize,
+  getFontWeight,
+  getTextStyle,
+  getFontFamily,
+} from '@/lib/design-system/tokens';
 
 // 获取字体大小
 const fontSize = getFontSize('base');

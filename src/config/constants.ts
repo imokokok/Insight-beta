@@ -64,12 +64,7 @@ export { PROTOCOL_COLORS } from '@/lib/design-system/tokens/colors';
 export const DEFAULT_STALENESS_THRESHOLDS = Object.freeze({
   PYTH: 60,
   CHAINLINK: 3600,
-  BAND: 300,
-  API3: 300,
   REDSTONE: 60,
-  SWITCHBOARD: 300,
-  FLUX: 300,
-  DIA: 300,
   UMA: 600,
 } as const);
 
@@ -97,5 +92,3 @@ export const DEFAULT_FALLBACK_PRICES = Object.freeze({
   ETH: 3000,
   DEFAULT: 100,
 } as const);
-
-

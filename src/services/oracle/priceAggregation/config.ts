@@ -27,12 +27,10 @@ export const AGGREGATION_CONFIG = {
 
   // 权重配置（用于加权平均）
   protocolWeights: {
-    chainlink: 0.25,
-    pyth: 0.25,
-    band: 0.15,
-    api3: 0.15,
-    redstone: 0.1,
-    dia: 0.1,
+    chainlink: 0.4,
+    pyth: 0.35,
+    redstone: 0.15,
+    uma: 0.1,
   } as Record<OracleProtocol, number>,
 
   // 异常检测配置 - P2 优化：添加 zscore 方法

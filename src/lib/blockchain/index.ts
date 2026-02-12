@@ -52,23 +52,12 @@ export { ChainlinkClient, createChainlinkClient } from './chainlinkDataFeeds';
 // Pyth
 export { PythClient, createPythClient, getAvailablePythSymbols } from './pythOracle';
 
-// Band
-export { BandClient, createBandClient } from './bandOracle';
-
-// DIA
-export { DIAClient, createDIAClient, getAvailableDIASymbols } from './diaOracle';
-
-// API3
-export { API3Client, createAPI3Client, getAvailableAPI3Dapis } from './api3Oracle';
-
 // RedStone
-export { RedStoneClient, createRedStoneClient, getAvailableRedStoneSymbols } from './redstoneOracle';
-
-// Flux
-export { FluxClient, createFluxClient, getAvailableFluxFeeds } from './fluxOracle';
-
-// Switchboard
-export { SwitchboardClient, createSwitchboardClient } from './switchboardOracle';
+export {
+  RedStoneClient,
+  createRedStoneClient,
+  getAvailableRedStoneSymbols,
+} from './redstoneOracle';
 
 // UMA
 export {

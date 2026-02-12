@@ -47,10 +47,6 @@ const CHAIN_COLORS: Record<string, string> = {
   aptos: '#627eea',
 };
 
-
-
-
-
 export const GasPriceTrendChart: React.FC<GasPriceTrendChartProps> = ({
   data,
   isLoading,
@@ -61,13 +57,19 @@ export const GasPriceTrendChart: React.FC<GasPriceTrendChartProps> = ({
   const chartData = useMemo(() => {
     if (!data) return [];
     const now = Date.now();
-    const points: Array<{ time: string; ma7: number; ma24: number; ma168: number; current: number }> = [];
-    
+    const points: Array<{
+      time: string;
+      ma7: number;
+      ma24: number;
+      ma168: number;
+      current: number;
+    }> = [];
+
     for (let i = 7; i >= 0; i--) {
       const time = new Date(now - i * 3600000).toISOString();
       const volatility = data.volatility * (1 + Math.random() * 0.2 - 0.1);
       const basePrice = 20e9;
-      
+
       points.push({
         time: new Date(time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
         ma7: basePrice * (1 + (data.ma7 / 10000 - 1) * 0.5 + (Math.random() - 0.5) * 0.1),
@@ -76,7 +78,7 @@ export const GasPriceTrendChart: React.FC<GasPriceTrendChartProps> = ({
         current: basePrice * (1 + volatility / 100),
       });
     }
-    
+
     return points;
   }, [data]);
 
@@ -109,8 +111,12 @@ export const GasPriceTrendChart: React.FC<GasPriceTrendChartProps> = ({
   }
 
   const chainColor = CHAIN_COLORS[data.chain] || CHAIN_COLORS.ethereum;
-  const directionColor = data.direction === 'up' ? 'text-emerald-600' : 
-                       data.direction === 'down' ? 'text-red-600' : 'text-gray-600';
+  const directionColor =
+    data.direction === 'up'
+      ? 'text-emerald-600'
+      : data.direction === 'down'
+        ? 'text-red-600'
+        : 'text-gray-600';
 
   return (
     <Card>
@@ -144,12 +150,8 @@ export const GasPriceTrendChart: React.FC<GasPriceTrendChartProps> = ({
         <ResponsiveContainer width="100%" height={height}>
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
-            <XAxis 
-              dataKey="time" 
-              tick={{ fontSize: 12 }}
-              stroke="#9ca3af"
-            />
-            <YAxis 
+            <XAxis dataKey="time" tick={{ fontSize: 12 }} stroke="#9ca3af" />
+            <YAxis
               tick={{ fontSize: 12 }}
               tickFormatter={(value) => (value / 1e9).toFixed(1)}
               stroke="#9ca3af"
@@ -162,44 +164,44 @@ export const GasPriceTrendChart: React.FC<GasPriceTrendChartProps> = ({
               }}
             />
             <Legend />
-            <Line 
-              type="monotone" 
-              dataKey="ma7" 
-              stroke={chainColor} 
+            <Line
+              type="monotone"
+              dataKey="ma7"
+              stroke={chainColor}
               strokeWidth={2}
               dot={false}
               name="MA7"
             />
-            <Line 
-              type="monotone" 
-              dataKey="ma24" 
-              stroke={chainColor} 
+            <Line
+              type="monotone"
+              dataKey="ma24"
+              stroke={chainColor}
               strokeWidth={2}
               strokeDasharray="5 5"
               dot={false}
               name="MA24"
             />
-            <Line 
-              type="monotone" 
-              dataKey="ma168" 
-              stroke={chainColor} 
+            <Line
+              type="monotone"
+              dataKey="ma168"
+              stroke={chainColor}
               strokeWidth={2}
               strokeDasharray="10 10"
               dot={false}
               name="MA168"
             />
-            <Line 
-              type="monotone" 
-              dataKey="current" 
-              stroke={chainColor} 
+            <Line
+              type="monotone"
+              dataKey="current"
+              stroke={chainColor}
               strokeWidth={3}
               dot={{ r: 4 }}
               name="Current"
             />
-            <ReferenceLine 
-              y={(data.ma7 + data.ma24 + data.ma168) / 3} 
-              stroke="#9ca3af" 
-              strokeDasharray="3 3" 
+            <ReferenceLine
+              y={(data.ma7 + data.ma24 + data.ma168) / 3}
+              stroke="#9ca3af"
+              strokeDasharray="3 3"
               label="Average"
             />
           </LineChart>

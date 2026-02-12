@@ -181,7 +181,9 @@ async function initRedisClient(): Promise<RedisClient | null> {
       eval: async (script: string, keys: string[], args: string[]) => {
         return client.eval(script, keys.length, ...keys, ...args);
       },
-      quit: async () => { await client.quit(); },
+      quit: async () => {
+        await client.quit();
+      },
     };
   } catch (error) {
     logger.warn('Redis client initialization failed, falling back to memory store', {
@@ -262,7 +264,11 @@ class RedisStore implements RateLimitStore {
     `;
 
     try {
-      const result = await client.eval(script, [fullKey], [String(now), String(windowMs), String(ttl)]);
+      const result = await client.eval(
+        script,
+        [fullKey],
+        [String(now), String(windowMs), String(ttl)],
+      );
       if (typeof result === 'string') {
         return JSON.parse(result) as RateLimitRecord;
       }
@@ -317,20 +323,21 @@ async function getStore(): Promise<RateLimitStore> {
 // ============================================================================
 
 /** 可信代理配置 */
-const TRUSTED_PROXIES = process.env.TRUSTED_PROXIES?.split(',').map(p => p.trim()) ?? [];
+const TRUSTED_PROXIES = process.env.TRUSTED_PROXIES?.split(',').map((p) => p.trim()) ?? [];
 
 /**
  * 验证 IP 地址格式
  */
 function isValidIp(ip: string): boolean {
-  const ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+  const ipv4Regex =
+    /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
   const ipv6Regex = /^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/;
   return ipv4Regex.test(ip) || ipv6Regex.test(ip);
 }
 
 /**
  * 检查请求是否来自可信代理
- * 
+ *
  * 注意：由于 NextRequest 类型限制，无法直接获取连接 IP
  * 在生产环境中，建议在边缘函数或反向代理层进行验证
  */
@@ -383,7 +390,7 @@ function hashString(str: string): string {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash;
   }
   return Math.abs(hash).toString(36);
@@ -408,7 +415,10 @@ export function getClientIp(req: NextRequest): string {
     const forwarded = req.headers.get('x-forwarded-for');
     if (forwarded) {
       // 取第一个 IP（最原始的客户端 IP）
-      const ips = forwarded.split(',').map(ip => ip.trim()).filter(isValidIp);
+      const ips = forwarded
+        .split(',')
+        .map((ip) => ip.trim())
+        .filter(isValidIp);
       if (ips.length > 0) {
         return ips[0]!;
       }

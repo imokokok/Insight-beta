@@ -19,16 +19,16 @@ export function ShortcutHelpPanel({ isOpen, onClose, groups }: ShortcutHelpPanel
 
   const formatKey = (key: string) => {
     const keyMap: Record<string, string> = {
-      'ctrl': 'Ctrl',
-      'alt': 'Alt',
-      'shift': 'Shift',
-      'meta': '⌘',
-      'Escape': 'Esc',
-      'Delete': 'Del',
-      'ArrowUp': '↑',
-      'ArrowDown': '↓',
-      'ArrowLeft': '←',
-      'ArrowRight': '→',
+      ctrl: 'Ctrl',
+      alt: 'Alt',
+      shift: 'Shift',
+      meta: '⌘',
+      Escape: 'Esc',
+      Delete: 'Del',
+      ArrowUp: '↑',
+      ArrowDown: '↓',
+      ArrowLeft: '←',
+      ArrowRight: '→',
     };
     return keyMap[key] || key;
   };
@@ -44,7 +44,12 @@ export function ShortcutHelpPanel({ isOpen, onClose, groups }: ShortcutHelpPanel
           >
             <span className="sr-only">关闭</span>
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>

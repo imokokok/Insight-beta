@@ -118,7 +118,7 @@ export function HealthScore({ score, size = 'md', showLabel = true, className }:
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className={cn('font-bold', text)}>{score}</span>
-          <span className="text-muted-foreground text-xs">/100</span>
+          <span className="text-xs text-muted-foreground">/100</span>
         </div>
       </div>
 
@@ -128,7 +128,7 @@ export function HealthScore({ score, size = 'md', showLabel = true, className }:
             <Icon className={icon} />
             {config.label}
           </div>
-          <p className="text-muted-foreground text-sm">{config.description}</p>
+          <p className="text-sm text-muted-foreground">{config.description}</p>
         </div>
       )}
     </div>

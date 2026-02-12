@@ -27,12 +27,7 @@ interface PriceHistoryChartProps {
   className?: string;
 }
 
-export function PriceHistoryChart({
-  data,
-  symbol,
-  title,
-  className,
-}: PriceHistoryChartProps) {
+export function PriceHistoryChart({ data, symbol, title, className }: PriceHistoryChartProps) {
   const formattedData = useMemo(() => {
     return data.map((point) => ({
       ...point,
@@ -64,12 +59,7 @@ export function PriceHistoryChart({
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis
-                dataKey="time"
-                tick={{ fontSize: 12 }}
-                tickLine={false}
-                axisLine={false}
-              />
+              <XAxis dataKey="time" tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
               <YAxis
                 domain={[minPrice, maxPrice]}
                 tick={{ fontSize: 12 }}

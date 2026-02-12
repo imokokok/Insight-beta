@@ -57,12 +57,7 @@ export type DisputeStatus =
 // 断言状态
 // ============================================================================
 
-export type AssertionStatus =
-  | 'proposed'
-  | 'disputed'
-  | 'settled'
-  | 'expired'
-  | 'resolved';
+export type AssertionStatus = 'proposed' | 'disputed' | 'settled' | 'expired' | 'resolved';
 
 // ============================================================================
 // 投票状态

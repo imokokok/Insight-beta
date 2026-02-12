@@ -1,7 +1,5 @@
 'use client';
 
-
-
 import { AuditLogViewer } from '@/components/common/AuditLogViewer';
 import { PageHeader } from '@/components/common/PageHeader';
 import { useIsMobile, useAdminToken } from '@/hooks';

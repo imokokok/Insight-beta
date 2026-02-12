@@ -36,7 +36,7 @@ export interface FormatPercentOptions {
 export function formatPercent(
   value: number | null | undefined,
   decimals: number = 2,
-  options: FormatPercentOptions = {}
+  options: FormatPercentOptions = {},
 ): string {
   const { showSign = false, placeholder = '—', spaceBeforeSymbol = false } = options;
 
@@ -71,7 +71,7 @@ export function formatPercent(
 export function formatPercentValue(
   value: number | null | undefined,
   decimals: number = 2,
-  options: FormatPercentOptions = {}
+  options: FormatPercentOptions = {},
 ): string {
   const { showSign = false, placeholder = '—', spaceBeforeSymbol = false } = options;
 
@@ -106,7 +106,7 @@ export function formatPercentValue(
 export function formatChangePercent(
   value: number | null | undefined,
   decimals: number = 2,
-  isDecimal: boolean = true
+  isDecimal: boolean = true,
 ): string {
   if (value === null || value === undefined || !Number.isFinite(value)) {
     return '—';
@@ -135,7 +135,7 @@ export function formatChangePercent(
  */
 export function formatConfidence(
   confidence: number | null | undefined,
-  decimals: number = 1
+  decimals: number = 1,
 ): string {
   return formatPercent(confidence, decimals);
 }
@@ -155,10 +155,7 @@ export function formatConfidence(
  * formatSuccessRate(1);        // Returns: '100.00%'
  * ```
  */
-export function formatSuccessRate(
-  rate: number | null | undefined,
-  decimals: number = 2
-): string {
+export function formatSuccessRate(rate: number | null | undefined, decimals: number = 2): string {
   return formatPercent(rate, decimals);
 }
 
@@ -179,7 +176,7 @@ export function formatSuccessRate(
  */
 export function formatDeviation(
   deviation: number | null | undefined,
-  decimals: number = 2
+  decimals: number = 2,
 ): string {
   return formatChangePercent(deviation, decimals, true);
 }

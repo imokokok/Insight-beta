@@ -187,7 +187,7 @@ export function useWebSocket(url: string, options: WebSocketOptions = {}) {
 
     if (wsRef.current) {
       const ws = wsRef.current;
-      
+
       // 等待 close 事件或超时（最多1秒）
       await Promise.race([
         new Promise<void>((resolve) => {
@@ -200,7 +200,7 @@ export function useWebSocket(url: string, options: WebSocketOptions = {}) {
         }),
         new Promise<void>((resolve) => setTimeout(resolve, 1000)),
       ]);
-      
+
       ws.onopen = null;
       ws.onclose = null;
       ws.onerror = null;

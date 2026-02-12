@@ -6,10 +6,7 @@
  */
 
 // 实时价格服务
-export {
-  RealtimePriceService,
-  realtimePriceService,
-} from './RealtimePriceService';
+export { RealtimePriceService, realtimePriceService } from './RealtimePriceService';
 
 // 告警规则引擎
 export {

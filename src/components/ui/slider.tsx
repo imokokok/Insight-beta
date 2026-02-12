@@ -50,7 +50,7 @@ const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
         {...props}
       >
         <div className="bg-secondary relative h-2 w-full grow overflow-hidden rounded-full">
-          <div className="bg-primary absolute h-full" style={{ width: `${percentage}%` }} />
+          <div className="absolute h-full bg-primary" style={{ width: `${percentage}%` }} />
         </div>
         <input
           type="range"
@@ -63,7 +63,7 @@ const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
           className="absolute h-full w-full cursor-pointer opacity-0"
         />
         <div
-          className="border-primary bg-background ring-offset-background focus-visible:ring-ring absolute block h-5 w-5 rounded-full border-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+          className="bg-background ring-offset-background absolute block h-5 w-5 rounded-full border-2 border-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
           style={{ left: `calc(${percentage}% - 10px)` }}
         />
       </div>

@@ -27,55 +27,55 @@ export interface ShortcutGroup {
 
 // ==================== 全局快捷键 Hook ====================
 
-export function useKeyboardShortcuts(
-  shortcuts: KeyboardShortcut[],
-  enabled: boolean = true
-) {
+export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[], enabled: boolean = true) {
   const shortcutsRef = useRef(shortcuts);
   shortcutsRef.current = shortcuts;
 
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (!enabled) return;
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (!enabled) return;
 
-    for (const shortcut of shortcutsRef.current) {
-      if (shortcut.scope === 'local') continue;
+      for (const shortcut of shortcutsRef.current) {
+        if (shortcut.scope === 'local') continue;
 
-      const keyMatch = e.key.toLowerCase() === shortcut.key.toLowerCase();
-      
-      let modifierMatch = true;
-      if (shortcut.modifier) {
-        const modifiers = Array.isArray(shortcut.modifier)
-          ? shortcut.modifier
-          : [shortcut.modifier];
-        
-        modifierMatch = modifiers.every((mod) => {
-          switch (mod) {
-            case 'ctrl':
-              return e.ctrlKey;
-            case 'alt':
-              return e.altKey;
-            case 'shift':
-              return e.shiftKey;
-            case 'meta':
-              return e.metaKey;
-            default:
-              return false;
+        const keyMatch = e.key.toLowerCase() === shortcut.key.toLowerCase();
+
+        let modifierMatch = true;
+        if (shortcut.modifier) {
+          const modifiers = Array.isArray(shortcut.modifier)
+            ? shortcut.modifier
+            : [shortcut.modifier];
+
+          modifierMatch = modifiers.every((mod) => {
+            switch (mod) {
+              case 'ctrl':
+                return e.ctrlKey;
+              case 'alt':
+                return e.altKey;
+              case 'shift':
+                return e.shiftKey;
+              case 'meta':
+                return e.metaKey;
+              default:
+                return false;
+            }
+          });
+        }
+
+        if (keyMatch && modifierMatch) {
+          if (shortcut.preventDefault !== false) {
+            e.preventDefault();
           }
-        });
-      }
-
-      if (keyMatch && modifierMatch) {
-        if (shortcut.preventDefault !== false) {
-          e.preventDefault();
+          if (shortcut.stopPropagation) {
+            e.stopPropagation();
+          }
+          shortcut.handler(e);
+          break;
         }
-        if (shortcut.stopPropagation) {
-          e.stopPropagation();
-        }
-        shortcut.handler(e);
-        break;
       }
-    }
-  }, [enabled]);
+    },
+    [enabled],
+  );
 
   useEffect(() => {
     if (!enabled) return;

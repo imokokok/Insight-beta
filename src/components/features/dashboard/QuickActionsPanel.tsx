@@ -2,12 +2,7 @@
 
 import type { ReactNode } from 'react';
 
-import {
-  RefreshCw,
-  Download,
-  Settings,
-  Filter,
-} from 'lucide-react';
+import { RefreshCw, Download, Settings, Filter } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -132,7 +127,7 @@ export function QuickActionButton({
       {icon}
       {label}
       {badge !== undefined && badge > 0 && (
-        <span className="ml-1 rounded-full bg-primary px-1.5 py-0.5 text-xs text-primary-foreground">
+        <span className="text-primary-foreground ml-1 rounded-full bg-primary px-1.5 py-0.5 text-xs">
           {badge}
         </span>
       )}

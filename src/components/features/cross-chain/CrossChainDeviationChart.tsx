@@ -34,10 +34,7 @@ export const CrossChainDeviationChart = memo(function CrossChainDeviationChart({
         <CardTitle>Deviation Analysis</CardTitle>
       </CardHeader>
       <CardContent>
-        <div
-          style={{ height }}
-          className="flex items-center justify-center text-muted-foreground"
-        >
+        <div style={{ height }} className="flex items-center justify-center text-muted-foreground">
           Deviation chart coming soon
         </div>
       </CardContent>

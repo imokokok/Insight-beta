@@ -2,12 +2,6 @@
 
 import { useEffect } from 'react';
 
-
-
-
-
-
-
 import { DynamicSwaggerUI } from '@/lib/dynamic-imports';
 
 export default function ApiDocsPage() {

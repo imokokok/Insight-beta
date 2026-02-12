@@ -475,6 +475,11 @@ function getDefaultTemplate(
         stalenessThreshold: 60,
       },
     },
+    redstone: {
+      maxBlockRange: 5000,
+      confirmationBlocks: 12,
+      syncIntervalMs: 30000,
+    },
     uma: {
       maxBlockRange: 10000,
       confirmationBlocks: 12,
@@ -482,36 +487,6 @@ function getDefaultTemplate(
       protocolConfig: {
         votingPeriodHours: 72,
       },
-    },
-    band: {
-      maxBlockRange: 10000,
-      confirmationBlocks: 12,
-      syncIntervalMs: 60000,
-    },
-    api3: {
-      maxBlockRange: 10000,
-      confirmationBlocks: 12,
-      syncIntervalMs: 60000,
-    },
-    redstone: {
-      maxBlockRange: 5000,
-      confirmationBlocks: 12,
-      syncIntervalMs: 30000,
-    },
-    switchboard: {
-      maxBlockRange: 5000,
-      confirmationBlocks: 32,
-      syncIntervalMs: 30000,
-    },
-    flux: {
-      maxBlockRange: 10000,
-      confirmationBlocks: 12,
-      syncIntervalMs: 60000,
-    },
-    dia: {
-      maxBlockRange: 10000,
-      confirmationBlocks: 12,
-      syncIntervalMs: 60000,
     },
   };
 
@@ -536,13 +511,9 @@ export async function getInstanceStats(): Promise<{
     const result = await query(`
       SELECT
         COUNT(*) as total,
-        protocol,
-        chain,
-        enabled,
         COUNT(*) FILTER (WHERE enabled = true) as enabled_count,
         COUNT(*) FILTER (WHERE enabled = false) as disabled_count
       FROM unified_oracle_instances
-      GROUP BY protocol, chain, enabled
     `);
 
     const stats = {
@@ -553,24 +524,30 @@ export async function getInstanceStats(): Promise<{
       disabled: 0,
     };
 
-    for (const row of result.rows) {
-      stats.total += parseInt(row.count);
+    if (result.rows.length > 0) {
+      const row = result.rows[0];
+      if (row) {
+        stats.total = parseInt(row.total);
+        stats.enabled = parseInt(row.enabled_count || 0);
+        stats.disabled = parseInt(row.disabled_count || 0);
+      }
+    }
+
+    const groupResult = await query(`
+      SELECT
+        protocol,
+        chain,
+        COUNT(*) as count
+      FROM unified_oracle_instances
+      GROUP BY protocol, chain
+    `);
+
+    for (const row of groupResult.rows) {
       stats.byProtocol[row.protocol as OracleProtocol] =
         (stats.byProtocol[row.protocol as OracleProtocol] || 0) + parseInt(row.count);
       stats.byChain[row.chain as SupportedChain] =
         (stats.byChain[row.chain as SupportedChain] || 0) + parseInt(row.count);
     }
-
-    // 重新查询获取准确的 enabled/disabled 数量
-    const enabledResult = await query(
-      `SELECT COUNT(*) as count FROM unified_oracle_instances WHERE enabled = true`,
-    );
-    const disabledResult = await query(
-      `SELECT COUNT(*) as count FROM unified_oracle_instances WHERE enabled = false`,
-    );
-
-    stats.enabled = parseInt(enabledResult.rows[0]?.count || 0);
-    stats.disabled = parseInt(disabledResult.rows[0]?.count || 0);
 
     return stats;
   } catch (error) {
@@ -835,16 +812,40 @@ function rowToInstance(row: Record<string, unknown>): UnifiedOracleInstance {
     typeof row.protocol_config === 'string' ? JSON.parse(row.protocol_config) : row.protocol_config;
   const metadata = typeof row.metadata === 'string' ? JSON.parse(row.metadata) : row.metadata;
 
+  const id = row.id;
+  const name = row.name;
+  const protocol = row.protocol;
+  const chain = row.chain;
+  const enabled = row.enabled;
+  const createdAt = row.created_at;
+  const updatedAt = row.updated_at;
+
+  if (typeof id !== 'string') {
+    throw new Error('Invalid instance: missing or invalid id');
+  }
+  if (typeof name !== 'string') {
+    throw new Error('Invalid instance: missing or invalid name');
+  }
+  if (typeof protocol !== 'string') {
+    throw new Error('Invalid instance: missing or invalid protocol');
+  }
+  if (typeof chain !== 'string') {
+    throw new Error('Invalid instance: missing or invalid chain');
+  }
+  if (typeof enabled !== 'boolean') {
+    throw new Error('Invalid instance: missing or invalid enabled');
+  }
+
   return {
-    id: row.id as string,
-    name: row.name as string,
-    protocol: row.protocol as OracleProtocol,
-    chain: row.chain as SupportedChain,
-    enabled: row.enabled as boolean,
+    id,
+    name,
+    protocol: protocol as OracleProtocol,
+    chain: chain as SupportedChain,
+    enabled,
     config: {
       rpcUrl: config?.rpcUrl || '',
       rpcUrls: config?.rpcUrls,
-      chain: row.chain as SupportedChain,
+      chain: chain as SupportedChain,
       startBlock: config?.startBlock,
       maxBlockRange: config?.maxBlockRange,
       confirmationBlocks: config?.confirmationBlocks,
@@ -852,7 +853,7 @@ function rowToInstance(row: Record<string, unknown>): UnifiedOracleInstance {
       protocolConfig: protocolConfig as ProtocolSpecificConfig,
     },
     metadata: metadata as Record<string, unknown>,
-    createdAt: row.created_at as string,
-    updatedAt: row.updated_at as string,
+    createdAt: createdAt as string,
+    updatedAt: updatedAt as string,
   };
 }

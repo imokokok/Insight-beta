@@ -58,7 +58,14 @@ export const PROTOCOL_HEALTH_MOCK: Record<string, ProtocolHealthData> = {
 /**
  * 协议列表
  */
-export const PROTOCOL_LIST = ['Chainlink', 'Pyth Network', 'Band Protocol', 'API3', 'RedStone', 'Flux'];
+export const PROTOCOL_LIST = [
+  'Chainlink',
+  'Pyth Network',
+  'Band Protocol',
+  'API3',
+  'RedStone',
+  'Flux',
+];
 
 /**
  * 获取协议健康数据
@@ -68,5 +75,3 @@ export const PROTOCOL_LIST = ['Chainlink', 'Pyth Network', 'Band Protocol', 'API
 export function getProtocolHealth(protocol: string): ProtocolHealthData | null {
   return PROTOCOL_HEALTH_MOCK[protocol] ?? null;
 }
-
-

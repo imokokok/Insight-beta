@@ -34,12 +34,12 @@ export interface CircuitBreakerFallbackIndicatorProps {
 
 /**
  * 熔断回退数据指示器
- * 
+ *
  * 当熔断器打开时使用过期缓存数据时显示此标识
  * 优化数据可观测性，让用户知道数据可能过期
- * 
+ *
  * @example
- * <CircuitBreakerFallbackIndicator 
+ * <CircuitBreakerFallbackIndicator
  *   status="circuit-breaker"
  *   cachedAt={new Date('2024-01-01')}
  *   onRefresh={() => refetch()}
@@ -137,35 +137,39 @@ export function CircuitBreakerFallbackIndicator({
               className={cn(
                 'cursor-help gap-1.5 px-2 py-1 font-medium',
                 config.badgeColor,
-                className
+                className,
               )}
             >
               <Icon className="h-3 w-3" />
               <span>{config.label}</span>
-              {cachedDuration && (
-                <span className="opacity-75">({cachedDuration})</span>
-              )}
+              {cachedDuration && <span className="opacity-75">({cachedDuration})</span>}
             </Badge>
           </TooltipTrigger>
           <TooltipContent side="bottom" className="max-w-sm p-3">
             <div className="space-y-2">
               <p className="font-semibold">{config.tooltipTitle}</p>
-              <p className="text-muted-foreground text-sm">{config.description}</p>
+              <p className="text-sm text-muted-foreground">{config.description}</p>
               {cachedAt && (
                 <p className="text-xs">
-                  <span className="text-muted-foreground">{t('circuitBreaker.fallback.cachedAt')}:</span>{' '}
+                  <span className="text-muted-foreground">
+                    {t('circuitBreaker.fallback.cachedAt')}:
+                  </span>{' '}
                   {formatTime(cachedAt)}
                 </p>
               )}
               {circuitBreakerOpenedAt && (
                 <p className="text-xs">
-                  <span className="text-muted-foreground">{t('circuitBreaker.fallback.circuitOpenedAt')}:</span>{' '}
+                  <span className="text-muted-foreground">
+                    {t('circuitBreaker.fallback.circuitOpenedAt')}:
+                  </span>{' '}
                   {formatTime(circuitBreakerOpenedAt)}
                 </p>
               )}
               {estimatedRecoveryTime && (
                 <p className="text-xs">
-                  <span className="text-muted-foreground">{t('circuitBreaker.fallback.estimatedRecovery')}:</span>{' '}
+                  <span className="text-muted-foreground">
+                    {t('circuitBreaker.fallback.estimatedRecovery')}:
+                  </span>{' '}
                   {formatTime(estimatedRecoveryTime)}
                 </p>
               )}
@@ -193,7 +197,7 @@ export function CircuitBreakerFallbackIndicator({
           'flex items-center justify-between gap-4 rounded-lg border p-3',
           config.bgColor,
           config.borderColor,
-          className
+          className,
         )}
       >
         <div className="flex items-center gap-3">
@@ -202,9 +206,9 @@ export function CircuitBreakerFallbackIndicator({
           </div>
           <div>
             <p className={cn('font-medium', config.color)}>{config.label}</p>
-            <p className="text-muted-foreground text-sm">{config.description}</p>
+            <p className="text-sm text-muted-foreground">{config.description}</p>
             {cachedAt && (
-              <p className="text-muted-foreground mt-1 text-xs">
+              <p className="mt-1 text-xs text-muted-foreground">
                 {t('circuitBreaker.fallback.cachedAt')}: {formatTime(cachedAt)}
                 {cachedDuration && ` (${cachedDuration} ${t('circuitBreaker.fallback.ago')})`}
               </p>
@@ -218,7 +222,7 @@ export function CircuitBreakerFallbackIndicator({
               'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
               config.bgColor,
               config.color,
-              'hover:opacity-80'
+              'hover:opacity-80',
             )}
           >
             <RefreshCw className="h-4 w-4" />
@@ -234,11 +238,7 @@ export function CircuitBreakerFallbackIndicator({
     <span className={cn('inline-flex items-center gap-1.5 text-sm', config.color, className)}>
       <Icon className="h-4 w-4" />
       <span>{config.label}</span>
-      {cachedDuration && (
-        <span className="text-muted-foreground text-xs">({cachedDuration})</span>
-      )}
+      {cachedDuration && <span className="text-xs text-muted-foreground">({cachedDuration})</span>}
     </span>
   );
 }
-
-

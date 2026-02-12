@@ -78,7 +78,7 @@ export const ChartCard = memo(function ChartCard({
                 {icon}
                 {title}
               </h2>
-              {description && <p className="text-muted-foreground mt-1">{description}</p>}
+              {description && <p className="mt-1 text-muted-foreground">{description}</p>}
             </div>
             <div className="flex items-center gap-2">
               {onExport && (
@@ -111,7 +111,7 @@ export const ChartCard = memo(function ChartCard({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Info className="text-muted-foreground h-4 w-4 cursor-help" />
+                      <Info className="h-4 w-4 cursor-help text-muted-foreground" />
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="max-w-xs">{tooltip}</p>

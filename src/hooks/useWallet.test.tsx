@@ -6,6 +6,17 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useWallet, WalletProvider } from '@/contexts/WalletContext';
 
+// Mock getRecommendedConnectionType
+vi.mock('@/lib/blockchain/walletConnect', async () => {
+  const actual = await vi.importActual('@/lib/blockchain/walletConnect');
+  return {
+    ...actual,
+    getRecommendedConnectionType: vi.fn().mockReturnValue('browser'),
+    isWalletBrowser: vi.fn().mockReturnValue(true),
+    getWalletName: vi.fn().mockReturnValue('MetaMask'),
+  };
+});
+
 // Mock window.ethereum
 const mockEthereum = {
   request: vi.fn(),

@@ -61,9 +61,7 @@ export function useAutoRefreshWithStats(
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isError, setIsError] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [formattedLastUpdated, setFormattedLastUpdated] = useState(() =>
-    formatLastUpdated(null),
-  );
+  const [formattedLastUpdated, setFormattedLastUpdated] = useState(() => formatLastUpdated(null));
   const [refreshHistory, setRefreshHistory] = useState<RefreshHistoryItem[]>([]);
   const [refreshStats, setRefreshStats] = useState<RefreshStats>(createEmptyRefreshStats());
 
@@ -142,15 +140,12 @@ export function useAutoRefreshWithStats(
     }
   }, [fetchFn, updateStats]);
 
-  const setStrategy = useCallback(
-    (strategyId: string) => {
-      const newStrategy = REFRESH_STRATEGIES[strategyId as keyof typeof REFRESH_STRATEGIES];
-      if (newStrategy) {
-        setStrategyState(newStrategy);
-      }
-    },
-    [],
-  );
+  const setStrategy = useCallback((strategyId: string) => {
+    const newStrategy = REFRESH_STRATEGIES[strategyId as keyof typeof REFRESH_STRATEGIES];
+    if (newStrategy) {
+      setStrategyState(newStrategy);
+    }
+  }, []);
 
   const clearHistory = useCallback(() => {
     setRefreshHistory([]);
@@ -158,7 +153,9 @@ export function useAutoRefreshWithStats(
   }, []);
 
   useEffect(() => {
-    refresh().catch(() => {});
+    refresh().catch((error) => {
+      logger.warn('Initial refresh failed', { error });
+    });
   }, [refresh]);
 
   useEffect(() => {

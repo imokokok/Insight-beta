@@ -128,7 +128,7 @@ export function exportLatencyToCSV(data: LatencyAnalysis) {
       资产对: metric.symbol,
       链: metric.chain,
       '延迟(ms)': metric.latencyMs,
-      '区块延迟': metric.blockLag,
+      区块延迟: metric.blockLag,
       'P50延迟(ms)': metric.percentile50,
       'P90延迟(ms)': metric.percentile90,
       'P99延迟(ms)': metric.percentile99,
@@ -181,5 +181,3 @@ export function exportAllToJSON(data: {
   const filename = `oracle-comparison-all-${new Date().toISOString().split('T')[0]}.json`;
   downloadFile(jsonContent, filename, 'application/json;charset=utf-8;');
 }
-
-

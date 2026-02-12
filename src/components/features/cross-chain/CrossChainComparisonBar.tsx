@@ -40,10 +40,7 @@ export const CrossChainComparisonBar = memo(function CrossChainComparisonBar({
         <CardTitle>Chain Comparison</CardTitle>
       </CardHeader>
       <CardContent>
-        <div
-          style={{ height }}
-          className="flex items-center justify-center text-muted-foreground"
-        >
+        <div style={{ height }} className="flex items-center justify-center text-muted-foreground">
           Comparison chart coming soon
         </div>
       </CardContent>

@@ -50,9 +50,7 @@ export class ErrorBoundary extends Component<Props, State> {
           animate={{ opacity: 1, scale: 1 }}
         >
           <AlertTriangle className="mb-3 h-10 w-10 text-red-500" />
-          <h3 className="mb-2 text-lg font-semibold text-red-900">
-            组件加载失败
-          </h3>
+          <h3 className="mb-2 text-lg font-semibold text-red-900">组件加载失败</h3>
           <p className="mb-4 max-w-xs text-center text-sm text-red-600">
             该组件出现错误，请尝试刷新
           </p>

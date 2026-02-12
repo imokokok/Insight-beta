@@ -86,16 +86,11 @@ export class OracleHealthMonitor {
       staleThresholdSeconds: {
         chainlink: 3600,
         pyth: 60,
-        api3: 300,
-        band: 300,
         redstone: 60,
-        dia: 300,
         uma: 600,
-        switchboard: 300,
-        flux: 300,
       },
       maxConcurrentChecks: 5,
-      enabledProtocols: ['chainlink', 'pyth', 'api3', 'band', 'redstone', 'dia', 'uma'],
+      enabledProtocols: ['chainlink', 'pyth', 'redstone', 'uma'],
       ...config,
     };
   }
@@ -377,21 +372,9 @@ export class OracleHealthMonitor {
         const { PythClient } = await import('@/lib/blockchain/pythOracle');
         return new PythClient(chain, rpcUrl);
       }
-      case 'api3': {
-        const { API3Client } = await import('@/lib/blockchain/api3Oracle');
-        return new API3Client(chain, rpcUrl);
-      }
-      case 'band': {
-        const { BandClient } = await import('@/lib/blockchain/bandOracle');
-        return new BandClient({ chain, rpcUrl });
-      }
       case 'redstone': {
         const { RedStoneClient } = await import('@/lib/blockchain/redstoneOracle');
         return new RedStoneClient(chain, rpcUrl);
-      }
-      case 'dia': {
-        const { DIAClient } = await import('@/lib/blockchain/diaOracle');
-        return new DIAClient(chain, rpcUrl);
       }
       case 'uma': {
         const { UMAClient } = await import('@/lib/blockchain/umaOracle');

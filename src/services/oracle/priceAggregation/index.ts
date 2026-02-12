@@ -50,7 +50,12 @@ export async function getHistoricalComparisons(
 export async function getAggregatedPrice(
   symbol: string,
   chain?: SupportedChain,
-): Promise<{ price: number; timestamp: number; primarySource: string; confidence?: number } | null> {
+): Promise<{
+  price: number;
+  timestamp: number;
+  primarySource: string;
+  confidence?: number;
+} | null> {
   return priceAggregationEngine.getAggregatedPrice(symbol, chain);
 }
 

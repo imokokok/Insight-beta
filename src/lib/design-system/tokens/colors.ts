@@ -326,13 +326,8 @@ export type ProtocolColor = keyof typeof PROTOCOL_COLORS;
 export const PROTOCOL_COLORS = {
   chainlink: '#375bd2',
   pyth: '#e6c35c',
-  band: '#00b2a9',
-  api3: '#7ce3cb',
   redstone: '#ff6b6b',
   uma: '#ff4d4d',
-  dia: '#9c27b0',
-  flux: '#00bcd4',
-  switchboard: '#ff9800',
   tellor: '#3f51b5',
   nest: '#8bc34a',
   uncl: '#607d8b',

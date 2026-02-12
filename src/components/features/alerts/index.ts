@@ -10,7 +10,4 @@ export {
   type NotificationChannelConfigProps,
 } from './NotificationChannelConfig';
 
-export {
-  AlertHistory,
-  type AlertHistoryProps,
-} from './AlertHistory';
+export { AlertHistory, type AlertHistoryProps } from './AlertHistory';

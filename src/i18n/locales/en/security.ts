@@ -19,8 +19,10 @@ export const security = {
       enabledRulesDesc: 'Select price manipulation detection rules to enable',
       statisticalThresholds: 'Statistical Anomaly Thresholds',
       attackThresholds: 'Attack Detection Thresholds',
-      zScoreDesc: 'Standard deviation multiplier, values above this are considered anomalous (recommended: 3)',
-      minDataPointsDesc: 'Minimum number of historical data points required for statistical detection',
+      zScoreDesc:
+        'Standard deviation multiplier, values above this are considered anomalous (recommended: 3)',
+      minDataPointsDesc:
+        'Minimum number of historical data points required for statistical detection',
       alertChannels: 'Alert Channels',
       alertChannelsDesc: 'Configure notification methods for detection alerts',
     },

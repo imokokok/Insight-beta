@@ -2,8 +2,6 @@
 
 import { useEffect } from 'react';
 
-
-
 import { ErrorFallback } from '@/components/common/ErrorHandler';
 import { useI18n } from '@/i18n';
 import { logger } from '@/shared/logger';
@@ -24,7 +22,11 @@ export default function Error({ error, reset }: ErrorProps) {
   // 根据错误信息判断错误类型
   const getErrorType = () => {
     const message = error.message.toLowerCase();
-    if (message.includes('network') || message.includes('fetch') || message.includes('connection')) {
+    if (
+      message.includes('network') ||
+      message.includes('fetch') ||
+      message.includes('connection')
+    ) {
       return 'network';
     }
     if (message.includes('timeout')) {
@@ -49,7 +51,7 @@ export default function Error({ error, reset }: ErrorProps) {
         requestId: error.digest,
       }}
       onRetry={reset}
-      onHome={() => window.location.href = '/'}
+      onHome={() => (window.location.href = '/')}
       showDetails={process.env.NODE_ENV === 'development'}
     />
   );

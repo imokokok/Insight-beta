@@ -347,7 +347,7 @@ function AlertPanelSkeleton({ className }: { className?: string }) {
 // 模拟数据生成器
 function generateMockAlerts(): Alert[] {
   const severities: AlertSeverity[] = ['critical', 'warning', 'info'];
-  const protocols: OracleProtocol[] = ['chainlink', 'pyth', 'uma', 'band', 'api3'];
+  const protocols: OracleProtocol[] = ['chainlink', 'pyth', 'uma', 'redstone'];
   const symbols = ['ETH/USD', 'BTC/USD', 'LINK/USD', 'MATIC/USD'];
 
   const alertTypes = [
