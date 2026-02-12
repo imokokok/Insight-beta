@@ -11,7 +11,9 @@
 'use client';
 
 import React from 'react';
-import { motion, AnimatePresence, Variants } from 'framer-motion';
+
+import { motion, AnimatePresence } from 'framer-motion';
+
 import {
   containerVariants,
   componentVariants,
@@ -20,6 +22,8 @@ import {
   STAGGER_CONFIG,
 } from '@/lib/design-system/tokens/animation';
 import { cn } from '@/lib/utils';
+
+import type { Variants } from 'framer-motion';
 
 // ============================================================================
 // Types
@@ -223,15 +227,6 @@ export function StaggerContainer({
         staggerChildren,
         delayChildren,
       },
-    },
-  };
-
-  const item: Variants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: transitionPresets.normal,
     },
   };
 
@@ -487,15 +482,6 @@ export function AnimatedGrid({
     },
   };
 
-  const item: Variants = {
-    hidden: { opacity: 0, scale: 0.9 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      transition: transitionPresets.normal,
-    },
-  };
-
   return (
     <motion.div
       className={cn(
@@ -587,7 +573,7 @@ export function PresenceAnimation({
 export function NumberCounter({
   value,
   className,
-  duration = 0.8,
+  duration: _duration = 0.8,
   prefix = '',
   suffix = '',
   decimals = 0,

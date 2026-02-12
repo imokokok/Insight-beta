@@ -7,6 +7,10 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { LayoutGrid, List, Search, Wallet, FileText, ChevronDown } from 'lucide-react';
 
+
+
+
+
 import { PageHeader } from '@/components/common/PageHeader';
 import { CardSkeleton } from '@/components/ui/skeleton';
 import { useWallet } from '@/contexts/WalletContext';
@@ -16,22 +20,6 @@ import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage, type TranslationKey } from '@/i18n/translations';
 import type { OracleConfig, OracleStatus, OracleInstance } from '@/lib/types/oracleTypes';
 import { cn, fetchApiData } from '@/lib/utils';
-import {
-  StaggerContainer,
-  StaggerItem,
-  FadeIn,
-} from '@/components/common/AnimatedContainer';
-import {
-  Container,
-  Stack,
-  Row,
-} from '@/components/common/Layout';
-import {
-  ResponsiveGrid,
-  ResponsivePadding,
-  MobileOnly,
-  DesktopOnly,
-} from '@/components/common/Responsive';
 
 import type { Route } from 'next';
 

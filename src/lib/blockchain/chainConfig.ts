@@ -323,8 +323,8 @@ export function isEvmChain(chain: SupportedChain): boolean {
  * @returns 交易浏览器 URL
  */
 export function getExplorerTxUrl(chain: SupportedChain, txHash: string): string {
-  const metadata = CHAIN_METADATA[chain];
-  return `${metadata?.blockExplorerUrl ?? 'https://etherscan.io'}/tx/${txHash}`;
+  const metadata = getChainMetadata(chain);
+  return `${metadata.blockExplorerUrl}/tx/${txHash}`;
 }
 
 /**
@@ -334,6 +334,8 @@ export function getExplorerTxUrl(chain: SupportedChain, txHash: string): string 
  * @returns 地址浏览器 URL
  */
 export function getExplorerAddressUrl(chain: SupportedChain, address: string): string {
-  const metadata = CHAIN_METADATA[chain];
-  return `${metadata?.blockExplorerUrl ?? 'https://etherscan.io'}/address/${address}`;
+  const metadata = getChainMetadata(chain);
+  return `${metadata.blockExplorerUrl}/address/${address}`;
 }
+
+

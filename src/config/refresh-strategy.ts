@@ -138,20 +138,6 @@ export function getRefreshStrategy(pageId: string): RefreshStrategyConfig {
 }
 
 /**
- * 自定义 Hook 配置选项
- */
-export interface UseRefreshStrategyOptions {
-  /** 页面 ID */
-  pageId: string;
-  /** 是否启用自动刷新 */
-  enabled?: boolean;
-  /** 自定义间隔（覆盖默认配置） */
-  customInterval?: number;
-  /** 是否强制使用 WebSocket */
-  forceWebSocket?: boolean;
-}
-
-/**
  * 格式化最后更新时间
  */
 export function formatLastUpdated(lastUpdated: Date | null): string {

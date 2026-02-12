@@ -23,7 +23,7 @@ export type WalletBrowserType =
   | 'chrome'
   | 'unknown';
 
-interface WalletBrowserInfo {
+export interface WalletBrowserInfo {
   type: WalletBrowserType;
   name: string;
   isWalletBrowser: boolean;

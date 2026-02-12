@@ -4,7 +4,8 @@
  * 获取告警历史、确认告警
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
 import { notificationManager } from '@/server/alerts/notificationManager';

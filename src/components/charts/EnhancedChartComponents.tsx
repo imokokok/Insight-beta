@@ -10,6 +10,12 @@
 'use client';
 
 import { useMemo, memo } from 'react';
+
+import { motion } from 'framer-motion';
+import {
+  TrendingUp,
+  TrendingDown,
+} from 'lucide-react';
 import {
   Area,
   AreaChart,
@@ -36,13 +42,7 @@ import {
   PolarAngleAxis,
   PolarRadiusAxis,
 } from 'recharts';
-import { motion } from 'framer-motion';
-import {
-  TrendingUp,
-  TrendingDown,
-} from 'lucide-react';
 
-import { cn, formatChangePercent, formatNumber } from '@/lib/utils';
 import {
   CHART_COLORS,
   CHART_DIMENSIONS,
@@ -54,6 +54,7 @@ import {
   getSeriesColor,
   generateGradientId,
 } from '@/lib/design-system/tokens/visualization';
+import { cn, formatChangePercent, formatNumber } from '@/lib/utils';
 
 // ============================================================================
 // Types

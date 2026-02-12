@@ -5,6 +5,24 @@
  */
 
 // ============================================================================
+// WebSocket Message Type Guards
+// ============================================================================
+
+interface StatsUpdateMessage {
+  type: 'stats_update';
+  data: unknown;
+}
+
+/**
+ * 检查值是否为 StatsUpdateMessage 类型
+ */
+export function isStatsUpdateMessage(value: unknown): value is StatsUpdateMessage {
+  if (typeof value !== 'object' || value === null) return false;
+  const message = value as Record<string, unknown>;
+  return message.type === 'stats_update';
+}
+
+// ============================================================================
 // General Type Guards
 // ============================================================================
 

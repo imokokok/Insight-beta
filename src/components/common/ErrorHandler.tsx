@@ -6,7 +6,9 @@
 
 'use client';
 
-import React, { useState, useEffect, ReactNode } from 'react';
+import type { ReactNode } from 'react';
+import React, { useState, useEffect } from 'react';
+
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   AlertCircle,
@@ -22,9 +24,10 @@ import {
   Check,
   Bug,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/toast';
+import { cn } from '@/lib/utils';
 
 // ==================== 错误类型定义 ====================
 

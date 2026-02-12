@@ -1,7 +1,7 @@
 /**
  * API Cache - API 响应缓存
  *
- * 提供内存缓存支持
+ * 提供内存缓存支持，使用 O(1) LRU 实现
  */
 
 // ============================================================================
@@ -18,37 +18,49 @@ export interface CacheProvider {
 }
 
 // ============================================================================
-// 内存缓存实现
+// LRU 双向链表节点
+// ============================================================================
+
+interface LRUNode {
+  key: string;
+  prev: LRUNode | null;
+  next: LRUNode | null;
+}
+
+// ============================================================================
+// 内存缓存实现 - O(1) LRU
 // ============================================================================
 
 interface CacheEntry<T> {
   value: T;
   expiresAt: number;
+  node: LRUNode;
 }
+
+const MAX_REGEX_CACHE_SIZE = 100;
 
 export class MemoryCache implements CacheProvider {
   private store = new Map<string, CacheEntry<unknown>>();
-  private accessOrder: string[] = []; // 访问顺序列表，用于 LRU
   private maxSize: number;
-  private regexCache = new Map<string, RegExp>(); // 缓存编译后的正则表达式
-  private prefixIndex = new Map<string, Set<string>>(); // 前缀索引，用于快速清除
+  private regexCache = new Map<string, RegExp>();
+  private prefixIndex = new Map<string, Set<string>>();
+
+  private head: LRUNode | null = null;
+  private tail: LRUNode | null = null;
+  private nodeMap = new Map<string, LRUNode>();
+
+  private cleanupInterval: ReturnType<typeof setInterval> | null = null;
 
   constructor(maxSize: number = 1000) {
     this.maxSize = maxSize;
     this.startCleanup();
   }
 
-  /**
-   * 提取 key 的前缀（冒号分隔的第一部分）
-   */
   private extractPrefix(key: string): string | null {
     const colonIndex = key.indexOf(':');
     return colonIndex > 0 ? key.slice(0, colonIndex) : null;
   }
 
-  /**
-   * 更新前缀索引
-   */
   private addToPrefixIndex(key: string): void {
     const prefix = this.extractPrefix(key);
     if (prefix) {
@@ -61,9 +73,6 @@ export class MemoryCache implements CacheProvider {
     }
   }
 
-  /**
-   * 从前缀索引中移除
-   */
   private removeFromPrefixIndex(key: string): void {
     const prefix = this.extractPrefix(key);
     if (prefix) {
@@ -77,18 +86,91 @@ export class MemoryCache implements CacheProvider {
     }
   }
 
-  /**
-   * 获取或创建正则表达式（带缓存）
-   */
   private getRegex(pattern: string): RegExp {
     const cached = this.regexCache.get(pattern);
     if (cached) {
       return cached;
     }
+
+    if (this.regexCache.size >= MAX_REGEX_CACHE_SIZE) {
+      const firstKey = this.regexCache.keys().next().value;
+      if (firstKey) {
+        this.regexCache.delete(firstKey);
+      }
+    }
+
     // eslint-disable-next-line security/detect-non-literal-regexp
     const regex = new RegExp(pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
     this.regexCache.set(pattern, regex);
     return regex;
+  }
+
+  private moveToTail(node: LRUNode): void {
+    if (node === this.tail) {
+      return;
+    }
+
+    if (node.prev) {
+      node.prev.next = node.next;
+    } else {
+      this.head = node.next;
+    }
+
+    if (node.next) {
+      node.next.prev = node.prev;
+    }
+
+    node.prev = this.tail;
+    node.next = null;
+
+    if (this.tail) {
+      this.tail.next = node;
+    }
+    this.tail = node;
+
+    if (!this.head) {
+      this.head = node;
+    }
+  }
+
+  private removeNode(node: LRUNode): void {
+    if (node.prev) {
+      node.prev.next = node.next;
+    } else {
+      this.head = node.next;
+    }
+
+    if (node.next) {
+      node.next.prev = node.prev;
+    } else {
+      this.tail = node.prev;
+    }
+
+    this.nodeMap.delete(node.key);
+  }
+
+  private addToTail(key: string): LRUNode {
+    const node: LRUNode = { key, prev: null, next: null };
+
+    if (this.tail) {
+      this.tail.next = node;
+      node.prev = this.tail;
+    } else {
+      this.head = node;
+    }
+
+    this.tail = node;
+    this.nodeMap.set(key, node);
+    return node;
+  }
+
+  private evictLRU(count: number): void {
+    for (let i = 0; i < count && this.head; i++) {
+      const oldestKey = this.head.key;
+      this.store.delete(oldestKey);
+      this.removeFromPrefixIndex(oldestKey);
+      this.removeNode(this.head);
+    }
   }
 
   async get<T>(key: string): Promise<T | null> {
@@ -100,98 +182,86 @@ export class MemoryCache implements CacheProvider {
 
     if (Date.now() > entry.expiresAt) {
       this.store.delete(key);
-      this.removeFromAccessOrder(key);
+      this.removeFromPrefixIndex(key);
+      this.removeNode(entry.node);
       return null;
     }
 
-    // 更新访问顺序（LRU）
-    this.updateAccessOrder(key);
+    this.moveToTail(entry.node);
 
     return entry.value as T;
   }
 
   async set<T>(key: string, value: T, ttlMs: number = 60000): Promise<void> {
-    // 如果 key 已存在，先更新访问顺序
-    if (this.store.has(key)) {
-      this.updateAccessOrder(key);
-    } else if (this.store.size >= this.maxSize) {
-      // 使用 LRU 策略清理最久未使用的条目
-      const removeCount = Math.max(1, Math.ceil(this.maxSize * 0.1));
-      for (let i = 0; i < removeCount; i++) {
-        const oldestKey = this.accessOrder.shift(); // 从队列头部移除最旧的
-        if (oldestKey) {
-          this.store.delete(oldestKey);
-          this.removeFromPrefixIndex(oldestKey);
-        } else {
-          break;
-        }
-      }
+    const existing = this.store.get(key);
+
+    if (existing) {
+      existing.value = value;
+      existing.expiresAt = Date.now() + ttlMs;
+      this.moveToTail(existing.node);
+      return;
     }
+
+    if (this.store.size >= this.maxSize) {
+      const removeCount = Math.max(1, Math.ceil(this.maxSize * 0.1));
+      this.evictLRU(removeCount);
+    }
+
+    const node = this.addToTail(key);
 
     this.store.set(key, {
       value,
       expiresAt: Date.now() + ttlMs,
+      node,
     });
 
-    // 添加到访问顺序列表（新条目放在末尾）
-    if (!this.accessOrder.includes(key)) {
-      this.accessOrder.push(key);
-    }
-
-    // 更新前缀索引
     this.addToPrefixIndex(key);
   }
 
-  /**
-   * 更新访问顺序（将 key 移到列表末尾）
-   */
-  private updateAccessOrder(key: string): void {
-    const index = this.accessOrder.indexOf(key);
-    if (index > -1) {
-      this.accessOrder.splice(index, 1);
-    }
-    this.accessOrder.push(key);
-  }
-
-  /**
-   * 从访问顺序列表中移除 key
-   */
-  private removeFromAccessOrder(key: string): void {
-    const index = this.accessOrder.indexOf(key);
-    if (index > -1) {
-      this.accessOrder.splice(index, 1);
-    }
-  }
-
   async delete(key: string): Promise<void> {
-    this.store.delete(key);
-    this.removeFromPrefixIndex(key);
+    const entry = this.store.get(key);
+    if (entry) {
+      this.store.delete(key);
+      this.removeFromPrefixIndex(key);
+      this.removeNode(entry.node);
+    }
   }
 
   async clear(pattern?: string): Promise<void> {
     if (!pattern) {
       this.store.clear();
       this.prefixIndex.clear();
+      this.nodeMap.clear();
+      this.head = null;
+      this.tail = null;
       return;
     }
 
-    // 如果 pattern 是简单的前缀（如 "price:"），使用索引快速清除
     if (pattern.endsWith('*') && !pattern.slice(0, -1).includes('*')) {
       const prefix = pattern.slice(0, -1);
       const keys = this.prefixIndex.get(prefix);
       if (keys) {
-        keys.forEach((key) => this.store.delete(key));
+        for (const key of keys) {
+          const entry = this.store.get(key);
+          if (entry) {
+            this.store.delete(key);
+            this.removeNode(entry.node);
+          }
+        }
         this.prefixIndex.delete(prefix);
         return;
       }
     }
 
-    // 回退到正则匹配
     const regex = this.getRegex(pattern);
     for (const key of this.store.keys()) {
       if (regex.test(key)) {
-        this.store.delete(key);
-        this.removeFromPrefixIndex(key);
+        const entry = this.store.get(key);
+        if (entry) {
+          this.store.delete(key);
+          this.removeFromPrefixIndex(key);
+          this.removeNode(entry.node);
+        }
       }
     }
   }
@@ -201,6 +271,8 @@ export class MemoryCache implements CacheProvider {
     if (!entry) return false;
     if (Date.now() > entry.expiresAt) {
       this.store.delete(key);
+      this.removeFromPrefixIndex(key);
+      this.removeNode(entry.node);
       return false;
     }
     return true;
@@ -219,15 +291,27 @@ export class MemoryCache implements CacheProvider {
   }
 
   private startCleanup(): void {
-    setInterval(() => {
+    this.cleanupInterval = setInterval(() => {
       const now = Date.now();
       for (const [key, entry] of this.store.entries()) {
         if (now > entry.expiresAt) {
           this.store.delete(key);
           this.removeFromPrefixIndex(key);
+          this.removeNode(entry.node);
         }
       }
-    }, 60000); // 每分钟清理一次
+    }, 60000);
+  }
+
+  destroy(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
+  }
+
+  get size(): number {
+    return this.store.size;
   }
 }
 
@@ -270,9 +354,6 @@ export const cacheManager = new CacheManager(defaultCache);
 // 辅助函数
 // ============================================================================
 
-/**
- * 生成缓存键
- */
 export function generateCacheKey(prefix: string, ...parts: unknown[]): string {
   const serialized = parts
     .map((part) => {

@@ -128,21 +128,13 @@ const REDACTION_RULES: RedactionRule[] = [
 const SENSITIVE_PATTERNS = [
   // 以太坊私钥 (64位 hex)
   { pattern: /\b0x[a-f0-9]{64}\b/gi, name: 'eth_private_key' },
-  // Solana 私钥 (Base58, 88-96 字符)
   { pattern: /\b[1-9A-HJ-NP-Za-km-z]{88,96}\b/g, name: 'solana_private_key' },
-  // BIP39 助记词 (12/24个单词)
-  { pattern: /\b(?:[a-z]+[ \t]+){11,23}[a-z]+\b/gi, name: 'mnemonic' },
-  // RPC URL 中的认证信息
+  { pattern: /\b(?:[a-z]+(?:[ \t]+[a-z]+){11,23})\b/gi, name: 'mnemonic' },
   { pattern: /(https?:\/\/)[^@\s]+@/gi, name: 'url_auth', replace: '$1<REDACTED>@' },
-  // API Keys - Stripe 格式
   { pattern: /\b(sk|pk)_(live|test)_[a-zA-Z0-9]{24,}\b/gi, name: 'stripe_key' },
-  // JWT Token
   { pattern: /\beyJ[a-zA-Z0-9_-]*\.eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*\b/g, name: 'jwt_token' },
-  // 基础认证头
   { pattern: /\bBasic\s+[a-zA-Z0-9+/=]{20,}\b/gi, name: 'basic_auth' },
-  // AWS Access Key ID
   { pattern: /\bAKIA[0-9A-Z]{16}\b/g, name: 'aws_access_key' },
-  // GitHub Token
   { pattern: /\bghp_[a-zA-Z0-9]{36}\b/g, name: 'github_token' },
 ] as const;
 
@@ -402,14 +394,12 @@ function shouldLog(level: LogLevel): boolean {
  * 移除控制字符和格式化字符
  */
 function sanitizeLogMessage(message: string): string {
+  const controlCharsRegex = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g;
   return (
     message
-      // 移除控制字符
-      .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
-      // 转义换行符
+      .replace(controlCharsRegex, '')
       .replace(/\n/g, '\\n')
       .replace(/\r/g, '\\r')
-      // 转义制表符
       .replace(/\t/g, '\\t')
   );
 }
@@ -443,6 +433,53 @@ function formatLogEntry(logEntry: ReturnType<typeof createLogEntry>): string {
   const metadataStr =
     Object.keys(metadata).length > 0 ? ` ${JSON.stringify(metadata, null, 2)}` : '';
   return `${level} [${timestamp}] ${message}${metadataStr}`;
+}
+
+/**
+ * Sentry 上报队列（后台异步处理，不阻塞主流程）
+ */
+const sentryQueue: Array<{
+  message: string;
+  metadata?: Record<string, unknown>;
+  level: 'error' | 'fatal';
+}> = [];
+
+let isProcessingQueue = false;
+
+async function processSentryQueue(): Promise<void> {
+  if (isProcessingQueue) return;
+  isProcessingQueue = true;
+
+  while (sentryQueue.length > 0) {
+    const item = sentryQueue.shift();
+    if (!item) break;
+
+    try {
+      const sentryModule = await loadSentry();
+      if (sentryModule) {
+        const errorObj =
+          item.metadata?.error instanceof Error ? item.metadata.error : new Error(item.message);
+        sentryModule.captureException(errorObj, {
+          level: item.level,
+          extra: { ...item.metadata, message: item.message },
+        });
+      }
+    } catch {
+      // Sentry 上报失败，静默处理
+    }
+  }
+
+  isProcessingQueue = false;
+}
+
+function queueSentryReport(message: string, metadata: Record<string, unknown> | undefined, level: 'error' | 'fatal'): void {
+  sentryQueue.push({ message, metadata, level });
+  // 使用 setImmediate 或 setTimeout 在下一个事件循环中处理
+  if (typeof setImmediate !== 'undefined') {
+    setImmediate(processSentryQueue);
+  } else {
+    setTimeout(processSentryQueue, 0);
+  }
 }
 
 /**
@@ -499,43 +536,33 @@ export const logger = {
 
   /**
    * Error level logging - for errors
+   * 同步记录日志，异步后台上报 Sentry
    * @param message - Log message
    * @param metadata - Additional context metadata, should include error object if available
    */
-  error: async (message: string, metadata?: Record<string, unknown>) => {
+  error: (message: string, metadata?: Record<string, unknown>) => {
     if (shouldLog('error')) {
       const logEntry = createLogEntry('error', message, metadata);
       console.error(formatLogEntry(logEntry));
 
-      const sentryModule = await loadSentry();
-      if (sentryModule) {
-        const errorObj = metadata?.error instanceof Error ? metadata.error : new Error(message);
-        sentryModule.captureException(errorObj, {
-          level: 'error',
-          extra: { ...metadata, message },
-        });
-      }
+      // 后台异步上报 Sentry，不阻塞主流程
+      queueSentryReport(message, metadata, 'error');
     }
   },
 
   /**
    * Fatal level logging - for critical errors that cause application failure
+   * 同步记录日志，异步后台上报 Sentry
    * @param message - Log message
    * @param metadata - Additional context metadata, should include error object if available
    */
-  fatal: async (message: string, metadata?: Record<string, unknown>) => {
+  fatal: (message: string, metadata?: Record<string, unknown>) => {
     if (shouldLog('fatal')) {
       const logEntry = createLogEntry('fatal', message, metadata);
       console.error(formatLogEntry(logEntry));
 
-      const sentryModule = await loadSentry();
-      if (sentryModule) {
-        const errorObj = metadata?.error instanceof Error ? metadata.error : new Error(message);
-        sentryModule.captureException(errorObj, {
-          level: 'fatal',
-          extra: { ...metadata, message },
-        });
-      }
+      // 后台异步上报 Sentry，不阻塞主流程
+      queueSentryReport(message, metadata, 'fatal');
     }
   },
 };

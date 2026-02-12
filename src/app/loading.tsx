@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+
 import { useAccessibility } from '@/components/common/AccessibilityProvider';
 
 export default function Loading() {

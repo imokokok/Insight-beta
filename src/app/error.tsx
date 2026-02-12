@@ -2,24 +2,11 @@
 
 import { useEffect } from 'react';
 
+
+
 import { ErrorFallback } from '@/components/common/ErrorHandler';
-import { logger } from '@/lib/logger';
 import { useI18n } from '@/i18n';
-import {
-  StaggerContainer,
-  StaggerItem,
-  FadeIn,
-} from '@/components/common/AnimatedContainer';
-import {
-  Container,
-  Stack,
-  Row,
-} from '@/components/common/Layout';
-import {
-  ResponsivePadding,
-  MobileOnly,
-  DesktopOnly,
-} from '@/components/common/Responsive';
+import { logger } from '@/lib/logger';
 
 interface ErrorProps {
   error: Error & { digest?: string };

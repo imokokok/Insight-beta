@@ -8,7 +8,8 @@
  */
 
 import React, { memo, useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+
+import { motion } from 'framer-motion';
 import {
   TrendingUp,
   TrendingDown,
@@ -18,14 +19,12 @@ import {
   Info,
   ArrowUpRight,
   ArrowDownRight,
-  Minus,
   MoreHorizontal,
-  Maximize2,
-  Download,
 } from 'lucide-react';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Sparkline, StatComparison, CHART_COLORS } from '@/components/charts';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,15 +32,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Sparkline, StatComparison, CHART_COLORS } from '@/components/charts';
-import { cn, formatNumber, formatChangePercent, formatTimeAgo } from '@/lib/utils';
+import { cn, formatChangePercent, formatTimeAgo } from '@/lib/utils';
 
 // ============================================================================
 // Types

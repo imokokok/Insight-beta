@@ -6,9 +6,9 @@
 
 'use client';
 
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
+
 import { motion } from 'framer-motion';
-import type { Variants } from 'framer-motion';
 import {
   Search,
   ShieldCheck,
@@ -22,8 +22,11 @@ import {
   Wallet,
   Lock,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+
+import type { Variants } from 'framer-motion';
 
 // ==================== 动画变体 ====================
 

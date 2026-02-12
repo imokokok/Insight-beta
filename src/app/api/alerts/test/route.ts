@@ -4,7 +4,8 @@
  * 测试通知渠道是否正常工作
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
 import { notificationManager } from '@/server/alerts/notificationManager';

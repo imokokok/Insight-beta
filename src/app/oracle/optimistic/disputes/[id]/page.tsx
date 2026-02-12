@@ -17,25 +17,14 @@ import {
   TrendingUp,
 } from 'lucide-react';
 
+
+
+
+
 import { PageHeader } from '@/components/common/PageHeader';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { logger } from '@/lib/logger';
 import { cn, fetchApiData, formatTime } from '@/lib/utils';
-import {
-  StaggerContainer,
-  StaggerItem,
-  FadeIn,
-} from '@/components/common/AnimatedContainer';
-import {
-  Container,
-  Stack,
-  Row,
-} from '@/components/common/Layout';
-import {
-  ResponsivePadding,
-  MobileOnly,
-  DesktopOnly,
-} from '@/components/common/Responsive';
 
 interface UMADisputeDetail {
   id: string;

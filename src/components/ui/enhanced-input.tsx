@@ -8,6 +8,7 @@
 
 import * as React from 'react';
 import { useState, useRef, useEffect, useCallback } from 'react';
+
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -18,6 +19,7 @@ import {
   AlertCircle,
   Loader2,
 } from 'lucide-react';
+
 import { cn } from '@/lib/utils';
 
 // ==================== 验证状态类型 ====================

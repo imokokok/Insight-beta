@@ -1,22 +1,23 @@
 'use client';
 
 import { useState } from 'react';
+
 import { Wallet, Smartphone, X, ChevronRight, AlertCircle } from 'lucide-react';
 
-import { UserMenu } from '@/components/features/wallet/UserMenu';
 import { MobileWalletConnect } from '@/components/features/wallet/MobileWalletConnect';
+import { UserMenu } from '@/components/features/wallet/UserMenu';
 import { useToast } from '@/components/ui/toast';
 import { useWallet, type WalletConnectionType } from '@/contexts/WalletContext';
 import { useI18n } from '@/i18n/LanguageProvider';
-import { normalizeWalletError } from '@/lib/errors/walletErrors';
-import { logger } from '@/lib/logger';
 import {
   isMobile as isMobileDevice,
   isWalletBrowser,
   getWalletName,
   WALLET_CONNECT_PROJECT_ID,
 } from '@/lib/blockchain/walletConnect';
-import { isMobile as isMobileEnhanced, isInWalletBrowser } from '@/lib/mobile';
+import { normalizeWalletError } from '@/lib/errors/walletErrors';
+import { logger } from '@/lib/logger';
+import { isMobile as isMobileEnhanced } from '@/lib/mobile';
 
 interface WalletOption {
   id: WalletConnectionType;

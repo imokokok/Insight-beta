@@ -6,8 +6,7 @@
 
 'use client';
 
-import type { RefObject } from 'react';
-import { useEffect, useCallback, useRef, useState } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 
 // ==================== 快捷键类型定义 ====================
 
@@ -84,139 +83,6 @@ export function useKeyboardShortcuts(
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [enabled, handleKeyDown]);
-}
-
-// ==================== 局部快捷键 Hook ====================
-
-export function useLocalShortcuts(
-  shortcuts: KeyboardShortcut[],
-  ref: RefObject<HTMLElement | null>
-) {
-  const shortcutsRef = useRef(shortcuts);
-  shortcutsRef.current = shortcuts;
-
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (!ref.current?.contains(e.target as Node)) return;
-
-    for (const shortcut of shortcutsRef.current) {
-      const keyMatch = e.key.toLowerCase() === shortcut.key.toLowerCase();
-      
-      let modifierMatch = true;
-      if (shortcut.modifier) {
-        const modifiers = Array.isArray(shortcut.modifier)
-          ? shortcut.modifier
-          : [shortcut.modifier];
-        
-        modifierMatch = modifiers.every((mod) => {
-          switch (mod) {
-            case 'ctrl':
-              return e.ctrlKey;
-            case 'alt':
-              return e.altKey;
-            case 'shift':
-              return e.shiftKey;
-            case 'meta':
-              return e.metaKey;
-            default:
-              return false;
-          }
-        });
-      }
-
-      if (keyMatch && modifierMatch) {
-        if (shortcut.preventDefault !== false) {
-          e.preventDefault();
-        }
-        if (shortcut.stopPropagation) {
-          e.stopPropagation();
-        }
-        shortcut.handler(e);
-        break;
-      }
-    }
-  }, [ref]);
-
-  useEffect(() => {
-    const element = ref.current;
-    if (!element) return;
-
-    element.addEventListener('keydown', handleKeyDown);
-    return () => element.removeEventListener('keydown', handleKeyDown);
-  }, [ref, handleKeyDown]);
-}
-
-// ==================== 快捷键帮助面板 Hook ====================
-
-export function useShortcutHelp() {
-  const [isOpen, setIsOpen] = useState(false);
-
-  useKeyboardShortcuts([
-    {
-      key: '?',
-      modifier: 'shift',
-      handler: () => setIsOpen(true),
-      description: '显示快捷键帮助',
-      scope: 'global',
-    },
-    {
-      key: 'Escape',
-      handler: () => setIsOpen(false),
-      description: '关闭帮助面板',
-      scope: 'global',
-    },
-  ]);
-
-  return { isOpen, setIsOpen };
-}
-
-// ==================== 搜索快捷键 Hook ====================
-
-export function useSearchShortcut(
-  onSearch: () => void,
-  inputRef?: RefObject<HTMLInputElement | null>
-) {
-  useKeyboardShortcuts([
-    {
-      key: '/',
-      handler: () => {
-        onSearch();
-        inputRef?.current?.focus();
-      },
-      description: '聚焦搜索框',
-      scope: 'global',
-    },
-  ]);
-}
-
-// ==================== 导航快捷键 Hook ====================
-
-export function useNavigationShortcuts(
-  routes: { path: string; shortcut: string }[],
-  router: { push: (path: string) => void }
-) {
-  const shortcuts: KeyboardShortcut[] = routes.map((route) => ({
-    key: route.shortcut,
-    modifier: 'alt',
-    handler: () => router.push(route.path),
-    description: `导航到 ${route.path}`,
-    scope: 'global',
-  }));
-
-  useKeyboardShortcuts(shortcuts);
-}
-
-// ==================== 刷新快捷键 Hook ====================
-
-export function useRefreshShortcut(onRefresh: () => void) {
-  useKeyboardShortcuts([
-    {
-      key: 'r',
-      modifier: 'ctrl',
-      handler: onRefresh,
-      description: '刷新数据',
-      scope: 'global',
-    },
-  ]);
 }
 
 // ==================== 通用快捷键 Hook ====================

@@ -27,3 +27,22 @@ import { twMerge } from 'tailwind-merge';
 export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs));
 }
+
+/**
+ * 获取 Assertion 状态对应的颜色类
+ *
+ * @param status - Assertion 状态
+ * @returns Tailwind CSS 类名字符串
+ */
+export function getAssertionStatusColor(status: string): string {
+  switch (status) {
+    case 'Pending':
+      return 'bg-yellow-100 text-yellow-700';
+    case 'Disputed':
+      return 'bg-amber-100 text-amber-700';
+    case 'Resolved':
+      return 'bg-green-100 text-green-700';
+    default:
+      return 'bg-gray-100 text-gray-700';
+  }
+}

@@ -9,12 +9,12 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { logger } from '@/lib/logger';
 import {
   getRefreshStrategy,
   formatLastUpdated,
   type RefreshStrategyConfig,
 } from '@/config/refresh-strategy';
+import { logger } from '@/lib/logger';
 
 interface UseAutoRefreshOptions {
   /** 页面/视图 ID */

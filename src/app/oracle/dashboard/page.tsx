@@ -10,7 +10,9 @@
 'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
+
 import { useRouter } from 'next/navigation';
+
 import {
   Activity,
   AlertTriangle,
@@ -21,63 +23,42 @@ import {
   Clock,
   Layers,
   Menu,
-  Info,
   AlertCircle,
   TrendingUp,
-  TrendingDown,
 } from 'lucide-react';
 
-import {
-  EnhancedStatCard,
-  StatCardGroup,
-  DashboardStatsSection,
-} from '@/components/common/StatCard';
 import {
   EnhancedAreaChart,
   EnhancedLineChart,
   EnhancedBarChart,
-  Sparkline,
   CHART_COLORS,
 } from '@/components/charts';
-import { ChartCard } from '@/components/common/ChartCard';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ErrorBanner } from '@/components/ui/error-banner';
-import { RefreshIndicator } from '@/components/ui/refresh-indicator';
-import {
-  EmptyDashboardState,
-  EmptyChartState,
-  EmptyDataState,
-  DashboardSkeleton,
-  LoadingOverlay,
-} from '@/components/ui';
 import {
   StaggerContainer,
   StaggerItem,
-  ScrollReveal,
-  FadeIn,
 } from '@/components/common/AnimatedContainer';
+import { ChartCard } from '@/components/common/ChartCard';
 import {
-  Container,
-  DashboardGrid,
-  ContentSection,
-  Stack,
-  Row,
-} from '@/components/common/Layout';
+  EnhancedStatCard,
+  StatCardGroup,
+  DashboardStatsSection,
+  StatCardStatus,
+} from '@/components/common/StatCard';
 import {
-  ResponsiveGrid,
-  ResponsiveText,
-  ResponsivePadding,
-  MobileOnly,
-  DesktopOnly,
-} from '@/components/common/Responsive';
+  EmptyDashboardState,
+  LoadingOverlay,
+} from '@/components/ui';
+import { Button } from '@/components/ui/button';
+import { ErrorBanner } from '@/components/ui/error-banner';
+import { RefreshIndicator } from '@/components/ui/refresh-indicator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getRefreshStrategy } from '@/config/refresh-strategy';
 import { useWebSocket, useIsMobile } from '@/hooks';
 import { useAutoRefresh } from '@/hooks/use-auto-refresh';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
-import { fetchApiData, cn, formatNumber, formatPercent } from '@/lib/utils';
-import { isStatsUpdateMessage } from '@/lib/utils/typeGuards';
 import { logger } from '@/lib/logger';
-import { getRefreshStrategy } from '@/config/refresh-strategy';
+import { fetchApiData, cn, formatNumber } from '@/lib/utils';
+import { isStatsUpdateMessage } from '@/lib/utils/typeGuards';
 
 // ============================================================================
 // Types
@@ -99,6 +80,7 @@ interface ChartDataPoint {
   timestamp: string;
   value: number;
   label: string;
+  [key: string]: unknown;
 }
 
 // ============================================================================
@@ -252,7 +234,7 @@ export default function OptimizedOracleDashboard() {
     if (!lastMessage) return;
     try {
       if (isStatsUpdateMessage(lastMessage)) {
-        setStats(lastMessage.data);
+        setStats(lastMessage.data as DashboardStats);
       }
     } catch (err: unknown) {
       logger.error('Failed to process WebSocket message', { err });
@@ -266,7 +248,7 @@ export default function OptimizedOracleDashboard() {
       dataKey: 'value',
       color: CHART_COLORS.primary.DEFAULT,
       valueFormatter: (v: number) => `$${formatNumber(v, 2)}`,
-      labelFormatter: (l: string) => new Date(l).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      labelFormatter: (l: string | number) => new Date(l).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
     }),
     [priceTrendData],
   );
@@ -295,13 +277,20 @@ export default function OptimizedOracleDashboard() {
   );
 
   // Stat cards data
-  const statCardsData = useMemo(
+  const statCardsData: Array<{
+    title: string;
+    value: string | number;
+    icon: React.ReactNode;
+    status: StatCardStatus;
+    trend: { value: number; isPositive: boolean; label: string };
+    sparkline?: { data: number[]; color: string };
+  }> = useMemo(
     () => [
       {
         title: 'Active Alerts',
         value: stats?.activeAlerts ?? 0,
         icon: <AlertTriangle className="h-5 w-5" />,
-        status: (stats?.activeAlerts ?? 0) > 0 ? 'warning' : 'healthy',
+        status: ((stats?.activeAlerts ?? 0) > 0 ? 'warning' : 'healthy'),
         trend: { value: 12, isPositive: false, label: 'vs last hour' },
         sparkline: { data: [10, 12, 8, 15, 12, 18, 12], color: CHART_COLORS.semantic.warning.DEFAULT },
       },
@@ -309,7 +298,7 @@ export default function OptimizedOracleDashboard() {
         title: 'Avg Latency',
         value: `${stats?.avgLatency ?? 0}ms`,
         icon: <Activity className="h-5 w-5" />,
-        status: (stats?.avgLatency ?? 0) > 1000 ? 'warning' : 'healthy',
+        status: ((stats?.avgLatency ?? 0) > 1000 ? 'warning' : 'healthy'),
         trend: { value: 5, isPositive: false, label: 'vs last hour' },
         sparkline: { data: [500, 520, 480, 550, 530, 580, 520], color: CHART_COLORS.primary.DEFAULT },
       },
@@ -325,7 +314,7 @@ export default function OptimizedOracleDashboard() {
         title: 'Stale Feeds',
         value: stats?.staleFeeds ?? 0,
         icon: <Clock className="h-5 w-5" />,
-        status: (stats?.staleFeeds ?? 0) > 0 ? 'warning' : 'healthy',
+        status: ((stats?.staleFeeds ?? 0) > 0 ? 'warning' : 'healthy'),
         trend: { value: 2, isPositive: false, label: 'vs last hour' },
         sparkline: { data: [2, 3, 2, 4, 3, 2, 3], color: CHART_COLORS.semantic.error.DEFAULT },
       },
@@ -333,34 +322,40 @@ export default function OptimizedOracleDashboard() {
     [stats],
   );
 
-  const scaleCardsData = useMemo(
+  const scaleCardsData: Array<{
+    title: string;
+    value: string | number;
+    icon: React.ReactNode;
+    status: StatCardStatus;
+    trend: { value: number; isPositive: boolean; label: string };
+  }> = useMemo(
     () => [
       {
         title: 'Protocols',
         value: stats?.totalProtocols ?? 0,
         icon: <Globe className="h-5 w-5" />,
-        status: 'neutral' as const,
+        status: 'neutral',
         trend: { value: 8, isPositive: true, label: 'vs last week' },
       },
       {
         title: 'Price Feeds',
         value: stats?.totalPriceFeeds ?? 0,
         icon: <BarChart3 className="h-5 w-5" />,
-        status: 'neutral' as const,
+        status: 'neutral',
         trend: { value: 15, isPositive: true, label: 'vs last week' },
       },
       {
         title: 'TVS',
         value: stats?.totalValueSecured ?? '$0',
         icon: <Shield className="h-5 w-5" />,
-        status: 'neutral' as const,
+        status: 'neutral',
         trend: { value: 23, isPositive: true, label: 'vs last week' },
       },
       {
         title: 'Updates (24h)',
         value: stats?.priceUpdates24h?.toLocaleString() ?? '0',
         icon: <Layers className="h-5 w-5" />,
-        status: 'neutral' as const,
+        status: 'neutral',
         trend: { value: 18, isPositive: true, label: 'vs yesterday' },
       },
     ],
@@ -439,7 +434,7 @@ export default function OptimizedOracleDashboard() {
                 color="amber"
               >
                 <StatCardGroup columns={4} gap="sm">
-                  {statCardsData.map((card, index) => (
+                  {statCardsData.map((card) => (
                     <EnhancedStatCard
                       key={card.title}
                       title={card.title}
@@ -466,7 +461,7 @@ export default function OptimizedOracleDashboard() {
                 color="blue"
               >
                 <StatCardGroup columns={4} gap="sm">
-                  {scaleCardsData.map((card, index) => (
+                  {scaleCardsData.map((card) => (
                     <EnhancedStatCard
                       key={card.title}
                       title={card.title}

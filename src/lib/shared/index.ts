@@ -39,7 +39,6 @@ export {
   normalizeError,
   getErrorMessage,
   withRetry,
-  withErrorHandling,
 } from '@/lib/errors';
 
 // 日志工具

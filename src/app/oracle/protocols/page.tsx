@@ -4,29 +4,14 @@ import { useEffect, useState, useCallback } from 'react';
 
 import { TrendingUp, Globe, Activity } from 'lucide-react';
 
+
+
 import { EmptyProtocolsState } from '@/components/common/EmptyState';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { fetchApiData } from '@/lib/utils';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
-import {
-  StaggerContainer,
-  StaggerItem,
-  FadeIn,
-} from '@/components/common/AnimatedContainer';
-import {
-  Container,
-  DashboardGrid,
-  Stack,
-  Row,
-} from '@/components/common/Layout';
-import {
-  ResponsiveGrid,
-  ResponsivePadding,
-  MobileOnly,
-  DesktopOnly,
-} from '@/components/common/Responsive';
+import { fetchApiData } from '@/lib/utils';
 
 interface PriceFeed {
   id: string;

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 
 import useSWR from 'swr';
 
-import { createSWRConfig, createSWRInfiniteConfig } from './useSWRConfig';
 import type { BaseResponse } from '@/hooks/useUI';
 import { useInfiniteList } from '@/hooks/useUI';
 import type { Assertion, OracleConfig, OracleStats, OracleStatus } from '@/lib/types/oracleTypes';
@@ -14,6 +13,8 @@ import {
   isDefaultOracleInstance,
   buildApiUrl,
 } from '@/lib/utils';
+
+import { createSWRConfig, createSWRInfiniteConfig } from './useSWRConfig';
 
 // ============================================================================
 // useOracleData - Oracle 数据获取 Hook
@@ -29,7 +30,11 @@ export function useOracleData(
   const normalizedInstanceId = (instanceId ?? '').trim();
 
   // 1. Stats Fetching (Standard SWR)
-  const { data: stats, error: statsError } = useSWR<OracleStats>(
+  const {
+    data: stats,
+    error: statsError,
+    mutate: mutateStats,
+  } = useSWR<OracleStats>(
     normalizedInstanceId
       ? `/api/oracle/stats?instanceId=${encodeURIComponent(normalizedInstanceId)}`
       : '/api/oracle/stats',
@@ -63,7 +68,12 @@ export function useOracleData(
     loadMore,
     hasMore,
     refresh,
+    mutate: mutateAssertions,
   } = useInfiniteList<Assertion>(getUrl, createSWRInfiniteConfig() as Parameters<typeof useInfiniteList>[1]);
+
+  const mutate = async () => {
+    await Promise.all([mutateAssertions(), mutateStats()]);
+  };
 
   return {
     items,
@@ -74,6 +84,7 @@ export function useOracleData(
     loadMore,
     hasMore,
     refresh,
+    mutate,
   };
 }
 

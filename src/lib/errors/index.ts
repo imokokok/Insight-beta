@@ -14,23 +14,12 @@
 export {
   AppError,
   ValidationError,
-  AuthenticationError,
-  AuthorizationError,
   NotFoundError,
-  ConflictError,
-  RateLimitError,
-  ExternalServiceError,
-  TimeoutError,
-  ServiceUnavailableError,
-  DatabaseError,
-  OracleError,
   isAppError,
   toAppError,
   getHttpStatusCode,
   createErrorResponse,
 } from './AppError';
-
-export type { ErrorCategory } from './AppError';
 
 // ============================================================================
 // 从 apiErrors 导出
@@ -39,12 +28,9 @@ export type { ErrorCategory } from './AppError';
 export {
   ApiError,
   ApiErrorCode,
-  ErrorCodeToHttpStatus,
-  ErrorCodeToMessage,
-  apiErrors,
 } from './apiErrors';
 
-export type { ApiErrorResponse, ApiSuccessResponse, ApiResponse } from './apiErrors';
+export type { ApiErrorResponse } from './apiErrors';
 
 // ============================================================================
 // 从 walletErrors 导出
@@ -58,7 +44,7 @@ export type { WalletErrorDetail, NormalizedWalletErrorKind } from './walletError
 // 错误处理器（从 shared/errors/ErrorHandler 迁移）
 // ============================================================================
 
-import { OracleClientError, PriceFetchError, HealthCheckError } from '@/lib/blockchain/core/types';
+import { PriceFetchError } from '@/lib/blockchain/core/types';
 import type { OracleProtocol, SupportedChain } from '@/lib/types/unifiedOracleTypes';
 
 /**
@@ -116,36 +102,6 @@ export class ErrorHandler {
       symbol,
       normalized,
     );
-  }
-
-  /**
-   * 创建健康检查错误
-   */
-  static createHealthCheckError(
-    error: unknown,
-    protocol: OracleProtocol,
-    chain: SupportedChain,
-  ): HealthCheckError {
-    const normalized = normalizeError(error);
-    return new HealthCheckError(
-      `Health check failed: ${normalized.message}`,
-      protocol,
-      chain,
-      normalized,
-    );
-  }
-
-  /**
-   * 创建通用 Oracle 客户端错误
-   */
-  static createOracleError(
-    message: string,
-    code: string,
-    protocol: OracleProtocol,
-    chain: SupportedChain,
-    cause?: unknown,
-  ): OracleClientError {
-    return new OracleClientError(message, code, protocol, chain, cause);
   }
 
   /**
@@ -210,25 +166,4 @@ export function withRetry(options: {
   };
 }
 
-/**
- * 错误处理装饰器 - 包装函数并捕获错误
- */
-export function withErrorHandling<T extends (...args: unknown[]) => Promise<unknown>>(
-  handler: (error: Error) => void,
-) {
-  return function (_target: unknown, _propertyKey: string, descriptor: PropertyDescriptor) {
-    const originalMethod = descriptor.value as T;
 
-    descriptor.value = async function (...args: Parameters<T>) {
-      try {
-        return await originalMethod.apply(this, args);
-      } catch (error) {
-        const normalizedError = normalizeError(error);
-        handler(normalizedError);
-        throw normalizedError;
-      }
-    };
-
-    return descriptor;
-  };
-}

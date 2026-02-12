@@ -10,7 +10,7 @@
 
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 import {
   Brain,
@@ -35,30 +35,18 @@ import {
   Area,
 } from 'recharts';
 
-import { StatCard, StatCardSkeleton, StatCardGroup } from '@/components/common';
-import { AnimatedContainer, StaggerContainer, HoverCard } from '@/components/common/AnimatedContainer';
+import { StatCard, StatCardSkeleton, StatCardGroup, HoverCard, StaggerContainerWithDelay } from '@/components/common';
+import { AnimatedContainer } from '@/components/common/AnimatedContainer';
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
 import { ChartCard } from '@/components/common/ChartCard';
 import { ToastContainer, useToast } from '@/components/common/DashboardToast';
-import { EmptyAnomalyState, EmptySearchState, LoadingOverlay } from '@/components/ui';
 import { PageHeader } from '@/components/common/PageHeader';
+import { EmptyAnomalyState, EmptySearchState } from '@/components/ui';
 import { Badge } from '@/components/ui/badge';
-import {
-  Container,
-  DashboardGrid,
-  Stack,
-  Row,
-} from '@/components/common/Layout';
-import {
-  ResponsiveGrid,
-  ResponsivePadding,
-  MobileOnly,
-  DesktopOnly,
-} from '@/components/common/Responsive';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { SearchInput } from '@/components/ui/enhanced-input';
+import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { ChartSkeleton, SkeletonList } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -295,7 +283,7 @@ function AnomalyList({
   }
 
   return (
-    <StaggerContainer className="space-y-3" staggerDelay={50}>
+    <StaggerContainerWithDelay className="space-y-3" staggerDelay={0.05}>
       {anomalies.map((anomaly) => (
         <HoverCard key={anomaly.id} hoverScale={false} hoverShadow={true} hoverBorder={true}>
           <button
@@ -340,7 +328,7 @@ function AnomalyList({
           </button>
         </HoverCard>
       ))}
-    </StaggerContainer>
+    </StaggerContainerWithDelay>
   );
 }
 
@@ -520,7 +508,6 @@ export default function AnomalyDetectionPage() {
   const [detecting, setDetecting] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Toast notifications
   const { toasts, removeToast, success, error: showError } = useToast();

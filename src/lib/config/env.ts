@@ -247,7 +247,6 @@ const envSchema = z.object({
 // ============================================================================
 
 function parseEnv() {
-  // 在客户端只暴露 NEXT_PUBLIC_ 开头的变量
   const isServer = typeof window === 'undefined';
 
   const rawEnv = {
@@ -264,8 +263,11 @@ function parseEnv() {
       throw new Error(`Environment validation failed:\n${errors.join('\n')}`);
     }
 
-    // 开发环境只打印警告
-    console.warn('Environment validation warnings:\n' + errors.join('\n'));
+    // 开发环境打印格式化的警告
+    const timestamp = new Date().toISOString();
+    const level = 'WARN';
+    const message = 'Environment validation warnings';
+    console.warn(`\n${level} [${timestamp}] ${message}\n${errors.join('\n')}\n`);
 
     // 返回默认值
     return envSchema.parse({});

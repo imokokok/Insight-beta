@@ -5,7 +5,7 @@
  */
 
 // UI 工具
-export { cn } from './ui';
+export { cn, getAssertionStatusColor } from './ui';
 
 // 格式化工具
 export {
@@ -45,6 +45,7 @@ export {
   apiError,
   withErrorHandler,
   getQueryParam,
+  getRequiredQueryParam,
   type ApiResponse,
   type ApiRouteHandler,
 } from './api-handler';

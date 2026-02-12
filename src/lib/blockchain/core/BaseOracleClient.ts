@@ -9,6 +9,8 @@
  * - 结构化日志
  */
 
+import pLimit from 'p-limit';
+
 import { logger as defaultLogger } from '@/lib/logger';
 import type {
   OracleProtocol,
@@ -324,52 +326,30 @@ export abstract class BaseOracleClient implements IOracleClient {
 
   /**
    * 并发控制执行
-   * 使用 p-limit 模式正确实现并发限制
+   * 使用 p-limit 库实现简洁高效的并发限制
    */
   protected async withConcurrencyLimit<T, R>(
     items: T[],
     fn: (item: T) => Promise<R>,
     limit: number,
   ): Promise<(R | null)[]> {
-    const results: (R | null)[] = new Array(items.length).fill(null);
-    
-    // 使用队列模式实现并发控制
-    const queue = items.map((item, index) => ({ item, index }));
-    const executing = new Set<Promise<void>>();
-    
-    const processItem = async ({ item, index }: { item: T; index: number }) => {
-      try {
-        const result = await fn(item);
-        results[index] = result;
-      } catch (error) {
-        this.logger.error('Concurrency operation failed', {
-          error: error instanceof Error ? error.message : String(error),
-          index,
-        });
-        // 错误时保持 null（已初始化）
-      }
-    };
-    
-    // 分批处理，确保并发数不超过限制
-    while (queue.length > 0 || executing.size > 0) {
-      // 启动新的任务直到达到并发限制
-      while (executing.size < limit && queue.length > 0) {
-        const next = queue.shift();
-        if (next) {
-          const promise = processItem(next).finally(() => {
-            executing.delete(promise);
-          });
-          executing.add(promise);
-        }
-      }
-      
-      // 等待至少一个任务完成
-      if (executing.size > 0) {
-        await Promise.race(executing);
-      }
-    }
+    const limiter = pLimit(limit);
 
-    return results;
+    const promises = items.map((item, index) =>
+      limiter(async () => {
+        try {
+          return await fn(item);
+        } catch (error) {
+          this.logger.error('Concurrency operation failed', {
+            error: error instanceof Error ? error.message : String(error),
+            index,
+          });
+          return null;
+        }
+      }),
+    );
+
+    return Promise.all(promises);
   }
 
   /**

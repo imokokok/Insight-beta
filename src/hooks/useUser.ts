@@ -20,7 +20,7 @@ const SESSION_EVENT = 'oracle-monitor_admin_session';
 
 export function useUserStats(address?: string | null, instanceId?: string | null) {
   const normalizedInstanceId = (instanceId ?? '').trim();
-  const { data, error, isLoading } = useSWR<UserStats>(
+  const { data, error, isLoading, mutate } = useSWR<UserStats>(
     address
       ? `/api/oracle/stats/user?address=${encodeURIComponent(address)}${
           normalizedInstanceId ? `&instanceId=${encodeURIComponent(normalizedInstanceId)}` : ''
@@ -37,6 +37,7 @@ export function useUserStats(address?: string | null, instanceId?: string | null
     stats: data ?? null,
     loading: isLoading,
     error: error?.message ?? null,
+    mutate,
   };
 }
 

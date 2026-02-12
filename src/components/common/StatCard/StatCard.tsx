@@ -5,11 +5,14 @@
  */
 
 import React, { memo, useState } from 'react';
+
 import { TrendingDown, TrendingUp } from 'lucide-react';
+
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { COMPONENT_COLORS } from '@/lib/design-system/tokens/colors';
 import { cn } from '@/lib/utils';
+
 import { DataFreshnessIndicator } from '../DataFreshnessIndicator';
 
 export type StatCardColor = keyof typeof COMPONENT_COLORS;
@@ -272,14 +275,20 @@ interface StatCardGroupProps {
   children: React.ReactNode;
   className?: string;
   columns?: 2 | 3 | 4 | 6;
+  gap?: 'sm' | 'md' | 'lg';
 }
 
-export const StatCardGroup = memo(function StatCardGroup({ children, className, columns = 4 }: StatCardGroupProps) {
+export const StatCardGroup = memo(function StatCardGroup({ children, className, columns = 4, gap = 'md' }: StatCardGroupProps) {
   const gridCols = {
     2: 'grid-cols-1 sm:grid-cols-2',
     3: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
     4: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4',
     6: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-6',
   };
-  return <div className={cn('grid gap-4', gridCols[columns], className)}>{children}</div>;
+  const gapClasses = {
+    sm: 'gap-2',
+    md: 'gap-4',
+    lg: 'gap-6',
+  };
+  return <div className={cn('grid', gridCols[columns], gapClasses[gap], className)}>{children}</div>;
 });

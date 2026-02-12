@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+
 import { Download, X, Smartphone, Share2 } from 'lucide-react';
 
 import { useI18n } from '@/i18n/LanguageProvider';

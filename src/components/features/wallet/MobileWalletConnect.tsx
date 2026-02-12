@@ -15,6 +15,7 @@ import {
 import { useToast } from '@/components/ui/toast';
 import { useWallet } from '@/contexts/WalletContext';
 import { useI18n } from '@/i18n/LanguageProvider';
+import { logger } from '@/lib/logger';
 import {
   getWalletBrowserInfo,
   isMobile,
@@ -25,7 +26,6 @@ import {
   getTokenPocketDeepLink,
   type WalletBrowserType,
 } from '@/lib/mobile/walletBrowser';
-import { logger } from '@/lib/logger';
 
 interface WalletOption {
   id: WalletBrowserType;

@@ -7,10 +7,12 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+
 import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, WifiOff, AlertCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
+
 import { useToast } from '@/components/ui/toast';
+import { cn } from '@/lib/utils';
 
 interface SmartRefreshOptions {
   interval?: number; // 刷新间隔（毫秒）

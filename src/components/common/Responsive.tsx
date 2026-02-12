@@ -10,8 +10,9 @@
 
 'use client';
 
-import React, { ReactNode, useEffect, useState } from 'react';
-import { cn } from '@/lib/utils';
+import type { ReactNode} from 'react';
+import { useEffect, useState } from 'react';
+
 import {
   useIsMobile,
   useIsTablet,
@@ -19,14 +20,16 @@ import {
   useIsLargeScreen,
   useDeviceType,
 } from '@/hooks/useMediaQuery';
+import type {
+  Breakpoint} from '@/lib/design-system/tokens/responsive';
 import {
-  Breakpoint,
   getResponsiveGridCols,
   getResponsiveGap,
   getResponsivePadding,
   getResponsiveFontSize,
   RESPONSIVE_PATTERNS,
 } from '@/lib/design-system/tokens/responsive';
+import { cn } from '@/lib/utils';
 
 // ============================================================================
 // Types

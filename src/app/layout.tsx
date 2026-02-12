@@ -6,19 +6,20 @@ import { cookies, headers } from 'next/headers';
 
 import { Toaster } from 'sonner';
 
+import { AccessibilityProvider, SkipLink } from '@/components/common/AccessibilityProvider';
 import { MobileBottomNav } from '@/components/common/MobileBottomNav';
 import { OfflineIndicator } from '@/components/common/OfflineIndicator';
 import { PageProgress } from '@/components/common/PageProgress';
+import { PageTransition } from '@/components/common/PageTransitions';
 import { PerformanceMonitor } from '@/components/common/PerformanceMonitor';
 import { ResourceHints } from '@/components/common/ResourceHints';
 import { ServiceWorkerRegister } from '@/components/common/ServiceWorkerRegister';
 import { SmartPreloader } from '@/components/common/SmartPreloader';
 import { PWAInstallPrompt } from '@/components/features/pwa';
 import { MobileChainSwitcher } from '@/components/features/wallet/MobileChainSwitcher';
+import { MobileLayout } from '@/components/layout/MobileLayout';
 import { WalletProvider } from '@/contexts/WalletContext';
 import { LanguageProvider } from '@/i18n/LanguageProvider';
-import { AccessibilityProvider, SkipLink } from '@/components/common/AccessibilityProvider';
-import { PageTransition } from '@/components/common/PageTransitions';
 import {
   detectLangFromAcceptLanguage,
   isLang,
@@ -27,7 +28,6 @@ import {
   translations,
 } from '@/i18n/translations';
 import { cn } from '@/lib/utils';
-import { MobileLayout } from '@/components/layout/MobileLayout';
 
 import type { Metadata } from 'next';
 
@@ -152,7 +152,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                   <div className="blob-4" />
                 </div>
                 <div className="flex min-h-screen-dynamic">
-                  <Suspense fallback={<LoadingPlaceholder className="hidden md:block" style={{ width: 280 }} />}>
+                  <Suspense fallback={<LoadingPlaceholder className="hidden md:block w-[280px]" />}>
                     <EnhancedSidebar />
                   </Suspense>
                   <main id="main-content" className="flex-1 transition-all duration-300 md:ml-[280px]">

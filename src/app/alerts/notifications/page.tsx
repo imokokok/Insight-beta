@@ -4,28 +4,13 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { PageHeader } from '@/components/common/PageHeader';
 import { AlertHistory, NotificationChannelConfig } from '@/components/features/alerts';
-import { ErrorBanner } from '@/components/ui/error-banner';
+import type { ChannelConfig } from '@/components/features/alerts';
 import { LoadingOverlay, EmptyAlertsState } from '@/components/ui';
+import { ErrorBanner } from '@/components/ui/error-banner';
 import { useI18n } from '@/i18n';
 import { logger } from '@/lib/logger';
 import type { AlertHistoryRecord, ChannelHealthStatus } from '@/server/alerts/notificationManager';
-import type { ChannelConfig } from '@/components/features/alerts';
-import {
-  StaggerContainer,
-  StaggerItem,
-  FadeIn,
-} from '@/components/common/AnimatedContainer';
-import {
-  Container,
-  Stack,
-  Row,
-} from '@/components/common/Layout';
-import {
-  ResponsiveGrid,
-  ResponsivePadding,
-  MobileOnly,
-  DesktopOnly,
-} from '@/components/common/Responsive';
+
 
 /**
  * 通知渠道配置页面

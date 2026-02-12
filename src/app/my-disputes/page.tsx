@@ -4,6 +4,10 @@ import { useEffect, useState } from 'react';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
+
+
+
+
 import { PageHeader } from '@/components/common/PageHeader';
 import { DisputeList } from '@/components/features/dispute/DisputeList';
 import { DisputesEmptyState } from '@/components/features/dispute/my-disputes/DisputesEmptyState';
@@ -18,22 +22,6 @@ import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage } from '@/i18n/translations';
 import type { OracleConfig, OracleInstance, DisputeStatus } from '@/lib/types/oracleTypes';
 import { fetchApiData } from '@/lib/utils';
-import {
-  StaggerContainer,
-  StaggerItem,
-  FadeIn,
-} from '@/components/common/AnimatedContainer';
-import {
-  Container,
-  Stack,
-  Row,
-} from '@/components/common/Layout';
-import {
-  ResponsiveGrid,
-  ResponsivePadding,
-  MobileOnly,
-  DesktopOnly,
-} from '@/components/common/Responsive';
 
 import type { Route } from 'next';
 

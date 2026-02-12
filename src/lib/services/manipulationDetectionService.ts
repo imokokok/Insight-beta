@@ -54,12 +54,32 @@ export class ManipulationDetectionService {
     return this.metricsService.getMetrics();
   }
 
+  /**
+   * 检查单个价格源是否被操纵
+   *
+   * TODO: 实现实际的检测逻辑
+   * - 获取当前价格数据
+   * - 与参考价格比较
+   * - 检测异常偏差
+   * - 记录检测结果
+   * - 触发告警（如果需要）
+   *
+   * @param protocol - 预言机协议
+   * @param symbol - 价格符号
+   * @param chain - 区块链
+   */
   private async checkFeed(
     protocol: OracleProtocol,
     symbol: string,
     chain: SupportedChain,
   ): Promise<void> {
     logger.debug('Checking feed', { protocol, symbol, chain });
+    // TODO: 实现实际的检测逻辑
+    // 1. 获取当前价格数据
+    // 2. 与参考价格比较
+    // 3. 检测异常偏差
+    // 4. 记录检测结果
+    // 5. 触发告警（如果需要）
   }
 }
 

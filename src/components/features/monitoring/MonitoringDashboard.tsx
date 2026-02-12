@@ -30,8 +30,8 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { logger } from '@/lib/logger';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
+import { logger } from '@/lib/logger';
 
 interface MonitoringStats {
   alerts: {

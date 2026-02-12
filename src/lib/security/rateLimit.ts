@@ -323,9 +323,7 @@ const TRUSTED_PROXIES = process.env.TRUSTED_PROXIES?.split(',').map(p => p.trim(
  * 验证 IP 地址格式
  */
 function isValidIp(ip: string): boolean {
-  // IPv4 验证
   const ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-  // IPv6 验证（简化版）
   const ipv6Regex = /^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/;
   return ipv4Regex.test(ip) || ipv6Regex.test(ip);
 }
@@ -349,12 +347,56 @@ function isTrustedProxy(_req: NextRequest): boolean {
 }
 
 /**
+ * 生成请求指纹（当无法获取 IP 时使用）
+ * 基于 User-Agent 和其他头部信息生成唯一标识
+ */
+function generateRequestFingerprint(req: NextRequest): string {
+  const components: string[] = [];
+
+  const userAgent = req.headers.get('user-agent');
+  if (userAgent) {
+    components.push(`ua:${userAgent.slice(0, 100)}`);
+  }
+
+  const acceptLanguage = req.headers.get('accept-language');
+  if (acceptLanguage) {
+    components.push(`lang:${acceptLanguage.slice(0, 50)}`);
+  }
+
+  const acceptEncoding = req.headers.get('accept-encoding');
+  if (acceptEncoding) {
+    components.push(`enc:${acceptEncoding.slice(0, 30)}`);
+  }
+
+  if (components.length === 0) {
+    return 'unknown';
+  }
+
+  const fingerprint = components.join('|');
+  return `fp:${hashString(fingerprint)}`;
+}
+
+/**
+ * 简单的字符串哈希函数
+ */
+function hashString(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash).toString(36);
+}
+
+/**
  * 获取客户端真实 IP
  *
  * 安全说明：
  * - 只有在请求来自可信代理时，才使用 x-forwarded-for 头
  * - 验证 IP 地址格式，防止注入攻击
  * - 支持从多个代理头中获取 IP
+ * - 当无法获取 IP 时，使用请求指纹区分不同用户
  */
 export function getClientIp(req: NextRequest): string {
   // 检查是否来自可信代理
@@ -392,11 +434,9 @@ export function getClientIp(req: NextRequest): string {
   }
 
   // 注意：Next.js 的 NextRequest 不直接暴露连接 IP
-  // 如果无法从转发头获取 IP，返回 unknown
-  // 在生产环境中，建议在边缘函数或反向代理层获取真实 IP
-
-  // 返回未知标识
-  return 'unknown';
+  // 如果无法从转发头获取 IP，使用请求指纹区分不同用户
+  // 这可以避免所有无法识别 IP 的用户共享限流配额
+  return generateRequestFingerprint(req);
 }
 
 // ============================================================================

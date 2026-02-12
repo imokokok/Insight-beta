@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { requireAuth } from '@/lib/auth';
+import { rateLimit as rateLimitCheck } from '@/lib/security/rateLimit';
 
 export interface ApiError {
   code: string;
@@ -60,9 +61,37 @@ export async function handleApi(
 }
 
 export async function rateLimit(
-  _request: Request,
-  _config: { key: string; limit: number; windowMs: number },
+  request: Request,
+  config: { key: string; limit: number; windowMs: number },
 ): Promise<NextResponse | null> {
+  const result = await rateLimitCheck(request as NextRequest, {
+    windowMs: config.windowMs,
+    maxRequests: config.limit,
+    keyGenerator: () => config.key,
+  });
+
+  if (!result.allowed) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Rate limit exceeded',
+        code: 'RATE_LIMIT_EXCEEDED',
+        details: {
+          retryAfter: Math.ceil((result.resetTime - Date.now()) / 1000),
+        },
+      },
+      {
+        status: 429,
+        headers: {
+          'X-RateLimit-Limit': String(result.totalLimit),
+          'X-RateLimit-Remaining': String(result.remaining),
+          'X-RateLimit-Reset': String(result.resetTime),
+          'Retry-After': String(Math.ceil((result.resetTime - Date.now()) / 1000)),
+        },
+      },
+    );
+  }
+
   return null;
 }
 
@@ -93,11 +122,10 @@ export async function requireAdminWithToken(
   request: NextRequest,
   options?: { strict?: boolean; scope?: string },
 ): Promise<null | NextResponse> {
-  const authHeader = request.headers.get('x-admin-token');
   const headerToken = request.headers.get('x-admin-token');
   const queryToken = new URL(request.url).searchParams.get('token');
 
-  const token = authHeader || headerToken || queryToken;
+  const token = headerToken || queryToken;
   const adminToken = process.env.INSIGHT_ADMIN_TOKEN;
 
   if (!token || !adminToken) {

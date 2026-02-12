@@ -6,14 +6,16 @@
 
 'use client';
 
+import type {
+  ReactNode} from 'react';
 import {
   createContext,
   useContext,
   useState,
   useEffect,
-  ReactNode,
   useCallback,
 } from 'react';
+
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Eye,
@@ -25,8 +27,9 @@ import {
   Check,
   Accessibility,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 // ==================== 无障碍设置类型 ====================
 

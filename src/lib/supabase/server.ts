@@ -13,10 +13,8 @@ import type { Database } from '@/types/supabase';
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-// 类型化的 Supabase 客户端
 export type TypedSupabaseClient = SupabaseClient<Database>;
 
-// Supabase 错误代码常量
 export const SUPABASE_ERROR_CODES = {
   NO_DATA: 'PGRST116',
   DUPLICATE_KEY: '23505',
@@ -24,17 +22,81 @@ export const SUPABASE_ERROR_CODES = {
 } as const;
 
 /**
+ * 创建 Mock Supabase 客户端（使用 Proxy 实现）
+ */
+function createMockClient(): TypedSupabaseClient {
+  const createMockChain = () => {
+    const chain: Record<string, unknown> = {};
+
+    const methods = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'in', 'like', 'ilike', 'is', 'not', 'or', 'and'];
+    const terminators = ['single', 'maybeSingle', 'limit', 'order', 'range', 'abortSignal'];
+
+    methods.forEach((method) => {
+      chain[method] = (..._args: unknown[]) => createMockChain();
+    });
+
+    terminators.forEach((method) => {
+      chain[method] = (..._args: unknown[]) => {
+        if (method === 'single' || method === 'maybeSingle') {
+          return Promise.resolve({
+            data: null,
+            error: { code: SUPABASE_ERROR_CODES.NO_DATA, message: 'No data found' },
+          });
+        }
+        return createMockChain();
+      };
+    });
+
+    chain['data'] = [];
+    chain['error'] = null;
+
+    return chain;
+  };
+
+  const handler: ProxyHandler<object> = {
+    get(_target, prop) {
+      if (prop === 'from') {
+        return () => ({
+          select: () => createMockChain(),
+          insert: () => Promise.resolve({ data: null, error: null }),
+          update: () => ({
+            eq: () => Promise.resolve({ data: null, error: null }),
+          }),
+          upsert: () => Promise.resolve({ data: null, error: null }),
+          delete: () => ({
+            eq: () => Promise.resolve({ data: null, error: null }),
+          }),
+        });
+      }
+
+      if (prop === 'channel') {
+        return () => ({
+          on: () => ({ subscribe: () => ({ unsubscribe: () => {} }) }),
+        });
+      }
+
+      if (prop === 'rpc') {
+        return () => Promise.resolve({ data: null, error: null });
+      }
+
+      return undefined;
+    },
+  };
+
+  return new Proxy({}, handler) as unknown as TypedSupabaseClient;
+}
+
+/**
  * 创建服务端 Supabase 客户端（使用 Service Role Key）
  * 用于：API Routes、Server Actions、Background Jobs
  */
 export function createSupabaseClient(): TypedSupabaseClient {
-  // 使用 NEXT_PUBLIC_SUPABASE_URL，因为它在服务端也可用
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
     logger.warn('Missing Supabase environment variables, using mock client');
-    return createMockClient() as unknown as TypedSupabaseClient;
+    return createMockClient();
   }
 
   try {
@@ -46,7 +108,7 @@ export function createSupabaseClient(): TypedSupabaseClient {
     });
   } catch {
     logger.warn('@supabase/supabase-js not installed, using mock client');
-    return createMockClient() as unknown as TypedSupabaseClient;
+    return createMockClient();
   }
 }
 
@@ -55,66 +117,3 @@ export function createSupabaseClient(): TypedSupabaseClient {
  * 在服务端代码中直接使用此实例
  */
 export const supabaseAdmin = createSupabaseClient();
-
-// Mock client types
-type MockQueryBuilder = {
-  eq: () => { single: () => Promise<{ data: null; error: { code: string; message: string } }> };
-  order: () => {
-    limit: () => {
-      single: () => Promise<{ data: null; error: { code: string; message: string } }>;
-    };
-  };
-  gte: () => { order: () => { data: []; error: null } };
-  lte: () => { data: []; error: null };
-  data: [];
-  error: null;
-};
-
-type MockSupabaseClient = {
-  from: () => {
-    select: () => MockQueryBuilder;
-    insert: () => { data: null; error: null };
-    update: () => { eq: () => { data: null; error: null } };
-    upsert: () => { data: null; error: null };
-    delete: () => { eq: () => { data: null; error: null } };
-  };
-  channel: () => {
-    on: () => { subscribe: () => { unsubscribe: () => void } };
-  };
-  rpc: () => Promise<{ data: null; error: null }>;
-};
-
-function createMockClient(): MockSupabaseClient {
-  return {
-    from: () => ({
-      select: () => ({
-        eq: () => ({
-          single: async () => ({
-            data: null,
-            error: { code: SUPABASE_ERROR_CODES.NO_DATA, message: 'No data found' },
-          }),
-        }),
-        order: () => ({
-          limit: () => ({
-            single: async () => ({
-              data: null,
-              error: { code: SUPABASE_ERROR_CODES.NO_DATA, message: 'No data found' },
-            }),
-          }),
-        }),
-        gte: () => ({ order: () => ({ data: [], error: null }) }),
-        lte: () => ({ data: [], error: null }),
-        data: [],
-        error: null,
-      }),
-      insert: () => ({ data: null, error: null }),
-      update: () => ({ eq: () => ({ data: null, error: null }) }),
-      upsert: () => ({ data: null, error: null }),
-      delete: () => ({ eq: () => ({ data: null, error: null }) }),
-    }),
-    channel: () => ({
-      on: () => ({ subscribe: () => ({ unsubscribe: () => {} }) }),
-    }),
-    rpc: async () => ({ data: null, error: null }),
-  };
-}

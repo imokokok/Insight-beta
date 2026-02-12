@@ -1,24 +1,11 @@
 'use client';
 
+
+
 import { AuditLogViewer } from '@/components/common/AuditLogViewer';
 import { PageHeader } from '@/components/common/PageHeader';
 import { useIsMobile, useAdminToken } from '@/hooks';
 import { useI18n } from '@/i18n/LanguageProvider';
-import {
-  StaggerContainer,
-  StaggerItem,
-  FadeIn,
-} from '@/components/common/AnimatedContainer';
-import {
-  Container,
-  Stack,
-  Row,
-} from '@/components/common/Layout';
-import {
-  ResponsivePadding,
-  MobileOnly,
-  DesktopOnly,
-} from '@/components/common/Responsive';
 
 export default function AuditPage() {
   const { t } = useI18n();

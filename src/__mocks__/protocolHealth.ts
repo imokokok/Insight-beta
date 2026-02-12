@@ -69,16 +69,4 @@ export function getProtocolHealth(protocol: string): ProtocolHealthData | null {
   return PROTOCOL_HEALTH_MOCK[protocol] ?? null;
 }
 
-/**
- * 获取所有协议的平均健康度
- */
-export function getAverageHealth(): Pick<ProtocolHealthData, 'uptime' | 'latency' | 'accuracy'> {
-  const protocols = Object.values(PROTOCOL_HEALTH_MOCK);
-  const count = protocols.length;
 
-  return {
-    uptime: protocols.reduce((sum, p) => sum + p.uptime, 0) / count,
-    latency: protocols.reduce((sum, p) => sum + p.latency, 0) / count,
-    accuracy: protocols.reduce((sum, p) => sum + p.accuracy, 0) / count,
-  };
-}

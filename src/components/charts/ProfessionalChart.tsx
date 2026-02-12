@@ -10,6 +10,7 @@
 'use client';
 
 import { useMemo } from 'react';
+
 import {
   Area,
   Line,
@@ -22,6 +23,7 @@ import {
   ReferenceArea,
   AreaChart,
 } from 'recharts';
+
 import { cn, formatChangePercent } from '@/lib/utils';
 
 // ============================================================================

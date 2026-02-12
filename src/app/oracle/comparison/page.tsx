@@ -14,6 +14,12 @@
 
 import { useEffect, useState, useCallback, useRef, Suspense, lazy } from 'react';
 
+
+
+
+
+
+
 import { ComparisonControls } from '@/components/features/comparison/ComparisonControls';
 import { ChartSkeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
@@ -22,21 +28,6 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n';
 import { logger } from '@/lib/logger';
-import {
-  StaggerContainer,
-  StaggerItem,
-  FadeIn,
-} from '@/components/common/AnimatedContainer';
-import {
-  Container,
-  Stack,
-  Row,
-} from '@/components/common/Layout';
-import {
-  ResponsiveGrid,
-  MobileOnly,
-  DesktopOnly,
-} from '@/components/common/Responsive';
 import { ORACLE_PROTOCOLS, PROTOCOL_DISPLAY_NAMES } from '@/lib/types/oracle';
 import type {
   ComparisonFilter,
@@ -333,23 +324,6 @@ export default function ComparisonPage() {
     enableSearch: false,
     showRefreshToast: true,
   });
-
-  const handleRefreshOld = useCallback(() => {
-    switch (currentView) {
-      case 'heatmap':
-        heatmap.refresh();
-        break;
-      case 'latency':
-        latency.refresh();
-        break;
-      case 'cost':
-        cost.refresh();
-        break;
-      case 'realtime':
-        realtime.refresh();
-        break;
-    }
-  }, [currentView, heatmap, latency, cost, realtime]);
 
   // ============================================================================
   // 渲染

@@ -6,6 +6,9 @@
  */
 
 import { logger } from '@/lib/logger';
+
+import { NotificationService } from './notifications/notificationService';
+
 import type {
   AlertNotification,
   NotificationChannel,
@@ -13,7 +16,6 @@ import type {
   NotificationResult,
   AlertSeverity,
 } from './notifications/types';
-import { NotificationService } from './notifications/notificationService';
 
 // 告警历史记录
 export interface AlertHistoryRecord {

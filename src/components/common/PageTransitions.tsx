@@ -6,9 +6,16 @@
 
 'use client';
 
-import { motion, AnimatePresence, Variants } from 'framer-motion';
+
+
+import type { ReactNode} from 'react';
+import { useEffect, useState } from 'react';
+
 import { usePathname } from 'next/navigation';
-import { ReactNode, useEffect, useState } from 'react';
+
+import { motion, AnimatePresence } from 'framer-motion';
+
+import type { Variants } from 'framer-motion';
 
 // ==================== 页面转场动画变体 ====================
 
@@ -524,9 +531,11 @@ export function Parallax({
 interface HoverCardProps {
   children: ReactNode;
   className?: string;
-  hoverScale?: number;
+  hoverScale?: number | false;
   hoverY?: number;
   glowColor?: string;
+  hoverShadow?: boolean;
+  hoverBorder?: boolean;
 }
 
 export function HoverCard({
@@ -535,14 +544,19 @@ export function HoverCard({
   hoverScale = 1.02,
   hoverY = -4,
   glowColor = 'rgba(139, 92, 246, 0.15)',
+  hoverShadow = false,
+  hoverBorder = false,
 }: HoverCardProps) {
+  const scaleValue = hoverScale === false ? 1 : hoverScale;
+  
   return (
     <motion.div
       className={className}
       whileHover={{
-        scale: hoverScale,
+        scale: scaleValue,
         y: hoverY,
-        boxShadow: `0 20px 40px ${glowColor}`,
+        ...(hoverShadow ? { boxShadow: `0 20px 40px ${glowColor}` } : {}),
+        ...(hoverBorder ? { borderColor: 'rgba(139, 92, 246, 0.3)' } : {}),
       }}
       whileTap={{ scale: 0.98 }}
       transition={{

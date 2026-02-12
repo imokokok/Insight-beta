@@ -6,26 +6,13 @@ import Link from 'next/link';
 
 import { ArrowUpRight, RefreshCw } from 'lucide-react';
 
+
+
 import { EmptyFirstItemState } from '@/components/common/EmptyState';
 import { PageHeader } from '@/components/common/PageHeader';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { logger } from '@/lib/logger';
 import { cn, fetchApiData, formatTime } from '@/lib/utils';
-import {
-  StaggerContainer,
-  StaggerItem,
-  FadeIn,
-} from '@/components/common/AnimatedContainer';
-import {
-  Container,
-  Stack,
-  Row,
-} from '@/components/common/Layout';
-import {
-  ResponsivePadding,
-  MobileOnly,
-  DesktopOnly,
-} from '@/components/common/Responsive';
 
 import type { Route } from 'next';
 

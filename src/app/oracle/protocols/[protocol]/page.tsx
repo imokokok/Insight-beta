@@ -27,23 +27,6 @@ import { getProtocolConfig } from '@/lib/protocol-config';
 import { ORACLE_PROTOCOLS, type OracleProtocol } from '@/lib/types';
 import { SUPPORTED_CHAINS } from '@/lib/types/protocol';
 import { formatTimeAgo, truncateAddress } from '@/lib/utils/format';
-import {
-  StaggerContainer,
-  StaggerItem,
-  FadeIn,
-} from '@/components/common/AnimatedContainer';
-import {
-  Container,
-  DashboardGrid,
-  Stack,
-  Row,
-} from '@/components/common/Layout';
-import {
-  ResponsiveGrid,
-  ResponsivePadding,
-  MobileOnly,
-  DesktopOnly,
-} from '@/components/common/Responsive';
 
 // 将 OracleProtocol 转换为 ProtocolComparisonData
 const convertToComparisonData = (protocols: OracleProtocol[]): ProtocolComparisonData[] => {

@@ -7,8 +7,10 @@
 'use client';
 
 import { useCallback, useEffect, useRef } from 'react';
-import { useCommonShortcuts } from './useKeyboardShortcuts';
+
 import { useToast } from '@/components/ui/toast';
+
+import { useCommonShortcuts } from './useKeyboardShortcuts';
 
 interface PageOptimizationOptions {
   /** 页面名称，用于快捷键帮助 */
@@ -142,66 +144,5 @@ export function usePageOptimizations(options: PageOptimizationOptions = {}) {
     handleSearchFocus,
   };
 }
-
-/**
- * 数据获取优化 Hook
- * 为数据展示页面提供统一的加载、错误、刷新管理
- */
-export function useDataFetching<T>(
-  fetcher: () => Promise<T>,
-  options: {
-    autoFetch?: boolean;
-    refreshInterval?: number;
-    onError?: (error: Error) => void;
-    onSuccess?: (data: T) => void;
-  } = {}
-) {
-  const { autoFetch = true, refreshInterval, onError, onSuccess } = options;
-  const [data, setData] = useState<T | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const fetch = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await fetcher();
-      setData(result);
-      onSuccess?.(result);
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error(String(err));
-      setError(error);
-      onError?.(error);
-    } finally {
-      setLoading(false);
-    }
-  }, [fetcher, onError, onSuccess]);
-
-  useEffect(() => {
-    if (autoFetch) {
-      fetch();
-    }
-
-    if (refreshInterval && refreshInterval > 0) {
-      intervalRef.current = setInterval(fetch, refreshInterval);
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [autoFetch, fetch, refreshInterval]);
-
-  return {
-    data,
-    loading,
-    error,
-    refresh: fetch,
-  };
-}
-
-import { useState } from 'react';
 
 export default usePageOptimizations;

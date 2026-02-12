@@ -89,4 +89,97 @@ export function exportRealtimeToCSV(data: RealtimeComparisonItem[]) {
   downloadFile(csv, filename, 'text/csv;charset=utf-8;');
 }
 
+// ============================================================================
+// 热力图数据导出
+// ============================================================================
+
+export function exportHeatmapToCSV(data: PriceHeatmapData) {
+  const flatData: Record<string, string | number>[] = [];
+
+  data.rows.forEach((row) => {
+    row.cells.forEach((cell) => {
+      flatData.push({
+        资产对: row.symbol,
+        协议: cell.protocol,
+        价格: cell.price.toFixed(4),
+        参考价格: cell.referencePrice.toFixed(4),
+        '偏离度(%)': (cell.deviationPercent * 100).toFixed(2),
+        偏离级别: cell.deviationLevel,
+        时间戳: cell.timestamp,
+      });
+    });
+  });
+
+  const csv = convertToCSV(flatData);
+  const filename = `oracle-heatmap-${new Date().toISOString().split('T')[0]}.csv`;
+  downloadFile(csv, filename, 'text/csv;charset=utf-8;');
+}
+
+// ============================================================================
+// 延迟分析数据导出
+// ============================================================================
+
+export function exportLatencyToCSV(data: LatencyAnalysis) {
+  const flatData: Record<string, string | number>[] = [];
+
+  data.metrics.forEach((metric) => {
+    flatData.push({
+      协议: metric.protocol,
+      资产对: metric.symbol,
+      链: metric.chain,
+      '延迟(ms)': metric.latencyMs,
+      '区块延迟': metric.blockLag,
+      'P50延迟(ms)': metric.percentile50,
+      'P90延迟(ms)': metric.percentile90,
+      'P99延迟(ms)': metric.percentile99,
+      状态: metric.status,
+      时间戳: metric.lastUpdateTimestamp,
+    });
+  });
+
+  const csv = convertToCSV(flatData);
+  const filename = `oracle-latency-${new Date().toISOString().split('T')[0]}.csv`;
+  downloadFile(csv, filename, 'text/csv;charset=utf-8;');
+}
+
+// ============================================================================
+// 成本对比数据导出
+// ============================================================================
+
+export function exportCostToCSV(data: CostComparison) {
+  const flatData: Record<string, string | number>[] = [];
+
+  data.protocols.forEach((metric) => {
+    flatData.push({
+      协议: metric.protocol,
+      成本评分: metric.costScore,
+      价值评分: metric.valueScore,
+      喂价数量: metric.feedsCount,
+      链数量: metric.chainsCount,
+      '每次更新成本(USD)': metric.costPerUpdate.toFixed(6),
+      '每个喂价成本(USD)': metric.costPerFeed.toFixed(6),
+      投资回报率: metric.roi.toFixed(2),
+    });
+  });
+
+  const csv = convertToCSV(flatData);
+  const filename = `oracle-cost-${new Date().toISOString().split('T')[0]}.csv`;
+  downloadFile(csv, filename, 'text/csv;charset=utf-8;');
+}
+
+// ============================================================================
+// 全部数据导出为 JSON
+// ============================================================================
+
+export function exportAllToJSON(data: {
+  realtime?: RealtimeComparisonItem[];
+  heatmap?: PriceHeatmapData;
+  latency?: LatencyAnalysis;
+  cost?: CostComparison;
+}) {
+  const jsonContent = JSON.stringify(data, null, 2);
+  const filename = `oracle-comparison-all-${new Date().toISOString().split('T')[0]}.json`;
+  downloadFile(jsonContent, filename, 'application/json;charset=utf-8;');
+}
+
 

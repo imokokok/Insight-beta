@@ -13,6 +13,10 @@
 'use client';
 
 import React, { useState, useCallback, useMemo, createContext, useContext } from 'react';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronRight,
@@ -38,15 +42,14 @@ import {
   Users,
   ChevronLeft,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { usePathname } from 'next/navigation';
-import Link from 'next/link';
-import { useI18n } from '@/i18n/LanguageProvider';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { Input } from '@/components/ui/input';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ScrollArea } from '@/components/ui/scroll-area';
+
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { cn } from '@/lib/utils';
+
 
 // ============================================================================
 // Types
@@ -325,7 +328,6 @@ interface NavItemProps {
 
 function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
   const pathname = usePathname();
-  const { t } = useI18n();
   const { favorites, toggleFavorite, addRecentItem, collapsed: sidebarCollapsed } = useSidebar();
   const prefersReducedMotion = useReducedMotion();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -401,7 +403,7 @@ function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
   if (collapsed) {
     return (
       <Tooltip delayDuration={0}>
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+          { }
           <TooltipTrigger asChild>
             <Link
               href={item.href as any}
@@ -425,7 +427,7 @@ function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
 
   return (
     <div className="group">
-      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+      { }
       <Link
         href={item.href as any}
         onClick={handleClick}
@@ -554,7 +556,6 @@ function NavGroupComponent({ group }: NavGroupProps) {
 
 function SidebarSearch() {
   const { searchQuery, setSearchQuery } = useSidebar();
-  const { t } = useI18n();
 
   return (
     <div className="px-3 py-2">
@@ -586,7 +587,6 @@ function SidebarSearch() {
 
 function SidebarFavorites({ config }: { config: SidebarConfig }) {
   const { favorites, collapsed } = useSidebar();
-  const { t } = useI18n();
 
   const favoriteItems = useMemo(() => {
     const items: NavItem[] = [];
@@ -636,7 +636,6 @@ function SidebarFavorites({ config }: { config: SidebarConfig }) {
 
 function SidebarRecents({ config }: { config: SidebarConfig }) {
   const { recentItems, collapsed } = useSidebar();
-  const { t } = useI18n();
 
   const recentNavItems = useMemo(() => {
     const itemMap = new Map<string, NavItem>();
@@ -862,7 +861,7 @@ export function EnhancedSidebar({
               </div>
             ) : (
               <Tooltip>
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                { }
                 <TooltipTrigger asChild>
                   <Link 
                     href={"/settings" as any}

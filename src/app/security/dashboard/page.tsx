@@ -9,14 +9,15 @@
 
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useCallback, useMemo, type ReactNode } from 'react';
+
+import dynamic from 'next/dynamic';
+
 import {
   Shield,
   AlertTriangle,
   Activity,
   TrendingUp,
-  TrendingDown,
   Clock,
   Target,
   Lock,
@@ -24,59 +25,43 @@ import {
   Zap,
   BarChart3,
   PieChart,
-  AlertCircle,
-  CheckCircle,
-  XCircle,
 } from 'lucide-react';
 
 import {
-  EnhancedStatCard,
-  StatCardGroup,
-  DashboardStatsSection,
-} from '@/components/common/StatCard';
-import {
-  EnhancedAreaChart,
-  EnhancedBarChart,
   EnhancedPieChart,
   EnhancedRadarChart,
   EnhancedGaugeChart,
   CHART_COLORS,
 } from '@/components/charts';
 import { ChartCard } from '@/components/common/ChartCard';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { useAutoRefresh } from '@/hooks/use-auto-refresh';
-import { useIsMobile } from '@/hooks';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
+import {
+  EnhancedStatCard,
+  StatCardGroup,
+  DashboardStatsSection,
+  type StatCardStatus,
+} from '@/components/common/StatCard';
+import { ThreatLevelBadge } from '@/components/security';
 import {
   EmptySecurityState,
-  EmptyChartState,
-  EmptyDataState,
-  DashboardSkeleton,
   LoadingOverlay,
 } from '@/components/ui';
-import {
-  StaggerContainer,
-  StaggerItem,
-  ScrollReveal,
-  FadeIn,
-} from '@/components/common/AnimatedContainer';
-import {
-  Container,
-  DashboardGrid,
-  ContentSection,
-  Stack,
-  Row,
-} from '@/components/common/Layout';
-import {
-  ResponsiveGrid,
-  ResponsiveText,
-  ResponsivePadding,
-  MobileOnly,
-  DesktopOnly,
-} from '@/components/common/Responsive';
-import { fetchApiData, cn, formatNumber, formatPercent } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useIsMobile } from '@/hooks';
+import { useAutoRefresh } from '@/hooks/use-auto-refresh';
+import { cn, formatNumber } from '@/lib/utils';
+
+const EnhancedAreaChart = dynamic(
+  () => import('@/components/charts').then((mod) => mod.EnhancedAreaChart),
+  { ssr: false }
+);
+
+const EnhancedBarChart = dynamic(
+  () => import('@/components/charts').then((mod) => mod.EnhancedBarChart),
+  { ssr: false }
+);
 
 // ============================================================================
 // Types
@@ -87,6 +72,7 @@ interface SecurityStats {
   highRiskCount: number;
   mediumRiskCount: number;
   lowRiskCount: number;
+  safeCount: number;
   avgDetectionTime: number;
   blockedTransactions: number;
   totalValueAtRisk: string;
@@ -95,25 +81,57 @@ interface SecurityStats {
   lastIncident: string | null;
 }
 
-interface ThreatData {
+interface ThreatDataPoint {
   timestamp: string;
   threats: number;
   blocked: number;
   label: string;
+  [key: string]: unknown;
 }
 
-interface RiskDistribution {
+interface RiskDistributionItem {
   name: string;
   value: number;
   color: string;
 }
 
+interface RadarDataItem {
+  metric: string;
+  value: number;
+  fullMark: number;
+}
+
+// ============================================================================
+// Constants
+// ============================================================================
+
+const MOCK_STATS: SecurityStats = {
+  totalDetections: 185,
+  highRiskCount: 12,
+  mediumRiskCount: 28,
+  lowRiskCount: 45,
+  safeCount: 115,
+  avgDetectionTime: 2.3,
+  blockedTransactions: 156,
+  totalValueAtRisk: '$2.4M',
+  activeMonitors: 24,
+  threatScore: 85,
+  lastIncident: '2 hours ago',
+};
+
+const getSecurityStatus = (score: number): string => {
+  if (score >= 90) return 'Excellent';
+  if (score >= 70) return 'Good';
+  if (score >= 50) return 'Fair';
+  return 'Poor';
+};
+
 // ============================================================================
 // Mock Data Generators
 // ============================================================================
 
-const generateMockThreatData = (points: number = 24): ThreatData[] => {
-  const data: ThreatData[] = [];
+const generateMockThreatData = (points: number = 24): ThreatDataPoint[] => {
+  const data: ThreatDataPoint[] = [];
   const now = new Date();
   for (let i = points; i >= 0; i--) {
     const time = new Date(now.getTime() - i * 60 * 60 * 1000);
@@ -127,14 +145,14 @@ const generateMockThreatData = (points: number = 24): ThreatData[] => {
   return data;
 };
 
-const generateMockRiskDistribution = (): RiskDistribution[] => [
-  { name: 'High Risk', value: 12, color: CHART_COLORS.semantic.error.DEFAULT },
-  { name: 'Medium Risk', value: 28, color: CHART_COLORS.semantic.warning.DEFAULT },
-  { name: 'Low Risk', value: 45, color: CHART_COLORS.semantic.info.DEFAULT },
-  { name: 'Safe', value: 115, color: CHART_COLORS.semantic.success.DEFAULT },
+const generateMockRiskDistribution = (stats: SecurityStats): RiskDistributionItem[] => [
+  { name: 'High Risk', value: stats.highRiskCount, color: CHART_COLORS.semantic.error.DEFAULT },
+  { name: 'Medium Risk', value: stats.mediumRiskCount, color: CHART_COLORS.semantic.warning.DEFAULT },
+  { name: 'Low Risk', value: stats.lowRiskCount, color: CHART_COLORS.semantic.info.DEFAULT },
+  { name: 'Safe', value: stats.safeCount, color: CHART_COLORS.semantic.success.DEFAULT },
 ];
 
-const generateMockRadarData = () => [
+const generateMockRadarData = (): RadarDataItem[] => [
   { metric: 'Network Security', value: 85, fullMark: 100 },
   { metric: 'Data Protection', value: 92, fullMark: 100 },
   { metric: 'Access Control', value: 78, fullMark: 100 },
@@ -147,84 +165,49 @@ const generateMockRadarData = () => [
 // Components
 // ============================================================================
 
-function ThreatLevelBadge({ level, count }: { level: 'high' | 'medium' | 'low' | 'safe'; count: number }) {
-  const config = {
-    high: {
-      bg: 'bg-rose-100',
-      text: 'text-rose-700',
-      border: 'border-rose-200',
-      icon: <AlertCircle className="h-4 w-4" />,
-      label: 'High Risk',
-    },
-    medium: {
-      bg: 'bg-amber-100',
-      text: 'text-amber-700',
-      border: 'border-amber-200',
-      icon: <AlertTriangle className="h-4 w-4" />,
-      label: 'Medium Risk',
-    },
-    low: {
-      bg: 'bg-blue-100',
-      text: 'text-blue-700',
-      border: 'border-blue-200',
-      icon: <Eye className="h-4 w-4" />,
-      label: 'Low Risk',
-    },
-    safe: {
-      bg: 'bg-emerald-100',
-      text: 'text-emerald-700',
-      border: 'border-emerald-200',
-      icon: <CheckCircle className="h-4 w-4" />,
-      label: 'Safe',
-    },
-  }[level];
+function SecurityScoreGauge({ score }: { score: number }) {
+  const status = getSecurityStatus(score);
 
   return (
-    <div
-      className={cn(
-        'flex items-center gap-2 rounded-lg border px-3 py-2',
-        config.bg,
-        config.border,
-      )}
-    >
-      <div className={config.text}>{config.icon}</div>
-      <div>
-        <span className={cn('text-xs font-semibold', config.text)}>{config.label}</span>
-        <span className={cn('ml-2 text-sm font-bold', config.text)}>{count}</span>
+    <div className="flex flex-col items-center" role="figure" aria-label={`Security score: ${score}, Status: ${status}`}>
+      <EnhancedGaugeChart
+        value={score}
+        max={100}
+        height={150}
+        thresholds={{ warning: 70, critical: 50 }}
+      />
+      <div className="text-center -mt-4">
+        <p className="text-sm font-medium text-gray-600">Security Score</p>
+        <p className={cn('text-lg font-bold', score >= 70 ? 'text-emerald-600' : 'text-amber-600')}>
+          {status}
+        </p>
       </div>
     </div>
   );
 }
 
-function SecurityScoreGauge({ score }: { score: number }) {
-  const getColor = () => {
-    if (score >= 90) return CHART_COLORS.semantic.success.DEFAULT;
-    if (score >= 70) return CHART_COLORS.semantic.warning.DEFAULT;
-    return CHART_COLORS.semantic.error.DEFAULT;
-  };
+interface ChartErrorFallbackProps {
+  title: string;
+}
 
-  const getStatus = () => {
-    if (score >= 90) return 'Excellent';
-    if (score >= 70) return 'Good';
-    if (score >= 50) return 'Fair';
-    return 'Poor';
-  };
-
+function ChartErrorFallback({ title }: ChartErrorFallbackProps) {
   return (
-    <div className="flex flex-col items-center">
-      <EnhancedGaugeChart
-        value={score}
-        max={100}
-        height={150}
-        color={getColor()}
-      />
-      <div className="text-center -mt-4">
-        <p className="text-sm font-medium text-gray-600">Security Score</p>
-        <p className={cn('text-lg font-bold', score >= 70 ? 'text-emerald-600' : 'text-amber-600')}>
-          {getStatus()}
-        </p>
-      </div>
+    <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-gray-200 bg-gray-50 p-6">
+      <p className="text-sm text-gray-500">{title} 加载失败，请刷新页面重试</p>
     </div>
+  );
+}
+
+interface ChartWrapperProps {
+  children: ReactNode;
+  fallbackTitle: string;
+}
+
+function ChartWrapper({ children, fallbackTitle }: ChartWrapperProps) {
+  return (
+    <ErrorBoundary fallback={<ChartErrorFallback title={fallbackTitle} />}>
+      {children}
+    </ErrorBoundary>
   );
 }
 
@@ -233,71 +216,59 @@ function SecurityScoreGauge({ score }: { score: number }) {
 // ============================================================================
 
 export default function OptimizedSecurityDashboard() {
-  const router = useRouter();
   const [activeTab, setActiveTab] = useState('overview');
+  const [stats] = useState<SecurityStats>(MOCK_STATS);
   const isMobile = useIsMobile();
 
-  // Chart data states
-  const [threatData] = useState<ThreatData[]>(generateMockThreatData());
-  const [riskDistribution] = useState<RiskDistribution[]>(generateMockRiskDistribution());
-  const [radarData] = useState(generateMockRadarData());
+  const [threatData] = useState<ThreatDataPoint[]>(() => generateMockThreatData());
+  const [riskDistribution] = useState<RiskDistributionItem[]>(() => generateMockRiskDistribution(stats));
+  const [radarData] = useState<RadarDataItem[]>(() => generateMockRadarData());
 
-  // Auto refresh
-  const { lastUpdated, isRefreshing, refresh } = useAutoRefresh({
+  const fetchSecurityData = useCallback(async () => {
+    // TODO: Implement actual API call
+    // const response = await fetch('/api/security/stats');
+    // const data = await response.json();
+    // setStats(data);
+  }, []);
+
+  const { isRefreshing, refresh } = useAutoRefresh({
     pageId: 'security-dashboard',
-    fetchFn: useCallback(async () => {
-      // Fetch security stats
-    }, []),
+    fetchFn: fetchSecurityData,
     enabled: true,
   });
 
-  // Mock stats
-  const stats: SecurityStats = {
-    totalDetections: 185,
-    highRiskCount: 12,
-    mediumRiskCount: 28,
-    lowRiskCount: 45,
-    avgDetectionTime: 2.3,
-    blockedTransactions: 156,
-    totalValueAtRisk: '$2.4M',
-    activeMonitors: 24,
-    threatScore: 85,
-    lastIncident: '2 hours ago',
-  };
-
-  // Stat cards data
   const threatCardsData = useMemo(
     () => [
       {
         title: 'Total Detections',
         value: stats.totalDetections,
         icon: <AlertTriangle className="h-5 w-5" />,
-        status: stats.totalDetections > 100 ? 'warning' : 'healthy',
+        status: (stats.totalDetections > 100 ? 'warning' : 'healthy') as StatCardStatus,
         trend: { value: 15, isPositive: false, label: 'vs yesterday' },
       },
       {
         title: 'Blocked Transactions',
         value: stats.blockedTransactions,
         icon: <Lock className="h-5 w-5" />,
-        status: 'healthy',
+        status: 'healthy' as StatCardStatus,
         trend: { value: 8, isPositive: true, label: 'vs yesterday' },
       },
       {
         title: 'Avg Detection Time',
         value: `${stats.avgDetectionTime}s`,
         icon: <Clock className="h-5 w-5" />,
-        status: stats.avgDetectionTime < 5 ? 'healthy' : 'warning',
+        status: (stats.avgDetectionTime < 5 ? 'healthy' : 'warning') as StatCardStatus,
         trend: { value: 12, isPositive: true, label: 'faster' },
       },
       {
         title: 'Value at Risk',
         value: stats.totalValueAtRisk,
         icon: <Target className="h-5 w-5" />,
-        status: 'warning',
+        status: 'warning' as StatCardStatus,
         trend: { value: 5, isPositive: false, label: 'vs yesterday' },
       },
     ],
-    [stats],
+    [stats.totalDetections, stats.blockedTransactions, stats.avgDetectionTime, stats.totalValueAtRisk],
   );
 
   const monitoringCardsData = useMemo(
@@ -306,38 +277,36 @@ export default function OptimizedSecurityDashboard() {
         title: 'Active Monitors',
         value: stats.activeMonitors,
         icon: <Eye className="h-5 w-5" />,
-        status: 'neutral' as const,
+        status: 'neutral' as StatCardStatus,
         trend: { value: 4, isPositive: true, label: 'new today' },
       },
       {
         title: 'Security Score',
         value: `${stats.threatScore}/100`,
         icon: <Shield className="h-5 w-5" />,
-        status: stats.threatScore >= 80 ? 'healthy' : 'warning',
+        status: (stats.threatScore >= 80 ? 'healthy' : 'warning') as StatCardStatus,
         trend: { value: 3, isPositive: true, label: 'vs last week' },
       },
       {
         title: 'Last Incident',
         value: stats.lastIncident || 'None',
         icon: <Activity className="h-5 w-5" />,
-        status: 'neutral' as const,
+        status: 'neutral' as StatCardStatus,
       },
       {
         title: 'Response Time',
         value: '< 30s',
         icon: <Zap className="h-5 w-5" />,
-        status: 'healthy',
+        status: 'healthy' as StatCardStatus,
         trend: { value: 10, isPositive: true, label: 'faster' },
       },
     ],
-    [stats],
+    [stats.activeMonitors, stats.threatScore, stats.lastIncident],
   );
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50/50">
-      {/* Main Content */}
       <main className="flex flex-1 flex-col overflow-hidden">
-        {/* Header */}
         <header className="border-b border-gray-200/50 bg-white/80 px-4 py-3 backdrop-blur-sm lg:px-6">
           <div className="flex items-center justify-between">
             <div>
@@ -348,45 +317,45 @@ export default function OptimizedSecurityDashboard() {
             </div>
             <div className="flex items-center gap-3">
               <ThreatLevelBadge level="high" count={stats.highRiskCount} />
-              <Button variant="outline" size="sm" onClick={refresh} disabled={isRefreshing}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={refresh}
+                disabled={isRefreshing}
+                aria-busy={isRefreshing}
+              >
                 {isRefreshing ? 'Refreshing...' : 'Refresh'}
               </Button>
             </div>
           </div>
         </header>
 
-        {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto p-2 sm:p-3 lg:p-4 relative">
-          {/* Loading Overlay */}
           {isRefreshing && (
             <LoadingOverlay message="Loading security data..." />
           )}
 
-          {/* Empty State - No Detections */}
           {!isRefreshing && stats.totalDetections === 0 && (
             <div className="py-12">
               <EmptySecurityState onRefresh={refresh} />
             </div>
           )}
 
-          {/* Risk Level Summary */}
-          <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:gap-3">
+          <section aria-label="Risk Level Summary" className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:gap-3">
             <ThreatLevelBadge level="high" count={stats.highRiskCount} />
             <ThreatLevelBadge level="medium" count={stats.mediumRiskCount} />
             <ThreatLevelBadge level="low" count={stats.lowRiskCount} />
-            <ThreatLevelBadge level="safe" count={115} />
-          </div>
+            <ThreatLevelBadge level="safe" count={stats.safeCount} />
+          </section>
 
-          {/* Stats Sections */}
           <div className="mb-4 space-y-3">
-            {/* Threat Overview Section */}
             <DashboardStatsSection
               title="Threat Overview"
               description="Real-time threat detection metrics"
               icon={<AlertTriangle className="h-4 w-4" />}
               color="red"
             >
-              <StatCardGroup columns={4} gap="sm">
+              <StatCardGroup columns={4}>
                 {threatCardsData.map((card) => (
                   <EnhancedStatCard
                     key={card.title}
@@ -401,14 +370,13 @@ export default function OptimizedSecurityDashboard() {
               </StatCardGroup>
             </DashboardStatsSection>
 
-            {/* Monitoring Status Section */}
             <DashboardStatsSection
               title="Monitoring Status"
               description="Security monitoring and response metrics"
               icon={<Eye className="h-4 w-4" />}
               color="blue"
             >
-              <StatCardGroup columns={4} gap="sm">
+              <StatCardGroup columns={4}>
                 {monitoringCardsData.map((card) => (
                   <EnhancedStatCard
                     key={card.title}
@@ -424,125 +392,129 @@ export default function OptimizedSecurityDashboard() {
             </DashboardStatsSection>
           </div>
 
-          {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
             <TabsList className="w-full justify-start overflow-x-auto lg:w-auto">
               <TabsTrigger value="overview" className="gap-1 sm:gap-2">
-                <Shield className="h-4 w-4" />
+                <Shield className="h-4 w-4" aria-hidden="true" />
                 <span>Overview</span>
               </TabsTrigger>
               <TabsTrigger value="threats" className="gap-1 sm:gap-2">
-                <AlertTriangle className="h-4 w-4" />
+                <AlertTriangle className="h-4 w-4" aria-hidden="true" />
                 <span>Threats</span>
               </TabsTrigger>
               <TabsTrigger value="analysis" className="gap-1 sm:gap-2">
-                <BarChart3 className="h-4 w-4" />
+                <BarChart3 className="h-4 w-4" aria-hidden="true" />
                 <span>Analysis</span>
               </TabsTrigger>
             </TabsList>
 
-            {/* Overview Tab */}
             <TabsContent value="overview" className="space-y-3 sm:space-y-4">
               <div className="grid gap-3 sm:gap-4 xl:grid-cols-3">
-                {/* Security Score */}
-                <ChartCard
-                  title="Security Score"
-                  description="Overall security posture assessment"
-                  icon={<Shield className="h-5 w-5" />}
-                >
-                  <SecurityScoreGauge score={stats.threatScore} />
-                </ChartCard>
+                <ChartWrapper fallbackTitle="Security Score">
+                  <ChartCard
+                    title="Security Score"
+                    description="Overall security posture assessment"
+                    icon={<Shield className="h-5 w-5" />}
+                  >
+                    <SecurityScoreGauge score={stats.threatScore} />
+                  </ChartCard>
+                </ChartWrapper>
 
-                {/* Risk Distribution */}
-                <ChartCard
-                  title="Risk Distribution"
-                  description="Asset risk level breakdown"
-                  icon={<PieChart className="h-5 w-5" />}
-                >
-                  <EnhancedPieChart
-                    data={riskDistribution}
-                    height={isMobile ? 200 : 250}
-                    innerRadius={60}
-                    showLabels
-                  />
-                </ChartCard>
+                <ChartWrapper fallbackTitle="Risk Distribution">
+                  <ChartCard
+                    title="Risk Distribution"
+                    description="Asset risk level breakdown"
+                    icon={<PieChart className="h-5 w-5" />}
+                  >
+                    <EnhancedPieChart
+                      data={riskDistribution}
+                      height={isMobile ? 200 : 250}
+                      innerRadius={60}
+                      showLabels
+                    />
+                  </ChartCard>
+                </ChartWrapper>
 
-                {/* Security Radar */}
-                <ChartCard
-                  title="Security Dimensions"
-                  description="Security capability assessment"
-                  icon={<Activity className="h-5 w-5" />}
-                >
-                  <EnhancedRadarChart
-                    data={radarData}
-                    height={isMobile ? 200 : 250}
-                    color={CHART_COLORS.primary.DEFAULT}
-                  />
-                </ChartCard>
+                <ChartWrapper fallbackTitle="Security Dimensions">
+                  <ChartCard
+                    title="Security Dimensions"
+                    description="Security capability assessment"
+                    icon={<Activity className="h-5 w-5" />}
+                  >
+                    <EnhancedRadarChart
+                      data={radarData}
+                      height={isMobile ? 200 : 250}
+                      color={CHART_COLORS.primary.DEFAULT}
+                    />
+                  </ChartCard>
+                </ChartWrapper>
               </div>
 
-              {/* Threat Timeline */}
-              <ChartCard
-                title="Threat Activity Timeline"
-                description="Detected threats and blocked attempts over time"
-                icon={<BarChart3 className="h-5 w-5" />}
-              >
-                <EnhancedAreaChart
-                  data={threatData}
-                  dataKey="threats"
-                  color={CHART_COLORS.semantic.error.DEFAULT}
-                  height={isMobile ? 200 : 280}
-                  valueFormatter={(v) => formatNumber(v, 0)}
-                  labelFormatter={(l) => new Date(l).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-                  showGrid
-                  gradient
-                  thresholds={[
-                    { value: 40, label: 'High Threshold', color: CHART_COLORS.semantic.error.DEFAULT, type: 'warning' },
-                  ]}
-                />
-              </ChartCard>
-            </TabsContent>
-
-            {/* Threats Tab */}
-            <TabsContent value="threats" className="space-y-4">
-              <div className="grid gap-4 lg:grid-cols-2">
+              <ChartWrapper fallbackTitle="Threat Activity Timeline">
                 <ChartCard
-                  title="Threats vs Blocked"
-                  description="Detection and prevention comparison"
-                  icon={<Shield className="h-5 w-5" />}
-                >
-                  <EnhancedBarChart
-                    data={threatData}
-                    bars={[
-                      { dataKey: 'threats', name: 'Detected', color: CHART_COLORS.semantic.error.DEFAULT },
-                      { dataKey: 'blocked', name: 'Blocked', color: CHART_COLORS.semantic.success.DEFAULT },
-                    ]}
-                    height={300}
-                    valueFormatter={(v) => formatNumber(v, 0)}
-                    showGrid
-                    showLegend
-                  />
-                </ChartCard>
-
-                <ChartCard
-                  title="Threat Trends"
-                  description="Threat detection trends over time"
-                  icon={<TrendingUp className="h-5 w-5" />}
+                  title="Threat Activity Timeline"
+                  description="Detected threats and blocked attempts over time"
+                  icon={<BarChart3 className="h-5 w-5" />}
                 >
                   <EnhancedAreaChart
                     data={threatData}
                     dataKey="threats"
-                    color={CHART_COLORS.semantic.warning.DEFAULT}
-                    height={300}
+                    color={CHART_COLORS.semantic.error.DEFAULT}
+                    height={isMobile ? 200 : 280}
                     valueFormatter={(v) => formatNumber(v, 0)}
+                    labelFormatter={(l) => new Date(l).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                     showGrid
                     gradient
+                    thresholds={[
+                      { value: 40, label: 'High Threshold', color: CHART_COLORS.semantic.error.DEFAULT, type: 'warning' },
+                    ]}
                   />
                 </ChartCard>
+              </ChartWrapper>
+            </TabsContent>
+
+            <TabsContent value="threats" className="space-y-4">
+              <div className="grid gap-4 lg:grid-cols-2">
+                <ChartWrapper fallbackTitle="Threats vs Blocked">
+                  <ChartCard
+                    title="Threats vs Blocked"
+                    description="Detection and prevention comparison"
+                    icon={<Shield className="h-5 w-5" />}
+                  >
+                    <EnhancedBarChart
+                      data={threatData}
+                      bars={[
+                        { dataKey: 'threats', name: 'Detected', color: CHART_COLORS.semantic.error.DEFAULT },
+                        { dataKey: 'blocked', name: 'Blocked', color: CHART_COLORS.semantic.success.DEFAULT },
+                      ]}
+                      height={300}
+                      valueFormatter={(v) => formatNumber(v, 0)}
+                      showGrid
+                      showLegend
+                    />
+                  </ChartCard>
+                </ChartWrapper>
+
+                <ChartWrapper fallbackTitle="Threat Trends">
+                  <ChartCard
+                    title="Threat Trends"
+                    description="Threat detection trends over time"
+                    icon={<TrendingUp className="h-5 w-5" />}
+                  >
+                    <EnhancedAreaChart
+                      data={threatData}
+                      dataKey="threats"
+                      color={CHART_COLORS.semantic.warning.DEFAULT}
+                      height={300}
+                      valueFormatter={(v) => formatNumber(v, 0)}
+                      showGrid
+                      gradient
+                    />
+                  </ChartCard>
+                </ChartWrapper>
               </div>
             </TabsContent>
 
-            {/* Analysis Tab */}
             <TabsContent value="analysis" className="space-y-4">
               <ChartCard
                 title="Security Posture Analysis"
@@ -550,14 +522,16 @@ export default function OptimizedSecurityDashboard() {
                 icon={<Activity className="h-5 w-5" />}
               >
                 <div className="grid gap-6 lg:grid-cols-2">
-                  <EnhancedRadarChart
-                    data={radarData}
-                    height={350}
-                    color={CHART_COLORS.primary.DEFAULT}
-                  />
-                  <div className="space-y-4">
-                    {radarData.map((item, index) => (
-                      <div key={item.metric} className="space-y-2">
+                  <ChartWrapper fallbackTitle="Security Radar">
+                    <EnhancedRadarChart
+                      data={radarData}
+                      height={350}
+                      color={CHART_COLORS.primary.DEFAULT}
+                    />
+                  </ChartWrapper>
+                  <div className="space-y-4" role="list" aria-label="Security metrics breakdown">
+                    {radarData.map((item) => (
+                      <div key={item.metric} className="space-y-2" role="listitem">
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-medium text-gray-700">{item.metric}</span>
                           <span className={cn(
@@ -570,6 +544,7 @@ export default function OptimizedSecurityDashboard() {
                         <Progress
                           value={item.value}
                           className="h-2"
+                          aria-label={`${item.metric}: ${item.value}%`}
                         />
                       </div>
                     ))}

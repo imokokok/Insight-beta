@@ -22,30 +22,19 @@ import {
   RefreshCw,
 } from 'lucide-react';
 
+
+
+
+
+import { PageSkeleton } from '@/components/ui';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { PageSkeleton, EmptyEventsState } from '@/components/ui';
 import { logger } from '@/lib/logger';
-import {
-  StaggerContainer,
-  StaggerItem,
-  FadeIn,
-} from '@/components/common/AnimatedContainer';
-import {
-  Container,
-  DashboardGrid,
-  Stack,
-  Row,
-} from '@/components/common/Layout';
-import {
-  ResponsiveGrid,
-  ResponsivePadding,
-  MobileOnly,
-  DesktopOnly,
-} from '@/components/common/Responsive';
+
+
 
 interface TimelineEvent {
   id: string;

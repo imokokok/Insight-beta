@@ -27,8 +27,8 @@ import { ConnectWallet } from '@/components/features/wallet/ConnectWallet';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { cn } from '@/lib/utils';
 
-import type { Route } from 'next';
 import type { LucideIcon } from 'lucide-react';
+import type { Route } from 'next';
 
 // Type assertion helper for Link href
 const asRoute = (href: string): Route => href as Route;

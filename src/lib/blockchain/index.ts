@@ -5,7 +5,7 @@
  */
 
 // ============================================================================
-// 核心模块 (被 FluxOracleClient 使用)
+// 核心模块
 // ============================================================================
 
 export { BaseOracleClient } from './core';
@@ -25,32 +25,167 @@ export type {
 } from './core';
 
 // ============================================================================
-// 传统协议客户端（被同步服务使用）
+// 链配置
+// ============================================================================
+
+export {
+  VIEM_CHAIN_MAP,
+  DEFAULT_RPC_URLS,
+  CHAIN_METADATA,
+  getChainSymbol,
+  getViemChain,
+  getDefaultRpcUrl,
+  getChainMetadata,
+  isEvmChain,
+  getExplorerTxUrl,
+  getExplorerAddressUrl,
+  type ChainMetadata,
+} from './chainConfig';
+
+// ============================================================================
+// 预言机客户端
 // ============================================================================
 
 // Chainlink
-export { ChainlinkClient } from './chainlinkDataFeeds';
+export { ChainlinkClient, createChainlinkClient } from './chainlinkDataFeeds';
 
 // Pyth
-export { createPythClient, getAvailablePythSymbols } from './pythOracle';
+export { PythClient, createPythClient, getAvailablePythSymbols } from './pythOracle';
 
 // Band
-export { createBandClient } from './bandOracle';
+export { BandClient, createBandClient } from './bandOracle';
 
 // DIA
-export { createDIAClient, getAvailableDIASymbols } from './diaOracle';
+export { DIAClient, createDIAClient, getAvailableDIASymbols } from './diaOracle';
 
 // API3
-export { createAPI3Client, getAvailableAPI3Dapis } from './api3Oracle';
+export { API3Client, createAPI3Client, getAvailableAPI3Dapis } from './api3Oracle';
 
 // RedStone
-export { createRedStoneClient, getAvailableRedStoneSymbols } from './redstoneOracle';
+export { RedStoneClient, createRedStoneClient, getAvailableRedStoneSymbols } from './redstoneOracle';
 
 // Flux
-export { createFluxClient } from './fluxOracle';
+export { FluxClient, createFluxClient, getAvailableFluxFeeds } from './fluxOracle';
 
 // Switchboard
-export { SwitchboardClient } from './switchboardOracle';
+export { SwitchboardClient, createSwitchboardClient } from './switchboardOracle';
 
 // UMA
-export { createUMAClient, isChainSupportedByUMA } from './umaOracle';
+export {
+  UMAClient,
+  createUMAClient,
+  isChainSupportedByUMA,
+  getSupportedUMAChains,
+  getUMAContractAddresses,
+  UMA_CONTRACT_ADDRESSES,
+  type UMAAssertion,
+  type UMADispute,
+  type DisputeStatus,
+  type UMAHealthStatus,
+  type UMAProtocolConfig,
+} from './umaOracle';
+
+export {
+  UMATransactionClient,
+  createUMATransactionClient,
+  encodeAssertTruthCall,
+  encodeDisputeAssertionCall,
+  encodeSettleAssertionCall,
+  calculateRequiredBond,
+  type AssertTruthParams,
+  type DisputeAssertionParams,
+  type SettleAssertionParams,
+  type UMATransactionResult,
+} from './umaTransaction';
+
+// ============================================================================
+// 钱包连接
+// ============================================================================
+
+export {
+  WalletConnectProvider,
+  WALLET_CONNECT_PROJECT_ID,
+  SUPPORTED_CHAINS,
+  isMobile,
+  isWalletBrowser,
+  getRecommendedConnectionType,
+  getWalletName,
+  type WalletProvider,
+  type WalletConnectionType,
+} from './walletConnect';
+
+// ============================================================================
+// 安全模块
+// ============================================================================
+
+export {
+  // 输入验证
+  validateAddress,
+  validateAddressArray,
+  validateBytes32,
+  validateSymbol,
+  validateBondAmount,
+  validateClaim,
+  validateTimestamp,
+  validateChainId,
+  validateBatch,
+  validateExtraData,
+  validateUMAAssertionParams,
+  VALIDATION_LIMITS,
+  type ValidationResult,
+  // Gas 优化
+  QueryCache,
+  SmartRetry,
+  GasEstimator,
+  BatchCallOptimizer,
+  createQueryCache,
+  createGasEstimator,
+  createBatchCallOptimizer,
+  createSmartRetry,
+  GAS_CONSTANTS,
+  type GasEstimate,
+  type BatchCallItem,
+  type BatchCallResult,
+  // 速率限制
+  SlidingWindowRateLimiter,
+  TokenBucketRateLimiter,
+  MultiTierRateLimiter,
+  createRateLimiter,
+  createTokenBucketLimiter,
+  createMultiTierRateLimiter,
+  RATE_LIMIT_DEFAULTS,
+  type RateLimitConfig,
+  type RateLimitResult,
+  // 价格清洗
+  PriceSanitizer,
+  PriceDeviationDetector,
+  createPriceSanitizer,
+  createPriceDeviationDetector,
+  PRICE_SANITIZER_DEFAULTS,
+  type PriceData,
+  type SanitizedPrice,
+  type OutlierInfo,
+  // 重入防护
+  ReentrancyGuard,
+  CrossContractReentrancyDetector,
+  CallbackAttackProtector,
+  createReentrancyGuard,
+  createCrossContractDetector,
+  createCallbackProtector,
+  getGlobalReentrancyGuard,
+  protectedOperation,
+  REENTRANCY_DEFAULTS,
+  type ReentrancyState,
+  type ReentrancyConfig,
+  // 交易验证
+  TransactionValidator,
+  UMATransactionValidator,
+  TransactionMonitor,
+  createTransactionValidator,
+  createUMATransactionValidator,
+  createTransactionMonitor,
+  TX_VALIDATION_DEFAULTS,
+  type TransactionParams,
+  type TransactionValidationResult,
+  type TransactionStatus,
+} from './security';

@@ -10,8 +10,6 @@
 
 import useSWR from 'swr';
 
-import { createSWRConfig, REALTIME_CONFIG } from './useSWRConfig';
-import { buildApiUrl } from '@/lib/utils';
 import type {
   ComparisonFilter,
   ComparisonView,
@@ -20,6 +18,9 @@ import type {
   PriceHeatmapData,
   RealtimeComparisonItem,
 } from '@/lib/types/oracle/comparison';
+import { buildApiUrl } from '@/lib/utils';
+
+import { createSWRConfig, REALTIME_CONFIG } from './useSWRConfig';
 
 // ============================================================================
 // 热力图数据 Hook

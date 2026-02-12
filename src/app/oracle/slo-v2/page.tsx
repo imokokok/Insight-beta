@@ -23,30 +23,19 @@ import {
   ChevronRight,
 } from 'lucide-react';
 
+
+
+
+
+import { PageSkeleton } from '@/components/ui';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PageSkeleton, EmptyDataState, EmptyFirstItemState } from '@/components/ui';
 import { logger } from '@/lib/logger';
-import {
-  StaggerContainer,
-  StaggerItem,
-  FadeIn,
-} from '@/components/common/AnimatedContainer';
-import {
-  Container,
-  DashboardGrid,
-  Stack,
-  Row,
-} from '@/components/common/Layout';
-import {
-  ResponsiveGrid,
-  ResponsivePadding,
-  MobileOnly,
-  DesktopOnly,
-} from '@/components/common/Responsive';
+
+
 
 interface SloReport {
   sloId: string;

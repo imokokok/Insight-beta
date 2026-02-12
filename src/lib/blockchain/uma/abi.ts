@@ -1,126 +1,11 @@
-export const UMA_OPTIMISTIC_ORACLE_V2_ABI = [
-  {
-    inputs: [
-      { name: 'identifier', type: 'bytes32' },
-      { name: 'timestamp', type: 'uint256' },
-      { name: 'ancillaryData', type: 'bytes' },
-      { name: 'currency', type: 'address' },
-      { name: 'reward', type: 'uint256' },
-      { name: 'finalFee', type: 'uint256' },
-      { name: 'bond', type: 'uint256' },
-      { name: 'customLiveness', type: 'uint256' },
-      { name: 'proposer', type: 'address' },
-      { name: 'callbackContract', type: 'address' },
-      { name: 'escalateManually', type: 'bool' },
-      { name: 'extraData', type: 'bytes' },
-    ],
-    name: 'proposePrice',
-    outputs: [{ name: 'totalBond', type: 'uint256' }],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [
-      { name: 'identifier', type: 'bytes32' },
-      { name: 'timestamp', type: 'uint256' },
-      { name: 'ancillaryData', type: 'bytes' },
-    ],
-    name: 'disputePrice',
-    outputs: [],
-    stateMutability: 'payable',
-    type: 'function',
-  },
-  {
-    inputs: [
-      { name: 'identifier', type: 'bytes32' },
-      { name: 'timestamp', type: 'uint256' },
-      { name: 'ancillaryData', type: 'bytes' },
-    ],
-    name: 'settle',
-    outputs: [
-      { name: 'price', type: 'int256' },
-      { name: 'settledAt', type: 'uint256' },
-    ],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [
-      { name: 'identifier', type: 'bytes32' },
-      { name: 'timestamp', type: 'uint256' },
-      { name: 'ancillaryData', type: 'bytes' },
-    ],
-    name: 'getRequest',
-    outputs: [
-      {
-        name: '',
-        type: 'tuple',
-        components: [
-          { name: 'requestState', type: 'uint8' },
-          { name: 'currency', type: 'address' },
-          { name: 'reward', type: 'uint256' },
-          { name: 'finalFee', type: 'uint256' },
-          { name: 'proposer', type: 'address' },
-          { name: 'disputer', type: 'address' },
-          { name: 'proposedPrice', type: 'int256' },
-          { name: 'settledPrice', type: 'int256' },
-          { name: 'proposalExpirationTimestamp', type: 'uint256' },
-          { name: 'disputeTimestamp', type: 'uint256' },
-          { name: 'settlementTimestamp', type: 'uint256' },
-          { name: 'bond', type: 'uint256' },
-          { name: 'customLiveness', type: 'uint256' },
-        ],
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [
-      { name: 'identifier', type: 'bytes32' },
-      { name: 'timestamp', type: 'uint256' },
-      { name: 'ancillaryData', type: 'bytes' },
-    ],
-    name: 'hasPrice',
-    outputs: [{ name: '', type: 'bool' }],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [{ name: '', type: 'bytes32' }],
-    name: 'identifierWhitelist',
-    outputs: [{ name: '', type: 'address' }],
-    stateMutability: 'view',
-    type: 'function',
-  },
-] as const;
+/**
+ * UMA Optimistic Oracle V3 ABI
+ *
+ * 统一的 UMA V3 ABI 定义，供 umaOracle.ts 和 umaTransaction.ts 使用
+ */
 
 export const UMA_OPTIMISTIC_ORACLE_V3_ABI = [
-  {
-    inputs: [
-      { name: 'claim', type: 'string' },
-      { name: 'currency', type: 'address' },
-      { name: 'bond', type: 'uint256' },
-      { name: 'identifier', type: 'bytes32' },
-      { name: 'escalateManually', type: 'bool' },
-      { name: 'extraData', type: 'bytes' },
-    ],
-    name: 'assertTruth',
-    outputs: [{ name: 'assertionId', type: 'bytes32' }],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [{ name: 'assertionId', type: 'bytes32' }],
-    name: 'settleAssertion',
-    outputs: [
-      { name: 'resolved', type: 'bool' },
-      { name: 'settledValue', type: 'bool' },
-      { name: 'anchorValue', type: 'uint256' },
-    ],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
+  // ============ 读取函数 ============
   {
     inputs: [{ name: 'assertionId', type: 'bytes32' }],
     name: 'getAssertion',
@@ -129,13 +14,16 @@ export const UMA_OPTIMISTIC_ORACLE_V3_ABI = [
         name: '',
         type: 'tuple',
         components: [
-          { name: 'asserter', type: 'address' },
-          { name: 'callbackContract', type: 'address' },
-          { name: 'escalateManually', type: 'bool' },
-          { name: 'expirationTime', type: 'uint64' },
+          { name: 'identifier', type: 'bytes32' },
+          { name: 'timestamp', type: 'uint256' },
+          { name: 'data', type: 'bytes' },
+          { name: 'requester', type: 'address' },
+          { name: 'resolved', type: 'bool' },
+          { name: 'disputed', type: 'bool' },
+          { name: 'settlementResolution', type: 'uint256' },
           { name: 'currency', type: 'address' },
-          { name: 'disputeSolver', type: 'address' },
-          { name: 'noDataPresent', type: 'bool' },
+          { name: 'bond', type: 'uint256' },
+          { name: 'expirationTime', type: 'uint256' },
         ],
       },
     ],
@@ -157,11 +45,102 @@ export const UMA_OPTIMISTIC_ORACLE_V3_ABI = [
     type: 'function',
   },
   {
+    inputs: [{ name: 'assertionId', type: 'bytes32' }],
+    name: 'getDispute',
+    outputs: [
+      {
+        name: '',
+        type: 'tuple',
+        components: [
+          { name: 'disputer', type: 'address' },
+          { name: 'disputeTimestamp', type: 'uint256' },
+          { name: 'disputeBond', type: 'uint256' },
+          { name: 'disputeStatus', type: 'uint8' },
+        ],
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ name: 'currency', type: 'address' }],
+    name: 'getMinimumBond',
+    outputs: [{ name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ name: 'currency', type: 'address' }],
+    name: 'finalFee',
+    outputs: [{ name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'defaultLiveness',
+    outputs: [{ name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'getCurrentTime',
+    outputs: [{ name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  // ============ 写入函数 ============
+  {
+    inputs: [
+      { name: 'claim', type: 'string' },
+      { name: 'currency', type: 'address' },
+      { name: 'bond', type: 'uint256' },
+      { name: 'identifier', type: 'bytes32' },
+      { name: 'escalateManually', type: 'bool' },
+      { name: 'extraData', type: 'bytes' },
+    ],
+    name: 'assertTruth',
+    outputs: [{ name: 'assertionId', type: 'bytes32' }],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { name: 'assertionId', type: 'bytes32' },
+      { name: 'disputer', type: 'address' },
+    ],
+    name: 'disputeAssertion',
+    outputs: [],
+    stateMutability: 'payable',
+    type: 'function',
+  },
+  {
+    inputs: [{ name: 'assertionId', type: 'bytes32' }],
+    name: 'settleAssertion',
+    outputs: [
+      { name: 'resolved', type: 'bool' },
+      { name: 'settledValue', type: 'bool' },
+      { name: 'anchorValue', type: 'uint256' },
+    ],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  // ============ 事件 ============
+  {
     anonymous: false,
     inputs: [
       { indexed: true, name: 'assertionId', type: 'bytes32' },
-      { indexed: false, name: 'claim', type: 'string' },
+      { indexed: true, name: 'domainId', type: 'bytes32' },
+      { indexed: false, name: 'claim', type: 'bytes' },
       { indexed: true, name: 'asserter', type: 'address' },
+      { indexed: false, name: 'callbackRecipient', type: 'address' },
+      { indexed: false, name: 'escalationManager', type: 'address' },
+      { indexed: false, name: 'caller', type: 'address' },
+      { indexed: false, name: 'expirationTime', type: 'uint64' },
+      { indexed: false, name: 'currency', type: 'address' },
+      { indexed: false, name: 'bond', type: 'uint256' },
+      { indexed: false, name: 'identifier', type: 'bytes32' },
     ],
     name: 'AssertionMade',
     type: 'event',
@@ -170,69 +149,21 @@ export const UMA_OPTIMISTIC_ORACLE_V3_ABI = [
     anonymous: false,
     inputs: [
       { indexed: true, name: 'assertionId', type: 'bytes32' },
-      { indexed: false, name: 'settledValue', type: 'bool' },
+      { indexed: true, name: 'caller', type: 'address' },
+      { indexed: true, name: 'disputer', type: 'address' },
     ],
-    name: 'AssertionSettled',
+    name: 'AssertionDisputed',
     type: 'event',
   },
   {
     anonymous: false,
     inputs: [
       { indexed: true, name: 'assertionId', type: 'bytes32' },
-      { indexed: true, name: 'disputer', type: 'address' },
+      { indexed: false, name: 'settledValue', type: 'bool' },
+      { indexed: false, name: 'disputed', type: 'bool' },
+      { indexed: true, name: 'bondRecipient', type: 'address' },
     ],
-    name: 'AssertionDisputed',
+    name: 'AssertionSettled',
     type: 'event',
-  },
-] as const;
-
-export const UMA_FINDER_ABI = [
-  {
-    inputs: [{ name: 'interfaceName', type: 'bytes32' }],
-    name: 'getImplementationAddress',
-    outputs: [{ name: '', type: 'address' }],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [
-      { name: 'interfaceName', type: 'bytes32' },
-      { name: 'implementationAddress', type: 'address' },
-    ],
-    name: 'changeImplementationAddress',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [{ name: '', type: 'bytes32' }],
-    name: 'interfacesImplemented',
-    outputs: [{ name: '', type: 'address' }],
-    stateMutability: 'view',
-    type: 'function',
-  },
-] as const;
-
-export const UMA_WHITELIST_ABI = [
-  {
-    inputs: [{ name: 'newElement', type: 'address' }],
-    name: 'addToWhitelist',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [{ name: 'elementToRemove', type: 'address' }],
-    name: 'removeFromWhitelist',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [{ name: 'element', type: 'address' }],
-    name: 'isOnWhitelist',
-    outputs: [{ name: '', type: 'bool' }],
-    stateMutability: 'view',
-    type: 'function',
   },
 ] as const;

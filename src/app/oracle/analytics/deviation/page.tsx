@@ -62,23 +62,6 @@ import { useAutoRefreshLegacy, useDataCache } from '@/hooks';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { logger } from '@/lib/logger';
 import { fetchApiData, cn, formatTime } from '@/lib/utils';
-import {
-  StaggerContainer,
-  StaggerItem,
-  FadeIn,
-} from '@/components/common/AnimatedContainer';
-import {
-  Container,
-  DashboardGrid,
-  Stack,
-  Row,
-} from '@/components/common/Layout';
-import {
-  ResponsiveGrid,
-  ResponsivePadding,
-  MobileOnly,
-  DesktopOnly,
-} from '@/components/common/Responsive';
 
 // ============================================================================
 // Types

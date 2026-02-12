@@ -6,7 +6,7 @@
 
 'use client';
 
-import { ShortcutGroup } from '@/hooks/useKeyboardShortcuts';
+import type { ShortcutGroup } from '@/hooks/useKeyboardShortcuts';
 
 interface ShortcutHelpPanelProps {
   isOpen: boolean;

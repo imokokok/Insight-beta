@@ -4,6 +4,12 @@ import { useState, useCallback, useMemo } from 'react';
 
 import { RefreshCw, Filter, Activity, Calendar } from 'lucide-react';
 
+
+
+
+
+
+
 import {
   CrossChainComparisonCard,
   CrossChainArbitrageCard,
@@ -23,23 +29,6 @@ import {
   useCrossChainHistory,
 } from '@/hooks/useCrossChain';
 import { useI18n } from '@/i18n';
-import {
-  StaggerContainer,
-  StaggerItem,
-  FadeIn,
-} from '@/components/common/AnimatedContainer';
-import {
-  Container,
-  DashboardGrid,
-  Stack,
-  Row,
-} from '@/components/common/Layout';
-import {
-  ResponsiveGrid,
-  ResponsivePadding,
-  MobileOnly,
-  DesktopOnly,
-} from '@/components/common/Responsive';
 
 const AVAILABLE_SYMBOLS = ['BTC', 'ETH', 'SOL', 'LINK', 'AVAX', 'MATIC', 'UNI', 'AAVE'];
 const AVAILABLE_CHAINS = ['ethereum', 'bsc', 'polygon', 'avalanche', 'arbitrum', 'optimism', 'base'];

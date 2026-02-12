@@ -5,7 +5,6 @@ import type { Dispatch, SetStateAction } from 'react';
 import Link from 'next/link';
 
 import { AlertTriangle, CheckCircle2, Clock } from 'lucide-react';
-
 import {
   CartesianGrid,
   Legend,
@@ -15,7 +14,8 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-} from '@/components/charts';
+} from 'recharts';
+
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { getUiErrorMessage, type TranslationKey } from '@/i18n/translations';
 import type {

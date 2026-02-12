@@ -15,8 +15,8 @@ import {
 import { useToast } from '@/components/ui/toast';
 import { useWallet } from '@/contexts/WalletContext';
 import { useI18n } from '@/i18n/LanguageProvider';
-import { isMobile, supportsFeature, getWalletBrowserInfo } from '@/lib/mobile/walletBrowser';
 import { logger } from '@/lib/logger';
+import { isMobile, supportsFeature } from '@/lib/mobile/walletBrowser';
 import { cn } from '@/lib/utils';
 
 interface Chain {
@@ -72,7 +72,6 @@ export function MobileChainSwitcher() {
   const [switchingChainId, setSwitchingChainId] = useState<number | null>(null);
 
   const isMobileDevice = isMobile();
-  const browserInfo = getWalletBrowserInfo();
   const supportsChainSwitch = supportsFeature('wallet_switchEthereumChain');
 
   const currentChain = SUPPORTED_CHAINS.find((c) => c.id === chainId);

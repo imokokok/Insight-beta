@@ -7,7 +7,9 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+
 import { motion, AnimatePresence } from 'framer-motion';
+
 import { cn } from '@/lib/utils';
 
 interface AnimatedNumberProps {

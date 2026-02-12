@@ -154,8 +154,8 @@ class UMASyncManager extends BaseSyncManager {
       disputeId: string;
       assertionId: string;
       disputer: string;
-      timestamp: number;
-      status: string;
+      disputeTimestamp: number;
+      disputeStatus: string;
     }>,
   ): Promise<void> {
     // 实际实现中应该保存到数据库

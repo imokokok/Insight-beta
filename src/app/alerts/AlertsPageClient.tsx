@@ -7,32 +7,15 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { Filter, RefreshCw, ShieldAlert, Clock, AlertTriangle, Info } from 'lucide-react';
 
+import { MetricCard } from '@/components/charts/ProfessionalChart';
 import { EmptyAlertsState } from '@/components/common/EmptyState';
 import { PageHeader } from '@/components/common/PageHeader';
+import { TimeRangeSelector, DashboardSection, DashboardGrid } from '@/components/dashboard/ProfessionalDashboard';
 import { AlertRulesManager } from '@/components/features/alert/AlertRulesManager';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import {
-  StaggerContainer,
-  StaggerItem,
-  FadeIn,
-} from '@/components/common/AnimatedContainer';
-import {
-  Container,
-  Stack,
-  Row,
-} from '@/components/common/Layout';
-import {
-  ResponsiveGrid,
-  MobileOnly,
-  DesktopOnly,
-} from '@/components/common/Responsive';
-
+import { ErrorBanner } from '@/components/ui/error-banner';
 import { RefreshIndicator } from '@/components/ui/refresh-indicator';
 import { getRefreshStrategy } from '@/config/refresh-strategy';
-import { TimeRangeSelector, DashboardSection, DashboardGrid } from '@/components/dashboard/ProfessionalDashboard';
-import { ErrorBanner } from '@/components/ui/error-banner';
-import { MetricCard } from '@/components/charts/ProfessionalChart';
-
 import {
   useIsMobile,
   useOracleIncidents,

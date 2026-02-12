@@ -10,17 +10,19 @@
 
 'use client';
 
-import React, { createContext, useContext, ReactNode } from 'react';
-import { cn } from '@/lib/utils';
+import type { ReactNode } from 'react';
+import React, { createContext, useContext } from 'react';
+
+import type {
+  Density} from '@/lib/design-system/tokens/layout';
 import {
-  Density,
   DENSITY_CONFIG,
   GRID_COLUMNS,
   GRID_GAPS,
-  LAYOUT_PATTERNS,
   RESPONSIVE_PADDING,
   getDensityConfig,
 } from '@/lib/design-system/tokens/layout';
+import { cn } from '@/lib/utils';
 
 // ============================================================================
 // Density Context
@@ -375,7 +377,7 @@ export function SplitLayout({
   ratio = '1:1',
   gap = 'lg',
   direction = 'horizontal',
-  responsive = true,
+  responsive: _responsive = true,
 }: SplitLayoutProps) {
   const ratioClasses = {
     '1:1': 'grid-cols-1 lg:grid-cols-2',

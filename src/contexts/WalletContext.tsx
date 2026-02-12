@@ -14,8 +14,6 @@ import {
 import { createWalletClient, custom, type WalletClient, type Address, type Chain } from 'viem';
 import { arbitrum, hardhat, mainnet, optimism, polygon, polygonAmoy } from 'viem/chains';
 
-import { normalizeWalletError } from '@/lib/errors/walletErrors';
-import { logger } from '@/lib/logger';
 import {
   WalletConnectProvider,
   isMobile,
@@ -24,6 +22,8 @@ import {
   getWalletName,
   WALLET_CONNECT_PROJECT_ID,
 } from '@/lib/blockchain/walletConnect';
+import { normalizeWalletError } from '@/lib/errors/walletErrors';
+import { logger } from '@/lib/logger';
 
 // 钱包连接类型
 export type WalletConnectionType = 'browser' | 'walletconnect';

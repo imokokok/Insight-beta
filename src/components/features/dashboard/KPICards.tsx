@@ -4,11 +4,11 @@ import type { ReactNode } from 'react';
 
 import { TrendingUp, TrendingDown, Minus, Activity } from 'lucide-react';
 
+import { AnimatedNumber, PriceChangeIndicator } from '@/components/common/AnimatedNumber';
+import { HoverCard } from '@/components/common/PageTransitions';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { AnimatedNumber, PriceChangeIndicator } from '@/components/common/AnimatedNumber';
-import { HoverCard } from '@/components/common/PageTransitions';
 
 export interface KPIData {
   id: string;

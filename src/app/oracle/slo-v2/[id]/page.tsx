@@ -26,29 +26,18 @@ import {
   Calendar,
 } from 'lucide-react';
 
+
+
+
+
+
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { logger } from '@/lib/logger';
-import {
-  StaggerContainer,
-  StaggerItem,
-  FadeIn,
-} from '@/components/common/AnimatedContainer';
-import {
-  Container,
-  DashboardGrid,
-  Stack,
-  Row,
-} from '@/components/common/Layout';
-import {
-  ResponsiveGrid,
-  ResponsivePadding,
-  MobileOnly,
-  DesktopOnly,
-} from '@/components/common/Responsive';
 
 interface SloReport {
   sloId: string;
@@ -138,7 +127,7 @@ export default function SloDetailPage({ params }: { params: Promise<{ id: string
   };
 
   const goToEdit = () => {
-    router.push(`/oracle/slo-v2/${sloId}/edit`);
+    router.push(`/oracle/slo-v2/${sloId}/edit` as any);
   };
 
   if (loading) {

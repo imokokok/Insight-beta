@@ -4,21 +4,10 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-import { EmptyWatchlistState } from '@/components/ui';
+import { FadeIn, StaggerContainer, StaggerItem } from '@/components/common/AnimatedContainer';
 import { PageHeader } from '@/components/common/PageHeader';
 import { AssertionList } from '@/components/features/assertion/AssertionList';
-import { FadeIn, StaggerContainer, StaggerItem } from '@/components/common/AnimatedContainer';
-import {
-  Container,
-  Stack,
-  Row,
-} from '@/components/common/Layout';
-import {
-  ResponsiveGrid,
-  ResponsivePadding,
-  MobileOnly,
-  DesktopOnly,
-} from '@/components/common/Responsive';
+import { EmptyWatchlistState } from '@/components/ui';
 import { useInfiniteList, useWatchlist, type BaseResponse, useIsMobile } from '@/hooks';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n/LanguageProvider';

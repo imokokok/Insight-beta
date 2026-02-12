@@ -4,7 +4,8 @@
  * 管理告警通知渠道配置
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 
 import { env } from '@/lib/config/env';
 import { logger } from '@/lib/logger';
