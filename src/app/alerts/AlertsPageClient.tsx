@@ -11,6 +11,21 @@ import { EmptyAlertsState } from '@/components/common/EmptyState';
 import { PageHeader } from '@/components/common/PageHeader';
 import { AlertRulesManager } from '@/components/features/alert/AlertRulesManager';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import {
+  StaggerContainer,
+  StaggerItem,
+  FadeIn,
+} from '@/components/common/AnimatedContainer';
+import {
+  Container,
+  Stack,
+  Row,
+} from '@/components/common/Layout';
+import {
+  ResponsiveGrid,
+  MobileOnly,
+  DesktopOnly,
+} from '@/components/common/Responsive';
 
 import { RefreshIndicator } from '@/components/ui/refresh-indicator';
 import { getRefreshStrategy } from '@/config/refresh-strategy';

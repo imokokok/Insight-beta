@@ -62,6 +62,20 @@ import {
   ScrollReveal,
   FadeIn,
 } from '@/components/common/AnimatedContainer';
+import {
+  Container,
+  DashboardGrid,
+  ContentSection,
+  Stack,
+  Row,
+} from '@/components/common/Layout';
+import {
+  ResponsiveGrid,
+  ResponsiveText,
+  ResponsivePadding,
+  MobileOnly,
+  DesktopOnly,
+} from '@/components/common/Responsive';
 import { fetchApiData, cn, formatNumber, formatPercent } from '@/lib/utils';
 
 // ============================================================================
