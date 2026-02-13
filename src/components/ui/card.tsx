@@ -11,7 +11,7 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
     <div
       ref={ref}
       className={cn(
-        'rounded-2xl border border-primary/10 bg-white/60 text-[var(--foreground)] shadow-sm backdrop-blur-xl transition-all hover:bg-white/70 hover:shadow-md',
+        'rounded-2xl border border-border/50 bg-card text-foreground shadow-sm backdrop-blur-xl transition-all hover:bg-card/80 hover:shadow-md',
         className,
       )}
       {...props}
@@ -32,7 +32,7 @@ const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HT
     <h3
       ref={ref}
       className={cn(
-        'text-lg font-semibold leading-none tracking-tight text-[var(--foreground)]',
+        'text-lg font-semibold leading-none tracking-tight text-foreground',
         className,
       )}
       {...props}
@@ -75,13 +75,13 @@ const CardEnhanced = React.forwardRef<HTMLDivElement, CardEnhancedProps>(
       <motion.div
         ref={ref}
         className={cn(
-          'relative overflow-hidden rounded-2xl border border-primary/10 bg-white/70 p-6 backdrop-blur-xl',
+          'relative overflow-hidden rounded-2xl border border-border/50 bg-card p-6 backdrop-blur-xl',
           'transition-all duration-300',
           hover &&
-            'hover:border-primary300 hover:bg-white/90 hover:shadow-xl hover:shadow-primary-500/10',
+            'hover:border-primary/30 hover:bg-card/80 hover:shadow-xl hover:shadow-primary/10',
           clickable && 'cursor-pointer active:scale-[0.98]',
-          gradient && 'bg-gradient-to-br from-white/80 via-primary-50/30 to-blue-50/30',
-          glow && 'shadow-lg shadow-primary-500/20 hover:shadow-xl hover:shadow-primary-500/30',
+          gradient && 'bg-gradient-to-br from-card via-primary-5/10 to-blue-5/10',
+          glow && 'shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30',
           className,
         )}
         whileHover={hover ? { y: -4, transition: { duration: 0.2 } } : undefined}
@@ -90,12 +90,12 @@ const CardEnhanced = React.forwardRef<HTMLDivElement, CardEnhancedProps>(
       >
         {/* Shimmer effect on hover */}
         {hover && (
-          <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:animate-shimmer group-hover:opacity-100" />
+          <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-primary/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:animate-shimmer group-hover:opacity-100" />
         )}
 
         {/* Gradient border effect */}
         {gradient && (
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary-500/10 via-transparent to-blue-500/10 opacity-0 transition-opacity duration-300 hover:opacity-100" />
+          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/10 via-transparent to-blue-500/10 opacity-0 transition-opacity duration-300 hover:opacity-100" />
         )}
 
         <div className="relative z-10">{children as React.ReactNode}</div>
@@ -133,7 +133,7 @@ function InteractiveStatCard({
   const trendColors = {
     up: 'text-emerald-500',
     down: 'text-rose-500',
-    neutral: 'text-gray-500',
+    neutral: 'text-muted-foreground',
   };
 
   const trendIcons = {
@@ -145,9 +145,9 @@ function InteractiveStatCard({
   return (
     <motion.div
       className={cn(
-        'relative cursor-pointer overflow-hidden rounded-2xl border border-primary/10 bg-white/70 p-6 backdrop-blur-xl',
+        'relative cursor-pointer overflow-hidden rounded-2xl border border-border/50 bg-card p-6 backdrop-blur-xl',
         'transition-all duration-300',
-        'hover:border-primary300 hover:bg-white/90 hover:shadow-lg hover:shadow-primary-500/10',
+        'hover:border-primary/30 hover:bg-card/80 hover:shadow-lg hover:shadow-primary/10',
         className,
       )}
       onHoverStart={() => setIsHovered(true)}
@@ -158,7 +158,7 @@ function InteractiveStatCard({
     >
       {/* Background glow on hover */}
       <motion.div
-        className="absolute inset-0 bg-gradient-to-br from-primary-500/5 to-blue-500/5"
+        className="absolute inset-0 bg-gradient-to-br from-primary/5 to-blue-500/5"
         initial={{ opacity: 0 }}
         animate={{ opacity: isHovered ? 1 : 0 }}
         transition={{ duration: 0.3 }}
@@ -167,7 +167,7 @@ function InteractiveStatCard({
       <div className="relative z-10">
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
-          <span className="text-sm font-medium text-primary/70">{title}</span>
+          <span className="text-sm font-medium text-muted-foreground">{title}</span>
           {icon && (
             <motion.div
               className="rounded-xl bg-primary/10 p-2 text-primary"
@@ -185,7 +185,7 @@ function InteractiveStatCard({
             <div className="h-8 w-24 animate-pulse rounded bg-primary/20" />
           ) : (
             <motion.span
-              className="text-3xl font-bold text-gray-900"
+              className="text-3xl font-bold text-foreground"
               key={value}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -206,7 +206,7 @@ function InteractiveStatCard({
           >
             <span>{trendIcons[trend]}</span>
             <span>{Math.abs(change)}%</span>
-            <span className="text-gray-400">vs last period</span>
+            <span className="text-muted-foreground">vs last period</span>
           </motion.div>
         )}
       </div>
@@ -237,7 +237,7 @@ function ExpandableCard({
         className="flex w-full items-center justify-between"
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <h3 className="text-lg font-semibold text-[var(--foreground)]">{title}</h3>
+        <h3 className="text-lg font-semibold text-foreground">{title}</h3>
         <motion.div
           animate={{ rotate: isExpanded ? 180 : 0 }}
           transition={{ duration: 0.2 }}

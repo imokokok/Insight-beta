@@ -88,40 +88,40 @@ export function UserMenu() {
         className={cn(
           'flex items-center gap-2 rounded-full border p-1 pr-3 transition-all',
           isOpen
-            ? 'ring-primary100 border-primary/20 bg-primary/5 ring-2'
-            : 'border-gray-200 bg-white hover:border-primary/20 hover:shadow-sm',
+            ? 'border-primary/20 bg-primary/5 ring-2'
+            : 'border-border bg-card hover:border-primary/20 hover:shadow-sm',
         )}
       >
         <div
-          className="h-8 w-8 rounded-full border-2 border-white shadow-sm"
+          className="h-8 w-8 rounded-full border-2 border-card shadow-sm"
           style={{ background: gradient }}
         />
         <div className="flex flex-col items-start">
-          <span className="text-xs font-semibold text-gray-700">
+          <span className="text-xs font-semibold text-foreground">
             {address.slice(0, 6)}...{address.slice(-4)}
           </span>
         </div>
         <ChevronDown
           size={14}
-          className={cn('text-gray-400 transition-transform', isOpen && 'rotate-180')}
+          className={cn('text-muted-foreground transition-transform', isOpen && 'rotate-180')}
         />
       </button>
 
       {isOpen && (
-        <div className="animate-in fade-in zoom-in-95 absolute right-0 top-full z-50 mt-2 w-64 origin-top-right rounded-xl border border-gray-100 bg-white p-2 shadow-xl ring-1 ring-black/5 duration-200">
+        <div className="animate-in fade-in zoom-in-95 absolute right-0 top-full z-50 mt-2 w-64 origin-top-right rounded-xl border border-border bg-card p-2 shadow-xl duration-200">
           {/* Header */}
-          <div className="mb-2 rounded-lg bg-gray-50 p-3">
+          <div className="mb-2 rounded-lg bg-muted/50 p-3">
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-xs font-medium text-gray-500">{t('wallet.balance')}</span>
-              <span className="font-mono text-xs font-bold text-gray-900">
+              <span className="text-xs font-medium text-muted-foreground">{t('wallet.balance')}</span>
+              <span className="font-mono text-xs font-bold text-foreground">
                 {formattedBalance} {symbol}
               </span>
             </div>
-            <div className="flex items-center justify-between gap-2 rounded-md border border-gray-200 bg-white px-2 py-1.5">
-              <span className="truncate font-mono text-xs text-gray-500">{address}</span>
+            <div className="flex items-center justify-between gap-2 rounded-md border border-border bg-muted/50 px-2 py-1.5">
+              <span className="truncate font-mono text-xs text-muted-foreground">{address}</span>
               <button
                 onClick={handleCopy}
-                className="text-gray-400 transition-colors hover:text-primary"
+                className="text-muted-foreground transition-colors hover:text-primary"
                 title={t('wallet.copyAddress')}
               >
                 {copied ? <Check size={14} /> : <Copy size={14} />}
@@ -129,10 +129,10 @@ export function UserMenu() {
             </div>
           </div>
 
-          <div className="mb-2 rounded-lg border border-gray-100 bg-white px-3 py-2">
+          <div className="mb-2 rounded-lg border border-border bg-muted/30 px-3 py-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-gray-500">{t('wallet.network')}</span>
-              <span className="text-xs font-semibold text-gray-900">
+              <span className="text-xs font-medium text-muted-foreground">{t('wallet.network')}</span>
+              <span className="text-xs font-semibold text-foreground">
                 {currentChain ? currentChain.name : t('wallet.unknownNetwork')}
               </span>
             </div>
@@ -146,8 +146,8 @@ export function UserMenu() {
                   className={cn(
                     'rounded-lg border px-2 py-1.5 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60',
                     chainId === c.id
-                      ? 'text-primary-dark border-primary/20 bg-primary/5'
-                      : 'hover:text-primary-dark border-gray-200 bg-white text-gray-700 hover:border-primary/20 hover:bg-primary/5',
+                      ? 'border-primary/20 bg-primary/5 text-primary'
+                      : 'border-border bg-muted/50 text-foreground hover:border-primary/20 hover:bg-primary/5',
                   )}
                 >
                   {switchingChainId === c.id ? t('wallet.switchingNetwork') : c.name}
@@ -160,7 +160,7 @@ export function UserMenu() {
           <div className="space-y-1">
             <Link
               href={attachInstanceId('/my-assertions') as Route}
-              className="hover:text-primary-dark flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-primary/5"
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-primary/5 hover:text-primary"
               onClick={() => setIsOpen(false)}
             >
               <FileText size={16} />
@@ -168,7 +168,7 @@ export function UserMenu() {
             </Link>
             <Link
               href={attachInstanceId('/my-disputes') as Route}
-              className="hover:text-primary-dark flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-primary/5"
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-primary/5 hover:text-primary"
               onClick={() => setIsOpen(false)}
             >
               <AlertTriangle size={16} />
@@ -176,7 +176,7 @@ export function UserMenu() {
             </Link>
           </div>
 
-          <div className="my-2 h-px bg-gray-100" />
+          <div className="my-2 h-px bg-border" />
 
           {/* Footer */}
           <button
@@ -184,7 +184,7 @@ export function UserMenu() {
               disconnect();
               setIsOpen(false);
             }}
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/10"
           >
             <LogOut size={16} />
             {t('wallet.disconnect')}

@@ -2,11 +2,10 @@
 
 import { useState } from 'react';
 
-import { Wallet, Smartphone, X, ChevronRight, AlertCircle } from 'lucide-react';
+import { Wallet, X, ChevronRight, AlertCircle } from 'lucide-react';
 
 import { useToast } from '@/components/ui/toast';
 import { useWallet, type WalletConnectionType } from '@/contexts/WalletContext';
-import { MobileWalletConnect } from '@/features/wallet/components/MobileWalletConnect';
 import { UserMenu } from '@/features/wallet/components/UserMenu';
 import { useI18n } from '@/i18n/LanguageProvider';
 import {
@@ -16,7 +15,6 @@ import {
   WALLET_CONNECT_PROJECT_ID,
 } from '@/lib/blockchain/walletConnect';
 import { normalizeWalletError } from '@/lib/errors';
-import { isMobile as isMobileEnhanced } from '@/lib/mobile';
 import { logger } from '@/shared/logger';
 
 interface WalletOption {
@@ -44,7 +42,6 @@ function WalletSelectModal({
   recommendedType: WalletConnectionType;
 }) {
   const { t } = useI18n();
-  const mobile = isMobileDevice();
   const walletBrowser = isWalletBrowser();
   const walletName = getWalletName();
 
@@ -61,7 +58,7 @@ function WalletSelectModal({
       id: 'walletconnect',
       name: 'WalletConnect',
       description: t('wallet.useWalletConnect'),
-      icon: <Smartphone size={24} className="text-blue-600" />,
+      icon: <Wallet size={24} className="text-blue-500" />,
       recommended: recommendedType === 'walletconnect' || !hasBrowserWallet,
       disabled: !WALLET_CONNECT_PROJECT_ID,
     },
@@ -71,29 +68,19 @@ function WalletSelectModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-sm overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-slate-900">
+      <div className="w-full max-w-sm overflow-hidden rounded-2xl bg-card shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 dark:border-slate-800">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+        <div className="flex items-center justify-between border-b border-border px-6 py-4">
+          <h2 className="text-lg font-semibold text-foreground">
             {t('wallet.selectWallet')}
           </h2>
           <button
             onClick={onClose}
-            className="rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+            className="rounded-full p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <X size={20} />
           </button>
         </div>
-
-        {/* Mobile Hint */}
-        {mobile && (
-          <div className="border-b border-slate-200 bg-blue-50 px-6 py-3 dark:border-slate-800 dark:bg-blue-900/20">
-            <p className="flex items-start gap-2 text-sm text-blue-700 dark:text-blue-300">
-              <Smartphone size={16} className="mt-0.5 shrink-0" />
-              <span>{t('wallet.mobileHint')}</span>
-            </p>
-          </div>
-        )}
 
         {/* Wallet Options */}
         <div className="p-4">
@@ -105,33 +92,31 @@ function WalletSelectModal({
                 disabled={option.disabled || isConnecting}
                 className={`flex w-full items-center gap-4 rounded-xl border-2 p-4 transition-all ${
                   option.disabled
-                    ? 'cursor-not-allowed border-slate-100 bg-slate-50 opacity-50 dark:border-slate-800 dark:bg-slate-800/50'
+                    ? 'cursor-not-allowed border-border bg-muted opacity-50'
                     : option.recommended
-                      ? 'dark:bg-primary-darker/20 border-primary bg-primary/5 hover:bg-primary/10 dark:border-primary/50 dark:hover:bg-primary-900/30'
-                      : 'hover:border-primary300 dark:hover:border-primary500/30 border-slate-200 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800'
+                      ? 'border-primary bg-primary/5 hover:bg-primary/10'
+                      : 'border-border hover:border-primary/30 hover:bg-muted'
                 }`}
               >
                 <div
                   className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${
-                    option.recommended
-                      ? 'dark:bg-primary-darker/30 bg-primary/10'
-                      : 'bg-slate-100 dark:bg-slate-800'
+                    option.recommended ? 'bg-primary/10' : 'bg-muted'
                   }`}
                 >
                   {option.icon}
                 </div>
                 <div className="flex-1 text-left">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-slate-900 dark:text-white">
+                    <span className="font-semibold text-foreground">
                       {option.name}
                     </span>
                     {option.recommended && (
-                      <span className="text-primary-dark dark:bg-primary-darker/30 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium dark:text-primary/30">
+                      <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
                         {t('wallet.recommended')}
                       </span>
                     )}
                   </div>
-                  <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+                  <p className="mt-0.5 text-sm text-muted-foreground">
                     {option.disabled
                       ? option.id === 'browser'
                         ? t('wallet.noBrowserWallet')
@@ -142,9 +127,7 @@ function WalletSelectModal({
                 <ChevronRight
                   size={20}
                   className={`shrink-0 ${
-                    option.disabled
-                      ? 'text-slate-300 dark:text-slate-600'
-                      : 'text-slate-400 dark:text-slate-500'
+                    option.disabled ? 'text-muted-foreground' : 'text-muted-foreground'
                   }`}
                 />
               </button>
@@ -153,7 +136,7 @@ function WalletSelectModal({
 
           {/* Setup Hint */}
           {!WALLET_CONNECT_PROJECT_ID && (
-            <div className="mt-4 flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
+            <div className="mt-4 flex items-start gap-2 rounded-lg bg-amber-500/10 p-3 text-sm text-amber-400">
               <AlertCircle size={16} className="mt-0.5 shrink-0" />
               <div>
                 <p className="font-medium">{t('wallet.setupRequired')}</p>
@@ -164,14 +147,14 @@ function WalletSelectModal({
         </div>
 
         {/* Footer */}
-        <div className="border-t border-slate-200 bg-slate-50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/50">
-          <p className="text-center text-xs text-slate-500 dark:text-slate-400">
+        <div className="border-t border-border bg-muted/50 px-6 py-4">
+          <p className="text-center text-xs text-muted-foreground">
             {t('wallet.newToWallets')}{' '}
             <a
               href="https://ethereum.org/en/wallets/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-primary hover:underline dark:text-primary/40"
+              className="text-primary hover:underline"
             >
               {t('wallet.learnMore')}
             </a>
@@ -230,13 +213,11 @@ export function ConnectWallet() {
   };
 
   const handleButtonClick = () => {
-    // 如果只有一种连接方式可用，直接连接
     if (!WALLET_CONNECT_PROJECT_ID && hasBrowserWallet) {
       handleConnect('browser');
     } else if (WALLET_CONNECT_PROJECT_ID && !hasBrowserWallet) {
       handleConnect('walletconnect');
     } else {
-      // 显示选择模态框
       setShowModal(true);
     }
   };
@@ -245,21 +226,12 @@ export function ConnectWallet() {
     return <UserMenu />;
   }
 
-  // 在移动端使用优化的钱包连接组件
-  if (isMobileEnhanced()) {
-    return (
-      <div className="wallet-connect-btn">
-        <MobileWalletConnect />
-      </div>
-    );
-  }
-
   return (
     <>
       <button
         onClick={handleButtonClick}
         disabled={isConnecting}
-        className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
       >
         <Wallet size={16} />
         {isConnecting ? t('wallet.connecting') : t('wallet.connect')}
