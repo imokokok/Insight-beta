@@ -74,7 +74,7 @@ vi.mock('@/lib/utils', async () => {
   };
 });
 
-vi.mock('@/components/features/assertion/AssertionList', () => ({
+vi.mock('@/features/assertion/AssertionList', () => ({
   AssertionList: () => <div data-testid="assertion-list">AssertionList</div>,
 }));
 

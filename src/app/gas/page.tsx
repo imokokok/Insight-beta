@@ -4,12 +4,12 @@ import { useState, useEffect } from 'react';
 
 import { RefreshCw, Zap, TrendingUp, Activity, AlertTriangle, History } from 'lucide-react';
 
-import { GasPriceHistoryViewer } from '@/components/features/gas/GasPriceHistoryViewer';
-import { GasPriceTrendChart } from '@/components/features/gas/GasPriceTrendChart';
-import { GasProviderHealthCard } from '@/components/features/gas/GasProviderHealthCard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { GasPriceHistoryViewer } from '@/features/gas/components/GasPriceHistoryViewer';
+import { GasPriceTrendChart } from '@/features/gas/components/GasPriceTrendChart';
+import { GasProviderHealthCard } from '@/features/gas/components/GasProviderHealthCard';
 import {
   useGasPrices,
   useGasPriceTrend,

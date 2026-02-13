@@ -2,8 +2,8 @@
 
 import type { ReactNode } from 'react';
 
-import { GasCacheWarmer } from '@/components/features/gas/GasCacheWarmer';
-import { Onboarding, FirstTimeTour, useFirstTimeTour } from '@/components/features/onboarding';
+import { GasCacheWarmer } from '@/features/gas/components/GasCacheWarmer';
+import { Onboarding, FirstTimeTour, useFirstTimeTour } from '@/features/onboarding/components';
 
 interface ClientComponentsWrapperProps {
   children: ReactNode;

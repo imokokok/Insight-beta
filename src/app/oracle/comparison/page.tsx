@@ -14,9 +14,9 @@
 
 import { useEffect, useState, useCallback, useRef, Suspense, lazy } from 'react';
 
-import { ComparisonControls } from '@/components/features/comparison/ComparisonControls';
 import { ChartSkeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
+import { ComparisonControls } from '@/features/comparison/components/ComparisonControls';
 import { useComparisonData } from '@/hooks/useComparison';
 import { useDebounce } from '@/hooks/useDebounce';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
@@ -42,31 +42,31 @@ import type {
 // ============================================================================
 
 const PriceHeatmap = lazy(() =>
-  import('@/components/features/comparison/PriceHeatmap').then((mod) => ({
+  import('@/features/comparison/components/PriceHeatmap').then((mod) => ({
     default: mod.PriceHeatmap,
   })),
 );
 
 const LatencyAnalysisView = lazy(() =>
-  import('@/components/features/comparison/LatencyAnalysis').then((mod) => ({
+  import('@/features/comparison/components/LatencyAnalysis').then((mod) => ({
     default: mod.LatencyAnalysisView,
   })),
 );
 
 const CostEfficiencyView = lazy(() =>
-  import('@/components/features/comparison/CostEfficiency').then((mod) => ({
+  import('@/features/comparison/components/CostEfficiency').then((mod) => ({
     default: mod.CostEfficiencyView,
   })),
 );
 
 const RealtimeComparisonView = lazy(() =>
-  import('@/components/features/comparison/RealtimeComparison').then((mod) => ({
+  import('@/features/comparison/components/RealtimeComparison').then((mod) => ({
     default: mod.RealtimeComparisonView,
   })),
 );
 
 const VirtualTable = lazy(() =>
-  import('@/components/features/comparison/VirtualTable').then((mod) => ({
+  import('@/features/comparison/components/VirtualTable').then((mod) => ({
     default: mod.VirtualTable,
   })),
 );

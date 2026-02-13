@@ -4,14 +4,6 @@ import { useState, useCallback, useMemo } from 'react';
 
 import { RefreshCw, Filter, Activity, Calendar } from 'lucide-react';
 
-import {
-  CrossChainComparisonCard,
-  CrossChainArbitrageCard,
-  CrossChainDashboardCard,
-  CrossChainPriceChart,
-  CrossChainDeviationChart,
-  CrossChainComparisonBar,
-} from '@/components/features/cross-chain';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -21,6 +13,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  CrossChainComparisonCard,
+  CrossChainArbitrageCard,
+  CrossChainDashboardCard,
+  CrossChainPriceChart,
+  CrossChainDeviationChart,
+  CrossChainComparisonBar,
+} from '@/features/cross-chain';
 import {
   useCrossChainComparison,
   useCrossChainArbitrage,

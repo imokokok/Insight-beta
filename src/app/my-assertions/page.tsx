@@ -21,19 +21,19 @@ import type { Route } from 'next';
 
 // Dynamic imports for heavy components
 const ConnectWallet = lazy(() =>
-  import('@/components/features/wallet/ConnectWallet').then((mod) => ({
+  import('@/features/wallet/components/ConnectWallet').then((mod) => ({
     default: mod.ConnectWallet,
   })),
 );
 
 const AssertionList = lazy(() =>
-  import('@/components/features/assertion/AssertionList').then((mod) => ({
+  import('@/features/assertion/components/AssertionList').then((mod) => ({
     default: mod.AssertionList,
   })),
 );
 
 const UserStatsCard = lazy(() =>
-  import('@/components/features/wallet/UserStatsCard').then((mod) => ({
+  import('@/features/wallet/components/UserStatsCard').then((mod) => ({
     default: mod.UserStatsCard,
   })),
 );

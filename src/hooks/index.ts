@@ -1,3 +1,22 @@
+/**
+ * Hooks Index - 全局 Hooks 导出
+ *
+ * 架构说明：
+ * - 本文件导出全局通用的 hooks
+ * - 业务相关的 hooks 最终会迁移到 features/[domain]/hooks/
+ * - 新功能应使用 Feature-Based 结构
+ *
+ * 分组：
+ * - 核心 Hooks      : 基础功能
+ * - 交互优化 Hooks  : 键盘快捷键、页面优化
+ * - 响应式 Hooks   : 视口、媒体查询
+ * - 性能 Hooks     : 性能监控
+ * - UI Hooks       : 列表、无限滚动
+ * - 业务 Hooks     : 按功能域分组（待迁移）
+ *
+ * @see ../docs/ARCHITECTURE_PLAN.md
+ */
+
 // ==================== 核心 Hooks ====================
 export { useWebSocket, type WebSocketOptions, type WebSocketState } from './useWebSocket';
 
@@ -128,3 +147,19 @@ export {
 
 // Legacy alias for backwards compatibility
 export { useAutoRefresh as useAutoRefreshLegacy } from './useDashboard';
+
+/**
+ * 迁移说明：
+ *
+ * 业务 Hooks 最终将迁移到 features/[domain]/hooks/：
+ * - Oracle Hooks     → features/oracle/hooks/
+ * - Alerts Hooks     → features/alerts/hooks/
+ * - Security Hooks   → features/security/hooks/
+ * - Gas Hooks       → features/gas/hooks/
+ * - Cross-chain     → features/cross-chain/hooks/
+ * - Wallet Hooks    → features/wallet/hooks/
+ * - Dispute Hooks   → features/dispute/hooks/
+ * - Dashboard Hooks → features/dashboard/hooks/
+ *
+ * @see ../docs/ARCHITECTURE_PLAN.md
+ */

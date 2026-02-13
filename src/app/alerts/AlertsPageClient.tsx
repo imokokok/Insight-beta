@@ -15,12 +15,12 @@ import {
   DashboardSection,
   DashboardGrid,
 } from '@/components/dashboard/ProfessionalDashboard';
-import { AlertRulesManager } from '@/components/features/alert/AlertRulesManager';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { RefreshIndicator } from '@/components/ui/RefreshIndicator';
 import { DEBOUNCE_CONFIG } from '@/config/constants';
 import { getRefreshStrategy } from '@/config/refreshStrategy';
+import { AlertRulesManager } from '@/features/alert/components/AlertRulesManager';
 import {
   useIsMobile,
   useOracleIncidents,

@@ -3,10 +3,10 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { PageHeader } from '@/components/common/PageHeader';
-import { AlertHistory, NotificationChannelConfig } from '@/components/features/alerts';
-import type { ChannelConfig } from '@/components/features/alerts';
 import { LoadingOverlay, EmptyAlertsState } from '@/components/ui';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
+import { AlertHistory, NotificationChannelConfig } from '@/features/alert/components';
+import type { ChannelConfig as ChannelConfigType } from '@/features/alert/components/NotificationChannelConfig';
 import { useI18n } from '@/i18n';
 import type { AlertHistoryRecord, ChannelHealthStatus } from '@/services/alert/notificationManager';
 import { logger } from '@/shared/logger';
@@ -21,7 +21,7 @@ export default function NotificationsConfigPage() {
   const { t } = useI18n();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [channels, setChannels] = useState<ChannelConfig[]>([]);
+  const [channels, setChannels] = useState<ChannelConfigType[]>([]);
   const [alerts, setAlerts] = useState<AlertHistoryRecord[]>([]);
   const [channelHealth, setChannelHealth] = useState<ChannelHealthStatus[]>([]);
 
@@ -38,12 +38,16 @@ export default function NotificationsConfigPage() {
       }
 
       // 转换配置为组件格式
-      const channelConfigs: ChannelConfig[] = Object.entries(data.config.channels || {}).map(
+      const channelConfigs: ChannelConfigType[] = Object.entries(data.config.channels || {}).map(
         ([name, config]: [string, unknown]) => ({
+          id: name,
           name,
-          channel: (config as { type: string }).type as ChannelConfig['channel'],
+          channel: (config as { type: string }).type as ChannelConfigType['channel'],
           enabled: true,
-          config: config as ChannelConfig['config'],
+          config: config as ChannelConfigType['config'],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          severity: 'medium',
         }),
       );
 
@@ -74,7 +78,7 @@ export default function NotificationsConfigPage() {
   }, []);
 
   // 保存配置
-  const handleSave = async (newChannels: ChannelConfig[]) => {
+  const handleSave = async (newChannels: ChannelConfigType[]) => {
     const channelsConfig: Record<string, unknown> = {};
     const severityChannels = {
       critical: [] as string[],

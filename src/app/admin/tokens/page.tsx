@@ -1,11 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 
 import { PageHeader } from '@/components/common/PageHeader';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useI18n } from '@/i18n/LanguageProvider';
-import { getUiErrorMessage } from '@/i18n/translations';
 import { fetchApiData, getErrorCode, copyToClipboard, formatTime, cn } from '@/shared/utils';
 
 type AdminRole = 'root' | 'ops' | 'alerts' | 'viewer';
@@ -21,6 +20,62 @@ type AdminTokenPublic = {
 
 type CreateResponse = { token: string; record: AdminTokenPublic };
 
+interface TokensState {
+  items: AdminTokenPublic[];
+  loading: boolean;
+  creating: boolean;
+  revokingId: string | null;
+  error: string | null;
+  newTokenValue: string | null;
+  copied: boolean;
+}
+
+type TokensAction =
+  | { type: 'SET_ITEMS'; payload: AdminTokenPublic[] }
+  | { type: 'SET_LOADING'; payload: boolean }
+  | { type: 'SET_CREATING'; payload: boolean }
+  | { type: 'SET_REVOKING_ID'; payload: string | null }
+  | { type: 'SET_ERROR'; payload: string | null }
+  | { type: 'SET_NEW_TOKEN'; payload: string | null }
+  | { type: 'SET_COPIED'; payload: boolean }
+  | { type: 'RESET_FORM' }
+  | { type: 'CLEAR_ERROR' };
+
+function tokensReducer(state: TokensState, action: TokensAction): TokensState {
+  switch (action.type) {
+    case 'SET_ITEMS':
+      return { ...state, items: action.payload };
+    case 'SET_LOADING':
+      return { ...state, loading: action.payload };
+    case 'SET_CREATING':
+      return { ...state, creating: action.payload };
+    case 'SET_REVOKING_ID':
+      return { ...state, revokingId: action.payload };
+    case 'SET_ERROR':
+      return { ...state, error: action.payload };
+    case 'SET_NEW_TOKEN':
+      return { ...state, newTokenValue: action.payload };
+    case 'SET_COPIED':
+      return { ...state, copied: action.payload };
+    case 'RESET_FORM':
+      return { ...state, newTokenValue: null, copied: false };
+    case 'CLEAR_ERROR':
+      return { ...state, error: null };
+    default:
+      return state;
+  }
+}
+
+const initialState: TokensState = {
+  items: [],
+  loading: false,
+  creating: false,
+  revokingId: null,
+  error: null,
+  newTokenValue: null,
+  copied: false,
+};
+
 export default function AdminTokensPage() {
   const { t, lang } = useI18n();
   const locale = useMemo(
@@ -30,39 +85,18 @@ export default function AdminTokensPage() {
 
   const [adminToken, setAdminToken] = useState('');
   const [adminActor, setAdminActor] = useState('');
-
-  const [items, setItems] = useState<AdminTokenPublic[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [creating, setCreating] = useState(false);
-  const [revokingId, setRevokingId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
   const [label, setLabel] = useState('');
   const [role, setRole] = useState<AdminRole>('alerts');
 
-  const [newTokenValue, setNewTokenValue] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [state, dispatch] = useReducer(tokensReducer, initialState);
+
+  const tokenRef = useRef(adminToken);
+  const actorRef = useRef(adminActor);
+  const headersRef = useRef<Record<string, string>>({});
 
   useEffect(() => {
-    const saved = window.sessionStorage.getItem('oracle-monitor_admin_token');
-    if (saved) setAdminToken(saved);
-    const savedActor = window.sessionStorage.getItem('oracle-monitor_admin_actor');
-    if (savedActor) setAdminActor(savedActor);
-  }, []);
-
-  useEffect(() => {
-    const trimmed = adminToken.trim();
-    if (trimmed) window.sessionStorage.setItem('oracle-monitor_admin_token', trimmed);
-    else window.sessionStorage.removeItem('oracle-monitor_admin_token');
-  }, [adminToken]);
-
-  useEffect(() => {
-    const trimmed = adminActor.trim();
-    if (trimmed) window.sessionStorage.setItem('oracle-monitor_admin_actor', trimmed);
-    else window.sessionStorage.removeItem('oracle-monitor_admin_actor');
-  }, [adminActor]);
-
-  const buildHeaders = useCallback(() => {
+    tokenRef.current = adminToken;
+    actorRef.current = adminActor;
     const headers: Record<string, string> = {
       'content-type': 'application/json',
     };
@@ -70,84 +104,105 @@ export default function AdminTokensPage() {
     if (token) headers['x-admin-token'] = token;
     const actor = adminActor.trim();
     if (actor) headers['x-admin-actor'] = actor;
-    return headers;
-  }, [adminActor, adminToken]);
+    headersRef.current = headers;
+  }, [adminToken, adminActor]);
+
+  const canManage = useMemo(() => adminToken.trim().length > 0, [adminToken]);
 
   const load = useCallback(async () => {
-    const token = adminToken.trim();
+    const token = tokenRef.current.trim();
     if (!token) {
-      setItems([]);
-      setError(null);
-      setLoading(false);
+      dispatch({ type: 'SET_ITEMS', payload: [] });
+      dispatch({ type: 'SET_ERROR', payload: null });
+      dispatch({ type: 'SET_LOADING', payload: false });
       return;
     }
-    setLoading(true);
-    setError(null);
+    dispatch({ type: 'SET_LOADING', payload: true });
+    dispatch({ type: 'CLEAR_ERROR' });
     try {
       const data = await fetchApiData<{ items: AdminTokenPublic[] }>('/api/admin/tokens', {
         method: 'GET',
-        headers: buildHeaders(),
+        headers: headersRef.current,
       });
-      setItems(data.items);
+      dispatch({ type: 'SET_ITEMS', payload: data.items });
     } catch (error: unknown) {
-      setError(getErrorCode(error));
+      dispatch({ type: 'SET_ERROR', payload: getErrorCode(error) });
     } finally {
-      setLoading(false);
+      dispatch({ type: 'SET_LOADING', payload: false });
     }
-  }, [adminToken, buildHeaders]);
+  }, []);
 
   useEffect(() => {
     if (!adminToken.trim()) return;
-    void load();
+    const timer = setTimeout(() => {
+      load();
+    }, 0);
+    return () => clearTimeout(timer);
   }, [adminToken, load]);
 
-  const createToken = async () => {
-    setCreating(true);
-    setError(null);
-    setNewTokenValue(null);
-    setCopied(false);
+  const createToken = useCallback(async () => {
+    dispatch({ type: 'SET_CREATING', payload: true });
+    dispatch({ type: 'CLEAR_ERROR' });
+    dispatch({ type: 'RESET_FORM' });
     try {
       const body = { label: label.trim(), role };
       const data = await fetchApiData<CreateResponse>('/api/admin/tokens', {
         method: 'POST',
-        headers: buildHeaders(),
+        headers: headersRef.current,
         body: JSON.stringify(body),
       });
-      setNewTokenValue(data.token);
+      dispatch({ type: 'SET_NEW_TOKEN', payload: data.token });
       setLabel('');
       await load();
     } catch (error: unknown) {
-      setError(getErrorCode(error));
+      dispatch({ type: 'SET_ERROR', payload: getErrorCode(error) });
     } finally {
-      setCreating(false);
+      dispatch({ type: 'SET_CREATING', payload: false });
     }
-  };
+  }, [label, role, load]);
 
-  const revoke = async (id: string) => {
-    setRevokingId(id);
-    setError(null);
-    try {
-      await fetchApiData<{ ok: true }>(`/api/admin/tokens?id=${encodeURIComponent(id)}`, {
-        method: 'DELETE',
-        headers: buildHeaders(),
-      });
-      await load();
-    } catch (error: unknown) {
-      setError(getErrorCode(error));
-    } finally {
-      setRevokingId(null);
+  const revoke = useCallback(
+    async (id: string) => {
+      dispatch({ type: 'SET_REVOKING_ID', payload: id });
+      dispatch({ type: 'CLEAR_ERROR' });
+      try {
+        await fetchApiData<{ ok: true }>(`/api/admin/tokens?id=${encodeURIComponent(id)}`, {
+          method: 'DELETE',
+          headers: headersRef.current,
+        });
+        await load();
+      } catch (error: unknown) {
+        dispatch({ type: 'SET_ERROR', payload: getErrorCode(error) });
+      } finally {
+        dispatch({ type: 'SET_REVOKING_ID', payload: null });
+      }
+    },
+    [load],
+  );
+
+  const handleCopy = useCallback(async () => {
+    if (!state.newTokenValue) return;
+    const ok = await copyToClipboard(state.newTokenValue);
+    dispatch({ type: 'SET_COPIED', payload: ok });
+    if (ok) {
+      setTimeout(() => dispatch({ type: 'SET_COPIED', payload: false }), 1200);
     }
-  };
+  }, [state.newTokenValue]);
 
-  const canManage = adminToken.trim().length > 0;
+  const errorMessage = useMemo(() => {
+    if (!state.error) return null;
+    const errorKey = `errors.${state.error}`;
+    const translated = t(errorKey);
+    return translated === errorKey ? state.error : translated;
+  }, [state.error, t]);
 
   return (
     <div className="space-y-6 pb-16">
       <PageHeader title={t('adminTokens.title')} description={t('adminTokens.description')} />
 
-      {error && (
+      {errorMessage && (
         <div className="rounded-2xl border border-rose-100 bg-rose-50/50 p-4 text-sm text-rose-700 shadow-sm">
-          {getUiErrorMessage(error, t)}
+          {errorMessage}
         </div>
       )}
 
@@ -219,38 +274,34 @@ export default function AdminTokensPage() {
             <button
               type="button"
               onClick={createToken}
-              disabled={!canManage || creating || label.trim().length === 0}
+              disabled={!canManage || state.creating || label.trim().length === 0}
               className="w-full rounded-xl bg-gradient-to-r from-primary-600 to-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-primary-500/20 disabled:opacity-60"
             >
-              {creating ? t('common.loading') : t('adminTokens.create')}
+              {state.creating ? t('common.loading') : t('adminTokens.create')}
             </button>
 
-            {newTokenValue && (
+            {state.newTokenValue && (
               <div className="space-y-2 rounded-xl border border-primary/10 bg-white/50 p-3">
                 <div className="text-xs font-semibold text-gray-500">
                   {t('adminTokens.tokenValue')}
                 </div>
                 <div className="flex items-center gap-2">
                   <input
-                    value={newTokenValue}
+                    value={state.newTokenValue}
                     readOnly
                     className="h-9 flex-1 rounded-lg border-none bg-white/70 px-3 font-mono text-xs text-[var(--foreground)] shadow-sm"
                   />
                   <button
                     type="button"
-                    onClick={async () => {
-                      const ok = await copyToClipboard(newTokenValue);
-                      setCopied(ok);
-                      if (ok) setTimeout(() => setCopied(false), 1200);
-                    }}
+                    onClick={handleCopy}
                     className={cn(
                       'h-9 rounded-lg px-3 text-xs font-semibold shadow-sm ring-1',
-                      copied
+                      state.copied
                         ? 'bg-emerald-50 text-emerald-700 ring-emerald-100'
                         : 'text-primary-dark ring-primary100 bg-white hover:bg-primary/5',
                     )}
                   >
-                    {copied ? t('common.copied') : t('common.copyHash')}
+                    {state.copied ? t('common.copied') : t('common.copyHash')}
                   </button>
                 </div>
               </div>
@@ -267,21 +318,21 @@ export default function AdminTokensPage() {
               <button
                 type="button"
                 onClick={load}
-                disabled={loading}
+                disabled={state.loading}
                 className="text-primary-darker ring-primary100 rounded-xl bg-white/60 px-4 py-2 text-sm font-semibold shadow-sm ring-1 hover:bg-white disabled:opacity-60"
               >
-                {loading ? t('common.loading') : t('audit.refresh')}
+                {state.loading ? t('common.loading') : t('audit.refresh')}
               </button>
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            {items.length === 0 && !loading && (
+            {state.items.length === 0 && !state.loading && (
               <div className="text-primary-dark/70 rounded-2xl border border-primary/10 bg-white/50 p-6 text-sm shadow-sm">
                 {t('common.noData')}
               </div>
             )}
 
-            {items.map((it) => (
+            {state.items.map((it) => (
               <div key={it.id} className="rounded-xl border border-primary/10 bg-white/50 p-3">
                 <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                   <div className="space-y-1">
@@ -304,10 +355,10 @@ export default function AdminTokensPage() {
                     <button
                       type="button"
                       onClick={() => revoke(it.id)}
-                      disabled={!canManage || !!it.revokedAt || revokingId === it.id}
+                      disabled={!canManage || !!it.revokedAt || state.revokingId === it.id}
                       className="rounded-lg bg-white px-3 py-2 text-xs font-semibold text-rose-700 shadow-sm ring-1 ring-rose-100 hover:bg-rose-50 disabled:opacity-60"
                     >
-                      {revokingId === it.id ? t('common.loading') : t('adminTokens.revoke')}
+                      {state.revokingId === it.id ? t('common.loading') : t('adminTokens.revoke')}
                     </button>
                   </div>
                 </div>

@@ -11,18 +11,18 @@ export const revalidate = 3600; // 1 hour
 export const fetchCache = 'force-cache';
 
 import { StatCard } from '@/components/common';
-import {
-  FeedTable,
-  commonFeedColumns,
-  type FeedColumn,
-} from '@/components/features/protocol/FeedTable';
-import type { ProtocolComparisonData } from '@/components/features/protocol/ProtocolComparison';
-import { ProtocolPageLayout } from '@/components/features/protocol/ProtocolPageLayout';
 import { Button, StatusBadge, RefreshStrategyVisualizer } from '@/components/ui';
 import { Card, CardContent } from '@/components/ui/card';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { Progress } from '@/components/ui/progress';
 import { ChartSkeleton } from '@/components/ui/skeleton';
+import {
+  FeedTable,
+  commonFeedColumns,
+  type FeedColumn,
+} from '@/features/protocol/components/FeedTable';
+import type { ProtocolComparisonData } from '@/features/protocol/components/ProtocolComparison';
+import { ProtocolPageLayout } from '@/features/protocol/components/ProtocolPageLayout';
 import { useAutoRefreshWithStats } from '@/hooks/useAutoRefreshWithStats';
 import { getProtocolConfig } from '@/lib/protocol-config';
 import { logger } from '@/shared/logger';
@@ -47,19 +47,19 @@ const convertToComparisonData = (protocols: OracleProtocol[]): ProtocolCompariso
 
 // Dynamic imports for heavy components with recharts
 const PriceHistoryChart = lazy(() =>
-  import('@/components/features/protocol').then((mod) => ({
+  import('@/features/protocol').then((mod) => ({
     default: mod.PriceHistoryChart,
   })),
 );
 
 const ProtocolComparison = lazy(() =>
-  import('@/components/features/protocol').then((mod) => ({
+  import('@/features/protocol').then((mod) => ({
     default: mod.ProtocolComparison,
   })),
 );
 
 const PriceAlertSettings = lazy(() =>
-  import('@/components/features/protocol').then((mod) => ({
+  import('@/features/protocol').then((mod) => ({
     default: mod.PriceAlertSettings,
   })),
 );

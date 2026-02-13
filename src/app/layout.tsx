@@ -15,10 +15,10 @@ import { PerformanceMonitor } from '@/components/common/PerformanceMonitor';
 import { ResourceHints } from '@/components/common/ResourceHints';
 import { ServiceWorkerRegister } from '@/components/common/ServiceWorkerRegister';
 import { SmartPreloader } from '@/components/common/SmartPreloader';
-import { PWAInstallPrompt } from '@/components/features/pwa';
-import { MobileChainSwitcher } from '@/components/features/wallet/MobileChainSwitcher';
 import { MobileLayout } from '@/components/layout/MobileLayout';
 import { WalletProvider } from '@/contexts/WalletContext';
+import { PWAInstallPrompt } from '@/features/pwa/components/PWAInstallPrompt';
+import { MobileChainSwitcher } from '@/features/wallet/components/MobileChainSwitcher';
 import { LanguageProvider } from '@/i18n/LanguageProvider';
 import {
   detectLangFromAcceptLanguage,
@@ -42,7 +42,7 @@ const LanguageSwitcher = lazy(() =>
   })),
 );
 const SyncStatus = lazy(() =>
-  import('@/components/features/oracle/SyncStatus').then((mod) => ({
+  import('@/features/oracle/components/SyncStatus').then((mod) => ({
     default: mod.SyncStatus,
   })),
 );

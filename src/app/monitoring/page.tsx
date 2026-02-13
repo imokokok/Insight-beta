@@ -4,7 +4,7 @@
  * 展示系统监控状态和告警配置
  */
 
-import { MonitoringDashboard } from '@/components/features/monitoring/MonitoringDashboard';
+import { MonitoringDashboard } from '@/features/monitoring/components/MonitoringDashboard';
 
 import type { Metadata } from 'next';
 

@@ -36,7 +36,7 @@ export {
   LoadingOverlay,
 } from './EnhancedSkeleton';
 
-// Enhanced Empty States - 增强版空状态
+// Enhanced Empty States - 增强版空状态（直接从common导入）
 export {
   EnhancedEmptyState,
   EmptySearchState,
@@ -52,7 +52,7 @@ export {
   EmptyPriceDataState,
   EmptyEventsState,
   EmptyFirstItemState,
-} from './EnhancedEmptyState';
+} from '@/components/common/EmptyState';
 
 // 响应式组件
 export { ResponsiveContainer, Show, Hide } from './ResponsiveContainer';

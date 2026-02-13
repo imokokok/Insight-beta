@@ -6,8 +6,8 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { FadeIn, StaggerContainer, StaggerItem } from '@/components/common/AnimatedContainer';
 import { PageHeader } from '@/components/common/PageHeader';
-import { AssertionList } from '@/components/features/assertion/AssertionList';
 import { EmptyWatchlistState } from '@/components/ui';
+import { AssertionList } from '@/features/assertion/components/AssertionList';
 import { useInfiniteList, useWatchlist, type BaseResponse, useIsMobile } from '@/hooks';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n/LanguageProvider';

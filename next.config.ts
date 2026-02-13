@@ -246,9 +246,16 @@ const nextConfig: NextConfig = {
       process: false,
     };
 
+    // 客户端打包时排除服务器端专用库
+    if (!isServer) {
+      config.externals = [...(config.externals || []), 'pg', 'pg-native'];
+    }
+
     // 添加 alias 避免重复模块
     config.resolve.alias = {
       ...config.resolve.alias,
+      // 避免 Solana 库被打包到客户端
+      '@solana/web3.js': false,
     };
 
     // Tree-shaking 和代码分割优化

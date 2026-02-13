@@ -7,10 +7,10 @@ import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigat
 import { ExternalLink, LayoutGrid, List as ListIcon } from 'lucide-react';
 
 import { CopyButton } from '@/components/common/CopyButton';
-import { AssertionList } from '@/components/features/assertion/AssertionList';
-import { DisputeList } from '@/components/features/dispute/DisputeList';
-import { AddressAvatar } from '@/components/features/wallet/AddressAvatar';
-import { UserStatsCard } from '@/components/features/wallet/UserStatsCard';
+import { AssertionList } from '@/features/assertion/components/AssertionList';
+import { DisputeList } from '@/features/dispute/components/DisputeList';
+import { AddressAvatar } from '@/features/wallet/components/AddressAvatar';
+import { UserStatsCard } from '@/features/wallet/components/UserStatsCard';
 import { useDisputes, useOracleData, useUserStats } from '@/hooks';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage } from '@/i18n/translations';
