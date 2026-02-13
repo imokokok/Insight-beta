@@ -20,7 +20,6 @@ export { useWebSocket, type WebSocketOptions, type WebSocketState } from './useW
 
 export { useDebounce } from './useDebounce';
 export { useAutoRefresh } from './useAutoRefresh';
-export { useAutoRefreshWithStats } from './useAutoRefreshWithStats';
 
 // ==================== 交互优化 Hooks ====================
 export {
@@ -37,13 +36,7 @@ export { useViewport } from './useViewport';
 
 export {
   useMediaQuery,
-  useIsMobile,
-  useIsTablet,
-  useIsDesktop,
   useIsLargeScreen,
-  useDeviceType,
-  useViewportSize,
-  type DeviceType,
 } from './useMediaQuery';
 
 // ==================== 无障碍 Hooks ====================
@@ -94,7 +87,6 @@ export {
   useGasPriceStatistics,
   useGasPriceTrend,
   useGasPriceHealth,
-  useWarmupGasCache,
   type GasPriceData,
   type GasPriceHistoryEntry,
   type GasPriceStatistics,

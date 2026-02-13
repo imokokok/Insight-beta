@@ -6,7 +6,6 @@
 
 // 原有导出
 export * from './ProfessionalChart';
-export * from './MobileChartWrapper';
 
 // 新增增强组件
 export {

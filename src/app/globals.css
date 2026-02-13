@@ -8,54 +8,57 @@
    ============================================================================ */
 
 :root {
-  /* 安全区域变量 - 用于刘海屏手机 */
-  --sat: env(safe-area-inset-top);
-  --sar: env(safe-area-inset-right);
-  --sab: env(safe-area-inset-bottom);
-  --sal: env(safe-area-inset-left);
+  /* ============================================================================
+     颜色系统 - 专业预言机监控平台配色
+     主色调: 蓝色 (#3B82F6) + 青色 (#06B6D4)
+     背景: 深蓝黑 (#0F172A)
+     ============================================================================ */
 
-  /* 颜色系统 - 使用 RGB 格式以便 Tailwind 透明度支持 */
-  --color-bg: 250 250 250;
-  --color-foreground: 24 24 27;
-  --color-card: 255 255 255;
-  --color-card-foreground: 24 24 27;
-  --color-popover: 255 255 255;
-  --color-popover-foreground: 24 24 27;
-  --color-primary: 139 92 246;
+  /* 基础颜色 - RGB 格式以便 Tailwind 透明度支持 */
+  --background: 15 23 42;
+  --foreground: 248 250 252;
+  --color-bg: 15 23 42;
+  --color-foreground: 248 250 252;
+  --color-card: 30 41 59;
+  --color-card-foreground: 248 250 252;
+  --color-popover: 30 41 59;
+  --color-popover-foreground: 248 250 252;
+
+  /* 主色 - 蓝色系 (Blue) */
+  --color-primary: 59 130 246;
   --color-primary-foreground: 255 255 255;
-  --color-primary-50: 245 243 255;
-  --color-primary-100: 237 233 254;
-  --color-primary-200: 221 214 254;
-  --color-primary-300: 196 181 253;
-  --color-primary-400: 167 139 250;
-  --color-primary-500: 139 92 246;
-  --color-primary-600: 124 58 237;
-  --color-primary-700: 109 40 217;
-  --color-primary-800: 91 33 182;
-  --color-primary-900: 76 29 149;
-  --color-primary-950: 46 16 101;
-  --color-secondary: 244 244 245;
-  --color-secondary-foreground: 24 24 27;
-  --color-muted: 244 244 245;
-  --color-muted-foreground: 113 113 122;
-  --color-accent: 244 244 245;
-  --color-accent-foreground: 24 24 27;
-  --color-destructive: 239 68 68;
-  --color-destructive-foreground: 250 250 250;
-  --color-border: 139 92 246;
-  --color-input: 228 228 231;
-  --color-ring: 139 92 246;
+  --color-primary-50: 239 246 255;
+  --color-primary-100: 219 234 254;
+  --color-primary-200: 191 219 254;
+  --color-primary-300: 147 197 253;
+  --color-primary-400: 96 165 250;
+  --color-primary-500: 59 130 246;
+  --color-primary-600: 37 99 235;
+  --color-primary-700: 29 78 216;
+  --color-primary-800: 30 64 175;
+  --color-primary-900: 30 58 138;
 
-  /* 主色调变体 - 保留兼容性 */
-  --primary: rgb(var(--color-primary));
-  --primary-foreground: rgb(var(--color-primary-foreground));
-  --primary-light: rgb(var(--color-primary-400));
-  --primary-dark: rgb(var(--color-primary-600));
-  --primary-darker: rgb(var(--color-primary-700));
-  --primary-darkest: rgb(var(--color-primary-900));
-  --primary-lightest: rgb(var(--color-primary-50));
+  /* 强调色 - 青色系 (Cyan) */
+  --color-accent: 6 182 212;
+  --color-accent-foreground: 255 255 255;
+  --color-accent-50: 236 254 255;
+  --color-accent-100: 207 250 254;
+  --color-accent-200: 165 243 252;
+  --color-accent-300: 103 232 249;
+  --color-accent-400: 34 211 238;
+  --color-accent-500: 6 182 212;
+  --color-accent-600: 8 145 178;
+  --color-accent-700: 21 94 117;
+  --color-accent-800: 22 78 99;
+  --color-accent-900: 22 63 81;
 
-  /* 语义化颜色 - 使用 RGB 格式 */
+  /* 次要色 - 灰色系 */
+  --color-secondary: 51 65 85;
+  --color-secondary-foreground: 248 250 252;
+  --color-muted: 51 65 85;
+  --color-muted-foreground: 148 163 184;
+
+  /* 语义化颜色 - 数据状态 */
   --success: 34 197 94;
   --success-light: 220 252 231;
   --success-dark: 21 128 61;
@@ -69,11 +72,16 @@
   --info-light: 219 234 254;
   --info-dark: 29 78 216;
 
+  /* 边框和输入 */
+  --color-border: 51 65 85;
+  --color-input: 51 65 85;
+  --color-ring: 59 130 246;
+
   /* 玻璃拟态 */
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-bg-light: rgba(255, 255, 255, 0.5);
-  --glass-border: rgba(255, 255, 255, 0.6);
-  --glass-shadow: 0 8px 20px -4px rgba(139, 92, 246, 0.1), 0 6px 12px -6px rgba(139, 92, 246, 0.1);
+  --glass-bg: rgba(30, 41, 59, 0.7);
+  --glass-bg-light: rgba(30, 41, 59, 0.5);
+  --glass-border: rgba(148, 163, 184, 0.2);
+  --glass-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.3), 0 6px 12px -6px rgba(0, 0, 0, 0.2);
 
   /* 动画 */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -110,7 +118,7 @@ body::before {
   position: fixed;
   inset: 0;
   z-index: -30;
-  background-color: var(--background);
+  background: linear-gradient(180deg, rgb(var(--color-bg)) 0%, rgb(var(--color-card)) 100%);
 }
 
 /* 网格渐变背景 */
@@ -119,9 +127,9 @@ body::before {
   inset: 0;
   z-index: -20;
   background: 
-    radial-gradient(circle at 0% 0%, hsla(253, 16%, 7%, 0.03) 0, transparent 50%),
-    radial-gradient(circle at 50% 0%, hsla(225, 39%, 30%, 0.03) 0, transparent 50%),
-    radial-gradient(circle at 100% 0%, hsla(339, 49%, 30%, 0.03) 0, transparent 50%);
+    radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.08) 0, transparent 50%),
+    radial-gradient(circle at 50% 0%, rgba(6, 182, 212, 0.08) 0, transparent 50%),
+    radial-gradient(circle at 100% 0%, rgba(59, 130, 246, 0.05) 0, transparent 50%);
   pointer-events: none;
 }
 
@@ -168,7 +176,7 @@ body::before {
   top: -20%;
   height: 60%;
   width: 60%;
-  background: linear-gradient(to bottom right, rgba(253, 224, 71, 0.3), rgba(251, 191, 36, 0.3));
+  background: linear-gradient(to bottom right, rgba(59, 130, 246, 0.15), rgba(6, 182, 212, 0.15));
   animation-delay: 0s;
 }
 
@@ -177,7 +185,7 @@ body::before {
   top: 10%;
   height: 60%;
   width: 50%;
-  background: linear-gradient(to bottom right, rgba(103, 232, 249, 0.3), rgba(96, 165, 250, 0.3));
+  background: linear-gradient(to bottom right, rgba(6, 182, 212, 0.15), rgba(59, 130, 246, 0.15));
   animation-delay: 2s;
 }
 
@@ -186,7 +194,7 @@ body::before {
   left: -10%;
   height: 60%;
   width: 50%;
-  background: linear-gradient(to bottom right, rgba(244, 114, 182, 0.3), rgba(168, 85, 247, 0.3));
+  background: linear-gradient(to bottom right, rgba(34, 197, 94, 0.1), rgba(6, 182, 212, 0.1));
   animation-delay: 4s;
 }
 
@@ -195,7 +203,7 @@ body::before {
   right: 10%;
   height: 50%;
   width: 50%;
-  background: linear-gradient(to bottom right, rgba(163, 230, 53, 0.3), rgba(52, 211, 153, 0.3));
+  background: linear-gradient(to bottom right, rgba(59, 130, 246, 0.1), rgba(34, 197, 94, 0.1));
   animation-delay: 6s;
 }
 
@@ -212,32 +220,38 @@ body::before {
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(30, 41, 59, 0.6);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.05), 0 2px 4px -2px rgba(139, 92, 246, 0.05);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
   transition: all var(--transition-normal);
 }
 
 .glass-card:hover {
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 10px 15px -3px rgba(139, 92, 246, 0.15), 0 4px 6px -4px rgba(139, 92, 246, 0.1);
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
   transform: translateY(-2px);
 }
 
 .glass-input {
-  background: var(--glass-bg-light);
+  background: rgba(15, 23, 42, 0.6);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  color: rgb(var(--color-foreground));
   transition: all var(--transition-fast);
 }
 
+.glass-input::placeholder {
+  color: rgba(148, 163, 184, 0.5);
+}
+
 .glass-input:focus {
-  background: rgba(255, 255, 255, 0.8);
-  border-color: rgba(139, 92, 246, 0.3);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  background: rgba(15, 23, 42, 0.8);
+  border-color: rgba(59, 130, 246, 0.4);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
 /* ============================================================================
@@ -251,14 +265,14 @@ body::before {
 
   .btn-primary {
     @apply btn;
-    background-color: var(--primary);
-    color: var(--primary-foreground);
-    box-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.2), 0 2px 4px -2px rgba(139, 92, 246, 0.2);
+    background-color: rgb(var(--color-primary));
+    color: rgb(var(--color-primary-foreground));
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3), 0 2px 4px -2px rgba(59, 130, 246, 0.2);
   }
 
   .btn-primary:hover {
-    background-color: var(--primary-dark);
-    box-shadow: 0 10px 15px -3px rgba(139, 92, 246, 0.3), 0 4px 6px -4px rgba(139, 92, 246, 0.3);
+    background-color: rgb(var(--color-primary-600));
+    box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.4), 0 4px 6px -4px rgba(59, 130, 246, 0.3);
     transform: translateY(-1px);
   }
 
@@ -267,20 +281,20 @@ body::before {
   }
 
   .btn-primary:focus {
-    --tw-ring-color: var(--primary);
+    --tw-ring-color: rgb(var(--color-primary));
   }
 
   .btn-secondary {
     @apply btn;
-    background-color: var(--secondary);
-    color: var(--secondary-foreground);
-    border: 1px solid var(--border);
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+    background-color: rgb(var(--color-secondary));
+    color: rgb(var(--color-secondary-foreground));
+    border: 1px solid rgb(var(--color-border));
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2);
   }
 
   .btn-secondary:hover {
-    background-color: #e4e4e7;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    background-color: rgb(var(--color-muted));
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
     transform: translateY(-1px);
   }
 
@@ -291,30 +305,30 @@ body::before {
   .btn-ghost {
     @apply btn;
     background-color: transparent;
-    color: #71717a;
+    color: rgb(var(--color-muted-foreground));
   }
 
   .btn-ghost:hover {
-    background-color: var(--secondary);
-    color: var(--foreground);
+    background-color: rgb(var(--color-muted));
+    color: rgb(var(--color-foreground));
   }
 
   .btn-ghost:focus {
-    --tw-ring-color: #71717a;
+    --tw-ring-color: rgb(var(--color-muted-foreground));
   }
 
   .btn-destructive {
     @apply btn;
-    background-color: var(--destructive);
-    color: var(--destructive-foreground);
+    background-color: rgb(var(--error));
+    color: rgb(250, 250, 250);
   }
 
   .btn-destructive:hover {
-    background-color: var(--error-dark);
+    background-color: rgb(var(--error-dark));
   }
 
   .btn-destructive:focus {
-    --tw-ring-color: var(--destructive);
+    --tw-ring-color: rgb(var(--error));
   }
 }
 
@@ -324,12 +338,14 @@ body::before {
 
 @layer components {
   .card {
-    @apply rounded-xl border bg-white shadow-sm transition-all duration-200;
-    border-color: var(--border);
+    @apply rounded-xl border transition-all duration-200;
+    background-color: rgb(var(--color-card));
+    border-color: rgb(var(--color-border));
+    color: rgb(var(--color-card-foreground));
   }
 
   .card:hover {
-    box-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.1), 0 2px 4px -2px rgba(139, 92, 246, 0.1);
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.15), 0 2px 4px -2px rgba(59, 130, 246, 0.1);
   }
 
   .card-header {
@@ -338,13 +354,12 @@ body::before {
 
   .card-title {
     @apply text-lg font-semibold leading-none tracking-tight;
-    color: var(--primary-darkest);
+    color: rgb(var(--color-primary-300));
   }
 
   .card-description {
     @apply text-sm;
-    color: var(--primary);
-    opacity: 0.7;
+    color: rgb(var(--color-muted-foreground));
   }
 
   .card-content {
@@ -363,18 +378,18 @@ body::before {
 @layer components {
   .input {
     @apply w-full rounded-lg border px-4 py-2 text-sm transition-all duration-200 focus:outline-none focus:ring-2;
-    border-color: var(--input);
-    background-color: white;
-    color: var(--foreground);
+    border-color: rgb(var(--color-input));
+    background-color: rgb(var(--color-card));
+    color: rgb(var(--color-foreground));
   }
 
   .input::placeholder {
-    color: var(--muted-foreground);
+    color: rgb(var(--color-muted-foreground));
   }
 
   .input:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+    border-color: rgb(var(--color-primary));
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
   }
 
   .label {
@@ -466,60 +481,60 @@ body::before {
    ============================================================================ */
 
 @layer utilities {
-  /* 主色调变体 */
-  .text-primary { color: var(--primary); }
-  .text-primary-light { color: var(--primary-light); }
-  .text-primary-dark { color: var(--primary-dark); }
-  .text-primary-darker { color: var(--primary-darker); }
-  .text-primary-darkest { color: var(--primary-darkest); }
+  /* 主色调变体 - 蓝色系 */
+  .text-primary { color: rgb(var(--color-primary)); }
+  .text-primary-light { color: rgb(var(--color-primary-400)); }
+  .text-primary-dark { color: rgb(var(--color-primary-600)); }
+  .text-primary-darker { color: rgb(var(--color-primary-700)); }
+  .text-primary-darkest { color: rgb(var(--color-primary-900)); }
 
-  .bg-primary { background-color: var(--primary); }
-  .bg-primary-light { background-color: var(--primary-light); }
-  .bg-primary-dark { background-color: var(--primary-dark); }
-  .bg-primary-lightest { background-color: var(--primary-lightest); }
+  .bg-primary { background-color: rgb(var(--color-primary)); }
+  .bg-primary-light { background-color: rgb(var(--color-primary-400)); }
+  .bg-primary-dark { background-color: rgb(var(--color-primary-600)); }
+  .bg-primary-lightest { background-color: rgb(var(--color-primary-50)); }
 
-  .border-primary { border-color: var(--primary); }
-  .border-primary-light { border-color: var(--primary-lightest); }
+  .border-primary { border-color: rgb(var(--color-primary)); }
+  .border-primary-light { border-color: rgb(var(--color-primary-50)); }
 
-  .ring-primary { --ring: var(--primary); }
+  .ring-primary { --ring: rgb(var(--color-primary)); }
 
   /* 主色调透明度变体 */
-  .text-primary\/50 { color: rgba(139, 92, 246, 0.5); }
-  .text-primary\/60 { color: rgba(139, 92, 246, 0.6); }
-  .text-primary\/70 { color: rgba(139, 92, 246, 0.7); }
-  .text-primary\/80 { color: rgba(139, 92, 246, 0.8); }
-  .text-primary\/90 { color: rgba(139, 92, 246, 0.9); }
+  .text-primary\/50 { color: rgba(59, 130, 246, 0.5); }
+  .text-primary\/60 { color: rgba(59, 130, 246, 0.6); }
+  .text-primary\/70 { color: rgba(59, 130, 246, 0.7); }
+  .text-primary\/80 { color: rgba(59, 130, 246, 0.8); }
+  .text-primary\/90 { color: rgba(59, 130, 246, 0.9); }
 
-  .bg-primary\/50 { background-color: rgba(139, 92, 246, 0.5); }
-  .bg-primary\/60 { background-color: rgba(139, 92, 246, 0.6); }
-  .bg-primary\/70 { background-color: rgba(139, 92, 246, 0.7); }
-  .bg-primary\/80 { background-color: rgba(139, 92, 246, 0.8); }
+  .bg-primary\/50 { background-color: rgba(59, 130, 246, 0.5); }
+  .bg-primary\/60 { background-color: rgba(59, 130, 246, 0.6); }
+  .bg-primary\/70 { background-color: rgba(59, 130, 246, 0.7); }
+  .bg-primary\/80 { background-color: rgba(59, 130, 246, 0.8); }
 
   /* 主色调边框透明度变体 */
-  .border-primary\/20 { border-color: rgba(139, 92, 246, 0.2); }
-  .border-primary\/30 { border-color: rgba(139, 92, 246, 0.3); }
-  .border-primary\/40 { border-color: rgba(139, 92, 246, 0.4); }
-  .border-primary\/50 { border-color: rgba(139, 92, 246, 0.5); }
+  .border-primary\/20 { border-color: rgba(59, 130, 246, 0.2); }
+  .border-primary\/30 { border-color: rgba(59, 130, 246, 0.3); }
+  .border-primary\/40 { border-color: rgba(59, 130, 246, 0.4); }
+  .border-primary\/50 { border-color: rgba(59, 130, 246, 0.5); }
 
   /* 主色调 hover 变体 */
-  .hover\:text-primary:hover { color: var(--primary); }
-  .hover\:text-primary-dark:hover { color: var(--primary-dark); }
-  .hover\:bg-primary:hover { background-color: var(--primary); }
-  .hover\:bg-primary\/10:hover { background-color: rgba(139, 92, 246, 0.1); }
-  .hover\:bg-primary\/50:hover { background-color: rgba(139, 92, 246, 0.5); }
-  .hover\:border-primary:hover { border-color: var(--primary); }
+  .hover\:text-primary:hover { color: rgb(var(--color-primary)); }
+  .hover\:text-primary-dark:hover { color: rgb(var(--color-primary-600)); }
+  .hover\:bg-primary:hover { background-color: rgb(var(--color-primary)); }
+  .hover\:bg-primary\/10:hover { background-color: rgba(59, 130, 246, 0.1); }
+  .hover\:bg-primary\/50:hover { background-color: rgba(59, 130, 246, 0.5); }
+  .hover\:border-primary:hover { border-color: rgb(var(--color-primary)); }
 
   /* 主色调 focus 变体 */
-  .focus\:text-primary:focus { color: var(--primary); }
-  .focus\:bg-primary:focus { background-color: var(--primary); }
-  .focus\:border-primary:focus { border-color: var(--primary); }
-  .focus\:ring-primary:focus { --ring: var(--primary); }
-  .focus\:ring-primary\/20:focus { --ring: rgba(139, 92, 246, 0.2); }
+  .focus\:text-primary:focus { color: rgb(var(--color-primary)); }
+  .focus\:bg-primary:focus { background-color: rgb(var(--color-primary)); }
+  .focus\:border-primary:focus { border-color: rgb(var(--color-primary)); }
+  .focus\:ring-primary:focus { --ring: rgb(var(--color-primary)); }
+  .focus\:ring-primary\/20:focus { --ring: rgba(59, 130, 246, 0.2); }
 
   /* 主色调占位符变体 */
-  .placeholder\:text-primary\/30::placeholder { color: rgba(139, 92, 246, 0.3); }
-  .placeholder\:text-primary\/40::placeholder { color: rgba(139, 92, 246, 0.4); }
-  .placeholder\:text-primary\/50::placeholder { color: rgba(139, 92, 246, 0.5); }
+  .placeholder\:text-primary\/30::placeholder { color: rgba(59, 130, 246, 0.3); }
+  .placeholder\:text-primary\/40::placeholder { color: rgba(59, 130, 246, 0.4); }
+  .placeholder\:text-primary\/50::placeholder { color: rgba(59, 130, 246, 0.5); }
 
   /* 滚动条样式 */
   .scrollbar-thin {
@@ -829,7 +844,7 @@ body::before {
 
 .transition-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 10px 40px -10px rgba(139, 92, 246, 0.2);
+  box-shadow: 0 10px 40px -10px rgba(59, 130, 246, 0.25);
 }
 
 .transition-card:active {
@@ -901,7 +916,7 @@ body::before {
 
 .hover-lift:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 24px -8px rgba(139, 92, 246, 0.2);
+  box-shadow: 0 12px 24px -8px rgba(59, 130, 246, 0.25);
 }
 
 /* 按压效果 */
@@ -959,10 +974,10 @@ body::before {
 /* 脉冲发光 */
 @keyframes pulseGlow {
   0%, 100% {
-    box-shadow: 0 0 5px rgba(139, 92, 246, 0.5);
+    box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
   }
   50% {
-    box-shadow: 0 0 20px rgba(139, 92, 246, 0.8);
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
   }
 }
 
@@ -1165,237 +1180,12 @@ body::before {
   }
 }
 
-@media (min-width: 769px) {
-  .show-mobile {
-    display: none !important;
-  }
-}
-
-/* 移动端安全区域 */
-.pb-safe {
-  padding-bottom: max(env(safe-area-inset-bottom), 8px);
-}
-
-.pt-safe {
-  padding-top: max(env(safe-area-inset-top), 8px);
-}
-
-.pl-safe {
-  padding-left: max(env(safe-area-inset-left), 8px);
-}
-
-.pr-safe {
-  padding-right: max(env(safe-area-inset-right), 8px);
-}
-
-/* 移动端底部导航高度补偿 */
-.pb-nav {
-  padding-bottom: calc(64px + env(safe-area-inset-bottom));
-}
-
-/* 触摸优化 */
-@media (hover: none) and (pointer: coarse) {
-  .touch-manipulation {
-    touch-action: manipulation;
-  }
-  
-  .touch-pan-y {
-    touch-action: pan-y;
-  }
-
-  .touch-pan-x {
-    touch-action: pan-x;
-  }
-
-  .touch-pan-xy {
-    touch-action: pan-x pan-y;
-  }
-
-  .touch-gestures {
-    touch-action: pan-x pan-y pinch-zoom;
-  }
-
-  .touch-auto {
-    touch-action: auto;
-  }
-  
-  button,
-  [role="button"],
-  a,
-  input,
-  select,
-  textarea {
-    touch-action: manipulation;
-  }
-}
-
-/* 横屏适配 */
-@media (orientation: landscape) and (max-height: 500px) {
-  .landscape-compact {
-    padding-top: max(env(safe-area-inset-top), 4px);
-    padding-bottom: max(env(safe-area-inset-bottom), 4px);
-  }
-  
-  .landscape-hide {
-    display: none !important;
-  }
-
-  .landscape-reduce-padding {
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
-  }
-
-  .landscape-reduce-gap {
-    gap: 0.5rem;
-  }
-
-  .landscape-scroll-x {
-    overflow-x: auto;
-    overflow-y: hidden;
-    white-space: nowrap;
-  }
-
-  .landscape-flex-row {
-    flex-direction: row !important;
-  }
-}
-
-@media (orientation: landscape) and (max-height: 400px) {
-  .landscape-extra-compact {
-    padding-top: 2px;
-    padding-bottom: 2px;
-  }
-}
-
-/* 移动端滚动优化 */
-.scroll-smooth-mobile {
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
-}
-
-/* 防止文本缩放 */
-@media screen and (max-width: 768px) {
-  html {
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-  }
-}
-
-/* ============================================================================
-   移动端 Web3 优化
-   ============================================================================ */
-
-/* 动态视口高度 - 解决 100vh 问题 */
-.h-screen-dynamic {
-  height: 100vh;
-  height: calc(var(--vh, 1vh) * 100);
-}
-
-.min-h-screen-dynamic {
-  min-height: 100vh;
-  min-height: calc(var(--vh, 1vh) * 100);
-}
-
-/* 钱包弹窗时的页面锁定 */
-body.wallet-popup-open {
-  position: fixed;
-  width: 100%;
-  overflow: hidden;
-}
-
-/* 键盘打开时的底部间距 */
-.keyboard-open .pb-keyboard {
-  padding-bottom: var(--keyboard-offset, 300px);
-}
-
-/* 移动端钱包连接按钮优化 */
-@media (hover: none) and (pointer: coarse) {
-  .wallet-connect-btn {
-    min-height: 48px;
-    padding: 12px 24px;
-  }
-  
-  .wallet-connect-btn:active {
-    transform: scale(0.98);
-  }
-}
-
-/* 移动端 Sheet 组件优化 */
-@media (max-width: 768px) {
-  [data-radix-sheet-content] {
-    max-height: 90vh;
-    border-radius: 24px 24px 0 0;
-  }
-  
-  /* 确保 Sheet 在钱包浏览器中正常显示 */
-  .wallet-browser [data-radix-sheet-content] {
-    max-height: 85vh;
-  }
-}
-
-/* 移动端链切换优化 */
-.chain-switcher-mobile {
-  touch-action: pan-y;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* 防止钱包浏览器中的横向滚动 */
-.wallet-browser {
-  overflow-x: hidden;
-}
-
-/* 移动端 Toast 位置调整 */
-@media (max-width: 768px) {
-  [data-radix-toast-viewport] {
-    bottom: calc(80px + env(safe-area-inset-bottom));
-  }
-}
-
-/* 钱包浏览器检测标记 */
-.wallet-metamask .wallet-detect-metamask,
-.wallet-trust .wallet-detect-trust,
-.wallet-tokenpocket .wallet-detect-tokenpocket {
-  display: block !important;
-}
-
-/* 移动端输入框优化 */
-@media (hover: none) and (pointer: coarse) {
-  input, textarea, select {
-    font-size: 16px; /* 防止 iOS 缩放 */
-  }
-  
-  input:focus, textarea:focus, select:focus {
-    font-size: 16px;
-  }
-}
-
-/* 移动端按钮点击反馈 */
-@media (hover: none) and (pointer: coarse) {
-  .btn-mobile-feedback {
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .btn-mobile-feedback::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at center, rgba(255,255,255,0.3) 0%, transparent 70%);
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-  
-  .btn-mobile-feedback:active::after {
-    opacity: 1;
-  }
-}
-
 /* ============================================================================
    焦点样式（无障碍）
    ============================================================================ */
 
 *:focus-visible {
-  outline: 2px solid var(--primary);
+  outline: 2px solid rgb(var(--color-primary));
   outline-offset: 2px;
 }
 
@@ -1415,6 +1205,6 @@ body.wallet-popup-open {
    ============================================================================ */
 
 ::selection {
-  background-color: rgba(139, 92, 246, 0.2);
-  color: var(--foreground);
+  background-color: rgba(59, 130, 246, 0.3);
+  color: rgb(var(--color-foreground));
 }

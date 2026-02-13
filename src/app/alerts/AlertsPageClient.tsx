@@ -19,7 +19,6 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { RefreshIndicator } from '@/components/ui/RefreshIndicator';
 import { DEBOUNCE_CONFIG } from '@/config/constants';
-import { getRefreshStrategy } from '@/config/refreshStrategy';
 import { AlertRulesManager } from '@/features/alert/components/AlertRulesManager';
 import {
   useIsMobile,
@@ -656,9 +655,6 @@ export default function AlertsPageClient() {
   }, [locale, opsMetricsSeries]);
   const hasOpsSeries = opsSeriesChartData.length >= 2;
 
-  // 获取刷新策略配置
-  const alertsStrategy = getRefreshStrategy('alerts-list');
-
   // 计算最后更新时间（基于 loading 状态变化）
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   useEffect(() => {
@@ -689,7 +685,6 @@ export default function AlertsPageClient() {
           <RefreshIndicator
             lastUpdated={lastUpdated}
             isRefreshing={loading}
-            strategy={alertsStrategy}
             onRefresh={refresh}
           />
           <button

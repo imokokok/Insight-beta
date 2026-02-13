@@ -43,11 +43,10 @@ import {
   type StatCardStatus,
 } from '@/components/common/StatCard';
 import { ThreatLevelBadge } from '@/components/security';
-import { EmptySecurityState, LoadingOverlay, RefreshStrategyVisualizer } from '@/components/ui';
+import { EmptySecurityState, LoadingOverlay, RefreshIndicator } from '@/components/ui';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useIsMobile } from '@/hooks';
-import { useAutoRefreshWithStats } from '@/hooks/useAutoRefreshWithStats';
+import { useIsMobile, useAutoRefresh } from '@/hooks';
 import { cn, formatNumber } from '@/shared/utils';
 
 const EnhancedAreaChart = dynamic(
@@ -239,8 +238,8 @@ export default function OptimizedSecurityDashboard() {
     // setStats(data);
   }, []);
 
-  const { isRefreshing, refresh, lastUpdated, strategy, refreshHistory, refreshStats } =
-    useAutoRefreshWithStats({
+  const { isRefreshing, refresh, lastUpdated } =
+    useAutoRefresh({
       pageId: 'security-dashboard',
       fetchFn: fetchSecurityData,
       enabled: true,
@@ -327,16 +326,10 @@ export default function OptimizedSecurityDashboard() {
           icon={<Shield className="h-5 w-5 text-primary" />}
           statusBadge={<ThreatLevelBadge level="high" count={stats.highRiskCount} />}
           refreshControl={
-            <RefreshStrategyVisualizer
-              strategy={strategy}
+            <RefreshIndicator
               lastUpdated={lastUpdated}
               isRefreshing={isRefreshing}
               onRefresh={refresh}
-              refreshHistory={refreshHistory}
-              refreshStats={refreshStats}
-              showHistory={true}
-              showStats={true}
-              compact={isMobile}
             />
           }
           showMobileMenu={false}

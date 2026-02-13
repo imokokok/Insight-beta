@@ -1,13 +1,12 @@
 /**
  * Enhanced Sidebar Navigation
  *
- * 增强型侧边栏导航组件
+ * 增强型侧边栏导航组件 - Web 版本
  * - 可折叠分组
  * - 多级菜单支持
  * - 搜索过滤
  * - 最近访问
  * - 收藏功能
- * - 响应式设计
  */
 
 'use client';
@@ -31,7 +30,6 @@ import {
   History,
   Bookmark,
   X,
-  Menu,
   Activity,
   BarChart3,
   Layers,
@@ -353,7 +351,7 @@ function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
       <item.icon
         className={cn(
           'h-5 w-5 flex-shrink-0 transition-colors',
-          isActive ? 'text-primary' : 'text-gray-500 group-hover:text-gray-700',
+          isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground',
         )}
       />
 
@@ -362,7 +360,7 @@ function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
           <span
             className={cn(
               'ml-3 flex-1 truncate text-sm font-medium transition-colors',
-              isActive ? 'text-primary-dark' : 'text-gray-700 group-hover:text-gray-900',
+              isActive ? 'text-primary-dark' : 'text-foreground group-hover:text-foreground',
             )}
           >
             {item.label}
@@ -397,7 +395,7 @@ function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
             <Star
               className={cn(
                 'h-4 w-4',
-                isFavorite ? 'fill-yellow-500 text-yellow-500' : 'text-gray-400',
+                isFavorite ? 'fill-yellow-500 text-yellow-500' : 'text-muted-foreground',
               )}
             />
           </button>
@@ -409,7 +407,6 @@ function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
   if (collapsed) {
     return (
       <Tooltip delayDuration={0}>
-        {}
         <TooltipTrigger asChild>
           <Link
             href={item.href as Route}
@@ -418,7 +415,7 @@ function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
               'flex h-10 w-10 items-center justify-center rounded-lg transition-all',
               isActive
                 ? 'text-primary-dark bg-primary/10'
-                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
             )}
           >
             <item.icon className="h-5 w-5" />
@@ -431,13 +428,12 @@ function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
 
   return (
     <div className="group">
-      {}
       <Link
         href={item.href as Route}
         onClick={handleClick}
         className={cn(
           'flex items-center rounded-lg px-3 py-2 transition-all duration-200',
-          'hover:bg-gray-50',
+          'hover:bg-muted',
           isActive && 'bg-primary/5 hover:bg-primary/10',
           level > 0 && 'ml-4',
           item.disabled && 'cursor-not-allowed opacity-50',
@@ -514,7 +510,7 @@ function NavGroupComponent({ group }: NavGroupProps) {
       {group.label && canCollapse && (
         <button
           onClick={() => toggleGroup(group.id)}
-          className="flex w-full items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-500 transition-colors hover:text-gray-700"
+          className="flex w-full items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground"
         >
           {group.icon && <group.icon className="mr-2 h-3.5 w-3.5" />}
           <span className="flex-1 text-left">{group.label}</span>
@@ -525,7 +521,7 @@ function NavGroupComponent({ group }: NavGroupProps) {
       )}
 
       {group.label && !canCollapse && (
-        <div className="flex items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+        <div className="flex items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {group.icon && <group.icon className="mr-2 h-3.5 w-3.5" />}
           <span>{group.label}</span>
         </div>
@@ -560,20 +556,20 @@ function SidebarSearch() {
   return (
     <div className="px-3 py-2">
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           type="text"
           placeholder="搜索导航..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="h-9 border-gray-200 bg-gray-50 pl-9 text-sm focus:bg-white"
+          className="h-9 border-border bg-muted pl-9 text-sm text-foreground focus:bg-card"
         />
         {searchQuery && (
           <button
             onClick={() => setSearchQuery('')}
             className="absolute right-3 top-1/2 -translate-y-1/2"
           >
-            <X className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+            <X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
           </button>
         )}
       </div>
@@ -610,9 +606,9 @@ function SidebarFavorites({ config }: { config: SidebarConfig }) {
   if (favoriteItems.length === 0) return null;
 
   return (
-    <div className="border-b border-gray-100 py-2">
+    <div className="border-b border-border py-2">
       {!collapsed && (
-        <div className="flex items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+        <div className="flex items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           <Star className="mr-2 h-3.5 w-3.5" />
           <span>收藏</span>
         </div>
@@ -654,9 +650,9 @@ function SidebarRecents({ config }: { config: SidebarConfig }) {
   if (recentNavItems.length === 0) return null;
 
   return (
-    <div className="border-b border-gray-100 py-2">
+    <div className="border-b border-border py-2">
       {!collapsed && (
-        <div className="flex items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+        <div className="flex items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           <Clock className="mr-2 h-3.5 w-3.5" />
           <span>最近访问</span>
         </div>
@@ -681,7 +677,6 @@ interface EnhancedSidebarProps {
 
 export function EnhancedSidebar({ config = defaultNavConfig, className }: EnhancedSidebarProps) {
   const [collapsed, setCollapsed] = useState(config.defaultCollapsed ?? false);
-  const [mobileOpen, setMobileOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => {
     const initial = new Set<string>();
     config.groups.forEach((group) => {
@@ -694,7 +689,6 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [recentItems, setRecentItems] = useState<string[]>([]);
-  const prefersReducedMotion = useReducedMotion();
 
   const toggleGroup = useCallback((groupId: string) => {
     setExpandedGroups((prev) => {
@@ -755,51 +749,22 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
   return (
     <SidebarContext.Provider value={contextValue}>
       <TooltipProvider delayDuration={0}>
-        {/* Mobile Overlay */}
-        <AnimatePresence>
-          {mobileOpen && (
-            <motion.div
-              initial={prefersReducedMotion ? {} : { opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={prefersReducedMotion ? {} : { opacity: 0 }}
-              className="fixed inset-0 z-40 bg-black/50 md:hidden"
-              onClick={() => setMobileOpen(false)}
-            />
-          )}
-        </AnimatePresence>
-
-        {/* Mobile Menu Button */}
-        <button
-          onClick={() => setMobileOpen(true)}
-          className="fixed left-4 top-4 z-30 rounded-lg bg-white p-2 shadow-md md:hidden"
-        >
-          <Menu className="h-5 w-5" />
-        </button>
-
-        {/* Sidebar */}
-        <motion.aside
-          initial={prefersReducedMotion ? {} : { x: -300 }}
-          animate={{
-            x: mobileOpen ? 0 : undefined,
-            width: collapsed ? 72 : 280,
-          }}
+        <aside
           className={cn(
-            'fixed bottom-0 left-0 top-0 z-50 border-r border-gray-200 bg-white',
-            'flex flex-col shadow-xl md:shadow-none',
-            'transition-all duration-300 ease-in-out',
-            mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
+            'h-screen sticky top-0 border-r border-border bg-card',
+            'flex flex-col',
             className,
           )}
           style={{ width: collapsed ? 72 : 280 }}
         >
           {/* Header */}
-          <div className="flex h-16 flex-shrink-0 items-center justify-between border-b border-gray-100 px-4">
+          <div className="flex h-16 flex-shrink-0 items-center justify-between border-b border-border px-4">
             {!collapsed && (
               <Link href="/" className="flex items-center gap-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
                   <LayoutDashboard className="h-5 w-5 text-white" />
                 </div>
-                <span className="text-lg font-bold text-gray-900">Insight</span>
+                <span className="text-lg font-bold text-foreground">Insight</span>
               </Link>
             )}
             {collapsed && (
@@ -812,14 +777,14 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
               <button
                 onClick={() => setCollapsed(!collapsed)}
                 className={cn(
-                  'rounded-lg p-1.5 transition-colors hover:bg-gray-100',
-                  collapsed && 'absolute -right-3 top-20 border border-gray-200 bg-white shadow-sm',
+                  'rounded-lg p-1.5 transition-colors hover:bg-muted',
+                  collapsed && 'absolute -right-3 top-20 border border-border bg-card shadow-sm',
                 )}
               >
                 {collapsed ? (
-                  <ChevronRight className="h-4 w-4 text-gray-500" />
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 ) : (
-                  <ChevronLeft className="h-4 w-4 text-gray-500" />
+                  <ChevronLeft className="h-4 w-4 text-muted-foreground" />
                 )}
               </button>
             )}
@@ -845,10 +810,10 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
           </ScrollArea>
 
           {/* Footer */}
-          <div className="flex-shrink-0 border-t border-gray-100 p-3">
+          <div className="flex-shrink-0 border-t border-border p-3">
             <ConnectWallet />
           </div>
-        </motion.aside>
+        </aside>
       </TooltipProvider>
     </SidebarContext.Provider>
   );

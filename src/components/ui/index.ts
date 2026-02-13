@@ -57,5 +57,5 @@ export {
 // 响应式组件
 export { ResponsiveContainer, Show, Hide } from './ResponsiveContainer';
 
-// Refresh Strategy Visualizer - 刷新策略可视化
-export { RefreshStrategyVisualizer } from './RefreshStrategyVisualizer';
+// Refresh Indicator
+export { RefreshIndicator } from './RefreshIndicator';

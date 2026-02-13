@@ -452,7 +452,7 @@ function TargetHighlight({ target }: { target: string }) {
           repeat: Infinity,
           ease: 'easeOut',
         }}
-        className="pointer-events-none absolute rounded-lg border-2 border-purple-400"
+        className="pointer-events-none absolute rounded-lg border-2 border-blue-400"
         style={{
           top: rect.top - 4,
           left: rect.left - 4,

@@ -2,7 +2,6 @@
 
 import useSWR from 'swr';
 
-import { logger } from '@/shared/logger';
 import { buildApiUrl } from '@/shared/utils';
 
 import type { SWRConfiguration } from 'swr';
@@ -198,30 +197,4 @@ export function useGasPriceHealth(options?: SWRConfiguration<GasPriceHealthRespo
   });
 }
 
-export function useWarmupGasCache(chains: string[], mutate?: () => void) {
-  return async () => {
-    try {
-      const res = await fetch('/api/gas/warmup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ chains }),
-      });
 
-      if (!res.ok) {
-        throw new Error(`Failed to warm up gas cache: ${res.status}`);
-      }
-
-      const data = await res.json();
-      if (data.ok && mutate) {
-        mutate();
-      }
-
-      return data;
-    } catch (error) {
-      logger.error('Error warming up gas cache', { error });
-      throw error;
-    }
-  };
-}

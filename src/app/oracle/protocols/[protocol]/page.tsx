@@ -11,7 +11,7 @@ export const revalidate = 3600; // 1 hour
 export const fetchCache = 'force-cache';
 
 import { StatCard } from '@/components/common';
-import { Button, StatusBadge, RefreshStrategyVisualizer } from '@/components/ui';
+import { Button, StatusBadge, RefreshIndicator } from '@/components/ui';
 import { Card, CardContent } from '@/components/ui/card';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { Progress } from '@/components/ui/progress';
@@ -23,7 +23,7 @@ import {
 } from '@/features/protocol/components/FeedTable';
 import type { ProtocolComparisonData } from '@/features/protocol/components/ProtocolComparison';
 import { ProtocolPageLayout } from '@/features/protocol/components/ProtocolPageLayout';
-import { useAutoRefreshWithStats } from '@/hooks/useAutoRefreshWithStats';
+import { useAutoRefresh } from '@/hooks';
 import { getProtocolConfig } from '@/lib/protocol-config';
 import { logger } from '@/shared/logger';
 import { formatTimeAgo, truncateAddress } from '@/shared/utils/format';
@@ -106,10 +106,7 @@ export default function UnifiedProtocolPage() {
     isError,
     error,
     refresh,
-    strategy,
-    refreshHistory,
-    refreshStats,
-  } = useAutoRefreshWithStats({
+  } = useAutoRefresh({
     pageId: 'protocol-detail',
     fetchFn: useCallback(async () => {
       try {
@@ -507,16 +504,10 @@ export default function UnifiedProtocolPage() {
 
       {/* 刷新策略可视化 */}
       <div className="flex justify-end px-4">
-        <RefreshStrategyVisualizer
-          strategy={strategy}
+        <RefreshIndicator
           lastUpdated={lastUpdated}
           isRefreshing={isRefreshing}
           onRefresh={refresh}
-          refreshHistory={refreshHistory}
-          refreshStats={refreshStats}
-          showHistory={true}
-          showStats={true}
-          compact={true}
         />
       </div>
 

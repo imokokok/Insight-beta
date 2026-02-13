@@ -41,11 +41,10 @@ import {
   StatCardGroup,
   DashboardStatsSection,
 } from '@/components/common/StatCard';
-import { EmptyDashboardState, LoadingOverlay, RefreshStrategyVisualizer } from '@/components/ui';
+import { EmptyDashboardState, LoadingOverlay, RefreshIndicator } from '@/components/ui';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useWebSocket, useIsMobile } from '@/hooks';
-import { useAutoRefreshWithStats } from '@/hooks/useAutoRefreshWithStats';
+import { useWebSocket, useIsMobile, useAutoRefresh } from '@/hooks';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { logger } from '@/shared/logger';
 import { fetchApiData, cn, formatNumber } from '@/shared/utils';
@@ -223,10 +222,7 @@ export default function OptimizedOracleDashboard() {
     isError,
     error,
     refresh,
-    strategy,
-    refreshHistory,
-    refreshStats,
-  } = useAutoRefreshWithStats({
+  } = useAutoRefresh({
     pageId: 'dashboard-overview',
     fetchFn: useCallback(async () => {
       const data = await fetchApiData<DashboardStats>('/api/oracle/stats');
@@ -410,17 +406,10 @@ export default function OptimizedOracleDashboard() {
             <HealthStatusBadge activeAlerts={stats?.activeAlerts ?? 0} isConnected={isConnected} />
           }
           refreshControl={
-            <RefreshStrategyVisualizer
-              strategy={strategy}
+            <RefreshIndicator
               lastUpdated={lastUpdated}
               isRefreshing={isRefreshing}
-              isWebSocketConnected={isConnected}
               onRefresh={refresh}
-              refreshHistory={refreshHistory}
-              refreshStats={refreshStats}
-              showHistory={true}
-              showStats={true}
-              compact={isMobile}
             />
           }
           onMobileMenuClick={() => setSidebarOpen(true)}

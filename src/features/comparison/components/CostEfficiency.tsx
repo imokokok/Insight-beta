@@ -143,7 +143,7 @@ export function CostEfficiencyView({ data, isLoading }: CostEfficiencyProps) {
         {/* Top Recommendations */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {/* Best Value */}
-          <div className="rounded-lg border border-violet-200 bg-gradient-to-br from-violet-50 to-primary-50 p-4">
+          <div className="rounded-lg border border-blue-200 bg-gradient-to-br from-blue-50 to-primary-50 p-4">
             <div className="flex items-start justify-between">
               <div>
                 <p className="flex items-center gap-1 text-sm font-medium text-primary-600">

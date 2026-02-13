@@ -22,7 +22,7 @@ const buttonVariants = cva(
         ghost: 'text-primary-dark hover:text-primary-darker hover:bg-primary/10',
         link: 'text-blue-600 underline-offset-4 hover:text-blue-700 hover:underline',
         gradient:
-          'bg-gradient-to-r from-violet-600 via-primary-600 to-blue-600 text-white shadow-lg shadow-primary-500/30 hover:scale-[1.02] hover:shadow-xl hover:shadow-primary-500/40',
+          'bg-gradient-to-r from-blue-600 via-primary-500 to-cyan-500 text-white shadow-lg shadow-primary-500/30 hover:scale-[1.02] hover:shadow-xl hover:shadow-primary-500/40',
         glow: 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.5)] hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(37,99,235,0.7)]',
       },
       size: {

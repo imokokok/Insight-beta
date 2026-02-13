@@ -361,7 +361,7 @@ export function HoverCard({
   className,
   hoverScale = 1.02,
   hoverY = -4,
-  glowColor = 'rgba(139, 92, 246, 0.15)',
+  glowColor = 'rgba(59, 130, 246, 0.15)',
   hoverShadow = false,
   hoverBorder = false,
 }: HoverCardProps) {
@@ -374,7 +374,7 @@ export function HoverCard({
         scale: scaleValue,
         y: hoverY,
         ...(hoverShadow ? { boxShadow: `0 20px 40px ${glowColor}` } : {}),
-        ...(hoverBorder ? { borderColor: 'rgba(139, 92, 246, 0.3)' } : {}),
+        ...(hoverBorder ? { borderColor: 'rgba(59, 130, 246, 0.3)' } : {}),
       }}
       whileTap={{ scale: 0.98 }}
       transition={{

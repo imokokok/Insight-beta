@@ -181,7 +181,7 @@ export const AssertionList = memo(function AssertionList({
                 className={cn(
                   'flex h-10 w-10 items-center justify-center rounded-xl text-sm font-bold shadow-sm ring-1 ring-black/5 transition-transform duration-300 group-hover:scale-110',
                   item.chain === 'Polygon' &&
-                    'bg-gradient-to-br from-violet-50 to-violet-100 text-primary-600',
+                    'bg-gradient-to-br from-blue-50 to-blue-100 text-primary-600',
                   item.chain === 'Arbitrum' &&
                     'bg-gradient-to-br from-blue-50 to-blue-100 text-blue-600',
                   item.chain === 'Optimism' &&

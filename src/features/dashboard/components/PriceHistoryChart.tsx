@@ -57,10 +57,11 @@ export function PriceHistoryChart({ data, symbol, className }: PriceHistoryChart
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                  border: '1px solid rgba(139, 92, 246, 0.1)',
+                  backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                  border: '1px solid rgba(59, 130, 246, 0.2)',
                   borderRadius: '8px',
-                  boxShadow: '0 4px 6px -1px rgba(139, 92, 246, 0.1)',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3)',
+                  color: '#f8fafc',
                 }}
                 formatter={(value) => [formatPrice(value as number), '']}
                 labelFormatter={(label) => new Date(label as string).toLocaleString()}
@@ -69,11 +70,11 @@ export function PriceHistoryChart({ data, symbol, className }: PriceHistoryChart
               <Line
                 type="monotone"
                 dataKey="recommendedPrice"
-                stroke="#8b5cf6"
+                stroke="#3b82f6"
                 strokeWidth={2}
                 dot={false}
                 name="Recommended"
-                activeDot={{ r: 6, fill: '#8b5cf6' }}
+                activeDot={{ r: 6, fill: '#3b82f6' }}
               />
               <Line
                 type="monotone"

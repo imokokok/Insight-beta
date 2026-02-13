@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 import { RefreshCw, Zap, TrendingUp, Activity, AlertTriangle, History } from 'lucide-react';
 
@@ -10,12 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { GasPriceHistoryViewer } from '@/features/gas/components/GasPriceHistoryViewer';
 import { GasPriceTrendChart } from '@/features/gas/components/GasPriceTrendChart';
 import { GasProviderHealthCard } from '@/features/gas/components/GasProviderHealthCard';
-import {
-  useGasPrices,
-  useGasPriceTrend,
-  useGasPriceHealth,
-  useWarmupGasCache,
-} from '@/features/gas/hooks';
+import { useGasPrices, useGasPriceTrend, useGasPriceHealth } from '@/features/gas/hooks';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { cn } from '@/shared/utils';
 
@@ -36,18 +31,12 @@ export default function GasPriceMonitorPage() {
     'average',
   );
   const { data: healthData, isLoading: healthLoading, mutate: refreshHealth } = useGasPriceHealth();
-  const warmup = useWarmupGasCache(selectedChains, refreshPrices);
-
-  useEffect(() => {
-    warmup();
-  }, []);
 
   const handleRefresh = () => {
     refreshPrices();
     refreshHealth();
   };
 
-  // 页面优化：键盘快捷键
   usePageOptimizations({
     pageName: 'Gas价格监控',
     onRefresh: async () => {
@@ -96,10 +85,6 @@ export default function GasPriceMonitorPage() {
                 className={cn('mr-2 h-4 w-4', pricesLoading || (healthLoading && 'animate-spin'))}
               />
               Refresh
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => warmup()}>
-              <Zap className="mr-2 h-4 w-4" />
-              Warm Cache
             </Button>
           </div>
         </div>

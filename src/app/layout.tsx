@@ -6,15 +6,12 @@ import { cookies, headers } from 'next/headers';
 import { Toaster } from 'sonner';
 
 import { AccessibilityProvider, SkipLink } from '@/components/common/AccessibilityProvider';
-import { MobileBottomNav } from '@/components/common/MobileBottomNav';
 import { PageProgress } from '@/components/common/PageProgress';
 import { PageTransition } from '@/components/common/PageTransitions';
 import { ResourceHints } from '@/components/common/ResourceHints';
 import { Sidebar } from '@/components/common/EnhancedSidebar';
 import { ClientComponentsWrapper } from '@/components/common/ClientComponentsWrapper';
-import { MobileLayout } from '@/components/layout/MobileLayout';
 import { WalletProvider } from '@/contexts/WalletContext';
-import { MobileChainSwitcher } from '@/features/wallet/components/MobileChainSwitcher';
 import { LanguageProvider } from '@/i18n/LanguageProvider';
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { SyncStatus } from '@/features/oracle/components/SyncStatus';
@@ -81,7 +78,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       </head>
       <body
         className={cn(
-          'min-h-screen bg-[var(--background)] font-sans text-[var(--foreground)] antialiased',
+          'min-h-screen bg-background font-sans text-foreground antialiased',
         )}
       >
         <AccessibilityProvider>
@@ -90,45 +87,37 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           <LanguageProvider initialLang={lang}>
             <WalletProvider>
               <Toaster />
-              <MobileLayout>
-                <div className="mesh-gradient" />
-                <div className="animated-blobs">
-                  <div className="blob-1" />
-                  <div className="blob-2" />
-                  <div className="blob-3" />
-                  <div className="blob-4" />
+              <div className="mesh-gradient" />
+              <div className="animated-blobs">
+                <div className="blob-1" />
+                <div className="blob-2" />
+                <div className="blob-3" />
+                <div className="blob-4" />
+              </div>
+              <div className="min-h-screen flex">
+                <div className="w-[280px] flex-shrink-0">
+                  <Sidebar />
                 </div>
-                <div className="min-h-screen-dynamic flex">
-                  <div className="hidden w-[280px] md:block">
-                    <Sidebar />
-                  </div>
-                  <main
-                    id="main-content"
-                    className="flex-1 transition-all duration-300 md:ml-[280px]"
-                  >
-                    <div className="container mx-auto max-w-7xl p-3 pb-24 md:p-4 md:pb-4 lg:p-8">
-                      <div className="sticky top-0 z-20 mb-4 flex flex-wrap items-center justify-between gap-3 md:mb-6">
-                        <h2 className="text-xl font-bold text-[var(--foreground)] md:text-2xl">
-                          {translations[lang].app.title}
-                        </h2>
-                        <div className="flex items-center gap-2 md:gap-3">
-                          <div className="hidden sm:flex">
-                            <SyncStatus />
-                          </div>
-                          <div className="md:hidden">
-                            <MobileChainSwitcher />
-                          </div>
-                          <LanguageSwitcher />
-                        </div>
+                <main
+                  id="main-content"
+                  className="flex-1"
+                >
+                  <div className="container mx-auto max-w-7xl p-8">
+                    <div className="sticky top-0 z-20 mb-6 flex items-center justify-between gap-3">
+                      <h2 className="text-2xl font-bold text-foreground">
+                        {translations[lang].app.title}
+                      </h2>
+                      <div className="flex items-center gap-3">
+                        <SyncStatus />
+                        <LanguageSwitcher />
                       </div>
-                      <PageTransition variant="fade">
-                        <ClientComponentsWrapper>{children}</ClientComponentsWrapper>
-                      </PageTransition>
                     </div>
-                  </main>
-                </div>
-                <MobileBottomNav />
-              </MobileLayout>
+                    <PageTransition variant="fade">
+                      <ClientComponentsWrapper>{children}</ClientComponentsWrapper>
+                    </PageTransition>
+                  </div>
+                </main>
+              </div>
             </WalletProvider>
           </LanguageProvider>
         </AccessibilityProvider>

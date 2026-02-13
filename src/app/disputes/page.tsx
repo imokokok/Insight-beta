@@ -21,7 +21,6 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { ErrorBanner as ErrorBannerUI } from '@/components/ui/ErrorBanner';
 import { RefreshIndicator } from '@/components/ui/RefreshIndicator';
-import { getRefreshStrategy } from '@/config/refreshStrategy';
 import { useIsMobile } from '@/hooks';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n/LanguageProvider';
@@ -394,9 +393,6 @@ export default function DisputesPage() {
     getOracleInstanceId().then((id) => setInstanceIdState(id));
   }, []);
 
-  // 获取刷新策略配置
-  const disputesStrategy = getRefreshStrategy('disputes-list');
-
   // 计算最后更新时间
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   useEffect(() => {
@@ -550,7 +546,6 @@ export default function DisputesPage() {
           <RefreshIndicator
             lastUpdated={lastUpdated}
             isRefreshing={loading}
-            strategy={disputesStrategy}
             onRefresh={refresh}
           />
           <button

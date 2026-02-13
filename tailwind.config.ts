@@ -3,14 +3,6 @@ import type { Config } from 'tailwindcss';
 const config: Config = {
   content: ['./src/**/*.{js,ts,jsx,tsx,mdx}'],
   theme: {
-    screens: {
-      xs: '475px',
-      sm: '640px',
-      md: '768px',
-      lg: '1024px',
-      xl: '1280px',
-      '2xl': '1536px',
-    },
     extend: {
       colors: {
         bg: 'rgb(var(--color-bg) / <alpha-value>)',
@@ -31,6 +23,7 @@ const config: Config = {
           950: 'rgb(var(--color-primary-950) / <alpha-value>)',
         },
         foreground: 'rgb(var(--color-foreground) / <alpha-value>)',
+        background: 'rgb(var(--background) / <alpha-value>)',
         card: {
           DEFAULT: 'rgb(var(--color-card) / <alpha-value>)',
           foreground: 'rgb(var(--color-card-foreground) / <alpha-value>)',
@@ -48,12 +41,12 @@ const config: Config = {
         border: 'rgb(var(--color-border) / <alpha-value>)',
       },
       boxShadow: {
-        sm: '0 1px 2px 0 rgba(139, 92, 246, 0.05)',
-        DEFAULT: '0 1px 3px 0 rgba(139, 92, 246, 0.1), 0 1px 2px -1px rgba(139, 92, 246, 0.1)',
-        md: '0 4px 6px -1px rgba(139, 92, 246, 0.1), 0 2px 4px -2px rgba(139, 92, 246, 0.1)',
-        lg: '0 10px 15px -3px rgba(139, 92, 246, 0.1), 0 4px 6px -4px rgba(139, 92, 246, 0.1)',
-        xl: '0 20px 25px -5px rgba(139, 92, 246, 0.1), 0 8px 10px -6px rgba(139, 92, 246, 0.1)',
-        panel: '0 8px 20px -4px rgba(139, 92, 246, 0.1), 0 6px 12px -6px rgba(139, 92, 246, 0.1)',
+        sm: '0 1px 2px 0 rgba(59, 130, 246, 0.05)',
+        DEFAULT: '0 1px 3px 0 rgba(59, 130, 246, 0.1), 0 1px 2px -1px rgba(59, 130, 246, 0.1)',
+        md: '0 4px 6px -1px rgba(59, 130, 246, 0.1), 0 2px 4px -2px rgba(59, 130, 246, 0.1)',
+        lg: '0 10px 15px -3px rgba(59, 130, 246, 0.1), 0 4px 6px -4px rgba(59, 130, 246, 0.1)',
+        xl: '0 20px 25px -5px rgba(59, 130, 246, 0.1), 0 8px 10px -6px rgba(59, 130, 246, 0.1)',
+        panel: '0 8px 20px -4px rgba(0, 0, 0, 0.3), 0 6px 12px -6px rgba(0, 0, 0, 0.2)',
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
@@ -100,8 +93,8 @@ const config: Config = {
           '100%': { backgroundPosition: '200% 0' },
         },
         priceFlashUp: {
-          '0%': { backgroundColor: 'rgba(16, 185, 129, 0.4)' },
-          '100%': { backgroundColor: 'rgba(16, 185, 129, 0)' },
+          '0%': { backgroundColor: 'rgba(34, 197, 94, 0.4)' },
+          '100%': { backgroundColor: 'rgba(34, 197, 94, 0)' },
         },
         priceFlashDown: {
           '0%': { backgroundColor: 'rgba(239, 68, 68, 0.4)' },
@@ -118,10 +111,7 @@ const config: Config = {
       },
     },
   },
-  plugins: [
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    require('@tailwindcss/container-queries'),
-  ],
+  plugins: [],
 };
 
 export default config;
