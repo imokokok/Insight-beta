@@ -16,7 +16,7 @@ import {
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { GasPriceTrend } from '@/hooks/useGasPrice';
+import type { GasPriceTrend } from '@/features/gas/hooks';
 import { useI18n } from '@/i18n';
 import { cn, formatChangePercent, formatPercentValue } from '@/shared/utils';
 

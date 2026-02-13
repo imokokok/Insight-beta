@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { CrossChainDashboardData } from '@/hooks/useCrossChain';
+import type { CrossChainDashboardData } from '@/features/cross-chain/hooks';
 import { useI18n } from '@/i18n';
 import { cn, formatPercentValue, formatPercent } from '@/shared/utils';
 import { STATUS_COLORS } from '@/types/common';

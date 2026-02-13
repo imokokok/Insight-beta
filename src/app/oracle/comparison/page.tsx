@@ -17,7 +17,7 @@ import { useEffect, useState, useCallback, useRef, Suspense, lazy } from 'react'
 import { ChartSkeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import { ComparisonControls } from '@/features/comparison/components/ComparisonControls';
-import { useComparisonData } from '@/hooks/useComparison';
+import { useComparisonData } from '@/features/comparison/hooks';
 import { useDebounce } from '@/hooks/useDebounce';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n';

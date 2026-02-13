@@ -27,7 +27,7 @@ import {
   useCrossChainAlerts,
   useCrossChainDashboard,
   useCrossChainHistory,
-} from '@/hooks/useCrossChain';
+} from '@/features/cross-chain/hooks';
 import { useI18n } from '@/i18n';
 
 const AVAILABLE_SYMBOLS = ['BTC', 'ETH', 'SOL', 'LINK', 'AVAX', 'MATIC', 'UNI', 'AAVE'];

@@ -23,7 +23,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type {
   CrossChainArbitrageOpportunity,
   CrossChainArbitrageSummary,
-} from '@/hooks/useCrossChain';
+} from '@/features/cross-chain/hooks';
 import { useI18n } from '@/i18n';
 import { cn, formatPrice, formatChangePercent, formatPercentValue } from '@/shared/utils';
 import { RISK_COLORS } from '@/types/common';

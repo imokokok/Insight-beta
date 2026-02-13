@@ -19,7 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useGasPriceHistory } from '@/hooks/useGasPrice';
+import { useGasPriceHistory } from '@/features/gas/hooks';
 import { cn, formatChangePercent } from '@/shared/utils';
 
 interface GasPriceHistoryViewerProps {

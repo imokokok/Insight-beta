@@ -3,8 +3,8 @@
  *
  * 架构说明：
  * - 本文件导出全局通用的 hooks
- * - 业务相关的 hooks 最终会迁移到 features/[domain]/hooks/
- * - 新功能应使用 Feature-Based 结构
+ * - 业务相关的 hooks 从 features/[domain]/hooks/ 导出
+ * - 使用 Feature-Based 结构，避免重复
  *
  * 分组：
  * - 核心 Hooks      : 基础功能
@@ -12,9 +12,7 @@
  * - 响应式 Hooks   : 视口、媒体查询
  * - 性能 Hooks     : 性能监控
  * - UI Hooks       : 列表、无限滚动
- * - 业务 Hooks     : 按功能域分组（待迁移）
- *
- * @see ../docs/ARCHITECTURE_PLAN.md
+ * - 业务 Hooks     : 从 features 重新导出
  */
 
 // ==================== 核心 Hooks ====================
@@ -63,12 +61,35 @@ export { useUserStats, useWatchlist, useAdminSession } from './useUser';
 // ==================== 钱包 Hooks ====================
 export { useBalance, useSwitchChainWithFeedback } from './useWallet';
 
-// ==================== Oracle Hooks ====================
-export { useOracleData, useOracleFilters } from './useOracle';
+// ==================== Admin Hooks ====================
+export {
+  useAdminToken,
+  type UseAdminTokenOptions,
+  type UseAdminTokenReturn,
+} from './useAdminToken';
 
-export { useDisputes } from './useDisputes';
+// ==================== Query Hooks ====================
+export { useQuery, type UseQueryOptions, type UseQueryReturn } from './useQuery';
 
-// ==================== Gas Price Hooks ====================
+// ==================== SWR 配置 Hooks ====================
+export { createSWRConfig, createSWRInfiniteConfig, REALTIME_CONFIG } from './useSWRConfig';
+
+// ==================== 业务 Hooks (从 features 重新导出) ====================
+
+// Oracle Hooks
+export { useOracleData, useOracleFilters } from '@/features/oracle/hooks';
+
+// Alert Hooks
+export {
+  useOracleIncidents,
+  useOracleRisks,
+  useOracleOpsMetrics,
+  type UseOracleIncidentsReturn,
+  type UseOracleRisksReturn,
+  type UseOracleOpsMetricsReturn,
+} from '@/features/alert/hooks';
+
+// Gas Price Hooks
 export {
   useGasPrice,
   useGasPrices,
@@ -83,18 +104,18 @@ export {
   type GasPriceTrend,
   type ProviderHealth,
   type GasPriceHealthResponse,
-} from './useGasPrice';
+} from '@/features/gas/hooks';
 
-// ==================== Comparison Hooks ====================
+// Comparison Hooks
 export {
   useHeatmapData,
   useLatencyData,
   useCostData,
   useRealtimeData,
   useComparisonData,
-} from './useComparison';
+} from '@/features/comparison/hooks';
 
-// ==================== Cross Chain Hooks ====================
+// Cross Chain Hooks
 export {
   useCrossChainComparison,
   useCrossChainArbitrage,
@@ -113,53 +134,17 @@ export {
   type CrossChainHistoricalDataPoint,
   type CrossChainHistoricalSummary,
   type CrossChainHistoricalResponse,
-} from './useCrossChain';
+} from '@/features/cross-chain/hooks';
 
-// ==================== Admin Hooks ====================
-export {
-  useAdminToken,
-  type UseAdminTokenOptions,
-  type UseAdminTokenReturn,
-} from './useAdminToken';
+// Dispute Hooks
+export { useDisputes } from '@/features/dispute/hooks';
 
-// ==================== Alert Hooks ====================
-export {
-  useOracleIncidents,
-  useOracleRisks,
-  useOracleOpsMetrics,
-  type UseOracleIncidentsReturn,
-  type UseOracleRisksReturn,
-  type UseOracleOpsMetricsReturn,
-} from './useAlerts';
-
-// ==================== Query Hooks ====================
-export { useQuery, type UseQueryOptions, type UseQueryReturn } from './useQuery';
-
-// ==================== SWR 配置 Hooks ====================
-export { createSWRConfig, createSWRInfiniteConfig, REALTIME_CONFIG } from './useSWRConfig';
-
-// ==================== Dashboard Hooks ====================
+// Dashboard Hooks
 export {
   useAutoRefresh as useAutoRefreshWithInterval,
   useDataCache,
   useDashboardShortcuts,
-} from './useDashboard';
+} from '@/features/dashboard/hooks';
 
 // Legacy alias for backwards compatibility
-export { useAutoRefresh as useAutoRefreshLegacy } from './useDashboard';
-
-/**
- * 迁移说明：
- *
- * 业务 Hooks 最终将迁移到 features/[domain]/hooks/：
- * - Oracle Hooks     → features/oracle/hooks/
- * - Alerts Hooks     → features/alerts/hooks/
- * - Security Hooks   → features/security/hooks/
- * - Gas Hooks       → features/gas/hooks/
- * - Cross-chain     → features/cross-chain/hooks/
- * - Wallet Hooks    → features/wallet/hooks/
- * - Dispute Hooks   → features/dispute/hooks/
- * - Dashboard Hooks → features/dashboard/hooks/
- *
- * @see ../docs/ARCHITECTURE_PLAN.md
- */
+export { useAutoRefresh as useAutoRefreshLegacy } from '@/features/dashboard/hooks';

@@ -1,7 +1,5 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
-
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -20,144 +18,33 @@ import {
 } from 'lucide-react';
 
 import { StatCard } from '@/components/common';
-import { Button, CardEnhanced, StatusBadge } from '@/components/ui';
+import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui/badge';
+import {
+  HeroActionCard,
+  FeatureCard,
+  ProtocolCard,
+} from '@/features/oracle/components/LandingPageCards';
+import { PROTOCOLS } from '@/features/oracle/constants/protocols';
+import { usePlatformStats } from '@/features/oracle/hooks';
 import { useCommonShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useI18n } from '@/i18n';
-import { cn, fetchApiData } from '@/shared/utils';
-
-interface PlatformStats {
-  totalProtocols: number;
-  totalPriceFeeds: number;
-  supportedChains: number;
-  avgUpdateLatency: number;
-}
-
-interface ProtocolHighlight {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  status: 'active' | 'beta' | 'coming_soon';
-  features: string[];
-  category: 'price_feed' | 'optimistic' | 'hybrid';
-}
-
-// 所有支持的协议列表 - 平等展示，不区分类别
-const PROTOCOLS: ProtocolHighlight[] = [
-  {
-    id: 'chainlink',
-    name: 'Chainlink',
-    description: 'Industry-standard decentralized oracle network with comprehensive data feeds',
-    icon: '🔗',
-    status: 'active',
-    features: ['Price Feeds', 'VRF', 'Automation', 'CCIP'],
-    category: 'price_feed',
-  },
-  {
-    id: 'pyth',
-    name: 'Pyth Network',
-    description: 'Low-latency financial data from institutional sources',
-    icon: '🐍',
-    status: 'active',
-    features: ['Low Latency', 'High Frequency', 'Confidence Scores'],
-    category: 'price_feed',
-  },
-  {
-    id: 'band',
-    name: 'Band Protocol',
-    description: 'Cross-chain data oracle platform with decentralized consensus',
-    icon: '🎸',
-    status: 'active',
-    features: ['Cross-chain', 'Decentralized', 'Custom Data'],
-    category: 'price_feed',
-  },
-  {
-    id: 'api3',
-    name: 'API3',
-    description: 'First-party oracle with DAO-governed dAPIs',
-    icon: '📡',
-    status: 'beta',
-    features: ['First-party', 'dAPIs', 'DAO Governed'],
-    category: 'price_feed',
-  },
-  {
-    id: 'redstone',
-    name: 'RedStone',
-    description: 'Modular oracle optimized for L2s and rollups',
-    icon: '💎',
-    status: 'beta',
-    features: ['Modular', 'L2 Optimized', 'Cost Efficient'],
-    category: 'price_feed',
-  },
-  {
-    id: 'flux',
-    name: 'Flux',
-    description: 'Decentralized oracle aggregator with on-chain data verification',
-    icon: '⚡',
-    status: 'active',
-    features: ['Aggregator', 'On-chain Verification', 'Multi-source'],
-    category: 'price_feed',
-  },
-  {
-    id: 'uma',
-    name: 'UMA',
-    description: 'Optimistic oracle for custom data verification and dispute resolution',
-    icon: '⚖️',
-    status: 'active',
-    features: ['Optimistic Oracle', 'Assertions', 'Disputes'],
-    category: 'optimistic',
-  },
-  {
-    id: 'switchboard',
-    name: 'Switchboard',
-    description: 'Permissionless oracle network for Solana and EVM chains',
-    icon: '🎛️',
-    status: 'beta',
-    features: ['Permissionless', 'Solana', 'EVM Compatible'],
-    category: 'price_feed',
-  },
-];
 
 export default function OraclePlatformPage() {
   const router = useRouter();
   const { t } = useI18n();
-  const [stats, setStats] = useState<PlatformStats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { stats, loading, refresh } = usePlatformStats();
 
-  // 键盘快捷键支持
   useCommonShortcuts({
-    onRefresh: () => fetchPlatformStats(),
+    onRefresh: refresh,
     onSearch: () => {
-      // 聚焦到搜索框（如果有的话）
       const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
       searchInput?.focus();
     },
   });
 
-  const fetchPlatformStats = useCallback(async () => {
-    try {
-      const data = await fetchApiData<PlatformStats>('/api/oracle/unified/stats');
-      setStats(data);
-    } catch {
-      setStats({
-        totalProtocols: 10,
-        totalPriceFeeds: 150,
-        supportedChains: 15,
-        avgUpdateLatency: 500,
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchPlatformStats();
-  }, [fetchPlatformStats]);
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      {/* Hero Section - 完全通用化 */}
       <section className="relative overflow-hidden px-4 py-20 sm:px-6 lg:px-8">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary-100 via-transparent to-transparent" />
 
@@ -179,7 +66,6 @@ export default function OraclePlatformPage() {
             {t('home.hero.description')}
           </p>
 
-          {/* 三个主要功能入口 - 平衡展示 */}
           <div className="mx-auto mb-12 grid max-w-3xl gap-4 sm:grid-cols-3">
             <HeroActionCard
               icon={<Activity className="h-6 w-6" />}
@@ -202,7 +88,6 @@ export default function OraclePlatformPage() {
             />
           </div>
 
-          {/* 信任指标 */}
           <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500">
             <span className="flex items-center gap-2">
               <CheckCircle className="h-4 w-4 text-green-500" />
@@ -220,34 +105,33 @@ export default function OraclePlatformPage() {
         </div>
       </section>
 
-      {/* Stats Section */}
       <section className="border-y border-gray-100 px-4 py-12 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard
               title={t('home.stats.supportedProtocols')}
-              value={stats?.totalProtocols || 10}
+              value={stats.totalProtocols}
               icon={<Layers className="h-5 w-5" />}
               loading={loading}
               color="blue"
             />
             <StatCard
               title={t('home.stats.priceFeeds')}
-              value={stats?.totalPriceFeeds || 150}
+              value={stats.totalPriceFeeds}
               icon={<TrendingUp className="h-5 w-5" />}
               loading={loading}
               color="green"
             />
             <StatCard
               title={t('home.stats.supportedChains')}
-              value={stats?.supportedChains || 15}
+              value={stats.supportedChains}
               icon={<Globe className="h-5 w-5" />}
               loading={loading}
               color="purple"
             />
             <StatCard
               title={t('home.stats.avgLatency')}
-              value={`${stats?.avgUpdateLatency || 500}ms`}
+              value={`${stats.avgUpdateLatency}ms`}
               icon={<Zap className="h-5 w-5" />}
               loading={loading}
               color="amber"
@@ -256,7 +140,6 @@ export default function OraclePlatformPage() {
         </div>
       </section>
 
-      {/* Features Section - 通用功能描述 */}
       <section className="px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="mb-12 text-center">
@@ -291,7 +174,6 @@ export default function OraclePlatformPage() {
         </div>
       </section>
 
-      {/* Protocols Section - 统一网格展示，不区分类别 */}
       <section className="bg-gray-50 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="mb-12 text-center">
@@ -299,7 +181,6 @@ export default function OraclePlatformPage() {
             <p className="mx-auto max-w-2xl text-gray-600">{t('home.protocols.subtitle')}</p>
           </div>
 
-          {/* 统一网格展示所有协议 */}
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {PROTOCOLS.map((protocol) => (
               <ProtocolCard key={protocol.id} protocol={protocol} />
@@ -319,7 +200,6 @@ export default function OraclePlatformPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="px-4 py-20 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl text-center">
           <h2 className="mb-6 text-3xl font-bold text-gray-900">{t('home.cta.title')}</h2>
@@ -347,129 +227,3 @@ export default function OraclePlatformPage() {
     </div>
   );
 }
-
-// ============================================================================
-// Sub-components
-// ============================================================================
-
-interface HeroActionCardProps {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  onClick: () => void;
-  primary?: boolean;
-}
-
-const HeroActionCard = React.memo(function HeroActionCard({
-  icon,
-  title,
-  description,
-  onClick,
-  primary,
-}: HeroActionCardProps) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        'group flex flex-col items-center gap-3 rounded-2xl p-6 transition-all duration-200',
-        primary
-          ? 'bg-primary text-white shadow-lg shadow-primary-500/25 hover:bg-primary-700 hover:shadow-xl hover:shadow-primary-500/30'
-          : 'hover:text-primary-dark bg-white text-gray-700 shadow-md hover:shadow-lg',
-      )}
-    >
-      <div
-        className={cn(
-          'rounded-xl p-3',
-          primary ? 'bg-white/20' : 'bg-primary/5 group-hover:bg-primary/10',
-        )}
-      >
-        {icon}
-      </div>
-      <div className="text-center">
-        <h3 className="font-semibold">{title}</h3>
-        <p className={cn('text-sm', primary ? 'text-primary/10' : 'text-gray-500')}>
-          {description}
-        </p>
-      </div>
-    </button>
-  );
-});
-
-// Note: StatCard component has been extracted to @/components/common/StatCard
-
-interface FeatureCardProps {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-}
-
-const FeatureCard = React.memo(function FeatureCard({
-  icon,
-  title,
-  description,
-}: FeatureCardProps) {
-  return (
-    <CardEnhanced hover className="border-0 shadow-sm">
-      <div className="p-6">
-        <div className="mb-4 text-primary">{icon}</div>
-        <h3 className="mb-2 text-lg font-semibold text-gray-900">{title}</h3>
-        <p className="text-gray-600">{description}</p>
-      </div>
-    </CardEnhanced>
-  );
-});
-
-interface ProtocolCardProps {
-  protocol: ProtocolHighlight;
-}
-
-const ProtocolCard = React.memo(function ProtocolCard({ protocol }: ProtocolCardProps) {
-  const { t } = useI18n();
-
-  const statusConfig = {
-    active: { status: 'active' as const, color: 'emerald' },
-    beta: { status: 'pending' as const, color: 'amber' },
-    coming_soon: { status: 'offline' as const, color: 'gray' },
-  };
-
-  return (
-    <CardEnhanced hover className="group cursor-pointer border-0 shadow-sm" clickable>
-      <div className="pb-4">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-3xl">{protocol.icon}</span>
-            <div>
-              <h3 className="group-hover:text-primary-dark text-lg font-semibold text-gray-900 transition-colors">
-                {protocol.name}
-              </h3>
-              <StatusBadge
-                status={statusConfig[protocol.status].status}
-                text={
-                  protocol.status === 'active'
-                    ? t('home.protocolStatus.active')
-                    : protocol.status === 'beta'
-                      ? t('home.protocolStatus.beta')
-                      : t('home.protocolStatus.comingSoon')
-                }
-                className="mt-1"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="pt-0">
-        <p className="mb-4 text-sm text-gray-600">{protocol.description}</p>
-        <div className="flex flex-wrap gap-2">
-          {protocol.features.map((feature) => (
-            <span
-              key={feature}
-              className="text-primary-dark rounded-full bg-primary/10 px-2 py-1 text-xs"
-            >
-              {feature}
-            </span>
-          ))}
-        </div>
-      </div>
-    </CardEnhanced>
-  );
-});

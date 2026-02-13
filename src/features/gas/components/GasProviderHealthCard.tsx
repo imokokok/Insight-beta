@@ -7,7 +7,7 @@ import { Activity, CheckCircle, AlertTriangle, XCircle, Clock } from 'lucide-rea
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { GasPriceHealthResponse } from '@/hooks/useGasPrice';
+import type { GasPriceHealthResponse } from '@/features/gas/hooks';
 import { cn, formatPercentValue } from '@/shared/utils';
 
 interface GasProviderHealthCardProps {

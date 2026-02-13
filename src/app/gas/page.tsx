@@ -15,7 +15,7 @@ import {
   useGasPriceTrend,
   useGasPriceHealth,
   useWarmupGasCache,
-} from '@/hooks/useGasPrice';
+} from '@/features/gas/hooks';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { cn } from '@/shared/utils';
 
