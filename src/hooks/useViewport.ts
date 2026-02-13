@@ -55,6 +55,11 @@ export function useViewport(options: ViewportOptions = {}) {
   const stableHeightRef = useRef(0);
   const checkTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const rafIdRef = useRef<number>(0);
+  const optionsRef = useRef(options);
+
+  useEffect(() => {
+    optionsRef.current = options;
+  }, [options]);
 
   const updateViewport = useCallback(() => {
     if (typeof window === 'undefined') return;
@@ -75,23 +80,25 @@ export function useViewport(options: ViewportOptions = {}) {
         isWalletPopupOpen,
       };
 
+      const opts = optionsRef.current;
+
       if (!prev.isKeyboardOpen && isKeyboardOpen) {
-        options.onKeyboardOpen?.();
+        opts.onKeyboardOpen?.();
       } else if (prev.isKeyboardOpen && !isKeyboardOpen) {
-        options.onKeyboardClose?.();
+        opts.onKeyboardClose?.();
       }
 
       if (!prev.isWalletPopupOpen && isWalletPopupOpen) {
-        options.onWalletPopupOpen?.();
+        opts.onWalletPopupOpen?.();
       } else if (prev.isWalletPopupOpen && !isWalletPopupOpen) {
-        options.onWalletPopupClose?.();
+        opts.onWalletPopupClose?.();
       }
 
       return newState;
     });
 
     prevVisualHeightRef.current = visualHeight;
-  }, [options]);
+  }, []);
 
   function detectWalletPopup(
     windowHeight: number,

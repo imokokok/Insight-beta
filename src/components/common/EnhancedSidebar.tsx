@@ -28,7 +28,6 @@ import {
   Globe,
   Shield,
   ShieldAlert,
-  Settings,
   History,
   Bookmark,
   X,
@@ -47,6 +46,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { ConnectWallet } from '@/features/wallet/components/ConnectWallet';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { cn } from '@/shared/utils';
 
@@ -846,33 +846,7 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
 
           {/* Footer */}
           <div className="flex-shrink-0 border-t border-gray-100 p-3">
-            {!collapsed ? (
-              <div className="flex items-center gap-3 rounded-lg bg-gray-50 px-3 py-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-                  <Users className="h-4 w-4 text-primary" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-gray-900">Admin User</p>
-                  <p className="truncate text-xs text-gray-500">admin@example.com</p>
-                </div>
-                <Link href={'/settings' as Route}>
-                  <Settings className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-                </Link>
-              </div>
-            ) : (
-              <Tooltip>
-                {}
-                <TooltipTrigger asChild>
-                  <Link
-                    href={'/settings' as Route}
-                    className="mx-auto flex h-10 w-10 items-center justify-center rounded-lg hover:bg-gray-100"
-                  >
-                    <Settings className="h-5 w-5 text-gray-500" />
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="right">设置</TooltipContent>
-              </Tooltip>
-            )}
+            <ConnectWallet />
           </div>
         </motion.aside>
       </TooltipProvider>

@@ -47,7 +47,6 @@ export const common = {
   noHistory: 'No history yet',
   templates: 'Templates',
   allSynced: 'All synced',
-  pwaSettings: 'PWA Settings',
   installation: 'Installation',
   storage: 'Storage',
   cacheSize: 'Cache size',

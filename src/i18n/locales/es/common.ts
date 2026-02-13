@@ -47,7 +47,6 @@ export const common = {
   noHistory: 'Sin historial aún',
   templates: 'Plantillas',
   allSynced: 'Todo sincronizado',
-  pwaSettings: 'Configuración PWA',
   installation: 'Instalación',
   storage: 'Almacenamiento',
   cacheSize: 'Tamaño de caché',

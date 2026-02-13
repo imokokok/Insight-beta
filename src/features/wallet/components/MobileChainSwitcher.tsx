@@ -59,7 +59,7 @@ const SUPPORTED_CHAINS: Chain[] = [
 ];
 
 export function MobileChainSwitcher() {
-  const { t } = useI18n();
+  const { t, isLoading } = useI18n();
   const { toast } = useToast();
   const { chainId, switchChain, addNetwork, isConnected } = useWallet();
   const [isOpen, setIsOpen] = useState(false);
@@ -185,7 +185,7 @@ export function MobileChainSwitcher() {
               <span className="sm:hidden">{currentChain.nativeCurrency.symbol}</span>
             </>
           ) : (
-            <span>{t('wallet.selectNetwork')}</span>
+            <span>{isLoading ? '' : t('wallet.selectNetwork')}</span>
           )}
           <ChevronDown className="h-4 w-4 text-gray-400" />
         </Button>

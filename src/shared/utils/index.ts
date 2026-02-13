@@ -8,7 +8,6 @@ export * from './common';
 export * from './export';
 export * from './format/index';
 export * from './math';
-export * from './pwa';
 export * from './result';
 export * from './robustTrendAnalysis';
 export * from './storage';

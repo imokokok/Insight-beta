@@ -1,6 +1,5 @@
 import './globals.css';
 import type { ReactNode } from 'react';
-import { lazy, Suspense } from 'react';
 
 import { cookies, headers } from 'next/headers';
 
@@ -8,18 +7,17 @@ import { Toaster } from 'sonner';
 
 import { AccessibilityProvider, SkipLink } from '@/components/common/AccessibilityProvider';
 import { MobileBottomNav } from '@/components/common/MobileBottomNav';
-import { OfflineIndicator } from '@/components/common/OfflineIndicator';
 import { PageProgress } from '@/components/common/PageProgress';
 import { PageTransition } from '@/components/common/PageTransitions';
-import { PerformanceMonitor } from '@/components/common/PerformanceMonitor';
 import { ResourceHints } from '@/components/common/ResourceHints';
-import { ServiceWorkerRegister } from '@/components/common/ServiceWorkerRegister';
-import { SmartPreloader } from '@/components/common/SmartPreloader';
+import { Sidebar } from '@/components/common/EnhancedSidebar';
+import { ClientComponentsWrapper } from '@/components/common/ClientComponentsWrapper';
 import { MobileLayout } from '@/components/layout/MobileLayout';
 import { WalletProvider } from '@/contexts/WalletContext';
-import { PWAInstallPrompt } from '@/features/pwa/components/PWAInstallPrompt';
 import { MobileChainSwitcher } from '@/features/wallet/components/MobileChainSwitcher';
 import { LanguageProvider } from '@/i18n/LanguageProvider';
+import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
+import { SyncStatus } from '@/features/oracle/components/SyncStatus';
 import {
   detectLangFromAcceptLanguage,
   isLang,
@@ -31,39 +29,8 @@ import { cn } from '@/shared/utils';
 
 import type { Metadata } from 'next';
 
-const Sidebar = lazy(() =>
-  import('@/components/common/EnhancedSidebar').then((mod) => ({
-    default: mod.Sidebar,
-  })),
-);
-const LanguageSwitcher = lazy(() =>
-  import('@/components/common/LanguageSwitcher').then((mod) => ({
-    default: mod.LanguageSwitcher,
-  })),
-);
-const SyncStatus = lazy(() =>
-  import('@/features/oracle/components/SyncStatus').then((mod) => ({
-    default: mod.SyncStatus,
-  })),
-);
-const ClientComponentsWrapper = lazy(() =>
-  import('@/components/common/ClientComponentsWrapper').then((mod) => ({
-    default: mod.ClientComponentsWrapper,
-  })),
-);
-const ResourcePreloader = lazy(() =>
-  import('@/components/common/ResourcePreloader').then((mod) => ({
-    default: mod.ResourcePreloader,
-  })),
-);
-
-function LoadingPlaceholder({ className }: { className?: string }) {
-  return <div className={className} aria-hidden="true" />;
-}
-
-// 使用 ISR 缓存布局，但允许在请求时重新验证
 export const dynamic = 'force-static';
-export const revalidate = 60; // 60秒重新验证
+export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
   const c = await cookies();
@@ -82,7 +49,6 @@ export async function generateMetadata(): Promise<Metadata> {
       icon: '/logo-owl.png',
       apple: '/logo-owl.png',
     },
-    manifest: '/manifest.json',
     openGraph: {
       type: 'website',
       locale: langToHtmlLang[lang],
@@ -101,7 +67,6 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  // 并行获取 cookies 和 headers - 性能优化
   const [c, h] = await Promise.all([cookies(), headers()]);
   const cookieLang = c.get(LANG_STORAGE_KEY)?.value;
   const lang = isLang(cookieLang)
@@ -111,12 +76,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     <html lang={langToHtmlLang[lang]}>
       <head>
         <ResourceHints />
-        <link rel="manifest" href="/manifest.json" />
-        <link rel="apple-touch-icon" href="/logo-owl.png" />
+        <link rel="icon" href="/logo-owl.png" />
         <meta name="theme-color" content="#6366f1" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="OracleMonitor" />
       </head>
       <body
         className={cn(
@@ -126,26 +87,10 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <AccessibilityProvider>
           <SkipLink />
           <PageProgress />
-          <Suspense fallback={null}>
-            <ResourcePreloader />
-          </Suspense>
-          <Suspense fallback={null}>
-            <ServiceWorkerRegister />
-          </Suspense>
-          <Suspense fallback={null}>
-            <SmartPreloader />
-          </Suspense>
-          <Suspense fallback={null}>
-            <OfflineIndicator />
-          </Suspense>
-          <Suspense fallback={null}>
-            <PerformanceMonitor />
-          </Suspense>
           <LanguageProvider initialLang={lang}>
             <WalletProvider>
               <Toaster />
               <MobileLayout>
-                {/* 背景层 */}
                 <div className="mesh-gradient" />
                 <div className="animated-blobs">
                   <div className="blob-1" />
@@ -154,9 +99,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                   <div className="blob-4" />
                 </div>
                 <div className="min-h-screen-dynamic flex">
-                  <Suspense fallback={<LoadingPlaceholder className="hidden w-[280px] md:block" />}>
+                  <div className="hidden w-[280px] md:block">
                     <Sidebar />
-                  </Suspense>
+                  </div>
                   <main
                     id="main-content"
                     className="flex-1 transition-all duration-300 md:ml-[280px]"
@@ -167,26 +112,13 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                           {translations[lang].app.title}
                         </h2>
                         <div className="flex items-center gap-2 md:gap-3">
-                          <Suspense
-                            fallback={
-                              <LoadingPlaceholder className="hidden h-6 w-24 animate-pulse rounded bg-gray-200 sm:flex" />
-                            }
-                          >
-                            <SyncStatus className="hidden sm:flex" />
-                          </Suspense>
-                          {/* 移动端链切换 */}
-                          <Suspense fallback={null}>
-                            <div className="md:hidden">
-                              <MobileChainSwitcher />
-                            </div>
-                          </Suspense>
-                          <Suspense
-                            fallback={
-                              <LoadingPlaceholder className="h-8 w-8 animate-pulse rounded bg-gray-200" />
-                            }
-                          >
-                            <LanguageSwitcher />
-                          </Suspense>
+                          <div className="hidden sm:flex">
+                            <SyncStatus />
+                          </div>
+                          <div className="md:hidden">
+                            <MobileChainSwitcher />
+                          </div>
+                          <LanguageSwitcher />
                         </div>
                       </div>
                       <PageTransition variant="fade">
@@ -195,14 +127,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                     </div>
                   </main>
                 </div>
-                {/* 移动端底部导航 */}
-                <Suspense fallback={null}>
-                  <MobileBottomNav />
-                </Suspense>
-                {/* PWA 安装提示 */}
-                <Suspense fallback={null}>
-                  <PWAInstallPrompt />
-                </Suspense>
+                <MobileBottomNav />
               </MobileLayout>
             </WalletProvider>
           </LanguageProvider>

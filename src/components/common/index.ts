@@ -1,7 +1,6 @@
 // Common Components - 通用组件导出
 // ==================== 核心组件 ====================
 export { ClientComponentsWrapper } from './ClientComponentsWrapper';
-export { ServiceWorkerRegister } from './ServiceWorkerRegister';
 
 // ==================== 加载状态 ====================
 export { DynamicLoading, createLoadingComponent, type LoadingType } from './DynamicLoading';
@@ -85,7 +84,6 @@ export { MobileBottomNav } from './MobileBottomNav';
 
 // ==================== 性能优化 ====================
 export { ResourceHints } from './ResourceHints';
-export { ResourcePreloader } from './ResourcePreloader';
 
 // ==================== 响应式 ====================
 export {

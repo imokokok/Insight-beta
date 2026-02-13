@@ -29,7 +29,6 @@ export function useOracleData(
 ) {
   const normalizedInstanceId = (instanceId ?? '').trim();
 
-  // 1. Stats Fetching (Standard SWR)
   const {
     data: stats,
     error: statsError,
@@ -42,7 +41,6 @@ export function useOracleData(
     createSWRConfig<OracleStats>(),
   );
 
-  // 2. Assertions Fetching (Infinite SWR for pagination)
   const getUrl = (pageIndex: number, previousPageData: BaseResponse<Assertion> | null) => {
     // If reached the end, return null
     if (previousPageData && previousPageData.nextCursor === null) return null;

@@ -9,7 +9,7 @@ import { languages, type Lang } from '@/i18n/translations';
 import { cn } from '@/shared/utils';
 
 export function LanguageSwitcher({ className }: { className?: string }) {
-  const { lang, setLang, t } = useI18n();
+  const { lang, setLang, t, isLoading } = useI18n();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
 
@@ -43,7 +43,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
         aria-expanded={open}
       >
         <Globe size={16} className="text-primary" />
-        <span className="whitespace-nowrap">{currentLabel}</span>
+        <span className="whitespace-nowrap">{isLoading ? '' : currentLabel}</span>
       </button>
 
       {open && (

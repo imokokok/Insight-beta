@@ -46,9 +46,6 @@ export {
   type DeviceType,
 } from './useMediaQuery';
 
-// ==================== 性能监控 Hooks ====================
-export { useWebVitals, useLongTaskMonitor } from './usePerformance';
-
 // ==================== 无障碍 Hooks ====================
 export { useReducedMotion } from './useReducedMotion';
 

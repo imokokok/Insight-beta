@@ -36,13 +36,11 @@ export function SyncStatus({ className }: { className?: string }) {
   const now = Date.now();
   const diff = Number.isFinite(lastSynced) ? now - lastSynced : Number.POSITIVE_INFINITY;
 
-  // Status logic
   let status: 'ok' | 'lagging' | 'error' | 'demo' = 'ok';
   if (data.mode === 'demo') status = 'demo';
   else if (data.sync.error) status = 'error';
-  else if (diff > 5 * 60 * 1000)
-    status = 'error'; // > 5 min
-  else if (diff > 60 * 1000) status = 'lagging'; // > 1 min
+  else if (diff > 5 * 60 * 1000) status = 'error';
+  else if (diff > 60 * 1000) status = 'lagging';
 
   return (
     <div
@@ -83,7 +81,6 @@ export function SyncStatus({ className }: { className?: string }) {
               : t('oracle.sync.error')}
       </span>
 
-      {/* Hover Card */}
       <div className="absolute right-0 top-full z-50 mt-2 hidden w-64 flex-col gap-2 rounded-xl bg-white p-4 shadow-xl ring-1 ring-gray-100 group-hover:flex">
         <div className="flex items-center justify-between border-b border-gray-100 pb-2">
           <span className="text-sm font-semibold text-gray-900">{t('oracle.sync.status')}</span>

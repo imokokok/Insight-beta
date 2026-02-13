@@ -18,8 +18,7 @@ interface PreloadConfig {
     api?: string[];
     /** 图片资源 */
     images?: string[];
-    /** 组件模块 */
-    components?: (() => Promise<unknown>)[];
+  
   };
   /** 延迟时间（毫秒） */
   delay?: number;
@@ -33,7 +32,7 @@ interface PreloadConfig {
 interface PreloadQueueItem {
   id: string;
   url: string;
-  type: 'api' | 'image' | 'component';
+  type: 'api' | 'image';
   priority: number;
   timestamp: number;
 }
@@ -194,10 +193,7 @@ export function SmartPreloader() {
             case 'image':
               await preloadImage(item.url);
               break;
-            case 'component':
-              // 动态导入组件
-              await import(item.url);
-              break;
+
           }
         } catch (error) {
           logger.debug('Preload item failed', { item, error });
@@ -269,16 +265,7 @@ export function SmartPreloader() {
         });
       });
 
-      // 添加组件预加载
-      config.resources.components?.forEach((_, index) => {
-        // 组件预加载在实际使用时处理
-        items.push({
-          id: `component-${index}`,
-          url: '',
-          type: 'component',
-          priority: basePriority + index,
-        });
-      });
+
 
       if (items.length > 0) {
         enqueuePreload(items);

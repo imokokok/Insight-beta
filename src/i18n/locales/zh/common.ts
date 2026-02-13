@@ -47,7 +47,6 @@ export const common = {
   noHistory: '暂无历史记录',
   templates: '模板',
   allSynced: '全部同步',
-  pwaSettings: 'PWA 设置',
   installation: '安装',
   storage: '存储',
   cacheSize: '缓存大小',
