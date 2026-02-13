@@ -7,8 +7,9 @@
 import type { NextRequest } from 'next/server';
 
 import { env } from '@/config/env';
+import { withMiddleware, DEFAULT_RATE_LIMIT } from '@/lib/api/middleware';
 import { alertService } from '@/services/alert/alertService';
-import { apiSuccess, withErrorHandler } from '@/shared/utils';
+import { apiSuccess } from '@/shared/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,19 +50,17 @@ interface MonitoringStats {
   };
 }
 
-export const GET = withErrorHandler(async (_request: NextRequest) => {
-  // 获取告警服务统计
+async function handleGet(_request: NextRequest) {
   const alertStats = alertService.getStats();
   const channelHealth = alertService.getChannelHealth();
 
-  // 检查通知渠道配置状态
   const notificationConfig = {
     email: !!(env.INSIGHT_SMTP_HOST && env.INSIGHT_SMTP_USER && env.INSIGHT_SMTP_PASS),
     webhook: !!env.INSIGHT_WEBHOOK_URL,
     slack: !!env.INSIGHT_SLACK_WEBHOOK_URL,
     telegram: !!(env.INSIGHT_TELEGRAM_BOT_TOKEN && env.INSIGHT_TELEGRAM_CHAT_ID),
     pagerduty: !!env.INSIGHT_PAGERDUTY_KEY,
-    discord: false, // Discord 配置暂未添加
+    discord: false,
   };
 
   const configuredChannels = Object.entries(notificationConfig)
@@ -92,4 +91,9 @@ export const GET = withErrorHandler(async (_request: NextRequest) => {
   };
 
   return apiSuccess(stats);
-});
+}
+
+export const GET = withMiddleware({
+  rateLimit: DEFAULT_RATE_LIMIT,
+  validate: { allowedMethods: ['GET'] },
+})(handleGet);

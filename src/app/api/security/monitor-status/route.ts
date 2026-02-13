@@ -1,12 +1,13 @@
 import type { NextRequest } from 'next/server';
 
 import { requireAdminWithToken } from '@/lib/api/apiResponse';
+import { withMiddleware, DEFAULT_RATE_LIMIT } from '@/lib/api/middleware';
 import { query } from '@/lib/database/db';
 import { manipulationDetectionService } from '@/services/security/manipulationDetectionService';
 import { logger } from '@/shared/logger';
-import { apiSuccess, withErrorHandler } from '@/shared/utils';
+import { apiSuccess } from '@/shared/utils';
 
-export const GET = withErrorHandler(async (request: NextRequest) => {
+async function handleGet(request: NextRequest) {
   const auth = await requireAdminWithToken(request, { strict: false });
   if (auth) return auth;
 
@@ -48,4 +49,9 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
       systemHealth,
     },
   });
-});
+}
+
+export const GET = withMiddleware({
+  rateLimit: DEFAULT_RATE_LIMIT,
+  validate: { allowedMethods: ['GET'] },
+})(handleGet);

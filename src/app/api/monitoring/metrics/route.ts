@@ -6,16 +6,11 @@
 
 import type { NextRequest } from 'next/server';
 
+import { withMiddleware, DEFAULT_RATE_LIMIT } from '@/lib/api/middleware';
 import { performanceMonitor } from '@/services/monitoring/performanceMonitor';
-import { apiSuccess, withErrorHandler, getQueryParam } from '@/shared/utils';
+import { apiSuccess, getQueryParam } from '@/shared/utils';
 
-/**
- * GET /api/monitoring/metrics
- *
- * Query params:
- * - duration: Time range in milliseconds (default: 3600000 = 1 hour)
- */
-export const GET = withErrorHandler(async (request: NextRequest) => {
+async function handleGet(request: NextRequest) {
   const durationParam = getQueryParam(request, 'duration');
   const duration = durationParam ? parseInt(durationParam, 10) : 3600000;
 
@@ -29,4 +24,9 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
       timestamp: Date.now(),
     },
   });
-});
+}
+
+export const GET = withMiddleware({
+  rateLimit: DEFAULT_RATE_LIMIT,
+  validate: { allowedMethods: ['GET'] },
+})(handleGet);

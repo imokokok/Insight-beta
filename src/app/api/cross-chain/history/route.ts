@@ -1,8 +1,9 @@
 import type { NextRequest } from 'next/server';
 
+import { withMiddleware, DEFAULT_RATE_LIMIT } from '@/lib/api/middleware';
 import { crossChainAnalysisService } from '@/services/oracle/crossChainAnalysisService';
 import { logger } from '@/shared/logger';
-import { apiSuccess, apiError, withErrorHandler, getQueryParam } from '@/shared/utils';
+import { apiSuccess, apiError, getQueryParam } from '@/shared/utils';
 
 const VALID_SYMBOLS = ['BTC', 'ETH', 'SOL', 'LINK', 'AVAX', 'MATIC', 'UNI', 'AAVE'];
 const VALID_INTERVALS = ['1hour', '1day'] as const;
@@ -59,7 +60,7 @@ function createPaginationMeta(params: PaginationParams): Record<string, number |
   };
 }
 
-export const GET = withErrorHandler(async (request: NextRequest) => {
+async function handleGet(request: NextRequest) {
   const symbol = getQueryParam(request, 'symbol');
   const startTimeParam = getQueryParam(request, 'startTime');
   const endTimeParam = getQueryParam(request, 'endTime');
@@ -129,4 +130,9 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
       timestamp: new Date().toISOString(),
     },
   });
-});
+}
+
+export const GET = withMiddleware({
+  rateLimit: DEFAULT_RATE_LIMIT,
+  validate: { allowedMethods: ['GET'] },
+})(handleGet);

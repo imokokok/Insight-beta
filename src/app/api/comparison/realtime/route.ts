@@ -7,10 +7,11 @@
 
 import type { NextRequest } from 'next/server';
 
+import { withMiddleware, DEFAULT_RATE_LIMIT } from '@/lib/api/middleware';
 import { logger } from '@/shared/logger';
-import { apiSuccess, withErrorHandler, getQueryParam } from '@/shared/utils';
+import { apiSuccess, getQueryParam } from '@/shared/utils';
 
-export const GET = withErrorHandler(async (request: NextRequest) => {
+async function handleGet(request: NextRequest) {
   const requestStartTime = performance.now();
 
   const symbolsParam = getQueryParam(request, 'symbols');
@@ -21,17 +22,13 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     : ['ETH/USD', 'BTC/USD', 'LINK/USD', 'MATIC/USD', 'AVAX/USD', 'SOL/USD'];
   const protocols = protocolsParam ? protocolsParam.split(',') : undefined;
 
-  // 动态导入 PriceAggregationEngine 以避免构建时执行
   const { PriceAggregationEngine } = await import('@/services/oracle/priceAggregation');
   const priceEngine = new PriceAggregationEngine();
 
-  // 并行获取所有交易对的聚合数据
   const comparisons = await priceEngine.aggregateMultipleSymbols(symbols);
 
-  // 构建实时对比数据
   const response = comparisons.map((comparison) => {
     const protocolData = comparison.prices.map((price) => {
-      // 使用小数形式存储偏差 (0.01 = 1%)
       const deviationFromConsensus =
         (price.price - comparison.medianPrice) / comparison.medianPrice;
 
@@ -40,19 +37,17 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
         price: price.price,
         timestamp: new Date(price.timestamp).toISOString(),
         confidence: price.confidence,
-        latency: 0, // 可以从同步状态表获取
+        latency: 0,
         deviationFromConsensus,
         status: price.isStale ? ('stale' as const) : ('active' as const),
       };
     });
 
-    // 过滤协议
     const filteredData = protocols
       ? protocolData.filter((p) => protocols.includes(p.protocol))
       : protocolData;
 
     const prices = filteredData.map((p) => p.price);
-    // 检查 prices 数组是否为空
     if (prices.length === 0) {
       return {
         symbol: comparison.symbol,
@@ -90,7 +85,6 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
         min,
         max,
         absolute: max - min,
-        // 价差百分比，小数形式 (0.01 = 1%)
         percent: (max - min) / median,
       },
       lastUpdated: comparison.timestamp,
@@ -111,4 +105,9 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
       requestTimeMs: Math.round(requestTime),
     },
   });
-});
+}
+
+export const GET = withMiddleware({
+  rateLimit: DEFAULT_RATE_LIMIT,
+  validate: { allowedMethods: ['GET'] },
+})(handleGet);

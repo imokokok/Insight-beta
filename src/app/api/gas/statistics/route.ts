@@ -1,10 +1,11 @@
 import type { NextRequest } from 'next/server';
 
+import { withMiddleware, DEFAULT_RATE_LIMIT } from '@/lib/api/middleware';
 import { gasPriceService } from '@/services/gas';
-import { apiSuccess, apiError, withErrorHandler, getRequiredQueryParam } from '@/shared/utils';
+import { apiSuccess, apiError, getRequiredQueryParam } from '@/shared/utils';
 import type { SupportedChain } from '@/types/unifiedOracleTypes';
 
-export const GET = withErrorHandler(async (request: NextRequest) => {
+async function handleGet(request: NextRequest) {
   const chain = getRequiredQueryParam(request, 'chain') as SupportedChain | null;
   const provider = getRequiredQueryParam(request, 'provider') as
     | 'etherscan'
@@ -35,4 +36,9 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
   const statistics = gasPriceService.getStatistics(chain, provider, priceLevel);
 
   return apiSuccess(statistics);
-});
+}
+
+export const GET = withMiddleware({
+  rateLimit: DEFAULT_RATE_LIMIT,
+  validate: { allowedMethods: ['GET'] },
+})(handleGet);

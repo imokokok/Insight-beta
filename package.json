@@ -41,6 +41,10 @@
     "test:chaos": "tsx scripts/chaos-test.ts",
     "test:chaos:dry-run": "CHAOS_DRY_RUN=true CHAOS_ENABLED=true tsx scripts/chaos-test.ts",
     "validate:schema": "tsx scripts/validate-schema-consistency.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
     "prepare": "husky"
   },
   "dependencies": {
@@ -54,6 +58,7 @@
     "@walletconnect/ethereum-provider": "^2.19.0",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
+    "drizzle-orm": "^0.45.1",
     "framer-motion": "^12.33.0",
     "lucide-react": "0.562.0",
     "next": "^16.1.6",
@@ -91,6 +96,7 @@
     "@typescript-eslint/parser": "8.24.0",
     "@vitejs/plugin-react": "5.1.2",
     "autoprefixer": "10.4.20",
+    "drizzle-kit": "^0.31.9",
     "eslint": "^9.39.2",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.32.0",

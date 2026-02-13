@@ -7,9 +7,10 @@
 
 import type { NextRequest } from 'next/server';
 
+import { withMiddleware, DEFAULT_RATE_LIMIT } from '@/lib/api/middleware';
 import { query } from '@/lib/database/db';
 import { logger } from '@/shared/logger';
-import { apiSuccess, withErrorHandler, getQueryParam } from '@/shared/utils';
+import { apiSuccess, getQueryParam } from '@/shared/utils';
 
 interface LatencyRow {
   protocol: string;
@@ -21,7 +22,7 @@ interface LatencyRow {
   is_stale: boolean;
 }
 
-export const GET = withErrorHandler(async (request: NextRequest) => {
+async function handleGet(request: NextRequest) {
   const requestStartTime = performance.now();
 
   const symbolsParam = getQueryParam(request, 'symbols');
@@ -30,7 +31,6 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
   const symbols = symbolsParam ? symbolsParam.split(',') : ['ETH/USD', 'BTC/USD', 'LINK/USD'];
   const protocols = protocolsParam ? protocolsParam.split(',') : undefined;
 
-  // 查询延迟数据
   const sql = `
     SELECT
       protocol,
@@ -54,7 +54,6 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
 
   const result = await query(sql, params);
 
-  // 按协议和交易对分组计算统计信息
   const metricsMap = new Map<string, LatencyRow[]>();
 
   for (const row of result.rows) {
@@ -135,4 +134,9 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
       requestTimeMs: Math.round(requestTime),
     },
   });
-});
+}
+
+export const GET = withMiddleware({
+  rateLimit: DEFAULT_RATE_LIMIT,
+  validate: { allowedMethods: ['GET'] },
+})(handleGet);

@@ -1,7 +1,8 @@
+import { withMiddleware, DEFAULT_RATE_LIMIT } from '@/lib/api/middleware';
 import { gasPriceService } from '@/services/gas';
-import { apiSuccess, withErrorHandler } from '@/shared/utils';
+import { apiSuccess } from '@/shared/utils';
 
-export const GET = withErrorHandler(async () => {
+async function handleGet() {
   const health = gasPriceService.getProviderHealth();
 
   return apiSuccess({
@@ -13,4 +14,9 @@ export const GET = withErrorHandler(async () => {
       unhealthyCount: health.filter((h) => h.status === 'unhealthy').length,
     },
   });
-});
+}
+
+export const GET = withMiddleware({
+  rateLimit: DEFAULT_RATE_LIMIT,
+  validate: { allowedMethods: ['GET'] },
+})(handleGet);

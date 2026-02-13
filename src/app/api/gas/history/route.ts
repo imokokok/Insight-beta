@@ -1,17 +1,12 @@
 import type { NextRequest } from 'next/server';
 
+import { withMiddleware, DEFAULT_RATE_LIMIT } from '@/lib/api/middleware';
 import { gasPriceService } from '@/services/gas';
-import {
-  apiSuccess,
-  apiError,
-  withErrorHandler,
-  getRequiredQueryParam,
-  getQueryParam,
-} from '@/shared/utils';
+import { apiSuccess, getQueryParam, getRequiredQueryParam } from '@/shared/utils';
 import type { SupportedChain } from '@/types/unifiedOracleTypes';
 
-export const GET = withErrorHandler(async (request: NextRequest) => {
-  const chain = getRequiredQueryParam(request, 'chain') as SupportedChain | null;
+async function handleGet(request: NextRequest) {
+  const chain = getRequiredQueryParam(request, 'chain') as SupportedChain;
   const provider = getQueryParam(request, 'provider') as
     | 'etherscan'
     | 'gasnow'
@@ -21,10 +16,6 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     | null;
   const limitParam = getQueryParam(request, 'limit');
   const limit = limitParam ? parseInt(limitParam, 10) : 100;
-
-  if (!chain) {
-    return apiError('Chain parameter is required', 400);
-  }
 
   const history = gasPriceService.getHistory(chain, provider ?? undefined, Math.min(limit, 1000));
 
@@ -36,4 +27,9 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
       provider,
     },
   });
-});
+}
+
+export const GET = withMiddleware({
+  rateLimit: DEFAULT_RATE_LIMIT,
+  validate: { allowedMethods: ['GET'] },
+})(handleGet);

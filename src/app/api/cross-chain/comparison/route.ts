@@ -1,8 +1,9 @@
 import type { NextRequest } from 'next/server';
 
+import { withMiddleware, DEFAULT_RATE_LIMIT } from '@/lib/api/middleware';
 import { crossChainAnalysisService } from '@/services/oracle/crossChainAnalysisService';
 import { logger } from '@/shared/logger';
-import { apiSuccess, apiError, withErrorHandler, getQueryParam } from '@/shared/utils';
+import { apiSuccess, apiError, getQueryParam } from '@/shared/utils';
 import type { SupportedChain } from '@/types/unifiedOracleTypes';
 
 const VALID_SYMBOLS = ['BTC', 'ETH', 'SOL', 'LINK', 'AVAX', 'MATIC', 'UNI', 'AAVE'];
@@ -53,7 +54,7 @@ function validateChains(chainsParam: string | null): SupportedChain[] | null {
   return chains as SupportedChain[];
 }
 
-export const GET = withErrorHandler(async (request: NextRequest) => {
+async function handleGet(request: NextRequest) {
   const symbol = getQueryParam(request, 'symbol');
   const chainsParam = getQueryParam(request, 'chains');
 
@@ -84,4 +85,9 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
       timestamp: new Date().toISOString(),
     },
   });
-});
+}
+
+export const GET = withMiddleware({
+  rateLimit: DEFAULT_RATE_LIMIT,
+  validate: { allowedMethods: ['GET'] },
+})(handleGet);

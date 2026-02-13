@@ -1,11 +1,12 @@
 import type { NextRequest } from 'next/server';
 
 import { requireAdminWithToken } from '@/lib/api/apiResponse';
+import { withMiddleware, DEFAULT_RATE_LIMIT } from '@/lib/api/middleware';
 import { query } from '@/lib/database/db';
 import { logger } from '@/shared/logger';
-import { apiSuccess, apiError, withErrorHandler } from '@/shared/utils';
+import { apiSuccess, apiError } from '@/shared/utils';
 
-export const GET = withErrorHandler(async (request: NextRequest) => {
+async function handleGet(request: NextRequest) {
   const auth = await requireAdminWithToken(request, { strict: false });
   if (auth) return auth;
 
@@ -27,4 +28,9 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     });
     return apiError('Failed to fetch count', 500);
   }
-});
+}
+
+export const GET = withMiddleware({
+  rateLimit: DEFAULT_RATE_LIMIT,
+  validate: { allowedMethods: ['GET'] },
+})(handleGet);

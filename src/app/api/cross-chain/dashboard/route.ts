@@ -1,7 +1,8 @@
+import { withMiddleware, DEFAULT_RATE_LIMIT } from '@/lib/api/middleware';
 import { crossChainAnalysisService } from '@/services/oracle/crossChainAnalysisService';
-import { apiSuccess, withErrorHandler } from '@/shared/utils';
+import { apiSuccess } from '@/shared/utils';
 
-export const GET = withErrorHandler(async () => {
+async function handleGet() {
   const dashboard = await crossChainAnalysisService.getDashboardData();
 
   return apiSuccess({
@@ -10,4 +11,9 @@ export const GET = withErrorHandler(async () => {
       timestamp: new Date().toISOString(),
     },
   });
-});
+}
+
+export const GET = withMiddleware({
+  rateLimit: DEFAULT_RATE_LIMIT,
+  validate: { allowedMethods: ['GET'] },
+})(handleGet);
