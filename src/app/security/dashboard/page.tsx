@@ -181,8 +181,8 @@ function SecurityScoreGauge({ score }: { score: number }) {
         thresholds={{ warning: 70, critical: 50 }}
       />
       <div className="-mt-4 text-center">
-        <p className="text-sm font-medium text-gray-600">Security Score</p>
-        <p className={cn('text-lg font-bold', score >= 70 ? 'text-emerald-600' : 'text-amber-600')}>
+        <p className="text-sm font-medium text-muted-foreground">Security Score</p>
+        <p className={cn('text-lg font-bold', score >= 70 ? 'text-green-500' : 'text-amber-500')}>
           {status}
         </p>
       </div>
@@ -196,8 +196,8 @@ interface ChartErrorFallbackProps {
 
 function ChartErrorFallback({ title }: ChartErrorFallbackProps) {
   return (
-    <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-gray-200 bg-gray-50 p-6">
-      <p className="text-sm text-gray-500">{title} 加载失败，请刷新页面重试</p>
+    <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-border bg-card p-6">
+      <p className="text-sm text-muted-foreground">{title} 加载失败，请刷新页面重试</p>
     </div>
   );
 }
@@ -318,7 +318,7 @@ export default function OptimizedSecurityDashboard() {
   );
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50/50">
+    <div className="flex h-screen overflow-hidden bg-background">
       <main className="flex flex-1 flex-col overflow-hidden">
         <DashboardPageHeader
           title="Security Operations Center"

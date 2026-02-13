@@ -361,9 +361,9 @@ function formatTime(timestamp: string, isDense: boolean): string {
 
 ## 3. Color System Guidelines
 
-### 3.1 Semantic Colors (Recommended)
+### 3.1 Color Palette - Blue-Purple Elegant Theme
 
-This project uses a dark theme. Always use semantic colors instead of hardcoded colors:
+This project uses a dark theme with a sophisticated blue-purple color palette. Always use semantic colors instead of hardcoded colors:
 
 | Semantic Color | Usage | CSS Variable |
 |---------------|-------|--------------|
@@ -373,7 +373,13 @@ This project uses a dark theme. Always use semantic colors instead of hardcoded 
 | `text-foreground` | Primary text | `--color-foreground` |
 | `text-muted-foreground` | Secondary text | `--color-muted-foreground` |
 | `border-border` | Borders | `--color-border` |
-| `text-primary` | Primary accent | `--color-primary` |
+| `text-primary` | Primary accent (Indigo) | `--color-primary` |
+
+**Color Palette:**
+- **Primary**: Indigo (#818CF8) - Softer, more elegant
+- **Accent**: Purple (#C4B5FD) - Subtle purple highlights
+- **Background**: Deep slate (#0F172A)
+- **Cards**: Soft dark (#1E2030)
 
 ### 3.2 Usage Examples
 
@@ -382,6 +388,7 @@ This project uses a dark theme. Always use semantic colors instead of hardcoded 
 <div className="bg-card border-border">
   <h1 className="text-foreground">Title</h1>
   <p className="text-muted-foreground">Description</p>
+  <button className="bg-primary text-primary-foreground">Action</button>
 </div>
 
 // ❌ Wrong - Using hardcoded colors
@@ -393,7 +400,7 @@ This project uses a dark theme. Always use semantic colors instead of hardcoded 
 
 ### 3.3 Status Colors
 
-For status indicators, use these patterns:
+For status indicators, use these patterns (softer tones):
 
 ```tsx
 // Success/Active
@@ -405,8 +412,8 @@ For status indicators, use these patterns:
 // Error/Critical
 <span className="text-red-400">Error</span>
 
-// Info
-<span className="text-blue-400">Info</span>
+// Info/Primary
+<span className="text-primary">Info</span>
 ```
 
 ### 3.4 Background Variations
@@ -421,8 +428,8 @@ For status indicators, use these patterns:
 // Success backgrounds
 <div className="bg-emerald-500/10">Success background</div>
 
-// Info backgrounds
-<div className="bg-blue-500/10">Info background</div>
+// Primary/Info backgrounds
+<div className="bg-primary/10">Primary background</div>
 ```
 
 ---

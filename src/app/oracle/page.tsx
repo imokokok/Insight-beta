@@ -44,9 +44,10 @@ export default function OraclePlatformPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="relative min-h-screen">
+      <div className="mesh-gradient" />
       <section className="relative overflow-hidden px-4 py-20 sm:px-6 lg:px-8">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary-100 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary-900/20 via-transparent to-transparent" />
 
         <div className="relative mx-auto max-w-7xl text-center">
           <Badge variant="secondary" className="mb-6">
@@ -54,15 +55,15 @@ export default function OraclePlatformPage() {
             {t('home.hero.badge')}
           </Badge>
 
-          <h1 className="mb-6 text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
+          <h1 className="mb-6 text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
             {t('home.hero.title')}
-            <span className="bg-gradient-to-r from-primary-600 to-blue-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-primary-400 to-cyan-400 bg-clip-text text-transparent">
               {' '}
               {t('home.hero.titleHighlight')}
             </span>
           </h1>
 
-          <p className="mx-auto mb-10 max-w-3xl text-lg text-gray-600 sm:text-xl">
+          <p className="mx-auto mb-10 max-w-3xl text-lg text-muted-foreground sm:text-xl">
             {t('home.hero.description')}
           </p>
 
@@ -88,7 +89,7 @@ export default function OraclePlatformPage() {
             />
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500">
+          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
             <span className="flex items-center gap-2">
               <CheckCircle className="h-4 w-4 text-green-500" />
               {t('home.trustIndicators.protocols')}
@@ -105,7 +106,7 @@ export default function OraclePlatformPage() {
         </div>
       </section>
 
-      <section className="border-y border-gray-100 px-4 py-12 sm:px-6 lg:px-8">
+      <section className="border-y border-border/50 px-4 py-12 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard
@@ -143,10 +144,10 @@ export default function OraclePlatformPage() {
       <section className="px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-gray-900">
+            <h2 className="mb-4 text-3xl font-bold text-foreground">
               {t('home.capabilities.title')}
             </h2>
-            <p className="mx-auto max-w-2xl text-gray-600">{t('home.capabilities.subtitle')}</p>
+            <p className="mx-auto max-w-2xl text-muted-foreground">{t('home.capabilities.subtitle')}</p>
           </div>
 
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
@@ -174,11 +175,11 @@ export default function OraclePlatformPage() {
         </div>
       </section>
 
-      <section className="bg-gray-50 px-4 py-16 sm:px-6 lg:px-8">
+      <section className="bg-card/50 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-gray-900">{t('home.protocols.title')}</h2>
-            <p className="mx-auto max-w-2xl text-gray-600">{t('home.protocols.subtitle')}</p>
+            <h2 className="mb-4 text-3xl font-bold text-foreground">{t('home.protocols.title')}</h2>
+            <p className="mx-auto max-w-2xl text-muted-foreground">{t('home.protocols.subtitle')}</p>
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -202,8 +203,8 @@ export default function OraclePlatformPage() {
 
       <section className="px-4 py-20 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl text-center">
-          <h2 className="mb-6 text-3xl font-bold text-gray-900">{t('home.cta.title')}</h2>
-          <p className="mb-8 text-lg text-gray-600">{t('home.cta.subtitle')}</p>
+          <h2 className="mb-6 text-3xl font-bold text-foreground">{t('home.cta.title')}</h2>
+          <p className="mb-8 text-lg text-muted-foreground">{t('home.cta.subtitle')}</p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Button
               size="lg"

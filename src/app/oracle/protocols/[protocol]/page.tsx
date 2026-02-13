@@ -212,12 +212,12 @@ export default function UnifiedProtocolPage() {
                     lastSubmission: string;
                   };
                   return (
-                    <Card key={n.id} className="border-0 bg-gray-50">
+                    <Card key={n.id} className="border-0 bg-card">
                       <CardContent className="p-4">
                         <div className="mb-3 flex items-start justify-between">
                           <div>
-                            <h4 className="font-semibold">{n.name}</h4>
-                            <p className="font-mono text-sm text-gray-500">
+                            <h4 className="font-semibold text-foreground">{n.name}</h4>
+                            <p className="font-mono text-sm text-muted-foreground">
                               {truncateAddress(n.address)}
                             </p>
                           </div>
@@ -225,8 +225,8 @@ export default function UnifiedProtocolPage() {
                         </div>
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
-                            <span className="text-gray-500">Success Rate</span>
-                            <span className="font-medium">{n.successRate}%</span>
+                            <span className="text-muted-foreground">Success Rate</span>
+                            <span className="font-medium text-foreground">{n.successRate}%</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-gray-500">Total Submissions</span>
@@ -270,21 +270,21 @@ export default function UnifiedProtocolPage() {
                     lastPublish: string;
                   };
                   return (
-                    <Card key={p.id} className="border-0 bg-gray-50">
+                    <Card key={p.id} className="border-0 bg-card">
                       <CardContent className="p-4">
                         <div className="mb-3 flex items-start justify-between">
                           <div>
-                            <h4 className="font-semibold">{p.name}</h4>
+                            <h4 className="font-semibold text-foreground">{p.name}</h4>
                           </div>
                           <StatusBadge status={p.status} size="sm" />
                         </div>
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
-                            <span className="text-gray-500">Accuracy</span>
-                            <span className="font-medium">{p.accuracy}%</span>
+                            <span className="text-muted-foreground">Accuracy</span>
+                            <span className="font-medium text-foreground">{p.accuracy}%</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-gray-500">Total Publishes</span>
+                            <span className="text-muted-foreground">Total Publishes</span>
                             <span className="font-medium">{p.totalPublishes.toLocaleString()}</span>
                           </div>
                           <div className="flex justify-between">

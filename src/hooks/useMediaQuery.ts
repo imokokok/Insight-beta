@@ -88,3 +88,10 @@ export function useWindowSize(): { width: number; height: number } {
 export function useIsLargeScreen(): boolean {
   return useMediaQuery('(min-width: 1280px)');
 }
+
+/**
+ * 移动设备检测 Hook (768px-)
+ */
+export function useIsMobile(): boolean {
+  return useMediaQuery('(max-width: 768px)');
+}

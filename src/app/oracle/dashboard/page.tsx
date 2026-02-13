@@ -385,7 +385,7 @@ export default function OptimizedOracleDashboard() {
   );
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50/50">
+    <div className="flex h-screen overflow-hidden bg-background">
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <button
@@ -545,27 +545,27 @@ export default function OptimizedOracleDashboard() {
                     icon={<Activity className="h-5 w-5" />}
                   >
                     <div className="space-y-4">
-                      <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
-                        <span className="text-sm text-gray-600">Active Protocols</span>
-                        <span className="text-lg font-bold text-gray-900">
+                      <div className="flex items-center justify-between rounded-lg bg-card/50 p-3">
+                        <span className="text-sm text-muted-foreground">Active Protocols</span>
+                        <span className="text-lg font-bold text-foreground">
                           {stats?.totalProtocols ?? 8}
                         </span>
                       </div>
-                      <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
-                        <span className="text-sm text-gray-600">Total Feeds</span>
-                        <span className="text-lg font-bold text-gray-900">
+                      <div className="flex items-center justify-between rounded-lg bg-card/50 p-3">
+                        <span className="text-sm text-muted-foreground">Total Feeds</span>
+                        <span className="text-lg font-bold text-foreground">
                           {stats?.totalPriceFeeds ?? 156}
                         </span>
                       </div>
-                      <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
-                        <span className="text-sm text-gray-600">Avg Update Time</span>
-                        <span className="text-lg font-bold text-gray-900">
+                      <div className="flex items-center justify-between rounded-lg bg-card/50 p-3">
+                        <span className="text-sm text-muted-foreground">Avg Update Time</span>
+                        <span className="text-lg font-bold text-foreground">
                           {stats?.avgLatency ?? 450}ms
                         </span>
                       </div>
-                      <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
-                        <span className="text-sm text-gray-600">Health Score</span>
-                        <span className="text-lg font-bold text-emerald-600">98.5%</span>
+                      <div className="flex items-center justify-between rounded-lg bg-card/50 p-3">
+                        <span className="text-sm text-muted-foreground">Health Score</span>
+                        <span className="text-lg font-bold text-green-500">98.5%</span>
                       </div>
                     </div>
                   </ChartCard>

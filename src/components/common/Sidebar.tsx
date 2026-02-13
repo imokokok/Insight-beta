@@ -240,7 +240,7 @@ const SidebarLogo = memo(function SidebarLogo() {
           priority
           placeholder="blur"
           blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzYiIGhlaWdodD0iMzYiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjM2IiBoZWlnaHQ9IjM2IiBmaWxsPSIjZjNmNGY2Ii8+PC9zdmc+"
-          onError={() => setLogoSrc('/logo-owl.svg')}
+          onError={() => setLogoSrc('/logo-owl.png')}
           sizes="36px"
         />
         <span

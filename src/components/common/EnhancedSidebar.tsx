@@ -761,15 +761,13 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
           <div className="flex h-16 flex-shrink-0 items-center justify-between border-b border-border px-4">
             {!collapsed && (
               <Link href="/" className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                  <LayoutDashboard className="h-5 w-5 text-white" />
-                </div>
+                <img src="/logo-owl.png" alt="Logo" className="h-8 w-8" />
                 <span className="text-lg font-bold text-foreground">Insight</span>
               </Link>
             )}
             {collapsed && (
-              <div className="mx-auto flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                <LayoutDashboard className="h-5 w-5 text-white" />
+              <div className="mx-auto">
+                <img src="/logo-owl.png" alt="Logo" className="h-8 w-8" />
               </div>
             )}
 
