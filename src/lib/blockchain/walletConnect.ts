@@ -21,6 +21,9 @@ export const SUPPORTED_CHAINS: Chain[] = [
 export type WalletConnectionType = 'browser' | 'walletconnect';
 
 // Ethereum Provider 类型
+// WalletConnect/Ethereum Provider 类型定义复杂，使用 any 以避免类型膨胀
+// 如需严格类型，可从 @walletconnect/ethereum-provider 导入具体类型
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type EthereumProviderType = any;
 
 // 钱包提供者接口

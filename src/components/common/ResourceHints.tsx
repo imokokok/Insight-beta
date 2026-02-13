@@ -49,13 +49,13 @@ const MODULE_PRELOADS = [
 // 关键图片预加载
 const CRITICAL_IMAGES = ['/logo-owl.png', '/icon-192x192.png'];
 
-export const ResourceHints: React.FC<ResourceHintsProps> = ({
+export function ResourceHints({
   enablePreconnect = true,
   enableDnsPrefetch = true,
   enablePreload = true,
   customPreconnect = [],
   customDnsPrefetch = [],
-}) => {
+}: ResourceHintsProps) {
   const preconnectDomains = [...DEFAULT_PRECONNECT, ...customPreconnect];
   const dnsPrefetchDomains = [...DEFAULT_DNS_PREFETCH, ...customDnsPrefetch];
 
@@ -104,24 +104,28 @@ export const ResourceHints: React.FC<ResourceHintsProps> = ({
         ))}
     </>
   );
-};
+}
 
 /**
  * 预加载图片组件
  */
-export const PreloadImage: React.FC<{
+interface PreloadImageProps {
   src: string;
   fetchpriority?: 'high' | 'low' | 'auto';
-}> = ({ src, fetchpriority = 'auto' }) => {
+}
+
+export function PreloadImage({ src, fetchpriority = 'auto' }: PreloadImageProps) {
   return <link rel="preload" as="image" href={src} fetchPriority={fetchpriority} />;
-};
+}
 
 /**
  * 预加载关键 CSS
  */
-export const PreloadCriticalCSS: React.FC<{
+interface PreloadCriticalCSSProps {
   href: string;
-}> = ({ href }) => {
+}
+
+export function PreloadCriticalCSS({ href }: PreloadCriticalCSSProps) {
   return (
     <link
       rel="preload"
@@ -133,6 +137,6 @@ export const PreloadCriticalCSS: React.FC<{
       }}
     />
   );
-};
+}
 
 export default ResourceHints;

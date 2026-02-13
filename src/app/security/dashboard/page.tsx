@@ -233,7 +233,7 @@ export default function OptimizedSecurityDashboard() {
 
   const fetchSecurityData = useCallback(async () => {
     // Note: Security stats API not yet implemented - using mock data
-    // TODO: Uncomment when API is ready
+    // TODO: [Security API] Uncomment when API is ready
     // const response = await fetch('/api/security/stats');
     // const data = await response.json();
     // setStats(data);

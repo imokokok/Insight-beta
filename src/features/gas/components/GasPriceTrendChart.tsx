@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 
 import {
   Line,
@@ -24,6 +24,7 @@ interface GasPriceTrendChartProps {
   data?: GasPriceTrend;
   isLoading?: boolean;
   height?: number;
+  className?: string;
 }
 
 const CHAIN_COLORS: Record<string, string> = {
@@ -47,11 +48,7 @@ const CHAIN_COLORS: Record<string, string> = {
   aptos: '#627eea',
 };
 
-export const GasPriceTrendChart: React.FC<GasPriceTrendChartProps> = ({
-  data,
-  isLoading,
-  height = 300,
-}) => {
+export function GasPriceTrendChart({ data, isLoading, height = 300 }: GasPriceTrendChartProps) {
   const { t } = useI18n();
 
   const chartData = useMemo(() => {
@@ -209,4 +206,4 @@ export const GasPriceTrendChart: React.FC<GasPriceTrendChartProps> = ({
       </CardContent>
     </Card>
   );
-};
+}

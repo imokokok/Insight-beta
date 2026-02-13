@@ -22,6 +22,7 @@ import {
   blast,
   sepolia,
   goerli,
+  type Chain,
 } from 'viem/chains';
 
 import type { SupportedChain } from '@/types/unifiedOracleTypes';
@@ -34,7 +35,7 @@ import type { SupportedChain } from '@/types/unifiedOracleTypes';
  * 支持的链到 viem chain 对象的映射
  * 不支持的链默认映射到 mainnet
  */
-export const VIEM_CHAIN_MAP: Record<SupportedChain, any> = {
+export const VIEM_CHAIN_MAP: Record<SupportedChain, Chain> = {
   ethereum: mainnet,
   polygon: polygon,
   arbitrum: arbitrum,

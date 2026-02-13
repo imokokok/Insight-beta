@@ -26,6 +26,7 @@ interface GasPriceHistoryViewerProps {
   chain: string;
   provider?: string;
   limit?: number;
+  className?: string;
 }
 
 const PRICE_LEVEL_COLORS = {
@@ -53,11 +54,11 @@ function formatDate(timestamp: string): string {
   });
 }
 
-export const GasPriceHistoryViewer: React.FC<GasPriceHistoryViewerProps> = ({
+export function GasPriceHistoryViewer({
   chain,
   provider,
   limit = 100,
-}) => {
+}: GasPriceHistoryViewerProps) {
   const [selectedPriceLevel, setSelectedPriceLevel] = useState<
     'slow' | 'average' | 'fast' | 'fastest'
   >('average');
@@ -361,4 +362,4 @@ export const GasPriceHistoryViewer: React.FC<GasPriceHistoryViewerProps> = ({
       </CardContent>
     </Card>
   );
-};
+}

@@ -22,11 +22,11 @@ interface ServiceWorkerRegisterProps {
   onError?: (error: Error) => void;
 }
 
-export const ServiceWorkerRegister: React.FC<ServiceWorkerRegisterProps> = ({
+export function ServiceWorkerRegister({
   swPath = '/sw.js',
   onRegistered,
   onError,
-}) => {
+}: ServiceWorkerRegisterProps) {
   const [, setIsRegistered] = useState(false);
 
   useEffect(() => {
@@ -112,7 +112,7 @@ export const ServiceWorkerRegister: React.FC<ServiceWorkerRegisterProps> = ({
 
   // 这个组件不渲染任何内容
   return null;
-};
+}
 
 /**
  * 手动更新 Service Worker

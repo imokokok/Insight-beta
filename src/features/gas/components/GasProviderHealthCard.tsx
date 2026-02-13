@@ -1,7 +1,5 @@
 'use client';
 
-import React from 'react';
-
 import { Activity, CheckCircle, AlertTriangle, XCircle, Clock } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +11,7 @@ import { cn, formatPercentValue } from '@/shared/utils';
 interface GasProviderHealthCardProps {
   data?: GasPriceHealthResponse;
   isLoading?: boolean;
+  className?: string;
 }
 
 const STATUS_CONFIG = {
@@ -45,10 +44,7 @@ function formatLatency(ms: number): string {
   return `${(ms / 1000).toFixed(1)}s`;
 }
 
-export const GasProviderHealthCard: React.FC<GasProviderHealthCardProps> = ({
-  data,
-  isLoading,
-}) => {
+export function GasProviderHealthCard({ data, isLoading }: GasProviderHealthCardProps) {
   if (isLoading) {
     return (
       <Card className="w-full">
@@ -200,4 +196,4 @@ export const GasProviderHealthCard: React.FC<GasProviderHealthCardProps> = ({
       </CardContent>
     </Card>
   );
-};
+}
