@@ -27,21 +27,13 @@ import {
 } from '@/features/oracle/components/LandingPageCards';
 import { PROTOCOLS } from '@/features/oracle/constants/protocols';
 import { usePlatformStats } from '@/features/oracle/hooks';
-import { useCommonShortcuts } from '@/hooks/useKeyboardShortcuts';
+
 import { useI18n } from '@/i18n';
 
 export default function OraclePlatformPage() {
   const router = useRouter();
   const { t } = useI18n();
-  const { stats, loading, refresh } = usePlatformStats();
-
-  useCommonShortcuts({
-    onRefresh: refresh,
-    onSearch: () => {
-      const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
-      searchInput?.focus();
-    },
-  });
+  const { stats, loading } = usePlatformStats();
 
   return (
     <div className="relative min-h-screen">

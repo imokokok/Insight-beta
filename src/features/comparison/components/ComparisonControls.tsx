@@ -435,7 +435,7 @@ export const ComparisonControls = memo(function ComparisonControls({
             </Button>
 
             <DropdownMenu>
-              <DropdownMenuTrigger>
+              <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="px-2 text-xs sm:px-3 sm:text-sm">
                   <Download className="mr-1 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   <span className="hidden sm:inline">{t('comparison.controls.export')}</span>

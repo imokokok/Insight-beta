@@ -171,8 +171,6 @@ function SecurityScoreGauge({ score }: { score: number }) {
   return (
     <div
       className="flex flex-col items-center"
-      role="figure"
-      aria-label={`Security score: ${score}, Status: ${status}`}
     >
       <EnhancedGaugeChart
         value={score}
@@ -345,7 +343,6 @@ export default function OptimizedSecurityDashboard() {
           )}
 
           <section
-            aria-label="Risk Level Summary"
             className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:gap-3"
           >
             <ThreatLevelBadge level="high" count={stats.highRiskCount} />
@@ -401,15 +398,15 @@ export default function OptimizedSecurityDashboard() {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
             <TabsList className="w-full justify-start overflow-x-auto lg:w-auto">
               <TabsTrigger value="overview" className="gap-1 sm:gap-2">
-                <Shield className="h-4 w-4" aria-hidden="true" />
+                <Shield className="h-4 w-4" />
                 <span>Overview</span>
               </TabsTrigger>
               <TabsTrigger value="threats" className="gap-1 sm:gap-2">
-                <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+                <AlertTriangle className="h-4 w-4" />
                 <span>Threats</span>
               </TabsTrigger>
               <TabsTrigger value="analysis" className="gap-1 sm:gap-2">
-                <BarChart3 className="h-4 w-4" aria-hidden="true" />
+                <BarChart3 className="h-4 w-4" />
                 <span>Analysis</span>
               </TabsTrigger>
             </TabsList>
@@ -553,9 +550,9 @@ export default function OptimizedSecurityDashboard() {
                       color={CHART_COLORS.primary.DEFAULT}
                     />
                   </ChartWrapper>
-                  <div className="space-y-4" role="list" aria-label="Security metrics breakdown">
+                  <div className="space-y-4">
                     {radarData.map((item) => (
-                      <div key={item.metric} className="space-y-2" role="listitem">
+                      <div key={item.metric} className="space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-medium text-gray-700">{item.metric}</span>
                           <span
@@ -574,7 +571,6 @@ export default function OptimizedSecurityDashboard() {
                         <Progress
                           value={item.value}
                           className="h-2"
-                          aria-label={`${item.metric}: ${item.value}%`}
                         />
                       </div>
                     ))}

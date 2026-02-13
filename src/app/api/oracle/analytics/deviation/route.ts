@@ -8,13 +8,13 @@
 
 import type { NextRequest } from 'next/server';
 
-import { createSuccessResponse, createErrorResponse, handleApiError } from '@/lib/api/response';
+import { ok, error } from '@/lib/api/apiResponse';
 import { query } from '@/lib/database/db';
 import {
   priceDeviationAnalytics,
   type DeviationReport,
   type PriceDeviationPoint,
-} from '@/services/oracle/priceDeviationAnalytics';
+} from '@/features/oracle/services/priceDeviationAnalytics';
 import { logger } from '@/shared/logger';
 
 // ============================================================================
@@ -36,13 +36,13 @@ async function handleReportRequest(
 
     // 验证输入参数
     if (!Number.isFinite(windowHours) || windowHours <= 0 || windowHours > 8760) {
-      return createErrorResponse('Invalid windowHours parameter');
+      return error({ code: 'invalid_windowHours', message: 'Invalid windowHours parameter' }, 400);
     }
     if (!Number.isFinite(page) || page < 1) {
-      return createErrorResponse('Invalid page parameter');
+      return error({ code: 'invalid_page', message: 'Invalid page parameter' }, 400);
     }
     if (!Number.isFinite(limit) || limit < 1 || limit > 1000) {
-      return createErrorResponse('Invalid limit parameter');
+      return error({ code: 'invalid_limit', message: 'Invalid limit parameter' }, 400);
     }
 
     // 解析交易对列表
@@ -103,11 +103,11 @@ async function handleReportRequest(
       },
     });
 
-    return createSuccessResponse(paginatedReport, page, limit, total);
-  } catch (error) {
+    return ok(paginatedReport, { page, pageSize: limit, total });
+  } catch (err) {
     const requestTime = performance.now() - requestStartTime;
     logger.error('Failed to generate deviation report', {
-      error,
+      error: err,
       performance: {
         totalRequestTimeMs: Math.round(requestTime),
         failedAt: new Date().toISOString(),
@@ -118,8 +118,8 @@ async function handleReportRequest(
         windowHours: windowHoursParam,
       },
     });
-    return handleApiError(
-      error instanceof Error ? error.message : 'Failed to generate report',
+    return error(
+      { code: 'report_generation_failed', message: err instanceof Error ? err.message : 'Failed to generate report' },
       500,
     );
   }
@@ -186,11 +186,11 @@ async function handleTrendRequest(
       },
     });
 
-    return createSuccessResponse(result, page, limit, dataPoints.total);
-  } catch (error) {
+    return ok(result, { page, pageSize: limit, total: dataPoints.total });
+  } catch (err) {
     const requestTime = performance.now() - requestStartTime;
     logger.error('Failed to fetch trend data', {
-      error,
+      error: err,
       symbol,
       performance: {
         totalRequestTimeMs: Math.round(requestTime),
@@ -202,7 +202,7 @@ async function handleTrendRequest(
         windowHours: windowHoursParam,
       },
     });
-    return handleApiError(error instanceof Error ? error.message : 'Failed to fetch trend', 500);
+    return error({ code: 'trend_fetch_failed', message: err instanceof Error ? err.message : 'Failed to fetch trend' }, 500);
   }
 }
 
@@ -387,23 +387,19 @@ function generateMockData(symbol: string, windowHours: number): PriceDeviationPo
  *             schema:
  *               type: object
  *               properties:
- *                 ok:
+ *                 success:
  *                   type: boolean
  *                 data:
  *                   type: object
  *                 meta:
  *                   type: object
  *                   properties:
- *                     timestamp:
- *                       type: string
- *                     page:
- *                       type: integer
- *                     limit:
- *                       type: integer
  *                     total:
  *                       type: integer
- *                     hasMore:
- *                       type: boolean
+ *                     page:
+ *                       type: integer
+ *                     pageSize:
+ *                       type: integer
  *       400:
  *         description: 请求参数错误
  *       500:
@@ -416,7 +412,7 @@ export async function GET(request: NextRequest): Promise<Response> {
     const type = searchParams.get('type');
 
     if (!type || (type !== 'report' && type !== 'trend')) {
-      return createErrorResponse('Invalid or missing type parameter. Use "report" or "trend"', 400);
+      return error({ code: 'invalid_type', message: 'Invalid or missing type parameter. Use "report" or "trend"' }, 400);
     }
 
     if (type === 'report') {
@@ -432,7 +428,7 @@ export async function GET(request: NextRequest): Promise<Response> {
       const symbol = searchParams.get('symbol');
 
       if (!symbol) {
-        return createErrorResponse('Missing required parameter: symbol', 400);
+        return error({ code: 'missing_symbol', message: 'Missing required parameter: symbol' }, 400);
       }
 
       const windowHours = searchParams.get('windowHours') || undefined;
@@ -442,9 +438,9 @@ export async function GET(request: NextRequest): Promise<Response> {
       return handleTrendRequest(symbol, windowHours, page, limit);
     }
 
-    return createErrorResponse('Invalid request', 400);
-  } catch (error) {
-    logger.error('Deviation API error', { error });
-    return handleApiError(error instanceof Error ? error.message : 'Internal server error', 500);
+    return error({ code: 'invalid_request', message: 'Invalid request' }, 400);
+  } catch (err) {
+    logger.error('Deviation API error', { error: err });
+    return error({ code: 'internal_error', message: err instanceof Error ? err.message : 'Internal server error' }, 500);
   }
 }

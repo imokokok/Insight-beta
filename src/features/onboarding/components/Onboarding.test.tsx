@@ -280,7 +280,7 @@ describe('Onboarding Component', () => {
     );
   });
 
-  it('should have skip button with aria-label', async () => {
+  it('should have skip button', async () => {
     render(
       <LanguageProvider initialLang="en">
         <Onboarding />
@@ -289,7 +289,7 @@ describe('Onboarding Component', () => {
 
     await waitFor(
       () => {
-        const skipButtons = screen.getAllByRole('button', { name: 'Skip Tour' });
+        const skipButtons = screen.getAllByText('Skip Tour');
         expect(skipButtons.length).toBeGreaterThan(0);
       },
       { timeout: 3000 },

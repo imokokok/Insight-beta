@@ -3,7 +3,7 @@ import { useInfiniteList } from '@/hooks/useUI';
 import { buildApiUrl } from '@/shared/utils';
 import type { Dispute, OracleConfig, DisputeStatus } from '@/types/oracleTypes';
 
-import { createSWRInfiniteConfig } from './useSWRConfig';
+import { createSWRInfiniteConfig } from '@/hooks/useSWRConfig';
 
 export function useDisputes(
   filterStatus: DisputeStatus | 'All' | null,

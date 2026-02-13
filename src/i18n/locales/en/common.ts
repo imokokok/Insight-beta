@@ -192,4 +192,17 @@ export const common = {
     stale: 'Expired',
     expired: 'Invalid',
   },
+  // Refresh Strategies
+  refreshStrategies: {
+    realtime: 'Realtime',
+    frequent: 'Frequent',
+    standard: 'Standard',
+    lazy: 'Lazy',
+    static: 'Static',
+    realtimeDesc: 'WebSocket real-time push',
+    frequentDesc: 'Auto refresh every 30 seconds',
+    standardDesc: 'Auto refresh every 1 minute',
+    lazyDesc: 'Auto refresh every 5 minutes',
+    staticDesc: 'Load once when entering page',
+  },
 };

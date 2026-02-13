@@ -230,7 +230,6 @@ export const DashboardPageHeader = memo(function DashboardPageHeader({
               size="icon"
               className="lg:hidden"
               onClick={onMobileMenuClick}
-              aria-label="Open menu"
             >
               <Menu className="h-5 w-5" />
             </Button>

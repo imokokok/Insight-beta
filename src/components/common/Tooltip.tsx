@@ -146,8 +146,7 @@ export function Tooltip({
       className={cn('relative inline-block', className)}
       onMouseEnter={showTooltip}
       onMouseLeave={hideTooltip}
-      onFocus={showTooltip}
-      onBlur={hideTooltip}
+
     >
       {children}
 
@@ -159,7 +158,7 @@ export function Tooltip({
             positionClasses[positionState],
             themeClasses[theme],
           )}
-          role="tooltip"
+
         >
           <div className="relative z-10">{content}</div>
           <div
@@ -192,7 +191,7 @@ export function ContextualHelp({ children, helpId, title, className }: Contextua
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="rounded-full p-1 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
-          aria-label="Help"
+
         >
           <svg
             className="h-4 w-4 text-gray-500"

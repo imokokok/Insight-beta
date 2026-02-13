@@ -277,7 +277,6 @@ function DisputeCard({
                     }}
                     className="rounded p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-primary"
                     title={t('common.viewOnExplorer')}
-                    aria-label={t('common.viewOnExplorer')}
                   >
                     <ArrowUpRight size={10} />
                   </button>

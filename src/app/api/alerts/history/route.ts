@@ -7,7 +7,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { notificationManager } from '@/services/alert/notificationManager';
+import { notificationManager } from '@/features/alert/services/notificationManager';
 import type { AlertSeverity } from '@/services/alert/notifications/types';
 import { logger } from '@/shared/logger';
 

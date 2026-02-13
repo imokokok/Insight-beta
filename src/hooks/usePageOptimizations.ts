@@ -10,28 +10,17 @@ import { useCallback, useEffect, useRef } from 'react';
 
 import { useToast } from '@/components/ui/toast';
 
-import { useCommonShortcuts } from './useKeyboardShortcuts';
-
 interface PageOptimizationOptions {
-  /** 页面名称，用于快捷键帮助 */
+  /** 页面名称 */
   pageName?: string;
-  /** 是否启用刷新快捷键 */
+  /** 是否启用刷新 */
   enableRefresh?: boolean;
   /** 刷新回调函数 */
   onRefresh?: () => void | Promise<void>;
-  /** 是否启用搜索快捷键 */
+  /** 是否启用搜索 */
   enableSearch?: boolean;
   /** 搜索输入框选择器 */
   searchSelector?: string;
-  /** 是否启用帮助快捷键 */
-  enableHelp?: boolean;
-  /** 自定义快捷键 */
-  customShortcuts?: Array<{
-    key: string;
-    modifier?: 'ctrl' | 'alt' | 'shift' | 'meta';
-    handler: () => void;
-    description: string;
-  }>;
   /** 页面可见性变化回调 */
   onVisibilityChange?: (isVisible: boolean) => void;
   /** 是否显示刷新提示 */
@@ -44,13 +33,8 @@ interface PageOptimizationOptions {
  */
 export function usePageOptimizations(options: PageOptimizationOptions = {}) {
   const {
-    pageName: _pageName = '当前页面',
-    enableRefresh = true,
     onRefresh,
-    enableSearch = true,
     searchSelector = 'input[type="search"], input[placeholder*="搜索"], input[placeholder*="Search"]',
-    enableHelp: _enableHelp = true,
-    customShortcuts = [],
     onVisibilityChange,
     showRefreshToast = false,
   } = options;
@@ -95,12 +79,6 @@ export function usePageOptimizations(options: PageOptimizationOptions = {}) {
     }
   }, [searchSelector]);
 
-  // 基础快捷键
-  const shortcuts = useCommonShortcuts({
-    onRefresh: enableRefresh ? handleRefresh : undefined,
-    onSearch: enableSearch ? handleSearchFocus : undefined,
-  });
-
   // 页面可见性检测
   useEffect(() => {
     if (!onVisibilityChange) return;
@@ -115,31 +93,7 @@ export function usePageOptimizations(options: PageOptimizationOptions = {}) {
     };
   }, [onVisibilityChange]);
 
-  // 自定义快捷键
-  useEffect(() => {
-    if (customShortcuts.length === 0) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      for (const shortcut of customShortcuts) {
-        const keyMatch = e.key.toLowerCase() === shortcut.key.toLowerCase();
-        const modifierMatch = shortcut.modifier
-          ? e[`${shortcut.modifier}Key`]
-          : !e.ctrlKey && !e.altKey && !e.metaKey;
-
-        if (keyMatch && modifierMatch) {
-          e.preventDefault();
-          shortcut.handler();
-          break;
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [customShortcuts]);
-
   return {
-    shortcuts,
     handleRefresh,
     handleSearchFocus,
   };

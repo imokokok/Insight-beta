@@ -1,6 +1,7 @@
 export const comparison = {
   title: '预言机比较分析',
   description: '多维度对比分析各预言机协议的价格、延迟和成本效益',
+  pageName: '预言机对比分析',
   liveConnected: '实时连接中',
   usage: {
     title: '使用说明',

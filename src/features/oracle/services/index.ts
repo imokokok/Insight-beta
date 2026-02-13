@@ -2,12 +2,13 @@
  * Oracle Services - Oracle 相关服务
  */
 
-// 从原位置导出，避免复制导致的问题
-export * from '@/services/oracle/priceAggregation';
-export * from '@/services/oracle/realtime';
-export * from '@/services/oracle/sync';
-export * from '@/services/oracle/priceFetcher';
-export * from '@/services/oracle/unifiedPriceService';
-export * from '@/services/oracle/crossChainAnalysisService';
-export * from '@/services/oracle/priceDeviationAnalytics';
-export * from '@/services/oracle/realDataService';
+// priceAggregation 已从 @/services/oracle/priceAggregation 导出
+export * from './realtime';
+export * from './priceFetcher';
+export * from './unifiedPriceService';
+export * from './crossChainAnalysisService';
+export * from './priceDeviationAnalytics';
+export * from './realDataService';
+
+export { syncManager, writePriceFeeds, createPriceFeedRecord } from './syncFramework';
+export { DEFAULT_SYNC_CONFIG, type SyncConfig, type SyncState } from './syncFramework';

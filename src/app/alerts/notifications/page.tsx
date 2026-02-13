@@ -8,7 +8,7 @@ import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { AlertHistory, NotificationChannelConfig } from '@/features/alert/components';
 import type { ChannelConfig as ChannelConfigType } from '@/features/alert/components/NotificationChannelConfig';
 import { useI18n } from '@/i18n';
-import type { AlertHistoryRecord, ChannelHealthStatus } from '@/services/alert/notificationManager';
+import type { AlertHistoryRecord, ChannelHealthStatus } from '@/features/alert/services/notificationManager';
 import { logger } from '@/shared/logger';
 
 /**

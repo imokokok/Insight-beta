@@ -20,14 +20,7 @@ export { useWebSocket, type WebSocketOptions, type WebSocketState } from './useW
 
 export { useDebounce } from './useDebounce';
 export { useAutoRefresh } from './useAutoRefresh';
-
-// ==================== 交互优化 Hooks ====================
-export {
-  useKeyboardShortcuts,
-  useCommonShortcuts,
-  ShortcutHelpPanel,
-  type ShortcutGroup,
-} from './useKeyboardShortcuts';
+export { useDataCache } from './useDataCache';
 
 export { usePageOptimizations } from './usePageOptimizations';
 
@@ -50,7 +43,7 @@ export { useInfiniteList, type BaseResponse } from './useUI';
 export { useUserStats, useWatchlist, useAdminSession } from './useUser';
 
 // ==================== 钱包 Hooks ====================
-export { useBalance, useSwitchChainWithFeedback } from './useWallet';
+export { useBalance, useSwitchChainWithFeedback } from '@/features/wallet/hooks/useWallet';
 
 // ==================== Admin Hooks ====================
 export {
@@ -129,12 +122,8 @@ export {
 // Dispute Hooks
 export { useDisputes } from '@/features/dispute/hooks';
 
-// Dashboard Hooks
+// ==================== Dashboard Hooks ====================
 export {
-  useAutoRefresh as useAutoRefreshWithInterval,
-  useDataCache,
   useDashboardShortcuts,
+  useAutoRefresh as useAutoRefreshWithCountdown,
 } from '@/features/dashboard/hooks';
-
-// Legacy alias for backwards compatibility
-export { useAutoRefresh as useAutoRefreshLegacy } from '@/features/dashboard/hooks';

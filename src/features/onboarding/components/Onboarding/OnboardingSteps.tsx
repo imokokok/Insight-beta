@@ -51,7 +51,6 @@ export function OnboardingSteps({
           animate={{ scale: 1 }}
           transition={{ duration: 0.3, delay: 0.1 }}
           className="mb-4"
-          aria-hidden="true"
         >
           {step.icon}
         </motion.div>
@@ -63,10 +62,6 @@ export function OnboardingSteps({
       <div className="mb-6">
         <div
           className="mb-2 flex justify-between"
-          role="progressbar"
-          aria-valuenow={currentStep + 1}
-          aria-valuemin={1}
-          aria-valuemax={steps.length}
         >
           {steps.map((s, index) => (
             <motion.div
@@ -78,7 +73,6 @@ export function OnboardingSteps({
               }}
               transition={{ duration: 0.2 }}
               className={cn('h-2 w-2 rounded-full')}
-              aria-label={`Step ${index + 1} ${index <= currentStep ? 'completed' : 'pending'}`}
             />
           ))}
         </div>
@@ -103,7 +97,6 @@ export function OnboardingSteps({
             whileTap={{ scale: 0.98 }}
             onClick={onBack}
             className="flex items-center justify-center gap-2 rounded-md border border-gray-300 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-50"
-            aria-label={t('onboarding.back')}
           >
             <ArrowLeft className="h-4 w-4" />
             <span className="sm:hidden">{t('onboarding.back')}</span>
@@ -122,7 +115,6 @@ export function OnboardingSteps({
           whileTap={{ scale: 0.98 }}
           onClick={onNext}
           className="focus:ring-primary500 flex flex-1 items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-white transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2"
-          aria-label={isLastStep ? t('onboarding.getStarted') : t('onboarding.next')}
         >
           {isLastStep ? (
             <>

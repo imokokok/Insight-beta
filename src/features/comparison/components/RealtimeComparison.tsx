@@ -302,19 +302,11 @@ export function RealtimeComparisonView({
                         className={cn(
                           'h-2 w-2 rounded-full',
                           maxDeviation > 1
-                            ? statusColors.critical.dot
+                            ? 'bg-red-500'
                             : maxDeviation > 0.5
-                              ? statusColors.warning.dot
+                              ? 'bg-amber-500'
                               : statusColors.healthy.dot,
                         )}
-                        role="status"
-                        aria-label={
-                          maxDeviation > 1
-                            ? t('status.critical')
-                            : maxDeviation > 0.5
-                              ? t('status.warning')
-                              : t('status.healthy')
-                        }
                       />
                       <div>
                         <p className="text-sm font-medium">{item.symbol}</p>

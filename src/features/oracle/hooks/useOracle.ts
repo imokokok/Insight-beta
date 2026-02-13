@@ -14,7 +14,7 @@ import {
 } from '@/shared/utils';
 import type { Assertion, OracleConfig, OracleStats, OracleStatus } from '@/types/oracleTypes';
 
-import { createSWRConfig, createSWRInfiniteConfig } from './useSWRConfig';
+import { createSWRConfig, createSWRInfiniteConfig } from '@/hooks/useSWRConfig';
 
 // ============================================================================
 // useOracleData - Oracle 数据获取 Hook

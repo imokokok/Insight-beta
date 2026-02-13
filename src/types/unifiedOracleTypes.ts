@@ -5,44 +5,38 @@
  */
 
 // ============================================================================
-// 预言机协议类型定义
+// 预言机协议类型定义 (从 protocol.ts 导入并重新导出)
 // ============================================================================
 
-export type OracleProtocol =
-  | 'uma' // UMA Optimistic Oracle
-  | 'chainlink' // Chainlink Data Feeds
-  | 'pyth' // Pyth Network
-  | 'redstone'; // RedStone
+import type {
+  OracleProtocol as _OracleProtocol,
+  OracleProtocolInfo as _OracleProtocolInfo,
+  OracleFeature as _OracleFeature,
+} from './oracle/protocol';
 
-export const ORACLE_PROTOCOLS: OracleProtocol[] = [
-  'uma',
-  'chainlink',
-  'pyth',
-  'redstone',
-];
+import {
+  ORACLE_PROTOCOLS as _ORACLE_PROTOCOLS,
+  PROTOCOL_DISPLAY_NAMES as _PROTOCOL_DISPLAY_NAMES,
+  PROTOCOL_DESCRIPTIONS as _PROTOCOL_DESCRIPTIONS,
+  PROTOCOL_INFO as _PROTOCOL_INFO,
+  PRICE_FEED_PROTOCOLS as _PRICE_FEED_PROTOCOLS,
+  OPTIMISTIC_PROTOCOLS as _OPTIMISTIC_PROTOCOLS,
+  getProtocolsByCategory as _getProtocolsByCategory,
+} from './oracle/protocol';
 
-export type OracleProtocolInfo = {
-  id: OracleProtocol;
-  name: string;
-  description: string;
-  logoUrl: string;
-  website: string;
-  supportedChains: string[];
-  features: OracleFeature[];
-  tvl?: number;
-  marketShare?: number;
-};
+// 本地类型别名
+export type OracleProtocol = _OracleProtocol;
+export type OracleProtocolInfo = _OracleProtocolInfo;
+export type OracleFeature = _OracleFeature;
 
-export type OracleFeature =
-  | 'price_feeds'
-  | 'randomness'
-  | 'automation'
-  | 'ccip'
-  | 'functions'
-  | 'proof_of_reserve'
-  | 'dispute_resolution'
-  | 'staking'
-  | 'governance';
+// 本地常量别名
+export const ORACLE_PROTOCOLS = _ORACLE_PROTOCOLS;
+export const PROTOCOL_DISPLAY_NAMES = _PROTOCOL_DISPLAY_NAMES;
+export const PROTOCOL_DESCRIPTIONS = _PROTOCOL_DESCRIPTIONS;
+export const PROTOCOL_INFO = _PROTOCOL_INFO;
+export const PRICE_FEED_PROTOCOLS = _PRICE_FEED_PROTOCOLS;
+export const OPTIMISTIC_PROTOCOLS = _OPTIMISTIC_PROTOCOLS;
+export const getProtocolsByCategory = _getProtocolsByCategory;
 
 // ============================================================================
 // 通用链类型定义

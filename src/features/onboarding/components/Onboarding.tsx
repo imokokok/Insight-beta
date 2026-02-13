@@ -260,9 +260,6 @@ export function Onboarding({ onComplete, onSkip, className, forceOpen }: Onboard
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="onboarding-title"
       className={cn(
         'fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm',
         className,
@@ -284,7 +281,6 @@ export function Onboarding({ onComplete, onSkip, className, forceOpen }: Onboard
                 whileTap={{ scale: 0.95 }}
                 onClick={currentStep === 0 ? handleBackToRoleSelection : handleBack}
                 className="mr-2 rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
-                aria-label={t('onboarding.back')}
               >
                 <ArrowLeft className="h-5 w-5" />
               </motion.button>
@@ -298,7 +294,6 @@ export function Onboarding({ onComplete, onSkip, className, forceOpen }: Onboard
             whileTap={{ scale: 0.95 }}
             onClick={handleSkip}
             className="rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
-            aria-label={t('onboarding.skipTour')}
           >
             <X className="h-5 w-5" />
           </motion.button>

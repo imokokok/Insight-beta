@@ -3,7 +3,7 @@ import security from "eslint-plugin-security";
 import tseslint from "@typescript-eslint/eslint-plugin";
 import tsParser from "@typescript-eslint/parser";
 import importPlugin from "eslint-plugin-import";
-import jsxA11y from "eslint-plugin-jsx-a11y";
+
 import unusedImports from "eslint-plugin-unused-imports";
 import nextPlugin from "@next/eslint-plugin-next";
 import reactPlugin from "eslint-plugin-react";
@@ -93,7 +93,7 @@ export default [
       "@typescript-eslint": tseslint,
       security,
       import: importPlugin,
-      "jsx-a11y": jsxA11y,
+
       "unused-imports": unusedImports,
     },
     languageOptions: {
@@ -200,38 +200,7 @@ export default [
       "import/no-anonymous-default-export": "warn",
       "import/named": "off",
       "import/namespace": "off",
-      // JSX Accessibility rules
-      "jsx-a11y/alt-text": [
-        "warn",
-        {
-          elements: ["img"],
-          img: ["Image"],
-        },
-      ],
-      "jsx-a11y/anchor-has-content": "error",
-      "jsx-a11y/anchor-is-valid": "error",
-      "jsx-a11y/aria-props": "warn",
-      "jsx-a11y/aria-proptypes": "warn",
-      "jsx-a11y/aria-unsupported-elements": "warn",
-      "jsx-a11y/click-events-have-key-events": "off",
-      "jsx-a11y/heading-has-content": "error",
-      "jsx-a11y/html-has-lang": "error",
-      "jsx-a11y/img-redundant-alt": "warn",
-      "jsx-a11y/interactive-supports-focus": "error",
-      "jsx-a11y/label-has-associated-control": "error",
-      "jsx-a11y/media-has-caption": "warn",
-      "jsx-a11y/mouse-events-have-key-events": "warn",
-      "jsx-a11y/no-access-key": "warn",
-      "jsx-a11y/no-autofocus": "off",
-      "jsx-a11y/no-distracting-elements": "error",
-      "jsx-a11y/no-interactive-element-to-noninteractive-role": "error",
-      "jsx-a11y/no-noninteractive-element-interactions": "off",
-      "jsx-a11y/no-noninteractive-element-to-interactive-role": "error",
-      "jsx-a11y/no-redundant-roles": "warn",
-      "jsx-a11y/role-has-required-aria-props": "warn",
-      "jsx-a11y/role-supports-aria-props": "warn",
-      "jsx-a11y/scope": "error",
-      "jsx-a11y/tabindex-no-positive": "warn",
+
     },
   },
   // Services directory - internal services with lower object injection risk

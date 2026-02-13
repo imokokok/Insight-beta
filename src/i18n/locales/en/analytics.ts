@@ -3,6 +3,7 @@ export const analytics = {
   anomaly: {
     title: 'ML Anomaly Detection',
     description: 'Machine learning powered anomaly detection for price feeds',
+    pageName: 'Anomaly Detection Analysis',
     noAnomaliesTitle: 'No anomalies detected yet',
     noAnomaliesDescription: 'ML models are monitoring price feeds',
     totalAnomalies: 'Total Anomalies',
@@ -51,6 +52,8 @@ export const analytics = {
   deviation: {
     title: 'Price Deviation Analysis',
     description: 'Cross-protocol price deviation monitoring and analysis',
+    pageName: 'Price Deviation Analysis',
+    loadError: 'Failed to load deviation data',
     avgDeviation: 'Avg Deviation',
     maxDeviation: 'Max Deviation',
     protocolsCompared: 'Protocols Compared',

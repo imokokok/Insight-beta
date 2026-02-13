@@ -4,6 +4,7 @@ export const analytics = {
     title: 'Detección de Anomalías ML',
     description:
       'Detección de anomalías impulsada por aprendizaje automático para feeds de precios',
+    pageName: 'Análisis de Detección de Anomalías',
     noAnomaliesTitle: 'No se detectaron anomalías aún',
     noAnomaliesDescription: 'Los modelos ML están monitoreando los feeds de precios',
     totalAnomalies: 'Anomalías Totales',
@@ -52,6 +53,8 @@ export const analytics = {
   deviation: {
     title: 'Análisis de Desviación de Precios',
     description: 'Monitoreo y análisis de desviación de precios entre protocolos',
+    pageName: 'Análisis de Desviación de Precios',
+    loadError: 'Error al cargar datos de desviación',
     avgDeviation: 'Desviación Promedio',
     maxDeviation: 'Desviación Máxima',
     protocolsCompared: 'Protocolos Comparados',

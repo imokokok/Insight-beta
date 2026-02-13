@@ -10,7 +10,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { requireAdminWithToken } from '@/lib/api/apiResponse';
-import { alertService } from '@/services/alert/alertService';
+import { alertService } from '@/features/alert/services/alertService';
 import { logger } from '@/shared/logger';
 
 const configSchema = z.object({

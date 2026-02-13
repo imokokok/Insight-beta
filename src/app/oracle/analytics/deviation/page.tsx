@@ -58,8 +58,9 @@ import {
   CardSkeleton,
 } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useAutoRefreshLegacy, useDataCache } from '@/hooks';
+import { useAutoRefreshWithCountdown, useDataCache } from '@/hooks';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
+import { useI18n } from '@/i18n';
 import { logger } from '@/shared/logger';
 import { fetchApiData, cn, formatTime } from '@/shared/utils';
 
@@ -509,6 +510,9 @@ export default function DeviationAnalyticsPage() {
   const [error, setError] = useState<string | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  // i18n
+  const { t } = useI18n();
+
   // Toast notifications
   const { toasts, removeToast, success, error: showError } = useToast();
 
@@ -525,7 +529,7 @@ export default function DeviationAnalyticsPage() {
     setRefreshInterval,
     timeUntilRefresh,
     refresh,
-  } = useAutoRefreshLegacy({
+  } = useAutoRefreshWithCountdown({
     onRefresh: () => fetchReport(false),
     interval: 60000,
     enabled: true,
@@ -585,12 +589,12 @@ export default function DeviationAnalyticsPage() {
 
   // 页面优化：键盘快捷键
   usePageOptimizations({
-    pageName: '价格偏差分析',
+    pageName: t('analytics:deviation.pageName'),
     onRefresh: async () => {
       await refresh();
     },
     enableSearch: true,
-    searchSelector: 'input[type="text"][placeholder*="搜索"]',
+    searchSelector: 'input[type="text"][placeholder*="' + t('common:search') + '"]',
     showRefreshToast: true,
   });
 
@@ -630,7 +634,7 @@ export default function DeviationAnalyticsPage() {
         <ErrorBanner
           error={new Error(error)}
           onRetry={() => fetchReport()}
-          title="加载偏差数据失败"
+          title={t('analytics:deviation.loadError')}
           isRetrying={loading}
         />
       </div>

@@ -2,11 +2,7 @@
 
 import { motion } from 'framer-motion';
 
-import { useAccessibility } from '@/components/common/AccessibilityProvider';
-
 export default function Loading() {
-  const { reduceMotion } = useAccessibility();
-
   return (
     <div className="flex min-h-[50vh] flex-col items-center justify-center">
       <motion.div
@@ -18,7 +14,7 @@ export default function Loading() {
         {/* 外圈 - 品牌紫色 */}
         <motion.div
           className="absolute inset-0 rounded-full border-4 border-primary/20"
-          animate={reduceMotion ? {} : { rotate: 360 }}
+          animate={{ rotate: 360 }}
           transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
         >
           <div className="absolute -top-1 left-1/2 h-4 w-4 -translate-x-1/2 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 shadow-lg shadow-primary-500/30" />
@@ -27,7 +23,7 @@ export default function Loading() {
         {/* 中圈 - 青色 */}
         <motion.div
           className="absolute inset-2 rounded-full border-4 border-cyan-200"
-          animate={reduceMotion ? {} : { rotate: -360 }}
+          animate={{ rotate: -360 }}
           transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
         >
           <div className="absolute -bottom-1 left-1/2 h-3 w-3 -translate-x-1/2 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-500 shadow-lg shadow-cyan-500/30" />
@@ -36,7 +32,7 @@ export default function Loading() {
         {/* 内圈 - 中心 Logo */}
         <motion.div
           className="absolute inset-5 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-100 to-cyan-100"
-          animate={reduceMotion ? {} : { scale: [1, 1.1, 1] }}
+          animate={{ scale: [1, 1.1, 1] }}
           transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
         >
           <svg
@@ -52,26 +48,22 @@ export default function Loading() {
         </motion.div>
 
         {/* 装饰光点 */}
-        {!reduceMotion && (
-          <>
-            <motion.div
-              className="absolute -right-2 top-1/2 h-2 w-2 rounded-full bg-yellow-400"
-              animate={{
-                scale: [1, 1.5, 1],
-                opacity: [0.5, 1, 0.5],
-              }}
-              transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}
-            />
-            <motion.div
-              className="absolute -left-2 top-1/3 h-1.5 w-1.5 rounded-full bg-blue-400"
-              animate={{
-                scale: [1, 1.3, 1],
-                opacity: [0.5, 1, 0.5],
-              }}
-              transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }}
-            />
-          </>
-        )}
+        <motion.div
+          className="absolute -right-2 top-1/2 h-2 w-2 rounded-full bg-yellow-400"
+          animate={{
+            scale: [1, 1.5, 1],
+            opacity: [0.5, 1, 0.5],
+          }}
+          transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}
+        />
+        <motion.div
+          className="absolute -left-2 top-1/3 h-1.5 w-1.5 rounded-full bg-blue-400"
+          animate={{
+            scale: [1, 1.3, 1],
+            opacity: [0.5, 1, 0.5],
+          }}
+          transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }}
+        />
       </motion.div>
 
       {/* 加载文字 */}
@@ -84,7 +76,7 @@ export default function Loading() {
         <p className="text-base font-medium text-[var(--foreground)]">加载中</p>
         <motion.p
           className="mt-1 text-sm text-muted-foreground"
-          animate={reduceMotion ? {} : { opacity: [0.5, 1, 0.5] }}
+          animate={{ opacity: [0.5, 1, 0.5] }}
           transition={{ duration: 1.5, repeat: Infinity }}
         >
           正在准备数据...
@@ -101,10 +93,8 @@ export default function Loading() {
         <motion.div
           className="h-full rounded-full bg-gradient-to-r from-primary-500 to-cyan-500"
           initial={{ width: '0%' }}
-          animate={reduceMotion ? { width: '100%' } : { width: ['0%', '100%', '0%'] }}
-          transition={
-            reduceMotion ? { duration: 0.5 } : { duration: 2, repeat: Infinity, ease: 'easeInOut' }
-          }
+          animate={{ width: ['0%', '100%', '0%'] }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
         />
       </motion.div>
     </div>

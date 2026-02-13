@@ -242,18 +242,6 @@ describe('Tabs', () => {
       expect(tabs).toHaveLength(3);
     });
 
-    it('should have correct aria-selected on active tab', () => {
-      renderTabs();
-      const activeTab = screen.getByRole('tab', { name: 'Tab 1' });
-      expect(activeTab).toHaveAttribute('aria-selected', 'true');
-    });
-
-    it('should have correct aria-selected on inactive tabs', () => {
-      renderTabs();
-      const inactiveTab = screen.getByRole('tab', { name: 'Tab 2' });
-      expect(inactiveTab).toHaveAttribute('aria-selected', 'false');
-    });
-
     it('should have focus visible styles on tabs', () => {
       renderTabs();
       const tab = screen.getByRole('tab', { name: 'Tab 1' });

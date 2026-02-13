@@ -1,4 +1,4 @@
-import type { PricePoint } from '@/services/oracle/priceFetcher';
+import type { PricePoint } from '@/features/oracle/services/priceFetcher';
 
 export type TabKey = 'activity' | 'tvs' | 'sync' | 'markets' | 'accuracy';
 

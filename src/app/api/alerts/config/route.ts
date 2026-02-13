@@ -11,7 +11,7 @@ import { env } from '@/config/env';
 import {
   notificationManager,
   type NotificationManagerConfig,
-} from '@/services/alert/notificationManager';
+} from '@/features/alert/services/notificationManager';
 import type { NotificationConfig } from '@/services/alert/notifications/types';
 import { logger } from '@/shared/logger';
 

@@ -9,7 +9,7 @@ import { env } from '@/config/env';
 import {
   notificationManager,
   type NotificationManagerConfig,
-} from '@/services/alert/notificationManager';
+} from './notificationManager';
 import type {
   NotificationConfig,
   EmailConfig,

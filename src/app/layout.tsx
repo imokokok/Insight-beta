@@ -5,7 +5,7 @@ import { cookies, headers } from 'next/headers';
 
 import { Toaster } from 'sonner';
 
-import { AccessibilityProvider, SkipLink } from '@/components/common/AccessibilityProvider';
+
 import { PageProgress } from '@/components/common/PageProgress';
 import { PageTransition } from '@/components/common/PageTransitions';
 import { ResourceHints } from '@/components/common/ResourceHints';
@@ -81,8 +81,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           'min-h-screen bg-background font-sans text-foreground antialiased',
         )}
       >
-        <AccessibilityProvider>
-          <SkipLink />
+
           <PageProgress />
           <LanguageProvider initialLang={lang}>
             <WalletProvider>
@@ -120,7 +119,6 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
               </div>
             </WalletProvider>
           </LanguageProvider>
-        </AccessibilityProvider>
       </body>
     </html>
   );

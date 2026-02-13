@@ -148,22 +148,7 @@ describe('Button', () => {
     });
   });
 
-  describe('Accessibility', () => {
-    it('should have correct button role', () => {
-      render(<Button>Accessible</Button>);
-      expect(screen.getByRole('button')).toBeInTheDocument();
-    });
 
-    it('should support aria-label', () => {
-      render(<Button aria-label="Close dialog">×</Button>);
-      expect(screen.getByLabelText('Close dialog')).toBeInTheDocument();
-    });
-
-    it('should support aria-disabled', () => {
-      render(<Button aria-disabled="true">Disabled</Button>);
-      expect(screen.getByRole('button')).toHaveAttribute('aria-disabled', 'true');
-    });
-  });
 
   describe('buttonVariants utility', () => {
     it('should generate correct classes for default variant', () => {

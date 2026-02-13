@@ -2,6 +2,7 @@ export const comparison = {
   title: 'Oracle Comparison Analytics',
   description:
     'Multi-dimensional comparison of oracle protocols price, latency, and cost efficiency',
+  pageName: 'Oracle Comparison Analysis',
   liveConnected: 'Live Connected',
   usage: {
     title: 'Usage Guide',

@@ -56,8 +56,9 @@ import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { ChartSkeleton, SkeletonList } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useAutoRefreshLegacy, useDataCache } from '@/hooks';
+import { useAutoRefreshWithCountdown, useDataCache } from '@/hooks';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
+import { useI18n } from '@/i18n';
 import { logger } from '@/shared/logger';
 import { fetchApiData, cn, formatTime } from '@/shared/utils';
 
@@ -515,6 +516,9 @@ export default function AnomalyDetectionPage() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // i18n
+  const { t } = useI18n();
+
   // Toast notifications
   const { toasts, removeToast, success, error: showError } = useToast();
 
@@ -532,7 +536,7 @@ export default function AnomalyDetectionPage() {
     setRefreshInterval,
     timeUntilRefresh,
     refresh,
-  } = useAutoRefreshLegacy({
+  } = useAutoRefreshWithCountdown({
     onRefresh: () => fetchData(false),
     interval: 60000,
     enabled: true,
@@ -592,12 +596,12 @@ export default function AnomalyDetectionPage() {
 
   // 页面优化：键盘快捷键
   usePageOptimizations({
-    pageName: '异常检测分析',
+    pageName: t('analytics:anomaly.pageName'),
     onRefresh: async () => {
       await refresh();
     },
     enableSearch: true,
-    searchSelector: 'input[type="text"][placeholder*="搜索"]',
+    searchSelector: 'input[type="text"][placeholder*="' + t('common:search') + '"]',
     showRefreshToast: true,
   });
 

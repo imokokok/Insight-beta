@@ -46,8 +46,7 @@ interface NavItemConfig {
 // 导航分组类型定义
 interface NavGroupConfig {
   id: string;
-  label: string;
-  labelEn: string;
+  labelKey: string;
   items: NavItemConfig[];
 }
 
@@ -55,117 +54,112 @@ interface NavGroupConfig {
 const navGroups: NavGroupConfig[] = [
   {
     id: 'monitor',
-    label: '监控',
-    labelEn: 'Monitor',
+    labelKey: 'nav.groups.monitor',
     items: [
       {
         key: 'nav.dashboard',
         href: '/oracle/dashboard',
         icon: LayoutDashboard,
-        tooltip: '实时监控仪表板，查看系统健康状态',
+        tooltip: 'nav.descriptions.dashboard',
         tourId: 'dashboard',
       },
       {
         key: 'nav.unifiedOracle',
         href: '/oracle/comparison',
         icon: Globe,
-        tooltip: '统一视图，跨协议对比分析',
+        tooltip: 'nav.descriptions.unifiedOracle',
       },
       {
         key: 'nav.security',
         href: '/security/dashboard',
         icon: Shield,
-        tooltip: '安全检测与风险监控',
+        tooltip: 'nav.descriptions.security',
       },
     ],
   },
   {
     id: 'handle',
-    label: '处置',
-    labelEn: 'Handle',
+    labelKey: 'nav.groups.handle',
     items: [
       {
         key: 'nav.alerts',
         href: '/alerts',
         icon: ShieldAlert,
-        tooltip: '告警管理：查看、确认、处理系统告警',
+        tooltip: 'nav.descriptions.alerts',
         tourId: 'alerts',
       },
       {
         key: 'nav.disputes',
         href: '/disputes',
         icon: ShieldAlert,
-        tooltip: '争议处理：查看和参与预言机争议',
+        tooltip: 'nav.descriptions.disputes',
       },
     ],
   },
   {
     id: 'operate',
-    label: '运营',
-    labelEn: 'Operate',
+    labelKey: 'nav.groups.operate',
     items: [
       {
         key: 'nav.audit',
         href: '/audit',
         icon: ScrollText,
-        tooltip: '审计日志与合规报告',
+        tooltip: 'nav.descriptions.audit',
       },
       {
         key: 'nav.watchlist',
         href: '/watchlist',
         icon: Star,
-        tooltip: '关注列表：自定义监控项',
+        tooltip: 'nav.descriptions.watchlist',
         tourId: 'watchlist',
       },
     ],
   },
   {
     id: 'slo',
-    label: 'SLO',
-    labelEn: 'SLO',
+    labelKey: 'nav.groups.sloGroup',
     items: [
       {
         key: 'nav.slo',
         href: '/oracle/slo-v2',
         icon: Target,
-        tooltip: 'SLO / Error Budget 监控视图',
+        tooltip: 'nav.descriptions.sloDashboard',
       },
       {
         key: 'nav.timeline',
         href: '/oracle/timeline',
         icon: Clock,
-        tooltip: '事件时间线：告警、争议、部署等',
+        tooltip: 'nav.descriptions.timeline',
       },
     ],
   },
   {
     id: 'protocols',
-    label: '协议',
-    labelEn: 'Protocols',
+    labelKey: 'nav.groups.protocolsGroup',
     items: [
       {
         key: 'nav.priceFeeds',
         href: '/oracle/protocols',
         icon: TrendingUp,
-        tooltip: '查看各协议详细数据',
+        tooltip: 'nav.descriptions.priceFeeds',
       },
       {
         key: 'nav.optimisticOracle',
         href: '/oracle/optimistic',
         icon: ShieldCheck,
-        tooltip: '乐观预言机争议与断言',
+        tooltip: 'nav.descriptions.optimistic',
       },
       {
         key: 'nav.crossChain',
         href: '/cross-chain',
         icon: Link2,
-        tooltip: '跨链价格对比与套利分析',
+        tooltip: 'nav.descriptions.crossChain',
       },
       {
         key: 'nav.aiAnalytics',
         href: '/oracle/analytics',
         icon: Brain,
-        tooltip: 'AI 驱动的深度分析',
+        tooltip: 'nav.descriptions.aiAnalytics',
       },
     ],
   },
@@ -193,9 +187,8 @@ const NavItem = memo(function NavItem({ item, isActive, onNavigate }: NavItemPro
   return (
     <Link
       href={asRoute(item.href)}
-      title={item.tooltip}
+      title={t(item.tooltip)}
       onClick={onNavigate}
-      aria-current={isActive ? 'page' : undefined}
       className={cn(
         'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
         isActive
@@ -210,12 +203,10 @@ const NavItem = memo(function NavItem({ item, isActive, onNavigate }: NavItemPro
           'transition-colors duration-200',
           isActive ? 'text-primary' : 'text-gray-400 group-hover:text-primary',
         )}
-        aria-hidden="true"
       />
       <span className="flex-1">{t(item.key)}</span>
       <span
         className="hidden text-[10px] text-gray-300 group-hover:text-gray-400 lg:inline"
-        aria-hidden="true"
       >
         ?
       </span>
@@ -245,7 +236,6 @@ const SidebarLogo = memo(function SidebarLogo() {
         />
         <span
           className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-pink-300/70 ring-2 ring-white/80"
-          aria-hidden="true"
         />
       </div>
       <div>
@@ -270,6 +260,8 @@ const NavGroup = memo(function NavGroup({
   pathname,
   onNavigate,
 }: NavGroupProps) {
+  const { t } = useI18n();
+
   const isItemActive = useCallback(
     (item: NavItemConfig): boolean => {
       if (!pathname) return false;
@@ -289,7 +281,7 @@ const NavGroup = memo(function NavGroup({
     <div className={cn('space-y-1', groupIndex > 0 && 'mt-4 border-t border-gray-100 pt-4')}>
       <div className="px-3 py-1">
         <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
-          {group.label}
+          {t(group.labelKey)}
         </span>
       </div>
       {group.items.map((item) => (
@@ -314,17 +306,12 @@ const MobileMenuButton = memo(function MobileMenuButton({
   isOpen,
   onToggle,
 }: MobileMenuButtonProps) {
-  const { t } = useI18n();
-
   return (
     <button
       onClick={onToggle}
       className="fixed left-4 top-4 z-50 rounded-xl bg-white/50 p-2 text-[var(--foreground)] shadow-sm backdrop-blur-md md:hidden"
-      aria-label={isOpen ? t('common.closeMenu') : t('common.openMenu')}
-      aria-expanded={isOpen}
-      aria-controls="sidebar-navigation"
     >
-      {isOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
+      {isOpen ? <X size={20} /> : <Menu size={20} />}
     </button>
   );
 });
@@ -333,7 +320,6 @@ const MobileMenuButton = memo(function MobileMenuButton({
 export function Sidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
-  const { t } = useI18n();
 
   const toggleMenu = useCallback(() => {
     setIsOpen((prev) => !prev);
@@ -356,7 +342,6 @@ export function Sidebar() {
         <div
           className="fixed inset-0 z-30 bg-black/20 backdrop-blur-sm md:hidden"
           onClick={handleOverlayClick}
-          aria-hidden="true"
         />
       )}
 
@@ -366,7 +351,6 @@ export function Sidebar() {
           'fixed inset-y-0 left-0 z-40 w-64 transform border-r border-white/40 bg-white/70 shadow-2xl shadow-primary-500/10 backdrop-blur-xl transition-transform duration-300 ease-in-out md:translate-x-0',
           isOpen ? 'translate-x-0' : '-translate-x-full',
         )}
-        aria-label={t('common.sidebar')}
       >
         <div className="flex h-full flex-col px-4 py-6">
           <SidebarLogo />

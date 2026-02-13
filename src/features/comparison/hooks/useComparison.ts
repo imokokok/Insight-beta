@@ -20,7 +20,7 @@ import type {
   RealtimeComparisonItem,
 } from '@/types/oracle/comparison';
 
-import { createSWRConfig, REALTIME_CONFIG } from './useSWRConfig';
+import { createSWRConfig, REALTIME_CONFIG } from '@/hooks/useSWRConfig';
 
 // ============================================================================
 // 热力图数据 Hook

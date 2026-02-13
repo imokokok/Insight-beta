@@ -10,7 +10,7 @@
 
 import type { NextRequest } from 'next/server';
 
-import { realtimePriceService } from '@/services/oracle/realtime';
+import { realtimePriceService } from '@/features/oracle/services/realtime';
 import { logger } from '@/shared/logger';
 
 export const dynamic = 'force-dynamic';

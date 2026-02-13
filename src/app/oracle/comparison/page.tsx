@@ -168,7 +168,10 @@ export default function ComparisonPage() {
     };
 
     ws.onerror = (error) => {
-      logger.error('WebSocket error', { error });
+      // 只在非开发环境下记录错误，避免开发时频繁的连接错误日志
+      if (process.env.NODE_ENV !== 'development') {
+        logger.error('WebSocket error', { error });
+      }
       setIsLive(false);
     };
 
@@ -311,7 +314,7 @@ export default function ComparisonPage() {
 
   // 页面优化：键盘快捷键
   usePageOptimizations({
-    pageName: '预言机对比分析',
+    pageName: t('comparison.pageName'),
     onRefresh: async () => {
       handleRefresh();
     },

@@ -9,6 +9,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { getRefreshStrategy, formatLastUpdated, type RefreshStrategyConfig } from '@/config/refreshStrategy';
+import { useI18n } from '@/i18n';
 import { logger } from '@/shared/logger';
 
 interface UseAutoRefreshOptions {
@@ -30,13 +31,14 @@ interface UseAutoRefreshReturn {
 
 export function useAutoRefresh(options: UseAutoRefreshOptions): UseAutoRefreshReturn {
   const { pageId, fetchFn, enabled = true, interval: customInterval } = options;
+  const { t } = useI18n();
 
   const strategy = getRefreshStrategy(pageId);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isError, setIsError] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [formattedLastUpdated, setFormattedLastUpdated] = useState(() => formatLastUpdated(null));
+  const [formattedLastUpdated, setFormattedLastUpdated] = useState(() => formatLastUpdated(null, t));
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const isMountedRef = useRef(true);
@@ -93,12 +95,12 @@ export function useAutoRefresh(options: UseAutoRefreshOptions): UseAutoRefreshRe
   }, [enabled, strategy.interval, customInterval, refresh]);
 
   useEffect(() => {
-    setFormattedLastUpdated(formatLastUpdated(lastUpdated));
+    setFormattedLastUpdated(formatLastUpdated(lastUpdated, t));
     const timeInterval = setInterval(() => {
-      setFormattedLastUpdated(formatLastUpdated(lastUpdated));
+      setFormattedLastUpdated(formatLastUpdated(lastUpdated, t));
     }, 1000);
     return () => clearInterval(timeInterval);
-  }, [lastUpdated]);
+  }, [lastUpdated, t]);
 
   useEffect(() => {
     return () => {

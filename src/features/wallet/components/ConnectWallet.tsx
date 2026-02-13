@@ -9,7 +9,6 @@ import { useWallet, type WalletConnectionType } from '@/contexts/WalletContext';
 import { UserMenu } from '@/features/wallet/components/UserMenu';
 import { useI18n } from '@/i18n/LanguageProvider';
 import {
-  isMobile as isMobileDevice,
   isWalletBrowser,
   getWalletName,
   WALLET_CONNECT_PROJECT_ID,

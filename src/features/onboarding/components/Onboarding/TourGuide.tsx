@@ -313,9 +313,6 @@ export function TourGuide({
             top: tooltipPosition.top,
             left: tooltipPosition.left,
           }}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="tour-title"
         >
           {/* Target not found warning */}
           {targetNotFound && (
@@ -335,7 +332,6 @@ export function TourGuide({
             <button
               onClick={handleSkip}
               className="rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
-              aria-label={t('onboarding.skipTour')}
             >
               <X className="h-4 w-4" />
             </button>
@@ -365,7 +361,6 @@ export function TourGuide({
               onClick={handleBack}
               disabled={currentStep === 0}
               className="flex items-center justify-center rounded-md border border-gray-300 px-3 py-2 text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-              aria-label={t('onboarding.back')}
             >
               <ChevronLeft className="h-4 w-4" />
             </button>

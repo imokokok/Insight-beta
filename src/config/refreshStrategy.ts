@@ -4,6 +4,8 @@
  * 定义不同视图的数据更新周期
  */
 
+import type { TFunction } from '@/i18n';
+
 export type RefreshStrategy = 'realtime' | 'frequent' | 'standard' | 'lazy' | 'static';
 
 export interface RefreshStrategyConfig {
@@ -14,6 +16,45 @@ export interface RefreshStrategyConfig {
   useWebSocket: boolean;
 }
 
+export const getRefreshStrategies = (t: TFunction): Record<RefreshStrategy, RefreshStrategyConfig> => ({
+  realtime: {
+    id: 'realtime',
+    label: t('common.refreshStrategies.realtime'),
+    description: t('common.refreshStrategies.realtimeDesc'),
+    interval: 0,
+    useWebSocket: true,
+  },
+  frequent: {
+    id: 'frequent',
+    label: t('common.refreshStrategies.frequent'),
+    description: t('common.refreshStrategies.frequentDesc'),
+    interval: 30 * 1000,
+    useWebSocket: false,
+  },
+  standard: {
+    id: 'standard',
+    label: t('common.refreshStrategies.standard'),
+    description: t('common.refreshStrategies.standardDesc'),
+    interval: 60 * 1000,
+    useWebSocket: false,
+  },
+  lazy: {
+    id: 'lazy',
+    label: t('common.refreshStrategies.lazy'),
+    description: t('common.refreshStrategies.lazyDesc'),
+    interval: 5 * 60 * 1000,
+    useWebSocket: false,
+  },
+  static: {
+    id: 'static',
+    label: t('common.refreshStrategies.static'),
+    description: t('common.refreshStrategies.staticDesc'),
+    interval: 0,
+    useWebSocket: false,
+  },
+});
+
+// Keep the original for backward compatibility during migration
 export const REFRESH_STRATEGIES: Record<RefreshStrategy, RefreshStrategyConfig> = {
   realtime: {
     id: 'realtime',
@@ -73,17 +114,17 @@ export function getRefreshStrategy(pageId: string): RefreshStrategyConfig {
   return REFRESH_STRATEGIES[strategyId];
 }
 
-export function formatLastUpdated(lastUpdated: Date | null): string {
-  if (!lastUpdated) return '从未更新';
+export function formatLastUpdated(lastUpdated: Date | null, t: TFunction | undefined): string {
+  if (!lastUpdated) return t ? t('common.timeAgo.never') : 'Never';
 
   const diff = Date.now() - lastUpdated.getTime();
   const seconds = Math.floor(diff / 1000);
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
 
-  if (seconds < 10) return '刚刚';
-  if (seconds < 60) return `${seconds}秒前`;
-  if (minutes < 60) return `${minutes}分钟前`;
-  if (hours < 24) return `${hours}小时前`;
+  if (seconds < 10) return t ? t('common.timeAgo.justNow') : 'Just now';
+  if (seconds < 60) return t ? t('common.timeAgo.seconds', { seconds: String(seconds) }) : `${seconds}s ago`;
+  if (minutes < 60) return t ? t('common.timeAgo.minutes', { minutes: String(minutes) }) : `${minutes}m ago`;
+  if (hours < 24) return t ? t('common.timeAgo.hours', { hours: String(hours) }) : `${hours}h ago`;
   return lastUpdated.toLocaleString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 }

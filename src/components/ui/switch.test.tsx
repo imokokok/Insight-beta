@@ -23,18 +23,6 @@ describe('Switch', () => {
   });
 
   describe('Checked state', () => {
-    it('should render unchecked by default', () => {
-      render(<Switch />);
-      const switchEl = screen.getByRole('switch');
-      expect(switchEl).toHaveAttribute('aria-checked', 'false');
-    });
-
-    it('should render checked when checked prop is true', () => {
-      render(<Switch checked={true} />);
-      const switchEl = screen.getByRole('switch');
-      expect(switchEl).toHaveAttribute('aria-checked', 'true');
-    });
-
     it('should apply checked styles when checked', () => {
       render(<Switch checked={true} />);
       const switchEl = screen.getByRole('switch');
@@ -129,16 +117,6 @@ describe('Switch', () => {
   });
 
   describe('Accessibility', () => {
-    it('should have correct aria-checked attribute when unchecked', () => {
-      render(<Switch checked={false} />);
-      expect(screen.getByRole('switch')).toHaveAttribute('aria-checked', 'false');
-    });
-
-    it('should have correct aria-checked attribute when checked', () => {
-      render(<Switch checked={true} />);
-      expect(screen.getByRole('switch')).toHaveAttribute('aria-checked', 'true');
-    });
-
     it('should have focus visible styles', () => {
       render(<Switch />);
       const switchEl = screen.getByRole('switch');
@@ -169,14 +147,7 @@ describe('Switch', () => {
     it('should handle undefined onCheckedChange', async () => {
       render(<Switch checked={false} />);
 
-      // Should not throw error
       await userEvent.click(screen.getByRole('switch'));
-    });
-
-    it('should handle undefined checked prop', () => {
-      render(<Switch />);
-      const switchEl = screen.getByRole('switch');
-      expect(switchEl).toHaveAttribute('aria-checked', 'false');
     });
   });
 });

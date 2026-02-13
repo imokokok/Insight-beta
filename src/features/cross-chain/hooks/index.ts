@@ -2,5 +2,4 @@
  * Cross-chain Hooks
  */
 export * from './useCrossChain';
-export * from './useUI';
-export * from './useQuery';
+// useUI 和 useQuery 已从 @/hooks/useUI 和 @/hooks/useQuery 直接导入

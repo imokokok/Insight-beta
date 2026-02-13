@@ -193,4 +193,17 @@ export const common = {
     stale: 'Expirado',
     expired: 'Inválido',
   },
+  // Refresh Strategies
+  refreshStrategies: {
+    realtime: 'Tiempo real',
+    frequent: 'Frecuente',
+    standard: 'Estándar',
+    lazy: 'Perezoso',
+    static: 'Estático',
+    realtimeDesc: 'WebSocket en tiempo real',
+    frequentDesc: 'Actualización automática cada 30 segundos',
+    standardDesc: 'Actualización automática cada 1 minuto',
+    lazyDesc: 'Actualización automática cada 5 minutos',
+    staticDesc: 'Cargar una vez al entrar a la página',
+  },
 };

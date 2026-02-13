@@ -2,4 +2,4 @@
  * Dispute Hooks
  */
 export * from './useDisputes';
-export * from './useSWRConfig';
+// useSWRConfig 已从 @/hooks/useSWRConfig 直接导入

@@ -25,7 +25,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useI18n } from '@/i18n';
-import { statusColors } from '@/lib/design-system';
 import { cn } from '@/shared/utils';
 import { exportRealtimeToCSV } from '@/shared/utils/export';
 import type { RealtimeComparisonItem } from '@/types/oracle';
@@ -174,9 +173,7 @@ const StatusBadge = React.memo(function StatusBadge({ status }: StatusBadgeProps
       return (
         <Badge
           variant="default"
-          className={cn(statusColors.active.dot, 'text-xs')}
-          role="status"
-          aria-label={t('status.active')}
+          className={cn('bg-emerald-500', 'text-xs')}
         >
           {t('comparison.status.active')}
         </Badge>
@@ -185,9 +182,7 @@ const StatusBadge = React.memo(function StatusBadge({ status }: StatusBadgeProps
       return (
         <Badge
           variant="secondary"
-          className={cn(statusColors.stale.bg, statusColors.stale.text, 'text-xs')}
-          role="status"
-          aria-label={t('status.stale')}
+          className={cn('bg-amber-500/10', 'text-amber-600', 'text-xs')}
         >
           {t('comparison.status.stale')}
         </Badge>
@@ -197,8 +192,6 @@ const StatusBadge = React.memo(function StatusBadge({ status }: StatusBadgeProps
         <Badge
           variant="destructive"
           className="text-xs"
-          role="status"
-          aria-label={t('status.error')}
         >
           {t('comparison.status.error')}
         </Badge>
@@ -358,7 +351,7 @@ const VirtualTableRow = React.memo(function VirtualTableRow({ row, style }: Virt
       </div>
       <div className="w-[50px]">
         <DropdownMenu>
-          <DropdownMenuTrigger>
+          <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
               <MoreHorizontal className="h-4 w-4" />
             </Button>
@@ -405,7 +398,7 @@ const VirtualTableToolbar = React.memo(function VirtualTableToolbar({
             />
           </div>
           <DropdownMenu>
-            <DropdownMenuTrigger>
+            <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
                 <Download className="mr-1 h-4 w-4" />
                 {t('comparison.controls.export')}

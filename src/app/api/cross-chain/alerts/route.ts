@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
 
 import { withMiddleware, DEFAULT_RATE_LIMIT } from '@/lib/api/middleware';
-import { crossChainAnalysisService } from '@/services/oracle/crossChainAnalysisService';
+import { crossChainAnalysisService } from '@/features/oracle/services/crossChainAnalysisService';
 import { apiSuccess, apiError, getQueryParam } from '@/shared/utils';
 
 async function handleGet(request: NextRequest) {

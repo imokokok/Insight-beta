@@ -196,14 +196,21 @@ export interface ApiErrorResponse {
   };
 }
 
+import type { PaginationMeta } from '@/types/common/pagination';
+
 export interface ApiSuccessResponse<T> {
   data: T;
-  meta?: {
-    page?: number;
-    limit?: number;
-    total?: number;
-    hasMore?: boolean;
-  };
+  meta?: PaginationMeta;
 }
 
 export type ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse;
+
+// ============================================================================
+// 请求选项类型
+// ============================================================================
+
+export interface RequestOptions {
+  timeout?: number;
+  retries?: number;
+  cache?: boolean;
+}

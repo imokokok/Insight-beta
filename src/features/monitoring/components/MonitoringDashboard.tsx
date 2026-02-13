@@ -382,9 +382,6 @@ export function MonitoringDashboard() {
                           onCheckedChange={() => toggleChannel(channel)}
                           disabled={!isConfigured || saving}
                         />
-                        <Label htmlFor={`${channel}-toggle`} className="sr-only">
-                          Enable {channel}
-                        </Label>
                       </div>
                       <Button
                         variant="outline"

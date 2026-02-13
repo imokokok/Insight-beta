@@ -2,8 +2,6 @@
 
 import type { ReactNode } from 'react';
 
-import { Onboarding, FirstTimeTour, useFirstTimeTour } from '@/features/onboarding/components';
-
 interface ClientComponentsWrapperProps {
   children: ReactNode;
 }

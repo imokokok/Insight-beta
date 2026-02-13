@@ -19,7 +19,7 @@ import type {
   SupportedChain,
 } from '@/types/unifiedOracleTypes';
 
-import { PriceAggregationEngine } from '../priceAggregation';
+import { PriceAggregationEngine } from '@/services/oracle/priceAggregation';
 
 // ============================================================================
 // 配置常量

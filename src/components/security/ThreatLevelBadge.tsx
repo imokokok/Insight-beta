@@ -49,8 +49,6 @@ export function ThreatLevelBadge({ level, count, className }: ThreatLevelBadgePr
 
   return (
     <div
-      role="status"
-      aria-label={`${config.label}: ${count}`}
       className={cn(
         'flex items-center gap-2 rounded-lg border px-3 py-2',
         config.bg,
@@ -59,7 +57,7 @@ export function ThreatLevelBadge({ level, count, className }: ThreatLevelBadgePr
       )}
     >
       <div className={config.text}>
-        <Icon className="h-4 w-4" aria-hidden="true" />
+        <Icon className="h-4 w-4" />
       </div>
       <div>
         <span className={cn('text-xs font-semibold', config.text)}>{config.label}</span>

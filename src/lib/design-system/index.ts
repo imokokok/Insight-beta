@@ -7,23 +7,34 @@
  * - 设计令牌
  *
  * 使用方式：
- * import { StatusType, statusColors, STATUS_THEME_COLORS } from '@/lib/design-system';
+ * import { StatusType, STATUS_COLORS, STATUS_THEME_COLORS } from '@/lib/design-system';
  */
 
+// 颜色令牌 - 从 design-system/tokens/colors 导出
 export {
-  themeColors,
-  statCardColors,
-  statusColors,
-  trendColors,
-  priorityColors,
-} from '../constants/colors';
-export type { ThemeColor, PriorityLevel } from '../constants/colors';
-
-export { colors } from '../utils/colors';
-export type { ColorKeys } from '../utils/colors';
-
-export {
+  SEMANTIC_COLORS,
+  BRAND_COLORS,
+  NEUTRAL_COLORS,
   STATUS_COLORS,
+  COMPONENT_COLORS,
+  PROTOCOL_COLORS,
+  CHAIN_COLORS,
+  CHART_COLORS,
+  MONITOR_STATUS_COLORS,
+  type SemanticColor,
+  type BrandColor,
+  type StatusColor,
+  type ComponentColor,
+  type ProtocolColor,
+  type ChainColor,
+  type MonitorStatus,
+  getStatusColor,
+  getProtocolColor,
+} from './tokens/colors';
+
+// 状态类型和颜色
+export {
+  STATUS_COLORS as statusColors,
   STATUS_THEME_COLORS,
   RISK_COLORS,
   SEVERITY_COLORS,
@@ -40,6 +51,7 @@ export type {
   VotingStatus,
 } from '../../types/common/status';
 
+// 响应式设计
 export {
   BREAKPOINTS,
   BREAKPOINT_DESCRIPTIONS,
@@ -69,6 +81,7 @@ export {
   getContainerBreakpoint,
 } from './tokens/responsive';
 
+// 布局
 export {
   CONTAINER_WIDTHS,
   MAX_WIDTHS,

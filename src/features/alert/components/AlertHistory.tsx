@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useI18n } from '@/i18n';
-import type { AlertHistoryRecord, ChannelHealthStatus } from '@/services/alert/notificationManager';
+import type { AlertHistoryRecord, ChannelHealthStatus } from '@/features/alert/services/notificationManager';
 import type { AlertSeverity, NotificationChannel } from '@/services/alert/notifications/types';
 
 function cn(...classes: (string | boolean | undefined)[]) {

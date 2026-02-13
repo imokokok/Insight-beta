@@ -2,4 +2,4 @@
  * Comparison Hooks
  */
 export * from './useComparison';
-export * from './useSWRConfig';
+// useSWRConfig 已从 @/hooks/useSWRConfig 直接导入

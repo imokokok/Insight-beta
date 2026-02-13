@@ -12,7 +12,7 @@ import {
   getUnifiedInstance,
   updateSyncState,
   recordSyncError,
-} from '@/services/oracle/unifiedConfig';
+} from '@/features/oracle/services/unifiedConfig';
 import { logger } from '@/shared/logger';
 import type { SupportedChain } from '@/types/oracle/chain';
 import type { OracleProtocol } from '@/types/oracle/protocol';

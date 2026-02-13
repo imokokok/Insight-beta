@@ -2,6 +2,7 @@ export const comparison = {
   title: 'Análisis Comparativo de Oráculos',
   description:
     'Comparación multidimensional de precios, latencia y eficiencia de costos de protocolos de oráculos',
+  pageName: 'Análisis de Comparación de Oráculos',
   liveConnected: 'Conectado en Tiempo Real',
   usage: {
     title: 'Guía de Uso',

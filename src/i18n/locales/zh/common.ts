@@ -183,11 +183,24 @@ export const common = {
       originalTime: '原始数据时间',
     },
   },
-  // 数据新鲜度
+  // Data Freshness
   freshness: {
     fresh: '最新',
     warning: '稍旧',
     stale: '过期',
     expired: '已失效',
+  },
+  // Refresh Strategies
+  refreshStrategies: {
+    realtime: '实时',
+    frequent: '高频',
+    standard: '标准',
+    lazy: '低频',
+    static: '静态',
+    realtimeDesc: 'WebSocket 实时推送',
+    frequentDesc: '每 30 秒自动刷新',
+    standardDesc: '每 1 分钟自动刷新',
+    lazyDesc: '每 5 分钟自动刷新',
+    staticDesc: '进入页面时加载一次',
   },
 };

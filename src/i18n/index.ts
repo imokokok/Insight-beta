@@ -47,6 +47,9 @@ export type {
   Translations,
 } from './types';
 
+// Translation function type - defined after importing InterpolationValues
+export type TFunction = (key: string, values?: Record<string, string | number>) => string;
+
 // Constants and utilities
 export {
   languages,

@@ -39,19 +39,19 @@ const statusConfig = {
     color: statusColors.healthy.dot,
     labelKey: 'comparison.status.healthy',
     icon: Zap,
-    ariaLabelKey: statusColors.healthy.ariaLabelKey,
+    ariaLabelKey: 'status.healthy',
   },
   degraded: {
     color: statusColors.degraded.dot,
     labelKey: 'comparison.status.degraded',
     icon: AlertCircle,
-    ariaLabelKey: statusColors.degraded.ariaLabelKey,
+    ariaLabelKey: 'status.degraded',
   },
   stale: {
-    color: statusColors.stale.dot,
+    color: 'bg-amber-500',
     labelKey: 'comparison.status.stale',
     icon: Clock,
-    ariaLabelKey: statusColors.stale.ariaLabelKey,
+    ariaLabelKey: 'status.stale',
   },
 };
 
@@ -301,8 +301,6 @@ export function LatencyAnalysisView({
                   <Bar
                     dataKey="latency"
                     radius={[4, 4, 0, 0]}
-                    role="img"
-                    aria-label={t('comparison.latency.chartAriaLabel')}
                   >
                     {chartData.map((entry, index) => {
                       const statusColor =
@@ -315,9 +313,6 @@ export function LatencyAnalysisView({
                         <Cell
                           key={`cell-${index}`}
                           fill={statusColor}
-                          role="graphics-symbol"
-                          aria-label={`${entry.protocol}: ${t(statusConfig[entry.status].ariaLabelKey)}`}
-                          tabIndex={0}
                         />
                       );
                     })}
@@ -373,10 +368,8 @@ export function LatencyAnalysisView({
                                   : 'destructive'
                             }
                             className="gap-1 text-xs"
-                            role="status"
-                            aria-label={t(statusConfig[metric.status].ariaLabelKey)}
                           >
-                            <StatusIcon className="h-3 w-3" aria-hidden="true" />
+                            <StatusIcon className="h-3 w-3" />
                             {t(statusConfig[metric.status].labelKey)}
                           </Badge>
                         </td>

@@ -45,6 +45,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ConnectWallet } from '@/features/wallet/components/ConnectWallet';
+import { useI18n } from '@/i18n';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { cn } from '@/shared/utils';
 
@@ -124,187 +125,166 @@ export const defaultNavConfig: SidebarConfig = {
   groups: [
     {
       id: 'main',
-      label: '主导航',
-      labelEn: 'Main',
+      label: 'nav.groups.main',
       collapsible: false,
       items: [
         {
           id: 'dashboard',
-          label: '仪表板',
-          labelEn: 'Dashboard',
+          label: 'nav.dashboard',
           href: '/oracle/dashboard',
           icon: LayoutDashboard,
-          description: '系统概览和关键指标',
+          description: 'nav.descriptions.dashboard',
         },
         {
           id: 'comparison',
-          label: '统一预言机',
-          labelEn: 'Unified Oracle',
+          label: 'nav.unifiedOracle',
           href: '/oracle/comparison',
           icon: Globe,
-          description: '跨协议价格对比',
+          description: 'nav.descriptions.unifiedOracle',
         },
       ],
     },
     {
       id: 'monitor',
-      label: '监控',
-      labelEn: 'Monitor',
+      label: 'nav.groups.monitor',
       icon: Activity,
       defaultExpanded: true,
       items: [
         {
           id: 'security',
-          label: '安全监控',
-          labelEn: 'Security',
+          label: 'nav.security',
           href: '/security/dashboard',
           icon: Shield,
-          description: '安全态势感知',
+          description: 'nav.descriptions.security',
         },
         {
           id: 'alerts',
-          label: '告警中心',
-          labelEn: 'Alerts',
+          label: 'nav.alerts',
           href: '/alerts',
           icon: ShieldAlert,
           badge: 0,
           badgeVariant: 'destructive',
-          description: '实时告警通知',
+          description: 'nav.descriptions.alerts',
         },
         {
           id: 'monitoring',
-          label: '性能监控',
-          labelEn: 'Monitoring',
+          label: 'nav.monitoring',
           href: '/oracle/monitoring',
           icon: Activity,
-          description: '系统性能指标',
+          description: 'nav.descriptions.monitoring',
         },
       ],
     },
     {
       id: 'analytics',
-      label: '分析',
-      labelEn: 'Analytics',
+      label: 'nav.groups.analytics',
       icon: BarChart3,
       items: [
         {
           id: 'trends',
-          label: '趋势分析',
-          labelEn: 'Trends',
+          label: 'nav.trends',
           href: '/oracle/analytics',
           icon: BarChart3,
-          description: '价格趋势和预测',
+          description: 'nav.descriptions.trends',
         },
         {
           id: 'anomalies',
-          label: '异常检测',
-          labelEn: 'Anomalies',
+          label: 'nav.anomalies',
           href: '/oracle/analytics/anomalies',
           icon: AlertTriangle,
-          description: 'ML 异常检测',
+          description: 'nav.descriptions.anomalies',
         },
         {
           id: 'deviation',
-          label: '偏差分析',
-          labelEn: 'Deviation',
+          label: 'nav.deviation',
           href: '/oracle/analytics/deviation',
           icon: Activity,
-          description: '价格偏差分析',
+          description: 'nav.descriptions.deviation',
         },
       ],
     },
     {
       id: 'operations',
-      label: '运营',
-      labelEn: 'Operations',
+      label: 'nav.groups.operations',
       icon: Layers,
       items: [
         {
           id: 'disputes',
-          label: '争议处理',
-          labelEn: 'Disputes',
+          label: 'nav.disputes',
           href: '/disputes',
           icon: FileText,
-          description: '争议管理和处理',
+          description: 'nav.descriptions.disputes',
         },
         {
           id: 'assertions',
-          label: '断言管理',
-          labelEn: 'Assertions',
+          label: 'nav.assertions',
           href: '/oracle/optimistic/assertions',
           icon: Zap,
-          description: '乐观预言机断言',
+          description: 'nav.descriptions.assertions',
         },
         {
           id: 'watchlist',
-          label: '关注列表',
-          labelEn: 'Watchlist',
+          label: 'nav.watchlist',
           href: '/watchlist',
           icon: Bookmark,
-          description: '关注的资产',
+          description: 'nav.descriptions.watchlist',
         },
       ],
     },
     {
       id: 'slo',
-      label: 'SLO',
-      labelEn: 'SLO',
+      label: 'nav.groups.sloGroup',
       icon: BarChart3,
       items: [
         {
           id: 'slo-dashboard',
-          label: 'SLO 仪表板',
-          labelEn: 'SLO Dashboard',
+          label: 'nav.slo',
           href: '/oracle/slo-v2',
           icon: BarChart3,
-          description: '服务等级目标',
+          description: 'nav.descriptions.sloDashboard',
         },
         {
           id: 'timeline',
-          label: '事件时间线',
-          labelEn: 'Timeline',
+          label: 'nav.timeline',
           href: '/oracle/timeline',
           icon: History,
-          description: '系统事件追踪',
+          description: 'nav.descriptions.timeline',
         },
       ],
     },
     {
       id: 'protocols',
-      label: '协议',
-      labelEn: 'Protocols',
+      label: 'nav.groups.protocolsGroup',
       icon: Layers,
       items: [
         {
           id: 'protocol-list',
-          label: '协议列表',
-          labelEn: 'Protocol List',
+          label: 'nav.protocols',
           href: '/oracle/protocols',
           icon: Layers,
-          description: '所有协议概览',
+          description: 'nav.descriptions.protocolList',
         },
         {
           id: 'optimistic',
-          label: '乐观预言机',
-          labelEn: 'Optimistic Oracle',
+          label: 'nav.optimisticOracle',
           href: '/oracle/optimistic',
           icon: Zap,
           children: [
             {
               id: 'oo-dashboard',
-              label: 'OO 仪表板',
+              label: 'nav.dashboard',
               href: '/oracle/optimistic',
               icon: LayoutDashboard,
             },
             {
               id: 'governance',
-              label: '治理',
+              label: 'nav.governance',
               href: '/oracle/optimistic/governance',
               icon: Users,
             },
             {
               id: 'rewards',
-              label: '奖励',
+              label: 'nav.rewards',
               href: '/oracle/optimistic/rewards',
               icon: Star,
             },
@@ -329,6 +309,7 @@ function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
   const pathname = usePathname();
   const { favorites, toggleFavorite, addRecentItem, collapsed: sidebarCollapsed } = useSidebar();
   const prefersReducedMotion = useReducedMotion();
+  const { t } = useI18n();
   const [isExpanded, setIsExpanded] = useState(false);
 
   const isActive = useMemo(() => {
@@ -363,7 +344,7 @@ function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
               isActive ? 'text-primary-dark' : 'text-foreground group-hover:text-foreground',
             )}
           >
-            {item.label}
+            {t(item.label)}
           </span>
 
           {item.badge !== undefined && item.badge !== 0 && (
@@ -421,7 +402,7 @@ function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
             <item.icon className="h-5 w-5" />
           </Link>
         </TooltipTrigger>
-        <TooltipContent side="right">{item.label}</TooltipContent>
+        <TooltipContent side="right">{t(item.label)}</TooltipContent>
       </Tooltip>
     );
   }
@@ -475,6 +456,7 @@ interface NavGroupProps {
 function NavGroupComponent({ group }: NavGroupProps) {
   const { expandedGroups, toggleGroup, collapsed, searchQuery } = useSidebar();
   const prefersReducedMotion = useReducedMotion();
+  const { t } = useI18n();
   const isExpanded = expandedGroups.has(group.id);
   const canCollapse = group.collapsible !== false;
 
@@ -484,12 +466,11 @@ function NavGroupComponent({ group }: NavGroupProps) {
     const query = searchQuery.toLowerCase();
     return group.items.filter(
       (item) =>
-        item.label.toLowerCase().includes(query) ||
-        item.labelEn?.toLowerCase().includes(query) ||
-        item.description?.toLowerCase().includes(query) ||
+        t(item.label).toLowerCase().includes(query) ||
+        (item.description && t(item.description).toLowerCase().includes(query)) ||
         item.keywords?.some((k) => k.toLowerCase().includes(query)),
     );
-  }, [group.items, searchQuery]);
+  }, [group.items, searchQuery, t]);
 
   if (filteredItems.length === 0) return null;
 
@@ -513,7 +494,7 @@ function NavGroupComponent({ group }: NavGroupProps) {
           className="flex w-full items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground"
         >
           {group.icon && <group.icon className="mr-2 h-3.5 w-3.5" />}
-          <span className="flex-1 text-left">{group.label}</span>
+          <span className="flex-1 text-left">{t(group.label)}</span>
           <ChevronDown
             className={cn('h-4 w-4 transition-transform duration-200', !isExpanded && '-rotate-90')}
           />
@@ -523,7 +504,7 @@ function NavGroupComponent({ group }: NavGroupProps) {
       {group.label && !canCollapse && (
         <div className="flex items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {group.icon && <group.icon className="mr-2 h-3.5 w-3.5" />}
-          <span>{group.label}</span>
+          <span>{t(group.label)}</span>
         </div>
       )}
 
@@ -552,6 +533,7 @@ function NavGroupComponent({ group }: NavGroupProps) {
 
 function SidebarSearch() {
   const { searchQuery, setSearchQuery } = useSidebar();
+  const { t } = useI18n();
 
   return (
     <div className="px-3 py-2">
@@ -559,7 +541,7 @@ function SidebarSearch() {
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           type="text"
-          placeholder="搜索导航..."
+          placeholder={t('nav.labels.search')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="h-9 border-border bg-muted pl-9 text-sm text-foreground focus:bg-card"
@@ -583,6 +565,7 @@ function SidebarSearch() {
 
 function SidebarFavorites({ config }: { config: SidebarConfig }) {
   const { favorites, collapsed } = useSidebar();
+  const { t } = useI18n();
 
   const favoriteItems = useMemo(() => {
     const items: NavItem[] = [];
@@ -610,7 +593,7 @@ function SidebarFavorites({ config }: { config: SidebarConfig }) {
       {!collapsed && (
         <div className="flex items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           <Star className="mr-2 h-3.5 w-3.5" />
-          <span>收藏</span>
+          <span>{t('nav.labels.favorites')}</span>
         </div>
       )}
       <div className={cn('space-y-1', collapsed && 'px-1')}>
@@ -628,6 +611,7 @@ function SidebarFavorites({ config }: { config: SidebarConfig }) {
 
 function SidebarRecents({ config }: { config: SidebarConfig }) {
   const { recentItems, collapsed } = useSidebar();
+  const { t } = useI18n();
 
   const recentNavItems = useMemo(() => {
     const itemMap = new Map<string, NavItem>();
@@ -654,7 +638,7 @@ function SidebarRecents({ config }: { config: SidebarConfig }) {
       {!collapsed && (
         <div className="flex items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           <Clock className="mr-2 h-3.5 w-3.5" />
-          <span>最近访问</span>
+          <span>{t('nav.labels.recent')}</span>
         </div>
       )}
       <div className={cn('space-y-1', collapsed && 'px-1')}>

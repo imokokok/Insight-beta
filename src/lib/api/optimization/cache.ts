@@ -1,7 +1,7 @@
 /**
  * Simple Cache - 简化的内存缓存
  *
- * 仅提供基本的缓存功能，移除过度优化的 LRU 实现
+ * 仅提供基本的缓存功能，用于服务器端数据缓存
  */
 
 export interface CacheProvider {
@@ -70,13 +70,7 @@ export class SimpleCache implements CacheProvider {
 
   async keys(pattern: string): Promise<string[]> {
     const regex = new RegExp(pattern.replace(/\*/g, '.*'));
-    const result: string[] = [];
-    for (const key of this.store.keys()) {
-      if (regex.test(key)) {
-        result.push(key);
-      }
-    }
-    return result;
+    return [...this.store.keys()].filter((key) => regex.test(key));
   }
 
   get size(): number {
@@ -84,42 +78,10 @@ export class SimpleCache implements CacheProvider {
   }
 }
 
-export class CacheManager {
-  private cache: CacheProvider;
-
-  constructor(cache: CacheProvider) {
-    this.cache = cache;
-  }
-
-  async get<T>(key: string): Promise<T | null> {
-    return this.cache.get<T>(key);
-  }
-
-  async set<T>(key: string, value: T, ttlMs?: number): Promise<void> {
-    return this.cache.set(key, value, ttlMs);
-  }
-
-  async delete(key: string): Promise<void> {
-    return this.cache.delete(key);
-  }
-
-  async clear(pattern?: string): Promise<void> {
-    return this.cache.clear(pattern);
-  }
-}
-
 export const defaultCache = new SimpleCache();
-export const cacheManager = new CacheManager(defaultCache);
 
 export function generateCacheKey(prefix: string, ...parts: unknown[]): string {
-  const serialized = parts
-    .map((part) => {
-      if (typeof part === 'object') {
-        return JSON.stringify(part);
-      }
-      return String(part);
-    })
-    .join(':');
-
-  return `${prefix}:${serialized}`;
+  return `${prefix}:${parts
+    .map((part) => (typeof part === 'object' ? JSON.stringify(part) : String(part)))
+    .join(':')}`;
 }

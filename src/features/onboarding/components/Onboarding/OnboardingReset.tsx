@@ -55,7 +55,6 @@ export function OnboardingReset({ onReset, variant = 'button', className }: Onbo
       <button
         onClick={() => setShowConfirm(true)}
         className={`rounded-full p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 ${className}`}
-        aria-label={t('onboarding.viewAgain')}
         title={t('onboarding.viewAgain')}
       >
         <HelpCircle className="h-5 w-5" />

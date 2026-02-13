@@ -390,7 +390,6 @@ export default function OptimizedOracleDashboard() {
       {sidebarOpen && (
         <button
           type="button"
-          aria-label="Close sidebar"
           className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />

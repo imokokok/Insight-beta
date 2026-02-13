@@ -15,7 +15,7 @@ import {
   type SyncContext,
 } from './syncFramework';
 import { query } from '@/lib/database/db';
-import { getUnifiedInstance } from '@/services/oracle/unifiedConfig';
+import { getUnifiedInstance } from '@/features/oracle/services/unifiedConfig';
 
 // Mock dependencies
 vi.mock('@/lib/database/db', () => ({

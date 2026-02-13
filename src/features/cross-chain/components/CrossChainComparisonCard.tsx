@@ -218,14 +218,6 @@ export const CrossChainComparisonCard = memo(function CrossChainComparisonCard({
                           onChainSelect && 'cursor-pointer hover:bg-opacity-20',
                         )}
                         onClick={() => onChainSelect?.(priceData.chain)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            onChainSelect?.(priceData.chain);
-                          }
-                        }}
-                        role={onChainSelect ? 'button' : undefined}
-                        tabIndex={onChainSelect ? 0 : undefined}
                       >
                         <div className="flex items-center gap-3">
                           {isMaxPrice && <TrendingUp className="h-4 w-4 text-emerald-600" />}

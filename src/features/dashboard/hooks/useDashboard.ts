@@ -85,7 +85,8 @@ export function useDashboardShortcuts({
 }
 
 // ============================================================================
-// useAutoRefresh - 自动刷新 Hook
+// useAutoRefresh - 自动刷新 Hook (带倒计时功能)
+// 这是 dashboard 专用版本，保留向后兼容
 // ============================================================================
 
 interface UseAutoRefreshOptions {

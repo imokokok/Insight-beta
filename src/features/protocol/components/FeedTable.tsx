@@ -43,15 +43,13 @@ export function FeedTable({
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
-          <table className="w-full" role="table" aria-label={title}>
+          <table className="w-full">
             <thead>
               <tr className="border-b text-left text-sm text-gray-500">
                 {columns.map((col) => (
                   <th
                     key={col.key}
                     className="pb-3 font-medium"
-                    scope="col"
-                    role="columnheader"
                     style={{ width: col.width }}
                   >
                     {col.header}

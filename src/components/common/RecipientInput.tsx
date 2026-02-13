@@ -155,44 +155,33 @@ function RecipientInputComponent({ rule, onPatchRule, t }: RecipientInputProps) 
           {isSuccess && (
             <div
               className="flex animate-fade-in items-center gap-1 text-xs font-medium text-green-600"
-              role="status"
-              aria-live="polite"
             >
               <CheckCircle2 className="h-3 w-3" />
               {t('oracle.alerts.saved')}
             </div>
           )}
-          <div className={`text-xs ${characterCountColor}`} aria-hidden="true">
+          <div className={`text-xs ${characterCountColor}`}>
             {localValue.length}/{MAX_LENGTH}
           </div>
         </div>
       </div>
 
       {isUpdating ? (
-        <div className="h-10 animate-pulse rounded-xl bg-gray-100" aria-hidden="true" />
+        <div className="h-10 animate-pulse rounded-xl bg-gray-100" />
       ) : (
         <Input
           value={localValue}
           onChange={handleChange}
           placeholder={t('oracle.alerts.recipientPlaceholder')}
           maxLength={MAX_LENGTH}
-          aria-invalid={!!error}
-          aria-describedby={error ? 'recipient-error' : 'recipient-hint'}
-          aria-label={t('oracle.alerts.recipient')}
           className={inputClassName}
         />
       )}
-
-      <div id="recipient-hint" className="sr-only">
-        {t('oracle.alerts.recipientHint')}
-      </div>
 
       {error && (
         <div
           id="recipient-error"
           className="mt-1 flex animate-fade-in items-center gap-1 text-sm text-red-500"
-          role="alert"
-          aria-live="assertive"
         >
           <AlertCircle className="h-3 w-3 flex-shrink-0" />
           {error}

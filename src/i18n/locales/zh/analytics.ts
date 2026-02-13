@@ -3,6 +3,7 @@ export const analytics = {
   anomaly: {
     title: 'ML异常检测',
     description: '基于机器学习的价格数据源异常检测',
+    pageName: '异常检测分析',
     noAnomaliesTitle: '尚未检测到异常',
     noAnomaliesDescription: 'ML模型正在监控价格数据源',
     totalAnomalies: '总异常数',
@@ -51,6 +52,8 @@ export const analytics = {
   deviation: {
     title: '价格偏差分析',
     description: '跨协议价格偏差监控和分析',
+    pageName: '价格偏差分析',
+    loadError: '加载偏差数据失败',
     avgDeviation: '平均偏差',
     maxDeviation: '最大偏差',
     protocolsCompared: '协议对比',

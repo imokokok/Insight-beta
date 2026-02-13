@@ -4,26 +4,32 @@
  * 按领域组织所有服务
  */
 
-// Oracle 服务
+// Oracle 服务 - 从 features/oracle/services 重新导出
 export * from './oracle/priceAggregation';
-export * from './oracle/realtime';
 export * from './oracle/sync';
-export * from './oracle/priceFetcher';
-export * from './oracle/unifiedPriceService';
-export * from './oracle/crossChainAnalysisService';
-export * from './oracle/priceDeviationAnalytics';
-export * from './oracle/realDataService';
+// priceFetcher, unifiedPriceService, crossChainAnalysisService, priceDeviationAnalytics, realDataService
+// 已从 @/features/oracle/services 导出
 
-// 告警服务（排除重复的类型导出）
-export { NotificationService } from './alert/notifications';
-export { alertService } from './alert/alertService';
-export { notificationConfigService } from './alert/notificationConfigService';
-export { notificationManager } from './alert/notificationManager';
+// Oracle Realtime - 排除与 alert/notifications 重复的类型
+export {
+  RealtimePriceService,
+  realtimePriceService,
+  AlertRuleEngine,
+  alertRuleEngine,
+  type Alert,
+  type AlertRule,
+  type AlertCondition,
+  type AlertConditionType,
+} from './oracle/realtime';
+
+// 告警服务 - 从 features/alert/services 重新导出
+// AlertSeverity 和 NotificationChannel 从这里导出
+export * from './alert/notifications';
 
 // 安全服务
 export * from './security/anomaly';
 export * from './security/apiAuth';
-export * from './security/rateLimiter';
+// rateLimiter 已从 lib/security/rateLimit.ts 导出
 export * from './security/manipulationDetectionService';
 
 // 监控服务

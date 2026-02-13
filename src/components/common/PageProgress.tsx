@@ -73,7 +73,6 @@ export function PageProgress() {
         opacity: progress === 100 ? 0 : 1,
         boxShadow: '0 0 10px rgba(59, 130, 246, 0.5), 0 0 20px rgba(59, 130, 246, 0.3)',
       }}
-      aria-hidden="true"
     />
   );
 }

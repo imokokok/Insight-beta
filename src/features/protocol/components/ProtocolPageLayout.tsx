@@ -55,12 +55,11 @@ export function ProtocolPageLayout({
               variant="ghost"
               size="icon"
               onClick={() => router.push('/oracle')}
-              aria-label="Go back to oracle dashboard"
             >
-              <ArrowLeft className="h-5 w-5" aria-hidden="true" />
+              <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="flex items-center gap-3">
-              <span className="text-4xl" aria-hidden="true">
+              <span className="text-4xl">
                 {icon}
               </span>
               <div>
@@ -75,14 +74,13 @@ export function ProtocolPageLayout({
               onClick={onRefresh}
               disabled={loading}
               className="gap-2"
-              aria-label={loading ? 'Refreshing data' : 'Refresh data'}
             >
-              <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} aria-hidden="true" />
+              <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
               Refresh
             </Button>
             <Link href={officialUrl as never} target="_blank" rel="noopener noreferrer">
               <Button variant="outline" className="gap-2">
-                <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                <ExternalLink className="h-4 w-4" />
                 Official Site
               </Button>
             </Link>

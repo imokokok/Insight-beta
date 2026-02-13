@@ -3,7 +3,7 @@
  * 异常检测服务主类
  */
 
-import type { PriceHistoryRecord } from '@/services/oracle/unifiedPriceService';
+import type { PriceHistoryRecord } from '@/features/oracle/services/unifiedPriceService';
 import { logger } from '@/shared/logger';
 
 import { BehaviorPatternDetector } from './BehaviorPatternDetector';

@@ -2,7 +2,7 @@
  * Unified Oracle Service Configuration
  */
 
-import type { ServiceConfig } from '../types/serviceTypes';
+import type { ServiceConfig } from '@/features/oracle/services/types/serviceTypes';
 
 export const DEFAULT_SERVICE_CONFIG: ServiceConfig = {
   aggregationIntervalMs: 30000, // 30 seconds
