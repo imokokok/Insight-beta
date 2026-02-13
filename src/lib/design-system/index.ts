@@ -17,7 +17,7 @@ export {
   trendColors,
   priorityColors,
 } from '../constants/colors';
-export type { ThemeColor, StatusType, PriorityLevel } from '../constants/colors';
+export type { ThemeColor, PriorityLevel } from '../constants/colors';
 
 export { colors } from '../utils/colors';
 export type { ColorKeys } from '../utils/colors';

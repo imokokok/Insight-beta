@@ -1,10 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import {
-  formatUsdCompact,
-  calculatePercentage,
-  formatDurationMinutes,
-  fetchApiData,
-} from './utils';
+import { formatUsdCompact, calculatePercentage, formatDurationMinutes } from '@/shared/utils';
+import { fetchApiData } from '@/shared/utils/api';
 
 describe('Utils', () => {
   beforeEach(() => {

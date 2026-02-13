@@ -66,8 +66,8 @@ vi.mock('@/components/UserStatsCard', () => ({
   UserStatsCard: () => <div data-testid="user-stats">UserStatsCard</div>,
 }));
 
-vi.mock('@/lib/utils', async () => {
-  const actual = await import('@/lib/utils');
+vi.mock('@/shared/utils', async () => {
+  const actual = await import('@/shared/utils');
   return {
     ...actual,
     fetchApiData: vi.fn().mockResolvedValue({ instances: [] }),
