@@ -145,15 +145,6 @@ export {
   RATE_LIMIT_DEFAULTS,
   type RateLimitConfig,
   type RateLimitResult,
-  // 价格清洗
-  PriceSanitizer,
-  PriceDeviationDetector,
-  createPriceSanitizer,
-  createPriceDeviationDetector,
-  PRICE_SANITIZER_DEFAULTS,
-  type PriceData,
-  type SanitizedPrice,
-  type OutlierInfo,
   // 重入防护
   ReentrancyGuard,
   CrossContractReentrancyDetector,

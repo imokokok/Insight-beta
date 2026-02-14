@@ -10,13 +10,11 @@ import {
   ShieldAlert,
   Menu,
   X,
-  ScrollText,
   Star,
   Globe,
   LayoutDashboard,
   TrendingUp,
   Shield,
-  ShieldCheck,
   Brain,
   Target,
   Clock,
@@ -88,24 +86,12 @@ const navGroups: NavGroupConfig[] = [
         tooltip: 'nav.descriptions.alerts',
         tourId: 'alerts',
       },
-      {
-        key: 'nav.disputes',
-        href: '/disputes',
-        icon: ShieldAlert,
-        tooltip: 'nav.descriptions.disputes',
-      },
     ],
   },
   {
     id: 'operate',
     labelKey: 'nav.groups.operate',
     items: [
-      {
-        key: 'nav.audit',
-        href: '/audit',
-        icon: ScrollText,
-        tooltip: 'nav.descriptions.audit',
-      },
       {
         key: 'nav.watchlist',
         href: '/watchlist',
@@ -142,12 +128,6 @@ const navGroups: NavGroupConfig[] = [
         href: '/oracle/protocols',
         icon: TrendingUp,
         tooltip: 'nav.descriptions.priceFeeds',
-      },
-      {
-        key: 'nav.optimisticOracle',
-        href: '/oracle/optimistic',
-        icon: ShieldCheck,
-        tooltip: 'nav.descriptions.optimistic',
       },
       {
         key: 'nav.crossChain',
@@ -267,10 +247,6 @@ const NavGroup = memo(function NavGroup({
       if (!pathname) return false;
       if (item.exact) {
         return pathname === item.href;
-      }
-      // 特殊处理：/oracle/protocols 不应该匹配 /oracle/optimistic
-      if (item.href === '/oracle/protocols' && pathname.startsWith('/oracle/optimistic')) {
-        return false;
       }
       return pathname === item.href || pathname.startsWith(item.href + '/');
     },

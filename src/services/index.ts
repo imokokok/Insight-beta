@@ -38,6 +38,3 @@ export * from './monitoring/performanceMonitor';
 
 // Gas 服务
 export * from './gas/gasPriceService';
-
-// 导出服务
-export * from './export/dataExportService';

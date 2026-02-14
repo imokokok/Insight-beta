@@ -8,7 +8,6 @@ import { RefreshCw } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { formatLastUpdated } from '@/config/refreshStrategy';
-import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 
 interface RefreshIndicatorProps {
@@ -24,11 +23,10 @@ export function RefreshIndicator({
   onRefresh,
   className,
 }: RefreshIndicatorProps) {
-  const { t } = useI18n();
   return (
     <div className={cn('flex items-center gap-2', className)}>
       <span className="text-xs text-muted-foreground">
-        {formatLastUpdated(lastUpdated, t)}
+        {formatLastUpdated(lastUpdated)}
       </span>
       {onRefresh && (
         <Button

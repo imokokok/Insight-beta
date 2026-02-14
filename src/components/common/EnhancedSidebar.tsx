@@ -33,10 +33,7 @@ import {
   Activity,
   BarChart3,
   Layers,
-  Zap,
   AlertTriangle,
-  FileText,
-  Users,
   ChevronLeft,
 } from 'lucide-react';
 
@@ -209,20 +206,6 @@ export const defaultNavConfig: SidebarConfig = {
       icon: Layers,
       items: [
         {
-          id: 'disputes',
-          label: 'nav.disputes',
-          href: '/disputes',
-          icon: FileText,
-          description: 'nav.descriptions.disputes',
-        },
-        {
-          id: 'assertions',
-          label: 'nav.assertions',
-          href: '/oracle/optimistic/assertions',
-          icon: Zap,
-          description: 'nav.descriptions.assertions',
-        },
-        {
           id: 'watchlist',
           label: 'nav.watchlist',
           href: '/watchlist',
@@ -263,32 +246,6 @@ export const defaultNavConfig: SidebarConfig = {
           href: '/oracle/protocols',
           icon: Layers,
           description: 'nav.descriptions.protocolList',
-        },
-        {
-          id: 'optimistic',
-          label: 'nav.optimisticOracle',
-          href: '/oracle/optimistic',
-          icon: Zap,
-          children: [
-            {
-              id: 'oo-dashboard',
-              label: 'nav.dashboard',
-              href: '/oracle/optimistic',
-              icon: LayoutDashboard,
-            },
-            {
-              id: 'governance',
-              label: 'nav.governance',
-              href: '/oracle/optimistic/governance',
-              icon: Users,
-            },
-            {
-              id: 'rewards',
-              label: 'nav.rewards',
-              href: '/oracle/optimistic/rewards',
-              icon: Star,
-            },
-          ],
         },
       ],
     },

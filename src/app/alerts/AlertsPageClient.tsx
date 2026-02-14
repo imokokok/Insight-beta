@@ -179,7 +179,7 @@ export default function AlertsPageClient() {
   const attachInstanceId = useCallback(
     (path: string) => {
       if (!instanceId) return path;
-      if (!path.startsWith('/oracle') && !path.startsWith('/disputes')) return path;
+      if (!path.startsWith('/oracle')) return path;
       const normalized = instanceId.trim();
       if (!normalized) return path;
       const url = new URL(path, 'http://oracle-monitor.local');
@@ -1014,12 +1014,6 @@ export default function AlertsPageClient() {
                     const assertionHref = assertionHrefRaw
                       ? (attachInstanceId(assertionHrefRaw) as Route)
                       : null;
-                    const disputeHrefRaw = r.disputeId?.trim()
-                      ? (`/disputes?q=${encodeURIComponent(r.disputeId)}` as Route)
-                      : null;
-                    const disputeHref = disputeHrefRaw
-                      ? (attachInstanceId(disputeHrefRaw) as Route)
-                      : null;
                     const reasons = (r.reasons ?? []).filter(Boolean);
                     return (
                       <div
@@ -1070,21 +1064,6 @@ export default function AlertsPageClient() {
                                 Assertion
                               </Link>
                             ) : null}
-                            {disputeHref ? (
-                              <Link
-                                href={disputeHref}
-                                className="rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-semibold text-amber-800 shadow-sm ring-1 ring-amber-100 hover:bg-amber-50"
-                              >
-                                Dispute
-                              </Link>
-                            ) : (
-                              <Link
-                                href={attachInstanceId('/disputes') as Route}
-                                className="text-primary-dark ring-primary100 rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-semibold shadow-sm ring-1 hover:bg-primary/5"
-                              >
-                                Disputes
-                              </Link>
-                            )}
                           </div>
                         </div>
                       </div>

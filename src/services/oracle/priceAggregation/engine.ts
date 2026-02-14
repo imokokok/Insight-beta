@@ -12,7 +12,6 @@ import pLimit from 'p-limit';
 import { defaultCache } from '@/lib/api/optimization/cache';
 import { query } from '@/lib/database/db';
 import { priceMetrics } from '@/lib/monitoring/priceMetrics';
-import { alertRuleEngine } from '@/services/oracle/realtime';
 import { logger } from '@/shared/logger';
 import { calculateMean, calculateMedian } from '@/shared/utils/math';
 import { withRetry, circuitBreakerManager } from '@/shared/utils/resilience';
@@ -214,8 +213,15 @@ export class PriceAggregationEngine {
       logger.error('Failed to save comparison', { error });
     });
 
-    // 使用新的告警规则引擎评估告警
-    alertRuleEngine.evaluate(comparison);
+    // 使用新的告警规则引擎评估告警（延迟执行+动态导入，打破循环依赖）
+    setImmediate(async () => {
+      try {
+        const { alertRuleEngine } = await import('@/services/oracle/realtime');
+        alertRuleEngine.evaluate(comparison);
+      } catch (error) {
+        logger.error('Failed to evaluate alert rules', { error });
+      }
+    });
 
     return comparison;
   }

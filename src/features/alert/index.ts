@@ -17,4 +17,4 @@ export {
 export * from './hooks';
 
 // 导出 services
-export * from './services/notificationConfigService';
+export * from './services';

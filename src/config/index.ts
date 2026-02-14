@@ -4,5 +4,5 @@
 
 export * from './constants';
 export * from './env';
-export * from './rpcConfig';
+export * from './refreshStrategy';
 export * from './pythPriceFeeds';

@@ -27,7 +27,7 @@ export function DisputesEmptyState({ instanceId, t }: DisputesEmptyStateProps) {
           {t('nav.oracle')}
         </Link>
         <Link
-          href={instanceId ? `/disputes?instanceId=${encodeURIComponent(instanceId)}` : '/disputes'}
+          href={instanceId ? `/disputes?instanceId=${encodeURIComponent(instanceId)}` : '/disputes' as any}
           className="text-primary-dark rounded-xl border border-primary/20 bg-white px-6 py-3 font-medium transition-colors hover:bg-primary/5"
         >
           {t('nav.disputes')}

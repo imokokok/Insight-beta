@@ -11,7 +11,6 @@ import {
   BarChart3,
   Layers,
   CheckCircle,
-  Shield,
   Clock,
   Bell,
   TrendingUp,
@@ -72,12 +71,6 @@ export default function OraclePlatformPage() {
               title={t('home.actions.comparison.title')}
               description={t('home.actions.comparison.description')}
               onClick={() => router.push('/oracle/comparison')}
-            />
-            <HeroActionCard
-              icon={<Shield className="h-6 w-6" />}
-              title={t('home.actions.optimistic.title')}
-              description={t('home.actions.optimistic.description')}
-              onClick={() => router.push('/oracle/optimistic')}
             />
           </div>
 
