@@ -9,6 +9,8 @@
 // ============================================================================
 
 export const WS_CONFIG = {
+  /** WebSocket URL */
+  URL: process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001',
   /** 最大重连次数 */
   MAX_RECONNECT_ATTEMPTS: 5,
   /** 基础重连延迟（毫秒） */

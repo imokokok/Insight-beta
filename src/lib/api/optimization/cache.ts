@@ -4,15 +4,14 @@
  * 提供基本的缓存功能，用于服务器端数据缓存
  */
 
-import { LRUCache, LRUCacheOptions } from '@/lib/cache/lru-cache';
+import type { LRUCacheOptions } from '@/lib/cache/lru-cache';
+import { LRUCache } from '@/lib/cache/lru-cache';
 
 export interface CacheProvider {
   get<T>(key: string): Promise<T | null>;
   set<T>(key: string, value: T, ttlMs?: number): Promise<void>;
   delete(key: string): Promise<void>;
   clear(pattern?: string): Promise<void>;
-  exists(key: string): Promise<boolean>;
-  keys(pattern: string): Promise<string[]>;
 }
 
 class DefaultCache implements CacheProvider {
@@ -40,18 +39,6 @@ class DefaultCache implements CacheProvider {
     } else {
       this.cache.clearByPattern(pattern);
     }
-  }
-
-  async exists(key: string): Promise<boolean> {
-    return this.cache.exists(key);
-  }
-
-  async keys(pattern: string): Promise<string[]> {
-    return this.cache.keysByPattern(pattern);
-  }
-
-  get size(): number {
-    return this.cache.size;
   }
 }
 

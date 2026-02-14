@@ -737,7 +737,7 @@ export default function AnomalyDetectionPage() {
       {/* Header - 使用专业级 PageHeader 组件 */}
       <PageHeader
         breadcrumbs={[
-          { label: 'Oracle', href: '/oracle' },
+          { label: 'Oracle', href: '/oracle/dashboard' },
           { label: 'Analytics', href: '/oracle/analytics' },
           { label: 'Anomalies' },
         ]}

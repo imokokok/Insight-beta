@@ -11,7 +11,6 @@ export function useReducedMotion(): boolean {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   useEffect(() => {
-    // Check if window is defined (SSR)
     if (typeof window === 'undefined') return;
 
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');

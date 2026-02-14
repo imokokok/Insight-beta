@@ -1,9 +1,10 @@
 /**
  * Security Services - 安全相关服务
+ * @deprecated 请使用 @/features/security/services 导入
  */
 
 // 异常检测服务
-export * from './anomaly';
+export * from '@/features/security/services/anomaly';
 
 // API 认证
 export * from './apiAuth';
@@ -12,4 +13,4 @@ export * from './apiAuth';
 export { rateLimit, getRateLimitStoreStatus, cleanupRateLimitStore } from '@/lib/security/rateLimit';
 
 // 操纵检测服务
-export * from './manipulationDetectionService';
+export * from '@/features/security/services/manipulationDetectionService';

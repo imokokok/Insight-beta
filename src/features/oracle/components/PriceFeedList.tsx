@@ -17,6 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useWebSocket } from '@/hooks';
+import { WS_CONFIG } from '@/config/constants';
 import { logger } from '@/shared/logger';
 import { cn, fetchApiData, formatTimeAgo } from '@/shared/utils';
 import { PROTOCOL_DISPLAY_NAMES } from '@/types/oracle';
@@ -89,8 +90,7 @@ export const PriceFeedList = memo(function PriceFeedList({
   const batchTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // WebSocket 连接
-  const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001';
-  const { isConnected, sendMessage, lastMessage } = useWebSocket(wsUrl, {
+  const { isConnected, sendMessage, lastMessage } = useWebSocket(WS_CONFIG.URL, {
     autoConnect: true,
     onConnect: () => {
       sendMessage({

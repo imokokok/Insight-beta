@@ -46,6 +46,7 @@ import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useWebSocket, useIsMobile, useAutoRefresh } from '@/hooks';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
+import { WS_CONFIG } from '@/config/constants';
 import { logger } from '@/shared/logger';
 import { fetchApiData, cn, formatNumber } from '@/shared/utils';
 import { isStatsUpdateMessage } from '@/shared/utils/typeGuards';
@@ -236,8 +237,7 @@ export default function OptimizedOracleDashboard() {
   });
 
   // WebSocket
-  const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001';
-  const { isConnected, sendMessage, lastMessage } = useWebSocket(wsUrl, {
+  const { isConnected, sendMessage, lastMessage } = useWebSocket(WS_CONFIG.URL, {
     autoConnect: true,
     onConnect: () => {
       sendMessage({ type: 'subscribe_dashboard' });

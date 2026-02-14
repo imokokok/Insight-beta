@@ -17,14 +17,14 @@ interface PageOptimizationOptions {
   enableRefresh?: boolean;
   /** 刷新回调函数 */
   onRefresh?: () => void | Promise<void>;
-  /** 是否启用搜索 */
-  enableSearch?: boolean;
   /** 搜索输入框选择器 */
   searchSelector?: string;
   /** 页面可见性变化回调 */
   onVisibilityChange?: (isVisible: boolean) => void;
   /** 是否显示刷新提示 */
   showRefreshToast?: boolean;
+  /** 是否启用搜索 */
+  enableSearch?: boolean;
 }
 
 /**

@@ -74,19 +74,6 @@ export {
   type UMAProtocolConfig,
 } from './umaOracle';
 
-export {
-  UMATransactionClient,
-  createUMATransactionClient,
-  encodeAssertTruthCall,
-  encodeDisputeAssertionCall,
-  encodeSettleAssertionCall,
-  calculateRequiredBond,
-  type AssertTruthParams,
-  type DisputeAssertionParams,
-  type SettleAssertionParams,
-  type UMATransactionResult,
-} from './umaTransaction';
-
 // ============================================================================
 // 钱包连接
 // ============================================================================
@@ -108,33 +95,6 @@ export {
 // ============================================================================
 
 export {
-  // 输入验证
-  validateAddress,
-  validateAddressArray,
-  validateBytes32,
-  validateSymbol,
-  validateBondAmount,
-  validateClaim,
-  validateTimestamp,
-  validateChainId,
-  validateBatch,
-  validateExtraData,
-  validateUMAAssertionParams,
-  VALIDATION_LIMITS,
-  type ValidationResult,
-  // Gas 优化
-  QueryCache,
-  SmartRetry,
-  GasEstimator,
-  BatchCallOptimizer,
-  createQueryCache,
-  createGasEstimator,
-  createBatchCallOptimizer,
-  createSmartRetry,
-  GAS_CONSTANTS,
-  type GasEstimate,
-  type BatchCallItem,
-  type BatchCallResult,
   // 速率限制
   SlidingWindowRateLimiter,
   TokenBucketRateLimiter,
@@ -157,15 +117,4 @@ export {
   REENTRANCY_DEFAULTS,
   type ReentrancyState,
   type ReentrancyConfig,
-  // 交易验证
-  TransactionValidator,
-  UMATransactionValidator,
-  TransactionMonitor,
-  createTransactionValidator,
-  createUMATransactionValidator,
-  createTransactionMonitor,
-  TX_VALIDATION_DEFAULTS,
-  type TransactionParams,
-  type TransactionValidationResult,
-  type TransactionStatus,
 } from './security';

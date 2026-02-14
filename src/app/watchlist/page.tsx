@@ -105,8 +105,8 @@ export default function WatchlistPage() {
           <EmptyWatchlistState
             onBrowseAssets={() => {
               const href = instanceId
-                ? `/oracle?instanceId=${encodeURIComponent(instanceId)}`
-                : '/oracle';
+                ? `/oracle/dashboard?instanceId=${encodeURIComponent(instanceId)}`
+                : '/oracle/dashboard';
               router.push(href as Route);
             }}
             className="mx-auto max-w-2xl"

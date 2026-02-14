@@ -4,7 +4,6 @@
 
 export * from './AlertPanel';
 export * from './Leaderboard';
-export * from './LandingPageCards';
 export * from './LivenessProgressBar';
 export * from './OracleCharts';
 export * from './OracleHealthScore';

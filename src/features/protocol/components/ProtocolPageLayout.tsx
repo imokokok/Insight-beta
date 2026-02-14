@@ -54,7 +54,7 @@ export function ProtocolPageLayout({
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => router.push('/oracle')}
+              onClick={() => router.push('/oracle/dashboard')}
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useSyncExternalStore } from 'react';
+import { useSyncExternalStore } from 'react';
 
 const getSnapshot = (query: string): boolean => {
   if (typeof window === 'undefined') return false;
@@ -45,41 +45,6 @@ function getMediaQueryStore(query: string) {
 export function useMediaQuery(query: string): boolean {
   const store = getMediaQueryStore(query);
   return useSyncExternalStore(store.subscribe, store.getSnapshot, store.getServerSnapshot);
-}
-
-/**
- * 视口尺寸 Hook
- */
-export function useWindowSize(): { width: number; height: number } {
-  const [size, setSize] = useState<{ width: number; height: number }>(() => {
-    if (typeof window === 'undefined') {
-      return { width: 1024, height: 768 };
-    }
-    return { width: window.innerWidth, height: window.innerHeight };
-  });
-
-  useEffect(() => {
-    let rafId: number;
-    const updateSize = () => {
-      cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(() => {
-        setSize({
-          width: window.innerWidth,
-          height: window.innerHeight,
-        });
-      });
-    };
-
-    updateSize();
-    window.addEventListener('resize', updateSize, { passive: true });
-
-    return () => {
-      cancelAnimationFrame(rafId);
-      window.removeEventListener('resize', updateSize);
-    };
-  }, []);
-
-  return size;
 }
 
 /**

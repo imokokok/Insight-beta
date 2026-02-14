@@ -21,6 +21,7 @@ import { useComparisonData } from '@/features/comparison/hooks';
 import { useDebounce } from '@/hooks/useDebounce';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n';
+import { WS_CONFIG } from '@/config/constants';
 import { logger } from '@/shared/logger';
 import {
   exportRealtimeToCSV,
@@ -141,7 +142,7 @@ export default function ComparisonPage() {
   const connectWebSocket = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
 
-    const ws = new WebSocket(process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001');
+    const ws = new WebSocket(WS_CONFIG.URL);
 
     ws.onopen = () => {
       setIsLive(true);

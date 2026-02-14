@@ -14,8 +14,6 @@ import { getAdminToken, setAdminToken, clearAdminToken } from '@/shared/utils/st
 export interface UseAdminTokenOptions {
   /** 是否持久化到 sessionStorage */
   persist?: boolean;
-  /** 存储键名 */
-  storageKey?: string;
 }
 
 export interface UseAdminTokenReturn {

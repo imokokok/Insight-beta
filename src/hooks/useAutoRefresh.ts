@@ -94,10 +94,6 @@ export function useAutoRefresh(options: UseAutoRefreshOptions): UseAutoRefreshRe
 
   useEffect(() => {
     setFormattedLastUpdated(formatLastUpdated(lastUpdated));
-    const timeInterval = setInterval(() => {
-      setFormattedLastUpdated(formatLastUpdated(lastUpdated));
-    }, 1000);
-    return () => clearInterval(timeInterval);
   }, [lastUpdated]);
 
   useEffect(() => {

@@ -27,14 +27,7 @@ export {
 export * from './alert/notifications';
 
 // 安全服务
-export * from './security/anomaly';
 export * from './security/apiAuth';
-// rateLimiter 已从 lib/security/rateLimit.ts 导出
-export * from './security/manipulationDetectionService';
 
 // 监控服务
 export * from './monitoring/oracleHealthMonitor';
-export * from './monitoring/performanceMonitor';
-
-// Gas 服务
-export * from './gas/gasPriceService';
