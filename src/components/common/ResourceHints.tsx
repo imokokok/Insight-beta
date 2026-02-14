@@ -34,10 +34,7 @@ const DEFAULT_DNS_PREFETCH = [
 ];
 
 // 关键资源预加载
-const CRITICAL_PRELOADS = [
-  // 字体
-  { href: '/fonts/inter-var.woff2', as: 'font', type: 'font/woff2', crossOrigin: 'anonymous' },
-];
+const CRITICAL_PRELOADS: { href: string; as: string; type?: string; crossOrigin?: string }[] = [];
 
 // 关键模块预加载
 const MODULE_PRELOADS = [
@@ -47,7 +44,7 @@ const MODULE_PRELOADS = [
 ];
 
 // 关键图片预加载
-const CRITICAL_IMAGES = ['/logo-owl.png', '/icon-192x192.png'];
+const CRITICAL_IMAGES = ['/logo-owl.png'];
 
 export function ResourceHints({
   enablePreconnect = true,

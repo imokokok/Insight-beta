@@ -5,7 +5,6 @@
  * - 可折叠分组
  * - 多级菜单支持
  * - 搜索过滤
- * - 最近访问
  * - 收藏功能
  */
 
@@ -22,7 +21,6 @@ import {
   ChevronDown,
   Search,
   Star,
-  Clock,
   LayoutDashboard,
   Globe,
   Shield,
@@ -81,7 +79,6 @@ export interface SidebarConfig {
   groups: NavGroup[];
   showSearch?: boolean;
   showFavorites?: boolean;
-  showRecents?: boolean;
   collapsible?: boolean;
   defaultCollapsed?: boolean;
 }
@@ -95,8 +92,6 @@ interface SidebarContextType {
   toggleFavorite: (itemId: string) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
-  recentItems: string[];
-  addRecentItem: (itemId: string) => void;
 }
 
 const SidebarContext = createContext<SidebarContextType | null>(null);
@@ -116,7 +111,6 @@ function useSidebar() {
 export const defaultNavConfig: SidebarConfig = {
   showSearch: true,
   showFavorites: true,
-  showRecents: true,
   collapsible: true,
   defaultCollapsed: false,
   groups: [
@@ -264,7 +258,7 @@ interface NavItemProps {
 
 function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
   const pathname = usePathname();
-  const { favorites, toggleFavorite, addRecentItem, collapsed: sidebarCollapsed } = useSidebar();
+  const { favorites, toggleFavorite, collapsed: sidebarCollapsed } = useSidebar();
   const prefersReducedMotion = useReducedMotion();
   const { t } = useI18n();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -278,11 +272,10 @@ function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
   const hasChildren = item.children && item.children.length > 0;
 
   const handleClick = useCallback(() => {
-    addRecentItem(item.id);
     if (hasChildren) {
       setIsExpanded(!isExpanded);
     }
-  }, [addRecentItem, item.id, hasChildren, isExpanded]);
+  }, [hasChildren, isExpanded]);
 
   const content = (
     <>
@@ -565,51 +558,6 @@ function SidebarFavorites({ config }: { config: SidebarConfig }) {
 }
 
 // ============================================================================
-// Recents Component
-// ============================================================================
-
-function SidebarRecents({ config }: { config: SidebarConfig }) {
-  const { recentItems, collapsed } = useSidebar();
-  const { t } = useI18n();
-
-  const recentNavItems = useMemo(() => {
-    const itemMap = new Map<string, NavItem>();
-    config.groups.forEach((group) => {
-      group.items.forEach((item) => {
-        itemMap.set(item.id, item);
-        if (item.children) {
-          item.children.forEach((child) => {
-            itemMap.set(child.id, child);
-          });
-        }
-      });
-    });
-    return recentItems
-      .slice(0, 5)
-      .map((id) => itemMap.get(id))
-      .filter((item): item is NavItem => item !== undefined);
-  }, [recentItems, config.groups]);
-
-  if (recentNavItems.length === 0) return null;
-
-  return (
-    <div className="border-b border-border py-2">
-      {!collapsed && (
-        <div className="flex items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          <Clock className="mr-2 h-3.5 w-3.5" />
-          <span>{t('nav.labels.recent')}</span>
-        </div>
-      )}
-      <div className={cn('space-y-1', collapsed && 'px-1')}>
-        {recentNavItems.map((item) => (
-          <NavItemComponent key={item.id} item={item} collapsed={collapsed} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ============================================================================
 // Main Sidebar Component
 // ============================================================================
 
@@ -631,7 +579,6 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
   });
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
-  const [recentItems, setRecentItems] = useState<string[]>([]);
 
   const toggleGroup = useCallback((groupId: string) => {
     setExpandedGroups((prev) => {
@@ -657,13 +604,6 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
     });
   }, []);
 
-  const addRecentItem = useCallback((itemId: string) => {
-    setRecentItems((prev) => {
-      const filtered = prev.filter((id) => id !== itemId);
-      return [itemId, ...filtered].slice(0, 10);
-    });
-  }, []);
-
   const contextValue = useMemo(
     () => ({
       collapsed,
@@ -674,18 +614,14 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
       toggleFavorite,
       searchQuery,
       setSearchQuery,
-      recentItems,
-      addRecentItem,
     }),
     [
       collapsed,
       expandedGroups,
       favorites,
       searchQuery,
-      recentItems,
       toggleGroup,
       toggleFavorite,
-      addRecentItem,
     ],
   );
 
@@ -738,9 +674,6 @@ export function EnhancedSidebar({ config = defaultNavConfig, className }: Enhanc
           <ScrollArea className="flex-1">
             {/* Favorites */}
             {config.showFavorites && <SidebarFavorites config={config} />}
-
-            {/* Recents */}
-            {config.showRecents && !searchQuery && <SidebarRecents config={config} />}
 
             {/* Navigation Groups */}
             <div className={cn('py-2', collapsed && 'px-1')}>

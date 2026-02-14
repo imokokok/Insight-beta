@@ -4,7 +4,6 @@ export const nav = {
   watchlist: 'Lista de Seguimiento',
   labels: {
     favorites: 'Favoritos',
-    recent: 'Reciente',
     search: 'Buscar navegación...'
   }
 };

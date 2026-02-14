@@ -4,7 +4,6 @@ export const nav = {
   watchlist: 'Watchlist',
   labels: {
     favorites: 'Favorites',
-    recent: 'Recent',
     search: 'Search navigation...'
   }
 };

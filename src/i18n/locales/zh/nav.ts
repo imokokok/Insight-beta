@@ -4,7 +4,6 @@ export const nav = {
   watchlist: '关注列表',
   labels: {
     favorites: '收藏',
-    recent: '最近访问',
     search: '搜索导航...'
   }
 };
