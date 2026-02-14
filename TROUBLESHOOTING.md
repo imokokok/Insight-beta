@@ -1,6 +1,6 @@
 # Troubleshooting Guide
 
-This guide helps you resolve common issues when running OracleMonitor in production.
+This guide helps you resolve common issues when running Insight in production.
 
 ## 1. Startup Failures
 

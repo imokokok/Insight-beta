@@ -1,14 +1,14 @@
 export const home = {
   hero: {
-    badge: 'Universal Oracle Infrastructure Monitoring',
+    badge: 'Universal Oracle Data Analytics',
     title: 'One Platform',
     titleHighlight: 'All Oracles',
-    description: 'Monitor, compare, and analyze data from every major oracle protocol. Ensure reliability with cross-protocol verification and real-time alerts.'
+    description: 'Analyze, compare, and gain insights from every major oracle protocol. Ensure reliability with cross-protocol verification and real-time alerts.'
   },
   actions: {
     dashboard: {
       title: 'Dashboard',
-      description: 'Unified monitoring view'
+      description: 'Unified analytics view'
     },
     comparison: {
       title: 'Price Comparison',
@@ -28,7 +28,7 @@ export const home = {
   },
   capabilities: {
     title: 'Platform Capabilities',
-    subtitle: 'Comprehensive tools for oracle infrastructure monitoring and management',
+    subtitle: 'Comprehensive tools for oracle data analysis and insights',
     items: {
       priceComparison: {
         title: 'Price Comparison',
@@ -36,7 +36,7 @@ export const home = {
       },
       multiChain: {
         title: 'Multi-Chain Support',
-        description: 'Monitor oracle performance across 15+ blockchain networks from a single interface.'
+        description: 'Analyze oracle performance across 15+ blockchain networks from a single interface.'
       },
       smartAlerts: {
         title: 'Smart Alerts',
@@ -50,12 +50,12 @@ export const home = {
   },
   protocols: {
     title: 'Supported Protocols',
-    subtitle: 'Monitor all major oracle networks from a single unified interface',
+    subtitle: 'Analyze all major oracle networks from a single unified interface',
     exploreAll: 'Explore All Protocols'
   },
   cta: {
-    title: 'Ready to Monitor Your Oracle Infrastructure?',
-    subtitle: 'Get started with comprehensive monitoring across all major oracle protocols. No single protocol bias — just reliable data.',
+    title: 'Ready to Analyze Your Oracle Data?',
+    subtitle: 'Get started with comprehensive data analysis across all major oracle protocols. No single protocol bias — just reliable data.',
     launchDashboard: 'Launch Dashboard',
     compareProtocols: 'Compare Protocols'
   },

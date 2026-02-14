@@ -1,4 +1,4 @@
-# OracleMonitor Architecture Documentation
+# Insight Architecture Documentation
 
 ## System Architecture Overview
 

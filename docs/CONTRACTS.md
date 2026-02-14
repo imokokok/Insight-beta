@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the smart contract integrations supported by OracleMonitor. The platform currently focuses on **UMA Optimistic Oracle** for assertion and dispute mechanisms.
+This document describes the smart contract integrations supported by Insight. The platform currently focuses on **UMA Optimistic Oracle** for assertion and dispute mechanisms.
 
 ## Supported Protocols
 
@@ -80,7 +80,7 @@ event AssertionSettled(
 
 ### Other Oracle Protocols
 
-OracleMonitor also supports monitoring of the following protocols (read-only):
+Insight also supports analysis of the following protocols (read-only):
 
 - **Chainlink** - Price feed contracts
 - **Pyth** - Low-latency price updates

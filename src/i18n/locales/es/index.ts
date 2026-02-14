@@ -14,7 +14,6 @@ import { nav } from './nav';
 import { oracle } from './oracle';
 import { protocol } from './protocol';
 import { security } from './security';
-import { sla } from './sla';
 import { status } from './status';
 import { wallet } from './wallet';
 
@@ -35,7 +34,6 @@ export const esTranslations = {
   oracle,
   protocol,
   security,
-  sla,
   status,
   wallet,
 };

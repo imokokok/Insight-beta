@@ -1,14 +1,14 @@
 export const home = {
   hero: {
-    badge: 'Monitoreo Universal de Infraestructura Oracle',
+    badge: 'Análisis Universal de Datos de Oráculos',
     title: 'Una Plataforma',
     titleHighlight: 'Todos los Oráculos',
-    description: 'Monitorea, compara y analiza datos de todos los principales protocolos oracle. Garantiza la confiabilidad con verificación entre protocolos y alertas en tiempo real.'
+    description: 'Analiza, compara y obtén información de todos los principales protocolos oracle. Garantiza la confiabilidad con verificación entre protocolos y alertas en tiempo real.'
   },
   actions: {
     dashboard: {
       title: 'Panel',
-      description: 'Vista de monitoreo unificada'
+      description: 'Vista de análisis unificada'
     },
     comparison: {
       title: 'Comparación de Precios',
@@ -28,7 +28,7 @@ export const home = {
   },
   capabilities: {
     title: 'Capacidades de la Plataforma',
-    subtitle: 'Herramientas integrales para el monitoreo y gestión de infraestructura oracle',
+    subtitle: 'Herramientas integrales para el análisis de datos y obtención de información de oráculos',
     items: {
       priceComparison: {
         title: 'Comparación de Precios',
@@ -36,7 +36,7 @@ export const home = {
       },
       multiChain: {
         title: 'Soporte Multi-Cadena',
-        description: 'Monitorea el rendimiento de oracles en más de 15 redes blockchain desde una sola interfaz.'
+        description: 'Analiza el rendimiento de oracles en más de 15 redes blockchain desde una sola interfaz.'
       },
       smartAlerts: {
         title: 'Alertas Inteligentes',
@@ -50,12 +50,12 @@ export const home = {
   },
   protocols: {
     title: 'Protocolos Soportados',
-    subtitle: 'Monitorea todas las principales redes oracle desde una interfaz unificada',
+    subtitle: 'Analiza todas las principales redes oracle desde una interfaz unificada',
     exploreAll: 'Explorar Todos los Protocolos'
   },
   cta: {
-    title: '¿Listo para Monitorear tu Infraestructura Oracle?',
-    subtitle: 'Comienza con el monitoreo integral de todos los principales protocolos oracle. Sin sesgo hacia un solo protocolo, solo datos confiables.',
+    title: '¿Listo para Analizar tus Datos de Oracle?',
+    subtitle: 'Comienza con el análisis integral de datos de todos los principales protocolos oracle. Sin sesgo hacia un solo protocolo, solo datos confiables.',
     launchDashboard: 'Iniciar Panel',
     compareProtocols: 'Comparar Protocolos'
   },

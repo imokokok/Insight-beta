@@ -1,6 +1,6 @@
 # Maintenance Tools
 
-This directory contains scripts and tools for maintaining the OracleMonitor project.
+This directory contains scripts and tools for maintaining the Insight project.
 
 ## Available Scripts
 

@@ -204,15 +204,7 @@ List incidents.
 
 Get incident details.
 
-### SLA
 
-#### GET `/api/oracle/sla/stats`
-
-Get SLA statistics.
-
-#### GET `/api/oracle/sla/reports`
-
-Get SLA reports.
 
 ## Security
 

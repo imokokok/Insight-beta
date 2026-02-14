@@ -3,8 +3,8 @@
 ## 1. Environment Setup
 
 ```bash
-git clone https://github.com/your-org/oracle-monitor.git
-cd oracle-monitor
+git clone https://github.com/your-org/insight-beta.git
+cd insight-beta
 npm install
 cp .env.example .env.local
 npm run dev

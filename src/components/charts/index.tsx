@@ -4,10 +4,7 @@
  * 图表组件统一导出
  */
 
-// 原有导出
-export * from './ProfessionalChart';
-
-// 新增增强组件
+// 图表组件
 export {
   // 图表组件
   EnhancedAreaChart,

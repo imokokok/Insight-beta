@@ -132,28 +132,28 @@ function HealthStatusBadge({
     online: {
       label: 'Online',
       icon: <Shield className="h-4 w-4" />,
-      bgColor: 'bg-emerald-100',
-      textColor: 'text-emerald-700',
-      borderColor: 'border-emerald-200',
-      dotColor: 'bg-emerald-500',
+      bgColor: 'bg-success/20',
+      textColor: 'text-success-dark',
+      borderColor: 'border-success/30',
+      dotColor: 'bg-success',
       description: 'All systems operational',
     },
     degraded: {
       label: 'Degraded',
       icon: <AlertTriangle className="h-4 w-4" />,
-      bgColor: 'bg-amber-100',
-      textColor: 'text-amber-700',
-      borderColor: 'border-amber-200',
-      dotColor: 'bg-amber-500',
+      bgColor: 'bg-warning/20',
+      textColor: 'text-warning-dark',
+      borderColor: 'border-warning/30',
+      dotColor: 'bg-warning',
       description: `${activeAlerts} active alert${activeAlerts > 1 ? 's' : ''}`,
     },
     incident: {
       label: 'Incident',
       icon: <AlertCircle className="h-4 w-4" />,
-      bgColor: 'bg-rose-100',
-      textColor: 'text-rose-700',
-      borderColor: 'border-rose-200',
-      dotColor: 'bg-rose-500',
+      bgColor: 'bg-error/20',
+      textColor: 'text-error-dark',
+      borderColor: 'border-error/30',
+      dotColor: 'bg-error',
       description: !isConnected ? 'Connection lost' : `${activeAlerts} critical alerts`,
     },
   };
@@ -562,7 +562,7 @@ export default function OptimizedOracleDashboard() {
                       </div>
                       <div className="flex items-center justify-between rounded-lg bg-card/50 p-3">
                         <span className="text-sm text-muted-foreground">Health Score</span>
-                        <span className="text-lg font-bold text-green-500">98.5%</span>
+                        <span className="text-lg font-bold text-success">98.5%</span>
                       </div>
                     </div>
                   </ChartCard>

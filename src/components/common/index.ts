@@ -9,10 +9,8 @@ export { ChartCard, ChartCardSkeleton } from './ChartCard';
 // ==================== 数据展示 ====================
 export {
   StatCard,
-  StatCardSimple,
   StatCardSkeleton,
   StatCardGroup,
-  StatCardGroupSimple,
   DashboardStatsSection,
 } from './StatCard';
 
@@ -20,7 +18,6 @@ export type {
   StatCardProps,
   StatCardColor,
   StatCardVariant,
-  StatCardVariantSimple,
   StatCardSize,
   StatCardStatus,
   TrendData,

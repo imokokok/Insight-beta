@@ -23,7 +23,7 @@ function main() {
       if (entry.isDirectory()) {
         if (entry.name === 'node_modules' || entry.name === '__tests__' || entry.name === '__mocks__') continue;
         walk(fullPath);
-      } else if (entry.isFile() && (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx')) {
+      } else if (entry.isFile() && (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx'))) {
         if (entry.name.includes('.test.') || entry.name.includes('.spec.')) continue;
         if (entry.name.includes('.d.ts')) continue;
         if (fullPath.includes('i18n/locales')) continue;
@@ -53,7 +53,7 @@ function main() {
   
   console.log(`Used keys: ${usedKeys.size}`);
   console.log('\nSample used keys:');
-  Array.from(usedKeys).slice(0, 30).forEach(k => console.log(`  - ${k}));
+  Array.from(usedKeys).slice(0, 30).forEach(k => console.log(`  - ${k}`));
   
   console.log('\n---\n');
   
@@ -80,20 +80,21 @@ function main() {
     const exportMatch = nsContent.match(/export\s+(?:const|default)\s+(\w+)\s*=\s*({[\s\S]*?});?\s*$/);
     if (exportMatch) {
       try {
-        const obj = eval(`(${exportMatch[3])`);
+        const obj = eval(`(${exportMatch[2]})`);
         
-        function addKeys(o: any, prefix: string) {
+        const addKeys = (o: any, prefix: string) => {
           for (const [k, v] of Object.entries(o)) {
-          const fullKey = `${prefix}.${k}`;
-          if (typeof v === 'object' && v !== null && !Array.isArray(v)) {
-            addKeys(v, fullKey);
-          } else {
-            allTranslationKeys.add(fullKey);
+            const fullKey = `${prefix}.${k}`;
+            if (typeof v === 'object' && v !== null && !Array.isArray(v)) {
+              addKeys(v, fullKey);
+            } else {
+              allTranslationKeys.add(fullKey);
+            }
           }
-        }
+        };
         addKeys(obj, ns.name);
       } catch (e) {
-        console.error(`Error parsing ${ns.file}:`, e`);
+        console.error(`Error parsing ${ns.file}:`, e);
       }
     }
   }
@@ -104,7 +105,7 @@ function main() {
   console.log(`\nUnused keys: ${unused.length}`);
   
   console.log('\nSample unused keys:');
-  unused.slice(0, 50).forEach(k => console.log(`  - ${k}));
+  unused.slice(0, 50).forEach(k => console.log(`  - ${k}`));
   
   console.log(`\n\nSaving report...`);
   const report = {
@@ -114,7 +115,7 @@ function main() {
   };
   fs.writeFileSync(path.join(__dirname, 'simple-report.json'), JSON.stringify(report, null, 2), 'utf-8');
   
-  console.log('Report saved to scripts/simple-report.json`);
+  console.log('Report saved to scripts/simple-report.json');
 }
 
 main();

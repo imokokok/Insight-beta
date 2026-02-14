@@ -536,6 +536,59 @@ body::before {
   .placeholder\:text-primary\/40::placeholder { color: rgba(59, 130, 246, 0.4); }
   .placeholder\:text-primary\/50::placeholder { color: rgba(59, 130, 246, 0.5); }
 
+  /* 强调色变体 - 青色系 */
+  .text-accent { color: rgb(var(--color-accent)); }
+  .text-accent-light { color: rgb(var(--color-accent-400)); }
+  .text-accent-dark { color: rgb(var(--color-accent-600)); }
+
+  .bg-accent { background-color: rgb(var(--color-accent)); }
+  .bg-accent-light { background-color: rgb(var(--color-accent-400)); }
+  .bg-accent-dark { background-color: rgb(var(--color-accent-600)); }
+
+  .border-accent { border-color: rgb(var(--color-accent)); }
+
+  /* 强调色透明度变体 */
+  .text-accent\/50 { color: rgba(6, 182, 212, 0.5); }
+  .text-accent\/60 { color: rgba(6, 182, 212, 0.6); }
+  .text-accent\/70 { color: rgba(6, 182, 212, 0.7); }
+  .text-accent\/80 { color: rgba(6, 182, 212, 0.8); }
+  .text-accent\/90 { color: rgba(6, 182, 212, 0.9); }
+
+  .bg-accent\/50 { background-color: rgba(6, 182, 212, 0.5); }
+  .bg-accent\/60 { background-color: rgba(6, 182, 212, 0.6); }
+  .bg-accent\/70 { background-color: rgba(6, 182, 212, 0.7); }
+  .bg-accent\/80 { background-color: rgba(6, 182, 212, 0.8); }
+
+  .border-accent\/20 { border-color: rgba(6, 182, 212, 0.2); }
+  .border-accent\/30 { border-color: rgba(6, 182, 212, 0.3); }
+  .border-accent\/40 { border-color: rgba(6, 182, 212, 0.4); }
+  .border-accent\/50 { border-color: rgba(6, 182, 212, 0.5); }
+
+  /* 语义化颜色工具类 */
+  .text-success { color: rgb(var(--success)); }
+  .text-success-light { color: rgb(var(--success-light)); }
+  .text-success-dark { color: rgb(var(--success-dark)); }
+
+  .bg-success { background-color: rgb(var(--success)); }
+  .bg-success-light { background-color: rgb(var(--success-light)); }
+  .bg-success-dark { background-color: rgb(var(--success-dark)); }
+
+  .text-warning { color: rgb(var(--warning)); }
+  .text-warning-light { color: rgb(var(--warning-light)); }
+  .text-warning-dark { color: rgb(var(--warning-dark)); }
+
+  .bg-warning { background-color: rgb(var(--warning)); }
+  .bg-warning-light { background-color: rgb(var(--warning-light)); }
+  .bg-warning-dark { background-color: rgb(var(--warning-dark)); }
+
+  .text-error { color: rgb(var(--error)); }
+  .text-error-light { color: rgb(var(--error-light)); }
+  .text-error-dark { color: rgb(var(--error-dark)); }
+
+  .bg-error { background-color: rgb(var(--error)); }
+  .bg-error-light { background-color: rgb(var(--error-light)); }
+  .bg-error-dark { background-color: rgb(var(--error-dark)); }
+
   /* 滚动条样式 */
   .scrollbar-thin {
     scrollbar-width: thin;

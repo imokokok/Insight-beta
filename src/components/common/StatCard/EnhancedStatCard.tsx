@@ -126,36 +126,36 @@ const statusConfig: Record<
   }
 > = {
   healthy: {
-    bg: 'bg-emerald-50',
-    border: 'border-emerald-200',
-    text: 'text-emerald-700',
+    bg: 'bg-success/10',
+    border: 'border-success/20',
+    text: 'text-success-dark',
     icon: <CheckCircle className="h-5 w-5" />,
-    dot: 'bg-emerald-500',
-    gradient: 'from-emerald-500/10 to-emerald-500/5',
+    dot: 'bg-success',
+    gradient: 'from-success/10 to-success/5',
   },
   warning: {
-    bg: 'bg-amber-50',
-    border: 'border-amber-200',
-    text: 'text-amber-700',
+    bg: 'bg-warning/10',
+    border: 'border-warning/20',
+    text: 'text-warning-dark',
     icon: <AlertCircle className="h-5 w-5" />,
-    dot: 'bg-amber-500',
-    gradient: 'from-amber-500/10 to-amber-500/5',
+    dot: 'bg-warning',
+    gradient: 'from-warning/10 to-warning/5',
   },
   critical: {
-    bg: 'bg-rose-50',
-    border: 'border-rose-200',
-    text: 'text-rose-700',
+    bg: 'bg-error/10',
+    border: 'border-error/20',
+    text: 'text-error-dark',
     icon: <AlertCircle className="h-5 w-5" />,
-    dot: 'bg-rose-500',
-    gradient: 'from-rose-500/10 to-rose-500/5',
+    dot: 'bg-error',
+    gradient: 'from-error/10 to-error/5',
   },
   neutral: {
-    bg: 'bg-gray-50',
-    border: 'border-gray-200',
-    text: 'text-gray-700',
+    bg: 'bg-muted/30',
+    border: 'border-muted',
+    text: 'text-muted-foreground',
     icon: <Activity className="h-5 w-5" />,
-    dot: 'bg-gray-500',
-    gradient: 'from-gray-500/10 to-gray-500/5',
+    dot: 'bg-muted-foreground',
+    gradient: 'from-muted-foreground/10 to-muted-foreground/5',
   },
 };
 
@@ -171,60 +171,60 @@ const colorConfig: Record<
   }
 > = {
   blue: {
-    bg: 'bg-blue-50',
-    border: 'border-blue-200',
-    text: 'text-blue-700',
+    bg: 'bg-primary/10',
+    border: 'border-primary/20',
+    text: 'text-primary-dark',
     icon: <Activity className="h-5 w-5" />,
-    dot: 'bg-blue-500',
-    gradient: 'from-blue-500/10 to-blue-500/5',
+    dot: 'bg-primary',
+    gradient: 'from-primary/10 to-primary/5',
   },
   green: {
-    bg: 'bg-emerald-50',
-    border: 'border-emerald-200',
-    text: 'text-emerald-700',
+    bg: 'bg-success/10',
+    border: 'border-success/20',
+    text: 'text-success-dark',
     icon: <CheckCircle className="h-5 w-5" />,
-    dot: 'bg-emerald-500',
-    gradient: 'from-emerald-500/10 to-emerald-500/5',
+    dot: 'bg-success',
+    gradient: 'from-success/10 to-success/5',
   },
   amber: {
-    bg: 'bg-amber-50',
-    border: 'border-amber-200',
-    text: 'text-amber-700',
+    bg: 'bg-warning/10',
+    border: 'border-warning/20',
+    text: 'text-warning-dark',
     icon: <AlertCircle className="h-5 w-5" />,
-    dot: 'bg-amber-500',
-    gradient: 'from-amber-500/10 to-amber-500/5',
+    dot: 'bg-warning',
+    gradient: 'from-warning/10 to-warning/5',
   },
   purple: {
-    bg: 'bg-purple-50',
-    border: 'border-purple-200',
-    text: 'text-purple-700',
+    bg: 'bg-primary/10',
+    border: 'border-primary/20',
+    text: 'text-primary-dark',
     icon: <Activity className="h-5 w-5" />,
-    dot: 'bg-purple-500',
-    gradient: 'from-purple-500/10 to-purple-500/5',
+    dot: 'bg-primary',
+    gradient: 'from-primary/10 to-primary/5',
   },
   red: {
-    bg: 'bg-red-50',
-    border: 'border-red-200',
-    text: 'text-red-700',
+    bg: 'bg-error/10',
+    border: 'border-error/20',
+    text: 'text-error-dark',
     icon: <AlertCircle className="h-5 w-5" />,
-    dot: 'bg-red-500',
-    gradient: 'from-red-500/10 to-red-500/5',
+    dot: 'bg-error',
+    gradient: 'from-error/10 to-error/5',
   },
   cyan: {
-    bg: 'bg-cyan-50',
-    border: 'border-cyan-200',
-    text: 'text-cyan-700',
+    bg: 'bg-accent/10',
+    border: 'border-accent/20',
+    text: 'text-accent-dark',
     icon: <Activity className="h-5 w-5" />,
-    dot: 'bg-cyan-500',
-    gradient: 'from-cyan-500/10 to-cyan-500/5',
+    dot: 'bg-accent',
+    gradient: 'from-accent/10 to-accent/5',
   },
   pink: {
-    bg: 'bg-pink-50',
-    border: 'border-pink-200',
-    text: 'text-pink-700',
+    bg: 'bg-accent/10',
+    border: 'border-accent/20',
+    text: 'text-accent-dark',
     icon: <Activity className="h-5 w-5" />,
-    dot: 'bg-pink-500',
-    gradient: 'from-pink-500/10 to-pink-500/5',
+    dot: 'bg-accent',
+    gradient: 'from-accent/10 to-accent/5',
   },
 };
 
@@ -288,7 +288,7 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
   const trendDisplay = useMemo(() => {
     if (!trend) return null;
     const { value: trendValue, isPositive, label } = trend;
-    const color = isPositive ? 'text-emerald-600' : 'text-rose-600';
+    const color = isPositive ? 'text-success' : 'text-error';
     const Icon = isPositive ? TrendingUp : TrendingDown;
 
     return (
@@ -349,20 +349,20 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <CardTitle className="text-sm font-medium text-gray-600">{title}</CardTitle>
-              {tooltip && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Info className="h-3.5 w-3.5 cursor-help text-gray-400" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="max-w-xs text-xs">{tooltip}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-            </div>
+            <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+            {tooltip && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-3.5 w-3.5 cursor-help text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="max-w-xs text-xs">{tooltip}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
             {actions && actions.length > 0 && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -395,8 +395,8 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-gray-900">{value}</span>
-                {subtitle && <span className="text-sm text-gray-500">{subtitle}</span>}
+                <span className="text-3xl font-bold text-foreground">{value}</span>
+                {subtitle && <span className="text-sm text-muted-foreground">{subtitle}</span>}
               </div>
 
               {comparison && (
@@ -474,8 +474,8 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
                 className={cn(
                   'flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium',
                   trend.isPositive
-                    ? 'bg-emerald-100 text-emerald-700'
-                    : 'bg-rose-100 text-rose-700',
+                    ? 'bg-success/20 text-success-dark'
+                    : 'bg-error/20 text-error-dark',
                 )}
               >
                 {trend.isPositive ? (
@@ -488,10 +488,10 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
             )}
           </div>
 
-          <h3 className="mb-1 text-sm font-medium text-gray-600">{title}</h3>
-          <p className="mb-2 text-3xl font-bold text-gray-900">{value}</p>
+          <h3 className="mb-1 text-sm font-medium text-muted-foreground">{title}</h3>
+          <p className="mb-2 text-3xl font-bold text-foreground">{value}</p>
 
-          {subtitle && <p className="text-sm text-gray-500">{subtitle}</p>}
+          {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
 
           {sparklineWithData && (
             <div className="mt-4">
@@ -521,13 +521,13 @@ export const EnhancedStatCard = memo(function EnhancedStatCard({
     >
       <CardContent className="p-4">
         <div className="mb-3 flex items-center justify-between">
-          <span className="text-sm font-medium text-gray-600">{title}</span>
+          <span className="text-sm font-medium text-muted-foreground">{title}</span>
           <div className={cn('rounded-lg p-2', config.bg, config.text)}>{icon || config.icon}</div>
         </div>
 
         <div className="mb-2 flex items-baseline gap-2">
-          <span className="text-2xl font-bold text-gray-900">{value}</span>
-          {subtitle && <span className="text-sm text-gray-500">{subtitle}</span>}
+          <span className="text-2xl font-bold text-foreground">{value}</span>
+          {subtitle && <span className="text-sm text-muted-foreground">{subtitle}</span>}
         </div>
 
         {trendDisplay && <div>{trendDisplay}</div>}
@@ -605,20 +605,20 @@ export const DashboardStatsSection = memo(function DashboardStatsSection({
   color = 'blue',
 }: DashboardStatsSectionProps) {
   const colorConfig = {
-    blue: { bg: 'bg-blue-50/50', border: 'border-blue-200/50', icon: 'text-blue-600' },
-    green: { bg: 'bg-emerald-50/50', border: 'border-emerald-200/50', icon: 'text-emerald-600' },
-    amber: { bg: 'bg-amber-50/50', border: 'border-amber-200/50', icon: 'text-amber-600' },
+    blue: { bg: 'bg-primary/5', border: 'border-primary/20', icon: 'text-primary' },
+    green: { bg: 'bg-success/5', border: 'border-success/20', icon: 'text-success' },
+    amber: { bg: 'bg-warning/5', border: 'border-warning/20', icon: 'text-warning' },
     purple: { bg: 'bg-primary/5', border: 'border-primary/20', icon: 'text-primary' },
-    red: { bg: 'bg-rose-50/50', border: 'border-rose-200/50', icon: 'text-rose-600' },
+    red: { bg: 'bg-error/5', border: 'border-error/20', icon: 'text-error' },
   }[color];
 
   return (
     <div className={cn('rounded-xl border p-4', colorConfig.bg, colorConfig.border, className)}>
       <div className="mb-4 flex items-center gap-2">
-        {icon && <div className={cn('rounded-lg bg-white/50 p-1.5', colorConfig.icon)}>{icon}</div>}
+        {icon && <div className={cn('rounded-lg bg-card/50 p-1.5', colorConfig.icon)}>{icon}</div>}
         <div>
-          <h3 className="text-sm font-semibold text-gray-800">{title}</h3>
-          {description && <p className="text-xs text-gray-500">{description}</p>}
+          <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+          {description && <p className="text-xs text-muted-foreground">{description}</p>}
         </div>
       </div>
       {children}

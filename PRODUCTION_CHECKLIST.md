@@ -1,6 +1,6 @@
 # Production Checklist (Pre-flight)
 
-Ready to launch? Follow this checklist to ensure your OracleMonitor is secure, stable, and monitored.
+Ready to launch? Follow this checklist to ensure your Insight is secure, stable, and monitored.
 
 ## 1. Security & Environment
 

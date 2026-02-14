@@ -1,6 +1,6 @@
 # Architecture Decision Records (ADR)
 
-This document records key architecture decisions for the OracleMonitor project.
+This document records key architecture decisions for the Insight project.
 
 ## Core Decisions
 

@@ -1,4 +1,4 @@
-# OracleMonitor - Unified Oracle Platform
+# Insight - Oracle Data Analytics Platform
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Next.js](https://img.shields.io/badge/Next.js-16-black)
@@ -6,7 +6,7 @@
 ![Tailwind](https://img.shields.io/badge/Tailwind-3.4-cyan)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue)
 
-OracleMonitor is a universal multi-protocol oracle monitoring platform, supporting real-time aggregation and monitoring of oracle data from 4 protocols.
+Insight is a universal multi-protocol oracle data analytics platform, supporting real-time aggregation and analysis of oracle data from 4 protocols.
 
 ## ✨ Features
 
@@ -46,8 +46,8 @@ OracleMonitor is a universal multi-protocol oracle monitoring platform, supporti
 ### Installation
 
 ```bash
-git clone https://github.com/your-org/oracle-monitor.git
-cd oracle-monitor
+git clone https://github.com/your-org/insight-beta.git
+cd insight-beta
 npm install
 cp .env.example .env.local
 npm run supabase:push

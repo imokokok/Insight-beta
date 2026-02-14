@@ -1,4 +1,4 @@
-# Contributing to OracleMonitor
+# Contributing to Insight
 
 Thank you for your contribution!
 

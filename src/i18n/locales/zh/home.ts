@@ -1,14 +1,14 @@
 export const home = {
   hero: {
-    badge: '通用预言机基础设施监控',
+    badge: '通用预言机数据分析',
     title: '一个平台',
     titleHighlight: '所有预言机',
-    description: '监控、比较和分析来自所有主流预言机协议的数据。通过跨协议验证和实时告警确保可靠性。'
+    description: '分析、比较并获取所有主流预言机协议的洞察。通过跨协议验证和实时告警确保可靠性。'
   },
   actions: {
     dashboard: {
       title: '仪表盘',
-      description: '统一监控视图'
+      description: '统一分析视图'
     },
     comparison: {
       title: '价格对比',
@@ -28,7 +28,7 @@ export const home = {
   },
   capabilities: {
     title: '平台能力',
-    subtitle: '全面的预言机基础设施监控和管理工具',
+    subtitle: '全面的预言机数据分析和洞察工具',
     items: {
       priceComparison: {
         title: '价格对比',
@@ -36,7 +36,7 @@ export const home = {
       },
       multiChain: {
         title: '多链支持',
-        description: '从单一界面监控15+区块链网络上的预言机性能。'
+        description: '从单一界面分析15+区块链网络上的预言机性能。'
       },
       smartAlerts: {
         title: '智能告警',
@@ -50,12 +50,12 @@ export const home = {
   },
   protocols: {
     title: '支持协议',
-    subtitle: '从单一统一界面监控所有主流预言机网络',
+    subtitle: '从单一统一界面分析所有主流预言机网络',
     exploreAll: '探索所有协议'
   },
   cta: {
-    title: '准备好监控您的预言机基础设施了吗？',
-    subtitle: '开始使用全面的主流预言机协议监控。无单一协议偏见 — 只有可靠的数据。',
+    title: '准备好分析您的预言机数据了吗？',
+    subtitle: '开始使用全面的主流预言机协议数据分析。无单一协议偏见 — 只有可靠的数据。',
     launchDashboard: '启动仪表盘',
     compareProtocols: '对比协议'
   },

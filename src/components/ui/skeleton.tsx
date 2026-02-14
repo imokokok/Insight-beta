@@ -1,3 +1,7 @@
+'use client';
+
+import { motion, AnimatePresence, type Variants } from 'framer-motion';
+
 import { cn } from '@/shared/utils';
 
 /**
@@ -372,6 +376,190 @@ function SkeletonList({
   );
 }
 
+// ============================================================================
+// Animation Variants
+// ============================================================================
+
+const shimmerAnimation: Variants = {
+  initial: { x: '-100%' },
+  animate: {
+    x: '100%',
+    transition: {
+      repeat: Infinity,
+      duration: 1.5,
+      ease: 'linear',
+    },
+  },
+};
+
+const pulseAnimation: Variants = {
+  initial: { opacity: 0.4 },
+  animate: {
+    opacity: [0.4, 0.8, 0.4],
+    transition: {
+      repeat: Infinity,
+      duration: 1.5,
+      ease: 'easeInOut',
+    },
+  },
+};
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.3 },
+  },
+};
+
+// ============================================================================
+// Skeleton Container
+// ============================================================================
+
+interface SkeletonContainerProps {
+  children: React.ReactNode;
+  className?: string;
+  animated?: boolean;
+}
+
+function SkeletonContainer({ children, className, animated = true }: SkeletonContainerProps) {
+  const Wrapper = animated ? motion.div : 'div';
+
+  return (
+    <Wrapper
+      className={cn('space-y-4', className)}
+      {...(animated
+        ? {
+            initial: 'hidden',
+            animate: 'visible',
+            variants: containerVariants,
+          }
+        : {})}
+    >
+      {children}
+    </Wrapper>
+  );
+}
+
+// ============================================================================
+// Table Skeleton
+// ============================================================================
+
+interface TableSkeletonProps extends SkeletonProps {
+  rows?: number;
+  columns?: number;
+  showHeader?: boolean;
+}
+
+function TableSkeleton({
+  className,
+  rows = 5,
+  columns = 4,
+  showHeader = true,
+}: TableSkeletonProps) {
+  return (
+    <motion.div
+      className={cn('rounded-xl border border-gray-200 bg-white', className)}
+      variants={itemVariants}
+    >
+      {showHeader && (
+        <div className="border-b border-gray-200 bg-gray-50 px-4 py-3">
+          <div className="flex gap-4">
+            {Array.from({ length: columns }).map((_, i) => (
+              <Skeleton key={i} className="h-4 flex-1" />
+            ))}
+          </div>
+        </div>
+      )}
+      <div className="divide-y divide-gray-200">
+        {Array.from({ length: rows }).map((_, rowIndex) => (
+          <div key={rowIndex} className="px-4 py-3">
+            <div className="flex gap-4">
+              {Array.from({ length: columns }).map((_, colIndex) => (
+                <Skeleton
+                  key={colIndex}
+                  className="h-4 flex-1"
+                  style={{
+                    width: `${Math.random() * 20 + 60}%`,
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+// ============================================================================
+// Loading Spinner
+// ============================================================================
+
+interface LoadingSpinnerProps extends SkeletonProps {
+  size?: 'sm' | 'md' | 'lg';
+}
+
+function LoadingSpinner({ className, size = 'md' }: LoadingSpinnerProps) {
+  const sizeClasses = {
+    sm: 'h-4 w-4',
+    md: 'h-8 w-8',
+    lg: 'h-12 w-12',
+  };
+
+  return (
+    <div className={cn('flex items-center justify-center', className)}>
+      <motion.div
+        className={cn('rounded-full border-2 border-gray-200 border-t-primary', sizeClasses[size])}
+        animate={{ rotate: 360 }}
+        transition={{
+          duration: 1,
+          repeat: Infinity,
+          ease: 'linear',
+        }}
+      />
+    </div>
+  );
+}
+
+// ============================================================================
+// Loading Overlay
+// ============================================================================
+
+interface LoadingOverlayProps extends SkeletonProps {
+  message?: string;
+}
+
+function LoadingOverlay({ className, message = 'Loading...' }: LoadingOverlayProps) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className={cn(
+        'absolute inset-0 z-50 flex flex-col items-center justify-center',
+        'bg-white/80 backdrop-blur-sm',
+        className,
+      )}
+    >
+      <LoadingSpinner size="lg" />
+      {message && <p className="mt-4 text-sm text-gray-600">{message}</p>}
+    </motion.div>
+  );
+}
+
 export {
   Skeleton,
   CardSkeleton,
@@ -389,6 +577,10 @@ export {
   PriceCardSkeleton,
   ProtocolCardSkeleton,
   SkeletonList,
+  SkeletonContainer,
+  TableSkeleton,
+  LoadingSpinner,
+  LoadingOverlay,
 };
 
 export default Skeleton;

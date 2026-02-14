@@ -23,10 +23,10 @@ const badgeVariants = cva(
           'bg-destructive text-destructive-foreground hover:bg-destructive/80 border-transparent',
         outline: 'text-foreground',
         // 语义化变体
-        success: 'border-transparent bg-emerald-100 text-emerald-700 hover:bg-emerald-200',
-        warning: 'border-transparent bg-amber-100 text-amber-700 hover:bg-amber-200',
-        danger: 'border-transparent bg-rose-100 text-rose-700 hover:bg-rose-200',
-        info: 'border-transparent bg-blue-100 text-blue-700 hover:bg-blue-200',
+        success: 'border-transparent bg-success/20 text-success-dark hover:bg-success/30',
+        warning: 'border-transparent bg-warning/20 text-warning-dark hover:bg-warning/30',
+        danger: 'border-transparent bg-error/20 text-error-dark hover:bg-error/30',
+        info: 'border-transparent bg-primary/20 text-primary-dark hover:bg-primary/30',
         // 特殊效果
         ghost: 'text-primary-dark border-transparent hover:bg-primary/10',
         pulse: 'text-primary-dark animate-pulse border-transparent bg-primary/10',
@@ -139,7 +139,7 @@ const CountBadge = React.memo(function CountBadge({ count, max = 99, className }
   return (
     <span
       className={cn(
-        'inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-bold text-white',
+        'inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-error px-1.5 text-[10px] font-bold text-white',
         className,
       )}
     >
@@ -162,19 +162,19 @@ const ProgressBadge = React.memo(function ProgressBadge({
   className,
 }: ProgressBadgeProps) {
   const getColor = (p: number) => {
-    if (p >= 80) return 'bg-emerald-500';
-    if (p >= 50) return 'bg-amber-500';
-    return 'bg-rose-500';
+    if (p >= 80) return 'bg-success';
+    if (p >= 50) return 'bg-warning';
+    return 'bg-error';
   };
 
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium',
+        'inline-flex items-center gap-1.5 rounded-full bg-muted/30 px-2.5 py-0.5 text-xs font-medium',
         className,
       )}
     >
-      <span className="relative h-2 w-8 overflow-hidden rounded-full bg-gray-200">
+      <span className="relative h-2 w-8 overflow-hidden rounded-full bg-muted">
         <span
           className={cn(
             'absolute inset-y-0 left-0 rounded-full transition-all duration-500',
@@ -183,7 +183,7 @@ const ProgressBadge = React.memo(function ProgressBadge({
           style={{ width: `${progress}%` }}
         />
       </span>
-      <span className="text-gray-600">{progress}%</span>
+      <span className="text-muted-foreground">{progress}%</span>
     </span>
   );
 });

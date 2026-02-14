@@ -1,6 +1,6 @@
 # Database Design
 
-This document describes the database schema for OracleMonitor.
+This document describes the database schema for Insight.
 
 ## Overview
 

@@ -1,6 +1,6 @@
-# OracleMonitor Documentation
+# Insight Documentation
 
-Welcome to the OracleMonitor documentation center.
+Welcome to the Insight documentation center.
 
 ## Quick Links
 
@@ -29,7 +29,7 @@ Welcome to the OracleMonitor documentation center.
 ## Project Structure
 
 ```
-oracle-monitor/
+insight-beta/
 ├── docs/                       # Documentation
 ├── src/
 │   ├── app/                   # Next.js App Router

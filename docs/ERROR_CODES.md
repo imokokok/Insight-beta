@@ -1,6 +1,6 @@
 # Error Codes Documentation
 
-This document describes all error codes used in the OracleMonitor platform to help developers understand and handle API errors.
+This document describes all error codes used in the Insight platform to help developers understand and handle API errors.
 
 ## Error Response Format
 
@@ -255,4 +255,4 @@ If you encounter unrecorded error codes or need more help:
 
 1. See [API Documentation](./API.md)
 2. See [Troubleshooting Guide](./TROUBLESHOOTING.md)
-3. Contact technical support: api@oracle-monitor.foresight.build
+3. Contact technical support: api@insight.foresight.build

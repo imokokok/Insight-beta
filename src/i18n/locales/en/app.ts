@@ -1,8 +1,8 @@
 export const app = {
   brand: 'Insight',
   description:
-    'Universal multi-protocol oracle monitoring platform supporting Chainlink, Pyth, API3, DIA, Band, RedStone, and more.',
+    'Universal multi-protocol oracle data analytics platform supporting Chainlink, Pyth, API3, DIA, Band, RedStone, and more.',
   logoAlt: 'Insight logo',
-  subtitle: 'Universal Oracle Monitor',
-  title: 'Insight · Multi-Protocol Oracle Aggregator',
+  subtitle: 'Universal Oracle Data Analytics',
+  title: 'Insight · Multi-Protocol Oracle Analytics Platform',
 };

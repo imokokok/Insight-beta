@@ -49,17 +49,17 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       type: 'website',
       locale: langToHtmlLang[lang],
-      url: 'https://oracle-monitor.foresight.build',
+      url: 'https://insight.foresight.build',
       title: translations[lang].app.title,
       description: translations[lang].app.description,
-      siteName: 'OracleMonitor',
+      siteName: 'Insight',
     },
     twitter: {
       card: 'summary_large_image',
       title: translations[lang].app.title,
       description: translations[lang].app.description,
     },
-    metadataBase: new URL('https://oracle-monitor.foresight.build'),
+    metadataBase: new URL('https://insight.foresight.build'),
   };
 }
 
