@@ -349,6 +349,7 @@ function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
           <Link
             href={item.href as Route}
             onClick={handleClick}
+            data-tour={item.id}
             className={cn(
               'flex h-10 w-10 items-center justify-center rounded-lg transition-all',
               isActive
@@ -369,6 +370,7 @@ function NavItemComponent({ item, level = 0, collapsed }: NavItemProps) {
       <Link
         href={item.href as Route}
         onClick={handleClick}
+        data-tour={item.id}
         className={cn(
           'flex items-center rounded-lg px-3 py-2 transition-all duration-200',
           'hover:bg-muted',

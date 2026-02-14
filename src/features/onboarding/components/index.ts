@@ -1,4 +1,4 @@
-export { Onboarding, STORAGE_KEY, ROLE_STORAGE_KEY, PROGRESS_STORAGE_KEY } from './Onboarding';
+export { Onboarding, STORAGE_KEY, PROGRESS_STORAGE_KEY } from './Onboarding';
 export type { UserRole, OnboardingProgress } from './Onboarding';
 export { OnboardingSteps } from './Onboarding/OnboardingSteps';
 export { RoleSelection } from './Onboarding/RoleSelection';

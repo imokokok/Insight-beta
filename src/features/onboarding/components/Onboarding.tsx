@@ -2,16 +2,15 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, AlertCircle, BarChart2, FileText, Users, ArrowLeft } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { X, AlertCircle, BarChart2, FileText, ArrowLeft } from 'lucide-react';
 
 import { useI18n } from '@/i18n/LanguageProvider';
 import { cn, getStorageItem, setStorageItem, removeStorageItem } from '@/shared/utils';
 
 import { OnboardingSteps } from './Onboarding/OnboardingSteps';
-import { RoleSelection } from './Onboarding/RoleSelection';
 
-export type UserRole = 'developer' | 'protocol' | 'general';
+export type UserRole = 'general';
 
 interface OnboardingStep {
   id: string;
@@ -29,13 +28,10 @@ interface OnboardingProps {
 }
 
 const STORAGE_KEY = 'oracle-monitor-onboarding-completed';
-const ROLE_STORAGE_KEY = 'oracle-monitor-user-role';
 const PROGRESS_STORAGE_KEY = 'oracle-monitor-onboarding-progress';
 
 interface OnboardingProgress {
   currentStep: number;
-  selectedRole: UserRole | null;
-  showRoleSelection: boolean;
   timestamp: number;
 }
 
@@ -43,8 +39,6 @@ export function Onboarding({ onComplete, onSkip, className, forceOpen }: Onboard
   const { t } = useI18n();
   const [currentStep, setCurrentStep] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
-  const [showRoleSelection, setShowRoleSelection] = useState(true);
 
   // Check if user has completed onboarding and restore progress
   useEffect(() => {
@@ -65,15 +59,11 @@ export function Onboarding({ onComplete, onSkip, className, forceOpen }: Onboard
 
         // Restore progress if exists
         if (savedProgress) {
-          // Check if progress is not too old (7 days)
           const isRecent = Date.now() - savedProgress.timestamp < 7 * 24 * 60 * 60 * 1000;
 
           if (isRecent) {
-            setSelectedRole(savedProgress.selectedRole);
-            setShowRoleSelection(savedProgress.showRoleSelection);
             setCurrentStep(savedProgress.currentStep);
           } else {
-            // Clear old progress
             removeStorageItem(PROGRESS_STORAGE_KEY);
           }
         }
@@ -89,112 +79,37 @@ export function Onboarding({ onComplete, onSkip, className, forceOpen }: Onboard
 
     const progress: OnboardingProgress = {
       currentStep,
-      selectedRole,
-      showRoleSelection,
       timestamp: Date.now(),
     };
 
     setStorageItem(PROGRESS_STORAGE_KEY, progress);
-  }, [isOpen, currentStep, selectedRole, showRoleSelection]);
+  }, [isOpen, currentStep]);
 
-  // Current steps based on role selection
+  // Current steps - always use general role for all users
   const getCurrentSteps = useCallback((): OnboardingStep[] => {
-    // Common welcome step
-    const welcomeStep: OnboardingStep = {
-      id: 'welcome',
-      title: t('onboarding.welcome'),
-      description: t('onboarding.welcomeDesc'),
-      icon: <AlertCircle className="h-10 w-10 text-primary" />,
-    };
-
-    if (showRoleSelection) {
-      return [welcomeStep];
-    }
-    if (!selectedRole) {
-      return [welcomeStep];
-    }
-
-    // Role-specific steps with translations (3 roles: developer, protocol, general)
-    const roleStepsConfig: Record<UserRole, OnboardingStep[]> = {
-      developer: [
-        {
-          id: 'dev_api',
-          title: t('onboarding.steps.developer.api.title'),
-          description: t('onboarding.steps.developer.api.description'),
-          icon: <FileText className="h-10 w-10 text-blue-600" />,
-        },
-        {
-          id: 'dev_integration',
-          title: t('onboarding.steps.developer.integration.title'),
-          description: t('onboarding.steps.developer.integration.description'),
-          icon: <BarChart2 className="h-10 w-10 text-green-600" />,
-        },
-        {
-          id: 'dev_monitoring',
-          title: t('onboarding.steps.developer.monitoring.title'),
-          description: t('onboarding.steps.developer.monitoring.description'),
-          icon: <AlertCircle className="h-10 w-10 text-primary" />,
-        },
-      ],
-      protocol: [
-        {
-          id: 'proto_monitoring',
-          title: t('onboarding.steps.protocol.monitoring.title'),
-          description: t('onboarding.steps.protocol.monitoring.description'),
-          icon: <BarChart2 className="h-10 w-10 text-blue-600" />,
-        },
-        {
-          id: 'proto_disputes',
-          title: t('onboarding.steps.protocol.disputes.title'),
-          description: t('onboarding.steps.protocol.disputes.description'),
-          icon: <Users className="h-10 w-10 text-amber-600" />,
-        },
-        {
-          id: 'proto_alerts',
-          title: t('onboarding.steps.protocol.alerts.title'),
-          description: t('onboarding.steps.protocol.alerts.description'),
-          icon: <AlertCircle className="h-10 w-10 text-primary" />,
-        },
-      ],
-      general: [
-        {
-          id: 'general_explore',
-          title: t('onboarding.steps.general.exploration.title'),
-          description: t('onboarding.steps.general.exploration.description'),
-          icon: <BarChart2 className="h-10 w-10 text-blue-600" />,
-        },
-        {
-          id: 'general_compare',
-          title: t('onboarding.steps.general.comparison.title'),
-          description: t('onboarding.steps.general.comparison.description'),
-          icon: <FileText className="h-10 w-10 text-green-600" />,
-        },
-        {
-          id: 'general_alerts',
-          title: t('onboarding.steps.general.alerts.title'),
-          description: t('onboarding.steps.general.alerts.description'),
-          icon: <AlertCircle className="h-10 w-10 text-primary" />,
-        },
-      ],
-    };
-
-    return roleStepsConfig[selectedRole] || [];
-  }, [selectedRole, showRoleSelection, t]);
+    return [
+      {
+        id: 'general_explore',
+        title: t('onboarding.steps.general.exploration.title'),
+        description: t('onboarding.steps.general.exploration.description'),
+        icon: <BarChart2 className="h-10 w-10 text-blue-600" />,
+      },
+      {
+        id: 'general_compare',
+        title: t('onboarding.steps.general.comparison.title'),
+        description: t('onboarding.steps.general.comparison.description'),
+        icon: <FileText className="h-10 w-10 text-green-600" />,
+      },
+      {
+        id: 'general_alerts',
+        title: t('onboarding.steps.general.alerts.title'),
+        description: t('onboarding.steps.general.alerts.description'),
+        icon: <AlertCircle className="h-10 w-10 text-primary" />,
+      },
+    ];
+  }, [t]);
 
   const steps = getCurrentSteps();
-
-  const handleRoleSelect = (role: UserRole) => {
-    setSelectedRole(role);
-    setShowRoleSelection(false);
-    setCurrentStep(0);
-    setStorageItem(ROLE_STORAGE_KEY, role);
-    // Progress will be saved by the useEffect
-  };
-
-  const handleBackToRoleSelection = useCallback(() => {
-    setShowRoleSelection(true);
-    setCurrentStep(0);
-  }, []);
 
   const handleNext = useCallback(() => {
     if (currentStep < steps.length - 1) {
@@ -222,35 +137,23 @@ export function Onboarding({ onComplete, onSkip, className, forceOpen }: Onboard
     onComplete?.();
   }, [onComplete]);
 
-  // Handle keyboard navigation - must be after handler definitions
+  // Handle keyboard navigation
   useEffect(() => {
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         handleSkip();
-      } else if (e.key === 'ArrowRight' && !showRoleSelection) {
+      } else if (e.key === 'ArrowRight') {
         handleNext();
-      } else if (e.key === 'ArrowLeft') {
-        if (!showRoleSelection && currentStep > 0) {
-          handleBack();
-        } else if (!showRoleSelection && currentStep === 0) {
-          handleBackToRoleSelection();
-        }
+      } else if (e.key === 'ArrowLeft' && currentStep > 0) {
+        handleBack();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [
-    isOpen,
-    showRoleSelection,
-    currentStep,
-    handleSkip,
-    handleNext,
-    handleBack,
-    handleBackToRoleSelection,
-  ]);
+  }, [isOpen, currentStep, handleSkip, handleNext, handleBack]);
 
   if (!isOpen) return null;
 
@@ -275,11 +178,11 @@ export function Onboarding({ onComplete, onSkip, className, forceOpen }: Onboard
         {/* Header */}
         <div className="flex items-center justify-between border-b p-4 sm:p-6">
           <div className="flex items-center gap-2">
-            {!showRoleSelection && (
+            {currentStep > 0 && (
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={currentStep === 0 ? handleBackToRoleSelection : handleBack}
+                onClick={handleBack}
                 className="mr-2 rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
               >
                 <ArrowLeft className="h-5 w-5" />
@@ -301,36 +204,14 @@ export function Onboarding({ onComplete, onSkip, className, forceOpen }: Onboard
 
         {/* Content */}
         <div className="p-4 sm:p-6">
-          <AnimatePresence mode="wait">
-            {showRoleSelection ? (
-              <motion.div
-                key="role-selection"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.2 }}
-              >
-                <RoleSelection onRoleSelect={handleRoleSelect} onSkip={handleSkip} />
-              </motion.div>
-            ) : (
-              <motion.div
-                key="onboarding-steps"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.2 }}
-              >
-                <OnboardingSteps
-                  currentStep={currentStep}
-                  steps={steps}
-                  onNext={handleNext}
-                  onBack={handleBack}
-                  onSkip={handleSkip}
-                  canGoBack={currentStep > 0}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <OnboardingSteps
+            currentStep={currentStep}
+            steps={steps}
+            onNext={handleNext}
+            onBack={handleBack}
+            onSkip={handleSkip}
+            canGoBack={currentStep > 0}
+          />
         </div>
       </motion.div>
     </motion.div>
@@ -338,5 +219,5 @@ export function Onboarding({ onComplete, onSkip, className, forceOpen }: Onboard
 }
 
 // Export reset function for external use
-export { STORAGE_KEY, ROLE_STORAGE_KEY, PROGRESS_STORAGE_KEY };
+export { STORAGE_KEY, PROGRESS_STORAGE_KEY };
 export type { OnboardingProgress };

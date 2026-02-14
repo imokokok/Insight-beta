@@ -88,15 +88,15 @@ const onboarding = {
       description:
         'Your central command center showing all key metrics and system health in real-time.',
     },
+    comparison: {
+      title: 'Comparison',
+      description:
+        'Compare prices and performance across different oracle protocols. Analyze cross-chain opportunities.',
+    },
     alerts: {
       title: 'Alerts',
       description:
         'View and manage all system alerts, including price deviations, node offline notifications, and more.',
-    },
-    protocols: {
-      title: 'Protocols',
-      description:
-        'Monitor multiple oracle protocols like Chainlink, Pyth, Band with real-time data and performance metrics.',
     },
     watchlist: {
       title: 'Watchlist',

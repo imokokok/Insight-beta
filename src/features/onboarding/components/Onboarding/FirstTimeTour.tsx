@@ -39,7 +39,15 @@ export function FirstTimeTour({ isOpen, onComplete, onSkip, className }: FirstTi
       title: t('onboarding.tour.dashboard.title'),
       description: t('onboarding.tour.dashboard.description'),
       icon: <MapPin className="h-5 w-5 text-primary" />,
-      placement: 'bottom',
+      placement: 'right',
+    },
+    {
+      id: 'comparison',
+      target: '[data-tour="comparison"]',
+      title: t('onboarding.tour.comparison.title'),
+      description: t('onboarding.tour.comparison.description'),
+      icon: <Layers className="h-5 w-5 text-blue-600" />,
+      placement: 'right',
     },
     {
       id: 'alerts',
@@ -47,14 +55,6 @@ export function FirstTimeTour({ isOpen, onComplete, onSkip, className }: FirstTi
       title: t('onboarding.tour.alerts.title'),
       description: t('onboarding.tour.alerts.description'),
       icon: <Bell className="h-5 w-5 text-amber-600" />,
-      placement: 'bottom',
-    },
-    {
-      id: 'protocols',
-      target: '[data-tour="protocols"]',
-      title: t('onboarding.tour.protocols.title'),
-      description: t('onboarding.tour.protocols.description'),
-      icon: <Layers className="h-5 w-5 text-blue-600" />,
       placement: 'right',
     },
     {

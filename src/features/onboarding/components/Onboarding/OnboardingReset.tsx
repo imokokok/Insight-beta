@@ -6,7 +6,7 @@ import { HelpCircle, RotateCcw } from 'lucide-react';
 
 import { useI18n } from '@/i18n/LanguageProvider';
 
-import { STORAGE_KEY, ROLE_STORAGE_KEY, PROGRESS_STORAGE_KEY } from '../Onboarding';
+import { STORAGE_KEY, PROGRESS_STORAGE_KEY } from '../Onboarding';
 
 interface OnboardingResetProps {
   onReset?: () => void;
@@ -20,11 +20,9 @@ export function OnboardingReset({ onReset, variant = 'button', className }: Onbo
 
   const handleReset = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(ROLE_STORAGE_KEY);
     localStorage.removeItem(PROGRESS_STORAGE_KEY);
     setShowConfirm(false);
     onReset?.();
-    // Reload page to show onboarding
     window.location.reload();
   }, [onReset]);
 
