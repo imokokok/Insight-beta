@@ -5,3 +5,4 @@
  */
 
 export * from './cache';
+export { LRUCache } from '@/lib/cache/lru-cache';

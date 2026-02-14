@@ -1,5 +1,5 @@
-import { withMiddleware, DEFAULT_RATE_LIMIT } from '@/lib/api/middleware';
 import { crossChainAnalysisService } from '@/features/oracle/services/crossChainAnalysisService';
+import { withMiddleware, DEFAULT_RATE_LIMIT } from '@/lib/api/middleware';
 import { apiSuccess } from '@/shared/utils';
 
 async function handleGet() {

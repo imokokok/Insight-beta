@@ -7,8 +7,8 @@
 import type { NextRequest } from 'next/server';
 
 import { env } from '@/config/env';
-import { withMiddleware, DEFAULT_RATE_LIMIT } from '@/lib/api/middleware';
 import { alertService } from '@/features/alert/services/alertService';
+import { withMiddleware, DEFAULT_RATE_LIMIT } from '@/lib/api/middleware';
 import { apiSuccess } from '@/shared/utils';
 
 export const dynamic = 'force-dynamic';

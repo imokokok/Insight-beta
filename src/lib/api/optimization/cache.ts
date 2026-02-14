@@ -1,8 +1,10 @@
 /**
- * Simple Cache - 简化的内存缓存
+ * Simple Cache - 基于 LRUCache 的内存缓存
  *
- * 仅提供基本的缓存功能，用于服务器端数据缓存
+ * 提供基本的缓存功能，用于服务器端数据缓存
  */
+
+import { LRUCache, LRUCacheOptions } from '@/lib/cache/lru-cache';
 
 export interface CacheProvider {
   get<T>(key: string): Promise<T | null>;
@@ -13,75 +15,44 @@ export interface CacheProvider {
   keys(pattern: string): Promise<string[]>;
 }
 
-interface CacheEntry<T> {
-  value: T;
-  expiresAt: number;
-}
+class DefaultCache implements CacheProvider {
+  private cache: LRUCache<string, unknown>;
 
-export class SimpleCache implements CacheProvider {
-  private store = new Map<string, CacheEntry<unknown>>();
-
-  async get<T>(key: string): Promise<T | null> {
-    const entry = this.store.get(key);
-    if (!entry) return null;
-
-    if (Date.now() > entry.expiresAt) {
-      this.store.delete(key);
-      return null;
-    }
-
-    return entry.value as T;
+  constructor(options: LRUCacheOptions = { maxSize: 1000, ttlMs: 60000 }) {
+    this.cache = new LRUCache<string, unknown>(options);
   }
 
-  async set<T>(key: string, value: T, ttlMs: number = 60000): Promise<void> {
-    this.store.set(key, {
-      value,
-      expiresAt: Date.now() + ttlMs,
-    });
+  async get<T>(key: string): Promise<T | null> {
+    return this.cache.get<T>(key) as Promise<T | null>;
+  }
+
+  async set<T>(key: string, value: T, ttlMs?: number): Promise<void> {
+    this.cache.set(key, value, ttlMs);
   }
 
   async delete(key: string): Promise<void> {
-    this.store.delete(key);
+    this.cache.delete(key);
   }
 
   async clear(pattern?: string): Promise<void> {
     if (!pattern) {
-      this.store.clear();
-      return;
-    }
-
-    const regex = new RegExp(pattern.replace(/\*/g, '.*'));
-    for (const key of this.store.keys()) {
-      if (regex.test(key)) {
-        this.store.delete(key);
-      }
+      this.cache.clear();
+    } else {
+      this.cache.clearByPattern(pattern);
     }
   }
 
   async exists(key: string): Promise<boolean> {
-    const entry = this.store.get(key);
-    if (!entry) return false;
-    if (Date.now() > entry.expiresAt) {
-      this.store.delete(key);
-      return false;
-    }
-    return true;
+    return this.cache.exists(key);
   }
 
   async keys(pattern: string): Promise<string[]> {
-    const regex = new RegExp(pattern.replace(/\*/g, '.*'));
-    return [...this.store.keys()].filter((key) => regex.test(key));
+    return this.cache.keysByPattern(pattern);
   }
 
   get size(): number {
-    return this.store.size;
+    return this.cache.size;
   }
 }
 
-export const defaultCache = new SimpleCache();
-
-export function generateCacheKey(prefix: string, ...parts: unknown[]): string {
-  return `${prefix}:${parts
-    .map((part) => (typeof part === 'object' ? JSON.stringify(part) : String(part)))
-    .join(':')}`;
-}
+export const defaultCache = new DefaultCache();

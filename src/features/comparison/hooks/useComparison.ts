@@ -10,6 +10,7 @@
 
 import useSWR from 'swr';
 
+import { createSWRConfig, REALTIME_CONFIG } from '@/hooks/useSWRConfig';
 import { buildApiUrl } from '@/shared/utils';
 import type {
   ComparisonFilter,
@@ -20,7 +21,6 @@ import type {
   RealtimeComparisonItem,
 } from '@/types/oracle/comparison';
 
-import { createSWRConfig, REALTIME_CONFIG } from '@/hooks/useSWRConfig';
 
 // ============================================================================
 // 热力图数据 Hook

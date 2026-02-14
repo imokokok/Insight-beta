@@ -5,17 +5,16 @@
  * 支持 Webhook、PagerDuty、Slack、Email、Telegram、Discord 等多种渠道
  */
 
-import { logger } from '@/shared/logger';
 
-import { NotificationService } from './notifications/notificationService';
-
+import { NotificationService } from '@/services/alert/notifications/notificationService';
 import type {
   AlertNotification,
   NotificationChannel,
   NotificationConfig,
   NotificationResult,
   AlertSeverity,
-} from './notifications/types';
+} from '@/services/alert/notifications/types';
+import { logger } from '@/shared/logger';
 
 // 告警历史记录
 export interface AlertHistoryRecord {

@@ -6,10 +6,6 @@
  */
 
 import { env } from '@/config/env';
-import {
-  notificationManager,
-  type NotificationManagerConfig,
-} from './notificationManager';
 import type {
   NotificationConfig,
   EmailConfig,
@@ -20,6 +16,11 @@ import type {
 } from '@/services/alert/notifications/types';
 import { logger } from '@/shared/logger';
 import type { ManipulationAlert } from '@/types/security/detection';
+
+import {
+  notificationManager,
+  type NotificationManagerConfig,
+} from './notificationManager';
 
 export interface AlertChannelConfig {
   email?: boolean;

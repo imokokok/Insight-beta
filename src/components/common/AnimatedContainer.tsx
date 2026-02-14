@@ -14,6 +14,7 @@ import React from 'react';
 
 import { motion, AnimatePresence } from 'framer-motion';
 
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import {
   containerVariants,
   componentVariants,
@@ -21,7 +22,6 @@ import {
   transitionPresets,
   STAGGER_CONFIG,
 } from '@/lib/design-system/tokens/animation';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { cn } from '@/shared/utils';
 
 import type { Variants } from 'framer-motion';

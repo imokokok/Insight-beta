@@ -6,15 +6,15 @@ import { cookies, headers } from 'next/headers';
 import { Toaster } from 'sonner';
 
 
+import { ClientComponentsWrapper } from '@/components/common/ClientComponentsWrapper';
+import { Sidebar } from '@/components/common/EnhancedSidebar';
+import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { PageProgress } from '@/components/common/PageProgress';
 import { PageTransition } from '@/components/common/PageTransitions';
 import { ResourceHints } from '@/components/common/ResourceHints';
-import { Sidebar } from '@/components/common/EnhancedSidebar';
-import { ClientComponentsWrapper } from '@/components/common/ClientComponentsWrapper';
+import { SyncStatus } from '@/features/oracle/components/SyncStatus';
 import { WalletProvider } from '@/features/wallet/contexts/WalletContext';
 import { LanguageProvider } from '@/i18n/LanguageProvider';
-import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
-import { SyncStatus } from '@/features/oracle/components/SyncStatus';
 import {
   detectLangFromAcceptLanguage,
   isLang,

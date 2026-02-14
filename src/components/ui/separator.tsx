@@ -10,7 +10,7 @@ interface SeparatorProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const Separator = React.forwardRef<HTMLDivElement, SeparatorProps>(
-  ({ className, orientation = 'horizontal', decorative = true, ...props }, ref) => (
+  ({ className, orientation = 'horizontal', decorative: _decorative, ...props }, ref) => (
     <div
       ref={ref}
       className={cn(
@@ -18,6 +18,7 @@ const Separator = React.forwardRef<HTMLDivElement, SeparatorProps>(
         orientation === 'horizontal' ? 'h-[1px] w-full' : 'h-full w-[1px]',
         className,
       )}
+      role={_decorative ? 'none' : undefined}
       {...props}
     />
   ),

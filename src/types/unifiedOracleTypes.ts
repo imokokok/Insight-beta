@@ -8,12 +8,6 @@
 // 预言机协议类型定义 (从 protocol.ts 导入并重新导出)
 // ============================================================================
 
-import type {
-  OracleProtocol as _OracleProtocol,
-  OracleProtocolInfo as _OracleProtocolInfo,
-  OracleFeature as _OracleFeature,
-} from './oracle/protocol';
-
 import {
   ORACLE_PROTOCOLS as _ORACLE_PROTOCOLS,
   PROTOCOL_DISPLAY_NAMES as _PROTOCOL_DISPLAY_NAMES,
@@ -23,6 +17,13 @@ import {
   OPTIMISTIC_PROTOCOLS as _OPTIMISTIC_PROTOCOLS,
   getProtocolsByCategory as _getProtocolsByCategory,
 } from './oracle/protocol';
+
+import type {
+  OracleProtocol as _OracleProtocol,
+  OracleProtocolInfo as _OracleProtocolInfo,
+  OracleFeature as _OracleFeature,
+} from './oracle/protocol';
+
 
 // 本地类型别名
 export type OracleProtocol = _OracleProtocol;

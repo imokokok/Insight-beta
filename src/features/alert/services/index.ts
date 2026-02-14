@@ -3,7 +3,7 @@
  */
 
 // 通知服务
-export * from './notifications';
+export * from '@/services/alert/notifications';
 
 // 告警服务
 export * from './alertService';

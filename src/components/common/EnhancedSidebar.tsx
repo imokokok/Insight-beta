@@ -40,8 +40,8 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ConnectWallet } from '@/features/wallet/components/ConnectWallet';
-import { useI18n } from '@/i18n';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
 
 import type { Route } from 'next';

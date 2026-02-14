@@ -5,8 +5,8 @@ import { useState } from 'react';
 import { Wallet, X, ChevronRight, AlertCircle } from 'lucide-react';
 
 import { useToast } from '@/components/ui/toast';
-import { useWallet, type WalletConnectionType } from '@/features/wallet/contexts/WalletContext';
 import { UserMenu } from '@/features/wallet/components/UserMenu';
+import { useWallet, type WalletConnectionType } from '@/features/wallet/contexts/WalletContext';
 import { useI18n } from '@/i18n/LanguageProvider';
 import {
   isWalletBrowser,

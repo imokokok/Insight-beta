@@ -12,6 +12,7 @@ import { EventEmitter } from 'events';
 
 import pLimit from 'p-limit';
 
+import { PriceAggregationEngine } from '@/services/oracle/priceAggregation';
 import { logger } from '@/shared/logger';
 import type {
   CrossOracleComparison,
@@ -19,7 +20,6 @@ import type {
   SupportedChain,
 } from '@/types/unifiedOracleTypes';
 
-import { PriceAggregationEngine } from '@/services/oracle/priceAggregation';
 
 // ============================================================================
 // 配置常量

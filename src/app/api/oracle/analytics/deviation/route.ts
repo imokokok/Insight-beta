@@ -8,13 +8,13 @@
 
 import type { NextRequest } from 'next/server';
 
-import { ok, error } from '@/lib/api/apiResponse';
-import { query } from '@/lib/database/db';
 import {
   priceDeviationAnalytics,
   type DeviationReport,
   type PriceDeviationPoint,
 } from '@/features/oracle/services/priceDeviationAnalytics';
+import { ok, error } from '@/lib/api/apiResponse';
+import { query } from '@/lib/database/db';
 import { logger } from '@/shared/logger';
 
 // ============================================================================

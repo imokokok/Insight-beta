@@ -7,12 +7,12 @@
 
 import crypto from 'crypto';
 
-import { query } from '@/lib/database/db';
 import {
   getUnifiedInstance,
   updateSyncState,
   recordSyncError,
 } from '@/features/oracle/services/unifiedConfig';
+import { query } from '@/lib/database/db';
 import { logger } from '@/shared/logger';
 import type { SupportedChain } from '@/types/oracle/chain';
 import type { OracleProtocol } from '@/types/oracle/protocol';

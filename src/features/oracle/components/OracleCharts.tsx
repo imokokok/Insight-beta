@@ -17,10 +17,10 @@ import type {
   TabKey,
   Translator,
 } from '@/features/charts/components/types';
-import { useI18n } from '@/i18n/LanguageProvider';
-import { getUiErrorMessage, langToLocale } from '@/i18n/translations';
 import type { PricePoint } from '@/features/oracle/services/priceFetcher';
 import { calculateHealthScore } from '@/features/oracle/services/priceFetcher';
+import { useI18n } from '@/i18n/LanguageProvider';
+import { getUiErrorMessage, langToLocale } from '@/i18n/translations';
 import { cn, fetchApiData, formatPercent as formatPercentUtil } from '@/shared/utils';
 
 const getTabBorder = (activeTab: TabKey) =>

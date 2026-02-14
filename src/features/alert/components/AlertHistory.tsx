@@ -30,8 +30,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useI18n } from '@/i18n';
 import type { AlertHistoryRecord, ChannelHealthStatus } from '@/features/alert/services/notificationManager';
+import { useI18n } from '@/i18n';
 import type { AlertSeverity, NotificationChannel } from '@/services/alert/notifications/types';
 
 function cn(...classes: (string | boolean | undefined)[]) {
