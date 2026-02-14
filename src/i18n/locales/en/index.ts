@@ -12,7 +12,6 @@ import { errorPage } from './errorPage';
 import { errors } from './errors';
 import { home } from './home';
 import { nav } from './nav';
-import onboarding from './onboarding';
 import { oracle } from './oracle';
 import { protocol } from './protocol';
 import { security } from './security';
@@ -35,7 +34,6 @@ export const enTranslations = {
   errors,
   home,
   nav,
-  onboarding,
   oracle,
   protocol,
   security,
