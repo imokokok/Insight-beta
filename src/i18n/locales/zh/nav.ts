@@ -9,7 +9,6 @@ export const nav = {
   trends: '趋势',
   anomalies: '异常',
   deviation: '偏差',
-  slo: 'SLO',
   timeline: '时间线',
   protocols: '协议',
   groups: {
@@ -17,7 +16,6 @@ export const nav = {
     monitor: '监控',
     analytics: '分析',
     operations: '运营',
-    sloGroup: 'SLO',
     protocolsGroup: '协议'
   },
   descriptions: {
@@ -29,7 +27,6 @@ export const nav = {
     anomalies: '异常检测',
     deviation: '价格偏差',
     watchlist: '您的关注列表',
-    sloDashboard: 'SLO 仪表盘',
     timeline: '事件时间线',
     protocolList: '协议列表'
   },

@@ -12,8 +12,7 @@ This document records key architecture decisions for the OracleMonitor project.
 | Multi-chain Support       | Support Ethereum, BSC, Polygon, Avalanche      | Implemented |
 | Supabase as Single Source | Use Supabase as only database source           | Implemented |
 | Shared Module Library     | Centralized reusable components                | Implemented |
-| Event-driven Architecture | Timeline-based event management                | Implemented |
-| SLO/Error Budget          | Service level objectives monitoring            | Implemented |
+| Event-driven Architecture | Timeline-based event management              | Implemented |
 
 ## Technical Stack
 
@@ -76,22 +75,3 @@ This document records key architecture decisions for the OracleMonitor project.
 - Better incident debugging
 - Complete audit trail
 - Improved operational visibility
-
-### ADR-004: SLO/Error Budget Monitoring
-
-**Status**: Implemented
-
-**Context**: Need to track service level commitments.
-
-**Decision**: Implement SLO system with:
-
-- SLO definitions per protocol/chain
-- Error budget calculation
-- Compliance tracking
-- Budget burn rate analysis
-
-**Consequences**:
-
-- Proactive monitoring
-- Better SLA management
-- Clear reliability metrics

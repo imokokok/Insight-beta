@@ -131,15 +131,6 @@ const envSchema = z.object({
   INSIGHT_CHAIN: optionalString('ethereum'),
   INSIGHT_SLOW_REQUEST_MS: optionalNumber(5000),
 
-  // SLO 配置
-  INSIGHT_SLO_MAX_LAG_BLOCKS: optionalNumber(10),
-  INSIGHT_SLO_MAX_SYNC_STALENESS_MINUTES: optionalNumber(5),
-  INSIGHT_SLO_MAX_ALERT_MTTA_MINUTES: optionalNumber(5),
-  INSIGHT_SLO_MAX_ALERT_MTTR_MINUTES: optionalNumber(30),
-  INSIGHT_SLO_MAX_INCIDENT_MTTR_MINUTES: optionalNumber(60),
-  INSIGHT_SLO_MAX_OPEN_ALERTS: optionalNumber(100),
-  INSIGHT_SLO_MAX_OPEN_CRITICAL_ALERTS: optionalNumber(10),
-
   // 内存配置
   INSIGHT_MEMORY_MAX_VOTE_KEYS: optionalNumber(1000),
   INSIGHT_MEMORY_VOTE_BLOCK_WINDOW: optionalNumber(100),

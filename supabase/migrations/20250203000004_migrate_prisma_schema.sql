@@ -191,70 +191,6 @@ CREATE INDEX IF NOT EXISTS idx_solana_alerts_severity_status ON solana_alerts(se
 CREATE INDEX IF NOT EXISTS idx_solana_alerts_created_at ON solana_alerts(created_at DESC);
 
 -- ============================================================================
--- SLO (Service Level Objective) 数据表
--- ============================================================================
-
--- SLO 定义
-CREATE TABLE IF NOT EXISTS slo_definitions (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(100) NOT NULL,
-    description TEXT,
-    protocol VARCHAR(50) NOT NULL,
-    chain VARCHAR(50) NOT NULL,
-    metric_type VARCHAR(50) NOT NULL, -- latency, availability, accuracy, custom
-    target_value DECIMAL(10, 4) NOT NULL,
-    threshold_value DECIMAL(10, 4) NOT NULL,
-    evaluation_window VARCHAR(20) NOT NULL, -- 30d, 7d, 24h
-    error_budget_policy VARCHAR(20) DEFAULT 'monthly', -- monthly, weekly, daily
-    condition_config JSONB,
-    is_active BOOLEAN DEFAULT true,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_slo_definitions_protocol_chain ON slo_definitions(protocol, chain);
-CREATE INDEX IF NOT EXISTS idx_slo_definitions_metric_type ON slo_definitions(metric_type);
-CREATE INDEX IF NOT EXISTS idx_slo_definitions_is_active ON slo_definitions(is_active);
-
--- SLO 指标
-CREATE TABLE IF NOT EXISTS slo_metrics (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    slo_id UUID NOT NULL REFERENCES slo_definitions(id) ON DELETE CASCADE,
-    actual_value DECIMAL(10, 4) NOT NULL,
-    target_value DECIMAL(10, 4) NOT NULL,
-    is_compliant BOOLEAN DEFAULT true,
-    compliance_rate DECIMAL(5, 2),
-    total_events INTEGER DEFAULT 0,
-    good_events INTEGER DEFAULT 0,
-    bad_events INTEGER DEFAULT 0,
-    window_start TIMESTAMPTZ NOT NULL,
-    window_end TIMESTAMPTZ NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_slo_metrics_slo_window ON slo_metrics(slo_id, window_start);
-CREATE INDEX IF NOT EXISTS idx_slo_metrics_window_end ON slo_metrics(window_end);
-
--- Error Budget
-CREATE TABLE IF NOT EXISTS error_budgets (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    slo_id UUID NOT NULL REFERENCES slo_definitions(id) ON DELETE CASCADE,
-    period_start TIMESTAMPTZ NOT NULL,
-    period_end TIMESTAMPTZ NOT NULL,
-    total_budget DECIMAL(20, 8) NOT NULL,
-    used_budget DECIMAL(20, 8) NOT NULL,
-    remaining_budget DECIMAL(20, 8) NOT NULL,
-    burn_rate DECIMAL(10, 4),
-    projected_depletion TIMESTAMPTZ,
-    status VARCHAR(20) DEFAULT 'healthy', -- healthy, at_risk, exhausted
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_error_budgets_slo_period ON error_budgets(slo_id, period_start);
-CREATE INDEX IF NOT EXISTS idx_error_budgets_status ON error_budgets(status);
-
--- ============================================================================
 -- 事件时间线数据表
 -- ============================================================================
 
@@ -332,20 +268,6 @@ BEGIN
             BEFORE UPDATE ON solana_sync_status
             FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
     END IF;
-
-    -- slo_definitions
-    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_slo_definitions_updated_at') THEN
-        CREATE TRIGGER update_slo_definitions_updated_at
-            BEFORE UPDATE ON slo_definitions
-            FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-    END IF;
-
-    -- error_budgets
-    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_error_budgets_updated_at') THEN
-        CREATE TRIGGER update_error_budgets_updated_at
-            BEFORE UPDATE ON error_budgets
-            FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-    END IF;
 END $$;
 
 -- ============================================================================
@@ -363,9 +285,6 @@ ALTER TABLE solana_price_histories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE solana_oracle_instances ENABLE ROW LEVEL SECURITY;
 ALTER TABLE solana_sync_status ENABLE ROW LEVEL SECURITY;
 ALTER TABLE solana_alerts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE slo_definitions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE slo_metrics ENABLE ROW LEVEL SECURITY;
-ALTER TABLE error_budgets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE event_timeline ENABLE ROW LEVEL SECURITY;
 ALTER TABLE deployment_records ENABLE ROW LEVEL SECURITY;
 
@@ -380,9 +299,6 @@ CREATE POLICY "Enable read access for all users" ON solana_price_histories FOR S
 CREATE POLICY "Enable read access for all users" ON solana_oracle_instances FOR SELECT USING (true);
 CREATE POLICY "Enable read access for all users" ON solana_sync_status FOR SELECT USING (true);
 CREATE POLICY "Enable read access for all users" ON solana_alerts FOR SELECT USING (true);
-CREATE POLICY "Enable read access for all users" ON slo_definitions FOR SELECT USING (true);
-CREATE POLICY "Enable read access for all users" ON slo_metrics FOR SELECT USING (true);
-CREATE POLICY "Enable read access for all users" ON error_budgets FOR SELECT USING (true);
 CREATE POLICY "Enable read access for all users" ON event_timeline FOR SELECT USING (true);
 CREATE POLICY "Enable read access for all users" ON deployment_records FOR SELECT USING (true);
 
@@ -401,11 +317,6 @@ CREATE POLICY "Enable insert for authenticated users" ON solana_sync_status FOR 
 CREATE POLICY "Enable update for authenticated users" ON solana_sync_status FOR UPDATE USING (auth.role() = 'authenticated');
 CREATE POLICY "Enable insert for authenticated users" ON solana_alerts FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 CREATE POLICY "Enable update for authenticated users" ON solana_alerts FOR UPDATE USING (auth.role() = 'authenticated');
-CREATE POLICY "Enable insert for authenticated users" ON slo_definitions FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-CREATE POLICY "Enable update for authenticated users" ON slo_definitions FOR UPDATE USING (auth.role() = 'authenticated');
-CREATE POLICY "Enable insert for authenticated users" ON slo_metrics FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-CREATE POLICY "Enable insert for authenticated users" ON error_budgets FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-CREATE POLICY "Enable update for authenticated users" ON error_budgets FOR UPDATE USING (auth.role() = 'authenticated');
 CREATE POLICY "Enable insert for authenticated users" ON event_timeline FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 CREATE POLICY "Enable insert for authenticated users" ON deployment_records FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 CREATE POLICY "Enable update for authenticated users" ON deployment_records FOR UPDATE USING (auth.role() = 'authenticated');
@@ -423,8 +334,5 @@ COMMENT ON TABLE solana_price_histories IS 'Solana 价格历史';
 COMMENT ON TABLE solana_oracle_instances IS 'Solana 预言机实例';
 COMMENT ON TABLE solana_sync_status IS 'Solana 同步状态';
 COMMENT ON TABLE solana_alerts IS 'Solana 告警';
-COMMENT ON TABLE slo_definitions IS 'SLO 定义';
-COMMENT ON TABLE slo_metrics IS 'SLO 指标';
-COMMENT ON TABLE error_budgets IS 'Error Budget';
 COMMENT ON TABLE event_timeline IS '事件时间线';
 COMMENT ON TABLE deployment_records IS '部署记录';

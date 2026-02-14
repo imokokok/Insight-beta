@@ -20,7 +20,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SyncManagerFactory for simplified protocol synchronization
 - EvmOracleClient base class for EVM protocol clients
 - Timeline event management system
-- SLO monitoring and reporting
 - Security monitoring and manipulation detection
 - WebSocket price streaming with Redis adapter
 - Database optimization and caching layers

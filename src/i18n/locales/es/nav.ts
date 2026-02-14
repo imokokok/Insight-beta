@@ -9,7 +9,6 @@ export const nav = {
   trends: 'Tendencias',
   anomalies: 'Anomalías',
   deviation: 'Desviación',
-  slo: 'SLO',
   timeline: 'Línea de Tiempo',
   protocols: 'Protocolos',
   groups: {
@@ -17,7 +16,6 @@ export const nav = {
     monitor: 'Monitorear',
     analytics: 'Analíticas',
     operations: 'Operaciones',
-    sloGroup: 'SLO',
     protocolsGroup: 'Protocolos'
   },
   descriptions: {
@@ -29,7 +27,6 @@ export const nav = {
     anomalies: 'Detección de anomalías',
     deviation: 'Desviación de precios',
     watchlist: 'Tu lista de seguimiento',
-    sloDashboard: 'Panel de SLO',
     timeline: 'Línea de tiempo de eventos',
     protocolList: 'Lista de protocolos'
   },

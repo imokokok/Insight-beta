@@ -303,30 +303,6 @@ export type OpsMetrics = {
     resolved: number;
     mttrMs: number | null;
   };
-  slo?: OpsSloStatus;
-};
-
-export type OpsSloStatus = {
-  status: 'met' | 'degraded' | 'breached';
-  targets: {
-    maxLagBlocks: number;
-    maxSyncStalenessMinutes: number;
-    maxAlertMttaMinutes: number;
-    maxAlertMttrMinutes: number;
-    maxIncidentMttrMinutes: number;
-    maxOpenAlerts: number;
-    maxOpenCriticalAlerts: number;
-  };
-  current: {
-    lagBlocks: number | null;
-    syncStalenessMinutes: number | null;
-    alertMttaMinutes: number | null;
-    alertMttrMinutes: number | null;
-    incidentMttrMinutes: number | null;
-    openAlerts: number | null;
-    openCriticalAlerts: number | null;
-  };
-  breaches: Array<{ key: string; target: number; actual: number }>;
 };
 
 export type UMAAssertionStatus = 'Requested' | 'Proposed' | 'Disputed' | 'Settled';

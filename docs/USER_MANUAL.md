@@ -14,7 +14,6 @@
 - **UMA Assertions** - Create, dispute, and settle assertions
 - **Alert Notifications** - Price deviation alerts and notifications
 - **Security Monitoring** - Price manipulation detection and security alerts
-- **SLO Monitoring** - Service Level Objective monitoring
 
 ## Page Navigation
 

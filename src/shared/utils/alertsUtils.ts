@@ -4,21 +4,9 @@
  * 告警相关的工具函数
  */
 
-import type { AlertSeverity, AlertStatus, OpsSloStatus } from '@/types/oracleTypes';
+import type { AlertSeverity, AlertStatus } from '@/types/oracleTypes';
 
-// ============================================================================
-// 类型定义
-// ============================================================================
-
-export interface SloEntry {
-  key: string;
-  label: string;
-  target: number;
-  unit: string;
-  current?: number;
-}
-
-export interface RootCauseOption {
+interface RootCauseOption {
   value: string;
   label: string;
 }
@@ -62,52 +50,6 @@ export function statusBadge(status: AlertStatus): {
     default:
       return { variant: 'outline', className: '', label: '已抑制' };
   }
-}
-
-// ============================================================================
-// SLO 相关
-// ============================================================================
-
-export const sloLabels: Record<string, string> = {
-  availability: '可用性',
-  latency: '延迟',
-  accuracy: '准确性',
-  freshness: '新鲜度',
-};
-
-export function sloStatusBadge(status: OpsSloStatus['status']): {
-  variant: 'default' | 'destructive' | 'outline' | 'secondary';
-  className: string;
-  label: string;
-} {
-  switch (status) {
-    case 'met':
-      return { variant: 'secondary', className: 'bg-green-500', label: '健康' };
-    case 'degraded':
-      return { variant: 'default', className: 'bg-yellow-500', label: '警告' };
-    case 'breached':
-      return { variant: 'destructive', className: 'bg-red-500', label: '已违反' };
-    default:
-      return { variant: 'secondary', className: 'bg-green-500', label: '健康' };
-  }
-}
-
-export function sloStatusLabel(status: OpsSloStatus['status']): string {
-  const labels = {
-    met: '健康',
-    degraded: '警告',
-    breached: '已违反',
-  };
-  return labels[status] ?? status;
-}
-
-export function formatSloTarget(_key: string, target: number): string {
-  return `${(target * 100).toFixed(2)}%`;
-}
-
-export function formatSloValue(_key: string, value: number | undefined): string {
-  if (value === undefined) return '-';
-  return value.toFixed(2);
 }
 
 // ============================================================================
@@ -185,22 +127,6 @@ export const rootCauseOptions: RootCauseOption[] = [
   { value: 'unknown', label: '未知原因' },
 ];
 
-export const sloAlertTypes = [
-  { value: 'latency', label: '延迟告警' },
-  { value: 'availability', label: '可用性告警' },
-  { value: 'accuracy', label: '准确性告警' },
-  { value: 'freshness', label: '新鲜度告警' },
-];
-
 export function getInitialInstanceId(): string {
   return 'default';
-}
-
-export function getSloEntries(): SloEntry[] {
-  return [
-    { key: 'availability', label: '可用性', target: 0.999, unit: '%' },
-    { key: 'latency', label: '延迟', target: 100, unit: 'ms' },
-    { key: 'accuracy', label: '准确性', target: 0.99, unit: '%' },
-    { key: 'freshness', label: '新鲜度', target: 60, unit: 's' },
-  ];
 }
