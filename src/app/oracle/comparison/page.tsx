@@ -14,6 +14,7 @@
 
 import { useEffect, useState, useCallback, useRef, Suspense, lazy } from 'react';
 
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { ChartSkeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import { ComparisonControls } from '@/features/comparison/components/ComparisonControls';
@@ -328,6 +329,7 @@ export default function ComparisonPage() {
   // ============================================================================
 
   return (
+    <ErrorBoundary>
     <div className="container mx-auto space-y-4 p-3 sm:space-y-6 sm:p-6">
       {/* 页面标题 */}
       <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between">
@@ -433,5 +435,6 @@ export default function ComparisonPage() {
         )}
       </div>
     </div>
+    </ErrorBoundary>
   );
 }

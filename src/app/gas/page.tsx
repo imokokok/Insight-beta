@@ -2,11 +2,14 @@
 
 import { useState } from 'react';
 
-import { RefreshCw, Zap, TrendingUp, Activity, AlertTriangle, History } from 'lucide-react';
+import { RefreshCw, Zap, TrendingUp, Activity, AlertTriangle, History, Calendar } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { GasPriceHistoryViewer } from '@/features/gas/components/GasPriceHistoryViewer';
 import { GasPriceTrendChart } from '@/features/gas/components/GasPriceTrendChart';
 import { GasProviderHealthCard } from '@/features/gas/components/GasProviderHealthCard';
@@ -16,10 +19,22 @@ import { cn } from '@/shared/utils';
 
 const DEFAULT_CHAINS = ['ethereum', 'polygon', 'bsc', 'arbitrum', 'optimism', 'base'];
 
+const TIME_RANGE_OPTIONS = [
+  { value: '1h', label: '1H', duration: 3600000 },
+  { value: '6h', label: '6H', duration: 21600000 },
+  { value: '24h', label: '24H', duration: 86400000 },
+  { value: '7d', label: '7D', duration: 604800000 },
+];
+
 export default function GasPriceMonitorPage() {
   const [selectedChains, setSelectedChains] = useState<string[]>(DEFAULT_CHAINS);
   const [showTrend, setShowTrend] = useState(false);
   const [selectedChainForTrend, setSelectedChainForTrend] = useState<string>('ethereum');
+  const [timeRange, setTimeRange] = useState<string>('24h');
+  const [customDateRange, setCustomDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: undefined,
+    to: undefined,
+  });
 
   const {
     data: gasPrices,
@@ -65,6 +80,7 @@ export default function GasPriceMonitorPage() {
   const fastGasPrice = gasData.reduce((sum, p) => sum + p.fast, 0) / (gasData.length || 1);
 
   return (
+    <ErrorBoundary>
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <div className="flex items-center justify-between">
@@ -75,6 +91,56 @@ export default function GasPriceMonitorPage() {
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Calendar className="mr-2 h-4 w-4" />
+                  {timeRange === 'custom'
+                    ? customDateRange.from && customDateRange.to
+                      ? `${customDateRange.from.toLocaleDateString()} - ${customDateRange.to.toLocaleDateString()}`
+                      : 'Custom Range'
+                    : TIME_RANGE_OPTIONS.find(o => o.value === timeRange)?.label || '24H'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-4" align="end">
+                <div className="space-y-4">
+                  <div className="flex gap-2">
+                    {TIME_RANGE_OPTIONS.map((option) => (
+                      <Button
+                        key={option.value}
+                        variant={timeRange === option.value ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => {
+                          setTimeRange(option.value);
+                          setCustomDateRange({ from: undefined, to: undefined });
+                        }}
+                      >
+                        {option.label}
+                      </Button>
+                    ))}
+                  </div>
+                  {timeRange === 'custom' && (
+                    <div className="flex gap-2">
+                      <Input
+                        type="datetime-local"
+                        value={customDateRange.from?.toISOString().slice(0, 16) || ''}
+                        onChange={(e) => setCustomDateRange(prev => ({ ...prev, from: new Date(e.target.value) }))}
+                        className="text-sm"
+                        placeholder="Start"
+                      />
+                      <Input
+                        type="datetime-local"
+                        value={customDateRange.to?.toISOString().slice(0, 16) || ''}
+                        onChange={(e) => setCustomDateRange(prev => ({ ...prev, to: new Date(e.target.value) }))}
+                        className="text-sm"
+                        placeholder="End"
+                      />
+                    </div>
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
+
             <Button
               variant="outline"
               size="sm"
@@ -282,5 +348,6 @@ export default function GasPriceMonitorPage() {
         )}
       </div>
     </div>
+    </ErrorBoundary>
   );
 }

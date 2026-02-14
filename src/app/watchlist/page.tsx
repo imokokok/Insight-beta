@@ -7,6 +7,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { FadeIn, StaggerContainer, StaggerItem } from '@/components/common/AnimatedContainer';
 import { PageHeader } from '@/components/common/PageHeader';
 import { EmptyWatchlistState } from '@/components/ui';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { AssertionList } from '@/features/assertion/components/AssertionList';
 import { useInfiniteList, useWatchlist, type BaseResponse, useIsMobile } from '@/hooks';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
@@ -87,6 +88,7 @@ export default function WatchlistPage() {
   });
 
   return (
+    <ErrorBoundary>
     <main className="container mx-auto px-3 py-4 pb-20 sm:px-4 sm:py-8 sm:pb-24">
       <PageHeader
         title={t('nav.watchlist')}
@@ -136,5 +138,6 @@ export default function WatchlistPage() {
         </StaggerContainer>
       )}
     </main>
+    </ErrorBoundary>
   );
 }

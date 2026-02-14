@@ -43,6 +43,7 @@ import {
 } from '@/components/common/StatCard';
 import { EmptyDashboardState, LoadingOverlay, RefreshIndicator } from '@/components/ui';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useWebSocket, useIsMobile, useAutoRefresh } from '@/hooks';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
@@ -385,6 +386,7 @@ export default function OptimizedOracleDashboard() {
   );
 
   return (
+    <ErrorBoundary>
     <div className="flex h-screen overflow-hidden bg-background">
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
@@ -669,5 +671,6 @@ export default function OptimizedOracleDashboard() {
         </div>
       </main>
     </div>
+    </ErrorBoundary>
   );
 }

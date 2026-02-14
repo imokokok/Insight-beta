@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 
 import {
   Activity,
@@ -15,6 +15,7 @@ import {
   CheckCircle,
   XCircle,
   AlertTriangle,
+  Calendar,
 } from 'lucide-react';
 
 import { DashboardSkeleton, EmptyDataState } from '@/components/ui';
@@ -23,6 +24,18 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
+import {
+  Area,
+  AreaChart,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Input } from '@/components/ui/input';
 import { logger } from '@/shared/logger';
 import { cn, fetchApiData } from '@/shared/utils';
 
@@ -193,7 +206,14 @@ function HealthIndicator({ status }: { status: 'healthy' | 'degraded' | 'unhealt
 }
 
 function ResponseTimeChart({ data }: { data: PerformanceMetrics[] }) {
-  const maxValue = Math.max(...data.map((d) => d.responseTime.p99), 100);
+  const chartData = useMemo(() => {
+    return data.slice(-30).map((d) => ({
+      time: new Date(d.timestamp).toLocaleTimeString(),
+      p50: d.responseTime.p50,
+      p95: d.responseTime.p95,
+      p99: d.responseTime.p99,
+    }));
+  }, [data]);
 
   return (
     <div className="space-y-4">
@@ -214,61 +234,76 @@ function ResponseTimeChart({ data }: { data: PerformanceMetrics[] }) {
           </span>
         </div>
       </div>
-      <div className="flex h-48 items-end gap-1">
-        {data.slice(-30).map((d, i) => (
-          <div key={i} className="flex flex-1 flex-col gap-0.5">
-            <div
-              className="rounded-t bg-red-500"
-              style={{ height: `${(d.responseTime.p99 / maxValue) * 100}%` }}
-            />
-            <div
-              className="bg-yellow-500"
-              style={{ height: `${((d.responseTime.p95 - d.responseTime.p50) / maxValue) * 100}%` }}
-            />
-            <div
-              className="rounded-b bg-blue-500"
-              style={{ height: `${(d.responseTime.p50 / maxValue) * 100}%` }}
-            />
-          </div>
-        ))}
-      </div>
+      <ResponsiveContainer width="100%" height={200}>
+        <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id="p50Gradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+            </linearGradient>
+            <linearGradient id="p95Gradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#eab308" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#eab308" stopOpacity={0} />
+            </linearGradient>
+            <linearGradient id="p99Gradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+          <XAxis dataKey="time" stroke="#9ca3af" fontSize={10} tickLine={false} axisLine={false} />
+          <YAxis stroke="#9ca3af" fontSize={10} tickLine={false} axisLine={false} width={40} />
+          <Tooltip
+            contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb' }}
+            labelStyle={{ fontSize: '12px', color: '#6b7280' }}
+          />
+          <Area type="monotone" dataKey="p50" stackId="1" stroke="#3b82f6" fill="url(#p50Gradient)" strokeWidth={2} />
+          <Area type="monotone" dataKey="p95" stackId="2" stroke="#eab308" fill="url(#p95Gradient)" strokeWidth={2} />
+          <Area type="monotone" dataKey="p99" stackId="3" stroke="#ef4444" fill="url(#p99Gradient)" strokeWidth={2} />
+        </AreaChart>
+      </ResponsiveContainer>
     </div>
   );
 }
 
 function ErrorRateChart({ data }: { data: PerformanceMetrics[] }) {
-  const firstRate = data[0]?.errors.rate ?? 0;
+  const chartData = useMemo(() => {
+    return data.slice(-30).map((d) => ({
+      time: new Date(d.timestamp).toLocaleTimeString(),
+      rate: d.errors.rate,
+    }));
+  }, [data]);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-medium">Error Rate Trend</h4>
       </div>
-      <div className="relative h-48">
-        <svg className="h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+      <ResponsiveContainer width="100%" height={200}>
+        <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="errorGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="rgb(239 68 68)" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="rgb(239 68 68)" stopOpacity="0" />
+              <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <path
-            d={`M 0 ${100 - firstRate} ${data
-              .slice(-30)
-              .map((d, i) => `L ${(i / 29) * 100} ${100 - d.errors.rate}`)
-              .join(' ')} L 100 100 L 0 100 Z`}
+          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+          <XAxis dataKey="time" stroke="#9ca3af" fontSize={10} tickLine={false} axisLine={false} />
+          <YAxis stroke="#9ca3af" fontSize={10} tickLine={false} axisLine={false} width={40} />
+          <Tooltip
+            contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb' }}
+            labelStyle={{ fontSize: '12px', color: '#6b7280' }}
+            formatter={(value) => [`${Number(value).toFixed(2)}%`, 'Error Rate']}
+          />
+          <Area
+            type="monotone"
+            dataKey="rate"
+            stroke="#ef4444"
             fill="url(#errorGradient)"
+            strokeWidth={2}
           />
-          <path
-            d={`M 0 ${100 - firstRate} ${data
-              .slice(-30)
-              .map((d, i) => `L ${(i / 29) * 100} ${100 - d.errors.rate}`)
-              .join(' ')}`}
-            fill="none"
-            stroke="rgb(239 68 68)"
-            strokeWidth="0.5"
-          />
-        </svg>
-      </div>
+        </AreaChart>
+      </ResponsiveContainer>
     </div>
   );
 }
@@ -324,13 +359,37 @@ export default function MonitoringDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const [timeRange, setTimeRange] = useState<string>('1h');
+  const [customDateRange, setCustomDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: undefined,
+    to: undefined,
+  });
+
+  const timeRangeOptions = [
+    { value: '15m', label: '15m', duration: 900000 },
+    { value: '1h', label: '1H', duration: 3600000 },
+    { value: '6h', label: '6H', duration: 21600000 },
+    { value: '24h', label: '24H', duration: 86400000 },
+    { value: '7d', label: '7D', duration: 604800000 },
+    { value: '30d', label: '30D', duration: 2592000000 },
+    { value: 'custom', label: 'Custom', duration: 0 },
+  ];
+
+  const getDuration = useCallback(() => {
+    if (timeRange === 'custom' && customDateRange.from && customDateRange.to) {
+      return customDateRange.to.getTime() - customDateRange.from.getTime();
+    }
+    const option = timeRangeOptions.find((o) => o.value === timeRange);
+    return option?.duration || 3600000;
+  }, [timeRange, customDateRange]);
 
   const fetchMetrics = useCallback(async () => {
     try {
+      const duration = getDuration();
       const [metricsData, healthData, statsData] = await Promise.all([
-        fetchApiData<PerformanceMetrics[]>('/api/monitoring/metrics?duration=3600000'),
+        fetchApiData<PerformanceMetrics[]>(`/api/monitoring/metrics?duration=${duration}`),
         fetchApiData<HealthStatus>('/api/monitoring/health'),
-        fetchApiData<Statistics>('/api/monitoring/statistics?duration=3600000'),
+        fetchApiData<Statistics>(`/api/monitoring/statistics?duration=${duration}`),
       ]);
 
       setMetrics(metricsData);
@@ -343,13 +402,13 @@ export default function MonitoringDashboard() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [getDuration]);
 
   useEffect(() => {
     fetchMetrics();
 
     if (autoRefresh) {
-      const interval = setInterval(fetchMetrics, 30000); // Refresh every 30 seconds
+      const interval = setInterval(fetchMetrics, 30000);
       return () => clearInterval(interval);
     }
     return undefined;
@@ -382,33 +441,95 @@ export default function MonitoringDashboard() {
   }
 
   return (
-    <div className="container relative mx-auto space-y-6 px-4 py-8">
-      {/* Empty State - No Data */}
-      {metrics.length === 0 && !isLoading && (
-        <div className="py-12">
-          <EmptyDataState
-            title="No Performance Data"
-            description="Performance metrics will appear here once data collection begins."
-            onRefresh={fetchMetrics}
-          />
-        </div>
-      )}
+    <ErrorBoundary>
+      <div className="container relative mx-auto space-y-6 px-4 py-8">
+        {/* Empty State - No Data */}
+        {metrics.length === 0 && !isLoading && (
+          <div className="py-12">
+            <EmptyDataState
+              title="No Performance Data"
+              description="Performance metrics will appear here once data collection begins."
+              onRefresh={fetchMetrics}
+            />
+          </div>
+        )}
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="flex items-center gap-3 text-3xl font-bold">
-            <Activity className="h-8 w-8 text-primary" />
-            Performance Monitoring
-          </h1>
-          <p className="mt-1 text-muted-foreground">
-            Real-time system performance metrics and health monitoring
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <p className="text-sm text-muted-foreground">
-            Last updated: {lastUpdated.toLocaleTimeString()}
-          </p>
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="flex items-center gap-3 text-3xl font-bold">
+              <Activity className="h-8 w-8 text-primary" />
+              Performance Monitoring
+            </h1>
+            <p className="mt-1 text-muted-foreground">
+              Real-time system performance metrics and health monitoring
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <p className="text-sm text-muted-foreground">
+              Last updated: {lastUpdated.toLocaleTimeString()}
+            </p>
+          
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Calendar className="mr-2 h-4 w-4" />
+                {timeRange === 'custom'
+                  ? customDateRange.from && customDateRange.to
+                    ? `${customDateRange.from.toLocaleDateString()} - ${customDateRange.to.toLocaleDateString()}`
+                    : 'Custom Range'
+                  : timeRangeOptions.find(o => o.value === timeRange)?.label || '1H'}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-4" align="end">
+              <div className="space-y-4">
+                <div className="flex flex-wrap gap-2">
+                  {timeRangeOptions.filter(o => o.value !== 'custom').map((option) => (
+                    <Button
+                      key={option.value}
+                      variant={timeRange === option.value ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => {
+                        setTimeRange(option.value);
+                        setCustomDateRange({ from: undefined, to: undefined });
+                      }}
+                    >
+                      {option.label}
+                    </Button>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant={timeRange === 'custom' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setTimeRange('custom')}
+                  >
+                    <Calendar className="mr-2 h-4 w-4" />
+                    Custom
+                  </Button>
+                </div>
+                {timeRange === 'custom' && (
+                  <div className="flex gap-2">
+                    <Input
+                      type="datetime-local"
+                      value={customDateRange.from?.toISOString().slice(0, 16) || ''}
+                      onChange={(e) => setCustomDateRange(prev => ({ ...prev, from: new Date(e.target.value) }))}
+                      className="text-sm"
+                      placeholder="Start"
+                    />
+                    <Input
+                      type="datetime-local"
+                      value={customDateRange.to?.toISOString().slice(0, 16) || ''}
+                      onChange={(e) => setCustomDateRange(prev => ({ ...prev, to: new Date(e.target.value) }))}
+                      className="text-sm"
+                      placeholder="End"
+                    />
+                  </div>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
+
           <Button variant="outline" size="sm" onClick={() => setAutoRefresh(!autoRefresh)}>
             <RefreshCw className={cn('mr-2 h-4 w-4', autoRefresh && 'animate-spin')} />
             {autoRefresh ? 'Auto' : 'Manual'}
@@ -776,6 +897,7 @@ export default function MonitoringDashboard() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+      </div>
+    </ErrorBoundary>
   );
 }

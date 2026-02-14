@@ -20,6 +20,9 @@ import {
   RefreshCw,
   Settings,
   Activity,
+  Plus,
+  Trash2,
+  Save,
 } from 'lucide-react';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -29,6 +32,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { logger } from '@/shared/logger';
 
@@ -66,6 +71,16 @@ interface AlertConfig {
     telegram: boolean;
   };
   cooldownMs: number;
+  thresholds: AlertThreshold[];
+}
+
+interface AlertThreshold {
+  id: string;
+  metric: string;
+  operator: 'gt' | 'lt' | 'eq' | 'gte' | 'lte';
+  value: number;
+  severity: 'warning' | 'critical';
+  enabled: boolean;
 }
 
 export function MonitoringDashboard() {
@@ -466,6 +481,146 @@ export function MonitoringDashboard() {
                   Reset
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Alert Thresholds</CardTitle>
+              <CardDescription>Configure custom alert thresholds for metrics</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {(config.thresholds || []).map((threshold, index) => (
+                <div key={threshold.id} className="flex items-center gap-4 rounded-lg border p-4">
+                  <div className="flex-1 grid grid-cols-4 gap-4">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Metric</Label>
+                      <Input
+                        value={threshold.metric}
+                        onChange={(e) => {
+                          if (!config) return;
+                          const newThresholds: AlertThreshold[] = config.thresholds.map((t, i) =>
+                            i === index ? { ...t, metric: e.target.value } : t
+                          );
+                          setConfig({ ...config, thresholds: newThresholds });
+                        }}
+                        placeholder="e.g., response_time"
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Operator</Label>
+                      <select
+                        className="mt-1 flex h-9 w-full rounded-md border border-gray-200 bg-transparent px-3 py-1 text-sm"
+                        value={threshold.operator}
+                        onChange={(e) => {
+                          if (!config) return;
+                          const newThresholds: AlertThreshold[] = config.thresholds.map((t, i) =>
+                            i === index ? { ...t, operator: e.target.value as AlertThreshold['operator'] } : t
+                          );
+                          setConfig({ ...config, thresholds: newThresholds });
+                        }}
+                      >
+                        <option value="gt">&gt; (Greater than)</option>
+                        <option value="gte">&gt;= (Greater or equal)</option>
+                        <option value="lt">&lt; (Less than)</option>
+                        <option value="lte">&lt;= (Less or equal)</option>
+                        <option value="eq">= (Equal)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Value</Label>
+                      <Input
+                        type="number"
+                        value={threshold.value}
+                        onChange={(e) => {
+                          if (!config) return;
+                          const newThresholds: AlertThreshold[] = config.thresholds.map((t, i) =>
+                            i === index ? { ...t, value: parseFloat(e.target.value) || 0 } : t
+                          );
+                          setConfig({ ...config, thresholds: newThresholds });
+                        }}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Severity</Label>
+                      <div className="mt-1 flex items-center gap-2">
+                        <select
+                          className="flex h-9 w-full rounded-md border border-gray-200 bg-transparent px-3 py-1 text-sm"
+                          value={threshold.severity}
+                          onChange={(e) => {
+                            if (!config) return;
+                            const newThresholds: AlertThreshold[] = config.thresholds.map((t, i) =>
+                              i === index ? { ...t, severity: e.target.value as 'warning' | 'critical' } : t
+                            );
+                            setConfig({ ...config, thresholds: newThresholds });
+                          }}
+                        >
+                          <option value="warning">Warning</option>
+                          <option value="critical">Critical</option>
+                        </select>
+                        <Switch
+                          checked={threshold.enabled}
+                          onCheckedChange={(checked) => {
+                            if (!config) return;
+                            const newThresholds: AlertThreshold[] = config.thresholds.map((t, i) =>
+                              i === index ? { ...t, enabled: checked } : t
+                            );
+                            setConfig({ ...config, thresholds: newThresholds });
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      if (!config) return;
+                      const newThresholds = config.thresholds.filter((_, i) => i !== index);
+                      setConfig({ ...config, thresholds: newThresholds });
+                      updateConfig({ thresholds: newThresholds });
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
+              ))}
+
+              <Button
+                variant="outline"
+                onClick={() => {
+                  if (!config) return;
+                  const newThreshold: AlertThreshold = {
+                    id: `threshold-${Date.now()}`,
+                    metric: '',
+                    operator: 'gt',
+                    value: 0,
+                    severity: 'warning',
+                    enabled: true,
+                  };
+                  const newThresholds = [...(config.thresholds || []), newThreshold];
+                  setConfig({ ...config, thresholds: newThresholds });
+                }}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Add Threshold
+              </Button>
+
+              {(config.thresholds?.length ?? 0) > 0 && (
+                <div className="flex justify-end">
+                  <Button
+                    onClick={() => {
+                      updateConfig({ thresholds: config.thresholds });
+                    }}
+                    disabled={saving}
+                  >
+                    <Save className="mr-2 h-4 w-4" />
+                    {saving ? 'Saving...' : 'Save Thresholds'}
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
 
