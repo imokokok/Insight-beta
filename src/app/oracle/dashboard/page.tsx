@@ -11,8 +11,6 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 
-import { useRouter } from 'next/navigation';
-
 import {
   Activity,
   AlertTriangle,
@@ -195,7 +193,6 @@ function HealthStatusBadge({
 // ============================================================================
 
 export default function OptimizedOracleDashboard() {
-  const router = useRouter();
   const [activeTab, setActiveTab] = useState('overview');
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -301,7 +298,7 @@ export default function OptimizedOracleDashboard() {
   }> = useMemo(
     () => [
       {
-        title: 'Active Alerts',
+        title: 'Active Incidents',
         value: stats?.activeAlerts ?? 0,
         icon: <AlertTriangle className="h-5 w-5" />,
         status: (stats?.activeAlerts ?? 0) > 0 ? 'warning' : 'healthy',
@@ -462,7 +459,6 @@ export default function OptimizedOracleDashboard() {
                       sparkline={card.sparkline}
                       variant="compact"
                       loading={isRefreshing && !stats}
-                      onClick={() => router.push('/alerts')}
                     />
                   ))}
                 </StatCardGroup>

@@ -24,7 +24,6 @@ import {
   LayoutDashboard,
   Globe,
   Shield,
-  ShieldAlert,
   History,
   Bookmark,
   X,
@@ -147,15 +146,6 @@ export const defaultNavConfig: SidebarConfig = {
           href: '/security/dashboard',
           icon: Shield,
           description: 'nav.descriptions.security',
-        },
-        {
-          id: 'alerts',
-          label: 'nav.alerts',
-          href: '/alerts',
-          icon: ShieldAlert,
-          badge: 0,
-          badgeVariant: 'destructive',
-          description: 'nav.descriptions.alerts',
         },
         {
           id: 'monitoring',

@@ -10,7 +10,7 @@ export * from './oracle/sync';
 // priceFetcher, unifiedPriceService, crossChainAnalysisService, priceDeviationAnalytics, realDataService
 // 已从 @/features/oracle/services 导出
 
-// Oracle Realtime - 排除与 alert/notifications 重复的类型
+// Oracle Realtime
 export {
   RealtimePriceService,
   realtimePriceService,
@@ -21,10 +21,6 @@ export {
   type AlertCondition,
   type AlertConditionType,
 } from './oracle/realtime';
-
-// 告警服务 - 从 features/alert/services 重新导出
-// AlertSeverity 和 NotificationChannel 从这里导出
-export * from './alert/notifications';
 
 // 安全服务
 export * from './security/apiAuth';

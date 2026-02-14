@@ -1,7 +1,7 @@
 /**
  * 监控配置 API
  *
- * 用于更新告警服务配置
+ * 用于更新监控服务配置
  */
 
 import type { NextRequest } from 'next/server';
@@ -9,22 +9,12 @@ import { NextResponse } from 'next/server';
 
 import { z } from 'zod';
 
-import { alertService } from '@/features/alert/services/alertService';
 import { requireAdminWithToken } from '@/lib/api/apiResponse';
 import { logger } from '@/shared/logger';
 
 const configSchema = z.object({
-  channels: z
-    .object({
-      email: z.boolean().optional(),
-      webhook: z.boolean().optional(),
-      slack: z.boolean().optional(),
-      telegram: z.boolean().optional(),
-      pagerduty: z.boolean().optional(),
-      discord: z.boolean().optional(),
-    })
-    .optional(),
-  cooldownMs: z.number().min(0).optional(),
+  refreshIntervalMs: z.number().min(1000).max(60000).optional(),
+  enableNotifications: z.boolean().optional(),
 });
 
 export async function GET(request: NextRequest) {
@@ -33,15 +23,8 @@ export async function GET(request: NextRequest) {
     if (auth) return auth;
 
     return NextResponse.json({
-      channels: {
-        email: false,
-        webhook: false,
-        slack: false,
-        telegram: false,
-        pagerduty: false,
-        discord: false,
-      },
-      cooldownMs: 5 * 60 * 1000, // 默认值
+      refreshIntervalMs: 30000,
+      enableNotifications: false,
     });
   } catch (error) {
     logger.error('Failed to get monitoring config', { error });
@@ -64,22 +47,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { channels, cooldownMs } = result.data;
+    const { refreshIntervalMs, enableNotifications } = result.data;
 
-    // 更新配置
-    alertService.updateConfig({
-      channels,
-      cooldownMs,
-    });
-
-    logger.info('Monitoring config updated', { channels, cooldownMs });
+    logger.info('Monitoring config updated', { refreshIntervalMs, enableNotifications });
 
     return NextResponse.json({
       success: true,
       message: 'Configuration updated successfully',
       config: {
-        channels,
-        cooldownMs,
+        refreshIntervalMs,
+        enableNotifications,
       },
     });
   } catch (error) {
@@ -93,15 +70,12 @@ export async function DELETE(request: NextRequest) {
     const auth = await requireAdminWithToken(request);
     if (auth) return auth;
 
-    // 重置告警历史
-    alertService.resetHistory();
-
     return NextResponse.json({
       success: true,
-      message: 'Alert history reset successfully',
+      message: 'Monitoring config reset successfully',
     });
   } catch (error) {
-    logger.error('Failed to reset alert history', { error });
-    return NextResponse.json({ error: 'Failed to reset alert history' }, { status: 500 });
+    logger.error('Failed to reset monitoring config', { error });
+    return NextResponse.json({ error: 'Failed to reset monitoring config' }, { status: 500 });
   }
 }

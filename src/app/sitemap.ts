@@ -24,21 +24,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/alerts`,
-      lastModified: new Date(),
-      changeFrequency: 'always' as const,
-      priority: 0.8,
-    },
-    {
       url: `${baseUrl}/oracle/comparison`,
       lastModified: new Date(),
       changeFrequency: 'hourly' as const,
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/security/dashboard`,
-      lastModified: new Date(),
-      changeFrequency: 'daily' as const,
       priority: 0.7,
     },
   ];

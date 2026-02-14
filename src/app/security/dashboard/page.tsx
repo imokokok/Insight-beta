@@ -229,18 +229,13 @@ export default function OptimizedSecurityDashboard() {
   const [radarData] = useState<RadarDataItem[]>(() => generateMockRadarData());
 
   const fetchSecurityData = useCallback(async () => {
-    // Note: Security stats API not yet implemented - using mock data
-    // TODO: [Security API] Uncomment when API is ready
-    // const response = await fetch('/api/security/stats');
-    // const data = await response.json();
-    // setStats(data);
   }, []);
 
   const { isRefreshing, refresh, lastUpdated } =
     useAutoRefresh({
       pageId: 'security-dashboard',
       fetchFn: fetchSecurityData,
-      enabled: true,
+      enabled: false,
     });
 
   const threatCardsData = useMemo(
