@@ -30,17 +30,6 @@ vi.mock('@/hooks/oracle/useOracleData', () => ({
   }),
 }));
 
-vi.mock('@/hooks/dispute/useDisputes', () => ({
-  useDisputes: () => ({
-    items: [],
-    loading: false,
-    loadingMore: false,
-    hasMore: false,
-    loadMore: vi.fn(),
-    error: null,
-  }),
-}));
-
 vi.mock('@/hooks/user/useUserStats', () => ({
   useUserStats: () => ({
     stats: null,
@@ -48,23 +37,19 @@ vi.mock('@/hooks/user/useUserStats', () => ({
   }),
 }));
 
-vi.mock('@/components/UserStatsCard', () => ({
+vi.mock('@/features/wallet/components/UserStatsCard', () => ({
   UserStatsCard: () => <div>UserStatsCard</div>,
 }));
 
-vi.mock('@/components/AssertionList', () => ({
+vi.mock('@/features/assertion/components/AssertionList', () => ({
   AssertionList: () => <div>AssertionList</div>,
 }));
 
-vi.mock('@/components/DisputeList', () => ({
-  DisputeList: () => <div>DisputeList</div>,
-}));
-
-vi.mock('@/components/AddressAvatar', () => ({
+vi.mock('@/features/wallet/components/AddressAvatar', () => ({
   AddressAvatar: () => <div>AddressAvatar</div>,
 }));
 
-vi.mock('@/components/CopyButton', () => ({
+vi.mock('@/components/common/CopyButton', () => ({
   CopyButton: () => <div>CopyButton</div>,
 }));
 

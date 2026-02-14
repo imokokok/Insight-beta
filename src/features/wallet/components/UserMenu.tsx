@@ -8,7 +8,7 @@ import { useSearchParams } from 'next/navigation';
 import { LogOut, Copy, Check, FileText, AlertTriangle, ChevronDown } from 'lucide-react';
 import { arbitrum, hardhat, mainnet, optimism, polygon, polygonAmoy } from 'viem/chains';
 
-import { useWallet } from '@/contexts/WalletContext';
+import { useWallet } from '@/features/wallet/contexts/WalletContext';
 import { useBalance, useSwitchChainWithFeedback } from '@/hooks';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { cn, getOracleInstanceId } from '@/shared/utils';

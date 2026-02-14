@@ -11,7 +11,7 @@ import { PageTransition } from '@/components/common/PageTransitions';
 import { ResourceHints } from '@/components/common/ResourceHints';
 import { Sidebar } from '@/components/common/EnhancedSidebar';
 import { ClientComponentsWrapper } from '@/components/common/ClientComponentsWrapper';
-import { WalletProvider } from '@/contexts/WalletContext';
+import { WalletProvider } from '@/features/wallet/contexts/WalletContext';
 import { LanguageProvider } from '@/i18n/LanguageProvider';
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { SyncStatus } from '@/features/oracle/components/SyncStatus';

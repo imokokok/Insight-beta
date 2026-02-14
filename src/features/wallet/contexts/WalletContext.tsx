@@ -122,21 +122,13 @@ export function WalletProvider({ children }: WalletProviderProps) {
 
   const wcProviderRef = useRef<WalletConnectProvider | null>(null);
 
-  const isConnected = useMemo(() => {
-    return address !== null && chainId !== null;
-  }, [address, chainId]);
+  const isConnected = address !== null && chainId !== null;
 
-  const hasBrowserWallet = useMemo(() => {
-    return typeof window !== 'undefined' && !!window.ethereum;
-  }, []);
+  const hasBrowserWallet = typeof window !== 'undefined' && !!window.ethereum;
 
-  const hasWalletConnect = useMemo(() => {
-    return !!WALLET_CONNECT_PROJECT_ID;
-  }, []);
+  const hasWalletConnect = !!WALLET_CONNECT_PROJECT_ID;
 
-  const recommendedConnectionType = useMemo(() => {
-    return getRecommendedConnectionType();
-  }, []);
+  const recommendedConnectionType = getRecommendedConnectionType();
 
   const clearError = useCallback(() => {
     setError(null);

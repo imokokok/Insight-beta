@@ -73,9 +73,6 @@ export {
 // ==================== 表单输入 ====================
 export { RecipientInput } from './RecipientInput';
 
-// ==================== 审计日志 ====================
-export { AuditLogViewer } from './AuditLogViewer';
-
 // ==================== 国际化 ====================
 export { LanguageSwitcher } from './LanguageSwitcher';
 

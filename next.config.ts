@@ -28,7 +28,6 @@ function buildCsp(isDev: boolean) {
     "object-src 'none'",
     "frame-src 'none'",
     "worker-src 'self' blob:",
-    "manifest-src 'self'",
     "base-uri 'self'",
     "form-action 'self'",
     "frame-ancestors 'none'",

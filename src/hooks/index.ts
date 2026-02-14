@@ -119,9 +119,6 @@ export {
   type CrossChainHistoricalResponse,
 } from '@/features/cross-chain/hooks';
 
-// Dispute Hooks
-export { useDisputes } from '@/features/dispute/hooks';
-
 // ==================== Dashboard Hooks ====================
 export {
   useDashboardShortcuts,

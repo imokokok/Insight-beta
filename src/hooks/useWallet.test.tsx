@@ -4,7 +4,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useWallet, WalletProvider } from '@/contexts/WalletContext';
+import { useWallet, WalletProvider } from '@/features/wallet/contexts/WalletContext';
 
 // Mock getRecommendedConnectionType
 vi.mock('@/lib/blockchain/walletConnect', async () => {

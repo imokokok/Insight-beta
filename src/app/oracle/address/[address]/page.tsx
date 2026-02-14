@@ -4,14 +4,13 @@ import { useEffect, useState } from 'react';
 
 import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-import { ExternalLink, LayoutGrid, List as ListIcon } from 'lucide-react';
+import { LayoutGrid, List as ListIcon } from 'lucide-react';
 
 import { CopyButton } from '@/components/common/CopyButton';
 import { AssertionList } from '@/features/assertion/components/AssertionList';
-import { DisputeList } from '@/features/dispute/components/DisputeList';
 import { AddressAvatar } from '@/features/wallet/components/AddressAvatar';
 import { UserStatsCard } from '@/features/wallet/components/UserStatsCard';
-import { useDisputes, useOracleData, useUserStats } from '@/hooks';
+import { useOracleData, useUserStats } from '@/hooks';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { getUiErrorMessage } from '@/i18n/translations';
 import { cn, getExplorerUrl } from '@/shared/utils';
@@ -26,7 +25,6 @@ export default function AddressProfilePage() {
   const router = useRouter();
   const pathname = usePathname();
   const currentSearch = searchParams?.toString() ?? '';
-  const [activeTab, setActiveTab] = useState<'assertions' | 'disputes'>('assertions');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
     try {
       if (typeof window === 'undefined') return 'grid';
@@ -87,10 +85,8 @@ export default function AddressProfilePage() {
     }
   }, [instanceId, viewMode]);
 
-  // Fetch User Stats
   const { stats, loading: statsLoading } = useUserStats(address, instanceId);
 
-  // Fetch Assertions (reusing useOracleData)
   const {
     items: assertions,
     loading: assertionsLoading,
@@ -100,20 +96,8 @@ export default function AddressProfilePage() {
     loadMore: loadMoreAssertions,
   } = useOracleData('All', 'All', '', address, instanceId);
 
-  // Fetch Disputes
-  const {
-    items: disputes,
-    loading: disputesLoading,
-    loadingMore: disputesLoadingMore,
-    error: disputesError,
-    hasMore: disputesHasMore,
-    loadMore: loadMoreDisputes,
-  } = useDisputes('All', 'All', '', address, instanceId);
-  const activeError = activeTab === 'assertions' ? assertionsError : disputesError;
-
   return (
     <div className="container mx-auto max-w-7xl space-y-8 px-4 py-8">
-      {/* Header Section */}
       <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
         <div>
           <div className="mb-3 flex items-center gap-4">
@@ -145,7 +129,7 @@ export default function AddressProfilePage() {
                   className="rounded-lg border border-transparent p-2 text-gray-400 transition-colors hover:border-primary/10 hover:bg-primary/5 hover:text-primary"
                   title={t('common.viewOnExplorer')}
                 >
-                  <ExternalLink size={18} />
+                  <span className="sr-only">View on Explorer</span>
                 </a>
               ) : null;
             })()}
@@ -153,39 +137,10 @@ export default function AddressProfilePage() {
         </div>
       </div>
 
-      {/* Stats Cards */}
       <UserStatsCard stats={stats ?? null} loading={statsLoading} />
 
-      {/* Content Tabs */}
       <div className="space-y-6">
-        <div className="flex items-center justify-between border-b border-gray-200/60 pb-1">
-          <div className="flex gap-6">
-            <button
-              onClick={() => setActiveTab('assertions')}
-              className={cn(
-                'relative pb-3 text-sm font-bold transition-all',
-                activeTab === 'assertions' ? 'text-primary' : 'text-gray-500 hover:text-gray-700',
-              )}
-            >
-              {t('oracle.profile.assertionsHistory')}
-              {activeTab === 'assertions' && (
-                <span className="absolute bottom-0 left-0 h-0.5 w-full rounded-full bg-primary" />
-              )}
-            </button>
-            <button
-              onClick={() => setActiveTab('disputes')}
-              className={cn(
-                'relative pb-3 text-sm font-bold transition-all',
-                activeTab === 'disputes' ? 'text-primary' : 'text-gray-500 hover:text-gray-700',
-              )}
-            >
-              {t('oracle.profile.disputesHistory')}
-              {activeTab === 'disputes' && (
-                <span className="absolute bottom-0 left-0 h-0.5 w-full rounded-full bg-primary" />
-              )}
-            </button>
-          </div>
-
+        <div className="flex items-center justify-end border-b border-gray-200/60 pb-1">
           <div className="flex rounded-lg border border-gray-200/50 bg-gray-100/50 p-1">
             <button
               onClick={() => setViewMode('grid')}
@@ -212,34 +167,21 @@ export default function AddressProfilePage() {
           </div>
         </div>
 
-        {/* Tab Content */}
         <div className="min-h-[400px]">
-          {activeError ? (
+          {assertionsError ? (
             <div className="mb-4 rounded-2xl border border-rose-100 bg-rose-50/50 p-4 text-sm text-rose-700 shadow-sm">
-              {getUiErrorMessage(activeError, t)}
+              {getUiErrorMessage(assertionsError, t)}
             </div>
           ) : null}
-          {activeTab === 'assertions' ? (
-            <AssertionList
-              items={assertions}
-              loading={assertionsLoading}
-              viewMode={viewMode}
-              hasMore={assertionsHasMore}
-              loadMore={loadMoreAssertions}
-              loadingMore={assertionsLoadingMore}
-              instanceId={instanceId}
-            />
-          ) : (
-            <DisputeList
-              items={disputes}
-              loading={disputesLoading}
-              viewMode={viewMode}
-              hasMore={disputesHasMore}
-              loadMore={loadMoreDisputes}
-              loadingMore={disputesLoadingMore}
-              instanceId={instanceId}
-            />
-          )}
+          <AssertionList
+            items={assertions}
+            loading={assertionsLoading}
+            viewMode={viewMode}
+            hasMore={assertionsHasMore}
+            loadMore={loadMoreAssertions}
+            loadingMore={assertionsLoadingMore}
+            instanceId={instanceId}
+          />
         </div>
       </div>
     </div>
