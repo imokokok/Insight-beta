@@ -100,7 +100,7 @@ const generateMockChartData = (points: number = 24): ChartDataPoint[] => {
 };
 
 const generateMockComparisonData = () => {
-  const protocols = ['Chainlink', 'Pyth', 'Band', 'API3', 'RedStone'];
+  const protocols = ['Chainlink', 'Pyth', 'RedStone', 'UMA'];
   return protocols.map((protocol) => ({
     label: protocol,
     latency: Math.random() * 500 + 200,

@@ -621,7 +621,7 @@ export function EmptyProtocolsState({
       }
     >
       <div className="mt-4 grid grid-cols-2 gap-3 text-center sm:grid-cols-4">
-        {['Chainlink', 'Pyth', 'Band', 'API3'].map((protocol) => (
+        {['Chainlink', 'Pyth', 'RedStone', 'UMA'].map((protocol) => (
           <div key={protocol} className="rounded-lg bg-primary/10 px-3 py-2">
             <span className="text-primary-dark text-sm font-medium">{protocol}</span>
           </div>

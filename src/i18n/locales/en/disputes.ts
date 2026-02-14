@@ -1,21 +1,2 @@
 export const disputes = {
-  card: {
-    dispute: 'Dispute',
-    disputer: 'Disputer',
-    votes: 'Votes',
-  },
-  description: 'Monitor active disputes, track voting progress, and analyze outcomes.',
-  disputedAt: 'Disputed At',
-  disputer: 'Disputer',
-  emptyDesc: 'There are currently no active disputes in the system.',
-  emptyTitle: 'No Active Disputes',
-  endsAt: 'Ends',
-  reason: 'Reason for Dispute',
-  reject: 'Reject Assertion',
-  support: 'Support Assertion',
-  title: 'Dispute Resolution',
-  totalVotesCast: 'Total Votes Cast',
-  umaDvmActive: 'UMA DVM Active',
-  viewOnUma: 'View on UMA',
-  votingProgress: 'Voting Progress',
 };

@@ -1,41 +1,16 @@
 export const oracle = {
-  description:
-    'Universal multi-protocol oracle monitoring platform supporting Chainlink, Pyth, API3, DIA, Band, RedStone, and more.',
-  title: 'Universal Oracle Monitor',
   newAssertion: 'New Assertion',
-  searchPlaceholder: 'Search assertions…',
-  myActivity: 'My Activity',
-  myActivityEmpty: "You haven't created any assertions yet.",
-  myActivityTooltip: 'Only show assertions created by me',
-  myDisputesEmpty: "You haven't initiated any disputes yet.",
-  myDisputesFilter: 'My Disputes',
-  myDisputesTooltip: 'Only show disputes initiated by me',
-  tabs: {
-    leaderboard: 'Leaderboard',
-    overview: 'Overview',
-    tools: 'Tools',
-  },
   card: {
     asserter: 'Asserter',
-    assertion: 'Assertion',
     bond: 'Bond',
     disputer: 'Disputer',
-    gridView: 'Grid view',
-    listView: 'List view',
-    livenessEnds: 'Liveness Ends',
-    marketQuestion: 'Market Question',
-    tx: 'Transaction',
+    marketQuestion: 'Market Question'
   },
   stats: {
-    activeDisputes: 'Active Disputes',
-    avgResolution: 'Avg Resolution Time',
-    liveCap: 'Live oracle market capitalization',
-    resolved24h: 'Resolved (24h)',
     totalAssertions: 'Total Assertions',
     totalBonded: 'Total Bonded',
     totalDisputes: 'Total Disputes',
-    tvs: 'Total Value Secured',
-    winRate: 'Win Rate',
+    winRate: 'Win Rate'
   },
   sync: {
     block: 'Block Height',
@@ -43,22 +18,14 @@ export const oracle = {
     lagging: 'Lagging',
     lastUpdate: 'Last Update',
     status: 'Indexer Status',
-    synced: 'Synced',
-  },
-  timeline: {
-    active: 'Active',
-    asserted: 'Asserted',
-    disputed: 'Disputed',
-    livenessEnds: 'Liveness Ends',
-    resolved: 'Resolved',
-    votingEnds: 'Voting Ends',
+    synced: 'Synced'
   },
   healthScore: {
     critical: 'Critical',
     degraded: 'Degraded',
     excellent: 'Excellent',
     good: 'Good',
-    title: 'Oracle Health Score',
+    title: 'Oracle Health Score'
   },
   leaderboard: {
     assertions: 'Assertions',
@@ -68,39 +35,12 @@ export const oracle = {
     topAsserters: 'Top Asserters',
     topAssertersDesc: 'Most active contributors',
     topDisputers: 'Top Disputers',
-    topDisputersDesc: 'Most active verifiers',
-  },
-  myAssertions: {
-    connectWalletDesc: 'Please connect your wallet to see your assertion history.',
-    connectWalletTitle: 'Connect Wallet to View',
-    createFirst: 'Create your first assertion',
-    description: 'Manage all assertions created by you.',
-    noAssertions: "You haven't created any assertions yet.",
-    searchPlaceholder: 'Search assertions…',
-    title: 'My Assertions',
-  },
-  myDisputes: {
-    connectWalletDesc: 'Please connect your wallet to see your dispute history.',
-    connectWalletTitle: 'Connect Wallet to View',
-    description: 'Manage all disputes initiated by you.',
-    noDisputes: "You haven't initiated any disputes yet.",
-    searchPlaceholder: 'Search disputes…',
-    title: 'My Disputes',
+    topDisputersDesc: 'Most active verifiers'
   },
   profile: {
-    assertionsHistory: 'Assertions History',
-    disputesHistory: 'Disputes History',
-    title: 'Address Profile',
-  },
-  createAssertionModal: {
-    protocolNotSupported:
-      'This protocol does not support assertions. Please select one of: {{supportedProtocols}}.',
+    title: 'Address Profile'
   },
   priceService: {
-    refreshedMaterializedView: 'Successfully refreshed materialized view: {{viewName}}',
-    refreshingMaterializedView: 'Refreshing materialized view: {{viewName}}',
-    priceUpdateReceived: 'Price update received for {{symbol}} at ${{price}}',
-    priceDeviationDetected: 'Price deviation detected: {{symbol}} changed by {{percent}}%',
-    historicalDataPurge: 'Purged {{count}} outdated historical price records',
-  },
+    refreshedMaterializedView: 'Successfully refreshed materialized view: {{viewName}}'
+  }
 };

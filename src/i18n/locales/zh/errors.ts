@@ -1,6 +1,5 @@
 export const errors = {
   apiError: '服务器错误',
-  errorMessage: '错误信息',
   chainNotAdded: '此网络未添加到您的钱包中。请先添加。',
   contractNotFound: '合约未找到',
   forbidden: '禁止访问（需要管理员令牌）',
@@ -23,18 +22,6 @@ export const errors = {
   userRejected: '您拒绝了钱包请求。',
   walletNotConnected: '钱包未连接',
   wrongNetwork: '网络错误。请切换到目标链。',
-  requestTimeout: '请求超时，请稍后重试',
-  networkConnectionFailed: '网络连接失败，请检查您的网络',
-  rateLimitExceeded: '请求过多，请稍后重试',
-  authenticationFailed: '认证失败，请重新登录',
-  permissionDenied: '权限被拒绝，您无法执行此操作',
-  resourceNotFound: '{{resource}} 未找到',
-  severity: '严重级别',
-  severityCritical: '严重',
-  severityHigh: '高',
-  severityMedium: '中',
-  severityLow: '低',
-  // 价格服务错误
   failedToFetchPriceHistory: '无法获取价格历史数据',
   failedToFetchOhlcvData: '无法获取 OHLCV 市场数据',
   failedToFetchCurrentPrices: '无法获取当前市场价格',
@@ -43,5 +30,5 @@ export const errors = {
   failedToFetchPriceStats: '无法计算价格统计数据',
   failedToInsertPriceHistory: '无法保存价格历史记录',
   failedToRefreshMaterializedView: '无法刷新物化视图',
-  noPriceDataFound: '指定条件下暂无价格数据',
+  noPriceDataFound: '指定条件下暂无价格数据'
 };

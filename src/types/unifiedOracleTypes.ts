@@ -123,12 +123,7 @@ export type ProtocolSpecificConfig =
   | UMAProtocolConfig
   | ChainlinkProtocolConfig
   | PythProtocolConfig
-  | BandProtocolConfig
-  | API3ProtocolConfig
-  | RedStoneProtocolConfig
-  | SwitchboardProtocolConfig
-  | FluxProtocolConfig
-  | DIAProtocolConfig;
+  | RedStoneProtocolConfig;
 
 export type UMAProtocolConfig = {
   optimisticOracleV2Address?: string;
@@ -153,41 +148,10 @@ export type PythProtocolConfig = {
   stalenessThreshold?: number; // 数据新鲜度阈值（秒）
 };
 
-export type BandProtocolConfig = {
-  endpoint?: string;
-  dataSource?: string;
-};
-
-export type API3ProtocolConfig = {
-  airnodeAddress?: string;
-  endpointId?: string;
-  sponsorAddress?: string;
-};
-
 export type RedStoneProtocolConfig = {
   feedIds?: string[];
   apiEndpoint?: string;
   stalenessThreshold?: number;
-};
-
-export type SwitchboardProtocolConfig = {
-  programId?: string;
-  queueAddress?: string;
-  feedAddresses?: string[];
-  stalenessThreshold?: number;
-  timeoutMs?: number;
-  commitment?: 'processed' | 'confirmed' | 'finalized';
-};
-
-export type FluxProtocolConfig = {
-  feedId?: string;
-  apiEndpoint?: string;
-  roundId?: bigint;
-};
-
-export type DIAProtocolConfig = {
-  assets?: string[];
-  apiEndpoint?: string;
 };
 
 // ============================================================================

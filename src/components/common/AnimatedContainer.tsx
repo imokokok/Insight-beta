@@ -21,6 +21,7 @@ import {
   transitionPresets,
   STAGGER_CONFIG,
 } from '@/lib/design-system/tokens/animation';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { cn } from '@/shared/utils';
 
 import type { Variants } from 'framer-motion';
@@ -72,18 +73,6 @@ interface HoverScaleProps {
   className?: string;
   scale?: number;
   y?: number;
-}
-
-// ============================================================================
-// Hook: useReducedMotion
-// ============================================================================
-
-function useReducedMotion(): boolean {
-  // Check if window is defined (SSR)
-  if (typeof window === 'undefined') return false;
-
-  const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-  return mediaQuery.matches;
 }
 
 // ============================================================================

@@ -397,7 +397,7 @@ export class PriceDeviationAnalytics {
   private generateMockData(symbol: string): PriceDeviationPoint[] {
     const dataPoints: PriceDeviationPoint[] = [];
     const now = new Date();
-    const protocols = ['chainlink', 'pyth', 'switchboard'];
+    const protocols = ['chainlink', 'pyth', 'redstone'];
 
     // 生成 24 小时的数据点，每小时一个
     for (let i = 23; i >= 0; i--) {

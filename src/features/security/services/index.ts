@@ -5,11 +5,8 @@
 // 异常检测服务
 export * from './anomaly';
 
-// API 认证
-export * from './apiAuth';
-
-// 速率限制
-export * from './rateLimiter';
+// 速率限制 - 已移至 lib/security/rateLimit.ts
+// API 认证 - 已移至 services/security/apiAuth.ts
 
 // 操纵检测服务
 export * from './manipulationDetectionService';

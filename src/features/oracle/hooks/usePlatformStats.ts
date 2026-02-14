@@ -12,8 +12,8 @@ export interface PlatformStats {
 }
 
 const DEFAULT_STATS: PlatformStats = {
-  totalProtocols: 10,
-  totalPriceFeeds: 150,
+  totalProtocols: 4,
+  totalPriceFeeds: 95,
   supportedChains: 15,
   avgUpdateLatency: 500,
 };

@@ -79,15 +79,8 @@ export { LanguageSwitcher } from './LanguageSwitcher';
 // ==================== 性能优化 ====================
 export { ResourceHints } from './ResourceHints';
 
-// ==================== 响应式 ====================
-export {
-  ResponsiveGrid,
-  ResponsiveStack,
-  Container,
-} from './Responsive';
-
 // ==================== 布局 ====================
-export { ResponsiveGrid as LayoutGrid, DashboardGrid } from './Layout';
+export { ResponsiveGrid, DashboardGrid } from './Layout';
 
 // ==================== 动画 ====================
 export {

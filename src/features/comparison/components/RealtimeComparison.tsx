@@ -46,12 +46,7 @@ interface RealtimeComparisonProps {
 const protocolColors: Record<string, string> = {
   chainlink: '#375bd2',
   pyth: '#e6c35c',
-  band: '#516ff5',
-  api3: '#7ce3cb',
   redstone: '#ff6b6b',
-  switchboard: '#a855f7',
-  flux: '#3b82f6',
-  dia: '#10b981',
   uma: '#f59e0b',
   insight: '#8b5cf6',
 };

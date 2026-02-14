@@ -1,40 +1,16 @@
 export const oracle = {
-  description: '通用多协议预言机监控平台，支持 Chainlink、Pyth、API3、DIA、Band、RedStone 等。',
-  title: '通用预言机监控',
   newAssertion: '新建断言',
-  searchPlaceholder: '搜索断言…',
-  myActivity: '我的活动',
-  myActivityEmpty: '您还没有创建任何断言。',
-  myActivityTooltip: '只显示我创建的断言',
-  myDisputesEmpty: '您还没有发起任何争议。',
-  myDisputesFilter: '我的争议',
-  myDisputesTooltip: '只显示我发起的争议',
-  tabs: {
-    leaderboard: '排行榜',
-    overview: '概览',
-    tools: '工具',
-  },
   card: {
     asserter: '断言者',
-    assertion: '断言',
     bond: '保证金',
     disputer: '争议者',
-    gridView: '网格视图',
-    listView: '列表视图',
-    livenessEnds: '活跃期结束',
-    marketQuestion: '市场问题',
-    tx: '交易',
+    marketQuestion: '市场问题'
   },
   stats: {
-    activeDisputes: '活跃争议',
-    avgResolution: '平均解决时间',
-    liveCap: '实时预言机市值',
-    resolved24h: '已解决（24小时）',
     totalAssertions: '总断言数',
     totalBonded: '总质押',
     totalDisputes: '总争议数',
-    tvs: '总担保价值',
-    winRate: '胜率',
+    winRate: '胜率'
   },
   sync: {
     block: '区块高度',
@@ -42,22 +18,14 @@ export const oracle = {
     lagging: '滞后',
     lastUpdate: '最后更新',
     status: '索引器状态',
-    synced: '已同步',
-  },
-  timeline: {
-    active: '活跃',
-    asserted: '已断言',
-    disputed: '已争议',
-    livenessEnds: '活跃期结束',
-    resolved: '已解决',
-    votingEnds: '投票结束',
+    synced: '已同步'
   },
   healthScore: {
     critical: '严重',
     degraded: '降级',
     excellent: '优秀',
     good: '良好',
-    title: '预言机健康评分',
+    title: '预言机健康评分'
   },
   leaderboard: {
     assertions: '断言',
@@ -67,38 +35,12 @@ export const oracle = {
     topAsserters: '顶级断言者',
     topAssertersDesc: '最活跃的贡献者',
     topDisputers: '顶级争议者',
-    topDisputersDesc: '最活跃的验证者',
-  },
-  myAssertions: {
-    connectWalletDesc: '请连接钱包以查看您的断言历史。',
-    connectWalletTitle: '连接钱包查看',
-    createFirst: '创建您的第一个断言',
-    description: '管理您创建的所有断言。',
-    noAssertions: '您还没有创建任何断言。',
-    searchPlaceholder: '搜索断言…',
-    title: '我的断言',
-  },
-  myDisputes: {
-    connectWalletDesc: '请连接钱包以查看您的争议历史。',
-    connectWalletTitle: '连接钱包查看',
-    description: '管理您发起的所有争议。',
-    noDisputes: '您还没有发起任何争议。',
-    searchPlaceholder: '搜索争议…',
-    title: '我的争议',
+    topDisputersDesc: '最活跃的验证者'
   },
   profile: {
-    assertionsHistory: '断言历史',
-    disputesHistory: '争议历史',
-    title: '地址资料',
-  },
-  createAssertionModal: {
-    protocolNotSupported: '该协议不支持断言功能。请选择以下之一：{{supportedProtocols}}。',
+    title: '地址资料'
   },
   priceService: {
-    refreshedMaterializedView: '成功刷新物化视图：{{viewName}}',
-    refreshingMaterializedView: '正在刷新物化视图：{{viewName}}',
-    priceUpdateReceived: '收到 {{symbol}} 价格更新：${{price}}',
-    priceDeviationDetected: '检测到 {{symbol}} 价格偏离：变动 {{percent}}%',
-    historicalDataPurge: '已清理 {{count}} 条过期历史价格记录',
-  },
+    refreshedMaterializedView: '成功刷新物化视图：{{viewName}}'
+  }
 };

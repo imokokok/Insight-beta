@@ -1,6 +1,5 @@
 export const errors = {
   apiError: 'Server error',
-  errorMessage: 'Error Message',
   chainNotAdded: 'This network is not added in your wallet. Please add it first.',
   contractNotFound: 'Contract not found',
   forbidden: 'Forbidden (admin token required)',
@@ -23,18 +22,6 @@ export const errors = {
   userRejected: 'You rejected the wallet request.',
   walletNotConnected: 'Wallet not connected',
   wrongNetwork: 'Wrong network. Please switch to the target chain.',
-  requestTimeout: 'Request timeout, please try again later',
-  networkConnectionFailed: 'Network connection failed, please check your network',
-  rateLimitExceeded: 'Too many requests, please try again later',
-  authenticationFailed: 'Authentication failed, please log in again',
-  permissionDenied: 'Permission denied, you cannot perform this action',
-  resourceNotFound: '{{resource}} not found',
-  severity: 'Severity',
-  severityCritical: 'Critical',
-  severityHigh: 'High',
-  severityMedium: 'Medium',
-  severityLow: 'Low',
-  // Price Service Errors
   failedToFetchPriceHistory: 'Unable to retrieve price history data',
   failedToFetchOhlcvData: 'Unable to retrieve OHLCV market data',
   failedToFetchCurrentPrices: 'Unable to retrieve current market prices',
@@ -43,5 +30,5 @@ export const errors = {
   failedToFetchPriceStats: 'Unable to calculate price statistics',
   failedToInsertPriceHistory: 'Unable to save price history records',
   failedToRefreshMaterializedView: 'Unable to refresh materialized view',
-  noPriceDataFound: 'No price data available for the specified criteria',
+  noPriceDataFound: 'No price data available for the specified criteria'
 };

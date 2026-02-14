@@ -189,13 +189,8 @@ export default function CreateSloPage() {
                 <SelectContent>
                   <SelectItem value="chainlink">Chainlink</SelectItem>
                   <SelectItem value="pyth">Pyth</SelectItem>
-                  <SelectItem value="uma">UMA</SelectItem>
-                  <SelectItem value="band">Band</SelectItem>
-                  <SelectItem value="api3">API3</SelectItem>
                   <SelectItem value="redstone">RedStone</SelectItem>
-                  <SelectItem value="switchboard">Switchboard</SelectItem>
-                  <SelectItem value="flux">Flux</SelectItem>
-                  <SelectItem value="dia">DIA</SelectItem>
+                  <SelectItem value="uma">UMA</SelectItem>
                 </SelectContent>
               </Select>
             </div>

@@ -295,7 +295,7 @@ async function fetchDeviationHistoryPaginated(
 function generateMockData(symbol: string, windowHours: number): PriceDeviationPoint[] {
   const dataPoints: PriceDeviationPoint[] = [];
   const now = new Date();
-  const protocols = ['chainlink', 'pyth', 'switchboard'];
+  const protocols = ['chainlink', 'pyth', 'redstone'];
 
   // 根据时间窗口生成数据点
   const dataPointCount = Math.min(windowHours, 24);

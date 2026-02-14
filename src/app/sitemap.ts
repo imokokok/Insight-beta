@@ -48,12 +48,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     'chainlink',
     'pyth',
     'uma',
-    'band',
-    'api3',
     'redstone',
-    'switchboard',
-    'dia',
-    'flux',
   ];
 
   const protocolPages = protocols.map((protocol) => ({

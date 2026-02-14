@@ -231,7 +231,7 @@ export const universalPriceFeeds: TableDefinition = {
   sql: `
     CREATE TABLE IF NOT EXISTS oracle_price_feeds (
       id BIGSERIAL PRIMARY KEY,
-      protocol VARCHAR(50) NOT NULL, -- 'chainlink', 'pyth', 'band', 'uma'
+      protocol VARCHAR(50) NOT NULL, -- 'chainlink', 'pyth', 'redstone', 'uma'
       chain TEXT NOT NULL,
       instance_id TEXT NOT NULL DEFAULT 'default',
       

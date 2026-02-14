@@ -6,33 +6,23 @@
 ![Tailwind](https://img.shields.io/badge/Tailwind-3.4-cyan)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue)
 
-**OracleMonitor** is a universal multi-protocol oracle monitoring platform, supporting real-time aggregation and monitoring of oracle data from 10+ protocols.
+OracleMonitor is a universal multi-protocol oracle monitoring platform, supporting real-time aggregation and monitoring of oracle data from 4 protocols.
 
 ## ✨ Features
 
-### Multi-Protocol Support (9 Protocols Integrated)
-
-#### Fully Integrated ✅
+### Multi-Protocol Support (4 Protocols Integrated)
 
 - **UMA** - Optimistic Oracle with assertion and dispute mechanisms
 - **Chainlink** - Industry-standard price feeds and data oracles
 - **Pyth** - Low-latency financial data from institutional sources
-- **Band** - Cross-chain data oracle platform
-- **API3** - First-party oracle with Airnode
 - **RedStone** - Modular oracle with on-demand data
-- **Switchboard** - Solana and EVM compatible oracle network
-- **Flux** - Decentralized oracle aggregator
-- **DIA** - Transparent and verifiable data feeds
 
-> **Note**: All 9 protocols are now fully integrated into the unified service with real-time price aggregation.
-
-### 🏗️ Architecture Highlights
+### Architecture Highlights
 
 - **Shared Module Library** - Reusable components for database, blockchain, sync, errors, and logging
 - **Factory Pattern** - `SyncManagerFactory` and `EvmOracleClient` for rapid protocol integration
 - **Code Reusability** - 54% code reduction through shared abstractions
 - **Type Safety** - Full TypeScript coverage with strict type checking
-- **Test Coverage** - 28+ unit tests for shared modules
 
 ### Core Capabilities
 
@@ -56,54 +46,31 @@
 ### Installation
 
 ```bash
-# Clone repository
 git clone https://github.com/your-org/oracle-monitor.git
 cd oracle-monitor
-
-# Install dependencies
 npm install
-
-# Configure environment
 cp .env.example .env.local
-# Edit .env.local with your RPC URLs and database credentials
-
-# Setup database
 npm run supabase:push
-
-# Start development server
 npm run dev
 ```
 
+Visit http://localhost:3000
+
 ## 📖 Documentation
 
-Full documentation available at [docs/README.md](./docs/README.md).
-
-### Quick Navigation
-
-| Document                                                         | Description                                        |
-| ---------------------------------------------------------------- | -------------------------------------------------- |
-| [User Manual](./docs/USER_MANUAL.md)                             | End user guide                                     |
-| [Development Guide](./docs/DEVELOPMENT_GUIDE.md)                 | Development environment setup and coding standards |
-| [Architecture](./docs/ARCHITECTURE.md)                           | System architecture design                         |
-| [Architecture Improvements](./docs/ARCHITECTURE_IMPROVEMENTS.md) | Code refactoring and optimization records          |
-| [API Documentation](./docs/API.md)                               | Complete API reference                             |
-| [Database Documentation](./docs/DATABASE.md)                     | Database design and schema                         |
-| [Deployment Guide](./docs/DEPLOYMENT.md)                         | Production deployment                              |
-| [Troubleshooting](./TROUBLESHOOTING.md)                          | Common issues and solutions                        |
-| [Error Codes](./docs/ERROR_CODES.md)                             | Error code reference                               |
-| [UI Guidelines](./docs/UI_GUIDELINES.md)                         | User interface design standards                    |
-
-### Supported Trading Pairs
-
-- ETH/USD, BTC/USD, LINK/USD
-- MATIC/USD, AVAX/USD, BNB/USD
-- UNI/USD, AAVE/USD, MKR/USD
-- USDC/USD, USDT/USD, DAI/USD
-- And more...
+| Document | Description |
+|----------|-------------|
+| [User Manual](./docs/USER_MANUAL.md) | End user guide |
+| [Development Guide](./docs/DEVELOPMENT_GUIDE.md) | Development environment setup |
+| [Architecture](./docs/ARCHITECTURE.md) | System architecture design |
+| [API Documentation](./docs/API.md) | Complete API reference |
+| [Database Documentation](./docs/DATABASE.md) | Database design and schema |
+| [Deployment Guide](./docs/DEPLOYMENT.md) | Production deployment |
+| [Troubleshooting](./TROUBLESHOOTING.md) | Common issues and solutions |
+| [Error Codes](./docs/ERROR_CODES.md) | Error code reference |
+| [UI Guidelines](./docs/UI_GUIDELINES.md) | User interface design standards |
 
 ## 🛠️ Development
-
-See [Development Guide](./docs/DEVELOPMENT_GUIDE.md) for details.
 
 ### Available Scripts
 
@@ -116,18 +83,8 @@ npm run test             # Run unit tests
 npm run test:coverage    # Run tests with coverage
 npm run test:e2e        # Run E2E tests
 npm run supabase:push   # Push database changes
-npm run supabase:studio # Open Supabase Studio (if available)
+npm run supabase:studio # Open Supabase Studio
 ```
-
-## 🔧 Configuration
-
-See [Deployment Guide](./docs/DEPLOYMENT.md#environment-variables) for details.
-
-## 📊 Monitoring
-
-- Health Check: `/api/health`
-- Metrics: `/api/monitoring/metrics`
-- Dashboard: `/monitoring`
 
 ## 🤝 Contributing
 
@@ -141,14 +98,7 @@ See [Contributing Guide](./CONTRIBUTING.md) and [Coding Standards](./CODING_STAN
 
 ## 📄 License
 
-This project is licensed under the MIT License - see [LICENSE](LICENSE) file.
-
-## 🙏 Acknowledgments
-
-- [Chainlink](https://chain.link/) - Industry-leading oracle network
-- [Pyth Network](https://pyth.network/) - Low-latency financial data
-- [Band Protocol](https://bandprotocol.com/) - Cross-chain data oracle
-- [UMA](https://umaproject.org/) - Optimistic oracle pioneer
+This project is licensed under the MIT License.
 
 ---
 

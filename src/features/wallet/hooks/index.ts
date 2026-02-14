@@ -2,4 +2,4 @@
  * Wallet Hooks
  */
 export * from './useWallet';
-export * from './useUser';
+export { useUserStats, useWatchlist, useAdminSession } from '@/hooks/useUser';

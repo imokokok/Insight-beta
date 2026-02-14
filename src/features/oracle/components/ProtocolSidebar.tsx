@@ -5,14 +5,10 @@ import { Check, Filter } from 'lucide-react';
 import { cn } from '@/shared/utils';
 
 const PROTOCOLS = [
-  { id: 'all', name: 'All Protocols', icon: '🔍', count: 156 },
+  { id: 'all', name: 'All Protocols', icon: '🔍', count: 95 },
   { id: 'chainlink', name: 'Chainlink', icon: '🔗', count: 45 },
   { id: 'pyth', name: 'Pyth Network', icon: '🐍', count: 32 },
-  { id: 'band', name: 'Band Protocol', icon: '🎸', count: 28 },
-  { id: 'api3', name: 'API3', icon: '📡', count: 15 },
   { id: 'redstone', name: 'RedStone', icon: '💎', count: 12 },
-  { id: 'flux', name: 'Flux', icon: '⚡', count: 10 },
-  { id: 'switchboard', name: 'Switchboard', icon: '🎛️', count: 8 },
   { id: 'uma', name: 'UMA', icon: '⚖️', count: 6 },
 ];
 

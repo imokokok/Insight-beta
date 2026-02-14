@@ -1,41 +1,16 @@
 export const oracle = {
-  description:
-    'Plataforma universal de monitoreo de oráculos multi-protocolo compatible con Chainlink, Pyth, API3, DIA, Band, RedStone y más.',
-  title: 'Monitor Universal de Oráculos',
   newAssertion: 'Nueva Aserción',
-  searchPlaceholder: 'Buscar aserciones…',
-  myActivity: 'Mi Actividad',
-  myActivityEmpty: 'Aún no has creado ninguna aserción.',
-  myActivityTooltip: 'Mostrar solo aserciones creadas por mí',
-  myDisputesEmpty: 'Aún no has iniciado ninguna disputa.',
-  myDisputesFilter: 'Mis Disputas',
-  myDisputesTooltip: 'Mostrar solo disputas iniciadas por mí',
-  tabs: {
-    leaderboard: 'Clasificación',
-    overview: 'Resumen',
-    tools: 'Herramientas',
-  },
   card: {
     asserter: 'Asercionista',
-    assertion: 'Aserción',
     bond: 'Garantía',
     disputer: 'Disputante',
-    gridView: 'Vista de cuadrícula',
-    listView: 'Vista de lista',
-    livenessEnds: 'Finaliza el Periodo de Vida',
-    marketQuestion: 'Pregunta del Mercado',
-    tx: 'Transacción',
+    marketQuestion: 'Pregunta del Mercado'
   },
   stats: {
-    activeDisputes: 'Disputas Activas',
-    avgResolution: 'Tiempo Promedio de Resolución',
-    liveCap: 'Capitalización de mercado del oracle en vivo',
-    resolved24h: 'Resueltas (24h)',
     totalAssertions: 'Total de Aserciones',
     totalBonded: 'Total Garantizado',
     totalDisputes: 'Total de Disputas',
-    tvs: 'Valor Total Asegurado',
-    winRate: 'Tasa de Éxito',
+    winRate: 'Tasa de Éxito'
   },
   sync: {
     block: 'Altura del Bloque',
@@ -43,22 +18,14 @@ export const oracle = {
     lagging: 'Retrasado',
     lastUpdate: 'Última Actualización',
     status: 'Estado del Indexador',
-    synced: 'Sincronizado',
-  },
-  timeline: {
-    active: 'Activa',
-    asserted: 'Aserción Hecha',
-    disputed: 'Disputada',
-    livenessEnds: 'Finaliza el Periodo de Vida',
-    resolved: 'Resuelta',
-    votingEnds: 'Finaliza la Votación',
+    synced: 'Sincronizado'
   },
   healthScore: {
     critical: 'Crítico',
     degraded: 'Degradado',
     excellent: 'Excelente',
     good: 'Bueno',
-    title: 'Puntuación de Salud del Oracle',
+    title: 'Puntuación de Salud del Oracle'
   },
   leaderboard: {
     assertions: 'Aserciones',
@@ -68,39 +35,12 @@ export const oracle = {
     topAsserters: 'Mejores Asercionistas',
     topAssertersDesc: 'Contribuyentes más activos',
     topDisputers: 'Mejores Disputantes',
-    topDisputersDesc: 'Verificadores más activos',
-  },
-  myAssertions: {
-    connectWalletDesc: 'Por favor conecta tu billetera para ver tu historial de aserciones.',
-    connectWalletTitle: 'Conectar Billetera para Ver',
-    createFirst: 'Crea tu primera aserción',
-    description: 'Gestiona todas las aserciones creadas por ti.',
-    noAssertions: 'Aún no has creado ninguna aserción.',
-    searchPlaceholder: 'Buscar aserciones…',
-    title: 'Mis Aserciones',
-  },
-  myDisputes: {
-    connectWalletDesc: 'Por favor conecta tu billetera para ver tu historial de disputas.',
-    connectWalletTitle: 'Conectar Billetera para Ver',
-    description: 'Gestiona todas las disputas iniciadas por ti.',
-    noDisputes: 'Aún no has iniciado ninguna disputa.',
-    searchPlaceholder: 'Buscar disputas…',
-    title: 'Mis Disputas',
+    topDisputersDesc: 'Verificadores más activos'
   },
   profile: {
-    assertionsHistory: 'Historial de Aserciones',
-    disputesHistory: 'Historial de Disputas',
-    title: 'Perfil de Dirección',
-  },
-  createAssertionModal: {
-    protocolNotSupported:
-      'Este protocolo no admite aserciones. Por favor selecciona uno de: {{supportedProtocols}}.',
+    title: 'Perfil de Dirección'
   },
   priceService: {
-    refreshedMaterializedView: 'Vista materializada actualizada exitosamente: {{viewName}}',
-    refreshingMaterializedView: 'Actualizando vista materializada: {{viewName}}',
-    priceUpdateReceived: 'Actualización de precio recibida para {{symbol}} en ${{price}}',
-    priceDeviationDetected: 'Desviación de precio detectada: {{symbol}} cambió un {{percent}}%',
-    historicalDataPurge: 'Se purgaron {{count}} registros históricos de precios obsoletos',
-  },
+    refreshedMaterializedView: 'Vista materializada actualizada exitosamente: {{viewName}}'
+  }
 };

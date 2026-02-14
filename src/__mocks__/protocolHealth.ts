@@ -29,29 +29,17 @@ export const PROTOCOL_HEALTH_MOCK: Record<string, ProtocolHealthData> = {
     accuracy: 99.5,
     latencyColor: 'green',
   },
-  'Band Protocol': {
-    uptime: 99.87,
-    latency: 620,
-    accuracy: 98.9,
-    latencyColor: 'yellow',
-  },
-  API3: {
-    uptime: 99.92,
-    latency: 380,
-    accuracy: 99.3,
-    latencyColor: 'green',
-  },
   RedStone: {
     uptime: 99.85,
     latency: 520,
     accuracy: 99.1,
     latencyColor: 'green',
   },
-  Flux: {
-    uptime: 99.72,
-    latency: 780,
-    accuracy: 98.5,
-    latencyColor: 'yellow',
+  UMA: {
+    uptime: 99.9,
+    latency: 600,
+    accuracy: 99.2,
+    latencyColor: 'green',
   },
 };
 
@@ -61,10 +49,8 @@ export const PROTOCOL_HEALTH_MOCK: Record<string, ProtocolHealthData> = {
 export const PROTOCOL_LIST = [
   'Chainlink',
   'Pyth Network',
-  'Band Protocol',
-  'API3',
   'RedStone',
-  'Flux',
+  'UMA',
 ];
 
 /**

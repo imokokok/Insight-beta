@@ -218,7 +218,7 @@ function generateMockFeeds(): PriceFeed[] {
     price: Math.random() * 50000 + 10,
     change24h: (Math.random() - 0.5) * 20,
     volume24h: Math.random() * 10e9,
-    sources: ['Chainlink', 'Pyth', 'Band'],
+    sources: ['Chainlink', 'Pyth', 'RedStone'],
     lastUpdated: new Date().toISOString(),
   }));
 }

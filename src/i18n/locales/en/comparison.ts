@@ -1,19 +1,8 @@
 export const comparison = {
   title: 'Oracle Comparison Analytics',
-  description:
-    'Multi-dimensional comparison of oracle protocols price, latency, and cost efficiency',
+  description: 'Multi-dimensional comparison of oracle protocols price, latency, and cost efficiency',
   pageName: 'Oracle Comparison Analysis',
   liveConnected: 'Live Connected',
-  usage: {
-    title: 'Usage Guide',
-    heatmap:
-      'Price Heatmap: Visual display of price deviation between protocols, darker colors indicate larger deviations',
-    latency:
-      'Latency Analysis: View update latency, P50/P90/P99 percentiles and trends for each protocol',
-    cost: 'Cost Efficiency: Compare cost structure, value scores and usage recommendations',
-    realtime:
-      'Realtime Comparison: WebSocket real-time price updates, suitable for monitoring high-frequency changes',
-  },
   controls: {
     filter: 'Filter',
     filterConditions: 'Filter Conditions',
@@ -38,43 +27,13 @@ export const comparison = {
     export: 'Export',
     exportJSON: 'Export as JSON',
     exportCSV: 'Export as CSV',
-    filterActive: 'Filter Active:',
-  },
-  timeRange: {
-    '1h': '1 Hour',
-    '24h': '24 Hours',
-    '7d': '7 Days',
-    '30d': '30 Days',
-    '5s': '5 Seconds',
-    '10s': '10 Seconds',
-    '30s': '30 Seconds',
-    '1m': '1 Minute',
-  },
-  views: {
-    heatmap: 'Price Heatmap',
-    latency: 'Latency Analysis',
-    cost: 'Cost Efficiency',
-    realtime: 'Realtime Comparison',
-    table: 'Data Table',
+    filterActive: 'Filter Active:'
   },
   status: {
-    healthy: 'Healthy',
-    degraded: 'Degraded',
     stale: 'Stale',
     active: 'Active',
     error: 'Error',
-    unknown: 'Unknown',
-    normal: 'Normal',
-    slightDeviation: 'Slight Deviation',
-    significantDeviation: 'Significant Deviation',
-    criticalDeviation: 'Critical Deviation',
-    excellent: 'Excellent',
-    good: 'Good',
-    needsImprovement: 'Needs Improvement',
-    expired: 'Expired',
-    compliant: 'Compliant',
-    risk: 'Risk',
-    violation: 'Violation',
+    unknown: 'Unknown'
   },
   table: {
     assetPair: 'Asset Pair',
@@ -88,30 +47,17 @@ export const comparison = {
     viewDetails: 'View Details',
     addToWatchlist: 'Add to Watchlist',
     setAlert: 'Set Alert',
-    detailedTable: 'Detailed Data Table',
-    completeData: 'Complete comparison data for all asset pairs and protocols',
     searchPlaceholder: 'Search asset pair or protocol...',
     total: 'Total',
-    showing: 'Showing',
-    searchResults: 'Search Results',
-    noData: 'No matching data found',
-    page: 'Page',
-    of: 'of',
-    goToPage: 'Go to page',
+    showing: 'Showing'
   },
   heatmap: {
     title: 'Price Deviation Heatmap',
     description: 'Real-time display of price deviation between oracle protocols',
     deviationLevel: 'Deviation Level:',
     assetPair: 'Asset Pair',
-    assetPairs: 'asset pairs',
     maxDeviation: 'Max Deviation',
-    consensus: 'Consensus:',
-    criticalCount: 'Critical Deviations',
-    totalPairs: 'Total',
-    protocols: 'Protocols',
     clickForDetails: 'Click cell for details',
-    updatedAt: 'Updated at',
     selectAssetPair: 'Select asset pairs and protocols to view heatmap',
     tooltip: {
       currentPrice: 'Current Price',
@@ -119,12 +65,11 @@ export const comparison = {
       deviationValue: 'Deviation Value',
       deviationPercent: 'Deviation %',
       updateTime: 'Update Time',
-      status: 'Status',
-    },
+      status: 'Status'
+    }
   },
   latency: {
     title: 'Latency Analysis',
-    noData: 'No Data',
     selectAssetPair: 'Select an asset pair to view latency analysis',
     selectAssetPairTrends: 'Select an asset pair to view trend analysis',
     description: 'Update latency and frequency analysis for each oracle protocol',
@@ -137,7 +82,7 @@ export const comparison = {
     tabs: {
       distribution: 'Latency Distribution',
       frequency: 'Update Frequency',
-      trends: 'Trend Analysis',
+      trends: 'Trend Analysis'
     },
     threshold: 'Threshold',
     vsLastHour: 'vs last hour',
@@ -145,19 +90,11 @@ export const comparison = {
       avgLatency: 'Avg Latency',
       maxLatency: 'Max Latency',
       healthyNodes: 'Healthy Nodes',
-      degradedNodes: 'Degraded Nodes',
-    },
-    table: {
-      protocol: 'Protocol',
-      assetPair: 'Asset Pair',
-      currentLatency: 'Current Latency',
-      p50: 'P50',
-      p90: 'P90',
-    },
+      degradedNodes: 'Degraded Nodes'
+    }
   },
   cost: {
     title: 'Cost Efficiency Analysis',
-    noData: 'No Data',
     loading: 'Loading cost data...',
     description: 'Cost structure and value comparison of oracle protocols',
     monthlyEstimate: 'Monthly Estimate',
@@ -165,24 +102,8 @@ export const comparison = {
     tabs: {
       overallScore: 'Overall Score',
       costComparison: 'Cost Comparison',
-      recommendations: 'Recommendations',
-      overview: 'Overview',
-      comparison: 'Comparison',
+      recommendations: 'Recommendations'
     },
-    useCases: {
-      defi: 'DeFi Protocol',
-      trading: 'Trading App',
-      enterprise: 'Enterprise',
-      hobby: 'Personal/Hobby',
-    },
-    costDetails: {
-      perFeed: 'Per Feed',
-      perUpdate: 'Per Update',
-      roi: 'ROI',
-    },
-    recommendation: 'Recommendation',
-    estimatedMonthly: 'Estimated Monthly',
-    calculationDesc: 'Cost estimates are based on public pricing and on-chain gas fees.',
     bestValue: 'Best Value',
     lowestCost: 'Lowest Cost',
     mostFeeds: 'Most Feeds',
@@ -201,125 +122,39 @@ export const comparison = {
     alternatives: 'Alternatives',
     estimatedMonthlyCost: 'Est. Monthly Cost',
     calculationNote: 'Cost Calculation Note',
-    calculationDescription:
-      'Cost estimates are based on public pricing and on-chain gas fees. Actual costs may vary based on usage, network congestion, and protocol pricing policies. Contact the protocol directly for accurate quotes.',
-    useCase: {
-      defi_protocol: 'DeFi Protocol',
-      trading: 'Trading App',
-      enterprise: 'Enterprise',
-      hobby: 'Personal/Hobby',
-    },
+    calculationDescription: 'Cost estimates are based on public pricing and on-chain gas fees. Actual costs may vary based on usage, network congestion, and protocol pricing policies. Contact the protocol directly for accurate quotes.',
     radar: {
       costAdvantage: 'Cost Advantage',
       overallValue: 'Overall Value',
       accuracy: 'Data Accuracy',
       uptime: 'Uptime',
       coverage: 'Coverage',
-      multiChain: 'Multi-Chain',
-    },
+      multiChain: 'Multi-Chain'
+    }
   },
   realtime: {
     title: 'Realtime Price Comparison',
-    noData: 'No Data',
-    waiting: 'Waiting for real-time data...',
     description: 'Cross-protocol real-time price monitoring and comparison',
-    live: 'Live',
     updatedAt: 'Updated at',
-    refresh: 'Refresh',
-    export: 'Export',
-    monitoringAssets: 'Monitoring Assets',
     activeProtocols: 'Active Protocols',
     maxSpread: 'Max Spread',
     avgLatency: 'Avg Latency',
-    assetPair: 'Asset Pair',
     name: 'Name',
     spread: 'Spread',
-    protocolCount: 'Protocols',
     protocolPriceDistribution: 'Protocol Price Distribution',
     median: 'Median',
     protocolDetails: 'Protocol Details',
     deviationFromConsensus: 'Deviation from Consensus',
-    stale: 'Stale',
     mean: 'Mean',
     spreadRange: 'Spread Range',
-    selectAssetPair: 'Select an asset pair to view details',
+    selectAssetPair: 'Select an asset pair to view details'
   },
   toast: {
-    loadError: 'Data Load Failed',
-    retryLater: 'Please try again later',
     exportSuccess: 'Export Successful',
     heatmapExported: 'Heatmap data exported as CSV',
     latencyExported: 'Latency data exported as CSV',
     costExported: 'Cost data exported as CSV',
     realtimeExported: 'Realtime data exported as CSV',
-    allExported: 'All data exported as JSON',
-  },
-  // Price Comparison Component
-  priceComparison: {
-    title: 'Cross-Protocol Price Comparison',
-    placeholder: 'Enter trading pair (e.g.: ETH/USD)',
-    chain: 'Chain',
-    price: 'Price',
-    deviation: 'Deviation',
-    averagePrice: 'Average Price',
-    medianPrice: 'Median',
-    priceRange: 'Price Range',
-    recommendedPrice: 'Recommended Price',
-    noData: 'No comparison data',
-    enterPairHint: 'Enter a trading pair (e.g.: ETH/USD, BTC/USD) to view price comparison',
-  },
-  // Oracle Ranking Component
-  ranking: {
-    title: 'Oracle Performance Ranking',
-    bestPerformance: 'Best Performance:',
-    rank: 'Rank',
-    reliabilityScore: 'Reliability Score',
-    uptime: 'Uptime',
-    responseTime: 'Response Time',
-    priceDeviation: 'Price Deviation',
-    noData: 'No ranking data',
-    waitingForSync: 'Waiting for oracle data synchronization...',
-    excellent: 'Excellent',
-    good: 'Good',
-    needsImprovement: 'Needs Improvement',
-  },
-  // Cross Protocol Chart
-  crossProtocolChart: {
-    title: 'Cross-Protocol Price Trends',
-    timeRange: {
-      '1h': '1 Hour',
-      '6h': '6 Hours',
-      '1d': '1 Day',
-      '7d': '7 Days',
-      '30d': '30 Days',
-    },
-    noData: 'No historical data',
-    selectHint: 'Select trading pair and time range to view price trends',
-  },
-  // Form Validation
-  validation: {
-    enterTradingPair: 'Please enter trading pair',
-    pairFormat: 'Format should be XXX/XXX (e.g.: ETH/USD)',
-  },
-  // Recommendations
-  recommendations: {
-    chainlink: {
-      reason: 'Best overall value, suitable for DeFi protocols requiring high reliability',
-    },
-    pyth: {
-      reason: 'Fast update frequency, low latency, suitable for high-frequency trading',
-    },
-    api3: {
-      reason: 'High availability and enterprise-grade support',
-    },
-    band: {
-      reason: 'Lowest cost, suitable for personal projects and small experiments',
-    },
-    defiReason: 'Best overall value, suitable for DeFi protocols requiring high reliability',
-    tradingReason: 'Fast update frequency, low latency, suitable for high-frequency trading',
-    enterpriseReason: 'High availability and enterprise-grade support',
-    hobbyReason: 'Lowest cost, suitable for personal projects and small experiments',
-  },
-  price: 'Price',
-  deviation: 'Deviation',
+    allExported: 'All data exported as JSON'
+  }
 };

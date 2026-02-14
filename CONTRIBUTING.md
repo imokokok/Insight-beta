@@ -1,4 +1,4 @@
-# Contributing to Insight
+# Contributing to OracleMonitor
 
 Thank you for your contribution!
 
@@ -15,14 +15,6 @@ Thank you for your contribution!
 - Keep the first line under 72 characters
 - Reference issues in commit messages
 
-## Code Style
-
-- Format: Prettier + ESLint
-- Indentation: 2 spaces
-- Quotes: Single quotes
-- Semicolons: Required
-- Line width: 100 characters
-
 ## Git Commit Format
 
 Use Conventional Commits:
@@ -36,22 +28,21 @@ refactor: simplify query builder
 test: add unit tests for module
 ```
 
+## Code Style
+
+- **Formatting**: Prettier + ESLint
+- **Indentation**: 2 spaces
+- **Quotes**: Single quotes
+- **Semicolons**: Required
+- **Line width**: 100 characters
+
 ## Development Setup
 
 ```bash
-# Install dependencies
 npm install
-
-# Start development server
 npm run dev
-
-# Run tests
 npm test
-
-# Check code style
 npm run lint
-
-# Type check
 npm run typecheck
 ```
 
@@ -62,7 +53,5 @@ npm run typecheck
 3. Ensure all tests pass
 4. Update CHANGELOG.md if needed
 5. Request review from maintainers
-
-## Development Setup
 
 Detailed development guide available at [Development Guide](docs/DEVELOPMENT_GUIDE.md)

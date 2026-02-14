@@ -50,7 +50,7 @@ export const getApiDocs = () => {
             properties: {
               id: { type: 'string' },
               instanceId: { type: 'string' },
-              protocol: { type: 'string', enum: ['uma', 'chainlink', 'pyth', 'band', 'api3'] },
+              protocol: { type: 'string', enum: ['uma', 'chainlink', 'pyth', 'redstone'] },
               chain: { type: 'string' },
               symbol: { type: 'string' },
               baseAsset: { type: 'string' },

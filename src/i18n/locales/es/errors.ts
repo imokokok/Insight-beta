@@ -1,6 +1,5 @@
 export const errors = {
   apiError: 'Error del servidor',
-  errorMessage: 'Mensaje de Error',
   chainNotAdded: 'Esta red no está añadida en tu billetera. Por favor, agrégala primero.',
   contractNotFound: 'Contrato no encontrado',
   forbidden: 'Prohibido (se requiere token de administrador)',
@@ -14,8 +13,7 @@ export const errors = {
   invalidMaxBlockRange: 'El rango máximo de bloques está fuera de los límites permitidos',
   invalidRequestBody: 'Cuerpo de solicitud inválido',
   invalidRpcUrl: 'URL de RPC inválida',
-  invalidVotingPeriodHours:
-    'Las horas del período de votación están fuera de los límites permitidos',
+  invalidVotingPeriodHours: 'Las horas del período de votación están fuera de los límites permitidos',
   missingConfig: 'Configuración faltante: URL de RPC o dirección de contrato',
   requestPending: 'Ya hay una solicitud de billetera pendiente. Por favor, revisa tu billetera.',
   rpcUnreachable: 'RPC inaccesible',
@@ -24,26 +22,13 @@ export const errors = {
   userRejected: 'Rechazaste la solicitud de la billetera.',
   walletNotConnected: 'Billetera no conectada',
   wrongNetwork: 'Red incorrecta. Por favor, cambia a la cadena objetivo.',
-  requestTimeout: 'Tiempo de espera agotado, por favor intenta de nuevo más tarde',
-  networkConnectionFailed: 'Error de conexión de red, por favor revisa tu conexión',
-  rateLimitExceeded: 'Demasiadas solicitudes, por favor intenta de nuevo más tarde',
-  authenticationFailed: 'Error de autenticación, por favor inicia sesión de nuevo',
-  permissionDenied: 'Permiso denegado, no puedes realizar esta acción',
-  resourceNotFound: '{{resource}} no encontrado',
-  severity: 'Severidad',
-  severityCritical: 'Crítico',
-  severityHigh: 'Alto',
-  severityMedium: 'Medio',
-  severityLow: 'Bajo',
-  // Errores del Servicio de Precios
   failedToFetchPriceHistory: 'No se pudo obtener el historial de precios',
   failedToFetchOhlcvData: 'No se pudieron obtener los datos de mercado OHLCV',
   failedToFetchCurrentPrices: 'No se pudieron obtener los precios de mercado actuales',
   failedToFetchCurrentPrice: 'No se pudo obtener el precio actual del feed especificado',
-  failedToFetchPriceUpdateEvents:
-    'No se pudo obtener el historial de eventos de actualización de precios',
+  failedToFetchPriceUpdateEvents: 'No se pudo obtener el historial de eventos de actualización de precios',
   failedToFetchPriceStats: 'No se pudieron calcular las estadísticas de precios',
   failedToInsertPriceHistory: 'No se pudieron guardar los registros de historial de precios',
   failedToRefreshMaterializedView: 'No se pudo actualizar la vista materializada',
-  noPriceDataFound: 'No hay datos de precios disponibles para los criterios especificados',
+  noPriceDataFound: 'No hay datos de precios disponibles para los criterios especificados'
 };

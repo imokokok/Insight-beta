@@ -17,11 +17,7 @@ const PROTOCOLS = [
   { id: 'all', name: 'All Protocols', icon: '🔍' },
   { id: 'chainlink', name: 'Chainlink', icon: '🔗' },
   { id: 'pyth', name: 'Pyth Network', icon: '🐍' },
-  { id: 'band', name: 'Band Protocol', icon: '🎸' },
-  { id: 'api3', name: 'API3', icon: '📡' },
   { id: 'redstone', name: 'RedStone', icon: '💎' },
-  { id: 'flux', name: 'Flux', icon: '⚡' },
-  { id: 'switchboard', name: 'Switchboard', icon: '🎛️' },
   { id: 'uma', name: 'UMA', icon: '⚖️' },
 ];
 
