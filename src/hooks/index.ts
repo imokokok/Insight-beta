@@ -62,22 +62,6 @@ export { createSWRConfig, createSWRInfiniteConfig, REALTIME_CONFIG } from './use
 // Oracle Hooks
 export { useOracleData, useOracleFilters } from '@/features/oracle/hooks';
 
-// Gas Price Hooks
-export {
-  useGasPrice,
-  useGasPrices,
-  useGasPriceHistory,
-  useGasPriceStatistics,
-  useGasPriceTrend,
-  useGasPriceHealth,
-  type GasPriceData,
-  type GasPriceHistoryEntry,
-  type GasPriceStatistics,
-  type GasPriceTrend,
-  type ProviderHealth,
-  type GasPriceHealthResponse,
-} from '@/features/gas/hooks';
-
 // Comparison Hooks
 export {
   useHeatmapData,

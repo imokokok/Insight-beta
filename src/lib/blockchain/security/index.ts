@@ -7,4 +7,3 @@
 
 export * from './gasOptimizer';
 export * from './rateLimiter';
-export * from './reentrancyGuard';

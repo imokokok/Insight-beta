@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ES2022"
+    ],
     "allowJs": false,
     "skipLibCheck": true,
     "strict": true,
@@ -20,14 +24,19 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     },
     "noUncheckedIndexedAccess": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "types": ["vitest/globals", "@testing-library/jest-dom"]
+    "types": [
+      "vitest/globals",
+      "@testing-library/jest-dom"
+    ]
   },
   "include": [
     ".next/types/**/*.ts",
@@ -43,7 +52,14 @@
     "!src/**/*.test.ts",
     "!src/**/*.test.tsx",
     "!src/**/*.spec.ts",
-    "!src/**/*.spec.tsx"
+    "!src/**/*.spec.tsx",
+    ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "contracts", "test", "hardhat.config.ts", "tests"]
+  "exclude": [
+    "node_modules",
+    "contracts",
+    "test",
+    "hardhat.config.ts",
+    "tests"
+  ]
 }

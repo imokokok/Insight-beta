@@ -105,16 +105,4 @@ export {
   RATE_LIMIT_DEFAULTS,
   type RateLimitConfig,
   type RateLimitResult,
-  // 重入防护
-  ReentrancyGuard,
-  CrossContractReentrancyDetector,
-  CallbackAttackProtector,
-  createReentrancyGuard,
-  createCrossContractDetector,
-  createCallbackProtector,
-  getGlobalReentrancyGuard,
-  protectedOperation,
-  REENTRANCY_DEFAULTS,
-  type ReentrancyState,
-  type ReentrancyConfig,
 } from './security';

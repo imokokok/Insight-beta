@@ -1,8 +1,10 @@
 export const nav = {
   myAssertions: 'My Assertions',
   myDisputes: 'My Disputes',
+  assertions: 'Assertions',
   dashboard: 'Dashboard',
   unifiedOracle: 'Unified Oracle',
+  crossChain: 'Cross-Chain',
   security: 'Security',
   monitoring: 'Analytics',
   trends: 'Trends',
@@ -20,7 +22,9 @@ export const nav = {
   descriptions: {
     dashboard: 'Overview of your system',
     unifiedOracle: 'Unified Oracle view',
+    crossChain: 'Cross-chain price analysis',
     security: 'Security analysis',
+    assertions: 'UMA Optimistic Oracle assertions',
     trends: 'Trend analysis',
     anomalies: 'Anomaly detection',
     deviation: 'Price deviation',
