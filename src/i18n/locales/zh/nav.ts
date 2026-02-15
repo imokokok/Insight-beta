@@ -10,7 +10,6 @@ export const nav = {
   trends: '趋势',
   anomalies: '异常',
   deviation: '偏差',
-  timeline: '时间线',
   protocols: '协议',
   groups: {
     main: '主要',
@@ -28,7 +27,6 @@ export const nav = {
     trends: '趋势分析',
     anomalies: '异常检测',
     deviation: '价格偏差',
-    timeline: '事件时间线',
     protocolList: '协议列表'
   },
   labels: {

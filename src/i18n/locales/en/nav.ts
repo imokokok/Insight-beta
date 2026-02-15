@@ -10,7 +10,6 @@ export const nav = {
   trends: 'Trends',
   anomalies: 'Anomalies',
   deviation: 'Deviation',
-  timeline: 'Timeline',
   protocols: 'Protocols',
   groups: {
     main: 'Main',
@@ -28,7 +27,6 @@ export const nav = {
     trends: 'Trend analysis',
     anomalies: 'Anomaly detection',
     deviation: 'Price deviation',
-    timeline: 'Event timeline',
     protocolList: 'Protocol list'
   },
   labels: {
