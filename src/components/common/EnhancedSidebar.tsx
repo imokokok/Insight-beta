@@ -31,6 +31,7 @@ import {
   AlertTriangle,
   ChevronLeft,
   Network,
+  User,
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -125,6 +126,13 @@ export const defaultNavConfig: SidebarConfig = {
           description: 'nav.descriptions.dashboard',
         },
         {
+          id: 'address',
+          label: 'nav.address',
+          href: '/oracle/address',
+          icon: User,
+          description: 'nav.descriptions.address',
+        },
+        {
           id: 'comparison',
           label: 'nav.unifiedOracle',
           href: '/oracle/comparison',
@@ -149,7 +157,7 @@ export const defaultNavConfig: SidebarConfig = {
         {
           id: 'security',
           label: 'nav.security',
-          href: '/security/dashboard',
+          href: '/security',
           icon: Shield,
           description: 'nav.descriptions.security',
         },

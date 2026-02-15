@@ -40,6 +40,15 @@ export const oracle = {
   profile: {
     title: 'Perfil de Dirección'
   },
+  address: {
+    title: 'Buscar Dirección',
+    description: 'Ingrese una dirección Ethereum para ver su actividad y estadísticas',
+    inputLabel: 'Dirección Ethereum',
+    helperText: 'Ingrese una dirección Ethereum válida (0x...)',
+    invalidAddress: 'Dirección Ethereum inválida',
+    search: 'Buscar Dirección',
+    examples: 'Prueba estas direcciones:'
+  },
   priceService: {
     refreshedMaterializedView: 'Vista materializada actualizada exitosamente: {{viewName}}'
   }

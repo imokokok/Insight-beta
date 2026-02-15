@@ -11,6 +11,7 @@ export const nav = {
   anomalies: '异常',
   deviation: '偏差',
   protocols: '协议',
+  address: '地址查询',
   groups: {
     main: '主要',
     monitor: '分析',
@@ -27,7 +28,8 @@ export const nav = {
     trends: '趋势分析',
     anomalies: '异常检测',
     deviation: '价格偏差',
-    protocolList: '协议列表'
+    protocolList: '协议列表',
+    address: '搜索地址资料'
   },
   labels: {
     favorites: '收藏',

@@ -40,6 +40,15 @@ export const oracle = {
   profile: {
     title: 'Address Profile'
   },
+  address: {
+    title: 'Address Lookup',
+    description: 'Enter an Ethereum address to view its oracle activity and statistics',
+    inputLabel: 'Ethereum Address',
+    helperText: 'Enter a valid Ethereum address (0x...)',
+    invalidAddress: 'Invalid Ethereum address',
+    search: 'Search Address',
+    examples: 'Try these addresses:'
+  },
   priceService: {
     refreshedMaterializedView: 'Successfully refreshed materialized view: {{viewName}}'
   }

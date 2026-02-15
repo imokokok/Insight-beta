@@ -11,6 +11,7 @@ export const nav = {
   anomalies: 'Anomalies',
   deviation: 'Deviation',
   protocols: 'Protocols',
+  address: 'Address Lookup',
   groups: {
     main: 'Main',
     monitor: 'Analytics',
@@ -27,7 +28,8 @@ export const nav = {
     trends: 'Trend analysis',
     anomalies: 'Anomaly detection',
     deviation: 'Price deviation',
-    protocolList: 'Protocol list'
+    protocolList: 'Protocol list',
+    address: 'Search address profile'
   },
   labels: {
     favorites: 'Favorites',

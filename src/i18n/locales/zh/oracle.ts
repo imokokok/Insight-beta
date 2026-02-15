@@ -40,6 +40,15 @@ export const oracle = {
   profile: {
     title: '地址资料'
   },
+  address: {
+    title: '地址查询',
+    description: '输入以太坊地址查看其预言机活动与统计数据',
+    inputLabel: '以太坊地址',
+    helperText: '输入有效的以太坊地址 (0x...)',
+    invalidAddress: '无效的以太坊地址',
+    search: '搜索地址',
+    examples: '试试这些地址：'
+  },
   priceService: {
     refreshedMaterializedView: '成功刷新物化视图：{{viewName}}'
   }
