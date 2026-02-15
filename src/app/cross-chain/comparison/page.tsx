@@ -2,10 +2,10 @@
 
 import { useState, useCallback, useMemo } from 'react';
 
-import { RefreshCw, Filter, Calendar } from 'lucide-react';
+import { RefreshCw, Filter, Calendar, TrendingUp, Minus, DollarSign } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -20,6 +20,7 @@ import {
 } from '@/features/cross-chain';
 import { useCrossChainComparison, useCrossChainHistory } from '@/features/cross-chain/hooks';
 import { useI18n } from '@/i18n';
+import { cn } from '@/shared/utils';
 
 const AVAILABLE_SYMBOLS = ['BTC', 'ETH', 'SOL', 'LINK', 'AVAX', 'MATIC', 'UNI', 'AAVE'];
 const AVAILABLE_CHAINS = [
@@ -84,6 +85,22 @@ export default function CrossChainComparisonPage() {
     }));
   }, [comparisonData]);
 
+  const stats = useMemo(() => {
+    if (!comparisonData?.data) {
+      return {
+        priceRangePercent: 0,
+        maxDeviation: 0,
+        chainsCount: 0,
+      };
+    }
+    const { statistics, pricesByChain } = comparisonData.data;
+    return {
+      priceRangePercent: statistics.priceRangePercent,
+      maxDeviation: statistics.priceRangePercent,
+      chainsCount: pricesByChain.length,
+    };
+  }, [comparisonData]);
+
   const handleChainToggle = useCallback((chain: string) => {
     setSelectedChains((prev) =>
       prev.includes(chain) ? prev.filter((c) => c !== chain) : [...prev, chain],
@@ -103,6 +120,48 @@ export default function CrossChainComparisonPage() {
           <RefreshCw className="mr-2 h-4 w-4" />
           {t('crossChain.controls.refresh')}
         </Button>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Monitored Chains</CardTitle>
+            <TrendingUp className="h-4 w-4 text-green-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.chainsCount}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Price Range</CardTitle>
+            <Minus className="h-4 w-4 text-blue-500" />
+          </CardHeader>
+          <CardContent>
+            <div className={cn(
+              'text-2xl font-bold',
+              stats.priceRangePercent > 2 ? 'text-red-600' : stats.priceRangePercent > 0.5 ? 'text-yellow-600' : 'text-green-600'
+            )}>
+              {stats.priceRangePercent.toFixed(2)}%
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Status</CardTitle>
+            <DollarSign className="h-4 w-4 text-purple-500" />
+          </CardHeader>
+          <CardContent>
+            <div className={cn(
+              'text-2xl font-bold capitalize',
+              stats.priceRangePercent > 2 ? 'text-red-600' : stats.priceRangePercent > 0.5 ? 'text-yellow-600' : 'text-green-600'
+            )}>
+              {stats.priceRangePercent > 2 ? 'Critical' : stats.priceRangePercent > 0.5 ? 'Warning' : 'Normal'}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <Card>

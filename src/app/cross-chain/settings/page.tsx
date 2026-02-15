@@ -16,7 +16,6 @@ export default function CrossChainSettingsPage() {
 
   const [deviationThreshold, setDeviationThreshold] = useState('0.5');
   const [criticalThreshold, setCriticalThreshold] = useState('2.0');
-  const [arbitrageThreshold, setArbitrageThreshold] = useState('0.3');
   const [alertEnabled, setAlertEnabled] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -28,7 +27,6 @@ export default function CrossChainSettingsPage() {
   const handleReset = () => {
     setDeviationThreshold('0.5');
     setCriticalThreshold('2.0');
-    setArbitrageThreshold('0.3');
     setAlertEnabled(true);
   };
 
@@ -55,7 +53,7 @@ export default function CrossChainSettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Threshold Settings</CardTitle>
-            <CardDescription>Configure deviation and arbitrage detection thresholds</CardDescription>
+            <CardDescription>Configure price deviation detection thresholds</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -83,20 +81,6 @@ export default function CrossChainSettingsPage() {
               />
               <p className="text-sm text-muted-foreground">
                 Trigger critical alert when deviation exceeds this value
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="arbitrage-threshold">Arbitrage Threshold (%)</Label>
-              <Input
-                id="arbitrage-threshold"
-                type="number"
-                step="0.1"
-                value={arbitrageThreshold}
-                onChange={(e) => setArbitrageThreshold(e.target.value)}
-              />
-              <p className="text-sm text-muted-foreground">
-                Minimum deviation to consider as arbitrage opportunity
               </p>
             </div>
           </CardContent>

@@ -176,13 +176,6 @@ export const defaultNavConfig: SidebarConfig = {
               description: 'nav.descriptions.crossChainAlerts',
             },
             {
-              id: 'crossChainArbitrage',
-              label: 'nav.crossChainArbitrage',
-              href: '/cross-chain/arbitrage',
-              icon: Activity,
-              description: 'nav.descriptions.crossChainArbitrage',
-            },
-            {
               id: 'crossChainSettings',
               label: 'nav.crossChainSettings',
               href: '/cross-chain/settings',
