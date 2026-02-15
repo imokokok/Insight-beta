@@ -1,7 +1,6 @@
 'use client';
 
 import { BarChart3 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
   XAxis,
   YAxis,
@@ -12,7 +11,10 @@ import {
   Bar,
   Cell,
 } from 'recharts';
+
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useI18n } from '@/i18n/LanguageProvider';
+
 import type { DeviationTrend } from '../types/deviation';
 
 interface DeviationDistributionChartProps {

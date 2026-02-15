@@ -1,8 +1,10 @@
 'use client';
 
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/shared/utils';
+
 import type { DeviationTrend } from '../types/deviation';
 
 interface TrendDirectionBadgeProps {

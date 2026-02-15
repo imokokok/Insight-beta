@@ -4,6 +4,7 @@
  * 提供偏离检测、异常值分析、趋势计算等通用算法
  */
 
+import { robustTrendAnalysis } from '@/shared/utils/robustTrendAnalysis';
 import type {
   DeviationThresholds,
   TrendDirection,
@@ -12,7 +13,6 @@ import type {
   PricePoint,
   CacheEntry,
 } from '@/types/analytics/deviation';
-import { robustTrendAnalysis } from '@/shared/utils/robustTrendAnalysis';
 
 export function classifyDeviation(
   deviationPercent: number,

@@ -1,13 +1,15 @@
 'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
+
 import { Globe, RefreshCw, Search, TrendingUp, Activity } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+
 import { StatCard } from '@/components/common';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { logger } from '@/shared/logger';
 import { cn, fetchApiData } from '@/shared/utils';
 

@@ -4,8 +4,8 @@
  * 提供内存缓存功能，支持 TTL 和缓存大小限制
  */
 
-import type { CacheEntry, CacheOptions } from '@/types/analytics/deviation';
 import { logger } from '@/shared/logger';
+import type { CacheEntry, CacheOptions } from '@/types/analytics/deviation';
 
 class APICacheService {
   private cache: Map<string, CacheEntry<unknown>>;

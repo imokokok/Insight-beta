@@ -1,18 +1,20 @@
 'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
+
 import { Shield, AlertTriangle, Activity, RefreshCw, Search, TrendingUp } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+
 import { StatCard } from '@/components/common';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useI18n } from '@/i18n/LanguageProvider';
 import { logger } from '@/shared/logger';
 import { cn, fetchApiData, formatTime } from '@/shared/utils';
-import { useI18n } from '@/i18n/LanguageProvider';
 
 interface Alert { id: string; timestamp: string; type: string; severity: 'low' | 'medium' | 'high' | 'critical'; status: 'active' | 'resolved' | 'investigating'; description: string; }
 

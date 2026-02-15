@@ -1,7 +1,6 @@
 'use client';
 
 import { TrendingUp } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
   XAxis,
   YAxis,
@@ -11,7 +10,10 @@ import {
   AreaChart,
   Area,
 } from 'recharts';
+
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useI18n } from '@/i18n/LanguageProvider';
+
 import type { PriceDeviationPoint } from '../types/deviation';
 
 interface DeviationTrendChartProps {

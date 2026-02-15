@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+
 import { Settings, Save, RotateCcw, X } from 'lucide-react';
+
 import { deviationConfigService } from '@/features/oracle/services/deviationConfig';
 import type { DeviationThresholds } from '@/types/analytics/deviation';
 

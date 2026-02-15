@@ -12,7 +12,7 @@ import { EventEmitter } from 'events';
 
 import pLimit from 'p-limit';
 
-import { PriceAggregationEngine } from '@/services/oracle/priceAggregation';
+import { PriceAggregationEngine } from '@/services/oracle/priceAggregation/engine';
 import { logger } from '@/shared/logger';
 import type {
   CrossOracleComparison,

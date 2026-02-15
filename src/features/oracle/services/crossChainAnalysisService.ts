@@ -357,6 +357,11 @@ export class CrossChainAnalysisService {
         monitoredSymbols: symbols,
         monitoredChains: this.config.chains,
         activeAlerts: 0,
+        opportunities: {
+          total: 0,
+          actionable: 0,
+          avgProfitPercent: 0,
+        },
         priceComparisons: [],
         chainHealth: [],
       };
@@ -435,7 +440,6 @@ export class CrossChainAnalysisService {
 
       logger.info('Dashboard data generated', {
         symbolsProcessed: symbols.length,
-        totalOpportunities,
         activeAlerts: dashboardData.activeAlerts,
         healthyChains: dashboardData.chainHealth.filter((c) => c.status === 'healthy').length,
       });

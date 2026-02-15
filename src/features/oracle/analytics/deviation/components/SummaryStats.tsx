@@ -1,8 +1,10 @@
 'use client';
 
-import { StatCard } from '@/components/common';
 import { BarChart3, AlertTriangle, Activity, Zap } from 'lucide-react';
+
+import { StatCard } from '@/components/common';
 import { useI18n } from '@/i18n';
+
 import type { DeviationReport } from '../types/deviation';
 
 interface SummaryStatsProps {

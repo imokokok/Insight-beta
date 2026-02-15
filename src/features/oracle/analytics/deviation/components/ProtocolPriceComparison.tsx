@@ -1,10 +1,12 @@
 'use client';
 
 import { ArrowRightLeft, BarChart3 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+
 import { Badge } from '@/components/ui/badge';
-import { cn, formatTime } from '@/shared/utils';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useI18n } from '@/i18n/LanguageProvider';
+import { cn, formatTime } from '@/shared/utils';
+
 import type { PriceDeviationPoint } from '../types/deviation';
 
 interface ProtocolPriceComparisonProps {

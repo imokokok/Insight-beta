@@ -1,9 +1,12 @@
 'use client';
 
 import { ChevronRight, BarChart3 } from 'lucide-react';
-import { TrendDirectionBadge } from './TrendDirectionBadge';
-import { DeviationSeverityBadge } from './DeviationSeverityBadge';
+
 import { useI18n } from '@/i18n';
+
+import { DeviationSeverityBadge } from './DeviationSeverityBadge';
+import { TrendDirectionBadge } from './TrendDirectionBadge';
+
 import type { DeviationTrend } from '../types/deviation';
 
 interface TrendListProps {

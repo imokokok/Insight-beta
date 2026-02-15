@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
+
 import { AlertTriangle, Activity, TrendingUp, RefreshCw, Download, Search } from 'lucide-react';
-import { useToast } from '@/components/common/DashboardToast';
+
 import { StatCard } from '@/components/common';
 import { AutoRefreshControl } from '@/components/common/AutoRefreshControl';
+import { useToast } from '@/components/common/DashboardToast';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -14,9 +16,9 @@ import { RefreshIndicator } from '@/components/ui/RefreshIndicator';
 import { SkeletonList, StatCardSkeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAutoRefreshWithCountdown, useDataCache } from '@/hooks';
+import { useI18n } from '@/i18n/LanguageProvider';
 import { logger } from '@/shared/logger';
 import { fetchApiData, cn, formatTime } from '@/shared/utils';
-import { useI18n } from '@/i18n/LanguageProvider';
 
 interface AnomalyData {
   id: string;

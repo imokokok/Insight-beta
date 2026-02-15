@@ -1,9 +1,11 @@
 'use client';
 
 import { Clock } from 'lucide-react';
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { formatTime } from '@/shared/utils';
 import { useI18n } from '@/i18n/LanguageProvider';
+import { formatTime } from '@/shared/utils';
+
 import type { DeviationReport } from '../types/deviation';
 
 interface AnalysisPeriodCardProps {

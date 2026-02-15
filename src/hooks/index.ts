@@ -74,15 +74,11 @@ export {
 // Cross Chain Hooks
 export {
   useCrossChainComparison,
-  useCrossChainArbitrage,
   useCrossChainAlerts,
   useCrossChainDashboard,
   useCrossChainHistory,
   type CrossChainComparisonData,
   type CrossChainComparisonResult,
-  type CrossChainArbitrageOpportunity,
-  type CrossChainArbitrageSummary,
-  type CrossChainArbitrageResponse,
   type CrossChainDeviationAlert,
   type CrossChainDeviationAlertsResponse,
   type CrossChainDashboardData,

@@ -33,8 +33,8 @@ import {
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { cn } from '@/shared/utils';
 import { useI18n } from '@/i18n/LanguageProvider';
+import { cn } from '@/shared/utils';
 
 interface UnifiedEmptyStateProps {
   icon?: LucideIcon;

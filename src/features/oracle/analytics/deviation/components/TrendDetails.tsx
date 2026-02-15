@@ -1,10 +1,13 @@
 'use client';
 
 import { TrendingUp, Target } from 'lucide-react';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendDirectionBadge } from './TrendDirectionBadge';
-import { DeviationTrendChart } from './DeviationTrendChart';
 import { useI18n } from '@/i18n/LanguageProvider';
+
+import { DeviationTrendChart } from './DeviationTrendChart';
+import { TrendDirectionBadge } from './TrendDirectionBadge';
+
 import type { DeviationTrend, PriceDeviationPoint } from '../types/deviation';
 
 interface TrendDetailsProps {

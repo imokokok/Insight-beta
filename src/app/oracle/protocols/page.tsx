@@ -9,8 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
-import { fetchApiData } from '@/shared/utils';
 import { useI18n } from '@/i18n/LanguageProvider';
+import { fetchApiData } from '@/shared/utils';
 
 interface PriceFeed {
   id: string;

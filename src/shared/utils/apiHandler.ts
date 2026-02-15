@@ -7,8 +7,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-import { logger } from '@/shared/logger';
-
 /**
  * API 响应格式
  */
@@ -93,40 +91,6 @@ export type ApiRouteHandler = (request: NextRequest) => Promise<NextResponse>;
  * });
  * ```
  */
-export function withErrorHandler(handler: ApiRouteHandler): ApiRouteHandler {
-  return async (request: NextRequest): Promise<NextResponse> => {
-    try {
-      return await handler(request);
-    } catch (error) {
-      logger.error('API Error', { error });
-      return apiError(error instanceof Error ? error.message : 'Internal server error', 500);
-    }
-  };
-}
-
-/**
- * 从请求中获取查询参数
- *
- * @param request - NextRequest
- * @param key - 参数名
- * @returns 参数值或 null
- */
 export function getQueryParam(request: NextRequest, key: string): string | null {
   return request.nextUrl.searchParams.get(key);
-}
-
-/**
- * 从请求中获取必需的查询参数
- *
- * @param request - NextRequest
- * @param key - 参数名
- * @returns 参数值
- * @throws Error 如果参数不存在
- */
-export function getRequiredQueryParam(request: NextRequest, key: string): string {
-  const value = request.nextUrl.searchParams.get(key);
-  if (value === null) {
-    throw new Error(`Missing required query parameter: ${key}`);
-  }
-  return value;
 }

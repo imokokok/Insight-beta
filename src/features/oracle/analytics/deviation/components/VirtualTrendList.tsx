@@ -1,12 +1,16 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Virtuoso } from 'react-virtuoso';
 
 import { ChevronRight, BarChart3, Search, Filter } from 'lucide-react';
-import { TrendDirectionBadge } from './TrendDirectionBadge';
-import { DeviationSeverityBadge } from './DeviationSeverityBadge';
+import { Virtuoso } from 'react-virtuoso';
+
 import { useI18n } from '@/i18n/LanguageProvider';
+
+import { DeviationSeverityBadge } from './DeviationSeverityBadge';
+import { TrendDirectionBadge } from './TrendDirectionBadge';
+
+
 import type { DeviationTrend } from '../types/deviation';
 
 interface VirtualTrendListProps {

@@ -19,9 +19,9 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useI18n } from '@/i18n/LanguageProvider';
 import { cn, fetchApiData } from '@/shared/utils';
 import { PROTOCOL_DISPLAY_NAMES, ORACLE_PROTOCOLS } from '@/types/oracle';
-import { useI18n } from '@/i18n/LanguageProvider';
 import type { OracleProtocol } from '@/types/unifiedOracleTypes';
 
 interface ProtocolHealthGridProps {

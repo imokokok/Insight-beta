@@ -6,8 +6,8 @@ import { EnhancedAreaChart, EnhancedLineChart, EnhancedBarChart } from '@/compon
 import { CHART_COLORS } from '@/components/charts';
 import { ChartCard } from '@/components/common/ChartCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { formatNumber } from '@/shared/utils';
 import { useI18n } from '@/i18n/LanguageProvider';
+import { formatNumber } from '@/shared/utils';
 
 import type { ChartDataPoint, ComparisonDataPoint } from '../types/dashboard';
 

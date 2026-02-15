@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCrossChainDashboard } from '@/features/cross-chain/hooks';
 import { useI18n } from '@/i18n';
 import { cn } from '@/shared/utils';
+import type { CrossChainDashboardData } from '@/types/crossChainAnalysisTypes';
 
 const AVAILABLE_SYMBOLS = ['BTC', 'ETH', 'SOL', 'LINK', 'AVAX', 'MATIC', 'UNI', 'AAVE'];
 
@@ -19,9 +20,9 @@ export default function CrossChainOverviewPage() {
     mutate: refreshDashboard,
   } = useCrossChainDashboard();
 
-  const dashboard = dashboardData?.data as any;
+  const dashboard = dashboardData?.data as CrossChainDashboardData | undefined;
 
-  const healthyChains = dashboard?.chainHealth?.filter((c: any) => c.status === 'healthy').length ?? 0;
+  const healthyChains = dashboard?.chainHealth?.filter((c) => c.status === 'healthy').length ?? 0;
   const totalChains = dashboard?.chainHealth?.length ?? 0;
 
   return (

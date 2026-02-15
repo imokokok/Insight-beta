@@ -17,7 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import type { CrossChainHistoricalResponse } from '@/features/cross-chain/hooks';
 import { useI18n } from '@/i18n';
-import { cn, formatChangePercent, formatPercentValue } from '@/shared/utils';
+import { cn, formatPercentValue } from '@/shared/utils';
 
 interface CrossChainHistoricalCardProps {
   data?: CrossChainHistoricalResponse['data'];

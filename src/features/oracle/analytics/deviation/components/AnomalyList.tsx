@@ -1,11 +1,13 @@
 'use client';
 
 import { AlertTriangle } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+
 import { EmptyDeviationState } from '@/components/common/EmptyState';
+import { Badge } from '@/components/ui/badge';
 import { SkeletonList } from '@/components/ui/skeleton';
-import { formatTime } from '@/shared/utils';
 import { useI18n } from '@/i18n/LanguageProvider';
+import { formatTime } from '@/shared/utils';
+
 import type { PriceDeviationPoint } from '../types/deviation';
 
 interface AnomalyListProps {

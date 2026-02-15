@@ -8,8 +8,8 @@ import {
   StatCardGroup,
   DashboardStatsSection,
 } from '@/components/common/StatCard';
-import { useI18n } from '@/i18n/LanguageProvider';
 import type { StatCardStatus } from '@/components/common/StatCard';
+import { useI18n } from '@/i18n/LanguageProvider';
 
 interface StatCardData {
   title: string;

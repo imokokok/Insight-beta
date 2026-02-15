@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+
+import { deviationConfigService } from '@/features/oracle/services/deviationConfig';
 import { useAutoRefreshWithCountdown, useDataCache } from '@/hooks';
 import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n';
 import { logger } from '@/shared/logger';
 import { fetchApiData } from '@/shared/utils';
-import { deviationConfigService } from '@/features/oracle/services/deviationConfig';
+
 import type { DeviationReport, DeviationTrend, PriceDeviationPoint } from '../types/deviation';
 
 export interface UseDeviationAnalyticsOptions {
