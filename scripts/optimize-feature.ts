@@ -54,9 +54,7 @@ const files = {
   'hooks/index.ts': `export {};\n`,
   'index.ts': `export * from './components';
 export * from './hooks';
-// export type { ... } from './types/[page]';
-// export * from './utils/[page]';
-`,
+`;`,
 };
 
 try {
