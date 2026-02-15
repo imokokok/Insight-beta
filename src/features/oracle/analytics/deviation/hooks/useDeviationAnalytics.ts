@@ -6,6 +6,7 @@ import { usePageOptimizations } from '@/hooks/usePageOptimizations';
 import { useI18n } from '@/i18n';
 import { logger } from '@/shared/logger';
 import { fetchApiData } from '@/shared/utils';
+import { deviationConfigService } from '@/features/oracle/services/deviationConfig';
 import type { DeviationReport, DeviationTrend, PriceDeviationPoint } from '../types/deviation';
 
 export function useDeviationAnalytics() {
@@ -18,6 +19,7 @@ export function useDeviationAnalytics() {
   const [symbolData, setSymbolData] = useState<PriceDeviationPoint[]>([]);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const { t } = useI18n();
@@ -35,7 +37,7 @@ export function useDeviationAnalytics() {
     refresh,
   } = useAutoRefreshWithCountdown({
     onRefresh: () => fetchReport(false),
-    interval: 60000,
+    interval: deviationConfigService.getConfig().refreshIntervalMs,
     enabled: true,
     pauseWhenHidden: true,
   });
@@ -52,8 +54,11 @@ export function useDeviationAnalytics() {
           setLoading(false);
         }
 
+        const config = deviationConfigService.getConfig();
+        const windowHours = config.analysisWindowHours;
+        
         const response = await fetchApiData<{ data: DeviationReport }>(
-          '/api/oracle/analytics/deviation?type=report',
+          `/api/oracle/analytics/deviation?type=report&windowHours=${windowHours}`,
         );
         setReport(response.data);
         setLastUpdated(new Date());
@@ -75,8 +80,9 @@ export function useDeviationAnalytics() {
 
   const fetchSymbolTrend = useCallback(async (symbol: string) => {
     try {
+      const config = deviationConfigService.getConfig();
       const response = await fetchApiData<{ data: { dataPoints: PriceDeviationPoint[] } }>(
-        `/api/oracle/analytics/deviation?type=trend&symbol=${symbol}`,
+        `/api/oracle/analytics/deviation?type=trend&symbol=${symbol}&windowHours=${config.analysisWindowHours}`,
       );
       setSymbolData(response.data.dataPoints || []);
     } catch (err) {
@@ -126,6 +132,8 @@ export function useDeviationAnalytics() {
     URL.revokeObjectURL(url);
   }, [report]);
 
+  const config = deviationConfigService.getConfig();
+
   return {
     loading,
     report,
@@ -151,5 +159,8 @@ export function useDeviationAnalytics() {
     fetchSymbolTrend,
     filteredTrends,
     handleExport,
+    config,
+    settingsOpen,
+    setSettingsOpen,
   };
 }
