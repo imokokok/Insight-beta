@@ -39,7 +39,7 @@ export { useReducedMotion } from './useReducedMotion';
 export { useInfiniteList, type BaseResponse } from './useUI';
 
 // ==================== 用户 Hooks ====================
-export { useUserStats, useWatchlist, useAdminSession } from './useUser';
+export { useUserStats, useAdminSession } from './useUser';
 
 // ==================== 钱包 Hooks ====================
 export { useBalance, useSwitchChainWithFeedback } from '@/features/wallet/hooks/useWallet';

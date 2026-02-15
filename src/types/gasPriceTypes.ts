@@ -15,22 +15,6 @@ export interface GasPriceData {
   currency: string;
 }
 
-export interface GasEstimationRequest {
-  chain: SupportedChain;
-  gasLimit?: number;
-  gasPrice?: 'slow' | 'average' | 'fast' | 'fastest';
-}
-
-export interface GasEstimationResult {
-  chain: SupportedChain;
-  gasPrice: number;
-  gasLimit: number;
-  estimatedCost: number;
-  estimatedCostUsd: number;
-  currency: string;
-  timestamp: Date;
-}
-
 export interface GasPriceConfig {
   enabled: boolean;
   providers: GasProvider[];
@@ -53,17 +37,6 @@ export interface GasProviderResponse {
   error?: string;
   latencyMs: number;
   retryCount?: number;
-}
-
-export interface CrossChainGasEstimation {
-  fromChain: SupportedChain;
-  toChain: SupportedChain;
-  fromGasCost: number;
-  toGasCost: number;
-  bridgeCost: number;
-  totalCost: number;
-  currency: string;
-  timestamp: Date;
 }
 
 export interface GasPriceHistoryEntry {

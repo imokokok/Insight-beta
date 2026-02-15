@@ -358,7 +358,6 @@ const VirtualTableRow = React.memo(function VirtualTableRow({ row, style }: Virt
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem>{t('comparison.table.viewDetails')}</DropdownMenuItem>
-            <DropdownMenuItem>{t('comparison.table.addToWatchlist')}</DropdownMenuItem>
             <DropdownMenuItem>{t('comparison.table.setAlert')}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

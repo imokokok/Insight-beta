@@ -24,7 +24,6 @@ import {
   LayoutDashboard,
   Globe,
   Shield,
-  Bookmark,
   X,
   Activity,
   BarChart3,
@@ -146,13 +145,6 @@ export const defaultNavConfig: SidebarConfig = {
           icon: Shield,
           description: 'nav.descriptions.security',
         },
-        {
-          id: 'monitoring',
-          label: 'nav.monitoring',
-          href: '/oracle/monitoring',
-          icon: Activity,
-          description: 'nav.descriptions.monitoring',
-        },
       ],
     },
     {
@@ -180,20 +172,6 @@ export const defaultNavConfig: SidebarConfig = {
           href: '/oracle/analytics/deviation',
           icon: Activity,
           description: 'nav.descriptions.deviation',
-        },
-      ],
-    },
-    {
-      id: 'operations',
-      label: 'nav.groups.operations',
-      icon: Layers,
-      items: [
-        {
-          id: 'watchlist',
-          label: 'nav.watchlist',
-          href: '/watchlist',
-          icon: Bookmark,
-          description: 'nav.descriptions.watchlist',
         },
       ],
     },

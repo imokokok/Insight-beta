@@ -1,8 +1,5 @@
 import { logger } from '@/shared/logger';
 import type {
-  CrossChainGasEstimation,
-  GasEstimationRequest,
-  GasEstimationResult,
   GasPriceConfig,
   GasPriceData,
   GasPriceHistoryEntry,
@@ -293,52 +290,6 @@ export class GasPriceService {
     }
 
     return results;
-  }
-
-  async estimateGasCost(request: GasEstimationRequest): Promise<GasEstimationResult> {
-    const gasPriceData = await this.getGasPrice(request.chain);
-    const gasPriceLevel = request.gasPrice ?? 'average';
-
-    const gasPrice = this.getGasPriceByLevel(gasPriceData, gasPriceLevel);
-    const gasLimit = request.gasLimit ?? 21000;
-
-    const estimatedCost = (gasPrice * gasLimit) / 1e9;
-    const estimatedCostUsd = this.convertToUsd(estimatedCost, request.chain);
-
-    return {
-      chain: request.chain,
-      gasPrice,
-      gasLimit,
-      estimatedCost,
-      estimatedCostUsd,
-      currency: 'ETH',
-      timestamp: new Date(),
-    };
-  }
-
-  async estimateCrossChainGasCost(
-    fromChain: SupportedChain,
-    toChain: SupportedChain,
-  ): Promise<CrossChainGasEstimation> {
-    const [fromGasPrice, toGasPrice] = await Promise.all([
-      this.getGasPrice(fromChain),
-      this.getGasPrice(toChain),
-    ]);
-
-    const fromGasCost = this.convertToUsd((fromGasPrice.average * 21000) / 1e9, fromChain);
-    const toGasCost = this.convertToUsd((toGasPrice.average * 21000) / 1e9, toChain);
-    const bridgeCost = this.getBridgeCost(fromChain, toChain);
-
-    return {
-      fromChain,
-      toChain,
-      fromGasCost,
-      toGasCost,
-      bridgeCost,
-      totalCost: fromGasCost + toGasCost + bridgeCost,
-      currency: 'USD',
-      timestamp: new Date(),
-    };
   }
 
   getHistory(
@@ -798,62 +749,6 @@ export class GasPriceService {
       case 'fastest':
         return gasPriceData.fastest;
     }
-  }
-
-  private convertToUsd(amount: number, chain: SupportedChain): number {
-    const nativePrices: Partial<Record<SupportedChain, number>> = {
-      ethereum: 3500,
-      bsc: 600,
-      polygon: 0.8,
-      avalanche: 40,
-      arbitrum: 3500,
-      optimism: 3500,
-      base: 3500,
-      solana: 150,
-      near: 5,
-      fantom: 0.7,
-      celo: 0.8,
-      gnosis: 300,
-      linea: 3500,
-      scroll: 3500,
-      mantle: 0.5,
-      mode: 2,
-      blast: 1,
-      aptos: 10,
-    };
-
-    const price = nativePrices[chain] ?? 1;
-    return amount * price;
-  }
-
-  private getBridgeCost(fromChain: SupportedChain, toChain: SupportedChain): number {
-    if (fromChain === toChain) return 0;
-
-    const bridgeCosts: Partial<Record<SupportedChain, number>> = {
-      ethereum: 5.0,
-      bsc: 2.0,
-      polygon: 0.5,
-      avalanche: 1.0,
-      arbitrum: 1.5,
-      optimism: 1.5,
-      base: 1.0,
-      solana: 0.01,
-      near: 0.1,
-      fantom: 0.2,
-      celo: 0.1,
-      gnosis: 0.1,
-      linea: 0.5,
-      scroll: 0.5,
-      mantle: 0.3,
-      mode: 0.3,
-      blast: 0.3,
-      aptos: 0.1,
-    };
-
-    const costA = bridgeCosts[fromChain] ?? 1.0;
-    const costB = bridgeCosts[toChain] ?? 1.0;
-
-    return (costA + costB) / 2;
   }
 
   private getFallbackEstimation(chain: SupportedChain): GasPriceData {

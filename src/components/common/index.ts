@@ -51,7 +51,6 @@ export {
   EmptyDeviationState,
   EmptyErrorState,
   EmptyAlertsState,
-  EmptyWatchlistState,
   EmptyDashboardState,
   EmptyProtocolsState,
   EmptyPriceDataState,

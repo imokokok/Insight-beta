@@ -45,7 +45,6 @@ export const comparison = {
     status: '状态',
     confidence: '置信度',
     viewDetails: '查看详情',
-    addToWatchlist: '添加到观察列表',
     setAlert: '设置告警',
     searchPlaceholder: '搜索资产对或协议...',
     total: '总计',

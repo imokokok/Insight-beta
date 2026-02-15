@@ -1,5 +1,4 @@
 import { env, getEnvReport } from '@/config/env';
-import { performanceMonitor } from '@/features/monitoring/services/performanceMonitor';
 import { error, handleApi, rateLimit, requireAdmin } from '@/lib/api/apiResponse';
 import { hasDatabase, query } from '@/lib/database/db';
 
@@ -13,7 +12,6 @@ import { hasDatabase, query } from '@/lib/database/db';
  *       - liveness: 应用是否存活
  *       - readiness: 应用是否就绪
  *       - validation: 完整配置验证
- *       - performance: 性能监控状态
  *     tags:
  *       - Health
  *     parameters:
@@ -21,7 +19,7 @@ import { hasDatabase, query } from '@/lib/database/db';
  *         name: probe
  *         schema:
  *           type: string
- *           enum: [liveness, readiness, validation, performance]
+ *           enum: [liveness, readiness, validation]
  *         description: 探针类型
  *     responses:
  *       200:
@@ -110,7 +108,6 @@ async function handleValidationProbe(request: Request) {
   const includeEnv = auth === null;
   const issues: string[] = [];
 
-  // 基础检查
   if (databaseStatus === 'disconnected') issues.push('database_disconnected');
   if (isProd && databaseStatus === 'not_configured') issues.push('database_not_configured');
   if (isProd && demoModeEnabled) issues.push('demo_mode_enabled');
@@ -123,27 +120,6 @@ async function handleValidationProbe(request: Request) {
     issues,
     database: databaseStatus,
     env: includeEnv ? envReport : { ok: false, issues: [] },
-  };
-}
-
-async function handlePerformanceProbe() {
-  const health = performanceMonitor.getHealthStatus();
-  const latest = performanceMonitor.getLatestMetrics();
-  const stats = performanceMonitor.getStatistics(3600000); // 1 hour
-
-  return {
-    status: health.status,
-    probe: 'performance',
-    timestamp: new Date().toISOString(),
-    checks: health.checks,
-    metrics: latest
-      ? {
-          responseTime: latest.responseTime,
-          errors: latest.errors,
-          resources: latest.resources,
-        }
-      : null,
-    statistics: stats,
   };
 }
 
@@ -193,10 +169,6 @@ export async function GET(request: Request) {
       case 'validation': {
         const result = await handleValidationProbe(request);
         if (result instanceof Response) return result;
-        return Response.json(result);
-      }
-      case 'performance': {
-        const result = await handlePerformanceProbe();
         return Response.json(result);
       }
       default: {

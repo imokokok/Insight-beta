@@ -45,7 +45,6 @@ export const comparison = {
     status: 'Status',
     confidence: 'Confidence',
     viewDetails: 'View Details',
-    addToWatchlist: 'Add to Watchlist',
     setAlert: 'Set Alert',
     searchPlaceholder: 'Search asset pair or protocol...',
     total: 'Total',

@@ -45,7 +45,6 @@ export const comparison = {
     status: 'Estado',
     confidence: 'Confianza',
     viewDetails: 'Ver Detalles',
-    addToWatchlist: 'Agregar a Lista de Seguimiento',
     setAlert: 'Configurar Alerta',
     searchPlaceholder: 'Buscar par de activos o protocolo...',
     total: 'Total',

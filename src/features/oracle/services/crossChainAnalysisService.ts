@@ -1,6 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import { gasPriceService } from '@/features/gas/services/gasPriceService';
 import { query } from '@/lib/database/db';
 import { logger } from '@/shared/logger';
 import type {
@@ -318,7 +317,7 @@ export class CrossChainAnalysisService {
           const priceDiffPercent = lowerPrice > 0 ? (priceDiff / lowerPrice) * 100 : 0;
 
           if (priceDiffPercent >= this.config.arbitrageThreshold) {
-            const gasCostEstimate = await this.estimateGasCost(buy.chain, sell.chain);
+            const gasCostEstimate = this.getStaticGasCost(buy.chain, sell.chain);
 
             const buyCostUsd = tradeAmount * buy.price;
             const sellRevenueUsd = tradeAmount * sell.price;
@@ -387,50 +386,39 @@ export class CrossChainAnalysisService {
     }
   }
 
-  private async estimateGasCost(chainA: SupportedChain, chainB: SupportedChain): Promise<number> {
-    try {
-      const gasEstimation = await gasPriceService.estimateCrossChainGasCost(chainA, chainB);
-      return gasEstimation.totalCost;
-    } catch (error) {
-      logger.warn('Failed to fetch real-time gas prices, using fallback estimation', {
-        chainA,
-        chainB,
-        error: error instanceof Error ? error.message : String(error),
-      });
+  private getStaticGasCost(chainA: SupportedChain, chainB: SupportedChain): number {
+    const gasCosts: Partial<Record<SupportedChain, number>> = {
+      ethereum: 15.0,
+      polygon: 0.02,
+      bsc: 0.2,
+      avalanche: 0.3,
+      arbitrum: 0.2,
+      optimism: 0.5,
+      base: 0.1,
+      solana: 0.0005,
+      near: 0.1,
+      fantom: 0.05,
+      celo: 0.01,
+      gnosis: 0.01,
+      linea: 0.1,
+      scroll: 0.15,
+      mantle: 0.05,
+      mode: 0.1,
+      blast: 0.1,
+      aptos: 0.02,
+      polygonAmoy: 0.001,
+      sepolia: 0.001,
+      goerli: 0.001,
+      mumbai: 0.001,
+    };
 
-      const gasCosts: Partial<Record<SupportedChain, number>> = {
-        ethereum: 15.0,
-        polygon: 0.02,
-        bsc: 0.2,
-        avalanche: 0.3,
-        arbitrum: 0.2,
-        optimism: 0.5,
-        base: 0.1,
-        solana: 0.0005,
-        near: 0.1,
-        fantom: 0.05,
-        celo: 0.01,
-        gnosis: 0.01,
-        linea: 0.1,
-        scroll: 0.15,
-        mantle: 0.05,
-        mode: 0.1,
-        blast: 0.1,
-        aptos: 0.02,
-        polygonAmoy: 0.001,
-        sepolia: 0.001,
-        goerli: 0.001,
-        mumbai: 0.001,
-      };
+    const costA = gasCosts[chainA] ?? 0.5;
+    const costB = gasCosts[chainB] ?? 0.5;
 
-      const costA = gasCosts[chainA] ?? 0.5;
-      const costB = gasCosts[chainB] ?? 0.5;
+    const isBridgeRequired = chainA !== chainB;
+    const bridgeOverhead = isBridgeRequired ? 5.0 : 0;
 
-      const isBridgeRequired = chainA !== chainB;
-      const bridgeOverhead = isBridgeRequired ? 5.0 : 0;
-
-      return costA + costB + bridgeOverhead;
-    }
+    return costA + costB + bridgeOverhead;
   }
 
   private generateArbitrageWarnings(

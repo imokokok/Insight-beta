@@ -1,5 +1,4 @@
 export const common = {
-  addToWatchlist: 'Add to Watchlist',
   all: 'All',
   allLoaded: 'All loaded',
   copied: 'Copied',
@@ -10,7 +9,6 @@ export const common = {
   noData: 'No Data',
   pending: 'Pending',
   refresh: 'Refresh',
-  removeFromWatchlist: 'Remove from Watchlist',
   resolved: 'Resolved',
   retry: 'Retry',
   success: 'Success',

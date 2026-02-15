@@ -1,15 +1,14 @@
 import type { ComponentPropsWithoutRef } from 'react';
-import { memo, forwardRef, useCallback } from 'react';
+import { memo, forwardRef } from 'react';
 
 import Link from 'next/link';
 
-import { CheckCircle2, Clock, ArrowUpRight, RotateCw, FileQuestion, Star } from 'lucide-react';
+import { CheckCircle2, Clock, ArrowUpRight, RotateCw, FileQuestion } from 'lucide-react';
 import { Virtuoso, VirtuosoGrid } from 'react-virtuoso';
 
 import { CopyButton } from '@/components/common/CopyButton';
 import { SkeletonList } from '@/components/ui/skeleton';
 import { LivenessProgressBar } from '@/features/oracle/components/LivenessProgressBar';
-import { useWatchlist } from '@/hooks';
 import { useI18n } from '@/i18n/LanguageProvider';
 import { langToLocale } from '@/i18n/translations';
 import {
@@ -83,16 +82,6 @@ export const AssertionList = memo(function AssertionList({
 }: AssertionListProps) {
   const { t, lang } = useI18n();
   const locale = langToLocale[lang];
-  const { isWatched, toggleWatchlist } = useWatchlist();
-
-  const handleToggleWatchlist = useCallback(
-    (e: React.MouseEvent, id: string) => {
-      e.preventDefault();
-      e.stopPropagation();
-      toggleWatchlist(id);
-    },
-    [toggleWatchlist],
-  );
 
   if (loading && items.length === 0) {
     return <SkeletonList viewMode={viewMode} />;
@@ -202,25 +191,6 @@ export const AssertionList = memo(function AssertionList({
             </div>
 
             <div className="flex items-center gap-2">
-              <button
-                onClick={(e) => handleToggleWatchlist(e, item.id)}
-                className={cn(
-                  'rounded-lg p-1.5 transition-all duration-200',
-                  isWatched(item.id)
-                    ? 'text-yellow-400 hover:bg-yellow-50 hover:text-yellow-500'
-                    : 'text-gray-300 hover:bg-gray-50 hover:text-yellow-400',
-                )}
-                title={
-                  isWatched(item.id) ? t('common.removeFromWatchlist') : t('common.addToWatchlist')
-                }
-              >
-                <Star
-                  size={18}
-                  fill={isWatched(item.id) ? 'currentColor' : 'none'}
-                  strokeWidth={isWatched(item.id) ? 0 : 2}
-                />
-              </button>
-
               {/* Status badge for Grid view */}
               {viewMode === 'grid' && (
                 <span

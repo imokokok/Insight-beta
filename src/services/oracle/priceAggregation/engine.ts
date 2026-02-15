@@ -213,16 +213,6 @@ export class PriceAggregationEngine {
       logger.error('Failed to save comparison', { error });
     });
 
-    // 使用新的告警规则引擎评估告警（延迟执行+动态导入，打破循环依赖）
-    setImmediate(async () => {
-      try {
-        const { alertRuleEngine } = await import('@/services/oracle/realtime');
-        alertRuleEngine.evaluate(comparison);
-      } catch (error) {
-        logger.error('Failed to evaluate alert rules', { error });
-      }
-    });
-
     return comparison;
   }
 

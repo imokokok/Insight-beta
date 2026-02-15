@@ -98,10 +98,6 @@ const onboarding = {
       description:
         'View and manage all system alerts, including price deviations, node offline notifications, and more.',
     },
-    watchlist: {
-      title: 'Watchlist',
-      description: 'Add assets you care about to quickly track important price changes.',
-    },
     sidebar: {
       title: 'Navigation',
       description: 'Use the sidebar to quickly access different functional modules.',
@@ -117,12 +113,6 @@ const onboarding = {
       description: 'No active alerts at the moment. All oracle protocols are running normally.',
       action: 'Set Alert Rules',
       actionDesc: 'Configure custom alert thresholds to get notified of anomalies',
-    },
-    watchlist: {
-      title: 'Start Adding Monitors',
-      description: "You haven't added any monitors yet. Start building your watchlist.",
-      action: 'Add First Monitor',
-      actionDesc: "Browse oracle data and add assets you're interested in",
     },
   },
 };

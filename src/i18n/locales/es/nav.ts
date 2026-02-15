@@ -1,7 +1,6 @@
 export const nav = {
   myAssertions: 'Mis Aserciones',
   myDisputes: 'Mis Disputas',
-  watchlist: 'Lista de Seguimiento',
   dashboard: 'Panel',
   unifiedOracle: 'Oráculo Unificado',
   security: 'Seguridad',
@@ -22,11 +21,9 @@ export const nav = {
     dashboard: 'Visión general de tu sistema',
     unifiedOracle: 'Vista de Oráculo Unificado',
     security: 'Monitoreo de seguridad',
-    monitoring: 'Monitoreo en tiempo real',
     trends: 'Análisis de tendencias',
     anomalies: 'Detección de anomalías',
     deviation: 'Desviación de precios',
-    watchlist: 'Tu lista de seguimiento',
     timeline: 'Línea de tiempo de eventos',
     protocolList: 'Lista de protocolos'
   },

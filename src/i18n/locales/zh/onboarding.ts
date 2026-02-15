@@ -95,10 +95,6 @@ const onboarding = {
       title: 'Protocols - 协议监控',
       description: '查看 Chainlink、Pyth、Band 等多个预言机协议的实时数据和性能指标。',
     },
-    watchlist: {
-      title: 'Watchlist - 关注列表',
-      description: '添加您关注的资产到列表，快速追踪重要价格变化。',
-    },
     sidebar: {
       title: '导航菜单',
       description: '通过侧边栏快速访问各个功能模块。',
@@ -114,12 +110,6 @@ const onboarding = {
       description: '当前没有活跃告警，所有预言机协议正常运行。',
       action: '设置告警规则',
       actionDesc: '配置自定义告警阈值，及时获取异常通知',
-    },
-    watchlist: {
-      title: '开始添加监控',
-      description: '您还没有添加任何监控项，开始构建您的关注列表吧。',
-      action: '添加第一个监控',
-      actionDesc: '浏览预言机数据并添加您感兴趣的资产',
     },
   },
 };

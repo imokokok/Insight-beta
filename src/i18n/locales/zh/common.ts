@@ -1,5 +1,4 @@
 export const common = {
-  addToWatchlist: '添加到关注列表',
   all: '全部',
   allLoaded: '已全部加载',
   copied: '已复制',
@@ -10,7 +9,6 @@ export const common = {
   noData: '暂无数据',
   pending: '待处理',
   refresh: '刷新',
-  removeFromWatchlist: '从关注列表移除',
   resolved: '已解决',
   retry: '重试',
   success: '成功',

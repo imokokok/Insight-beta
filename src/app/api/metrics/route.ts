@@ -5,7 +5,6 @@
  * - 聚合性能指标
  * - 缓存命中率
  * - 熔断器状态
- * - 告警统计
  */
 
 import { NextResponse } from 'next/server';
@@ -17,8 +16,6 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    // 动态导入以避免构建时执行
-    const { alertRuleEngine } = await import('@/services/oracle/realtime');
     const { priceAggregationEngine } = await import('@/services/oracle/priceAggregation');
 
     const metrics = {
@@ -27,9 +24,6 @@ export async function GET() {
 
       // 熔断器状态
       circuitBreakers: circuitBreakerManager.getAllStats(),
-
-      // 告警统计
-      alerts: alertRuleEngine.getStats(),
 
       // 引擎统计
       engine: {

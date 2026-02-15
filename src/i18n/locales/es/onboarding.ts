@@ -102,11 +102,6 @@ const onboarding = {
       description:
         'Monitorea múltiples protocolos de oracle como Chainlink, Pyth, Band con datos en tiempo real y métricas de rendimiento.',
     },
-    watchlist: {
-      title: 'Lista de Seguimiento',
-      description:
-        'Agrega activos que te interesan para rastrear rápidamente cambios importantes de precios.',
-    },
     sidebar: {
       title: 'Navegación',
       description:
@@ -125,13 +120,6 @@ const onboarding = {
       action: 'Configurar Reglas de Alerta',
       actionDesc:
         'Configura umbrales de alerta personalizados para recibir notificaciones de anomalías',
-    },
-    watchlist: {
-      title: 'Comienza a Agregar Monitores',
-      description:
-        'Aún no has agregado ningún monitor. Comienza a construir tu lista de seguimiento.',
-      action: 'Agregar Primer Monitor',
-      actionDesc: 'Explora datos de oracle y agrega activos que te interesen',
     },
   },
 };

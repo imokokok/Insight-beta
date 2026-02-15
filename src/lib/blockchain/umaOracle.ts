@@ -18,7 +18,7 @@ import {
 import { logger } from '@/shared/logger';
 import type { SupportedChain } from '@/types/unifiedOracleTypes';
 
-import { createQueryCache, createSmartRetry, GAS_CONSTANTS } from './security/gasOptimizer';
+import { createQueryCache, createSmartRetry, UTILITY_CONSTANTS } from './security/gasOptimizer';
 import {
   validateAddress,
   validateBytes32,
@@ -204,10 +204,11 @@ export class UMAClient {
 
     // 初始化安全组件
     this.cache = createQueryCache(
-      GAS_CONSTANTS.MAX_CACHE_SIZE,
-      config.cacheTtl ?? GAS_CONSTANTS.DEFAULT_CACHE_TTL,
+      UTILITY_CONSTANTS.MAX_CACHE_SIZE,
+      config.cacheTtl ?? UTILITY_CONSTANTS.DEFAULT_CACHE_TTL,
     );
-    this.retry = createSmartRetry(GAS_CONSTANTS.MAX_RETRIES, GAS_CONSTANTS.RETRY_DELAY_MS);
+
+    this.retry = createSmartRetry(UTILITY_CONSTANTS.MAX_RETRIES, UTILITY_CONSTANTS.RETRY_DELAY_MS);
 
     if (config.enableRateLimit !== false) {
       this.rateLimiter = createRateLimiter({

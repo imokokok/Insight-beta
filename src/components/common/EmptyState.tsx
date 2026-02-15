@@ -16,7 +16,6 @@ import {
   ShieldCheck,
   Brain,
   BarChart3,
-  Star,
   ArrowRight,
   Sparkles,
   LayoutDashboard,
@@ -451,50 +450,6 @@ export function EmptyAlertsState({
       <div className="flex items-center gap-2 rounded-lg bg-emerald-100/50 px-4 py-2 text-sm text-emerald-700">
         <Sparkles className="h-4 w-4" />
         <span>Everything is running smoothly</span>
-      </div>
-    </UnifiedEmptyState>
-  );
-}
-
-export function EmptyWatchlistState({
-  onBrowseAssets,
-  className,
-  animated = true,
-}: {
-  onBrowseAssets?: () => void;
-  className?: string;
-  animated?: boolean;
-}) {
-  return (
-    <UnifiedEmptyState
-      icon={Star}
-      title="Start Building Your Watchlist"
-      description="You haven't added any items to your watchlist yet. Browse oracle data and add assets you're interested in monitoring."
-      variant="action"
-      className={className}
-      animated={animated}
-      action={
-        onBrowseAssets
-          ? {
-              label: 'Browse Assets',
-              onClick: onBrowseAssets,
-            }
-          : undefined
-      }
-    >
-      <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-        <div className="rounded-lg bg-primary/10 p-3">
-          <div className="text-primary-dark text-lg font-semibold">100+</div>
-          <div className="text-xs text-primary">Assets</div>
-        </div>
-        <div className="rounded-lg bg-primary/10 p-3">
-          <div className="text-primary-dark text-lg font-semibold">6</div>
-          <div className="text-xs text-primary">Protocols</div>
-        </div>
-        <div className="rounded-lg bg-primary/10 p-3">
-          <div className="text-primary-dark text-lg font-semibold">Real-time</div>
-          <div className="text-xs text-primary">Updates</div>
-        </div>
       </div>
     </UnifiedEmptyState>
   );

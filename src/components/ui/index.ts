@@ -40,7 +40,6 @@ export {
   EmptySecurityState,
   EmptyAnomalyState,
   EmptyAlertsState,
-  EmptyWatchlistState,
   EmptyErrorState,
   EmptyConnectionState,
   EmptyDashboardState,

@@ -2,7 +2,6 @@
  * Oracle Components
  */
 
-export * from './AlertPanel';
 export * from './Leaderboard';
 export * from './LivenessProgressBar';
 export * from './OracleCharts';

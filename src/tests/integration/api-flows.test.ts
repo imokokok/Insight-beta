@@ -179,67 +179,6 @@ describe('API Flows Integration', () => {
     });
   });
 
-  describe('Watchlist API', () => {
-    it('should create watchlist item', async () => {
-      const mockItem = {
-        id: 'watch-1',
-        symbol: 'ETH/USD',
-        protocol: 'chainlink',
-        createdAt: new Date().toISOString(),
-      };
-
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ ok: true, data: mockItem }),
-        headers: new Headers({ 'content-type': 'application/json' }),
-      });
-
-      const result = await fetchApiData('/api/watchlist', {
-        method: 'POST',
-        body: JSON.stringify({ symbol: 'ETH/USD', protocol: 'chainlink' }),
-      });
-
-      expect(result).toEqual(mockItem);
-    });
-
-    it('should update watchlist item', async () => {
-      const mockItem = {
-        id: 'watch-1',
-        symbol: 'ETH/USD',
-        protocol: 'chainlink',
-        alertThreshold: 0.05,
-        updatedAt: new Date().toISOString(),
-      };
-
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ ok: true, data: mockItem }),
-        headers: new Headers({ 'content-type': 'application/json' }),
-      });
-
-      const result = await fetchApiData('/api/watchlist/watch-1', {
-        method: 'PUT',
-        body: JSON.stringify({ alertThreshold: 0.05 }),
-      });
-
-      expect(result).toEqual(mockItem);
-    });
-
-    it('should delete watchlist item', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ ok: true, data: { deleted: true } }),
-        headers: new Headers({ 'content-type': 'application/json' }),
-      });
-
-      const result = await fetchApiData('/api/watchlist/watch-1', {
-        method: 'DELETE',
-      });
-
-      expect(result).toEqual({ deleted: true });
-    });
-  });
-
   describe('Alert API', () => {
     it('should fetch active alerts', async () => {
       const mockAlerts = {
